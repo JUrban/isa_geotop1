@@ -3400,4 +3400,126 @@ theorem Theorem_GT_18_8_Antoine_arc:
            geotop_is_wild A"
   sorry
 
+section \<open>\<S>19 A wild arc with a simply connected complement\<close>
+
+(** from \<S>19: unknotted in C (geotop.tex:3997)
+    LATEX VERSION: If B and C satisfy the conditions of Theorem 1, then we say that B is
+      unknotted in C. **)
+definition geotop_unknotted_in ::
+  "(real^3) set \<Rightarrow> (real^3) set \<Rightarrow> bool" where
+  "geotop_unknotted_in B C \<longleftrightarrow>
+    geotop_is_broken_line B \<and>
+    geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<and>
+    (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C) \<and>
+    (\<exists>\<sigma>2::(real^2) set. geotop_simplex_dim \<sigma>2 2 \<and>
+       (\<exists>R\<in>geotop_top_interior UNIV geotop_euclidean_topology \<sigma>2.
+         (\<exists>\<phi>. top1_homeomorphism_on C (subspace_topology UNIV geotop_euclidean_topology C)
+                (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1})
+                (subspace_topology (UNIV::((real^2) \<times> real) set) geotop_euclidean_topology
+                   (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1})) \<phi> \<and>
+              \<phi> ` B = {R} \<times> {t. 0 \<le> t \<and> t \<le> 1})))"
+
+(** from \<S>19 Theorem 1 (geotop.tex:3985)
+    LATEX VERSION: Let B be a broken line in R^3, with end-points P and Q. Then there is a
+      polyhedral 3-cell C such that (1) Int B \<subseteq> Int C, (2) P, Q \<in> Bd C, and (3) there is a
+      PLH \<phi>: C \<leftrightarrow> \<sigma>^2 \<times> [0,1], such that B \<leftrightarrow> R \<times> [0,1], for some R \<in> Int \<sigma>^2. **)
+theorem Theorem_GT_19_1:
+  fixes B :: "(real^3) set"
+  assumes "geotop_is_broken_line B"
+  shows "\<exists>C. geotop_unknotted_in B C"
+  sorry
+
+(** from \<S>19 Theorem 2 (geotop.tex:3999)
+    LATEX VERSION: If B_i is unknotted in C_i (i = 1,2), then every PLH
+      h: Bd C_1 \<leftrightarrow> Bd C_2, Bd B_1 \<leftrightarrow> Bd B_2 can be extended to give a PLH
+      h': C_1 \<leftrightarrow> C_2, B_1 \<leftrightarrow> B_2. **)
+theorem Theorem_GT_19_2:
+  fixes B1 B2 C1 C2 :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3"
+  assumes "geotop_unknotted_in B1 C1" and "geotop_unknotted_in B2 C2"
+  assumes "top1_homeomorphism_on
+             (geotop_frontier UNIV geotop_euclidean_topology C1)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_frontier UNIV geotop_euclidean_topology C1))
+             (geotop_frontier UNIV geotop_euclidean_topology C2)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_frontier UNIV geotop_euclidean_topology C2)) h"
+  assumes "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' h"
+  assumes "h ` (geotop_frontier UNIV geotop_euclidean_topology B1) =
+             geotop_frontier UNIV geotop_euclidean_topology B2"
+  shows "\<exists>h'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                C2 (subspace_topology UNIV geotop_euclidean_topology C2) h' \<and>
+              (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology C1. h' P = h P) \<and>
+              h' ` B1 = B2"
+  sorry
+
+(** from \<S>19 Theorem 3 (geotop.tex:4064)
+    LATEX VERSION: A_1 is tame.
+    Here A_1 is the Wilder arc (union of arcs B_i accumulating at a point P). **)
+theorem Theorem_GT_19_3:
+  fixes A1 :: "(real^3) set" and Bs :: "nat \<Rightarrow> (real^3) set" and P :: "real^3"
+  assumes "\<forall>i. geotop_is_broken_line (Bs i)"
+  assumes "\<forall>i. \<forall>j. i \<noteq> j \<longrightarrow> Bs i \<inter> Bs j = {}"
+  assumes "A1 = (\<Union>i. Bs i) \<union> {P}"
+  assumes "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  shows "geotop_is_tame A1"
+  sorry
+
+(** from \<S>19: locally commutative fundamental group (geotop.tex:4127)
+    LATEX VERSION: Let U be an open set, and let P \<in> closure U. Suppose that for every open
+      set V containing P there is an open set W containing P such that (1) P \<in> W \<subseteq> V and (2)
+      if p and q are closed paths in U \<inter> W, with base-point P_0, then pq \<cong> qp in
+      \<pi>(U \<inter> V). Then \<pi>(U) is locally commutative at P. **)
+definition geotop_pi_locally_commutative_at ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_pi_locally_commutative_at U T P \<longleftrightarrow>
+    U \<in> T \<and>
+    (\<forall>V\<in>T. P \<in> V \<longrightarrow>
+       (\<exists>W\<in>T. P \<in> W \<and> W \<subseteq> V \<and>
+         (\<forall>P\<^sub>0 \<in> U \<inter> W. \<forall>p q.
+             geotop_closed_path_on (U \<inter> W) (subspace_topology (U \<inter> W) T (U \<inter> W)) P\<^sub>0 p \<and>
+             geotop_closed_path_on (U \<inter> W) (subspace_topology (U \<inter> W) T (U \<inter> W)) P\<^sub>0 q \<longrightarrow>
+             geotop_path_equiv (U \<inter> V) (subspace_topology (U \<inter> V) T (U \<inter> V))
+               P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult q p))))"
+
+(** from \<S>19 Theorem 4 (geotop.tex:4102)
+    LATEX VERSION: A is wild.
+    Here A is the Fox-Artin wild arc, A = A_1 \<union> A_2 where A_1 is the Wilder arc and A_2 is
+    a linear interval from P to a point Q to the right. **)
+theorem Theorem_GT_19_4:
+  fixes A :: "(real^3) set" and P :: "real^3"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "\<exists>A1 A2. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
+                   geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
+                   geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes "\<not> geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P"
+  shows "geotop_is_wild A"
+  sorry
+
+(** from \<S>19 Theorem 5 (geotop.tex:4167)
+    LATEX VERSION: R^3 - A is homeomorphic to the complement of a point. **)
+theorem Theorem_GT_19_5:
+  fixes A :: "(real^3) set"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "\<exists>A1 A2 P. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
+                   geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
+                   geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+                   geotop_is_wild A"
+  shows "\<exists>(Q::real^3). \<exists>h. top1_homeomorphism_on
+             (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
+             (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q}))
+             h"
+  sorry
+
+(** from \<S>19 Theorem 6 (geotop.tex:4172)
+    LATEX VERSION: There are tame arcs A_1, A_2 in R^3 such that A_1 \<inter> A_2 is a point and
+      A_1 \<union> A_2 is wild. **)
+theorem Theorem_GT_19_6:
+  shows "\<exists>A1 A2 :: (real^3) set. \<exists>P.
+           geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
+           geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+           geotop_is_tame A1 \<and> geotop_is_tame A2 \<and>
+           A1 \<inter> A2 = {P} \<and>
+           geotop_is_wild (A1 \<union> A2)"
+  sorry
+
 end
