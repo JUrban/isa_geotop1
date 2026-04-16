@@ -1128,4 +1128,128 @@ theorem Theorem_GT_4_10:
   shows "geotop_manifold_boundary M d = geotop_frontier UNIV geotop_euclidean_topology M"
   sorry
 
+
+section \<open>\<S>5 Piecewise linear homeomorphisms\<close>
+
+(** from \<S>5 Theorem 1 (geotop.tex:1118)
+    LATEX VERSION: Given K_1 < K. Then f is PL relative to K,L iff f is PL relative to K_1,L. **)
+theorem Theorem_GT_5_1:
+  fixes K K1 :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
+  fixes f :: "'a \<Rightarrow> 'b"
+  assumes "geotop_is_subdivision K1 K"
+  shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K1 L f"
+  sorry
+
+(** from \<S>5 Theorem 2 (geotop.tex:1124)
+    LATEX VERSION: Let L_1 be a subdivision of L. f is PL relative to K,L iff f is PL
+      relative to K,L_1. **)
+theorem Theorem_GT_5_2:
+  fixes K :: "'a::real_normed_vector set set" and L L1 :: "'b::real_normed_vector set set"
+  fixes f :: "'a \<Rightarrow> 'b"
+  assumes "geotop_is_subdivision L1 L"
+  shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K L1 f"
+  sorry
+
+(** from \<S>5 Theorem 3 (geotop.tex:1146)
+    LATEX VERSION: Let J be a polygon in R^2, let I be its interior, and let K be a
+      subcomplex of a triangulation of R^2 such that |K| = \<bar>I\<close>. Then there is a PLH
+      f: R^2 \<leftrightarrow> R^2, \<bar>I\<close> \<leftrightarrow> \<sigma>^2, f: J \<leftrightarrow> Bd \<sigma>^2 = Fr \<sigma>^2. Thus K is a combinatorial 2-cell. **)
+theorem Theorem_GT_5_3:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes "geotop_is_polygon J"
+  assumes "geotop_is_complex K"
+  assumes "geotop_polyhedron K =
+    closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "\<exists>f \<sigma>. geotop_simplex_dim \<sigma> 2 \<and>
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology f \<and>
+          f ` geotop_polyhedron K = \<sigma> \<and>
+          f ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    and "geotop_comb_n_cell K 2"
+  sorry
+
+(** from \<S>5 Theorem 4 (geotop.tex:1157)
+    LATEX VERSION: Let K_1 and K_2 be combinatorial 2-cells and let f be a PLH
+      Bd|K_1| \<leftrightarrow> Bd|K_2|. Then f has a PLH extension f': |K_1| \<leftrightarrow> |K_2|. **)
+theorem Theorem_GT_5_4:
+  fixes K1 K2 :: "'a::real_normed_vector set set"
+  fixes f :: "'a \<Rightarrow> 'a" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  assumes "geotop_comb_n_cell K1 2"
+  assumes "geotop_comb_n_cell K2 2"
+  assumes "geotop_PLH (geotop_comb_boundary K1 2) (geotop_comb_boundary K2 2) f"
+  shows "\<exists>f'. geotop_PLH K1 K2 f' \<and>
+              (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x)"
+  sorry
+
+(** from \<S>5 Theorem 5 (geotop.tex:1174)
+    LATEX VERSION: Let K be a complex such that M^2 = |K| is a 2-manifold with boundary.
+      Let J be a polygon in |K| which forms a subcomplex of a subdivision. If J lies in a
+      set |St v|, then J is the boundary of a combinatorial 2-cell in K. **)
+theorem Theorem_GT_5_5:
+  fixes K :: "'a::real_normed_vector set set" and J :: "'a set" and v :: "'a"
+  fixes d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K :: 'a set) d 2"
+  assumes "geotop_is_polygon J"
+  assumes "J \<subseteq> geotop_polyhedron K"
+  assumes "v \<in> geotop_complex_vertices K"
+  assumes "J \<subseteq> geotop_polyhedron (geotop_star K v)"
+  shows "\<exists>K'. K' \<subseteq> K \<and> geotop_comb_n_cell K' 2
+          \<and> geotop_polyhedron (geotop_comb_boundary K' 2) = J"
+  sorry
+
+(** from \<S>5 Theorem 6 (geotop.tex:1178)
+    LATEX VERSION: Let C_1 and C_2 be 2-cells, and let f be a homeomorphism Bd C_1 \<leftrightarrow> Bd C_2.
+      Then f has a homeomorphic extension f': C_1 \<leftrightarrow> C_2. **)
+theorem Theorem_GT_5_6:
+  fixes C1 C2 :: "'a::real_normed_vector set"
+  assumes "geotop_is_disk C1 (subspace_topology UNIV geotop_euclidean_topology C1)"
+  assumes "geotop_is_disk C2 (subspace_topology UNIV geotop_euclidean_topology C2)"
+  assumes "top1_homeomorphism_on
+             (geotop_frontier UNIV geotop_euclidean_topology C1)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_frontier UNIV geotop_euclidean_topology C1))
+             (geotop_frontier UNIV geotop_euclidean_topology C2)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_frontier UNIV geotop_euclidean_topology C2))
+             f"
+  shows "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                C2 (subspace_topology UNIV geotop_euclidean_topology C2) f'
+          \<and> (\<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x)"
+  sorry
+
+subsection \<open>Joins, barycenters, barycentric subdivision\<close>
+
+(** from Problem Set 5 / \<S>5 additions: join (geotop.tex:1190)
+    LATEX VERSION: The join J(A,v) of A and v is the union of all segments vP (P \<in> A).
+      More generally, J(A,B) = union of all segments PQ (P \<in> A, Q \<in> B). **)
+definition geotop_join_pt :: "'a::real_vector set \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "geotop_join_pt A v = (\<Union>P\<in>A. geotop_segment v P)"
+
+definition geotop_join :: "'a::real_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "geotop_join A B = (\<Union>P\<in>A. \<Union>Q\<in>B. geotop_segment P Q)"
+
+(** from Problem Set 5 / \<S>5: barycenter (geotop.tex:1197)
+    LATEX VERSION: The barycenter v of \<sigma>^n is the point of \<sigma>^n all of whose barycentric
+      coordinates are equal (= 1/(n+1)). **)
+definition geotop_barycenter :: "'a::real_vector set \<Rightarrow> 'a" where
+  "geotop_barycenter \<sigma> = (SOME v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and>
+     v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w))"
+
+(** from Problem Set 5 / \<S>5: barycentric subdivision (geotop.tex:1197)
+    LATEX VERSION: bK^0 = K^0. bK^{i+1} = bK^i union the set of all joins v\<sigma>^i where v is
+      the barycenter of \<sigma>^{i+1} of K, \<sigma>^i \<in> bK^i, \<sigma>^i \<subset> \<sigma>^{i+1}. **)
+text \<open>Definition is inductive; we state its existence as a function on complexes.\<close>
+definition geotop_barycentric_subdivision ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_barycentric_subdivision K =
+    (SOME bK. geotop_is_subdivision bK K \<and>
+       (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK))"
+
+(** \<epsilon>-approximation of a mapping (Problem 5.8 and PL approximations \<S>F) (geotop.tex:1201)
+    LATEX VERSION: f' is an \<epsilon>-approximation of f if for each P, d(f(P), f'(P)) < \<epsilon>. **)
+definition geotop_epsilon_approximation ::
+  "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> real \<Rightarrow> 'b set \<Rightarrow> bool" where
+  "geotop_epsilon_approximation d f g \<epsilon> X \<longleftrightarrow> (\<forall>P\<in>X. d (f P) (g P) < \<epsilon>)"
+
 end
