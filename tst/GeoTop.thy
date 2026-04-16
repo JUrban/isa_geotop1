@@ -1577,4 +1577,114 @@ definition geotop_PL_star ::
   "geotop_PL_star \<K> v =
     {(\<tau>, h')\<in>\<K>. \<exists>\<sigma> h. (\<sigma>, h)\<in>\<K> \<and> v \<in> h ` \<sigma> \<and> (geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>)}"
 
+
+section \<open>\<S>8 The triangulation theorem for 2-manifolds\<close>
+
+(** from \<S>8: unit balls D and D' (geotop.tex:1615)
+    LATEX VERSION: D = {P | ||P|| < 1}, D' = {P | ||P|| < 1/2}. **)
+definition geotop_std_open_ball :: "real \<Rightarrow> 'a::real_normed_vector set" where
+  "geotop_std_open_ball r = {P. norm P < r}"
+
+abbreviation geotop_D :: "'a::real_normed_vector set" where
+  "geotop_D \<equiv> geotop_std_open_ball 1"
+
+abbreviation geotop_D' :: "'a::real_normed_vector set" where
+  "geotop_D' \<equiv> geotop_std_open_ball (1/2)"
+
+(** from \<S>8 Theorem 1 (geotop.tex:1622)
+    LATEX VERSION: Let M be an n-manifold. Then there is a sequence (N_i, N_i') of ordered
+      pairs of open sets in M, such that for each i there is a homeomorphism
+      h_i: \<bar>N_i\<close> \<leftrightarrow> \<bar>D\<close>, \<bar>N_i'\<close> \<leftrightarrow> \<bar>D'\<close>, and {N_i'} covers M. **)
+theorem Theorem_GT_8_1:
+  fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  assumes "geotop_n_manifold_on M d n"
+  shows "\<exists>(N :: nat \<Rightarrow> 'a set) (N' :: nat \<Rightarrow> 'a set) (h :: nat \<Rightarrow> 'a \<Rightarrow> 'a).
+    (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
+         openin_on M (top1_metric_topology_on M d) (N' i) \<and>
+         top1_homeomorphism_on
+           (closure_on M (top1_metric_topology_on M d) (N i))
+           (subspace_topology M (top1_metric_topology_on M d)
+               (closure_on M (top1_metric_topology_on M d) (N i)))
+           (closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball 1))
+           (subspace_topology UNIV geotop_euclidean_topology
+               (closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball 1)))
+           (h i) \<and>
+         h i ` closure_on M (top1_metric_topology_on M d) (N' i) =
+            closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball (1/2)))
+    \<and> M = (\<Union>i. N' i)"
+  sorry
+
+(** from \<S>8 Theorem 2 (geotop.tex:1639)
+    LATEX VERSION: Let K be a finite complex, and let U be an open set in |K| (relative to the
+      subspace topology for |K|). Then there is a complex K_U such that |K_U| = U and every
+      simplex \<sigma> of K_U is a (rectilinear) subsimplex of some simplex of K. **)
+theorem Theorem_GT_8_2:
+  fixes K :: "'a::real_normed_vector set set" and U :: "'a set"
+  assumes "geotop_is_complex K"
+  assumes "finite K"
+  assumes "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+  shows "\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and>
+           (\<forall>\<sigma>\<in>KU. \<exists>\<tau>\<in>K. \<sigma> \<subseteq> \<tau>)"
+  sorry
+
+(** from \<S>8 Theorem 3 (T. Radó) (geotop.tex:1674)
+    LATEX VERSION: Every 2-manifold is triangulable, i.e., there is a (Euclidean) complex K
+      such that M and |K| are homeomorphic; equivalently, there is a PL complex \<K> in M with
+      |\<K>| = M. **)
+theorem Theorem_GT_8_3_Rado:
+  fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  assumes "geotop_n_manifold_on M d 2"
+  shows "\<exists>(K :: (real^2) set set) (f :: real^2 \<Rightarrow> 'a).
+    geotop_is_complex K \<and>
+    top1_homeomorphism_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+        M (top1_metric_topology_on M d) f"
+  sorry
+
+(** from \<S>8 Theorem 4 (geotop.tex:1826)
+    LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds, let U be an open set in |K_1|,
+      let h be a homeomorphism U \<rightarrow> |K_2|, and let \<phi> be strongly positive on U. Then there is
+      a PLH f: U \<rightarrow> |K_2| such that f is a \<phi>-approximation of h and f(U) = h(U). **)
+theorem Theorem_GT_8_4:
+  fixes K1 K2 :: "(real^2) set set"
+  fixes h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
+  fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  fixes U :: "(real^2) set"
+  assumes "geotop_is_complex K1"
+  assumes "geotop_is_complex K2"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)"
+  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
+  assumes "h ` U \<subseteq> geotop_polyhedron K2"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f
+          \<and> f ` U = h ` U
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
+          \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f)"
+  sorry
+
+(** from \<S>8 Theorem 5 (Hauptvermutung for 2-manifolds) (geotop.tex:1844)
+    LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds. If there is a homeomorphism
+      |K_1| \<leftrightarrow> |K_2|, then there is a PLH |K_1| \<leftrightarrow> |K_2|. Thus, for triangulated 2-manifolds,
+      homeomorphism implies combinatorial equivalence. **)
+theorem Theorem_GT_8_5_Hauptvermutung_2d:
+  fixes K1 K2 :: "(real^2) set set"
+  fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  fixes h :: "real^2 \<Rightarrow> real^2"
+  assumes "geotop_is_complex K1"
+  assumes "geotop_is_complex K2"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+             (geotop_polyhedron K2)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h"
+  shows "\<exists>f. geotop_PLH K1 K2 f"
+    and "geotop_comb_equiv K1 K2"
+  sorry
+
 end
