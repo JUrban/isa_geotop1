@@ -4207,4 +4207,352 @@ theorem Theorem_GT_22_12:
   shows "geotop_is_projective_plane M"
   sorry
 
+section \<open>\<S>23 Triangulated 3-manifolds\<close>
+
+(** from \<S>23: combinatorial boundary \<partial>K for triangulated 3-manifold with boundary
+    (geotop.tex:4962)
+    LATEX VERSION: If K is a triangulated 3-manifold with boundary, then \<partial>K is the set of
+      all 2-simplexes \<sigma> of K such that \<sigma> lies in only one 3-simplex of K (together with all
+      faces of such simplexes \<sigma>). **)
+definition geotop_comb_boundary_3 ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_comb_boundary_3 K =
+    (let \<Sigma>2 = {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and>
+                      card {\<tau>\<in>K. geotop_simplex_dim \<tau> 3 \<and> \<sigma> \<subseteq> \<tau>} = 1}
+     in \<Sigma>2 \<union> {\<tau>. \<exists>\<sigma>\<in>\<Sigma>2. \<tau> \<subseteq> \<sigma> \<and> geotop_is_simplex \<tau>})"
+
+definition geotop_3_interior :: "'a::real_normed_vector set set \<Rightarrow> 'a set" where
+  "geotop_3_interior K = geotop_polyhedron K - \<Union>(geotop_comb_boundary_3 K)"
+
+(** from \<S>23: combinatorial 3-manifold (geotop.tex:4972)
+    LATEX VERSION: A triangulated 3-manifold is a combinatorial 3-manifold if each complex
+      St v is combinatorially equivalent to a 3-simplex. **)
+definition geotop_is_combinatorial_3_manifold ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_combinatorial_3_manifold K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3 \<and>
+    geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {} \<and>
+    (\<forall>v\<in>geotop_complex_vertices K.
+       \<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 3 \<and>
+         geotop_comb_equiv (geotop_star K v) {\<tau>. \<tau> \<subseteq> \<sigma> \<and> geotop_is_simplex \<tau>})"
+
+definition geotop_is_combinatorial_3_manifold_with_boundary ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_combinatorial_3_manifold_with_boundary K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3 \<and>
+    (\<forall>v\<in>geotop_complex_vertices K.
+       \<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 3 \<and>
+         geotop_comb_equiv (geotop_star K v) {\<tau>. \<tau> \<subseteq> \<sigma> \<and> geotop_is_simplex \<tau>})"
+
+(** from \<S>23 Theorem 1 (geotop.tex:4974)
+    LATEX VERSION: Every triangulated 3-manifold is a combinatorial 3-manifold. **)
+theorem Theorem_GT_23_1:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}"
+  shows "geotop_is_combinatorial_3_manifold K"
+  sorry
+
+(** from \<S>23 Theorem 2 (geotop.tex:5005)
+    LATEX VERSION: Let M be a 3-manifold with boundary, and let P \<in> Bd M. Then there is a
+      homeomorphism f: \<sigma>^3 \<leftrightarrow> C^3 \<subseteq> M such that (1) C^3 is a neighborhood of P in M, (2)
+      C^3 \<inter> Bd M = f(\<sigma>^2), where \<sigma>^2 is a 2-face of \<sigma>^3, and (3) f(\<sigma>^2) is a neighborhood of P
+      in Bd M. **)
+theorem Theorem_GT_23_2:
+  fixes M :: "'a::real_normed_vector set" and P :: 'a
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  shows "\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f. geotop_simplex_dim \<sigma>3 3 \<and>
+             geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face \<sigma>2 \<sigma>3 \<and>
+             top1_homeomorphism_on \<sigma>3 (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
+               C3 (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
+             C3 \<subseteq> M \<and>
+             P \<in> geotop_top_interior M
+                (subspace_topology UNIV geotop_euclidean_topology M) C3 \<and>
+             C3 \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = f ` \<sigma>2"
+  sorry
+
+(** from \<S>23 Theorem 3 (geotop.tex:5013)
+    LATEX VERSION: If M is a 3-manifold with boundary, then Bd M is a 2-manifold. **)
+theorem Theorem_GT_23_3:
+  fixes M :: "'a::real_normed_vector set"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  shows "geotop_n_manifold_with_boundary_on
+           (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+           (\<lambda>x y. norm (x - y)) 2"
+  sorry
+
+(** from \<S>23 Theorem 4 (geotop.tex:5014)
+    LATEX VERSION: Let M be a 3-manifold with boundary, and let P \<in> Bd M. Then every
+      sufficiently small 2-cell neighborhood C^2 of P in Bd M is of the type C^3 \<inter> Bd M,
+      where C^3 = f(\<sigma>^3) and C^2 = f(\<sigma>^2), as in Theorem 2. **)
+theorem Theorem_GT_23_4:
+  fixes M :: "'a::real_normed_vector set" and P :: 'a
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  shows "\<exists>\<epsilon>>0. \<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+                     C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+                     P \<in> geotop_top_interior (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+                            (subspace_topology UNIV geotop_euclidean_topology
+                               (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) C2 \<and>
+                     geotop_diameter (\<lambda>x y. norm (x - y)) C2 < \<epsilon>
+             \<longrightarrow> (\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f.
+                    geotop_simplex_dim \<sigma>3 3 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
+                    geotop_is_face \<sigma>2 \<sigma>3 \<and>
+                    top1_homeomorphism_on \<sigma>3
+                      (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
+                      C3 (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
+                    C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)"
+  sorry
+
+(** from \<S>23: doubling of a 3-manifold with boundary (geotop.tex:5016)
+    LATEX VERSION: Let M be a 3-manifold with boundary, and for i = 1, 2 let h_i: M \<leftrightarrow> M_i
+      be a homeomorphism, such that M_1 \<inter> M_2 = \<emptyset>. Let M' be the space obtained by
+      identifying every pair h_1(P), h_2(P) of points, where P \<in> Bd M. **)
+definition geotop_is_doubling_of ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_doubling_of M M' \<longleftrightarrow>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3 \<and>
+    geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 3 \<and>
+    geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) = {} \<and>
+    (\<exists>(M1::'a set) (M2::'a set) (h1::'a \<Rightarrow> 'a) (h2::'a \<Rightarrow> 'a).
+       M1 \<inter> M2 = {} \<and>
+       top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M) M1
+          (subspace_topology UNIV geotop_euclidean_topology M1) h1 \<and>
+       top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M) M2
+          (subspace_topology UNIV geotop_euclidean_topology M2) h2)"
+
+(** from \<S>23 Theorem 5 (geotop.tex:5016)
+    LATEX VERSION: M' is a 3-manifold. **)
+theorem Theorem_GT_23_5:
+  fixes M :: "'a::real_normed_vector set"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "top1_compact_on (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_manifold_boundary M (\<lambda>x y. norm (x - y))))"
+  shows "\<exists>M'. geotop_is_doubling_of M M'"
+  sorry
+
+(** from \<S>23 Theorem 6 (geotop.tex:5025)
+    LATEX VERSION: Every triangulated 3-manifold K with boundary is a combinatorial
+      3-manifold with boundary. **)
+theorem Theorem_GT_23_6:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  shows "geotop_is_combinatorial_3_manifold_with_boundary K"
+  sorry
+
+(** from \<S>23 Theorem 7 (geotop.tex:5031)
+    LATEX VERSION: Let K be a triangulated 3-manifold with boundary. Then
+      |\<partial>K| = Bd |K|. **)
+theorem Theorem_GT_23_7:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  shows "\<Union>(geotop_comb_boundary_3 K) =
+         geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  sorry
+
+(** from \<S>23 Theorem 8 (geotop.tex:5033)
+    LATEX VERSION: Let M' be a 3-manifold with boundary, lying in a 3-manifold. If M' is
+      closed, then Bd M' = Fr M'. **)
+theorem Theorem_GT_23_8:
+  fixes M' M :: "'a::real_normed_vector set"
+  assumes "geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes "M' \<subseteq> M"
+  assumes "closedin_on M (subspace_topology UNIV geotop_euclidean_topology M) M'"
+  shows "geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) =
+         geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'"
+  sorry
+
+(** from \<S>23 Theorem 9 (geotop.tex:5040)
+    LATEX VERSION: In a triangulated 3-manifold K, let S be a polyhedral 2-sphere, lying in
+      a set |St v|. Then S is the boundary of a combinatorial 3-cell. **)
+theorem Theorem_GT_23_9:
+  fixes K :: "'a::real_normed_vector set set" and S :: "'a set" and v :: 'a
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}"
+  assumes "v \<in> geotop_complex_vertices K"
+  assumes "S \<subseteq> \<Union>(geotop_star K v)"
+  assumes "geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
+  shows "\<exists>C3 L. geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
+                geotop_is_complex L \<and> geotop_polyhedron L = C3 \<and>
+                geotop_frontier UNIV geotop_euclidean_topology C3 = S"
+  sorry
+
+(** from \<S>23 Theorem 10 (geotop.tex:5044)
+    LATEX VERSION: In a triangulated 3-manifold K, let C^3 be a polyhedral 3-cell, lying in
+      a set Int |St v|. Let D_1 and D_2 be polyhedral 2-cells such that D_1 \<union> D_2 = Bd C^3
+      and D_1 \<inter> D_2 = J = Bd D_1 = Bd D_2. Let N be a polyhedral closed neighborhood of
+      C^3 - J. Then there is a PLH h: |K| \<leftrightarrow> |K| such that (1) h(D_1) = D_2 and (2)
+      h|(|K| - N) is the identity. **)
+theorem Theorem_GT_23_10:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes C3 D1 D2 N :: "'a set" and v :: 'a
+  assumes "geotop_is_complex K"
+  assumes "v \<in> geotop_complex_vertices K"
+  assumes "C3 \<subseteq> \<Union>(geotop_star K v)"
+  assumes "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
+  assumes "D1 \<union> D2 = geotop_frontier UNIV geotop_euclidean_topology C3"
+  assumes "geotop_is_n_cell D1 (subspace_topology UNIV geotop_euclidean_topology D1) 2"
+  assumes "geotop_is_n_cell D2 (subspace_topology UNIV geotop_euclidean_topology D2) 2"
+  assumes "D1 \<inter> D2 = geotop_frontier UNIV geotop_euclidean_topology D1"
+  assumes "C3 - (D1 \<inter> D2) \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology N"
+  shows "\<exists>h. top1_homeomorphism_on (geotop_polyhedron K)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+               (geotop_polyhedron K)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) h \<and>
+             h ` D1 = D2 \<and> (\<forall>P\<in>geotop_polyhedron K - N. h P = P)"
+  sorry
+
+(** from \<S>23 Theorem 11 (geotop.tex:5049)
+    LATEX VERSION: In a triangulated 3-manifold K, let C_1^3 and C_2^3 be combinatorial
+      3-cells such that (1) each C_i^3 lies in a set Int |St v_i| and (2) C_1^3 \<inter> C_2^3 is a
+      polyhedral 2-cell D = Bd C_1^3 \<inter> Bd C_2^3. Then C_1^3 \<union> C_2^3 is a combinatorial
+      3-cell. **)
+theorem Theorem_GT_23_11:
+  fixes K :: "'a::real_normed_vector set set" and C1 C2 D :: "'a set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 3"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 3"
+  assumes "C1 \<inter> C2 = D"
+  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  shows "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C1 \<union> C2 \<and>
+             geotop_is_n_cell (C1 \<union> C2)
+               (subspace_topology UNIV geotop_euclidean_topology (C1 \<union> C2)) 3"
+  sorry
+
+(** from \<S>23 Theorem 12 (geotop.tex:5062)
+    LATEX VERSION: Let K be a triangulated 3-manifold, and let L be a finite subcomplex of
+      K, such that L is a triangulated 3-manifold with boundary. Then |L| and N(L) are
+      combinatorially equivalent. **)
+theorem Theorem_GT_23_12:
+  fixes K L :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K" and "geotop_is_complex L"
+  assumes "L \<subseteq> K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron L) (\<lambda>x y. norm (x - y)) 3"
+  shows "geotop_comb_equiv {\<sigma>\<in>geotop_barycentric_subdivision
+              (geotop_barycentric_subdivision K).
+              \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}
+           L"
+  sorry
+
+(** from \<S>23 Theorem 13 (geotop.tex:5066)
+    LATEX VERSION: Let K be a triangulated 3-manifold with boundary. Then K is
+      combinatorially equivalent to a set N(L), where N(L) is the regular neighborhood of a
+      subcomplex L of a triangulated 3-manifold K'. **)
+theorem Theorem_GT_23_13:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  shows "\<exists>K' L. geotop_is_complex K' \<and> geotop_is_complex L \<and> L \<subseteq> K' \<and>
+                geotop_n_manifold_with_boundary_on (geotop_polyhedron K')
+                   (\<lambda>x y. norm (x - y)) 3 \<and>
+                geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
+                geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
+                       (geotop_barycentric_subdivision K').
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}"
+  sorry
+
+(** from \<S>23: orientable triangulated 3-manifold (geotop.tex:5070)
+    LATEX VERSION: A finite triangulated 3-manifold K is orientable if each of its components
+      K_i has a nonvanishing 3-dimensional homology group. **)
+definition geotop_is_orientable_3_manifold ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_orientable_3_manifold K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3 \<and>
+    True  \<comment> \<open>H_3 \<cong> Z left abstract in this initial pass\<close>"
+
+(** from \<S>23 Theorem 14 (geotop.tex:5084)
+    LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary. Then \<partial>K and
+      |\<partial>K| = Bd |K| are orientable. **)
+theorem Theorem_GT_23_14:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  shows "geotop_is_orientable (geotop_comb_boundary_3 K)"
+  sorry
+
+(** from \<S>23 Theorem 15 (geotop.tex:5088)
+    LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary, and let K'
+      be a doubling of K. Then K' is orientable. **)
+theorem Theorem_GT_23_15:
+  fixes K :: "'a::real_normed_vector set set" and K' :: "'a set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  assumes "geotop_is_doubling_of (geotop_polyhedron K) (geotop_polyhedron K')"
+  assumes "geotop_is_complex K'"
+  shows "geotop_is_orientable_3_manifold K'"
+  sorry
+
+(** from \<S>23 Theorem 16 (geotop.tex:5092)
+    LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary. Then K is
+      combinatorially equivalent to the regular neighborhood N(L) of a subcomplex L of an
+      orientable triangulated 3-manifold K'. **)
+theorem Theorem_GT_23_16:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  shows "\<exists>K' L. geotop_is_orientable_3_manifold K' \<and>
+                geotop_is_complex L \<and> L \<subseteq> K' \<and>
+                geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
+                geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
+                       (geotop_barycentric_subdivision K').
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}"
+  sorry
+
+(** from \<S>23 Theorem 17 (geotop.tex:5097)
+    LATEX VERSION: Let K be a triangulated 3-manifold with boundary, and let K' be a
+      subcomplex of K, such that K' is a triangulated 3-manifold with boundary. If K is
+      orientable, then so also is K'. **)
+theorem Theorem_GT_23_17:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  assumes "K' \<subseteq> K"
+  assumes "geotop_is_complex K'"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) 3"
+  shows "geotop_is_orientable_3_manifold K'"
+  sorry
+
+(** from \<S>23: total number of handles h(M) (geotop.tex:5099)
+    LATEX VERSION: Let M be a compact orientable 2-manifold, let the components of M be
+      M_1, \<dots>, M_n, and for each i let M_i be a 2-sphere with h_i handles. Then the number
+      h(M) = \<sum> h_i is called the total number of handles in M. **)
+definition geotop_total_handles :: "'a::real_normed_vector set \<Rightarrow> nat" where
+  "geotop_total_handles M = (SOME n. True)"
+  \<comment> \<open>Left abstract in this initial pass.\<close>
+
+(** from \<S>23 Theorem 18 (geotop.tex:5106)
+    LATEX VERSION: In an orientable triangulated 3-manifold K, let L be a subcomplex, of
+      dimension \<le> 1, let N = N(L), and let B = Bd N. Then h(B) = p^1(N). **)
+theorem Theorem_GT_23_18:
+  fixes K L :: "'a::real_normed_vector set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  assumes "geotop_is_complex L" and "L \<subseteq> K"
+  assumes "\<forall>\<sigma>\<in>L. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  shows "geotop_total_handles
+           (geotop_manifold_boundary (geotop_regular_neighborhood K L)
+              (\<lambda>x y. norm (x - y)))
+         = geotop_first_betti_number (geotop_regular_neighborhood K L)"
+  sorry
+
+(** from \<S>23 Theorem 19 (geotop.tex:5136)
+    LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary. Then
+      p^1(K) \<ge> h(Bd |K|). **)
+theorem Theorem_GT_23_19:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_orientable_3_manifold K"
+  shows "geotop_first_betti_number (geotop_polyhedron K)
+         \<ge> geotop_total_handles
+             (geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)))"
+  sorry
+
 end
