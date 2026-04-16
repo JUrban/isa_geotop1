@@ -3019,4 +3019,239 @@ definition geotop_is_unknotted :: "(real^3) set \<Rightarrow> bool" where
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
          geotop_frontier UNIV geotop_euclidean_topology D = K)"
 
+section \<open>\<S>17 The PL Schönflies theorem in R^3\<close>
+
+(** from \<S>17 Theorem 1 (geotop.tex:3403)
+    LATEX VERSION: Let M be a 3-manifold with boundary, lying in R^3. If M is closed, then
+      Bd M = Fr M. **)
+theorem Theorem_GT_17_1:
+  fixes M :: "(real^3) set"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "closedin_on UNIV geotop_euclidean_topology M"
+  shows "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) =
+         geotop_frontier UNIV geotop_euclidean_topology M"
+  sorry
+
+(** from \<S>17: cell-complex (geotop.tex:3415)
+    LATEX VERSION: By a cell-complex we mean a finite collection K of topological cells, such
+      that (1) different elements of K have disjoint interiors, (2) for each C in K, Bd C is
+      a union of elements of K, and (3) if C, C' \<in> K, and C \<inter> C' \<ne> \<emptyset>, then C \<inter> C' is a cell,
+      and is a union of elements of K. **)
+definition geotop_is_cell_complex ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_cell_complex K \<longleftrightarrow>
+    finite K \<and>
+    (\<forall>C\<in>K. \<exists>n. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) n) \<and>
+    (\<forall>C\<in>K. \<forall>C'\<in>K. C \<noteq> C' \<longrightarrow>
+       geotop_top_interior UNIV geotop_euclidean_topology C
+       \<inter> geotop_top_interior UNIV geotop_euclidean_topology C' = {}) \<and>
+    (\<forall>C\<in>K. \<exists>KS\<subseteq>K. geotop_frontier UNIV geotop_euclidean_topology C = \<Union>KS) \<and>
+    (\<forall>C\<in>K. \<forall>C'\<in>K. C \<inter> C' \<noteq> {} \<longrightarrow>
+       (\<exists>n. geotop_is_n_cell (C \<inter> C')
+              (subspace_topology UNIV geotop_euclidean_topology (C \<inter> C')) n) \<and>
+       (\<exists>KS\<subseteq>K. C \<inter> C' = \<Union>KS))"
+
+(** from \<S>17: PL cell-complex (geotop.tex:3415)
+    LATEX VERSION: If the elements of K are polyhedra, then K will be called a PL cell-complex. **)
+definition geotop_is_PL_cell_complex ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_PL_cell_complex K \<longleftrightarrow>
+    geotop_is_cell_complex K \<and>
+    (\<forall>C\<in>K. \<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C)"
+
+(** from \<S>17: free 2-cell in cell-decomposition (geotop.tex:3418)
+    LATEX VERSION: Let K be a cell-decomposition of a 2-cell, and let C be a 2-cell belonging
+      to K. If Bd C \<inter> Bd|K| is an arc, then C is free in K. **)
+definition geotop_is_free_2cell_in ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_free_2cell_in C K \<longleftrightarrow>
+    C \<in> K \<and>
+    geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+    geotop_is_arc (geotop_frontier UNIV geotop_euclidean_topology C \<inter>
+                   geotop_frontier UNIV geotop_euclidean_topology (\<Union>K))
+      (subspace_topology UNIV geotop_euclidean_topology
+         (geotop_frontier UNIV geotop_euclidean_topology C \<inter>
+          geotop_frontier UNIV geotop_euclidean_topology (\<Union>K)))"
+
+(** from \<S>17 Theorem 2 (geotop.tex:3420)
+    LATEX VERSION: Let K be a cell-decomposition of a 2-cell, and suppose that K has more than
+      one 2-cell. Then at least two of the 2-cells of K are free in K. **)
+theorem Theorem_GT_17_2:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_cell_complex K"
+  assumes "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
+  assumes "2 \<le> card {C\<in>K. geotop_is_n_cell C
+                        (subspace_topology UNIV geotop_euclidean_topology C) 2}"
+  shows "\<exists>C1 C2. C1 \<noteq> C2 \<and> geotop_is_free_2cell_in C1 K \<and> geotop_is_free_2cell_in C2 K"
+  sorry
+
+(** from \<S>17 Theorem 3 (geotop.tex:3426)
+    LATEX VERSION: Let K be as in Theorem 2. Let D be a 2-cell which forms a proper
+      subcomplex of K. Then there is a 2-cell which is free in K and does not lie in D. **)
+theorem Theorem_GT_17_3:
+  fixes K :: "'a::real_normed_vector set set" and D :: "'a set"
+  assumes "geotop_is_cell_complex K"
+  assumes "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
+  assumes "\<exists>KD. KD \<subset> K \<and> geotop_is_cell_complex KD \<and> \<Union>KD = D \<and>
+               geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  shows "\<exists>C. geotop_is_free_2cell_in C K \<and> \<not> C \<subseteq> D"
+  sorry
+
+(** from \<S>17: push property at D_1 (geotop.tex:3431)
+    LATEX VERSION: Let C^3 be a polyhedral 3-cell in R^3, let D_1 be a polyhedral 2-cell in
+      Bd C^3, D_2 = Cl(Bd C^3 - D_1), J = Bd D_1 = Bd D_2. Suppose that for every polyhedral
+      closed neighborhood N of C^3 - J there is a PLH h: R^3 \<leftrightarrow> R^3, D_1 \<leftrightarrow> D_2, such that
+      h|(R^3 - N) is the identity. Then C^3 and Bd C^3 have the push property at D_1. **)
+definition geotop_has_push_property_at ::
+  "(real^3) set \<Rightarrow> (real^3) set \<Rightarrow> bool" where
+  "geotop_has_push_property_at C3 D1 \<longleftrightarrow>
+    geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
+    (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C3) \<and>
+    geotop_is_n_cell D1 (subspace_topology UNIV geotop_euclidean_topology D1) 2 \<and>
+    D1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C3 \<and>
+    (\<exists>L1. geotop_is_complex L1 \<and> geotop_polyhedron L1 = D1) \<and>
+    (\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N) \<and>
+         (C3 - (geotop_frontier UNIV geotop_euclidean_topology D1)) \<subseteq>
+            geotop_top_interior UNIV geotop_euclidean_topology N \<longrightarrow>
+       (\<exists>h KR KR'. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology h \<and>
+                   geotop_PLH KR KR' h \<and>
+                   h ` D1 = geotop_frontier UNIV geotop_euclidean_topology C3 - (D1 -
+                      geotop_frontier UNIV geotop_euclidean_topology D1) \<and>
+                   (\<forall>P\<in>UNIV - N. h P = P)))"
+
+definition geotop_has_push_property :: "(real^3) set \<Rightarrow> bool" where
+  "geotop_has_push_property C3 \<longleftrightarrow>
+    (\<forall>D1. geotop_is_n_cell D1 (subspace_topology UNIV geotop_euclidean_topology D1) 2 \<and>
+          D1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C3 \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D1) \<longrightarrow>
+       geotop_has_push_property_at C3 D1)"
+
+(** from \<S>17 Theorem 4 (geotop.tex:3439)
+    LATEX VERSION: Let \<sigma>^3 be a 3-simplex in R^3, and let \<sigma>^2 be a face of \<sigma>^3. Then \<sigma>^3 has
+      the push property at \<sigma>^2. **)
+theorem Theorem_GT_17_4:
+  fixes \<sigma>3 \<sigma>2 :: "(real^3) set"
+  assumes "geotop_simplex_dim \<sigma>3 3" and "geotop_simplex_dim \<sigma>2 2"
+  assumes "geotop_is_face \<sigma>2 \<sigma>3"
+  shows "geotop_has_push_property_at \<sigma>3 \<sigma>2"
+  sorry
+
+(** from \<S>17 Theorem 5 (geotop.tex:3443)
+    LATEX VERSION: Given \<sigma>^3 \<subseteq> R^3. Let D be a polyhedral 2-cell in Bd \<sigma>^3, and let W be an
+      open set containing \<sigma>^3. Then there is a PLH f: R^3 \<leftrightarrow> R^3, \<sigma>^3 \<leftrightarrow> \<sigma>^3, D \<leftrightarrow> \<sigma>_0^2,
+      where \<sigma>_0^2 is a 2-face of \<sigma>^3, such that f|(R^3 - W) is the identity. **)
+theorem Theorem_GT_17_5:
+  fixes \<sigma>3 D W :: "(real^3) set"
+  assumes "geotop_simplex_dim \<sigma>3 3"
+  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes "D \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D"
+  assumes "W \<in> geotop_euclidean_topology" and "\<sigma>3 \<subseteq> W"
+  shows "\<exists>f \<sigma>02. geotop_simplex_dim \<sigma>02 2 \<and> geotop_is_face \<sigma>02 \<sigma>3 \<and>
+           top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology f \<and>
+           (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+           f ` \<sigma>3 = \<sigma>3 \<and> f ` D = \<sigma>02 \<and>
+           (\<forall>P\<in>UNIV - W. f P = P)"
+  sorry
+
+(** from \<S>17 Theorem 6 (geotop.tex:3502)
+    LATEX VERSION: Every 3-simplex in R^3 has the push property. **)
+theorem Theorem_GT_17_6:
+  fixes \<sigma>3 :: "(real^3) set"
+  assumes "geotop_simplex_dim \<sigma>3 3"
+  shows "geotop_has_push_property \<sigma>3"
+  sorry
+
+(** from \<S>17: simply imbedded 2-sphere (geotop.tex:3530)
+    LATEX VERSION: Let S be a polyhedral 2-sphere in R^3. Suppose that for every convex open
+      set W, containing S, there is a PLH f: R^3 \<leftrightarrow> R^3, S \<leftrightarrow> Bd \<sigma>^3 (where \<sigma>^3 is a
+      3-simplex) such that f|(R^3 - W) is the identity. Then S is simply imbedded. **)
+definition geotop_is_simply_imbedded :: "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_simply_imbedded S \<longleftrightarrow>
+    geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+    (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S) \<and>
+    (\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> S \<subseteq> W \<longrightarrow>
+       (\<exists>f \<sigma>3. geotop_simplex_dim \<sigma>3 3 \<and>
+               top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology f \<and>
+               (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+               f ` S = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 \<and>
+               (\<forall>P\<in>UNIV - W. f P = P)))"
+
+(** from \<S>17 Theorem 7 (geotop.tex:3540)
+    LATEX VERSION: The push property, for polyhedral 3-cells in R^3, is preserved by every
+      PLH. **)
+theorem Theorem_GT_17_7:
+  fixes C3 :: "(real^3) set" and f :: "real^3 \<Rightarrow> real^3"
+  assumes "geotop_has_push_property C3"
+  assumes "top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology f"
+  assumes "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f"
+  shows "geotop_has_push_property (f ` C3)"
+  sorry
+
+(** from \<S>17 Theorem 8 (geotop.tex:3544)
+    LATEX VERSION: Every simply imbedded 2-sphere in R^3 has the push property. **)
+theorem Theorem_GT_17_8:
+  fixes S :: "(real^3) set"
+  assumes "geotop_is_simply_imbedded S"
+  shows "\<exists>C3. geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
+              geotop_frontier UNIV geotop_euclidean_topology C3 = S \<and>
+              geotop_has_push_property C3"
+  sorry
+
+(** from \<S>17 Theorem 9 (geotop.tex:3546)
+    LATEX VERSION: Let C^3 be a convex polyhedral 3-cell in R^3. Then Bd C^3 is simply
+      imbedded. **)
+theorem Theorem_GT_17_9:
+  fixes C3 :: "(real^3) set"
+  assumes "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
+  assumes "geotop_convex C3"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C3"
+  shows "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
+  sorry
+
+(** from \<S>17 Theorem 10 (geotop.tex:3564)
+    LATEX VERSION: Let C^3 be a polyhedral 3-cell in R^3, and suppose that C^3 can be
+      triangulated as the join of a polyhedral 2-cell and a point. Then Bd C^3 is simply
+      imbedded. **)
+theorem Theorem_GT_17_10:
+  fixes C3 :: "(real^3) set"
+  assumes "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
+  assumes "\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                 (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
+                 C3 = geotop_join D {v}"
+  shows "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
+  sorry
+
+(** from \<S>17 Theorem 11 (geotop.tex:3567)
+    LATEX VERSION: Let S_1 and S_2 be polyhedral 2-spheres in R^3, such that S_1 \<inter> S_2 is a
+      plane 2-cell D. Let S = (S_1 \<union> S_2) - Int D. If S_1 and S_2 are simply imbedded, then
+      so also is S. **)
+theorem Theorem_GT_17_11:
+  fixes S1 S2 D :: "(real^3) set"
+  assumes "geotop_is_simply_imbedded S1"
+  assumes "geotop_is_simply_imbedded S2"
+  assumes "S1 \<inter> S2 = D"
+  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  shows "geotop_is_simply_imbedded
+           ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)"
+  sorry
+
+(** from \<S>17 Theorem 12 (The PL Schönflies theorem in R^3) (geotop.tex:3598)
+    LATEX VERSION: Let S be a polyhedral 2-sphere in R^3, and let W be a convex open set
+      containing S. Then there is a PLH f: R^3 \<leftrightarrow> R^3, S \<leftrightarrow> Bd \<sigma>^3, where \<sigma>^3 is a 3-simplex,
+      such that f|(R^3 - W) is the identity. Thus every polyhedral 2-sphere is simply
+      imbedded. **)
+theorem Theorem_GT_17_12_PL_Schoenflies:
+  fixes S W :: "(real^3) set"
+  assumes "geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
+  assumes "W \<in> geotop_euclidean_topology" and "geotop_convex W" and "S \<subseteq> W"
+  shows "geotop_is_simply_imbedded S"
+  sorry
+
 end
