@@ -847,4 +847,112 @@ theorem Theorem_GT_2_8:
            (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
   sorry
 
+
+section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
+
+(** from \<S>3 Theorem 1 (geotop.tex:724)
+    LATEX VERSION: Let \<sigma>^n = v_0 v_1 ... v_n and \<tau>^n = w_0 w_1 ... w_n be simplexes in R^m.
+      Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
+theorem Theorem_GT_3_1:
+  fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
+  assumes "geotop_simplex_vertices \<sigma> V"
+  assumes "geotop_simplex_vertices \<tau> W"
+  assumes "card V = card W"
+  assumes "\<phi> \<in> V \<rightarrow>\<^sub>E W"
+  assumes "bij_betw \<phi> V W"
+  shows "\<exists>f. top1_homeomorphism_on \<sigma>
+              (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+              \<tau>
+              (subspace_topology UNIV geotop_euclidean_topology \<tau>) f
+          \<and> geotop_simplicial_on \<sigma> f \<tau>
+          \<and> (\<forall>v\<in>V. f v = \<phi> v)"
+  sorry
+
+(** from \<S>3 Theorem 2 (geotop.tex:735)
+    LATEX VERSION: In Theorem 1, if m = n, then there is a homeomorphism g: R^n \<leftrightarrow> R^n such
+      that g|\<sigma>^n is a simplicial homeomorphism \<sigma>^n \<leftrightarrow> \<tau>^n. **)
+theorem Theorem_GT_3_2:
+  fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
+  assumes "geotop_simplex_dim \<sigma> n" and "geotop_simplex_dim \<tau> n"
+  assumes "geotop_simplex_vertices \<sigma> V" and "geotop_simplex_vertices \<tau> W"
+  assumes "\<phi> \<in> V \<rightarrow>\<^sub>E W" and "bij_betw \<phi> V W"
+  shows "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology g
+          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
+  sorry
+
+(** from \<S>3: free 2-simplex (geotop.tex:752)
+    LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
+      finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
+      then \<sigma>^2 is free (in K). **)
+definition geotop_free_2_simplex ::
+  "(real^2) set set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow> bool" where
+  "geotop_free_2_simplex K J \<sigma>\<^sub>2 \<longleftrightarrow>
+    \<sigma>\<^sub>2 \<in> K \<and> geotop_simplex_dim \<sigma>\<^sub>2 2 \<and>
+    (\<exists>E. E \<subseteq> K \<and> (E = {} \<or> (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+         (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                \<and> geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J))
+         \<and> \<sigma>\<^sub>2 \<inter> J = \<Union>E)"
+
+(** from \<S>3 Theorem 3 (geotop.tex:762)
+    LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
+      triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
+theorem Theorem_GT_3_3:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes "geotop_is_polygon J"
+  assumes "geotop_is_complex K"
+  assumes "geotop_polyhedron K =
+    closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+  shows "\<exists>\<sigma>\<^sub>2. geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  sorry
+
+(** from \<S>3 Theorem 4 (geotop.tex:782)
+    LATEX VERSION: Let J be a polygon in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
+      such that h(J) is the frontier of a 2-simplex. **)
+theorem Theorem_GT_3_4:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+  sorry
+
+(** from \<S>3 Theorem 5 (Schönflies for polygons) (geotop.tex:801)
+    LATEX VERSION: Let J and J' be polygons in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
+      J \<leftrightarrow> J'. **)
+theorem Theorem_GT_3_5:
+  fixes J J' :: "(real^2) set"
+  assumes "geotop_is_polygon J" and "geotop_is_polygon J'"
+  shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> h ` J = J'"
+  sorry
+
+(** from \<S>3 Theorem 6 (geotop.tex:821)
+    LATEX VERSION: Every polygon in R^2 is the frontier of a 2-cell in R^2. **)
+theorem Theorem_GT_3_6:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+        \<and> J = geotop_frontier UNIV geotop_euclidean_topology D"
+  sorry
+
+(** from \<S>3 Theorem 7 (geotop.tex:824)
+    LATEX VERSION: Let J be a polygon in R^2 with interior I, and let U be an open set
+      containing \<bar>I\<close>. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2 such that
+      (1) h(J) is the frontier of a 2-simplex, and (2) h|(R^2 - U) is the identity. **)
+theorem Theorem_GT_3_7:
+  fixes J U :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+  sorry
+
 end
