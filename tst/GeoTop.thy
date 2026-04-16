@@ -1823,4 +1823,294 @@ theorem Theorem_GT_9_6_Schoenflies:
                 (closure_on UNIV geotop_euclidean_topology I)) 2"
   sorry
 
+
+section \<open>\<S>10 Tame imbedding in $\mathbf{R}^2$\<close>
+
+(** from \<S>10: 2-sphere (topological) and standard 2-sphere (geotop.tex:1977)
+    LATEX VERSION: A 2-sphere S^2 is a space homeomorphic to the standard 2-sphere
+      \<b>S\<close>^2 = {(x,y,z) | x^2+y^2+z^2 = 1} = Bd \<b>B\<close>^3 \<subset> R^3. **)
+text \<open>Already defined as \<open>geotop_is_n_sphere\<close> and \<open>geotop_std_sphere\<close> above with parameter n=2.\<close>
+
+(** from \<S>10 Theorem 1 (geotop.tex:1985)
+    LATEX VERSION: Let J be a 1-sphere in a 2-sphere S^2. Then S^2 - J is the union of two
+      disjoint connected open sets U, V, such that J = Fr U = Fr V. **)
+theorem Theorem_GT_10_1:
+  fixes J S2 :: "'a::real_normed_vector set"
+  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "J \<subseteq> S2"
+  shows "\<exists>U V. U \<union> V = S2 - J \<and> U \<inter> V = {} \<and>
+           U \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           V \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U) \<and>
+           top1_connected_on V (subspace_topology UNIV geotop_euclidean_topology V) \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) U \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V"
+  sorry
+
+(** from \<S>10 Theorem 2 (geotop.tex:1989)
+    LATEX VERSION: Let J be a 1-sphere in a 2-sphere S^2. Then S^2 is the union of two 2-cells
+      with J as their common frontier. **)
+theorem Theorem_GT_10_2:
+  fixes J S2 :: "'a::real_normed_vector set"
+  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "J \<subseteq> S2"
+  shows "\<exists>C1 C2. S2 = C1 \<union> C2 \<and>
+           geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2 \<and>
+           geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+           J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1 \<and>
+           J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
+  sorry
+
+(** from \<S>10 Theorem 3 (geotop.tex:1991)
+    LATEX VERSION: Let J be a 1-sphere in a 2-sphere S^2, and let h: J \<leftrightarrow> J' \<subset> S^2. Then h can
+      be extended to give a homeomorphism S^2 \<leftrightarrow> S^2. **)
+theorem Theorem_GT_10_3:
+  fixes J J' S2 :: "'a::real_normed_vector set"
+  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "geotop_is_n_sphere J' (subspace_topology UNIV geotop_euclidean_topology J') 1"
+  assumes "J \<subseteq> S2" and "J' \<subseteq> S2"
+  assumes "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
+             J' (subspace_topology UNIV geotop_euclidean_topology J') h"
+  shows "\<exists>H. top1_homeomorphism_on S2 (subspace_topology UNIV geotop_euclidean_topology S2)
+               S2 (subspace_topology UNIV geotop_euclidean_topology S2) H
+          \<and> (\<forall>x\<in>J. H x = h x)"
+  sorry
+
+(** from \<S>10 Theorem 4 (Schönflies theorem, second form) (geotop.tex:1997)
+    LATEX VERSION: Let J be a 1-sphere in R^2. Then every homeomorphism of J into R^2 can be
+      extended to give a homeomorphism of R^2 onto R^2. **)
+theorem Theorem_GT_10_4_Schoenflies_2:
+  fixes J :: "(real^2) set"
+  fixes h :: "real^2 \<Rightarrow> real^2"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
+             (h ` J) (subspace_topology UNIV geotop_euclidean_topology (h ` J)) h"
+  shows "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology H
+          \<and> (\<forall>x\<in>J. H x = h x)"
+  sorry
+
+(** from \<S>10: tame imbedding (geotop.tex:2000)
+    LATEX VERSION: Let M be a set in R^n, such that M (as a space) is triangulable. If there
+      is a homeomorphism h: R^n \<leftrightarrow> R^n such that h(M) is a polyhedron, then M is tamely
+      imbedded (or simply tame). If M is triangulable but not tame, then M is wild. **)
+definition geotop_is_triangulable :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_triangulable M \<longleftrightarrow>
+    (\<exists>(K::'a set set) (f::'a \<Rightarrow> 'a).
+       geotop_is_complex K \<and>
+       top1_homeomorphism_on (geotop_polyhedron K)
+          (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+          M (subspace_topology UNIV geotop_euclidean_topology M) f)"
+
+definition geotop_is_tame :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_tame M \<longleftrightarrow>
+    geotop_is_triangulable M \<and>
+    (\<exists>(h::'a \<Rightarrow> 'a). top1_homeomorphism_on (UNIV::'a set) geotop_euclidean_topology
+           (UNIV::'a set) geotop_euclidean_topology h \<and>
+         (\<exists>(K::'a set set). geotop_is_complex K \<and> geotop_polyhedron K = h ` M))"
+
+definition geotop_is_wild :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_wild M \<longleftrightarrow> geotop_is_triangulable M \<and> \<not> geotop_is_tame M"
+
+(** from \<S>10 Theorem 5 (geotop.tex:2007)
+    LATEX VERSION: In R^2, every 1-sphere is tame. **)
+theorem Theorem_GT_10_5:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "geotop_is_tame J"
+  sorry
+
+(** from \<S>10 Theorem 6 (The frame theorem) (geotop.tex:2009)
+    LATEX VERSION: Let M be a compact set in R^2, and U an open set containing M. Then there
+      is a compact polyhedral 2-manifold N with boundary such that (1) N is a neighborhood
+      of M, (2) N \<subset> U, (3) every component of N intersects M, and (4) different components
+      of R^2 - N lie in different components of R^2 - M. **)
+definition geotop_is_U_frame ::
+  "(real^2) set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow> bool" where
+  "geotop_is_U_frame M U N \<longleftrightarrow>
+    top1_compact_on N (subspace_topology UNIV geotop_euclidean_topology N) \<and>
+    (\<exists>K d. geotop_is_complex K \<and> geotop_polyhedron K = N \<and>
+       geotop_n_manifold_with_boundary_on N d 2) \<and>
+    (\<exists>V\<in>geotop_euclidean_topology. M \<subseteq> V \<and> V \<subseteq> N) \<and>
+    N \<subseteq> U \<and>
+    (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow> C \<inter> M \<noteq> {}) \<and>
+    (\<forall>C1 C2. (\<exists>P1. P1 \<in> UNIV - N \<and> C1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - N) P1)
+          \<and> (\<exists>P2. P2 \<in> UNIV - N \<and> C2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - N) P2)
+          \<and> C1 \<noteq> C2
+      \<longrightarrow> (\<exists>D1 D2. (\<exists>P1. P1 \<in> UNIV - M \<and> D1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - M) P1)
+               \<and> (\<exists>P2. P2 \<in> UNIV - M \<and> D2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - M) P2)
+               \<and> D1 \<noteq> D2 \<and> C1 \<subseteq> D1 \<and> C2 \<subseteq> D2))"
+
+definition geotop_is_frame ::
+  "(real^2) set \<Rightarrow> (real^2) set \<Rightarrow> bool" where
+  "geotop_is_frame M N \<longleftrightarrow> (\<exists>U\<in>geotop_euclidean_topology. geotop_is_U_frame M U N)"
+
+theorem Theorem_GT_10_6_frame:
+  fixes M U :: "(real^2) set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "M \<subseteq> U"
+  shows "\<exists>N. geotop_is_U_frame M U N"
+  sorry
+
+(** from \<S>10: end-point of a linear graph (geotop.tex:2020)
+    LATEX VERSION: An end-point of a linear graph K is a vertex which lies on one and only
+      one edge. **)
+definition geotop_graph_endpoint ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_graph_endpoint K v \<longleftrightarrow>
+    v \<in> geotop_complex_vertices K \<and>
+    card {e\<in>K. geotop_is_edge e \<and> v \<in> e} = 1"
+
+(** from \<S>10: linear graph — a 1-dimensional complex **)
+definition geotop_is_linear_graph ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_linear_graph K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    (\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i)"
+
+(** from \<S>10: contracting collection (geotop.tex:2024)
+    LATEX VERSION: Let G be a collection of sets in a metric space. G is contracting if for
+      each \<epsilon> > 0, at most a finite number of elements have diameter \<ge> \<epsilon>. **)
+definition geotop_contracting_collection ::
+  "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_contracting_collection d G \<longleftrightarrow>
+    (\<forall>\<epsilon>>0. finite {g\<in>G. geotop_diameter d g \<ge> \<epsilon>})"
+
+(** from \<S>10 Theorem 7 (geotop.tex:2022)
+    LATEX VERSION: Let K be a linear graph with no end-points, and f: |K| \<leftrightarrow> M \<subset> R^2. Then M
+      is tame. In fact, for every open set U containing M, and every strongly positive \<phi>,
+      there is a homeomorphism h: R^2 \<leftrightarrow> R^2 such that (1) h(M) is a polyhedron, (2) h|(R^2-U)
+      is the identity, and (3) h|U is a \<phi>-approximation of the identity. **)
+theorem Theorem_GT_10_7:
+  fixes K :: "'a::real_normed_vector set set" and f :: "'a \<Rightarrow> real^2"
+  fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
+  assumes "geotop_is_linear_graph K"
+  assumes "\<not>(\<exists>v. geotop_graph_endpoint K v)"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             M (subspace_topology UNIV geotop_euclidean_topology M) f"
+  assumes "f ` (geotop_polyhedron K) = M"
+  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+  sorry
+
+(** from \<S>10 Theorem 8 (geotop.tex:2127)
+    LATEX VERSION: Let K be a linear graph, and f: |K| \<leftrightarrow> M \<subset> R^2. Then M is tame
+      (stronger conclusion as in Theorem 7, without "no end-points" restriction). **)
+theorem Theorem_GT_10_8:
+  fixes K :: "'a::real_normed_vector set set" and f :: "'a \<Rightarrow> real^2"
+  fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
+  assumes "geotop_is_linear_graph K"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             M (subspace_topology UNIV geotop_euclidean_topology M) f"
+  assumes "f ` (geotop_polyhedron K) = M"
+  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+  sorry
+
+(** from \<S>10 Theorem 9 (geotop.tex:2149)
+    LATEX VERSION: Let C^2 be a 2-cell, and P, Q, R, S points of Bd C^2 such that {P,R}
+      separates Q from S in Bd C^2. Let M_1, M_2 be disjoint closed sets in C^2 with
+      M_1 \<inter> Bd C^2 = {P} and M_2 \<inter> Bd C^2 = {R}. Then Q and S are in the same component
+      of C^2 - (M_1 \<union> M_2). **)
+theorem Theorem_GT_10_9:
+  fixes C2 :: "'a::real_normed_vector set" and M1 M2 :: "'a set" and P Q R S :: "'a"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes "P \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes "Q \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes "R \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes "S \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes "geotop_separates_pts UNIV geotop_euclidean_topology
+             (geotop_frontier UNIV geotop_euclidean_topology C2) {P, R} Q S"
+  assumes "M1 \<inter> M2 = {}"
+  assumes "closedin_on UNIV geotop_euclidean_topology M1"
+  assumes "closedin_on UNIV geotop_euclidean_topology M2"
+  assumes "M1 \<subseteq> C2" and "M2 \<subseteq> C2"
+  assumes "M1 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {P}"
+  assumes "M2 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {R}"
+  shows "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q =
+         geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
+  sorry
+
+(** from \<S>10: retraction (geotop.tex:2153)
+    LATEX VERSION: Let B \<subset> A in a topological space. A retraction of A onto B is a mapping
+      r: A \<rightarrow> B such that r|B is the identity. **)
+definition geotop_is_retraction ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'a) \<Rightarrow> bool" where
+  "geotop_is_retraction A TA B r \<longleftrightarrow>
+    B \<subseteq> A \<and>
+    top1_continuous_map_on A TA B (subspace_topology A TA B) r \<and>
+    (\<forall>x\<in>B. r x = x)"
+
+definition geotop_is_retract ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_retract A TA B \<longleftrightarrow> (\<exists>r. geotop_is_retraction A TA B r)"
+
+(** from \<S>10 Theorem 10 (geotop.tex:2155)
+    LATEX VERSION: Let C^2 be a 2-cell, and J = Bd C^2. Then J is not a retract of C^2. **)
+theorem Theorem_GT_10_10:
+  fixes C2 :: "'a::real_normed_vector set"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  shows "\<not> geotop_is_retract C2 (subspace_topology UNIV geotop_euclidean_topology C2)
+           (geotop_frontier UNIV geotop_euclidean_topology C2)"
+  sorry
+
+(** from \<S>10 Theorem 11 (geotop.tex:2165)
+    LATEX VERSION: Let J be the unit circle \<b>S\<close>^1 in R^2, and C^2 a 2-cell in R^2 such that
+      Bd C^2 = J. Then C^2 is the unit disk \<b>B\<close>^2. **)
+theorem Theorem_GT_10_11:
+  fixes C2 :: "(real^2) set"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes "geotop_frontier UNIV geotop_euclidean_topology C2 = (geotop_std_sphere :: (real^2) set)"
+  shows "C2 = (geotop_std_ball :: (real^2) set)"
+  sorry
+
+(** from \<S>10 Theorem 12 (geotop.tex:2169)
+    LATEX VERSION: Let C^2 be a 2-cell in R^2. Then Int C^2 is the interior I of Bd C^2 in R^2. **)
+theorem Theorem_GT_10_12:
+  fixes C2 :: "(real^2) set"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes "geotop_is_polygon (geotop_frontier UNIV geotop_euclidean_topology C2) \<or>
+           geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C2)
+              (subspace_topology UNIV geotop_euclidean_topology
+                 (geotop_frontier UNIV geotop_euclidean_topology C2)) 1"
+  shows "geotop_top_interior UNIV geotop_euclidean_topology C2 =
+         geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
+  sorry
+
+(** from \<S>10 Theorem 13 (geotop.tex:2173)
+    LATEX VERSION: Let M be a triangulable set in R^2. Then M is tame. In fact, for each open
+      set U containing M, and every strongly positive \<phi>, there is a homeomorphism
+      h: R^2 \<leftrightarrow> R^2 such that (1) h(M) is a polyhedron, (2) h|(R^2 - U) is the identity,
+      and (3) h|U is a \<phi>-approximation of the identity. **)
+theorem Theorem_GT_10_13:
+  fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
+  assumes "geotop_is_triangulable M"
+  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+  sorry
+
 end
