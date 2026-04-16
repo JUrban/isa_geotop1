@@ -955,4 +955,177 @@ theorem Theorem_GT_3_7:
           \<and> (\<forall>P\<in>UNIV - U. h P = P)"
   sorry
 
+
+section \<open>\<S>4 The Jordan curve theorem\<close>
+
+text \<open>The goal of this section: Let J be a topological 1-sphere in R^2. Then R^2 - J is
+  the union of two disjoint connected sets I and E, such that J = Fr I = Fr E.\<close>
+
+(** from \<S>4 Theorem 1 (geotop.tex:865)
+    LATEX VERSION: Let U be an open set in R^n, and let P, Q \<in> U. If P and Q are in different
+      components of U, then U is the union of two disjoint open sets containing P and Q. **)
+theorem Theorem_GT_4_1:
+  fixes U :: "'a::real_normed_vector set"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "P \<in> U" and "Q \<in> U"
+  assumes "geotop_component_at UNIV geotop_euclidean_topology U P \<noteq>
+           geotop_component_at UNIV geotop_euclidean_topology U Q"
+  shows "\<exists>V W. U = V \<union> W \<and> V \<inter> W = {} \<and>
+           V \<in> geotop_euclidean_topology \<and> W \<in> geotop_euclidean_topology \<and>
+           P \<in> V \<and> Q \<in> W"
+  sorry
+
+(** from \<S>4 Theorem 2 (geotop.tex:869)
+    LATEX VERSION: Let I be the interior of a polygon in R^2, and let P, Q, R, S be points of
+      Fr I, in cyclic order. Let A be an arc from P to R, lying in \<bar>I\<close>, with A \<inter> Fr I = {P,R}.
+      Then I - A is the union of two disjoint open sets U_Q, U_S containing Q and S in
+      their frontiers. **)
+text \<open>We parametrize "cyclic order" abstractly via the existence of the four distinct
+  points on the polygon.\<close>
+theorem Theorem_GT_4_2:
+  fixes J :: "(real^2) set" and A :: "(real^2) set" and P Q R S :: "real^2"
+  assumes "geotop_is_polygon J"
+  assumes "P \<in> J" "Q \<in> J" "R \<in> J" "S \<in> J"
+  assumes "card {P, Q, R, S} = 4"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes "A \<inter> J = {P, R}"
+  shows "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and>
+           U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+           U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
+           Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+           S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+  sorry
+
+(** from \<S>4 Theorem 3 (geotop.tex:886)
+    LATEX VERSION: Let J be a topological 1-sphere in R^2. Then R^2 - J is not connected. **)
+theorem Theorem_GT_4_3:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<not> top1_connected_on (UNIV - J)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+  sorry
+
+(** from \<S>4 Theorem 4 (geotop.tex:931)
+    LATEX VERSION: Let I, P, Q, R, S be as before, and let A_1 and A_2 be disjoint arcs in \<bar>I\<close>,
+      with A_1 \<inter> Fr I = {P} and A_2 \<inter> Fr I = {R}. Then S and Q are in the frontier of the
+      same component of I - (A_1 \<union> A_2). **)
+theorem Theorem_GT_4_4:
+  fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
+  assumes "geotop_is_polygon J"
+  assumes "P \<in> J" "Q \<in> J" "R \<in> J" "S \<in> J"
+  assumes "card {P, Q, R, S} = 4"
+  assumes "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
+  assumes "A1 \<inter> A2 = {}"
+  assumes "A1 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes "A2 \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes "A1 \<inter> J = {P}" "A2 \<inter> J = {R}"
+  shows "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
+          \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
+          \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_polygon_interior J - (A1 \<union> A2)) P')"
+  sorry
+
+(** from \<S>4: brick-decomposition (geotop.tex:943)
+    LATEX VERSION: By a brick-decomposition of the plane we mean a collection G = {g_i} of
+      polyhedral disks (=2-cells) such that (1) union is R^2, (2) if g_i and g_j intersect,
+      their intersection is a broken line lying in the frontier of each, and (3) every point
+      has a neighborhood intersecting at most three of the g_i. **)
+definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" where
+  "geotop_brick_decomposition G \<longleftrightarrow>
+    (\<forall>g\<in>G. geotop_is_disk g (subspace_topology UNIV geotop_euclidean_topology g) \<and>
+       (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g)) \<and>
+    \<Union>G = UNIV \<and>
+    (\<forall>g\<^sub>1\<in>G. \<forall>g\<^sub>2\<in>G. g\<^sub>1 \<noteq> g\<^sub>2 \<longrightarrow> g\<^sub>1 \<inter> g\<^sub>2 \<noteq> {} \<longrightarrow>
+       geotop_is_broken_line (g\<^sub>1 \<inter> g\<^sub>2) \<and>
+       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>1 \<and>
+       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
+    (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
+
+(** from \<S>4: diameter and mesh (geotop.tex:953)
+    LATEX VERSION: In a metric space [X,d], the diameter \<delta>M of M is the least upper bound of
+      d(P,Q) (P,Q \<in> M). If G is a collection of subsets, the mesh of G is the least upper
+      bound of \<delta>g (g \<in> G). **)
+definition geotop_diameter :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set \<Rightarrow> real" where
+  "geotop_diameter d M = (if M = {} then 0 else (SUP P\<in>M. SUP Q\<in>M. d P Q))"
+
+definition geotop_mesh :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set set \<Rightarrow> real" where
+  "geotop_mesh d G = (if G = {} then 0 else (SUP g\<in>G. geotop_diameter d g))"
+
+(** from \<S>4 Theorem 5 (geotop.tex:976)
+    LATEX VERSION: No arc separates R^2. **)
+theorem Theorem_GT_4_5:
+  fixes A :: "(real^2) set"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "top1_connected_on (UNIV - A)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))"
+  sorry
+
+(** from \<S>4 Theorem 6 (geotop.tex:996)
+    LATEX VERSION: Let J be a 1-sphere in R^2, and let U be a component of R^2 - J. Then J = Fr U. **)
+theorem Theorem_GT_4_6:
+  fixes J U :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "\<exists>P\<in>UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+  shows "J = geotop_frontier UNIV geotop_euclidean_topology U"
+  sorry
+
+(** from \<S>4 Theorem 7 (geotop.tex:1002)
+    LATEX VERSION: Let J be a 1-sphere in R^2. Then R^2 - J has only one bounded component. **)
+theorem Theorem_GT_4_7:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "card {C. geotop_bounded_R2 C \<and>
+            (\<exists>P\<in>UNIV - J.
+               C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)} = 1"
+  sorry
+
+(** JORDAN CURVE THEOREM — combining the above
+    LATEX VERSION: Let J be a topological 1-sphere in R^2. Then R^2 - J is the union of two
+      disjoint connected sets I and E, such that J = Fr I = Fr E. **)
+theorem Jordan_curve_theorem:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<exists>I E. UNIV - J = I \<union> E \<and> I \<inter> E = {} \<and>
+           top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+           top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
+           J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
+           J = geotop_frontier UNIV geotop_euclidean_topology E"
+  sorry
+
+(** from \<S>4 Theorem 8 (geotop.tex:1020)
+    LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
+      combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
+theorem Theorem_GT_4_8:
+  fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K) d 2"
+  shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
+  sorry
+
+(** from \<S>4 Theorem 9 (geotop.tex:1052)
+    LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold with boundary. Then
+      K is a combinatorial 2-manifold with boundary, and Bd M is the union of the edges of K
+      that lie in only one 2-simplex of K. **)
+theorem Theorem_GT_4_9:
+  fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
+  shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
+    and "geotop_manifold_boundary (geotop_polyhedron K) d =
+         \<Union>{e\<in>K. geotop_is_edge e \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  sorry
+
+(** from \<S>4 Theorem 10 (geotop.tex:1058)
+    LATEX VERSION: Let M be a 2-manifold with boundary, lying in R^2. If M is closed, then
+      Bd M = Fr M. **)
+theorem Theorem_GT_4_10:
+  fixes M :: "(real^2) set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  assumes "geotop_n_manifold_with_boundary_on M d 2"
+  assumes "closedin_on UNIV geotop_euclidean_topology M"
+  shows "geotop_manifold_boundary M d = geotop_frontier UNIV geotop_euclidean_topology M"
+  sorry
+
 end
