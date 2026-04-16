@@ -1687,4 +1687,140 @@ theorem Theorem_GT_8_5_Hauptvermutung_2d:
     and "geotop_comb_equiv K1 K2"
   sorry
 
+
+section \<open>\<S>9 The Schönflies theorem\<close>
+
+(** from \<S>9: D separates P from Q in C (definition from \<S>2, recalled) (geotop.tex:1850)
+    LATEX VERSION: Let C be a connected set, D a subset of C, and P,Q points of C-D. If
+      C-D is the union of two separated sets containing P,Q respectively, then D separates
+      P from Q in C. **)
+definition geotop_separates_pts ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_separates_pts X T C D P Q \<longleftrightarrow>
+    C \<subseteq> X \<and> D \<subseteq> C \<and> P \<in> C - D \<and> Q \<in> C - D \<and>
+    top1_connected_on C (subspace_topology X T C) \<and>
+    (\<exists>H K. H \<union> K = C - D \<and> geotop_separated X T H K \<and> P \<in> H \<and> Q \<in> K)"
+
+(** from \<S>9 Theorem 1 (geotop.tex:1852)
+    LATEX VERSION: Let J be a 1-sphere in R^2 which is the union of an arc A and a broken
+      line B, intersecting in their end-points P and Q. Let I be the interior of J. Let R, S
+      be points of Int A, Int B. Let M = union of disjoint broken lines M_i lying in I except
+      for their end-points, which lie in Int B - S. Suppose M separates R from S in \<bar>I\<close>.
+      Then some M_i has end-points which separate R from S in J. **)
+theorem Theorem_GT_9_1:
+  fixes J A B :: "(real^2) set" and P Q R S :: "real^2"
+  fixes M :: "(real^2) set" and Ms :: "nat \<Rightarrow> (real^2) set" and n :: nat
+  assumes "geotop_is_polygon J"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "geotop_is_broken_line B"
+  assumes "J = A \<union> B" and "A \<inter> B = {P, Q}"
+  assumes "R \<in> geotop_arc_interior A {P, Q}" and "S \<in> geotop_arc_interior B {P, Q}"
+  assumes "\<forall>i<n. geotop_is_broken_line (Ms i)"
+  assumes "\<forall>i<n. \<forall>j<n. i \<noteq> j \<longrightarrow> Ms i \<inter> Ms j = {}"
+  assumes "M = (\<Union>i<n. Ms i)"
+  assumes "geotop_separates_pts UNIV geotop_euclidean_topology
+             (closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)) M R S"
+  shows "\<exists>i<n. \<exists>E. card E = 2 \<and> E \<subseteq> Ms i \<and> geotop_separates_pts UNIV geotop_euclidean_topology J E R S"
+  sorry
+
+(** from \<S>9: linearly accessible from I (geotop.tex:1869)
+    LATEX VERSION: Point v is linearly accessible from I if there is a linear interval vv'
+      with v \<in> Int A, and vv' - v \<subset> I. **)
+definition geotop_linearly_accessible ::
+  "(real^2) set \<Rightarrow> real^2 \<Rightarrow> bool" where
+  "geotop_linearly_accessible I v \<longleftrightarrow>
+    (\<exists>v'. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I)"
+
+(** from \<S>9 Theorem 2 (geotop.tex:1869)
+    LATEX VERSION: Let J be a 1-sphere in R^2, with interior I, and A an arc in J. Then there
+      is a linear interval vv' with v \<in> Int A and vv' - v \<subset> I. **)
+theorem Theorem_GT_9_2:
+  fixes J A :: "(real^2) set" and I :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "I = geotop_polygon_interior J"
+    (* Only defined for polygons, but let's use the general form via "J separates R^2"; for
+       the book's general 1-sphere, a corresponding geotop_sphere_interior would be defined. *)
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "A \<subseteq> J"
+  shows "\<exists>v v' E. geotop_arc_endpoints A E \<and> v \<in> geotop_arc_interior A E
+          \<and> geotop_segment v v' - {v} \<subseteq> I"
+  sorry
+
+(** from \<S>9 Theorem 3 (geotop.tex:1875)
+    LATEX VERSION: Let J be a 1-sphere in R^2 with interior I. Then there is a sequence
+      G_1, G_2, ... such that (1) each G_i is a finite decomposition of J into arcs intersecting
+      only in their end-points, (2) G_{i+1} \<le> G_i, (3) if g \<in> G_i, the end-points of g are
+      linearly accessible from I, and (4) if P \<in> g \<in> G_i, then g \<subset> N(P, 1/i). **)
+theorem Theorem_GT_9_3:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "I = geotop_polygon_interior J"
+  shows "\<exists>G :: nat \<Rightarrow> (real^2) set set.
+    (\<forall>i. finite (G i) \<and>
+         (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J) \<and>
+         (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h \<subseteq> {P. \<exists>E. geotop_arc_endpoints g E \<and> P \<in> E}) \<and>
+         J = \<Union>(G i)) \<and>
+    (\<forall>i. geotop_refines (G (i+1)) (G i)) \<and>
+    (\<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow> (\<forall>v\<in>E. geotop_linearly_accessible I v)) \<and>
+    (\<forall>i>0. \<forall>g\<in>G i. \<forall>P\<in>g. g \<subseteq> geotop_nbhd_pt UNIV (\<lambda>x y. norm (x - y)) P (1 / real i))"
+  sorry
+
+(** from \<S>9 Theorem 4 (geotop.tex:1879)
+    LATEX VERSION: Let J, I, G_1, G_2, ... be as in Theorem 3. Then there is a sequence
+      H_1, H_2, ... of collections of linear intervals vv' (v \<in> J) such that (1) if vv' \<in> H_i
+      then vv' - v \<subset> I and v is an end-point of some g \<in> G_i, (2) each end-point of each g \<in> G_i
+      lies in one and only one interval vv' \<in> H_i, (3) for each i, the elements of H_i are
+      disjoint, and (4) H_i and H_j (i<j) satisfy: if vv' \<in> H_i intersects ww' \<in> H_j, then v=w
+      and ww' \<subset> vv'. **)
+theorem Theorem_GT_9_4:
+  fixes J :: "(real^2) set" and I :: "(real^2) set"
+  fixes G :: "nat \<Rightarrow> (real^2) set set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "I = geotop_polygon_interior J"
+  (* Same hypotheses as Theorem 3 output *)
+  assumes "\<forall>i. finite (G i) \<and> (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J)"
+  shows "\<exists>H :: nat \<Rightarrow> ((real^2) \<times> (real^2)) set.
+    (\<forall>i. \<forall>(v, v')\<in>H i. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I
+                    \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)) \<and>
+    (\<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
+          (\<forall>v\<in>E. \<exists>!v'. (v, v') \<in> H i)) \<and>
+    (\<forall>i. \<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H i. (v,v') \<noteq> (w,w') \<longrightarrow> geotop_segment v v' \<inter> geotop_segment w w' = {}) \<and>
+    (\<forall>i j. i < j \<longrightarrow> (\<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H j. geotop_segment v v' \<inter> geotop_segment w w' \<noteq> {}
+                  \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v'))"
+  sorry
+
+(** from \<S>9 Theorem 5 (geotop.tex:1885)
+    LATEX VERSION: Let J be a 1-sphere in R^2, with interior I, A an arc in J with end-points
+      v_0, v_1. Let v_0 v_0' and v_1 v_1' be linear intervals such that v_i v_i' - v_i \<subset> I.
+      Let \<epsilon> > 0. Then there is a broken line b_A joining w_0 \<in> v_0 v_0' to w_1 \<in> v_1 v_1' such
+      that b_A \<inter> v_i v_i' = w_i and b_A \<subset> I \<inter> N(A, \<epsilon>). **)
+theorem Theorem_GT_9_5:
+  fixes J A :: "(real^2) set" and v0 v0' v1 v1' :: "real^2" and \<epsilon> :: real
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "I = geotop_polygon_interior J"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "A \<subseteq> J"
+  assumes "geotop_segment v0 v0' - {v0} \<subseteq> I"
+  assumes "geotop_segment v1 v1' - {v1} \<subseteq> I"
+  assumes "\<epsilon> > 0"
+  shows "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+           w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
+           bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
+           bA \<subseteq> I \<and>
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>"
+  sorry
+
+(** from \<S>9 Theorem 6 (Schönflies theorem, first form) (geotop.tex:1898)
+    LATEX VERSION: Let J be a 1-sphere in R^2, with interior I. Then \<bar>I\<close> is a 2-cell. **)
+theorem Theorem_GT_9_6_Schoenflies:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and> I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+                \<and> geotop_bounded_R2 I) \<and>
+           geotop_is_n_cell
+             (closure_on UNIV geotop_euclidean_topology I)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology I)) 2"
+  sorry
+
 end
