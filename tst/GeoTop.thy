@@ -1252,4 +1252,115 @@ definition geotop_epsilon_approximation ::
   "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> real \<Rightarrow> 'b set \<Rightarrow> bool" where
   "geotop_epsilon_approximation d f g \<epsilon> X \<longleftrightarrow> (\<forall>P\<in>X. d (f P) (g P) < \<epsilon>)"
 
+
+section \<open>\<S>6 PL approximations of homeomorphisms\<close>
+
+(** from \<S>6: strongly positive function (geotop.tex:1211)
+    LATEX VERSION: Let \<phi>: X \<rightarrow> R^+ be a function (not necessarily continuous). \<phi> is strongly
+      positive (written \<phi> >> 0 on X) if \<phi> is bounded away from 0 on every compact set. **)
+definition geotop_strongly_positive ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> ('a \<Rightarrow> real) \<Rightarrow> bool" where
+  "geotop_strongly_positive X TX \<phi> \<longleftrightarrow>
+    (\<forall>P\<in>X. 0 \<le> \<phi> P) \<and>
+    (\<forall>M. M \<subseteq> X \<and> top1_compact_on M (subspace_topology X TX M) \<longrightarrow>
+       (\<exists>\<epsilon>>0. \<forall>P\<in>M. \<phi> P \<ge> \<epsilon>))"
+
+(** from \<S>6: \<phi>-approximation (geotop.tex:1217)
+    LATEX VERSION: Let \<phi> >> 0 on X, and let f, g be mappings X \<rightarrow> Y. If for each P \<in> X,
+      d'(f(P), g(P)) < \<phi>(P), then g is a \<phi>-approximation of f. **)
+definition geotop_phi_approximation ::
+  "('b \<Rightarrow> 'b \<Rightarrow> real) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> real) \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_phi_approximation d f g \<phi> X \<longleftrightarrow> (\<forall>P\<in>X. d (f P) (g P) < \<phi> P)"
+
+(** distance between two sets (needed for proof of Theorem 3) (geotop.tex:1342)
+    LATEX VERSION: d(A,B) = inf {d(P,Q) | P \<in> A, Q \<in> B}. **)
+definition geotop_set_distance ::
+  "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> real" where
+  "geotop_set_distance d A B = (if A = {} \<or> B = {} then 0 else (INF P\<in>A. INF Q\<in>B. d P Q))"
+
+(** from \<S>6 Theorem 1 (geotop.tex:1219)
+    LATEX VERSION: Let vv' be a 1-simplex, let h be a homeomorphism vv' \<leftrightarrow> A \<subset> R^2, with
+      v \<mapsto> P, v' \<mapsto> Q, and let \<epsilon> > 0. Then there is a broken line B from P to Q, lying
+      in N(A,\<epsilon>). **)
+theorem Theorem_GT_6_1:
+  fixes e :: "(real^2) set" and A :: "(real^2) set"
+  fixes h :: "real^2 \<Rightarrow> real^2" and \<epsilon> :: real
+  assumes "geotop_is_edge e"
+  assumes "top1_homeomorphism_on e (subspace_topology UNIV geotop_euclidean_topology e)
+             A (subspace_topology UNIV geotop_euclidean_topology A) h"
+  assumes "\<epsilon> > 0"
+  assumes "geotop_simplex_vertices e {v, v'}"
+  assumes "P = h v" and "Q = h v'"
+  shows "\<exists>B. geotop_is_broken_line B \<and>
+          B \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>
+          \<and> P \<in> B \<and> Q \<in> B"
+  sorry
+
+(** from \<S>6 Theorem 2 (geotop.tex:1223)
+    LATEX VERSION: Let K^1 be a 1-dimensional complex (not necessarily finite), let h be a
+      homeomorphism |K^1| \<rightarrow> R^2, and let \<phi> >> 0 on K^1. Then there is a PLH
+      f: |K^1| \<rightarrow> R^2 such that (1) f is a \<phi>-approximation of h, and (2) for each vertex
+      v of K^1, h(v) = f(v). **)
+theorem Theorem_GT_6_2:
+  fixes K1 :: "(real^2) set set" and h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
+  assumes "geotop_is_complex K1"
+  assumes "\<forall>\<sigma>\<in>K1. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+             UNIV geotop_euclidean_topology h"
+  assumes "geotop_strongly_positive (geotop_polyhedron K1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)) \<phi>"
+  shows "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+                (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+                UNIV geotop_euclidean_topology f
+          \<and> geotop_PL_map K1 (SOME L. geotop_is_complex L \<and> f ` geotop_polyhedron K1 = geotop_polyhedron L) f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)
+          \<and> (\<forall>v\<in>geotop_complex_vertices K1. h v = f v)"
+  sorry
+
+(** from \<S>6 Theorem 3 (geotop.tex:1326)
+    LATEX VERSION: Let K be a combinatorial 2-manifold with boundary (not necessarily finite),
+      let h be a homeomorphism |K| \<leftrightarrow> M \<subset> R^2, and let \<phi> be a strongly positive function
+      |K| \<rightarrow> R. Then there is a PLH f: |K| \<rightarrow> R^2 such that f is a \<phi>-approximation of h. **)
+theorem Theorem_GT_6_3:
+  fixes K :: "(real^2) set set" and h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
+  fixes M :: "(real^2) set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  assumes "geotop_is_complex K"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             M (subspace_topology UNIV geotop_euclidean_topology M) h"
+  assumes "geotop_strongly_positive (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<phi>"
+  shows "\<exists>f L. geotop_is_complex L \<and>
+          top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             (geotop_polyhedron L)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) f
+          \<and> geotop_PLH K L f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K)"
+  sorry
+
+(** from \<S>6 Theorem 4 (geotop.tex:1397)
+    LATEX VERSION: Let K_1 be a combinatorial 2-manifold with boundary, let K_2 be a
+      combinatorial 2-manifold, let h be a homeomorphism |K_1| \<rightarrow> |K_2|, and let \<phi> >> 0 on K_1.
+      Then there is a PLH f: |K_1| \<rightarrow> |K_2| such that f is a \<phi>-approximation of h. **)
+theorem Theorem_GT_6_4:
+  fixes K1 K2 :: "(real^2) set set"
+  fixes h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
+  fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  assumes "geotop_is_complex K1"
+  assumes "geotop_is_complex K2"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) d1 2"
+  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+             (geotop_polyhedron K2)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h"
+  assumes "geotop_strongly_positive (geotop_polyhedron K1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)) \<phi>"
+  shows "\<exists>f. geotop_PLH K1 K2 f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)"
+  sorry
+
 end
