@@ -2421,4 +2421,139 @@ theorem Theorem_GT_12_9:
   shows "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
   sorry
 
+section \<open>\<S>13 Extension of homeomorphisms of totally disconnected sets in R^2\<close>
+
+(** from \<S>13: k-annulus (geotop.tex:2537)
+    LATEX VERSION: By a k-annulus we mean a compact connected 2-manifold A with boundary,
+      imbeddable in R^2, such that Bd A has k+1 components. **)
+definition geotop_is_k_annulus ::
+  "nat \<Rightarrow> (real^2) set \<Rightarrow> bool" where
+  "geotop_is_k_annulus k A \<longleftrightarrow>
+    top1_compact_on A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+    top1_connected_on A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+    geotop_n_manifold_with_boundary_on A (\<lambda>x y. norm (x - y)) 2 \<and>
+    (\<exists>B. B = geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) \<and>
+         card {C. \<exists>P\<in>B. C = geotop_component_at UNIV geotop_euclidean_topology B P} = k + 1)"
+
+(** from \<S>13: outer boundary of a k-annulus (geotop.tex:2543)
+    LATEX VERSION: J_0 is the outer boundary of A, that is, the frontier of the unbounded
+      component of R^2 - A. **)
+definition geotop_outer_boundary ::
+  "(real^2) set \<Rightarrow> (real^2) set" where
+  "geotop_outer_boundary A =
+    (let U = (SOME U. (\<exists>P. P \<in> UNIV - A \<and>
+                U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - A) P) \<and>
+               \<not> top1_compact_on U (subspace_topology UNIV geotop_euclidean_topology U))
+     in geotop_frontier UNIV geotop_euclidean_topology U)"
+
+(** from \<S>13 Theorem 1 (geotop.tex:2545)
+    LATEX VERSION: Let A and A' be k-annuli in R^2, with boundaries \<union> J_i and \<union> J'_i, and let
+      f be a homeomorphism J_0 \<leftrightarrow> J'_0. Then f can be extended so as to give a homeomorphism
+      A \<leftrightarrow> A', R^2 \<leftrightarrow> R^2, J_i \<leftrightarrow> J'_i. **)
+theorem Theorem_GT_13_1:
+  fixes A A' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes "geotop_is_k_annulus k A" and "geotop_is_k_annulus k A'"
+  assumes "top1_homeomorphism_on (geotop_outer_boundary A)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_outer_boundary A))
+             (geotop_outer_boundary A')
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_outer_boundary A')) f"
+  shows "\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology F \<and>
+             (\<forall>P\<in>geotop_outer_boundary A. F P = f P) \<and>
+             F ` A = A'"
+  sorry
+
+(** from \<S>13 Theorem 2 (geotop.tex:2572)
+    LATEX VERSION: Let A be a k-annulus in R^2, and let B be the union of some or all of the
+      boundary components J_1, J_2, \<dots>, J_k. Then there is a 2-cell C such that (1) Bd C \<subseteq> Int A,
+      (2) B \<subseteq> Int C, and (3) C contains no point of Bd A - B. **)
+theorem Theorem_GT_13_2:
+  fixes A B :: "(real^2) set"
+  assumes "geotop_is_k_annulus k A"
+  assumes "B \<subseteq> geotop_manifold_boundary A (\<lambda>x y. norm (x - y))"
+  assumes "B \<inter> geotop_outer_boundary A = {}"
+  shows "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C
+               \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
+             B \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
+             C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {}"
+  sorry
+
+(** from \<S>13 Theorem 3 (geotop.tex:2578)
+    LATEX VERSION: Let C^2 be a 2-cell, with Bd C^2 = J = B_1 \<union> B_2, where B_1 and B_2 are
+      arcs with common end-points Q, S. Let M_1 and M_2 be disjoint closed sets in C^2, such
+      that M_i \<inter> J \<subseteq> Int B_i (i = 1, 2). Then Q and S are in the same component of
+      C^2 - (M_1 \<union> M_2). **)
+theorem Theorem_GT_13_3:
+  fixes C2 B1 B2 M1 M2 :: "(real^2) set" and Q S :: "real^2"
+  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes "geotop_frontier UNIV geotop_euclidean_topology C2 = B1 \<union> B2"
+  assumes "geotop_is_arc B1 (subspace_topology UNIV geotop_euclidean_topology B1)"
+  assumes "geotop_is_arc B2 (subspace_topology UNIV geotop_euclidean_topology B2)"
+  assumes "Q \<in> B1 \<inter> B2" and "S \<in> B1 \<inter> B2"
+  assumes "B1 \<inter> B2 = {Q, S}"
+  assumes "closedin_on UNIV geotop_euclidean_topology M1"
+  assumes "closedin_on UNIV geotop_euclidean_topology M2"
+  assumes "M1 \<subseteq> C2" and "M2 \<subseteq> C2" and "M1 \<inter> M2 = {}"
+  assumes "M1 \<inter> (B1 \<union> B2) \<subseteq> B1 - {Q, S}"
+  assumes "M2 \<inter> (B1 \<union> B2) \<subseteq> B2 - {Q, S}"
+  shows "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
+         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
+  sorry
+
+(** from \<S>13 Theorem 4 (geotop.tex:2583)
+    LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let U be a
+      connected open set containing M. Then U - M is connected. **)
+theorem Theorem_GT_13_4:
+  fixes M U :: "(real^2) set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  assumes "M \<subseteq> U"
+  shows "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
+  sorry
+
+(** from \<S>13 Theorem 5 (geotop.tex:2587)
+    LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let N be a frame
+      of M. Then every component of N is a 2-cell. **)
+theorem Theorem_GT_13_5:
+  fixes M N :: "(real^2) set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_is_frame M N"
+  shows "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2"
+  sorry
+
+(** from \<S>13 Theorem 6 (geotop.tex:2591)
+    LATEX VERSION: Let M and N be as in Theorem 5, and let \<epsilon> be a positive number. If N lies
+      in a sufficiently small neighborhood of M, then every component of N has diameter less
+      than \<epsilon>. **)
+theorem Theorem_GT_13_6:
+  fixes M :: "(real^2) set" and \<epsilon> :: real
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "\<epsilon> > 0"
+  shows "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)"
+  sorry
+
+(** from \<S>13 Theorem 7 (geotop.tex:2595)
+    LATEX VERSION: Let M and M' be totally disconnected compact sets in R^2, and let f be a
+      homeomorphism M \<leftrightarrow> M'. Then f has an extension F: R^2 \<leftrightarrow> R^2. **)
+theorem Theorem_GT_13_7:
+  fixes M M' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes "geotop_is_totally_disconnected M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes "top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+             M' (subspace_topology UNIV geotop_euclidean_topology M') f"
+  shows "\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology F \<and>
+             (\<forall>P\<in>M. F P = f P)"
+  sorry
+
 end
