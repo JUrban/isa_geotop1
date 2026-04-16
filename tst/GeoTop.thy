@@ -2881,4 +2881,142 @@ theorem Theorem_GT_15_4:
            bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0)"
   sorry
 
+section \<open>\<S>16 Computations of fundamental groups\<close>
+
+(** from \<S>16 Theorem 1 (geotop.tex:3221)
+    LATEX VERSION: Let A be an annulus. Then \<pi>(A) \<cong> Z (additive group of integers). **)
+theorem Theorem_GT_16_1:
+  fixes A :: "(real^2) set" and P\<^sub>0 :: "real^2"
+  assumes "geotop_is_k_annulus 1 A" and "P\<^sub>0 \<in> A"
+  shows "\<exists>(\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> int).
+           bij_betw \<Phi>
+             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+             (UNIV::int set)"
+  sorry
+
+(** from \<S>16: solid torus (geotop.tex:3235)
+    LATEX VERSION: A solid torus is a space homeomorphic to a product D \<times> S^1, where D is a
+      2-cell and S^1 is a 1-sphere. **)
+definition geotop_is_solid_torus :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_solid_torus T \<longleftrightarrow>
+    (\<exists>(D::(real^2) set) (S::(real^2) set)
+       (f::(real^2) \<times> (real^2) \<Rightarrow> 'a).
+       geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+       geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 1 \<and>
+       top1_homeomorphism_on (D \<times> S)
+          (subspace_topology (UNIV::((real^2) \<times> (real^2)) set)
+             geotop_euclidean_topology (D \<times> S))
+          T (subspace_topology UNIV geotop_euclidean_topology T) f)"
+
+(** from \<S>16 Theorem 2 (geotop.tex:3235)
+    LATEX VERSION: Let T be a solid torus. Then \<pi>(T) \<cong> Z. **)
+theorem Theorem_GT_16_2:
+  fixes T :: "'a::real_normed_vector set" and P\<^sub>0 :: 'a
+  assumes "geotop_is_solid_torus T" and "P\<^sub>0 \<in> T"
+  shows "\<exists>(\<Phi>::(real \<Rightarrow> 'a) set \<Rightarrow> int).
+           bij_betw \<Phi>
+             (geotop_pi T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0)
+             (UNIV::int set)"
+  sorry
+
+(** from \<S>16 Theorem 3 (geotop.tex:3238)
+    LATEX VERSION: Let A be a k-annulus. Then \<pi>(A) is a free group on k generators. **)
+theorem Theorem_GT_16_3:
+  fixes A :: "(real^2) set" and P\<^sub>0 :: "real^2"
+  assumes "geotop_is_k_annulus k A" and "P\<^sub>0 \<in> A"
+  shows "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi>
+             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+             (geotop_free_group G)"
+  sorry
+
+(** from \<S>16 Theorem 4 (geotop.tex:3257)
+    LATEX VERSION: Let L be a link in R^3, with k components, and suppose that the components
+      of L are polygons which form the boundaries of disjoint polyhedral 2-cells. Then the
+      group of L is a free group on k generators. **)
+theorem Theorem_GT_16_4:
+  fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
+  assumes "geotop_is_link L" and "geotop_link_general_position L"
+  assumes "P\<^sub>0 \<in> UNIV - L"
+  assumes "\<exists>Ks Ds. finite Ks \<and> card Ks = k \<and> L = \<Union>Ks \<and>
+                   (\<forall>K\<in>Ks. geotop_is_knot K) \<and>
+                   (\<forall>K1\<in>Ks. \<forall>K2\<in>Ks. K1 \<noteq> K2 \<longrightarrow> K1 \<inter> K2 = {}) \<and>
+                   (\<forall>D\<in>Ds. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2) \<and>
+                   (\<forall>D1\<in>Ds. \<forall>D2\<in>Ds. D1 \<noteq> D2 \<longrightarrow> D1 \<inter> D2 = {}) \<and>
+                   (\<forall>K\<in>Ks. \<exists>D\<in>Ds. K = geotop_frontier UNIV geotop_euclidean_topology D)"
+  shows "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)"
+  sorry
+
+(** from \<S>16 Theorem 5 (geotop.tex:3261)
+    LATEX VERSION: Let J_1, J_2, J_3 be plane polygons, simply linked in series, let D be
+      the plane 2-cell bounded by J_2, and suppose that D is simply punctured by J_1 and J_3.
+      Let p be a closed path in U = D - (J_1 \<union> J_2 \<union> J_3). If p \<cong> e in R^3 - (J_1 \<union> J_3),
+      then p \<cong> e in U. **)
+theorem Theorem_GT_16_5:
+  fixes J1 J2 J3 D :: "(real^3) set" and P\<^sub>0 :: "real^3" and p :: "real \<Rightarrow> real^3"
+  assumes "geotop_is_polygon J1" and "geotop_is_polygon J2" and "geotop_is_polygon J3"
+  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes "geotop_frontier UNIV geotop_euclidean_topology D = J2"
+  assumes "P\<^sub>0 \<in> D - (J1 \<union> J2 \<union> J3)"
+  assumes "geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
+             (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 p"
+  assumes "geotop_path_equiv (UNIV - (J1 \<union> J3))
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3)))
+             P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
+           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  sorry
+
+(** from \<S>16: trefoil knot (geotop.tex:3281)
+    LATEX VERSION: The trefoil is the knot defined by Figure 16.4. **)
+definition geotop_is_trefoil :: "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_trefoil K \<longleftrightarrow>
+    geotop_is_knot K \<and>
+    (\<exists>P\<^sub>0\<in>UNIV - K.
+       \<not> (\<forall>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<longrightarrow>
+             geotop_pi_mult (UNIV - K)
+               (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D =
+             geotop_pi_mult (UNIV - K)
+               (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C))"
+
+(** from \<S>16 Theorem 6 (geotop.tex:3281)
+    LATEX VERSION: The group of the trefoil knot is not commutative. **)
+theorem Theorem_GT_16_6:
+  fixes K :: "(real^3) set" and P\<^sub>0 :: "real^3"
+  assumes "geotop_is_trefoil K" and "P\<^sub>0 \<in> UNIV - K"
+  shows "\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C"
+  sorry
+
+(** from \<S>16 Theorem 7 (geotop.tex:3367)
+    LATEX VERSION: \<pi>(V) is isomorphic to the group of the trefoil knot. **)
+theorem Theorem_GT_16_7:
+  fixes V :: "(real^3) set" and K :: "(real^3) set"
+  fixes P\<^sub>V :: "real^3" and P\<^sub>K :: "real^3"
+  assumes "geotop_is_trefoil K" and "P\<^sub>K \<in> UNIV - K"
+  assumes "P\<^sub>V \<in> V"
+  \<comment> \<open>V here is the complement of a knotted broken line in an open cylinder (Fig. 16.5)\<close>
+  assumes "V \<in> geotop_euclidean_topology"
+  shows "\<exists>\<Phi>. bij_betw \<Phi>
+           (geotop_pi V (subspace_topology UNIV geotop_euclidean_topology V) P\<^sub>V)
+           (geotop_group_of_link K P\<^sub>K)"
+  sorry
+
+(** from \<S>16: unknotted knot (geotop.tex:3370)
+    LATEX VERSION: A knot is said to be unknotted if it is the boundary of a polyhedral
+      2-cell. **)
+definition geotop_is_unknotted :: "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_unknotted K \<longleftrightarrow>
+    geotop_is_knot K \<and>
+    (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
+         geotop_frontier UNIV geotop_euclidean_topology D = K)"
+
 end
