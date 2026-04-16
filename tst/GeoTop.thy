@@ -2113,4 +2113,100 @@ theorem Theorem_GT_10_13:
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
   sorry
 
+section \<open>\<S>11 Isotopies 1\<close>
+
+(** from \<S>11 homotopy (geotop.tex:2230)
+    LATEX VERSION: Let f_0 and f_1 be mappings A \<rightarrow> B. A homotopy between f_0 and f_1 is a
+      mapping \<phi>: A \<times> [0,1] \<rightarrow> B such that \<phi>(P,0) = f_0(P) and \<phi>(P,1) = f_1(P) for every P
+      in A. If such a \<phi> exists, then f_0 and f_1 are homotopic. **)
+definition geotop_is_homotopy ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow>
+   ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<times> real \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_is_homotopy A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<phi> \<longleftrightarrow>
+    (\<forall>P\<in>A. \<phi> (P, 0) = f\<^sub>0 P) \<and>
+    (\<forall>P\<in>A. \<phi> (P, 1) = f\<^sub>1 P) \<and>
+    (\<forall>P\<in>A. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<phi> (P, t) \<in> B)"
+
+definition geotop_homotopic ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow>
+   ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_homotopic A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<longleftrightarrow>
+    (\<exists>\<phi>. geotop_is_homotopy A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<phi>)"
+
+(** from \<S>11 isotopy (geotop.tex:2238)
+    LATEX VERSION: Suppose now that f_0 and f_1 are homeomorphisms A \<rightarrow> B. An isotopy between
+      f_0 and f_1 is a homotopy \<phi>: A \<times> [0,1] \<rightarrow> B such that for each t, the slice mapping
+      f_t: A \<rightarrow> B, P \<mapsto> \<phi>(P, t) is a homeomorphism. **)
+definition geotop_is_isotopy ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow>
+   ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<times> real \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_is_isotopy A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<phi> \<longleftrightarrow>
+    geotop_is_homotopy A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<phi> \<and>
+    top1_homeomorphism_on A T\<^sub>A B T\<^sub>B f\<^sub>0 \<and>
+    top1_homeomorphism_on A T\<^sub>A B T\<^sub>B f\<^sub>1 \<and>
+    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow>
+       top1_homeomorphism_on A T\<^sub>A B T\<^sub>B (\<lambda>P. \<phi> (P, t)))"
+
+definition geotop_isotopic ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow>
+   ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_isotopic A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<longleftrightarrow>
+    (\<exists>\<phi>. geotop_is_isotopy A T\<^sub>A B T\<^sub>B f\<^sub>0 f\<^sub>1 \<phi>)"
+
+(** from \<S>11 Theorem 1 (Alexander) (geotop.tex:2245)
+    LATEX VERSION: In R^n, let B^n = {P | ||P|| \<le> 1}, S^(n-1) = Fr B^n = {P | ||P|| = 1}.
+      Let f_1 be a homeomorphism B^n \<leftrightarrow> B^n, such that f_1|S^(n-1) is the identity. Then f_1
+      is isotopic to the identity mapping f_0: B^n \<leftrightarrow> B^n, P \<mapsto> P. **)
+theorem Theorem_GT_11_1_Alexander:
+  fixes f\<^sub>1 :: "'a::real_normed_vector \<Rightarrow> 'a"
+  assumes "top1_homeomorphism_on ({P::'a. norm P \<le> 1})
+             (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+             ({P::'a. norm P \<le> 1})
+             (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) f\<^sub>1"
+  assumes "\<forall>P. norm P = 1 \<longrightarrow> f\<^sub>1 P = P"
+  shows "geotop_isotopic ({P::'a. norm P \<le> 1})
+           (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+           ({P::'a. norm P \<le> 1})
+           (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+           (\<lambda>P. P) f\<^sub>1"
+  sorry
+
+(** from \<S>11 stable homeomorphism (geotop.tex:2259)
+    LATEX VERSION: Let [X, O] be a topological space, and let f be a homeomorphism X \<leftrightarrow> X.
+      If there is an open set U such that f|U is the identity, then f is stable. **)
+definition geotop_is_stable ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> ('a \<Rightarrow> 'a) \<Rightarrow> bool" where
+  "geotop_is_stable X T f \<longleftrightarrow>
+    top1_homeomorphism_on X T X T f \<and>
+    (\<exists>U\<in>T. U \<noteq> {} \<and> (\<forall>P\<in>U. f P = P))"
+
+(** from \<S>11 Theorem 2 (geotop.tex:2261)
+    LATEX VERSION: Let f_1 be a stable homeomorphism R^n \<leftrightarrow> R^n. Then f_1 is isotopic to
+      the identity. **)
+theorem Theorem_GT_11_2:
+  fixes f\<^sub>1 :: "'a::real_normed_vector \<Rightarrow> 'a"
+  assumes "geotop_is_stable (UNIV::'a set) geotop_euclidean_topology f\<^sub>1"
+  shows "geotop_isotopic (UNIV::'a set) geotop_euclidean_topology
+           (UNIV::'a set) geotop_euclidean_topology (\<lambda>P. P) f\<^sub>1"
+  sorry
+
+(** from \<S>11 Theorem 3 (geotop.tex:2294)
+    LATEX VERSION: Let M, U, \<phi>, and h be as in Theorem 10.13. If R^2 - U contains an open set,
+      then h is isotopic to the identity. **)
+theorem Theorem_GT_11_3:
+  fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real" and h :: "real^2 \<Rightarrow> real^2"
+  assumes "geotop_is_triangulable M"
+  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  assumes "top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology h"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M"
+  assumes "\<forall>P\<in>UNIV - U. h P = P"
+  assumes "geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+  assumes "\<exists>V\<in>geotop_euclidean_topology. V \<noteq> {} \<and> V \<subseteq> UNIV - U"
+  shows "geotop_isotopic (UNIV::(real^2) set) geotop_euclidean_topology
+           (UNIV::(real^2) set) geotop_euclidean_topology (\<lambda>P. P) h"
+  sorry
+
 end
