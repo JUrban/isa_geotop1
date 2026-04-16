@@ -2209,4 +2209,216 @@ theorem Theorem_GT_11_3:
            (UNIV::(real^2) set) geotop_euclidean_topology (\<lambda>P. P) h"
   sorry
 
+section \<open>\<S>12 Homeomorphisms between Cantor sets\<close>
+
+(** from \<S>12: Cantor set (geotop.tex:2298)
+    LATEX VERSION: By a Cantor set we mean a compact metrizable space in which every point is
+      a limit point, and which is totally disconnected, in the sense that the only connected
+      subsets are formed by single points. **)
+definition geotop_is_totally_disconnected ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_totally_disconnected X T \<longleftrightarrow>
+    is_topology_on X T \<and>
+    (\<forall>S\<subseteq>X. top1_connected_on S (subspace_topology X T S) \<longrightarrow>
+       S = {} \<or> (\<exists>P. S = {P}))"
+
+definition geotop_is_cantor_set ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_cantor_set X T \<longleftrightarrow>
+    top1_compact_on X T \<and>
+    top1_metrizable_on X T \<and>
+    (\<forall>P\<in>X. is_limit_point_of P X X T) \<and>
+    geotop_is_totally_disconnected X T"
+
+(** from \<S>12: homogeneous space (geotop.tex:2298)
+    LATEX VERSION: A topological space [X, O] is homogeneous if for every two points P, Q of
+      X there is a homeomorphism X \<leftrightarrow> X, P \<mapsto> Q. **)
+definition geotop_is_homogeneous ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_homogeneous X T \<longleftrightarrow>
+    (\<forall>P\<in>X. \<forall>Q\<in>X. \<exists>h. top1_homeomorphism_on X T X T h \<and> h P = Q)"
+
+(** from \<S>12: separable/inseparable sets (geotop.tex:2302)
+    LATEX VERSION: Let M be a closed set, in a metrizable space [X, O], and let A and B be
+      disjoint closed sets in X. If M is the union of two disjoint closed sets, containing
+      M \<inter> A and M \<inter> B respectively, then A and B are separable in M. If not, A and B are
+      inseparable in M. **)
+definition geotop_separable_in ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_separable_in X T M A B \<longleftrightarrow>
+    (\<exists>MA MB. closedin_on X T MA \<and> closedin_on X T MB \<and>
+       MA \<inter> MB = {} \<and> M = MA \<union> MB \<and>
+       M \<inter> A \<subseteq> MA \<and> M \<inter> B \<subseteq> MB)"
+
+definition geotop_inseparable_in ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_inseparable_in X T M A B \<longleftrightarrow> \<not> geotop_separable_in X T M A B"
+
+(** from \<S>12 Theorem 1 (geotop.tex:2304)
+    LATEX VERSION: Let M_1, M_2, \<dots> be a descending sequence of compact sets, in a metrizable
+      space [X, O], and let A and B be disjoint closed sets in X. If A and B are inseparable
+      in each set M_i, then A and B are inseparable in M_\<infinity> = \<Inter>_i=1^\<infinity> M_i. **)
+theorem Theorem_GT_12_1:
+  fixes X :: "'a::metric_space set" and T :: "'a set set"
+  fixes M :: "nat \<Rightarrow> 'a set" and A B :: "'a set"
+  assumes "is_topology_on X T" and "top1_metrizable_on X T"
+  assumes "\<forall>i. top1_compact_on (M i) (subspace_topology X T (M i))"
+  assumes "\<forall>i. M (Suc i) \<subseteq> M i"
+  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
+  assumes "\<forall>i. geotop_inseparable_in X T (M i) A B"
+  shows "geotop_inseparable_in X T (\<Inter>i. M i) A B"
+  sorry
+
+(** from \<S>12 Theorem 2 (geotop.tex:2332)
+    LATEX VERSION: Let M be a compact set, in a metrizable space [X, O], and let A and B be
+      disjoint closed sets in X, such that A and B are inseparable in M. Then there is an
+      M' \<subseteq> M such that (1) M' is closed, (2) A and B are inseparable in M', and (3) M' is
+      irreducible with respect to Properties (1) and (2). **)
+theorem Theorem_GT_12_2:
+  fixes X :: "'a::metric_space set" and T :: "'a set set"
+  fixes M A B :: "'a set"
+  assumes "is_topology_on X T" and "top1_metrizable_on X T"
+  assumes "top1_compact_on M (subspace_topology X T M)"
+  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
+  assumes "geotop_inseparable_in X T M A B"
+  shows "\<exists>M'. M' \<subseteq> M \<and> closedin_on X T M' \<and>
+              geotop_inseparable_in X T M' A B \<and>
+              (\<forall>M''. M'' \<subset> M' \<longrightarrow>
+                 \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B))"
+  sorry
+
+(** from \<S>12 Theorem 3 (geotop.tex:2339)
+    LATEX VERSION: Let M be a compact set, in a metrizable space [X, O], and let A and B be
+      disjoint closed sets in X. Then either (1) M contains a connected set which intersects
+      both A and B or (2) A and B are separable in M. **)
+theorem Theorem_GT_12_3:
+  fixes X :: "'a::metric_space set" and T :: "'a set set"
+  fixes M A B :: "'a set"
+  assumes "is_topology_on X T" and "top1_metrizable_on X T"
+  assumes "top1_compact_on M (subspace_topology X T M)"
+  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
+  shows "(\<exists>C\<subseteq>M. top1_connected_on C (subspace_topology X T C) \<and>
+            C \<inter> A \<noteq> {} \<and> C \<inter> B \<noteq> {}) \<or>
+         geotop_separable_in X T M A B"
+  sorry
+
+(** from \<S>12: continuum (geotop.tex:2355)
+    LATEX VERSION: A set which is both compact and connected is called a continuum. **)
+definition geotop_is_continuum ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_continuum X T \<longleftrightarrow>
+    top1_compact_on X T \<and> top1_connected_on X T"
+
+(** from \<S>12: diameter of a set (geotop.tex) - required for Theorem 4 **)
+(** We reuse geotop_diameter introduced in \<S>4. **)
+
+(** from \<S>12 Theorem 4 (geotop.tex:2357)
+    LATEX VERSION: Let C be a totally disconnected compact set, in a metric space, and let \<epsilon>
+      be a positive number. Then C is the union of a finite collection
+      G_\<epsilon> = {g_1, g_2, \<dots>, g_n} of disjoint nonempty closed sets, with \<delta>g_i < \<epsilon> for each i. **)
+theorem Theorem_GT_12_4:
+  fixes X :: "'a::metric_space set" and T :: "'a set set" and C :: "'a set"
+  assumes "is_topology_on X T" and "top1_metrizable_on X T"
+  assumes "top1_compact_on C (subspace_topology X T C)"
+  assumes "geotop_is_totally_disconnected C (subspace_topology X T C)"
+  assumes "\<epsilon> > 0"
+  shows "\<exists>G. finite G \<and> (\<forall>g\<in>G. g \<noteq> {} \<and> closedin_on X T g \<and> g \<subseteq> C) \<and>
+             (\<forall>g\<in>G. \<forall>h\<in>G. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and>
+             \<Union>G = C \<and>
+             (\<forall>g\<in>G. geotop_diameter dist g < \<epsilon>)"
+  sorry
+
+(** from \<S>12 Theorem 5 (geotop.tex:2384)
+    LATEX VERSION: Let C be a Cantor set, and let U be a subset of C which is both open and
+      closed. Then U is a Cantor set. **)
+theorem Theorem_GT_12_5:
+  fixes X :: "'a set" and T :: "'a set set" and U :: "'a set"
+  assumes "geotop_is_cantor_set X T"
+  assumes "U \<subseteq> X" and "U \<noteq> {}"
+  assumes "U \<in> T" and "closedin_on X T U"
+  shows "geotop_is_cantor_set U (subspace_topology X T U)"
+  sorry
+
+(** from \<S>12 Theorem 6 (geotop.tex:2387)
+    LATEX VERSION: Let [X, O] and [Y, O'] be metrizable spaces. If X is compact, and f is a
+      bijective mapping X \<leftrightarrow> Y, then f is a homeomorphism. **)
+theorem Theorem_GT_12_6:
+  fixes X :: "'a set" and T :: "'a set set"
+  fixes Y :: "'b set" and T' :: "'b set set"
+  fixes f :: "'a \<Rightarrow> 'b"
+  assumes "is_topology_on X T" and "top1_metrizable_on X T"
+  assumes "is_topology_on Y T'" and "top1_metrizable_on Y T'"
+  assumes "top1_compact_on X T"
+  assumes "top1_continuous_on X T Y T' f"
+  assumes "bij_betw f X Y"
+  shows "top1_homeomorphism_on X T Y T' f"
+  sorry
+
+(** from \<S>12: refinement of coverings (geotop.tex:2391)
+    LATEX VERSION: G_{i+1} \<le> G_i means G_{i+1} refines G_i.
+    We reuse geotop_refines from the Introduction. **)
+
+(** from \<S>12: mesh of a covering (geotop.tex:2391)
+    LATEX VERSION: \<Vert>G_i\<Vert> is the mesh of G_i, i.e. sup of diameters of its elements. **)
+(** We reuse geotop_mesh from \<S>4. **)
+
+(** from \<S>12 Theorem 7 (geotop.tex:2391)
+    LATEX VERSION: Let C be a Cantor set, and let C' be a compact metrizable space. Let
+      G_1, G_2, \<dots> be a sequence of finite coverings of C by disjoint nonempty open (and
+      therefore closed) sets, such that (1) G_{i+1} \<le> G_i for each i and (2) \<Vert>G_i\<Vert> \<rightarrow> 0 as
+      i \<rightarrow> \<infinity>. Let G'_1, G'_2, \<dots> be a sequence of finite coverings of C' by nonempty open
+      sets, satisfying (1) and (2). For each i, let f_i be a function G_i \<rightarrow> G'_i, such that
+      (3) if g_i \<in> G_i, g_{i+1} \<in> G_{i+1}, and g_{i+1} \<subseteq> g_i, then f_{i+1}(g_{i+1}) \<subseteq> f_i(g_i).
+      Then there is a mapping f: C \<rightarrow> C', such that for each g_i \<in> G_i, f(g_i) \<subseteq> closure of
+      f_i(g_i). If each f_i is surjective, then so also is f. If each f_i is a bijection, and
+      every two elements of G'_i have disjoint closures, then f is a homeomorphism. **)
+theorem Theorem_GT_12_7:
+  fixes C :: "'a::metric_space set" and T :: "'a set set"
+  fixes C' :: "'b::metric_space set" and T' :: "'b set set"
+  fixes G :: "nat \<Rightarrow> 'a set set" and G' :: "nat \<Rightarrow> 'b set set"
+  fixes f :: "nat \<Rightarrow> 'a set \<Rightarrow> 'b set"
+  assumes "geotop_is_cantor_set C T"
+  assumes "top1_compact_on C' T'" and "top1_metrizable_on C' T'"
+  assumes "\<forall>i. finite (G i) \<and> (\<forall>g\<in>G i. g \<noteq> {} \<and> g \<in> T \<and> closedin_on C T g) \<and>
+               (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and> \<Union>(G i) = C"
+  assumes "\<forall>i. geotop_refines (G (Suc i)) (G i)"
+  assumes "(\<lambda>i. geotop_mesh dist (G i)) \<longlonglongrightarrow> 0"
+  assumes "\<forall>i. finite (G' i) \<and> (\<forall>g\<in>G' i. g \<noteq> {} \<and> g \<in> T') \<and> \<Union>(G' i) = C'"
+  assumes "\<forall>i. geotop_refines (G' (Suc i)) (G' i)"
+  assumes "(\<lambda>i. geotop_mesh dist (G' i)) \<longlonglongrightarrow> 0"
+  assumes "\<forall>i. (f i) ` (G i) \<subseteq> G' i"
+  assumes "\<forall>i g h. g \<in> G i \<and> h \<in> G (Suc i) \<and> h \<subseteq> g \<longrightarrow> f (Suc i) h \<subseteq> f i g"
+  shows "\<exists>F. top1_continuous_on C T C' T' F \<and>
+             (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g)) \<and>
+             ((\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> F ` C = C') \<and>
+             ((\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
+              (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
+                 closure_on C' T' g \<inter> closure_on C' T' h = {})
+              \<longrightarrow> top1_homeomorphism_on C T C' T' F)"
+  sorry
+
+(** from \<S>12 Theorem 8 (geotop.tex:2431)
+    LATEX VERSION: Every two Cantor sets are homeomorphic. **)
+theorem Theorem_GT_12_8:
+  fixes C :: "'a::metric_space set" and T :: "'a set set"
+  fixes C' :: "'b::metric_space set" and T' :: "'b set set"
+  assumes "geotop_is_cantor_set C T"
+  assumes "geotop_is_cantor_set C' T'"
+  shows "\<exists>h. top1_homeomorphism_on C T C' T' h"
+  sorry
+
+(** from \<S>12 Theorem 9 (geotop.tex:2453)
+    LATEX VERSION: Let C and C' be Cantor sets, and let D and D' be countable dense sets in C
+      and C' respectively. Then there is a homeomorphism C \<leftrightarrow> C', D \<leftrightarrow> D'. **)
+theorem Theorem_GT_12_9:
+  fixes C :: "'a::metric_space set" and T :: "'a set set"
+  fixes C' :: "'b::metric_space set" and T' :: "'b set set"
+  fixes D :: "'a set" and D' :: "'b set"
+  assumes "geotop_is_cantor_set C T"
+  assumes "geotop_is_cantor_set C' T'"
+  assumes "D \<subseteq> C" and "top1_countable D" and "closure_on C T D = C"
+  assumes "D' \<subseteq> C'" and "top1_countable D'" and "closure_on C' T' D' = C'"
+  shows "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
+  sorry
+
 end
