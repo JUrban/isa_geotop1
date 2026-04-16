@@ -1,5 +1,5 @@
 theory GeoTop
-  imports "Top0.AlgTop"
+  imports "Top0.AlgTop" "HOL-Analysis.Cartesian_Euclidean_Space"
 begin
 
 text \<open>
@@ -635,6 +635,216 @@ theorem Theorem_GT_1_16:
 theorem Theorem_GT_1_17:
   assumes "is_topology_on X T" "M \<subseteq> N" "N \<subseteq> X" "P \<in> M"
   shows "\<exists>Q\<in>N. geotop_component_at X T M P \<subseteq> geotop_component_at X T N Q"
+  sorry
+
+
+section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
+
+(** from \<S>2: standard n-ball (geotop.tex:490)
+    LATEX VERSION: B^n = {P | P \<in> R^n and d(P_0, P) \<le> 1}, where P_0 is the origin. **)
+definition geotop_std_ball :: "'a::real_normed_vector set" where
+  "geotop_std_ball = {P. norm P \<le> 1}"
+
+(** from \<S>2: standard n-sphere (geotop.tex:494)
+    LATEX VERSION: S^n = {P | P \<in> R^n and d(P_0, P) = 1}. **)
+definition geotop_std_sphere :: "'a::real_normed_vector set" where
+  "geotop_std_sphere = {P. norm P = 1}"
+
+(** from \<S>2: n-sphere as an abstract space (geotop.tex:500)
+    LATEX VERSION: A space (or set) S^n is an n-sphere if S^n is homeomorphic to S^n (standard). **)
+definition geotop_is_n_sphere :: "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_is_n_sphere X TX n \<longleftrightarrow>
+    is_topology_on X TX \<and>
+    (\<exists>f. top1_homeomorphism_on X TX
+           (geotop_std_sphere::'a set)
+           (subspace_topology UNIV geotop_euclidean_topology geotop_std_sphere) f)"
+
+(** from \<S>2: polygon (geotop.tex:500)
+    LATEX VERSION: A polygon is a polyhedral 1-sphere. **)
+definition geotop_is_polygon :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_polygon J \<longleftrightarrow>
+    (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = J
+       \<and> geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1)"
+
+(** from \<S>2: triangulation of a polyhedron (geotop.tex:500)
+    LATEX VERSION: For each complex K, K is called a triangulation of |K|. **)
+text \<open>A triangulation of a set $M$ is a complex $K$ with $|K| = M$.
+  Formalized inline as \<open>geotop_polyhedron K = M\<close>.\<close>
+
+(** from \<S>2 Theorem 1 (geotop.tex:502)
+    LATEX VERSION: Let J be a polygon in R^2. Then R^2 - J has exactly two components. **)
+theorem Theorem_GT_2_1:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} = 2"
+  sorry
+
+(** from \<S>2 Theorem 1 - Lemma 1 (geotop.tex:514)
+    LATEX VERSION: R^2 - J has at most two components. **)
+theorem Lemma_GT_2_1a:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
+  sorry
+
+(** from \<S>2 Theorem 1 - Lemma 2 (geotop.tex:527)
+    LATEX VERSION: R^2 - J has at least two components. **)
+theorem Lemma_GT_2_1b:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
+  sorry
+
+(** from \<S>2: interior and exterior of a polygon (geotop.tex:553)
+    LATEX VERSION: The bounded component I of R^2 - J is called the interior of J, and the
+      unbounded component E is called the exterior. **)
+text \<open>A set $A \subseteq \mathbb{R}^2$ is \emph{bounded} if there exists $r > 0$ such that
+  $A \subseteq N(\mathbf{0}, r)$. We define interior and exterior of a polygon accordingly.\<close>
+
+definition geotop_bounded_R2 :: "(real^2) set \<Rightarrow> bool" where
+  "geotop_bounded_R2 A \<longleftrightarrow> (\<exists>r>0. \<forall>P\<in>A. norm P < r)"
+
+definition geotop_polygon_interior :: "(real^2) set \<Rightarrow> (real^2) set" where
+  "geotop_polygon_interior J =
+    (SOME I. I \<subseteq> UNIV - J \<and> geotop_bounded_R2 I \<and>
+       top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+       (\<forall>P\<in>I. geotop_component_at UNIV geotop_euclidean_topology
+                   ((UNIV::(real^2) set) - J) P = I))"
+
+definition geotop_polygon_exterior :: "(real^2) set \<Rightarrow> (real^2) set" where
+  "geotop_polygon_exterior J =
+    (SOME E. E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 E \<and>
+       top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
+       (\<forall>P\<in>E. geotop_component_at UNIV geotop_euclidean_topology
+                   ((UNIV::(real^2) set) - J) P = E))"
+
+(** from \<S>2 Theorem 2 (geotop.tex:555)
+    LATEX VERSION: Let I be the interior of the polygon J in R^2. Then \<bar>I\<close> is a finite polyhedron. **)
+theorem Theorem_GT_2_2:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "\<exists>K. geotop_is_complex K \<and> finite K \<and>
+    geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  sorry
+
+(** from \<S>2 Theorem 3 (geotop.tex:579)
+    LATEX VERSION: No broken line separates R^2. That is, if B is a broken line in R^2,
+      then R^2 - B is connected. **)
+theorem Theorem_GT_2_3:
+  fixes B :: "(real^2) set"
+  assumes "geotop_is_broken_line B"
+  shows "top1_connected_on (UNIV - B)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - B))"
+  sorry
+
+(** from \<S>2 Theorem 4 (geotop.tex:593)
+    LATEX VERSION: Let X be a topological space and let U be an open set. Then Fr U = \<bar>U\<close> - U. **)
+theorem Theorem_GT_2_4:
+  assumes "is_topology_on X T"
+  assumes "U \<in> T"
+  assumes "U \<subseteq> X"
+  shows "geotop_frontier X T U = closure_on X T U - U"
+  sorry
+
+(** from \<S>2 Theorem 5 (geotop.tex:596)
+    LATEX VERSION: Let J be a polygon in R^2, with interior I and exterior E. Then every point
+      of J is a limit point both of I and of E. **)
+theorem Theorem_GT_2_5:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "\<forall>P\<in>J. is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology
+             \<and> is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
+  sorry
+
+(** from \<S>2 Theorem 6 (geotop.tex:611)
+    LATEX VERSION: Let J, I, E be as in Theorem 5. Then J = Fr I = Fr E. **)
+theorem Theorem_GT_2_6:
+  fixes J :: "(real^2) set"
+  assumes "geotop_is_polygon J"
+  shows "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    and "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)"
+  sorry
+
+(** from \<S>2: \<theta>-graph (geotop.tex:619)
+    LATEX VERSION: Let M be the union of three arcs B_1, B_2, B_3 with the same end-points P, Q
+      but with disjoint interiors. Then M is called a \<theta>-graph. **)
+definition geotop_arc_endpoints :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_arc_endpoints A E \<longleftrightarrow>
+    geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+    card E = 2 \<and> E \<subseteq> A \<and>
+    (\<exists>f::real\<Rightarrow>'a. top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) A
+        (subspace_topology UNIV geotop_euclidean_topology A) f
+      \<and> E = {f 0, f 1})"
+
+definition geotop_arc_interior :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "geotop_arc_interior A E = A - E"
+
+definition geotop_is_theta_graph ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_theta_graph M B1 B2 B3 E \<longleftrightarrow>
+    M = B1 \<union> B2 \<union> B3 \<and>
+    geotop_arc_endpoints B1 E \<and> geotop_arc_endpoints B2 E \<and> geotop_arc_endpoints B3 E \<and>
+    geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {} \<and>
+    geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {} \<and>
+    geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+
+text \<open>A polyhedral \<theta>-graph is a \<theta>-graph whose arcs are broken lines.\<close>
+definition geotop_is_polyhedral_theta_graph ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_polyhedral_theta_graph M B1 B2 B3 E \<longleftrightarrow>
+    geotop_is_theta_graph M B1 B2 B3 E \<and>
+    geotop_is_broken_line B1 \<and> geotop_is_broken_line B2 \<and> geotop_is_broken_line B3"
+
+(** from \<S>2 Theorem 7 (geotop.tex:621)
+    LATEX VERSION: Let M = B_1 \<union> B_2 \<union> B_3 be a polyhedral \<theta>-graph in R^2, with Bd B_i = {P,Q}.
+      Then (1) Every component of R^2 - M has a polygon B_i \<union> B_j as its frontier, and
+      (2) Exactly one of the sets B_i lies, except for its end-points, in the interior of the
+      polygon formed by the other two. **)
+theorem Theorem_GT_2_7:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<forall>U. (U \<in> {C. \<exists>P\<in>UNIV - M.
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P})
+         \<longrightarrow> (\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+              geotop_is_polygon (i \<union> j) \<and>
+              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)"
+    and "(\<exists>!k. k \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+  sorry
+
+(** from \<S>2 Theorem 8 (geotop.tex:651)
+    LATEX VERSION: Let B_1, B_2, B_3 be as in Theorem 7, with Int B_2 in the interior I_13 of
+      B_1 \<union> B_3. Then
+      (1) The components of I_13 - Int B_2 are the interiors I_12 and I_23.
+      (2) \<bar>I_13\<close> = \<bar>I_12\<close> \<union> \<bar>I_23\<close>.
+      (3) \<bar>I_13\<close> - B_2 = (I_12 \<union> Int B_1) \<union> (I_23 \<union> Int B_3), where the sets on the right are
+        connected and separated. **)
+theorem Theorem_GT_2_8:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  assumes "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+  defines "I12 \<equiv> geotop_polygon_interior (B1 \<union> B2)"
+  defines "I23 \<equiv> geotop_polygon_interior (B2 \<union> B3)"
+  defines "I13 \<equiv> geotop_polygon_interior (B1 \<union> B3)"
+  shows "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
+         = {I12, I23}"
+    and "closure_on UNIV geotop_euclidean_topology I13 =
+         closure_on UNIV geotop_euclidean_topology I12
+         \<union> closure_on UNIV geotop_euclidean_topology I23"
+    and "closure_on UNIV geotop_euclidean_topology I13 - B2 =
+         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)"
+    and "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
+           (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E))"
+    and "top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
+           (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
+    and "geotop_separated UNIV geotop_euclidean_topology
+           (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
   sorry
 
 end
