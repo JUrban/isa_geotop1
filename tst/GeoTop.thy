@@ -3650,4 +3650,338 @@ definition geotop_is_locally_tame ::
   "'a::real_normed_vector set \<Rightarrow> bool" where
   "geotop_is_locally_tame M \<longleftrightarrow> (\<forall>P\<in>M. geotop_is_locally_tame_at M P)"
 
+section \<open>\<S>21 The Euler characteristic\<close>
+
+(** from \<S>21: Euler characteristic of a complex (geotop.tex:4434)
+    LATEX VERSION: Let K be a finite complex, of dimension \<le> 2. The Euler characteristic of
+      K is the alternating sum \<chi>(K) = V - E + F, where V, E, and F are respectively the
+      number of vertices, edges, and 2-faces of K. **)
+definition geotop_num_simplexes_of_dim ::
+  "'a::real_normed_vector set set \<Rightarrow> nat \<Rightarrow> nat" where
+  "geotop_num_simplexes_of_dim K n = card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> n}"
+
+definition geotop_euler_characteristic ::
+  "'a::real_normed_vector set set \<Rightarrow> int" where
+  "geotop_euler_characteristic K =
+    int (geotop_num_simplexes_of_dim K 0)
+    - int (geotop_num_simplexes_of_dim K 1)
+    + int (geotop_num_simplexes_of_dim K 2)"
+
+(** from \<S>21: open cell-complex (geotop.tex:4443)
+    LATEX VERSION: Let K be a finite complex, of dimension \<le> 2, and let C be a finite
+      collection of subsets of |K|. Suppose that (1) elements are disjoint, (2) each closure
+      is a finite polyhedron, (3) Fr C is a union of elements, (4) each C is either a point
+      or homeomorphic to the interior of a Euclidean simplex. Then C is an open cell-complex. **)
+definition geotop_is_open_cell_complex ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_open_cell_complex \<C> \<longleftrightarrow>
+    finite \<C> \<and>
+    (\<forall>C1\<in>\<C>. \<forall>C2\<in>\<C>. C1 \<noteq> C2 \<longrightarrow> C1 \<inter> C2 = {}) \<and>
+    (\<forall>C\<in>\<C>. \<exists>L. geotop_is_complex L \<and>
+              geotop_polyhedron L = closure_on (\<Union>\<C>) (subspace_topology UNIV
+                 geotop_euclidean_topology (\<Union>\<C>)) C) \<and>
+    (\<forall>C\<in>\<C>. \<exists>CS\<subseteq>\<C>. geotop_frontier (\<Union>\<C>)
+         (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C = \<Union>CS) \<and>
+    (\<forall>C\<in>\<C>. (\<exists>P. C = {P}) \<or>
+            (\<exists>\<sigma>::'a set. geotop_is_simplex \<sigma> \<and>
+                top1_homeomorphism_on C (subspace_topology UNIV geotop_euclidean_topology C)
+                  (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>))
+                  (SOME h. True)))"
+
+definition geotop_open_cell_vertices ::
+  "'a set set \<Rightarrow> 'a set" where
+  "geotop_open_cell_vertices \<C> = {v. {v} \<in> \<C>}"
+
+definition geotop_open_cell_num_vertices ::
+  "'a set set \<Rightarrow> nat" where
+  "geotop_open_cell_num_vertices \<C> = card (geotop_open_cell_vertices \<C>)"
+
+definition geotop_open_cell_num_edges ::
+  "'a::real_normed_vector set set \<Rightarrow> nat" where
+  "geotop_open_cell_num_edges \<C> =
+    card {C\<in>\<C>. \<exists>\<sigma>. geotop_simplex_dim \<sigma> 1 \<and>
+         (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C
+             (subspace_topology UNIV geotop_euclidean_topology C)
+             (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)) h)}"
+
+definition geotop_open_cell_num_faces ::
+  "'a::real_normed_vector set set \<Rightarrow> nat" where
+  "geotop_open_cell_num_faces \<C> =
+    card {C\<in>\<C>. \<exists>\<sigma>. geotop_simplex_dim \<sigma> 2 \<and>
+         (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C
+             (subspace_topology UNIV geotop_euclidean_topology C)
+             (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)) h)}"
+
+definition geotop_open_cell_euler ::
+  "'a::real_normed_vector set set \<Rightarrow> int" where
+  "geotop_open_cell_euler \<C> =
+    int (geotop_open_cell_num_vertices \<C>)
+    - int (geotop_open_cell_num_edges \<C>)
+    + int (geotop_open_cell_num_faces \<C>)"
+
+(** from \<S>21 Theorem 1 (geotop.tex:4463)
+    LATEX VERSION: If C^1 is an edge of C, then Fr C^1 consists of either one or two vertices
+      of C. **)
+theorem Theorem_GT_21_1:
+  fixes \<C> :: "'a::real_normed_vector set set" and C1 :: "'a set"
+  assumes "geotop_is_open_cell_complex \<C>"
+  assumes "C1 \<in> \<C>"
+  assumes "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 1 \<and>
+             (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C1
+                (subspace_topology UNIV geotop_euclidean_topology C1)
+                (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
+                (subspace_topology UNIV geotop_euclidean_topology
+                   (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)) h)"
+  shows "\<exists>V\<subseteq>geotop_open_cell_vertices \<C>.
+           (card V = 1 \<or> card V = 2) \<and>
+           geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
+           = (\<Union>v\<in>V. {v})"
+  sorry
+
+(** from \<S>21 Theorem 2 (geotop.tex:4465)
+    LATEX VERSION: If C^2 is a face of C, then Fr C^2 is connected. **)
+theorem Theorem_GT_21_2:
+  fixes \<C> :: "'a::real_normed_vector set set" and C2 :: "'a set"
+  assumes "geotop_is_open_cell_complex \<C>"
+  assumes "C2 \<in> \<C>"
+  assumes "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 2 \<and>
+             (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C2
+                (subspace_topology UNIV geotop_euclidean_topology C2)
+                (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
+                (subspace_topology UNIV geotop_euclidean_topology
+                   (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)) h)"
+  shows "top1_connected_on
+           (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2))"
+  sorry
+
+(** from \<S>21: subdivision for open cell-complexes (geotop.tex:4472)
+    LATEX VERSION: If C_1 and C_2 are open cell-complexes, and every element of C_2 lies in
+      an element of C_1, then C_2 is a subdivision of C_1, C_2 < C_1. **)
+definition geotop_open_cell_refines ::
+  "'a set set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_open_cell_refines \<C>2 \<C>1 \<longleftrightarrow>
+    (\<forall>C\<in>\<C>2. \<exists>D\<in>\<C>1. C \<subseteq> D)"
+
+(** from \<S>21 Theorem 3 (geotop.tex:4486)
+    LATEX VERSION: For open cell-complexes, the Euler characteristic is preserved by
+      Operations \<alpha>, \<beta>, \<gamma>, and \<delta>. **)
+(** Operations \<alpha>, \<beta>, \<gamma>, \<delta> formalized abstractly as "one-step subdivisions preserving \<chi>". **)
+theorem Theorem_GT_21_3:
+  fixes \<C>1 \<C>2 :: "'a::real_normed_vector set set"
+  assumes "geotop_is_open_cell_complex \<C>1"
+  assumes "geotop_is_open_cell_complex \<C>2"
+  assumes "geotop_open_cell_refines \<C>2 \<C>1"
+  assumes "\<Union>\<C>2 = \<Union>\<C>1"
+  shows "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
+  sorry
+
+(** from \<S>21 Theorem 4 (geotop.tex:4490)
+    LATEX VERSION: For open cell-complexes, the Euler characteristic is preserved under
+      subdivision, and hence is a combinatorial invariant. **)
+theorem Theorem_GT_21_4:
+  fixes \<C>1 \<C>2 :: "'a::real_normed_vector set set"
+  assumes "geotop_is_open_cell_complex \<C>1"
+  assumes "geotop_is_open_cell_complex \<C>2"
+  assumes "geotop_open_cell_refines \<C>2 \<C>1"
+  assumes "\<Union>\<C>2 = \<Union>\<C>1"
+  shows "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
+  sorry
+
+(** from \<S>21 Theorem 5 (geotop.tex:4498)
+    LATEX VERSION: All triangulations of the same compact 2-manifold have the same Euler
+      characteristic. **)
+theorem Theorem_GT_21_5:
+  fixes M :: "'a::real_normed_vector set"
+  fixes K1 K2 :: "'a set set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes "geotop_is_complex K1" and "geotop_polyhedron K1 = M"
+  assumes "geotop_is_complex K2" and "geotop_polyhedron K2 = M"
+  shows "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+  sorry
+
+definition geotop_manifold_euler ::
+  "'a::real_normed_vector set \<Rightarrow> int" where
+  "geotop_manifold_euler M =
+    (THE x. \<forall>K. geotop_is_complex K \<and> geotop_polyhedron K = M
+              \<longrightarrow> geotop_euler_characteristic K = x)"
+
+(** from \<S>21 Theorem 6 (geotop.tex:4504)
+    LATEX VERSION: If J is a polygon, then \<chi>(J) = 0. **)
+theorem Theorem_GT_21_6:
+  fixes J :: "'a::real_normed_vector set"
+  assumes "geotop_is_polygon J"
+  shows "geotop_manifold_euler J = 0"
+  sorry
+
+(** from \<S>21 Theorem 7 (geotop.tex:4507)
+    LATEX VERSION: Let K be any triangulation of a 2-cell. Then \<chi>(K) = 1. **)
+theorem Theorem_GT_21_7:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  assumes "geotop_is_n_cell (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2"
+  shows "geotop_euler_characteristic K = 1"
+  sorry
+
+(** from \<S>21 Theorem 8 (geotop.tex:4522)
+    LATEX VERSION: Let K_1 and K_2 be finite complexes, such that |K_1| \<inter> |K_2| is a polygon
+      J which forms a subcomplex of each K_i, so that K_1 \<union> K_2 is a complex. Then
+      \<chi>(K_1 \<union> K_2) = \<chi>(K_1) + \<chi>(K_2). **)
+theorem Theorem_GT_21_8:
+  fixes K1 K2 :: "'a::real_normed_vector set set" and J :: "'a set"
+  assumes "geotop_is_complex K1" and "geotop_is_complex K2"
+  assumes "geotop_is_complex (K1 \<union> K2)"
+  assumes "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = J"
+  assumes "geotop_is_polygon J"
+  shows "geotop_euler_characteristic (K1 \<union> K2)
+         = geotop_euler_characteristic K1 + geotop_euler_characteristic K2"
+  sorry
+
+(** from \<S>21 Theorem 9 (geotop.tex:4530)
+    LATEX VERSION: Let M be a compact 2-manifold with boundary. Then all triangulations K of
+      M have the same Euler characteristic. **)
+theorem Theorem_GT_21_9:
+  fixes M :: "'a::real_normed_vector set"
+  fixes K1 K2 :: "'a set set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes "geotop_is_complex K1" and "geotop_polyhedron K1 = M"
+  assumes "geotop_is_complex K2" and "geotop_polyhedron K2 = M"
+  shows "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+  sorry
+
+(** from \<S>21 Theorem 10 (geotop.tex:4542)
+    LATEX VERSION: When a 2-manifold with boundary is split apart at a 1-sphere lying in its
+      interior, and separating a connected neighborhood of itself, the Euler characteristic
+      is unchanged. **)
+theorem Theorem_GT_21_10:
+  fixes M M' :: "'a::real_normed_vector set" and J :: "'a set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes "J \<subseteq> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+  \<comment> \<open>M' is the manifold obtained by splitting M at J.\<close>
+  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes "geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2"
+  shows "geotop_manifold_euler M = geotop_manifold_euler M'"
+  sorry
+
+(** from \<S>21 Theorem 11 (geotop.tex:4554)
+    LATEX VERSION: If a 2-manifold M with boundary is split apart as in Theorem 10, and the
+      new boundary components are spanned by 2-cells, then the Euler characteristic is
+      increased by 2. **)
+theorem Theorem_GT_21_11:
+  fixes M M' :: "'a::real_normed_vector set"
+  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  \<comment> \<open>M' is obtained by splitting M at a 1-sphere J and filling the new boundaries with 2-cells.\<close>
+  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes "geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2"
+  shows "geotop_manifold_euler M' = geotop_manifold_euler M + 2"
+  sorry
+
+(** from \<S>21: handle, 2-sphere with n holes, 2-sphere with n handles, projective plane,
+    Klein bottle, Möbius band, cross-cap (geotop.tex:4588-4615)
+    LATEX VERSION: By a handle we mean a space obtained by deleting from a torus the interior
+      of a 2-cell. A 2-sphere with n holes is a space obtained by deleting from a 2-sphere
+      the interiors of n disjoint 2-cells. A 2-sphere with n handles is a 2-sphere with n
+      holes with a handle attached to the boundary of each hole. A projective plane is a
+      space defined by identifying antipodal points of a circle. A sphere with n cross-caps
+      is obtained by starting with a sphere with n holes and attaching a Möbius band to the
+      boundary of each hole. **)
+definition geotop_is_torus :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_torus T \<longleftrightarrow>
+    top1_compact_on T (subspace_topology UNIV geotop_euclidean_topology T) \<and>
+    geotop_n_manifold_with_boundary_on T (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary T (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler T = 0 \<and>
+    (\<exists>P. P \<in> T \<and> \<not> geotop_simply_connected T
+        (subspace_topology UNIV geotop_euclidean_topology T) P)"
+
+definition geotop_is_handle :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_handle H \<longleftrightarrow>
+    (\<exists>T D. geotop_is_torus T \<and>
+       geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+       D \<subseteq> T \<and>
+       H = T - geotop_top_interior UNIV geotop_euclidean_topology D)"
+
+definition geotop_is_sphere_with_n_holes ::
+  "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_sphere_with_n_holes n M \<longleftrightarrow>
+    (\<exists>(S::'a set) Ds.
+       geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+       finite Ds \<and> card Ds = n \<and>
+       (\<forall>D\<in>Ds. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+               \<and> D \<subseteq> S) \<and>
+       (\<forall>D1\<in>Ds. \<forall>D2\<in>Ds. D1 \<noteq> D2 \<longrightarrow> D1 \<inter> D2 = {}) \<and>
+       M = S - \<Union>(geotop_top_interior UNIV geotop_euclidean_topology ` Ds))"
+
+definition geotop_is_sphere_with_n_handles ::
+  "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_sphere_with_n_handles n M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler M = 2 - 2 * int n"
+
+definition geotop_is_mobius_band :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_mobius_band M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_is_n_sphere (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+       (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) 1 \<and>
+    geotop_manifold_euler M = 0"
+
+definition geotop_is_projective_plane ::
+  "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_projective_plane M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler M = 1"
+
+definition geotop_is_klein_bottle ::
+  "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_klein_bottle M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler M = 0 \<and>
+    \<not> (\<exists>T. geotop_is_torus T \<and>
+           top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+             T (subspace_topology UNIV geotop_euclidean_topology T) (SOME h. True))"
+
+definition geotop_is_sphere_with_n_crosscaps ::
+  "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_sphere_with_n_crosscaps n M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler M = 2 - int n"
+
+(** from \<S>21: orientable triangulated 2-manifold (geotop.tex:4616)
+    LATEX VERSION: If |K| is a compact connected 2-manifold, then we have either H_2(K, Z) = 0
+      or H_2(K, Z) \<cong> Z. If the latter holds, then K and |K| are called orientable. **)
+definition geotop_is_orientable ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_orientable K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    top1_compact_on (geotop_polyhedron K)
+       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
+    top1_connected_on (geotop_polyhedron K)
+       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
+    geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2 \<and>
+    True  \<comment> \<open>H_2 \<cong> Z — formalization left abstract in this initial pass\<close>"
+
 end
