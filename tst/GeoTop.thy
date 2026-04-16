@@ -3522,4 +3522,132 @@ theorem Theorem_GT_19_6:
            geotop_is_wild (A1 \<union> A2)"
   sorry
 
+section \<open>\<S>20 A wild 2-sphere with a simply connected complement\<close>
+
+(** from \<S>20 Theorem 1 (geotop.tex:4190)
+    LATEX VERSION: In R^3, let P_0 = (0,0,0), P_1 = (0,0,3/2), P_2 = (0,0,2), P_3 = (0,1,2);
+      let T be the 2-simplex P_0 P_2 P_3, and let D^3 be the solid of revolution of T about
+      the z-axis. Then there is a mapping f: D^3 \<rightarrow> D^3 such that (1) f(P_0 P_1) = P_0 and
+      (2) f|(D^3 - P_0 P_1) is a homeomorphism D^3 - P_0 P_1 \<leftrightarrow> D^3 - {P_0}. **)
+theorem Theorem_GT_20_1:
+  fixes D3 :: "(real^3) set" and P\<^sub>0 P\<^sub>1 :: "real^3"
+  assumes "geotop_is_n_cell D3 (subspace_topology UNIV geotop_euclidean_topology D3) 3"
+  assumes "geotop_is_broken_line {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}"
+  shows "\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
+             top1_homeomorphism_on
+               (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
+               (subspace_topology UNIV geotop_euclidean_topology
+                  (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
+               (D3 - {P\<^sub>0})
+               (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f"
+  sorry
+
+(** from \<S>20 Theorem 2 (geotop.tex:4193)
+    LATEX VERSION: Let A be an arc in R^3, with Bd A = {P, Q}, such that A - {Q} is an
+      (infinite) polyhedron. Then R^3 - A is homeomorphic to R^3 - {Q}. **)
+theorem Theorem_GT_20_2:
+  fixes A :: "(real^3) set" and P Q :: "real^3"
+  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = A - {Q}"
+  shows "\<exists>h. top1_homeomorphism_on
+               (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
+               (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q})) h"
+  sorry
+
+(** from \<S>20: locally simply connected (geotop.tex:4243)
+    LATEX VERSION: Let U be a connected open set in R^3, and let Q \<in> closure U. Suppose that
+      for each open set V containing Q there is an open set W such that (1) Q \<in> W \<subseteq> V and
+      (2) every closed path in W \<inter> U is contractible in V \<inter> U. Then U is locally simply
+      connected at Q. **)
+definition geotop_locally_simply_connected_at ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_locally_simply_connected_at U T Q \<longleftrightarrow>
+    U \<in> T \<and>
+    (\<forall>V\<in>T. Q \<in> V \<longrightarrow>
+       (\<exists>W\<in>T. Q \<in> W \<and> W \<subseteq> V \<and>
+         (\<forall>P\<^sub>0\<in>W \<inter> U. \<forall>p.
+             geotop_closed_path_on (W \<inter> U)
+               (subspace_topology (W \<inter> U) T (W \<inter> U)) P\<^sub>0 p \<longrightarrow>
+             geotop_path_equiv (V \<inter> U)
+               (subspace_topology (V \<inter> U) T (V \<inter> U)) P\<^sub>0 p (\<lambda>t. P\<^sub>0))))"
+
+(** from \<S>20 Theorem 3 (geotop.tex:4245)
+    LATEX VERSION: Let A be a tame arc in R^3, and let Q \<in> Bd A. Then R^3 - A is locally
+      simply connected at Q. Similarly, if S is a tame 2-sphere in R^3, then each component
+      of R^3 - S is locally simply connected at each point Q of S. **)
+theorem Theorem_GT_20_3:
+  shows "(\<forall>A :: (real^3) set. \<forall>Q.
+           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+           geotop_is_tame A \<and>
+           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
+           geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q) \<and>
+         (\<forall>S :: (real^3) set. \<forall>Q\<in>S.
+           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+           geotop_is_tame S \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
+                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))"
+  sorry
+
+(** from \<S>20 Theorem 4 (geotop.tex:4338)
+    LATEX VERSION: A_2 is wild.
+    Here A_2 is the Fox-Artin arc from S to Q, a portion of the Fox-Artin wild arc. **)
+theorem Theorem_GT_20_4:
+  shows "\<exists>A2 :: (real^3) set.
+           geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+           (\<exists>Q\<in>geotop_frontier UNIV geotop_euclidean_topology A2.
+              \<not> geotop_locally_simply_connected_at (UNIV - A2) geotop_euclidean_topology Q) \<and>
+           geotop_is_wild A2"
+  sorry
+
+(** from \<S>20 Theorem 5 (Fox-Artin) (geotop.tex:4400)
+    LATEX VERSION: There is a wild 2-sphere S^2 in R^3 such that (1) S^2 is locally polyhedral
+      except at one point Q and (2) R^3 - S^2 is homeomorphic to R^3 - S^2 (standard). **)
+theorem Theorem_GT_20_5_Fox_Artin:
+  shows "\<exists>S2 :: (real^3) set.
+           geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
+           geotop_is_wild S2 \<and>
+           (\<exists>Q\<in>S2. \<forall>P\<in>S2. P \<noteq> Q \<longrightarrow>
+              (\<exists>N\<in>geotop_euclidean_topology. P \<in> N \<and>
+                 (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S2 \<inter> N))) \<and>
+           (\<exists>(Sstd :: (real^3) set) h.
+              geotop_is_n_sphere Sstd (subspace_topology UNIV geotop_euclidean_topology Sstd) 2 \<and>
+              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = Sstd) \<and>
+              top1_homeomorphism_on (UNIV - S2)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - S2))
+                (UNIV - Sstd)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - Sstd)) h)"
+  sorry
+
+(** from \<S>20: semi-locally tame and locally tame (geotop.tex:4406)
+    LATEX VERSION: Let M be a triangulable set in a triangulated n-manifold K. Suppose that
+      there is an open set U, containing M, and a homeomorphism h: U \<rightarrow> |K| such that h(M)
+      is a polyhedron. Then M is semi-locally tamely imbedded (or semi-locally tame.)
+      Let P \<in> M, and suppose that there is a closed neighborhood N of P and a homeomorphism
+      h: N \<rightarrow> |K| such that h(N \<inter> M) is a polyhedron. Then M is locally tame at P. If M is
+      locally tame at each point of M, then M is locally tame. **)
+definition geotop_is_semi_locally_tame ::
+  "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_semi_locally_tame M \<longleftrightarrow>
+    geotop_is_triangulable M \<and>
+    (\<exists>(U::'a set) (h::'a \<Rightarrow> 'a).
+           U \<in> geotop_euclidean_topology \<and> M \<subseteq> U \<and>
+           top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h \<and>
+           (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = h ` M))"
+
+definition geotop_is_locally_tame_at ::
+  "'a::real_normed_vector set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_is_locally_tame_at M P \<longleftrightarrow>
+    P \<in> M \<and>
+    (\<exists>(N::'a set) (h::'a \<Rightarrow> 'a).
+           closedin_on UNIV geotop_euclidean_topology N \<and>
+           P \<in> geotop_top_interior UNIV geotop_euclidean_topology N \<and>
+           top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+             (h ` N) (subspace_topology UNIV geotop_euclidean_topology (h ` N)) h \<and>
+           (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = h ` (N \<inter> M)))"
+
+definition geotop_is_locally_tame ::
+  "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_locally_tame M \<longleftrightarrow> (\<forall>P\<in>M. geotop_is_locally_tame_at M P)"
+
 end
