@@ -3254,4 +3254,150 @@ theorem Theorem_GT_17_12_PL_Schoenflies:
   shows "geotop_is_simply_imbedded S"
   sorry
 
+section \<open>\<S>18 The Antoine set\<close>
+
+(** from \<S>18: circular solid torus (geotop.tex:3742)
+    LATEX VERSION: Let T_1 be the solid of revolution of a circular closed plane region
+      about a line in the same plane, not intersecting it. Such a set is called a circular
+      solid torus. A set homeomorphic to a circular solid torus is called a solid torus. **)
+definition geotop_is_circular_solid_torus :: "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_circular_solid_torus T \<longleftrightarrow>
+    geotop_is_solid_torus T"
+
+(** from \<S>18: Antoine construction T_n (geotop.tex:3742-3787)
+    LATEX VERSION: In the interior of T_1, form a set T_2 which is the union of a finite
+      collection of circular solid tori, linked in cyclic order. The number of components is
+      k, with k \<ge> 4. Inductively, given T_n (union of k^(n-1) disjoint tori), for each
+      component C_i let \<phi>_i be a similarity T_1 \<leftrightarrow> C_i, and let T_{n+1} = \<union> \<phi>_i(T_2). Define
+      Q = \<inter> T_n. **)
+definition geotop_antoine_chain ::
+  "nat \<Rightarrow> (real^3) set \<Rightarrow> (real^3) set \<Rightarrow> (nat \<Rightarrow> (real^3) set) \<Rightarrow> bool" where
+  "geotop_antoine_chain k T1 T2 T \<longleftrightarrow>
+    k \<ge> 4 \<and>
+    geotop_is_circular_solid_torus T1 \<and>
+    T 1 = T1 \<and>
+    T 2 = T2 \<and>
+    (\<forall>n. T (Suc n) \<subseteq> T n) \<and>
+    (\<forall>n\<ge>1. \<exists>Cs. finite Cs \<and> card Cs = k^(n-1) \<and>
+               (\<forall>C\<in>Cs. geotop_is_circular_solid_torus C) \<and>
+               (\<forall>C1\<in>Cs. \<forall>C2\<in>Cs. C1 \<noteq> C2 \<longrightarrow> C1 \<inter> C2 = {}) \<and>
+               T n = \<Union>Cs)"
+
+definition geotop_antoine_set ::
+  "nat \<Rightarrow> (real^3) set \<Rightarrow> (real^3) set \<Rightarrow> (nat \<Rightarrow> (real^3) set) \<Rightarrow> (real^3) set" where
+  "geotop_antoine_set k T1 T2 T = (\<Inter>n\<in>{m. m \<ge> 1}. T n)"
+
+(** from \<S>18 Theorem 1 (geotop.tex:3793)
+    LATEX VERSION: Let the components C_i and the spanning 2-cells D_i (i \<le> k) be as in the
+      definition of T_2. Then Bd T_1 is a retract of the set
+      T_1 - [\<union>_i C_i \<union> \<union>_i D_i]. **)
+theorem Theorem_GT_18_1:
+  fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
+  fixes Cs Ds :: "(real^3) set set"
+  assumes "geotop_antoine_chain k T1 T2 T"
+  assumes "finite Cs" and "card Cs = k" and "T2 = \<Union>Cs"
+  assumes "finite Ds" and "card Ds = k"
+  assumes "\<forall>D\<in>Ds. \<exists>C\<in>Cs. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                          \<and> geotop_frontier UNIV geotop_euclidean_topology D
+                              \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C"
+  shows "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)"
+  sorry
+
+(** from \<S>18 Theorem 2 (geotop.tex:3800)
+    LATEX VERSION: Let p be a closed path in R^3 - T_1. If p \<cong> e in R^3 - T_2, then
+      p \<cong> e in R^3 - T_1. **)
+theorem Theorem_GT_18_2:
+  fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
+  fixes p :: "real \<Rightarrow> real^3" and P\<^sub>0 :: "real^3"
+  assumes "geotop_antoine_chain k T1 T2 T"
+  assumes "P\<^sub>0 \<in> UNIV - T1"
+  assumes "geotop_closed_path_on (UNIV - T1)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) P\<^sub>0 p"
+  assumes "geotop_path_equiv (UNIV - T2)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - T2))
+             P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "geotop_path_equiv (UNIV - T1)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  sorry
+
+(** from \<S>18 Theorem 3 (geotop.tex:3905)
+    LATEX VERSION: Let p be a closed path in R^3 - T_1, and suppose that p \<cong> e in R^3 - Q.
+      Then p \<cong> e in R^3 - T_1. **)
+theorem Theorem_GT_18_3:
+  fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
+  fixes p :: "real \<Rightarrow> real^3" and P\<^sub>0 :: "real^3"
+  assumes "geotop_antoine_chain k T1 T2 T"
+  assumes "P\<^sub>0 \<in> UNIV - T1"
+  assumes "geotop_closed_path_on (UNIV - T1)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) P\<^sub>0 p"
+  assumes "geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (UNIV - geotop_antoine_set k T1 T2 T))
+             P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "geotop_path_equiv (UNIV - T1)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  sorry
+
+(** from \<S>18 Theorem 4 (geotop.tex:3927)
+    LATEX VERSION: R^3 - Q is not simply connected. **)
+theorem Theorem_GT_18_4:
+  fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
+  fixes P\<^sub>0 :: "real^3"
+  assumes "geotop_antoine_chain k T1 T2 T"
+  assumes "P\<^sub>0 \<in> UNIV - geotop_antoine_set k T1 T2 T"
+  shows "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
+  sorry
+
+(** from \<S>18 Theorem 5 (geotop.tex:3930)
+    LATEX VERSION: There are Cantor sets C_1 and C_2 in R^3 such that no homeomorphism
+      C_1 \<leftrightarrow> C_2 has a homeomorphic extension R^3 \<leftrightarrow> R^3. **)
+theorem Theorem_GT_18_5:
+  shows "\<exists>C1 C2 :: (real^3) set.
+           geotop_is_cantor_set C1 (subspace_topology UNIV geotop_euclidean_topology C1) \<and>
+           geotop_is_cantor_set C2 (subspace_topology UNIV geotop_euclidean_topology C2) \<and>
+           (\<exists>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                  C2 (subspace_topology UNIV geotop_euclidean_topology C2) h) \<and>
+           (\<forall>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                  C2 (subspace_topology UNIV geotop_euclidean_topology C2) h \<longrightarrow>
+              (\<nexists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology H \<and>
+                   (\<forall>P\<in>C1. H P = h P)))"
+  sorry
+
+(** from \<S>18 Theorem 6 (geotop.tex:3934)
+    LATEX VERSION: Let U be a connected open set containing Q. Then there is a 2-sphere S
+      such that Q \<subseteq> S \<subseteq> U. **)
+theorem Theorem_GT_18_6:
+  fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
+  fixes U :: "(real^3) set"
+  assumes "geotop_antoine_chain k T1 T2 T"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  assumes "geotop_antoine_set k T1 T2 T \<subseteq> U"
+  shows "\<exists>S. geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+             geotop_antoine_set k T1 T2 T \<subseteq> S \<and> S \<subseteq> U"
+  sorry
+
+(** from \<S>18 Theorem 7 (Louis Antoine) (geotop.tex:3963)
+    LATEX VERSION: R^3 contains a wild 2-sphere. **)
+theorem Theorem_GT_18_7_Antoine_sphere:
+  shows "\<exists>S :: (real^3) set.
+           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+           geotop_is_wild S"
+  sorry
+
+(** from \<S>18 Theorem 8 (Louis Antoine) (geotop.tex:3966)
+    LATEX VERSION: R^3 contains a wild arc. **)
+theorem Theorem_GT_18_8_Antoine_arc:
+  shows "\<exists>A :: (real^3) set.
+           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+           geotop_is_wild A"
+  sorry
+
 end
