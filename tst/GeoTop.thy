@@ -1363,4 +1363,218 @@ theorem Theorem_GT_6_4:
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)"
   sorry
 
+
+section \<open>\<S>7 Abstract complexes and PL complexes\<close>
+
+subsection \<open>Abstract complexes\<close>
+
+(** from \<S>7: diagram \<Phi>(K) of a Euclidean complex (geotop.tex:1423)
+    LATEX VERSION: The diagram \<Phi>(K) is the set of all sets {v_0,...,v_k} where v_0 v_1 ... v_k \<in> K. **)
+definition geotop_diagram :: "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_diagram K = {V. \<exists>\<sigma>\<in>K. geotop_simplex_vertices \<sigma> V}"
+
+(** from \<S>7: abstract complex (geotop.tex:1434)
+    LATEX VERSION: A collection \<Phi> is an abstract complex if
+      (1) \<Phi> is a collection of nonempty finite sets,
+      (2) if \<phi> \<in> \<Phi> and \<phi>' is a nonempty subset of \<phi>, then \<phi>' \<in> \<Phi>,
+      (3) every element of \<Phi> intersects only a finite number of elements,
+      (4) the union of the elements is countable. **)
+definition geotop_is_abstract_complex :: "'a set set \<Rightarrow> bool" where
+  "geotop_is_abstract_complex \<Phi> \<longleftrightarrow>
+    (\<forall>\<phi>\<in>\<Phi>. finite \<phi> \<and> \<phi> \<noteq> {}) \<and>
+    (\<forall>\<phi>\<in>\<Phi>. \<forall>\<phi>'. \<phi>' \<noteq> {} \<and> \<phi>' \<subseteq> \<phi> \<longrightarrow> \<phi>' \<in> \<Phi>) \<and>
+    (\<forall>\<phi>\<in>\<Phi>. finite {\<psi>\<in>\<Phi>. \<psi> \<inter> \<phi> \<noteq> {}}) \<and>
+    top1_countable (\<Union>\<Phi>)"
+
+(** from \<S>7: finite-dimensional abstract complex (geotop.tex:1434)
+    LATEX VERSION: If \<Phi> satisfies (5) There is n such that every element has at most n+1
+      elements, then \<Phi> is finite-dimensional, and the least such n is dim \<Phi>. **)
+definition geotop_abstract_dim :: "'a set set \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_abstract_dim \<Phi> n \<longleftrightarrow>
+    (\<forall>\<phi>\<in>\<Phi>. card \<phi> \<le> n + 1) \<and>
+    (\<exists>\<phi>\<in>\<Phi>. card \<phi> = n + 1)"
+
+(** from \<S>7: abstract k-simplex, face (geotop.tex:1434) **)
+definition geotop_abstract_simplex :: "'a set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_abstract_simplex \<phi> \<Phi> \<longleftrightarrow> \<phi> \<in> \<Phi>"
+
+definition geotop_abstract_simplex_dim :: "'a set \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_abstract_simplex_dim \<phi> k \<longleftrightarrow> card \<phi> = k + 1"
+
+definition geotop_abstract_face :: "'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_abstract_face \<phi>' \<phi> \<longleftrightarrow> \<phi>' \<noteq> {} \<and> \<phi>' \<subseteq> \<phi>"
+
+(** from \<S>7: i-skeleton \<Phi>^i (geotop.tex:1434)
+    LATEX VERSION: The i-skeleton \<Phi>^i of \<Phi> is the set of all i-simplexes of \<Phi>
+      together with all their faces. **)
+definition geotop_abstract_skeleton :: "'a set set \<Rightarrow> nat \<Rightarrow> 'a set set" where
+  "geotop_abstract_skeleton \<Phi> i = {\<phi>\<in>\<Phi>. \<exists>k\<le>i. geotop_abstract_simplex_dim \<phi> k}"
+
+(** from \<S>7: isomorphism of abstract complexes (geotop.tex:1436)
+    LATEX VERSION: An isomorphism between abstract complexes \<Phi> and \<Psi> is a bijection
+      f: \<Phi>^0 \<leftrightarrow> \<Psi>^0 such that \<phi> \<in> \<Phi> iff f(\<phi>) \<in> \<Psi>. **)
+definition geotop_abstract_iso :: "'a set set \<Rightarrow> 'b set set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_abstract_iso \<Phi> \<Psi> f \<longleftrightarrow>
+    bij_betw f (\<Union>\<Phi>) (\<Union>\<Psi>) \<and>
+    (\<forall>\<phi>. \<phi> \<subseteq> \<Union>\<Phi> \<and> \<phi> \<noteq> {} \<longrightarrow> (\<phi> \<in> \<Phi> \<longleftrightarrow> f ` \<phi> \<in> \<Psi>))"
+
+(** from \<S>7 Theorem 1 (geotop.tex:1443)
+    LATEX VERSION: Let \<Phi> be a finite-dimensional abstract complex with dim \<Phi> \<le> n. Then
+      there is a Euclidean complex K in R^{2n+1} such that \<Phi>(K) is isomorphic to \<Phi>. **)
+theorem Theorem_GT_7_1:
+  fixes \<Phi> :: "'a set set"
+  assumes "geotop_is_abstract_complex \<Phi>"
+  assumes "geotop_abstract_dim \<Phi> n"
+  shows "\<exists>(K::(real^'b::finite) set set) (f::'a \<Rightarrow> real^'b).
+           geotop_is_complex K \<and>
+           geotop_abstract_iso \<Phi> (geotop_diagram K) f"
+  sorry
+
+(** from \<S>7: Euclidean realization (geotop.tex:1473)
+    LATEX VERSION: If \<Phi> is an abstract complex and K a Euclidean complex such that \<Phi> and
+      \<Phi>(K) are isomorphic, then K is called a Euclidean realization of \<Phi>. **)
+definition geotop_euclidean_realization ::
+  "'a set set \<Rightarrow> 'b::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_euclidean_realization \<Phi> K \<longleftrightarrow>
+    geotop_is_complex K \<and> (\<exists>f. geotop_abstract_iso \<Phi> (geotop_diagram K) f)"
+
+subsection \<open>Coordinate mappings, PL simplexes, PL complexes\<close>
+
+(** from \<S>7: coordinate mapping (geotop.tex:1475)
+    LATEX VERSION: Let [X, \<O>] be a topological space, and let h be a homeomorphism of a
+      Euclidean simplex into X. h is called a coordinate mapping. **)
+definition geotop_coordinate_mapping ::
+  "'a::real_normed_vector set \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_coordinate_mapping \<sigma> X TX h \<longleftrightarrow>
+    geotop_is_simplex \<sigma> \<and> is_topology_on X TX \<and>
+    h ` \<sigma> \<subseteq> X \<and>
+    top1_homeomorphism_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+       (h ` \<sigma>) (subspace_topology X TX (h ` \<sigma>)) h"
+
+(** from \<S>7: equivalence of coordinate mappings (geotop.tex:1510)
+    LATEX VERSION: Let g and h be coordinate mappings into X. g \<sim> h if |g| = |h| and
+      h^{-1}(g) is a simplicial homeomorphism. **)
+definition geotop_coord_equiv ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
+  "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longleftrightarrow>
+    g ` \<sigma>\<^sub>g = h ` \<sigma>\<^sub>h \<and>
+    (\<exists>\<phi>::'a\<Rightarrow>'a. top1_homeomorphism_on \<sigma>\<^sub>g (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                  \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<phi>
+         \<and> geotop_simplicial_on \<sigma>\<^sub>g \<phi> \<sigma>\<^sub>h
+         \<and> (\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<phi> x)))"
+
+(** from \<S>7 Theorem 2 (geotop.tex:1520)
+    LATEX VERSION: For each [X, \<O>], \<sim> is an equivalence relation on C(X). **)
+text \<open>We state this inline as a part of the coordinate equivalence definition; it can be
+  formalized as three separate theorems about reflexivity, symmetry, transitivity.\<close>
+
+(** from \<S>7 Theorem 3 (geotop.tex:1523)
+    LATEX VERSION: Given g \<sim> h, S \<subset> |g| = |h|. If S forms a face of g, then S forms a face of h. **)
+theorem Theorem_GT_7_3:
+  fixes \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a::real_normed_vector set" and g h :: "'a \<Rightarrow> 'b::real_normed_vector"
+  fixes S :: "'b set"
+  assumes "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+  assumes "\<exists>\<tau>. geotop_is_face \<tau> \<sigma>\<^sub>g \<and> S = g ` \<tau>"
+  shows "\<exists>\<rho>. geotop_is_face \<rho> \<sigma>\<^sub>h \<and> S = h ` \<rho>"
+  sorry
+
+(** from \<S>7 Theorem 4 (geotop.tex:1526)
+    LATEX VERSION: Equivalent coordinate mappings induce the same barycentric coordinate
+      systems in their common image. **)
+text \<open>Stated implicitly: the coordinate-system function depends only on the equivalence class.
+  A full Isabelle formalization would introduce a barycentric coordinate function; we omit
+  the detail here as it is a consequence of the definitions.\<close>
+
+(** from \<S>7: PL simplex (as equivalence class) (geotop.tex:1547)
+    LATEX VERSION: For each h \<in> C(X), [h] = {g | g \<in> C(X) and g \<sim> h}. The [h] are called
+      PL simplexes. **)
+text \<open>A PL simplex is represented by a pair (domain simplex, coordinate mapping) up to
+  equivalence. We use the pair directly in the PL complex definition below.\<close>
+
+definition geotop_PL_simplex_support ::
+  "'a::real_normed_vector set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> 'b set" where
+  "geotop_PL_simplex_support \<sigma> h = h ` \<sigma>"
+
+definition geotop_PL_simplex_dim ::
+  "'a::real_normed_vector set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_PL_simplex_dim \<sigma> h k \<longleftrightarrow> geotop_simplex_dim \<sigma> k"
+
+(** from \<S>7: PL complex in a topological space (geotop.tex:1556)
+    LATEX VERSION: A PL complex in [X, \<O>] is a countable collection \<K> of PL simplexes
+      satisfying: (K.1) If [h] \<in> \<K>, every face of [h] is in \<K>;
+      (K.2) If [g], [h] \<in> \<K> with |[g]| \<inter> |[h]| = S \<noteq> \<emptyset>, there are faces \<tau>_g, \<tau>_h with
+        g(\<tau>_g) = h(\<tau>_h) = S and [g|\<tau>_g] = [h|\<tau>_h];
+      (K.3) Every |[h]| has a neighborhood intersecting only finitely many |[g]|. **)
+text \<open>We represent a PL complex as a set of pairs (domain simplex, coordinate mapping).\<close>
+definition geotop_PL_complex ::
+  "'b set \<Rightarrow> 'b set set \<Rightarrow> (('a::real_normed_vector set \<times> ('a \<Rightarrow> 'b)) set) \<Rightarrow> bool" where
+  "geotop_PL_complex X TX \<K> \<longleftrightarrow>
+    is_topology_on X TX \<and>
+    top1_countable \<K> \<and>
+    (\<forall>(\<sigma>, h)\<in>\<K>. geotop_coordinate_mapping \<sigma> X TX h) \<and>
+    (\<forall>(\<sigma>, h)\<in>\<K>. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> (\<tau>, h) \<in> \<K>) \<and>
+    (\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
+       (\<exists>\<tau>\<^sub>g \<tau>\<^sub>h. geotop_is_face \<tau>\<^sub>g \<sigma>\<^sub>g \<and> geotop_is_face \<tau>\<^sub>h \<sigma>\<^sub>h \<and>
+             g ` \<tau>\<^sub>g = h ` \<tau>\<^sub>h \<and> g ` \<tau>\<^sub>g = g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<and>
+             geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)) \<and>
+    (\<forall>(\<sigma>, h)\<in>\<K>. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
+       finite {(\<sigma>', h')\<in>\<K>. h' ` \<sigma>' \<inter> U \<noteq> {}})"
+
+(** from \<S>7: support of PL complex, i-skeleton, finite-dimensionality (geotop.tex:1563) **)
+definition geotop_PL_support ::
+  "(('a::real_normed_vector set \<times> ('a \<Rightarrow> 'b)) set) \<Rightarrow> 'b set" where
+  "geotop_PL_support \<K> = \<Union>{h ` \<sigma> |\<sigma> h. (\<sigma>, h) \<in> \<K>}"
+
+definition geotop_PL_skeleton ::
+  "(('a::real_normed_vector set \<times> ('a \<Rightarrow> 'b)) set) \<Rightarrow> nat \<Rightarrow>
+   (('a set \<times> ('a \<Rightarrow> 'b)) set)" where
+  "geotop_PL_skeleton \<K> i = {(\<sigma>, h)\<in>\<K>. \<exists>k\<le>i. geotop_simplex_dim \<sigma> k}"
+
+definition geotop_PL_finite_dim ::
+  "(('a::real_normed_vector set \<times> ('a \<Rightarrow> 'b)) set) \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_PL_finite_dim \<K> n \<longleftrightarrow>
+    (\<forall>(\<sigma>, h)\<in>\<K>. \<exists>k\<le>n. geotop_simplex_dim \<sigma> k) \<and>
+    (\<exists>(\<sigma>, h)\<in>\<K>. geotop_simplex_dim \<sigma> n)"
+
+(** from \<S>7 Theorem 5 (geotop.tex:1569)
+    LATEX VERSION: Let \<K> be a finite-dimensional PL complex. Then there is a Euclidean
+      complex K such that there is a simplicial homeomorphism f: |K| \<leftrightarrow> |\<K>|. **)
+theorem Theorem_GT_7_5:
+  fixes X :: "'b set" and TX :: "'b set set"
+  fixes \<K> :: "(('a::real_normed_vector set) \<times> ('a \<Rightarrow> 'b)) set"
+  assumes "geotop_PL_complex X TX \<K>"
+  assumes "geotop_PL_finite_dim \<K> n"
+  shows "\<exists>(K::'a set set) (f::'a \<Rightarrow> 'b).
+           geotop_is_complex K \<and>
+           top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             (geotop_PL_support \<K>) (subspace_topology X TX (geotop_PL_support \<K>)) f
+         \<and> \<K> = {(\<sigma>, \<lambda>x\<in>\<sigma>. f x) |\<sigma>. \<sigma> \<in> K}"
+  sorry
+
+(** from \<S>7 Theorem 6 (geotop.tex:1593)
+    LATEX VERSION: Let \<K>_1 and \<K>_2 be PL complexes in the same space [X, \<O>]. Suppose that
+      if [g] \<in> \<K>_1, [h] \<in> \<K>_2, and S = |[g]| \<inter> |[h]| \<noteq> \<emptyset>, there are faces \<tau>_g, \<tau>_h with
+      g(\<tau>_g) = h(\<tau>_h) = S and [g|\<tau>_g] = [h|\<tau>_h]. Then \<K>_1 \<union> \<K>_2 is a PL complex. **)
+theorem Theorem_GT_7_6:
+  fixes X :: "'b set" and TX :: "'b set set"
+  fixes \<K>\<^sub>1 \<K>\<^sub>2 :: "(('a::real_normed_vector set) \<times> ('a \<Rightarrow> 'b)) set"
+  assumes "geotop_PL_complex X TX \<K>\<^sub>1"
+  assumes "geotop_PL_complex X TX \<K>\<^sub>2"
+  assumes "\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
+             (\<exists>\<tau>\<^sub>g \<tau>\<^sub>h. geotop_is_face \<tau>\<^sub>g \<sigma>\<^sub>g \<and> geotop_is_face \<tau>\<^sub>h \<sigma>\<^sub>h \<and>
+                 g ` \<tau>\<^sub>g = h ` \<tau>\<^sub>h \<and> g ` \<tau>\<^sub>g = g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<and>
+                 geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)"
+  shows "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)"
+  sorry
+
+(** from \<S>7: PL star (geotop.tex:1596)
+    LATEX VERSION: In a PL complex \<K>, for each vertex v, St v is the set of all elements [h]
+      of \<K> such that |[h]| contains v, together with all faces. **)
+definition geotop_PL_star ::
+  "(('a::real_normed_vector set \<times> ('a \<Rightarrow> 'b)) set) \<Rightarrow> 'b \<Rightarrow>
+   (('a set \<times> ('a \<Rightarrow> 'b)) set)" where
+  "geotop_PL_star \<K> v =
+    {(\<tau>, h')\<in>\<K>. \<exists>\<sigma> h. (\<sigma>, h)\<in>\<K> \<and> v \<in> h ` \<sigma> \<and> (geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>)}"
+
 end
