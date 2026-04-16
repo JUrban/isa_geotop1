@@ -2556,4 +2556,182 @@ theorem Theorem_GT_13_7:
              (\<forall>P\<in>M. F P = f P)"
   sorry
 
+section \<open>\<S>14 The fundamental group (summary)\<close>
+
+(** from \<S>14: closed path (geotop.tex:2667)
+    LATEX VERSION: Let P_0 \<in> X, and let CP(X, P_0) be the set of all closed paths
+      p: [0,1] \<rightarrow> X, 0 \<mapsto> P_0, 1 \<mapsto> P_0. P_0 is the base point. **)
+definition geotop_closed_path_on ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) \<Rightarrow> bool" where
+  "geotop_closed_path_on X T P\<^sub>0 p \<longleftrightarrow>
+    geotop_path_on X T 0 1 p \<and> p 0 = P\<^sub>0 \<and> p 1 = P\<^sub>0"
+
+definition geotop_CP ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) set" where
+  "geotop_CP X T P\<^sub>0 = {p. geotop_closed_path_on X T P\<^sub>0 p}"
+
+(** from \<S>14: path multiplication (geotop.tex:2673)
+    LATEX VERSION: In CP(X, P_0) we multiply paths by shrinking them and laying them end to
+      end. pq(t) = p(2t) for 0 \<le> t \<le> 1/2, = q(2t-1) for 1/2 \<le> t \<le> 1. **)
+definition geotop_path_mult ::
+  "(real \<Rightarrow> 'a) \<Rightarrow> (real \<Rightarrow> 'a) \<Rightarrow> (real \<Rightarrow> 'a)" where
+  "geotop_path_mult p q = (\<lambda>t. if t \<le> 1/2 then p (2 * t) else q (2 * t - 1))"
+
+(** from \<S>14: path equivalence (geotop.tex:2681)
+    LATEX VERSION: Let p, q \<in> CP(X, P_0), let D be the unit square [0,1]^2 in R^2, and suppose
+      that there is a mapping f: D \<rightarrow> X, such that f(t, 0) = p(t), f(t, 1) = q(t),
+      f(0, y) = f(1, y) = P_0 for every y in [0,1]. Then p and q are equivalent, p \<cong> q. **)
+definition geotop_path_equiv ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) \<Rightarrow> (real \<Rightarrow> 'a) \<Rightarrow> bool" where
+  "geotop_path_equiv X T P\<^sub>0 p q \<longleftrightarrow>
+    geotop_closed_path_on X T P\<^sub>0 p \<and>
+    geotop_closed_path_on X T P\<^sub>0 q \<and>
+    (\<exists>(f::real \<times> real \<Rightarrow> 'a).
+         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = q t) \<and>
+         (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0) \<and>
+         (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> X))"
+
+(** from \<S>14 Theorem 1 (geotop.tex:2706)
+    LATEX VERSION: \<cong> is an equivalence relation. **)
+theorem Theorem_GT_14_1:
+  fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
+  shows "equivp (geotop_path_equiv X T P\<^sub>0)"
+  sorry
+
+(** from \<S>14 Theorem 2 (geotop.tex:2707)
+    LATEX VERSION: If p \<cong> p' and q \<cong> q', then pq \<cong> p'q'. **)
+theorem Theorem_GT_14_2:
+  assumes "geotop_path_equiv X T P\<^sub>0 p p'"
+  assumes "geotop_path_equiv X T P\<^sub>0 q q'"
+  shows "geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')"
+  sorry
+
+(** from \<S>14: fundamental group (geotop.tex:2708)
+    LATEX VERSION: \<pi>(X, P_0) = {[p] | p \<in> CP(X, P_0)} with multiplication induced by path
+      multiplication. **)
+definition geotop_pi_class ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) \<Rightarrow> (real \<Rightarrow> 'a) set" where
+  "geotop_pi_class X T P\<^sub>0 p = {q. geotop_path_equiv X T P\<^sub>0 p q}"
+
+definition geotop_pi ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) set set" where
+  "geotop_pi X T P\<^sub>0 =
+    {C. \<exists>p\<in>geotop_CP X T P\<^sub>0. C = geotop_pi_class X T P\<^sub>0 p}"
+
+definition geotop_pi_mult ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow>
+   (real \<Rightarrow> 'a) set \<Rightarrow> (real \<Rightarrow> 'a) set \<Rightarrow> (real \<Rightarrow> 'a) set" where
+  "geotop_pi_mult X T P\<^sub>0 C D =
+    (SOME E. \<exists>p q. p \<in> C \<and> q \<in> D \<and>
+       E = geotop_pi_class X T P\<^sub>0 (geotop_path_mult p q))"
+
+(** from \<S>14 Theorem 3 (geotop.tex:2715)
+    LATEX VERSION: [\<pi>(X, P_0), \<cdot>] is a group. **)
+theorem Theorem_GT_14_3:
+  fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
+  assumes "is_topology_on X T" and "P\<^sub>0 \<in> X"
+  shows "\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
+           geotop_pi_mult X T P\<^sub>0 e C = C \<and>
+           geotop_pi_mult X T P\<^sub>0 C e = C \<and>
+           (\<exists>D\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 C D = e \<and>
+              geotop_pi_mult X T P\<^sub>0 D C = e) \<and>
+           (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
+              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))"
+  sorry
+
+(** from \<S>14: simply connected (geotop.tex:2716)
+    LATEX VERSION: If \<pi>(X, P_0) = {[e]}, then X is simply connected. **)
+definition geotop_simply_connected ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_simply_connected X T P\<^sub>0 \<longleftrightarrow>
+    (\<forall>C\<in>geotop_pi X T P\<^sub>0. C = geotop_pi_class X T P\<^sub>0 (\<lambda>t. P\<^sub>0))"
+
+(** from \<S>14 Theorem 4 (geotop.tex:2718)
+    LATEX VERSION: Let P_0 and P_1 be points of X, and let p be a path from P_0 to P_1. Then
+      p induces an isomorphism p*: \<pi>(X, P_0) \<leftrightarrow> \<pi>(X, P_1), p*([q]) = [p^{-1} q p]. **)
+theorem Theorem_GT_14_4:
+  fixes X :: "'a set" and T :: "'a set set"
+  fixes P\<^sub>0 P\<^sub>1 :: 'a and p :: "real \<Rightarrow> 'a"
+  assumes "is_topology_on X T"
+  assumes "geotop_path_on X T 0 1 p" and "p 0 = P\<^sub>0" and "p 1 = P\<^sub>1"
+  shows "\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
+             (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+                \<phi> (geotop_pi_mult X T P\<^sub>0 C D) =
+                geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))"
+  sorry
+
+(** from \<S>14 Theorem 5 (geotop.tex:2735)
+    LATEX VERSION: Let [X, O] and [Y, O'] be pathwise connected spaces, let P_0 \<in> X, let
+      Q_0 \<in> Y, and let f be a mapping X \<rightarrow> Y, P_0 \<mapsto> Q_0. Then f induces a homomorphism
+      f*: \<pi>(X, P_0) \<rightarrow> \<pi>(Y, Q_0), f*([p]) = [f \<circ> p]. **)
+theorem Theorem_GT_14_5:
+  fixes X :: "'a set" and T :: "'a set set"
+  fixes Y :: "'b set" and T' :: "'b set set"
+  fixes P\<^sub>0 :: 'a and Q\<^sub>0 :: 'b and f :: "'a \<Rightarrow> 'b"
+  assumes "is_topology_on X T" and "is_topology_on Y T'"
+  assumes "top1_continuous_on X T Y T' f"
+  assumes "f P\<^sub>0 = Q\<^sub>0"
+  shows "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi Y T' Q\<^sub>0) \<and>
+             (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+                \<phi> (geotop_pi_mult X T P\<^sub>0 C D) =
+                geotop_pi_mult Y T' Q\<^sub>0 (\<phi> C) (\<phi> D)) \<and>
+             (\<forall>p\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 p)
+                = geotop_pi_class Y T' Q\<^sub>0 (f \<circ> p))"
+  sorry
+
+(** from \<S>14 Theorem 6 (geotop.tex:2751)
+    LATEX VERSION: Let P_0 \<in> U \<subseteq> R^3. For each p \<in> CP(U, P_0) there is a PL closed path p'
+      such that p \<cong> p' in \<pi>(U, P_0). **)
+theorem Theorem_GT_14_6:
+  fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p :: "real \<Rightarrow> real^3"
+  assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
+  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             P\<^sub>0 p"
+  shows "\<exists>p'. geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U)
+                P\<^sub>0 p' \<and>
+              geotop_is_broken_line (p' ` {0..1}) \<and>
+              geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U)
+                P\<^sub>0 p p'"
+  sorry
+
+(** from \<S>14 Theorem 7 (geotop.tex:2753)
+    LATEX VERSION: Let p and p' be PL paths in CP(U, P_0), where U is open in R^3 and
+      P_0 \<in> U. If p \<cong> p', then there is a PL mapping f: [0,1]^2 \<rightarrow> U, under which p \<cong> p'
+      in \<pi>(U, P_0). **)
+theorem Theorem_GT_14_7:
+  fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p p' :: "real \<Rightarrow> real^3"
+  assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
+  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p"
+  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p'"
+  assumes "geotop_is_broken_line (p ` {0..1})"
+  assumes "geotop_is_broken_line (p' ` {0..1})"
+  assumes "geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p p'"
+  shows "\<exists>f. (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> U) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p' t) \<and>
+             (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)"
+  sorry
+
+(** from \<S>14: canonical homomorphism (geotop.tex:2775)
+    LATEX VERSION: h: \<pi>(|K|, P_0) \<rightarrow> H_1(K), induced by p \<mapsto> Z^1(p). **)
+(** We state Theorem 8 without an explicit construction of H_1 and h. **)
+
+(** from \<S>14 Theorem 8 (geotop.tex:2783)
+    LATEX VERSION: For every complex K, the canonical homomorphism
+      h: \<pi>(|K|, P_0) \<rightarrow> H_1(K, Z) is surjective. Its kernel ker h is the commutator subgroup
+      of \<pi>(|K|, P_0). **)
+theorem Theorem_GT_14_8:
+  fixes K :: "'a::real_normed_vector set set" and P\<^sub>0 :: 'a
+  assumes "geotop_is_complex K"
+  assumes "\<exists>v\<in>geotop_complex_vertices K. v = P\<^sub>0"
+  shows "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> int).
+           (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              \<exists>n. h C = n) \<and>
+           True"
+  sorry
+
 end
