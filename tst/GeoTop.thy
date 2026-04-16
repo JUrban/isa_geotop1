@@ -4807,4 +4807,117 @@ theorem Theorem_GT_24_12:
                      N = geotop_regular_neighborhood K' L)"
   sorry
 
+section \<open>\<S>25 The Stallings proof of the Loop theorem of Papakyriakopoulos\<close>
+
+(** from \<S>25: loop (geotop.tex:5396)
+    LATEX VERSION: By a loop in a space X we mean a closed path without a distinguished base
+      point, that is, a mapping L: S^1 \<rightarrow> X. If L is a homeomorphism, then L is nonsingular. **)
+definition geotop_is_loop_in ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow>
+   ('b::real_normed_vector \<Rightarrow> 'a) \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow> bool" where
+  "geotop_is_loop_in X T L S1 TS1 \<longleftrightarrow>
+    geotop_is_n_sphere S1 TS1 1 \<and>
+    top1_continuous_map_on S1 TS1 X T L"
+
+definition geotop_is_nonsingular_loop ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow>
+   ('b::real_normed_vector \<Rightarrow> 'a) \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow> bool" where
+  "geotop_is_nonsingular_loop X T L S1 TS1 \<longleftrightarrow>
+    geotop_is_loop_in X T L S1 TS1 \<and>
+    top1_homeomorphism_on S1 TS1 (L ` S1)
+       (subspace_topology X T (L ` S1)) L"
+
+(** from \<S>25: singular 2-cell (geotop.tex:5396)
+    LATEX VERSION: By a singular 2-cell in X we mean a mapping D: \<Delta> \<rightarrow> X, where \<Delta> is a
+      polyhedral 2-cell. **)
+definition geotop_is_singular_2cell ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow>
+   ('b::real_normed_vector \<Rightarrow> 'a) \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow> bool" where
+  "geotop_is_singular_2cell X T D \<Delta> T\<Delta> \<longleftrightarrow>
+    geotop_is_n_cell \<Delta> T\<Delta> 2 \<and>
+    top1_continuous_map_on \<Delta> T\<Delta> X T D"
+
+(** from \<S>25: conjugacy class L(X, P_0) of a loop (geotop.tex:5420)
+    LATEX VERSION: Let L(X) = L(X, P_0) be the conjugacy class in \<pi>(X, P_0) that contains
+      every such element r_bar. **)
+definition geotop_loop_conjugacy_class ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow>
+   ('b::real_normed_vector \<Rightarrow> 'a) \<Rightarrow> 'b set \<Rightarrow> 'b set set \<Rightarrow>
+   (real \<Rightarrow> 'a) set set" where
+  "geotop_loop_conjugacy_class X T P\<^sub>0 L S1 TS1 =
+    {C\<in>geotop_pi X T P\<^sub>0.
+       \<exists>p Q\<^sub>0. Q\<^sub>0 \<in> S1 \<and>
+         geotop_closed_path_on X T P\<^sub>0 p \<and>
+         C = geotop_pi_class X T P\<^sub>0 p}"
+
+(** from \<S>25 Theorem 1 (Stallings) (geotop.tex:5428)
+    LATEX VERSION: Let K be a triangulated 3-manifold with boundary, and let M = |K|. Let B
+      be a component of Bd M, let P_0 \<in> B, and let N be a normal subgroup of
+      \<pi>(B) = \<pi>(B, P_0). Suppose that there is a PL singular 2-cell D: \<Delta> \<rightarrow> M, such that
+      L = Bd D is a loop in B, and L(B) \<inter> N = \<emptyset>. Then there is a nonsingular PL 2-cell
+      D_1: \<Delta> \<rightarrow> M with the same properties. **)
+theorem Theorem_GT_25_1_Stallings:
+  fixes K :: "(real^3) set set" and M B \<Delta> :: "(real^3) set"
+  fixes P\<^sub>0 :: "real^3" and N :: "(real \<Rightarrow> real^3) set set"
+  fixes D :: "real^3 \<Rightarrow> real^3"
+  fixes S1 :: "(real^3) set" and L :: "real^3 \<Rightarrow> real^3"
+  assumes "geotop_is_complex K" and "M = geotop_polyhedron K"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  assumes "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes "P\<^sub>0 \<in> B"
+  assumes "N \<subseteq> geotop_pi B (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0"
+  assumes "geotop_is_singular_2cell M (subspace_topology UNIV geotop_euclidean_topology M) D
+             \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>)"
+  assumes "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
+             S1 (subspace_topology UNIV geotop_euclidean_topology S1)"
+  assumes "geotop_loop_conjugacy_class B
+             (subspace_topology UNIV geotop_euclidean_topology B)
+             P\<^sub>0 L S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
+  shows "\<exists>D\<^sub>1 L\<^sub>1. geotop_is_singular_2cell M
+               (subspace_topology UNIV geotop_euclidean_topology M)
+               D\<^sub>1 \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
+               geotop_is_nonsingular_loop B
+                 (subspace_topology UNIV geotop_euclidean_topology B) L\<^sub>1
+                 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<and>
+               geotop_loop_conjugacy_class B
+                 (subspace_topology UNIV geotop_euclidean_topology B)
+                 P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
+  sorry
+
+(** from \<S>25 Theorem 2 (Loop theorem, first form; Papakyriakopoulos) (geotop.tex:5432)
+    LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary, and let
+      M = |K|. Let B be a component of Bd M, and suppose that there is a loop L in B such
+      that L is contractible in M but not in B. Then there is a polyhedral 2-cell \<Delta> in M
+      such that (1) Bd \<Delta> \<subseteq> B, (2) Bd \<Delta> = \<Delta> \<inter> Bd M, and (3) Bd \<Delta> is not contractible in B. **)
+theorem Theorem_GT_25_2_Loop_theorem:
+  fixes K :: "(real^3) set set" and M B :: "(real^3) set"
+  fixes L :: "real^3 \<Rightarrow> real^3" and S1 :: "(real^3) set"
+  assumes "geotop_is_orientable_3_manifold K" and "M = geotop_polyhedron K"
+  assumes "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  assumes "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
+             S1 (subspace_topology UNIV geotop_euclidean_topology S1)"
+  assumes "\<exists>P\<^sub>0\<in>B. \<forall>p. geotop_closed_path_on M
+             (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 p \<longrightarrow>
+             geotop_path_equiv M (subspace_topology UNIV geotop_euclidean_topology M)
+               P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  assumes "\<exists>P\<^sub>0\<in>B. \<exists>p. geotop_closed_path_on B
+             (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0 p \<and>
+             \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
+               P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "\<exists>\<Delta>. geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+             (\<exists>L\<^sub>\<Delta>. geotop_is_complex L\<^sub>\<Delta> \<and> geotop_polyhedron L\<^sub>\<Delta> = \<Delta>) \<and>
+             \<Delta> \<subseteq> M \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<subseteq> B \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta>
+               = \<Delta> \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+             (\<exists>P\<^sub>0\<in>geotop_frontier UNIV geotop_euclidean_topology \<Delta>. \<exists>p.
+                geotop_closed_path_on (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)) P\<^sub>0 p \<and>
+                \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
+                     P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
+  sorry
+
 end
