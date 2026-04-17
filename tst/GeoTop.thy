@@ -6222,14 +6222,6 @@ definition geotop_is_sphere_with_n_holes ::
        (\<forall>D1\<in>Ds. \<forall>D2\<in>Ds. D1 \<noteq> D2 \<longrightarrow> D1 \<inter> D2 = {}) \<and>
        M = S - \<Union>(geotop_top_interior UNIV geotop_euclidean_topology ` Ds))"
 
-definition geotop_is_sphere_with_n_handles ::
-  "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
-  "geotop_is_sphere_with_n_handles n M \<longleftrightarrow>
-    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
-    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
-    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
-    geotop_manifold_euler M = 2 - 2 * int n"
-
 definition geotop_is_mobius_band :: "'a::real_normed_vector set \<Rightarrow> bool" where
   "geotop_is_mobius_band M \<longleftrightarrow>
     top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
@@ -6238,6 +6230,27 @@ definition geotop_is_mobius_band :: "'a::real_normed_vector set \<Rightarrow> bo
        (subspace_topology UNIV geotop_euclidean_topology
           (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) 1 \<and>
     geotop_manifold_euler M = 0"
+
+(** Orientability via M\<ouml>bius-band exclusion (set-level). A 2-manifold M is
+    orientable iff it contains no M\<ouml>bius-band submanifold. This is Moise's
+    elementary characterization of orientability (does not need H\<^sub>2), and
+    distinguishes e.g. the torus (orientable, Euler 0) from the Klein bottle
+    (non-orientable, Euler 0). Used below to fix the bug whereby Klein bottle
+    satisfied both sphere-with-n-handles and sphere-with-n-crosscaps based on
+    Euler characteristic alone. **)
+definition geotop_set_orientable :: "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_set_orientable M \<longleftrightarrow> \<not> (\<exists>M\<^sub>0\<subseteq>M. geotop_is_mobius_band M\<^sub>0)"
+
+definition geotop_is_sphere_with_n_handles ::
+  "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_sphere_with_n_handles n M \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
+    geotop_manifold_euler M = 2 - 2 * int n \<and>
+    (\<comment> \<open>Orientability (via M\<ouml>bius-band exclusion); was missing, making torus
+         and Klein bottle both satisfy sphere-with-n-handles since both have
+         Euler 0.\<close> geotop_set_orientable M)"
 
 definition geotop_is_projective_plane ::
   "'a::real_normed_vector set \<Rightarrow> bool" where
@@ -6254,9 +6267,11 @@ definition geotop_is_klein_bottle ::
     geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
     geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
     geotop_manifold_euler M = 0 \<and>
-    \<not> (\<exists>T h. geotop_is_torus T \<and>
-           top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
-             T (subspace_topology UNIV geotop_euclidean_topology T) h)"
+    \<comment> \<open>Non-orientable (contains a M\<ouml>bius-band submanifold). This directly
+       distinguishes Klein bottle from torus; the previous \<not>(\<exists>T. is_torus T \<and>
+       M\<cong>T) clause used the weak is_torus predicate and was self-contradictory
+       (Klein bottle satisfied the weak is_torus def too).\<close>
+    \<not> geotop_set_orientable M"
 
 definition geotop_is_sphere_with_n_crosscaps ::
   "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
@@ -6264,7 +6279,12 @@ definition geotop_is_sphere_with_n_crosscaps ::
     top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
     geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
     geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
-    geotop_manifold_euler M = 2 - int n"
+    geotop_manifold_euler M = 2 - int n \<and>
+    (\<comment> \<open>For n \<ge> 1, M is non-orientable (attaching a M\<ouml>bius band embeds one as
+         a submanifold). For n = 0, M is the 2-sphere, which is orientable and
+         is also the unique sphere-with-0-handles; the two classes coincide at
+         n=0 as they should.\<close>
+     n \<ge> 1 \<longrightarrow> \<not> geotop_set_orientable M)"
 
 (** from \<S>21: orientable triangulated 2-manifold (geotop.tex:4616)
     LATEX VERSION: If |K| is a compact connected 2-manifold, then we have either H_2(K, Z) = 0
