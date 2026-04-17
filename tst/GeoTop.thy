@@ -5499,16 +5499,20 @@ theorem Theorem_GT_28_8:
                       (subspace_topology UNIV geotop_euclidean_topology S)
                       P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
   assumes "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
-  assumes "\<forall>P\<^sub>0\<in>\<Union>Js. \<exists>p. p ` {0..1} \<subseteq> \<Union>Js \<and>
-              geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+  assumes "\<exists>P\<^sub>0\<in>\<Union>Js. \<exists>p. p ` {0..1} \<subseteq> \<Union>Js \<and>
+              geotop_closed_path_on S
+                 (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
               (\<forall>q. geotop_closed_path_on S
                      (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
-                   (\<exists>n::int. True))"
-  shows "\<forall>J\<in>Js. \<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
-              geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+                geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
+                \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
+  shows "\<forall>J\<in>Js. \<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+              geotop_closed_path_on S
+                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
               (\<forall>q. geotop_closed_path_on S
                      (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
-                   (\<exists>n::int. True))"
+                geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
+                \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
   sorry
 
 (** from \<S>28 Theorem 9 (geotop.tex:5859)
@@ -5612,7 +5616,10 @@ theorem Theorem_GT_28_14:
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 g \<and>
            (\<forall>p. geotop_closed_path_on (UNIV - J)
                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p \<longrightarrow>
-                (\<exists>n::int. True))"
+                geotop_pi_class (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p
+                \<in> geotop_pi (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)"
   sorry
 
 (** from \<S>28 Theorem 15 (geotop.tex:5914)
@@ -5940,8 +5947,10 @@ theorem Theorem_GT_30_8:
   shows "\<exists>p. geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S)
                P\<^sub>0 p \<and>
              p ` {0..1} = J \<and>
-             (\<forall>C\<in>geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0.
-                \<exists>n::int. True)"
+             (\<forall>q. geotop_closed_path_on S
+                    (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
+                  geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
+                  \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
   sorry
 
 section \<open>\<S>31 Canonical configurations; dual cells; pseudo-cells\<close>
@@ -5993,7 +6002,10 @@ theorem Theorem_GT_31_2:
              (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 p \<and>
            (\<forall>q. geotop_closed_path_on (S'' j)
                   (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q \<longrightarrow>
-                (\<exists>n::int. True))"
+                geotop_pi_class (S'' j)
+                  (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q
+                \<in> geotop_pi (S'' j)
+                  (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0)"
   sorry
 
 (** from \<S>31 Theorem 3 (geotop.tex:6282)
