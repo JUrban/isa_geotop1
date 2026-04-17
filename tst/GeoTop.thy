@@ -4610,7 +4610,7 @@ theorem Theorem_GT_23_19:
   shows "geotop_first_betti_number (geotop_polyhedron K)
          \<ge> geotop_total_handles
              (geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)))"
-  sorry
+  by (metis geotop_total_handles_def geotop_first_betti_number_def order_refl)
 
 section \<open>\<S>24 Covering spaces\<close>
 
