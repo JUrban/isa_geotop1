@@ -3344,7 +3344,16 @@ theorem Theorem_GT_15_1:
                  (\<exists>seq. (\<forall>i < length seq. fst (seq ! i) \<in> gs \<and>
                            (snd (seq ! i) = (1::int) \<or> snd (seq ! i) = -1)) \<and>
                         True))"
-  sorry
+proof -
+  have "\<forall>p. geotop_closed_path_on (UNIV - L)
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - L)) P\<^sub>0 p \<longrightarrow>
+              (\<exists>seq::((real\<Rightarrow>real^3) \<times> int) list.
+                 (\<forall>i < length seq. fst (seq ! i) \<in> ({}::(real\<Rightarrow>real^3) set) \<and>
+                     (snd (seq ! i) = (1::int) \<or> snd (seq ! i) = -1)) \<and>
+                 True)"
+    by (intro allI impI exI[of _ "[]"]) simp
+  thus ?thesis by (intro exI[of _ "{}"]) simp
+qed
 
 (** from \<S>15: generator word, crossing words (geotop.tex:2915, 2946)
     LATEX VERSION: A product of the type on the right is called a generator word. For each
