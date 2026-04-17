@@ -528,7 +528,8 @@ theorem Theorem_GT_1_8:
   assumes "M \<subseteq> X" "f ` M = N"
   assumes "top1_connected_on M (subspace_topology X TX M)"
   shows "top1_connected_on N (subspace_topology Y TY N)"
-  sorry
+  by (metis Lemma_23_1 Theorem_23_5 assms(2,3,4,5,6)
+    top1_continuous_map_on_restrict_domain_simple)
 
 (** from \<S>1 Theorem 9 (geotop.tex:375)
     LATEX VERSION: Every closed interval in R is connected. **)
