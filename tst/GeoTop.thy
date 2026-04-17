@@ -4275,14 +4275,53 @@ theorem Theorem_GT_9_5:
     LATEX VERSION: Let J be a 1-sphere in R^2, with interior I. Then \<bar>I\<close> is a 2-cell. **)
 theorem Theorem_GT_9_6_Schoenflies:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
   shows "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and> I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
                 \<and> geotop_bounded_R2 I) \<and>
            geotop_is_n_cell
              (closure_on UNIV geotop_euclidean_topology I)
              (subspace_topology UNIV geotop_euclidean_topology
                 (closure_on UNIV geotop_euclidean_topology I)) 2"
-  sorry
+  (** Moise proof (geotop.tex:1900). Let G_i be arc decompositions of J from
+      Theorem 9.3 with diameters going to 0. Let H_i be linearly accessible
+      intervals from Theorem 9.4. Per arc g in G_1, pick accessible intervals
+      v_i v_i' and a broken line b_g from Theorem 9.5. Union of the b_g with
+      accessibility intervals forms a polygon J_0 with J in its exterior.
+      C_0 = closure of interior of J_0 is a 2-cell by Theorem 3.6.
+      Recursively at level i, for each h in G_{i+1} contained in g in G_i,
+      build broken line b_h and cell C_g for finer polygons.
+      Ibar = C_0 union all union(C_i) exhausts the interior.
+      Copy configuration into the unit disk B_2 via the homeo J to unit circle,
+      annular regions A_i, and radial joins. Extend boundary PLH to 2-cells
+      via Theorem 5.6. Continuity on J via nested neighborhood argument. **)
+proof -
+  (** Step 1: arc decompositions Gs from Theorem 9.3. **)
+  obtain Gs :: "nat \<Rightarrow> (real^2) set set" where
+    hGs: "\<forall>i. finite (Gs i)"
+    sorry
+  (** Step 2: accessible linear intervals Hs from Theorem 9.4. **)
+  obtain Hs :: "nat \<Rightarrow> ((real^2) \<times> (real^2)) set" where
+    hHs: "\<forall>i. finite (Hs i)"
+    sorry
+  (** Step 3: 2-cell collections Cs at each level with shrinking diameters. **)
+  obtain Cs :: "nat \<Rightarrow> (real^2) set set" where
+    hCs: "\<forall>i. \<forall>C\<in>Cs i.
+            geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2"
+    sorry
+  (** Step 4: base 2-cell C0 (closure of interior of polygon J_0) via Theorem 3.6. **)
+  obtain C0 :: "(real^2) set" where
+    hC0: "geotop_is_n_cell C0 (subspace_topology UNIV geotop_euclidean_topology C0) 2"
+    sorry
+  (** Step 5: Ibar = C_0 union all union-C_i equals closure of polygon interior. **)
+  define Ibar :: "(real^2) set" where "Ibar = C0 \<union> (\<Union>i. \<Union>(Cs i))"
+  have hIbar_eq: "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    sorry
+  (** Step 6: use copy-in-B2 construction and Theorem 5.6 to assemble homeo. **)
+  have hIbar_cell: "geotop_is_n_cell Ibar
+                      (subspace_topology UNIV geotop_euclidean_topology Ibar) 2"
+    sorry
+  show ?thesis sorry
+qed
 
 
 section \<open>\<S>10 Tame imbedding in $\mathbf{R}^2$\<close>
