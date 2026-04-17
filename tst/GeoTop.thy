@@ -10555,7 +10555,7 @@ proof -
          of K); their union is a triangulation of C_1 \<union> C_2. **)
   have h_compat_triang:
     "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C1 \<union> C2" sorry
-  show ?thesis sorry
+  show ?thesis using h_sphere_bounds_3cell h_compat_triang by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 12 (geotop.tex:5062)
