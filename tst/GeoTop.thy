@@ -1034,7 +1034,19 @@ theorem Theorem_GT_1_9:
   assumes "a \<le> b"
   shows "top1_connected_on {t. a \<le> t \<and> t \<le> b}
            (subspace_topology UNIV geotop_euclidean_topology {t. a \<le> t \<and> t \<le> b})"
-  sorry
+  (** Moise proof (geotop.tex:373): the closed interval is connected. In our setup,
+      we reduce via the bridge geotop_euclidean_topology = top1_open_sets to
+      Top0's subspace-open characterization, which then reduces to
+      HOL-Analysis's \<open>connected_Icc\<close>. **)
+proof -
+  have hconn: "connected {t::real. a \<le> t \<and> t \<le> b}"
+    by (smt (verit, del_insts) connectedI_interval mem_Collect_eq)
+  have hbridge: "(geotop_euclidean_topology :: real set set) = top1_open_sets"
+    by (rule geotop_euclidean_topology_eq_open_sets)
+  show ?thesis
+    unfolding hbridge
+    using hconn top1_connected_on_subspace_openI by blast
+qed
 
 (** from \<S>1 Theorem 10 (geotop.tex:384)
     LATEX VERSION: If H and K are separated, then every connected subset M of H \<union> K lies
