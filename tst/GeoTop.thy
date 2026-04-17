@@ -3,6 +3,35 @@ theory GeoTop
           "HOL-Analysis.Smooth_Paths" "HOL-Analysis.Further_Topology"
 begin
 
+ML \<open>
+  fun method_evaluate text ctxt facts =
+    NO_CONTEXT_TACTIC ctxt (Method.evaluate_runtime text ctxt facts)
+
+  fun timed_seq name limit seq =
+    Seq.make (fn () =>
+      (case
+         (Timeout.apply limit (fn () => Seq.pull seq) ()
+           handle Timeout.TIMEOUT _ =>
+             error (name ^ ": timeout after " ^
+               string_of_int (Time.toMilliseconds limit) ^ " ms"))
+       of
+         NONE => NONE
+       | SOME (st, seq') => SOME (st, timed_seq name limit seq')))
+\<close>
+
+method_setup by100 =
+  \<open>
+    Method.text_closure >> (fn text => fn ctxt => fn facts =>
+      let
+        val limit = Time.fromMilliseconds 100
+        fun tac st = timed_seq "by100" limit (method_evaluate text ctxt facts st)
+      in
+        SIMPLE_METHOD tac facts
+      end)
+  \<close>
+  "apply a proof method with 100ms timeout per result step"
+
+
 text \<open>
   Formalization of geometric topology from Moise's "Geometric topology in dimensions 2 and 3"
   (geotop.tex). This file follows the source text section-by-section, starting from the
@@ -6018,7 +6047,21 @@ definition geotop_path_equiv ::
 theorem Theorem_GT_14_1:
   fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
   shows "equivp (geotop_path_equiv X T P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Reflexivity: for any closed path p, the constant-in-y map f(t, y) = p(t) is a
+         homotopy p \<cong> p (both boundaries equal p; constant at P_0 on the sides). **)
+  have h_refl: "\<forall>p. geotop_closed_path_on X T P\<^sub>0 p \<longrightarrow>
+                  geotop_path_equiv X T P\<^sub>0 p p" sorry
+  (** (2) Symmetry: given F witnessing p \<cong> q, F'(t, y) = F(t, 1 - y) witnesses q \<cong> p. **)
+  have h_sym: "\<forall>p q. geotop_path_equiv X T P\<^sub>0 p q \<longrightarrow>
+                      geotop_path_equiv X T P\<^sub>0 q p" sorry
+  (** (3) Transitivity: given F: p \<cong> q and G: q \<cong> r, glue along y = 1/2 using
+         H(t, y) = F(t, 2y) for y \<in> [0, 1/2], H(t, y) = G(t, 2y - 1) for y \<in> [1/2, 1];
+         continuity by pasting since both equal q at y = 1/2. **)
+  have h_trans: "\<forall>p q r. geotop_path_equiv X T P\<^sub>0 p q \<and> geotop_path_equiv X T P\<^sub>0 q r \<longrightarrow>
+                          geotop_path_equiv X T P\<^sub>0 p r" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>14 Theorem 2 (geotop.tex:2707)
     LATEX VERSION: If p \<cong> p' and q \<cong> q', then pq \<cong> p'q'.
@@ -6027,10 +6070,31 @@ theorem Theorem_GT_14_1:
       by the pasting lemma on the overlap at t = 1/2 where both equal P_0. The boundary
       conditions y = 0, y = 1 reproduce pq and p'q' respectively. **)
 theorem Theorem_GT_14_2:
-  assumes "geotop_path_equiv X T P\<^sub>0 p p'"
-  assumes "geotop_path_equiv X T P\<^sub>0 q q'"
+  assumes hpp': "geotop_path_equiv X T P\<^sub>0 p p'"
+  assumes hqq': "geotop_path_equiv X T P\<^sub>0 q q'"
   shows "geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')"
-  sorry
+proof -
+  (** (1) Extract homotopies F, G witnessing p \<cong> p' and q \<cong> q'. **)
+  obtain F :: "real \<times> real \<Rightarrow> 'a" where hF:
+    "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 0) = p t) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 1) = p' t) \<and>
+     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (0, y) = P\<^sub>0 \<and> F (1, y) = P\<^sub>0) \<and>
+     (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (t, y) \<in> X)" sorry
+  obtain G :: "real \<times> real \<Rightarrow> 'a" where hG:
+    "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> G (t, 0) = q t) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> G (t, 1) = q' t) \<and>
+     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> G (0, y) = P\<^sub>0 \<and> G (1, y) = P\<^sub>0) \<and>
+     (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> G (t, y) \<in> X)" sorry
+  (** (2) Paste H(t, y) = F(2t, y) for t \<in> [0, 1/2], G(2t - 1, y) for t \<in> [1/2, 1].
+         Both agree at t = 1/2 (both equal P_0). Boundary check: H(t, 0) = (pq)(t),
+         H(t, 1) = (p'q')(t), sides stay at P_0, image inside X. **)
+  have h_paste:
+    "\<exists>H. (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 0) = geotop_path_mult p q t) \<and>
+         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 1) = geotop_path_mult p' q' t) \<and>
+         (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (0, y) = P\<^sub>0 \<and> H (1, y) = P\<^sub>0) \<and>
+         (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (t, y) \<in> X)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>14: fundamental group (geotop.tex:2708)
     LATEX VERSION: \<pi>(X, P_0) = {[p] | p \<in> CP(X, P_0)} with multiplication induced by path
@@ -6060,7 +6124,7 @@ definition geotop_pi_mult ::
       along y \<in> [0, 1] to shift the boundary between consecutive constituents. **)
 theorem Theorem_GT_14_3:
   fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
-  assumes "is_topology_on X T" and "P\<^sub>0 \<in> X"
+  assumes hT: "is_topology_on X T" and hP\<^sub>0: "P\<^sub>0 \<in> X"
   shows "\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
            geotop_pi_mult X T P\<^sub>0 e C = C \<and>
            geotop_pi_mult X T P\<^sub>0 C e = C \<and>
@@ -6070,7 +6134,32 @@ theorem Theorem_GT_14_3:
            (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
               geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
               geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))"
-  sorry
+proof -
+  (** (1) The constant path e(t) = P_0 is a closed path based at P_0; take
+         [e] \<in> \<pi>(X, P_0) as the candidate identity. **)
+  define e\<^sub>c :: "real \<Rightarrow> 'a" where "e\<^sub>c = (\<lambda>t. P\<^sub>0)"
+  have h_e_cp: "geotop_closed_path_on X T P\<^sub>0 e\<^sub>c" sorry
+  (** (2) Identity laws: for any closed path p, pe \<cong> p and ep \<cong> p via the linear
+         reparametrisation homotopy H(t, y) = p(t(2 - y)) on the appropriate interval. **)
+  have h_id: "\<forall>p\<in>geotop_CP X T P\<^sub>0.
+                geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p e\<^sub>c) p \<and>
+                geotop_path_equiv X T P\<^sub>0 (geotop_path_mult e\<^sub>c p) p" sorry
+  (** (3) Inverse: p^{-1}(t) = p(1 - t); then p p^{-1} \<cong> e and p^{-1} p \<cong> e via
+         the retraction homotopy. **)
+  have h_inv: "\<forall>p\<in>geotop_CP X T P\<^sub>0.
+                \<exists>q\<in>geotop_CP X T P\<^sub>0.
+                  geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) e\<^sub>c \<and>
+                  geotop_path_equiv X T P\<^sub>0 (geotop_path_mult q p) e\<^sub>c" sorry
+  (** (4) Associativity: (pq)r \<cong> p(qr) via the standard linear reparametrisation
+         homotopy that shifts the interior break point from 1/4 \<to> 1/2. **)
+  have h_assoc: "\<forall>p\<in>geotop_CP X T P\<^sub>0. \<forall>q\<in>geotop_CP X T P\<^sub>0. \<forall>r\<in>geotop_CP X T P\<^sub>0.
+                   geotop_path_equiv X T P\<^sub>0
+                     (geotop_path_mult (geotop_path_mult p q) r)
+                     (geotop_path_mult p (geotop_path_mult q r))" sorry
+  (** (5) By Theorem 14.2 (congruence) these pointwise facts descend to \<pi>-classes and
+         give the group laws. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>14: simply connected (geotop.tex:2716)
     LATEX VERSION: If \<pi>(X, P_0) = {[e]}, then X is simply connected. **)
@@ -6089,13 +6178,40 @@ definition geotop_simply_connected ::
 theorem Theorem_GT_14_4:
   fixes X :: "'a set" and T :: "'a set set"
   fixes P\<^sub>0 P\<^sub>1 :: 'a and p :: "real \<Rightarrow> 'a"
-  assumes "is_topology_on X T"
-  assumes "geotop_path_on X T 0 1 p" and "p 0 = P\<^sub>0" and "p 1 = P\<^sub>1"
+  assumes hT: "is_topology_on X T"
+  assumes hp_path: "geotop_path_on X T 0 1 p" and hp0: "p 0 = P\<^sub>0" and hp1: "p 1 = P\<^sub>1"
   shows "\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
              (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
                 \<phi> (geotop_pi_mult X T P\<^sub>0 C D) =
                 geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))"
-  sorry
+proof -
+  (** (1) Define the reverse path p^{-1}(t) = p(1 - t), a path from P_1 to P_0. **)
+  define p_inv :: "real \<Rightarrow> 'a" where "p_inv = (\<lambda>t. p (1 - t))"
+  have h_pinv: "geotop_path_on X T 0 1 p_inv \<and> p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0" sorry
+  (** (2) Conjugation at the path level: \<phi>_0(q) = p^{-1} \<cdot> q \<cdot> p. This sends closed paths
+         based at P_0 to closed paths based at P_1 (endpoints check out). **)
+  have h_phi0_maps:
+    "\<forall>q\<in>geotop_CP X T P\<^sub>0.
+        geotop_closed_path_on X T P\<^sub>1
+          (geotop_path_mult p_inv (geotop_path_mult q p))" sorry
+  (** (3) By Theorem 14.2, if q \<cong> q' then p^{-1} q p \<cong> p^{-1} q' p, so \<phi>_0 descends to
+         a function \<phi>: \<pi>(X, P_0) \<rightarrow> \<pi>(X, P_1). **)
+  have h_phi_welldef:
+    "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi X T P\<^sub>1) \<and>
+         (\<forall>q\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 q) =
+              geotop_pi_class X T P\<^sub>1 (geotop_path_mult p_inv (geotop_path_mult q p)))"
+    sorry
+  (** (4) \<phi> is a group homomorphism:
+         p^{-1} q_1 q_2 p = p^{-1} q_1 (p p^{-1}) q_2 p \<cong> (p^{-1} q_1 p)(p^{-1} q_2 p)
+         using p p^{-1} \<cong> e (Theorem 14.3) and associativity. **)
+  have h_hom:
+    "\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
+         (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+              \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))" sorry
+  (** (5) \<phi> has an inverse \<psi>([r]) = [p r p^{-1}]; p (p^{-1} q p) p^{-1} \<cong> q and symmetric,
+         so \<phi> is a bijection. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>14 Theorem 5 (geotop.tex:2735)
     LATEX VERSION: Let [X, O] and [Y, O'] be pathwise connected spaces, let P_0 \<in> X, let
@@ -6109,16 +6225,33 @@ theorem Theorem_GT_14_5:
   fixes X :: "'a set" and T :: "'a set set"
   fixes Y :: "'b set" and T' :: "'b set set"
   fixes P\<^sub>0 :: 'a and Q\<^sub>0 :: 'b and f :: "'a \<Rightarrow> 'b"
-  assumes "is_topology_on X T" and "is_topology_on Y T'"
-  assumes "top1_continuous_map_on X T Y T' f"
-  assumes "f P\<^sub>0 = Q\<^sub>0"
+  assumes hT: "is_topology_on X T" and hT': "is_topology_on Y T'"
+  assumes hf_cont: "top1_continuous_map_on X T Y T' f"
+  assumes hf_base: "f P\<^sub>0 = Q\<^sub>0"
   shows "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi Y T' Q\<^sub>0) \<and>
              (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
                 \<phi> (geotop_pi_mult X T P\<^sub>0 C D) =
                 geotop_pi_mult Y T' Q\<^sub>0 (\<phi> C) (\<phi> D)) \<and>
              (\<forall>p\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 p)
                 = geotop_pi_class Y T' Q\<^sub>0 (f \<circ> p))"
-  sorry
+proof -
+  (** (1) For any closed path p based at P_0, f \<circ> p is a closed path based at Q_0 in Y
+         (composition of continuous maps; endpoints map to f(P_0) = Q_0). **)
+  have h_push_cp:
+    "\<forall>p\<in>geotop_CP X T P\<^sub>0. geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p)" sorry
+  (** (2) If F witnesses p \<cong> p' in X, then f \<circ> F witnesses (f \<circ> p) \<cong> (f \<circ> p') in Y.
+         Hence the assignment [p] \<mapsto> [f \<circ> p] is well-defined on equivalence classes. **)
+  have h_push_equiv:
+    "\<forall>p p'. geotop_path_equiv X T P\<^sub>0 p p' \<longrightarrow>
+            geotop_path_equiv Y T' Q\<^sub>0 (f \<circ> p) (f \<circ> p')" sorry
+  (** (3) f commutes with path multiplication pointwise: f \<circ> (p q) = (f \<circ> p)(f \<circ> q),
+         directly from the definition of geotop_path_mult. **)
+  have h_push_mult:
+    "\<forall>p q. f \<circ> geotop_path_mult p q = geotop_path_mult (f \<circ> p) (f \<circ> q)" sorry
+  (** (4) Assemble \<phi>([p]) := [f \<circ> p]; well-defined by (2), maps into \<pi>(Y, Q_0) by (1),
+         a homomorphism by (3). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>14 Theorem 6 (geotop.tex:2751)
     LATEX VERSION: Let P_0 \<in> U \<subseteq> R^3. For each p \<in> CP(U, P_0) there is a PL closed path p'
@@ -6131,15 +6264,40 @@ theorem Theorem_GT_14_5:
       y [affine segment] stays inside B_i \<subseteq> U. Pasting the H_j gives p \<cong> p' in U. **)
 theorem Theorem_GT_14_6:
   fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p :: "real \<Rightarrow> real^3"
-  assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
-  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U)
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hP\<^sub>0: "P\<^sub>0 \<in> U"
+  assumes hp_cp: "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U)
              P\<^sub>0 p"
   shows "\<exists>p'. geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U)
                 P\<^sub>0 p' \<and>
               geotop_is_broken_line (p' ` {0..1}) \<and>
               geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U)
                 P\<^sub>0 p p'"
-  sorry
+proof -
+  (** (1) The image |p| is compact, hence covered by finitely many open balls B_i \<subseteq> U. **)
+  obtain Bs where h_cover:
+    "finite Bs \<and> (\<forall>B\<in>Bs. B \<in> geotop_euclidean_topology \<and> B \<subseteq> U \<and>
+                         (\<exists>c r. r > 0 \<and> B = {x. norm (x - c) < r})) \<and>
+     p ` {0..1} \<subseteq> \<Union>Bs" sorry
+  (** (2) Pick 0 = t_0 < t_1 < ... < t_n = 1 so that p([t_{j-1}, t_j]) lies in some one B_i
+         (Lebesgue number lemma applied to the finite cover). **)
+  obtain ts :: "real list" where h_partition:
+    "length ts \<ge> 2 \<and> ts ! 0 = 0 \<and> last ts = 1 \<and>
+     (\<forall>j < length ts - 1. ts ! j < ts ! (j + 1)) \<and>
+     (\<forall>j < length ts - 1. \<exists>B\<in>Bs. p ` {ts ! j .. ts ! (j + 1)} \<subseteq> B)" sorry
+  (** (3) Define p' to be linear on each [t_{j-1}, t_j] with p'(t_j) = p(t_j), so p' is a
+         PL closed path with p'(0) = p'(1) = P_0. Each linear segment lies inside the same
+         ball B_i as p on that subinterval. **)
+  obtain p' where h_pl:
+    "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p' \<and>
+     geotop_is_broken_line (p' ` {0..1}) \<and>
+     (\<forall>j < length ts - 1. \<exists>B\<in>Bs. p' ` {ts ! j .. ts ! (j + 1)} \<subseteq> B)" sorry
+  (** (4) The straight-line homotopy H_j(s, y) = (1 - y) \<cdot> p(...) + y \<cdot> p'(...) stays
+         inside the ball B_i \<subseteq> U on each subinterval (by convexity). Glue these homotopies
+         into a single homotopy H: [0, 1] \<times> [0, 1] \<rightarrow> U witnessing p \<cong> p'. **)
+  have h_homotopy:
+    "geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p p'" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>14 Theorem 7 (geotop.tex:2753)
     LATEX VERSION: Let p and p' be PL paths in CP(U, P_0), where U is open in R^3 and
@@ -6154,17 +6312,43 @@ theorem Theorem_GT_14_6:
       structure of |p|, |p'|; then f is the required PL homotopy. **)
 theorem Theorem_GT_14_7:
   fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p p' :: "real \<Rightarrow> real^3"
-  assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
-  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p"
-  assumes "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p'"
-  assumes "geotop_is_broken_line (p ` {0..1})"
-  assumes "geotop_is_broken_line (p' ` {0..1})"
-  assumes "geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p p'"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hP\<^sub>0: "P\<^sub>0 \<in> U"
+  assumes hp_cp: "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p"
+  assumes hp'_cp: "geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p'"
+  assumes hp_PL: "geotop_is_broken_line (p ` {0..1})"
+  assumes hp'_PL: "geotop_is_broken_line (p' ` {0..1})"
+  assumes hpp': "geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p p'"
   shows "\<exists>f. (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> U) \<and>
              (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
              (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p' t) \<and>
              (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Extract a continuous homotopy F: [0,1]^2 \<rightarrow> U between p and p'. **)
+  obtain F :: "real \<times> real \<Rightarrow> real^3" where h_cont_homotopy:
+    "(\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (t, y) \<in> U) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 0) = p t) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 1) = p' t) \<and>
+     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (0, y) = P\<^sub>0 \<and> F (1, y) = P\<^sub>0)" sorry
+  (** (2) Compact image F([0,1]^2) \<subseteq> U; pick a finite cover by open balls B_i \<subseteq> U and a
+         Lebesgue number \<lambda> of the cover of [0,1]^2 by F^{-1}(B_i). **)
+  obtain Bs lam where h_cover:
+    "finite Bs \<and> lam > 0 \<and> (\<forall>B\<in>Bs. B \<in> geotop_euclidean_topology \<and> B \<subseteq> U \<and>
+                                   (\<exists>c r. r > 0 \<and> B = {x. norm (x - c) < r})) \<and>
+     (\<forall>S. diameter S < lam \<and> S \<subseteq> {0..1} \<times> {0..1} \<longrightarrow> (\<exists>B\<in>Bs. F ` S \<subseteq> B))" sorry
+  (** (3) Triangulate [0,1]^2 finely enough that every simplex T_i has diameter < lam, and
+         matched on {y = 0}, {y = 1} with the vertex structure of |p|, |p'|. **)
+  obtain Ts :: "(real \<times> real) set set" where h_triangulation:
+    "finite Ts \<and> (\<forall>T\<in>Ts. diameter T < lam) \<and>
+     \<Union>Ts = {0..1} \<times> {0..1}" sorry
+  (** (4) Define f to be affine on each simplex T_i, with f | vertices = F | vertices. By
+         convexity of each B_i \<supseteq> F(T_i), f(T_i) \<subseteq> B_i \<subseteq> U. **)
+  obtain f :: "real \<times> real \<Rightarrow> real^3" where h_PL_homotopy:
+    "(\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> U) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p' t) \<and>
+     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>14: canonical homomorphism (geotop.tex:2775)
     LATEX VERSION: h: \<pi>(|K|, P_0) \<rightarrow> H_1(K), induced by p \<mapsto> Z^1(p). **)
@@ -6189,8 +6373,8 @@ theorem Theorem_GT_14_7:
     as a product of commutators. **)
 theorem Theorem_GT_14_8:
   fixes K :: "'a::real_normed_vector set set" and P\<^sub>0 :: 'a
-  assumes "geotop_is_complex K"
-  assumes "P\<^sub>0 \<in> geotop_complex_vertices K"
+  assumes hK: "geotop_is_complex K"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> geotop_complex_vertices K"
   shows "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> ('a set \<Rightarrow> int)) (Z1::('a set \<Rightarrow> int) set).
            (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
                  (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
@@ -6205,7 +6389,57 @@ theorem Theorem_GT_14_8:
            (\<forall>z\<in>Z1. \<exists>C\<in>geotop_pi (geotop_polyhedron K)
                        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
                        P\<^sub>0. h C = z)"
-  sorry
+proof -
+  (** (1) Simplicial representative: for each [p] \<in> \<pi>(|K|, P_0) there is a representative
+         p: [0, 1] \<rightarrow> |K^1| which is simplicial relative to K^1 and a subdivision L of
+         [0, 1] (standard PL approximation). **)
+  have h_simp_rep:
+    "\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+        \<exists>p. p \<in> C \<and>
+            (\<exists>L::real set. True \<comment> \<open>a subdivision of [0,1]\<close>)" sorry
+  (** (2) Assignment to a 1-cycle: given a simplicial p as in (1), define
+         Z^1(p)(\<sigma>_i) = sum of \<plusminus>1 over edges e of L with p|e traversing \<sigma>_i (+1 positively,
+         -1 negatively). This is a 1-cycle in the edge-indexed free abelian group. **)
+  have h_Z1_exists:
+    "\<exists>(Z1::(real \<Rightarrow> 'a) \<Rightarrow> ('a set \<Rightarrow> int))
+       (Z1_img::('a set \<Rightarrow> int) set).
+        (\<forall>p. Z1 p \<in> Z1_img) \<and>
+        (\<forall>p1 p2. Z1 (geotop_path_mult p1 p2) = (\<lambda>e. Z1 p1 e + Z1 p2 e))" sorry
+  (** (3) Homotopy invariance at cycle level: if p \<cong> p' (simplicial approximations to
+         homotopic paths), then Z^1(p) - Z^1(p') is a boundary, hence they agree modulo
+         boundaries; since we take the free abelian edge-group (not its homology), we
+         actually get Z^1(p) = Z^1(p') on the nose (see tex remark after display 2.66). **)
+  have h_class_welldef:
+    "\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+        \<forall>p\<in>C. \<forall>p'\<in>C. True" sorry
+  (** (4) Assemble h: \<pi>(|K|, P_0) \<rightarrow> H_1(K): pick a simplicial representative, take Z^1.
+         By (3) this is a well-defined group homomorphism; additivity follows from
+         additivity of Z^1 on path-multiplication. **)
+  have h_hom:
+    "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> ('a set \<Rightarrow> int)) (Z1::('a set \<Rightarrow> int) set).
+       (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+          h C \<in> Z1) \<and>
+       (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+          \<forall>D\<in>geotop_pi (geotop_polyhedron K)
+                (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+          h (geotop_pi_mult (geotop_polyhedron K)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+               P\<^sub>0 C D) = (\<lambda>e. h C e + h D e))" sorry
+  (** (5) Surjectivity: every 1-cycle z = \<Sigma> \<alpha>_i \<sigma>_i with \<partial> z = 0 is represented by a
+         closed path p_z obtained by concatenating the oriented edges \<sigma>_i^{\<alpha>_i} in any
+         order, linked by paths in |K^1| back to P_0 (possible by path-connectedness of
+         each component of |K|). Then Z^1(p_z) = z. **)
+  have h_surj:
+    "\<exists>Z1. \<forall>z\<in>Z1.
+       \<exists>C\<in>geotop_pi (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+          True" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>15 The group of (the complement of) a link\<close>
 
