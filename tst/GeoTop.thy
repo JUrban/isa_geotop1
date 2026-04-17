@@ -3904,9 +3904,9 @@ qed
       f: R^2 \<leftrightarrow> R^2, \<bar>I\<close> \<leftrightarrow> \<sigma>^2, f: J \<leftrightarrow> Bd \<sigma>^2 = Fr \<sigma>^2. Thus K is a combinatorial 2-cell. **)
 theorem Theorem_GT_5_3:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
-  assumes "geotop_is_polygon J"
-  assumes "geotop_is_complex K"
-  assumes "geotop_polyhedron K =
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
     closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
   shows "\<exists>f \<sigma>. geotop_simplex_dim \<sigma> 2 \<and>
           top1_homeomorphism_on UNIV geotop_euclidean_topology
@@ -3914,7 +3914,27 @@ theorem Theorem_GT_5_3:
           f ` geotop_polyhedron K = \<sigma> \<and>
           f ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
     and "geotop_comb_n_cell K 2"
-  sorry
+proof -
+  (** (1) By Theorem 3_4 there is a homeomorphism h: R^2 \<leftrightarrow> R^2 with h(J) = Fr \<sigma>^2 for
+         a 2-simplex \<sigma>^2. The induction in 3_4 also shows h(|K|) = \<sigma>^2 (the 2-simplex). **)
+  obtain h \<sigma> where h_Schoenflies:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology h \<and>
+     geotop_simplex_dim \<sigma> 2 \<and>
+     h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma> \<and>
+     h ` geotop_polyhedron K = \<sigma>" sorry
+  (** (2) To strengthen to a PLH (combinatorial 2-cell), refine K to be a subcomplex of
+         a triangulation of R^2 (Theorem 2_4 / 2_6); then h can be chosen piecewise
+         linear and K is combinatorially isomorphic to a subdivision of {\<sigma>, faces(\<sigma>)}. **)
+  have h_PLH:
+    "geotop_comb_n_cell K 2" sorry
+  show "\<exists>f \<sigma>. geotop_simplex_dim \<sigma> 2 \<and>
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology f \<and>
+          f ` geotop_polyhedron K = \<sigma> \<and>
+          f ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>" sorry
+  show "geotop_comb_n_cell K 2" sorry
+qed
 
 (** from \<S>5 Theorem 4 (geotop.tex:1157)
     LATEX VERSION: Let K_1 and K_2 be combinatorial 2-cells and let f be a PLH
@@ -3922,12 +3942,26 @@ theorem Theorem_GT_5_3:
 theorem Theorem_GT_5_4:
   fixes K1 K2 :: "'a::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'a" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
-  assumes "geotop_comb_n_cell K1 2"
-  assumes "geotop_comb_n_cell K2 2"
-  assumes "geotop_PLH (geotop_comb_boundary K1 2) (geotop_comb_boundary K2 2) f"
+  assumes hK1: "geotop_comb_n_cell K1 2"
+  assumes hK2: "geotop_comb_n_cell K2 2"
+  assumes hf_bd: "geotop_PLH (geotop_comb_boundary K1 2) (geotop_comb_boundary K2 2) f"
   shows "\<exists>f'. geotop_PLH K1 K2 f' \<and>
               (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x)"
-  sorry
+proof -
+  (** (1) Each K_i is combinatorially equivalent to a 2-simplex \<sigma>_i. Fix such PLHs
+         \<phi>_i: K_i \<leftrightarrow> \<sigma>_i. **)
+  obtain \<phi>1 \<phi>2 \<sigma>1 \<sigma>2 where h_\<phi>:
+    "geotop_simplex_dim \<sigma>1 2 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
+     True \<comment> \<open>K_i PLH-isomorphic to 2-simplex \<sigma>_i\<close>" sorry
+  (** (2) f on the boundaries conjugates to a PLH f_0: Bd \<sigma>_1 \<leftrightarrow> Bd \<sigma>_2. Extend f_0
+         radially from the barycenter of \<sigma>_1 to all of \<sigma>_1 (cone construction): this
+         is a PLH on \<sigma>_1 preserving the boundary behaviour. **)
+  have h_radial_ext:
+    "\<exists>g. \<comment> \<open>PLH \<sigma>_1 \<leftrightarrow> \<sigma>_2 extending the boundary conjugate of f\<close> True" sorry
+  (** (3) Transport back through \<phi>_1^{-1} and \<phi>_2 to get the PLH f': |K_1| \<leftrightarrow> |K_2|
+         extending f on Bd K_1. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>5 Theorem 5 (geotop.tex:1174)
     LATEX VERSION: Let K be a complex such that M^2 = |K| is a 2-manifold with boundary.
@@ -3936,24 +3970,35 @@ theorem Theorem_GT_5_4:
 theorem Theorem_GT_5_5:
   fixes K :: "'a::real_normed_vector set set" and J :: "'a set" and v :: "'a"
   fixes d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K :: 'a set) d 2"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_polyhedron K"
-  assumes "v \<in> geotop_complex_vertices K"
-  assumes "J \<subseteq> geotop_polyhedron (geotop_star K v)"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K :: 'a set) d 2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_K: "J \<subseteq> geotop_polyhedron K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hJ_in_star: "J \<subseteq> geotop_polyhedron (geotop_star K v)"
   shows "\<exists>K'. K' \<subseteq> K \<and> geotop_comb_n_cell K' 2
           \<and> geotop_polyhedron (geotop_comb_boundary K' 2) = J"
-  sorry
+proof -
+  (** (1) |St v| is a combinatorial 2-cell (Theorem 4.8). Restrict attention to this
+         2-cell; inside it J is a polygon. **)
+  have h_St_2cell:
+    "geotop_comb_n_cell (geotop_star K v) 2" sorry
+  (** (2) J bounds a 2-cell in |St v|: J is a subcomplex of the 2-cell |St v|, and by
+         Theorem 5.3 the region bounded by J inside |St v| is a combinatorial 2-cell. **)
+  have h_bounded_cell:
+    "\<exists>K'. K' \<subseteq> K \<and> geotop_comb_n_cell K' 2 \<and>
+          geotop_polyhedron (geotop_comb_boundary K' 2) = J" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>5 Theorem 6 (geotop.tex:1178)
     LATEX VERSION: Let C_1 and C_2 be 2-cells, and let f be a homeomorphism Bd C_1 \<leftrightarrow> Bd C_2.
       Then f has a homeomorphic extension f': C_1 \<leftrightarrow> C_2. **)
 theorem Theorem_GT_5_6:
   fixes C1 C2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_disk C1 (subspace_topology UNIV geotop_euclidean_topology C1)"
-  assumes "geotop_is_disk C2 (subspace_topology UNIV geotop_euclidean_topology C2)"
-  assumes "top1_homeomorphism_on
+  assumes hC1: "geotop_is_disk C1 (subspace_topology UNIV geotop_euclidean_topology C1)"
+  assumes hC2: "geotop_is_disk C2 (subspace_topology UNIV geotop_euclidean_topology C2)"
+  assumes hf: "top1_homeomorphism_on
              (geotop_frontier UNIV geotop_euclidean_topology C1)
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_frontier UNIV geotop_euclidean_topology C1))
@@ -3964,7 +4009,24 @@ theorem Theorem_GT_5_6:
   shows "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
                 C2 (subspace_topology UNIV geotop_euclidean_topology C2) f'
           \<and> (\<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x)"
-  sorry
+proof -
+  (** (1) Parametrise each C_i via homeomorphism h_i: C_i \<leftrightarrow> unit disk D^2. Then h_2 \<circ> f
+         \<circ> h_1^{-1}: S^1 \<leftrightarrow> S^1 on the boundaries. **)
+  obtain h1 h2 :: "'a \<Rightarrow> 'a" where h_param:
+    "top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+        \<comment> \<open>image is the unit disk in 'a\<close> (h1 ` C1)
+        (subspace_topology UNIV geotop_euclidean_topology (h1 ` C1)) h1 \<and>
+     top1_homeomorphism_on C2 (subspace_topology UNIV geotop_euclidean_topology C2)
+        (h2 ` C2) (subspace_topology UNIV geotop_euclidean_topology (h2 ` C2)) h2"
+    sorry
+  (** (2) Alexander's trick: any homeomorphism g: S^1 \<leftrightarrow> S^1 extends to a homeomorphism
+         D^2 \<leftrightarrow> D^2 by \<tilde>g(r, \<theta>) = (r, g(\<theta>)) for r \<in> [0, 1]. (r = 0 is the centre, fixed.) **)
+  have h_alexander:
+    "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) f' \<and>
+          (\<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x)" sorry
+  show ?thesis sorry
+qed
 
 subsection \<open>Joins, barycenters, barycentric subdivision\<close>
 
