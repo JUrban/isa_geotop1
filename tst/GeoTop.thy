@@ -304,7 +304,7 @@ proof -
   have h_backward:
     "(\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K) \<longrightarrow>
        geotop_comb_equiv K L" sorry
-  show ?thesis sorry
+  show ?thesis using h_forward h_backward by (by100 blast)
 qed
 
 (** from Introduction: Theorem 3 (geotop.tex:185)
@@ -10872,7 +10872,7 @@ proof -
     "(\<exists>pt. geotop_closed_path_on Mt T\<^sub>M Pt\<^sub>0 pt \<and> (\<forall>t. g (pt t) = p t)) \<longrightarrow>
      (\<exists>g\<^sub>0. (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
               geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) p \<in> g\<^sub>0 ` geotop_pi Mt T\<^sub>M Pt\<^sub>0)" sorry
-  show ?thesis sorry
+  show ?thesis using h_forward h_backward by (by100 blast)
 qed
 
 (** from \<S>24: k-sheeted covering (geotop.tex:5313)
