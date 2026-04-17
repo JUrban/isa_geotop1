@@ -4599,7 +4599,7 @@ theorem Theorem_GT_23_18:
            (geotop_manifold_boundary (geotop_regular_neighborhood K L)
               (\<lambda>x y. norm (x - y)))
          = geotop_first_betti_number (geotop_regular_neighborhood K L)"
-  sorry
+  by (metis geotop_total_handles_def geotop_first_betti_number_def)
 
 (** from \<S>23 Theorem 19 (geotop.tex:5136)
     LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary. Then
