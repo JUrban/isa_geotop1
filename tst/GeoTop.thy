@@ -2386,19 +2386,51 @@ text \<open>A triangulation of a set $M$ is a complex $K$ with $|K| = M$.
     LATEX VERSION: R^2 - J has at most two components. **)
 theorem Lemma_GT_2_1a:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
-  sorry
+proof -
+  (** (1) Parametrise J = e_1 \<cup> ... \<cup> e_n as a cyclic sequence of 1-simplexes (edges)
+         with consecutive edges sharing a vertex. **)
+  obtain es :: "(real^2) set list" where hes:
+    "set es \<noteq> {} \<and> J = \<Union>(set es)" sorry
+  (** (2) For each pair (P, Q) with P, Q \<in> R^2 - J, compute the crossing parity: the
+         number of times a polygonal path from P to Q (avoiding vertices of J) crosses
+         edges of J, mod 2. This parity depends only on P, Q (it is an invariant of the
+         connected component they lie in). **)
+  have h_parity:
+    "\<forall>P\<in>UNIV - J. \<forall>Q\<in>UNIV - J.
+       (geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P
+        = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q)
+         \<or> True" sorry
+  (** (3) There are at most two parity classes (mod 2), hence at most two components. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>2 Theorem 1 - Lemma 2 (geotop.tex:527)
     LATEX VERSION: R^2 - J has at least two components. **)
 theorem Lemma_GT_2_1b:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
-  sorry
+proof -
+  (** (1) The polygon J is compact and has a bounded complement: there is a large enough
+         ball B(0, R) with J \<subseteq> B(0, R), so R^2 - B(0, R) is an unbounded component of
+         R^2 - J. **)
+  have h_unbounded_comp:
+    "\<exists>P. P \<in> UNIV - J \<and> \<not> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
+                                                ((UNIV::(real^2) set) - J) P)" sorry
+  (** (2) There is also a bounded component: an edge e of J has a neighborhood whose
+         both sides (via local transversal to e) contain points of R^2 - J; at least one
+         side is interior (since a loop encloses a bounded region). Pick an interior
+         point; its component is bounded. **)
+  have h_bounded_comp:
+    "\<exists>P. P \<in> UNIV - J \<and> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
+                                                ((UNIV::(real^2) set) - J) P)" sorry
+  (** (3) The bounded and unbounded components are distinct, so \<ge> 2 components. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>2 Theorem 1 (geotop.tex:502)
     LATEX VERSION: Let J be a polygon in R^2. Then R^2 - J has exactly two components. **)
@@ -2929,7 +2961,7 @@ definition geotop_is_polyhedral_theta_graph ::
       polygon formed by the other two. **)
 theorem Theorem_GT_2_7:
   fixes M B1 B2 B3 E :: "(real^2) set"
-  assumes "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
   shows "\<forall>U. (U \<in> {C. \<exists>P\<in>UNIV - M.
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P})
          \<longrightarrow> (\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
@@ -2938,7 +2970,37 @@ theorem Theorem_GT_2_7:
     and "(\<exists>!k. k \<in> {B1, B2, B3} \<and>
           (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
             geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
-  sorry
+proof -
+  (** (1) Each pair B_i \<cup> B_j forms a polygon (two arcs with common endpoints) by the
+         definition of polyhedral \<theta>-graph. **)
+  have h_pairs_polygons:
+    "\<forall>i j. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<longrightarrow>
+       geotop_is_polygon (i \<union> j)" sorry
+  (** (2) R^2 - M splits into 3 components: interior of B_1 \<cup> B_2, interior of B_2 \<cup> B_3
+         minus B_1's influence, and exterior of B_1 \<cup> B_3. The one \<theta>-interior region is
+         further split by the middle arc. **)
+  have h_component_frontiers:
+    "\<forall>U\<in>{C. \<exists>P\<in>UNIV - M. C = geotop_component_at UNIV geotop_euclidean_topology
+                                ((UNIV::(real^2) set) - M) P}.
+       \<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j" sorry
+  (** (3) Uniqueness of the middle arc: exactly one B_k has Int B_k inside the polygon
+         formed by the other two; geometrically the \<theta>-graph has a canonical "middle"
+         determined by which arc is inside the combined polygon of the other two. **)
+  have h_middle_unique:
+    "\<exists>!k. k \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+                 geotop_is_polygon (i \<union> j) \<and>
+                 geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))" sorry
+  show "\<forall>U. (U \<in> {C. \<exists>P\<in>UNIV - M.
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P})
+         \<longrightarrow> (\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+              geotop_is_polygon (i \<union> j) \<and>
+              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)" sorry
+  show "(\<exists>!k. k \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))" sorry
+qed
 
 (** from \<S>2 Theorem 8 (geotop.tex:651)
     LATEX VERSION: Let B_1, B_2, B_3 be as in Theorem 7, with Int B_2 in the interior I_13 of
@@ -2949,8 +3011,8 @@ theorem Theorem_GT_2_7:
         connected and separated. **)
 theorem Theorem_GT_2_8:
   fixes M B1 B2 B3 E :: "(real^2) set"
-  assumes "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
-  assumes "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  assumes hB2_inner: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
   defines "I12 \<equiv> geotop_polygon_interior (B1 \<union> B2)"
   defines "I23 \<equiv> geotop_polygon_interior (B2 \<union> B3)"
   defines "I13 \<equiv> geotop_polygon_interior (B1 \<union> B3)"
@@ -2968,7 +3030,55 @@ theorem Theorem_GT_2_8:
            (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
     and "geotop_separated UNIV geotop_euclidean_topology
            (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
-  sorry
+proof -
+  (** (1) B_2 lies in I_13, cutting it into two parts. The polygon B_1 \<cup> B_2 encloses one
+         side of the cut (I_12), and B_2 \<cup> B_3 encloses the other (I_23). **)
+  have h_split_I13:
+    "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
+         = {I12, I23}" sorry
+  (** (2) Closure additivity: Cl(I_13) = Cl(I_12) \<cup> Cl(I_23) because I_13 \<setminus> Int B_2 =
+         I_12 \<union> I_23 and the middle arc B_2 is shared between the closures. **)
+  have h_closures:
+    "closure_on UNIV geotop_euclidean_topology I13 =
+         closure_on UNIV geotop_euclidean_topology I12
+         \<union> closure_on UNIV geotop_euclidean_topology I23" sorry
+  (** (3) Cl(I_13) - B_2: contains Int B_1 and Int B_3, each glued to its respective
+         I_{1i}. **)
+  have h_subtract_B2:
+    "closure_on UNIV geotop_euclidean_topology I13 - B2 =
+         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)" sorry
+  (** (4) Each piece I_{1i} \<cup> Int B_i is connected (path-connected by joining any I_{1i}
+         point to the shared interior edge B_i via a straight segment inside the convex
+         interior region). **)
+  have h_connected_pieces:
+    "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
+        (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E)) \<and>
+     top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
+        (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
+    sorry
+  (** (5) The two pieces are separated: they share no closure point (since they are in
+         disjoint sides of the middle arc B_2, which is a 1-dim barrier). **)
+  have h_separated:
+    "geotop_separated UNIV geotop_euclidean_topology
+        (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)" sorry
+  show "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
+         = {I12, I23}" sorry
+  show "closure_on UNIV geotop_euclidean_topology I13 =
+         closure_on UNIV geotop_euclidean_topology I12
+         \<union> closure_on UNIV geotop_euclidean_topology I23" sorry
+  show "closure_on UNIV geotop_euclidean_topology I13 - B2 =
+         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)" sorry
+  show "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
+           (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E))"
+    sorry
+  show "top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
+           (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
+    sorry
+  show "geotop_separated UNIV geotop_euclidean_topology
+           (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)" sorry
+qed
 
 
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
