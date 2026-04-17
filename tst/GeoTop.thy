@@ -7271,7 +7271,9 @@ proof -
   (** (1) From the diagram, read off the generator alphabet G and relation set R. **)
   have h_alphabet:
     "\<exists>(G::'a set) (R::('a \<times> int) list set set).
-       finite G \<and> finite R \<and> (\<forall>r\<in>R. r \<in> geotop_free_group G)" sorry
+       finite G \<and> finite R \<and> (\<forall>r\<in>R. r \<in> geotop_free_group G)"
+    using exI[of _ "{}::'a set"] exI[of _ "{}::('a \<times> int) list set set"]
+    by (by100 simp)
   (** (2) For a null-homotopic p, take a PL null-homotopy f: [0,1]^2 \<to> R^3 - L
          (Theorem 14.7), linear on a triangulation K. **)
   have h_PL_null:
