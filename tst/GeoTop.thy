@@ -4243,7 +4243,7 @@ theorem Theorem_GT_22_12:
   assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
   assumes "geotop_manifold_euler M = 1"
   shows "geotop_is_projective_plane M"
-  sorry
+  using assms(1,3,4,5) geotop_is_projective_plane_def by blast
 
 section \<open>\<S>23 Triangulated 3-manifolds\<close>
 
