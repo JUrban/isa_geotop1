@@ -605,7 +605,27 @@ theorem Theorem_GT_1_14:
   assumes "\<forall>g\<in>G. g \<subseteq> X \<and> top1_connected_on g (subspace_topology X T g)"
   assumes "\<forall>g\<in>G. P \<in> g"
   shows "top1_connected_on (\<Union>G) (subspace_topology X T (\<Union>G))"
-  sorry
+proof (cases "G = {}")
+  case True
+  show ?thesis
+    by (simp add: True assms(1) subspace_topology_is_topology_on
+      top1_connected_on_def)
+next
+  case False
+  have h2: "\<forall>g\<in>G. g \<subseteq> X"
+    by (metis assms(2))
+  have h3: "\<forall>g\<in>G. top1_connected_on g (subspace_topology X T g)"
+    by (metis assms(2))
+  have h4: "P \<in> \<Inter>(id ` G)"
+    by (metis assms(3) id_apply image_id InterI)
+  have h5: "\<Union>G = (\<Union>g\<in>G. id g)"
+    by simp
+  have h6: "top1_connected_on (\<Union>g\<in>G. id g) (subspace_topology X T (\<Union>g\<in>G. id g))"
+    by (rule Theorem_23_3[OF assms(1) False _ _ h4])
+       (use h2 h3 in auto)
+  show ?thesis
+    by (metis h6 h5)
+qed
 
 (** from \<S>1 Theorem 15 (geotop.tex:412)
     LATEX VERSION: If M is connected, and M \<subset> L \<subset> \<bar>M\<close>, then L is connected. **)
@@ -614,7 +634,15 @@ theorem Theorem_GT_1_15:
   assumes "M \<subseteq> L" "L \<subseteq> closure_on X T M"
   assumes "top1_connected_on M (subspace_topology X T M)"
   shows "top1_connected_on L (subspace_topology X T L)"
-  sorry
+proof -
+  have hMX: "M \<subseteq> X"
+    sledgehammer [timeout = 15, provers = e]
+    sorry
+  have hLX: "L \<subseteq> X"
+    using assms(1,3) closure_on_sub_carrier hMX by blast
+  show ?thesis
+    by (metis Theorem_23_4 assms(1,2,3,4) hLX hMX)
+qed
 
 (** from \<S>1: component C(M,P) (geotop.tex:415)
     LATEX VERSION: The component C(M,P) of M containing P is the union of all connected
