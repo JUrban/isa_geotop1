@@ -2399,10 +2399,12 @@ proof -
          edges of J, mod 2. This parity depends only on P, Q (it is an invariant of the
          connected component they lie in). **)
   have h_parity:
-    "\<forall>P\<in>UNIV - J. \<forall>Q\<in>UNIV - J.
-       (geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P
-        = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q)
-         \<or> True" sorry
+    "\<exists>\<pi>::real^2 \<Rightarrow> nat.
+        \<forall>P\<in>UNIV - J. \<forall>Q\<in>UNIV - J.
+          (\<pi> P = \<pi> Q \<longleftrightarrow>
+             geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P
+             = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q) \<and>
+          \<pi> P < 2" sorry
   (** (3) There are at most two parity classes (mod 2), hence at most two components. **)
   show ?thesis sorry
 qed
@@ -7647,7 +7649,12 @@ proof -
          broken line (in three stages, one per crossing), each stage changing the word by
          an element of N({r_1, r_2, r_3}). Hence [g_1'] = [g_1] in F / N(R). **)
   have h_merge:
-    "True \<comment> \<open>g_1 \<equiv> g_1' modulo N(R)\<close>" sorry
+    "\<exists>(G::nat set) R (g\<^sub>1::(nat \<times> int) list) (g\<^sub>1'::(nat \<times> int) list).
+       finite G \<and> finite R \<and>
+       (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+       (\<forall>a\<in>set g\<^sub>1. fst a \<in> G) \<and> (\<forall>a\<in>set g\<^sub>1'. fst a \<in> G) \<and>
+       (\<exists>rel\<in>geotop_normal_closure G R. (g\<^sub>1 @ geotop_word_inv g\<^sub>1') \<in> rel)"
+    sorry
   (** (3) Substituting g_1' \<leftarrow> g_1 in r_2, r_3 reduces the set R to the original trefoil
          relations R' = {g_1 g_3^{-1} g_2^{-1} g_3, g_2 g_1^{-1} g_3^{-1} g_1,
          g_3 g_2^{-1} g_1^{-1} g_2}. Hence F(g_1, g_2, g_3, g_1') / N(R) \<cong>
@@ -8162,17 +8169,39 @@ proof -
   (** (2) Induction on the total number n of singular points of slices. Base n = 0: all
          slices are disjoint polygons (manifold slices). The top and bottom planes E_1,
          E_m each meet S in a singleton (Theorem 17_12_lem_1, inmost-polygon argument). **)
-  have h_base: "True \<comment> \<open>base case: n = 0 singular points\<close>" sorry
+  have h_base:
+    "\<forall>S'::(real^3) set. geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
+                       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
+                       card {P\<in>S'. \<exists>E. True \<comment> \<open>P is a singular slice point of S'\<close>} = 0 \<longrightarrow>
+       geotop_is_simply_imbedded S'" sorry
   (** (3) Inductive step: pick a horizontal plane E containing a singular point P, with
          an innermost polygon J \<subseteq> E \<inter> S bounding a 2-cell D_J in E with Int D_J \<inter> S = \<emptyset>.
          J splits S into S_1 \<union> S_2 along D_J; by Theorem 17_11, if both halves are simply
          imbedded the reunion is. Recursion on fewer singular points yields the result. **)
-  have h_step: "True \<comment> \<open>inductive step: reduce singular points\<close>" sorry
+  have h_step:
+    "\<forall>n>0. \<forall>S'::(real^3) set.
+       geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
+       card {P\<in>S'. \<exists>E. True \<comment> \<open>P singular slice point\<close>} = n \<longrightarrow>
+       (\<exists>S\<^sub>1 S\<^sub>2 D\<^sub>J.
+         geotop_is_n_cell D\<^sub>J (subspace_topology UNIV geotop_euclidean_topology D\<^sub>J) 2 \<and>
+         geotop_is_n_sphere S\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology S\<^sub>1) 2 \<and>
+         geotop_is_n_sphere S\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology S\<^sub>2) 2 \<and>
+         S' = (S\<^sub>1 \<union> S\<^sub>2) - geotop_top_interior UNIV geotop_euclidean_topology D\<^sub>J)"
+    sorry
   (** (4) At n = 0: each slice plane E_i bounds a 3-manifold slab M_i in R^3 between
          y = y_i and y = y_{i+1}, triangulable as the join of E_i \<inter> |K| with a point of
          E_{i+1} \<inter> |K| (Theorem 17_10). Hence Bd of the union is simply imbedded via
          Theorem 17_11. **)
-  have h_zerosing_simple: "True \<comment> \<open>zero-singular reduces to join-triangulable 3-cells\<close>" sorry
+  have h_zerosing_simple:
+    "\<forall>S'::(real^3) set.
+       geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
+       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
+       card {P\<in>S'. \<exists>E. True \<comment> \<open>singular slice point\<close>} = 0 \<longrightarrow>
+       (\<exists>Ms::nat \<Rightarrow> (real^3) set.
+          (\<forall>i. geotop_is_n_cell (Ms i)
+                 (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
+               (\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                      Ms i = geotop_join D {v})))" sorry
   show ?thesis sorry
 qed
 
@@ -9183,16 +9212,45 @@ proof -
             True)" sorry
   (** (2) Operation \<alpha> (split an edge at a new vertex): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged;
          \<chi>: V - E + F unchanged. **)
-  have h_alpha: "True \<comment> \<open>\<alpha> preserves \<chi>\<close>" sorry
+  have h_alpha:
+    "\<forall>\<C> \<C>'::'a set set.
+       geotop_is_open_cell_complex \<C> \<and> geotop_is_open_cell_complex \<C>' \<and>
+       \<Union>\<C> = \<Union>\<C>' \<and>
+       \<comment> \<open>\<C>' is an \<alpha>-refinement of \<C>: one new vertex, one new edge, same faces\<close>
+       geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
+       geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
+       geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
   (** (3) Operation \<beta> (split a face by a chord joining two boundary vertices): V unchanged,
          E \<mapsto> E + 1, F \<mapsto> F + 1; \<chi> unchanged. **)
-  have h_beta: "True \<comment> \<open>\<beta> preserves \<chi>\<close>" sorry
+  have h_beta:
+    "\<forall>\<C> \<C>'::'a set set.
+       geotop_is_open_cell_complex \<C> \<and> geotop_is_open_cell_complex \<C>' \<and>
+       \<Union>\<C> = \<Union>\<C>' \<and>
+       geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> \<and>
+       geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
+       geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> + 1 \<longrightarrow>
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
   (** (4) Operation \<gamma> (insert a new vertex of degree 2 in the interior of an edge):
          V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
-  have h_gamma: "True \<comment> \<open>\<gamma> preserves \<chi>\<close>" sorry
+  have h_gamma:
+    "\<forall>\<C> \<C>'::'a set set.
+       geotop_is_open_cell_complex \<C> \<and> geotop_is_open_cell_complex \<C>' \<and>
+       \<Union>\<C> = \<Union>\<C>' \<and>
+       geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
+       geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
+       geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
   (** (5) Operation \<delta> (insert an isolated vertex v and a chord from v to the face boundary
          into a face): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
-  have h_delta: "True \<comment> \<open>\<delta> preserves \<chi>\<close>" sorry
+  have h_delta:
+    "\<forall>\<C> \<C>'::'a set set.
+       geotop_is_open_cell_complex \<C> \<and> geotop_is_open_cell_complex \<C>' \<and>
+       \<Union>\<C> = \<Union>\<C>' \<and>
+       geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
+       geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
+       geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
   (** (6) By induction along the step sequence, \<chi>(\<C>1) = \<chi>(\<C>2). **)
   show ?thesis sorry
 qed
@@ -10899,15 +10957,19 @@ proof -
          at first). Since M is non-orientable, there is no consistent orientation: there
          is a closed path of 3-simplexes whose product of orientation compatibility is -1. **)
   have h_orientation_ambiguity:
-    "\<exists>p. geotop_closed_path_on M (subspace_topology UNIV geotop_euclidean_topology M)
-           (SOME P. True) p \<and>
-         \<comment> \<open>the orientation-holonomy along p is -1\<close> True" sorry
+    "\<exists>p P\<^sub>0. P\<^sub>0 \<in> M \<and>
+         geotop_closed_path_on M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 p \<and>
+         \<comment> \<open>the orientation-holonomy along p is -1\<close>
+         \<not> geotop_is_orientable_3_manifold K" sorry
   (** (2) The orientation character \<chi>: \<pi>(M, P_0) \<to> {\<plusminus>1} is a well-defined group
          homomorphism (orientation-reversal composition). Its kernel K_\<chi> is a subgroup of
          index 2. **)
   have h_character:
-    "\<exists>K\<^sub>\<chi>. K\<^sub>\<chi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) (SOME P. True) \<and>
-           \<comment> \<open>K_\<chi> has index 2 in \<pi>\<close> True" sorry
+    "\<exists>P\<^sub>0 K\<^sub>\<chi> cosets.
+        P\<^sub>0 \<in> M \<and>
+        K\<^sub>\<chi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 \<and>
+        card cosets = 2 \<and>
+        \<Union>cosets = geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0" sorry
   (** (3) Apply Theorem 24.5 with \<pi> = K_\<chi>: there is a 2-fold covering Mt \<to> M
          corresponding to this index-2 subgroup. **)
   show ?thesis sorry
@@ -10935,15 +10997,23 @@ proof -
          h \<ge> 1 handles or crosscaps (since \<chi>(C) < 2). Thus \<pi>(C, P_0) is non-trivial and
          has a nontrivial map to Z by integrating a 1-form (or directly via H_1 surjection). **)
   have h_nonsphere_H1:
-    "True \<comment> \<open>H_1(C) \<noteq> 0\<close>" sorry
+    "\<exists>C. (\<exists>P\<in>geotop_manifold_boundary M (\<lambda>x y. norm (x - y)).
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                   (geotop_manifold_boundary M (\<lambda>x y. norm (x - y))) P) \<and>
+         geotop_first_betti_number C \<ge> 1" sorry
   (** (2) The inclusion C into M induces a homomorphism pi(C, P_0) --> pi(M, P_0). Since
          C is non-trivial in H_1 and M is orientable, the composition pi(C) --> pi(M) -->
          pi(M)/[pi, pi] = H_1(M) has image containing an infinite cyclic subgroup
          (Poincare duality: boundary map H_2(M, BdM) --> H_1(BdM) is surjective onto a
          Z-subgroup). **)
   have h_Z_subgroup:
-    "\<exists>Z\<^sub>0. Z\<^sub>0 \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) (SOME P. True)
-         \<and> \<comment> \<open>Z_0 is an infinite cyclic (Z-like) subgroup\<close> True" sorry
+    "\<exists>P\<^sub>0 Z\<^sub>0. P\<^sub>0 \<in> M \<and>
+        Z\<^sub>0 \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 \<and>
+        infinite Z\<^sub>0 \<and>
+        \<comment> \<open>Z_0 is an infinite cyclic (Z-like) subgroup of \<pi>(M, P_0)\<close>
+        (\<exists>g\<in>Z\<^sub>0. \<forall>h\<in>Z\<^sub>0. \<exists>n::int.
+           geotop_pi_mult M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 g h
+             \<in> Z\<^sub>0)" sorry
   (** (3) The index-2 subgroup 2Z in Z pulls back to an index-2 subgroup of \<pi>(M, P_0);
          apply Theorem 24.5 to obtain a 2-fold covering of M. **)
   show ?thesis sorry
@@ -11405,8 +11475,12 @@ proof -
   (** (2) Consider N = M^2 \<union> V^+ (closure of the + side). N is a 3-manifold with boundary
          containing M^2 as a boundary component. Apply Theorem 26_2 (collar) to N to get a
          one-sided collar \<rho>^+: M^2 \<times> [0, 1] \<to> N. Similarly \<rho>^- for the minus side. **)
-  obtain \<rho>p \<rho>m where h_two_collars:
-    "True \<comment> \<open>separate collars on each side of M^2\<close>" sorry
+  have h_two_collars:
+    "\<exists>\<rho>p \<rho>m::(real^3) \<times> real \<Rightarrow> real^3.
+        (\<forall>P\<in>M2. \<rho>p (P, 0) = P \<and> \<rho>m (P, 0) = P) \<and>
+        (\<forall>P\<in>M2. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<rho>p (P, t) \<in> Vp \<union> M2) \<and>
+        (\<forall>P\<in>M2. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<rho>m (P, t) \<in> Vm \<union> M2)
+        \<comment> \<open>separate collars on each side of M^2\<close>" sorry
   (** (3) Glue \<rho>^+ and (mirrored) \<rho>^- along M^2 \<times> {0} to form a single PLH \<rho>: M^2 \<times>
          [-1, 1] \<to> W with W = \<rho>^+([0, 1]) \<cup> \<rho>^-([0, 1]) open in M^3. **)
   show ?thesis sorry
@@ -12023,7 +12097,8 @@ proof -
                h ` J = J')" sorry
   (** (2) [J] = n [J_x] in \<pi>(S) (Theorem 28_4). The assumption "J null on S" forces n = 0
          (else J represents a non-trivial class). **)
-  have h_n_zero: "True" sorry
+  have h_n_zero:
+    "\<exists>J'. geotop_in_standard_position S J' Jx \<and> card (J' \<inter> Jx) = 0" sorry
   (** (3) "J not null on T" rules out J being trivially on T, so J must be another
          latitudinal parallel (same generator class as J_x on T). **)
   have h_latitudinal:
@@ -12345,7 +12420,7 @@ theorem Theorem_GT_28_14:
 proof -
   (** (1) H_1(R^3 - J) \<cong> Z (abelianisation of \<pi>(R^3 - J) is Z; Alexander duality). **)
   have h_H1:
-    "True \<comment> \<open>H_1(R^3 - J) \<cong> Z\<close>" sorry
+    "geotop_first_betti_number (UNIV - J) = 1" sorry
   (** (2) Let S = regular neighbourhood of J; T = Bd S torus. A latitudinal polygon J_x
          on T has Z^1(J_x) generating H_1(R^3 - J). Geometrically, p_{J_x} winds around
          J once. **)
@@ -12449,7 +12524,7 @@ proof -
          identification group kills all 1-cycles), H_2 = 0 (by Poincare duality),
          H_3 = Z. So K has the homology groups of a 3-sphere. **)
   have h_homology_sphere:
-    "True \<comment> \<open>H_*(K, Z) \<cong> H_*(S^3, Z)\<close>" sorry
+    "geotop_first_betti_number (geotop_polyhedron K) = 0" sorry
   (** (4) However \<pi>(K, P_0) is the binary icosahedral group (order 120), which is
          non-trivial. Hence K is not simply connected. **)
   have h_pi_nontrivial:
@@ -12677,7 +12752,10 @@ theorem Theorem_GT_30_2:
 proof -
   (** (1) Induction on the number n of components of C. Base n = 1: C is already
          connected, so it is its own component. **)
-  have h_base: "True \<comment> \<open>n = 1 trivial\<close>" sorry
+  have h_base:
+    "card {cC. \<exists>P\<in>C. cC = geotop_component_at X T C P} = 1 \<longrightarrow>
+     (\<exists>cC. (\<exists>P\<in>C. cC = geotop_component_at X T C P) \<and>
+           geotop_separates_in X T cC H K)" sorry
   (** (2) Inductive step: C = C_1 \<cup> (\<union>_{i>1} C_i) with C_1 a component and \<union>_{i>1} C_i
          the union of the remaining components (each disjoint and closed). Both parts
          are closed and disjoint. Apply Theorem 30.1 to split C_1 vs the rest. One of
