@@ -7742,7 +7742,7 @@ proof -
   have h_fr_sub_bd:
     "geotop_frontier UNIV geotop_euclidean_topology M
        \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))" sorry
-  show ?thesis sorry
+  show ?thesis using h_U_interior h_fr_sub_bd by (by100 blast)
 qed
 
 (** from \<S>17: cell-complex (geotop.tex:3415)
