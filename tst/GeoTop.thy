@@ -782,9 +782,15 @@ qed
     LATEX VERSION: Let K be a complex. If K is connected, then |K| is pathwise connected. **)
 theorem Theorem_GT_1_4:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_complex_connected K"
+  assumes hK: "geotop_complex_connected K"
   shows "top1_path_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+  (** Moise proof (geotop.tex:343): given P, Q \<in> |K|, pick \<sigma>\<^sub>P, \<sigma>\<^sub>Q \<in> K with P \<in> \<sigma>\<^sub>P,
+      Q \<in> \<sigma>\<^sub>Q. Define Cs = {\<sigma> \<in> K: \<sigma> reachable from \<sigma>\<^sub>P via a chain of simplexes with
+      consecutive intersections nonempty}. Show Cs and K - Cs are both complexes; by
+      complex-connectedness of K, one is empty; since \<sigma>\<^sub>P \<in> Cs, Cs = K, so \<sigma>\<^sub>Q reachable.
+      Build a path from P to Q by concatenating straight-line paths within each simplex,
+      via top1_in_same_path_component_on_trans. **)
   sorry
 
 (** from \<S>1: connected topological space (geotop.tex:349)
