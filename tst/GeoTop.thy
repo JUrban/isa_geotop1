@@ -12080,20 +12080,31 @@ definition geotop_is_canonical_configuration ::
       configuration. **)
 theorem Theorem_GT_31_1:
   fixes A S S' :: "nat \<Rightarrow> (real^3) set" and i :: nat
-  assumes "\<forall>j. j = i \<or> j = i+1 \<or> j = i+2 \<longrightarrow>
+  assumes hinputs: "\<forall>j. j = i \<or> j = i+1 \<or> j = i+2 \<longrightarrow>
              geotop_is_solid_torus (S j) \<and>
              geotop_is_solid_torus (S' j) \<and>
              A j \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y))"
   shows "\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i"
-  sorry
+proof -
+  (** (1) For each j \<in> {i, i+1, i+2}, apply Theorem 30.7 to find a CST S''_j satisfying
+         A_j \<subseteq> Int S''_j \<subseteq> S''_j \<subseteq> Int S'_j. **)
+  have h_per_j_CST:
+    "\<forall>j\<in>{i, i+1, i+2}. \<exists>Sj. geotop_is_CST Sj \<and>
+         A j \<subseteq> geotop_manifold_interior Sj (\<lambda>x y. norm (x - y)) \<and>
+         Sj \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y))" sorry
+  (** (2) Assemble S'' as S''_j per index (and T'' as boundaries thereof); the disjointness
+         S''_i \<inter> S''_{i+2} holds by the disjoint-S_j inputs (transported to their
+         sub-CSTs). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>31 Theorem 2 (geotop.tex:6279)
     LATEX VERSION: In a canonical configuration, each of the sets J_j' and J_{j+1}' carries
       a generator of \<pi>(S_j''). **)
 theorem Theorem_GT_31_2:
   fixes A S S' S'' T'' J :: "nat \<Rightarrow> (real^3) set" and i :: nat
-  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
-  assumes "\<forall>j. geotop_is_polygon (J j) \<and> J j \<subseteq> S' j"
+  assumes hcc: "geotop_is_canonical_configuration A S S' S'' T'' i"
+  assumes hJ: "\<forall>j. geotop_is_polygon (J j) \<and> J j \<subseteq> S' j"
   shows "\<forall>j. \<forall>P\<^sub>0\<in>J j. \<exists>p.
            p ` {0..1} = J j \<and>
            geotop_closed_path_on (S'' j)
@@ -12104,15 +12115,36 @@ theorem Theorem_GT_31_2:
                   (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q
                 \<in> geotop_pi (S'' j)
                   (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Each S''_j and S'_j are combinatorial solid tori; fix Theorem 30.8 with S_1 = S_j,
+         S = S''_j, S_2 = S'_j: any spine J_j' of S_j generates \<pi>(S''_j). **)
+  have h_per_j_spine:
+    "\<forall>j. \<forall>P\<^sub>0\<in>J j. \<exists>p. p ` {0..1} = J j \<and>
+         geotop_closed_path_on (S'' j)
+           (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 p \<and>
+         (\<forall>q. geotop_closed_path_on (S'' j)
+                (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q \<longrightarrow>
+              geotop_pi_class (S'' j)
+                (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q
+              \<in> geotop_pi (S'' j)
+                (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>31 Theorem 3 (geotop.tex:6282)
     LATEX VERSION: In a canonical configuration, S_i'' \<inter> S_{i+2}'' = \<emptyset>. **)
 theorem Theorem_GT_31_3:
   fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and i :: nat
-  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
+  assumes hcc: "geotop_is_canonical_configuration A S S' S'' T'' i"
   shows "S'' i \<inter> S'' (i+2) = {}"
-  sorry
+proof -
+  (** (1) By canonical configuration, S''_j \<subseteq> Int S'_j. The original solid tori S'_i and
+         S'_{i+2} are separated (non-adjacent in the chain). **)
+  have h_S'_disjoint:
+    "S' i \<inter> S' (i+2) = {}" sorry
+  (** (2) Hence S''_i \<subseteq> Int S'_i disjoint from S''_{i+2} \<subseteq> Int S'_{i+2}. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>31 Theorem 4 (geotop.tex:6285)
     LATEX VERSION: In a canonical configuration, let J be a polygon in a set T_j'' \<inter>
@@ -12120,9 +12152,9 @@ theorem Theorem_GT_31_3:
       (2) J bounds a 2-cell in T_j'' and a 2-cell in T_{j+1}''. **)
 theorem Theorem_GT_31_4:
   fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and J :: "(real^3) set" and j :: nat
-  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> T'' j \<inter> T'' (j+1)"
+  assumes hcc: "geotop_is_canonical_configuration A S S' S'' T'' i"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_on_T: "J \<subseteq> T'' j \<inter> T'' (j+1)"
   shows "(\<forall>k\<in>{j, j+1}. \<forall>P\<^sub>0\<in>J. \<exists>p.
              p ` {0..1} = J \<and>
              geotop_closed_path_on (S'' k)
@@ -12130,7 +12162,25 @@ theorem Theorem_GT_31_4:
          (\<forall>k\<in>{j, j+1}. \<exists>D. geotop_is_n_cell D
               (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
               D \<subseteq> T'' k \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)"
-  sorry
+proof -
+  (** (1) J lies in T''_j = Bd S''_j. Apply Theorem 27.3 to the annulus T''_j: either J
+         bounds a 2-cell in T''_j (case 2), or J carries a generator of \<pi>(S''_j) (case 1). **)
+  have h_T_j_dichotomy:
+    "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+          D \<subseteq> T'' j \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
+     (\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on (S'' j)
+               (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 p)" sorry
+  (** (2) Similarly for T''_{j+1}. The same disjunction holds; moreover it is consistent
+         across j and j+1 (intersection at J forces the same case on both). **)
+  have h_T_j1_dichotomy:
+    "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+          D \<subseteq> T'' (j+1) \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
+     (\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on (S'' (j+1))
+               (subspace_topology UNIV geotop_euclidean_topology (S'' (j+1))) P\<^sub>0 p)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>31: dual cells of a tubular neighborhood (geotop.tex:6316)
     LATEX VERSION: Let K be a 1-dimensional complex, in a PL 3-manifold M, and let N be a
