@@ -1447,6 +1447,57 @@ proof (intro exI[of _ "{P, Q}"] exI[of _ "1::nat"] conjI)
     by (simp add: geotop_convex_hull_eq_HOL segment_convex_hull)
 qed
 
+(** Helper: a closed segment between distinct points is an arc. **)
+lemma geotop_closed_segment_is_arc:
+  fixes P Q :: "'a::real_normed_vector"
+  assumes hne: "P \<noteq> Q"
+  shows "geotop_is_arc (closed_segment P Q)
+           (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
+proof -
+  have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hTsub: "is_topology_on (closed_segment P Q)
+                 (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
+    by (rule subspace_topology_is_topology_on[OF hTeucl subset_UNIV])
+  have hsimplex: "geotop_simplex_dim (closed_segment P Q) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hne])
+  have hcont_id: "top1_continuous_map_on (closed_segment P Q)
+                    (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+                    (closed_segment P Q)
+                    (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q)) id"
+    by (rule top1_continuous_map_on_id[OF hTsub])
+  have hinv_id: "\<forall>x\<in>closed_segment P Q. inv_into (closed_segment P Q) id x = id x"
+  proof
+    fix x assume "x \<in> closed_segment P Q"
+    thus "inv_into (closed_segment P Q) id x = id x"
+      by (metis inj_on_id inv_into_f_f id_apply)
+  qed
+  have hcont_inv: "top1_continuous_map_on (closed_segment P Q)
+                    (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+                    (closed_segment P Q)
+                    (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+                    (inv_into (closed_segment P Q) id)"
+    using hcont_id top1_continuous_map_on_cong[OF hinv_id] by blast
+  have hbij: "bij_betw id (closed_segment P Q) (closed_segment P Q)" by simp
+  have hhomeo: "top1_homeomorphism_on (closed_segment P Q)
+                  (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+                  (closed_segment P Q)
+                  (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q)) id"
+    unfolding top1_homeomorphism_on_def
+    using hTsub hbij hcont_id hcont_inv by blast
+  (** Package into the n_cell existential form. **)
+  have hncell: "geotop_is_n_cell (closed_segment P Q)
+                  (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q)) 1"
+    unfolding geotop_is_n_cell_def
+    apply (rule conjI[OF hTsub])
+    apply (rule exI[where x = "closed_segment P Q"])
+    apply (rule exI[where x = "id :: 'a \<Rightarrow> 'a"])
+    apply (rule conjI[OF hsimplex])
+    apply (rule hhomeo)
+    done
+  show ?thesis unfolding geotop_is_arc_def using hncell .
+qed
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
