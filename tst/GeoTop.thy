@@ -8798,7 +8798,7 @@ proof -
              (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
              (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q}))
              h" sorry
-  show ?thesis sorry
+  show ?thesis using h_prob_17_6 by (by100 blast)
 qed
 
 (** from \<S>19 Theorem 6 (geotop.tex:4172)
