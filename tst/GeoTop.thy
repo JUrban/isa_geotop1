@@ -5198,8 +5198,12 @@ proof -
   (** H(J) is a polygon. **)
   have hHJ_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J"
     sorry
+  (** J is triangulable (from the homeomorphism to the polygon P). **)
+  have hJ_triangulable: "geotop_is_triangulable J" sorry
   (** Conclude J is tame. **)
-  show ?thesis sorry
+  show ?thesis
+    using hJ_triangulable hH hHJ_poly
+    unfolding geotop_is_tame_def by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 6 (The frame theorem) (geotop.tex:2009)
