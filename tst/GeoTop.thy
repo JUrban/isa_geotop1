@@ -7973,6 +7973,8 @@ proof -
           D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 \<and>
           (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D\<^sub>1) \<longrightarrow>
           geotop_has_push_property_at \<sigma>3 D\<^sub>1" sorry
+  have h_push_sigma: "geotop_has_push_property \<sigma>3"
+    using h_setup unfolding geotop_has_push_property_def by (by100 blast)
   (** (2) By Theorem 17_5, push D_1 onto a 2-face \<sigma>_0^2 of \<sigma>^3 via some PLH f_1 with
          compact support in the given neighbourhood N. **)
   have h_step1:
@@ -7989,7 +7991,7 @@ proof -
   (** (3) Push the 2-face \<sigma>_0^2 across \<sigma>^3 to its opposite D_2 = Cl(Bd \<sigma>^3 - \<sigma>_0^2) via
          Theorem 17_4. Compose f_1 with this second PLH to get h: D_1 \<leftrightarrow> D_2, with support
          still in N. **)
-  show ?thesis sorry
+  show ?thesis using h_push_sigma by (by100 blast)
 qed
 
 (** from \<S>17: simply imbedded 2-sphere (geotop.tex:3530)
