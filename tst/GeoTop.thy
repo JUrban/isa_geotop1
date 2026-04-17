@@ -5200,6 +5200,8 @@ proof -
   have hHJ_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J"
     sorry
   (** J is triangulable (from the homeomorphism to the polygon P). **)
+  have hP_poly_complex: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = P"
+    using hP_polygon unfolding geotop_is_polygon_def by (by100 blast)
   have hJ_triangulable: "geotop_is_triangulable J" sorry
   (** Conclude J is tame. **)
   show ?thesis
