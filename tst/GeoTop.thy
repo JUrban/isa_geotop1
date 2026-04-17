@@ -4530,7 +4530,7 @@ theorem Theorem_GT_23_15:
   assumes "geotop_is_doubling_of (geotop_polyhedron K) (geotop_polyhedron K')"
   assumes "geotop_is_complex K'"
   shows "geotop_is_orientable_3_manifold K'"
-  sorry
+  using assms(2,3) geotop_is_doubling_of_def geotop_is_orientable_3_manifold_def by blast
 
 (** from \<S>23 Theorem 16 (geotop.tex:5092)
     LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary. Then K is
@@ -4558,7 +4558,7 @@ theorem Theorem_GT_23_17:
   assumes "geotop_is_complex K'"
   assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) 3"
   shows "geotop_is_orientable_3_manifold K'"
-  sorry
+  using assms(3,4) geotop_is_orientable_3_manifold_def by blast
 
 (** from \<S>23: total number of handles h(M) (geotop.tex:5099)
     LATEX VERSION: Let M be a compact orientable 2-manifold, let the components of M be
