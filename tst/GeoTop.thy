@@ -3831,7 +3831,7 @@ theorem Theorem_GT_21_4:
   assumes "geotop_open_cell_refines \<C>2 \<C>1"
   assumes "\<Union>\<C>2 = \<Union>\<C>1"
   shows "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
-  sorry
+  using Theorem_GT_21_3 assms(1,2,3,4) by blast
 
 (** from \<S>21 Theorem 5 (geotop.tex:4498)
     LATEX VERSION: All triangulations of the same compact 2-manifold have the same Euler
