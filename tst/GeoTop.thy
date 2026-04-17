@@ -13009,7 +13009,7 @@ proof -
           (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T') \<and>
           T' \<subseteq> geotop_manifold_interior Y (\<lambda>x y. norm (x - y)) \<and>
           geotop_separates_in UNIV geotop_euclidean_topology T' T0 T1" sorry
-  show ?thesis sorry
+  show ?thesis using h_PL_torus by (by100 blast)
 qed
 
 (** from \<S>30 Theorem 7 (geotop.tex:6177)
