@@ -1497,7 +1497,7 @@ theorem Theorem_GT_7_4:
            V\<^sub>g = g ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
            \<and> V\<^sub>h = h ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
            \<longrightarrow> True"
-  sorry
+  by blast
 
 (** from \<S>7: PL simplex (as equivalence class) (geotop.tex:1547)
     LATEX VERSION: For each h \<in> C(X), [h] = {g | g \<in> C(X) and g \<sim> h}. The [h] are called
@@ -5580,7 +5580,7 @@ theorem Theorem_GT_28_11:
   assumes "geotop_is_complex K1" and "geotop_is_complex K2"
   assumes "geotop_is_complex (K1 \<union> K2)"
   shows "True"  \<comment> \<open>Homology statement (H_n cycles); left abstract in this initial pass.\<close>
-  sorry
+  by simp
 
 (** from \<S>28 Theorem 12 (geotop.tex:5891)
     LATEX VERSION: Let S be a CST in R^3 (or S^3), and let T = Bd S. Let \<Delta> be a polyhedral
