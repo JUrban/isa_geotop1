@@ -11233,7 +11233,7 @@ proof -
          J ensures consistent orientations around the loop, so no twist; hence a CST. **)
   have h_N_CST:
     "\<exists>N. geotop_is_CST N \<and> N = geotop_regular_neighborhood K' L" sorry
-  show ?thesis sorry
+  show ?thesis using hKL h_N_CST by (by100 blast)
 qed
 
 section \<open>\<S>25 The Stallings proof of the Loop theorem of Papakyriakopoulos\<close>
