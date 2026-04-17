@@ -12121,7 +12121,7 @@ theorem Theorem_GT_28_4:
 proof -
   (** (1) The standard position means J meets J_x in finitely many transverse points.
          Count n = |J \<cap> J_x|. **)
-  have h_card: "\<exists>n::nat. n = card (J \<inter> Jx)" sorry
+  have h_card: "\<exists>n::nat. n = card (J \<inter> Jx)" by (by100 blast)
   (** (2) Parametrise J as a closed path p_J based at P_0, and J_x as p_Y. On S (CST)
          the abelianised \<pi>(S) \<cong> Z has generator Y = [p_Y]; each transverse crossing of
          J with J_x contributes +1 or -1 to [p_J] measured against Y. Hence [p_J] = n * Y
