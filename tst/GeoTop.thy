@@ -553,13 +553,221 @@ definition geotop_complex_connected :: "'a::real_normed_vector set set \<Rightar
     \<not>(\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
           \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
 
+subsection \<open>Helpers for simplex connectivity (\<S>1 Theorem 3)\<close>
+
+text \<open>Moise's \<S>1 Theorem 3: every simplex is pathwise connected, because
+  it is convex, and the straight-line path between any two points of a
+  convex set is continuous.\<close>
+
+(** Bridge between Moise's geotop_convex and HOL-Analysis convex. **)
+lemma geotop_convex_iff_HOL_convex:
+  fixes S :: "'a::real_vector set"
+  shows "geotop_convex S \<longleftrightarrow> convex S"
+  unfolding geotop_convex_def geotop_segment_def convex_def by blast
+
+(** The convex hull of a set is convex in Moise's sense. **)
+lemma geotop_convex_hull_is_convex:
+  fixes V :: "'a::real_vector set"
+  shows "geotop_convex (geotop_convex_hull V)"
+  unfolding geotop_convex_hull_def geotop_convex_def geotop_segment_def by blast
+
+(** A simplex is convex (as a convex hull of its vertex set). **)
+lemma geotop_simplex_is_convex:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "geotop_convex \<sigma>"
+  by (metis assms geotop_convex_hull_is_convex geotop_is_simplex_def)
+
+(** The geotop convex hull coincides with HOL-Analysis's convex hull. **)
+lemma geotop_convex_hull_eq_HOL:
+  fixes V :: "'a::real_vector set"
+  shows "geotop_convex_hull V = convex hull V"
+  by (simp add: geotop_convex_hull_def geotop_convex_iff_HOL_convex hull_def)
+
+(** Every vertex of a simplex belongs to the simplex. **)
+lemma geotop_simplex_vertices_subset:
+  fixes V :: "'a::real_vector set"
+  shows "V \<subseteq> geotop_convex_hull V"
+  by (metis geotop_convex_hull_eq_HOL hull_subset)
+
+(** A simplex is nonempty (it contains its vertices). **)
+lemma geotop_simplex_nonempty:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "\<sigma> \<noteq> {}"
+proof -
+  obtain V m n where hV: "finite V" "card V = n + 1"
+                    "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by blast
+  have hVne: "V \<noteq> {}" using hV(2) by force
+  have hsub: "V \<subseteq> \<sigma>"
+    by (simp add: geotop_simplex_vertices_subset hV(3))
+  show ?thesis using hVne hsub by blast
+qed
+
+(** Auxiliary: top1 norm-ball equals HOL-Analysis ball. **)
+lemma top1_ball_on_UNIV_norm_eq_ball:
+  fixes x :: "'a::real_normed_vector" and e :: real
+  shows "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+  unfolding top1_ball_on_def ball_def dist_norm by simp
+
+(** Bridge: the metric topology from the norm equals top1_open_sets, which
+    coincides with HOL's built-in topology on real_normed_vector types. **)
+lemma geotop_euclidean_topology_eq_open_sets:
+  "(geotop_euclidean_topology :: ('a::real_normed_vector) set set) = top1_open_sets"
+proof (rule set_eqI, rule iffI)
+  fix U :: "'a set" assume hU: "U \<in> geotop_euclidean_topology"
+  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+    by (rule top1_ball_on_UNIV_norm_eq_ball)
+  have "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
+  proof (intro ballI)
+    fix x assume hxU: "x \<in> U"
+    obtain b where hb1: "b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
+               and hb2: "x \<in> b" and hb3: "b \<subseteq> U"
+      using hU hxU
+      unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
+                topology_generated_by_basis_def by blast
+    obtain x' e' where hb_eq: "b = top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x' e'"
+                   and he': "0 < e'"
+      using hb1 unfolding top1_metric_basis_on_def by blast
+    have hb_ball: "b = ball x' e'" using hb_eq top1_ball_on_UNIV_norm_eq_ball by simp
+    have hxb: "x \<in> ball x' e'" using hb2 hb_ball by simp
+    obtain e where he0: "0 < e" and he_sub: "ball x e \<subseteq> ball x' e'"
+      using hxb openE open_ball by blast
+    from he_sub hb3 hb_ball he0 show "\<exists>e>0. ball x e \<subseteq> U" by auto
+  qed
+  then have "open U" using open_contains_ball by blast
+  thus "U \<in> top1_open_sets" unfolding top1_open_sets_def by simp
+next
+  fix U :: "'a set" assume hU: "U \<in> top1_open_sets"
+  then have hopen: "open U" unfolding top1_open_sets_def by simp
+  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+    by (rule top1_ball_on_UNIV_norm_eq_ball)
+  have hforall: "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
+    using hopen open_contains_ball by blast
+  show "U \<in> geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
+              topology_generated_by_basis_def
+  proof (intro CollectI conjI ballI)
+    show "U \<subseteq> UNIV" by simp
+  next
+    fix x assume hxU: "x \<in> U"
+    obtain e where he0: "0 < e" and heU: "ball x e \<subseteq> U"
+      using hforall hxU by blast
+    let ?b = "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e"
+    have hb_in: "?b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
+      unfolding top1_metric_basis_on_def using he0 by blast
+    have hb_eq: "?b = ball x e" by (rule top1_ball_on_UNIV_norm_eq_ball)
+    have hxb: "x \<in> ?b" using hb_eq he0 by simp
+    have hbU: "?b \<subseteq> U" using hb_eq heU by simp
+    show "\<exists>b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y)). x \<in> b \<and> b \<subseteq> U"
+      using hb_in hxb hbU by blast
+  qed
+qed
+
+(** Continuous maps from a real subspace into a real_normed_vector subspace
+    (via the top1_open_sets topology). Mirror of
+    \<open>top1_continuous_map_on_real_subspace_open_sets\<close> but with
+    real_normed_vector codomain. **)
+lemma top1_continuous_map_on_real_to_normed_subspace_open_sets:
+  fixes S :: "real set" and T :: "'a::real_normed_vector set"
+  fixes f :: "real \<Rightarrow> 'a"
+  assumes hmap: "\<And>x. x \<in> S \<Longrightarrow> f x \<in> T"
+  assumes hcont: "continuous_on UNIV f"
+  shows "top1_continuous_map_on S (subspace_topology UNIV top1_open_sets S)
+                                T (subspace_topology UNIV top1_open_sets T) f"
+  unfolding top1_continuous_map_on_def
+proof (intro conjI)
+  show "\<forall>x\<in>S. f x \<in> T" using hmap by blast
+  show "\<forall>V \<in> subspace_topology UNIV top1_open_sets T.
+          {x \<in> S. f x \<in> V} \<in> subspace_topology UNIV top1_open_sets S"
+  proof (intro ballI)
+    fix V assume hV: "V \<in> subspace_topology UNIV top1_open_sets T"
+    obtain U where hU: "U \<in> top1_open_sets" and hVeq: "V = T \<inter> U"
+      using hV unfolding subspace_topology_def by blast
+    have hopenU: "open U" using hU unfolding top1_open_sets_def by simp
+    have hopen_pre: "open (f -` U)" by (rule open_vimage[OF hopenU hcont])
+    have hpre_mem: "f -` U \<in> top1_open_sets"
+      unfolding top1_open_sets_def using hopen_pre by simp
+    have hEq: "{x \<in> S. f x \<in> V} = S \<inter> (f -` U)"
+      unfolding hVeq using hmap by blast
+    show "{x \<in> S. f x \<in> V} \<in> subspace_topology UNIV top1_open_sets S"
+      unfolding subspace_topology_def
+      apply (rule CollectI)
+      apply (rule exI[where x="f -` U"])
+      apply (intro conjI)
+       apply (simp add: hEq Int_commute Int_left_commute Int_assoc)
+      apply (rule hpre_mem)
+      done
+  qed
+qed
+
+(** The straight-line path t \<mapsto> (1-t)P + tQ is continuous into the subspace
+    topology induced by geotop_euclidean_topology, for any convex target. **)
+lemma geotop_straight_line_path_continuous:
+  fixes P Q :: "'a::real_normed_vector" and S :: "'a set"
+  assumes hconv: "convex S" and hP: "P \<in> S" and hQ: "Q \<in> S"
+  shows "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+           S (subspace_topology UNIV geotop_euclidean_topology S)
+           (\<lambda>t. (1-t) *\<^sub>R P + t *\<^sub>R Q)"
+proof -
+  let ?f = "\<lambda>t::real. (1-t) *\<^sub>R P + t *\<^sub>R Q"
+  have hmap: "\<And>t. t \<in> top1_unit_interval \<Longrightarrow> ?f t \<in> S"
+    by (metis atLeastAtMost_iff convex_alt hP hQ hconv top1_unit_interval_def)
+  have hcont_HOL: "continuous_on UNIV ?f"
+    by (intro continuous_intros)
+  have hcont_op: "top1_continuous_map_on top1_unit_interval
+                    (subspace_topology UNIV top1_open_sets top1_unit_interval)
+                    S (subspace_topology UNIV top1_open_sets S) ?f"
+    by (rule top1_continuous_map_on_real_to_normed_subspace_open_sets[OF hmap hcont_HOL])
+  have hbridge: "(geotop_euclidean_topology :: 'a set set) = top1_open_sets"
+    by (rule geotop_euclidean_topology_eq_open_sets)
+  show ?thesis
+    unfolding top1_unit_interval_topology_def hbridge
+    using hcont_op by simp
+qed
+
+(** Every convex nonempty set in a real_normed_vector is path-connected in
+    Top0's sense (via geotop_euclidean_topology). **)
+lemma top1_path_connected_on_HOL_convex:
+  fixes S :: "'a::real_normed_vector set"
+  assumes hconv: "convex S" and hne: "S \<noteq> {}"
+  shows "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  unfolding top1_path_connected_on_def
+proof (intro conjI ballI)
+  have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hSUNIV: "S \<subseteq> UNIV" by simp
+  show "is_topology_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+    by (rule subspace_topology_is_topology_on[OF hTeucl hSUNIV])
+next
+  fix P Q assume hP: "P \<in> S" and hQ: "Q \<in> S"
+  let ?f = "\<lambda>t::real. (1-t) *\<^sub>R P + t *\<^sub>R Q"
+  have hcont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                 S (subspace_topology UNIV geotop_euclidean_topology S) ?f"
+    by (rule geotop_straight_line_path_continuous[OF hconv hP hQ])
+  have hf0: "?f 0 = P" by simp
+  have hf1: "?f 1 = Q" by simp
+  have "top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P Q ?f"
+    unfolding top1_is_path_on_def using hcont hf0 hf1 by simp
+  thus "\<exists>f. top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P Q f"
+    by blast
+qed
+
 (** from \<S>1 Theorem 3 (geotop.tex:338)
     LATEX VERSION: Every simplex is pathwise connected. **)
 theorem Theorem_GT_1_3:
   fixes \<sigma> :: "'a::real_normed_vector set"
   assumes "geotop_is_simplex \<sigma>"
   shows "top1_path_connected_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
-  sorry
+  (** Moise proof (geotop.tex:338): a simplex is convex (as a convex hull),
+      and every convex set is path-connected via straight-line paths. **)
+proof -
+  have hconv: "convex \<sigma>"
+    using geotop_simplex_is_convex[OF assms] geotop_convex_iff_HOL_convex by blast
+  have hne: "\<sigma> \<noteq> {}" by (rule geotop_simplex_nonempty[OF assms])
+  show ?thesis by (rule top1_path_connected_on_HOL_convex[OF hconv hne])
+qed
 
 (** from \<S>1 Theorem 4 (geotop.tex:341)
     LATEX VERSION: Let K be a complex. If K is connected, then |K| is pathwise connected. **)
