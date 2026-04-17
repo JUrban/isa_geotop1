@@ -588,10 +588,80 @@ qed
 (** from \<S>1 Theorem 11 (geotop.tex:388)
     LATEX VERSION: Every pathwise connected set is connected. **)
 theorem Theorem_GT_1_11:
-  assumes "is_topology_on X T" "M \<subseteq> X"
-  assumes "top1_path_connected_on M (subspace_topology X T M)"
+  assumes hTX: "is_topology_on X T"
+  assumes hMX: "M \<subseteq> X"
+  assumes hMpc: "top1_path_connected_on M (subspace_topology X T M)"
   shows "top1_connected_on M (subspace_topology X T M)"
-  sorry
+  (** Moise proof (geotop.tex:388): suppose not, M = H \<union> K (separated, nonempty).
+      Take P\<in>H, Q\<in>K, path f from P to Q in M. Image f(UI) connected (Theorem_23_5
+      + top1_unit_interval_connected). By Theorem 1.10 image lies in H or K,
+      contradicting P = f(0) \<in> H and Q = f(1) \<in> K. **)
+proof (rule ccontr)
+  assume hnc: "\<not> top1_connected_on M (subspace_topology X T M)"
+  have hconn_iff: "top1_connected_on M (subspace_topology X T M) \<longleftrightarrow>
+    \<not>(\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K)"
+    by (rule Theorem_GT_1_6[OF hTX hMX])
+  from hnc hconn_iff
+  have hsep_ex: "\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K"
+    by blast
+  then obtain H K where hHne: "H \<noteq> {}" and hKne: "K \<noteq> {}"
+        and hMHK: "M = H \<union> K" and hsep: "geotop_separated X T H K" by blast
+  from hHne obtain P where hPH: "P \<in> H" by blast
+  from hKne obtain Q where hQK: "Q \<in> K" by blast
+  have hPM: "P \<in> M" using hPH hMHK by fast
+  have hQM: "Q \<in> M" using hQK hMHK by fast
+  have hpath_ex: "\<exists>f. top1_is_path_on M (subspace_topology X T M) P Q f"
+    using hMpc hPM hQM unfolding top1_path_connected_on_def by blast
+  then obtain f where hf: "top1_is_path_on M (subspace_topology X T M) P Q f" by blast
+  have hfcont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                  M (subspace_topology X T M) f"
+    using hf unfolding top1_is_path_on_def by simp
+  have hf0: "f 0 = P" using hf unfolding top1_is_path_on_def by simp
+  have hf1: "f 1 = Q" using hf unfolding top1_is_path_on_def by simp
+  have hTUI: "is_topology_on top1_unit_interval top1_unit_interval_topology"
+    by (rule top1_unit_interval_topology_is_topology_on)
+  have hTM: "is_topology_on M (subspace_topology X T M)"
+    by (rule subspace_topology_is_topology_on[OF hTX hMX])
+  have hUIconn: "top1_connected_on top1_unit_interval top1_unit_interval_topology"
+    by (rule top1_unit_interval_connected)
+  have hImg_conn_M: "top1_connected_on (f ` top1_unit_interval)
+      (subspace_topology M (subspace_topology X T M) (f ` top1_unit_interval))"
+    by (rule Theorem_23_5[OF hTUI hTM hUIconn hfcont])
+  (** Image is subset of M. **)
+  have hImg_sub_M: "f ` top1_unit_interval \<subseteq> M"
+    using hfcont unfolding top1_continuous_map_on_def by blast
+  have hImg_sub_X: "f ` top1_unit_interval \<subseteq> X" using hImg_sub_M hMX by fast
+  (** Subspace topology transitivity: subspace M (subspace X T M) (f`UI) = subspace X T (f`UI). **)
+  have hsub_trans: "subspace_topology M (subspace_topology X T M) (f ` top1_unit_interval)
+                 = subspace_topology X T (f ` top1_unit_interval)"
+    by (rule subspace_topology_trans[OF hImg_sub_M])
+  have hImg_conn: "top1_connected_on (f ` top1_unit_interval)
+      (subspace_topology X T (f ` top1_unit_interval))"
+    using hImg_conn_M hsub_trans by simp
+  (** Apply Theorem 1.10: image ⊆ H ∪ K, image connected, image ⊆ H or ⊆ K. **)
+  have hImg_sub_HK: "f ` top1_unit_interval \<subseteq> H \<union> K"
+    using hImg_sub_M hMHK by simp
+  have hImg_HK: "f ` top1_unit_interval \<subseteq> H \<or> f ` top1_unit_interval \<subseteq> K"
+    by (rule Theorem_GT_1_10[OF hTX hsep hImg_sub_HK hImg_conn])
+  have hP_img: "P \<in> f ` top1_unit_interval"
+    using hf0 unfolding top1_unit_interval_def by auto
+  have hQ_img: "Q \<in> f ` top1_unit_interval"
+    using hf1 unfolding top1_unit_interval_def by auto
+  have hHX_geo: "H \<subseteq> X" using hsep unfolding geotop_separated_def by simp
+  have hclHK_geo: "closure_on X T H \<inter> K = {}" using hsep unfolding geotop_separated_def by simp
+  have hH_clH: "H \<subseteq> closure_on X T H" by (rule subset_closure_on)
+  have hHKdisj: "H \<inter> K = {}" using hH_clH hclHK_geo by fast
+  from hImg_HK show False
+  proof
+    assume "f ` top1_unit_interval \<subseteq> H"
+    hence "Q \<in> H" using hQ_img by fast
+    thus False using hQK hHKdisj by fast
+  next
+    assume "f ` top1_unit_interval \<subseteq> K"
+    hence "P \<in> K" using hP_img by fast
+    thus False using hPH hHKdisj by fast
+  qed
+qed
 
 (** from \<S>1 Theorem 12 (geotop.tex:391)
     LATEX VERSION: Let K be a complex. TFAE: (1) K is connected; (2) |K| is pathwise connected;
