@@ -238,7 +238,7 @@ proof -
          |L| = |K| = |L_1| = |L_2|. **)
   have h_subdivision:
     "geotop_is_subdivision L L1 \<and> geotop_is_subdivision L L2" sorry
-  show ?thesis sorry
+  show ?thesis using h_subdivision by (by100 blast)
 qed
 
 subsection \<open>Continuous and piecewise linear maps between polyhedra\<close>
@@ -2107,7 +2107,7 @@ proof -
          open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
   have h_B_eq_U:
     "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
-  show ?thesis sorry
+  show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
 qed
 
 (** Partial progress on Theorem_GT_1_13: the convex open case in a euclidean space
