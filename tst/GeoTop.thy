@@ -4667,33 +4667,117 @@ definition geotop_is_retract ::
     LATEX VERSION: Let C^2 be a 2-cell, and J = Bd C^2. Then J is not a retract of C^2. **)
 theorem Theorem_GT_10_10:
   fixes C2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
   shows "\<not> geotop_is_retract C2 (subspace_topology UNIV geotop_euclidean_topology C2)
            (geotop_frontier UNIV geotop_euclidean_topology C2)"
-  sorry
+  (** Moise proof (geotop.tex:2157): As in Theorem 10.9, WLOG C^2 is a rectangular
+      region. Pick four cyclic points P,Q,R,S on J = Bd C^2. Suppose a retraction
+      r: C^2 \<rightarrow> J exists. Let M_1 = r^{-1}(P), M_2 = r^{-1}(R). By Theorem 10.9,
+      Q and S are in the same component of C^2 - (M_1 \<union> M_2). Hence an arc B
+      (broken line) from Q to S exists in C^2 - (M_1 \<union> M_2). By Theorem 1.7,
+      r(B) is connected in J - {P,R}. But J - {P,R} is the union of two
+      separated sets H, K containing Q and S, contradicting Theorem 1.10. **)
+proof (rule ccontr)
+  assume hret: "\<not> \<not> geotop_is_retract C2
+                        (subspace_topology UNIV geotop_euclidean_topology C2)
+                        (geotop_frontier UNIV geotop_euclidean_topology C2)"
+  then obtain r where hr: "geotop_is_retraction C2
+                              (subspace_topology UNIV geotop_euclidean_topology C2)
+                              (geotop_frontier UNIV geotop_euclidean_topology C2) r"
+    unfolding geotop_is_retract_def by blast
+  (** Four cyclic-order points P, Q, R, S on Bd C2. **)
+  obtain P Q R S where hpts: "{P,Q,R,S} \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2
+                                 \<and> card {P,Q,R,S} = 4"
+    sorry
+  define M1 where "M1 = {x\<in>C2. r x = P}"
+  define M2 where "M2 = {x\<in>C2. r x = R}"
+  (** By Theorem 10.9 (or its Moise-9 variant), Q and S lie in the same
+      component of C^2 - (M1 \<union> M2). **)
+  have hQSconn:
+    "\<exists>C. Q \<in> C \<and> S \<in> C \<and> top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)
+         \<and> C \<subseteq> C2 - (M1 \<union> M2)"
+    sorry
+  (** Pick broken line B from Q to S in C^2 - (M1 \<union> M2). **)
+  obtain B where hB_bline: "geotop_is_broken_line B"
+             and hB_in: "B \<subseteq> C2 - (M1 \<union> M2)"
+             and hB_QS: "Q \<in> B \<and> S \<in> B"
+    sorry
+  (** r(B) is connected in J - {P, R} (by Theorem 1.7 applied to r|B). **)
+  have hrB_conn:
+    "top1_connected_on (r ` B) (subspace_topology UNIV geotop_euclidean_topology (r ` B))"
+    sorry
+  have hrB_in: "r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R}"
+    sorry
+  (** But J - {P,R} is the union of two separated sets H, K containing Q, S resp.
+      Apply Theorem_GT_1_10 to get contradiction. **)
+  show False sorry
+qed
 
 (** from \<S>10 Theorem 11 (geotop.tex:2165)
     LATEX VERSION: Let J be the unit circle \<b>S\<close>^1 in R^2, and C^2 a 2-cell in R^2 such that
       Bd C^2 = J. Then C^2 is the unit disk \<b>B\<close>^2. **)
 theorem Theorem_GT_10_11:
   fixes C2 :: "(real^2) set"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology C2 = (geotop_std_sphere :: (real^2) set)"
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes hBd: "geotop_frontier UNIV geotop_euclidean_topology C2 = (geotop_std_sphere :: (real^2) set)"
   shows "C2 = (geotop_std_ball :: (real^2) set)"
-  sorry
+  (** Moise proof (geotop.tex:2167): Let I, E be the interior/exterior of
+      J = Bd C^2 = unit circle in R^2. Since Int C^2 is connected, Int C^2
+      lies in E or I. If Int C^2 \<subseteq> E: construct an explicit retraction of
+      C^2 onto J (radial projection from a point outside), contradicting 10_10.
+      If Int C^2 \<subseteq> I but proper, shift so Int C^2 misses the origin and again
+      construct a retraction, contradicting 10_10. So Int C^2 = I, C^2 = B^2. **)
+proof -
+  (** Step 1: get interior and exterior of J = unit circle. **)
+  define J where "J = (geotop_std_sphere :: (real^2) set)"
+  define I where "I = geotop_polygon_interior J"
+  (** Step 2: Int C^2 is connected (from 2-cell def). **)
+  have hIntC2_conn: "top1_connected_on (geotop_top_interior UNIV geotop_euclidean_topology C2)
+     (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_top_interior UNIV geotop_euclidean_topology C2))"
+    sorry
+  (** Step 3: Int C^2 \<subseteq> E gives contradiction via 10_10 retraction argument. **)
+  have hCaseE: "\<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq> UNIV - closure_on UNIV geotop_euclidean_topology I - J)"
+    sorry
+  (** Step 4: Int C^2 proper subset of I gives contradiction via 10_10. **)
+  have hIntC2_full: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I"
+    sorry
+  (** Step 5: Conclude C^2 = closure I = B^2 = std_ball. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>10 Theorem 12 (geotop.tex:2169)
     LATEX VERSION: Let C^2 be a 2-cell in R^2. Then Int C^2 is the interior I of Bd C^2 in R^2. **)
 theorem Theorem_GT_10_12:
   fixes C2 :: "(real^2) set"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
-  assumes "geotop_is_polygon (geotop_frontier UNIV geotop_euclidean_topology C2) \<or>
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes hFrJ: "geotop_is_polygon (geotop_frontier UNIV geotop_euclidean_topology C2) \<or>
            geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C2)
               (subspace_topology UNIV geotop_euclidean_topology
                  (geotop_frontier UNIV geotop_euclidean_topology C2)) 1"
   shows "geotop_top_interior UNIV geotop_euclidean_topology C2 =
          geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
-  sorry
+  (** Moise proof (geotop.tex:2171): By Theorem 10.4 (Schoenflies), \<exists>h: R^2 \<leftrightarrow> R^2
+      with h(Bd C^2) = unit circle. Then h(Int C^2) = Int h(C^2) and the interior
+      of h(Bd C^2) is h(interior of Bd C^2). Apply Theorem 10.11. **)
+proof -
+  obtain h where hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                         UNIV geotop_euclidean_topology h"
+             and hh_J: "h ` (geotop_frontier UNIV geotop_euclidean_topology C2)
+                          = (geotop_std_sphere::(real^2) set)"
+    sorry
+  (** h(Int C^2) = Int h(C^2) since h is a homeomorphism of R^2. **)
+  have h_Int: "h ` (geotop_top_interior UNIV geotop_euclidean_topology C2)
+                 = geotop_top_interior UNIV geotop_euclidean_topology (h ` C2)"
+    sorry
+  (** By 10.11, h(C^2) = std_ball, so its top-interior = polygon-interior of std_sphere. **)
+  have hhC2_ball: "h ` C2 = (geotop_std_ball::(real^2) set)"
+    sorry
+  have h_conclude: "geotop_top_interior UNIV geotop_euclidean_topology C2 =
+                     geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
+    sorry
+  show ?thesis using h_conclude .
+qed
 
 (** from \<S>10 Theorem 13 (geotop.tex:2173)
     LATEX VERSION: Let M be a triangulable set in R^2. Then M is tame. In fact, for each open
