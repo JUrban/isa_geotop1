@@ -9278,7 +9278,8 @@ proof -
        geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
        geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
        geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
-       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
+    unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (3) Operation \<beta> (split a face by a chord joining two boundary vertices): V unchanged,
          E \<mapsto> E + 1, F \<mapsto> F + 1; \<chi> unchanged. **)
   have h_beta:
@@ -9288,7 +9289,8 @@ proof -
        geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> \<and>
        geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
        geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> + 1 \<longrightarrow>
-       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
+    unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (4) Operation \<gamma> (insert a new vertex of degree 2 in the interior of an edge):
          V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
   have h_gamma:
@@ -9298,7 +9300,8 @@ proof -
        geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
        geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
        geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
-       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
+    unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (5) Operation \<delta> (insert an isolated vertex v and a chord from v to the face boundary
          into a face): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
   have h_delta:
@@ -9308,7 +9311,8 @@ proof -
        geotop_open_cell_num_vertices \<C>' = geotop_open_cell_num_vertices \<C> + 1 \<and>
        geotop_open_cell_num_edges \<C>' = geotop_open_cell_num_edges \<C> + 1 \<and>
        geotop_open_cell_num_faces \<C>' = geotop_open_cell_num_faces \<C> \<longrightarrow>
-       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>" sorry
+       geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
+    unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (6) By induction along the step sequence, \<chi>(\<C>1) = \<chi>(\<C>2). **)
   show ?thesis sorry
 qed
