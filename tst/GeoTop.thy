@@ -3898,19 +3898,43 @@ theorem Theorem_GT_21_9:
   shows "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
   sorry
 
+(** from \<S>21: splitting a 2-manifold at a 1-sphere (geotop.tex:4542)
+    LATEX VERSION: A "splitting" of M at a 1-sphere J (lying in Int M, separating a
+      connected neighborhood of itself) produces a 2-manifold with boundary M' whose
+      boundary is the union of Bd M and two disjoint copies of J. **)
+definition geotop_is_splitting_of ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_splitting_of M J M' \<longleftrightarrow>
+    top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M) \<and>
+    geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
+    geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 \<and>
+    J \<subseteq> geotop_manifold_interior M (\<lambda>x y. norm (x - y)) \<and>
+    top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M') \<and>
+    geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2"
+
+(** from \<S>21: splitting and filling (geotop.tex:4554)
+    LATEX VERSION: M' is obtained from M by splitting at a 1-sphere J and then attaching
+      a pair of 2-cells to the new boundary components. **)
+definition geotop_is_split_and_filled ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_is_split_and_filled M J M' \<longleftrightarrow>
+    (\<exists>Msplit. geotop_is_splitting_of M J Msplit \<and>
+              top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M') \<and>
+              geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2 \<and>
+              (\<exists>D1 D2. geotop_is_n_cell D1
+                         (subspace_topology UNIV geotop_euclidean_topology D1) 2 \<and>
+                       geotop_is_n_cell D2
+                         (subspace_topology UNIV geotop_euclidean_topology D2) 2 \<and>
+                       Msplit \<inter> D1 = {} \<and> Msplit \<inter> D2 = {} \<and>
+                       M' = Msplit \<union> D1 \<union> D2))"
+
 (** from \<S>21 Theorem 10 (geotop.tex:4542)
     LATEX VERSION: When a 2-manifold with boundary is split apart at a 1-sphere lying in its
       interior, and separating a connected neighborhood of itself, the Euler characteristic
       is unchanged. **)
 theorem Theorem_GT_21_10:
   fixes M M' :: "'a::real_normed_vector set" and J :: "'a set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "J \<subseteq> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
-  \<comment> \<open>M' is the manifold obtained by splitting M at J.\<close>
-  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
-  assumes "geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2"
+  assumes "geotop_is_splitting_of M J M'"
   shows "geotop_manifold_euler M = geotop_manifold_euler M'"
   sorry
 
@@ -3919,12 +3943,8 @@ theorem Theorem_GT_21_10:
       new boundary components are spanned by 2-cells, then the Euler characteristic is
       increased by 2. **)
 theorem Theorem_GT_21_11:
-  fixes M M' :: "'a::real_normed_vector set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  \<comment> \<open>M' is obtained by splitting M at a 1-sphere J and filling the new boundaries with 2-cells.\<close>
-  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
-  assumes "geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2"
+  fixes M M' :: "'a::real_normed_vector set" and J :: "'a set"
+  assumes "geotop_is_split_and_filled M J M'"
   shows "geotop_manifold_euler M' = geotop_manifold_euler M + 2"
   sorry
 
@@ -4092,7 +4112,7 @@ theorem Theorem_GT_22_3:
                (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
                 geotop_top_interior UNIV geotop_euclidean_topology D') = {}) \<and>
              True"
-  using Theorem_GT_21_11 assms(1,3) by fastforce
+  sorry
 
 (** from \<S>22 Theorem 4 (geotop.tex:4864)
     LATEX VERSION: Let M be a compact connected 2-manifold. Then M is a 2-sphere with h
@@ -4119,8 +4139,7 @@ theorem Theorem_GT_22_5:
   assumes "geotop_is_sphere_with_n_crosscaps m M"
   assumes "m \<le> 2"
   shows "geotop_manifold_euler M = 2 - (2 * int h + int m)"
-  using Theorem_GT_21_11 assms(1) geotop_is_sphere_with_n_handles_def
-    by fastforce
+  sorry
 
 (** from \<S>22: 1-dim Betti number p^1(M) (geotop.tex:4895)
     LATEX VERSION: The group B^1 is a p-term module over Z for some p, and the 1-dimensional
@@ -4231,7 +4250,7 @@ theorem Theorem_GT_22_11:
   assumes "\<forall>P\<in>M. geotop_simply_connected M
              (subspace_topology UNIV geotop_euclidean_topology M) P"
   shows "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2"
-  using Theorem_GT_21_11 assms(1,3) by fastforce
+  sorry
 
 (** from \<S>22 Theorem 12 (geotop.tex:4939)
     LATEX VERSION: Let M be a compact connected 2-manifold. If \<chi>(M) = 1, then M is a
@@ -4373,7 +4392,7 @@ theorem Theorem_GT_23_5:
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_manifold_boundary M (\<lambda>x y. norm (x - y))))"
   shows "\<exists>M'. geotop_is_doubling_of M M'"
-  using Theorem_GT_21_11 Theorem_GT_23_3 assms(1,2) by fastforce
+  sorry
 
 (** from \<S>23 Theorem 6 (geotop.tex:5025)
     LATEX VERSION: Every triangulated 3-manifold K with boundary is a combinatorial
