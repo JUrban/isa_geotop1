@@ -8656,10 +8656,15 @@ proof -
     "\<exists>h\<^sub>1. top1_homeomorphism_on UNIV geotop_euclidean_topology UNIV geotop_euclidean_topology h\<^sub>1 \<and>
           (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology C1. h\<^sub>1 P = h P) \<and>
           h\<^sub>1 ` B1 = B2" sorry
+  have h_extend_D_subsp:
+    "\<exists>h'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) h' \<and>
+          (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology C1. h' P = h P) \<and>
+          h' ` B1 = B2" sorry
   (** (4) D splits C_1 into two polyhedral 3-cells; D' splits C_2 into two; finally extend
          h to interiors. This gives the required PLH h': C_1 \<leftrightarrow> C_2 with h'(B_1) = B_2
          and h' | Bd C_1 = h. **)
-  show ?thesis sorry
+  show ?thesis using h_extend_D_subsp by (by100 blast)
 qed
 
 (** from \<S>19 Theorem 3 (geotop.tex:4064)
