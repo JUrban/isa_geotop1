@@ -5907,7 +5907,8 @@ proof (cases "geotop_separable_in X T M A B")
   then show ?thesis by blast
 next
   case False
-  then have h_ins: "geotop_inseparable_in X T M A B" sorry
+  then have h_ins: "geotop_inseparable_in X T M A B"
+    unfolding geotop_inseparable_in_def by (by100 blast)
   obtain M' where hM'_sub: "M' \<subseteq> M" and hM'_cl: "closedin_on X T M'"
                and hM'_ins: "geotop_inseparable_in X T M' A B"
                and hM'_irred: "\<forall>M''. M'' \<subset> M' \<longrightarrow>
