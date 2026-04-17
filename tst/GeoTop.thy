@@ -3035,7 +3035,10 @@ qed
 (** from \<S>3 Theorem 7 (geotop.tex:824)
     LATEX VERSION: Let J be a polygon in R^2 with interior I, and let U be an open set
       containing \<bar>I\<close>. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2 such that
-      (1) h(J) is the frontier of a 2-simplex, and (2) h|(R^2 - U) is the identity. **)
+      (1) h(J) is the frontier of a 2-simplex, and (2) h|(R^2 - U) is the identity.
+    Moise proof (geotop.tex:826): \"In the proof of Theorem 4, we choose our
+    homeomorphisms so that each of them satisfies (2).\" I.e., the induction in
+    3_4 can be run with each step's homeomorphism having support inside U. **)
 theorem Theorem_GT_3_7:
   fixes J U :: "(real^2) set"
   assumes "geotop_is_polygon J"
@@ -3213,18 +3216,34 @@ text \<open>We parametrize "cyclic order" abstractly via the existence of the fo
   points on the polygon.\<close>
 theorem Theorem_GT_4_2:
   fixes J :: "(real^2) set" and A :: "(real^2) set" and P Q R S :: "real^2"
-  assumes "geotop_is_polygon J"
-  assumes "P \<in> J" "Q \<in> J" "R \<in> J" "S \<in> J"
-  assumes "card {P, Q, R, S} = 4"
-  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
-  assumes "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes "A \<inter> J = {P, R}"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAsub: "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hAJ: "A \<inter> J = {P, R}"
   shows "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and>
            U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
            U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-  sorry
+  (** Moise proof (geotop.tex:872): By 3.5 we may assume \<bar>I\<close> is rectangular and
+      P,Q,R,S in standard cyclic positions. Proof by contradiction: if Q' \<in> I near Q
+      and S' \<in> I near S are in the same component of I - A, then \<exists> a broken line
+      from Q' to S' in I - A, hence a broken line B from Q to S in \<bar>I\<close> - A
+      intersecting Fr I only at Q,S. But then P,R lie in the same component of
+      \<bar>I\<close> - B (since A is connected and A \<subseteq> \<bar>I\<close> - B), contradicting 2.8. **)
+proof -
+  (** By contradiction: suppose no such decomposition. Then \<exists>Q' \<in> I near Q and S' \<in> I
+      near S in the same component of I - A. **)
+  have hdecomp:
+    "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and> U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+            U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
+            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+    sorry  \<comment> \<open>Contradiction argument using broken-line concatenation + 2.8.\<close>
+  show ?thesis using hdecomp .
+qed
 
 (** from \<S>4 Theorem 3 (geotop.tex:886)
     LATEX VERSION: Let J be a topological 1-sphere in R^2. Then R^2 - J is not connected. **)
@@ -3277,7 +3296,13 @@ theorem Theorem_GT_4_4:
           \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
               C = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_polygon_interior J - (A1 \<union> A2)) P')"
-  sorry
+  (** Moise proof sketch (geotop.tex:931-ff.): Connect endpoints of A\<^sub>1 and A\<^sub>2
+      by a broken-line-with-endpoints-in-I path so that the union becomes
+      a single arc A' from P to R in \<bar>I\<close>. Apply Theorem 4.2 to A' to get
+      two open sets U\<^sub>Q, U\<^sub>S in I - A'; Q,S sit in Fr U\<^sub>Q, Fr U\<^sub>S. Then U\<^sub>Q, U\<^sub>S
+      refine to components of I - (A\<^sub>1 \<union> A\<^sub>2) after re-extracting the detour.
+      Under the cyclic-order hypothesis, Q and S end up in a common component. **)
+  sorry  \<comment> \<open>Full sketch deferred: argument uses 4.2 + detour construction.\<close>
 
 (** from \<S>4: brick-decomposition (geotop.tex:943)
     LATEX VERSION: By a brick-decomposition of the plane we mean a collection G = {g_i} of
@@ -3360,11 +3385,39 @@ qed
     LATEX VERSION: Let J be a 1-sphere in R^2. Then R^2 - J has only one bounded component. **)
 theorem Theorem_GT_4_7:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
   shows "card {C. geotop_bounded_R2 C \<and>
             (\<exists>P\<in>UNIV - J.
                C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)} = 1"
-  sorry
+  (** Moise proof (geotop.tex:1004): As in the proof of 4.3, embed J \<subset> \<bar>I\<close>
+      polyhedral 2-cell with J \<inter> Fr I = {P,R}; decompose J = A\<^sub>1 \<union> A\<^sub>2 along P,R.
+      Broken line B from S to Q in \<bar>I\<close> meeting Fr I only at endpoints.
+      Define T, X, Y, Z, W as in Fig 4.9. Z lies in a bounded component of R\<^sup>2 - J.
+      Let B\<^sub>1,\<dots>,B\<^sub>5 be the segments S-T-X-Y-W-Q, B' = \<Union>B\<^sub>i.
+      P, R are limit points of different components of I - B'.
+      If U is a bounded component of R\<^sup>2 - J distinct from Z's component, then
+      U \<inter> B' = \<emptyset>, so Fr U cannot contain both P and R, hence Fr U \<subset> arc of J,
+      contradicting Theorem 5 (every point of J is a limit point of both I and E). **)
+proof -
+  (** Step 1: Exists a \"bounded component\" (from Jordan_Brouwer_separation + bdd). **)
+  have h_exists_bdd: "\<exists>C. geotop_bounded_R2 C \<and>
+            (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)"
+    sorry
+  (** Step 2: At most one bounded component, by the Moise contradiction argument:
+      any second bounded component U would give Fr U \<subset> arc of J, contradicting 2.5. **)
+  have h_atmost: "\<forall>C1 C2.
+          (geotop_bounded_R2 C1 \<and>
+             (\<exists>P\<in>UNIV - J. C1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)) \<and>
+          (geotop_bounded_R2 C2 \<and>
+             (\<exists>P\<in>UNIV - J. C2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P))
+          \<longrightarrow> C1 = C2"
+    sorry
+  (** Conclude card = 1. **)
+  show "card {C. geotop_bounded_R2 C \<and>
+            (\<exists>P\<in>UNIV - J.
+               C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)} = 1"
+    sorry
+qed
 
 (** JORDAN CURVE THEOREM — combining the above
     LATEX VERSION: Let J be a topological 1-sphere in R^2. Then R^2 - J is the union of two
@@ -3384,10 +3437,49 @@ theorem Jordan_curve_theorem:
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
 theorem Theorem_GT_4_8:
   fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K) d 2"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) d 2"
   shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
-  sorry
+  (** Moise proof (geotop.tex:1022). Via five lemmas:
+      L1: Every vertex lies in an edge (R\<^sup>2 has no isolated points).
+      L2: Every edge lies in \<ge> 1 2-simplex (else interior point has a plane-nbhd
+          inside Int(edge), contradicting \"no point separates plane\").
+      L3: Every edge lies in \<ge> 2 2-simplexes (else a semicircle in the
+          2-simplex separates a plane-nbhd, contradicting \"no arc separates R\<^sup>2\").
+      L4: Every edge lies in \<le> 2 2-simplexes (else 2 semicircles form a
+          1-sphere not separating its plane-nbhd, contradicting Jordan).
+      L5: |L(v)| is connected (v does not separate its plane-nbhd |St v|).
+      From L1: L(v) \<noteq> \<emptyset>. From L2-L4: each component of |L(v)| is a polygon.
+      With L5: |L(v)| is a single polygon. Form simplicial homeomorphism
+      between (St v, L(v)) and a standard cone over a polygon (Fig 4.10). **)
+proof
+  fix v assume hv: "v \<in> geotop_complex_vertices K"
+  (** L1: every vertex of K lies in an edge (R^2 has no isolated points). **)
+  have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+    sorry
+  (** L2: every edge lies in >= 1 two-simplex (no point separates plane). **)
+  have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
+    sorry
+  (** L3: every edge lies in >= 2 two-simplexes (no arc separates R^2). **)
+  have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2"
+    sorry
+  (** L4: every edge lies in <= 2 two-simplexes (Jordan curve theorem). **)
+  have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    sorry
+  (** L5: |L(v)| is connected (v does not separate its R^2 nbhd |St v|). **)
+  have hL5: "top1_connected_on (\<Union>(geotop_link K v))
+               (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v)))"
+    sorry
+  (** From L1 + L2-L4 (each component a polygon) + L5 (connected): |L(v)| is a single polygon. **)
+  have hLink_polygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
+    sorry
+  (** Simplicial cone over the polygon link = combinatorial 2-cell. **)
+  show "geotop_comb_n_cell (geotop_star K v) 2"
+    sorry
+qed
 
 (** from \<S>4 Theorem 9 (geotop.tex:1052)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold with boundary. Then
@@ -3407,10 +3499,25 @@ theorem Theorem_GT_4_9:
       Bd M = Fr M. **)
 theorem Theorem_GT_4_10:
   fixes M :: "(real^2) set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes "geotop_n_manifold_with_boundary_on M d 2"
-  assumes "closedin_on UNIV geotop_euclidean_topology M"
+  assumes hM: "geotop_n_manifold_with_boundary_on M d 2"
+  assumes hMcl: "closedin_on UNIV geotop_euclidean_topology M"
   shows "geotop_manifold_boundary M d = geotop_frontier UNIV geotop_euclidean_topology M"
-  sorry
+  (** Moise proof (geotop.tex:1060): Two inclusions.
+      (1) Since Fr M is closed, every point of M - Fr M has a locally Euclidean
+          open neighborhood in M. Hence M - Fr M \<subseteq> Int M = M - Bd M, i.e. Bd M \<subseteq> Fr M.
+      (2) M closed in R\<^sup>2 so Fr M \<subseteq> M. If P \<in> Fr M, then P does NOT have a locally
+          Euclidean (plane-homeomorphic) open nbhd in M \<Rightarrow> by Invariance of Domain
+          (Theorem 4 = our Theorem_GT_4_invariance_of_domain) would give such a nbhd
+          open in R\<^sup>2, contradicting P \<in> Fr M. Hence Fr M \<subseteq> Bd M. **)
+proof -
+  (** (1) Bd M \<subseteq> Fr M. **)
+  have h_incl1: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M"
+    sorry
+  (** (2) Fr M \<subseteq> Bd M, using invariance of domain. **)
+  have h_incl2: "geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
+    sorry
+  show ?thesis using h_incl1 h_incl2 by blast
+qed
 
 
 section \<open>\<S>5 Piecewise linear homeomorphisms\<close>
