@@ -1096,6 +1096,46 @@ proof -
     by (metis hfS hf_HOL hfinvT hfinv_HOL hfinv_f hfinvf homeomorphicI)
 qed
 
+(** Invariance of domain (\<S>Introduction Theorem 4): U \<cong> UNIV implies U is open.
+    Uses HOL's \<open>invariance_of_domain_gen\<close> on the inverse g = f\<^sup>-\<^sup>1. **)
+lemma Theorem_GT_4_invariance_of_domain_proved:
+  fixes U :: "'a::euclidean_space set"
+  assumes hhomeo: "top1_homeomorphism_on U
+             (subspace_topology (UNIV::'a set) geotop_euclidean_topology U)
+             (UNIV::'a set) geotop_euclidean_topology f"
+  shows "U \<in> geotop_euclidean_topology"
+proof -
+  have hbij: "bij_betw f U UNIV"
+    using hhomeo unfolding top1_homeomorphism_on_def by blast
+  define g where "g = inv_into U f"
+  have hg_bij: "bij_betw g UNIV U"
+    unfolding g_def using hbij by (rule bij_betw_inv_into)
+  have hU_img: "g ` UNIV = U"
+    using hg_bij unfolding bij_betw_def by blast
+  have hg_inj: "inj_on g UNIV"
+    using hg_bij unfolding bij_betw_def by blast
+  have hg_cont_top1: "top1_continuous_map_on (UNIV::'a set) geotop_euclidean_topology
+                         U (subspace_topology UNIV geotop_euclidean_topology U) g"
+    using hhomeo unfolding top1_homeomorphism_on_def g_def by blast
+  have hsubUNIV: "subspace_topology (UNIV::'a set) geotop_euclidean_topology UNIV
+                   = geotop_euclidean_topology"
+    by (rule subspace_topology_self_carrier) simp
+  have hg_cont_sub: "top1_continuous_map_on (UNIV::'a set)
+                       (subspace_topology UNIV geotop_euclidean_topology UNIV)
+                       U (subspace_topology UNIV geotop_euclidean_topology U) g"
+    using hg_cont_top1 hsubUNIV by simp
+  have hg_cont_HOL: "continuous_on UNIV g"
+    using hg_cont_sub top1_continuous_map_on_geotop_imp_continuous_on by blast
+  have hopenUNIV: "open (UNIV :: 'a set)" by simp
+  have hdim: "DIM('a) \<le> DIM('a)" by simp
+  have hUopen_img: "open (g ` (UNIV::'a set))"
+    using invariance_of_domain_gen[OF hopenUNIV hg_cont_HOL hg_inj hdim] .
+  have hU_open: "open U" using hUopen_img hU_img by simp
+  show "U \<in> geotop_euclidean_topology"
+    by (metis hU_open geotop_euclidean_topology_eq_open_sets
+              mem_Collect_eq top1_open_sets_def)
+qed
+
 (** Bridge: closed sets in our geotop_euclidean topology coincide with
     HOL-Analysis `closed` sets on real_normed_vector. **)
 lemma closedin_on_geotop_UNIV_iff_closed:
