@@ -1498,6 +1498,21 @@ proof -
   show ?thesis unfolding geotop_is_arc_def using hncell .
 qed
 
+(** Helper: the singleton {P} is a 0-simplex. **)
+lemma geotop_singleton_is_simplex:
+  fixes P :: "'a::real_normed_vector"
+  shows "geotop_simplex_dim {P} 0"
+  unfolding geotop_simplex_dim_def
+proof (intro exI[of _ "{P}"] exI[of _ "0::nat"] conjI)
+  show "finite {P}" by simp
+  show "card {P} = 0 + 1" by simp
+  show "(0::nat) \<le> 0" by simp
+  show "geotop_general_position {P} 0"
+    unfolding geotop_general_position_def by simp
+  show "{P} = geotop_convex_hull {P}"
+    by (simp add: geotop_convex_hull_eq_HOL)
+qed
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
