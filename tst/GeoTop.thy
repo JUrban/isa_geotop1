@@ -11901,41 +11901,69 @@ definition geotop_in_standard_position ::
       PLH h: M^3 \<leftrightarrow> M^3, S \<leftrightarrow> S, such that h(J) is in standard position relative to J_x. **)
 theorem Theorem_GT_28_2:
   fixes M3 S Jx J W :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M3"
-  assumes "S \<subseteq> M3"
-  assumes "geotop_is_latitudinal S Jx"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "W \<in> geotop_euclidean_topology"
-  assumes "geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<subseteq> W"
+  assumes hM3: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM3_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M3"
+  assumes hS_in_M3: "S \<subseteq> M3"
+  assumes hJx_lat: "geotop_is_latitudinal S Jx"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_T: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes hT_in_W: "geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<subseteq> W"
   shows "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
               M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
               h ` S = S \<and>
               geotop_in_standard_position S (h ` J) Jx \<and>
               (\<forall>P\<in>M3 - W. h P = P)"
-  sorry
+proof -
+  (** (1) S is a CST (by 28.1) so has a cylindrical diagram; in this diagram J_x is the
+         boundary of one base. J meets J_x finitely, possibly with tangencies. **)
+  have h_cyl:
+    "\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> real^3).
+        \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
+        \<phi> ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>2 \<times> {0}) = Jx" sorry
+  (** (2) Put J in standard position by: (a) remove tangencies of J with J_x via small
+         finger-pushes inside S; (b) straighten J into the cylindrical diagram. Combine
+         into a single PLH h supported inside W. **)
+  have h_standardize:
+    "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+             M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+         h ` S = S \<and>
+         geotop_in_standard_position S (h ` J) Jx \<and>
+         (\<forall>P\<in>M3 - W. h P = P)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 3 (geotop.tex:5828)
     LATEX VERSION: Let J_x be latitudinal on S, and let J_1, ..., J_n be disjoint polygons in
       T. Then there is a PLH h such that each h(J_i) is in standard position. **)
 theorem Theorem_GT_28_3:
   fixes M3 S Jx W :: "(real^3) set" and Js :: "(real^3) set set"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "S \<subseteq> M3"
-  assumes "geotop_is_latitudinal S Jx"
-  assumes "finite Js"
-  assumes "\<forall>J\<in>Js. geotop_is_polygon J \<and>
+  assumes hM3: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hS_in_M3: "S \<subseteq> M3"
+  assumes hJx_lat: "geotop_is_latitudinal S Jx"
+  assumes hJs_fin: "finite Js"
+  assumes hJs: "\<forall>J\<in>Js. geotop_is_polygon J \<and>
              J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
-  assumes "W \<in> geotop_euclidean_topology"
-  assumes "geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<subseteq> W"
+  assumes hJs_disj: "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes hT_in_W: "geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<subseteq> W"
   shows "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
               M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
               h ` S = S \<and>
               (\<forall>J\<in>Js. geotop_in_standard_position S (h ` J) Jx) \<and>
               (\<forall>P\<in>M3 - W. h P = P)"
-  sorry
+proof -
+  (** (1) Apply Theorem 28_2 to each J_i in turn; each PLH h_i supported in a disjoint
+         neighbourhood W_i of J_i inside W. Compose sequentially. **)
+  have h_per_J:
+    "\<forall>J\<in>Js. \<exists>hJ. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+                    M3 (subspace_topology UNIV geotop_euclidean_topology M3) hJ \<and>
+                 hJ ` S = S \<and>
+                 geotop_in_standard_position S (hJ ` J) Jx \<and>
+                 (\<forall>P\<in>M3 - W. hJ P = P)" sorry
+  (** (2) Assemble composed PLH h supported in W. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 4 (geotop.tex:5835)
     LATEX VERSION: Let J and J_x be polygons in T, such that J_x is latitudinal and J is in
@@ -11943,34 +11971,65 @@ theorem Theorem_GT_28_3:
       Z^1(J) \<sim> n Y^1 on S, where Y^1 is a generator of H_1(S). **)
 theorem Theorem_GT_28_4:
   fixes S Jx J :: "(real^3) set"
-  assumes "geotop_is_latitudinal S Jx"
-  assumes "geotop_in_standard_position S J Jx"
+  assumes hJx_lat: "geotop_is_latitudinal S Jx"
+  assumes hJ_std: "geotop_in_standard_position S J Jx"
   shows "\<exists>n::nat. n = card (J \<inter> Jx) \<and>
          (\<forall>P\<^sub>0\<in>J. \<exists>pJ pY. geotop_closed_path_on S
               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pJ \<and>
               geotop_closed_path_on S
               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pY \<and>
               pJ ` {0..1} = J)"
-  sorry
+proof -
+  (** (1) The standard position means J meets J_x in finitely many transverse points.
+         Count n = |J \<cap> J_x|. **)
+  have h_card: "\<exists>n::nat. n = card (J \<inter> Jx)" sorry
+  (** (2) Parametrise J as a closed path p_J based at P_0, and J_x as p_Y. On S (CST)
+         the abelianised \<pi>(S) \<cong> Z has generator Y = [p_Y]; each transverse crossing of
+         J with J_x contributes +1 or -1 to [p_J] measured against Y. Hence [p_J] = n * Y
+         where n is the signed count (matching |J \<cap> J_x| with orientation). **)
+  have h_paths:
+    "\<forall>P\<^sub>0\<in>J. \<exists>pJ pY. geotop_closed_path_on S
+              (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pJ \<and>
+              geotop_closed_path_on S
+              (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pY \<and>
+              pJ ` {0..1} = J" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 5 (geotop.tex:5839)
     LATEX VERSION: Let J be a polygon in T. If J \<sim> 0 on S but not on T, then J is
       latitudinal in S. **)
 theorem Theorem_GT_28_5:
   fixes S J :: "(real^3) set" and Jx :: "(real^3) set"
-  assumes "geotop_is_latitudinal S Jx"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+  assumes hJx_lat: "geotop_is_latitudinal S Jx"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_T: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes hJ_null_on_S: "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
              geotop_path_equiv S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p
                (\<lambda>t. P\<^sub>0)"
-  assumes "\<not> (\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+  assumes hJ_not_null_on_T: "\<not> (\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
                  geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
                    (subspace_topology UNIV geotop_euclidean_topology
                       (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
   shows "geotop_is_latitudinal S J"
-  sorry
+proof -
+  (** (1) Put J in standard position relative to J_x (Theorem 28_2). Count crossings n
+         = |J \<cap> J_x|. **)
+  have h_std:
+    "\<exists>J'. geotop_in_standard_position S J' Jx \<and>
+          (\<exists>h. top1_homeomorphism_on S (subspace_topology UNIV geotop_euclidean_topology S)
+                 S (subspace_topology UNIV geotop_euclidean_topology S) h \<and>
+               h ` J = J')" sorry
+  (** (2) [J] = n [J_x] in \<pi>(S) (Theorem 28_4). The assumption "J null on S" forces n = 0
+         (else J represents a non-trivial class). **)
+  have h_n_zero: "True" sorry
+  (** (3) "J not null on T" rules out J being trivially on T, so J must be another
+         latitudinal parallel (same generator class as J_x on T). **)
+  have h_latitudinal:
+    "geotop_is_latitudinal S J" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 6 (geotop.tex:5843)
     LATEX VERSION: Let J_1, ..., J_n (n > 1) be disjoint polygons in T, such that J_i is not
@@ -11978,15 +12037,15 @@ theorem Theorem_GT_28_5:
       is an annulus, and Bd A = J_i \<union> J_j for some i, j. **)
 theorem Theorem_GT_28_6:
   fixes S :: "(real^3) set" and Js :: "(real^3) set set"
-  assumes "geotop_is_CST S"
-  assumes "finite Js" and "2 \<le> card Js"
-  assumes "\<forall>J\<in>Js. geotop_is_polygon J \<and>
+  assumes hS: "geotop_is_CST S"
+  assumes hJs_fin: "finite Js" and hJs_card: "2 \<le> card Js"
+  assumes hJs: "\<forall>J\<in>Js. geotop_is_polygon J \<and>
              J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
              \<not> (\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
                 geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
                    (subspace_topology UNIV geotop_euclidean_topology
                       (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
-  assumes "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
+  assumes hJs_disj: "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
   shows "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
                 U = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
@@ -11998,17 +12057,35 @@ theorem Theorem_GT_28_6:
              (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
                geotop_frontier UNIV geotop_euclidean_topology
                   (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)"
-  sorry
+proof -
+  (** (1) T = Bd S is a torus. Each J_i is a non-contractible polygon on T, hence
+         (by Theorem 27.3 in T) a latitudinal/longitudinal cycle. The J_i are disjoint
+         parallel cycles. **)
+  have h_parallel_cycles:
+    "\<forall>J\<in>Js. \<exists>Jx. geotop_is_latitudinal S Jx \<and> J = Jx" sorry
+  (** (2) T - \<union> J_i has exactly card(Js) components, each an annulus sandwiched between
+         two consecutive J_i's. **)
+  have h_annuli:
+    "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+                U = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
+             (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
+                top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+                  (closure_on UNIV geotop_euclidean_topology U)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on UNIV geotop_euclidean_topology U)) f)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 7 (geotop.tex:5851)
     LATEX VERSION: Let J be a polygon in T, such that J is not contractible on T, and let
       B be a regular neighborhood of J in T. Then Cl(T - B) is an annulus. **)
 theorem Theorem_GT_28_7:
   fixes S J :: "(real^3) set"
-  assumes "geotop_is_CST S"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+  assumes hS: "geotop_is_CST S"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_T: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes hJ_essential: "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_closed_path_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
                 (subspace_topology UNIV geotop_euclidean_topology
                    (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p \<and>
@@ -12031,7 +12108,33 @@ theorem Theorem_GT_28_7:
                        (subspace_topology UNIV geotop_euclidean_topology
                           (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
                        (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))) f))"
-  sorry
+proof -
+  (** (1) T = Bd S is a torus. J non-contractible on T is an essential polygon. Take a
+         thin regular neighbourhood B of J in T (small tubular neighbourhood along J). **)
+  obtain B where hB:
+    "(\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = J) \<and>
+     J \<subseteq> geotop_top_interior (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+         (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) B" sorry
+  (** (2) T - B is the complement of a tubular neighbourhood, which cuts T along the
+         essential curve J. The result is an annulus A (by Theorem 28_6 applied to
+         the parallel pair {Bd B_1, Bd B_2} of J's regular-nbhd boundary). **)
+  have h_annulus_complement:
+    "\<exists>A::(real^2) set. geotop_is_k_annulus 1 A \<and>
+        (\<exists>f. top1_homeomorphism_on A
+                (subspace_topology UNIV geotop_euclidean_topology A)
+                (closure_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                   (subspace_topology UNIV geotop_euclidean_topology
+                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
+                   (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))
+                (subspace_topology UNIV geotop_euclidean_topology
+                   (closure_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                     (subspace_topology UNIV geotop_euclidean_topology
+                        (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))) f)"
+    sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 8 (geotop.tex:5855)
     LATEX VERSION: Let J_1, ..., J_n be disjoint polygons on T, such that J_i is not
@@ -12039,9 +12142,9 @@ theorem Theorem_GT_28_7:
       each J_i carries a generator of H_1(S). **)
 theorem Theorem_GT_28_8:
   fixes S :: "(real^3) set" and Js :: "(real^3) set set"
-  assumes "geotop_is_CST S"
-  assumes "finite Js"
-  assumes "\<forall>J\<in>Js. geotop_is_polygon J \<and>
+  assumes hS: "geotop_is_CST S"
+  assumes hJs_fin: "finite Js"
+  assumes hJs: "\<forall>J\<in>Js. geotop_is_polygon J \<and>
              J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
              (\<forall>P\<^sub>0\<in>J. \<forall>p. p ` {0..1} = J \<and>
                 geotop_closed_path_on S
@@ -12049,8 +12152,8 @@ theorem Theorem_GT_28_8:
                 \<longrightarrow> \<not> geotop_path_equiv S
                       (subspace_topology UNIV geotop_euclidean_topology S)
                       P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
-  assumes "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
-  assumes "\<exists>P\<^sub>0\<in>\<Union>Js. \<exists>p. p ` {0..1} \<subseteq> \<Union>Js \<and>
+  assumes hJs_disj: "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
+  assumes hUnion_gen: "\<exists>P\<^sub>0\<in>\<Union>Js. \<exists>p. p ` {0..1} \<subseteq> \<Union>Js \<and>
               geotop_closed_path_on S
                  (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
               (\<forall>q. geotop_closed_path_on S
@@ -12064,23 +12167,56 @@ theorem Theorem_GT_28_8:
                      (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
                 geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
                 \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
-  sorry
+proof -
+  (** (1) By 28_4/28_5, each non-contractible polygon J_i on T is latitudinal with some
+         winding number n_i \<ne> 0 around the solid torus S (since J_i carries a non-trivial
+         \<pi>(S)-class). **)
+  have h_winding:
+    "\<forall>J\<in>Js. \<exists>n::int. n \<noteq> 0" sorry
+  (** (2) The generator \<union>_i J_i of H_1(S) is the sum \<Sigma>_i n_i [J_i]. Since H_1(S) \<cong> Z and
+         this sum is 1 (generator), we have gcd(n_i) = 1; combined with disjointness and
+         the constraint \<Sigma> n_i = 1 (mod \<pi>(S) generator), each n_i = \<plusminus>1. **)
+  have h_each_generator:
+    "\<forall>J\<in>Js. \<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+              geotop_closed_path_on S
+                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+              (\<forall>q. geotop_closed_path_on S
+                     (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
+                geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
+                \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
+    sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 9 (geotop.tex:5859)
     LATEX VERSION: Let J be a polygon in T. If J \<sim> 0 on T, then J bounds a 2-cell in T. **)
 theorem Theorem_GT_28_9:
   fixes S J :: "(real^3) set"
-  assumes "geotop_is_CST S"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+  assumes hS: "geotop_is_CST S"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_T: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes hJ_null: "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
                 (subspace_topology UNIV geotop_euclidean_topology
                    (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
   shows "\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
              D \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
              geotop_frontier UNIV geotop_euclidean_topology D = J"
-  sorry
+proof -
+  (** (1) T = Bd S is a torus. J null on T means J is contractible to a point in T. **)
+  have h_null_curve:
+    "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+         geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  (** (2) On the torus T, any null-homotopic polygon bounds a 2-cell in T (classical
+         result: \<pi>_1(T) = Z \<times> Z and null curves bound disks). Extract D \<subseteq> T. **)
+  have h_bounds_cell:
+    "\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+         D \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
+         geotop_frontier UNIV geotop_euclidean_topology D = J" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 10 (geotop.tex:5863)
     LATEX VERSION: Let K be a polyhedron in T, such that K carries a generator of H_1(S). Let
@@ -12088,21 +12224,40 @@ theorem Theorem_GT_28_9:
       generator of H_1(S). **)
 theorem Theorem_GT_28_10:
   fixes S K J :: "(real^3) set"
-  assumes "geotop_is_CST S"
-  assumes "K \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
-  assumes "\<exists>P\<^sub>0\<in>K. \<exists>p. p ` {0..1} \<subseteq> K \<and>
+  assumes hS: "geotop_is_CST S"
+  assumes hK_in_T: "K \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes hK_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes hK_gen: "\<exists>P\<^sub>0\<in>K. \<exists>p. p ` {0..1} \<subseteq> K \<and>
              geotop_closed_path_on S
                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - K"
-  assumes "\<nexists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_ext: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - K"
+  assumes hJ_no_cell: "\<nexists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
               D \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
               geotop_frontier UNIV geotop_euclidean_topology D = J"
   shows "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
               geotop_closed_path_on S
                 (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
-  sorry
+proof -
+  (** (1) J doesn't bound a 2-cell on T \<Rightarrow> J is non-contractible on T (Theorem 28_9
+         contrapositive). **)
+  have h_J_essential:
+    "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+         geotop_closed_path_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p \<and>
+         \<not> geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  (** (2) Since K already carries a generator and J is disjoint from K, J must be
+         parallel to K. By Theorem 28_8 applied to {K-equivalent, J}, J itself carries
+         a generator class. **)
+  have h_J_generator:
+    "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+         geotop_closed_path_on S
+           (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 11 (geotop.tex:5869)
     LATEX VERSION: Let K_1 and K_2 be complexes whose union is a complex K. Let Z^n be a
