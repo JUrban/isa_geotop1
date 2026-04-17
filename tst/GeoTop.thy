@@ -13039,7 +13039,7 @@ proof -
          geotop_frontier UNIV geotop_euclidean_topology S = T \<and>
          S1 \<subseteq> geotop_manifold_interior S (\<lambda>x y. norm (x - y)) \<and>
          S \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))" sorry
-  show ?thesis sorry
+  show ?thesis using h_S_is_CST by (by100 blast)
 qed
 
 (** from \<S>30: spine of a solid torus (geotop.tex:6188)
