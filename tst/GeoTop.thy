@@ -4843,17 +4843,52 @@ definition geotop_isotopic ::
       is isotopic to the identity mapping f_0: B^n \<leftrightarrow> B^n, P \<mapsto> P. **)
 theorem Theorem_GT_11_1_Alexander:
   fixes f\<^sub>1 :: "'a::real_normed_vector \<Rightarrow> 'a"
-  assumes "top1_homeomorphism_on ({P::'a. norm P \<le> 1})
+  assumes hf1: "top1_homeomorphism_on ({P::'a. norm P \<le> 1})
              (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
              ({P::'a. norm P \<le> 1})
              (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) f\<^sub>1"
-  assumes "\<forall>P. norm P = 1 \<longrightarrow> f\<^sub>1 P = P"
+  assumes hf1_bdry: "\<forall>P. norm P = 1 \<longrightarrow> f\<^sub>1 P = P"
   shows "geotop_isotopic ({P::'a. norm P \<le> 1})
            (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
            ({P::'a. norm P \<le> 1})
            (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
            (\<lambda>P. P) f\<^sub>1"
-  sorry
+  (** Moise proof (geotop.tex:2247, Alexander's trick):
+      Define phi: B^n x [0,1] -> B^n by
+        phi(P, 0) = P for every P;
+        phi(P, t) = P for ||P|| >= t > 0;
+        phi(P, t) = t * f_1(P/t) for t > 0, ||P|| < t.
+      Need: continuity (jointly in P and t), each slice is a homeomorphism.
+      For t_0 > 0, continuity obvious. For t_0 = 0, note ||P - phi(P, t)|| < 2t. **)
+proof -
+  define \<phi> :: "'a \<times> real \<Rightarrow> 'a" where
+    "\<phi> = (\<lambda>(P, t). if t = 0 then P
+                    else if t \<le> norm P then P
+                    else t *\<^sub>R f\<^sub>1 ((1/t) *\<^sub>R P))"
+  (** \<phi> is jointly continuous on B^n \<times> [0,1]. **)
+  have h\<phi>_cont:
+    "top1_continuous_map_on ({P::'a. norm P \<le> 1} \<times> {t::real. 0 \<le> t \<and> t \<le> 1})
+       (subspace_topology (UNIV :: ('a \<times> real) set) geotop_euclidean_topology
+          ({P::'a. norm P \<le> 1} \<times> {t::real. 0 \<le> t \<and> t \<le> 1}))
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) \<phi>"
+    sorry
+  (** Each slice \<lambda>P. \<phi>(P, t) is a homeomorphism of B^n. **)
+  have h\<phi>_slice_homeo:
+    "\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow>
+      top1_homeomorphism_on ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) (\<lambda>P. \<phi> (P, t))"
+    sorry
+  (** Boundary conditions \<phi>(P, 0) = P and \<phi>(P, 1) = f_1(P). **)
+  have h\<phi>_boundary:
+    "(\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 0) = P) \<and> (\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 1) = f\<^sub>1 P)"
+    sorry
+  show ?thesis
+    unfolding geotop_isotopic_def geotop_is_isotopy_def
+    sorry
+qed
 
 (** from \<S>11 stable homeomorphism (geotop.tex:2259)
     LATEX VERSION: Let [X, O] be a topological space, and let f be a homeomorphism X \<leftrightarrow> X.
@@ -4869,29 +4904,74 @@ definition geotop_is_stable ::
       the identity. **)
 theorem Theorem_GT_11_2:
   fixes f\<^sub>1 :: "'a::real_normed_vector \<Rightarrow> 'a"
-  assumes "geotop_is_stable (UNIV::'a set) geotop_euclidean_topology f\<^sub>1"
+  assumes hf1: "geotop_is_stable (UNIV::'a set) geotop_euclidean_topology f\<^sub>1"
   shows "geotop_isotopic (UNIV::'a set) geotop_euclidean_topology
            (UNIV::'a set) geotop_euclidean_topology (\<lambda>P. P) f\<^sub>1"
-  sorry
+  (** Moise proof (geotop.tex:2263). Assume WLOG f_1 is the identity on B^n.
+      Let inv be the inversion P -> P/||P||^2 on R^n - {0}.
+      Define g_1: B^n -> B^n by g_1(0) = 0 and g_1(P) = inv(f_1(inv(P))) for
+      0 < ||P|| <= 1. Then g_1|S^(n-1) = id, so by Alexander (11_1), g_1
+      is isotopic to the identity via psi: B^n x [0,1] -> B^n.
+      psi fixes 0 (psi(0, t) = 0) and is nonzero on nonzero inputs, so
+      psi' = psi on (B^n - {0}) x [0,1] is a valid isotopy.
+      phi = inv o psi' o inv is an isotopy on R^n - Int(B^n) between f_1 and id.
+      Extend phi(P, t) = P for P in B^n to get a full isotopy on R^n. **)
+proof -
+  (** Step 1: WLOG f_1 is the identity on B^n (stability gives a nbhd; scale). **)
+  have hWLOG: "\<forall>P. norm P \<le> 1 \<longrightarrow> f\<^sub>1 P = P" sorry
+  (** Step 2: define g_1 via double inversion. **)
+  define inv_op where "inv_op = (\<lambda>P::'a. P /\<^sub>R (norm P)^2)"
+  define g\<^sub>1 where "g\<^sub>1 = (\<lambda>P::'a. if P = 0 then 0 else inv_op (f\<^sub>1 (inv_op P)))"
+  (** Step 3: g_1 is a homeo B^n <-> B^n identity on S^(n-1). **)
+  have hg1_homeo: "top1_homeomorphism_on {P::'a. norm P \<le> 1}
+                     (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+                     {P::'a. norm P \<le> 1}
+                     (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) g\<^sub>1"
+    sorry
+  have hg1_bdry: "\<forall>P. norm P = 1 \<longrightarrow> g\<^sub>1 P = P" sorry
+  (** Step 4: apply Alexander to get isotopy psi: g_1 ~ id on B^n. **)
+  have hpsi: "geotop_isotopic {P::'a. norm P \<le> 1}
+                (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+                {P::'a. norm P \<le> 1}
+                (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+                (\<lambda>P. P) g\<^sub>1"
+    using Theorem_GT_11_1_Alexander[OF hg1_homeo hg1_bdry] .
+  (** Step 5: restrict psi to (B^n - {0}) x [0,1], conjugate by inv to get isotopy
+      phi on R^n - Int(B^n) between f_1 and id; extend by identity on B^n. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>11 Theorem 3 (geotop.tex:2294)
     LATEX VERSION: Let M, U, \<phi>, and h be as in Theorem 10.13. If R^2 - U contains an open set,
       then h is isotopic to the identity. **)
 theorem Theorem_GT_11_3:
   fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real" and h :: "real^2 \<Rightarrow> real^2"
-  assumes "geotop_is_triangulable M"
-  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
-  assumes "geotop_strongly_positive U
+  assumes hM: "geotop_is_triangulable M"
+  assumes hU: "U \<in> geotop_euclidean_topology" and hMU: "M \<subseteq> U"
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
-  assumes "top1_homeomorphism_on UNIV geotop_euclidean_topology
+  assumes hh_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
              UNIV geotop_euclidean_topology h"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M"
-  assumes "\<forall>P\<in>UNIV - U. h P = P"
-  assumes "geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
-  assumes "\<exists>V\<in>geotop_euclidean_topology. V \<noteq> {} \<and> V \<subseteq> UNIV - U"
+  assumes hhM: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M"
+  assumes hh_id: "\<forall>P\<in>UNIV - U. h P = P"
+  assumes hh_\<phi>: "geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+  assumes hV: "\<exists>V\<in>geotop_euclidean_topology. V \<noteq> {} \<and> V \<subseteq> UNIV - U"
   shows "geotop_isotopic (UNIV::(real^2) set) geotop_euclidean_topology
            (UNIV::(real^2) set) geotop_euclidean_topology (\<lambda>P. P) h"
-  sorry
+  (** Moise proof (geotop.tex:2294): From \"R^2 - U contains an open set V\" and
+      h|V = id (by hh_id applied to V), h is a stable homeomorphism. Apply
+      Theorem 11_2. **)
+proof -
+  obtain V where hV_open: "V \<in> geotop_euclidean_topology"
+              and hV_ne: "V \<noteq> {}"
+              and hV_out: "V \<subseteq> UNIV - U"
+    using hV by blast
+  have hh_stable: "geotop_is_stable (UNIV::(real^2) set) geotop_euclidean_topology h"
+    unfolding geotop_is_stable_def
+    using hh_homeo hV_open hV_ne hV_out hh_id by blast
+  show ?thesis
+    using Theorem_GT_11_2[OF hh_stable] .
+qed
 
 section \<open>\<S>12 Homeomorphisms between Cantor sets\<close>
 
