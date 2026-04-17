@@ -6579,8 +6579,8 @@ definition geotop_normal_closure ::
       such moves, the initial word reduces to the empty word on f(y = 1) \<equiv> e. **)
 theorem Theorem_GT_15_2:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_link L" and "geotop_link_general_position L"
-  assumes "P\<^sub>0 \<in> UNIV - L"
+  assumes hL: "geotop_is_link L" and hL_gp: "geotop_link_general_position L"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - L"
   shows "\<exists>(G::'a set) (R::('a \<times> int) list set set).
            finite G \<and> finite R \<and>
            (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
@@ -6592,7 +6592,36 @@ theorem Theorem_GT_15_2:
                 (\<exists>w::('a \<times> int) list. w \<in> {w. \<forall>(a, \<alpha>)\<in>set w. a \<in> G} \<and>
                    (\<exists>rel\<in>geotop_normal_closure G R.
                       geotop_word_equiv w [] \<or> w \<in> rel)))"
-  sorry
+proof -
+  (** (1) From the diagram, read off the generator alphabet G and relation set R. **)
+  have h_alphabet:
+    "\<exists>(G::'a set) (R::('a \<times> int) list set set).
+       finite G \<and> finite R \<and> (\<forall>r\<in>R. r \<in> geotop_free_group G)" sorry
+  (** (2) For a null-homotopic p, take a PL null-homotopy f: [0,1]^2 \<to> R^3 - L
+         (Theorem 14.7), linear on a triangulation K. **)
+  have h_PL_null:
+    "\<forall>p. geotop_closed_path_on (UNIV - L)
+            (subspace_topology UNIV geotop_euclidean_topology (UNIV - L)) P\<^sub>0 p \<and>
+          geotop_path_equiv (UNIV - L)
+            (subspace_topology UNIV geotop_euclidean_topology (UNIV - L)) P\<^sub>0 p (\<lambda>t. P\<^sub>0)
+         \<longrightarrow>
+         (\<exists>f::real \<times> real \<Rightarrow> real^3.
+             (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> UNIV - L) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = P\<^sub>0) \<and>
+             (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0))" sorry
+  (** (3) Sweep K simplex by simplex. Each local move across a 2-simplex either
+         (a) cancels g_i^{\<plusminus>1} g_i^{\<mp>1} (simplex crosses one arc twice), or
+         (b) inserts/deletes a conjugate g_i r_j^{\<plusminus>1} g_i^{-1} (simplex spans a
+             crossing of the diagram). **)
+  have h_sweep:
+    "\<exists>(G::'a set) (R::('a \<times> int) list set set). finite G \<and> finite R \<and>
+        (\<forall>w::('a \<times> int) list. (\<forall>(a, \<alpha>)\<in>set w. a \<in> G) \<longrightarrow>
+           (\<exists>rel\<in>geotop_normal_closure G R. geotop_word_equiv w [] \<or> w \<in> rel))" sorry
+  (** (4) Initial word (for p) reduces to empty via these moves, i.e. its class lies in
+         the normal closure N([R]). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>15 Theorem 3 (geotop.tex:3138)
     LATEX VERSION: ker \<phi>* = N([R]).
@@ -6605,8 +6634,8 @@ theorem Theorem_GT_15_2:
       w by an element of N([R]); so [w] \<in> N([R]). **)
 theorem Theorem_GT_15_3:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_link L" and "geotop_link_general_position L"
-  assumes "P\<^sub>0 \<in> UNIV - L"
+  assumes hL: "geotop_is_link L" and hL_gp: "geotop_link_general_position L"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - L"
   shows "\<exists>G R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
            G \<subseteq> UNIV \<and>
            (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
@@ -6615,7 +6644,32 @@ theorem Theorem_GT_15_3:
                (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
                P\<^sub>0 (\<lambda>t. P\<^sub>0)} =
            geotop_normal_closure G R"
-  sorry
+proof -
+  (** (1) From the diagram, obtain the generator alphabet G, relation set R, and the
+         canonical map \<phi>*: F(G) \<rightarrow> \<pi>(R^3 - L, P_0). **)
+  have h_diag:
+    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+        G \<subseteq> UNIV \<and> (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+        (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C \<in> geotop_group_of_link L P\<^sub>0)" sorry
+  (** (2) Inclusion N([R]) \<subseteq> ker \<phi>*: since \<phi>*([r_i]) = [e] for each crossing relation,
+         and \<phi>* is a homomorphism, inductively any element of N([R]) obtained by
+         multiplication, inversion, and conjugation maps to [e]. **)
+  have h_incl1:
+    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+        (\<forall>C\<in>geotop_normal_closure G R. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+             P\<^sub>0 (\<lambda>t. P\<^sub>0))" sorry
+  (** (3) Reverse inclusion ker \<phi>* \<subseteq> N([R]): if \<phi>*([w]) = [e], the closed path represented
+         by w is null-homotopic; by Theorem 15.2, w reduces to the empty word by steps each
+         consisting of inserting or deleting g_i r_j^{\<plusminus>1} g_i^{-1}, g_i g_i^{-1}, or
+         g_i^{-1} g_i. Each such step translates [w] by an element of N([R]). **)
+  have h_incl2:
+    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+        (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+             P\<^sub>0 (\<lambda>t. P\<^sub>0) \<longrightarrow> C \<in> geotop_normal_closure G R)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>15 Theorem 4 (geotop.tex:3167)
     LATEX VERSION: Let L be a link in R^3, in general position relative to the axes. Let
@@ -6630,14 +6684,30 @@ theorem Theorem_GT_15_3:
       isomorphism theorem for groups gives F(G) / N([R]) \<cong> \<pi>(R^3 - L, P_0). **)
 theorem Theorem_GT_15_4:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_link L" and "geotop_link_general_position L"
-  assumes "P\<^sub>0 \<in> UNIV - L"
+  assumes hL: "geotop_is_link L" and hL_gp: "geotop_link_general_position L"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - L"
   shows "\<exists>(G::'a set) (R::('a \<times> int) list set set)
           (\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
            G \<subseteq> UNIV \<and> finite G \<and> finite R \<and>
            (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
            bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0)"
-  sorry
+proof -
+  (** (1) By Theorem 15.1, the word map \<phi>*: F(G) \<rightarrow> \<pi>(R^3 - L, P_0) is surjective. **)
+  have h_surj:
+    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+        finite G \<and> finite R \<and> (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+        (\<forall>X\<in>geotop_group_of_link L P\<^sub>0. \<exists>C\<in>geotop_free_group G. \<phi>\<^sub>s C = X)" sorry
+  (** (2) By Theorem 15.3, ker \<phi>* = N([R]). **)
+  have h_ker:
+    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+        {C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+             P\<^sub>0 (\<lambda>t. P\<^sub>0)} = geotop_normal_closure G R" sorry
+  (** (3) First isomorphism theorem: F(G) / N([R]) \<cong> \<pi>(R^3 - L, P_0); we pass to the quotient
+         via \<phi>** . Identify the quotient F(G) / N([R]) with (a set-theoretic transversal in)
+         F(G) itself, giving a bijection \<Phi> between F(G) and \<pi>(R^3 - L, P_0). **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>16 Computations of fundamental groups\<close>
 
