@@ -5601,4 +5601,48 @@ theorem Theorem_GT_28_20:
   shows "geotop_manifold_euler M1 = geotop_manifold_euler M2 + 2"
   sorry
 
+section \<open>\<S>29 Limits on the Loop theorem: Stallings's example\<close>
+
+(** from \<S>29: lens space L(p,q) (geotop.tex:6010)
+    LATEX VERSION: Let p and q be positive integers, with p \<ge> 2 and q < p. The lens space
+      L(p, q) is defined by identifying (r, \<theta>, z) in S^2 with z \<ge> 0 with
+      (r, \<theta> + 2\<pi>q/p, -z). **)
+definition geotop_is_lens_space ::
+  "nat \<Rightarrow> nat \<Rightarrow> (real^3) set \<Rightarrow> bool" where
+  "geotop_is_lens_space p q L \<longleftrightarrow>
+    p \<ge> 2 \<and> q < p \<and>
+    top1_compact_on L (subspace_topology UNIV geotop_euclidean_topology L) \<and>
+    top1_connected_on L (subspace_topology UNIV geotop_euclidean_topology L) \<and>
+    geotop_n_manifold_with_boundary_on L (\<lambda>x y. norm (x - y)) 3 \<and>
+    geotop_manifold_boundary L (\<lambda>x y. norm (x - y)) = {}"
+
+(** from \<S>29: Stallings's counterexample (geotop.tex:6008)
+    LATEX VERSION: If in Theorem 26.4 we omit the hypothesis that M^2 is two sided in
+      Int M^3, the resulting proposition is false. **)
+theorem Theorem_GT_29_1_Stallings_counterexample:
+  shows "\<exists>(L::(real^3) set) (M2::(real^3) set).
+           geotop_is_lens_space 6 1 L \<and>
+           top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2) \<and>
+           geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2 \<and>
+           geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {} \<and>
+           \<not> geotop_is_two_sided M2 (geotop_manifold_interior L (\<lambda>x y. norm (x - y))) \<and>
+           (\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
+                     (subspace_topology UNIV geotop_euclidean_topology M2) P\<^sub>0 p \<and>
+                     \<not> geotop_path_equiv M2
+                          (subspace_topology UNIV geotop_euclidean_topology M2)
+                          P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
+                     geotop_path_equiv L (subspace_topology UNIV geotop_euclidean_topology L)
+                       P\<^sub>0 p (\<lambda>t. P\<^sub>0)) \<and>
+           (\<nexists>\<Delta>. geotop_is_n_cell \<Delta>
+                  (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+                \<Delta> \<subseteq> geotop_manifold_interior L (\<lambda>x y. norm (x - y)) \<and>
+                geotop_frontier UNIV geotop_euclidean_topology \<Delta> = \<Delta> \<inter> M2 \<and>
+                (\<exists>P\<^sub>0\<in>\<Delta> \<inter> M2. \<exists>p.
+                   geotop_closed_path_on (\<Delta> \<inter> M2)
+                     (subspace_topology UNIV geotop_euclidean_topology (\<Delta> \<inter> M2)) P\<^sub>0 p \<and>
+                   \<not> geotop_path_equiv M2
+                        (subspace_topology UNIV geotop_euclidean_topology M2)
+                        P\<^sub>0 p (\<lambda>t. P\<^sub>0)))"
+  sorry
+
 end
