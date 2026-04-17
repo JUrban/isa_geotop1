@@ -7862,9 +7862,25 @@ definition geotop_unknotted_in ::
       PLH \<phi>: C \<leftrightarrow> \<sigma>^2 \<times> [0,1], such that B \<leftrightarrow> R \<times> [0,1], for some R \<in> Int \<sigma>^2. **)
 theorem Theorem_GT_19_1:
   fixes B :: "(real^3) set"
-  assumes "geotop_is_broken_line B"
+  assumes hB: "geotop_is_broken_line B"
   shows "\<exists>C. geotop_unknotted_in B C"
-  sorry
+proof -
+  (** (1) Induct on the number n of edges of B. Base case n = 1: B is a single segment PQ;
+         take a solid cylindrical neighbourhood C = \<sigma>^2 \<times> [0, 1] with (R, t) \<mapsto> straight
+         segment at height t. **)
+  have h_base:
+    "\<forall>B. geotop_is_broken_line B \<and>
+         (\<exists>P Q. P \<noteq> Q \<and> B = {(1 - t) *\<^sub>R P + t *\<^sub>R Q | t. 0 \<le> t \<and> t \<le> 1}) \<longrightarrow>
+         (\<exists>C. geotop_unknotted_in B C)" sorry
+  (** (2) Induction step: given a broken line B with n + 1 edges and an apex vertex v of
+         degree 2 joining the last two edges e_n, e_{n+1}, replace the last two edges by
+         a single edge e'; apply IH on the shorter broken line B'; then augment the
+         resulting 3-cell C' with a small local rectangular 3-cell that twists e' back
+         into e_n \<cup> e_{n+1}, preserving the \<sigma>^2 \<times> [0,1] structure. **)
+  have h_step:
+    "\<forall>B. geotop_is_broken_line B \<longrightarrow> (\<exists>C. geotop_unknotted_in B C)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>19 Theorem 2 (geotop.tex:3999)
     LATEX VERSION: If B_i is unknotted in C_i (i = 1,2), then every PLH
@@ -7872,34 +7888,102 @@ theorem Theorem_GT_19_1:
       h': C_1 \<leftrightarrow> C_2, B_1 \<leftrightarrow> B_2. **)
 theorem Theorem_GT_19_2:
   fixes B1 B2 C1 C2 :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3"
-  assumes "geotop_unknotted_in B1 C1" and "geotop_unknotted_in B2 C2"
-  assumes "top1_homeomorphism_on
+  assumes hB1C1: "geotop_unknotted_in B1 C1" and hB2C2: "geotop_unknotted_in B2 C2"
+  assumes hh: "top1_homeomorphism_on
              (geotop_frontier UNIV geotop_euclidean_topology C1)
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_frontier UNIV geotop_euclidean_topology C1))
              (geotop_frontier UNIV geotop_euclidean_topology C2)
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_frontier UNIV geotop_euclidean_topology C2)) h"
-  assumes "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' h"
-  assumes "h ` (geotop_frontier UNIV geotop_euclidean_topology B1) =
+  assumes hh_PL: "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' h"
+  assumes hh_bdB: "h ` (geotop_frontier UNIV geotop_euclidean_topology B1) =
              geotop_frontier UNIV geotop_euclidean_topology B2"
   shows "\<exists>h'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
                 C2 (subspace_topology UNIV geotop_euclidean_topology C2) h' \<and>
               (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology C1. h' P = h P) \<and>
               h' ` B1 = B2"
-  sorry
+proof -
+  (** (1) Extract PLHs f_i: C_i \<leftrightarrow> \<sigma>^2 \<times> [0,1] with B_i \<leftrightarrow> R_i \<times> [0,1]. Adjust f_2 so
+         that R_2 = R_1 = R. The theorem reduces to the special case
+           C_1 = C_2 = C = \<sigma>^2 \<times> [0,1], B_1 = B_2 = B = R \<times> [0,1]. **)
+  have h_std:
+    "\<exists>h\<^sub>r. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) h\<^sub>r \<and>
+          h\<^sub>r ` B1 = B2
+     \<comment> \<open>standard-cell reduction yields an internal C_1 \<leftrightarrow> C_2, B_1 \<leftrightarrow> B_2 homeomorphism\<close>"
+    sorry
+  (** (2) In the reduced setting, for any polygon J \<subseteq> Bd C containing Bd B = {P, Q}, the
+         join D = v * J (with v \<in> Int B) is a PL 2-cell with D \<inter> Bd C = Bd D = J and
+         B \<subseteq> D. **)
+  have h_join_cell:
+    "\<forall>J. J \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C1 \<and>
+         geotop_frontier UNIV geotop_euclidean_topology B1 \<subseteq> J \<longrightarrow>
+         (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+              D \<inter> geotop_frontier UNIV geotop_euclidean_topology C1 = J \<and> B1 \<subseteq> D)" sorry
+  (** (3) Take such J = Bd D, J' = h(J), D' a PL 2-cell in C_2 for (B_2, J'); extend h so
+         h | B_1 = identity-like (matching the canonical parametrisation), then extend
+         again so h(D) = D'. **)
+  have h_extend_D:
+    "\<exists>h\<^sub>1. top1_homeomorphism_on UNIV geotop_euclidean_topology UNIV geotop_euclidean_topology h\<^sub>1 \<and>
+          (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology C1. h\<^sub>1 P = h P) \<and>
+          h\<^sub>1 ` B1 = B2" sorry
+  (** (4) D splits C_1 into two polyhedral 3-cells; D' splits C_2 into two; finally extend
+         h to interiors. This gives the required PLH h': C_1 \<leftrightarrow> C_2 with h'(B_1) = B_2
+         and h' | Bd C_1 = h. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>19 Theorem 3 (geotop.tex:4064)
     LATEX VERSION: A_1 is tame.
     Here A_1 is the Wilder arc (union of arcs B_i accumulating at a point P). **)
 theorem Theorem_GT_19_3:
   fixes A1 :: "(real^3) set" and Bs :: "nat \<Rightarrow> (real^3) set" and P :: "real^3"
-  assumes "\<forall>i. geotop_is_broken_line (Bs i)"
-  assumes "\<forall>i. \<forall>j. i \<noteq> j \<longrightarrow> Bs i \<inter> Bs j = {}"
-  assumes "A1 = (\<Union>i. Bs i) \<union> {P}"
-  assumes "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
+  assumes hBs_bl: "\<forall>i. geotop_is_broken_line (Bs i)"
+  assumes hBs_disjoint: "\<forall>i. \<forall>j. i \<noteq> j \<longrightarrow> Bs i \<inter> Bs j = {}"
+  assumes hA1: "A1 = (\<Union>i. Bs i) \<union> {P}"
+  assumes hA1_arc: "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
   shows "geotop_is_tame A1"
-  sorry
+proof -
+  (** (1) Take the nested sequence of concentric cubes C_1 \<supseteq> C_2 \<supseteq> \<dots> accumulating on P
+         such that \<union>_{i \<ge> n} B_i \<subseteq> C_n and each B_i lies in the shell Cl(C_i - C_{i+1}). **)
+  obtain Cs :: "nat \<Rightarrow> (real^3) set" where h_cubes:
+    "(\<forall>i. Cs (Suc i) \<subseteq> Cs i) \<and>
+     (\<forall>n. \<Union>{Bs i | i. i \<ge> n} \<subseteq> Cs n) \<and>
+     (\<Inter>n. Cs n) = {P}" sorry
+  (** (2) In each shell Cl(C_i - C_{i+1}), pick a polyhedral 3-cell D_i in which B_i is
+         unknotted (Theorem 19_1), meeting Bd C_i and Bd C_{i+1} in 2-cells d_i, d_{i+1}
+         consistently: D_i \<inter> Bd C_{i+1} = D_{i+1} \<inter> Bd C_{i+1}. **)
+  obtain Ds ds where h_unknotting_shells:
+    "(\<forall>i. geotop_unknotted_in (Bs i) (Ds i)) \<and>
+     (\<forall>i. Ds i \<inter> geotop_frontier UNIV geotop_euclidean_topology (Cs (Suc i)) = ds (Suc i)) \<and>
+     (\<forall>i. geotop_is_n_cell (ds i)
+            (subspace_topology UNIV geotop_euclidean_topology (ds i)) 2)" sorry
+  (** (3) Let L be the straight line through P and the points P_i (endpoints of B_i).
+         Set B_i' = L \<inter> Cl(C_i - C_{i+1}) (a straight subsegment) and D_i' the analogous
+         unknotting 3-cell around B_i', chosen so D_i' \<inter> Bd C_j = D_i \<inter> Bd C_j for all i, j.
+         Let A_1' = \<union>_i B_i' \<cup> {P} (a linear interval from P_1 to P). **)
+  obtain Bs' Ds' A1' where h_straight:
+    "(\<forall>i. Bs' i \<subseteq> (UNIV::(real^3) set)) \<and>
+     A1' = (\<Union>i. Bs' i) \<union> {P} \<and>
+     (\<forall>i. geotop_unknotted_in (Bs' i) (Ds' i)) \<and>
+     (\<forall>i j. Ds' i \<inter> geotop_frontier UNIV geotop_euclidean_topology (Cs j)
+              = Ds i \<inter> geotop_frontier UNIV geotop_euclidean_topology (Cs j))" sorry
+  (** (4) Assemble \<phi>: R^3 \<leftrightarrow> R^3 stage by stage:
+         (a) \<phi> is the identity on R^3 - C_1;
+         (b) for each i, by Theorem 19.2, extend on D_i to map B_i \<leftrightarrow> B_i' preserving
+             Bd C_i \<cup> Bd C_{i+1};
+         (c) extend on the "filler" polyhedral 3-cell E_i = Cl[C_i - (D_i \<cup> C_{i+1})]
+             matching boundary with E_i' analogously.
+         Continuity at P: the diameters of the shells tend to 0. **)
+  have h_extension:
+    "\<exists>\<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology \<phi> \<and>
+         \<phi> ` A1 = A1'" sorry
+  (** (5) A_1' is a linear interval (straight line segment from P_1 to P), hence trivially
+         tame. Pulling back via \<phi>^{-1}, A_1 is tame. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>19: locally commutative fundamental group (geotop.tex:4127)
     LATEX VERSION: Let U be an open set, and let P \<in> closure U. Suppose that for every open
@@ -7924,20 +8008,43 @@ definition geotop_pi_locally_commutative_at ::
     a linear interval from P to a point Q to the right. **)
 theorem Theorem_GT_19_4:
   fixes A :: "(real^3) set" and P :: "real^3"
-  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
-  assumes "\<exists>A1 A2. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
+  assumes hA_arc: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hA_decomp: "\<exists>A1 A2. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
                    geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
                    geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
-  assumes "\<not> geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P"
+  assumes hA_not_loc_comm: "\<not> geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P"
   shows "geotop_is_wild A"
-  sorry
+proof -
+  (** (1) Suppose for contradiction A is tame: a homeomorphism \<phi>: R^3 \<leftrightarrow> R^3 carries A
+         onto a linear interval I. Let P' = \<phi>(P). **)
+  have h_tame_contra_setup:
+    "\<not> geotop_is_tame A \<longrightarrow> geotop_is_wild A" sorry
+  (** (2) U = R^3 - I has locally commutative fundamental group at every point P' of I:
+         for each small \<epsilon> > 0, closed paths in U \<inter> B(P', \<epsilon>) can be homotoped inside
+         U \<inter> B(P', 2\<epsilon>) by a homotopy that commutes pq with qp (any two loops near a
+         linear interval commute since R^3 minus a line segment is locally the complement
+         of a line, whose fundamental group is Z). **)
+  have h_line_loc_comm:
+    "\<forall>I::(real^3) set. (\<exists>a b. I = {(1 - t) *\<^sub>R a + t *\<^sub>R b | t. 0 \<le> t \<and> t \<le> 1}) \<longrightarrow>
+       (\<forall>P'\<in>I. geotop_pi_locally_commutative_at (UNIV - I) geotop_euclidean_topology P')"
+    sorry
+  (** (3) Local commutativity is a homeomorphism invariant. Transporting through \<phi>^{-1},
+         R^3 - A would be locally commutative at P, contradicting the hypothesis. **)
+  have h_invariant:
+    "\<forall>\<phi> Y. top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology \<phi> \<and> \<phi> ` A = Y \<and>
+           (\<forall>P'\<in>Y. geotop_pi_locally_commutative_at (UNIV - Y)
+                     geotop_euclidean_topology P') \<longrightarrow>
+       geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>19 Theorem 5 (geotop.tex:4167)
     LATEX VERSION: R^3 - A is homeomorphic to the complement of a point. **)
 theorem Theorem_GT_19_5:
   fixes A :: "(real^3) set"
-  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
-  assumes "\<exists>A1 A2 P. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
+  assumes hA_arc: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hA_decomp: "\<exists>A1 A2 P. A = A1 \<union> A2 \<and> A1 \<inter> A2 = {P} \<and>
                    geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
                    geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
                    geotop_is_wild A"
@@ -7945,7 +8052,26 @@ theorem Theorem_GT_19_5:
              (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
              (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q}))
              h"
-  sorry
+proof -
+  (** (1) Express R^3 - A as the nested intersection of a descending sequence of polyhedral
+         3-cells C_i^3 with C_{i+1}^3 \<subseteq> Int C_i^3 converging onto the single singular point
+         Q of A (where A fails to be locally polyhedral). **)
+  obtain Cs Q where h_descent:
+    "(\<forall>i. geotop_is_n_cell (Cs i) (subspace_topology UNIV geotop_euclidean_topology (Cs i)) 3) \<and>
+     (\<forall>i. \<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = Cs i) \<and>
+     (\<forall>i. Cs (Suc i) \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Cs i)) \<and>
+     UNIV - A = (\<Inter>i. UNIV - Cs i) \<union> (UNIV - {Q}) \<comment> \<open>placeholder identification\<close>"
+    sorry
+  (** (2) Apply Problem 17.6 (R^3 - nested-intersection = R^3 - point): the ambient space
+         with a Cantor-nested-3-cell intersection removed is homeomorphic to the ambient
+         space with a single point removed. **)
+  have h_prob_17_6:
+    "\<exists>h Q. top1_homeomorphism_on
+             (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
+             (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q}))
+             h" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>19 Theorem 6 (geotop.tex:4172)
     LATEX VERSION: There are tame arcs A_1, A_2 in R^3 such that A_1 \<inter> A_2 is a point and
@@ -7957,7 +8083,27 @@ theorem Theorem_GT_19_6:
            geotop_is_tame A1 \<and> geotop_is_tame A2 \<and>
            A1 \<inter> A2 = {P} \<and>
            geotop_is_wild (A1 \<union> A2)"
-  sorry
+proof -
+  (** (1) Construct the Wilder arc A_1 as in Theorem 19.3: union of trefoil-like broken
+         lines B_i accumulating at P, so A_1 is tame. **)
+  obtain A1 P where hA1:
+    "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
+     geotop_is_tame A1 \<and> P \<in> A1" sorry
+  (** (2) Let A_2 be a straight linear interval from P to a point Q to the right of the
+         accumulation point; A_2 is trivially tame. **)
+  obtain A2 where hA2:
+    "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+     geotop_is_tame A2 \<and> A1 \<inter> A2 = {P}" sorry
+  (** (3) The Fox-Artin arc A = A_1 \<union> A_2 fails to have locally commutative fundamental
+         group of R^3 - A at P (each trefoil B_i provides a non-commuting pair of loops
+         in the complement, no matter how small a neighbourhood of P is chosen). **)
+  have hA_not_loc_comm:
+    "\<not> geotop_pi_locally_commutative_at (UNIV - (A1 \<union> A2)) geotop_euclidean_topology P"
+    sorry
+  (** (4) Apply Theorem 19_4 to conclude A_1 \<union> A_2 is wild. **)
+  have hA_wild: "geotop_is_wild (A1 \<union> A2)" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>20 A wild 2-sphere with a simply connected complement\<close>
 
