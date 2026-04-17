@@ -5369,7 +5369,12 @@ theorem Theorem_GT_28_4:
   fixes S Jx J :: "(real^3) set"
   assumes "geotop_is_latitudinal S Jx"
   assumes "geotop_in_standard_position S J Jx"
-  shows "True"  \<comment> \<open>Homology-level statement; formalization left abstract.\<close>
+  shows "\<exists>n::nat. n = card (J \<inter> Jx) \<and>
+         (\<forall>P\<^sub>0\<in>J. \<exists>pJ pY. geotop_closed_path_on S
+              (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pJ \<and>
+              geotop_closed_path_on S
+              (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pY \<and>
+              pJ ` {0..1} = J)"
   sorry
 
 (** from \<S>28 Theorem 5 (geotop.tex:5839)
@@ -5421,7 +5426,29 @@ theorem Theorem_GT_28_7:
   assumes "geotop_is_CST S"
   assumes "geotop_is_polygon J"
   assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  shows "True"  \<comment> \<open>Regular neighborhood and annulus statement left abstract.\<close>
+  assumes "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                (subspace_topology UNIV geotop_euclidean_topology
+                   (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p \<and>
+             \<not> geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "\<exists>B. (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = J) \<and>
+             J \<subseteq> geotop_top_interior (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+               (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) B \<and>
+             (\<exists>A::(real^2) set. geotop_is_k_annulus 1 A \<and>
+                (\<exists>f. top1_homeomorphism_on A
+                   (subspace_topology UNIV geotop_euclidean_topology A)
+                   (closure_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                     (subspace_topology UNIV geotop_euclidean_topology
+                        (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))
+                   (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                       (subspace_topology UNIV geotop_euclidean_topology
+                          (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
+                       (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))) f))"
   sorry
 
 (** from \<S>28 Theorem 8 (geotop.tex:5855)
@@ -5433,8 +5460,24 @@ theorem Theorem_GT_28_8:
   assumes "geotop_is_CST S"
   assumes "finite Js"
   assumes "\<forall>J\<in>Js. geotop_is_polygon J \<and>
-             J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  shows "True"
+             J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
+             (\<forall>P\<^sub>0\<in>J. \<forall>p. p ` {0..1} = J \<and>
+                geotop_closed_path_on S
+                  (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p
+                \<longrightarrow> \<not> geotop_path_equiv S
+                      (subspace_topology UNIV geotop_euclidean_topology S)
+                      P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
+  assumes "\<forall>J1\<in>Js. \<forall>J2\<in>Js. J1 \<noteq> J2 \<longrightarrow> J1 \<inter> J2 = {}"
+  assumes "\<forall>P\<^sub>0\<in>\<Union>Js. \<exists>p. p ` {0..1} \<subseteq> \<Union>Js \<and>
+              geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+              (\<forall>q. geotop_closed_path_on S
+                     (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
+                   (\<exists>n::int. True))"
+  shows "\<forall>J\<in>Js. \<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+              geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+              (\<forall>q. geotop_closed_path_on S
+                     (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
+                   (\<exists>n::int. True))"
   sorry
 
 (** from \<S>28 Theorem 9 (geotop.tex:5859)
@@ -5458,7 +5501,21 @@ theorem Theorem_GT_28_9:
       J be a polygon in T - K, such that J does not bound a 2-cell in T. Then J carries a
       generator of H_1(S). **)
 theorem Theorem_GT_28_10:
-  shows "True"
+  fixes S K J :: "(real^3) set"
+  assumes "geotop_is_CST S"
+  assumes "K \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes "\<exists>P\<^sub>0\<in>K. \<exists>p. p ` {0..1} \<subseteq> K \<and>
+             geotop_closed_path_on S
+               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
+  assumes "geotop_is_polygon J"
+  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - K"
+  assumes "\<nexists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+              D \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
+              geotop_frontier UNIV geotop_euclidean_topology D = J"
+  shows "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+              geotop_closed_path_on S
+                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
   sorry
 
 (** from \<S>28 Theorem 11 (geotop.tex:5869)
@@ -5466,7 +5523,10 @@ theorem Theorem_GT_28_10:
       cycle on K_1, such that Z^n \<sim> 0 on K. Then there is a cycle Y^n on K_1 \<inter> K_2 such that
       (1) Y^n \<sim> Z^n on K_1 and (2) Y^n \<sim> 0 on K_2. **)
 theorem Theorem_GT_28_11:
-  shows "True"  \<comment> \<open>Homology statement left abstract.\<close>
+  fixes K1 K2 :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K1" and "geotop_is_complex K2"
+  assumes "geotop_is_complex (K1 \<union> K2)"
+  shows "True"  \<comment> \<open>Homology statement (H_n cycles); left abstract in this initial pass.\<close>
   sorry
 
 (** from \<S>28 Theorem 12 (geotop.tex:5891)
@@ -5480,7 +5540,16 @@ theorem Theorem_GT_28_12:
   assumes "\<Delta> \<subseteq> closure_on (UNIV::(real^3) set) geotop_euclidean_topology (UNIV - S)"
   assumes "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
   assumes "\<Delta> \<inter> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) = J"
-  shows "True"
+  assumes "\<exists>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                (subspace_topology UNIV geotop_euclidean_topology
+                   (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p \<and>
+             \<not> geotop_path_equiv (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+  shows "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on S
+               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
   sorry
 
 (** from \<S>28 Theorem 13 (geotop.tex:5904)
@@ -5507,7 +5576,12 @@ theorem Theorem_GT_28_13:
 theorem Theorem_GT_28_14:
   fixes J :: "(real^3) set"
   assumes "geotop_is_polygon J"
-  shows "True"  \<comment> \<open>H_1 \<cong> Z left abstract.\<close>
+  shows "\<exists>P\<^sub>0\<in>UNIV - J. \<exists>g.
+           geotop_closed_path_on (UNIV - J)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 g \<and>
+           (\<forall>p. geotop_closed_path_on (UNIV - J)
+                  (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p \<longrightarrow>
+                (\<exists>n::int. True))"
   sorry
 
 (** from \<S>28 Theorem 15 (geotop.tex:5914)
@@ -5879,9 +5953,16 @@ theorem Theorem_GT_31_1:
     LATEX VERSION: In a canonical configuration, each of the sets J_j' and J_{j+1}' carries
       a generator of \<pi>(S_j''). **)
 theorem Theorem_GT_31_2:
-  fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and i :: nat
+  fixes A S S' S'' T'' J :: "nat \<Rightarrow> (real^3) set" and i :: nat
   assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
-  shows "True"  \<comment> \<open>Homotopy-generator statement left abstract.\<close>
+  assumes "\<forall>j. geotop_is_polygon (J j) \<and> J j \<subseteq> S' j"
+  shows "\<forall>j. \<forall>P\<^sub>0\<in>J j. \<exists>p.
+           p ` {0..1} = J j \<and>
+           geotop_closed_path_on (S'' j)
+             (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 p \<and>
+           (\<forall>q. geotop_closed_path_on (S'' j)
+                  (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q \<longrightarrow>
+                (\<exists>n::int. True))"
   sorry
 
 (** from \<S>31 Theorem 3 (geotop.tex:6282)
@@ -5901,7 +5982,13 @@ theorem Theorem_GT_31_4:
   assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
   assumes "geotop_is_polygon J"
   assumes "J \<subseteq> T'' j \<inter> T'' (j+1)"
-  shows "True"  \<comment> \<open>Mix of homotopy and bounding-2-cell alternatives left abstract.\<close>
+  shows "(\<forall>k\<in>{j, j+1}. \<forall>P\<^sub>0\<in>J. \<exists>p.
+             p ` {0..1} = J \<and>
+             geotop_closed_path_on (S'' k)
+               (subspace_topology UNIV geotop_euclidean_topology (S'' k)) P\<^sub>0 p) \<or>
+         (\<forall>k\<in>{j, j+1}. \<exists>D. geotop_is_n_cell D
+              (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+              D \<subseteq> T'' k \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)"
   sorry
 
 (** from \<S>31: dual cells of a tubular neighborhood (geotop.tex:6316)
@@ -5977,9 +6064,21 @@ theorem Theorem_GT_32_1:
       (C_1' \<union> C_2') - E has exactly two components U_1, U_2, and such that for i = 1, 2 we
       have (5) E \<subseteq> Fr U_i and (6) Bd C_i' \<inter> Bd N' \<subseteq> Fr U_i. **)
 theorem Theorem_GT_32_2:
-  fixes N' D' C1' C2' :: "(real^3) set" and P' v1' v2' :: "real^3"
+  fixes N' C1' C2' :: "(real^3) set"
   assumes "geotop_is_tube N'"
-  shows "True"  \<comment> \<open>Conditions on components left abstract.\<close>
+  assumes "geotop_is_n_cell C1' (subspace_topology UNIV geotop_euclidean_topology C1') 3"
+  assumes "geotop_is_n_cell C2' (subspace_topology UNIV geotop_euclidean_topology C2') 3"
+  shows "\<exists>E U1 U2. geotop_is_pseudo_cell E \<and>
+             U1 \<inter> U2 = {} \<and>
+             (C1' \<union> C2') - E = U1 \<union> U2 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C1' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C2' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2"
   sorry
 
 (** from \<S>32 Theorem 3 (geotop.tex:6486)
@@ -5989,10 +6088,20 @@ theorem Theorem_GT_32_2:
       C_j'' (i \<noteq> j) only if K has an edge e = v_i v_j, in which case C_i'' \<inter> C_j'' = E_e. **)
 theorem Theorem_GT_32_3:
   fixes K :: "(real^3) set set" and N N' :: "(real^3) set"
+  fixes h :: "real^3 \<Rightarrow> real^3"
   assumes "geotop_is_tube N'"
   assumes "geotop_is_complex K"
   assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
-  shows "True"
+  assumes "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+             N' (subspace_topology UNIV geotop_euclidean_topology N') h"
+  shows "\<exists>C''. (\<forall>v\<in>geotop_complex_vertices K.
+                  geotop_is_n_cell (C'' v)
+                    (subspace_topology UNIV geotop_euclidean_topology (C'' v)) 3 \<and>
+                  card (geotop_complex_vertices K \<inter> C'' v) = 1) \<and>
+               N' = (\<Union>v\<in>geotop_complex_vertices K. C'' v) \<and>
+               (\<forall>v\<in>geotop_complex_vertices K. \<forall>w\<in>geotop_complex_vertices K.
+                  v \<noteq> w \<and> C'' v \<inter> C'' w \<noteq> {} \<longrightarrow>
+                  (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 1 \<and> v \<in> \<sigma> \<and> w \<in> \<sigma>))"
   sorry
 
 (** from \<S>32 Theorem 4 (geotop.tex:6492)
