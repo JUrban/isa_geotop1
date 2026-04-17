@@ -3926,12 +3926,33 @@ definition geotop_abstract_iso :: "'a set set \<Rightarrow> 'b set set \<Rightar
       there is a Euclidean complex K in R^{2n+1} such that \<Phi>(K) is isomorphic to \<Phi>. **)
 theorem Theorem_GT_7_1:
   fixes \<Phi> :: "'a set set"
-  assumes "geotop_is_abstract_complex \<Phi>"
-  assumes "geotop_abstract_dim \<Phi> n"
+  assumes h\<Phi>: "geotop_is_abstract_complex \<Phi>"
+  assumes hdim: "geotop_abstract_dim \<Phi> n"
   shows "\<exists>(K::(real^'b::finite) set set) (f::'a \<Rightarrow> real^'b).
            geotop_is_complex K \<and>
            geotop_abstract_iso \<Phi> (geotop_diagram K) f"
-  sorry
+  (** Moise proof (geotop.tex:1465). Use the moment curve / general-position
+      argument: embed \<Phi>^0 = V (the countable vertex set) into R^{2n+1}
+      injectively into general position (Lemma 3 in tex). Any 2n+2 points
+      of V then form a Euclidean simplex. For each \<phi> \<in> \<Phi>, f(\<phi>) has at
+      most n+1 points, so f(\<phi>) \<union> f(\<psi>) has at most 2n+2 and spans a
+      simplex \<tau>. The intersections \<sigma>_\<phi> \<inter> \<sigma>_\<psi> are then faces of both.
+      Complex axioms verified. **)
+proof -
+  (** Step 1: pick a general-position injection f of \<Phi>^0 into R^{2n+1}
+      (in our formalization, into R^'b for some type 'b::finite). **)
+  obtain f :: "'a \<Rightarrow> real^'b" where
+    hf_gp: "inj_on f (\<Union>\<Phi>) \<and> geotop_general_position (f ` \<Union>\<Phi>) n"
+    sorry
+  (** Step 2: define K = {convex_hull(f(\<phi>)) | \<phi>\<in>\<Phi>}. **)
+  define K :: "(real^'b) set set" where
+    "K = {geotop_convex_hull (f ` \<phi>) | \<phi>. \<phi>\<in>\<Phi>}"
+  (** Step 3: K is a Euclidean complex (via general-position intersection property). **)
+  have hK_complex: "geotop_is_complex K" sorry
+  (** Step 4: \<Phi> and \<Phi>(K) are isomorphic via f. **)
+  have hiso: "geotop_abstract_iso \<Phi> (geotop_diagram K) f" sorry
+  show ?thesis using hK_complex hiso by blast
+qed
 
 (** from \<S>7: Euclidean realization (geotop.tex:1473)
     LATEX VERSION: If \<Phi> is an abstract complex and K a Euclidean complex such that \<Phi> and
@@ -3977,17 +3998,50 @@ theorem Theorem_GT_7_2:
          (\<forall>\<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h (f::'a\<Rightarrow>'b) g h.
             geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
             geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h)"
-  sorry
+  (** Moise proof (geotop.tex:1520, stated; proof omitted in text as standard).
+      Three conjuncts: reflexivity (\<phi> = id works), symmetry (\<phi>\<inverse> works),
+      transitivity (composition of \<phi>_1 \<circ> \<phi>_2 works). **)
+proof -
+  have hrefl: "\<forall>(\<sigma>::'a set) h. geotop_coordinate_mapping \<sigma> X TX h \<longrightarrow>
+                 geotop_coord_equiv \<sigma> \<sigma> h h"
+    sorry
+  have hsymm: "\<forall>\<sigma>\<^sub>g \<sigma>\<^sub>h (g::'a\<Rightarrow>'b) h. geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
+                 geotop_coord_equiv \<sigma>\<^sub>h \<sigma>\<^sub>g h g"
+    sorry
+  have htrans: "\<forall>\<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h (f::'a\<Rightarrow>'b) g h.
+                  geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
+                  geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h"
+    sorry
+  show ?thesis using hrefl hsymm htrans by blast
+qed
 
 (** from \<S>7 Theorem 3 (geotop.tex:1523)
     LATEX VERSION: Given g \<sim> h, S \<subset> |g| = |h|. If S forms a face of g, then S forms a face of h. **)
 theorem Theorem_GT_7_3:
   fixes \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a::real_normed_vector set" and g h :: "'a \<Rightarrow> 'b::real_normed_vector"
   fixes S :: "'b set"
-  assumes "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
-  assumes "\<exists>\<tau>. geotop_is_face \<tau> \<sigma>\<^sub>g \<and> S = g ` \<tau>"
+  assumes hequiv: "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+  assumes hface: "\<exists>\<tau>. geotop_is_face \<tau> \<sigma>\<^sub>g \<and> S = g ` \<tau>"
   shows "\<exists>\<rho>. geotop_is_face \<rho> \<sigma>\<^sub>h \<and> S = h ` \<rho>"
-  sorry
+  (** Moise proof (geotop.tex:1524): Let S = g(\<tau>) with \<tau> a face of \<sigma>_g.
+      Set \<rho> = h^{-1}(g(\<tau>)) = h^{-1}(S). Since h^{-1} \<circ> g is a simplicial
+      homeomorphism \<sigma>_g \<leftrightarrow> \<sigma>_h (from \<sim>), \<rho> is a face of \<sigma>_h. **)
+proof -
+  obtain \<tau> where h\<tau>_face: "geotop_is_face \<tau> \<sigma>\<^sub>g" and hS\<tau>: "S = g ` \<tau>"
+    using hface by blast
+  obtain \<phi> where h\<phi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>g
+                              (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                              \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<phi>"
+                  and h\<phi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>g \<phi> \<sigma>\<^sub>h"
+                  and hghphi: "\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<phi> x)"
+    using hequiv unfolding geotop_coord_equiv_def by blast
+  (** Let \<rho> = \<phi>(\<tau>). \<rho> is a face of \<sigma>_h because simplicial \<phi> maps faces to faces. **)
+  define \<rho> where "\<rho> = \<phi> ` \<tau>"
+  have h\<rho>_face: "geotop_is_face \<rho> \<sigma>\<^sub>h" sorry
+  have hS\<rho>: "S = h ` \<rho>"
+    using hS\<tau> hghphi \<rho>_def sorry
+  show ?thesis using h\<rho>_face hS\<rho> by blast
+qed
 
 (** from \<S>7 Theorem 4 (geotop.tex:1526)
     LATEX VERSION: Equivalent coordinate mappings induce the same barycentric coordinate
