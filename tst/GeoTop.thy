@@ -5141,4 +5141,149 @@ theorem Theorem_GT_26_8:
   shows "geotop_is_orientable Km"
   sorry
 
+section \<open>\<S>27 The Dehn lemma\<close>
+
+(** from \<S>27: cellular PLH (geotop.tex:5744)
+    LATEX VERSION: Let M^2 be a PL 2-manifold, and let h be a PLH M^2 \<leftrightarrow> M^2. If there is a
+      polyhedral 2-cell d in M^2, such that h|(M^2 - d) is the identity, then h is cellular. **)
+definition geotop_is_cellular_PLH ::
+  "'a::real_normed_vector set \<Rightarrow> ('a \<Rightarrow> 'a) \<Rightarrow> bool" where
+  "geotop_is_cellular_PLH M2 h \<longleftrightarrow>
+    top1_homeomorphism_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)
+       M2 (subspace_topology UNIV geotop_euclidean_topology M2) h \<and>
+    (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' h) \<and>
+    (\<exists>d. geotop_is_n_cell d (subspace_topology UNIV geotop_euclidean_topology d) 2 \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = d) \<and>
+         d \<subseteq> M2 \<and> (\<forall>P\<in>M2 - d. h P = P))"
+
+(** from \<S>27 Theorem 1 (geotop.tex:5746)
+    LATEX VERSION: Let M^3 be a PL 3-manifold, let N be a polyhedral 3-manifold with boundary,
+      lying in M^3, and let M^2 be a polyhedral 2-manifold (not necessarily compact) lying in
+      Bd N. Then every cellular PLH h: M^2 \<leftrightarrow> M^2 has a PLH extension h': M^3 \<leftrightarrow> M^3, N \<leftrightarrow> N.
+      And for each neighborhood W of M^2, h' can be chosen so that h'|(M^3 - W) is the
+      identity. **)
+theorem Theorem_GT_27_1:
+  fixes K :: "(real^3) set set" and M3 N M2 W :: "(real^3) set"
+  fixes h :: "real^3 \<Rightarrow> real^3"
+  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
+  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes "N \<subseteq> M3"
+  assumes "geotop_n_manifold_with_boundary_on N (\<lambda>x y. norm (x - y)) 3"
+  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N)"
+  assumes "M2 \<subseteq> geotop_manifold_boundary N (\<lambda>x y. norm (x - y))"
+  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes "geotop_is_cellular_PLH M2 h"
+  assumes "W \<in> geotop_euclidean_topology" and "M2 \<subseteq> W"
+  shows "\<exists>h'. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+                 M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
+              (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
+                        geotop_PLH K1 K1' h') \<and>
+              h' ` N = N \<and>
+              (\<forall>P\<in>M2. h' P = h P) \<and>
+              (\<forall>P\<in>M3 - W. h' P = P)"
+  sorry
+
+(** from \<S>27 Theorem 2 (geotop.tex:5750)
+    LATEX VERSION: Let A be a PL annulus, and let J and J' be polygons in Int A, neither of
+      which bounds a 2-cell in A. Then there is PLH h: A \<leftrightarrow> A such that (1) h(J) = J',
+      (2) h|Bd A is the identity, and (3) h is the composition of a finite sequence of
+      cellular homeomorphisms. **)
+theorem Theorem_GT_27_2:
+  fixes A J J' :: "(real^2) set"
+  assumes "geotop_is_k_annulus 1 A"
+  assumes "geotop_is_polygon J" and "geotop_is_polygon J'"
+  assumes "J \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
+  assumes "J' \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
+  assumes "\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                  \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)"
+  assumes "\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                  \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J')"
+  shows "\<exists>h. top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+              A (subspace_topology UNIV geotop_euclidean_topology A) h \<and>
+              h ` J = J' \<and>
+              (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)). h P = P) \<and>
+              (\<exists>hs. hs \<noteq> [] \<and>
+                    (\<forall>hi\<in>set hs. geotop_is_cellular_PLH A hi) \<and>
+                    h = foldr (\<circ>) hs id)"
+  sorry
+
+(** from \<S>27 Theorem 3 (geotop.tex:5771)
+    LATEX VERSION: Let J be a polygon in the interior of a PL annulus A. Then (1) J bounds a
+      2-cell in A or (2) J carries a generator of H_1(A) = H_1(A, Z) and a generator of
+      \<pi>(A). **)
+theorem Theorem_GT_27_3:
+  fixes A J :: "(real^2) set"
+  assumes "geotop_is_k_annulus 1 A"
+  assumes "geotop_is_polygon J"
+  assumes "J \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
+  shows "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+              \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
+         (\<exists>P\<^sub>0\<in>J. \<exists>p. geotop_closed_path_on J
+            (subspace_topology UNIV geotop_euclidean_topology J) P\<^sub>0 p \<and>
+            p ` {0..1} = J \<and>
+            (\<exists>f. (\<forall>C\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
+                     \<exists>n::int. True) \<and>
+                 True))"
+  sorry
+
+(** from \<S>27 Theorem 4 (geotop.tex:5774)
+    LATEX VERSION: Let N be a polyhedral 3-manifold with boundary, in a PL 3-manifold M^3,
+      let A be a polyhedral annulus in Bd N, and let J and J' be polygons in Int A, neither
+      of which bounds a 2-cell in Int A. Let W be a neighborhood of A in M^3. Then there is
+      a PLH h: M^3 \<leftrightarrow> M^3, Bd N \<leftrightarrow> Bd N, A \<leftrightarrow> A, J \<leftrightarrow> J', such that h|(M^3 - W) is the
+      identity. **)
+theorem Theorem_GT_27_4:
+  fixes N M3 A J J' W :: "(real^3) set"
+  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M3)"
+  assumes "N \<subseteq> M3"
+  assumes "geotop_n_manifold_with_boundary_on N (\<lambda>x y. norm (x - y)) 3"
+  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N)"
+  assumes "geotop_n_manifold_with_boundary_on A (\<lambda>x y. norm (x - y)) 2"
+  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = A)"
+  assumes "\<exists>A0::(real^2) set. geotop_is_k_annulus 1 A0 \<and>
+            (\<exists>f. top1_homeomorphism_on A0
+               (subspace_topology UNIV geotop_euclidean_topology A0)
+               A (subspace_topology UNIV geotop_euclidean_topology A) f)"
+  assumes "A \<subseteq> geotop_manifold_boundary N (\<lambda>x y. norm (x - y))"
+  assumes "geotop_is_polygon J" and "geotop_is_polygon J'"
+  assumes "J \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
+  assumes "J' \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
+  assumes "\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                  \<and> D \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))
+                  \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)"
+  assumes "\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                  \<and> D \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))
+                  \<and> geotop_frontier UNIV geotop_euclidean_topology D = J')"
+  assumes "W \<in> geotop_euclidean_topology" and "A \<subseteq> W"
+  shows "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+              M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+              h ` (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))
+                = geotop_manifold_boundary N (\<lambda>x y. norm (x - y)) \<and>
+              h ` A = A \<and> h ` J = J' \<and>
+              (\<forall>P\<in>M3 - W. h P = P)"
+  sorry
+
+(** from \<S>27 Theorem 5 (The Dehn lemma, Papakyriakopoulos) (geotop.tex:5778)
+    LATEX VERSION: Let M^3 be a PL 3-manifold, and let D: \<Delta> \<rightarrow> M^3 be a PL singular 2-cell
+      with no singularities on its boundary. Then the polygon D(Bd \<Delta>) is the boundary of a
+      polyhedral 2-cell \<Delta>_1 in M^3. **)
+theorem Theorem_GT_27_5_Dehn:
+  fixes M3 :: "(real^3) set" and D :: "real^3 \<Rightarrow> real^3" and \<Delta> :: "(real^3) set"
+  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M3)"
+  assumes "geotop_is_singular_2cell M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+             D \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>)"
+  assumes "top1_homeomorphism_on (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_frontier UNIV geotop_euclidean_topology \<Delta>))
+             (D ` (geotop_frontier UNIV geotop_euclidean_topology \<Delta>))
+             (subspace_topology UNIV geotop_euclidean_topology
+                (D ` (geotop_frontier UNIV geotop_euclidean_topology \<Delta>))) D"
+  shows "\<exists>\<Delta>1. geotop_is_n_cell \<Delta>1 (subspace_topology UNIV geotop_euclidean_topology \<Delta>1) 2 \<and>
+              \<Delta>1 \<subseteq> M3 \<and>
+              geotop_frontier UNIV geotop_euclidean_topology \<Delta>1
+                = D ` (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)"
+  sorry
+
 end
