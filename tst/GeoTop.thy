@@ -3088,31 +3088,61 @@ section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<clo
       Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
 theorem Theorem_GT_3_1:
   fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
-  assumes "geotop_simplex_vertices \<sigma> V"
-  assumes "geotop_simplex_vertices \<tau> W"
-  assumes "card V = card W"
-  assumes "\<phi> \<in> V \<rightarrow>\<^sub>E W"
-  assumes "bij_betw \<phi> V W"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes hW: "geotop_simplex_vertices \<tau> W"
+  assumes hcard: "card V = card W"
+  assumes h\<phi>_mem: "\<phi> \<in> V \<rightarrow>\<^sub>E W"
+  assumes h\<phi>_bij: "bij_betw \<phi> V W"
   shows "\<exists>f. top1_homeomorphism_on \<sigma>
               (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
               \<tau>
               (subspace_topology UNIV geotop_euclidean_topology \<tau>) f
           \<and> geotop_simplicial_on \<sigma> f \<tau>
           \<and> (\<forall>v\<in>V. f v = \<phi> v)"
-  sorry
+proof -
+  (** (1) For each P \<in> \<sigma>, express P uniquely in barycentric coordinates P = \<Sigma>_{v \<in> V}
+         \<alpha>_v v with \<alpha>_v \<ge> 0 and \<Sigma> \<alpha>_v = 1. **)
+  have h_barycentric:
+    "\<forall>P\<in>\<sigma>. \<exists>!\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+                          P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)" sorry
+  (** (2) Define f: \<sigma> \<to> \<tau> by f(P) = \<Sigma>_{v \<in> V} \<alpha>_v \<phi>(v). This is affine on each face and
+         bijective (barycentric coordinates are unique). **)
+  have h_f_def:
+    "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v) \<and>
+         geotop_simplicial_on \<sigma> f \<tau> \<and>
+         top1_homeomorphism_on \<sigma>
+           (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
+           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>3 Theorem 2 (geotop.tex:735)
     LATEX VERSION: In Theorem 1, if m = n, then there is a homeomorphism g: R^n \<leftrightarrow> R^n such
       that g|\<sigma>^n is a simplicial homeomorphism \<sigma>^n \<leftrightarrow> \<tau>^n. **)
 theorem Theorem_GT_3_2:
   fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
-  assumes "geotop_simplex_dim \<sigma> n" and "geotop_simplex_dim \<tau> n"
-  assumes "geotop_simplex_vertices \<sigma> V" and "geotop_simplex_vertices \<tau> W"
-  assumes "\<phi> \<in> V \<rightarrow>\<^sub>E W" and "bij_betw \<phi> V W"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n" and h\<tau>: "geotop_simplex_dim \<tau> n"
+  assumes hV: "geotop_simplex_vertices \<sigma> V" and hW: "geotop_simplex_vertices \<tau> W"
+  assumes h\<phi>_mem: "\<phi> \<in> V \<rightarrow>\<^sub>E W" and h\<phi>_bij: "bij_betw \<phi> V W"
   shows "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
           \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
-  sorry
+proof -
+  (** (1) By Theorem 3.1 there is a simplicial homeomorphism f: \<sigma> \<leftrightarrow> \<tau> with f | V = \<phi>. **)
+  obtain f where hf_simpl:
+    "top1_homeomorphism_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+        \<tau> (subspace_topology UNIV geotop_euclidean_topology \<tau>) f \<and>
+     geotop_simplicial_on \<sigma> f \<tau> \<and>
+     (\<forall>v\<in>V. f v = \<phi> v)" sorry
+  (** (2) Extend f to an affine map A: R^m \<to> R^m (where m is the ambient dimension),
+         since both \<sigma> and \<tau> are n-simplexes in R^m with n = m (same dim). The affine
+         extension is uniquely determined by images of V \<cup> {V's affine basis complement}. **)
+  have h_affine_ext:
+    "\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
+         top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology g" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
@@ -3273,15 +3303,28 @@ qed
     3_4 can be run with each step's homeomorphism having support inside U. **)
 theorem Theorem_GT_3_7:
   fixes J U :: "(real^2) set"
-  assumes "geotop_is_polygon J"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U: "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
   shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
                  UNIV geotop_euclidean_topology h
           \<and> geotop_simplex_dim \<sigma> 2
           \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
           \<and> (\<forall>P\<in>UNIV - U. h P = P)"
-  sorry
+proof -
+  (** (1) Re-run the induction of Theorem 3_4 (reducing the triangulation K to one 2-simplex)
+         but at each folding step choose the supporting quadrilateral/ triangle to lie
+         entirely inside U. Each such fold is a PLH with support in U. **)
+  have h_support_in_U:
+    "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)" sorry
+  (** (2) The composition of U-supported folds is itself U-supported; outside U the
+         composition is the identity. **)
+  show ?thesis sorry
+qed
 
 
 section \<open>\<S>4 The Jordan curve theorem\<close>
@@ -3656,13 +3699,39 @@ qed
       disjoint connected sets I and E, such that J = Fr I = Fr E. **)
 theorem Jordan_curve_theorem:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
   shows "\<exists>I E. UNIV - J = I \<union> E \<and> I \<inter> E = {} \<and>
            top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
            top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology E"
-  sorry
+proof -
+  (** (1) Approximate J by a polygonal 1-sphere J' in R^2 arbitrarily close to J
+         (tame imbedding / PL approximation; R^2 is 2-dim so every 1-sphere is tame). **)
+  have h_approx_polygon:
+    "\<exists>J'. geotop_is_polygon J' \<and>
+          (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h \<and> h ` J = J')" sorry
+  (** (2) For the polygonal J', apply Theorem 2.1: R^2 - J' has exactly two connected
+         components with Jordan property (bounded I' and unbounded E', each with frontier
+         J'). **)
+  have h_polygon_JCT:
+    "\<exists>I' E'. UNIV - (SOME J'. geotop_is_polygon J') = I' \<union> E' \<and>
+             I' \<inter> E' = {} \<and>
+             top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
+             top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E')"
+    sorry
+  (** (3) Pull the Jordan decomposition back through the homeomorphism h: I = h^{-1}(I'),
+         E = h^{-1}(E'). The connectivity, disjointness, and frontier relations transport
+         through the homeomorphism. **)
+  have h_pullback:
+    "\<exists>I E. UNIV - J = I \<union> E \<and> I \<inter> E = {} \<and>
+           top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+           top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
+           J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
+           J = geotop_frontier UNIV geotop_euclidean_topology E" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
