@@ -12300,15 +12300,26 @@ theorem Theorem_GT_28_12:
       unknotted. **)
 theorem Theorem_GT_28_13:
   fixes J0 S J \<Delta> :: "(real^3) set"
-  assumes "geotop_is_polygon J0"
-  assumes "geotop_is_CST S"
-  assumes "geotop_is_polygon J"
-  assumes "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
-  assumes "geotop_top_interior UNIV geotop_euclidean_topology \<Delta> \<subseteq> UNIV - S"
+  assumes hJ0: "geotop_is_polygon J0"
+  assumes hS: "geotop_is_CST S"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hJ_in_T: "J \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
+  assumes h\<Delta>: "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
+  assumes hBd\<Delta>: "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
+  assumes h\<Delta>_ext: "geotop_top_interior UNIV geotop_euclidean_topology \<Delta> \<subseteq> UNIV - S"
   shows "geotop_is_unknotted J0"
-  sorry
+proof -
+  (** (1) \<Delta> is a polyhedral 2-cell in R^3 - S with boundary J on T. By Theorem 28_12,
+         J carries a generator of H_1(S), i.e. J is a latitudinal polygon. **)
+  have h_J_latitudinal:
+    "geotop_is_latitudinal S J" sorry
+  (** (2) S is a regular neighbourhood of J_0; since J represents the "longitude" of S
+         bounded by \<Delta> on the outside, the classical knot-complement argument shows J_0
+         is unknotted (if J_0 were knotted, no such \<Delta> would exist filling the
+         longitude). **)
+  have h_unknotted: "geotop_is_unknotted J0" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 14 (geotop.tex:5910)
     LATEX VERSION: Let J be a polygon in R^3 (or S^3). Then H_1(R^3 - J) \<cong> Z. And if S is a
@@ -12331,7 +12342,22 @@ theorem Theorem_GT_28_14:
            bij_betw \<Phi> (geotop_free_group G)
                       (geotop_pi (UNIV - J)
                          (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)"
-  sorry
+proof -
+  (** (1) H_1(R^3 - J) \<cong> Z (abelianisation of \<pi>(R^3 - J) is Z; Alexander duality). **)
+  have h_H1:
+    "True \<comment> \<open>H_1(R^3 - J) \<cong> Z\<close>" sorry
+  (** (2) Let S = regular neighbourhood of J; T = Bd S torus. A latitudinal polygon J_x
+         on T has Z^1(J_x) generating H_1(R^3 - J). Geometrically, p_{J_x} winds around
+         J once. **)
+  have h_Jx_generator:
+    "\<exists>P\<^sub>0\<in>UNIV - J. \<exists>(G::nat set) (\<Phi>::(nat \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+           card G = 1 \<and>
+           bij_betw \<Phi> (geotop_free_group G)
+                      (geotop_pi (UNIV - J)
+                         (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)"
+    sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 15 (geotop.tex:5914)
     LATEX VERSION: Let J be a polygon in R^3 (or S^3). Let S be a regular neighborhood of J.
@@ -12339,19 +12365,27 @@ theorem Theorem_GT_28_14:
       Z^1(J_y) \<sim> 0 on Cl(R^3 - S). **)
 theorem Theorem_GT_28_15:
   fixes J S :: "(real^3) set"
-  assumes "geotop_is_polygon J"
-  assumes "geotop_is_CST S"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hS: "geotop_is_CST S"
   shows "\<exists>Jy. geotop_is_polygon Jy \<and>
               Jy \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))"
-  sorry
+proof -
+  (** (1) T = Bd S is a torus. A "meridian" J_y (or "longitude" perpendicular to J)
+         bounds a 2-cell D_y in R^3 - S (by Alexander duality or explicit construction
+         using J's regular neighbourhood). **)
+  have h_Jy:
+    "\<exists>Jy. geotop_is_polygon Jy \<and>
+          Jy \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 16 (geotop.tex:5926)
     LATEX VERSION: Let J be a polygon in R^3 (or S^3), and suppose that \<pi>(R^3 - J) is
       commutative. Then J is unknotted. **)
 theorem Theorem_GT_28_16:
   fixes J :: "(real^3) set"
-  assumes "geotop_is_polygon J"
-  assumes "\<forall>P\<^sub>0\<in>UNIV - J. \<forall>C D.
+  assumes hJ: "geotop_is_polygon J"
+  assumes hcomm: "\<forall>P\<^sub>0\<in>UNIV - J. \<forall>C D.
              C \<in> geotop_pi (UNIV - J) (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 \<and>
              D \<in> geotop_pi (UNIV - J) (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 \<longrightarrow>
              geotop_pi_mult (UNIV - J)
@@ -12359,7 +12393,19 @@ theorem Theorem_GT_28_16:
              geotop_pi_mult (UNIV - J)
                (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 D C"
   shows "geotop_is_unknotted J"
-  sorry
+proof -
+  (** (1) \<pi>(R^3 - J) commutative \<Rightarrow> H_1(R^3 - J) = \<pi>(R^3 - J) = Z (from 28.14, the free
+         rank is 1 but non-trivially knotted J would have non-commutative group). **)
+  have h_pi_Z:
+    "\<forall>P\<^sub>0\<in>UNIV - J. \<exists>(\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> int).
+       bij_betw \<Phi> (geotop_pi (UNIV - J)
+                     (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)
+                  (UNIV::int set)" sorry
+  (** (2) Take a meridian J_y on Bd(regular-nbhd S of J); it bounds a 2-cell D_y in
+         R^3 - S. By Theorem 28.13, J is unknotted. **)
+  have h_unknotted: "geotop_is_unknotted J" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 17 (Poincaré) (geotop.tex:5930)
     LATEX VERSION: There is a compact connected triangulated 3-manifold which has the
@@ -12419,14 +12465,27 @@ qed
       M, and let N be a regular neighborhood of M^2. Then Bd N is a 2-sphere. **)
 theorem Theorem_GT_28_18:
   fixes M3 :: "(real^3) set" and K :: "(real^3) set set" and M2 N :: "(real^3) set"
-  assumes "geotop_is_orientable_3_manifold K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_is_projective_plane M2" and "M2 \<subseteq> M3"
-  assumes "\<exists>L\<subseteq>K. geotop_polyhedron L = M2"
-  assumes "N = geotop_regular_neighborhood K (SOME L::(real^3) set set. L \<subseteq> K \<and> geotop_polyhedron L = M2)"
+  assumes hK_orient: "geotop_is_orientable_3_manifold K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM2_proj: "geotop_is_projective_plane M2" and hM2_in_M3: "M2 \<subseteq> M3"
+  assumes hM2_sub: "\<exists>L\<subseteq>K. geotop_polyhedron L = M2"
+  assumes hN: "N = geotop_regular_neighborhood K (SOME L::(real^3) set set. L \<subseteq> K \<and> geotop_polyhedron L = M2)"
   shows "geotop_is_n_sphere (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))
            (subspace_topology UNIV geotop_euclidean_topology
               (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))) 2"
-  sorry
+proof -
+  (** (1) A projective plane M^2 is non-orientable; its regular neighbourhood N(M^2) in
+         an orientable 3-manifold is the orientation double cover of a Mobius-band
+         neighbourhood, which is the non-trivial D^2-bundle over RP^2. **)
+  have h_N_structure:
+    "geotop_n_manifold_with_boundary_on N (\<lambda>x y. norm (x - y)) 3" sorry
+  (** (2) Bd N is a 2-manifold whose orientation double cover in N is a 2-sphere.
+         Compute: \<chi>(Bd N) = 2 (Euler characteristic for double cover of RP^2 is
+         2 * \<chi>(RP^2) = 2). **)
+  have h_BdN_chi:
+    "geotop_manifold_euler (geotop_manifold_boundary N (\<lambda>x y. norm (x - y))) = 2" sorry
+  (** (3) A closed orientable 2-manifold with \<chi> = 2 is the 2-sphere (Theorem 22.11). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 19 (geotop.tex:5983)
     LATEX VERSION: Let M^2 be a polyhedral 2-manifold, in a PL 3-manifold M^3 = |K|. Let \<Delta>
@@ -12434,15 +12493,12 @@ theorem Theorem_GT_28_18:
       neighborhood in M^2. **)
 theorem Theorem_GT_28_19:
   fixes M3 M2 \<Delta> J :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "M2 \<subseteq> M3"
-  assumes "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
-  assumes "\<Delta> \<inter> M2 = J"
-  (** Moise: J has an ANNULAR neighborhood in M\<^sup>2. We strengthen the original
-      Isabelle conclusion (which was satisfiable trivially by A = M\<^sup>2) to require
-      A to be homeomorphic to a 1-annulus, per Moise's original statement. **)
+  assumes hM3: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_sub: "M2 \<subseteq> M3"
+  assumes h\<Delta>: "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
+  assumes hBd\<Delta>: "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
+  assumes h\<Delta>_meet: "\<Delta> \<inter> M2 = J"
   shows "\<exists>A::(real^3) set. A \<subseteq> M2 \<and>
           J \<subseteq> geotop_top_interior M2
             (subspace_topology UNIV geotop_euclidean_topology M2) A \<and>
@@ -12450,7 +12506,26 @@ theorem Theorem_GT_28_19:
               (\<exists>f. top1_homeomorphism_on A0
                      (subspace_topology UNIV geotop_euclidean_topology A0)
                      A (subspace_topology UNIV geotop_euclidean_topology A) f))"
-  sorry
+proof -
+  (** (1) J = Bd \<Delta> is a polygon in the interior of M^2 (since \<Delta>, M^2 only meet along J
+         and \<Delta>'s interior is disjoint from M^2). J has a regular tubular neighbourhood
+         N(J, M^2) in M^2. **)
+  have h_reg_nbhd:
+    "\<exists>N. N \<subseteq> M2 \<and> J \<subseteq> geotop_top_interior M2
+                        (subspace_topology UNIV geotop_euclidean_topology M2) N" sorry
+  (** (2) In a 2-manifold, the regular neighbourhood of a polygon is a 1-annulus (the
+         polygon is 2-sided in the 2-manifold since M^2 is orientable near J, coming from
+         \<Delta>'s one-sided structure in the 3-manifold). **)
+  have h_annulus:
+    "\<exists>A::(real^3) set. A \<subseteq> M2 \<and>
+        J \<subseteq> geotop_top_interior M2
+              (subspace_topology UNIV geotop_euclidean_topology M2) A \<and>
+        (\<exists>A0::(real^2) set. geotop_is_k_annulus 1 A0 \<and>
+            (\<exists>f. top1_homeomorphism_on A0
+                   (subspace_topology UNIV geotop_euclidean_topology A0)
+                   A (subspace_topology UNIV geotop_euclidean_topology A) f))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 20 (geotop.tex:5991)
     LATEX VERSION: Let M^2 be a polyhedral 2-manifold, in a PL 3-manifold M^3, and let \<Delta> be
@@ -12458,13 +12533,24 @@ theorem Theorem_GT_28_19:
       apart at \<Delta>. Then \<chi>(M_1^2) = \<chi>(M^2) + 2. **)
 theorem Theorem_GT_28_20:
   fixes M3 M2 M1 \<Delta> :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = \<Delta> \<inter> M2"
+  assumes hM3: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM1: "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
+  assumes h\<Delta>: "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
+  assumes hBd\<Delta>: "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = \<Delta> \<inter> M2"
   shows "geotop_manifold_euler M1 = geotop_manifold_euler M2 + 2"
-  sorry
+proof -
+  (** (1) Splitting M^2 \<union> \<Delta> along \<Delta> produces M^2_split with Bd M^2_split = Bd M^2 + 2
+         new boundary copies of J = Bd \<Delta>. **)
+  have h_split:
+    "\<exists>M\<^sub>s. geotop_n_manifold_with_boundary_on M\<^sub>s (\<lambda>x y. norm (x - y)) 2 \<and>
+          geotop_manifold_euler M\<^sub>s = geotop_manifold_euler M2" sorry
+  (** (2) By Theorem 21_11 (split + fill), attaching two 2-cells (one on each side of the
+         new cut) increases \<chi> by 2: \<chi>(M_1) = \<chi>(M^2_split) + 2 = \<chi>(M^2) + 2. **)
+  have h_euler_plus_2:
+    "geotop_manifold_euler M1 = geotop_manifold_euler M2 + 2" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>29 Limits on the Loop theorem: Stallings's example\<close>
 
