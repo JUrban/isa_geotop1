@@ -624,6 +624,13 @@ proof -
     using hSV hVne hV(5) by blast
 qed
 
+(** A \<sigma> with a known simplex-dimension is in particular a simplex. **)
+lemma geotop_simplex_dim_imp_is_simplex:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes "geotop_simplex_dim \<sigma> k"
+  shows "geotop_is_simplex \<sigma>"
+  using assms unfolding geotop_is_simplex_def geotop_simplex_dim_def by blast
+
 (** If W is a nonempty subset of a vertex set of \<sigma>, then the convex hull of W
     is a face of \<sigma>. **)
 lemma geotop_is_face_of_subset:
