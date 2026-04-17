@@ -606,6 +606,33 @@ proof -
   show ?thesis using hVne hsub by blast
 qed
 
+(** A simplex is always a face of itself. **)
+lemma geotop_is_face_refl_of_simplex:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "geotop_is_face \<sigma> \<sigma>"
+proof -
+  obtain V m n where hV: "finite V" "card V = n + 1" "n \<le> m"
+                     "geotop_general_position V m" "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by blast
+  have hVne: "V \<noteq> {}" using hV(2) by force
+  have hSV: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def using hV by blast
+  show ?thesis
+    unfolding geotop_is_face_def
+    using hSV hVne hV(5) by blast
+qed
+
+(** If W is a nonempty subset of a vertex set of \<sigma>, then the convex hull of W
+    is a face of \<sigma>. **)
+lemma geotop_is_face_of_subset:
+  fixes \<sigma> :: "'a::real_vector set" and V W :: "'a set"
+  assumes hSV: "geotop_simplex_vertices \<sigma> V"
+  assumes hWne: "W \<noteq> {}"
+  assumes hWsub: "W \<subseteq> V"
+  shows "geotop_is_face (geotop_convex_hull W) \<sigma>"
+  unfolding geotop_is_face_def using hSV hWne hWsub by blast
+
 (** Auxiliary: top1 norm-ball equals HOL-Analysis ball. **)
 lemma top1_ball_on_UNIV_norm_eq_ball:
   fixes x :: "'a::real_normed_vector" and e :: real
