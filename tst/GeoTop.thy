@@ -4235,7 +4235,9 @@ theorem Theorem_GT_22_10:
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
           geotop_first_betti_number M1 = geotop_first_betti_number M2)"
-  sorry
+  by (metis (no_types, lifting) ext Theorem_GT_22_7 Theorem_GT_22_9
+    assms(1,10,11,12,2,3,4,5,6,7,8,9)
+    geotop_first_betti_number_def)
 
 (** from \<S>22 Theorem 11 (geotop.tex:4933)
     LATEX VERSION: Let M be a compact connected 2-manifold. If M is simply connected, then
