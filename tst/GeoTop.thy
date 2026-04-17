@@ -3713,12 +3713,11 @@ definition geotop_is_open_cell_complex ::
     (\<forall>C\<in>\<C>. \<exists>CS\<subseteq>\<C>. geotop_frontier (\<Union>\<C>)
          (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C = \<Union>CS) \<and>
     (\<forall>C\<in>\<C>. (\<exists>P. C = {P}) \<or>
-            (\<exists>\<sigma>::'a set. geotop_is_simplex \<sigma> \<and>
+            (\<exists>\<sigma>::'a set. \<exists>h::'a \<Rightarrow> 'a. geotop_is_simplex \<sigma> \<and>
                 top1_homeomorphism_on C (subspace_topology UNIV geotop_euclidean_topology C)
                   (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
                   (subspace_topology UNIV geotop_euclidean_topology
-                     (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>))
-                  (SOME h. True)))"
+                     (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)) h))"
 
 definition geotop_open_cell_vertices ::
   "'a set set \<Rightarrow> 'a set" where
@@ -3988,9 +3987,9 @@ definition geotop_is_klein_bottle ::
     geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2 \<and>
     geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {} \<and>
     geotop_manifold_euler M = 0 \<and>
-    \<not> (\<exists>T. geotop_is_torus T \<and>
+    \<not> (\<exists>T h. geotop_is_torus T \<and>
            top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
-             T (subspace_topology UNIV geotop_euclidean_topology T) (SOME h. True))"
+             T (subspace_topology UNIV geotop_euclidean_topology T) h)"
 
 definition geotop_is_sphere_with_n_crosscaps ::
   "nat \<Rightarrow> 'a::real_normed_vector set \<Rightarrow> bool" where
@@ -4096,10 +4095,10 @@ theorem Theorem_GT_22_4:
   assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
   assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
   shows "\<exists>h m. 0 \<le> m \<and> m \<le> 2 \<and>
-               (\<exists>M'. geotop_is_sphere_with_n_handles h M' \<and>
+               (\<exists>M' f. geotop_is_sphere_with_n_handles h M' \<and>
                      geotop_is_sphere_with_n_crosscaps m M' \<and>
                      top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
-                       M' (subspace_topology UNIV geotop_euclidean_topology M') (SOME h. True))"
+                       M' (subspace_topology UNIV geotop_euclidean_topology M') f)"
   sorry
 
 (** from \<S>22 Theorem 5 (geotop.tex:4881)
