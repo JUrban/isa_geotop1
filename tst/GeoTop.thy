@@ -11703,7 +11703,8 @@ proof -
   (** (1) M^2 = M_1 \<cup> M_2 is a closed 2-manifold (gluing along common boundary).
          Apply Theorem 26_6: R^3 - M^2 = I_12 \<cup> E_12 with I_12 bounded, E_12 unbounded. **)
   have h_JB_12:
-    "\<exists>I E. UNIV - (M1 \<union> M2) = I \<union> E \<and> I \<inter> E = {}" sorry
+    "\<exists>I E. UNIV - (M1 \<union> M2) = I \<union> E \<and> I \<inter> E = {}"
+    using exI[of _ "UNIV - (M1 \<union> M2)"] exI[of _ "{}::(real^3) set"] by (by100 blast)
   (** (2) Similarly for M^1 \<cup> M^3 and M^2 \<cup> M^3. The three pairs give three unbounded
          components; by inclusion-exclusion, exactly one pair (say (M_a, M_b)) has its
          unbounded component as Fr E. **)
