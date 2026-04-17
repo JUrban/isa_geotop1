@@ -11740,17 +11740,30 @@ definition geotop_separates_in ::
       then either C or D separates H from K. **)
 theorem Theorem_GT_30_1:
   fixes X :: "'a set" and T :: "'a set set" and H K C D :: "'a set"
-  assumes "is_topology_on X T"
-  assumes "\<forall>P\<in>X. geotop_simply_connected X T P"
-  assumes "top1_connected_on H (subspace_topology X T H)"
-  assumes "top1_connected_on K (subspace_topology X T K)"
-  assumes "H \<inter> K = {}" and "H \<inter> C = {}" and "H \<inter> D = {}"
-  assumes "K \<inter> C = {}" and "K \<inter> D = {}" and "C \<inter> D = {}"
-  assumes "closedin_on X T H" and "closedin_on X T K"
-  assumes "closedin_on X T C" and "closedin_on X T D"
-  assumes "geotop_separates_in X T (C \<union> D) H K"
+  assumes hT: "is_topology_on X T"
+  assumes hX_simp_conn: "\<forall>P\<in>X. geotop_simply_connected X T P"
+  assumes hH_conn: "top1_connected_on H (subspace_topology X T H)"
+  assumes hK_conn: "top1_connected_on K (subspace_topology X T K)"
+  assumes hHK: "H \<inter> K = {}" and hHC: "H \<inter> C = {}" and hHD: "H \<inter> D = {}"
+  assumes hKC: "K \<inter> C = {}" and hKD: "K \<inter> D = {}" and hCD: "C \<inter> D = {}"
+  assumes hH_closed: "closedin_on X T H" and hK_closed: "closedin_on X T K"
+  assumes hC_closed: "closedin_on X T C" and hD_closed: "closedin_on X T D"
+  assumes hsep: "geotop_separates_in X T (C \<union> D) H K"
   shows "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K"
-  sorry
+proof -
+  (** (1) X - (C \<cup> D) = U \<cup> V with U \<supseteq> H, V \<supseteq> K, U, V disjoint open. **)
+  obtain U V where hUV:
+    "U \<in> T \<and> V \<in> T \<and> U \<inter> V = {} \<and> X - (C \<union> D) = U \<union> V \<and> H \<subseteq> U \<and> K \<subseteq> V" sorry
+  (** (2) Consider auxiliary sets: M = (X - D) \<cap> (Cl U \<cup> Cl V \<cup> C). By simply connectedness
+         of X and the disconnection of U, V, at least one of C, D alone inherits the
+         separation between H and K. **)
+  have h_dichotomy:
+    "(\<exists>U\<^sub>1 V\<^sub>1. U\<^sub>1 \<in> T \<and> V\<^sub>1 \<in> T \<and> U\<^sub>1 \<inter> V\<^sub>1 = {} \<and>
+              X - C = U\<^sub>1 \<union> V\<^sub>1 \<and> H \<subseteq> U\<^sub>1 \<and> K \<subseteq> V\<^sub>1) \<or>
+     (\<exists>U\<^sub>2 V\<^sub>2. U\<^sub>2 \<in> T \<and> V\<^sub>2 \<in> T \<and> U\<^sub>2 \<inter> V\<^sub>2 = {} \<and>
+              X - D = U\<^sub>2 \<union> V\<^sub>2 \<and> H \<subseteq> U\<^sub>2 \<and> K \<subseteq> V\<^sub>2)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30 Theorem 2 (geotop.tex:6123)
     LATEX VERSION: Let X, H, K be as in Theorem 1. Let C be a closed set which separates H
@@ -11758,15 +11771,27 @@ theorem Theorem_GT_30_1:
       component of C separates H from K. **)
 theorem Theorem_GT_30_2:
   fixes X :: "'a set" and T :: "'a set set" and H K C :: "'a set"
-  assumes "is_topology_on X T"
-  assumes "\<forall>P\<in>X. geotop_simply_connected X T P"
-  assumes "top1_connected_on H (subspace_topology X T H)"
-  assumes "top1_connected_on K (subspace_topology X T K)"
-  assumes "geotop_separates_in X T C H K"
-  assumes "finite {cC. \<exists>P\<in>C. cC = geotop_component_at X T C P}"
+  assumes hT: "is_topology_on X T"
+  assumes hX_simp_conn: "\<forall>P\<in>X. geotop_simply_connected X T P"
+  assumes hH_conn: "top1_connected_on H (subspace_topology X T H)"
+  assumes hK_conn: "top1_connected_on K (subspace_topology X T K)"
+  assumes hsep: "geotop_separates_in X T C H K"
+  assumes hfinite_comps: "finite {cC. \<exists>P\<in>C. cC = geotop_component_at X T C P}"
   shows "\<exists>cC. (\<exists>P\<in>C. cC = geotop_component_at X T C P) \<and>
               geotop_separates_in X T cC H K"
-  sorry
+proof -
+  (** (1) Induction on the number n of components of C. Base n = 1: C is already
+         connected, so it is its own component. **)
+  have h_base: "True \<comment> \<open>n = 1 trivial\<close>" sorry
+  (** (2) Inductive step: C = C_1 \<cup> (\<union>_{i>1} C_i) with C_1 a component and \<union>_{i>1} C_i
+         the union of the remaining components (each disjoint and closed). Both parts
+         are closed and disjoint. Apply Theorem 30.1 to split C_1 vs the rest. One of
+         them separates H, K. Recurse. **)
+  have h_step:
+    "\<exists>cC. (\<exists>P\<in>C. cC = geotop_component_at X T C P) \<and>
+          geotop_separates_in X T cC H K" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30 Theorem 3 (geotop.tex:6126)
     LATEX VERSION: Let M be a connected PL 3-manifold, let H and K be disjoint closed sets in
@@ -11777,14 +11802,24 @@ theorem Theorem_GT_30_2:
 theorem Theorem_GT_30_3:
   fixes M :: "(real^3) set" and K :: "(real^3) set set"
   fixes H Kk C \<Delta> C' :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C H Kk"
-  assumes "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
-  assumes "\<Delta> \<subseteq> C"
+  assumes hK: "geotop_is_complex K" and hM: "M = geotop_polyhedron K"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hsep: "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C H Kk"
+  assumes h\<Delta>: "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
+  assumes h\<Delta>_in_C: "\<Delta> \<subseteq> C"
   shows "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk"
-  sorry
+proof -
+  (** (1) Splitting C at \<Delta> replaces \<Delta> (lying in C) by two parallel copies \<Delta>_+, \<Delta>_-
+         (each a polyhedral 2-cell) and keeps the D_2 part of the local decomposition
+         D_1 \<cup> D_2 fixed. The resulting set C' still separates M into two sides. **)
+  have h_local_replacement:
+    "\<exists>\<Delta>p \<Delta>m. True \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close>" sorry
+  (** (2) The separation between H and K is preserved because no path from H to K in M
+         was forced to cross \<Delta> in a way that the replacement breaks; locally the two
+         copies serve the same cutting function. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>30: spherical shell (geotop.tex:6137)
     LATEX VERSION: Let S^2 be a 2-sphere, and let \<phi> be a homeomorphism S^2 \<times> [0,1] \<leftrightarrow> X.
@@ -11804,16 +11839,37 @@ definition geotop_is_spherical_shell ::
       2-sphere B in Int X such that B separates B_0 from B_1 in R^3 (and hence in X). **)
 theorem Theorem_GT_30_4:
   fixes X :: "(real^3) set" and B0 B1 :: "(real^3) set"
-  assumes "geotop_is_spherical_shell X"
-  assumes "B0 \<union> B1 = geotop_manifold_boundary X (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_n_sphere B0 (subspace_topology UNIV geotop_euclidean_topology B0) 2"
-  assumes "geotop_is_n_sphere B1 (subspace_topology UNIV geotop_euclidean_topology B1) 2"
-  assumes "B0 \<inter> B1 = {}"
+  assumes hX: "geotop_is_spherical_shell X"
+  assumes hB: "B0 \<union> B1 = geotop_manifold_boundary X (\<lambda>x y. norm (x - y))"
+  assumes hB0: "geotop_is_n_sphere B0 (subspace_topology UNIV geotop_euclidean_topology B0) 2"
+  assumes hB1: "geotop_is_n_sphere B1 (subspace_topology UNIV geotop_euclidean_topology B1) 2"
+  assumes hB01: "B0 \<inter> B1 = {}"
   shows "\<exists>B. geotop_is_n_sphere B (subspace_topology UNIV geotop_euclidean_topology B) 2 \<and>
              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = B) \<and>
              B \<subseteq> geotop_manifold_interior X (\<lambda>x y. norm (x - y)) \<and>
              geotop_separates_in UNIV geotop_euclidean_topology B B0 B1"
-  sorry
+proof -
+  (** (1) Extract the spherical-shell homeomorphism \<phi>: S^2 \<times> [0, 1] \<leftrightarrow> X. **)
+  obtain S\<^sub>2 \<phi> where h\<phi>:
+    "geotop_is_n_sphere S\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology S\<^sub>2) 2 \<and>
+     top1_homeomorphism_on (S\<^sub>2 \<times> {t::real. 0 \<le> t \<and> t \<le> 1})
+        (subspace_topology UNIV geotop_euclidean_topology (S\<^sub>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}))
+        X (subspace_topology UNIV geotop_euclidean_topology X) \<phi>" sorry
+  (** (2) The midsection B = \<phi>(S^2 \<times> {1/2}) is a 2-sphere in Int X that separates \<phi>(S^2
+         \<times> [0, 1/2)) from \<phi>(S^2 \<times> (1/2, 1]), hence separates B_0 from B_1. **)
+  have h_midsection:
+    "\<exists>B. geotop_is_n_sphere B (subspace_topology UNIV geotop_euclidean_topology B) 2 \<and>
+         B = \<phi> ` (S\<^sub>2 \<times> {1/2::real}) \<and>
+         geotop_separates_in UNIV geotop_euclidean_topology B B0 B1" sorry
+  (** (3) PL-approximate the (topological) 2-sphere B by a polyhedral 2-sphere B' via the
+         Tame imbedding theorem for 2-spheres (Theorem 6.2) inside Int X. **)
+  have h_PL_approx:
+    "\<exists>B'. geotop_is_n_sphere B' (subspace_topology UNIV geotop_euclidean_topology B') 2 \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = B') \<and>
+          B' \<subseteq> geotop_manifold_interior X (\<lambda>x y. norm (x - y)) \<and>
+          geotop_separates_in UNIV geotop_euclidean_topology B' B0 B1" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30 Theorem 5 (geotop.tex:6155)
     LATEX VERSION: Let C_1 and C_2 be topological 3-cells in R^3 (or S^3) such that
@@ -11821,16 +11877,37 @@ theorem Theorem_GT_30_4:
       polyhedral 3-cell C such that C_1 \<subseteq> Int C and C \<subseteq> Int C_2. **)
 theorem Theorem_GT_30_5:
   fixes C1 C2 :: "(real^3) set"
-  assumes "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 3"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 3"
-  assumes "C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2"
-  assumes "geotop_is_spherical_shell
+  assumes hC1: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 3"
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 3"
+  assumes hC1_C2: "C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2"
+  assumes h_shell: "geotop_is_spherical_shell
              (closure_on UNIV geotop_euclidean_topology (C2 - C1))"
   shows "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<and>
              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C) \<and>
              C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
              C \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2"
-  sorry
+proof -
+  (** (1) Apply Theorem 30_4 to the spherical shell Cl(C_2 - C_1) with boundary components
+         Bd C_1 and Bd C_2: obtain a polyhedral 2-sphere B \<subseteq> Int(Cl(C_2 - C_1)) separating
+         Bd C_1 from Bd C_2. **)
+  obtain B where hB:
+    "geotop_is_n_sphere B (subspace_topology UNIV geotop_euclidean_topology B) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = B) \<and>
+     B \<subseteq> closure_on UNIV geotop_euclidean_topology (C2 - C1) \<and>
+     geotop_separates_in UNIV geotop_euclidean_topology B
+        (geotop_frontier UNIV geotop_euclidean_topology C1)
+        (geotop_frontier UNIV geotop_euclidean_topology C2)" sorry
+  (** (2) The bounded component of R^3 - B, together with B itself, is a polyhedral
+         3-cell C (PL Schoenflies, Theorem 17_12) containing C_1 in its interior and
+         contained in Int C_2. **)
+  have h_C_is_3cell:
+    "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C) \<and>
+         geotop_frontier UNIV geotop_euclidean_topology C = B \<and>
+         C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
+         C \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30: toroidal shell (geotop.tex:6163)
     LATEX VERSION: Let M be a torus, and let \<phi> be a homeomorphism M \<times> [0,1] \<leftrightarrow> Y. Then Y is
@@ -11850,15 +11927,35 @@ definition geotop_is_toroidal_shell ::
       torus T \<subseteq> Int Y such that T separates T_0 from T_1. **)
 theorem Theorem_GT_30_6:
   fixes Y T0 T1 :: "(real^3) set"
-  assumes "geotop_is_toroidal_shell Y"
-  assumes "T0 \<union> T1 = geotop_manifold_boundary Y (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_torus T0" and "geotop_is_torus T1"
-  assumes "T0 \<inter> T1 = {}"
+  assumes hY: "geotop_is_toroidal_shell Y"
+  assumes hT: "T0 \<union> T1 = geotop_manifold_boundary Y (\<lambda>x y. norm (x - y))"
+  assumes hT0: "geotop_is_torus T0" and hT1: "geotop_is_torus T1"
+  assumes hT01: "T0 \<inter> T1 = {}"
   shows "\<exists>T. geotop_is_torus T \<and>
              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T) \<and>
              T \<subseteq> geotop_manifold_interior Y (\<lambda>x y. norm (x - y)) \<and>
              geotop_separates_in UNIV geotop_euclidean_topology T T0 T1"
-  sorry
+proof -
+  (** (1) Extract the toroidal-shell parametrisation \<phi>: T \<times> [0, 1] \<leftrightarrow> Y. **)
+  obtain M \<phi> where h\<phi>:
+    "geotop_is_torus M \<and>
+     top1_homeomorphism_on (M \<times> {t::real. 0 \<le> t \<and> t \<le> 1})
+        (subspace_topology UNIV geotop_euclidean_topology (M \<times> {t. 0 \<le> t \<and> t \<le> 1}))
+        Y (subspace_topology UNIV geotop_euclidean_topology Y) \<phi>" sorry
+  (** (2) Midsection T = \<phi>(M \<times> {1/2}) is a topological torus in Int Y separating T_0
+         from T_1 (same midsection argument as for spherical shells). **)
+  have h_midsection:
+    "\<exists>T. geotop_is_torus T \<and> T = \<phi> ` (M \<times> {1/2::real}) \<and>
+         geotop_separates_in UNIV geotop_euclidean_topology T T0 T1" sorry
+  (** (3) PL-approximate the topological torus T by a polyhedral torus T' (Tame imbedding
+         for tori, Theorem 6.2 / Rado). **)
+  have h_PL_torus:
+    "\<exists>T'. geotop_is_torus T' \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T') \<and>
+          T' \<subseteq> geotop_manifold_interior Y (\<lambda>x y. norm (x - y)) \<and>
+          geotop_separates_in UNIV geotop_euclidean_topology T' T0 T1" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30 Theorem 7 (geotop.tex:6177)
     LATEX VERSION: Let S_1 and S_2 be (topological) solid tori in R^3 (or S^3) such that
@@ -11866,14 +11963,29 @@ theorem Theorem_GT_30_6:
       solid torus (CST) S such that S_1 \<subseteq> Int S and S \<subseteq> Int S_2. **)
 theorem Theorem_GT_30_7:
   fixes S1 S2 :: "(real^3) set"
-  assumes "geotop_is_solid_torus S1" and "geotop_is_solid_torus S2"
-  assumes "S1 \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_toroidal_shell
+  assumes hS1: "geotop_is_solid_torus S1" and hS2: "geotop_is_solid_torus S2"
+  assumes hS1_S2: "S1 \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))"
+  assumes h_shell: "geotop_is_toroidal_shell
              (closure_on UNIV geotop_euclidean_topology (S2 - S1))"
   shows "\<exists>S. geotop_is_CST S \<and>
              S1 \<subseteq> geotop_manifold_interior S (\<lambda>x y. norm (x - y)) \<and>
              S \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))"
-  sorry
+proof -
+  (** (1) Apply Theorem 30_6 to the toroidal shell Cl(S_2 - S_1) to get a polyhedral
+         torus T in the interior of the shell, separating Bd S_1 from Bd S_2. **)
+  obtain T where hT:
+    "geotop_is_torus T \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T) \<and>
+     T \<subseteq> closure_on UNIV geotop_euclidean_topology (S2 - S1)" sorry
+  (** (2) The bounded solid-torus region bounded by T (using the toroidal shell structure
+         + Theorem 28_1 polyhedral-torus-is-CST) gives the required S. **)
+  have h_S_is_CST:
+    "\<exists>S. geotop_is_CST S \<and>
+         geotop_frontier UNIV geotop_euclidean_topology S = T \<and>
+         S1 \<subseteq> geotop_manifold_interior S (\<lambda>x y. norm (x - y)) \<and>
+         S \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>30: spine of a solid torus (geotop.tex:6188)
     LATEX VERSION: Let S be a solid torus, and let J be a 1-sphere in Int S. Let \<Delta> be a
@@ -11902,11 +12014,11 @@ definition geotop_is_spine_of_solid_torus ::
       P_0 \<in> J. Then p_J generates \<pi>(S) = \<pi>(S, P_0). **)
 theorem Theorem_GT_30_8:
   fixes S1 S S2 :: "(real^3) set" and J :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_solid_torus S1" and "geotop_is_CST S" and "geotop_is_solid_torus S2"
-  assumes "S1 \<subseteq> geotop_manifold_interior S (\<lambda>x y. norm (x - y))"
-  assumes "S \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_spine_of_solid_torus J S1"
-  assumes "P\<^sub>0 \<in> J"
+  assumes hS1: "geotop_is_solid_torus S1" and hS: "geotop_is_CST S" and hS2: "geotop_is_solid_torus S2"
+  assumes hS1_S: "S1 \<subseteq> geotop_manifold_interior S (\<lambda>x y. norm (x - y))"
+  assumes hS_S2: "S \<subseteq> geotop_manifold_interior S2 (\<lambda>x y. norm (x - y))"
+  assumes hJ_spine: "geotop_is_spine_of_solid_torus J S1"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> J"
   shows "\<exists>p. geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S)
                P\<^sub>0 p \<and>
              p ` {0..1} = J \<and>
@@ -11914,7 +12026,30 @@ theorem Theorem_GT_30_8:
                     (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
                   geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
                   \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
-  sorry
+proof -
+  (** (1) J is a spine of S_1: \<phi>: \<Delta> \<times> S^1 \<leftrightarrow> S_1 with J = \<phi>({P} \<times> S^1), so J is the
+         core 1-sphere of S_1 and is a generator of \<pi>(S_1). **)
+  have h_J_generates_S1:
+    "\<exists>p. geotop_closed_path_on S1 (subspace_topology UNIV geotop_euclidean_topology S1) P\<^sub>0 p \<and>
+         p ` {0..1} = J \<and>
+         (\<forall>q. geotop_closed_path_on S1
+                (subspace_topology UNIV geotop_euclidean_topology S1) P\<^sub>0 q \<longrightarrow>
+              geotop_pi_class S1
+                (subspace_topology UNIV geotop_euclidean_topology S1) P\<^sub>0 q
+              \<in> geotop_pi S1
+                (subspace_topology UNIV geotop_euclidean_topology S1) P\<^sub>0)" sorry
+  (** (2) Since S_1 \<subseteq> Int S and S is a CST (hence \<pi>(S) \<cong> Z), the inclusion S_1 \<hookrightarrow> S
+         induces a map on fundamental groups which is an isomorphism (the J's are in the
+         same homotopy class). **)
+  have h_inclusion_iso:
+    "\<exists>p. geotop_closed_path_on S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p \<and>
+         p ` {0..1} = J \<and>
+         (\<forall>q. geotop_closed_path_on S
+                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
+              geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
+              \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>31 Canonical configurations; dual cells; pseudo-cells\<close>
 
