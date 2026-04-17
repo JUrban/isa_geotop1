@@ -663,7 +663,16 @@ theorem Theorem_GT_1_16:
 theorem Theorem_GT_1_17:
   assumes "is_topology_on X T" "M \<subseteq> N" "N \<subseteq> X" "P \<in> M"
   shows "\<exists>Q\<in>N. geotop_component_at X T M P \<subseteq> geotop_component_at X T N Q"
-  sorry
+proof -
+  (** Moise's proof is implicit: take Q = P; M \<subseteq> N gives component_M \<subseteq> component_N. **)
+  have hPN: "P \<in> N"
+    using assms(2,4) by blast
+  have hsub: "geotop_component_at X T M P \<subseteq> geotop_component_at X T N P"
+    unfolding geotop_component_at_def
+    using assms(2) by blast
+  show ?thesis
+    using hPN hsub by blast
+qed
 
 
 section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
