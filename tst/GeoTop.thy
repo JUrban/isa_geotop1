@@ -586,10 +586,161 @@ definition geotop_separated ::
     LATEX VERSION: Given M \<subset> X, M = H \<union> K. Then (1) H and K are separated iff
       (2) H, K \<in> \<O>|M and H \<inter> K = \<emptyset>. **)
 theorem Theorem_GT_1_5:
-  assumes "is_topology_on X T" "M \<subseteq> X" "H \<subseteq> M" "K \<subseteq> M" "M = H \<union> K"
+  assumes hTX: "is_topology_on X T"
+  assumes hMX: "M \<subseteq> X"
+  assumes hHM: "H \<subseteq> M"
+  assumes hKM: "K \<subseteq> M"
+  assumes hMHK: "M = H \<union> K"
   shows "geotop_separated X T H K \<longleftrightarrow>
     (H \<in> subspace_topology X T M \<and> K \<in> subspace_topology X T M \<and> H \<inter> K = {})"
-  sorry
+  (** Standard topology result (Munkres \<S>23.3 / Moise 1.5, no proof shown). **)
+proof (rule iffI)
+  (** FORWARD: separated \<Longrightarrow> both clopen in subspace + disjoint. **)
+  assume hsep: "geotop_separated X T H K"
+  from hsep have hHX: "H \<subseteq> X" and hKX: "K \<subseteq> X"
+      and hclHK: "closure_on X T H \<inter> K = {}"
+      and hHclK: "H \<inter> closure_on X T K = {}"
+    unfolding geotop_separated_def by simp_all
+  have hKclK: "K \<subseteq> closure_on X T K" by (rule subset_closure_on)
+  have hHK_disj: "H \<inter> K = {}" using hHclK hKclK by fast
+  (** H = M \<inter> (X - closure_X K). **)
+  have hH_eq: "H = M \<inter> (X - closure_on X T K)"
+  proof (rule set_eqI, rule iffI)
+    fix x assume hxH: "x \<in> H"
+    have hxM: "x \<in> M" using hxH hHM by fast
+    have hx_notK: "x \<notin> closure_on X T K" using hxH hHclK by fast
+    have hxX: "x \<in> X" using hxM hMX by fast
+    show "x \<in> M \<inter> (X - closure_on X T K)" using hxM hx_notK hxX by fast
+  next
+    fix x assume hxMK: "x \<in> M \<inter> (X - closure_on X T K)"
+    then have hxM: "x \<in> M" and hxnotclK: "x \<notin> closure_on X T K" by auto
+    have "x \<in> H \<or> x \<in> K" using hxM hMHK by fast
+    moreover have "x \<notin> K" using hxnotclK hKclK by fast
+    ultimately show "x \<in> H" by simp
+  qed
+  (** Symmetric: K = M \<inter> (X - closure_X H). **)
+  have hK_eq: "K = M \<inter> (X - closure_on X T H)"
+  proof (rule set_eqI, rule iffI)
+    fix x assume hxK: "x \<in> K"
+    have hxM: "x \<in> M" using hxK hKM by fast
+    have hx_notclH: "x \<notin> closure_on X T H" using hxK hclHK by fast
+    show "x \<in> M \<inter> (X - closure_on X T H)" using hxM hx_notclH hMX by fast
+  next
+    fix x assume hxMH: "x \<in> M \<inter> (X - closure_on X T H)"
+    then have hxM: "x \<in> M" and hxnotclH: "x \<notin> closure_on X T H" by auto
+    have "x \<in> H \<or> x \<in> K" using hxM hMHK by fast
+    moreover have hHclH: "H \<subseteq> closure_on X T H" by (rule subset_closure_on)
+    ultimately show "x \<in> K" using hxnotclH by fast
+  qed
+  (** Both closure_X K and closure_X H are closed in X; their complements (in X) are open. **)
+  have hclK_closed: "closedin_on X T (closure_on X T K)"
+    using hKX closure_on_closed[OF hTX hKX] by simp
+  have hXminusClK_open: "X - closure_on X T K \<in> T"
+    using hclK_closed unfolding closedin_on_def by simp
+  have hclH_closed: "closedin_on X T (closure_on X T H)"
+    using hHX closure_on_closed[OF hTX hHX] by simp
+  have hXminusClH_open: "X - closure_on X T H \<in> T"
+    using hclH_closed unfolding closedin_on_def by simp
+  (** H is in subspace topology. **)
+  have hH_sub: "H \<in> subspace_topology X T M"
+    unfolding subspace_topology_def
+    using hXminusClK_open hH_eq by blast
+  have hK_sub: "K \<in> subspace_topology X T M"
+    unfolding subspace_topology_def
+    using hXminusClH_open hK_eq by blast
+  show "H \<in> subspace_topology X T M \<and> K \<in> subspace_topology X T M \<and> H \<inter> K = {}"
+    using hH_sub hK_sub hHK_disj by simp
+next
+  (** REVERSE: both in subspace + disjoint \<Longrightarrow> separated. **)
+  assume hhyp: "H \<in> subspace_topology X T M \<and> K \<in> subspace_topology X T M \<and> H \<inter> K = {}"
+  then have hH_sub: "H \<in> subspace_topology X T M"
+      and hK_sub: "K \<in> subspace_topology X T M"
+      and hHK_disj: "H \<inter> K = {}"
+    by auto
+  obtain U where hU: "U \<in> T" and hHU: "H = M \<inter> U"
+    using hH_sub unfolding subspace_topology_def by blast
+  obtain V where hV: "V \<in> T" and hKV: "K = M \<inter> V"
+    using hK_sub unfolding subspace_topology_def by blast
+  (** K = M - H since M = H \<union> K and H \<inter> K = {}. **)
+  have hK_compl_H: "K = M - H"
+    using hMHK hHK_disj by blast
+  have hH_compl_K: "H = M - K"
+    using hMHK hHK_disj by blast
+  (** K = M \<inter> (X - U): from K ⊆ M and K ∩ H = ∅ i.e. K ∩ U ∩ M = ∅, so K ⊆ M - U. **)
+  have hK_complU_inM: "K \<subseteq> M \<inter> (X - U)"
+  proof (rule subsetI)
+    fix x assume hxK: "x \<in> K"
+    have hxM: "x \<in> M" using hxK hKM by fast
+    have "x \<notin> H" using hxK hHK_disj by fast
+    hence "x \<notin> M \<inter> U" using hHU by simp
+    hence "x \<notin> U" using hxM by simp
+    thus "x \<in> M \<inter> (X - U)" using hxM hMX by fast
+  qed
+  (** closure_M K = K (K is closed in M). We use the subspace closure theorem. **)
+  have hKclosed_in_M: "closedin_on M (subspace_topology X T M) K"
+  proof -
+    have "H = (M \<inter> U)" using hHU by simp
+    have "M - K = H" using hH_compl_K by simp
+    hence "M - K = M \<inter> U" using hHU by simp
+    have "M - K \<in> subspace_topology X T M" using hH_sub hH_compl_K by simp
+    thus ?thesis unfolding closedin_on_def
+      using hKM by simp
+  qed
+  have hHclosed_in_M: "closedin_on M (subspace_topology X T M) H"
+  proof -
+    have "M - H = K" using hK_compl_H by simp
+    hence "M - H \<in> subspace_topology X T M" using hK_sub by simp
+    thus ?thesis unfolding closedin_on_def
+      using hHM by simp
+  qed
+  (** Closure of K in subspace = K (since K closed in M). **)
+  have hclK_M: "closure_on M (subspace_topology X T M) K = K"
+  proof (rule equalityI)
+    show "closure_on M (subspace_topology X T M) K \<subseteq> K"
+      by (rule closure_on_subset_of_closed[OF hKclosed_in_M]) simp
+    show "K \<subseteq> closure_on M (subspace_topology X T M) K"
+      by (rule subset_closure_on)
+  qed
+  have hclH_M: "closure_on M (subspace_topology X T M) H = H"
+  proof (rule equalityI)
+    show "closure_on M (subspace_topology X T M) H \<subseteq> H"
+      by (rule closure_on_subset_of_closed[OF hHclosed_in_M]) simp
+    show "H \<subseteq> closure_on M (subspace_topology X T M) H"
+      by (rule subset_closure_on)
+  qed
+  (** By Theorem_17_4: closure_M X = closure_X X \<inter> M. **)
+  have hclK_trans: "closure_on M (subspace_topology X T M) K = closure_on X T K \<inter> M"
+    by (rule Theorem_17_4[OF hTX hKM hMX])
+  have hclH_trans: "closure_on M (subspace_topology X T M) H = closure_on X T H \<inter> M"
+    by (rule Theorem_17_4[OF hTX hHM hMX])
+  (** So K = closure_X K \<inter> M. **)
+  have hK_eq_cl: "K = closure_on X T K \<inter> M"
+    using hclK_M hclK_trans by simp
+  have hH_eq_cl: "H = closure_on X T H \<inter> M"
+    using hclH_M hclH_trans by simp
+  (** closure_X H \<inter> K = ? Since K \<subseteq> M, K \<inter> closure_X H = closure_X H \<inter> M \<inter> K = H \<inter> K = \<emptyset>. **)
+  have hclH_K_disj: "closure_on X T H \<inter> K = {}"
+  proof -
+    have "closure_on X T H \<inter> K = closure_on X T H \<inter> M \<inter> K"
+      using hKM by fast
+    also have "\<dots> = H \<inter> K" using hH_eq_cl by simp
+    also have "\<dots> = {}" using hHK_disj by simp
+    finally show ?thesis .
+  qed
+  have hH_clK_disj: "H \<inter> closure_on X T K = {}"
+  proof -
+    have "H \<inter> closure_on X T K = closure_on X T K \<inter> M \<inter> H"
+      using hHM by fast
+    also have "\<dots> = K \<inter> H" using hK_eq_cl by simp
+    also have "\<dots> = {}" using hHK_disj by fast
+    finally show ?thesis .
+  qed
+  have hHX: "H \<subseteq> X" using hHM hMX by fast
+  have hKX: "K \<subseteq> X" using hKM hMX by fast
+  show "geotop_separated X T H K"
+    unfolding geotop_separated_def
+    using hHX hKX hclH_K_disj hH_clK_disj by simp
+qed
 
 (** from \<S>1 Theorem 6 (geotop.tex:365)
     LATEX VERSION: A set M \<subset> X is connected iff M is not the union of two nonempty
