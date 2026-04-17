@@ -755,11 +755,58 @@ theorem Theorem_GT_1_6:
 (** from \<S>1 Theorem 7 (geotop.tex:369)
     LATEX VERSION: For spaces, connectivity is preserved by surjective mappings. **)
 theorem Theorem_GT_1_7:
-  assumes "is_topology_on X TX" "is_topology_on Y TY"
-  assumes "top1_continuous_map_on X TX Y TY f" "f ` X = Y"
-  assumes "top1_connected_on X TX"
+  assumes hTX: "is_topology_on X TX"
+  assumes hTY: "is_topology_on Y TY"
+  assumes hcont: "top1_continuous_map_on X TX Y TY f"
+  assumes hsurj: "f ` X = Y"
+  assumes hXconn: "top1_connected_on X TX"
   shows "top1_connected_on Y TY"
-  sorry
+  (** Moise proof (geotop.tex:369): standard, by Top0 Theorem_23_5. Bridge:
+      connectedness in subspace(Y,TY,Y) implies connectedness in TY because any
+      separation U,V \<in> TY of Y must satisfy U,V \<subseteq> Y (since U \<union> V = Y), hence
+      Y \<inter> U = U and Y \<inter> V = V are separating opens in the subspace too. **)
+proof (unfold top1_connected_on_def, intro conjI hTY)
+  show "\<nexists>U V. U \<in> TY \<and> V \<in> TY \<and> U \<noteq> {} \<and> V \<noteq> {} \<and> U \<inter> V = {} \<and> U \<union> V = Y"
+  proof (rule notI)
+    assume "\<exists>U V. U \<in> TY \<and> V \<in> TY \<and> U \<noteq> {} \<and> V \<noteq> {} \<and> U \<inter> V = {} \<and> U \<union> V = Y"
+    then obtain U V where hU: "U \<in> TY" and hV: "V \<in> TY"
+        and hUne: "U \<noteq> {}" and hVne: "V \<noteq> {}"
+        and hUV_disj: "U \<inter> V = {}" and hUV_cover: "U \<union> V = Y" by blast
+    (** f \<^sup>{-1}(U), f \<^sup>{-1}(V) are open in X by continuity. **)
+    have hfU: "{x\<in>X. f x \<in> U} \<in> TX"
+      using hcont hU unfolding top1_continuous_map_on_def by blast
+    have hfV: "{x\<in>X. f x \<in> V} \<in> TX"
+      using hcont hV unfolding top1_continuous_map_on_def by blast
+    have hfU_in_Y: "\<forall>x\<in>X. f x \<in> Y"
+      using hcont unfolding top1_continuous_map_on_def by blast
+    (** Preimages cover X (since f `X = Y = U \<union> V). **)
+    have hpreimgs_cover: "{x\<in>X. f x \<in> U} \<union> {x\<in>X. f x \<in> V} = X"
+      using hfU_in_Y hUV_cover by blast
+    (** Preimages are disjoint. **)
+    have hpreimgs_disj: "{x\<in>X. f x \<in> U} \<inter> {x\<in>X. f x \<in> V} = {}"
+      using hUV_disj by blast
+    (** Preimages are nonempty (via surjectivity). **)
+    from hUne obtain y where hyU: "y \<in> U" by blast
+    have hyY: "y \<in> Y" using hyU hUV_cover by blast
+    then obtain x where hxX: "x \<in> X" and hfx: "f x = y"
+      using hsurj by blast
+    have hpreimg_U_ne: "{x\<in>X. f x \<in> U} \<noteq> {}"
+      using hxX hfx hyU by blast
+    from hVne obtain y2 where hy2V: "y2 \<in> V" by blast
+    have hy2Y: "y2 \<in> Y" using hy2V hUV_cover by blast
+    then obtain x2 where hx2X: "x2 \<in> X" and hfx2: "f x2 = y2"
+      using hsurj by blast
+    have hpreimg_V_ne: "{x\<in>X. f x \<in> V} \<noteq> {}"
+      using hx2X hfx2 hy2V by blast
+    (** Now we have a separation of X, contradicting X connected. **)
+    have "\<exists>U' V'. U' \<in> TX \<and> V' \<in> TX \<and> U' \<noteq> {} \<and> V' \<noteq> {} \<and> U' \<inter> V' = {} \<and> U' \<union> V' = X"
+      apply (rule exI[of _ "{x\<in>X. f x \<in> U}"])
+      apply (rule exI[of _ "{x\<in>X. f x \<in> V}"])
+      using hfU hfV hpreimg_U_ne hpreimg_V_ne hpreimgs_cover hpreimgs_disj by simp
+    thus False
+      using hXconn unfolding top1_connected_on_def by blast
+  qed
+qed
 
 (** from \<S>1 Theorem 8 (geotop.tex:373)
     LATEX VERSION: For sets, connectivity is preserved by surjective mappings. **)
