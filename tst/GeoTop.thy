@@ -3341,13 +3341,20 @@ theorem Theorem_GT_12_6:
   fixes X :: "'a set" and T :: "'a set set"
   fixes Y :: "'b set" and T' :: "'b set set"
   fixes f :: "'a \<Rightarrow> 'b"
-  assumes "is_topology_on X T" and "top1_metrizable_on X T"
-  assumes "is_topology_on Y T'" and "top1_metrizable_on Y T'"
-  assumes "top1_compact_on X T"
-  assumes "top1_continuous_map_on X T Y T' f"
-  assumes "bij_betw f X Y"
+  assumes hTX: "is_topology_on X T" and hMX: "top1_metrizable_on X T"
+  assumes hTY: "is_topology_on Y T'" and hMY: "top1_metrizable_on Y T'"
+  assumes hcomp: "top1_compact_on X T"
+  assumes hcont: "top1_continuous_map_on X T Y T' f"
+  assumes hbij: "bij_betw f X Y"
   shows "top1_homeomorphism_on X T Y T' f"
-  sorry
+  (** Moise proof (geotop.tex:2387): compact + Hausdorff + continuous bijection =
+      homeomorphism (Top0 Theorem_26_6). Metrizable implies Hausdorff. **)
+proof -
+  have hH: "is_hausdorff_on Y T'"
+    using hMY metrizable_imp_hausdorff by blast
+  show ?thesis
+    by (rule Theorem_26_6[OF hTX hTY hcomp hH hcont hbij])
+qed
 
 (** from \<S>12: refinement of coverings (geotop.tex:2391)
     LATEX VERSION: G_{i+1} \<le> G_i means G_{i+1} refines G_i.
