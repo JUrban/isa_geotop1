@@ -5551,8 +5551,8 @@ definition geotop_outer_boundary ::
       then exterior of J_0. **)
 theorem Theorem_GT_13_1:
   fixes A A' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
-  assumes "geotop_is_k_annulus k A" and "geotop_is_k_annulus k A'"
-  assumes "top1_homeomorphism_on (geotop_outer_boundary A)
+  assumes hA: "geotop_is_k_annulus k A" and hA': "geotop_is_k_annulus k A'"
+  assumes hf_bd: "top1_homeomorphism_on (geotop_outer_boundary A)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_outer_boundary A))
              (geotop_outer_boundary A')
              (subspace_topology UNIV geotop_euclidean_topology (geotop_outer_boundary A')) f"
@@ -5560,7 +5560,85 @@ theorem Theorem_GT_13_1:
                 UNIV geotop_euclidean_topology F \<and>
              (\<forall>P\<in>geotop_outer_boundary A. F P = f P) \<and>
              F ` A = A'"
-  sorry
+proof -
+  (** (1) Preliminary: by a translation of R^2 we may reduce to A \<inter> A' = \<emptyset>, since A is
+         compact. **)
+  obtain T where h_translate:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+       UNIV geotop_euclidean_topology T \<and> T ` A \<inter> A' = {}" sorry
+  (** (2) By the Tame imbedding theorem (10.13) and Problem 10.13, we may further assume
+         Bd A and Bd A' are polyhedra, so A and A' are polyhedra. **)
+  have h_poly:
+    "\<exists>A\<^sub>p A'\<^sub>p F\<^sub>1 F\<^sub>2. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology F\<^sub>1 \<and>
+                   top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology F\<^sub>2 \<and>
+                   F\<^sub>1 ` A = A\<^sub>p \<and> F\<^sub>2 ` A' = A'\<^sub>p \<and>
+                   (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and>
+                           A\<^sub>p = geotop_polyhedron K \<and> A'\<^sub>p = geotop_polyhedron K')" sorry
+  (** (3) Base case (k = 1): A and A' are 1-annuli. There is a broken line B joining a
+         point of J_0 to a point of J_1, intersecting Bd A only at its endpoints P_0, P_1
+         (neither of which is a vertex). Let P_0' = f(P_0); build a broken line B' in A'
+         from P_0' to some P_1' \<in> J_1', meeting Bd A' only at its endpoints. **)
+  have h_base_brokenline:
+    "k = 1 \<longrightarrow>
+       (\<exists>B P\<^sub>0 P\<^sub>1 B' P\<^sub>0' P\<^sub>1'.
+          geotop_is_broken_line B \<and> geotop_is_broken_line B' \<and>
+          P\<^sub>0 \<in> geotop_outer_boundary A \<and>
+          P\<^sub>0' = f P\<^sub>0 \<and> P\<^sub>0' \<in> geotop_outer_boundary A' \<and>
+          P\<^sub>1 \<in> geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) \<and>
+          P\<^sub>1 \<notin> geotop_outer_boundary A \<and>
+          P\<^sub>1' \<in> geotop_manifold_boundary A' (\<lambda>x y. norm (x - y)) \<and>
+          P\<^sub>1' \<notin> geotop_outer_boundary A' \<and>
+          B \<inter> geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) = {P\<^sub>0, P\<^sub>1} \<and>
+          B' \<inter> geotop_manifold_boundary A' (\<lambda>x y. norm (x - y)) = {P\<^sub>0', P\<^sub>1'} \<and>
+          B \<subseteq> A \<and> B' \<subseteq> A')" sorry
+  (** (4) Base case: choose two disjoint broken lines B_1, B_2 close to B but disjoint
+         from B; they decompose A into two 2-cells D_1, D_2 with B \<subseteq> D_1. Copy this
+         configuration into A' to get B_1', B_2', D_1', D_2'. **)
+  have h_base_decompose:
+    "k = 1 \<longrightarrow>
+       (\<exists>B\<^sub>1 B\<^sub>2 D\<^sub>1 D\<^sub>2 B\<^sub>1' B\<^sub>2' D\<^sub>1' D\<^sub>2'.
+          geotop_is_broken_line B\<^sub>1 \<and> geotop_is_broken_line B\<^sub>2 \<and>
+          geotop_is_broken_line B\<^sub>1' \<and> geotop_is_broken_line B\<^sub>2' \<and>
+          B\<^sub>1 \<inter> B\<^sub>2 = {} \<and> B\<^sub>1' \<inter> B\<^sub>2' = {} \<and>
+          A = D\<^sub>1 \<union> D\<^sub>2 \<and> A' = D\<^sub>1' \<union> D\<^sub>2' \<and>
+          geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+          geotop_is_n_cell D\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>2) 2 \<and>
+          geotop_is_n_cell D\<^sub>1' (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1') 2 \<and>
+          geotop_is_n_cell D\<^sub>2' (subspace_topology UNIV geotop_euclidean_topology D\<^sub>2') 2)" sorry
+  (** (5) Base case: extend f stage by stage. B_i \<leftrightarrow> B_i' and B_5 \<leftrightarrow> B_5' by homeomorphisms
+         of arcs; then D_1 \<leftrightarrow> D_1', B_6 \<leftrightarrow> B_6', D_2 \<leftrightarrow> D_2', D_3 \<leftrightarrow> D_3' (inner disk via
+         Schoenflies), and finally exterior of J_0 \<leftrightarrow> exterior of J_0' (Theorem 4.3 for
+         the unbounded complement of a polygon). **)
+  have h_base_conclude:
+    "k = 1 \<longrightarrow>
+       (\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology F \<and>
+             (\<forall>P\<in>geotop_outer_boundary A. F P = f P) \<and> F ` A = A')" sorry
+  (** (6) Inductive step: suppose the theorem holds for every j-annulus pair with j < k.
+         Take a broken line B from J_0 to J_1, build D_1 \<subseteq> A and D_1' \<subseteq> A' as in the base
+         case. Let D_3 = closure of interior of J_1 and D_3' = closure of interior of J_1'.
+         Set A_k = Cl(A - D_1), A_k' = Cl(A' - D_1'); these are (k - 1)-annuli. **)
+  have h_step_split:
+    "k \<noteq> 1 \<longrightarrow>
+       (\<exists>(D\<^sub>1::(real^2) set) D\<^sub>3 A\<^sub>k D\<^sub>1' D\<^sub>3' A\<^sub>k'.
+          geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+          geotop_is_n_cell D\<^sub>3 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>3) 2 \<and>
+          geotop_is_n_cell D\<^sub>1' (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1') 2 \<and>
+          geotop_is_n_cell D\<^sub>3' (subspace_topology UNIV geotop_euclidean_topology D\<^sub>3') 2 \<and>
+          geotop_is_k_annulus (k - 1) A\<^sub>k \<and>
+          geotop_is_k_annulus (k - 1) A\<^sub>k' \<and>
+          A = D\<^sub>1 \<union> A\<^sub>k \<and> A' = D\<^sub>1' \<union> A\<^sub>k')" sorry
+  (** (7) Extend f: D_1 \<leftrightarrow> D_1', D_3 \<leftrightarrow> D_3'. Apply induction hypothesis on A_k \<leftrightarrow> A_k',
+         then extend to the exterior of J_0. **)
+  have h_step_conclude:
+    "k \<noteq> 1 \<longrightarrow>
+       (\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology F \<and>
+             (\<forall>P\<in>geotop_outer_boundary A. F P = f P) \<and> F ` A = A')" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 2 (geotop.tex:2572)
     LATEX VERSION: Let A be a k-annulus in R^2, and let B be the union of some or all of the
@@ -5571,15 +5649,39 @@ theorem Theorem_GT_13_1:
       union of the tiny disks plus thin tubes, so the construction of C is elementary. **)
 theorem Theorem_GT_13_2:
   fixes A B :: "(real^2) set"
-  assumes "geotop_is_k_annulus k A"
-  assumes "B \<subseteq> geotop_manifold_boundary A (\<lambda>x y. norm (x - y))"
-  assumes "B \<inter> geotop_outer_boundary A = {}"
+  assumes hA_kann: "geotop_is_k_annulus k A"
+  assumes hB_sub: "B \<subseteq> geotop_manifold_boundary A (\<lambda>x y. norm (x - y))"
+  assumes hB_inner: "B \<inter> geotop_outer_boundary A = {}"
   shows "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
              geotop_frontier UNIV geotop_euclidean_topology C
                \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
              B \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
              C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {}"
-  sorry
+proof -
+  (** (1) By Theorem 13.1, there exists a homeomorphism F: R^2 \<leftrightarrow> R^2 mapping A to a
+         "standard" k-annulus A* whose outer boundary J_0* is a large circle and whose
+         inner boundaries J_1*, ..., J_k* are tiny disjoint circles, with F(B) equal to
+         the union of some subset of {J_1*, ..., J_k*}. **)
+  obtain F A\<^sub>s B\<^sub>s where h_standardize:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+       UNIV geotop_euclidean_topology F \<and>
+     F ` A = A\<^sub>s \<and> F ` B = B\<^sub>s \<and>
+     geotop_is_k_annulus k A\<^sub>s \<and>
+     B\<^sub>s \<subseteq> geotop_manifold_boundary A\<^sub>s (\<lambda>x y. norm (x - y)) \<and>
+     B\<^sub>s \<inter> geotop_outer_boundary A\<^sub>s = {}" sorry
+  (** (2) In standard form, construct the 2-cell C* explicitly as the union of small closed
+         disks (one per J_i* \<subseteq> B_s) together with thin rectangular "tubes" connecting them,
+         entirely inside Int A*. The cell satisfies:
+         Bd C* \<subseteq> Int A*, B_s \<subseteq> Int C*, C* misses all J_j* \<notin> B_s. **)
+  obtain C\<^sub>s where h_build_std:
+    "geotop_is_n_cell C\<^sub>s (subspace_topology UNIV geotop_euclidean_topology C\<^sub>s) 2 \<and>
+     geotop_frontier UNIV geotop_euclidean_topology C\<^sub>s
+       \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A\<^sub>s \<and>
+     B\<^sub>s \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C\<^sub>s \<and>
+     C\<^sub>s \<inter> (geotop_manifold_boundary A\<^sub>s (\<lambda>x y. norm (x - y)) - B\<^sub>s) = {}" sorry
+  (** (3) Pull C* back via F^{-1} to obtain the required C in A. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 3 (geotop.tex:2578)
     LATEX VERSION: Let C^2 be a 2-cell, with Bd C^2 = J = B_1 \<union> B_2, where B_1 and B_2 are
@@ -5592,20 +5694,41 @@ theorem Theorem_GT_13_2:
       boundary arcs. **)
 theorem Theorem_GT_13_3:
   fixes C2 B1 B2 M1 M2 :: "(real^2) set" and Q S :: "real^2"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology C2 = B1 \<union> B2"
-  assumes "geotop_is_arc B1 (subspace_topology UNIV geotop_euclidean_topology B1)"
-  assumes "geotop_is_arc B2 (subspace_topology UNIV geotop_euclidean_topology B2)"
-  assumes "Q \<in> B1 \<inter> B2" and "S \<in> B1 \<inter> B2"
-  assumes "B1 \<inter> B2 = {Q, S}"
-  assumes "closedin_on UNIV geotop_euclidean_topology M1"
-  assumes "closedin_on UNIV geotop_euclidean_topology M2"
-  assumes "M1 \<subseteq> C2" and "M2 \<subseteq> C2" and "M1 \<inter> M2 = {}"
-  assumes "M1 \<inter> (B1 \<union> B2) \<subseteq> B1 - {Q, S}"
-  assumes "M2 \<inter> (B1 \<union> B2) \<subseteq> B2 - {Q, S}"
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes hBd: "geotop_frontier UNIV geotop_euclidean_topology C2 = B1 \<union> B2"
+  assumes hB1: "geotop_is_arc B1 (subspace_topology UNIV geotop_euclidean_topology B1)"
+  assumes hB2: "geotop_is_arc B2 (subspace_topology UNIV geotop_euclidean_topology B2)"
+  assumes hQ_bd: "Q \<in> B1 \<inter> B2" and hS_bd: "S \<in> B1 \<inter> B2"
+  assumes hQS: "B1 \<inter> B2 = {Q, S}"
+  assumes hM1_closed: "closedin_on UNIV geotop_euclidean_topology M1"
+  assumes hM2_closed: "closedin_on UNIV geotop_euclidean_topology M2"
+  assumes hM1_sub: "M1 \<subseteq> C2" and hM2_sub: "M2 \<subseteq> C2" and hM1M2: "M1 \<inter> M2 = {}"
+  assumes hM1_meet: "M1 \<inter> (B1 \<union> B2) \<subseteq> B1 - {Q, S}"
+  assumes hM2_meet: "M2 \<inter> (B1 \<union> B2) \<subseteq> B2 - {Q, S}"
   shows "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
          = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
-  sorry
+proof -
+  (** (1) Apply Schoenflies (\<S>9.6 / 10.6) to transport C^2 to the unit disk D, mapping
+         B_1, B_2 to the upper, lower semicircles and Q, S to (\<plusminus>1, 0). **)
+  obtain h where h_homeo:
+    "top1_homeomorphism_on C2 (subspace_topology UNIV geotop_euclidean_topology C2)
+       {P::real^2. norm P \<le> 1}
+       (subspace_topology UNIV geotop_euclidean_topology {P. norm P \<le> 1}) h"
+    sorry
+  (** (2) Under h, M_1, M_2 are disjoint closed sets in D; h(M_i) meets \<partial> D only in the
+         relative interior of the corresponding semicircle. **)
+  have h_image_split:
+    "h ` M1 \<inter> h ` M2 = {} \<and> h ` M1 \<subseteq> {P. norm P \<le> 1} \<and> h ` M2 \<subseteq> {P. norm P \<le> 1}" sorry
+  (** (3) Theorem 10.9 in the unit-disk coordinates: (1, 0) and (-1, 0) lie in the same
+         component of D - (h(M_1) \<union> h(M_2)). **)
+  have h_109:
+    "geotop_component_at UNIV geotop_euclidean_topology
+       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h Q)
+     = geotop_component_at UNIV geotop_euclidean_topology
+       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S)" sorry
+  (** (4) Pull back the conclusion through h. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 4 (geotop.tex:2583)
     LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let U be a
@@ -5618,13 +5741,51 @@ theorem Theorem_GT_13_3:
       Q and S lie in the same component of C^2 - M. Hence in U - M. **)
 theorem Theorem_GT_13_4:
   fixes M U :: "(real^2) set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
-  assumes "M \<subseteq> U"
+  assumes hM_compact: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_td: "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  assumes hMU: "M \<subseteq> U"
   shows "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
-  sorry
+proof -
+  (** (1) For any Q, S in U - M there is a polyhedral 2-cell C^2 \<subseteq> U whose boundary is a
+         union of two arcs B_1, B_2 meeting only at {Q, S}. (Build via broken line from Q
+         to S in U thickened into a 2-cell.) **)
+  have h_cell:
+    "\<forall>Q\<in>U - M. \<forall>S\<in>U - M. Q \<noteq> S \<longrightarrow>
+       (\<exists>C2 B1 B2.
+          geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+          geotop_frontier UNIV geotop_euclidean_topology C2 = B1 \<union> B2 \<and>
+          geotop_is_arc B1 (subspace_topology UNIV geotop_euclidean_topology B1) \<and>
+          geotop_is_arc B2 (subspace_topology UNIV geotop_euclidean_topology B2) \<and>
+          B1 \<inter> B2 = {Q, S} \<and> C2 \<subseteq> U)" sorry
+  (** (2) For such a C^2, B_1, B_2, M \<inter> C^2 is compact totally disconnected; the sets
+         A_i = M \<inter> B_i are disjoint closed, so by Theorem 12.3 they extend to a splitting
+         M \<inter> C^2 = M_1 \<union> M_2 with M_1 \<inter> M_2 = \<emptyset>, M_1 \<inter> (B_1 \<union> B_2) \<subseteq> B_1 - {Q, S},
+         M_2 \<inter> (B_1 \<union> B_2) \<subseteq> B_2 - {Q, S}. **)
+  have h_split:
+    "\<forall>Q S C2 B1 B2.
+       Q \<in> U - M \<and> S \<in> U - M \<and> Q \<noteq> S \<and>
+       geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+       geotop_frontier UNIV geotop_euclidean_topology C2 = B1 \<union> B2 \<and>
+       geotop_is_arc B1 (subspace_topology UNIV geotop_euclidean_topology B1) \<and>
+       geotop_is_arc B2 (subspace_topology UNIV geotop_euclidean_topology B2) \<and>
+       B1 \<inter> B2 = {Q, S} \<and> C2 \<subseteq> U \<longrightarrow>
+       (\<exists>M1 M2. M \<inter> C2 = M1 \<union> M2 \<and> M1 \<inter> M2 = {} \<and>
+                closedin_on UNIV geotop_euclidean_topology M1 \<and>
+                closedin_on UNIV geotop_euclidean_topology M2 \<and>
+                M1 \<subseteq> C2 \<and> M2 \<subseteq> C2 \<and>
+                M1 \<inter> (B1 \<union> B2) \<subseteq> B1 - {Q, S} \<and>
+                M2 \<inter> (B1 \<union> B2) \<subseteq> B2 - {Q, S})" sorry
+  (** (3) Apply Theorem 13.3 to C^2, B_1, B_2, M_1, M_2 to conclude Q, S in the same
+         component of C^2 - (M_1 \<union> M_2) \<subseteq> C^2 - M \<subseteq> U - M. **)
+  have h_same_comp:
+    "\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
+        geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
+      = geotop_component_at UNIV geotop_euclidean_topology (U - M) S" sorry
+  (** (4) Since all points of U - M share a single component, U - M is connected. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 5 (geotop.tex:2587)
     LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let N be a frame
@@ -5635,12 +5796,46 @@ theorem Theorem_GT_13_4:
       by the Schoenflies theorem C is a 2-cell. **)
 theorem Theorem_GT_13_5:
   fixes M N :: "(real^2) set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_frame M N"
+  assumes hM_compact: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_td: "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hN_frame: "geotop_is_frame M N"
   shows "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
            geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2"
-  sorry
+proof -
+  (** (1) Different components of R^2 - N lie in different components of R^2 - M
+         (property of a frame). **)
+  have h_sep:
+    "\<forall>V1 V2. V1 \<noteq> V2 \<and>
+             (\<exists>P. V1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - N) P) \<and>
+             (\<exists>P. V2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - N) P) \<longrightarrow>
+             (\<forall>P1\<in>V1. \<forall>P2\<in>V2.
+                geotop_component_at UNIV geotop_euclidean_topology (UNIV - M) P1
+                \<noteq> geotop_component_at UNIV geotop_euclidean_topology (UNIV - M) P2)" sorry
+  (** (2) By Theorem 13.4 (with U = R^2), R^2 - M is connected. **)
+  have h_RminusM_conn:
+    "top1_connected_on (UNIV - M)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV - M))" sorry
+  (** (3) Hence R^2 - N is connected (single component in (1)). **)
+  have h_RminusN_conn:
+    "top1_connected_on (UNIV - N)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV - N))" sorry
+  (** (4) For each component C of N, the complement R^2 - C has connected boundary Bd C. **)
+  have h_bd_connected:
+    "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         top1_connected_on (geotop_frontier UNIV geotop_euclidean_topology C)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier UNIV geotop_euclidean_topology C))" sorry
+  (** (5) The connected frontier Bd C is a 1-sphere (polyhedral simple closed curve from
+         the PL frame construction). **)
+  have h_bd_1sphere:
+    "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier UNIV geotop_euclidean_topology C)) 1" sorry
+  (** (6) Applying Schoenflies (\<S>10.6), the bounded region C with 1-sphere boundary is
+         a 2-cell. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 6 (geotop.tex:2591)
     LATEX VERSION: Let M and N be as in Theorem 5, and let \<epsilon> be a positive number. If N lies
@@ -5652,13 +5847,35 @@ theorem Theorem_GT_13_5:
       giving \<delta> D < \<epsilon>/3 + 2 \<alpha> < \<epsilon>. **)
 theorem Theorem_GT_13_6:
   fixes M :: "(real^2) set" and \<epsilon> :: real
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "\<epsilon> > 0"
+  assumes hM_compact: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_td: "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes heps: "\<epsilon> > 0"
   shows "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
                geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)"
-  sorry
+proof -
+  (** (1) By Theorem 12.4, write M = \<union>_{i=1..n} g_i with each diameter g_i < \<epsilon>/3. **)
+  have h_cover:
+    "\<exists>gs::(real^2) set set. finite gs \<and> M = \<Union>gs \<and>
+       (\<forall>g\<in>gs. geotop_diameter (\<lambda>x y. norm (x - y)) g < \<epsilon>/3) \<and>
+       (\<forall>g\<in>gs. closedin_on UNIV geotop_euclidean_topology g)" sorry
+  (** (2) For \<alpha> > 0 sufficiently small, the \<alpha>-neighbourhoods N(g_i, \<alpha>) are pairwise
+         disjoint. **)
+  have h_alpha_sep:
+    "\<exists>\<alpha>>0. \<forall>gs. finite gs \<and> (\<forall>g1\<in>gs. \<forall>g2\<in>gs. g1 \<noteq> g2 \<longrightarrow> g1 \<inter> g2 = {}) \<longrightarrow>
+       (\<forall>g1\<in>gs. \<forall>g2\<in>gs. g1 \<noteq> g2 \<longrightarrow>
+         {P. \<exists>Q\<in>g1. norm (P - Q) < \<alpha>} \<inter> {P. \<exists>Q\<in>g2. norm (P - Q) < \<alpha>} = {})" sorry
+  (** (3) Pick \<delta> = min(\<alpha>, \<epsilon>/3). If N \<subseteq> N(M, \<delta>) then every component of N lies in some
+         single N(g_i, \<delta>) since the neighbourhoods are disjoint. **)
+  have h_component_confined:
+    "\<exists>\<delta>>0. \<forall>N gs. finite gs \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<and>
+                  (\<forall>g\<in>gs. geotop_diameter (\<lambda>x y. norm (x - y)) g < \<epsilon>/3) \<and>
+                  M = \<Union>gs \<longrightarrow>
+       (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))" sorry
+  (** (4) Diameter of such a component is < \<epsilon>/3 + 2\<delta> < \<epsilon>. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>13 Theorem 7 (geotop.tex:2595)
     LATEX VERSION: Let M and M' be totally disconnected compact sets in R^2, and let f be a
@@ -5684,16 +5901,77 @@ theorem Theorem_GT_13_6:
       by the symmetric argument. **)
 theorem Theorem_GT_13_7:
   fixes M M' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
-  assumes "geotop_is_totally_disconnected M' (subspace_topology UNIV geotop_euclidean_topology M')"
-  assumes "top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_td: "geotop_is_totally_disconnected M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM'_cpt: "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes hM'_td: "geotop_is_totally_disconnected M' (subspace_topology UNIV geotop_euclidean_topology M')"
+  assumes hf: "top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
              M' (subspace_topology UNIV geotop_euclidean_topology M') f"
   shows "\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
                 UNIV geotop_euclidean_topology F \<and>
              (\<forall>P\<in>M. F P = f P)"
-  sorry
+proof -
+  (** (1) Take 2-cells A, A' with M \<subseteq> Int A, M' \<subseteq> Int A'. **)
+  obtain A A' where h_hulls:
+    "geotop_is_n_cell A (subspace_topology UNIV geotop_euclidean_topology A) 2 \<and>
+     geotop_is_n_cell A' (subspace_topology UNIV geotop_euclidean_topology A') 2 \<and>
+     M \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
+     M' \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A'" sorry
+  (** (2) Choose a "base" homeomorphism f_0: R^2 - Int A \<leftrightarrow> R^2 - Int A'. **)
+  obtain f\<^sub>0 where h_base_homeo:
+    "top1_homeomorphism_on (UNIV - geotop_top_interior UNIV geotop_euclidean_topology A)
+       (subspace_topology UNIV geotop_euclidean_topology
+          (UNIV - geotop_top_interior UNIV geotop_euclidean_topology A))
+       (UNIV - geotop_top_interior UNIV geotop_euclidean_topology A')
+       (subspace_topology UNIV geotop_euclidean_topology
+          (UNIV - geotop_top_interior UNIV geotop_euclidean_topology A')) f\<^sub>0" sorry
+  (** (3) Construct a pair of sequences of frames N_i of M and N_i' of M', each nested
+         inside Int N_{i-1} (inside Int A for i = 1), and a sequence of homeomorphisms
+         f_i: E_i \<leftrightarrow> E_i' (where E_i = R^2 - Int N_i) extending f_0, with
+         (a) each component of N_{2i-1} (resp. N_{2i}') of diameter < 1/(2i-1) (resp. 1/2i);
+             (Theorem 13.6)
+         (b) for each pair of matched components D, D' of N_i, N_i', f(M \<inter> D) = M' \<inter> D';
+         (c) f_{i+1} extends f_i.
+         The odd step (2i-1 \<to> 2i) works from M' outwards, constructing N_{2i}' via 13.6
+         then N_{2i} via 13.2; the even step is symmetric. **)
+  obtain Ns Ns' fs where h_frames:
+    "\<forall>i::nat. geotop_is_frame M (Ns i) \<and> geotop_is_frame M' (Ns' i) \<and>
+              (i > 0 \<longrightarrow> Ns (Suc i) \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Ns i)) \<and>
+              (i > 0 \<longrightarrow> Ns' (Suc i) \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Ns' i)) \<and>
+              top1_homeomorphism_on (UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns i))
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns i)))
+                 (UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns' i))
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns' i))) (fs i)" sorry
+  (** (4) The diameter bound on components of N_{2i-1} forces \<Inter>_i Int N_i = M (similarly
+         on the primed side), so every point of R^2 lies either in M or in some E_i
+         eventually. **)
+  have h_exhaust:
+    "UNIV = M \<union> (\<Union>i. UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns i)) \<and>
+     UNIV = M' \<union> (\<Union>i. UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns' i))"
+    sorry
+  (** (5) Define F(P) = f(P) if P \<in> M, else F(P) = f_i(P) for any i with
+         P \<in> E_i = R^2 - Int N_i. By (c) this is well-defined. **)
+  define F :: "real^2 \<Rightarrow> real^2" where
+    "F = (\<lambda>P. if P \<in> M then f P
+              else fs (LEAST i. P \<in> UNIV - geotop_top_interior UNIV geotop_euclidean_topology (Ns i)) P)"
+  (** (6) F is a bijection R^2 \<leftrightarrow> R^2 by (4) and the bijectivity of f and each f_i. **)
+  have h_bij:
+    "bij F" sorry
+  (** (7) F is continuous at every P in R^2 - M: P \<in> Int E_i for some i and F coincides
+         with f_i on a neighbourhood. At P \<in> M: the matched component sequence
+         N_{2i} \<supseteq> D_i \<ni> P has diameter \<to> 0, and F(D_i) is the matched component of N_{2i}',
+         which also shrinks to {F(P)} = {f(P)}. Hence F has arbitrarily small
+         neighbourhoods mapped into arbitrarily small neighbourhoods, so F is continuous.
+         F^{-1} is continuous by symmetry. **)
+  have h_cont:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology UNIV geotop_euclidean_topology F"
+    sorry
+  (** (8) Finally F \<restriction> M = f by construction. **)
+  have h_ext: "\<forall>P\<in>M. F P = f P" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>14 The fundamental group (summary)\<close>
 
@@ -5732,14 +6010,22 @@ definition geotop_path_equiv ::
          (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> X))"
 
 (** from \<S>14 Theorem 1 (geotop.tex:2706)
-    LATEX VERSION: \<cong> is an equivalence relation. **)
+    LATEX VERSION: \<cong> is an equivalence relation.
+    Moise proof (geotop.tex:2706, summary section). Reflexivity: the homotopy f(t, y) = p(t)
+      is constant in y. Symmetry: given f witnessing p \<cong> q, use f'(t, y) = f(t, 1 - y).
+      Transitivity: glue two homotopies end-to-end along y = 1/2, rescaling the y-parameter
+      on each half. Each piece is continuous and sends {0, 1} to P_0 throughout. **)
 theorem Theorem_GT_14_1:
   fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
   shows "equivp (geotop_path_equiv X T P\<^sub>0)"
   sorry
 
 (** from \<S>14 Theorem 2 (geotop.tex:2707)
-    LATEX VERSION: If p \<cong> p' and q \<cong> q', then pq \<cong> p'q'. **)
+    LATEX VERSION: If p \<cong> p' and q \<cong> q', then pq \<cong> p'q'.
+    Moise proof (geotop.tex:2707, summary). Let F witness p \<cong> p' and G witness q \<cong> q'. Define
+      H(t, y) = F(2t, y) for t \<in> [0, 1/2], H(t, y) = G(2t - 1, y) for t \<in> [1/2, 1]; continuous
+      by the pasting lemma on the overlap at t = 1/2 where both equal P_0. The boundary
+      conditions y = 0, y = 1 reproduce pq and p'q' respectively. **)
 theorem Theorem_GT_14_2:
   assumes "geotop_path_equiv X T P\<^sub>0 p p'"
   assumes "geotop_path_equiv X T P\<^sub>0 q q'"
@@ -5766,7 +6052,12 @@ definition geotop_pi_mult ::
        E = geotop_pi_class X T P\<^sub>0 (geotop_path_mult p q))"
 
 (** from \<S>14 Theorem 3 (geotop.tex:2715)
-    LATEX VERSION: [\<pi>(X, P_0), \<cdot>] is a group. **)
+    LATEX VERSION: [\<pi>(X, P_0), \<cdot>] is a group.
+    Moise proof (geotop.tex:2715, summary). Identity: e(t) = P_0 gives pe \<cong> p via the
+      reparametrisation homotopy linear in y. Inverse: p^{-1}(t) = p(1 - t); the homotopy
+      p p^{-1} \<cong> e is obtained by "retracting": H(t, y) = p(2t(1 - y)) for t \<in> [0, 1/2],
+      p(2(1 - t)(1 - y)) for t \<in> [1/2, 1]. Associativity: (pq)r \<cong> p(qr) by reparametrising
+      along y \<in> [0, 1] to shift the boundary between consecutive constituents. **)
 theorem Theorem_GT_14_3:
   fixes X :: "'a set" and T :: "'a set set" and P\<^sub>0 :: 'a
   assumes "is_topology_on X T" and "P\<^sub>0 \<in> X"
@@ -5790,7 +6081,11 @@ definition geotop_simply_connected ::
 
 (** from \<S>14 Theorem 4 (geotop.tex:2718)
     LATEX VERSION: Let P_0 and P_1 be points of X, and let p be a path from P_0 to P_1. Then
-      p induces an isomorphism p*: \<pi>(X, P_0) \<leftrightarrow> \<pi>(X, P_1), p*([q]) = [p^{-1} q p]. **)
+      p induces an isomorphism p*: \<pi>(X, P_0) \<leftrightarrow> \<pi>(X, P_1), p*([q]) = [p^{-1} q p].
+    Moise proof (geotop.tex:2718, summary). Define \<phi>([q]) = [p^{-1} q p]; well-defined by
+      Theorem 14.2. It is a homomorphism: [p^{-1} q_1 q_2 p] = [p^{-1} q_1 p p^{-1} q_2 p]
+      using p p^{-1} \<cong> e (Theorem 14.3). Inverse is \<phi>^{-1}([r]) = [p r p^{-1}], because
+      p (p^{-1} q p) p^{-1} \<cong> q. **)
 theorem Theorem_GT_14_4:
   fixes X :: "'a set" and T :: "'a set set"
   fixes P\<^sub>0 P\<^sub>1 :: 'a and p :: "real \<Rightarrow> 'a"
@@ -5805,7 +6100,11 @@ theorem Theorem_GT_14_4:
 (** from \<S>14 Theorem 5 (geotop.tex:2735)
     LATEX VERSION: Let [X, O] and [Y, O'] be pathwise connected spaces, let P_0 \<in> X, let
       Q_0 \<in> Y, and let f be a mapping X \<rightarrow> Y, P_0 \<mapsto> Q_0. Then f induces a homomorphism
-      f*: \<pi>(X, P_0) \<rightarrow> \<pi>(Y, Q_0), f*([p]) = [f \<circ> p]. **)
+      f*: \<pi>(X, P_0) \<rightarrow> \<pi>(Y, Q_0), f*([p]) = [f \<circ> p].
+    Moise proof (geotop.tex:2735, summary). The map p \<mapsto> f \<circ> p sends CP(X, P_0) to
+      CP(Y, Q_0) (continuity preserved under composition; endpoints go to Q_0). If F is a
+      homotopy p \<cong> p' then f \<circ> F is a homotopy (f \<circ> p) \<cong> (f \<circ> p'), so the induced map is
+      well-defined on classes. It is a homomorphism since f \<circ> (pq) = (f \<circ> p)(f \<circ> q). **)
 theorem Theorem_GT_14_5:
   fixes X :: "'a set" and T :: "'a set set"
   fixes Y :: "'b set" and T' :: "'b set set"
@@ -5823,7 +6122,13 @@ theorem Theorem_GT_14_5:
 
 (** from \<S>14 Theorem 6 (geotop.tex:2751)
     LATEX VERSION: Let P_0 \<in> U \<subseteq> R^3. For each p \<in> CP(U, P_0) there is a PL closed path p'
-      such that p \<cong> p' in \<pi>(U, P_0). **)
+      such that p \<cong> p' in \<pi>(U, P_0).
+    Moise proof (geotop.tex:2751, summary; details in Problem Set 14). Cover |p| \<subseteq> U by
+      finitely many small open balls B_i \<subseteq> U (compactness of |p|). Choose 0 = t_0 < t_1 < ... <
+      t_n = 1 so that p([t_{j-1}, t_j]) \<subseteq> some B_i. Replace p on each [t_{j-1}, t_j] by the
+      linear segment from p(t_{j-1}) to p(t_j); both endpoints lie in the same ball, so the
+      straight-line homotopy H_j(s, y) = (1 - y) p(t_{j-1} + s(t_j - t_{j-1})) +
+      y [affine segment] stays inside B_i \<subseteq> U. Pasting the H_j gives p \<cong> p' in U. **)
 theorem Theorem_GT_14_6:
   fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p :: "real \<Rightarrow> real^3"
   assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
@@ -5839,7 +6144,14 @@ theorem Theorem_GT_14_6:
 (** from \<S>14 Theorem 7 (geotop.tex:2753)
     LATEX VERSION: Let p and p' be PL paths in CP(U, P_0), where U is open in R^3 and
       P_0 \<in> U. If p \<cong> p', then there is a PL mapping f: [0,1]^2 \<rightarrow> U, under which p \<cong> p'
-      in \<pi>(U, P_0). **)
+      in \<pi>(U, P_0).
+    Moise proof (geotop.tex:2753, summary; Problem Set 14). Given a continuous homotopy
+      F: [0,1]^2 \<rightarrow> U between p and p', approximate F by a PL map via simplicial approximation:
+      triangulate [0,1]^2 so finely that F(T_i) lies inside a small ball B_i \<subseteq> U for each
+      simplex T_i, then define f to be affine on each T_i with f | vertices = F | vertices.
+      Each triangle's image lies inside B_i \<subseteq> U by convexity, so f: [0,1]^2 \<rightarrow> U. Since p, p'
+      are already PL, we adjust the triangulation on {y = 0} and {y = 1} to match the vertex
+      structure of |p|, |p'|; then f is the required PL homotopy. **)
 theorem Theorem_GT_14_7:
   fixes U :: "(real^3) set" and P\<^sub>0 :: "real^3" and p p' :: "real \<Rightarrow> real^3"
   assumes "U \<in> geotop_euclidean_topology" and "P\<^sub>0 \<in> U"
@@ -5864,7 +6176,17 @@ theorem Theorem_GT_14_7:
       of \<pi>(|K|, P_0).
     We express the canonical homomorphism in abelianised form: every element of \<pi>(|K|, P_0)
     maps to a value in a free abelian group (represented as int multiplicity per edge); the
-    map is surjective, and its kernel is the commutator subgroup. **)
+    map is surjective, and its kernel is the commutator subgroup.
+    Moise proof (geotop.tex:2789; full proof in Seifert-Threlfall pp. 171-174, outlined in
+    Problems 14.4-14.13). Surjectivity: every 1-cycle z \<in> Z_1(K) is represented by a formal
+    sum \<Sigma> \<alpha>_i \<sigma>_i with \<partial> z = 0; construct a closed path p_z in |K^1| by concatenating the
+    oriented edges \<sigma>_i^{\<alpha>_i} in any order that returns to P_0 using connecting paths in
+    |K^1| (possible by path-connectedness of each component). Then Z^1(p_z) = z. Commutator
+    kernel: the map into H_1 factors via the abelianisation \<pi>(|K|, P_0) / [\<pi>, \<pi>]; any
+    commutator [a, b] = a b a^{-1} b^{-1} gets Z^1(a) + Z^1(b) - Z^1(a) - Z^1(b) = 0, so
+    lies in ker h. Conversely if Z^1(p) = 0 then in K^2 one can fill p by a 2-chain whose
+    boundary is Z^1(p); lifting this bounding disc back to a homotopy in |K| expresses p
+    as a product of commutators. **)
 theorem Theorem_GT_14_8:
   fixes K :: "'a::real_normed_vector set set" and P\<^sub>0 :: 'a
   assumes "geotop_is_complex K"
@@ -5931,7 +6253,17 @@ definition geotop_link_diagram ::
 
 (** from \<S>15 Theorem 1 (geotop.tex:2870)
     LATEX VERSION: \<pi>(R^3 - L) is generated by {[g_1], [g_2], \<dots>, [g_n]}. That is, every
-      [p] \<in> \<pi>(R^3 - L, P_0) is equal to a product \<Pi>_i [g_{j_i}]^{\<alpha>_i} (\<alpha>_i = \<plusminus>1). **)
+      [p] \<in> \<pi>(R^3 - L, P_0) is equal to a product \<Pi>_i [g_{j_i}]^{\<alpha>_i} (\<alpha>_i = \<plusminus>1).
+    Moise proof (geotop.tex:2876). Given closed path p in R^3 - L, use Theorem 14.6 to take
+      p PL, and perturb into general position relative to L: (1) no vertex of |p| projects
+      into diag L, (2) no segment of |p| is vertical, (3) no point of |p| projects onto a
+      crossing of diag L. The diagram of p meets diag L only in simple crossings. For each
+      short directed "under" segment b near a crossing, form a triangular path t going
+      P_0 \<to> b \<to> P_0. Taking them in order gives p' = t_1 \<dots> t_m; p \<cong> p' because the parts
+      outside the b's drag continuously back to P_0, yielding e_1 t_1 e_2 \<dots> t_m e_{m+1}
+      with each e_i = const P_0. Each t_i that crosses under a_j is \<cong> g_j^{\<plusminus>1}: move t_i's
+      middle interval close to a_j, slide to coincide with a subinterval of g_j's middle
+      interval, adjust direction if needed. Hence p \<cong> \<Pi> g_{j_i}^{\<alpha>_i}. **)
 theorem Theorem_GT_15_1:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
   assumes "geotop_is_link L" and "geotop_link_general_position L"
@@ -6002,7 +6334,15 @@ definition geotop_normal_closure ::
 (** from \<S>15 Theorem 2 (geotop.tex:2973)
     LATEX VERSION: Let p = \<Pi>_i g_{j_i}^{\<alpha>_i}. If p \<cong> e, then the generator word on the right
       can be reduced to e by a finite sequence of operations, each of which inserts or deletes
-      an expression of the form g_i r_j^{\<plusminus>1} g_i^{-1}, g_i g_i^{-1}, or g_i^{-1} g_i. **)
+      an expression of the form g_i r_j^{\<plusminus>1} g_i^{-1}, g_i g_i^{-1}, or g_i^{-1} g_i.
+    Moise proof (geotop.tex:2985). Take a PL homotopy f: [0,1]^2 \<rightarrow> R^3 - L with f linear on
+      a triangulation K of [0,1]^2 (Theorem 14.7). Generically the 2-simplexes of f(K) meet
+      diag L transversally; track how the generator word along f(\<partial> [0,1]^2) transforms
+      simplex-by-simplex. Each local move (pushing the word across one 2-simplex in K) either
+      (i) cancels g_i g_i^{-1} or g_i^{-1} g_i when the simplex crosses a single arc a_i of
+      L twice, or (ii) inserts/deletes a conjugate g_i r_j^{\<plusminus>1} g_i^{-1} of a crossing
+      relation when the simplex spans a crossing of the diagram. After O(#simplexes of K)
+      such moves, the initial word reduces to the empty word on f(y = 1) \<equiv> e. **)
 theorem Theorem_GT_15_2:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
   assumes "geotop_is_link L" and "geotop_link_general_position L"
@@ -6021,7 +6361,14 @@ theorem Theorem_GT_15_2:
   sorry
 
 (** from \<S>15 Theorem 3 (geotop.tex:3138)
-    LATEX VERSION: ker \<phi>* = N([R]). **)
+    LATEX VERSION: ker \<phi>* = N([R]).
+    Moise proof (geotop.tex:3139). (\<subseteq>) N([R]) is the set of elements of F(G) obtainable
+      from [R] by multiplication, inversion, and conjugation. Since \<phi>*([r_i]) = [e] for each
+      i, induction shows [p] \<in> N([R]) \<Rightarrow> \<phi>*([p]) = [e]; hence N([R]) \<subseteq> ker \<phi>*.
+      (\<supseteq>) If \<phi>*([w]) = [e] then the closed path represented by w is null-homotopic in R^3 - L.
+      By Theorem 15.2, w reduces to the empty word by steps which each insert or delete
+      expressions g_i r_j^{\<plusminus>1} g_i^{-1}, g_i g_i^{-1}, g_i^{-1} g_i. Each such step moves
+      w by an element of N([R]); so [w] \<in> N([R]). **)
 theorem Theorem_GT_15_3:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
   assumes "geotop_is_link L" and "geotop_link_general_position L"
@@ -6041,7 +6388,12 @@ theorem Theorem_GT_15_3:
       G = {[g_1], \<dots>, [g_n]} and R = {r_1, \<dots>, r_n} be the generating set and the set of
       crossing words derived from the diagram of L. Let F(G) be the free group on G, let
       [R] = {[r_i]}, and let N([R]) be the smallest normal subgroup of F(G) that contains
-      [R]. Then \<phi>** : F(G)/N([R]) \<leftrightarrow> \<pi>(R^3 - L, P_0) is an isomorphism. **)
+      [R]. Then \<phi>** : F(G)/N([R]) \<leftrightarrow> \<pi>(R^3 - L, P_0) is an isomorphism.
+    Moise proof (geotop.tex:3167; combines 15.1-15.3). The map \<phi>: W(G) \<rightarrow> \<pi>(R^3 - L, P_0)
+      sending a generator word to the corresponding product of classes [g_{j_i}]^{\<alpha>_i} is
+      well-defined on equivalence classes by the relations defining F(G). By Theorem 15.1,
+      \<phi>* is surjective onto \<pi>(R^3 - L, P_0). By Theorem 15.3, ker \<phi>* = N([R]). The first
+      isomorphism theorem for groups gives F(G) / N([R]) \<cong> \<pi>(R^3 - L, P_0). **)
 theorem Theorem_GT_15_4:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
   assumes "geotop_is_link L" and "geotop_link_general_position L"
