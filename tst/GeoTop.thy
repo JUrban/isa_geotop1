@@ -631,17 +631,15 @@ qed
     LATEX VERSION: If M is connected, and M \<subset> L \<subset> \<bar>M\<close>, then L is connected. **)
 theorem Theorem_GT_1_15:
   assumes "is_topology_on X T"
+  assumes "M \<subseteq> X"
   assumes "M \<subseteq> L" "L \<subseteq> closure_on X T M"
   assumes "top1_connected_on M (subspace_topology X T M)"
   shows "top1_connected_on L (subspace_topology X T L)"
 proof -
-  have hMX: "M \<subseteq> X"
-    sledgehammer [timeout = 15, provers = e]
-    sorry
   have hLX: "L \<subseteq> X"
-    using assms(1,3) closure_on_sub_carrier hMX by blast
+    using assms(1,2,4) closure_on_subset_carrier by blast
   show ?thesis
-    by (metis Theorem_23_4 assms(1,2,3,4) hLX hMX)
+    by (metis Theorem_23_4 assms(1,2,3,4,5) hLX)
 qed
 
 (** from \<S>1: component C(M,P) (geotop.tex:415)
