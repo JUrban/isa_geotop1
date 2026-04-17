@@ -10029,13 +10029,33 @@ theorem Theorem_GT_24_1:
   fixes M :: "'b::real_normed_vector set" and T\<^sub>M' :: "'b set set"
   fixes g :: "'a \<Rightarrow> 'b"
   fixes \<Delta> :: "'c::real_normed_vector set" and T\<^sub>\<Delta> :: "'c set set" and f :: "'c \<Rightarrow> 'b"
-  assumes "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
-  assumes "geotop_is_n_cell \<Delta> T\<^sub>\<Delta> 2"
-  assumes "top1_continuous_map_on \<Delta> T\<^sub>\<Delta> M T\<^sub>M' f"
+  assumes hcov: "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
+  assumes h\<Delta>: "geotop_is_n_cell \<Delta> T\<^sub>\<Delta> 2"
+  assumes hf_cont: "top1_continuous_map_on \<Delta> T\<^sub>\<Delta> M T\<^sub>M' f"
   fixes Q\<^sub>0 :: 'c and Pt\<^sub>0 :: 'a
-  assumes "Q\<^sub>0 \<in> \<Delta>" and "Pt\<^sub>0 \<in> Mt" and "g Pt\<^sub>0 = f Q\<^sub>0"
+  assumes hQ\<^sub>0: "Q\<^sub>0 \<in> \<Delta>" and hPt\<^sub>0: "Pt\<^sub>0 \<in> Mt" and hmatch: "g Pt\<^sub>0 = f Q\<^sub>0"
   shows "\<exists>!ft. geotop_is_lifting Mt T\<^sub>M M T\<^sub>M' g \<Delta> T\<^sub>\<Delta> f ft \<and> ft Q\<^sub>0 = Pt\<^sub>0"
-  sorry
+proof -
+  (** (1) Cover \<Delta> (compact 2-cell) by finitely many open neighbourhoods {V_j} each of
+         which has f-image contained in an evenly covered open set U_j of M (Lebesgue
+         number of the cover {f^{-1}(U)} for U evenly covered). **)
+  obtain Vs :: "'c set set" and Us :: "'b set set" where h_good_cover:
+    "finite Vs \<and> finite Us \<and> \<Union>Vs \<supseteq> \<Delta> \<and>
+     (\<forall>V\<in>Vs. V \<in> T\<^sub>\<Delta>) \<and>
+     (\<forall>V\<in>Vs. \<exists>U\<in>Us. U \<in> T\<^sub>M' \<and> f ` V \<subseteq> U \<and>
+                     \<comment> \<open>U is evenly covered by g\<close> True)" sorry
+  (** (2) Define ft on V_{j_0} containing Q_0 using the local section s_{j_0}: U_{j_0} \<to> Mt
+         with s_{j_0}(f(Q_0)) = Pt_0: take ft(Q) = s_{j_0}(f(Q)) for Q \<in> V_{j_0}. **)
+  have h_local_section:
+    "\<exists>ft\<^sub>0. (\<forall>Q\<in>\<Delta>. True) \<comment> \<open>ft_0 defined on V_{j_0}; matches Pt_0 at Q_0\<close>" sorry
+  (** (3) Extend ft across the cover by uniqueness: on overlap V_i \<inter> V_j, two sections
+         of g that agree at one point must agree everywhere (since \<Delta> is connected and
+         the "agreement set" is open and closed). Use Zorn / finite induction along a
+         connected path of V_j's from V_{j_0}. **)
+  have h_extend_unique:
+    "\<exists>!ft. geotop_is_lifting Mt T\<^sub>M M T\<^sub>M' g \<Delta> T\<^sub>\<Delta> f ft \<and> ft Q\<^sub>0 = Pt\<^sub>0" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 2 (geotop.tex:5291)
     LATEX VERSION: Let g: Mt \<rightarrow> M be a covering, let P_0 \<in> M, and let Pt_0 \<in> g^(-1)(P_0).
@@ -10044,14 +10064,29 @@ theorem Theorem_GT_24_2:
   fixes Mt :: "'a set" and T\<^sub>M :: "'a set set"
   fixes M :: "'b set" and T\<^sub>M' :: "'b set set"
   fixes g :: "'a \<Rightarrow> 'b"
-  assumes "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
-  assumes "Pt\<^sub>0 \<in> Mt" and "g Pt\<^sub>0 \<in> M"
+  assumes hcov: "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
+  assumes hPt\<^sub>0: "Pt\<^sub>0 \<in> Mt" and hgPt\<^sub>0: "g Pt\<^sub>0 \<in> M"
   shows "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0) \<and>
               (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
               (\<forall>p\<in>geotop_CP Mt T\<^sub>M Pt\<^sub>0.
                  g\<^sub>0 (geotop_pi_class Mt T\<^sub>M Pt\<^sub>0 p)
                  = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p))"
-  sorry
+proof -
+  (** (1) Define g_0*: \<pi>(Mt, Pt_0) \<to> \<pi>(M, P_0) by g_0*([pt]) = [g \<circ> pt]; well-defined
+         by functoriality of Theorem 14.5. **)
+  have h_induced:
+    "\<exists>g\<^sub>0. (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+          (\<forall>p\<in>geotop_CP Mt T\<^sub>M Pt\<^sub>0.
+             g\<^sub>0 (geotop_pi_class Mt T\<^sub>M Pt\<^sub>0 p)
+             = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p))" sorry
+  (** (2) Injectivity: suppose [g \<circ> pt_1] = [g \<circ> pt_2]. Take a homotopy F: [0,1]^2 \<to> M
+         between g \<circ> pt_1 and g \<circ> pt_2. By Theorem 24.1 (path lifting version), lift F to
+         F~: [0,1]^2 \<to> Mt starting at Pt_0, uniquely. The lifted homotopy F~ witnesses
+         pt_1 \<cong> pt_2 in Mt. **)
+  have h_inj:
+    "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 3 (geotop.tex:5311)
     LATEX VERSION: Under the conditions of Theorem 2, [p] \<in> \<pi>_0 = g_0*(\<pi>(Mt, Pt_0)) if and
@@ -10060,14 +10095,31 @@ theorem Theorem_GT_24_3:
   fixes Mt :: "'a set" and T\<^sub>M :: "'a set set"
   fixes M :: "'b set" and T\<^sub>M' :: "'b set set"
   fixes g :: "'a \<Rightarrow> 'b" and p :: "real \<Rightarrow> 'b"
-  assumes "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
-  assumes "Pt\<^sub>0 \<in> Mt"
-  assumes "geotop_closed_path_on M T\<^sub>M' (g Pt\<^sub>0) p"
+  assumes hcov: "geotop_is_covering Mt T\<^sub>M M T\<^sub>M' g"
+  assumes hPt\<^sub>0: "Pt\<^sub>0 \<in> Mt"
+  assumes hp_cp: "geotop_closed_path_on M T\<^sub>M' (g Pt\<^sub>0) p"
   shows "(\<exists>g\<^sub>0. (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
               geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) p \<in> g\<^sub>0 ` geotop_pi Mt T\<^sub>M Pt\<^sub>0)
          \<longleftrightarrow>
          (\<exists>pt. geotop_closed_path_on Mt T\<^sub>M Pt\<^sub>0 pt \<and> (\<forall>t. g (pt t) = p t))"
-  sorry
+proof -
+  (** (1) (\<Rightarrow>) If [p] \<in> image of g_0*, there is pt_1 \<in> CP(Mt, Pt_0) with [g \<circ> pt_1] = [p]
+         in \<pi>(M, P_0). By Theorem 24.1 (path homotopy lifting), lift the homotopy from
+         g \<circ> pt_1 to p starting at Pt_0 to get a homotopy in Mt from pt_1 to some lift pt
+         of p with pt(0) = Pt_0. Closedness of pt follows from pt(1) = Pt_0 (lift of the
+         homotopy endpoints). **)
+  have h_forward:
+    "(\<exists>g\<^sub>0. (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+              geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) p \<in> g\<^sub>0 ` geotop_pi Mt T\<^sub>M Pt\<^sub>0) \<longrightarrow>
+     (\<exists>pt. geotop_closed_path_on Mt T\<^sub>M Pt\<^sub>0 pt \<and> (\<forall>t. g (pt t) = p t))" sorry
+  (** (2) (\<Leftarrow>) If p lifts to pt \<in> CP(Mt, Pt_0), then [p] = [g \<circ> pt] = g_0*([pt]) \<in> image
+         of g_0*. **)
+  have h_backward:
+    "(\<exists>pt. geotop_closed_path_on Mt T\<^sub>M Pt\<^sub>0 pt \<and> (\<forall>t. g (pt t) = p t)) \<longrightarrow>
+     (\<exists>g\<^sub>0. (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+              geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) p \<in> g\<^sub>0 ` geotop_pi Mt T\<^sub>M Pt\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>24: k-sheeted covering (geotop.tex:5313)
     LATEX VERSION: If each set g^(-1)(P) is finite, with k elements, then g is called a
@@ -10085,21 +10137,36 @@ theorem Theorem_GT_24_4:
   fixes Mt :: "'a set" and T\<^sub>M :: "'a set set"
   fixes M :: "'b set" and T\<^sub>M' :: "'b set set"
   fixes g :: "'a \<Rightarrow> 'b"
-  assumes "geotop_is_k_fold_covering k Mt T\<^sub>M M T\<^sub>M' g"
-  assumes "Pt\<^sub>0 \<in> Mt"
+  assumes hkcov: "geotop_is_k_fold_covering k Mt T\<^sub>M M T\<^sub>M' g"
+  assumes hPt\<^sub>0: "Pt\<^sub>0 \<in> Mt"
   shows "\<exists>cosets. card cosets = k \<and>
                   \<Union>cosets = geotop_pi M T\<^sub>M' (g Pt\<^sub>0)"
-  sorry
+proof -
+  (** (1) By Theorem 24.2, \<pi>_0 = g_0*(\<pi>(Mt, Pt_0)) is a subgroup of \<pi>(M, P_0). Partition
+         \<pi>(M, P_0) into left cosets of \<pi>_0. **)
+  have h_cosets:
+    "\<exists>g\<^sub>0 cosets. (\<forall>C\<in>cosets. C \<subseteq> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+                 \<Union>cosets = geotop_pi M T\<^sub>M' (g Pt\<^sub>0) \<and>
+                 (\<forall>c\<^sub>1\<in>cosets. \<forall>c\<^sub>2\<in>cosets. c\<^sub>1 \<noteq> c\<^sub>2 \<longrightarrow> c\<^sub>1 \<inter> c\<^sub>2 = {})" sorry
+  (** (2) Correspondence: each coset [p] \<pi>_0 corresponds to an endpoint of the lifted
+         path starting at Pt_0 (Theorem 24.1 path lifting). Different cosets give
+         different endpoints, same coset gives same endpoint. Hence #cosets = #{Q \<in> Mt |
+         g(Q) = P_0} = k. **)
+  have h_card_k:
+    "\<exists>cosets. card cosets = k \<and>
+              \<Union>cosets = geotop_pi M T\<^sub>M' (g Pt\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 5 (geotop.tex:5321)
     LATEX VERSION: Let M be a connected polyhedron. If \<pi>(M) has a subgroup \<pi>, of index k,
       then there is a k-fold covering of M. **)
 theorem Theorem_GT_24_5:
   fixes M :: "'a::real_normed_vector set" and P\<^sub>0 :: 'a
-  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "P\<^sub>0 \<in> M"
-  assumes "\<exists>\<pi> cosets. \<pi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0
+  assumes hM_poly: "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> M"
+  assumes hindexk: "\<exists>\<pi> cosets. \<pi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0
                      \<and> card cosets = k
                      \<and> (\<forall>c\<in>cosets. c \<subseteq> geotop_pi M (subspace_topology UNIV
                                 geotop_euclidean_topology M) P\<^sub>0)
@@ -10109,7 +10176,23 @@ theorem Theorem_GT_24_5:
   shows "\<exists>(Mt::'a set) (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering k Mt
            (subspace_topology UNIV geotop_euclidean_topology Mt)
            M (subspace_topology UNIV geotop_euclidean_topology M) g"
-  sorry
+proof -
+  (** (1) Construct Mt as pairs (Q, coset) where Q \<in> M and coset is a left coset of the
+         subgroup \<pi> in \<pi>(M, P_0) (chosen via a path-lift equivalence). **)
+  obtain \<pi> cosets where h_subgroup:
+    "\<pi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 \<and>
+     card cosets = k \<and>
+     \<Union>cosets = geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0" sorry
+  (** (2) Topologize Mt by specifying a local-homeomorphism structure: at each (Q, c), a
+         basis neighbourhood is {(Q', c) | Q' in some evenly-covered nbhd of Q}. The
+         projection g: Mt \<to> M, (Q, c) \<mapsto> Q, is continuous and k-fold. **)
+  obtain Mt g where h_cover_setup:
+    "geotop_is_k_fold_covering k Mt (subspace_topology UNIV geotop_euclidean_topology Mt)
+       M (subspace_topology UNIV geotop_euclidean_topology M) g" sorry
+  (** (3) Verify Mt is connected: any two points (Q_1, c_1), (Q_2, c_2) are linked by a
+         lifted path (using path lifting from Theorem 24.1). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 6 (geotop.tex:5325)
     LATEX VERSION: Let g: Mt \<rightarrow> M be a covering. Then Mt is a polyhedron. In fact, every
@@ -10117,29 +10200,64 @@ theorem Theorem_GT_24_5:
 theorem Theorem_GT_24_6:
   fixes Mt M :: "'a::real_normed_vector set"
   fixes g :: "'a \<Rightarrow> 'a" and K :: "'a set set"
-  assumes "geotop_is_covering Mt (subspace_topology UNIV geotop_euclidean_topology Mt)
+  assumes hcov: "geotop_is_covering Mt (subspace_topology UNIV geotop_euclidean_topology Mt)
              M (subspace_topology UNIV geotop_euclidean_topology M) g"
-  assumes "geotop_is_complex K" and "geotop_polyhedron K = M"
+  assumes hK: "geotop_is_complex K" and hK_poly: "geotop_polyhedron K = M"
   shows "\<exists>Kt. geotop_is_complex Kt \<and> geotop_polyhedron Kt = Mt \<and>
               (\<forall>sigmat\<in>Kt. \<exists>\<sigma>\<in>K. top1_homeomorphism_on sigmat
                   (subspace_topology UNIV geotop_euclidean_topology sigmat)
                   \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
                   (\<lambda>P. g P))"
-  sorry
+proof -
+  (** (1) Subdivide K so each simplex lies in some evenly covered open set of M (finite
+         Lebesgue number argument). **)
+  have h_subdivide:
+    "\<exists>K\<^sub>s. geotop_is_complex K\<^sub>s \<and> geotop_polyhedron K\<^sub>s = M \<and>
+          (\<forall>\<sigma>\<in>K\<^sub>s. \<exists>U\<in>(subspace_topology UNIV geotop_euclidean_topology M). \<sigma> \<subseteq> U)" sorry
+  (** (2) For each simplex \<sigma> \<in> K_s and each sheet of g over \<sigma>, get a lifted simplex
+         \<sigma>~ \<subseteq> Mt homeomorphic to \<sigma>. Collect all such \<sigma>~ into Kt. **)
+  obtain Kt where h_lift_simplexes:
+    "geotop_is_complex Kt \<and> geotop_polyhedron Kt = Mt \<and>
+     (\<forall>sigmat\<in>Kt. \<exists>\<sigma>\<in>K. top1_homeomorphism_on sigmat
+           (subspace_topology UNIV geotop_euclidean_topology sigmat)
+           \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+           (\<lambda>P. g P))" sorry
+  (** (3) Simplex coherence: the intersection of lifted simplexes follows the pattern of
+         their base simplexes' intersections, because the sheets over an evenly-covered
+         neighbourhood match up uniquely. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 7 (geotop.tex:5330)
     LATEX VERSION: Let M be a connected polyhedral 3-manifold with boundary, and suppose that
       M is not orientable. Then M has a 2-fold covering. **)
 theorem Theorem_GT_24_7:
   fixes M :: "'a::real_normed_vector set" and K :: "'a set set"
-  assumes "geotop_is_complex K" and "geotop_polyhedron K = M"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "\<not> geotop_is_orientable_3_manifold K"
+  assumes hK: "geotop_is_complex K" and hK_poly: "geotop_polyhedron K = M"
+  assumes hM_3mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_nonorient: "\<not> geotop_is_orientable_3_manifold K"
   shows "\<exists>Mt (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering 2 Mt
            (subspace_topology UNIV geotop_euclidean_topology Mt)
            M (subspace_topology UNIV geotop_euclidean_topology M) g"
-  sorry
+proof -
+  (** (1) Assign to each 3-simplex \<sigma>^3 \<in> K an orientation \<omega>(\<sigma>^3) \<in> {+1, -1} (arbitrarily
+         at first). Since M is non-orientable, there is no consistent orientation: there
+         is a closed path of 3-simplexes whose product of orientation compatibility is -1. **)
+  have h_orientation_ambiguity:
+    "\<exists>p. geotop_closed_path_on M (subspace_topology UNIV geotop_euclidean_topology M)
+           (SOME P. True) p \<and>
+         \<comment> \<open>the orientation-holonomy along p is -1\<close> True" sorry
+  (** (2) The orientation character \<chi>: \<pi>(M, P_0) \<to> {\<plusminus>1} is a well-defined group
+         homomorphism (orientation-reversal composition). Its kernel K_\<chi> is a subgroup of
+         index 2. **)
+  have h_character:
+    "\<exists>K\<^sub>\<chi>. K\<^sub>\<chi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) (SOME P. True) \<and>
+           \<comment> \<open>K_\<chi> has index 2 in \<pi>\<close> True" sorry
+  (** (3) Apply Theorem 24.5 with \<pi> = K_\<chi>: there is a 2-fold covering Mt \<to> M
+         corresponding to this index-2 subgroup. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 8 (geotop.tex:5336)
     LATEX VERSION: Let M be a compact, connected, orientable polyhedral 3-manifold with
@@ -10147,18 +10265,35 @@ theorem Theorem_GT_24_7:
       2-fold covering. **)
 theorem Theorem_GT_24_8:
   fixes M :: "'a::real_normed_vector set" and K :: "'a set set"
-  assumes "geotop_is_complex K" and "geotop_polyhedron K = M"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_is_orientable_3_manifold K"
-  assumes "\<exists>C. (\<exists>P\<in>geotop_manifold_boundary M (\<lambda>x y. norm (x - y)).
+  assumes hK: "geotop_is_complex K" and hK_poly: "geotop_polyhedron K = M"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hK_orient: "geotop_is_orientable_3_manifold K"
+  assumes hBd_not_sphere: "\<exists>C. (\<exists>P\<in>geotop_manifold_boundary M (\<lambda>x y. norm (x - y)).
                   C = geotop_component_at UNIV geotop_euclidean_topology
                         (geotop_manifold_boundary M (\<lambda>x y. norm (x - y))) P) \<and>
               \<not> geotop_is_n_sphere C (subspace_topology UNIV geotop_euclidean_topology C) 2"
   shows "\<exists>Mt (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering 2 Mt
            (subspace_topology UNIV geotop_euclidean_topology Mt)
            M (subspace_topology UNIV geotop_euclidean_topology M) g"
-  sorry
+proof -
+  (** (1) Let C be the non-sphere boundary component; by Theorem 22_4 it is a sphere with
+         h \<ge> 1 handles or crosscaps (since \<chi>(C) < 2). Thus \<pi>(C, P_0) is non-trivial and
+         has a nontrivial map to Z by integrating a 1-form (or directly via H_1 surjection). **)
+  have h_nonsphere_H1:
+    "True \<comment> \<open>H_1(C) \<noteq> 0\<close>" sorry
+  (** (2) The inclusion C into M induces a homomorphism pi(C, P_0) --> pi(M, P_0). Since
+         C is non-trivial in H_1 and M is orientable, the composition pi(C) --> pi(M) -->
+         pi(M)/[pi, pi] = H_1(M) has image containing an infinite cyclic subgroup
+         (Poincare duality: boundary map H_2(M, BdM) --> H_1(BdM) is surjective onto a
+         Z-subgroup). **)
+  have h_Z_subgroup:
+    "\<exists>Z\<^sub>0. Z\<^sub>0 \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) (SOME P. True)
+         \<and> \<comment> \<open>Z_0 is an infinite cyclic (Z-like) subgroup\<close> True" sorry
+  (** (3) The index-2 subgroup 2Z in Z pulls back to an index-2 subgroup of \<pi>(M, P_0);
+         apply Theorem 24.5 to obtain a 2-fold covering of M. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24: combinatorial solid torus (CST) (geotop.tex:5339)
     LATEX VERSION: Let K_S be a triangulated solid torus, and let S = |K_S|. Suppose that for
@@ -10181,27 +10316,60 @@ definition geotop_is_CST :: "'a::real_normed_vector set \<Rightarrow> bool" wher
       S, and \<phi> is a homeomorphism elsewhere. **)
 theorem Theorem_GT_24_9:
   fixes K :: "'a::real_normed_vector set set" and S :: "'a set"
-  assumes "geotop_is_complex K"
-  assumes "geotop_is_solid_torus S"
-  assumes "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S)"
-  assumes "S \<subseteq> geotop_polyhedron K"
+  assumes hK: "geotop_is_complex K"
+  assumes hS_ST: "geotop_is_solid_torus S"
+  assumes hS_poly: "(\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S)"
+  assumes hS_in_K: "S \<subseteq> geotop_polyhedron K"
   shows "geotop_is_CST S \<longleftrightarrow>
          (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
             geotop_simplex_dim \<sigma>2 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
             (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                  \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))"
-  sorry
+proof -
+  (** (1) (=>) Given S is a CST via decomposition into n consecutive 3-cells C_i with
+         cyclic 2-cell gluings. Walk around the cycle: parametrise t in [0, 1] with
+         sub-intervals [(i-1)/n, i/n] mapping to C_i, and the common 2-cell D = C_0 \<inter> C_n. **)
+  have h_forward:
+    "geotop_is_CST S \<longrightarrow>
+       (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+          geotop_simplex_dim \<sigma>2 2 \<and>
+          \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
+          (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+               \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))" sorry
+  (** (2) (<=) Given the parametrisation \<phi>: \<sigma>^2 \<times> [0, 1] \<to> S identifying top and bottom
+         faces to one 2-cell D, partition [0, 1] at t_i = i/n into n parts to get C_i =
+         \<phi>(\<sigma>^2 \<times> [t_{i-1}, t_i]), each a combinatorial 3-cell; consecutive C_i, C_{i+1}
+         share a 2-cell. **)
+  have h_backward:
+    "(\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+       geotop_simplex_dim \<sigma>2 2 \<and>
+       \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
+       (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+            \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))
+       \<longrightarrow> geotop_is_CST S" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 10 (geotop.tex:5348)
     LATEX VERSION: Every two combinatorial solid tori are combinatorially equivalent. **)
 theorem Theorem_GT_24_10:
   fixes S1 S2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_CST S1" and "geotop_is_CST S2"
+  assumes hS1: "geotop_is_CST S1" and hS2: "geotop_is_CST S2"
   shows "\<exists>f. top1_homeomorphism_on S1 (subspace_topology UNIV geotop_euclidean_topology S1)
               S2 (subspace_topology UNIV geotop_euclidean_topology S2) f \<and>
               (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f)"
-  sorry
+proof -
+  (** (1) By Theorem 24.9, each S_i has a standard parametrisation \<phi>_i: \<sigma>^2 \<times> [0, 1] \<to>
+         S_i with top and bottom 2-faces identified to one 2-cell. **)
+  obtain \<phi>1 \<phi>2 \<sigma>2 where h_std_params:
+    "geotop_simplex_dim \<sigma>2 2 \<and>
+     \<phi>1 ` (\<sigma>2 \<times> {t::real. 0 \<le> t \<and> t \<le> 1}) = S1 \<and>
+     \<phi>2 ` (\<sigma>2 \<times> {t::real. 0 \<le> t \<and> t \<le> 1}) = S2" sorry
+  (** (2) The PL homeomorphism \<phi>_2 \<circ> \<phi>_1^{-1}: S_1 \<to> S_2 is well-defined (respects the
+         gluing identification) and PL on each layer [(i-1)/n_i, i/n_i] by construction. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 11 (geotop.tex:5351)
     LATEX VERSION: Let K be an orientable triangulated 3-manifold, let M = |K|, let J be a
@@ -10209,15 +10377,29 @@ theorem Theorem_GT_24_10:
       which J forms a subcomplex. Then S is a CST. **)
 theorem Theorem_GT_24_11:
   fixes K :: "'a::real_normed_vector set set" and J :: "'a set"
-  assumes "geotop_is_orientable_3_manifold K"
-  assumes "geotop_is_polygon J" and "J \<subseteq> geotop_polyhedron K"
-  assumes "\<exists>K'. geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
+  assumes hK_orient: "geotop_is_orientable_3_manifold K"
+  assumes hJ: "geotop_is_polygon J" and hJ_in_K: "J \<subseteq> geotop_polyhedron K"
+  assumes hJ_subcomplex: "\<exists>K'. geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
                 (\<exists>L\<subseteq>K'. geotop_polyhedron L = J)"
   shows "\<exists>S. geotop_is_CST S \<and>
              (\<exists>K'. geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
                    (\<exists>L\<subseteq>K'. geotop_polyhedron L = J \<and>
                            S = geotop_regular_neighborhood K' L))"
-  sorry
+proof -
+  (** (1) Subdivide K so J is a subcomplex L. Take S = N(L) = regular neighbourhood in
+         the second barycentric subdivision of K. **)
+  obtain K' L where hKL:
+    "geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
+     L \<subseteq> K' \<and> geotop_polyhedron L = J" sorry
+  (** (2) Since L is a polygon (1-dim acyclic circular graph), N(L) is homeomorphic to
+         S^1 \<times> D^2 (thickening of the circle into a solid torus). The combinatorial-
+         solid-torus structure comes from the finite edge decomposition of L. **)
+  have h_N_is_ST:
+    "\<exists>S. geotop_is_CST S \<and> S = geotop_regular_neighborhood K' L" sorry
+  (** (3) Orientability of K (hypothesis) ensures the thickening N(L) does not have a
+         Klein-bottle twist; it is a genuine solid torus, not a twisted analogue. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>24 Theorem 12 (geotop.tex:5361)
     LATEX VERSION: Let M = |K| be a triangulated 3-manifold, let J be a polygon in M, and
@@ -10225,11 +10407,11 @@ theorem Theorem_GT_24_11:
       subdivision of K in which J forms a subcomplex. Then N is a CST. **)
 theorem Theorem_GT_24_12:
   fixes K :: "'a::real_normed_vector set set" and J :: "'a set" and P\<^sub>0 :: 'a
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_is_polygon J" and "J \<subseteq> geotop_polyhedron K"
-  assumes "P\<^sub>0 \<in> J"
-  assumes "\<exists>p. geotop_closed_path_on (geotop_polyhedron K)
+  assumes hK: "geotop_is_complex K"
+  assumes hK_3mfd: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  assumes hJ: "geotop_is_polygon J" and hJ_sub: "J \<subseteq> geotop_polyhedron K"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> J"
+  assumes hJ_contractible: "\<exists>p. geotop_closed_path_on (geotop_polyhedron K)
                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
                 P\<^sub>0 p \<and>
                 p ` {0..1} = J \<and>
@@ -10240,7 +10422,25 @@ theorem Theorem_GT_24_12:
              (\<exists>K' L. geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
                      L \<subseteq> K' \<and> geotop_polyhedron L = J \<and>
                      N = geotop_regular_neighborhood K' L)"
-  sorry
+proof -
+  (** (1) J is contractible; take a PL null-homotopy f: D^2 \<to> |K| with f | S^1 = J. **)
+  obtain f :: "real \<times> real \<Rightarrow> 'a" where h_null:
+    "(\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> geotop_polyhedron K) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) \<in> J) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = P\<^sub>0)" sorry
+  (** (2) Subdivide K so J is a subcomplex L. N(L) inherits the CST structure from the
+         argument of Theorem 24.11 locally around the disc swept by f, which thickens J
+         into an untwisted solid torus. **)
+  obtain K' L where hKL:
+    "geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
+     L \<subseteq> K' \<and> geotop_polyhedron L = J" sorry
+  (** (3) The combinatorial cyclic structure of N(L) is obtained by slicing along the
+         edges of L with each C_i a 3-cell thickening of an edge. The contractibility of
+         J ensures consistent orientations around the loop, so no twist; hence a CST. **)
+  have h_N_CST:
+    "\<exists>N. geotop_is_CST N \<and> N = geotop_regular_neighborhood K' L" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>25 The Stallings proof of the Loop theorem of Papakyriakopoulos\<close>
 
