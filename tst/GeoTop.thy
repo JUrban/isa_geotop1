@@ -12024,7 +12024,9 @@ proof -
        (\<forall>C\<in>Cs. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3) \<and>
        S = \<Union>Cs" sorry
   (** (3) Transport the chain back via \<psi> to conclude S is a CST. **)
-  show ?thesis sorry
+  show ?thesis
+    using hS_ST hS_poly h_cyclic_chain
+    unfolding geotop_is_CST_def by (by100 blast)
 qed
 
 (** from \<S>28: latitudinal polygon in a CST (geotop.tex:5822)
