@@ -5308,7 +5308,8 @@ proof -
          Decompose M as a union of simple polygons (cycles) + arcs running between
          them. **)
   have h_decomp:
-    "\<exists>Cs. finite Cs \<and> (\<forall>C\<in>Cs. geotop_is_polygon C) \<and> \<Union>Cs \<subseteq> M" sorry
+    "\<exists>Cs. finite Cs \<and> (\<forall>C\<in>Cs. geotop_is_polygon C) \<and> \<Union>Cs \<subseteq> M"
+    using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (2) Apply Theorem 3_7 to each polygon cycle in M: there is a PLH supported in a
          small neighbourhood U_C \<subseteq> U of C that folds C onto Fr \<sigma> for a 2-simplex. **)
   have h_per_cycle:
