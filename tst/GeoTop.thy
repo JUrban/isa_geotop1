@@ -376,11 +376,12 @@ subsection \<open>Brouwer's Invariance of Domain (Theorem 4)\<close>
 (** from Introduction: Theorem 4 - Invariance of domain (geotop.tex:206)
     LATEX VERSION: Let U be a subset of R^n, such that U is homeomorphic to R^n. Then U is open. **)
 theorem Theorem_GT_4_invariance_of_domain:
-  fixes U :: "'a::real_normed_vector set"
-  assumes "top1_homeomorphism_on U
+  fixes U :: "'a::euclidean_space set"
+  assumes hhomeo: "top1_homeomorphism_on U
              (subspace_topology (UNIV::'a set) geotop_euclidean_topology U)
              (UNIV::'a set) geotop_euclidean_topology f"
   shows "U \<in> geotop_euclidean_topology"
+  (** Proof below as `Theorem_GT_4_invariance_of_domain_proved` once bridge lemmas are in scope. **)
   sorry
 
 subsection \<open>Star, link, combinatorial manifolds\<close>
