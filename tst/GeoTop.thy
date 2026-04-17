@@ -10442,7 +10442,7 @@ proof -
   have h_fr_in_bd:
     "geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M' \<subseteq>
        geotop_manifold_boundary M' (\<lambda>x y. norm (x - y))" sorry
-  show ?thesis sorry
+  show ?thesis using h_U_locE h_fr_in_bd by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 9 (geotop.tex:5040)
