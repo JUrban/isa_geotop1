@@ -4755,8 +4755,8 @@ proof -
   (** (2) A PLH between triangulations is (up to subdivision) a simplicial isomorphism,
          hence combinatorial equivalence. **)
   have h_comb: "geotop_comb_equiv K1 K2" sorry
-  show "\<exists>f. geotop_PLH K1 K2 f" sorry
-  show "geotop_comb_equiv K1 K2" sorry
+  show "\<exists>f. geotop_PLH K1 K2 f" using h_PLH by (by100 blast)
+  show "geotop_comb_equiv K1 K2" using h_comb by (by100 blast)
 qed
 
 
@@ -6668,7 +6668,7 @@ proof -
     sorry
   (** (8) Finally F \<restriction> M = f by construction. **)
   have h_ext: "\<forall>P\<in>M. F P = f P" sorry
-  show ?thesis sorry
+  show ?thesis using h_cont h_ext by (by100 blast)
 qed
 
 section \<open>\<S>14 The fundamental group (summary)\<close>
@@ -11663,7 +11663,7 @@ proof -
            top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
            geotop_frontier UNIV geotop_euclidean_topology I = M2 \<and>
            geotop_frontier UNIV geotop_euclidean_topology E = M2" sorry
-  show ?thesis sorry
+  show ?thesis using h_two_sided h_JB by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 7 (geotop.tex:5715)
@@ -12132,7 +12132,7 @@ proof -
               geotop_closed_path_on S
               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 pY \<and>
               pJ ` {0..1} = J" sorry
-  show ?thesis sorry
+  show ?thesis using h_card h_paths by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 5 (geotop.tex:5839)
@@ -12458,7 +12458,7 @@ proof -
          is unknotted (if J_0 were knotted, no such \<Delta> would exist filling the
          longitude). **)
   have h_unknotted: "geotop_is_unknotted J0" sorry
-  show ?thesis sorry
+  show ?thesis using h_unknotted by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 14 (geotop.tex:5910)
@@ -12544,7 +12544,7 @@ proof -
   (** (2) Take a meridian J_y on Bd(regular-nbhd S of J); it bounds a 2-cell D_y in
          R^3 - S. By Theorem 28.13, J is unknotted. **)
   have h_unknotted: "geotop_is_unknotted J" sorry
-  show ?thesis sorry
+  show ?thesis using h_unknotted by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 17 (Poincaré) (geotop.tex:5930)
