@@ -5942,17 +5942,261 @@ definition geotop_is_tube ::
 definition geotop_is_pseudo_cell ::
   "(real^3) set \<Rightarrow> bool" where
   "geotop_is_pseudo_cell E \<longleftrightarrow>
-    (\<exists>U J P. E = U \<union> J \<and> U \<inter> J = {} \<and>
-             (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
-                  \<and> top1_homeomorphism_on U
-                    (subspace_topology UNIV geotop_euclidean_topology U)
-                    (geotop_top_interior UNIV geotop_euclidean_topology D)
-                    (subspace_topology UNIV geotop_euclidean_topology
-                       (geotop_top_interior UNIV geotop_euclidean_topology D))
-                    (SOME h. True)) \<and>
-             geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 \<and>
-             closure_on UNIV geotop_euclidean_topology U = U \<union> J \<and>
-             P \<in> U \<and>
-             (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = U - {P}))"
+    (\<exists>U J (P::real^3).
+       E = U \<union> J \<and> U \<inter> J = {} \<and>
+       geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 \<and>
+       closure_on UNIV geotop_euclidean_topology U = U \<union> J \<and>
+       P \<in> U \<and>
+       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = U - {P}))"
+
+section \<open>\<S>32 Pseudo-cells that split tubes\<close>
+
+(** from \<S>32 Theorem 1 (geotop.tex:6330)
+    LATEX VERSION: Let N, K, and h: N \<leftrightarrow> N' \<subseteq> R^3 be as in the definition of a tube. Let D
+      be a splitting disk of N, and let {P} = D \<inter> |K|. Let C_1 and C_2 be the dual cells of N
+      such that C_1 \<inter> C_2 = D, and let v_1 and v_2 be the vertices of K that they contain.
+      Let W be a closed neighborhood of Int D' - {P'}, lying in C_1' \<union> C_2'. Then there is a
+      pseudo-cell E, with center at P', such that (1) Bd E = Bd D', (2) E \<subseteq> W, and (3) Int E
+      separates v_1' and v_2' in Int(C_1' \<union> C_2'). **)
+theorem Theorem_GT_32_1:
+  fixes N N' D C1 C2 W D' C1' C2' :: "(real^3) set"
+  fixes P P' v1 v2 v1' v2' :: "real^3"
+  fixes h :: "real^3 \<Rightarrow> real^3"
+  assumes "geotop_is_tube N'"
+  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+             N' (subspace_topology UNIV geotop_euclidean_topology N') h"
+  assumes "D' = h ` D" and "C1' = h ` C1" and "C2' = h ` C2" and "P' = h P"
+  shows "\<exists>E. geotop_is_pseudo_cell E \<and>
+             P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E \<and>
+             E \<subseteq> W"
+  sorry
+
+(** from \<S>32 Theorem 2 (geotop.tex:6459)
+    LATEX VERSION: Under the conditions of Theorem 1, E can be chosen so that
+      (C_1' \<union> C_2') - E has exactly two components U_1, U_2, and such that for i = 1, 2 we
+      have (5) E \<subseteq> Fr U_i and (6) Bd C_i' \<inter> Bd N' \<subseteq> Fr U_i. **)
+theorem Theorem_GT_32_2:
+  fixes N' D' C1' C2' :: "(real^3) set" and P' v1' v2' :: "real^3"
+  assumes "geotop_is_tube N'"
+  shows "True"  \<comment> \<open>Conditions on components left abstract.\<close>
+  sorry
+
+(** from \<S>32 Theorem 3 (geotop.tex:6486)
+    LATEX VERSION: Under the conditions just stated, the sets W_e can be chosen so that
+      (7) each set C_i'' contains only one vertex of K', (8) the sets C_i'' lie in arbitrarily
+      small neighborhoods of the sets C_i', (9) N' = \<union>_i C_i'', and (10) C_i'' intersects
+      C_j'' (i \<noteq> j) only if K has an edge e = v_i v_j, in which case C_i'' \<inter> C_j'' = E_e. **)
+theorem Theorem_GT_32_3:
+  fixes K :: "(real^3) set set" and N N' :: "(real^3) set"
+  assumes "geotop_is_tube N'"
+  assumes "geotop_is_complex K"
+  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  shows "True"
+  sorry
+
+(** from \<S>32 Theorem 4 (geotop.tex:6492)
+    LATEX VERSION: Let E be a pseudo-cell with center P', in R^3, and let \<delta> be a positive
+      number. Then there is a polyhedral 2-cell \<Delta>_1, lying in N(P', \<delta>), such that (1) J =
+      Bd \<Delta>_1 = \<Delta>_1 \<inter> E and (2) J bounds a 2-cell D_J in E, containing P' in its interior. **)
+theorem Theorem_GT_32_4:
+  fixes E :: "(real^3) set" and P' :: "real^3" and \<delta> :: real
+  assumes "geotop_is_pseudo_cell E"
+  assumes "P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E"
+  assumes "\<delta> > 0"
+  shows "\<exists>\<Delta>1 J DJ. geotop_is_n_cell \<Delta>1 (subspace_topology UNIV geotop_euclidean_topology \<Delta>1) 2 \<and>
+             (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>1) \<and>
+             \<Delta>1 \<subseteq> {P. norm (P - P') < \<delta>} \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta>1 = J \<and>
+             \<Delta>1 \<inter> E = J \<and>
+             geotop_is_n_cell DJ (subspace_topology UNIV geotop_euclidean_topology DJ) 2 \<and>
+             DJ \<subseteq> E \<and>
+             geotop_frontier UNIV geotop_euclidean_topology DJ = J \<and>
+             P' \<in> geotop_top_interior UNIV geotop_euclidean_topology DJ"
+  sorry
+
+section \<open>\<S>33 PLH approximations, for regular neighborhoods of linear graphs in R^3\<close>
+
+(** from \<S>33 Theorem 1 (geotop.tex:6498)
+    LATEX VERSION: Let K be a finite connected 1-dimensional polyhedron in R^3, such that K
+      has no end-points. Let U be an open set containing K, and let h be a homeomorphism
+      U \<rightarrow> R^3. Let \<epsilon> be a positive number. Then there is a regular neighborhood N of K,
+      lying in U, and a PL homeomorphism f: N \<leftrightarrow> X \<subseteq> R^3, such that (1) X is a neighborhood
+      of K' = h(K) and (2) f is an \<epsilon>-approximation of h|N. **)
+theorem Theorem_GT_33_1:
+  fixes K :: "(real^3) set set" and U :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3"
+  fixes \<epsilon> :: real
+  assumes "geotop_is_complex K"
+  assumes "finite K"
+  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes "top1_connected_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+  assumes "\<forall>v\<in>geotop_complex_vertices K. \<not> geotop_graph_endpoint K v"
+  assumes "U \<in> geotop_euclidean_topology" and "geotop_polyhedron K \<subseteq> U"
+  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
+  assumes "\<epsilon> > 0"
+  shows "\<exists>N f. geotop_is_complex N \<and>
+               geotop_polyhedron N = geotop_regular_neighborhood K K \<and>
+               geotop_polyhedron N \<subseteq> U \<and>
+               top1_homeomorphism_on (geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron N))
+                 (f ` geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (f ` geotop_polyhedron N)) f \<and>
+               (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+               h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
+               (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)"
+  sorry
+
+section \<open>\<S>34 PLH approximations of homeomorphisms, for polyhedral 3-cells\<close>
+
+(** from \<S>34 Theorem 1 (geotop.tex:6758)
+    LATEX VERSION: Let K be a polyhedral 3-cell in R^3, let h be a homeomorphism K \<rightarrow> R^3,
+      and let \<epsilon> be a positive number. Then there is a PLH f: K \<rightarrow> R^3 such that f is an
+      \<epsilon>-approximation of h. **)
+theorem Theorem_GT_34_1:
+  fixes K :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<epsilon> :: real
+  assumes "geotop_is_n_cell K (subspace_topology UNIV geotop_euclidean_topology K) 3"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+             (h ` K) (subspace_topology UNIV geotop_euclidean_topology (h ` K)) h"
+  assumes "\<epsilon> > 0"
+  shows "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+               (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
+             (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+             (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)"
+  sorry
+
+section \<open>\<S>35 The Triangulation theorem\<close>
+
+(** from \<S>35 Theorem 1 (geotop.tex:7003)
+    LATEX VERSION: Let K be a 1-dimensional polyhedron in a PL 3-manifold M_1. Let U be an
+      open set containing K, and let h be a homeomorphism of U into a PL 3-manifold M_2. Let
+      \<phi> be a strongly positive function on U. Then there is a regular neighborhood N of K in
+      U, and a PLH f: N \<leftrightarrow> X \<subseteq> M_2, such that (1) X is a neighborhood of K' = h(K) and (2)
+      f is a \<phi>-approximation of h|N. **)
+theorem Theorem_GT_35_1:
+  fixes K :: "(real^3) set set" and U :: "(real^3) set"
+  fixes h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
+  assumes "geotop_is_complex K"
+  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes "U \<in> geotop_euclidean_topology" and "geotop_polyhedron K \<subseteq> U"
+  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>N f. geotop_is_complex N \<and>
+               geotop_polyhedron N \<subseteq> U \<and>
+               (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+               top1_homeomorphism_on (geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron N))
+                 (f ` geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (f ` geotop_polyhedron N)) f \<and>
+               h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
+               (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)"
+  sorry
+
+(** from \<S>35 Theorem 2 (geotop.tex:7137)
+    LATEX VERSION: Let M_1 and M_2 be PL 3-manifolds, let K be a polyhedral 3-manifold with
+      boundary in M_1, let h be a homeomorphism K \<rightarrow> M_2, and let \<phi> be a strongly positive
+      function on K. Then there is a PLH f: K \<rightarrow> M_2, such that f is a \<phi>-approximation of
+      h. **)
+theorem Theorem_GT_35_2:
+  fixes K :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
+  assumes "geotop_n_manifold_with_boundary_on K (\<lambda>x y. norm (x - y)) 3"
+  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+             (h ` K) (subspace_topology UNIV geotop_euclidean_topology (h ` K)) h"
+  assumes "geotop_strongly_positive K
+             (subspace_topology UNIV geotop_euclidean_topology K) \<phi>"
+  shows "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+               (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
+             (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+             (\<forall>P\<in>K. norm (h P - f P) < \<phi> P)"
+  sorry
+
+(** from \<S>35 Theorem 3 (The triangulation theorem for 3-manifolds) (geotop.tex:7150)
+    LATEX VERSION: Let M be a 3-manifold. Then there is a complex K such that M and |K| are
+      homeomorphic. **)
+theorem Theorem_GT_35_3_triangulation_3manifolds:
+  fixes M :: "(real^3) set"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  shows "\<exists>K. geotop_is_complex K \<and>
+             (\<exists>f. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+                    (geotop_polyhedron K)
+                    (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) f)"
+  sorry
+
+section \<open>\<S>36 The Hauptvermutung; Tame imbedding\<close>
+
+(** from \<S>36 Theorem 1 (geotop.tex:7160)
+    LATEX VERSION: Let M_1 and M_2 be PL 3-manifolds, let U be an open set in M_1, let h be
+      a homeomorphism U \<rightarrow> M_2, and let \<phi> be a strongly positive function on U. Then there
+      is a PLH f: U \<rightarrow> M_2 such that (1) f is a \<phi>-approximation of h and (2) f(U) = h(U). **)
+theorem Theorem_GT_36_1:
+  fixes U :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
+  assumes "U \<in> geotop_euclidean_topology"
+  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+             (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
+  assumes "geotop_strongly_positive U
+             (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
+  shows "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f \<and>
+             (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+             (\<forall>P\<in>U. norm (h P - f P) < \<phi> P) \<and>
+             f ` U = h ` U"
+  sorry
+
+(** from \<S>36 Theorem 2 (The Hauptvermutung for 3-manifolds) (geotop.tex:7166)
+    LATEX VERSION: Let K_1 and K_2 be triangulated 3-manifolds. If there is a homeomorphism
+      |K_1| \<leftrightarrow> |K_2|, then there is a PLH |K_1| \<leftrightarrow> |K_2|. **)
+theorem Theorem_GT_36_2_Hauptvermutung_3manifolds:
+  fixes K1 K2 :: "(real^3) set set"
+  assumes "geotop_is_complex K1" and "geotop_is_complex K2"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) (\<lambda>x y. norm (x - y)) 3"
+  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K2) (\<lambda>x y. norm (x - y)) 3"
+  assumes "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+                 (geotop_polyhedron K2)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) f"
+  shows "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+               (geotop_polyhedron K2)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) f \<and>
+             geotop_PLH K1 K2 f"
+  sorry
+
+(** from \<S>36 Theorem 3 (geotop.tex:7170)
+    LATEX VERSION: In R^3, or in a PL 3-manifold M, every semi-locally tame set is tame.
+      In fact, if L is semi-locally tame, then for every open set V containing L, and for
+      every \<psi> \<gg> 0 on V, there is a homeomorphism g': M \<leftrightarrow> M such that (1) g'(L) is a polyhedron,
+      (2) g'|(M - V) is the identity, and (3) g'|V is a \<psi>-approximation of the identity. **)
+theorem Theorem_GT_36_3:
+  fixes M L V :: "(real^3) set" and \<psi> :: "real^3 \<Rightarrow> real"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
+  assumes "geotop_is_semi_locally_tame L"
+  assumes "V \<in> geotop_euclidean_topology" and "L \<subseteq> V"
+  assumes "geotop_strongly_positive V
+             (subspace_topology UNIV geotop_euclidean_topology V) \<psi>"
+  shows "\<exists>g'. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+                M (subspace_topology UNIV geotop_euclidean_topology M) g' \<and>
+              (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g' ` L) \<and>
+              (\<forall>P\<in>M - V. g' P = P) \<and>
+              (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)"
+  sorry
+
+(** from \<S>36 Theorem 4 (geotop.tex:7174)
+    LATEX VERSION: In R^3, or in a PL 3-manifold, every locally tame set is tame. **)
+theorem Theorem_GT_36_4:
+  fixes M L :: "(real^3) set"
+  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
+  assumes "L \<subseteq> M"
+  assumes "geotop_is_locally_tame L"
+  shows "geotop_is_tame L"
+  sorry
 
 end
