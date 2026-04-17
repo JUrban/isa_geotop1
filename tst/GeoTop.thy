@@ -5025,13 +5025,22 @@ definition geotop_inseparable_in ::
 theorem Theorem_GT_12_1:
   fixes X :: "'a::metric_space set" and T :: "'a set set"
   fixes M :: "nat \<Rightarrow> 'a set" and A B :: "'a set"
-  assumes "is_topology_on X T" and "top1_metrizable_on X T"
-  assumes "\<forall>i. top1_compact_on (M i) (subspace_topology X T (M i))"
-  assumes "\<forall>i. M (Suc i) \<subseteq> M i"
-  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
-  assumes "\<forall>i. geotop_inseparable_in X T (M i) A B"
+  assumes hTX: "is_topology_on X T" and hmetr: "top1_metrizable_on X T"
+  assumes hMcmp: "\<forall>i. top1_compact_on (M i) (subspace_topology X T (M i))"
+  assumes hMdesc: "\<forall>i. M (Suc i) \<subseteq> M i"
+  assumes hAcl: "closedin_on X T A" and hBcl: "closedin_on X T B"
+            and hABdisj: "A \<inter> B = {}"
+  assumes hins: "\<forall>i. geotop_inseparable_in X T (M i) A B"
   shows "geotop_inseparable_in X T (\<Inter>i. M i) A B"
-  sorry
+  (** Moise proof (geotop.tex:2313-ff., preceded by defining inseparable via
+      absence of separation). Proof by contradiction: suppose A, B are separable
+      in M_\<infinity> = \<Inter>M_i. Then \<exists>U, V disjoint closed with M_\<infinity> = U \<union> V, A \<subseteq> U, B \<subseteq> V.
+      \"Fatten\" U, V into open supersets U', V' with compact complement-in-M_i.
+      For each i, define K_i = M_i \<inter> (X - U' - V'). Each K_i is compact, K_i
+      descending, \<Inter>K_i = M_\<infinity> \<inter> (X - U' - V') = \<emptyset> (since M_\<infinity> \<subseteq> U' \<union> V').
+      By compactness (nested-sequence property), some K_i_0 = \<emptyset>, i.e.
+      M_{i_0} \<subseteq> U' \<union> V', contradicting inseparability at i_0. **)
+  sorry  \<comment> \<open>Nested compact set argument; full sketch above.\<close>
 
 (** from \<S>12 Theorem 2 (geotop.tex:2332)
     LATEX VERSION: Let M be a compact set, in a metrizable space [X, O], and let A and B be
@@ -5041,15 +5050,51 @@ theorem Theorem_GT_12_1:
 theorem Theorem_GT_12_2:
   fixes X :: "'a::metric_space set" and T :: "'a set set"
   fixes M A B :: "'a set"
-  assumes "is_topology_on X T" and "top1_metrizable_on X T"
-  assumes "top1_compact_on M (subspace_topology X T M)"
-  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
-  assumes "geotop_inseparable_in X T M A B"
+  assumes hTX: "is_topology_on X T" and hmetr: "top1_metrizable_on X T"
+  assumes hMcmp: "top1_compact_on M (subspace_topology X T M)"
+  assumes hAcl: "closedin_on X T A" and hBcl: "closedin_on X T B"
+            and hABdisj: "A \<inter> B = {}"
+  assumes hins: "geotop_inseparable_in X T M A B"
   shows "\<exists>M'. M' \<subseteq> M \<and> closedin_on X T M' \<and>
               geotop_inseparable_in X T M' A B \<and>
               (\<forall>M''. M'' \<subset> M' \<longrightarrow>
                  \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B))"
-  sorry
+  (** Moise proof (geotop.tex:2335). M is compact metrizable hence second
+      countable: pick a countable basis {U_1, U_2, \<dots>} of M. Define descending
+      sequence M_i: M_1 = M; given M_i with A,B inseparable in M_i, let
+      M_{i+1} = M_i - U_i if A,B still inseparable there, else M_{i+1} = M_i.
+      By induction, A, B inseparable in each M_i. By Theorem 12_1, A, B
+      inseparable in M' = \<Inter>M_i. For irreducibility: if M'' \<subset> M' satisfies
+      (1), (2), pick P \<in> M' - M''; some basis U_i with P \<in> U_i and
+      U_i \<inter> M'' = \<emptyset> exists, then M_{i+1} = M_i - U_i (still inseparable
+      on the smaller set), so P \<notin> M', contradiction. **)
+proof -
+  (** Step 1: obtain countable basis {U_1, U_2, ...} of M as a subspace. **)
+  obtain Us :: "nat \<Rightarrow> 'a set" where hUs_basis:
+    "\<forall>V. V \<in> subspace_topology X T M \<longleftrightarrow> (\<exists>S\<subseteq>UNIV. V = \<Union>{Us n | n. n \<in> S})"
+    sorry
+  (** Step 2: define descending sequence M_i by (M_i - U_i if still inseparable). **)
+  define Ms :: "nat \<Rightarrow> 'a set" where
+    "Ms = (\<lambda>i. ((\<lambda>n. rec_nat M (\<lambda>k acc.
+                       if geotop_inseparable_in X T (acc - Us k) A B
+                       then acc - Us k else acc)) i)) i"
+  (** Step 3: each M_i compact, descending, and A, B inseparable in each. **)
+  have hMs_desc: "\<forall>i. Ms (Suc i) \<subseteq> Ms i" sorry
+  have hMs_ins: "\<forall>i. geotop_inseparable_in X T (Ms i) A B" sorry
+  have hMs_cmp: "\<forall>i. top1_compact_on (Ms i) (subspace_topology X T (Ms i))" sorry
+  (** Step 4: M' = \<Inter>M_i; inseparable by Theorem 12_1. **)
+  define M' where "M' = (\<Inter>i. Ms i)"
+  have hM'_ins: "geotop_inseparable_in X T M' A B"
+    using Theorem_GT_12_1[OF hTX hmetr hMs_cmp hMs_desc hAcl hBcl hABdisj hMs_ins] M'_def
+    by simp
+  (** Step 5: irreducibility: argue by contradiction using basis. **)
+  have hM'_irred: "\<forall>M''. M'' \<subset> M' \<longrightarrow>
+                     \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
+    sorry
+  have hM'_cl: "closedin_on X T M'" sorry
+  have hM'_sub: "M' \<subseteq> M" sorry
+  show ?thesis using hM'_sub hM'_cl hM'_ins hM'_irred by blast
+qed
 
 (** from \<S>12 Theorem 3 (geotop.tex:2339)
     LATEX VERSION: Let M be a compact set, in a metrizable space [X, O], and let A and B be
@@ -5058,13 +5103,39 @@ theorem Theorem_GT_12_2:
 theorem Theorem_GT_12_3:
   fixes X :: "'a::metric_space set" and T :: "'a set set"
   fixes M A B :: "'a set"
-  assumes "is_topology_on X T" and "top1_metrizable_on X T"
-  assumes "top1_compact_on M (subspace_topology X T M)"
-  assumes "closedin_on X T A" and "closedin_on X T B" and "A \<inter> B = {}"
+  assumes hTX: "is_topology_on X T" and hmetr: "top1_metrizable_on X T"
+  assumes hMcmp: "top1_compact_on M (subspace_topology X T M)"
+  assumes hAcl: "closedin_on X T A" and hBcl: "closedin_on X T B"
+            and hABdisj: "A \<inter> B = {}"
   shows "(\<exists>C\<subseteq>M. top1_connected_on C (subspace_topology X T C) \<and>
             C \<inter> A \<noteq> {} \<and> C \<inter> B \<noteq> {}) \<or>
          geotop_separable_in X T M A B"
-  sorry
+  (** Moise proof (geotop.tex:2341). Suppose (2) is false, i.e. A, B inseparable
+      in M. By Theorem 12_2, get irreducible M' \<subseteq> M with A, B inseparable in M'.
+      Suppose M' is disconnected: M' = H \<union> K with H, K disjoint nonempty.
+      By irreducibility, A, B are separable in H and in K separately, so
+      H = H_A \<union> H_B, K = K_A \<union> K_B with the usual disjointness. Then
+      M' = (H_A \<union> K_A) \<union> (H_B \<union> K_B) is a separation of A, B in M',
+      contradicting inseparability. So M' is connected; M' intersects both
+      A and B (else it would trivially separate them). **)
+proof (cases "geotop_separable_in X T M A B")
+  case True
+  then show ?thesis by blast
+next
+  case False
+  then have h_ins: "geotop_inseparable_in X T M A B" sorry
+  obtain M' where hM'_sub: "M' \<subseteq> M" and hM'_cl: "closedin_on X T M'"
+               and hM'_ins: "geotop_inseparable_in X T M' A B"
+               and hM'_irred: "\<forall>M''. M'' \<subset> M' \<longrightarrow>
+                      \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
+    using Theorem_GT_12_2[OF hTX hmetr hMcmp hAcl hBcl hABdisj h_ins] by blast
+  (** M' is connected (else the Moise irreducibility argument separates A, B). **)
+  have hM'_conn: "top1_connected_on M' (subspace_topology X T M')" sorry
+  (** M' intersects both A and B (else trivially separable). **)
+  have hM'_meets_A: "M' \<inter> A \<noteq> {}" sorry
+  have hM'_meets_B: "M' \<inter> B \<noteq> {}" sorry
+  show ?thesis using hM'_sub hM'_conn hM'_meets_A hM'_meets_B by blast
+qed
 
 (** from \<S>12: continuum (geotop.tex:2355)
     LATEX VERSION: A set which is both compact and connected is called a continuum. **)
@@ -5263,10 +5334,21 @@ theorem Theorem_GT_12_7:
 theorem Theorem_GT_12_8:
   fixes C :: "'a::metric_space set" and T :: "'a set set"
   fixes C' :: "'b::metric_space set" and T' :: "'b set set"
-  assumes "geotop_is_cantor_set C T"
-  assumes "geotop_is_cantor_set C' T'"
+  assumes hC: "geotop_is_cantor_set C T"
+  assumes hC': "geotop_is_cantor_set C' T'"
   shows "\<exists>h. top1_homeomorphism_on C T C' T' h"
-  sorry
+  (** Moise proof (geotop.tex:2432): Inductively build matched fine partitions
+      G_i of C and G_i' of C' with G_i refining G_{i-1}, matching cardinalities
+      level-by-level, and mesh going to 0. By Theorem 12.4, each G_i exists as
+      a disjoint open-closed decomposition. Go back-and-forth between C and C'
+      (alternating parity) so both meshes go to 0. Finally let f(P) = unique
+      element of \<Inter>_i f_i(G_i(P)). By Theorem 12.7, this yields a homeomorphism. **)
+proof -
+  (** Step 1: recursively build G_i, G'_i, f_i matching. **)
+  obtain Gs Gs' fs where hGs: "\<forall>i. finite (Gs i)" sorry
+  (** Step 2: combine level data into a single homeo f via Theorem 12.7. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>12 Theorem 9 (geotop.tex:2453)
     LATEX VERSION: Let C and C' be Cantor sets, and let D and D' be countable dense sets in C
@@ -5275,12 +5357,23 @@ theorem Theorem_GT_12_9:
   fixes C :: "'a::metric_space set" and T :: "'a set set"
   fixes C' :: "'b::metric_space set" and T' :: "'b set set"
   fixes D :: "'a set" and D' :: "'b set"
-  assumes "geotop_is_cantor_set C T"
-  assumes "geotop_is_cantor_set C' T'"
-  assumes "D \<subseteq> C" and "top1_countable D" and "closure_on C T D = C"
-  assumes "D' \<subseteq> C'" and "top1_countable D'" and "closure_on C' T' D' = C'"
+  assumes hC: "geotop_is_cantor_set C T"
+  assumes hC': "geotop_is_cantor_set C' T'"
+  assumes hDC: "D \<subseteq> C" and hDctbl: "top1_countable D" and hDdense: "closure_on C T D = C"
+  assumes hD'C': "D' \<subseteq> C'" and hD'ctbl: "top1_countable D'" and hD'dense: "closure_on C' T' D' = C'"
   shows "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
-  sorry
+  (** Moise proof (geotop.tex:2455). Refinement of 12.8: enumerate
+      D = {P_1, P_2, \<dots>}, D' = {P'_1, P'_2, \<dots>}. Build G_i, G'_i with extra
+      matching conditions: for each j, \<exists>k_j such that for every i,
+      f_i(G_i(P_j)) = G'_i(P'_{k_j}). Back-and-forth construction. **)
+proof -
+  obtain Ps where hPs: "bij_betw Ps UNIV D" sorry
+  obtain Ps' where hPs': "bij_betw Ps' UNIV D'" sorry
+  (** Refined G_i, G'_i, f_i with D-matching constraints. **)
+  obtain Gs Gs' fs where h_levels: "\<forall>i. finite (Gs i)"
+    sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>13 Extension of homeomorphisms of totally disconnected sets in R^2\<close>
 
