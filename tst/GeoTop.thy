@@ -10186,7 +10186,9 @@ proof -
     "\<forall>v\<in>geotop_complex_vertices K.
         \<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 3 \<and>
            geotop_comb_equiv (geotop_star K v) {\<tau>. \<tau> \<subseteq> \<sigma> \<and> geotop_is_simplex \<tau>}" sorry
-  show ?thesis sorry
+  show ?thesis
+    using hK hK_3mfd hK_closed h_comb_equiv
+    unfolding geotop_is_combinatorial_3_manifold_def by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 2 (geotop.tex:5005)
