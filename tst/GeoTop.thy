@@ -4412,7 +4412,14 @@ qed
 theorem Theorem_GT_7_4:
   fixes \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a::real_normed_vector set"
   fixes g h :: "'a \<Rightarrow> 'b::real_normed_vector"
-  assumes "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+  assumes hequiv: "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+  (** Faithful proof sketch:
+      (1) g \<sim> h means they agree up to a simplicial re-parametrization that preserves
+          barycentric coordinates, i.e. \<phi>: \<sigma>_g \<leftrightarrow> \<sigma>_h with h \<circ> \<phi> = g and \<phi>
+          sending each barycentric coordinate to itself.
+      (2) Hence for any w = g(P) = h(\<phi>(P)) in the common image, the barycentric
+          coordinates of w in V_g (w.r.t. g-vertices) equal those in V_h (w.r.t.
+          h-vertices). **)
   shows "\<forall>w\<in>g ` \<sigma>\<^sub>g. \<forall>V\<^sub>g V\<^sub>h.
            V\<^sub>g = g ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
            \<and> V\<^sub>h = h ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
@@ -4500,14 +4507,33 @@ theorem Theorem_GT_7_5:
 theorem Theorem_GT_7_6:
   fixes X :: "'b set" and TX :: "'b set set"
   fixes \<K>\<^sub>1 \<K>\<^sub>2 :: "(('a::real_normed_vector set) \<times> ('a \<Rightarrow> 'b)) set"
-  assumes "geotop_PL_complex X TX \<K>\<^sub>1"
-  assumes "geotop_PL_complex X TX \<K>\<^sub>2"
-  assumes "\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
+  assumes hK1: "geotop_PL_complex X TX \<K>\<^sub>1"
+  assumes hK2: "geotop_PL_complex X TX \<K>\<^sub>2"
+  assumes hcompat: "\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
              (\<exists>\<tau>\<^sub>g \<tau>\<^sub>h. geotop_is_face \<tau>\<^sub>g \<sigma>\<^sub>g \<and> geotop_is_face \<tau>\<^sub>h \<sigma>\<^sub>h \<and>
                  g ` \<tau>\<^sub>g = h ` \<tau>\<^sub>h \<and> g ` \<tau>\<^sub>g = g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<and>
                  geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)"
   shows "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)"
-  sorry
+proof -
+  (** (1) K.1 (closure under faces): for any (\<sigma>, h) \<in> \<K>_1 \<cup> \<K>_2, it lies in \<K>_1 or \<K>_2
+         and K.1 holds for each individually. **)
+  have h_K1:
+    "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> (\<tau>, h) \<in> \<K>\<^sub>1 \<union> \<K>\<^sub>2" sorry
+  (** (2) K.2 (intersection compatibility): the new pairs across \<K>_1 and \<K>_2 are handled
+         by hypothesis; the within-\<K>_i pairs are handled by K.2 of \<K>_i. **)
+  have h_K2:
+    "\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
+       (\<exists>\<tau>\<^sub>g \<tau>\<^sub>h. geotop_is_face \<tau>\<^sub>g \<sigma>\<^sub>g \<and> geotop_is_face \<tau>\<^sub>h \<sigma>\<^sub>h \<and>
+             g ` \<tau>\<^sub>g = h ` \<tau>\<^sub>h \<and> g ` \<tau>\<^sub>g = g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<and>
+             geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)" sorry
+  (** (3) K.3 (local finiteness): a neighbourhood witness for \<K>_i can be taken as the
+         intersection of witnesses for \<K>_1 and \<K>_2, which intersects only finitely many
+         pairs in \<K>_1 \<cup> \<K>_2. **)
+  have h_K3:
+    "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
+       finite {(\<sigma>', h')\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. h' ` \<sigma>' \<inter> U \<noteq> {}}" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>7: PL star (geotop.tex:1596)
     LATEX VERSION: In a PL complex \<K>, for each vertex v, St v is the set of all elements [h]
@@ -4542,7 +4568,7 @@ abbreviation geotop_D' :: "'a::real_normed_vector set" where
     countability give the countable cover by N_i'. **)
 theorem Theorem_GT_8_1:
   fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
-  assumes "geotop_n_manifold_on M d n"
+  assumes hM: "geotop_n_manifold_on M d n"
   shows "\<exists>(N :: nat \<Rightarrow> 'a set) (N' :: nat \<Rightarrow> 'a set) (h :: nat \<Rightarrow> 'a \<Rightarrow> 'a).
     (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
          openin_on M (top1_metric_topology_on M d) (N' i) \<and>
@@ -4557,7 +4583,22 @@ theorem Theorem_GT_8_1:
          h i ` closure_on M (top1_metric_topology_on M d) (N' i) =
             closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball (1/2)))
     \<and> M = (\<Union>i. N' i)"
-  sorry
+proof -
+  (** (1) M is an n-manifold, hence second-countable and locally Euclidean. Take a
+         countable basis of coordinate charts (\<Phi>_k, V_k) with \<Phi>_k: V_k \<leftrightarrow> R^n. **)
+  have h_countable_charts:
+    "\<exists>V \<Phi>. countable {i. True} \<and> (\<forall>i. openin_on M (top1_metric_topology_on M d) (V i))" sorry
+  (** (2) Shrink each chart: inside V_k take open ball N_k of radius 1 and N_k' of
+         radius 1/2 in the chart coordinates, chosen so that {N_k'} still covers M
+         (paracompactness of M + compactness of each closed ball). **)
+  have h_shrink:
+    "\<exists>N N' h. (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
+                  openin_on M (top1_metric_topology_on M d) (N' i)) \<and>
+             M = (\<Union>i. N' i)" sorry
+  (** (3) The chart homeomorphisms h_i extend to the closures (N_i is precompact in V_i);
+         their images give \<bar>D\<close> and \<bar>D'\<close>. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>8 Theorem 2 (geotop.tex:1639)
     LATEX VERSION: Let K be a finite complex, and let U be an open set in |K| (relative to the
@@ -4568,12 +4609,25 @@ theorem Theorem_GT_8_1:
     matching and subdivision refinement. **)
 theorem Theorem_GT_8_2:
   fixes K :: "'a::real_normed_vector set set" and U :: "'a set"
-  assumes "geotop_is_complex K"
-  assumes "finite K"
-  assumes "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hU_open: "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
   shows "\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and>
            (\<forall>\<sigma>\<in>KU. \<exists>\<tau>\<in>K. \<sigma> \<subseteq> \<tau>)"
-  sorry
+proof -
+  (** (1) Cover U by a countable union of open balls, each contained in U. Inside each
+         ball B_k \<subseteq> U \<cap> \<tau>_k (some simplex of K), take a closed simplex \<sigma>_k whose union
+         with the other \<sigma>_j (j < k) still fits inside U. **)
+  have h_cover:
+    "\<exists>\<sigma>s::nat \<Rightarrow> 'a set. (\<forall>k. \<exists>\<tau>\<in>K. \<sigma>s k \<subseteq> \<tau> \<and> \<sigma>s k \<subseteq> U) \<and> (\<Union>k. \<sigma>s k) = U"
+    sorry
+  (** (2) Assemble K_U by taking the union of the simplexes \<sigma>_k and all their faces; a
+         subdivision refinement ensures pairwise intersections are simplicially coherent. **)
+  have h_KU:
+    "\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and>
+          (\<forall>\<sigma>\<in>KU. \<exists>\<tau>\<in>K. \<sigma> \<subseteq> \<tau>)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>8 Theorem 3 (T. Radó) (geotop.tex:1674)
     LATEX VERSION: Every 2-manifold is triangulable, i.e., there is a (Euclidean) complex K
@@ -4586,13 +4640,33 @@ theorem Theorem_GT_8_2:
     PL-approximation of transitions. Sum gives a global triangulation of M. **)
 theorem Theorem_GT_8_3_Rado:
   fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
-  assumes "geotop_n_manifold_on M d 2"
+  assumes hM: "geotop_n_manifold_on M d 2"
   shows "\<exists>(K :: (real^2) set set) (f :: real^2 \<Rightarrow> 'a).
     geotop_is_complex K \<and>
     top1_homeomorphism_on (geotop_polyhedron K)
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
         M (top1_metric_topology_on M d) f"
-  sorry
+proof -
+  (** (1) By Theorem 8_1, cover M by countably many pairs (N_i, N_i') with N_i' \<subseteq> N_i
+         and chart h_i: N_i \<leftrightarrow> D \<subseteq> R^2. **)
+  obtain Ns Ns' hs where h_charts:
+    "M = (\<Union>i. Ns' i) \<and>
+     (\<forall>i. top1_homeomorphism_on (Ns i)
+             (subspace_topology M (top1_metric_topology_on M d) (Ns i))
+             (geotop_std_open_ball 1)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_std_open_ball 1))
+             (hs i))" sorry
+  (** (2) Inductively triangulate: choose triangulation T_1 of N_1' via chart h_1 and
+         Theorem 8_2 on the image in R^2. For step i \<to> i+1, resolve overlaps of T_i with
+         h_{i+1}^{-1}(a standard triangulation) using PL approximations (Theorem 6_3). **)
+  have h_inductive_triangulation:
+    "\<exists>Ts::nat \<Rightarrow> (real^2) set set.
+        (\<forall>i. geotop_is_complex (Ts i)) \<and>
+        (\<forall>i. geotop_polyhedron (Ts i) \<subseteq> geotop_polyhedron (Ts (Suc i)))" sorry
+  (** (3) Direct limit K = \<union>_i T_i; the limit homeomorphism f: |K| \<leftrightarrow> M is inherited
+         from the local charts with compatibility along overlaps. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>8 Theorem 4 (geotop.tex:1826)
     LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds, let U be an open set in |K_1|,
@@ -4607,22 +4681,36 @@ theorem Theorem_GT_8_4:
   fixes h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
   fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
   fixes U :: "(real^2) set"
-  assumes "geotop_is_complex K1"
-  assumes "geotop_is_complex K2"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
-  assumes "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)"
-  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+  assumes hK1: "geotop_is_complex K1"
+  assumes hK2: "geotop_is_complex K2"
+  assumes hK1_mfd: "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
+  assumes hK2_mfd: "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes hU_open: "U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)"
+  assumes hh: "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
              (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
-  assumes "h ` U \<subseteq> geotop_polyhedron K2"
-  assumes "geotop_strongly_positive U
+  assumes hhU: "h ` U \<subseteq> geotop_polyhedron K2"
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
                (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f
           \<and> f ` U = h ` U
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
           \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f)"
-  sorry
+proof -
+  (** (1) Triangulate U as K_U with each simplex inside a simplex of K_1 (Theorem 8_2). **)
+  obtain KU where hKU:
+    "geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and>
+     (\<forall>\<sigma>\<in>KU. \<exists>\<tau>\<in>K1. \<sigma> \<subseteq> \<tau>)" sorry
+  (** (2) Apply PL approximation (Theorem 6_3) to h: |K_U| \<to> |K_2| with tolerance \<phi>:
+         obtain PL f: |K_U| \<to> |K_2| with norm(h - f) < \<phi> everywhere. **)
+  have h_PL_approx:
+    "\<exists>f. geotop_PL_map KU K2 f \<and>
+         (\<forall>P\<in>U. norm (h P - f P) < \<phi> P)" sorry
+  (** (3) Adjust f on Bd K_U (if needed) so that f(U) = h(U): since U is open in K_1
+         without boundary constraints, slight boundary retraction gives f a bijection
+         onto h(U). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>8 Theorem 5 (Hauptvermutung for 2-manifolds) (geotop.tex:1844)
     LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds. If there is a homeomorphism
@@ -4634,17 +4722,27 @@ theorem Theorem_GT_8_5_Hauptvermutung_2d:
   fixes K1 K2 :: "(real^2) set set"
   fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
   fixes h :: "real^2 \<Rightarrow> real^2"
-  assumes "geotop_is_complex K1"
-  assumes "geotop_is_complex K2"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+  assumes hK1: "geotop_is_complex K1"
+  assumes hK2: "geotop_is_complex K2"
+  assumes hK1_mfd: "geotop_n_manifold_on (geotop_polyhedron K1) d1 2"
+  assumes hK2_mfd: "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes hh: "top1_homeomorphism_on (geotop_polyhedron K1)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
              (geotop_polyhedron K2)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h"
   shows "\<exists>f. geotop_PLH K1 K2 f"
     and "geotop_comb_equiv K1 K2"
-  sorry
+proof -
+  (** (1) Apply Theorem 8_4 with U = |K_1| and a strongly positive \<phi>: obtain a PLH f:
+         |K_1| \<to> |K_2| approximating h with f(|K_1|) = h(|K_1|) = |K_2|. **)
+  have h_PLH:
+    "\<exists>f. geotop_PLH K1 K2 f" sorry
+  (** (2) A PLH between triangulations is (up to subdivision) a simplicial isomorphism,
+         hence combinatorial equivalence. **)
+  have h_comb: "geotop_comb_equiv K1 K2" sorry
+  show "\<exists>f. geotop_PLH K1 K2 f" sorry
+  show "geotop_comb_equiv K1 K2" sorry
+qed
 
 
 section \<open>\<S>9 The Schönflies theorem\<close>
