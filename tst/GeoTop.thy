@@ -6715,12 +6715,41 @@ section \<open>\<S>16 Computations of fundamental groups\<close>
     LATEX VERSION: Let A be an annulus. Then \<pi>(A) \<cong> Z (additive group of integers). **)
 theorem Theorem_GT_16_1:
   fixes A :: "(real^2) set" and P\<^sub>0 :: "real^2"
-  assumes "geotop_is_k_annulus 1 A" and "P\<^sub>0 \<in> A"
+  assumes hA: "geotop_is_k_annulus 1 A" and hP\<^sub>0: "P\<^sub>0 \<in> A"
   shows "\<exists>(\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> int).
            bij_betw \<Phi>
              (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
              (UNIV::int set)"
-  sorry
+proof -
+  (** (1) WLOG assume A is a polyhedral annulus in R^2 (e.g. a standard rectangle minus
+         a smaller rectangle) since \<pi> is a topological invariant. Pick a single generator
+         g_1 (a simple closed PL loop crossing a radial "cut" once). **)
+  have h_standard:
+    "\<exists>(A\<^sub>0::(real^2) set). (\<exists>f. top1_homeomorphism_on A
+                                 (subspace_topology UNIV geotop_euclidean_topology A)
+                                 A\<^sub>0
+                                 (subspace_topology UNIV geotop_euclidean_topology A\<^sub>0) f) \<and>
+                          geotop_is_k_annulus 1 A\<^sub>0" sorry
+  (** (2) Generator: every PL closed path in A reduces to a product g_1^{\<plusminus>1} \<dots> g_1^{\<plusminus>1}
+         by tracking crossings with a radial cut, via the PL sweeping argument of §15. **)
+  have h_gen:
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^2). geotop_closed_path_on A
+                               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g\<^sub>1 \<and>
+       (\<forall>p. geotop_closed_path_on A
+              (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
+          (\<exists>n::int. True \<comment> \<open>signed-crossing count\<close>))" sorry
+  (** (3) No relations: pushing a PL path across a triangle of A can only insert or delete
+         g_1^{\<plusminus>1} g_1^{\<mp>1} (since A has no crossings). Hence \<pi>(A) is the free abelian/free
+         group on one generator, i.e. Z. **)
+  have h_no_rel:
+    "\<exists>\<Phi>. bij_betw \<Phi> (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+                    (UNIV::int set) \<and>
+         (\<forall>C\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
+          \<forall>D\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
+            \<Phi> (geotop_pi_mult A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 C D)
+            = \<Phi> C + \<Phi> D)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>16: solid torus (geotop.tex:3235)
     LATEX VERSION: A solid torus is a space homeomorphic to a product D \<times> S^1, where D is a
@@ -6740,24 +6769,69 @@ definition geotop_is_solid_torus :: "'a::real_normed_vector set \<Rightarrow> bo
     LATEX VERSION: Let T be a solid torus. Then \<pi>(T) \<cong> Z. **)
 theorem Theorem_GT_16_2:
   fixes T :: "'a::real_normed_vector set" and P\<^sub>0 :: 'a
-  assumes "geotop_is_solid_torus T" and "P\<^sub>0 \<in> T"
+  assumes hT: "geotop_is_solid_torus T" and hP\<^sub>0: "P\<^sub>0 \<in> T"
   shows "\<exists>(\<Phi>::(real \<Rightarrow> 'a) set \<Rightarrow> int).
            bij_betw \<Phi>
              (geotop_pi T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0)
              (UNIV::int set)"
-  sorry
+proof -
+  (** (1) T is homeomorphic to D \<times> S^1 (definition of solid torus). Fix such a homeomorphism. **)
+  obtain D S\<^sub>1 f where h_homeo:
+    "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+     geotop_is_n_sphere S\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology S\<^sub>1) 1 \<and>
+     top1_homeomorphism_on (D \<times> S\<^sub>1)
+        (subspace_topology UNIV geotop_euclidean_topology (D \<times> S\<^sub>1))
+        T (subspace_topology UNIV geotop_euclidean_topology T) f" sorry
+  (** (2) Take a 2-cell cross-section D_0 \<subseteq> T (image of D \<times> {*} for a fixed point * of S^1);
+         cutting T along D_0 gives a 3-cell D \<times> I, so collapsing D_0 makes T essentially a
+         circle. Every PL closed path in T crosses D_0 a signed integer number of times. **)
+  have h_gen:
+    "\<exists>(g\<^sub>1::real \<Rightarrow> 'a).
+        geotop_closed_path_on T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 g\<^sub>1 \<and>
+        (\<forall>p. geotop_closed_path_on T
+                (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 p \<longrightarrow>
+             (\<exists>n::int. True))" sorry
+  (** (3) No relations: pushing a PL path across a 2-simplex of T can only insert or delete
+         g_1^{\<plusminus>1} g_1^{\<mp>1} (since D \<times> S^1 has no knot-crossings); hence \<pi>(T) \<cong> Z,
+         just as in Theorem 16.1 with the 2-cell D_0 playing the role of the radial cut. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16 Theorem 3 (geotop.tex:3238)
     LATEX VERSION: Let A be a k-annulus. Then \<pi>(A) is a free group on k generators. **)
 theorem Theorem_GT_16_3:
   fixes A :: "(real^2) set" and P\<^sub>0 :: "real^2"
-  assumes "geotop_is_k_annulus k A" and "P\<^sub>0 \<in> A"
+  assumes hA: "geotop_is_k_annulus k A" and hP\<^sub>0: "P\<^sub>0 \<in> A"
   shows "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
            bij_betw \<Phi>
              (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
              (geotop_free_group G)"
-  sorry
+proof -
+  (** (1) By Tame imbedding (Theorem 6.2) + repeated Theorem 3.7, WLOG A is in standard
+         form: inside a large outer circle J_0, with inner components J_1, ..., J_k that
+         are small disjoint circles joined to J_0 by disjoint linear intervals. **)
+  have h_standard:
+    "\<exists>(A\<^sub>0::(real^2) set). geotop_is_k_annulus k A\<^sub>0 \<and>
+       (\<exists>f. top1_homeomorphism_on A
+              (subspace_topology UNIV geotop_euclidean_topology A) A\<^sub>0
+              (subspace_topology UNIV geotop_euclidean_topology A\<^sub>0) f)" sorry
+  (** (2) Define k generators g_1, \<dots>, g_k: each g_i is a PL loop that crosses the i-th
+         radial interval once and no other interval; disjoint otherwise. These generate
+         \<pi>(A, P_0) by the same PL-sweeping argument as Theorem 16.1. **)
+  have h_gens:
+    "\<exists>(gs::(real \<Rightarrow> real^2) set).
+        card gs = k \<and>
+        (\<forall>g\<in>gs. geotop_closed_path_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g) \<and>
+        (\<forall>p. geotop_closed_path_on A
+               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
+           (\<exists>ns::int list. length ns = card gs))" sorry
+  (** (3) No relations: a PL path can only change by inserting or deleting g_i^{\<plusminus>1}
+         g_i^{\<mp>1} across each triangle (no crossings between the radial intervals),
+         so \<pi>(A, P_0) \<cong> F(g_1, \<dots>, g_k), the free group on k generators. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16 Theorem 4 (geotop.tex:3257)
     LATEX VERSION: Let L be a link in R^3, with k components, and suppose that the components
@@ -6765,9 +6839,9 @@ theorem Theorem_GT_16_3:
       group of L is a free group on k generators. **)
 theorem Theorem_GT_16_4:
   fixes L :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_link L" and "geotop_link_general_position L"
-  assumes "P\<^sub>0 \<in> UNIV - L"
-  assumes "\<exists>Ks Ds. finite Ks \<and> card Ks = k \<and> L = \<Union>Ks \<and>
+  assumes hL: "geotop_is_link L" and hL_gp: "geotop_link_general_position L"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - L"
+  assumes hL_trivial: "\<exists>Ks Ds. finite Ks \<and> card Ks = k \<and> L = \<Union>Ks \<and>
                    (\<forall>K\<in>Ks. geotop_is_knot K) \<and>
                    (\<forall>K1\<in>Ks. \<forall>K2\<in>Ks. K1 \<noteq> K2 \<longrightarrow> K1 \<inter> K2 = {}) \<and>
                    (\<forall>D\<in>Ds. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2) \<and>
@@ -6776,7 +6850,26 @@ theorem Theorem_GT_16_4:
   shows "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
            bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)"
-  sorry
+proof -
+  (** (1) Since the k components of L are unknotted and bound disjoint polyhedral 2-cells,
+         we can arrange the diagram so each knot projects to a simple unknotted convex
+         loop, with no crossings between distinct components. **)
+  have h_diag_trivial:
+    "\<exists>Ks. finite Ks \<and> card Ks = k \<and> L = \<Union>Ks \<and>
+          (\<forall>K\<in>Ks. geotop_is_knot K) \<and>
+          (\<forall>K1\<in>Ks. \<forall>K2\<in>Ks. K1 \<noteq> K2 \<longrightarrow> K1 \<inter> K2 = {}) \<and>
+          \<comment> \<open>diagram has no crossings between components\<close> True" sorry
+  (** (2) By Theorem 15.4, \<pi>(R^3 - L, P_0) \<cong> F(G) / N([R]) for generators G (one per arc
+         of diagram) and relations R (one per crossing). With no crossings, R is empty
+         (or trivially closes) and each component contributes exactly one free generator. **)
+  have h_presentation:
+    "\<exists>(G::'a set) (R::('a \<times> int) list set set).
+        finite G \<and> card G = k \<and> R = {} \<and>
+        (\<exists>\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set.
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))" sorry
+  (** (3) Hence group of L \<cong> F(G), the free group on k generators. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16 Theorem 5 (geotop.tex:3261)
     LATEX VERSION: Let J_1, J_2, J_3 be plane polygons, simply linked in series, let D be
@@ -6785,19 +6878,41 @@ theorem Theorem_GT_16_4:
       then p \<cong> e in U. **)
 theorem Theorem_GT_16_5:
   fixes J1 J2 J3 D :: "(real^3) set" and P\<^sub>0 :: "real^3" and p :: "real \<Rightarrow> real^3"
-  assumes "geotop_is_polygon J1" and "geotop_is_polygon J2" and "geotop_is_polygon J3"
-  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
-  assumes "geotop_frontier UNIV geotop_euclidean_topology D = J2"
-  assumes "P\<^sub>0 \<in> D - (J1 \<union> J2 \<union> J3)"
-  assumes "geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
+  assumes hJ1: "geotop_is_polygon J1" and hJ2: "geotop_is_polygon J2" and hJ3: "geotop_is_polygon J3"
+  assumes hD: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes hBdD: "geotop_frontier UNIV geotop_euclidean_topology D = J2"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> D - (J1 \<union> J2 \<union> J3)"
+  assumes hp_cp: "geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
              (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 p"
-  assumes "geotop_path_equiv (UNIV - (J1 \<union> J3))
+  assumes hp_null_big: "geotop_path_equiv (UNIV - (J1 \<union> J3))
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3)))
              P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
   shows "geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
            (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
            P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
-  sorry
+proof -
+  (** (1) In U = D - (J_1 \<union> J_2 \<union> J_3), take the two generators g_1, g_2 of \<pi>(U, P_0)
+         provided by the proof of Theorem 16.3 (one crossing J_1, one crossing J_3). **)
+  have h_local_gens:
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2.
+        geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
+          (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 g\<^sub>1 \<and>
+        geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
+          (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 g\<^sub>2 \<and>
+        \<comment> \<open>g_1, g_2 generate \<pi>(U, P_0)\<close> True" sorry
+  (** (2) By Theorem 16.4, {g_1, g_2} freely generates \<pi>(R^3 - (J_1 \<union> J_3)) as well
+         (J_2 plays no role outside D, and (J_1, J_3) is a 2-component unknotted link). **)
+  have h_big_free:
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2.
+        (\<forall>q. geotop_closed_path_on (UNIV - (J1 \<union> J3))
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3))) P\<^sub>0 q \<longrightarrow>
+           \<comment> \<open>q is reducible to a unique word in g_1, g_2 up to equivalence\<close> True)" sorry
+  (** (3) p \<cong> e in R^3 - (J_1 \<union> J_3) means the word of p in g_1, g_2 reduces to empty
+         using only free-group moves (no extra relations). The same moves are valid
+         inside U, since each local triangle move in the PL sweep respects the
+         confinement to D - (J_1 \<union> J_2 \<union> J_3). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16: trefoil knot (geotop.tex:3281)
     LATEX VERSION: The trefoil is the knot defined by Figure 16.4. **)
@@ -6815,27 +6930,76 @@ definition geotop_is_trefoil :: "(real^3) set \<Rightarrow> bool" where
     LATEX VERSION: The group of the trefoil knot is not commutative. **)
 theorem Theorem_GT_16_6:
   fixes K :: "(real^3) set" and P\<^sub>0 :: "real^3"
-  assumes "geotop_is_trefoil K" and "P\<^sub>0 \<in> UNIV - K"
+  assumes hK: "geotop_is_trefoil K" and hP\<^sub>0: "P\<^sub>0 \<in> UNIV - K"
   shows "\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
               geotop_pi_mult (UNIV - K)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
               geotop_pi_mult (UNIV - K)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C"
-  sorry
+proof -
+  (** (1) Read the generators g_1, g_2, g_3 and relation r_1 = g_1 g_3^{-1} g_2^{-1} g_3
+         from the trefoil diagram. By the 3-fold symmetry of the trefoil, permuting
+         (1 2 3) \<to> (2 3 1) \<to> (3 1 2) gives
+           r_2 = g_2 g_1^{-1} g_3^{-1} g_1,  r_3 = g_3 g_2^{-1} g_1^{-1} g_2. **)
+  have h_relations:
+    "\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>1 \<and>
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>2 \<and>
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>3 \<and>
+        \<comment> \<open>r_i are null-homotopic in R^3 - K\<close>
+        True" sorry
+  (** (2) Define h: F(g_1, g_2, g_3) \<rightarrow> S_3 by h(g_1) = (2 3), h(g_2) = (1 3),
+         h(g_3) = (1 2). Extend multiplicatively. **)
+  have h_into_S3:
+    "\<exists>hh::(nat \<times> int) list \<Rightarrow> (nat \<Rightarrow> nat). hh [] = id
+       \<comment> \<open>a homomorphism from F(3 generators) to S_3\<close>" sorry
+  (** (3) Verify h(r_1) = (2 3)(1 2)(1 3)(1 2) = identity; by symmetry h(r_2), h(r_3) are
+         also the identity. Hence h descends to h*: F/N(R) \<rightarrow> S_3. **)
+  have h_descends:
+    "\<exists>hhs::(nat \<times> int) list set \<Rightarrow> (nat \<Rightarrow> nat). hhs {} = id
+       \<comment> \<open>a homomorphism from F(3 gen) / N(R) to S_3\<close>" sorry
+  (** (4) h* is surjective (the transpositions generate S_3). S_3 is non-commutative,
+         so F/N(R) is non-commutative, so \<pi>(R^3 - K, P_0) (which is isomorphic to
+         F/N(R) by Theorem 15.4) is non-commutative. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16 Theorem 7 (geotop.tex:3367)
     LATEX VERSION: \<pi>(V) is isomorphic to the group of the trefoil knot. **)
 theorem Theorem_GT_16_7:
   fixes V :: "(real^3) set" and K :: "(real^3) set"
   fixes P\<^sub>V :: "real^3" and P\<^sub>K :: "real^3"
-  assumes "geotop_is_trefoil K" and "P\<^sub>K \<in> UNIV - K"
-  assumes "P\<^sub>V \<in> V"
+  assumes hK: "geotop_is_trefoil K" and hP\<^sub>K: "P\<^sub>K \<in> UNIV - K"
+  assumes hP\<^sub>V: "P\<^sub>V \<in> V"
   \<comment> \<open>V here is the complement of a knotted broken line in an open cylinder (Fig. 16.5)\<close>
-  assumes "V \<in> geotop_euclidean_topology"
+  assumes hV_open: "V \<in> geotop_euclidean_topology"
   shows "\<exists>\<Phi>. bij_betw \<Phi>
            (geotop_pi V (subspace_topology UNIV geotop_euclidean_topology V) P\<^sub>V)
            (geotop_group_of_link K P\<^sub>K)"
-  sorry
+proof -
+  (** (1) By an extension of Theorem 15.4, \<pi>(V) has presentation F(g_1, g_2, g_3, g_1')
+         / N(R), where R = {r_1 = g_1 g_3^{-1} g_2^{-1} g_3, r_2 = g_2 g_1'^{-1} g_3^{-1} g_1',
+         r_3 = g_3 g_2^{-1} g_1'^{-1} g_2}. **)
+  have h_presentation:
+    "\<exists>(\<Phi>\<^sub>V::_ \<Rightarrow> _).
+        bij_betw \<Phi>\<^sub>V
+          (geotop_pi V (subspace_topology UNIV geotop_euclidean_topology V) P\<^sub>V)
+          \<comment> \<open>F(g_1, g_2, g_3, g_1') / N(R)\<close>
+          (UNIV::(nat \<times> int) list set set)" sorry
+  (** (2) Geometrically g_1 \<cong> g_1': a path from g_1 can be slid behind all of the knotted
+         broken line (in three stages, one per crossing), each stage changing the word by
+         an element of N({r_1, r_2, r_3}). Hence [g_1'] = [g_1] in F / N(R). **)
+  have h_merge:
+    "True \<comment> \<open>g_1 \<equiv> g_1' modulo N(R)\<close>" sorry
+  (** (3) Substituting g_1' \<leftarrow> g_1 in r_2, r_3 reduces the set R to the original trefoil
+         relations R' = {g_1 g_3^{-1} g_2^{-1} g_3, g_2 g_1^{-1} g_3^{-1} g_1,
+         g_3 g_2^{-1} g_1^{-1} g_2}. Hence F(g_1, g_2, g_3, g_1') / N(R) \<cong>
+         F(g_1, g_2, g_3) / N(R') = group of the trefoil knot K. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>16: unknotted knot (geotop.tex:3370)
     LATEX VERSION: A knot is said to be unknotted if it is the boundary of a polyhedral
