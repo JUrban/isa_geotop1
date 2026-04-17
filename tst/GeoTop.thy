@@ -11199,10 +11199,25 @@ section \<open>\<S>28 Polygons in the boundary of a combinatorial solid torus\<c
     LATEX VERSION: Let S be a polyhedral torus in R^3. Then S is a CST. **)
 theorem Theorem_GT_28_1:
   fixes S :: "(real^3) set"
-  assumes "geotop_is_solid_torus S"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
+  assumes hS_ST: "geotop_is_solid_torus S"
+  assumes hS_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
   shows "geotop_is_CST S"
-  sorry
+proof -
+  (** (1) S is homeomorphic to D^2 \<times> S^1 via some homeomorphism \<psi>. **)
+  obtain \<psi> where h_S_param:
+    "top1_homeomorphism_on S (subspace_topology UNIV geotop_euclidean_topology S)
+       \<comment> \<open>standard solid torus\<close> S (subspace_topology UNIV geotop_euclidean_topology S) \<psi>"
+    sorry
+  (** (2) Triangulate the standard model D^2 \<times> S^1 as a cyclic chain of n \<ge> 2 polyhedral
+         3-cells C_i = D^2 \<times> [\<theta>_i, \<theta>_{i+1}], with consecutive C_i, C_{i+1} sharing the
+         2-cell D^2 \<times> {\<theta>_{i+1}}. **)
+  have h_cyclic_chain:
+    "\<exists>n Cs. n \<ge> 2 \<and> finite Cs \<and> card Cs = n \<and>
+       (\<forall>C\<in>Cs. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3) \<and>
+       S = \<Union>Cs" sorry
+  (** (3) Transport the chain back via \<psi> to conclude S is a CST. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>28: latitudinal polygon in a CST (geotop.tex:5822)
     LATEX VERSION: If S has a cylindrical diagram in which J_x appears as the boundaries of
@@ -11553,7 +11568,42 @@ theorem Theorem_GT_28_17_Poincare:
               \<not> geotop_simply_connected (geotop_polyhedron K)
                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
                   P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Take a regular dodecahedron D in R^3 (realised as a polyhedral 3-cell with 12
+         pentagonal 2-faces). Identify opposite pentagonal 2-faces via a rotation by \<pi>/5
+         around the axis through their centres. This defines a quotient space P
+         (Poincare dodecahedral space). **)
+  have h_dodecahedron:
+    "\<exists>(D::(real^3) set) F. geotop_is_n_cell D
+          (subspace_topology UNIV geotop_euclidean_topology D) 3 \<and>
+        (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
+        F \<subseteq> geotop_frontier UNIV geotop_euclidean_topology D \<and>
+        \<comment> \<open>F is the set of 12 pentagonal 2-faces\<close> True" sorry
+  (** (2) The quotient P admits a triangulation K (subdivide each pentagon's interior,
+         then lift via the identification). P is compact, connected, and a 3-manifold
+         without boundary. **)
+  obtain K where hK:
+    "geotop_is_complex K \<and>
+     top1_compact_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
+     top1_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
+     geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3 \<and>
+     geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}" sorry
+  (** (3) Compute H_*(K, Z): the chain complex of K has H_0 = Z, H_1 = 0 (the abelianised
+         identification group kills all 1-cycles), H_2 = 0 (by Poincare duality),
+         H_3 = Z. So K has the homology groups of a 3-sphere. **)
+  have h_homology_sphere:
+    "True \<comment> \<open>H_*(K, Z) \<cong> H_*(S^3, Z)\<close>" sorry
+  (** (4) However \<pi>(K, P_0) is the binary icosahedral group (order 120), which is
+         non-trivial. Hence K is not simply connected. **)
+  have h_pi_nontrivial:
+    "\<exists>P\<^sub>0\<in>geotop_polyhedron K.
+        \<not> geotop_simply_connected (geotop_polyhedron K)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+            P\<^sub>0" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>28 Theorem 18 (geotop.tex:5977)
     LATEX VERSION: Let M^2 be a polyhedral projective plane, in an orientable PL 3-manifold
