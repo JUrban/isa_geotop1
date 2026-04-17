@@ -3487,12 +3487,41 @@ qed
       that lie in only one 2-simplex of K. **)
 theorem Theorem_GT_4_9:
   fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
   shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
     and "geotop_manifold_boundary (geotop_polyhedron K) d =
          \<Union>{e\<in>K. geotop_is_edge e \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
-  sorry
+  (** Moise proof (geotop.tex:1054): As in Theorem 8, #(2-simplexes containing
+      an edge e) is 1 or 2 (L2-L4 reused). Hence each component of |L(v)| is
+      a broken line (edges with 1 triangle) or a 1-sphere (all edges with 2).
+      |L(v)| connected (L5). So |L(v)| is a single broken line or polygon. St v
+      is a combinatorial 2-cell.
+      For Bd |K| = \<Union>(edges in only 1 triangle): such edges are exactly the ones
+      at the manifold boundary. **)
+proof -
+  show "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
+  proof
+    fix v assume hv: "v \<in> geotop_complex_vertices K"
+    (** Same five lemmas as in 4.8 but weakened L3: each edge in \<ge> 1 triangle. **)
+    have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e" sorry
+    have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+               (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)" sorry
+    have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
+    have hL5: "top1_connected_on (\<Union>(geotop_link K v))
+                 (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v)))" sorry
+    (** |L(v)| is either a broken line (with-boundary case) or a polygon. **)
+    have hLinkBL: "geotop_is_broken_line (\<Union>(geotop_link K v))
+                     \<or> geotop_is_polygon (\<Union>(geotop_link K v))" sorry
+    show "geotop_comb_n_cell (geotop_star K v) 2" sorry
+  qed
+next
+  (** Bd |K| = union of edges lying in only one 2-simplex. **)
+  show "geotop_manifold_boundary (geotop_polyhedron K) d =
+         \<Union>{e\<in>K. geotop_is_edge e \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+    sorry
+qed
 
 (** from \<S>4 Theorem 10 (geotop.tex:1058)
     LATEX VERSION: Let M be a 2-manifold with boundary, lying in R^2. If M is closed, then
@@ -3527,9 +3556,26 @@ section \<open>\<S>5 Piecewise linear homeomorphisms\<close>
 theorem Theorem_GT_5_1:
   fixes K K1 :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'b"
-  assumes "geotop_is_subdivision K1 K"
+  assumes hsub: "geotop_is_subdivision K1 K"
   shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K1 L f"
-  sorry
+  (** Moise proof (geotop.tex:1120). (2)\<Rightarrow>(1): trivial (any subdivision of K\<^sub>1
+      is a subdivision of K, via Theorem 1 - common subdivision).
+      (1)\<Rightarrow>(2): given K\<^sub>2 < K with f|\<sigma> linear for each \<sigma>\<in>K\<^sub>2, take K\<^sub>12 common
+      subdivision of K\<^sub>1 and K\<^sub>2 (Theorem_GT_1). For each \<sigma>\<in>K\<^sub>12, f|\<sigma> is linear. **)
+proof
+  assume hPL: "geotop_PL_map K L f"
+  (** Extract K\<^sub>2 subdivision of K witnessing PL. **)
+  obtain K\<^sub>2 where hK2_sub: "geotop_is_subdivision K\<^sub>2 K"
+              and hK2_lin: "\<forall>\<sigma>\<in>K\<^sub>2. (\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    sorry
+  (** Common subdivision of K\<^sub>1 and K\<^sub>2 via Theorem_GT_1. **)
+  obtain K\<^sub>12 where hK12: "geotop_is_subdivision K\<^sub>12 K\<^sub>1 \<and> geotop_is_subdivision K\<^sub>12 K\<^sub>2"
+    sorry
+  show "geotop_PL_map K1 L f" sorry
+next
+  assume hPL1: "geotop_PL_map K1 L f"
+  show "geotop_PL_map K L f" sorry
+qed
 
 (** from \<S>5 Theorem 2 (geotop.tex:1124)
     LATEX VERSION: Let L_1 be a subdivision of L. f is PL relative to K,L iff f is PL
@@ -3537,9 +3583,19 @@ theorem Theorem_GT_5_1:
 theorem Theorem_GT_5_2:
   fixes K :: "'a::real_normed_vector set set" and L L1 :: "'b::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'b"
-  assumes "geotop_is_subdivision L1 L"
+  assumes hsub: "geotop_is_subdivision L1 L"
   shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K L1 f"
-  sorry
+  (** Moise proof (geotop.tex:1126). \"if\" trivial. \"only if\": let K\<^sub>1 < K s.t. f|\<sigma>
+      maps \<sigma> linearly into a simplex of L. Let f(K\<^sub>1) = {f(\<sigma>) | \<sigma>\<in>K\<^sub>1}, a subdivision
+      of L. Take L\<^sub>2 common subdivision of f(K\<^sub>1) and L\<^sub>1. Let K\<^sub>2 = f^{-1}(L\<^sub>2) =
+      {f^{-1}(\<tau>) | \<tau>\<in>L\<^sub>2}. Then K\<^sub>2 < K, and f|\<sigma> maps each \<sigma>\<in>K\<^sub>2 linearly into L\<^sub>1. **)
+proof
+  assume "geotop_PL_map K L f"
+  show "geotop_PL_map K L1 f" sorry
+next
+  assume hPL1: "geotop_PL_map K L1 f"
+  show "geotop_PL_map K L f" sorry
+qed
 
 (** from \<S>5 Theorem 3 (geotop.tex:1146)
     LATEX VERSION: Let J be a polygon in R^2, let I be its interior, and let K be a
