@@ -1653,6 +1653,251 @@ proof (intro exI[of _ "{P}"] exI[of _ "0::nat"] conjI)
     by (simp add: geotop_convex_hull_eq_HOL)
 qed
 
+(** The closed segment [P, Q] between distinct points in a Euclidean space is a
+    broken line. Witness complex: K = {{P}, {Q}, closed_segment P Q}. **)
+lemma geotop_closed_segment_is_broken_line:
+  fixes P Q :: "'a::euclidean_space"
+  assumes hne: "P \<noteq> Q"
+  shows "geotop_is_broken_line (closed_segment P Q)"
+proof -
+  define K :: "'a set set" where "K = {{P}, {Q}, closed_segment P Q}"
+  (** Element-wise simplicity. **)
+  have hP_simp: "geotop_is_simplex {P}"
+    using geotop_singleton_is_simplex[of P]
+    unfolding geotop_is_simplex_def geotop_simplex_dim_def by blast
+  have hQ_simp: "geotop_is_simplex {Q}"
+    using geotop_singleton_is_simplex[of Q]
+    unfolding geotop_is_simplex_def geotop_simplex_dim_def by blast
+  have hS_simp: "geotop_is_simplex (closed_segment P Q)"
+    using geotop_closed_segment_is_simplex[OF hne]
+    unfolding geotop_is_simplex_def geotop_simplex_dim_def by blast
+  have hK_simplexes: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    unfolding K_def using hP_simp hQ_simp hS_simp by blast
+  (** K is closed under faces. **)
+  have hK_faces: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K: "\<sigma> \<in> K" and h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+    from h\<tau>face obtain V W where hSV: "geotop_simplex_vertices \<sigma> V"
+                            and hWne: "W \<noteq> {}" and hWsub: "W \<subseteq> V"
+                            and h\<tau>eq: "\<tau> = geotop_convex_hull W"
+      unfolding geotop_is_face_def by blast
+    from h\<sigma>K consider (sP) "\<sigma> = {P}" | (sQ) "\<sigma> = {Q}" | (sS) "\<sigma> = closed_segment P Q"
+      unfolding K_def by blast
+    then show "\<tau> \<in> K"
+    proof cases
+      case sP
+      have hV: "V = {P}"
+        using hSV geotop_singleton_simplex_vertices sP by metis
+      have hW: "W = {P}" using hV hWne hWsub by blast
+      have "\<tau> = geotop_convex_hull {P}" using h\<tau>eq hW by simp
+      also have "... = convex hull {P}" by (rule geotop_convex_hull_eq_HOL)
+      also have "... = {P}" by simp
+      finally have "\<tau> = {P}" .
+      thus "\<tau> \<in> K" unfolding K_def by blast
+    next
+      case sQ
+      have hV: "V = {Q}"
+        using hSV geotop_singleton_simplex_vertices sQ by metis
+      have hW: "W = {Q}" using hV hWne hWsub by blast
+      have "\<tau> = geotop_convex_hull {Q}" using h\<tau>eq hW by simp
+      also have "... = convex hull {Q}" by (rule geotop_convex_hull_eq_HOL)
+      also have "... = {Q}" by simp
+      finally have "\<tau> = {Q}" .
+      thus "\<tau> \<in> K" unfolding K_def by blast
+    next
+      case sS
+      have hV: "V = {P, Q}"
+        using hSV geotop_segment_simplex_vertices[OF hne] sS by metis
+      have hW_cases: "W \<in> {{P}, {Q}, {P, Q}}"
+        using hV hWne hWsub by blast
+      from hW_cases consider "W = {P}" | "W = {Q}" | "W = {P, Q}" by blast
+      thus "\<tau> \<in> K"
+      proof cases
+        assume "W = {P}"
+        then have "\<tau> = geotop_convex_hull {P}" using h\<tau>eq by simp
+        also have "... = convex hull {P}" by (rule geotop_convex_hull_eq_HOL)
+        also have "... = {P}" by simp
+        finally have "\<tau> = {P}" .
+        thus "\<tau> \<in> K" unfolding K_def by blast
+      next
+        assume "W = {Q}"
+        then have "\<tau> = geotop_convex_hull {Q}" using h\<tau>eq by simp
+        also have "... = convex hull {Q}" by (rule geotop_convex_hull_eq_HOL)
+        also have "... = {Q}" by simp
+        finally have "\<tau> = {Q}" .
+        thus "\<tau> \<in> K" unfolding K_def by blast
+      next
+        assume hW_PQ: "W = {P, Q}"
+        have "\<tau> = geotop_convex_hull {P, Q}" using h\<tau>eq hW_PQ by simp
+        also have "... = convex hull {P, Q}" by (rule geotop_convex_hull_eq_HOL)
+        also have "... = closed_segment P Q" by (simp add: segment_convex_hull)
+        finally have "\<tau> = closed_segment P Q" .
+        thus "\<tau> \<in> K" unfolding K_def by blast
+      qed
+    qed
+  qed
+  (** Intersection property. **)
+  (** Package the three segment vertex witnesses for face-of-subset lookups. **)
+  have hSV_P: "geotop_simplex_vertices {P} {P}"
+    unfolding geotop_simplex_vertices_def
+    apply (rule exI[of _ "0::nat"], rule exI[of _ "0::nat"])
+    apply (intro conjI)
+    apply simp
+    apply simp
+    apply simp
+    apply (simp add: geotop_general_position_def)
+    apply (simp add: geotop_convex_hull_eq_HOL)
+    done
+  have hSV_Q: "geotop_simplex_vertices {Q} {Q}"
+    unfolding geotop_simplex_vertices_def
+    apply (rule exI[of _ "0::nat"], rule exI[of _ "0::nat"])
+    apply (intro conjI)
+    apply simp
+    apply simp
+    apply simp
+    apply (simp add: geotop_general_position_def)
+    apply (simp add: geotop_convex_hull_eq_HOL)
+    done
+  have hSV_S: "geotop_simplex_vertices (closed_segment P Q) {P, Q}"
+  proof -
+    have hsimp_dim: "geotop_simplex_dim (closed_segment P Q) 1"
+      by (rule geotop_closed_segment_is_simplex[OF hne])
+    from hsimp_dim obtain V m where hV: "finite V" "card V = 1 + 1" "1 \<le> m"
+                                "geotop_general_position V m"
+                                "closed_segment P Q = geotop_convex_hull V"
+      unfolding geotop_simplex_dim_def by blast
+    have hSV_V: "geotop_simplex_vertices (closed_segment P Q) V"
+      unfolding geotop_simplex_vertices_def
+      using hV by blast
+    have hVPQ: "V = {P, Q}"
+      using geotop_segment_simplex_vertices[OF hne hSV_V] .
+    show ?thesis using hSV_V hVPQ by simp
+  qed
+  (** Face-of-\<sigma> facts for each element of K, to reuse in intersection cases. **)
+  have hface_P_in_S: "geotop_is_face {P} (closed_segment P Q)"
+  proof -
+    have hhull_P: "geotop_convex_hull {P} = {P}"
+      by (simp add: geotop_convex_hull_eq_HOL)
+    have "geotop_is_face (geotop_convex_hull {P}) (closed_segment P Q)"
+      by (rule geotop_is_face_of_subset[OF hSV_S]) auto
+    thus ?thesis using hhull_P by simp
+  qed
+  have hface_Q_in_S: "geotop_is_face {Q} (closed_segment P Q)"
+  proof -
+    have hhull_Q: "geotop_convex_hull {Q} = {Q}"
+      by (simp add: geotop_convex_hull_eq_HOL)
+    have "geotop_is_face (geotop_convex_hull {Q}) (closed_segment P Q)"
+      by (rule geotop_is_face_of_subset[OF hSV_S]) auto
+    thus ?thesis using hhull_Q by simp
+  qed
+  have hface_P_in_P: "geotop_is_face {P} {P}"
+    by (rule geotop_is_face_refl_of_simplex[OF hP_simp])
+  have hface_Q_in_Q: "geotop_is_face {Q} {Q}"
+    by (rule geotop_is_face_refl_of_simplex[OF hQ_simp])
+  have hface_S_in_S: "geotop_is_face (closed_segment P Q) (closed_segment P Q)"
+    by (rule geotop_is_face_refl_of_simplex[OF hS_simp])
+  (** Compute the six nontrivial intersections. **)
+  have hP_in_seg: "P \<in> closed_segment P Q" by simp
+  have hQ_in_seg: "Q \<in> closed_segment P Q" by simp
+  have hPsegQ: "{P} \<inter> {Q} = {}" using hne by simp
+  have hPseg_inter: "{P} \<inter> closed_segment P Q = {P}" using hP_in_seg by blast
+  have hQseg_inter: "{Q} \<inter> closed_segment P Q = {Q}" using hQ_in_seg by blast
+  (** Now the intersection case analysis. **)
+  have hK_inter: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K" and hne_inter: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    from h\<sigma>K consider (sP) "\<sigma> = {P}" | (sQ) "\<sigma> = {Q}" | (sS) "\<sigma> = closed_segment P Q"
+      unfolding K_def by blast
+    then show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof cases
+      case sP
+      from h\<tau>K consider "\<tau> = {P}" | "\<tau> = {Q}" | "\<tau> = closed_segment P Q"
+        unfolding K_def by blast
+      thus ?thesis
+      proof cases
+        assume "\<tau> = {P}"
+        then show ?thesis using sP hface_P_in_P by simp
+      next
+        assume "\<tau> = {Q}"
+        then show ?thesis using sP hPsegQ hne_inter by simp
+      next
+        assume h\<tau>S: "\<tau> = closed_segment P Q"
+        have hint: "\<sigma> \<inter> \<tau> = {P}" using sP h\<tau>S hPseg_inter by simp
+        show ?thesis using hint sP h\<tau>S hface_P_in_P hface_P_in_S by simp
+      qed
+    next
+      case sQ
+      from h\<tau>K consider "\<tau> = {P}" | "\<tau> = {Q}" | "\<tau> = closed_segment P Q"
+        unfolding K_def by blast
+      thus ?thesis
+      proof cases
+        assume "\<tau> = {P}"
+        then show ?thesis using sQ hPsegQ hne_inter by simp
+      next
+        assume "\<tau> = {Q}"
+        then show ?thesis using sQ hface_Q_in_Q by simp
+      next
+        assume h\<tau>S: "\<tau> = closed_segment P Q"
+        have hint: "\<sigma> \<inter> \<tau> = {Q}" using sQ h\<tau>S hQseg_inter by simp
+        show ?thesis using hint sQ h\<tau>S hface_Q_in_Q hface_Q_in_S by simp
+      qed
+    next
+      case sS
+      from h\<tau>K consider "\<tau> = {P}" | "\<tau> = {Q}" | "\<tau> = closed_segment P Q"
+        unfolding K_def by blast
+      thus ?thesis
+      proof cases
+        assume h\<tau>P: "\<tau> = {P}"
+        have hint: "\<sigma> \<inter> \<tau> = {P}" using sS h\<tau>P hPseg_inter by blast
+        show ?thesis using hint sS h\<tau>P hface_P_in_S hface_P_in_P by simp
+      next
+        assume h\<tau>Q: "\<tau> = {Q}"
+        have hint: "\<sigma> \<inter> \<tau> = {Q}" using sS h\<tau>Q hQseg_inter by blast
+        show ?thesis using hint sS h\<tau>Q hface_Q_in_S hface_Q_in_Q by simp
+      next
+        assume h\<tau>S: "\<tau> = closed_segment P Q"
+        show ?thesis using sS h\<tau>S hface_S_in_S by simp
+      qed
+    qed
+  qed
+  (** Neighborhood finiteness: take U = UNIV and note |K| is finite (3 elements). **)
+  have hK_fin: "finite K" unfolding K_def by simp
+  have hK_nbhd: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume "\<sigma> \<in> K"
+    have hfin: "finite {\<tau>\<in>K. \<tau> \<inter> UNIV \<noteq> {}}"
+      using hK_fin by simp
+    have hopen: "open (UNIV::'a set)" by simp
+    have hsub: "\<sigma> \<subseteq> UNIV" by simp
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hopen hsub hfin by blast
+  qed
+  (** Combine: K is a complex. **)
+  have hK_complex: "geotop_is_complex K"
+    unfolding geotop_is_complex_def using hK_simplexes hK_faces hK_inter hK_nbhd by blast
+  (** |K| = closed_segment P Q (since P, Q \<in> closed_segment P Q). **)
+  have hK_poly: "geotop_polyhedron K = closed_segment P Q"
+  proof -
+    have hunion: "\<Union>K = {P} \<union> {Q} \<union> closed_segment P Q"
+      unfolding K_def by blast
+    have hP_in: "P \<in> closed_segment P Q" by simp
+    have hQ_in: "Q \<in> closed_segment P Q" by simp
+    have hsing_sub_P: "{P} \<subseteq> closed_segment P Q" using hP_in by simp
+    have hsing_sub_Q: "{Q} \<subseteq> closed_segment P Q" using hQ_in by simp
+    have hunion_eq: "\<Union>K = closed_segment P Q"
+      using hunion hsing_sub_P hsing_sub_Q by blast
+    thus ?thesis unfolding geotop_polyhedron_def .
+  qed
+  (** Already proven: closed_segment is an arc. **)
+  have harc: "geotop_is_arc (closed_segment P Q)
+                (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
+    by (rule geotop_closed_segment_is_arc[OF hne])
+  show ?thesis
+    unfolding geotop_is_broken_line_def
+    using hK_complex hK_poly harc by blast
+qed
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
