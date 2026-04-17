@@ -5182,7 +5182,7 @@ theorem Theorem_GT_26_8:
   assumes "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {}"
   assumes "geotop_is_complex Km" and "geotop_polyhedron Km = M2"
   shows "geotop_is_orientable Km"
-  sorry
+  using assms(3,4,5,7,8) geotop_is_orientable_def by blast
 
 section \<open>\<S>27 The Dehn lemma\<close>
 
