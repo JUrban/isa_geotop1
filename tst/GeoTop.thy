@@ -8114,8 +8114,8 @@ section \<open>\<S>20 A wild 2-sphere with a simply connected complement\<close>
       (2) f|(D^3 - P_0 P_1) is a homeomorphism D^3 - P_0 P_1 \<leftrightarrow> D^3 - {P_0}. **)
 theorem Theorem_GT_20_1:
   fixes D3 :: "(real^3) set" and P\<^sub>0 P\<^sub>1 :: "real^3"
-  assumes "geotop_is_n_cell D3 (subspace_topology UNIV geotop_euclidean_topology D3) 3"
-  assumes "geotop_is_broken_line {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}"
+  assumes hD3: "geotop_is_n_cell D3 (subspace_topology UNIV geotop_euclidean_topology D3) 3"
+  assumes hseg_bl: "geotop_is_broken_line {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}"
   shows "\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
              top1_homeomorphism_on
                (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
@@ -8123,19 +8123,69 @@ theorem Theorem_GT_20_1:
                   (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
                (D3 - {P\<^sub>0})
                (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f"
-  sorry
+proof -
+  (** (1) Define the quotient map f on D^3 that collapses the segment P_0 P_1 to the
+         single point P_0, by shrinking concentric spherical shells around P_0 P_1 onto
+         spherical shells around P_0. Explicit form: for each point Q at signed distance
+         r from the core segment, map (core_proj(Q), r) \<mapsto> (linear shrink to P_0, r). **)
+  have h_construction:
+    "\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
+         (\<forall>P\<in>D3. f P \<in> D3)" sorry
+  (** (2) Verify f is continuous on D^3 (the quotient map is continuous since the segment
+         is compact and the shells are continuously parametrised). **)
+  have h_continuous:
+    "\<exists>f. top1_continuous_map_on D3 (subspace_topology UNIV geotop_euclidean_topology D3)
+            D3 (subspace_topology UNIV geotop_euclidean_topology D3) f \<and>
+         f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0}" sorry
+  (** (3) The restriction f | (D^3 - segment) is bijective onto D^3 - {P_0} (by the
+         explicit inverse: pull a shell around P_0 back to the corresponding shell around
+         the core segment). Continuity of the inverse follows from the explicit formula. **)
+  have h_restrict_bij:
+    "\<exists>f. top1_homeomorphism_on
+             (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
+             (subspace_topology UNIV geotop_euclidean_topology
+                (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
+             (D3 - {P\<^sub>0})
+             (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>20 Theorem 2 (geotop.tex:4193)
     LATEX VERSION: Let A be an arc in R^3, with Bd A = {P, Q}, such that A - {Q} is an
       (infinite) polyhedron. Then R^3 - A is homeomorphic to R^3 - {Q}. **)
 theorem Theorem_GT_20_2:
   fixes A :: "(real^3) set" and P Q :: "real^3"
-  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = A - {Q}"
+  assumes hA_arc: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hA_Q_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = A - {Q}"
   shows "\<exists>h. top1_homeomorphism_on
                (UNIV - A) (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
                (UNIV - {Q}) (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q})) h"
-  sorry
+proof -
+  (** (1) A - {Q} is an infinite polyhedron homeomorphic to the half-open segment [0, 1).
+         Parametrise A \<cong> [0, 1] with P \<mapsto> 0, Q \<mapsto> 1. **)
+  obtain \<gamma> where h_param:
+    "top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+       {t::real. 0 \<le> t \<and> t \<le> 1}
+       (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1}) \<gamma> \<and>
+     \<gamma> P = 0 \<and> \<gamma> Q = 1" sorry
+  (** (2) Cover A - {Q} by polyhedral 3-cells C_i, each containing the segment
+         \<gamma>^{-1}([t_{i-1}, t_i]) unknotted (Theorem 19.1), with C_{i+1} \<subseteq> Int C_i for a
+         nested system accumulating on Q. **)
+  obtain Cs where h_cells:
+    "(\<forall>i. geotop_is_n_cell (Cs i) (subspace_topology UNIV geotop_euclidean_topology (Cs i)) 3) \<and>
+     (\<forall>i. \<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = Cs i) \<and>
+     (\<forall>i. Cs (Suc i) \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Cs i))" sorry
+  (** (3) Apply Theorem 20.1 per cell: collapse the unknotted subsegment inside C_i onto
+         a single interior point p_i of Bd C_i \<inter> Bd C_{i+1}. Compose these PLHs in a way
+         that is locally constant outside the preceding shells; the composed map tends to
+         the identity away from Q. **)
+  have h_assemble:
+    "\<exists>h. top1_homeomorphism_on (UNIV - A)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
+           (UNIV - {Q})
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q})) h" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>20: locally simply connected (geotop.tex:4243)
     LATEX VERSION: Let U be a connected open set in R^3, and let Q \<in> closure U. Suppose that
@@ -8169,7 +8219,36 @@ theorem Theorem_GT_20_3:
            geotop_is_tame S \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
                 \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))"
-  sorry
+proof -
+  (** (1) Arc case: A tame means there is a homeomorphism \<phi>: R^3 \<leftrightarrow> R^3 with \<phi>(A) = I a
+         linear interval. Local simple connectivity is a homeomorphism invariant, so it
+         suffices to check R^3 - I is locally simply connected at each Q \<in> Bd I. **)
+  have h_arc_reduce:
+    "\<forall>A Q. geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+           geotop_is_tame A \<and>
+           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
+       (\<exists>I \<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology \<phi> \<and> \<phi> ` A = I \<and>
+              (\<exists>a b. I = {(1 - t) *\<^sub>R a + t *\<^sub>R b | t. 0 \<le> t \<and> t \<le> 1}))" sorry
+  (** (2) R^3 - I is locally simply connected at any Q \<in> Bd I: a closed path in a small
+         \<epsilon>-ball intersected with R^3 - I can be pushed off I inside the 2\<epsilon>-ball (via a
+         radial retraction of the cylinder around I). Transport via \<phi>^{-1}. **)
+  have h_line_locsc:
+    "\<forall>I::(real^3) set. (\<exists>a b. I = {(1 - t) *\<^sub>R a + t *\<^sub>R b | t. 0 \<le> t \<and> t \<le> 1}) \<longrightarrow>
+       (\<forall>Q\<in>geotop_frontier UNIV geotop_euclidean_topology I.
+          geotop_locally_simply_connected_at (UNIV - I) geotop_euclidean_topology Q)"
+    sorry
+  (** (3) 2-sphere case: tame S \<leftrightarrow> Bd \<sigma>^3 via PLH \<phi> (Theorem 17.12). Each component of
+         R^3 - Bd \<sigma>^3 is a 3-cell or unbounded 3-cell, both locally simply connected at
+         every boundary point. Transport via \<phi>^{-1}. **)
+  have h_sphere_locsc:
+    "\<forall>S::(real^3) set. geotop_is_n_sphere S
+         (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and> geotop_is_tame S \<longrightarrow>
+       (\<forall>Q\<in>S. \<forall>C.
+          (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
+          \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>20 Theorem 4 (geotop.tex:4338)
     LATEX VERSION: A_2 is wild.
@@ -8180,7 +8259,23 @@ theorem Theorem_GT_20_4:
            (\<exists>Q\<in>geotop_frontier UNIV geotop_euclidean_topology A2.
               \<not> geotop_locally_simply_connected_at (UNIV - A2) geotop_euclidean_topology Q) \<and>
            geotop_is_wild A2"
-  sorry
+proof -
+  (** (1) Build A_2 as a Fox-Artin half-arc: start at a point S and approach a limit point
+         Q via a sequence of trefoil-style broken lines B_i whose groups contribute
+         non-commuting loops in R^3 - A_2 arbitrarily close to Q. **)
+  obtain A2 Q where h_construction:
+    "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+     Q \<in> geotop_frontier UNIV geotop_euclidean_topology A2" sorry
+  (** (2) In every neighbourhood V of Q there is a closed path p in V \<inter> (R^3 - A_2) that
+         links one of the trefoils B_i, hence is not null-homotopic in V \<inter> (R^3 - A_2);
+         so R^3 - A_2 is not locally simply connected at Q. **)
+  have h_not_locsc:
+    "\<not> geotop_locally_simply_connected_at (UNIV - A2) geotop_euclidean_topology Q" sorry
+  (** (3) By Theorem 20.3 (arc case), tame arcs have locally simply connected complement
+         at every boundary point. Contrapositive: A_2 is wild. **)
+  have h_wild: "geotop_is_wild A2" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>20 Theorem 5 (Fox-Artin) (geotop.tex:4400)
     LATEX VERSION: There is a wild 2-sphere S^2 in R^3 such that (1) S^2 is locally polyhedral
@@ -8199,7 +8294,38 @@ theorem Theorem_GT_20_5_Fox_Artin:
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - S2))
                 (UNIV - Sstd)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - Sstd)) h)"
-  sorry
+proof -
+  (** (1) Start with a polyhedral 2-sphere S_0 in R^3 (take the standard simplex boundary).
+         Pick a point Q on S_0 where we will attach a wild horn. **)
+  obtain S0 Q where hS0:
+    "geotop_is_n_sphere S0 (subspace_topology UNIV geotop_euclidean_topology S0) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S0) \<and> Q \<in> S0" sorry
+  (** (2) Attach a Fox-Artin horn at Q: push a small neighbourhood of Q in S_0 inwards so
+         that it becomes a wild Fox-Artin half-arc A_2 (Theorem 20_4) ending at Q. The
+         resulting surface S^2 = (S_0 - small_cap) \<union> horn is a 2-sphere, polyhedral
+         everywhere except at Q. **)
+  obtain S2 where hS2:
+    "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
+     Q \<in> S2 \<and>
+     (\<forall>P\<in>S2. P \<noteq> Q \<longrightarrow> (\<exists>N\<in>geotop_euclidean_topology. P \<in> N \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S2 \<inter> N)))" sorry
+  (** (3) Wildness of S^2: if S^2 were tame, R^3 - S^2 would be locally simply connected
+         at Q (Theorem 20.3 sphere case); but the embedded Fox-Artin horn forces
+         non-local-simple-connectivity at Q (same argument as Theorem 20_4). **)
+  have h_S2_wild: "geotop_is_wild S2" sorry
+  (** (4) R^3 - S^2 \<cong> R^3 - S_0 (Theorem 20_2 applied to the "horn" arc + polyhedral
+         patching): the horn is isotopic to its trivial version in R^3 relative to
+         complements, giving a homeomorphism of complements. **)
+  have h_cpl_iso:
+    "\<exists>Sstd h.
+        geotop_is_n_sphere Sstd (subspace_topology UNIV geotop_euclidean_topology Sstd) 2 \<and>
+        (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = Sstd) \<and>
+        top1_homeomorphism_on (UNIV - S2)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - S2))
+          (UNIV - Sstd)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - Sstd)) h" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>20: semi-locally tame and locally tame (geotop.tex:4406)
     LATEX VERSION: Let M be a triangulable set in a triangulated n-manifold K. Suppose that
