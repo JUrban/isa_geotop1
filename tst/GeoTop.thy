@@ -631,6 +631,37 @@ lemma geotop_simplex_dim_imp_is_simplex:
   shows "geotop_is_simplex \<sigma>"
   using assms unfolding geotop_is_simplex_def geotop_simplex_dim_def by blast
 
+(** Moise's \`geotop_segment\` agrees with HOL's \`closed_segment\`. **)
+lemma geotop_segment_eq_closed_segment:
+  fixes v w :: "'a::real_vector"
+  shows "geotop_segment v w = closed_segment v w"
+proof
+  show "geotop_segment v w \<subseteq> closed_segment v w"
+  proof
+    fix u assume "u \<in> geotop_segment v w"
+    then obtain \<alpha> \<beta> where h\<alpha>: "\<alpha> \<ge> 0" and h\<beta>: "\<beta> \<ge> 0" and hsum: "\<alpha> + \<beta> = 1"
+                      and hu: "u = \<alpha> *\<^sub>R v + \<beta> *\<^sub>R w"
+      unfolding geotop_segment_def by blast
+    have h\<beta>1: "\<beta> \<le> 1" using h\<alpha> hsum by linarith
+    have h\<alpha>eq: "\<alpha> = 1 - \<beta>" using hsum by simp
+    have "u = (1 - \<beta>) *\<^sub>R v + \<beta> *\<^sub>R w" using hu h\<alpha>eq by simp
+    thus "u \<in> closed_segment v w"
+      unfolding closed_segment_def using h\<beta> h\<beta>1 by blast
+  qed
+next
+  show "closed_segment v w \<subseteq> geotop_segment v w"
+  proof
+    fix u assume "u \<in> closed_segment v w"
+    then obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+                    and hu: "u = (1 - t) *\<^sub>R v + t *\<^sub>R w"
+      unfolding closed_segment_def by blast
+    have h1mt: "(1 - t) \<ge> 0" using ht1 by simp
+    have hsum: "(1 - t) + t = 1" by simp
+    show "u \<in> geotop_segment v w"
+      unfolding geotop_segment_def using h1mt ht0 hsum hu by blast
+  qed
+qed
+
 (** If W is a nonempty subset of a vertex set of \<sigma>, then the convex hull of W
     is a face of \<sigma>. **)
 lemma geotop_is_face_of_subset:
