@@ -763,6 +763,50 @@ next
     by blast
 qed
 
+(** Bridge: top1_continuous_map_on (w.r.t. geotop_euclidean subspaces) implies
+    HOL-Analysis continuous_on. **)
+lemma top1_continuous_map_on_geotop_imp_continuous_on:
+  fixes f :: "'a::real_normed_vector \<Rightarrow> 'b::real_normed_vector"
+  assumes hcont: "top1_continuous_map_on S
+                    (subspace_topology UNIV geotop_euclidean_topology S)
+                    T (subspace_topology UNIV geotop_euclidean_topology T) f"
+  shows "continuous_on S f"
+  unfolding continuous_on_open_invariant
+proof (intro allI impI)
+  fix B :: "'b set" assume hBopen: "open B"
+  have hBopen_T1: "B \<in> (top1_open_sets :: 'b set set)"
+    unfolding top1_open_sets_def using hBopen by simp
+  have hGeoEq_b: "(geotop_euclidean_topology :: 'b set set) = top1_open_sets"
+    by (rule geotop_euclidean_topology_eq_open_sets)
+  have hBopen_geotop: "B \<in> (geotop_euclidean_topology :: 'b set set)"
+    using hBopen_T1 hGeoEq_b by simp
+  have hfT: "\<forall>x\<in>S. f x \<in> T"
+    using hcont unfolding top1_continuous_map_on_def by blast
+  (** T \<inter> B is in the subspace topology of T. **)
+  have hTB_in_subspace: "T \<inter> B \<in> subspace_topology UNIV geotop_euclidean_topology T"
+    unfolding subspace_topology_def using hBopen_geotop by blast
+  (** By continuity, preimage is in subspace topology of S. **)
+  have hpre_in: "{x \<in> S. f x \<in> T \<inter> B} \<in> subspace_topology UNIV geotop_euclidean_topology S"
+    using hcont hTB_in_subspace unfolding top1_continuous_map_on_def by blast
+  (** Extract the underlying open set. **)
+  obtain A where hA_geotop: "A \<in> geotop_euclidean_topology"
+             and hpre_eq: "{x \<in> S. f x \<in> T \<inter> B} = S \<inter> A"
+    using hpre_in unfolding subspace_topology_def by blast
+  have hGeoEq_a: "(geotop_euclidean_topology :: 'a set set) = top1_open_sets"
+    by (rule geotop_euclidean_topology_eq_open_sets)
+  have hA_top1: "A \<in> top1_open_sets"
+    using hA_geotop hGeoEq_a by simp
+  have hA_open: "open A"
+    using hA_top1 unfolding top1_open_sets_def by simp
+  (** Since f x \<in> T for x \<in> S, T \<inter> B ∩ image = B ∩ image. **)
+  have hpre_eq2: "{x \<in> S. f x \<in> T \<inter> B} = {x \<in> S. f x \<in> B}"
+    using hfT by blast
+  have hfinal: "A \<inter> S = f -` B \<inter> S"
+    using hpre_eq hpre_eq2 by fastforce
+  show "\<exists>A. open A \<and> A \<inter> S = f -` B \<inter> S"
+    using hA_open hfinal by blast
+qed
+
 (** from \<S>1 Theorem 3 (geotop.tex:338)
     LATEX VERSION: Every simplex is pathwise connected. **)
 theorem Theorem_GT_1_3:
