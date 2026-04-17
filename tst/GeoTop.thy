@@ -633,6 +633,119 @@ lemma geotop_is_face_of_subset:
   shows "geotop_is_face (geotop_convex_hull W) \<sigma>"
   unfolding geotop_is_face_def using hSV hWne hWsub by blast
 
+(** The only vertex-witness of a singleton simplex is the singleton itself. **)
+lemma geotop_singleton_simplex_vertices:
+  fixes P :: "'a::real_normed_vector" and V :: "'a set"
+  assumes "geotop_simplex_vertices {P} V"
+  shows "V = {P}"
+proof -
+  from assms obtain m n where hV: "finite V" "card V = n + 1" "n \<le> m"
+                          "geotop_general_position V m" "{P} = geotop_convex_hull V"
+    unfolding geotop_simplex_vertices_def by blast
+  have hVne: "V \<noteq> {}" using hV(2) by force
+  have hVsub: "V \<subseteq> geotop_convex_hull V"
+    by (rule geotop_simplex_vertices_subset)
+  have hVsubP: "V \<subseteq> {P}" using hV(5) hVsub by simp
+  show "V = {P}" using hVne hVsubP by blast
+qed
+
+(** The only vertex-witness of a closed-segment simplex (with distinct endpoints)
+    is the endpoint pair \<open>{P, Q}\<close>. Requires `euclidean_space` so that HOL's
+    `closed_segment_eq` (nondegenerate segments have unique endpoint pairs) applies. **)
+lemma geotop_segment_simplex_vertices:
+  fixes P Q :: "'a::euclidean_space" and V :: "'a set"
+  assumes hne: "P \<noteq> Q"
+  assumes hSV: "geotop_simplex_vertices (closed_segment P Q) V"
+  shows "V = {P, Q}"
+proof -
+  from hSV obtain m n where hV_fin: "finite V" and hV_card: "card V = n + 1"
+                        and hnm: "n \<le> m" and hgp: "geotop_general_position V m"
+                        and hV_cvx: "closed_segment P Q = geotop_convex_hull V"
+    unfolding geotop_simplex_vertices_def by blast
+  (** V \<subseteq> closed_segment P Q. **)
+  have hVsub: "V \<subseteq> closed_segment P Q"
+    using geotop_simplex_vertices_subset hV_cvx by metis
+  (** V is nonempty, card \<ge> 1. **)
+  have hVne: "V \<noteq> {}" using hV_card by force
+  (** Step 1: card V \<ge> 2 (else convex_hull V = singleton, not closed_segment). **)
+  have hcard_ge2: "card V \<ge> 2"
+  proof (rule ccontr)
+    assume hnot2: "\<not> 2 \<le> card V"
+    have hcard_le1: "card V \<le> 1" using hnot2 by simp
+    have hcard_ge1: "card V \<ge> 1" using hVne hV_fin by (simp add: Suc_leI card_gt_0_iff)
+    have hcard1: "card V = 1" using hcard_le1 hcard_ge1 by linarith
+    obtain v where hVv: "V = {v}" using hcard1 card_1_singletonE by metis
+    have hhull_HOL: "geotop_convex_hull V = convex hull V"
+      by (rule geotop_convex_hull_eq_HOL)
+    have hcvx_sing: "convex hull {v} = {v}" by simp
+    have hhull_sing: "geotop_convex_hull V = {v}"
+      using hhull_HOL hVv hcvx_sing by simp
+    have hseg_sing: "closed_segment P Q = {v}" using hV_cvx hhull_sing by simp
+    have hPinseg: "P \<in> closed_segment P Q" by simp
+    have "P = v" using hPinseg hseg_sing by blast
+    moreover have "Q = v" using hseg_sing by auto
+    ultimately show False using hne by simp
+  qed
+  (** Step 2: card V \<le> 2. Suppose card V \<ge> 3, i.e., n \<ge> 2, so m \<ge> 2.
+      The 1-dim hyperplane through P, Q contains V (all collinear). general_position
+      with k=1 < m says |V \<inter> H| \<le> 2, but |V \<inter> H| = |V| \<ge> 3. **)
+  have hcard_le2: "card V \<le> 2"
+  proof (rule ccontr)
+    assume hnot: "\<not> card V \<le> 2"
+    have hcard3: "card V \<ge> 3" using hnot by simp
+    have hn2: "n \<ge> 2" using hV_card hcard3 by linarith
+    have hm2: "m \<ge> 2" using hnm hn2 by linarith
+    (** Build the 1-dim hyperplane H containing P, Q. **)
+    define H :: "'a set" where "H = (\<lambda>v. v + P) ` span {Q - P}"
+    have hsub_span: "subspace (span {Q - P})" by (rule subspace_span)
+    have hQP_nz: "Q - P \<noteq> 0" using hne by simp
+    have hB_indep: "independent {Q - P}"
+      using hQP_nz by (metis dependent_single empty_subsetI independent_empty independent_insert insert_Diff insert_absorb2)
+    have hB_fin: "finite {Q - P}" by simp
+    have hB_card: "card {Q - P} = 1" by simp
+    have hB_span: "span {Q - P} = span {Q - P}" by simp
+    have hhyp1: "geotop_hyperplane_dim H 1"
+      unfolding geotop_hyperplane_dim_def H_def
+      using hsub_span hB_indep hB_fin hB_card hB_span by blast
+    (** V \<subseteq> H: every v \<in> V is on line through P, Q. **)
+    have hVsubH: "V \<subseteq> H"
+    proof
+      fix v assume hvV: "v \<in> V"
+      have hvseg: "v \<in> closed_segment P Q" using hVsub hvV by blast
+      then obtain t where ht: "0 \<le> t" "t \<le> 1" and hv_eq: "v = (1 - t) *\<^sub>R P + t *\<^sub>R Q"
+        unfolding closed_segment_def by blast
+      have hv_alt: "v = P + t *\<^sub>R (Q - P)"
+        using hv_eq by (simp add: scaleR_diff_right scaleR_left_diff_distrib)
+      have ht_span: "t *\<^sub>R (Q - P) \<in> span {Q - P}"
+        by (rule span_mul[OF span_base[of "Q - P" "{Q - P}"]]) simp
+      have "v \<in> (\<lambda>u. u + P) ` span {Q - P}"
+        using hv_alt ht_span by (simp add: image_iff add.commute)
+      thus "v \<in> H" unfolding H_def by simp
+    qed
+    have hVint: "V \<inter> H = V" using hVsubH by blast
+    have hcard_int: "card (V \<inter> H) = card V" using hVint by simp
+    have hk_lt_m: "(1::nat) < m" using hm2 by simp
+    have hgp_bound: "card (V \<inter> H) \<le> 1 + 1"
+      using hgp hhyp1 hk_lt_m unfolding geotop_general_position_def by blast
+    have "card V \<le> 2" using hcard_int hgp_bound by simp
+    thus False using hcard3 by simp
+  qed
+  (** Hence card V = 2. **)
+  have hcard2: "card V = 2" using hcard_ge2 hcard_le2 by linarith
+  (** Step 3: write V = {a, b}, a \<noteq> b; show {a, b} = {P, Q} via `closed_segment_eq`. **)
+  obtain a b where hV_eq: "V = {a, b}" and hab_ne: "a \<noteq> b"
+    using hcard2 by (metis card_2_iff)
+  have hhull_ab: "geotop_convex_hull V = convex hull {a, b}"
+    unfolding hV_eq by (rule geotop_convex_hull_eq_HOL)
+  have hhull_ab_seg: "convex hull {a, b} = closed_segment a b"
+    by (simp add: segment_convex_hull)
+  have hseg_eq: "closed_segment a b = closed_segment P Q"
+    using hV_cvx hhull_ab hhull_ab_seg by simp
+  have hab_set: "{a, b} = {P, Q}"
+    using hseg_eq closed_segment_eq by blast
+  show "V = {P, Q}" using hV_eq hab_set by simp
+qed
+
 (** Auxiliary: top1 norm-ball equals HOL-Analysis ball. **)
 lemma top1_ball_on_UNIV_norm_eq_ball:
   fixes x :: "'a::real_normed_vector" and e :: real
