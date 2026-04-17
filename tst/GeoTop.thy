@@ -4110,6 +4110,10 @@ definition geotop_PL_finite_dim ::
 (** from \<S>7 Theorem 5 (geotop.tex:1569)
     LATEX VERSION: Let \<K> be a finite-dimensional PL complex. Then there is a Euclidean
       complex K such that there is a simplicial homeomorphism f: |K| \<leftrightarrow> |\<K>|. **)
+(** from \<S>7 Theorem 5 (geotop.tex:1569)
+    Moise proof: \<Phi>(\<K>) = {\<phi>_h | [h] \<in> \<K>} is a finite-dimensional abstract complex.
+    Apply Theorem 7_1 to get Euclidean K with \<Phi>(K) iso to \<Phi>(\<K>). Extend the
+    vertex iso f simplicially. Then \<K> = {[f|\<sigma>] | \<sigma> \<in> K} by construction. **)
 theorem Theorem_GT_7_5:
   fixes X :: "'b set" and TX :: "'b set set"
   fixes \<K> :: "(('a::real_normed_vector set) \<times> ('a \<Rightarrow> 'b)) set"
@@ -4127,6 +4131,9 @@ theorem Theorem_GT_7_5:
     LATEX VERSION: Let \<K>_1 and \<K>_2 be PL complexes in the same space [X, \<O>]. Suppose that
       if [g] \<in> \<K>_1, [h] \<in> \<K>_2, and S = |[g]| \<inter> |[h]| \<noteq> \<emptyset>, there are faces \<tau>_g, \<tau>_h with
       g(\<tau>_g) = h(\<tau>_h) = S and [g|\<tau>_g] = [h|\<tau>_h]. Then \<K>_1 \<union> \<K>_2 is a PL complex. **)
+(** from \<S>7 Theorem 6 (geotop.tex:1593)
+    Moise proof: K.1 and K.2 of PL-complex-def hold by hypothesis (\<tau>_g, \<tau>_h
+    faces with equivalent coordinate mappings). K.3 (local finiteness) is trivial. **)
 theorem Theorem_GT_7_6:
   fixes X :: "'b set" and TX :: "'b set set"
   fixes \<K>\<^sub>1 \<K>\<^sub>2 :: "(('a::real_normed_vector set) \<times> ('a \<Rightarrow> 'b)) set"
@@ -4165,7 +4172,11 @@ abbreviation geotop_D' :: "'a::real_normed_vector set" where
 (** from \<S>8 Theorem 1 (geotop.tex:1622)
     LATEX VERSION: Let M be an n-manifold. Then there is a sequence (N_i, N_i') of ordered
       pairs of open sets in M, such that for each i there is a homeomorphism
-      h_i: \<bar>N_i\<close> \<leftrightarrow> \<bar>D\<close>, \<bar>N_i'\<close> \<leftrightarrow> \<bar>D'\<close>, and {N_i'} covers M. **)
+      h_i: \<bar>N_i\<close> \<leftrightarrow> \<bar>D\<close>, \<bar>N_i'\<close> \<leftrightarrow> \<bar>D'\<close>, and {N_i'} covers M.
+    Moise proof (geotop.tex:1624-ff.): n-manifold has a countable basis of nbhds
+    each homeomorphic to open balls. Refine to Euclidean coordinate charts in
+    \<bar>D\<close>, then shrink via the standard inner disk D'. Paracompactness / second
+    countability give the countable cover by N_i'. **)
 theorem Theorem_GT_8_1:
   fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
   assumes "geotop_n_manifold_on M d n"
@@ -4188,7 +4199,10 @@ theorem Theorem_GT_8_1:
 (** from \<S>8 Theorem 2 (geotop.tex:1639)
     LATEX VERSION: Let K be a finite complex, and let U be an open set in |K| (relative to the
       subspace topology for |K|). Then there is a complex K_U such that |K_U| = U and every
-      simplex \<sigma> of K_U is a (rectilinear) subsimplex of some simplex of K. **)
+      simplex \<sigma> of K_U is a (rectilinear) subsimplex of some simplex of K.
+    Moise proof: U is a countable union of small closed simplices; each lies in
+    some \<sigma>\<in>K and admits a rectilinear subdivision. Assemble via countable
+    matching and subdivision refinement. **)
 theorem Theorem_GT_8_2:
   fixes K :: "'a::real_normed_vector set set" and U :: "'a set"
   assumes "geotop_is_complex K"
@@ -4201,7 +4215,12 @@ theorem Theorem_GT_8_2:
 (** from \<S>8 Theorem 3 (T. Radó) (geotop.tex:1674)
     LATEX VERSION: Every 2-manifold is triangulable, i.e., there is a (Euclidean) complex K
       such that M and |K| are homeomorphic; equivalently, there is a PL complex \<K> in M with
-      |\<K>| = M. **)
+      |\<K>| = M.
+    Moise proof (Rado's classical triangulation theorem, long). Use Theorem 8_1
+    to cover M by disks N_i' with h_i: \<bar>N_i\<close> \<leftrightarrow> \<bar>D\<close>. Inductively triangulate
+    each N_i' compatibly with N_j' for j < i, using h_j \<circ> h_i\<^sup>-\<^sup>1: N_i \<inter> N_j \<rightarrow> R^2
+    as a chart transition. Resolve triangulations on overlaps via 6_3
+    PL-approximation of transitions. Sum gives a global triangulation of M. **)
 theorem Theorem_GT_8_3_Rado:
   fixes M :: "'a::real_normed_vector set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
   assumes "geotop_n_manifold_on M d 2"
@@ -4215,7 +4234,11 @@ theorem Theorem_GT_8_3_Rado:
 (** from \<S>8 Theorem 4 (geotop.tex:1826)
     LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds, let U be an open set in |K_1|,
       let h be a homeomorphism U \<rightarrow> |K_2|, and let \<phi> be strongly positive on U. Then there is
-      a PLH f: U \<rightarrow> |K_2| such that f is a \<phi>-approximation of h and f(U) = h(U). **)
+      a PLH f: U \<rightarrow> |K_2| such that f is a \<phi>-approximation of h and f(U) = h(U).
+    Moise proof (geotop.tex:1828-ff.): By Theorem 8_2, U has a triangulation K_U
+    as a subcomplex of a subdivision of K_1. Apply Theorem 6_3 (PL approximation)
+    to h: |K_U| \<rightarrow> |K_2| with tolerance \<phi>. Adjust f's endpoints on \<partial> K_U to stay
+    inside h(U). **)
 theorem Theorem_GT_8_4:
   fixes K1 K2 :: "(real^2) set set"
   fixes h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
@@ -4241,7 +4264,9 @@ theorem Theorem_GT_8_4:
 (** from \<S>8 Theorem 5 (Hauptvermutung for 2-manifolds) (geotop.tex:1844)
     LATEX VERSION: Let K_1 and K_2 be triangulated 2-manifolds. If there is a homeomorphism
       |K_1| \<leftrightarrow> |K_2|, then there is a PLH |K_1| \<leftrightarrow> |K_2|. Thus, for triangulated 2-manifolds,
-      homeomorphism implies combinatorial equivalence. **)
+      homeomorphism implies combinatorial equivalence.
+    Moise proof: apply Theorem 8_4 (with U = |K_1|) to get a PLH approximation
+    of h. The approximation is PLH by construction; conclude comb_equiv. **)
 theorem Theorem_GT_8_5_Hauptvermutung_2d:
   fixes K1 K2 :: "(real^2) set set"
   fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
