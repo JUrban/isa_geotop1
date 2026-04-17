@@ -2316,10 +2316,69 @@ definition geotop_polygon_exterior :: "(real^2) set \<Rightarrow> (real^2) set" 
     LATEX VERSION: Let I be the interior of the polygon J in R^2. Then \<bar>I\<close> is a finite polyhedron. **)
 theorem Theorem_GT_2_2:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "\<exists>K. geotop_is_complex K \<and> finite K \<and>
     geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  sorry
+  (** Moise proof (geotop.tex:557). Let L\<^sub>1, \<dots>, L\<^sub>n be the lines that
+      contain edges of J; finite in number. Each L\<^sub>i splits R\<^sup>2 into two closed
+      half-planes; any finite intersection of closed half-planes is closed and
+      convex. So \<Union>L\<^sub>i decomposes R\<^sup>2 into a finite collection of closed convex
+      regions R\<^sub>1, \<dots>, R\<^sub>m with Fr R\<^sub>j \<subseteq> \<Union>L\<^sub>i.
+      Now R\<^sub>j \<inter> J \<subseteq> Fr R\<^sub>j, so either R\<^sub>j \<inter> \<bar>I\<close> \<subseteq> J or R\<^sub>j \<subseteq> \<bar>I\<close>.
+      Write \<bar>I\<close> = \<Union>\<^sub>{j\<le>k} R\<^sub>j (reindexing). For each j \<le> k, triangulate Fr R\<^sub>j
+      minimally; pick w\<^sub>j \<in> R\<^sub>j - Fr R\<^sub>j; for each 1-simplex vv' of Fr R\<^sub>j
+      form the 2-simplex w\<^sub>j v v'. Union gives a triangulation of \<bar>I\<close>. **)
+proof -
+  (** (1) The lines containing edges of J are finite in number. **)
+  obtain Ls :: "(real^2) set set" where hLs_fin: "finite Ls"
+     and hLs_lines: "\<forall>L\<in>Ls. geotop_hyperplane_dim L 1"
+     and hLs_cover: "\<forall>e. geotop_is_edge e \<and> e \<subseteq> J \<longrightarrow> (\<exists>L\<in>Ls. e \<subseteq> L)"
+    sorry
+  (** (2) The union of these lines decomposes R\<^sup>2 into finitely many closed
+      convex regions R\<^sub>j with Fr R\<^sub>j \<subseteq> \<Union>Ls. **)
+  obtain Rs :: "(real^2) set set" where hRs_fin: "finite Rs"
+     and hRs_conv: "\<forall>R\<in>Rs. convex R"
+     and hRs_closed: "\<forall>R\<in>Rs. closed R"
+     and hRs_fr: "\<forall>R\<in>Rs. frontier R \<subseteq> \<Union>Ls"
+     and hRs_cover: "\<Union>Rs = (UNIV::(real^2) set)"
+    sorry
+  (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
+  define Ibar where
+    "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  have hRj_dichotomy: "\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J"
+    sorry
+  (** (4) Select the \"inside\" regions Rs_in = {R \<in> Rs. R \<subseteq> \<bar>I\<close>}; their union covers \<bar>I\<close>. **)
+  define Rs_in where "Rs_in = {R\<in>Rs. R \<subseteq> Ibar}"
+  have hRs_in_fin: "finite Rs_in" using hRs_fin Rs_in_def by simp
+  have hRs_in_cover: "\<Union>Rs_in = Ibar" sorry
+  (** (5) Triangulate each R \<in> Rs_in: pick w \<in> R - Fr R (nonempty interior;
+      legitimate since R is a 2-dim closed convex region with nonempty interior
+      in the \<bar>I\<close> case), and for each 1-simplex vv' of a minimal triangulation
+      of Fr R, form the 2-simplex w v v'. **)
+  obtain wpt :: "(real^2) set \<Rightarrow> real^2" where
+    hwpt: "\<forall>R\<in>Rs_in. wpt R \<in> R - frontier R"
+    sorry
+  obtain FrTri :: "(real^2) set \<Rightarrow> (real^2) set set" where
+    hFrTri_fin: "\<forall>R\<in>Rs_in. finite (FrTri R)"
+    and hFrTri_edges: "\<forall>R\<in>Rs_in. \<forall>e\<in>FrTri R. geotop_is_edge e \<and> e \<subseteq> frontier R"
+    and hFrTri_cover: "\<forall>R\<in>Rs_in. \<Union>(FrTri R) = frontier R"
+    and hFrTri_disj: "\<forall>R\<in>Rs_in. \<forall>e1\<in>FrTri R. \<forall>e2\<in>FrTri R.
+                         e1 \<noteq> e2 \<longrightarrow> geotop_is_face (e1 \<inter> e2) e1 \<or> e1 \<inter> e2 = {}"
+    sorry
+  (** Simplexes of the triangulation of R\<^sub>j: the 2-simplex w\<^sub>j v v' per edge vv',
+      plus all faces. **)
+  define K_R :: "(real^2) set \<Rightarrow> (real^2) set set" where
+    "K_R R = {\<sigma>. \<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                  \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}"
+  define K :: "(real^2) set set" where "K = (\<Union>R\<in>Rs_in. K_R R)"
+  (** (6a) K is a complex. **)
+  have hK_complex: "geotop_is_complex K" sorry
+  (** (6b) K is finite. **)
+  have hK_fin: "finite K" sorry
+  (** (6c) |K| = \<bar>I\<close>. **)
+  have hK_poly: "geotop_polyhedron K = Ibar" sorry
+  show ?thesis using hK_complex hK_fin hK_poly Ibar_def by blast
+qed
 
 (** from \<S>2 Theorem 3 (geotop.tex:579)
     LATEX VERSION: No broken line separates R^2. That is, if B is a broken line in R^2,
@@ -2841,45 +2900,137 @@ definition geotop_free_2_simplex ::
       triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
 theorem Theorem_GT_3_3:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
-  assumes "geotop_is_polygon J"
-  assumes "geotop_is_complex K"
-  assumes "geotop_polyhedron K =
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hKI: "geotop_polyhedron K =
     closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+  assumes hcard: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
   shows "\<exists>\<sigma>\<^sub>2. geotop_free_2_simplex K J \<sigma>\<^sub>2"
-  sorry
+  (** Moise proof (geotop.tex:764). The stronger claim: K has at least two free
+      2-simplexes, by induction on the number of 2-simplexes.
+      Base: exactly 2 two-simplexes \<Rightarrow> both free.
+      Inductive: \<ge> 3 two-simplexes. \<exists> two 2-simplexes \<sigma>, \<tau> with an edge in Fr|K|.
+      If both free, done. Otherwise \<sigma> = v\<^sub>0 v\<^sub>1 v\<^sub>2 with v\<^sub>0 v\<^sub>1 \<subseteq> Fr|K| but \<sigma> not free.
+      Then v\<^sub>0 v\<^sub>2, v\<^sub>1 v\<^sub>2 \<notin> Fr|K| (geometry). v\<^sub>0 and v\<^sub>2 decompose J = Fr|K|
+      into two broken lines C\<^sub>1, C\<^sub>2; |K| = \<bar>I\<^sub>1\<close> \<union> \<bar>I\<^sub>2\<close> where I\<^sub>i = interior(C\<^sub>i \<union> v\<^sub>0 v\<^sub>2).
+      L\<^sub>1 = simplexes of K in \<bar>I\<^sub>1\<close> \<union> {v\<^sub>0 v\<^sub>1 v\<^sub>2, faces}; L\<^sub>2 = simplexes in \<bar>I\<^sub>2\<close>.
+      Induction: each L\<^sub>i has 2 free 2-simplexes. Pick \<sigma>\<^sub>i \<ne> v\<^sub>0 v\<^sub>1 v\<^sub>2 in L\<^sub>i.
+      Each \<sigma>\<^sub>i is free in K (not just L\<^sub>i). **)
+proof -
+  (** Strengthen to \"K has \<ge> 2 free 2-simplexes\" (induction hypothesis). **)
+  have strong_claim: "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+    sorry
+  have hex: "\<exists>\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2" sorry
+  then show ?thesis by blast
+qed
 
 (** from \<S>3 Theorem 4 (geotop.tex:782)
     LATEX VERSION: Let J be a polygon in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
       such that h(J) is the frontier of a 2-simplex. **)
 theorem Theorem_GT_3_4:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
                  UNIV geotop_euclidean_topology h
           \<and> geotop_simplex_dim \<sigma> 2
           \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-  sorry
+  (** Moise proof (geotop.tex:783): Let I = Int J; K = triangulation of \<bar>I\<close>.
+      Any free 2-simplex of K can be removed by a homeomorphism R\<^sup>2 \<leftrightarrow> R\<^sup>2.
+      Case 1: v\<^sub>0v\<^sub>1v\<^sub>2 free with intersection only edge v\<^sub>0v\<^sub>2 in Fr|K|; fold v\<^sub>1
+              along an extended quadrilateral (Fig 3.3). Reduces #2-simplexes by 1.
+      Case 2: v\<^sub>0v\<^sub>1v\<^sub>2 free with intersection = v\<^sub>0v\<^sub>1 \<union> v\<^sub>1v\<^sub>2 in Fr|K|; use inverse.
+      By induction on #2-simplexes: eventually K reduces to a single 2-simplex \<sigma>
+      whose frontier is the image of J. **)
+proof -
+  (** Triangulate \<bar>I\<close> via Theorem_GT_2_2. **)
+  obtain K where hK: "geotop_is_complex K" and hK_fin: "finite K"
+             and hK_poly: "geotop_polyhedron K =
+                             closure_on UNIV geotop_euclidean_topology
+                               (geotop_polygon_interior J)"
+    using Theorem_GT_2_2[OF hJ] by blast
+  (** By induction on #2-simplexes of K, with base case \"exactly 1 two-simplex\"
+      (K = single 2-simplex \<sigma>, h = id, h(J) = Fr \<sigma>). **)
+  have ind_claim:
+    "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+          geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
+          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+                \<and> geotop_simplex_dim \<sigma> 2
+                \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    sorry
+  show ?thesis using ind_claim[OF hK hK_fin hK_poly] .
+qed
 
 (** from \<S>3 Theorem 5 (Schönflies for polygons) (geotop.tex:801)
     LATEX VERSION: Let J and J' be polygons in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
       J \<leftrightarrow> J'. **)
 theorem Theorem_GT_3_5:
   fixes J J' :: "(real^2) set"
-  assumes "geotop_is_polygon J" and "geotop_is_polygon J'"
+  assumes hJ: "geotop_is_polygon J" and hJ': "geotop_is_polygon J'"
   shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> h ` J = J'"
-  sorry
+  (** Moise proof (geotop.tex:805): By Theorem 4, \<exists>f\<^sub>1 homeo R\<^sup>2 \<leftrightarrow> R\<^sup>2 with
+      f\<^sub>1(J) = Fr \<sigma>\<^sup>2, and \<exists>f\<^sub>2 homeo R\<^sup>2 \<leftrightarrow> R\<^sup>2 with f\<^sub>2(J') = Fr \<tau>\<^sup>2.
+      By Theorem 2 (simplicial homeo between 2-simplexes), \<exists>f\<^sub>3 homeo R\<^sup>2 \<leftrightarrow> R\<^sup>2
+      with f\<^sub>3(\<sigma>\<^sup>2) = \<tau>\<^sup>2 (hence f\<^sub>3(Fr \<sigma>\<^sup>2) = Fr \<tau>\<^sup>2).
+      Let h = f\<^sub>2\<^sup>-\<^sup>1 \<circ> f\<^sub>3 \<circ> f\<^sub>1. Then h(J) = J'. **)
+proof -
+  obtain f\<^sub>1 \<sigma> where hf1: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                              UNIV geotop_euclidean_topology f\<^sub>1"
+                   and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+                   and hf1J: "f\<^sub>1 ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    using Theorem_GT_3_4[OF hJ] by blast
+  obtain f\<^sub>2 \<tau> where hf2: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                              UNIV geotop_euclidean_topology f\<^sub>2"
+                   and h\<tau>: "geotop_simplex_dim \<tau> 2"
+                   and hf2J': "f\<^sub>2 ` J' = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+    using Theorem_GT_3_4[OF hJ'] by blast
+  (** Theorem 2 (3_2): homeomorphism g: R\<^sup>2 \<leftrightarrow> R\<^sup>2 with g(\<sigma>) = \<tau>. Need vertex sets for \<sigma>, \<tau>. **)
+  have hf3: "\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology f\<^sub>3
+                  \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
+                    = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+    sorry
+  (** Compose h = f\<^sub>2\<^sup>-\<^sup>1 \<circ> f\<^sub>3 \<circ> f\<^sub>1. **)
+  have hh: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h
+                \<and> h ` J = J'"
+    sorry
+  show ?thesis using hh .
+qed
 
 (** from \<S>3 Theorem 6 (geotop.tex:821)
     LATEX VERSION: Every polygon in R^2 is the frontier of a 2-cell in R^2. **)
 theorem Theorem_GT_3_6:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
         \<and> J = geotop_frontier UNIV geotop_euclidean_topology D"
-  sorry
+  (** Moise proof (geotop.tex:821-822, below-the-diagram sentence):
+      By Theorem 3.4, \<exists>h: R\<^sup>2 \<leftrightarrow> R\<^sup>2 with h(J) = Fr \<sigma>\<^sup>2 for a 2-simplex \<sigma>\<^sup>2.
+      Then h\<^sup>-\<^sup>1(\<sigma>\<^sup>2) is a 2-cell with frontier h\<^sup>-\<^sup>1(Fr \<sigma>\<^sup>2) = J.
+      A 2-simplex is itself a 2-cell; the homeomorphic preimage of a 2-cell is a 2-cell;
+      frontier commutes with homeomorphisms of R\<^sup>2. **)
+proof -
+  obtain h \<sigma> where hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                          UNIV geotop_euclidean_topology h"
+             and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+             and hhJ: "h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    using Theorem_GT_3_4[OF hJ] by blast
+  (** \<sigma>\<^sup>2 is a 2-cell (simplex is an n-cell via identity homeomorphism). **)
+  have h\<sigma>_ncell: "geotop_is_n_cell \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) 2"
+    sorry
+  (** Preimage of a 2-cell under a homeomorphism is a 2-cell. **)
+  define D :: "(real^2) set" where "D = {P. h P \<in> \<sigma>}"
+  have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+    sorry
+  (** Frontier commutes with homeomorphism of R\<^sup>2: h(Fr D) = Fr (h(D)) = Fr \<sigma>. **)
+  have hD_fr: "J = geotop_frontier UNIV geotop_euclidean_topology D"
+    sorry
+  show ?thesis using hD_ncell hD_fr by blast
+qed
 
 (** from \<S>3 Theorem 7 (geotop.tex:824)
     LATEX VERSION: Let J be a polygon in R^2 with interior I, and let U be an open set
