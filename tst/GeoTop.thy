@@ -3123,7 +3123,7 @@ proof -
          top1_homeomorphism_on \<sigma>
            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
            (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
-  show ?thesis sorry
+  show ?thesis using h_f_def by (by100 blast)
 qed
 
 (** from \<S>3 Theorem 2 (geotop.tex:735)
