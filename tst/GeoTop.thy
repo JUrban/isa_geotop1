@@ -3732,16 +3732,37 @@ definition geotop_set_distance ::
 theorem Theorem_GT_6_1:
   fixes e :: "(real^2) set" and A :: "(real^2) set"
   fixes h :: "real^2 \<Rightarrow> real^2" and \<epsilon> :: real
-  assumes "geotop_is_edge e"
-  assumes "top1_homeomorphism_on e (subspace_topology UNIV geotop_euclidean_topology e)
+  assumes he: "geotop_is_edge e"
+  assumes hh: "top1_homeomorphism_on e (subspace_topology UNIV geotop_euclidean_topology e)
              A (subspace_topology UNIV geotop_euclidean_topology A) h"
-  assumes "\<epsilon> > 0"
-  assumes "geotop_simplex_vertices e {v, v'}"
-  assumes "P = h v" and "Q = h v'"
+  assumes h\<epsilon>: "\<epsilon> > 0"
+  assumes hvs: "geotop_simplex_vertices e {v, v'}"
+  assumes hP: "P = h v" and hQ: "Q = h v'"
   shows "\<exists>B. geotop_is_broken_line B \<and>
           B \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>
           \<and> P \<in> B \<and> Q \<in> B"
-  sorry
+  (** Moise proof (geotop.tex:1221): N(A,\<epsilon>) is open and connected (Theorems
+      1_3, 1_7, and Problem 1.26 - the \<epsilon>-neighborhood of a connected set is
+      connected). Therefore N(A,\<epsilon>) is broken-line-wise connected (Theorem 1_13).
+      Apply broken-line-connectedness between P and Q. **)
+proof -
+  define N\<epsilon> where "N\<epsilon> = geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>"
+  (** Step 1: N\<epsilon> is open (in the ambient R^2 topology). **)
+  have hN_open: "N\<epsilon> \<in> geotop_euclidean_topology" sorry
+  (** Step 2: N\<epsilon> is connected (nbhd of connected set A = image of connected arc). **)
+  have hN_conn: "top1_connected_on N\<epsilon>
+                   (subspace_topology UNIV geotop_euclidean_topology N\<epsilon>)" sorry
+  (** Step 3: N\<epsilon> is broken-line-connected (Theorem 1_13). **)
+  have hN_bl: "geotop_broken_line_connected N\<epsilon>"
+    using Theorem_GT_1_13[OF hN_open hN_conn] .
+  (** Step 4: P, Q are in N\<epsilon> (since both in A \<subseteq> N(A, \<epsilon>)). **)
+  have hP_N: "P \<in> N\<epsilon>" sorry
+  have hQ_N: "Q \<in> N\<epsilon>" sorry
+  (** Step 5: apply broken-line-connectedness. **)
+  obtain B where hB: "geotop_is_broken_line B \<and> B \<subseteq> N\<epsilon> \<and> P \<in> B \<and> Q \<in> B"
+    using hN_bl hP_N hQ_N unfolding geotop_broken_line_connected_def by blast
+  show ?thesis using hB unfolding N\<epsilon>_def by blast
+qed
 
 (** from \<S>6 Theorem 2 (geotop.tex:1223)
     LATEX VERSION: Let K^1 be a 1-dimensional complex (not necessarily finite), let h be a
@@ -3750,12 +3771,12 @@ theorem Theorem_GT_6_1:
       v of K^1, h(v) = f(v). **)
 theorem Theorem_GT_6_2:
   fixes K1 :: "(real^2) set set" and h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
-  assumes "geotop_is_complex K1"
-  assumes "\<forall>\<sigma>\<in>K1. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+  assumes hK1: "geotop_is_complex K1"
+  assumes hK1_1d: "\<forall>\<sigma>\<in>K1. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes hh: "top1_homeomorphism_on (geotop_polyhedron K1)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
              UNIV geotop_euclidean_topology h"
-  assumes "geotop_strongly_positive (geotop_polyhedron K1)
+  assumes h\<phi>: "geotop_strongly_positive (geotop_polyhedron K1)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)) \<phi>"
   shows "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
@@ -3763,7 +3784,20 @@ theorem Theorem_GT_6_2:
           \<and> geotop_PL_map K1 (SOME L. geotop_is_complex L \<and> f ` geotop_polyhedron K1 = geotop_polyhedron L) f
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)
           \<and> (\<forall>v\<in>geotop_complex_vertices K1. h v = f v)"
-  sorry
+  (** Moise proof (geotop.tex:1227): For each edge e of K_1, let
+      \<epsilon>_e = inf(\<phi>|e) > 0 (strong positivity). By uniform continuity of h|e,
+      get subdivision L of K_1 with \<delta>h(v_i v_j) < \<epsilon>_e / 3 for each edge v_i v_j
+      of L inside e. Let w_i = h(v_i), A_ij = h(v_i v_j).
+      For each i, let N_i = N(w_i, \<epsilon>_i) = small ball around w_i, C_i = Fr N_i.
+      Define f on each v_i v_j to be a PL path (by Theorem 6_1) from w_i to w_j
+      staying inside N(A_ij, \<epsilon>_ij) \<subseteq> N(A_ij, \<epsilon>_e/3). Then f is globally a PL
+      homeomorphism satisfying (1), (2). **)
+proof -
+  (** Step 1: uniform continuity + inf-\<phi> on each edge gives subdivision L. **)
+  obtain L where hL_sub: "geotop_is_subdivision L K1" sorry
+  (** Step 2-3: Moise's PL construction yields f; details deferred. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>6 Theorem 3 (geotop.tex:1326)
     LATEX VERSION: Let K be a combinatorial 2-manifold with boundary (not necessarily finite),
@@ -3772,12 +3806,12 @@ theorem Theorem_GT_6_2:
 theorem Theorem_GT_6_3:
   fixes K :: "(real^2) set set" and h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
   fixes M :: "(real^2) set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
+  assumes hh: "top1_homeomorphism_on (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
              M (subspace_topology UNIV geotop_euclidean_topology M) h"
-  assumes "geotop_strongly_positive (geotop_polyhedron K)
+  assumes h\<phi>: "geotop_strongly_positive (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<phi>"
   shows "\<exists>f L. geotop_is_complex L \<and>
           top1_homeomorphism_on (geotop_polyhedron K)
@@ -3786,7 +3820,20 @@ theorem Theorem_GT_6_3:
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) f
           \<and> geotop_PLH K L f
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K)"
-  sorry
+  (** Moise proof (geotop.tex:1326-1396, long). Sketch:
+      Step (1): Apply Theorem 6_2 to K^1 (the 1-skeleton) to get a PL
+      approximation of h|K^1.
+      Step (2): The PL approximation on K^1 extends \<phi>-approximately to each
+      2-simplex via barycentric-coordinate interpolation combined with
+      Theorems 4_7 (frame) and Schoenflies for polygons (3_4).
+      Step (3): Patching together on individual 2-simplexes yields the
+      required PLH f on |K|. **)
+proof -
+  (** Step 1: PL approximation of h on K^1 via Theorem 6_2. **)
+  obtain f1 where hf1_PL: "\<exists>L. geotop_is_complex L" sorry
+  (** Step 2: Extend to each 2-simplex via Schoenflies + barycentric interpolation. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>6 Theorem 4 (geotop.tex:1397)
     LATEX VERSION: Let K_1 be a combinatorial 2-manifold with boundary, let K_2 be a
@@ -3796,19 +3843,28 @@ theorem Theorem_GT_6_4:
   fixes K1 K2 :: "(real^2) set set"
   fixes h :: "real^2 \<Rightarrow> real^2" and \<phi> :: "real^2 \<Rightarrow> real"
   fixes d1 d2 :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes "geotop_is_complex K1"
-  assumes "geotop_is_complex K2"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) d1 2"
-  assumes "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K1)
+  assumes hK1: "geotop_is_complex K1"
+  assumes hK2: "geotop_is_complex K2"
+  assumes hM1: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) d1 2"
+  assumes hM2: "geotop_n_manifold_on (geotop_polyhedron K2) d2 2"
+  assumes hh: "top1_homeomorphism_on (geotop_polyhedron K1)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
              (geotop_polyhedron K2)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h"
-  assumes "geotop_strongly_positive (geotop_polyhedron K1)
+  assumes h\<phi>: "geotop_strongly_positive (geotop_polyhedron K1)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1)) \<phi>"
   shows "\<exists>f. geotop_PLH K1 K2 f
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)"
-  sorry
+  (** Moise proof (geotop.tex:1397-ff.): Apply Theorem 6_3 to embed |K_1|
+      into R^2 via h, getting a PL f_1: |K_1| \<leftrightarrow> |L_1|. K_2 is a 2-manifold
+      in R^2 containing h(|K_1|). By combinatorial-equivalence theory (Theorem
+      5_5), there is a common subdivision matching f_1(|K_1|) with K_2. **)
+proof -
+  (** Step 1: apply Theorem 6_3 to get PL f_1 for h. **)
+  obtain f1 where hf1: "\<exists>L. geotop_is_complex L" sorry
+  (** Step 2: adjust f_1 to land in K_2 using subdivision matching. **)
+  show ?thesis sorry
+qed
 
 
 section \<open>\<S>7 Abstract complexes and PL complexes\<close>
