@@ -4110,8 +4110,7 @@ theorem Theorem_GT_22_3:
              geotop_top_interior UNIV geotop_euclidean_topology D' = {} \<and>
              (\<forall>S\<in>Ss. geotop_top_interior UNIV geotop_euclidean_topology S \<inter>
                (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
-                geotop_top_interior UNIV geotop_euclidean_topology D') = {}) \<and>
-             True"
+                geotop_top_interior UNIV geotop_euclidean_topology D') = {})"
   sorry
 
 (** from \<S>22 Theorem 4 (geotop.tex:4864)
