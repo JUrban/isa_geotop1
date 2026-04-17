@@ -4336,9 +4336,9 @@ text \<open>Already defined as \<open>geotop_is_n_sphere\<close> and \<open>geot
       disjoint connected open sets U, V, such that J = Fr U = Fr V. **)
 theorem Theorem_GT_10_1:
   fixes J S2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "J \<subseteq> S2"
+  assumes hS2: "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJsub: "J \<subseteq> S2"
   shows "\<exists>U V. U \<union> V = S2 - J \<and> U \<inter> V = {} \<and>
            U \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
            V \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
@@ -4346,38 +4346,106 @@ theorem Theorem_GT_10_1:
            top1_connected_on V (subspace_topology UNIV geotop_euclidean_topology V) \<and>
            J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) U \<and>
            J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V"
-  sorry
+  (** Moise proof (geotop.tex:1986): delete a point of S^2 - J, apply Jordan
+      curve theorem in R^2 (= S^2 minus a point via stereographic projection),
+      then reinstate the deleted point. **)
+proof -
+  (** Pick point P in S2 - J. **)
+  obtain P where hP: "P \<in> S2 - J" sorry
+  (** Stereographic projection S^2 \\ {P} homeomorphic to R^2. **)
+  obtain \<phi> where h\<phi>: "top1_homeomorphism_on (S2 - {P})
+                          (subspace_topology UNIV geotop_euclidean_topology (S2 - {P}))
+                          (UNIV::'a set) geotop_euclidean_topology \<phi>"
+    sorry
+  (** J lies in S2 - {P} (since P in S2 - J). Image \<phi>(J) is a 1-sphere in R^2. **)
+  have h\<phi>J_sphere: "geotop_is_n_sphere (\<phi> ` J)
+                       (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1"
+    sorry
+  (** Apply Jordan curve (Theorem_4_6 + 4_3 + 4_7): R^2 - \<phi>(J) is 2 connected
+      open sets U', V' with frontier \<phi>(J). **)
+  obtain U' V' where hUV': "U' \<union> V' = UNIV - \<phi> ` J \<and> U' \<inter> V' = {}"
+    sorry
+  (** Pull back: U = \<phi>^{-1}(U'), V = \<phi>^{-1}(V'). Reinstate P in whichever
+      component contains it in the limit. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>10 Theorem 2 (geotop.tex:1989)
     LATEX VERSION: Let J be a 1-sphere in a 2-sphere S^2. Then S^2 is the union of two 2-cells
       with J as their common frontier. **)
 theorem Theorem_GT_10_2:
   fixes J S2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "J \<subseteq> S2"
+  assumes hS2: "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJsub: "J \<subseteq> S2"
   shows "\<exists>C1 C2. S2 = C1 \<union> C2 \<and>
            geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2 \<and>
            geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
            J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1 \<and>
            J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
-  sorry
+  (** Moise proof (geotop.tex:1989, \"extension of Schönflies\"): by Theorem 9.6
+      (polygonal Schoenflies, applied after stereographic projection onto R^2),
+      each of the two components U, V from Theorem 10.1 has closure a 2-cell,
+      and J is their common frontier. **)
+proof -
+  (** Step 1: get two open components from Theorem 10.1. **)
+  obtain U V where hUV: "U \<union> V = S2 - J \<and> U \<inter> V = {}"
+              and hUJ: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) U"
+              and hVJ: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) V"
+    using Theorem_GT_10_1[OF hS2 hJ hJsub] by blast
+  (** Step 2: Closure of each is a 2-cell via Theorem 9_6. **)
+  define C1 where "C1 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) U"
+  define C2 where "C2 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) V"
+  have hC1_cell: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2"
+    sorry
+  have hC2_cell: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+    sorry
+  have hS2_eq: "S2 = C1 \<union> C2" sorry
+  have hC1_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1"
+    sorry
+  have hC2_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
+    sorry
+  show ?thesis using hC1_cell hC2_cell hS2_eq hC1_Fr hC2_Fr by blast
+qed
 
 (** from \<S>10 Theorem 3 (geotop.tex:1991)
     LATEX VERSION: Let J be a 1-sphere in a 2-sphere S^2, and let h: J \<leftrightarrow> J' \<subset> S^2. Then h can
       be extended to give a homeomorphism S^2 \<leftrightarrow> S^2. **)
 theorem Theorem_GT_10_3:
   fixes J J' S2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "geotop_is_n_sphere J' (subspace_topology UNIV geotop_euclidean_topology J') 1"
-  assumes "J \<subseteq> S2" and "J' \<subseteq> S2"
-  assumes "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
+  assumes hS2: "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJ': "geotop_is_n_sphere J' (subspace_topology UNIV geotop_euclidean_topology J') 1"
+  assumes hJsub: "J \<subseteq> S2" and hJ'sub: "J' \<subseteq> S2"
+  assumes hh: "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
              J' (subspace_topology UNIV geotop_euclidean_topology J') h"
   shows "\<exists>H. top1_homeomorphism_on S2 (subspace_topology UNIV geotop_euclidean_topology S2)
                S2 (subspace_topology UNIV geotop_euclidean_topology S2) H
           \<and> (\<forall>x\<in>J. H x = h x)"
-  sorry
+  (** Moise proof (geotop.tex:1993): by Theorem 10.2, S^2 = C_1 \<union> C_2 with
+      common boundary J (similarly C_1', C_2' for J'). By Theorem 5.6
+      (PLH extension), h extends to each C_i \<leftrightarrow> C_i'. Paste. **)
+proof -
+  obtain C1 C2 where hS2_decomp: "S2 = C1 \<union> C2"
+                  and hC1_cell: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2"
+                  and hC2_cell: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+                  and hC1_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1"
+                  and hC2_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
+    using Theorem_GT_10_2[OF hS2 hJ hJsub] by blast
+  obtain C1' C2' where hS2'_decomp: "S2 = C1' \<union> C2'"
+                    and hC1'_cell: "geotop_is_n_cell C1' (subspace_topology UNIV geotop_euclidean_topology C1') 2"
+                    and hC2'_cell: "geotop_is_n_cell C2' (subspace_topology UNIV geotop_euclidean_topology C2') 2"
+                    and hC1'_Fr: "J' = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1'"
+                    and hC2'_Fr: "J' = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2'"
+    using Theorem_GT_10_2[OF hS2 hJ' hJ'sub] by blast
+  (** Extend h: J \<leftrightarrow> J' to each C_i \<leftrightarrow> C_i' via Theorem_GT_5_6 (combinatorial
+      2-cell PLH extension) and its topological analogue. **)
+  have hH: "\<exists>H. top1_homeomorphism_on S2 (subspace_topology UNIV geotop_euclidean_topology S2)
+                   S2 (subspace_topology UNIV geotop_euclidean_topology S2) H
+                 \<and> (\<forall>x\<in>J. H x = h x)"
+    sorry
+  show ?thesis using hH .
+qed
 
 (** from \<S>10 Theorem 4 (Schönflies theorem, second form) (geotop.tex:1997)
     LATEX VERSION: Let J be a 1-sphere in R^2. Then every homeomorphism of J into R^2 can be
@@ -4385,13 +4453,22 @@ theorem Theorem_GT_10_3:
 theorem Theorem_GT_10_4_Schoenflies_2:
   fixes J :: "(real^2) set"
   fixes h :: "real^2 \<Rightarrow> real^2"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hh: "top1_homeomorphism_on J (subspace_topology UNIV geotop_euclidean_topology J)
              (h ` J) (subspace_topology UNIV geotop_euclidean_topology (h ` J)) h"
   shows "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology H
           \<and> (\<forall>x\<in>J. H x = h x)"
-  sorry
+  (** Moise proof (geotop.tex:1999): \"Deducible from 10.3.\" Lift R^2 to S^2 by
+      adding point at infinity; apply 10.3 on S^2; restrict. **)
+proof -
+  (** Compactify R^2 to S^2 by adding point at infinity. h extends to h* on
+      the one-point compactifications, which are both 2-spheres. **)
+  have h_lift: "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology H \<and> (\<forall>x\<in>J. H x = h x)"
+    sorry
+  show ?thesis using h_lift .
+qed
 
 (** from \<S>10: tame imbedding (geotop.tex:2000)
     LATEX VERSION: Let M be a set in R^n, such that M (as a space) is triangulable. If there
@@ -4419,9 +4496,32 @@ definition geotop_is_wild :: "'a::real_normed_vector set \<Rightarrow> bool" whe
     LATEX VERSION: In R^2, every 1-sphere is tame. **)
 theorem Theorem_GT_10_5:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
   shows "geotop_is_tame J"
-  sorry
+  (** Moise proof (geotop.tex:2006): \"Theorem 4 [= 10.4] gives immediately\".
+      Fix any polygon P ~ J (e.g. a triangle bounding a 2-simplex); let
+      f: J \<leftrightarrow> P be a homeomorphism. By 10.4, f extends to H: R^2 \<leftrightarrow> R^2
+      with H(J) = P. H shows that J is tame. **)
+proof -
+  (** Pick a concrete polygon P (e.g., the unit-triangle Fr sigma for some 2-simplex). **)
+  obtain P::"(real^2) set" where hP_polygon: "geotop_is_polygon P"
+    sorry
+  (** Homeomorphism J \<leftrightarrow> P exists since both are 1-spheres in R^2. **)
+  obtain f where hf: "top1_homeomorphism_on J
+                        (subspace_topology UNIV geotop_euclidean_topology J)
+                        P (subspace_topology UNIV geotop_euclidean_topology P) f"
+    sorry
+  (** Extend f to all of R^2 by Theorem 10.4. **)
+  obtain H where hH: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                         UNIV geotop_euclidean_topology H"
+              and hHJ: "\<forall>x\<in>J. H x = f x"
+    sorry
+  (** H(J) is a polygon. **)
+  have hHJ_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J"
+    sorry
+  (** Conclude J is tame. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>10 Theorem 6 (The frame theorem) (geotop.tex:2009)
     LATEX VERSION: Let M be a compact set in R^2, and U an open set containing M. Then there
