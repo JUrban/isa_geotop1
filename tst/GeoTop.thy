@@ -5538,7 +5538,17 @@ definition geotop_outer_boundary ::
 (** from \<S>13 Theorem 1 (geotop.tex:2545)
     LATEX VERSION: Let A and A' be k-annuli in R^2, with boundaries \<union> J_i and \<union> J'_i, and let
       f be a homeomorphism J_0 \<leftrightarrow> J'_0. Then f can be extended so as to give a homeomorphism
-      A \<leftrightarrow> A', R^2 \<leftrightarrow> R^2, J_i \<leftrightarrow> J'_i. **)
+      A \<leftrightarrow> A', R^2 \<leftrightarrow> R^2, J_i \<leftrightarrow> J'_i.
+    Moise proof (geotop.tex:2548). A is compact, so translate A' far from A; reduces to
+      A \<inter> A' = {}. By Tame imbedding (10.13) assume Bd A, Bd A' are polyhedra (so A, A' are
+      polyhedra). Induct on k. (I) k=1: broken line B from J_0 to J_1 hitting Bd A only at
+      endpoints P_0, P_1; let P_0' = f(P_0), B' broken line in A' to P_1' \<in> J_1'. Two disjoint
+      broken lines B_1, B_2 close to B decompose A into 2-cells D_1 \<supseteq> B and D_2; copy config to
+      A'; extend f stage by stage: B_i \<leftrightarrow> B_i', D_1 \<leftrightarrow> D_1', B_6 \<leftrightarrow> B_6', D_2 \<leftrightarrow> D_2', D_3 \<leftrightarrow> D_3',
+      exterior of J_0 \<leftrightarrow> exterior of J_0'. (II) (k+1)-annuli: broken line B from J_0 to J_1,
+      build D_1, D_1'; let D_3 = closure of interior of J_1, etc.; set A_k = Cl(A - D_1),
+      A_k' = Cl(A' - D_1'); extend so D_1 \<leftrightarrow> D_1', D_3 \<leftrightarrow> D_3', by induction A_k \<leftrightarrow> A_k',
+      then exterior of J_0. **)
 theorem Theorem_GT_13_1:
   fixes A A' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes "geotop_is_k_annulus k A" and "geotop_is_k_annulus k A'"
@@ -5555,7 +5565,10 @@ theorem Theorem_GT_13_1:
 (** from \<S>13 Theorem 2 (geotop.tex:2572)
     LATEX VERSION: Let A be a k-annulus in R^2, and let B be the union of some or all of the
       boundary components J_1, J_2, \<dots>, J_k. Then there is a 2-cell C such that (1) Bd C \<subseteq> Int A,
-      (2) B \<subseteq> Int C, and (3) C contains no point of Bd A - B. **)
+      (2) B \<subseteq> Int C, and (3) C contains no point of Bd A - B.
+    Moise proof (geotop.tex:2576). By Theorem 13.1, reduce to the case in which all J_i are
+      circles, with J_i a very small circle for every i > 0. In that case C is the trivial
+      union of the tiny disks plus thin tubes, so the construction of C is elementary. **)
 theorem Theorem_GT_13_2:
   fixes A B :: "(real^2) set"
   assumes "geotop_is_k_annulus k A"
@@ -5572,7 +5585,11 @@ theorem Theorem_GT_13_2:
     LATEX VERSION: Let C^2 be a 2-cell, with Bd C^2 = J = B_1 \<union> B_2, where B_1 and B_2 are
       arcs with common end-points Q, S. Let M_1 and M_2 be disjoint closed sets in C^2, such
       that M_i \<inter> J \<subseteq> Int B_i (i = 1, 2). Then Q and S are in the same component of
-      C^2 - (M_1 \<union> M_2). **)
+      C^2 - (M_1 \<union> M_2).
+    Moise proof (geotop.tex:2580). The proof is identical with that of Theorem 10.9 (the
+      2-cell separation lemma): reduce via Schoenflies to the unit-disk case, and argue by
+      connectedness of the complement of two closed sets which each miss one of the two
+      boundary arcs. **)
 theorem Theorem_GT_13_3:
   fixes C2 B1 B2 M1 M2 :: "(real^2) set" and Q S :: "real^2"
   assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
@@ -5592,7 +5609,13 @@ theorem Theorem_GT_13_3:
 
 (** from \<S>13 Theorem 4 (geotop.tex:2583)
     LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let U be a
-      connected open set containing M. Then U - M is connected. **)
+      connected open set containing M. Then U - M is connected.
+    Moise proof (geotop.tex:2585). Take Q, S in U - M. Join them by a broken line in U; by
+      an easy construction there is a polyhedral 2-cell C^2 with Bd C^2 = B_1 \<union> B_2 and
+      B_1 \<inter> B_2 = {Q, S}. For i = 1, 2 put A_i = M \<inter> Int B_i = M \<inter> B_i. A_1 and A_2 are
+      disjoint and closed. Since M \<inter> C^2 is compact and totally disconnected, by Theorem
+      12.3 it splits as M_1 \<union> M_2 (disjoint closed) containing A_1, A_2. By Theorem 13.3,
+      Q and S lie in the same component of C^2 - M. Hence in U - M. **)
 theorem Theorem_GT_13_4:
   fixes M U :: "(real^2) set"
   assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
@@ -5605,7 +5628,11 @@ theorem Theorem_GT_13_4:
 
 (** from \<S>13 Theorem 5 (geotop.tex:2587)
     LATEX VERSION: Let M be a totally disconnected compact set in R^2, and let N be a frame
-      of M. Then every component of N is a 2-cell. **)
+      of M. Then every component of N is a 2-cell.
+    Moise proof (geotop.tex:2589). Different components of R^2 - N lie in different
+      components of R^2 - M. Since R^2 - M is connected (Theorem 13.4), so is R^2 - N.
+      Hence each component C of N has connected boundary; so Bd C is a 1-sphere, and
+      by the Schoenflies theorem C is a 2-cell. **)
 theorem Theorem_GT_13_5:
   fixes M N :: "(real^2) set"
   assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
@@ -5618,7 +5645,11 @@ theorem Theorem_GT_13_5:
 (** from \<S>13 Theorem 6 (geotop.tex:2591)
     LATEX VERSION: Let M and N be as in Theorem 5, and let \<epsilon> be a positive number. If N lies
       in a sufficiently small neighborhood of M, then every component of N has diameter less
-      than \<epsilon>. **)
+      than \<epsilon>.
+    Moise proof (geotop.tex:2593). Write M = \<union>_{i=1..n} g_i (Theorem 12.4) with \<delta> g_i < \<epsilon>/3.
+      Pick \<alpha> > 0 sufficiently small so that N(g_i, \<alpha>) \<inter> N(g_j, \<alpha>) = \<emptyset> for i \<noteq> j, and also
+      \<alpha> < \<epsilon>/3. Take N \<subseteq> N(M, \<alpha>). Then every component D of N lies in some one set N(g_i, \<alpha>),
+      giving \<delta> D < \<epsilon>/3 + 2 \<alpha> < \<epsilon>. **)
 theorem Theorem_GT_13_6:
   fixes M :: "(real^2) set" and \<epsilon> :: real
   assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
@@ -5631,7 +5662,26 @@ theorem Theorem_GT_13_6:
 
 (** from \<S>13 Theorem 7 (geotop.tex:2595)
     LATEX VERSION: Let M and M' be totally disconnected compact sets in R^2, and let f be a
-      homeomorphism M \<leftrightarrow> M'. Then f has an extension F: R^2 \<leftrightarrow> R^2. **)
+      homeomorphism M \<leftrightarrow> M'. Then f has an extension F: R^2 \<leftrightarrow> R^2.
+    Moise proof (geotop.tex:2598). Back-and-forth construction.
+      (1) Take 2-cells A, A' with M \<subseteq> Int A, M' \<subseteq> Int A'. Take frame N_1 of M in Int A with
+          every component of diameter < 1 (Theorem 13.6). The sets f(M \<inter> C) (C a component
+          of N_1) are disjoint compact. Take a frame L of M' in Int A' with small-diameter
+          components so that no component meets two of the f(M \<inter> C). By repeated Theorem
+          13.2, produce frame N_1' of M' in Int A' so that each f(M \<inter> C) = M' \<inter> C' for a
+          component C' of N_1'. Take f_0: R^2 - Int A \<leftrightarrow> R^2 - Int A'. Let E_1 = R^2 - Int N_1,
+          E_1' analogously; by Theorem 13.1, extend f_0 to f_1: E_1 \<leftrightarrow> E_1' matching components
+          and respecting f.
+      (2) Given N_{2i-1}, N'_{2i-1}, f_{2i-1} with N_{2i-1} of component diameter < 1/(2i-1)
+          and induction hypothesis f(M \<inter> A) = M' \<inter> A' for paired components: take N'_{2i}
+          inside Int N'_{2i-1} with diameter < 1/(2i); construct N_{2i} inside Int N_{2i-1}
+          matching f^{-1} on M'-intersections; extend f_{2i-1} to f_{2i}: E_{2i} \<leftrightarrow> E'_{2i}.
+      (3) Symmetric step N_{2i}, N'_{2i}, f_{2i} \<to> N_{2i+1}, N'_{2i+1}, f_{2i+1}.
+      Set F = f \<union> \<union>_i f_i; well-defined by (e); a bijection R^2 \<leftrightarrow> R^2 by the decompositions
+      R^2 = M \<union> \<union>_i E_i = M' \<union> \<union>_i E'_i. Continuity on R^2 - M is by the f_i; continuity at
+      points of M uses that every Q = f(P) \<in> M' has arbitrarily small neighbourhoods which
+      are components D' of N'_i, and D' = F(D) for a component D of N_i. F^{-1} is continuous
+      by the symmetric argument. **)
 theorem Theorem_GT_13_7:
   fixes M M' :: "(real^2) set" and f :: "real^2 \<Rightarrow> real^2"
   assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
