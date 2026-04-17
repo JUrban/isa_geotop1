@@ -4373,7 +4373,7 @@ theorem Theorem_GT_23_5:
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_manifold_boundary M (\<lambda>x y. norm (x - y))))"
   shows "\<exists>M'. geotop_is_doubling_of M M'"
-  sorry
+  using Theorem_GT_21_11 Theorem_GT_23_3 assms(1,2) by fastforce
 
 (** from \<S>23 Theorem 6 (geotop.tex:5025)
     LATEX VERSION: Every triangulated 3-manifold K with boundary is a combinatorial
