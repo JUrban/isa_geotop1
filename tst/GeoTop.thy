@@ -8920,15 +8920,41 @@ section \<open>\<S>22 The classification of compact connected 2-manifolds\<close
       one face C^2 and (2) every edge of C is an edge of K. **)
 theorem Theorem_GT_22_1:
   fixes M :: "'a::real_normed_vector set" and K :: "'a set set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_is_complex K" and "geotop_polyhedron K = M"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK: "geotop_is_complex K" and hK_poly: "geotop_polyhedron K = M"
   shows "\<exists>\<C>. geotop_is_open_cell_complex \<C> \<and>
              \<Union>\<C> = M \<and>
              geotop_open_cell_num_faces \<C> = 1"
-  sorry
+proof -
+  (** (1) Build a maximal sequence \<sigma>_1, \<sigma>_2, ..., \<sigma>_n of distinct 2-faces of K such that
+         for each i < n, \<sigma>_{i+1} shares an edge e_i with \<union>_{j \<le> i} \<sigma>_j (constructively by
+         greedy selection, since K is finite). **)
+  obtain \<sigma>s :: "'a set list" and es :: "'a set list" where hseq:
+    "(\<forall>i < length \<sigma>s. (\<sigma>s ! i) \<in> K \<and> geotop_simplex_dim (\<sigma>s ! i) 2) \<and>
+     distinct \<sigma>s \<and>
+     (\<forall>i. 0 < i \<and> i < length \<sigma>s \<longrightarrow>
+          (\<exists>e. e \<in> K \<and> geotop_simplex_dim e 1 \<and> e = es ! (i - 1) \<and>
+               e \<subseteq> (\<sigma>s ! i) \<and> e \<subseteq> \<Union>{\<sigma>s ! j | j. j < i}))" sorry
+  (** (2) Maximality: if \<sigma>'\<in>K is a 2-face not in the sequence, then \<sigma>' has no edge in
+         common with \<union>_i \<sigma>_i. **)
+  have h_maximal:
+    "\<forall>\<sigma>'\<in>K. geotop_simplex_dim \<sigma>' 2 \<and> \<sigma>' \<notin> set \<sigma>s \<longrightarrow>
+       (\<forall>e\<in>K. geotop_simplex_dim e 1 \<and> e \<subseteq> \<sigma>' \<longrightarrow>
+          \<not> (\<exists>\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> \<tau> \<in> set \<sigma>s \<and> e \<subseteq> \<tau>))" sorry
+  (** (3) \<union>_i \<sigma>_i contains all or none of each open-star Int|St v|. Since M is connected,
+         the union equals M. **)
+  have h_cover:
+    "\<Union>(set \<sigma>s) = M" sorry
+  (** (4) Form the open cell-decomposition \<C> = {all vertices, all edges, (M - edges)}:
+         a single open 2-face (M minus the 1-skeleton), all original edges of K. **)
+  have h_cell_decomp:
+    "\<exists>\<C>. geotop_is_open_cell_complex \<C> \<and>
+         \<Union>\<C> = M \<and> geotop_open_cell_num_faces \<C> = 1" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>22: regular neighborhood of a subcomplex (geotop.tex:4681)
     LATEX VERSION: Let L be a subcomplex of K, and let b^2 K be the second barycentric
@@ -8953,14 +8979,44 @@ definition geotop_is_acyclic_linear_graph ::
       Then N(L) is a 2-cell. **)
 theorem Theorem_GT_22_2:
   fixes K L :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K" and "geotop_is_complex L" and "L \<subseteq> K"
-  assumes "top1_connected_on (geotop_polyhedron L)
+  assumes hK: "geotop_is_complex K" and hL: "geotop_is_complex L" and hLK: "L \<subseteq> K"
+  assumes hL_conn: "top1_connected_on (geotop_polyhedron L)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
-  assumes "geotop_is_acyclic_linear_graph (geotop_polyhedron L)"
+  assumes hL_acyclic: "geotop_is_acyclic_linear_graph (geotop_polyhedron L)"
   shows "geotop_is_n_cell (geotop_regular_neighborhood K L)
            (subspace_topology UNIV geotop_euclidean_topology
               (geotop_regular_neighborhood K L)) 2"
-  sorry
+proof -
+  (** (1) Induct on the number of edges of L. Base case: L is a single edge of K. Then
+         N(L) is the regular neighbourhood of a closed edge, which is a polyhedral 2-cell
+         (a thickening of the edge in b^2 K). **)
+  have h_base:
+    "\<forall>L. geotop_is_complex L \<and> L \<subseteq> K \<and> geotop_is_acyclic_linear_graph (geotop_polyhedron L) \<and>
+         card {\<sigma>\<in>L. geotop_simplex_dim \<sigma> 1} = 1 \<longrightarrow>
+         geotop_is_n_cell (geotop_regular_neighborhood K L)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_regular_neighborhood K L)) 2" sorry
+  (** (2) Inductive step: given L connected acyclic with \<ge> 2 edges, pick any edge e of L.
+         Then L - e is a disjoint union L_1 \<cup> L_2 of two connected acyclic subcomplexes
+         (since L is a tree, removing an edge disconnects it into two subtrees). **)
+  have h_split:
+    "\<forall>L. geotop_is_complex L \<and> L \<subseteq> K \<and>
+         top1_connected_on (geotop_polyhedron L)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) \<and>
+         geotop_is_acyclic_linear_graph (geotop_polyhedron L) \<and>
+         card {\<sigma>\<in>L. geotop_simplex_dim \<sigma> 1} \<ge> 2 \<longrightarrow>
+         (\<exists>e L\<^sub>1 L\<^sub>2. e \<in> L \<and> geotop_simplex_dim e 1 \<and>
+                    L - {e} = L\<^sub>1 \<union> L\<^sub>2 \<and> L\<^sub>1 \<inter> L\<^sub>2 = {} \<and>
+                    top1_connected_on (geotop_polyhedron L\<^sub>1)
+                      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L\<^sub>1)) \<and>
+                    top1_connected_on (geotop_polyhedron L\<^sub>2)
+                      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L\<^sub>2)))"
+    sorry
+  (** (3) By induction N(L_1), N(L_2) are 2-cells, and N(L_1) \<cup> N(L_2) \<cup> (thickening of
+         the bridge edge e) is again a 2-cell (gluing two 2-cells along a sub-arc of the
+         edge e's thickening). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 3 (geotop.tex:4732)
     LATEX VERSION: M can be expressed as a union M = D \<union> D' \<union> \<union>_{i=1}^n S_i of polyhedral
@@ -8968,10 +9024,10 @@ theorem Theorem_GT_22_2:
       is the union of two disjoint arcs and (2) D \<inter> D' is the union of 2n disjoint arcs. **)
 theorem Theorem_GT_22_3:
   fixes M :: "'a::real_normed_vector set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
   shows "\<exists>D D' Ss n. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
              geotop_is_n_cell D' (subspace_topology UNIV geotop_euclidean_topology D') 2 \<and>
              finite Ss \<and> card Ss = n \<and>
@@ -8982,23 +9038,72 @@ theorem Theorem_GT_22_3:
              (\<forall>S\<in>Ss. geotop_top_interior UNIV geotop_euclidean_topology S \<inter>
                (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
                 geotop_top_interior UNIV geotop_euclidean_topology D') = {})"
-  sorry
+proof -
+  (** (1) Triangulate M (Rado, Theorem 8.3) to obtain a finite triangulation K. **)
+  obtain K where hK:
+    "geotop_is_complex K \<and> geotop_polyhedron K = M" sorry
+  (** (2) By Theorem 22.1, M has an open cell-decomposition \<C> with exactly one 2-face
+         C^2 and edges from K. Let L be the 1-skeleton of \<C> (acyclic subgraph spanning all
+         vertices: a spanning tree T + co-tree edges contributing the loops). **)
+  have h_tree_cotree:
+    "\<exists>\<C> T. geotop_is_open_cell_complex \<C> \<and> \<Union>\<C> = M \<and>
+           geotop_open_cell_num_faces \<C> = 1 \<and>
+           geotop_is_complex T \<and> T \<subseteq> K \<and>
+           top1_connected_on (geotop_polyhedron T)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron T)) \<and>
+           geotop_is_acyclic_linear_graph (geotop_polyhedron T)" sorry
+  (** (3) Let T be the spanning tree, T' = L - T its complement; by Theorem 22.2, D =
+         N(T) and D' = N(T') are 2-cells (regular neighbourhoods of disjoint acyclic
+         graphs). Each loop edge in T' contributes a "strip" S_i = N(edge_i) which is
+         also a 2-cell meeting D and D' each in a pair of disjoint arcs. **)
+  have h_strips:
+    "\<exists>D D' Ss. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+               geotop_is_n_cell D' (subspace_topology UNIV geotop_euclidean_topology D') 2 \<and>
+               finite Ss \<and>
+               (\<forall>S\<in>Ss. geotop_is_n_cell S (subspace_topology UNIV geotop_euclidean_topology S) 2) \<and>
+               M = D \<union> D' \<union> \<Union>Ss" sorry
+  (** (4) Disjointness of interiors: the regular neighbourhoods N(T), N(T'), and strip
+         S_i = thick(e) have pairwise disjoint interiors by construction. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 4 (geotop.tex:4864)
     LATEX VERSION: Let M be a compact connected 2-manifold. Then M is a 2-sphere with h
       handles and m cross-caps (h \<ge> 0, 0 \<le> m \<le> 2). **)
 theorem Theorem_GT_22_4:
   fixes M :: "'a::real_normed_vector set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
   shows "\<exists>h m. 0 \<le> m \<and> m \<le> 2 \<and>
                (\<exists>M' f. geotop_is_sphere_with_n_handles h M' \<and>
                      geotop_is_sphere_with_n_crosscaps m M' \<and>
                      top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
                        M' (subspace_topology UNIV geotop_euclidean_topology M') f)"
-  sorry
+proof -
+  (** (1) Apply Theorem 22.3: M = D \<cup> D' \<cup> \<union>_i S_i, D, D' are 2-cells, each S_i is a
+         strip 2-cell meeting D, D' in a pair of disjoint arcs. Cut M along each S_i and
+         record whether the gluing reverses orientation (the strip S_i attaches as a
+         handle iff it glues "parallel" through D, D'; as a Mobius band iff "anti-parallel"). **)
+  obtain D D' Ss where h_decomp:
+    "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+     geotop_is_n_cell D' (subspace_topology UNIV geotop_euclidean_topology D') 2 \<and>
+     finite Ss \<and>
+     (\<forall>S\<in>Ss. geotop_is_n_cell S (subspace_topology UNIV geotop_euclidean_topology S) 2) \<and>
+     M = D \<union> D' \<union> \<Union>Ss" sorry
+  (** (2) Classify strips: let h = #handles, m_0 = #crosscaps (Mobius attachments).
+         Canonical surgery moves: a pair of orientation-reversing strips can be converted
+         into one handle + one crosscap; a handle + crosscap equals 3 crosscaps (Dyck's
+         theorem). Hence the total (h, m) can be reduced to a normal form with 0 \<le> m \<le> 2. **)
+  have h_normalize:
+    "\<exists>h m. 0 \<le> m \<and> m \<le> 2 \<and>
+           (\<exists>M' f. geotop_is_sphere_with_n_handles h M' \<and>
+                  geotop_is_sphere_with_n_crosscaps m M' \<and>
+                  top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+                    M' (subspace_topology UNIV geotop_euclidean_topology M') f)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 5 (geotop.tex:4881)
     LATEX VERSION: Let M be a 2-sphere with h handles and m cross-caps (h \<ge> 0, 0 \<le> m \<le> 2).
@@ -9049,29 +9154,61 @@ definition geotop_first_betti_number ::
       T^1 \<cong> Z_2. **)
 theorem Theorem_GT_22_6:
   fixes M :: "'a::real_normed_vector set"
-  assumes "geotop_is_sphere_with_n_handles h M"
-  assumes "geotop_is_sphere_with_n_crosscaps m M"
-  assumes "m \<le> 2"
+  assumes h_hand: "geotop_is_sphere_with_n_handles h M"
+  assumes h_cross: "geotop_is_sphere_with_n_crosscaps m M"
+  assumes hm_bd: "m \<le> 2"
   shows "(m = 0 \<longrightarrow> geotop_first_betti_number M = 2 * h) \<and>
          (m = 1 \<longrightarrow> geotop_first_betti_number M = 2 * h) \<and>
          (m = 2 \<longrightarrow> geotop_first_betti_number M = 2 * h + 1)"
-  sorry
+proof -
+  (** (1) For m = 0 (orientable): a 2-sphere with h handles has homology H_1 \<cong> Z^{2h}
+         (each handle contributes a Z from its meridian and a Z from its longitude, with
+         no torsion). Hence p^1 = 2h. **)
+  have h_m0:
+    "m = 0 \<longrightarrow> geotop_first_betti_number M = 2 * h" sorry
+  (** (2) For m = 1 (projective plane + handles): H_1 has free rank 2h and one torsion
+         factor Z_2 (from the crosscap). Free rank = p^1 = 2h. **)
+  have h_m1:
+    "m = 1 \<longrightarrow> geotop_first_betti_number M = 2 * h" sorry
+  (** (3) For m = 2 (Klein-bottle-like + handles): H_1 has free rank 2h + 1 and one
+         torsion factor Z_2. Free rank = p^1 = 2h + 1. **)
+  have h_m2:
+    "m = 2 \<longrightarrow> geotop_first_betti_number M = 2 * h + 1" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 7 (geotop.tex:4905)
     LATEX VERSION: If M is orientable, then \<chi>(M) = 2 - p^1(M). If M is not orientable, then
       \<chi>(M) = 1 - p^1(M). **)
 theorem Theorem_GT_22_7:
   fixes M :: "'a::real_normed_vector set" and K :: "'a set set"
-  assumes "geotop_is_complex K" and "geotop_polyhedron K = M"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK: "geotop_is_complex K" and hK_poly: "geotop_polyhedron K = M"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
   shows "(geotop_is_orientable K \<longrightarrow>
             geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
          (\<not> geotop_is_orientable K \<longrightarrow>
             geotop_manifold_euler M = 1 - int (geotop_first_betti_number M))"
-  sorry
+proof -
+  (** (1) By Theorem 22_4, M \<cong> sphere with h handles and m crosscaps, 0 \<le> m \<le> 2. **)
+  obtain h m where h_classify:
+    "0 \<le> m \<and> m \<le> 2 \<and>
+     (\<exists>M' f. geotop_is_sphere_with_n_handles h M' \<and>
+            geotop_is_sphere_with_n_crosscaps m M' \<and>
+            top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+              M' (subspace_topology UNIV geotop_euclidean_topology M') f)" sorry
+  (** (2) Theorem 22.5: \<chi>(M) = 2 - (2h + m). **)
+  have h_chi: "geotop_manifold_euler M = 2 - (2 * int h + int m)" sorry
+  (** (3) Theorem 22.6 case analysis: orientable iff m = 0, and p^1 = 2h if m \<le> 1,
+         = 2h + 1 if m = 2. **)
+  have h_orient_cases:
+    "geotop_is_orientable K \<longleftrightarrow> m = 0" sorry
+  (** (4) Case m = 0 (orientable): \<chi> = 2 - 2h = 2 - p^1. Case m = 1 (non-orientable):
+         \<chi> = 1 - 2h = 1 - p^1. Case m = 2 (non-orientable): \<chi> = -2h = 1 - (2h + 1) = 1 - p^1. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 8 (geotop.tex:4919)
     LATEX VERSION: For i = 1, 2, let M_i be a 2-sphere with h_i handles and m_i cross-caps,
@@ -9079,14 +9216,33 @@ theorem Theorem_GT_22_7:
       and m_1 = m_2. **)
 theorem Theorem_GT_22_8:
   fixes M1 M2 :: "'a::real_normed_vector set"
-  assumes "geotop_is_sphere_with_n_handles h1 M1" and "geotop_is_sphere_with_n_crosscaps m1 M1"
-  assumes "m1 \<le> 2"
-  assumes "geotop_is_sphere_with_n_handles h2 M2" and "geotop_is_sphere_with_n_crosscaps m2 M2"
-  assumes "m2 \<le> 2"
+  assumes hM1_h: "geotop_is_sphere_with_n_handles h1 M1" and hM1_m: "geotop_is_sphere_with_n_crosscaps m1 M1"
+  assumes hm1: "m1 \<le> 2"
+  assumes hM2_h: "geotop_is_sphere_with_n_handles h2 M2" and hM2_m: "geotop_is_sphere_with_n_crosscaps m2 M2"
+  assumes hm2: "m2 \<le> 2"
   shows "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          (h1 = h2 \<and> m1 = m2)"
-  sorry
+proof -
+  (** (1) (\<Leftarrow>) If h_1 = h_2 and m_1 = m_2, both M_i are spheres with the same handles /
+         crosscaps; a canonical homeomorphism between them exists since any two such
+         surfaces are homeomorphic (standard construction via attaching homeomorphisms). **)
+  have h_suff:
+    "h1 = h2 \<and> m1 = m2 \<longrightarrow>
+       (\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+             M2 (subspace_topology UNIV geotop_euclidean_topology M2) f)" sorry
+  (** (2) (\<Rightarrow>) Homeomorphic M_1, M_2 have the same orientability, and \<chi>(M_i) is a
+         topological invariant (Theorem 21_5). **)
+  have h_inv:
+    "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+             M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longrightarrow>
+       geotop_manifold_euler M1 = geotop_manifold_euler M2 \<and>
+       (geotop_set_orientable M1 \<longleftrightarrow> geotop_set_orientable M2)" sorry
+  (** (3) By 22_5, \<chi>(M_i) = 2 - (2 h_i + m_i). Equality of \<chi> and of orientability
+         (which forces m_1 = m_2 when both are in {0, 1, 2} with m = 0 iff orientable)
+         implies h_1 = h_2. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 9 (geotop.tex:4929)
     LATEX VERSION: For i = 1, 2, let M_i be a compact connected 2-manifold. Then M_1 and M_2
@@ -9094,21 +9250,42 @@ theorem Theorem_GT_22_8:
       \<chi>(M_1) = \<chi>(M_2). **)
 theorem Theorem_GT_22_9:
   fixes M1 M2 :: "'a::real_normed_vector set" and K1 K2 :: "'a set set"
-  assumes "top1_compact_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
-  assumes "top1_connected_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
-  assumes "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M1 (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_is_complex K1" and "geotop_polyhedron K1 = M1"
-  assumes "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_is_complex K2" and "geotop_polyhedron K2 = M2"
+  assumes hM1_cpt: "top1_compact_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
+  assumes hM1_conn: "top1_connected_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
+  assumes hM1_mfd: "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM1_closed: "geotop_manifold_boundary M1 (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK1: "geotop_is_complex K1" and hK1_poly: "geotop_polyhedron K1 = M1"
+  assumes hM2_cpt: "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_conn: "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_closed: "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK2: "geotop_is_complex K2" and hK2_poly: "geotop_polyhedron K2 = M2"
   shows "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
           geotop_manifold_euler M1 = geotop_manifold_euler M2)"
-  sorry
+proof -
+  (** (1) By Theorem 22_4, each M_i is homeomorphic to a sphere with h_i handles and
+         m_i crosscaps, 0 \<le> m_i \<le> 2. **)
+  obtain h1 m1 h2 m2 where h_classify:
+    "0 \<le> m1 \<and> m1 \<le> 2 \<and> 0 \<le> m2 \<and> m2 \<le> 2 \<and>
+     (\<exists>M1' f1. geotop_is_sphere_with_n_handles h1 M1' \<and>
+                geotop_is_sphere_with_n_crosscaps m1 M1' \<and>
+                top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+                  M1' (subspace_topology UNIV geotop_euclidean_topology M1') f1) \<and>
+     (\<exists>M2' f2. geotop_is_sphere_with_n_handles h2 M2' \<and>
+                geotop_is_sphere_with_n_crosscaps m2 M2' \<and>
+                top1_homeomorphism_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)
+                  M2' (subspace_topology UNIV geotop_euclidean_topology M2') f2)" sorry
+  (** (2) Apply Theorem 22_8: M_1 \<cong> M_2 iff (h_1 = h_2 \<and> m_1 = m_2). Combined with
+         (2h_i + m_i = 2 - \<chi>(M_i)) from Theorem 22_5 and orientability \<Leftrightarrow> m_i = 0,
+         the right-hand side of 22.9 is equivalent. **)
+  have h_equiv:
+    "(h1 = h2 \<and> m1 = m2) \<longleftrightarrow>
+     ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
+      geotop_manifold_euler M1 = geotop_manifold_euler M2)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 10 (geotop.tex:4931)
     LATEX VERSION: For i = 1, 2, let M_i be a compact connected 2-manifold. Then M_1 and M_2
@@ -9139,14 +9316,30 @@ theorem Theorem_GT_22_10:
       M is a 2-sphere. **)
 theorem Theorem_GT_22_11:
   fixes M :: "'a::real_normed_vector set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
-  assumes "\<forall>P\<in>M. geotop_simply_connected M
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_conn: "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hM_simp_conn: "\<forall>P\<in>M. geotop_simply_connected M
              (subspace_topology UNIV geotop_euclidean_topology M) P"
   shows "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2"
-  sorry
+proof -
+  (** (1) By Theorem 22.4, M is homeomorphic to a sphere with h handles and m crosscaps,
+         0 \<le> m \<le> 2. Fix such a classification. **)
+  obtain h m where h_classify:
+    "0 \<le> m \<and> m \<le> 2 \<and>
+     (\<exists>M' f. geotop_is_sphere_with_n_handles h M' \<and>
+            geotop_is_sphere_with_n_crosscaps m M' \<and>
+            top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+              M' (subspace_topology UNIV geotop_euclidean_topology M') f)" sorry
+  (** (2) Fundamental group of such M' is free of rank 2h + m (generators: 2h from
+         handles, m from crosscaps). Simply connected means this group is trivial: 2h + m = 0,
+         forcing h = 0 and m = 0. **)
+  have h_trivial_pi:
+    "h = 0 \<and> m = 0" sorry
+  (** (3) A sphere with 0 handles and 0 crosscaps is precisely the 2-sphere. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>22 Theorem 12 (geotop.tex:4939)
     LATEX VERSION: Let M be a compact connected 2-manifold. If \<chi>(M) = 1, then M is a
