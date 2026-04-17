@@ -727,6 +727,15 @@ proof -
     using hcont_op by simp
 qed
 
+(** Bridge: top1_connected_on w.r.t. geotop_euclidean_topology is equivalent
+    to HOL-Analysis connectedness. **)
+lemma top1_connected_on_geotop_iff_connected:
+  fixes S :: "'a::real_normed_vector set"
+  shows "top1_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)
+         \<longleftrightarrow> connected S"
+  by (simp add: geotop_euclidean_topology_eq_open_sets
+                top1_connected_on_subspace_open_iff_connected)
+
 (** Every convex nonempty set in a real_normed_vector is path-connected in
     Top0's sense (via geotop_euclidean_topology). **)
 lemma top1_path_connected_on_HOL_convex:
