@@ -12961,7 +12961,7 @@ proof -
          geotop_frontier UNIV geotop_euclidean_topology C = B \<and>
          C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
          C \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2" sorry
-  show ?thesis sorry
+  show ?thesis using h_C_is_3cell by (by100 blast)
 qed
 
 (** from \<S>30: toroidal shell (geotop.tex:6163)
