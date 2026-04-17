@@ -12496,7 +12496,7 @@ proof -
                       (geotop_pi (UNIV - J)
                          (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)"
     sorry
-  show ?thesis sorry
+  show ?thesis using h_Jx_generator by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 15 (geotop.tex:5914)
