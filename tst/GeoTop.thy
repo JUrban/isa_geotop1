@@ -5839,4 +5839,120 @@ theorem Theorem_GT_30_8:
                 \<exists>n::int. True)"
   sorry
 
+section \<open>\<S>31 Canonical configurations; dual cells; pseudo-cells\<close>
+
+(** from \<S>31: canonical configuration (geotop.tex:6274)
+    LATEX VERSION: The entire apparatus described above will be called a canonical
+      configuration. A canonical configuration consists of points P_j, 2-cells D_j, their
+      rotations to solid tori S_j with T_j = Bd S_j, A_j \<subseteq> Int S_j, N = \<union>_{j=i}^{i+2} S_j,
+      a homeomorphism h: N \<leftrightarrow> N' \<subseteq> R^3, and polyhedral solid tori S_j'' with A_j' \<subseteq> Int S_j''
+      and S_j'' \<subseteq> Int S_j'. **)
+definition geotop_is_canonical_configuration ::
+  "(nat \<Rightarrow> (real^3) set) \<Rightarrow>
+   (nat \<Rightarrow> (real^3) set) \<Rightarrow>
+   (nat \<Rightarrow> (real^3) set) \<Rightarrow>
+   (nat \<Rightarrow> (real^3) set) \<Rightarrow>
+   (nat \<Rightarrow> (real^3) set) \<Rightarrow> nat \<Rightarrow> bool" where
+  "geotop_is_canonical_configuration A S S' S'' T'' i \<longleftrightarrow>
+    (\<forall>j. geotop_is_solid_torus (S j) \<and>
+         geotop_is_solid_torus (S' j) \<and>
+         geotop_is_solid_torus (S'' j) \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S'' j)) \<and>
+    (\<forall>j. j = i \<or> j = i+1 \<or> j = i+2 \<longrightarrow>
+         A j \<subseteq> geotop_manifold_interior (S'' j) (\<lambda>x y. norm (x - y)) \<and>
+         S'' j \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y)))"
+
+(** from \<S>31 Theorem 1 (geotop.tex:6276)
+    LATEX VERSION: Given sets A_j, D_j, and a homeomorphism h, as in the definition of a
+      canonical configuration, there are polyhedral solid tori S_j'' which give a canonical
+      configuration. **)
+theorem Theorem_GT_31_1:
+  fixes A S S' :: "nat \<Rightarrow> (real^3) set" and i :: nat
+  assumes "\<forall>j. j = i \<or> j = i+1 \<or> j = i+2 \<longrightarrow>
+             geotop_is_solid_torus (S j) \<and>
+             geotop_is_solid_torus (S' j) \<and>
+             A j \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y))"
+  shows "\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i"
+  sorry
+
+(** from \<S>31 Theorem 2 (geotop.tex:6279)
+    LATEX VERSION: In a canonical configuration, each of the sets J_j' and J_{j+1}' carries
+      a generator of \<pi>(S_j''). **)
+theorem Theorem_GT_31_2:
+  fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and i :: nat
+  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
+  shows "True"  \<comment> \<open>Homotopy-generator statement left abstract.\<close>
+  sorry
+
+(** from \<S>31 Theorem 3 (geotop.tex:6282)
+    LATEX VERSION: In a canonical configuration, S_i'' \<inter> S_{i+2}'' = \<emptyset>. **)
+theorem Theorem_GT_31_3:
+  fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and i :: nat
+  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
+  shows "S'' i \<inter> S'' (i+2) = {}"
+  sorry
+
+(** from \<S>31 Theorem 4 (geotop.tex:6285)
+    LATEX VERSION: In a canonical configuration, let J be a polygon in a set T_j'' \<inter>
+      T_{j+1}''. Then either (1) J carries a generator of \<pi>(S_j'') and of \<pi>(S_{j+1}'') or
+      (2) J bounds a 2-cell in T_j'' and a 2-cell in T_{j+1}''. **)
+theorem Theorem_GT_31_4:
+  fixes A S S' S'' T'' :: "nat \<Rightarrow> (real^3) set" and J :: "(real^3) set" and j :: nat
+  assumes "geotop_is_canonical_configuration A S S' S'' T'' i"
+  assumes "geotop_is_polygon J"
+  assumes "J \<subseteq> T'' j \<inter> T'' (j+1)"
+  shows "True"  \<comment> \<open>Mix of homotopy and bounding-2-cell alternatives left abstract.\<close>
+  sorry
+
+(** from \<S>31: dual cells of a tubular neighborhood (geotop.tex:6316)
+    LATEX VERSION: Let K be a 1-dimensional complex, in a PL 3-manifold M, and let N be a
+      regular neighborhood of K. Then for each edge \<sigma>^1 of K there is a 2-cell D, orthogonal
+      to \<sigma>^1 at the mid-point P of \<sigma>^1; D \<inter> K = {P}; and the 2-cells D decompose N into a
+      collection of polyhedral 3-cells C_v, each of which contains exactly one vertex v of
+      K. The sets C_v will be called the dual cells of N. The 2-cells D will be called
+      splitting disks. **)
+definition geotop_is_splitting_disks_and_dual_cells ::
+  "(real^3) set set \<Rightarrow> (real^3) set \<Rightarrow> (real^3) set set \<Rightarrow> (real^3) set set \<Rightarrow> bool" where
+  "geotop_is_splitting_disks_and_dual_cells K N Ds Cs \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    (\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i) \<and>
+    N = geotop_regular_neighborhood K K \<and>
+    (\<forall>D\<in>Ds. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2) \<and>
+    (\<forall>C\<in>Cs. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3) \<and>
+    (\<forall>v\<in>geotop_complex_vertices K. \<exists>!C\<in>Cs. v \<in> C)"
+
+(** from \<S>31: tube (geotop.tex:6318)
+    LATEX VERSION: Now let h be a homeomorphism N \<rightarrow> M', where M' is a PL 3-manifold but h
+      is not necessarily PL. Then N' = h(N) will be called a tube, and the images of the
+      splitting disks of N will be called splitting disks of N'. **)
+definition geotop_is_tube ::
+  "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_tube N' \<longleftrightarrow>
+    (\<exists>K N (h::real^3 \<Rightarrow> real^3). geotop_is_complex K \<and>
+       (\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i) \<and>
+       N = geotop_regular_neighborhood K K \<and>
+       top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+         N' (subspace_topology UNIV geotop_euclidean_topology N') h)"
+
+(** from \<S>31: pseudo-cell (geotop.tex:6320)
+    LATEX VERSION: By an open 2-cell we mean a set which is homeomorphic to the interior of
+      a 2-cell. Let U be an open 2-cell, in a PL 3-manifold M, and let J be a 1-sphere, such
+      that U \<inter> J = \<emptyset> and closure U = U \<union> J. Let P be a point of U, and suppose that U - P is
+      a polyhedron. Then the set E = U \<union> J is called a pseudo-cell. **)
+definition geotop_is_pseudo_cell ::
+  "(real^3) set \<Rightarrow> bool" where
+  "geotop_is_pseudo_cell E \<longleftrightarrow>
+    (\<exists>U J P. E = U \<union> J \<and> U \<inter> J = {} \<and>
+             (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+                  \<and> top1_homeomorphism_on U
+                    (subspace_topology UNIV geotop_euclidean_topology U)
+                    (geotop_top_interior UNIV geotop_euclidean_topology D)
+                    (subspace_topology UNIV geotop_euclidean_topology
+                       (geotop_top_interior UNIV geotop_euclidean_topology D))
+                    (SOME h. True)) \<and>
+             geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 \<and>
+             closure_on UNIV geotop_euclidean_topology U = U \<union> J \<and>
+             P \<in> U \<and>
+             (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = U - {P}))"
+
 end
