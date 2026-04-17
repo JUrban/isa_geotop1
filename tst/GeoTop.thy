@@ -447,12 +447,36 @@ theorem Theorem_GT_1_1:
 (** from \<S>1 Theorem 2 (geotop.tex:330)
     LATEX VERSION: Pathwise connectivity is preserved by surjective mappings. **)
 theorem Theorem_GT_1_2:
-  assumes "is_topology_on X TX" "is_topology_on Y TY"
-  assumes "top1_continuous_map_on X TX Y TY f"
-  assumes "f ` X = Y"
-  assumes "top1_path_connected_on X TX"
+  assumes hTX: "is_topology_on X TX"
+  assumes hTY: "is_topology_on Y TY"
+  assumes hcont: "top1_continuous_map_on X TX Y TY f"
+  assumes hsurj: "f ` X = Y"
+  assumes hXpc: "top1_path_connected_on X TX"
   shows "top1_path_connected_on Y TY"
-  sorry
+  (** Moise proof (geotop.tex:332): given P,Q \<in> Y, take P',Q' \<in> X with f(P')=P,
+      f(Q')=Q. Get path p in X from P' to Q'. Then f \<circ> p is a path in Y from P to Q. **)
+proof (unfold top1_path_connected_on_def, intro conjI hTY ballI)
+  fix P Q
+  assume hP: "P \<in> Y" and hQ: "Q \<in> Y"
+  obtain P' where hP': "P' \<in> X" and hfP': "f P' = P"
+    using hsurj hP by blast
+  obtain Q' where hQ': "Q' \<in> X" and hfQ': "f Q' = Q"
+    using hsurj hQ by blast
+  have "\<exists>p. top1_is_path_on X TX P' Q' p"
+    using hXpc hP' hQ' unfolding top1_path_connected_on_def by blast
+  then obtain p where hp: "top1_is_path_on X TX P' Q' p" by blast
+  have hpcont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology X TX p"
+    using hp unfolding top1_is_path_on_def by simp
+  have hp0: "p 0 = P'" using hp unfolding top1_is_path_on_def by simp
+  have hp1: "p 1 = Q'" using hp unfolding top1_is_path_on_def by simp
+  have hfpcont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology Y TY (f \<circ> p)"
+    by (rule top1_continuous_map_on_comp[OF hpcont hcont])
+  have hfp0: "(f \<circ> p) 0 = P" using hp0 hfP' by simp
+  have hfp1: "(f \<circ> p) 1 = Q" using hp1 hfQ' by simp
+  have "top1_is_path_on Y TY P Q (f \<circ> p)"
+    unfolding top1_is_path_on_def using hfpcont hfp0 hfp1 by simp
+  thus "\<exists>g. top1_is_path_on Y TY P Q g" by blast
+qed
 
 (** from \<S>1: connected complex (geotop.tex:334)
     LATEX VERSION: A complex K is connected if it is not the union of two disjoint nonempty
