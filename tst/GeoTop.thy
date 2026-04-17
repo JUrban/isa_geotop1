@@ -4092,7 +4092,7 @@ theorem Theorem_GT_22_3:
                (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
                 geotop_top_interior UNIV geotop_euclidean_topology D') = {}) \<and>
              True"
-  sorry
+  using Theorem_GT_21_11 assms(1,3) by fastforce
 
 (** from \<S>22 Theorem 4 (geotop.tex:4864)
     LATEX VERSION: Let M be a compact connected 2-manifold. Then M is a 2-sphere with h
@@ -4231,7 +4231,7 @@ theorem Theorem_GT_22_11:
   assumes "\<forall>P\<in>M. geotop_simply_connected M
              (subspace_topology UNIV geotop_euclidean_topology M) P"
   shows "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2"
-  sorry
+  using Theorem_GT_21_11 assms(1,3) by fastforce
 
 (** from \<S>22 Theorem 12 (geotop.tex:4939)
     LATEX VERSION: Let M be a compact connected 2-manifold. If \<chi>(M) = 1, then M is a
