@@ -8067,7 +8067,7 @@ proof -
          PLH-invariant; hence C^3 = f^{-1}(\<sigma>^3) has the push property as well. **)
   have h_push:
     "geotop_has_push_property C3" sorry
-  show ?thesis sorry
+  show ?thesis using h_C3 h_push by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 9 (geotop.tex:3546)
