@@ -5214,11 +5214,33 @@ definition geotop_is_frame ::
 
 theorem Theorem_GT_10_6_frame:
   fixes M U :: "(real^2) set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "M \<subseteq> U"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hM_U: "M \<subseteq> U"
   shows "\<exists>N. geotop_is_U_frame M U N"
-  sorry
+proof -
+  (** (1) M compact \<Rightarrow> finite open ball cover B(P_i, r_i), each ball \<subseteq> U. Take N_0 =
+         closure of \<union>_i B(P_i, r_i); N_0 is a compact region of R^2 contained in U
+         and containing M in its interior. **)
+  obtain Ns where hNs:
+    "top1_compact_on Ns (subspace_topology UNIV geotop_euclidean_topology Ns) \<and>
+     M \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology Ns \<and>
+     Ns \<subseteq> U" sorry
+  (** (2) Triangulate N_0 (finite triangulation of a compact PL region in R^2); refine
+         the triangulation so each simplex has diameter small enough to be confined to
+         a single component of R^2 - M (whenever it misses M). **)
+  have h_triangulate:
+    "\<exists>N::(real^2) set.
+        top1_compact_on N (subspace_topology UNIV geotop_euclidean_topology N) \<and>
+        (\<exists>K d. geotop_is_complex K \<and> geotop_polyhedron K = N \<and>
+               geotop_n_manifold_with_boundary_on N d 2) \<and>
+        N \<subseteq> U" sorry
+  (** (3) Remove simplexes of the triangulation that miss M; keep only components of N_0
+         that intersect M. The resulting N is the required frame. **)
+  have h_frame:
+    "\<exists>N. geotop_is_U_frame M U N" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>10: end-point of a linear graph (geotop.tex:2020)
     LATEX VERSION: An end-point of a linear graph K is a vertex which lies on one and only
@@ -5252,21 +5274,45 @@ definition geotop_contracting_collection ::
 theorem Theorem_GT_10_7:
   fixes K :: "'a::real_normed_vector set set" and f :: "'a \<Rightarrow> real^2"
   fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
-  assumes "geotop_is_linear_graph K"
-  assumes "\<not>(\<exists>v. geotop_graph_endpoint K v)"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+  assumes hK: "geotop_is_linear_graph K"
+  assumes hK_no_ends: "\<not>(\<exists>v. geotop_graph_endpoint K v)"
+  assumes hf: "top1_homeomorphism_on (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
              M (subspace_topology UNIV geotop_euclidean_topology M) f"
-  assumes "f ` (geotop_polyhedron K) = M"
-  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
-  assumes "geotop_strongly_positive U
+  assumes hfK_M: "f ` (geotop_polyhedron K) = M"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hM_U: "M \<subseteq> U"
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
           \<and> (\<forall>P\<in>UNIV - U. h P = P)
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
-  sorry
+proof -
+  (** (1) Since K has no end-points, every arc in M ends at a vertex of valence \<ge> 2.
+         Decompose M as a union of simple polygons (cycles) + arcs running between
+         them. **)
+  have h_decomp:
+    "\<exists>Cs. finite Cs \<and> (\<forall>C\<in>Cs. geotop_is_polygon C) \<and> \<Union>Cs \<subseteq> M" sorry
+  (** (2) Apply Theorem 3_7 to each polygon cycle in M: there is a PLH supported in a
+         small neighbourhood U_C \<subseteq> U of C that folds C onto Fr \<sigma> for a 2-simplex. **)
+  have h_per_cycle:
+    "\<forall>C. geotop_is_polygon C \<and> C \<subseteq> M \<longrightarrow>
+       (\<exists>hC. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology hC \<and>
+             (\<forall>P\<in>UNIV - U. hC P = P))" sorry
+  (** (3) Compose the per-cycle and per-arc PLHs into a single h, ensuring
+         (a) h(M) is a polyhedron (union of simplicial pieces);
+         (b) h = identity outside U;
+         (c) norm(h(P) - P) < \<phi>(P) on U (by taking folds with sufficiently small support). **)
+  have h_compose:
+    "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology h \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M) \<and>
+         (\<forall>P\<in>UNIV - U. h P = P) \<and>
+         geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>10 Theorem 8 (geotop.tex:2127)
     LATEX VERSION: Let K be a linear graph, and f: |K| \<leftrightarrow> M \<subset> R^2. Then M is tame
@@ -5274,20 +5320,36 @@ theorem Theorem_GT_10_7:
 theorem Theorem_GT_10_8:
   fixes K :: "'a::real_normed_vector set set" and f :: "'a \<Rightarrow> real^2"
   fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
-  assumes "geotop_is_linear_graph K"
-  assumes "top1_homeomorphism_on (geotop_polyhedron K)
+  assumes hK: "geotop_is_linear_graph K"
+  assumes hf: "top1_homeomorphism_on (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
              M (subspace_topology UNIV geotop_euclidean_topology M) f"
-  assumes "f ` (geotop_polyhedron K) = M"
-  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
-  assumes "geotop_strongly_positive U
+  assumes hfK_M: "f ` (geotop_polyhedron K) = M"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hM_U: "M \<subseteq> U"
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
           \<and> (\<forall>P\<in>UNIV - U. h P = P)
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
-  sorry
+proof -
+  (** (1) Extend K with added edges to remove all end-points: for each end-point v of K,
+         pair it with another end-point and join them by a fresh edge f(vv'). The
+         resulting K' has no end-points. **)
+  obtain K' where hK':
+    "geotop_is_linear_graph K' \<and> \<not>(\<exists>v. geotop_graph_endpoint K' v) \<and>
+     K \<subseteq> K'" sorry
+  (** (2) Apply Theorem 10.7 to K' to obtain h: R^2 \<leftrightarrow> R^2 with h(f(|K'|)) polyhedral
+         and h = id outside U. **)
+  obtain h\<^sub>0 where hh0:
+    "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology h\<^sub>0 \<and>
+     (\<forall>P\<in>UNIV - U. h\<^sub>0 P = P)" sorry
+  (** (3) Restrict to the M-part: h_0 restricted to h_0(M) stays polyhedral since M \<subseteq>
+         f(|K'|); the extra edges are discarded. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>10 Theorem 9 (geotop.tex:2149)
     LATEX VERSION: Let C^2 be a 2-cell, and P, Q, R, S points of Bd C^2 such that {P,R}
@@ -5296,22 +5358,39 @@ theorem Theorem_GT_10_8:
       of C^2 - (M_1 \<union> M_2). **)
 theorem Theorem_GT_10_9:
   fixes C2 :: "'a::real_normed_vector set" and M1 M2 :: "'a set" and P Q R S :: "'a"
-  assumes "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
-  assumes "P \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
-  assumes "Q \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
-  assumes "R \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
-  assumes "S \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
-  assumes "geotop_separates_pts UNIV geotop_euclidean_topology
+  assumes hC2: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+  assumes hP: "P \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes hQ: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes hR: "R \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes hS: "S \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+  assumes hPR_sep: "geotop_separates_pts UNIV geotop_euclidean_topology
              (geotop_frontier UNIV geotop_euclidean_topology C2) {P, R} Q S"
-  assumes "M1 \<inter> M2 = {}"
-  assumes "closedin_on UNIV geotop_euclidean_topology M1"
-  assumes "closedin_on UNIV geotop_euclidean_topology M2"
-  assumes "M1 \<subseteq> C2" and "M2 \<subseteq> C2"
-  assumes "M1 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {P}"
-  assumes "M2 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {R}"
+  assumes hM12_disj: "M1 \<inter> M2 = {}"
+  assumes hM1_closed: "closedin_on UNIV geotop_euclidean_topology M1"
+  assumes hM2_closed: "closedin_on UNIV geotop_euclidean_topology M2"
+  assumes hM1_in_C: "M1 \<subseteq> C2" and hM2_in_C: "M2 \<subseteq> C2"
+  assumes hM1_bd: "M1 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {P}"
+  assumes hM2_bd: "M2 \<inter> geotop_frontier UNIV geotop_euclidean_topology C2 = {R}"
   shows "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q =
          geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
-  sorry
+proof -
+  (** (1) Apply the Schoenflies theorem to C^2: C^2 is homeomorphic to the unit disk D
+         with the boundary arcs {P \<to> Q \<to> R \<to> S \<to> P} mapped to the four standard
+         quadrant boundaries. **)
+  obtain \<phi> where h\<phi>:
+    "top1_homeomorphism_on C2 (subspace_topology UNIV geotop_euclidean_topology C2)
+        \<comment> \<open>standard disk with marked points\<close> (\<phi> ` C2)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` C2)) \<phi>" sorry
+  (** (2) In the standard disk, \<phi>(M_1) has \<phi>(P) as its only boundary point, \<phi>(M_2)
+         has \<phi>(R); the remaining boundary arc from Q to S (going the "free" way)
+         avoids both. Connect \<phi>(Q) to \<phi>(S) along that arc and into D - (\<phi>(M_1) \<union>
+         \<phi>(M_2)). **)
+  have h_free_path:
+    "\<exists>\<gamma>::real \<Rightarrow> 'a. \<gamma> 0 = Q \<and> \<gamma> 1 = S \<and>
+       (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<gamma> t \<in> C2 - (M1 \<union> M2))" sorry
+  (** (3) The free path shows Q and S are in the same component of C^2 - (M_1 \<union> M_2). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>10: retraction (geotop.tex:2153)
     LATEX VERSION: Let B \<subset> A in a topological space. A retraction of A onto B is a mapping
@@ -5450,16 +5529,41 @@ qed
       and (3) h|U is a \<phi>-approximation of the identity. **)
 theorem Theorem_GT_10_13:
   fixes M U :: "(real^2) set" and \<phi> :: "real^2 \<Rightarrow> real"
-  assumes "geotop_is_triangulable M"
-  assumes "U \<in> geotop_euclidean_topology" and "M \<subseteq> U"
-  assumes "geotop_strongly_positive U
+  assumes hM_triang: "geotop_is_triangulable M"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hM_U: "M \<subseteq> U"
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
           \<and> (\<forall>P\<in>UNIV - U. h P = P)
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
-  sorry
+proof -
+  (** (1) Extract a triangulation: M is the image of some |K| \<cong> M via f. The 1-skeleton
+         K^1 \<subseteq> K is a linear graph. **)
+  obtain K f where hKf:
+    "geotop_is_complex K \<and>
+     top1_homeomorphism_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+        M (subspace_topology UNIV geotop_euclidean_topology M) f" sorry
+  (** (2) By Theorem 10_8, the 1-skeleton (including its endpoints) can be tamed: find
+         h_1: R^2 \<leftrightarrow> R^2 with h_1(f(|K^1|)) polyhedral, supported in U, \<phi>/2-close to id. **)
+  have h_skeleton:
+    "\<exists>h1. top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology h1 \<and>
+          (\<forall>P\<in>UNIV - U. h1 P = P)" sorry
+  (** (3) 2-faces: each 2-simplex \<sigma> of K has f(\<sigma>) mapped to a (possibly non-polyhedral)
+         2-cell whose boundary is already polyhedral (from step 2). By Schoenflies
+         (Theorem 3_7) tame each 2-cell inside U while keeping the boundary fixed,
+         with support in a small \<phi>/2-neighbourhood. **)
+  have h_faces:
+    "\<exists>h2. top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology h2 \<and>
+          (\<forall>P\<in>UNIV - U. h2 P = P)" sorry
+  (** (4) Compose h = h_2 \<circ> h_1; the result has h(M) polyhedral, supported in U, and
+         within \<phi> of the identity. **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>11 Isotopies 1\<close>
 
@@ -5817,15 +5921,39 @@ definition geotop_is_continuum ::
       G_\<epsilon> = {g_1, g_2, \<dots>, g_n} of disjoint nonempty closed sets, with \<delta>g_i < \<epsilon> for each i. **)
 theorem Theorem_GT_12_4:
   fixes X :: "'a::metric_space set" and T :: "'a set set" and C :: "'a set"
-  assumes "is_topology_on X T" and "top1_metrizable_on X T"
-  assumes "top1_compact_on C (subspace_topology X T C)"
-  assumes "geotop_is_totally_disconnected C (subspace_topology X T C)"
-  assumes "\<epsilon> > 0"
+  assumes hT: "is_topology_on X T" and hmetr: "top1_metrizable_on X T"
+  assumes hC_cpt: "top1_compact_on C (subspace_topology X T C)"
+  assumes hC_td: "geotop_is_totally_disconnected C (subspace_topology X T C)"
+  assumes heps: "\<epsilon> > 0"
   shows "\<exists>G. finite G \<and> (\<forall>g\<in>G. g \<noteq> {} \<and> closedin_on X T g \<and> g \<subseteq> C) \<and>
              (\<forall>g\<in>G. \<forall>h\<in>G. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and>
              \<Union>G = C \<and>
              (\<forall>g\<in>G. geotop_diameter dist g < \<epsilon>)"
-  sorry
+proof -
+  (** (1) C totally disconnected + compact + metrizable \<Rightarrow> every point has arbitrarily
+         small clopen neighbourhoods (in C). For each P \<in> C pick a clopen U_P \<ni> P
+         of diameter < \<epsilon>. **)
+  have h_clopen:
+    "\<forall>P\<in>C. \<exists>U. P \<in> U \<and> U \<subseteq> C \<and>
+               U \<in> subspace_topology X T C \<and>
+               closedin_on C (subspace_topology X T C) U \<and>
+               geotop_diameter dist U < \<epsilon>" sorry
+  (** (2) By compactness of C, finitely many {U_{P_i}} cover C. **)
+  have h_finite_cover:
+    "\<exists>Us::'a set set. finite Us \<and>
+         (\<forall>U\<in>Us. U \<in> subspace_topology X T C \<and>
+                 closedin_on C (subspace_topology X T C) U \<and>
+                 geotop_diameter dist U < \<epsilon>) \<and>
+         \<Union>Us = C" sorry
+  (** (3) Make the cover disjoint: replace each U with U \<setminus> \<union>_{j<i} U_j. Disjointness
+         preserves clopen-ness and diameter bound. **)
+  have h_disjoint:
+    "\<exists>G. finite G \<and> (\<forall>g\<in>G. g \<noteq> {} \<and> closedin_on X T g \<and> g \<subseteq> C) \<and>
+         (\<forall>g\<in>G. \<forall>h\<in>G. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and>
+         \<Union>G = C \<and>
+         (\<forall>g\<in>G. geotop_diameter dist g < \<epsilon>)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>12 Theorem 5 (geotop.tex:2384)
     LATEX VERSION: Let C be a Cantor set, and let U be a subset of C which is both open and
@@ -5973,17 +6101,17 @@ theorem Theorem_GT_12_7:
   fixes C' :: "'b::metric_space set" and T' :: "'b set set"
   fixes G :: "nat \<Rightarrow> 'a set set" and G' :: "nat \<Rightarrow> 'b set set"
   fixes f :: "nat \<Rightarrow> 'a set \<Rightarrow> 'b set"
-  assumes "geotop_is_cantor_set C T"
-  assumes "top1_compact_on C' T'" and "top1_metrizable_on C' T'"
-  assumes "\<forall>i. finite (G i) \<and> (\<forall>g\<in>G i. g \<noteq> {} \<and> g \<in> T \<and> closedin_on C T g) \<and>
+  assumes hC: "geotop_is_cantor_set C T"
+  assumes hC'_cpt: "top1_compact_on C' T'" and hC'_metr: "top1_metrizable_on C' T'"
+  assumes hG: "\<forall>i. finite (G i) \<and> (\<forall>g\<in>G i. g \<noteq> {} \<and> g \<in> T \<and> closedin_on C T g) \<and>
                (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and> \<Union>(G i) = C"
-  assumes "\<forall>i. geotop_refines (G (Suc i)) (G i)"
-  assumes "(\<lambda>i. geotop_mesh dist (G i)) \<longlonglongrightarrow> 0"
-  assumes "\<forall>i. finite (G' i) \<and> (\<forall>g\<in>G' i. g \<noteq> {} \<and> g \<in> T') \<and> \<Union>(G' i) = C'"
-  assumes "\<forall>i. geotop_refines (G' (Suc i)) (G' i)"
-  assumes "(\<lambda>i. geotop_mesh dist (G' i)) \<longlonglongrightarrow> 0"
-  assumes "\<forall>i. (f i) ` (G i) \<subseteq> G' i"
-  assumes "\<forall>i g h. g \<in> G i \<and> h \<in> G (Suc i) \<and> h \<subseteq> g \<longrightarrow> f (Suc i) h \<subseteq> f i g"
+  assumes hG_refine: "\<forall>i. geotop_refines (G (Suc i)) (G i)"
+  assumes hG_mesh: "(\<lambda>i. geotop_mesh dist (G i)) \<longlonglongrightarrow> 0"
+  assumes hG': "\<forall>i. finite (G' i) \<and> (\<forall>g\<in>G' i. g \<noteq> {} \<and> g \<in> T') \<and> \<Union>(G' i) = C'"
+  assumes hG'_refine: "\<forall>i. geotop_refines (G' (Suc i)) (G' i)"
+  assumes hG'_mesh: "(\<lambda>i. geotop_mesh dist (G' i)) \<longlonglongrightarrow> 0"
+  assumes hf: "\<forall>i. (f i) ` (G i) \<subseteq> G' i"
+  assumes hf_compat: "\<forall>i g h. g \<in> G i \<and> h \<in> G (Suc i) \<and> h \<subseteq> g \<longrightarrow> f (Suc i) h \<subseteq> f i g"
   shows "\<exists>F. top1_continuous_map_on C T C' T' F \<and>
              (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g)) \<and>
              ((\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> F ` C = C') \<and>
@@ -5991,7 +6119,33 @@ theorem Theorem_GT_12_7:
               (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
                  closure_on C' T' g \<inter> closure_on C' T' h = {})
               \<longrightarrow> top1_homeomorphism_on C T C' T' F)"
-  sorry
+proof -
+  (** (1) For each P \<in> C, the sequence (g_i(P)) of nested covering elements containing P
+         has diameter \<to> 0, so uniquely determines P. Correspondingly the images
+         f_i(g_i(P)) have diameter \<to> 0 in C'. The intersection \<Inter>_i Cl(f_i(g_i(P))) is a
+         single point F(P). **)
+  have h_define_F:
+    "\<exists>F. \<forall>P\<in>C. (\<forall>i. \<exists>g\<in>G i. P \<in> g \<and> F P \<in> closure_on C' T' (f i g))" sorry
+  (** (2) F is continuous: for \<epsilon> > 0, pick i such that mesh G'_i < \<epsilon>. Then for P, Q in the
+         same g_i, F(P), F(Q) both in closure(f_i(g_i)) with diameter < \<epsilon>. Take open
+         neighbourhood = g_i containing P. **)
+  have h_cont:
+    "\<exists>F. top1_continuous_map_on C T C' T' F \<and>
+         (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g))" sorry
+  (** (3) Surjectivity: if f_i is surjective per level, every element of G'_i is hit;
+         density argument gives F(C) dense in C'; image F(C) compact (continuous image of
+         compact) hence closed = C'. **)
+  have h_surjective:
+    "(\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> (\<exists>F. F ` C = C')" sorry
+  (** (4) Homeomorphism: injectivity follows from disjointness of closures (different P,
+         Q in C land in distinct closures); combine with continuity + compactness. **)
+  have h_homeo:
+    "(\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
+     (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
+        closure_on C' T' g \<inter> closure_on C' T' h = {}) \<longrightarrow>
+     (\<exists>F. top1_homeomorphism_on C T C' T' F)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>12 Theorem 8 (geotop.tex:2431)
     LATEX VERSION: Every two Cantor sets are homeomorphic. **)
