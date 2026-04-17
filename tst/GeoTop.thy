@@ -7434,7 +7434,7 @@ proof -
           \<forall>D\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
             \<Phi> (geotop_pi_mult A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 C D)
             = \<Phi> C + \<Phi> D)" sorry
-  show ?thesis sorry
+  show ?thesis using h_no_rel by (by100 blast)
 qed
 
 (** from \<S>16: solid torus (geotop.tex:3235)
