@@ -508,7 +508,8 @@ theorem Theorem_GT_1_6:
   assumes "is_topology_on X T" "M \<subseteq> X"
   shows "top1_connected_on M (subspace_topology X T M) \<longleftrightarrow>
     \<not>(\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K)"
-  sorry
+  by (metis Theorem_GT_1_5 assms(1,2) subspace_topology_is_topology_on
+    sup.cobounded1 sup.cobounded2 top1_connected_on_def)
 
 (** from \<S>1 Theorem 7 (geotop.tex:369)
     LATEX VERSION: For spaces, connectivity is preserved by surjective mappings. **)
