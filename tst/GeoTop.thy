@@ -12247,15 +12247,31 @@ theorem Theorem_GT_32_1:
   fixes N N' D C1 C2 W D' C1' C2' :: "(real^3) set"
   fixes P P' v1 v2 v1' v2' :: "real^3"
   fixes h :: "real^3 \<Rightarrow> real^3"
-  assumes "geotop_is_tube N'"
-  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
-  assumes "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+  assumes hN'_tube: "geotop_is_tube N'"
+  assumes hD: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes hh: "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
              N' (subspace_topology UNIV geotop_euclidean_topology N') h"
-  assumes "D' = h ` D" and "C1' = h ` C1" and "C2' = h ` C2" and "P' = h P"
+  assumes hD': "D' = h ` D" and hC1': "C1' = h ` C1" and hC2': "C2' = h ` C2" and hP': "P' = h P"
   shows "\<exists>E. geotop_is_pseudo_cell E \<and>
              P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E \<and>
              E \<subseteq> W"
-  sorry
+proof -
+  (** (1) In N, the splitting disk D can be slightly perturbed (PL isotopy supported in
+         C_1 \<cup> C_2) to yield a 2-cell D_0 with D_0 - P polyhedral; D has polyhedral
+         interior around its punctured mid-point P. **)
+  have h_PL_perturb:
+    "\<exists>D\<^sub>0. D\<^sub>0 \<subseteq> C1 \<union> C2 \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D\<^sub>0 - {P})" sorry
+  (** (2) Transport D_0 through h: E = h(D_0) is the candidate pseudo-cell with center at
+         P'. E - P' is polyhedral (by h a homeomorphism onto N'; the polyhedral structure
+         of D_0 - P transports although the homeo may be non-PL on D_0, it is PL on
+         D_0 - P since the tube has a PL structure on its open part). **)
+  have h_E_pseudocell:
+    "\<exists>E. geotop_is_pseudo_cell E \<and>
+         P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E \<and>
+         E \<subseteq> W" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>32 Theorem 2 (geotop.tex:6459)
     LATEX VERSION: Under the conditions of Theorem 1, E can be chosen so that
@@ -12263,9 +12279,9 @@ theorem Theorem_GT_32_1:
       have (5) E \<subseteq> Fr U_i and (6) Bd C_i' \<inter> Bd N' \<subseteq> Fr U_i. **)
 theorem Theorem_GT_32_2:
   fixes N' C1' C2' :: "(real^3) set"
-  assumes "geotop_is_tube N'"
-  assumes "geotop_is_n_cell C1' (subspace_topology UNIV geotop_euclidean_topology C1') 3"
-  assumes "geotop_is_n_cell C2' (subspace_topology UNIV geotop_euclidean_topology C2') 3"
+  assumes hN'_tube: "geotop_is_tube N'"
+  assumes hC1': "geotop_is_n_cell C1' (subspace_topology UNIV geotop_euclidean_topology C1') 3"
+  assumes hC2': "geotop_is_n_cell C2' (subspace_topology UNIV geotop_euclidean_topology C2') 3"
   shows "\<exists>E U1 U2. geotop_is_pseudo_cell E \<and>
              U1 \<inter> U2 = {} \<and>
              (C1' \<union> C2') - E = U1 \<union> U2 \<and>
@@ -12277,7 +12293,21 @@ theorem Theorem_GT_32_2:
              geotop_frontier UNIV geotop_euclidean_topology C2' \<inter>
                geotop_frontier UNIV geotop_euclidean_topology N'
                \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2"
-  sorry
+proof -
+  (** (1) By Theorem 32_1 obtain the pseudo-cell E with center P'. **)
+  obtain E where hE:
+    "geotop_is_pseudo_cell E" sorry
+  (** (2) (C_1' \<cup> C_2') - E separates into two components U_1 \<subseteq> C_1', U_2 \<subseteq> C_2' with E
+         on their common boundary. This is because E is topologically a 2-cell bridging
+         v_1' and v_2'. **)
+  have h_two_components:
+    "\<exists>U1 U2. U1 \<inter> U2 = {} \<and> (C1' \<union> C2') - E = U1 \<union> U2 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2" sorry
+  (** (3) Each U_i contains the "side" of C_i' that faces N' \<setminus> (C_1' \<cup> C_2'), so
+         Bd C_i' \<cap> Bd N' \<subseteq> Fr U_i. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>32 Theorem 3 (geotop.tex:6486)
     LATEX VERSION: Under the conditions just stated, the sets W_e can be chosen so that
@@ -12287,10 +12317,10 @@ theorem Theorem_GT_32_2:
 theorem Theorem_GT_32_3:
   fixes K :: "(real^3) set set" and N N' :: "(real^3) set"
   fixes h :: "real^3 \<Rightarrow> real^3"
-  assumes "geotop_is_tube N'"
-  assumes "geotop_is_complex K"
-  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
-  assumes "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+  assumes hN'_tube: "geotop_is_tube N'"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_1dim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes hh: "top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
              N' (subspace_topology UNIV geotop_euclidean_topology N') h"
   shows "\<exists>C''. (\<forall>v\<in>geotop_complex_vertices K.
                   geotop_is_n_cell (C'' v)
@@ -12300,7 +12330,24 @@ theorem Theorem_GT_32_3:
                (\<forall>v\<in>geotop_complex_vertices K. \<forall>w\<in>geotop_complex_vertices K.
                   v \<noteq> w \<and> C'' v \<inter> C'' w \<noteq> {} \<longrightarrow>
                   (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 1 \<and> v \<in> \<sigma> \<and> w \<in> \<sigma>))"
-  sorry
+proof -
+  (** (1) For each edge e of K apply Theorem 32.2 to the pair (C_{v_1}, C_{v_2}) of dual
+         cells adjacent at e, obtaining a pseudo-cell E_e and its two-component complement
+         U_1, U_2 in (C_{v_1} \<cup> C_{v_2}) - E_e. **)
+  have h_per_edge:
+    "\<forall>e\<in>K. geotop_simplex_dim e 1 \<longrightarrow>
+       (\<exists>E. geotop_is_pseudo_cell E)" sorry
+  (** (2) Choose the "sides" U_1 and U_2 consistently around each vertex v so they glue to
+         form dual cells C''_v; each C''_v contains exactly one vertex v and satisfies
+         the combinatorial incidence: C''_v \<cap> C''_w \<ne> \<emptyset> only if there is an edge vw. **)
+  have h_dual_cells:
+    "\<exists>C''. (\<forall>v\<in>geotop_complex_vertices K.
+                  geotop_is_n_cell (C'' v)
+                    (subspace_topology UNIV geotop_euclidean_topology (C'' v)) 3 \<and>
+                  card (geotop_complex_vertices K \<inter> C'' v) = 1) \<and>
+               N' = (\<Union>v\<in>geotop_complex_vertices K. C'' v)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>32 Theorem 4 (geotop.tex:6492)
     LATEX VERSION: Let E be a pseudo-cell with center P', in R^3, and let \<delta> be a positive
@@ -12308,9 +12355,9 @@ theorem Theorem_GT_32_3:
       Bd \<Delta>_1 = \<Delta>_1 \<inter> E and (2) J bounds a 2-cell D_J in E, containing P' in its interior. **)
 theorem Theorem_GT_32_4:
   fixes E :: "(real^3) set" and P' :: "real^3" and \<delta> :: real
-  assumes "geotop_is_pseudo_cell E"
-  assumes "P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E"
-  assumes "\<delta> > 0"
+  assumes hE: "geotop_is_pseudo_cell E"
+  assumes hP': "P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E"
+  assumes h\<delta>: "\<delta> > 0"
   shows "\<exists>\<Delta>1 J DJ. geotop_is_n_cell \<Delta>1 (subspace_topology UNIV geotop_euclidean_topology \<Delta>1) 2 \<and>
              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>1) \<and>
              \<Delta>1 \<subseteq> {P. norm (P - P') < \<delta>} \<and>
@@ -12320,7 +12367,29 @@ theorem Theorem_GT_32_4:
              DJ \<subseteq> E \<and>
              geotop_frontier UNIV geotop_euclidean_topology DJ = J \<and>
              P' \<in> geotop_top_interior UNIV geotop_euclidean_topology DJ"
-  sorry
+proof -
+  (** (1) E is a pseudo-cell so E = U \<cup> J_0 with U open 2-cell, P' \<in> U. Pick a small
+         polygon J in the \<delta>/2 ball around P', lying in U \<setminus> {P'} (polyhedral region). **)
+  obtain J where hJ:
+    "geotop_is_polygon J \<and>
+     J \<subseteq> {P. norm (P - P') < \<delta>/2}" sorry
+  (** (2) By PL Schoenflies (Theorem 17.12 applied in a 3-cell neighbourhood of P'),
+         J bounds a polyhedral 2-cell \<Delta>_1 with \<Delta>_1 \<inter> E = J. **)
+  have h_\<Delta>1:
+    "\<exists>\<Delta>1. geotop_is_n_cell \<Delta>1 (subspace_topology UNIV geotop_euclidean_topology \<Delta>1) 2 \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>1) \<and>
+          \<Delta>1 \<subseteq> {P. norm (P - P') < \<delta>} \<and>
+          geotop_frontier UNIV geotop_euclidean_topology \<Delta>1 = J \<and>
+          \<Delta>1 \<inter> E = J" sorry
+  (** (3) J also bounds a topological 2-cell D_J \<subseteq> E containing P' in its interior (since
+         E is an open 2-cell with J a small loop around P'). **)
+  have h_DJ:
+    "\<exists>DJ. geotop_is_n_cell DJ (subspace_topology UNIV geotop_euclidean_topology DJ) 2 \<and>
+          DJ \<subseteq> E \<and>
+          geotop_frontier UNIV geotop_euclidean_topology DJ = J \<and>
+          P' \<in> geotop_top_interior UNIV geotop_euclidean_topology DJ" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>33 PLH approximations, for regular neighborhoods of linear graphs in R^3\<close>
 
@@ -12333,16 +12402,16 @@ section \<open>\<S>33 PLH approximations, for regular neighborhoods of linear gr
 theorem Theorem_GT_33_1:
   fixes K :: "(real^3) set set" and U :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3"
   fixes \<epsilon> :: real
-  assumes "geotop_is_complex K"
-  assumes "finite K"
-  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
-  assumes "top1_connected_on (geotop_polyhedron K)
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_1dim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes hK_conn: "top1_connected_on (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
-  assumes "\<forall>v\<in>geotop_complex_vertices K. \<not> geotop_graph_endpoint K v"
-  assumes "U \<in> geotop_euclidean_topology" and "geotop_polyhedron K \<subseteq> U"
-  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+  assumes hK_noend: "\<forall>v\<in>geotop_complex_vertices K. \<not> geotop_graph_endpoint K v"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hK_in_U: "geotop_polyhedron K \<subseteq> U"
+  assumes hh: "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
              (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
-  assumes "\<epsilon> > 0"
+  assumes h\<epsilon>: "\<epsilon> > 0"
   shows "\<exists>N f. geotop_is_complex N \<and>
                geotop_polyhedron N = geotop_regular_neighborhood K K \<and>
                geotop_polyhedron N \<subseteq> U \<and>
@@ -12354,7 +12423,32 @@ theorem Theorem_GT_33_1:
                (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
                h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
                (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)"
-  sorry
+proof -
+  (** (1) Pick a regular neighbourhood N of K inside U (exists by taking second
+         barycentric of a triangulation of a compact neighbourhood of K in U). **)
+  obtain N where hN:
+    "geotop_is_complex N \<and>
+     geotop_polyhedron N = geotop_regular_neighborhood K K \<and>
+     geotop_polyhedron N \<subseteq> U" sorry
+  (** (2) h(N) is a tube (image of a 3-manifold-with-boundary under a homeomorphism).
+         Apply Theorem 32_3 to find dual-cell decomposition of h(N) so each 3-cell
+         corresponds to a vertex of K. **)
+  have h_dual:
+    "\<exists>Csp. \<forall>v\<in>geotop_complex_vertices K.
+        geotop_is_n_cell (Csp v)
+          (subspace_topology UNIV geotop_euclidean_topology (Csp v)) 3" sorry
+  (** (3) Build PL approximation f: N \<to> h(N) by mapping each dual cell PL-linearly to
+         the corresponding component in h(N), using splitting disks from Theorem 32.4
+         and the \<epsilon>-close approximation on each cell. **)
+  have h_f:
+    "\<exists>f. top1_homeomorphism_on (geotop_polyhedron N)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron N))
+            (f ` geotop_polyhedron N)
+            (subspace_topology UNIV geotop_euclidean_topology
+               (f ` geotop_polyhedron N)) f \<and>
+         (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>34 PLH approximations of homeomorphisms, for polyhedral 3-cells\<close>
 
@@ -12364,16 +12458,36 @@ section \<open>\<S>34 PLH approximations of homeomorphisms, for polyhedral 3-cel
       \<epsilon>-approximation of h. **)
 theorem Theorem_GT_34_1:
   fixes K :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<epsilon> :: real
-  assumes "geotop_is_n_cell K (subspace_topology UNIV geotop_euclidean_topology K) 3"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
-  assumes "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+  assumes hK: "geotop_is_n_cell K (subspace_topology UNIV geotop_euclidean_topology K) 3"
+  assumes hK_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes hh: "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
              (h ` K) (subspace_topology UNIV geotop_euclidean_topology (h ` K)) h"
-  assumes "\<epsilon> > 0"
+  assumes h\<epsilon>: "\<epsilon> > 0"
   shows "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
                (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
              (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
              (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)"
-  sorry
+proof -
+  (** (1) Extract a PL triangulation L of K (given) with simplexes of diameter < \<epsilon>/3
+         (refine if needed by Rado / barycentric subdivision). **)
+  obtain L where hL:
+    "geotop_is_complex L \<and> geotop_polyhedron L = K \<and>
+     (\<forall>\<sigma>\<in>L. geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma> < \<epsilon>/3)" sorry
+  (** (2) On the 1-skeleton of L, define f to agree with h on vertices and extend affinely
+         across each edge. Apply Theorem 33_1 to build PL approximations on tubular
+         neighbourhoods of the 1-skeleton inside K. **)
+  have h_1skeleton_approx:
+    "\<exists>f. (\<forall>v\<in>geotop_complex_vertices L. f v = h v) \<and>
+         (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)" sorry
+  (** (3) Extend f to the 2-skeleton (apply 2-dimensional PL approximation per 2-simplex)
+         and then to the 3-simplexes (cone construction). **)
+  have h_extend_to_3cells:
+    "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+            (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
+         (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+         (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>35 The Triangulation theorem\<close>
 
@@ -12386,12 +12500,12 @@ section \<open>\<S>35 The Triangulation theorem\<close>
 theorem Theorem_GT_35_1:
   fixes K :: "(real^3) set set" and U :: "(real^3) set"
   fixes h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
-  assumes "geotop_is_complex K"
-  assumes "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
-  assumes "U \<in> geotop_euclidean_topology" and "geotop_polyhedron K \<subseteq> U"
-  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+  assumes hK: "geotop_is_complex K"
+  assumes hK_1dim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+  assumes hU_open: "U \<in> geotop_euclidean_topology" and hK_in_U: "geotop_polyhedron K \<subseteq> U"
+  assumes hh: "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
              (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
-  assumes "geotop_strongly_positive U
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>N f. geotop_is_complex N \<and>
                geotop_polyhedron N \<subseteq> U \<and>
@@ -12403,7 +12517,19 @@ theorem Theorem_GT_35_1:
                     (f ` geotop_polyhedron N)) f \<and>
                h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
                (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)"
-  sorry
+proof -
+  (** (1) Apply Theorem 33_1 with a constant \<epsilon> = inf_{P \<in> |K|} \<phi>(P) > 0 (strong
+         positivity, and |K| is compact so the infimum is attained). **)
+  obtain \<epsilon> where h\<epsilon>:
+    "\<epsilon> > 0 \<and> (\<forall>P\<in>geotop_polyhedron K. \<epsilon> \<le> \<phi> P)" sorry
+  (** (2) Theorem 33_1 gives a regular neighbourhood N of K in U and a PLH f: N \<leftrightarrow> X
+         with norm(h P - f P) < \<epsilon> \<le> \<phi> P on |K|. For P in N \<setminus> |K|, re-refine the
+         subdivision so diameters of simplexes are < \<phi>(P)/3; iterate. **)
+  have h_refine:
+    "\<exists>N f. geotop_is_complex N \<and> geotop_polyhedron N \<subseteq> U \<and>
+           (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>35 Theorem 2 (geotop.tex:7137)
     LATEX VERSION: Let M_1 and M_2 be PL 3-manifolds, let K be a polyhedral 3-manifold with
@@ -12412,29 +12538,65 @@ theorem Theorem_GT_35_1:
       h. **)
 theorem Theorem_GT_35_2:
   fixes K :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
-  assumes "geotop_n_manifold_with_boundary_on K (\<lambda>x y. norm (x - y)) 3"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
-  assumes "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+  assumes hK_mfd: "geotop_n_manifold_with_boundary_on K (\<lambda>x y. norm (x - y)) 3"
+  assumes hK_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = K"
+  assumes hh: "top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
              (h ` K) (subspace_topology UNIV geotop_euclidean_topology (h ` K)) h"
-  assumes "geotop_strongly_positive K
+  assumes h\<phi>: "geotop_strongly_positive K
              (subspace_topology UNIV geotop_euclidean_topology K) \<phi>"
   shows "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
                (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
              (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
              (\<forall>P\<in>K. norm (h P - f P) < \<phi> P)"
-  sorry
+proof -
+  (** (1) Decompose K into a chain of polyhedral 3-cells (using a triangulation's
+         3-simplexes, each of controlled diameter). **)
+  have h_cell_decomp:
+    "\<exists>Cs. finite Cs \<and> K = \<Union>Cs \<and>
+          (\<forall>C\<in>Cs. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3)"
+    sorry
+  (** (2) Apply Theorem 34_1 on each 3-cell C with \<epsilon>_C = min_{P \<in> C} \<phi>(P) to get local
+         PL-approximations f_C: C \<leftrightarrow> h(C). **)
+  have h_per_cell:
+    "\<exists>fs. \<forall>C. C \<subseteq> K \<and>
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<longrightarrow>
+      (\<forall>P\<in>C. norm (h P - fs C P) < \<phi> P)" sorry
+  (** (3) Glue per-cell PLHs into a single PLH f: K \<leftrightarrow> h(K) using a shared combinatorial
+         structure on overlapping faces (barycentric refinement ensures compatibility). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>35 Theorem 3 (The triangulation theorem for 3-manifolds) (geotop.tex:7150)
     LATEX VERSION: Let M be a 3-manifold. Then there is a complex K such that M and |K| are
       homeomorphic. **)
 theorem Theorem_GT_35_3_triangulation_3manifolds:
   fixes M :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
   shows "\<exists>K. geotop_is_complex K \<and>
              (\<exists>f. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
                     (geotop_polyhedron K)
                     (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) f)"
-  sorry
+proof -
+  (** (1) Cover M by countably many coordinate charts (half-simplex neighbourhoods from
+         23.2), producing a nested exhaustion by polyhedral 3-cells C_i with
+         C_i \<subseteq> Int C_{i+1} and \<union>_i C_i = M. **)
+  have h_exhaustion:
+    "\<exists>Cs::nat \<Rightarrow> (real^3) set.
+        (\<forall>i. geotop_is_n_cell (Cs i)
+              (subspace_topology UNIV geotop_euclidean_topology (Cs i)) 3) \<and>
+        (\<forall>i. Cs i \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Cs (Suc i))) \<and>
+        (\<Union>i. Cs i) = M" sorry
+  (** (2) Iteratively apply Theorem 35_2 (Moise's approximation): for each shell Cl(C_{i+1}
+         - C_i), PL-approximate the inherited local chart to get a compatible polyhedral
+         triangulation extension K_{i+1} \<supseteq> K_i. **)
+  have h_inductive_triang:
+    "\<exists>Ks::nat \<Rightarrow> (real^3) set set.
+        (\<forall>i. geotop_is_complex (Ks i)) \<and>
+        (\<forall>i. Ks i \<subseteq> Ks (Suc i))" sorry
+  (** (3) The direct limit K = \<union>_i K_i is a complex with |K| \<cong> M (homeomorphism
+         inherited from the approximating local charts). **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>36 The Hauptvermutung; Tame imbedding\<close>
 
