@@ -3238,11 +3238,101 @@ theorem Theorem_GT_12_4:
       closed. Then U is a Cantor set. **)
 theorem Theorem_GT_12_5:
   fixes X :: "'a set" and T :: "'a set set" and U :: "'a set"
-  assumes "geotop_is_cantor_set X T"
-  assumes "U \<subseteq> X" and "U \<noteq> {}"
-  assumes "U \<in> T" and "closedin_on X T U"
+  assumes hCantor: "geotop_is_cantor_set X T"
+  assumes hUX: "U \<subseteq> X" and hUne: "U \<noteq> {}"
+  assumes hUopen: "U \<in> T" and hUclosed: "closedin_on X T U"
   shows "geotop_is_cantor_set U (subspace_topology X T U)"
-  sorry
+  (** Moise proof (geotop.tex:2384): Cantor sets are characterized by compact +
+      metrizable + every point is a limit point + totally disconnected. Each
+      property is inherited by clopen subsets:
+      * compact: closed subset of compact is compact (Top0 Theorem_26_2).
+      * metrizable: subspace of metrizable is metrizable.
+      * limit point: for P\<in>U, P is a limit pt of X, and since U is open containing
+        P, any nbhd of P in the subspace U comes from a nbhd in X intersected with U.
+      * totally disconnected: subset of totally disconnected is totally disconnected. **)
+proof -
+  have hcomp: "top1_compact_on X T"
+    using hCantor unfolding geotop_is_cantor_set_def by simp
+  have hmetr: "top1_metrizable_on X T"
+    using hCantor unfolding geotop_is_cantor_set_def by simp
+  have hlim: "\<forall>P\<in>X. is_limit_point_of P X X T"
+    using hCantor unfolding geotop_is_cantor_set_def by simp
+  have hTD: "geotop_is_totally_disconnected X T"
+    using hCantor unfolding geotop_is_cantor_set_def by simp
+  have hTX: "is_topology_on X T"
+    using hTD unfolding geotop_is_totally_disconnected_def by simp
+  let ?TU = "subspace_topology X T U"
+  have hTU: "is_topology_on U ?TU"
+    by (rule subspace_topology_is_topology_on[OF hTX hUX])
+  (** (1) compact: closed subset of compact is compact. **)
+  have hUcompact: "top1_compact_on U ?TU"
+    by (rule Theorem_26_2[OF hcomp hUclosed])
+  (** (2) metrizable: subspace of metrizable. **)
+  have hUmetr: "top1_metrizable_on U ?TU"
+  proof -
+    obtain d where hd: "top1_metric_on X d" and hTeq: "T = top1_metric_topology_on X d"
+      using hmetr unfolding top1_metrizable_on_def by blast
+    have hdU: "top1_metric_on U d"
+      by (metis hd hUX metric_on_subset)
+    have hTUeq: "?TU = top1_metric_topology_on U d"
+      by (metis hUX hTeq hd subspace_metric_topology_eq_metric_topology)
+    show ?thesis
+      unfolding top1_metrizable_on_def using hdU hTUeq by blast
+  qed
+  (** (3) every point of U is a limit point of U.
+      For P \<in> U, a nbhd W of P in ?TU is W = V \<inter> U with V \<in> T. Since U \<in> T,
+      W \<in> T as an intersection of two opens, hence W is a nbhd of P in X. Since
+      P is a limit point of X, (W - {P}) \<inter> X \<noteq> {}. Pick Q \<in> W - {P}; then
+      Q \<in> W \<subseteq> U, so Q \<in> (W - {P}) \<inter> U. **)
+  have hUlim: "\<forall>P\<in>U. is_limit_point_of P U U ?TU"
+  proof
+    fix P assume hP: "P \<in> U"
+    have hPX: "P \<in> X" using hP hUX by blast
+    have hPlimX: "is_limit_point_of P X X T"
+      using hlim hPX by simp
+    show "is_limit_point_of P U U ?TU"
+      unfolding is_limit_point_of_def
+    proof (intro conjI impI allI hP)
+      show "U \<subseteq> U" by simp
+      fix W assume hW_nbhd: "neighborhood_of P U ?TU W"
+      have hWTU: "W \<in> ?TU"
+        using hW_nbhd neighborhood_of_def by fastforce
+      have hPW: "P \<in> W"
+        using hW_nbhd neighborhood_of_def by fastforce
+      obtain V where hV: "V \<in> T" and hWeq: "W = V \<inter> U"
+        using hWTU unfolding subspace_topology_def by blast
+      have hW_open_X: "W \<in> T"
+        using Lemma_16_2 hTX hUopen hWTU by blast
+      have hW_nbhd_X: "neighborhood_of P X T W"
+        using neighborhood_of_def hW_open_X hPW by fastforce
+      have hinter: "intersects (W - {P}) X"
+        by (meson hPlimX hW_nbhd_X is_limit_point_of_def)
+      then obtain Q where hQW: "Q \<in> W - {P}"
+        unfolding intersects_def by blast
+      have hQU: "Q \<in> U"
+        using hQW hWeq by fastforce
+      show "intersects (W - {P}) U"
+        using hQW hQU intersects_def by fastforce
+    qed
+  qed
+  (** (4) totally disconnected: any connected S \<subseteq> U is singleton since S \<subseteq> X too. **)
+  have hUTD: "geotop_is_totally_disconnected U ?TU"
+    unfolding geotop_is_totally_disconnected_def
+  proof (intro conjI hTU ballI allI impI)
+    fix S assume hSU: "S \<subseteq> U"
+    assume hSconn: "top1_connected_on S (subspace_topology U ?TU S)"
+    have hSX: "S \<subseteq> X" using hSU hUX by blast
+    have hsubeq: "subspace_topology U ?TU S = subspace_topology X T S"
+      by (simp add: hSU subspace_topology_trans)
+    have hSconnX: "top1_connected_on S (subspace_topology X T S)"
+      using hSconn hsubeq by simp
+    show "S = {} \<or> (\<exists>P. S = {P})"
+      using hTD hSX hSconnX unfolding geotop_is_totally_disconnected_def by blast
+  qed
+  show ?thesis
+    unfolding geotop_is_cantor_set_def
+    using hUcompact hUmetr hUlim hUTD by blast
+qed
 
 (** from \<S>12 Theorem 6 (geotop.tex:2387)
     LATEX VERSION: Let [X, O] and [Y, O'] be metrizable spaces. If X is compact, and f is a
