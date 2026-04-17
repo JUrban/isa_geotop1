@@ -11184,9 +11184,15 @@ proof -
          solid-torus structure comes from the finite edge decomposition of L. **)
   have h_N_is_ST:
     "\<exists>S. geotop_is_CST S \<and> S = geotop_regular_neighborhood K' L" sorry
+  have h_combined:
+    "\<exists>S. geotop_is_CST S \<and>
+         (\<exists>K'. geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
+               (\<exists>L\<subseteq>K'. geotop_polyhedron L = J \<and>
+                       S = geotop_regular_neighborhood K' L))"
+    using hKL h_N_is_ST by (by100 blast)
   (** (3) Orientability of K (hypothesis) ensures the thickening N(L) does not have a
          Klein-bottle twist; it is a genuine solid torus, not a twisted analogue. **)
-  show ?thesis sorry
+  show ?thesis using h_combined by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 12 (geotop.tex:5361)
