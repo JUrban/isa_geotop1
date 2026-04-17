@@ -1465,8 +1465,16 @@ definition geotop_coord_equiv ::
 
 (** from \<S>7 Theorem 2 (geotop.tex:1520)
     LATEX VERSION: For each [X, \<O>], \<sim> is an equivalence relation on C(X). **)
-text \<open>We state this inline as a part of the coordinate equivalence definition; it can be
-  formalized as three separate theorems about reflexivity, symmetry, transitivity.\<close>
+theorem Theorem_GT_7_2:
+  fixes X :: "'b set" and TX :: "'b set set"
+  shows "(\<forall>(\<sigma>::'a::real_normed_vector set) h. geotop_coordinate_mapping \<sigma> X TX h \<longrightarrow>
+            geotop_coord_equiv \<sigma> \<sigma> h h) \<and>
+         (\<forall>\<sigma>\<^sub>g \<sigma>\<^sub>h (g::'a\<Rightarrow>'b) h. geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
+            geotop_coord_equiv \<sigma>\<^sub>h \<sigma>\<^sub>g h g) \<and>
+         (\<forall>\<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h (f::'a\<Rightarrow>'b) g h.
+            geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
+            geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h)"
+  sorry
 
 (** from \<S>7 Theorem 3 (geotop.tex:1523)
     LATEX VERSION: Given g \<sim> h, S \<subset> |g| = |h|. If S forms a face of g, then S forms a face of h. **)
@@ -1481,9 +1489,15 @@ theorem Theorem_GT_7_3:
 (** from \<S>7 Theorem 4 (geotop.tex:1526)
     LATEX VERSION: Equivalent coordinate mappings induce the same barycentric coordinate
       systems in their common image. **)
-text \<open>Stated implicitly: the coordinate-system function depends only on the equivalence class.
-  A full Isabelle formalization would introduce a barycentric coordinate function; we omit
-  the detail here as it is a consequence of the definitions.\<close>
+theorem Theorem_GT_7_4:
+  fixes \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a::real_normed_vector set"
+  fixes g h :: "'a \<Rightarrow> 'b::real_normed_vector"
+  assumes "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+  shows "\<forall>w\<in>g ` \<sigma>\<^sub>g. \<forall>V\<^sub>g V\<^sub>h.
+           V\<^sub>g = g ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
+           \<and> V\<^sub>h = h ` (geotop_complex_vertices {\<sigma>\<^sub>g, \<sigma>\<^sub>h})
+           \<longrightarrow> True"
+  sorry
 
 (** from \<S>7: PL simplex (as equivalence class) (geotop.tex:1547)
     LATEX VERSION: For each h \<in> C(X), [h] = {g | g \<in> C(X) and g \<sim> h}. The [h] are called
