@@ -11189,7 +11189,8 @@ proof -
          the second barycentric subdivision of K. **)
   obtain K' L where hKL:
     "geotop_is_complex K' \<and> geotop_is_subdivision K K' \<and>
-     L \<subseteq> K' \<and> geotop_polyhedron L = J" sorry
+     L \<subseteq> K' \<and> geotop_polyhedron L = J"
+    using hJ_subcomplex by (by100 blast)
   (** (2) Since L is a polygon (1-dim acyclic circular graph), N(L) is homeomorphic to
          S^1 \<times> D^2 (thickening of the circle into a solid torus). The combinatorial-
          solid-torus structure comes from the finite edge decomposition of L. **)
