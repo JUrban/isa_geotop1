@@ -9397,11 +9397,33 @@ definition geotop_is_combinatorial_3_manifold_with_boundary ::
     LATEX VERSION: Every triangulated 3-manifold is a combinatorial 3-manifold. **)
 theorem Theorem_GT_23_1:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_3mfd: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3"
+  assumes hK_closed: "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}"
   shows "geotop_is_combinatorial_3_manifold K"
-  sorry
+proof -
+  (** (1) For each vertex v of K, the star |St v| is a compact neighbourhood of v in the
+         triangulated 3-manifold; by the local-Euclidean property at v, it is a 3-cell. **)
+  have h_star_3cell:
+    "\<forall>v\<in>geotop_complex_vertices K.
+        geotop_is_n_cell (\<Union>(geotop_star K v))
+          (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_star K v))) 3" sorry
+  (** (2) Link lk v of v in K is a polyhedral 2-sphere in |St v|. Since M is a closed
+         3-manifold at v, Bd(|St v|) = |lk v| is a 2-sphere. **)
+  have h_link_2sphere:
+    "\<forall>v\<in>geotop_complex_vertices K.
+        geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology (\<Union>(geotop_star K v)))
+          (subspace_topology UNIV geotop_euclidean_topology
+             (geotop_frontier UNIV geotop_euclidean_topology (\<Union>(geotop_star K v)))) 2" sorry
+  (** (3) Apply PL Schoenflies (Theorem 17_12) locally in |St v|: |St v| is combinatorially
+         equivalent to the cone over its boundary triangulation, hence combinatorially
+         equivalent to a 3-simplex (join of the boundary 2-sphere triangulation with v). **)
+  have h_comb_equiv:
+    "\<forall>v\<in>geotop_complex_vertices K.
+        \<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 3 \<and>
+           geotop_comb_equiv (geotop_star K v) {\<tau>. \<tau> \<subseteq> \<sigma> \<and> geotop_is_simplex \<tau>}" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>23 Theorem 2 (geotop.tex:5005)
     LATEX VERSION: Let M be a 3-manifold with boundary, and let P \<in> Bd M. Then there is a
@@ -9410,8 +9432,8 @@ theorem Theorem_GT_23_1:
       in Bd M. **)
 theorem Theorem_GT_23_2:
   fixes M :: "'a::real_normed_vector set" and P :: 'a
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hP: "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
   shows "\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f. geotop_simplex_dim \<sigma>3 3 \<and>
              geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face \<sigma>2 \<sigma>3 \<and>
              top1_homeomorphism_on \<sigma>3 (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
@@ -9420,17 +9442,54 @@ theorem Theorem_GT_23_2:
              P \<in> geotop_top_interior M
                 (subspace_topology UNIV geotop_euclidean_topology M) C3 \<and>
              C3 \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = f ` \<sigma>2"
-  sorry
+proof -
+  (** (1) Boundary atlas: by definition of 3-manifold with boundary, P has an open
+         neighbourhood V in M and a homeomorphism \<psi>: V \<leftrightarrow> open half-space H^3_+, sending
+         P to the origin. **)
+  have h_atlas:
+    "\<exists>V. P \<in> V \<and> V \<in> (subspace_topology UNIV geotop_euclidean_topology M)
+         \<comment> \<open>plus a homeomorphism onto a half-space neighbourhood\<close>" sorry
+  (** (2) Inside the half-space, pick a 3-simplex \<sigma>^3 containing the origin in its
+         interior-of-base 2-face \<sigma>^2 \<subseteq> {z = 0} (a closed regular half-tetrahedron). **)
+  have h_simplex_and_pullback:
+    "\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f.
+       geotop_simplex_dim \<sigma>3 3 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
+       geotop_is_face \<sigma>2 \<sigma>3 \<and>
+       top1_homeomorphism_on \<sigma>3
+         (subspace_topology UNIV geotop_euclidean_topology \<sigma>3) C3
+         (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
+       C3 \<subseteq> M \<and>
+       P \<in> geotop_top_interior M
+              (subspace_topology UNIV geotop_euclidean_topology M) C3 \<and>
+       C3 \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = f ` \<sigma>2" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>23 Theorem 3 (geotop.tex:5013)
     LATEX VERSION: If M is a 3-manifold with boundary, then Bd M is a 2-manifold. **)
 theorem Theorem_GT_23_3:
   fixes M :: "'a::real_normed_vector set"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
   shows "geotop_n_manifold_with_boundary_on
            (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
            (\<lambda>x y. norm (x - y)) 2"
-  sorry
+proof -
+  (** (1) For each P \<in> Bd M, Theorem 23_2 provides a 3-cell C^3 \<subseteq> M whose intersection
+         with Bd M is a 2-cell neighbourhood of P (the image of a 2-face \<sigma>^2 of \<sigma>^3). **)
+  have h_local:
+    "\<forall>P\<in>geotop_manifold_boundary M (\<lambda>x y. norm (x - y)).
+        \<exists>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+             C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+             P \<in> geotop_top_interior
+                   (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+                   (subspace_topology UNIV geotop_euclidean_topology
+                      (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) C2" sorry
+  (** (2) Hence Bd M is a 2-manifold with boundary: each point has a 2-cell neighbourhood
+         in Bd M. Moreover Bd(Bd M) = \<emptyset> since Bd M is closed in M (Bd as a 2-manifold
+         without boundary in this closed 3-manifold case; for Bd M's own boundary we need
+         separate argument if M itself has corners, here assume none). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>23 Theorem 4 (geotop.tex:5014)
     LATEX VERSION: Let M be a 3-manifold with boundary, and let P \<in> Bd M. Then every
