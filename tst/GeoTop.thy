@@ -7018,11 +7018,27 @@ section \<open>\<S>17 The PL Schönflies theorem in R^3\<close>
       Bd M = Fr M. **)
 theorem Theorem_GT_17_1:
   fixes M :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "closedin_on UNIV geotop_euclidean_topology M"
+  assumes hM_3mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM_closed: "closedin_on UNIV geotop_euclidean_topology M"
   shows "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) =
          geotop_frontier UNIV geotop_euclidean_topology M"
-  sorry
+proof -
+  (** (1) Let U = M - Fr M; U is the topological interior of M in R^3 (union of open sets
+         of R^3 contained in M). At every P \<in> U, M is locally Euclidean. **)
+  define U :: "(real^3) set"
+    where "U = M - geotop_frontier UNIV geotop_euclidean_topology M"
+  have h_U_interior:
+    "U \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology M \<and>
+     geotop_manifold_boundary M (\<lambda>x y. norm (x - y))
+       \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M" sorry
+  (** (2) Converse inclusion Fr M \<subseteq> Bd M: suppose P \<in> Fr M has an open neighbourhood V
+         in M homeomorphic to R^3. Since P \<in> V, V cannot be open in R^3; this contradicts
+         Invariance of domain (Theorem 0.4). **)
+  have h_fr_sub_bd:
+    "geotop_frontier UNIV geotop_euclidean_topology M
+       \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17: cell-complex (geotop.tex:3415)
     LATEX VERSION: By a cell-complex we mean a finite collection K of topological cells, such
@@ -7070,24 +7086,67 @@ definition geotop_is_free_2cell_in ::
       one 2-cell. Then at least two of the 2-cells of K are free in K. **)
 theorem Theorem_GT_17_2:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_cell_complex K"
-  assumes "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
-  assumes "2 \<le> card {C\<in>K. geotop_is_n_cell C
+  assumes hK_cc: "geotop_is_cell_complex K"
+  assumes hK_2cell: "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
+  assumes hK_many: "2 \<le> card {C\<in>K. geotop_is_n_cell C
                         (subspace_topology UNIV geotop_euclidean_topology C) 2}"
   shows "\<exists>C1 C2. C1 \<noteq> C2 \<and> geotop_is_free_2cell_in C1 K \<and> geotop_is_free_2cell_in C2 K"
-  sorry
+proof -
+  (** (1) By the Tame imbedding theorem for linear graphs (Theorem 10.8), WLOG all edges
+         of K are polyhedra; hence all 2-cells of K are polyhedra. Embed |K| into R^2. **)
+  have h_poly:
+    "\<exists>K\<^sub>p. geotop_is_PL_cell_complex K\<^sub>p \<and>
+         (\<exists>f. top1_homeomorphism_on (\<Union>K)
+                (subspace_topology UNIV geotop_euclidean_topology (\<Union>K))
+                (\<Union>K\<^sub>p)
+                (subspace_topology UNIV geotop_euclidean_topology (\<Union>K\<^sub>p)) f)" sorry
+  (** (2) Pick a non-free 2-cell C \<in> K. The edge Bd C \<inter> Bd|K| is not an arc; hence it is
+         either empty, a point, or has \<ge> 2 components. Fix such a C and a separating arc
+         that cuts |K| into two subcomplexes |K_1| and |K_2|, each a 2-cell, with C in
+         (say) K_1. **)
+  have h_separate:
+    "\<exists>C \<in> K. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+             \<not> geotop_is_free_2cell_in C K \<and>
+             (\<exists>K\<^sub>1 K\<^sub>2. K\<^sub>1 \<subseteq> K \<and> K\<^sub>2 \<subseteq> K \<and> K\<^sub>1 \<inter> K\<^sub>2 \<noteq> K \<and>
+                     geotop_is_n_cell (\<Union>K\<^sub>1) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K\<^sub>1)) 2 \<and>
+                     geotop_is_n_cell (\<Union>K\<^sub>2) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K\<^sub>2)) 2 \<and>
+                     C \<in> K\<^sub>1)" sorry
+  (** (3) Recurse into K_1: either K_1 already contains a free 2-cell (inner induction on
+         #cells, base case card K_i = 1 a single 2-cell is trivially free), or we iterate
+         on a non-free cell in K_1. Symmetrically for K_2. Merging the two recursive
+         guarantees yields two distinct free 2-cells in K. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 3 (geotop.tex:3426)
     LATEX VERSION: Let K be as in Theorem 2. Let D be a 2-cell which forms a proper
       subcomplex of K. Then there is a 2-cell which is free in K and does not lie in D. **)
 theorem Theorem_GT_17_3:
   fixes K :: "'a::real_normed_vector set set" and D :: "'a set"
-  assumes "geotop_is_cell_complex K"
-  assumes "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
-  assumes "\<exists>KD. KD \<subset> K \<and> geotop_is_cell_complex KD \<and> \<Union>KD = D \<and>
+  assumes hK_cc: "geotop_is_cell_complex K"
+  assumes hK_2cell: "geotop_is_n_cell (\<Union>K) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K)) 2"
+  assumes hD_sub: "\<exists>KD. KD \<subset> K \<and> geotop_is_cell_complex KD \<and> \<Union>KD = D \<and>
                geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
   shows "\<exists>C. geotop_is_free_2cell_in C K \<and> \<not> C \<subseteq> D"
-  sorry
+proof -
+  (** (1) Pick a 2-cell C \<in> K with C \<not>\<subseteq> D. If C is free, done; otherwise proceed. **)
+  obtain C where hC:
+    "C \<in> K \<and> geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+     \<not> C \<subseteq> D" sorry
+  (** (2) Apply the separating-arc construction from Theorem 17_2: |K| splits as
+         |K_1| \<union> |K_2| along an arc through C. Since D is a 2-cell sub-decomposition
+         containing no point of Int C (by choice of C), D lies in one of the sides, say D
+         \<subseteq> |K_2|. **)
+  have h_split:
+    "\<exists>K\<^sub>1 K\<^sub>2. K\<^sub>1 \<subseteq> K \<and> K\<^sub>2 \<subseteq> K \<and> C \<in> K\<^sub>1 \<and> D \<subseteq> \<Union>K\<^sub>2 \<and>
+             geotop_is_n_cell (\<Union>K\<^sub>1) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K\<^sub>1)) 2 \<and>
+             geotop_is_n_cell (\<Union>K\<^sub>2) (subspace_topology UNIV geotop_euclidean_topology (\<Union>K\<^sub>2)) 2"
+    sorry
+  (** (3) By Theorem 17_2 applied to K_1 (or recursive Theorem 17_3 on K_1), obtain a
+         2-cell C' \<in> K_1 with C' free in K_1 and C' \<noteq> C. Then C' is also free in K, and
+         does not lie in D (since D \<subseteq> |K_2|). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>17: push property at D_1 (geotop.tex:3431)
     LATEX VERSION: Let C^3 be a polyhedral 3-cell in R^3, let D_1 be a polyhedral 2-cell in
@@ -7125,10 +7184,34 @@ definition geotop_has_push_property :: "(real^3) set \<Rightarrow> bool" where
       the push property at \<sigma>^2. **)
 theorem Theorem_GT_17_4:
   fixes \<sigma>3 \<sigma>2 :: "(real^3) set"
-  assumes "geotop_simplex_dim \<sigma>3 3" and "geotop_simplex_dim \<sigma>2 2"
-  assumes "geotop_is_face \<sigma>2 \<sigma>3"
+  assumes h\<sigma>3: "geotop_simplex_dim \<sigma>3 3" and h\<sigma>2: "geotop_simplex_dim \<sigma>2 2"
+  assumes hface: "geotop_is_face \<sigma>2 \<sigma>3"
   shows "geotop_has_push_property_at \<sigma>3 \<sigma>2"
-  sorry
+proof -
+  (** (1) Identify D_1 = \<sigma>^2 and D_2 = Cl(Bd \<sigma>^3 - \<sigma>^2) = the union of the other three
+         2-faces of \<sigma>^3; these meet along J = Bd \<sigma>^2. **)
+  have h_decomp:
+    "(\<exists>D\<^sub>2. D\<^sub>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - geotop_top_interior UNIV geotop_euclidean_topology \<sigma>2 \<and>
+                geotop_is_n_cell D\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>2) 2 \<and>
+                geotop_frontier UNIV geotop_euclidean_topology \<sigma>2 =
+                geotop_frontier UNIV geotop_euclidean_topology D\<^sub>2)" sorry
+  (** (2) For a given polyhedral neighbourhood N of \<sigma>^3 - J, construct the reflection-like
+         PLH h by flattening \<sigma>^3 onto the plane of \<sigma>^2, reflecting D_2 across that plane,
+         then lifting back: h acts as the folding-along-\<sigma>^2 isotopy, agrees with identity
+         outside N by taking the support inside a thin polyhedral collar of \<sigma>^3 in N. **)
+  have h_PLH:
+    "\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N) \<and>
+         (\<sigma>3 - (geotop_frontier UNIV geotop_euclidean_topology \<sigma>2)) \<subseteq>
+            geotop_top_interior UNIV geotop_euclidean_topology N \<longrightarrow>
+         (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h \<and>
+              (\<exists>KR KR'. geotop_PLH KR KR' h) \<and>
+              h ` \<sigma>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - (\<sigma>2 -
+                         geotop_frontier UNIV geotop_euclidean_topology \<sigma>2) \<and>
+              (\<forall>P\<in>UNIV - N. h P = P))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 5 (geotop.tex:3443)
     LATEX VERSION: Given \<sigma>^3 \<subseteq> R^3. Let D be a polyhedral 2-cell in Bd \<sigma>^3, and let W be an
@@ -7136,26 +7219,73 @@ theorem Theorem_GT_17_4:
       where \<sigma>_0^2 is a 2-face of \<sigma>^3, such that f|(R^3 - W) is the identity. **)
 theorem Theorem_GT_17_5:
   fixes \<sigma>3 D W :: "(real^3) set"
-  assumes "geotop_simplex_dim \<sigma>3 3"
-  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
-  assumes "D \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D"
-  assumes "W \<in> geotop_euclidean_topology" and "\<sigma>3 \<subseteq> W"
+  assumes h\<sigma>3: "geotop_simplex_dim \<sigma>3 3"
+  assumes hD: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes hD_sub: "D \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3"
+  assumes hD_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D"
+  assumes hW_open: "W \<in> geotop_euclidean_topology" and h\<sigma>W: "\<sigma>3 \<subseteq> W"
   shows "\<exists>f \<sigma>02. geotop_simplex_dim \<sigma>02 2 \<and> geotop_is_face \<sigma>02 \<sigma>3 \<and>
            top1_homeomorphism_on UNIV geotop_euclidean_topology
              UNIV geotop_euclidean_topology f \<and>
            (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
            f ` \<sigma>3 = \<sigma>3 \<and> f ` D = \<sigma>02 \<and>
            (\<forall>P\<in>UNIV - W. f P = P)"
-  sorry
+proof -
+  (** (1) Choose a rectilinear triangulation K of Bd \<sigma>^3 such that D forms a subcomplex
+         and each vertex-star St \<tau>^2 in K avoids one 2-face \<sigma>_?^2 of \<sigma>^3 (take K fine
+         enough for diameters of St \<tau>^2 to be less than the side of the simplex). **)
+  obtain K where h_triangulation:
+    "geotop_is_complex K \<and>
+     geotop_polyhedron K = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 \<and>
+     (\<exists>KD\<subseteq>K. geotop_polyhedron KD = D) \<and>
+     (\<forall>\<tau>\<in>K. \<exists>\<sigma>0. geotop_simplex_dim \<sigma>0 2 \<and> geotop_is_face \<sigma>0 \<sigma>3 \<and>
+                   \<tau> \<inter> \<sigma>0 = {})" sorry
+  (** (2) Iteratively push 2-cells of D onto faces of \<sigma>^3 via Theorem 17_4. At each step,
+         pick a free 2-cell (Theorem 17_2 / 17_3) of the current K inside D, push it using
+         the face-push of Theorem 17_4 into an adjacent 2-face of \<sigma>^3, with support inside
+         a small polyhedral neighbourhood contained in W. **)
+  have h_iterate:
+    "\<exists>f. top1_homeomorphism_on UNIV geotop_euclidean_topology
+           UNIV geotop_euclidean_topology f \<and>
+         (\<exists>KR KR'. geotop_PLH KR KR' f) \<and>
+         f ` \<sigma>3 = \<sigma>3 \<and>
+         (\<exists>\<sigma>02. geotop_simplex_dim \<sigma>02 2 \<and> geotop_is_face \<sigma>02 \<sigma>3 \<and> f ` D = \<sigma>02) \<and>
+         (\<forall>P\<in>UNIV - W. f P = P)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 6 (geotop.tex:3502)
     LATEX VERSION: Every 3-simplex in R^3 has the push property. **)
 theorem Theorem_GT_17_6:
   fixes \<sigma>3 :: "(real^3) set"
-  assumes "geotop_simplex_dim \<sigma>3 3"
+  assumes h\<sigma>3: "geotop_simplex_dim \<sigma>3 3"
   shows "geotop_has_push_property \<sigma>3"
-  sorry
+proof -
+  (** (1) Let D_1 \<subseteq> Bd \<sigma>^3 be any polyhedral 2-cell; we must construct the pushing PLH
+         h taking D_1 \<leftrightarrow> D_2 = Cl(Bd \<sigma>^3 - D_1) with support inside a given neighbourhood. **)
+  have h_setup:
+    "\<forall>D\<^sub>1. geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+          D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D\<^sub>1) \<longrightarrow>
+          geotop_has_push_property_at \<sigma>3 D\<^sub>1" sorry
+  (** (2) By Theorem 17_5, push D_1 onto a 2-face \<sigma>_0^2 of \<sigma>^3 via some PLH f_1 with
+         compact support in the given neighbourhood N. **)
+  have h_step1:
+    "\<forall>D\<^sub>1 N. geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+            D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 \<and>
+            closedin_on UNIV geotop_euclidean_topology N \<and>
+            (\<sigma>3 - geotop_frontier UNIV geotop_euclidean_topology D\<^sub>1) \<subseteq>
+              geotop_top_interior UNIV geotop_euclidean_topology N \<longrightarrow>
+            (\<exists>f\<^sub>1 \<sigma>0. geotop_simplex_dim \<sigma>0 2 \<and> geotop_is_face \<sigma>0 \<sigma>3 \<and>
+                     top1_homeomorphism_on UNIV geotop_euclidean_topology
+                       UNIV geotop_euclidean_topology f\<^sub>1 \<and>
+                     f\<^sub>1 ` D\<^sub>1 = \<sigma>0 \<and>
+                     (\<forall>P\<in>UNIV - N. f\<^sub>1 P = P))" sorry
+  (** (3) Push the 2-face \<sigma>_0^2 across \<sigma>^3 to its opposite D_2 = Cl(Bd \<sigma>^3 - \<sigma>_0^2) via
+         Theorem 17_4. Compose f_1 with this second PLH to get h: D_1 \<leftrightarrow> D_2, with support
+         still in N. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>17: simply imbedded 2-sphere (geotop.tex:3530)
     LATEX VERSION: Let S be a polyhedral 2-sphere in R^3. Suppose that for every convex open
@@ -7178,33 +7308,99 @@ definition geotop_is_simply_imbedded :: "(real^3) set \<Rightarrow> bool" where
       PLH. **)
 theorem Theorem_GT_17_7:
   fixes C3 :: "(real^3) set" and f :: "real^3 \<Rightarrow> real^3"
-  assumes "geotop_has_push_property C3"
-  assumes "top1_homeomorphism_on UNIV geotop_euclidean_topology
+  assumes hC3: "geotop_has_push_property C3"
+  assumes hf: "top1_homeomorphism_on UNIV geotop_euclidean_topology
              UNIV geotop_euclidean_topology f"
-  assumes "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f"
+  assumes hf_PL: "\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f"
   shows "geotop_has_push_property (f ` C3)"
-  sorry
+proof -
+  (** (1) Given a polyhedral 2-cell D_1' \<subseteq> Bd f(C^3) and a polyhedral closed neighbourhood
+         N' of f(C^3) - J', pull them back under f: D_1 = f^{-1}(D_1') is polyhedral in
+         Bd C^3, and N = f^{-1}(N') is a polyhedral neighbourhood of C^3 - J. **)
+  have h_pullback:
+    "\<forall>D\<^sub>1' N'. geotop_is_n_cell D\<^sub>1' (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1') 2 \<and>
+              D\<^sub>1' \<subseteq> geotop_frontier UNIV geotop_euclidean_topology (f ` C3) \<and>
+              closedin_on UNIV geotop_euclidean_topology N' \<longrightarrow>
+              (\<exists>D\<^sub>1 N. D\<^sub>1 = f -` D\<^sub>1' \<inter> C3 \<and> N = f -` N' \<and>
+                     D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+  (** (2) Apply the push-property of C^3 (hypothesis) at D_1 inside N to get a PLH h with
+         h(D_1) = D_2, supported in N. **)
+  have h_apply:
+    "\<forall>D\<^sub>1 N. geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+            D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C3 \<and>
+            closedin_on UNIV geotop_euclidean_topology N \<longrightarrow>
+       (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h \<and>
+            (\<forall>P\<in>UNIV - N. h P = P))" sorry
+  (** (3) Transport: the conjugated PLH h' = f \<circ> h \<circ> f^{-1} sends D_1' to D_2' in Bd f(C^3),
+         is a PLH (compose PLHs), and is supported in N'. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 8 (geotop.tex:3544)
     LATEX VERSION: Every simply imbedded 2-sphere in R^3 has the push property. **)
 theorem Theorem_GT_17_8:
   fixes S :: "(real^3) set"
-  assumes "geotop_is_simply_imbedded S"
+  assumes hS: "geotop_is_simply_imbedded S"
   shows "\<exists>C3. geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
               geotop_frontier UNIV geotop_euclidean_topology C3 = S \<and>
               geotop_has_push_property C3"
-  sorry
+proof -
+  (** (1) By hypothesis, S is polyhedral, and there is a PLH f: R^3 \<leftrightarrow> R^3, S \<leftrightarrow> Bd \<sigma>^3
+         with support in any given convex open neighbourhood. **)
+  obtain f \<sigma>3 where hf:
+    "geotop_simplex_dim \<sigma>3 3 \<and>
+     top1_homeomorphism_on UNIV geotop_euclidean_topology UNIV geotop_euclidean_topology f \<and>
+     (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+     f ` S = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3" sorry
+  (** (2) Let C^3 = f^{-1}(\<sigma>^3); this is a polyhedral 3-cell with Bd C^3 = S. **)
+  define C3 :: "(real^3) set" where "C3 = f -` \<sigma>3"
+  have h_C3:
+    "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
+     geotop_frontier UNIV geotop_euclidean_topology C3 = S" sorry
+  (** (3) \<sigma>^3 has the push property (Theorem 17_6); by Theorem 17_7 the push property is
+         PLH-invariant; hence C^3 = f^{-1}(\<sigma>^3) has the push property as well. **)
+  have h_push:
+    "geotop_has_push_property C3" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 9 (geotop.tex:3546)
     LATEX VERSION: Let C^3 be a convex polyhedral 3-cell in R^3. Then Bd C^3 is simply
       imbedded. **)
 theorem Theorem_GT_17_9:
   fixes C3 :: "(real^3) set"
-  assumes "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
-  assumes "geotop_convex C3"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C3"
+  assumes hC3: "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
+  assumes hconvex: "geotop_convex C3"
+  assumes hpoly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C3"
   shows "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
-  sorry
+proof -
+  (** (1) Triangulate Bd C^3 (given); form the join with any point v \<in> Int C^3 to get a
+         triangulation K of C^3 whose 3-simplexes all have v as a common vertex. **)
+  obtain v K where h_join:
+    "v \<in> geotop_top_interior UNIV geotop_euclidean_topology C3 \<and>
+     geotop_is_complex K \<and> geotop_polyhedron K = C3 \<and>
+     (\<forall>\<tau>\<in>K. geotop_simplex_dim \<tau> 3 \<longrightarrow> v \<in> \<tau>)" sorry
+  (** (2) Each 3-simplex \<tau>^3 \<in> K is "free" in K: Bd \<tau>^3 \<inter> Bd|K| is the opposite 2-face
+         \<tau>^2 of \<tau>^3, a 2-cell. **)
+  have h_free:
+    "\<forall>\<tau>\<in>K. geotop_simplex_dim \<tau> 3 \<longrightarrow>
+       (\<exists>\<tau>2. geotop_simplex_dim \<tau>2 2 \<and> geotop_is_face \<tau>2 \<tau> \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<tau>
+             \<inter> geotop_frontier UNIV geotop_euclidean_topology C3 = \<tau>2)" sorry
+  (** (3) Iteratively peel off free 3-simplexes via PLHs f_i: R^3 \<leftrightarrow> R^3 supported inside
+         any preset W \<supseteq> C^3 (push property at opposite 2-face from Theorem 17_4). **)
+  have h_peel:
+    "\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
+       (\<exists>f. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology f \<and>
+            (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f) \<and>
+            (\<forall>P\<in>UNIV - W. f P = P) \<and>
+            (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
+                 f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
+                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 10 (geotop.tex:3564)
     LATEX VERSION: Let C^3 be a polyhedral 3-cell in R^3, and suppose that C^3 can be
@@ -7212,12 +7408,36 @@ theorem Theorem_GT_17_9:
       imbedded. **)
 theorem Theorem_GT_17_10:
   fixes C3 :: "(real^3) set"
-  assumes "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
-  assumes "\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+  assumes hC3: "geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3"
+  assumes hjoin: "\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                  (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
                  C3 = geotop_join D {v}"
   shows "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
-  sorry
+proof -
+  (** (1) Extract the polyhedral 2-cell D and apex v with C^3 = D * v. **)
+  obtain D v where hDv:
+    "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
+     C3 = geotop_join D {v}" sorry
+  (** (2) Triangulate D by a 2-complex K_D (exists, given polyhedral cell). Joining with v
+         gives a 3-triangulation K of C^3 as a cone over K_D. Every 3-simplex of K is
+         \<tau>^2 * v for some \<tau>^2 \<in> K_D. **)
+  obtain K\<^sub>D where hK\<^sub>D:
+    "geotop_is_complex K\<^sub>D \<and> geotop_polyhedron K\<^sub>D = D" sorry
+  (** (3) The 3-simplexes of the cone triangulation are "free" in the complex in the
+         sense of Theorem 17_9: each has a unique 2-face in Bd C^3 = (D * v-Bd D) \<cup>
+         (Bd D * v) \<cup> D; peel them off iteratively using Theorem 17_4 push. **)
+  have h_peel:
+    "\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
+       (\<exists>f. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology f \<and>
+            (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f) \<and>
+            (\<forall>P\<in>UNIV - W. f P = P) \<and>
+            (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
+                 f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
+                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 11 (geotop.tex:3567)
     LATEX VERSION: Let S_1 and S_2 be polyhedral 2-spheres in R^3, such that S_1 \<inter> S_2 is a
@@ -7225,13 +7445,42 @@ theorem Theorem_GT_17_10:
       so also is S. **)
 theorem Theorem_GT_17_11:
   fixes S1 S2 D :: "(real^3) set"
-  assumes "geotop_is_simply_imbedded S1"
-  assumes "geotop_is_simply_imbedded S2"
-  assumes "S1 \<inter> S2 = D"
-  assumes "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  assumes hS1: "geotop_is_simply_imbedded S1"
+  assumes hS2: "geotop_is_simply_imbedded S2"
+  assumes hint: "S1 \<inter> S2 = D"
+  assumes hD: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
   shows "geotop_is_simply_imbedded
            ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)"
-  sorry
+proof -
+  (** (1) Write S = (S_1 \<union> S_2) - Int D; this is a 2-sphere (standard gluing lemma: each
+         S_i is a 2-sphere with D as a polyhedral 2-disk, and S is obtained by removing
+         Int D from each and gluing along Bd D). **)
+  have h_S_2sphere:
+    "geotop_is_n_sphere ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)
+       (subspace_topology UNIV geotop_euclidean_topology
+          ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and>
+          geotop_polyhedron L = ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D))"
+    sorry
+  (** (2) Given a convex open W \<supseteq> S: take a convex open W' \<supseteq> S_1 \<cup> S_2 (if needed, replace
+         by the convex hull). By hS1, there is a PLH f_1 with f_1(S_1) = Bd \<sigma>_1^3 and
+         support in W'; by hS2, analogously f_2 with f_2(S_2) = Bd \<sigma>_2^3, support in W'. **)
+  have h_each_PLH:
+    "\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> S1 \<union> S2 \<subseteq> W \<longrightarrow>
+       (\<exists>f\<^sub>1 f\<^sub>2 \<sigma>\<^sub>1 \<sigma>\<^sub>2.
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f\<^sub>1 \<and>
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology f\<^sub>2 \<and>
+          geotop_simplex_dim \<sigma>\<^sub>1 3 \<and> geotop_simplex_dim \<sigma>\<^sub>2 3 \<and>
+          f\<^sub>1 ` S1 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>\<^sub>1 \<and>
+          f\<^sub>2 ` S2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>\<^sub>2 \<and>
+          (\<forall>P\<in>UNIV - W. f\<^sub>1 P = P \<and> f\<^sub>2 P = P))" sorry
+  (** (3) Align the two PLHs along D so that they match on D: by Theorem 17_5 pre-compose
+         f_1, f_2 with further PLHs mapping f_i(D) onto a common 2-face of a shared
+         \<sigma>^3, yielding a single PLH f: S \<leftrightarrow> Bd \<sigma>^3 that fixes R^3 - W. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>17 Theorem 12 (The PL Schönflies theorem in R^3) (geotop.tex:3598)
     LATEX VERSION: Let S be a polyhedral 2-sphere in R^3, and let W be a convex open set
@@ -7240,11 +7489,38 @@ theorem Theorem_GT_17_11:
       imbedded. **)
 theorem Theorem_GT_17_12_PL_Schoenflies:
   fixes S W :: "(real^3) set"
-  assumes "geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
-  assumes "W \<in> geotop_euclidean_topology" and "geotop_convex W" and "S \<subseteq> W"
+  assumes hS: "geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2"
+  assumes hS_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S"
+  assumes hW_open: "W \<in> geotop_euclidean_topology" and hW_conv: "geotop_convex W"
+  assumes hSW: "S \<subseteq> W"
   shows "geotop_is_simply_imbedded S"
-  sorry
+proof -
+  (** (1) Choose axes in general position relative to S: no horizontal plane E contains
+         more than one vertex of S. Then for each E, E \<inter> S is one of: a singleton, a
+         disjoint union of polygons, or has a single singular point. **)
+  have h_gen_pos:
+    "\<exists>R::(real^3) \<Rightarrow> real^3.
+        top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology R \<and>
+        (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' R) \<and>
+        (\<forall>y::real. \<exists>V. V \<subseteq> R ` S \<and>
+           (\<forall>P\<in>R ` S. P $ 3 = y \<longrightarrow> P \<in> V))" sorry
+  (** (2) Induction on the total number n of singular points of slices. Base n = 0: all
+         slices are disjoint polygons (manifold slices). The top and bottom planes E_1,
+         E_m each meet S in a singleton (Theorem 17_12_lem_1, inmost-polygon argument). **)
+  have h_base: "True \<comment> \<open>base case: n = 0 singular points\<close>" sorry
+  (** (3) Inductive step: pick a horizontal plane E containing a singular point P, with
+         an innermost polygon J \<subseteq> E \<inter> S bounding a 2-cell D_J in E with Int D_J \<inter> S = \<emptyset>.
+         J splits S into S_1 \<union> S_2 along D_J; by Theorem 17_11, if both halves are simply
+         imbedded the reunion is. Recursion on fewer singular points yields the result. **)
+  have h_step: "True \<comment> \<open>inductive step: reduce singular points\<close>" sorry
+  (** (4) At n = 0: each slice plane E_i bounds a 3-manifold slab M_i in R^3 between
+         y = y_i and y = y_{i+1}, triangulable as the join of E_i \<inter> |K| with a point of
+         E_{i+1} \<inter> |K| (Theorem 17_10). Hence Bd of the union is simply imbedded via
+         Theorem 17_11. **)
+  have h_zerosing_simple: "True \<comment> \<open>zero-singular reduces to join-triangulable 3-cells\<close>" sorry
+  show ?thesis sorry
+qed
 
 section \<open>\<S>18 The Antoine set\<close>
 
