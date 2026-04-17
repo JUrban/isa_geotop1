@@ -1950,6 +1950,57 @@ theorem Theorem_GT_1_13:
   shows "geotop_broken_line_connected U"
   sorry
 
+(** Partial progress on Theorem_GT_1_13: the convex open case in a euclidean space
+    is broken-line-connected. Uses \<open>geotop_closed_segment_is_broken_line\<close> for the
+    P \<noteq> Q case; for P = Q, picks an auxiliary point via the open-ball assumption. **)
+lemma geotop_convex_open_broken_line_connected:
+  fixes U :: "'a::euclidean_space set"
+  assumes hopen: "U \<in> geotop_euclidean_topology"
+  assumes hconv: "convex U"
+  shows "geotop_broken_line_connected U"
+  unfolding geotop_broken_line_connected_def
+proof (intro ballI)
+  fix P Q assume hP: "P \<in> U" and hQ: "Q \<in> U"
+  have hU_open_HOL: "open U"
+    using hopen geotop_euclidean_topology_eq_open_sets
+    unfolding top1_open_sets_def by blast
+  show "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+  proof (cases "P = Q")
+    case False
+    let ?B = "closed_segment P Q"
+    have hbline: "geotop_is_broken_line ?B"
+      by (rule geotop_closed_segment_is_broken_line[OF False])
+    have hsub: "?B \<subseteq> U"
+      by (rule closed_segment_subset[OF hP hQ hconv])
+    show ?thesis using hbline hsub by auto
+  next
+    case True
+    (** P = Q; pick Q' \<noteq> P in U via the open-ball nbhd and take [P, Q']. **)
+    obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and hball: "ball P \<epsilon> \<subseteq> U"
+      using hU_open_HOL hP open_contains_ball by blast
+    (** A nonzero basis vector exists (DIM('a) \<ge> 1 via euclidean_space axioms). **)
+    obtain b :: 'a where hb: "b \<in> Basis" using nonempty_Basis by blast
+    have hb_norm: "norm b = 1" using hb by (rule norm_Basis)
+    have hb_nz: "b \<noteq> 0" using hb_norm by auto
+    define Q' :: 'a where "Q' = P + (\<epsilon>/2) *\<^sub>R b"
+    have hPne: "P \<noteq> Q'"
+      unfolding Q'_def using h\<epsilon> hb_nz by simp
+    have hdist: "norm (Q' - P) = \<epsilon>/2"
+      unfolding Q'_def using h\<epsilon> hb_norm by simp
+    have hQ'ball: "Q' \<in> ball P \<epsilon>"
+      unfolding ball_def dist_norm using hdist h\<epsilon> by (simp add: norm_minus_commute)
+    have hQ'U: "Q' \<in> U" using hQ'ball hball by blast
+    let ?B = "closed_segment P Q'"
+    have hbline: "geotop_is_broken_line ?B"
+      by (rule geotop_closed_segment_is_broken_line[OF hPne])
+    have hsub: "?B \<subseteq> U"
+      by (rule closed_segment_subset[OF hP hQ'U hconv])
+    have hPB: "P \<in> ?B" by simp
+    have hQB: "Q \<in> ?B" using True hPB by simp
+    show ?thesis using hbline hsub hPB hQB by blast
+  qed
+qed
+
 (** from \<S>1 Theorem 14 (geotop.tex:408)
     LATEX VERSION: Let G be a collection of connected sets, with a point P in common. Then
       the union G* is connected. **)
