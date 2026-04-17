@@ -12298,7 +12298,7 @@ proof -
                         (geotop_manifold_boundary S (\<lambda>x y. norm (x - y))))
                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - B))) f)"
     sorry
-  show ?thesis sorry
+  show ?thesis using hB h_annulus_complement by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 8 (geotop.tex:5855)
