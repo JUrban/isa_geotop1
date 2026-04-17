@@ -6858,7 +6858,11 @@ theorem Theorem_GT_14_4:
 proof -
   (** (1) Define the reverse path p^{-1}(t) = p(1 - t), a path from P_1 to P_0. **)
   define p_inv :: "real \<Rightarrow> 'a" where "p_inv = (\<lambda>t. p (1 - t))"
-  have h_pinv: "geotop_path_on X T 0 1 p_inv \<and> p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0" sorry
+  have h_pinv_endpts: "p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0"
+    unfolding p_inv_def using hp0 hp1 by (by100 simp)
+  have h_pinv_path: "geotop_path_on X T 0 1 p_inv" sorry
+  have h_pinv: "geotop_path_on X T 0 1 p_inv \<and> p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0"
+    using h_pinv_path h_pinv_endpts by (by100 blast)
   (** (2) Conjugation at the path level: \<phi>_0(q) = p^{-1} \<cdot> q \<cdot> p. This sends closed paths
          based at P_0 to closed paths based at P_1 (endpoints check out). **)
   have h_phi0_maps:
