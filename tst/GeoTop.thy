@@ -2850,12 +2850,20 @@ definition geotop_free_group :: "'a set \<Rightarrow> ('a \<times> int) list set
 
 (** from \<S>15: normal closure of a set of relations (geotop.tex:3131)
     LATEX VERSION: Let N([R]) be the smallest normal subgroup of F(G) that contains [R]. **)
+definition geotop_word_inv :: "('a \<times> int) list \<Rightarrow> ('a \<times> int) list" where
+  "geotop_word_inv w = rev (map (\<lambda>(a, n). (a, -n)) w)"
+
 definition geotop_normal_closure ::
   "'a set \<Rightarrow> ('a \<times> int) list set set \<Rightarrow> ('a \<times> int) list set set" where
   "geotop_normal_closure A R =
     \<Inter>{N. R \<subseteq> N \<and> N \<subseteq> geotop_free_group A \<and>
-          (\<forall>x\<in>N. \<forall>y\<in>geotop_free_group A.
-             (\<exists>rep. rep \<in> x \<and> True) \<longrightarrow> True)}"
+          (\<comment> \<open>closed under multiplication (word concatenation)\<close>
+           \<forall>x\<in>N. \<forall>y\<in>N. \<forall>wx\<in>x. \<forall>wy\<in>y. \<exists>z\<in>N. (wx @ wy) \<in> z) \<and>
+          (\<comment> \<open>closed under inverse\<close>
+           \<forall>x\<in>N. \<forall>wx\<in>x. \<exists>z\<in>N. geotop_word_inv wx \<in> z) \<and>
+          (\<comment> \<open>closed under conjugation (normality)\<close>
+           \<forall>x\<in>N. \<forall>y\<in>geotop_free_group A. \<forall>wx\<in>x. \<forall>wy\<in>y. \<exists>z\<in>N.
+             (wy @ wx @ geotop_word_inv wy) \<in> z)}"
 
 (** from \<S>15 Theorem 2 (geotop.tex:2973)
     LATEX VERSION: Let p = \<Pi>_i g_{j_i}^{\<alpha>_i}. If p \<cong> e, then the generator word on the right
