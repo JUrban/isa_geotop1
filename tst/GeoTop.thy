@@ -917,6 +917,32 @@ proof -
     by (metis hfS hf_HOL hfinvT hfinv_HOL hfinv_f hfinvf homeomorphicI)
 qed
 
+(** Bridge: closed sets in our geotop_euclidean topology coincide with
+    HOL-Analysis `closed` sets on real_normed_vector. **)
+lemma closedin_on_geotop_UNIV_iff_closed:
+  fixes C :: "'a::real_normed_vector set"
+  shows "closedin_on UNIV geotop_euclidean_topology C \<longleftrightarrow> closed C"
+  unfolding closedin_on_def
+  using geotop_euclidean_topology_eq_open_sets
+  unfolding top1_open_sets_def
+  by (metis Compl_eq_Diff_UNIV closed_open mem_Collect_eq subset_UNIV)
+
+(** Bridge: closure_on (w.r.t. geotop_euclidean_topology on UNIV) equals
+    HOL-Analysis `closure`. **)
+lemma closure_on_geotop_UNIV_eq_closure:
+  fixes A :: "'a::real_normed_vector set"
+  shows "closure_on UNIV geotop_euclidean_topology A = closure A"
+  unfolding closure_on_def closure_hull hull_def
+  using closedin_on_geotop_UNIV_iff_closed by blast
+
+(** Bridge: geotop_frontier (w.r.t. geotop_euclidean_topology on UNIV) equals
+    HOL-Analysis `frontier`. **)
+lemma geotop_frontier_UNIV_eq_frontier:
+  fixes U :: "'a::real_normed_vector set"
+  shows "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
+  by (simp add: Compl_eq_Diff_UNIV closure_on_geotop_UNIV_eq_closure
+                frontier_closures geotop_frontier_def)
+
 (** from \<S>1 Theorem 3 (geotop.tex:338)
     LATEX VERSION: Every simplex is pathwise connected. **)
 theorem Theorem_GT_1_3:
@@ -1444,6 +1470,14 @@ definition geotop_component_at ::
   "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a set" where
   "geotop_component_at X T M P =
     \<Union>{C. C \<subseteq> M \<and> P \<in> C \<and> top1_connected_on C (subspace_topology X T C)}"
+
+(** Bridge: geotop_component_at on UNIV equals HOL connected_component_set. **)
+lemma geotop_component_at_UNIV_eq_connected_component_set:
+  fixes Y :: "'a::real_normed_vector set" and P :: 'a
+  shows "geotop_component_at UNIV geotop_euclidean_topology Y P
+         = connected_component_set Y P"
+  unfolding geotop_component_at_def connected_component_Union
+  using top1_connected_on_geotop_iff_connected by blast
 
 (** from \<S>1 Theorem 16 (geotop.tex:417)
     LATEX VERSION: Every two (different) components of the same set are disjoint. **)
@@ -2162,10 +2196,41 @@ theorem Theorem_GT_4_5:
     LATEX VERSION: Let J be a 1-sphere in R^2, and let U be a component of R^2 - J. Then J = Fr U. **)
 theorem Theorem_GT_4_6:
   fixes J U :: "(real^2) set"
-  assumes "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
-  assumes "\<exists>P\<in>UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hU: "\<exists>P\<in>UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
   shows "J = geotop_frontier UNIV geotop_euclidean_topology U"
-  sorry
+  (** Moise proof (geotop.tex:996): J homeomorphic to unit sphere in real^2
+      (via our bridges); U ∈ components(-J); apply HOL `Jordan_Brouwer_frontier`
+      (DIM(real^2)=2); bridge back via `geotop_frontier_UNIV_eq_frontier`. **)
+proof -
+  obtain f where hhomeo: "top1_homeomorphism_on J
+                           (subspace_topology UNIV geotop_euclidean_topology J)
+                           (geotop_std_sphere::(real^2) set)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (geotop_std_sphere::(real^2) set)) f"
+    using hJ unfolding geotop_is_n_sphere_def by blast
+  have hhomeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hhomeo])
+  have hstd_eq: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def sphere_def by simp
+  have hJ_sphere: "J homeomorphic sphere (0::real^2) 1"
+    using hhomeo_HOL hstd_eq by simp
+  obtain P where hP_notJ: "P \<in> UNIV - J"
+             and hU_eq: "U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using hU by blast
+  have hU_HOL: "U = connected_component_set (UNIV - J) P"
+    using hU_eq geotop_component_at_UNIV_eq_connected_component_set by simp
+  have hU_comp: "U = connected_component_set (- J) P"
+    using hU_HOL by (simp add: Compl_eq_Diff_UNIV)
+  have hP_compl: "P \<in> - J" using hP_notJ by (simp add: Compl_eq_Diff_UNIV)
+  have hU_in_components: "U \<in> components (- J)"
+    unfolding components_def using hU_comp hP_compl by blast
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hfrontier: "frontier U = J"
+    by (rule Jordan_Brouwer_frontier[OF hJ_sphere hU_in_components hdim])
+  show ?thesis
+    using hfrontier geotop_frontier_UNIV_eq_frontier by metis
+qed
 
 (** from \<S>4 Theorem 7 (geotop.tex:1002)
     LATEX VERSION: Let J be a 1-sphere in R^2. Then R^2 - J has only one bounded component. **)
