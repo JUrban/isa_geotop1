@@ -2736,16 +2736,28 @@ theorem Theorem_GT_14_7:
 (** from \<S>14 Theorem 8 (geotop.tex:2783)
     LATEX VERSION: For every complex K, the canonical homomorphism
       h: \<pi>(|K|, P_0) \<rightarrow> H_1(K, Z) is surjective. Its kernel ker h is the commutator subgroup
-      of \<pi>(|K|, P_0). **)
+      of \<pi>(|K|, P_0).
+    We express the canonical homomorphism in abelianised form: every element of \<pi>(|K|, P_0)
+    maps to a value in a free abelian group (represented as int multiplicity per edge); the
+    map is surjective, and its kernel is the commutator subgroup. **)
 theorem Theorem_GT_14_8:
   fixes K :: "'a::real_normed_vector set set" and P\<^sub>0 :: 'a
   assumes "geotop_is_complex K"
-  assumes "\<exists>v\<in>geotop_complex_vertices K. v = P\<^sub>0"
-  shows "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> int).
+  assumes "P\<^sub>0 \<in> geotop_complex_vertices K"
+  shows "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> ('a set \<Rightarrow> int)) (Z1::('a set \<Rightarrow> int) set).
            (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
                  (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
-              \<exists>n. h C = n) \<and>
-           True"
+              h C \<in> Z1) \<and>
+           (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              \<forall>D\<in>geotop_pi (geotop_polyhedron K)
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              h (geotop_pi_mult (geotop_polyhedron K)
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+                   P\<^sub>0 C D) = (\<lambda>e. h C e + h D e)) \<and>
+           (\<forall>z\<in>Z1. \<exists>C\<in>geotop_pi (geotop_polyhedron K)
+                       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+                       P\<^sub>0. h C = z)"
   sorry
 
 section \<open>\<S>15 The group of (the complement of) a link\<close>
