@@ -12606,27 +12606,45 @@ section \<open>\<S>36 The Hauptvermutung; Tame imbedding\<close>
       is a PLH f: U \<rightarrow> M_2 such that (1) f is a \<phi>-approximation of h and (2) f(U) = h(U). **)
 theorem Theorem_GT_36_1:
   fixes U :: "(real^3) set" and h :: "real^3 \<Rightarrow> real^3" and \<phi> :: "real^3 \<Rightarrow> real"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+  assumes hU: "U \<in> geotop_euclidean_topology"
+  assumes hh: "top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
              (h ` U) (subspace_topology UNIV geotop_euclidean_topology (h ` U)) h"
-  assumes "geotop_strongly_positive U
+  assumes h\<phi>: "geotop_strongly_positive U
              (subspace_topology UNIV geotop_euclidean_topology U) \<phi>"
   shows "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
                (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f \<and>
              (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
              (\<forall>P\<in>U. norm (h P - f P) < \<phi> P) \<and>
              f ` U = h ` U"
-  sorry
+proof -
+  (** (1) Exhaust U by an increasing sequence of compact polyhedral 3-manifolds K_n with
+         K_n \<subseteq> Int K_{n+1} and \<union>_n K_n = U. **)
+  obtain Kns :: "nat \<Rightarrow> (real^3) set" where h_exhaust:
+    "(\<forall>n. geotop_n_manifold_with_boundary_on (Kns n) (\<lambda>x y. norm (x - y)) 3) \<and>
+     (\<forall>n. Kns n \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology (Kns (Suc n))) \<and>
+     (\<Union>n. Kns n) = U" sorry
+  (** (2) Apply Theorem 35_2 on each K_n with a shrinking \<phi>-bound; combine the per-stage
+         PLHs using an inductive limit that respects the compatibility on overlapping
+         regions (the combinatorial Schoenflies / regular-neighbourhood theorems control
+         this). **)
+  have h_iterative:
+    "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+            (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f \<and>
+         (\<forall>P\<in>U. norm (h P - f P) < \<phi> P)" sorry
+  (** (3) f(U) = h(U): the \<phi>-approximation + inductive construction ensures surjectivity
+         onto h(U) by a "handle" argument matching each h(K_n) exactly. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>36 Theorem 2 (The Hauptvermutung for 3-manifolds) (geotop.tex:7166)
     LATEX VERSION: Let K_1 and K_2 be triangulated 3-manifolds. If there is a homeomorphism
       |K_1| \<leftrightarrow> |K_2|, then there is a PLH |K_1| \<leftrightarrow> |K_2|. **)
 theorem Theorem_GT_36_2_Hauptvermutung_3manifolds:
   fixes K1 K2 :: "(real^3) set set"
-  assumes "geotop_is_complex K1" and "geotop_is_complex K2"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_n_manifold_with_boundary_on (geotop_polyhedron K2) (\<lambda>x y. norm (x - y)) 3"
-  assumes "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+  assumes hK1: "geotop_is_complex K1" and hK2: "geotop_is_complex K2"
+  assumes hK1_mfd: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K1) (\<lambda>x y. norm (x - y)) 3"
+  assumes hK2_mfd: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K2) (\<lambda>x y. norm (x - y)) 3"
+  assumes hhomeo: "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
                  (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
                  (geotop_polyhedron K2)
                  (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) f"
@@ -12635,7 +12653,19 @@ theorem Theorem_GT_36_2_Hauptvermutung_3manifolds:
                (geotop_polyhedron K2)
                (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) f \<and>
              geotop_PLH K1 K2 f"
-  sorry
+proof -
+  (** (1) Apply Theorem 36.1 with U = |K_1|, h the given homeomorphism, and \<phi> a strongly
+         positive continuous function on |K_1| (exists since |K_1| is second-countable
+         and we can choose a partition of unity). **)
+  obtain h where hh:
+    "top1_homeomorphism_on (geotop_polyhedron K1)
+       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+       (geotop_polyhedron K2)
+       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h" sorry
+  (** (2) Theorem 36.1 gives a PLH f: |K_1| \<leftrightarrow> |K_2| approximating h. Since f is PLH
+         and f(|K_1|) = h(|K_1|) = |K_2|, we obtain the desired simplicial equivalence. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>36 Theorem 3 (geotop.tex:7170)
     LATEX VERSION: In R^3, or in a PL 3-manifold M, every semi-locally tame set is tame.
@@ -12644,28 +12674,64 @@ theorem Theorem_GT_36_2_Hauptvermutung_3manifolds:
       (2) g'|(M - V) is the identity, and (3) g'|V is a \<psi>-approximation of the identity. **)
 theorem Theorem_GT_36_3:
   fixes M L V :: "(real^3) set" and \<psi> :: "real^3 \<Rightarrow> real"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
-  assumes "geotop_is_semi_locally_tame L"
-  assumes "V \<in> geotop_euclidean_topology" and "L \<subseteq> V"
-  assumes "geotop_strongly_positive V
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
+  assumes hL_sltame: "geotop_is_semi_locally_tame L"
+  assumes hV_open: "V \<in> geotop_euclidean_topology" and hL_in_V: "L \<subseteq> V"
+  assumes h\<psi>: "geotop_strongly_positive V
              (subspace_topology UNIV geotop_euclidean_topology V) \<psi>"
   shows "\<exists>g'. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
                 M (subspace_topology UNIV geotop_euclidean_topology M) g' \<and>
               (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g' ` L) \<and>
               (\<forall>P\<in>M - V. g' P = P) \<and>
               (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)"
-  sorry
+proof -
+  (** (1) By semi-local tameness of L, there is an open set U with L \<subseteq> U and a
+         homeomorphism h_0: U \<to> |K_0| with h_0(L) polyhedral in some K_0. **)
+  obtain U and h\<^sub>0 :: "real^3 \<Rightarrow> real^3" and K\<^sub>0 where h_sltame:
+    "U \<in> geotop_euclidean_topology \<and> L \<subseteq> U \<and>
+     top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+        (h\<^sub>0 ` U) (subspace_topology UNIV geotop_euclidean_topology (h\<^sub>0 ` U)) h\<^sub>0 \<and>
+     geotop_is_complex K\<^sub>0 \<and> geotop_polyhedron K\<^sub>0 = h\<^sub>0 ` L" sorry
+  (** (2) Apply Theorem 36_1 to approximate h_0 by a PLH f: U \<to> h_0(U), with
+         \<psi>-approximation of h_0. **)
+  have h_PLH_approx:
+    "\<exists>f::real^3 \<Rightarrow> real^3. (\<forall>P\<in>U. norm (h\<^sub>0 P - f P) < \<psi> P)" sorry
+  (** (3) The composite f^{-1} \<circ> h_0: U \<to> U is a PLH-close-to-identity homeomorphism
+         mapping L onto a polyhedron. Extend by identity on M - V (using a PL cut-off
+         supported in V). **)
+  have h_extend:
+    "\<exists>g'. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+            M (subspace_topology UNIV geotop_euclidean_topology M) g' \<and>
+          (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g' ` L) \<and>
+          (\<forall>P\<in>M - V. g' P = P) \<and>
+          (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>36 Theorem 4 (geotop.tex:7174)
     LATEX VERSION: In R^3, or in a PL 3-manifold, every locally tame set is tame. **)
 theorem Theorem_GT_36_4:
   fixes M L :: "(real^3) set"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
-  assumes "L \<subseteq> M"
-  assumes "geotop_is_locally_tame L"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hM_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
+  assumes hL_sub: "L \<subseteq> M"
+  assumes hL_loctame: "geotop_is_locally_tame L"
   shows "geotop_is_tame L"
-  sorry
+proof -
+  (** (1) By local tameness at each P \<in> L, pick finitely many closed nbhds N_i \<ni> P_i with
+         homeomorphisms h_i: N_i \<to> |K_i| making h_i(N_i \<inter> L) polyhedral. **)
+  obtain Ns hs where h_loc_charts:
+    "\<forall>P\<in>L. \<exists>N h. closedin_on UNIV geotop_euclidean_topology N \<and> P \<in> N \<and>
+                  top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
+                     (h ` N) (subspace_topology UNIV geotop_euclidean_topology (h ` N)) h \<and>
+                  (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = h ` (N \<inter> L))" sorry
+  (** (2) Local tameness implies semi-local tameness: extend each local chart to a
+         common open set via a compatible atlas (finite cover + partition of unity on
+         the compact L), obtaining U \<supseteq> L with U \<to> |K| PL-embedding L. **)
+  have h_slt: "geotop_is_semi_locally_tame L" sorry
+  (** (3) Apply Theorem 36_3: semi-locally tame implies tame. **)
+  show ?thesis sorry
+qed
 
 end
