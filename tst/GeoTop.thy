@@ -1,5 +1,6 @@
 theory GeoTop
   imports "Top0.AlgTop" "HOL-Analysis.Cartesian_Euclidean_Space"
+          "HOL-Analysis.Smooth_Paths"
 begin
 
 text \<open>
@@ -2009,14 +2010,82 @@ definition geotop_diameter :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Righta
 definition geotop_mesh :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set set \<Rightarrow> real" where
   "geotop_mesh d G = (if G = {} then 0 else (SUP g\<in>G. geotop_diameter d g))"
 
+(** Bridge: every geotop-arc B in a real_normed_vector space gives rise to an
+    HOL-Analysis arc \<gamma> with path_image \<gamma> = B. The simplex witness for the arc
+    is a segment (1-simplex = convex hull of two points), so we can parametrize
+    by t \<mapsto> f((1-t) v\<^sub>0 + t v\<^sub>1). **)
+lemma geotop_is_arc_imp_HOL_arc:
+  fixes B :: "'a::real_normed_vector set"
+  assumes hB: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
+  shows "\<exists>\<gamma>::real \<Rightarrow> 'a. arc \<gamma> \<and> path_image \<gamma> = B"
+proof -
+  have hB_ncell: "geotop_is_n_cell B (subspace_topology UNIV geotop_euclidean_topology B) 1"
+    using hB unfolding geotop_is_arc_def by blast
+  obtain \<sigma> f where hdim: "geotop_simplex_dim (\<sigma>::'a set) 1"
+               and hhomeo: "top1_homeomorphism_on B
+                             (subspace_topology UNIV geotop_euclidean_topology B)
+                             \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+    using hB_ncell unfolding geotop_is_n_cell_def by blast
+  obtain V m where hV_fin: "finite V" and hV_card: "card V = 2"
+               and hV_gp: "geotop_general_position V m"
+               and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using hdim unfolding geotop_simplex_dim_def by auto
+  obtain v0 v1 where hV_eq: "V = {v0, v1}" and hv_ne: "v0 \<noteq> v1"
+    using hV_card by (metis card_2_iff)
+  have h\<sigma>_segment: "\<sigma> = closed_segment v0 v1"
+    by (simp add: geotop_convex_hull_eq_HOL hV_eq h\<sigma>_eq segment_convex_hull)
+  have hf_bij: "bij_betw f B \<sigma>"
+    using hhomeo unfolding top1_homeomorphism_on_def by blast
+  let ?finv = "inv_into B f"
+  have hfinv_cont_top1: "top1_continuous_map_on \<sigma>
+                          (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+                          B (subspace_topology UNIV geotop_euclidean_topology B) ?finv"
+    using hhomeo unfolding top1_homeomorphism_on_def by blast
+  have hfinv_cont: "continuous_on \<sigma> ?finv"
+    using hfinv_cont_top1 top1_continuous_map_on_geotop_imp_continuous_on by blast
+  let ?g = "\<lambda>t::real. (1-t) *\<^sub>R v0 + t *\<^sub>R v1"
+  let ?\<gamma> = "?finv \<circ> ?g"
+  have hg_cont: "continuous_on {0..1} ?g"
+    by (intro continuous_intros)
+  have hg_image: "?g ` {0..1} = \<sigma>"
+    using closed_segment_image_interval h\<sigma>_segment by blast
+  have hg_inj: "inj_on ?g {0..1}"
+    by (metis hv_ne inj_segment)
+  have h\<gamma>_cont: "continuous_on {0..1} ?\<gamma>"
+    using continuous_on_compose hfinv_cont hg_cont hg_image by blast
+  have hfinv_inj: "inj_on ?finv \<sigma>"
+    by (metis bij_betw_def bij_betw_inv_into hf_bij)
+  have h\<gamma>_inj: "inj_on ?\<gamma> {0..1}"
+    using comp_inj_on hfinv_inj hg_image hg_inj by blast
+  have h\<gamma>_arc: "arc ?\<gamma>"
+    using h\<gamma>_cont h\<gamma>_inj unfolding arc_def path_def by blast
+  have h\<gamma>_pim: "path_image ?\<gamma> = B"
+    by (metis (lifting) bij_betw_def bij_betw_inv_into hf_bij hg_image
+              path_image_compose path_image_def)
+  show ?thesis using h\<gamma>_arc h\<gamma>_pim by blast
+qed
+
 (** from \<S>4 Theorem 5 (geotop.tex:976)
     LATEX VERSION: No arc separates R^2. **)
 theorem Theorem_GT_4_5:
   fixes A :: "(real^2) set"
-  assumes "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
   shows "top1_connected_on (UNIV - A)
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))"
-  sorry
+  (** Moise proof (geotop.tex:976): bridge the geotop-arc to an HOL arc with
+      path_image = A, apply HOL-Analysis's `connected_arc_complement` (requires
+      DIM \<ge> 2; real^2 has dimension 2), then bridge back. **)
+proof -
+  obtain \<gamma> where harc: "arc \<gamma>" and hpim: "path_image \<gamma> = A"
+    using hA geotop_is_arc_imp_HOL_arc by blast
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hconnC: "connected (- A)"
+    using harc hpim hdim connected_arc_complement[of \<gamma>] by simp
+  have hconnD: "connected (UNIV - A)"
+    by (metis Compl_eq_Diff_UNIV hconnC)
+  show ?thesis
+    by (simp add: hconnD top1_connected_on_geotop_iff_connected)
+qed
 
 (** from \<S>4 Theorem 6 (geotop.tex:996)
     LATEX VERSION: Let J be a 1-sphere in R^2, and let U be a component of R^2 - J. Then J = Fr U. **)
