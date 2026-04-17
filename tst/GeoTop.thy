@@ -8043,11 +8043,31 @@ theorem Theorem_GT_28_19:
   assumes "M2 \<subseteq> M3"
   assumes "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2"
   assumes "geotop_frontier UNIV geotop_euclidean_topology \<Delta> = J"
-  assumes "\<Delta> \<inter> M2 = J"
+  assumes h\<Delta>M2: "\<Delta> \<inter> M2 = J"
   shows "\<exists>A::(real^3) set. J \<subseteq> geotop_top_interior M2
            (subspace_topology UNIV geotop_euclidean_topology M2) A \<and>
            A \<subseteq> M2"
-  sorry
+  (** Weak witness: take A = M2. Then top_interior M2 (sub_M2) M2 = M2 (since M2
+      is itself in its own subspace topology, being \<open>M2 \<inter> UNIV\<close>), and J \<subseteq> M2
+      since J = \<Delta> \<inter> M2 \<subseteq> M2. **)
+proof -
+  have hJ_sub_M2: "J \<subseteq> M2" using h\<Delta>M2 by blast
+  have hUNIVopen: "(UNIV :: (real^3) set) \<in> geotop_euclidean_topology"
+    by (metis UNIV_I geotop_euclidean_topology_eq_open_sets mem_Collect_eq open_UNIV
+              top1_open_sets_def)
+  have hM2_in_sub: "M2 \<in> subspace_topology UNIV geotop_euclidean_topology M2"
+    unfolding subspace_topology_def
+    using hUNIVopen by blast
+  have htop_int_M2: "geotop_top_interior M2
+                     (subspace_topology UNIV geotop_euclidean_topology M2) M2 = M2"
+    unfolding geotop_top_interior_def
+    using hM2_in_sub by blast
+  have hJ_sub_int: "J \<subseteq> geotop_top_interior M2
+                     (subspace_topology UNIV geotop_euclidean_topology M2) M2"
+    using hJ_sub_M2 htop_int_M2 by simp
+  have hM2_sub_M2: "M2 \<subseteq> M2" by simp
+  show ?thesis using hJ_sub_int hM2_sub_M2 by blast
+qed
 
 (** from \<S>28 Theorem 20 (geotop.tex:5991)
     LATEX VERSION: Let M^2 be a polyhedral 2-manifold, in a PL 3-manifold M^3, and let \<Delta> be
