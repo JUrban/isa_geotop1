@@ -1718,15 +1718,44 @@ theorem Theorem_GT_2_4:
     inf.right_idem inf_le1 insertCI is_topology_on_def
     subset_closure_on)
 
-(** from \<S>2 Theorem 5 (geotop.tex:596)
-    LATEX VERSION: Let J be a polygon in R^2, with interior I and exterior E. Then every point
-      of J is a limit point both of I and of E. **)
-theorem Theorem_GT_2_5:
-  fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
-  shows "\<forall>P\<in>J. is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology
-             \<and> is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
-  sorry
+(** Bridge: is_limit_point_of on UNIV with geotop_euclidean_topology equals
+    HOL-Analysis `islimpt`. **)
+lemma is_limit_point_of_UNIV_geotop_iff_islimpt:
+  fixes P :: "'a::real_normed_vector" and A :: "'a set"
+  shows "is_limit_point_of P A UNIV geotop_euclidean_topology \<longleftrightarrow> P islimpt A"
+proof
+  assume "is_limit_point_of P A UNIV geotop_euclidean_topology"
+  hence hf: "\<forall>U\<in>geotop_euclidean_topology. P \<in> U \<longrightarrow> (U - {P}) \<inter> A \<noteq> {}"
+    unfolding is_limit_point_of_def neighborhood_of_def intersects_def by blast
+  show "P islimpt A"
+    unfolding islimpt_def
+  proof (intro allI impI)
+    fix T assume hPT: "P \<in> T" and hopen: "open T"
+    have hT_geotop: "T \<in> (geotop_euclidean_topology :: 'a set set)"
+      using hopen geotop_euclidean_topology_eq_open_sets[where 'a='a]
+      unfolding top1_open_sets_def by auto
+    have "(T - {P}) \<inter> A \<noteq> {}"
+      using hf hT_geotop hPT by blast
+    thus "\<exists>y\<in>A. y \<in> T \<and> y \<noteq> P" by blast
+  qed
+next
+  assume "P islimpt A"
+  hence hlimpt: "\<forall>T. P \<in> T \<longrightarrow> open T \<longrightarrow> (\<exists>y\<in>A. y \<in> T \<and> y \<noteq> P)"
+    unfolding islimpt_def by blast
+  show "is_limit_point_of P A UNIV geotop_euclidean_topology"
+    unfolding is_limit_point_of_def neighborhood_of_def intersects_def
+  proof (intro conjI allI impI)
+    show "P \<in> UNIV" by simp
+    show "A \<subseteq> UNIV" by simp
+    fix U assume "U \<in> geotop_euclidean_topology \<and> P \<in> U"
+    then have hUopen: "open U" and hPU: "P \<in> U"
+      using geotop_euclidean_topology_eq_open_sets
+      unfolding top1_open_sets_def by auto
+    then obtain y where "y \<in> A" "y \<in> U" "y \<noteq> P"
+      using hlimpt by blast
+    thus "(U - {P}) \<inter> A \<noteq> {}" by blast
+  qed
+qed
 
 (** Helper: for a geotop-1-sphere J in euclidean_space with DIM \<ge> 2, every
     component of UNIV - J has J as its frontier. **)
@@ -1983,6 +2012,69 @@ next
     by (rule geotop_polygon_exterior_is_component[OF hJ_sphere])
   show "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)"
     by (rule top1_frontier_component_of_geotop_1sphere[OF hJ_sphere hE_comp hdim])
+qed
+
+(** from \<S>2 Theorem 5 (geotop.tex:596)
+    LATEX VERSION: Let J be a polygon in R^2, with interior I and exterior E. Then every point
+      of J is a limit point both of I and of E.
+    (Placed here, after Theorem_GT_2_6, to reuse the frontier equality.) **)
+theorem Theorem_GT_2_5:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  shows "\<forall>P\<in>J. is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology
+             \<and> is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
+  (** Moise proof (geotop.tex:596): J = Fr I = Fr E (Theorem 2.6). For P \<in> J,
+      P \<in> Fr I = closure I \<inter> closure (UNIV - I). Since P \<in> J and I \<subseteq> UNIV - J,
+      so P \<notin> I. P \<in> closure I and P \<notin> I means P is a limit point of I. Similarly E. **)
+proof
+  fix P assume hPJ: "P \<in> J"
+  have hJ_sphere: "geotop_is_n_sphere J
+                     (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  (** Interior part. **)
+  obtain Pi where hPi_notJ: "Pi \<in> UNIV - J"
+            and hI_eq: "geotop_polygon_interior J
+                        = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) Pi"
+    using geotop_polygon_interior_is_bounded_component[OF hJ_sphere] by blast
+  have hI_sub: "geotop_polygon_interior J \<subseteq> UNIV - J"
+    using hI_eq connected_component_subset geotop_component_at_UNIV_eq_connected_component_set
+    by metis
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hI_front: "geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J) = J"
+    using Theorem_GT_2_6(1)[OF hJ_poly] by simp
+  have hI_front_HOL: "frontier (geotop_polygon_interior J) = J"
+    using hI_front geotop_frontier_UNIV_eq_frontier by metis
+  have hP_closureI: "P \<in> closure (geotop_polygon_interior J)"
+    using hPJ hI_front_HOL unfolding frontier_def by blast
+  have hP_notI: "P \<notin> geotop_polygon_interior J"
+    using hPJ hI_sub by blast
+  have hP_islimptI: "P islimpt (geotop_polygon_interior J)"
+    by (simp add: islimpt_in_closure hP_closureI hP_notI)
+  have hlim_I: "is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
+    using hP_islimptI is_limit_point_of_UNIV_geotop_iff_islimpt by blast
+  (** Exterior part, same structure. **)
+  obtain Pe where hPe_notJ: "Pe \<in> UNIV - J"
+            and hE_eq: "geotop_polygon_exterior J
+                        = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) Pe"
+    using geotop_polygon_exterior_is_component[OF hJ_sphere] by blast
+  have hE_sub: "geotop_polygon_exterior J \<subseteq> UNIV - J"
+    using hE_eq connected_component_subset geotop_component_at_UNIV_eq_connected_component_set
+    by metis
+  have hE_front: "geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J) = J"
+    using Theorem_GT_2_6(2)[OF hJ_poly] by simp
+  have hE_front_HOL: "frontier (geotop_polygon_exterior J) = J"
+    using hE_front geotop_frontier_UNIV_eq_frontier by metis
+  have hP_closureE: "P \<in> closure (geotop_polygon_exterior J)"
+    using hPJ hE_front_HOL unfolding frontier_def by blast
+  have hP_notE: "P \<notin> geotop_polygon_exterior J"
+    using hPJ hE_sub by blast
+  have hP_islimptE: "P islimpt (geotop_polygon_exterior J)"
+    by (simp add: hP_closureE hP_notE islimpt_in_closure)
+  have hlim_E: "is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
+    using hP_islimptE is_limit_point_of_UNIV_geotop_iff_islimpt by blast
+  show "is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology
+      \<and> is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
+    using hlim_I hlim_E by blast
 qed
 
 (** from \<S>2: \<theta>-graph (geotop.tex:619)
