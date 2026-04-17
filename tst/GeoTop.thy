@@ -1705,11 +1705,13 @@ proof -
      geotop_complex_connected K" sorry
   show "geotop_complex_connected K \<longleftrightarrow>
         top1_path_connected_on (geotop_polyhedron K)
-           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using h_comb_to_path h_path_to_conn h_conn_to_comb by (by100 blast)
   show "top1_path_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longleftrightarrow>
         top1_connected_on (geotop_polyhedron K)
-           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using h_comb_to_path h_path_to_conn h_conn_to_comb by (by100 blast)
 qed
 
 (** from \<S>1: arc (geotop.tex:401)
@@ -3068,20 +3070,24 @@ proof -
         (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)" sorry
   show "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
-         = {I12, I23}" sorry
+         = {I12, I23}"
+    using h_split_I13 by (by100 blast)
   show "closure_on UNIV geotop_euclidean_topology I13 =
          closure_on UNIV geotop_euclidean_topology I12
-         \<union> closure_on UNIV geotop_euclidean_topology I23" sorry
+         \<union> closure_on UNIV geotop_euclidean_topology I23"
+    using h_closures by (by100 blast)
   show "closure_on UNIV geotop_euclidean_topology I13 - B2 =
-         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)" sorry
+         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)"
+    using h_subtract_B2 by (by100 blast)
   show "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
            (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E))"
-    sorry
+    using h_connected_pieces by (by100 blast)
   show "top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
            (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
-    sorry
+    using h_connected_pieces by (by100 blast)
   show "geotop_separated UNIV geotop_euclidean_topology
-           (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)" sorry
+           (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
+    using h_separated by (by100 blast)
 qed
 
 
@@ -3937,7 +3943,7 @@ proof -
              UNIV geotop_euclidean_topology f \<and>
           f ` geotop_polyhedron K = \<sigma> \<and>
           f ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>" sorry
-  show "geotop_comb_n_cell K 2" sorry
+  show "geotop_comb_n_cell K 2" using h_PLH by (by100 blast)
 qed
 
 (** from \<S>5 Theorem 4 (geotop.tex:1157)
