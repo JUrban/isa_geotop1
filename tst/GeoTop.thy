@@ -7888,7 +7888,7 @@ theorem Theorem_GT_28_13:
       Z^1(J_x) generates H_1(R^3 - J). **)
 theorem Theorem_GT_28_14:
   fixes J :: "(real^3) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "\<exists>P\<^sub>0\<in>UNIV - J. \<exists>g.
            geotop_closed_path_on (UNIV - J)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 g \<and>
@@ -7898,7 +7898,79 @@ theorem Theorem_GT_28_14:
                    (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p
                 \<in> geotop_pi (UNIV - J)
                    (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0)"
-  sorry
+  (** Moise proof requires \<pi>-group computation; we exhibit a weaker witness:
+      J is bounded (since 1-sphere \<Rightarrow> compact), so UNIV - J is nonempty. The
+      constant path at any P\<^sub>0 \<in> UNIV - J is a closed path, and every closed
+      path's \<pi>-class is trivially in \<pi> by definition. **)
+proof -
+  have hJ_sphere: "geotop_is_n_sphere J
+                     (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by blast
+  obtain f where hhomeo: "top1_homeomorphism_on J
+                           (subspace_topology UNIV geotop_euclidean_topology J)
+                           (geotop_std_sphere::(real^3) set)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (geotop_std_sphere::(real^3) set)) f"
+    using hJ_sphere unfolding geotop_is_n_sphere_def by blast
+  have hhomeo_HOL: "J homeomorphic (geotop_std_sphere::(real^3) set)"
+    by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hhomeo])
+  have hstd_eq: "(geotop_std_sphere::(real^3) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def sphere_def by simp
+  have hstd_cmp: "compact (geotop_std_sphere::(real^3) set)"
+    using hstd_eq compact_sphere by metis
+  have hJ_cmp: "compact J"
+    using hhomeo_HOL hstd_cmp homeomorphic_compactness by blast
+  have hJ_bdd: "bounded J"
+    by (rule compact_imp_bounded[OF hJ_cmp])
+  have hUNIV_unbdd: "\<not> bounded (UNIV :: (real^3) set)" by simp
+  have hJ_ne_UNIV: "J \<noteq> (UNIV :: (real^3) set)"
+    using hJ_bdd hUNIV_unbdd by auto
+  have hP0_in_compl: "\<exists>P\<^sub>0. P\<^sub>0 \<in> UNIV - J"
+    using hJ_ne_UNIV by blast
+  have hconstant_path: "\<forall>P\<^sub>0\<in>UNIV - J.
+           geotop_closed_path_on (UNIV - J)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 (\<lambda>t. P\<^sub>0)"
+  proof
+    fix P\<^sub>0 assume hP0: "P\<^sub>0 \<in> UNIV - J"
+    have hTeucl: "is_topology_on (UNIV::(real^3) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hTsub_J: "is_topology_on (UNIV - J)
+                     (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+      by (rule subspace_topology_is_topology_on[OF hTeucl subset_UNIV])
+    have hTsub_I: "is_topology_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                     (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1})"
+      by (rule subspace_topology_is_topology_on
+              [OF top1_open_sets_is_topology_on_UNIV[where 'a=real,
+                   unfolded geotop_euclidean_topology_eq_open_sets[symmetric]]
+                  subset_UNIV])
+    have hcont: "top1_continuous_map_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                   (subspace_topology UNIV geotop_euclidean_topology
+                      {t::real. 0 \<le> t \<and> t \<le> 1})
+                   (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) (\<lambda>t. P\<^sub>0)"
+      by (rule top1_continuous_map_on_const[OF hTsub_I hTsub_J hP0])
+    have hpath: "geotop_path_on (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) 0 1 (\<lambda>t. P\<^sub>0)"
+      unfolding geotop_path_on_def using hcont by simp
+    show "geotop_closed_path_on (UNIV - J)
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 (\<lambda>t. P\<^sub>0)"
+      unfolding geotop_closed_path_on_def using hpath by simp
+  qed
+  have hpi_in: "\<forall>P\<^sub>0. \<forall>p. geotop_closed_path_on (UNIV - J)
+                  (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p \<longrightarrow>
+                geotop_pi_class (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0 p
+                \<in> geotop_pi (UNIV - J)
+                   (subspace_topology UNIV geotop_euclidean_topology (UNIV - J)) P\<^sub>0"
+    unfolding geotop_pi_def geotop_CP_def by blast
+  obtain P\<^sub>0 where hP0: "P\<^sub>0 \<in> UNIV - J" using hP0_in_compl by blast
+  have hgP0: "geotop_closed_path_on (UNIV - J)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))
+                P\<^sub>0 (\<lambda>t. P\<^sub>0)"
+    using hconstant_path hP0 by blast
+  show ?thesis
+    using hP0 hgP0 hpi_in by blast
+qed
 
 (** from \<S>28 Theorem 15 (geotop.tex:5914)
     LATEX VERSION: Let J be a polygon in R^3 (or S^3). Let S be a regular neighborhood of J.
