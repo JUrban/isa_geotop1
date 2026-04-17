@@ -791,7 +791,21 @@ theorem Theorem_GT_1_4:
       complex-connectedness of K, one is empty; since \<sigma>\<^sub>P \<in> Cs, Cs = K, so \<sigma>\<^sub>Q reachable.
       Build a path from P to Q by concatenating straight-line paths within each simplex,
       via top1_in_same_path_component_on_trans. **)
-  sorry
+proof -
+  let ?X = "geotop_polyhedron K"
+  let ?TX = "subspace_topology UNIV geotop_euclidean_topology ?X"
+  have hKcomplex: "geotop_is_complex K"
+    using hK geotop_complex_connected_def by blast
+  have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (simp add: geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hXsub: "?X \<subseteq> UNIV" by simp
+  have hTX_top: "is_topology_on ?X ?TX"
+    by (rule subspace_topology_is_topology_on[OF hTeucl hXsub])
+  have hpath_PQ: "\<forall>P\<in>?X. \<forall>Q\<in>?X. \<exists>f. top1_is_path_on ?X ?TX P Q f"
+    sorry  \<comment> \<open>chain-of-simplexes argument; deferred\<close>
+  show ?thesis
+    unfolding top1_path_connected_on_def using hTX_top hpath_PQ by blast
+qed
 
 (** from \<S>1: connected topological space (geotop.tex:349)
     LATEX VERSION: A topological space [X,\<O>] is connected if X is not the union of two
