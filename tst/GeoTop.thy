@@ -9933,7 +9933,7 @@ proof -
          torsion factor Z_2. Free rank = p^1 = 2h + 1. **)
   have h_m2:
     "m = 2 \<longrightarrow> geotop_first_betti_number M = 2 * h + 1" sorry
-  show ?thesis sorry
+  show ?thesis using h_m0 h_m1 h_m2 by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 7 (geotop.tex:4905)
