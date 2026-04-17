@@ -2001,6 +2001,20 @@ proof (intro ballI)
   qed
 qed
 
+(** Corollary: every open ball in a Euclidean space is broken-line-connected. **)
+corollary geotop_open_ball_broken_line_connected:
+  fixes P :: "'a::euclidean_space" and r :: real
+  shows "geotop_broken_line_connected (ball P r)"
+proof -
+  have hopen_HOL: "open (ball P r)" by simp
+  have hopen: "ball P r \<in> geotop_euclidean_topology"
+    by (metis hopen_HOL geotop_euclidean_topology_eq_open_sets
+              mem_Collect_eq top1_open_sets_def)
+  have hconv: "convex (ball P r)" by (rule convex_ball)
+  show ?thesis
+    by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
+qed
+
 (** from \<S>1 Theorem 14 (geotop.tex:408)
     LATEX VERSION: Let G be a collection of connected sets, with a point P in common. Then
       the union G* is connected. **)
