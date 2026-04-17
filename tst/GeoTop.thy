@@ -8438,9 +8438,9 @@ definition geotop_open_cell_euler ::
       of C. **)
 theorem Theorem_GT_21_1:
   fixes \<C> :: "'a::real_normed_vector set set" and C1 :: "'a set"
-  assumes "geotop_is_open_cell_complex \<C>"
-  assumes "C1 \<in> \<C>"
-  assumes "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 1 \<and>
+  assumes h\<C>: "geotop_is_open_cell_complex \<C>"
+  assumes hC1: "C1 \<in> \<C>"
+  assumes hC1_edge: "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 1 \<and>
              (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C1
                 (subspace_topology UNIV geotop_euclidean_topology C1)
                 (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
@@ -8450,15 +8450,31 @@ theorem Theorem_GT_21_1:
            (card V = 1 \<or> card V = 2) \<and>
            geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
            = (\<Union>v\<in>V. {v})"
-  sorry
+proof -
+  (** (1) C^1 \<cong> Int \<sigma>^1 is an open arc. Its closure Cl C^1 is a closed arc or a circle,
+         because the topological closure of an open 1-cell in a cell-complex is a compact
+         1-manifold with boundary (potentially empty). **)
+  have h_closure_class:
+    "(\<exists>a b. a \<noteq> b \<and> closure_on (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
+               = C1 \<union> {a, b}) \<or>
+     (\<exists>a. closure_on (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
+              = C1 \<union> {a})" sorry
+  (** (2) By definition of open cell-complex, Fr C^1 = Cl C^1 - C^1 is a union of elements
+         of \<C>; these elements are vertices (0-cells) by dimension. **)
+  have h_frontier_vertices:
+    "geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
+       \<subseteq> geotop_open_cell_vertices \<C>" sorry
+  (** (3) Combine (1) and (2): Fr C^1 has cardinality 1 (circle case) or 2 (arc case). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 2 (geotop.tex:4465)
     LATEX VERSION: If C^2 is a face of C, then Fr C^2 is connected. **)
 theorem Theorem_GT_21_2:
   fixes \<C> :: "'a::real_normed_vector set set" and C2 :: "'a set"
-  assumes "geotop_is_open_cell_complex \<C>"
-  assumes "C2 \<in> \<C>"
-  assumes "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 2 \<and>
+  assumes h\<C>: "geotop_is_open_cell_complex \<C>"
+  assumes hC2: "C2 \<in> \<C>"
+  assumes hC2_face: "\<exists>\<sigma>::'a set. geotop_simplex_dim \<sigma> 2 \<and>
              (\<exists>h::'a \<Rightarrow> 'a. top1_homeomorphism_on C2
                 (subspace_topology UNIV geotop_euclidean_topology C2)
                 (geotop_top_interior UNIV geotop_euclidean_topology \<sigma>)
@@ -8468,7 +8484,19 @@ theorem Theorem_GT_21_2:
            (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2)
            (subspace_topology UNIV geotop_euclidean_topology
               (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2))"
-  sorry
+proof -
+  (** (1) C^2 \<cong> Int \<sigma>^2 is an open 2-cell. Its closure Cl C^2 is a closed 2-manifold with
+         boundary; Fr C^2 = Cl C^2 - C^2 is its boundary, homeomorphic to a 1-sphere
+         (boundary of the closed 2-cell). **)
+  have h_frontier_1sphere:
+    "geotop_is_n_sphere
+        (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2)
+        (subspace_topology UNIV geotop_euclidean_topology
+           (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2))
+        1" sorry
+  (** (2) A 1-sphere is connected (continuous image of [0, 1] after identifying endpoints). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21: subdivision for open cell-complexes (geotop.tex:4472)
     LATEX VERSION: If C_1 and C_2 are open cell-complexes, and every element of C_2 lies in
@@ -8484,12 +8512,36 @@ definition geotop_open_cell_refines ::
 (** Operations \<alpha>, \<beta>, \<gamma>, \<delta> formalized abstractly as "one-step subdivisions preserving \<chi>". **)
 theorem Theorem_GT_21_3:
   fixes \<C>1 \<C>2 :: "'a::real_normed_vector set set"
-  assumes "geotop_is_open_cell_complex \<C>1"
-  assumes "geotop_is_open_cell_complex \<C>2"
-  assumes "geotop_open_cell_refines \<C>2 \<C>1"
-  assumes "\<Union>\<C>2 = \<Union>\<C>1"
+  assumes h\<C>1: "geotop_is_open_cell_complex \<C>1"
+  assumes h\<C>2: "geotop_is_open_cell_complex \<C>2"
+  assumes hrefine: "geotop_open_cell_refines \<C>2 \<C>1"
+  assumes hunion: "\<Union>\<C>2 = \<Union>\<C>1"
   shows "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
-  sorry
+proof -
+  (** (1) Reduce the refinement \<C>2 \<le> \<C>1 to a finite sequence of single-step subdivisions
+         each of type \<alpha> (subdivide an edge), \<beta> (subdivide a face by a chord), \<gamma> (insert a
+         vertex in an edge interior), or \<delta> (insert a vertex in a face interior). **)
+  have h_seq_steps:
+    "\<exists>steps::'a set set list.
+        hd steps = \<C>1 \<and> last steps = \<C>2 \<and>
+        (\<forall>i < length steps - 1.
+            \<comment> \<open>step_i \<to> step_{i+1} is one of operations \<alpha>, \<beta>, \<gamma>, \<delta>\<close>
+            True)" sorry
+  (** (2) Operation \<alpha> (split an edge at a new vertex): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged;
+         \<chi>: V - E + F unchanged. **)
+  have h_alpha: "True \<comment> \<open>\<alpha> preserves \<chi>\<close>" sorry
+  (** (3) Operation \<beta> (split a face by a chord joining two boundary vertices): V unchanged,
+         E \<mapsto> E + 1, F \<mapsto> F + 1; \<chi> unchanged. **)
+  have h_beta: "True \<comment> \<open>\<beta> preserves \<chi>\<close>" sorry
+  (** (4) Operation \<gamma> (insert a new vertex of degree 2 in the interior of an edge):
+         V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
+  have h_gamma: "True \<comment> \<open>\<gamma> preserves \<chi>\<close>" sorry
+  (** (5) Operation \<delta> (insert an isolated vertex v and a chord from v to the face boundary
+         into a face): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged. **)
+  have h_delta: "True \<comment> \<open>\<delta> preserves \<chi>\<close>" sorry
+  (** (6) By induction along the step sequence, \<chi>(\<C>1) = \<chi>(\<C>2). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 4 (geotop.tex:4490)
     LATEX VERSION: For open cell-complexes, the Euler characteristic is preserved under
@@ -8509,13 +8561,31 @@ theorem Theorem_GT_21_4:
 theorem Theorem_GT_21_5:
   fixes M :: "'a::real_normed_vector set"
   fixes K1 K2 :: "'a set set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_is_complex K1" and "geotop_polyhedron K1 = M"
-  assumes "geotop_is_complex K2" and "geotop_polyhedron K2 = M"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_2mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hM_closed: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = {}"
+  assumes hK1: "geotop_is_complex K1" and hK1_poly: "geotop_polyhedron K1 = M"
+  assumes hK2: "geotop_is_complex K2" and hK2_poly: "geotop_polyhedron K2 = M"
   shows "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
-  sorry
+proof -
+  (** (1) By the 2-dimensional Hauptvermutung (Theorem 8.5), two triangulations K_1, K_2
+         of the same compact 2-manifold are combinatorially equivalent: they admit a
+         common subdivision K (or linear equivalence through a PL homeomorphism). **)
+  obtain K where h_common_subdiv:
+    "geotop_is_complex K \<and> geotop_polyhedron K = M \<and>
+     (\<exists>\<C>1 \<C>2. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
+              geotop_open_cell_refines \<C>1 \<C>2)" sorry
+  (** (2) Convert K_1, K_2 to open cell-complexes \<C>_1, \<C>_2 and K to \<C>; both refine \<C>_1
+         and \<C>_2. **)
+  have h_refine:
+    "\<exists>\<C>1 \<C>2 \<C>. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
+               geotop_is_open_cell_complex \<C> \<and>
+               geotop_open_cell_refines \<C> \<C>1 \<and>
+               geotop_open_cell_refines \<C> \<C>2 \<and>
+               \<Union>\<C>1 = M \<and> \<Union>\<C>2 = M \<and> \<Union>\<C> = M" sorry
+  (** (3) Apply Theorem 21_4 twice: \<chi>(K_1) = \<chi>(\<C>_1) = \<chi>(\<C>) = \<chi>(\<C>_2) = \<chi>(K_2). **)
+  show ?thesis sorry
+qed
 
 definition geotop_manifold_euler ::
   "'a::real_normed_vector set \<Rightarrow> int" where
@@ -8527,19 +8597,54 @@ definition geotop_manifold_euler ::
     LATEX VERSION: If J is a polygon, then \<chi>(J) = 0. **)
 theorem Theorem_GT_21_6:
   fixes J :: "'a::real_normed_vector set"
-  assumes "geotop_is_polygon J"
+  assumes hJ: "geotop_is_polygon J"
   shows "geotop_manifold_euler J = 0"
-  sorry
+proof -
+  (** (1) Pick any point P \<in> J. The 2-cell complex \<C> = {{P}, J - {P}} is an open
+         cell-decomposition of J with 1 vertex, 1 edge, 0 faces. **)
+  obtain P where hP: "P \<in> J" sorry
+  have h_decomp:
+    "geotop_is_open_cell_complex ({{P}, J - {P}}::'a set set) \<and>
+     \<Union>({{P}, J - {P}}) = J" sorry
+  (** (2) Compute \<chi>({{P}, J - {P}}) = 1 - 1 + 0 = 0. **)
+  have h_compute: "geotop_open_cell_euler ({{P}, J - {P}}::'a set set) = 0" sorry
+  (** (3) Conclude by Theorem 21_4 (invariance) that \<chi>(J) = 0. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 7 (geotop.tex:4507)
     LATEX VERSION: Let K be any triangulation of a 2-cell. Then \<chi>(K) = 1. **)
 theorem Theorem_GT_21_7:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K"
-  assumes "geotop_is_n_cell (geotop_polyhedron K)
+  assumes hK: "geotop_is_complex K"
+  assumes hK_2cell: "geotop_is_n_cell (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2"
   shows "geotop_euler_characteristic K = 1"
-  sorry
+proof -
+  (** (1) Induct on the number of 2-faces of K. Base case: K is a single 2-simplex
+         \<sigma>^2; V = 3, E = 3, F = 1, giving \<chi> = 3 - 3 + 1 = 1. **)
+  have h_base:
+    "\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 1 \<and>
+         geotop_is_n_cell (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2 \<longrightarrow>
+         geotop_euler_characteristic K = 1" sorry
+  (** (2) Inductive step: given K with n + 1 2-faces, pick a free 2-face \<tau>^2 by Theorem
+         17_2 (2-cell with boundary arc on Bd K); remove Int \<tau>^2 and its free edge(s),
+         getting K' with n 2-faces whose underlying space is still a 2-cell. **)
+  have h_free_reduction:
+    "\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 2 \<and>
+         geotop_is_n_cell (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2 \<longrightarrow>
+         (\<exists>K' \<tau>. geotop_is_complex K' \<and> K' \<subseteq> K \<and>
+                 \<tau> \<in> K - K' \<and> geotop_simplex_dim \<tau> 2 \<and>
+                 geotop_euler_characteristic K' = geotop_euler_characteristic K \<and>
+                 card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2}
+                   = card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} - 1 \<and>
+                 geotop_is_n_cell (geotop_polyhedron K')
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')) 2)"
+    sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 8 (geotop.tex:4522)
     LATEX VERSION: Let K_1 and K_2 be finite complexes, such that |K_1| \<inter> |K_2| is a polygon
@@ -8547,13 +8652,35 @@ theorem Theorem_GT_21_7:
       \<chi>(K_1 \<union> K_2) = \<chi>(K_1) + \<chi>(K_2). **)
 theorem Theorem_GT_21_8:
   fixes K1 K2 :: "'a::real_normed_vector set set" and J :: "'a set"
-  assumes "geotop_is_complex K1" and "geotop_is_complex K2"
-  assumes "geotop_is_complex (K1 \<union> K2)"
-  assumes "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = J"
-  assumes "geotop_is_polygon J"
+  assumes hK1: "geotop_is_complex K1" and hK2: "geotop_is_complex K2"
+  assumes hK12: "geotop_is_complex (K1 \<union> K2)"
+  assumes hJ_int: "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = J"
+  assumes hJ_poly: "geotop_is_polygon J"
   shows "geotop_euler_characteristic (K1 \<union> K2)
          = geotop_euler_characteristic K1 + geotop_euler_characteristic K2"
-  sorry
+proof -
+  (** (1) Let K_J be the sub-triangulation of J inside K_1 \<inter> K_2 (a polygon, hence a
+         circular triangulation with V_J vertices, E_J = V_J edges, 0 faces). By Theorem
+         21_6, \<chi>(K_J) = 0. **)
+  obtain K\<^sub>J where hKJ:
+    "geotop_is_complex K\<^sub>J \<and> geotop_polyhedron K\<^sub>J = J \<and>
+     geotop_euler_characteristic K\<^sub>J = 0" sorry
+  (** (2) Count simplexes of each dimension in K_1 \<union> K_2 by inclusion-exclusion:
+         V(K_1 \<cup> K_2) = V(K_1) + V(K_2) - V(K_J), similarly for E. The 2-face count is
+         F(K_1) + F(K_2) since K_J has no 2-faces. **)
+  have h_counts:
+    "int (geotop_num_simplexes_of_dim (K1 \<union> K2) 0)
+       = int (geotop_num_simplexes_of_dim K1 0) + int (geotop_num_simplexes_of_dim K2 0)
+         - int (geotop_num_simplexes_of_dim K\<^sub>J 0) \<and>
+     int (geotop_num_simplexes_of_dim (K1 \<union> K2) 1)
+       = int (geotop_num_simplexes_of_dim K1 1) + int (geotop_num_simplexes_of_dim K2 1)
+         - int (geotop_num_simplexes_of_dim K\<^sub>J 1) \<and>
+     int (geotop_num_simplexes_of_dim (K1 \<union> K2) 2)
+       = int (geotop_num_simplexes_of_dim K1 2) + int (geotop_num_simplexes_of_dim K2 2)"
+    sorry
+  (** (3) Thus \<chi>(K_1 \<cup> K_2) = \<chi>(K_1) + \<chi>(K_2) - \<chi>(K_J) = \<chi>(K_1) + \<chi>(K_2). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 9 (geotop.tex:4530)
     LATEX VERSION: Let M be a compact 2-manifold with boundary. Then all triangulations K of
@@ -8561,12 +8688,35 @@ theorem Theorem_GT_21_8:
 theorem Theorem_GT_21_9:
   fixes M :: "'a::real_normed_vector set"
   fixes K1 K2 :: "'a set set"
-  assumes "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_is_complex K1" and "geotop_polyhedron K1 = M"
-  assumes "geotop_is_complex K2" and "geotop_polyhedron K2 = M"
+  assumes hM_cpt: "top1_compact_on M (subspace_topology UNIV geotop_euclidean_topology M)"
+  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hK1: "geotop_is_complex K1" and hK1_poly: "geotop_polyhedron K1 = M"
+  assumes hK2: "geotop_is_complex K2" and hK2_poly: "geotop_polyhedron K2 = M"
   shows "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
-  sorry
+proof -
+  (** (1) Cap off Bd M: let J_1, ..., J_n be the components of Bd M; for each i choose a
+         2-cell D_i with Bd D_i = J_i (disjoint copies) so that M' = M \<union> \<union>_i D_i is a
+         compact closed 2-manifold. All such M' are homeomorphic (any two cappings give
+         homeomorphic closures since D_i is a 2-cell in each). **)
+  obtain M' :: "'a set" and Ds :: "'a set set" where hM':
+    "top1_compact_on M' (subspace_topology UNIV geotop_euclidean_topology M') \<and>
+     geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 2 \<and>
+     geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) = {} \<and>
+     finite Ds \<and> (\<forall>D\<in>Ds. geotop_is_n_cell D
+                           (subspace_topology UNIV geotop_euclidean_topology D) 2) \<and>
+     M' = M \<union> \<Union>Ds" sorry
+  (** (2) Each triangulation K_i of M extends to a triangulation K_i' of M' where K_i
+         and each D_j form subcomplexes. By Theorem 21.5 (closed 2-manifold case),
+         \<chi>(K_1') = \<chi>(K_2'). **)
+  have h_extend:
+    "\<exists>K1' K2'. geotop_is_complex K1' \<and> geotop_is_complex K2' \<and>
+               geotop_polyhedron K1' = M' \<and> geotop_polyhedron K2' = M' \<and>
+               K1 \<subseteq> K1' \<and> K2 \<subseteq> K2'" sorry
+  (** (3) By Theorem 21.8 applied to M = K_i and \<union>_j D_j glued along \<union>_j J_j, we have
+         \<chi>(K_i') = \<chi>(K_i) + (\<Sigma>_j \<chi>(D_j)) - (\<Sigma>_j \<chi>(J_j))
+         = \<chi>(K_i) + n (by 21.7 and 21.6 respectively). Hence \<chi>(K_1) = \<chi>(K_2). **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21: splitting a 2-manifold at a 1-sphere (geotop.tex:4542)
     LATEX VERSION: A "splitting" of M at a 1-sphere J (lying in Int M, separating a
@@ -8604,9 +8754,24 @@ definition geotop_is_split_and_filled ::
       is unchanged. **)
 theorem Theorem_GT_21_10:
   fixes M M' :: "'a::real_normed_vector set" and J :: "'a set"
-  assumes "geotop_is_splitting_of M J M'"
+  assumes hsplit: "geotop_is_splitting_of M J M'"
   shows "geotop_manifold_euler M = geotop_manifold_euler M'"
-  sorry
+proof -
+  (** (1) Choose a triangulation K of M in which J forms a subcomplex K_J (polygon).
+         K induces a triangulation K' of M' obtained by duplicating K_J along the cut: the
+         simplexes on one side of J keep K_J as boundary, those on the other side get a
+         disjoint copy K_J'. **)
+  obtain K K\<^sub>J K\<^sub>J' K' where h_triangulations:
+    "geotop_is_complex K \<and> geotop_polyhedron K = M \<and>
+     K\<^sub>J \<subseteq> K \<and> geotop_polyhedron K\<^sub>J = J \<and>
+     geotop_is_complex K' \<and> geotop_polyhedron K' = M' \<and>
+     K\<^sub>J \<subseteq> K' \<and> K\<^sub>J' \<subseteq> K'" sorry
+  (** (2) Count simplex changes: V(K') = V(K) + V_J, E(K') = E(K) + E_J, F(K') = F(K).
+         Since J is a polygon, V_J = E_J, so the changes cancel and \<chi>(K') = \<chi>(K). **)
+  have h_counts:
+    "\<chi>\<^sub>K' - \<chi>\<^sub>K = (0::int) \<comment> \<open>placeholder: V_J - E_J = 0 for the polygon J\<close>" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>21 Theorem 11 (geotop.tex:4554)
     LATEX VERSION: If a 2-manifold M with boundary is split apart as in Theorem 10, and the
@@ -8614,9 +8779,25 @@ theorem Theorem_GT_21_10:
       increased by 2. **)
 theorem Theorem_GT_21_11:
   fixes M M' :: "'a::real_normed_vector set" and J :: "'a set"
-  assumes "geotop_is_split_and_filled M J M'"
+  assumes hSF: "geotop_is_split_and_filled M J M'"
   shows "geotop_manifold_euler M' = geotop_manifold_euler M + 2"
-  sorry
+proof -
+  (** (1) Unpack: M_split is the 2-manifold obtained by splitting M at J; D_1 and D_2 are
+         two disjoint 2-cells attached to the new boundary components, with M' = M_split
+         \<union> D_1 \<union> D_2. **)
+  obtain M\<^sub>s D\<^sub>1 D\<^sub>2 where h_unpack:
+    "geotop_is_splitting_of M J M\<^sub>s \<and>
+     geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+     geotop_is_n_cell D\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>2) 2 \<and>
+     M' = M\<^sub>s \<union> D\<^sub>1 \<union> D\<^sub>2" sorry
+  (** (2) By Theorem 21_10 (splitting is \<chi>-preserving), \<chi>(M_split) = \<chi>(M). **)
+  have h_split_chi:
+    "geotop_manifold_euler M\<^sub>s = geotop_manifold_euler M" sorry
+  (** (3) By Theorem 21_8 (gluing along polygon) applied twice (attaching D_1, then D_2)
+         with \<chi>(D_i) = 1 (Theorem 21.7) and \<chi>(J_i) = 0 (Theorem 21.6):
+         \<chi>(M') = \<chi>(M_split) + \<chi>(D_1) + \<chi>(D_2) = \<chi>(M_split) + 2 = \<chi>(M) + 2. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>21: handle, 2-sphere with n holes, 2-sphere with n handles, projective plane,
     Klein bottle, Möbius band, cross-cap (geotop.tex:4588-4615)
