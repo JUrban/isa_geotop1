@@ -4170,7 +4170,8 @@ theorem Theorem_GT_6_2:
       homeomorphism satisfying (1), (2). **)
 proof -
   (** Step 1: uniform continuity + inf-\<phi> on each edge gives subdivision L. **)
-  obtain L where hL_sub: "geotop_is_subdivision L K1" sorry
+  obtain L where hL_sub: "geotop_is_subdivision L K1"
+    using hK1 unfolding geotop_is_subdivision_def geotop_refines_def by (by100 blast)
   (** Step 2-3: Moise's PL construction yields f; details deferred. **)
   show ?thesis sorry
 qed
