@@ -5248,12 +5248,13 @@ theorem Theorem_GT_27_3:
   assumes "J \<subseteq> geotop_manifold_interior A (\<lambda>x y. norm (x - y))"
   shows "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
               \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
-         (\<exists>P\<^sub>0\<in>J. \<exists>p. geotop_closed_path_on J
-            (subspace_topology UNIV geotop_euclidean_topology J) P\<^sub>0 p \<and>
-            p ` {0..1} = J \<and>
-            (\<exists>f. (\<forall>C\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
-                     \<exists>n::int. True) \<and>
-                 True))"
+         (\<exists>P\<^sub>0\<in>J. \<exists>pJ. geotop_closed_path_on A
+              (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ \<and>
+              pJ ` {0..1} = J \<and>
+              (\<forall>q. geotop_closed_path_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q \<longrightarrow>
+                   (\<exists>n::int. geotop_path_equiv A
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q q)))"
   sorry
 
 (** from \<S>27 Theorem 4 (geotop.tex:5774)
