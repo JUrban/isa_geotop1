@@ -6669,7 +6669,7 @@ proof -
     "top1_homeomorphism_on UNIV geotop_euclidean_topology UNIV geotop_euclidean_topology F"
     sorry
   (** (8) Finally F \<restriction> M = f by construction. **)
-  have h_ext: "\<forall>P\<in>M. F P = f P" sorry
+  have h_ext: "\<forall>P\<in>M. F P = f P" unfolding F_def by (by100 simp)
   show ?thesis using h_cont h_ext by (by100 blast)
 qed
 
