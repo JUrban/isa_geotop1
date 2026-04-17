@@ -1405,6 +1405,48 @@ definition geotop_is_broken_line :: "'a::real_normed_vector set \<Rightarrow> bo
     (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B
        \<and> geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B))"
 
+(** Helper: a closed segment between two distinct points is a 1-simplex (and hence
+    both an arc and a polyhedron; i.e., a broken line). **)
+lemma geotop_closed_segment_is_simplex:
+  fixes P Q :: "'a::real_normed_vector"
+  assumes hne: "P \<noteq> Q"
+  shows "geotop_simplex_dim (closed_segment P Q) 1"
+  unfolding geotop_simplex_dim_def
+proof (intro exI[of _ "{P, Q}"] exI[of _ "1::nat"] conjI)
+  show "finite {P, Q}" by simp
+  show "card {P, Q} = 1 + 1" using hne by simp
+  show "(1::nat) \<le> 1" by simp
+  show "geotop_general_position {P, Q} 1"
+    unfolding geotop_general_position_def
+  proof (intro allI impI)
+    fix H :: "'a set" and k :: nat
+    assume hassm: "geotop_hyperplane_dim H k \<and> k < 1"
+    then have hk: "k = 0" by simp
+    have hhyp: "geotop_hyperplane_dim H 0" using hassm hk by simp
+    (** 0-dim hyperplane is a singleton. **)
+    have hH_sing: "\<exists>v0. H = {v0}"
+    proof -
+      obtain V v0 B where hV: "subspace V"
+                      and hB: "independent B" "finite B" "card B = 0" "span B = V"
+                      and hH': "H = (\<lambda>v. v + v0) ` V"
+        using hhyp unfolding geotop_hyperplane_dim_def by blast
+      have hBempty: "B = {}" using hB(2) hB(3) by simp
+      have hVzero: "V = {0}" using hBempty hB(4) by simp
+      have "H = {0 + v0}" using hH' hVzero by simp
+      thus ?thesis by blast
+    qed
+    then obtain v0 where hH_eq: "H = {v0}" by blast
+    have hinter: "{P, Q} \<inter> H \<subseteq> {v0}" using hH_eq by blast
+    have h1: "finite ({P, Q} \<inter> H)" using hinter by (meson finite.emptyI finite.insertI finite_subset)
+    have h2: "card ({P, Q} \<inter> H) \<le> 1"
+      using hinter card_mono[of "{v0}"] by (simp)
+    show "finite ({P, Q} \<inter> H) \<and> card ({P, Q} \<inter> H) \<le> k + 1"
+      using h1 h2 hk by simp
+  qed
+  show "closed_segment P Q = geotop_convex_hull {P, Q}"
+    by (simp add: geotop_convex_hull_eq_HOL segment_convex_hull)
+qed
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
