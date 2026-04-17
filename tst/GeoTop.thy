@@ -8199,18 +8199,19 @@ proof -
          slices are disjoint polygons (manifold slices). The top and bottom planes E_1,
          E_m each meet S in a singleton (Theorem 17_12_lem_1, inmost-polygon argument). **)
   have h_base:
-    "\<forall>S'::(real^3) set. geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
-                       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
-                       card {P\<in>S'. \<exists>E. True \<comment> \<open>P is a singular slice point of S'\<close>} = 0 \<longrightarrow>
+    "\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
+       geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
+       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
+       sing = {} \<comment> \<open>no singular slice points\<close> \<longrightarrow>
        geotop_is_simply_imbedded S'" sorry
   (** (3) Inductive step: pick a horizontal plane E containing a singular point P, with
          an innermost polygon J \<subseteq> E \<inter> S bounding a 2-cell D_J in E with Int D_J \<inter> S = \<emptyset>.
          J splits S into S_1 \<union> S_2 along D_J; by Theorem 17_11, if both halves are simply
          imbedded the reunion is. Recursion on fewer singular points yields the result. **)
   have h_step:
-    "\<forall>n>0. \<forall>S'::(real^3) set.
+    "\<forall>n>0. \<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
        geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
-       card {P\<in>S'. \<exists>E. True \<comment> \<open>P singular slice point\<close>} = n \<longrightarrow>
+       sing \<subseteq> S' \<and> card sing = n \<comment> \<open>sing = n singular slice points\<close> \<longrightarrow>
        (\<exists>S\<^sub>1 S\<^sub>2 D\<^sub>J.
          geotop_is_n_cell D\<^sub>J (subspace_topology UNIV geotop_euclidean_topology D\<^sub>J) 2 \<and>
          geotop_is_n_sphere S\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology S\<^sub>1) 2 \<and>
@@ -8222,10 +8223,10 @@ proof -
          E_{i+1} \<inter> |K| (Theorem 17_10). Hence Bd of the union is simply imbedded via
          Theorem 17_11. **)
   have h_zerosing_simple:
-    "\<forall>S'::(real^3) set.
+    "\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
        geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
        (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
-       card {P\<in>S'. \<exists>E. True \<comment> \<open>singular slice point\<close>} = 0 \<longrightarrow>
+       sing = {} \<comment> \<open>no singular slice points\<close> \<longrightarrow>
        (\<exists>Ms::nat \<Rightarrow> (real^3) set.
           (\<forall>i. geotop_is_n_cell (Ms i)
                  (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
