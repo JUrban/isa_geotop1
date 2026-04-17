@@ -5712,7 +5712,8 @@ proof -
                      {P::'a. norm P \<le> 1}
                      (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) g\<^sub>1"
     sorry
-  have hg1_bdry: "\<forall>P. norm P = 1 \<longrightarrow> g\<^sub>1 P = P" sorry
+  have hg1_bdry: "\<forall>P. norm P = 1 \<longrightarrow> g\<^sub>1 P = P"
+    using hWLOG unfolding g\<^sub>1_def inv_op_def by (by100 auto)
   (** Step 4: apply Alexander to get isotopy psi: g_1 ~ id on B^n. **)
   have hpsi: "geotop_isotopic {P::'a. norm P \<le> 1}
                 (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
