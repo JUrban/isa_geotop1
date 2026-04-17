@@ -6392,11 +6392,35 @@ theorem Theorem_GT_22_4:
       Then \<chi>(M) = 2 - (2h + m). **)
 theorem Theorem_GT_22_5:
   fixes M :: "'a::real_normed_vector set"
-  assumes "geotop_is_sphere_with_n_handles h M"
-  assumes "geotop_is_sphere_with_n_crosscaps m M"
-  assumes "m \<le> 2"
+  assumes h_hand: "geotop_is_sphere_with_n_handles h M"
+  assumes h_cross: "geotop_is_sphere_with_n_crosscaps m M"
+  assumes hm_bd: "m \<le> 2"
   shows "geotop_manifold_euler M = 2 - (2 * int h + int m)"
-  sorry
+  (** With the fixed defs: handles \<Rightarrow> orientable; crosscaps with m \<ge> 1 \<Rightarrow>
+      non-orientable. So if m \<ge> 1, hypotheses are contradictory (vacuous).
+      If m = 0, handles gives euler = 2 - 2h and crosscaps gives euler = 2,
+      so h = 0; then 2 - (2*0 + 0) = 2. **)
+proof -
+  have h_orient: "geotop_set_orientable M"
+    using h_hand unfolding geotop_is_sphere_with_n_handles_def by blast
+  have h_euler_h: "geotop_manifold_euler M = 2 - 2 * int h"
+    using h_hand unfolding geotop_is_sphere_with_n_handles_def by blast
+  have h_euler_m: "geotop_manifold_euler M = 2 - int m"
+    using h_cross unfolding geotop_is_sphere_with_n_crosscaps_def by blast
+  show ?thesis
+  proof (cases "m = 0")
+    case True
+    have hh0: "int h = 0" using h_euler_h h_euler_m True by simp
+    show ?thesis using h_euler_h hh0 True by simp
+  next
+    case False
+    then have hm_ge1: "m \<ge> 1" by simp
+    have h_nonorient: "\<not> geotop_set_orientable M"
+      using h_cross hm_ge1 unfolding geotop_is_sphere_with_n_crosscaps_def by blast
+    have "False" using h_orient h_nonorient by blast
+    then show ?thesis by blast
+  qed
+qed
 
 (** from \<S>22: 1-dim Betti number p^1(M) (geotop.tex:4895)
     LATEX VERSION: The group B^1 is a p-term module over Z for some p, and the 1-dimensional
