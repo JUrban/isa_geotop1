@@ -4837,7 +4837,7 @@ proof -
          Take v' = v + r*e; then vv' \<setminus> {v} \<subseteq> I. **)
   have h_segment:
     "\<exists>v'. geotop_segment v v' - {v} \<subseteq> I" sorry
-  show ?thesis sorry
+  show ?thesis using hv h_segment by (by100 blast)
 qed
 
 (** from \<S>9 Theorem 3 (geotop.tex:1875)
