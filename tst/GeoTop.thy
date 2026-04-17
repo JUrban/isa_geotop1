@@ -748,7 +748,12 @@ theorem Theorem_GT_2_4:
   assumes "U \<in> T"
   assumes "U \<subseteq> X"
   shows "geotop_frontier X T U = closure_on X T U - U"
-  sorry
+  by (smt (verit, del_insts) DiffI Diff_Diff_Int Diff_Int_distrib
+    Diff_cancel Diff_empty Diff_subset assms(1,2,3) closedin_intro
+    closure_on_sub_carrier closure_on_subset_of_closed dual_order.refl
+    geotop_frontier_def imageE imageI inf.absorb_iff2 inf.order_iff
+    inf.right_idem inf_le1 insertCI is_topology_on_def
+    subset_closure_on)
 
 (** from \<S>2 Theorem 5 (geotop.tex:596)
     LATEX VERSION: Let J be a polygon in R^2, with interior I and exterior E. Then every point
