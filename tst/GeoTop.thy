@@ -218,10 +218,26 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
     LATEX VERSION: Every two subdivisions of the same complex have a common subdivision. **)
 theorem Theorem_GT_1:
   fixes K L1 L2 :: "'a::real_normed_vector set set"
-  assumes "geotop_is_subdivision L1 K"
-  assumes "geotop_is_subdivision L2 K"
+  assumes hL1: "geotop_is_subdivision L1 K"
+  assumes hL2: "geotop_is_subdivision L2 K"
   shows "\<exists>L. geotop_is_subdivision L L1 \<and> geotop_is_subdivision L L2"
-  sorry
+proof -
+  (** (1) For each simplex \<sigma> of K, L_1 and L_2 each refine it into simplicial complexes
+         L_1^\<sigma> and L_2^\<sigma>. Take their intersection pattern: for each pair (\<tau>_1 \<in> L_1^\<sigma>,
+         \<tau>_2 \<in> L_2^\<sigma>) form \<tau>_1 \<inter> \<tau>_2, which is a convex polyhedron. **)
+  have h_pairwise_inter:
+    "\<forall>\<sigma>\<in>K. True \<comment> \<open>intersection of L_1^\<sigma> and L_2^\<sigma>\<close>" sorry
+  (** (2) Triangulate each intersection polyhedron (they are convex, hence triangulable
+         barycentrically); collect the triangulations into a complex L. **)
+  obtain L :: "'a set set" where hL:
+    "geotop_is_complex L \<and> geotop_polyhedron L = geotop_polyhedron K" sorry
+  (** (3) Verify L < L_1 and L < L_2: every simplex of L lies inside some \<tau>_1 \<in> L_1
+         (by construction each piece sits in an L_1-cell and in an L_2-cell); and
+         |L| = |K| = |L_1| = |L_2|. **)
+  have h_subdivision:
+    "geotop_is_subdivision L L1 \<and> geotop_is_subdivision L L2" sorry
+  show ?thesis sorry
+qed
 
 subsection \<open>Continuous and piecewise linear maps between polyhedra\<close>
 
@@ -273,13 +289,41 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
 theorem Theorem_GT_2:
   fixes K :: "'a::real_normed_vector set set" and L :: "'a set set"
   shows "geotop_comb_equiv K L \<longleftrightarrow> (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
-  sorry
+proof -
+  (** (1) (\<Rightarrow>) K \<sim>_c L means there are subdivisions K', L' with an isomorphism \<phi>: K'_0 \<leftrightarrow>
+         L'_0. Define f on |L| affinely on each simplex of L' using \<phi>^{-1} on vertices;
+         this gives a PLH with f(|L|) = |K|. **)
+  have h_forward:
+    "geotop_comb_equiv K L \<longrightarrow>
+       (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)" sorry
+  (** (2) (\<Leftarrow>) Given a PLH f: |L| \<leftrightarrow> |K|, PL structure provides subdivisions K'' of K, L''
+         of L on which f is affinely simplicial; f restricted to vertices is a vertex-
+         bijection giving an isomorphism L'' \<leftrightarrow> K''. Hence K \<sim>_c L. **)
+  have h_backward:
+    "(\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K) \<longrightarrow>
+       geotop_comb_equiv K L" sorry
+  show ?thesis sorry
+qed
 
 (** from Introduction: Theorem 3 (geotop.tex:185)
     LATEX VERSION: Combinatorial equivalence is an equivalence relation. **)
 theorem Theorem_GT_3:
   shows "equivp (geotop_comb_equiv :: 'a::real_normed_vector set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
-  sorry
+proof -
+  (** (1) Reflexive: K and K have themselves as subdivisions and the identity isomorphism
+         makes them combinatorially equivalent. **)
+  have h_refl: "\<forall>K::'a set set. geotop_comb_equiv K K" sorry
+  (** (2) Symmetric: if \<phi>: K' \<leftrightarrow> L' is an isomorphism, so is \<phi>^{-1}: L' \<leftrightarrow> K'. **)
+  have h_sym:
+    "\<forall>K L::'a set set. geotop_comb_equiv K L \<longrightarrow> geotop_comb_equiv L K" sorry
+  (** (3) Transitive: given K' \<leftrightarrow> L' (via subdivisions of K, L) and L'' \<leftrightarrow> M' (via
+         subdivisions of L, M), take a common subdivision (Theorem 1) of L' and L''
+         inside L, pull back along both isomorphisms. **)
+  have h_trans:
+    "\<forall>K L M::'a set set. geotop_comb_equiv K L \<and> geotop_comb_equiv L M \<longrightarrow>
+                         geotop_comb_equiv K M" sorry
+  show ?thesis sorry
+qed
 
 subsection \<open>Cells, manifolds, dense sets, separability\<close>
 
@@ -1634,7 +1678,37 @@ theorem Theorem_GT_1_12:
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longleftrightarrow>
          top1_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
-  sorry
+proof -
+  (** (1) K connected (combinatorial sense: adjacency graph of simplexes connected)
+         implies |K| path-connected: for any two points P, Q \<in> |K|, join them by a chain
+         of simplexes. Within each simplex, any two points are joined by a linear segment
+         (simplexes are convex). **)
+  have h_comb_to_path:
+    "geotop_complex_connected K \<longrightarrow>
+       top1_path_connected_on (geotop_polyhedron K)
+          (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+  (** (2) Path-connected \<Rightarrow> connected: standard result (continuous image of [0, 1]
+         connected, hence |K| cannot be split into two non-empty open pieces). **)
+  have h_path_to_conn:
+    "top1_path_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longrightarrow>
+     top1_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+  (** (3) Connected \<Rightarrow> combinatorially connected: if the adjacency graph were disconnected,
+         partition K into (K_1, K_2) such that no vertex is shared; then |K| = |K_1| \<cup> |K_2|
+         would be a disconnection of |K|. **)
+  have h_conn_to_comb:
+    "top1_connected_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longrightarrow>
+     geotop_complex_connected K" sorry
+  show "geotop_complex_connected K \<longleftrightarrow>
+        top1_path_connected_on (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+  show "top1_path_connected_on (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longleftrightarrow>
+        top1_connected_on (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+qed
 
 (** from \<S>1: arc (geotop.tex:401)
     LATEX VERSION: An arc is a 1-cell. **)
@@ -2008,10 +2082,29 @@ definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightar
 
 theorem Theorem_GT_1_13:
   fixes U :: "'a::real_normed_vector set"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
   shows "geotop_broken_line_connected U"
-  sorry
+proof -
+  (** (1) For any P \<in> U, the set B_P = {Q \<in> U | P is connected to Q by a broken line in
+         U} is open (any Q has an open ball in U which is convex, hence broken-line
+         connected; any Q' in that ball extends the path). **)
+  have h_B_open:
+    "\<forall>P\<in>U. (\<exists>BP. BP \<subseteq> U \<and> P \<in> BP \<and> BP \<in> geotop_euclidean_topology \<and>
+           (\<forall>Q\<in>BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B))" sorry
+  (** (2) The complement U - B_P is also open: if Q \<in> U - B_P, take an open ball B(Q, r)
+         \<subseteq> U; no point of B(Q, r) is joinable to P (else by extending from Q through
+         convex ball, Q itself would be joinable). **)
+  have h_complement_open:
+    "\<forall>P\<in>U. (\<exists>V. V \<subseteq> U \<and> V \<in> geotop_euclidean_topology \<and>
+              (\<forall>Q\<in>V. \<not> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)) \<and>
+              (V \<union> (U - V) = U))" sorry
+  (** (3) U is connected (hypothesis); hence the partition B_P \<union> (U - B_P) = U with both
+         open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
+  have h_B_eq_U:
+    "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
+  show ?thesis sorry
+qed
 
 (** Partial progress on Theorem_GT_1_13: the convex open case in a euclidean space
     is broken-line-connected. Uses \<open>geotop_closed_segment_is_broken_line\<close> for the
