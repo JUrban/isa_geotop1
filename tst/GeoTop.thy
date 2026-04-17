@@ -6082,7 +6082,14 @@ definition geotop_is_pseudo_cell ::
        geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 \<and>
        closure_on UNIV geotop_euclidean_topology U = U \<union> J \<and>
        P \<in> U \<and>
-       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = U - {P}))"
+       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = U - {P}) \<and>
+       \<comment> \<open>U is homeomorphic to the open interior of a 2-cell\<close>
+       (\<exists>(D::(real^3) set) (h::real^3 \<Rightarrow> real^3).
+          geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+          top1_homeomorphism_on (geotop_top_interior UNIV geotop_euclidean_topology D)
+            (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_top_interior UNIV geotop_euclidean_topology D))
+            U (subspace_topology UNIV geotop_euclidean_topology U) h))"
 
 section \<open>\<S>32 Pseudo-cells that split tubes\<close>
 
