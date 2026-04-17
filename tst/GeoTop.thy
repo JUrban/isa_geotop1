@@ -10496,17 +10496,17 @@ theorem Theorem_GT_25_1_Stallings:
   fixes P\<^sub>0 :: "real^3" and N :: "(real \<Rightarrow> real^3) set set"
   fixes D :: "real^3 \<Rightarrow> real^3"
   fixes S1 :: "(real^3) set" and L :: "real^3 \<Rightarrow> real^3"
-  assumes "geotop_is_complex K" and "M = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
-  assumes "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
-  assumes "P\<^sub>0 \<in> B"
-  assumes "N \<subseteq> geotop_pi B (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0"
-  assumes "geotop_is_singular_2cell M (subspace_topology UNIV geotop_euclidean_topology M) D
+  assumes hK: "geotop_is_complex K" and hM: "M = geotop_polyhedron K"
+  assumes hM_3mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
+  assumes hB_sub: "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  assumes hB_conn: "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> B"
+  assumes hN: "N \<subseteq> geotop_pi B (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0"
+  assumes hD: "geotop_is_singular_2cell M (subspace_topology UNIV geotop_euclidean_topology M) D
              \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>)"
-  assumes "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
+  assumes hL: "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
              S1 (subspace_topology UNIV geotop_euclidean_topology S1)"
-  assumes "geotop_loop_conjugacy_class B
+  assumes hL_avoid_N: "geotop_loop_conjugacy_class B
              (subspace_topology UNIV geotop_euclidean_topology B)
              P\<^sub>0 L S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
   shows "\<exists>D\<^sub>1 L\<^sub>1. geotop_is_singular_2cell M
@@ -10518,7 +10518,37 @@ theorem Theorem_GT_25_1_Stallings:
                geotop_loop_conjugacy_class B
                  (subspace_topology UNIV geotop_euclidean_topology B)
                  P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
-  sorry
+proof -
+  (** (1) Stallings' tower construction: build a sequence of covering spaces M = M_0
+         <-- M_1 <-- M_2 <-- ... together with lifted 2-cells D_i: \<Delta> \<to> M_i, so that at
+         each stage the number of double curves of self-intersection strictly decreases.
+         At the top of the tower, D_n has no double curves -- it is nonsingular. **)
+  have h_tower:
+    "\<exists>(towerM::nat \<Rightarrow> (real^3) set) (D_seq::nat \<Rightarrow> real^3 \<Rightarrow> real^3) n.
+        (\<forall>i\<le>n. geotop_is_singular_2cell (towerM i)
+                  (subspace_topology UNIV geotop_euclidean_topology (towerM i))
+                  (D_seq i) \<Delta>
+                  (subspace_topology UNIV geotop_euclidean_topology \<Delta>)) \<and>
+        \<comment> \<open>each transition reduces double-point count\<close> True" sorry
+  (** (2) Nonsingularity at the tower top: the self-intersection complex I(D) collapses
+         at each level by applying the universal cover / double-cover construction. Key
+         ingredient: Dehn's lemma (nonsingular disk + local combinatorial tower). **)
+  have h_nonsingular_top:
+    "\<exists>D\<^sub>n L\<^sub>n. geotop_is_singular_2cell M
+                (subspace_topology UNIV geotop_euclidean_topology M)
+                D\<^sub>n \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
+             geotop_is_nonsingular_loop B
+               (subspace_topology UNIV geotop_euclidean_topology B) L\<^sub>n
+               S1 (subspace_topology UNIV geotop_euclidean_topology S1)" sorry
+  (** (3) The avoidance property L(B) \<inter> N = \<emptyset> is preserved at each level since taking
+         covers does not introduce new conjugacy classes crossing N. **)
+  have h_avoid:
+    "\<exists>D\<^sub>1 L\<^sub>1. geotop_loop_conjugacy_class B
+                 (subspace_topology UNIV geotop_euclidean_topology B)
+                 P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
+    sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>25 Theorem 2 (Loop theorem, first form; Papakyriakopoulos) (geotop.tex:5432)
     LATEX VERSION: Let K be an orientable triangulated 3-manifold with boundary, and let
@@ -10528,16 +10558,16 @@ theorem Theorem_GT_25_1_Stallings:
 theorem Theorem_GT_25_2_Loop_theorem:
   fixes K :: "(real^3) set set" and M B :: "(real^3) set"
   fixes L :: "real^3 \<Rightarrow> real^3" and S1 :: "(real^3) set"
-  assumes "geotop_is_orientable_3_manifold K" and "M = geotop_polyhedron K"
-  assumes "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
-  assumes "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
-  assumes "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
+  assumes hK_orient: "geotop_is_orientable_3_manifold K" and hM: "M = geotop_polyhedron K"
+  assumes hB_sub: "B \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  assumes hB_conn: "top1_connected_on B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes hL: "geotop_is_loop_in B (subspace_topology UNIV geotop_euclidean_topology B) L
              S1 (subspace_topology UNIV geotop_euclidean_topology S1)"
-  assumes "\<exists>P\<^sub>0\<in>B. \<forall>p. geotop_closed_path_on M
+  assumes hM_simp_conn: "\<exists>P\<^sub>0\<in>B. \<forall>p. geotop_closed_path_on M
              (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0 p \<longrightarrow>
              geotop_path_equiv M (subspace_topology UNIV geotop_euclidean_topology M)
                P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
-  assumes "\<exists>P\<^sub>0\<in>B. \<exists>p. geotop_closed_path_on B
+  assumes hB_not_simp_conn: "\<exists>P\<^sub>0\<in>B. \<exists>p. geotop_closed_path_on B
              (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0 p \<and>
              \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
                P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
@@ -10553,7 +10583,35 @@ theorem Theorem_GT_25_2_Loop_theorem:
                      (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)) P\<^sub>0 p \<and>
                 \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
                      P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
-  sorry
+proof -
+  (** (1) Take a loop L_0 in B which is contractible in M but not in B (hypothesis). **)
+  obtain P\<^sub>0 p\<^sub>0 where hL\<^sub>0:
+    "P\<^sub>0 \<in> B \<and>
+     geotop_closed_path_on B
+       (subspace_topology UNIV geotop_euclidean_topology B) P\<^sub>0 p\<^sub>0 \<and>
+     \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
+          P\<^sub>0 p\<^sub>0 (\<lambda>t. P\<^sub>0)" sorry
+  (** (2) L_0 contractible in M (via hypothesis hM_simp_conn) gives a PL singular 2-cell
+         D: \<Delta> \<to> M with Bd D = L_0. **)
+  obtain D \<Delta> where hD:
+    "geotop_is_singular_2cell M (subspace_topology UNIV geotop_euclidean_topology M) D
+       \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
+     geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2" sorry
+  (** (3) Set N = {[identity]} (trivial normal subgroup of \<pi>(B, P_0)). Since [L_0] \<ne> [id]
+         in \<pi>(B), L(B) \<inter> N = \<emptyset>. Apply Theorem 25_1 (Stallings) to get a nonsingular PL
+         2-cell D_1 with boundary Bd D_1 a nonsingular loop L_1 in B which is still
+         non-contractible in B. **)
+  obtain D\<^sub>1 L\<^sub>1 where h_stallings:
+    "geotop_is_singular_2cell M
+        (subspace_topology UNIV geotop_euclidean_topology M)
+        D\<^sub>1 \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
+     geotop_is_nonsingular_loop B
+        (subspace_topology UNIV geotop_euclidean_topology B) L\<^sub>1
+        S1 (subspace_topology UNIV geotop_euclidean_topology S1)" sorry
+  (** (4) D_1 with nonsingular boundary is a genuine polyhedral 2-cell embedded in M.
+         Its image \<Delta> \<subseteq> M has Bd \<Delta> \<subseteq> B \<inter> Bd M with Bd \<Delta> not contractible in B. **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>26 Bicollar neighborhoods; an extension of the Loop theorem\<close>
 
