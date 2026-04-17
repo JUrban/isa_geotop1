@@ -544,12 +544,46 @@ theorem Theorem_GT_1_9:
     LATEX VERSION: If H and K are separated, then every connected subset M of H \<union> K lies
       either in H or in K. **)
 theorem Theorem_GT_1_10:
-  assumes "is_topology_on X T"
-  assumes "geotop_separated X T H K"
-  assumes "M \<subseteq> H \<union> K"
-  assumes "top1_connected_on M (subspace_topology X T M)"
+  assumes hTX: "is_topology_on X T"
+  assumes hsepHK: "geotop_separated X T H K"
+  assumes hMHK: "M \<subseteq> H \<union> K"
+  assumes hMconn: "top1_connected_on M (subspace_topology X T M)"
   shows "M \<subseteq> H \<or> M \<subseteq> K"
-  sorry
+proof (rule ccontr)
+  assume hcc: "\<not>(M \<subseteq> H \<or> M \<subseteq> K)"
+  have hHX: "H \<subseteq> X" using hsepHK unfolding geotop_separated_def by simp
+  have hKX: "K \<subseteq> X" using hsepHK unfolding geotop_separated_def by simp
+  have hclHK: "closure_on X T H \<inter> K = {}"
+    using hsepHK unfolding geotop_separated_def by simp
+  have hHclK: "H \<inter> closure_on X T K = {}"
+    using hsepHK unfolding geotop_separated_def by simp
+  have hMX: "M \<subseteq> X" using hMHK hHX hKX by fast
+  have hMHK_union: "M = (M \<inter> H) \<union> (M \<inter> K)" using hMHK by fast
+  have hMHne: "M \<inter> H \<noteq> {}" using hcc hMHK_union by fast
+  have hMKne: "M \<inter> K \<noteq> {}" using hcc hMHK_union by fast
+  have hcl_MH: "closure_on X T (M \<inter> H) \<subseteq> closure_on X T H"
+    by (rule closure_on_mono) fast
+  have hcl_MK: "closure_on X T (M \<inter> K) \<subseteq> closure_on X T K"
+    by (rule closure_on_mono) fast
+  have hint1: "closure_on X T (M \<inter> H) \<inter> (M \<inter> K) = {}"
+    using hcl_MH hclHK by fast
+  have hint2: "(M \<inter> H) \<inter> closure_on X T (M \<inter> K) = {}"
+    using hcl_MK hHclK by fast
+  have hMH_X: "M \<inter> H \<subseteq> X" using hHX by fast
+  have hMK_X: "M \<inter> K \<subseteq> X" using hKX by fast
+  have hsep: "geotop_separated X T (M \<inter> H) (M \<inter> K)"
+    unfolding geotop_separated_def
+    using hMH_X hMK_X hint1 hint2 by simp
+  have hconn_iff: "top1_connected_on M (subspace_topology X T M) \<longleftrightarrow>
+    \<not>(\<exists>H' K'. H' \<noteq> {} \<and> K' \<noteq> {} \<and> M = H' \<union> K' \<and> geotop_separated X T H' K')"
+    by (rule Theorem_GT_1_6[OF hTX hMX])
+  have "\<exists>H' K'. H' \<noteq> {} \<and> K' \<noteq> {} \<and> M = H' \<union> K' \<and> geotop_separated X T H' K'"
+    apply (rule exI[of _ "M \<inter> H"])
+    apply (rule exI[of _ "M \<inter> K"])
+    using hMHne hMKne hMHK_union hsep by simp
+  thus False
+    using hconn_iff hMconn by simp
+qed
 
 (** from \<S>1 Theorem 11 (geotop.tex:388)
     LATEX VERSION: Every pathwise connected set is connected. **)
