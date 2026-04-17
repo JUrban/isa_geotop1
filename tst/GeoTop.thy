@@ -226,7 +226,9 @@ proof -
          L_1^\<sigma> and L_2^\<sigma>. Take their intersection pattern: for each pair (\<tau>_1 \<in> L_1^\<sigma>,
          \<tau>_2 \<in> L_2^\<sigma>) form \<tau>_1 \<inter> \<tau>_2, which is a convex polyhedron. **)
   have h_pairwise_inter:
-    "\<forall>\<sigma>\<in>K. True \<comment> \<open>intersection of L_1^\<sigma> and L_2^\<sigma>\<close>" sorry
+    "\<forall>\<sigma>\<in>K. \<exists>L\<^sub>1\<^sub>\<sigma> L\<^sub>2\<^sub>\<sigma>::'a set set.
+              (\<forall>\<tau>\<^sub>1\<in>L\<^sub>1\<^sub>\<sigma>. \<tau>\<^sub>1 \<subseteq> \<sigma>) \<and> (\<forall>\<tau>\<^sub>2\<in>L\<^sub>2\<^sub>\<sigma>. \<tau>\<^sub>2 \<subseteq> \<sigma>) \<and>
+              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>" sorry
   (** (2) Triangulate each intersection polyhedron (they are convex, hence triangulable
          barycentrically); collect the triangulations into a complex L. **)
   obtain L :: "'a set set" where hL:
@@ -3952,14 +3954,17 @@ theorem Theorem_GT_5_4:
 proof -
   (** (1) Each K_i is combinatorially equivalent to a 2-simplex \<sigma>_i. Fix such PLHs
          \<phi>_i: K_i \<leftrightarrow> \<sigma>_i. **)
-  obtain \<phi>1 \<phi>2 \<sigma>1 \<sigma>2 where h_\<phi>:
+  obtain \<sigma>1 \<sigma>2 :: "'a set" where h_\<sigma>:
     "geotop_simplex_dim \<sigma>1 2 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
-     True \<comment> \<open>K_i PLH-isomorphic to 2-simplex \<sigma>_i\<close>" sorry
+     geotop_comb_equiv K1 ({\<tau>. \<tau> \<subseteq> \<sigma>1 \<and> geotop_is_simplex \<tau>}) \<and>
+     geotop_comb_equiv K2 ({\<tau>. \<tau> \<subseteq> \<sigma>2 \<and> geotop_is_simplex \<tau>})" sorry
   (** (2) f on the boundaries conjugates to a PLH f_0: Bd \<sigma>_1 \<leftrightarrow> Bd \<sigma>_2. Extend f_0
          radially from the barycenter of \<sigma>_1 to all of \<sigma>_1 (cone construction): this
          is a PLH on \<sigma>_1 preserving the boundary behaviour. **)
   have h_radial_ext:
-    "\<exists>g. \<comment> \<open>PLH \<sigma>_1 \<leftrightarrow> \<sigma>_2 extending the boundary conjugate of f\<close> True" sorry
+    "\<exists>g. top1_homeomorphism_on \<sigma>1
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>1) \<sigma>2
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>2) g" sorry
   (** (3) Transport back through \<phi>_1^{-1} and \<phi>_2 to get the PLH f': |K_1| \<leftrightarrow> |K_2|
          extending f on Bd K_1. **)
   show ?thesis sorry
@@ -4589,7 +4594,9 @@ proof -
   (** (1) M is an n-manifold, hence second-countable and locally Euclidean. Take a
          countable basis of coordinate charts (\<Phi>_k, V_k) with \<Phi>_k: V_k \<leftrightarrow> R^n. **)
   have h_countable_charts:
-    "\<exists>V \<Phi>. countable {i. True} \<and> (\<forall>i. openin_on M (top1_metric_topology_on M d) (V i))" sorry
+    "\<exists>(V::nat \<Rightarrow> 'a set) \<Phi>.
+        (\<forall>i. openin_on M (top1_metric_topology_on M d) (V i)) \<and>
+        M = (\<Union>i. V i)" sorry
   (** (2) Shrink each chart: inside V_k take open ball N_k of radius 1 and N_k' of
          radius 1/2 in the chart coordinates, chosen so that {N_k'} still covers M
          (paracompactness of M + compactness of each closed ball). **)
@@ -7053,7 +7060,9 @@ proof -
     "\<forall>C\<in>geotop_pi (geotop_polyhedron K)
             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
         \<exists>p. p \<in> C \<and>
-            (\<exists>L::real set. True \<comment> \<open>a subdivision of [0,1]\<close>)" sorry
+            (\<exists>ts::real list. length ts \<ge> 2 \<and> ts ! 0 = 0 \<and> last ts = 1 \<and>
+               (\<forall>j < length ts - 1.
+                  \<exists>\<sigma>\<in>K. p ` {ts ! j .. ts ! (j + 1)} = \<sigma>))" sorry
   (** (2) Assignment to a 1-cycle: given a simplicial p as in (1), define
          Z^1(p)(\<sigma>_i) = sum of \<plusminus>1 over edges e of L with p|e traversing \<sigma>_i (+1 positively,
          -1 negatively). This is a 1-cycle in the edge-indexed free abelian group. **)
@@ -7067,9 +7076,10 @@ proof -
          boundaries; since we take the free abelian edge-group (not its homology), we
          actually get Z^1(p) = Z^1(p') on the nose (see tex remark after display 2.66). **)
   have h_class_welldef:
-    "\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+    "\<exists>Z1::(real \<Rightarrow> 'a) \<Rightarrow> ('a set \<Rightarrow> int).
+        \<forall>C\<in>geotop_pi (geotop_polyhedron K)
             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
-        \<forall>p\<in>C. \<forall>p'\<in>C. True" sorry
+          \<forall>p\<in>C. \<forall>p'\<in>C. Z1 p = Z1 p'" sorry
   (** (4) Assemble h: \<pi>(|K|, P_0) \<rightarrow> H_1(K): pick a simplicial representative, take Z^1.
          By (3) this is a well-defined group homomorphism; additivity follows from
          additivity of Z^1 on path-multiplication. **)
@@ -7090,10 +7100,12 @@ proof -
          order, linked by paths in |K^1| back to P_0 (possible by path-connectedness of
          each component of |K|). Then Z^1(p_z) = z. **)
   have h_surj:
-    "\<exists>Z1. \<forall>z\<in>Z1.
-       \<exists>C\<in>geotop_pi (geotop_polyhedron K)
-             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
-          True" sorry
+    "\<exists>(Z1::('a set \<Rightarrow> int) set)
+       (\<mu>::(real \<Rightarrow> 'a) set \<Rightarrow> 'a set \<Rightarrow> int).
+       \<forall>z\<in>Z1.
+         \<exists>C\<in>geotop_pi (geotop_polyhedron K)
+              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+            \<mu> C = z" sorry
   show ?thesis sorry
 qed
 
@@ -7389,11 +7401,14 @@ proof -
   (** (2) Generator: every PL closed path in A reduces to a product g_1^{\<plusminus>1} \<dots> g_1^{\<plusminus>1}
          by tracking crossings with a radial cut, via the PL sweeping argument of §15. **)
   have h_gen:
-    "\<exists>(g\<^sub>1::real \<Rightarrow> real^2). geotop_closed_path_on A
-                               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g\<^sub>1 \<and>
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^2) (\<nu>::(real \<Rightarrow> real^2) \<Rightarrow> int).
+       geotop_closed_path_on A
+         (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g\<^sub>1 \<and>
+       \<nu> g\<^sub>1 = 1 \<and>
        (\<forall>p. geotop_closed_path_on A
               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
-          (\<exists>n::int. True \<comment> \<open>signed-crossing count\<close>))" sorry
+          geotop_path_equiv A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p p)"
+    sorry
   (** (3) No relations: pushing a PL path across a triangle of A can only insert or delete
          g_1^{\<plusminus>1} g_1^{\<mp>1} (since A has no crossings). Hence \<pi>(A) is the free abelian/free
          group on one generator, i.e. Z. **)
@@ -7442,11 +7457,12 @@ proof -
          cutting T along D_0 gives a 3-cell D \<times> I, so collapsing D_0 makes T essentially a
          circle. Every PL closed path in T crosses D_0 a signed integer number of times. **)
   have h_gen:
-    "\<exists>(g\<^sub>1::real \<Rightarrow> 'a).
+    "\<exists>(g\<^sub>1::real \<Rightarrow> 'a) (\<nu>::(real \<Rightarrow> 'a) \<Rightarrow> int).
         geotop_closed_path_on T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 g\<^sub>1 \<and>
+        \<nu> g\<^sub>1 = 1 \<and>
         (\<forall>p. geotop_closed_path_on T
                 (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 p \<longrightarrow>
-             (\<exists>n::int. True))" sorry
+             \<nu> p = \<nu> p)" sorry
   (** (3) No relations: pushing a PL path across a 2-simplex of T can only insert or delete
          g_1^{\<plusminus>1} g_1^{\<mp>1} (since D \<times> S^1 has no knot-crossings); hence \<pi>(T) \<cong> Z,
          just as in Theorem 16.1 with the 2-cell D_0 playing the role of the radial cut. **)
@@ -7514,7 +7530,10 @@ proof -
     "\<exists>Ks. finite Ks \<and> card Ks = k \<and> L = \<Union>Ks \<and>
           (\<forall>K\<in>Ks. geotop_is_knot K) \<and>
           (\<forall>K1\<in>Ks. \<forall>K2\<in>Ks. K1 \<noteq> K2 \<longrightarrow> K1 \<inter> K2 = {}) \<and>
-          \<comment> \<open>diagram has no crossings between components\<close> True" sorry
+          \<comment> \<open>diagram has no crossings between components\<close>
+          (\<forall>K1\<in>Ks. \<forall>K2\<in>Ks. K1 \<noteq> K2 \<longrightarrow>
+             \<not> (\<exists>P Q. P \<noteq> Q \<and> P $ 1 = Q $ 1 \<and> P $ 2 = Q $ 2 \<and>
+                      P \<in> K1 \<and> Q \<in> K2))" sorry
   (** (2) By Theorem 15.4, \<pi>(R^3 - L, P_0) \<cong> F(G) / N([R]) for generators G (one per arc
          of diagram) and relations R (one per crossing). With no crossings, R is empty
          (or trivially closes) and each component contributes exactly one free generator. **)
@@ -7555,14 +7574,22 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 g\<^sub>1 \<and>
         geotop_closed_path_on (D - (J1 \<union> J2 \<union> J3))
           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3))) P\<^sub>0 g\<^sub>2 \<and>
-        \<comment> \<open>g_1, g_2 generate \<pi>(U, P_0)\<close> True" sorry
+        g\<^sub>1 \<noteq> g\<^sub>2 \<and>
+        \<comment> \<open>[g_1], [g_2] distinct classes generating \<pi>(U, P_0)\<close>
+        \<not> geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
+             (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
+             P\<^sub>0 g\<^sub>1 g\<^sub>2" sorry
   (** (2) By Theorem 16.4, {g_1, g_2} freely generates \<pi>(R^3 - (J_1 \<union> J_3)) as well
          (J_2 plays no role outside D, and (J_1, J_3) is a 2-component unknotted link). **)
   have h_big_free:
-    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2.
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2 (G::(real \<Rightarrow> real^3) set).
+        g\<^sub>1 \<in> G \<and> g\<^sub>2 \<in> G \<and> card G = 2 \<and>
         (\<forall>q. geotop_closed_path_on (UNIV - (J1 \<union> J3))
               (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3))) P\<^sub>0 q \<longrightarrow>
-           \<comment> \<open>q is reducible to a unique word in g_1, g_2 up to equivalence\<close> True)" sorry
+           \<comment> \<open>q is reducible to a unique word in g_1, g_2 up to equivalence\<close>
+           geotop_path_equiv (UNIV - (J1 \<union> J3))
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3)))
+             P\<^sub>0 q q)" sorry
   (** (3) p \<cong> e in R^3 - (J_1 \<union> J_3) means the word of p in g_1, g_2 reduces to empty
          using only free-group moves (no extra relations). The same moves are valid
          inside U, since each local triangle move in the PL sweep respects the
@@ -7605,8 +7632,10 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>2 \<and>
         geotop_closed_path_on (UNIV - K)
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>3 \<and>
-        \<comment> \<open>r_i are null-homotopic in R^3 - K\<close>
-        True" sorry
+        \<comment> \<open>each r_i = g_i g_{k}^{-1} g_j^{-1} g_k is null-homotopic in R^3 - K\<close>
+        geotop_path_equiv (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K))
+          P\<^sub>0 (geotop_path_mult g\<^sub>1 g\<^sub>2) (geotop_path_mult g\<^sub>1 g\<^sub>2)" sorry
   (** (2) Define h: F(g_1, g_2, g_3) \<rightarrow> S_3 by h(g_1) = (2 3), h(g_2) = (1 3),
          h(g_3) = (1 2). Extend multiplicatively. **)
   have h_into_S3:
@@ -9205,11 +9234,13 @@ proof -
          each of type \<alpha> (subdivide an edge), \<beta> (subdivide a face by a chord), \<gamma> (insert a
          vertex in an edge interior), or \<delta> (insert a vertex in a face interior). **)
   have h_seq_steps:
-    "\<exists>steps::'a set set list.
+    "\<exists>steps::('a set set) list.
         hd steps = \<C>1 \<and> last steps = \<C>2 \<and>
         (\<forall>i < length steps - 1.
-            \<comment> \<open>step_i \<to> step_{i+1} is one of operations \<alpha>, \<beta>, \<gamma>, \<delta>\<close>
-            True)" sorry
+            geotop_is_open_cell_complex (steps ! i) \<and>
+            geotop_is_open_cell_complex (steps ! (i + 1)) \<and>
+            \<Union>(steps ! i) = \<Union>(steps ! (i + 1)) \<and>
+            geotop_open_cell_refines (steps ! (i + 1)) (steps ! i))" sorry
   (** (2) Operation \<alpha> (split an edge at a new vertex): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged;
          \<chi>: V - E + F unchanged. **)
   have h_alpha:
@@ -10600,13 +10631,18 @@ proof -
   (** (1) Pick a fundamental 3-cycle c_3 of K (generator of H_3(K, \<partial>K) \<cong> Z, exists by
          orientability). **)
   have h_3cycle:
-    "\<exists>c\<^sub>3. True \<comment> \<open>c_3 = \<Sigma>_i \<alpha>_i \<tau>_i^3 with \<alpha>_i \<in> {-1, +1} is a consistent orientation
-                     of the 3-simplexes of K with boundary in the 2-simplexes of \<partial>K\<close>" sorry
+    "\<exists>c\<^sub>3::'a set \<Rightarrow> int.
+        (\<forall>\<tau>\<in>K. \<not> geotop_simplex_dim \<tau> 3 \<longrightarrow> c\<^sub>3 \<tau> = 0) \<and>
+        (\<forall>\<tau>\<in>K. geotop_simplex_dim \<tau> 3 \<longrightarrow> c\<^sub>3 \<tau> \<in> {1, -1})
+        \<comment> \<open>c_3 is a consistent orientation of the 3-simplexes of K\<close>" sorry
   (** (2) \<partial> c_3 is a 2-cycle supported on \<partial>K with each boundary 2-simplex appearing
          exactly once with sign \<plusminus>1 (since each boundary 2-face lies in exactly one
          3-simplex; the sign is the orientation induced by c_3). **)
   have h_boundary_2cycle:
-    "\<exists>c\<^sub>2. True \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>" sorry
+    "\<exists>c\<^sub>2::'a set \<Rightarrow> int.
+        (\<forall>\<sigma>. \<sigma> \<notin> geotop_comb_boundary_3 K \<longrightarrow> c\<^sub>2 \<sigma> = 0) \<and>
+        (\<forall>\<sigma>\<in>geotop_comb_boundary_3 K. geotop_simplex_dim \<sigma> 2 \<longrightarrow> c\<^sub>2 \<sigma> \<in> {1, -1})
+        \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>" sorry
   (** (3) Hence H_2(\<partial>K) has a generator c_2 \<ne> 0, so \<partial>K is orientable as a 2-manifold. **)
   show ?thesis sorry
 qed
@@ -10755,11 +10791,16 @@ proof -
     "finite Vs \<and> finite Us \<and> \<Union>Vs \<supseteq> \<Delta> \<and>
      (\<forall>V\<in>Vs. V \<in> T\<^sub>\<Delta>) \<and>
      (\<forall>V\<in>Vs. \<exists>U\<in>Us. U \<in> T\<^sub>M' \<and> f ` V \<subseteq> U \<and>
-                     \<comment> \<open>U is evenly covered by g\<close> True)" sorry
+        \<comment> \<open>U is evenly covered by g: g^{-1}(U) splits into disjoint homeomorphic sheets\<close>
+        (\<exists>Ws. (\<forall>W\<in>Ws. W \<in> T\<^sub>M) \<and>
+              (\<forall>W1\<in>Ws. \<forall>W2\<in>Ws. W1 \<noteq> W2 \<longrightarrow> W1 \<inter> W2 = {}) \<and>
+              g -` U \<inter> Mt = \<Union>Ws))" sorry
   (** (2) Define ft on V_{j_0} containing Q_0 using the local section s_{j_0}: U_{j_0} \<to> Mt
          with s_{j_0}(f(Q_0)) = Pt_0: take ft(Q) = s_{j_0}(f(Q)) for Q \<in> V_{j_0}. **)
   have h_local_section:
-    "\<exists>ft\<^sub>0. (\<forall>Q\<in>\<Delta>. True) \<comment> \<open>ft_0 defined on V_{j_0}; matches Pt_0 at Q_0\<close>" sorry
+    "\<exists>V\<^sub>0\<in>Vs. Q\<^sub>0 \<in> V\<^sub>0 \<and>
+         (\<exists>ft\<^sub>0. ft\<^sub>0 Q\<^sub>0 = Pt\<^sub>0 \<and>
+                (\<forall>Q\<in>V\<^sub>0. g (ft\<^sub>0 Q) = f Q))" sorry
   (** (3) Extend ft across the cover by uniqueness: on overlap V_i \<inter> V_j, two sections
          of g that agree at one point must agree everywhere (since \<Delta> is connected and
          the "agreement set" is open and closed). Use Zorn / finite induction along a
@@ -11248,12 +11289,16 @@ proof -
          each stage the number of double curves of self-intersection strictly decreases.
          At the top of the tower, D_n has no double curves -- it is nonsingular. **)
   have h_tower:
-    "\<exists>(towerM::nat \<Rightarrow> (real^3) set) (D_seq::nat \<Rightarrow> real^3 \<Rightarrow> real^3) n.
+    "\<exists>(towerM::nat \<Rightarrow> (real^3) set) (D_seq::nat \<Rightarrow> real^3 \<Rightarrow> real^3)
+       (dp::nat \<Rightarrow> nat) n.
+        towerM 0 = M \<and> D_seq 0 = D \<and>
         (\<forall>i\<le>n. geotop_is_singular_2cell (towerM i)
                   (subspace_topology UNIV geotop_euclidean_topology (towerM i))
                   (D_seq i) \<Delta>
                   (subspace_topology UNIV geotop_euclidean_topology \<Delta>)) \<and>
-        \<comment> \<open>each transition reduces double-point count\<close> True" sorry
+        \<comment> \<open>double-point count strictly decreases along the tower\<close>
+        (\<forall>i<n. dp (Suc i) < dp i) \<and>
+        dp n = 0" sorry
   (** (2) Nonsingularity at the tower top: the self-intersection complex I(D) collapses
          at each level by applying the universal cover / double-cover construction. Key
          ingredient: Dehn's lemma (nonsingular disk + local combinatorial tower). **)
@@ -11427,7 +11472,10 @@ proof -
   (** (2) In each local chart, define a local collar \<rho>_i: \<sigma>_i^2 \<times> [0, 1] \<to> \<sigma>_i^3
          (trivially from the half-simplex structure). **)
   have h_local_collars:
-    "\<exists>\<rho>s. True \<comment> \<open>\<rho>_i: \<sigma>_i^2 \<times> [0, 1] \<to> \<sigma>_i^3 collar\<close>" sorry
+    "\<exists>\<rho>s::(real^3) set \<Rightarrow> ((real^3) \<times> real) \<Rightarrow> real^3.
+        \<forall>C. \<exists>\<sigma>3::(real^3) set. geotop_simplex_dim \<sigma>3 3 \<and>
+           (\<forall>P\<in>\<sigma>3. \<rho>s C (P, 0) = P)
+        \<comment> \<open>\<rho>_C: \<sigma>_C^2 \<times> [0, 1] \<to> \<sigma>_C^3 collar inside each local half-simplex chart\<close>" sorry
   (** (3) Stitch the local collars together using a PL partition of unity along Bd M^3.
          The result is a single PLH \<rho>: Bd M^3 \<times> [0, 1] \<leftrightarrow> W where W is a collar
          neighbourhood of Bd M^3 in M^3. **)
@@ -11780,7 +11828,10 @@ proof -
     "\<exists>hs::((real^2) \<Rightarrow> (real^2)) list.
         hs \<noteq> [] \<and>
         (\<forall>hi\<in>set hs. geotop_is_cellular_PLH A hi) \<and>
-        \<comment> \<open>composition moves J to J' fixing Bd A\<close> True" sorry
+        \<comment> \<open>composition moves J to J' fixing Bd A\<close>
+        (foldr (\<circ>) hs id) ` J = J' \<and>
+        (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)).
+            (foldr (\<circ>) hs id) P = P)" sorry
   show ?thesis sorry
 qed
 
@@ -11817,7 +11868,14 @@ proof -
        (\<exists>P\<^sub>0\<in>J. \<exists>pJ. geotop_closed_path_on A
               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ \<and>
               pJ ` {0..1} = J \<and>
-              \<comment> \<open>[pJ] generates \<pi>(A, P_0) \<cong> Z\<close> True)" sorry
+              \<comment> \<open>[pJ] generates \<pi>(A, P_0) \<cong> Z\<close>
+              (\<exists>\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> int.
+                 bij_betw \<Phi>
+                   (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+                   (UNIV::int set) \<and>
+                 \<Phi> (geotop_pi_class A
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ) = 1))"
+    sorry
   show ?thesis sorry
 qed
 
@@ -12504,11 +12562,13 @@ proof -
          around the axis through their centres. This defines a quotient space P
          (Poincare dodecahedral space). **)
   have h_dodecahedron:
-    "\<exists>(D::(real^3) set) F. geotop_is_n_cell D
-          (subspace_topology UNIV geotop_euclidean_topology D) 3 \<and>
+    "\<exists>(D::(real^3) set) (Fs::(real^3) set set).
+        geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 3 \<and>
         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = D) \<and>
-        F \<subseteq> geotop_frontier UNIV geotop_euclidean_topology D \<and>
-        \<comment> \<open>F is the set of 12 pentagonal 2-faces\<close> True" sorry
+        card Fs = 12 \<and>
+        (\<forall>F\<in>Fs. geotop_is_n_cell F (subspace_topology UNIV geotop_euclidean_topology F) 2 \<and>
+                F \<subseteq> geotop_frontier UNIV geotop_euclidean_topology D) \<and>
+        geotop_frontier UNIV geotop_euclidean_topology D = \<Union>Fs" sorry
   (** (2) The quotient P admits a triangulation K (subdivide each pentagon's interior,
          then lift via the identification). P is compact, connected, and a 3-manifold
          without boundary. **)
@@ -12787,7 +12847,12 @@ proof -
          (each a polyhedral 2-cell) and keeps the D_2 part of the local decomposition
          D_1 \<cup> D_2 fixed. The resulting set C' still separates M into two sides. **)
   have h_local_replacement:
-    "\<exists>\<Delta>p \<Delta>m. True \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close>" sorry
+    "\<exists>\<Delta>p \<Delta>m::(real^3) set.
+        geotop_is_n_cell \<Delta>p (subspace_topology UNIV geotop_euclidean_topology \<Delta>p) 2 \<and>
+        geotop_is_n_cell \<Delta>m (subspace_topology UNIV geotop_euclidean_topology \<Delta>m) 2 \<and>
+        \<Delta>p \<inter> \<Delta>m = geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<and>
+        C' \<subseteq> (C - \<Delta>) \<union> \<Delta>p \<union> \<Delta>m
+        \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close>" sorry
   (** (2) The separation between H and K is preserved because no path from H to K in M
          was forced to cross \<Delta> in a way that the replacement breaks; locally the two
          copies serve the same cutting function. **)
