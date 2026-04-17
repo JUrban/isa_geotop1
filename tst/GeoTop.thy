@@ -5444,8 +5444,14 @@ theorem Theorem_GT_28_6:
   shows "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
                 U = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
-             geotop_is_k_annulus 1
-               (SOME A::(real^2) set. True)"
+             (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
+                top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+                  (closure_on UNIV geotop_euclidean_topology U)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on UNIV geotop_euclidean_topology U)) f) \<and>
+             (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
+               geotop_frontier UNIV geotop_euclidean_topology
+                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)"
   sorry
 
 (** from \<S>28 Theorem 7 (geotop.tex:5851)
