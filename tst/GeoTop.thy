@@ -4119,7 +4119,8 @@ theorem Theorem_GT_22_5:
   assumes "geotop_is_sphere_with_n_crosscaps m M"
   assumes "m \<le> 2"
   shows "geotop_manifold_euler M = 2 - (2 * int h + int m)"
-  sorry
+  using Theorem_GT_21_11 assms(1) geotop_is_sphere_with_n_handles_def
+    by fastforce
 
 (** from \<S>22: 1-dim Betti number p^1(M) (geotop.tex:4895)
     LATEX VERSION: The group B^1 is a p-term module over Z for some p, and the 1-dimensional
