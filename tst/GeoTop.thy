@@ -11699,7 +11699,26 @@ theorem Theorem_GT_29_1_Stallings_counterexample:
                    \<not> geotop_path_equiv M2
                         (subspace_topology UNIV geotop_euclidean_topology M2)
                         P\<^sub>0 p (\<lambda>t. P\<^sub>0)))"
-  sorry
+proof -
+  (** (1) Construct the lens space L(6, 1) = solid torus quotient: take a 3-ball B^3 and
+         identify the top 2-face with the bottom 2-face via a rotation by 2\<pi>/6. **)
+  obtain L where hL: "geotop_is_lens_space 6 1 L" sorry
+  (** (2) Inside L(6, 1) find an embedded non-orientable projective plane M^2 (which
+         exists because \<pi>_1(L(6, 1)) \<cong> Z/6 has an element of order 2 providing a Z/2
+         character; its kernel is covered by an orientation-reversing 2-cycle). M^2
+         is one-sided in Int L. **)
+  obtain M2 where hM2:
+    "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2) \<and>
+     geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2 \<and>
+     geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {} \<and>
+     \<not> geotop_is_two_sided M2 (geotop_manifold_interior L (\<lambda>x y. norm (x - y)))" sorry
+  (** (3) There is a loop p in M^2 (generator of the Z/2-homology class) that is
+         non-contractible in M^2 but contractible in L; yet no polyhedral 2-cell \<Delta> in
+         Int L can have Bd \<Delta> non-contractible on M^2 (since such a \<Delta> would force
+         orientability of M^2 by the argument of Theorem 26_4 requiring the two-sidedness
+         hypothesis). **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>30 Polyhedral interpolation theorems\<close>
 
