@@ -1667,14 +1667,14 @@ definition geotop_bounded_R2 :: "(real^2) set \<Rightarrow> bool" where
 
 definition geotop_polygon_interior :: "(real^2) set \<Rightarrow> (real^2) set" where
   "geotop_polygon_interior J =
-    (SOME I. I \<subseteq> UNIV - J \<and> geotop_bounded_R2 I \<and>
+    (SOME I. I \<noteq> {} \<and> I \<subseteq> UNIV - J \<and> geotop_bounded_R2 I \<and>
        top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
        (\<forall>P\<in>I. geotop_component_at UNIV geotop_euclidean_topology
                    ((UNIV::(real^2) set) - J) P = I))"
 
 definition geotop_polygon_exterior :: "(real^2) set \<Rightarrow> (real^2) set" where
   "geotop_polygon_exterior J =
-    (SOME E. E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 E \<and>
+    (SOME E. E \<noteq> {} \<and> E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 E \<and>
        top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
        (\<forall>P\<in>E. geotop_component_at UNIV geotop_euclidean_topology
                    ((UNIV::(real^2) set) - J) P = E))"
@@ -1728,14 +1728,262 @@ theorem Theorem_GT_2_5:
              \<and> is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology"
   sorry
 
+(** Helper: for a geotop-1-sphere J in euclidean_space with DIM \<ge> 2, every
+    component of UNIV - J has J as its frontier. **)
+lemma top1_frontier_component_of_geotop_1sphere:
+  fixes J U :: "'a::euclidean_space set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hU_ex: "\<exists>P\<in>UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+  assumes hdim: "2 \<le> DIM('a)"
+  shows "J = geotop_frontier UNIV geotop_euclidean_topology U"
+proof -
+  obtain f where hhomeo: "top1_homeomorphism_on J
+                           (subspace_topology UNIV geotop_euclidean_topology J)
+                           (geotop_std_sphere::'a set)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (geotop_std_sphere::'a set)) f"
+    using hJ unfolding geotop_is_n_sphere_def by blast
+  have hhomeo_HOL: "J homeomorphic (geotop_std_sphere::'a set)"
+    by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hhomeo])
+  have hstd_eq: "(geotop_std_sphere::'a set) = sphere 0 1"
+    unfolding geotop_std_sphere_def sphere_def by simp
+  have hJ_sphere: "J homeomorphic sphere (0::'a) 1"
+    using hhomeo_HOL hstd_eq by simp
+  obtain P where hP_notJ: "P \<in> UNIV - J"
+             and hU_eq: "U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using hU_ex by blast
+  have hU_comp: "U = connected_component_set (- J) P"
+    using hU_eq geotop_component_at_UNIV_eq_connected_component_set
+    by (simp add: Compl_eq_Diff_UNIV)
+  have hP_compl: "P \<in> - J" using hP_notJ by (simp add: Compl_eq_Diff_UNIV)
+  have hU_in_components: "U \<in> components (- J)"
+    unfolding components_def using hU_comp hP_compl by blast
+  have hfrontier: "frontier U = J"
+    by (rule Jordan_Brouwer_frontier[OF hJ_sphere hU_in_components hdim])
+  show ?thesis
+    using hfrontier geotop_frontier_UNIV_eq_frontier by metis
+qed
+
+(** Helper: for a geotop-1-sphere J in euclidean_space with DIM \<ge> 2, there
+    exists a bounded component and an unbounded component of UNIV - J. **)
+lemma geotop_1sphere_has_bounded_unbounded_components:
+  fixes J :: "'a::euclidean_space set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hdim: "2 \<le> DIM('a)"
+  shows "(\<exists>c. c \<in> components (- J) \<and> bounded c) \<and>
+         (\<exists>c. c \<in> components (- J) \<and> \<not> bounded c)"
+proof -
+  obtain f where hhomeo: "top1_homeomorphism_on J
+                           (subspace_topology UNIV geotop_euclidean_topology J)
+                           (geotop_std_sphere::'a set)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (geotop_std_sphere::'a set)) f"
+    using hJ unfolding geotop_is_n_sphere_def by blast
+  have hhomeo_HOL: "J homeomorphic (geotop_std_sphere::'a set)"
+    by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hhomeo])
+  have hstd_eq: "(geotop_std_sphere::'a set) = sphere 0 1"
+    unfolding geotop_std_sphere_def sphere_def by simp
+  have hJ_sphere: "J homeomorphic sphere (0::'a) 1"
+    using hhomeo_HOL hstd_eq by simp
+  have hnot_conn: "\<not> connected (- J)"
+    using Jordan_Brouwer_separation[OF hJ_sphere] by simp
+  (** J is bounded (compact, as homeomorphic image of sphere which is compact). **)
+  have hJ_compact: "compact J"
+    by (metis compact_sphere hJ_sphere homeomorphic_compactness)
+  have hJ_bounded: "bounded J"
+    using hJ_compact compact_imp_bounded by blast
+  have hbounded_neg: "bounded (- (- J))"
+    by (simp add: hJ_bounded)
+  have hbd_comp: "\<exists>c. c \<in> components (- J) \<and> bounded c"
+    using cobounded_has_bounded_component[OF hbounded_neg hnot_conn] hdim by blast
+  have hunbd_comp: "\<exists>c. c \<in> components (- J) \<and> \<not> bounded c"
+    using cobounded_unbounded_components[OF hbounded_neg] by blast
+  show ?thesis using hbd_comp hunbd_comp by blast
+qed
+
+(** Bridge: geotop_bounded_R2 equals HOL-Analysis `bounded` on real^2. **)
+lemma geotop_bounded_R2_iff_bounded:
+  fixes A :: "(real^2) set"
+  shows "geotop_bounded_R2 A \<longleftrightarrow> bounded A"
+proof
+  assume "geotop_bounded_R2 A"
+  then obtain r where hr: "r > 0" "\<forall>P\<in>A. norm P < r"
+    unfolding geotop_bounded_R2_def by blast
+  then show "bounded A"
+    unfolding bounded_iff by (meson less_le_not_le nle_le)
+next
+  assume "bounded A"
+  then obtain a where ha: "\<forall>x\<in>A. norm x \<le> a"
+    unfolding bounded_iff by blast
+  let ?r = "max a 0 + 1"
+  have "?r > 0" by simp
+  moreover have "\<forall>P\<in>A. norm P < ?r"
+    using ha by (smt (verit) max.cobounded1)
+  ultimately show "geotop_bounded_R2 A"
+    unfolding geotop_bounded_R2_def by blast
+qed
+
+(** Helper: given a 1-sphere J in R^2, polygon_interior J is a bounded connected
+    component of UNIV - J, and polygon_exterior J is an unbounded one. **)
+lemma geotop_polygon_interior_is_bounded_component:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<exists>P\<in>UNIV - J.
+           geotop_polygon_interior J
+           = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+proof -
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hexists_bd: "\<exists>c. c \<in> components (- J) \<and> bounded c"
+    using geotop_1sphere_has_bounded_unbounded_components[OF hJ hdim] by blast
+  then obtain C where hC_comp: "C \<in> components (- J)" and hC_bd: "bounded C" by blast
+  (** Show C satisfies the polygon_interior predicate. **)
+  obtain P where hP: "P \<in> -J" and hC_eq: "C = connected_component_set (- J) P"
+    using hC_comp unfolding components_def by blast
+  have hC_sub: "C \<subseteq> UNIV - J"
+    using hC_eq connected_component_subset by (metis Compl_eq_Diff_UNIV)
+  have hC_bdR2: "geotop_bounded_R2 C"
+    using hC_bd geotop_bounded_R2_iff_bounded by blast
+  have hC_conn_HOL: "connected C"
+    using hC_comp in_components_connected by blast
+  have hC_topconn: "top1_connected_on C
+                     (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC_conn_HOL top1_connected_on_geotop_iff_connected by blast
+  have hC_comp_at: "\<forall>Q\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                             ((UNIV::(real^2) set) - J) Q = C"
+  proof
+    fix Q assume hQC: "Q \<in> C"
+    have hQ_compl: "Q \<in> -J"
+      using hQC hC_eq connected_component_subset by blast
+    have hC_comp_Q: "C = connected_component_set (- J) Q"
+      using connected_component_eq hC_eq hQC by blast
+    then have "connected_component_set (UNIV - J) Q = C"
+      using Compl_eq_Diff_UNIV by metis
+    thus "geotop_component_at UNIV geotop_euclidean_topology
+            ((UNIV::(real^2) set) - J) Q = C"
+      using geotop_component_at_UNIV_eq_connected_component_set by metis
+  qed
+  have hC_ne: "C \<noteq> {}" using hC_comp in_components_nonempty by blast
+  have hpred_C: "C \<noteq> {} \<and> C \<subseteq> UNIV - J \<and> geotop_bounded_R2 C \<and>
+                 top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C) \<and>
+                 (\<forall>P\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                           ((UNIV::(real^2) set) - J) P = C)"
+    using hC_ne hC_sub hC_bdR2 hC_topconn hC_comp_at by blast
+  have hpred_ex: "\<exists>I. I \<noteq> {} \<and> I \<subseteq> UNIV - J \<and> geotop_bounded_R2 I \<and>
+                      top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+                      (\<forall>P\<in>I. geotop_component_at UNIV geotop_euclidean_topology
+                                ((UNIV::(real^2) set) - J) P = I)"
+    using hpred_C by blast
+  (** SOME picks such an I. Let I = polygon_interior J. **)
+  let ?I = "geotop_polygon_interior J"
+  have hI_pred: "?I \<noteq> {} \<and> ?I \<subseteq> UNIV - J \<and> geotop_bounded_R2 ?I \<and>
+                 top1_connected_on ?I (subspace_topology UNIV geotop_euclidean_topology ?I) \<and>
+                 (\<forall>P\<in>?I. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) P = ?I)"
+    unfolding geotop_polygon_interior_def
+    by (rule someI_ex[OF hpred_ex])
+  have hI_ne: "?I \<noteq> {}" using hI_pred by blast
+  have hI_sub: "?I \<subseteq> UNIV - J" using hI_pred by blast
+  obtain P where hP_I: "P \<in> ?I" using hI_ne by blast
+  have hP_notJ: "P \<in> UNIV - J" using hP_I hI_sub by blast
+  have hI_eq: "?I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using hI_pred hP_I by metis
+  show ?thesis using hP_notJ hI_eq by blast
+qed
+
+lemma geotop_polygon_exterior_is_component:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<exists>P\<in>UNIV - J.
+           geotop_polygon_exterior J
+           = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+proof -
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hexists_unbd: "\<exists>c. c \<in> components (- J) \<and> \<not> bounded c"
+    using geotop_1sphere_has_bounded_unbounded_components[OF hJ hdim] by blast
+  then obtain C where hC_comp: "C \<in> components (- J)" and hC_unbd: "\<not> bounded C" by blast
+  obtain P where hP: "P \<in> -J" and hC_eq: "C = connected_component_set (- J) P"
+    using hC_comp unfolding components_def by blast
+  have hC_sub: "C \<subseteq> UNIV - J"
+    using hC_eq connected_component_subset by (metis Compl_eq_Diff_UNIV)
+  have hC_unbdR2: "\<not> geotop_bounded_R2 C"
+    using hC_unbd geotop_bounded_R2_iff_bounded by blast
+  have hC_conn_HOL: "connected C"
+    using hC_comp in_components_connected by blast
+  have hC_topconn: "top1_connected_on C
+                     (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC_conn_HOL top1_connected_on_geotop_iff_connected by blast
+  have hC_comp_at: "\<forall>Q\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                             ((UNIV::(real^2) set) - J) Q = C"
+  proof
+    fix Q assume hQC: "Q \<in> C"
+    have hQ_compl: "Q \<in> -J"
+      using hQC hC_eq connected_component_subset by blast
+    have hC_comp_Q: "C = connected_component_set (- J) Q"
+      using connected_component_eq hC_eq hQC by blast
+    then have "connected_component_set (UNIV - J) Q = C"
+      using Compl_eq_Diff_UNIV by metis
+    thus "geotop_component_at UNIV geotop_euclidean_topology
+            ((UNIV::(real^2) set) - J) Q = C"
+      using geotop_component_at_UNIV_eq_connected_component_set by metis
+  qed
+  have hC_ne: "C \<noteq> {}" using hC_comp in_components_nonempty by blast
+  have hpred_C: "C \<noteq> {} \<and> C \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 C \<and>
+                 top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C) \<and>
+                 (\<forall>P\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                           ((UNIV::(real^2) set) - J) P = C)"
+    using hC_ne hC_sub hC_unbdR2 hC_topconn hC_comp_at by blast
+  have hpred_ex: "\<exists>E. E \<noteq> {} \<and> E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 E \<and>
+                      top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
+                      (\<forall>P\<in>E. geotop_component_at UNIV geotop_euclidean_topology
+                                ((UNIV::(real^2) set) - J) P = E)"
+    using hpred_C by blast
+  let ?E = "geotop_polygon_exterior J"
+  have hE_pred: "?E \<noteq> {} \<and> ?E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 ?E \<and>
+                 top1_connected_on ?E (subspace_topology UNIV geotop_euclidean_topology ?E) \<and>
+                 (\<forall>P\<in>?E. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) P = ?E)"
+    unfolding geotop_polygon_exterior_def
+    by (rule someI_ex[OF hpred_ex])
+  have hE_ne: "?E \<noteq> {}" using hE_pred by blast
+  have hE_sub: "?E \<subseteq> UNIV - J" using hE_pred by blast
+  obtain P where hP_E: "P \<in> ?E" using hE_ne by blast
+  have hP_notJ: "P \<in> UNIV - J" using hP_E hE_sub by blast
+  have hE_eq: "?E = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using hE_pred hP_E by metis
+  show ?thesis using hP_notJ hE_eq by blast
+qed
+
 (** from \<S>2 Theorem 6 (geotop.tex:611)
     LATEX VERSION: Let J, I, E be as in Theorem 5. Then J = Fr I = Fr E. **)
 theorem Theorem_GT_2_6:
   fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
+  assumes hJ_poly: "geotop_is_polygon J"
   shows "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
     and "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)"
-  sorry
+proof -
+  have hJ_sphere: "geotop_is_n_sphere J
+                     (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  (** Part 1: polygon_interior J is a component of UNIV - J, apply helper. **)
+  have hI_comp: "\<exists>P\<in>UNIV - J.
+                   geotop_polygon_interior J
+                   = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    by (rule geotop_polygon_interior_is_bounded_component[OF hJ_sphere])
+  show "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    by (rule top1_frontier_component_of_geotop_1sphere[OF hJ_sphere hI_comp hdim])
+next
+  have hJ_sphere: "geotop_is_n_sphere J
+                     (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hdim: "(2::nat) \<le> DIM(real^2)" by simp
+  have hE_comp: "\<exists>P\<in>UNIV - J.
+                   geotop_polygon_exterior J
+                   = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    by (rule geotop_polygon_exterior_is_component[OF hJ_sphere])
+  show "J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)"
+    by (rule top1_frontier_component_of_geotop_1sphere[OF hJ_sphere hE_comp hdim])
+qed
 
 (** from \<S>2: \<theta>-graph (geotop.tex:619)
     LATEX VERSION: Let M be the union of three arcs B_1, B_2, B_3 with the same end-points P, Q
