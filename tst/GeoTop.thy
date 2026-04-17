@@ -3327,7 +3327,7 @@ proof -
           \<and> (\<forall>P\<in>UNIV - U. h P = P)" sorry
   (** (2) The composition of U-supported folds is itself U-supported; outside U the
          composition is the identity. **)
-  show ?thesis sorry
+  show ?thesis using h_support_in_U by (by100 blast)
 qed
 
 
@@ -3734,7 +3734,7 @@ proof -
            top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology E" sorry
-  show ?thesis sorry
+  show ?thesis using h_pullback by (by100 blast)
 qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
@@ -3995,7 +3995,7 @@ proof -
   have h_bounded_cell:
     "\<exists>K'. K' \<subseteq> K \<and> geotop_comb_n_cell K' 2 \<and>
           geotop_polyhedron (geotop_comb_boundary K' 2) = J" sorry
-  show ?thesis sorry
+  show ?thesis using h_bounded_cell by (by100 blast)
 qed
 
 (** from \<S>5 Theorem 6 (geotop.tex:1178)
@@ -4032,7 +4032,7 @@ proof -
     "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
             C2 (subspace_topology UNIV geotop_euclidean_topology C2) f' \<and>
           (\<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x)" sorry
-  show ?thesis sorry
+  show ?thesis using h_alexander by (by100 blast)
 qed
 
 subsection \<open>Joins, barycenters, barycentric subdivision\<close>
@@ -4635,7 +4635,7 @@ proof -
   have h_KU:
     "\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and>
           (\<forall>\<sigma>\<in>KU. \<exists>\<tau>\<in>K. \<sigma> \<subseteq> \<tau>)" sorry
-  show ?thesis sorry
+  show ?thesis using h_KU by (by100 blast)
 qed
 
 (** from \<S>8 Theorem 3 (T. Radó) (geotop.tex:1674)
@@ -4799,7 +4799,7 @@ proof -
   have h_cut_separates:
     "\<exists>i<n. \<exists>E. card E = 2 \<and> E \<subseteq> Ms i \<and>
          geotop_separates_pts UNIV geotop_euclidean_topology J E R S" sorry
-  show ?thesis sorry
+  show ?thesis using h_cut_separates by (by100 blast)
 qed
 
 (** from \<S>9: linearly accessible from I (geotop.tex:1869)
@@ -5248,7 +5248,7 @@ proof -
          that intersect M. The resulting N is the required frame. **)
   have h_frame:
     "\<exists>N. geotop_is_U_frame M U N" sorry
-  show ?thesis sorry
+  show ?thesis using h_frame by (by100 blast)
 qed
 
 (** from \<S>10: end-point of a linear graph (geotop.tex:2020)
@@ -5320,7 +5320,7 @@ proof -
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M) \<and>
          (\<forall>P\<in>UNIV - U. h P = P) \<and>
          geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
-  show ?thesis sorry
+  show ?thesis using h_compose by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 8 (geotop.tex:2127)
@@ -5961,7 +5961,7 @@ proof -
          (\<forall>g\<in>G. \<forall>h\<in>G. g \<noteq> h \<longrightarrow> g \<inter> h = {}) \<and>
          \<Union>G = C \<and>
          (\<forall>g\<in>G. geotop_diameter dist g < \<epsilon>)" sorry
-  show ?thesis sorry
+  show ?thesis using h_disjoint by (by100 blast)
 qed
 
 (** from \<S>12 Theorem 5 (geotop.tex:2384)
@@ -6873,7 +6873,7 @@ proof -
               \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))" sorry
   (** (5) \<phi> has an inverse \<psi>([r]) = [p r p^{-1}]; p (p^{-1} q p) p^{-1} \<cong> q and symmetric,
          so \<phi> is a bijection. **)
-  show ?thesis sorry
+  show ?thesis using h_hom by (by100 blast)
 qed
 
 (** from \<S>14 Theorem 5 (geotop.tex:2735)
@@ -8493,7 +8493,7 @@ proof -
   have h_sphere:
     "\<exists>S. geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
          geotop_antoine_set k T1 T2 T \<subseteq> S \<and> S \<subseteq> U" sorry
-  show ?thesis sorry
+  show ?thesis using h_sphere by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 7 (Louis Antoine) (geotop.tex:3963)
@@ -8897,7 +8897,7 @@ proof -
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - A))
            (UNIV - {Q})
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - {Q})) h" sorry
-  show ?thesis sorry
+  show ?thesis using h_assemble by (by100 blast)
 qed
 
 (** from \<S>20: locally simply connected (geotop.tex:4243)
@@ -9697,7 +9697,7 @@ proof -
   have h_cell_decomp:
     "\<exists>\<C>. geotop_is_open_cell_complex \<C> \<and>
          \<Union>\<C> = M \<and> geotop_open_cell_num_faces \<C> = 1" sorry
-  show ?thesis sorry
+  show ?thesis using h_cell_decomp by (by100 blast)
 qed
 
 (** from \<S>22: regular neighborhood of a subcomplex (geotop.tex:4681)
@@ -9846,7 +9846,7 @@ proof -
                   geotop_is_sphere_with_n_crosscaps m M' \<and>
                   top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
                     M' (subspace_topology UNIV geotop_euclidean_topology M') f)" sorry
-  show ?thesis sorry
+  show ?thesis using h_normalize by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 5 (geotop.tex:4881)
@@ -10206,7 +10206,7 @@ proof -
        P \<in> geotop_top_interior M
               (subspace_topology UNIV geotop_euclidean_topology M) C3 \<and>
        C3 \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) = f ` \<sigma>2" sorry
-  show ?thesis sorry
+  show ?thesis using h_simplex_and_pullback by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 3 (geotop.tex:5013)
@@ -10503,7 +10503,7 @@ proof -
              (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) h \<and>
            h ` D1 = D2 \<and> (\<forall>P\<in>geotop_polyhedron K - N. h P = P)" sorry
-  show ?thesis sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 11 (geotop.tex:5049)
@@ -10579,7 +10579,7 @@ proof -
     "geotop_comb_equiv
        {\<sigma>\<in>geotop_barycentric_subdivision (geotop_barycentric_subdivision K).
            \<sigma> \<inter> geotop_polyhedron L \<noteq> {}} L" sorry
-  show ?thesis sorry
+  show ?thesis using h_comb_equiv by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 13 (geotop.tex:5066)
@@ -10808,7 +10808,7 @@ proof -
          connected path of V_j's from V_{j_0}. **)
   have h_extend_unique:
     "\<exists>!ft. geotop_is_lifting Mt T\<^sub>M M T\<^sub>M' g \<Delta> T\<^sub>\<Delta> f ft \<and> ft Q\<^sub>0 = Pt\<^sub>0" sorry
-  show ?thesis sorry
+  show ?thesis using h_extend_unique by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 2 (geotop.tex:5291)
@@ -10909,7 +10909,7 @@ proof -
   have h_card_k:
     "\<exists>cosets. card cosets = k \<and>
               \<Union>cosets = geotop_pi M T\<^sub>M' (g Pt\<^sub>0)" sorry
-  show ?thesis sorry
+  show ?thesis using h_card_k by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 5 (geotop.tex:5321)
@@ -11483,7 +11483,7 @@ proof -
   have h_glue:
     "\<exists>W. geotop_is_collar_neighborhood W
            (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y))) M3" sorry
-  show ?thesis sorry
+  show ?thesis using h_glue by (by100 blast)
 qed
 
 (** from \<S>26: bicollar neighborhood (geotop.tex:5659)
@@ -11977,7 +11977,7 @@ proof -
            \<Delta>1 \<subseteq> M3 \<and>
            geotop_frontier UNIV geotop_euclidean_topology \<Delta>1
              = D ` (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)" sorry
-  show ?thesis sorry
+  show ?thesis using h_Dehn by (by100 blast)
 qed
 
 section \<open>\<S>28 Polygons in the boundary of a combinatorial solid torus\<close>
@@ -12063,7 +12063,7 @@ proof -
          h ` S = S \<and>
          geotop_in_standard_position S (h ` J) Jx \<and>
          (\<forall>P\<in>M3 - W. h P = P)" sorry
-  show ?thesis sorry
+  show ?thesis using h_standardize by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 3 (geotop.tex:5828)
@@ -12162,7 +12162,7 @@ proof -
          latitudinal parallel (same generator class as J_x on T). **)
   have h_latitudinal:
     "geotop_is_latitudinal S J" sorry
-  show ?thesis sorry
+  show ?thesis using h_latitudinal by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 6 (geotop.tex:5843)
@@ -12349,7 +12349,7 @@ proof -
     "\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
          D \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) \<and>
          geotop_frontier UNIV geotop_euclidean_topology D = J" sorry
-  show ?thesis sorry
+  show ?thesis using h_bounds_cell by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 10 (geotop.tex:5863)
@@ -12390,7 +12390,7 @@ proof -
     "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
          geotop_closed_path_on S
            (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p" sorry
-  show ?thesis sorry
+  show ?thesis using h_J_generator by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 11 (geotop.tex:5869)
@@ -12510,7 +12510,7 @@ proof -
   have h_Jy:
     "\<exists>Jy. geotop_is_polygon Jy \<and>
           Jy \<subseteq> geotop_manifold_boundary S (\<lambda>x y. norm (x - y))" sorry
-  show ?thesis sorry
+  show ?thesis using h_Jy by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 16 (geotop.tex:5926)
@@ -12660,7 +12660,7 @@ proof -
             (\<exists>f. top1_homeomorphism_on A0
                    (subspace_topology UNIV geotop_euclidean_topology A0)
                    A (subspace_topology UNIV geotop_euclidean_topology A) f))" sorry
-  show ?thesis sorry
+  show ?thesis using h_annulus by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 20 (geotop.tex:5991)
@@ -12685,7 +12685,7 @@ proof -
          new cut) increases \<chi> by 2: \<chi>(M_1) = \<chi>(M^2_split) + 2 = \<chi>(M^2) + 2. **)
   have h_euler_plus_2:
     "geotop_manifold_euler M1 = geotop_manifold_euler M2 + 2" sorry
-  show ?thesis sorry
+  show ?thesis using h_euler_plus_2 by (by100 blast)
 qed
 
 section \<open>\<S>29 Limits on the Loop theorem: Stallings's example\<close>
@@ -12824,7 +12824,7 @@ proof -
   have h_step:
     "\<exists>cC. (\<exists>P\<in>C. cC = geotop_component_at X T C P) \<and>
           geotop_separates_in X T cC H K" sorry
-  show ?thesis sorry
+  show ?thesis using h_step by (by100 blast)
 qed
 
 (** from \<S>30 Theorem 3 (geotop.tex:6126)
@@ -13087,7 +13087,7 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q \<longrightarrow>
               geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
               \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)" sorry
-  show ?thesis sorry
+  show ?thesis using h_inclusion_iso by (by100 blast)
 qed
 
 section \<open>\<S>31 Canonical configurations; dual cells; pseudo-cells\<close>
@@ -13167,7 +13167,7 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0 q
               \<in> geotop_pi (S'' j)
                 (subspace_topology UNIV geotop_euclidean_topology (S'' j)) P\<^sub>0)" sorry
-  show ?thesis sorry
+  show ?thesis using h_per_j_spine by (by100 blast)
 qed
 
 (** from \<S>31 Theorem 3 (geotop.tex:6282)
@@ -13309,7 +13309,7 @@ proof -
     "\<exists>E. geotop_is_pseudo_cell E \<and>
          P' \<in> geotop_top_interior UNIV geotop_euclidean_topology E \<and>
          E \<subseteq> W" sorry
-  show ?thesis sorry
+  show ?thesis using h_E_pseudocell by (by100 blast)
 qed
 
 (** from \<S>32 Theorem 2 (geotop.tex:6459)
@@ -13525,7 +13525,7 @@ proof -
             (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
          (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
          (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)" sorry
-  show ?thesis sorry
+  show ?thesis using h_extend_to_3cells by (by100 blast)
 qed
 
 section \<open>\<S>35 The Triangulation theorem\<close>
@@ -13745,7 +13745,7 @@ proof -
           (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g' ` L) \<and>
           (\<forall>P\<in>M - V. g' P = P) \<and>
           (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)" sorry
-  show ?thesis sorry
+  show ?thesis using h_extend by (by100 blast)
 qed
 
 (** from \<S>36 Theorem 4 (geotop.tex:7174)
