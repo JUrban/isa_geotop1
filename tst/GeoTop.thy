@@ -8607,7 +8607,7 @@ proof -
          into e_n \<cup> e_{n+1}, preserving the \<sigma>^2 \<times> [0,1] structure. **)
   have h_step:
     "\<forall>B. geotop_is_broken_line B \<longrightarrow> (\<exists>C. geotop_unknotted_in B C)" sorry
-  show ?thesis sorry
+  show ?thesis using h_step hB by (by100 blast)
 qed
 
 (** from \<S>19 Theorem 2 (geotop.tex:3999)
