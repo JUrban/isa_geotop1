@@ -687,10 +687,102 @@ definition geotop_component_at ::
 (** from \<S>1 Theorem 16 (geotop.tex:417)
     LATEX VERSION: Every two (different) components of the same set are disjoint. **)
 theorem Theorem_GT_1_16:
-  assumes "is_topology_on X T" "M \<subseteq> X" "P \<in> M" "Q \<in> M"
+  assumes hTX: "is_topology_on X T"
+  assumes hMX: "M \<subseteq> X"
+  assumes hPM: "P \<in> M"
+  assumes hQM: "Q \<in> M"
   shows "geotop_component_at X T M P = geotop_component_at X T M Q
        \<or> geotop_component_at X T M P \<inter> geotop_component_at X T M Q = {}"
-  sorry
+proof (cases "geotop_component_at X T M P \<inter> geotop_component_at X T M Q = {}")
+  case True
+  thus ?thesis by simp
+next
+  case False
+  then obtain R where hRP: "R \<in> geotop_component_at X T M P"
+                 and hRQ: "R \<in> geotop_component_at X T M Q"
+    by blast
+  obtain CP where hCP_P: "CP \<subseteq> M \<and> P \<in> CP \<and> top1_connected_on CP (subspace_topology X T CP)"
+              and hR_CP: "R \<in> CP"
+    using hRP unfolding geotop_component_at_def by blast
+  obtain CQ where hCQ_Q: "CQ \<subseteq> M \<and> Q \<in> CQ \<and> top1_connected_on CQ (subspace_topology X T CQ)"
+              and hR_CQ: "R \<in> CQ"
+    using hRQ unfolding geotop_component_at_def by blast
+  have hCP_sub: "CP \<subseteq> X" using hCP_P hMX by fast
+  have hCQ_sub: "CQ \<subseteq> X" using hCQ_Q hMX by fast
+  have hCP_conn: "top1_connected_on CP (subspace_topology X T CP)" using hCP_P by simp
+  have hCQ_conn: "top1_connected_on CQ (subspace_topology X T CQ)" using hCQ_Q by simp
+  (** Apply Theorem_GT_1_14 on G = {CP, CQ} with common R. **)
+  have hG_sub: "\<forall>g\<in>{CP, CQ}. g \<subseteq> X \<and> top1_connected_on g (subspace_topology X T g)"
+    using hCP_sub hCQ_sub hCP_conn hCQ_conn by simp
+  have hG_R: "\<forall>g\<in>{CP, CQ}. R \<in> g"
+    using hR_CP hR_CQ by simp
+  have hUnion_conn: "top1_connected_on (\<Union>{CP, CQ}) (subspace_topology X T (\<Union>{CP, CQ}))"
+    by (rule Theorem_GT_1_14[OF hTX hG_sub hG_R])
+  have hCPuCQ_eq: "\<Union>{CP, CQ} = CP \<union> CQ" by simp
+  have hCPCQ_conn: "top1_connected_on (CP \<union> CQ) (subspace_topology X T (CP \<union> CQ))"
+    using hUnion_conn hCPuCQ_eq by simp
+  have hCPCQ_sub_M: "CP \<union> CQ \<subseteq> M" using hCP_P hCQ_Q by fast
+  have hP_CPCQ: "P \<in> CP \<union> CQ" using hCP_P by fast
+  have hQ_CPCQ: "Q \<in> CP \<union> CQ" using hCQ_Q by fast
+  have hCPCQ_sub_X: "CP \<union> CQ \<subseteq> X" using hCPCQ_sub_M hMX by fast
+  (** Now for any connected C ⊆ M with P ∈ C, apply 1_14 to {C, CP∪CQ} sharing P:
+      get C ∪ CP ∪ CQ connected, ⊆ M, contains Q. So C ⊆ component_Q. **)
+  have hPQ_sub: "geotop_component_at X T M P \<subseteq> geotop_component_at X T M Q"
+  proof (rule subsetI)
+    fix x assume hx: "x \<in> geotop_component_at X T M P"
+    obtain C where hC_P: "C \<subseteq> M \<and> P \<in> C \<and> top1_connected_on C (subspace_topology X T C)"
+                and hxC: "x \<in> C"
+      using hx unfolding geotop_component_at_def by blast
+    have hCsubX: "C \<subseteq> X" using hC_P hMX by fast
+    have hCconn: "top1_connected_on C (subspace_topology X T C)" using hC_P by simp
+    have hP_C: "P \<in> C" using hC_P by simp
+    (** Apply 1_14 to G = {C, CP∪CQ} with common P. **)
+    have hG2_sub: "\<forall>g\<in>{C, CP\<union>CQ}. g \<subseteq> X \<and> top1_connected_on g (subspace_topology X T g)"
+      using hCsubX hCconn hCPCQ_sub_X hCPCQ_conn by simp
+    have hG2_P: "\<forall>g\<in>{C, CP\<union>CQ}. P \<in> g" using hP_C hP_CPCQ by simp
+    have hUn2_conn: "top1_connected_on (\<Union>{C, CP\<union>CQ}) (subspace_topology X T (\<Union>{C, CP\<union>CQ}))"
+      by (rule Theorem_GT_1_14[OF hTX hG2_sub hG2_P])
+    have hUn2_eq: "\<Union>{C, CP\<union>CQ} = C \<union> CP \<union> CQ" by auto
+    have hW_conn: "top1_connected_on (C \<union> CP \<union> CQ) (subspace_topology X T (C \<union> CP \<union> CQ))"
+      using hUn2_conn hUn2_eq by simp
+    have hW_sub_M: "C \<union> CP \<union> CQ \<subseteq> M" using hC_P hCPCQ_sub_M by fast
+    have hQ_W: "Q \<in> C \<union> CP \<union> CQ" using hQ_CPCQ by fast
+    have hx_W: "x \<in> C \<union> CP \<union> CQ" using hxC by fast
+    have "C \<union> CP \<union> CQ \<in> {D. D \<subseteq> M \<and> Q \<in> D \<and> top1_connected_on D (subspace_topology X T D)}"
+      using hW_sub_M hQ_W hW_conn by simp
+    thus "x \<in> geotop_component_at X T M Q"
+      unfolding geotop_component_at_def using hx_W by blast
+  qed
+  (** Symmetric direction: component_Q ⊆ component_P. **)
+  have hQP_sub: "geotop_component_at X T M Q \<subseteq> geotop_component_at X T M P"
+  proof (rule subsetI)
+    fix x assume hx: "x \<in> geotop_component_at X T M Q"
+    obtain C where hC_Q: "C \<subseteq> M \<and> Q \<in> C \<and> top1_connected_on C (subspace_topology X T C)"
+                and hxC: "x \<in> C"
+      using hx unfolding geotop_component_at_def by blast
+    have hCsubX: "C \<subseteq> X" using hC_Q hMX by fast
+    have hCconn: "top1_connected_on C (subspace_topology X T C)" using hC_Q by simp
+    have hQ_C: "Q \<in> C" using hC_Q by simp
+    have hG2_sub: "\<forall>g\<in>{C, CP\<union>CQ}. g \<subseteq> X \<and> top1_connected_on g (subspace_topology X T g)"
+      using hCsubX hCconn hCPCQ_sub_X hCPCQ_conn by simp
+    have hG2_Q: "\<forall>g\<in>{C, CP\<union>CQ}. Q \<in> g" using hQ_C hQ_CPCQ by simp
+    have hUn2_conn: "top1_connected_on (\<Union>{C, CP\<union>CQ}) (subspace_topology X T (\<Union>{C, CP\<union>CQ}))"
+      by (rule Theorem_GT_1_14[OF hTX hG2_sub hG2_Q])
+    have hUn2_eq: "\<Union>{C, CP\<union>CQ} = C \<union> CP \<union> CQ" by auto
+    have hW_conn: "top1_connected_on (C \<union> CP \<union> CQ) (subspace_topology X T (C \<union> CP \<union> CQ))"
+      using hUn2_conn hUn2_eq by simp
+    have hW_sub_M: "C \<union> CP \<union> CQ \<subseteq> M" using hC_Q hCPCQ_sub_M by fast
+    have hP_W: "P \<in> C \<union> CP \<union> CQ" using hP_CPCQ by fast
+    have hx_W: "x \<in> C \<union> CP \<union> CQ" using hxC by fast
+    have "C \<union> CP \<union> CQ \<in> {D. D \<subseteq> M \<and> P \<in> D \<and> top1_connected_on D (subspace_topology X T D)}"
+      using hW_sub_M hP_W hW_conn by simp
+    thus "x \<in> geotop_component_at X T M P"
+      unfolding geotop_component_at_def using hx_W by blast
+  qed
+  have heq: "geotop_component_at X T M P = geotop_component_at X T M Q"
+    using hPQ_sub hQP_sub by simp
+  thus ?thesis by simp
+qed
 
 (** from \<S>1 Theorem 17 (geotop.tex:418)
     LATEX VERSION: If M \<subset> N, then every component of M lies in a component of N. **)
