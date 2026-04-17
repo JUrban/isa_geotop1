@@ -4707,7 +4707,12 @@ theorem Theorem_GT_24_5:
   assumes "top1_connected_on M (subspace_topology UNIV geotop_euclidean_topology M)"
   assumes "P\<^sub>0 \<in> M"
   assumes "\<exists>\<pi> cosets. \<pi> \<subseteq> geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0
-                     \<and> card cosets = k \<and> True"
+                     \<and> card cosets = k
+                     \<and> (\<forall>c\<in>cosets. c \<subseteq> geotop_pi M (subspace_topology UNIV
+                                geotop_euclidean_topology M) P\<^sub>0)
+                     \<and> \<Union>cosets = geotop_pi M (subspace_topology UNIV
+                                geotop_euclidean_topology M) P\<^sub>0
+                     \<and> (\<forall>c1\<in>cosets. \<forall>c2\<in>cosets. c1 \<noteq> c2 \<longrightarrow> c1 \<inter> c2 = {})"
   shows "\<exists>(Mt::'a set) (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering k Mt
            (subspace_topology UNIV geotop_euclidean_topology Mt)
            M (subspace_topology UNIV geotop_euclidean_topology M) g"
