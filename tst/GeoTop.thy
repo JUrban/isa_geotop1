@@ -438,11 +438,77 @@ text \<open>Already available in Top0 as \<open>top1_path_connected_on\<close>.\
       pathwise connected. **)
 theorem Theorem_GT_1_1:
   fixes X :: "'a set" and T :: "'a set set" and G :: "'a set set" and P :: 'a
-  assumes "is_topology_on X T"
-  assumes "\<forall>g\<in>G. g \<subseteq> X \<and> top1_path_connected_on g (subspace_topology X T g)"
-  assumes "\<forall>g\<in>G. P \<in> g"
+  assumes hTX: "is_topology_on X T"
+  assumes hGpc: "\<forall>g\<in>G. g \<subseteq> X \<and> top1_path_connected_on g (subspace_topology X T g)"
+  assumes hGP: "\<forall>g\<in>G. P \<in> g"
   shows "top1_path_connected_on (\<Union>G) (subspace_topology X T (\<Union>G))"
-  sorry
+  (** Moise proof (geotop.tex:326): given Q \<in> g_Q, R \<in> g_R, paths from Q to P in
+      g_Q and from P to R in g_R, concatenate via path component transitivity. **)
+proof -
+  have hUG_X: "\<Union>G \<subseteq> X" using hGpc by blast
+  have hTUG: "is_topology_on (\<Union>G) (subspace_topology X T (\<Union>G))"
+    by (rule subspace_topology_is_topology_on[OF hTX hUG_X])
+  show ?thesis
+  proof (cases "G = {}")
+    case True
+    (** Empty union - vacuous path-connectedness. **)
+    show ?thesis unfolding top1_path_connected_on_def
+      using hTUG True by simp
+  next
+    case False
+    show ?thesis unfolding top1_path_connected_on_def
+    proof (intro conjI hTUG ballI)
+      fix Q R assume hQ: "Q \<in> \<Union>G" and hR: "R \<in> \<Union>G"
+      obtain gQ where hgQ: "gQ \<in> G" and hQgQ: "Q \<in> gQ" using hQ by blast
+      obtain gR where hgR: "gR \<in> G" and hRgR: "R \<in> gR" using hR by blast
+      have hgQ_X: "gQ \<subseteq> X" using hgQ hGpc by blast
+      have hgR_X: "gR \<subseteq> X" using hgR hGpc by blast
+      have hgQ_pc: "top1_path_connected_on gQ (subspace_topology X T gQ)"
+        using hgQ hGpc by blast
+      have hgR_pc: "top1_path_connected_on gR (subspace_topology X T gR)"
+        using hgR hGpc by blast
+      have hP_gQ: "P \<in> gQ" using hgQ hGP by blast
+      have hP_gR: "P \<in> gR" using hgR hGP by blast
+      (** Path Q \<rightarrow> P in gQ. **)
+      have "\<exists>p. top1_is_path_on gQ (subspace_topology X T gQ) Q P p"
+        using hgQ_pc hQgQ hP_gQ unfolding top1_path_connected_on_def by blast
+      then obtain p1 where hp1: "top1_is_path_on gQ (subspace_topology X T gQ) Q P p1" by blast
+      (** Path P \<rightarrow> R in gR. **)
+      have "\<exists>p. top1_is_path_on gR (subspace_topology X T gR) P R p"
+        using hgR_pc hP_gR hRgR unfolding top1_path_connected_on_def by blast
+      then obtain p2 where hp2: "top1_is_path_on gR (subspace_topology X T gR) P R p2" by blast
+      (** Upgrade paths to live in \<Union>G. **)
+      have hp1cont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                      gQ (subspace_topology X T gQ) p1"
+        using hp1 unfolding top1_is_path_on_def by simp
+      have hgQ_UG: "gQ \<subseteq> \<Union>G" using hgQ by blast
+      have hp1cont_UG: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                          (\<Union>G) (subspace_topology X T (\<Union>G)) p1"
+        by (rule top1_continuous_map_on_codomain_enlarge[OF hp1cont hgQ_UG hUG_X])
+      have hp2cont: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                      gR (subspace_topology X T gR) p2"
+        using hp2 unfolding top1_is_path_on_def by simp
+      have hgR_UG: "gR \<subseteq> \<Union>G" using hgR by blast
+      have hp2cont_UG: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                          (\<Union>G) (subspace_topology X T (\<Union>G)) p2"
+        by (rule top1_continuous_map_on_codomain_enlarge[OF hp2cont hgR_UG hUG_X])
+      have hp1_UG: "top1_is_path_on (\<Union>G) (subspace_topology X T (\<Union>G)) Q P p1"
+        unfolding top1_is_path_on_def
+        using hp1cont_UG hp1 unfolding top1_is_path_on_def by simp
+      have hp2_UG: "top1_is_path_on (\<Union>G) (subspace_topology X T (\<Union>G)) P R p2"
+        unfolding top1_is_path_on_def
+        using hp2cont_UG hp2 unfolding top1_is_path_on_def by simp
+      have hQP_sc: "top1_in_same_path_component_on (\<Union>G) (subspace_topology X T (\<Union>G)) Q P"
+        unfolding top1_in_same_path_component_on_def using hp1_UG by blast
+      have hPR_sc: "top1_in_same_path_component_on (\<Union>G) (subspace_topology X T (\<Union>G)) P R"
+        unfolding top1_in_same_path_component_on_def using hp2_UG by blast
+      have hQR_sc: "top1_in_same_path_component_on (\<Union>G) (subspace_topology X T (\<Union>G)) Q R"
+        by (rule top1_in_same_path_component_on_trans[OF hTUG hQP_sc hPR_sc])
+      thus "\<exists>g. top1_is_path_on (\<Union>G) (subspace_topology X T (\<Union>G)) Q R g"
+        unfolding top1_in_same_path_component_on_def by blast
+    qed
+  qed
+qed
 
 (** from \<S>1 Theorem 2 (geotop.tex:330)
     LATEX VERSION: Pathwise connectivity is preserved by surjective mappings. **)
