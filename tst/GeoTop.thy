@@ -1737,15 +1737,6 @@ definition geotop_is_polygon :: "'a::real_normed_vector set \<Rightarrow> bool" 
 text \<open>A triangulation of a set $M$ is a complex $K$ with $|K| = M$.
   Formalized inline as \<open>geotop_polyhedron K = M\<close>.\<close>
 
-(** from \<S>2 Theorem 1 (geotop.tex:502)
-    LATEX VERSION: Let J be a polygon in R^2. Then R^2 - J has exactly two components. **)
-theorem Theorem_GT_2_1:
-  fixes J :: "(real^2) set"
-  assumes "geotop_is_polygon J"
-  shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} = 2"
-  sorry
-
 (** from \<S>2 Theorem 1 - Lemma 1 (geotop.tex:514)
     LATEX VERSION: R^2 - J has at most two components. **)
 theorem Lemma_GT_2_1a:
@@ -1763,6 +1754,17 @@ theorem Lemma_GT_2_1b:
   shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
   sorry
+
+(** from \<S>2 Theorem 1 (geotop.tex:502)
+    LATEX VERSION: Let J be a polygon in R^2. Then R^2 - J has exactly two components. **)
+theorem Theorem_GT_2_1:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} = 2"
+  (** Combine the upper bound (Lemma_GT_2_1a) and lower bound (Lemma_GT_2_1b). **)
+  using Lemma_GT_2_1a[OF hJ] Lemma_GT_2_1b[OF hJ]
+  by linarith
 
 (** from \<S>2: interior and exterior of a polygon (geotop.tex:553)
     LATEX VERSION: The bounded component I of R^2 - J is called the interior of J, and the
