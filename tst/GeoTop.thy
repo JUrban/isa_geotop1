@@ -10637,16 +10637,31 @@ definition geotop_is_two_sided ::
       M^2 is two sided in M^3. **)
 theorem Theorem_GT_26_1:
   fixes K :: "(real^3) set set" and M3 M2 N :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_n_manifold_with_boundary_on N (\<lambda>x y. norm (x - y)) 3"
-  assumes "N \<subseteq> M3"
-  assumes "\<exists>Cs. (\<forall>C\<in>Cs. C \<subseteq> geotop_manifold_boundary N (\<lambda>x y. norm (x - y))) \<and>
+  assumes hK: "geotop_is_complex K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_int: "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
+  assumes hN_mfd: "geotop_n_manifold_with_boundary_on N (\<lambda>x y. norm (x - y)) 3"
+  assumes hN_in_M3: "N \<subseteq> M3"
+  assumes hM2_as_Bd: "\<exists>Cs. (\<forall>C\<in>Cs. C \<subseteq> geotop_manifold_boundary N (\<lambda>x y. norm (x - y))) \<and>
                 M2 = \<Union>Cs"
   shows "geotop_is_two_sided M2 M3"
-  sorry
+proof -
+  (** (1) Take a small open neighbourhood V of M^2 in M^3 contained inside N \<union> (M^3 - N);
+         V \<inter> Int N and V \<inter> (M^3 - Cl N) are each connected (as collar/exterior neighbourhoods
+         of M^2). **)
+  obtain V where hV:
+    "V \<in> geotop_euclidean_topology \<and> M2 \<subseteq> V \<and> V \<subseteq> M3" sorry
+  (** (2) For every sufficiently small open W with M^2 \<subseteq> W \<subseteq> V, W - M^2 has at least two
+         components (one inside N, one outside), since M^2 is in \<partial>N and separates the
+         neighbourhood. **)
+  have h_separates:
+    "\<forall>W\<in>geotop_euclidean_topology. M2 \<subseteq> W \<and> W \<subseteq> V \<and>
+       top1_connected_on W (subspace_topology UNIV geotop_euclidean_topology W) \<longrightarrow>
+       \<not> top1_connected_on (W - M2)
+           (subspace_topology UNIV geotop_euclidean_topology (W - M2))" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>26: collar neighborhood (geotop.tex:5649)
     LATEX VERSION: A neighborhood W as in Theorem 2 will be called a collar neighborhood of
@@ -10669,14 +10684,34 @@ definition geotop_is_collar_neighborhood ::
       (1) W is a neighborhood of B in M^3 and (2) \<rho>(P, 0) = P. **)
 theorem Theorem_GT_26_2:
   fixes K :: "(real^3) set set" and M3 :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "top1_compact_on (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y)))
+  assumes hK: "geotop_is_complex K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hBd_cpt: "top1_compact_on (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y)))
              (subspace_topology UNIV geotop_euclidean_topology
                 (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y))))"
   shows "\<exists>W. geotop_is_collar_neighborhood W
              (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y))) M3"
-  sorry
+proof -
+  (** (1) Cover Bd M^3 with finitely many half-simplex neighbourhoods (Theorem 23_2, 23_4):
+         Bd M^3 \<subseteq> \<union>_i f_i(\<sigma>_i^2) with f_i: \<sigma>_i^3 \<leftrightarrow> C_i^3 local charts. **)
+  obtain Cs :: "(real^3) set set" and fs where h_cover:
+    "finite Cs \<and>
+     (\<forall>C\<in>Cs. \<exists>f. \<exists>\<sigma>3 \<sigma>2::(real^3) set. geotop_simplex_dim \<sigma>3 3 \<and>
+              top1_homeomorphism_on \<sigma>3
+                 (subspace_topology UNIV geotop_euclidean_topology \<sigma>3) C
+                 (subspace_topology UNIV geotop_euclidean_topology C) f)" sorry
+  (** (2) In each local chart, define a local collar \<rho>_i: \<sigma>_i^2 \<times> [0, 1] \<to> \<sigma>_i^3
+         (trivially from the half-simplex structure). **)
+  have h_local_collars:
+    "\<exists>\<rho>s. True \<comment> \<open>\<rho>_i: \<sigma>_i^2 \<times> [0, 1] \<to> \<sigma>_i^3 collar\<close>" sorry
+  (** (3) Stitch the local collars together using a PL partition of unity along Bd M^3.
+         The result is a single PLH \<rho>: Bd M^3 \<times> [0, 1] \<leftrightarrow> W where W is a collar
+         neighbourhood of Bd M^3 in M^3. **)
+  have h_glue:
+    "\<exists>W. geotop_is_collar_neighborhood W
+           (geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y))) M3" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>26: bicollar neighborhood (geotop.tex:5659)
     LATEX VERSION: Such a W will be called a bicollar neighborhood of M^2. **)
@@ -10699,14 +10734,29 @@ definition geotop_is_bicollar_neighborhood ::
       of M^2 in Int M^3 and (2) \<rho>(P, 0) = P. **)
 theorem Theorem_GT_26_3:
   fixes K :: "(real^3) set set" and M3 M2 :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
+  assumes hK: "geotop_is_complex K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2_cpt: "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_int: "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
+  assumes hM2_twosided: "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
   shows "\<exists>W. geotop_is_bicollar_neighborhood W M2 M3"
-  sorry
+proof -
+  (** (1) M^2 two-sided means a connected neighbourhood V of M^2 in Int M^3 is separated
+         by M^2 into two sides V \<cap> (sides): "V^+" and "V^-". **)
+  obtain V Vp Vm where h_two_sides:
+    "V \<in> geotop_euclidean_topology \<and> M2 \<subseteq> V \<and>
+     V \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
+     V - M2 = Vp \<union> Vm \<and> Vp \<inter> Vm = {}" sorry
+  (** (2) Consider N = M^2 \<union> V^+ (closure of the + side). N is a 3-manifold with boundary
+         containing M^2 as a boundary component. Apply Theorem 26_2 (collar) to N to get a
+         one-sided collar \<rho>^+: M^2 \<times> [0, 1] \<to> N. Similarly \<rho>^- for the minus side. **)
+  obtain \<rho>p \<rho>m where h_two_collars:
+    "True \<comment> \<open>separate collars on each side of M^2\<close>" sorry
+  (** (3) Glue \<rho>^+ and (mirrored) \<rho>^- along M^2 \<times> {0} to form a single PLH \<rho>: M^2 \<times>
+         [-1, 1] \<to> W with W = \<rho>^+([0, 1]) \<cup> \<rho>^-([0, 1]) open in M^3. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>26 Theorem 4 (Papakyriakopoulos) (geotop.tex:5663)
     LATEX VERSION: Let M^3 = |K| be a triangulated 3-manifold with boundary, let M^2 be a
@@ -10716,13 +10766,13 @@ theorem Theorem_GT_26_3:
       with Bd \<Delta> = C, such that C = \<Delta> \<inter> M^2 and C is not contractible in M^2. **)
 theorem Theorem_GT_26_4:
   fixes K :: "(real^3) set set" and M3 M2 :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
-  assumes "\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
+  assumes hK: "geotop_is_complex K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2_cpt: "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_int: "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
+  assumes hM2_twosided: "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
+  assumes hker_nontriv: "\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
              (subspace_topology UNIV geotop_euclidean_topology M2) P\<^sub>0 p \<and>
              \<not> geotop_path_equiv M2 (subspace_topology UNIV geotop_euclidean_topology M2)
                 P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
@@ -10739,20 +10789,39 @@ theorem Theorem_GT_26_4:
                   P\<^sub>0 p \<and>
                 \<not> geotop_path_equiv M2 (subspace_topology UNIV geotop_euclidean_topology M2)
                      P\<^sub>0 p (\<lambda>t. P\<^sub>0))"
-  sorry
+proof -
+  (** (1) By Theorem 26_3, M^2 has a bicollar neighbourhood W = M^2 \<times> [-1, 1] in Int M^3.
+         Cut M^3 open along M^2 to form a new 3-manifold M^3_cut with M^2 (two copies)
+         as boundary components, via the bicollar. **)
+  obtain M\<^sub>3\<^sub>c W where h_cut:
+    "geotop_is_bicollar_neighborhood W M2 M3 \<and>
+     geotop_n_manifold_with_boundary_on M\<^sub>3\<^sub>c (\<lambda>x y. norm (x - y)) 3 \<and>
+     M2 \<subseteq> geotop_manifold_boundary M\<^sub>3\<^sub>c (\<lambda>x y. norm (x - y))" sorry
+  (** (2) A loop L in M^2 which is contractible in M^3 but not in M^2 maps into one
+         boundary copy of M^2 in M^3_cut and is still contractible there. Apply the Loop
+         theorem (Theorem 25_2) to M^3_cut with boundary component B = M^2 to obtain a
+         polyhedral 2-cell \<Delta> with Bd \<Delta> non-contractible in M^2. **)
+  obtain \<Delta> C where h_loop_thm_applied:
+    "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>) \<and>
+     \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
+     geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
+     C = \<Delta> \<inter> M2" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>26 Theorem 5 (geotop.tex:5691)
     LATEX VERSION: Suppose that in Theorem 4, M^2 is a closed set in M^3, but is not
       necessarily compact. Then the conclusion of Theorem 4 still holds. **)
 theorem Theorem_GT_26_5:
   fixes K :: "(real^3) set set" and M3 M2 :: "(real^3) set"
-  assumes "geotop_is_complex K" and "M3 = geotop_polyhedron K"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
-  assumes "closedin_on M3 (subspace_topology UNIV geotop_euclidean_topology M3) M2"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
-  assumes "\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
+  assumes hK: "geotop_is_complex K" and hM3: "M3 = geotop_polyhedron K"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 3"
+  assumes hM2_closed: "closedin_on M3 (subspace_topology UNIV geotop_euclidean_topology M3) M2"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_int: "M2 \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y))"
+  assumes hM2_twosided: "geotop_is_two_sided M2 (geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)))"
+  assumes hker_nontriv: "\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
              (subspace_topology UNIV geotop_euclidean_topology M2) P\<^sub>0 p \<and>
              \<not> geotop_path_equiv M2 (subspace_topology UNIV geotop_euclidean_topology M2)
                 P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
@@ -10763,7 +10832,19 @@ theorem Theorem_GT_26_5:
              \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
              geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
              C = \<Delta> \<inter> M2"
-  sorry
+proof -
+  (** (1) The closed (but not necessarily compact) M^2 can be exhausted by an increasing
+         sequence of compact submanifolds M^2_n with M^2 = \<union>_n M^2_n. The kernel witness
+         lies in some M^2_n (compactness of the PL null-homotopy image). **)
+  obtain n M2\<^sub>n where h_compact_piece:
+    "top1_compact_on M2\<^sub>n (subspace_topology UNIV geotop_euclidean_topology M2\<^sub>n) \<and>
+     geotop_n_manifold_with_boundary_on M2\<^sub>n (\<lambda>x y. norm (x - y)) 2 \<and>
+     M2\<^sub>n \<subseteq> M2" sorry
+  (** (2) Apply Theorem 26_4 to M^2_n (compact case) to get the polyhedral 2-cell \<Delta>
+         with boundary non-contractible in M^2_n. Since M^2_n \<subseteq> M^2, the conclusion
+         transfers. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>26 Theorem 6 (geotop.tex:5699)
     LATEX VERSION: Let M^2 be a compact connected polyhedral 2-manifold in R^3. Then M^2 is
@@ -10771,18 +10852,36 @@ theorem Theorem_GT_26_5:
       M^2 as their common frontier. **)
 theorem Theorem_GT_26_6:
   fixes M2 :: "(real^3) set"
-  assumes "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {}"
-  assumes "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M2"
+  assumes hM2_cpt: "top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_conn: "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_closed: "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {}"
+  assumes hM2_poly: "\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = M2"
   shows "geotop_is_two_sided M2 (UNIV::(real^3) set) \<and>
          (\<exists>I E. I \<inter> E = {} \<and> UNIV - M2 = I \<union> E \<and>
                 top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
                 top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
                 geotop_frontier UNIV geotop_euclidean_topology I = M2 \<and>
                 geotop_frontier UNIV geotop_euclidean_topology E = M2)"
-  sorry
+proof -
+  (** (1) A compact connected polyhedral 2-manifold in R^3 is orientable (Theorem 26_8).
+         Orientable closed 2-manifold has a globally defined normal direction. **)
+  have h_orientable:
+    "\<exists>Km. geotop_is_complex Km \<and> geotop_polyhedron Km = M2 \<and>
+          geotop_is_orientable Km" sorry
+  (** (2) Global normal direction cuts every small polyhedral neighbourhood in two: the
+         "inside" side and "outside" side. Hence M^2 is 2-sided. **)
+  have h_two_sided: "geotop_is_two_sided M2 (UNIV::(real^3) set)" sorry
+  (** (3) Generalised Jordan-Brouwer: R^3 - M^2 has exactly two connected components I
+         (bounded) and E (unbounded), both with frontier = M^2. **)
+  have h_JB:
+    "\<exists>I E. I \<inter> E = {} \<and> UNIV - M2 = I \<union> E \<and>
+           top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+           top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
+           geotop_frontier UNIV geotop_euclidean_topology I = M2 \<and>
+           geotop_frontier UNIV geotop_euclidean_topology E = M2" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>26 Theorem 7 (geotop.tex:5715)
     LATEX VERSION: In R^3, let M_1^2, M_2^2, M_3^2 be connected polyhedral 2-manifolds with
@@ -10792,21 +10891,21 @@ theorem Theorem_GT_26_6:
       M_1^2 \<union> M_2^2. **)
 theorem Theorem_GT_26_7:
   fixes M1 M2 M3 :: "(real^3) set"
-  assumes "top1_connected_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
-  assumes "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
-  assumes "top1_connected_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)"
-  assumes "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 2"
-  assumes "geotop_manifold_boundary M1 (\<lambda>x y. norm (x - y))
+  assumes hM1_conn: "top1_connected_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)"
+  assumes hM2_conn: "top1_connected_on M2 (subspace_topology UNIV geotop_euclidean_topology M2)"
+  assumes hM3_conn: "top1_connected_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)"
+  assumes hM1_mfd: "geotop_n_manifold_with_boundary_on M1 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM2_mfd: "geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2"
+  assumes hM3_mfd: "geotop_n_manifold_with_boundary_on M3 (\<lambda>x y. norm (x - y)) 2"
+  assumes hBd12: "geotop_manifold_boundary M1 (\<lambda>x y. norm (x - y))
            = geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y))
+  assumes hBd23: "geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y))
            = geotop_manifold_boundary M3 (\<lambda>x y. norm (x - y))"
-  assumes "geotop_manifold_interior M1 (\<lambda>x y. norm (x - y))
+  assumes hInt12: "geotop_manifold_interior M1 (\<lambda>x y. norm (x - y))
            \<inter> geotop_manifold_interior M2 (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_manifold_interior M2 (\<lambda>x y. norm (x - y))
+  assumes hInt23: "geotop_manifold_interior M2 (\<lambda>x y. norm (x - y))
            \<inter> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) = {}"
-  assumes "geotop_manifold_interior M1 (\<lambda>x y. norm (x - y))
+  assumes hInt13: "geotop_manifold_interior M1 (\<lambda>x y. norm (x - y))
            \<inter> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) = {}"
   shows "\<exists>(E::(real^3) set) (Ma::(real^3) set) (Mb::(real^3) set).
            (Ma = M1 \<or> Ma = M2 \<or> Ma = M3) \<and>
@@ -10817,7 +10916,23 @@ theorem Theorem_GT_26_7:
                       (UNIV - (M1 \<union> M2 \<union> M3)) P \<and>
                 \<not> top1_compact_on E (subspace_topology UNIV geotop_euclidean_topology E)) \<and>
            geotop_frontier UNIV geotop_euclidean_topology E = Ma \<union> Mb"
-  sorry
+proof -
+  (** (1) M^2 = M_1 \<cup> M_2 is a closed 2-manifold (gluing along common boundary).
+         Apply Theorem 26_6: R^3 - M^2 = I_12 \<cup> E_12 with I_12 bounded, E_12 unbounded. **)
+  have h_JB_12:
+    "\<exists>I E. UNIV - (M1 \<union> M2) = I \<union> E \<and> I \<inter> E = {}" sorry
+  (** (2) Similarly for M^1 \<cup> M^3 and M^2 \<cup> M^3. The three pairs give three unbounded
+         components; by inclusion-exclusion, exactly one pair (say (M_a, M_b)) has its
+         unbounded component as Fr E. **)
+  have h_pair_boundary:
+    "\<exists>(E::(real^3) set) Ma Mb. (Ma = M1 \<or> Ma = M2 \<or> Ma = M3) \<and>
+                               (Mb = M1 \<or> Mb = M2 \<or> Mb = M3) \<and> Ma \<noteq> Mb \<and>
+       geotop_frontier UNIV geotop_euclidean_topology E = Ma \<union> Mb" sorry
+  (** (3) Int M_3 lies inside the bounded region between M_a and M_b because it shares
+         the common boundary Bd M_1 = Bd M_2 = Bd M_3 but has interior in neither M_a nor
+         M_b's side. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>26 Theorem 8 (geotop.tex:5718)
     LATEX VERSION: Let K be a triangulation of R^3, and let M^2 be a compact connected
