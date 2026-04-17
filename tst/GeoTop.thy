@@ -9563,7 +9563,8 @@ proof -
     "geotop_is_splitting_of M J M\<^sub>s \<and>
      geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
      geotop_is_n_cell D\<^sub>2 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>2) 2 \<and>
-     M' = M\<^sub>s \<union> D\<^sub>1 \<union> D\<^sub>2" sorry
+     M' = M\<^sub>s \<union> D\<^sub>1 \<union> D\<^sub>2"
+    using hSF unfolding geotop_is_split_and_filled_def by (by100 blast)
   (** (2) By Theorem 21_10 (splitting is \<chi>-preserving), \<chi>(M_split) = \<chi>(M). **)
   have h_split_chi:
     "geotop_manifold_euler M\<^sub>s = geotop_manifold_euler M" sorry
