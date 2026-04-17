@@ -7562,16 +7562,37 @@ definition geotop_antoine_set ::
 theorem Theorem_GT_18_1:
   fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
   fixes Cs Ds :: "(real^3) set set"
-  assumes "geotop_antoine_chain k T1 T2 T"
-  assumes "finite Cs" and "card Cs = k" and "T2 = \<Union>Cs"
-  assumes "finite Ds" and "card Ds = k"
-  assumes "\<forall>D\<in>Ds. \<exists>C\<in>Cs. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+  assumes hantoine: "geotop_antoine_chain k T1 T2 T"
+  assumes hCs: "finite Cs" and hcardC: "card Cs = k" and hT2: "T2 = \<Union>Cs"
+  assumes hDs: "finite Ds" and hcardD: "card Ds = k"
+  assumes hDC: "\<forall>D\<in>Ds. \<exists>C\<in>Cs. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
                           \<and> geotop_frontier UNIV geotop_euclidean_topology D
                               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C"
   shows "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
            (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
            (geotop_frontier UNIV geotop_euclidean_topology T1)"
-  sorry
+proof -
+  (** (1) Bd T_1 is a torus; each C_i is a component of T_2 circumscribed by a spanning
+         2-cell D_i with \<partial>D_i \<subseteq> Bd C_i. Removing \<union>C_i \<union> \<union>D_i leaves T_1 with disjoint
+         neighbourhoods of each C_i \<union> D_i punched out, plus the surrounding tube system. **)
+  have h_structure:
+    "T1 - (\<Union>Cs \<union> \<Union>Ds) =
+       (T1 - T2) \<union>
+       ((T1 - (\<Union>Cs \<union> \<Union>Ds)) \<inter> T2)" sorry
+  (** (2) Retract radially onto Bd T_1: for each spanning 2-cell D_i, the region between
+         C_i and Bd T_1 is a solid slab that retracts onto its outer face in Bd T_1. These
+         per-component retractions glue along the complement of \<union>C_i to a retraction of
+         T_1 - (\<union>C_i \<union> \<union>D_i) onto Bd T_1. **)
+  have h_retract:
+    "\<exists>r. (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology T1. r P = P) \<and>
+         (\<forall>P\<in>T1 - (\<Union>Cs \<union> \<Union>Ds). r P \<in> geotop_frontier UNIV geotop_euclidean_topology T1) \<and>
+         top1_continuous_map_on (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier UNIV geotop_euclidean_topology T1)) r" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 2 (geotop.tex:3800)
     LATEX VERSION: Let p be a closed path in R^3 - T_1. If p \<cong> e in R^3 - T_2, then
@@ -7579,17 +7600,41 @@ theorem Theorem_GT_18_1:
 theorem Theorem_GT_18_2:
   fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
   fixes p :: "real \<Rightarrow> real^3" and P\<^sub>0 :: "real^3"
-  assumes "geotop_antoine_chain k T1 T2 T"
-  assumes "P\<^sub>0 \<in> UNIV - T1"
-  assumes "geotop_closed_path_on (UNIV - T1)
+  assumes hantoine: "geotop_antoine_chain k T1 T2 T"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - T1"
+  assumes hp_cp: "geotop_closed_path_on (UNIV - T1)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) P\<^sub>0 p"
-  assumes "geotop_path_equiv (UNIV - T2)
+  assumes hnull_T2: "geotop_path_equiv (UNIV - T2)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - T2))
              P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
   shows "geotop_path_equiv (UNIV - T1)
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
            P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Extract a PL null-homotopy f: [0,1]^2 \<rightarrow> R^3 - T_2 with f | y=0 = p and
+         f | y=1 = constant P_0 (Theorem 14.7 PL approximation). **)
+  obtain f :: "real \<times> real \<Rightarrow> real^3" where hf:
+    "(\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> UNIV - T2) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = P\<^sub>0) \<and>
+     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)" sorry
+  (** (2) Since R^3 - T_2 retracts onto R^3 - T_1 except along each spanning 2-cell D_i,
+         compose f with the retraction r from Theorem 18.1 (extended: fix outside T_1,
+         retract the inside of T_1 to Bd T_1 away from the spanning cells). The image lies
+         in R^3 - T_1. **)
+  obtain r :: "real^3 \<Rightarrow> real^3" where h_retract:
+    "top1_continuous_map_on (UNIV - T2) (subspace_topology UNIV geotop_euclidean_topology (UNIV - T2))
+       (UNIV - T1) (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) r \<and>
+     (\<forall>P\<in>UNIV - T1. r P = P)" sorry
+  (** (3) The composite g = r \<circ> f is a continuous null-homotopy of p in R^3 - T_1. **)
+  have h_null:
+    "\<exists>g::real \<times> real \<Rightarrow> real^3.
+        (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (t, y) \<in> UNIV - T1) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 0) = p t) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 1) = P\<^sub>0) \<and>
+        (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (0, y) = P\<^sub>0 \<and> g (1, y) = P\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 3 (geotop.tex:3905)
     LATEX VERSION: Let p be a closed path in R^3 - T_1, and suppose that p \<cong> e in R^3 - Q.
@@ -7597,30 +7642,71 @@ theorem Theorem_GT_18_2:
 theorem Theorem_GT_18_3:
   fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
   fixes p :: "real \<Rightarrow> real^3" and P\<^sub>0 :: "real^3"
-  assumes "geotop_antoine_chain k T1 T2 T"
-  assumes "P\<^sub>0 \<in> UNIV - T1"
-  assumes "geotop_closed_path_on (UNIV - T1)
+  assumes hantoine: "geotop_antoine_chain k T1 T2 T"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - T1"
+  assumes hp_cp: "geotop_closed_path_on (UNIV - T1)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) P\<^sub>0 p"
-  assumes "geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
+  assumes hnull_Q: "geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
              (subspace_topology UNIV geotop_euclidean_topology
                 (UNIV - geotop_antoine_set k T1 T2 T))
              P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
   shows "geotop_path_equiv (UNIV - T1)
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
            P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
-  sorry
+proof -
+  (** (1) Take a PL null-homotopy f: [0,1]^2 \<rightarrow> R^3 - Q of p in the complement of the
+         Antoine set Q. Since the image is compact and disjoint from Q = \<inter>_n T_n, it is
+         disjoint from T_n for some n (compactness of |f| + nestedness of T_n). **)
+  have h_avoid_Tn:
+    "\<exists>n f::real \<times> real \<Rightarrow> real^3.
+        (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> UNIV - T n) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = P\<^sub>0) \<and>
+        (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)" sorry
+  (** (2) Iteratively apply Theorem 18.2 to each nested pair T_{m+1} \<subseteq> T_m for m = n, n-1,
+         ..., 1: the null-homotopy in R^3 - T_{m+1} extends to a null-homotopy in R^3 - T_m
+         via the corresponding Theorem 18.1 retraction. **)
+  have h_descend:
+    "\<forall>m. m \<ge> 1 \<and>
+       geotop_path_equiv (UNIV - T (Suc m))
+         (subspace_topology UNIV geotop_euclidean_topology (UNIV - T (Suc m))) P\<^sub>0 p (\<lambda>t. P\<^sub>0)
+       \<longrightarrow>
+         geotop_path_equiv (UNIV - T m)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - T m)) P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+    sorry
+  (** (3) After n - 1 descending steps, obtain null-homotopy in R^3 - T_1, i.e. p \<cong> e
+         in R^3 - T_1. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 4 (geotop.tex:3927)
     LATEX VERSION: R^3 - Q is not simply connected. **)
 theorem Theorem_GT_18_4:
   fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
   fixes P\<^sub>0 :: "real^3"
-  assumes "geotop_antoine_chain k T1 T2 T"
-  assumes "P\<^sub>0 \<in> UNIV - geotop_antoine_set k T1 T2 T"
+  assumes hantoine: "geotop_antoine_chain k T1 T2 T"
+  assumes hP\<^sub>0: "P\<^sub>0 \<in> UNIV - geotop_antoine_set k T1 T2 T"
   shows "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
            (subspace_topology UNIV geotop_euclidean_topology
               (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
-  sorry
+proof -
+  (** (1) R^3 - T_1 is a solid-torus complement, hence \<pi>(R^3 - T_1, P_0) \<cong> Z; pick a
+         non-trivial closed path p in R^3 - T_1 (a meridian winding once). **)
+  obtain p where h_nontrivial_in_T1:
+    "geotop_closed_path_on (UNIV - T1)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) P\<^sub>0 p \<and>
+     \<not> geotop_path_equiv (UNIV - T1)
+         (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+         P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  (** (2) If p were null-homotopic in R^3 - Q, then by Theorem 18.3 it would be
+         null-homotopic in R^3 - T_1, contradicting the choice of p. **)
+  have h_contra:
+    "\<not> geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
+         (subspace_topology UNIV geotop_euclidean_topology
+            (UNIV - geotop_antoine_set k T1 T2 T))
+         P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 5 (geotop.tex:3930)
     LATEX VERSION: There are Cantor sets C_1 and C_2 in R^3 such that no homeomorphism
@@ -7636,7 +7722,32 @@ theorem Theorem_GT_18_5:
               (\<nexists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
                      UNIV geotop_euclidean_topology H \<and>
                    (\<forall>P\<in>C1. H P = h P)))"
-  sorry
+proof -
+  (** (1) Take C_1 := Q = \<inter>_n T_n the Antoine set and C_2 a linear middle-third Cantor
+         set on a line L in R^3. Both are Cantor sets in R^3. **)
+  obtain C1 C2 where h_Cantors:
+    "geotop_is_cantor_set C1 (subspace_topology UNIV geotop_euclidean_topology C1) \<and>
+     geotop_is_cantor_set C2 (subspace_topology UNIV geotop_euclidean_topology C2) \<and>
+     (\<exists>k T1 T2 T. geotop_antoine_chain k T1 T2 T \<and> C1 = geotop_antoine_set k T1 T2 T) \<and>
+     (\<exists>L. C2 \<subseteq> L \<and> (\<exists>a b::real^3. L = {(1 - t) *\<^sub>R a + t *\<^sub>R b | t. t \<in> UNIV}))" sorry
+  (** (2) R^3 - C_2 is simply connected: every PL path in R^3 - C_2 can be slid off L
+         (since L is a line), then contracted inside the complement of a linear interval
+         containing C_2. **)
+  have h_C2_simply_conn:
+    "\<forall>P\<^sub>0. P\<^sub>0 \<in> UNIV - C2 \<longrightarrow>
+       geotop_simply_connected (UNIV - C2)
+         (subspace_topology UNIV geotop_euclidean_topology (UNIV - C2)) P\<^sub>0" sorry
+  (** (3) R^3 - C_1 is not simply connected (Theorem 18.4). **)
+  have h_C1_not_simply_conn:
+    "\<exists>P\<^sub>0. P\<^sub>0 \<in> UNIV - C1 \<and>
+          \<not> geotop_simply_connected (UNIV - C1)
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - C1)) P\<^sub>0" sorry
+  (** (4) Any homeomorphic extension H: R^3 \<leftrightarrow> R^3 of a Cantor-set homeomorphism would
+         send R^3 - C_1 to R^3 - C_2 homeomorphically, identifying their fundamental
+         groups. Contradiction. (There is a homeomorphism C_1 \<leftrightarrow> C_2 at the
+         intrinsic-Cantor-set level by Brouwer's theorem, but it cannot extend.) **)
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 6 (geotop.tex:3934)
     LATEX VERSION: Let U be a connected open set containing Q. Then there is a 2-sphere S
@@ -7644,13 +7755,33 @@ theorem Theorem_GT_18_5:
 theorem Theorem_GT_18_6:
   fixes k :: nat and T1 T2 :: "(real^3) set" and T :: "nat \<Rightarrow> (real^3) set"
   fixes U :: "(real^3) set"
-  assumes "geotop_antoine_chain k T1 T2 T"
-  assumes "U \<in> geotop_euclidean_topology"
-  assumes "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
-  assumes "geotop_antoine_set k T1 T2 T \<subseteq> U"
+  assumes hantoine: "geotop_antoine_chain k T1 T2 T"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  assumes hQ_in_U: "geotop_antoine_set k T1 T2 T \<subseteq> U"
   shows "\<exists>S. geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
              geotop_antoine_set k T1 T2 T \<subseteq> S \<and> S \<subseteq> U"
-  sorry
+proof -
+  (** (1) Since Q \<subseteq> U and Q = \<inter>_n T_n with T_{n+1} \<subseteq> Int T_n, compactness of Q gives
+         T_n \<subseteq> U for some n. **)
+  obtain n where h_Tn_in_U: "n \<ge> 1 \<and> T n \<subseteq> U" sorry
+  (** (2) Build a multiple annulus A_n in U - Int T_n spanning T_n: for each component C
+         of T_n pick a broken line B_C from a common base point P_0 \<in> U - T_n to a point
+         Q_C \<in> Bd C, with the B_C's disjoint except at P_0; thicken slightly to get a
+         k^{n-1}-annulus A_n with Bd A_n \<subseteq> Bd T_n. **)
+  obtain A\<^sub>n :: "(real^3) set" where h_span:
+    "A\<^sub>n \<subseteq> U - geotop_top_interior UNIV geotop_euclidean_topology (T n) \<and>
+     geotop_frontier UNIV geotop_euclidean_topology A\<^sub>n
+       \<subseteq> geotop_frontier UNIV geotop_euclidean_topology (T n)
+     \<comment> \<open>multiple annulus (planar k-annulus embedded in R^3) spanning T_n\<close>" sorry
+  (** (3) Capping A_n along Bd T_n: for each component of T_n, attach a 2-cell in Bd T_n
+         bounded by the corresponding component of Bd A_n. The resulting surface is a
+         polyhedral 2-sphere S \<subseteq> U containing (a neighbourhood of) T_n \<supseteq> Q. **)
+  have h_sphere:
+    "\<exists>S. geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+         geotop_antoine_set k T1 T2 T \<subseteq> S \<and> S \<subseteq> U" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 7 (Louis Antoine) (geotop.tex:3963)
     LATEX VERSION: R^3 contains a wild 2-sphere. **)
@@ -7658,7 +7789,28 @@ theorem Theorem_GT_18_7_Antoine_sphere:
   shows "\<exists>S :: (real^3) set.
            geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
            geotop_is_wild S"
-  sorry
+proof -
+  (** (1) Fix an Antoine chain (T_n); by Theorem 18.6 (with U = Int T_1) pick a 2-sphere
+         S with Q \<subseteq> S \<subseteq> Int T_1. **)
+  obtain k T1 T2 T S where hS:
+    "geotop_antoine_chain k T1 T2 T \<and>
+     geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+     geotop_antoine_set k T1 T2 T \<subseteq> S \<and>
+     S \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology T1" sorry
+  (** (2) Let U be the unbounded component of R^3 - S. By Theorem 18.4, there is a
+         closed path p in R^3 - T_1 \<subseteq> U which is not contractible in R^3 - T_1.
+         It is therefore not contractible in R^3 - Q \<supseteq> R^3 - S \<supseteq> U either. Hence
+         \<pi>(U) is nontrivial. **)
+  obtain p U where h_nonsimp_U:
+    "U \<in> geotop_euclidean_topology \<and>
+     geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) (SOME P. True) p \<and>
+     \<not> geotop_path_equiv U
+        (subspace_topology UNIV geotop_euclidean_topology U) (SOME P. True) p (\<lambda>t. (SOME P. True))"
+    sorry
+  (** (3) If S were tame, then by Problem 17.1 every component of R^3 - S would be simply
+         connected, contradicting (2). Hence S is wild. **)
+  show ?thesis sorry
+qed
 
 (** from \<S>18 Theorem 8 (Louis Antoine) (geotop.tex:3966)
     LATEX VERSION: R^3 contains a wild arc. **)
@@ -7666,7 +7818,24 @@ theorem Theorem_GT_18_8_Antoine_arc:
   shows "\<exists>A :: (real^3) set.
            geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
            geotop_is_wild A"
-  sorry
+proof -
+  (** (1) Take an Antoine chain (T_n) whose tori T_n link together to form a Cantor-like
+         arc: concatenate the tori along a path so that successive generations approach a
+         common arc parametrisation, yielding a wild arc A whose "core" is derived from Q. **)
+  obtain k T1 T2 T A where h_construction:
+    "geotop_antoine_chain k T1 T2 T \<and>
+     geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+     geotop_antoine_set k T1 T2 T \<subseteq> A" sorry
+  (** (2) The non-simple-connectivity of R^3 - Q (Theorem 18.4) carries over to R^3 - A
+         since A \<supseteq> Q. **)
+  have h_not_simply_conn:
+    "\<exists>P\<^sub>0. P\<^sub>0 \<in> UNIV - A \<and>
+          \<not> geotop_simply_connected (UNIV - A)
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - A)) P\<^sub>0" sorry
+  (** (3) Every tame arc in R^3 has simply connected complement (standard result).
+         Hence A is wild. **)
+  show ?thesis sorry
+qed
 
 section \<open>\<S>19 A wild arc with a simply connected complement\<close>
 
