@@ -6409,14 +6409,20 @@ proof -
                         (subspace_topology UNIV geotop_euclidean_topology J)
                         P (subspace_topology UNIV geotop_euclidean_topology P) f"
     sorry
-  (** Extend f to all of R^2 by Theorem 10.4. **)
+  (** Extend f to all of R^2 by Theorem 10.4; H(J) is then a polygon. **)
   obtain H where hH: "top1_homeomorphism_on UNIV geotop_euclidean_topology
-                         UNIV geotop_euclidean_topology H"
-              and hHJ: "\<forall>x\<in>J. H x = f x"
+                         UNIV geotop_euclidean_topology H \<and>
+                      (\<forall>x\<in>J. H x = f x) \<and>
+                      (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J)"
     sorry
-  (** H(J) is a polygon. **)
+  have hHJ_all: "(top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology H) \<and>
+                  (\<forall>x\<in>J. H x = f x) \<and>
+                  (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J)"
+    using hH by (by100 blast)
   have hHJ_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = H ` J"
-    sorry
+    using hHJ_all by (by100 blast)
+  have hHJ: "\<forall>x\<in>J. H x = f x" using hHJ_all by (by100 blast)
   (** J is triangulable (from the homeomorphism to the polygon P). **)
   have hP_poly_complex: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = P"
     using hP_polygon unfolding geotop_is_polygon_def by (by100 blast)
@@ -6432,8 +6438,11 @@ proof -
       using hK'_cx hK'_poly hf_inv_homeo by (by100 blast)
   qed
   (** Conclude J is tame. **)
+  have hH_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology H"
+    using hH by (by100 blast)
   show ?thesis
-    using hJ_triangulable hH hHJ_poly
+    using hJ_triangulable hH_homeo hHJ_poly
     unfolding geotop_is_tame_def by (by100 blast)
 qed
 
