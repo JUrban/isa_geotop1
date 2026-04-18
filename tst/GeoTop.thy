@@ -535,6 +535,28 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
   "geotop_comb_equiv K L \<longleftrightarrow>
     (\<exists>K' L'. geotop_is_subdivision K' K \<and> geotop_is_subdivision L' L \<and> geotop_isomorphic K' L')"
 
+(** from early.tex Lemma 5 (iso-induces-PLH): every simplicial isomorphism
+    \<open>\<phi>: K \<cong> L\<close> induces a PL homeomorphism \<open>|\<phi>|: |K| \<leftrightarrow> |L|\<close>, defined by
+    extending barycentrically on each simplex. **)
+lemma geotop_isomorphism_induces_PLH:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  assumes hiso: "geotop_isomorphism K L \<phi>"
+  shows "\<exists>f::'a \<Rightarrow> 'b.
+            geotop_PLH K L f \<and>
+            f ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
+            (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
+  sorry
+
+(** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
+    PLH between the underlying polyhedra. **)
+lemma geotop_isomorphic_induces_PLH:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  assumes hiso: "geotop_isomorphic K L"
+  shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L"
+  sorry
+
 (** from early.tex Lemma 8.1 (iso-symmetric): the inverse of a simplicial
     isomorphism is a simplicial isomorphism. **)
 lemma geotop_isomorphic_sym:
@@ -568,20 +590,46 @@ lemma geotop_transport_subdivision:
   sorry
 
 (** from Introduction: Theorem 2 (geotop.tex:184)
-    LATEX VERSION: K \<sim>_c L iff |K| is the image of |L| under a PLH. **)
+    LATEX VERSION: K \<sim>_c L iff |K| is the image of |L| under a PLH.
+    Proof following early.tex Theorem 2: the (\<Rightarrow>) direction uses
+    \<open>iso_induces_PLH\<close> applied to the common-subdivisions isomorphism; the
+    (\<Leftarrow>) direction uses Theorem_GT_1 to merge the two PL-induced subdivisions
+    into a common subdivision on which \<open>f\<close> is simplicially linear. **)
 theorem Theorem_GT_2:
   fixes K :: "'a::real_normed_vector set set" and L :: "'a set set"
-  shows "geotop_comb_equiv K L \<longleftrightarrow> (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
+  shows "geotop_comb_equiv K L
+         \<longleftrightarrow> (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
 proof -
-  (** (1) (\<Rightarrow>) K \<sim>_c L means there are subdivisions K', L' with an isomorphism \<phi>: K'_0 \<leftrightarrow>
-         L'_0. Define f on |L| affinely on each simplex of L' using \<phi>^{-1} on vertices;
-         this gives a PLH with f(|L|) = |K|. **)
+  (** (\<Rightarrow>) K \<sim>_c L means subdivisions \<open>K' < K\<close>, \<open>L' < L\<close> with \<open>K' \<cong> L'\<close>. By
+      \<open>iso_induces_PLH\<close> (applied to \<open>L' \<cong> K'\<close>), there is a PLH \<open>f: |L'| \<leftrightarrow> |K'|\<close>;
+      because \<open>|L'| = |L|\<close> and \<open>|K'| = |K|\<close>, this is a PLH \<open>L \<leftrightarrow> K\<close>. **)
   have h_forward:
     "geotop_comb_equiv K L \<longrightarrow>
-       (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)" sorry
-  (** (2) (\<Leftarrow>) Given a PLH f: |L| \<leftrightarrow> |K|, PL structure provides subdivisions K'' of K, L''
-         of L on which f is affinely simplicial; f restricted to vertices is a vertex-
-         bijection giving an isomorphism L'' \<leftrightarrow> K''. Hence K \<sim>_c L. **)
+       (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
+  proof
+    assume hKL: "geotop_comb_equiv K L"
+    obtain K' L' where hK'K: "geotop_is_subdivision K' K"
+                   and hL'L: "geotop_is_subdivision L' L"
+                   and hiso: "geotop_isomorphic K' L'"
+      using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    have hL'K': "geotop_isomorphic L' K'"
+      by (rule geotop_isomorphic_sym[OF hiso])
+    obtain f where hf: "geotop_PLH L' K' f
+                         \<and> f ` (geotop_polyhedron L') = geotop_polyhedron K'"
+      using geotop_isomorphic_induces_PLH[OF hL'K'] by (by100 blast)
+    have hpolyL: "geotop_polyhedron L' = geotop_polyhedron L"
+      using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+    have hpolyK: "geotop_polyhedron K' = geotop_polyhedron K"
+      using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+    (** Lift PLH L' \<leftrightarrow> K' to L \<leftrightarrow> K (pending: the polyhedra are equal, so PLH
+        lifting is a bridge lemma — deferred). **)
+    show "\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K"
+      sorry
+  qed
+  (** (\<Leftarrow>) Given a PLH \<open>f: |L| \<leftrightarrow> |K|\<close>, PL structure provides subdivisions \<open>L_1 < L\<close>
+      on which \<open>f\<close> is affinely simplicial and \<open>K_1 < K\<close> on which \<open>f^{-1}\<close> is affinely
+      simplicial. Apply Theorem_GT_1 to get a common refinement \<open>L_2 < L_1\<close> and pull back
+      under \<open>f\<close> to \<open>K_2 < K_1\<close> on which \<open>f: K_2 \<cong> L_2\<close>. Hence \<open>K \<sim>_c L\<close>. **)
   have h_backward:
     "(\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K) \<longrightarrow>
        geotop_comb_equiv K L" sorry
