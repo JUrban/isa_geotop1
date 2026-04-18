@@ -12610,7 +12610,12 @@ proof -
                  geotop_in_standard_position S (hJ ` J) Jx \<and>
                  (\<forall>P\<in>M3 - W. hJ P = P)" sorry
   (** (2) Assemble composed PLH h supported in W. **)
-  show ?thesis sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+              M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+              h ` S = S \<and>
+              (\<forall>J\<in>Js. geotop_in_standard_position S (h ` J) Jx) \<and>
+              (\<forall>P\<in>M3 - W. h P = P)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 4 (geotop.tex:5835)
@@ -12723,7 +12728,18 @@ proof -
                   (closure_on UNIV geotop_euclidean_topology U)
                   (subspace_topology UNIV geotop_euclidean_topology
                      (closure_on UNIV geotop_euclidean_topology U)) f)" sorry
-  show ?thesis sorry
+  have h_final: "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+                U = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
+             (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
+                top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+                  (closure_on UNIV geotop_euclidean_topology U)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on UNIV geotop_euclidean_topology U)) f) \<and>
+             (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
+               geotop_frontier UNIV geotop_euclidean_topology
+                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 7 (geotop.tex:5851)
