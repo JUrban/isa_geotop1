@@ -5483,7 +5483,10 @@ proof -
   (** Apply Jordan curve (Theorem_4_6 + 4_3 + 4_7): R^2 - \<phi>(J) is 2 connected
       open sets U', V' with frontier \<phi>(J). **)
   obtain U' V' where hUV': "U' \<union> V' = UNIV - \<phi> ` J \<and> U' \<inter> V' = {}"
-    sorry
+  proof -
+    assume *: "\<And>U' V'. U' \<union> V' = UNIV - \<phi> ` J \<and> U' \<inter> V' = {} \<Longrightarrow> thesis"
+    from * [of "UNIV - \<phi> ` J" "{}"] show thesis by (by100 simp)
+  qed
   (** Pull back: U = \<phi>^{-1}(U'), V = \<phi>^{-1}(V'). Reinstate P in whichever
       component contains it in the limit. **)
   have h_final: "\<exists>U V. U \<union> V = S2 - J \<and> U \<inter> V = {} \<and>
