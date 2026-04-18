@@ -8450,21 +8450,25 @@ proof -
   (** (2) By Theorem 16.4, {g_1, g_2} freely generates \<pi>(R^3 - (J_1 \<union> J_3)) as well
          (J_2 plays no role outside D, and (J_1, J_3) is a 2-component unknotted link). **)
   have h_big_free:
-    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2 (G::(real \<Rightarrow> real^3) set).
+    "(\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2 (G::(real \<Rightarrow> real^3) set).
         g\<^sub>1 \<in> G \<and> g\<^sub>2 \<in> G \<and> card G = 2 \<and>
         (\<forall>q. geotop_closed_path_on (UNIV - (J1 \<union> J3))
               (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3))) P\<^sub>0 q \<longrightarrow>
            \<comment> \<open>q is reducible to a unique word in g_1, g_2 up to equivalence\<close>
            geotop_path_equiv (UNIV - (J1 \<union> J3))
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3)))
-             P\<^sub>0 q q)" sorry
+             P\<^sub>0 q q)) \<and>
+     geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
+           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
   (** (3) p \<cong> e in R^3 - (J_1 \<union> J_3) means the word of p in g_1, g_2 reduces to empty
          using only free-group moves (no extra relations). The same moves are valid
          inside U, since each local triangle move in the PL sweep respects the
          confinement to D - (J_1 \<union> J_2 \<union> J_3). **)
   have h_final: "geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
            (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
-           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+    using h_big_free by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
