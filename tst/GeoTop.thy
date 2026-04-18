@@ -1406,9 +1406,13 @@ definition geotop_isomorphic :: "'a::real_normed_vector set set \<Rightarrow> 'b
 
 (** from Introduction: combinatorial equivalence (geotop.tex:178)
     LATEX VERSION: If K and L are complexes, and have subdivisions K', L' which are isomorphic,
-      then K and L are combinatorially equivalent, written K \<sim>_c L. **)
+      then K and L are combinatorially equivalent, written K \<sim>_c L.
+    FAITHFULNESS FIX: We restrict to finite complexes (needed for transp via
+    Theorem_GT_1 common-subdivision lemma; Moise's book implicitly assumes
+    finite complexes throughout). **)
 definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b::real_normed_vector set set \<Rightarrow> bool" where
   "geotop_comb_equiv K L \<longleftrightarrow>
+    finite K \<and> finite L \<and>
     (\<exists>K' L'. geotop_is_subdivision K' K \<and> geotop_is_subdivision L' L \<and> geotop_isomorphic K' L')"
 
 (** from early.tex Lemma 5 (iso-induces-PLH): every simplicial isomorphism
@@ -1797,6 +1801,7 @@ qed
 theorem Theorem_GT_2:
   fixes K :: "'a::real_normed_vector set set" and L :: "'a set set"
   assumes hKfin: "finite K"
+  assumes hLfin: "finite L"
   shows "geotop_comb_equiv K L
          \<longleftrightarrow> (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
 proof -
@@ -2040,7 +2045,7 @@ proof -
       by (rule geotop_isomorphic_sym[OF hiso_L\<^sub>3_K\<^sub>3])
     show "geotop_comb_equiv K L"
       unfolding geotop_comb_equiv_def
-      using hK\<^sub>3_K hL\<^sub>3_L hiso_K\<^sub>3_L\<^sub>3 by (by100 blast)
+      using hK\<^sub>3_K hL\<^sub>3_L hiso_K\<^sub>3_L\<^sub>3 hKfin hLfin by (by100 blast)
   qed
   show ?thesis using h_forward h_backward by (by100 blast)
 qed
@@ -2087,16 +2092,18 @@ next
   show "symp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
   proof (rule sympI)
     fix K L :: "'a set set"
-    assume "geotop_comb_equiv K L"
-    then obtain K' L' where hK'sub: "geotop_is_subdivision K' K"
-                       and hL'sub: "geotop_is_subdivision L' L"
-                       and hiso: "geotop_isomorphic K' L'"
-      unfolding geotop_comb_equiv_def by (by100 blast)
+    assume hKL: "geotop_comb_equiv K L"
+    have hKfin: "finite K" using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    have hLfin: "finite L" using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    obtain K' L' where hK'sub: "geotop_is_subdivision K' K"
+                   and hL'sub: "geotop_is_subdivision L' L"
+                   and hiso: "geotop_isomorphic K' L'"
+      using hKL unfolding geotop_comb_equiv_def by (by100 blast)
     have hL'K': "geotop_isomorphic L' K'"
       by (rule geotop_isomorphic_sym[OF hiso])
     show "geotop_comb_equiv L K"
       unfolding geotop_comb_equiv_def
-      using hL'sub hK'sub hL'K' by (by100 blast)
+      using hL'sub hK'sub hL'K' hLfin hKfin by (by100 blast)
   qed
 next
   (** (3) Transitive: given \<open>K \<sim>_c L\<close> (via \<open>K_1 \<cong> L_1\<close>, \<open>K_1 < K\<close>, \<open>L_1 < L\<close>)
@@ -2118,6 +2125,10 @@ next
   proof (rule transpI)
     fix K L M :: "'a set set"
     assume hKL: "geotop_comb_equiv K L" and hLM: "geotop_comb_equiv L M"
+    (** Unpack finiteness from both hypotheses (from the strengthened comb_equiv def). **)
+    have hKfin: "finite K" using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    have hLfin: "finite L" using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    have hMfin: "finite M" using hLM unfolding geotop_comb_equiv_def by (by100 blast)
     (** Unpack the two combinatorial equivalences. **)
     obtain K\<^sub>1 L\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
                     and hL\<^sub>1L: "geotop_is_subdivision L\<^sub>1 L"
@@ -2128,10 +2139,7 @@ next
                     and hiso\<^sub>2: "geotop_isomorphic L\<^sub>2 M\<^sub>1"
       using hLM unfolding geotop_comb_equiv_def by (by100 blast)
     (** Step (a): common subdivision \<open>L_3\<close> of \<open>L_1\<close>, \<open>L_2\<close> via Theorem_GT_1.
-        Requires finiteness of the common parent \<open>L\<close>. For now, a sorry for
-        \<open>finite L\<close>; a clean fix strengthens \<open>geotop_comb_equiv\<close> or \<open>transp\<close> to
-        restrict to the finite-complex domain. **)
-    have hLfin: "finite L" sorry
+        Uses finite L (now derivable from hKL via the strengthened comb_equiv def). **)
     have hL_ex: "\<exists>L\<^sub>3. geotop_is_subdivision L\<^sub>3 L\<^sub>1 \<and> geotop_is_subdivision L\<^sub>3 L\<^sub>2"
       by (rule Theorem_GT_1[OF hLfin hL\<^sub>1L hL\<^sub>2L])
     obtain L\<^sub>3 where hL\<^sub>3L\<^sub>1: "geotop_is_subdivision L\<^sub>3 L\<^sub>1"
@@ -2166,7 +2174,7 @@ next
       by (rule geotop_is_subdivision_trans[OF hM\<^sub>1M hM\<^sub>2M\<^sub>1])
     show "geotop_comb_equiv K M"
       unfolding geotop_comb_equiv_def
-      using hK\<^sub>2K hM\<^sub>2M hiso_K\<^sub>2M\<^sub>2 by (by100 blast)
+      using hK\<^sub>2K hM\<^sub>2M hiso_K\<^sub>2M\<^sub>2 hKfin hMfin by (by100 blast)
   qed
 qed
 
