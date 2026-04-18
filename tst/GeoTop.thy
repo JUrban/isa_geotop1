@@ -2634,11 +2634,91 @@ proof -
             f_inv applied to a face of \<sigma>; K_3 is face-closed, so L_3 is too. **)
     have hL\<^sub>3_K1: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L\<^sub>3"
       sorry
-    (** (iii) K.2: pairwise intersections are faces. f_inv is bijective, so
-             f_inv(\<sigma>_1) \<inter> f_inv(\<sigma>_2) = f_inv(\<sigma>_1 \<inter> \<sigma>_2), a face by K_3's K.2. **)
+    (** (iii) K.2: pairwise intersections are faces. Same pattern as hfL_1_K2
+             but with f_inv on K_3 side (f_inv linear on K_1 \<supseteq> K_3 via sub_simplex). **)
+    have h_K\<^sub>3_K2: "\<forall>\<sigma>\<in>K\<^sub>3. \<forall>\<tau>\<in>K\<^sub>3. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+              hK\<^sub>3_comp[unfolded geotop_is_complex_def]]]])
+    have hK\<^sub>3_ref_K\<^sub>1_ref_b: "geotop_refines K\<^sub>3 K\<^sub>1"
+      using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
+    have h_K\<^sub>3_simp_all: "\<forall>\<sigma>\<in>K\<^sub>3. geotop_is_simplex \<sigma>"
+      by (rule conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]])
+    have hK\<^sub>3_K_sub_b: "geotop_is_subdivision K\<^sub>3 K"
+      by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
+    have hK\<^sub>3_poly_b: "geotop_polyhedron K\<^sub>3 = geotop_polyhedron K"
+      using hK\<^sub>3_K_sub_b unfolding geotop_is_subdivision_def by (by100 blast)
+    have hf_inv_bij_local_b: "bij_betw (inv_into (geotop_polyhedron L) f)
+                                         (geotop_polyhedron K) (geotop_polyhedron L)"
+      by (rule bij_betw_inv_into[OF hf_bij_LK])
+    have hf_inv_inj_K_b: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+      using hf_inv_bij_local_b unfolding bij_betw_def by (by100 blast)
     have hL\<^sub>3_K2: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>\<in>L\<^sub>3. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-      sorry
+    proof (intro ballI impI)
+      fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> L\<^sub>3" and h\<tau>: "\<tau> \<in> L\<^sub>3"
+      assume h_nonempty: "\<sigma> \<inter> \<tau> \<noteq> {}"
+      obtain \<sigma>_K where h\<sigma>_K_K\<^sub>3: "\<sigma>_K \<in> K\<^sub>3"
+                  and h\<sigma>_eq: "\<sigma> = inv_into (geotop_polyhedron L) f ` \<sigma>_K"
+        using h\<sigma> unfolding L\<^sub>3_def by (by100 blast)
+      obtain \<tau>_K where h\<tau>_K_K\<^sub>3: "\<tau>_K \<in> K\<^sub>3"
+                  and h\<tau>_eq: "\<tau> = inv_into (geotop_polyhedron L) f ` \<tau>_K"
+        using h\<tau> unfolding L\<^sub>3_def by (by100 blast)
+      have h\<sigma>_K_sim: "geotop_is_simplex \<sigma>_K"
+        using h_K\<^sub>3_simp_all h\<sigma>_K_K\<^sub>3 by (by100 blast)
+      (** f_inv linear on \<sigma>_K, \<tau>_K via sub_simplex from their K_1-supersets. **)
+      obtain \<sigma>_1 where h\<sigma>_1_K\<^sub>1: "\<sigma>_1 \<in> K\<^sub>1" and h\<sigma>_K_sub: "\<sigma>_K \<subseteq> \<sigma>_1"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1_ref_b unfolding geotop_refines_def by (by100 blast)
+      obtain \<tau>_1 where h\<tau>_1_K\<^sub>1: "\<tau>_1 \<in> K\<^sub>1" and h\<tau>_K_sub: "\<tau>_K \<subseteq> \<tau>_1"
+        using h\<tau>_K_K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1_ref_b unfolding geotop_refines_def by (by100 blast)
+      have h\<sigma>_1_lin_raw: "\<exists>\<tau>'\<in>L. (\<forall>x\<in>\<sigma>_1. inv_into (geotop_polyhedron L) f x \<in> \<tau>') \<and>
+                            geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using hK\<^sub>1_lin h\<sigma>_1_K\<^sub>1 by (by100 blast)
+      have h\<sigma>_1_lin: "geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using h\<sigma>_1_lin_raw by (by100 blast)
+      have h\<sigma>_K_lin: "geotop_linear_on \<sigma>_K (inv_into (geotop_polyhedron L) f)"
+        by (rule geotop_linear_on_sub_simplex[OF h\<sigma>_1_lin h\<sigma>_K_sim h\<sigma>_K_sub])
+      have h\<sigma>_K_in_K: "\<sigma>_K \<subseteq> geotop_polyhedron K"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_poly_b unfolding geotop_polyhedron_def by (by100 blast)
+      have h\<tau>_K_in_K: "\<tau>_K \<subseteq> geotop_polyhedron K"
+        using h\<tau>_K_K\<^sub>3 hK\<^sub>3_poly_b unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inv_inj_\<sigma>_K: "inj_on (inv_into (geotop_polyhedron L) f) \<sigma>_K"
+        using hf_inv_inj_K_b h\<sigma>_K_in_K inj_on_subset by (by100 blast)
+      (** f_inv(\<sigma>_K) \<inter> f_inv(\<tau>_K) = f_inv(\<sigma>_K \<inter> \<tau>_K) via inj_on_image_Int. **)
+      have h_image_int_raw: "inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K)
+                               = inv_into (geotop_polyhedron L) f ` \<sigma>_K
+                                 \<inter> inv_into (geotop_polyhedron L) f ` \<tau>_K"
+        by (rule inj_on_image_Int[OF hf_inv_inj_K_b h\<sigma>_K_in_K h\<tau>_K_in_K])
+      have h_sigma_tau_K_nonempty: "\<sigma>_K \<inter> \<tau>_K \<noteq> {}"
+        using h_nonempty h\<sigma>_eq h\<tau>_eq h_image_int_raw by (by100 auto)
+      have h_intface_\<sigma>_K: "geotop_is_face (\<sigma>_K \<inter> \<tau>_K) \<sigma>_K"
+        using h_K\<^sub>3_K2 h\<sigma>_K_K\<^sub>3 h\<tau>_K_K\<^sub>3 h_sigma_tau_K_nonempty by (by100 blast)
+      (** Image of face is face. Apply the helper for \<sigma>_K. **)
+      have h_face_\<sigma>: "geotop_is_face (inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K))
+                                       (inv_into (geotop_polyhedron L) f ` \<sigma>_K)"
+        by (rule geotop_linear_inj_image_preserves_face[OF h\<sigma>_K_lin hf_inv_inj_\<sigma>_K h_intface_\<sigma>_K])
+      (** And for \<tau>_K. **)
+      have h\<tau>_1_lin_raw: "\<exists>\<tau>'\<in>L. (\<forall>x\<in>\<tau>_1. inv_into (geotop_polyhedron L) f x \<in> \<tau>') \<and>
+                            geotop_linear_on \<tau>_1 (inv_into (geotop_polyhedron L) f)"
+        using hK\<^sub>1_lin h\<tau>_1_K\<^sub>1 by (by100 blast)
+      have h\<tau>_1_lin: "geotop_linear_on \<tau>_1 (inv_into (geotop_polyhedron L) f)"
+        using h\<tau>_1_lin_raw by (by100 blast)
+      have h\<tau>_K_sim: "geotop_is_simplex \<tau>_K"
+        using h_K\<^sub>3_simp_all h\<tau>_K_K\<^sub>3 by (by100 blast)
+      have h\<tau>_K_lin: "geotop_linear_on \<tau>_K (inv_into (geotop_polyhedron L) f)"
+        by (rule geotop_linear_on_sub_simplex[OF h\<tau>_1_lin h\<tau>_K_sim h\<tau>_K_sub])
+      have hf_inv_inj_\<tau>_K: "inj_on (inv_into (geotop_polyhedron L) f) \<tau>_K"
+        using hf_inv_inj_K_b h\<tau>_K_in_K inj_on_subset by (by100 blast)
+      have h_intface_\<tau>_K: "geotop_is_face (\<sigma>_K \<inter> \<tau>_K) \<tau>_K"
+        using h_K\<^sub>3_K2 h\<sigma>_K_K\<^sub>3 h\<tau>_K_K\<^sub>3 h_sigma_tau_K_nonempty by (by100 blast)
+      have h_face_\<tau>: "geotop_is_face (inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K))
+                                       (inv_into (geotop_polyhedron L) f ` \<tau>_K)"
+        by (rule geotop_linear_inj_image_preserves_face[OF h\<tau>_K_lin hf_inv_inj_\<tau>_K h_intface_\<tau>_K])
+      have h_int_eq: "\<sigma> \<inter> \<tau> = inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K)"
+        using h\<sigma>_eq h\<tau>_eq h_image_int_raw by (by100 simp)
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        using h_int_eq h\<sigma>_eq h\<tau>_eq h_face_\<sigma> h_face_\<tau> by (by100 simp)
+    qed
     (** (iv) K.3: local finiteness. For finite L_3, U = UNIV suffices. **)
     have hK\<^sub>1fin: "finite K\<^sub>1"
       by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hK\<^sub>1K])
