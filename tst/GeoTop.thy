@@ -8863,12 +8863,12 @@ theorem Theorem_GT_19_6:
 proof -
   (** (1) Construct the Wilder arc A_1 as in Theorem 19.3: union of trefoil-like broken
          lines B_i accumulating at P, so A_1 is tame. **)
-  obtain A1 P where hA1:
+  obtain A1 :: "(real^3) set" and P :: "real^3" where hA1:
     "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1) \<and>
      geotop_is_tame A1 \<and> P \<in> A1" sorry
   (** (2) Let A_2 be a straight linear interval from P to a point Q to the right of the
          accumulation point; A_2 is trivially tame. **)
-  obtain A2 where hA2:
+  obtain A2 :: "(real^3) set" where hA2:
     "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
      geotop_is_tame A2 \<and> A1 \<inter> A2 = {P}" sorry
   (** (3) The Fox-Artin arc A = A_1 \<union> A_2 fails to have locally commutative fundamental
@@ -8879,7 +8879,7 @@ proof -
     sorry
   (** (4) Apply Theorem 19_4 to conclude A_1 \<union> A_2 is wild. **)
   have hA_wild: "geotop_is_wild (A1 \<union> A2)" sorry
-  show ?thesis sorry
+  show ?thesis using hA1 hA2 hA_wild by (by100 blast)
 qed
 
 section \<open>\<S>20 A wild 2-sphere with a simply connected complement\<close>
