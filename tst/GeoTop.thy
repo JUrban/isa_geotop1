@@ -8579,7 +8579,8 @@ proof -
     sorry
   (** (3) If S were tame, then by Problem 17.1 every component of R^3 - S would be simply
          connected, contradicting (2). Hence S is wild. **)
-  show ?thesis sorry
+  have h_wild: "geotop_is_wild S" sorry
+  show ?thesis using hS h_wild by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 8 (Louis Antoine) (geotop.tex:3966)
