@@ -2886,8 +2886,49 @@ proof -
   have hK\<^sub>1_K3: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>\<in>K\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                   geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
     using hK\<^sub>1_subK hK_inter by (by100 blast)
-  (** K_1's face-closure: requires general-position-descends-to-subsets. **)
-  have hK\<^sub>1_K2: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>1" sorry
+  (** K_1's face-closure: use vertex-uniqueness + general-position descent. **)
+  have hK\<^sub>1_K2: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>1"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> K\<^sub>1" and hface: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma> hK\<^sub>1_subK by (by100 blast)
+    (** Extract \<sigma>'s vertex set and \<open>V\<^sub>\<sigma> \<subseteq> V\<close>. **)
+    obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>" and hV\<^sub>\<sigma>V: "V\<^sub>\<sigma> \<subseteq> V"
+      using h\<sigma> unfolding K\<^sub>1_def by (by100 blast)
+    (** Extract \<tau>'s vertex set \<open>W\<close> from the face definition. **)
+    obtain V' W where hV'sv: "geotop_simplex_vertices \<sigma> V'" and hWne: "W \<noteq> {}"
+                  and hWV': "W \<subseteq> V'" and h\<tau>eq: "\<tau> = geotop_convex_hull W"
+      using hface unfolding geotop_is_face_def by (by100 blast)
+    (** Vertex-uniqueness: \<open>V' = V\<^sub>\<sigma>\<close>. **)
+    have hV'eq: "V' = V\<^sub>\<sigma>"
+      by (rule geotop_simplex_vertices_unique[OF hV'sv hV\<^sub>\<sigma>sv])
+    have hWV\<^sub>\<sigma>: "W \<subseteq> V\<^sub>\<sigma>" using hWV' hV'eq by (by100 simp)
+    have hWV: "W \<subseteq> V" using hWV\<^sub>\<sigma> hV\<^sub>\<sigma>V by (by100 blast)
+    (** \<open>\<tau> \<in> K\<close> by K's face-closure. **)
+    have h\<tau>K: "\<tau> \<in> K" using hK_fc h\<sigma>K hface by (by100 blast)
+    (** Build \<open>simplex_vertices \<tau> W\<close>. **)
+    obtain m n where hV\<^sub>\<sigma>_unp: "finite V\<^sub>\<sigma>" and hV\<^sub>\<sigma>card: "card V\<^sub>\<sigma> = n+1"
+                   and hnm: "n \<le> m" and hV\<^sub>\<sigma>gp: "geotop_general_position V\<^sub>\<sigma> m"
+      using hV\<^sub>\<sigma>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hWfin: "finite W" using hWV\<^sub>\<sigma> hV\<^sub>\<sigma>_unp finite_subset by (by100 blast)
+    have hWgp: "geotop_general_position W m"
+      by (rule geotop_general_position_mono[OF hV\<^sub>\<sigma>gp hWV\<^sub>\<sigma> hWfin])
+    have hWcard_pos: "card W > 0"
+      using hWne hWfin card_gt_0_iff by (by100 blast)
+    have hWcard_ex: "\<exists>n'. card W = n' + 1" using hWcard_pos by (by100 presburger)
+    obtain n' where hWcard: "card W = n' + 1" using hWcard_ex by (by100 blast)
+    have hcard_leq: "card W \<le> card V\<^sub>\<sigma>"
+      using hWV\<^sub>\<sigma> hV\<^sub>\<sigma>_unp card_mono by (by100 blast)
+    have hn'_bound: "n' \<le> m"
+      using hcard_leq hWcard hV\<^sub>\<sigma>card hnm by (by100 linarith)
+    have h\<tau>_hull_W: "\<tau> = geotop_convex_hull W" using h\<tau>eq .
+    have h\<tau>sv: "geotop_simplex_vertices \<tau> W"
+      unfolding geotop_simplex_vertices_def
+      apply (rule exI[of _ m])
+      apply (rule exI[of _ n'])
+      using hWfin hWcard hn'_bound hWgp h\<tau>_hull_W by (by100 blast)
+    show "\<tau> \<in> K\<^sub>1"
+      unfolding K\<^sub>1_def using h\<tau>K h\<tau>sv hWV by (by100 blast)
+  qed
   have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1"
     unfolding geotop_is_complex_def
     using hK\<^sub>1_K1 hK\<^sub>1_K2 hK\<^sub>1_K3 hK\<^sub>1_K4 by (by100 blast)
