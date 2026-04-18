@@ -5997,7 +5997,18 @@ proof -
   (** Step 3: each M_i compact, descending, and A, B inseparable in each. **)
   have hMs_desc: "\<forall>i. Ms (Suc i) \<subseteq> Ms i"
     unfolding Ms_def by (by100 auto)
-  have hMs_ins: "\<forall>i. geotop_inseparable_in X T (Ms i) A B" sorry
+  have hMs_ins: "\<forall>i. geotop_inseparable_in X T (Ms i) A B"
+  proof (intro allI)
+    fix i
+    show "geotop_inseparable_in X T (Ms i) A B"
+    proof (induct i)
+      case 0
+      show ?case unfolding Ms_def using hins by (by100 simp)
+    next
+      case (Suc k)
+      show ?case unfolding Ms_def using Suc[unfolded Ms_def] by (by100 simp)
+    qed
+  qed
   have hMs_cmp: "\<forall>i. top1_compact_on (Ms i) (subspace_topology X T (Ms i))" sorry
   (** Step 4: M' = \<Inter>M_i; inseparable by Theorem 12_1. **)
   define M' where "M' = (\<Inter>i. Ms i)"
