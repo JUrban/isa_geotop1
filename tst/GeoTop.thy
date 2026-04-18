@@ -11982,7 +11982,14 @@ proof -
             M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
          h ` A = A \<and> h ` J = J' \<and>
          (\<forall>P\<in>M3 - W. h P = P)" sorry
-  show ?thesis sorry
+  have h_extend_BdN:
+    "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+            M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+         h ` (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))
+           = geotop_manifold_boundary N (\<lambda>x y. norm (x - y)) \<and>
+         h ` A = A \<and> h ` J = J' \<and>
+         (\<forall>P\<in>M3 - W. h P = P)" sorry
+  show ?thesis using h_extend_BdN by (by100 blast)
 qed
 
 (** from \<S>27 Theorem 5 (The Dehn lemma, Papakyriakopoulos) (geotop.tex:5778)
