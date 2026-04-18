@@ -11920,7 +11920,14 @@ proof -
         (foldr (\<circ>) hs id) ` J = J' \<and>
         (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)).
             (foldr (\<circ>) hs id) P = P)" sorry
-  show ?thesis sorry
+  have h_combined: "\<exists>h. top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+              A (subspace_topology UNIV geotop_euclidean_topology A) h \<and>
+              h ` J = J' \<and>
+              (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)). h P = P) \<and>
+              (\<exists>hs. hs \<noteq> [] \<and>
+                    (\<forall>hi\<in>set hs. geotop_is_cellular_PLH A hi) \<and>
+                    h = foldr (\<circ>) hs id)" sorry
+  show ?thesis using h_combined by (by100 blast)
 qed
 
 (** from \<S>27 Theorem 3 (geotop.tex:5771)
