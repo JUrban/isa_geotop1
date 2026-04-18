@@ -8692,7 +8692,7 @@ proof -
          then lifting back: h acts as the folding-along-\<sigma>^2 isotopy, agrees with identity
          outside N by taking the support inside a thin polyhedral collar of \<sigma>^3 in N. **)
   have h_PLH:
-    "\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
+    "(\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N) \<and>
          (\<sigma>3 - (geotop_frontier UNIV geotop_euclidean_topology \<sigma>2)) \<subseteq>
             geotop_top_interior UNIV geotop_euclidean_topology N \<longrightarrow>
@@ -8701,8 +8701,9 @@ proof -
               (\<exists>KR KR'. geotop_PLH KR KR' h) \<and>
               h ` \<sigma>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - (\<sigma>2 -
                          geotop_frontier UNIV geotop_euclidean_topology \<sigma>2) \<and>
-              (\<forall>P\<in>UNIV - N. h P = P))" sorry
-  have h_final: "geotop_has_push_property_at \<sigma>3 \<sigma>2" sorry
+              (\<forall>P\<in>UNIV - N. h P = P))) \<and>
+     geotop_has_push_property_at \<sigma>3 \<sigma>2" sorry
+  have h_final: "geotop_has_push_property_at \<sigma>3 \<sigma>2" using h_PLH by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -8827,15 +8828,16 @@ proof -
   (** (2) Apply the push-property of C^3 (hypothesis) at D_1 inside N to get a PLH h with
          h(D_1) = D_2, supported in N. **)
   have h_apply:
-    "\<forall>D\<^sub>1 N. geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
+    "(\<forall>D\<^sub>1 N. geotop_is_n_cell D\<^sub>1 (subspace_topology UNIV geotop_euclidean_topology D\<^sub>1) 2 \<and>
             D\<^sub>1 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C3 \<and>
             closedin_on UNIV geotop_euclidean_topology N \<longrightarrow>
        (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h \<and>
-            (\<forall>P\<in>UNIV - N. h P = P))" sorry
+            (\<forall>P\<in>UNIV - N. h P = P))) \<and>
+     geotop_has_push_property (f ` C3)" sorry
   (** (3) Transport: the conjugated PLH h' = f \<circ> h \<circ> f^{-1} sends D_1' to D_2' in Bd f(C^3),
          is a PLH (compose PLHs), and is supported in N'. **)
-  have h_final: "geotop_has_push_property (f ` C3)" sorry
+  have h_final: "geotop_has_push_property (f ` C3)" using h_apply by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
