@@ -2442,7 +2442,56 @@ lemma top1_is_path_on_of_HOL_path:
   assumes hg_im: "path_image g \<subseteq> S"
   assumes hg_start: "pathstart g = x" and hg_finish: "pathfinish g = y"
   shows "top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y g"
-  sorry \<comment> \<open>continuous_on [0,1] \<to> top1_continuous_map_on via a Top0 bridge; deferred.\<close>
+proof -
+  have hg_cont: "continuous_on {0..1} g" using hg_path unfolding path_def .
+  have hg_maps: "\<forall>t\<in>top1_unit_interval. g t \<in> S"
+    using hg_im unfolding path_image_def top1_unit_interval_def by (by100 blast)
+  have hpre_open: "\<forall>V \<in> subspace_topology UNIV geotop_euclidean_topology S.
+                     {t\<in>top1_unit_interval. g t \<in> V} \<in> top1_unit_interval_topology"
+  proof
+    fix V assume hV: "V \<in> subspace_topology UNIV geotop_euclidean_topology S"
+    then obtain U where hU_eq: "V = S \<inter> U" and hU_top: "U \<in> geotop_euclidean_topology"
+      unfolding subspace_topology_def by (by100 blast)
+    have hU_open: "open U"
+      using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    (** continuous_on + HOL gives open preimage relative to [0,1]: there's W open with
+        \<open>{0..1} \<inter> g -` U = {0..1} \<inter> W\<close>. **)
+    have hpre_HOL: "openin (top_of_set {0..1}) ({0..1} \<inter> g -` U)"
+      by (rule continuous_openin_preimage_gen[OF hg_cont hU_open])
+    then obtain W where hW_open: "open W"
+                    and hWeq: "{0..1} \<inter> g -` U = {0..1} \<inter> W"
+      unfolding openin_open by (by100 blast)
+    (** The preimage \<open>{t\<in>[0,1]. g t \<in> V}\<close> equals \<open>{t\<in>[0,1]. g t \<in> U}\<close> since \<open>g\<close>
+        maps into \<open>S\<close>. **)
+    have hpre_eq: "{t\<in>top1_unit_interval. g t \<in> V} = {t\<in>top1_unit_interval. g t \<in> U}"
+      using hU_eq hg_maps unfolding top1_unit_interval_def by (by100 blast)
+    also have "\<dots> = {0..1} \<inter> g -` U"
+      unfolding top1_unit_interval_def by (by100 blast)
+    also have "\<dots> = {0..1} \<inter> W" using hWeq .
+    also have "\<dots> = top1_unit_interval \<inter> W"
+      unfolding top1_unit_interval_def by (by100 simp)
+    finally have hpre_final:
+      "{t\<in>top1_unit_interval. g t \<in> V} = top1_unit_interval \<inter> W" .
+    have hW_top: "W \<in> geotop_euclidean_topology"
+      using hW_open unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hW_opensets: "W \<in> top1_open_sets"
+      using hW_open unfolding top1_open_sets_def by (by100 simp)
+    have hinter_in: "top1_unit_interval \<inter> W \<in> top1_unit_interval_topology"
+      unfolding top1_unit_interval_topology_def subspace_topology_def
+      using hW_opensets by (by100 blast)
+    show "{t\<in>top1_unit_interval. g t \<in> V} \<in> top1_unit_interval_topology"
+      using hpre_final hinter_in by (by100 simp)
+  qed
+  have hcont_top1: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                       S (subspace_topology UNIV geotop_euclidean_topology S) g"
+    unfolding top1_continuous_map_on_def using hg_maps hpre_open by (by100 blast)
+  have hg0: "g 0 = x" using hg_start unfolding pathstart_def .
+  have hg1: "g 1 = y" using hg_finish unfolding pathfinish_def .
+  show ?thesis
+    unfolding top1_is_path_on_def using hcont_top1 hg0 hg1 by (by100 simp)
+qed
 
 (** Corollary: path-connected (geotop-sense) \<Longrightarrow> connected (geotop-sense). **)
 lemma top1_path_connected_on_geotop_imp_connected:
