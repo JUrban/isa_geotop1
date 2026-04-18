@@ -10443,7 +10443,8 @@ proof -
   have h_trivial_pi:
     "h = 0 \<and> m = 0" sorry
   (** (3) A sphere with 0 handles and 0 crosscaps is precisely the 2-sphere. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 12 (geotop.tex:4939)
@@ -10595,7 +10596,10 @@ proof -
          in Bd M. Moreover Bd(Bd M) = \<emptyset> since Bd M is closed in M (Bd as a 2-manifold
          without boundary in this closed 3-manifold case; for Bd M's own boundary we need
          separate argument if M itself has corners, here assume none). **)
-  show ?thesis sorry
+  have h_final: "geotop_n_manifold_with_boundary_on
+           (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+           (\<lambda>x y. norm (x - y)) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 4 (geotop.tex:5014)
