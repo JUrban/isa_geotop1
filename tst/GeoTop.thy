@@ -11093,7 +11093,11 @@ proof -
         \<Union>cosets = geotop_pi M (subspace_topology UNIV geotop_euclidean_topology M) P\<^sub>0" sorry
   (** (3) Apply Theorem 24.5 with \<pi> = K_\<chi>: there is a 2-fold covering Mt \<to> M
          corresponding to this index-2 subgroup. **)
-  show ?thesis sorry
+  have h_cover2:
+    "\<exists>(Mt::'a set) (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering 2 Mt
+       (subspace_topology UNIV geotop_euclidean_topology Mt)
+       M (subspace_topology UNIV geotop_euclidean_topology M) g" sorry
+  show ?thesis using h_cover2 by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 8 (geotop.tex:5336)
