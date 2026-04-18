@@ -13697,7 +13697,8 @@ proof -
   (** (2) Assemble S'' as S''_j per index (and T'' as boundaries thereof); the disjointness
          S''_i \<inter> S''_{i+2} holds by the disjoint-S_j inputs (transported to their
          sub-CSTs). **)
-  show ?thesis sorry
+  have h_final: "\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>31 Theorem 2 (geotop.tex:6279)
@@ -13745,7 +13746,8 @@ proof -
   have h_S'_disjoint:
     "S' i \<inter> S' (i+2) = {}" sorry
   (** (2) Hence S''_i \<subseteq> Int S'_i disjoint from S''_{i+2} \<subseteq> Int S'_{i+2}. **)
-  show ?thesis sorry
+  have h_final: "S'' i \<inter> S'' (i+2) = {}" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>31 Theorem 4 (geotop.tex:6285)
@@ -13781,7 +13783,14 @@ proof -
      (\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_closed_path_on (S'' (j+1))
                (subspace_topology UNIV geotop_euclidean_topology (S'' (j+1))) P\<^sub>0 p)" sorry
-  show ?thesis sorry
+  have h_final: "(\<forall>k\<in>{j, j+1}. \<forall>P\<^sub>0\<in>J. \<exists>p.
+             p ` {0..1} = J \<and>
+             geotop_closed_path_on (S'' k)
+               (subspace_topology UNIV geotop_euclidean_topology (S'' k)) P\<^sub>0 p) \<or>
+         (\<forall>k\<in>{j, j+1}. \<exists>D. geotop_is_n_cell D
+              (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+              D \<subseteq> T'' k \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>31: dual cells of a tubular neighborhood (geotop.tex:6316)
@@ -13908,7 +13917,18 @@ proof -
              E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2" sorry
   (** (3) Each U_i contains the "side" of C_i' that faces N' \<setminus> (C_1' \<cup> C_2'), so
          Bd C_i' \<cap> Bd N' \<subseteq> Fr U_i. **)
-  show ?thesis sorry
+  have h_final: "\<exists>E U1 U2. geotop_is_pseudo_cell E \<and>
+             U1 \<inter> U2 = {} \<and>
+             (C1' \<union> C2') - E = U1 \<union> U2 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C1' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C2' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>32 Theorem 3 (geotop.tex:6486)
