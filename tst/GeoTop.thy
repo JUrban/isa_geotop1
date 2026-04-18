@@ -631,14 +631,17 @@ lemma geotop_open_star_complement:
            distinct faces, which needs the complex's intersection-compat axiom.\<close>
 
 (** For finite \<open>K\<close>, the complement is closed (finite union of closed simplices),
-    hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>. **)
+    hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>.
+    Proof deferred: requires the bridge \<open>geotop_euclidean_topology_eq_open_sets\<close>,
+    defined later in the file (line ~2500). The full proof is straightforward:
+    \<open>|K| \<setminus> star = \<Union>{\<tau> \<in> K: v \<notin> \<tau>}\<close> by \<open>geotop_open_star_complement\<close>, which is a
+    finite union of closed simplices, hence closed. **)
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
   shows "geotop_open_star K v
            \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
-  sorry \<comment> \<open>Via \<open>geotop_open_star_complement\<close> + finite closed simplices +
-           complement is closed → star is relatively open.\<close>
+  sorry
 
 (** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>.
     Proof: for \<open>x \<in> \<sigma> \<in> K\<close> with vertex set \<open>V\<close> (finite, affinely indep), write
