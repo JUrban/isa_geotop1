@@ -1851,9 +1851,37 @@ proof -
     have hK\<^sub>3_ref_K\<^sub>1: "geotop_refines K\<^sub>3 K\<^sub>1"
       using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
     have hL\<^sub>3_ref: "geotop_refines L\<^sub>3 L"
-      sorry \<comment> \<open>Each simplex of L_3 sits in some simplex of L via the PL structure:
-                 K_3 refines K_1, and inv_f is linear on each K_1-simplex mapping
-                 into some L-simplex. See elaborated sketch below.\<close>
+    proof -
+      (** (i) Each element of L_3 is f_inv(\<sigma>_3) for some \<sigma>_3 \<in> K_3. **)
+      have h_elem: "\<And>s. s \<in> L\<^sub>3 \<Longrightarrow>
+                       \<exists>\<sigma>\<^sub>3\<in>K\<^sub>3. s = inv_into (geotop_polyhedron L) f ` \<sigma>\<^sub>3"
+        unfolding L\<^sub>3_def by (by100 blast)
+      (** (ii) Each \<sigma>_3 \<in> K_3 sits in some \<sigma>_1 \<in> K_1 (from K_3 refines K_1). **)
+      have h_refK: "\<And>\<sigma>\<^sub>3. \<sigma>\<^sub>3 \<in> K\<^sub>3 \<Longrightarrow> \<exists>\<sigma>\<^sub>1\<in>K\<^sub>1. \<sigma>\<^sub>3 \<subseteq> \<sigma>\<^sub>1"
+        using hK\<^sub>3_ref_K\<^sub>1 unfolding geotop_refines_def by (by100 blast)
+      (** (iii) f_inv maps each \<sigma>_1 \<in> K_1 into some \<tau> \<in> L. **)
+      have h_mapL: "\<And>\<sigma>\<^sub>1. \<sigma>\<^sub>1 \<in> K\<^sub>1 \<Longrightarrow>
+                       \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>\<^sub>1. inv_into (geotop_polyhedron L) f x \<in> \<tau>"
+        using hK\<^sub>1_lin by (by100 meson)
+      (** (iv) Combine: each s \<in> L_3 sits in some \<tau> \<in> L. **)
+      show ?thesis
+        unfolding geotop_refines_def
+      proof (rule ballI)
+        fix s assume hs: "s \<in> L\<^sub>3"
+        from h_elem[OF hs] obtain \<sigma>\<^sub>3
+          where h\<sigma>\<^sub>3: "\<sigma>\<^sub>3 \<in> K\<^sub>3"
+            and hs_eq: "s = inv_into (geotop_polyhedron L) f ` \<sigma>\<^sub>3" by (by100 blast)
+        from h_refK[OF h\<sigma>\<^sub>3] obtain \<sigma>\<^sub>1
+          where h\<sigma>\<^sub>1: "\<sigma>\<^sub>1 \<in> K\<^sub>1" and hsub: "\<sigma>\<^sub>3 \<subseteq> \<sigma>\<^sub>1" by (by100 blast)
+        from h_mapL[OF h\<sigma>\<^sub>1] obtain \<tau>
+          where h\<tau>: "\<tau> \<in> L"
+            and hg_into: "\<forall>x\<in>\<sigma>\<^sub>1. inv_into (geotop_polyhedron L) f x \<in> \<tau>" by (by100 blast)
+        have hg_img: "inv_into (geotop_polyhedron L) f ` \<sigma>\<^sub>3 \<subseteq> \<tau>"
+          using hg_into hsub by (by100 blast)
+        show "\<exists>h\<in>L. s \<subseteq> h"
+          using h\<tau> hg_img hs_eq by (by100 blast)
+      qed
+    qed
     have hLcomp: "geotop_is_complex L"
       using hf_PL_fwd unfolding geotop_PL_map_def geotop_is_subdivision_def
       by (by100 blast)
