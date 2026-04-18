@@ -547,8 +547,23 @@ proof -
     by (rule geotop_mesh_iterated_Sd_tends_to_zero[OF hKcomp hK])
   have hm_ex: "\<exists>m::nat. geotop_mesh (\<lambda>x y. norm (x - y))
                            (geotop_iterated_Sd m K) < \<delta>"
-    sorry \<comment> \<open>Standard: \<open>LIMSEQ_D\<close>-style extraction — from \<open>a_n \<to> 0\<close> and \<open>\<delta> > 0\<close>,
-             eventually \<open>a_n < \<delta>\<close>. Deferred to avoid HOL limit-library detour.\<close>
+  proof -
+    have hLIMD: "\<exists>no::nat. \<forall>n\<ge>no. norm (geotop_mesh (\<lambda>x y. norm (x - y))
+                                          (geotop_iterated_Sd n K) - 0) < \<delta>"
+      using LIMSEQ_D[OF hmesh_lim h\<delta>pos] by (by100 blast)
+    obtain N where hN:
+      "\<forall>n\<ge>N. norm (geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd n K) - 0) < \<delta>"
+      using hLIMD by (by100 blast)
+    have hN_N:
+      "norm (geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd N K) - 0) < \<delta>"
+      using hN by (by100 blast)
+    then have hnorm: "\<bar>geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd N K)\<bar>
+                       < \<delta>"
+      by (by100 simp)
+    have "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd N K) < \<delta>"
+      using hnorm by (by100 linarith)
+    then show ?thesis by (by100 blast)
+  qed
   obtain m where hm_mesh_bd:
     "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<delta>"
     using hm_ex by (by100 blast)
