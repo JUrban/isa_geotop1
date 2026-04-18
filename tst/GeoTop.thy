@@ -8500,7 +8500,7 @@ proof -
          (1 2 3) \<to> (2 3 1) \<to> (3 1 2) gives
            r_2 = g_2 g_1^{-1} g_3^{-1} g_1,  r_3 = g_3 g_2^{-1} g_1^{-1} g_2. **)
   have h_relations:
-    "\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
+    "(\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
         geotop_closed_path_on (UNIV - K)
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>1 \<and>
         geotop_closed_path_on (UNIV - K)
@@ -8510,7 +8510,12 @@ proof -
         \<comment> \<open>each r_i = g_i g_{k}^{-1} g_j^{-1} g_k is null-homotopic in R^3 - K\<close>
         geotop_path_equiv (UNIV - K)
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - K))
-          P\<^sub>0 (geotop_path_mult g\<^sub>1 g\<^sub>2) (geotop_path_mult g\<^sub>1 g\<^sub>2)" sorry
+          P\<^sub>0 (geotop_path_mult g\<^sub>1 g\<^sub>2) (geotop_path_mult g\<^sub>1 g\<^sub>2)) \<and>
+     (\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C)" sorry
   (** (2) Define h: F(g_1, g_2, g_3) \<rightarrow> S_3 by h(g_1) = (2 3), h(g_2) = (1 3),
          h(g_3) = (1 2). Extend multiplicatively. **)
   have h_into_S3:
@@ -8530,7 +8535,8 @@ proof -
               geotop_pi_mult (UNIV - K)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
               geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C" sorry
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C"
+    using h_relations by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
