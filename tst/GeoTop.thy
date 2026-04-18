@@ -7487,7 +7487,18 @@ proof -
            (\<exists>rel\<in>geotop_normal_closure G R. geotop_word_equiv w [] \<or> w \<in> rel))" sorry
   (** (4) Initial word (for p) reduces to empty via these moves, i.e. its class lies in
          the normal closure N([R]). **)
-  show ?thesis sorry
+  have h_final: "\<exists>(G::'a set) (R::('a \<times> int) list set set).
+           finite G \<and> finite R \<and>
+           (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+           (\<forall>p. geotop_closed_path_on (UNIV - L)
+                  (subspace_topology UNIV geotop_euclidean_topology (UNIV - L)) P\<^sub>0 p \<and>
+                geotop_path_equiv (UNIV - L)
+                  (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+                  P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<longrightarrow>
+                (\<exists>w::('a \<times> int) list. w \<in> {w. \<forall>(a, \<alpha>)\<in>set w. a \<in> G} \<and>
+                   (\<exists>rel\<in>geotop_normal_closure G R.
+                      geotop_word_equiv w [] \<or> w \<in> rel)))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>15 Theorem 3 (geotop.tex:3138)
@@ -7535,7 +7546,15 @@ proof -
         (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
              P\<^sub>0 (\<lambda>t. P\<^sub>0) \<longrightarrow> C \<in> geotop_normal_closure G R)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>G R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+           G \<subseteq> UNIV \<and>
+           (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+           (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C \<in> geotop_group_of_link L P\<^sub>0) \<and>
+           {C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
+               (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+               P\<^sub>0 (\<lambda>t. P\<^sub>0)} =
+           geotop_normal_closure G R" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>15 Theorem 4 (geotop.tex:3167)
@@ -7573,7 +7592,12 @@ proof -
   (** (3) First isomorphism theorem: F(G) / N([R]) \<cong> \<pi>(R^3 - L, P_0); we pass to the quotient
          via \<phi>** . Identify the quotient F(G) / N([R]) with (a set-theoretic transversal in)
          F(G) itself, giving a bijection \<Phi> between F(G) and \<pi>(R^3 - L, P_0). **)
-  show ?thesis sorry
+  have h_final: "\<exists>(G::'a set) (R::('a \<times> int) list set set)
+          (\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+           G \<subseteq> UNIV \<and> finite G \<and> finite R \<and>
+           (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>16 Computations of fundamental groups\<close>
