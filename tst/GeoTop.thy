@@ -7860,7 +7860,9 @@ proof -
          #cells, base case card K_i = 1 a single 2-cell is trivially free), or we iterate
          on a non-free cell in K_1. Symmetrically for K_2. Merging the two recursive
          guarantees yields two distinct free 2-cells in K. **)
-  show ?thesis sorry
+  have h_two_free:
+    "\<exists>C1 C2. C1 \<noteq> C2 \<and> geotop_is_free_2cell_in C1 K \<and> geotop_is_free_2cell_in C2 K" sorry
+  show ?thesis using h_two_free by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 3 (geotop.tex:3426)
