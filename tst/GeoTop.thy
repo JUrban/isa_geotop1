@@ -1835,9 +1835,50 @@ proof -
     (** (2) The image complex \<open>f(L\<^sub>1) = {f(\<sigma>) | \<sigma>\<in>L\<^sub>1}\<close> is a subdivision of K
           (push linear images of simplexes; f bij gives intersection compatibility). **)
     define fL\<^sub>1 where "fL\<^sub>1 = (\<lambda>\<sigma>. f ` \<sigma>) ` L\<^sub>1"
+    (** Subdivision decomposes into three components: complex, refinement, polyhedron. **)
+    (** (2a) |fL_1| = |K|: f(|L_1|) = f(|L|) = |K| (via bijection and |L_1|=|L|). **)
+    have hL\<^sub>1_poly_L: "geotop_polyhedron L\<^sub>1 = geotop_polyhedron L"
+      using hL\<^sub>1L unfolding geotop_is_subdivision_def by (by100 blast)
+    have hf_bij_LK: "bij_betw f (geotop_polyhedron L) (geotop_polyhedron K)"
+      using hf_PLH unfolding geotop_PLH_def by (by100 blast)
+    have hf_img_L_K: "f ` (geotop_polyhedron L) = geotop_polyhedron K"
+      using hf_bij_LK unfolding bij_betw_def by (by100 blast)
+    have hfL\<^sub>1_poly_step1: "geotop_polyhedron fL\<^sub>1 = f ` (geotop_polyhedron L\<^sub>1)"
+      unfolding fL\<^sub>1_def geotop_polyhedron_def by (by100 blast)
+    have hfL\<^sub>1_poly: "geotop_polyhedron fL\<^sub>1 = geotop_polyhedron K"
+      using hfL\<^sub>1_poly_step1 hL\<^sub>1_poly_L hf_img_L_K by (by100 simp)
+    (** (2b) fL_1 is a complex: deferred (needs f-image-of-simplex = simplex,
+            face preservation, pairwise intersection consistency, local finiteness). **)
+    have hfL\<^sub>1_comp: "geotop_is_complex fL\<^sub>1"
+      sorry
+    (** (2c) fL_1 refines K: each f(\<sigma>) for \<sigma> \<in> L_1 sits in some \<tau> \<in> K (from hL_1_lin). **)
+    have hfL\<^sub>1_ref: "geotop_refines fL\<^sub>1 K"
+    proof -
+      have h_elem: "\<And>s. s \<in> fL\<^sub>1 \<Longrightarrow> \<exists>\<sigma>\<in>L\<^sub>1. s = f ` \<sigma>"
+        unfolding fL\<^sub>1_def by (by100 blast)
+      have h_map: "\<And>\<sigma>. \<sigma> \<in> L\<^sub>1 \<Longrightarrow> \<exists>\<tau>\<in>K. \<forall>x\<in>\<sigma>. f x \<in> \<tau>"
+        using hL\<^sub>1_lin by (by100 meson)
+      show ?thesis
+        unfolding geotop_refines_def
+      proof (rule ballI)
+        fix s assume hs: "s \<in> fL\<^sub>1"
+        from h_elem[OF hs] obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L\<^sub>1" and hs_eq: "s = f ` \<sigma>"
+          by (by100 blast)
+        from h_map[OF h\<sigma>] obtain \<tau> where h\<tau>: "\<tau> \<in> K" and hfx: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>"
+          by (by100 blast)
+        have hfimg: "f ` \<sigma> \<subseteq> \<tau>" using hfx by (by100 blast)
+        show "\<exists>h\<in>K. s \<subseteq> h" using h\<tau> hfimg hs_eq by (by100 blast)
+      qed
+    qed
     have hfL\<^sub>1_sub: "geotop_is_subdivision fL\<^sub>1 K"
-      sorry \<comment> \<open>\<open>f\<close> bijective + linear on each simplex of \<open>L\<^sub>1\<close> means \<open>f(\<sigma>)\<close> is a simplex;
-                the simplexes \<open>f(\<sigma>)\<close> tile \<open>|K|\<close> coherently.\<close>
+    proof -
+      have hKcomp_local: "geotop_is_complex K"
+        using hf_PLH unfolding geotop_PLH_def geotop_PL_map_def
+              geotop_is_subdivision_def by (by100 blast)
+      show ?thesis
+        unfolding geotop_is_subdivision_def
+        using hfL\<^sub>1_comp hKcomp_local hfL\<^sub>1_ref hfL\<^sub>1_poly by (by100 blast)
+    qed
     (** (3) Similarly obtain a subdivision \<open>K\<^sub>1 < K\<close> on which \<open>f^{-1}\<close> is linear. **)
     have hf_PL_bwd: "geotop_PL_map K L (inv_into (geotop_polyhedron L) f)"
       using hf_PLH unfolding geotop_PLH_def by (by100 blast)
