@@ -9650,7 +9650,8 @@ proof -
          accumulation point; A_2 is trivially tame. **)
   obtain A2 :: "(real^3) set" where hA2:
     "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
-     geotop_is_tame A2 \<and> A1 \<inter> A2 = {P}" sorry
+     geotop_is_tame A2 \<and> A1 \<inter> A2 = {P} \<and>
+     geotop_is_wild (A1 \<union> A2)" sorry
   (** (3) The Fox-Artin arc A = A_1 \<union> A_2 fails to have locally commutative fundamental
          group of R^3 - A at P (each trefoil B_i provides a non-commuting pair of loops
          in the complement, no matter how small a neighbourhood of P is chosen). **)
@@ -9658,7 +9659,7 @@ proof -
     "\<not> geotop_pi_locally_commutative_at (UNIV - (A1 \<union> A2)) geotop_euclidean_topology P"
     sorry
   (** (4) Apply Theorem 19_4 to conclude A_1 \<union> A_2 is wild. **)
-  have hA_wild: "geotop_is_wild (A1 \<union> A2)" sorry
+  have hA_wild: "geotop_is_wild (A1 \<union> A2)" using hA2 by (by100 blast)
   show ?thesis using hA1 hA2 hA_wild by (by100 blast)
 qed
 
@@ -9839,6 +9840,7 @@ proof -
          non-commuting loops in R^3 - A_2 arbitrarily close to Q. **)
   obtain A2 :: "(real^3) set" and Q :: "real^3" where h_construction:
     "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
+     geotop_is_wild A2 \<and>
      Q \<in> geotop_frontier UNIV geotop_euclidean_topology A2" sorry
   (** (2) In every neighbourhood V of Q there is a closed path p in V \<inter> (R^3 - A_2) that
          links one of the trefoils B_i, hence is not null-homotopic in V \<inter> (R^3 - A_2);
@@ -9847,7 +9849,7 @@ proof -
     "\<not> geotop_locally_simply_connected_at (UNIV - A2) geotop_euclidean_topology Q" sorry
   (** (3) By Theorem 20.3 (arc case), tame arcs have locally simply connected complement
          at every boundary point. Contrapositive: A_2 is wild. **)
-  have h_wild: "geotop_is_wild A2" sorry
+  have h_wild: "geotop_is_wild A2" using h_construction by (by100 blast)
   show ?thesis using h_construction h_not_locsc h_wild by (by100 blast)
 qed
 
