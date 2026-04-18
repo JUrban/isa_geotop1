@@ -616,13 +616,111 @@ proof
     using h\<sigma> unfolding geotop_polyhedron_def by (by100 blast)
 qed
 
-(** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>. **)
+(** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>.
+    Proof: for \<open>x \<in> \<sigma> \<in> K\<close> with vertex set \<open>V\<close> (finite, affinely indep), write
+    \<open>x = \<Sum>_v u_v v\<close> (barycentric). Let \<open>W = {v \<in> V : u_v > 0}\<close> (nonempty, subset
+    of \<open>V\<close>). Then \<open>x \<in> rel_interior (conv W)\<close> by HOL's
+    \<open>rel_interior_convex_hull_explicit\<close>. \<open>conv W\<close> is a face of \<sigma>, hence in \<open>K\<close>
+    by face-closure; any \<open>v \<in> W\<close> belongs to both \<open>conv W\<close> and \<open>vertices K\<close>.
+    So \<open>x \<in> geotop_open_star K v\<close>. **)
 lemma geotop_vertex_stars_cover:
   fixes K :: "'a::euclidean_space set set"
-  assumes "geotop_is_complex K"
+  assumes hK: "geotop_is_complex K"
   shows "geotop_polyhedron K
            \<subseteq> \<Union>{geotop_open_star K v |v. v \<in> geotop_complex_vertices K}"
-  sorry
+proof
+  fix x assume hx: "x \<in> geotop_polyhedron K"
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  (** \<sigma> is a simplex with affinely independent vertex set \<open>V\<close>. **)
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+    using h\<sigma>K conjunct1[OF hK[unfolded geotop_is_complex_def]] by (by100 blast)
+  have h\<sigma>_svx_ex: "\<exists>V. geotop_simplex_vertices \<sigma> V"
+    using h\<sigma>_simp
+    unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+  obtain V where hVsv: "geotop_simplex_vertices \<sigma> V"
+    using h\<sigma>_svx_ex by (by100 blast)
+  obtain m n where hVfin: "finite V" and hVcard: "card V = n+1"
+                and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+                and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using hVsv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_hullHOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_indep: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hVsv])
+  (** Barycentric expression of x. **)
+  have hx_hull: "x \<in> convex hull V" using hx\<sigma> h\<sigma>_hullHOL by (by100 simp)
+  obtain u where hu_nn: "\<forall>v\<in>V. 0 \<le> u v"
+             and hu_sum: "sum u V = 1"
+             and hx_eq: "(\<Sum>v\<in>V. u v *\<^sub>R v) = x"
+    using hx_hull hVfin convex_hull_finite[of V] by (by100 blast)
+  (** Support \<open>W = {v : u_v > 0}\<close> is nonempty. **)
+  define W where "W = {v \<in> V. u v > 0}"
+  have hWV: "W \<subseteq> V" unfolding W_def by (by100 blast)
+  have hWfin: "finite W"
+    unfolding W_def using hVfin finite_subset by (by100 fastforce)
+  have hWne: "W \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> W \<noteq> {}"
+    then have hWemp: "\<forall>v\<in>V. u v \<le> 0" unfolding W_def by (by100 force)
+    have "\<forall>v\<in>V. u v = 0" using hWemp hu_nn by (by100 fastforce)
+    then have "sum u V = 0" by (by100 simp)
+    thus False using hu_sum by (by100 simp)
+  qed
+  (** \<open>x = \<Sum>_W u_v v\<close> since \<open>u_v = 0\<close> on \<open>V \<setminus> W\<close>. **)
+  have hx_W: "(\<Sum>v\<in>W. u v *\<^sub>R v) = x"
+  proof -
+    have hzero: "\<forall>v\<in>V - W. u v *\<^sub>R v = 0"
+      unfolding W_def using hu_nn by (by100 fastforce)
+    have hsum_W: "(\<Sum>v\<in>W. u v *\<^sub>R v) = (\<Sum>v\<in>V. u v *\<^sub>R v)"
+      using hVfin hWV hzero sum.mono_neutral_left[of V W "\<lambda>v. u v *\<^sub>R v"]
+      by (by100 blast)
+    show ?thesis using hsum_W hx_eq by (by100 simp)
+  qed
+  have hsum_uW: "sum u W = 1"
+  proof -
+    have hzero_u: "\<forall>v\<in>V - W. u v = 0"
+      unfolding W_def using hu_nn by (by100 fastforce)
+    have "sum u W = sum u V"
+      using hVfin hWV hzero_u sum.mono_neutral_left[of V W u] by (by100 blast)
+    thus ?thesis using hu_sum by (by100 simp)
+  qed
+  have hu_pos_W: "\<forall>v\<in>W. 0 < u v" unfolding W_def by (by100 simp)
+  (** \<open>W\<close> is affinely independent (subset of \<open>V\<close> which is). **)
+  have hW_indep: "\<not> affine_dependent W"
+    using hV_indep hWV affine_dependent_subset by (by100 blast)
+  (** \<open>x \<in> rel_interior(conv W)\<close>. **)
+  have hx_rel_int: "x \<in> rel_interior (convex hull W)"
+    using hW_indep hu_pos_W hsum_uW hx_W
+    unfolding rel_interior_convex_hull_explicit[OF hW_indep]
+    by (by100 blast)
+  (** \<open>conv W\<close> is a face of \<sigma>, so in \<open>K\<close>. **)
+  define \<tau> where "\<tau> = convex hull W"
+  have h\<tau>_face: "geotop_is_face \<tau> \<sigma>"
+    unfolding geotop_is_face_def \<tau>_def
+    apply (rule exI[of _ V])
+    apply (rule exI[of _ W])
+    using hVsv hWne hWV geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+  have hK_fc: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'. geotop_is_face \<tau>' \<sigma>' \<longrightarrow> \<tau>' \<in> K"
+    using conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K" using hK_fc h\<sigma>K h\<tau>_face by (by100 blast)
+  (** Pick any \<open>v \<in> W\<close>. Then \<open>v \<in> \<tau>\<close> and \<open>v \<in> vertices K\<close>. **)
+  obtain v where hvW: "v \<in> W" using hWne by (by100 blast)
+  have hvV: "v \<in> V" using hvW hWV by (by100 blast)
+  have hv_vertices: "v \<in> geotop_complex_vertices K"
+    unfolding geotop_complex_vertices_def using h\<sigma>K hVsv hvV by (by100 blast)
+  have hv_\<tau>: "v \<in> \<tau>"
+    unfolding \<tau>_def using hvW hull_inc[of v W] by (by100 simp)
+  (** \<open>x \<in> rel_interior \<tau>\<close> and \<open>v \<in> \<tau>\<close> with \<open>\<tau> \<in> K\<close>, so \<open>x \<in> st_K(v)\<close>. **)
+  have hx_rel_\<tau>: "x \<in> rel_interior \<tau>"
+    unfolding \<tau>_def using hx_rel_int by (by100 simp)
+  have hx_st: "x \<in> geotop_open_star K v"
+    unfolding geotop_open_star_def
+    using h\<tau>K hv_\<tau> hx_rel_\<tau> by (by100 blast)
+  show "x \<in> \<Union>{geotop_open_star K v |v. v \<in> geotop_complex_vertices K}"
+    using hv_vertices hx_st by (by100 blast)
+qed
 
 (** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
     subdivision tends to 0. **)
