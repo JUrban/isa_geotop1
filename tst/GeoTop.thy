@@ -2783,7 +2783,24 @@ proof -
       Proof: if \<sigma>\<in>K has vertex in \<open>V\<close> and vertex not in \<open>V\<close>, the edge between
       them lifts vertex-reachability to the "not-in-V" endpoint, a contradiction. **)
   have hK\<^sub>1\<^sub>2_cover: "K\<^sub>1 \<union> K\<^sub>2 = K" sorry
-  have hK\<^sub>1\<^sub>2_disjoint: "K\<^sub>1 \<inter> K\<^sub>2 = {}" sorry
+  have hK\<^sub>1\<^sub>2_disjoint: "K\<^sub>1 \<inter> K\<^sub>2 = {}"
+  proof (rule equals0I)
+    fix \<sigma> assume h\<sigma>12: "\<sigma> \<in> K\<^sub>1 \<inter> K\<^sub>2"
+    then obtain V\<^sub>1 where hV\<^sub>1: "geotop_simplex_vertices \<sigma> V\<^sub>1" and hV\<^sub>1V: "V\<^sub>1 \<subseteq> V"
+      unfolding K\<^sub>1_def by (by100 blast)
+    obtain V\<^sub>2 where hV\<^sub>2: "geotop_simplex_vertices \<sigma> V\<^sub>2" and hV\<^sub>2V: "V\<^sub>2 \<inter> V = {}"
+      using h\<sigma>12 unfolding K\<^sub>2_def by (by100 blast)
+    (** Both vertex sets determine \<sigma> by convex hull; \<open>V\<^sub>1, V\<^sub>2\<close> are in general position
+        so \<open>convex_hull V\<^sub>1 = convex_hull V\<^sub>2 \<Rightarrow> V\<^sub>1 = V\<^sub>2\<close>. Deferred vertex-uniqueness
+        argument; here we just derive the contradiction from the weak claim that
+        \<open>V\<^sub>1 \<subseteq> V\<^sub>2\<close> or vice versa (even with distinct vertex sets, they'd both be
+        subsets of the extreme points and intersect in common extreme points). **)
+    have hV12_eq: "V\<^sub>1 = V\<^sub>2" sorry
+    have hV\<^sub>1_empty: "V\<^sub>1 = {}" using hV\<^sub>1V hV\<^sub>2V hV12_eq by (by100 blast)
+    have hV\<^sub>1_card: "card V\<^sub>1 \<ge> 1"
+      using hV\<^sub>1 unfolding geotop_simplex_vertices_def by (by100 fastforce)
+    show False using hV\<^sub>1_empty hV\<^sub>1_card by (by100 simp)
+  qed
   (** Step 6: \<open>K\<^sub>1 \<noteq> \<emptyset>\<close> because \<open>{v}\<close> is a 0-simplex in \<open>K\<^sub>1\<close>.
       Use: \<open>v \<in> \<sigma>\<^sub>v \<in> K\<close> with vertex set \<open>V\<^sub>v \<ni> v\<close>; then \<open>{v}\<close> is a face of \<open>\<sigma>\<^sub>v\<close>,
       and by K.2 face-closure \<open>{v} \<in> K\<close>. Since \<open>v \<in> V\<close> (Step 1), \<open>{v} \<in> K\<^sub>1\<close>. **)
