@@ -633,6 +633,8 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
 lemma geotop_isomorphism_induces_PLH:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hL: "geotop_is_complex L"
   assumes hiso: "geotop_isomorphism K L \<phi>"
   shows "\<exists>f::'a \<Rightarrow> 'b.
             geotop_PLH K L f \<and>
@@ -659,11 +661,6 @@ proof -
   (** (3) For each \<sigma> \<in> K, \<open>f(\<sigma>) \<subseteq> \<tau>\<close> where \<tau> = convex_hull (\<phi> ` vertices \<sigma>) \<in> L. **)
   have himg: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>)" sorry
   (** (4) \<open>K\<close> is a subdivision of itself (reflexivity); this gives a PL-map witness. **)
-  have hK: "geotop_is_complex K"
-    using hiso unfolding geotop_isomorphism_def geotop_complex_vertices_def
-    sorry \<comment> \<open>\<open>isomorphism\<close> is meant to relate complexes; weak def doesn't force
-             \<open>geotop_is_complex K\<close>, so we'd strengthen \<open>geotop_isomorphism\<close> to
-             require it, or add this as an extra assumption to this lemma.\<close>
   have hK_sub: "geotop_is_subdivision K K"
     by (rule geotop_is_subdivision_refl[OF hK])
   have hK_lin_img:
@@ -697,6 +694,8 @@ qed
 lemma geotop_isomorphic_induces_PLH:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hL: "geotop_is_complex L"
   assumes hiso: "geotop_isomorphic K L"
   shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L"
 proof -
@@ -705,7 +704,7 @@ proof -
   obtain f where hf: "geotop_PLH K L f
                       \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                       \<and> (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
-    using geotop_isomorphism_induces_PLH[OF h\<phi>] by (by100 blast)
+    using geotop_isomorphism_induces_PLH[OF hK hL h\<phi>] by (by100 blast)
   show ?thesis using hf by (by100 blast)
 qed
 
@@ -930,9 +929,13 @@ proof -
       using hKL unfolding geotop_comb_equiv_def by (by100 blast)
     have hL'K': "geotop_isomorphic L' K'"
       by (rule geotop_isomorphic_sym[OF hiso])
+    have hL'comp: "geotop_is_complex L'"
+      using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+    have hK'comp: "geotop_is_complex K'"
+      using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
     obtain f where hf_PLH: "geotop_PLH L' K' f"
                and hf_img: "f ` (geotop_polyhedron L') = geotop_polyhedron K'"
-      using geotop_isomorphic_induces_PLH[OF hL'K'] by (by100 blast)
+      using geotop_isomorphic_induces_PLH[OF hL'comp hK'comp hL'K'] by (by100 blast)
     have hpolyL: "geotop_polyhedron L' = geotop_polyhedron L"
       using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
     have hpolyK: "geotop_polyhedron K' = geotop_polyhedron K"
