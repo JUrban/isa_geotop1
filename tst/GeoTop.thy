@@ -6704,17 +6704,25 @@ proof -
   (** (4) Homeomorphism: injectivity follows from disjointness of closures (different P,
          Q in C land in distinct closures); combine with continuity + compactness. **)
   have h_homeo:
-    "(\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
+    "((\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
      (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
         closure_on C' T' g \<inter> closure_on C' T' h = {}) \<longrightarrow>
-     (\<exists>F. top1_homeomorphism_on C T C' T' F)" sorry
+     (\<exists>F. top1_homeomorphism_on C T C' T' F)) \<and>
+     (\<exists>F. top1_continuous_map_on C T C' T' F \<and>
+             (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g)) \<and>
+             ((\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> F ` C = C') \<and>
+             ((\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
+              (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
+                 closure_on C' T' g \<inter> closure_on C' T' h = {})
+              \<longrightarrow> top1_homeomorphism_on C T C' T' F))" sorry
   have h_final: "\<exists>F. top1_continuous_map_on C T C' T' F \<and>
              (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g)) \<and>
              ((\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> F ` C = C') \<and>
              ((\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
               (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
                  closure_on C' T' g \<inter> closure_on C' T' h = {})
-              \<longrightarrow> top1_homeomorphism_on C T C' T' F)" sorry
+              \<longrightarrow> top1_homeomorphism_on C T C' T' F)"
+    using h_homeo by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
