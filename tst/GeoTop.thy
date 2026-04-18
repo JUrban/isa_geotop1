@@ -199,6 +199,13 @@ definition geotop_skeleton :: "'a::real_normed_vector set set \<Rightarrow> nat 
 definition geotop_polyhedron :: "'a::real_normed_vector set set \<Rightarrow> 'a set" where
   "geotop_polyhedron K = \<Union>K"
 
+(** Polyhedron of an image-of-simplexes complex: \<open>|f \<sup>`\<sup>` K| = f \<sup>` |K|\<close>.
+    Useful for transport/pushforward of subdivisions through a bijection. **)
+lemma geotop_polyhedron_image:
+  fixes f :: "'a::real_normed_vector \<Rightarrow> 'b::real_normed_vector" and K :: "'a set set"
+  shows "geotop_polyhedron ((`) f ` K) = f ` geotop_polyhedron K"
+  unfolding geotop_polyhedron_def by (by100 blast)
+
 subsection \<open>Linear maps and simplicial maps\<close>
 
 (** from Introduction: linear and simplicial maps (geotop.tex:164)
