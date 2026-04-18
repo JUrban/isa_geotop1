@@ -619,7 +619,17 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
 
 (** from early.tex Lemma 5 (iso-induces-PLH): every simplicial isomorphism
     \<open>\<phi>: K \<cong> L\<close> induces a PL homeomorphism \<open>|\<phi>|: |K| \<leftrightarrow> |L|\<close>, defined by
-    extending barycentrically on each simplex. **)
+    extending barycentrically on each simplex.
+    Construction: for \<open>x \<in> \<sigma> = [v\<^sub>0, \<dots>, v\<^sub>n] \<in> K\<close>, write \<open>x = \<Sum> t_i v_i\<close> in
+    barycentric coords and set \<open>f(x) = \<Sum> t_i \<phi>(v_i)\<close>.
+    Correctness needs:
+      (a) Well-definedness on overlaps (barycentric coords match on faces).
+      (b) Linearity on each simplex of \<open>K\<close> (so \<open>K\<close> witnesses PL).
+      (c) Image of each \<open>\<sigma>\<close> is a simplex of \<open>L\<close> (since \<open>\<phi>(\<sigma>)\<close> is the
+          corresponding simplex).
+      (d) Bijectivity \<open>|K| \<leftrightarrow> |L|\<close> (from bijectivity of \<open>\<phi>\<close> on vertices
+          lifted to polyhedra).
+      (e) The inverse is the barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>, also PL. **)
 lemma geotop_isomorphism_induces_PLH:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
@@ -628,7 +638,59 @@ lemma geotop_isomorphism_induces_PLH:
             geotop_PLH K L f \<and>
             f ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
             (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
-  sorry
+proof -
+  (** Unpack the iso. **)
+  have hbij\<phi>: "bij_betw \<phi> (geotop_complex_vertices K) (geotop_complex_vertices L)"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<phi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+                  (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  (** (1) Define the barycentric extension \<open>f\<close>: for \<open>x \<in> |K|\<close>, choose any simplex
+      \<sigma> \<in> K containing \<open>x\<close>, express \<open>x = \<Sum> t_i v_i\<close>, and set \<open>f(x) = \<Sum> t_i \<phi>(v_i)\<close>.
+      We encode this via \<open>SOME\<close> parameterised on the ambient simplex. **)
+  define f :: "'a \<Rightarrow> 'b" where
+    "f x = (SOME y. \<exists>\<sigma>\<in>K. \<exists>V t. geotop_simplex_vertices \<sigma> V \<and> x \<in> \<sigma> \<and>
+                      (\<forall>v\<in>V. 0 \<le> t v) \<and> sum t V = 1 \<and>
+                      x = (\<Sum>v\<in>V. t v *\<^sub>R v) \<and>
+                      y = (\<Sum>v\<in>V. t v *\<^sub>R \<phi> v))" for x :: 'a
+  (** (2) On each \<sigma> \<in> K, \<open>f\<close> coincides with the barycentric-extended affine
+      map into \<open>\<phi>(\<sigma>)\<close>. Hence \<open>f\<close> is linear on \<sigma>. **)
+  have hlin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f" sorry
+  (** (3) For each \<sigma> \<in> K, \<open>f(\<sigma>) \<subseteq> \<tau>\<close> where \<tau> = convex_hull (\<phi> ` vertices \<sigma>) \<in> L. **)
+  have himg: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>)" sorry
+  (** (4) \<open>K\<close> is a subdivision of itself (reflexivity); this gives a PL-map witness. **)
+  have hK: "geotop_is_complex K"
+    using hiso unfolding geotop_isomorphism_def geotop_complex_vertices_def
+    sorry \<comment> \<open>\<open>isomorphism\<close> is meant to relate complexes; weak def doesn't force
+             \<open>geotop_is_complex K\<close>, so we'd strengthen \<open>geotop_isomorphism\<close> to
+             require it, or add this as an extra assumption to this lemma.\<close>
+  have hK_sub: "geotop_is_subdivision K K"
+    by (rule geotop_is_subdivision_refl[OF hK])
+  have hK_lin_img:
+    "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
+    have h\<sigma>img: "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>)" using himg h\<sigma> by (by100 blast)
+    have hlin\<sigma>: "geotop_linear_on \<sigma> f" using hlin h\<sigma> by (by100 blast)
+    show "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using h\<sigma>img hlin\<sigma> by (by100 blast)
+  qed
+  have hPL: "geotop_PL_map K L f"
+    unfolding geotop_PL_map_def
+    using hK_sub hK_lin_img by (by100 blast)
+  (** (5) \<open>f\<close> is a bijection \<open>|K| \<leftrightarrow> |L|\<close>. **)
+  have hbij: "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)" sorry
+  have himg_poly: "f ` (geotop_polyhedron K) = geotop_polyhedron L"
+    using hbij unfolding bij_betw_def by (by100 blast)
+  (** (6) \<open>f\<close> agrees with \<phi> on vertices. **)
+  have hagree: "\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v" sorry
+  (** (7) The inverse \<open>f\<^sup>-\<^sup>1\<close> is the analogous barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>;
+      symmetry gives \<open>geotop_PL_map L K (inv_into (|K|) f)\<close>. **)
+  have hPL_inv: "geotop_PL_map L K (inv_into (geotop_polyhedron K) f)" sorry
+  have hPLH: "geotop_PLH K L f"
+    unfolding geotop_PLH_def using hPL hbij hPL_inv by (by100 blast)
+  show ?thesis using hPLH himg_poly hagree by (by100 blast)
+qed
 
 (** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
     PLH between the underlying polyhedra. **)
