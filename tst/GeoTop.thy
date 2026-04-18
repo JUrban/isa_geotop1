@@ -6008,7 +6008,10 @@ proof -
                      \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
     sorry
   have hM'_cl: "closedin_on X T M'" sorry
-  have hM'_sub: "M' \<subseteq> M" sorry
+  have hMs_0: "Ms 0 = M"
+    unfolding Ms_def by (by100 simp)
+  have hM'_sub: "M' \<subseteq> M"
+    using hMs_0 unfolding M'_def by (by100 blast)
   show ?thesis using hM'_sub hM'_cl hM'_ins hM'_irred by blast
 qed
 
