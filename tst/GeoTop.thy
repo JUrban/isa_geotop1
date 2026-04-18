@@ -2902,32 +2902,6 @@ definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightar
   "geotop_broken_line_connected U \<longleftrightarrow>
     (\<forall>P\<in>U. \<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
 
-theorem Theorem_GT_1_13:
-  fixes U :: "'a::euclidean_space set"
-  assumes hU_open: "U \<in> geotop_euclidean_topology"
-  assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
-  shows "geotop_broken_line_connected U"
-proof -
-  (** (1) For any P \<in> U, the set B_P = {Q \<in> U | P is connected to Q by a broken line in
-         U} is open (any Q has an open ball in U which is convex, hence broken-line
-         connected; any Q' in that ball extends the path). **)
-  have h_B_open:
-    "\<forall>P\<in>U. (\<exists>BP. BP \<subseteq> U \<and> P \<in> BP \<and> BP \<in> geotop_euclidean_topology \<and>
-           (\<forall>Q\<in>BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B))" sorry
-  (** (2) The complement U - B_P is also open: if Q \<in> U - B_P, take an open ball B(Q, r)
-         \<subseteq> U; no point of B(Q, r) is joinable to P (else by extending from Q through
-         convex ball, Q itself would be joinable). **)
-  have h_complement_open:
-    "\<forall>P\<in>U. (\<exists>V. V \<subseteq> U \<and> V \<in> geotop_euclidean_topology \<and>
-              (\<forall>Q\<in>V. \<not> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)) \<and>
-              (V \<union> (U - V) = U))" sorry
-  (** (3) U is connected (hypothesis); hence the partition B_P \<union> (U - B_P) = U with both
-         open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
-  have h_B_eq_U:
-    "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
-  show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
-qed
-
 (** Partial progress on Theorem_GT_1_13: the convex open case in a euclidean space
     is broken-line-connected. Uses \<open>geotop_closed_segment_is_broken_line\<close> for the
     P \<noteq> Q case; for P = Q, picks an auxiliary point via the open-ball assumption. **)
@@ -2953,10 +2927,8 @@ proof (intro ballI)
     show ?thesis using hbline hsub by auto
   next
     case True
-    (** P = Q; pick Q' \<noteq> P in U via the open-ball nbhd and take [P, Q']. **)
     obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and hball: "ball P \<epsilon> \<subseteq> U"
       using hU_open_HOL hP open_contains_ball by blast
-    (** A nonzero basis vector exists (DIM('a) \<ge> 1 via euclidean_space axioms). **)
     obtain b :: 'a where hb: "b \<in> Basis" using nonempty_Basis by blast
     have hb_norm: "norm b = 1" using hb by (rule norm_Basis)
     have hb_nz: "b \<noteq> 0" using hb_norm by auto
@@ -2991,6 +2963,66 @@ proof -
   have hconv: "convex (ball P r)" by (rule convex_ball)
   show ?thesis
     by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
+qed
+
+theorem Theorem_GT_1_13:
+  fixes U :: "'a::euclidean_space set"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+  shows "geotop_broken_line_connected U"
+proof -
+  (** (1) For any P \<in> U, the set B_P = {Q \<in> U | P is connected to Q by a broken line in
+         U} is open (any Q has an open ball in U which is convex, hence broken-line
+         connected; any Q' in that ball extends the path). **)
+  have h_B_open:
+    "\<forall>P\<in>U. (\<exists>BP. BP \<subseteq> U \<and> P \<in> BP \<and> BP \<in> geotop_euclidean_topology \<and>
+           (\<forall>Q\<in>BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B))"
+  proof
+    fix P assume hP: "P \<in> U"
+    have hU_HOL: "open U"
+      using hU_open unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hball_ex: "\<exists>e>0. ball P e \<subseteq> U"
+      using hU_HOL hP open_contains_ball by (by100 blast)
+    then obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and h\<epsilon>sub: "ball P \<epsilon> \<subseteq> U"
+      by (by100 blast)
+    let ?BP = "ball P \<epsilon>"
+    have hBP_open: "open ?BP" by (by100 simp)
+    have hBP_topgeo: "?BP \<in> geotop_euclidean_topology"
+      using hBP_open unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hBP_convex: "convex ?BP" by (by100 simp)
+    have hBP_bl: "geotop_broken_line_connected ?BP"
+      by (rule geotop_convex_open_broken_line_connected[OF hBP_topgeo hBP_convex])
+    have hP_BP: "P \<in> ?BP" using h\<epsilon> by (by100 simp)
+    have hQ_bline: "\<forall>Q\<in>?BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> ?BP \<and> P \<in> B \<and> Q \<in> B"
+      using hBP_bl hP_BP unfolding geotop_broken_line_connected_def by (by100 blast)
+    have hQ_bline_U: "\<forall>Q\<in>?BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+    proof
+      fix Q assume hQ: "Q \<in> ?BP"
+      obtain B where hB: "geotop_is_broken_line B" and hBBP: "B \<subseteq> ?BP"
+                 and hPB: "P \<in> B" and hQB: "Q \<in> B"
+        using hQ_bline hQ by (by100 blast)
+      have "B \<subseteq> U" using hBBP h\<epsilon>sub by (by100 blast)
+      then show "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+        using hB hPB hQB by (by100 blast)
+    qed
+    show "\<exists>BP. BP \<subseteq> U \<and> P \<in> BP \<and> BP \<in> geotop_euclidean_topology \<and>
+                 (\<forall>Q\<in>BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
+      using h\<epsilon>sub hP_BP hBP_topgeo hQ_bline_U by (by100 blast)
+  qed
+  (** (2) The complement U - B_P is also open: if Q \<in> U - B_P, take an open ball B(Q, r)
+         \<subseteq> U; no point of B(Q, r) is joinable to P (else by extending from Q through
+         convex ball, Q itself would be joinable). **)
+  have h_complement_open:
+    "\<forall>P\<in>U. (\<exists>V. V \<subseteq> U \<and> V \<in> geotop_euclidean_topology \<and>
+              (\<forall>Q\<in>V. \<not> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)) \<and>
+              (V \<union> (U - V) = U))" sorry
+  (** (3) U is connected (hypothesis); hence the partition B_P \<union> (U - B_P) = U with both
+         open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
+  have h_B_eq_U:
+    "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
+  show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
 qed
 
 (** from \<S>1 Theorem 14 (geotop.tex:408)
