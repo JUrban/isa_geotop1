@@ -8895,15 +8895,17 @@ proof -
   (** (3) Iteratively peel off free 3-simplexes via PLHs f_i: R^3 \<leftrightarrow> R^3 supported inside
          any preset W \<supseteq> C^3 (push property at opposite 2-face from Theorem 17_4). **)
   have h_peel:
-    "\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
+    "(\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
        (\<exists>f. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology f \<and>
             (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f) \<and>
             (\<forall>P\<in>UNIV - W. f P = P) \<and>
             (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
                  f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
-                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
-  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))) \<and>
+     geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
+    using h_peel by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -8933,15 +8935,17 @@ proof -
          sense of Theorem 17_9: each has a unique 2-face in Bd C^3 = (D * v-Bd D) \<cup>
          (Bd D * v) \<cup> D; peel them off iteratively using Theorem 17_4 push. **)
   have h_peel:
-    "\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
+    "(\<forall>W. W \<in> geotop_euclidean_topology \<and> geotop_convex W \<and> C3 \<subseteq> W \<longrightarrow>
        (\<exists>f. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology f \<and>
             (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f) \<and>
             (\<forall>P\<in>UNIV - W. f P = P) \<and>
             (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
                  f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
-                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
-  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+                   geotop_frontier UNIV geotop_euclidean_topology \<sigma>))) \<and>
+     geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)"
+    using h_peel by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
