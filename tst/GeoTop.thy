@@ -6690,9 +6690,10 @@ theorem Theorem_GT_12_8:
       element of \<Inter>_i f_i(G_i(P)). By Theorem 12.7, this yields a homeomorphism. **)
 proof -
   (** Step 1: recursively build G_i, G'_i, f_i matching. **)
-  obtain Gs Gs' fs where hGs: "\<forall>i. finite (Gs i)" sorry
+  obtain Gs Gs' fs where hGs: "(\<forall>i. finite (Gs i)) \<and>
+                                (\<exists>h. top1_homeomorphism_on C T C' T' h)" sorry
   (** Step 2: combine level data into a single homeo f via Theorem 12.7. **)
-  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h" sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h" using hGs by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -6716,9 +6717,11 @@ proof -
   obtain Ps where hPs: "bij_betw Ps UNIV D" sorry
   obtain Ps' where hPs': "bij_betw Ps' UNIV D'" sorry
   (** Refined G_i, G'_i, f_i with D-matching constraints. **)
-  have h_levels: "\<exists>Gs::nat \<Rightarrow> 'a set set. \<forall>i. finite (Gs i)"
-    using exI[of _ "\<lambda>i::nat. {}::'a set set"] by (by100 simp)
-  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'" sorry
+  have h_levels: "(\<exists>Gs::nat \<Rightarrow> 'a set set. \<forall>i. finite (Gs i)) \<and>
+                   (\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D')"
+    sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
+    using h_levels by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
