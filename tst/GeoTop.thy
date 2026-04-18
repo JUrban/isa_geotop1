@@ -6097,16 +6097,22 @@ proof -
          (Theorem 3_7) tame each 2-cell inside U while keeping the boundary fixed,
          with support in a small \<phi>/2-neighbourhood. **)
   have h_faces:
-    "\<exists>h2. top1_homeomorphism_on UNIV geotop_euclidean_topology
+    "(\<exists>h2. top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology h2 \<and>
-          (\<forall>P\<in>UNIV - U. h2 P = P)" sorry
+          (\<forall>P\<in>UNIV - U. h2 P = P)) \<and>
+     (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U)" sorry
   (** (4) Compose h = h_2 \<circ> h_1; the result has h(M) polyhedral, supported in U, and
          within \<phi> of the identity. **)
   have h_final: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
           \<and> (\<forall>P\<in>UNIV - U. h P = P)
-          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+    using h_faces by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -7111,14 +7117,17 @@ proof -
   (** (5) The connected frontier Bd C is a 1-sphere (polyhedral simple closed curve from
          the PL frame construction). **)
   have h_bd_1sphere:
-    "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+    "(\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
          geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C)
            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_frontier UNIV geotop_euclidean_topology C)) 1" sorry
+              (geotop_frontier UNIV geotop_euclidean_topology C)) 1) \<and>
+     (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2)" sorry
   (** (6) Applying Schoenflies (\<S>10.6), the bounded region C with 1-sphere boundary is
          a 2-cell. **)
   have h_final: "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
-           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2" sorry
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2"
+    using h_bd_1sphere by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
