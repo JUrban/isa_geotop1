@@ -231,6 +231,19 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
     geotop_is_complex K \<and> geotop_is_complex L
     \<and> geotop_refines L K \<and> geotop_polyhedron L = geotop_polyhedron K"
 
+subsection \<open>Diameter and mesh\<close>
+
+(** from \<S>4: diameter and mesh (geotop.tex:953)
+    LATEX VERSION: In a metric space [X,d], the diameter \<delta>M of M is the least upper bound of
+      d(P,Q) (P,Q \<in> M). If G is a collection of subsets, the mesh of G is the least upper
+      bound of \<delta>g (g \<in> G). Moved here from \<S>4 because the mesh-shrinkage lemma for
+      iterated barycentric subdivision (needed in Theorem_GT_1) references \<open>geotop_mesh\<close>. **)
+definition geotop_diameter :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set \<Rightarrow> real" where
+  "geotop_diameter d M = (if M = {} then 0 else (SUP P\<in>M. SUP Q\<in>M. d P Q))"
+
+definition geotop_mesh :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set set \<Rightarrow> real" where
+  "geotop_mesh d G = (if G = {} then 0 else (SUP g\<in>G. geotop_diameter d g))"
+
 subsection \<open>Barycentric subdivision infrastructure (from early.tex \<S>4)\<close>
 
 text \<open>The proof of Theorem 1 goes via iterated barycentric subdivision, as
@@ -5292,15 +5305,9 @@ definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" w
        g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
     (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
 
-(** from \<S>4: diameter and mesh (geotop.tex:953)
-    LATEX VERSION: In a metric space [X,d], the diameter \<delta>M of M is the least upper bound of
-      d(P,Q) (P,Q \<in> M). If G is a collection of subsets, the mesh of G is the least upper
-      bound of \<delta>g (g \<in> G). **)
-definition geotop_diameter :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set \<Rightarrow> real" where
-  "geotop_diameter d M = (if M = {} then 0 else (SUP P\<in>M. SUP Q\<in>M. d P Q))"
-
-definition geotop_mesh :: "('a \<Rightarrow> 'a \<Rightarrow> real) \<Rightarrow> 'a set set \<Rightarrow> real" where
-  "geotop_mesh d G = (if G = {} then 0 else (SUP g\<in>G. geotop_diameter d g))"
+text \<open>\<open>geotop_diameter\<close> and \<open>geotop_mesh\<close> are defined earlier (before
+Theorem_GT_1), since they are needed to state the mesh-shrinkage lemma for
+iterated barycentric subdivision.\<close>
 
 (** from \<S>4 Theorem 5 (geotop.tex:976)
     LATEX VERSION: No arc separates R^2. **)
