@@ -1085,10 +1085,15 @@ next
                     and hiso\<^sub>2: "geotop_isomorphic L\<^sub>2 M\<^sub>1"
       using hLM unfolding geotop_comb_equiv_def by (by100 blast)
     (** Step (a): common subdivision \<open>L_3\<close> of \<open>L_1\<close>, \<open>L_2\<close> via Theorem_GT_1.
-        Requires finiteness of the common parent \<open>L\<close>. **)
+        Requires finiteness of the common parent \<open>L\<close>. For now, a sorry for
+        \<open>finite L\<close>; a clean fix strengthens \<open>geotop_comb_equiv\<close> or \<open>transp\<close> to
+        restrict to the finite-complex domain. **)
+    have hLfin: "finite L" sorry
+    have hL_ex: "\<exists>L\<^sub>3. geotop_is_subdivision L\<^sub>3 L\<^sub>1 \<and> geotop_is_subdivision L\<^sub>3 L\<^sub>2"
+      by (rule Theorem_GT_1[OF hLfin hL\<^sub>1L hL\<^sub>2L])
     obtain L\<^sub>3 where hL\<^sub>3L\<^sub>1: "geotop_is_subdivision L\<^sub>3 L\<^sub>1"
                  and hL\<^sub>3L\<^sub>2: "geotop_is_subdivision L\<^sub>3 L\<^sub>2"
-      sorry
+      using hL_ex by (by100 blast)
     (** Step (b): transport \<open>L_3 < L_1\<close> across \<open>K_1 \<cong> L_1\<close> to get \<open>K_2 < K_1\<close> with
         \<open>K_2 \<cong> L_3\<close>. **)
     obtain K\<^sub>2 where hK\<^sub>2K\<^sub>1: "geotop_is_subdivision K\<^sub>2 K\<^sub>1"
