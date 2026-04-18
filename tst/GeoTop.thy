@@ -779,12 +779,57 @@ proof -
       using hPLH_lift himg by (by100 blast)
   qed
   (** (\<Leftarrow>) Given a PLH \<open>f: |L| \<leftrightarrow> |K|\<close>, PL structure provides subdivisions \<open>L_1 < L\<close>
-      on which \<open>f\<close> is affinely simplicial and \<open>K_1 < K\<close> on which \<open>f^{-1}\<close> is affinely
-      simplicial. Apply Theorem_GT_1 to get a common refinement \<open>L_2 < L_1\<close> and pull back
-      under \<open>f\<close> to \<open>K_2 < K_1\<close> on which \<open>f: K_2 \<cong> L_2\<close>. Hence \<open>K \<sim>_c L\<close>. **)
+      on which \<open>f\<close> is linear into simplexes of K, and \<open>K_1 < K\<close> on which \<open>f^{-1}\<close> is
+      linear into simplexes of L. Push \<open>L_1\<close> forward by \<open>f\<close> to a subdivision \<open>f(L_1) < K\<close>,
+      apply Theorem_GT_1 to get a common refinement \<open>K_3 < f(L_1), K_1\<close>, pull back
+      through \<open>f\<close> to \<open>L_3 < L_1\<close>, and note \<open>f: L_3 \<cong> K_3\<close>. Hence \<open>K \<sim>_c L\<close>. **)
   have h_backward:
     "(\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K) \<longrightarrow>
-       geotop_comb_equiv K L" sorry
+       geotop_comb_equiv K L"
+  proof
+    assume hexf: "\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K"
+    obtain f where hf_PLH: "geotop_PLH L K f"
+               and hf_img: "f ` (geotop_polyhedron L) = geotop_polyhedron K"
+      using hexf by (by100 blast)
+    (** (1) Extract forward/backward PL subdivisions witnessing linearity. **)
+    have hf_PL_fwd: "geotop_PL_map L K f"
+      using hf_PLH unfolding geotop_PLH_def by (by100 blast)
+    obtain L\<^sub>1 where hL\<^sub>1L: "geotop_is_subdivision L\<^sub>1 L"
+                 and hL\<^sub>1_lin: "\<forall>\<sigma>\<in>L\<^sub>1. \<exists>\<tau>\<in>K. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using hf_PL_fwd unfolding geotop_PL_map_def by (by100 blast)
+    (** (2) The image complex \<open>f(L\<^sub>1) = {f(\<sigma>) | \<sigma>\<in>L\<^sub>1}\<close> is a subdivision of K
+          (push linear images of simplexes; f bij gives intersection compatibility). **)
+    define fL\<^sub>1 where "fL\<^sub>1 = (\<lambda>\<sigma>. f ` \<sigma>) ` L\<^sub>1"
+    have hfL\<^sub>1_sub: "geotop_is_subdivision fL\<^sub>1 K"
+      sorry \<comment> \<open>\<open>f\<close> bijective + linear on each simplex of \<open>L\<^sub>1\<close> means \<open>f(\<sigma>)\<close> is a simplex;
+                the simplexes \<open>f(\<sigma>)\<close> tile \<open>|K|\<close> coherently.\<close>
+    (** (3) Similarly obtain a subdivision \<open>K\<^sub>1 < K\<close> on which \<open>f^{-1}\<close> is linear. **)
+    have hf_PL_bwd: "geotop_PL_map K L (inv_into (geotop_polyhedron L) f)"
+      using hf_PLH unfolding geotop_PLH_def by (by100 blast)
+    obtain K\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
+      using hf_PL_bwd unfolding geotop_PL_map_def by (by100 blast)
+    (** (4) Apply Theorem_GT_1 to get a common subdivision \<open>K\<^sub>3\<close> of \<open>fL\<^sub>1\<close> and \<open>K\<^sub>1\<close>.
+          Requires finite K (a faithfulness gap: we need to add this assumption to GT_2). **)
+    have hKfin: "finite K" sorry
+    obtain K\<^sub>3 where hK\<^sub>3_fL\<^sub>1: "geotop_is_subdivision K\<^sub>3 fL\<^sub>1"
+                 and hK\<^sub>3_K\<^sub>1: "geotop_is_subdivision K\<^sub>3 K\<^sub>1"
+      using Theorem_GT_1[OF hKfin hfL\<^sub>1_sub hK\<^sub>1K] by (by100 blast)
+    (** (5) Pull \<open>K\<^sub>3\<close> back through \<open>f\<close> to get \<open>L\<^sub>3 < L\<^sub>1\<close> with \<open>f: L\<^sub>3 \<cong> K\<^sub>3\<close>. **)
+    define L\<^sub>3 where "L\<^sub>3 = (\<lambda>\<sigma>. inv_into (geotop_polyhedron L) f ` \<sigma>) ` K\<^sub>3"
+    have hL\<^sub>3_L: "geotop_is_subdivision L\<^sub>3 L"
+      sorry \<comment> \<open>Pull back via \<open>f\<^sup>-\<^sup>1\<close> (linear on each simplex of \<open>K\<^sub>1\<close>, hence on \<open>K\<^sub>3 < K\<^sub>1\<close>);
+                image is a subdivision of \<open>L\<^sub>1\<close>, transitively of \<open>L\<close>.\<close>
+    have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
+      sorry \<comment> \<open>\<open>f\<close> linear on each simplex of \<open>L\<^sub>3\<close>, bijective on vertex sets.\<close>
+    (** (6) Assemble \<open>K \<sim>_c L\<close> from \<open>K\<^sub>3 < K\<close> and \<open>L\<^sub>3 < L\<close> and \<open>K\<^sub>3 \<cong> L\<^sub>3\<close>. **)
+    have hK\<^sub>3_K: "geotop_is_subdivision K\<^sub>3 K"
+      by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
+    have hiso_K\<^sub>3_L\<^sub>3: "geotop_isomorphic K\<^sub>3 L\<^sub>3"
+      by (rule geotop_isomorphic_sym[OF hiso_L\<^sub>3_K\<^sub>3])
+    show "geotop_comb_equiv K L"
+      unfolding geotop_comb_equiv_def
+      using hK\<^sub>3_K hL\<^sub>3_L hiso_K\<^sub>3_L\<^sub>3 by (by100 blast)
+  qed
   show ?thesis using h_forward h_backward by (by100 blast)
 qed
 
