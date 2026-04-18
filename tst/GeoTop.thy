@@ -6960,7 +6960,22 @@ proof -
   (** (1) The constant path e(t) = P_0 is a closed path based at P_0; take
          [e] \<in> \<pi>(X, P_0) as the candidate identity. **)
   define e\<^sub>c :: "real \<Rightarrow> 'a" where "e\<^sub>c = (\<lambda>t. P\<^sub>0)"
-  have h_e_cp: "geotop_closed_path_on X T P\<^sub>0 e\<^sub>c" sorry
+  have h_e_cp: "geotop_closed_path_on X T P\<^sub>0 e\<^sub>c"
+  proof -
+    have hTeucl: "is_topology_on (UNIV::real set) geotop_euclidean_topology"
+      using top1_open_sets_is_topology_on_UNIV
+      unfolding geotop_euclidean_topology_eq_open_sets
+      by (by100 simp)
+    have hsub_topol: "is_topology_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                      (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1})"
+      by (rule subspace_topology_is_topology_on[OF hTeucl]) simp
+    have hcont: "top1_continuous_map_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                   (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1}) X T e\<^sub>c"
+      unfolding e\<^sub>c_def by (rule top1_continuous_map_on_const[OF hsub_topol hT hP\<^sub>0])
+    show ?thesis
+      using hcont unfolding geotop_closed_path_on_def geotop_path_on_def e\<^sub>c_def
+      by (by100 simp)
+  qed
   (** (2) Identity laws: for any closed path p, pe \<cong> p and ep \<cong> p via the linear
          reparametrisation homotopy H(t, y) = p(t(2 - y)) on the appropriate interval. **)
   have h_id: "\<forall>p\<in>geotop_CP X T P\<^sub>0.
