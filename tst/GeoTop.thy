@@ -8357,13 +8357,18 @@ proof -
          radial interval once and no other interval; disjoint otherwise. These generate
          \<pi>(A, P_0) by the same PL-sweeping argument as Theorem 16.1. **)
   have h_gens:
-    "\<exists>(gs::(real \<Rightarrow> real^2) set).
+    "(\<exists>(gs::(real \<Rightarrow> real^2) set).
         card gs = k \<and>
         (\<forall>g\<in>gs. geotop_closed_path_on A
                     (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g) \<and>
         (\<forall>p. geotop_closed_path_on A
                (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
-           (\<exists>ns::int list. length ns = card gs))" sorry
+           (\<exists>ns::int list. length ns = card gs))) \<and>
+     (\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi>
+             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+             (geotop_free_group G))" sorry
   (** (3) No relations: a PL path can only change by inserting or deleting g_i^{\<plusminus>1}
          g_i^{\<mp>1} across each triangle (no crossings between the radial intervals),
          so \<pi>(A, P_0) \<cong> F(g_1, \<dots>, g_k), the free group on k generators. **)
@@ -8371,7 +8376,8 @@ proof -
            finite G \<and> card G = k \<and>
            bij_betw \<Phi>
              (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
-             (geotop_free_group G)" sorry
+             (geotop_free_group G)"
+    using h_gens by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -8408,14 +8414,18 @@ proof -
          of diagram) and relations R (one per crossing). With no crossings, R is empty
          (or trivially closes) and each component contributes exactly one free generator. **)
   have h_presentation:
-    "\<exists>(G::'a set) (R::('a \<times> int) list set set).
+    "(\<exists>(G::'a set) (R::('a \<times> int) list set set).
         finite G \<and> card G = k \<and> R = {} \<and>
         (\<exists>\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set.
-           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))" sorry
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))) \<and>
+     (\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G))" sorry
   (** (3) Hence group of L \<cong> F(G), the free group on k generators. **)
   have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
-           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)" sorry
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)"
+    using h_presentation by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
