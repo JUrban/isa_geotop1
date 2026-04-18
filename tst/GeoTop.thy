@@ -1823,8 +1823,24 @@ proof -
     have hL\<^sub>3_complex: "geotop_is_complex L\<^sub>3"
       sorry \<comment> \<open>L_3 is a complex: image of complex K_3 under a bijective PL map
                 preserves the complex structure.\<close>
+    (** Polyhedron equality: \<open>|L_3| = f_inv(|K_3|) = f_inv(|K|) = |L|\<close>. **)
+    have hK\<^sub>3_K: "geotop_is_subdivision K\<^sub>3 K"
+      by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
+    have hK\<^sub>3_poly_eq_K: "geotop_polyhedron K\<^sub>3 = geotop_polyhedron K"
+      using hK\<^sub>3_K unfolding geotop_is_subdivision_def by (by100 blast)
+    have hf_bij: "bij_betw f (geotop_polyhedron L) (geotop_polyhedron K)"
+      using hf_PLH unfolding geotop_PLH_def by (by100 blast)
+    have hf_inv_bij: "bij_betw (inv_into (geotop_polyhedron L) f)
+                                  (geotop_polyhedron K) (geotop_polyhedron L)"
+      by (rule bij_betw_inv_into[OF hf_bij])
+    have hf_inv_img_K: "(inv_into (geotop_polyhedron L) f) ` (geotop_polyhedron K)
+                          = geotop_polyhedron L"
+      using hf_inv_bij unfolding bij_betw_def by (by100 blast)
+    have hL\<^sub>3_poly_step: "geotop_polyhedron L\<^sub>3 =
+                         (inv_into (geotop_polyhedron L) f) ` (geotop_polyhedron K\<^sub>3)"
+      unfolding L\<^sub>3_def geotop_polyhedron_def by (by100 blast)
     have hL\<^sub>3_poly: "geotop_polyhedron L\<^sub>3 = geotop_polyhedron L"
-      sorry \<comment> \<open>|L_3| = f_inv(|K_3|) = f_inv(|K|) = |L| via bijection.\<close>
+      using hL\<^sub>3_poly_step hK\<^sub>3_poly_eq_K hf_inv_img_K by (by100 simp)
     have hL\<^sub>3_ref: "geotop_refines L\<^sub>3 L"
       sorry \<comment> \<open>Each simplex of L_3 sits in some simplex of L via the PL structure.\<close>
     have hLcomp: "geotop_is_complex L"
