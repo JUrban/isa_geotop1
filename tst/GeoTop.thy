@@ -2442,6 +2442,18 @@ lemma geotop_component_at_UNIV_eq_connected_component_set:
   unfolding geotop_component_at_def connected_component_Union
   using top1_connected_on_geotop_iff_connected by blast
 
+(** Self-membership: P \<in> its own component whenever the singleton is connected. **)
+lemma geotop_self_in_component_at:
+  assumes hPM: "P \<in> M"
+  assumes hsing: "top1_connected_on {P} (subspace_topology X T {P})"
+  shows "P \<in> geotop_component_at X T M P"
+proof -
+  have "{P} \<subseteq> M" using hPM by (by100 simp)
+  moreover have "P \<in> {P}" by (by100 simp)
+  ultimately show ?thesis
+    unfolding geotop_component_at_def using hsing by (by100 blast)
+qed
+
 (** from \<S>1 Theorem 16 (geotop.tex:417)
     LATEX VERSION: Every two (different) components of the same set are disjoint. **)
 theorem Theorem_GT_1_16:
@@ -3627,8 +3639,7 @@ proof -
                              (subspace_topology UNIV geotop_euclidean_topology {x})"
       by (rule top1_connected_on_singleton[OF hTU], simp)
     have hx_comp_x: "x \<in> geotop_component_at UNIV geotop_euclidean_topology U x"
-      unfolding geotop_component_at_def
-      using hxU hxsingleton_conn by blast
+      by (rule geotop_self_in_component_at[OF hxU hxsingleton_conn])
     have hdisj: "geotop_component_at UNIV geotop_euclidean_topology U P =
                  geotop_component_at UNIV geotop_euclidean_topology U x
               \<or> ?CP \<inter> geotop_component_at UNIV geotop_euclidean_topology U x = {}"
@@ -3674,13 +3685,13 @@ proof -
                       (subspace_topology UNIV geotop_euclidean_topology {P})"
     by (rule top1_connected_on_singleton[OF hTU], simp)
   have hP_V: "P \<in> ?V"
-    unfolding geotop_component_at_def using hP hPsing_conn by blast
+    by (rule geotop_self_in_component_at[OF hP hPsing_conn])
   (** Q in W because comp_U(Q) \<noteq> V, disjoint by 1.16, so Q (which is in comp_U(Q)) \<notin> V. **)
   have hQsing_conn: "top1_connected_on {Q}
                       (subspace_topology UNIV geotop_euclidean_topology {Q})"
     by (rule top1_connected_on_singleton[OF hTU], simp)
   have hQ_compQ: "Q \<in> geotop_component_at UNIV geotop_euclidean_topology U Q"
-    unfolding geotop_component_at_def using hQ hQsing_conn by blast
+    by (rule geotop_self_in_component_at[OF hQ hQsing_conn])
   have hdisj_PQ:
     "?V = geotop_component_at UNIV geotop_euclidean_topology U Q
    \<or> ?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U Q = {}"
@@ -3710,7 +3721,7 @@ proof -
                              (subspace_topology UNIV geotop_euclidean_topology {x})"
       by (rule top1_connected_on_singleton[OF hTU], simp)
     have hx_compx: "x \<in> geotop_component_at UNIV geotop_euclidean_topology U x"
-      unfolding geotop_component_at_def using hxU hxsingleton_conn by blast
+      by (rule geotop_self_in_component_at[OF hxU hxsingleton_conn])
     have hdisj_Px:
       "?V = geotop_component_at UNIV geotop_euclidean_topology U x
      \<or> ?V \<inter> geotop_component_at UNIV geotop_euclidean_topology U x = {}"
