@@ -231,6 +231,29 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
     geotop_is_complex K \<and> geotop_is_complex L
     \<and> geotop_refines L K \<and> geotop_polyhedron L = geotop_polyhedron K"
 
+subsection \<open>General position descent\<close>
+
+(** Subsets of general-position sets inherit the general-position property. **)
+lemma geotop_general_position_mono:
+  fixes V W :: "'a::real_vector set"
+  assumes hV: "geotop_general_position V m"
+  assumes hWV: "W \<subseteq> V"
+  assumes hWfin: "finite W"
+  shows "geotop_general_position W m"
+  unfolding geotop_general_position_def
+proof (intro allI impI)
+  fix H :: "'a set" and k :: nat
+  assume hHk: "geotop_hyperplane_dim H k \<and> k < m"
+  have hVk: "finite (V \<inter> H) \<and> card (V \<inter> H) \<le> k+1"
+    using hV hHk unfolding geotop_general_position_def by (by100 blast)
+  have hW_sub: "W \<inter> H \<subseteq> V \<inter> H" using hWV by (by100 blast)
+  have hWfin_H: "finite (W \<inter> H)" using hWfin by (by100 blast)
+  have "card (W \<inter> H) \<le> card (V \<inter> H)"
+    using hW_sub hVk card_mono by (by100 blast)
+  then have "card (W \<inter> H) \<le> k+1" using hVk by (by100 linarith)
+  then show "finite (W \<inter> H) \<and> card (W \<inter> H) \<le> k+1" using hWfin_H by (by100 blast)
+qed
+
 subsection \<open>Vertex uniqueness for simplexes\<close>
 
 (** A simplex \<open>\<sigma>\<close> has a unique vertex set: if \<open>\<sigma> = conv V\<^sub>1 = conv V\<^sub>2\<close> with
