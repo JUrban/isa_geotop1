@@ -2734,7 +2734,64 @@ lemma geotop_complex_connected_imp_HOL_vertex_reachable:
   assumes hw: "w \<in> geotop_complex_vertices K"
   shows "\<exists>g. path g \<and> path_image g \<subseteq> geotop_polyhedron K \<and>
                pathstart g = v \<and> pathfinish g = w"
-  sorry
+proof -
+  have hKcomp: "geotop_is_complex K"
+    using hK unfolding geotop_complex_connected_def by (by100 blast)
+  (** Define \<open>V\<close> = vertices HOL-path-reachable from \<open>v\<close> through \<open>|K|\<close>. **)
+  define V where
+    "V = {u \<in> geotop_complex_vertices K. \<exists>g. path g \<and> path_image g \<subseteq> geotop_polyhedron K
+                                               \<and> pathstart g = v \<and> pathfinish g = u}"
+  (** Step 1: \<open>v \<in> V\<close> via the constant path. **)
+  have hv_V: "v \<in> V"
+  proof -
+    let ?g = "\<lambda>t::real. v"
+    have h_path: "path ?g" unfolding path_def by (by100 simp)
+    have h_im_sub: "path_image ?g \<subseteq> {v}"
+      unfolding path_image_def by (by100 blast)
+    (** \<open>v \<in> |K|\<close>: any vertex of \<open>K\<close> lies in some simplex of \<open>K\<close>. **)
+    obtain \<sigma>\<^sub>v V\<^sub>v where h\<sigma>\<^sub>v: "\<sigma>\<^sub>v \<in> K" and hV\<^sub>v: "geotop_simplex_vertices \<sigma>\<^sub>v V\<^sub>v"
+                     and hv_in_V\<^sub>v: "v \<in> V\<^sub>v"
+      using hv unfolding geotop_complex_vertices_def by (by100 blast)
+    have h\<sigma>\<^sub>v_eq: "\<sigma>\<^sub>v = convex hull V\<^sub>v"
+      using hV\<^sub>v geotop_convex_hull_eq_HOL
+      unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hv_hull: "v \<in> convex hull V\<^sub>v"
+      using hv_in_V\<^sub>v hull_inc[of v V\<^sub>v] by (by100 simp)
+    have hv_\<sigma>\<^sub>v: "v \<in> \<sigma>\<^sub>v" using hv_hull h\<sigma>\<^sub>v_eq by (by100 simp)
+    have hv_K: "v \<in> geotop_polyhedron K"
+      using hv_\<sigma>\<^sub>v h\<sigma>\<^sub>v unfolding geotop_polyhedron_def by (by100 blast)
+    have h_im_K: "path_image ?g \<subseteq> geotop_polyhedron K"
+      using h_im_sub hv_K by (by100 blast)
+    have h_s: "pathstart ?g = v" unfolding pathstart_def by (by100 simp)
+    have h_f: "pathfinish ?g = v" unfolding pathfinish_def by (by100 simp)
+    show ?thesis
+      unfolding V_def using hv h_path h_im_K h_s h_f by (by100 blast)
+  qed
+  (** Step 2-6: define subcomplexes \<open>K_1\<close>, \<open>K_2\<close> and derive contradiction from
+      \<open>complex_connected K\<close> if \<open>K_2 \<noteq> \<emptyset>\<close>. Steps 3-5 (K_1, K_2 are complexes) and
+      Step 4 (vertex bipartition) require an edge-crossing lemma to propagate
+      reachability across edges. **)
+  define K\<^sub>1 where "K\<^sub>1 = {\<sigma>\<in>K. \<exists>V\<sigma>. geotop_simplex_vertices \<sigma> V\<sigma> \<and> V\<sigma> \<subseteq> V}"
+  define K\<^sub>2 where "K\<^sub>2 = {\<sigma>\<in>K. \<exists>V\<sigma>. geotop_simplex_vertices \<sigma> V\<sigma>
+                                     \<and> V\<sigma> \<inter> V = {}}"
+  (** Step 3: \<open>K\<^sub>1\<close> is a subcomplex of \<open>K\<close> (face-closed, intersection-compatible,
+      K.3-local-finite). **)
+  have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1" sorry
+  (** Step 5: \<open>K\<^sub>2\<close> is a subcomplex of \<open>K\<close>. **)
+  have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2" sorry
+  (** Step 4: bipartition — any simplex has all or no vertices in \<open>V\<close>.
+      Proof: if \<sigma>\<in>K has vertex in \<open>V\<close> and vertex not in \<open>V\<close>, the edge between
+      them lifts vertex-reachability to the "not-in-V" endpoint, a contradiction. **)
+  have hK\<^sub>1\<^sub>2_cover: "K\<^sub>1 \<union> K\<^sub>2 = K" sorry
+  have hK\<^sub>1\<^sub>2_disjoint: "K\<^sub>1 \<inter> K\<^sub>2 = {}" sorry
+  (** Step 6: \<open>K\<^sub>1 \<noteq> \<emptyset>\<close> because \<open>{v}\<close> is a 0-simplex in \<open>K\<^sub>1\<close>. **)
+  have hK\<^sub>1_nonempty: "K\<^sub>1 \<noteq> {}" sorry
+  (** Step 7: by \<open>complex_connected K\<close>, \<open>K\<^sub>2 = \<emptyset>\<close>, so every simplex of \<open>K\<close> has
+      all vertices in \<open>V\<close>. Hence \<open>w \<in> V\<close>. **)
+  have hV_all: "geotop_complex_vertices K \<subseteq> V" sorry
+  have hw_V: "w \<in> V" using hV_all hw by (by100 blast)
+  show ?thesis using hw_V unfolding V_def by (by100 blast)
+qed
 
 lemma geotop_complex_connected_imp_HOL_path_connected:
   fixes K :: "'a::real_normed_vector set set"
