@@ -3867,7 +3867,20 @@ proof -
       by (by100 blast)
   qed
   (** (3) U is connected (hypothesis); hence the partition B_P \<union> (U - B_P) = U with both
-         open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
+         open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U.
+         Structure:
+           (3a) Define \<open>B_P\<close> = broken-line reachable set from \<open>P\<close> in \<open>U\<close>.
+           (3b) \<open>B_P\<close> is open: any \<open>Q \<in> B_P\<close> has an open ball \<open>V \<subseteq> U\<close> around \<open>Q\<close>;
+                \<open>V\<close> is convex, broken-line connected, so any \<open>Q'\<in>V\<close> is \<open>P\<close>-reachable
+                by concatenation (broken-line concat lemma).
+           (3c) \<open>U \<setminus> B_P\<close> is open: any \<open>Q \<in> U \<setminus> B_P\<close> has a ball \<open>V \<subseteq> U\<close>;
+                if some \<open>Q' \<in> V\<close> were in \<open>B_P\<close>, concatenation gives \<open>P\<close>-reachable \<open>Q\<close>,
+                contradiction. So \<open>V \<subseteq> U \<setminus> B_P\<close>.
+           (3d) \<open>U\<close> connected + partition into two open sets forces one empty.
+           (3e) \<open>P \<in> B_P\<close> (any ball \<open>V \<subseteq> U\<close> around P is broken-line connected so
+                has a \<open>Q' \<in> V\<close> with broken-line from \<open>P\<close> to \<open>Q'\<close>; then \<open>Q' \<in> B_P\<close>).
+                Actually simpler: \<open>P \<in> B\<close> trivially for any \<open>B\<close> containing \<open>P\<close> —
+                witness: a segment \<open>P, Q_0\<close> for some \<open>Q_0 \<in> ball P \<epsilon> \<setminus> {P}\<close>. **)
   have h_B_eq_U:
     "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
   show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
