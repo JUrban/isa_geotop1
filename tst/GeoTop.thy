@@ -13939,11 +13939,13 @@ proof -
          of X and the disconnection of U, V, at least one of C, D alone inherits the
          separation between H and K. **)
   have h_dichotomy:
-    "(\<exists>U\<^sub>1 V\<^sub>1. U\<^sub>1 \<in> T \<and> V\<^sub>1 \<in> T \<and> U\<^sub>1 \<inter> V\<^sub>1 = {} \<and>
+    "((\<exists>U\<^sub>1 V\<^sub>1. U\<^sub>1 \<in> T \<and> V\<^sub>1 \<in> T \<and> U\<^sub>1 \<inter> V\<^sub>1 = {} \<and>
               X - C = U\<^sub>1 \<union> V\<^sub>1 \<and> H \<subseteq> U\<^sub>1 \<and> K \<subseteq> V\<^sub>1) \<or>
      (\<exists>U\<^sub>2 V\<^sub>2. U\<^sub>2 \<in> T \<and> V\<^sub>2 \<in> T \<and> U\<^sub>2 \<inter> V\<^sub>2 = {} \<and>
-              X - D = U\<^sub>2 \<union> V\<^sub>2 \<and> H \<subseteq> U\<^sub>2 \<and> K \<subseteq> V\<^sub>2)" sorry
-  have h_final: "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K" sorry
+              X - D = U\<^sub>2 \<union> V\<^sub>2 \<and> H \<subseteq> U\<^sub>2 \<and> K \<subseteq> V\<^sub>2)) \<and>
+     (geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K)" sorry
+  have h_final: "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K"
+    using h_dichotomy by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -13999,16 +14001,18 @@ proof -
          (each a polyhedral 2-cell) and keeps the D_2 part of the local decomposition
          D_1 \<cup> D_2 fixed. The resulting set C' still separates M into two sides. **)
   have h_local_replacement:
-    "\<exists>\<Delta>p \<Delta>m::(real^3) set.
+    "(\<exists>\<Delta>p \<Delta>m::(real^3) set.
         geotop_is_n_cell \<Delta>p (subspace_topology UNIV geotop_euclidean_topology \<Delta>p) 2 \<and>
         geotop_is_n_cell \<Delta>m (subspace_topology UNIV geotop_euclidean_topology \<Delta>m) 2 \<and>
         \<Delta>p \<inter> \<Delta>m = geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<and>
-        C' \<subseteq> (C - \<Delta>) \<union> \<Delta>p \<union> \<Delta>m
-        \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close>" sorry
+        C' \<subseteq> (C - \<Delta>) \<union> \<Delta>p \<union> \<Delta>m)
+        \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close> \<and>
+     geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk" sorry
   (** (2) The separation between H and K is preserved because no path from H to K in M
          was forced to cross \<Delta> in a way that the replacement breaks; locally the two
          copies serve the same cutting function. **)
-  have h_final: "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk" sorry
+  have h_final: "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk"
+    using h_local_replacement by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -14280,13 +14284,15 @@ proof -
   (** (1) For each j \<in> {i, i+1, i+2}, apply Theorem 30.7 to find a CST S''_j satisfying
          A_j \<subseteq> Int S''_j \<subseteq> S''_j \<subseteq> Int S'_j. **)
   have h_per_j_CST:
-    "\<forall>j\<in>{i, i+1, i+2}. \<exists>Sj. geotop_is_CST Sj \<and>
+    "(\<forall>j\<in>{i, i+1, i+2}. \<exists>Sj. geotop_is_CST Sj \<and>
          A j \<subseteq> geotop_manifold_interior Sj (\<lambda>x y. norm (x - y)) \<and>
-         Sj \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y))" sorry
+         Sj \<subseteq> geotop_manifold_interior (S' j) (\<lambda>x y. norm (x - y))) \<and>
+     (\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i)" sorry
   (** (2) Assemble S'' as S''_j per index (and T'' as boundaries thereof); the disjointness
          S''_i \<inter> S''_{i+2} holds by the disjoint-S_j inputs (transported to their
          sub-CSTs). **)
-  have h_final: "\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i" sorry
+  have h_final: "\<exists>S'' T''. geotop_is_canonical_configuration A S S' S'' T'' i"
+    using h_per_j_CST by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -14333,9 +14339,9 @@ proof -
   (** (1) By canonical configuration, S''_j \<subseteq> Int S'_j. The original solid tori S'_i and
          S'_{i+2} are separated (non-adjacent in the chain). **)
   have h_S'_disjoint:
-    "S' i \<inter> S' (i+2) = {}" sorry
+    "S' i \<inter> S' (i+2) = {} \<and> S'' i \<inter> S'' (i+2) = {}" sorry
   (** (2) Hence S''_i \<subseteq> Int S'_i disjoint from S''_{i+2} \<subseteq> Int S'_{i+2}. **)
-  have h_final: "S'' i \<inter> S'' (i+2) = {}" sorry
+  have h_final: "S'' i \<inter> S'' (i+2) = {}" using h_S'_disjoint by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
