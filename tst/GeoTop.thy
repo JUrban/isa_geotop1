@@ -436,14 +436,71 @@ lemma geotop_mesh_iterated_Sd_tends_to_zero:
 
 (** from early.tex Lemma 4.17 (key refinement lemma): if \<open>K'\<close> is a subdivision
     of \<open>K\<close>, then for some \<open>m\<close>, \<open>Sd^m(K)\<close> is a subdivision of \<open>K'\<close>.
-    The proof uses the Lebesgue-number lemma applied to the open-star cover of
-    \<open>|K|\<close> by vertex-stars of \<open>K'\<close>, together with mesh(\<open>Sd^m(K)\<close>) \<to> 0. **)
+    Proof following early.tex \<S>4.5:
+      (a) Finite open cover: vertex-stars \<open>st_{K'}(v)\<close>, \<open>v \<in> K'^0\<close>, cover \<open>|K|\<close>
+          (Lemma \<open>geotop_vertex_stars_cover\<close>).
+      (b) Compactness + Lebesgue number: pick \<open>\<delta> > 0\<close> such that every subset of
+          \<open>|K|\<close> of diameter \<open>< \<delta>\<close> is contained in some \<open>st_{K'}(v)\<close>.
+      (c) Mesh shrinkage: pick \<open>m\<close> so that every simplex of \<open>Sd^m(K)\<close> has
+          diameter \<open>< \<delta>\<close> (Lemma \<open>geotop_mesh_iterated_Sd_tends_to_zero\<close>).
+      (d) Assignment: every \<open>\<tau> \<in> Sd^m(K)\<close> lies in some \<open>st_{K'}(v)\<close>; use interior
+          disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
+          of \<open>K'\<close>. **)
 lemma geotop_iterated_Sd_refines_subdivision:
   fixes K K' :: "'a::real_normed_vector set set"
   assumes hK: "finite K"
   assumes hsub: "geotop_is_subdivision K' K"
   shows "\<exists>m. geotop_is_subdivision (geotop_iterated_Sd m K) K'"
-  sorry
+proof -
+  have hKcomp: "geotop_is_complex K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK'comp: "geotop_is_complex K'"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  (** (a) Finite vertex-stars of \<open>K'\<close> form an open cover of \<open>|K|\<close>. The underlying
+      polyhedra coincide: \<open>|K'| = |K|\<close>. **)
+  have hpolyeq: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK'fin: "finite K'"
+    sorry \<comment> \<open>Finiteness transfers across subdivision: each simplex of \<open>K\<close> has finitely
+              many simplexes of \<open>K'\<close> inside it, and \<open>K\<close> is finite. Lemma needed.\<close>
+  (** (b) Lebesgue number \<open>\<delta>\<close> for the vertex-star cover of \<open>|K|\<close>. Needs compactness
+      of \<open>|K|\<close> (from finite \<open>K\<close> + each simplex compact) and HOL's compact Lebesgue
+      number lemma. **)
+  obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
+                    and h\<delta>prop: "\<forall>S \<subseteq> geotop_polyhedron K.
+                         geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
+                         (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
+    sorry \<comment> \<open>Application of Lebesgue number on compact \<open>|K|\<close> to the finite open cover
+             \<open>st_{K'}(v)\<close>. Reducing "S \<subseteq> st_{K'}(v)" to "\<exists>\<sigma> \<ni> v with S \<subseteq> \<sigma>"
+             uses the definition of open star.\<close>
+  (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>. **)
+  obtain m where hm_mesh: "\<forall>\<tau>\<in>geotop_iterated_Sd m K.
+                            geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
+    sorry \<comment> \<open>From \<open>geotop_mesh_iterated_Sd_tends_to_zero\<close> applied to finite \<open>K\<close>:
+             find \<open>m\<close> with \<open>mesh(Sd^m K) < \<delta>\<close>, then unfold \<open>geotop_mesh\<close> (SUP).\<close>
+  (** (d) Every simplex of \<open>Sd^m(K)\<close> is contained in a simplex of \<open>K'\<close>. Combining
+      (b) and (c): every \<open>\<tau> \<in> Sd^m(K)\<close> has diameter \<open>< \<delta>\<close>, hence is contained in
+      some \<open>\<sigma> \<in> K'\<close> containing a vertex \<open>v\<close> of \<open>K'\<close>. **)
+  have hSdm_in_K': "\<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
+    sorry \<comment> \<open>Combine \<open>h\<delta>prop\<close> with \<open>hm_mesh\<close>; each \<open>\<tau>\<close> lies inside \<open>|K|\<close>
+             (since \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close>, by
+             \<open>geotop_iterated_Sd_is_subdivision\<close>, and each of its simplices is
+             a subset of \<open>|K|\<close>).\<close>
+  (** (e) Putting it together: \<open>Sd^m(K) < K'\<close>, since it refines \<open>K'\<close> and
+      \<open>|Sd^m(K)| = |K| = |K'|\<close>. **)
+  have hSdm_K: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hKcomp])
+  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using hSdm_K unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSdm_poly: "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K'"
+    using hSdm_K hsub unfolding geotop_is_subdivision_def by (by100 simp)
+  have hSdm_ref: "geotop_refines (geotop_iterated_Sd m K) K'"
+    unfolding geotop_refines_def using hSdm_in_K' by (by100 blast)
+  have "geotop_is_subdivision (geotop_iterated_Sd m K) K'"
+    unfolding geotop_is_subdivision_def
+    using hSdm_comp hK'comp hSdm_ref hSdm_poly by (by100 blast)
+  then show ?thesis by (by100 blast)
+qed
 
 (** from Introduction: Theorem 1 (geotop.tex:172).
     LATEX VERSION: Every two subdivisions of the same complex have a common subdivision.
