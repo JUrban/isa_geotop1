@@ -10657,7 +10657,20 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology \<sigma>3) C3
             (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
           C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>\<epsilon>>0. \<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+                     C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+                     P \<in> geotop_top_interior (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+                            (subspace_topology UNIV geotop_euclidean_topology
+                               (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) C2 \<and>
+                     geotop_diameter (\<lambda>x y. norm (x - y)) C2 < \<epsilon>
+             \<longrightarrow> (\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f.
+                    geotop_simplex_dim \<sigma>3 3 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
+                    geotop_is_face \<sigma>2 \<sigma>3 \<and>
+                    top1_homeomorphism_on \<sigma>3
+                      (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
+                      C3 (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
+                    C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23: doubling of a 3-manifold with boundary (geotop.tex:5016)
@@ -10702,7 +10715,8 @@ proof -
   have h_glued_manifold:
     "\<exists>M'. geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 3 \<and>
           geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) = {}" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>M'. geotop_is_doubling_of M M'" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 6 (geotop.tex:5025)
@@ -10731,7 +10745,8 @@ proof -
          Int K, St_K v = St_{K_double} v; for v \<in> Bd K, St_K v is a half-simplex (the
          half of St_{K_double} v on one side of the gluing 2-sphere). In either case,
          St_K v is combinatorially equivalent to a 3-simplex. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_combinatorial_3_manifold_with_boundary K" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 7 (geotop.tex:5031)
@@ -10821,7 +10836,10 @@ proof -
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C\<^sub>\<phi>) \<and>
          geotop_frontier UNIV geotop_euclidean_topology C\<^sub>\<phi> = \<phi> ` S" sorry
   (** (3) Pull back \<tilde>C^3 through \<phi>^{-1} to obtain C^3 \<subseteq> |St v| \<subseteq> |K| with Bd C^3 = S. **)
-  show ?thesis sorry
+  have h_final: "\<exists>C3 L. geotop_is_n_cell C3 (subspace_topology UNIV geotop_euclidean_topology C3) 3 \<and>
+                geotop_is_complex L \<and> geotop_polyhedron L = C3 \<and>
+                geotop_frontier UNIV geotop_euclidean_topology C3 = S" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 10 (geotop.tex:5044)
