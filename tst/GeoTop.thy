@@ -9460,7 +9460,10 @@ proof -
        = int (geotop_num_simplexes_of_dim K1 2) + int (geotop_num_simplexes_of_dim K2 2)"
     sorry
   (** (3) Thus \<chi>(K_1 \<cup> K_2) = \<chi>(K_1) + \<chi>(K_2) - \<chi>(K_J) = \<chi>(K_1) + \<chi>(K_2). **)
-  show ?thesis sorry
+  have hKJ_F0: "geotop_num_simplexes_of_dim K\<^sub>J 2 = 0" sorry
+  show ?thesis
+    using hKJ h_counts hKJ_F0
+    unfolding geotop_euler_characteristic_def by (by100 simp)
 qed
 
 (** from \<S>21 Theorem 9 (geotop.tex:4530)
