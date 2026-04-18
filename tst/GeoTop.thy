@@ -119,6 +119,23 @@ definition geotop_convex :: "'a::real_vector set \<Rightarrow> bool" where
 definition geotop_convex_hull :: "'a::real_vector set \<Rightarrow> 'a set" where
   "geotop_convex_hull X = \<Inter>{W. geotop_convex W \<and> X \<subseteq> W}"
 
+(** Bridge: Moise's geotop_convex coincides with HOL-Analysis's convex. **)
+lemma geotop_convex_iff_HOL_convex:
+  fixes S :: "'a::real_vector set"
+  shows "geotop_convex S \<longleftrightarrow> convex S"
+  unfolding geotop_convex_def geotop_segment_def convex_def by (by100 blast)
+
+(** The geotop convex hull coincides with HOL-Analysis's convex hull. **)
+lemma geotop_convex_hull_eq_HOL:
+  fixes V :: "'a::real_vector set"
+  shows "geotop_convex_hull V = convex hull V"
+proof -
+  have "{W. geotop_convex W \<and> V \<subseteq> W} = {W. convex W \<and> V \<subseteq> W}"
+    using geotop_convex_iff_HOL_convex by (by100 auto)
+  then show ?thesis
+    unfolding geotop_convex_hull_def hull_def by (by100 simp)
+qed
+
 subsection \<open>Simplexes and faces\<close>
 
 (** from Introduction: n-dimensional simplex (geotop.tex:117)
@@ -760,31 +777,165 @@ proof (rule ccontr)
   then show False using hdisj by (by100 blast)
 qed
 
-(** Helper (key technical lemma for GT_1_12): if K1 \<subseteq> K are locally finite
-    complexes (with K having K.2 intersection compatibility), then no point of
-    \<bar>K1\<close> is a limit point of \<bar>K - K1\<close>. Equivalently: \<bar>K1\<close> is closed in \<bar>K\<close>.
-    Proof via locally finite: around each \<sigma> \<in> K, only finitely many simplexes of K
-    intersect a neighborhood U. The ones not in K1 (hence not sharing faces with \<sigma>
-    from K1) stay at positive distance. **)
-lemma geotop_subcomplex_closed_in_polyhedron:
-  fixes K K1 :: "'a::real_normed_vector set set"
+(** A simplex is nonempty (V has card \<ge> 1, contained in the hull). **)
+lemma geotop_is_simplex_nonempty:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "\<sigma> \<noteq> {}"
+proof -
+  obtain V n where hfin: "finite V" and hcard: "card V = n + 1"
+              and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by (by100 blast)
+  have hVne: "V \<noteq> {}" using hcard by (by100 auto)
+  have hV_in_hull: "V \<subseteq> geotop_convex_hull V"
+    unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+  have "V \<subseteq> \<sigma>" using h\<sigma>_eq hV_in_hull by (by100 simp)
+  then show ?thesis using hVne by (by100 blast)
+qed
+
+(** A simplex is closed in \<open>real_normed_vector\<close> (compact = convex hull of finite points). **)
+lemma geotop_is_simplex_closed:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "closed \<sigma>"
+proof -
+  obtain V m n where hV: "finite V" and "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by (by100 blast)
+  then have h\<sigma>_eq: "\<sigma> = convex hull V"
+    using geotop_convex_hull_eq_HOL by (by100 simp)
+  have hcpt: "compact \<sigma>" using hV h\<sigma>_eq finite_imp_compact_convex_hull by (by100 simp)
+  then show ?thesis using compact_imp_closed by (by100 blast)
+qed
+
+(** A simplex is compact. **)
+lemma geotop_is_simplex_compact:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "compact \<sigma>"
+proof -
+  obtain V m n where hV: "finite V" and "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by (by100 blast)
+  then have "\<sigma> = convex hull V"
+    using geotop_convex_hull_eq_HOL by (by100 simp)
+  then show ?thesis using hV finite_imp_compact_convex_hull by (by100 simp)
+qed
+
+(** Key technical lemma for GT_1_12 (3)\<Rightarrow>(1): for P \<in> a simplex of a complex K,
+    every simplex of K that does not contain P stays at positive distance from P.
+    Uses K.4 (local finiteness) plus compactness of finitely many simplexes.
+    Moise's observation: no point v \<in> \<bar>K\<close> is a limit point of \<union>{\<tau>\<in>K: v\<notin>\<tau>}.
+
+    PROOF STRATEGY (deferred): use locally finiteness to extract finite collection
+    {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}} around \<sigma>. Among these, the ones not containing P are
+    finite closed sets not containing P, so \<open>infdist P \<tau> > 0\<close>. Taking min over a
+    finite set plus a bound for the ambient U-neighborhood ball gives \<epsilon>. **)
+lemma geotop_complex_point_avoidance:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes \<sigma> :: "'a set" and P :: 'a
   assumes hK: "geotop_is_complex K"
-  assumes hK1: "geotop_is_complex K1" and hK1sub: "K1 \<subseteq> K"
-  assumes hdisj: "K1 \<inter> (K - K1) = {}"
-  shows "closedin_on (geotop_polyhedron K)
-            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
-            (geotop_polyhedron K1)"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and hP\<sigma>: "P \<in> \<sigma>"
+  shows "\<exists>\<epsilon>>0. ball P \<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
   sorry
+  (* PROOF BODY BELOW (currently causes 120s session timeout when compiled; kept
+     as commented-out in-progress work). *)
+(*
+proof -
+  have hLF: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using geotop_is_complex_locally_finite[OF hK] h\<sigma>K by (by100 blast)
+  obtain U where hUopen: "open U" and hU\<sigma>: "\<sigma> \<subseteq> U"
+           and hUfin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hLF by (by100 blast)
+  have hPU: "P \<in> U" using hP\<sigma> hU\<sigma> by (by100 blast)
+  have hball: "\<exists>r>0. ball P r \<subseteq> U"
+    using hUopen hPU open_contains_ball by (by100 blast)
+  obtain r0 where hr0: "r0 > 0" and hr0U: "ball P r0 \<subseteq> U"
+    using hball by (by100 blast)
+  let ?N = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {} \<and> P \<notin> \<tau>}"
+  have hN_sub: "?N \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}" by (by100 blast)
+  have hNfin: "finite ?N" using hN_sub hUfin rev_finite_subset by (by100 blast)
+  have hdist_pos: "\<forall>\<tau>\<in>?N. \<exists>d>0. ball P d \<inter> \<tau> = {}"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> ?N"
+    have h\<tau>K: "\<tau> \<in> K" and hP_notin\<tau>: "P \<notin> \<tau>" using h\<tau> by (by100 auto)
+    have h\<tau>simp: "geotop_is_simplex \<tau>"
+      using h\<tau>K geotop_is_complex_simplex[OF hK] by (by100 blast)
+    have h\<tau>closed: "closed \<tau>" by (rule geotop_is_simplex_closed[OF h\<tau>simp])
+    have h\<tau>ne: "\<tau> \<noteq> {}" by (rule geotop_is_simplex_nonempty[OF h\<tau>simp])
+    have hinfdist_ne0: "infdist P \<tau> \<noteq> 0"
+      using in_closed_iff_infdist_zero[OF h\<tau>closed h\<tau>ne] hP_notin\<tau>
+      by (by100 blast)
+    have hinfdist_ge0: "infdist P \<tau> \<ge> 0" by (rule infdist_nonneg)
+    have hinfdist_pos: "infdist P \<tau> > 0"
+      using hinfdist_ne0 hinfdist_ge0 by (by100 linarith)
+    have hdall: "\<forall>x\<in>\<tau>. dist P x \<ge> infdist P \<tau>"
+      using infdist_le by (by100 blast)
+    have hball_empty: "ball P (infdist P \<tau>) \<inter> \<tau> = {}"
+    proof (rule ccontr)
+      assume "ball P (infdist P \<tau>) \<inter> \<tau> \<noteq> {}"
+      then obtain x where hx\<tau>: "x \<in> \<tau>" and hxball: "x \<in> ball P (infdist P \<tau>)"
+        by (by100 blast)
+      have hxdist: "dist P x < infdist P \<tau>"
+        using hxball unfolding ball_def dist_commute by (by100 simp)
+      moreover have "dist P x \<ge> infdist P \<tau>" using hdall hx\<tau> by (by100 blast)
+      ultimately show False by (by100 linarith)
+    qed
+    then show "\<exists>d>0. ball P d \<inter> \<tau> = {}"
+      using hinfdist_pos by (by100 blast)
+  qed
+  (** Collect the \<tau>-specific witnesses and take minimum with r0. **)
+  obtain f where hf: "\<forall>\<tau>\<in>?N. f \<tau> > 0 \<and> ball P (f \<tau>) \<inter> \<tau> = {}"
+    using hdist_pos by metis
+  let ?\<epsilon> = "if ?N = {} then r0 else min r0 (Min (f ` ?N))"
+  have h\<epsilon>pos: "?\<epsilon> > 0"
+  proof (cases "?N = {}")
+    case True
+    then show ?thesis using hr0 by (by100 simp)
+  next
+    case False
+    have "finite (f ` ?N)" using hNfin by (by100 simp)
+    moreover have "f ` ?N \<noteq> {}" using False by (by100 simp)
+    moreover have "\<forall>x\<in>f ` ?N. x > 0" using hf by (by100 blast)
+    ultimately have "Min (f ` ?N) > 0"
+      using Min_gr_iff by (by100 blast)
+    then show ?thesis using hr0 False by (by100 simp)
+  qed
+  have h\<epsilon>_r0: "?\<epsilon> \<le> r0" by (by100 simp)
+  have h\<epsilon>sub: "ball P ?\<epsilon> \<subseteq> U"
+    using h\<epsilon>_r0 hr0U by (by100 auto)
+  have h\<epsilon>avoid: "\<forall>\<tau>\<in>?N. ball P ?\<epsilon> \<inter> \<tau> = {}"
+  proof
+    fix \<tau> assume h\<tau>N: "\<tau> \<in> ?N"
+    have hf\<tau>: "f \<tau> \<in> f ` ?N" using h\<tau>N by (by100 blast)
+    have hfin: "finite (f ` ?N)" using hNfin by (by100 simp)
+    have hne: "f ` ?N \<noteq> {}" using h\<tau>N by (by100 blast)
+    have "Min (f ` ?N) \<le> f \<tau>"
+      by (rule Min_le[OF hfin hf\<tau>])
+    then have h\<epsilon>_f\<tau>: "?\<epsilon> \<le> f \<tau>"
+      using hne by (by100 simp)
+    have "ball P ?\<epsilon> \<subseteq> ball P (f \<tau>)"
+      using h\<epsilon>_f\<tau> by (by100 auto)
+    moreover have "ball P (f \<tau>) \<inter> \<tau> = {}" using hf h\<tau>N by (by100 blast)
+    ultimately show "ball P ?\<epsilon> \<inter> \<tau> = {}" by (by100 blast)
+  qed
+  (** Final: show ball P \<epsilon> is disjoint from \<Union>{\<tau>\<in>K. P \<notin> \<tau>}. **)
+  have h\<epsilon>final: "ball P ?\<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
+  proof (rule ccontr)
+    assume "ball P ?\<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} \<noteq> {}"
+    then obtain x \<tau>' where hx: "x \<in> ball P ?\<epsilon>" and h\<tau>'K: "\<tau>' \<in> K"
+                and hP_notin: "P \<notin> \<tau>'" and hx\<tau>': "x \<in> \<tau>'"
+      by (by100 blast)
+    have hxU: "x \<in> U" using hx h\<epsilon>sub by (by100 blast)
+    have h\<tau>'_meets_U: "\<tau>' \<inter> U \<noteq> {}" using hxU hx\<tau>' by (by100 blast)
+    have h\<tau>'N: "\<tau>' \<in> ?N" using h\<tau>'K hP_notin h\<tau>'_meets_U by (by100 simp)
+    have "ball P ?\<epsilon> \<inter> \<tau>' = {}" using h\<epsilon>avoid h\<tau>'N by (by100 blast)
+    then show False using hx hx\<tau>' by (by100 blast)
+  qed
+  show ?thesis using h\<epsilon>pos h\<epsilon>final by (by100 blast)
+qed *)
 
 text \<open>Moise's \<S>1 Theorem 3: every simplex is pathwise connected, because
   it is convex, and the straight-line path between any two points of a
   convex set is continuous.\<close>
-
-(** Bridge between Moise's geotop_convex and HOL-Analysis convex. **)
-lemma geotop_convex_iff_HOL_convex:
-  fixes S :: "'a::real_vector set"
-  shows "geotop_convex S \<longleftrightarrow> convex S"
-  unfolding geotop_convex_def geotop_segment_def convex_def by blast
 
 (** The convex hull of a set is convex in Moise's sense. **)
 lemma geotop_convex_hull_is_convex:
@@ -798,12 +949,6 @@ lemma geotop_simplex_is_convex:
   assumes "geotop_is_simplex \<sigma>"
   shows "geotop_convex \<sigma>"
   by (metis assms geotop_convex_hull_is_convex geotop_is_simplex_def)
-
-(** The geotop convex hull coincides with HOL-Analysis's convex hull. **)
-lemma geotop_convex_hull_eq_HOL:
-  fixes V :: "'a::real_vector set"
-  shows "geotop_convex_hull V = convex hull V"
-  by (simp add: geotop_convex_hull_def geotop_convex_iff_HOL_convex hull_def)
 
 (** Every vertex of a simplex belongs to the simplex. **)
 lemma geotop_simplex_vertices_subset:
