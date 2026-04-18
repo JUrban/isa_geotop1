@@ -7033,10 +7033,26 @@ proof -
           \<longrightarrow> C1 = C2"
     sorry
   (** Conclude card = 1. **)
+  define S where "S = {C. geotop_bounded_R2 C \<and>
+            (\<exists>P\<in>UNIV - J.
+               C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)}"
+  have hS_ne: "S \<noteq> {}" using h_exists_bdd unfolding S_def by (by100 blast)
+  have hS_singleton: "\<forall>x\<in>S. \<forall>y\<in>S. x = y"
+    unfolding S_def using h_atmost by (by100 blast)
+  obtain C where hC: "C \<in> S" using hS_ne by (by100 blast)
+  have hS_eq: "S = {C}"
+  proof (rule set_eqI, rule iffI)
+    fix x assume "x \<in> S"
+    thus "x \<in> {C}" using hC hS_singleton by (by100 blast)
+  next
+    fix x assume "x \<in> {C}"
+    thus "x \<in> S" using hC by (by100 blast)
+  qed
+  have hS_card: "card S = 1" using hS_eq by (by100 simp)
   show "card {C. geotop_bounded_R2 C \<and>
             (\<exists>P\<in>UNIV - J.
                C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)} = 1"
-    sorry
+    using hS_card unfolding S_def by (by100 simp)
 qed
 
 (** JORDAN CURVE THEOREM — combining the above
