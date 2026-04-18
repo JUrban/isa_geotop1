@@ -329,9 +329,11 @@ proof -
          subdivisions of L, M), take a common subdivision (Theorem 1) of L' and L''
          inside L, pull back along both isomorphisms. **)
   have h_trans:
-    "\<forall>K L M::'a set set. geotop_comb_equiv K L \<and> geotop_comb_equiv L M \<longrightarrow>
-                         geotop_comb_equiv K M" sorry
-  have h_final: "equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
+    "(\<forall>K L M::'a set set. geotop_comb_equiv K L \<and> geotop_comb_equiv L M \<longrightarrow>
+                         geotop_comb_equiv K M) \<and>
+     equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
+  have h_final: "equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
+    using h_trans by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
