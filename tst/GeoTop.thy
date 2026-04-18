@@ -12411,7 +12411,7 @@ proof -
                 geotop_pi_class S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 q
                 \<in> geotop_pi S (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0)"
     sorry
-  show ?thesis sorry
+  show ?thesis using h_each_generator by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 9 (geotop.tex:5859)
