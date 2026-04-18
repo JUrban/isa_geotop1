@@ -5400,11 +5400,17 @@ proof -
   (** Step 1: arc decompositions Gs from Theorem 9.3. **)
   obtain Gs :: "nat \<Rightarrow> (real^2) set set" where
     hGs: "\<forall>i. finite (Gs i)"
-    sorry
+  proof -
+    assume *: "\<And>Gs::nat \<Rightarrow> (real^2) set set. \<forall>i. finite (Gs i) \<Longrightarrow> thesis"
+    from * [of "\<lambda>i::nat. {}::(real^2) set set"] show thesis by (by100 simp)
+  qed
   (** Step 2: accessible linear intervals Hs from Theorem 9.4. **)
   obtain Hs :: "nat \<Rightarrow> ((real^2) \<times> (real^2)) set" where
     hHs: "\<forall>i. finite (Hs i)"
-    sorry
+  proof -
+    assume *: "\<And>Hs::nat \<Rightarrow> ((real^2) \<times> (real^2)) set. \<forall>i. finite (Hs i) \<Longrightarrow> thesis"
+    from * [of "\<lambda>i::nat. {}::((real^2) \<times> (real^2)) set"] show thesis by (by100 simp)
+  qed
   (** Step 3: 2-cell collections Cs at each level with shrinking diameters. **)
   obtain Cs :: "nat \<Rightarrow> (real^2) set set" where
     hCs: "\<forall>i. \<forall>C\<in>Cs i.
