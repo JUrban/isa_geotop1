@@ -1982,8 +1982,19 @@ proof -
     have hL\<^sub>3_L: "geotop_is_subdivision L\<^sub>3 L"
       unfolding geotop_is_subdivision_def
       using hL\<^sub>3_complex hLcomp hL\<^sub>3_ref hL\<^sub>3_poly by (by100 blast)
+    (** L_3 \<cong> K_3 via f restricted to vertices. L_3 = f_inv \<sup>\` K_3, so
+        vertices of L_3 are f_inv-images of vertices of K_3. f is a bijection
+        |L| \<leftrightarrow> |K| mapping each vertex of L_3 to a vertex of K_3. **)
+    (** (a) vertex bijection: f maps vertices of L_3 to vertices of K_3 bijectively. **)
+    have hiso_vert: "bij_betw f (geotop_complex_vertices L\<^sub>3) (geotop_complex_vertices K\<^sub>3)"
+      sorry
+    (** (b) simplex correspondence: conv V \<in> L_3 \<longleftrightarrow> conv (f\<sup>\`V) \<in> K_3. **)
+    have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
+                       (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
+      sorry
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
-      sorry \<comment> \<open>\<open>f\<close> linear on each simplex of \<open>L\<^sub>3\<close>, bijective on vertex sets.\<close>
+      unfolding geotop_isomorphic_def geotop_isomorphism_def
+      using hiso_vert hiso_simp by (by100 blast)
     (** (6) Assemble \<open>K \<sim>_c L\<close> from \<open>K\<^sub>3 < K\<close> and \<open>L\<^sub>3 < L\<close> and \<open>K\<^sub>3 \<cong> L\<^sub>3\<close>. **)
     have hK\<^sub>3_K: "geotop_is_subdivision K\<^sub>3 K"
       by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
