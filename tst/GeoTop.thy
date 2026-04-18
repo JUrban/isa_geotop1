@@ -2450,10 +2450,39 @@ proof -
         using h\<sigma>_eq geotop_linear_inj_image_is_simplex[OF h\<sigma>_L_lin hf_inj_\<sigma>_L h\<sigma>_L_sim]
         by (by100 simp)
     qed
-    (** (b1) K.1: fL_1 is closed under faces. A face of f(\<sigma>) is f applied to a face
-            of \<sigma> (via linearity on \<sigma>); L_1 is face-closed (K.1), so fL_1 is too. **)
+    (** (b1) K.1: fL_1 is closed under faces. Use geotop_linear_inj_image_face_preimage
+            to pull back a face of f(\<sigma>_L) to a face of \<sigma>_L in L_1, then push it forward. **)
+    have h_L\<^sub>1_face_closed: "\<forall>\<sigma>\<in>L\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L\<^sub>1"
+      by (rule conjunct1[OF conjunct2[OF hL\<^sub>1_comp[unfolded geotop_is_complex_def]]])
+    have h_L\<^sub>1_simp_all_for_K1: "\<forall>\<sigma>\<in>L\<^sub>1. geotop_is_simplex \<sigma>"
+      by (rule conjunct1[OF hL\<^sub>1_comp[unfolded geotop_is_complex_def]])
     have hfL\<^sub>1_K1: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> fL\<^sub>1"
-      sorry
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>: "\<sigma> \<in> fL\<^sub>1" and h_face: "geotop_is_face \<tau> \<sigma>"
+      obtain \<sigma>_L where h\<sigma>_L_L\<^sub>1: "\<sigma>_L \<in> L\<^sub>1" and h\<sigma>_eq: "\<sigma> = f ` \<sigma>_L"
+        using h\<sigma> unfolding fL\<^sub>1_def by (by100 blast)
+      have h\<sigma>_L_sim: "geotop_is_simplex \<sigma>_L"
+        using h_L\<^sub>1_simp_all_for_K1 h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      have h\<sigma>_L_lin_raw: "\<exists>\<tau>'\<in>K. (\<forall>x\<in>\<sigma>_L. f x \<in> \<tau>') \<and> geotop_linear_on \<sigma>_L f"
+        using hL\<^sub>1_lin h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      have h\<sigma>_L_lin: "geotop_linear_on \<sigma>_L f" using h\<sigma>_L_lin_raw by (by100 blast)
+      have h\<sigma>_L_in_L: "\<sigma>_L \<subseteq> geotop_polyhedron L"
+        using h\<sigma>_L_L\<^sub>1 hL\<^sub>1_poly_L unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inj_L: "inj_on f (geotop_polyhedron L)"
+        using hf_bij_LK unfolding bij_betw_def by (by100 blast)
+      have hf_inj_\<sigma>_L: "inj_on f \<sigma>_L"
+        using hf_inj_L h\<sigma>_L_in_L inj_on_subset by (by100 blast)
+      (** Pull back \<tau> (a face of f(\<sigma>_L)) to a face of \<sigma>_L. **)
+      have h_face_sub: "geotop_is_face \<tau> (f ` \<sigma>_L)"
+        using h_face h\<sigma>_eq by (by100 simp)
+      obtain \<tau>_L where h\<tau>_L_face: "geotop_is_face \<tau>_L \<sigma>_L"
+                   and h\<tau>_eq: "\<tau> = f ` \<tau>_L"
+        using geotop_linear_inj_image_face_preimage[OF h\<sigma>_L_lin hf_inj_\<sigma>_L h\<sigma>_L_sim h_face_sub]
+        by (by100 blast)
+      have h\<tau>_L_L\<^sub>1: "\<tau>_L \<in> L\<^sub>1" using h_L\<^sub>1_face_closed h\<sigma>_L_L\<^sub>1 h\<tau>_L_face by (by100 blast)
+      show "\<tau> \<in> fL\<^sub>1" unfolding fL\<^sub>1_def using h\<tau>_L_L\<^sub>1 h\<tau>_eq by (by100 blast)
+    qed
     (** (b2) K.2: f(\<sigma>_L1) \<inter> f(\<sigma>_L2) = f(\<sigma>_L1 \<inter> \<sigma>_L2) via f inj;
             \<sigma>_L1 \<inter> \<sigma>_L2 is face of both (K.2 of L_1); apply
             geotop_linear_inj_image_preserves_face. **)
@@ -2630,10 +2659,54 @@ proof -
         using h\<sigma>_eq geotop_linear_inj_image_is_simplex[OF h\<sigma>_K_lin hf_inv_inj_\<sigma>_K h\<sigma>_K_sim]
         by (by100 simp)
     qed
-    (** (ii) K.1: L_3 closed under faces. A face of f_inv(\<sigma>) corresponds to
-            f_inv applied to a face of \<sigma>; K_3 is face-closed, so L_3 is too. **)
+    (** (ii) K.1: L_3 closed under faces. Pull back via face_preimage helper. **)
+    have h_K\<^sub>3_face_closed: "\<forall>\<sigma>\<in>K\<^sub>3. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>3"
+      by (rule conjunct1[OF conjunct2[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]]])
+    have hK\<^sub>3_ref_K\<^sub>1_ref_K1: "geotop_refines K\<^sub>3 K\<^sub>1"
+      using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
+    have h_K\<^sub>3_simp_all_K1: "\<forall>\<sigma>\<in>K\<^sub>3. geotop_is_simplex \<sigma>"
+      by (rule conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]])
+    have hK\<^sub>3_K_sub_K1: "geotop_is_subdivision K\<^sub>3 K"
+      by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
+    have hK\<^sub>3_poly_K1: "geotop_polyhedron K\<^sub>3 = geotop_polyhedron K"
+      using hK\<^sub>3_K_sub_K1 unfolding geotop_is_subdivision_def by (by100 blast)
+    have hf_inv_bij_local_K1: "bij_betw (inv_into (geotop_polyhedron L) f)
+                                         (geotop_polyhedron K) (geotop_polyhedron L)"
+      by (rule bij_betw_inv_into[OF hf_bij_LK])
+    have hf_inv_inj_K_K1: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+      using hf_inv_bij_local_K1 unfolding bij_betw_def by (by100 blast)
     have hL\<^sub>3_K1: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L\<^sub>3"
-      sorry
+    proof (intro ballI allI impI)
+      fix \<sigma> \<tau>
+      assume h\<sigma>: "\<sigma> \<in> L\<^sub>3" and h_face: "geotop_is_face \<tau> \<sigma>"
+      obtain \<sigma>_K where h\<sigma>_K_K\<^sub>3: "\<sigma>_K \<in> K\<^sub>3"
+                  and h\<sigma>_eq: "\<sigma> = inv_into (geotop_polyhedron L) f ` \<sigma>_K"
+        using h\<sigma> unfolding L\<^sub>3_def by (by100 blast)
+      have h\<sigma>_K_sim: "geotop_is_simplex \<sigma>_K"
+        using h_K\<^sub>3_simp_all_K1 h\<sigma>_K_K\<^sub>3 by (by100 blast)
+      obtain \<sigma>_1 where h\<sigma>_1_K\<^sub>1: "\<sigma>_1 \<in> K\<^sub>1" and h\<sigma>_K_sub: "\<sigma>_K \<subseteq> \<sigma>_1"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1_ref_K1 unfolding geotop_refines_def by (by100 blast)
+      have h\<sigma>_1_lin_raw: "\<exists>\<tau>'\<in>L. (\<forall>x\<in>\<sigma>_1. inv_into (geotop_polyhedron L) f x \<in> \<tau>') \<and>
+                            geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using hK\<^sub>1_lin h\<sigma>_1_K\<^sub>1 by (by100 blast)
+      have h\<sigma>_1_lin: "geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using h\<sigma>_1_lin_raw by (by100 blast)
+      have h\<sigma>_K_lin: "geotop_linear_on \<sigma>_K (inv_into (geotop_polyhedron L) f)"
+        by (rule geotop_linear_on_sub_simplex[OF h\<sigma>_1_lin h\<sigma>_K_sim h\<sigma>_K_sub])
+      have h\<sigma>_K_in_K: "\<sigma>_K \<subseteq> geotop_polyhedron K"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_poly_K1 unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inv_inj_\<sigma>_K: "inj_on (inv_into (geotop_polyhedron L) f) \<sigma>_K"
+        using hf_inv_inj_K_K1 h\<sigma>_K_in_K inj_on_subset by (by100 blast)
+      (** Pull back face via helper. **)
+      have h_face_sub: "geotop_is_face \<tau> (inv_into (geotop_polyhedron L) f ` \<sigma>_K)"
+        using h_face h\<sigma>_eq by (by100 simp)
+      obtain \<tau>_K where h\<tau>_K_face: "geotop_is_face \<tau>_K \<sigma>_K"
+                   and h\<tau>_eq: "\<tau> = inv_into (geotop_polyhedron L) f ` \<tau>_K"
+        using geotop_linear_inj_image_face_preimage[OF h\<sigma>_K_lin hf_inv_inj_\<sigma>_K h\<sigma>_K_sim h_face_sub]
+        by (by100 blast)
+      have h\<tau>_K_K\<^sub>3: "\<tau>_K \<in> K\<^sub>3" using h_K\<^sub>3_face_closed h\<sigma>_K_K\<^sub>3 h\<tau>_K_face by (by100 blast)
+      show "\<tau> \<in> L\<^sub>3" unfolding L\<^sub>3_def using h\<tau>_K_K\<^sub>3 h\<tau>_eq by (by100 blast)
+    qed
     (** (iii) K.2: pairwise intersections are faces. Same pattern as hfL_1_K2
              but with f_inv on K_3 side (f_inv linear on K_1 \<supseteq> K_3 via sub_simplex). **)
     have h_K\<^sub>3_K2: "\<forall>\<sigma>\<in>K\<^sub>3. \<forall>\<tau>\<in>K\<^sub>3. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
