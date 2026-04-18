@@ -7021,10 +7021,13 @@ proof -
     "geotop_component_at UNIV geotop_euclidean_topology
        ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h Q)
      = geotop_component_at UNIV geotop_euclidean_topology
-       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S)" sorry
+       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S) \<and>
+     geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
+         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
   (** (4) Pull back the conclusion through h. **)
   have h_final: "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
-         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
+         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
+    using h_109 by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
