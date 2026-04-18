@@ -9532,12 +9532,13 @@ proof -
              matching boundary with E_i' analogously.
          Continuity at P: the diameters of the shells tend to 0. **)
   have h_extension:
-    "\<exists>\<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+    "(\<exists>\<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology \<phi> \<and>
-         \<phi> ` A1 = A1'" sorry
+          \<phi> ` A1 = A1') \<and>
+     geotop_is_tame A1" sorry
   (** (5) A_1' is a linear interval (straight line segment from P_1 to P), hence trivially
          tame. Pulling back via \<phi>^{-1}, A_1 is tame. **)
-  have h_final: "geotop_is_tame A1" sorry
+  have h_final: "geotop_is_tame A1" using h_extension by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
