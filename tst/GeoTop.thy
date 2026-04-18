@@ -965,6 +965,61 @@ proof (intro conjI)
   qed
 qed
 
+(** Composition of homeomorphisms is a homeomorphism. **)
+lemma top1_homeomorphism_on_comp:
+  assumes hf: "top1_homeomorphism_on X TX Y TY f"
+  assumes hg: "top1_homeomorphism_on Y TY Z TZ g"
+  shows "top1_homeomorphism_on X TX Z TZ (g \<circ> f)"
+  unfolding top1_homeomorphism_on_def
+proof (intro conjI)
+  show "is_topology_on X TX"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  show "is_topology_on Z TZ"
+    using hg unfolding top1_homeomorphism_on_def by blast
+  have hbijf: "bij_betw f X Y"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  have hbijg: "bij_betw g Y Z"
+    using hg unfolding top1_homeomorphism_on_def by blast
+  show "bij_betw (g \<circ> f) X Z"
+    using hbijf hbijg bij_betw_trans by blast
+  have hfcont: "top1_continuous_map_on X TX Y TY f"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  have hgcont: "top1_continuous_map_on Y TY Z TZ g"
+    using hg unfolding top1_homeomorphism_on_def by blast
+  show "top1_continuous_map_on X TX Z TZ (g \<circ> f)"
+    by (rule top1_continuous_map_on_comp[OF hfcont hgcont])
+  (** Inverse of g \<circ> f is (inv f) \<circ> (inv g), which is continuous. **)
+  have hinvf: "top1_continuous_map_on Y TY X TX (inv_into X f)"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  have hinvg: "top1_continuous_map_on Z TZ Y TY (inv_into Y g)"
+    using hg unfolding top1_homeomorphism_on_def by blast
+  have hinv_comp: "top1_continuous_map_on Z TZ X TX (inv_into X f \<circ> inv_into Y g)"
+    by (rule top1_continuous_map_on_comp[OF hinvg hinvf])
+  have h_inv_eq: "\<forall>z\<in>Z. inv_into X (g \<circ> f) z = (inv_into X f \<circ> inv_into Y g) z"
+  proof
+    fix z assume hzZ: "z \<in> Z"
+    have hbij_comp: "bij_betw (g \<circ> f) X Z"
+      using hbijf hbijg bij_betw_trans by blast
+    obtain x where hxX: "x \<in> X" and hgfx: "(g \<circ> f) x = z"
+      using hzZ hbij_comp unfolding bij_betw_def by blast
+    have hinv_comp_z: "inv_into X (g \<circ> f) z = x"
+      using hxX hgfx hbij_comp unfolding bij_betw_def
+      by (metis inv_into_f_f)
+    have hfxY: "f x \<in> Y" using hxX hbijf unfolding bij_betw_def by blast
+    have hg_fx: "g (f x) = z" using hgfx by simp
+    have hinv_g: "inv_into Y g z = f x"
+      using hfxY hg_fx hbijg unfolding bij_betw_def
+      by (metis inv_into_f_f)
+    have hinv_f: "inv_into X f (f x) = x"
+      using hxX hbijf unfolding bij_betw_def
+      by (metis inv_into_f_f)
+    show "inv_into X (g \<circ> f) z = (inv_into X f \<circ> inv_into Y g) z"
+      using hinv_comp_z hinv_g hinv_f by simp
+  qed
+  show "top1_continuous_map_on Z TZ X TX (inv_into X (g \<circ> f))"
+    using top1_continuous_map_on_cong[OF h_inv_eq] hinv_comp by blast
+qed
+
 (** Homeomorphism is symmetric: the inverse of a homeomorphism is a homeomorphism. **)
 lemma top1_homeomorphism_on_sym:
   assumes hf: "top1_homeomorphism_on X TX Y TY f"
