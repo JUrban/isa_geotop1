@@ -1624,11 +1624,44 @@ qed
     LATEX VERSION: A set M \<subset> X is connected iff M is not the union of two nonempty
       separated sets. **)
 theorem Theorem_GT_1_6:
-  assumes "is_topology_on X T" "M \<subseteq> X"
+  assumes hT: "is_topology_on X T" and hMX: "M \<subseteq> X"
   shows "top1_connected_on M (subspace_topology X T M) \<longleftrightarrow>
     \<not>(\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K)"
-  by (metis Theorem_GT_1_5 assms(1,2) subspace_topology_is_topology_on
-    sup.cobounded1 sup.cobounded2 top1_connected_on_def)
+proof -
+  have hTM: "is_topology_on M (subspace_topology X T M)"
+    by (rule subspace_topology_is_topology_on[OF hT hMX])
+  show ?thesis
+  proof
+    assume hconn: "top1_connected_on M (subspace_topology X T M)"
+    show "\<not>(\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K)"
+    proof (intro notI, elim exE conjE)
+      fix H K assume hHne: "H \<noteq> {}" and hKne: "K \<noteq> {}"
+        and hMHK: "M = H \<union> K" and hsep: "geotop_separated X T H K"
+      have hHM: "H \<subseteq> M" and hKM: "K \<subseteq> M" using hMHK by (by100 auto)
+      have hsplit: "H \<in> subspace_topology X T M \<and> K \<in> subspace_topology X T M
+                     \<and> H \<inter> K = {}"
+        using Theorem_GT_1_5[OF hT hMX hHM hKM hMHK] hsep by (by100 blast)
+      show False
+        using hconn hHne hKne hMHK hsplit
+        unfolding top1_connected_on_def by (by100 blast)
+    qed
+  next
+    assume hno_sep:
+      "\<not>(\<exists>H K. H \<noteq> {} \<and> K \<noteq> {} \<and> M = H \<union> K \<and> geotop_separated X T H K)"
+    show "top1_connected_on M (subspace_topology X T M)"
+      unfolding top1_connected_on_def
+    proof (intro conjI notI, rule hTM, elim exE conjE)
+      fix U V assume hU: "U \<in> subspace_topology X T M" and hV: "V \<in> subspace_topology X T M"
+        and hUne: "U \<noteq> {}" and hVne: "V \<noteq> {}"
+        and hUV: "U \<inter> V = {}" and hUVM: "U \<union> V = M"
+      have hUM: "U \<subseteq> M" and hVM: "V \<subseteq> M" using hUVM by (by100 auto)
+      have hMUV: "M = U \<union> V" using hUVM by (by100 simp)
+      have hsep: "geotop_separated X T U V"
+        using Theorem_GT_1_5[OF hT hMX hUM hVM hMUV] hU hV hUV by (by100 blast)
+      show False using hno_sep hUne hVne hMUV hsep by (by100 blast)
+    qed
+  qed
+qed
 
 (** from \<S>1 Theorem 7 (geotop.tex:369)
     LATEX VERSION: For spaces, connectivity is preserved by surjective mappings. **)
@@ -2752,12 +2785,24 @@ theorem Theorem_GT_2_4:
   assumes "U \<in> T"
   assumes "U \<subseteq> X"
   shows "geotop_frontier X T U = closure_on X T U - U"
-  by (smt (verit, del_insts) DiffI Diff_Diff_Int Diff_Int_distrib
-    Diff_cancel Diff_empty Diff_subset assms(1,2,3) closedin_intro
-    closure_on_sub_carrier closure_on_subset_of_closed dual_order.refl
-    geotop_frontier_def imageE imageI inf.absorb_iff2 inf.order_iff
-    inf.right_idem inf_le1 insertCI is_topology_on_def
-    subset_closure_on)
+proof -
+  have hXXU: "X - (X - U) = U"
+    using assms(3) by (by100 blast)
+  have hXU_in_T: "X - (X - U) \<in> T"
+    using assms(2) hXXU by (by100 simp)
+  have hXU_sub: "X - U \<subseteq> X" by (by100 blast)
+  have hXU_closed: "closedin_on X T (X - U)"
+    by (rule closedin_intro[OF hXU_sub hXU_in_T])
+  have hcl_XU: "closure_on X T (X - U) = X - U"
+    using closure_on_subset_of_closed[OF hXU_closed subset_refl]
+          subset_closure_on[of "X - U" X T]
+    by (by100 blast)
+  have hcl_U_sub_X: "closure_on X T U \<subseteq> X"
+    by (rule closure_on_subset_carrier[OF assms(1) assms(3)])
+  show ?thesis
+    unfolding geotop_frontier_def
+    using hcl_XU hcl_U_sub_X by (by100 blast)
+qed
 
 (** Bridge: is_limit_point_of on UNIV with geotop_euclidean_topology equals
     HOL-Analysis `islimpt`. **)
