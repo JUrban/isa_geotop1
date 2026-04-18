@@ -643,7 +643,149 @@ lemma geotop_subdivision_of_finite_is_finite:
   assumes hKfin: "finite K"
   assumes hK'K: "geotop_is_subdivision K' K"
   shows "finite K'"
-  sorry
+proof -
+  have hKcomp: "geotop_is_complex K"
+    using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK'comp: "geotop_is_complex K'"
+    using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+  have hpolyeq: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+  (** |K| is compact: finite union of simplexes, each compact. **)
+  have hK_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hK_comp_all: "\<forall>\<sigma>\<in>K. compact \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K hK_simp by (by100 blast)
+    obtain V where hV_fin: "finite V" and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<sigma>_hullHOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    show "compact \<sigma>"
+      using h\<sigma>_hullHOL hV_fin finite_imp_compact_convex_hull by (by100 simp)
+  qed
+  have hK_poly_comp: "compact (geotop_polyhedron K)"
+    unfolding geotop_polyhedron_def using hKfin hK_comp_all by (by100 blast)
+  have hK'_poly_comp: "compact (geotop_polyhedron K')"
+    using hK_poly_comp hpolyeq by (by100 simp)
+  (** K.3 for K': each \<tau> \<in> K' has an open nbhd with finitely many K' simplexes. **)
+  have hK'_locfin: "\<forall>\<tau>\<in>K'. \<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K'. \<tau>' \<inter> U \<noteq> {}}"
+    using hK'comp unfolding geotop_is_complex_def by (by100 blast)
+  (** For each \<tau> \<in> K' pick such a \<open>U_\<tau>\<close>. Use \<open>Axiom of Choice\<close> / \<open>SOME\<close> via
+      obtain. **)
+  define Uf :: "'a set \<Rightarrow> 'a set" where
+    "Uf \<tau> = (SOME U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K'. \<tau>' \<inter> U \<noteq> {}})" for \<tau>
+  have hUf_spec: "\<forall>\<tau>\<in>K'. open (Uf \<tau>) \<and> \<tau> \<subseteq> Uf \<tau>
+                          \<and> finite {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}}"
+  proof
+    fix \<tau> assume h\<tau>K': "\<tau> \<in> K'"
+    have hex: "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K'. \<tau>' \<inter> U \<noteq> {}}"
+      using hK'_locfin h\<tau>K' by (by100 blast)
+    show "open (Uf \<tau>) \<and> \<tau> \<subseteq> Uf \<tau> \<and> finite {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}}"
+      unfolding Uf_def using someI_ex[OF hex] by (by100 blast)
+  qed
+  (** The U_\<tau>'s cover |K'|: any point is in some simplex \<tau> \<in> K', which sits in U_\<tau>. **)
+  have hcover: "geotop_polyhedron K' \<subseteq> (\<Union>\<tau>\<in>K'. Uf \<tau>)"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K'"
+    obtain \<tau> where h\<tau>K': "\<tau> \<in> K'" and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hx_Uf: "x \<in> Uf \<tau>" using hx\<tau> h\<tau>K' hUf_spec by (by100 blast)
+    show "x \<in> (\<Union>\<tau>\<in>K'. Uf \<tau>)" using h\<tau>K' hx_Uf by (by100 blast)
+  qed
+  (** By compactness, finite subcover. **)
+  have hUf_open_img: "\<forall>B\<in>Uf ` K'. open B"
+    using hUf_spec by (by100 blast)
+  have hcover_img: "geotop_polyhedron K' \<subseteq> \<Union>(Uf ` K')"
+    using hcover by (by100 blast)
+  have hcover_fin: "\<exists>\<T>'\<subseteq>Uf ` K'. finite \<T>' \<and> geotop_polyhedron K' \<subseteq> \<Union>\<T>'"
+  proof (rule compactE[OF hK'_poly_comp hcover_img])
+    fix B assume "B \<in> Uf ` K'"
+    thus "open B" using hUf_open_img by (by100 blast)
+  next
+    fix \<T>' assume "\<T>' \<subseteq> Uf ` K'" "finite \<T>'" "geotop_polyhedron K' \<subseteq> \<Union>\<T>'"
+    thus "\<exists>\<T>'\<subseteq>Uf ` K'. finite \<T>' \<and> geotop_polyhedron K' \<subseteq> \<Union>\<T>'"
+      by (by100 blast)
+  qed
+  obtain \<T>' where h\<T>'_sub: "\<T>' \<subseteq> Uf ` K'" and h\<T>'fin: "finite \<T>'"
+              and h\<T>'_cover: "geotop_polyhedron K' \<subseteq> \<Union>\<T>'"
+    using hcover_fin by (by100 blast)
+  (** Each element of \<T>' is \<open>Uf \<tau>\<close> for some \<tau> \<in> K'. Pick such \<tau>'s. **)
+  define S where "S = (\<lambda>B. SOME \<tau>. \<tau> \<in> K' \<and> B = Uf \<tau>) ` \<T>'"
+  have hSfin: "finite S" unfolding S_def using h\<T>'fin by (by100 blast)
+  have hS_sub: "S \<subseteq> K'"
+  proof
+    fix \<tau> assume h\<tau>S: "\<tau> \<in> S"
+    then obtain B where hBT: "B \<in> \<T>'"
+      and h\<tau>_some: "\<tau> = (SOME \<tau>'. \<tau>' \<in> K' \<and> B = Uf \<tau>')"
+      unfolding S_def by (by100 blast)
+    have hB_img: "B \<in> Uf ` K'" using hBT h\<T>'_sub by (by100 blast)
+    have hex_some: "\<exists>\<tau>'. \<tau>' \<in> K' \<and> B = Uf \<tau>'" using hB_img by (by100 blast)
+    show "\<tau> \<in> K'" using h\<tau>_some someI_ex[OF hex_some] by (by100 blast)
+  qed
+  have hS_cover: "geotop_polyhedron K' \<subseteq> (\<Union>\<tau>\<in>S. Uf \<tau>)"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K'"
+    obtain B where hBT: "B \<in> \<T>'" and hxB: "x \<in> B"
+      using hx h\<T>'_cover by (by100 blast)
+    have hB_img: "B \<in> Uf ` K'" using hBT h\<T>'_sub by (by100 blast)
+    have hex_some: "\<exists>\<tau>'. \<tau>' \<in> K' \<and> B = Uf \<tau>'" using hB_img by (by100 blast)
+    define \<tau> where "\<tau> = (SOME \<tau>'. \<tau>' \<in> K' \<and> B = Uf \<tau>')"
+    have h\<tau>_props: "\<tau> \<in> K' \<and> B = Uf \<tau>"
+      unfolding \<tau>_def using someI_ex[OF hex_some] by (by100 blast)
+    have h\<tau>S: "\<tau> \<in> S" unfolding S_def using hBT \<tau>_def by (by100 blast)
+    show "x \<in> (\<Union>\<tau>\<in>S. Uf \<tau>)" using h\<tau>S h\<tau>_props hxB by (by100 blast)
+  qed
+  (** Every \<tau>' \<in> K' is contained in |K'|, so meets some Uf \<tau> with \<tau> \<in> S. **)
+  have h\<tau>'_S: "\<forall>\<tau>'\<in>K'. \<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}"
+  proof
+    fix \<tau>' assume h\<tau>'K': "\<tau>' \<in> K'"
+    have hK'_simp_all: "\<forall>\<sigma>\<in>K'. geotop_is_simplex \<sigma>"
+      using conjunct1[OF hK'comp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h\<tau>'_simp: "geotop_is_simplex \<tau>'"
+      using h\<tau>'K' hK'_simp_all by (by100 blast)
+    (** Simplex nonempty: \<open>\<sigma> = conv V\<close> with \<open>card V \<ge> 1\<close>, hence \<open>V \<noteq> {}\<close>. **)
+    have h\<tau>'ne: "\<tau>' \<noteq> {}"
+    proof -
+      obtain V m n where hV_fin: "finite V" and hVcard: "card V = n + 1"
+                  and h\<tau>'_hull: "\<tau>' = geotop_convex_hull V"
+        using h\<tau>'_simp unfolding geotop_is_simplex_def by (by100 blast)
+      have hVne: "V \<noteq> {}"
+        using hV_fin hVcard card_gt_0_iff by (by100 fastforce)
+      obtain v where hv: "v \<in> V" using hVne by (by100 blast)
+      have hvhull: "v \<in> convex hull V" using hv hull_inc[of v V] by (by100 simp)
+      have h\<tau>'_hullHOL: "\<tau>' = convex hull V"
+        using h\<tau>'_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      show "\<tau>' \<noteq> {}" using hvhull h\<tau>'_hullHOL by (by100 blast)
+    qed
+    obtain x where hx\<tau>': "x \<in> \<tau>'" using h\<tau>'ne by (by100 blast)
+    have hx_K'poly: "x \<in> geotop_polyhedron K'"
+      using h\<tau>'K' hx\<tau>' unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<tau> where h\<tau>S: "\<tau> \<in> S" and hx_Uf\<tau>: "x \<in> Uf \<tau>"
+      using hS_cover hx_K'poly by (by100 blast)
+    have hmeet: "\<tau>' \<inter> Uf \<tau> \<noteq> {}" using hx\<tau>' hx_Uf\<tau> by (by100 blast)
+    show "\<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}" using h\<tau>S hmeet by (by100 blast)
+  qed
+  (** K' = union over \<tau> \<in> S of {\<tau>'. \<tau>' ∩ Uf \<tau> \<noteq> {}}. **)
+  have hK'_sub: "K' \<subseteq> (\<Union>\<tau>\<in>S. {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+  proof
+    fix \<tau>' assume h\<tau>'K': "\<tau>' \<in> K'"
+    have h\<tau>'_meet: "\<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}"
+      using h\<tau>'_S h\<tau>'K' by (by100 blast)
+    obtain \<tau> where h\<tau>S: "\<tau> \<in> S" and hmeet: "\<tau>' \<inter> Uf \<tau> \<noteq> {}"
+      using h\<tau>'_meet by (by100 blast)
+    show "\<tau>' \<in> (\<Union>\<tau>\<in>S. {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+      using h\<tau>S h\<tau>'K' hmeet by (by100 blast)
+  qed
+  have hSfin_sub: "finite (\<Union>\<tau>\<in>S. {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+  proof (rule finite_UN_I[OF hSfin])
+    fix \<tau> assume h\<tau>S: "\<tau> \<in> S"
+    have h\<tau>K': "\<tau> \<in> K'" using h\<tau>S hS_sub by (by100 blast)
+    show "finite {\<tau>'\<in>K'. \<tau>' \<inter> Uf \<tau> \<noteq> {}}" using hUf_spec h\<tau>K' by (by100 blast)
+  qed
+  show "finite K'"
+    using hK'_sub hSfin_sub finite_subset by (by100 blast)
+qed
 
 (** For a finite non-empty collection \<open>G\<close>, each member's diameter is bounded
     by the mesh. Direct from the SUP def of \<open>geotop_mesh\<close>. **)
