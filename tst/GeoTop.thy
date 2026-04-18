@@ -1763,8 +1763,21 @@ proof -
     unfolding geotop_is_subdivision_def
     using hK'_comp hKcomp hK'_ref hK'_poly by (by100 blast)
   (** (6) Build the vertex iso \<open>K' \<cong> L'\<close> via \<open>\<tau> \<mapsto> g\<^sup>-\<^sup>1(\<tau>)\<close>, descending to
-      vertex-level. **)
-  have hiso_K'L': "geotop_isomorphic K' L'" sorry
+      vertex-level. Decomposed into: **)
+  (** (6a) Vertex bijection: g_inv maps vertices of L' to vertices of K'. **)
+  have hiso_K'L'_vert: "bij_betw ?g_inv (geotop_complex_vertices L')
+                                          (geotop_complex_vertices K')"
+    sorry
+  (** (6b) Simplex correspondence under convex hull. **)
+  have hiso_K'L'_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L' \<longrightarrow>
+                          (geotop_convex_hull V \<in> L' \<longleftrightarrow>
+                           geotop_convex_hull (?g_inv ` V) \<in> K')"
+    sorry
+  have hiso_L'K': "geotop_isomorphic L' K'"
+    unfolding geotop_isomorphic_def geotop_isomorphism_def
+    using hiso_K'L'_vert hiso_K'L'_simp by (by100 blast)
+  have hiso_K'L': "geotop_isomorphic K' L'"
+    by (rule geotop_isomorphic_sym[OF hiso_L'K'])
   show ?thesis using hK'_K hiso_K'L' by (by100 blast)
 qed
 
