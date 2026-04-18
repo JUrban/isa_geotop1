@@ -5630,7 +5630,15 @@ proof
   show "geotop_PL_map K L1 f" sorry
 next
   assume hPL1: "geotop_PL_map K L1 f"
-  show "geotop_PL_map K L f" sorry
+  (** Direct: \<open>L\<^sub>1 < L\<close> (hypothesis) and \<open>K < K\<close> (reflexivity); apply \<open>PL_map_lift\<close>. **)
+  obtain K' where hK'K: "geotop_is_subdivision K' K"
+    using hPL1 unfolding geotop_PL_map_def by (by100 blast)
+  have hKcomp: "geotop_is_complex K"
+    using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+  have hKK: "geotop_is_subdivision K K"
+    by (rule geotop_is_subdivision_refl[OF hKcomp])
+  show "geotop_PL_map K L f"
+    by (rule geotop_PL_map_lift[OF hKK hsub hPL1])
 qed
 
 (** from \<S>5 Theorem 3 (geotop.tex:1146)
