@@ -1827,26 +1827,39 @@ theorem Theorem_GT_1_4:
   assumes hK: "geotop_complex_connected K"
   shows "top1_path_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
-  (** Moise proof (geotop.tex:343): given P, Q \<in> |K|, pick \<sigma>\<^sub>P, \<sigma>\<^sub>Q \<in> K with P \<in> \<sigma>\<^sub>P,
-      Q \<in> \<sigma>\<^sub>Q. Define Cs = {\<sigma> \<in> K: \<sigma> reachable from \<sigma>\<^sub>P via a chain of simplexes with
-      consecutive intersections nonempty}. Show Cs and K - Cs are both complexes; by
-      complex-connectedness of K, one is empty; since \<sigma>\<^sub>P \<in> Cs, Cs = K, so \<sigma>\<^sub>Q reachable.
-      Build a path from P to Q by concatenating straight-line paths within each simplex,
-      via top1_in_same_path_component_on_trans. **)
+  (** Moise proof (geotop.tex:343). Structured following the book:
+      Step 1: Fix any vertex v0 of K.
+      Step 2: Let V = {v in vertices(K): exists path in |1-skeleton| from v0 to v}.
+      Step 3: Let K1 = {sigma in K: all vertices of sigma in V}. Then K1 is a subcomplex.
+      Step 4: Every simplex of K has either all vertices in V or none in V.
+              (Else an edge from V to vertices - V would force its far endpoint into V.)
+      Step 5: Hence K2 = K - K1 = {sigma in K: no vertex of sigma in V} is a subcomplex.
+      Step 6: K1 inter K2 = {}, K = K1 union K2, K1 nonempty. By complex_connected K, K2 = {}.
+      Step 7: Hence V = vertices(K): every two vertices path-connected through |1-skeleton|.
+      Step 8: For arbitrary P, Q in |K|, take sigma_P with P, sigma_Q with Q. Paths:
+              P to vP in sigma_P (convex), vP to vQ (in 1-skel), vQ to Q in sigma_Q (convex). **)
 proof -
   let ?X = "geotop_polyhedron K"
   let ?TX = "subspace_topology UNIV geotop_euclidean_topology ?X"
   have hKcomplex: "geotop_is_complex K"
-    using hK geotop_complex_connected_def by blast
+    using hK geotop_complex_connected_def by (by100 blast)
   have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
     by (simp add: geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-  have hXsub: "?X \<subseteq> UNIV" by simp
+  have hXsub: "?X \<subseteq> UNIV" by (by100 simp)
   have hTX_top: "is_topology_on ?X ?TX"
     by (rule subspace_topology_is_topology_on[OF hTeucl hXsub])
+  (** Step 1-7 (vertex reachability): deferred, requires 1-skeleton path infrastructure. **)
+  have h_vertex_conn:
+    "\<forall>v\<in>geotop_complex_vertices K. \<forall>w\<in>geotop_complex_vertices K.
+       \<exists>f. top1_is_path_on ?X ?TX v w f"
+    sorry \<comment> \<open>Moise Thm 4 Steps 1-7: 1-skeleton path via complex-connected subcomplex
+           argument. Needs K1/K2 subcomplex decomposition + edge-crossing lemma.\<close>
+  (** Step 8 (extend to arbitrary points via simplex path-connectedness): also deferred. **)
   have hpath_PQ: "\<forall>P\<in>?X. \<forall>Q\<in>?X. \<exists>f. top1_is_path_on ?X ?TX P Q f"
-    sorry  \<comment> \<open>chain-of-simplexes argument; deferred\<close>
+    sorry \<comment> \<open>Moise Thm 4 Step 8: concatenate P -> vP (simplex) -> vQ (1-skel) -> Q (simplex).
+           Uses h_vertex_conn and top1_in_same_path_component_on_trans.\<close>
   show ?thesis
-    unfolding top1_path_connected_on_def using hTX_top hpath_PQ by blast
+    unfolding top1_path_connected_on_def using hTX_top hpath_PQ by (by100 blast)
 qed
 
 (** from \<S>1: connected topological space (geotop.tex:349)
