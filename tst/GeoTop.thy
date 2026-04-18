@@ -11987,7 +11987,8 @@ proof -
         \<comment> \<open>separate collars on each side of M^2\<close>" sorry
   (** (3) Glue \<rho>^+ and (mirrored) \<rho>^- along M^2 \<times> {0} to form a single PLH \<rho>: M^2 \<times>
          [-1, 1] \<to> W with W = \<rho>^+([0, 1]) \<cup> \<rho>^-([0, 1]) open in M^3. **)
-  show ?thesis sorry
+  have h_final: "\<exists>W. geotop_is_bicollar_neighborhood W M2 M3" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 4 (Papakyriakopoulos) (geotop.tex:5663)
@@ -12039,7 +12040,18 @@ proof -
      \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
      geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
      C = \<Delta> \<inter> M2" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>\<Delta> C. geotop_is_n_cell \<Delta>
+               (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+             (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>) \<and>
+             \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
+             C = \<Delta> \<inter> M2 \<and>
+             (\<exists>P\<^sub>0\<in>C. \<exists>p.
+                geotop_closed_path_on C (subspace_topology UNIV geotop_euclidean_topology C)
+                  P\<^sub>0 p \<and>
+                \<not> geotop_path_equiv M2 (subspace_topology UNIV geotop_euclidean_topology M2)
+                     P\<^sub>0 p (\<lambda>t. P\<^sub>0))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 5 (geotop.tex:5691)
@@ -12075,7 +12087,12 @@ proof -
   (** (2) Apply Theorem 26_4 to M^2_n (compact case) to get the polyhedral 2-cell \<Delta>
          with boundary non-contractible in M^2_n. Since M^2_n \<subseteq> M^2, the conclusion
          transfers. **)
-  show ?thesis sorry
+  have h_final: "\<exists>\<Delta> C. geotop_is_n_cell \<Delta>
+               (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+             \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
+             C = \<Delta> \<inter> M2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 6 (geotop.tex:5699)
