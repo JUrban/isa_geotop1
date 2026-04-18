@@ -2424,6 +2424,26 @@ proof (intro ballI)
     using hpath hpim hstart hfinish by (by100 blast)
 qed
 
+(** Reverse bridge: HOL \<open>path_connected S\<close> \<Longrightarrow> \<open>top1_path_connected_on S\<close>
+    in the geotop-Euclidean subspace topology. **)
+lemma path_connected_imp_top1_path_connected_on_geotop:
+  fixes S :: "'a::real_normed_vector set"
+  assumes hpc: "path_connected S"
+  shows "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  sorry \<comment> \<open>For each \<open>x, y \<in> S\<close>, HOL gives a path \<open>g: [0,1] \<to> S\<close>; lift to top1 via
+           the continuous_on \<Rightarrow> top1_continuous_map_on bridge (deferred: such a bridge
+           is not yet in Top0).\<close>
+
+(** Specialised form via \<open>top1_path_connected_on_HOL_convex\<close> and related:
+    every path in a HOL-sense connected subset lifts to a top1-sense path. **)
+lemma top1_is_path_on_of_HOL_path:
+  fixes S :: "'a::real_normed_vector set" and g :: "real \<Rightarrow> 'a"
+  assumes hg_path: "path g"
+  assumes hg_im: "path_image g \<subseteq> S"
+  assumes hg_start: "pathstart g = x" and hg_finish: "pathfinish g = y"
+  shows "top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y g"
+  sorry \<comment> \<open>continuous_on [0,1] \<to> top1_continuous_map_on via a Top0 bridge; deferred.\<close>
+
 (** Corollary: path-connected (geotop-sense) \<Longrightarrow> connected (geotop-sense). **)
 lemma top1_path_connected_on_geotop_imp_connected:
   fixes S :: "'a::real_normed_vector set"
