@@ -506,19 +506,32 @@ proof -
   (** (d) Every simplex of \<open>Sd^m(K)\<close> is contained in a simplex of \<open>K'\<close>. Combining
       (b) and (c): every \<open>\<tau> \<in> Sd^m(K)\<close> has diameter \<open>< \<delta>\<close>, hence is contained in
       some \<open>\<sigma> \<in> K'\<close> containing a vertex \<open>v\<close> of \<open>K'\<close>. **)
+  (** Each \<tau> \<in> Sd^m K has diameter < \<delta> (from (c)) and lies inside |K| (since Sd^m
+      refines K, each \<tau> sits inside some \<sigma> \<in> K, hence in |K|). Apply (b). **)
+  have hSdm_sub_K: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hKcomp])
+  have hSdm_refines_K: "geotop_refines (geotop_iterated_Sd m K) K"
+    using hSdm_sub_K unfolding geotop_is_subdivision_def by (by100 blast)
   have hSdm_in_K': "\<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
-    sorry \<comment> \<open>Combine \<open>h\<delta>prop\<close> with \<open>hm_mesh\<close>; each \<open>\<tau>\<close> lies inside \<open>|K|\<close>
-             (since \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close>, by
-             \<open>geotop_iterated_Sd_is_subdivision\<close>, and each of its simplices is
-             a subset of \<open>|K|\<close>).\<close>
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> geotop_iterated_Sd m K"
+    (** \<tau> \<subseteq> |K|: \<tau> is refined by some \<sigma> \<in> K. **)
+    obtain \<sigma>\<^sub>K where h\<sigma>\<^sub>K: "\<sigma>\<^sub>K \<in> K" and h\<tau>\<sigma>\<^sub>K: "\<tau> \<subseteq> \<sigma>\<^sub>K"
+      using h\<tau> hSdm_refines_K unfolding geotop_refines_def by (by100 blast)
+    have h\<tau>_sub_K: "\<tau> \<subseteq> geotop_polyhedron K"
+      using h\<sigma>\<^sub>K h\<tau>\<sigma>\<^sub>K unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<tau>_diam: "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
+      using h\<tau> hm_mesh by (by100 blast)
+    have hstar: "\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> \<tau> \<subseteq> \<sigma>"
+      using h\<delta>prop h\<tau>_sub_K h\<tau>_diam by (by100 blast)
+    show "\<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>" using hstar by (by100 blast)
+  qed
   (** (e) Putting it together: \<open>Sd^m(K) < K'\<close>, since it refines \<open>K'\<close> and
       \<open>|Sd^m(K)| = |K| = |K'|\<close>. **)
-  have hSdm_K: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
-    by (rule geotop_iterated_Sd_is_subdivision[OF hKcomp])
   have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
-    using hSdm_K unfolding geotop_is_subdivision_def by (by100 blast)
+    using hSdm_sub_K unfolding geotop_is_subdivision_def by (by100 blast)
   have hSdm_poly: "geotop_polyhedron (geotop_iterated_Sd m K) = geotop_polyhedron K'"
-    using hSdm_K hsub unfolding geotop_is_subdivision_def by (by100 simp)
+    using hSdm_sub_K hsub unfolding geotop_is_subdivision_def by (by100 simp)
   have hSdm_ref: "geotop_refines (geotop_iterated_Sd m K) K'"
     unfolding geotop_refines_def using hSdm_in_K' by (by100 blast)
   have "geotop_is_subdivision (geotop_iterated_Sd m K) K'"
