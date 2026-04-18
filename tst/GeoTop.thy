@@ -703,7 +703,78 @@ definition geotop_complex_connected :: "'a::real_normed_vector set set \<Rightar
     \<not>(\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
           \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
 
-subsection \<open>Helpers for simplex connectivity (\<S>1 Theorem 3)\<close>
+(** Projections of the four conjuncts of \<open>geotop_is_complex\<close>, useful as
+    cheap simp-callable lemmas (avoids re-unfolding the full def which has 4 conjuncts
+    and blows by100 budget). **)
+lemma geotop_is_complex_simplex:
+  assumes "geotop_is_complex K"
+  shows "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+  by (rule conjunct1[OF assms[unfolded geotop_is_complex_def]])
+
+lemma geotop_is_complex_face_closed:
+  assumes "geotop_is_complex K"
+  shows "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+  by (rule conjunct1[OF conjunct2[OF assms[unfolded geotop_is_complex_def]]])
+
+lemma geotop_is_complex_intersection:
+  assumes "geotop_is_complex K"
+  shows "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+              geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  by (rule conjunct1[OF conjunct2[OF conjunct2[OF assms[unfolded geotop_is_complex_def]]]])
+
+lemma geotop_is_complex_locally_finite:
+  assumes "geotop_is_complex K"
+  shows "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  by (rule conjunct2[OF conjunct2[OF conjunct2[OF assms[unfolded geotop_is_complex_def]]]])
+
+(** Helper for Theorem 12 (Moise's proof of (3)\<Rightarrow>(1)): if K1, K2 are disjoint
+    subcomplexes of a complex K, then the point-sets \<bar>K1\<close> and \<bar>K2\<close> are disjoint.
+    Uses K.2 (intersection compatibility) plus face-closure in K1 and K2. **)
+lemma geotop_disjoint_subcomplex_polyhedra_disjoint:
+  fixes K K1 K2 :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_is_complex K1" and hK1sub: "K1 \<subseteq> K"
+  assumes hK2: "geotop_is_complex K2" and hK2sub: "K2 \<subseteq> K"
+  assumes hdisj: "K1 \<inter> K2 = {}"
+  shows "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = {}"
+proof (rule ccontr)
+  assume "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 \<noteq> {}"
+  then obtain P where hP: "P \<in> geotop_polyhedron K1 \<inter> geotop_polyhedron K2"
+    by (by100 blast)
+  obtain \<sigma> where h\<sigma>K1: "\<sigma> \<in> K1" and hP\<sigma>: "P \<in> \<sigma>"
+    using hP unfolding geotop_polyhedron_def by (by100 blast)
+  obtain \<tau> where h\<tau>K2: "\<tau> \<in> K2" and hP\<tau>: "P \<in> \<tau>"
+    using hP unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K1 hK1sub by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K" using h\<tau>K2 hK2sub by (by100 blast)
+  have hintne: "\<sigma> \<inter> \<tau> \<noteq> {}" using hP\<sigma> hP\<tau> by (by100 blast)
+  have hface_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+    using h\<sigma>K h\<tau>K hintne geotop_is_complex_intersection[OF hK] by (by100 blast)
+  have hface_\<tau>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using h\<sigma>K h\<tau>K hintne geotop_is_complex_intersection[OF hK] by (by100 blast)
+  have hinter_K1: "\<sigma> \<inter> \<tau> \<in> K1"
+    using h\<sigma>K1 hface_\<sigma> geotop_is_complex_face_closed[OF hK1] by (by100 blast)
+  have hinter_K2: "\<sigma> \<inter> \<tau> \<in> K2"
+    using h\<tau>K2 hface_\<tau> geotop_is_complex_face_closed[OF hK2] by (by100 blast)
+  have "\<sigma> \<inter> \<tau> \<in> K1 \<inter> K2" using hinter_K1 hinter_K2 by (by100 blast)
+  then show False using hdisj by (by100 blast)
+qed
+
+(** Helper (key technical lemma for GT_1_12): if K1 \<subseteq> K are locally finite
+    complexes (with K having K.2 intersection compatibility), then no point of
+    \<bar>K1\<close> is a limit point of \<bar>K - K1\<close>. Equivalently: \<bar>K1\<close> is closed in \<bar>K\<close>.
+    Proof via locally finite: around each \<sigma> \<in> K, only finitely many simplexes of K
+    intersect a neighborhood U. The ones not in K1 (hence not sharing faces with \<sigma>
+    from K1) stay at positive distance. **)
+lemma geotop_subcomplex_closed_in_polyhedron:
+  fixes K K1 :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_is_complex K1" and hK1sub: "K1 \<subseteq> K"
+  assumes hdisj: "K1 \<inter> (K - K1) = {}"
+  shows "closedin_on (geotop_polyhedron K)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+            (geotop_polyhedron K1)"
+  sorry
 
 text \<open>Moise's \<S>1 Theorem 3: every simplex is pathwise connected, because
   it is convex, and the straight-line path between any two points of a
