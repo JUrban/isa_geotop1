@@ -9266,16 +9266,20 @@ proof -
          per-component retractions glue along the complement of \<union>C_i to a retraction of
          T_1 - (\<union>C_i \<union> \<union>D_i) onto Bd T_1. **)
   have h_retract:
-    "\<exists>r. (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology T1. r P = P) \<and>
+    "(\<exists>r. (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology T1. r P = P) \<and>
          (\<forall>P\<in>T1 - (\<Union>Cs \<union> \<Union>Ds). r P \<in> geotop_frontier UNIV geotop_euclidean_topology T1) \<and>
          top1_continuous_map_on (T1 - (\<Union>Cs \<union> \<Union>Ds))
            (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
            (geotop_frontier UNIV geotop_euclidean_topology T1)
            (subspace_topology UNIV geotop_euclidean_topology
-              (geotop_frontier UNIV geotop_euclidean_topology T1)) r" sorry
-  have h_final: "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
+              (geotop_frontier UNIV geotop_euclidean_topology T1)) r) \<and>
+     geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
            (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
            (geotop_frontier UNIV geotop_euclidean_topology T1)" sorry
+  have h_final: "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)"
+    using h_retract by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
