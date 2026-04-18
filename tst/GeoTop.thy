@@ -7201,7 +7201,50 @@ proof -
          Hence the assignment [p] \<mapsto> [f \<circ> p] is well-defined on equivalence classes. **)
   have h_push_equiv:
     "\<forall>p p'. geotop_path_equiv X T P\<^sub>0 p p' \<longrightarrow>
-            geotop_path_equiv Y T' Q\<^sub>0 (f \<circ> p) (f \<circ> p')" sorry
+            geotop_path_equiv Y T' Q\<^sub>0 (f \<circ> p) (f \<circ> p')"
+  proof (intro allI impI)
+    fix p p'
+    assume hpp': "geotop_path_equiv X T P\<^sub>0 p p'"
+    have hcp_p: "geotop_closed_path_on X T P\<^sub>0 p"
+      using hpp' unfolding geotop_path_equiv_def by (by100 simp)
+    have hcp_p': "geotop_closed_path_on X T P\<^sub>0 p'"
+      using hpp' unfolding geotop_path_equiv_def by (by100 simp)
+    have hp_mem: "p \<in> geotop_CP X T P\<^sub>0"
+      using hcp_p unfolding geotop_CP_def by (by100 simp)
+    have hp'_mem: "p' \<in> geotop_CP X T P\<^sub>0"
+      using hcp_p' unfolding geotop_CP_def by (by100 simp)
+    have hfp_cp: "geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p)"
+      using h_push_cp hp_mem by (by100 blast)
+    have hfp'_cp: "geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p')"
+      using h_push_cp hp'_mem by (by100 blast)
+    have hexF: "\<exists>(F::real \<times> real \<Rightarrow> 'a).
+                   (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 0) = p t) \<and>
+                   (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 1) = p' t) \<and>
+                   (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (0, y) = P\<^sub>0 \<and> F (1, y) = P\<^sub>0) \<and>
+                   (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (t, y) \<in> X)"
+      using hpp' unfolding geotop_path_equiv_def by (by100 simp)
+    from hexF obtain F :: "real \<times> real \<Rightarrow> 'a" where hF:
+                   "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 0) = p t) \<and>
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 1) = p' t) \<and>
+                    (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (0, y) = P\<^sub>0 \<and> F (1, y) = P\<^sub>0) \<and>
+                    (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (t, y) \<in> X)"
+      by blast
+    let ?H = "\<lambda>(t::real, y::real). f (F (t, y))"
+    have h_H: "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?H (t, 0) = (f \<circ> p) t) \<and>
+               (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?H (t, 1) = (f \<circ> p') t) \<and>
+               (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?H (0, y) = Q\<^sub>0 \<and> ?H (1, y) = Q\<^sub>0) \<and>
+               (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?H (t, y) \<in> Y)"
+      using hF hf_base hf_cont unfolding top1_continuous_map_on_def by (by100 simp)
+    have h_exH: "\<exists>(g::real \<times> real \<Rightarrow> 'b).
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 0) = (f \<circ> p) t) \<and>
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 1) = (f \<circ> p') t) \<and>
+                    (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (0, y) = Q\<^sub>0 \<and> g (1, y) = Q\<^sub>0) \<and>
+                    (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (t, y) \<in> Y)"
+      by (rule exI[where x = ?H], rule h_H)
+    show "geotop_path_equiv Y T' Q\<^sub>0 (f \<circ> p) (f \<circ> p')"
+      unfolding geotop_path_equiv_def
+      using hfp_cp hfp'_cp h_exH by (by100 blast)
+  qed
   (** (3) f commutes with path multiplication pointwise: f \<circ> (p q) = (f \<circ> p)(f \<circ> q),
          directly from the definition of geotop_path_mult. **)
   have h_push_mult:
