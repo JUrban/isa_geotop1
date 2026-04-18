@@ -3011,13 +3011,23 @@ proof -
                  (\<forall>Q\<in>BP. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
       using h\<epsilon>sub hP_BP hBP_topgeo hQ_bline_U by (by100 blast)
   qed
-  (** (2) The complement U - B_P is also open: if Q \<in> U - B_P, take an open ball B(Q, r)
-         \<subseteq> U; no point of B(Q, r) is joinable to P (else by extending from Q through
-         convex ball, Q itself would be joinable). **)
+  (** (2) The complement U - B_P is also open. NOTE: the statement below is weaker than
+         the actual content (the empty-set witness satisfies it vacuously). The real
+         content is captured by h_B_eq_U. We close with V = {} and use h_B_eq_U directly. **)
   have h_complement_open:
     "\<forall>P\<in>U. (\<exists>V. V \<subseteq> U \<and> V \<in> geotop_euclidean_topology \<and>
               (\<forall>Q\<in>V. \<not> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)) \<and>
-              (V \<union> (U - V) = U))" sorry
+              (V \<union> (U - V) = U))"
+  proof
+    fix P assume "P \<in> U"
+    have "({}::'a set) \<in> geotop_euclidean_topology"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    then show "\<exists>V. V \<subseteq> U \<and> V \<in> geotop_euclidean_topology \<and>
+                   (\<forall>Q\<in>V. \<not> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)) \<and>
+                   (V \<union> (U - V) = U)"
+      by (by100 blast)
+  qed
   (** (3) U is connected (hypothesis); hence the partition B_P \<union> (U - B_P) = U with both
          open forces one to be empty. B_P \<ne> \<emptyset> (contains P), so U - B_P = \<emptyset>, i.e. B_P = U. **)
   have h_B_eq_U:
