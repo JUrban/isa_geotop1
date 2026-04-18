@@ -2006,6 +2006,7 @@ qed
       (3) |K| is connected. **)
 theorem Theorem_GT_1_12:
   fixes K :: "'a::real_normed_vector set set"
+  assumes hK_complex: "geotop_is_complex K"
   shows "geotop_complex_connected K \<longleftrightarrow>
     top1_path_connected_on (geotop_polyhedron K)
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
