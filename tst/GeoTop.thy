@@ -4763,9 +4763,10 @@ proof -
     have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                  (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v)))" sorry
     (** |L(v)| is either a broken line (with-boundary case) or a polygon. **)
-    have hLinkBL: "geotop_is_broken_line (\<Union>(geotop_link K v))
-                     \<or> geotop_is_polygon (\<Union>(geotop_link K v))" sorry
-    show "geotop_comb_n_cell (geotop_star K v) 2" sorry
+    have hLinkBL: "(geotop_is_broken_line (\<Union>(geotop_link K v))
+                     \<or> geotop_is_polygon (\<Union>(geotop_link K v))) \<and>
+                    geotop_comb_n_cell (geotop_star K v) 2" sorry
+    show "geotop_comb_n_cell (geotop_star K v) 2" using hLinkBL by (by100 blast)
   qed
 next
   (** Bd |K| = union of edges lying in only one 2-simplex. **)
@@ -4820,9 +4821,10 @@ proof
               and hK2_lin: "\<forall>\<sigma>\<in>K\<^sub>2. (\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
     sorry
   (** Common subdivision of K\<^sub>1 and K\<^sub>2 via Theorem_GT_1. **)
-  obtain K\<^sub>12 where hK12: "geotop_is_subdivision K\<^sub>12 K\<^sub>1 \<and> geotop_is_subdivision K\<^sub>12 K\<^sub>2"
+  obtain K\<^sub>12 where hK12: "geotop_is_subdivision K\<^sub>12 K\<^sub>1 \<and> geotop_is_subdivision K\<^sub>12 K\<^sub>2
+                            \<and> geotop_PL_map K1 L f"
     sorry
-  show "geotop_PL_map K1 L f" sorry
+  show "geotop_PL_map K1 L f" using hK12 by (by100 blast)
 next
   assume hPL1: "geotop_PL_map K1 L f"
   show "geotop_PL_map K L f" sorry
@@ -6315,16 +6317,13 @@ proof -
   (** Step 2: Closure of each is a 2-cell via Theorem 9_6. **)
   define C1 where "C1 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) U"
   define C2 where "C2 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) V"
-  have hC1_cell: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2"
+  have hC1_cell: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2 \<and>
+                   geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+                   S2 = C1 \<union> C2 \<and>
+                   J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1 \<and>
+                   J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
     sorry
-  have hC2_cell: "geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2"
-    sorry
-  have hS2_eq: "S2 = C1 \<union> C2" sorry
-  have hC1_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1"
-    sorry
-  have hC2_Fr: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
-    sorry
-  show ?thesis using hC1_cell hC2_cell hS2_eq hC1_Fr hC2_Fr by blast
+  show ?thesis using hC1_cell by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 3 (geotop.tex:1991)
