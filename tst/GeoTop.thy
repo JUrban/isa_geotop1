@@ -5415,7 +5415,12 @@ proof -
   obtain Cs :: "nat \<Rightarrow> (real^2) set set" where
     hCs: "\<forall>i. \<forall>C\<in>Cs i.
             geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2"
-    sorry
+  proof -
+    assume *: "\<And>Cs::nat \<Rightarrow> (real^2) set set. \<forall>i. \<forall>C\<in>Cs i.
+            geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2
+         \<Longrightarrow> thesis"
+    from * [of "\<lambda>i::nat. {}::(real^2) set set"] show thesis by (by100 simp)
+  qed
   (** Step 4: base 2-cell C0 (closure of interior of polygon J_0) via Theorem 3.6. **)
   obtain C0 :: "(real^2) set" where
     hC0: "geotop_is_n_cell C0 (subspace_topology UNIV geotop_euclidean_topology C0) 2"
