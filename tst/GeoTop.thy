@@ -2987,6 +2987,26 @@ proof (intro conjI)
   qed
 qed
 
+(** A simplex of dim n is an n-cell (identity is the witness homeomorphism). **)
+lemma geotop_simplex_is_n_cell:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "geotop_is_n_cell \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) n"
+proof -
+  have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h\<sigma>_sub: "\<sigma> \<subseteq> UNIV" by simp
+  have h\<sigma>_top: "is_topology_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl h\<sigma>_sub])
+  have h_id: "top1_homeomorphism_on \<sigma>
+         (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+         \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) id"
+    by (rule top1_homeomorphism_on_id[OF h\<sigma>_top])
+  show ?thesis
+    unfolding geotop_is_n_cell_def
+    using h\<sigma>_top h\<sigma> h_id by (by100 blast)
+qed
+
 (** Composition of homeomorphisms is a homeomorphism. **)
 lemma top1_homeomorphism_on_comp:
   assumes hf: "top1_homeomorphism_on X TX Y TY f"
@@ -6637,7 +6657,7 @@ proof -
     using Theorem_GT_3_4[OF hJ] by blast
   (** \<sigma>\<^sup>2 is a 2-cell (simplex is an n-cell via identity homeomorphism). **)
   have h\<sigma>_ncell: "geotop_is_n_cell \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) 2"
-    sorry
+    by (rule geotop_simplex_is_n_cell[OF h\<sigma>])
   (** Preimage of a 2-cell under a homeomorphism is a 2-cell. **)
   define D :: "(real^2) set" where "D = {P. h P \<in> \<sigma>}"
   have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
