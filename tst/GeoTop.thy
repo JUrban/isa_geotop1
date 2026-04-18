@@ -1860,10 +1860,28 @@ proof -
       unfolding fL\<^sub>1_def geotop_polyhedron_def by (by100 blast)
     have hfL\<^sub>1_poly: "geotop_polyhedron fL\<^sub>1 = geotop_polyhedron K"
       using hfL\<^sub>1_poly_step1 hL\<^sub>1_poly_L hf_img_L_K by (by100 simp)
-    (** (2b) fL_1 is a complex: deferred (needs f-image-of-simplex = simplex,
-            face preservation, pairwise intersection consistency, local finiteness). **)
-    have hfL\<^sub>1_comp: "geotop_is_complex fL\<^sub>1"
+    (** (2b) fL_1 is a complex: deferred. Decomposed into the four K-conditions
+            (K.0 simplex, K.1 face-closed, K.2 intersections, K.3 local finiteness). **)
+    have hL\<^sub>1_comp: "geotop_is_complex L\<^sub>1"
+      using hL\<^sub>1L unfolding geotop_is_subdivision_def by (by100 blast)
+    (** (b0) K.0: f(\<sigma>) is a simplex when f is linear on \<sigma> and \<sigma> is a simplex. **)
+    have hfL\<^sub>1_K0: "\<forall>\<sigma>\<in>fL\<^sub>1. geotop_is_simplex \<sigma>"
       sorry
+    (** (b1) K.1: fL_1 is closed under faces. A face of f(\<sigma>) is f applied to a face
+            of \<sigma> (via linearity on \<sigma>); L_1 is face-closed (K.1), so fL_1 is too. **)
+    have hfL\<^sub>1_K1: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> fL\<^sub>1"
+      sorry
+    (** (b2) K.2: f(\<sigma>_1) \<inter> f(\<sigma>_2) = f(\<sigma>_1 \<inter> \<sigma>_2) (f bij) is a face of both by K.2 of L_1. **)
+    have hfL\<^sub>1_K2: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>\<in>fL\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      sorry
+    (** (b3) K.3: local finiteness. f is continuous (PL-homeomorphism),
+            so pull back L_1's local-finiteness witness through f. **)
+    have hfL\<^sub>1_K3: "\<forall>\<sigma>\<in>fL\<^sub>1. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>fL\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+      sorry
+    have hfL\<^sub>1_comp: "geotop_is_complex fL\<^sub>1"
+      unfolding geotop_is_complex_def
+      using hfL\<^sub>1_K0 hfL\<^sub>1_K1 hfL\<^sub>1_K2 hfL\<^sub>1_K3 by (by100 blast)
     (** (2c) fL_1 refines K: each f(\<sigma>) for \<sigma> \<in> L_1 sits in some \<tau> \<in> K (from hL_1_lin). **)
     have hfL\<^sub>1_ref: "geotop_refines fL\<^sub>1 K"
     proof -
