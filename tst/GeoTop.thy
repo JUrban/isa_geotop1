@@ -2717,13 +2717,25 @@ qed
     LATEX VERSION: Let K be a complex. If K is connected, then |K| is pathwise connected. **)
 (** Helper: complex-connected \<open>K\<close> implies HOL-path-connected \<open>|K|\<close>.
     Proof outline (Moise Thm 4 in HOL form):
-      (1) For each \<sigma> \<in> K, \<sigma> is convex, hence HOL-path-connected.
-      (2) For any two vertices \<open>v, w\<close> of \<open>K\<close>, \<open>h_vertex_conn\<close> gives a top1-path
-          in \<open>|K|\<close>; \<open>top1_path_connected_on_geotop_imp_path_connected\<close> converts
-          it to a HOL-path with image in \<open>|K|\<close>.
-      (3) For any \<open>P \<in> |K|\<close>, choose \<open>\<sigma>_P \<ni> P\<close> and vertex \<open>v_P\<close> of \<open>\<sigma>_P\<close>;
-          the straight-line \<open>t \<mapsto> (1-t) P + t v_P\<close> is a HOL path inside \<open>\<sigma>_P\<close>.
-      (4) Concatenate \<open>P \<to> v_P \<to> v_Q \<to> Q\<close> via HOL's \<open>+++\<close>. **)
+      (1) Vertex-level reachability: for any two vertices \<open>v, w \<in> K^0\<close>, there is a
+          HOL-path \<open>g: [0,1] \<to> |K|\<close> with start \<open>v\<close>, finish \<open>w\<close>. Proof follows Moise
+          Steps 1-7: fix \<open>v_0\<close>; \<open>V = reachable vertices from v_0 via 1-skeleton\<close>;
+          \<open>K_1 = subcomplex on V\<close>, \<open>K_2 = K \<setminus> K_1\<close>; \<open>K_1 \<inter> K_2 = {}\<close>, \<open>K = K_1 \<cup> K_2\<close>
+          (Step 4: any edge between \<open>V\<close> and \<open>V\<^sup>c\<close> would propagate reachability);
+          complex-connected K forces \<open>K_2 = \<emptyset>\<close>; hence \<open>V = K^0\<close>.
+      (2) For any \<open>P \<in> |K|\<close>, pick \<open>\<sigma>_P \<in> K\<close> with \<open>P \<in> \<sigma>_P\<close> and a vertex \<open>v_P \<in> \<sigma>_P\<close>;
+          the straight-line segment in \<open>\<sigma>_P\<close> (convex, hence HOL-path-connected) gives
+          a HOL-path \<open>P \<to> v_P\<close>.
+      (3) Concatenate \<open>P \<to> v_P \<to> v_Q \<to> Q\<close> via HOL's \<open>+++\<close>. **)
+lemma geotop_complex_connected_imp_HOL_vertex_reachable:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_complex_connected K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hw: "w \<in> geotop_complex_vertices K"
+  shows "\<exists>g. path g \<and> path_image g \<subseteq> geotop_polyhedron K \<and>
+               pathstart g = v \<and> pathfinish g = w"
+  sorry
+
 lemma geotop_complex_connected_imp_HOL_path_connected:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_complex_connected K"
