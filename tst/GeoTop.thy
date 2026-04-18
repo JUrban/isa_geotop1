@@ -8990,7 +8990,8 @@ proof -
          \<phi> ` A1 = A1'" sorry
   (** (5) A_1' is a linear interval (straight line segment from P_1 to P), hence trivially
          tame. Pulling back via \<phi>^{-1}, A_1 is tame. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_tame A1" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>19: locally commutative fundamental group (geotop.tex:4127)
@@ -9044,7 +9045,8 @@ proof -
            (\<forall>P'\<in>Y. geotop_pi_locally_commutative_at (UNIV - Y)
                      geotop_euclidean_topology P') \<longrightarrow>
        geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_wild A" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>19 Theorem 5 (geotop.tex:4167)
@@ -9155,7 +9157,14 @@ proof -
                 (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
              (D3 - {P\<^sub>0})
              (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
+             top1_homeomorphism_on
+               (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
+               (subspace_topology UNIV geotop_euclidean_topology
+                  (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
+               (D3 - {P\<^sub>0})
+               (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>20 Theorem 2 (geotop.tex:4193)
