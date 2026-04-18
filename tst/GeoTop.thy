@@ -5407,7 +5407,17 @@ proof -
   (** J is triangulable (from the homeomorphism to the polygon P). **)
   have hP_poly_complex: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = P"
     using hP_polygon unfolding geotop_is_polygon_def by (by100 blast)
-  have hJ_triangulable: "geotop_is_triangulable J" sorry
+  have hJ_triangulable: "geotop_is_triangulable J"
+  proof -
+    obtain K' where hK'_cx: "geotop_is_complex K'" and hK'_poly: "geotop_polyhedron K' = P"
+      using hP_poly_complex by (by100 blast)
+    have hf_inv_homeo: "top1_homeomorphism_on P (subspace_topology UNIV geotop_euclidean_topology P)
+                         J (subspace_topology UNIV geotop_euclidean_topology J) (inv_into J f)"
+      by (rule top1_homeomorphism_on_sym[OF hf])
+    show ?thesis
+      unfolding geotop_is_triangulable_def
+      using hK'_cx hK'_poly hf_inv_homeo by (by100 blast)
+  qed
   (** Conclude J is tame. **)
   show ?thesis
     using hJ_triangulable hH hHJ_poly
