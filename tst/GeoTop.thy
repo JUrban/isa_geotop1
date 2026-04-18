@@ -327,19 +327,39 @@ proof -
     using hMcomp hKcomp hMK_ref hMK_poly by (by100 blast)
 qed
 
-(** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close>. **)
+(** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
 lemma geotop_iterated_Sd_is_subdivision:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K"
+  assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_iterated_Sd m K) K"
-  sorry
+proof (induction m)
+  case 0
+  show ?case by (simp add: geotop_is_subdivision_refl[OF hK])
+next
+  case (Suc m)
+  (** \<open>Sd^m(K) < K\<close> (IH), hence \<open>Sd^m(K)\<close> is a complex; then \<open>Sd(Sd^m K) < Sd^m K\<close>
+      by \<open>geotop_Sd_is_subdivision\<close>; then \<open>Sd^{Suc m} K < K\<close> by transitivity. **)
+  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using Suc.IH unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSuc_m: "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K)
+                                        (geotop_iterated_Sd m K)"
+    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
+  show ?case
+    by (rule geotop_is_subdivision_trans[OF Suc.IH hSuc_m])
+qed
 
 (** \<open>Sd^{Suc m}(K)\<close> is a subdivision of \<open>Sd^m(K)\<close>. **)
 lemma geotop_iterated_Sd_Suc_refines:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K"
+  assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
-  sorry
+proof -
+  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using geotop_iterated_Sd_is_subdivision[OF hK, of m]
+    unfolding geotop_is_subdivision_def by (by100 blast)
+  show ?thesis
+    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
+qed
 
 (** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>.
     Proof by induction on \<open>N - m\<close> using Suc-step refinement and transitivity. **)
