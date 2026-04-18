@@ -14576,7 +14576,9 @@ theorem Theorem_GT_36_4:
 proof -
   (** (1) By local tameness at each P \<in> L, pick finitely many closed nbhds N_i \<ni> P_i with
          homeomorphisms h_i: N_i \<to> |K_i| making h_i(N_i \<inter> L) polyhedral. **)
-  obtain Ns hs where h_loc_charts:
+  have h_at: "\<forall>P\<in>L. geotop_is_locally_tame_at L P"
+    using hL_loctame unfolding geotop_is_locally_tame_def by (by100 blast)
+  have h_loc_charts:
     "\<forall>P\<in>L. \<exists>N h. closedin_on UNIV geotop_euclidean_topology N \<and> P \<in> N \<and>
                   top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
                      (h ` N) (subspace_topology UNIV geotop_euclidean_topology (h ` N)) h \<and>
