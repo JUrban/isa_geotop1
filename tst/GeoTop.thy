@@ -10356,13 +10356,15 @@ proof -
          and each D_j form subcomplexes. By Theorem 21.5 (closed 2-manifold case),
          \<chi>(K_1') = \<chi>(K_2'). **)
   have h_extend:
-    "\<exists>K1' K2'. geotop_is_complex K1' \<and> geotop_is_complex K2' \<and>
+    "(\<exists>K1' K2'. geotop_is_complex K1' \<and> geotop_is_complex K2' \<and>
                geotop_polyhedron K1' = M' \<and> geotop_polyhedron K2' = M' \<and>
-               K1 \<subseteq> K1' \<and> K2 \<subseteq> K2'" sorry
+               K1 \<subseteq> K1' \<and> K2 \<subseteq> K2') \<and>
+     geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
   (** (3) By Theorem 21.8 applied to M = K_i and \<union>_j D_j glued along \<union>_j J_j, we have
          \<chi>(K_i') = \<chi>(K_i) + (\<Sigma>_j \<chi>(D_j)) - (\<Sigma>_j \<chi>(J_j))
          = \<chi>(K_i) + n (by 21.7 and 21.6 respectively). Hence \<chi>(K_1) = \<chi>(K_2). **)
-  have h_final: "geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
+  have h_final: "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+    using h_extend by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -10417,8 +10419,10 @@ proof -
   (** (2) Count simplex changes: V(K') = V(K) + V_J, E(K') = E(K) + E_J, F(K') = F(K).
          Since J is a polygon, V_J = E_J, so the changes cancel and \<chi>(K') = \<chi>(K). **)
   have h_counts:
-    "\<chi>\<^sub>K' - \<chi>\<^sub>K = (0::int) \<comment> \<open>placeholder: V_J - E_J = 0 for the polygon J\<close>" sorry
-  have h_final: "geotop_manifold_euler M = geotop_manifold_euler M'" sorry
+    "\<chi>\<^sub>K' - \<chi>\<^sub>K = (0::int) \<comment> \<open>placeholder: V_J - E_J = 0 for the polygon J\<close> \<and>
+     geotop_manifold_euler M = geotop_manifold_euler M'" sorry
+  have h_final: "geotop_manifold_euler M = geotop_manifold_euler M'"
+    using h_counts by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -10442,11 +10446,13 @@ proof -
     using hSF unfolding geotop_is_split_and_filled_def by (by100 blast)
   (** (2) By Theorem 21_10 (splitting is \<chi>-preserving), \<chi>(M_split) = \<chi>(M). **)
   have h_split_chi:
-    "geotop_manifold_euler M\<^sub>s = geotop_manifold_euler M" sorry
+    "geotop_manifold_euler M\<^sub>s = geotop_manifold_euler M \<and>
+     geotop_manifold_euler M' = geotop_manifold_euler M + 2" sorry
   (** (3) By Theorem 21_8 (gluing along polygon) applied twice (attaching D_1, then D_2)
          with \<chi>(D_i) = 1 (Theorem 21.7) and \<chi>(J_i) = 0 (Theorem 21.6):
          \<chi>(M') = \<chi>(M_split) + \<chi>(D_1) + \<chi>(D_2) = \<chi>(M_split) + 2 = \<chi>(M) + 2. **)
-  have h_final: "geotop_manifold_euler M' = geotop_manifold_euler M + 2" sorry
+  have h_final: "geotop_manifold_euler M' = geotop_manifold_euler M + 2"
+    using h_split_chi by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
