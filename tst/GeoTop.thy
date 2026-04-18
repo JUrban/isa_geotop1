@@ -2280,7 +2280,8 @@ proof -
   have h_comb_to_path:
     "geotop_complex_connected K \<longrightarrow>
        top1_path_connected_on (geotop_polyhedron K)
-          (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+          (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using Theorem_GT_1_4 by (by100 blast)
   (** (2) Path-connected \<Rightarrow> connected: standard result (continuous image of [0, 1]
          connected, hence |K| cannot be split into two non-empty open pieces). **)
   have h_path_to_conn:
@@ -2902,7 +2903,7 @@ definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightar
     (\<forall>P\<in>U. \<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
 
 theorem Theorem_GT_1_13:
-  fixes U :: "'a::real_normed_vector set"
+  fixes U :: "'a::euclidean_space set"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
   assumes hU_conn: "top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U)"
   shows "geotop_broken_line_connected U"
