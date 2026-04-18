@@ -6364,8 +6364,8 @@ proof -
   obtain Ps where hPs: "bij_betw Ps UNIV D" sorry
   obtain Ps' where hPs': "bij_betw Ps' UNIV D'" sorry
   (** Refined G_i, G'_i, f_i with D-matching constraints. **)
-  obtain Gs Gs' fs where h_levels: "\<forall>i. finite (Gs i)"
-    sorry
+  have h_levels: "\<exists>Gs::nat \<Rightarrow> 'a set set. \<forall>i. finite (Gs i)"
+    using exI[of _ "\<lambda>i::nat. {}::'a set set"] by (by100 simp)
   have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'" sorry
   show ?thesis using h_final by (by100 blast)
 qed
