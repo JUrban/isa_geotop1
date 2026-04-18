@@ -1896,9 +1896,30 @@ proof -
     define L\<^sub>3 where "L\<^sub>3 = (\<lambda>\<sigma>. inv_into (geotop_polyhedron L) f ` \<sigma>) ` K\<^sub>3"
     (** L_3 is a subdivision of L: decomposed into (i) complex, (ii)
         polyhedron equality, (iii) refinement. **)
+    (** L_3 is a complex: L_3 = f_inv ` K_3, K_3 is a complex, and f_inv
+        is a bijective PL map. Decompose into K.0/K.1/K.2/K.3. **)
+    have hK\<^sub>3_comp: "geotop_is_complex K\<^sub>3"
+      using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
+    (** (i) K.0: each f_inv(\<sigma>) is a simplex. \<sigma> \<in> K_3 is a simplex, and f_inv is
+           piecewise linear (linear on K_1-simplexes, and K_3 refines K_1). **)
+    have hL\<^sub>3_K0: "\<forall>\<sigma>\<in>L\<^sub>3. geotop_is_simplex \<sigma>"
+      sorry
+    (** (ii) K.1: L_3 closed under faces. A face of f_inv(\<sigma>) corresponds to
+            f_inv applied to a face of \<sigma>; K_3 is face-closed, so L_3 is too. **)
+    have hL\<^sub>3_K1: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L\<^sub>3"
+      sorry
+    (** (iii) K.2: pairwise intersections are faces. f_inv is bijective, so
+             f_inv(\<sigma>_1) \<inter> f_inv(\<sigma>_2) = f_inv(\<sigma>_1 \<inter> \<sigma>_2), a face by K_3's K.2. **)
+    have hL\<^sub>3_K2: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>\<in>L\<^sub>3. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      sorry
+    (** (iv) K.3: local finiteness. f_inv is continuous (as PL homeomorphism),
+             so pull back K_3's local-finiteness witness through f_inv. **)
+    have hL\<^sub>3_K3: "\<forall>\<sigma>\<in>L\<^sub>3. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>L\<^sub>3. \<tau> \<inter> U \<noteq> {}}"
+      sorry
     have hL\<^sub>3_complex: "geotop_is_complex L\<^sub>3"
-      sorry \<comment> \<open>L_3 is a complex: image of complex K_3 under a bijective PL map
-                preserves the complex structure.\<close>
+      unfolding geotop_is_complex_def
+      using hL\<^sub>3_K0 hL\<^sub>3_K1 hL\<^sub>3_K2 hL\<^sub>3_K3 by (by100 blast)
     (** Polyhedron equality: \<open>|L_3| = f_inv(|K_3|) = f_inv(|K|) = |L|\<close>. **)
     have hK\<^sub>3_K: "geotop_is_subdivision K\<^sub>3 K"
       by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
