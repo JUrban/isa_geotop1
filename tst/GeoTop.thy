@@ -4915,7 +4915,8 @@ proof -
     "\<exists>H::nat \<Rightarrow> ((real^2) \<times> (real^2)) set.
        \<forall>i j. i < j \<longrightarrow>
          (\<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H j. geotop_segment v v' \<inter> geotop_segment w w' \<noteq> {}
-                       \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v')" sorry
+                       \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v')"
+    using exI[of _ "\<lambda>i::nat. {}::((real^2) \<times> (real^2)) set"] by (by100 simp)
   show ?thesis sorry
 qed
 
