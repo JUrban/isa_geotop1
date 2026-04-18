@@ -4193,7 +4193,13 @@ proof -
   obtain L where hL_sub: "geotop_is_subdivision L K1"
     using hK1 unfolding geotop_is_subdivision_def geotop_refines_def by (by100 blast)
   (** Step 2-3: Moise's PL construction yields f; details deferred. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+                (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+                UNIV geotop_euclidean_topology f
+          \<and> geotop_PL_map K1 (SOME L. geotop_is_complex L \<and> f ` geotop_polyhedron K1 = geotop_polyhedron L) f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)
+          \<and> (\<forall>v\<in>geotop_complex_vertices K1. h v = f v)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>6 Theorem 3 (geotop.tex:1326)
