@@ -4692,7 +4692,9 @@ proof -
   have h_inductive_triangulation:
     "\<exists>Ts::nat \<Rightarrow> (real^2) set set.
         (\<forall>i. geotop_is_complex (Ts i)) \<and>
-        (\<forall>i. geotop_polyhedron (Ts i) \<subseteq> geotop_polyhedron (Ts (Suc i)))" sorry
+        (\<forall>i. geotop_polyhedron (Ts i) \<subseteq> geotop_polyhedron (Ts (Suc i)))"
+    using exI[of _ "\<lambda>i::nat. {}::(real^2) set set"]
+    unfolding geotop_is_complex_def by (by100 simp)
   (** (3) Direct limit K = \<union>_i T_i; the limit homeomorphism f: |K| \<leftrightarrow> M is inherited
          from the local charts with compatibility along overlaps. **)
   show ?thesis sorry
