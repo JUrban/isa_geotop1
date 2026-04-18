@@ -231,48 +231,166 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
     geotop_is_complex K \<and> geotop_is_complex L
     \<and> geotop_refines L K \<and> geotop_polyhedron L = geotop_polyhedron K"
 
-(** from Introduction: Theorem 1 (geotop.tex:172)
-    LATEX VERSION: Every two subdivisions of the same complex have a common subdivision. **)
+subsection \<open>Barycentric subdivision infrastructure (from early.tex \<S>4)\<close>
+
+text \<open>The proof of Theorem 1 goes via iterated barycentric subdivision, as
+developed in early.tex \<S>4. We define the barycenter of a simplex, the
+barycentric subdivision \<open>Sd(K)\<close> of a complex, and its iterates; we state
+the key lemmas (Sd is a subdivision, mesh tends to 0, sufficient iteration
+refines any given subdivision). Full proofs of the listed lemmas follow
+early.tex and are deferred to dedicated sub-proofs.\<close>
+
+(** from Problem Set 5 / \<S>5: barycenter of a simplex (geotop.tex:1197,
+    early.tex Def 4.1). The barycenter of \<sigma> = [v_0, \<dots>, v_n] is
+    \<open>(1/(n+1)) \<cdot> \<Sum> v_i\<close>, equivalently the unique point with all barycentric
+    coordinates equal to 1/(n+1). **)
+definition geotop_barycenter :: "'a::real_vector set \<Rightarrow> 'a" where
+  "geotop_barycenter \<sigma> = (SOME v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and>
+     v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w))"
+
+(** from Problem Set 5 / \<S>5: barycentric subdivision of a complex
+    (geotop.tex:1197, early.tex Def 4.4). \<open>Sd(K)\<close> is the subdivision of
+    \<open>K\<close> whose simplexes are the convex hulls of barycenters of flags
+    \<open>\<sigma>_0 < \<sigma>_1 < \<dots> < \<sigma>_n\<close> of faces of simplexes of \<open>K\<close>. We specify it
+    existentially via \<open>SOME\<close>; concrete construction is deferred. **)
+definition geotop_barycentric_subdivision ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_barycentric_subdivision K =
+    (SOME bK. geotop_is_subdivision bK K \<and>
+       (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK))"
+
+abbreviation geotop_Sd :: "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_Sd K \<equiv> geotop_barycentric_subdivision K"
+
+(** Iterated barycentric subdivision \<open>Sd^m(K)\<close>. **)
+primrec geotop_iterated_Sd ::
+  "nat \<Rightarrow> 'a::real_normed_vector set set \<Rightarrow> 'a set set" where
+  "geotop_iterated_Sd 0 K = K"
+| "geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)"
+
+(** from early.tex Lemma 4.9: \<open>Sd(K)\<close> is a simplicial complex and is a
+    subdivision of \<open>K\<close>. **)
+lemma geotop_Sd_is_subdivision:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_Sd K) K"
+  sorry
+
+(** Transitivity of subdivision: if C < B and B < A, then C < A. **)
+lemma geotop_is_subdivision_trans:
+  fixes K L M :: "'a::real_normed_vector set set"
+  assumes hLK: "geotop_is_subdivision L K"
+  assumes hML: "geotop_is_subdivision M L"
+  shows "geotop_is_subdivision M K"
+  sorry
+
+(** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close>. **)
+lemma geotop_iterated_Sd_is_subdivision:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+  sorry
+
+(** \<open>Sd^{Suc m}(K)\<close> is a subdivision of \<open>Sd^m(K)\<close>. **)
+lemma geotop_iterated_Sd_Suc_refines:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
+  sorry
+
+(** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>. **)
+lemma geotop_iterated_Sd_mono:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hmN: "m \<le> N"
+  shows "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
+  sorry
+
+(** from early.tex Lemma 4.10: open star of a vertex \<open>v\<close> in a complex \<open>K\<close>
+    is the union of the relative interiors of simplexes of \<open>K\<close> having \<open>v\<close>
+    as a vertex. We use HOL's \<open>rel_interior\<close> to express this. **)
+definition geotop_open_star ::
+  "'a::euclidean_space set set \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "geotop_open_star K v = \<Union>{rel_interior \<sigma> |\<sigma>. \<sigma> \<in> K \<and> v \<in> \<sigma>}"
+
+(** from early.tex Lemma 4.11: the open star is relatively open in \<open>|K|\<close>,
+    i.e. its intersection with \<open>|K|\<close> equals itself and is open in the subspace. **)
+lemma geotop_open_star_subset:
+  fixes K :: "'a::euclidean_space set set"
+  shows "geotop_open_star K v \<subseteq> geotop_polyhedron K"
+  sorry
+
+(** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>. **)
+lemma geotop_vertex_stars_cover:
+  fixes K :: "'a::euclidean_space set set"
+  assumes "geotop_is_complex K"
+  shows "geotop_polyhedron K
+           \<subseteq> \<Union>{geotop_open_star K v |v. v \<in> geotop_complex_vertices K}"
+  sorry
+
+(** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
+    subdivision tends to 0. **)
+lemma geotop_mesh_iterated_Sd_tends_to_zero:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes "geotop_is_complex K" and "finite K"
+  shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
+               (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
+  sorry
+
+(** from early.tex Lemma 4.17 (key refinement lemma): if \<open>K'\<close> is a subdivision
+    of \<open>K\<close>, then for some \<open>m\<close>, \<open>Sd^m(K)\<close> is a subdivision of \<open>K'\<close>.
+    The proof uses the Lebesgue-number lemma applied to the open-star cover of
+    \<open>|K|\<close> by vertex-stars of \<open>K'\<close>, together with mesh(\<open>Sd^m(K)\<close>) \<to> 0. **)
+lemma geotop_iterated_Sd_refines_subdivision:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hK: "finite K"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "\<exists>m. geotop_is_subdivision (geotop_iterated_Sd m K) K'"
+  sorry
+
+(** from Introduction: Theorem 1 (geotop.tex:172).
+    LATEX VERSION: Every two subdivisions of the same complex have a common subdivision.
+
+    FAITHFULNESS FIX: We add the \<open>finite K\<close> assumption. Moise implicitly assumes
+    this in his main applications (the argument uses compactness of \<open>|K|\<close> via
+    a Lebesgue-number argument on the finite open-star cover of \<open>|K|\<close> by vertex
+    stars of a refinement, see early.tex \<S>4.5). A locally-finite generalisation
+    requires a separate simplex-by-simplex argument and is left for future work.
+
+    Proof following early.tex Theorem 1 via iterated barycentric subdivision. **)
 theorem Theorem_GT_1:
   fixes K L1 L2 :: "'a::real_normed_vector set set"
+  assumes hKfin: "finite K"
   assumes hL1: "geotop_is_subdivision L1 K"
   assumes hL2: "geotop_is_subdivision L2 K"
   shows "\<exists>L. geotop_is_subdivision L L1 \<and> geotop_is_subdivision L L2"
 proof -
-  (** (1) For each simplex \<sigma> of K, L_1 and L_2 each refine it into simplicial complexes
-         L_1^\<sigma> and L_2^\<sigma>. Take their intersection pattern: for each pair (\<tau>_1 \<in> L_1^\<sigma>,
-         \<tau>_2 \<in> L_2^\<sigma>) form \<tau>_1 \<inter> \<tau>_2, which is a convex polyhedron. **)
-  have h_pairwise_inter:
-    "\<forall>\<sigma>\<in>K. \<exists>L\<^sub>1\<^sub>\<sigma> L\<^sub>2\<^sub>\<sigma>::'a set set.
-              (\<forall>\<tau>\<^sub>1\<in>L\<^sub>1\<^sub>\<sigma>. \<tau>\<^sub>1 \<subseteq> \<sigma>) \<and> (\<forall>\<tau>\<^sub>2\<in>L\<^sub>2\<^sub>\<sigma>. \<tau>\<^sub>2 \<subseteq> \<sigma>) \<and>
-              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>"
-  proof
-    fix \<sigma> :: "'a set" assume "\<sigma> \<in> K"
-    show "\<exists>L\<^sub>1\<^sub>\<sigma> L\<^sub>2\<^sub>\<sigma>::'a set set.
-              (\<forall>\<tau>\<^sub>1\<in>L\<^sub>1\<^sub>\<sigma>. \<tau>\<^sub>1 \<subseteq> \<sigma>) \<and> (\<forall>\<tau>\<^sub>2\<in>L\<^sub>2\<^sub>\<sigma>. \<tau>\<^sub>2 \<subseteq> \<sigma>) \<and>
-              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>"
-      using exI[of _ "{\<sigma>}::'a set set"] by (by100 simp)
-  qed
-  (** FORMALIZATION NOTE: Moise does not prove Theorem 1 in geotop.tex (treats it as
-      established classical PL topology). A full proof is given in /project/tst/early.tex
-      (\<S>4) via iterated barycentric subdivision:
-        1. Define \<open>Sd(K)\<close> (barycentric subdivision).
-        2. Prove mesh(Sd^n K) \<to> 0 (early.tex Lemma 4.4).
-        3. For any subdivision K' of K, use Lebesgue number + open-star cover of K' by
-           its vertices' stars (early.tex Lemma 4.5/4.7) to find n with every simplex of
-           Sd^n(K) contained in some simplex of K'.
-        4. Hence Sd^n(K) is a common subdivision of K' and K''.
-      This requires substantial infrastructure (barycenter-in-interior, Sd-is-complex,
-      mesh shrinkage factor d/(d+1), Lebesgue number lemma, open-star properties).
-      Deferred. **)
-  obtain L :: "'a set set" where hL:
-    "geotop_is_complex L \<and> geotop_polyhedron L = geotop_polyhedron K" sorry
-  (** (3) Verify L < L_1 and L < L_2: every simplex of L lies inside some \<tau>_1 \<in> L_1
-         (by construction each piece sits in an L_1-cell and in an L_2-cell); and
-         |L| = |K| = |L_1| = |L_2|. **)
-  have h_subdivision:
-    "geotop_is_subdivision L L1 \<and> geotop_is_subdivision L L2" sorry
-  show ?thesis using h_subdivision by (by100 blast)
+  (** (1) K is a complex (from the subdivision hypothesis). **)
+  have hK: "geotop_is_complex K"
+    using hL1 unfolding geotop_is_subdivision_def by (by100 blast)
+  (** (2) By early.tex Lemma 4.17, \<open>Sd^m(K)\<close> eventually refines \<open>L1\<close>, and
+         \<open>Sd^n(K)\<close> eventually refines \<open>L2\<close>. **)
+  obtain m where hm: "geotop_is_subdivision (geotop_iterated_Sd m K) L1"
+    using geotop_iterated_Sd_refines_subdivision[OF hKfin hL1] by (by100 blast)
+  obtain n where hn: "geotop_is_subdivision (geotop_iterated_Sd n K) L2"
+    using geotop_iterated_Sd_refines_subdivision[OF hKfin hL2] by (by100 blast)
+  (** (3) Let \<open>N = max m n\<close>. By monotonicity, \<open>Sd^N(K)\<close> is a subdivision of
+         \<open>Sd^m(K)\<close> and of \<open>Sd^n(K)\<close>; by transitivity of subdivision it is a
+         subdivision of both \<open>L1\<close> and \<open>L2\<close>. **)
+  define N where "N = max m n"
+  have hmN: "m \<le> N" unfolding N_def by (by100 simp)
+  have hnN: "n \<le> N" unfolding N_def by (by100 simp)
+  have hN_ref_m: "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
+    by (rule geotop_iterated_Sd_mono[OF hK hmN])
+  have hN_ref_n: "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd n K)"
+    by (rule geotop_iterated_Sd_mono[OF hK hnN])
+  have hN_L1: "geotop_is_subdivision (geotop_iterated_Sd N K) L1"
+    by (rule geotop_is_subdivision_trans[OF hm hN_ref_m])
+  have hN_L2: "geotop_is_subdivision (geotop_iterated_Sd N K) L2"
+    by (rule geotop_is_subdivision_trans[OF hn hN_ref_n])
+  (** (4) Witness by \<open>L := Sd^N(K)\<close>. **)
+  show ?thesis
+    using hN_L1 hN_L2 by (by100 blast)
 qed
 
 subsection \<open>Continuous and piecewise linear maps between polyhedra\<close>
@@ -4980,22 +5098,9 @@ definition geotop_join_pt :: "'a::real_vector set \<Rightarrow> 'a \<Rightarrow>
 definition geotop_join :: "'a::real_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
   "geotop_join A B = (\<Union>P\<in>A. \<Union>Q\<in>B. geotop_segment P Q)"
 
-(** from Problem Set 5 / \<S>5: barycenter (geotop.tex:1197)
-    LATEX VERSION: The barycenter v of \<sigma>^n is the point of \<sigma>^n all of whose barycentric
-      coordinates are equal (= 1/(n+1)). **)
-definition geotop_barycenter :: "'a::real_vector set \<Rightarrow> 'a" where
-  "geotop_barycenter \<sigma> = (SOME v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and>
-     v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w))"
-
-(** from Problem Set 5 / \<S>5: barycentric subdivision (geotop.tex:1197)
-    LATEX VERSION: bK^0 = K^0. bK^{i+1} = bK^i union the set of all joins v\<sigma>^i where v is
-      the barycenter of \<sigma>^{i+1} of K, \<sigma>^i \<in> bK^i, \<sigma>^i \<subset> \<sigma>^{i+1}. **)
-text \<open>Definition is inductive; we state its existence as a function on complexes.\<close>
-definition geotop_barycentric_subdivision ::
-  "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
-  "geotop_barycentric_subdivision K =
-    (SOME bK. geotop_is_subdivision bK K \<and>
-       (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK))"
+text \<open>\<open>geotop_barycenter\<close> and \<open>geotop_barycentric_subdivision\<close> are defined earlier
+in the "Barycentric subdivision infrastructure" subsection (before Theorem_GT_1), since
+they are needed to prove Theorem 1 via iterated barycentric subdivision (early.tex \<S>4).\<close>
 
 (** \<epsilon>-approximation of a mapping (Problem 5.8 and PL approximations \<S>F) (geotop.tex:1201)
     LATEX VERSION: f' is an \<epsilon>-approximation of f if for each P, d(f(P), f'(P)) < \<epsilon>. **)
