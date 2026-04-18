@@ -6998,11 +6998,13 @@ proof -
   (** (3) Apply Theorem 13.3 to C^2, B_1, B_2, M_1, M_2 to conclude Q, S in the same
          component of C^2 - (M_1 \<union> M_2) \<subseteq> C^2 - M \<subseteq> U - M. **)
   have h_same_comp:
-    "\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
+    "(\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
         geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
-      = geotop_component_at UNIV geotop_euclidean_topology (U - M) S" sorry
+      = geotop_component_at UNIV geotop_euclidean_topology (U - M) S) \<and>
+     top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))" sorry
   (** (4) Since all points of U - M share a single component, U - M is connected. **)
-  have h_final: "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))" sorry
+  have h_final: "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
+    using h_same_comp by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
