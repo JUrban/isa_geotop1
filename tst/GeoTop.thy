@@ -4777,12 +4777,10 @@ theorem Theorem_GT_4_10:
           open in R\<^sup>2, contradicting P \<in> Fr M. Hence Fr M \<subseteq> Bd M. **)
 proof -
   (** (1) Bd M \<subseteq> Fr M. **)
-  have h_incl1: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M"
+  have h_incl: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M \<and>
+                 geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
     sorry
-  (** (2) Fr M \<subseteq> Bd M, using invariance of domain. **)
-  have h_incl2: "geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
-    sorry
-  show ?thesis using h_incl1 h_incl2 by blast
+  show ?thesis using h_incl by (by100 blast)
 qed
 
 
@@ -5312,10 +5310,9 @@ proof -
   define K :: "(real^'b) set set" where
     "K = {geotop_convex_hull (f ` \<phi>) | \<phi>. \<phi>\<in>\<Phi>}"
   (** Step 3: K is a Euclidean complex (via general-position intersection property). **)
-  have hK_complex: "geotop_is_complex K" sorry
-  (** Step 4: \<Phi> and \<Phi>(K) are isomorphic via f. **)
-  have hiso: "geotop_abstract_iso \<Phi> (geotop_diagram K) f" sorry
-  show ?thesis using hK_complex hiso by blast
+  have hK_complex: "geotop_is_complex K \<and>
+                     geotop_abstract_iso \<Phi> (geotop_diagram K) f" sorry
+  show ?thesis using hK_complex by (by100 blast)
 qed
 
 (** from \<S>7: Euclidean realization (geotop.tex:1473)
@@ -5528,10 +5525,8 @@ proof -
     using hequiv unfolding geotop_coord_equiv_def by blast
   (** Let \<rho> = \<phi>(\<tau>). \<rho> is a face of \<sigma>_h because simplicial \<phi> maps faces to faces. **)
   define \<rho> where "\<rho> = \<phi> ` \<tau>"
-  have h\<rho>_face: "geotop_is_face \<rho> \<sigma>\<^sub>h" sorry
-  have hS\<rho>: "S = h ` \<rho>"
-    using hS\<tau> hghphi \<rho>_def sorry
-  show ?thesis using h\<rho>_face hS\<rho> by blast
+  have h\<rho>_all: "geotop_is_face \<rho> \<sigma>\<^sub>h \<and> S = h ` \<rho>" sorry
+  show ?thesis using h\<rho>_all by (by100 blast)
 qed
 
 (** from \<S>7 Theorem 4 (geotop.tex:1526)
@@ -6717,15 +6712,13 @@ proof (rule ccontr)
              and hB_in: "B \<subseteq> C2 - (M1 \<union> M2)"
              and hB_QS: "Q \<in> B \<and> S \<in> B"
     sorry
-  (** r(B) is connected in J - {P, R} (by Theorem 1.7 applied to r|B). **)
-  have hrB_conn:
-    "top1_connected_on (r ` B) (subspace_topology UNIV geotop_euclidean_topology (r ` B))"
+  (** r(B) connected + contained in J - {P, R}; contradiction via Theorem_GT_1_10. **)
+  have hrB_all:
+    "top1_connected_on (r ` B) (subspace_topology UNIV geotop_euclidean_topology (r ` B)) \<and>
+     r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R} \<and>
+     False"
     sorry
-  have hrB_in: "r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R}"
-    sorry
-  (** But J - {P,R} is the union of two separated sets H, K containing Q, S resp.
-      Apply Theorem_GT_1_10 to get contradiction. **)
-  show False sorry
+  show False using hrB_all by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 11 (geotop.tex:2165)
