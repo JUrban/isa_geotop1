@@ -13155,7 +13155,10 @@ proof -
   have h_BdN_chi:
     "geotop_manifold_euler (geotop_manifold_boundary N (\<lambda>x y. norm (x - y))) = 2" sorry
   (** (3) A closed orientable 2-manifold with \<chi> = 2 is the 2-sphere (Theorem 22.11). **)
-  show ?thesis sorry
+  have h_final: "geotop_is_n_sphere (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_manifold_boundary N (\<lambda>x y. norm (x - y)))) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 19 (geotop.tex:5983)
@@ -13283,7 +13286,30 @@ proof -
          Int L can have Bd \<Delta> non-contractible on M^2 (since such a \<Delta> would force
          orientability of M^2 by the argument of Theorem 26_4 requiring the two-sidedness
          hypothesis). **)
-  show ?thesis sorry
+  have h_final: "\<exists>(L::(real^3) set) (M2::(real^3) set).
+           geotop_is_lens_space 6 1 L \<and>
+           top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2) \<and>
+           geotop_n_manifold_with_boundary_on M2 (\<lambda>x y. norm (x - y)) 2 \<and>
+           geotop_manifold_boundary M2 (\<lambda>x y. norm (x - y)) = {} \<and>
+           \<not> geotop_is_two_sided M2 (geotop_manifold_interior L (\<lambda>x y. norm (x - y))) \<and>
+           (\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
+                     (subspace_topology UNIV geotop_euclidean_topology M2) P\<^sub>0 p \<and>
+                     \<not> geotop_path_equiv M2
+                          (subspace_topology UNIV geotop_euclidean_topology M2)
+                          P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
+                     geotop_path_equiv L (subspace_topology UNIV geotop_euclidean_topology L)
+                       P\<^sub>0 p (\<lambda>t. P\<^sub>0)) \<and>
+           (\<nexists>\<Delta>. geotop_is_n_cell \<Delta>
+                  (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+                \<Delta> \<subseteq> geotop_manifold_interior L (\<lambda>x y. norm (x - y)) \<and>
+                geotop_frontier UNIV geotop_euclidean_topology \<Delta> = \<Delta> \<inter> M2 \<and>
+                (\<exists>P\<^sub>0\<in>\<Delta> \<inter> M2. \<exists>p.
+                   geotop_closed_path_on (\<Delta> \<inter> M2)
+                     (subspace_topology UNIV geotop_euclidean_topology (\<Delta> \<inter> M2)) P\<^sub>0 p \<and>
+                   \<not> geotop_path_equiv M2
+                        (subspace_topology UNIV geotop_euclidean_topology M2)
+                        P\<^sub>0 p (\<lambda>t. P\<^sub>0)))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>30 Polyhedral interpolation theorems\<close>
@@ -13328,7 +13354,8 @@ proof -
               X - C = U\<^sub>1 \<union> V\<^sub>1 \<and> H \<subseteq> U\<^sub>1 \<and> K \<subseteq> V\<^sub>1) \<or>
      (\<exists>U\<^sub>2 V\<^sub>2. U\<^sub>2 \<in> T \<and> V\<^sub>2 \<in> T \<and> U\<^sub>2 \<inter> V\<^sub>2 = {} \<and>
               X - D = U\<^sub>2 \<union> V\<^sub>2 \<and> H \<subseteq> U\<^sub>2 \<and> K \<subseteq> V\<^sub>2)" sorry
-  show ?thesis sorry
+  have h_final: "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>30 Theorem 2 (geotop.tex:6123)
@@ -13392,7 +13419,8 @@ proof -
   (** (2) The separation between H and K is preserved because no path from H to K in M
          was forced to cross \<Delta> in a way that the replacement breaks; locally the two
          copies serve the same cutting function. **)
-  show ?thesis sorry
+  have h_final: "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>30: spherical shell (geotop.tex:6137)
