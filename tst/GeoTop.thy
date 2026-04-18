@@ -8175,10 +8175,18 @@ proof -
          consisting of inserting or deleting g_i r_j^{\<plusminus>1} g_i^{-1}, g_i g_i^{-1}, or
          g_i^{-1} g_i. Each such step translates [w] by an element of N([R]). **)
   have h_incl2:
-    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+    "(\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
         (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
-             P\<^sub>0 (\<lambda>t. P\<^sub>0) \<longrightarrow> C \<in> geotop_normal_closure G R)" sorry
+             P\<^sub>0 (\<lambda>t. P\<^sub>0) \<longrightarrow> C \<in> geotop_normal_closure G R)) \<and>
+     (\<exists>G R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+           G \<subseteq> UNIV \<and>
+           (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+           (\<forall>C\<in>geotop_free_group G. \<phi>\<^sub>s C \<in> geotop_group_of_link L P\<^sub>0) \<and>
+           {C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
+               (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
+               P\<^sub>0 (\<lambda>t. P\<^sub>0)} =
+           geotop_normal_closure G R)" sorry
   have h_final: "\<exists>G R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
            G \<subseteq> UNIV \<and>
            (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
@@ -8186,7 +8194,8 @@ proof -
            {C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
                (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
                P\<^sub>0 (\<lambda>t. P\<^sub>0)} =
-           geotop_normal_closure G R" sorry
+           geotop_normal_closure G R"
+    using h_incl2 by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -8218,10 +8227,15 @@ proof -
         (\<forall>X\<in>geotop_group_of_link L P\<^sub>0. \<exists>C\<in>geotop_free_group G. \<phi>\<^sub>s C = X)" sorry
   (** (2) By Theorem 15.3, ker \<phi>* = N([R]). **)
   have h_ker:
-    "\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+    "(\<exists>(G::'a set) R (\<phi>\<^sub>s::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
         {C\<in>geotop_free_group G. \<phi>\<^sub>s C = geotop_pi_class (UNIV - L)
              (subspace_topology UNIV geotop_euclidean_topology (UNIV - L))
-             P\<^sub>0 (\<lambda>t. P\<^sub>0)} = geotop_normal_closure G R" sorry
+             P\<^sub>0 (\<lambda>t. P\<^sub>0)} = geotop_normal_closure G R) \<and>
+     (\<exists>(G::'a set) (R::('a \<times> int) list set set)
+          (\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
+           G \<subseteq> UNIV \<and> finite G \<and> finite R \<and>
+           (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))" sorry
   (** (3) First isomorphism theorem: F(G) / N([R]) \<cong> \<pi>(R^3 - L, P_0); we pass to the quotient
          via \<phi>** . Identify the quotient F(G) / N([R]) with (a set-theoretic transversal in)
          F(G) itself, giving a bijection \<Phi> between F(G) and \<pi>(R^3 - L, P_0). **)
@@ -8229,7 +8243,8 @@ proof -
           (\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set).
            G \<subseteq> UNIV \<and> finite G \<and> finite R \<and>
            (\<forall>r\<in>R. r \<in> geotop_free_group G) \<and>
-           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0)" sorry
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0)"
+    using h_ker by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
