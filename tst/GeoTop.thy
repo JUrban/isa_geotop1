@@ -6983,7 +6983,7 @@ proof -
          into a single homotopy H: [0, 1] \<times> [0, 1] \<rightarrow> U witnessing p \<cong> p'. **)
   have h_homotopy:
     "geotop_path_equiv U (subspace_topology UNIV geotop_euclidean_topology U) P\<^sub>0 p p'" sorry
-  show ?thesis sorry
+  show ?thesis using h_pl h_homotopy by (by100 blast)
 qed
 
 (** from \<S>14 Theorem 7 (geotop.tex:2753)
