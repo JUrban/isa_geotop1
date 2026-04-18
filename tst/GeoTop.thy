@@ -11019,7 +11019,7 @@ proof -
   (** (3) Simplex coherence: the intersection of lifted simplexes follows the pattern of
          their base simplexes' intersections, because the sheets over an evenly-covered
          neighbourhood match up uniquely. **)
-  show ?thesis sorry
+  show ?thesis using h_lift_simplexes by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 7 (geotop.tex:5330)
