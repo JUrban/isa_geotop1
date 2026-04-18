@@ -887,9 +887,9 @@ proof -
       Rather than forward-referencing the bridge, we unfold
       \<open>geotop_euclidean_topology\<close> directly and reduce to the metric topology. **)
   have hUC_top1: "UNIV - C \<in> geotop_euclidean_topology"
-    sorry \<comment> \<open>HOL-open \<Longrightarrow> in \<open>geotop_euclidean_topology\<close>; requires
-             \<open>geotop_euclidean_topology_eq_open_sets\<close> bridge (defined ~1900 lines later).
-             The fact is true but not accessible here without moving the bridge.\<close>
+    using hUC_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
   show ?thesis
     unfolding subspace_topology_def
     using hstar_eq hUC_top1 by (by100 blast)
