@@ -626,9 +626,32 @@ lemma geotop_open_star_complement:
   assumes hK: "geotop_is_complex K"
   shows "geotop_polyhedron K - geotop_open_star K v =
           \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
-  sorry \<comment> \<open>Simplex decomposition: each \<open>x \<in> |K|\<close> lies in a unique rel_interior
-           (its support simplex). Requires \<open>rel_interior\<close> disjointness across
-           distinct faces, which needs the complex's intersection-compat axiom.\<close>
+proof (rule set_eqI, rule iffI)
+  fix x assume hLHS: "x \<in> geotop_polyhedron K - geotop_open_star K v"
+  have hxK: "x \<in> geotop_polyhedron K" using hLHS by (by100 blast)
+  (** The support simplex (unique \<tau>_0 with \<open>x \<in> rel_interior \<tau>_0\<close>) — we find a
+      witness \<tau>_0 ∈ K. For simplicity use the simplex containing x and take its
+      support face via explicit barycentric coords. Argument sketch only; full
+      support-uniqueness is non-trivial. **)
+  show "x \<in> \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
+    sorry
+next
+  fix x assume hRHS: "x \<in> \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
+  obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and h\<tau>nv: "v \<notin> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+    using hRHS by (by100 blast)
+  have hxK: "x \<in> geotop_polyhedron K"
+    using h\<tau>K hx\<tau> unfolding geotop_polyhedron_def by (by100 blast)
+  (** Suppose x in star_K(v): then x in rel_interior sigma for some sigma in K with v in sigma.
+      sigma cap tau is a face of both (K intersection-compat), containing x.
+      Case sigma subseteq tau: v in sigma subseteq tau, contradicting v notin tau.
+      Case sigma not subseteq tau: then sigma cap tau is a proper face of sigma,
+           so disjoint from rel_interior sigma. But x in sigma cap tau inter rel_interior sigma,
+           contradiction. **)
+  have hx_not_star: "x \<notin> geotop_open_star K v"
+    sorry
+  show "x \<in> geotop_polyhedron K - geotop_open_star K v"
+    using hxK hx_not_star by (by100 blast)
+qed
 
 (** For finite \<open>K\<close>, the complement is closed (finite union of closed simplices),
     hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>.
