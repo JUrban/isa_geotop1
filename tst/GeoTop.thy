@@ -4622,10 +4622,156 @@ proof -
       ball \<open>V \<subseteq> U\<close> such that if some \<open>Q' \<in> V\<close> were in \<open>B_P\<close>, concatenation gives
       \<open>Q \<in> B_P\<close>, contradiction. By connectedness of \<open>U\<close>, \<open>B_P \<in> {\<emptyset>, U}\<close>; \<open>P \<in> B_P\<close>,
       so \<open>B_P = U\<close>. **)
+  have hU_HOL_open: "open U"
+    using hU_open unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
   have h_B_eq_U:
     "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
-    sorry \<comment> \<open>Full connectedness argument: openness of \<open>B_P\<close> and \<open>U \<setminus> B_P\<close> via
-             \<open>geotop_broken_line_concat\<close>; connectedness partition.\<close>
+  proof (rule ballI)
+    fix P assume hP: "P \<in> U"
+    define BP :: "'a set" where
+      "BP = {Q. Q \<in> U \<and> (\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)}"
+    (** (a) \<open>BP\<close> is open in HOL sense. **)
+    have hBP_open: "open BP"
+    proof (rule openI)
+      fix Q assume hQBP: "Q \<in> BP"
+      then have hQU: "Q \<in> U" and hQ_reach:
+          "\<exists>B\<^sub>1. geotop_is_broken_line B\<^sub>1 \<and> B\<^sub>1 \<subseteq> U \<and> P \<in> B\<^sub>1 \<and> Q \<in> B\<^sub>1"
+        unfolding BP_def by (by100 blast)+
+      obtain B\<^sub>1 where hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>1U: "B\<^sub>1 \<subseteq> U"
+                  and hPB\<^sub>1: "P \<in> B\<^sub>1" and hQB\<^sub>1: "Q \<in> B\<^sub>1"
+        using hQ_reach by (by100 blast)
+      have hrexQ: "\<exists>e>0. ball Q e \<subseteq> U"
+        using hU_HOL_open hQU open_contains_ball by (by100 blast)
+      obtain r where hr: "r > 0" and hballsub: "ball Q r \<subseteq> U"
+        using hrexQ by (by100 blast)
+      have hball_top: "ball Q r \<in> geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hball_conv: "convex (ball Q r)" by (by100 simp)
+      have hball_bl: "geotop_broken_line_connected (ball Q r)"
+        by (rule geotop_convex_open_broken_line_connected[OF hball_top hball_conv])
+      (** Any \<open>Q' \<in> ball Q r\<close> is broken-line reachable from \<open>P\<close> via \<open>B\<^sub>1\<close> then concat
+          with segment \<open>Q \<to> Q'\<close> in the ball. **)
+      have hQ_ball: "Q \<in> ball Q r" using hr by (by100 simp)
+      have hQ'_reach: "\<forall>Q'\<in>ball Q r. Q' \<in> BP"
+      proof
+        fix Q' assume hQ'_ball: "Q' \<in> ball Q r"
+        have hQ'U: "Q' \<in> U" using hQ'_ball hballsub by (by100 blast)
+        obtain B\<^sub>2 where hB\<^sub>2: "geotop_is_broken_line B\<^sub>2" and hB\<^sub>2ball: "B\<^sub>2 \<subseteq> ball Q r"
+                     and hQB\<^sub>2: "Q \<in> B\<^sub>2" and hQ'B\<^sub>2: "Q' \<in> B\<^sub>2"
+          using hball_bl hQ_ball hQ'_ball unfolding geotop_broken_line_connected_def
+          by (by100 blast)
+        have hB\<^sub>2U: "B\<^sub>2 \<subseteq> U" using hB\<^sub>2ball hballsub by (by100 blast)
+        obtain B where hB: "geotop_is_broken_line B" and hBU: "B \<subseteq> U"
+                    and hPB: "P \<in> B" and hQ'B: "Q' \<in> B"
+          using geotop_broken_line_concat[OF hB\<^sub>1 hB\<^sub>1U hB\<^sub>2 hB\<^sub>2U hPB\<^sub>1 hQB\<^sub>1 hQB\<^sub>2 hQ'B\<^sub>2
+                                            hU_HOL_open]
+          by (by100 blast)
+        show "Q' \<in> BP"
+          unfolding BP_def using hQ'U hB hBU hPB hQ'B by (by100 blast)
+      qed
+      show "\<exists>e>0. ball Q e \<subseteq> BP" using hr hQ'_reach by (by100 blast)
+    qed
+    (** (b) \<open>U \<setminus> BP\<close> is open: any \<open>Q \<in> U \<setminus> BP\<close> has a ball \<open>V \<subseteq> U\<close> entirely in \<open>U \<setminus> BP\<close>
+        (otherwise concat would put \<open>Q \<in> BP\<close>). **)
+    have hBPcomp_open: "open (U - BP)"
+    proof (rule openI)
+      fix Q assume hQdiff: "Q \<in> U - BP"
+      then have hQU: "Q \<in> U" and hQ_notBP: "Q \<notin> BP" by (by100 blast)+
+      have hrex: "\<exists>e>0. ball Q e \<subseteq> U"
+        using hU_HOL_open hQU open_contains_ball by (by100 blast)
+      obtain r where hr: "r > 0" and hballsub: "ball Q r \<subseteq> U" using hrex by (by100 blast)
+      have hball_top: "ball Q r \<in> geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hball_conv: "convex (ball Q r)" by (by100 simp)
+      have hball_bl: "geotop_broken_line_connected (ball Q r)"
+        by (rule geotop_convex_open_broken_line_connected[OF hball_top hball_conv])
+      have hQ_ball: "Q \<in> ball Q r" using hr by (by100 simp)
+      have hballsub_comp: "ball Q r \<subseteq> U - BP"
+      proof
+        fix Q' assume hQ'_ball: "Q' \<in> ball Q r"
+        have hQ'U: "Q' \<in> U" using hQ'_ball hballsub by (by100 blast)
+        (** Contradiction: if \<open>Q' \<in> BP\<close>, concat gives \<open>Q \<in> BP\<close>. **)
+        have hQ'_notBP: "Q' \<notin> BP"
+        proof
+          assume hQ'BP: "Q' \<in> BP"
+          then obtain B\<^sub>1 where hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>1U: "B\<^sub>1 \<subseteq> U"
+                            and hPB\<^sub>1: "P \<in> B\<^sub>1" and hQ'B\<^sub>1: "Q' \<in> B\<^sub>1"
+            unfolding BP_def by (by100 blast)
+          obtain B\<^sub>2 where hB\<^sub>2: "geotop_is_broken_line B\<^sub>2" and hB\<^sub>2ball: "B\<^sub>2 \<subseteq> ball Q r"
+                       and hQ'B\<^sub>2: "Q' \<in> B\<^sub>2" and hQB\<^sub>2: "Q \<in> B\<^sub>2"
+            using hball_bl hQ'_ball hQ_ball unfolding geotop_broken_line_connected_def
+            by (by100 blast)
+          have hB\<^sub>2U: "B\<^sub>2 \<subseteq> U" using hB\<^sub>2ball hballsub by (by100 blast)
+          obtain B where hB: "geotop_is_broken_line B" and hBU: "B \<subseteq> U"
+                      and hPB: "P \<in> B" and hQB: "Q \<in> B"
+            using geotop_broken_line_concat[OF hB\<^sub>1 hB\<^sub>1U hB\<^sub>2 hB\<^sub>2U hPB\<^sub>1 hQ'B\<^sub>1 hQ'B\<^sub>2 hQB\<^sub>2
+                                              hU_HOL_open]
+            by (by100 blast)
+          have "Q \<in> BP" unfolding BP_def using hQU hB hBU hPB hQB by (by100 blast)
+          thus False using hQ_notBP by (by100 blast)
+        qed
+        show "Q' \<in> U - BP" using hQ'U hQ'_notBP by (by100 blast)
+      qed
+      show "\<exists>e>0. ball Q e \<subseteq> U - BP" using hr hballsub_comp by (by100 blast)
+    qed
+    (** (c) \<open>P \<in> BP\<close>: tiny segment \<open>P, Q\<^sub>0\<close> in a ball around P. **)
+    have hP_BP: "P \<in> BP"
+    proof -
+      have hrex: "\<exists>e>0. ball P e \<subseteq> U"
+        using hU_HOL_open hP open_contains_ball by (by100 blast)
+      obtain r where hr: "r > 0" and hballsub: "ball P r \<subseteq> U" using hrex by (by100 blast)
+      have hball_top: "ball P r \<in> geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hball_conv: "convex (ball P r)" by (by100 simp)
+      have hball_bl: "geotop_broken_line_connected (ball P r)"
+        by (rule geotop_convex_open_broken_line_connected[OF hball_top hball_conv])
+      have hP_ball: "P \<in> ball P r" using hr by (by100 simp)
+      obtain B where hB: "geotop_is_broken_line B" and hBball: "B \<subseteq> ball P r"
+                  and hPB: "P \<in> B"
+        using hball_bl hP_ball unfolding geotop_broken_line_connected_def by (by100 blast)
+      have hBU: "B \<subseteq> U" using hBball hballsub by (by100 blast)
+      show "P \<in> BP"
+        unfolding BP_def using hP hB hBU hPB by (by100 blast)
+    qed
+    (** (d) Use connectedness of U to conclude BP = U. **)
+    have hU_HOL_conn: "connected U"
+      using hU_conn top1_connected_on_geotop_iff_connected by (by100 blast)
+    have hBP_sub_U: "BP \<subseteq> U" unfolding BP_def by (by100 blast)
+    have hBP_nonempty: "BP \<noteq> {}" using hP_BP by (by100 blast)
+    have hBP_eq_U: "BP = U"
+    proof (rule ccontr)
+      assume "BP \<noteq> U"
+      then have hBP_proper: "BP \<subset> U" using hBP_sub_U by (by100 blast)
+      have hcomp_nonempty: "U - BP \<noteq> {}" using hBP_proper by (by100 blast)
+      (** BP is open in HOL, U - BP is open in HOL; both disjoint; union is U. **)
+      have hU_union: "U = BP \<union> (U - BP)" using hBP_sub_U by (by100 blast)
+      have hU_disj: "BP \<inter> (U - BP) = {}" by (by100 blast)
+      (** By connectedness: one of BP, U - BP is empty. **)
+      have hBP_meets_U: "BP \<inter> U \<noteq> {}" using hBP_nonempty hBP_sub_U by (by100 blast)
+      have hcomp_meets_U: "(U - BP) \<inter> U \<noteq> {}" using hcomp_nonempty by (by100 blast)
+      have hU_sub_union: "U \<subseteq> BP \<union> (U - BP)" using hBP_sub_U by (by100 blast)
+      have hinter_empty: "BP \<inter> (U - BP) \<inter> U = {}" by (by100 blast)
+      have hU_not_conn: "\<not> connected U"
+        unfolding connected_def
+        using hBP_open hBPcomp_open hU_sub_union hinter_empty hBP_meets_U hcomp_meets_U
+        by (by100 blast)
+      show False using hU_not_conn hU_HOL_conn by (by100 blast)
+    qed
+    (** BP = U means all Q ∈ U are broken-line reachable from P. **)
+    have hall_Q: "\<And>Q. Q \<in> U \<Longrightarrow> \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+    proof -
+      fix Q assume hQU_l: "Q \<in> U"
+      have hQBP: "Q \<in> BP" using hBP_eq_U hQU_l by (by100 blast)
+      show "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+        using hQBP unfolding BP_def by (by100 blast)
+    qed
+    show "\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+      using hall_Q by (by100 blast)
+  qed
   show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
 qed
 
