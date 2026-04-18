@@ -9383,7 +9383,25 @@ proof -
   (** Image staying in B^n: for each t \<in> [0,1], \<phi>(P,t) \<in> B^n (from slice being a
       homeomorphism B^n \<leftrightarrow> B^n hence mapping into B^n). **)
   have h\<phi>_image: "\<forall>P. norm P \<le> 1 \<longrightarrow> (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> norm (\<phi> (P, t)) \<le> 1)"
-    sorry \<comment> \<open>Follows from h_\<phi>_slice_homeo: each slice maps B^n to B^n, so \<phi>(P,t) \<in> B^n.\<close>
+  proof (intro allI impI)
+    fix P :: 'a and t :: real
+    assume hP: "norm P \<le> 1" and ht: "0 \<le> t \<and> t \<le> 1"
+    (** Slice at t is a homeomorphism B^n \<leftrightarrow> B^n, hence maps B^n into B^n. **)
+    have h_slice: "top1_homeomorphism_on ({Q::'a. norm Q \<le> 1})
+          (subspace_topology UNIV geotop_euclidean_topology {Q::'a. norm Q \<le> 1})
+          ({Q::'a. norm Q \<le> 1})
+          (subspace_topology UNIV geotop_euclidean_topology {Q::'a. norm Q \<le> 1})
+          (\<lambda>Q. \<phi> (Q, t))"
+      using h\<phi>_slice_homeo ht by (by100 blast)
+    have h_bij: "bij_betw (\<lambda>Q. \<phi> (Q, t)) ({Q::'a. norm Q \<le> 1}) ({Q::'a. norm Q \<le> 1})"
+      using h_slice unfolding top1_homeomorphism_on_def by (by100 blast)
+    have h_into: "(\<lambda>Q. \<phi> (Q, t)) ` ({Q::'a. norm Q \<le> 1}) \<subseteq> ({Q::'a. norm Q \<le> 1})"
+      using h_bij unfolding bij_betw_def by (by100 blast)
+    have hP_in: "P \<in> {Q::'a. norm Q \<le> 1}" using hP by (by100 simp)
+    have h_img: "\<phi> (P, t) \<in> {Q::'a. norm Q \<le> 1}"
+      using h_into hP_in by (by100 blast)
+    show "norm (\<phi> (P, t)) \<le> 1" using h_img by (by100 simp)
+  qed
   (** Identity on B^n is a homeomorphism (needed for is_isotopy second conjunct). **)
   have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
     by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
