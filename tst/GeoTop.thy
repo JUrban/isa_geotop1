@@ -5615,7 +5615,8 @@ proof -
   have hIntC2_full: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I"
     sorry
   (** Step 5: Conclude C^2 = closure I = B^2 = std_ball. **)
-  show ?thesis sorry
+  have h_final: "C2 = (geotop_std_ball :: (real^2) set)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 12 (geotop.tex:2169)
@@ -5691,7 +5692,12 @@ proof -
           (\<forall>P\<in>UNIV - U. h2 P = P)" sorry
   (** (4) Compose h = h_2 \<circ> h_1; the result has h(M) polyhedral, supported in U, and
          within \<phi> of the identity. **)
-  show ?thesis sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>11 Isotopies 1\<close>
@@ -5836,7 +5842,9 @@ proof -
     using Theorem_GT_11_1_Alexander[OF hg1_homeo hg1_bdry] .
   (** Step 5: restrict psi to (B^n - {0}) x [0,1], conjugate by inv to get isotopy
       phi on R^n - Int(B^n) between f_1 and id; extend by identity on B^n. **)
-  show ?thesis sorry
+  have h_final: "geotop_isotopic (UNIV::'a set) geotop_euclidean_topology
+           (UNIV::'a set) geotop_euclidean_topology (\<lambda>P. P) f\<^sub>1" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>11 Theorem 3 (geotop.tex:2294)
@@ -6275,7 +6283,14 @@ proof -
      (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
         closure_on C' T' g \<inter> closure_on C' T' h = {}) \<longrightarrow>
      (\<exists>F. top1_homeomorphism_on C T C' T' F)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>F. top1_continuous_map_on C T C' T' F \<and>
+             (\<forall>i. \<forall>g\<in>G i. F ` g \<subseteq> closure_on C' T' (f i g)) \<and>
+             ((\<forall>i. (f i) ` (G i) = G' i) \<longrightarrow> F ` C = C') \<and>
+             ((\<forall>i. bij_betw (f i) (G i) (G' i)) \<and>
+              (\<forall>i g h. g \<in> G' i \<and> h \<in> G' i \<and> g \<noteq> h \<longrightarrow>
+                 closure_on C' T' g \<inter> closure_on C' T' h = {})
+              \<longrightarrow> top1_homeomorphism_on C T C' T' F)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>12 Theorem 8 (geotop.tex:2431)
@@ -6296,7 +6311,8 @@ proof -
   (** Step 1: recursively build G_i, G'_i, f_i matching. **)
   obtain Gs Gs' fs where hGs: "\<forall>i. finite (Gs i)" sorry
   (** Step 2: combine level data into a single homeo f via Theorem 12.7. **)
-  show ?thesis sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>12 Theorem 9 (geotop.tex:2453)
@@ -6321,7 +6337,8 @@ proof -
   (** Refined G_i, G'_i, f_i with D-matching constraints. **)
   obtain Gs Gs' fs where h_levels: "\<forall>i. finite (Gs i)"
     sorry
-  show ?thesis sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>13 Extension of homeomorphisms of totally disconnected sets in R^2\<close>
