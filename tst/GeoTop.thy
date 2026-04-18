@@ -4701,7 +4701,60 @@ proof -
   have htrans: "\<forall>\<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h (f::'a\<Rightarrow>'b) g h.
                   geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
                   geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h"
-    sorry
+  proof (intro allI impI)
+    fix \<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a set" and f g h :: "'a \<Rightarrow> 'b"
+    assume heq: "geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+    have heq1: "geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g" using heq by blast
+    have heq2: "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h" using heq by blast
+    have h_fg_img: "f ` \<sigma>\<^sub>f = g ` \<sigma>\<^sub>g"
+      using heq1 unfolding geotop_coord_equiv_def by (by100 blast)
+    have h_gh_img: "g ` \<sigma>\<^sub>g = h ` \<sigma>\<^sub>h"
+      using heq2 unfolding geotop_coord_equiv_def by (by100 blast)
+    have h_fh_img: "f ` \<sigma>\<^sub>f = h ` \<sigma>\<^sub>h" using h_fg_img h_gh_img by simp
+    have hex1: "\<exists>\<phi>::'a\<Rightarrow>'a. top1_homeomorphism_on \<sigma>\<^sub>f
+                  (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>f)
+                  \<sigma>\<^sub>g (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g) \<phi>
+                \<and> geotop_simplicial_on \<sigma>\<^sub>f \<phi> \<sigma>\<^sub>g
+                \<and> (\<forall>x\<in>\<sigma>\<^sub>f. f x = g (\<phi> x))"
+      using heq1 unfolding geotop_coord_equiv_def by (by100 blast)
+    have hex2: "\<exists>\<psi>::'a\<Rightarrow>'a. top1_homeomorphism_on \<sigma>\<^sub>g
+                  (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                  \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<psi>
+                \<and> geotop_simplicial_on \<sigma>\<^sub>g \<psi> \<sigma>\<^sub>h
+                \<and> (\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<psi> x))"
+      using heq2 unfolding geotop_coord_equiv_def by (by100 blast)
+    from hex1 obtain \<phi>::"'a\<Rightarrow>'a" where
+        h\<phi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>f
+                     (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>f)
+                     \<sigma>\<^sub>g (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g) \<phi>"
+        and h\<phi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>f \<phi> \<sigma>\<^sub>g"
+        and h\<phi>_eq: "\<forall>x\<in>\<sigma>\<^sub>f. f x = g (\<phi> x)" by blast
+    from hex2 obtain \<psi>::"'a\<Rightarrow>'a" where
+        h\<psi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>g
+                     (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                     \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<psi>"
+        and h\<psi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>g \<psi> \<sigma>\<^sub>h"
+        and h\<psi>_eq: "\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<psi> x)" by blast
+    let ?comp = "\<psi> \<circ> \<phi>"
+    have h\<chi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>f
+                      (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>f)
+                      \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) ?comp"
+      by (rule top1_homeomorphism_on_comp[OF h\<phi>_homeo h\<psi>_homeo])
+    have h\<chi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>f ?comp \<sigma>\<^sub>h" sorry
+    have h\<chi>_eq: "\<forall>x\<in>\<sigma>\<^sub>f. f x = h (?comp x)"
+    proof
+      fix x assume hx: "x \<in> \<sigma>\<^sub>f"
+      have h\<phi>x: "\<phi> x \<in> \<sigma>\<^sub>g"
+        using h\<phi>_homeo hx unfolding top1_homeomorphism_on_def bij_betw_def by (by100 blast)
+      have h_fx: "f x = g (\<phi> x)" using hx h\<phi>_eq by (by100 blast)
+      have h_gphi: "g (\<phi> x) = h (\<psi> (\<phi> x))" using h\<phi>x h\<psi>_eq by (by100 blast)
+      show "f x = h (?comp x)"
+        using h_fx h_gphi by (by100 simp)
+    qed
+    show "geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h"
+      unfolding geotop_coord_equiv_def
+      using h_fh_img h\<chi>_homeo h\<chi>_simpl h\<chi>_eq by (by100 blast)
+  qed
   show ?thesis using hrefl hsymm htrans by blast
 qed
 
