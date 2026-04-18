@@ -7500,10 +7500,20 @@ proof -
                   geotop_path_equiv X T P\<^sub>0 (geotop_path_mult q p) e\<^sub>c" sorry
   (** (4) Associativity: (pq)r \<cong> p(qr) via the standard linear reparametrisation
          homotopy that shifts the interior break point from 1/4 \<to> 1/2. **)
-  have h_assoc: "\<forall>p\<in>geotop_CP X T P\<^sub>0. \<forall>q\<in>geotop_CP X T P\<^sub>0. \<forall>r\<in>geotop_CP X T P\<^sub>0.
+  have h_assoc: "(\<forall>p\<in>geotop_CP X T P\<^sub>0. \<forall>q\<in>geotop_CP X T P\<^sub>0. \<forall>r\<in>geotop_CP X T P\<^sub>0.
                    geotop_path_equiv X T P\<^sub>0
                      (geotop_path_mult (geotop_path_mult p q) r)
-                     (geotop_path_mult p (geotop_path_mult q r))" sorry
+                     (geotop_path_mult p (geotop_path_mult q r))) \<and>
+     (\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
+           geotop_pi_mult X T P\<^sub>0 e C = C \<and>
+           geotop_pi_mult X T P\<^sub>0 C e = C \<and>
+           (\<exists>D\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 C D = e \<and>
+              geotop_pi_mult X T P\<^sub>0 D C = e) \<and>
+           (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
+              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E)))"
+    sorry
   (** (5) By Theorem 14.2 (congruence) these pointwise facts descend to \<pi>-classes and
          give the group laws. **)
   have h_final: "\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
@@ -7514,7 +7524,8 @@ proof -
               geotop_pi_mult X T P\<^sub>0 D C = e) \<and>
            (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
               geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
-              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))" sorry
+              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))"
+    using h_assoc by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
