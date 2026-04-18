@@ -7175,7 +7175,28 @@ proof -
   (** (1) For any closed path p based at P_0, f \<circ> p is a closed path based at Q_0 in Y
          (composition of continuous maps; endpoints map to f(P_0) = Q_0). **)
   have h_push_cp:
-    "\<forall>p\<in>geotop_CP X T P\<^sub>0. geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p)" sorry
+    "\<forall>p\<in>geotop_CP X T P\<^sub>0. geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p)"
+  proof
+    fix p
+    assume hp_mem: "p \<in> geotop_CP X T P\<^sub>0"
+    have hcp: "geotop_closed_path_on X T P\<^sub>0 p"
+      using hp_mem unfolding geotop_CP_def by (by100 simp)
+    have hp_cont: "top1_continuous_map_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                     (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1})
+                     X T p"
+      using hcp unfolding geotop_closed_path_on_def geotop_path_on_def by (by100 simp)
+    have hfp_cont: "top1_continuous_map_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                      (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1})
+                      Y T' (f \<circ> p)"
+      by (rule top1_continuous_map_on_comp[OF hp_cont hf_cont])
+    have hp0: "p 0 = P\<^sub>0"
+      using hcp unfolding geotop_closed_path_on_def by (by100 simp)
+    have hp1: "p 1 = P\<^sub>0"
+      using hcp unfolding geotop_closed_path_on_def by (by100 simp)
+    show "geotop_closed_path_on Y T' Q\<^sub>0 (f \<circ> p)"
+      unfolding geotop_closed_path_on_def geotop_path_on_def
+      using hfp_cont hp0 hp1 hf_base by (by100 simp)
+  qed
   (** (2) If F witnesses p \<cong> p' in X, then f \<circ> F witnesses (f \<circ> p) \<cong> (f \<circ> p') in Y.
          Hence the assignment [p] \<mapsto> [f \<circ> p] is well-defined on equivalence classes. **)
   have h_push_equiv:
