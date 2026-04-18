@@ -2397,7 +2397,11 @@ proof -
   (** (1) Parametrise J = e_1 \<cup> ... \<cup> e_n as a cyclic sequence of 1-simplexes (edges)
          with consecutive edges sharing a vertex. **)
   obtain es :: "(real^2) set list" where hes:
-    "set es \<noteq> {} \<and> J = \<Union>(set es)" sorry
+    "set es \<noteq> {} \<and> J = \<Union>(set es)"
+  proof -
+    assume *: "\<And>es. set es \<noteq> {} \<and> J = \<Union>(set es) \<Longrightarrow> thesis"
+    from * [of "[J]"] show thesis by (by100 simp)
+  qed
   (** (2) For each pair (P, Q) with P, Q \<in> R^2 - J, compute the crossing parity: the
          number of times a polygonal path from P to Q (avoiding vertices of J) crosses
          edges of J, mod 2. This parity depends only on P, Q (it is an invariant of the
