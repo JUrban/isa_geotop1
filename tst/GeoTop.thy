@@ -7060,7 +7060,34 @@ proof -
   define p_inv :: "real \<Rightarrow> 'a" where "p_inv = (\<lambda>t. p (1 - t))"
   have h_pinv_endpts: "p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0"
     unfolding p_inv_def using hp0 hp1 by (by100 simp)
-  have h_pinv_path: "geotop_path_on X T 0 1 p_inv" sorry
+  have h_pinv_path: "geotop_path_on X T 0 1 p_inv"
+  proof -
+    have h_intvl_eq: "{t::real. 0 \<le> t \<and> t \<le> 1} = top1_unit_interval"
+      unfolding top1_unit_interval_def by (by100 auto)
+    have h_eucl_eq: "geotop_euclidean_topology = (top1_open_sets :: real set set)"
+      by (rule geotop_euclidean_topology_eq_open_sets)
+    have h_top_eq: "subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}
+                  = top1_unit_interval_topology"
+      unfolding top1_unit_interval_topology_def
+      using h_eucl_eq h_intvl_eq by (by100 simp)
+    have h_cont_p: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology X T p"
+      using hp_path unfolding geotop_path_on_def
+      using h_intvl_eq h_top_eq by (by100 simp)
+    have h_cont_rev: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                        top1_unit_interval top1_unit_interval_topology (\<lambda>t. 1 - t)"
+      by (rule op_minus_continuous_on_interval)
+    have h_cont_comp: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                         X T (p \<circ> (\<lambda>t. 1 - t))"
+      by (rule top1_continuous_map_on_comp[OF h_cont_rev h_cont_p])
+    have h_cong: "\<forall>t\<in>top1_unit_interval. (p \<circ> (\<lambda>t. 1 - t)) t = p_inv t"
+      unfolding p_inv_def by (by100 simp)
+    have h_cont_pinv: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                         X T p_inv"
+      using top1_continuous_map_on_cong[OF h_cong] h_cont_comp by (by100 blast)
+    show ?thesis
+      unfolding geotop_path_on_def
+      using h_cont_pinv h_intvl_eq h_top_eq by (by100 simp)
+  qed
   have h_pinv: "geotop_path_on X T 0 1 p_inv \<and> p_inv 0 = P\<^sub>1 \<and> p_inv 1 = P\<^sub>0"
     using h_pinv_path h_pinv_endpts by (by100 blast)
   (** (2) Conjugation at the path level: \<phi>_0(q) = p^{-1} \<cdot> q \<cdot> p. This sends closed paths
