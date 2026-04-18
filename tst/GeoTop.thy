@@ -917,6 +917,10 @@ next
   qed
 qed
 
+(** Vertex set is a subset of the convex hull. **)
+lemma geotop_convex_hull_contains_V: "V \<subseteq> geotop_convex_hull V"
+  unfolding geotop_convex_hull_def by blast
+
 (** The identity is a homeomorphism from any topology to itself. **)
 lemma top1_homeomorphism_on_id:
   assumes hT: "is_topology_on X TX"
