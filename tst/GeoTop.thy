@@ -4936,7 +4936,15 @@ proof -
     using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (3) Inductive refinement: G_{i+1} refines G_i by subdividing each g \<in> G_i into
          smaller sub-arcs, chosen compatibly with accessibility. **)
-  show ?thesis sorry
+  have h_final: "\<exists>G :: nat \<Rightarrow> (real^2) set set.
+    (\<forall>i. finite (G i) \<and>
+         (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J) \<and>
+         (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h \<subseteq> {P. \<exists>E. geotop_arc_endpoints g E \<and> P \<in> E}) \<and>
+         J = \<Union>(G i)) \<and>
+    (\<forall>i. geotop_refines (G (i+1)) (G i)) \<and>
+    (\<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow> (\<forall>v\<in>E. geotop_linearly_accessible I v)) \<and>
+    (\<forall>i>0. \<forall>g\<in>G i. \<forall>P\<in>g. g \<subseteq> geotop_nbhd_pt UNIV (\<lambda>x y. norm (x - y)) P (1 / real i))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>9 Theorem 4 (geotop.tex:1879)
@@ -4975,7 +4983,15 @@ proof -
          (\<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H j. geotop_segment v v' \<inter> geotop_segment w w' \<noteq> {}
                        \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v')"
     using exI[of _ "\<lambda>i::nat. {}::((real^2) \<times> (real^2)) set"] by (by100 simp)
-  show ?thesis sorry
+  have h_final: "\<exists>H :: nat \<Rightarrow> ((real^2) \<times> (real^2)) set.
+    (\<forall>i. \<forall>(v, v')\<in>H i. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I
+                    \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)) \<and>
+    (\<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
+          (\<forall>v\<in>E. \<exists>!v'. (v, v') \<in> H i)) \<and>
+    (\<forall>i. \<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H i. (v,v') \<noteq> (w,w') \<longrightarrow> geotop_segment v v' \<inter> geotop_segment w w' = {}) \<and>
+    (\<forall>i j. i < j \<longrightarrow> (\<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H j. geotop_segment v v' \<inter> geotop_segment w w' \<noteq> {}
+                  \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v'))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>9 Theorem 5 (geotop.tex:1885)
@@ -5013,7 +5029,12 @@ proof -
                 bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon> \<and>
                 bA \<subseteq> I" sorry
   (** (3) Truncate bA to meet v_0 v_0' and v_1 v_1' only at single points w_0, w_1. **)
-  show ?thesis sorry
+  have h_final: "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+           w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
+           bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
+           bA \<subseteq> I \<and>
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>9 Theorem 6 (Schönflies theorem, first form) (geotop.tex:1898)
