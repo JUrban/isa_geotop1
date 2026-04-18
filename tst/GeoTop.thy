@@ -282,7 +282,37 @@ lemma geotop_is_subdivision_trans:
   assumes hLK: "geotop_is_subdivision L K"
   assumes hML: "geotop_is_subdivision M L"
   shows "geotop_is_subdivision M K"
-  sorry
+proof -
+  have hKcomp: "geotop_is_complex K"
+    using hLK unfolding geotop_is_subdivision_def by (by100 blast)
+  have hMcomp: "geotop_is_complex M"
+    using hML unfolding geotop_is_subdivision_def by (by100 blast)
+  have hML_ref: "geotop_refines M L"
+    using hML unfolding geotop_is_subdivision_def by (by100 blast)
+  have hLK_ref: "geotop_refines L K"
+    using hLK unfolding geotop_is_subdivision_def by (by100 blast)
+  have hML_poly: "geotop_polyhedron M = geotop_polyhedron L"
+    using hML unfolding geotop_is_subdivision_def by (by100 blast)
+  have hLK_poly: "geotop_polyhedron L = geotop_polyhedron K"
+    using hLK unfolding geotop_is_subdivision_def by (by100 blast)
+  (** Transitivity of refines: m \<subseteq> l \<subseteq> k. **)
+  have hMK_ref: "geotop_refines M K"
+    unfolding geotop_refines_def
+  proof
+    fix m assume hm: "m \<in> M"
+    obtain l where hlL: "l \<in> L" and hml: "m \<subseteq> l"
+      using hm hML_ref unfolding geotop_refines_def by (by100 blast)
+    obtain k where hkK: "k \<in> K" and hlk: "l \<subseteq> k"
+      using hlL hLK_ref unfolding geotop_refines_def by (by100 blast)
+    show "\<exists>k\<in>K. m \<subseteq> k"
+      using hkK hml hlk by (by100 blast)
+  qed
+  have hMK_poly: "geotop_polyhedron M = geotop_polyhedron K"
+    using hML_poly hLK_poly by (by100 simp)
+  show ?thesis
+    unfolding geotop_is_subdivision_def
+    using hMcomp hKcomp hMK_ref hMK_poly by (by100 blast)
+qed
 
 (** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close>. **)
 lemma geotop_iterated_Sd_is_subdivision:
