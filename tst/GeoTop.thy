@@ -1238,10 +1238,24 @@ proof -
       of \<open>|K|\<close> (from finite \<open>K\<close> + each simplex compact) and HOL's compact Lebesgue
       number lemma. Structured decomposition (for euclidean_space narrowing elsewhere): **)
   (** (b.1) |K| is compact (finite union of compact simplexes). Each simplex is a
-         convex hull of a finite set, hence compact (needs euclidean_space to
-         fully close via HOL \<open>compact_convex_hull\<close>). **)
+         convex hull of a finite set, hence compact (via HOL \<open>compact_convex_hull\<close>
+         + \<open>finite_imp_compact\<close>; both require euclidean_space). **)
   have hK_simp_compact: "\<forall>\<sigma>\<in>K. compact \<sigma>"
-    sorry
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
+    have hsim_all: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+      by (rule conjunct1[OF hKcomp[unfolded geotop_is_complex_def]])
+    have hsim: "geotop_is_simplex \<sigma>" using hsim_all h\<sigma> by (by100 blast)
+    obtain V m n where hVfin: "finite V"
+                   and hV_hull: "\<sigma> = geotop_convex_hull V"
+      using hsim unfolding geotop_is_simplex_def by (by100 blast)
+    have hV_HOL: "\<sigma> = convex hull V"
+      using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have hV_compact: "compact V" using hVfin by (rule finite_imp_compact)
+    have h_hull_compact: "compact (convex hull V)"
+      by (rule compact_convex_hull[OF hV_compact])
+    show "compact \<sigma>" using hV_HOL h_hull_compact by (by100 simp)
+  qed
   have hK_compact: "compact (geotop_polyhedron K)"
     unfolding geotop_polyhedron_def
     using hK hK_simp_compact by (by100 blast)
