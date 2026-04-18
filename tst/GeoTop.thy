@@ -10096,7 +10096,10 @@ proof -
   (** (3) By induction N(L_1), N(L_2) are 2-cells, and N(L_1) \<cup> N(L_2) \<cup> (thickening of
          the bridge edge e) is again a 2-cell (gluing two 2-cells along a sub-arc of the
          edge e's thickening). **)
-  show ?thesis sorry
+  have h_final: "geotop_is_n_cell (geotop_regular_neighborhood K L)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_regular_neighborhood K L)) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 3 (geotop.tex:4732)
@@ -10145,7 +10148,17 @@ proof -
                M = D \<union> D' \<union> \<Union>Ss" sorry
   (** (4) Disjointness of interiors: the regular neighbourhoods N(T), N(T'), and strip
          S_i = thick(e) have pairwise disjoint interiors by construction. **)
-  show ?thesis sorry
+  have h_final: "\<exists>D D' Ss n. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+             geotop_is_n_cell D' (subspace_topology UNIV geotop_euclidean_topology D') 2 \<and>
+             finite Ss \<and> card Ss = n \<and>
+             (\<forall>S\<in>Ss. geotop_is_n_cell S (subspace_topology UNIV geotop_euclidean_topology S) 2) \<and>
+             M = D \<union> D' \<union> \<Union>Ss \<and>
+             geotop_top_interior UNIV geotop_euclidean_topology D \<inter>
+             geotop_top_interior UNIV geotop_euclidean_topology D' = {} \<and>
+             (\<forall>S\<in>Ss. geotop_top_interior UNIV geotop_euclidean_topology S \<inter>
+               (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
+                geotop_top_interior UNIV geotop_euclidean_topology D') = {})" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 4 (geotop.tex:4864)
