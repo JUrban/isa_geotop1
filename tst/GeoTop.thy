@@ -228,7 +228,14 @@ proof -
   have h_pairwise_inter:
     "\<forall>\<sigma>\<in>K. \<exists>L\<^sub>1\<^sub>\<sigma> L\<^sub>2\<^sub>\<sigma>::'a set set.
               (\<forall>\<tau>\<^sub>1\<in>L\<^sub>1\<^sub>\<sigma>. \<tau>\<^sub>1 \<subseteq> \<sigma>) \<and> (\<forall>\<tau>\<^sub>2\<in>L\<^sub>2\<^sub>\<sigma>. \<tau>\<^sub>2 \<subseteq> \<sigma>) \<and>
-              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>" sorry
+              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>"
+  proof
+    fix \<sigma> :: "'a set" assume "\<sigma> \<in> K"
+    show "\<exists>L\<^sub>1\<^sub>\<sigma> L\<^sub>2\<^sub>\<sigma>::'a set set.
+              (\<forall>\<tau>\<^sub>1\<in>L\<^sub>1\<^sub>\<sigma>. \<tau>\<^sub>1 \<subseteq> \<sigma>) \<and> (\<forall>\<tau>\<^sub>2\<in>L\<^sub>2\<^sub>\<sigma>. \<tau>\<^sub>2 \<subseteq> \<sigma>) \<and>
+              \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>"
+      using exI[of _ "{\<sigma>}::'a set set"] by (by100 simp)
+  qed
   (** (2) Triangulate each intersection polyhedron (they are convex, hence triangulable
          barycentrically); collect the triangulations into a complex L. **)
   obtain L :: "'a set set" where hL:
