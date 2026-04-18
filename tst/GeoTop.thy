@@ -4235,7 +4235,14 @@ proof -
   (** Step 1: PL approximation of h on K^1 via Theorem 6_2. **)
   obtain f1 where hf1_PL: "\<exists>L. geotop_is_complex L" sorry
   (** Step 2: Extend to each 2-simplex via Schoenflies + barycentric interpolation. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f L. geotop_is_complex L \<and>
+          top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             (geotop_polyhedron L)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) f
+          \<and> geotop_PLH K L f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>6 Theorem 4 (geotop.tex:1397)
@@ -4266,7 +4273,9 @@ proof -
   (** Step 1: apply Theorem 6_3 to get PL f_1 for h. **)
   obtain f1 where hf1: "\<exists>L. geotop_is_complex L" sorry
   (** Step 2: adjust f_1 to land in K_2 using subdivision matching. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. geotop_PLH K1 K2 f
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 
