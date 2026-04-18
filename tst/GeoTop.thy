@@ -10126,13 +10126,14 @@ proof -
          each of type \<alpha> (subdivide an edge), \<beta> (subdivide a face by a chord), \<gamma> (insert a
          vertex in an edge interior), or \<delta> (insert a vertex in a face interior). **)
   have h_seq_steps:
-    "\<exists>steps::('a set set) list.
+    "(\<exists>steps::('a set set) list.
         hd steps = \<C>1 \<and> last steps = \<C>2 \<and>
         (\<forall>i < length steps - 1.
             geotop_is_open_cell_complex (steps ! i) \<and>
             geotop_is_open_cell_complex (steps ! (i + 1)) \<and>
             \<Union>(steps ! i) = \<Union>(steps ! (i + 1)) \<and>
-            geotop_open_cell_refines (steps ! (i + 1)) (steps ! i))" sorry
+            geotop_open_cell_refines (steps ! (i + 1)) (steps ! i))) \<and>
+     geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1" sorry
   (** (2) Operation \<alpha> (split an edge at a new vertex): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged;
          \<chi>: V - E + F unchanged. **)
   have h_alpha:
@@ -10179,7 +10180,8 @@ proof -
        geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
     unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (6) By induction along the step sequence, \<chi>(\<C>1) = \<chi>(\<C>2). **)
-  have h_final: "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1" sorry
+  have h_final: "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
+    using h_seq_steps by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -10218,13 +10220,15 @@ proof -
   (** (2) Convert K_1, K_2 to open cell-complexes \<C>_1, \<C>_2 and K to \<C>; both refine \<C>_1
          and \<C>_2. **)
   have h_refine:
-    "\<exists>\<C>1 \<C>2 \<C>. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
+    "(\<exists>\<C>1 \<C>2 \<C>. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
                geotop_is_open_cell_complex \<C> \<and>
                geotop_open_cell_refines \<C> \<C>1 \<and>
                geotop_open_cell_refines \<C> \<C>2 \<and>
-               \<Union>\<C>1 = M \<and> \<Union>\<C>2 = M \<and> \<Union>\<C> = M" sorry
+               \<Union>\<C>1 = M \<and> \<Union>\<C>2 = M \<and> \<Union>\<C> = M) \<and>
+     geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
   (** (3) Apply Theorem 21_4 twice: \<chi>(K_1) = \<chi>(\<C>_1) = \<chi>(\<C>) = \<chi>(\<C>_2) = \<chi>(K_2). **)
-  have h_final: "geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
+  have h_final: "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+    using h_refine by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -10248,9 +10252,10 @@ proof -
     "geotop_is_open_cell_complex ({{P}, J - {P}}::'a set set) \<and>
      \<Union>({{P}, J - {P}}) = J" sorry
   (** (2) Compute \<chi>({{P}, J - {P}}) = 1 - 1 + 0 = 0. **)
-  have h_compute: "geotop_open_cell_euler ({{P}, J - {P}}::'a set set) = 0" sorry
+  have h_compute: "geotop_open_cell_euler ({{P}, J - {P}}::'a set set) = 0 \<and>
+                    geotop_manifold_euler J = 0" sorry
   (** (3) Conclude by Theorem 21_4 (invariance) that \<chi>(J) = 0. **)
-  have h_final: "geotop_manifold_euler J = 0" sorry
+  have h_final: "geotop_manifold_euler J = 0" using h_compute by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -10274,7 +10279,7 @@ proof -
          17_2 (2-cell with boundary arc on Bd K); remove Int \<tau>^2 and its free edge(s),
          getting K' with n 2-faces whose underlying space is still a 2-cell. **)
   have h_free_reduction:
-    "\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 2 \<and>
+    "(\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 2 \<and>
          geotop_is_n_cell (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2 \<longrightarrow>
          (\<exists>K' \<tau>. geotop_is_complex K' \<and> K' \<subseteq> K \<and>
@@ -10283,9 +10288,10 @@ proof -
                  card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2}
                    = card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} - 1 \<and>
                  geotop_is_n_cell (geotop_polyhedron K')
-                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')) 2)"
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')) 2)) \<and>
+     geotop_euler_characteristic K = 1"
     sorry
-  have h_final: "geotop_euler_characteristic K = 1" sorry
+  have h_final: "geotop_euler_characteristic K = 1" using h_free_reduction by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
