@@ -2487,10 +2487,47 @@ proof -
     have hV_K\<^sub>3_eq: "geotop_complex_vertices K\<^sub>3 = {v. {v} \<in> K\<^sub>3}"
       by (rule geotop_complex_vertices_eq_0_simplexes[OF hK\<^sub>3_comp])
     (** Characterize 0-simplexes of L_3 as f_inv images of 0-simplexes of K_3. **)
+    have hf_inv_inj_K: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+      using hf_inv_bij unfolding bij_betw_def by (by100 blast)
     have hL\<^sub>3_singletons: "{v. {v} \<in> L\<^sub>3}
                             = inv_into (geotop_polyhedron L) f ` {w. {w} \<in> K\<^sub>3}"
-      sorry \<comment> \<open>Unfold L_3 = f_inv \`\` K_3; {v} = f_inv \`\` \<sigma> forces \<sigma> singleton
-                (f_inv inj); singletons in K_3 correspond bijectively via f_inv.\<close>
+    proof (rule set_eqI, rule iffI)
+      fix v assume hv: "v \<in> {v. {v} \<in> L\<^sub>3}"
+      hence hv_L\<^sub>3: "{v} \<in> L\<^sub>3" by (by100 simp)
+      (** L_3 = (\<lambda>\<sigma>. f_inv \`\` \<sigma>) \`\` K_3. **)
+      obtain \<sigma> where h\<sigma>K\<^sub>3: "\<sigma> \<in> K\<^sub>3"
+                  and h\<sigma>_eq: "{v} = inv_into (geotop_polyhedron L) f ` \<sigma>"
+        using hv_L\<^sub>3 unfolding L\<^sub>3_def by (by100 blast)
+      (** \<sigma> \<subseteq> |K_3| = |K|; f_inv is injective on |K|, so |f_inv(\<sigma>)| = |\<sigma>|. **)
+      have h\<sigma>_in_K: "\<sigma> \<subseteq> geotop_polyhedron K"
+        using h\<sigma>K\<^sub>3 hK\<^sub>3_poly_eq_K unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inv_inj_\<sigma>: "inj_on (inv_into (geotop_polyhedron L) f) \<sigma>"
+        using hf_inv_inj_K h\<sigma>_in_K inj_on_subset by (by100 blast)
+      have h_img_card: "card (inv_into (geotop_polyhedron L) f ` \<sigma>) = card \<sigma>"
+        by (rule card_image[OF hf_inv_inj_\<sigma>])
+      have h\<sigma>_card: "card \<sigma> = card {v}"
+        using h_img_card h\<sigma>_eq by (by100 simp)
+      have h\<sigma>_single_card: "card \<sigma> = 1" using h\<sigma>_card by (by100 simp)
+      have h\<sigma>_fin: "finite \<sigma>" using h\<sigma>_single_card card_gt_0_iff by (by100 fastforce)
+      obtain w where h\<sigma>_sing: "\<sigma> = {w}"
+        using h\<sigma>_single_card card_1_singletonE[of \<sigma>] h\<sigma>_fin by (by100 blast)
+      have hw_K\<^sub>3: "{w} \<in> K\<^sub>3" using h\<sigma>K\<^sub>3 h\<sigma>_sing by (by100 simp)
+      have hv_eq: "v = inv_into (geotop_polyhedron L) f w"
+        using h\<sigma>_eq h\<sigma>_sing by (by100 simp)
+      show "v \<in> inv_into (geotop_polyhedron L) f ` {w. {w} \<in> K\<^sub>3}"
+        using hw_K\<^sub>3 hv_eq by (by100 blast)
+    next
+      fix v assume hv: "v \<in> inv_into (geotop_polyhedron L) f ` {w. {w} \<in> K\<^sub>3}"
+      obtain w where hw_K\<^sub>3: "{w} \<in> K\<^sub>3"
+                 and hvw: "v = inv_into (geotop_polyhedron L) f w"
+        using hv by (by100 blast)
+      have h_img: "inv_into (geotop_polyhedron L) f ` {w} = {v}"
+        using hvw by (by100 simp)
+      have h_img_in_L\<^sub>3: "inv_into (geotop_polyhedron L) f ` {w} \<in> L\<^sub>3"
+        using hw_K\<^sub>3 unfolding L\<^sub>3_def by (by100 blast)
+      show "v \<in> {v. {v} \<in> L\<^sub>3}"
+        using h_img h_img_in_L\<^sub>3 by (by100 simp)
+    qed
     have hV_L\<^sub>3_img: "geotop_complex_vertices L\<^sub>3 =
                        inv_into (geotop_polyhedron L) f ` geotop_complex_vertices K\<^sub>3"
       using hV_L\<^sub>3_eq hV_K\<^sub>3_eq hL\<^sub>3_singletons by (by100 simp)
