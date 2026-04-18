@@ -7201,9 +7201,26 @@ theorem Theorem_GT_5_1:
 proof
   assume hPL: "geotop_PL_map K L f"
   (** Extract K\<^sub>2 subdivision of K witnessing PL. **)
+  have hPL_body: "\<exists>K'. geotop_is_subdivision K' K \<and>
+                   (\<forall>\<sigma>\<in>K'. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f)"
+    using hPL unfolding geotop_PL_map_def by (by100 blast)
   obtain K\<^sub>2 where hK2_sub: "geotop_is_subdivision K\<^sub>2 K"
-              and hK2_lin: "\<forall>\<sigma>\<in>K\<^sub>2. (\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
-    sorry
+              and hK2_lin_raw: "\<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    using hPL_body by (by100 blast)
+  have hK2_lin: "\<forall>\<sigma>\<in>K\<^sub>2. (\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K\<^sub>2"
+    have h_one: "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using hK2_lin_raw h\<sigma> by (by100 blast)
+    from h_one obtain \<tau> where h\<tau>: "\<tau> \<in> L"
+                          and hrest: "(\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      by (by100 blast)
+    have hfx: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>" using hrest by (by100 blast)
+    have hlin: "geotop_linear_on \<sigma> f" using hrest by (by100 blast)
+    have hfimg: "f ` \<sigma> \<subseteq> \<tau>" using hfx by (by100 blast)
+    show "(\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using h\<tau> hfimg hlin by (by100 blast)
+  qed
   (** Common subdivision of K\<^sub>1 and K\<^sub>2 via Theorem_GT_1. **)
   obtain K\<^sub>12 where hK12: "geotop_is_subdivision K\<^sub>12 K\<^sub>1 \<and> geotop_is_subdivision K\<^sub>12 K\<^sub>2
                             \<and> geotop_PL_map K1 L f"
