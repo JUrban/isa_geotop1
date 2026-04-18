@@ -5865,14 +5865,20 @@ proof -
   obtain h\<^sub>0 where hh0:
     "top1_homeomorphism_on UNIV geotop_euclidean_topology
         UNIV geotop_euclidean_topology h\<^sub>0 \<and>
-     (\<forall>P\<in>UNIV - U. h\<^sub>0 P = P)" sorry
+     (\<forall>P\<in>UNIV - U. h\<^sub>0 P = P) \<and>
+     (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U)" sorry
   (** (3) Restrict to the M-part: h_0 restricted to h_0(M) stays polyhedral since M \<subseteq>
          f(|K'|); the extra edges are discarded. **)
   have h_final: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
           \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
           \<and> (\<forall>P\<in>UNIV - U. h P = P)
-          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U"
+    using hh0 by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
