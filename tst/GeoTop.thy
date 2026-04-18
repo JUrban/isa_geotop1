@@ -415,7 +415,14 @@ definition geotop_open_star ::
 lemma geotop_open_star_subset:
   fixes K :: "'a::euclidean_space set set"
   shows "geotop_open_star K v \<subseteq> geotop_polyhedron K"
-  sorry
+proof
+  fix x assume hx: "x \<in> geotop_open_star K v"
+  then obtain \<sigma> where h\<sigma>: "\<sigma> \<in> K" and hv\<sigma>: "v \<in> \<sigma>" and hx\<sigma>: "x \<in> rel_interior \<sigma>"
+    unfolding geotop_open_star_def by (by100 blast)
+  have "x \<in> \<sigma>" using hx\<sigma> rel_interior_subset by (by100 blast)
+  then show "x \<in> geotop_polyhedron K"
+    using h\<sigma> unfolding geotop_polyhedron_def by (by100 blast)
+qed
 
 (** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>. **)
 lemma geotop_vertex_stars_cover:
@@ -612,7 +619,15 @@ lemma geotop_isomorphic_induces_PLH:
   fixes L :: "'b::real_normed_vector set set"
   assumes hiso: "geotop_isomorphic K L"
   shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L"
-  sorry
+proof -
+  obtain \<phi> where h\<phi>: "geotop_isomorphism K L \<phi>"
+    using hiso unfolding geotop_isomorphic_def by (by100 blast)
+  obtain f where hf: "geotop_PLH K L f
+                      \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+                      \<and> (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
+    using geotop_isomorphism_induces_PLH[OF h\<phi>] by (by100 blast)
+  show ?thesis using hf by (by100 blast)
+qed
 
 (** PL-map lifting across refinement: if \<open>f\<close> is a PL map of \<open>K' \<to> L'\<close> and
     \<open>K' < K\<close>, \<open>L' < L\<close>, then \<open>f\<close> is a PL map of \<open>K \<to> L\<close>. **)
@@ -720,10 +735,47 @@ lemma geotop_isomorphic_trans:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
   fixes M :: "'c::real_normed_vector set set"
-  assumes "geotop_isomorphic K L"
-  assumes "geotop_isomorphic L M"
+  assumes hKL: "geotop_isomorphic K L"
+  assumes hLM: "geotop_isomorphic L M"
   shows "geotop_isomorphic K M"
-  sorry
+proof -
+  obtain \<phi> where h\<phi>: "geotop_isomorphism K L \<phi>"
+    using hKL unfolding geotop_isomorphic_def by (by100 blast)
+  obtain \<psi> where h\<psi>: "geotop_isomorphism L M \<psi>"
+    using hLM unfolding geotop_isomorphic_def by (by100 blast)
+  let ?\<chi> = "\<psi> \<circ> \<phi>"
+  have h\<phi>bij: "bij_betw \<phi> (geotop_complex_vertices K) (geotop_complex_vertices L)"
+    using h\<phi> unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices M)"
+    using h\<psi> unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<chi>bij: "bij_betw ?\<chi> (geotop_complex_vertices K) (geotop_complex_vertices M)"
+    by (rule bij_betw_trans[OF h\<phi>bij h\<psi>bij])
+  have h\<phi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+                  (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
+    using h\<phi> unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<psi>cond: "\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+                  (geotop_convex_hull W \<in> L \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> M)"
+    using h\<psi> unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<chi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+                  (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (?\<chi> ` V) \<in> M)"
+  proof (intro allI impI)
+    fix V assume hVK: "V \<subseteq> geotop_complex_vertices K"
+    (** \<open>\<phi> ` V \<subseteq> vertices L\<close> because \<open>\<phi>\<close> is a bijection vertices K \<to> vertices L. **)
+    have h\<phi>V: "\<phi> ` V \<subseteq> geotop_complex_vertices L"
+      using h\<phi>bij hVK unfolding bij_betw_def by (by100 blast)
+    have h\<chi>img: "?\<chi> ` V = \<psi> ` (\<phi> ` V)" by (rule image_comp[symmetric])
+    have "geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L"
+      using h\<phi>cond hVK by (by100 blast)
+    also have "\<dots> \<longleftrightarrow> geotop_convex_hull (\<psi> ` (\<phi> ` V)) \<in> M"
+      using h\<psi>cond h\<phi>V by (by100 blast)
+    finally show "geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (?\<chi> ` V) \<in> M"
+      using h\<chi>img by (by100 simp)
+  qed
+  have h\<chi>iso: "geotop_isomorphism K M ?\<chi>"
+    unfolding geotop_isomorphism_def using h\<chi>bij h\<chi>cond by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphic_def using h\<chi>iso by (by100 blast)
+qed
 
 (** from early.tex Lemma 6 (transport subdivision): given \<open>K \<cong> L\<close> and a subdivision
     \<open>L'\<close> of \<open>L\<close>, there is a subdivision \<open>K'\<close> of \<open>K\<close> with \<open>K' \<cong> L'\<close>.
