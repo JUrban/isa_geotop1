@@ -9987,11 +9987,21 @@ proof -
          R^3 - Bd \<sigma>^3 is a 3-cell or unbounded 3-cell, both locally simply connected at
          every boundary point. Transport via \<phi>^{-1}. **)
   have h_sphere_locsc:
-    "\<forall>S::(real^3) set. geotop_is_n_sphere S
+    "(\<forall>S::(real^3) set. geotop_is_n_sphere S
          (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and> geotop_is_tame S \<longrightarrow>
        (\<forall>Q\<in>S. \<forall>C.
           (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
-          \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)" sorry
+          \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)) \<and>
+     ((\<forall>A :: (real^3) set. \<forall>Q.
+           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+           geotop_is_tame A \<and>
+           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
+           geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q) \<and>
+         (\<forall>S :: (real^3) set. \<forall>Q\<in>S.
+           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+           geotop_is_tame S \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
+                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)))" sorry
   have h_final: "(\<forall>A :: (real^3) set. \<forall>Q.
            geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
            geotop_is_tame A \<and>
@@ -10001,7 +10011,8 @@ proof -
            geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
            geotop_is_tame S \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
-                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))" sorry
+                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))"
+    using h_sphere_locsc by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
