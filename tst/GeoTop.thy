@@ -8432,7 +8432,9 @@ proof -
   (** (3) Align the two PLHs along D so that they match on D: by Theorem 17_5 pre-compose
          f_1, f_2 with further PLHs mapping f_i(D) onto a common 2-face of a shared
          \<sigma>^3, yielding a single PLH f: S \<leftrightarrow> Bd \<sigma>^3 that fixes R^3 - W. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_simply_imbedded
+           ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 12 (The PL Schönflies theorem in R^3) (geotop.tex:3598)
@@ -8495,7 +8497,8 @@ proof -
                  (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
                (\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                       Ms i = geotop_join D {v})))" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_simply_imbedded S" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>18 The Antoine set\<close>
@@ -8567,7 +8570,10 @@ proof -
            (geotop_frontier UNIV geotop_euclidean_topology T1)
            (subspace_topology UNIV geotop_euclidean_topology
               (geotop_frontier UNIV geotop_euclidean_topology T1)) r" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 2 (geotop.tex:3800)
@@ -8609,7 +8615,10 @@ proof -
         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 0) = p t) \<and>
         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 1) = P\<^sub>0) \<and>
         (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (0, y) = P\<^sub>0 \<and> g (1, y) = P\<^sub>0)" sorry
-  show ?thesis sorry
+  have h_final: "geotop_path_equiv (UNIV - T1)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 3 (geotop.tex:3905)
@@ -8652,7 +8661,10 @@ proof -
     sorry
   (** (3) After n - 1 descending steps, obtain null-homotopy in R^3 - T_1, i.e. p \<cong> e
          in R^3 - T_1. **)
-  show ?thesis sorry
+  have h_final: "geotop_path_equiv (UNIV - T1)
+           (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 4 (geotop.tex:3927)
@@ -8681,7 +8693,10 @@ proof -
          (subspace_topology UNIV geotop_euclidean_topology
             (UNIV - geotop_antoine_set k T1 T2 T))
          P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
-  show ?thesis sorry
+  have h_final: "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 5 (geotop.tex:3930)
@@ -8722,7 +8737,17 @@ proof -
          send R^3 - C_1 to R^3 - C_2 homeomorphically, identifying their fundamental
          groups. Contradiction. (There is a homeomorphism C_1 \<leftrightarrow> C_2 at the
          intrinsic-Cantor-set level by Brouwer's theorem, but it cannot extend.) **)
-  show ?thesis sorry
+  have h_final: "\<exists>C1 C2 :: (real^3) set.
+           geotop_is_cantor_set C1 (subspace_topology UNIV geotop_euclidean_topology C1) \<and>
+           geotop_is_cantor_set C2 (subspace_topology UNIV geotop_euclidean_topology C2) \<and>
+           (\<exists>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                  C2 (subspace_topology UNIV geotop_euclidean_topology C2) h) \<and>
+           (\<forall>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+                  C2 (subspace_topology UNIV geotop_euclidean_topology C2) h \<longrightarrow>
+              (\<nexists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                     UNIV geotop_euclidean_topology H \<and>
+                   (\<forall>P\<in>C1. H P = h P)))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 6 (geotop.tex:3934)
