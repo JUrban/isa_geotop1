@@ -459,6 +459,18 @@ lemma geotop_mesh_iterated_Sd_tends_to_zero:
                (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
   sorry
 
+(** Finiteness transfers across subdivision: if \<open>K\<close> is a finite complex and
+    \<open>K' < K\<close>, then \<open>K'\<close> is finite. The proof uses \<open>K.3\<close> local-finiteness of
+    \<open>K'\<close> + compactness of each \<open>\<sigma> \<in> K\<close> (implicit in simplex being a compact
+    convex hull) to conclude that only finitely many simplexes of \<open>K'\<close> meet
+    each \<open>\<sigma> \<in> K\<close>; finite \<open>K\<close> then gives finite \<open>K'\<close>. **)
+lemma geotop_subdivision_of_finite_is_finite:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hKfin: "finite K"
+  assumes hK'K: "geotop_is_subdivision K' K"
+  shows "finite K'"
+  sorry
+
 (** from early.tex Lemma 4.17 (key refinement lemma): if \<open>K'\<close> is a subdivision
     of \<open>K\<close>, then for some \<open>m\<close>, \<open>Sd^m(K)\<close> is a subdivision of \<open>K'\<close>.
     Proof following early.tex \<S>4.5:
@@ -486,8 +498,7 @@ proof -
   have hpolyeq: "geotop_polyhedron K' = geotop_polyhedron K"
     using hsub unfolding geotop_is_subdivision_def by (by100 blast)
   have hK'fin: "finite K'"
-    sorry \<comment> \<open>Finiteness transfers across subdivision: each simplex of \<open>K\<close> has finitely
-              many simplexes of \<open>K'\<close> inside it, and \<open>K\<close> is finite. Lemma needed.\<close>
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK hsub])
   (** (b) Lebesgue number \<open>\<delta>\<close> for the vertex-star cover of \<open>|K|\<close>. Needs compactness
       of \<open>|K|\<close> (from finite \<open>K\<close> + each simplex compact) and HOL's compact Lebesgue
       number lemma. **)
