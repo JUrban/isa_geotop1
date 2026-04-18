@@ -602,6 +602,66 @@ text \<open>The Euclidean topology on a normed vector space, expressed as a topo
 definition geotop_euclidean_topology :: "('a::real_normed_vector) set set" where
   "geotop_euclidean_topology = top1_metric_topology_on (UNIV::'a set) (\<lambda>x y. norm (x - y))"
 
+(** Auxiliary: top1 norm-ball equals HOL-Analysis ball. **)
+lemma top1_ball_on_UNIV_norm_eq_ball:
+  fixes x :: "'a::real_normed_vector" and e :: real
+  shows "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+  unfolding top1_ball_on_def ball_def dist_norm by simp
+
+(** Bridge: the metric topology from the norm equals top1_open_sets, which
+    coincides with HOL's built-in topology on real_normed_vector types. **)
+lemma geotop_euclidean_topology_eq_open_sets:
+  "(geotop_euclidean_topology :: ('a::real_normed_vector) set set) = top1_open_sets"
+proof (rule set_eqI, rule iffI)
+  fix U :: "'a set" assume hU: "U \<in> geotop_euclidean_topology"
+  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+    by (rule top1_ball_on_UNIV_norm_eq_ball)
+  have "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
+  proof (intro ballI)
+    fix x assume hxU: "x \<in> U"
+    obtain b where hb1: "b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
+               and hb2: "x \<in> b" and hb3: "b \<subseteq> U"
+      using hU hxU
+      unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
+                topology_generated_by_basis_def by blast
+    obtain x' e' where hb_eq: "b = top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x' e'"
+                   and he': "0 < e'"
+      using hb1 unfolding top1_metric_basis_on_def by blast
+    have hb_ball: "b = ball x' e'" using hb_eq top1_ball_on_UNIV_norm_eq_ball by simp
+    have hxb: "x \<in> ball x' e'" using hb2 hb_ball by simp
+    obtain e where he0: "0 < e" and he_sub: "ball x e \<subseteq> ball x' e'"
+      using hxb openE open_ball by blast
+    from he_sub hb3 hb_ball he0 show "\<exists>e>0. ball x e \<subseteq> U" by auto
+  qed
+  then have "open U" using open_contains_ball by blast
+  thus "U \<in> top1_open_sets" unfolding top1_open_sets_def by simp
+next
+  fix U :: "'a set" assume hU: "U \<in> top1_open_sets"
+  then have hopen: "open U" unfolding top1_open_sets_def by simp
+  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
+    by (rule top1_ball_on_UNIV_norm_eq_ball)
+  have hforall: "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
+    using hopen open_contains_ball by blast
+  show "U \<in> geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
+              topology_generated_by_basis_def
+  proof (intro CollectI conjI ballI)
+    show "U \<subseteq> UNIV" by simp
+  next
+    fix x assume hxU: "x \<in> U"
+    obtain e where he0: "0 < e" and heU: "ball x e \<subseteq> U"
+      using hforall hxU by blast
+    let ?b = "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e"
+    have hb_in: "?b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
+      unfolding top1_metric_basis_on_def using he0 by blast
+    have hb_eq: "?b = ball x e" by (rule top1_ball_on_UNIV_norm_eq_ball)
+    have hxb: "x \<in> ?b" using hb_eq he0 by simp
+    have hbU: "?b \<subseteq> U" using hb_eq heU by simp
+    show "\<exists>b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y)). x \<in> b \<and> b \<subseteq> U"
+      using hb_in hxb hbU by blast
+  qed
+qed
+
 (** from early.tex Lemma 4.10: open star of a vertex \<open>v\<close> in a complex \<open>K\<close>
     is the union of the relative interiors of simplexes of \<open>K\<close> having \<open>v\<close>
     as a vertex. We use HOL's \<open>rel_interior\<close> to express this. **)
@@ -2634,65 +2694,9 @@ proof -
   show "V = {P, Q}" using hV_eq hab_set by simp
 qed
 
-(** Auxiliary: top1 norm-ball equals HOL-Analysis ball. **)
-lemma top1_ball_on_UNIV_norm_eq_ball:
-  fixes x :: "'a::real_normed_vector" and e :: real
-  shows "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
-  unfolding top1_ball_on_def ball_def dist_norm by simp
-
-(** Bridge: the metric topology from the norm equals top1_open_sets, which
-    coincides with HOL's built-in topology on real_normed_vector types. **)
-lemma geotop_euclidean_topology_eq_open_sets:
-  "(geotop_euclidean_topology :: ('a::real_normed_vector) set set) = top1_open_sets"
-proof (rule set_eqI, rule iffI)
-  fix U :: "'a set" assume hU: "U \<in> geotop_euclidean_topology"
-  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
-    by (rule top1_ball_on_UNIV_norm_eq_ball)
-  have "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
-  proof (intro ballI)
-    fix x assume hxU: "x \<in> U"
-    obtain b where hb1: "b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
-               and hb2: "x \<in> b" and hb3: "b \<subseteq> U"
-      using hU hxU
-      unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
-                topology_generated_by_basis_def by blast
-    obtain x' e' where hb_eq: "b = top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x' e'"
-                   and he': "0 < e'"
-      using hb1 unfolding top1_metric_basis_on_def by blast
-    have hb_ball: "b = ball x' e'" using hb_eq top1_ball_on_UNIV_norm_eq_ball by simp
-    have hxb: "x \<in> ball x' e'" using hb2 hb_ball by simp
-    obtain e where he0: "0 < e" and he_sub: "ball x e \<subseteq> ball x' e'"
-      using hxb openE open_ball by blast
-    from he_sub hb3 hb_ball he0 show "\<exists>e>0. ball x e \<subseteq> U" by auto
-  qed
-  then have "open U" using open_contains_ball by blast
-  thus "U \<in> top1_open_sets" unfolding top1_open_sets_def by simp
-next
-  fix U :: "'a set" assume hU: "U \<in> top1_open_sets"
-  then have hopen: "open U" unfolding top1_open_sets_def by simp
-  have hball: "\<And>x e. top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e = ball x e"
-    by (rule top1_ball_on_UNIV_norm_eq_ball)
-  have hforall: "\<forall>x\<in>U. \<exists>e>0. ball x e \<subseteq> U"
-    using hopen open_contains_ball by blast
-  show "U \<in> geotop_euclidean_topology"
-    unfolding geotop_euclidean_topology_def top1_metric_topology_on_def
-              topology_generated_by_basis_def
-  proof (intro CollectI conjI ballI)
-    show "U \<subseteq> UNIV" by simp
-  next
-    fix x assume hxU: "x \<in> U"
-    obtain e where he0: "0 < e" and heU: "ball x e \<subseteq> U"
-      using hforall hxU by blast
-    let ?b = "top1_ball_on UNIV (\<lambda>x y. norm (x - y)) x e"
-    have hb_in: "?b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y))"
-      unfolding top1_metric_basis_on_def using he0 by blast
-    have hb_eq: "?b = ball x e" by (rule top1_ball_on_UNIV_norm_eq_ball)
-    have hxb: "x \<in> ?b" using hb_eq he0 by simp
-    have hbU: "?b \<subseteq> U" using hb_eq heU by simp
-    show "\<exists>b \<in> top1_metric_basis_on UNIV (\<lambda>x y. norm (x - y)). x \<in> b \<and> b \<subseteq> U"
-      using hb_in hxb hbU by blast
-  qed
-qed
+text \<open>\<open>top1_ball_on_UNIV_norm_eq_ball\<close> and \<open>geotop_euclidean_topology_eq_open_sets\<close>
+  moved earlier in the file (right after \<open>geotop_euclidean_topology\<close> def) so the
+  early.tex infrastructure can use them.\<close>
 
 (** Vertex set is a subset of the convex hull. **)
 lemma geotop_convex_hull_contains_V: "V \<subseteq> geotop_convex_hull V"
