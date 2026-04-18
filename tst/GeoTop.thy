@@ -745,6 +745,20 @@ proof -
     using h_sv' h_prop' by (by100 blast)
 qed
 
+(** Image of a simplex under a map that is linear on it and injective on it is a simplex.
+    Proof plan: \<sigma> = conv V with V in general position; linearity gives
+    f(\<sigma>) = conv(f \`\` V); injectivity + affine-structure gives f V is affinely
+    independent, which together with card(f V) = card V + ambient dim gives
+    general_position. **)
+lemma geotop_linear_inj_image_is_simplex:
+  fixes \<sigma> :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
+  assumes h_lin: "geotop_linear_on \<sigma> f"
+  assumes h_inj: "inj_on f \<sigma>"
+  assumes h_sim: "geotop_is_simplex \<sigma>"
+  shows "geotop_is_simplex (f ` \<sigma>)"
+  sorry \<comment> \<open>Deep: requires affine-injection-preserves-AI + general_position derivation.
+             Deferred pending support lemma \<open>geotop_ai_imp_general_position\<close>.\<close>
+
 subsection \<open>Diameter and mesh\<close>
 
 (** from \<S>4: diameter and mesh (geotop.tex:953)
@@ -2335,7 +2349,31 @@ proof -
       using hL\<^sub>1L unfolding geotop_is_subdivision_def by (by100 blast)
     (** (b0) K.0: f(\<sigma>) is a simplex when f is linear on \<sigma> and \<sigma> is a simplex. **)
     have hfL\<^sub>1_K0: "\<forall>\<sigma>\<in>fL\<^sub>1. geotop_is_simplex \<sigma>"
-      sorry
+    proof (rule ballI)
+      fix \<sigma> assume h\<sigma>: "\<sigma> \<in> fL\<^sub>1"
+      obtain \<sigma>_L where h\<sigma>_L_L\<^sub>1: "\<sigma>_L \<in> L\<^sub>1" and h\<sigma>_eq: "\<sigma> = f ` \<sigma>_L"
+        using h\<sigma> unfolding fL\<^sub>1_def by (by100 blast)
+      (** \<sigma>_L is a simplex (L_1 complex). **)
+      have h_L\<^sub>1_simp_all: "\<forall>\<sigma>\<in>L\<^sub>1. geotop_is_simplex \<sigma>"
+        by (rule conjunct1[OF hL\<^sub>1_comp[unfolded geotop_is_complex_def]])
+      have h\<sigma>_L_sim: "geotop_is_simplex \<sigma>_L"
+        using h_L\<^sub>1_simp_all h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      (** f is linear on \<sigma>_L (from hL_1_lin). **)
+      have h\<sigma>_L_lin_raw: "\<exists>\<tau>\<in>K. (\<forall>x\<in>\<sigma>_L. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma>_L f"
+        using hL\<^sub>1_lin h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      have h\<sigma>_L_lin: "geotop_linear_on \<sigma>_L f"
+        using h\<sigma>_L_lin_raw by (by100 blast)
+      (** \<sigma>_L \<subseteq> |L_1| = |L|, so f inj on \<sigma>_L (from f bij |L| \<leftrightarrow> |K|). **)
+      have h\<sigma>_L_in_L: "\<sigma>_L \<subseteq> geotop_polyhedron L"
+        using h\<sigma>_L_L\<^sub>1 hL\<^sub>1_poly_L unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inj_L: "inj_on f (geotop_polyhedron L)"
+        using hf_bij_LK unfolding bij_betw_def by (by100 blast)
+      have hf_inj_\<sigma>_L: "inj_on f \<sigma>_L"
+        using hf_inj_L h\<sigma>_L_in_L inj_on_subset by (by100 blast)
+      show "geotop_is_simplex \<sigma>"
+        using h\<sigma>_eq geotop_linear_inj_image_is_simplex[OF h\<sigma>_L_lin hf_inj_\<sigma>_L h\<sigma>_L_sim]
+        by (by100 simp)
+    qed
     (** (b1) K.1: fL_1 is closed under faces. A face of f(\<sigma>) is f applied to a face
             of \<sigma> (via linearity on \<sigma>); L_1 is face-closed (K.1), so fL_1 is too. **)
     have hfL\<^sub>1_K1: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> fL\<^sub>1"
