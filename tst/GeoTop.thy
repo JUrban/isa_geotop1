@@ -1224,6 +1224,58 @@ proof (intro allI impI)
     using hA_open hfinal by blast
 qed
 
+(** Bridge: top1_path_connected_on w.r.t. geotop_euclidean_topology implies
+    HOL-Analysis path-connectedness. **)
+lemma top1_path_connected_on_geotop_imp_path_connected:
+  fixes S :: "'a::real_normed_vector set"
+  assumes hpc: "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  shows "path_connected S"
+  unfolding path_connected_def
+proof (intro ballI)
+  fix x y assume hx: "x \<in> S" and hy: "y \<in> S"
+  from hpc have "\<exists>f. top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y f"
+    using hx hy unfolding top1_path_connected_on_def by (by100 blast)
+  then obtain f :: "real \<Rightarrow> 'a"
+    where hf: "top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y f"
+    by (by100 blast)
+  have hfcont_top1: "top1_continuous_map_on top1_unit_interval top1_unit_interval_topology
+                       S (subspace_topology UNIV geotop_euclidean_topology S) f"
+    using hf unfolding top1_is_path_on_def by (by100 blast)
+  have hf0: "f 0 = x" and hf1: "f 1 = y"
+    using hf unfolding top1_is_path_on_def by (by100 simp)+
+  have hfS: "\<forall>t\<in>top1_unit_interval. f t \<in> S"
+    using hfcont_top1 unfolding top1_continuous_map_on_def by (by100 blast)
+  have heq: "top1_unit_interval_topology
+              = subspace_topology UNIV geotop_euclidean_topology top1_unit_interval"
+    unfolding top1_unit_interval_topology_def geotop_euclidean_topology_eq_open_sets
+    by (by100 simp)
+  have hfcont_geo: "top1_continuous_map_on top1_unit_interval
+                      (subspace_topology UNIV geotop_euclidean_topology top1_unit_interval)
+                      S (subspace_topology UNIV geotop_euclidean_topology S) f"
+    using hfcont_top1 heq by (by100 simp)
+  have hfcont_HOL: "continuous_on top1_unit_interval f"
+    by (rule top1_continuous_map_on_geotop_imp_continuous_on[OF hfcont_geo])
+  have hpath: "path f"
+    using hfcont_HOL unfolding path_def top1_unit_interval_def by (by100 simp)
+  have hpim: "path_image f \<subseteq> S"
+    using hfS unfolding path_image_def top1_unit_interval_def by (by100 blast)
+  have hstart: "pathstart f = x"
+    unfolding pathstart_def using hf0 by (by100 simp)
+  have hfinish: "pathfinish f = y"
+    unfolding pathfinish_def using hf1 by (by100 simp)
+  show "\<exists>g. path g \<and> path_image g \<subseteq> S \<and> pathstart g = x \<and> pathfinish g = y"
+    using hpath hpim hstart hfinish by (by100 blast)
+qed
+
+(** Corollary: path-connected (geotop-sense) \<Longrightarrow> connected (geotop-sense). **)
+lemma top1_path_connected_on_geotop_imp_connected:
+  fixes S :: "'a::real_normed_vector set"
+  assumes "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  shows "top1_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  by (rule iffD2[OF top1_connected_on_geotop_iff_connected
+                    path_connected_imp_connected[OF
+                      top1_path_connected_on_geotop_imp_path_connected[OF assms]]])
+
 (** Bridge: every geotop-arc B in a real_normed_vector space gives rise to an
     HOL-Analysis arc \<gamma> with path_image \<gamma> = B. The simplex witness for the arc
     is a segment (1-simplex = convex hull of two points), so we can parametrize
@@ -1902,7 +1954,8 @@ proof -
     "top1_path_connected_on (geotop_polyhedron K)
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longrightarrow>
      top1_connected_on (geotop_polyhedron K)
-        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))" sorry
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    by (rule impI, erule top1_path_connected_on_geotop_imp_connected)
   (** (3) Connected \<Rightarrow> combinatorially connected: if the adjacency graph were disconnected,
          partition K into (K_1, K_2) such that no vertex is shared; then |K| = |K_1| \<cup> |K_2|
          would be a disconnection of |K|. **)
@@ -2572,6 +2625,8 @@ proof -
 qed
 
 
+text \<open>=== TEMPORARILY CHUNKED OUT §2-end for faster iteration on §1 ===\<close>
+(*
 section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
 
 (** from \<S>2: standard n-ball (geotop.tex:490)
@@ -15297,5 +15352,6 @@ proof -
   have h_final: "geotop_is_tame L" using h_slt by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
+*)
 
 end
