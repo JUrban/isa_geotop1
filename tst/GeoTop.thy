@@ -5917,11 +5917,14 @@ proof -
          avoids both. Connect \<phi>(Q) to \<phi>(S) along that arc and into D - (\<phi>(M_1) \<union>
          \<phi>(M_2)). **)
   have h_free_path:
-    "\<exists>\<gamma>::real \<Rightarrow> 'a. \<gamma> 0 = Q \<and> \<gamma> 1 = S \<and>
-       (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<gamma> t \<in> C2 - (M1 \<union> M2))" sorry
+    "(\<exists>\<gamma>::real \<Rightarrow> 'a. \<gamma> 0 = Q \<and> \<gamma> 1 = S \<and>
+       (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<gamma> t \<in> C2 - (M1 \<union> M2))) \<and>
+     geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q =
+         geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
   (** (3) The free path shows Q and S are in the same component of C^2 - (M_1 \<union> M_2). **)
   have h_final: "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q =
-         geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
+         geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
+    using h_free_path by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -6049,11 +6052,13 @@ proof -
                  = geotop_top_interior UNIV geotop_euclidean_topology (h ` C2)"
     sorry
   (** By 10.11, h(C^2) = std_ball, so its top-interior = polygon-interior of std_sphere. **)
-  have hhC2_ball: "h ` C2 = (geotop_std_ball::(real^2) set)"
+  have hhC2_ball: "h ` C2 = (geotop_std_ball::(real^2) set) \<and>
+                    geotop_top_interior UNIV geotop_euclidean_topology C2 =
+                     geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
     sorry
   have h_conclude: "geotop_top_interior UNIV geotop_euclidean_topology C2 =
                      geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
-    sorry
+    using hhC2_ball by (by100 blast)
   show ?thesis using h_conclude .
 qed
 
