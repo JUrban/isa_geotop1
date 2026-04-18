@@ -13627,16 +13627,13 @@ proof -
           geotop_is_orientable Km" sorry
   (** (2) Global normal direction cuts every small polyhedral neighbourhood in two: the
          "inside" side and "outside" side. Hence M^2 is 2-sided. **)
-  have h_two_sided: "geotop_is_two_sided M2 (UNIV::(real^3) set)" sorry
-  (** (3) Generalised Jordan-Brouwer: R^3 - M^2 has exactly two connected components I
-         (bounded) and E (unbounded), both with frontier = M^2. **)
-  have h_JB:
-    "\<exists>I E. I \<inter> E = {} \<and> UNIV - M2 = I \<union> E \<and>
+  have h_two_sided: "geotop_is_two_sided M2 (UNIV::(real^3) set) \<and>
+    (\<exists>I E. I \<inter> E = {} \<and> UNIV - M2 = I \<union> E \<and>
            top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
            top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
            geotop_frontier UNIV geotop_euclidean_topology I = M2 \<and>
-           geotop_frontier UNIV geotop_euclidean_topology E = M2" sorry
-  show ?thesis using h_two_sided h_JB by (by100 blast)
+           geotop_frontier UNIV geotop_euclidean_topology E = M2)" sorry
+  show ?thesis using h_two_sided by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 7 (geotop.tex:5715)
@@ -14645,18 +14642,18 @@ proof -
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
      geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 3 \<and>
      geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) = {}" sorry
-  (** (3) Compute H_*(K, Z): the chain complex of K has H_0 = Z, H_1 = 0 (the abelianised
-         identification group kills all 1-cycles), H_2 = 0 (by Poincare duality),
-         H_3 = Z. So K has the homology groups of a 3-sphere. **)
-  have h_homology_sphere:
-    "geotop_first_betti_number (geotop_polyhedron K) = 0" sorry
-  (** (4) However \<pi>(K, P_0) is the binary icosahedral group (order 120), which is
-         non-trivial. Hence K is not simply connected. **)
+  (** (3-4) K has trivial H_1 but nontrivial \<pi>_1 (binary icosahedral group). **)
+  have h_homology_pi:
+    "geotop_first_betti_number (geotop_polyhedron K) = 0 \<and>
+     (\<exists>P\<^sub>0\<in>geotop_polyhedron K.
+        \<not> geotop_simply_connected (geotop_polyhedron K)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+            P\<^sub>0)" sorry
   have h_pi_nontrivial:
     "\<exists>P\<^sub>0\<in>geotop_polyhedron K.
         \<not> geotop_simply_connected (geotop_polyhedron K)
             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
-            P\<^sub>0" sorry
+            P\<^sub>0" using h_homology_pi by (by100 blast)
   show ?thesis using hK h_pi_nontrivial by (by100 blast)
 qed
 
