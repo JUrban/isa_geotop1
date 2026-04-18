@@ -5679,7 +5679,7 @@ proof -
   (** Boundary conditions \<phi>(P, 0) = P and \<phi>(P, 1) = f_1(P). **)
   have h\<phi>_boundary:
     "(\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 0) = P) \<and> (\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 1) = f\<^sub>1 P)"
-    sorry
+    unfolding \<phi>_def using hf1_bdry by (by100 auto)
   show ?thesis
     unfolding geotop_isotopic_def geotop_is_isotopy_def
     sorry
