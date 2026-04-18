@@ -540,13 +540,31 @@ proof -
     sorry \<comment> \<open>Application of Lebesgue number on compact \<open>|K|\<close> to the finite open cover
              \<open>st_{K'}(v)\<close>. Reducing "S \<subseteq> st_{K'}(v)" to "\<exists>\<sigma> \<ni> v with S \<subseteq> \<sigma>"
              uses the definition of open star.\<close>
-  (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>. **)
-  obtain m where hm_mesh: "\<forall>\<tau>\<in>geotop_iterated_Sd m K.
-                            geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
-    sorry \<comment> \<open>From \<open>geotop_mesh_iterated_Sd_tends_to_zero\<close> applied to finite \<open>K\<close>:
-             find \<open>m\<close> with \<open>mesh(Sd^m K) < \<delta>\<close>, then bound each \<open>\<tau>\<close>'s diameter
-             by \<open>mesh\<close>. Typeclass friction with \<open>SUP\<close> over reals makes this
-             inline-proof tricky; deferred.\<close>
+  (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>, then bound each
+      \<open>\<tau>\<close>'s diameter via \<open>geotop_diameter_le_mesh\<close>. **)
+  have hmesh_lim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K))
+                    \<longlonglongrightarrow> 0"
+    by (rule geotop_mesh_iterated_Sd_tends_to_zero[OF hKcomp hK])
+  have hm_ex: "\<exists>m::nat. geotop_mesh (\<lambda>x y. norm (x - y))
+                           (geotop_iterated_Sd m K) < \<delta>"
+    sorry \<comment> \<open>Standard: \<open>LIMSEQ_D\<close>-style extraction — from \<open>a_n \<to> 0\<close> and \<open>\<delta> > 0\<close>,
+             eventually \<open>a_n < \<delta>\<close>. Deferred to avoid HOL limit-library detour.\<close>
+  obtain m where hm_mesh_bd:
+    "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<delta>"
+    using hm_ex by (by100 blast)
+  have hSd_m_fin: "finite (geotop_iterated_Sd m K)"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hK
+          geotop_iterated_Sd_is_subdivision[OF hKcomp]])
+  have hm_mesh: "\<forall>\<tau>\<in>geotop_iterated_Sd m K.
+                   geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> geotop_iterated_Sd m K"
+    have h1: "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>
+                \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+      by (rule geotop_diameter_le_mesh[OF hSd_m_fin h\<tau>])
+    from h1 hm_mesh_bd show "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
+      by (by100 linarith)
+  qed
   (** (d) Every simplex of \<open>Sd^m(K)\<close> is contained in a simplex of \<open>K'\<close>. Combining
       (b) and (c): every \<open>\<tau> \<in> Sd^m(K)\<close> has diameter \<open>< \<delta>\<close>, hence is contained in
       some \<open>\<sigma> \<in> K'\<close> containing a vertex \<open>v\<close> of \<open>K'\<close>. **)
