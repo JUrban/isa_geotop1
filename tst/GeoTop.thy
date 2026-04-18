@@ -6871,7 +6871,32 @@ proof -
   (** (1) Reflexivity: for any closed path p, the constant-in-y map f(t, y) = p(t) is a
          homotopy p \<cong> p (both boundaries equal p; constant at P_0 on the sides). **)
   have h_refl: "\<forall>p. geotop_closed_path_on X T P\<^sub>0 p \<longrightarrow>
-                  geotop_path_equiv X T P\<^sub>0 p p" sorry
+                  geotop_path_equiv X T P\<^sub>0 p p"
+  proof (intro allI impI)
+    fix p
+    assume hp: "geotop_closed_path_on X T P\<^sub>0 p"
+    have hp0: "p 0 = P\<^sub>0" and hp1: "p 1 = P\<^sub>0"
+      using hp unfolding geotop_closed_path_on_def by (by100 simp)+
+    have hp_in_X: "\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> p t \<in> X"
+      using hp unfolding geotop_closed_path_on_def geotop_path_on_def
+                         top1_continuous_map_on_def
+      by (by100 auto)
+    let ?F = "\<lambda>(t::real, y::real). p t"
+    have h_F: "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?F (t, 0) = p t) \<and>
+               (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?F (t, 1) = p t) \<and>
+               (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?F (0, y) = P\<^sub>0 \<and> ?F (1, y) = P\<^sub>0) \<and>
+               (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?F (t, y) \<in> X)"
+      using hp0 hp1 hp_in_X by (by100 simp)
+    have h_exF: "\<exists>(f::real \<times> real \<Rightarrow> 'a).
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p t) \<and>
+                    (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0) \<and>
+                    (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> X)"
+      by (rule exI[where x = ?F], rule h_F)
+    show "geotop_path_equiv X T P\<^sub>0 p p"
+      unfolding geotop_path_equiv_def
+      using hp h_exF by (by100 blast)
+  qed
   (** (2) Symmetry: given F witnessing p \<cong> q, F'(t, y) = F(t, 1 - y) witnesses q \<cong> p. **)
   have h_sym: "\<forall>p q. geotop_path_equiv X T P\<^sub>0 p q \<longrightarrow>
                       geotop_path_equiv X T P\<^sub>0 q p" sorry
