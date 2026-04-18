@@ -7191,6 +7191,7 @@ section \<open>\<S>5 Piecewise linear homeomorphisms\<close>
 theorem Theorem_GT_5_1:
   fixes K K1 :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'b"
+  assumes hKfin: "finite K"
   assumes hsub: "geotop_is_subdivision K1 K"
   assumes hLcomp: "geotop_is_complex L"
   shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K1 L f"
@@ -7221,11 +7222,24 @@ proof
     show "(\<exists>\<tau>\<in>L. f ` \<sigma> \<subseteq> \<tau>) \<and> geotop_linear_on \<sigma> f"
       using h\<tau> hfimg hlin by (by100 blast)
   qed
-  (** Common subdivision of K\<^sub>1 and K\<^sub>2 via Theorem_GT_1. **)
-  obtain K\<^sub>12 where hK12: "geotop_is_subdivision K\<^sub>12 K\<^sub>1 \<and> geotop_is_subdivision K\<^sub>12 K\<^sub>2
-                            \<and> geotop_PL_map K1 L f"
-    sorry
-  show "geotop_PL_map K1 L f" using hK12 by (by100 blast)
+  (** Common subdivision of K1 and K\<^sub>2 via Theorem_GT_1 (uses finite K). **)
+  have hGT1: "\<exists>L. geotop_is_subdivision L K1 \<and> geotop_is_subdivision L K\<^sub>2"
+    by (rule Theorem_GT_1[OF hKfin hsub hK2_sub])
+  obtain K\<^sub>12 where hK12_K1: "geotop_is_subdivision K\<^sub>12 K1"
+               and hK12_K2: "geotop_is_subdivision K\<^sub>12 K\<^sub>2"
+    using hGT1 by (by100 blast)
+  (** K_12 < K via transitivity. **)
+  have hK12_K: "geotop_is_subdivision K\<^sub>12 K"
+    by (rule geotop_is_subdivision_trans[OF hsub hK12_K1])
+  (** For each \<sigma> \<in> K_12, it refines some \<sigma>_2 \<in> K_2, so f is linear on \<sigma>_2 and
+      \<sigma> \<subseteq> \<sigma>_2. Claim: f|\<sigma> linear + f(\<sigma>) \<subseteq> some \<tau> \<in> L (the one for \<sigma>_2). **)
+  have hK12_witness: "\<forall>\<sigma>\<in>K\<^sub>12. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    sorry \<comment> \<open>Needs: linear_on K_2-simplex restricts to linear_on sub-simplex;
+              depends on vertex-decomposition preservation in the common refinement.\<close>
+  have hK12_PL_K1_f: "geotop_PL_map K1 L f"
+    unfolding geotop_PL_map_def
+    using hK12_K1 hK12_witness by (by100 blast)
+  show "geotop_PL_map K1 L f" using hK12_PL_K1_f by (by100 blast)
 next
   assume hPL1: "geotop_PL_map K1 L f"
   (** Given \<open>K\<^sub>1 < K\<close> (hypothesis) and \<open>L < L\<close> (refl from \<open>hLcomp\<close>), apply
