@@ -13968,7 +13968,15 @@ proof -
                     (subspace_topology UNIV geotop_euclidean_topology (C'' v)) 3 \<and>
                   card (geotop_complex_vertices K \<inter> C'' v) = 1) \<and>
                N' = (\<Union>v\<in>geotop_complex_vertices K. C'' v)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>C''. (\<forall>v\<in>geotop_complex_vertices K.
+                  geotop_is_n_cell (C'' v)
+                    (subspace_topology UNIV geotop_euclidean_topology (C'' v)) 3 \<and>
+                  card (geotop_complex_vertices K \<inter> C'' v) = 1) \<and>
+               N' = (\<Union>v\<in>geotop_complex_vertices K. C'' v) \<and>
+               (\<forall>v\<in>geotop_complex_vertices K. \<forall>w\<in>geotop_complex_vertices K.
+                  v \<noteq> w \<and> C'' v \<inter> C'' w \<noteq> {} \<longrightarrow>
+                  (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 1 \<and> v \<in> \<sigma> \<and> w \<in> \<sigma>))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>32 Theorem 4 (geotop.tex:6492)
@@ -14010,7 +14018,16 @@ proof -
           DJ \<subseteq> E \<and>
           geotop_frontier UNIV geotop_euclidean_topology DJ = J \<and>
           P' \<in> geotop_top_interior UNIV geotop_euclidean_topology DJ" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>\<Delta>1 J DJ. geotop_is_n_cell \<Delta>1 (subspace_topology UNIV geotop_euclidean_topology \<Delta>1) 2 \<and>
+             (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>1) \<and>
+             \<Delta>1 \<subseteq> {P. norm (P - P') < \<delta>} \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta>1 = J \<and>
+             \<Delta>1 \<inter> E = J \<and>
+             geotop_is_n_cell DJ (subspace_topology UNIV geotop_euclidean_topology DJ) 2 \<and>
+             DJ \<subseteq> E \<and>
+             geotop_frontier UNIV geotop_euclidean_topology DJ = J \<and>
+             P' \<in> geotop_top_interior UNIV geotop_euclidean_topology DJ" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>33 PLH approximations, for regular neighborhoods of linear graphs in R^3\<close>
@@ -14069,7 +14086,18 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology
                (f ` geotop_polyhedron N)) f \<and>
          (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>N f. geotop_is_complex N \<and>
+               geotop_polyhedron N = geotop_regular_neighborhood K K \<and>
+               geotop_polyhedron N \<subseteq> U \<and>
+               top1_homeomorphism_on (geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron N))
+                 (f ` geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (f ` geotop_polyhedron N)) f \<and>
+               (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+               h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
+               (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>34 PLH approximations of homeomorphisms, for polyhedral 3-cells\<close>
@@ -14152,7 +14180,17 @@ proof -
            (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)"
     using exI[of _ "{}::(real^3) set set"] exI[of _ "h::real^3 \<Rightarrow> real^3"]
     unfolding geotop_is_complex_def geotop_polyhedron_def by (by100 simp)
-  show ?thesis sorry
+  have h_final: "\<exists>N f. geotop_is_complex N \<and>
+               geotop_polyhedron N \<subseteq> U \<and>
+               (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+               top1_homeomorphism_on (geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron N))
+                 (f ` geotop_polyhedron N)
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (f ` geotop_polyhedron N)) f \<and>
+               h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N \<and>
+               (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>35 Theorem 2 (geotop.tex:7137)
@@ -14187,7 +14225,11 @@ proof -
       (\<forall>P\<in>C. norm (h P - fs C P) < \<phi> P)" sorry
   (** (3) Glue per-cell PLHs into a single PLH f: K \<leftrightarrow> h(K) using a shared combinatorial
          structure on overlapping faces (barycentric refinement ensures compatibility). **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+               (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
+             (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
+             (\<forall>P\<in>K. norm (h P - f P) < \<phi> P)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>35 Theorem 3 (The triangulation theorem for 3-manifolds) (geotop.tex:7150)
