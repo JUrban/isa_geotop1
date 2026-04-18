@@ -6364,7 +6364,7 @@ proof -
        (\<exists>F. top1_homeomorphism_on UNIV geotop_euclidean_topology
                 UNIV geotop_euclidean_topology F \<and>
              (\<forall>P\<in>geotop_outer_boundary A. F P = f P) \<and> F ` A = A')" sorry
-  show ?thesis sorry
+  show ?thesis using h_base_conclude h_step_conclude by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 2 (geotop.tex:2572)
