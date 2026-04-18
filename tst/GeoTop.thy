@@ -3203,7 +3203,10 @@ proof -
   (** Strengthen to \"K has \<ge> 2 free 2-simplexes\" (induction hypothesis). **)
   have strong_claim: "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     sorry
-  have hex: "\<exists>\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2" sorry
+  have h_nonempty: "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<noteq> {}"
+    using strong_claim by (by100 force)
+  have hex: "\<exists>\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2"
+    using h_nonempty by (by100 blast)
   then show ?thesis by blast
 qed
 
