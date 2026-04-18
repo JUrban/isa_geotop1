@@ -1742,8 +1742,9 @@ theorem Theorem_GT_1_9:
       Top0's subspace-open characterization, which then reduces to
       HOL-Analysis's \<open>connected_Icc\<close>. **)
 proof -
+  have heq: "{t::real. a \<le> t \<and> t \<le> b} = {a..b}" by (by100 auto)
   have hconn: "connected {t::real. a \<le> t \<and> t \<le> b}"
-    by (smt (verit, del_insts) connectedI_interval mem_Collect_eq)
+    unfolding heq by (rule connected_Icc)
   have hbridge: "(geotop_euclidean_topology :: real set set) = top1_open_sets"
     by (rule geotop_euclidean_topology_eq_open_sets)
   show ?thesis
@@ -12372,25 +12373,18 @@ proof -
          \<phi>(\<sigma>^2 \<times> [t_{i-1}, t_i]), each a combinatorial 3-cell; consecutive C_i, C_{i+1}
          share a 2-cell. **)
   have h_backward:
-    "((\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+    "(\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
        geotop_simplex_dim \<sigma>2 2 \<and>
        \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
        (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))
-       \<longrightarrow> geotop_is_CST S) \<and>
-     (geotop_is_CST S \<longleftrightarrow>
-         (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
-            geotop_simplex_dim \<sigma>2 2 \<and>
-            \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
-            (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
-                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D)))" sorry
+       \<longrightarrow> geotop_is_CST S" sorry
   have h_final: "geotop_is_CST S \<longleftrightarrow>
          (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
             geotop_simplex_dim \<sigma>2 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
             (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
-                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))"
-    using h_backward by (by100 blast)
+                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))" sorry
   show ?thesis using h_final by (by100 blast)
 qed
 
