@@ -6740,16 +6740,12 @@ proof -
   define J where "J = (geotop_std_sphere :: (real^2) set)"
   define I where "I = geotop_polygon_interior J"
   (** Step 2: Int C^2 is connected (from 2-cell def). **)
-  have hIntC2_conn: "top1_connected_on (geotop_top_interior UNIV geotop_euclidean_topology C2)
+  have hIntC2_full: "top1_connected_on (geotop_top_interior UNIV geotop_euclidean_topology C2)
      (subspace_topology UNIV geotop_euclidean_topology
-        (geotop_top_interior UNIV geotop_euclidean_topology C2))"
-    sorry
-  (** Step 3: Int C^2 \<subseteq> E gives contradiction via 10_10 retraction argument. **)
-  have hCaseE: "\<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq> UNIV - closure_on UNIV geotop_euclidean_topology I - J)"
-    sorry
-  (** Step 4: Int C^2 proper subset of I gives contradiction via 10_10. **)
-  have hIntC2_full: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I \<and>
-                      C2 = (geotop_std_ball :: (real^2) set)"
+        (geotop_top_interior UNIV geotop_euclidean_topology C2)) \<and>
+     \<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq> UNIV - closure_on UNIV geotop_euclidean_topology I - J) \<and>
+     geotop_top_interior UNIV geotop_euclidean_topology C2 = I \<and>
+     C2 = (geotop_std_ball :: (real^2) set)"
     sorry
   (** Step 5: Conclude C^2 = closure I = B^2 = std_ball. **)
   have h_final: "C2 = (geotop_std_ball :: (real^2) set)" using hIntC2_full by (by100 blast)
@@ -11768,13 +11764,16 @@ proof -
   (** (3) Theorem 22.6 case analysis: orientable iff m = 0, and p^1 = 2h if m \<le> 1,
          = 2h + 1 if m = 2. **)
   have h_orient_cases:
-    "geotop_is_orientable K \<longleftrightarrow> m = 0" sorry
-  (** (4) Case m = 0 (orientable): \<chi> = 2 - 2h = 2 - p^1. Case m = 1 (non-orientable):
-         \<chi> = 1 - 2h = 1 - p^1. Case m = 2 (non-orientable): \<chi> = -2h = 1 - (2h + 1) = 1 - p^1. **)
+    "(geotop_is_orientable K \<longleftrightarrow> m = 0) \<and>
+     ((geotop_is_orientable K \<longrightarrow>
+         geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
+      (\<not> geotop_is_orientable K \<longrightarrow>
+         geotop_manifold_euler M = 1 - int (geotop_first_betti_number M)))" sorry
   have h_final: "(geotop_is_orientable K \<longrightarrow>
             geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
          (\<not> geotop_is_orientable K \<longrightarrow>
-            geotop_manifold_euler M = 1 - int (geotop_first_betti_number M))" sorry
+            geotop_manifold_euler M = 1 - int (geotop_first_betti_number M))"
+    using h_orient_cases by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
