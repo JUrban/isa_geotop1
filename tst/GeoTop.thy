@@ -11017,12 +11017,12 @@ proof -
   (** (2) Topologize Mt by specifying a local-homeomorphism structure: at each (Q, c), a
          basis neighbourhood is {(Q', c) | Q' in some evenly-covered nbhd of Q}. The
          projection g: Mt \<to> M, (Q, c) \<mapsto> Q, is continuous and k-fold. **)
-  obtain Mt g where h_cover_setup:
+  obtain Mt :: "'a set" and g :: "'a \<Rightarrow> 'a" where h_cover_setup:
     "geotop_is_k_fold_covering k Mt (subspace_topology UNIV geotop_euclidean_topology Mt)
        M (subspace_topology UNIV geotop_euclidean_topology M) g" sorry
   (** (3) Verify Mt is connected: any two points (Q_1, c_1), (Q_2, c_2) are linked by a
          lifted path (using path lifting from Theorem 24.1). **)
-  show ?thesis sorry
+  show ?thesis using h_cover_setup by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 6 (geotop.tex:5325)
