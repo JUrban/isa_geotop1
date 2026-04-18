@@ -5382,16 +5382,22 @@ proof -
          Use broken-line connectedness of T (§1.13) to get a polygonal path from w_0 to
          w_1 inside T. **)
   have h_broken_line_in_tube:
-    "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+    "(\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
                 w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
                 bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon> \<and>
-                bA \<subseteq> I" sorry
+                bA \<subseteq> I) \<and>
+     (\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+           w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
+           bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
+           bA \<subseteq> I \<and>
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>)" sorry
   (** (3) Truncate bA to meet v_0 v_0' and v_1 v_1' only at single points w_0, w_1. **)
   have h_final: "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
            w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
            bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
            bA \<subseteq> I \<and>
-           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>" sorry
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>"
+    using h_broken_line_in_tube by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
