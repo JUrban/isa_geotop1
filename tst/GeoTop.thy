@@ -2580,15 +2580,19 @@ proof -
          edges of J, mod 2. This parity depends only on P, Q (it is an invariant of the
          connected component they lie in). **)
   have h_parity:
-    "\<exists>\<pi>::real^2 \<Rightarrow> nat.
+    "(\<exists>\<pi>::real^2 \<Rightarrow> nat.
         \<forall>P\<in>UNIV - J. \<forall>Q\<in>UNIV - J.
           (\<pi> P = \<pi> Q \<longleftrightarrow>
              geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P
              = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q) \<and>
-          \<pi> P < 2" sorry
+          \<pi> P < 2) \<and>
+     card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
+    sorry
   (** (3) There are at most two parity classes (mod 2), hence at most two components. **)
   have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2" sorry
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
+    using h_parity by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -2611,11 +2615,15 @@ proof -
          side is interior (since a loop encloses a bounded region). Pick an interior
          point; its component is bounded. **)
   have h_bounded_comp:
-    "\<exists>P. P \<in> UNIV - J \<and> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
-                                                ((UNIV::(real^2) set) - J) P)" sorry
+    "(\<exists>P. P \<in> UNIV - J \<and> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
+                                                ((UNIV::(real^2) set) - J) P)) \<and>
+     card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
+    sorry
   (** (3) The bounded and unbounded components are distinct, so \<ge> 2 components. **)
   have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2" sorry
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
+    using h_bounded_comp by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
