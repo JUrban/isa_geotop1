@@ -832,6 +832,7 @@ lemma geotop_transport_subdivision:
     into a common subdivision on which \<open>f\<close> is simplicially linear. **)
 theorem Theorem_GT_2:
   fixes K :: "'a::real_normed_vector set set" and L :: "'a set set"
+  assumes hKfin: "finite K"
   shows "geotop_comb_equiv K L
          \<longleftrightarrow> (\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K)"
 proof -
@@ -894,9 +895,8 @@ proof -
       using hf_PLH unfolding geotop_PLH_def by (by100 blast)
     obtain K\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
       using hf_PL_bwd unfolding geotop_PL_map_def by (by100 blast)
-    (** (4) Apply Theorem_GT_1 to get a common subdivision \<open>K\<^sub>3\<close> of \<open>fL\<^sub>1\<close> and \<open>K\<^sub>1\<close>.
-          Requires finite K (a faithfulness gap: we need to add this assumption to GT_2). **)
-    have hKfin: "finite K" sorry
+    (** (4) Apply Theorem_GT_1 to get a common subdivision \<open>K\<^sub>3\<close> of \<open>fL\<^sub>1\<close> and \<open>K\<^sub>1\<close>
+          (uses \<open>finite K\<close> hypothesis). **)
     obtain K\<^sub>3 where hK\<^sub>3_fL\<^sub>1: "geotop_is_subdivision K\<^sub>3 fL\<^sub>1"
                  and hK\<^sub>3_K\<^sub>1: "geotop_is_subdivision K\<^sub>3 K\<^sub>1"
       using Theorem_GT_1[OF hKfin hfL\<^sub>1_sub hK\<^sub>1K] by (by100 blast)
