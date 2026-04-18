@@ -8605,7 +8605,8 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology (UNIV - A)) P\<^sub>0" sorry
   (** (3) Every tame arc in R^3 has simply connected complement (standard result).
          Hence A is wild. **)
-  show ?thesis sorry
+  have h_wild_A: "geotop_is_wild A" sorry
+  show ?thesis using h_construction h_wild_A by (by100 blast)
 qed
 
 section \<open>\<S>19 A wild arc with a simply connected complement\<close>
