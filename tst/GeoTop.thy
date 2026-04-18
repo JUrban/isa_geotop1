@@ -5508,7 +5508,14 @@ proof -
     sorry
   (** J lies in S2 - {P} (since P in S2 - J). Image \<phi>(J) is a 1-sphere in R^2. **)
   have h\<phi>J_sphere: "geotop_is_n_sphere (\<phi> ` J)
-                       (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1"
+                       (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1 \<and>
+     (\<exists>U V. U \<union> V = S2 - J \<and> U \<inter> V = {} \<and>
+           U \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           V \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U) \<and>
+           top1_connected_on V (subspace_topology UNIV geotop_euclidean_topology V) \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) U \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V)"
     sorry
   (** Apply Jordan curve (Theorem_4_6 + 4_3 + 4_7): R^2 - \<phi>(J) is 2 connected
       open sets U', V' with frontier \<phi>(J). **)
@@ -5525,7 +5532,8 @@ proof -
            top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U) \<and>
            top1_connected_on V (subspace_topology UNIV geotop_euclidean_topology V) \<and>
            J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) U \<and>
-           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V" sorry
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V"
+    using h\<phi>J_sphere by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
