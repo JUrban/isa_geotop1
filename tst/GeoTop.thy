@@ -4919,9 +4919,10 @@ proof -
          intersection of witnesses for \<K>_1 and \<K>_2, which intersects only finitely many
          pairs in \<K>_1 \<cup> \<K>_2. **)
   have h_K3:
-    "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
-       finite {(\<sigma>', h')\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. h' ` \<sigma>' \<inter> U \<noteq> {}}" sorry
-  have h_final: "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" sorry
+    "(\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
+        finite {(\<sigma>', h')\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. h' ` \<sigma>' \<inter> U \<noteq> {}}) \<and>
+     geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" sorry
+  have h_final: "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" using h_K3 by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
