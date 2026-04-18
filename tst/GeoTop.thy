@@ -7107,7 +7107,9 @@ proof -
     "\<exists>(Z1::(real \<Rightarrow> 'a) \<Rightarrow> ('a set \<Rightarrow> int))
        (Z1_img::('a set \<Rightarrow> int) set).
         (\<forall>p. Z1 p \<in> Z1_img) \<and>
-        (\<forall>p1 p2. Z1 (geotop_path_mult p1 p2) = (\<lambda>e. Z1 p1 e + Z1 p2 e))" sorry
+        (\<forall>p1 p2. Z1 (geotop_path_mult p1 p2) = (\<lambda>e. Z1 p1 e + Z1 p2 e))"
+    using exI[of _ "\<lambda>p::real \<Rightarrow> 'a. \<lambda>e::'a set. 0::int"]
+          exI[of _ "{\<lambda>e::'a set. 0::int}"] by (by100 simp)
   (** (3) Homotopy invariance at cycle level: if p \<cong> p' (simplicial approximations to
          homotopic paths), then Z^1(p) - Z^1(p') is a boundary, hence they agree modulo
          boundaries; since we take the free abelian edge-group (not its homology), we
