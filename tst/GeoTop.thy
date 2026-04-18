@@ -2188,10 +2188,18 @@ proof -
   have hK'_K2: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>\<in>K'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
     sorry
-  (** (3d) K.3: local finiteness. g_inv is a PL homeomorphism, hence continuous;
-      pull back a local-finiteness witness for L' through g_inv. **)
+  (** (3d) K.3: local finiteness. For finite K', U = UNIV suffices. **)
+  have hL'fin: "finite L'"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL'L])
+  have hK'fin: "finite K'" unfolding K'_def using hL'fin by (by100 simp)
   have hK'_K3: "\<forall>\<sigma>\<in>K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
-    sorry
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K'"
+    have h_sub_fin: "finite {\<tau>\<in>K'. \<tau> \<inter> UNIV \<noteq> {}}" using hK'fin by (by100 simp)
+    have h_open: "open (UNIV :: 'a set)" by (by100 simp)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+      using h_open h_sub_fin by (by100 blast)
+  qed
   have hK'_comp: "geotop_is_complex K'"
     unfolding geotop_is_complex_def
     using hK'_K0 hK'_K1 hK'_K2 hK'_K3 by (by100 blast)
@@ -2338,8 +2346,19 @@ proof -
       sorry
     (** (b3) K.3: local finiteness. f is continuous (PL-homeomorphism),
             so pull back L_1's local-finiteness witness through f. **)
+    (** For finite fL_1, local finiteness is trivial: take U = UNIV. **)
+    have hL\<^sub>1fin: "finite L\<^sub>1"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL\<^sub>1L])
+    have hfL\<^sub>1fin: "finite fL\<^sub>1" unfolding fL\<^sub>1_def using hL\<^sub>1fin by (by100 simp)
     have hfL\<^sub>1_K3: "\<forall>\<sigma>\<in>fL\<^sub>1. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>fL\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
-      sorry
+    proof (rule ballI)
+      fix \<sigma> assume h\<sigma>: "\<sigma> \<in> fL\<^sub>1"
+      have h_sub_fin: "finite {\<tau>\<in>fL\<^sub>1. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hfL\<^sub>1fin by (by100 simp)
+      have h_open: "open (UNIV :: 'a set)" by (by100 simp)
+      show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>fL\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+        using h_open h_sub_fin by (by100 blast)
+    qed
     have hfL\<^sub>1_comp: "geotop_is_complex fL\<^sub>1"
       unfolding geotop_is_complex_def
       using hfL\<^sub>1_K0 hfL\<^sub>1_K1 hfL\<^sub>1_K2 hfL\<^sub>1_K3 by (by100 blast)
@@ -2405,10 +2424,21 @@ proof -
     have hL\<^sub>3_K2: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>\<in>L\<^sub>3. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
       sorry
-    (** (iv) K.3: local finiteness. f_inv is continuous (as PL homeomorphism),
-             so pull back K_3's local-finiteness witness through f_inv. **)
+    (** (iv) K.3: local finiteness. For finite L_3, U = UNIV suffices. **)
+    have hK\<^sub>1fin: "finite K\<^sub>1"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hK\<^sub>1K])
+    have hK\<^sub>3fin: "finite K\<^sub>3"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hK\<^sub>1fin hK\<^sub>3_K\<^sub>1])
+    have hL\<^sub>3fin: "finite L\<^sub>3" unfolding L\<^sub>3_def using hK\<^sub>3fin by (by100 simp)
     have hL\<^sub>3_K3: "\<forall>\<sigma>\<in>L\<^sub>3. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>L\<^sub>3. \<tau> \<inter> U \<noteq> {}}"
-      sorry
+    proof (rule ballI)
+      fix \<sigma> assume h\<sigma>: "\<sigma> \<in> L\<^sub>3"
+      have h_sub_fin: "finite {\<tau>\<in>L\<^sub>3. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hL\<^sub>3fin by (by100 simp)
+      have h_open: "open (UNIV :: 'a set)" by (by100 simp)
+      show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>L\<^sub>3. \<tau> \<inter> U \<noteq> {}}"
+        using h_open h_sub_fin by (by100 blast)
+    qed
     have hL\<^sub>3_complex: "geotop_is_complex L\<^sub>3"
       unfolding geotop_is_complex_def
       using hL\<^sub>3_K0 hL\<^sub>3_K1 hL\<^sub>3_K2 hL\<^sub>3_K3 by (by100 blast)
