@@ -240,7 +240,7 @@ subsection \<open>Vertex uniqueness for simplexes\<close>
     affine independence follows from \<open>geotop_general_position\<close> with the matching
     dimension parameter. **)
 lemma geotop_general_position_imp_aff_indep:
-  fixes V :: "'a::real_normed_vector set"
+  fixes V :: "'a::euclidean_space set"
   assumes hV: "geotop_simplex_vertices \<sigma> V"
   shows "\<not> affine_dependent V"
   sorry \<comment> \<open>\<open>card V = n+1\<close>, \<open>n \<le> m\<close>, and \<open>geotop_general_position V m\<close> together
@@ -249,16 +249,35 @@ lemma geotop_general_position_imp_aff_indep:
            \<open>card(V \<inter> H) \<le> k+1\<close> for the containing hyperplane.\<close>
 
 lemma geotop_simplex_vertices_unique:
-  fixes V\<^sub>1 V\<^sub>2 :: "'a::real_normed_vector set" and \<sigma> :: "'a set"
+  fixes V\<^sub>1 V\<^sub>2 :: "'a::euclidean_space set" and \<sigma> :: "'a set"
   assumes h1: "geotop_simplex_vertices \<sigma> V\<^sub>1"
   assumes h2: "geotop_simplex_vertices \<sigma> V\<^sub>2"
   shows "V\<^sub>1 = V\<^sub>2"
-  sorry \<comment> \<open>Standard argument: both \<open>V\<^sub>i\<close> are affinely independent (via
-           \<open>geotop_general_position_imp_aff_indep\<close>), with the same convex hull \<open>\<sigma>\<close>.
-           For affinely independent sets, the extreme points of \<open>conv V\<close> equal
-           \<open>V\<close> (HOL \<open>extreme_point_of_convex_hull_affine_independent\<close>); so
-           \<open>V\<^sub>1 = \<close> extreme points \<open>= V\<^sub>2\<close>. Deferred due to rule-application
-           scoping friction on the meta-quantified variable.\<close>
+proof -
+  have h1_hull: "\<sigma> = convex hull V\<^sub>1"
+    using h1 geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h2_hull: "\<sigma> = convex hull V\<^sub>2"
+    using h2 geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h1_ai: "\<not> affine_dependent V\<^sub>1"
+    by (rule geotop_general_position_imp_aff_indep[OF h1])
+  have h2_ai: "\<not> affine_dependent V\<^sub>2"
+    by (rule geotop_general_position_imp_aff_indep[OF h2])
+  have h1_ext: "{x. x extreme_point_of convex hull V\<^sub>1} = V\<^sub>1"
+    using extreme_point_of_convex_hull_affine_independent[OF h1_ai] by blast
+  have h2_ext: "{x. x extreme_point_of convex hull V\<^sub>2} = V\<^sub>2"
+    using extreme_point_of_convex_hull_affine_independent[OF h2_ai] by blast
+  have hhull_eq: "convex hull V\<^sub>1 = convex hull V\<^sub>2"
+    using h1_hull h2_hull by (by100 simp)
+  have hext_eq: "{x. x extreme_point_of convex hull V\<^sub>1}
+                  = {x. x extreme_point_of convex hull V\<^sub>2}"
+    using hhull_eq by (by100 simp)
+  have "V\<^sub>1 = {x. x extreme_point_of convex hull V\<^sub>1}" using h1_ext by (by100 simp)
+  also have "\<dots> = {x. x extreme_point_of convex hull V\<^sub>2}" using hext_eq .
+  also have "\<dots> = V\<^sub>2" using h2_ext by (by100 simp)
+  finally show "V\<^sub>1 = V\<^sub>2" .
+qed
 
 subsection \<open>Diameter and mesh\<close>
 
@@ -2757,7 +2776,7 @@ qed
           a HOL-path \<open>P \<to> v_P\<close>.
       (3) Concatenate \<open>P \<to> v_P \<to> v_Q \<to> Q\<close> via HOL's \<open>+++\<close>. **)
 lemma geotop_complex_connected_imp_HOL_vertex_reachable:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_complex_connected K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hw: "w \<in> geotop_complex_vertices K"
@@ -2898,7 +2917,7 @@ proof -
 qed
 
 lemma geotop_complex_connected_imp_HOL_path_connected:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_complex_connected K"
   shows "path_connected (geotop_polyhedron K)"
   unfolding path_connected_def
@@ -3010,7 +3029,7 @@ proof (intro ballI)
 qed
 
 theorem Theorem_GT_1_4:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_complex_connected K"
   shows "top1_path_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
@@ -3464,7 +3483,7 @@ qed
     LATEX VERSION: Let K be a complex. TFAE: (1) K is connected; (2) |K| is pathwise connected;
       (3) |K| is connected. **)
 theorem Theorem_GT_1_12:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK_complex: "geotop_is_complex K"
   shows "geotop_complex_connected K \<longleftrightarrow>
     top1_path_connected_on (geotop_polyhedron K)
