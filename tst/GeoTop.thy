@@ -11904,7 +11904,8 @@ proof -
        top1_connected_on W (subspace_topology UNIV geotop_euclidean_topology W) \<longrightarrow>
        \<not> top1_connected_on (W - M2)
            (subspace_topology UNIV geotop_euclidean_topology (W - M2))" sorry
-  have h_final: "geotop_is_two_sided M2 M3" sorry
+  have h_final: "geotop_is_two_sided M2 M3"
+    using hV h_separates unfolding geotop_is_two_sided_def by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
