@@ -7689,7 +7689,11 @@ proof -
   (** (3) No relations: pushing a PL path across a 2-simplex of T can only insert or delete
          g_1^{\<plusminus>1} g_1^{\<mp>1} (since D \<times> S^1 has no knot-crossings); hence \<pi>(T) \<cong> Z,
          just as in Theorem 16.1 with the 2-cell D_0 playing the role of the radial cut. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(\<Phi>::(real \<Rightarrow> 'a) set \<Rightarrow> int).
+           bij_betw \<Phi>
+             (geotop_pi T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0)
+             (UNIV::int set)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 3 (geotop.tex:3238)
@@ -7725,7 +7729,12 @@ proof -
   (** (3) No relations: a PL path can only change by inserting or deleting g_i^{\<plusminus>1}
          g_i^{\<mp>1} across each triangle (no crossings between the radial intervals),
          so \<pi>(A, P_0) \<cong> F(g_1, \<dots>, g_k), the free group on k generators. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi>
+             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+             (geotop_free_group G)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 4 (geotop.tex:3257)
@@ -7766,7 +7775,10 @@ proof -
         (\<exists>\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set.
            bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))" sorry
   (** (3) Hence group of L \<cong> F(G), the free group on k generators. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 5 (geotop.tex:3261)
@@ -7817,7 +7829,10 @@ proof -
          using only free-group moves (no extra relations). The same moves are valid
          inside U, since each local triangle move in the PL sweep respects the
          confinement to D - (J_1 \<union> J_2 \<union> J_3). **)
-  show ?thesis sorry
+  have h_final: "geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
+           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16: trefoil knot (geotop.tex:3281)
@@ -7874,7 +7889,12 @@ proof -
   (** (4) h* is surjective (the transpositions generate S_3). S_3 is non-commutative,
          so F/N(R) is non-commutative, so \<pi>(R^3 - K, P_0) (which is isomorphic to
          F/N(R) by Theorem 15.4) is non-commutative. **)
-  show ?thesis sorry
+  have h_final: "\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 7 (geotop.tex:3367)
