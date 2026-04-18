@@ -7892,7 +7892,8 @@ proof -
   (** (3) By Theorem 17_2 applied to K_1 (or recursive Theorem 17_3 on K_1), obtain a
          2-cell C' \<in> K_1 with C' free in K_1 and C' \<noteq> C. Then C' is also free in K, and
          does not lie in D (since D \<subseteq> |K_2|). **)
-  show ?thesis sorry
+  have h_free_notD: "\<exists>C. geotop_is_free_2cell_in C K \<and> \<not> C \<subseteq> D" sorry
+  show ?thesis using h_free_notD by (by100 blast)
 qed
 
 (** from \<S>17: push property at D_1 (geotop.tex:3431)
