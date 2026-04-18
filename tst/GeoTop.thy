@@ -491,8 +491,16 @@ lemma geotop_diameter_le_mesh:
   assumes hGfin: "finite G"
   assumes h\<tau>G: "\<tau> \<in> G"
   shows "geotop_diameter d \<tau> \<le> geotop_mesh d G"
-  sorry \<comment> \<open>SUP-based bound: for finite \<open>G\<close>, \<open>SUP g\<in>G. diam g = MAX g\<in>G. diam g\<close>.
-           Typeclass friction (\<open>ord\<close> vs \<open>Sup\<close>) requires careful formulation; deferred.\<close>
+proof -
+  have hGne: "G \<noteq> {}" using h\<tau>G by (by100 blast)
+  have hbdd: "bdd_above ((\<lambda>g. geotop_diameter d g) ` G)"
+    using hGfin by (by100 simp)
+  have "geotop_diameter d \<tau> \<le> (SUP g\<in>G. geotop_diameter d g)"
+    using cSUP_upper[OF h\<tau>G hbdd] by (by100 blast)
+  also have "(SUP g\<in>G. geotop_diameter d g) = geotop_mesh d G"
+    unfolding geotop_mesh_def using hGne by (by100 simp)
+  finally show ?thesis .
+qed
 
 (** from early.tex Lemma 4.17 (key refinement lemma): if \<open>K'\<close> is a subdivision
     of \<open>K\<close>, then for some \<open>m\<close>, \<open>Sd^m(K)\<close> is a subdivision of \<open>K'\<close>.
