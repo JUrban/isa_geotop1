@@ -1608,11 +1608,19 @@ proof -
     have hU_C: "U_fn v \<in> C" unfolding C_def using hv by (by100 blast)
     show "x \<in> \<Union>C" using hx_U hU_C by (by100 blast)
   qed
-  (** (b.2.iii) Apply Lebesgue_number_lemma to get \<delta> > 0 with diam T < \<delta>
-               \<Longrightarrow> T \<subseteq> U_v for some v. **)
-  have h_leb_raw: "\<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
+  (** (b.2.iii) Apply Lebesgue_number_lemma when C is nonempty; handle empty case
+               separately at the obtain below. **)
+  have h_leb_raw: "C \<noteq> {} \<Longrightarrow> \<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
                      diameter T < \<delta> \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
-    sorry \<comment> \<open>Direct Lebesgue_number_lemma[OF hK_compact hC_ne ...].\<close>
+  proof -
+    assume hC_ne: "C \<noteq> {}"
+    obtain \<delta>' :: real where h\<delta>'pos: "0 < \<delta>'"
+       and h\<delta>'prop: "\<And>T. T \<subseteq> geotop_polyhedron K \<Longrightarrow> diameter T < \<delta>'
+                             \<Longrightarrow> \<exists>B\<in>C. T \<subseteq> B"
+      using Lebesgue_number_lemma[OF hK_compact hC_ne hC_covers] hC_open by (by100 blast)
+    show ?thesis
+      using h\<delta>'pos h\<delta>'prop by (by100 blast)
+  qed
   (** (b.2.iv) Translate: T \<subseteq> U_v \<and> T \<subseteq> |K| \<Longrightarrow> T \<subseteq> star(v) \<subseteq> \<sigma> \<ni> v.
                The last step needs connectedness or interior-disjointness; since we
                apply this to simplexes of Sd^m(K), T is always a simplex (connected,
