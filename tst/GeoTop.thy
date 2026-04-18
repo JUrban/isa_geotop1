@@ -234,6 +234,23 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
 subsection \<open>General position descent\<close>
 
 (** Subsets of general-position sets inherit the general-position property. **)
+(** Every singleton \<open>{v}\<close> is a 0-simplex with vertex set \<open>{v}\<close>. **)
+lemma geotop_simplex_vertices_singleton:
+  fixes v :: "'a::real_vector"
+  shows "geotop_simplex_vertices {v} {v}"
+  unfolding geotop_simplex_vertices_def
+proof -
+  have h_hull_v: "geotop_convex_hull ({v}::'a set) = {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}::'a set"] by (by100 simp)
+  have h_gp: "geotop_general_position ({v}::'a set) 0"
+    unfolding geotop_general_position_def by (by100 blast)
+  show "\<exists>m n. finite {v} \<and> card {v} = n + 1 \<and> n \<le> m \<and>
+              geotop_general_position {v} m \<and> {v} = geotop_convex_hull {v}"
+    apply (rule exI[of _ "0::nat"])
+    apply (rule exI[of _ "0::nat"])
+    using h_hull_v h_gp by (by100 simp)
+qed
+
 lemma geotop_general_position_mono:
   fixes V W :: "'a::real_vector set"
   assumes hV: "geotop_general_position V m"
