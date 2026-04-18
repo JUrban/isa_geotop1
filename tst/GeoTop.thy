@@ -2650,6 +2650,21 @@ qed
 
 (** from \<S>1 Theorem 4 (geotop.tex:341)
     LATEX VERSION: Let K be a complex. If K is connected, then |K| is pathwise connected. **)
+(** Helper: complex-connected \<open>K\<close> implies HOL-path-connected \<open>|K|\<close>.
+    Proof outline (Moise Thm 4 in HOL form):
+      (1) For each \<sigma> \<in> K, \<sigma> is convex, hence HOL-path-connected.
+      (2) For any two vertices \<open>v, w\<close> of \<open>K\<close>, \<open>h_vertex_conn\<close> gives a top1-path
+          in \<open>|K|\<close>; \<open>top1_path_connected_on_geotop_imp_path_connected\<close> converts
+          it to a HOL-path with image in \<open>|K|\<close>.
+      (3) For any \<open>P \<in> |K|\<close>, choose \<open>\<sigma>_P \<ni> P\<close> and vertex \<open>v_P\<close> of \<open>\<sigma>_P\<close>;
+          the straight-line \<open>t \<mapsto> (1-t) P + t v_P\<close> is a HOL path inside \<open>\<sigma>_P\<close>.
+      (4) Concatenate \<open>P \<to> v_P \<to> v_Q \<to> Q\<close> via HOL's \<open>+++\<close>. **)
+lemma geotop_complex_connected_imp_HOL_path_connected:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_complex_connected K"
+  shows "path_connected (geotop_polyhedron K)"
+  sorry
+
 theorem Theorem_GT_1_4:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_complex_connected K"
@@ -2667,27 +2682,11 @@ theorem Theorem_GT_1_4:
       Step 8: For arbitrary P, Q in |K|, take sigma_P with P, sigma_Q with Q. Paths:
               P to vP in sigma_P (convex), vP to vQ (in 1-skel), vQ to Q in sigma_Q (convex). **)
 proof -
-  let ?X = "geotop_polyhedron K"
-  let ?TX = "subspace_topology UNIV geotop_euclidean_topology ?X"
-  have hKcomplex: "geotop_is_complex K"
-    using hK geotop_complex_connected_def by (by100 blast)
-  have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
-    by (simp add: geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
-  have hXsub: "?X \<subseteq> UNIV" by (by100 simp)
-  have hTX_top: "is_topology_on ?X ?TX"
-    by (rule subspace_topology_is_topology_on[OF hTeucl hXsub])
-  (** Step 1-7 (vertex reachability): deferred, requires 1-skeleton path infrastructure. **)
-  have h_vertex_conn:
-    "\<forall>v\<in>geotop_complex_vertices K. \<forall>w\<in>geotop_complex_vertices K.
-       \<exists>f. top1_is_path_on ?X ?TX v w f"
-    sorry \<comment> \<open>Moise Thm 4 Steps 1-7: 1-skeleton path via complex-connected subcomplex
-           argument. Needs K1/K2 subcomplex decomposition + edge-crossing lemma.\<close>
-  (** Step 8 (extend to arbitrary points via simplex path-connectedness): also deferred. **)
-  have hpath_PQ: "\<forall>P\<in>?X. \<forall>Q\<in>?X. \<exists>f. top1_is_path_on ?X ?TX P Q f"
-    sorry \<comment> \<open>Moise Thm 4 Step 8: concatenate P -> vP (simplex) -> vQ (1-skel) -> Q (simplex).
-           Uses h_vertex_conn and top1_in_same_path_component_on_trans.\<close>
+  (** Use the HOL path-connectedness helper and lift via the bridge. **)
+  have hHOL_pc: "path_connected (geotop_polyhedron K)"
+    by (rule geotop_complex_connected_imp_HOL_path_connected[OF hK])
   show ?thesis
-    unfolding top1_path_connected_on_def using hTX_top hpath_PQ by (by100 blast)
+    by (rule path_connected_imp_top1_path_connected_on_geotop[OF hHOL_pc])
 qed
 
 (** from \<S>1: connected topological space (geotop.tex:349)
