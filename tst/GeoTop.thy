@@ -5453,14 +5453,22 @@ proof -
     sorry
   (** Step 6: use copy-in-B2 construction and Theorem 5.6 to assemble homeo. **)
   have hIbar_cell: "geotop_is_n_cell Ibar
-                      (subspace_topology UNIV geotop_euclidean_topology Ibar) 2"
+                      (subspace_topology UNIV geotop_euclidean_topology Ibar) 2 \<and>
+                    (\<exists>I. (\<exists>P. P \<in> UNIV - J \<and>
+                          I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+                          \<and> geotop_bounded_R2 I) \<and>
+                         geotop_is_n_cell
+                           (closure_on UNIV geotop_euclidean_topology I)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (closure_on UNIV geotop_euclidean_topology I)) 2)"
     sorry
   have h_final: "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and> I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
                 \<and> geotop_bounded_R2 I) \<and>
            geotop_is_n_cell
              (closure_on UNIV geotop_euclidean_topology I)
              (subspace_topology UNIV geotop_euclidean_topology
-                (closure_on UNIV geotop_euclidean_topology I)) 2" sorry
+                (closure_on UNIV geotop_euclidean_topology I)) 2"
+    using hIbar_cell by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -12967,7 +12975,7 @@ proof -
   (** (2) If J doesn't bound a 2-cell in A, then A - J has two annular components (J is
          essential), and J is isotopic to the core circle (Theorem 27.2 argument). **)
   have h_essential_gen:
-    "\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+    "(\<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
            \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<longrightarrow>
        (\<exists>P\<^sub>0\<in>J. \<exists>pJ. geotop_closed_path_on A
               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ \<and>
@@ -12978,7 +12986,16 @@ proof -
                    (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
                    (UNIV::int set) \<and>
                  \<Phi> (geotop_pi_class A
-                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ) = 1))"
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ) = 1))) \<and>
+     ((\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+              \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
+         (\<exists>P\<^sub>0\<in>J. \<exists>pJ. geotop_closed_path_on A
+              (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ \<and>
+              pJ ` {0..1} = J \<and>
+              (\<forall>q. geotop_closed_path_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q \<longrightarrow>
+                   (\<exists>n::int. geotop_path_equiv A
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q q))))"
     sorry
   have h_final: "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
               \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
@@ -12988,7 +13005,8 @@ proof -
               (\<forall>q. geotop_closed_path_on A
                     (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q \<longrightarrow>
                    (\<exists>n::int. geotop_path_equiv A
-                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q q)))" sorry
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q q)))"
+    using h_essential_gen by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
