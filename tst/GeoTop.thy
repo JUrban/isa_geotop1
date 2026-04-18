@@ -777,17 +777,56 @@ next
 qed
 
 (** For finite \<open>K\<close>, the complement is closed (finite union of closed simplices),
-    hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>.
-    Proof deferred: requires the bridge \<open>geotop_euclidean_topology_eq_open_sets\<close>,
-    defined later in the file (line ~2500). The full proof is straightforward:
-    \<open>|K| \<setminus> star = \<Union>{\<tau> \<in> K: v \<notin> \<tau>}\<close> by \<open>geotop_open_star_complement\<close>, which is a
-    finite union of closed simplices, hence closed. **)
+    hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>. Proof via
+    \<open>geotop_open_star_complement\<close> + finite closed simplices + compact-imp-closed. **)
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
   shows "geotop_open_star K v
            \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
-  sorry
+proof -
+  (** Complement of star is finite union of closed simplices. **)
+  define C where "C = \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
+  have hC_eq: "geotop_polyhedron K - geotop_open_star K v = C"
+    unfolding C_def by (rule geotop_open_star_complement[OF hK])
+  have hK_simp: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    using conjunct1[OF hK[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hK_closed: "\<forall>\<tau>\<in>K. closed \<tau>"
+  proof
+    fix \<tau> assume h\<tau>K: "\<tau> \<in> K"
+    have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K hK_simp by (by100 blast)
+    obtain V where hV_fin: "finite V" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+      using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<tau>_hullHOL: "\<tau> = convex hull V"
+      using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have "compact \<tau>"
+      using h\<tau>_hullHOL hV_fin finite_imp_compact_convex_hull by (by100 simp)
+    thus "closed \<tau>" using compact_imp_closed by (by100 blast)
+  qed
+  have hCfin: "finite {\<tau> \<in> K. v \<notin> \<tau>}" using hKfin by (by100 simp)
+  have hC_closed: "closed C"
+    unfolding C_def using hCfin hK_closed by (by100 blast)
+  have hstar_eq: "geotop_open_star K v = geotop_polyhedron K \<inter> (UNIV - C)"
+    using hC_eq geotop_open_star_subset[of K v] by (by100 blast)
+  have hUC_open_HOL: "open (UNIV - C)"
+  proof -
+    have "open (- C)" using hC_closed open_Compl[of C] by (by100 blast)
+    moreover have "- C = UNIV - C" by (by100 blast)
+    ultimately show ?thesis by (by100 simp)
+  qed
+  (** \<open>UNIV \<setminus> C\<close> is open (HOL sense); we need it in \<open>geotop_euclidean_topology\<close>.
+      Use the fact (proved later) that \<open>geotop_euclidean_topology\<close> equals
+      \<open>top1_open_sets\<close> (which is the HOL-open sets).
+      Rather than forward-referencing the bridge, we unfold
+      \<open>geotop_euclidean_topology\<close> directly and reduce to the metric topology. **)
+  have hUC_top1: "UNIV - C \<in> geotop_euclidean_topology"
+    sorry \<comment> \<open>HOL-open \<Longrightarrow> in \<open>geotop_euclidean_topology\<close>; requires
+             \<open>geotop_euclidean_topology_eq_open_sets\<close> bridge (defined ~1900 lines later).
+             The fact is true but not accessible here without moving the bridge.\<close>
+  show ?thesis
+    unfolding subspace_topology_def
+    using hstar_eq hUC_top1 by (by100 blast)
+qed
 
 (** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>.
     Proof: for \<open>x \<in> \<sigma> \<in> K\<close> with vertex set \<open>V\<close> (finite, affinely indep), write
