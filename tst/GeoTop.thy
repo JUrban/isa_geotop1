@@ -5995,7 +5995,8 @@ proof -
                        if geotop_inseparable_in X T (acc - Us k) A B
                        then acc - Us k else acc)) i)) i"
   (** Step 3: each M_i compact, descending, and A, B inseparable in each. **)
-  have hMs_desc: "\<forall>i. Ms (Suc i) \<subseteq> Ms i" sorry
+  have hMs_desc: "\<forall>i. Ms (Suc i) \<subseteq> Ms i"
+    unfolding Ms_def by (by100 auto)
   have hMs_ins: "\<forall>i. geotop_inseparable_in X T (Ms i) A B" sorry
   have hMs_cmp: "\<forall>i. top1_compact_on (Ms i) (subspace_topology X T (Ms i))" sorry
   (** Step 4: M' = \<Inter>M_i; inseparable by Theorem 12_1. **)
