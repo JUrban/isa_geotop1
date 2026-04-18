@@ -616,6 +616,30 @@ proof
     using h\<sigma> unfolding geotop_polyhedron_def by (by100 blast)
 qed
 
+(** Alternative characterisation: \<open>|K| \<setminus> star_K(v)\<close> = union of simplices not
+    containing \<open>v\<close>. This uses the fact that each point of \<open>|K|\<close> has a unique
+    "support simplex" \<open>\<tau>_0\<close> (the face whose rel_interior it lies in), so
+    \<open>x \<in> star_K(v)\<close> iff \<open>v \<in> \<tau>_0\<close>, iff \<open>x\<close> is in some rel_interior \<tau> with \<open>v \<in> \<tau>\<close>.
+    Consequently the complement is \<open>\<Union>{\<tau> \<in> K : v \<notin> \<tau>}\<close>. **)
+lemma geotop_open_star_complement:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_polyhedron K - geotop_open_star K v =
+          \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
+  sorry \<comment> \<open>Simplex decomposition: each \<open>x \<in> |K|\<close> lies in a unique rel_interior
+           (its support simplex). Requires \<open>rel_interior\<close> disjointness across
+           distinct faces, which needs the complex's intersection-compat axiom.\<close>
+
+(** For finite \<open>K\<close>, the complement is closed (finite union of closed simplices),
+    hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>. **)
+lemma geotop_open_star_open_in_subspace:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K" and hKfin: "finite K"
+  shows "geotop_open_star K v
+           \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+  sorry \<comment> \<open>Via \<open>geotop_open_star_complement\<close> + finite closed simplices +
+           complement is closed → star is relatively open.\<close>
+
 (** from early.tex Lemma 4.13: the vertex open stars cover \<open>|K|\<close>.
     Proof: for \<open>x \<in> \<sigma> \<in> K\<close> with vertex set \<open>V\<close> (finite, affinely indep), write
     \<open>x = \<Sum>_v u_v v\<close> (barycentric). Let \<open>W = {v \<in> V : u_v > 0}\<close> (nonempty, subset
