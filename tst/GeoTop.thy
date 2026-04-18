@@ -4040,18 +4040,15 @@ theorem Theorem_GT_3_1:
 proof -
   (** (1) For each P \<in> \<sigma>, express P uniquely in barycentric coordinates P = \<Sigma>_{v \<in> V}
          \<alpha>_v v with \<alpha>_v \<ge> 0 and \<Sigma> \<alpha>_v = 1. **)
-  have h_barycentric:
-    "\<forall>P\<in>\<sigma>. \<exists>!\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
-                          P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)" sorry
-  (** (2) Define f: \<sigma> \<to> \<tau> by f(P) = \<Sigma>_{v \<in> V} \<alpha>_v \<phi>(v). This is affine on each face and
-         bijective (barycentric coordinates are unique). **)
-  have h_f_def:
-    "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v) \<and>
+  have h_barycentric_and_f:
+    "(\<forall>P\<in>\<sigma>. \<exists>!\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+                          P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)) \<and>
+     (\<exists>f. (\<forall>v\<in>V. f v = \<phi> v) \<and>
          geotop_simplicial_on \<sigma> f \<tau> \<and>
          top1_homeomorphism_on \<sigma>
            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
-           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
-  show ?thesis using h_f_def by (by100 blast)
+           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f)" sorry
+  show ?thesis using h_barycentric_and_f by (by100 blast)
 qed
 
 (** from \<S>3 Theorem 2 (geotop.tex:735)
