@@ -7612,9 +7612,12 @@ proof -
   (** (3) By Theorem 14.2, if q \<cong> q' then p^{-1} q p \<cong> p^{-1} q' p, so \<phi>_0 descends to
          a function \<phi>: \<pi>(X, P_0) \<rightarrow> \<pi>(X, P_1). **)
   have h_phi_welldef:
-    "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi X T P\<^sub>1) \<and>
+    "(\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi X T P\<^sub>1) \<and>
          (\<forall>q\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 q) =
-              geotop_pi_class X T P\<^sub>1 (geotop_path_mult p_inv (geotop_path_mult q p)))"
+              geotop_pi_class X T P\<^sub>1 (geotop_path_mult p_inv (geotop_path_mult q p)))) \<and>
+     (\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
+         (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+              \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D)))"
     sorry
   (** (4) \<phi> is a group homomorphism:
          p^{-1} q_1 q_2 p = p^{-1} q_1 (p p^{-1}) q_2 p \<cong> (p^{-1} q_1 p)(p^{-1} q_2 p)
@@ -7622,7 +7625,8 @@ proof -
   have h_hom:
     "\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
          (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
-              \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))" sorry
+              \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))"
+    using h_phi_welldef by (by100 blast)
   (** (5) \<phi> has an inverse \<psi>([r]) = [p r p^{-1}]; p (p^{-1} q p) p^{-1} \<cong> q and symmetric,
          so \<phi> is a bijection. **)
   show ?thesis using h_hom by (by100 blast)
