@@ -614,6 +614,56 @@ lemma geotop_isomorphic_induces_PLH:
   shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L"
   sorry
 
+(** PL-map lifting across refinement: if \<open>f\<close> is a PL map of \<open>K' \<to> L'\<close> and
+    \<open>K' < K\<close>, \<open>L' < L\<close>, then \<open>f\<close> is a PL map of \<open>K \<to> L\<close>. **)
+lemma geotop_PL_map_lift:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  fixes K' :: "'a set set" and L' :: "'b set set" and f :: "'a \<Rightarrow> 'b"
+  assumes hK'K: "geotop_is_subdivision K' K"
+  assumes hL'L: "geotop_is_subdivision L' L"
+  assumes hPL: "geotop_PL_map K' L' f"
+  shows "geotop_PL_map K L f"
+  sorry
+
+(** PLH lifting across refinement: combines \<open>geotop_PL_map_lift\<close> in both
+    directions with polyhedron equality to transport \<open>geotop_PLH K' L' f\<close> to
+    \<open>geotop_PLH K L f\<close>. **)
+lemma geotop_PLH_lift:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  fixes K' :: "'a set set" and L' :: "'b set set" and f :: "'a \<Rightarrow> 'b"
+  assumes hK'K: "geotop_is_subdivision K' K"
+  assumes hL'L: "geotop_is_subdivision L' L"
+  assumes hPLH: "geotop_PLH K' L' f"
+  shows "geotop_PLH K L f"
+proof -
+  (** Unfold the three conjuncts of PLH, lift each via \<open>geotop_PL_map_lift\<close>
+      and polyhedron equality. **)
+  have hPL_fwd: "geotop_PL_map K' L' f"
+    using hPLH unfolding geotop_PLH_def by (by100 blast)
+  have hbij: "bij_betw f (geotop_polyhedron K') (geotop_polyhedron L')"
+    using hPLH unfolding geotop_PLH_def by (by100 blast)
+  have hPL_bwd: "geotop_PL_map L' K' (inv_into (geotop_polyhedron K') f)"
+    using hPLH unfolding geotop_PLH_def by (by100 blast)
+  have hKpoly: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+  have hLpoly: "geotop_polyhedron L' = geotop_polyhedron L"
+    using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  have hPL_fwd': "geotop_PL_map K L f"
+    by (rule geotop_PL_map_lift[OF hK'K hL'L hPL_fwd])
+  have hbij': "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)"
+    using hbij hKpoly hLpoly by (by100 simp)
+  (** For the inverse direction, \<open>inv_into (polyhedron K') f = inv_into (polyhedron K) f\<close>
+      since the polyhedra coincide. Then we lift the PL_map across L < L' \<to> K < K'. **)
+  have hinv_eq: "inv_into (geotop_polyhedron K') f = inv_into (geotop_polyhedron K) f"
+    using hKpoly by (by100 simp)
+  have hPL_bwd': "geotop_PL_map L K (inv_into (geotop_polyhedron K) f)"
+    using geotop_PL_map_lift[OF hL'L hK'K hPL_bwd] hinv_eq by (by100 simp)
+  show ?thesis
+    unfolding geotop_PLH_def using hPL_fwd' hbij' hPL_bwd' by (by100 blast)
+qed
+
 (** from early.tex Lemma 8.1 (iso-symmetric): the inverse of a simplicial
     isomorphism is a simplicial isomorphism. **)
 lemma geotop_isomorphic_sym:
@@ -713,17 +763,20 @@ proof -
       using hKL unfolding geotop_comb_equiv_def by (by100 blast)
     have hL'K': "geotop_isomorphic L' K'"
       by (rule geotop_isomorphic_sym[OF hiso])
-    obtain f where hf: "geotop_PLH L' K' f
-                         \<and> f ` (geotop_polyhedron L') = geotop_polyhedron K'"
+    obtain f where hf_PLH: "geotop_PLH L' K' f"
+               and hf_img: "f ` (geotop_polyhedron L') = geotop_polyhedron K'"
       using geotop_isomorphic_induces_PLH[OF hL'K'] by (by100 blast)
     have hpolyL: "geotop_polyhedron L' = geotop_polyhedron L"
       using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
     have hpolyK: "geotop_polyhedron K' = geotop_polyhedron K"
       using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
-    (** Lift PLH L' \<leftrightarrow> K' to L \<leftrightarrow> K (pending: the polyhedra are equal, so PLH
-        lifting is a bridge lemma — deferred). **)
+    (** Lift PLH L' \<leftrightarrow> K' to L \<leftrightarrow> K via \<open>geotop_PLH_lift\<close>. **)
+    have hPLH_lift: "geotop_PLH L K f"
+      by (rule geotop_PLH_lift[OF hL'L hK'K hf_PLH])
+    have himg: "f ` (geotop_polyhedron L) = geotop_polyhedron K"
+      using hf_img hpolyL hpolyK by (by100 simp)
     show "\<exists>f. geotop_PLH L K f \<and> f ` (geotop_polyhedron L) = geotop_polyhedron K"
-      sorry
+      using hPLH_lift himg by (by100 blast)
   qed
   (** (\<Leftarrow>) Given a PLH \<open>f: |L| \<leftrightarrow> |K|\<close>, PL structure provides subdivisions \<open>L_1 < L\<close>
       on which \<open>f\<close> is affinely simplicial and \<open>K_1 < K\<close> on which \<open>f^{-1}\<close> is affinely
