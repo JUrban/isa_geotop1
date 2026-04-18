@@ -7342,6 +7342,20 @@ proof -
          linear and K is combinatorially isomorphic to a subdivision of {\<sigma>, faces(\<sigma>)}. **)
   have h_PLH:
     "geotop_comb_n_cell K 2" sorry
+  (** Extract h_Schoenflies conjuncts to rebuild the thesis. **)
+  have h_Sc1: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h"
+    using h_Schoenflies by (by100 blast)
+  have h_Sc2: "geotop_simplex_dim \<sigma> 2" using h_Schoenflies by (by100 blast)
+  have h_Sc3: "h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    using h_Schoenflies by (by100 blast)
+  have h_Sc4: "h ` geotop_polyhedron K = \<sigma>" using h_Schoenflies by (by100 blast)
+  have h_conj: "geotop_simplex_dim \<sigma> 2 \<and>
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology h \<and>
+          h ` geotop_polyhedron K = \<sigma> \<and>
+          h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    using h_Sc1 h_Sc2 h_Sc3 h_Sc4 by (by100 blast)
   show "\<exists>f \<sigma>. geotop_simplex_dim \<sigma> 2 \<and>
           top1_homeomorphism_on UNIV geotop_euclidean_topology
              UNIV geotop_euclidean_topology f \<and>
