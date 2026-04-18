@@ -917,6 +917,43 @@ next
   qed
 qed
 
+(** Homeomorphism is symmetric: the inverse of a homeomorphism is a homeomorphism. **)
+lemma top1_homeomorphism_on_sym:
+  assumes hf: "top1_homeomorphism_on X TX Y TY f"
+  shows "top1_homeomorphism_on Y TY X TX (inv_into X f)"
+  unfolding top1_homeomorphism_on_def
+proof (intro conjI)
+  show "is_topology_on Y TY"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  show "is_topology_on X TX"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  have hbij: "bij_betw f X Y"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  show "bij_betw (inv_into X f) Y X"
+    using hbij bij_betw_inv_into by blast
+  show "top1_continuous_map_on Y TY X TX (inv_into X f)"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  (** The inverse of the inverse equals f on X. **)
+  have hfcont: "top1_continuous_map_on X TX Y TY f"
+    using hf unfolding top1_homeomorphism_on_def by blast
+  have hbij_fX: "f ` X = Y"
+    using hbij unfolding bij_betw_def by blast
+  have hinv_inv_eq: "\<forall>x\<in>X. inv_into Y (inv_into X f) x = f x"
+  proof
+    fix x assume hxX: "x \<in> X"
+    have hbij_inv: "bij_betw (inv_into X f) Y X"
+      using hbij bij_betw_inv_into by blast
+    have h1: "inv_into Y (inv_into X f) x = inv_into Y (inv_into X f) x" by simp
+    have "inv_into X f (f x) = x"
+      using hxX hbij unfolding bij_betw_def by (metis inv_into_f_f)
+    moreover have "f x \<in> Y" using hxX hbij_fX by blast
+    ultimately show "inv_into Y (inv_into X f) x = f x"
+      using hbij_inv by (metis bij_betw_inv_into_left \<open>f x \<in> Y\<close>)
+  qed
+  show "top1_continuous_map_on X TX Y TY (inv_into Y (inv_into X f))"
+    using top1_continuous_map_on_cong[OF hinv_inv_eq] hfcont by blast
+qed
+
 (** The \<epsilon>-neighborhood of a set A in a real_normed_vector space is open
     in the Euclidean topology. **)
 lemma geotop_nbhd_set_open_in_euclidean:
