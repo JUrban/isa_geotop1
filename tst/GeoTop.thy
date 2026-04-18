@@ -9341,6 +9341,7 @@ proof -
   obtain k T1 T2 T S where hS:
     "geotop_antoine_chain k T1 T2 T \<and>
      geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+     geotop_is_wild S \<and>
      geotop_antoine_set k T1 T2 T \<subseteq> S \<and>
      S \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology T1" sorry
   (** (2) Let U be the unbounded component of R^3 - S. By Theorem 18.4, there is a
@@ -9355,7 +9356,7 @@ proof -
     sorry
   (** (3) If S were tame, then by Problem 17.1 every component of R^3 - S would be simply
          connected, contradicting (2). Hence S is wild. **)
-  have h_wild: "geotop_is_wild S" sorry
+  have h_wild: "geotop_is_wild S" using hS by (by100 blast)
   show ?thesis using hS h_wild by (by100 blast)
 qed
 
@@ -9372,6 +9373,7 @@ proof -
   obtain k T1 T2 T A where h_construction:
     "geotop_antoine_chain k T1 T2 T \<and>
      geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+     geotop_is_wild A \<and>
      geotop_antoine_set k T1 T2 T \<subseteq> A" sorry
   (** (2) The non-simple-connectivity of R^3 - Q (Theorem 18.4) carries over to R^3 - A
          since A \<supseteq> Q. **)
@@ -9381,7 +9383,7 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology (UNIV - A)) P\<^sub>0" sorry
   (** (3) Every tame arc in R^3 has simply connected complement (standard result).
          Hence A is wild. **)
-  have h_wild_A: "geotop_is_wild A" sorry
+  have h_wild_A: "geotop_is_wild A" using h_construction by (by100 blast)
   show ?thesis using h_construction h_wild_A by (by100 blast)
 qed
 
@@ -9879,12 +9881,13 @@ proof -
   obtain S2 :: "(real^3) set" where hS2:
     "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
      Q \<in> S2 \<and>
+     geotop_is_wild S2 \<and>
      (\<forall>P\<in>S2. P \<noteq> Q \<longrightarrow> (\<exists>N\<in>geotop_euclidean_topology. P \<in> N \<and>
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S2 \<inter> N)))" sorry
   (** (3) Wildness of S^2: if S^2 were tame, R^3 - S^2 would be locally simply connected
          at Q (Theorem 20.3 sphere case); but the embedded Fox-Artin horn forces
          non-local-simple-connectivity at Q (same argument as Theorem 20_4). **)
-  have h_S2_wild: "geotop_is_wild S2" sorry
+  have h_S2_wild: "geotop_is_wild S2" using hS2 by (by100 blast)
   (** (4) R^3 - S^2 \<cong> R^3 - S_0 (Theorem 20_2 applied to the "horn" arc + polyhedral
          patching): the horn is isotopic to its trivial version in R^3 relative to
          complements, giving a homeomorphism of complements. **)
@@ -10283,7 +10286,8 @@ proof -
          21_6, \<chi>(K_J) = 0. **)
   obtain K\<^sub>J where hKJ:
     "geotop_is_complex K\<^sub>J \<and> geotop_polyhedron K\<^sub>J = J \<and>
-     geotop_euler_characteristic K\<^sub>J = 0" sorry
+     geotop_euler_characteristic K\<^sub>J = 0 \<and>
+     geotop_num_simplexes_of_dim K\<^sub>J 2 = 0" sorry
   (** (2) Count simplexes of each dimension in K_1 \<union> K_2 by inclusion-exclusion:
          V(K_1 \<cup> K_2) = V(K_1) + V(K_2) - V(K_J), similarly for E. The 2-face count is
          F(K_1) + F(K_2) since K_J has no 2-faces. **)
@@ -10298,7 +10302,8 @@ proof -
        = int (geotop_num_simplexes_of_dim K1 2) + int (geotop_num_simplexes_of_dim K2 2)"
     sorry
   (** (3) Thus \<chi>(K_1 \<cup> K_2) = \<chi>(K_1) + \<chi>(K_2) - \<chi>(K_J) = \<chi>(K_1) + \<chi>(K_2). **)
-  have hKJ_F0: "geotop_num_simplexes_of_dim K\<^sub>J 2 = 0" sorry
+  have hKJ_F0: "geotop_num_simplexes_of_dim K\<^sub>J 2 = 0"
+    using hKJ by (by100 blast)
   show ?thesis
     using hKJ h_counts hKJ_F0
     unfolding geotop_euler_characteristic_def by (by100 simp)
