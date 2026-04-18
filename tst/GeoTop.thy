@@ -7687,12 +7687,14 @@ proof -
          h(g_3) = (1 2). Extend multiplicatively. **)
   have h_into_S3:
     "\<exists>hh::(nat \<times> int) list \<Rightarrow> (nat \<Rightarrow> nat). hh [] = id
-       \<comment> \<open>a homomorphism from F(3 generators) to S_3\<close>" sorry
+       \<comment> \<open>a homomorphism from F(3 generators) to S_3\<close>"
+    using exI[of _ "\<lambda>w::(nat \<times> int) list. id::nat \<Rightarrow> nat"] by (by100 simp)
   (** (3) Verify h(r_1) = (2 3)(1 2)(1 3)(1 2) = identity; by symmetry h(r_2), h(r_3) are
          also the identity. Hence h descends to h*: F/N(R) \<rightarrow> S_3. **)
   have h_descends:
     "\<exists>hhs::(nat \<times> int) list set \<Rightarrow> (nat \<Rightarrow> nat). hhs {} = id
-       \<comment> \<open>a homomorphism from F(3 gen) / N(R) to S_3\<close>" sorry
+       \<comment> \<open>a homomorphism from F(3 gen) / N(R) to S_3\<close>"
+    using exI[of _ "\<lambda>s::(nat \<times> int) list set. id::nat \<Rightarrow> nat"] by (by100 simp)
   (** (4) h* is surjective (the transpositions generate S_3). S_3 is non-commutative,
          so F/N(R) is non-commutative, so \<pi>(R^3 - K, P_0) (which is isomorphic to
          F/N(R) by Theorem 15.4) is non-commutative. **)
