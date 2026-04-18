@@ -2836,7 +2836,33 @@ proof -
   qed
   (** Step 7: by \<open>complex_connected K\<close>, \<open>K\<^sub>2 = \<emptyset>\<close>, so every simplex of \<open>K\<close> has
       all vertices in \<open>V\<close>. Hence \<open>w \<in> V\<close>. **)
-  have hV_all: "geotop_complex_vertices K \<subseteq> V" sorry
+  (** Step 7: From complex-connectedness, \<open>K_2 = \<emptyset>\<close>. **)
+  have hK\<^sub>2_empty: "K\<^sub>2 = {}"
+  proof (rule ccontr)
+    assume hK\<^sub>2ne: "K\<^sub>2 \<noteq> {}"
+    have hnot_conn: "\<exists>Ka Kb. Ka \<noteq> {} \<and> Kb \<noteq> {} \<and> Ka \<inter> Kb = {} \<and> K = Ka \<union> Kb
+                          \<and> geotop_is_complex Ka \<and> geotop_is_complex Kb"
+      using hK\<^sub>1_nonempty hK\<^sub>2ne hK\<^sub>1\<^sub>2_disjoint hK\<^sub>1\<^sub>2_cover hK\<^sub>1_complex hK\<^sub>2_complex
+      by (by100 blast)
+    show False
+      using hnot_conn hK unfolding geotop_complex_connected_def by (by100 blast)
+  qed
+  (** Hence every simplex of K is in K_1, i.e., all vertices lie in V. **)
+  have hK_is_K\<^sub>1: "K = K\<^sub>1"
+    using hK\<^sub>1\<^sub>2_cover hK\<^sub>2_empty by (by100 blast)
+  have hV_all: "geotop_complex_vertices K \<subseteq> V"
+    unfolding geotop_complex_vertices_def
+  proof (rule Union_least)
+    fix W assume hW_class: "W \<in> {V'. \<exists>\<sigma>\<in>K. geotop_simplex_vertices \<sigma> V'}"
+    then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hWsv: "geotop_simplex_vertices \<sigma> W"
+      by (by100 blast)
+    have h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1" using h\<sigma>K hK_is_K\<^sub>1 by (by100 simp)
+    then obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>" and hV\<^sub>\<sigma>V: "V\<^sub>\<sigma> \<subseteq> V"
+      unfolding K\<^sub>1_def by (by100 blast)
+    (** Vertex-uniqueness: \<open>W = V\<^sub>\<sigma>\<close> (deferred). **)
+    have hW_eq: "W = V\<^sub>\<sigma>" sorry
+    show "W \<subseteq> V" using hV\<^sub>\<sigma>V hW_eq by (by100 simp)
+  qed
   have hw_V: "w \<in> V" using hV_all hw by (by100 blast)
   show ?thesis using hw_V unfolding V_def by (by100 blast)
 qed
