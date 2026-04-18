@@ -2903,6 +2903,45 @@ lemma geotop_is_complex_locally_finite:
   shows "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
   by (rule conjunct2[OF conjunct2[OF conjunct2[OF assms[unfolded geotop_is_complex_def]]]])
 
+(** In a complex, the complex vertices are exactly the points whose singletons are
+    0-simplexes of K. Forward: vertex \<Rightarrow> in some V_\<sigma> \<Rightarrow> {v} is a face of \<sigma> \<Rightarrow>
+    {v} \<in> K by face-closure. Backward: {v} \<in> K has simplex_vertices {v} {v} (direct). **)
+lemma geotop_complex_vertices_eq_0_simplexes:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_complex_vertices K = {v. {v} \<in> K}"
+proof (rule set_eqI, rule iffI)
+  fix v assume hv: "v \<in> geotop_complex_vertices K"
+  obtain \<sigma> V where h\<sigma>K: "\<sigma> \<in> K" and h\<sigma>V: "geotop_simplex_vertices \<sigma> V" and hvV: "v \<in> V"
+    using hv unfolding geotop_complex_vertices_def by (by100 blast)
+  (** \<open>{v}\<close> is a face of \<sigma>: take W = \<open>{v}\<close> subset of V with \<open>{v}\<close> = conv \<open>{v}\<close>. **)
+  have hvhull: "{v} = geotop_convex_hull {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  have h_face: "geotop_is_face {v} \<sigma>"
+    unfolding geotop_is_face_def
+    using h\<sigma>V hvV hvhull by (by100 blast)
+  show "v \<in> {v. {v} \<in> K}"
+    using geotop_is_complex_face_closed[OF hK] h\<sigma>K h_face by (by100 blast)
+next
+  fix v assume hv: "v \<in> {v. {v} \<in> K}"
+  hence hvK: "{v} \<in> K" by (by100 simp)
+  (** simplex_vertices {v} {v}: finite, card=1, n=0, gp vacuous. **)
+  have h_conv: "{v} = geotop_convex_hull {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  have h_gp: "geotop_general_position {v} 0"
+    unfolding geotop_general_position_def by (by100 simp)
+  have h_sv_body: "finite ({v}::'a set) \<and> card ({v}::'a set) = 0 + 1 \<and>
+                    (0::nat) \<le> 0 \<and> geotop_general_position ({v}::'a set) 0 \<and>
+                    ({v}::'a set) = geotop_convex_hull ({v}::'a set)"
+    using h_conv h_gp by (by100 simp)
+  have h_sv: "geotop_simplex_vertices {v} {v}"
+    unfolding geotop_simplex_vertices_def
+    using h_sv_body by (by100 blast)
+  show "v \<in> geotop_complex_vertices K"
+    unfolding geotop_complex_vertices_def
+    using hvK h_sv by (by100 blast)
+qed
+
 (** Helper for Theorem 12 (Moise's proof of (3)\<Rightarrow>(1)): if K1, K2 are disjoint
     subcomplexes of a complex K, then the point-sets \<bar>K1\<close> and \<bar>K2\<close> are disjoint.
     Uses K.2 (intersection compatibility) plus face-closure in K1 and K2. **)
