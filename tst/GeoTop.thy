@@ -629,12 +629,91 @@ lemma geotop_open_star_complement:
 proof (rule set_eqI, rule iffI)
   fix x assume hLHS: "x \<in> geotop_polyhedron K - geotop_open_star K v"
   have hxK: "x \<in> geotop_polyhedron K" using hLHS by (by100 blast)
-  (** The support simplex (unique \<tau>_0 with \<open>x \<in> rel_interior \<tau>_0\<close>) — we find a
-      witness \<tau>_0 ∈ K. For simplicity use the simplex containing x and take its
-      support face via explicit barycentric coords. Argument sketch only; full
-      support-uniqueness is non-trivial. **)
+  have hx_not_star: "x \<notin> geotop_open_star K v" using hLHS by (by100 blast)
+  (** Pick a simplex \<sigma> containing x. **)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hxK unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+    using h\<sigma>K conjunct1[OF hK[unfolded geotop_is_complex_def]] by (by100 blast)
+  obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  obtain m n where hV\<^sub>\<sigma>fin: "finite V\<^sub>\<sigma>" and hV\<^sub>\<sigma>card: "card V\<^sub>\<sigma> = n + 1"
+                and hnm: "n \<le> m" and hV\<^sub>\<sigma>gp: "geotop_general_position V\<^sub>\<sigma> m"
+                and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma> unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_hullHOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV\<^sub>\<sigma>_ai: "\<not> affine_dependent V\<^sub>\<sigma>"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>\<sigma>])
+  (** Find barycentric coords of x. **)
+  have hx_hull: "x \<in> convex hull V\<^sub>\<sigma>" using hx\<sigma> h\<sigma>_hullHOL by (by100 simp)
+  obtain u where hu_nn: "\<forall>w\<in>V\<^sub>\<sigma>. 0 \<le> u w" and hu_sum: "sum u V\<^sub>\<sigma> = 1"
+             and hx_eq: "(\<Sum>w\<in>V\<^sub>\<sigma>. u w *\<^sub>R w) = x"
+    using hx_hull hV\<^sub>\<sigma>fin convex_hull_finite[of V\<^sub>\<sigma>] by (by100 blast)
+  (** Support set W, then \<tau>_0 = conv W. **)
+  define W where "W = {w \<in> V\<^sub>\<sigma>. u w > 0}"
+  define \<tau>\<^sub>0 where "\<tau>\<^sub>0 = convex hull W"
+  have hWV\<^sub>\<sigma>: "W \<subseteq> V\<^sub>\<sigma>" unfolding W_def by (by100 blast)
+  have hWfin: "finite W"
+    unfolding W_def using hV\<^sub>\<sigma>fin finite_subset by (by100 fastforce)
+  have hWne: "W \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> W \<noteq> {}"
+    then have hallz: "\<forall>w\<in>V\<^sub>\<sigma>. u w = 0" unfolding W_def using hu_nn by (by100 fastforce)
+    have "sum u V\<^sub>\<sigma> = 0" using hallz by (by100 simp)
+    thus False using hu_sum by (by100 simp)
+  qed
+  have hu_pos_W: "\<forall>w\<in>W. 0 < u w" unfolding W_def by (by100 simp)
+  have hsum_uW: "sum u W = 1"
+  proof -
+    have hz: "\<forall>w\<in>V\<^sub>\<sigma>-W. u w = 0" unfolding W_def using hu_nn by (by100 fastforce)
+    have "sum u W = sum u V\<^sub>\<sigma>"
+      using hV\<^sub>\<sigma>fin hWV\<^sub>\<sigma> hz sum.mono_neutral_left[of V\<^sub>\<sigma> W u] by (by100 blast)
+    thus ?thesis using hu_sum by (by100 simp)
+  qed
+  have hx_W: "(\<Sum>w\<in>W. u w *\<^sub>R w) = x"
+  proof -
+    have hz: "\<forall>w\<in>V\<^sub>\<sigma>-W. u w *\<^sub>R w = 0"
+      unfolding W_def using hu_nn by (by100 fastforce)
+    have "(\<Sum>w\<in>W. u w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<sigma>. u w *\<^sub>R w)"
+      using hV\<^sub>\<sigma>fin hWV\<^sub>\<sigma> hz sum.mono_neutral_left[of V\<^sub>\<sigma> W "\<lambda>w. u w *\<^sub>R w"]
+      by (by100 blast)
+    thus ?thesis using hx_eq by (by100 simp)
+  qed
+  have hW_ai: "\<not> affine_dependent W"
+    using hV\<^sub>\<sigma>_ai hWV\<^sub>\<sigma> affine_dependent_subset by (by100 blast)
+  have hx_rel\<tau>\<^sub>0: "x \<in> rel_interior \<tau>\<^sub>0"
+    unfolding \<tau>\<^sub>0_def
+    using hW_ai hu_pos_W hsum_uW hx_W
+    rel_interior_convex_hull_explicit[OF hW_ai] by (by100 blast)
+  (** \<tau>_0 is a face of \<sigma>, hence in K. **)
+  have h_hull_eq_W: "geotop_convex_hull W = convex hull W"
+    by (rule geotop_convex_hull_eq_HOL)
+  have h\<tau>\<^sub>0_geo: "\<tau>\<^sub>0 = geotop_convex_hull W"
+    unfolding \<tau>\<^sub>0_def using h_hull_eq_W by (by100 simp)
+  have h\<tau>\<^sub>0_face_geo: "geotop_is_face \<tau>\<^sub>0 \<sigma>"
+    unfolding geotop_is_face_def
+    apply (rule exI[of _ V\<^sub>\<sigma>])
+    apply (rule exI[of _ W])
+    using hV\<^sub>\<sigma> hWne hWV\<^sub>\<sigma> h\<tau>\<^sub>0_geo by (by100 blast)
+  have hK_fc: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'. geotop_is_face \<tau>' \<sigma>' \<longrightarrow> \<tau>' \<in> K"
+    using conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have h\<tau>\<^sub>0K: "\<tau>\<^sub>0 \<in> K" using hK_fc h\<sigma>K h\<tau>\<^sub>0_face_geo by (by100 blast)
+  (** If \<open>v \<in> \<tau>_0\<close>, then \<open>x \<in> star_K(v)\<close>, contradiction. So \<open>v \<notin> \<tau>_0\<close>. **)
+  have hv_not_\<tau>\<^sub>0: "v \<notin> \<tau>\<^sub>0"
+  proof
+    assume hv_\<tau>\<^sub>0: "v \<in> \<tau>\<^sub>0"
+    have "x \<in> geotop_open_star K v"
+      unfolding geotop_open_star_def
+      using h\<tau>\<^sub>0K hv_\<tau>\<^sub>0 hx_rel\<tau>\<^sub>0 by (by100 blast)
+    thus False using hx_not_star by (by100 blast)
+  qed
+  (** x \<in> \<tau>_0 (since x \<in> rel_interior \<tau>_0 \<subseteq> \<tau>_0). **)
+  have hx_\<tau>\<^sub>0: "x \<in> \<tau>\<^sub>0" using hx_rel\<tau>\<^sub>0 rel_interior_subset by (by100 blast)
   show "x \<in> \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
-    sorry
+    using h\<tau>\<^sub>0K hv_not_\<tau>\<^sub>0 hx_\<tau>\<^sub>0 by (by100 blast)
 next
   fix x assume hRHS: "x \<in> \<Union>{\<tau> \<in> K. v \<notin> \<tau>}"
   obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and h\<tau>nv: "v \<notin> \<tau>" and hx\<tau>: "x \<in> \<tau>"
