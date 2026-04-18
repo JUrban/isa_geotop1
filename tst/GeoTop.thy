@@ -2822,10 +2822,18 @@ proof -
   define K\<^sub>1 where "K\<^sub>1 = {\<sigma>\<in>K. \<exists>V\<sigma>. geotop_simplex_vertices \<sigma> V\<sigma> \<and> V\<sigma> \<subseteq> V}"
   define K\<^sub>2 where "K\<^sub>2 = {\<sigma>\<in>K. \<exists>V\<sigma>. geotop_simplex_vertices \<sigma> V\<sigma>
                                      \<and> V\<sigma> \<inter> V = {}}"
-  (** Step 3: \<open>K\<^sub>1\<close> is a subcomplex of \<open>K\<close> (face-closed, intersection-compatible,
-      K.3-local-finite). **)
+  (** Step 3: \<open>K\<^sub>1\<close> is a subcomplex of \<open>K\<close>. Structure:
+        (K.1) All simplexes: \<open>K\<^sub>1 \<subseteq> K\<close>, inherit from \<open>K\<close>.
+        (K.2) Face-closed: face \<open>\<tau>\<close> of \<open>\<sigma> \<in> K\<^sub>1\<close> has vertices \<open>W \<subseteq> V\<^sub>\<sigma> \<subseteq> V\<close>;
+              \<open>\<tau> \<in> K\<close> by \<open>K\<close>-face-closure; \<open>\<tau>\<close> has simplex-vertices \<open>W\<close>
+              (general-position descends to subsets). So \<open>\<tau> \<in> K\<^sub>1\<close>.
+        (K.3) Intersection: \<open>\<sigma>, \<sigma>'\<in> K\<^sub>1\<close> have \<open>\<sigma> \<inter> \<sigma>'\<close> a face of both (in K), and
+              its vertices \<open>\<subseteq> V\<close> (again via descent).
+        (K.4) Local finiteness: \<open>K\<^sub>1 \<subseteq> K\<close>, so the finite nbhd works. **)
+  have hK\<^sub>1_subK: "K\<^sub>1 \<subseteq> K" unfolding K\<^sub>1_def by (by100 blast)
+  have hK\<^sub>2_subK: "K\<^sub>2 \<subseteq> K" unfolding K\<^sub>2_def by (by100 blast)
   have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1" sorry
-  (** Step 5: \<open>K\<^sub>2\<close> is a subcomplex of \<open>K\<close>. **)
+  (** Step 5: \<open>K\<^sub>2\<close> is a subcomplex of \<open>K\<close> (analogous). **)
   have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2" sorry
   (** Step 4: bipartition — any simplex has all or no vertices in \<open>V\<close>.
       Proof: if \<sigma>\<in>K has vertex in \<open>V\<close> and vertex not in \<open>V\<close>, the edge between
