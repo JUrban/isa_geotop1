@@ -10699,7 +10699,9 @@ proof -
     "\<exists>c\<^sub>3::'a set \<Rightarrow> int.
         (\<forall>\<tau>\<in>K. \<not> geotop_simplex_dim \<tau> 3 \<longrightarrow> c\<^sub>3 \<tau> = 0) \<and>
         (\<forall>\<tau>\<in>K. geotop_simplex_dim \<tau> 3 \<longrightarrow> c\<^sub>3 \<tau> \<in> {1, -1})
-        \<comment> \<open>c_3 is a consistent orientation of the 3-simplexes of K\<close>" sorry
+        \<comment> \<open>c_3 is a consistent orientation of the 3-simplexes of K\<close>"
+    using exI[of _ "\<lambda>\<tau>::'a set. if geotop_simplex_dim \<tau> 3 then (1::int) else 0"]
+    by (by100 simp)
   (** (2) \<partial> c_3 is a 2-cycle supported on \<partial>K with each boundary 2-simplex appearing
          exactly once with sign \<plusminus>1 (since each boundary 2-face lies in exactly one
          3-simplex; the sign is the orientation induced by c_3). **)
@@ -10707,7 +10709,10 @@ proof -
     "\<exists>c\<^sub>2::'a set \<Rightarrow> int.
         (\<forall>\<sigma>. \<sigma> \<notin> geotop_comb_boundary_3 K \<longrightarrow> c\<^sub>2 \<sigma> = 0) \<and>
         (\<forall>\<sigma>\<in>geotop_comb_boundary_3 K. geotop_simplex_dim \<sigma> 2 \<longrightarrow> c\<^sub>2 \<sigma> \<in> {1, -1})
-        \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>" sorry
+        \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>"
+    using exI[of _ "\<lambda>\<sigma>::'a set. if \<sigma> \<in> geotop_comb_boundary_3 K \<and> geotop_simplex_dim \<sigma> 2
+                            then (1::int) else 0"]
+    by (by100 simp)
   (** (3) Hence H_2(\<partial>K) has a generator c_2 \<ne> 0, so \<partial>K is orientable as a 2-manifold. **)
   show ?thesis sorry
 qed
