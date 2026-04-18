@@ -323,10 +323,18 @@ proof (rule ccontr)
     by (rule aff_dim_parallel_subspace[OF hVne hL_sub h_parallel])
   have hL_dim: "dim L = k"
     using h_aff_V hk_int by (by100 simp)
-  obtain B where hB_indep: "independent B" and hBfin: "finite B"
-             and hBcard: "card B = k" and hB_span: "span B = L"
-    using basis_exists[of L] hL_sub hL_dim
-    sorry \<comment> \<open>Existence of a basis of dim k: \<open>basis_exists\<close> + the fact \<open>dim L = k\<close>.\<close>
+  (** \<open>basis_exists\<close> gives \<open>B \<subseteq> L\<close>, \<open>independent B\<close>, \<open>L \<subseteq> span B\<close>, \<open>card B = dim L\<close>.
+      Combine with \<open>span B \<subseteq> L\<close> (since \<open>B \<subseteq> L\<close>, \<open>subspace L\<close>, \<open>span\<close> is the smallest
+      subspace containing B); and \<open>independent_bound\<close> gives \<open>finite B\<close>. **)
+  obtain B where hB_sub: "B \<subseteq> L" and hB_indep: "independent B"
+             and hB_span_sup: "L \<subseteq> span B" and hBcard_dim: "card B = dim L"
+    using basis_exists[of L] by (by100 blast)
+  have hBfin: "finite B" using independent_bound[OF hB_indep] by (by100 blast)
+  have hBcard: "card B = k" using hBcard_dim hL_dim by (by100 simp)
+  have hB_span_sub: "span B \<subseteq> L"
+    by (rule span_minimal[OF hB_sub hL_sub])
+  have hB_span: "span B = L"
+    using hB_span_sub hB_span_sup by (by100 blast)
   (** Hence \<open>geotop_hyperplane_dim (affine hull V) k\<close>. **)
   define H where "H = (+) a ` L"
   have hH_eq: "H = affine hull V" unfolding H_def using haff_form by (by100 simp)
