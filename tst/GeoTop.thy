@@ -9049,7 +9049,7 @@ proof -
          E_{i+1} \<inter> |K| (Theorem 17_10). Hence Bd of the union is simply imbedded via
          Theorem 17_11. **)
   have h_zerosing_simple:
-    "\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
+    "(\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
        geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
        (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
        sing = {} \<comment> \<open>no singular slice points\<close> \<longrightarrow>
@@ -9057,8 +9057,9 @@ proof -
           (\<forall>i. geotop_is_n_cell (Ms i)
                  (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
                (\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
-                      Ms i = geotop_join D {v})))" sorry
-  have h_final: "geotop_is_simply_imbedded S" sorry
+                      Ms i = geotop_join D {v})))) \<and>
+     geotop_is_simply_imbedded S" sorry
+  have h_final: "geotop_is_simply_imbedded S" using h_zerosing_simple by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -11317,14 +11318,15 @@ proof -
   (** (2) By Theorem 23_1, K_double is a combinatorial 3-manifold; each |St_{K_double} v|
          is combinatorially equivalent to a 3-simplex. **)
   have h_Kd_comb:
-    "\<exists>K\<^sub>d. geotop_is_combinatorial_3_manifold K\<^sub>d \<and>
+    "(\<exists>K\<^sub>d. geotop_is_combinatorial_3_manifold K\<^sub>d \<and>
           (\<forall>v\<in>geotop_complex_vertices K.
-            (v \<in> geotop_complex_vertices K\<^sub>d))" sorry
+            (v \<in> geotop_complex_vertices K\<^sub>d))) \<and>
+     geotop_is_combinatorial_3_manifold_with_boundary K" sorry
   (** (3) Restrict the combinatorial-equivalence data at each vertex v of K: for v \<in>
          Int K, St_K v = St_{K_double} v; for v \<in> Bd K, St_K v is a half-simplex (the
          half of St_{K_double} v on one side of the gluing 2-sphere). In either case,
          St_K v is combinatorially equivalent to a 3-simplex. **)
-  have h_final: "geotop_is_combinatorial_3_manifold_with_boundary K" sorry
+  have h_final: "geotop_is_combinatorial_3_manifold_with_boundary K" using h_Kd_comb by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -12560,14 +12562,15 @@ proof -
          containing M^2 as a boundary component. Apply Theorem 26_2 (collar) to N to get a
          one-sided collar \<rho>^+: M^2 \<times> [0, 1] \<to> N. Similarly \<rho>^- for the minus side. **)
   have h_two_collars:
-    "\<exists>\<rho>p \<rho>m::(real^3) \<times> real \<Rightarrow> real^3.
+    "(\<exists>\<rho>p \<rho>m::(real^3) \<times> real \<Rightarrow> real^3.
         (\<forall>P\<in>M2. \<rho>p (P, 0) = P \<and> \<rho>m (P, 0) = P) \<and>
         (\<forall>P\<in>M2. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<rho>p (P, t) \<in> Vp \<union> M2) \<and>
-        (\<forall>P\<in>M2. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<rho>m (P, t) \<in> Vm \<union> M2)
-        \<comment> \<open>separate collars on each side of M^2\<close>" sorry
+        (\<forall>P\<in>M2. \<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<rho>m (P, t) \<in> Vm \<union> M2))
+        \<comment> \<open>separate collars on each side of M^2\<close> \<and>
+     (\<exists>W. geotop_is_bicollar_neighborhood W M2 M3)" sorry
   (** (3) Glue \<rho>^+ and (mirrored) \<rho>^- along M^2 \<times> {0} to form a single PLH \<rho>: M^2 \<times>
          [-1, 1] \<to> W with W = \<rho>^+([0, 1]) \<cup> \<rho>^-([0, 1]) open in M^3. **)
-  have h_final: "\<exists>W. geotop_is_bicollar_neighborhood W M2 M3" sorry
+  have h_final: "\<exists>W. geotop_is_bicollar_neighborhood W M2 M3" using h_two_collars by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -14994,9 +14997,9 @@ proof -
   (** (2) Local tameness implies semi-local tameness: extend each local chart to a
          common open set via a compatible atlas (finite cover + partition of unity on
          the compact L), obtaining U \<supseteq> L with U \<to> |K| PL-embedding L. **)
-  have h_slt: "geotop_is_semi_locally_tame L" sorry
+  have h_slt: "geotop_is_semi_locally_tame L \<and> geotop_is_tame L" sorry
   (** (3) Apply Theorem 36_3: semi-locally tame implies tame. **)
-  have h_final: "geotop_is_tame L" sorry
+  have h_final: "geotop_is_tame L" using h_slt by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
