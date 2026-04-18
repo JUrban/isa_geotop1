@@ -6841,6 +6841,27 @@ definition geotop_CP ::
   "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a \<Rightarrow> (real \<Rightarrow> 'a) set" where
   "geotop_CP X T P\<^sub>0 = {p. geotop_closed_path_on X T P\<^sub>0 p}"
 
+(** The constant path at P_0 is a closed path, if P_0 \<in> X and T is a topology on X. **)
+lemma geotop_const_closed_path:
+  assumes hT: "is_topology_on X T"
+  assumes hP: "P\<^sub>0 \<in> X"
+  shows "geotop_closed_path_on X T P\<^sub>0 (\<lambda>t. P\<^sub>0)"
+proof -
+  have hTeucl: "is_topology_on (UNIV::real set) geotop_euclidean_topology"
+    using top1_open_sets_is_topology_on_UNIV
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (by100 simp)
+  have hsub_topol: "is_topology_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                    (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1})"
+    by (rule subspace_topology_is_topology_on[OF hTeucl]) simp
+  have hcont: "top1_continuous_map_on {t::real. 0 \<le> t \<and> t \<le> 1}
+                 (subspace_topology UNIV geotop_euclidean_topology {t. 0 \<le> t \<and> t \<le> 1}) X T (\<lambda>t. P\<^sub>0)"
+    by (rule top1_continuous_map_on_const[OF hsub_topol hT hP])
+  show ?thesis
+    using hcont unfolding geotop_closed_path_on_def geotop_path_on_def
+    by (by100 simp)
+qed
+
 (** from \<S>14: path multiplication (geotop.tex:2673)
     LATEX VERSION: In CP(X, P_0) we multiply paths by shrinking them and laying them end to
       end. pq(t) = p(2t) for 0 \<le> t \<le> 1/2, = q(2t-1) for 1/2 \<le> t \<le> 1. **)
