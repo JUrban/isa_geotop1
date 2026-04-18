@@ -268,14 +268,6 @@ primrec geotop_iterated_Sd ::
   "geotop_iterated_Sd 0 K = K"
 | "geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)"
 
-(** from early.tex Lemma 4.9: \<open>Sd(K)\<close> is a simplicial complex and is a
-    subdivision of \<open>K\<close>. **)
-lemma geotop_Sd_is_subdivision:
-  fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K"
-  shows "geotop_is_subdivision (geotop_Sd K) K"
-  sorry
-
 (** Reflexivity of subdivision: every complex is a subdivision of itself. **)
 lemma geotop_is_subdivision_refl:
   fixes K :: "'a::real_normed_vector set set"
@@ -325,6 +317,32 @@ proof -
   show ?thesis
     unfolding geotop_is_subdivision_def
     using hMcomp hKcomp hMK_ref hMK_poly by (by100 blast)
+qed
+
+(** from early.tex Lemma 4.9: \<open>Sd(K)\<close> is a simplicial complex and is a
+    subdivision of \<open>K\<close>. The \<open>SOME\<close>-defined witness is selected from the set
+    of subdivisions of K whose 0-simplexes contain those of K; this set is
+    non-empty (take \<open>K\<close> itself), so \<open>SOME\<close> picks something with that property. **)
+lemma geotop_Sd_is_subdivision:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_Sd K) K"
+proof -
+  (** (1) Witness: \<open>K\<close> itself is a subdivision of \<open>K\<close> (reflexivity) and trivially
+      contains all its own 0-simplexes. **)
+  have hwit: "geotop_is_subdivision K K
+                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> K)"
+    using geotop_is_subdivision_refl[OF hK] by (by100 blast)
+  (** (2) Apply \<open>someI_ex\<close> to the SOME def. **)
+  have hex: "\<exists>bK. geotop_is_subdivision bK K
+                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK)"
+    using hwit by (by100 blast)
+  have hprop: "geotop_is_subdivision (geotop_barycentric_subdivision K) K
+                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow>
+                        \<sigma> \<in> geotop_barycentric_subdivision K)"
+    unfolding geotop_barycentric_subdivision_def
+    using someI_ex[OF hex] by (by100 blast)
+  show ?thesis using hprop by (by100 blast)
 qed
 
 (** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
