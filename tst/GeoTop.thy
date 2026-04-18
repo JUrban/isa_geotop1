@@ -849,18 +849,185 @@ proof -
 qed
 
 (** Image of a simplex under a map that is linear on it and injective on it is a simplex.
-    Proof plan: \<sigma> = conv V with V in general position; linearity gives
-    f(\<sigma>) = conv(f \`\` V); injectivity + affine-structure gives f V is affinely
-    independent, which together with card(f V) = card V + ambient dim gives
-    general_position. **)
+    Full proof except for "affine injection preserves affine independence" which is a
+    classical fact deferred to a sub-sorry. **)
 lemma geotop_linear_inj_image_is_simplex:
   fixes \<sigma> :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
   assumes h_lin: "geotop_linear_on \<sigma> f"
   assumes h_inj: "inj_on f \<sigma>"
   assumes h_sim: "geotop_is_simplex \<sigma>"
   shows "geotop_is_simplex (f ` \<sigma>)"
-  sorry \<comment> \<open>Deep: requires affine-injection-preserves-AI + general_position derivation.
-             Deferred pending support lemma \<open>geotop_ai_imp_general_position\<close>.\<close>
+proof -
+  (** (1) Extract V from linear_on: V is vertex set, bary-linearity holds. **)
+  obtain V where h_sv: "geotop_simplex_vertices \<sigma> V"
+             and h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+                              f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_lin unfolding geotop_linear_on_def by (by100 blast)
+  obtain m n where hVfin: "finite V" and hVcard: "card V = n + 1" and hnm: "n \<le> m"
+               and hVgp: "geotop_general_position V m"
+               and h\<sigma>hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hVai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h_sv])
+  (** (2) f \<sigma> = conv (f V) via bary expansion. **)
+  have h_f_img_eq: "f ` \<sigma> = convex hull (f ` V)"
+  proof (rule set_eqI, rule iffI)
+    fix y assume "y \<in> f ` \<sigma>"
+    then obtain x where hx\<sigma>: "x \<in> \<sigma>" and hy: "y = f x" by (by100 blast)
+    have hx_hull: "x \<in> convex hull V" using hx\<sigma> h\<sigma>_HOL by (by100 simp)
+    have h_hull_char: "convex hull V = {y. \<exists>u. (\<forall>v\<in>V. 0 \<le> u v) \<and> sum u V = 1
+                                               \<and> (\<Sum>v\<in>V. u v *\<^sub>R v) = y}"
+      by (rule convex_hull_finite[OF hVfin])
+    have h_ex: "\<exists>u. (\<forall>v\<in>V. 0 \<le> u v) \<and> sum u V = 1 \<and> (\<Sum>v\<in>V. u v *\<^sub>R v) = x"
+      using hx_hull h_hull_char by (by100 blast)
+    obtain t where ht_nn: "\<forall>v\<in>V. 0 \<le> t v" and ht_sum: "sum t V = 1"
+                 and hx_eq_raw: "(\<Sum>v\<in>V. t v *\<^sub>R v) = x"
+      using h_ex by (by100 blast)
+    have hx_eq: "x = (\<Sum>v\<in>V. t v *\<^sub>R v)" using hx_eq_raw by (by100 simp)
+    have h_lin_at_t: "f (\<Sum>v\<in>V. t v *\<^sub>R v) = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+      using h_prop ht_nn ht_sum by (by100 blast)
+    have hy_eq: "y = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+      using hy hx_eq h_lin_at_t by (by100 simp)
+    have hfV_fin: "finite (f ` V)" using hVfin by (by100 simp)
+    (** Translate t on V to t' on f V; we need inj for this. **)
+    have hV_sub_\<sigma>: "V \<subseteq> \<sigma>"
+      using h_sv h\<sigma>hull unfolding geotop_simplex_vertices_def geotop_convex_hull_def
+      by (by100 blast)
+    have h_inj_V: "inj_on f V" using h_inj hV_sub_\<sigma> inj_on_subset by (by100 blast)
+    define t' :: "'b \<Rightarrow> real" where "t' w = t (inv_into V f w)" for w
+    have h_t'_nn: "\<forall>w\<in>f`V. 0 \<le> t' w"
+    proof
+      fix w assume hw: "w \<in> f ` V"
+      obtain v where hvV: "v \<in> V" and hwv: "w = f v" using hw by (by100 blast)
+      have h_inv_raw: "inv_into V f (f v) = v"
+        by (rule inv_into_f_f[OF h_inj_V hvV])
+      have h_inv: "inv_into V f w = v"
+        using h_inv_raw hwv by (by100 simp)
+      show "0 \<le> t' w" unfolding t'_def using h_inv ht_nn hvV by (by100 simp)
+    qed
+    have h_t'_sum: "sum t' (f ` V) = 1"
+    proof -
+      have h_step1: "sum t' (f ` V) = (\<Sum>w\<in>f`V. t (inv_into V f w))"
+        unfolding t'_def by (by100 simp)
+      have h_reindex: "sum (t \<circ> inv_into V f) (f ` V) = sum ((t \<circ> inv_into V f) \<circ> f) V"
+        by (rule sum.reindex[OF h_inj_V])
+      have h_comp_id: "\<And>v. v \<in> V \<Longrightarrow> ((t \<circ> inv_into V f) \<circ> f) v = t v"
+      proof -
+        fix v assume hvV: "v \<in> V"
+        have "inv_into V f (f v) = v" by (rule inv_into_f_f[OF h_inj_V hvV])
+        thus "((t \<circ> inv_into V f) \<circ> f) v = t v" by (by100 simp)
+      qed
+      have h_sum_eq: "sum ((t \<circ> inv_into V f) \<circ> f) V = sum t V"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume hvV: "v \<in> V"
+        show "((t \<circ> inv_into V f) \<circ> f) v = t v" by (rule h_comp_id[OF hvV])
+      qed
+      have h_step2: "(\<Sum>w\<in>f`V. t (inv_into V f w)) = sum t V"
+        using h_reindex h_sum_eq by (by100 simp)
+      show ?thesis using h_step1 h_step2 ht_sum by (by100 simp)
+    qed
+    have h_vec_eq: "(\<Sum>w\<in>f`V. t' w *\<^sub>R w) = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+    proof -
+      have h_re: "sum (\<lambda>w. t' w *\<^sub>R w) (f ` V) = sum ((\<lambda>w. t' w *\<^sub>R w) \<circ> f) V"
+        by (rule sum.reindex[OF h_inj_V])
+      have h_expand: "\<And>v. v \<in> V \<Longrightarrow> ((\<lambda>w. t' w *\<^sub>R w) \<circ> f) v = t v *\<^sub>R f v"
+      proof -
+        fix v assume hvV: "v \<in> V"
+        have "inv_into V f (f v) = v" by (rule inv_into_f_f[OF h_inj_V hvV])
+        thus "((\<lambda>w. t' w *\<^sub>R w) \<circ> f) v = t v *\<^sub>R f v"
+          unfolding t'_def by (by100 simp)
+      qed
+      have h_sum_after: "sum ((\<lambda>w. t' w *\<^sub>R w) \<circ> f) V = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume hvV: "v \<in> V"
+        show "((\<lambda>w. t' w *\<^sub>R w) \<circ> f) v = t v *\<^sub>R f v" by (rule h_expand[OF hvV])
+      qed
+      show ?thesis using h_re h_sum_after by (by100 simp)
+    qed
+    have hy_bary: "y = (\<Sum>w\<in>f`V. t' w *\<^sub>R w)"
+      using hy_eq h_vec_eq by (by100 simp)
+    show "y \<in> convex hull (f ` V)"
+      unfolding convex_hull_finite[OF hfV_fin]
+      using h_t'_nn h_t'_sum hy_bary by (by100 blast)
+  next
+    fix y assume hy_in: "y \<in> convex hull (f ` V)"
+    have hfV_fin2: "finite (f ` V)" using hVfin by (by100 simp)
+    have h_hull_char2: "convex hull (f ` V) =
+                        {y. \<exists>u. (\<forall>x\<in>f`V. 0 \<le> u x) \<and> sum u (f ` V) = 1
+                                 \<and> (\<Sum>x\<in>f`V. u x *\<^sub>R x) = y}"
+      by (rule convex_hull_finite[OF hfV_fin2])
+    have h_ex2: "\<exists>u. (\<forall>x\<in>f`V. 0 \<le> u x) \<and> sum u (f ` V) = 1
+                     \<and> (\<Sum>x\<in>f`V. u x *\<^sub>R x) = y"
+      using hy_in h_hull_char2 by (by100 blast)
+    obtain u where hu_nn: "\<forall>w\<in>f`V. 0 \<le> u w" and hu_sum: "sum u (f ` V) = 1"
+                 and hy_raw: "(\<Sum>w\<in>f`V. u w *\<^sub>R w) = y"
+      using h_ex2 by (by100 blast)
+    have hy: "y = (\<Sum>w\<in>f`V. u w *\<^sub>R w)" using hy_raw by (by100 simp)
+    define t :: "'a \<Rightarrow> real" where "t v = u (f v)" for v
+    have hV_sub_\<sigma>: "V \<subseteq> \<sigma>"
+      using h_sv h\<sigma>hull unfolding geotop_simplex_vertices_def geotop_convex_hull_def
+      by (by100 blast)
+    have h_inj_V: "inj_on f V" using h_inj hV_sub_\<sigma> inj_on_subset by (by100 blast)
+    have h_t_nn: "\<forall>v\<in>V. 0 \<le> t v" unfolding t_def using hu_nn by (by100 blast)
+    have h_t_sum: "sum t V = 1"
+    proof -
+      have h1: "sum t V = sum (u \<circ> f) V" unfolding t_def by (by100 simp)
+      have h_re: "sum u (f ` V) = sum (u \<circ> f) V" by (rule sum.reindex[OF h_inj_V])
+      show ?thesis using h1 h_re hu_sum by (by100 simp)
+    qed
+    define x where "x = (\<Sum>v\<in>V. t v *\<^sub>R v)"
+    have hx_in_hull: "x \<in> convex hull V"
+      unfolding x_def convex_hull_finite[OF hVfin]
+      using h_t_nn h_t_sum by (by100 blast)
+    have hx_\<sigma>: "x \<in> \<sigma>" using hx_in_hull h\<sigma>_HOL by (by100 simp)
+    have h_fx: "f x = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+      using x_def h_prop h_t_nn h_t_sum by (by100 simp)
+    have h_vec_eq: "(\<Sum>v\<in>V. t v *\<^sub>R f v) = (\<Sum>w\<in>f`V. u w *\<^sub>R w)"
+    proof -
+      have "(\<Sum>v\<in>V. t v *\<^sub>R f v) = (\<Sum>v\<in>V. u (f v) *\<^sub>R f v)"
+        unfolding t_def by (by100 simp)
+      also have "\<dots> = sum ((\<lambda>w. u w *\<^sub>R w) \<circ> f) V" by (by100 simp)
+      also have "\<dots> = (\<Sum>w\<in>f`V. u w *\<^sub>R w)"
+      proof -
+        have h_re: "sum (\<lambda>w. u w *\<^sub>R w) (f ` V) = sum ((\<lambda>w. u w *\<^sub>R w) \<circ> f) V"
+          by (rule sum.reindex[OF h_inj_V])
+        show ?thesis using h_re by (by100 simp)
+      qed
+      finally show ?thesis .
+    qed
+    have "f x = y" using h_fx h_vec_eq hy by (by100 simp)
+    then show "y \<in> f ` \<sigma>" using hx_\<sigma> by (by100 blast)
+  qed
+  (** (3) card (f V) = card V (inj on V \<subseteq> \<sigma>). **)
+  have hV_sub_\<sigma>: "V \<subseteq> \<sigma>"
+    using h_sv h\<sigma>hull unfolding geotop_simplex_vertices_def geotop_convex_hull_def
+    by (by100 blast)
+  have h_inj_V: "inj_on f V" using h_inj hV_sub_\<sigma> inj_on_subset by (by100 blast)
+  have h_fV_card: "card (f ` V) = card V" by (rule card_image[OF h_inj_V])
+  have h_fV_fin: "finite (f ` V)" using hVfin by (by100 simp)
+  have h_fV_card_eq: "card (f ` V) = n + 1" using h_fV_card hVcard by (by100 simp)
+  (** (4) f V is AI (deferred — deep classical fact). **)
+  have h_fV_ai: "\<not> affine_dependent (f ` V)"
+    sorry \<comment> \<open>Affine injective on conv V preserves affine independence of V.
+              Deferred; classical.\<close>
+  (** (5) AI + card → general_position. **)
+  have h_fV_gp: "geotop_general_position (f ` V) n"
+    by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card_eq h_fV_ai])
+  (** (6) Assemble simplex definition. **)
+  have h_fV_hull_HOL: "geotop_convex_hull (f ` V) = convex hull (f ` V)"
+    by (rule geotop_convex_hull_eq_HOL)
+  have h_fV_hull: "f ` \<sigma> = geotop_convex_hull (f ` V)"
+    using h_f_img_eq h_fV_hull_HOL by (by100 simp)
+  show "geotop_is_simplex (f ` \<sigma>)"
+    unfolding geotop_is_simplex_def
+    using h_fV_fin h_fV_card_eq h_fV_gp h_fV_hull by (by100 blast)
+qed
 
 (** Image of a face under a linear+injective map is a face of the image. **)
 lemma geotop_linear_inj_image_preserves_face:
