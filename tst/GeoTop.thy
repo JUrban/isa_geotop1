@@ -1810,6 +1810,9 @@ proof -
     have hf_PL_bwd: "geotop_PL_map K L (inv_into (geotop_polyhedron L) f)"
       using hf_PLH unfolding geotop_PLH_def by (by100 blast)
     obtain K\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
+                and hK\<^sub>1_lin: "\<forall>\<sigma>\<in>K\<^sub>1. \<exists>\<tau>\<in>L.
+                                  (\<forall>x\<in>\<sigma>. inv_into (geotop_polyhedron L) f x \<in> \<tau>)
+                                  \<and> geotop_linear_on \<sigma> (inv_into (geotop_polyhedron L) f)"
       using hf_PL_bwd unfolding geotop_PL_map_def by (by100 blast)
     (** (4) Apply Theorem_GT_1 to get a common subdivision \<open>K\<^sub>3\<close> of \<open>fL\<^sub>1\<close> and \<open>K\<^sub>1\<close>
           (uses \<open>finite K\<close> hypothesis). **)
@@ -1841,8 +1844,16 @@ proof -
       unfolding L\<^sub>3_def geotop_polyhedron_def by (by100 blast)
     have hL\<^sub>3_poly: "geotop_polyhedron L\<^sub>3 = geotop_polyhedron L"
       using hL\<^sub>3_poly_step hK\<^sub>3_poly_eq_K hf_inv_img_K by (by100 simp)
+    (** Each simplex of L_3 sits in some simplex of L via the PL structure.
+        Proof: K_3 refines K_1 (subdivision), and f_inv is linear on each simplex
+        of K_1 mapping into some simplex of L. Hence each s_3 \<in> K_3 satisfies
+        s_3 \<subseteq> s_1 \<in> K_1 for some s_1, and f_inv(s_3) \<subseteq> f_inv(s_1) \<subseteq> \<tau> \<in> L. **)
+    have hK\<^sub>3_ref_K\<^sub>1: "geotop_refines K\<^sub>3 K\<^sub>1"
+      using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
     have hL\<^sub>3_ref: "geotop_refines L\<^sub>3 L"
-      sorry \<comment> \<open>Each simplex of L_3 sits in some simplex of L via the PL structure.\<close>
+      sorry \<comment> \<open>Each simplex of L_3 sits in some simplex of L via the PL structure:
+                 K_3 refines K_1, and inv_f is linear on each K_1-simplex mapping
+                 into some L-simplex. See elaborated sketch below.\<close>
     have hLcomp: "geotop_is_complex L"
       using hf_PL_fwd unfolding geotop_PL_map_def geotop_is_subdivision_def
       by (by100 blast)
