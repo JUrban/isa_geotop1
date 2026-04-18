@@ -7183,12 +7183,11 @@ proof -
      \<Union>Ts = {0..1} \<times> {0..1}" sorry
   (** (4) Define f to be affine on each simplex T_i, with f | vertices = F | vertices. By
          convexity of each B_i \<supseteq> F(T_i), f(T_i) \<subseteq> B_i \<subseteq> U. **)
-  obtain f :: "real \<times> real \<Rightarrow> real^3" where h_PL_homotopy:
-    "(\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> U) \<and>
-     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
-     (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p' t) \<and>
-     (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>f. (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> U) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+             (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p' t) \<and>
+             (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>14: canonical homomorphism (geotop.tex:2775)
@@ -7290,7 +7289,21 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
             \<mu> C = z"
     using exI[of _ "{}::('a set \<Rightarrow> int) set"] by (by100 simp)
-  show ?thesis sorry
+  have h_final: "\<exists>(h::(real \<Rightarrow> 'a) set \<Rightarrow> ('a set \<Rightarrow> int)) (Z1::('a set \<Rightarrow> int) set).
+           (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              h C \<in> Z1) \<and>
+           (\<forall>C\<in>geotop_pi (geotop_polyhedron K)
+                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              \<forall>D\<in>geotop_pi (geotop_polyhedron K)
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
+              h (geotop_pi_mult (geotop_polyhedron K)
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+                   P\<^sub>0 C D) = (\<lambda>e. h C e + h D e)) \<and>
+           (\<forall>z\<in>Z1. \<exists>C\<in>geotop_pi (geotop_polyhedron K)
+                       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+                       P\<^sub>0. h C = z)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>15 The group of (the complement of) a link\<close>
