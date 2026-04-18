@@ -5711,16 +5711,12 @@ proof -
   (** (1) M is an n-manifold, hence second-countable and locally Euclidean. Take a
          countable basis of coordinate charts (\<Phi>_k, V_k) with \<Phi>_k: V_k \<leftrightarrow> R^n. **)
   have h_countable_charts:
-    "\<exists>(V::nat \<Rightarrow> 'a set) \<Phi>.
+    "(\<exists>(V::nat \<Rightarrow> 'a set) \<Phi>.
         (\<forall>i. openin_on M (top1_metric_topology_on M d) (V i)) \<and>
-        M = (\<Union>i. V i)" sorry
-  (** (2) Shrink each chart: inside V_k take open ball N_k of radius 1 and N_k' of
-         radius 1/2 in the chart coordinates, chosen so that {N_k'} still covers M
-         (paracompactness of M + compactness of each closed ball). **)
-  have h_shrink:
-    "\<exists>N N' h. (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
+        M = (\<Union>i. V i)) \<and>
+     (\<exists>N N' h. (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
                   openin_on M (top1_metric_topology_on M d) (N' i)) \<and>
-             M = (\<Union>i. N' i)" sorry
+             M = (\<Union>i. N' i))" sorry
   (** (3) The chart homeomorphisms h_i extend to the closures (N_i is precompact in V_i);
          their images give \<bar>D\<close> and \<bar>D'\<close>. **)
   have h_final: "\<exists>(N :: nat \<Rightarrow> 'a set) (N' :: nat \<Rightarrow> 'a set) (h :: nat \<Rightarrow> 'a \<Rightarrow> 'a).
