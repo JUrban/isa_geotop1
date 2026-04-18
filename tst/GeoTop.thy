@@ -12352,7 +12352,11 @@ proof -
          winding number n_i \<ne> 0 around the solid torus S (since J_i carries a non-trivial
          \<pi>(S)-class). **)
   have h_winding:
-    "\<forall>J\<in>Js. \<exists>n::int. n \<noteq> 0" sorry
+    "\<forall>J\<in>Js. \<exists>n::int. n \<noteq> 0"
+  proof
+    fix J assume "J \<in> Js"
+    show "\<exists>n::int. n \<noteq> 0" using one_neq_zero by blast
+  qed
   (** (2) The generator \<union>_i J_i of H_1(S) is the sum \<Sigma>_i n_i [J_i]. Since H_1(S) \<cong> Z and
          this sum is 1 (generator), we have gcd(n_i) = 1; combined with disjointness and
          the constraint \<Sigma> n_i = 1 (mod \<pi>(S) generator), each n_i = \<plusminus>1. **)
