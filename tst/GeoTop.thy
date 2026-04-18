@@ -13764,7 +13764,8 @@ proof -
     "top1_homeomorphism_on (geotop_polyhedron K1)
        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
        (geotop_polyhedron K2)
-       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h" sorry
+       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) h"
+    using hhomeo by (by100 blast)
   (** (2) Theorem 36.1 gives a PLH f: |K_1| \<leftrightarrow> |K_2| approximating h. Since f is PLH
          and f(|K_1|) = h(|K_1|) = |K_2|, we obtain the desired simplicial equivalence. **)
   show ?thesis sorry
