@@ -1818,9 +1818,21 @@ proof -
       using Theorem_GT_1[OF hKfin hfL\<^sub>1_sub hK\<^sub>1K] by (by100 blast)
     (** (5) Pull \<open>K\<^sub>3\<close> back through \<open>f\<close> to get \<open>L\<^sub>3 < L\<^sub>1\<close> with \<open>f: L\<^sub>3 \<cong> K\<^sub>3\<close>. **)
     define L\<^sub>3 where "L\<^sub>3 = (\<lambda>\<sigma>. inv_into (geotop_polyhedron L) f ` \<sigma>) ` K\<^sub>3"
+    (** L_3 is a subdivision of L: decomposed into (i) complex, (ii)
+        polyhedron equality, (iii) refinement. **)
+    have hL\<^sub>3_complex: "geotop_is_complex L\<^sub>3"
+      sorry \<comment> \<open>L_3 is a complex: image of complex K_3 under a bijective PL map
+                preserves the complex structure.\<close>
+    have hL\<^sub>3_poly: "geotop_polyhedron L\<^sub>3 = geotop_polyhedron L"
+      sorry \<comment> \<open>|L_3| = f_inv(|K_3|) = f_inv(|K|) = |L| via bijection.\<close>
+    have hL\<^sub>3_ref: "geotop_refines L\<^sub>3 L"
+      sorry \<comment> \<open>Each simplex of L_3 sits in some simplex of L via the PL structure.\<close>
+    have hLcomp: "geotop_is_complex L"
+      using hf_PL_fwd unfolding geotop_PL_map_def geotop_is_subdivision_def
+      by (by100 blast)
     have hL\<^sub>3_L: "geotop_is_subdivision L\<^sub>3 L"
-      sorry \<comment> \<open>Pull back via \<open>f\<^sup>-\<^sup>1\<close> (linear on each simplex of \<open>K\<^sub>1\<close>, hence on \<open>K\<^sub>3 < K\<^sub>1\<close>);
-                image is a subdivision of \<open>L\<^sub>1\<close>, transitively of \<open>L\<close>.\<close>
+      unfolding geotop_is_subdivision_def
+      using hL\<^sub>3_complex hLcomp hL\<^sub>3_ref hL\<^sub>3_poly by (by100 blast)
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
       sorry \<comment> \<open>\<open>f\<close> linear on each simplex of \<open>L\<^sub>3\<close>, bijective on vertex sets.\<close>
     (** (6) Assemble \<open>K \<sim>_c L\<close> from \<open>K\<^sub>3 < K\<close> and \<open>L\<^sub>3 < L\<close> and \<open>K\<^sub>3 \<cong> L\<^sub>3\<close>. **)
