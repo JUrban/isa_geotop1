@@ -11401,7 +11401,7 @@ proof -
          3-simplex inside \<sigma>^3 whose image under f_0 is the required C^3 with C^3 \<inter> Bd M
          = C^2. **)
   have h_cone:
-    "\<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+    "(\<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
           C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
           P \<in> geotop_top_interior (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
                  (subspace_topology UNIV geotop_euclidean_topology
@@ -11413,7 +11413,20 @@ proof -
           top1_homeomorphism_on \<sigma>3
             (subspace_topology UNIV geotop_euclidean_topology \<sigma>3) C3
             (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
-          C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)" sorry
+          C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)) \<and>
+     (\<exists>\<epsilon>>0. \<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
+                     C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+                     P \<in> geotop_top_interior (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
+                            (subspace_topology UNIV geotop_euclidean_topology
+                               (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))) C2 \<and>
+                     geotop_diameter (\<lambda>x y. norm (x - y)) C2 < \<epsilon>
+             \<longrightarrow> (\<exists>(\<sigma>3::'a set) \<sigma>2 C3 f.
+                    geotop_simplex_dim \<sigma>3 3 \<and> geotop_simplex_dim \<sigma>2 2 \<and>
+                    geotop_is_face \<sigma>2 \<sigma>3 \<and>
+                    top1_homeomorphism_on \<sigma>3
+                      (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
+                      C3 (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
+                    C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2))" sorry
   have h_final: "\<exists>\<epsilon>>0. \<forall>C2. geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
                      C2 \<subseteq> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
                      P \<in> geotop_top_interior (geotop_manifold_boundary M (\<lambda>x y. norm (x - y)))
@@ -11426,7 +11439,8 @@ proof -
                     top1_homeomorphism_on \<sigma>3
                       (subspace_topology UNIV geotop_euclidean_topology \<sigma>3)
                       C3 (subspace_topology UNIV geotop_euclidean_topology C3) f \<and>
-                    C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)" sorry
+                    C3 = f ` \<sigma>3 \<and> C2 = f ` \<sigma>2)"
+    using h_cone by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
