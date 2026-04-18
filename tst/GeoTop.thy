@@ -11939,7 +11939,8 @@ proof -
     "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
            \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
      \<not> (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
-           \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)" sorry
+           \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J)"
+    by (by100 blast)
   (** (2) If J doesn't bound a 2-cell in A, then A - J has two annular components (J is
          essential), and J is isotopic to the core circle (Theorem 27.2 argument). **)
   have h_essential_gen:
