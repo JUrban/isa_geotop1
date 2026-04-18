@@ -513,6 +513,21 @@ proof -
     using h_sv_\<tau> h_prop_\<tau> by (by100 blast)
 qed
 
+(** Linearity on a simplex descends to any sub-simplex (subset that is itself a simplex).
+    Unlike \<open>geotop_linear_on_face\<close> which requires face relation, this works for arbitrary
+    simplex-subsets (e.g. sub-simplexes in a common refinement). Proof sketch (early.tex
+    style): each vertex w of \<sigma>' lies in \<sigma>, so w = \<Sum> t_{w,v} v (bary coords over V_\<sigma>).
+    For any \<alpha> over V_{\<sigma>'}, expand \<Sum> \<alpha>_w w = \<Sum>_v (\<Sum>_w \<alpha>_w t_{w,v}) v = \<Sum>_v \<beta>_v v.
+    Apply linear_on \<sigma> f twice: once to get f(w) = \<Sum> t_{w,v} f(v), once to get
+    f(\<Sum> \<beta>_v v) = \<Sum> \<beta>_v f(v). Conclude f(\<Sum> \<alpha>_w w) = \<Sum> \<alpha>_w f(w). **)
+lemma geotop_linear_on_sub_simplex:
+  fixes \<sigma> \<sigma>' :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::real_vector"
+  assumes h_lin: "geotop_linear_on \<sigma> f"
+  assumes h_sim': "geotop_is_simplex \<sigma>'"
+  assumes h_sub: "\<sigma>' \<subseteq> \<sigma>"
+  shows "geotop_linear_on \<sigma>' f"
+  sorry
+
 subsection \<open>Diameter and mesh\<close>
 
 (** from \<S>4: diameter and mesh (geotop.tex:953)
@@ -7402,10 +7417,37 @@ proof
   have hK12_K: "geotop_is_subdivision K\<^sub>12 K"
     by (rule geotop_is_subdivision_trans[OF hsub hK12_K1])
   (** For each \<sigma> \<in> K_12, it refines some \<sigma>_2 \<in> K_2, so f is linear on \<sigma>_2 and
-      \<sigma> \<subseteq> \<sigma>_2. Claim: f|\<sigma> linear + f(\<sigma>) \<subseteq> some \<tau> \<in> L (the one for \<sigma>_2). **)
+      \<sigma> \<subseteq> \<sigma>_2. Linear_on descends to sub-simplex by geotop_linear_on_sub_simplex.
+      Target \<tau> \<in> L: take the L-simplex witness for \<sigma>_2. **)
+  have hK12_K2_ref: "geotop_refines K\<^sub>12 K\<^sub>2"
+    using hK12_K2 unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK12_K2_complex: "geotop_is_complex K\<^sub>12"
+    using hK12_K1 unfolding geotop_is_subdivision_def by (by100 blast)
   have hK12_witness: "\<forall>\<sigma>\<in>K\<^sub>12. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
-    sorry \<comment> \<open>Needs: linear_on K_2-simplex restricts to linear_on sub-simplex;
-              depends on vertex-decomposition preservation in the common refinement.\<close>
+  proof (rule ballI)
+    fix \<sigma> :: "'a set" assume h\<sigma>: "\<sigma> \<in> K\<^sub>12"
+    (** \<sigma> is a simplex (K_12 is a complex, K.0 condition). **)
+    have h\<sigma>_sim: "geotop_is_simplex \<sigma>"
+      using h\<sigma> geotop_is_complex_simplex[OF hK12_K2_complex] by (by100 blast)
+    (** \<sigma> sits in some \<sigma>_2 \<in> K_2 by refinement K_12 < K_2. **)
+    obtain \<sigma>\<^sub>2 where h\<sigma>\<^sub>2K\<^sub>2: "\<sigma>\<^sub>2 \<in> K\<^sub>2" and h\<sigma>\<sigma>\<^sub>2: "\<sigma> \<subseteq> \<sigma>\<^sub>2"
+      using h\<sigma> hK12_K2_ref unfolding geotop_refines_def by (by100 blast)
+    (** For \<sigma>_2 \<in> K_2: \<exists>\<tau> \<in> L with f(\<sigma>_2) \<subseteq> \<tau> and f linear on \<sigma>_2. **)
+    have h_raw\<sigma>\<^sub>2: "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>\<^sub>2. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma>\<^sub>2 f"
+      using hK2_lin_raw h\<sigma>\<^sub>2K\<^sub>2 by (by100 blast)
+    obtain \<tau> where h\<tau>L: "\<tau> \<in> L"
+               and hrest\<sigma>\<^sub>2: "(\<forall>x\<in>\<sigma>\<^sub>2. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma>\<^sub>2 f"
+      using h_raw\<sigma>\<^sub>2 by (by100 blast)
+    have hf\<sigma>\<^sub>2: "\<forall>x\<in>\<sigma>\<^sub>2. f x \<in> \<tau>" using hrest\<sigma>\<^sub>2 by (by100 blast)
+    have hlin_\<sigma>\<^sub>2: "geotop_linear_on \<sigma>\<^sub>2 f" using hrest\<sigma>\<^sub>2 by (by100 blast)
+    (** f(\<sigma>) \<subseteq> f(\<sigma>_2) \<subseteq> \<tau>. **)
+    have hf\<sigma>: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>" using hf\<sigma>\<^sub>2 h\<sigma>\<sigma>\<^sub>2 by (by100 blast)
+    (** Linear_on \<sigma> f via sub-simplex descent. **)
+    have hlin_\<sigma>: "geotop_linear_on \<sigma> f"
+      by (rule geotop_linear_on_sub_simplex[OF hlin_\<sigma>\<^sub>2 h\<sigma>_sim h\<sigma>\<sigma>\<^sub>2])
+    show "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using h\<tau>L hf\<sigma> hlin_\<sigma> by (by100 blast)
+  qed
   have hK12_PL_K1_f: "geotop_PL_map K1 L f"
     unfolding geotop_PL_map_def
     using hK12_K1 hK12_witness by (by100 blast)
