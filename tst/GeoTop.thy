@@ -630,7 +630,10 @@ proof -
 qed
 
 (** PL-map lifting across refinement: if \<open>f\<close> is a PL map of \<open>K' \<to> L'\<close> and
-    \<open>K' < K\<close>, \<open>L' < L\<close>, then \<open>f\<close> is a PL map of \<open>K \<to> L\<close>. **)
+    \<open>K' < K\<close>, \<open>L' < L\<close>, then \<open>f\<close> is a PL map of \<open>K \<to> L\<close>.
+    Proof: unfold the PL-map witness \<open>K_0 < K'\<close>; by transitivity \<open>K_0 < K\<close>;
+    for each simplex \<open>\<sigma> \<in> K_0\<close>, \<open>f(\<sigma>) \<subseteq> \<tau>\<close> for some \<open>\<tau> \<in> L'\<close>, and by refinement
+    \<open>\<tau> \<subseteq> \<tilde>\<tau>\<close> for some \<open>\<tilde>\<tau> \<in> L\<close>, giving \<open>f(\<sigma>) \<subseteq> \<tilde>\<tau>\<close>. Linearity carries. **)
 lemma geotop_PL_map_lift:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
@@ -639,7 +642,38 @@ lemma geotop_PL_map_lift:
   assumes hL'L: "geotop_is_subdivision L' L"
   assumes hPL: "geotop_PL_map K' L' f"
   shows "geotop_PL_map K L f"
-  sorry
+proof -
+  (** (1) Extract a common witness \<open>K\<^sub>0 < K'\<close> on which \<open>f\<close> is linear into \<open>L'\<close>. **)
+  obtain K\<^sub>0 where hK\<^sub>0K': "geotop_is_subdivision K\<^sub>0 K'"
+               and hK\<^sub>0_lin:
+                 "\<forall>\<sigma>\<in>K\<^sub>0. \<exists>\<tau>\<in>L'. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    using hPL unfolding geotop_PL_map_def by (by100 blast)
+  (** (2) By transitivity of subdivision, \<open>K\<^sub>0 < K\<close>. **)
+  have hK\<^sub>0K: "geotop_is_subdivision K\<^sub>0 K"
+    by (rule geotop_is_subdivision_trans[OF hK'K hK\<^sub>0K'])
+  (** (3) For each \<sigma> \<in> K\<^sub>0, the target simplex in L' lifts to a simplex of L containing it. **)
+  have hL'_ref: "geotop_refines L' L"
+    using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK\<^sub>0_lin_L:
+    "\<forall>\<sigma>\<in>K\<^sub>0. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+  proof
+    fix \<sigma> :: "'a set" assume h\<sigma>K\<^sub>0: "\<sigma> \<in> K\<^sub>0"
+    have hex: "\<exists>\<tau>\<in>L'. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using hK\<^sub>0_lin h\<sigma>K\<^sub>0 by (by100 blast)
+    then obtain \<tau>' where h\<tau>'L': "\<tau>' \<in> L'"
+                      and hrange\<tau>': "\<forall>x\<in>\<sigma>. f x \<in> \<tau>'"
+                      and hlin: "geotop_linear_on \<sigma> f"
+      by (by100 blast)
+    obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and h\<tau>'\<tau>: "\<tau>' \<subseteq> \<tau>"
+      using hL'_ref h\<tau>'L' unfolding geotop_refines_def by (by100 blast)
+    have hrange\<tau>: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>" using hrange\<tau>' h\<tau>'\<tau> by (by100 blast)
+    show "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+      using h\<tau>L hrange\<tau> hlin by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_PL_map_def
+    using hK\<^sub>0K hK\<^sub>0_lin_L by (by100 blast)
+qed
 
 (** PLH lifting across refinement: combines \<open>geotop_PL_map_lift\<close> in both
     directions with polyhedron equality to transport \<open>geotop_PLH K' L' f\<close> to
