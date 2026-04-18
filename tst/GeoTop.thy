@@ -308,9 +308,21 @@ proof (rule ccontr)
   have haff_form: "affine hull V = (+) a ` L"
     using ha unfolding L_def W_def by (rule affine_hull_span2)
   (** The subspace \<open>L\<close> has a basis of size \<open>k\<close>. **)
+  (** Build parallelism: \<open>affine hull V = (+) a ` L\<close>, so \<open>L = (+) (-a) ` affine hull V\<close>. **)
+  have h_L_from: "(+) (-a) ` (affine hull V) = L"
+  proof -
+    have "(+) (-a) ` ((+) a ` L) = L"
+      by (by100 force)
+    thus ?thesis using haff_form by (by100 simp)
+  qed
+  have h_parallel: "affine_parallel (affine hull V) L"
+    unfolding affine_parallel_def
+    apply (rule exI[of _ "-a"])
+    using h_L_from by (by100 simp)
+  have h_aff_V: "aff_dim V = int (dim L)"
+    by (rule aff_dim_parallel_subspace[OF hVne hL_sub h_parallel])
   have hL_dim: "dim L = k"
-    sorry \<comment> \<open>\<open>dim L = dim(affine hull V) = aff_dim V = k\<close> via HOL bridges;
-             \<open>aff_dim_parallel_subspace\<close> or similar.\<close>
+    using h_aff_V hk_int by (by100 simp)
   obtain B where hB_indep: "independent B" and hBfin: "finite B"
              and hBcard: "card B = k" and hB_span: "span B = L"
     using basis_exists[of L] hL_sub hL_dim
