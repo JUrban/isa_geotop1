@@ -13530,14 +13530,25 @@ proof -
   (** (2) T - \<union> J_i has exactly card(Js) components, each an annulus sandwiched between
          two consecutive J_i's. **)
   have h_annuli:
-    "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+    "(\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
                 U = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
              (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
                 top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
                   (closure_on UNIV geotop_euclidean_topology U)
                   (subspace_topology UNIV geotop_euclidean_topology
-                     (closure_on UNIV geotop_euclidean_topology U)) f)" sorry
+                     (closure_on UNIV geotop_euclidean_topology U)) f)) \<and>
+     (\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+                U = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
+             (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
+                top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+                  (closure_on UNIV geotop_euclidean_topology U)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on UNIV geotop_euclidean_topology U)) f) \<and>
+             (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
+               geotop_frontier UNIV geotop_euclidean_topology
+                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j))" sorry
   have h_final: "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
                 U = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
@@ -13548,7 +13559,8 @@ proof -
                      (closure_on UNIV geotop_euclidean_topology U)) f) \<and>
              (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
                geotop_frontier UNIV geotop_euclidean_topology
-                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)" sorry
+                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)"
+    using h_annuli by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
