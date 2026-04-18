@@ -9072,14 +9072,14 @@ theorem Theorem_GT_20_5_Fox_Artin:
 proof -
   (** (1) Start with a polyhedral 2-sphere S_0 in R^3 (take the standard simplex boundary).
          Pick a point Q on S_0 where we will attach a wild horn. **)
-  obtain S0 Q where hS0:
+  obtain S0 :: "(real^3) set" and Q :: "real^3" where hS0:
     "geotop_is_n_sphere S0 (subspace_topology UNIV geotop_euclidean_topology S0) 2 \<and>
      (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S0) \<and> Q \<in> S0" sorry
   (** (2) Attach a Fox-Artin horn at Q: push a small neighbourhood of Q in S_0 inwards so
          that it becomes a wild Fox-Artin half-arc A_2 (Theorem 20_4) ending at Q. The
          resulting surface S^2 = (S_0 - small_cap) \<union> horn is a 2-sphere, polyhedral
          everywhere except at Q. **)
-  obtain S2 where hS2:
+  obtain S2 :: "(real^3) set" where hS2:
     "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
      Q \<in> S2 \<and>
      (\<forall>P\<in>S2. P \<noteq> Q \<longrightarrow> (\<exists>N\<in>geotop_euclidean_topology. P \<in> N \<and>
@@ -9099,7 +9099,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - S2))
           (UNIV - Sstd)
           (subspace_topology UNIV geotop_euclidean_topology (UNIV - Sstd)) h" sorry
-  show ?thesis sorry
+  show ?thesis using hS2 h_S2_wild h_cpl_iso by (by100 blast)
 qed
 
 (** from \<S>20: semi-locally tame and locally tame (geotop.tex:4406)
