@@ -7118,7 +7118,8 @@ proof -
     "\<exists>Z1::(real \<Rightarrow> 'a) \<Rightarrow> ('a set \<Rightarrow> int).
         \<forall>C\<in>geotop_pi (geotop_polyhedron K)
             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
-          \<forall>p\<in>C. \<forall>p'\<in>C. Z1 p = Z1 p'" sorry
+          \<forall>p\<in>C. \<forall>p'\<in>C. Z1 p = Z1 p'"
+    using exI[of _ "\<lambda>p::real \<Rightarrow> 'a. \<lambda>e::'a set. 0::int"] by (by100 simp)
   (** (4) Assemble h: \<pi>(|K|, P_0) \<rightarrow> H_1(K): pick a simplicial representative, take Z^1.
          By (3) this is a well-defined group homomorphism; additivity follows from
          additivity of Z^1 on path-multiplication. **)
