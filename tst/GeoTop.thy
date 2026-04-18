@@ -618,9 +618,51 @@ lemma geotop_isomorphic_induces_PLH:
     isomorphism is a simplicial isomorphism. **)
 lemma geotop_isomorphic_sym:
   fixes K :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
-  assumes "geotop_isomorphic K L"
+  assumes hiso: "geotop_isomorphic K L"
   shows "geotop_isomorphic L K"
-  sorry
+proof -
+  obtain \<phi> where hisoKL: "geotop_isomorphism K L \<phi>"
+    using hiso unfolding geotop_isomorphic_def by (by100 blast)
+  let ?\<psi> = "inv_into (geotop_complex_vertices K) \<phi>"
+  have h\<phi>bij: "bij_betw \<phi> (geotop_complex_vertices K) (geotop_complex_vertices L)"
+    using hisoKL unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<psi>bij: "bij_betw ?\<psi> (geotop_complex_vertices L) (geotop_complex_vertices K)"
+    by (rule bij_betw_inv_into[OF h\<phi>bij])
+  have h\<phi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+                  (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
+    using hisoKL unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<phi>inv_right: "\<forall>w\<in>geotop_complex_vertices L. \<phi> (?\<psi> w) = w"
+    using bij_betw_inv_into_right[OF h\<phi>bij] by (by100 blast)
+  have h\<psi>cond: "\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+                  (geotop_convex_hull W \<in> L \<longleftrightarrow> geotop_convex_hull (?\<psi> ` W) \<in> K)"
+  proof (intro allI impI)
+    fix W assume hWL: "W \<subseteq> geotop_complex_vertices L"
+    have h\<psi>W: "?\<psi> ` W \<subseteq> geotop_complex_vertices K"
+      using h\<psi>bij hWL unfolding bij_betw_def by (by100 blast)
+    have h\<phi>\<psi>W: "\<phi> ` (?\<psi> ` W) = W"
+    proof (rule set_eqI, rule iffI)
+      fix y assume "y \<in> \<phi> ` (?\<psi> ` W)"
+      then obtain w where hw: "w \<in> W" and hy: "y = \<phi> (?\<psi> w)"
+        by (by100 blast)
+      have hwL: "w \<in> geotop_complex_vertices L" using hw hWL by (by100 blast)
+      have "\<phi> (?\<psi> w) = w" using h\<phi>inv_right hwL by (by100 blast)
+      then show "y \<in> W" using hy hw by (by100 simp)
+    next
+      fix w assume hwW: "w \<in> W"
+      have hwL: "w \<in> geotop_complex_vertices L" using hwW hWL by (by100 blast)
+      have h\<phi>\<psi>w: "\<phi> (?\<psi> w) = w" using h\<phi>inv_right hwL by (by100 blast)
+      show "w \<in> \<phi> ` (?\<psi> ` W)" using hwW h\<phi>\<psi>w by (by100 force)
+    qed
+    have "geotop_convex_hull (?\<psi> ` W) \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` (?\<psi> ` W)) \<in> L"
+      using h\<phi>cond h\<psi>W by (by100 blast)
+    then show "geotop_convex_hull W \<in> L \<longleftrightarrow> geotop_convex_hull (?\<psi> ` W) \<in> K"
+      using h\<phi>\<psi>W by (by100 simp)
+  qed
+  have h\<psi>iso: "geotop_isomorphism L K ?\<psi>"
+    unfolding geotop_isomorphism_def using h\<psi>bij h\<psi>cond by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphic_def using h\<psi>iso by (by100 blast)
+qed
 
 (** from early.tex Lemma 8.2 (iso-transitive): the composition of two simplicial
     isomorphisms is a simplicial isomorphism. **)
