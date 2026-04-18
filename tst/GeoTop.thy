@@ -4740,18 +4740,18 @@ proof -
   proof
     fix v assume hv: "v \<in> geotop_complex_vertices K"
     (** Same five lemmas as in 4.8 but weakened L3: each edge in \<ge> 1 triangle. **)
-    have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e" sorry
-    have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-               (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)" sorry
-    have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
-    have hL5: "top1_connected_on (\<Union>(geotop_link K v))
-                 (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v)))" sorry
-    (** |L(v)| is either a broken line (with-boundary case) or a polygon. **)
-    have hLinkBL: "(geotop_is_broken_line (\<Union>(geotop_link K v))
+    have hL_all:
+      "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
+       (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+               (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)) \<and>
+       (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
+       top1_connected_on (\<Union>(geotop_link K v))
+                 (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
+       (geotop_is_broken_line (\<Union>(geotop_link K v))
                      \<or> geotop_is_polygon (\<Union>(geotop_link K v))) \<and>
-                    geotop_comb_n_cell (geotop_star K v) 2" sorry
-    show "geotop_comb_n_cell (geotop_star K v) 2" using hLinkBL by (by100 blast)
+       geotop_comb_n_cell (geotop_star K v) 2" sorry
+    show "geotop_comb_n_cell (geotop_star K v) 2" using hL_all by (by100 blast)
   qed
 next
   (** Bd |K| = union of edges lying in only one 2-simplex. **)
