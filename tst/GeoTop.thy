@@ -6949,7 +6949,12 @@ proof -
   (** (3) f commutes with path multiplication pointwise: f \<circ> (p q) = (f \<circ> p)(f \<circ> q),
          directly from the definition of geotop_path_mult. **)
   have h_push_mult:
-    "\<forall>p q. f \<circ> geotop_path_mult p q = geotop_path_mult (f \<circ> p) (f \<circ> q)" sorry
+    "\<forall>p q. f \<circ> geotop_path_mult p q = geotop_path_mult (f \<circ> p) (f \<circ> q)"
+  proof (intro allI ext)
+    fix p q :: "real \<Rightarrow> 'a" and t :: real
+    show "(f \<circ> geotop_path_mult p q) t = geotop_path_mult (f \<circ> p) (f \<circ> q) t"
+      unfolding geotop_path_mult_def by (by100 simp)
+  qed
   (** (4) Assemble \<phi>([p]) := [f \<circ> p]; well-defined by (2), maps into \<pi>(Y, Q_0) by (1),
          a homomorphism by (3). **)
   show ?thesis sorry
