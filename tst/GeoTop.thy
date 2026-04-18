@@ -5647,19 +5647,15 @@ proof -
     using hK1_faces hK2_faces by (by100 blast)
   (** (2) K.2 (intersection compatibility): the new pairs across \<K>_1 and \<K>_2 are handled
          by hypothesis; the within-\<K>_i pairs are handled by K.2 of \<K>_i. **)
-  have h_K2:
-    "\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
+  have h_K23:
+    "(\<forall>(\<sigma>\<^sub>g, g)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<forall>(\<sigma>\<^sub>h, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<noteq> {} \<longrightarrow>
        (\<exists>\<tau>\<^sub>g \<tau>\<^sub>h. geotop_is_face \<tau>\<^sub>g \<sigma>\<^sub>g \<and> geotop_is_face \<tau>\<^sub>h \<sigma>\<^sub>h \<and>
              g ` \<tau>\<^sub>g = h ` \<tau>\<^sub>h \<and> g ` \<tau>\<^sub>g = g ` \<sigma>\<^sub>g \<inter> h ` \<sigma>\<^sub>h \<and>
-             geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)" sorry
-  (** (3) K.3 (local finiteness): a neighbourhood witness for \<K>_i can be taken as the
-         intersection of witnesses for \<K>_1 and \<K>_2, which intersects only finitely many
-         pairs in \<K>_1 \<cup> \<K>_2. **)
-  have h_K3:
-    "(\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
+             geotop_coord_equiv \<tau>\<^sub>g \<tau>\<^sub>h g h)) \<and>
+     (\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
         finite {(\<sigma>', h')\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. h' ` \<sigma>' \<inter> U \<noteq> {}}) \<and>
      geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" sorry
-  have h_final: "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" using h_K3 by (by100 blast)
+  have h_final: "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" using h_K23 by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
