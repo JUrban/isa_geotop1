@@ -6899,7 +6899,42 @@ proof -
   qed
   (** (2) Symmetry: given F witnessing p \<cong> q, F'(t, y) = F(t, 1 - y) witnesses q \<cong> p. **)
   have h_sym: "\<forall>p q. geotop_path_equiv X T P\<^sub>0 p q \<longrightarrow>
-                      geotop_path_equiv X T P\<^sub>0 q p" sorry
+                      geotop_path_equiv X T P\<^sub>0 q p"
+  proof (intro allI impI)
+    fix p q
+    assume hpq: "geotop_path_equiv X T P\<^sub>0 p q"
+    have hp_cp: "geotop_closed_path_on X T P\<^sub>0 p"
+      using hpq unfolding geotop_path_equiv_def by (by100 simp)
+    have hq_cp: "geotop_closed_path_on X T P\<^sub>0 q"
+      using hpq unfolding geotop_path_equiv_def by (by100 simp)
+    have hexF: "\<exists>(f::real \<times> real \<Rightarrow> 'a).
+                   (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = p t) \<and>
+                   (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = q t) \<and>
+                   (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0) \<and>
+                   (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> X)"
+      using hpq unfolding geotop_path_equiv_def by (by100 simp)
+    from hexF obtain F :: "real \<times> real \<Rightarrow> 'a" where hF:
+                   "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 0) = p t) \<and>
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> F (t, 1) = q t) \<and>
+                    (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (0, y) = P\<^sub>0 \<and> F (1, y) = P\<^sub>0) \<and>
+                    (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> F (t, y) \<in> X)"
+      by blast
+    let ?G = "\<lambda>(t::real, y::real). F (t, 1 - y)"
+    have h_G: "(\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?G (t, 0) = q t) \<and>
+               (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> ?G (t, 1) = p t) \<and>
+               (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?G (0, y) = P\<^sub>0 \<and> ?G (1, y) = P\<^sub>0) \<and>
+               (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> ?G (t, y) \<in> X)"
+      using hF by (by100 simp)
+    have h_exG: "\<exists>(f::real \<times> real \<Rightarrow> 'a).
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 0) = q t) \<and>
+                    (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> f (t, 1) = p t) \<and>
+                    (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (0, y) = P\<^sub>0 \<and> f (1, y) = P\<^sub>0) \<and>
+                    (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> f (t, y) \<in> X)"
+      by (rule exI[where x = ?G], rule h_G)
+    show "geotop_path_equiv X T P\<^sub>0 q p"
+      unfolding geotop_path_equiv_def
+      using hp_cp hq_cp h_exG by (by100 blast)
+  qed
   (** (3) Transitivity: given F: p \<cong> q and G: q \<cong> r, glue along y = 1/2 using
          H(t, y) = F(t, 2y) for y \<in> [0, 1/2], H(t, y) = G(t, 2y - 1) for y \<in> [1/2, 1];
          continuity by pasting since both equal q at y = 1/2. **)
