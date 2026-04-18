@@ -3255,8 +3255,6 @@ proof -
 qed
 
 
-text \<open>=== TEMPORARILY CHUNKED OUT §2-end for faster iteration on §1 ===\<close>
-(*
 section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
 
 (** from \<S>2: standard n-ball (geotop.tex:490)
@@ -15982,6 +15980,5 @@ proof -
   have h_final: "geotop_is_tame L" using h_slt by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
-*)
 
 end
