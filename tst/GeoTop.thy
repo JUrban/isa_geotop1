@@ -7660,8 +7660,9 @@ qed
     LATEX VERSION: Let L_1 be a subdivision of L. f is PL relative to K,L iff f is PL
       relative to K,L_1. **)
 theorem Theorem_GT_5_2:
-  fixes K :: "'a::real_normed_vector set set" and L L1 :: "'b::real_normed_vector set set"
+  fixes K :: "'a::real_normed_vector set set" and L L1 :: "'b::euclidean_space set set"
   fixes f :: "'a \<Rightarrow> 'b"
+  assumes hLfin: "finite L"
   assumes hsub: "geotop_is_subdivision L1 L"
   shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K L1 f"
   (** Moise proof (geotop.tex:1126). \"if\" trivial. \"only if\": let K\<^sub>1 < K s.t. f|\<sigma>
