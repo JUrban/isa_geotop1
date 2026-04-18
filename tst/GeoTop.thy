@@ -10993,7 +10993,14 @@ proof -
      geotop_is_complex L \<and> L \<subseteq> K\<^sub>d" sorry
   (** (2) By Theorem 23_12, N(L) (regular neighbourhood of L in K_d) is combinatorially
          equivalent to L \<cong> K. Hence K \<cong> N(L) as required. **)
-  show ?thesis sorry
+  have h_final: "\<exists>K' L. geotop_is_complex K' \<and> geotop_is_complex L \<and> L \<subseteq> K' \<and>
+                geotop_n_manifold_with_boundary_on (geotop_polyhedron K')
+                   (\<lambda>x y. norm (x - y)) 3 \<and>
+                geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
+                geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
+                       (geotop_barycentric_subdivision K').
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23: orientable triangulated 3-manifold (geotop.tex:5070)
@@ -11035,7 +11042,8 @@ proof -
                             then (1::int) else 0"]
     by (by100 simp)
   (** (3) Hence H_2(\<partial>K) has a generator c_2 \<ne> 0, so \<partial>K is orientable as a 2-manifold. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_orientable (geotop_comb_boundary_3 K)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 15 (geotop.tex:5088)
@@ -11075,7 +11083,13 @@ proof -
          doubling process (Theorem 23.15 applied to the doubling of K that produced K')
          preserves the oriented class, hence K' is orientable. **)
   have hK'_orient: "geotop_is_orientable_3_manifold K'" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>K' L. geotop_is_orientable_3_manifold K' \<and>
+                geotop_is_complex L \<and> L \<subseteq> K' \<and>
+                geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
+                geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
+                       (geotop_barycentric_subdivision K').
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 17 (geotop.tex:5097)
