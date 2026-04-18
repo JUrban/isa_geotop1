@@ -1547,14 +1547,44 @@ proof -
     unfolding geotop_polyhedron_def
     using hK hK_simp_compact by (by100 blast)
   (** (b.2) Apply HOL's Lebesgue number lemma to |K| + the vertex-star cover to get
-          a \<delta>-bound; then tighten 'S in star(v)' to 'S in some \<sigma> \<ni> v'. **)
+          a \<delta>-bound; then tighten 'S in star(v)' to 'S in some \<sigma> \<ni> v'. Structured: **)
+  (** (b.2.i) Each vertex star of K' is open in subspace(|K'|) = subspace(|K|),
+           via \<open>geotop_open_star_open_in_subspace\<close>. Extract ambient open witness. **)
+  have h_stars_subspace_open:
+    "\<forall>v\<in>geotop_complex_vertices K'.
+       geotop_open_star K' v \<in> subspace_topology UNIV geotop_euclidean_topology
+                                 (geotop_polyhedron K')"
+    using geotop_open_star_open_in_subspace[OF hK'comp hK'fin] by (by100 blast)
+  have h_stars_amb_witness:
+    "\<forall>v\<in>geotop_complex_vertices K'. \<exists>U. open U \<and>
+       geotop_open_star K' v = geotop_polyhedron K' \<inter> U"
+    sorry \<comment> \<open>Unfold subspace_topology; use geotop_euclidean_topology_eq_open_sets
+              to convert top1-topology membership to HOL \<open>open\<close>.\<close>
+  (** (b.2.ii) Pick ambient witnesses U_v; \<open>\<Union>{U_v}\<close> is an open cover of |K|. **)
+  define U_fn :: "'a \<Rightarrow> 'a set" where
+    "U_fn v = (SOME U. open U \<and> geotop_open_star K' v = geotop_polyhedron K' \<inter> U)"
+    for v :: 'a
+  define C :: "'a set set" where
+    "C = U_fn ` geotop_complex_vertices K'"
+  have hC_open: "\<forall>U\<in>C. open U"
+    sorry \<comment> \<open>Follows from h_stars_amb_witness + someI_ex.\<close>
+  have hC_covers: "geotop_polyhedron K \<subseteq> \<Union>C"
+    sorry \<comment> \<open>star(v) \<subseteq> U_v and |K| = |K'| \<subseteq> \<Union> star(v) (vertex_stars_cover).\<close>
+  (** (b.2.iii) Apply Lebesgue_number_lemma to get \<delta> > 0 with diam T < \<delta>
+               \<Longrightarrow> T \<subseteq> U_v for some v. **)
+  have h_leb_raw: "\<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
+                     diameter T < \<delta> \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
+    sorry \<comment> \<open>Direct Lebesgue_number_lemma[OF hK_compact hC_ne ...].\<close>
+  (** (b.2.iv) Translate: T \<subseteq> U_v \<and> T \<subseteq> |K| \<Longrightarrow> T \<subseteq> star(v) \<subseteq> \<sigma> \<ni> v.
+               The last step needs connectedness or interior-disjointness; since we
+               apply this to simplexes of Sd^m(K), T is always a simplex (connected,
+               closed), hence T \<subseteq> single simplex of K'. **)
   obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
                     and h\<delta>prop: "\<forall>S \<subseteq> geotop_polyhedron K.
                          geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
                          (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
-    sorry \<comment> \<open>Combines: compact |K|, finite open vertex-star cover
-             (\<open>geotop_vertex_stars_cover\<close>, requires euclidean_space),
-             HOL \<open>Lebesgue_number_lemma\<close>, and tightening to single simplex.\<close>
+    sorry \<comment> \<open>Combines h_leb_raw + geotop_diameter_eq_HOL_diameter bridge
+              + star-to-simplex tightening (simplex case via connectedness).\<close>
   (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>, then bound each
       \<open>\<tau>\<close>'s diameter via \<open>geotop_diameter_le_mesh\<close>. **)
   have hmesh_lim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K))
