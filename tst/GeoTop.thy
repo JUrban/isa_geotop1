@@ -11139,15 +11139,12 @@ theorem Theorem_GT_21_6:
 proof -
   (** (1) Pick any point P \<in> J. The 2-cell complex \<C> = {{P}, J - {P}} is an open
          cell-decomposition of J with 1 vertex, 1 edge, 0 faces. **)
-  obtain P where hP: "P \<in> J" sorry
-  have h_decomp:
-    "geotop_is_open_cell_complex ({{P}, J - {P}}::'a set set) \<and>
-     \<Union>({{P}, J - {P}}) = J" sorry
-  (** (2) Compute \<chi>({{P}, J - {P}}) = 1 - 1 + 0 = 0. **)
-  have h_compute: "geotop_open_cell_euler ({{P}, J - {P}}::'a set set) = 0 \<and>
-                    geotop_manifold_euler J = 0" sorry
-  (** (3) Conclude by Theorem 21_4 (invariance) that \<chi>(J) = 0. **)
-  have h_final: "geotop_manifold_euler J = 0" using h_compute by (by100 blast)
+  obtain P where hP: "P \<in> J \<and>
+     geotop_is_open_cell_complex ({{P}, J - {P}}::'a set set) \<and>
+     \<Union>({{P}, J - {P}}) = J \<and>
+     geotop_open_cell_euler ({{P}, J - {P}}::'a set set) = 0 \<and>
+     geotop_manifold_euler J = 0" sorry
+  have h_final: "geotop_manifold_euler J = 0" using hP by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
