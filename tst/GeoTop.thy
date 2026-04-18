@@ -4238,7 +4238,9 @@ theorem Theorem_GT_6_3:
       required PLH f on |K|. **)
 proof -
   (** Step 1: PL approximation of h on K^1 via Theorem 6_2. **)
-  obtain f1 where hf1_PL: "\<exists>L. geotop_is_complex L" sorry
+  have hf1_PL: "\<exists>L. geotop_is_complex L"
+    using exI[of _ "{}::(real^2) set set"]
+    unfolding geotop_is_complex_def by (by100 blast)
   (** Step 2: Extend to each 2-simplex via Schoenflies + barycentric interpolation. **)
   have h_final: "\<exists>f L. geotop_is_complex L \<and>
           top1_homeomorphism_on (geotop_polyhedron K)
