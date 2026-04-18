@@ -1709,8 +1709,32 @@ proof -
   let ?g_inv = "inv_into (geotop_polyhedron K) g"
   define K' :: "'a set set" where "K' = (\<lambda>\<tau>. ?g_inv ` \<tau>) ` L'"
   (** (3) \<open>K'\<close> is a complex: \<open>g\<^sup>-\<^sup>1\<close> is bijective and linear on each simplex
-      of a suitable subdivision, so it maps simplexes to simplexes coherently. **)
-  have hK'_comp: "geotop_is_complex K'" sorry
+      of a suitable subdivision, so it maps simplexes to simplexes coherently.
+      The four complex conditions K.0, K.1, K.2, K.3 decompose as: **)
+  have hL'_comp: "geotop_is_complex L'"
+    using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  (** (3a) K.0: every \<sigma> \<in> K' is a simplex. \<sigma> = g_inv(\<tau>) for some \<tau> \<in> L';
+      g_inv maps L-simplexes to K-simplexes piecewise linearly, and \<tau> is a simplex. **)
+  have hK'_K0: "\<forall>\<sigma>\<in>K'. geotop_is_simplex \<sigma>"
+    sorry
+  (** (3b) K.1: K' closed under faces. If \<sigma>' is a face of \<sigma> \<in> K', then \<sigma>' = g_inv(\<tau>')
+      for some face \<tau>' of the corresponding \<tau> \<in> L'; since L' is closed under faces
+      (K.1 for L'), \<tau>' \<in> L', hence \<sigma>' \<in> K'. **)
+  have hK'_K1: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K'"
+    sorry
+  (** (3c) K.2: intersections are faces. For \<sigma>_1 = g_inv(\<tau>_1), \<sigma>_2 = g_inv(\<tau>_2),
+      \<sigma>_1 \<inter> \<sigma>_2 = g_inv(\<tau>_1 \<inter> \<tau>_2) (bijection), which is a face of both
+      by K.2 for L' pulled back through g_inv. **)
+  have hK'_K2: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>\<in>K'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                 geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry
+  (** (3d) K.3: local finiteness. g_inv is a PL homeomorphism, hence continuous;
+      pull back a local-finiteness witness for L' through g_inv. **)
+  have hK'_K3: "\<forall>\<sigma>\<in>K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+    sorry
+  have hK'_comp: "geotop_is_complex K'"
+    unfolding geotop_is_complex_def
+    using hK'_K0 hK'_K1 hK'_K2 hK'_K3 by (by100 blast)
   (** (4) \<open>|K'| = |K|\<close>: apply \<open>g\<^sup>-\<^sup>1\<close> to \<open>|L'| = |L|\<close>. **)
   have hL'L_poly: "geotop_polyhedron L' = geotop_polyhedron L"
     using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
