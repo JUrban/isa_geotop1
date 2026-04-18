@@ -893,7 +893,14 @@ qed
 (** from early.tex Lemma 6 (transport subdivision): given \<open>K \<cong> L\<close> and a subdivision
     \<open>L'\<close> of \<open>L\<close>, there is a subdivision \<open>K'\<close> of \<open>K\<close> with \<open>K' \<cong> L'\<close>.
     Proof idea (early.tex): \<open>\<phi>\<close> induces a PL homeomorphism \<open>|\<phi>|: |K| \<leftrightarrow> |L|\<close>;
-    pull back each simplex of \<open>L'\<close> through \<open>|\<phi>|^{-1}\<close> to a simplex in \<open>K\<close>. **)
+    pull back each simplex of \<open>L'\<close> through \<open>|\<phi>|\<^sup>-\<^sup>1\<close> to a simplex in \<open>K\<close>.
+    Structure:
+      (1) apply \<open>iso_induces_PLH\<close> to \<open>\<phi>\<close> to get PLH \<open>g: |K| \<leftrightarrow> |L|\<close>;
+      (2) define \<open>K' = {g\<^sup>-\<^sup>1(\<tau>) : \<tau> \<in> L'}\<close> (plus face-closure);
+      (3) check \<open>K'\<close> is a complex (face-closed, intersection-compatible)
+          using \<open>g\<^sup>-\<^sup>1\<close> is bijective and linear on simplexes of some subdivision of \<open>L\<close>;
+      (4) check \<open>|K'| = g\<^sup>-\<^sup>1(|L'|) = g\<^sup>-\<^sup>1(|L|) = |K|\<close>, so \<open>K' < K\<close>;
+      (5) construct vertex iso \<open>K' \<cong> L'\<close> via \<open>\<tau> \<mapsto> g\<^sup>-\<^sup>1(\<tau>)\<close>. **)
 lemma geotop_transport_subdivision:
   fixes K :: "'a::real_normed_vector set set"
   fixes L :: "'b::real_normed_vector set set"
@@ -901,7 +908,40 @@ lemma geotop_transport_subdivision:
   assumes hiso: "geotop_isomorphic K L"
   assumes hL'L: "geotop_is_subdivision L' L"
   shows "\<exists>K'::'a set set. geotop_is_subdivision K' K \<and> geotop_isomorphic K' L'"
-  sorry
+proof -
+  (** (1) Extract the PLH \<open>g: |K| \<leftrightarrow> |L|\<close> induced by \<phi>. Requires \<open>K\<close>, \<open>L\<close> complexes. **)
+  have hLcomp: "geotop_is_complex L"
+    using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  have hKcomp: "geotop_is_complex K" sorry \<comment> \<open>As with \<open>geotop_isomorphism_induces_PLH\<close>,
+         \<open>geotop_isomorphic\<close> doesn't force \<open>is_complex K\<close>; strengthen the def or
+         add as hypothesis. Leave as local sorry.\<close>
+  obtain g :: "'a \<Rightarrow> 'b" where hg: "geotop_PLH K L g"
+                             and hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
+    using geotop_isomorphic_induces_PLH[OF hKcomp hLcomp hiso] by (by100 blast)
+  have hg_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
+    using hg unfolding geotop_PLH_def by (by100 blast)
+  (** (2) Pull back each simplex of \<open>L'\<close> through \<open>g\<^sup>-\<^sup>1\<close>. **)
+  let ?g_inv = "inv_into (geotop_polyhedron K) g"
+  define K' :: "'a set set" where "K' = (\<lambda>\<tau>. ?g_inv ` \<tau>) ` L'"
+  (** (3) \<open>K'\<close> is a complex: \<open>g\<^sup>-\<^sup>1\<close> is bijective and linear on each simplex
+      of a suitable subdivision, so it maps simplexes to simplexes coherently. **)
+  have hK'_comp: "geotop_is_complex K'" sorry
+  (** (4) \<open>|K'| = |K|\<close>: apply \<open>g\<^sup>-\<^sup>1\<close> to \<open>|L'| = |L|\<close>. **)
+  have hL'L_poly: "geotop_polyhedron L' = geotop_polyhedron L"
+    using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K" sorry
+  (** (5) \<open>K' < K\<close>: each simplex of \<open>K'\<close> is \<open>g\<^sup>-\<^sup>1(\<tau>)\<close> for some \<open>\<tau> \<in> L'\<close>,
+      which sits inside \<open>g\<^sup>-\<^sup>1\<close> of the corresponding simplex of \<open>L\<close>, a subset of \<open>|K|\<close>
+      lying in some \<sigma> \<in> K. **)
+  have hK'_ref: "geotop_refines K' K" sorry
+  have hK'_K: "geotop_is_subdivision K' K"
+    unfolding geotop_is_subdivision_def
+    using hK'_comp hKcomp hK'_ref hK'_poly by (by100 blast)
+  (** (6) Build the vertex iso \<open>K' \<cong> L'\<close> via \<open>\<tau> \<mapsto> g\<^sup>-\<^sup>1(\<tau>)\<close>, descending to
+      vertex-level. **)
+  have hiso_K'L': "geotop_isomorphic K' L'" sorry
+  show ?thesis using hK'_K hiso_K'L' by (by100 blast)
+qed
 
 (** from Introduction: Theorem 2 (geotop.tex:184)
     LATEX VERSION: K \<sim>_c L iff |K| is the image of |L| under a PLH.
