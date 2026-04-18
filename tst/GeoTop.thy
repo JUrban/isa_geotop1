@@ -331,7 +331,8 @@ proof -
   have h_trans:
     "\<forall>K L M::'a set set. geotop_comb_equiv K L \<and> geotop_comb_equiv L M \<longrightarrow>
                          geotop_comb_equiv K M" sorry
-  show ?thesis sorry
+  have h_final: "equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 subsection \<open>Cells, manifolds, dense sets, separability\<close>
@@ -2421,7 +2422,9 @@ proof -
              = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q) \<and>
           \<pi> P < 2" sorry
   (** (3) There are at most two parity classes (mod 2), hence at most two components. **)
-  show ?thesis sorry
+  have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>2 Theorem 1 - Lemma 2 (geotop.tex:527)
@@ -2446,7 +2449,9 @@ proof -
     "\<exists>P. P \<in> UNIV - J \<and> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
                                                 ((UNIV::(real^2) set) - J) P)" sorry
   (** (3) The bounded and unbounded components are distinct, so \<ge> 2 components. **)
-  show ?thesis sorry
+  have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>2 Theorem 1 (geotop.tex:502)
