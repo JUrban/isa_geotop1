@@ -917,6 +917,54 @@ next
   qed
 qed
 
+(** The identity is a homeomorphism from any topology to itself. **)
+lemma top1_homeomorphism_on_id:
+  assumes hT: "is_topology_on X TX"
+  shows "top1_homeomorphism_on X TX X TX id"
+  unfolding top1_homeomorphism_on_def
+proof (intro conjI)
+  show "is_topology_on X TX" using hT .
+  show "is_topology_on X TX" using hT .
+  show "bij_betw id X X" unfolding bij_betw_def by simp
+  have hX_in: "X \<in> TX"
+    using hT unfolding is_topology_on_def by blast
+  have h_finint: "\<forall>F. finite F \<and> F \<noteq> {} \<and> F \<subseteq> TX \<longrightarrow> \<Inter>F \<in> TX"
+    using hT unfolding is_topology_on_def by blast
+  have h_id_cont: "top1_continuous_map_on X TX X TX id"
+    unfolding top1_continuous_map_on_def
+  proof (intro conjI)
+    show "\<forall>x\<in>X. id x \<in> X" by simp
+    show "\<forall>V\<in>TX. {x\<in>X. id x \<in> V} \<in> TX"
+    proof
+      fix V assume hV: "V \<in> TX"
+      have h_eq: "{x\<in>X. id x \<in> V} = X \<inter> V" by auto
+      have h_finF: "finite {X, V}" by simp
+      have h_ne: "{X, V} \<noteq> {}" by simp
+      have h_sub: "{X, V} \<subseteq> TX" using hX_in hV by simp
+      have h_int: "\<Inter>{X, V} \<in> TX"
+        using h_finint h_finF h_ne h_sub by blast
+      have h_int_eq: "\<Inter>{X, V} = X \<inter> V" by auto
+      show "{x\<in>X. id x \<in> V} \<in> TX" using h_eq h_int h_int_eq by simp
+    qed
+  qed
+  show "top1_continuous_map_on X TX X TX id"
+    using h_id_cont .
+  show "top1_continuous_map_on X TX X TX (inv_into X id)"
+  proof -
+    have hinj: "inj_on id X" by simp
+    have h_eq: "\<forall>x\<in>X. inv_into X id x = x"
+    proof
+      fix x assume hxX: "x \<in> X"
+      have "id x = x" by simp
+      hence "inv_into X id (id x) = x"
+        using hxX hinj inv_into_f_f[of id X x] by simp
+      thus "inv_into X id x = x" by simp
+    qed
+    show ?thesis
+      using top1_continuous_map_on_cong[OF h_eq] h_id_cont by (simp add: id_def)
+  qed
+qed
+
 (** Homeomorphism is symmetric: the inverse of a homeomorphism is a homeomorphism. **)
 lemma top1_homeomorphism_on_sym:
   assumes hf: "top1_homeomorphism_on X TX Y TY f"
