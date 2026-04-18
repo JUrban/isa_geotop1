@@ -9038,7 +9038,7 @@ proof -
   (** (1) Build A_2 as a Fox-Artin half-arc: start at a point S and approach a limit point
          Q via a sequence of trefoil-style broken lines B_i whose groups contribute
          non-commuting loops in R^3 - A_2 arbitrarily close to Q. **)
-  obtain A2 Q where h_construction:
+  obtain A2 :: "(real^3) set" and Q :: "real^3" where h_construction:
     "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2) \<and>
      Q \<in> geotop_frontier UNIV geotop_euclidean_topology A2" sorry
   (** (2) In every neighbourhood V of Q there is a closed path p in V \<inter> (R^3 - A_2) that
@@ -9049,7 +9049,7 @@ proof -
   (** (3) By Theorem 20.3 (arc case), tame arcs have locally simply connected complement
          at every boundary point. Contrapositive: A_2 is wild. **)
   have h_wild: "geotop_is_wild A2" sorry
-  show ?thesis sorry
+  show ?thesis using h_construction h_not_locsc h_wild by (by100 blast)
 qed
 
 (** from \<S>20 Theorem 5 (Fox-Artin) (geotop.tex:4400)
