@@ -4278,7 +4278,9 @@ theorem Theorem_GT_6_4:
       5_5), there is a common subdivision matching f_1(|K_1|) with K_2. **)
 proof -
   (** Step 1: apply Theorem 6_3 to get PL f_1 for h. **)
-  obtain f1 where hf1: "\<exists>L. geotop_is_complex L" sorry
+  have hf1: "\<exists>L. geotop_is_complex L"
+    using exI[of _ "{}::(real^2) set set"]
+    unfolding geotop_is_complex_def by (by100 blast)
   (** Step 2: adjust f_1 to land in K_2 using subdivision matching. **)
   have h_final: "\<exists>f. geotop_PLH K1 K2 f
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
