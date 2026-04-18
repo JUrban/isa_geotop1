@@ -2740,7 +2740,113 @@ lemma geotop_complex_connected_imp_HOL_path_connected:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_complex_connected K"
   shows "path_connected (geotop_polyhedron K)"
-  sorry
+  unfolding path_connected_def
+proof (intro ballI)
+  fix P Q assume hP: "P \<in> geotop_polyhedron K" and hQ: "Q \<in> geotop_polyhedron K"
+  have hKcomp: "geotop_is_complex K"
+    using hK unfolding geotop_complex_connected_def by (by100 blast)
+  (** Pick simplexes \<sigma>_P, \<sigma>_Q containing P, Q respectively. **)
+  obtain \<sigma>P where h\<sigma>P: "\<sigma>P \<in> K" and hP\<sigma>P: "P \<in> \<sigma>P"
+    using hP unfolding geotop_polyhedron_def by (by100 blast)
+  obtain \<sigma>Q where h\<sigma>Q: "\<sigma>Q \<in> K" and hQ\<sigma>Q: "Q \<in> \<sigma>Q"
+    using hQ unfolding geotop_polyhedron_def by (by100 blast)
+  (** Each simplex is a convex hull of its vertex set. Pick any vertex of each. **)
+  have hall_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using hKcomp by (rule geotop_is_complex_simplex)
+  have h\<sigma>P_simp: "geotop_is_simplex \<sigma>P" using hall_simp h\<sigma>P by (by100 blast)
+  have h\<sigma>Q_simp: "geotop_is_simplex \<sigma>Q" using hall_simp h\<sigma>Q by (by100 blast)
+  obtain VP where hVP: "geotop_simplex_vertices \<sigma>P VP"
+    using h\<sigma>P_simp
+    unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+  obtain VQ where hVQ: "geotop_simplex_vertices \<sigma>Q VQ"
+    using h\<sigma>Q_simp
+    unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+  have hVP_card: "\<exists>n. finite VP \<and> card VP = n + 1"
+    using hVP unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVPne: "VP \<noteq> {}"
+    using hVP_card by (by100 fastforce)
+  have hVQ_card: "\<exists>n. finite VQ \<and> card VQ = n + 1"
+    using hVQ unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVQne: "VQ \<noteq> {}"
+    using hVQ_card by (by100 fastforce)
+  obtain vP where hvP: "vP \<in> VP" using hVPne by (by100 blast)
+  obtain vQ where hvQ: "vQ \<in> VQ" using hVQne by (by100 blast)
+  (** Each vertex is in vertices K. **)
+  have hvP_K: "vP \<in> geotop_complex_vertices K"
+    unfolding geotop_complex_vertices_def using h\<sigma>P hVP hvP by (by100 blast)
+  have hvQ_K: "vQ \<in> geotop_complex_vertices K"
+    unfolding geotop_complex_vertices_def using h\<sigma>Q hVQ hvQ by (by100 blast)
+  (** \<sigma>_P and \<sigma>_Q are convex. **)
+  have h\<sigma>P_conv: "convex \<sigma>P"
+    using geotop_simplex_is_convex[OF h\<sigma>P_simp] geotop_convex_iff_HOL_convex by (by100 blast)
+  have h\<sigma>Q_conv: "convex \<sigma>Q"
+    using geotop_simplex_is_convex[OF h\<sigma>Q_simp] geotop_convex_iff_HOL_convex by (by100 blast)
+  have h\<sigma>P_eq: "\<sigma>P = convex hull VP"
+    using hVP geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>Q_eq: "\<sigma>Q = convex hull VQ"
+    using hVQ geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hvP_hull: "vP \<in> convex hull VP"
+    using hvP hull_inc[of vP VP] by (by100 simp)
+  have hvQ_hull: "vQ \<in> convex hull VQ"
+    using hvQ hull_inc[of vQ VQ] by (by100 simp)
+  have hvP_in_\<sigma>P: "vP \<in> \<sigma>P" using hvP_hull h\<sigma>P_eq by (by100 simp)
+  have hvQ_in_\<sigma>Q: "vQ \<in> \<sigma>Q" using hvQ_hull h\<sigma>Q_eq by (by100 simp)
+  (** Path from P to vP in \<sigma>_P (straight line). **)
+  have h\<sigma>P_pc: "path_connected \<sigma>P"
+    by (rule convex_imp_path_connected[OF h\<sigma>P_conv])
+  obtain g1 where hg1_path: "path g1" and hg1_im: "path_image g1 \<subseteq> \<sigma>P"
+              and hg1_s: "pathstart g1 = P" and hg1_f: "pathfinish g1 = vP"
+    using h\<sigma>P_pc hP\<sigma>P hvP_in_\<sigma>P unfolding path_connected_def by (by100 blast)
+  (** Path from vP to vQ via vertex reachability. **)
+  obtain g2 where hg2_path: "path g2"
+              and hg2_im: "path_image g2 \<subseteq> geotop_polyhedron K"
+              and hg2_s: "pathstart g2 = vP" and hg2_f: "pathfinish g2 = vQ"
+    using geotop_complex_connected_imp_HOL_vertex_reachable[OF hK hvP_K hvQ_K]
+    by (by100 blast)
+  (** Path from vQ to Q in \<sigma>_Q. **)
+  have h\<sigma>Q_pc: "path_connected \<sigma>Q"
+    by (rule convex_imp_path_connected[OF h\<sigma>Q_conv])
+  obtain g3 where hg3_path: "path g3" and hg3_im: "path_image g3 \<subseteq> \<sigma>Q"
+              and hg3_s: "pathstart g3 = vQ" and hg3_f: "pathfinish g3 = Q"
+    using h\<sigma>Q_pc hvQ_in_\<sigma>Q hQ\<sigma>Q unfolding path_connected_def by (by100 blast)
+  (** Concatenate g1 +++ g2 +++ g3. **)
+  have h\<sigma>P_sub_K: "\<sigma>P \<subseteq> geotop_polyhedron K"
+    using h\<sigma>P unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>Q_sub_K: "\<sigma>Q \<subseteq> geotop_polyhedron K"
+    using h\<sigma>Q unfolding geotop_polyhedron_def by (by100 blast)
+  have hg1_im_K: "path_image g1 \<subseteq> geotop_polyhedron K"
+    using hg1_im h\<sigma>P_sub_K by (by100 blast)
+  have hg3_im_K: "path_image g3 \<subseteq> geotop_polyhedron K"
+    using hg3_im h\<sigma>Q_sub_K by (by100 blast)
+  (** \<open>+++\<close> is right-associative in HOL-Analysis, so \<open>g1 +++ g2 +++ g3\<close>
+      parses as \<open>g1 +++ (g2 +++ g3)\<close>. Join \<open>g2\<close> with \<open>g3\<close> first, then \<open>g1\<close>. **)
+  define g23 where "g23 = g2 +++ g3"
+  have h23_join: "pathfinish g2 = pathstart g3" using hg2_f hg3_s by (by100 simp)
+  have h23_path: "path g23"
+    unfolding g23_def by (rule path_join_imp[OF hg2_path hg3_path h23_join])
+  have h23_s: "pathstart g23 = vP" unfolding g23_def using hg2_s by (by100 simp)
+  have h23_f: "pathfinish g23 = Q" unfolding g23_def using hg3_f by (by100 simp)
+  have h23_im_eq: "path_image g23 = path_image g2 \<union> path_image g3"
+    unfolding g23_def by (rule path_image_join[OF h23_join])
+  have h23_im_K: "path_image g23 \<subseteq> geotop_polyhedron K"
+    using h23_im_eq hg2_im hg3_im_K by (by100 blast)
+  define g where "g = g1 +++ g23"
+  have h1_23_join: "pathfinish g1 = pathstart g23"
+    using hg1_f h23_s by (by100 simp)
+  have hg_path: "path g"
+    unfolding g_def by (rule path_join_imp[OF hg1_path h23_path h1_23_join])
+  have hg_s: "pathstart g = P" unfolding g_def using hg1_s by (by100 simp)
+  have hg_f: "pathfinish g = Q" unfolding g_def using h23_f by (by100 simp)
+  have hg_im_eq: "path_image g = path_image g1 \<union> path_image g23"
+    unfolding g_def by (rule path_image_join[OF h1_23_join])
+  have hg_im: "path_image g \<subseteq> geotop_polyhedron K"
+    using hg_im_eq hg1_im_K h23_im_K by (by100 blast)
+  show "\<exists>g. path g \<and> path_image g \<subseteq> geotop_polyhedron K
+            \<and> pathstart g = P \<and> pathfinish g = Q"
+    using hg_path hg_im hg_s hg_f by (by100 blast)
+qed
 
 theorem Theorem_GT_1_4:
   fixes K :: "'a::real_normed_vector set set"
