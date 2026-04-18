@@ -1219,7 +1219,7 @@ qed
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
 lemma geotop_iterated_Sd_refines_subdivision:
-  fixes K K' :: "'a::real_normed_vector set set"
+  fixes K K' :: "'a::euclidean_space set set"
   assumes hK: "finite K"
   assumes hsub: "geotop_is_subdivision K' K"
   shows "\<exists>m. geotop_is_subdivision (geotop_iterated_Sd m K) K'"
@@ -1236,14 +1236,24 @@ proof -
     by (rule geotop_subdivision_of_finite_is_finite[OF hK hsub])
   (** (b) Lebesgue number \<open>\<delta>\<close> for the vertex-star cover of \<open>|K|\<close>. Needs compactness
       of \<open>|K|\<close> (from finite \<open>K\<close> + each simplex compact) and HOL's compact Lebesgue
-      number lemma. **)
+      number lemma. Structured decomposition (for euclidean_space narrowing elsewhere): **)
+  (** (b.1) |K| is compact (finite union of compact simplexes). Each simplex is a
+         convex hull of a finite set, hence compact (needs euclidean_space to
+         fully close via HOL \<open>compact_convex_hull\<close>). **)
+  have hK_simp_compact: "\<forall>\<sigma>\<in>K. compact \<sigma>"
+    sorry
+  have hK_compact: "compact (geotop_polyhedron K)"
+    unfolding geotop_polyhedron_def
+    using hK hK_simp_compact by (by100 blast)
+  (** (b.2) Apply HOL's Lebesgue number lemma to |K| + the vertex-star cover to get
+          a \<delta>-bound; then tighten 'S in star(v)' to 'S in some \<sigma> \<ni> v'. **)
   obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
                     and h\<delta>prop: "\<forall>S \<subseteq> geotop_polyhedron K.
                          geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
                          (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
-    sorry \<comment> \<open>Application of Lebesgue number on compact \<open>|K|\<close> to the finite open cover
-             \<open>st_{K'}(v)\<close>. Reducing "S \<subseteq> st_{K'}(v)" to "\<exists>\<sigma> \<ni> v with S \<subseteq> \<sigma>"
-             uses the definition of open star.\<close>
+    sorry \<comment> \<open>Combines: compact |K|, finite open vertex-star cover
+             (\<open>geotop_vertex_stars_cover\<close>, requires euclidean_space),
+             HOL \<open>Lebesgue_number_lemma\<close>, and tightening to single simplex.\<close>
   (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>, then bound each
       \<open>\<tau>\<close>'s diameter via \<open>geotop_diameter_le_mesh\<close>. **)
   have hmesh_lim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K))
@@ -1332,7 +1342,7 @@ qed
 
     Proof following early.tex Theorem 1 via iterated barycentric subdivision. **)
 theorem Theorem_GT_1:
-  fixes K L1 L2 :: "'a::real_normed_vector set set"
+  fixes K L1 L2 :: "'a::euclidean_space set set"
   assumes hKfin: "finite K"
   assumes hL1: "geotop_is_subdivision L1 K"
   assumes hL2: "geotop_is_subdivision L2 K"
@@ -1429,8 +1439,8 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
           lifted to polyhedra).
       (e) The inverse is the barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>, also PL. **)
 lemma geotop_isomorphism_induces_PLH:
-  fixes K :: "'a::real_normed_vector set set"
-  fixes L :: "'b::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
+  fixes L :: "'b::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   assumes hL: "geotop_is_complex L"
   assumes hiso: "geotop_isomorphism K L \<phi>"
@@ -1490,8 +1500,8 @@ qed
 (** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
     PLH between the underlying polyhedra. **)
 lemma geotop_isomorphic_induces_PLH:
-  fixes K :: "'a::real_normed_vector set set"
-  fixes L :: "'b::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
+  fixes L :: "'b::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   assumes hL: "geotop_is_complex L"
   assumes hiso: "geotop_isomorphic K L"
@@ -1700,8 +1710,8 @@ qed
       (4) check \<open>|K'| = g\<^sup>-\<^sup>1(|L'|) = g\<^sup>-\<^sup>1(|L|) = |K|\<close>, so \<open>K' < K\<close>;
       (5) construct vertex iso \<open>K' \<cong> L'\<close> via \<open>\<tau> \<mapsto> g\<^sup>-\<^sup>1(\<tau>)\<close>. **)
 lemma geotop_transport_subdivision:
-  fixes K :: "'a::real_normed_vector set set"
-  fixes L :: "'b::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
+  fixes L :: "'b::euclidean_space set set"
   fixes L' :: "'b set set"
   assumes hKcomp: "geotop_is_complex K"
   assumes hLfin: "finite L"
@@ -1800,7 +1810,7 @@ qed
     (\<Leftarrow>) direction uses Theorem_GT_1 to merge the two PL-induced subdivisions
     into a common subdivision on which \<open>f\<close> is simplicially linear. **)
 theorem Theorem_GT_2:
-  fixes K :: "'a::real_normed_vector set set" and L :: "'a set set"
+  fixes K :: "'a::euclidean_space set set" and L :: "'a set set"
   assumes hKfin: "finite K"
   assumes hLfin: "finite L"
   shows "geotop_comb_equiv K L
@@ -2061,7 +2071,7 @@ qed
     transitive, and reflexive on its domain of definition (complexes).
     We formalize it with \<open>part_equivp\<close> rather than \<open>equivp\<close>. **)
 theorem Theorem_GT_3:
-  shows "part_equivp (geotop_comb_equiv :: 'a::real_normed_vector set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
+  shows "part_equivp (geotop_comb_equiv :: 'a::euclidean_space set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
 proof (rule part_equivpI)
   (** (1) Some element is reflexive: the empty complex \<open>{}\<close> is vacuously a complex,
          is a subdivision of itself, and is isomorphic to itself (via identity). **)
@@ -7238,7 +7248,7 @@ section \<open>\<S>5 Piecewise linear homeomorphisms\<close>
 (** from \<S>5 Theorem 1 (geotop.tex:1118)
     LATEX VERSION: Given K_1 < K. Then f is PL relative to K,L iff f is PL relative to K_1,L. **)
 theorem Theorem_GT_5_1:
-  fixes K K1 :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
+  fixes K K1 :: "'a::euclidean_space set set" and L :: "'b::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'b"
   assumes hKfin: "finite K"
   assumes hsub: "geotop_is_subdivision K1 K"
