@@ -7933,7 +7933,10 @@ proof -
          relations R' = {g_1 g_3^{-1} g_2^{-1} g_3, g_2 g_1^{-1} g_3^{-1} g_1,
          g_3 g_2^{-1} g_1^{-1} g_2}. Hence F(g_1, g_2, g_3, g_1') / N(R) \<cong>
          F(g_1, g_2, g_3) / N(R') = group of the trefoil knot K. **)
-  show ?thesis sorry
+  have h_final: "\<exists>\<Phi>. bij_betw \<Phi>
+           (geotop_pi V (subspace_topology UNIV geotop_euclidean_topology V) P\<^sub>V)
+           (geotop_group_of_link K P\<^sub>K)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>16: unknotted knot (geotop.tex:3370)
@@ -8148,7 +8151,8 @@ proof -
               h ` \<sigma>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - (\<sigma>2 -
                          geotop_frontier UNIV geotop_euclidean_topology \<sigma>2) \<and>
               (\<forall>P\<in>UNIV - N. h P = P))" sorry
-  show ?thesis sorry
+  have h_final: "geotop_has_push_property_at \<sigma>3 \<sigma>2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 5 (geotop.tex:3443)
@@ -8189,7 +8193,13 @@ proof -
          f ` \<sigma>3 = \<sigma>3 \<and>
          (\<exists>\<sigma>02. geotop_simplex_dim \<sigma>02 2 \<and> geotop_is_face \<sigma>02 \<sigma>3 \<and> f ` D = \<sigma>02) \<and>
          (\<forall>P\<in>UNIV - W. f P = P)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>f \<sigma>02. geotop_simplex_dim \<sigma>02 2 \<and> geotop_is_face \<sigma>02 \<sigma>3 \<and>
+           top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology f \<and>
+           (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+           f ` \<sigma>3 = \<sigma>3 \<and> f ` D = \<sigma>02 \<and>
+           (\<forall>P\<in>UNIV - W. f P = P)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 6 (geotop.tex:3502)
@@ -8274,7 +8284,8 @@ proof -
             (\<forall>P\<in>UNIV - N. h P = P))" sorry
   (** (3) Transport: the conjugated PLH h' = f \<circ> h \<circ> f^{-1} sends D_1' to D_2' in Bd f(C^3),
          is a PLH (compose PLHs), and is supported in N'. **)
-  show ?thesis sorry
+  have h_final: "geotop_has_push_property (f ` C3)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 8 (geotop.tex:3544)
@@ -8339,7 +8350,8 @@ proof -
             (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
                  f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
                    geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 10 (geotop.tex:3564)
@@ -8376,7 +8388,8 @@ proof -
             (\<exists>\<sigma>. geotop_simplex_dim \<sigma> 3 \<and>
                  f ` geotop_frontier UNIV geotop_euclidean_topology C3 =
                    geotop_frontier UNIV geotop_euclidean_topology \<sigma>))" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_simply_imbedded (geotop_frontier UNIV geotop_euclidean_topology C3)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>17 Theorem 11 (geotop.tex:3567)
