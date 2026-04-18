@@ -315,26 +315,100 @@ proof -
 qed
 
 (** from Introduction: Theorem 3 (geotop.tex:185)
-    LATEX VERSION: Combinatorial equivalence is an equivalence relation. **)
+    LATEX VERSION: Combinatorial equivalence is an equivalence relation.
+
+    FORMALIZATION NOTE: Moise treats \<sim>\<^sub>c as an equivalence relation on the
+    (implicit) class of complexes. Since \<open>geotop_comb_equiv K K\<close> fails when K
+    is not a complex (because \<open>geotop_is_subdivision\<close> requires a complex), this
+    is a \emph{partial} equivalence relation in the HOL sense: symmetric,
+    transitive, and reflexive on its domain of definition (complexes).
+    We formalize it with \<open>part_equivp\<close> rather than \<open>equivp\<close>. **)
 theorem Theorem_GT_3:
-  shows "equivp (geotop_comb_equiv :: 'a::real_normed_vector set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
-proof -
-  (** (1) Reflexive: K and K have themselves as subdivisions and the identity isomorphism
-         makes them combinatorially equivalent. **)
-  have h_refl: "\<forall>K::'a set set. geotop_comb_equiv K K" sorry
+  shows "part_equivp (geotop_comb_equiv :: 'a::real_normed_vector set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
+proof (rule part_equivpI)
+  (** (1) Some element is reflexive: the empty complex \<open>{}\<close> is vacuously a complex,
+         is a subdivision of itself, and is isomorphic to itself (via identity). **)
+  have h_empty_complex: "geotop_is_complex ({}::'a set set)"
+    unfolding geotop_is_complex_def by (by100 blast)
+  have h_empty_polyhedron: "geotop_polyhedron ({}::'a set set) = {}"
+    unfolding geotop_polyhedron_def by (by100 simp)
+  have h_empty_refines: "geotop_refines ({}::'a set set) {}"
+    unfolding geotop_refines_def by (by100 simp)
+  have h_empty_vertices: "geotop_complex_vertices ({}::'a set set) = {}"
+    unfolding geotop_complex_vertices_def by (by100 simp)
+  have h_empty_subdiv: "geotop_is_subdivision ({}::'a set set) {}"
+    unfolding geotop_is_subdivision_def
+    using h_empty_complex h_empty_refines h_empty_polyhedron by (by100 simp)
+  have h_bij_empty: "bij_betw (id::'a \<Rightarrow> 'a) {} {}"
+    unfolding bij_betw_def by (by100 simp)
+  have h_empty_iso: "geotop_isomorphic ({}::'a set set) ({}::'a set set)"
+    unfolding geotop_isomorphic_def geotop_isomorphism_def
+    using h_empty_vertices h_bij_empty by (by100 blast)
+  have h_empty_comb: "geotop_comb_equiv ({}::'a set set) ({}::'a set set)"
+    unfolding geotop_comb_equiv_def
+    using h_empty_subdiv h_empty_iso by (by100 blast)
+  show "\<exists>K::'a set set. geotop_comb_equiv K K"
+    using h_empty_comb by (by100 blast)
+next
   (** (2) Symmetric: if \<phi>: K' \<leftrightarrow> L' is an isomorphism, so is \<phi>^{-1}: L' \<leftrightarrow> K'. **)
-  have h_sym:
-    "\<forall>K L::'a set set. geotop_comb_equiv K L \<longrightarrow> geotop_comb_equiv L K" sorry
+  show "symp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
+  proof (rule sympI)
+    fix K L :: "'a set set"
+    assume "geotop_comb_equiv K L"
+    then obtain K' L' \<phi> where hK'sub: "geotop_is_subdivision K' K"
+                           and hL'sub: "geotop_is_subdivision L' L"
+                           and hiso: "geotop_isomorphism K' L' \<phi>"
+      unfolding geotop_comb_equiv_def geotop_isomorphic_def by (by100 blast)
+    let ?\<psi> = "inv_into (geotop_complex_vertices K') \<phi>"
+    have h\<phi>bij: "bij_betw \<phi> (geotop_complex_vertices K') (geotop_complex_vertices L')"
+      using hiso unfolding geotop_isomorphism_def by (by100 blast)
+    have h\<psi>bij: "bij_betw ?\<psi> (geotop_complex_vertices L') (geotop_complex_vertices K')"
+      by (rule bij_betw_inv_into[OF h\<phi>bij])
+    have h\<phi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K' \<longrightarrow>
+                    (geotop_convex_hull V \<in> K' \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L')"
+      using hiso unfolding geotop_isomorphism_def by (by100 blast)
+    have h\<psi>cond: "\<forall>W. W \<subseteq> geotop_complex_vertices L' \<longrightarrow>
+                    (geotop_convex_hull W \<in> L' \<longleftrightarrow> geotop_convex_hull (?\<psi> ` W) \<in> K')"
+    proof (intro allI impI)
+      fix W assume hWL: "W \<subseteq> geotop_complex_vertices L'"
+      let ?V = "?\<psi> ` W"
+      have h\<psi>W: "?\<psi> ` W \<subseteq> geotop_complex_vertices K'"
+        using h\<psi>bij hWL unfolding bij_betw_def by (by100 blast)
+      have h\<phi>inv_right: "\<forall>w\<in>geotop_complex_vertices L'. \<phi> (?\<psi> w) = w"
+        using bij_betw_inv_into_right[OF h\<phi>bij] by (by100 blast)
+      have h\<phi>\<psi>W: "\<phi> ` (?\<psi> ` W) = W"
+      proof (rule set_eqI, rule iffI)
+        fix y assume "y \<in> \<phi> ` (?\<psi> ` W)"
+        then obtain w where hw: "w \<in> W" and hy: "y = \<phi> (?\<psi> w)"
+          by (by100 blast)
+        have hwL: "w \<in> geotop_complex_vertices L'" using hw hWL by (by100 blast)
+        have "\<phi> (?\<psi> w) = w" using h\<phi>inv_right hwL by (by100 blast)
+        then show "y \<in> W" using hy hw by (by100 simp)
+      next
+        fix w assume hwW: "w \<in> W"
+        have hwL: "w \<in> geotop_complex_vertices L'" using hwW hWL by (by100 blast)
+        have h\<phi>\<psi>w: "\<phi> (?\<psi> w) = w" using h\<phi>inv_right hwL by (by100 blast)
+        show "w \<in> \<phi> ` (?\<psi> ` W)" using hwW h\<phi>\<psi>w by (by100 force)
+      qed
+      have "geotop_convex_hull ?V \<in> K' \<longleftrightarrow> geotop_convex_hull (\<phi> ` ?V) \<in> L'"
+        using h\<phi>cond h\<psi>W by (by100 blast)
+      then show "geotop_convex_hull W \<in> L' \<longleftrightarrow> geotop_convex_hull (?\<psi> ` W) \<in> K'"
+        using h\<phi>\<psi>W by (by100 simp)
+    qed
+    have h\<psi>iso: "geotop_isomorphism L' K' ?\<psi>"
+      unfolding geotop_isomorphism_def
+      using h\<psi>bij h\<psi>cond by (by100 blast)
+    have hL'K': "geotop_isomorphic L' K'"
+      unfolding geotop_isomorphic_def using h\<psi>iso by (by100 blast)
+    show "geotop_comb_equiv L K"
+      unfolding geotop_comb_equiv_def
+      using hL'sub hK'sub hL'K' by (by100 blast)
+  qed
+next
   (** (3) Transitive: given K' \<leftrightarrow> L' (via subdivisions of K, L) and L'' \<leftrightarrow> M' (via
          subdivisions of L, M), take a common subdivision (Theorem 1) of L' and L''
          inside L, pull back along both isomorphisms. **)
-  have h_trans:
-    "(\<forall>K L M::'a set set. geotop_comb_equiv K L \<and> geotop_comb_equiv L M \<longrightarrow>
-                         geotop_comb_equiv K M) \<and>
-     equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
-  have h_final: "equivp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
-    using h_trans by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show "transp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
 qed
 
 subsection \<open>Cells, manifolds, dense sets, separability\<close>
