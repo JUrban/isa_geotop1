@@ -11141,7 +11141,11 @@ proof -
              \<in> Z\<^sub>0)" sorry
   (** (3) The index-2 subgroup 2Z in Z pulls back to an index-2 subgroup of \<pi>(M, P_0);
          apply Theorem 24.5 to obtain a 2-fold covering of M. **)
-  show ?thesis sorry
+  have h_cover2:
+    "\<exists>Mt (g::'a \<Rightarrow> 'a). geotop_is_k_fold_covering 2 Mt
+       (subspace_topology UNIV geotop_euclidean_topology Mt)
+       M (subspace_topology UNIV geotop_euclidean_topology M) g" sorry
+  show ?thesis using h_cover2 by (by100 blast)
 qed
 
 (** from \<S>24: combinatorial solid torus (CST) (geotop.tex:5339)
