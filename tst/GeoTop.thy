@@ -1704,6 +1704,7 @@ lemma geotop_transport_subdivision:
   fixes L :: "'b::real_normed_vector set set"
   fixes L' :: "'b set set"
   assumes hKcomp: "geotop_is_complex K"
+  assumes hLfin: "finite L"
   assumes hiso: "geotop_isomorphic K L"
   assumes hL'L: "geotop_is_subdivision L' L"
   shows "\<exists>K'::'a set set. geotop_is_subdivision K' K \<and> geotop_isomorphic K' L'"
@@ -2149,9 +2150,11 @@ next
         \<open>K_2 \<cong> L_3\<close>. **)
     have hK\<^sub>1comp: "geotop_is_complex K\<^sub>1"
       using hK\<^sub>1K unfolding geotop_is_subdivision_def by (by100 blast)
+    have hL\<^sub>1fin: "finite L\<^sub>1"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL\<^sub>1L])
     obtain K\<^sub>2 where hK\<^sub>2K\<^sub>1: "geotop_is_subdivision K\<^sub>2 K\<^sub>1"
                  and hiso_K\<^sub>2L\<^sub>3: "geotop_isomorphic K\<^sub>2 L\<^sub>3"
-      using geotop_transport_subdivision[OF hK\<^sub>1comp hiso\<^sub>1 hL\<^sub>3L\<^sub>1] by (by100 blast)
+      using geotop_transport_subdivision[OF hK\<^sub>1comp hL\<^sub>1fin hiso\<^sub>1 hL\<^sub>3L\<^sub>1] by (by100 blast)
     (** Step (c): transport \<open>L_3 < L_2\<close> across \<open>L_2 \<cong> M_1\<close> (reverse direction).
         First swap iso to get \<open>M_1 \<cong> L_2\<close>, then transport \<open>L_3\<close> to get \<open>M_2 < M_1\<close>
         with \<open>M_2 \<cong> L_3\<close>; symmetrise again. **)
@@ -2159,9 +2162,11 @@ next
       by (rule geotop_isomorphic_sym[OF hiso\<^sub>2])
     have hM\<^sub>1comp: "geotop_is_complex M\<^sub>1"
       using hM\<^sub>1M unfolding geotop_is_subdivision_def by (by100 blast)
+    have hL\<^sub>2fin: "finite L\<^sub>2"
+      by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL\<^sub>2L])
     obtain M\<^sub>2 where hM\<^sub>2M\<^sub>1: "geotop_is_subdivision M\<^sub>2 M\<^sub>1"
                  and hiso_M\<^sub>2L\<^sub>3: "geotop_isomorphic M\<^sub>2 L\<^sub>3"
-      using geotop_transport_subdivision[OF hM\<^sub>1comp hiso\<^sub>2_sym hL\<^sub>3L\<^sub>2] by (by100 blast)
+      using geotop_transport_subdivision[OF hM\<^sub>1comp hL\<^sub>2fin hiso\<^sub>2_sym hL\<^sub>3L\<^sub>2] by (by100 blast)
     (** Step (d): compose \<open>K_2 \<cong> L_3 \<cong> M_2\<close>. **)
     have hiso_L\<^sub>3M\<^sub>2: "geotop_isomorphic L\<^sub>3 M\<^sub>2"
       by (rule geotop_isomorphic_sym[OF hiso_M\<^sub>2L\<^sub>3])
