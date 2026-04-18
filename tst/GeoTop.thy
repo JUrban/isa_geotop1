@@ -2449,10 +2449,52 @@ proof -
         is a bijective PL map. Decompose into K.0/K.1/K.2/K.3. **)
     have hK\<^sub>3_comp: "geotop_is_complex K\<^sub>3"
       using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
-    (** (i) K.0: each f_inv(\<sigma>) is a simplex. \<sigma> \<in> K_3 is a simplex, and f_inv is
-           piecewise linear (linear on K_1-simplexes, and K_3 refines K_1). **)
+    (** (i) K.0: each f_inv(\<sigma>) is a simplex. \<sigma> \<in> K_3 is a simplex, f_inv is
+           linear on K_1-simplex \<supseteq> \<sigma> (via K_3 < K_1 + linear_on_sub_simplex),
+           f_inv inj globally \<Rightarrow> use geotop_linear_inj_image_is_simplex. **)
+    have hK\<^sub>3_ref_K\<^sub>1_ref: "geotop_refines K\<^sub>3 K\<^sub>1"
+      using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
     have hL\<^sub>3_K0: "\<forall>\<sigma>\<in>L\<^sub>3. geotop_is_simplex \<sigma>"
-      sorry
+    proof (rule ballI)
+      fix \<sigma> assume h\<sigma>L\<^sub>3: "\<sigma> \<in> L\<^sub>3"
+      obtain \<sigma>_K where h\<sigma>_K_K\<^sub>3: "\<sigma>_K \<in> K\<^sub>3"
+                  and h\<sigma>_eq: "\<sigma> = inv_into (geotop_polyhedron L) f ` \<sigma>_K"
+        using h\<sigma>L\<^sub>3 unfolding L\<^sub>3_def by (by100 blast)
+      (** \<sigma>_K is a simplex (K_3 complex). **)
+      have h_K\<^sub>3_simp_all: "\<forall>\<sigma>\<in>K\<^sub>3. geotop_is_simplex \<sigma>"
+        by (rule conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]])
+      have h\<sigma>_K_sim: "geotop_is_simplex \<sigma>_K"
+        using h_K\<^sub>3_simp_all h\<sigma>_K_K\<^sub>3 by (by100 blast)
+      (** \<sigma>_K \<subseteq> some \<sigma>_1 \<in> K_1 (K_3 refines K_1). **)
+      obtain \<sigma>_1 where h\<sigma>_1_K\<^sub>1: "\<sigma>_1 \<in> K\<^sub>1" and h\<sigma>_K_sub: "\<sigma>_K \<subseteq> \<sigma>_1"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1_ref unfolding geotop_refines_def by (by100 blast)
+      (** f_inv linear on \<sigma>_1 (from hK_1_lin). **)
+      have h\<sigma>_1_lin_raw: "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>_1. inv_into (geotop_polyhedron L) f x \<in> \<tau>) \<and>
+                            geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using hK\<^sub>1_lin h\<sigma>_1_K\<^sub>1 by (by100 blast)
+      have h\<sigma>_1_lin: "geotop_linear_on \<sigma>_1 (inv_into (geotop_polyhedron L) f)"
+        using h\<sigma>_1_lin_raw by (by100 blast)
+      (** f_inv linear on \<sigma>_K (via sub_simplex from \<sigma>_1). **)
+      have h\<sigma>_K_lin: "geotop_linear_on \<sigma>_K (inv_into (geotop_polyhedron L) f)"
+        by (rule geotop_linear_on_sub_simplex[OF h\<sigma>_1_lin h\<sigma>_K_sim h\<sigma>_K_sub])
+      (** f_inv inj on \<sigma>_K (from global bij |K| \<leftrightarrow> |L|). **)
+      have hK\<^sub>3_K_sub: "geotop_is_subdivision K\<^sub>3 K"
+        by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>3_K\<^sub>1])
+      have hK\<^sub>3_poly: "geotop_polyhedron K\<^sub>3 = geotop_polyhedron K"
+        using hK\<^sub>3_K_sub unfolding geotop_is_subdivision_def by (by100 blast)
+      have h\<sigma>_K_in_K: "\<sigma>_K \<subseteq> geotop_polyhedron K"
+        using h\<sigma>_K_K\<^sub>3 hK\<^sub>3_poly unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inv_bij_local: "bij_betw (inv_into (geotop_polyhedron L) f)
+                                         (geotop_polyhedron K) (geotop_polyhedron L)"
+        by (rule bij_betw_inv_into[OF hf_bij_LK])
+      have hf_inv_inj_K: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+        using hf_inv_bij_local unfolding bij_betw_def by (by100 blast)
+      have hf_inv_inj_\<sigma>_K: "inj_on (inv_into (geotop_polyhedron L) f) \<sigma>_K"
+        using hf_inv_inj_K h\<sigma>_K_in_K inj_on_subset by (by100 blast)
+      show "geotop_is_simplex \<sigma>"
+        using h\<sigma>_eq geotop_linear_inj_image_is_simplex[OF h\<sigma>_K_lin hf_inv_inj_\<sigma>_K h\<sigma>_K_sim]
+        by (by100 simp)
+    qed
     (** (ii) K.1: L_3 closed under faces. A face of f_inv(\<sigma>) corresponds to
             f_inv applied to a face of \<sigma>; K_3 is face-closed, so L_3 is too. **)
     have hL\<^sub>3_K1: "\<forall>\<sigma>\<in>L\<^sub>3. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L\<^sub>3"
