@@ -6945,13 +6945,19 @@ proof -
      geotop_frontier UNIV geotop_euclidean_topology C\<^sub>s
        \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A\<^sub>s \<and>
      B\<^sub>s \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C\<^sub>s \<and>
-     C\<^sub>s \<inter> (geotop_manifold_boundary A\<^sub>s (\<lambda>x y. norm (x - y)) - B\<^sub>s) = {}" sorry
+     C\<^sub>s \<inter> (geotop_manifold_boundary A\<^sub>s (\<lambda>x y. norm (x - y)) - B\<^sub>s) = {} \<and>
+     (\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+          geotop_frontier UNIV geotop_euclidean_topology C
+            \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
+          B \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
+          C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {})" sorry
   (** (3) Pull C* back via F^{-1} to obtain the required C in A. **)
   have h_final: "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
              geotop_frontier UNIV geotop_euclidean_topology C
                \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
              B \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
-             C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {}" sorry
+             C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {}"
+    using h_build_std by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
