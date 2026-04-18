@@ -10301,7 +10301,11 @@ proof -
     "geotop_is_orientable K \<longleftrightarrow> m = 0" sorry
   (** (4) Case m = 0 (orientable): \<chi> = 2 - 2h = 2 - p^1. Case m = 1 (non-orientable):
          \<chi> = 1 - 2h = 1 - p^1. Case m = 2 (non-orientable): \<chi> = -2h = 1 - (2h + 1) = 1 - p^1. **)
-  show ?thesis sorry
+  have h_final: "(geotop_is_orientable K \<longrightarrow>
+            geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
+         (\<not> geotop_is_orientable K \<longrightarrow>
+            geotop_manifold_euler M = 1 - int (geotop_first_betti_number M))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 8 (geotop.tex:4919)
@@ -10335,7 +10339,10 @@ proof -
   (** (3) By 22_5, \<chi>(M_i) = 2 - (2 h_i + m_i). Equality of \<chi> and of orientability
          (which forces m_1 = m_2 when both are in {0, 1, 2} with m = 0 iff orientable)
          implies h_1 = h_2. **)
-  show ?thesis sorry
+  have h_final: "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+                M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
+         (h1 = h2 \<and> m1 = m2)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 9 (geotop.tex:4929)
@@ -10378,7 +10385,11 @@ proof -
     "(h1 = h2 \<and> m1 = m2) \<longleftrightarrow>
      ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
       geotop_manifold_euler M1 = geotop_manifold_euler M2)" sorry
-  show ?thesis sorry
+  have h_final: "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+                M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
+         ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
+          geotop_manifold_euler M1 = geotop_manifold_euler M2)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>22 Theorem 10 (geotop.tex:4931)
