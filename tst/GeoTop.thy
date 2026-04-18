@@ -4195,17 +4195,15 @@ proof -
                    and hf2J': "f\<^sub>2 ` J' = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
     using Theorem_GT_3_4[OF hJ'] by blast
   (** Theorem 2 (3_2): homeomorphism g: R\<^sup>2 \<leftrightarrow> R\<^sup>2 with g(\<sigma>) = \<tau>. Need vertex sets for \<sigma>, \<tau>. **)
-  have hf3: "\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
+  have hf3_hh: "(\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
                     UNIV geotop_euclidean_topology f\<^sub>3
                   \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
-                    = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
-    sorry
-  (** Compose h = f\<^sub>2\<^sup>-\<^sup>1 \<circ> f\<^sub>3 \<circ> f\<^sub>1. **)
-  have hh: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    = geotop_frontier UNIV geotop_euclidean_topology \<tau>) \<and>
+                (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                   UNIV geotop_euclidean_topology h
-                \<and> h ` J = J'"
+                \<and> h ` J = J')"
     sorry
-  show ?thesis using hh .
+  show ?thesis using hf3_hh by (by100 blast)
 qed
 
 (** from \<S>3 Theorem 6 (geotop.tex:821)
