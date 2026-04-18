@@ -231,6 +231,35 @@ definition geotop_is_subdivision :: "'a::real_normed_vector set set \<Rightarrow
     geotop_is_complex K \<and> geotop_is_complex L
     \<and> geotop_refines L K \<and> geotop_polyhedron L = geotop_polyhedron K"
 
+subsection \<open>Vertex uniqueness for simplexes\<close>
+
+(** A simplex \<open>\<sigma>\<close> has a unique vertex set: if \<open>\<sigma> = conv V\<^sub>1 = conv V\<^sub>2\<close> with
+    both \<open>V\<^sub>1, V\<^sub>2\<close> satisfying \<open>geotop_simplex_vertices\<close>, then \<open>V\<^sub>1 = V\<^sub>2\<close>.
+    Proof: for affinely independent finite \<open>V\<close>, the extreme points of \<open>conv V\<close>
+    are exactly \<open>V\<close> (HOL \<open>extreme_point_of_convex_hull_affine_independent\<close>); the
+    affine independence follows from \<open>geotop_general_position\<close> with the matching
+    dimension parameter. **)
+lemma geotop_general_position_imp_aff_indep:
+  fixes V :: "'a::real_normed_vector set"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  shows "\<not> affine_dependent V"
+  sorry \<comment> \<open>\<open>card V = n+1\<close>, \<open>n \<le> m\<close>, and \<open>geotop_general_position V m\<close> together
+           imply affine independence. Key step: if \<open>V\<close> were affinely dependent, it
+           would lie in an \<open>(n-1)\<close>-dim affine subspace, contradicting
+           \<open>card(V \<inter> H) \<le> k+1\<close> for the containing hyperplane.\<close>
+
+lemma geotop_simplex_vertices_unique:
+  fixes V\<^sub>1 V\<^sub>2 :: "'a::real_normed_vector set" and \<sigma> :: "'a set"
+  assumes h1: "geotop_simplex_vertices \<sigma> V\<^sub>1"
+  assumes h2: "geotop_simplex_vertices \<sigma> V\<^sub>2"
+  shows "V\<^sub>1 = V\<^sub>2"
+  sorry \<comment> \<open>Standard argument: both \<open>V\<^sub>i\<close> are affinely independent (via
+           \<open>geotop_general_position_imp_aff_indep\<close>), with the same convex hull \<open>\<sigma>\<close>.
+           For affinely independent sets, the extreme points of \<open>conv V\<close> equal
+           \<open>V\<close> (HOL \<open>extreme_point_of_convex_hull_affine_independent\<close>); so
+           \<open>V\<^sub>1 = \<close> extreme points \<open>= V\<^sub>2\<close>. Deferred due to rule-application
+           scoping friction on the meta-quantified variable.\<close>
+
 subsection \<open>Diameter and mesh\<close>
 
 (** from \<S>4: diameter and mesh (geotop.tex:953)
@@ -2795,7 +2824,8 @@ proof -
         argument; here we just derive the contradiction from the weak claim that
         \<open>V\<^sub>1 \<subseteq> V\<^sub>2\<close> or vice versa (even with distinct vertex sets, they'd both be
         subsets of the extreme points and intersect in common extreme points). **)
-    have hV12_eq: "V\<^sub>1 = V\<^sub>2" sorry
+    have hV12_eq: "V\<^sub>1 = V\<^sub>2"
+      by (rule geotop_simplex_vertices_unique[OF hV\<^sub>1 hV\<^sub>2])
     have hV\<^sub>1_empty: "V\<^sub>1 = {}" using hV\<^sub>1V hV\<^sub>2V hV12_eq by (by100 blast)
     have hV\<^sub>1_card: "card V\<^sub>1 \<ge> 1"
       using hV\<^sub>1 unfolding geotop_simplex_vertices_def by (by100 fastforce)
@@ -2859,8 +2889,8 @@ proof -
     have h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1" using h\<sigma>K hK_is_K\<^sub>1 by (by100 simp)
     then obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>" and hV\<^sub>\<sigma>V: "V\<^sub>\<sigma> \<subseteq> V"
       unfolding K\<^sub>1_def by (by100 blast)
-    (** Vertex-uniqueness: \<open>W = V\<^sub>\<sigma>\<close> (deferred). **)
-    have hW_eq: "W = V\<^sub>\<sigma>" sorry
+    have hW_eq: "W = V\<^sub>\<sigma>"
+      by (rule geotop_simplex_vertices_unique[OF hWsv hV\<^sub>\<sigma>sv])
     show "W \<subseteq> V" using hV\<^sub>\<sigma>V hW_eq by (by100 simp)
   qed
   have hw_V: "w \<in> V" using hV_all hw by (by100 blast)
