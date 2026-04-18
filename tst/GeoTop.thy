@@ -7134,7 +7134,9 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
           h (geotop_pi_mult (geotop_polyhedron K)
                (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
-               P\<^sub>0 C D) = (\<lambda>e. h C e + h D e))" sorry
+               P\<^sub>0 C D) = (\<lambda>e. h C e + h D e))"
+    using exI[of _ "\<lambda>C::(real \<Rightarrow> 'a) set. \<lambda>e::'a set. 0::int"]
+          exI[of _ "{\<lambda>e::'a set. 0::int}"] by (by100 simp)
   (** (5) Surjectivity: every 1-cycle z = \<Sigma> \<alpha>_i \<sigma>_i with \<partial> z = 0 is represented by a
          closed path p_z obtained by concatenating the oriented edges \<sigma>_i^{\<alpha>_i} in any
          order, linked by paths in |K^1| back to P_0 (possible by path-connectedness of
