@@ -427,6 +427,109 @@ qed \<comment> \<open>\<open>card V = n+1\<close>, \<open>n \<le> m\<close>, and
            would lie in an \<open>(n-1)\<close>-dim affine subspace, contradicting
            \<open>card(V \<inter> H) \<le> k+1\<close> for the containing hyperplane.\<close>
 
+(** Converse direction: AI + card n+1 gives general_position V n.
+    Proof: for any k-hyperplane H with k < n, V \<inter> H is AI (subset of AI V),
+    finite, and contained in a k-dim affine set H, so card(V \<inter> H) \<le> k+1
+    via aff_dim reasoning. **)
+lemma geotop_ai_imp_general_position:
+  fixes V :: "'a::euclidean_space set"
+  assumes hVfin: "finite V"
+  assumes hVcard: "card V = n + 1"
+  assumes hVai: "\<not> affine_dependent V"
+  shows "geotop_general_position V n"
+  unfolding geotop_general_position_def
+proof (intro allI impI)
+  fix H :: "'a set" and k :: nat
+  assume "geotop_hyperplane_dim H k \<and> k < n"
+  then have hHk: "geotop_hyperplane_dim H k" and hkn: "k < n" by auto
+  (** H = (+) v0 ` U for subspace U of dim k. Hence H is affine of dim k. **)
+  obtain U v0 B where hU_sub: "subspace U"
+                    and hB_indep: "independent B" and hB_fin: "finite B"
+                    and hB_card: "card B = k" and hB_span: "span B = U"
+                    and hH_eq: "H = (\<lambda>v. v + v0) ` U"
+    using hHk unfolding geotop_hyperplane_dim_def by (by100 blast)
+  (** aff_dim U = int k (subspace dim = affine dim for subspaces). **)
+  have hU_dim: "dim U = k"
+  proof -
+    have h1: "dim U = dim (span B)" using hB_span by (by100 simp)
+    have h2: "dim (span B) = dim B" by (rule dim_span)
+    have h3: "dim B = card B" using hB_indep by (rule dim_eq_card_independent)
+    show ?thesis using h1 h2 h3 hB_card by (by100 simp)
+  qed
+  have hU_affine: "affine U" using hU_sub subspace_imp_affine by (by100 simp)
+  have hU_ne: "U \<noteq> {}" using hU_sub subspace_0 by (by100 blast)
+  have hU_aff_dim: "aff_dim U = int k"
+    using hU_dim aff_dim_subspace[OF hU_sub] by (by100 simp)
+  (** H = translate of U, aff_dim H = aff_dim U = k. **)
+  have hH_eq_sym: "H = ((+) v0) ` U"
+  proof (rule set_eqI, rule iffI)
+    fix x assume "x \<in> H"
+    then obtain u where hu: "u \<in> U" and hx: "x = u + v0"
+      using hH_eq by (by100 blast)
+    have "x = v0 + u" using hx by (by100 simp)
+    then show "x \<in> (+) v0 ` U" using hu by (by100 blast)
+  next
+    fix x assume "x \<in> (+) v0 ` U"
+    then obtain u where hu: "u \<in> U" and hx: "x = v0 + u" by (by100 blast)
+    have "x = u + v0" using hx by (by100 simp)
+    then show "x \<in> H" using hu hH_eq by (by100 blast)
+  qed
+  have hU_eq: "U = ((+) (-v0)) ` H"
+  proof (rule set_eqI, rule iffI)
+    fix u assume hu: "u \<in> U"
+    have hx_in_H: "v0 + u \<in> H" using hu hH_eq_sym by (by100 blast)
+    have hu_eq: "u = (-v0) + (v0 + u)" by (by100 simp)
+    show "u \<in> (+) (-v0) ` H" using hu_eq hx_in_H by (by100 blast)
+  next
+    fix u assume "u \<in> (+) (-v0) ` H"
+    then obtain x where hx: "x \<in> H" and hu: "u = -v0 + x" by (by100 blast)
+    obtain w where hwU: "w \<in> U" and hxw: "x = v0 + w" using hx hH_eq_sym by (by100 blast)
+    have "u = w" using hu hxw by (by100 simp)
+    then show "u \<in> U" using hwU by (by100 simp)
+  qed
+  have hH_parallel: "affine_parallel H U"
+    unfolding affine_parallel_def
+    using hU_eq by (by100 blast)
+  have hH_affine_step: "affine U = affine ((+) v0 ` U)"
+    by (rule affine_translation)
+  have hH_affine: "affine H"
+    using hH_affine_step hU_affine hH_eq_sym by (by100 simp)
+  have hH_ne: "H \<noteq> {}" using hU_ne hH_eq by (by100 simp)
+  have hH_aff_dim: "aff_dim H = int k"
+    using aff_dim_affine[OF hH_affine hU_sub hH_parallel hH_ne] hU_dim by (by100 simp)
+  (** V \<inter> H is finite (subset of finite V) and AI (subset of AI V). **)
+  have hVH_fin: "finite (V \<inter> H)" using hVfin by (by100 simp)
+  have hVH_sub_V: "V \<inter> H \<subseteq> V" by (by100 blast)
+  have hVH_ai: "\<not> affine_dependent (V \<inter> H)"
+  proof
+    assume h_dep: "affine_dependent (V \<inter> H)"
+    have "affine_dependent V"
+      using affine_dependent_subset[OF h_dep hVH_sub_V] by (by100 simp)
+    thus False using hVai by (by100 blast)
+  qed
+  (** aff_dim (V \<inter> H) = card - 1 (finite + AI). Also \<le> aff_dim H = k. **)
+  have hVH_card_eq: "int (card (V \<inter> H)) = aff_dim (V \<inter> H) + 1"
+  proof -
+    have h_iff: "(\<not> affine_dependent (V \<inter> H)) =
+                  (finite (V \<inter> H) \<and> aff_dim (V \<inter> H) = int (card (V \<inter> H)) - 1)"
+      by (rule affine_independent_iff_card)
+    have h_eq: "aff_dim (V \<inter> H) = int (card (V \<inter> H)) - 1"
+      using h_iff hVH_ai by (by100 blast)
+    show ?thesis using h_eq by (by100 linarith)
+  qed
+  have hVH_in_H: "V \<inter> H \<subseteq> H" by (by100 blast)
+  have hVH_aff_le: "aff_dim (V \<inter> H) \<le> aff_dim H"
+    by (rule aff_dim_subset[OF hVH_in_H])
+  have hVH_aff_le_k: "aff_dim (V \<inter> H) \<le> int k"
+    using hVH_aff_le hH_aff_dim by (by100 simp)
+  have hVH_card_le: "int (card (V \<inter> H)) \<le> int k + 1"
+    using hVH_card_eq hVH_aff_le_k by (by100 linarith)
+  have hVH_card_le_nat: "card (V \<inter> H) \<le> k + 1"
+    using hVH_card_le by (by100 linarith)
+  show "finite (V \<inter> H) \<and> card (V \<inter> H) \<le> k + 1"
+    using hVH_fin hVH_card_le_nat by (by100 blast)
+qed
+
 lemma geotop_simplex_vertices_unique:
   fixes V\<^sub>1 V\<^sub>2 :: "'a::euclidean_space set" and \<sigma> :: "'a set"
   assumes h1: "geotop_simplex_vertices \<sigma> V\<^sub>1"
