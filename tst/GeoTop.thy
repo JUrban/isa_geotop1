@@ -2846,10 +2846,68 @@ proof -
         using h\<sigma>_svx_ex by (by100 blast)
       (** Bipartition dichotomy: either \<open>V\<^sub>\<sigma> \<subseteq> V\<close> or \<open>V\<^sub>\<sigma> \<inter> V = {}\<close>.
           Suppose a mixed case: \<open>v' \<in> V\<^sub>\<sigma> \<inter> V\<close> and \<open>w \<in> V\<^sub>\<sigma> \<setminus> V\<close>.
-          Then the edge \<open>{v', w} \<subseteq> V\<^sub>\<sigma>\<close> gives a 1-face, in \<open>K\<close> by face-closure.
-          The segment \<open>v' \<to> w\<close> is a HOL path; extending the \<open>v \<to> v'\<close> path gives
-          \<open>v \<to> w\<close>, so \<open>w \<in> V\<close>, contradicting \<open>w \<notin> V\<close>. **)
-      have h_dichotomy: "V\<^sub>\<sigma> \<subseteq> V \<or> V\<^sub>\<sigma> \<inter> V = {}" sorry
+          Then the edge \<open>conv {v', w}\<close> is a 1-face of \<sigma>, in \<open>K\<close> by face-closure.
+          The segment \<open>v' \<to> w\<close> is a HOL path inside \<open>|K|\<close>; extending the
+          \<open>v \<to> v'\<close> path (from \<open>v' \<in> V\<close>) gives \<open>v \<to> w\<close>, so \<open>w \<in> V\<close>,
+          contradicting \<open>w \<notin> V\<close>. **)
+      have h_dichotomy: "V\<^sub>\<sigma> \<subseteq> V \<or> V\<^sub>\<sigma> \<inter> V = {}"
+      proof (rule ccontr)
+        assume hneg: "\<not> (V\<^sub>\<sigma> \<subseteq> V \<or> V\<^sub>\<sigma> \<inter> V = {})"
+        then have hmix: "\<not> V\<^sub>\<sigma> \<subseteq> V \<and> V\<^sub>\<sigma> \<inter> V \<noteq> {}" by (by100 blast)
+        obtain v' where hv'_V\<^sub>\<sigma>: "v' \<in> V\<^sub>\<sigma>" and hv'_V: "v' \<in> V" using hmix by (by100 blast)
+        obtain w where hw_V\<^sub>\<sigma>: "w \<in> V\<^sub>\<sigma>" and hw_nV: "w \<notin> V" using hmix by (by100 blast)
+        (** The edge \<open>conv {v', w}\<close> is a face of \<sigma>, hence in \<open>K\<close>. **)
+        have hvw_sub: "{v', w} \<subseteq> V\<^sub>\<sigma>" using hv'_V\<^sub>\<sigma> hw_V\<^sub>\<sigma> by (by100 blast)
+        have hvw_ne: "({v', w}::'a set) \<noteq> {}" by (by100 simp)
+        have h_hull_vw: "geotop_convex_hull ({v', w}::'a set) = convex hull {v', w}"
+          by (rule geotop_convex_hull_eq_HOL)
+        define e where "e = convex hull ({v', w}::'a set)"
+        have he_eq_geo: "e = geotop_convex_hull ({v', w}::'a set)"
+          unfolding e_def using h_hull_vw by (by100 simp)
+        have h_e_face: "geotop_is_face e \<sigma>"
+          unfolding geotop_is_face_def
+          apply (rule exI[of _ V\<^sub>\<sigma>])
+          apply (rule exI[of _ "{v', w}"])
+          using hV\<^sub>\<sigma>sv hvw_ne hvw_sub he_eq_geo by (by100 blast)
+        have hK_fc: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma>' \<longrightarrow> \<tau> \<in> K"
+          using hKcomp by (rule geotop_is_complex_face_closed)
+        have he_K: "e \<in> K" using hK_fc h\<sigma>K h_e_face by (by100 blast)
+        (** \<open>v' \<in> V\<close> gives HOL path \<open>v \<to> v'\<close> in \<open>|K|\<close>. **)
+        obtain g\<^sub>0 where hg\<^sub>0_path: "path g\<^sub>0"
+                     and hg\<^sub>0_im: "path_image g\<^sub>0 \<subseteq> geotop_polyhedron K"
+                     and hg\<^sub>0_s: "pathstart g\<^sub>0 = v" and hg\<^sub>0_f: "pathfinish g\<^sub>0 = v'"
+          using hv'_V unfolding V_def by (by100 blast)
+        (** Straight-line path \<open>v' \<to> w\<close> in \<open>e = conv {v', w}\<close>. **)
+        have he_conv: "convex e" unfolding e_def by (by100 simp)
+        have hv'_e: "v' \<in> e" unfolding e_def using hull_inc[of v' "{v', w}"] by (by100 simp)
+        have hw_e: "w \<in> e" unfolding e_def using hull_inc[of w "{v', w}"] by (by100 simp)
+        have he_pc: "path_connected e" by (rule convex_imp_path_connected[OF he_conv])
+        obtain g\<^sub>1 where hg\<^sub>1_path: "path g\<^sub>1" and hg\<^sub>1_im: "path_image g\<^sub>1 \<subseteq> e"
+                     and hg\<^sub>1_s: "pathstart g\<^sub>1 = v'" and hg\<^sub>1_f: "pathfinish g\<^sub>1 = w"
+          using he_pc hv'_e hw_e unfolding path_connected_def by (by100 blast)
+        have he_sub_K: "e \<subseteq> geotop_polyhedron K"
+          using he_K unfolding geotop_polyhedron_def by (by100 blast)
+        have hg\<^sub>1_im_K: "path_image g\<^sub>1 \<subseteq> geotop_polyhedron K"
+          using hg\<^sub>1_im he_sub_K by (by100 blast)
+        (** Concatenate \<open>g\<^sub>0 +++ g\<^sub>1\<close>. **)
+        have h_join: "pathfinish g\<^sub>0 = pathstart g\<^sub>1" using hg\<^sub>0_f hg\<^sub>1_s by (by100 simp)
+        define g where "g = g\<^sub>0 +++ g\<^sub>1"
+        have hg_path: "path g"
+          unfolding g_def by (rule path_join_imp[OF hg\<^sub>0_path hg\<^sub>1_path h_join])
+        have hg_s: "pathstart g = v" unfolding g_def using hg\<^sub>0_s by (by100 simp)
+        have hg_f: "pathfinish g = w" unfolding g_def using hg\<^sub>1_f by (by100 simp)
+        have hg_im_eq: "path_image g = path_image g\<^sub>0 \<union> path_image g\<^sub>1"
+          unfolding g_def by (rule path_image_join[OF h_join])
+        have hg_im: "path_image g \<subseteq> geotop_polyhedron K"
+          using hg_im_eq hg\<^sub>0_im hg\<^sub>1_im_K by (by100 blast)
+        (** \<open>w\<close> is a vertex of \<open>\<sigma> \<in> K\<close>, hence a vertex of \<open>K\<close>. **)
+        have hw_K: "w \<in> geotop_complex_vertices K"
+          unfolding geotop_complex_vertices_def using h\<sigma>K hV\<^sub>\<sigma>sv hw_V\<^sub>\<sigma> by (by100 blast)
+        (** So \<open>w \<in> V\<close>, contradicting \<open>w \<notin> V\<close>. **)
+        have hw_V_from_path: "w \<in> V"
+          unfolding V_def using hw_K hg_path hg_im hg_s hg_f by (by100 blast)
+        show False using hw_V_from_path hw_nV by (by100 blast)
+      qed
       show "\<sigma> \<in> K\<^sub>1 \<union> K\<^sub>2"
         using h\<sigma>K hV\<^sub>\<sigma>sv h_dichotomy
         unfolding K\<^sub>1_def K\<^sub>2_def by (by100 blast)
@@ -2913,9 +2971,12 @@ proof -
   have hK\<^sub>2_empty: "K\<^sub>2 = {}"
   proof (rule ccontr)
     assume hK\<^sub>2ne: "K\<^sub>2 \<noteq> {}"
+    have hK_union: "K = K\<^sub>1 \<union> K\<^sub>2" using hK\<^sub>1\<^sub>2_cover by (by100 blast)
     have hnot_conn: "\<exists>Ka Kb. Ka \<noteq> {} \<and> Kb \<noteq> {} \<and> Ka \<inter> Kb = {} \<and> K = Ka \<union> Kb
                           \<and> geotop_is_complex Ka \<and> geotop_is_complex Kb"
-      using hK\<^sub>1_nonempty hK\<^sub>2ne hK\<^sub>1\<^sub>2_disjoint hK\<^sub>1\<^sub>2_cover hK\<^sub>1_complex hK\<^sub>2_complex
+      apply (rule exI[of _ K\<^sub>1])
+      apply (rule exI[of _ K\<^sub>2])
+      using hK\<^sub>1_nonempty hK\<^sub>2ne hK\<^sub>1\<^sub>2_disjoint hK_union hK\<^sub>1_complex hK\<^sub>2_complex
       by (by100 blast)
     show False
       using hnot_conn hK unfolding geotop_complex_connected_def by (by100 blast)
