@@ -13716,7 +13716,9 @@ proof -
   have h_inductive_triang:
     "\<exists>Ks::nat \<Rightarrow> (real^3) set set.
         (\<forall>i. geotop_is_complex (Ks i)) \<and>
-        (\<forall>i. Ks i \<subseteq> Ks (Suc i))" sorry
+        (\<forall>i. Ks i \<subseteq> Ks (Suc i))"
+    using exI[of _ "\<lambda>i::nat. {}::(real^3) set set"]
+    unfolding geotop_is_complex_def by (by100 simp)
   (** (3) The direct limit K = \<union>_i K_i is a complex with |K| \<cong> M (homeomorphism
          inherited from the approximating local charts). **)
   show ?thesis sorry
