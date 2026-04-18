@@ -917,6 +917,25 @@ next
   qed
 qed
 
+(** The \<epsilon>-neighborhood of a set A in a real_normed_vector space is open
+    in the Euclidean topology. **)
+lemma geotop_nbhd_set_open_in_euclidean:
+  fixes A :: "'a::real_normed_vector set" and \<epsilon> :: real
+  assumes h\<epsilon>: "\<epsilon> > 0"
+  shows "geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon> \<in> geotop_euclidean_topology"
+proof -
+  have h_set_eq: "geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>
+                  = (\<Union>P\<in>A. ball P \<epsilon>)"
+    unfolding geotop_nbhd_set_def dist_norm
+    by (auto simp: dist_norm)
+  have h_open: "open (\<Union>P\<in>A. ball P \<epsilon>)" by (rule open_UN) auto
+  have h_in_open_sets: "(\<Union>P\<in>A. ball P \<epsilon>) \<in> top1_open_sets"
+    using h_open unfolding top1_open_sets_def by simp
+  show ?thesis
+    using h_set_eq h_in_open_sets
+    unfolding geotop_euclidean_topology_eq_open_sets by simp
+qed
+
 (** Continuous maps from a real subspace into a real_normed_vector subspace
     (via the top1_open_sets topology). Mirror of
     \<open>top1_continuous_map_on_real_subspace_open_sets\<close> but with
@@ -4149,7 +4168,9 @@ theorem Theorem_GT_6_1:
 proof -
   define N\<epsilon> where "N\<epsilon> = geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>"
   (** Step 1: N\<epsilon> is open (in the ambient R^2 topology). **)
-  have hN_open: "N\<epsilon> \<in> geotop_euclidean_topology" sorry
+  have hN_open: "N\<epsilon> \<in> geotop_euclidean_topology"
+    unfolding N\<epsilon>_def
+    by (rule geotop_nbhd_set_open_in_euclidean[OF h\<epsilon>])
   (** Step 2: N\<epsilon> is connected (nbhd of connected set A = image of connected arc). **)
   have hN_conn: "top1_connected_on N\<epsilon>
                    (subspace_topology UNIV geotop_euclidean_topology N\<epsilon>)" sorry
