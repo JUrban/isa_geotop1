@@ -4565,7 +4565,37 @@ theorem Theorem_GT_7_2:
 proof -
   have hrefl: "\<forall>(\<sigma>::'a set) h. geotop_coordinate_mapping \<sigma> X TX h \<longrightarrow>
                  geotop_coord_equiv \<sigma> \<sigma> h h"
-    sorry
+  proof (intro allI impI)
+    fix \<sigma>::"'a set" and h
+    assume hcm: "geotop_coordinate_mapping \<sigma> X TX h"
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+      using hcm unfolding geotop_coordinate_mapping_def by (by100 blast)
+    have h_sigma_topology: "is_topology_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+      using hcm unfolding geotop_coordinate_mapping_def top1_homeomorphism_on_def
+      by (by100 blast)
+    have hid_homeo: "top1_homeomorphism_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+                       \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) id"
+      by (rule top1_homeomorphism_on_id[OF h_sigma_topology])
+    have hid_simpl: "geotop_simplicial_on \<sigma> id \<sigma>"
+    proof -
+      have hexV: "\<exists>V. geotop_simplex_vertices \<sigma> V"
+        using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+        by (by100 blast)
+      obtain V where hV: "geotop_simplex_vertices \<sigma> V" using hexV by blast
+      have hid_V: "\<forall>v\<in>V. id v \<in> V" by simp
+      have hid_linear: "geotop_linear_on \<sigma> id"
+        unfolding geotop_linear_on_def
+        using hV by (by100 auto)
+      show ?thesis
+        unfolding geotop_simplicial_on_def
+        using hV hid_V hid_linear by (by100 blast)
+    qed
+    have hh_id: "\<forall>x\<in>\<sigma>. h x = h (id x)" by simp
+    have himg_eq: "h ` \<sigma> = h ` \<sigma>" by simp
+    show "geotop_coord_equiv \<sigma> \<sigma> h h"
+      unfolding geotop_coord_equiv_def
+      using himg_eq hid_homeo hid_simpl hh_id by (by100 blast)
+  qed
   have hsymm: "\<forall>\<sigma>\<^sub>g \<sigma>\<^sub>h (g::'a\<Rightarrow>'b) h. geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
                  geotop_coord_equiv \<sigma>\<^sub>h \<sigma>\<^sub>g h g"
     sorry
