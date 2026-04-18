@@ -2830,7 +2830,31 @@ proof -
   (** Step 4: bipartition — any simplex has all or no vertices in \<open>V\<close>.
       Proof: if \<sigma>\<in>K has vertex in \<open>V\<close> and vertex not in \<open>V\<close>, the edge between
       them lifts vertex-reachability to the "not-in-V" endpoint, a contradiction. **)
-  have hK\<^sub>1\<^sub>2_cover: "K\<^sub>1 \<union> K\<^sub>2 = K" sorry
+  have hK\<^sub>1\<^sub>2_cover: "K\<^sub>1 \<union> K\<^sub>2 = K"
+  proof
+    show "K\<^sub>1 \<union> K\<^sub>2 \<subseteq> K" unfolding K\<^sub>1_def K\<^sub>2_def by (by100 blast)
+  next
+    show "K \<subseteq> K\<^sub>1 \<union> K\<^sub>2"
+    proof
+      fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+      have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+        using h\<sigma>K geotop_is_complex_simplex[OF hKcomp] by (by100 blast)
+      have h\<sigma>_svx_ex: "\<exists>V. geotop_simplex_vertices \<sigma> V"
+        using h\<sigma>_simp
+        unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+      obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+        using h\<sigma>_svx_ex by (by100 blast)
+      (** Bipartition dichotomy: either \<open>V\<^sub>\<sigma> \<subseteq> V\<close> or \<open>V\<^sub>\<sigma> \<inter> V = {}\<close>.
+          Suppose a mixed case: \<open>v' \<in> V\<^sub>\<sigma> \<inter> V\<close> and \<open>w \<in> V\<^sub>\<sigma> \<setminus> V\<close>.
+          Then the edge \<open>{v', w} \<subseteq> V\<^sub>\<sigma>\<close> gives a 1-face, in \<open>K\<close> by face-closure.
+          The segment \<open>v' \<to> w\<close> is a HOL path; extending the \<open>v \<to> v'\<close> path gives
+          \<open>v \<to> w\<close>, so \<open>w \<in> V\<close>, contradicting \<open>w \<notin> V\<close>. **)
+      have h_dichotomy: "V\<^sub>\<sigma> \<subseteq> V \<or> V\<^sub>\<sigma> \<inter> V = {}" sorry
+      show "\<sigma> \<in> K\<^sub>1 \<union> K\<^sub>2"
+        using h\<sigma>K hV\<^sub>\<sigma>sv h_dichotomy
+        unfolding K\<^sub>1_def K\<^sub>2_def by (by100 blast)
+    qed
+  qed
   have hK\<^sub>1\<^sub>2_disjoint: "K\<^sub>1 \<inter> K\<^sub>2 = {}"
   proof (rule equals0I)
     fix \<sigma> assume h\<sigma>12: "\<sigma> \<in> K\<^sub>1 \<inter> K\<^sub>2"
