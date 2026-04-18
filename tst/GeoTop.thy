@@ -266,7 +266,77 @@ lemma geotop_general_position_imp_aff_indep:
   fixes V :: "'a::euclidean_space set"
   assumes hV: "geotop_simplex_vertices \<sigma> V"
   shows "\<not> affine_dependent V"
-  sorry \<comment> \<open>\<open>card V = n+1\<close>, \<open>n \<le> m\<close>, and \<open>geotop_general_position V m\<close> together
+proof (rule ccontr)
+  assume hAD: "\<not> \<not> affine_dependent V"
+  then have hdep: "affine_dependent V" by (by100 blast)
+  obtain m n where hVfin: "finite V" and hVcard: "card V = n+1" and hnm: "n \<le> m"
+                 and hVgp: "geotop_general_position V m"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  (** \<open>¬affine_dependent\<close> iff \<open>aff_dim V = int(card V) - 1\<close>; so dependence ⇒ strict. **)
+  have haff_le: "aff_dim V \<le> int (card V) - 1"
+    using hVfin aff_dim_le_card by (by100 simp)
+  have hdep_neq: "aff_dim V \<noteq> int (card V) - 1"
+    using hdep hVfin affine_independent_iff_card by (by100 blast)
+  have haff_lt: "aff_dim V < int (card V) - 1"
+    using haff_le hdep_neq by (by100 linarith)
+  have hdim_le: "aff_dim V \<le> int n - 1"
+    using haff_lt hVcard by (by100 linarith)
+  (** Take \<open>k = aff_dim V\<close> (nat). We have \<open>k \<le> n - 1 < n \<le> m\<close>, so \<open>k < m\<close>. **)
+  define k::nat where "k = nat (aff_dim V)"
+  have hVne: "V \<noteq> {}"
+    using hVfin hVcard card_gt_0_iff by (by100 fastforce)
+  have hk_nonneg: "aff_dim V \<ge> 0"
+  proof -
+    obtain a0 where ha0: "a0 \<in> V" using hVne by (by100 blast)
+    have hsing_sub: "{a0} \<subseteq> V" using ha0 by (by100 blast)
+    have h0_le: "aff_dim {a0} \<le> aff_dim V"
+      by (rule aff_dim_subset[OF hsing_sub])
+    have h_sing: "aff_dim {a0} = 0" by (by100 simp)
+    show "aff_dim V \<ge> 0" using h0_le h_sing by (by100 simp)
+  qed
+  have hk_int: "int k = aff_dim V" unfolding k_def using hk_nonneg by (by100 simp)
+  have hk_n: "k < n"
+    using hdim_le hk_int hVcard hVne by (by100 linarith)
+  have hk_m: "k < m" using hk_n hnm by (by100 linarith)
+  (** \<open>affine hull V\<close> is a \<open>k\<close>-dim affine subspace containing \<open>V\<close>. Write it as
+      a translate of a linear subspace of dim \<open>k\<close>. **)
+  have hV_sub_aff: "V \<subseteq> affine hull V" by (rule hull_subset)
+  obtain a where ha: "a \<in> V" using hVne by (by100 blast)
+  define W where "W = (+)(-a) ` (V - {a})"
+  define L where "L = span W"
+  have hL_sub: "subspace L" unfolding L_def by (by100 simp)
+  have haff_form: "affine hull V = (+) a ` L"
+    using ha unfolding L_def W_def by (rule affine_hull_span2)
+  (** The subspace \<open>L\<close> has a basis of size \<open>k\<close>. **)
+  have hL_dim: "dim L = k"
+    sorry \<comment> \<open>\<open>dim L = dim(affine hull V) = aff_dim V = k\<close> via HOL bridges;
+             \<open>aff_dim_parallel_subspace\<close> or similar.\<close>
+  obtain B where hB_indep: "independent B" and hBfin: "finite B"
+             and hBcard: "card B = k" and hB_span: "span B = L"
+    using basis_exists[of L] hL_sub hL_dim
+    sorry \<comment> \<open>Existence of a basis of dim k: \<open>basis_exists\<close> + the fact \<open>dim L = k\<close>.\<close>
+  (** Hence \<open>geotop_hyperplane_dim (affine hull V) k\<close>. **)
+  define H where "H = (+) a ` L"
+  have hH_eq: "H = affine hull V" unfolding H_def using haff_form by (by100 simp)
+  have h_plusa_eq: "(+) a = (\<lambda>v. v + a)"
+    by (intro ext) (rule add.commute)
+  have h_plusa: "(+) a ` L = (\<lambda>v. v + a) ` L"
+    using h_plusa_eq by (by100 simp)
+  have hH_hpdim: "geotop_hyperplane_dim H k"
+    unfolding geotop_hyperplane_dim_def H_def
+    apply (rule exI[of _ L])
+    apply (rule exI[of _ a])
+    using hL_sub hB_indep hBfin hBcard hB_span h_plusa by (by100 blast)
+  (** \<open>V \<subseteq> H\<close>, so \<open>V \<inter> H = V\<close> with \<open>card = n+1\<close>. **)
+  have hV_H: "V \<subseteq> H" using hV_sub_aff hH_eq by (by100 simp)
+  have hV_int_H: "V \<inter> H = V" using hV_H by (by100 blast)
+  (** By general_position: \<open>card(V \<inter> H) \<le> k+1\<close>. **)
+  have hgp_bound: "card (V \<inter> H) \<le> k+1"
+    using hVgp hH_hpdim hk_m unfolding geotop_general_position_def by (by100 blast)
+  have hbound: "n+1 \<le> k+1" using hV_int_H hVcard hgp_bound by (by100 simp)
+  have hn_le_k: "n \<le> k" using hbound by (by100 linarith)
+  show False using hn_le_k hk_n by (by100 linarith)
+qed \<comment> \<open>\<open>card V = n+1\<close>, \<open>n \<le> m\<close>, and \<open>geotop_general_position V m\<close> together
            imply affine independence. Key step: if \<open>V\<close> were affinely dependent, it
            would lie in an \<open>(n-1)\<close>-dim affine subspace, contradicting
            \<open>card(V \<inter> H) \<le> k+1\<close> for the containing hyperplane.\<close>
