@@ -5977,10 +5977,11 @@ proof -
   have hCaseE: "\<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq> UNIV - closure_on UNIV geotop_euclidean_topology I - J)"
     sorry
   (** Step 4: Int C^2 proper subset of I gives contradiction via 10_10. **)
-  have hIntC2_full: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I"
+  have hIntC2_full: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I \<and>
+                      C2 = (geotop_std_ball :: (real^2) set)"
     sorry
   (** Step 5: Conclude C^2 = closure I = B^2 = std_ball. **)
-  have h_final: "C2 = (geotop_std_ball :: (real^2) set)" sorry
+  have h_final: "C2 = (geotop_std_ball :: (real^2) set)" using hIntC2_full by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
