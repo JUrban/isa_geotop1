@@ -4868,7 +4868,8 @@ proof -
   have h_level_cover:
     "\<forall>i>0. \<exists>Gi. finite Gi \<and>
          (\<forall>g\<in>Gi. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and>
-                 g \<subseteq> J \<and> geotop_diameter (\<lambda>x y. norm (x - y)) g < 1 / real i)" sorry
+                 g \<subseteq> J \<and> geotop_diameter (\<lambda>x y. norm (x - y)) g < 1 / real i)"
+    using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (2) Arrange endpoints to be linearly accessible from I (Theorem 9.2). Perturb
          slightly if necessary to align endpoints across levels G_{i+1} \<le> G_i. **)
   have h_accessible:
