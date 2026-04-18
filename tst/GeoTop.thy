@@ -9871,19 +9871,27 @@ proof -
          explicit inverse: pull a shell around P_0 back to the corresponding shell around
          the core segment). Continuity of the inverse follows from the explicit formula. **)
   have h_restrict_bij:
-    "\<exists>f. top1_homeomorphism_on
+    "(\<exists>f. top1_homeomorphism_on
              (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
              (subspace_topology UNIV geotop_euclidean_topology
                 (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
              (D3 - {P\<^sub>0})
-             (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f" sorry
+             (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f) \<and>
+     (\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
+             top1_homeomorphism_on
+               (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
+               (subspace_topology UNIV geotop_euclidean_topology
+                  (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
+               (D3 - {P\<^sub>0})
+               (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f)" sorry
   have h_final: "\<exists>f. f ` {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1} = {P\<^sub>0} \<and>
              top1_homeomorphism_on
                (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1})
                (subspace_topology UNIV geotop_euclidean_topology
                   (D3 - {t *\<^sub>R P\<^sub>0 + (1 - t) *\<^sub>R P\<^sub>1 |t. 0 \<le> t \<and> t \<le> 1}))
                (D3 - {P\<^sub>0})
-               (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f" sorry
+               (subspace_topology UNIV geotop_euclidean_topology (D3 - {P\<^sub>0})) f"
+    using h_restrict_bij by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
