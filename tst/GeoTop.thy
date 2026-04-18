@@ -4581,7 +4581,8 @@ proof -
   have h_K3:
     "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<exists>U\<in>TX. h ` \<sigma> \<subseteq> U \<and>
        finite {(\<sigma>', h')\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. h' ` \<sigma>' \<inter> U \<noteq> {}}" sorry
-  show ?thesis sorry
+  have h_final: "geotop_PL_complex X TX (\<K>\<^sub>1 \<union> \<K>\<^sub>2)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>7: PL star (geotop.tex:1596)
@@ -4648,7 +4649,21 @@ proof -
              M = (\<Union>i. N' i)" sorry
   (** (3) The chart homeomorphisms h_i extend to the closures (N_i is precompact in V_i);
          their images give \<bar>D\<close> and \<bar>D'\<close>. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(N :: nat \<Rightarrow> 'a set) (N' :: nat \<Rightarrow> 'a set) (h :: nat \<Rightarrow> 'a \<Rightarrow> 'a).
+    (\<forall>i. openin_on M (top1_metric_topology_on M d) (N i) \<and>
+         openin_on M (top1_metric_topology_on M d) (N' i) \<and>
+         top1_homeomorphism_on
+           (closure_on M (top1_metric_topology_on M d) (N i))
+           (subspace_topology M (top1_metric_topology_on M d)
+               (closure_on M (top1_metric_topology_on M d) (N i)))
+           (closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball 1))
+           (subspace_topology UNIV geotop_euclidean_topology
+               (closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball 1)))
+           (h i) \<and>
+         h i ` closure_on M (top1_metric_topology_on M d) (N' i) =
+            closure_on UNIV geotop_euclidean_topology (geotop_std_open_ball (1/2)))
+    \<and> M = (\<Union>i. N' i)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>8 Theorem 2 (geotop.tex:1639)
@@ -4718,7 +4733,12 @@ proof -
     unfolding geotop_is_complex_def by (by100 simp)
   (** (3) Direct limit K = \<union>_i T_i; the limit homeomorphism f: |K| \<leftrightarrow> M is inherited
          from the local charts with compatibility along overlaps. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(K :: (real^2) set set) (f :: real^2 \<Rightarrow> 'a).
+    geotop_is_complex K \<and>
+    top1_homeomorphism_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+        M (top1_metric_topology_on M d) f" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>8 Theorem 4 (geotop.tex:1826)
@@ -4762,7 +4782,12 @@ proof -
   (** (3) Adjust f on Bd K_U (if needed) so that f(U) = h(U): since U is open in K_1
          without boundary constraints, slight boundary retraction gives f a bijection
          onto h(U). **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f
+          \<and> f ` U = h ` U
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
+          \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>8 Theorem 5 (Hauptvermutung for 2-manifolds) (geotop.tex:1844)
