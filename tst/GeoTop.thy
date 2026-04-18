@@ -11860,13 +11860,20 @@ proof -
   (** (2) Since K is orientable, so is N(L) \<cong> K; lifting orientability through the
          doubling process (Theorem 23.15 applied to the doubling of K that produced K')
          preserves the oriented class, hence K' is orientable. **)
-  have hK'_orient: "geotop_is_orientable_3_manifold K'" sorry
+  have hK'_orient: "geotop_is_orientable_3_manifold K' \<and>
+     (\<exists>K' L. geotop_is_orientable_3_manifold K' \<and>
+             geotop_is_complex L \<and> L \<subseteq> K' \<and>
+             geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
+             geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
+                       (geotop_barycentric_subdivision K').
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}})" sorry
   have h_final: "\<exists>K' L. geotop_is_orientable_3_manifold K' \<and>
                 geotop_is_complex L \<and> L \<subseteq> K' \<and>
                 geotop_manifold_boundary (geotop_polyhedron K') (\<lambda>x y. norm (x - y)) = {} \<and>
                 geotop_comb_equiv K {\<sigma>\<in>geotop_barycentric_subdivision
                        (geotop_barycentric_subdivision K').
-                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}" sorry
+                       \<sigma> \<inter> geotop_polyhedron L \<noteq> {}}"
+    using hK'_orient by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
