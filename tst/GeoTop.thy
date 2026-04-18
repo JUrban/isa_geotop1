@@ -2832,7 +2832,42 @@ proof -
         (K.4) Local finiteness: \<open>K\<^sub>1 \<subseteq> K\<close>, so the finite nbhd works. **)
   have hK\<^sub>1_subK: "K\<^sub>1 \<subseteq> K" unfolding K\<^sub>1_def by (by100 blast)
   have hK\<^sub>2_subK: "K\<^sub>2 \<subseteq> K" unfolding K\<^sub>2_def by (by100 blast)
-  have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1" sorry
+  (** Helpers: \<open>K\<^sub>1\<close>'s four complex axioms. **)
+  have hK_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using hKcomp by (rule geotop_is_complex_simplex)
+  have hK_fc: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hKcomp by (rule geotop_is_complex_face_closed)
+  have hK_inter: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hKcomp unfolding geotop_is_complex_def by (by100 blast)
+  have hK_locfin: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hKcomp unfolding geotop_is_complex_def by (by100 blast)
+  have hK\<^sub>1_K1: "\<forall>\<sigma>\<in>K\<^sub>1. geotop_is_simplex \<sigma>"
+    using hK\<^sub>1_subK hK_simp by (by100 blast)
+  have hK\<^sub>1_K4: "\<forall>\<sigma>\<in>K\<^sub>1. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K\<^sub>1"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma> hK\<^sub>1_subK by (by100 blast)
+    have h_ex_U: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK_locfin h\<sigma>K by (by100 blast)
+    obtain U where hU_open: "open U" and h\<sigma>U: "\<sigma> \<subseteq> U"
+                  and hUfin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using h_ex_U by (by100 blast)
+    have h_sub: "{\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}} \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK\<^sub>1_subK by (by100 blast)
+    have hfin: "finite {\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+      using finite_subset[OF h_sub hUfin] by (by100 blast)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+      using hU_open h\<sigma>U hfin by (by100 blast)
+  qed
+  have hK\<^sub>1_K3: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>\<in>K\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hK\<^sub>1_subK hK_inter by (by100 blast)
+  (** K_1's face-closure: requires general-position-descends-to-subsets. **)
+  have hK\<^sub>1_K2: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>1" sorry
+  have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1"
+    unfolding geotop_is_complex_def
+    using hK\<^sub>1_K1 hK\<^sub>1_K2 hK\<^sub>1_K3 hK\<^sub>1_K4 by (by100 blast)
   (** Step 5: \<open>K\<^sub>2\<close> is a subcomplex of \<open>K\<close> (analogous). **)
   have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2" sorry
   (** Step 4: bipartition — any simplex has all or no vertices in \<open>V\<close>.
