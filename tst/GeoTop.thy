@@ -416,6 +416,103 @@ proof -
   finally show "V\<^sub>1 = V\<^sub>2" .
 qed
 
+(** Linearity on a simplex restricts to linearity on any face. Key technical lemma
+    for PL-map transfer across subdivisions (e.g. hK12_witness in GT_5_1). **)
+lemma geotop_linear_on_face:
+  fixes \<sigma> \<tau> :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::real_vector"
+  assumes h_lin: "geotop_linear_on \<sigma> f"
+  assumes h_face: "geotop_is_face \<tau> \<sigma>"
+  shows "geotop_linear_on \<tau> f"
+proof -
+  (** (1) Unpack linear_on: obtain V with simplex_vertices \<sigma> V and the bary-linearity. **)
+  obtain V where h_sv: "geotop_simplex_vertices \<sigma> V"
+             and h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+                              f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_lin unfolding geotop_linear_on_def by (by100 blast)
+  (** (2) Unpack face: W \<subseteq> V' with \<tau> = conv(W); V' = V by vertex uniqueness. **)
+  obtain V' W where h_sv': "geotop_simplex_vertices \<sigma> V'"
+                and h_Wne: "W \<noteq> {}"
+                and h_WV': "W \<subseteq> V'"
+                and h_\<tau>hull: "\<tau> = geotop_convex_hull W"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  have h_VV': "V = V'"
+    by (rule geotop_simplex_vertices_unique[OF h_sv h_sv'])
+  have h_WV: "W \<subseteq> V" using h_WV' h_VV' by (by100 simp)
+  (** (3) simplex_vertices \<tau> W. **)
+  obtain m n where h_Vfin: "finite V"
+               and h_Vcard: "card V = n + 1"
+               and h_nm: "n \<le> m"
+               and h_Vgp: "geotop_general_position V m"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h_Wfin: "finite W" using h_Vfin h_WV by (rule finite_subset[rotated])
+  define k where "k = card W - 1"
+  have h_Wcard_pos: "card W > 0"
+    using h_Wne h_Wfin by (by100 fastforce)
+  have h_Wcard: "card W = k + 1" unfolding k_def using h_Wcard_pos by (by100 simp)
+  have h_W_le_V: "card W \<le> card V" using h_WV h_Vfin card_mono by blast
+  have h_k_n: "k \<le> n" using h_Wcard h_Vcard h_W_le_V by (by100 linarith)
+  have h_k_m: "k \<le> m" using h_k_n h_nm by (by100 linarith)
+  have h_Wgp: "geotop_general_position W m"
+    by (rule geotop_general_position_mono[OF h_Vgp h_WV h_Wfin])
+  have h_sv_\<tau>: "geotop_simplex_vertices \<tau> W"
+    unfolding geotop_simplex_vertices_def
+    using h_Wfin h_Wcard h_k_m h_Wgp h_\<tau>hull by (by100 blast)
+  (** (4) Bary-linearity for W: extend any \<alpha> over W to \<alpha>' over V by 0 outside W. **)
+  have h_prop_\<tau>: "\<forall>\<alpha>. (\<forall>v\<in>W. 0 \<le> \<alpha> v) \<and> sum \<alpha> W = 1 \<longrightarrow>
+                      f (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
+  proof (intro allI impI)
+    fix \<alpha> :: "'a \<Rightarrow> real"
+    assume h\<alpha>: "(\<forall>v\<in>W. 0 \<le> \<alpha> v) \<and> sum \<alpha> W = 1"
+    define \<alpha>' :: "'a \<Rightarrow> real" where "\<alpha>' v = (if v \<in> W then \<alpha> v else 0)" for v
+    (** Sum of \<alpha>' over V equals sum of \<alpha> over W. **)
+    have h_VW_inter: "V \<inter> W = W" using h_WV by (by100 blast)
+    have h_sum_\<alpha>'_V: "sum \<alpha>' V = sum \<alpha> W"
+    proof -
+      have "sum \<alpha>' V = sum \<alpha>' W + sum \<alpha>' (V - W)"
+        using h_Vfin h_WV sum.subset_diff[of W V \<alpha>'] by (by100 simp)
+      also have "sum \<alpha>' W = sum \<alpha> W"
+        unfolding \<alpha>'_def by (by100 simp)
+      also have "sum \<alpha>' (V - W) = 0"
+        unfolding \<alpha>'_def by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have h_sum_\<alpha>'_eq1: "sum \<alpha>' V = 1" using h_sum_\<alpha>'_V h\<alpha> by (by100 simp)
+    have h_\<alpha>'_nn: "\<forall>v\<in>V. 0 \<le> \<alpha>' v"
+      unfolding \<alpha>'_def using h\<alpha> by (by100 simp)
+    (** Vector sum: \<Sum>_V \<alpha>' v *\<^sub>R v = \<Sum>_W \<alpha> v *\<^sub>R v. **)
+    have h_vsum_eq: "(\<Sum>v\<in>V. \<alpha>' v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v)"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha>' v *\<^sub>R v)
+              = (\<Sum>v\<in>W. \<alpha>' v *\<^sub>R v) + (\<Sum>v\<in>V - W. \<alpha>' v *\<^sub>R v)"
+        using h_Vfin h_WV sum.subset_diff[of W V "\<lambda>v. \<alpha>' v *\<^sub>R v"] by (by100 simp)
+      also have "(\<Sum>v\<in>W. \<alpha>' v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v)"
+        unfolding \<alpha>'_def by (by100 simp)
+      also have "(\<Sum>v\<in>V - W. \<alpha>' v *\<^sub>R v) = 0"
+        unfolding \<alpha>'_def by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have h_fsum_eq: "(\<Sum>v\<in>V. \<alpha>' v *\<^sub>R f v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha>' v *\<^sub>R f v)
+              = (\<Sum>v\<in>W. \<alpha>' v *\<^sub>R f v) + (\<Sum>v\<in>V - W. \<alpha>' v *\<^sub>R f v)"
+        using h_Vfin h_WV sum.subset_diff[of W V "\<lambda>v. \<alpha>' v *\<^sub>R f v"] by (by100 simp)
+      also have "(\<Sum>v\<in>W. \<alpha>' v *\<^sub>R f v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
+        unfolding \<alpha>'_def by (by100 simp)
+      also have "(\<Sum>v\<in>V - W. \<alpha>' v *\<^sub>R f v) = 0"
+        unfolding \<alpha>'_def by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    (** Apply the linearity on \<sigma>. **)
+    have h_lin_V: "f (\<Sum>v\<in>V. \<alpha>' v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha>' v *\<^sub>R f v)"
+      using h_prop h_\<alpha>'_nn h_sum_\<alpha>'_eq1 by (by100 blast)
+    show "f (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
+      using h_lin_V h_vsum_eq h_fsum_eq by (by100 simp)
+  qed
+  show ?thesis
+    unfolding geotop_linear_on_def
+    using h_sv_\<tau> h_prop_\<tau> by (by100 blast)
+qed
+
 subsection \<open>Diameter and mesh\<close>
 
 (** from \<S>4: diameter and mesh (geotop.tex:953)
