@@ -6875,7 +6875,8 @@ proof -
          continuity by pasting since both equal q at y = 1/2. **)
   have h_trans: "\<forall>p q r. geotop_path_equiv X T P\<^sub>0 p q \<and> geotop_path_equiv X T P\<^sub>0 q r \<longrightarrow>
                           geotop_path_equiv X T P\<^sub>0 p r" sorry
-  show ?thesis sorry
+  have h_final: "equivp (geotop_path_equiv X T P\<^sub>0)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>14 Theorem 2 (geotop.tex:2707)
@@ -6908,7 +6909,8 @@ proof -
          (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 1) = geotop_path_mult p' q' t) \<and>
          (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (0, y) = P\<^sub>0 \<and> H (1, y) = P\<^sub>0) \<and>
          (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (t, y) \<in> X)" sorry
-  show ?thesis sorry
+  have h_final: "geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>14: fundamental group (geotop.tex:2708)
@@ -6973,7 +6975,16 @@ proof -
                      (geotop_path_mult p (geotop_path_mult q r))" sorry
   (** (5) By Theorem 14.2 (congruence) these pointwise facts descend to \<pi>-classes and
          give the group laws. **)
-  show ?thesis sorry
+  have h_final: "\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
+           geotop_pi_mult X T P\<^sub>0 e C = C \<and>
+           geotop_pi_mult X T P\<^sub>0 C e = C \<and>
+           (\<exists>D\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 C D = e \<and>
+              geotop_pi_mult X T P\<^sub>0 D C = e) \<and>
+           (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
+              geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
+              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>14: simply connected (geotop.tex:2716)
@@ -7074,7 +7085,13 @@ proof -
   qed
   (** (4) Assemble \<phi>([p]) := [f \<circ> p]; well-defined by (2), maps into \<pi>(Y, Q_0) by (1),
          a homomorphism by (3). **)
-  show ?thesis sorry
+  have h_final: "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi Y T' Q\<^sub>0) \<and>
+             (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+                \<phi> (geotop_pi_mult X T P\<^sub>0 C D) =
+                geotop_pi_mult Y T' Q\<^sub>0 (\<phi> C) (\<phi> D)) \<and>
+             (\<forall>p\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 p)
+                = geotop_pi_class Y T' Q\<^sub>0 (f \<circ> p))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>14 Theorem 6 (geotop.tex:2751)
