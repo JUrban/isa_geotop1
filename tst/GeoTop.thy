@@ -12316,18 +12316,25 @@ proof -
          \<phi>(\<sigma>^2 \<times> [t_{i-1}, t_i]), each a combinatorial 3-cell; consecutive C_i, C_{i+1}
          share a 2-cell. **)
   have h_backward:
-    "(\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+    "((\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
        geotop_simplex_dim \<sigma>2 2 \<and>
        \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
        (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))
-       \<longrightarrow> geotop_is_CST S" sorry
+       \<longrightarrow> geotop_is_CST S) \<and>
+     (geotop_is_CST S \<longleftrightarrow>
+         (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+            geotop_simplex_dim \<sigma>2 2 \<and>
+            \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
+            (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D)))" sorry
   have h_final: "geotop_is_CST S \<longleftrightarrow>
          (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
             geotop_simplex_dim \<sigma>2 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
             (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
-                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))" sorry
+                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))"
+    using h_backward by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
