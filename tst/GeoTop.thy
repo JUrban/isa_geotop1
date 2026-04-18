@@ -2424,16 +2424,6 @@ proof (intro ballI)
     using hpath hpim hstart hfinish by (by100 blast)
 qed
 
-(** Reverse bridge: HOL \<open>path_connected S\<close> \<Longrightarrow> \<open>top1_path_connected_on S\<close>
-    in the geotop-Euclidean subspace topology. **)
-lemma path_connected_imp_top1_path_connected_on_geotop:
-  fixes S :: "'a::real_normed_vector set"
-  assumes hpc: "path_connected S"
-  shows "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
-  sorry \<comment> \<open>For each \<open>x, y \<in> S\<close>, HOL gives a path \<open>g: [0,1] \<to> S\<close>; lift to top1 via
-           the continuous_on \<Rightarrow> top1_continuous_map_on bridge (deferred: such a bridge
-           is not yet in Top0).\<close>
-
 (** Specialised form via \<open>top1_path_connected_on_HOL_convex\<close> and related:
     every path in a HOL-sense connected subset lifts to a top1-sense path. **)
 lemma top1_is_path_on_of_HOL_path:
@@ -2491,6 +2481,32 @@ proof -
   have hg1: "g 1 = y" using hg_finish unfolding pathfinish_def .
   show ?thesis
     unfolding top1_is_path_on_def using hcont_top1 hg0 hg1 by (by100 simp)
+qed
+
+(** Reverse bridge: HOL \<open>path_connected S\<close> \<Longrightarrow> \<open>top1_path_connected_on S\<close>
+    in the geotop-Euclidean subspace topology. **)
+lemma path_connected_imp_top1_path_connected_on_geotop:
+  fixes S :: "'a::real_normed_vector set"
+  assumes hpc: "path_connected S"
+  shows "top1_path_connected_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+  unfolding top1_path_connected_on_def
+proof (intro conjI ballI)
+  have hTeucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hSUNIV: "S \<subseteq> UNIV" by (by100 simp)
+  show "is_topology_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+    by (rule subspace_topology_is_topology_on[OF hTeucl hSUNIV])
+next
+  fix x y assume hx: "x \<in> S" and hy: "y \<in> S"
+  from hpc obtain g where hg_path: "path g"
+                      and hg_im: "path_image g \<subseteq> S"
+                      and hg_start: "pathstart g = x"
+                      and hg_finish: "pathfinish g = y"
+    using hx hy unfolding path_connected_def by (by100 blast)
+  have "top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y g"
+    by (rule top1_is_path_on_of_HOL_path[OF hg_path hg_im hg_start hg_finish])
+  then show "\<exists>f. top1_is_path_on S (subspace_topology UNIV geotop_euclidean_topology S) x y f"
+    by (by100 blast)
 qed
 
 (** Corollary: path-connected (geotop-sense) \<Longrightarrow> connected (geotop-sense). **)
