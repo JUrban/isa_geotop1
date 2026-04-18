@@ -526,7 +526,182 @@ lemma geotop_linear_on_sub_simplex:
   assumes h_sim': "geotop_is_simplex \<sigma>'"
   assumes h_sub: "\<sigma>' \<subseteq> \<sigma>"
   shows "geotop_linear_on \<sigma>' f"
-  sorry
+proof -
+  (** (1) Extract V = vertices(\<sigma>) from linear_on. **)
+  obtain V where h_sv: "geotop_simplex_vertices \<sigma> V"
+             and h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+                              f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_lin unfolding geotop_linear_on_def by (by100 blast)
+  obtain m_\<sigma> n_\<sigma> where h_Vfin: "finite V" and h_Vcard: "card V = n_\<sigma> + 1"
+                   and h_Vnm: "n_\<sigma> \<le> m_\<sigma>" and h_Vgp: "geotop_general_position V m_\<sigma>"
+                   and h_\<sigma>hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h_\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h_\<sigma>hull geotop_convex_hull_eq_HOL by (by100 simp)
+  (** (2) Extract V' = vertices(\<sigma>'). **)
+  obtain V' where h_sv': "geotop_simplex_vertices \<sigma>' V'"
+    using h_sim' unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+  obtain m' n' where h_V'fin: "finite V'" and h_V'card: "card V' = n' + 1"
+                 and h_V'nm: "n' \<le> m'" and h_V'gp: "geotop_general_position V' m'"
+                 and h_\<sigma>'hull: "\<sigma>' = geotop_convex_hull V'"
+    using h_sv' unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h_\<sigma>'_HOL: "\<sigma>' = convex hull V'"
+    using h_\<sigma>'hull geotop_convex_hull_eq_HOL by (by100 simp)
+  (** (3) Each v' \<in> V' is in \<sigma>' \<subseteq> \<sigma> = conv(V), so v' has bary coords in V. **)
+  have h_V'_in_\<sigma>: "V' \<subseteq> \<sigma>"
+  proof
+    fix v' assume h_v'V': "v' \<in> V'"
+    have h_v'_hull: "v' \<in> convex hull V'"
+      by (rule subsetD[OF hull_subset h_v'V'])
+    have h_v'_\<sigma>': "v' \<in> \<sigma>'" using h_v'_hull h_\<sigma>'_HOL by (by100 simp)
+    show "v' \<in> \<sigma>" using h_v'_\<sigma>' h_sub by (by100 blast)
+  qed
+  have h_hull_char: "convex hull V =
+                      {y. \<exists>u. (\<forall>x\<in>V. 0 \<le> u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = y}"
+    by (rule convex_hull_finite[OF h_Vfin])
+  have h_bary_exists: "\<forall>v'\<in>V'. \<exists>t. (\<forall>v\<in>V. 0 \<le> t v) \<and> sum t V = 1 \<and>
+                                      v' = (\<Sum>v\<in>V. t v *\<^sub>R v)"
+  proof
+    fix v' assume h_v'V': "v' \<in> V'"
+    have h_v'_in: "v' \<in> convex hull V"
+      using h_V'_in_\<sigma> h_\<sigma>_HOL h_v'V' by (by100 blast)
+    have h_v'_exp: "\<exists>u. (\<forall>x\<in>V. 0 \<le> u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = v'"
+      using h_v'_in h_hull_char by (by100 blast)
+    show "\<exists>t. (\<forall>v\<in>V. 0 \<le> t v) \<and> sum t V = 1 \<and> v' = (\<Sum>v\<in>V. t v *\<^sub>R v)"
+      using h_v'_exp by (by100 metis)
+  qed
+  (** (4) Use a SOME to fix bary coords per v'. **)
+  define t :: "'a \<Rightarrow> 'a \<Rightarrow> real" where
+    "t v' = (SOME s. (\<forall>v\<in>V. 0 \<le> s v) \<and> sum s V = 1 \<and> v' = (\<Sum>v\<in>V. s v *\<^sub>R v))" for v'
+  have h_t_prop: "\<forall>v'\<in>V'. (\<forall>v\<in>V. 0 \<le> t v' v) \<and> sum (t v') V = 1 \<and>
+                             v' = (\<Sum>v\<in>V. t v' v *\<^sub>R v)"
+  proof
+    fix v' assume h_v'V': "v' \<in> V'"
+    have h_ex: "\<exists>s. (\<forall>v\<in>V. 0 \<le> s v) \<and> sum s V = 1 \<and> v' = (\<Sum>v\<in>V. s v *\<^sub>R v)"
+      using h_bary_exists h_v'V' by (by100 blast)
+    show "(\<forall>v\<in>V. 0 \<le> t v' v) \<and> sum (t v') V = 1 \<and> v' = (\<Sum>v\<in>V. t v' v *\<^sub>R v)"
+      unfolding t_def using someI_ex[OF h_ex] by (by100 blast)
+  qed
+  (** (5) f(v') = Σ t[v',v] f(v) for each v' ∈ V' (by linear_on σ f). **)
+  have h_f_v': "\<forall>v'\<in>V'. f v' = (\<Sum>v\<in>V. t v' v *\<^sub>R f v)"
+  proof
+    fix v' assume h_v'V': "v' \<in> V'"
+    have h_t_nn: "\<forall>v\<in>V. 0 \<le> t v' v" using h_t_prop h_v'V' by (by100 blast)
+    have h_t_sum: "sum (t v') V = 1" using h_t_prop h_v'V' by (by100 blast)
+    have h_v'_decomp: "v' = (\<Sum>v\<in>V. t v' v *\<^sub>R v)" using h_t_prop h_v'V' by (by100 blast)
+    have "f (\<Sum>v\<in>V. t v' v *\<^sub>R v) = (\<Sum>v\<in>V. t v' v *\<^sub>R f v)"
+      using h_prop h_t_nn h_t_sum by (by100 blast)
+    thus "f v' = (\<Sum>v\<in>V. t v' v *\<^sub>R f v)" using h_v'_decomp by (by100 simp)
+  qed
+  (** (6) Now prove linearity on \<sigma>'. **)
+  have h_prop': "\<forall>\<alpha>. (\<forall>v'\<in>V'. 0 \<le> \<alpha> v') \<and> sum \<alpha> V' = 1 \<longrightarrow>
+                     f (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R v') = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R f v')"
+  proof (intro allI impI)
+    fix \<alpha> :: "'a \<Rightarrow> real"
+    assume h\<alpha>: "(\<forall>v'\<in>V'. 0 \<le> \<alpha> v') \<and> sum \<alpha> V' = 1"
+    (** Define \<beta> v = Σ_{v'} \<alpha> v' * t v' v (the combined bary coords over V). **)
+    define \<beta> :: "'a \<Rightarrow> real" where "\<beta> v = (\<Sum>v'\<in>V'. \<alpha> v' * t v' v)" for v
+    (** \<beta> is a valid bary over V. **)
+    have h_\<beta>_nn: "\<forall>v\<in>V. 0 \<le> \<beta> v"
+    proof
+      fix v assume h_vV: "v \<in> V"
+      have "\<forall>v'\<in>V'. 0 \<le> \<alpha> v' * t v' v"
+      proof
+        fix v' assume h_v'V': "v' \<in> V'"
+        have h_\<alpha>_nn: "0 \<le> \<alpha> v'" using h\<alpha> h_v'V' by (by100 blast)
+        have h_t_nn: "0 \<le> t v' v" using h_t_prop h_v'V' h_vV by (by100 blast)
+        show "0 \<le> \<alpha> v' * t v' v" using h_\<alpha>_nn h_t_nn by (by100 simp)
+      qed
+      then have h_all: "\<And>v'. v' \<in> V' \<Longrightarrow> 0 \<le> \<alpha> v' * t v' v" by (by100 blast)
+      show "0 \<le> \<beta> v" unfolding \<beta>_def by (rule sum_nonneg[OF h_all])
+    qed
+    have h_\<beta>_sum: "sum \<beta> V = 1"
+    proof -
+      have "sum \<beta> V = (\<Sum>v\<in>V. \<Sum>v'\<in>V'. \<alpha> v' * t v' v)"
+        unfolding \<beta>_def by (by100 simp)
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<Sum>v\<in>V. \<alpha> v' * t v' v)"
+        by (rule sum.swap)
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<alpha> v' * sum (t v') V)"
+      proof (rule sum.cong)
+        show "V' = V'" by (by100 simp)
+      next
+        fix v' assume "v' \<in> V'"
+        show "(\<Sum>v\<in>V. \<alpha> v' * t v' v) = \<alpha> v' * sum (t v') V"
+          by (rule sum_distrib_left[symmetric])
+      qed
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<alpha> v')"
+        using h_t_prop by (by100 simp)
+      also have "\<dots> = 1" using h\<alpha> by (by100 simp)
+      finally show ?thesis .
+    qed
+    (** Show: \<Sum>_{v'} \<alpha> v' v' = \<Sum>_v \<beta> v v (in vector sense). **)
+    have h_vec_eq: "(\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R v') = (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+    proof -
+      have "(\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R v') = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R (\<Sum>v\<in>V. t v' v *\<^sub>R v))"
+        using h_t_prop by (by100 simp)
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<Sum>v\<in>V. \<alpha> v' *\<^sub>R (t v' v *\<^sub>R v))"
+      proof (rule sum.cong)
+        show "V' = V'" by (by100 simp)
+      next
+        fix v' assume "v' \<in> V'"
+        show "\<alpha> v' *\<^sub>R (\<Sum>v\<in>V. t v' v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v' *\<^sub>R (t v' v *\<^sub>R v))"
+          by (rule scaleR_right.sum)
+      qed
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<Sum>v\<in>V. (\<alpha> v' * t v' v) *\<^sub>R v)"
+        by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. \<Sum>v'\<in>V'. (\<alpha> v' * t v' v) *\<^sub>R v)"
+        by (rule sum.swap)
+      also have "\<dots> = (\<Sum>v\<in>V. (\<Sum>v'\<in>V'. \<alpha> v' * t v' v) *\<^sub>R v)"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume "v \<in> V"
+        show "(\<Sum>v'\<in>V'. (\<alpha> v' * t v' v) *\<^sub>R v) = (\<Sum>v'\<in>V'. \<alpha> v' * t v' v) *\<^sub>R v"
+          by (rule scaleR_left.sum[symmetric])
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+        unfolding \<beta>_def by (by100 simp)
+      finally show ?thesis .
+    qed
+    (** Show: \<Sum>_v \<beta> v f(v) = \<Sum>_{v'} \<alpha> v' f(v'). **)
+    have h_fvec_eq: "(\<Sum>v\<in>V. \<beta> v *\<^sub>R f v) = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R f v')"
+    proof -
+      have "(\<Sum>v\<in>V. \<beta> v *\<^sub>R f v) = (\<Sum>v\<in>V. (\<Sum>v'\<in>V'. \<alpha> v' * t v' v) *\<^sub>R f v)"
+        unfolding \<beta>_def by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. \<Sum>v'\<in>V'. (\<alpha> v' * t v' v) *\<^sub>R f v)"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume "v \<in> V"
+        show "(\<Sum>v'\<in>V'. \<alpha> v' * t v' v) *\<^sub>R f v = (\<Sum>v'\<in>V'. (\<alpha> v' * t v' v) *\<^sub>R f v)"
+          by (rule scaleR_left.sum)
+      qed
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<Sum>v\<in>V. (\<alpha> v' * t v' v) *\<^sub>R f v)"
+        by (rule sum.swap)
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<Sum>v\<in>V. \<alpha> v' *\<^sub>R (t v' v *\<^sub>R f v))"
+        by (by100 simp)
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R (\<Sum>v\<in>V. t v' v *\<^sub>R f v))"
+      proof (rule sum.cong)
+        show "V' = V'" by (by100 simp)
+      next
+        fix v' assume "v' \<in> V'"
+        show "(\<Sum>v\<in>V. \<alpha> v' *\<^sub>R (t v' v *\<^sub>R f v)) = \<alpha> v' *\<^sub>R (\<Sum>v\<in>V. t v' v *\<^sub>R f v)"
+          by (rule scaleR_right.sum[symmetric])
+      qed
+      also have "\<dots> = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R f v')"
+        using h_f_v' by (by100 simp)
+      finally show ?thesis .
+    qed
+    (** Apply linear_on \<sigma> f to \<beta>. **)
+    have h_f_\<beta>: "f (\<Sum>v\<in>V. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V. \<beta> v *\<^sub>R f v)"
+      using h_prop h_\<beta>_nn h_\<beta>_sum by (by100 blast)
+    show "f (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R v') = (\<Sum>v'\<in>V'. \<alpha> v' *\<^sub>R f v')"
+      using h_vec_eq h_fvec_eq h_f_\<beta> by (by100 simp)
+  qed
+  show ?thesis
+    unfolding geotop_linear_on_def
+    using h_sv' h_prop' by (by100 blast)
+qed
 
 subsection \<open>Diameter and mesh\<close>
 
