@@ -11750,7 +11750,16 @@ proof -
                  (subspace_topology UNIV geotop_euclidean_topology B)
                  P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
     sorry
-  show ?thesis sorry
+  have h_final: "\<exists>D\<^sub>1 L\<^sub>1. geotop_is_singular_2cell M
+               (subspace_topology UNIV geotop_euclidean_topology M)
+               D\<^sub>1 \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
+               geotop_is_nonsingular_loop B
+                 (subspace_topology UNIV geotop_euclidean_topology B) L\<^sub>1
+                 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<and>
+               geotop_loop_conjugacy_class B
+                 (subspace_topology UNIV geotop_euclidean_topology B)
+                 P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>25 Theorem 2 (Loop theorem, first form; Papakyriakopoulos) (geotop.tex:5432)
@@ -11813,7 +11822,19 @@ proof -
         S1 (subspace_topology UNIV geotop_euclidean_topology S1)" sorry
   (** (4) D_1 with nonsingular boundary is a genuine polyhedral 2-cell embedded in M.
          Its image \<Delta> \<subseteq> M has Bd \<Delta> \<subseteq> B \<inter> Bd M with Bd \<Delta> not contractible in B. **)
-  show ?thesis sorry
+  have h_final: "\<exists>\<Delta>. geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+             (\<exists>L\<^sub>\<Delta>. geotop_is_complex L\<^sub>\<Delta> \<and> geotop_polyhedron L\<^sub>\<Delta> = \<Delta>) \<and>
+             \<Delta> \<subseteq> M \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<subseteq> B \<and>
+             geotop_frontier UNIV geotop_euclidean_topology \<Delta>
+               = \<Delta> \<inter> geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<and>
+             (\<exists>P\<^sub>0\<in>geotop_frontier UNIV geotop_euclidean_topology \<Delta>. \<exists>p.
+                geotop_closed_path_on (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (geotop_frontier UNIV geotop_euclidean_topology \<Delta>)) P\<^sub>0 p \<and>
+                \<not> geotop_path_equiv B (subspace_topology UNIV geotop_euclidean_topology B)
+                     P\<^sub>0 p (\<lambda>t. P\<^sub>0))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>26 Bicollar neighborhoods; an extension of the Loop theorem\<close>
@@ -11863,7 +11884,8 @@ proof -
        top1_connected_on W (subspace_topology UNIV geotop_euclidean_topology W) \<longrightarrow>
        \<not> top1_connected_on (W - M2)
            (subspace_topology UNIV geotop_euclidean_topology (W - M2))" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_two_sided M2 M3" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>26: collar neighborhood (geotop.tex:5649)
