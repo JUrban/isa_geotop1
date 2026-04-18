@@ -829,109 +829,151 @@ qed
     {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}} around \<sigma>. Among these, the ones not containing P are
     finite closed sets not containing P, so \<open>infdist P \<tau> > 0\<close>. Taking min over a
     finite set plus a bound for the ambient U-neighborhood ball gives \<epsilon>. **)
+(** Helper 1: a closed set not containing a point has a ball-avoiding neighborhood. **)
+lemma geotop_ball_avoids_closed_not_containing:
+  fixes C :: "'a::metric_space set" and P :: 'a
+  assumes hC_closed: "closed C" and hC_ne: "C \<noteq> {}" and hP: "P \<notin> C"
+  shows "\<exists>d>0. ball P d \<inter> C = {}"
+proof -
+  have hpos: "infdist P C > 0"
+  proof -
+    have hne0: "infdist P C \<noteq> 0"
+      using in_closed_iff_infdist_zero[OF hC_closed hC_ne] hP by (by100 blast)
+    have "infdist P C \<ge> 0" by (rule infdist_nonneg)
+    then show ?thesis using hne0 by (by100 linarith)
+  qed
+  have hlb: "\<forall>x\<in>C. dist P x \<ge> infdist P C"
+    using infdist_le by (by100 blast)
+  have hball: "ball P (infdist P C) \<inter> C = {}"
+  proof (rule ccontr)
+    assume "ball P (infdist P C) \<inter> C \<noteq> {}"
+    then obtain x where hxC: "x \<in> C" and hxball: "x \<in> ball P (infdist P C)"
+      by (by100 blast)
+    have "dist P x < infdist P C" using hxball unfolding ball_def by (by100 simp)
+    moreover have "dist P x \<ge> infdist P C" using hlb hxC by (by100 blast)
+    ultimately show False by (by100 linarith)
+  qed
+  show ?thesis using hpos hball by (by100 blast)
+qed
+
+(** Helper 2: for a simplex \<tau> not containing P, exists d > 0 avoiding \<tau> in ball P d. **)
+lemma geotop_ball_avoids_simplex:
+  fixes \<tau> :: "'a::real_normed_vector set" and P :: 'a
+  assumes h\<tau>: "geotop_is_simplex \<tau>" and hP: "P \<notin> \<tau>"
+  shows "\<exists>d>0. ball P d \<inter> \<tau> = {}"
+  by (rule geotop_ball_avoids_closed_not_containing
+           [OF geotop_is_simplex_closed[OF h\<tau>]
+               geotop_is_simplex_nonempty[OF h\<tau>]
+               hP])
+
+(** Helper 3: for a finite union of sets, each with positive avoidance radius,
+    take the min to get positive avoidance for the union. **)
+lemma geotop_ball_avoids_finite_union:
+  fixes \<S> :: "'a::metric_space set set" and P :: 'a
+  assumes hfin: "finite \<S>"
+  assumes havoid: "\<forall>s\<in>\<S>. \<exists>d>0. ball P d \<inter> s = {}"
+  shows "\<exists>d>0. ball P d \<inter> \<Union>\<S> = {}"
+proof -
+  have hf: "\<exists>f. \<forall>s\<in>\<S>. f s > 0 \<and> ball P (f s) \<inter> s = {}"
+    using havoid by (by100 metis)
+  then obtain f where hf: "\<forall>s\<in>\<S>. f s > 0 \<and> ball P (f s) \<inter> s = {}"
+    by (by100 blast)
+  show ?thesis
+  proof (cases "\<S> = {}")
+    case True
+    have h1: "(1::real) > 0" by (by100 simp)
+    have h2: "ball P 1 \<inter> \<Union>\<S> = {}" unfolding True by (by100 simp)
+    show ?thesis using h1 h2 by (by100 blast)
+  next
+    case False
+    have hfinS: "finite (f ` \<S>)" using hfin by (by100 simp)
+    have hneS: "f ` \<S> \<noteq> {}" using False by (by100 simp)
+    have hposall: "\<forall>x\<in>f ` \<S>. x > 0" using hf by (by100 blast)
+    let ?d = "Min (f ` \<S>)"
+    have hd_pos: "?d > 0" using Min_gr_iff[OF hfinS hneS] hposall by (by100 blast)
+    have hd_le: "\<forall>s\<in>\<S>. ?d \<le> f s" using Min_le[OF hfinS] by (by100 blast)
+    have havoid_all: "ball P ?d \<inter> \<Union>\<S> = {}"
+    proof (rule ccontr)
+      assume "ball P ?d \<inter> \<Union>\<S> \<noteq> {}"
+      then obtain x s where hx: "x \<in> ball P ?d" and hs: "s \<in> \<S>" and hxs: "x \<in> s"
+        by (by100 blast)
+      have "ball P ?d \<subseteq> ball P (f s)"
+        using hd_le[rule_format, OF hs] by (rule subset_ball)
+      then have hxfs: "x \<in> ball P (f s)" using hx by (by100 blast)
+      have "ball P (f s) \<inter> s = {}" using hf hs by (by100 blast)
+      then show False using hxfs hxs by (by100 blast)
+    qed
+    show ?thesis using hd_pos havoid_all by (by100 blast)
+  qed
+qed
+
+(** Key technical lemma for GT_1_12 (3)\<Rightarrow>(1): for P in a simplex \<sigma> of a complex K,
+    every simplex of K that does not contain P stays at positive distance from P.
+    Uses local finiteness + Helper 2 + Helper 3. **)
 lemma geotop_complex_point_avoidance:
   fixes K :: "'a::real_normed_vector set set"
   fixes \<sigma> :: "'a set" and P :: 'a
   assumes hK: "geotop_is_complex K"
   assumes h\<sigma>K: "\<sigma> \<in> K" and hP\<sigma>: "P \<in> \<sigma>"
   shows "\<exists>\<epsilon>>0. ball P \<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
-  sorry
-  (* PROOF BODY BELOW (currently causes 120s session timeout when compiled; kept
-     as commented-out in-progress work). *)
-(*
 proof -
   have hLF: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
     using geotop_is_complex_locally_finite[OF hK] h\<sigma>K by (by100 blast)
+  (** Step 1: get a locally-finite open neighborhood U around \<sigma>. **)
   obtain U where hUopen: "open U" and hU\<sigma>: "\<sigma> \<subseteq> U"
            and hUfin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
     using hLF by (by100 blast)
   have hPU: "P \<in> U" using hP\<sigma> hU\<sigma> by (by100 blast)
-  have hball: "\<exists>r>0. ball P r \<subseteq> U"
+  (** Step 2: pick a ball of radius r0 around P inside U. **)
+  have "\<exists>r>0. ball P r \<subseteq> U"
     using hUopen hPU open_contains_ball by (by100 blast)
-  obtain r0 where hr0: "r0 > 0" and hr0U: "ball P r0 \<subseteq> U"
-    using hball by (by100 blast)
+  then obtain r0 where hr0: "r0 > 0" and hr0U: "ball P r0 \<subseteq> U"
+    by (by100 blast)
+  (** Step 3: let ?N be the finite collection of simplexes meeting U but not
+     containing P; each has a positive avoidance radius by Helper 2. **)
   let ?N = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {} \<and> P \<notin> \<tau>}"
-  have hN_sub: "?N \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}" by (by100 blast)
-  have hNfin: "finite ?N" using hN_sub hUfin rev_finite_subset by (by100 blast)
-  have hdist_pos: "\<forall>\<tau>\<in>?N. \<exists>d>0. ball P d \<inter> \<tau> = {}"
-  proof
-    fix \<tau> assume h\<tau>: "\<tau> \<in> ?N"
-    have h\<tau>K: "\<tau> \<in> K" and hP_notin\<tau>: "P \<notin> \<tau>" using h\<tau> by (by100 auto)
-    have h\<tau>simp: "geotop_is_simplex \<tau>"
-      using h\<tau>K geotop_is_complex_simplex[OF hK] by (by100 blast)
-    have h\<tau>closed: "closed \<tau>" by (rule geotop_is_simplex_closed[OF h\<tau>simp])
-    have h\<tau>ne: "\<tau> \<noteq> {}" by (rule geotop_is_simplex_nonempty[OF h\<tau>simp])
-    have hinfdist_ne0: "infdist P \<tau> \<noteq> 0"
-      using in_closed_iff_infdist_zero[OF h\<tau>closed h\<tau>ne] hP_notin\<tau>
-      by (by100 blast)
-    have hinfdist_ge0: "infdist P \<tau> \<ge> 0" by (rule infdist_nonneg)
-    have hinfdist_pos: "infdist P \<tau> > 0"
-      using hinfdist_ne0 hinfdist_ge0 by (by100 linarith)
-    have hdall: "\<forall>x\<in>\<tau>. dist P x \<ge> infdist P \<tau>"
-      using infdist_le by (by100 blast)
-    have hball_empty: "ball P (infdist P \<tau>) \<inter> \<tau> = {}"
-    proof (rule ccontr)
-      assume "ball P (infdist P \<tau>) \<inter> \<tau> \<noteq> {}"
-      then obtain x where hx\<tau>: "x \<in> \<tau>" and hxball: "x \<in> ball P (infdist P \<tau>)"
-        by (by100 blast)
-      have hxdist: "dist P x < infdist P \<tau>"
-        using hxball unfolding ball_def dist_commute by (by100 simp)
-      moreover have "dist P x \<ge> infdist P \<tau>" using hdall hx\<tau> by (by100 blast)
-      ultimately show False by (by100 linarith)
-    qed
-    then show "\<exists>d>0. ball P d \<inter> \<tau> = {}"
-      using hinfdist_pos by (by100 blast)
-  qed
-  (** Collect the \<tau>-specific witnesses and take minimum with r0. **)
-  obtain f where hf: "\<forall>\<tau>\<in>?N. f \<tau> > 0 \<and> ball P (f \<tau>) \<inter> \<tau> = {}"
-    using hdist_pos by metis
-  let ?\<epsilon> = "if ?N = {} then r0 else min r0 (Min (f ` ?N))"
-  have h\<epsilon>pos: "?\<epsilon> > 0"
-  proof (cases "?N = {}")
-    case True
-    then show ?thesis using hr0 by (by100 simp)
-  next
-    case False
-    have "finite (f ` ?N)" using hNfin by (by100 simp)
-    moreover have "f ` ?N \<noteq> {}" using False by (by100 simp)
-    moreover have "\<forall>x\<in>f ` ?N. x > 0" using hf by (by100 blast)
-    ultimately have "Min (f ` ?N) > 0"
-      using Min_gr_iff by (by100 blast)
-    then show ?thesis using hr0 False by (by100 simp)
-  qed
-  have h\<epsilon>_r0: "?\<epsilon> \<le> r0" by (by100 simp)
-  have h\<epsilon>sub: "ball P ?\<epsilon> \<subseteq> U"
-    using h\<epsilon>_r0 hr0U by (by100 auto)
-  have h\<epsilon>avoid: "\<forall>\<tau>\<in>?N. ball P ?\<epsilon> \<inter> \<tau> = {}"
+  have hNfin: "finite ?N"
+    using hUfin rev_finite_subset[of "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}" ?N] by (by100 blast)
+  have hNavoid: "\<forall>\<tau>\<in>?N. \<exists>d>0. ball P d \<inter> \<tau> = {}"
   proof
     fix \<tau> assume h\<tau>N: "\<tau> \<in> ?N"
-    have hf\<tau>: "f \<tau> \<in> f ` ?N" using h\<tau>N by (by100 blast)
-    have hfin: "finite (f ` ?N)" using hNfin by (by100 simp)
-    have hne: "f ` ?N \<noteq> {}" using h\<tau>N by (by100 blast)
-    have "Min (f ` ?N) \<le> f \<tau>"
-      by (rule Min_le[OF hfin hf\<tau>])
-    then have h\<epsilon>_f\<tau>: "?\<epsilon> \<le> f \<tau>"
-      using hne by (by100 simp)
-    have "ball P ?\<epsilon> \<subseteq> ball P (f \<tau>)"
-      using h\<epsilon>_f\<tau> by (by100 auto)
-    moreover have "ball P (f \<tau>) \<inter> \<tau> = {}" using hf h\<tau>N by (by100 blast)
-    ultimately show "ball P ?\<epsilon> \<inter> \<tau> = {}" by (by100 blast)
+    have "\<tau> \<in> K" and "P \<notin> \<tau>" using h\<tau>N by (by100 auto)
+    then show "\<exists>d>0. ball P d \<inter> \<tau> = {}"
+      using geotop_ball_avoids_simplex geotop_is_complex_simplex[OF hK]
+      by (by100 blast)
   qed
-  (** Final: show ball P \<epsilon> is disjoint from \<Union>{\<tau>\<in>K. P \<notin> \<tau>}. **)
+  (** Step 4: take the min avoidance radius via Helper 3. **)
+  have havoidN: "\<exists>d>0. ball P d \<inter> \<Union>?N = {}"
+    by (rule geotop_ball_avoids_finite_union[OF hNfin hNavoid])
+  then obtain d1 where hd1: "d1 > 0" and hd1N: "ball P d1 \<inter> \<Union>?N = {}"
+    by (by100 auto)
+  (** Step 5: take \<epsilon> = min(r0, d1). Inside ball P \<epsilon>, points are in U AND avoid all of ?N. **)
+  let ?\<epsilon> = "min r0 d1"
+  have h\<epsilon>pos: "?\<epsilon> > 0" using hr0 hd1 by (by100 simp)
+  have h\<epsilon>_r0: "?\<epsilon> \<le> r0" by (by100 simp)
+  have h\<epsilon>_d1: "?\<epsilon> \<le> d1" by (by100 simp)
+  have h\<epsilon>sub_r0: "ball P ?\<epsilon> \<subseteq> ball P r0"
+    by (rule subset_ball[OF h\<epsilon>_r0])
+  have h\<epsilon>sub_d1: "ball P ?\<epsilon> \<subseteq> ball P d1"
+    by (rule subset_ball[OF h\<epsilon>_d1])
+  have h\<epsilon>sub_U: "ball P ?\<epsilon> \<subseteq> U" using h\<epsilon>sub_r0 hr0U by (by100 blast)
+  have h\<epsilon>avoidN: "ball P ?\<epsilon> \<inter> \<Union>?N = {}" using h\<epsilon>sub_d1 hd1N by (by100 blast)
+  (** Step 6: any simplex \<tau> \<in> K not containing P, if it meets ball P ?\<epsilon>, belongs to ?N
+     (since ball P ?\<epsilon> \<subseteq> U). **)
   have h\<epsilon>final: "ball P ?\<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
   proof (rule ccontr)
     assume "ball P ?\<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} \<noteq> {}"
     then obtain x \<tau>' where hx: "x \<in> ball P ?\<epsilon>" and h\<tau>'K: "\<tau>' \<in> K"
-                and hP_notin: "P \<notin> \<tau>'" and hx\<tau>': "x \<in> \<tau>'"
+                and hPnotin: "P \<notin> \<tau>'" and hx\<tau>': "x \<in> \<tau>'"
       by (by100 blast)
-    have hxU: "x \<in> U" using hx h\<epsilon>sub by (by100 blast)
-    have h\<tau>'_meets_U: "\<tau>' \<inter> U \<noteq> {}" using hxU hx\<tau>' by (by100 blast)
-    have h\<tau>'N: "\<tau>' \<in> ?N" using h\<tau>'K hP_notin h\<tau>'_meets_U by (by100 simp)
-    have "ball P ?\<epsilon> \<inter> \<tau>' = {}" using h\<epsilon>avoid h\<tau>'N by (by100 blast)
-    then show False using hx hx\<tau>' by (by100 blast)
+    have hxU: "x \<in> U" using hx h\<epsilon>sub_U by (by100 blast)
+    have h\<tau>'_meets: "\<tau>' \<inter> U \<noteq> {}" using hxU hx\<tau>' by (by100 blast)
+    have h\<tau>'N: "\<tau>' \<in> ?N" using h\<tau>'K hPnotin h\<tau>'_meets by (by100 simp)
+    have hxU_N: "x \<in> \<Union>?N" using h\<tau>'N hx\<tau>' by (by100 blast)
+    then show False using hx h\<epsilon>avoidN by (by100 blast)
   qed
   show ?thesis using h\<epsilon>pos h\<epsilon>final by (by100 blast)
-qed *)
+qed
 
 text \<open>Moise's \<S>1 Theorem 3: every simplex is pathwise connected, because
   it is convex, and the straight-line path between any two points of a
