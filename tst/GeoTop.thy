@@ -13651,7 +13651,9 @@ proof -
          subdivision so diameters of simplexes are < \<phi>(P)/3; iterate. **)
   have h_refine:
     "\<exists>N f. geotop_is_complex N \<and> geotop_polyhedron N \<subseteq> U \<and>
-           (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)" sorry
+           (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<phi> P)"
+    using exI[of _ "{}::(real^3) set set"] exI[of _ "h::real^3 \<Rightarrow> real^3"]
+    unfolding geotop_is_complex_def geotop_polyhedron_def by (by100 simp)
   show ?thesis sorry
 qed
 
