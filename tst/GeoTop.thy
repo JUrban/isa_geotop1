@@ -5086,7 +5086,13 @@ proof -
   have hIbar_cell: "geotop_is_n_cell Ibar
                       (subspace_topology UNIV geotop_euclidean_topology Ibar) 2"
     sorry
-  show ?thesis sorry
+  have h_final: "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and> I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+                \<and> geotop_bounded_R2 I) \<and>
+           geotop_is_n_cell
+             (closure_on UNIV geotop_euclidean_topology I)
+             (subspace_topology UNIV geotop_euclidean_topology
+                (closure_on UNIV geotop_euclidean_topology I)) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 
@@ -5133,7 +5139,14 @@ proof -
     sorry
   (** Pull back: U = \<phi>^{-1}(U'), V = \<phi>^{-1}(V'). Reinstate P in whichever
       component contains it in the limit. **)
-  show ?thesis sorry
+  have h_final: "\<exists>U V. U \<union> V = S2 - J \<and> U \<inter> V = {} \<and>
+           U \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           V \<in> subspace_topology UNIV geotop_euclidean_topology S2 \<and>
+           top1_connected_on U (subspace_topology UNIV geotop_euclidean_topology U) \<and>
+           top1_connected_on V (subspace_topology UNIV geotop_euclidean_topology V) \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) U \<and>
+           J = geotop_frontier (S2) (subspace_topology UNIV geotop_euclidean_topology S2) V" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 2 (geotop.tex:1989)
@@ -5457,7 +5470,12 @@ proof -
      (\<forall>P\<in>UNIV - U. h\<^sub>0 P = P)" sorry
   (** (3) Restrict to the M-part: h_0 restricted to h_0(M) stays polyhedral since M \<subseteq>
          f(|K'|); the extra edges are discarded. **)
-  show ?thesis sorry
+  have h_final: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+          \<and> (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = h ` M)
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)
+          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) (\<lambda>x. x) h \<phi> U" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>10 Theorem 9 (geotop.tex:2149)
@@ -5498,7 +5516,9 @@ proof -
     "\<exists>\<gamma>::real \<Rightarrow> 'a. \<gamma> 0 = Q \<and> \<gamma> 1 = S \<and>
        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> \<gamma> t \<in> C2 - (M1 \<union> M2))" sorry
   (** (3) The free path shows Q and S are in the same component of C^2 - (M_1 \<union> M_2). **)
-  show ?thesis sorry
+  have h_final: "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q =
+         geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>10: retraction (geotop.tex:2153)
