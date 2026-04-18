@@ -641,14 +641,58 @@ next
     using hRHS by (by100 blast)
   have hxK: "x \<in> geotop_polyhedron K"
     using h\<tau>K hx\<tau> unfolding geotop_polyhedron_def by (by100 blast)
-  (** Suppose x in star_K(v): then x in rel_interior sigma for some sigma in K with v in sigma.
-      sigma cap tau is a face of both (K intersection-compat), containing x.
-      Case sigma subseteq tau: v in sigma subseteq tau, contradicting v notin tau.
-      Case sigma not subseteq tau: then sigma cap tau is a proper face of sigma,
-           so disjoint from rel_interior sigma. But x in sigma cap tau inter rel_interior sigma,
-           contradiction. **)
   have hx_not_star: "x \<notin> geotop_open_star K v"
-    sorry
+  proof
+    assume hx_star: "x \<in> geotop_open_star K v"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hv\<sigma>: "v \<in> \<sigma>"
+                 and hx_rel: "x \<in> rel_interior \<sigma>"
+      using hx_star unfolding geotop_open_star_def by (by100 blast)
+    have hx\<sigma>: "x \<in> \<sigma>" using hx_rel rel_interior_subset by (by100 blast)
+    have h\<sigma>_cap_\<tau>_ne: "\<sigma> \<inter> \<tau> \<noteq> {}" using hx\<sigma> hx\<tau> by (by100 blast)
+    (** \<sigma> \<inter> \<tau> is a face of \<sigma> (K intersection-compat). **)
+    have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+      using conjunct1[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]]
+      by (by100 blast)
+    have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+      using hK_inter h\<sigma>K h\<tau>K h\<sigma>_cap_\<tau>_ne by (by100 blast)
+    (** Get vertex set of \<sigma> and the subset W such that \<sigma> \<inter> \<tau> = conv W. **)
+    obtain V\<^sub>\<sigma> W where hV\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>" and hWne: "W \<noteq> {}"
+                   and hWV\<^sub>\<sigma>: "W \<subseteq> V\<^sub>\<sigma>"
+                   and h\<sigma>\<tau>_hull: "\<sigma> \<inter> \<tau> = geotop_convex_hull W"
+      using h_face_\<sigma> unfolding geotop_is_face_def by (by100 blast)
+    have h\<sigma>\<tau>_hullHOL: "\<sigma> \<inter> \<tau> = convex hull W"
+      using h\<sigma>\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have h\<sigma>_hullHOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
+      using hV\<^sub>\<sigma> geotop_convex_hull_eq_HOL
+      unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV\<^sub>\<sigma>_ai: "\<not> affine_dependent V\<^sub>\<sigma>"
+      by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>\<sigma>])
+    have h_face_HOL: "(\<sigma> \<inter> \<tau>) face_of \<sigma>"
+    proof -
+      have "(\<sigma> \<inter> \<tau>) face_of (convex hull V\<^sub>\<sigma>)"
+        using hV\<^sub>\<sigma>_ai hWV\<^sub>\<sigma> h\<sigma>\<tau>_hullHOL
+        face_of_convex_hull_affine_independent[OF hV\<^sub>\<sigma>_ai, of "\<sigma> \<inter> \<tau>"]
+        by (by100 blast)
+      thus ?thesis using h\<sigma>_hullHOL by (by100 simp)
+    qed
+    (** Case (a): \<sigma> \<inter> \<tau> = \<sigma>, i.e., \<sigma> \<subseteq> \<tau>. Then v \<in> \<sigma> \<subseteq> \<tau>, contradicting v \<notin> \<tau>. **)
+    show False
+    proof (cases "\<sigma> \<inter> \<tau> = \<sigma>")
+      case True
+      then have h\<sigma>_sub_\<tau>: "\<sigma> \<subseteq> \<tau>" by (by100 blast)
+      have "v \<in> \<tau>" using hv\<sigma> h\<sigma>_sub_\<tau> by (by100 blast)
+      thus False using h\<tau>nv by (by100 blast)
+    next
+      case False
+      (** Proper face, disjoint from rel_interior \<sigma>. **)
+      have h_disj: "(\<sigma> \<inter> \<tau>) \<inter> rel_interior \<sigma> = {}"
+        using face_of_disjoint_rel_interior[OF h_face_HOL False] by (by100 blast)
+      have hx_in: "x \<in> (\<sigma> \<inter> \<tau>) \<inter> rel_interior \<sigma>"
+        using hx\<sigma> hx\<tau> hx_rel by (by100 blast)
+      thus False using h_disj by (by100 blast)
+    qed
+  qed
   show "x \<in> geotop_polyhedron K - geotop_open_star K v"
     using hxK hx_not_star by (by100 blast)
 qed
