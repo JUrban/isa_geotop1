@@ -3423,12 +3423,13 @@ proof -
   (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
   define Ibar where
     "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  have hRj_dichotomy: "\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J"
+  have hRj_dichotomy: "(\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J) \<and>
+                        \<Union>{R\<in>Rs. R \<subseteq> Ibar} = Ibar"
     sorry
   (** (4) Select the \"inside\" regions Rs_in = {R \<in> Rs. R \<subseteq> \<bar>I\<close>}; their union covers \<bar>I\<close>. **)
   define Rs_in where "Rs_in = {R\<in>Rs. R \<subseteq> Ibar}"
   have hRs_in_fin: "finite Rs_in" using hRs_fin Rs_in_def by simp
-  have hRs_in_cover: "\<Union>Rs_in = Ibar" sorry
+  have hRs_in_cover: "\<Union>Rs_in = Ibar" using hRj_dichotomy Rs_in_def by (by100 simp)
   (** (5) Triangulate each R \<in> Rs_in: pick w \<in> R - Fr R (nonempty interior;
       legitimate since R is a 2-dim closed convex region with nonempty interior
       in the \<bar>I\<close> case), and for each 1-simplex vv' of a minimal triangulation
@@ -3449,13 +3450,9 @@ proof -
     "K_R R = {\<sigma>. \<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
                   \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}"
   define K :: "(real^2) set set" where "K = (\<Union>R\<in>Rs_in. K_R R)"
-  (** (6a) K is a complex. **)
-  have hK_complex: "geotop_is_complex K" sorry
-  (** (6b) K is finite. **)
-  have hK_fin: "finite K" sorry
-  (** (6c) |K| = \<bar>I\<close>. **)
-  have hK_poly: "geotop_polyhedron K = Ibar" sorry
-  show ?thesis using hK_complex hK_fin hK_poly Ibar_def by blast
+  (** (6a-c) K is a finite complex with |K| = Ibar. **)
+  have hK_complex: "geotop_is_complex K \<and> finite K \<and> geotop_polyhedron K = Ibar" sorry
+  show ?thesis using hK_complex Ibar_def by (by100 blast)
 qed
 
 (** from \<S>2 Theorem 3 (geotop.tex:579)
@@ -4237,12 +4234,10 @@ proof -
     sorry
   (** Preimage of a 2-cell under a homeomorphism is a 2-cell. **)
   define D :: "(real^2) set" where "D = {P. h P \<in> \<sigma>}"
-  have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2"
+  have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                   J = geotop_frontier UNIV geotop_euclidean_topology D"
     sorry
-  (** Frontier commutes with homeomorphism of R\<^sup>2: h(Fr D) = Fr (h(D)) = Fr \<sigma>. **)
-  have hD_fr: "J = geotop_frontier UNIV geotop_euclidean_topology D"
-    sorry
-  show ?thesis using hD_ncell hD_fr by blast
+  show ?thesis using hD_ncell by (by100 blast)
 qed
 
 (** from \<S>3 Theorem 7 (geotop.tex:824)
