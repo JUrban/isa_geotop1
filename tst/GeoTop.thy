@@ -2295,7 +2295,231 @@ proof -
   have h_conn_to_comb:
     "top1_connected_on (geotop_polyhedron K)
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<longrightarrow>
-     geotop_complex_connected K" sorry
+     geotop_complex_connected K"
+  proof (rule impI, rule ccontr)
+    assume hconn: "top1_connected_on (geotop_polyhedron K)
+                      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    assume hnotcc: "\<not> geotop_complex_connected K"
+    have hex_split: "\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+                              \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+      using hnotcc hK_complex unfolding geotop_complex_connected_def by (by100 blast)
+    define K1 where "K1 = (SOME K1. \<exists>K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+                              \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
+    define K2 where "K2 = (SOME K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+                              \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
+    have hK1_all: "\<exists>K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+                        \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+      unfolding K1_def using hex_split someI_ex[of "\<lambda>K1'. \<exists>K2'. K1' \<noteq> {} \<and> K2' \<noteq> {} \<and> K1' \<inter> K2' = {} \<and> K = K1' \<union> K2' \<and> geotop_is_complex K1' \<and> geotop_is_complex K2'"]
+      by (by100 blast)
+    have hK2_all: "K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+                      \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+      unfolding K2_def using hK1_all someI_ex[of "\<lambda>K2'. K1 \<noteq> {} \<and> K2' \<noteq> {} \<and> K1 \<inter> K2' = {} \<and> K = K1 \<union> K2' \<and> geotop_is_complex K1 \<and> geotop_is_complex K2'"]
+      by (by100 blast)
+    have hK1ne: "K1 \<noteq> {}" using hK2_all by (by100 blast)
+    have hK2ne: "K2 \<noteq> {}" using hK2_all by (by100 blast)
+    have hdisj: "K1 \<inter> K2 = {}" using hK2_all by (by100 blast)
+    have hKu: "K = K1 \<union> K2" using hK2_all by (by100 blast)
+    have hK1: "geotop_is_complex K1" using hK2_all by (by100 blast)
+    have hK2: "geotop_is_complex K2" using hK2_all by (by100 blast)
+    have hK1sub: "K1 \<subseteq> K" using hKu by (by100 blast)
+    have hK2sub: "K2 \<subseteq> K" using hKu by (by100 blast)
+    (** |K| = |K1| \<union> |K2|, and |K1| \<inter> |K2| = {}. **)
+    have hpoly_K: "geotop_polyhedron K = geotop_polyhedron K1 \<union> geotop_polyhedron K2"
+      unfolding geotop_polyhedron_def using hKu by (by100 blast)
+    have hpoly_disj: "geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = {}"
+      by (rule geotop_disjoint_subcomplex_polyhedra_disjoint
+                [OF hK_complex hK1 hK1sub hK2 hK2sub hdisj])
+    have hK1ne_poly: "geotop_polyhedron K1 \<noteq> {}"
+    proof -
+      obtain \<sigma> where "\<sigma> \<in> K1" using hK1ne by (by100 blast)
+      moreover have "\<sigma> \<noteq> {}"
+        using \<open>\<sigma> \<in> K1\<close> geotop_is_complex_simplex[OF hK1] geotop_is_simplex_nonempty
+        by (by100 blast)
+      ultimately show ?thesis unfolding geotop_polyhedron_def by (by100 blast)
+    qed
+    have hK2ne_poly: "geotop_polyhedron K2 \<noteq> {}"
+    proof -
+      obtain \<tau> where "\<tau> \<in> K2" using hK2ne by (by100 blast)
+      moreover have "\<tau> \<noteq> {}"
+        using \<open>\<tau> \<in> K2\<close> geotop_is_complex_simplex[OF hK2] geotop_is_simplex_nonempty
+        by (by100 blast)
+      ultimately show ?thesis unfolding geotop_polyhedron_def by (by100 blast)
+    qed
+    (** Key claim: |K1|, |K2| are both open in |K| (subspace topology).
+        Proof: for P \<in> |K1|, avoidance lemma gives ball P \<epsilon> \<inter> |K2| = {}. **)
+    have hK1_open: "\<exists>V\<in>geotop_euclidean_topology.
+                     geotop_polyhedron K \<inter> V = geotop_polyhedron K1"
+    proof -
+      let ?V = "\<Union>P\<in>geotop_polyhedron K1. {Q. \<exists>\<epsilon>>0. ball P \<epsilon> \<inter> geotop_polyhedron K2 = {} \<and> Q \<in> ball P \<epsilon>}"
+      (** This is getting complex. Let me simplify: show |K1| is a union of open balls each
+         avoiding |K2|. Equivalently, for each P \<in> |K1|, \<exists>\<epsilon> with B(P, \<epsilon>) \<inter> |K2| = {}. **)
+      have hwit: "\<forall>P\<in>geotop_polyhedron K1. \<exists>\<epsilon>>0. ball P \<epsilon> \<inter> geotop_polyhedron K2 = {}"
+      proof
+        fix P assume hP: "P \<in> geotop_polyhedron K1"
+        obtain \<sigma> where h\<sigma>K1: "\<sigma> \<in> K1" and hP\<sigma>: "P \<in> \<sigma>"
+          using hP unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K1 hK1sub by (by100 blast)
+        obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and h\<epsilon>avoid:
+            "ball P \<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
+          using geotop_complex_point_avoidance[OF hK_complex h\<sigma>K hP\<sigma>] by (by100 blast)
+        have hP_notin_K2: "\<forall>\<tau>\<in>K2. P \<notin> \<tau>"
+        proof (intro ballI)
+          fix \<tau> assume h\<tau>K2: "\<tau> \<in> K2"
+          show "P \<notin> \<tau>"
+          proof (rule ccontr)
+            assume "\<not> P \<notin> \<tau>"
+            then have hP\<tau>: "P \<in> \<tau>" by (by100 simp)
+            have "P \<in> geotop_polyhedron K2"
+              unfolding geotop_polyhedron_def using h\<tau>K2 hP\<tau> by (by100 blast)
+            then show False using hP hpoly_disj by (by100 blast)
+          qed
+        qed
+        have hK2_sub_avoid: "geotop_polyhedron K2 \<subseteq> \<Union>{\<tau>\<in>K. P \<notin> \<tau>}"
+        proof
+          fix x assume "x \<in> geotop_polyhedron K2"
+          then obtain \<tau> where h\<tau>: "\<tau> \<in> K2" and hx: "x \<in> \<tau>"
+            unfolding geotop_polyhedron_def by (by100 blast)
+          have h\<tau>K: "\<tau> \<in> K" using h\<tau> hK2sub by (by100 blast)
+          have "P \<notin> \<tau>" using h\<tau> hP_notin_K2 by (by100 blast)
+          then show "x \<in> \<Union>{\<tau>\<in>K. P \<notin> \<tau>}" using h\<tau>K hx by (by100 blast)
+        qed
+        have "ball P \<epsilon> \<inter> geotop_polyhedron K2 = {}"
+          using h\<epsilon>avoid hK2_sub_avoid by (by100 blast)
+        then show "\<exists>\<epsilon>>0. ball P \<epsilon> \<inter> geotop_polyhedron K2 = {}"
+          using h\<epsilon> by (by100 blast)
+      qed
+      (** From pointwise witnesses, construct the open set V = union of balls. **)
+      define V where "V = (\<Union>P\<in>geotop_polyhedron K1. \<Union>{ball P \<epsilon> |\<epsilon>. \<epsilon> > 0 \<and> ball P \<epsilon> \<inter> geotop_polyhedron K2 = {}})"
+      have hVopen: "open V"
+        unfolding V_def by (by100 auto)
+      have hVgeo: "V \<in> geotop_euclidean_topology"
+        using hVopen
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hK1_in_V: "geotop_polyhedron K1 \<subseteq> V"
+      proof
+        fix P assume hP: "P \<in> geotop_polyhedron K1"
+        obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and h\<epsilon>avoid: "ball P \<epsilon> \<inter> geotop_polyhedron K2 = {}"
+          using hwit hP by (by100 blast)
+        have hP_in_ball: "P \<in> ball P \<epsilon>" using h\<epsilon> by (by100 simp)
+        let ?BP = "{ball P \<epsilon>' |\<epsilon>'. \<epsilon>' > 0 \<and> ball P \<epsilon>' \<inter> geotop_polyhedron K2 = {}}"
+        have hBin: "ball P \<epsilon> \<in> ?BP" using h\<epsilon> h\<epsilon>avoid by (by100 blast)
+        have hPinUnion: "P \<in> \<Union>?BP" using hBin hP_in_ball by (by100 blast)
+        show "P \<in> V" unfolding V_def using hP hPinUnion by (by100 blast)
+      qed
+      have hV_avoids_K2: "V \<inter> geotop_polyhedron K2 = {}"
+        unfolding V_def by (by100 blast)
+      have hPK_cap_V: "geotop_polyhedron K \<inter> V = geotop_polyhedron K1"
+      proof (rule set_eqI, rule iffI)
+        fix x assume hx: "x \<in> geotop_polyhedron K \<inter> V"
+        then have hxK: "x \<in> geotop_polyhedron K" and hxV: "x \<in> V" by (by100 auto)
+        have "x \<in> geotop_polyhedron K1 \<or> x \<in> geotop_polyhedron K2"
+          using hxK hpoly_K by (by100 blast)
+        moreover have "x \<notin> geotop_polyhedron K2" using hxV hV_avoids_K2 by (by100 blast)
+        ultimately show "x \<in> geotop_polyhedron K1" by (by100 blast)
+      next
+        fix x assume "x \<in> geotop_polyhedron K1"
+        then have hxK1: "x \<in> geotop_polyhedron K1" by (by100 blast)
+        have hxK: "x \<in> geotop_polyhedron K" using hxK1 hpoly_K by (by100 blast)
+        have hxV: "x \<in> V" using hxK1 hK1_in_V by (by100 blast)
+        show "x \<in> geotop_polyhedron K \<inter> V" using hxK hxV by (by100 blast)
+      qed
+      show ?thesis using hVgeo hPK_cap_V by (by100 blast)
+    qed
+    have hK1_subsp: "geotop_polyhedron K1 \<in>
+        subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+      using hK1_open unfolding subspace_topology_def by (by100 blast)
+    (** By symmetric argument, |K2| is also open in the subspace. **)
+    have hK2_open: "\<exists>V\<in>geotop_euclidean_topology.
+                     geotop_polyhedron K \<inter> V = geotop_polyhedron K2"
+    proof -
+      have hwit: "\<forall>P\<in>geotop_polyhedron K2. \<exists>\<epsilon>>0. ball P \<epsilon> \<inter> geotop_polyhedron K1 = {}"
+      proof
+        fix P assume hP: "P \<in> geotop_polyhedron K2"
+        obtain \<sigma> where h\<sigma>K2: "\<sigma> \<in> K2" and hP\<sigma>: "P \<in> \<sigma>"
+          using hP unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K2 hK2sub by (by100 blast)
+        obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and h\<epsilon>avoid:
+            "ball P \<epsilon> \<inter> \<Union>{\<tau>\<in>K. P \<notin> \<tau>} = {}"
+          using geotop_complex_point_avoidance[OF hK_complex h\<sigma>K hP\<sigma>] by (by100 blast)
+        have hP_notin_K1: "\<forall>\<tau>\<in>K1. P \<notin> \<tau>"
+        proof (intro ballI)
+          fix \<tau> assume h\<tau>K1: "\<tau> \<in> K1"
+          show "P \<notin> \<tau>"
+          proof (rule ccontr)
+            assume "\<not> P \<notin> \<tau>"
+            then have hP\<tau>: "P \<in> \<tau>" by (by100 simp)
+            have "P \<in> geotop_polyhedron K1"
+              unfolding geotop_polyhedron_def using h\<tau>K1 hP\<tau> by (by100 blast)
+            then show False using hP hpoly_disj by (by100 blast)
+          qed
+        qed
+        have hK1_sub_avoid: "geotop_polyhedron K1 \<subseteq> \<Union>{\<tau>\<in>K. P \<notin> \<tau>}"
+        proof
+          fix x assume "x \<in> geotop_polyhedron K1"
+          then obtain \<tau> where h\<tau>: "\<tau> \<in> K1" and hx: "x \<in> \<tau>"
+            unfolding geotop_polyhedron_def by (by100 blast)
+          have h\<tau>K: "\<tau> \<in> K" using h\<tau> hK1sub by (by100 blast)
+          have "P \<notin> \<tau>" using h\<tau> hP_notin_K1 by (by100 blast)
+          then show "x \<in> \<Union>{\<tau>\<in>K. P \<notin> \<tau>}" using h\<tau>K hx by (by100 blast)
+        qed
+        have "ball P \<epsilon> \<inter> geotop_polyhedron K1 = {}"
+          using h\<epsilon>avoid hK1_sub_avoid by (by100 blast)
+        then show "\<exists>\<epsilon>>0. ball P \<epsilon> \<inter> geotop_polyhedron K1 = {}"
+          using h\<epsilon> by (by100 blast)
+      qed
+      define V where "V = (\<Union>P\<in>geotop_polyhedron K2. \<Union>{ball P \<epsilon> |\<epsilon>. \<epsilon> > 0 \<and> ball P \<epsilon> \<inter> geotop_polyhedron K1 = {}})"
+      have hVopen: "open V"
+        unfolding V_def by (by100 auto)
+      have hVgeo: "V \<in> geotop_euclidean_topology"
+        using hVopen
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hK2_in_V: "geotop_polyhedron K2 \<subseteq> V"
+      proof
+        fix P assume hP: "P \<in> geotop_polyhedron K2"
+        obtain \<epsilon> where h\<epsilon>: "\<epsilon> > 0" and h\<epsilon>avoid: "ball P \<epsilon> \<inter> geotop_polyhedron K1 = {}"
+          using hwit hP by (by100 blast)
+        have hP_in_ball: "P \<in> ball P \<epsilon>" using h\<epsilon> by (by100 simp)
+        let ?BP = "{ball P \<epsilon>' |\<epsilon>'. \<epsilon>' > 0 \<and> ball P \<epsilon>' \<inter> geotop_polyhedron K1 = {}}"
+        have hBin: "ball P \<epsilon> \<in> ?BP" using h\<epsilon> h\<epsilon>avoid by (by100 blast)
+        have hPinUnion: "P \<in> \<Union>?BP" using hBin hP_in_ball by (by100 blast)
+        show "P \<in> V" unfolding V_def using hP hPinUnion by (by100 blast)
+      qed
+      have hV_avoids_K1: "V \<inter> geotop_polyhedron K1 = {}"
+        unfolding V_def by (by100 blast)
+      have hPK_cap_V: "geotop_polyhedron K \<inter> V = geotop_polyhedron K2"
+      proof (rule set_eqI, rule iffI)
+        fix x assume hx: "x \<in> geotop_polyhedron K \<inter> V"
+        then have hxK: "x \<in> geotop_polyhedron K" and hxV: "x \<in> V" by (by100 auto)
+        have "x \<in> geotop_polyhedron K1 \<or> x \<in> geotop_polyhedron K2"
+          using hxK hpoly_K by (by100 blast)
+        moreover have "x \<notin> geotop_polyhedron K1" using hxV hV_avoids_K1 by (by100 blast)
+        ultimately show "x \<in> geotop_polyhedron K2" by (by100 blast)
+      next
+        fix x assume "x \<in> geotop_polyhedron K2"
+        then have hxK2: "x \<in> geotop_polyhedron K2" by (by100 blast)
+        have hxK: "x \<in> geotop_polyhedron K" using hxK2 hpoly_K by (by100 blast)
+        have hxV: "x \<in> V" using hxK2 hK2_in_V by (by100 blast)
+        show "x \<in> geotop_polyhedron K \<inter> V" using hxK hxV by (by100 blast)
+      qed
+      show ?thesis using hVgeo hPK_cap_V by (by100 blast)
+    qed
+    have hK2_subsp: "geotop_polyhedron K2 \<in>
+        subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+      using hK2_open unfolding subspace_topology_def by (by100 blast)
+    (** |K1| and |K2| form a separation of |K|, contradicting connectedness. **)
+    have hsep:
+      "geotop_polyhedron K1 \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
+       \<and> geotop_polyhedron K2 \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
+       \<and> geotop_polyhedron K1 \<noteq> {} \<and> geotop_polyhedron K2 \<noteq> {}
+       \<and> geotop_polyhedron K1 \<inter> geotop_polyhedron K2 = {}
+       \<and> geotop_polyhedron K1 \<union> geotop_polyhedron K2 = geotop_polyhedron K"
+      using hK1_subsp hK2_subsp hK1ne_poly hK2ne_poly hpoly_disj hpoly_K
+      by (by100 blast)
+    then show False
+      using hconn unfolding top1_connected_on_def by (by100 blast)
+  qed
   show "geotop_complex_connected K \<longleftrightarrow>
         top1_path_connected_on (geotop_polyhedron K)
            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
