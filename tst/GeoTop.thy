@@ -11243,7 +11243,12 @@ proof -
          pt_1 \<cong> pt_2 in Mt. **)
   have h_inj:
     "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0)" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0) \<and>
+              (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+              (\<forall>p\<in>geotop_CP Mt T\<^sub>M Pt\<^sub>0.
+                 g\<^sub>0 (geotop_pi_class Mt T\<^sub>M Pt\<^sub>0 p)
+                 = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 3 (geotop.tex:5311)
@@ -11526,7 +11531,13 @@ proof -
        (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
             \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))
        \<longrightarrow> geotop_is_CST S" sorry
-  show ?thesis sorry
+  have h_final: "geotop_is_CST S \<longleftrightarrow>
+         (\<exists>(\<sigma>2::(real^2) set) (\<phi>::(real^2) \<times> real \<Rightarrow> 'a).
+            geotop_simplex_dim \<sigma>2 2 \<and>
+            \<phi> ` (\<sigma>2 \<times> {t. 0 \<le> t \<and> t \<le> 1}) = S \<and>
+            (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                 \<phi> ` (\<sigma>2 \<times> {0}) = D \<and> \<phi> ` (\<sigma>2 \<times> {1}) = D))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 10 (geotop.tex:5348)
@@ -11546,7 +11557,10 @@ proof -
      \<phi>2 ` (\<sigma>2 \<times> {t::real. 0 \<le> t \<and> t \<le> 1}) = S2" sorry
   (** (2) The PL homeomorphism \<phi>_2 \<circ> \<phi>_1^{-1}: S_1 \<to> S_2 is well-defined (respects the
          gluing identification) and PL on each layer [(i-1)/n_i, i/n_i] by construction. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on S1 (subspace_topology UNIV geotop_euclidean_topology S1)
+              S2 (subspace_topology UNIV geotop_euclidean_topology S2) f \<and>
+              (\<exists>K1 K2. geotop_is_complex K1 \<and> geotop_is_complex K2 \<and> geotop_PLH K1 K2 f)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>24 Theorem 11 (geotop.tex:5351)
