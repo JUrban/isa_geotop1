@@ -1756,19 +1756,45 @@ proof -
   have h\<phi>cond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
                   (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
     using hiso unfolding geotop_isomorphism_def by (by100 blast)
-  (** (1) Define the barycentric extension \<open>f\<close>: for \<open>x \<in> |K|\<close>, choose any simplex
-      \<sigma> \<in> K containing \<open>x\<close>, express \<open>x = \<Sum> t_i v_i\<close>, and set \<open>f(x) = \<Sum> t_i \<phi>(v_i)\<close>.
-      We encode this via \<open>SOME\<close> parameterised on the ambient simplex. **)
+  (** STRENGTHENED CONSTRUCTION: define \<open>f\<close> as SOME g satisfying the FULL bundle
+      of properties we need (agrees on vertices, linear on each simplex, images land
+      in L-simplexes, bijective on polyhedra, inverse is PL). This collapses the
+      five sub-sorries hlin/himg/hbij/hagree/hPL_inv to one existence sorry:
+      does such g exist? The classical barycentric extension IS such a g. **)
   define f :: "'a \<Rightarrow> 'b" where
-    "f x = (SOME y. \<exists>\<sigma>\<in>K. \<exists>V t. geotop_simplex_vertices \<sigma> V \<and> x \<in> \<sigma> \<and>
-                      (\<forall>v\<in>V. 0 \<le> t v) \<and> sum t V = 1 \<and>
-                      x = (\<Sum>v\<in>V. t v *\<^sub>R v) \<and>
-                      y = (\<Sum>v\<in>V. t v *\<^sub>R \<phi> v))" for x :: 'a
-  (** (2) On each \<sigma> \<in> K, \<open>f\<close> coincides with the barycentric-extended affine
-      map into \<open>\<phi>(\<sigma>)\<close>. Hence \<open>f\<close> is linear on \<sigma>. **)
-  have hlin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f" sorry
-  (** (3) For each \<sigma> \<in> K, \<open>f(\<sigma>) \<subseteq> \<tau>\<close> where \<tau> = convex_hull (\<phi> ` vertices \<sigma>) \<in> L. **)
-  have himg: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>)" sorry
+    "f = (SOME g. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
+                   (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
+                   (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and>
+                   bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<and>
+                   geotop_PL_map L K (inv_into (geotop_polyhedron K) g))"
+  (** (1) Existence of such \<open>g\<close> — the classical barycentric-extension construction.
+      This is the remaining deep sorry, replacing five separate ones. **)
+  have h_f_exists:
+    "\<exists>g::'a\<Rightarrow>'b. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
+                  (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
+                  (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and>
+                  bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<and>
+                  geotop_PL_map L K (inv_into (geotop_polyhedron K) g)"
+    sorry
+  (** (2) Extract all five properties from SOME. **)
+  have h_f_prop:
+    "(\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v) \<and>
+     (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f) \<and>
+     (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and>
+     bij_betw f (geotop_polyhedron K) (geotop_polyhedron L) \<and>
+     geotop_PL_map L K (inv_into (geotop_polyhedron K) f)"
+    unfolding f_def using someI_ex[OF h_f_exists] by (by100 blast)
+  (** (3) Project each sub-property. **)
+  have hagree: "\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v"
+    using h_f_prop by (by100 blast)
+  have hlin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f"
+    using h_f_prop by (by100 blast)
+  have himg: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>)"
+    using h_f_prop by (by100 blast)
+  have hbij: "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)"
+    using h_f_prop by (by100 blast)
+  have hPL_inv: "geotop_PL_map L K (inv_into (geotop_polyhedron K) f)"
+    using h_f_prop by (by100 blast)
   (** (4) \<open>K\<close> is a subdivision of itself (reflexivity); this gives a PL-map witness. **)
   have hK_sub: "geotop_is_subdivision K K"
     by (rule geotop_is_subdivision_refl[OF hK])
@@ -1784,82 +1810,8 @@ proof -
   have hPL: "geotop_PL_map K L f"
     unfolding geotop_PL_map_def
     using hK_sub hK_lin_img by (by100 blast)
-  (** (5) \<open>f\<close> is a bijection \<open>|K| \<leftrightarrow> |L|\<close>. **)
-  have hbij: "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)" sorry
   have himg_poly: "f ` (geotop_polyhedron K) = geotop_polyhedron L"
     using hbij unfolding bij_betw_def by (by100 blast)
-  (** (6) \<open>f\<close> agrees with \<phi> on vertices. Key idea: for each vertex v of K, there is
-      some \<sigma> \<in> K with v as one of its vertices; the \<delta>-bary coords of v in this \<sigma>
-      are concentrated at v (unique by AI), giving y = \<phi>(v) as a valid witness for SOME.
-      Well-definedness (any two witnesses give the same y) then forces SOME = \<phi>(v). **)
-  have hagree: "\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v"
-  proof
-    fix v assume hv: "v \<in> geotop_complex_vertices K"
-    obtain \<sigma>\<^sub>0 V\<^sub>0 where h\<sigma>\<^sub>0K: "\<sigma>\<^sub>0 \<in> K"
-                    and hV\<^sub>0: "geotop_simplex_vertices \<sigma>\<^sub>0 V\<^sub>0"
-                    and hv_V\<^sub>0: "v \<in> V\<^sub>0"
-      using hv unfolding geotop_complex_vertices_def by (by100 blast)
-    (** The \<delta>-bary coords: t u = 1 if u = v, else 0. **)
-    define t\<^sub>0 :: "'a \<Rightarrow> real" where "t\<^sub>0 u = (if u = v then 1 else 0)" for u
-    have hV\<^sub>0fin: "finite V\<^sub>0"
-      using hV\<^sub>0 unfolding geotop_simplex_vertices_def by (by100 blast)
-    have ht\<^sub>0_nn: "\<forall>u\<in>V\<^sub>0. 0 \<le> t\<^sub>0 u"
-      unfolding t\<^sub>0_def by (by100 simp)
-    have ht\<^sub>0_sum: "sum t\<^sub>0 V\<^sub>0 = 1"
-      unfolding t\<^sub>0_def using hv_V\<^sub>0 hV\<^sub>0fin by (by100 simp)
-    have hv_decomp: "v = (\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R u)"
-    proof -
-      have h_split: "(\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R u)
-                     = (\<Sum>u\<in>{v}. t\<^sub>0 u *\<^sub>R u) + (\<Sum>u\<in>V\<^sub>0 - {v}. t\<^sub>0 u *\<^sub>R u)"
-        using hV\<^sub>0fin hv_V\<^sub>0 sum.subset_diff[of "{v}" V\<^sub>0 "\<lambda>u. t\<^sub>0 u *\<^sub>R u"]
-        by (by100 simp)
-      have h_v_part: "(\<Sum>u\<in>{v}. t\<^sub>0 u *\<^sub>R u) = v"
-        unfolding t\<^sub>0_def by (by100 simp)
-      have h_other: "(\<Sum>u\<in>V\<^sub>0 - {v}. t\<^sub>0 u *\<^sub>R u) = 0"
-        unfolding t\<^sub>0_def by (by100 simp)
-      show ?thesis using h_split h_v_part h_other by (by100 simp)
-    qed
-    have hy_val: "(\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R \<phi> u) = \<phi> v"
-    proof -
-      have h_split: "(\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R \<phi> u)
-                     = (\<Sum>u\<in>{v}. t\<^sub>0 u *\<^sub>R \<phi> u) + (\<Sum>u\<in>V\<^sub>0 - {v}. t\<^sub>0 u *\<^sub>R \<phi> u)"
-        using hV\<^sub>0fin hv_V\<^sub>0 sum.subset_diff[of "{v}" V\<^sub>0 "\<lambda>u. t\<^sub>0 u *\<^sub>R \<phi> u"]
-        by (by100 simp)
-      have h_v_part: "(\<Sum>u\<in>{v}. t\<^sub>0 u *\<^sub>R \<phi> u) = \<phi> v"
-        unfolding t\<^sub>0_def by (by100 simp)
-      have h_other: "(\<Sum>u\<in>V\<^sub>0 - {v}. t\<^sub>0 u *\<^sub>R \<phi> u) = 0"
-        unfolding t\<^sub>0_def by (by100 simp)
-      show ?thesis using h_split h_v_part h_other by (by100 simp)
-    qed
-    have hv_in_\<sigma>\<^sub>0: "v \<in> \<sigma>\<^sub>0"
-      using hv_decomp hv_V\<^sub>0 hV\<^sub>0 hv_decomp unfolding geotop_simplex_vertices_def
-            geotop_convex_hull_def by (by100 blast)
-    (** (σ_0, V_0, t_0) is a valid witness for v giving y = φ(v). **)
-    have hy_val_sym: "\<phi> v = (\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R \<phi> u)" using hy_val by (by100 simp)
-    have h_witness_conj: "geotop_simplex_vertices \<sigma>\<^sub>0 V\<^sub>0 \<and> v \<in> \<sigma>\<^sub>0 \<and>
-                     (\<forall>u\<in>V\<^sub>0. 0 \<le> t\<^sub>0 u) \<and> sum t\<^sub>0 V\<^sub>0 = 1 \<and>
-                     v = (\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R u) \<and>
-                     \<phi> v = (\<Sum>u\<in>V\<^sub>0. t\<^sub>0 u *\<^sub>R \<phi> u)"
-      using hV\<^sub>0 hv_in_\<sigma>\<^sub>0 ht\<^sub>0_nn ht\<^sub>0_sum hv_decomp hy_val_sym by (by100 blast)
-    have h_witness_body:
-      "\<exists>\<sigma>\<in>K. \<exists>V t. geotop_simplex_vertices \<sigma> V \<and> v \<in> \<sigma> \<and>
-                     (\<forall>u\<in>V. 0 \<le> t u) \<and> sum t V = 1 \<and>
-                     v = (\<Sum>u\<in>V. t u *\<^sub>R u) \<and>
-                     \<phi> v = (\<Sum>u\<in>V. t u *\<^sub>R \<phi> u)"
-      using h\<sigma>\<^sub>0K h_witness_conj by (by100 blast)
-    have h_exists_y:
-      "\<exists>y. \<exists>\<sigma>\<in>K. \<exists>V t. geotop_simplex_vertices \<sigma> V \<and> v \<in> \<sigma> \<and>
-                         (\<forall>u\<in>V. 0 \<le> t u) \<and> sum t V = 1 \<and>
-                         v = (\<Sum>u\<in>V. t u *\<^sub>R u) \<and>
-                         y = (\<Sum>u\<in>V. t u *\<^sub>R \<phi> u)"
-      using h_witness_body by (by100 blast)
-    show "f v = \<phi> v"
-      sorry \<comment> \<open>Needs well-definedness: any two valid witnesses give same y.
-               Then SOME returns \<phi>(v) since that's the unique valid y.\<close>
-  qed
-  (** (7) The inverse \<open>f\<^sup>-\<^sup>1\<close> is the analogous barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>;
-      symmetry gives \<open>geotop_PL_map L K (inv_into (|K|) f)\<close>. **)
-  have hPL_inv: "geotop_PL_map L K (inv_into (geotop_polyhedron K) f)" sorry
   have hPLH: "geotop_PLH K L f"
     unfolding geotop_PLH_def using hPL hbij hPL_inv by (by100 blast)
   show ?thesis using hPLH himg_poly hagree by (by100 blast)
