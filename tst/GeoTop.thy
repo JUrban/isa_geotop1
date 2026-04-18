@@ -9264,7 +9264,17 @@ proof -
        (\<forall>Q\<in>S. \<forall>C.
           (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
           \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)" sorry
-  show ?thesis sorry
+  have h_final: "(\<forall>A :: (real^3) set. \<forall>Q.
+           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+           geotop_is_tame A \<and>
+           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
+           geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q) \<and>
+         (\<forall>S :: (real^3) set. \<forall>Q\<in>S.
+           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+           geotop_is_tame S \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
+                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>20 Theorem 4 (geotop.tex:4338)
@@ -9482,7 +9492,11 @@ proof -
     "geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
        \<subseteq> geotop_open_cell_vertices \<C>" sorry
   (** (3) Combine (1) and (2): Fr C^1 has cardinality 1 (circle case) or 2 (arc case). **)
-  show ?thesis sorry
+  have h_final: "\<exists>V\<subseteq>geotop_open_cell_vertices \<C>.
+           (card V = 1 \<or> card V = 2) \<and>
+           geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C1
+           = (\<Union>v\<in>V. {v})" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>21 Theorem 2 (geotop.tex:4465)
@@ -9512,7 +9526,11 @@ proof -
            (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2))
         1" sorry
   (** (2) A 1-sphere is connected (continuous image of [0, 1] after identifying endpoints). **)
-  show ?thesis sorry
+  have h_final: "top1_connected_on
+           (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier (\<Union>\<C>) (subspace_topology UNIV geotop_euclidean_topology (\<Union>\<C>)) C2))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>21: subdivision for open cell-complexes (geotop.tex:4472)
@@ -9592,7 +9610,8 @@ proof -
        geotop_open_cell_euler \<C>' = geotop_open_cell_euler \<C>"
     unfolding geotop_open_cell_euler_def by (by100 simp)
   (** (6) By induction along the step sequence, \<chi>(\<C>1) = \<chi>(\<C>2). **)
-  show ?thesis sorry
+  have h_final: "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>21 Theorem 4 (geotop.tex:4490)
