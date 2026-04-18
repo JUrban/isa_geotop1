@@ -12181,7 +12181,16 @@ proof -
   (** (3) Int M_3 lies inside the bounded region between M_a and M_b because it shares
          the common boundary Bd M_1 = Bd M_2 = Bd M_3 but has interior in neither M_a nor
          M_b's side. **)
-  show ?thesis sorry
+  have h_final: "\<exists>(E::(real^3) set) (Ma::(real^3) set) (Mb::(real^3) set).
+           (Ma = M1 \<or> Ma = M2 \<or> Ma = M3) \<and>
+           (Mb = M1 \<or> Mb = M2 \<or> Mb = M3) \<and>
+           Ma \<noteq> Mb \<and>
+           (\<exists>P. P \<in> UNIV - (M1 \<union> M2 \<union> M3) \<and>
+                E = geotop_component_at UNIV geotop_euclidean_topology
+                      (UNIV - (M1 \<union> M2 \<union> M3)) P \<and>
+                \<not> top1_compact_on E (subspace_topology UNIV geotop_euclidean_topology E)) \<and>
+           geotop_frontier UNIV geotop_euclidean_topology E = Ma \<union> Mb" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>26 Theorem 8 (geotop.tex:5718)
@@ -12263,7 +12272,14 @@ proof -
           (\<forall>P\<in>UNIV - D3. h\<^sub>0 P = P)" sorry
   (** (4) Restrict h~ to M^3 (trivially, h~ fixes M^3 - W \<subseteq> UNIV - D_3). h'(N) = N
          because h~ maps the collar's + side in N to itself. **)
-  show ?thesis sorry
+  have h_final: "\<exists>h'. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+                 M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
+              (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
+                        geotop_PLH K1 K1' h') \<and>
+              h' ` N = N \<and>
+              (\<forall>P\<in>M2. h' P = h P) \<and>
+              (\<forall>P\<in>M3 - W. h' P = P)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>27 Theorem 2 (geotop.tex:5750)
@@ -12358,7 +12374,16 @@ proof -
                  \<Phi> (geotop_pi_class A
                         (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ) = 1))"
     sorry
-  show ?thesis sorry
+  have h_final: "(\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2
+              \<and> D \<subseteq> A \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<or>
+         (\<exists>P\<^sub>0\<in>J. \<exists>pJ. geotop_closed_path_on A
+              (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 pJ \<and>
+              pJ ` {0..1} = J \<and>
+              (\<forall>q. geotop_closed_path_on A
+                    (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q \<longrightarrow>
+                   (\<exists>n::int. geotop_path_equiv A
+                        (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 q q)))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>27 Theorem 4 (geotop.tex:5774)
