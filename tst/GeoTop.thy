@@ -12674,7 +12674,7 @@ proof -
   (** (2) The quotient P admits a triangulation K (subdivide each pentagon's interior,
          then lift via the identification). P is compact, connected, and a 3-manifold
          without boundary. **)
-  obtain K where hK:
+  obtain K :: "(real^3) set set" where hK:
     "geotop_is_complex K \<and>
      top1_compact_on (geotop_polyhedron K)
         (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) \<and>
@@ -12694,7 +12694,7 @@ proof -
         \<not> geotop_simply_connected (geotop_polyhedron K)
             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
             P\<^sub>0" sorry
-  show ?thesis sorry
+  show ?thesis using hK h_pi_nontrivial by (by100 blast)
 qed
 
 (** from \<S>28 Theorem 18 (geotop.tex:5977)
