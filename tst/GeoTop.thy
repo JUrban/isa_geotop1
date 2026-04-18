@@ -253,8 +253,18 @@ proof -
               \<sigma> = \<Union>L\<^sub>1\<^sub>\<sigma> \<and> \<sigma> = \<Union>L\<^sub>2\<^sub>\<sigma>"
       using exI[of _ "{\<sigma>}::'a set set"] by (by100 simp)
   qed
-  (** (2) Triangulate each intersection polyhedron (they are convex, hence triangulable
-         barycentrically); collect the triangulations into a complex L. **)
+  (** FORMALIZATION NOTE: Moise does not prove Theorem 1 in geotop.tex (treats it as
+      established classical PL topology). A full proof is given in /project/tst/early.tex
+      (\<S>4) via iterated barycentric subdivision:
+        1. Define \<open>Sd(K)\<close> (barycentric subdivision).
+        2. Prove mesh(Sd^n K) \<to> 0 (early.tex Lemma 4.4).
+        3. For any subdivision K' of K, use Lebesgue number + open-star cover of K' by
+           its vertices' stars (early.tex Lemma 4.5/4.7) to find n with every simplex of
+           Sd^n(K) contained in some simplex of K'.
+        4. Hence Sd^n(K) is a common subdivision of K' and K''.
+      This requires substantial infrastructure (barycenter-in-interior, Sd-is-complex,
+      mesh shrinkage factor d/(d+1), Lebesgue number lemma, open-star properties).
+      Deferred. **)
   obtain L :: "'a set set" where hL:
     "geotop_is_complex L \<and> geotop_polyhedron L = geotop_polyhedron K" sorry
   (** (3) Verify L < L_1 and L < L_2: every simplex of L lies inside some \<tau>_1 \<in> L_1
@@ -424,7 +434,14 @@ next
 next
   (** (3) Transitive: given K' \<leftrightarrow> L' (via subdivisions of K, L) and L'' \<leftrightarrow> M' (via
          subdivisions of L, M), take a common subdivision (Theorem 1) of L' and L''
-         inside L, pull back along both isomorphisms. **)
+         inside L, pull back along both isomorphisms.
+         Detailed proof: see early.tex \<S>8.
+         Depends on:
+           (i) Theorem_GT_1 (common subdivision of L' and L'') -- itself deferred.
+           (ii) Transport-subdivision lemma: if K1 \<cong> L1 and L3 subdivides L1, then
+                there is a subdivision K2 of K1 with K2 \<cong> L3 (early.tex Lemma 6).
+           (iii) Composition of simplicial isomorphisms is a simplicial isomorphism
+                (early.tex Lemma 8.2 / iso-transitive). **)
   show "transp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
 qed
 
