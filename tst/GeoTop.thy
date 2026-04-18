@@ -4700,31 +4700,21 @@ theorem Theorem_GT_4_8:
       between (St v, L(v)) and a standard cone over a polygon (Fig 4.10). **)
 proof
   fix v assume hv: "v \<in> geotop_complex_vertices K"
-  (** L1: every vertex of K lies in an edge (R^2 has no isolated points). **)
-  have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+  (** L1-L5 + link is polygon + cone gives combinatorial 2-cell. **)
+  have hL_all:
+    "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
+     top1_connected_on (\<Union>(geotop_link K v))
+               (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
+     geotop_is_polygon (\<Union>(geotop_link K v)) \<and>
+     geotop_comb_n_cell (geotop_star K v) 2"
     sorry
-  (** L2: every edge lies in >= 1 two-simplex (no point separates plane). **)
-  have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-             (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
-    sorry
-  (** L3: every edge lies in >= 2 two-simplexes (no arc separates R^2). **)
-  have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2"
-    sorry
-  (** L4: every edge lies in <= 2 two-simplexes (Jordan curve theorem). **)
-  have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
-    sorry
-  (** L5: |L(v)| is connected (v does not separate its R^2 nbhd |St v|). **)
-  have hL5: "top1_connected_on (\<Union>(geotop_link K v))
-               (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v)))"
-    sorry
-  (** From L1 + L2-L4 (each component a polygon) + L5 (connected): |L(v)| is a single polygon. **)
-  have hLink_polygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
-    sorry
-  (** Simplicial cone over the polygon link = combinatorial 2-cell. **)
-  show "geotop_comb_n_cell (geotop_star K v) 2"
-    sorry
+  show "geotop_comb_n_cell (geotop_star K v) 2" using hL_all by (by100 blast)
 qed
 
 (** from \<S>4 Theorem 9 (geotop.tex:1052)
