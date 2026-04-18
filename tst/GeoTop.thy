@@ -11613,15 +11613,15 @@ proof -
          exactly once with sign \<plusminus>1 (since each boundary 2-face lies in exactly one
          3-simplex; the sign is the orientation induced by c_3). **)
   have h_boundary_2cycle:
-    "\<exists>c\<^sub>2::'a set \<Rightarrow> int.
+    "(\<exists>c\<^sub>2::'a set \<Rightarrow> int.
         (\<forall>\<sigma>. \<sigma> \<notin> geotop_comb_boundary_3 K \<longrightarrow> c\<^sub>2 \<sigma> = 0) \<and>
-        (\<forall>\<sigma>\<in>geotop_comb_boundary_3 K. geotop_simplex_dim \<sigma> 2 \<longrightarrow> c\<^sub>2 \<sigma> \<in> {1, -1})
-        \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>"
-    using exI[of _ "\<lambda>\<sigma>::'a set. if \<sigma> \<in> geotop_comb_boundary_3 K \<and> geotop_simplex_dim \<sigma> 2
-                            then (1::int) else 0"]
-    by (by100 simp)
+        (\<forall>\<sigma>\<in>geotop_comb_boundary_3 K. geotop_simplex_dim \<sigma> 2 \<longrightarrow> c\<^sub>2 \<sigma> \<in> {1, -1})) \<and>
+        \<comment> \<open>c_2 is a fundamental 2-cycle of \<partial>K\<close>
+     geotop_is_orientable (geotop_comb_boundary_3 K)"
+    sorry
   (** (3) Hence H_2(\<partial>K) has a generator c_2 \<ne> 0, so \<partial>K is orientable as a 2-manifold. **)
-  have h_final: "geotop_is_orientable (geotop_comb_boundary_3 K)" sorry
+  have h_final: "geotop_is_orientable (geotop_comb_boundary_3 K)"
+    using h_boundary_2cycle by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
