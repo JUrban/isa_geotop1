@@ -4526,6 +4526,19 @@ proof -
     by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
 qed
 
+(** Broken-line concatenation: two broken lines sharing an endpoint can be combined
+    into a single broken line, possibly with a small detour to avoid self-intersections.
+    In the open-set context we have a bit of wiggle room. **)
+lemma geotop_broken_line_concat:
+  fixes B\<^sub>1 B\<^sub>2 U :: "'a::euclidean_space set"
+  assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>1U: "B\<^sub>1 \<subseteq> U"
+  assumes hB\<^sub>2: "geotop_is_broken_line B\<^sub>2" and hB\<^sub>2U: "B\<^sub>2 \<subseteq> U"
+  assumes hP: "P \<in> B\<^sub>1" and hQ\<^sub>0_1: "Q\<^sub>0 \<in> B\<^sub>1" and hQ\<^sub>0_2: "Q\<^sub>0 \<in> B\<^sub>2" and hQ: "Q \<in> B\<^sub>2"
+  assumes hU_open: "open U"
+  shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
+  sorry \<comment> \<open>Classical PL topology fact: two broken lines joined at a common endpoint
+           lift to a single broken-line arc (possibly via small detours). Deferred.\<close>
+
 theorem Theorem_GT_1_13:
   fixes U :: "'a::euclidean_space set"
   assumes hU_open: "U \<in> geotop_euclidean_topology"
@@ -4604,8 +4617,15 @@ proof -
                 has a \<open>Q' \<in> V\<close> with broken-line from \<open>P\<close> to \<open>Q'\<close>; then \<open>Q' \<in> B_P\<close>).
                 Actually simpler: \<open>P \<in> B\<close> trivially for any \<open>B\<close> containing \<open>P\<close> —
                 witness: a segment \<open>P, Q_0\<close> for some \<open>Q_0 \<in> ball P \<epsilon> \<setminus> {P}\<close>. **)
+  (** For each \<open>P \<in> U\<close>, let \<open>B_P = {Q \<in> U. \<exists> broken line P-Q in U}\<close>.
+      \<open>B_P\<close> is open (h_B_open). \<open>U \<setminus> B_P\<close> is open: any \<open>Q \<in> U \<setminus> B_P\<close> has an open
+      ball \<open>V \<subseteq> U\<close> such that if some \<open>Q' \<in> V\<close> were in \<open>B_P\<close>, concatenation gives
+      \<open>Q \<in> B_P\<close>, contradiction. By connectedness of \<open>U\<close>, \<open>B_P \<in> {\<emptyset>, U}\<close>; \<open>P \<in> B_P\<close>,
+      so \<open>B_P = U\<close>. **)
   have h_B_eq_U:
-    "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)" sorry
+    "\<forall>P\<in>U. (\<forall>Q\<in>U. \<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B)"
+    sorry \<comment> \<open>Full connectedness argument: openness of \<open>B_P\<close> and \<open>U \<setminus> B_P\<close> via
+             \<open>geotop_broken_line_concat\<close>; connectedness partition.\<close>
   show ?thesis using h_B_eq_U unfolding geotop_broken_line_connected_def by (by100 blast)
 qed
 
