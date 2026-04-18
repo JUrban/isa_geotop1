@@ -14263,7 +14263,11 @@ proof -
     unfolding geotop_is_complex_def by (by100 simp)
   (** (3) The direct limit K = \<union>_i K_i is a complex with |K| \<cong> M (homeomorphism
          inherited from the approximating local charts). **)
-  show ?thesis sorry
+  have h_final: "\<exists>K. geotop_is_complex K \<and>
+             (\<exists>f. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+                    (geotop_polyhedron K)
+                    (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) f)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 section \<open>\<S>36 The Hauptvermutung; Tame imbedding\<close>
@@ -14301,7 +14305,12 @@ proof -
          (\<forall>P\<in>U. norm (h P - f P) < \<phi> P)" sorry
   (** (3) f(U) = h(U): the \<phi>-approximation + inductive construction ensures surjectivity
          onto h(U) by a "handle" argument matching each h(K_n) exactly. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
+               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f \<and>
+             (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
+             (\<forall>P\<in>U. norm (h P - f P) < \<phi> P) \<and>
+             f ` U = h ` U" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>36 Theorem 2 (The Hauptvermutung for 3-manifolds) (geotop.tex:7166)
@@ -14333,7 +14342,12 @@ proof -
     using hhomeo by (by100 blast)
   (** (2) Theorem 36.1 gives a PLH f: |K_1| \<leftrightarrow> |K_2| approximating h. Since f is PLH
          and f(|K_1|) = h(|K_1|) = |K_2|, we obtain the desired simplicial equivalence. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+               (geotop_polyhedron K2)
+               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K2)) f \<and>
+             geotop_PLH K1 K2 f" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>36 Theorem 3 (geotop.tex:7170)
@@ -14400,7 +14414,8 @@ proof -
          the compact L), obtaining U \<supseteq> L with U \<to> |K| PL-embedding L. **)
   have h_slt: "geotop_is_semi_locally_tame L" sorry
   (** (3) Apply Theorem 36_3: semi-locally tame implies tame. **)
-  show ?thesis sorry
+  have h_final: "geotop_is_tame L" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 end
