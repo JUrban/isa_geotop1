@@ -12027,12 +12027,18 @@ proof -
          F~: [0,1]^2 \<to> Mt starting at Pt_0, uniquely. The lifted homotopy F~ witnesses
          pt_1 \<cong> pt_2 in Mt. **)
   have h_inj:
-    "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0)" sorry
+    "(\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0)) \<and>
+     (\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0) \<and>
+              (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
+              (\<forall>p\<in>geotop_CP Mt T\<^sub>M Pt\<^sub>0.
+                 g\<^sub>0 (geotop_pi_class Mt T\<^sub>M Pt\<^sub>0 p)
+                 = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p)))" sorry
   have h_final: "\<exists>g\<^sub>0. inj_on g\<^sub>0 (geotop_pi Mt T\<^sub>M Pt\<^sub>0) \<and>
               (\<forall>C\<in>geotop_pi Mt T\<^sub>M Pt\<^sub>0. g\<^sub>0 C \<in> geotop_pi M T\<^sub>M' (g Pt\<^sub>0)) \<and>
               (\<forall>p\<in>geotop_CP Mt T\<^sub>M Pt\<^sub>0.
                  g\<^sub>0 (geotop_pi_class Mt T\<^sub>M Pt\<^sub>0 p)
-                 = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p))" sorry
+                 = geotop_pi_class M T\<^sub>M' (g Pt\<^sub>0) (g \<circ> p))"
+    using h_inj by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
