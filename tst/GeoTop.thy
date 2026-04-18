@@ -7147,7 +7147,8 @@ proof -
        \<forall>z\<in>Z1.
          \<exists>C\<in>geotop_pi (geotop_polyhedron K)
               (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) P\<^sub>0.
-            \<mu> C = z" sorry
+            \<mu> C = z"
+    using exI[of _ "{}::('a set \<Rightarrow> int) set"] by (by100 simp)
   show ?thesis sorry
 qed
 
