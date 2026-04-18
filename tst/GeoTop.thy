@@ -1697,7 +1697,15 @@ proof -
   (** (4) \<open>|K'| = |K|\<close>: apply \<open>g\<^sup>-\<^sup>1\<close> to \<open>|L'| = |L|\<close>. **)
   have hL'L_poly: "geotop_polyhedron L' = geotop_polyhedron L"
     using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
-  have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K" sorry
+  (** \<open>|K'| = \<Union>K' = \<Union>{g\<^sup>-\<^sup>1(\<tau>) | \<tau>\<in>L'} = g\<^sup>-\<^sup>1(\<Union>L') = g\<^sup>-\<^sup>1(|L|) = |K|\<close>. **)
+  have hK'_poly_step1: "geotop_polyhedron K' = ?g_inv ` (geotop_polyhedron L')"
+    unfolding K'_def geotop_polyhedron_def by (by100 blast)
+  have hginv_bij: "bij_betw ?g_inv (geotop_polyhedron L) (geotop_polyhedron K)"
+    by (rule bij_betw_inv_into[OF hg_bij])
+  have hginv_img: "?g_inv ` (geotop_polyhedron L) = geotop_polyhedron K"
+    using hginv_bij unfolding bij_betw_def by (by100 blast)
+  have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hK'_poly_step1 hL'L_poly hginv_img by (by100 simp)
   (** (5) \<open>K' < K\<close>: each simplex of \<open>K'\<close> is \<open>g\<^sup>-\<^sup>1(\<tau>)\<close> for some \<open>\<tau> \<in> L'\<close>,
       which sits inside \<open>g\<^sup>-\<^sup>1\<close> of the corresponding simplex of \<open>L\<close>, a subset of \<open>|K|\<close>
       lying in some \<sigma> \<in> K. **)
