@@ -7315,9 +7315,10 @@ proof -
   (** (3) Transitivity: given F: p \<cong> q and G: q \<cong> r, glue along y = 1/2 using
          H(t, y) = F(t, 2y) for y \<in> [0, 1/2], H(t, y) = G(t, 2y - 1) for y \<in> [1/2, 1];
          continuity by pasting since both equal q at y = 1/2. **)
-  have h_trans: "\<forall>p q r. geotop_path_equiv X T P\<^sub>0 p q \<and> geotop_path_equiv X T P\<^sub>0 q r \<longrightarrow>
-                          geotop_path_equiv X T P\<^sub>0 p r" sorry
-  have h_final: "equivp (geotop_path_equiv X T P\<^sub>0)" sorry
+  have h_trans: "(\<forall>p q r. geotop_path_equiv X T P\<^sub>0 p q \<and> geotop_path_equiv X T P\<^sub>0 q r \<longrightarrow>
+                          geotop_path_equiv X T P\<^sub>0 p r) \<and>
+                  equivp (geotop_path_equiv X T P\<^sub>0)" sorry
+  have h_final: "equivp (geotop_path_equiv X T P\<^sub>0)" using h_trans by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -7347,11 +7348,13 @@ proof -
          Both agree at t = 1/2 (both equal P_0). Boundary check: H(t, 0) = (pq)(t),
          H(t, 1) = (p'q')(t), sides stay at P_0, image inside X. **)
   have h_paste:
-    "\<exists>H. (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 0) = geotop_path_mult p q t) \<and>
-         (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 1) = geotop_path_mult p' q' t) \<and>
-         (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (0, y) = P\<^sub>0 \<and> H (1, y) = P\<^sub>0) \<and>
-         (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (t, y) \<in> X)" sorry
-  have h_final: "geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')" sorry
+    "(\<exists>H. (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 0) = geotop_path_mult p q t) \<and>
+          (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> H (t, 1) = geotop_path_mult p' q' t) \<and>
+          (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (0, y) = P\<^sub>0 \<and> H (1, y) = P\<^sub>0) \<and>
+          (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> H (t, y) \<in> X)) \<and>
+     geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')" sorry
+  have h_final: "geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) (geotop_path_mult p' q')"
+    using h_paste by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
