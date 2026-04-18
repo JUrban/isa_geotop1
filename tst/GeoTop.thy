@@ -276,6 +276,19 @@ lemma geotop_Sd_is_subdivision:
   shows "geotop_is_subdivision (geotop_Sd K) K"
   sorry
 
+(** Reflexivity of subdivision: every complex is a subdivision of itself. **)
+lemma geotop_is_subdivision_refl:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_subdivision K K"
+proof -
+  have hrefl: "geotop_refines K K"
+    unfolding geotop_refines_def by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_subdivision_def
+    using hK hrefl by (by100 blast)
+qed
+
 (** Transitivity of subdivision: if C < B and B < A, then C < A. **)
 lemma geotop_is_subdivision_trans:
   fixes K L M :: "'a::real_normed_vector set set"
@@ -328,13 +341,47 @@ lemma geotop_iterated_Sd_Suc_refines:
   shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
   sorry
 
-(** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>. **)
+(** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>.
+    Proof by induction on \<open>N - m\<close> using Suc-step refinement and transitivity. **)
 lemma geotop_iterated_Sd_mono:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
   assumes hmN: "m \<le> N"
   shows "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
-  sorry
+  using hmN
+proof (induction N)
+  case 0
+  (** \<open>m \<le> 0\<close> forces \<open>m = 0\<close>, and any complex is a subdivision of itself. **)
+  have hmzero: "m = 0" using "0.prems" by (by100 simp)
+  have hSdK: "geotop_is_complex (geotop_iterated_Sd 0 K)"
+    using hK by (by100 simp)
+  show ?case
+    using hmzero hSdK geotop_is_subdivision_refl[OF hK]
+    by (by100 simp)
+next
+  case (Suc N)
+  (** Two cases: \<open>m = Suc N\<close> (reflexivity) or \<open>m \<le> N\<close> (IH + Suc_refines + trans). **)
+  show ?case
+  proof (cases "m = Suc N")
+    case True
+    have hcomp: "geotop_is_complex (geotop_iterated_Sd (Suc N) K)"
+      using geotop_iterated_Sd_is_subdivision[OF hK, of "Suc N"]
+      unfolding geotop_is_subdivision_def by (by100 blast)
+    show ?thesis
+      using True hcomp geotop_is_subdivision_refl[OF hcomp]
+      by (by100 simp)
+  next
+    case False
+    have hmN: "m \<le> N" using Suc.prems False by (by100 simp)
+    have hIH: "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
+      using Suc.IH[OF hmN] .
+    have hsuc: "geotop_is_subdivision (geotop_iterated_Sd (Suc N) K)
+                                       (geotop_iterated_Sd N K)"
+      by (rule geotop_iterated_Sd_Suc_refines[OF hK])
+    show ?thesis
+      by (rule geotop_is_subdivision_trans[OF hIH hsuc])
+  qed
+qed
 
 (** from early.tex Lemma 4.10: open star of a vertex \<open>v\<close> in a complex \<open>K\<close>
     is the union of the relative interiors of simplexes of \<open>K\<close> having \<open>v\<close>
