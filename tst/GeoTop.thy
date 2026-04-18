@@ -1558,18 +1558,56 @@ proof -
   have h_stars_amb_witness:
     "\<forall>v\<in>geotop_complex_vertices K'. \<exists>U. open U \<and>
        geotop_open_star K' v = geotop_polyhedron K' \<inter> U"
-    sorry \<comment> \<open>Unfold subspace_topology; use geotop_euclidean_topology_eq_open_sets
-              to convert top1-topology membership to HOL \<open>open\<close>.\<close>
+  proof (rule ballI)
+    fix v assume hv: "v \<in> geotop_complex_vertices K'"
+    have h1: "geotop_open_star K' v
+                \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')"
+      using h_stars_subspace_open hv by (by100 blast)
+    then obtain U where h_U_in: "U \<in> geotop_euclidean_topology"
+                    and h_eq: "geotop_open_star K' v = geotop_polyhedron K' \<inter> U"
+      unfolding subspace_topology_def by (by100 blast)
+    have h_eq_opens: "geotop_euclidean_topology = {S. open S}"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def by (by100 simp)
+    have h_U_in_coll: "U \<in> {S. open S}" using h_U_in h_eq_opens by (by100 blast)
+    have h_U_open: "open U" using h_U_in_coll by (by100 blast)
+    show "\<exists>U. open U \<and> geotop_open_star K' v = geotop_polyhedron K' \<inter> U"
+      using h_U_open h_eq by (by100 blast)
+  qed
   (** (b.2.ii) Pick ambient witnesses U_v; \<open>\<Union>{U_v}\<close> is an open cover of |K|. **)
   define U_fn :: "'a \<Rightarrow> 'a set" where
     "U_fn v = (SOME U. open U \<and> geotop_open_star K' v = geotop_polyhedron K' \<inter> U)"
     for v :: 'a
   define C :: "'a set set" where
     "C = U_fn ` geotop_complex_vertices K'"
+  have h_U_fn_prop: "\<forall>v\<in>geotop_complex_vertices K'. open (U_fn v) \<and>
+                       geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
+  proof (rule ballI)
+    fix v assume hv: "v \<in> geotop_complex_vertices K'"
+    have h_ex: "\<exists>U. open U \<and> geotop_open_star K' v = geotop_polyhedron K' \<inter> U"
+      using h_stars_amb_witness hv by (by100 blast)
+    show "open (U_fn v) \<and> geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
+      unfolding U_fn_def using someI_ex[OF h_ex] by (by100 blast)
+  qed
   have hC_open: "\<forall>U\<in>C. open U"
-    sorry \<comment> \<open>Follows from h_stars_amb_witness + someI_ex.\<close>
+    unfolding C_def using h_U_fn_prop by (by100 blast)
   have hC_covers: "geotop_polyhedron K \<subseteq> \<Union>C"
-    sorry \<comment> \<open>star(v) \<subseteq> U_v and |K| = |K'| \<subseteq> \<Union> star(v) (vertex_stars_cover).\<close>
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K"
+    have hx_K': "x \<in> geotop_polyhedron K'" using hx hpolyeq by (by100 simp)
+    (** x is in some vertex star. **)
+    have hcover: "geotop_polyhedron K'
+                     \<subseteq> \<Union>{geotop_open_star K' v | v. v \<in> geotop_complex_vertices K'}"
+      by (rule geotop_vertex_stars_cover[OF hK'comp])
+    have "x \<in> \<Union>{geotop_open_star K' v | v. v \<in> geotop_complex_vertices K'}"
+      using hcover hx_K' by (by100 blast)
+    then obtain v where hv: "v \<in> geotop_complex_vertices K'"
+                    and hx_star: "x \<in> geotop_open_star K' v" by (by100 blast)
+    have h_star_eq: "geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
+      using h_U_fn_prop hv by (by100 blast)
+    have hx_U: "x \<in> U_fn v" using hx_star h_star_eq by (by100 blast)
+    have hU_C: "U_fn v \<in> C" unfolding C_def using hv by (by100 blast)
+    show "x \<in> \<Union>C" using hx_U hU_C by (by100 blast)
+  qed
   (** (b.2.iii) Apply Lebesgue_number_lemma to get \<delta> > 0 with diam T < \<delta>
                \<Longrightarrow> T \<subseteq> U_v for some v. **)
   have h_leb_raw: "\<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
