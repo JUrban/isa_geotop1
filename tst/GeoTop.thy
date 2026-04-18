@@ -5592,6 +5592,7 @@ theorem Theorem_GT_5_1:
   fixes K K1 :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
   fixes f :: "'a \<Rightarrow> 'b"
   assumes hsub: "geotop_is_subdivision K1 K"
+  assumes hLcomp: "geotop_is_complex L"
   shows "geotop_PL_map K L f \<longleftrightarrow> geotop_PL_map K1 L f"
   (** Moise proof (geotop.tex:1120). (2)\<Rightarrow>(1): trivial (any subdivision of K\<^sub>1
       is a subdivision of K, via Theorem 1 - common subdivision).
@@ -5610,7 +5611,12 @@ proof
   show "geotop_PL_map K1 L f" using hK12 by (by100 blast)
 next
   assume hPL1: "geotop_PL_map K1 L f"
-  show "geotop_PL_map K L f" sorry
+  (** Given \<open>K\<^sub>1 < K\<close> (hypothesis) and \<open>L < L\<close> (refl from \<open>hLcomp\<close>), apply
+      \<open>PL_map_lift\<close> to transport PL from \<open>K\<^sub>1\<close> to \<open>K\<close>. **)
+  have hLL: "geotop_is_subdivision L L"
+    by (rule geotop_is_subdivision_refl[OF hLcomp])
+  show "geotop_PL_map K L f"
+    by (rule geotop_PL_map_lift[OF hsub hLL hPL1])
 qed
 
 (** from \<S>5 Theorem 2 (geotop.tex:1124)
