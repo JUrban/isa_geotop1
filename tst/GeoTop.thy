@@ -10455,7 +10455,7 @@ proof -
   have h_incl_comb:
     "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))
        \<subseteq> \<Union>(geotop_comb_boundary_3 K)" sorry
-  show ?thesis sorry
+  show ?thesis using h_incl_bd h_incl_comb by (by100 blast)
 qed
 
 (** from \<S>23 Theorem 8 (geotop.tex:5033)
