@@ -4598,7 +4598,51 @@ proof -
   qed
   have hsymm: "\<forall>\<sigma>\<^sub>g \<sigma>\<^sub>h (g::'a\<Rightarrow>'b) h. geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
                  geotop_coord_equiv \<sigma>\<^sub>h \<sigma>\<^sub>g h g"
-    sorry
+  proof (intro allI impI)
+    fix \<sigma>\<^sub>g \<sigma>\<^sub>h :: "'a set" and g h :: "'a \<Rightarrow> 'b"
+    assume heq: "geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h"
+    have h_img_eq: "g ` \<sigma>\<^sub>g = h ` \<sigma>\<^sub>h"
+      using heq unfolding geotop_coord_equiv_def by (by100 blast)
+    have hex: "\<exists>\<phi>::'a\<Rightarrow>'a. top1_homeomorphism_on \<sigma>\<^sub>g
+                  (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                  \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<phi>
+                \<and> geotop_simplicial_on \<sigma>\<^sub>g \<phi> \<sigma>\<^sub>h
+                \<and> (\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<phi> x))"
+      using heq unfolding geotop_coord_equiv_def by (by100 blast)
+    from hex obtain \<phi>::"'a\<Rightarrow>'a" where
+        h\<phi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>g
+                     (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g)
+                     \<sigma>\<^sub>h (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h) \<phi>"
+        and h\<phi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>g \<phi> \<sigma>\<^sub>h"
+        and h\<phi>_eq: "\<forall>x\<in>\<sigma>\<^sub>g. g x = h (\<phi> x)" by blast
+    (** Take \<psi> = inv_into \<sigma>_g \<phi>. This gives homeomorphism \<sigma>_h \<leftrightarrow> \<sigma>_g. **)
+    define \<psi>::"'a\<Rightarrow>'a" where "\<psi> = inv_into \<sigma>\<^sub>g \<phi>"
+    have h\<psi>_homeo: "top1_homeomorphism_on \<sigma>\<^sub>h
+                      (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>h)
+                      \<sigma>\<^sub>g (subspace_topology UNIV geotop_euclidean_topology \<sigma>\<^sub>g) \<psi>"
+      unfolding \<psi>_def by (rule top1_homeomorphism_on_sym[OF h\<phi>_homeo])
+    (** \<psi> is simplicial: follows from \<phi> simplicial by inversion. **)
+    have h\<psi>_simpl: "geotop_simplicial_on \<sigma>\<^sub>h \<psi> \<sigma>\<^sub>g" sorry
+    (** Compatibility: h(y) = g(\<psi>(y)) for y \<in> \<sigma>_h. Since y = \<phi>(x) for some x \<in> \<sigma>_g
+        (as \<phi> surjects onto \<sigma>_h), \<psi>(y) = x, so g(\<psi>(y)) = g(x) = h(\<phi>(x)) = h(y). **)
+    have h\<psi>_eq: "\<forall>y\<in>\<sigma>\<^sub>h. h y = g (\<psi> y)"
+    proof
+      fix y assume hy: "y \<in> \<sigma>\<^sub>h"
+      have hbij: "bij_betw \<phi> \<sigma>\<^sub>g \<sigma>\<^sub>h"
+        using h\<phi>_homeo unfolding top1_homeomorphism_on_def by (by100 blast)
+      have himg: "\<phi> ` \<sigma>\<^sub>g = \<sigma>\<^sub>h" using hbij unfolding bij_betw_def by (by100 blast)
+      then obtain x where hxg: "x \<in> \<sigma>\<^sub>g" and h\<phi>x: "\<phi> x = y" using hy by (by100 blast)
+      have h\<psi>y_eq: "\<psi> y = x"
+        using hxg h\<phi>x hbij unfolding \<psi>_def bij_betw_def
+        by (metis inv_into_f_f)
+      have h_eqn: "g x = h (\<phi> x)" using hxg h\<phi>_eq by (by100 blast)
+      show "h y = g (\<psi> y)"
+        using h\<phi>x h\<psi>y_eq h_eqn by (by100 simp)
+    qed
+    show "geotop_coord_equiv \<sigma>\<^sub>h \<sigma>\<^sub>g h g"
+      unfolding geotop_coord_equiv_def
+      using h_img_eq h\<psi>_homeo h\<psi>_simpl h\<psi>_eq by (by100 blast)
+  qed
   have htrans: "\<forall>\<sigma>\<^sub>f \<sigma>\<^sub>g \<sigma>\<^sub>h (f::'a\<Rightarrow>'b) g h.
                   geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>g f g \<and> geotop_coord_equiv \<sigma>\<^sub>g \<sigma>\<^sub>h g h \<longrightarrow>
                   geotop_coord_equiv \<sigma>\<^sub>f \<sigma>\<^sub>h f h"
