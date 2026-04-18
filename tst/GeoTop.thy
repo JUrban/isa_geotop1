@@ -2784,8 +2784,39 @@ proof -
       them lifts vertex-reachability to the "not-in-V" endpoint, a contradiction. **)
   have hK\<^sub>1\<^sub>2_cover: "K\<^sub>1 \<union> K\<^sub>2 = K" sorry
   have hK\<^sub>1\<^sub>2_disjoint: "K\<^sub>1 \<inter> K\<^sub>2 = {}" sorry
-  (** Step 6: \<open>K\<^sub>1 \<noteq> \<emptyset>\<close> because \<open>{v}\<close> is a 0-simplex in \<open>K\<^sub>1\<close>. **)
-  have hK\<^sub>1_nonempty: "K\<^sub>1 \<noteq> {}" sorry
+  (** Step 6: \<open>K\<^sub>1 \<noteq> \<emptyset>\<close> because \<open>{v}\<close> is a 0-simplex in \<open>K\<^sub>1\<close>.
+      Use: \<open>v \<in> \<sigma>\<^sub>v \<in> K\<close> with vertex set \<open>V\<^sub>v \<ni> v\<close>; then \<open>{v}\<close> is a face of \<open>\<sigma>\<^sub>v\<close>,
+      and by K.2 face-closure \<open>{v} \<in> K\<close>. Since \<open>v \<in> V\<close> (Step 1), \<open>{v} \<in> K\<^sub>1\<close>. **)
+  have hK\<^sub>1_nonempty: "K\<^sub>1 \<noteq> {}"
+  proof -
+    (** Repeat the \<sigma>_v setup for this scope. **)
+    obtain \<sigma>\<^sub>v V\<^sub>v where h\<sigma>\<^sub>v: "\<sigma>\<^sub>v \<in> K" and hV\<^sub>v: "geotop_simplex_vertices \<sigma>\<^sub>v V\<^sub>v"
+                     and hv_in_V\<^sub>v: "v \<in> V\<^sub>v"
+      using hv unfolding geotop_complex_vertices_def by (by100 blast)
+    (** \<open>{v}\<close> is a face of \<open>\<sigma>\<^sub>v\<close>. **)
+    have h_hull_v1: "geotop_convex_hull ({v}::'a set) = {v}"
+      using geotop_convex_hull_eq_HOL[of "{v}::'a set"] by (by100 simp)
+    have h_face: "geotop_is_face {v} \<sigma>\<^sub>v"
+      unfolding geotop_is_face_def
+      using hV\<^sub>v hv_in_V\<^sub>v h_hull_v1
+      by (by100 blast)
+    have hK_fc: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+      using hKcomp by (rule geotop_is_complex_face_closed)
+    have h_vset_K: "{v} \<in> K"
+      using hK_fc h\<sigma>\<^sub>v h_face by (by100 blast)
+    (** \<open>{v}\<close> is a simplex with vertex set \<open>{v}\<close>. **)
+    have h_gp_trivial: "geotop_general_position ({v}::'a set) 0"
+      unfolding geotop_general_position_def by (by100 blast)
+    have h_vset_svx: "geotop_simplex_vertices {v} {v}"
+      unfolding geotop_simplex_vertices_def
+      apply (rule exI[of _ "0::nat"])
+      apply (rule exI[of _ "0::nat"])
+      using h_hull_v1 h_gp_trivial by (by100 simp)
+    have h_vsub: "({v}::'a set) \<subseteq> V"
+      using hv_V by (by100 simp)
+    show "K\<^sub>1 \<noteq> {}"
+      unfolding K\<^sub>1_def using h_vset_K h_vset_svx h_vsub by (by100 blast)
+  qed
   (** Step 7: by \<open>complex_connected K\<close>, \<open>K\<^sub>2 = \<emptyset>\<close>, so every simplex of \<open>K\<close> has
       all vertices in \<open>V\<close>. Hence \<open>w \<in> V\<close>. **)
   have hV_all: "geotop_complex_vertices K \<subseteq> V" sorry
