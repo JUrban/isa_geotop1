@@ -595,6 +595,13 @@ next
   qed
 qed
 
+text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
+  Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.
+  Moved up here from the Cells/manifolds subsection so that early.tex infrastructure
+  (open stars, subspace topology) can reference it.\<close>
+definition geotop_euclidean_topology :: "('a::real_normed_vector) set set" where
+  "geotop_euclidean_topology = top1_metric_topology_on (UNIV::'a set) (\<lambda>x y. norm (x - y))"
+
 (** from early.tex Lemma 4.10: open star of a vertex \<open>v\<close> in a complex \<open>K\<close>
     is the union of the relative interiors of simplexes of \<open>K\<close> having \<open>v\<close>
     as a vertex. We use HOL's \<open>rel_interior\<close> to express this. **)
@@ -1875,10 +1882,8 @@ subsection \<open>Cells, manifolds, dense sets, separability\<close>
 text \<open>An $n$-cell is a space homeomorphic to an $n$-simplex. We formulate this parametrically:
   the witness simplex lives in the same type as our space, or via a second type variable.
   For the definition to be truly general we use a second parametric type \<open>'b\<close>.\<close>
-text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
-  Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.\<close>
-definition geotop_euclidean_topology :: "('a::real_normed_vector) set set" where
-  "geotop_euclidean_topology = top1_metric_topology_on (UNIV::'a set) (\<lambda>x y. norm (x - y))"
+text \<open>\<open>geotop_euclidean_topology\<close> is defined earlier (before \<open>geotop_open_star\<close>)
+  since early-tex infrastructure uses it.\<close>
 
 definition geotop_is_n_cell_wit ::
   "'a set \<Rightarrow> 'a set set \<Rightarrow> nat \<Rightarrow> 'b::real_normed_vector set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool" where
