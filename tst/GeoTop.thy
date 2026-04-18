@@ -759,6 +759,29 @@ lemma geotop_linear_inj_image_is_simplex:
   sorry \<comment> \<open>Deep: requires affine-injection-preserves-AI + general_position derivation.
              Deferred pending support lemma \<open>geotop_ai_imp_general_position\<close>.\<close>
 
+(** Image of a face under a linear+injective map is a face of the image. **)
+lemma geotop_linear_inj_image_preserves_face:
+  fixes \<sigma> \<tau> :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
+  assumes h_lin: "geotop_linear_on \<sigma> f"
+  assumes h_inj: "inj_on f \<sigma>"
+  assumes h_face: "geotop_is_face \<tau> \<sigma>"
+  shows "geotop_is_face (f ` \<tau>) (f ` \<sigma>)"
+  sorry \<comment> \<open>Deep: face(\<tau>, \<sigma>) = \<tau> = conv W for W \<subseteq> V(\<sigma>). f \`\` \<tau> = conv (f \`\` W).
+             Need f \`\` W \<subseteq> V(f \`\` \<sigma>) = f \`\` V(\<sigma>). Uses simplex_vertices
+             uniqueness + affine-bij structure preservation.\<close>
+
+(** Every face of f(\<sigma>) (for \<sigma> a simplex, f linear+inj on \<sigma>) arises as f(face of \<sigma>). **)
+lemma geotop_linear_inj_image_face_preimage:
+  fixes \<sigma> :: "'a::euclidean_space set"
+    and \<tau> :: "'b::euclidean_space set"
+    and f :: "'a \<Rightarrow> 'b"
+  assumes h_lin: "geotop_linear_on \<sigma> f"
+  assumes h_inj: "inj_on f \<sigma>"
+  assumes h_sim: "geotop_is_simplex \<sigma>"
+  assumes h_face: "geotop_is_face \<tau> (f ` \<sigma>)"
+  shows "\<exists>\<tau>_pre. geotop_is_face \<tau>_pre \<sigma> \<and> \<tau> = f ` \<tau>_pre"
+  sorry \<comment> \<open>Symmetric to geotop_linear_inj_image_preserves_face; pulls back via f.\<close>
+
 subsection \<open>Diameter and mesh\<close>
 
 (** from \<S>4: diameter and mesh (geotop.tex:953)
@@ -2431,10 +2454,69 @@ proof -
             of \<sigma> (via linearity on \<sigma>); L_1 is face-closed (K.1), so fL_1 is too. **)
     have hfL\<^sub>1_K1: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> fL\<^sub>1"
       sorry
-    (** (b2) K.2: f(\<sigma>_1) \<inter> f(\<sigma>_2) = f(\<sigma>_1 \<inter> \<sigma>_2) (f bij) is a face of both by K.2 of L_1. **)
+    (** (b2) K.2: f(\<sigma>_L1) \<inter> f(\<sigma>_L2) = f(\<sigma>_L1 \<inter> \<sigma>_L2) via f inj;
+            \<sigma>_L1 \<inter> \<sigma>_L2 is face of both (K.2 of L_1); apply
+            geotop_linear_inj_image_preserves_face. **)
+    have h_L\<^sub>1_K2: "\<forall>\<sigma>\<in>L\<^sub>1. \<forall>\<tau>\<in>L\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+              hL\<^sub>1_comp[unfolded geotop_is_complex_def]]]])
     have hfL\<^sub>1_K2: "\<forall>\<sigma>\<in>fL\<^sub>1. \<forall>\<tau>\<in>fL\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-      sorry
+    proof (intro ballI impI)
+      fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> fL\<^sub>1" and h\<tau>: "\<tau> \<in> fL\<^sub>1"
+      assume h_nonempty: "\<sigma> \<inter> \<tau> \<noteq> {}"
+      obtain \<sigma>_L where h\<sigma>_L_L\<^sub>1: "\<sigma>_L \<in> L\<^sub>1" and h\<sigma>_eq: "\<sigma> = f ` \<sigma>_L"
+        using h\<sigma> unfolding fL\<^sub>1_def by (by100 blast)
+      obtain \<tau>_L where h\<tau>_L_L\<^sub>1: "\<tau>_L \<in> L\<^sub>1" and h\<tau>_eq: "\<tau> = f ` \<tau>_L"
+        using h\<tau> unfolding fL\<^sub>1_def by (by100 blast)
+      (** Simplex status for \<sigma>_L, \<tau>_L. **)
+      have h_L\<^sub>1_simp_all: "\<forall>\<sigma>\<in>L\<^sub>1. geotop_is_simplex \<sigma>"
+        by (rule conjunct1[OF hL\<^sub>1_comp[unfolded geotop_is_complex_def]])
+      have h\<sigma>_L_sim: "geotop_is_simplex \<sigma>_L"
+        using h_L\<^sub>1_simp_all h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      have h\<tau>_L_sim: "geotop_is_simplex \<tau>_L"
+        using h_L\<^sub>1_simp_all h\<tau>_L_L\<^sub>1 by (by100 blast)
+      (** Linearity on \<sigma>_L, \<tau>_L. **)
+      have h\<sigma>_L_lin_raw: "\<exists>\<tau>'\<in>K. (\<forall>x\<in>\<sigma>_L. f x \<in> \<tau>') \<and> geotop_linear_on \<sigma>_L f"
+        using hL\<^sub>1_lin h\<sigma>_L_L\<^sub>1 by (by100 blast)
+      have h\<sigma>_L_lin: "geotop_linear_on \<sigma>_L f" using h\<sigma>_L_lin_raw by (by100 blast)
+      have h\<tau>_L_lin_raw: "\<exists>\<tau>'\<in>K. (\<forall>x\<in>\<tau>_L. f x \<in> \<tau>') \<and> geotop_linear_on \<tau>_L f"
+        using hL\<^sub>1_lin h\<tau>_L_L\<^sub>1 by (by100 blast)
+      have h\<tau>_L_lin: "geotop_linear_on \<tau>_L f" using h\<tau>_L_lin_raw by (by100 blast)
+      (** \<sigma>_L, \<tau>_L \<subseteq> |L|; f inj on union. **)
+      have h\<sigma>_L_in_L: "\<sigma>_L \<subseteq> geotop_polyhedron L"
+        using h\<sigma>_L_L\<^sub>1 hL\<^sub>1_poly_L unfolding geotop_polyhedron_def by (by100 blast)
+      have h\<tau>_L_in_L: "\<tau>_L \<subseteq> geotop_polyhedron L"
+        using h\<tau>_L_L\<^sub>1 hL\<^sub>1_poly_L unfolding geotop_polyhedron_def by (by100 blast)
+      have hf_inj_L: "inj_on f (geotop_polyhedron L)"
+        using hf_bij_LK unfolding bij_betw_def by (by100 blast)
+      have hf_inj_\<sigma>_L: "inj_on f \<sigma>_L"
+        using hf_inj_L h\<sigma>_L_in_L inj_on_subset by (by100 blast)
+      have hf_inj_\<tau>_L: "inj_on f \<tau>_L"
+        using hf_inj_L h\<tau>_L_in_L inj_on_subset by (by100 blast)
+      (** f(\<sigma>_L) \<inter> f(\<tau>_L) = f(\<sigma>_L \<inter> \<tau>_L) via inj_on_image_Int. **)
+      have h_image_int_raw: "f ` (\<sigma>_L \<inter> \<tau>_L) = f ` \<sigma>_L \<inter> f ` \<tau>_L"
+        by (rule inj_on_image_Int[OF hf_inj_L h\<sigma>_L_in_L h\<tau>_L_in_L])
+      have h_image_int: "f ` \<sigma>_L \<inter> f ` \<tau>_L = f ` (\<sigma>_L \<inter> \<tau>_L)"
+        using h_image_int_raw by (by100 simp)
+      have h_sigma_tau_nonempty: "\<sigma>_L \<inter> \<tau>_L \<noteq> {}"
+        using h_nonempty h\<sigma>_eq h\<tau>_eq h_image_int by (by100 auto)
+      (** K.2 for L_1: \<sigma>_L \<inter> \<tau>_L is face of both \<sigma>_L, \<tau>_L. **)
+      have h_intface_\<sigma>_L: "geotop_is_face (\<sigma>_L \<inter> \<tau>_L) \<sigma>_L"
+        using h_L\<^sub>1_K2 h\<sigma>_L_L\<^sub>1 h\<tau>_L_L\<^sub>1 h_sigma_tau_nonempty by (by100 blast)
+      have h_intface_\<tau>_L: "geotop_is_face (\<sigma>_L \<inter> \<tau>_L) \<tau>_L"
+        using h_L\<^sub>1_K2 h\<sigma>_L_L\<^sub>1 h\<tau>_L_L\<^sub>1 h_sigma_tau_nonempty by (by100 blast)
+      (** Image of face is face. **)
+      have h_face_\<sigma>: "geotop_is_face (f ` (\<sigma>_L \<inter> \<tau>_L)) (f ` \<sigma>_L)"
+        by (rule geotop_linear_inj_image_preserves_face[OF h\<sigma>_L_lin hf_inj_\<sigma>_L h_intface_\<sigma>_L])
+      have h_face_\<tau>: "geotop_is_face (f ` (\<sigma>_L \<inter> \<tau>_L)) (f ` \<tau>_L)"
+        by (rule geotop_linear_inj_image_preserves_face[OF h\<tau>_L_lin hf_inj_\<tau>_L h_intface_\<tau>_L])
+      have h_int_eq: "\<sigma> \<inter> \<tau> = f ` (\<sigma>_L \<inter> \<tau>_L)"
+        using h\<sigma>_eq h\<tau>_eq h_image_int by (by100 simp)
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        using h_int_eq h\<sigma>_eq h\<tau>_eq h_face_\<sigma> h_face_\<tau> by (by100 simp)
+    qed
     (** (b3) K.3: local finiteness. f is continuous (PL-homeomorphism),
             so pull back L_1's local-finiteness witness through f. **)
     (** For finite fL_1, local finiteness is trivial: take U = UNIV. **)
