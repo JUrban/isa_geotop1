@@ -2496,16 +2496,71 @@ proof -
       using hV_L\<^sub>3_eq hV_K\<^sub>3_eq hL\<^sub>3_singletons by (by100 simp)
     (** V(K_3) \<subseteq> |K_3| = |K| (vertices lie in polyhedron). **)
     have hV_K\<^sub>3_in_K: "geotop_complex_vertices K\<^sub>3 \<subseteq> geotop_polyhedron K"
-      sorry \<comment> \<open>Each v \<in> V(K_3) has {v} \<in> K_3 \<subseteq> \<Union>K_3 = |K_3| = |K|.\<close>
+    proof
+      fix v assume hv: "v \<in> geotop_complex_vertices K\<^sub>3"
+      hence hv_sing: "{v} \<in> K\<^sub>3" using hV_K\<^sub>3_eq by (by100 simp)
+      hence hv_in_K\<^sub>3: "v \<in> geotop_polyhedron K\<^sub>3"
+        unfolding geotop_polyhedron_def by (by100 blast)
+      show "v \<in> geotop_polyhedron K"
+        using hv_in_K\<^sub>3 hK\<^sub>3_poly_eq_K by (by100 simp)
+    qed
     (** f_inv is bijective |K| \<leftrightarrow> |L|; restricts to V(K_3) \<to> V(L_3) bij. **)
+    have hf_inv_inj_K: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+      using hf_inv_bij unfolding bij_betw_def by (by100 blast)
+    have hf_inv_inj_VK\<^sub>3: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_complex_vertices K\<^sub>3)"
+      using hf_inv_inj_K hV_K\<^sub>3_in_K inj_on_subset by (by100 blast)
     have hf_inv_bij_V: "bij_betw (inv_into (geotop_polyhedron L) f)
                                    (geotop_complex_vertices K\<^sub>3)
                                    (geotop_complex_vertices L\<^sub>3)"
-      sorry \<comment> \<open>f_inv bij |K| \<leftrightarrow> |L| + V(K_3) \<subseteq> |K| + V(L_3) = f_inv \`\` V(K_3).\<close>
+      unfolding bij_betw_def
+      using hf_inv_inj_VK\<^sub>3 hV_L\<^sub>3_img by (by100 simp)
     (** f is inverse of f_inv on the relevant sets. **)
+    have h_inv_of_inv_bij:
+      "bij_betw (inv_into (geotop_complex_vertices K\<^sub>3)
+                          (inv_into (geotop_polyhedron L) f))
+                (geotop_complex_vertices L\<^sub>3)
+                (geotop_complex_vertices K\<^sub>3)"
+      by (rule bij_betw_inv_into[OF hf_inv_bij_V])
+    (** Show the double inverse acts as f on V(L_3). **)
+    have h_agree: "\<forall>v\<in>geotop_complex_vertices L\<^sub>3.
+                     inv_into (geotop_complex_vertices K\<^sub>3)
+                              (inv_into (geotop_polyhedron L) f) v = f v"
+    proof (rule ballI)
+      fix v assume hv: "v \<in> geotop_complex_vertices L\<^sub>3"
+      obtain w where hwK\<^sub>3: "w \<in> geotop_complex_vertices K\<^sub>3"
+                 and hvw: "v = inv_into (geotop_polyhedron L) f w"
+        using hv hV_L\<^sub>3_img by (by100 blast)
+      have hw_K: "w \<in> geotop_polyhedron K" using hwK\<^sub>3 hV_K\<^sub>3_in_K by (by100 blast)
+      (** inv_into V(K_3) f_inv v = w (since v = f_inv w and f_inv inj on V(K_3)). **)
+      have h_double_step: "inv_into (geotop_complex_vertices K\<^sub>3)
+                                    (inv_into (geotop_polyhedron L) f)
+                                    (inv_into (geotop_polyhedron L) f w) = w"
+        using hf_inv_inj_VK\<^sub>3 hwK\<^sub>3 inv_into_f_f[of "inv_into (geotop_polyhedron L) f"
+                                                   "geotop_complex_vertices K\<^sub>3" w]
+        by (by100 blast)
+      have h_double: "inv_into (geotop_complex_vertices K\<^sub>3)
+                               (inv_into (geotop_polyhedron L) f) v = w"
+        using h_double_step hvw by (by100 simp)
+      (** f v = f (f_inv w) = w. **)
+      have h_fv_step: "f (inv_into (geotop_polyhedron L) f w) = w"
+        using bij_betw_inv_into_right[OF hf_bij hw_K] by (by100 simp)
+      have h_fv: "f v = w" using h_fv_step hvw by (by100 simp)
+      show "inv_into (geotop_complex_vertices K\<^sub>3)
+                     (inv_into (geotop_polyhedron L) f) v = f v"
+        using h_double h_fv by (by100 simp)
+    qed
+    have h_agree_single: "\<And>v. v \<in> geotop_complex_vertices L\<^sub>3 \<Longrightarrow>
+                            inv_into (geotop_complex_vertices K\<^sub>3)
+                                     (inv_into (geotop_polyhedron L) f) v = f v"
+      using h_agree by (by100 blast)
+    have h_cong_eq: "bij_betw (inv_into (geotop_complex_vertices K\<^sub>3)
+                                        (inv_into (geotop_polyhedron L) f))
+                              (geotop_complex_vertices L\<^sub>3)
+                              (geotop_complex_vertices K\<^sub>3)
+                       = bij_betw f (geotop_complex_vertices L\<^sub>3) (geotop_complex_vertices K\<^sub>3)"
+      by (rule bij_betw_cong[OF h_agree_single])
     have hiso_vert: "bij_betw f (geotop_complex_vertices L\<^sub>3) (geotop_complex_vertices K\<^sub>3)"
-      sorry \<comment> \<open>Invert hf_inv_bij_V using bij_betw_inv_into + identification
-                inv_into (|L|) f on V(L_3) coincides with f (since f bijects).\<close>
+      using h_inv_of_inv_bij h_cong_eq by (by100 simp)
     (** (b) simplex correspondence: conv V \<in> L_3 \<longleftrightarrow> conv (f\<sup>\`V) \<in> K_3. **)
     have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
                        (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
