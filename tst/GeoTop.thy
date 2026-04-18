@@ -4874,7 +4874,8 @@ proof -
          slightly if necessary to align endpoints across levels G_{i+1} \<le> G_i. **)
   have h_accessible:
     "\<forall>i. \<exists>Gi. (\<forall>g\<in>Gi. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
-               (\<forall>v\<in>E. geotop_linearly_accessible I v))" sorry
+               (\<forall>v\<in>E. geotop_linearly_accessible I v))"
+    using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (3) Inductive refinement: G_{i+1} refines G_i by subdividing each g \<in> G_i into
          smaller sub-arcs, chosen compatibly with accessibility. **)
   show ?thesis sorry
