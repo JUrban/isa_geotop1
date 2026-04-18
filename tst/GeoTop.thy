@@ -471,6 +471,16 @@ lemma geotop_subdivision_of_finite_is_finite:
   shows "finite K'"
   sorry
 
+(** For a finite non-empty collection \<open>G\<close>, each member's diameter is bounded
+    by the mesh. Direct from the SUP def of \<open>geotop_mesh\<close>. **)
+lemma geotop_diameter_le_mesh:
+  fixes G :: "'a set set" and d :: "'a \<Rightarrow> 'a \<Rightarrow> real"
+  assumes hGfin: "finite G"
+  assumes h\<tau>G: "\<tau> \<in> G"
+  shows "geotop_diameter d \<tau> \<le> geotop_mesh d G"
+  sorry \<comment> \<open>SUP-based bound: for finite \<open>G\<close>, \<open>SUP g\<in>G. diam g = MAX g\<in>G. diam g\<close>.
+           Typeclass friction (\<open>ord\<close> vs \<open>Sup\<close>) requires careful formulation; deferred.\<close>
+
 (** from early.tex Lemma 4.17 (key refinement lemma): if \<open>K'\<close> is a subdivision
     of \<open>K\<close>, then for some \<open>m\<close>, \<open>Sd^m(K)\<close> is a subdivision of \<open>K'\<close>.
     Proof following early.tex \<S>4.5:
@@ -513,7 +523,9 @@ proof -
   obtain m where hm_mesh: "\<forall>\<tau>\<in>geotop_iterated_Sd m K.
                             geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<delta>"
     sorry \<comment> \<open>From \<open>geotop_mesh_iterated_Sd_tends_to_zero\<close> applied to finite \<open>K\<close>:
-             find \<open>m\<close> with \<open>mesh(Sd^m K) < \<delta>\<close>, then unfold \<open>geotop_mesh\<close> (SUP).\<close>
+             find \<open>m\<close> with \<open>mesh(Sd^m K) < \<delta>\<close>, then bound each \<open>\<tau>\<close>'s diameter
+             by \<open>mesh\<close>. Typeclass friction with \<open>SUP\<close> over reals makes this
+             inline-proof tricky; deferred.\<close>
   (** (d) Every simplex of \<open>Sd^m(K)\<close> is contained in a simplex of \<open>K'\<close>. Combining
       (b) and (c): every \<open>\<tau> \<in> Sd^m(K)\<close> has diameter \<open>< \<delta>\<close>, hence is contained in
       some \<open>\<sigma> \<in> K'\<close> containing a vertex \<open>v\<close> of \<open>K'\<close>. **)
