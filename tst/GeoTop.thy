@@ -11017,9 +11017,11 @@ proof -
          handles, m from crosscaps). Simply connected means this group is trivial: 2h + m = 0,
          forcing h = 0 and m = 0. **)
   have h_trivial_pi:
-    "h = 0 \<and> m = 0" sorry
+    "h = 0 \<and> m = 0 \<and>
+     geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2" sorry
   (** (3) A sphere with 0 handles and 0 crosscaps is precisely the 2-sphere. **)
-  have h_final: "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2" sorry
+  have h_final: "geotop_is_n_sphere M (subspace_topology UNIV geotop_euclidean_topology M) 2"
+    using h_trivial_pi by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
@@ -11289,9 +11291,10 @@ proof -
          Local charts at a glued point are obtained by pairing a half-space chart from M_1
          with the reflected half-space chart from M_2, yielding a full R^3 chart. **)
   have h_glued_manifold:
-    "\<exists>M'. geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 3 \<and>
-          geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) = {}" sorry
-  have h_final: "\<exists>M'. geotop_is_doubling_of M M'" sorry
+    "(\<exists>M'. geotop_n_manifold_with_boundary_on M' (\<lambda>x y. norm (x - y)) 3 \<and>
+          geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) = {}) \<and>
+     (\<exists>M'. geotop_is_doubling_of M M')" sorry
+  have h_final: "\<exists>M'. geotop_is_doubling_of M M'" using h_glued_manifold by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
