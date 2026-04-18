@@ -7174,15 +7174,19 @@ proof -
   (** (3) Pick \<delta> = min(\<alpha>, \<epsilon>/3). If N \<subseteq> N(M, \<delta>) then every component of N lies in some
          single N(g_i, \<delta>) since the neighbourhoods are disjoint. **)
   have h_component_confined:
-    "\<exists>\<delta>>0. \<forall>N gs. finite gs \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<and>
+    "(\<exists>\<delta>>0. \<forall>N gs. finite gs \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<and>
                   (\<forall>g\<in>gs. geotop_diameter (\<lambda>x y. norm (x - y)) g < \<epsilon>/3) \<and>
                   M = \<Union>gs \<longrightarrow>
        (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
-         (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))" sorry
+         (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))) \<and>
+     (\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>))" sorry
   (** (4) Diameter of such a component is < \<epsilon>/3 + 2\<delta> < \<epsilon>. **)
   have h_final: "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
-               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)" sorry
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)"
+    using h_component_confined by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
