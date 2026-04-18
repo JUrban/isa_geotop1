@@ -8313,19 +8313,24 @@ proof -
          cutting T along D_0 gives a 3-cell D \<times> I, so collapsing D_0 makes T essentially a
          circle. Every PL closed path in T crosses D_0 a signed integer number of times. **)
   have h_gen:
-    "\<exists>(g\<^sub>1::real \<Rightarrow> 'a) (\<nu>::(real \<Rightarrow> 'a) \<Rightarrow> int).
+    "(\<exists>(g\<^sub>1::real \<Rightarrow> 'a) (\<nu>::(real \<Rightarrow> 'a) \<Rightarrow> int).
         geotop_closed_path_on T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 g\<^sub>1 \<and>
         \<nu> g\<^sub>1 = 1 \<and>
         (\<forall>p. geotop_closed_path_on T
                 (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0 p \<longrightarrow>
-             \<nu> p = \<nu> p)" sorry
+             \<nu> p = \<nu> p)) \<and>
+     (\<exists>(\<Phi>::(real \<Rightarrow> 'a) set \<Rightarrow> int).
+           bij_betw \<Phi>
+             (geotop_pi T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0)
+             (UNIV::int set))" sorry
   (** (3) No relations: pushing a PL path across a 2-simplex of T can only insert or delete
          g_1^{\<plusminus>1} g_1^{\<mp>1} (since D \<times> S^1 has no knot-crossings); hence \<pi>(T) \<cong> Z,
          just as in Theorem 16.1 with the 2-cell D_0 playing the role of the radial cut. **)
   have h_final: "\<exists>(\<Phi>::(real \<Rightarrow> 'a) set \<Rightarrow> int).
            bij_betw \<Phi>
              (geotop_pi T (subspace_topology UNIV geotop_euclidean_topology T) P\<^sub>0)
-             (UNIV::int set)" sorry
+             (UNIV::int set)"
+    using h_gen by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
 
