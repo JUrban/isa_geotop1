@@ -3991,7 +3991,9 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology \<sigma>2) g" sorry
   (** (3) Transport back through \<phi>_1^{-1} and \<phi>_2 to get the PLH f': |K_1| \<leftrightarrow> |K_2|
          extending f on Bd K_1. **)
-  show ?thesis sorry
+  have h_final: "\<exists>f'. geotop_PLH K1 K2 f' \<and>
+              (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>5 Theorem 5 (geotop.tex:1174)
