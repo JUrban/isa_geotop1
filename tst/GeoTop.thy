@@ -7263,8 +7263,26 @@ theorem Theorem_GT_5_2:
       of L. Take L\<^sub>2 common subdivision of f(K\<^sub>1) and L\<^sub>1. Let K\<^sub>2 = f^{-1}(L\<^sub>2) =
       {f^{-1}(\<tau>) | \<tau>\<in>L\<^sub>2}. Then K\<^sub>2 < K, and f|\<sigma> maps each \<sigma>\<in>K\<^sub>2 linearly into L\<^sub>1. **)
 proof
-  assume "geotop_PL_map K L f"
-  show "geotop_PL_map K L1 f" sorry
+  assume hPL: "geotop_PL_map K L f"
+  (** (1) Extract subdivision K_1 < K witnessing PL with f linear on each simplex. **)
+  have hPL_body: "\<exists>K\<^sub>1. geotop_is_subdivision K\<^sub>1 K \<and>
+                   (\<forall>\<sigma>\<in>K\<^sub>1. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f)"
+    using hPL unfolding geotop_PL_map_def by (by100 blast)
+  obtain K\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
+              and hK\<^sub>1_lin: "\<forall>\<sigma>\<in>K\<^sub>1. \<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    using hPL_body by (by100 blast)
+  (** (2) f(K_1) = image complex. Needs hfK_1_sub: f(K_1) is a subdivision of L. **)
+  have hfK\<^sub>1_sub: "geotop_is_subdivision ((`) f ` K\<^sub>1) L"
+    sorry
+  (** (3) Common subdivision L_2 of f(K_1) and L_1 via Theorem_GT_1 (requires finite L). **)
+  have hL_2_ex: "\<exists>L\<^sub>2. geotop_is_subdivision L\<^sub>2 ((`) f ` K\<^sub>1) \<and> geotop_is_subdivision L\<^sub>2 L1"
+    sorry
+  (** (4) K_2 = f_inv(L_2) refines K, and f linear on each K_2-simplex into L_1. **)
+  have hK\<^sub>2_ex: "\<exists>K\<^sub>2. geotop_is_subdivision K\<^sub>2 K \<and>
+                   (\<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f)"
+    sorry
+  show "geotop_PL_map K L1 f"
+    unfolding geotop_PL_map_def using hK\<^sub>2_ex by (by100 blast)
 next
   assume hPL1: "geotop_PL_map K L1 f"
   (** Direct: \<open>L\<^sub>1 < L\<close> (hypothesis) and \<open>K < K\<close> (reflexivity); apply \<open>PL_map_lift\<close>. **)
