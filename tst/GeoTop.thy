@@ -1749,8 +1749,16 @@ proof -
     using hK'_poly_step1 hL'L_poly hginv_img by (by100 simp)
   (** (5) \<open>K' < K\<close>: each simplex of \<open>K'\<close> is \<open>g\<^sup>-\<^sup>1(\<tau>)\<close> for some \<open>\<tau> \<in> L'\<close>,
       which sits inside \<open>g\<^sup>-\<^sup>1\<close> of the corresponding simplex of \<open>L\<close>, a subset of \<open>|K|\<close>
-      lying in some \<sigma> \<in> K. **)
+      lying in some \<sigma> \<in> K. Structured decomposition: **)
+  (** (5i) g_inv is PL L \<rightarrow> K, so there is a subdivision L_1 < L on which
+           g_inv is linear, mapping each L_1-simplex into some K-simplex. **)
+  have hg_inv_PL: "geotop_PL_map L K ?g_inv"
+    using hg unfolding geotop_PLH_def by (by100 blast)
   have hK'_ref: "geotop_refines K' K" sorry
+     \<comment> \<open>Needs: common subdivision L_2 of L' and L_1 (via Theorem_GT_1, requires
+         finite L or similar finiteness). Each \<tau> \<in> L' contains a union of L_2-simplexes
+         which are subsets of L_1-simplexes; g_inv sends these linearly into K-simplexes.
+         By bijectivity, g_inv(\<tau>) \<subseteq> some K-simplex obtained by tracing through.\<close>
   have hK'_K: "geotop_is_subdivision K' K"
     unfolding geotop_is_subdivision_def
     using hK'_comp hKcomp hK'_ref hK'_poly by (by100 blast)
