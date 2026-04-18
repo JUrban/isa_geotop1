@@ -9380,9 +9380,45 @@ proof -
   have h\<phi>_boundary:
     "(\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 0) = P) \<and> (\<forall>P. norm P \<le> 1 \<longrightarrow> \<phi> (P, 1) = f\<^sub>1 P)"
     unfolding \<phi>_def using hf1_bdry by (by100 auto)
+  (** Image staying in B^n: for each t \<in> [0,1], \<phi>(P,t) \<in> B^n (from slice being a
+      homeomorphism B^n \<leftrightarrow> B^n hence mapping into B^n). **)
+  have h\<phi>_image: "\<forall>P. norm P \<le> 1 \<longrightarrow> (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> norm (\<phi> (P, t)) \<le> 1)"
+    sorry \<comment> \<open>Follows from h_\<phi>_slice_homeo: each slice maps B^n to B^n, so \<phi>(P,t) \<in> B^n.\<close>
+  (** Identity on B^n is a homeomorphism (needed for is_isotopy second conjunct). **)
+  have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h_Bsub: "({P::'a. norm P \<le> 1}) \<subseteq> UNIV" by (by100 simp)
+  have h_Bsub_top: "is_topology_on ({P::'a. norm P \<le> 1})
+        (subspace_topology UNIV geotop_euclidean_topology ({P::'a. norm P \<le> 1}))"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl h_Bsub])
+  have h_id_B: "top1_homeomorphism_on ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) id"
+    by (rule top1_homeomorphism_on_id[OF h_Bsub_top])
+  have h_lam_eq_id: "(\<lambda>P::'a. P) = id" unfolding id_def by (by100 simp)
+  have h_id_homeo: "top1_homeomorphism_on ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1}) (\<lambda>P. P)"
+    using h_id_B h_lam_eq_id by (by100 simp)
+  (** Assemble the isotopy witness. **)
+  have h_homotopy: "geotop_is_homotopy ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       (\<lambda>P. P) f\<^sub>1 \<phi>"
+    unfolding geotop_is_homotopy_def
+    using h\<phi>_boundary h\<phi>_image by (by100 auto)
+  have h_isotopy: "geotop_is_isotopy ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       ({P::'a. norm P \<le> 1})
+       (subspace_topology UNIV geotop_euclidean_topology {P::'a. norm P \<le> 1})
+       (\<lambda>P. P) f\<^sub>1 \<phi>"
+    unfolding geotop_is_isotopy_def
+    using h_homotopy h_id_homeo hf1 h\<phi>_slice_homeo by (by100 blast)
   show ?thesis
-    unfolding geotop_isotopic_def geotop_is_isotopy_def
-    sorry
+    unfolding geotop_isotopic_def using h_isotopy by (by100 blast)
 qed
 
 (** from \<S>11 stable homeomorphism (geotop.tex:2259)
