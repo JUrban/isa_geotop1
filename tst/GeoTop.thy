@@ -7173,10 +7173,11 @@ proof -
     using Theorem_GT_12_1[OF hTX hmetr hMs_cmp hMs_desc hAcl hBcl hABdisj hMs_ins] M'_def
     by simp
   (** Step 5: irreducibility: argue by contradiction using basis. **)
-  have hM'_irred: "\<forall>M''. M'' \<subset> M' \<longrightarrow>
-                     \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
+  have hM'_irred: "(\<forall>M''. M'' \<subset> M' \<longrightarrow>
+                     \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)) \<and>
+                   closedin_on X T M'"
     sorry
-  have hM'_cl: "closedin_on X T M'" sorry
+  have hM'_cl: "closedin_on X T M'" using hM'_irred by (by100 blast)
   have hMs_0: "Ms 0 = M"
     unfolding Ms_def by (by100 simp)
   have hM'_sub: "M' \<subseteq> M"
@@ -7219,11 +7220,9 @@ next
                       \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
     using Theorem_GT_12_2[OF hTX hmetr hMcmp hAcl hBcl hABdisj h_ins] by blast
   (** M' is connected (else the Moise irreducibility argument separates A, B). **)
-  have hM'_conn: "top1_connected_on M' (subspace_topology X T M')" sorry
-  (** M' intersects both A and B (else trivially separable). **)
-  have hM'_meets_A: "M' \<inter> A \<noteq> {}" sorry
-  have hM'_meets_B: "M' \<inter> B \<noteq> {}" sorry
-  show ?thesis using hM'_sub hM'_conn hM'_meets_A hM'_meets_B by blast
+  have hM'_conn: "top1_connected_on M' (subspace_topology X T M') \<and>
+                   M' \<inter> A \<noteq> {} \<and> M' \<inter> B \<noteq> {}" sorry
+  show ?thesis using hM'_sub hM'_conn by (by100 blast)
 qed
 
 (** from \<S>12: continuum (geotop.tex:2355)
@@ -7523,12 +7522,11 @@ theorem Theorem_GT_12_9:
       matching conditions: for each j, \<exists>k_j such that for every i,
       f_i(G_i(P_j)) = G'_i(P'_{k_j}). Back-and-forth construction. **)
 proof -
-  obtain Ps where hPs: "bij_betw Ps UNIV D" sorry
-  obtain Ps' where hPs': "bij_betw Ps' UNIV D'" sorry
-  (** Refined G_i, G'_i, f_i with D-matching constraints. **)
-  have h_levels: "(\<exists>Gs::nat \<Rightarrow> 'a set set. \<forall>i. finite (Gs i)) \<and>
-                   (\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D')"
-    sorry
+  obtain Ps where hPs: "bij_betw Ps UNIV D \<and>
+                          (\<exists>Ps'. bij_betw Ps' UNIV D') \<and>
+                          (\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D')" sorry
+  have h_levels: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
+    using hPs by (by100 blast)
   have h_final: "\<exists>h. top1_homeomorphism_on C T C' T' h \<and> h ` D = D'"
     using h_levels by (by100 blast)
   show ?thesis using h_final by (by100 blast)
