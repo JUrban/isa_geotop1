@@ -12287,7 +12287,7 @@ proof -
     "\<exists>D\<^sub>1 L\<^sub>1. geotop_loop_conjugacy_class B
                  (subspace_topology UNIV geotop_euclidean_topology B)
                  P\<^sub>0 L\<^sub>1 S1 (subspace_topology UNIV geotop_euclidean_topology S1) \<inter> N = {}"
-    sorry
+    using exI[of _ D] exI[of _ L] hL_avoid_N by (by100 blast)
   have h_final: "\<exists>D\<^sub>1 L\<^sub>1. geotop_is_singular_2cell M
                (subspace_topology UNIV geotop_euclidean_topology M)
                D\<^sub>1 \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) \<and>
