@@ -2246,10 +2246,63 @@ proof -
     using hK'_comp hKcomp hK'_ref hK'_poly by (by100 blast)
   (** (6) Build the vertex iso \<open>K' \<cong> L'\<close> via \<open>\<tau> \<mapsto> g\<^sup>-\<^sup>1(\<tau>)\<close>, descending to
       vertex-level. Decomposed into: **)
-  (** (6a) Vertex bijection: g_inv maps vertices of L' to vertices of K'. **)
+  (** (6a) Vertex bijection: g_inv maps vertices of L' to vertices of K' bijectively.
+      Same pattern as hiso_vert in GT_2 backward: use complex_vertices_eq_0_simplexes
+      to rewrite vertex sets as {v : {v} \<in> complex}, then show g_inv-image structure. **)
+  have hV_L'_eq: "geotop_complex_vertices L' = {v. {v} \<in> L'}"
+    by (rule geotop_complex_vertices_eq_0_simplexes[OF hL'_comp])
+  have hV_K'_eq: "geotop_complex_vertices K' = {v. {v} \<in> K'}"
+    by (rule geotop_complex_vertices_eq_0_simplexes[OF hK'_comp])
+  have hg_inv_inj_L: "inj_on ?g_inv (geotop_polyhedron L)"
+    using hginv_bij unfolding bij_betw_def by (by100 blast)
+  (** {v} \<in> K' iff v = g_inv(w) for some w with {w} \<in> L'. **)
+  have hK'_singletons: "{v. {v} \<in> K'} = ?g_inv ` {w. {w} \<in> L'}"
+  proof (rule set_eqI, rule iffI)
+    fix v assume hv: "v \<in> {v. {v} \<in> K'}"
+    hence hv_K': "{v} \<in> K'" by (by100 simp)
+    obtain \<sigma> where h\<sigma>L': "\<sigma> \<in> L'" and h\<sigma>_eq: "{v} = ?g_inv ` \<sigma>"
+      using hv_K' unfolding K'_def by (by100 blast)
+    have h\<sigma>_in_L: "\<sigma> \<subseteq> geotop_polyhedron L"
+      using h\<sigma>L' hL'L_poly unfolding geotop_polyhedron_def by (by100 blast)
+    have hg_inv_inj_\<sigma>: "inj_on ?g_inv \<sigma>"
+      using hg_inv_inj_L h\<sigma>_in_L inj_on_subset by (by100 blast)
+    have h_img_card: "card (?g_inv ` \<sigma>) = card \<sigma>"
+      by (rule card_image[OF hg_inv_inj_\<sigma>])
+    have h_target_card: "card (?g_inv ` \<sigma>) = card {v}"
+      using h\<sigma>_eq by (by100 simp)
+    have h_v_card: "card ({v}::'a set) = 1" by (by100 simp)
+    have h\<sigma>_card: "card \<sigma> = 1"
+      using h_img_card h_target_card h_v_card by (by100 simp)
+    have h\<sigma>_fin: "finite \<sigma>" using h\<sigma>_card card_gt_0_iff by (by100 fastforce)
+    obtain w where h\<sigma>_sing: "\<sigma> = {w}"
+      using h\<sigma>_card card_1_singletonE[of \<sigma>] h\<sigma>_fin by (by100 blast)
+    have hw_L': "{w} \<in> L'" using h\<sigma>L' h\<sigma>_sing by (by100 simp)
+    have hv_eq: "v = ?g_inv w" using h\<sigma>_eq h\<sigma>_sing by (by100 simp)
+    show "v \<in> ?g_inv ` {w. {w} \<in> L'}" using hw_L' hv_eq by (by100 blast)
+  next
+    fix v assume hv: "v \<in> ?g_inv ` {w. {w} \<in> L'}"
+    obtain w where hw_L': "{w} \<in> L'" and hvw: "v = ?g_inv w" using hv by (by100 blast)
+    have h_img: "?g_inv ` {w} = {v}" using hvw by (by100 simp)
+    have h_img_in_K': "?g_inv ` {w} \<in> K'" using hw_L' unfolding K'_def by (by100 blast)
+    show "v \<in> {v. {v} \<in> K'}" using h_img h_img_in_K' by (by100 simp)
+  qed
+  have hV_K'_img: "geotop_complex_vertices K' = ?g_inv ` geotop_complex_vertices L'"
+    using hV_L'_eq hV_K'_eq hK'_singletons by (by100 simp)
+  (** V(L') \<subseteq> |L'| = |L| (vertices in polyhedron). **)
+  have hV_L'_in_L: "geotop_complex_vertices L' \<subseteq> geotop_polyhedron L"
+  proof
+    fix v assume hv: "v \<in> geotop_complex_vertices L'"
+    hence hv_sing: "{v} \<in> L'" using hV_L'_eq by (by100 simp)
+    hence hv_in_L': "v \<in> geotop_polyhedron L'"
+      unfolding geotop_polyhedron_def by (by100 blast)
+    show "v \<in> geotop_polyhedron L" using hv_in_L' hL'L_poly by (by100 simp)
+  qed
+  have hg_inv_inj_VL': "inj_on ?g_inv (geotop_complex_vertices L')"
+    using hg_inv_inj_L hV_L'_in_L inj_on_subset by (by100 blast)
   have hiso_K'L'_vert: "bij_betw ?g_inv (geotop_complex_vertices L')
                                           (geotop_complex_vertices K')"
-    sorry
+    unfolding bij_betw_def
+    using hg_inv_inj_VL' hV_K'_img by (by100 simp)
   (** (6b) Simplex correspondence under convex hull. **)
   have hiso_K'L'_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L' \<longrightarrow>
                           (geotop_convex_hull V \<in> L' \<longleftrightarrow>
