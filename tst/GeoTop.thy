@@ -3016,7 +3016,8 @@ proof -
               geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)" sorry
   show "(\<exists>!k. k \<in> {B1, B2, B3} \<and>
           (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
-            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))" sorry
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+    using h_middle_unique by (by100 blast)
 qed
 
 (** from \<S>2 Theorem 8 (geotop.tex:651)
