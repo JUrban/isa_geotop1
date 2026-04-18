@@ -4157,8 +4157,42 @@ proof -
   have hN_bl: "geotop_broken_line_connected N\<epsilon>"
     using Theorem_GT_1_13[OF hN_open hN_conn] .
   (** Step 4: P, Q are in N\<epsilon> (since both in A \<subseteq> N(A, \<epsilon>)). **)
-  have hP_N: "P \<in> N\<epsilon>" sorry
-  have hQ_N: "Q \<in> N\<epsilon>" sorry
+  have hv_in_e: "v \<in> e"
+  proof -
+    have "e = geotop_convex_hull {v, v'}"
+      using hvs unfolding geotop_simplex_vertices_def by (by100 blast)
+    moreover have "v \<in> geotop_convex_hull {v, v'}"
+      unfolding geotop_convex_hull_def by (by100 blast)
+    ultimately show "v \<in> e" by (by100 blast)
+  qed
+  have hv'_in_e: "v' \<in> e"
+  proof -
+    have "e = geotop_convex_hull {v, v'}"
+      using hvs unfolding geotop_simplex_vertices_def by (by100 blast)
+    moreover have "v' \<in> geotop_convex_hull {v, v'}"
+      unfolding geotop_convex_hull_def by (by100 blast)
+    ultimately show "v' \<in> e" by (by100 blast)
+  qed
+  have hP_A: "P \<in> A"
+    using hP hh hv_in_e unfolding top1_homeomorphism_on_def bij_betw_def
+    by (by100 blast)
+  have hQ_A: "Q \<in> A"
+    using hQ hh hv'_in_e unfolding top1_homeomorphism_on_def bij_betw_def
+    by (by100 blast)
+  have hP_N: "P \<in> N\<epsilon>"
+  proof -
+    have hnorm: "norm (P - P) < \<epsilon>" using h\<epsilon> by (by100 simp)
+    hence "\<exists>Pa\<in>A. norm (Pa - P) < \<epsilon>"
+      using hP_A by (rule bexI)
+    thus ?thesis unfolding N\<epsilon>_def geotop_nbhd_set_def by (by100 simp)
+  qed
+  have hQ_N: "Q \<in> N\<epsilon>"
+  proof -
+    have hnorm: "norm (Q - Q) < \<epsilon>" using h\<epsilon> by (by100 simp)
+    hence "\<exists>Qa\<in>A. norm (Qa - Q) < \<epsilon>"
+      using hQ_A by (rule bexI)
+    thus ?thesis unfolding N\<epsilon>_def geotop_nbhd_set_def by (by100 simp)
+  qed
   (** Step 5: apply broken-line-connectedness. **)
   obtain B where hB: "geotop_is_broken_line B \<and> B \<subseteq> N\<epsilon> \<and> P \<in> B \<and> Q \<in> B"
     using hN_bl hP_N hQ_N unfolding geotop_broken_line_connected_def by blast
