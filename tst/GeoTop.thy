@@ -6511,7 +6511,12 @@ proof -
      B\<^sub>s \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C\<^sub>s \<and>
      C\<^sub>s \<inter> (geotop_manifold_boundary A\<^sub>s (\<lambda>x y. norm (x - y)) - B\<^sub>s) = {}" sorry
   (** (3) Pull C* back via F^{-1} to obtain the required C in A. **)
-  show ?thesis sorry
+  have h_final: "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C
+               \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology A \<and>
+             B \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
+             C \<inter> (geotop_manifold_boundary A (\<lambda>x y. norm (x - y)) - B) = {}" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 3 (geotop.tex:2578)
@@ -6558,7 +6563,9 @@ proof -
      = geotop_component_at UNIV geotop_euclidean_topology
        ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S)" sorry
   (** (4) Pull back the conclusion through h. **)
-  show ?thesis sorry
+  have h_final: "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
+         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 4 (geotop.tex:2583)
@@ -6615,7 +6622,8 @@ proof -
         geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
       = geotop_component_at UNIV geotop_euclidean_topology (U - M) S" sorry
   (** (4) Since all points of U - M share a single component, U - M is connected. **)
-  show ?thesis sorry
+  have h_final: "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 5 (geotop.tex:2587)
@@ -6665,7 +6673,9 @@ proof -
               (geotop_frontier UNIV geotop_euclidean_topology C)) 1" sorry
   (** (6) Applying Schoenflies (\<S>10.6), the bounded region C with 1-sphere boundary is
          a 2-cell. **)
-  show ?thesis sorry
+  have h_final: "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 6 (geotop.tex:2591)
@@ -6705,7 +6715,10 @@ proof -
        (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
          (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))" sorry
   (** (4) Diameter of such a component is < \<epsilon>/3 + 2\<delta> < \<epsilon>. **)
-  show ?thesis sorry
+  have h_final: "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>13 Theorem 7 (geotop.tex:2595)
