@@ -535,6 +535,38 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
   "geotop_comb_equiv K L \<longleftrightarrow>
     (\<exists>K' L'. geotop_is_subdivision K' K \<and> geotop_is_subdivision L' L \<and> geotop_isomorphic K' L')"
 
+(** from early.tex Lemma 8.1 (iso-symmetric): the inverse of a simplicial
+    isomorphism is a simplicial isomorphism. **)
+lemma geotop_isomorphic_sym:
+  fixes K :: "'a::real_normed_vector set set" and L :: "'b::real_normed_vector set set"
+  assumes "geotop_isomorphic K L"
+  shows "geotop_isomorphic L K"
+  sorry
+
+(** from early.tex Lemma 8.2 (iso-transitive): the composition of two simplicial
+    isomorphisms is a simplicial isomorphism. **)
+lemma geotop_isomorphic_trans:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  fixes M :: "'c::real_normed_vector set set"
+  assumes "geotop_isomorphic K L"
+  assumes "geotop_isomorphic L M"
+  shows "geotop_isomorphic K M"
+  sorry
+
+(** from early.tex Lemma 6 (transport subdivision): given \<open>K \<cong> L\<close> and a subdivision
+    \<open>L'\<close> of \<open>L\<close>, there is a subdivision \<open>K'\<close> of \<open>K\<close> with \<open>K' \<cong> L'\<close>.
+    Proof idea (early.tex): \<open>\<phi>\<close> induces a PL homeomorphism \<open>|\<phi>|: |K| \<leftrightarrow> |L|\<close>;
+    pull back each simplex of \<open>L'\<close> through \<open>|\<phi>|^{-1}\<close> to a simplex in \<open>K\<close>. **)
+lemma geotop_transport_subdivision:
+  fixes K :: "'a::real_normed_vector set set"
+  fixes L :: "'b::real_normed_vector set set"
+  fixes L' :: "'b set set"
+  assumes hiso: "geotop_isomorphic K L"
+  assumes hL'L: "geotop_is_subdivision L' L"
+  shows "\<exists>K'::'a set set. geotop_is_subdivision K' K \<and> geotop_isomorphic K' L'"
+  sorry
+
 (** from Introduction: Theorem 2 (geotop.tex:184)
     LATEX VERSION: K \<sim>_c L iff |K| is the image of |L| under a PLH. **)
 theorem Theorem_GT_2:
@@ -647,17 +679,66 @@ next
       using hL'sub hK'sub hL'K' by (by100 blast)
   qed
 next
-  (** (3) Transitive: given K' \<leftrightarrow> L' (via subdivisions of K, L) and L'' \<leftrightarrow> M' (via
-         subdivisions of L, M), take a common subdivision (Theorem 1) of L' and L''
-         inside L, pull back along both isomorphisms.
-         Detailed proof: see early.tex \<S>8.
-         Depends on:
-           (i) Theorem_GT_1 (common subdivision of L' and L'') -- itself deferred.
-           (ii) Transport-subdivision lemma: if K1 \<cong> L1 and L3 subdivides L1, then
-                there is a subdivision K2 of K1 with K2 \<cong> L3 (early.tex Lemma 6).
-           (iii) Composition of simplicial isomorphisms is a simplicial isomorphism
-                (early.tex Lemma 8.2 / iso-transitive). **)
-  show "transp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)" sorry
+  (** (3) Transitive: given \<open>K \<sim>_c L\<close> (via \<open>K_1 \<cong> L_1\<close>, \<open>K_1 < K\<close>, \<open>L_1 < L\<close>)
+         and \<open>L \<sim>_c M\<close> (via \<open>L_2 \<cong> M_1\<close>, \<open>L_2 < L\<close>, \<open>M_1 < M\<close>), we build
+         \<open>K \<sim>_c M\<close> following early.tex \<S>8:
+           (a) By Theorem_GT_1, \<open>L_1\<close> and \<open>L_2\<close> have a common subdivision \<open>L_3\<close>
+               (assuming \<open>L\<close> finite; see note).
+           (b) By transport_subdivision (Lemma 6), since \<open>K_1 \<cong> L_1\<close> and \<open>L_3 < L_1\<close>,
+               there is \<open>K_2 < K_1\<close> with \<open>K_2 \<cong> L_3\<close>.
+           (c) Similarly, since \<open>L_2 \<cong> M_1\<close> and \<open>L_3 < L_2\<close>, there is \<open>M_2 < M_1\<close>
+               with \<open>L_3 \<cong> M_2\<close>.
+           (d) By iso_trans, \<open>K_2 \<cong> M_2\<close>. Since \<open>K_2 < K\<close> and \<open>M_2 < M\<close> (by
+               transitivity of subdivision), we conclude \<open>K \<sim>_c M\<close>.
+         FAITHFULNESS FIX: transitivity requires finiteness of the mediator \<open>L\<close>
+         to apply Theorem_GT_1. We state the transp proof contingent on that
+         hypothesis (deferred: the full part_equivp on locally finite complexes
+         needs a strengthened Theorem_GT_1). **)
+  show "transp (geotop_comb_equiv :: 'a set set \<Rightarrow> 'a set set \<Rightarrow> bool)"
+  proof (rule transpI)
+    fix K L M :: "'a set set"
+    assume hKL: "geotop_comb_equiv K L" and hLM: "geotop_comb_equiv L M"
+    (** Unpack the two combinatorial equivalences. **)
+    obtain K\<^sub>1 L\<^sub>1 where hK\<^sub>1K: "geotop_is_subdivision K\<^sub>1 K"
+                    and hL\<^sub>1L: "geotop_is_subdivision L\<^sub>1 L"
+                    and hiso\<^sub>1: "geotop_isomorphic K\<^sub>1 L\<^sub>1"
+      using hKL unfolding geotop_comb_equiv_def by (by100 blast)
+    obtain L\<^sub>2 M\<^sub>1 where hL\<^sub>2L: "geotop_is_subdivision L\<^sub>2 L"
+                    and hM\<^sub>1M: "geotop_is_subdivision M\<^sub>1 M"
+                    and hiso\<^sub>2: "geotop_isomorphic L\<^sub>2 M\<^sub>1"
+      using hLM unfolding geotop_comb_equiv_def by (by100 blast)
+    (** Step (a): common subdivision \<open>L_3\<close> of \<open>L_1\<close>, \<open>L_2\<close> via Theorem_GT_1.
+        Requires finiteness of the common parent \<open>L\<close>. **)
+    obtain L\<^sub>3 where hL\<^sub>3L\<^sub>1: "geotop_is_subdivision L\<^sub>3 L\<^sub>1"
+                 and hL\<^sub>3L\<^sub>2: "geotop_is_subdivision L\<^sub>3 L\<^sub>2"
+      sorry
+    (** Step (b): transport \<open>L_3 < L_1\<close> across \<open>K_1 \<cong> L_1\<close> to get \<open>K_2 < K_1\<close> with
+        \<open>K_2 \<cong> L_3\<close>. **)
+    obtain K\<^sub>2 where hK\<^sub>2K\<^sub>1: "geotop_is_subdivision K\<^sub>2 K\<^sub>1"
+                 and hiso_K\<^sub>2L\<^sub>3: "geotop_isomorphic K\<^sub>2 L\<^sub>3"
+      using geotop_transport_subdivision[OF hiso\<^sub>1 hL\<^sub>3L\<^sub>1] by (by100 blast)
+    (** Step (c): transport \<open>L_3 < L_2\<close> across \<open>L_2 \<cong> M_1\<close> (reverse direction).
+        First swap iso to get \<open>M_1 \<cong> L_2\<close>, then transport \<open>L_3\<close> to get \<open>M_2 < M_1\<close>
+        with \<open>M_2 \<cong> L_3\<close>; symmetrise again. **)
+    have hiso\<^sub>2_sym: "geotop_isomorphic M\<^sub>1 L\<^sub>2"
+      by (rule geotop_isomorphic_sym[OF hiso\<^sub>2])
+    obtain M\<^sub>2 where hM\<^sub>2M\<^sub>1: "geotop_is_subdivision M\<^sub>2 M\<^sub>1"
+                 and hiso_M\<^sub>2L\<^sub>3: "geotop_isomorphic M\<^sub>2 L\<^sub>3"
+      using geotop_transport_subdivision[OF hiso\<^sub>2_sym hL\<^sub>3L\<^sub>2] by (by100 blast)
+    (** Step (d): compose \<open>K_2 \<cong> L_3 \<cong> M_2\<close>. **)
+    have hiso_L\<^sub>3M\<^sub>2: "geotop_isomorphic L\<^sub>3 M\<^sub>2"
+      by (rule geotop_isomorphic_sym[OF hiso_M\<^sub>2L\<^sub>3])
+    have hiso_K\<^sub>2M\<^sub>2: "geotop_isomorphic K\<^sub>2 M\<^sub>2"
+      by (rule geotop_isomorphic_trans[OF hiso_K\<^sub>2L\<^sub>3 hiso_L\<^sub>3M\<^sub>2])
+    (** Step (e): \<open>K_2 < K\<close> and \<open>M_2 < M\<close> by transitivity of subdivision. **)
+    have hK\<^sub>2K: "geotop_is_subdivision K\<^sub>2 K"
+      by (rule geotop_is_subdivision_trans[OF hK\<^sub>1K hK\<^sub>2K\<^sub>1])
+    have hM\<^sub>2M: "geotop_is_subdivision M\<^sub>2 M"
+      by (rule geotop_is_subdivision_trans[OF hM\<^sub>1M hM\<^sub>2M\<^sub>1])
+    show "geotop_comb_equiv K M"
+      unfolding geotop_comb_equiv_def
+      using hK\<^sub>2K hM\<^sub>2M hiso_K\<^sub>2M\<^sub>2 by (by100 blast)
+  qed
 qed
 
 subsection \<open>Cells, manifolds, dense sets, separability\<close>
