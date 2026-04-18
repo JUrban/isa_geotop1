@@ -2477,9 +2477,35 @@ proof -
     (** L_3 \<cong> K_3 via f restricted to vertices. L_3 = f_inv \<sup>\` K_3, so
         vertices of L_3 are f_inv-images of vertices of K_3. f is a bijection
         |L| \<leftrightarrow> |K| mapping each vertex of L_3 to a vertex of K_3. **)
-    (** (a) vertex bijection: f maps vertices of L_3 to vertices of K_3 bijectively. **)
+    (** (a) vertex bijection: f maps vertices of L_3 to vertices of K_3 bijectively.
+        Key steps:
+        1. V(L_3) = {v : {v} \<in> L_3} = {f_inv w : {w} \<in> K_3} = f_inv \`\` V(K_3)
+        2. f restricted to f_inv \`\` V(K_3) bijects to V(K_3) (since f is inverse of
+           f_inv on |K|). **)
+    have hV_L\<^sub>3_eq: "geotop_complex_vertices L\<^sub>3 = {v. {v} \<in> L\<^sub>3}"
+      by (rule geotop_complex_vertices_eq_0_simplexes[OF hL\<^sub>3_complex])
+    have hV_K\<^sub>3_eq: "geotop_complex_vertices K\<^sub>3 = {v. {v} \<in> K\<^sub>3}"
+      by (rule geotop_complex_vertices_eq_0_simplexes[OF hK\<^sub>3_comp])
+    (** Characterize 0-simplexes of L_3 as f_inv images of 0-simplexes of K_3. **)
+    have hL\<^sub>3_singletons: "{v. {v} \<in> L\<^sub>3}
+                            = inv_into (geotop_polyhedron L) f ` {w. {w} \<in> K\<^sub>3}"
+      sorry \<comment> \<open>Unfold L_3 = f_inv \`\` K_3; {v} = f_inv \`\` \<sigma> forces \<sigma> singleton
+                (f_inv inj); singletons in K_3 correspond bijectively via f_inv.\<close>
+    have hV_L\<^sub>3_img: "geotop_complex_vertices L\<^sub>3 =
+                       inv_into (geotop_polyhedron L) f ` geotop_complex_vertices K\<^sub>3"
+      using hV_L\<^sub>3_eq hV_K\<^sub>3_eq hL\<^sub>3_singletons by (by100 simp)
+    (** V(K_3) \<subseteq> |K_3| = |K| (vertices lie in polyhedron). **)
+    have hV_K\<^sub>3_in_K: "geotop_complex_vertices K\<^sub>3 \<subseteq> geotop_polyhedron K"
+      sorry \<comment> \<open>Each v \<in> V(K_3) has {v} \<in> K_3 \<subseteq> \<Union>K_3 = |K_3| = |K|.\<close>
+    (** f_inv is bijective |K| \<leftrightarrow> |L|; restricts to V(K_3) \<to> V(L_3) bij. **)
+    have hf_inv_bij_V: "bij_betw (inv_into (geotop_polyhedron L) f)
+                                   (geotop_complex_vertices K\<^sub>3)
+                                   (geotop_complex_vertices L\<^sub>3)"
+      sorry \<comment> \<open>f_inv bij |K| \<leftrightarrow> |L| + V(K_3) \<subseteq> |K| + V(L_3) = f_inv \`\` V(K_3).\<close>
+    (** f is inverse of f_inv on the relevant sets. **)
     have hiso_vert: "bij_betw f (geotop_complex_vertices L\<^sub>3) (geotop_complex_vertices K\<^sub>3)"
-      sorry
+      sorry \<comment> \<open>Invert hf_inv_bij_V using bij_betw_inv_into + identification
+                inv_into (|L|) f on V(L_3) coincides with f (since f bijects).\<close>
     (** (b) simplex correspondence: conv V \<in> L_3 \<longleftrightarrow> conv (f\<sup>\`V) \<in> K_3. **)
     have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
                        (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
