@@ -3163,7 +3163,10 @@ proof -
     "\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
          top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology g" sorry
-  show ?thesis sorry
+  have h_final: "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology g
+          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>" sorry
+  show ?thesis using h_final by (by100 blast)
 qed
 
 (** from \<S>3: free 2-simplex (geotop.tex:752)
