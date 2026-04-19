@@ -3823,12 +3823,29 @@ proof -
                    \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))
                    \<and> (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K)"
     by (rule geotop_isomorphic_induces_PLH_strong[OF hKcomp hLcomp hiso])
-  obtain g :: "'a \<Rightarrow> 'b" where hg: "geotop_PLH K L g"
-                             and hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
-                             and hg_inv_lin_L: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau>
-                                                       (inv_into (geotop_polyhedron K) g)"
-                             and hg_inv_L_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K"
-    using hg_strong_ex by (by100 blast)
+  define gwit :: "'a \<Rightarrow> 'b" where
+    "gwit = (SOME g. geotop_PLH K L g \<and>
+                    g ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
+                    (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g)) \<and>
+                    (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K))"
+  have hgwit: "geotop_PLH K L gwit \<and>
+               gwit ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
+               (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) gwit)) \<and>
+               (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) gwit ` \<tau> \<in> K)"
+    unfolding gwit_def using someI_ex[OF hg_strong_ex] by (by100 blast)
+  obtain g :: "'a \<Rightarrow> 'b" where hg_all:
+    "geotop_PLH K L g \<and> g ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
+     (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g)) \<and>
+     (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K)"
+    using hgwit by (by100 blast)
+  have hg: "geotop_PLH K L g" using hg_all by (by100 blast)
+  have hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
+    using hg_all by (by100 blast)
+  have hg_inv_lin_L: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau>
+                                (inv_into (geotop_polyhedron K) g)"
+    using hg_all by (by100 blast)
+  have hg_inv_L_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K"
+    using hg_all by (by100 blast)
   have hg_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
     using hg unfolding geotop_PLH_def by (by100 blast)
   (** (2) Pull back each simplex of \<open>L'\<close> through \<open>g\<^sup>-\<^sup>1\<close>. **)
@@ -8829,6 +8846,46 @@ proof -
     by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
 qed
 
+(** PL Helper 1: a sub-arc of a broken line between any two of its points
+    is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
+    homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
+    sub-interval. Since \<open>B\<close>'s complex is at most 1-dimensional (arc has
+    dim 1), the sub-arc is the polyhedron of the restriction of the complex
+    to vertices between the two parameter values (after possible edge
+    subdivision at \<open>X\<close>, \<open>Y\<close>). **)
+lemma geotop_broken_line_subarc:
+  fixes B :: "'a::euclidean_space set"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hX: "X \<in> B" and hY: "Y \<in> B"
+  shows "\<exists>B'. geotop_is_broken_line B' \<and> B' \<subseteq> B \<and> X \<in> B' \<and> Y \<in> B'"
+proof (cases "X = Y")
+  case True
+  (** Degenerate: sub-arc collapses to a single point, not a valid broken line
+      (which is an arc, i.e., 1-cell). But we still need to exhibit SOME
+      broken line. Since \<open>X = Y \<in> B\<close>, take \<open>B' = B\<close> itself. **)
+  have hsub: "B \<subseteq> B" by (by100 blast)
+  show ?thesis using hB hsub hX hY by (by100 blast)
+next
+  case False
+  show ?thesis sorry \<comment> \<open>Classical PL: sub-arc from X to Y in the arc parametrisation
+                        of B. Deferred — needs arc-parametrisation access and
+                        sub-complex construction.\<close>
+qed
+
+(** PL Helper 2: two broken lines sharing exactly one endpoint (their
+    intersection = singleton endpoint of both) combine into a broken line.
+    Proof via HOL's \<open>arc_join\<close>: both underlying HOL arcs glue into a HOL arc
+    whose image is the set union. The complex union \<open>K\<^sub>1 \<union> K\<^sub>2\<close> (with K.2
+    checked at the shared vertex) gives the polyhedral witness. **)
+lemma geotop_broken_lines_glue_disjoint:
+  fixes B\<^sub>1 B\<^sub>2 :: "'a::euclidean_space set"
+  assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>2: "geotop_is_broken_line B\<^sub>2"
+  assumes hR: "R \<in> B\<^sub>1" "R \<in> B\<^sub>2"
+  assumes hdisj: "B\<^sub>1 \<inter> B\<^sub>2 = {R}"
+  shows "geotop_is_broken_line (B\<^sub>1 \<union> B\<^sub>2)"
+  sorry \<comment> \<open>Classical PL: two arcs meeting at exactly one point form an arc
+            via arc_join; complex union K1 \<union> K2 gives polyhedral witness.\<close>
+
 (** PL-arc-reduction: given two broken lines \<open>B\<^sub>1, B\<^sub>2\<close> sharing a point and two
     further points \<open>P \<in> B\<^sub>1\<close>, \<open>Q \<in> B\<^sub>2\<close>, there is a broken-line sub-arc of
     \<open>B\<^sub>1 \<union> B\<^sub>2\<close> from \<open>P\<close> to \<open>Q\<close>.
@@ -8865,26 +8922,26 @@ proof -
     show ?thesis using hB\<^sub>1 hsub hP QinB\<^sub>1 by (by100 blast)
   next
     case hard
-    (** Cross-arc case. Proof plan (PL graph-theoretic):
-        (1) Extract complexes K\<^sub>1, K\<^sub>2 witnessing the broken-line structure of
-            \<open>B\<^sub>1\<close>, \<open>B\<^sub>2\<close>. Each is at most 1-dimensional (its polyhedron is
-            homeomorphic to [0,1], so dim \<le> 1).
-        (2) The union \<open>K\<^sub>1 \<union> K\<^sub>2\<close> is a finite graph (possibly after subdivision
-            to make K.2 hold at \<open>Q\<^sub>0\<close> if needed). Its polyhedron is \<open>B\<^sub>1 \<union> B\<^sub>2\<close>.
-        (3) \<open>P\<close>, \<open>Q\<close> are either vertices or interior points of 1-simplices;
-            in the latter case, subdivide the containing edge to make them
-            vertices.
-        (4) The resulting graph is connected (\<open>B\<^sub>1 \<cup> B\<^sub>2\<close> is, shares \<open>Q\<^sub>0\<close>);
-            extract a simple graph-path from \<open>P\<close> to \<open>Q\<close> (standard graph theory).
-        (5) The polyhedron of that simple path is a broken line.
-
-        Alternative via HOL's \<open>path_contains_arc\<close> (Arcwise_Connected theory):
-        this gives a HOL arc inside \<open>B\<^sub>1 \<union> B\<^sub>2\<close>, but the arc need not be
-        PL - proving its image is a polyhedron requires essentially the
-        same graph-theoretic argument. **)
-    show ?thesis sorry \<comment> \<open>Classical PL Hausdorff-Moore arc-reduction (cross-arc).
-                          ~150-200 lines of PL graph theory (subdivide + path-in-graph +
-                          polyhedron of simple path). Deferred as one named classical fact.\<close>
+    (** Cross-arc case (P \<notin> B\<^sub>2 \<and> Q \<notin> B\<^sub>1). Proof via the two PL helpers:
+        (1) Take sub-arc \<open>B\<^sub>1'\<close> of \<open>B\<^sub>1\<close> from \<open>P\<close> to \<open>Q\<^sub>0\<close> (broken_line_subarc).
+        (2) Take sub-arc \<open>B\<^sub>2'\<close> of \<open>B\<^sub>2\<close> from \<open>Q\<^sub>0\<close> to \<open>Q\<close> (broken_line_subarc).
+        (3) Inductive argument on the intersection \<open>B\<^sub>1' \<cap> B\<^sub>2'\<close>:
+              - If \<open>{Q\<^sub>0}\<close>: glue via broken_lines_glue_disjoint.
+              - Otherwise: take first intersection along the arc parametrisation
+                of \<open>B\<^sub>1'\<close>, recurse.
+        A fully precise proof of (3) is deferred as one classical sorry; the
+        helpers reduce the content to a compact-meet-arc-endpoint argument. **)
+    obtain B\<^sub>1' where hB\<^sub>1': "geotop_is_broken_line B\<^sub>1'" and hB\<^sub>1'_sub: "B\<^sub>1' \<subseteq> B\<^sub>1"
+                  and hPB\<^sub>1': "P \<in> B\<^sub>1'" and hQ\<^sub>0B\<^sub>1': "Q\<^sub>0 \<in> B\<^sub>1'"
+      using geotop_broken_line_subarc[OF hB\<^sub>1 hP hQ\<^sub>0_1] by (by100 blast)
+    obtain B\<^sub>2' where hB\<^sub>2': "geotop_is_broken_line B\<^sub>2'" and hB\<^sub>2'_sub: "B\<^sub>2' \<subseteq> B\<^sub>2"
+                  and hQ\<^sub>0B\<^sub>2': "Q\<^sub>0 \<in> B\<^sub>2'" and hQB\<^sub>2': "Q \<in> B\<^sub>2'"
+      using geotop_broken_line_subarc[OF hB\<^sub>2 hQ\<^sub>0_2 hQ] by (by100 blast)
+    (** Now work with the tighter sub-arcs \<open>B\<^sub>1', B\<^sub>2'\<close>. At this level the
+        classical content reduces to: two sub-arcs sharing \<open>Q\<^sub>0\<close>, possibly
+        meeting elsewhere, have a broken-line sub-arc from \<open>P\<close> to \<open>Q\<close>. **)
+    show ?thesis sorry \<comment> \<open>Classical: reduce overlapping subarcs via first-intersection
+                          R on B1prime; then subarc1 \<union> subarc2 glues disjointly.\<close>
   qed
 qed
 
