@@ -9060,9 +9060,7 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
 (** Phase 1.1 helper (interior case, top-level). Substantive construction:
-    K' = (K \<setminus> {e}) \<union> {{R}, seg(v0,R), seg(R,v1)}. Axiom verification pending
-    as a single focused classical sorry at this level — the construction is
-    fully specified. **)
+    K' = (K \<setminus> {e}) \<union> {{R}, seg(v0,R), seg(R,v1)}. **)
 lemma geotop_complex_subdivide_edge_interior:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
@@ -9074,10 +9072,8 @@ lemma geotop_complex_subdivide_edge_interior:
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
             \<and> (finite K \<longrightarrow> finite K')"
-  sorry \<comment> \<open>Classical PL: subdivide edge e = conv{v0,v1} at interior point R.
-            Construction: K' = (K \<setminus> {e}) \<union> {{R}, conv{v0,R}, conv{R,v1}}.
-            Axioms (complex, 1-dim, |K'|=|K|, {R} \<in> K', finiteness) verified
-            via standard PL graph-theoretic case analysis.\<close>
+  sorry
+
 
 (** Phase 1.1 helper (vertex case): if R is a vertex of an edge e of K,
     then {R} is already in K by face-closure. **)
