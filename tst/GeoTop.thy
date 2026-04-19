@@ -1013,9 +1013,21 @@ proof -
     using h_sv' h_prop' by (by100 blast)
 qed
 
-(** Image of a simplex under a map that is linear on it and injective on it is a simplex.
-    Full proof except for "affine injection preserves affine independence" which is a
-    classical fact deferred to a sub-sorry. **)
+(** Shared classical fact: an affine map that is a bijection on a finite AI set V
+    preserves affine independence of the image. Used by is_simplex, preserves_face,
+    and face_preimage. Proof deferred — classical linear-algebra result. **)
+lemma geotop_bary_lin_inj_preserves_ai:
+  fixes V :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
+  assumes hVfin: "finite V"
+  assumes h_inj: "inj_on f V"
+  assumes hV_ai: "\<not> affine_dependent V"
+  assumes h_bary: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
+                        f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+  shows "\<not> affine_dependent (f ` V)"
+  sorry \<comment> \<open>Classical: affine bijection preserves AI. Uses aff_dim invariance
+             under affine bijection + affine_independent_iff_card.\<close>
+
+(** Image of a simplex under a map that is linear on it and injective on it is a simplex. **)
 lemma geotop_linear_inj_image_is_simplex:
   fixes \<sigma> :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
   assumes h_lin: "geotop_linear_on \<sigma> f"
@@ -1183,10 +1195,12 @@ proof -
   have h_fV_card: "card (f ` V) = card V" by (rule card_image[OF h_inj_V])
   have h_fV_fin: "finite (f ` V)" using hVfin by (by100 simp)
   have h_fV_card_eq: "card (f ` V) = n + 1" using h_fV_card hVcard by (by100 simp)
-  (** (4) f V is AI (deferred — deep classical fact). **)
+  (** (4) f V is AI via the shared preserves_ai helper. **)
+  have h_bary_V: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
+                        f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_prop by (by100 blast)
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    sorry \<comment> \<open>Affine injective on conv V preserves affine independence of V.
-              Deferred; classical.\<close>
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai h_bary_V])
   (** (5) AI + card → general_position. **)
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card_eq h_fV_ai])
@@ -1281,8 +1295,10 @@ proof -
   have h_fV_fin: "finite (f ` V)" using hVfin by (by100 simp)
   have h_fV_card: "card (f ` V) = n + 1"
     using card_image[OF h_inj_V] hVcard by (by100 simp)
+  have hVai_here: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hVsv])
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    sorry \<comment> \<open>Affine injective on conv V preserves AI; deferred classical.\<close>
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai_here h_bary_V])
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card h_fV_ai])
   have h_f\<sigma>_geo: "f ` \<sigma> = geotop_convex_hull (f ` V)"
@@ -1349,8 +1365,10 @@ proof -
   have h_fV_fin: "finite (f ` V)" using hVfin by (by100 simp)
   have h_fV_card: "card (f ` V) = n + 1"
     using card_image[OF h_inj_V] hVcard by (by100 simp)
+  have hVai_here: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hVsv])
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    sorry \<comment> \<open>Affine injective on conv V preserves AI; deferred classical.\<close>
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai_here h_bary_V])
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card h_fV_ai])
   have h_f\<sigma>_geo: "f ` \<sigma> = geotop_convex_hull (f ` V)"
