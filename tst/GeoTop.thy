@@ -11053,7 +11053,7 @@ proof
     sorry
   (** (3) Common subdivision L_2 of f(K_1) and L_1 via Theorem_GT_1 (requires finite L). **)
   have hL_2_ex: "\<exists>L\<^sub>2. geotop_is_subdivision L\<^sub>2 ((`) f ` K\<^sub>1) \<and> geotop_is_subdivision L\<^sub>2 L1"
-    sorry
+    by (rule Theorem_GT_1[OF hLfin hfK\<^sub>1_sub hsub])
   (** (4) K_2 = f_inv(L_2) refines K, and f linear on each K_2-simplex into L_1. **)
   have hK\<^sub>2_ex: "\<exists>K\<^sub>2. geotop_is_subdivision K\<^sub>2 K \<and>
                    (\<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f)"
