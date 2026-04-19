@@ -9360,11 +9360,104 @@ proof -
     by (by100 blast)
   have hK_faces: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
     unfolding K_def using hK\<^sub>1_faces hK\<^sub>2_faces by (by100 blast)
+  (** K.2: intersection is face of both. Split by K_1/K_2 membership. **)
+  have hK\<^sub>1_inter: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>\<in>K\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {}
+                      \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hK\<^sub>1_comp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have hK\<^sub>2_inter: "\<forall>\<sigma>\<in>K\<^sub>2. \<forall>\<tau>\<in>K\<^sub>2. \<sigma> \<inter> \<tau> \<noteq> {}
+                      \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hK\<^sub>2_comp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  (** Cross case: \<sigma> \<in> K_1, \<tau> \<in> K_2. Intersection lies in |K_1| \<inter> |K_2| = B_1 \<inter> B_2 = {R}. **)
+  have h_cross_inter: "\<And>\<sigma> \<tau>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> \<tau> \<in> K\<^sub>2 \<Longrightarrow> \<sigma> \<inter> \<tau> \<subseteq> {R}"
+  proof -
+    fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> K\<^sub>1" and h\<tau>: "\<tau> \<in> K\<^sub>2"
+    have h\<sigma>_sub: "\<sigma> \<subseteq> geotop_polyhedron K\<^sub>1"
+      unfolding geotop_polyhedron_def using h\<sigma> by (by100 blast)
+    have h\<tau>_sub: "\<tau> \<subseteq> geotop_polyhedron K\<^sub>2"
+      unfolding geotop_polyhedron_def using h\<tau> by (by100 blast)
+    have h_ss: "\<sigma> \<inter> \<tau> \<subseteq> B\<^sub>1 \<inter> B\<^sub>2"
+      using h\<sigma>_sub h\<tau>_sub hK\<^sub>1_poly hK\<^sub>2_poly by (by100 blast)
+    show "\<sigma> \<inter> \<tau> \<subseteq> {R}" using h_ss hdisj by (by100 simp)
+  qed
+  have h_cross_ne_R: "\<And>\<sigma> \<tau>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> \<tau> \<in> K\<^sub>2 \<Longrightarrow> \<sigma> \<inter> \<tau> \<noteq> {} \<Longrightarrow> \<sigma> \<inter> \<tau> = {R}"
+  proof -
+    fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> K\<^sub>1" and h\<tau>: "\<tau> \<in> K\<^sub>2" and hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h_sub: "\<sigma> \<inter> \<tau> \<subseteq> {R}" using h_cross_inter h\<sigma> h\<tau> by (by100 blast)
+    show "\<sigma> \<inter> \<tau> = {R}" using h_sub hne by (by100 blast)
+  qed
+  (** When R ∈ σ (σ ∈ K_1 containing R), {R} is a face of σ because {R} ∈ K_1 and K.2. **)
+  have h_R_face_of: "\<And>\<sigma>. \<sigma> \<in> K\<^sub>1 \<Longrightarrow> R \<in> \<sigma> \<Longrightarrow> geotop_is_face {R} \<sigma>"
+  proof -
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K\<^sub>1" and hR\<sigma>: "R \<in> \<sigma>"
+    have h_int: "\<sigma> \<inter> {R} = {R}" using hR\<sigma> by (by100 blast)
+    have h_ne: "\<sigma> \<inter> {R} \<noteq> {}" using h_int by (by100 simp)
+    have h_face: "geotop_is_face (\<sigma> \<inter> {R}) \<sigma>"
+      using hK\<^sub>1_inter h\<sigma> hR_K\<^sub>1 h_ne by (by100 blast)
+    show "geotop_is_face {R} \<sigma>" using h_face h_int by (by100 simp)
+  qed
+  have h_R_face_of_K\<^sub>2: "\<And>\<tau>. \<tau> \<in> K\<^sub>2 \<Longrightarrow> R \<in> \<tau> \<Longrightarrow> geotop_is_face {R} \<tau>"
+  proof -
+    fix \<tau> assume h\<tau>: "\<tau> \<in> K\<^sub>2" and hR\<tau>: "R \<in> \<tau>"
+    have h_int: "\<tau> \<inter> {R} = {R}" using hR\<tau> by (by100 blast)
+    have h_ne: "\<tau> \<inter> {R} \<noteq> {}" using h_int by (by100 simp)
+    have h_face: "geotop_is_face (\<tau> \<inter> {R}) \<tau>"
+      using hK\<^sub>2_inter h\<tau> hR_K\<^sub>2 h_ne by (by100 blast)
+    show "geotop_is_face {R} \<tau>" using h_face h_int by (by100 simp)
+  qed
+  have hK_inter: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {}
+                    \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K" and hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>_disj: "\<sigma> \<in> K\<^sub>1 \<or> \<sigma> \<in> K\<^sub>2" using h\<sigma>K unfolding K_def by (by100 blast)
+    have h\<tau>_disj: "\<tau> \<in> K\<^sub>1 \<or> \<tau> \<in> K\<^sub>2" using h\<tau>K unfolding K_def by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (cases "\<sigma> \<in> K\<^sub>1 \<and> \<tau> \<in> K\<^sub>1")
+      case True
+      thus ?thesis using hK\<^sub>1_inter hne by (by100 blast)
+    next
+      case False
+      show ?thesis
+      proof (cases "\<sigma> \<in> K\<^sub>2 \<and> \<tau> \<in> K\<^sub>2")
+        case True
+        thus ?thesis using hK\<^sub>2_inter hne by (by100 blast)
+      next
+        case False
+        (** Cross: σ ∈ K_1, τ ∈ K_2, or vice versa. **)
+        have hcross: "(\<sigma> \<in> K\<^sub>1 \<and> \<tau> \<in> K\<^sub>2) \<or> (\<sigma> \<in> K\<^sub>2 \<and> \<tau> \<in> K\<^sub>1)"
+          using h\<sigma>_disj h\<tau>_disj \<open>\<not> (\<sigma> \<in> K\<^sub>1 \<and> \<tau> \<in> K\<^sub>1)\<close> False by (by100 blast)
+        thus ?thesis
+        proof
+          assume h12: "\<sigma> \<in> K\<^sub>1 \<and> \<tau> \<in> K\<^sub>2"
+          have h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1" and h\<tau>K\<^sub>2: "\<tau> \<in> K\<^sub>2" using h12 by (by100 simp)+
+          have h_int_R: "\<sigma> \<inter> \<tau> = {R}" using h_cross_ne_R h\<sigma>K\<^sub>1 h\<tau>K\<^sub>2 hne by (by100 blast)
+          have hR\<sigma>: "R \<in> \<sigma>" using h_int_R by (by100 blast)
+          have hR\<tau>: "R \<in> \<tau>" using h_int_R by (by100 blast)
+          have hf\<sigma>: "geotop_is_face {R} \<sigma>" using h_R_face_of h\<sigma>K\<^sub>1 hR\<sigma> by (by100 blast)
+          have hf\<tau>: "geotop_is_face {R} \<tau>" using h_R_face_of_K\<^sub>2 h\<tau>K\<^sub>2 hR\<tau> by (by100 blast)
+          show ?thesis using h_int_R hf\<sigma> hf\<tau> by (by100 simp)
+        next
+          assume h21: "\<sigma> \<in> K\<^sub>2 \<and> \<tau> \<in> K\<^sub>1"
+          have h\<sigma>K\<^sub>2: "\<sigma> \<in> K\<^sub>2" and h\<tau>K\<^sub>1: "\<tau> \<in> K\<^sub>1" using h21 by (by100 simp)+
+          have h_int_R: "\<sigma> \<inter> \<tau> = {R}"
+          proof -
+            have h_sym: "\<tau> \<inter> \<sigma> = {R}"
+              using h_cross_ne_R h\<tau>K\<^sub>1 h\<sigma>K\<^sub>2 hne by (by100 blast)
+            thus ?thesis by (by100 blast)
+          qed
+          have hR\<sigma>: "R \<in> \<sigma>" using h_int_R by (by100 blast)
+          have hR\<tau>: "R \<in> \<tau>" using h_int_R by (by100 blast)
+          have hf\<sigma>: "geotop_is_face {R} \<sigma>" using h_R_face_of_K\<^sub>2 h\<sigma>K\<^sub>2 hR\<sigma> by (by100 blast)
+          have hf\<tau>: "geotop_is_face {R} \<tau>" using h_R_face_of h\<tau>K\<^sub>1 hR\<tau> by (by100 blast)
+          show ?thesis using h_int_R hf\<sigma> hf\<tau> by (by100 simp)
+        qed
+      qed
+    qed
+  qed
   have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2
                           \<and> geotop_complex_is_1dim K"
-    sorry \<comment> \<open>Remaining: K.2 (intersections force face-relation) and K.3 (local
-              finiteness). K.2 critical check: σ ∈ K_1, τ ∈ K_2, σ ∩ τ ≠ ∅ gives
-              σ ∩ τ ⊆ {R} = σ ∩ τ = {R} and R vertex of both ⟹ {R} face of both.\<close>
+    sorry \<comment> \<open>Remaining: K.3 (local finiteness).\<close>
   show ?thesis
     unfolding geotop_is_broken_line_def
     using h_polyhedron h_geotop_arc by (by100 blast)
