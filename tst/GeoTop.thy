@@ -1317,7 +1317,139 @@ lemma geotop_linear_inj_image_face_preimage:
   assumes h_sim: "geotop_is_simplex \<sigma>"
   assumes h_face: "geotop_is_face \<tau> (f ` \<sigma>)"
   shows "\<exists>\<tau>_pre. geotop_is_face \<tau>_pre \<sigma> \<and> \<tau> = f ` \<tau>_pre"
-  sorry \<comment> \<open>Symmetric to geotop_linear_inj_image_preserves_face; pulls back via f.\<close>
+proof -
+  (** (1) Extract V and bary-linearity from h_lin. **)
+  obtain V where hVsv: "geotop_simplex_vertices \<sigma> V"
+             and h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+                              f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_lin unfolding geotop_linear_on_def by (by100 blast)
+  obtain m n where hVfin: "finite V" and hVcard: "card V = n + 1" and hnm: "n \<le> m"
+               and hVgp: "geotop_general_position V m"
+               and h\<sigma>hull: "\<sigma> = geotop_convex_hull V"
+    using hVsv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_sub_\<sigma>: "V \<subseteq> \<sigma>"
+    using hVsv h\<sigma>hull unfolding geotop_simplex_vertices_def geotop_convex_hull_def
+    by (by100 blast)
+  have h_inj_V: "inj_on f V" using h_inj hV_sub_\<sigma> inj_on_subset by (by100 blast)
+  (** (2) Extract V0 W0 from h_face (\<tau> is face of f\<sigma>). **)
+  obtain V0 W0 where hV0sv: "geotop_simplex_vertices (f ` \<sigma>) V0"
+                 and hW0ne: "W0 \<noteq> {}" and hW0V0: "W0 \<subseteq> V0"
+                 and h\<tau>_eq_raw: "\<tau> = geotop_convex_hull W0"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  (** (3) We need f ` V as simplex_vertices of f\<sigma>. Same AI sorry as preserves_face. **)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_bary_V: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
+                        f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h_prop by (by100 blast)
+  have h_fV_hull_eq: "f ` (convex hull V) = convex hull (f ` V)"
+    by (rule geotop_bary_lin_inj_image_hull_eq[OF hVfin h_inj_V h_bary_V])
+  have h_f\<sigma>_HOL: "f ` \<sigma> = convex hull (f ` V)"
+    using h_fV_hull_eq h\<sigma>_HOL by (by100 simp)
+  have h_fV_fin: "finite (f ` V)" using hVfin by (by100 simp)
+  have h_fV_card: "card (f ` V) = n + 1"
+    using card_image[OF h_inj_V] hVcard by (by100 simp)
+  have h_fV_ai: "\<not> affine_dependent (f ` V)"
+    sorry \<comment> \<open>Affine injective on conv V preserves AI; deferred classical.\<close>
+  have h_fV_gp: "geotop_general_position (f ` V) n"
+    by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card h_fV_ai])
+  have h_f\<sigma>_geo: "f ` \<sigma> = geotop_convex_hull (f ` V)"
+    using h_f\<sigma>_HOL geotop_convex_hull_eq_HOL[of "f ` V", symmetric] by (by100 simp)
+  have h_fVsv: "geotop_simplex_vertices (f ` \<sigma>) (f ` V)"
+    unfolding geotop_simplex_vertices_def
+    using h_fV_fin h_fV_card hnm h_fV_gp h_f\<sigma>_geo by (by100 blast)
+  (** (4) By uniqueness V0 = f ` V. Hence W0 \<subseteq> f ` V. **)
+  have hV0eq: "V0 = f ` V" by (rule geotop_simplex_vertices_unique[OF hV0sv h_fVsv])
+  have hW0fV: "W0 \<subseteq> f ` V" using hW0V0 hV0eq by (by100 simp)
+  (** (5) Lift W0 back to W_pre = inv_into V f ` W0 \<subseteq> V. **)
+  define W_pre where "W_pre = inv_into V f ` W0"
+  have hW_pre_V: "W_pre \<subseteq> V"
+  proof
+    fix v assume hv: "v \<in> W_pre"
+    then obtain w where hwW0: "w \<in> W0" and hv_eq: "v = inv_into V f w"
+      unfolding W_pre_def by (by100 blast)
+    have "w \<in> f ` V" using hwW0 hW0fV by (by100 blast)
+    then have "inv_into V f w \<in> V" by (rule inv_into_into)
+    thus "v \<in> V" using hv_eq by (by100 simp)
+  qed
+  have hW_pre_ne: "W_pre \<noteq> {}" unfolding W_pre_def using hW0ne by (by100 blast)
+  have hW_pre_fin: "finite W_pre" using hW_pre_V hVfin finite_subset by (by100 blast)
+  (** (6) f ` W_pre = W0. **)
+  have h_fW_pre: "f ` W_pre = W0"
+  proof -
+    have h_pointwise: "\<And>w. w \<in> W0 \<Longrightarrow> f (inv_into V f w) = w"
+    proof -
+      fix w assume hw: "w \<in> W0"
+      have "w \<in> f ` V" using hw hW0fV by (by100 blast)
+      thus "f (inv_into V f w) = w" by (rule f_inv_into_f)
+    qed
+    have "f ` W_pre = (\<lambda>w. f (inv_into V f w)) ` W0"
+      unfolding W_pre_def image_image by (by100 simp)
+    also have "\<dots> = (\<lambda>w. w) ` W0" using h_pointwise by (by100 simp)
+    also have "\<dots> = W0" by (by100 simp)
+    finally show ?thesis .
+  qed
+  (** (7) Build \<tau>_pre = conv W_pre; show it is a face of \<sigma>. **)
+  define \<tau>_pre where "\<tau>_pre = geotop_convex_hull W_pre"
+  have h\<tau>_pre_face: "geotop_is_face \<tau>_pre \<sigma>"
+  proof -
+    have hwit: "geotop_simplex_vertices \<sigma> V \<and> W_pre \<noteq> {} \<and> W_pre \<subseteq> V
+                 \<and> \<tau>_pre = geotop_convex_hull W_pre"
+      unfolding \<tau>_pre_def using hVsv hW_pre_ne hW_pre_V by (by100 simp)
+    then have h_ex1: "\<exists>W1. geotop_simplex_vertices \<sigma> V \<and> W1 \<noteq> {}
+                            \<and> W1 \<subseteq> V \<and> \<tau>_pre = geotop_convex_hull W1"
+      by (rule exI[where x=W_pre])
+    then have h_ex2: "\<exists>V1 W1. geotop_simplex_vertices \<sigma> V1 \<and> W1 \<noteq> {}
+                               \<and> W1 \<subseteq> V1 \<and> \<tau>_pre = geotop_convex_hull W1"
+      by (rule exI[where x=V])
+    then show ?thesis unfolding geotop_is_face_def by (by100 simp)
+  qed
+  (** (8) f ` \<tau>_pre = \<tau>. **)
+  have h_inj_W_pre: "inj_on f W_pre" using h_inj_V hW_pre_V inj_on_subset by (by100 blast)
+  have h_lin_\<tau>_pre: "geotop_linear_on \<tau>_pre f"
+    by (rule geotop_linear_on_face[OF h_lin h\<tau>_pre_face])
+  obtain Vt_pre where hVtp_sv: "geotop_simplex_vertices \<tau>_pre Vt_pre"
+                  and h_bary_Vtp: "\<forall>\<alpha>. (\<forall>v\<in>Vt_pre. 0 \<le> \<alpha> v) \<and> sum \<alpha> Vt_pre = 1 \<longrightarrow>
+                                       f (\<Sum>v\<in>Vt_pre. \<alpha> v *\<^sub>R v)
+                                         = (\<Sum>v\<in>Vt_pre. \<alpha> v *\<^sub>R f v)"
+    using h_lin_\<tau>_pre unfolding geotop_linear_on_def by (by100 blast)
+  have hW_pre_ai: "\<not> affine_dependent W_pre"
+  proof -
+    have hV_ai: "\<not> affine_dependent V"
+      by (rule geotop_general_position_imp_aff_indep[OF hVsv])
+    show ?thesis using hV_ai hW_pre_V affine_dependent_subset by (by100 blast)
+  qed
+  have hW_pre_pos: "0 < card W_pre" using hW_pre_ne hW_pre_fin card_gt_0_iff by (by100 blast)
+  have hW_pre_card: "card W_pre = (card W_pre - 1) + 1" using hW_pre_pos by (by100 simp)
+  have hW_pre_gp_W: "geotop_general_position W_pre (card W_pre - 1)"
+    by (rule geotop_ai_imp_general_position[OF hW_pre_fin hW_pre_card hW_pre_ai])
+  have hW_pre_sv: "geotop_simplex_vertices \<tau>_pre W_pre"
+    unfolding geotop_simplex_vertices_def \<tau>_pre_def
+    using hW_pre_fin hW_pre_card hW_pre_gp_W by (by100 blast)
+  have hW_pre_Vtp: "W_pre = Vt_pre"
+    by (rule geotop_simplex_vertices_unique[OF hW_pre_sv hVtp_sv])
+  have h_bary_W_pre: "\<And>\<alpha>. (\<forall>v\<in>W_pre. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> W_pre = 1 \<Longrightarrow>
+                           f (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R f v)"
+    using h_bary_Vtp hW_pre_Vtp by (by100 simp)
+  have h_fW_pre_hull_eq: "f ` (convex hull W_pre) = convex hull (f ` W_pre)"
+    by (rule geotop_bary_lin_inj_image_hull_eq[OF hW_pre_fin h_inj_W_pre h_bary_W_pre])
+  have h_\<tau>_HOL: "\<tau> = convex hull W0"
+    using h\<tau>_eq_raw geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_\<tau>_pre_HOL: "\<tau>_pre = convex hull W_pre"
+    unfolding \<tau>_pre_def by (rule geotop_convex_hull_eq_HOL)
+  have h_f\<tau>_pre: "f ` \<tau>_pre = \<tau>"
+  proof -
+    have "f ` \<tau>_pre = f ` (convex hull W_pre)" using h_\<tau>_pre_HOL by (by100 simp)
+    also have "\<dots> = convex hull (f ` W_pre)" using h_fW_pre_hull_eq .
+    also have "\<dots> = convex hull W0" using h_fW_pre by (by100 simp)
+    also have "\<dots> = \<tau>" using h_\<tau>_HOL by (by100 simp)
+    finally show ?thesis .
+  qed
+  (** (9) Assemble. **)
+  have "geotop_is_face \<tau>_pre \<sigma> \<and> \<tau> = f ` \<tau>_pre"
+    using h\<tau>_pre_face h_f\<tau>_pre by (by100 simp)
+  then show ?thesis by (rule exI[where x=\<tau>_pre])
+qed
 
 subsection \<open>Diameter and mesh\<close>
 
