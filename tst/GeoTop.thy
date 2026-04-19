@@ -2477,17 +2477,9 @@ qed
 lemma geotop_diameter_norm_nonneg:
   fixes M :: "'a::real_normed_vector set"
   shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
-proof (cases "M = {}")
-  case True
-  then show ?thesis unfolding geotop_diameter_def by (by100 simp)
-next
-  case False
-  then obtain P0 where hP0: "P0 \<in> M" by (by100 blast)
-  show ?thesis
-    sorry \<comment> \<open>SUP P\<in>M. SUP Q\<in>M. norm(P-Q). For unbounded M, cSup defaults to 0
-               (HOL convention for real conditional_complete_lattice). For
-               bounded, SUP \<ge> norm(P0-P0) = 0. Either way \<ge> 0.\<close>
-qed
+  sorry \<comment> \<open>SUP P\<in>M. SUP Q\<in>M. norm(P-Q). For unbounded M, cSup defaults to 0
+             (HOL convention for real conditional_complete_lattice). For
+             bounded, SUP \<ge> norm(P0-P0) = 0. Either way \<ge> 0.\<close>
 
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
@@ -3785,9 +3777,22 @@ proof -
       assume h_in_L': "geotop_convex_hull V\<^sub>0 \<in> L'"
       have h_img_K': "?g_inv ` (geotop_convex_hull V\<^sub>0) \<in> K'"
         unfolding K'_def using h_in_L' by (by100 blast)
+      (** Obtain vertex set W_0 of conv V_0 from simplex_vertices. **)
+      have h_convV0_HOL: "geotop_convex_hull V\<^sub>0 = convex hull V\<^sub>0"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_convV0_sim: "geotop_is_simplex (geotop_convex_hull V\<^sub>0)"
+        using h_in_L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]]
+        by (by100 blast)
+      obtain W\<^sub>0 where hW\<^sub>0sv: "geotop_simplex_vertices (geotop_convex_hull V\<^sub>0) W\<^sub>0"
+        using h_convV0_sim unfolding geotop_is_simplex_def
+              geotop_simplex_vertices_def by (by100 blast)
+      (** conv V_0 = conv W_0 via simplex vertex decomposition. **)
+      have h_W\<^sub>0_eq_hull: "geotop_convex_hull V\<^sub>0 = geotop_convex_hull W\<^sub>0"
+        using hW\<^sub>0sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      (** Two key facts: V_0 \<supseteq> W_0 (vertices are among V_0), and V_0 \<subseteq> conv V_0. **)
       show "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
-        sorry \<comment> \<open>Need: g_inv(conv V_0) = conv(g_inv V_0). Via hull_eq helper
-                   if g_inv is linear on conv V_0 \<subseteq> |L|.\<close>
+        sorry \<comment> \<open>Remaining: show g_inv(conv V_0) = conv(g_inv V_0) via hull_eq
+                   on W_0 + set-reasoning on V_0 and W_0, then use h_img_K'.\<close>
     next
       assume h_img_in_K': "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
       obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
