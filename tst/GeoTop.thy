@@ -7146,8 +7146,34 @@ proof -
                     (subspace_topology UNIV geotop_euclidean_topology Y)
                     X (subspace_topology UNIV geotop_euclidean_topology X) g"
     by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont_HOL hg_img])
-  show ?thesis sorry \<comment> \<open>Assembly step deferred - by100 session timeout when combining
-                        the bij_betw + invf_top1 + homeomorphism_on witnesses.\<close>
+  have hf_bij: "bij_betw f X Y"
+    by (rule bij_betw_byWitness[where f' = g, OF hfg_id hgf_id hf_img hg_img])
+  have hf_inj: "inj_on f X" using hf_bij unfolding bij_betw_def by (by100 blast)
+  have hg_eq_inv: "\<forall>y\<in>Y. g y = inv_into X f y"
+  proof
+    fix y assume hy: "y \<in> Y"
+    have hgy_in_X: "g y \<in> X" using hg_img_eq hy by (by100 blast)
+    have hfgy: "f (g y) = y" using hgf_id hy by (by100 blast)
+    have "inv_into X f y = g y" by (rule inv_into_f_eq[OF hf_inj hgy_in_X hfgy])
+    thus "g y = inv_into X f y" by (by100 simp)
+  qed
+  have h_invf_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X)
+                    (inv_into X f)"
+    using hg_top1 top1_continuous_map_on_cong[OF hg_eq_inv] by (by100 blast)
+  have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hTX: "is_topology_on X (subspace_topology UNIV geotop_euclidean_topology X)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl subset_UNIV])
+  have hTY: "is_topology_on Y (subspace_topology UNIV geotop_euclidean_topology Y)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl subset_UNIV])
+  have hf_homeo: "top1_homeomorphism_on X
+                    (subspace_topology UNIV geotop_euclidean_topology X)
+                    Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+    unfolding top1_homeomorphism_on_def
+    using hTX hTY hf_bij hf_top1 h_invf_top1 by (by100 blast)
+  show ?thesis using hf_homeo by (by100 blast)
 qed
 
 (** Reverse bridge: a HOL arc's image is a geotop \<open>is_arc\<close> set.
