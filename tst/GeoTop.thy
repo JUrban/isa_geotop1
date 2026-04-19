@@ -4844,8 +4844,13 @@ proof -
         have h_convV_simp: "geotop_is_simplex (geotop_convex_hull V)"
           using hV_L\<^sub>3 conjunct1[OF hL\<^sub>3_complex[unfolded geotop_is_complex_def]]
           by (by100 blast)
+        obtain V_L\<^sub>3 where hV_L\<^sub>3sv: "geotop_simplex_vertices (geotop_convex_hull V) V_L\<^sub>3"
+          using h_convV_simp unfolding geotop_is_simplex_def
+                geotop_simplex_vertices_def by (by100 blast)
+        have hV_L\<^sub>3_ai: "\<not> affine_dependent V_L\<^sub>3"
+          by (rule geotop_general_position_imp_aff_indep[OF hV_L\<^sub>3sv])
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Remaining: V(\<tau>) \<subseteq> f V via extreme_point chain.\<close>
+          sorry \<comment> \<open>Remaining: V(\<tau>) \<subseteq> f V, then \<tau> \<subseteq> conv(f V) = \<tau>, so conv(f V) = \<tau> \<in> K_3.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
