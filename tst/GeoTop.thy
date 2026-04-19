@@ -1114,9 +1114,47 @@ proof (rule ccontr)
   have h_fxn: "f xn = (\<Sum>v\<in>V. \<alpha>n v *\<^sub>R f v)"
     unfolding xn_def using h_bary[OF h_\<alpha>n_nn h_\<alpha>n_sum] by (by100 simp)
   (** \<open>f xp - f xn = (1/s) \<Sum> w v *\<^sub>R f v = 0\<close>. **)
-  have h_fxp_eq_fxn: "f xp = f xn" sorry
-    \<comment> \<open>Subtraction: f xp minus f xn equals (1/s) times Sum v. (wp v - wn v) scaleR f v
-        which equals (1/s) times Sum v. w v scaleR f v equals 0 via h_vsum0.\<close>
+  have h_fxp_eq_fxn: "f xp = f xn"
+  proof -
+    have h_diff: "f xp - f xn = (\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R f v)"
+    proof -
+      have "f xp - f xn = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R f v) - (\<Sum>v\<in>V. \<alpha>n v *\<^sub>R f v)"
+        using h_fxp h_fxn by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R f v - \<alpha>n v *\<^sub>R f v)"
+        by (rule sum_subtractf[symmetric])
+      also have "\<dots> = (\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R f v)"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume "v \<in> V"
+        show "\<alpha>p v *\<^sub>R f v - \<alpha>n v *\<^sub>R f v = (\<alpha>p v - \<alpha>n v) *\<^sub>R f v"
+          by (rule scaleR_left_diff_distrib[symmetric])
+      qed
+      finally show ?thesis .
+    qed
+    have h_sdiff: "\<And>v. \<alpha>p v - \<alpha>n v = w v / s"
+    proof -
+      fix v
+      have "\<alpha>p v - \<alpha>n v = wp v / s - wn v / s" unfolding \<alpha>p_def \<alpha>n_def by (by100 simp)
+      also have "\<dots> = (wp v - wn v) / s" by (rule diff_divide_distrib[symmetric])
+      also have "\<dots> = w v / s" using h_w_split by (by100 simp)
+      finally show "\<alpha>p v - \<alpha>n v = w v / s" .
+    qed
+    have h_vsum_w_scale: "(\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R f v) = (1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R f v)"
+    proof -
+      have "(\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R f v) = (\<Sum>v\<in>V. (w v / s) *\<^sub>R f v)"
+        using h_sdiff by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. (1/s) *\<^sub>R (w v *\<^sub>R f v))"
+        by (by100 simp)
+      also have "\<dots> = (1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R f v)"
+        by (rule scaleR_right.sum[symmetric])
+      finally show ?thesis .
+    qed
+    have h_zero: "(1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R f v) = 0"
+      using h_vsum0 by (by100 simp)
+    have "f xp - f xn = 0" using h_diff h_vsum_w_scale h_zero by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
   (** xp = xn would give \<Sum>v. w v *\<^sub>R v = 0 with sum w V = 0 and some w v \<noteq> 0,
       contradicting V AI. So xp \<noteq> xn. **)
   have h_xp_ne_xn: "xp \<noteq> xn" sorry
