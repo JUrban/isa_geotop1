@@ -5060,10 +5060,23 @@ proof -
         have hV_sub_L: "V \<subseteq> geotop_polyhedron L"
         proof -
           have hVL\<^sub>3_sub_L: "geotop_complex_vertices L\<^sub>3 \<subseteq> geotop_polyhedron L"
-            unfolding geotop_complex_vertices_def geotop_polyhedron_def
-            using hL\<^sub>3_poly unfolding geotop_simplex_vertices_def
-            geotop_convex_hull_def hull_subset
-            sorry \<comment> \<open>routine: vertices \<subseteq> polyhedron.\<close>
+          proof
+            fix v assume hv: "v \<in> geotop_complex_vertices L\<^sub>3"
+            obtain V' where hV'sv: "\<exists>\<sigma>\<in>L\<^sub>3. geotop_simplex_vertices \<sigma> V'" and hv_V': "v \<in> V'"
+              using hv unfolding geotop_complex_vertices_def by (by100 blast)
+            obtain \<sigma>_L\<^sub>3 where h\<sigma>_L\<^sub>3: "\<sigma>_L\<^sub>3 \<in> L\<^sub>3" and hV'_sv: "geotop_simplex_vertices \<sigma>_L\<^sub>3 V'"
+              using hV'sv by (by100 blast)
+            have hV'_sub: "V' \<subseteq> geotop_convex_hull V'"
+              unfolding geotop_convex_hull_def hull_def by (by100 blast)
+            have h\<sigma>_L\<^sub>3_eq: "\<sigma>_L\<^sub>3 = geotop_convex_hull V'"
+              using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+            have hv_hull: "v \<in> geotop_convex_hull V'" using hv_V' hV'_sub by (by100 blast)
+            have hv_\<sigma>: "v \<in> \<sigma>_L\<^sub>3" using hv_hull h\<sigma>_L\<^sub>3_eq by (by100 simp)
+            have h\<sigma>_L\<^sub>3_sub: "\<sigma>_L\<^sub>3 \<subseteq> geotop_polyhedron L\<^sub>3"
+              unfolding geotop_polyhedron_def using h\<sigma>_L\<^sub>3 by (by100 blast)
+            have "v \<in> geotop_polyhedron L\<^sub>3" using hv_\<sigma> h\<sigma>_L\<^sub>3_sub by (by100 blast)
+            thus "v \<in> geotop_polyhedron L" using hL\<^sub>3_poly by (by100 simp)
+          qed
           show ?thesis using hV_sub hVL\<^sub>3_sub_L by (by100 blast)
         qed
         have hf_inj_L: "inj_on f (geotop_polyhedron L)"
