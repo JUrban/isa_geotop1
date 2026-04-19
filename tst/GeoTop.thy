@@ -2119,9 +2119,10 @@ proof (cases "M = {}")
 next
   case False
   then obtain P0 where hP0: "P0 \<in> M" by (by100 blast)
-  show ?thesis unfolding geotop_diameter_def
-    sorry \<comment> \<open>Split: for nonempty M, SUP over P \<in> M of (SUP Q. norm(P-Q)) \<ge> 0.
-                Take P=Q=P0: norm(0) = 0.\<close>
+  show ?thesis
+    sorry \<comment> \<open>SUP P\<in>M. SUP Q\<in>M. norm(P-Q). For unbounded M, cSup defaults to 0
+               (HOL convention for real conditional_complete_lattice). For
+               bounded, SUP \<ge> norm(P0-P0) = 0. Either way \<ge> 0.\<close>
 qed
 
 lemma geotop_mesh_norm_nonneg:
@@ -2134,7 +2135,7 @@ lemma geotop_mesh_norm_nonneg:
     \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close> (Moise Lemma 4.11) from
     \<open>geotop_Sd_mesh_shrinkage\<close>. **)
 lemma geotop_mesh_iterated_Sd_tends_to_zero:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
   shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
                (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
@@ -2149,10 +2150,9 @@ proof -
     define D where "D = {k::nat. \<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> k}"
     have hD_sub: "D \<subseteq> (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
       unfolding D_def by (by100 blast)
-    have h_sigma_fin: "\<And>\<sigma>. finite {k::nat. geotop_simplex_dim \<sigma> k}"
-      sorry \<comment> \<open>Each \<sigma> has a unique dim k = card V - 1 via simplex_vertices_unique
-                (in real_normed_vector we can't use that — need a weaker bound,
-                but {k. dim k} is bounded since dim \<le> card-1 for a given V).\<close>
+    have h_sigma_fin: "\<And>\<sigma>::'a set. finite {k::nat. geotop_simplex_dim \<sigma> k}"
+      sorry \<comment> \<open>Each simplex has a unique dim via simplex_vertices_unique
+                (euclidean_space typeclass). Deferred.\<close>
     have h_union_fin: "finite (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
       using hKfin h_sigma_fin by (by100 blast)
     have hD_fin: "finite D" using hD_sub h_union_fin finite_subset by (by100 blast)
