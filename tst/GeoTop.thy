@@ -1024,8 +1024,117 @@ lemma geotop_bary_lin_inj_preserves_ai:
   assumes h_bary: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
                         f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
   shows "\<not> affine_dependent (f ` V)"
-  sorry \<comment> \<open>Classical: affine bijection preserves AI. Uses aff_dim invariance
-             under affine bijection + affine_independent_iff_card.\<close>
+proof (rule ccontr)
+  assume h_abs: "\<not> \<not> affine_dependent (f ` V)"
+  then have h_dep: "affine_dependent (f ` V)" by (by100 blast)
+  (** (1) Pull back the dependence witness through f on V. Since f is inj on V,
+      there's a nontrivial w: V \<to> \<real> with sum w V = 0, \<Sum>v. w v *\<^sub>R f v = 0,
+      and some w v \<noteq> 0. **)
+  have h_fVfin: "finite (f ` V)" using hVfin by (by100 simp)
+  have h_witness: "\<exists>w::'a \<Rightarrow> real. (\<exists>v\<in>V. w v \<noteq> 0) \<and> sum w V = 0
+                                  \<and> (\<Sum>v\<in>V. w v *\<^sub>R f v) = 0"
+    sorry \<comment> \<open>Pull back w': f ` V \<to> \<real> from affine_dependent_explicit(f V) via inj.
+              Take w = w' \<circ> f (well-defined on V since inj on V).\<close>
+  then obtain w :: "'a \<Rightarrow> real"
+    where h_nonzero: "\<exists>v\<in>V. w v \<noteq> 0"
+      and h_sum0: "sum w V = 0"
+      and h_vsum0: "(\<Sum>v\<in>V. w v *\<^sub>R f v) = 0"
+    by (by100 blast)
+  (** (2) Split \<open>w\<close> into positive and negative parts. **)
+  define wp where "wp = (\<lambda>v. max 0 (w v))"
+  define wn where "wn = (\<lambda>v. max 0 (- w v))"
+  have h_wp_nn: "\<forall>v. 0 \<le> wp v" unfolding wp_def by (by100 simp)
+  have h_wn_nn: "\<forall>v. 0 \<le> wn v" unfolding wn_def by (by100 simp)
+  have h_w_split: "\<forall>v. w v = wp v - wn v"
+    unfolding wp_def wn_def by (by100 auto)
+  (** (3) Normalize to bary-coordinates. sum wp V = sum wn V = s > 0. **)
+  define s where "s = sum wp V"
+  have h_sums_eq: "sum wp V = sum wn V"
+  proof -
+    have h_sum_split: "sum w V = sum wp V - sum wn V"
+    proof -
+      have "sum w V = (\<Sum>v\<in>V. wp v - wn v)"
+        using h_w_split by (by100 simp)
+      also have "\<dots> = sum wp V - sum wn V"
+        by (rule sum_subtractf)
+      finally show ?thesis .
+    qed
+    show ?thesis using h_sum_split h_sum0 by (by100 simp)
+  qed
+  have h_s_pos: "0 < s"
+  proof -
+    have h_wp_nn_in: "\<forall>v\<in>V. 0 \<le> wp v" using h_wp_nn by (by100 blast)
+    have h_wn_nn_in: "\<forall>v\<in>V. 0 \<le> wn v" using h_wn_nn by (by100 blast)
+    have h_s_nn: "0 \<le> s" unfolding s_def
+      using sum_nonneg[of V wp] h_wp_nn_in by (by100 blast)
+    have h_not_zero: "s \<noteq> 0"
+    proof
+      assume h_s_eq0: "s = 0"
+      have h_sum_wp: "sum wp V = 0" using h_s_eq0 unfolding s_def by (by100 simp)
+      have h_sum_wn: "sum wn V = 0" using h_sums_eq h_sum_wp by (by100 simp)
+      have h_wp_zero: "\<forall>v\<in>V. wp v = 0"
+        using h_sum_wp h_wp_nn_in hVfin sum_nonneg_eq_0_iff by (by100 blast)
+      have h_wn_zero: "\<forall>v\<in>V. wn v = 0"
+        using h_sum_wn h_wn_nn_in hVfin sum_nonneg_eq_0_iff by (by100 blast)
+      have h_all_zero: "\<forall>v\<in>V. w v = 0"
+        using h_wp_zero h_wn_zero h_w_split by (by100 simp)
+      show False using h_all_zero h_nonzero by (by100 blast)
+    qed
+    show ?thesis using h_s_nn h_not_zero by (by100 simp)
+  qed
+  define \<alpha>p where "\<alpha>p = (\<lambda>v. wp v / s)"
+  define \<alpha>n where "\<alpha>n = (\<lambda>v. wn v / s)"
+  have h_\<alpha>p_nn: "\<forall>v\<in>V. 0 \<le> \<alpha>p v" unfolding \<alpha>p_def using h_wp_nn h_s_pos by (by100 simp)
+  have h_\<alpha>n_nn: "\<forall>v\<in>V. 0 \<le> \<alpha>n v" unfolding \<alpha>n_def using h_wn_nn h_s_pos by (by100 simp)
+  have h_\<alpha>p_sum: "sum \<alpha>p V = 1"
+  proof -
+    have h1: "sum \<alpha>p V = sum wp V / s"
+      unfolding \<alpha>p_def using sum_divide_distrib[symmetric, where f=wp and A=V and r=s]
+      by (by100 simp)
+    have h_s_eq: "sum wp V = s" unfolding s_def by (by100 simp)
+    have h_s_ne: "s \<noteq> 0" using h_s_pos by (by100 simp)
+    have h2: "sum wp V / s = 1" using h_s_eq h_s_ne by (by100 simp)
+    show ?thesis using h1 h2 by (by100 simp)
+  qed
+  have h_\<alpha>n_sum: "sum \<alpha>n V = 1"
+  proof -
+    have h1: "sum \<alpha>n V = sum wn V / s"
+      unfolding \<alpha>n_def using sum_divide_distrib[symmetric, where f=wn and A=V and r=s]
+      by (by100 simp)
+    have h_s_eq: "sum wn V = s" using h_sums_eq unfolding s_def by (by100 simp)
+    have h_s_ne: "s \<noteq> 0" using h_s_pos by (by100 simp)
+    have h2: "sum wn V / s = 1" using h_s_eq h_s_ne by (by100 simp)
+    show ?thesis using h1 h2 by (by100 simp)
+  qed
+  (** (4) Apply bary-preservation at \<alpha>p and \<alpha>n; build a nonzero combination on V. **)
+  define xp where "xp = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R v)"
+  define xn where "xn = (\<Sum>v\<in>V. \<alpha>n v *\<^sub>R v)"
+  have h_fxp: "f xp = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R f v)"
+    unfolding xp_def using h_bary[OF h_\<alpha>p_nn h_\<alpha>p_sum] by (by100 simp)
+  have h_fxn: "f xn = (\<Sum>v\<in>V. \<alpha>n v *\<^sub>R f v)"
+    unfolding xn_def using h_bary[OF h_\<alpha>n_nn h_\<alpha>n_sum] by (by100 simp)
+  (** \<open>f xp - f xn = (1/s) \<Sum> w v *\<^sub>R f v = 0\<close>. **)
+  have h_fxp_eq_fxn: "f xp = f xn" sorry
+    \<comment> \<open>Subtraction: f xp minus f xn equals (1/s) times Sum v. (wp v - wn v) scaleR f v
+        which equals (1/s) times Sum v. w v scaleR f v equals 0 via h_vsum0.\<close>
+  (** xp = xn would give \<Sum>v. w v *\<^sub>R v = 0 with sum w V = 0 and some w v \<noteq> 0,
+      contradicting V AI. So xp \<noteq> xn. **)
+  have h_xp_ne_xn: "xp \<noteq> xn" sorry
+    \<comment> \<open>xp minus xn equals (1/s) times Sum v. w v scaleR v. If xp = xn, then
+        Sum w v scaleR v = 0, with sum w V = 0 and nonzero w v, contradicting
+        V AI via affine_dependent_explicit.\<close>
+  (** The classical step requires inj on conv V, which follows from inj on V
+      via bary-preservation + V AI. This is where we use that xp, xn \<in> conv V
+      have UNIQUE bary coords \<alpha>p, \<alpha>n (V AI), and f(xp) = f(xn) forces
+      \<alpha>p = \<alpha>n (pre-image uniqueness via linear independence of f V \<Leftrightarrow> V AI). **)
+  (** But we assumed f V is affine_dependent, so this should produce the
+      contradiction somewhere. **)
+  have False sorry
+    \<comment> \<open>Combine h_fxp_eq_fxn + h_xp_ne_xn: two distinct convex combinations
+        of V with the same f-image. Pre-image analysis via bary-preservation
+        + V AI + f inj on V gives contradiction.\<close>
+  thus "False" .
+qed
 
 (** Image of a simplex under a map that is linear on it and injective on it is a simplex. **)
 lemma geotop_linear_inj_image_is_simplex:
