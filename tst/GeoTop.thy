@@ -9087,14 +9087,13 @@ lemma geotop_broken_line_subarc:
   fixes B :: "'a::euclidean_space set"
   assumes hB: "geotop_is_broken_line B"
   assumes hX: "X \<in> B" and hY: "Y \<in> B"
-  shows "\<exists>B'. geotop_is_broken_line B' \<and> B' \<subseteq> B \<and> X \<in> B' \<and> Y \<in> B'"
+  shows "\<exists>B'. geotop_is_broken_line B' \<and> B' \<subseteq> B \<and> X \<in> B' \<and> Y \<in> B'
+            \<and> (X = Y \<or> (\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B'
+                           \<and> pathstart \<gamma>' = X \<and> pathfinish \<gamma>' = Y))"
 proof (cases "X = Y")
   case True
-  (** Degenerate: sub-arc collapses to a single point, not a valid broken line
-      (which is an arc, i.e., 1-cell). But we still need to exhibit SOME
-      broken line. Since \<open>X = Y \<in> B\<close>, take \<open>B' = B\<close> itself. **)
   have hsub: "B \<subseteq> B" by (by100 blast)
-  show ?thesis using hB hsub hX hY by (by100 blast)
+  show ?thesis using hB hsub hX hY True by (by100 blast)
 next
   case False
   (** (1) Extract HOL arc parametrisation of B. **)
@@ -9108,7 +9107,8 @@ next
   obtain s\<^sub>Y where hs\<^sub>Y: "s\<^sub>Y \<in> {0::real..1}" and hY_eq: "\<gamma> s\<^sub>Y = Y"
     using hY hpim unfolding path_image_def by (by100 blast)
   have hsne: "s\<^sub>X \<noteq> s\<^sub>Y" using hX_eq hY_eq False by (by100 blast)
-  (** (3) WLOG s_X < s_Y. Take sub-path via HOL's subpath. **)
+  (** (3) Define endpoints-preserving subpath: pathstart = X, pathfinish = Y. **)
+  define \<gamma>' where "\<gamma>' = subpath s\<^sub>X s\<^sub>Y \<gamma>"
   define s_lo where "s_lo = min s\<^sub>X s\<^sub>Y"
   define s_hi where "s_hi = max s\<^sub>X s\<^sub>Y"
   have hs\<^sub>X_lb: "0 \<le> s\<^sub>X" using hs\<^sub>X by (by100 simp)
@@ -9161,7 +9161,32 @@ next
               a sub-complex (after edge subdivision at X, Y if interior to edges).\<close>
   have hB'_broken: "geotop_is_broken_line ?B'"
     unfolding geotop_is_broken_line_def using hB'_poly hB'_geotop_arc by (by100 blast)
-  show ?thesis using hB'_broken hsub_image hX_in_B' hY_in_B' by (by100 blast)
+  (** (9) Construct the pathstart-X, pathfinish-Y arc parametrisation. **)
+  have hs\<^sub>X_range_real: "s\<^sub>X \<in> {0..1}" using hs\<^sub>X_lb hs\<^sub>X_ub by (by100 simp)
+  have hs\<^sub>Y_range_real: "s\<^sub>Y \<in> {0..1}" using hs\<^sub>Y_lb hs\<^sub>Y_ub by (by100 simp)
+  have h\<gamma>'_arc: "arc \<gamma>'"
+    unfolding \<gamma>'_def
+    by (rule arc_subpath_arc[OF harc hs\<^sub>X_range_real hs\<^sub>Y_range_real hsne])
+  have h\<gamma>'_pathstart: "pathstart \<gamma>' = X"
+    unfolding \<gamma>'_def pathstart_def subpath_def using hX_eq by (by100 simp)
+  have h\<gamma>'_pathfinish: "pathfinish \<gamma>' = Y"
+    unfolding \<gamma>'_def pathfinish_def subpath_def using hY_eq by (by100 simp)
+  have h\<gamma>'_image: "path_image \<gamma>' = ?B'"
+  proof -
+    have h1: "path_image \<gamma>' = \<gamma> ` closed_segment s\<^sub>X s\<^sub>Y"
+      unfolding \<gamma>'_def by (rule path_image_subpath_gen)
+    have h2: "?B' = \<gamma> ` closed_segment s_lo s_hi"
+      by (rule path_image_subpath_gen)
+    have h_seg_xy: "closed_segment s\<^sub>X s\<^sub>Y = closed_segment s_lo s_hi"
+      unfolding s_lo_def s_hi_def using closed_segment_commute closed_segment_eq_real_ivl
+      by (by100 simp)
+    show ?thesis using h1 h2 h_seg_xy by (by100 simp)
+  qed
+  have hB'_arc_endpoints:
+    "\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = ?B' \<and> pathstart \<gamma>' = X \<and> pathfinish \<gamma>' = Y"
+    using h\<gamma>'_arc h\<gamma>'_image h\<gamma>'_pathstart h\<gamma>'_pathfinish by (by100 blast)
+  show ?thesis using hB'_broken hsub_image hX_in_B' hY_in_B' hB'_arc_endpoints False
+    by (by100 blast)
 qed
 
 (** PL Helper 2: two broken lines sharing exactly one point, each having that
