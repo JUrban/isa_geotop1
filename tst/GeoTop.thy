@@ -4776,12 +4776,12 @@ proof -
         Then conv V \<in> L_3 = f_inv \<sup>\` K_3 iff conv W \<in> K_3 (bijective correspondence). **)
     have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
                        (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
-      sorry \<comment> \<open>Full proof analogous to transport hiso_K'L'_simp with role swap:
-                 K_3 plays L' (source), L_3 plays K' (image), f_inv plays g_inv.
-                 Uses: L_3 < L_1 (via K_3 < fL_1), f linear on L_1-simplexes,
-                 sub_simplex descent, hull_eq (proved), extreme_point arguments
-                 on face-intersection (K.2 of K_3 complex), and K.1 face-closure.
-                 ~200-line adaptation of transport's proof. Deferred.\<close>
+      sorry \<comment> \<open>Full proof analogous to transport hiso_K'L'_simp (~200 lines).
+                 Forward: conv V \<in> L_3 = f_inv \<sup>\` K_3, so conv V = f_inv \<sup>\` \<tau> for \<tau> \<in> K_3.
+                   Then f(conv V) = \<tau> (via bij), and conv(f V) = f(conv V) = \<tau> \<in> K_3
+                   (hull_eq uses f linear on conv V \<subseteq> some L_1-simplex via L_3 < L_1).
+                 Backward: symmetric via f_inv.
+                 Needs auxiliary: L_3 < L_1 (via K_3 < fL_1 pullback) not yet proved here.\<close>
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
       unfolding geotop_isomorphic_def geotop_isomorphism_def
       using hiso_vert hiso_simp by (by100 blast)
