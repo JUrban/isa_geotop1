@@ -63,12 +63,12 @@ Given iso `φ: V(K) → V(L)`, define `g` on each simplex σ ∈ K by: for `x = 
 
 Record completions here as they happen:
 
-- [x] Strengthened `geotop_is_broken_line` def with 1-dim witness (commit e5a4ccc6) — cleaner.
-- [~] Phase 1.1: `geotop_complex_subdivide_edge` — VERTEX CASE CLOSED; interior case sorry (commit df602bd6).
-- [ ] Phase 1.2: `geotop_complex_subdivide_at` — sorry.
-- [ ] Phase 1.2b: `geotop_broken_line_finite_witness` — sorry (finite via compactness).
-- [x] Phase 1.3: `geotop_broken_line_vertex_at` — FULLY PROVED modulo 1.2 (commit ea34ece7).
-- [~] Phase 1.B: glue_disjoint_endpoints polyhedron — FULLY PROVED modulo 1.1/1.2/1.2b (commit 3085cd02).
+- [x] Strengthened `geotop_is_broken_line` def with 1-dim witness (e5a4ccc6).
+- [~] Phase 1.1: `geotop_complex_subdivide_edge` — VERTEX CASE CLOSED; interior case sorry (df602bd6).
+- [x] Phase 1.2: `geotop_complex_subdivide_at` — FULLY PROVED (39c82d2a).
+- [x] Phase 1.2b: `geotop_broken_line_finite_witness` — FULLY PROVED via compactE_image (4d826231).
+- [x] Phase 1.3: `geotop_broken_line_vertex_at` — FULLY PROVED (finite + vertex).
+- [x] Phase 1.B: `glue_disjoint_endpoints` polyhedron — FULLY PROVED structurally (3085cd02, 21f4d9fd).
 - [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron) — still sorry.
 - [ ] Phase 1.C: close C (`arc_reduction` cross-arc case) — still sorry.
 - [ ] Phase 2: close D (`classical_Sd_exists`)
