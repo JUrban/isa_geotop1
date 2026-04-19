@@ -3925,18 +3925,63 @@ proof -
           using inj_onD[OF hg_inv_inj hgiw hvL hwL] by (by100 simp)
         show "v \<in> \<tau>" using hvw hw\<tau> by (by100 simp)
       qed
-      (** V_0 \<subseteq> V(L') \<inter> \<tau> \<subseteq> V(\<tau>): because L' is a complex with K.2 face-closure,
-          any V(L')-vertex in \<tau> must lie in V(\<tau>). **)
-      have hV\<^sub>0_sub_V\<tau>: "V\<^sub>0 \<subseteq> {v. \<exists>V\<tau>. geotop_simplex_vertices \<tau> V\<tau> \<and> v \<in> V\<tau>}"
-        sorry \<comment> \<open>Vertex v of L' in interior of \<tau> must be vertex of \<tau>
-                   via K.2 face intersection: if v \<in> V(\<sigma>) for \<sigma> \<in> L', \<sigma> \<inter> \<tau>
-                   is a face. v \<in> face. face is conv of V(face) \<subseteq> V(\<tau>).
-                   extreme point argument: v extreme in \<sigma> \<Rightarrow> extreme in face
-                   \<Rightarrow> v \<in> V(face) \<subseteq> V(\<tau>).\<close>
+      (** \<tau> is a simplex (K.0 of L') with some vertex set V_\<tau>. **)
+      have h\<tau>_sim: "geotop_is_simplex \<tau>"
+        using h\<tau>L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]]
+        by (by100 blast)
+      obtain V\<tau> where hV\<tau>sv: "geotop_simplex_vertices \<tau> V\<tau>"
+        using h\<tau>_sim unfolding geotop_is_simplex_def
+              geotop_simplex_vertices_def by (by100 blast)
+      have hV\<tau>_ai: "\<not> affine_dependent V\<tau>"
+        by (rule geotop_general_position_imp_aff_indep[OF hV\<tau>sv])
+      have h\<tau>_hull: "\<tau> = convex hull V\<tau>"
+      proof -
+        have "\<tau> = geotop_convex_hull V\<tau>"
+          using hV\<tau>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        also have "\<dots> = convex hull V\<tau>" by (rule geotop_convex_hull_eq_HOL)
+        finally show ?thesis .
+      qed
+      (** V_0 \<subseteq> V_\<tau>: any L'-vertex in \<tau> must be a V_\<tau>-vertex (extreme point). **)
+      have hV\<^sub>0_sub_V\<tau>: "V\<^sub>0 \<subseteq> V\<tau>"
+        sorry \<comment> \<open>v \<in> V_0 \<subseteq> V(L') \<cap> \<tau>. v is vertex of some \<sigma> \<in> L', so
+                   extreme in \<sigma>. K.2: \<sigma> \<inter> \<tau> is face of \<tau> = conv W for W \<subseteq> V_\<tau>.
+                   v extreme in conv W \<Rightarrow> v \<in> W \<subseteq> V_\<tau>.\<close>
+      (** V_0 \<noteq> {}: from conv(g_inv V_0) being a simplex in K', nonempty. **)
+      have h_convgV\<^sub>0_sim: "geotop_is_simplex (geotop_convex_hull (?g_inv ` V\<^sub>0))"
+        using h_img_in_K' conjunct1[OF hK'_comp[unfolded geotop_is_complex_def]]
+        by (by100 blast)
+      have h_convgV\<^sub>0_ne: "geotop_convex_hull (?g_inv ` V\<^sub>0) \<noteq> {}"
+      proof -
+        obtain VV m n where hVV_card: "card VV = n + 1" and hVV_hull:
+          "geotop_convex_hull (?g_inv ` V\<^sub>0) = geotop_convex_hull VV"
+          using h_convgV\<^sub>0_sim unfolding geotop_is_simplex_def by (by100 blast)
+        have hVV_ne: "VV \<noteq> {}" using hVV_card by (by100 auto)
+        have "geotop_convex_hull VV \<noteq> {}"
+          unfolding geotop_convex_hull_def hull_def using hVV_ne by (by100 blast)
+        thus ?thesis using hVV_hull by (by100 simp)
+      qed
+      have hV\<^sub>0_ne: "V\<^sub>0 \<noteq> {}"
+      proof
+        assume h_empty: "V\<^sub>0 = {}"
+        have h_giV_empty: "?g_inv ` V\<^sub>0 = {}" using h_empty by (by100 simp)
+        have h_conv_eq: "geotop_convex_hull (?g_inv ` V\<^sub>0) = convex hull (?g_inv ` V\<^sub>0)"
+          by (rule geotop_convex_hull_eq_HOL)
+        have h_HOL_empty: "convex hull (?g_inv ` V\<^sub>0) = {}"
+          using h_giV_empty by (by100 simp)
+        have h_conv_empty: "geotop_convex_hull (?g_inv ` V\<^sub>0) = {}"
+          using h_conv_eq h_HOL_empty by (by100 simp)
+        show False using h_conv_empty h_convgV\<^sub>0_ne by (by100 simp)
+      qed
+      (** conv V_0 is a face of \<tau> (subset of vertices \<Rightarrow> face, nonempty). **)
+      have h_face: "geotop_is_face (geotop_convex_hull V\<^sub>0) \<tau>"
+        unfolding geotop_is_face_def
+        using hV\<tau>sv hV\<^sub>0_ne hV\<^sub>0_sub_V\<tau> by (by100 blast)
+      (** K.1 of L' (face-closed): face of \<tau> \<in> L' is in L'. **)
+      have hL'_face_closed: "\<forall>\<sigma>\<in>L'. \<forall>\<tau>'. geotop_is_face \<tau>' \<sigma> \<longrightarrow> \<tau>' \<in> L'"
+        using conjunct1[OF conjunct2[OF hL'_comp[unfolded geotop_is_complex_def]]]
+        by (by100 blast)
       show "geotop_convex_hull V\<^sub>0 \<in> L'"
-        sorry \<comment> \<open>With V_0 \<subseteq> V(\<tau>), conv V_0 is a face of \<tau> (assuming V_0 nonempty,
-                   which follows from K' conv(g_inv V_0) being a simplex, hence nonempty).
-                   Then K.1 of L' (face-closure): conv V_0 \<in> L'.\<close>
+        using hL'_face_closed h\<tau>L' h_face by (by100 blast)
     qed
   qed
   have hiso_L'K': "geotop_isomorphic L' K'"
