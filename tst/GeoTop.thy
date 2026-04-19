@@ -3340,9 +3340,140 @@ proof -
       using hfi_v h\<phi>i_v by (by100 simp)
   qed
   have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
-    sorry \<comment> \<open>Core: extract V_tau; f_inv V_tau = phi_inv V_tau \<subseteq> V(K);
-               conv(phi_inv V_tau) \<in> K via iso reversed on phi W where W = phi_inv V_tau;
-               hull_eq: f_inv tau = conv(f_inv V_tau) \<in> K.\<close>
+  proof (rule ballI)
+    fix \<tau> assume h\<tau>L: "\<tau> \<in> L"
+    (** tau is a simplex with vertex set V_tau. **)
+    have h\<tau>_sim: "geotop_is_simplex \<tau>"
+      using h\<tau>L conjunct1[OF hL[unfolded geotop_is_complex_def]] by (by100 blast)
+    obtain V\<tau> where hV\<tau>sv: "geotop_simplex_vertices \<tau> V\<tau>"
+      using h\<tau>_sim unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have hV\<tau>_ai: "\<not> affine_dependent V\<tau>"
+      by (rule geotop_general_position_imp_aff_indep[OF hV\<tau>sv])
+    obtain m n where hV\<tau>fin: "finite V\<tau>" and hV\<tau>card: "card V\<tau> = n + 1"
+                 and hV\<tau>nm: "n \<le> m" and hV\<tau>gp: "geotop_general_position V\<tau> m"
+                 and h\<tau>hull: "\<tau> = geotop_convex_hull V\<tau>"
+      using hV\<tau>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<tau>_HOL: "\<tau> = convex hull V\<tau>"
+      using h\<tau>hull geotop_convex_hull_eq_HOL by (by100 simp)
+    (** V_tau in V(L). **)
+    have hV\<tau>_sub_VL: "V\<tau> \<subseteq> geotop_complex_vertices L"
+    proof
+      fix v assume hvV\<tau>: "v \<in> V\<tau>"
+      show "v \<in> geotop_complex_vertices L"
+        unfolding geotop_complex_vertices_def using h\<tau>L hV\<tau>sv hvV\<tau> by (by100 blast)
+    qed
+    (** f_inv = phi_inv on V_tau. **)
+    have hfi_eq_\<phi>i_V\<tau>: "\<forall>v\<in>V\<tau>. inv_into (geotop_polyhedron K) f v
+                             = inv_into (geotop_complex_vertices K) \<phi> v"
+      using hf_inv_eq_\<phi>_inv hV\<tau>_sub_VL by (by100 blast)
+    (** f_inv image on V_tau equals phi_inv image on V_tau. **)
+    have hfi_img_V\<tau>: "inv_into (geotop_polyhedron K) f ` V\<tau>
+                        = inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>"
+      using hfi_eq_\<phi>i_V\<tau> by (by100 force)
+    (** phi_inv V_tau subseteq V(K). **)
+    have h\<phi>i_V\<tau>_sub_VK: "inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>
+                         \<subseteq> geotop_complex_vertices K"
+    proof
+      fix v assume hv: "v \<in> inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>"
+      obtain w where hwV\<tau>: "w \<in> V\<tau>"
+                  and hv_eq: "v = inv_into (geotop_complex_vertices K) \<phi> w"
+        using hv by (by100 blast)
+      have hw_VL: "w \<in> geotop_complex_vertices L" using hwV\<tau> hV\<tau>_sub_VL by (by100 blast)
+      have hw_img: "w \<in> \<phi> ` geotop_complex_vertices K"
+        using hw_VL h\<phi>_bij unfolding bij_betw_def by (by100 simp)
+      have "inv_into (geotop_complex_vertices K) \<phi> w \<in> geotop_complex_vertices K"
+        by (rule inv_into_into[OF hw_img])
+      thus "v \<in> geotop_complex_vertices K" using hv_eq by (by100 simp)
+    qed
+    (** Reconstruct: phi applied to phi_inv V_tau = V_tau (bij). **)
+    have h\<phi>_\<phi>i_V\<tau>: "\<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>) = V\<tau>"
+    proof (rule set_eqI)
+      fix w
+      show "(w \<in> \<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)) = (w \<in> V\<tau>)"
+      proof
+        assume "w \<in> \<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)"
+        then obtain w' where hw'V\<tau>: "w' \<in> V\<tau>"
+                          and hw_eq: "w = \<phi> (inv_into (geotop_complex_vertices K) \<phi> w')"
+          by (by100 blast)
+        have hw'_VL: "w' \<in> geotop_complex_vertices L" using hw'V\<tau> hV\<tau>_sub_VL by (by100 blast)
+        have hw'_img: "w' \<in> \<phi> ` geotop_complex_vertices K"
+          using hw'_VL h\<phi>_bij unfolding bij_betw_def by (by100 simp)
+        have h_round: "\<phi> (inv_into (geotop_complex_vertices K) \<phi> w') = w'"
+          by (rule f_inv_into_f[OF hw'_img])
+        thus "w \<in> V\<tau>" using hw_eq hw'V\<tau> by (by100 simp)
+      next
+        assume hwV\<tau>: "w \<in> V\<tau>"
+        have hw_VL: "w \<in> geotop_complex_vertices L" using hwV\<tau> hV\<tau>_sub_VL by (by100 blast)
+        have hw_img: "w \<in> \<phi> ` geotop_complex_vertices K"
+          using hw_VL h\<phi>_bij unfolding bij_betw_def by (by100 simp)
+        have h_round: "\<phi> (inv_into (geotop_complex_vertices K) \<phi> w) = w"
+          by (rule f_inv_into_f[OF hw_img])
+        have "\<phi> (inv_into (geotop_complex_vertices K) \<phi> w)
+               \<in> \<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)"
+          using hwV\<tau> by (by100 blast)
+        thus "w \<in> \<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)"
+          using h_round by (by100 simp)
+      qed
+    qed
+    (** By iso def applied with W = phi_inv V_tau: conv W \<in> K iff conv(phi W) \<in> L.
+        phi W = V_tau, conv V_tau = tau \<in> L, so conv W = conv(phi_inv V_tau) \<in> K. **)
+    have h_conv_\<phi>i_in_K:
+      "geotop_convex_hull (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>) \<in> K"
+    proof -
+      have h_iso_at: "geotop_convex_hull (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>) \<in> K
+                       \<longleftrightarrow> geotop_convex_hull (\<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)) \<in> L"
+        using h\<phi>_simp h\<phi>i_V\<tau>_sub_VK by (by100 blast)
+      have h_\<tau>_in_L: "geotop_convex_hull (\<phi> ` (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)) \<in> L"
+        using h\<phi>_\<phi>i_V\<tau> h\<tau>hull h\<tau>L by (by100 simp)
+      show ?thesis using h_iso_at h_\<tau>_in_L by (by100 simp)
+    qed
+    (** Apply hull_eq to get f_inv tau = conv(f_inv V_tau). **)
+    have h\<tau>_sub_polyL: "\<tau> \<subseteq> geotop_polyhedron L"
+      unfolding geotop_polyhedron_def using h\<tau>L by (by100 blast)
+    have h_inj_\<tau>: "inj_on (inv_into (geotop_polyhedron K) f) \<tau>"
+      using hf_inv_inj_L h\<tau>_sub_polyL inj_on_subset by (by100 blast)
+    have hV\<tau>_sub_\<tau>: "V\<tau> \<subseteq> \<tau>"
+    proof -
+      have "V\<tau> \<subseteq> convex hull V\<tau>" by (rule hull_subset)
+      thus ?thesis using h\<tau>_HOL by (by100 simp)
+    qed
+    have h_inj_V\<tau>: "inj_on (inv_into (geotop_polyhedron K) f) V\<tau>"
+      using h_inj_\<tau> hV\<tau>_sub_\<tau> inj_on_subset by (by100 blast)
+    (** Bary on V_tau via linear_on tau. **)
+    have h_lin_\<tau>: "geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
+      using hf5 h\<tau>L by (by100 blast)
+    obtain V\<tau>' where hV\<tau>'sv: "geotop_simplex_vertices \<tau> V\<tau>'"
+                 and h_prop_lin: "\<forall>\<alpha>. (\<forall>v\<in>V\<tau>'. 0 \<le> \<alpha> v) \<and> sum \<alpha> V\<tau>' = 1 \<longrightarrow>
+                                     inv_into (geotop_polyhedron K) f
+                                        (\<Sum>v\<in>V\<tau>'. \<alpha> v *\<^sub>R v)
+                                     = (\<Sum>v\<in>V\<tau>'. \<alpha> v *\<^sub>R
+                                         inv_into (geotop_polyhedron K) f v)"
+      using h_lin_\<tau> unfolding geotop_linear_on_def by (by100 blast)
+    have hV\<tau>'_eq: "V\<tau>' = V\<tau>" by (rule geotop_simplex_vertices_unique[OF hV\<tau>'sv hV\<tau>sv])
+    have h_bary_V\<tau>: "\<And>\<alpha>. (\<forall>v\<in>V\<tau>. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V\<tau> = 1 \<Longrightarrow>
+                         inv_into (geotop_polyhedron K) f (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R v)
+                         = (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R inv_into (geotop_polyhedron K) f v)"
+      using h_prop_lin hV\<tau>'_eq by (by100 blast)
+    have h_hull_eq: "inv_into (geotop_polyhedron K) f ` (convex hull V\<tau>)
+                      = convex hull (inv_into (geotop_polyhedron K) f ` V\<tau>)"
+      by (rule geotop_bary_lin_inj_image_hull_eq[OF hV\<tau>fin h_inj_V\<tau> h_bary_V\<tau>])
+    have h_fi_\<tau>_HOL: "inv_into (geotop_polyhedron K) f ` \<tau>
+                      = convex hull (inv_into (geotop_polyhedron K) f ` V\<tau>)"
+      using h_hull_eq h\<tau>_HOL by (by100 simp)
+    have h_geo_bridge: "geotop_convex_hull (inv_into (geotop_polyhedron K) f ` V\<tau>)
+                         = convex hull (inv_into (geotop_polyhedron K) f ` V\<tau>)"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h_fi_\<tau>_geo: "inv_into (geotop_polyhedron K) f ` \<tau>
+                      = geotop_convex_hull (inv_into (geotop_polyhedron K) f ` V\<tau>)"
+      using h_fi_\<tau>_HOL h_geo_bridge by (by100 simp)
+    (** Combine: f_inv tau = conv(f_inv V_tau) = conv(phi_inv V_tau) \<in> K. **)
+    have h_fi_\<tau>_phi: "inv_into (geotop_polyhedron K) f ` \<tau>
+                      = geotop_convex_hull (inv_into (geotop_complex_vertices K) \<phi> ` V\<tau>)"
+      using h_fi_\<tau>_geo hfi_img_V\<tau> by (by100 simp)
+    show "inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
+      using h_fi_\<tau>_phi h_conv_\<phi>i_in_K by (by100 simp)
+  qed
   show "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
                     \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                     \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
