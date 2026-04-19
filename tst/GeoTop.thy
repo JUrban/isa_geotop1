@@ -4901,8 +4901,25 @@ proof -
                              inv_into (geotop_polyhedron L) f (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R v)
                              = (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R inv_into (geotop_polyhedron L) f v)"
           using h_prop_lin\<tau> hV\<tau>'_eq by (by100 blast)
+        (** f_inv inj on conv V_\<tau> = \<tau> (\<subseteq> |K|). **)
+        have h\<tau>_sub_K_simp: "\<tau> \<subseteq> geotop_polyhedron K"
+          using h\<tau>K\<^sub>3 hK\<^sub>3_poly_eq_K unfolding geotop_polyhedron_def by (by100 blast)
+        have h_inj_\<tau>: "inj_on (inv_into (geotop_polyhedron L) f) \<tau>"
+          using hf_inv_inj_K h\<tau>_sub_K_simp inj_on_subset by (by100 blast)
+        have h\<tau>_conv_hull: "\<tau> = convex hull V\<tau>"
+        proof -
+          have "\<tau> = geotop_convex_hull V\<tau>" by (rule h\<tau>hull)
+          also have "\<dots> = convex hull V\<tau>" by (rule geotop_convex_hull_eq_HOL)
+          finally show ?thesis .
+        qed
+        have h_inj_convVt: "inj_on (inv_into (geotop_polyhedron L) f) (convex hull V\<tau>)"
+          using h_inj_\<tau> h\<tau>_conv_hull by (by100 simp)
+        (** Apply preserves_ai: f_inv V_\<tau> is AI. **)
+        have h_fiVt_ai: "\<not> affine_dependent (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+          by (rule geotop_bary_lin_inj_preserves_ai[OF hV\<tau>fin h_inj_convVt hV\<tau>_ai h_bary_V\<tau>])
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Next: f_inv inj on conv V_\<tau> = \<tau>; apply preserves_ai.\<close>
+          sorry \<comment> \<open>Next: hull_eq: f_inv \<tau> = conv(f_inv V_\<tau>) = conv V.
+                     Then establish simplex_vertices (conv V) (f_inv V_\<tau>) + uniqueness.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
