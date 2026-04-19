@@ -1037,10 +1037,130 @@ proof (rule ccontr)
       there's a nontrivial w: V \<to> \<real> with sum w V = 0, \<Sum>v. w v *\<^sub>R f v = 0,
       and some w v \<noteq> 0. **)
   have h_fVfin: "finite (f ` V)" using hVfin by (by100 simp)
+  (** f is inj on V \<subseteq> conv V. **)
+  have h_V_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have h_inj_V: "inj_on f V" using h_inj h_V_hull inj_on_subset by (by100 blast)
   have h_witness: "\<exists>w::'a \<Rightarrow> real. (\<exists>v\<in>V. w v \<noteq> 0) \<and> sum w V = 0
                                   \<and> (\<Sum>v\<in>V. w v *\<^sub>R f v) = 0"
-    sorry \<comment> \<open>Pull back w': f ` V \<to> \<real> from affine_dependent_explicit(f V) via inj.
-              Take w = w' \<circ> f (well-defined on V since inj on V).\<close>
+  proof -
+    (** (A) Unfold affine_dependent_explicit on f V. **)
+    have h_f_exp: "\<exists>T u. finite T \<and> T \<subseteq> f ` V \<and> sum u T = 0
+                       \<and> (\<exists>y\<in>T. u y \<noteq> 0) \<and> (\<Sum>y\<in>T. u y *\<^sub>R y) = 0"
+      using h_dep unfolding affine_dependent_explicit by (by100 blast)
+    obtain T u where hTfin: "finite T" and hT_sub: "T \<subseteq> f ` V"
+                 and hu_sum: "sum u T = 0"
+                 and hu_nonzero: "\<exists>y\<in>T. u y \<noteq> 0"
+                 and hu_vsum: "(\<Sum>y\<in>T. u y *\<^sub>R y) = 0"
+      using h_f_exp by (by100 blast)
+    (** (B) Define V_T = preimage of T in V, and w = u \<circ> f on V_T, 0 elsewhere. **)
+    define V_T where "V_T = V \<inter> f -` T"
+    have hV_T_sub: "V_T \<subseteq> V" unfolding V_T_def by (by100 blast)
+    have h_fV_T_eq: "f ` V_T = T"
+    proof
+      show "f ` V_T \<subseteq> T" unfolding V_T_def by (by100 blast)
+    next
+      show "T \<subseteq> f ` V_T"
+      proof
+        fix y assume hyT: "y \<in> T"
+        have hy_fV: "y \<in> f ` V" using hyT hT_sub by (by100 blast)
+        obtain v where hvV: "v \<in> V" and hy_eq: "y = f v" using hy_fV by (by100 blast)
+        have hvV_T: "v \<in> V_T" unfolding V_T_def using hvV hy_eq hyT by (by100 simp)
+        show "y \<in> f ` V_T" using hvV_T hy_eq by (by100 blast)
+      qed
+    qed
+    have h_inj_V_T: "inj_on f V_T" using h_inj_V hV_T_sub inj_on_subset by (by100 blast)
+    define w where "w = (\<lambda>v::'a. if v \<in> V_T then u (f v) else 0)"
+    (** (C) sum w V = sum_{v \<in> V_T} u(f v) = sum u T = 0. **)
+    have h_sum_w: "sum w V = sum u T"
+    proof -
+      have hVfin': "finite V" using hVfin by (by100 simp)
+      have h_split: "sum w V = sum w V_T + sum w (V - V_T)"
+        using hV_T_sub hVfin' sum.subset_diff[of V_T V w] by (by100 simp)
+      have h_w_on_diff: "sum w (V - V_T) = 0"
+      proof -
+        have "\<And>v. v \<in> V - V_T \<Longrightarrow> w v = 0" unfolding w_def by (by100 simp)
+        thus ?thesis by (by100 simp)
+      qed
+      have h_w_on_V_T: "sum w V_T = sum u T"
+      proof -
+        have h1: "sum w V_T = sum (\<lambda>v. u (f v)) V_T"
+        proof (rule sum.cong)
+          show "V_T = V_T" by (by100 simp)
+        next
+          fix v assume "v \<in> V_T"
+          thus "w v = u (f v)" unfolding w_def by (by100 simp)
+        qed
+        have h2: "sum (\<lambda>v. u (f v)) V_T = sum (u \<circ> f) V_T" by (by100 simp)
+        have h3: "sum (u \<circ> f) V_T = sum u (f ` V_T)"
+          by (rule sum.reindex[OF h_inj_V_T, symmetric])
+        have h4: "sum u (f ` V_T) = sum u T" using h_fV_T_eq by (by100 simp)
+        from h1 have s1: "sum w V_T = sum (\<lambda>v. u (f v)) V_T" .
+        also from h2 have "\<dots> = sum (u \<circ> f) V_T" .
+        also from h3 have "\<dots> = sum u (f ` V_T)" .
+        also from h4 have "\<dots> = sum u T" .
+        finally show ?thesis .
+      qed
+      show ?thesis using h_split h_w_on_diff h_w_on_V_T by (by100 simp)
+    qed
+    have h_sum_w_V: "sum w V = 0" using h_sum_w hu_sum by (by100 simp)
+    (** (D) Similar for vector-sum. **)
+    have h_vsum_w: "(\<Sum>v\<in>V. w v *\<^sub>R f v) = (\<Sum>y\<in>T. u y *\<^sub>R y)"
+    proof -
+      have hVfin': "finite V" using hVfin by (by100 simp)
+      have h_split: "(\<Sum>v\<in>V. w v *\<^sub>R f v) = (\<Sum>v\<in>V_T. w v *\<^sub>R f v)
+                                         + (\<Sum>v\<in>V - V_T. w v *\<^sub>R f v)"
+        using hV_T_sub hVfin'
+              sum.subset_diff[of V_T V "\<lambda>v. w v *\<^sub>R f v"] by (by100 simp)
+      have h_diff_zero: "(\<Sum>v\<in>V - V_T. w v *\<^sub>R f v) = 0"
+      proof -
+        have h_w_zero: "\<forall>v\<in>V - V_T. w v = 0"
+        proof
+          fix v assume hv: "v \<in> V - V_T"
+          show "w v = 0" unfolding w_def using hv by (by100 simp)
+        qed
+        have "(\<Sum>v\<in>V - V_T. w v *\<^sub>R f v) = (\<Sum>v\<in>V - V_T. 0 *\<^sub>R f v)"
+          using h_w_zero by (by100 simp)
+        also have "\<dots> = (\<Sum>v\<in>V - V_T. (0::'b))" by (by100 simp)
+        also have "\<dots> = 0" by (by100 simp)
+        finally show ?thesis .
+      qed
+      have h_V_T_part: "(\<Sum>v\<in>V_T. w v *\<^sub>R f v) = (\<Sum>y\<in>T. u y *\<^sub>R y)"
+      proof -
+        have h1: "(\<Sum>v\<in>V_T. w v *\<^sub>R f v) = (\<Sum>v\<in>V_T. u (f v) *\<^sub>R f v)"
+        proof (rule sum.cong)
+          show "V_T = V_T" by (by100 simp)
+        next
+          fix v assume "v \<in> V_T"
+          thus "w v *\<^sub>R f v = u (f v) *\<^sub>R f v" unfolding w_def by (by100 simp)
+        qed
+        have h2: "(\<Sum>v\<in>V_T. u (f v) *\<^sub>R f v) = sum ((\<lambda>y. u y *\<^sub>R y) \<circ> f) V_T" by (by100 simp)
+        have h3: "sum ((\<lambda>y. u y *\<^sub>R y) \<circ> f) V_T = sum (\<lambda>y. u y *\<^sub>R y) (f ` V_T)"
+          by (rule sum.reindex[OF h_inj_V_T, symmetric])
+        have h4: "sum (\<lambda>y. u y *\<^sub>R y) (f ` V_T) = sum (\<lambda>y. u y *\<^sub>R y) T"
+          using h_fV_T_eq by (by100 simp)
+        from h1 have s1: "(\<Sum>v\<in>V_T. w v *\<^sub>R f v) = (\<Sum>v\<in>V_T. u (f v) *\<^sub>R f v)" .
+        also from h2 have "\<dots> = sum ((\<lambda>y. u y *\<^sub>R y) \<circ> f) V_T" .
+        also from h3 have "\<dots> = sum (\<lambda>y. u y *\<^sub>R y) (f ` V_T)" .
+        also from h4 have "\<dots> = (\<Sum>y\<in>T. u y *\<^sub>R y)" .
+        finally show ?thesis .
+      qed
+      show ?thesis using h_split h_diff_zero h_V_T_part by (by100 simp)
+    qed
+    have h_vsum_w_V: "(\<Sum>v\<in>V. w v *\<^sub>R f v) = 0" using h_vsum_w hu_vsum by (by100 simp)
+    (** (E) \<exists>v\<in>V. w v \<noteq> 0: pick y\<^sub>0 \<in> T with u y\<^sub>0 \<noteq> 0, preimage v\<^sub>0. **)
+    obtain y0 where hy0T: "y0 \<in> T" and hu_y0: "u y0 \<noteq> 0" using hu_nonzero by (by100 blast)
+    have hy0_in_fV_T: "y0 \<in> f ` V_T" using hy0T h_fV_T_eq by (by100 simp)
+    obtain v0 where hv0V_T: "v0 \<in> V_T" and hfv0: "y0 = f v0"
+      using hy0_in_fV_T by (by100 blast)
+    have hv0V: "v0 \<in> V" using hv0V_T hV_T_sub by (by100 blast)
+    have hw_v0: "w v0 = u y0" unfolding w_def using hv0V_T hfv0 by (by100 simp)
+    have hw_v0_ne: "w v0 \<noteq> 0" using hw_v0 hu_y0 by (by100 simp)
+    have h_exists_nz: "\<exists>v\<in>V. w v \<noteq> 0" using hv0V hw_v0_ne by (by100 blast)
+    (** (F) Assemble. **)
+    have "(\<exists>v\<in>V. w v \<noteq> 0) \<and> sum w V = 0 \<and> (\<Sum>v\<in>V. w v *\<^sub>R f v) = 0"
+      using h_exists_nz h_sum_w_V h_vsum_w_V by (by100 blast)
+    thus ?thesis by (by100 blast)
+  qed
   then obtain w :: "'a \<Rightarrow> real"
     where h_nonzero: "\<exists>v\<in>V. w v \<noteq> 0"
       and h_sum0: "sum w V = 0"
