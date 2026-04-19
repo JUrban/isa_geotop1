@@ -9686,17 +9686,48 @@ proof -
                 of \<open>B\<^sub>1'\<close>, recurse.
         A fully precise proof of (3) is deferred as one classical sorry; the
         helpers reduce the content to a compact-meet-arc-endpoint argument. **)
+    (** From "hard": P \<notin> B_2 \<supseteq> B_2' so P \<noteq> Q_0; similarly Q \<noteq> Q_0. **)
+    have hP_neQ\<^sub>0: "P \<noteq> Q\<^sub>0" using hard hQ\<^sub>0_2 by (by100 blast)
+    have hQ_neQ\<^sub>0: "Q \<noteq> Q\<^sub>0" using hard hQ\<^sub>0_1 by (by100 blast)
     obtain B\<^sub>1' where hB\<^sub>1': "geotop_is_broken_line B\<^sub>1'" and hB\<^sub>1'_sub: "B\<^sub>1' \<subseteq> B\<^sub>1"
                   and hPB\<^sub>1': "P \<in> B\<^sub>1'" and hQ\<^sub>0B\<^sub>1': "Q\<^sub>0 \<in> B\<^sub>1'"
+                  and hB\<^sub>1'_arc_data:
+                     "P = Q\<^sub>0 \<or> (\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B\<^sub>1'
+                               \<and> pathstart \<gamma>' = P \<and> pathfinish \<gamma>' = Q\<^sub>0)"
       using geotop_broken_line_subarc[OF hB\<^sub>1 hP hQ\<^sub>0_1] by (by100 blast)
     obtain B\<^sub>2' where hB\<^sub>2': "geotop_is_broken_line B\<^sub>2'" and hB\<^sub>2'_sub: "B\<^sub>2' \<subseteq> B\<^sub>2"
                   and hQ\<^sub>0B\<^sub>2': "Q\<^sub>0 \<in> B\<^sub>2'" and hQB\<^sub>2': "Q \<in> B\<^sub>2'"
+                  and hB\<^sub>2'_arc_data:
+                     "Q\<^sub>0 = Q \<or> (\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B\<^sub>2'
+                               \<and> pathstart \<gamma>' = Q\<^sub>0 \<and> pathfinish \<gamma>' = Q)"
       using geotop_broken_line_subarc[OF hB\<^sub>2 hQ\<^sub>0_2 hQ] by (by100 blast)
-    (** Now work with the tighter sub-arcs \<open>B\<^sub>1', B\<^sub>2'\<close>. At this level the
-        classical content reduces to: two sub-arcs sharing \<open>Q\<^sub>0\<close>, possibly
-        meeting elsewhere, have a broken-line sub-arc from \<open>P\<close> to \<open>Q\<close>. **)
-    show ?thesis sorry \<comment> \<open>Classical: reduce overlapping subarcs via first-intersection
-                          R on B1prime; then subarc1 \<union> subarc2 glues disjointly.\<close>
+    have hB\<^sub>1'_arc: "\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B\<^sub>1' \<and> pathstart \<gamma>' = P \<and> pathfinish \<gamma>' = Q\<^sub>0"
+      using hB\<^sub>1'_arc_data hP_neQ\<^sub>0 by (by100 blast)
+    have hB\<^sub>2'_arc: "\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B\<^sub>2' \<and> pathstart \<gamma>' = Q\<^sub>0 \<and> pathfinish \<gamma>' = Q"
+      using hB\<^sub>2'_arc_data hQ_neQ\<^sub>0 by (by100 blast)
+    (** Disjoint sub-case: B_1' ∩ B_2' = {Q_0}. Glue via glue_disjoint_endpoints. **)
+    show ?thesis
+    proof (cases "B\<^sub>1' \<inter> B\<^sub>2' = {Q\<^sub>0}")
+      case True
+      have hR_end_1: "\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>1' \<and> pathfinish \<gamma> = Q\<^sub>0"
+        using hB\<^sub>1'_arc by (by100 blast)
+      have hR_end_2: "\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>2' \<and> pathstart \<gamma> = Q\<^sub>0"
+        using hB\<^sub>2'_arc by (by100 blast)
+      have h_glued: "geotop_is_broken_line (B\<^sub>1' \<union> B\<^sub>2')"
+        by (rule geotop_broken_lines_glue_disjoint_endpoints[OF hB\<^sub>1' hB\<^sub>2' hR_end_1 hR_end_2 True])
+      have h_sub: "B\<^sub>1' \<union> B\<^sub>2' \<subseteq> B\<^sub>1 \<union> B\<^sub>2" using hB\<^sub>1'_sub hB\<^sub>2'_sub by (by100 blast)
+      have h_P_in: "P \<in> B\<^sub>1' \<union> B\<^sub>2'" using hPB\<^sub>1' by (by100 blast)
+      have h_Q_in: "Q \<in> B\<^sub>1' \<union> B\<^sub>2'" using hQB\<^sub>2' by (by100 blast)
+      show ?thesis using h_glued h_sub h_P_in h_Q_in by (by100 blast)
+    next
+      case False
+      (** Overlap case: B_1' ∩ B_2' strictly contains {Q_0} or is different.
+          Classical first-intersection argument still deferred. **)
+      show ?thesis sorry \<comment> \<open>Classical: first-intersection along B_1' parameterisation.
+                            Extract R as smallest parameter t \<in> (0, 1] with γ(t) ∈ B_2';
+                            R is arc-endpoint of B_1'[P..R] and B_2'[R..Q], which glue
+                            disjointly via glue_disjoint_endpoints.\<close>
+    qed
   qed
 qed
 
