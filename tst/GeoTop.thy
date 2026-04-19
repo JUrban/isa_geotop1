@@ -3778,21 +3778,17 @@ proof -
       have h_img_K': "?g_inv ` (geotop_convex_hull V\<^sub>0) \<in> K'"
         unfolding K'_def using h_in_L' by (by100 blast)
       (** Obtain vertex set W_0 of conv V_0 from simplex_vertices. **)
-      have h_convV0_HOL: "geotop_convex_hull V\<^sub>0 = convex hull V\<^sub>0"
-        by (rule geotop_convex_hull_eq_HOL)
       have h_convV0_sim: "geotop_is_simplex (geotop_convex_hull V\<^sub>0)"
         using h_in_L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]]
         by (by100 blast)
       obtain W\<^sub>0 where hW\<^sub>0sv: "geotop_simplex_vertices (geotop_convex_hull V\<^sub>0) W\<^sub>0"
         using h_convV0_sim unfolding geotop_is_simplex_def
               geotop_simplex_vertices_def by (by100 blast)
-      (** conv V_0 = conv W_0 via simplex vertex decomposition. **)
-      have h_W\<^sub>0_eq_hull: "geotop_convex_hull V\<^sub>0 = geotop_convex_hull W\<^sub>0"
-        using hW\<^sub>0sv unfolding geotop_simplex_vertices_def by (by100 blast)
-      (** Two key facts: V_0 \<supseteq> W_0 (vertices are among V_0), and V_0 \<subseteq> conv V_0. **)
       show "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
-        sorry \<comment> \<open>Remaining: show g_inv(conv V_0) = conv(g_inv V_0) via hull_eq
-                   on W_0 + set-reasoning on V_0 and W_0, then use h_img_K'.\<close>
+        sorry \<comment> \<open>Deep: need W_0 \<subseteq> V_0 (extreme-point argument on convex hull),
+                   then hull_eq on W_0 gives g_inv(conv W_0) = conv(g_inv W_0),
+                   then V_0 \<subseteq> conv V_0 = conv W_0 gives g_inv V_0 \<subseteq> conv(g_inv W_0),
+                   so conv(g_inv V_0) = conv(g_inv W_0) = g_inv(conv V_0) \<in> K'.\<close>
     next
       assume h_img_in_K': "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
       obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
