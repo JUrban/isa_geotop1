@@ -4888,8 +4888,21 @@ proof -
           using hK\<^sub>1_lin h\<sigma>K1 by (by100 blast)
         have h_lin_\<tau>: "geotop_linear_on \<tau> (inv_into (geotop_polyhedron L) f)"
           by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>K\<^sub>1 h\<tau>_sim h\<tau>_sub_K1])
+        (** Bary-preservation of f_inv on V_\<tau>. **)
+        obtain V\<tau>' where hV\<tau>'sv: "geotop_simplex_vertices \<tau> V\<tau>'"
+                     and h_prop_lin\<tau>: "\<forall>\<alpha>. (\<forall>v\<in>V\<tau>'. 0 \<le> \<alpha> v) \<and> sum \<alpha> V\<tau>' = 1 \<longrightarrow>
+                                           inv_into (geotop_polyhedron L) f
+                                              (\<Sum>v\<in>V\<tau>'. \<alpha> v *\<^sub>R v)
+                                           = (\<Sum>v\<in>V\<tau>'. \<alpha> v *\<^sub>R
+                                                inv_into (geotop_polyhedron L) f v)"
+          using h_lin_\<tau> unfolding geotop_linear_on_def by (by100 blast)
+        have hV\<tau>'_eq: "V\<tau>' = V\<tau>" by (rule geotop_simplex_vertices_unique[OF hV\<tau>'sv hV\<tau>sv])
+        have h_bary_V\<tau>: "\<And>\<alpha>. (\<forall>v\<in>V\<tau>. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V\<tau> = 1 \<Longrightarrow>
+                             inv_into (geotop_polyhedron L) f (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R v)
+                             = (\<Sum>v\<in>V\<tau>. \<alpha> v *\<^sub>R inv_into (geotop_polyhedron L) f v)"
+          using h_prop_lin\<tau> hV\<tau>'_eq by (by100 blast)
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Next: f_inv V_\<tau> AI via preserves_ai; conv V = conv(f_inv V_\<tau>) via hull_eq.\<close>
+          sorry \<comment> \<open>Next: f_inv inj on conv V_\<tau> = \<tau>; apply preserves_ai.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
