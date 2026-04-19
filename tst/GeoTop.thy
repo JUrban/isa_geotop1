@@ -608,11 +608,13 @@ proof (intro allI impI)
   assume "geotop_hyperplane_dim H k \<and> k < n"
   then have hHk: "geotop_hyperplane_dim H k" and hkn: "k < n" by auto
   (** H = (+) v0 ` U for subspace U of dim k. Hence H is affine of dim k. **)
-  obtain U v0 B where hU_sub: "subspace U"
-                    and hB_indep: "independent B" and hB_fin: "finite B"
-                    and hB_card: "card B = k" and hB_span: "span B = U"
-                    and hH_eq: "H = (\<lambda>v. v + v0) ` U"
+  obtain U v0 where hU_sub: "subspace U"
+                and hU_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U"
+                and hH_eq: "H = (\<lambda>v. v + v0) ` U"
     using hHk unfolding geotop_hyperplane_dim_def by (by100 blast)
+  obtain B where hB_indep: "independent B" and hB_fin: "finite B"
+             and hB_card: "card B = k" and hB_span: "span B = U"
+    using hU_basis_ex by (by100 blast)
   (** aff_dim U = int k (subspace dim = affine dim for subspaces). **)
   have hU_dim: "dim U = k"
   proof -
@@ -873,12 +875,17 @@ proof -
                                       v' = (\<Sum>v\<in>V. t v *\<^sub>R v)"
   proof
     fix v' assume h_v'V': "v' \<in> V'"
+    have h_v'_in_\<sigma>: "v' \<in> \<sigma>" using h_V'_in_\<sigma> h_v'V' by (by100 blast)
     have h_v'_in: "v' \<in> convex hull V"
-      using h_V'_in_\<sigma> h_\<sigma>_HOL h_v'V' by (by100 blast)
+      using h_v'_in_\<sigma> h_\<sigma>_HOL by (by100 simp)
     have h_v'_exp: "\<exists>u. (\<forall>x\<in>V. 0 \<le> u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = v'"
       using h_v'_in h_hull_char by (by100 blast)
+    then obtain u where h_u_nn: "\<forall>x\<in>V. 0 \<le> u x" and h_u_sum: "sum u V = 1"
+                    and h_u_eq: "(\<Sum>x\<in>V. u x *\<^sub>R x) = v'"
+      by (by100 blast)
+    have h_v'_eq: "v' = (\<Sum>v\<in>V. u v *\<^sub>R v)" using h_u_eq by (by100 simp)
     show "\<exists>t. (\<forall>v\<in>V. 0 \<le> t v) \<and> sum t V = 1 \<and> v' = (\<Sum>v\<in>V. t v *\<^sub>R v)"
-      using h_v'_exp by (by100 metis)
+      using h_u_nn h_u_sum h_v'_eq by (by100 blast)
   qed
   (** (4) Use a SOME to fix bary coords per v'. **)
   define t :: "'a \<Rightarrow> 'a \<Rightarrow> real" where
@@ -1476,8 +1483,11 @@ proof -
     qed
     define x where "x = (\<Sum>v\<in>V. t v *\<^sub>R v)"
     have hx_in_hull: "x \<in> convex hull V"
-      unfolding x_def convex_hull_finite[OF hVfin]
-      using h_t_nn h_t_sum by (by100 blast)
+    proof -
+      have h_mem: "\<exists>a. (\<forall>v\<in>V. 0 \<le> a v) \<and> sum a V = 1 \<and> (\<Sum>v\<in>V. a v *\<^sub>R v) = x"
+        unfolding x_def using h_t_nn h_t_sum by (by100 blast)
+      show ?thesis unfolding convex_hull_finite[OF hVfin] using h_mem by (by100 blast)
+    qed
     have hx_\<sigma>: "x \<in> \<sigma>" using hx_in_hull h\<sigma>_HOL by (by100 simp)
     have h_fx: "f x = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
       using x_def h_prop h_t_nn h_t_sum by (by100 simp)
@@ -2345,15 +2355,13 @@ proof
   (** \<sigma> is a simplex with affinely independent vertex set \<open>V\<close>. **)
   have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
     using h\<sigma>K conjunct1[OF hK[unfolded geotop_is_complex_def]] by (by100 blast)
-  have h\<sigma>_svx_ex: "\<exists>V. geotop_simplex_vertices \<sigma> V"
-    using h\<sigma>_simp
-    unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
-  obtain V where hVsv: "geotop_simplex_vertices \<sigma> V"
-    using h\<sigma>_svx_ex by (by100 blast)
-  obtain m n where hVfin: "finite V" and hVcard: "card V = n+1"
-                and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
-                and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
-    using hVsv unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain V m n where hVfin: "finite V" and hVcard: "card V = n+1"
+                  and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+                  and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have hVsv: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hVcard hnm hVgp h\<sigma>_hull by (by100 blast)
   have h\<sigma>_hullHOL: "\<sigma> = convex hull V"
     using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
   have hV_indep: "\<not> affine_dependent V"
@@ -3775,12 +3783,18 @@ proof -
   (** (1) Extract the PLH \<open>g: |K| \<leftrightarrow> |L|\<close> induced by \<phi>. Requires \<open>K\<close>, \<open>L\<close> complexes. **)
   have hLcomp: "geotop_is_complex L"
     using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+  have hg_strong_ex:
+    "\<exists>g :: 'a \<Rightarrow> 'b. geotop_PLH K L g
+                   \<and> g ` (geotop_polyhedron K) = geotop_polyhedron L
+                   \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))
+                   \<and> (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K)"
+    by (rule geotop_isomorphic_induces_PLH_strong[OF hKcomp hLcomp hiso])
   obtain g :: "'a \<Rightarrow> 'b" where hg: "geotop_PLH K L g"
                              and hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
                              and hg_inv_lin_L: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau>
                                                        (inv_into (geotop_polyhedron K) g)"
                              and hg_inv_L_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K"
-    using geotop_isomorphic_induces_PLH_strong[OF hKcomp hLcomp hiso] by (by100 blast)
+    using hg_strong_ex by (by100 blast)
   have hg_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
     using hg unfolding geotop_PLH_def by (by100 blast)
   (** (2) Pull back each simplex of \<open>L'\<close> through \<open>g\<^sup>-\<^sup>1\<close>. **)
@@ -8781,9 +8795,29 @@ proof -
     by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
 qed
 
-(** Broken-line concatenation: two broken lines sharing an endpoint can be combined
-    into a single broken line, possibly with a small detour to avoid self-intersections.
-    In the open-set context we have a bit of wiggle room. **)
+(** PL-arc-reduction: given two broken lines \<open>B\<^sub>1, B\<^sub>2\<close> sharing a point and two
+    further points \<open>P \<in> B\<^sub>1\<close>, \<open>Q \<in> B\<^sub>2\<close>, there is a broken-line sub-arc of
+    \<open>B\<^sub>1 \<union> B\<^sub>2\<close> from \<open>P\<close> to \<open>Q\<close>.
+
+    This is the classical Hausdorff-Moore arc-reduction theorem, specialised to
+    the PL category. Proof sketch (Moise early.tex \<S>3):
+      (a) parametrise \<open>B\<^sub>1\<close> as an arc \<open>\<alpha> : [0,1] \<to> B\<^sub>1\<close> with \<open>\<alpha>(0) = P\<close>,
+          extract \<open>t\<^sub>0\<close> with \<open>\<alpha>(t\<^sub>0) = Q\<^sub>0\<close>, restrict to sub-arc \<open>\<alpha>' : [0, t\<^sub>0]\<close>;
+      (b) similarly \<open>\<beta>' : [0, s\<^sub>0]\<close> in \<open>B\<^sub>2\<close> from \<open>Q\<^sub>0\<close> to \<open>Q\<close>;
+      (c) concatenation \<open>c = \<alpha>' \<cdot> \<beta>'\<close> is PL, continuous, possibly self-intersecting;
+      (d) Hausdorff-Moore: any such path contains a sub-arc from its endpoints,
+          and in the PL category this sub-arc is itself a broken line.
+    Deferred as a single classical fact. **)
+lemma geotop_broken_line_arc_reduction:
+  fixes B\<^sub>1 B\<^sub>2 :: "'a::euclidean_space set"
+  assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>2: "geotop_is_broken_line B\<^sub>2"
+  assumes hP: "P \<in> B\<^sub>1" and hQ\<^sub>0_1: "Q\<^sub>0 \<in> B\<^sub>1" and hQ\<^sub>0_2: "Q\<^sub>0 \<in> B\<^sub>2" and hQ: "Q \<in> B\<^sub>2"
+  shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> B\<^sub>1 \<union> B\<^sub>2 \<and> P \<in> B \<and> Q \<in> B"
+  sorry \<comment> \<open>Classical PL Hausdorff-Moore arc reduction. Deferred.\<close>
+
+(** Broken-line concatenation: two broken lines sharing an endpoint combine
+    into a single broken line within the ambient set \<open>U\<close>.
+    Proved via \<open>geotop_broken_line_arc_reduction\<close> + transitivity of \<open>\<subseteq>\<close>. **)
 lemma geotop_broken_line_concat:
   fixes B\<^sub>1 B\<^sub>2 U :: "'a::euclidean_space set"
   assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>1U: "B\<^sub>1 \<subseteq> U"
@@ -8791,8 +8825,15 @@ lemma geotop_broken_line_concat:
   assumes hP: "P \<in> B\<^sub>1" and hQ\<^sub>0_1: "Q\<^sub>0 \<in> B\<^sub>1" and hQ\<^sub>0_2: "Q\<^sub>0 \<in> B\<^sub>2" and hQ: "Q \<in> B\<^sub>2"
   assumes hU_open: "open U"
   shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> U \<and> P \<in> B \<and> Q \<in> B"
-  sorry \<comment> \<open>Classical PL topology fact: two broken lines joined at a common endpoint
-           lift to a single broken-line arc (possibly via small detours). Deferred.\<close>
+proof -
+  obtain B where hB: "geotop_is_broken_line B" and hBsub: "B \<subseteq> B\<^sub>1 \<union> B\<^sub>2"
+              and hPB: "P \<in> B" and hQB: "Q \<in> B"
+    using geotop_broken_line_arc_reduction[OF hB\<^sub>1 hB\<^sub>2 hP hQ\<^sub>0_1 hQ\<^sub>0_2 hQ]
+    by (by100 blast)
+  have hunion_U: "B\<^sub>1 \<union> B\<^sub>2 \<subseteq> U" using hB\<^sub>1U hB\<^sub>2U by (by100 blast)
+  have hBU: "B \<subseteq> U" using hBsub hunion_U by (by100 blast)
+  show ?thesis using hB hBU hPB hQB by (by100 blast)
+qed
 
 theorem Theorem_GT_1_13:
   fixes U :: "'a::euclidean_space set"
@@ -9220,8 +9261,9 @@ proof -
 qed
 
 
-(* CHUNK_OUT_START -- temporarily commenting §2+ to speed iteration on Intro + §1.
-   To verify §2+ still compiles, remove this marker + the matching CHUNK_OUT_END.
+(* CHUNK_OUT_START -- §2+ chunked OUT for faster iteration on Intro + §1.
+   To chunk §2+ back IN: wrap "CHUNK_OUT_START" in (* ... *) and do the same
+   for the matching CHUNK_OUT_END marker at end of file.
 
 section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
 
