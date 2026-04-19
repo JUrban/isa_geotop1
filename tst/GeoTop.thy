@@ -1503,12 +1503,29 @@ definition geotop_barycenter :: "'a::real_vector set \<Rightarrow> 'a" where
     (geotop.tex:1197, early.tex Def 4.4). \<open>Sd(K)\<close> is the subdivision of
     \<open>K\<close> whose simplexes are the convex hulls of barycenters of flags
     \<open>\<sigma>_0 < \<sigma>_1 < \<dots> < \<sigma>_n\<close> of faces of simplexes of \<open>K\<close>. We specify it
-    existentially via \<open>SOME\<close>; concrete construction is deferred. **)
+    existentially via \<open>SOME\<close>; concrete construction is deferred.
+
+    CRITICAL: the spec MUST pin down the mesh-shrinkage property (early.tex
+    Lemma 4.11): if \<open>K\<close> has dimension \<open>\<le>n\<close>, then \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close>,
+    AND \<open>Sd(K)\<close> preserves the dimension bound. Otherwise the SOME could pick
+    \<open>K\<close> itself (K is a subdivision of itself preserving 0-simplexes), making
+    \<open>geotop_mesh_iterated_Sd_tends_to_zero\<close> FALSE. The spec is packaged as a
+    separate predicate to keep its unfolding localized. **)
+definition geotop_is_barycentric_Sd ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a set set \<Rightarrow> bool" where
+  "geotop_is_barycentric_Sd bK K \<longleftrightarrow>
+      geotop_is_subdivision bK K
+    \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK)
+    \<and> (\<forall>n::nat.
+          (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+          (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+          \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
+            \<le> (real n / real (Suc n))
+             * geotop_mesh (\<lambda>x y. norm (x - y)) K)"
+
 definition geotop_barycentric_subdivision ::
   "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
-  "geotop_barycentric_subdivision K =
-    (SOME bK. geotop_is_subdivision bK K \<and>
-       (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK))"
+  "geotop_barycentric_subdivision K = (SOME bK. geotop_is_barycentric_Sd bK K)"
 
 abbreviation geotop_Sd :: "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
   "geotop_Sd K \<equiv> geotop_barycentric_subdivision K"
@@ -1574,27 +1591,42 @@ qed
     subdivision of \<open>K\<close>. The \<open>SOME\<close>-defined witness is selected from the set
     of subdivisions of K whose 0-simplexes contain those of K; this set is
     non-empty (take \<open>K\<close> itself), so \<open>SOME\<close> picks something with that property. **)
+(** Classical existence of a barycentric subdivision satisfying the full spec.
+    Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction.
+    Deferred as a single classical sorry at the existence level. **)
+lemma geotop_classical_Sd_exists:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "\<exists>bK. geotop_is_barycentric_Sd bK K"
+  sorry \<comment> \<open>Deep classical: barycentric subdivision construction.
+             Proof: take bK = flags of face-barycenters (Moise Def 4.4),
+             verify subdivision + mesh \<le> n/(n+1) \<cdot> mesh K (Moise Lemma 4.11).\<close>
+
+lemma geotop_Sd_is_barycentric:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_barycentric_Sd (geotop_Sd K) K"
+  unfolding geotop_barycentric_subdivision_def
+  using someI_ex[OF geotop_classical_Sd_exists[OF hK]] by (by100 blast)
+
 lemma geotop_Sd_is_subdivision:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_Sd K) K"
-proof -
-  (** (1) Witness: \<open>K\<close> itself is a subdivision of \<open>K\<close> (reflexivity) and trivially
-      contains all its own 0-simplexes. **)
-  have hwit: "geotop_is_subdivision K K
-                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> K)"
-    using geotop_is_subdivision_refl[OF hK] by (by100 blast)
-  (** (2) Apply \<open>someI_ex\<close> to the SOME def. **)
-  have hex: "\<exists>bK. geotop_is_subdivision bK K
-                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK)"
-    using hwit by (by100 blast)
-  have hprop: "geotop_is_subdivision (geotop_barycentric_subdivision K) K
-                \<and> (\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow>
-                        \<sigma> \<in> geotop_barycentric_subdivision K)"
-    unfolding geotop_barycentric_subdivision_def
-    using someI_ex[OF hex] by (by100 blast)
-  show ?thesis using hprop by (by100 blast)
-qed
+  using geotop_Sd_is_barycentric[OF hK]
+  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
+
+(** The mesh-shrinkage property as a usable helper. **)
+lemma geotop_Sd_mesh_shrinkage:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hdim: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+  shows "(\<forall>\<sigma>'\<in>geotop_Sd K. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+       \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_Sd K)
+         \<le> (real n / real (Suc n))
+          * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+  using geotop_Sd_is_barycentric[OF hK] hdim
+  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
 
 (** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
 lemma geotop_iterated_Sd_is_subdivision:
