@@ -1001,7 +1001,13 @@ proof -
       qed
       finally show ?thesis .
     qed
-    have "f x = y" using h_fx h_vec_eq hy by (by100 simp)
+    have h_fx_y: "f x = y"
+    proof -
+      have "f x = (\<Sum>v\<in>V. t v *\<^sub>R f v)" using h_fx .
+      also have "\<dots> = (\<Sum>w\<in>f`V. u w *\<^sub>R w)" using h_vec_eq .
+      also have "\<dots> = y" using hy by (by100 simp)
+      finally show ?thesis .
+    qed
     then show "y \<in> f ` \<sigma>" using hx_\<sigma> by (by100 blast)
   qed
   (** (3) card (f V) = card V (inj on V \<subseteq> \<sigma>). **)
