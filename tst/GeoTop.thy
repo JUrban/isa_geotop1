@@ -5050,8 +5050,12 @@ proof -
             hull_eq on f V (which \<subseteq> V(K_3) \<subseteq> |K|). **)
         have hf_V_sub_K: "f ` V \<subseteq> geotop_polyhedron K"
           using hf_V_sub_VK\<^sub>3 hV_K\<^sub>3_in_K by (by100 blast)
+        have hK\<^sub>3fin: "finite K\<^sub>3"
+          using hK\<^sub>3_K\<^sub>1 hK\<^sub>1fin geotop_subdivision_of_finite_is_finite by (by100 blast)
+        have hV_K\<^sub>3fin: "finite (geotop_complex_vertices K\<^sub>3)"
+          sorry \<comment> \<open>V(K_3) finite (union over finite K_3 of finite vertex sets).\<close>
         have hfV_fin: "finite (f ` V)"
-          sorry \<comment> \<open>V(K_3) finite (K_3 finite subdivision); f V \<subseteq> V(K_3) finite.\<close>
+          using hf_V_sub_VK\<^sub>3 hV_K\<^sub>3fin finite_subset by (by100 blast)
         (** V = f_inv \<sup>\` (f V). **)
         have hV_sub_L: "V \<subseteq> geotop_polyhedron L"
         proof -
