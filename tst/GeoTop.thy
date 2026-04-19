@@ -2110,6 +2110,48 @@ proof
     using hv_vertices hx_st by (by100 blast)
 qed
 
+lemma geotop_simplex_dim_unique:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h1: "geotop_simplex_dim \<sigma> k1"
+  assumes h2: "geotop_simplex_dim \<sigma> k2"
+  shows "k1 = k2"
+proof -
+  obtain V1 m1 where hV1fin: "finite V1" and hV1card: "card V1 = k1 + 1"
+                  and hV1eq: "\<sigma> = geotop_convex_hull V1"
+                  and hV1gp: "geotop_general_position V1 m1"
+                  and hV1m: "k1 \<le> m1"
+    using h1 unfolding geotop_simplex_dim_def by (by100 blast)
+  obtain V2 m2 where hV2fin: "finite V2" and hV2card: "card V2 = k2 + 1"
+                  and hV2eq: "\<sigma> = geotop_convex_hull V2"
+                  and hV2gp: "geotop_general_position V2 m2"
+                  and hV2m: "k2 \<le> m2"
+    using h2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have hV1_sv: "geotop_simplex_vertices \<sigma> V1"
+    unfolding geotop_simplex_vertices_def
+    using hV1fin hV1card hV1eq hV1gp hV1m by (by100 blast)
+  have hV2_sv: "geotop_simplex_vertices \<sigma> V2"
+    unfolding geotop_simplex_vertices_def
+    using hV2fin hV2card hV2eq hV2gp hV2m by (by100 blast)
+  have hV_eq: "V1 = V2" by (rule geotop_simplex_vertices_unique[OF hV1_sv hV2_sv])
+  show "k1 = k2" using hV1card hV2card hV_eq by (by100 simp)
+qed
+
+lemma geotop_simplex_dim_set_finite:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  shows "finite {k::nat. geotop_simplex_dim \<sigma> k}"
+proof (cases "\<exists>k. geotop_simplex_dim \<sigma> k")
+  case False
+  then have "{k::nat. geotop_simplex_dim \<sigma> k} = {}" by (by100 blast)
+  thus ?thesis by (by100 simp)
+next
+  case True
+  then obtain k0 where hk0: "geotop_simplex_dim \<sigma> k0" by (by100 blast)
+  have h_sub: "{k::nat. geotop_simplex_dim \<sigma> k} \<subseteq> {k0}"
+    using hk0 geotop_simplex_dim_unique by (by100 blast)
+  have h_sing_fin: "finite ({k0}::nat set)" by (by100 simp)
+  show ?thesis by (rule finite_subset[OF h_sub h_sing_fin])
+qed
+
 lemma geotop_diameter_norm_nonneg:
   fixes M :: "'a::real_normed_vector set"
   shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
@@ -2151,8 +2193,7 @@ proof -
     have hD_sub: "D \<subseteq> (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
       unfolding D_def by (by100 blast)
     have h_sigma_fin: "\<And>\<sigma>::'a set. finite {k::nat. geotop_simplex_dim \<sigma> k}"
-      sorry \<comment> \<open>Each simplex has a unique dim via simplex_vertices_unique
-                (euclidean_space typeclass). Deferred.\<close>
+      by (rule geotop_simplex_dim_set_finite)
     have h_union_fin: "finite (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
       using hKfin h_sigma_fin by (by100 blast)
     have hD_fin: "finite D" using hD_sub h_union_fin finite_subset by (by100 blast)
