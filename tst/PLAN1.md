@@ -76,6 +76,25 @@ Record completions here as they happen:
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
 
+## Final state after this extended session
+
+**GeoTopBase.thy** (Intro + §1): 6 real sorry tactics (= 11 grep-counted due to
+comment mentions). These are the 6 classical-content sorries:
+  1. L1945 `classical_Sd_exists` — barycentric subdivision construction (D).
+  2. L3084 Lebesgue tightening in refinement lemma (E).
+  3. L3313 `h_f_exists` barycentric extension (F).
+  4. L9076 `subdivide_edge_interior` Phase 1.1.
+  5. L9437 `subarc` polyhedron Phase 1.A.
+  6. L9759 `arc_reduction` overlap case Phase 1.C.
+
+**GeoTop.thy** (§§2-36): 529 sorries.
+
+**Total: 540 (539 via grep, off-by-one from comment mentions).**
+
+**Build times:**
+  - Fresh: GeoTopBase 37s + GeoTop 14s = 51s.
+  - Cached: 8-10s.
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
