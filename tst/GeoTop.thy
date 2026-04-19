@@ -9169,8 +9169,66 @@ proof -
   have hK_locfin: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
     using conjunct2[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
     by (by100 blast)
-  show ?thesis sorry \<comment> \<open>Compactness argument for finite witness. Full assembly deferred
-            (splits into ~40 lines of HOL compactE + set-theoretic finite union).\<close>
+  (** Pick an open nbhd U_σ for each σ ∈ K via SOME. **)
+  define Uf where "Uf \<sigma> = (SOME U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}})" for \<sigma>
+  have hUf_spec: "\<forall>\<sigma>\<in>K. open (Uf \<sigma>) \<and> \<sigma> \<subseteq> Uf \<sigma> \<and> finite {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have h_ex: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK_locfin h\<sigma>K by (by100 blast)
+    show "open (Uf \<sigma>) \<and> \<sigma> \<subseteq> Uf \<sigma> \<and> finite {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}}"
+      unfolding Uf_def using someI_ex[OF h_ex] by (by100 blast)
+  qed
+  (** The {Uf σ} cover B = |K|. **)
+  have hUf_open: "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> open (Uf \<sigma>)" using hUf_spec by (by100 blast)
+  have hcover: "B \<subseteq> (\<Union>\<sigma>\<in>K. Uf \<sigma>)"
+  proof
+    fix x assume hxB: "x \<in> B"
+    have "x \<in> geotop_polyhedron K" using hxB hKpoly by (by100 simp)
+    then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+      unfolding geotop_polyhedron_def by (by100 blast)
+    have hx_Uf: "x \<in> Uf \<sigma>" using hx\<sigma> hUf_spec h\<sigma>K by (by100 blast)
+    show "x \<in> (\<Union>\<sigma>\<in>K. Uf \<sigma>)" using h\<sigma>K hx_Uf by (by100 blast)
+  qed
+  (** Apply HOL's compactE_image: finite subcover indexed by K. **)
+  obtain S\<^sub>\<sigma> where hS\<^sub>\<sigma>_sub: "S\<^sub>\<sigma> \<subseteq> K" and hS\<^sub>\<sigma>_fin: "finite S\<^sub>\<sigma>"
+              and hS\<^sub>\<sigma>_cover: "B \<subseteq> (\<Union>\<sigma>\<in>S\<^sub>\<sigma>. Uf \<sigma>)"
+    using compactE_image[OF hB_compact hUf_open hcover] by (by100 blast)
+  (** Each τ ∈ K meets some Uf σ with σ ∈ S_σ, since τ nonempty, τ ⊆ B ⊆ ⋃_σ Uf σ. **)
+  have h_tau_in_sub: "\<And>\<tau>. \<tau> \<in> K \<Longrightarrow> \<exists>\<sigma>\<in>S\<^sub>\<sigma>. \<tau> \<inter> Uf \<sigma> \<noteq> {}"
+  proof -
+    fix \<tau> assume h\<tau>K: "\<tau> \<in> K"
+    have h\<tau>_sim: "geotop_is_simplex \<tau>"
+      using h\<tau>K conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h\<tau>_ne: "\<tau> \<noteq> {}" by (rule geotop_is_simplex_nonempty[OF h\<tau>_sim])
+    obtain x where hx\<tau>: "x \<in> \<tau>" using h\<tau>_ne by (by100 blast)
+    have hxB: "x \<in> B" using hx\<tau> h\<tau>K hKpoly unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<sigma> where h\<sigma>_S: "\<sigma> \<in> S\<^sub>\<sigma>" and hx_Uf: "x \<in> Uf \<sigma>"
+      using hS\<^sub>\<sigma>_cover hxB by (by100 blast)
+    show "\<exists>\<sigma>\<in>S\<^sub>\<sigma>. \<tau> \<inter> Uf \<sigma> \<noteq> {}"
+      using h\<sigma>_S hx\<tau> hx_Uf by (by100 blast)
+  qed
+  (** K = ⋃_{σ ∈ S_σ} {τ ∈ K. τ ∩ Uf σ ≠ {}}, a finite union of finite sets. **)
+  have hK_eq_fwd: "K \<subseteq> (\<Union>\<sigma>\<in>S\<^sub>\<sigma>. {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}})"
+  proof
+    fix \<tau> assume h\<tau>K: "\<tau> \<in> K"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S\<^sub>\<sigma>" and h\<tau>U: "\<tau> \<inter> Uf \<sigma> \<noteq> {}"
+      using h_tau_in_sub[OF h\<tau>K] by (by100 blast)
+    show "\<tau> \<in> (\<Union>\<sigma>\<in>S\<^sub>\<sigma>. {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}})"
+      using h\<sigma>S h\<tau>K h\<tau>U by (by100 blast)
+  qed
+  have hK_eq_bwd: "(\<Union>\<sigma>\<in>S\<^sub>\<sigma>. {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}}) \<subseteq> K" by (by100 blast)
+  have hK_eq: "K = (\<Union>\<sigma>\<in>S\<^sub>\<sigma>. {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}})"
+    using hK_eq_fwd hK_eq_bwd by (by100 blast)
+  have hpieces_fin: "\<forall>\<sigma>\<in>S\<^sub>\<sigma>. finite {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}}"
+    using hS\<^sub>\<sigma>_sub hUf_spec by (by100 blast)
+  have hK_fin: "finite K"
+  proof -
+    have "finite (\<Union>\<sigma>\<in>S\<^sub>\<sigma>. {\<tau>\<in>K. \<tau> \<inter> Uf \<sigma> \<noteq> {}})"
+      using hS\<^sub>\<sigma>_fin hpieces_fin by (by100 blast)
+    thus ?thesis using hK_eq by (by100 simp)
+  qed
+  show ?thesis using hKcomp hK1dim hKpoly hK_fin by (by100 blast)
 qed
 
 (** Phase 1.3: any point on a broken line can be made a 0-simplex of a
