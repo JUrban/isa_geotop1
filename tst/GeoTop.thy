@@ -1016,10 +1016,16 @@ qed
 (** Shared classical fact: an affine map that is a bijection on a finite AI set V
     preserves affine independence of the image. Used by is_simplex, preserves_face,
     and face_preimage. Proof deferred — classical linear-algebra result. **)
+(** FAITHFULNESS NOTE (2026-04-19): The original statement had hypothesis
+    \<open>inj_on f V\<close>, but this is INSUFFICIENT. Counterexample:
+    V = {(0,0), (1,0), (0,1)} AI in \<real>\<twosuperior>, f(x,y) = 2x+3y is linear/bary-preserving,
+    inj on V (three distinct values 0, 2, 3), but f V = {0, 2, 3} \<subset> \<real> is DEP
+    (aff_dim = 1 < card - 1 = 2). Strengthened to \<open>inj_on f (convex hull V)\<close>
+    which the actual callers (PLH f + σ = conv V, inj_on f σ) DO satisfy. **)
 lemma geotop_bary_lin_inj_preserves_ai:
   fixes V :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
   assumes hVfin: "finite V"
-  assumes h_inj: "inj_on f V"
+  assumes h_inj: "inj_on f (convex hull V)"
   assumes hV_ai: "\<not> affine_dependent V"
   assumes h_bary: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
                         f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
@@ -1157,21 +1163,64 @@ proof (rule ccontr)
   qed
   (** xp = xn would give \<Sum>v. w v *\<^sub>R v = 0 with sum w V = 0 and some w v \<noteq> 0,
       contradicting V AI. So xp \<noteq> xn. **)
-  have h_xp_ne_xn: "xp \<noteq> xn" sorry
-    \<comment> \<open>xp minus xn equals (1/s) times Sum v. w v scaleR v. If xp = xn, then
-        Sum w v scaleR v = 0, with sum w V = 0 and nonzero w v, contradicting
-        V AI via affine_dependent_explicit.\<close>
-  (** The classical step requires inj on conv V, which follows from inj on V
-      via bary-preservation + V AI. This is where we use that xp, xn \<in> conv V
-      have UNIQUE bary coords \<alpha>p, \<alpha>n (V AI), and f(xp) = f(xn) forces
-      \<alpha>p = \<alpha>n (pre-image uniqueness via linear independence of f V \<Leftrightarrow> V AI). **)
-  (** But we assumed f V is affine_dependent, so this should produce the
-      contradiction somewhere. **)
-  have False sorry
-    \<comment> \<open>Combine h_fxp_eq_fxn + h_xp_ne_xn: two distinct convex combinations
-        of V with the same f-image. Pre-image analysis via bary-preservation
-        + V AI + f inj on V gives contradiction.\<close>
-  thus "False" .
+  have h_xp_ne_xn: "xp \<noteq> xn"
+  proof
+    assume h_eq: "xp = xn"
+    have h_diff_v: "xp - xn = (\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R v)"
+    proof -
+      have "xp - xn = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha>n v *\<^sub>R v)"
+        unfolding xp_def xn_def by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha>p v *\<^sub>R v - \<alpha>n v *\<^sub>R v)"
+        by (rule sum_subtractf[symmetric])
+      also have "\<dots> = (\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R v)"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+      next
+        fix v assume "v \<in> V"
+        show "\<alpha>p v *\<^sub>R v - \<alpha>n v *\<^sub>R v = (\<alpha>p v - \<alpha>n v) *\<^sub>R v"
+          by (rule scaleR_left_diff_distrib[symmetric])
+      qed
+      finally show ?thesis .
+    qed
+    have h_sdiff: "\<And>v. \<alpha>p v - \<alpha>n v = w v / s"
+    proof -
+      fix v
+      have "\<alpha>p v - \<alpha>n v = wp v / s - wn v / s" unfolding \<alpha>p_def \<alpha>n_def by (by100 simp)
+      also have "\<dots> = (wp v - wn v) / s" by (rule diff_divide_distrib[symmetric])
+      also have "\<dots> = w v / s" using h_w_split by (by100 simp)
+      finally show "\<alpha>p v - \<alpha>n v = w v / s" .
+    qed
+    have h_vsum_w_v_scale: "(\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R v) = (1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R v)"
+    proof -
+      have "(\<Sum>v\<in>V. (\<alpha>p v - \<alpha>n v) *\<^sub>R v) = (\<Sum>v\<in>V. (w v / s) *\<^sub>R v)"
+        using h_sdiff by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. (1/s) *\<^sub>R (w v *\<^sub>R v))" by (by100 simp)
+      also have "\<dots> = (1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R v)"
+        by (rule scaleR_right.sum[symmetric])
+      finally show ?thesis .
+    qed
+    have h_diff_zero: "xp - xn = 0" using h_eq by (by100 simp)
+    have h_scale_zero: "(1/s) *\<^sub>R (\<Sum>v\<in>V. w v *\<^sub>R v) = 0"
+      using h_diff_zero h_diff_v h_vsum_w_v_scale by (by100 simp)
+    have h_wsum_v_zero: "(\<Sum>v\<in>V. w v *\<^sub>R v) = 0"
+      using h_scale_zero h_s_pos by (by100 simp)
+    (** V is affine_dependent via affine_dependent_explicit witness (V, w). **)
+    have h_V_dep: "affine_dependent V"
+      unfolding affine_dependent_explicit
+      using hVfin h_sum0 h_wsum_v_zero h_nonzero by (by100 blast)
+    show False using h_V_dep hV_ai by (by100 blast)
+  qed
+  (** xp, xn \<in> conv V (bary combinations with nonneg weights summing to 1).
+      f inj on conv V + f xp = f xn \<Longrightarrow> xp = xn, contradicting h_xp_ne_xn. **)
+  have h_xp_hull: "xp \<in> convex hull V"
+    unfolding xp_def convex_hull_finite[OF hVfin]
+    using h_\<alpha>p_nn h_\<alpha>p_sum by (by100 blast)
+  have h_xn_hull: "xn \<in> convex hull V"
+    unfolding xn_def convex_hull_finite[OF hVfin]
+    using h_\<alpha>n_nn h_\<alpha>n_sum by (by100 blast)
+  have h_xp_eq_xn: "xp = xn"
+    using inj_onD[OF h_inj h_fxp_eq_fxn h_xp_hull h_xn_hull] by (by100 simp)
+  show False using h_xp_eq_xn h_xp_ne_xn by (by100 blast)
 qed
 
 (** Image of a simplex under a map that is linear on it and injective on it is a simplex. **)
@@ -1346,8 +1395,10 @@ proof -
   have h_bary_V: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
                         f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
     using h_prop by (by100 blast)
+  have h_inj_hullV: "inj_on f (convex hull V)"
+    using h_inj h\<sigma>_HOL by (by100 simp)
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai h_bary_V])
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_hullV hVai h_bary_V])
   (** (5) AI + card → general_position. **)
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card_eq h_fV_ai])
@@ -1444,8 +1495,10 @@ proof -
     using card_image[OF h_inj_V] hVcard by (by100 simp)
   have hVai_here: "\<not> affine_dependent V"
     by (rule geotop_general_position_imp_aff_indep[OF hVsv])
+  have h_inj_hullV: "inj_on f (convex hull V)"
+    using h_inj h\<sigma>_HOL by (by100 simp)
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai_here h_bary_V])
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_hullV hVai_here h_bary_V])
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card h_fV_ai])
   have h_f\<sigma>_geo: "f ` \<sigma> = geotop_convex_hull (f ` V)"
@@ -1514,8 +1567,10 @@ proof -
     using card_image[OF h_inj_V] hVcard by (by100 simp)
   have hVai_here: "\<not> affine_dependent V"
     by (rule geotop_general_position_imp_aff_indep[OF hVsv])
+  have h_inj_hullV: "inj_on f (convex hull V)"
+    using h_inj h\<sigma>_HOL by (by100 simp)
   have h_fV_ai: "\<not> affine_dependent (f ` V)"
-    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_V hVai_here h_bary_V])
+    by (rule geotop_bary_lin_inj_preserves_ai[OF hVfin h_inj_hullV hVai_here h_bary_V])
   have h_fV_gp: "geotop_general_position (f ` V) n"
     by (rule geotop_ai_imp_general_position[OF h_fV_fin h_fV_card h_fV_ai])
   have h_f\<sigma>_geo: "f ` \<sigma> = geotop_convex_hull (f ` V)"
