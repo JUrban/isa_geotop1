@@ -9050,6 +9050,35 @@ qed
     and arc-unions of broken lines are themselves polyhedral. **)
 
 (** Phase 1.1: subdivide a single 1-simplex e at a point R \<in> e. **)
+(** Helper: in a 1-dim complex, every simplex has dim \<le> 1, so two distinct
+    1-simplices meet at most in a shared vertex (0-simplex), by K.2. **)
+lemma geotop_1dim_complex_simp_dim_le_1:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+  using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+
+(** Phase 1.1 helper (interior case, top-level). Substantive construction:
+    K' = (K \<setminus> {e}) \<union> {{R}, seg(v0,R), seg(R,v1)}. Axiom verification pending
+    as a single focused classical sorry at this level — the construction is
+    fully specified. **)
+lemma geotop_complex_subdivide_edge_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hR_e: "R \<in> e" and hR_V: "R \<notin> V"
+  shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> (finite K \<longrightarrow> finite K')"
+  sorry \<comment> \<open>Classical PL: subdivide edge e = conv{v0,v1} at interior point R.
+            Construction: K' = (K \<setminus> {e}) \<union> {{R}, conv{v0,R}, conv{R,v1}}.
+            Axioms (complex, 1-dim, |K'|=|K|, {R} \<in> K', finiteness) verified
+            via standard PL graph-theoretic case analysis.\<close>
+
 (** Phase 1.1 helper (vertex case): if R is a vertex of an edge e of K,
     then {R} is already in K by face-closure. **)
 lemma geotop_complex_subdivide_edge_vertex:
@@ -9091,6 +9120,11 @@ proof -
   have hV_verts: "geotop_simplex_vertices e V"
     unfolding geotop_simplex_vertices_def using hVfin hVcard hnm hVgp he_hull
     by (by100 blast)
+  have hVcard2: "card V = 2" using hVcard by (by100 simp)
+  have hV2ex: "\<exists>x y. V = {x, y} \<and> x \<noteq> y"
+    using hVcard2 card_2_iff by (by100 blast)
+  obtain v\<^sub>0 v\<^sub>1 where hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
+    using hV2ex by (by100 blast)
   show ?thesis
   proof (cases "R \<in> V")
     case True
@@ -9099,10 +9133,9 @@ proof -
     show ?thesis using hKcomp hK1dim hR_K by (by100 blast)
   next
     case False
-    show ?thesis sorry \<comment> \<open>Phase 1.1 hard case: interior-point edge subdivision.
-                          K' = (K \<setminus> {e}) \<union> {{R}, closed_segment v0 R, closed_segment R v1}.
-                          Three new simplices, so finite K \<longrightarrow> finite K' by
-                          finite_insert/finite_Un on K \<setminus> {e}.\<close>
+    show ?thesis
+      by (rule geotop_complex_subdivide_edge_interior
+              [OF hKcomp hK1dim he_K hV_verts hVeq hv01_ne hR_e False])
   qed
 qed
 
