@@ -136,6 +136,91 @@ proof -
     unfolding geotop_convex_hull_def hull_def by (by100 simp)
 qed
 
+(** Helper: for a finite V and a map f satisfying bary-linearity on V,
+    f \`\` (conv V) \<subseteq> conv (f \`\` V). No injectivity required.
+    Key insight: x \<in> conv V has bary \<alpha>; f(x) = \<Sum> \<alpha>(v) f(v) ∈ conv(f V)
+    via grouping duplicates of f-values. **)
+lemma geotop_bary_lin_image_subset_hull:
+  fixes V :: "'a::euclidean_space set" and f :: "'a \<Rightarrow> 'b::euclidean_space"
+  assumes hVfin: "finite V"
+  assumes h_bary: "\<And>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V = 1 \<Longrightarrow>
+                        f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+  shows "f ` (convex hull V) \<subseteq> convex hull (f ` V)"
+proof
+  fix y assume "y \<in> f ` (convex hull V)"
+  (** (1) Unpack y = f x with x in conv V. **)
+  then obtain x where hx: "x \<in> convex hull V" and hy: "y = f x" by (by100 blast)
+  (** (2) Extract barycentric coordinates of x over V. **)
+  obtain \<alpha> where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v" and h\<alpha>_sum: "sum \<alpha> V = 1"
+              and h\<alpha>_eq: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+    using hx convex_hull_finite[OF hVfin] by (by100 blast)
+  (** (3) Apply bary-linearity: f(x) = \<Sum> \<alpha> v *R f v. **)
+  have hfx: "f x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using h\<alpha>_eq[symmetric] h_bary[OF h\<alpha>_nn h\<alpha>_sum] by (by100 simp)
+  (** (4) Regroup by f-value: define \<beta> w = sum of \<alpha> over preimage of w in V. **)
+  define \<beta> where "\<beta> = (\<lambda>w. (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v))"
+  have h_sum_regroup: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) = (\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w)"
+  proof -
+    have h_eq_set: "\<And>w. V \<inter> f -` {w} = {v\<in>V. f v = w}" by (by100 blast)
+    (** Step 4a: image_gen regroups by f-value. **)
+    have h4a: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)
+             = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)"
+      using sum.image_gen[OF hVfin, of "\<lambda>v. \<alpha> v *\<^sub>R f v" f] h_eq_set by (by100 simp)
+    (** Step 4b: on the preimage, f v = w so α v *R f v = α v *R w. **)
+    have h4b: "\<And>w. (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)
+                 = (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R w)"
+    proof -
+      fix w
+      show "(\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)
+              = (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R w)"
+        by (rule sum.cong) (by100 auto)+
+    qed
+    (** Step 4c: factor scalar out. **)
+    have h4c: "\<And>w. (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R w) = \<beta> w *\<^sub>R w"
+      unfolding \<beta>_def using scaleR_left.sum[symmetric] by (by100 simp)
+    (** Combine. **)
+    have h4d: "(\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)
+             = (\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w)"
+      using h4b h4c by (by100 simp)
+    from h4a have s1: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)" .
+    also from h4d have s2: "\<dots> = (\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w)" .
+    finally show ?thesis .
+  qed
+  (** (5) \<beta> is nonneg (sum of nonneg). **)
+  have h\<beta>_nn: "\<forall>w\<in>f`V. 0 \<le> \<beta> w"
+  proof
+    fix w assume "w \<in> f`V"
+    have h_sub: "V \<inter> f -` {w} \<subseteq> V" by (by100 blast)
+    have h_each: "\<And>v. v \<in> V \<inter> f -` {w} \<Longrightarrow> 0 \<le> \<alpha> v"
+      using h\<alpha>_nn h_sub by (by100 blast)
+    have "0 \<le> (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v)"
+      using sum_nonneg[of "V \<inter> f -` {w}" \<alpha>] h_each by (by100 blast)
+    thus "0 \<le> \<beta> w" unfolding \<beta>_def by (by100 simp)
+  qed
+  (** (6) \<beta> sums to 1 (double-sum equals sum \<alpha> V = 1). **)
+  have h\<beta>_sum: "sum \<beta> (f`V) = 1"
+  proof -
+    have h1: "sum \<beta> (f`V) = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v)"
+      unfolding \<beta>_def by (by100 simp)
+    have h_eq_set: "\<And>w. V \<inter> f -` {w} = {v. v \<in> V \<and> f v = w}" by (by100 blast)
+    have h2: "(\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v) = sum \<alpha> V"
+      using sum.image_gen[OF hVfin, of \<alpha> f, symmetric] h_eq_set by (by100 simp)
+    from h1 have "sum \<beta> (f`V) = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v)" .
+    also from h2 have "\<dots> = sum \<alpha> V" .
+    also from h\<alpha>_sum have "\<dots> = 1" .
+    finally show ?thesis .
+  qed
+  (** (7) Hence f(x) in conv(f``V). **)
+  have h_fVfin: "finite (f`V)" using hVfin by (by100 simp)
+  have h_final: "(\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w) \<in> convex hull (f ` V)"
+    using convex_hull_finite[OF h_fVfin] h\<beta>_nn h\<beta>_sum by (by100 blast)
+  from hy have "y = f x" .
+  also from hfx have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)" .
+  also from h_sum_regroup have "\<dots> = (\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w)" .
+  finally have "y = (\<Sum>w\<in>f`V. \<beta> w *\<^sub>R w)" .
+  then show "y \<in> convex hull (f ` V)" using h_final by (by100 simp)
+qed
+
 subsection \<open>Simplexes and faces\<close>
 
 (** from Introduction: n-dimensional simplex (geotop.tex:117)
