@@ -4849,8 +4849,30 @@ proof -
                 geotop_simplex_vertices_def by (by100 blast)
         have hV_L\<^sub>3_ai: "\<not> affine_dependent V_L\<^sub>3"
           by (rule geotop_general_position_imp_aff_indep[OF hV_L\<^sub>3sv])
+        have h_V_L\<^sub>3_hull: "geotop_convex_hull V = geotop_convex_hull V_L\<^sub>3"
+          using hV_L\<^sub>3sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have h_HOL_hulls_eq: "convex hull V = convex hull V_L\<^sub>3"
+        proof -
+          have h1: "convex hull V = geotop_convex_hull V"
+            by (rule geotop_convex_hull_eq_HOL[symmetric])
+          have h2: "geotop_convex_hull V_L\<^sub>3 = convex hull V_L\<^sub>3"
+            by (rule geotop_convex_hull_eq_HOL)
+          show ?thesis using h1 h_V_L\<^sub>3_hull h2 by (by100 simp)
+        qed
+        have hV_L\<^sub>3_sub_V: "V_L\<^sub>3 \<subseteq> V"
+        proof
+          fix v assume hv: "v \<in> V_L\<^sub>3"
+          have h_extr_VL: "v extreme_point_of (convex hull V_L\<^sub>3)"
+            using extreme_point_of_convex_hull_affine_independent[OF hV_L\<^sub>3_ai] hv
+            by (by100 blast)
+          have h_extr_V: "v extreme_point_of (convex hull V)"
+            using h_extr_VL h_HOL_hulls_eq by (by100 simp)
+          show "v \<in> V" by (rule extreme_point_of_convex_hull[OF h_extr_V])
+        qed
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Remaining: V(\<tau>) \<subseteq> f V, then \<tau> \<subseteq> conv(f V) = \<tau>, so conv(f V) = \<tau> \<in> K_3.\<close>
+          sorry \<comment> \<open>Final: V_L_3 = f_inv V(\<tau>) via simplex_vertices correspondence;
+                     f V_L_3 = V(\<tau>) via bij; V_L_3 \<subseteq> V so V(\<tau>) \<subseteq> f V;
+                     then \<tau> = conv V(\<tau>) \<subseteq> conv(f V); hence = \<tau> \<in> K_3.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
