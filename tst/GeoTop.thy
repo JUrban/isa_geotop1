@@ -9112,8 +9112,36 @@ lemma geotop_complex_subdivide_at:
   assumes hR_poly: "R \<in> geotop_polyhedron K"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
-  sorry \<comment> \<open>Phase 1.2: find the simplex σ \<in> K with R \<in> σ. If dim 0, σ = {R}
-            is already a 0-simplex. If dim 1, apply Phase 1.1.\<close>
+proof -
+  (** Find σ ∈ K with R ∈ σ. **)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hR\<sigma>: "R \<in> \<sigma>"
+    using hR_poly unfolding geotop_polyhedron_def by (by100 blast)
+  (** σ is 0- or 1-dim (from K 1-dim). **)
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+  show ?thesis
+  proof (cases n)
+    case 0
+    (** σ has dim 0, i.e., σ is a 0-simplex (singleton). R ∈ σ ⟹ σ = {R}. **)
+    obtain V m where hVfin: "finite V" and hVcard: "card V = 0 + 1"
+                 and hnm: "0 \<le> m" and hVgp: "geotop_general_position V m"
+                 and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_dim 0 unfolding geotop_simplex_dim_def by (by100 blast)
+    have hVsing: "\<exists>v. V = {v}" using hVcard by (metis card_1_singletonE One_nat_def add.commute add_0)
+    obtain v where hVeq: "V = {v}" using hVsing by (by100 blast)
+    have h\<sigma>_sing: "\<sigma> = {v}"
+      using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    have hR_v: "R = v" using hR\<sigma> h\<sigma>_sing by (by100 blast)
+    have hR_K: "{R} \<in> K" using h\<sigma>K h\<sigma>_sing hR_v by (by100 simp)
+    show ?thesis using hKcomp hK1dim hR_K by (by100 blast)
+  next
+    case (Suc k)
+    have hn_eq_1: "n = 1" using hn_le Suc by (by100 simp)
+    have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_dim hn_eq_1 by (by100 simp)
+    show ?thesis
+      by (rule geotop_complex_subdivide_edge[OF hKcomp hK1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>])
+  qed
+qed
 
 (** Phase 1.2b: broken line has a FINITE witness complex. Follows from
     compactness of the arc + K.3 local finiteness via subcover. **)

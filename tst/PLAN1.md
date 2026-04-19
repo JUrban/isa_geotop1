@@ -63,16 +63,29 @@ Given iso `φ: V(K) → V(L)`, define `g` on each simplex σ ∈ K by: for `x = 
 
 Record completions here as they happen:
 
-- [x] Strengthened `geotop_is_broken_line` def with 1-dim witness (commit e5a4ccc6) — eliminates Phase 1.1.
-- [ ] Phase 1.1: `geotop_subdivide_edge_at_point` — split a 1-simplex at interior point R, producing 2 sub-segments + vertex.
-- [ ] Phase 1.2: `geotop_complex_subdivide_at` — subdivide a 1-complex at any point R ∈ |K|, making R a 0-simplex.
-- [ ] Phase 1.3: `geotop_arc_endpoints_to_vertices` — any broken line has a 1-dim witness complex with its arc endpoints as 0-simplices.
-- [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron)
-- [ ] Phase 1.B: close B (`glue_disjoint_endpoints` polyhedron)
-- [ ] Phase 1.C: close C (`arc_reduction` cross-arc case)
+- [x] Strengthened `geotop_is_broken_line` def with 1-dim witness (commit e5a4ccc6) — cleaner.
+- [~] Phase 1.1: `geotop_complex_subdivide_edge` — VERTEX CASE CLOSED; interior case sorry (commit df602bd6).
+- [ ] Phase 1.2: `geotop_complex_subdivide_at` — sorry.
+- [ ] Phase 1.2b: `geotop_broken_line_finite_witness` — sorry (finite via compactness).
+- [x] Phase 1.3: `geotop_broken_line_vertex_at` — FULLY PROVED modulo 1.2 (commit ea34ece7).
+- [~] Phase 1.B: glue_disjoint_endpoints polyhedron — FULLY PROVED modulo 1.1/1.2/1.2b (commit 3085cd02).
+- [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron) — still sorry.
+- [ ] Phase 1.C: close C (`arc_reduction` cross-arc case) — still sorry.
 - [ ] Phase 2: close D (`classical_Sd_exists`)
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
+
+## Remaining work to close §1 sorry-free
+
+Core infrastructure sorries that unlock everything:
+1. `geotop_complex_subdivide_edge` interior case (~80 lines, concrete construction).
+2. `geotop_complex_subdivide_at` (trivial given 1.1 — case-split on dim of σ containing R).
+3. `geotop_broken_line_finite_witness` (~30 lines, compactness + K.3 subcover).
+4. Finiteness preservation in `vertex_at` (~15 lines, inspect subdivide_at's structure).
+
+Then A and C become tractable:
+- A: subarc polyhedron requires graph-theoretic sub-complex extraction (~80 lines).
+- C: arc_reduction cross-arc first-intersection (~100 lines).
 
 ## Split-proof safety template
 
