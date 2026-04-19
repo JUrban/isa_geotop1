@@ -3259,6 +3259,22 @@ proof -
   show ?thesis by (rule exI[where x=f], rule h_full)
 qed
 
+(** Strengthened iso induces PLH: also gives simplex-image structure for g_inv. **)
+lemma geotop_isomorphic_induces_PLH_strong:
+  fixes K :: "'a::euclidean_space set set"
+  fixes L :: "'b::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hL: "geotop_is_complex L"
+  assumes hiso: "geotop_isomorphic K L"
+  shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
+                    \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+                    \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
+                    \<and> (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K)"
+  sorry \<comment> \<open>Strengthened form: g_inv maps each L-simplex to a K-simplex.
+             For \<tau> \<in> L with vertex set V_\<tau>, g_inv V_\<tau> \<subseteq> V(K) via vertex bij.
+             By iso simp correspondence: conv(g_inv V_\<tau>) \<in> K. Via linearity + hull_eq:
+             g_inv(\<tau>) = conv(g_inv V_\<tau>) \<in> K.\<close>
+
 (** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
     PLH between the underlying polyhedra. **)
 lemma geotop_isomorphic_induces_PLH:
