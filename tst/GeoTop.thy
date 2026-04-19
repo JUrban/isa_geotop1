@@ -2497,11 +2497,10 @@ proof -
   thus ?thesis unfolding geotop_diameter_def using hne by (by100 simp)
 qed
 
-lemma geotop_diameter_norm_nonneg:
-  fixes M :: "'a::real_normed_vector set"
-  shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
-  sorry \<comment> \<open>General case. For bounded M use geotop_diameter_norm_nonneg_bdd.
-             Unbounded requires specific HOL cSUP for unbounded reals.\<close>
+(** Note: the unrestricted diameter_norm_nonneg is not provable without
+    additional hypothesis (unbounded M case can give arbitrary cSup).
+    Use geotop_diameter_norm_nonneg_bdd above for bounded M. **)
+
 
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
