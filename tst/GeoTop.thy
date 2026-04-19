@@ -9042,6 +9042,58 @@ proof -
     using hK_complex hK_poly hK_1dim harc by blast
 qed
 
+(** ===== Phase 1 (PLAN1.md) — Sub-complex infrastructure =====
+
+    Key fact: if K is a 1-complex containing an edge e and a point R \<in> e,
+    we can subdivide e at R to produce a 1-complex K' with |K'| = |K| and
+    R as a 0-simplex. This is the workhorse lemma for proving that sub-arcs
+    and arc-unions of broken lines are themselves polyhedral. **)
+
+(** Phase 1.1: subdivide a single 1-simplex e at a point R \<in> e. **)
+lemma geotop_complex_subdivide_edge:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K" and he_dim: "geotop_simplex_dim e 1"
+  assumes hR_e: "R \<in> e"
+  shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
+  sorry \<comment> \<open>Phase 1.1: replace edge e = closed_segment v0 v1 containing R by
+            K - {e} \<union> {{R}, closed_segment v0 R, closed_segment R v1}.
+            Trivial if R \<in> {v0, v1} (take K itself - \<open>{R} \<in> K\<close> by face-closure).\<close>
+
+(** Phase 1.2: subdivide a 1-complex at any point R \<in> |K| to make R a 0-simplex. **)
+lemma geotop_complex_subdivide_at:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes hR_poly: "R \<in> geotop_polyhedron K"
+  shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
+  sorry \<comment> \<open>Phase 1.2: find the simplex σ \<in> K with R \<in> σ. If dim 0, σ = {R}
+            is already a 0-simplex. If dim 1, apply Phase 1.1.\<close>
+
+(** Phase 1.3: any point on a broken line can be made a 0-simplex of the
+    witness complex. Direct corollary of Phase 1.2. **)
+lemma geotop_broken_line_vertex_at:
+  fixes B :: "'a::euclidean_space set"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hR_B: "R \<in> B"
+  shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+           \<and> geotop_polyhedron K = B \<and> {R} \<in> K"
+proof -
+  obtain K where hK: "geotop_is_complex K" and hKpoly: "geotop_polyhedron K = B"
+              and hK1: "geotop_complex_is_1dim K"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  have hR_poly: "R \<in> geotop_polyhedron K" using hR_B hKpoly by (by100 simp)
+  obtain K' where hK'_comp: "geotop_is_complex K'" and hK'_1dim: "geotop_complex_is_1dim K'"
+              and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+              and hR_K': "{R} \<in> K'"
+    using geotop_complex_subdivide_at[OF hK hK1 hR_poly] by (by100 blast)
+  have hK'_B: "geotop_polyhedron K' = B" using hK'_poly hKpoly by (by100 simp)
+  show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' by (by100 blast)
+qed
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
@@ -9214,8 +9266,15 @@ next
     have h2: "?B' = \<gamma> ` closed_segment s_lo s_hi"
       by (rule path_image_subpath_gen)
     have h_seg_xy: "closed_segment s\<^sub>X s\<^sub>Y = closed_segment s_lo s_hi"
-      unfolding s_lo_def s_hi_def using closed_segment_commute closed_segment_eq_real_ivl
-      by (by100 simp)
+    proof -
+      have heq_lh: "closed_segment s\<^sub>X s\<^sub>Y = {min s\<^sub>X s\<^sub>Y..max s\<^sub>X s\<^sub>Y}"
+        unfolding closed_segment_eq_real_ivl by (by100 simp)
+      have heq_rh: "closed_segment s_lo s_hi = {s_lo..s_hi}"
+        using hs_lt unfolding closed_segment_eq_real_ivl by (by100 simp)
+      have heq_ivl: "{min s\<^sub>X s\<^sub>Y..max s\<^sub>X s\<^sub>Y} = {s_lo..s_hi}"
+        unfolding s_lo_def s_hi_def by (by100 simp)
+      show ?thesis using heq_lh heq_rh heq_ivl by (by100 simp)
+    qed
     show ?thesis using h1 h2 h_seg_xy by (by100 simp)
   qed
   have hB'_arc_endpoints:
@@ -9264,12 +9323,48 @@ proof -
   have h_geotop_arc: "geotop_is_arc (B\<^sub>1 \<union> B\<^sub>2)
                        (subspace_topology UNIV geotop_euclidean_topology (B\<^sub>1 \<union> B\<^sub>2))"
     using h_join_pim geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_join] by (by100 simp)
-  (** (5) Polyhedral side: take complex union K\<^sub>1 \<union> K\<^sub>2 after subdividing
-          at R. This classical PL fact is the remaining content. **)
+  (** (5) Polyhedral side. Get K_1 with R as vertex; similarly K_2. **)
+  have hR_B\<^sub>1: "R \<in> B\<^sub>1" using hdisj by (by100 blast)
+  have hR_B\<^sub>2: "R \<in> B\<^sub>2" using hdisj by (by100 blast)
+  obtain K\<^sub>1 where hK\<^sub>1_comp: "geotop_is_complex K\<^sub>1"
+              and hK\<^sub>1_1dim: "geotop_complex_is_1dim K\<^sub>1"
+              and hK\<^sub>1_poly: "geotop_polyhedron K\<^sub>1 = B\<^sub>1"
+              and hR_K\<^sub>1: "{R} \<in> K\<^sub>1"
+    using geotop_broken_line_vertex_at[OF hB\<^sub>1 hR_B\<^sub>1] by (by100 blast)
+  obtain K\<^sub>2 where hK\<^sub>2_comp: "geotop_is_complex K\<^sub>2"
+              and hK\<^sub>2_1dim: "geotop_complex_is_1dim K\<^sub>2"
+              and hK\<^sub>2_poly: "geotop_polyhedron K\<^sub>2 = B\<^sub>2"
+              and hR_K\<^sub>2: "{R} \<in> K\<^sub>2"
+    using geotop_broken_line_vertex_at[OF hB\<^sub>2 hR_B\<^sub>2] by (by100 blast)
+  define K where "K = K\<^sub>1 \<union> K\<^sub>2"
+  (** K is a complex: K.0, K.1, K.2, K.3 checked pairwise. **)
+  have hK_simplexes: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    unfolding K_def
+    using conjunct1[OF hK\<^sub>1_comp[unfolded geotop_is_complex_def]]
+          conjunct1[OF hK\<^sub>2_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hK_1dim: "geotop_complex_is_1dim K"
+    unfolding K_def geotop_complex_is_1dim_def
+    using hK\<^sub>1_1dim hK\<^sub>2_1dim unfolding geotop_complex_is_1dim_def by (by100 blast)
+  have hK_poly: "geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2"
+  proof -
+    have h1: "geotop_polyhedron K = geotop_polyhedron K\<^sub>1 \<union> geotop_polyhedron K\<^sub>2"
+      unfolding K_def geotop_polyhedron_def by (by100 auto)
+    show ?thesis using h1 hK\<^sub>1_poly hK\<^sub>2_poly by (by100 simp)
+  qed
+  (** K.1: face closure. **)
+  have hK\<^sub>1_faces: "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>1"
+    using conjunct1[OF conjunct2[OF hK\<^sub>1_comp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have hK\<^sub>2_faces: "\<forall>\<sigma>\<in>K\<^sub>2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>2"
+    using conjunct1[OF conjunct2[OF hK\<^sub>2_comp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have hK_faces: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    unfolding K_def using hK\<^sub>1_faces hK\<^sub>2_faces by (by100 blast)
   have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2
                           \<and> geotop_complex_is_1dim K"
-    sorry \<comment> \<open>Classical PL: union of two 1-complexes sharing a vertex R is a
-              1-complex with polyhedron B_1 \<union> B_2.\<close>
+    sorry \<comment> \<open>Remaining: K.2 (intersections force face-relation) and K.3 (local
+              finiteness). K.2 critical check: σ ∈ K_1, τ ∈ K_2, σ ∩ τ ≠ ∅ gives
+              σ ∩ τ ⊆ {R} = σ ∩ τ = {R} and R vertex of both ⟹ {R} face of both.\<close>
   show ?thesis
     unfolding geotop_is_broken_line_def
     using h_polyhedron h_geotop_arc by (by100 blast)

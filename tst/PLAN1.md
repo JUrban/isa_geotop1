@@ -63,10 +63,10 @@ Given iso `φ: V(K) → V(L)`, define `g` on each simplex σ ∈ K by: for `x = 
 
 Record completions here as they happen:
 
-- [ ] Phase 1.1: `geotop_broken_line_1dim`
-- [ ] Phase 1.2: `geotop_arc_endpoint_is_vertex`
-- [ ] Phase 1.3: `geotop_complex_restrict_vertices`
-- [ ] Phase 1.4: `geotop_subpath_polyhedron`
+- [x] Strengthened `geotop_is_broken_line` def with 1-dim witness (commit e5a4ccc6) — eliminates Phase 1.1.
+- [ ] Phase 1.1: `geotop_subdivide_edge_at_point` — split a 1-simplex at interior point R, producing 2 sub-segments + vertex.
+- [ ] Phase 1.2: `geotop_complex_subdivide_at` — subdivide a 1-complex at any point R ∈ |K|, making R a 0-simplex.
+- [ ] Phase 1.3: `geotop_arc_endpoints_to_vertices` — any broken line has a 1-dim witness complex with its arc endpoints as 0-simplices.
 - [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron)
 - [ ] Phase 1.B: close B (`glue_disjoint_endpoints` polyhedron)
 - [ ] Phase 1.C: close C (`arc_reduction` cross-arc case)
