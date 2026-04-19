@@ -69,11 +69,24 @@ Record completions here as they happen:
 - [x] Phase 1.2b: `geotop_broken_line_finite_witness` — FULLY PROVED via compactE_image (4d826231).
 - [x] Phase 1.3: `geotop_broken_line_vertex_at` — FULLY PROVED (finite + vertex).
 - [x] Phase 1.B: `glue_disjoint_endpoints` polyhedron — FULLY PROVED structurally (3085cd02, 21f4d9fd).
+- [~] Phase 1.C: disjoint sub-case of `arc_reduction` hard case — CLOSED via glue_disjoint (91784d0b); overlap sub-case still sorry.
 - [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron) — still sorry.
-- [ ] Phase 1.C: close C (`arc_reduction` cross-arc case) — still sorry.
+- [ ] Phase 1.C overlap: first-intersection classical — still sorry.
 - [ ] Phase 2: close D (`classical_Sd_exists`)
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
+
+## Session timeout wall
+
+Hit the 120s ROOT-timeout ceiling when attempting to inline Phase 1.1
+interior's full proof (~100 lines of K.0/K.1/K.2/K.3 verification).
+Each new by100-guarded step adds to cumulative build time, and the
+monolithic proof pushed the whole theory past 120s.
+
+Workaround option: split `GeoTop.thy` into `GeoTopBase.thy` (Intro + §1)
+and a thinner `GeoTop.thy` (§2+), each with its own 120s ROOT budget.
+This would also deliver the caching goal even with remaining narrow
+sorries (since `quick_and_dirty` allows sorry-containing sessions).
 
 ## Remaining work to close §1 sorry-free
 
