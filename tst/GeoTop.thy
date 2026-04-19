@@ -4798,9 +4798,57 @@ proof -
         show "w \<in> geotop_complex_vertices K\<^sub>3" using hwv hfv hw0 by (by100 simp)
       qed
       show "geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-        sorry \<comment> \<open>Remaining: establish conv V = f_inv \<sup>\` (conv(f V)) via hull_eq,
-                   then L_3 = f_inv \<sup>\` K_3 gives the equivalence via f_inv injectivity.
-                   ~100 lines of set-reasoning.\<close>
+      proof (rule iffI)
+        assume hV_L\<^sub>3: "geotop_convex_hull V \<in> L\<^sub>3"
+        obtain \<tau> where h\<tau>K\<^sub>3: "\<tau> \<in> K\<^sub>3"
+                    and h_conv_eq_geo: "geotop_convex_hull V = inv_into (geotop_polyhedron L) f ` \<tau>"
+          using hV_L\<^sub>3 unfolding L\<^sub>3_def by (by100 blast)
+        (** \<tau> is a simplex (K.0 of K_3). **)
+        have h\<tau>_sim: "geotop_is_simplex \<tau>"
+          using h\<tau>K\<^sub>3 conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]]
+          by (by100 blast)
+        (** f V \<subseteq> \<tau>: V \<subseteq> conv V = f_inv \<tau>, applying f gives V \<subseteq> f(f_inv \<tau>) = \<tau>. **)
+        have hfV_sub_\<tau>: "f ` V \<subseteq> \<tau>"
+        proof
+          fix w assume hw: "w \<in> f ` V"
+          obtain v where hvV: "v \<in> V" and hwv: "w = f v" using hw by (by100 blast)
+          have hv_hull: "v \<in> geotop_convex_hull V"
+            unfolding geotop_convex_hull_def hull_def using hvV by (by100 blast)
+          have hv_in_fi: "v \<in> inv_into (geotop_polyhedron L) f ` \<tau>"
+            using hv_hull h_conv_eq_geo by (by100 simp)
+          obtain w' where hw'\<tau>: "w' \<in> \<tau>"
+                      and hv_eq: "v = inv_into (geotop_polyhedron L) f w'"
+            using hv_in_fi by (by100 blast)
+          have h\<tau>_sub_K: "\<tau> \<subseteq> geotop_polyhedron K"
+            using h\<tau>K\<^sub>3 hK\<^sub>3_poly_eq_K unfolding geotop_polyhedron_def by (by100 blast)
+          have hw'_K: "w' \<in> geotop_polyhedron K" using hw'\<tau> h\<tau>_sub_K by (by100 blast)
+          have hfv_eq: "f v = w'"
+            using bij_betw_inv_into_right[OF hf_bij hw'_K] hv_eq by (by100 simp)
+          show "w \<in> \<tau>" using hwv hfv_eq hw'\<tau> by (by100 simp)
+        qed
+        (** conv(f V) \<subseteq> \<tau> (\<tau> is convex as a simplex). **)
+        have h\<tau>_convex: "convex \<tau>"
+        proof -
+          obtain V\<tau> m n where h_V\<tau>_eq: "\<tau> = geotop_convex_hull V\<tau>"
+            using h\<tau>_sim unfolding geotop_is_simplex_def by (by100 blast)
+          have "\<tau> = convex hull V\<tau>"
+            using h_V\<tau>_eq geotop_convex_hull_eq_HOL by (by100 simp)
+          thus ?thesis using convex_convex_hull by (by100 simp)
+        qed
+        have h\<tau>_geo_conv: "geotop_convex \<tau>"
+          using h\<tau>_convex geotop_convex_iff_HOL_convex[of \<tau>] by (by100 simp)
+        have h_convfV_sub_\<tau>: "geotop_convex_hull (f ` V) \<subseteq> \<tau>"
+          unfolding geotop_convex_hull_def hull_def using hfV_sub_\<tau> h\<tau>_geo_conv
+          by (by100 blast)
+        (** \<tau> \<subseteq> conv(f V): via vertex-set argument. V(\<tau>) \<subseteq> f V. **)
+        show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
+          sorry \<comment> \<open>Remaining: show \<tau> \<subseteq> conv(f V), hence \<tau> = conv(f V) \<in> K_3.
+                     Requires: V(\<tau>) \<subseteq> f V via extreme_point argument on conv V.\<close>
+      next
+        assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
+        show "geotop_convex_hull V \<in> L\<^sub>3"
+          sorry \<comment> \<open>Backward: symmetric.\<close>
+      qed
     qed
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
       unfolding geotop_isomorphic_def geotop_isomorphism_def
