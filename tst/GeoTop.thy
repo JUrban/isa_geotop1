@@ -2110,6 +2110,25 @@ proof
     using hv_vertices hx_st by (by100 blast)
 qed
 
+lemma geotop_diameter_norm_nonneg:
+  fixes M :: "'a::real_normed_vector set"
+  shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
+proof (cases "M = {}")
+  case True
+  then show ?thesis unfolding geotop_diameter_def by (by100 simp)
+next
+  case False
+  then obtain P0 where hP0: "P0 \<in> M" by (by100 blast)
+  show ?thesis unfolding geotop_diameter_def
+    sorry \<comment> \<open>Split: for nonempty M, SUP over P \<in> M of (SUP Q. norm(P-Q)) \<ge> 0.
+                Take P=Q=P0: norm(0) = 0.\<close>
+qed
+
+lemma geotop_mesh_norm_nonneg:
+  fixes G :: "'a::real_normed_vector set set"
+  shows "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) G"
+  sorry \<comment> \<open>diameter \<ge> 0 for norm; SUP of nonneg \<ge> 0.\<close>
+
 (** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
     subdivision tends to 0. Proof via the shrinkage bound
     \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close> (Moise Lemma 4.11) from
@@ -2167,14 +2186,78 @@ proof -
   have h_q_lt_1: "q < 1" unfolding q_def
     by (by100 simp)
   define M where "M = geotop_mesh (\<lambda>x y. norm (x - y)) K"
-  have h_M_nn: "0 \<le> M" sorry \<comment> \<open>mesh is a SUP of diameters which are nonneg.\<close>
+  have h_M_nn: "0 \<le> M"
+    unfolding M_def by (rule geotop_mesh_norm_nonneg)
   have h_step: "\<And>m. geotop_is_complex (geotop_iterated_Sd m K)
                     \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
                          \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
                     \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
                       \<le> q^m * M"
-    sorry \<comment> \<open>Induction on m: base m=0 is trivial; step uses geotop_Sd_mesh_shrinkage
-              on the IH.\<close>
+  proof -
+    fix m
+    show "geotop_is_complex (geotop_iterated_Sd m K)
+        \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+             \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
+        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+          \<le> q^m * M"
+    proof (induct m)
+      case 0
+      have hSd0_eq: "geotop_iterated_Sd 0 K = K" by (by100 simp)
+      have hSd0_comp: "geotop_is_complex (geotop_iterated_Sd 0 K)"
+        using hSd0_eq hK by (by100 simp)
+      have hSd0_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd 0 K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using hSd0_eq hn by (by100 simp)
+      have hSd0_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd 0 K)
+                         \<le> q^0 * M"
+        unfolding M_def using hSd0_eq by (by100 simp)
+      show ?case using hSd0_comp hSd0_dim hSd0_mesh by (by100 blast)
+    next
+      case (Suc m)
+      (** IH parts. **)
+      have hIH_comp: "geotop_is_complex (geotop_iterated_Sd m K)" using Suc by (by100 blast)
+      have hIH_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+                        \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using Suc by (by100 blast)
+      have hIH_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                        \<le> q^m * M"
+        using Suc by (by100 blast)
+      (** Apply shrinkage. **)
+      have h_shr: "(\<forall>\<sigma>'\<in>geotop_Sd (geotop_iterated_Sd m K).
+                       \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+                 \<and> geotop_mesh (\<lambda>x y. norm (x - y))
+                      (geotop_Sd (geotop_iterated_Sd m K))
+                   \<le> (real n / real (Suc n))
+                    * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+        by (rule geotop_Sd_mesh_shrinkage[OF hIH_comp hIH_dim])
+      have hSuc_eq: "geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)"
+        by (by100 simp)
+      (** Complex from subdivision. **)
+      have h_sub: "geotop_is_subdivision (geotop_Sd (geotop_iterated_Sd m K))
+                                           (geotop_iterated_Sd m K)"
+        by (rule geotop_Sd_is_subdivision[OF hIH_comp])
+      have h_Sdm_comp: "geotop_is_complex (geotop_Sd (geotop_iterated_Sd m K))"
+        using h_sub unfolding geotop_is_subdivision_def by (by100 blast)
+      have hSuc_comp: "geotop_is_complex (geotop_iterated_Sd (Suc m) K)"
+        using h_Sdm_comp hSuc_eq by (by100 simp)
+      (** Dim bound preserved. **)
+      have hSuc_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd (Suc m) K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using h_shr hSuc_eq by (by100 simp)
+      (** Mesh bound. **)
+      have h_mesh_Suc: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
+                          \<le> q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+        using h_shr hSuc_eq unfolding q_def by (by100 simp)
+      have h_mult_ih: "q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                         \<le> q * (q^m * M)"
+        using h_q_pos hIH_mesh mult_left_mono by (by100 blast)
+      have h_pow_eq: "q * (q^m * M) = q^(Suc m) * M" by (by100 simp)
+      have hSuc_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
+                         \<le> q^(Suc m) * M"
+        using h_mesh_Suc h_mult_ih h_pow_eq by (by100 simp)
+      show ?case using hSuc_comp hSuc_dim hSuc_mesh by (by100 blast)
+    qed
+  qed
   (** (3) \<open>q^m \<to> 0\<close> since \<open>0 \<le> q < 1\<close>. **)
   have h_qm_lim: "(\<lambda>m. q^m) \<longlonglongrightarrow> 0"
     using LIMSEQ_realpow_zero[of q] h_q_pos h_q_lt_1 by (by100 simp)
@@ -2186,7 +2269,7 @@ proof -
   qed
   (** (4) Squeeze: mesh is nonneg and \<le> q^m M. **)
   have h_mesh_nn: "\<And>m. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
-    sorry \<comment> \<open>mesh is nonneg.\<close>
+    by (rule geotop_mesh_norm_nonneg)
   have h_mesh_ub: "\<And>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
                        \<le> q^m * M"
     using h_step by (by100 blast)
