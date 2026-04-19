@@ -608,25 +608,14 @@ proof (intro allI impI)
   assume "geotop_hyperplane_dim H k \<and> k < n"
   then have hHk: "geotop_hyperplane_dim H k" and hkn: "k < n" by auto
   (** H = (+) v0 ` U for subspace U of dim k. Hence H is affine of dim k. **)
-  have hHk_unf:
-    "\<exists>U v0. subspace U
-          \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
-          \<and> H = (\<lambda>v. v + v0) ` U"
+  have hHk_unf_raw:
+    "\<exists>V v0. subspace V \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = V)
+          \<and> H = (\<lambda>v. v + v0) ` V"
     using hHk unfolding geotop_hyperplane_dim_def by (by100 simp)
-  then obtain U where hU_inner:
-    "\<exists>v0. subspace U
-        \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
-        \<and> H = (\<lambda>v. v + v0) ` U"
-    by (by100 blast)
-  then obtain v0 where hU_v0:
-    "subspace U
-   \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
-   \<and> H = (\<lambda>v. v + v0) ` U"
-    by (by100 blast)
-  have hU_sub: "subspace U" using hU_v0 by (by100 blast)
-  have hU_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U"
-    using hU_v0 by (by100 blast)
-  have hH_eq: "H = (\<lambda>v. v + v0) ` U" using hU_v0 by (by100 blast)
+  obtain U v0 where hU_sub: "subspace U"
+                and hU_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U"
+                and hH_eq: "H = (\<lambda>v. v + v0) ` U"
+    using hHk_unf_raw by (by100 fast)
   obtain B where hB_indep: "independent B" and hB_fin: "finite B"
              and hB_card: "card B = k" and hB_span: "span B = U"
     using hU_basis_ex by (by100 blast)
@@ -859,10 +848,14 @@ proof -
              and h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
                               f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
     using h_lin unfolding geotop_linear_on_def by (by100 blast)
+  have h_sv_unf:
+    "\<exists>m n. finite V \<and> card V = n + 1 \<and> n \<le> m \<and> geotop_general_position V m
+          \<and> \<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 simp)
   obtain m_\<sigma> n_\<sigma> where h_Vfin: "finite V" and h_Vcard: "card V = n_\<sigma> + 1"
                    and h_Vnm: "n_\<sigma> \<le> m_\<sigma>" and h_Vgp: "geotop_general_position V m_\<sigma>"
                    and h_\<sigma>hull: "\<sigma> = geotop_convex_hull V"
-    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    using h_sv_unf by (by100 blast)
   have h_\<sigma>_HOL: "\<sigma> = convex hull V"
     using h_\<sigma>hull geotop_convex_hull_eq_HOL by (by100 simp)
   (** (2) Extract V' = vertices(\<sigma>'). **)
@@ -2584,172 +2577,26 @@ qed
 
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
+  assumes hGfin: "finite G"
+  assumes h_diam_nn: "\<forall>g\<in>G. 0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) g"
   shows "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) G"
 proof (cases "G = {}")
   case True
   then show ?thesis unfolding geotop_mesh_def by (by100 simp)
 next
   case False
-  show ?thesis
-    unfolding geotop_mesh_def using False
-    sorry \<comment> \<open>SUP g\<in>G. diameter g \<ge> 0 (diameter \<ge> 0 + SUP convention).\<close>
+  then obtain g0 where hg0: "g0 \<in> G" by (by100 blast)
+  have h_bdd: "bdd_above ((\<lambda>g. geotop_diameter (\<lambda>x y. norm (x - y)) g) ` G)"
+    using hGfin by (by100 simp)
+  have h_lb: "geotop_diameter (\<lambda>x y. norm (x - y)) g0
+              \<le> (SUP g\<in>G. geotop_diameter (\<lambda>x y. norm (x - y)) g)"
+    by (rule cSUP_upper[OF hg0 h_bdd])
+  have h_diam_g0: "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) g0"
+    using h_diam_nn hg0 by (by100 blast)
+  have "0 \<le> (SUP g\<in>G. geotop_diameter (\<lambda>x y. norm (x - y)) g)"
+    using h_diam_g0 h_lb by (by100 simp)
+  thus ?thesis unfolding geotop_mesh_def using False by (by100 simp)
 qed
-
-(** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
-    subdivision tends to 0. Proof via the shrinkage bound
-    \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close> (Moise Lemma 4.11) from
-    \<open>geotop_Sd_mesh_shrinkage\<close>. **)
-lemma geotop_mesh_iterated_Sd_tends_to_zero:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K" and hKfin: "finite K"
-  shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
-               (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
-proof -
-  (** (1) For finite K, there exists a uniform dimension bound \<open>n\<close>.
-      Proof: For each \<sigma>, the set of dims \<open>{k. geotop_simplex_dim \<sigma> k}\<close> is a
-      finite (in fact, singleton) set of naturals. The union over \<sigma>\<in>K is
-      finite since K is finite, so has a max. **)
-  have h_dim_bound:
-    "\<exists>n::nat. \<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-  proof -
-    define D where "D = {k::nat. \<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> k}"
-    have hD_sub: "D \<subseteq> (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
-      unfolding D_def by (by100 blast)
-    have h_sigma_fin: "\<And>\<sigma>::'a set. finite {k::nat. geotop_simplex_dim \<sigma> k}"
-      by (rule geotop_simplex_dim_set_finite)
-    have h_union_fin: "finite (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
-      using hKfin h_sigma_fin by (by100 blast)
-    have hD_fin: "finite D" using hD_sub h_union_fin finite_subset by (by100 blast)
-    show ?thesis
-    proof (cases "D = {}")
-      case True
-      then have "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 0"
-        unfolding D_def by (by100 blast)
-      thus ?thesis by (by100 blast)
-    next
-      case False
-      define n where "n = Max D"
-      have hn_ub: "\<forall>k\<in>D. k \<le> n"
-        unfolding n_def using hD_fin by (by100 simp)
-      have hn_prop: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-      proof (intro ballI allI impI)
-        fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
-        fix k assume hk: "geotop_simplex_dim \<sigma> k"
-        have "k \<in> D" unfolding D_def using h\<sigma> hk by (by100 blast)
-        thus "k \<le> n" using hn_ub by (by100 blast)
-      qed
-      thus ?thesis by (by100 blast)
-    qed
-  qed
-  then obtain n where hn: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-    by (by100 blast)
-  (** (2) Induction on m: \<open>Sd^m(K)\<close> has the same dim bound, and
-      \<open>mesh(Sd^m K) \<le> (n/(n+1))^m \<cdot> mesh K\<close>. **)
-  define q where "q = real n / real (Suc n)"
-  have h_q_pos: "0 \<le> q" unfolding q_def by (by100 simp)
-  have h_q_lt_1: "q < 1" unfolding q_def
-    by (by100 simp)
-  define M where "M = geotop_mesh (\<lambda>x y. norm (x - y)) K"
-  have h_M_nn: "0 \<le> M"
-    unfolding M_def by (rule geotop_mesh_norm_nonneg)
-  have h_step: "\<And>m. geotop_is_complex (geotop_iterated_Sd m K)
-                    \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
-                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
-                    \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
-                      \<le> q^m * M"
-  proof -
-    fix m
-    show "geotop_is_complex (geotop_iterated_Sd m K)
-        \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
-             \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
-        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
-          \<le> q^m * M"
-    proof (induct m)
-      case 0
-      have hSd0_eq: "geotop_iterated_Sd 0 K = K" by (by100 simp)
-      have hSd0_comp: "geotop_is_complex (geotop_iterated_Sd 0 K)"
-        using hSd0_eq hK by (by100 simp)
-      have hSd0_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd 0 K.
-                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-        using hSd0_eq hn by (by100 simp)
-      have hSd0_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd 0 K)
-                         \<le> q^0 * M"
-        unfolding M_def using hSd0_eq by (by100 simp)
-      show ?case using hSd0_comp hSd0_dim hSd0_mesh by (by100 blast)
-    next
-      case (Suc m)
-      (** IH parts. **)
-      have hIH_comp: "geotop_is_complex (geotop_iterated_Sd m K)" using Suc by (by100 blast)
-      have hIH_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
-                        \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-        using Suc by (by100 blast)
-      have hIH_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
-                        \<le> q^m * M"
-        using Suc by (by100 blast)
-      (** Apply shrinkage. **)
-      have h_shr: "(\<forall>\<sigma>'\<in>geotop_Sd (geotop_iterated_Sd m K).
-                       \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
-                 \<and> geotop_mesh (\<lambda>x y. norm (x - y))
-                      (geotop_Sd (geotop_iterated_Sd m K))
-                   \<le> (real n / real (Suc n))
-                    * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
-        by (rule geotop_Sd_mesh_shrinkage[OF hIH_comp hIH_dim])
-      have hSuc_eq: "geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)"
-        by (by100 simp)
-      (** Complex from subdivision. **)
-      have h_sub: "geotop_is_subdivision (geotop_Sd (geotop_iterated_Sd m K))
-                                           (geotop_iterated_Sd m K)"
-        by (rule geotop_Sd_is_subdivision[OF hIH_comp])
-      have h_Sdm_comp: "geotop_is_complex (geotop_Sd (geotop_iterated_Sd m K))"
-        using h_sub unfolding geotop_is_subdivision_def by (by100 blast)
-      have hSuc_comp: "geotop_is_complex (geotop_iterated_Sd (Suc m) K)"
-        using h_Sdm_comp hSuc_eq by (by100 simp)
-      (** Dim bound preserved. **)
-      have hSuc_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd (Suc m) K.
-                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-        using h_shr hSuc_eq by (by100 simp)
-      (** Mesh bound. **)
-      have h_mesh_Suc: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
-                          \<le> q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
-        using h_shr hSuc_eq unfolding q_def by (by100 simp)
-      have h_mult_ih: "q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
-                         \<le> q * (q^m * M)"
-        using h_q_pos hIH_mesh mult_left_mono by (by100 blast)
-      have h_pow_eq: "q * (q^m * M) = q^(Suc m) * M" by (by100 simp)
-      have hSuc_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
-                         \<le> q^(Suc m) * M"
-        using h_mesh_Suc h_mult_ih h_pow_eq by (by100 simp)
-      show ?case using hSuc_comp hSuc_dim hSuc_mesh by (by100 blast)
-    qed
-  qed
-  (** (3) \<open>q^m \<to> 0\<close> since \<open>0 \<le> q < 1\<close>. **)
-  have h_qm_lim: "(\<lambda>m. q^m) \<longlonglongrightarrow> 0"
-    using LIMSEQ_realpow_zero[of q] h_q_pos h_q_lt_1 by (by100 simp)
-  have h_qmM_lim: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0"
-  proof -
-    have h_mult: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0 * M"
-      using tendsto_mult[OF h_qm_lim tendsto_const[of M sequentially]] by (by100 simp)
-    thus ?thesis by (by100 simp)
-  qed
-  (** (4) Squeeze: mesh is nonneg and \<le> q^m M. **)
-  have h_mesh_nn: "\<And>m. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
-    by (rule geotop_mesh_norm_nonneg)
-  have h_mesh_ub: "\<And>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
-                       \<le> q^m * M"
-    using h_step by (by100 blast)
-  have h_zero_lim: "(\<lambda>m::nat. 0::real) \<longlonglongrightarrow> 0" by (by100 simp)
-  show ?thesis
-  proof (rule real_tendsto_sandwich[OF _ _ h_zero_lim h_qmM_lim])
-    show "\<forall>\<^sub>F m in sequentially. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y))
-                                       (geotop_iterated_Sd m K)"
-      using h_mesh_nn by (by100 simp)
-  next
-    show "\<forall>\<^sub>F m in sequentially. geotop_mesh (\<lambda>x y. norm (x - y))
-                                       (geotop_iterated_Sd m K) \<le> q^m * M"
-      using h_mesh_ub by (by100 simp)
-  qed
-qed
-
 (** Finiteness transfers across subdivision: if \<open>K\<close> is a finite complex and
     \<open>K' < K\<close>, then \<open>K'\<close> is finite. The proof uses \<open>K.3\<close> local-finiteness of
     \<open>K'\<close> + compactness of each \<open>\<sigma> \<in> K\<close> (implicit in simplex being a compact
@@ -2903,6 +2750,178 @@ proof -
   show "finite K'"
     using hK'_sub hSfin_sub finite_subset by (by100 blast)
 qed
+
+
+(** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
+    subdivision tends to 0. Proof via the shrinkage bound
+    \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close> (Moise Lemma 4.11) from
+    \<open>geotop_Sd_mesh_shrinkage\<close>. **)
+lemma geotop_mesh_iterated_Sd_tends_to_zero:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K" and hKfin: "finite K"
+  shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
+               (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
+proof -
+  (** (1) For finite K, there exists a uniform dimension bound \<open>n\<close>.
+      Proof: For each \<sigma>, the set of dims \<open>{k. geotop_simplex_dim \<sigma> k}\<close> is a
+      finite (in fact, singleton) set of naturals. The union over \<sigma>\<in>K is
+      finite since K is finite, so has a max. **)
+  have h_dim_bound:
+    "\<exists>n::nat. \<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+  proof -
+    define D where "D = {k::nat. \<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> k}"
+    have hD_sub: "D \<subseteq> (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
+      unfolding D_def by (by100 blast)
+    have h_sigma_fin: "\<And>\<sigma>::'a set. finite {k::nat. geotop_simplex_dim \<sigma> k}"
+      by (rule geotop_simplex_dim_set_finite)
+    have h_union_fin: "finite (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
+      using hKfin h_sigma_fin by (by100 blast)
+    have hD_fin: "finite D" using hD_sub h_union_fin finite_subset by (by100 blast)
+    show ?thesis
+    proof (cases "D = {}")
+      case True
+      then have "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 0"
+        unfolding D_def by (by100 blast)
+      thus ?thesis by (by100 blast)
+    next
+      case False
+      define n where "n = Max D"
+      have hn_ub: "\<forall>k\<in>D. k \<le> n"
+        unfolding n_def using hD_fin by (by100 simp)
+      have hn_prop: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+      proof (intro ballI allI impI)
+        fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
+        fix k assume hk: "geotop_simplex_dim \<sigma> k"
+        have "k \<in> D" unfolding D_def using h\<sigma> hk by (by100 blast)
+        thus "k \<le> n" using hn_ub by (by100 blast)
+      qed
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+  then obtain n where hn: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    by (by100 blast)
+  (** (2) Induction on m: \<open>Sd^m(K)\<close> has the same dim bound, and
+      \<open>mesh(Sd^m K) \<le> (n/(n+1))^m \<cdot> mesh K\<close>. **)
+  define q where "q = real n / real (Suc n)"
+  have h_q_pos: "0 \<le> q" unfolding q_def by (by100 simp)
+  have h_q_lt_1: "q < 1" unfolding q_def
+    by (by100 simp)
+  define M where "M = geotop_mesh (\<lambda>x y. norm (x - y)) K"
+  have h_K_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using conjunct1[OF hK[unfolded geotop_is_complex_def]] by (by100 blast)
+  have h_K_diam_nn: "\<forall>\<sigma>\<in>K. 0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>"
+    using h_K_simp geotop_simplex_diameter_nonneg by (by100 blast)
+  have h_M_nn: "0 \<le> M"
+    unfolding M_def by (rule geotop_mesh_norm_nonneg[OF hKfin h_K_diam_nn])
+  have h_step: "\<And>m. geotop_is_complex (geotop_iterated_Sd m K)
+                    \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
+                    \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                      \<le> q^m * M"
+  proof -
+    fix m
+    show "geotop_is_complex (geotop_iterated_Sd m K)
+        \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+             \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
+        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+          \<le> q^m * M"
+    proof (induct m)
+      case 0
+      have hSd0_eq: "geotop_iterated_Sd 0 K = K" by (by100 simp)
+      have hSd0_comp: "geotop_is_complex (geotop_iterated_Sd 0 K)"
+        using hSd0_eq hK by (by100 simp)
+      have hSd0_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd 0 K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using hSd0_eq hn by (by100 simp)
+      have hSd0_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd 0 K)
+                         \<le> q^0 * M"
+        unfolding M_def using hSd0_eq by (by100 simp)
+      show ?case using hSd0_comp hSd0_dim hSd0_mesh by (by100 blast)
+    next
+      case (Suc m)
+      (** IH parts. **)
+      have hIH_comp: "geotop_is_complex (geotop_iterated_Sd m K)" using Suc by (by100 blast)
+      have hIH_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+                        \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using Suc by (by100 blast)
+      have hIH_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                        \<le> q^m * M"
+        using Suc by (by100 blast)
+      (** Apply shrinkage. **)
+      have h_shr: "(\<forall>\<sigma>'\<in>geotop_Sd (geotop_iterated_Sd m K).
+                       \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+                 \<and> geotop_mesh (\<lambda>x y. norm (x - y))
+                      (geotop_Sd (geotop_iterated_Sd m K))
+                   \<le> (real n / real (Suc n))
+                    * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+        by (rule geotop_Sd_mesh_shrinkage[OF hIH_comp hIH_dim])
+      have hSuc_eq: "geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)"
+        by (by100 simp)
+      (** Complex from subdivision. **)
+      have h_sub: "geotop_is_subdivision (geotop_Sd (geotop_iterated_Sd m K))
+                                           (geotop_iterated_Sd m K)"
+        by (rule geotop_Sd_is_subdivision[OF hIH_comp])
+      have h_Sdm_comp: "geotop_is_complex (geotop_Sd (geotop_iterated_Sd m K))"
+        using h_sub unfolding geotop_is_subdivision_def by (by100 blast)
+      have hSuc_comp: "geotop_is_complex (geotop_iterated_Sd (Suc m) K)"
+        using h_Sdm_comp hSuc_eq by (by100 simp)
+      (** Dim bound preserved. **)
+      have hSuc_dim: "\<forall>\<sigma>\<in>geotop_iterated_Sd (Suc m) K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+        using h_shr hSuc_eq by (by100 simp)
+      (** Mesh bound. **)
+      have h_mesh_Suc: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
+                          \<le> q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+        using h_shr hSuc_eq unfolding q_def by (by100 simp)
+      have h_mult_ih: "q * geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                         \<le> q * (q^m * M)"
+        using h_q_pos hIH_mesh mult_left_mono by (by100 blast)
+      have h_pow_eq: "q * (q^m * M) = q^(Suc m) * M" by (by100 simp)
+      have hSuc_mesh: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd (Suc m) K)
+                         \<le> q^(Suc m) * M"
+        using h_mesh_Suc h_mult_ih h_pow_eq by (by100 simp)
+      show ?case using hSuc_comp hSuc_dim hSuc_mesh by (by100 blast)
+    qed
+  qed
+  (** (3) \<open>q^m \<to> 0\<close> since \<open>0 \<le> q < 1\<close>. **)
+  have h_qm_lim: "(\<lambda>m. q^m) \<longlonglongrightarrow> 0"
+    using LIMSEQ_realpow_zero[of q] h_q_pos h_q_lt_1 by (by100 simp)
+  have h_qmM_lim: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0"
+  proof -
+    have h_mult: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0 * M"
+      using tendsto_mult[OF h_qm_lim tendsto_const[of M sequentially]] by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
+  (** (4) Squeeze: mesh is nonneg and \<le> q^m M. **)
+  have h_Sdm_sub: "\<And>m. geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK])
+  have h_Sdm_fin: "\<And>m. finite (geotop_iterated_Sd m K)"
+    using geotop_subdivision_of_finite_is_finite[OF hKfin] h_Sdm_sub by (by100 blast)
+  have h_Sdm_comp: "\<And>m. geotop_is_complex (geotop_iterated_Sd m K)"
+    using h_step by (by100 blast)
+  have h_Sdm_simp: "\<And>m. \<forall>\<sigma>\<in>geotop_iterated_Sd m K. geotop_is_simplex \<sigma>"
+    using conjunct1[OF h_Sdm_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have h_Sdm_diam_nn: "\<And>m. \<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+                             0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>"
+    using h_Sdm_simp geotop_simplex_diameter_nonneg by (by100 blast)
+  have h_mesh_nn: "\<And>m. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+    by (rule geotop_mesh_norm_nonneg[OF h_Sdm_fin h_Sdm_diam_nn])
+  have h_mesh_ub: "\<And>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                       \<le> q^m * M"
+    using h_step by (by100 blast)
+  have h_zero_lim: "(\<lambda>m::nat. 0::real) \<longlonglongrightarrow> 0" by (by100 simp)
+  show ?thesis
+  proof (rule real_tendsto_sandwich[OF _ _ h_zero_lim h_qmM_lim])
+    show "\<forall>\<^sub>F m in sequentially. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y))
+                                       (geotop_iterated_Sd m K)"
+      using h_mesh_nn by (by100 simp)
+  next
+    show "\<forall>\<^sub>F m in sequentially. geotop_mesh (\<lambda>x y. norm (x - y))
+                                       (geotop_iterated_Sd m K) \<le> q^m * M"
+      using h_mesh_ub by (by100 simp)
+  qed
+qed
+
 
 (** For a finite non-empty collection \<open>G\<close>, each member's diameter is bounded
     by the mesh. Direct from the SUP def of \<open>geotop_mesh\<close>. **)
