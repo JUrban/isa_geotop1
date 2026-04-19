@@ -9050,6 +9050,29 @@ qed
     and arc-unions of broken lines are themselves polyhedral. **)
 
 (** Phase 1.1: subdivide a single 1-simplex e at a point R \<in> e. **)
+(** Phase 1.1 helper (vertex case): if R is a vertex of an edge e of K,
+    then {R} is already in K by face-closure. **)
+lemma geotop_complex_subdivide_edge_vertex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes he_K: "e \<in> K" and he_dim: "geotop_simplex_dim e 1"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hR_V: "R \<in> V"
+  shows "{R} \<in> K"
+proof -
+  have h_sing: "{R} = geotop_convex_hull {R}"
+    using geotop_convex_hull_eq_HOL[of "{R}"] by (by100 simp)
+  have hRs_V: "{R} \<subseteq> V" using hR_V by (by100 simp)
+  have h_Rface: "geotop_is_face {R} e"
+    unfolding geotop_is_face_def
+    using hV_verts hRs_V h_sing by (by100 blast)
+  have hK_faces: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using conjunct1[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  show "{R} \<in> K" using hK_faces he_K h_Rface by (by100 blast)
+qed
+
+(** Phase 1.1 main: subdivide a 1-simplex of K at a point R \<in> e. **)
 lemma geotop_complex_subdivide_edge:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
@@ -9058,9 +9081,28 @@ lemma geotop_complex_subdivide_edge:
   assumes hR_e: "R \<in> e"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
-  sorry \<comment> \<open>Phase 1.1: replace edge e = closed_segment v0 v1 containing R by
-            K - {e} \<union> {{R}, closed_segment v0 R, closed_segment R v1}.
-            Trivial if R \<in> {v0, v1} (take K itself - \<open>{R} \<in> K\<close> by face-closure).\<close>
+proof -
+  obtain V m where hVfin: "finite V" and hVcard: "card V = 1 + 1"
+               and hnm: "1 \<le> m" and hVgp: "geotop_general_position V m"
+               and he_hull: "e = geotop_convex_hull V"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have hV_verts: "geotop_simplex_vertices e V"
+    unfolding geotop_simplex_vertices_def using hVfin hVcard hnm hVgp he_hull
+    by (by100 blast)
+  show ?thesis
+  proof (cases "R \<in> V")
+    case True
+    have hR_K: "{R} \<in> K"
+      by (rule geotop_complex_subdivide_edge_vertex[OF hKcomp he_K he_dim hV_verts True])
+    show ?thesis using hKcomp hK1dim hR_K by (by100 blast)
+  next
+    case False
+    show ?thesis sorry \<comment> \<open>Phase 1.1 hard case: interior-point edge subdivision.
+                          K' = (K \<setminus> {e}) \<union> {{R}, closed_segment v0 R, closed_segment R v1}.
+                          Complex axioms verified — K.2 at new intersections trivial
+                          since new segments meet at R, the new vertex.\<close>
+  qed
+qed
 
 (** Phase 1.2: subdivide a 1-complex at any point R \<in> |K| to make R a 0-simplex. **)
 lemma geotop_complex_subdivide_at:
