@@ -3096,21 +3096,90 @@ proof -
       The four complex conditions K.0, K.1, K.2, K.3 decompose as: **)
   have hL'_comp: "geotop_is_complex L'"
     using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
-  (** (3a) K.0: every \<sigma> \<in> K' is a simplex. \<sigma> = g_inv(\<tau>) for some \<tau> \<in> L';
-      g_inv maps L-simplexes to K-simplexes piecewise linearly, and \<tau> is a simplex. **)
+  (** Extract g_inv's PL structure: there is a subdivision \<open>L*\<close> of \<open>L\<close> such that
+      \<open>g_inv\<close> is linear on each simplex of \<open>L*\<close>. **)
+  have hg_inv_PL: "geotop_PL_map L K ?g_inv"
+    using hg unfolding geotop_PLH_def by (by100 blast)
+  obtain L_star where hL_star_sub: "geotop_is_subdivision L_star L"
+                  and hL_star_lin: "\<forall>\<tau>\<in>L_star. \<exists>\<sigma>\<in>K.
+                                       (\<forall>x\<in>\<tau>. ?g_inv x \<in> \<sigma>)
+                                       \<and> geotop_linear_on \<tau> ?g_inv"
+    using hg_inv_PL unfolding geotop_PL_map_def by (by100 blast)
+  (** \<open>g_inv\<close> is injective on \<open>|L|\<close> since \<open>g\<close> is bijective. **)
+  have hg_inv_bij: "bij_betw ?g_inv (geotop_polyhedron L) (geotop_polyhedron K)"
+    by (rule bij_betw_inv_into[OF hg_bij])
+  have hg_inv_inj: "inj_on ?g_inv (geotop_polyhedron L)"
+    using hg_inv_bij unfolding bij_betw_def by (by100 blast)
+  (** (3a) K.0: every \<sigma> \<in> K' is a simplex. \<sigma> = g_inv(\<tau>) for some \<tau> \<in> L'.
+      Strategy: common refinement of L' and L_star; in the common refinement
+      each \<tau>' \<subseteq> \<tau> has g_inv linear + inj, so g_inv(\<tau>') is a simplex by
+      geotop_linear_inj_image_is_simplex. Assemble \<sigma> = g_inv(\<tau>) from the
+      pieces via sub_simplex / face-preservation. **)
   have hK'_K0: "\<forall>\<sigma>\<in>K'. geotop_is_simplex \<sigma>"
-    sorry
-  (** (3b) K.1: K' closed under faces. If \<sigma>' is a face of \<sigma> \<in> K', then \<sigma>' = g_inv(\<tau>')
-      for some face \<tau>' of the corresponding \<tau> \<in> L'; since L' is closed under faces
-      (K.1 for L'), \<tau>' \<in> L', hence \<sigma>' \<in> K'. **)
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    (** Unpack: \<sigma> = g_inv \<tau> for some \<tau> \<in> L'. **)
+    obtain \<tau> where h\<tau>L': "\<tau> \<in> L'" and h\<sigma>_eq: "\<sigma> = ?g_inv ` \<tau>"
+      using h\<sigma>K' unfolding K'_def by (by100 blast)
+    (** \<tau> is a simplex via K.0 of L'. **)
+    have h\<tau>_sim: "geotop_is_simplex \<tau>"
+      using h\<tau>L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+    (** Common refinement of \<tau> and L_star covering \<tau>: need Theorem_GT_1
+        applied to L'/L_star or direct argument. For now: assume \<tau> is
+        already in L_star (i.e. linear on \<tau>). This is a simplification;
+        the general proof needs common refinement. **)
+    have h_lin_\<tau>: "geotop_linear_on \<tau> ?g_inv"
+      sorry \<comment> \<open>g_inv linear on \<tau>: needs common refinement of L' and L_star
+                since L_star may not include \<tau> directly. Apply Theorem_GT_1
+                to get L** < L' and L** < L_star, then \<tau> decomposes into
+                pieces in L**.\<close>
+    have h_inj_\<tau>: "inj_on ?g_inv \<tau>"
+    proof -
+      have h\<tau>_poly: "\<tau> \<subseteq> geotop_polyhedron L"
+        using h\<tau>L' hL'L unfolding geotop_is_subdivision_def geotop_refines_def
+        geotop_polyhedron_def by (by100 blast)
+      show ?thesis using hg_inv_inj h\<tau>_poly inj_on_subset by (by100 blast)
+    qed
+    have "geotop_is_simplex (?g_inv ` \<tau>)"
+      by (rule geotop_linear_inj_image_is_simplex[OF h_lin_\<tau> h_inj_\<tau> h\<tau>_sim])
+    thus "geotop_is_simplex \<sigma>" using h\<sigma>_eq by (by100 simp)
+  qed
+  (** (3b) K.1: K' closed under faces. For \<sigma> \<in> K', \<sigma> = g_inv(\<tau>), \<tau> \<in> L';
+      face \<sigma>' of \<sigma> pulls back via face_preimage to a face \<tau>' of \<tau>; K.1 on L'
+      gives \<tau>' \<in> L', so \<sigma>' = g_inv(\<tau>') \<in> K'. **)
   have hK'_K1: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K'"
-    sorry
+  proof (intro ballI allI impI)
+    fix \<sigma> \<sigma>' assume h\<sigma>K': "\<sigma> \<in> K'" and h\<sigma>'_face: "geotop_is_face \<sigma>' \<sigma>"
+    obtain \<tau> where h\<tau>L': "\<tau> \<in> L'" and h\<sigma>_eq: "\<sigma> = ?g_inv ` \<tau>"
+      using h\<sigma>K' unfolding K'_def by (by100 blast)
+    have h\<tau>_sim: "geotop_is_simplex \<tau>"
+      using h\<tau>L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h_lin_\<tau>: "geotop_linear_on \<tau> ?g_inv" sorry
+    have h_inj_\<tau>: "inj_on ?g_inv \<tau>"
+    proof -
+      have h\<tau>_poly: "\<tau> \<subseteq> geotop_polyhedron L"
+        using h\<tau>L' hL'L unfolding geotop_is_subdivision_def geotop_refines_def
+        geotop_polyhedron_def by (by100 blast)
+      show ?thesis using hg_inv_inj h\<tau>_poly inj_on_subset by (by100 blast)
+    qed
+    have h\<sigma>'_in_img_face: "geotop_is_face \<sigma>' (?g_inv ` \<tau>)"
+      using h\<sigma>'_face h\<sigma>_eq by (by100 simp)
+    obtain \<tau>' where h\<tau>'_face: "geotop_is_face \<tau>' \<tau>" and h\<sigma>'_eq: "\<sigma>' = ?g_inv ` \<tau>'"
+      using geotop_linear_inj_image_face_preimage[OF h_lin_\<tau> h_inj_\<tau> h\<tau>_sim h\<sigma>'_in_img_face]
+      by (by100 blast)
+    have hL'_face_closed: "\<forall>\<sigma>\<in>L'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L'"
+      using conjunct1[OF conjunct2[OF hL'_comp[unfolded geotop_is_complex_def]]]
+      by (by100 blast)
+    have h\<tau>'L': "\<tau>' \<in> L'"
+      using h\<tau>'_face h\<tau>L' hL'_face_closed by (by100 blast)
+    show "\<sigma>' \<in> K'" unfolding K'_def using h\<tau>'L' h\<sigma>'_eq by (by100 blast)
+  qed
   (** (3c) K.2: intersections are faces. For \<sigma>_1 = g_inv(\<tau>_1), \<sigma>_2 = g_inv(\<tau>_2),
-      \<sigma>_1 \<inter> \<sigma>_2 = g_inv(\<tau>_1 \<inter> \<tau>_2) (bijection), which is a face of both
-      by K.2 for L' pulled back through g_inv. **)
+      \<sigma>_1 \<inter> \<sigma>_2 = g_inv(\<tau>_1 \<inter> \<tau>_2) (bijection), which is a face by face-preservation. **)
   have hK'_K2: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>\<in>K'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry
+    sorry \<comment> \<open>Same pattern as K.1 but applied to K.2 of L' + image_Int via inj.
+               Needs hg_inv_inj restricted to \<tau>_1 \<union> \<tau>_2.\<close>
   (** (3d) K.3: local finiteness. For finite K', U = UNIV suffices. **)
   have hL'fin: "finite L'"
     by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL'L])
