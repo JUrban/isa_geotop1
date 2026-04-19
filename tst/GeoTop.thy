@@ -4942,8 +4942,33 @@ proof -
           qed
           show ?thesis using h_convV_fi_tau h_fi_tau h_hull_eq_V\<tau> by (by100 simp)
         qed
+        (** f_inv V_\<tau> is a vertex set of conv V. **)
+        have h_fiVt_fin: "finite (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+          using hV\<tau>fin by (by100 simp)
+        have h_fiVt_card: "card (inv_into (geotop_polyhedron L) f ` V\<tau>) = nV + 1"
+          using card_image[OF h_inj_V\<tau>] hV\<tau>card by (by100 simp)
+        have h_fiVt_gp: "geotop_general_position
+                           (inv_into (geotop_polyhedron L) f ` V\<tau>) nV"
+          by (rule geotop_ai_imp_general_position[OF h_fiVt_fin h_fiVt_card h_fiVt_ai])
+        have h_convV_geo_eq: "geotop_convex_hull V
+                                 = geotop_convex_hull (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+        proof -
+          have h1: "geotop_convex_hull V = convex hull V"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h2: "geotop_convex_hull (inv_into (geotop_polyhedron L) f ` V\<tau>)
+                     = convex hull (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+            by (rule geotop_convex_hull_eq_HOL)
+          show ?thesis using h1 h_convV_eq_fiVt h2 by (by100 simp)
+        qed
+        have h_fiVt_sv: "geotop_simplex_vertices (geotop_convex_hull V)
+                           (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+          unfolding geotop_simplex_vertices_def
+          using h_fiVt_fin h_fiVt_card hV\<tau>nm h_fiVt_gp h_convV_geo_eq by (by100 blast)
+        (** By simplex_vertices_unique: V_L_3 = f_inv V_\<tau>. **)
+        have hV_L\<^sub>3_eq: "V_L\<^sub>3 = inv_into (geotop_polyhedron L) f ` V\<tau>"
+          by (rule geotop_simplex_vertices_unique[OF hV_L\<^sub>3sv h_fiVt_sv])
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Next: simplex_vertices (conv V) (f_inv V_\<tau>) + uniqueness + apply f.\<close>
+          sorry \<comment> \<open>Final: apply f to V_L_3 \<subseteq> V: f V_L_3 = V_\<tau> \<subseteq> f V. Then \<tau> \<subseteq> conv(f V).\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
