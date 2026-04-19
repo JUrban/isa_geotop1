@@ -4869,10 +4869,18 @@ proof -
             using h_extr_VL h_HOL_hulls_eq by (by100 simp)
           show "v \<in> V" by (rule extreme_point_of_convex_hull[OF h_extr_V])
         qed
+        (** Extract V_\<tau> = simplex_vertices of \<tau>. **)
+        obtain V\<tau> where hV\<tau>sv: "geotop_simplex_vertices \<tau> V\<tau>"
+          using h\<tau>_sim unfolding geotop_is_simplex_def
+                geotop_simplex_vertices_def by (by100 blast)
+        have hV\<tau>_ai: "\<not> affine_dependent V\<tau>"
+          by (rule geotop_general_position_imp_aff_indep[OF hV\<tau>sv])
+        obtain mV nV where hV\<tau>fin: "finite V\<tau>" and hV\<tau>card: "card V\<tau> = nV + 1"
+                       and hV\<tau>nm: "nV \<le> mV" and hV\<tau>gp: "geotop_general_position V\<tau> mV"
+                       and h\<tau>hull: "\<tau> = geotop_convex_hull V\<tau>"
+          using hV\<tau>sv unfolding geotop_simplex_vertices_def by (by100 blast)
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Final: V_L_3 = f_inv V(\<tau>) via simplex_vertices correspondence;
-                     f V_L_3 = V(\<tau>) via bij; V_L_3 \<subseteq> V so V(\<tau>) \<subseteq> f V;
-                     then \<tau> = conv V(\<tau>) \<subseteq> conv(f V); hence = \<tau> \<in> K_3.\<close>
+          sorry \<comment> \<open>Next: f_inv linear + inj on conv V_\<tau> = \<tau> (via \<tau> \<subseteq> K_1-simplex).\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
