@@ -3282,15 +3282,14 @@ proof -
     by (rule geotop_isomorphism_induces_PLH[OF hK hL h\<phi>])
   then obtain f where hf1: "geotop_PLH K L f"
                   and hf2: "f ` (geotop_polyhedron K) = geotop_polyhedron L"
+                  and hf3: "\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v"
                   and hf5: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
     by (by100 meson)
-  (** Additional property: f_inv \<tau> \<in> K for each \<tau> \<in> L. Deferred — the proof
-      requires unpacking iso def (bij + simp correspondence), establishing
-      f_inv = \<phi>\<^sup>-\<^sup>1 on V(L), and applying hull_eq. **)
+  (** Additional property: f_inv \<tau> \<in> K for each \<tau> \<in> L. **)
   have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
-    sorry \<comment> \<open>Core classical fact: for \<tau> \<in> L with vertex set V_\<tau>, f_inv V_\<tau> \<subseteq> V(K)
-               and conv(f_inv V_\<tau>) \<in> K (iso reversed). Via hull_eq: f_inv \<tau> = conv(f_inv V_\<tau>) \<in> K.
-               ~80-line proof using iso simp-correspondence + hull_eq.\<close>
+    sorry \<comment> \<open>Core classical fact: for tau in L with vertex set V_tau,
+               f_inv = phi_inv on V(L), iso reversed gives conv(phi_inv V_tau) in K,
+               hull_eq: f_inv tau = conv(f_inv V_tau) in K.\<close>
   show "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
                     \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                     \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
