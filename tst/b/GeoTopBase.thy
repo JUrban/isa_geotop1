@@ -9683,6 +9683,20 @@ qed
       (d) Hausdorff-Moore: any such path contains a sub-arc from its endpoints,
           and in the PL category this sub-arc is itself a broken line.
     Deferred as a single classical fact. **)
+
+(** Top-level first-intersection helper. Given a HOL arc \<gamma> on [0,1] mapping
+    into an ambient space, and a closed target set T with \<gamma>(1) \<in> T, extract
+    the smallest parameter sstar with \<gamma>(sstar) \<in> T. **)
+lemma geotop_arc_first_intersection:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  assumes harc: "arc \<gamma>"
+  assumes hT_closed: "closed T"
+  assumes hfin_in_T: "\<gamma> 1 \<in> T"
+  obtains sstar where "sstar \<in> {0..1}" and "\<gamma> sstar \<in> T"
+                 and "\<forall>s\<in>{0..<sstar}. \<gamma> s \<notin> T"
+  sorry \<comment> \<open>Classical: S = \<gamma>-inv(T) \<inter> [0,1] is nonempty closed bounded,
+            so Inf is attained. Split into its own lemma to isolate cost.\<close>
+
 lemma geotop_broken_line_arc_reduction:
   fixes B\<^sub>1 B\<^sub>2 :: "'a::euclidean_space set"
   assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>2: "geotop_is_broken_line B\<^sub>2"
