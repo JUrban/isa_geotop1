@@ -3517,7 +3517,8 @@ proof -
                              and hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
                              and hg_inv_lin_L: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau>
                                                        (inv_into (geotop_polyhedron K) g)"
-    using geotop_isomorphic_induces_PLH[OF hKcomp hLcomp hiso] by (by100 blast)
+                             and hg_inv_L_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K"
+    using geotop_isomorphic_induces_PLH_strong[OF hKcomp hLcomp hiso] by (by100 blast)
   have hg_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
     using hg unfolding geotop_PLH_def by (by100 blast)
   (** (2) Pull back each simplex of \<open>L'\<close> through \<open>g\<^sup>-\<^sup>1\<close>. **)
@@ -3737,11 +3738,24 @@ proof -
            g_inv is linear, mapping each L_1-simplex into some K-simplex. **)
   have hg_inv_PL: "geotop_PL_map L K ?g_inv"
     using hg unfolding geotop_PLH_def by (by100 blast)
-  have hK'_ref: "geotop_refines K' K" sorry
-     \<comment> \<open>Needs: common subdivision L_2 of L' and L_1 (via Theorem_GT_1, requires
-         finite L or similar finiteness). Each \<tau> \<in> L' contains a union of L_2-simplexes
-         which are subsets of L_1-simplexes; g_inv sends these linearly into K-simplexes.
-         By bijectivity, g_inv(\<tau>) \<subseteq> some K-simplex obtained by tracing through.\<close>
+  (** Direct proof via strengthened iso_induces_PLH: g_inv maps L-simplexes to K-simplexes.
+      For \<sigma>' = g_inv \<tau>' \<in> K' with \<tau>' \<in> L', use L' < L to find \<tau> \<in> L with \<tau>' \<subseteq> \<tau>,
+      then g_inv \<tau> \<in> K (from hg_inv_L_sim), and g_inv \<tau>' \<subseteq> g_inv \<tau>. **)
+  have hK'_ref: "geotop_refines K' K"
+    unfolding geotop_refines_def
+  proof (rule ballI)
+    fix \<sigma>' assume h\<sigma>'K': "\<sigma>' \<in> K'"
+    obtain \<tau>' where h\<tau>'L': "\<tau>' \<in> L'" and h\<sigma>'_eq: "\<sigma>' = ?g_inv ` \<tau>'"
+      using h\<sigma>'K' unfolding K'_def by (by100 blast)
+    have hL'_ref_L: "geotop_refines L' L"
+      using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+    obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and h\<tau>'_sub: "\<tau>' \<subseteq> \<tau>"
+      using h\<tau>'L' hL'_ref_L unfolding geotop_refines_def by (by100 blast)
+    have hg_inv_\<tau>_K: "?g_inv ` \<tau> \<in> K" using h\<tau>L hg_inv_L_sim by (by100 blast)
+    have h\<sigma>'_sub: "\<sigma>' \<subseteq> ?g_inv ` \<tau>"
+      using h\<sigma>'_eq h\<tau>'_sub by (by100 blast)
+    show "\<exists>\<sigma>\<in>K. \<sigma>' \<subseteq> \<sigma>" using hg_inv_\<tau>_K h\<sigma>'_sub by (by100 blast)
+  qed
   have hK'_K: "geotop_is_subdivision K' K"
     unfolding geotop_is_subdivision_def
     using hK'_comp hKcomp hK'_ref hK'_poly by (by100 blast)
