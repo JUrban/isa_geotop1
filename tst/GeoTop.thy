@@ -3991,10 +3991,32 @@ proof -
         (** Use AI to conclude W' spans uniquely: conv W = conv W' with both W, W'
             AI subsets of V_\<tau>, V_\<sigma> respectively. Actually simpler: apply
             simplex_vertices_unique on \<sigma> \<inter> \<tau>. **)
+        have hW_ai_early: "\<not> affine_dependent W"
+          using hV\<tau>_ai hWV\<tau> affine_dependent_subset by (by100 blast)
+        have hV\<tau>fin: "finite V\<tau>"
+          using hV\<tau>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hWfin: "finite W" using hWV\<tau> hV\<tau>fin finite_subset by (by100 blast)
+        have hW_pos: "0 < card W" using hW_ne hWfin card_gt_0_iff by (by100 blast)
+        have hW_card_eq: "card W = (card W - 1) + 1" using hW_pos by (by100 simp)
+        have hW_gp: "geotop_general_position W (card W - 1)"
+          by (rule geotop_ai_imp_general_position[OF hWfin hW_card_eq hW_ai_early])
         have hWsv: "geotop_simplex_vertices (\<sigma> \<inter> \<tau>) W"
-          sorry \<comment> \<open>simplex_vertices with the same set via h_inter_hull.\<close>
+          unfolding geotop_simplex_vertices_def
+          using hWfin hW_card_eq hW_gp h_inter_hull by (by100 blast)
+        have hW_\<sigma>_fin: "finite W_\<sigma>"
+          using hW\<sigma>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hW'fin: "finite W'" using hW'W\<sigma>_final hW_\<sigma>_fin finite_subset by (by100 blast)
+        have hW\<sigma>_ai_early: "\<not> affine_dependent W_\<sigma>"
+          by (rule geotop_general_position_imp_aff_indep[OF hW\<sigma>sv])
+        have hW'_ai: "\<not> affine_dependent W'"
+          using hW\<sigma>_ai_early hW'W\<sigma>_final affine_dependent_subset by (by100 blast)
+        have hW'_pos: "0 < card W'" using hW'_ne hW'fin card_gt_0_iff by (by100 blast)
+        have hW'_card_eq: "card W' = (card W' - 1) + 1" using hW'_pos by (by100 simp)
+        have hW'_gp: "geotop_general_position W' (card W' - 1)"
+          by (rule geotop_ai_imp_general_position[OF hW'fin hW'_card_eq hW'_ai])
         have hW'sv: "geotop_simplex_vertices (\<sigma> \<inter> \<tau>) W'"
-          sorry \<comment> \<open>same via h_inter_hull'.\<close>
+          unfolding geotop_simplex_vertices_def
+          using hW'fin hW'_card_eq hW'_gp h_inter_hull' by (by100 blast)
         have hWW': "W = W'" by (rule geotop_simplex_vertices_unique[OF hWsv hW'sv])
         have hWW\<sigma>: "W \<subseteq> W_\<sigma>" using hWW' hW'W\<sigma>_final by (by100 simp)
         (** W AI: W \<subseteq> V_\<tau>, V_\<tau> AI (since \<tau> is simplex), AI is closed under subsets. **)
@@ -4032,10 +4054,14 @@ proof -
             by (rule geotop_convex_hull_eq_HOL)
           show ?thesis using h1 h_W_HOL by (by100 simp)
         qed
-        (** In HOL, extreme_point_of is preserved going to a subset still containing v. **)
+        (** conv W face_of conv W_\<sigma> via face_of_convex_hull_affine_independent + W \<subseteq> W_\<sigma>. **)
+        have h_face_HOL: "convex hull W face_of convex hull W_\<sigma>"
+          using face_of_convex_hull_affine_independent[OF hW\<sigma>_ai_early] hWW\<sigma>
+          by (by100 blast)
+        (** v extreme in conv W (via extreme_point_of_face). **)
         have hv_extr_W: "v extreme_point_of (convex hull W)"
-          sorry \<comment> \<open>v extreme in convex hull W_\<sigma> and v \<in> convex hull W \<subseteq> convex hull W_\<sigma>:
-                   v extreme in conv W (HOL lemma extreme_point_of_subset or similar).\<close>
+          using extreme_point_of_face[OF h_face_HOL] hv_extr_W\<sigma> hv_hullW_HOL
+          by (by100 blast)
         have hvW: "v \<in> W"
           using extreme_point_of_convex_hull_affine_independent[OF hW_ai] hv_extr_W
           by (by100 blast)
