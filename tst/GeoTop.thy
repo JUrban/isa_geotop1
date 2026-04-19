@@ -2789,7 +2789,9 @@ lemma geotop_isomorphism_induces_PLH:
   shows "\<exists>f::'a \<Rightarrow> 'b.
             geotop_PLH K L f \<and>
             f ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
-            (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
+            (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v) \<and>
+            (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f) \<and>
+            (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
 proof -
   (** Unpack the iso. **)
   have hbij\<phi>: "bij_betw \<phi> (geotop_complex_vertices K) (geotop_complex_vertices L)"
@@ -2798,32 +2800,38 @@ proof -
                   (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
     using hiso unfolding geotop_isomorphism_def by (by100 blast)
   (** STRENGTHENED CONSTRUCTION: define \<open>f\<close> as SOME g satisfying the FULL bundle
-      of properties we need (agrees on vertices, linear on each simplex, images land
-      in L-simplexes, bijective on polyhedra, inverse is PL). This collapses the
-      five sub-sorries hlin/himg/hbij/hagree/hPL_inv to one existence sorry:
-      does such g exist? The classical barycentric extension IS such a g. **)
+      of properties. The additional conjunct
+        \<open>\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into |K| g)\<close>
+      (inverse linear on each L-simplex) is needed by \<open>geotop_transport_subdivision\<close>
+      to avoid the common-refinement loop through Theorem_GT_1. This is the
+      symmetric counterpart of \<open>\<forall>\<sigma>\<in>K. linear_on \<sigma> g\<close>, and is provided by
+      the classical barycentric extension. **)
   define f :: "'a \<Rightarrow> 'b" where
     "f = (SOME g. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
                    (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
                    (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and>
                    bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<and>
-                   geotop_PL_map L K (inv_into (geotop_polyhedron K) g))"
+                   geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
+                   (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g)))"
   (** (1) Existence of such \<open>g\<close> — the classical barycentric-extension construction.
-      This is the remaining deep sorry, replacing five separate ones. **)
+      This is the remaining deep sorry, replacing the earlier five separate ones plus
+      the new \<open>inv_into\<close> linearity. **)
   have h_f_exists:
     "\<exists>g::'a\<Rightarrow>'b. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
                   (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
                   (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and>
                   bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<and>
-                  geotop_PL_map L K (inv_into (geotop_polyhedron K) g)"
+                  geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
+                  (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))"
     sorry
-  (** (2) Extract all five properties from SOME. **)
+  (** (2) Extract all six properties from SOME. **)
   have h_f_prop:
     "(\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v) \<and>
      (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f) \<and>
      (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and>
      bij_betw f (geotop_polyhedron K) (geotop_polyhedron L) \<and>
-     geotop_PL_map L K (inv_into (geotop_polyhedron K) f)"
+     geotop_PL_map L K (inv_into (geotop_polyhedron K) f) \<and>
+     (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
     unfolding f_def using someI_ex[OF h_f_exists] by (by100 blast)
   (** (3) Project each sub-property. **)
   have hagree: "\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v"
@@ -2835,6 +2843,8 @@ proof -
   have hbij: "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)"
     using h_f_prop by (by100 blast)
   have hPL_inv: "geotop_PL_map L K (inv_into (geotop_polyhedron K) f)"
+    using h_f_prop by (by100 blast)
+  have hinv_lin: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
     using h_f_prop by (by100 blast)
   (** (4) \<open>K\<close> is a subdivision of itself (reflexivity); this gives a PL-map witness. **)
   have hK_sub: "geotop_is_subdivision K K"
@@ -2855,7 +2865,13 @@ proof -
     using hbij unfolding bij_betw_def by (by100 blast)
   have hPLH: "geotop_PLH K L f"
     unfolding geotop_PLH_def using hPL hbij hPL_inv by (by100 blast)
-  show ?thesis using hPLH himg_poly hagree by (by100 blast)
+  have h_full: "geotop_PLH K L f \<and>
+                f ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
+                (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v) \<and>
+                (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f) \<and>
+                (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
+    using hPLH himg_poly hagree hlin hinv_lin by (by100 blast)
+  show ?thesis by (rule exI[where x=f], rule h_full)
 qed
 
 (** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
@@ -2866,15 +2882,28 @@ lemma geotop_isomorphic_induces_PLH:
   assumes hK: "geotop_is_complex K"
   assumes hL: "geotop_is_complex L"
   assumes hiso: "geotop_isomorphic K L"
-  shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L"
+  shows "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
+                    \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+                    \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
 proof -
   obtain \<phi> where h\<phi>: "geotop_isomorphism K L \<phi>"
     using hiso unfolding geotop_isomorphic_def by (by100 blast)
-  obtain f where hf: "geotop_PLH K L f
-                      \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
-                      \<and> (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)"
-    using geotop_isomorphism_induces_PLH[OF hK hL h\<phi>] by (by100 blast)
-  show ?thesis using hf by (by100 blast)
+  have hex_full: "\<exists>f::'a\<Rightarrow>'b.
+        geotop_PLH K L f
+         \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+         \<and> (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)
+         \<and> (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f)
+         \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
+    by (rule geotop_isomorphism_induces_PLH[OF hK hL h\<phi>])
+  then obtain f where hf1: "geotop_PLH K L f"
+                  and hf2: "f ` (geotop_polyhedron K) = geotop_polyhedron L"
+                  and hf5: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
+    by (by100 meson)
+  have h_out: "geotop_PLH K L f
+               \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+               \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
+    using hf1 hf2 hf5 by (by100 blast)
+  show ?thesis by (rule exI[where x=f], rule h_out)
 qed
 
 (** PL-map lifting across refinement: if \<open>f\<close> is a PL map of \<open>K' \<to> L'\<close> and
@@ -3085,6 +3114,8 @@ proof -
     using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
   obtain g :: "'a \<Rightarrow> 'b" where hg: "geotop_PLH K L g"
                              and hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
+                             and hg_inv_lin_L: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau>
+                                                       (inv_into (geotop_polyhedron K) g)"
     using geotop_isomorphic_induces_PLH[OF hKcomp hLcomp hiso] by (by100 blast)
   have hg_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
     using hg unfolding geotop_PLH_def by (by100 blast)
@@ -3124,15 +3155,19 @@ proof -
     (** \<tau> is a simplex via K.0 of L'. **)
     have h\<tau>_sim: "geotop_is_simplex \<tau>"
       using h\<tau>L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
-    (** Common refinement of \<tau> and L_star covering \<tau>: need Theorem_GT_1
-        applied to L'/L_star or direct argument. For now: assume \<tau> is
-        already in L_star (i.e. linear on \<tau>). This is a simplification;
-        the general proof needs common refinement. **)
+    (** \<tau> \<in> L' \<subseteq> some \<sigma>\<^sub>L \<in> L via refinement; \<open>g_inv\<close> is linear on \<sigma>\<^sub>L by the
+        strengthened iso_induces_PLH conclusion. Restrict via sub_simplex. **)
     have h_lin_\<tau>: "geotop_linear_on \<tau> ?g_inv"
-      sorry \<comment> \<open>g_inv linear on \<tau>: needs common refinement of L' and L_star
-                since L_star may not include \<tau> directly. Apply Theorem_GT_1
-                to get L** < L' and L** < L_star, then \<tau> decomposes into
-                pieces in L**.\<close>
+    proof -
+      have hL'_refines_L: "geotop_refines L' L"
+        using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+      obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>L: "\<sigma>\<^sub>L \<in> L" and h\<tau>_sub: "\<tau> \<subseteq> \<sigma>\<^sub>L"
+        using hL'_refines_L h\<tau>L' unfolding geotop_refines_def by (by100 blast)
+      have h_lin_\<sigma>\<^sub>L: "geotop_linear_on \<sigma>\<^sub>L ?g_inv"
+        using hg_inv_lin_L h\<sigma>\<^sub>L by (by100 blast)
+      show ?thesis
+        by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>L h\<tau>_sim h\<tau>_sub])
+    qed
     have h_inj_\<tau>: "inj_on ?g_inv \<tau>"
     proof -
       have h\<tau>_poly: "\<tau> \<subseteq> geotop_polyhedron L"
@@ -3154,7 +3189,17 @@ proof -
       using h\<sigma>K' unfolding K'_def by (by100 blast)
     have h\<tau>_sim: "geotop_is_simplex \<tau>"
       using h\<tau>L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
-    have h_lin_\<tau>: "geotop_linear_on \<tau> ?g_inv" sorry
+    have h_lin_\<tau>: "geotop_linear_on \<tau> ?g_inv"
+    proof -
+      have hL'_refines_L: "geotop_refines L' L"
+        using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+      obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>L: "\<sigma>\<^sub>L \<in> L" and h\<tau>_sub: "\<tau> \<subseteq> \<sigma>\<^sub>L"
+        using hL'_refines_L h\<tau>L' unfolding geotop_refines_def by (by100 blast)
+      have h_lin_\<sigma>\<^sub>L: "geotop_linear_on \<sigma>\<^sub>L ?g_inv"
+        using hg_inv_lin_L h\<sigma>\<^sub>L by (by100 blast)
+      show ?thesis
+        by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>L h\<tau>_sim h\<tau>_sub])
+    qed
     have h_inj_\<tau>: "inj_on ?g_inv \<tau>"
     proof -
       have h\<tau>_poly: "\<tau> \<subseteq> geotop_polyhedron L"
@@ -3214,9 +3259,32 @@ proof -
       using hL'_K2 h\<tau>_1L' h\<tau>_2L' h_inter_ne by (by100 blast)
     have h_face_\<tau>_2: "geotop_is_face (\<tau>_1 \<inter> \<tau>_2) \<tau>_2"
       using hL'_K2 h\<tau>_1L' h\<tau>_2L' h_inter_ne by (by100 blast)
-    (** Apply preserves_face to pull through g_inv. **)
-    have h_lin_\<tau>_1: "geotop_linear_on \<tau>_1 ?g_inv" sorry
-    have h_lin_\<tau>_2: "geotop_linear_on \<tau>_2 ?g_inv" sorry
+    (** Apply preserves_face to pull through g_inv. Linearity from strengthened
+        iso_induces_PLH + sub_simplex descent via refinement. **)
+    have hL'_refines_L_2: "geotop_refines L' L"
+      using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+    have h\<tau>_1_sim: "geotop_is_simplex \<tau>_1"
+      using h\<tau>_1L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h\<tau>_2_sim: "geotop_is_simplex \<tau>_2"
+      using h\<tau>_2L' conjunct1[OF hL'_comp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h_lin_\<tau>_1: "geotop_linear_on \<tau>_1 ?g_inv"
+    proof -
+      obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>L: "\<sigma>\<^sub>L \<in> L" and h\<tau>_sub: "\<tau>_1 \<subseteq> \<sigma>\<^sub>L"
+        using hL'_refines_L_2 h\<tau>_1L' unfolding geotop_refines_def by (by100 blast)
+      have h_lin_\<sigma>\<^sub>L: "geotop_linear_on \<sigma>\<^sub>L ?g_inv"
+        using hg_inv_lin_L h\<sigma>\<^sub>L by (by100 blast)
+      show ?thesis
+        by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>L h\<tau>_1_sim h\<tau>_sub])
+    qed
+    have h_lin_\<tau>_2: "geotop_linear_on \<tau>_2 ?g_inv"
+    proof -
+      obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>L: "\<sigma>\<^sub>L \<in> L" and h\<tau>_sub: "\<tau>_2 \<subseteq> \<sigma>\<^sub>L"
+        using hL'_refines_L_2 h\<tau>_2L' unfolding geotop_refines_def by (by100 blast)
+      have h_lin_\<sigma>\<^sub>L: "geotop_linear_on \<sigma>\<^sub>L ?g_inv"
+        using hg_inv_lin_L h\<sigma>\<^sub>L by (by100 blast)
+      show ?thesis
+        by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>L h\<tau>_2_sim h\<tau>_sub])
+    qed
     have h_inj_\<tau>_1: "inj_on ?g_inv \<tau>_1"
       using hg_inv_inj h\<tau>_1_poly inj_on_subset by (by100 blast)
     have h_inj_\<tau>_2: "inj_on ?g_inv \<tau>_2"
