@@ -2514,6 +2514,50 @@ qed
     additional hypothesis (unbounded M case can give arbitrary cSup).
     Use geotop_diameter_norm_nonneg_bdd above for bounded M. **)
 
+(** Diameter of a simplex is nonneg via compactness (bounded argument). **)
+lemma geotop_simplex_diameter_nonneg:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes h\<sigma>_sim: "geotop_is_simplex \<sigma>"
+  shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>"
+proof -
+  have h\<sigma>_compact: "compact \<sigma>" by (rule geotop_is_simplex_compact_early[OF h\<sigma>_sim])
+  have h\<sigma>_bdd: "bounded \<sigma>" using h\<sigma>_compact compact_imp_bounded by (by100 blast)
+  have h\<sigma>_ne: "\<sigma> \<noteq> {}"
+  proof -
+    obtain V m n where hVfin: "finite V" and hVcard: "card V = n + 1"
+                   and h\<sigma>eq: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_sim unfolding geotop_is_simplex_def by (by100 blast)
+    have hVne: "V \<noteq> {}" using hVcard by (by100 auto)
+    have h_HOL: "\<sigma> = convex hull V" using h\<sigma>eq geotop_convex_hull_eq_HOL by (by100 simp)
+    have "V \<subseteq> \<sigma>" using h_HOL hull_subset by (by100 simp)
+    thus ?thesis using hVne by (by100 blast)
+  qed
+  obtain r where hr: "\<forall>x\<in>\<sigma>. norm x \<le> r" using h\<sigma>_bdd bounded_iff by (by100 blast)
+  have h_tri_sigma: "\<And>P Q. P \<in> \<sigma> \<Longrightarrow> Q \<in> \<sigma> \<Longrightarrow> norm (P - Q) \<le> 2 * r"
+  proof -
+    fix P Q assume hP: "P \<in> \<sigma>" and hQ: "Q \<in> \<sigma>"
+    have hnP: "norm P \<le> r" using hP hr by (by100 blast)
+    have hnQ: "norm Q \<le> r" using hQ hr by (by100 blast)
+    have h_tri: "norm (P - Q) \<le> norm P + norm Q" by (rule norm_triangle_ineq4)
+    show "norm (P - Q) \<le> 2 * r" using h_tri hnP hnQ by (by100 simp)
+  qed
+  have h_bdd_inner: "\<And>P. P \<in> \<sigma> \<Longrightarrow> bdd_above ((\<lambda>Q. norm (P - Q)) ` \<sigma>)"
+    unfolding bdd_above_def using h_tri_sigma by (by100 blast)
+  have h_bdd_outer: "bdd_above ((\<lambda>P. (SUP Q\<in>\<sigma>. norm (P - Q))) ` \<sigma>)"
+  proof -
+    have h_each: "\<And>P. P \<in> \<sigma> \<Longrightarrow> (SUP Q\<in>\<sigma>. norm (P - Q)) \<le> 2 * r"
+    proof -
+      fix P assume hP: "P \<in> \<sigma>"
+      have h_bound: "\<And>Q. Q \<in> \<sigma> \<Longrightarrow> norm (P - Q) \<le> 2 * r"
+        using h_tri_sigma hP by (by100 blast)
+      show "(SUP Q\<in>\<sigma>. norm (P - Q)) \<le> 2 * r"
+        by (rule cSUP_least[OF h\<sigma>_ne h_bound])
+    qed
+    show ?thesis unfolding bdd_above_def using h_each by (by100 blast)
+  qed
+  show ?thesis
+    by (rule geotop_diameter_norm_nonneg_bdd[OF h\<sigma>_ne h_bdd_outer h_bdd_inner])
+qed
 
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
