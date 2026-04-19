@@ -3766,11 +3766,38 @@ proof -
                                           (geotop_complex_vertices K')"
     unfolding bij_betw_def
     using hg_inv_inj_VL' hV_K'_img by (by100 simp)
-  (** (6b) Simplex correspondence under convex hull. **)
+  (** (6b) Simplex correspondence under convex hull. For V \<subseteq> V(L'):
+      conv V \<in> L' \<longleftrightarrow> conv (g_inv V) \<in> K'.
+      (\<Rightarrow>) If conv V = \<tau> \<in> L', then g_inv(\<tau>) \<in> K' by def of K'. Need
+          g_inv(\<tau>) = conv(g_inv V): since \<tau> = conv V and g_inv linear on \<tau>
+          via refinement, apply our hull_eq helper.
+      (\<Leftarrow>) If conv(g_inv V) \<in> K', unfold K': \<exists>\<tau> \<in> L'. conv(g_inv V) = g_inv \<tau>.
+          Apply g to both sides: g(conv(g_inv V)) = g(g_inv \<tau>) = \<tau>. And
+          g(conv(g_inv V)) = conv V via linearity + bijection. So conv V = \<tau> \<in> L'. **)
   have hiso_K'L'_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L' \<longrightarrow>
                           (geotop_convex_hull V \<in> L' \<longleftrightarrow>
                            geotop_convex_hull (?g_inv ` V) \<in> K')"
-    sorry
+  proof (intro allI impI)
+    fix V\<^sub>0 assume hV\<^sub>0: "V\<^sub>0 \<subseteq> geotop_complex_vertices L'"
+    show "geotop_convex_hull V\<^sub>0 \<in> L' \<longleftrightarrow>
+          geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
+    proof (rule iffI)
+      assume h_in_L': "geotop_convex_hull V\<^sub>0 \<in> L'"
+      have h_img_K': "?g_inv ` (geotop_convex_hull V\<^sub>0) \<in> K'"
+        unfolding K'_def using h_in_L' by (by100 blast)
+      show "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
+        sorry \<comment> \<open>Need: g_inv(conv V_0) = conv(g_inv V_0). Via hull_eq helper
+                   if g_inv is linear on conv V_0 \<subseteq> |L|.\<close>
+    next
+      assume h_img_in_K': "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
+      obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
+                 and h_eq: "geotop_convex_hull (?g_inv ` V\<^sub>0) = ?g_inv ` \<tau>"
+        using h_img_in_K' unfolding K'_def by (by100 blast)
+      show "geotop_convex_hull V\<^sub>0 \<in> L'"
+        sorry \<comment> \<open>Apply g to both sides; g \<circ> g_inv = id on |L|;
+                   use linearity of g to get conv V_0 = \<tau>.\<close>
+    qed
+  qed
   have hiso_L'K': "geotop_isomorphic L' K'"
     unfolding geotop_isomorphic_def geotop_isomorphism_def
     using hiso_K'L'_vert hiso_K'L'_simp by (by100 blast)
