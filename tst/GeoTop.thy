@@ -2111,13 +2111,51 @@ proof
 qed
 
 (** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
-    subdivision tends to 0. **)
+    subdivision tends to 0. Proof via the shrinkage bound
+    \<open>mesh(Sd K) \<le> (n/(n+1)) \<cdot> mesh K\<close> (Moise Lemma 4.11) from
+    \<open>geotop_Sd_mesh_shrinkage\<close>. **)
 lemma geotop_mesh_iterated_Sd_tends_to_zero:
   fixes K :: "'a::real_normed_vector set set"
-  assumes "geotop_is_complex K" and "finite K"
+  assumes hK: "geotop_is_complex K" and hKfin: "finite K"
   shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
                (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
-  sorry
+proof -
+  (** (1) For finite K, there exists a uniform dimension bound \<open>n\<close>. **)
+  have h_dim_bound:
+    "\<exists>n::nat. \<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    sorry \<comment> \<open>finite K \<Longrightarrow> finite set of dims, take the max.
+             Each simplex has a unique dim (card V - 1).\<close>
+  then obtain n where hn: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    by (by100 blast)
+  (** (2) Induction on m: \<open>Sd^m(K)\<close> has the same dim bound, and
+      \<open>mesh(Sd^m K) \<le> (n/(n+1))^m \<cdot> mesh K\<close>. **)
+  define q where "q = real n / real (Suc n)"
+  have h_q_pos: "0 \<le> q" unfolding q_def by (by100 simp)
+  have h_q_lt_1: "q < 1" unfolding q_def
+    by (by100 simp)
+  define M where "M = geotop_mesh (\<lambda>x y. norm (x - y)) K"
+  have h_M_nn: "0 \<le> M" sorry \<comment> \<open>mesh is a SUP of diameters which are nonneg.\<close>
+  have h_step: "\<And>m. geotop_is_complex (geotop_iterated_Sd m K)
+                    \<and> (\<forall>\<sigma>\<in>geotop_iterated_Sd m K.
+                         \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n)
+                    \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                      \<le> q^m * M"
+    sorry \<comment> \<open>Induction on m: base m=0 is trivial; step uses geotop_Sd_mesh_shrinkage
+              on the IH.\<close>
+  (** (3) \<open>q^m \<to> 0\<close> since \<open>0 \<le> q < 1\<close>. **)
+  have h_qm_lim: "(\<lambda>m. q^m) \<longlonglongrightarrow> 0"
+    using LIMSEQ_realpow_zero[of q] h_q_pos h_q_lt_1 by (by100 simp)
+  have h_qmM_lim: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0"
+    sorry \<comment> \<open>f \<longlonglongrightarrow> 0 \<Longrightarrow> (\<lambda>m. f m * c) \<longlonglongrightarrow> 0; standard limit fact.\<close>
+  (** (4) Squeeze: mesh is nonneg and \<le> q^m M. **)
+  have h_mesh_nn: "\<And>m. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
+    sorry \<comment> \<open>mesh is nonneg.\<close>
+  have h_mesh_ub: "\<And>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
+                       \<le> q^m * M"
+    using h_step by (by100 blast)
+  show ?thesis
+    sorry \<comment> \<open>sandwich: 0 \<le> mesh \<le> q^m * M with outer bounds both tending to 0.\<close>
+qed
 
 (** Finiteness transfers across subdivision: if \<open>K\<close> is a finite complex and
     \<open>K' < K\<close>, then \<open>K'\<close> is finite. The proof uses \<open>K.3\<close> local-finiteness of
