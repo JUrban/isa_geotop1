@@ -8872,19 +8872,24 @@ next
                         sub-complex construction.\<close>
 qed
 
-(** PL Helper 2: two broken lines sharing exactly one endpoint (their
-    intersection = singleton endpoint of both) combine into a broken line.
+(** PL Helper 2: two broken lines sharing exactly one point, each having that
+    point as an endpoint of its arc-parametrisation, combine into a broken line.
+    The endpoint hypothesis is essential: if \<open>R\<close> were interior to one arc, the
+    union would have a branch point at \<open>R\<close> and so fail to be an arc (T-shape).
+
     Proof via HOL's \<open>arc_join\<close>: both underlying HOL arcs glue into a HOL arc
-    whose image is the set union. The complex union \<open>K\<^sub>1 \<union> K\<^sub>2\<close> (with K.2
-    checked at the shared vertex) gives the polyhedral witness. **)
-lemma geotop_broken_lines_glue_disjoint:
+    whose image is the full set union. The polyhedral side uses the union of
+    their witnessing 1-complexes. **)
+lemma geotop_broken_lines_glue_disjoint_endpoints:
   fixes B\<^sub>1 B\<^sub>2 :: "'a::euclidean_space set"
   assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>2: "geotop_is_broken_line B\<^sub>2"
-  assumes hR: "R \<in> B\<^sub>1" "R \<in> B\<^sub>2"
+  assumes hR_end_1: "\<exists>\<gamma>\<^sub>1. arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = B\<^sub>1 \<and> pathfinish \<gamma>\<^sub>1 = R"
+  assumes hR_end_2: "\<exists>\<gamma>\<^sub>2. arc \<gamma>\<^sub>2 \<and> path_image \<gamma>\<^sub>2 = B\<^sub>2 \<and> pathstart \<gamma>\<^sub>2 = R"
   assumes hdisj: "B\<^sub>1 \<inter> B\<^sub>2 = {R}"
   shows "geotop_is_broken_line (B\<^sub>1 \<union> B\<^sub>2)"
-  sorry \<comment> \<open>Classical PL: two arcs meeting at exactly one point form an arc
-            via arc_join; complex union K1 \<union> K2 gives polyhedral witness.\<close>
+  sorry \<comment> \<open>Classical PL: two arcs meeting at endpoint R glue to arc via arc_join;
+            complex union K1 ∪ K2 gives polyhedron (K.2 at R checked since R is
+            a 0-simplex vertex of each).\<close>
 
 (** PL-arc-reduction: given two broken lines \<open>B\<^sub>1, B\<^sub>2\<close> sharing a point and two
     further points \<open>P \<in> B\<^sub>1\<close>, \<open>Q \<in> B\<^sub>2\<close>, there is a broken-line sub-arc of
@@ -8926,7 +8931,7 @@ proof -
         (1) Take sub-arc \<open>B\<^sub>1'\<close> of \<open>B\<^sub>1\<close> from \<open>P\<close> to \<open>Q\<^sub>0\<close> (broken_line_subarc).
         (2) Take sub-arc \<open>B\<^sub>2'\<close> of \<open>B\<^sub>2\<close> from \<open>Q\<^sub>0\<close> to \<open>Q\<close> (broken_line_subarc).
         (3) Inductive argument on the intersection \<open>B\<^sub>1' \<cap> B\<^sub>2'\<close>:
-              - If \<open>{Q\<^sub>0}\<close>: glue via broken_lines_glue_disjoint.
+              - If \<open>{Q\<^sub>0}\<close>: glue via broken_lines_glue_disjoint_endpoints.
               - Otherwise: take first intersection along the arc parametrisation
                 of \<open>B\<^sub>1'\<close>, recurse.
         A fully precise proof of (3) is deferred as one classical sorry; the
