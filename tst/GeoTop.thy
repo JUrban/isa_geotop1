@@ -3784,11 +3784,38 @@ proof -
       obtain W\<^sub>0 where hW\<^sub>0sv: "geotop_simplex_vertices (geotop_convex_hull V\<^sub>0) W\<^sub>0"
         using h_convV0_sim unfolding geotop_is_simplex_def
               geotop_simplex_vertices_def by (by100 blast)
+      obtain m_W n_W where hW\<^sub>0fin: "finite W\<^sub>0" and hW\<^sub>0card: "card W\<^sub>0 = n_W + 1"
+                       and hW\<^sub>0nm: "n_W \<le> m_W"
+                       and hW\<^sub>0gp: "geotop_general_position W\<^sub>0 m_W"
+                       and hW\<^sub>0hull: "geotop_convex_hull V\<^sub>0 = geotop_convex_hull W\<^sub>0"
+        using hW\<^sub>0sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      (** W_0 is AI. **)
+      have hW\<^sub>0_ai: "\<not> affine_dependent W\<^sub>0"
+        by (rule geotop_general_position_imp_aff_indep[OF hW\<^sub>0sv])
+      (** conv V_0 = conv W_0 in HOL sense. **)
+      have h_conv_eq: "convex hull V\<^sub>0 = convex hull W\<^sub>0"
+      proof -
+        have h1: "convex hull V\<^sub>0 = geotop_convex_hull V\<^sub>0"
+          by (rule geotop_convex_hull_eq_HOL[symmetric])
+        have h2: "geotop_convex_hull W\<^sub>0 = convex hull W\<^sub>0"
+          by (rule geotop_convex_hull_eq_HOL)
+        show ?thesis using h1 hW\<^sub>0hull h2 by (by100 simp)
+      qed
+      (** W_0 = extreme points of conv W_0 = extreme points of conv V_0. Both \<subseteq> V_0. **)
+      have hW\<^sub>0_sub_V\<^sub>0: "W\<^sub>0 \<subseteq> V\<^sub>0"
+      proof
+        fix w assume hw: "w \<in> W\<^sub>0"
+        have h_extr_W: "w extreme_point_of (convex hull W\<^sub>0)"
+          using extreme_point_of_convex_hull_affine_independent[OF hW\<^sub>0_ai] hw
+          by (by100 blast)
+        have h_extr_V: "w extreme_point_of (convex hull V\<^sub>0)"
+          using h_extr_W h_conv_eq by (by100 simp)
+        show "w \<in> V\<^sub>0" by (rule extreme_point_of_convex_hull[OF h_extr_V])
+      qed
       show "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
-        sorry \<comment> \<open>Deep: need W_0 \<subseteq> V_0 (extreme-point argument on convex hull),
-                   then hull_eq on W_0 gives g_inv(conv W_0) = conv(g_inv W_0),
-                   then V_0 \<subseteq> conv V_0 = conv W_0 gives g_inv V_0 \<subseteq> conv(g_inv W_0),
-                   so conv(g_inv V_0) = conv(g_inv W_0) = g_inv(conv V_0) \<in> K'.\<close>
+        sorry \<comment> \<open>Remaining: from h_img_K' (g_inv(conv V_0) \<in> K') and
+                   W_0 \<subseteq> V_0, V_0 \<subseteq> conv V_0 = conv W_0, plus hull_eq on W_0,
+                   conclude conv(g_inv V_0) = g_inv(conv V_0) \<in> K'.\<close>
     next
       assume h_img_in_K': "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
       obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
