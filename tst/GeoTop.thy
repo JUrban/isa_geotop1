@@ -3178,8 +3178,62 @@ proof -
       \<sigma>_1 \<inter> \<sigma>_2 = g_inv(\<tau>_1 \<inter> \<tau>_2) (bijection), which is a face by face-preservation. **)
   have hK'_K2: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>\<in>K'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry \<comment> \<open>Same pattern as K.1 but applied to K.2 of L' + image_Int via inj.
-               Needs hg_inv_inj restricted to \<tau>_1 \<union> \<tau>_2.\<close>
+  proof (intro ballI impI)
+    fix \<sigma>_1 \<sigma>_2 assume h\<sigma>_1K': "\<sigma>_1 \<in> K'" and h\<sigma>_2K': "\<sigma>_2 \<in> K'"
+    assume h_ne: "\<sigma>_1 \<inter> \<sigma>_2 \<noteq> {}"
+    obtain \<tau>_1 where h\<tau>_1L': "\<tau>_1 \<in> L'" and h\<sigma>_1_eq: "\<sigma>_1 = ?g_inv ` \<tau>_1"
+      using h\<sigma>_1K' unfolding K'_def by (by100 blast)
+    obtain \<tau>_2 where h\<tau>_2L': "\<tau>_2 \<in> L'" and h\<sigma>_2_eq: "\<sigma>_2 = ?g_inv ` \<tau>_2"
+      using h\<sigma>_2K' unfolding K'_def by (by100 blast)
+    (** \<tau>_1, \<tau>_2 \<subseteq> |L'| = |L|. g_inv is inj on |L|, hence on \<tau>_1 \<union> \<tau>_2. **)
+    have h\<tau>_1_poly: "\<tau>_1 \<subseteq> geotop_polyhedron L"
+      using h\<tau>_1L' hL'L unfolding geotop_is_subdivision_def geotop_refines_def
+      geotop_polyhedron_def by (by100 blast)
+    have h\<tau>_2_poly: "\<tau>_2 \<subseteq> geotop_polyhedron L"
+      using h\<tau>_2L' hL'L unfolding geotop_is_subdivision_def geotop_refines_def
+      geotop_polyhedron_def by (by100 blast)
+    (** g_inv(\<tau>_1 \<inter> \<tau>_2) = g_inv(\<tau>_1) \<inter> g_inv(\<tau>_2) = \<sigma>_1 \<inter> \<sigma>_2 via inj_on_image_Int. **)
+    have h_inj_union: "inj_on ?g_inv (\<tau>_1 \<union> \<tau>_2)"
+    proof -
+      have h_sub: "\<tau>_1 \<union> \<tau>_2 \<subseteq> geotop_polyhedron L"
+        using h\<tau>_1_poly h\<tau>_2_poly by (by100 blast)
+      show ?thesis using hg_inv_inj h_sub inj_on_subset by (by100 blast)
+    qed
+    have h_img_int: "?g_inv ` (\<tau>_1 \<inter> \<tau>_2) = ?g_inv ` \<tau>_1 \<inter> ?g_inv ` \<tau>_2"
+      using inj_on_image_Int[OF h_inj_union] by (by100 simp)
+    have h_img_ne: "?g_inv ` (\<tau>_1 \<inter> \<tau>_2) \<noteq> {}"
+      using h_ne h_img_int h\<sigma>_1_eq h\<sigma>_2_eq by (by100 simp)
+    have h_inter_ne: "\<tau>_1 \<inter> \<tau>_2 \<noteq> {}"
+      using h_img_ne by (by100 blast)
+    (** K.2 of L' gives \<tau>_1 \<inter> \<tau>_2 is a face of both. **)
+    have hL'_K2: "\<forall>\<sigma>\<in>L'. \<forall>\<tau>\<in>L'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using conjunct1[OF conjunct2[OF conjunct2[OF hL'_comp[unfolded geotop_is_complex_def]]]]
+      by (by100 blast)
+    have h_face_\<tau>_1: "geotop_is_face (\<tau>_1 \<inter> \<tau>_2) \<tau>_1"
+      using hL'_K2 h\<tau>_1L' h\<tau>_2L' h_inter_ne by (by100 blast)
+    have h_face_\<tau>_2: "geotop_is_face (\<tau>_1 \<inter> \<tau>_2) \<tau>_2"
+      using hL'_K2 h\<tau>_1L' h\<tau>_2L' h_inter_ne by (by100 blast)
+    (** Apply preserves_face to pull through g_inv. **)
+    have h_lin_\<tau>_1: "geotop_linear_on \<tau>_1 ?g_inv" sorry
+    have h_lin_\<tau>_2: "geotop_linear_on \<tau>_2 ?g_inv" sorry
+    have h_inj_\<tau>_1: "inj_on ?g_inv \<tau>_1"
+      using hg_inv_inj h\<tau>_1_poly inj_on_subset by (by100 blast)
+    have h_inj_\<tau>_2: "inj_on ?g_inv \<tau>_2"
+      using hg_inv_inj h\<tau>_2_poly inj_on_subset by (by100 blast)
+    have h_face_\<sigma>_1: "geotop_is_face (?g_inv ` (\<tau>_1 \<inter> \<tau>_2)) (?g_inv ` \<tau>_1)"
+      by (rule geotop_linear_inj_image_preserves_face[OF h_lin_\<tau>_1 h_inj_\<tau>_1 h_face_\<tau>_1])
+    have h_face_\<sigma>_2: "geotop_is_face (?g_inv ` (\<tau>_1 \<inter> \<tau>_2)) (?g_inv ` \<tau>_2)"
+      by (rule geotop_linear_inj_image_preserves_face[OF h_lin_\<tau>_2 h_inj_\<tau>_2 h_face_\<tau>_2])
+    have h_inter_eq: "\<sigma>_1 \<inter> \<sigma>_2 = ?g_inv ` (\<tau>_1 \<inter> \<tau>_2)"
+      using h_img_int h\<sigma>_1_eq h\<sigma>_2_eq by (by100 simp)
+    have h_face_1: "geotop_is_face (\<sigma>_1 \<inter> \<sigma>_2) \<sigma>_1"
+      using h_face_\<sigma>_1 h_inter_eq h\<sigma>_1_eq by (by100 simp)
+    have h_face_2: "geotop_is_face (\<sigma>_1 \<inter> \<sigma>_2) \<sigma>_2"
+      using h_face_\<sigma>_2 h_inter_eq h\<sigma>_2_eq by (by100 simp)
+    show "geotop_is_face (\<sigma>_1 \<inter> \<sigma>_2) \<sigma>_1 \<and> geotop_is_face (\<sigma>_1 \<inter> \<sigma>_2) \<sigma>_2"
+      using h_face_1 h_face_2 by (by100 blast)
+  qed
   (** (3d) K.3: local finiteness. For finite K', U = UNIV suffices. **)
   have hL'fin: "finite L'"
     by (rule geotop_subdivision_of_finite_is_finite[OF hLfin hL'L])
