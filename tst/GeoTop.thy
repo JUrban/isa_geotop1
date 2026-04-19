@@ -3301,7 +3301,21 @@ proof -
     using hf_inv_bij_poly unfolding bij_betw_def by (by100 blast)
   (** For v \<in> V(L): f_inv v = phi_inv v (where phi_inv = inv_into V(K) phi). **)
   have hVK_sub_polyK: "geotop_complex_vertices K \<subseteq> geotop_polyhedron K"
-    sorry \<comment> \<open>V(K) \<subseteq> |K| — standard fact.\<close>
+  proof
+    fix v assume hv: "v \<in> geotop_complex_vertices K"
+    obtain V' where hV'sv: "\<exists>\<sigma>\<in>K. geotop_simplex_vertices \<sigma> V'" and hvV': "v \<in> V'"
+      using hv unfolding geotop_complex_vertices_def by (by100 blast)
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and h\<sigma>sv: "geotop_simplex_vertices \<sigma> V'"
+      using hV'sv by (by100 blast)
+    have hV'_sub: "V' \<subseteq> geotop_convex_hull V'"
+      unfolding geotop_convex_hull_def hull_def by (by100 blast)
+    have h\<sigma>_eq: "\<sigma> = geotop_convex_hull V'"
+      using h\<sigma>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hv_hull: "v \<in> geotop_convex_hull V'" using hvV' hV'_sub by (by100 blast)
+    have hv_\<sigma>: "v \<in> \<sigma>" using hv_hull h\<sigma>_eq by (by100 simp)
+    show "v \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<sigma>K hv_\<sigma> by (by100 blast)
+  qed
   have h\<phi>_inj: "inj_on \<phi> (geotop_complex_vertices K)"
     using h\<phi>_bij unfolding bij_betw_def by (by100 blast)
   have hf_inj_polyK: "inj_on f (geotop_polyhedron K)"
