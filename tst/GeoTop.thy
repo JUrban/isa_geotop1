@@ -4840,10 +4840,12 @@ proof -
         have h_convfV_sub_\<tau>: "geotop_convex_hull (f ` V) \<subseteq> \<tau>"
           unfolding geotop_convex_hull_def hull_def using hfV_sub_\<tau> h\<tau>_geo_conv
           by (by100 blast)
-        (** \<tau> \<subseteq> conv(f V): via vertex-set argument. V(\<tau>) \<subseteq> f V. **)
+        (** conv V is a simplex in L_3. Extract its vertex set V_L_3 \<subseteq> V (extreme pts). **)
+        have h_convV_simp: "geotop_is_simplex (geotop_convex_hull V)"
+          using hV_L\<^sub>3 conjunct1[OF hL\<^sub>3_complex[unfolded geotop_is_complex_def]]
+          by (by100 blast)
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Remaining: show \<tau> \<subseteq> conv(f V), hence \<tau> = conv(f V) \<in> K_3.
-                     Requires: V(\<tau>) \<subseteq> f V via extreme_point argument on conv V.\<close>
+          sorry \<comment> \<open>Remaining: V(\<tau>) \<subseteq> f V via extreme_point chain.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
