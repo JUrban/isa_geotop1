@@ -4879,8 +4879,17 @@ proof -
                        and hV\<tau>nm: "nV \<le> mV" and hV\<tau>gp: "geotop_general_position V\<tau> mV"
                        and h\<tau>hull: "\<tau> = geotop_convex_hull V\<tau>"
           using hV\<tau>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        (** f_inv linear on \<tau>: \<tau> \<in> K_3 < K_1, each K_3-simplex \<subseteq> K_1-simplex. **)
+        have hK\<^sub>3_ref_K\<^sub>1: "geotop_refines K\<^sub>3 K\<^sub>1"
+          using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
+        obtain \<sigma>\<^sub>K\<^sub>1 where h\<sigma>K1: "\<sigma>\<^sub>K\<^sub>1 \<in> K\<^sub>1" and h\<tau>_sub_K1: "\<tau> \<subseteq> \<sigma>\<^sub>K\<^sub>1"
+          using h\<tau>K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1 unfolding geotop_refines_def by (by100 blast)
+        have h_lin_\<sigma>\<^sub>K\<^sub>1: "geotop_linear_on \<sigma>\<^sub>K\<^sub>1 (inv_into (geotop_polyhedron L) f)"
+          using hK\<^sub>1_lin h\<sigma>K1 by (by100 blast)
+        have h_lin_\<tau>: "geotop_linear_on \<tau> (inv_into (geotop_polyhedron L) f)"
+          by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>K\<^sub>1 h\<tau>_sim h\<tau>_sub_K1])
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Next: f_inv linear + inj on conv V_\<tau> = \<tau> (via \<tau> \<subseteq> K_1-simplex).\<close>
+          sorry \<comment> \<open>Next: f_inv V_\<tau> AI via preserves_ai; conv V = conv(f_inv V_\<tau>) via hull_eq.\<close>
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
