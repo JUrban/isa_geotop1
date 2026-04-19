@@ -5053,7 +5053,31 @@ proof -
         have hK\<^sub>3fin: "finite K\<^sub>3"
           using hK\<^sub>3_K\<^sub>1 hK\<^sub>1fin geotop_subdivision_of_finite_is_finite by (by100 blast)
         have hV_K\<^sub>3fin: "finite (geotop_complex_vertices K\<^sub>3)"
-          sorry \<comment> \<open>V(K_3) finite (union over finite K_3 of finite vertex sets).\<close>
+        proof -
+          have h_union_eq: "geotop_complex_vertices K\<^sub>3
+                              = (\<Union>\<sigma>\<in>K\<^sub>3. {v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and> v \<in> V})"
+            unfolding geotop_complex_vertices_def by (by100 blast)
+          have h_each_fin: "\<And>\<sigma>. \<sigma> \<in> K\<^sub>3
+                              \<Longrightarrow> finite {v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and> v \<in> V}"
+          proof -
+            fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K\<^sub>3"
+            have h\<sigma>_sim: "geotop_is_simplex \<sigma>"
+              using h\<sigma>K conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]]
+              by (by100 blast)
+            obtain V' where hV'sv: "geotop_simplex_vertices \<sigma> V'"
+              using h\<sigma>_sim unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+              by (by100 blast)
+            have hV'_fin: "finite V'"
+              using hV'sv unfolding geotop_simplex_vertices_def by (by100 blast)
+            have h_uniq: "\<And>V''. geotop_simplex_vertices \<sigma> V'' \<Longrightarrow> V'' = V'"
+              by (rule geotop_simplex_vertices_unique[OF _ hV'sv])
+            have h_set_eq: "{v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and> v \<in> V} = V'"
+              using hV'sv h_uniq by (by100 blast)
+            show "finite {v. \<exists>V. geotop_simplex_vertices \<sigma> V \<and> v \<in> V}"
+              using hV'_fin h_set_eq by (by100 simp)
+          qed
+          show ?thesis using h_union_eq h_each_fin hK\<^sub>3fin by (by100 simp)
+        qed
         have hfV_fin: "finite (f ` V)"
           using hf_V_sub_VK\<^sub>3 hV_K\<^sub>3fin finite_subset by (by100 blast)
         (** V = f_inv \<sup>\` (f V). **)
