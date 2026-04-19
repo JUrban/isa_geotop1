@@ -7054,6 +7054,19 @@ proof -
   show ?thesis using h\<gamma>_arc h\<gamma>_pim by blast
 qed
 
+(** Reverse bridge: a HOL arc's image is a geotop \<open>is_arc\<close> set.
+    Proof: path_image \<gamma> is homeomorphic to [0,1] (compact-Hausdorff injection),
+    and [0,1] is in turn homeomorphic to any 1-simplex (closed_segment 0 b for
+    b in Basis). Hence path_image \<gamma> is an n-cell with n=1. **)
+lemma geotop_HOL_arc_imp_geotop_is_arc:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  assumes harc: "arc \<gamma>"
+  shows "geotop_is_arc (path_image \<gamma>)
+          (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+  sorry \<comment> \<open>Support infrastructure: HOL_arc → geotop_is_arc. Full proof
+            needs continuous_on → top1_continuous_map_on bridge across types
+            (deferred as one focused helper).\<close>
+
 (** Helper: complement of a geotop-arc in R^n (n \<ge> 2) is connected. **)
 lemma top1_connected_complement_of_geotop_arc:
   fixes A :: "'a::euclidean_space set"
@@ -8887,9 +8900,39 @@ lemma geotop_broken_lines_glue_disjoint_endpoints:
   assumes hR_end_2: "\<exists>\<gamma>\<^sub>2. arc \<gamma>\<^sub>2 \<and> path_image \<gamma>\<^sub>2 = B\<^sub>2 \<and> pathstart \<gamma>\<^sub>2 = R"
   assumes hdisj: "B\<^sub>1 \<inter> B\<^sub>2 = {R}"
   shows "geotop_is_broken_line (B\<^sub>1 \<union> B\<^sub>2)"
-  sorry \<comment> \<open>Classical PL: two arcs meeting at endpoint R glue to arc via arc_join;
-            complex union K1 ∪ K2 gives polyhedron (K.2 at R checked since R is
-            a 0-simplex vertex of each).\<close>
+proof -
+  (** (1) Extract HOL arcs with endpoint R. **)
+  obtain \<gamma>\<^sub>1 where harc\<^sub>1: "arc \<gamma>\<^sub>1" and hpim\<^sub>1: "path_image \<gamma>\<^sub>1 = B\<^sub>1"
+                and hfin\<^sub>1: "pathfinish \<gamma>\<^sub>1 = R"
+    using hR_end_1 by (by100 blast)
+  obtain \<gamma>\<^sub>2 where harc\<^sub>2: "arc \<gamma>\<^sub>2" and hpim\<^sub>2: "path_image \<gamma>\<^sub>2 = B\<^sub>2"
+                and hstart\<^sub>2: "pathstart \<gamma>\<^sub>2 = R"
+    using hR_end_2 by (by100 blast)
+  (** (2) Apply HOL's arc_join: arcs meeting only at shared endpoint glue. **)
+  have h_fin_start: "pathfinish \<gamma>\<^sub>1 = pathstart \<gamma>\<^sub>2"
+    using hfin\<^sub>1 hstart\<^sub>2 by (by100 simp)
+  have h_int_sub: "path_image \<gamma>\<^sub>1 \<inter> path_image \<gamma>\<^sub>2 \<subseteq> {pathstart \<gamma>\<^sub>2}"
+    using hpim\<^sub>1 hpim\<^sub>2 hdisj hstart\<^sub>2 by (by100 blast)
+  have h\<gamma>_join: "arc (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2)"
+    by (rule arc_join[OF harc\<^sub>1 harc\<^sub>2 h_fin_start h_int_sub])
+  (** (3) The joined arc's path-image is B_1 \<union> B_2. **)
+  have h_join_pim_raw: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = path_image \<gamma>\<^sub>1 \<union> path_image \<gamma>\<^sub>2"
+    by (rule path_image_join[OF h_fin_start])
+  have h_join_pim: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = B\<^sub>1 \<union> B\<^sub>2"
+    using h_join_pim_raw hpim\<^sub>1 hpim\<^sub>2 by (by100 simp)
+  (** (4) Apply the HOL-arc \<rightarrow> geotop_is_arc bridge. **)
+  have h_geotop_arc: "geotop_is_arc (B\<^sub>1 \<union> B\<^sub>2)
+                       (subspace_topology UNIV geotop_euclidean_topology (B\<^sub>1 \<union> B\<^sub>2))"
+    using h_join_pim geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_join] by (by100 simp)
+  (** (5) Polyhedral side: take complex union K\<^sub>1 \<union> K\<^sub>2 after subdividing
+          at R. This classical PL fact is the remaining content. **)
+  have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2"
+    sorry \<comment> \<open>Classical PL: union of 1-complexes subdivided at shared vertex R
+              is a 1-complex with polyhedron B_1 \<union> B_2.\<close>
+  show ?thesis
+    unfolding geotop_is_broken_line_def
+    using h_polyhedron h_geotop_arc by (by100 blast)
+qed
 
 (** PL-arc-reduction: given two broken lines \<open>B\<^sub>1, B\<^sub>2\<close> sharing a point and two
     further points \<open>P \<in> B\<^sub>1\<close>, \<open>Q \<in> B\<^sub>2\<close>, there is a broken-line sub-arc of
