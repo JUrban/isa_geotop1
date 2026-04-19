@@ -3299,10 +3299,17 @@ proof -
     by (rule bij_betw_inv_into[OF hf_bij_poly])
   have hf_inv_inj_L: "inj_on (inv_into (geotop_polyhedron K) f) (geotop_polyhedron L)"
     using hf_inv_bij_poly unfolding bij_betw_def by (by100 blast)
+  (** For v \<in> V(L): f_inv v = phi_inv v (where phi_inv = inv_into V(K) phi). **)
+  have hf_inv_eq_\<phi>_inv: "\<forall>v\<in>geotop_complex_vertices L.
+                           inv_into (geotop_polyhedron K) f v
+                           = inv_into (geotop_complex_vertices K) \<phi> v"
+    sorry \<comment> \<open>Sub-proof: v \<in> V(L); by phi bij V(K)\<leftrightarrow>V(L) obtain u \<in> V(K) with phi u = v;
+               then f u = phi u = v (via hf3); u \<in> V(K) \<subseteq> |K|; so f_inv v = u
+               via bij_betw_inv_into_f; and phi_inv v = u.\<close>
   have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
-    sorry \<comment> \<open>Core: for tau in L with V_tau vertex set,
-               f_inv = phi_inv on V(L), iso reversed gives conv(phi_inv V_tau) in K,
-               hull_eq: f_inv tau = conv(phi_inv V_tau) in K.\<close>
+    sorry \<comment> \<open>Core: extract V_tau; f_inv V_tau = phi_inv V_tau \<subseteq> V(K);
+               conv(phi_inv V_tau) \<in> K via iso reversed on phi W where W = phi_inv V_tau;
+               hull_eq: f_inv tau = conv(f_inv V_tau) \<in> K.\<close>
   show "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
                     \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                     \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
