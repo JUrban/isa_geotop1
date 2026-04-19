@@ -9072,7 +9072,124 @@ lemma geotop_complex_subdivide_edge_interior:
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
             \<and> (finite K \<longrightarrow> finite K')"
-  sorry
+proof -
+  have hR_v0: "R \<noteq> v\<^sub>0" using hR_V hVeq by (by100 blast)
+  have hR_v1: "R \<noteq> v\<^sub>1" using hR_V hVeq by (by100 blast)
+  have he_eq: "e = closed_segment v\<^sub>0 v\<^sub>1"
+  proof -
+    have h_hull_V: "e = geotop_convex_hull V"
+      using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+    have "e = convex hull V" using h_hull_V geotop_convex_hull_eq_HOL by (by100 simp)
+    also have "convex hull V = convex hull {v\<^sub>0, v\<^sub>1}" using hVeq by (by100 simp)
+    also have "\<dots> = closed_segment v\<^sub>0 v\<^sub>1" by (rule segment_convex_hull[symmetric])
+    finally show ?thesis .
+  qed
+  define e\<^sub>l where "e\<^sub>l = closed_segment v\<^sub>0 R"
+  define e\<^sub>r where "e\<^sub>r = closed_segment R v\<^sub>1"
+  have he\<^sub>l_dim: "geotop_simplex_dim e\<^sub>l 1"
+    unfolding e\<^sub>l_def by (rule geotop_closed_segment_is_simplex[OF hR_v0[symmetric]])
+  have he\<^sub>r_dim: "geotop_simplex_dim e\<^sub>r 1"
+    unfolding e\<^sub>r_def by (rule geotop_closed_segment_is_simplex[OF hR_v1])
+  have hR_dim: "geotop_simplex_dim {R} 0" by (rule geotop_singleton_is_simplex)
+  define K' where "K' = (K - {e}) \<union> {{R}, e\<^sub>l, e\<^sub>r}"
+  (** |K'| = |K|: e\<^sub>l \<union> e\<^sub>r \<union> {R} = e. **)
+  have he_split: "e\<^sub>l \<union> e\<^sub>r \<union> {R} = e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_eq by (by100 simp)
+    have h_seg_split: "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 = closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule Un_closed_segment[OF hR_seg])
+    have hR_in_lhs: "R \<in> closed_segment v\<^sub>0 R" by (by100 simp)
+    show ?thesis unfolding e\<^sub>l_def e\<^sub>r_def he_eq
+      using h_seg_split hR_in_lhs by (by100 auto)
+  qed
+  have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+  proof -
+    have h1: "\<Union>K' = \<Union>(K - {e}) \<union> (e\<^sub>l \<union> e\<^sub>r \<union> {R})"
+      unfolding K'_def by (by100 blast)
+    have h3: "\<Union>K' = \<Union>(K - {e}) \<union> e" using h1 he_split by (by100 simp)
+    have h2: "\<Union>(K - {e}) \<union> e = \<Union>K" using he_K by (by100 blast)
+    have heq: "\<Union>K' = \<Union>K" using h2 h3 by (by100 simp)
+    thus ?thesis unfolding geotop_polyhedron_def by (by100 simp)
+  qed
+  have hR_K': "{R} \<in> K'" unfolding K'_def by (by100 blast)
+  have hK'_fin: "finite K \<longrightarrow> finite K'"
+    unfolding K'_def by (by100 simp)
+  (** Structure of K': 3 cases per simplex. **)
+  have hK'_cases: "\<And>\<sigma>. \<sigma> \<in> K' \<Longrightarrow> \<sigma> \<in> K - {e} \<or> \<sigma> = {R} \<or> \<sigma> = e\<^sub>l \<or> \<sigma> = e\<^sub>r"
+    unfolding K'_def by (by100 blast)
+  have hK'_1dim: "geotop_complex_is_1dim K'"
+    unfolding geotop_complex_is_1dim_def
+  proof (intro ballI)
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    have h_disj: "\<sigma> \<in> K - {e} \<or> \<sigma> = {R} \<or> \<sigma> = e\<^sub>l \<or> \<sigma> = e\<^sub>r"
+      using hK'_cases h\<sigma>K' by (by100 blast)
+    show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+    proof (cases "\<sigma> \<in> K - {e}")
+      case True
+      have h\<sigma>K: "\<sigma> \<in> K" using True by (by100 blast)
+      show ?thesis using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+    next
+      case False
+      note h_not_old = False
+      show ?thesis
+      proof (cases "\<sigma> = {R}")
+        case True thus ?thesis using hR_dim by (by100 blast)
+      next
+        case False
+        note h_not_R = False
+        show ?thesis
+        proof (cases "\<sigma> = e\<^sub>l")
+          case True thus ?thesis using he\<^sub>l_dim by (by100 blast)
+        next
+          case False
+          note h_not_l = False
+          have h_er: "\<sigma> = e\<^sub>r"
+          proof (rule disjE[OF h_disj])
+            assume "\<sigma> \<in> K - {e}"
+            with h_not_old show ?thesis by (by100 blast)
+          next
+            assume h_rem: "\<sigma> = {R} \<or> \<sigma> = e\<^sub>l \<or> \<sigma> = e\<^sub>r"
+            show ?thesis
+            proof (rule disjE[OF h_rem])
+              assume "\<sigma> = {R}"
+              with h_not_R show ?thesis by (by100 blast)
+            next
+              assume h_rem2: "\<sigma> = e\<^sub>l \<or> \<sigma> = e\<^sub>r"
+              show ?thesis
+              proof (rule disjE[OF h_rem2])
+                assume "\<sigma> = e\<^sub>l"
+                with h_not_l show ?thesis by (by100 blast)
+              next
+                assume "\<sigma> = e\<^sub>r"
+                thus ?thesis by (by100 blast)
+              qed
+            qed
+          qed
+          thus ?thesis using he\<^sub>r_dim by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  (** K.0: all elements of K' are simplices. **)
+  have hK_simplexes: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hK'_simplexes: "\<forall>\<sigma>\<in>K'. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    have hdim_ex: "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+      using hK'_1dim h\<sigma>K' unfolding geotop_complex_is_1dim_def by (by100 blast)
+    show "geotop_is_simplex \<sigma>"
+      using hdim_ex unfolding geotop_is_simplex_def geotop_simplex_dim_def
+      by (by100 blast)
+  qed
+  (** K.1, K.2, K.3: left as one focused sub-sorry, as the combinatorial
+      case analysis (interactions between new simplices and old) is the
+      core classical content. **)
+  have hK'_comp: "geotop_is_complex K'"
+    sorry \<comment> \<open>K.1 face-closure, K.2 intersections face of both, K.3 local
+              finiteness. All standard for the subdivision construction.\<close>
+  show ?thesis using hK'_comp hK'_1dim hK'_poly hR_K' hK'_fin by (by100 blast)
+qed
 
 
 (** Phase 1.1 helper (vertex case): if R is a vertex of an edge e of K,
