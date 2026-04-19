@@ -5129,9 +5129,113 @@ proof -
             thus "v \<in> V" using hv'V by (by100 simp)
           qed
         qed
+        (** Take \<tau> = conv(f V) \<in> K_3. Show conv V = f_inv \<sup>\` \<tau>. **)
+        define \<tau>_b where "\<tau>_b = geotop_convex_hull (f ` V)"
+        have h\<tau>_b_K\<^sub>3: "\<tau>_b \<in> K\<^sub>3" using hfV_K\<^sub>3 \<tau>_b_def by (by100 simp)
+        (** Extract W_b = vertex set of \<tau>_b. **)
+        obtain W_b where hW_b_sv: "geotop_simplex_vertices \<tau>_b W_b"
+          using hconvfV_sim \<tau>_b_def unfolding geotop_is_simplex_def
+                geotop_simplex_vertices_def by (by100 blast)
+        have hW_b_ai: "\<not> affine_dependent W_b"
+          by (rule geotop_general_position_imp_aff_indep[OF hW_b_sv])
+        (** f_inv linear on \<tau>_b. **)
+        have h_lin_\<tau>_b: "geotop_linear_on \<tau>_b (inv_into (geotop_polyhedron L) f)"
+          using h_lin_convfV \<tau>_b_def by (by100 simp)
+        (** f_inv inj on \<tau>_b (= conv(f V) \<subseteq> K_1-simplex \<subseteq> |K|). **)
+        have h\<tau>_b_sub_K: "\<tau>_b \<subseteq> geotop_polyhedron K"
+          using h\<tau>_b_K\<^sub>3 hK\<^sub>3_poly_eq_K unfolding geotop_polyhedron_def by (by100 blast)
+        have h_inj_\<tau>_b: "inj_on (inv_into (geotop_polyhedron L) f) \<tau>_b"
+          using hf_inv_inj_K h\<tau>_b_sub_K inj_on_subset by (by100 blast)
+        (** bary of f_inv on W_b (from linear_on). **)
+        obtain W_b' where hW_b'sv: "geotop_simplex_vertices \<tau>_b W_b'"
+                      and h_prop_W_b': "\<forall>\<alpha>. (\<forall>v\<in>W_b'. 0 \<le> \<alpha> v) \<and> sum \<alpha> W_b' = 1 \<longrightarrow>
+                                            inv_into (geotop_polyhedron L) f
+                                              (\<Sum>v\<in>W_b'. \<alpha> v *\<^sub>R v)
+                                            = (\<Sum>v\<in>W_b'. \<alpha> v *\<^sub>R
+                                                inv_into (geotop_polyhedron L) f v)"
+          using h_lin_\<tau>_b unfolding geotop_linear_on_def by (by100 blast)
+        have hW_b'_eq: "W_b' = W_b" by (rule geotop_simplex_vertices_unique[OF hW_b'sv hW_b_sv])
+        have h_bary_W_b: "\<And>\<alpha>. (\<forall>v\<in>W_b. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> W_b = 1 \<Longrightarrow>
+                              inv_into (geotop_polyhedron L) f (\<Sum>v\<in>W_b. \<alpha> v *\<^sub>R v)
+                              = (\<Sum>v\<in>W_b. \<alpha> v *\<^sub>R inv_into (geotop_polyhedron L) f v)"
+          using h_prop_W_b' hW_b'_eq by (by100 blast)
+        obtain mb nb where hW_b_fin: "finite W_b" and hW_b_card: "card W_b = nb + 1"
+                       and hW_b_nm: "nb \<le> mb" and hW_b_gp: "geotop_general_position W_b mb"
+                       and h\<tau>_b_hull: "\<tau>_b = geotop_convex_hull W_b"
+          using hW_b_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have h\<tau>_b_HOL: "\<tau>_b = convex hull W_b"
+          using h\<tau>_b_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have h_inj_W_b: "inj_on (inv_into (geotop_polyhedron L) f) W_b"
+        proof -
+          have "W_b \<subseteq> convex hull W_b" by (rule hull_subset)
+          hence "W_b \<subseteq> \<tau>_b" using h\<tau>_b_HOL by (by100 simp)
+          thus ?thesis using h_inj_\<tau>_b inj_on_subset by (by100 blast)
+        qed
+        (** Apply hull_eq on W_b: f_inv(conv W_b) = conv(f_inv W_b). **)
+        have h_hull_eq_W_b: "inv_into (geotop_polyhedron L) f ` (convex hull W_b)
+                            = convex hull (inv_into (geotop_polyhedron L) f ` W_b)"
+          by (rule geotop_bary_lin_inj_image_hull_eq[OF hW_b_fin h_inj_W_b h_bary_W_b])
+        (** W_b \<subseteq> f V (extreme points of conv(f V) = \<tau>_b). **)
+        have hW_b_sub_fV: "W_b \<subseteq> f ` V"
+        proof
+          fix w assume hw: "w \<in> W_b"
+          have h_extr_Wb: "w extreme_point_of (convex hull W_b)"
+            using extreme_point_of_convex_hull_affine_independent[OF hW_b_ai] hw by (by100 blast)
+          have h_fV_HOL: "\<tau>_b = convex hull (f ` V)"
+            using \<tau>_b_def geotop_convex_hull_eq_HOL by (by100 simp)
+          have h_convfV_eq: "convex hull (f ` V) = convex hull W_b"
+            using h_fV_HOL h\<tau>_b_HOL by (by100 simp)
+          have h_extr_fV: "w extreme_point_of (convex hull (f ` V))"
+            using h_extr_Wb h_convfV_eq by (by100 simp)
+          show "w \<in> f ` V" by (rule extreme_point_of_convex_hull[OF h_extr_fV])
+        qed
+        (** f_inv W_b \<subseteq> V via V = f_inv(f V) and monotonicity. **)
+        have hfi_W_b_sub_V: "inv_into (geotop_polyhedron L) f ` W_b \<subseteq> V"
+        proof -
+          have "inv_into (geotop_polyhedron L) f ` W_b
+                  \<subseteq> inv_into (geotop_polyhedron L) f ` (f ` V)"
+            using hW_b_sub_fV by (by100 blast)
+          thus ?thesis using hV_eq_fi_fV by (by100 simp)
+        qed
+        (** conv(f_inv W_b) \<subseteq> conv V. **)
+        have h_convfiWb_sub_convV: "convex hull (inv_into (geotop_polyhedron L) f ` W_b)
+                                    \<subseteq> convex hull V"
+          by (rule hull_mono[OF hfi_W_b_sub_V])
+        (** Other direction: f V \<subseteq> \<tau>_b, so f_inv(f V) \<subseteq> f_inv \<tau>_b, i.e., V \<subseteq> f_inv \<tau>_b.
+            Then conv V \<subseteq> conv(f_inv \<tau>_b) = conv(f_inv(conv W_b)) = conv(conv(f_inv W_b))
+            = conv(f_inv W_b). **)
+        have hfV_sub_\<tau>_b: "f ` V \<subseteq> \<tau>_b"
+          unfolding \<tau>_b_def geotop_convex_hull_def hull_def by (by100 blast)
+        have h_fi_fV_sub: "inv_into (geotop_polyhedron L) f ` (f ` V)
+                          \<subseteq> inv_into (geotop_polyhedron L) f ` \<tau>_b"
+          using hfV_sub_\<tau>_b by (by100 blast)
+        have hV_sub_fi\<tau>_b: "V \<subseteq> inv_into (geotop_polyhedron L) f ` \<tau>_b"
+          using h_fi_fV_sub hV_eq_fi_fV by (by100 simp)
+        have h_fi\<tau>_b_eq: "inv_into (geotop_polyhedron L) f ` \<tau>_b
+                          = convex hull (inv_into (geotop_polyhedron L) f ` W_b)"
+          using h\<tau>_b_HOL h_hull_eq_W_b by (by100 simp)
+        have hV_sub_convfiWb: "V \<subseteq> convex hull (inv_into (geotop_polyhedron L) f ` W_b)"
+          using hV_sub_fi\<tau>_b h_fi\<tau>_b_eq by (by100 simp)
+        have hconvV_sub_convfiWb: "convex hull V
+                                   \<subseteq> convex hull (inv_into (geotop_polyhedron L) f ` W_b)"
+          using hV_sub_convfiWb convex_convex_hull
+                hull_minimal[of V "convex hull (inv_into (geotop_polyhedron L) f ` W_b)" convex]
+          by (by100 simp)
+        (** So conv V = conv(f_inv W_b) = f_inv \<tau>_b (sets of |K| points). **)
+        have h_convV_eq_fi\<tau>_b: "convex hull V = inv_into (geotop_polyhedron L) f ` \<tau>_b"
+        proof -
+          have h1: "convex hull V = convex hull (inv_into (geotop_polyhedron L) f ` W_b)"
+            using h_convfiWb_sub_convV hconvV_sub_convfiWb by (by100 blast)
+          show ?thesis using h1 h_fi\<tau>_b_eq by (by100 simp)
+        qed
+        have h_conv_V_geo: "geotop_convex_hull V = inv_into (geotop_polyhedron L) f ` \<tau>_b"
+        proof -
+          have "geotop_convex_hull V = convex hull V"
+            by (rule geotop_convex_hull_eq_HOL)
+          thus ?thesis using h_convV_eq_fi\<tau>_b by (by100 simp)
+        qed
         show "geotop_convex_hull V \<in> L\<^sub>3"
-          sorry \<comment> \<open>conv V = f_inv \<sup>\` (conv(f V)) via hull_eq; and f_inv(conv(f V)) \<in> L_3
-                     since conv(f V) \<in> K_3 and L_3 = f_inv \<sup>\` K_3.\<close>
+          unfolding L\<^sub>3_def using h\<tau>_b_K\<^sub>3 h_conv_V_geo by (by100 blast)
       qed
     qed
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
