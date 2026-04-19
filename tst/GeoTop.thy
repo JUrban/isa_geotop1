@@ -9072,7 +9072,8 @@ proof -
   show "{R} \<in> K" using hK_faces he_K h_Rface by (by100 blast)
 qed
 
-(** Phase 1.1 main: subdivide a 1-simplex of K at a point R \<in> e. **)
+(** Phase 1.1 main: subdivide a 1-simplex of K at a point R \<in> e.
+    Also preserves finiteness when the input is finite. **)
 lemma geotop_complex_subdivide_edge:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
@@ -9080,7 +9081,8 @@ lemma geotop_complex_subdivide_edge:
   assumes he_K: "e \<in> K" and he_dim: "geotop_simplex_dim e 1"
   assumes hR_e: "R \<in> e"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
-            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
+            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> (finite K \<longrightarrow> finite K')"
 proof -
   obtain V m where hVfin: "finite V" and hVcard: "card V = 1 + 1"
                and hnm: "1 \<le> m" and hVgp: "geotop_general_position V m"
@@ -9099,19 +9101,21 @@ proof -
     case False
     show ?thesis sorry \<comment> \<open>Phase 1.1 hard case: interior-point edge subdivision.
                           K' = (K \<setminus> {e}) \<union> {{R}, closed_segment v0 R, closed_segment R v1}.
-                          Complex axioms verified — K.2 at new intersections trivial
-                          since new segments meet at R, the new vertex.\<close>
+                          Three new simplices, so finite K \<longrightarrow> finite K' by
+                          finite_insert/finite_Un on K \<setminus> {e}.\<close>
   qed
 qed
 
-(** Phase 1.2: subdivide a 1-complex at any point R \<in> |K| to make R a 0-simplex. **)
+(** Phase 1.2: subdivide a 1-complex at any point R \<in> |K| to make R a 0-simplex.
+    Preserves finiteness. **)
 lemma geotop_complex_subdivide_at:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
   assumes hK1dim: "geotop_complex_is_1dim K"
   assumes hR_poly: "R \<in> geotop_polyhedron K"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
-            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'"
+            \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> (finite K \<longrightarrow> finite K')"
 proof -
   (** Find σ ∈ K with R ∈ σ. **)
   obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hR\<sigma>: "R \<in> \<sigma>"
@@ -9168,12 +9172,10 @@ proof -
   obtain K' where hK'_comp: "geotop_is_complex K'" and hK'_1dim: "geotop_complex_is_1dim K'"
               and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
               and hR_K': "{R} \<in> K'"
+              and hK'_fin_imp: "finite K \<longrightarrow> finite K'"
     using geotop_complex_subdivide_at[OF hK hK1 hR_poly] by (by100 blast)
   have hK'_B: "geotop_polyhedron K' = B" using hK'_poly hKpoly by (by100 simp)
-  (** Finiteness of K' deferred — subdivide_at preserves finiteness (one edge
-      split replaces 1 simplex by 3), but we haven't threaded that through. **)
-  have hK'_fin: "finite K'"
-    sorry \<comment> \<open>Preservation of finiteness under subdivide_at — straightforward.\<close>
+  have hK'_fin: "finite K'" using hK'_fin_imp hKfin by (by100 simp)
   show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' hK'_fin by (by100 blast)
 qed
 
