@@ -8865,11 +8865,26 @@ proof -
     show ?thesis using hB\<^sub>1 hsub hP QinB\<^sub>1 by (by100 blast)
   next
     case hard
-    show ?thesis sorry \<comment> \<open>Classical PL Hausdorff-Moore arc-reduction (truly cross-arc).
-                          Proof sketch: sub-arc \<open>P \<to> Q\<^sub>0\<close> of \<open>B\<^sub>1\<close>, sub-arc
-                          \<open>Q\<^sub>0 \<to> Q\<close> of \<open>B\<^sub>2\<close>; if intersection = \<open>{Q\<^sub>0}\<close> their union
-                          is an arc by \<open>arc_join\<close>; otherwise take first-intersection
-                          \<open>R\<close> and use sub-arcs \<open>P \<to> R\<close> and \<open>R \<to> Q\<close>. Deferred.\<close>
+    (** Cross-arc case. Proof plan (PL graph-theoretic):
+        (1) Extract complexes K\<^sub>1, K\<^sub>2 witnessing the broken-line structure of
+            \<open>B\<^sub>1\<close>, \<open>B\<^sub>2\<close>. Each is at most 1-dimensional (its polyhedron is
+            homeomorphic to [0,1], so dim \<le> 1).
+        (2) The union \<open>K\<^sub>1 \<union> K\<^sub>2\<close> is a finite graph (possibly after subdivision
+            to make K.2 hold at \<open>Q\<^sub>0\<close> if needed). Its polyhedron is \<open>B\<^sub>1 \<union> B\<^sub>2\<close>.
+        (3) \<open>P\<close>, \<open>Q\<close> are either vertices or interior points of 1-simplices;
+            in the latter case, subdivide the containing edge to make them
+            vertices.
+        (4) The resulting graph is connected (\<open>B\<^sub>1 \<cup> B\<^sub>2\<close> is, shares \<open>Q\<^sub>0\<close>);
+            extract a simple graph-path from \<open>P\<close> to \<open>Q\<close> (standard graph theory).
+        (5) The polyhedron of that simple path is a broken line.
+
+        Alternative via HOL's \<open>path_contains_arc\<close> (Arcwise_Connected theory):
+        this gives a HOL arc inside \<open>B\<^sub>1 \<union> B\<^sub>2\<close>, but the arc need not be
+        PL - proving its image is a polyhedron requires essentially the
+        same graph-theoretic argument. **)
+    show ?thesis sorry \<comment> \<open>Classical PL Hausdorff-Moore arc-reduction (cross-arc).
+                          ~150-200 lines of PL graph theory (subdivide + path-in-graph +
+                          polyhedron of simple path). Deferred as one named classical fact.\<close>
   qed
 qed
 
