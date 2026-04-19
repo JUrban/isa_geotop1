@@ -1498,7 +1498,11 @@ proof -
     qed
     have hx_\<sigma>: "x \<in> \<sigma>" using hx_in_hull h\<sigma>_HOL by (by100 simp)
     have h_fx: "f x = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
-      using x_def h_prop h_t_nn h_t_sum by (by100 simp)
+    proof -
+      have h_apply: "f (\<Sum>v\<in>V. t v *\<^sub>R v) = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
+        using h_prop h_t_nn h_t_sum by (by100 blast)
+      thus ?thesis unfolding x_def by (by100 simp)
+    qed
     have h_vec_eq: "(\<Sum>v\<in>V. t v *\<^sub>R f v) = (\<Sum>w\<in>f`V. u w *\<^sub>R w)"
     proof -
       have "(\<Sum>v\<in>V. t v *\<^sub>R f v) = (\<Sum>v\<in>V. u (f v) *\<^sub>R f v)"
@@ -7054,6 +7058,61 @@ proof -
   show ?thesis using h\<gamma>_arc h\<gamma>_pim by blast
 qed
 
+(** Bridge: HOL continuous_on → top1_continuous_map_on. General reverse
+    direction of \<open>top1_continuous_map_on_geotop_imp_continuous_on\<close>.
+    For a function \<open>f : S \<to> T\<close> continuous on \<open>S\<close> (HOL sense) that maps
+    \<open>S\<close> into \<open>T\<close>, \<open>f\<close> is a top1 continuous map between the geotop
+    subspace topologies. **)
+lemma geotop_continuous_on_imp_top1_continuous_map_on:
+  fixes f :: "'a::real_normed_vector \<Rightarrow> 'b::real_normed_vector"
+  assumes hcont: "continuous_on S f" and himg: "f ` S \<subseteq> T"
+  shows "top1_continuous_map_on S
+                 (subspace_topology UNIV geotop_euclidean_topology S)
+                 T (subspace_topology UNIV geotop_euclidean_topology T) f"
+proof -
+  have h_Teucl_a: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h_Teucl_b: "is_topology_on (UNIV::'b set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hTS: "is_topology_on S (subspace_topology UNIV geotop_euclidean_topology S)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl_a subset_UNIV])
+  have hTT: "is_topology_on T (subspace_topology UNIV geotop_euclidean_topology T)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl_b subset_UNIV])
+  have h_maps: "\<forall>x\<in>S. f x \<in> T"
+    using himg by (by100 blast)
+  have h_pre: "\<forall>V \<in> subspace_topology UNIV geotop_euclidean_topology T.
+                   {x\<in>S. f x \<in> V} \<in> subspace_topology UNIV geotop_euclidean_topology S"
+  proof
+    fix V assume hV: "V \<in> subspace_topology UNIV geotop_euclidean_topology T"
+    then obtain U where hU_eq: "V = T \<inter> U" and hU_top: "U \<in> geotop_euclidean_topology"
+      unfolding subspace_topology_def by (by100 blast)
+    have hU_open: "open U"
+      using hU_top unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    (** continuous_on + HOL gives open preimage relative to S. **)
+    have hpre_HOL: "openin (top_of_set S) (S \<inter> f -` U)"
+      by (rule continuous_openin_preimage_gen[OF hcont hU_open])
+    then obtain W where hW_open: "open W"
+                    and hWeq: "S \<inter> f -` U = S \<inter> W"
+      unfolding openin_open by (by100 blast)
+    have hpre_eq: "{x\<in>S. f x \<in> V} = {x\<in>S. f x \<in> U}"
+      using hU_eq h_maps by (by100 blast)
+    also have "\<dots> = S \<inter> f -` U" by (by100 blast)
+    also have "\<dots> = S \<inter> W" using hWeq .
+    finally have hpre_final: "{x\<in>S. f x \<in> V} = S \<inter> W" .
+    have hW_top: "W \<in> geotop_euclidean_topology"
+      using hW_open unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hinter_in: "S \<inter> W \<in> subspace_topology UNIV geotop_euclidean_topology S"
+      unfolding subspace_topology_def using hW_top by (by100 blast)
+    show "{x\<in>S. f x \<in> V} \<in> subspace_topology UNIV geotop_euclidean_topology S"
+      using hpre_final hinter_in by (by100 simp)
+  qed
+  show ?thesis
+    unfolding top1_continuous_map_on_def
+    using hTS hTT h_maps h_pre by (by100 blast)
+qed
+
 (** Reverse bridge: a HOL arc's image is a geotop \<open>is_arc\<close> set.
     Proof: path_image \<gamma> is homeomorphic to [0,1] (compact-Hausdorff injection),
     and [0,1] is in turn homeomorphic to any 1-simplex (closed_segment 0 b for
@@ -7063,9 +7122,45 @@ lemma geotop_HOL_arc_imp_geotop_is_arc:
   assumes harc: "arc \<gamma>"
   shows "geotop_is_arc (path_image \<gamma>)
           (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
-  sorry \<comment> \<open>Support infrastructure: HOL_arc → geotop_is_arc. Full proof
-            needs continuous_on → top1_continuous_map_on bridge across types
-            (deferred as one focused helper).\<close>
+proof -
+  (** (1) Pick 1-simplex \<sigma> = closed_segment 0 b for b \<in> Basis. **)
+  obtain b :: 'a where hb_basis: "b \<in> Basis" using nonempty_Basis by (by100 blast)
+  have hb_ne: "(0::'a) \<noteq> b" using hb_basis nonzero_Basis by (by100 blast)
+  let ?\<sigma> = "closed_segment (0::'a) b"
+  have h\<sigma>_dim: "geotop_simplex_dim ?\<sigma> 1"
+    sorry \<comment> \<open>Forward reference to geotop_closed_segment_is_simplex; proved at line ~8460.
+              Inline proof is straightforward via geotop_simplex_dim_def but omitted
+              here to avoid duplication.\<close>
+  (** (2) Via HOL: path_image \<gamma> is homeomorphic to [0,1]. **)
+  have h_pim_homeo: "path_image \<gamma> homeomorphic {0::real..1}"
+  proof -
+    have "(0::real) < 1" by (by100 simp)
+    thus ?thesis by (rule homeomorphic_arc_image_interval[OF harc])
+  qed
+  (** (3) [0,1] is homeomorphic to \<sigma> via t \<mapsto> t *\<^sub>R b. **)
+  let ?h = "\<lambda>t::real. t *\<^sub>R b"
+  have hh_cont: "continuous_on {0..1} ?h" by (intro continuous_intros)
+  have hh_image: "?h ` {0..1} = ?\<sigma>"
+  proof -
+    have heq: "closed_segment (0::'a) b = (\<lambda>u. (1 - u) *\<^sub>R 0 + u *\<^sub>R b) ` {0..1}"
+      by (rule closed_segment_image_interval)
+    also have "(\<lambda>u::real. (1 - u) *\<^sub>R (0::'a) + u *\<^sub>R b) = (\<lambda>u. u *\<^sub>R b)"
+      by (by100 simp)
+    finally show ?thesis by (by100 simp)
+  qed
+  have hh_inj: "inj_on ?h {0..1}" using hb_ne by (simp add: inj_on_def)
+  have h_01_homeo_\<sigma>: "{0::real..1} homeomorphic ?\<sigma>"
+    by (rule homeomorphic_compact[OF _ hh_cont hh_image hh_inj]) simp
+  (** (4) Combine: path_image \<gamma> homeomorphic \<sigma>. **)
+  have h_pim_homeo_\<sigma>: "path_image \<gamma> homeomorphic ?\<sigma>"
+    by (rule homeomorphic_trans[OF h_pim_homeo h_01_homeo_\<sigma>])
+  (** (5) Extract HOL homeomorphism maps. **)
+  (** (5) Full completion of steps 5-8 deferred: extract HOL homeomorphism,
+      lift to top1_homeomorphism_on via the bridge, package as geotop_is_n_cell.
+      The individual pieces (HOL extract, top1 continuity, bijection) would be
+      straightforward but caused build-timeout when written inline. **)
+  show ?thesis sorry
+qed
 
 (** Helper: complement of a geotop-arc in R^n (n \<ge> 2) is connected. **)
 lemma top1_connected_complement_of_geotop_arc:
