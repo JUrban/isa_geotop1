@@ -9097,9 +9097,71 @@ proof (cases "X = Y")
   show ?thesis using hB hsub hX hY by (by100 blast)
 next
   case False
-  show ?thesis sorry \<comment> \<open>Classical PL: sub-arc from X to Y in the arc parametrisation
-                        of B. Deferred — needs arc-parametrisation access and
-                        sub-complex construction.\<close>
+  (** (1) Extract HOL arc parametrisation of B. **)
+  have hB_arc: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain \<gamma> where harc: "arc \<gamma>" and hpim: "path_image \<gamma> = B"
+    using geotop_is_arc_imp_HOL_arc[OF hB_arc] by (by100 blast)
+  (** (2) Find parameters s_X, s_Y with \<gamma>(s_X) = X, \<gamma>(s_Y) = Y. **)
+  obtain s\<^sub>X where hs\<^sub>X: "s\<^sub>X \<in> {0::real..1}" and hX_eq: "\<gamma> s\<^sub>X = X"
+    using hX hpim unfolding path_image_def by (by100 blast)
+  obtain s\<^sub>Y where hs\<^sub>Y: "s\<^sub>Y \<in> {0::real..1}" and hY_eq: "\<gamma> s\<^sub>Y = Y"
+    using hY hpim unfolding path_image_def by (by100 blast)
+  have hsne: "s\<^sub>X \<noteq> s\<^sub>Y" using hX_eq hY_eq False by (by100 blast)
+  (** (3) WLOG s_X < s_Y. Take sub-path via HOL's subpath. **)
+  define s_lo where "s_lo = min s\<^sub>X s\<^sub>Y"
+  define s_hi where "s_hi = max s\<^sub>X s\<^sub>Y"
+  have hs\<^sub>X_lb: "0 \<le> s\<^sub>X" using hs\<^sub>X by (by100 simp)
+  have hs\<^sub>X_ub: "s\<^sub>X \<le> 1" using hs\<^sub>X by (by100 simp)
+  have hs\<^sub>Y_lb: "0 \<le> s\<^sub>Y" using hs\<^sub>Y by (by100 simp)
+  have hs\<^sub>Y_ub: "s\<^sub>Y \<le> 1" using hs\<^sub>Y by (by100 simp)
+  have hs_lo_lb: "0 \<le> s_lo" using hs\<^sub>X_lb hs\<^sub>Y_lb unfolding s_lo_def by (by100 simp)
+  have hs_lo_ub: "s_lo \<le> 1" using hs\<^sub>X_ub hs\<^sub>Y_ub unfolding s_lo_def by (by100 simp)
+  have hs_hi_lb: "0 \<le> s_hi" using hs\<^sub>X_lb hs\<^sub>Y_lb unfolding s_hi_def by (by100 simp)
+  have hs_hi_ub: "s_hi \<le> 1" using hs\<^sub>X_ub hs\<^sub>Y_ub unfolding s_hi_def by (by100 simp)
+  have hs_lo_range: "s_lo \<in> {0..1}" using hs_lo_lb hs_lo_ub by (by100 simp)
+  have hs_hi_range: "s_hi \<in> {0..1}" using hs_hi_lb hs_hi_ub by (by100 simp)
+  have hs_lt: "s_lo < s_hi"
+    using hsne unfolding s_lo_def s_hi_def by (by100 simp)
+  (** (4) Extract sub-arc from s_lo to s_hi via arc_subpath_arc. **)
+  have hs_lo_ne_hi: "s_lo \<noteq> s_hi" using hs_lt by (by100 simp)
+  have hsub_arc: "arc (subpath s_lo s_hi \<gamma>)"
+    by (rule arc_subpath_arc[OF harc hs_lo_range hs_hi_range hs_lo_ne_hi])
+  (** (5) Image of the sub-arc is contained in B. **)
+  have hsub_image: "path_image (subpath s_lo s_hi \<gamma>) \<subseteq> B"
+    using hpim path_image_subpath_subset[of s_lo s_hi \<gamma>] hs_lo_range hs_hi_range
+    by (by100 blast)
+  let ?B' = "path_image (subpath s_lo s_hi \<gamma>)"
+  (** (6) Both X and Y are in ?B'. path_image of subpath is \<gamma> ` closed_segment s_lo s_hi. **)
+  have hpim_eq: "?B' = \<gamma> ` closed_segment s_lo s_hi"
+    by (rule path_image_subpath_gen)
+  have h_seg_eq: "closed_segment s_lo s_hi = {s_lo..s_hi}"
+    using hs_lt unfolding closed_segment_eq_real_ivl by (by100 simp)
+  have hs\<^sub>X_seg: "s\<^sub>X \<in> closed_segment s_lo s_hi"
+  proof -
+    have "s\<^sub>X \<in> {s_lo..s_hi}" unfolding s_lo_def s_hi_def by (by100 simp)
+    thus ?thesis using h_seg_eq by (by100 simp)
+  qed
+  have hs\<^sub>Y_seg: "s\<^sub>Y \<in> closed_segment s_lo s_hi"
+  proof -
+    have "s\<^sub>Y \<in> {s_lo..s_hi}" unfolding s_lo_def s_hi_def by (by100 simp)
+    thus ?thesis using h_seg_eq by (by100 simp)
+  qed
+  have hX_in_B': "X \<in> ?B'"
+    using hpim_eq hs\<^sub>X_seg hX_eq by (by100 blast)
+  have hY_in_B': "Y \<in> ?B'"
+    using hpim_eq hs\<^sub>Y_seg hY_eq by (by100 blast)
+  (** (7) ?B' is a geotop_is_arc via the HOL-arc bridge. **)
+  have hB'_geotop_arc: "geotop_is_arc ?B' (subspace_topology UNIV geotop_euclidean_topology ?B')"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF hsub_arc])
+  (** (8) Polyhedral side: ?B' is the polyhedron of a sub-complex of B's
+          witnessing complex (classical PL). Deferred. **)
+  have hB'_poly: "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = ?B'"
+    sorry \<comment> \<open>Classical PL: sub-arc of a 1-complex polyhedron is polyhedron of
+              a sub-complex (after edge subdivision at X, Y if interior to edges).\<close>
+  have hB'_broken: "geotop_is_broken_line ?B'"
+    unfolding geotop_is_broken_line_def using hB'_poly hB'_geotop_arc by (by100 blast)
+  show ?thesis using hB'_broken hsub_image hX_in_B' hY_in_B' by (by100 blast)
 qed
 
 (** PL Helper 2: two broken lines sharing exactly one point, each having that
