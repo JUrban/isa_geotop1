@@ -3812,10 +3812,88 @@ proof -
           using h_extr_W h_conv_eq by (by100 simp)
         show "w \<in> V\<^sub>0" by (rule extreme_point_of_convex_hull[OF h_extr_V])
       qed
+      (** Bary-preservation on W_0 via strengthened iso_induces_PLH
+          + refinement + sub_simplex. **)
+      have hL'_refines_L_fwd: "geotop_refines L' L"
+        using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
+      obtain \<sigma>\<^sub>L where h\<sigma>\<^sub>LL: "\<sigma>\<^sub>L \<in> L"
+                  and h_conv_sub_\<sigma>: "geotop_convex_hull V\<^sub>0 \<subseteq> \<sigma>\<^sub>L"
+        using hL'_refines_L_fwd h_in_L' unfolding geotop_refines_def by (by100 blast)
+      have h_lin_\<sigma>\<^sub>L: "geotop_linear_on \<sigma>\<^sub>L ?g_inv"
+        using hg_inv_lin_L h\<sigma>\<^sub>LL by (by100 blast)
+      have h_lin_convV\<^sub>0: "geotop_linear_on (geotop_convex_hull V\<^sub>0) ?g_inv"
+        by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>\<^sub>L h_convV0_sim h_conv_sub_\<sigma>])
+      (** From linear_on (conv V_0), extract bary on W_0 (= simplex_vertices(conv V_0)). **)
+      obtain V\<^sub>L where hV\<^sub>Lsv: "geotop_simplex_vertices (geotop_convex_hull V\<^sub>0) V\<^sub>L"
+                  and h_prop_lin: "\<forall>\<alpha>. (\<forall>v\<in>V\<^sub>L. 0 \<le> \<alpha> v) \<and> sum \<alpha> V\<^sub>L = 1 \<longrightarrow>
+                                      ?g_inv (\<Sum>v\<in>V\<^sub>L. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>L. \<alpha> v *\<^sub>R ?g_inv v)"
+        using h_lin_convV\<^sub>0 unfolding geotop_linear_on_def by (by100 blast)
+      have hVL_eq_W: "V\<^sub>L = W\<^sub>0"
+        by (rule geotop_simplex_vertices_unique[OF hV\<^sub>Lsv hW\<^sub>0sv])
+      have h_bary_W\<^sub>0: "\<And>\<alpha>. (\<forall>v\<in>W\<^sub>0. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> W\<^sub>0 = 1 \<Longrightarrow>
+                         ?g_inv (\<Sum>v\<in>W\<^sub>0. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W\<^sub>0. \<alpha> v *\<^sub>R ?g_inv v)"
+        using h_prop_lin hVL_eq_W by (by100 blast)
+      (** Inj on W_0 (W_0 \<subseteq> conv V_0 \<subseteq> |L|, g_inv inj on |L|). **)
+      have h_convV\<^sub>0_sub_L: "geotop_convex_hull V\<^sub>0 \<subseteq> geotop_polyhedron L"
+      proof -
+        have h_sub: "\<sigma>\<^sub>L \<subseteq> geotop_polyhedron L"
+          unfolding geotop_polyhedron_def using h\<sigma>\<^sub>LL by (by100 blast)
+        show ?thesis using h_conv_sub_\<sigma> h_sub by (by100 blast)
+      qed
+      have h_W\<^sub>0_sub_L: "W\<^sub>0 \<subseteq> geotop_polyhedron L"
+      proof -
+        have hW_conv: "W\<^sub>0 \<subseteq> geotop_convex_hull W\<^sub>0"
+          unfolding geotop_convex_hull_def hull_def by (by100 blast)
+        have "W\<^sub>0 \<subseteq> geotop_convex_hull V\<^sub>0" using hW_conv hW\<^sub>0hull by (by100 simp)
+        thus ?thesis using h_convV\<^sub>0_sub_L by (by100 blast)
+      qed
+      have h_inj_W\<^sub>0: "inj_on ?g_inv W\<^sub>0"
+        using hg_inv_inj h_W\<^sub>0_sub_L inj_on_subset by (by100 blast)
+      (** Apply hull_eq on W_0. **)
+      have h_hull_eq_W\<^sub>0: "?g_inv ` (convex hull W\<^sub>0) = convex hull (?g_inv ` W\<^sub>0)"
+        by (rule geotop_bary_lin_inj_image_hull_eq[OF hW\<^sub>0fin h_inj_W\<^sub>0 h_bary_W\<^sub>0])
+      (** g_inv(conv V_0) = conv(g_inv W_0). **)
+      have h_img_geo_HOL: "?g_inv ` (geotop_convex_hull V\<^sub>0) = convex hull (?g_inv ` W\<^sub>0)"
+      proof -
+        have hgv_eq_hw: "geotop_convex_hull V\<^sub>0 = convex hull W\<^sub>0"
+        proof -
+          have "geotop_convex_hull V\<^sub>0 = convex hull V\<^sub>0"
+            by (rule geotop_convex_hull_eq_HOL)
+          also have "\<dots> = convex hull W\<^sub>0" by (rule h_conv_eq)
+          finally show ?thesis .
+        qed
+        have h1: "?g_inv ` (geotop_convex_hull V\<^sub>0) = ?g_inv ` (convex hull W\<^sub>0)"
+          using hgv_eq_hw by (by100 simp)
+        show ?thesis using h1 h_hull_eq_W\<^sub>0 by (by100 simp)
+      qed
+      (** conv(g_inv V_0) = conv(g_inv W_0) via W_0 \<subseteq> V_0 + V_0 \<subseteq> conv V_0. **)
+      have h_gV\<^sub>0_sub_conv: "?g_inv ` V\<^sub>0 \<subseteq> convex hull (?g_inv ` W\<^sub>0)"
+      proof -
+        have "V\<^sub>0 \<subseteq> geotop_convex_hull V\<^sub>0"
+          unfolding geotop_convex_hull_def hull_def by (by100 blast)
+        hence "?g_inv ` V\<^sub>0 \<subseteq> ?g_inv ` (geotop_convex_hull V\<^sub>0)" by (by100 blast)
+        thus ?thesis using h_img_geo_HOL by (by100 simp)
+      qed
+      have h_gW\<^sub>0_sub_V\<^sub>0: "?g_inv ` W\<^sub>0 \<subseteq> ?g_inv ` V\<^sub>0" using hW\<^sub>0_sub_V\<^sub>0 by (by100 blast)
+      have h_conv_ge: "convex hull (?g_inv ` W\<^sub>0) \<subseteq> convex hull (?g_inv ` V\<^sub>0)"
+        by (rule hull_mono[OF h_gW\<^sub>0_sub_V\<^sub>0])
+      have h_conv_le: "convex hull (?g_inv ` V\<^sub>0) \<subseteq> convex hull (?g_inv ` W\<^sub>0)"
+        using h_gV\<^sub>0_sub_conv convex_convex_hull
+              hull_minimal[of "?g_inv ` V\<^sub>0" "convex hull (?g_inv ` W\<^sub>0)" convex]
+        by (by100 simp)
+      have h_conv_final: "convex hull (?g_inv ` V\<^sub>0) = convex hull (?g_inv ` W\<^sub>0)"
+        using h_conv_ge h_conv_le by (by100 blast)
+      have h_geo_final: "geotop_convex_hull (?g_inv ` V\<^sub>0) = ?g_inv ` (geotop_convex_hull V\<^sub>0)"
+      proof -
+        have h_a: "geotop_convex_hull (?g_inv ` V\<^sub>0) = convex hull (?g_inv ` V\<^sub>0)"
+          by (rule geotop_convex_hull_eq_HOL)
+        from h_a have s1: "geotop_convex_hull (?g_inv ` V\<^sub>0) = convex hull (?g_inv ` V\<^sub>0)" .
+        also from h_conv_final have "\<dots> = convex hull (?g_inv ` W\<^sub>0)" .
+        also from h_img_geo_HOL have "\<dots> = ?g_inv ` (geotop_convex_hull V\<^sub>0)" by (by100 simp)
+        finally show ?thesis .
+      qed
       show "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
-        sorry \<comment> \<open>Remaining: from h_img_K' (g_inv(conv V_0) \<in> K') and
-                   W_0 \<subseteq> V_0, V_0 \<subseteq> conv V_0 = conv W_0, plus hull_eq on W_0,
-                   conclude conv(g_inv V_0) = g_inv(conv V_0) \<in> K'.\<close>
+        using h_geo_final h_img_K' by (by100 simp)
     next
       assume h_img_in_K': "geotop_convex_hull (?g_inv ` V\<^sub>0) \<in> K'"
       obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
