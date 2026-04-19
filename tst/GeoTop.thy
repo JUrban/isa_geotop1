@@ -9154,7 +9154,24 @@ lemma geotop_broken_line_finite_witness:
   assumes hB: "geotop_is_broken_line B"
   shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
            \<and> geotop_polyhedron K = B \<and> finite K"
-  sorry \<comment> \<open>Finite: B compact (arc) + K.3 + Heine-Borel.\<close>
+proof -
+  obtain K where hKcomp: "geotop_is_complex K"
+             and hKpoly: "geotop_polyhedron K = B"
+             and hK1dim: "geotop_complex_is_1dim K"
+             and hKarc: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  (** B is compact: it's a HOL arc (homeomorphic to [0,1]). **)
+  obtain \<gamma> where harc: "arc \<gamma>" and hpim: "path_image \<gamma> = B"
+    using geotop_is_arc_imp_HOL_arc[OF hKarc] by (by100 blast)
+  have hB_compact: "compact B"
+    using hpim harc compact_arc_image by (by100 blast)
+  (** K.3: each σ ∈ K has open U_σ with σ ⊆ U_σ and finite {τ. τ ∩ U_σ ≠ {}}. **)
+  have hK_locfin: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using conjunct2[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  show ?thesis sorry \<comment> \<open>Compactness argument for finite witness. Full assembly deferred
+            (splits into ~40 lines of HOL compactE + set-theoretic finite union).\<close>
+qed
 
 (** Phase 1.3: any point on a broken line can be made a 0-simplex of a
     FINITE witness complex. Uses finite witness + Phase 1.2. **)
