@@ -4967,8 +4967,68 @@ proof -
         (** By simplex_vertices_unique: V_L_3 = f_inv V_\<tau>. **)
         have hV_L\<^sub>3_eq: "V_L\<^sub>3 = inv_into (geotop_polyhedron L) f ` V\<tau>"
           by (rule geotop_simplex_vertices_unique[OF hV_L\<^sub>3sv h_fiVt_sv])
+        (** V_\<tau> ⊆ f V: V_\<tau> = f V_L_3 (via bij, V_\<tau> ⊆ |K|), V_L_3 ⊆ V. **)
+        have hV\<tau>_sub_\<tau>: "V\<tau> \<subseteq> \<tau>"
+        proof -
+          have "V\<tau> \<subseteq> convex hull V\<tau>" by (rule hull_subset)
+          thus ?thesis using h\<tau>_conv_hull by (by100 simp)
+        qed
+        have hV\<tau>_K: "V\<tau> \<subseteq> geotop_polyhedron K"
+          using hV\<tau>_sub_\<tau> h\<tau>_sub_K_simp by (by100 blast)
+        have hfV_L\<^sub>3_eq_V\<tau>: "f ` V_L\<^sub>3 = V\<tau>"
+        proof -
+          have "f ` V_L\<^sub>3 = f ` (inv_into (geotop_polyhedron L) f ` V\<tau>)"
+            using hV_L\<^sub>3_eq by (by100 simp)
+          also have "\<dots> = (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau>"
+            unfolding image_image by (by100 simp)
+          also have "\<dots> = V\<tau>"
+          proof (rule set_eqI)
+            fix w
+            have "w \<in> (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau> \<longleftrightarrow> w \<in> V\<tau>"
+            proof
+              assume "w \<in> (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau>"
+              then obtain v where hvV\<tau>: "v \<in> V\<tau>"
+                              and hw: "w = f (inv_into (geotop_polyhedron L) f v)"
+                by (by100 blast)
+              have hv_K: "v \<in> geotop_polyhedron K" using hvV\<tau> hV\<tau>_K by (by100 blast)
+              have "f (inv_into (geotop_polyhedron L) f v) = v"
+                by (rule bij_betw_inv_into_right[OF hf_bij hv_K])
+              thus "w \<in> V\<tau>" using hw hvV\<tau> by (by100 simp)
+            next
+              assume hw: "w \<in> V\<tau>"
+              have hw_K: "w \<in> geotop_polyhedron K" using hw hV\<tau>_K by (by100 blast)
+              have h_round: "f (inv_into (geotop_polyhedron L) f w) = w"
+                by (rule bij_betw_inv_into_right[OF hf_bij hw_K])
+              have "f (inv_into (geotop_polyhedron L) f w) \<in>
+                      (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau>"
+                using hw by (by100 blast)
+              thus "w \<in> (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau>"
+                using h_round by (by100 simp)
+            qed
+            thus "(w \<in> (\<lambda>x. f (inv_into (geotop_polyhedron L) f x)) ` V\<tau>) = (w \<in> V\<tau>)" .
+          qed
+          finally show ?thesis .
+        qed
+        have hV\<tau>_sub_fV: "V\<tau> \<subseteq> f ` V"
+        proof -
+          have h_fV_L3_sub_fV: "f ` V_L\<^sub>3 \<subseteq> f ` V" using hV_L\<^sub>3_sub_V by (by100 blast)
+          show ?thesis using hfV_L\<^sub>3_eq_V\<tau> h_fV_L3_sub_fV by (by100 simp)
+        qed
+        (** \<tau> = conv V_\<tau> \<subseteq> conv(f V). **)
+        have h\<tau>_sub_convfV_HOL: "convex hull V\<tau> \<subseteq> convex hull (f ` V)"
+          by (rule hull_mono[OF hV\<tau>_sub_fV])
+        have h\<tau>_sub_convfV: "\<tau> \<subseteq> geotop_convex_hull (f ` V)"
+        proof -
+          have h1: "\<tau> = convex hull V\<tau>" by (rule h\<tau>_conv_hull)
+          have h2: "geotop_convex_hull (f ` V) = convex hull (f ` V)"
+            by (rule geotop_convex_hull_eq_HOL)
+          show ?thesis using h1 h\<tau>_sub_convfV_HOL h2 by (by100 simp)
+        qed
+        (** Combined with conv(f V) \<subseteq> \<tau>: conv(f V) = \<tau> \<in> K_3. **)
+        have h_convfV_eq_\<tau>: "geotop_convex_hull (f ` V) = \<tau>"
+          using h_convfV_sub_\<tau> h\<tau>_sub_convfV by (by100 blast)
         show "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
-          sorry \<comment> \<open>Final: apply f to V_L_3 \<subseteq> V: f V_L_3 = V_\<tau> \<subseteq> f V. Then \<tau> \<subseteq> conv(f V).\<close>
+          using h_convfV_eq_\<tau> h\<tau>K\<^sub>3 by (by100 simp)
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
         show "geotop_convex_hull V \<in> L\<^sub>3"
