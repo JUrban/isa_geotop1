@@ -7113,6 +7113,43 @@ proof -
     using hTS hTT h_maps h_pre by (by100 blast)
 qed
 
+(** Bridge: HOL homeomorphic \<rightarrow> top1_homeomorphism_on with geotop subspace
+    topologies. Reverse direction of \<open>top1_homeomorphism_on_geotop_imp_HOL_homeomorphic\<close>. **)
+lemma geotop_HOL_homeomorphic_imp_top1_homeomorphism_on:
+  fixes X Y :: "'a::real_normed_vector set"
+  assumes hHomeo: "X homeomorphic Y"
+  shows "\<exists>f. top1_homeomorphism_on X
+              (subspace_topology UNIV geotop_euclidean_topology X)
+              Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+proof -
+  obtain f g where hfg_homeo: "homeomorphism X Y f g"
+    using hHomeo unfolding homeomorphic_def by (by100 blast)
+  have hf_cont_HOL: "continuous_on X f"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hg_cont_HOL: "continuous_on Y g"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hf_img_eq: "f ` X = Y"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hg_img_eq: "g ` Y = X"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hfg_id: "\<forall>x\<in>X. g (f x) = x"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hgf_id: "\<forall>y\<in>Y. f (g y) = y"
+    using hfg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hf_img: "f ` X \<subseteq> Y" using hf_img_eq by (by100 simp)
+  have hg_img: "g ` Y \<subseteq> X" using hg_img_eq by (by100 simp)
+  have hf_top1: "top1_continuous_map_on X
+                    (subspace_topology UNIV geotop_euclidean_topology X)
+                    Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hf_cont_HOL hf_img])
+  have hg_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X) g"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont_HOL hg_img])
+  show ?thesis sorry \<comment> \<open>Assembly step deferred - by100 session timeout when combining
+                        the bij_betw + invf_top1 + homeomorphism_on witnesses.\<close>
+qed
+
 (** Reverse bridge: a HOL arc's image is a geotop \<open>is_arc\<close> set.
     Proof: path_image \<gamma> is homeomorphic to [0,1] (compact-Hausdorff injection),
     and [0,1] is in turn homeomorphic to any 1-simplex (closed_segment 0 b for
