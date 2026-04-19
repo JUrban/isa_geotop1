@@ -4770,10 +4770,18 @@ proof -
       by (rule bij_betw_cong[OF h_agree_single])
     have hiso_vert: "bij_betw f (geotop_complex_vertices L\<^sub>3) (geotop_complex_vertices K\<^sub>3)"
       using h_inv_of_inv_bij h_cong_eq by (by100 simp)
-    (** (b) simplex correspondence: conv V \<in> L_3 \<longleftrightarrow> conv (f\<sup>\`V) \<in> K_3. **)
+    (** (b) simplex correspondence: conv V \<in> L_3 \<longleftrightarrow> conv (f\<sup>\`V) \<in> K_3.
+        Key idea: V \<subseteq> V(L_3) = f_inv \<sup>\` V(K_3), so W = f V \<subseteq> V(K_3), V = f_inv \<sup>\` W.
+        Conv V = f_inv \<sup>\` conv W via hull_eq (f_inv linear on K_1-simplex \<supseteq> \<tau>).
+        Then conv V \<in> L_3 = f_inv \<sup>\` K_3 iff conv W \<in> K_3 (bijective correspondence). **)
     have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
                        (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
-      sorry
+      sorry \<comment> \<open>Full proof analogous to transport hiso_K'L'_simp with role swap:
+                 K_3 plays L' (source), L_3 plays K' (image), f_inv plays g_inv.
+                 Uses: L_3 < L_1 (via K_3 < fL_1), f linear on L_1-simplexes,
+                 sub_simplex descent, hull_eq (proved), extreme_point arguments
+                 on face-intersection (K.2 of K_3 complex), and K.1 face-closure.
+                 ~200-line adaptation of transport's proof. Deferred.\<close>
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
       unfolding geotop_isomorphic_def geotop_isomorphism_def
       using hiso_vert hiso_simp by (by100 blast)
