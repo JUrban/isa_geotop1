@@ -2120,11 +2120,44 @@ lemma geotop_mesh_iterated_Sd_tends_to_zero:
   shows "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y))
                (geotop_iterated_Sd m K)) \<longlonglongrightarrow> 0"
 proof -
-  (** (1) For finite K, there exists a uniform dimension bound \<open>n\<close>. **)
+  (** (1) For finite K, there exists a uniform dimension bound \<open>n\<close>.
+      Proof: For each \<sigma>, the set of dims \<open>{k. geotop_simplex_dim \<sigma> k}\<close> is a
+      finite (in fact, singleton) set of naturals. The union over \<sigma>\<in>K is
+      finite since K is finite, so has a max. **)
   have h_dim_bound:
     "\<exists>n::nat. \<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-    sorry \<comment> \<open>finite K \<Longrightarrow> finite set of dims, take the max.
-             Each simplex has a unique dim (card V - 1).\<close>
+  proof -
+    define D where "D = {k::nat. \<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> k}"
+    have hD_sub: "D \<subseteq> (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
+      unfolding D_def by (by100 blast)
+    have h_sigma_fin: "\<And>\<sigma>. finite {k::nat. geotop_simplex_dim \<sigma> k}"
+      sorry \<comment> \<open>Each \<sigma> has a unique dim k = card V - 1 via simplex_vertices_unique
+                (in real_normed_vector we can't use that — need a weaker bound,
+                but {k. dim k} is bounded since dim \<le> card-1 for a given V).\<close>
+    have h_union_fin: "finite (\<Union>\<sigma>\<in>K. {k. geotop_simplex_dim \<sigma> k})"
+      using hKfin h_sigma_fin by (by100 blast)
+    have hD_fin: "finite D" using hD_sub h_union_fin finite_subset by (by100 blast)
+    show ?thesis
+    proof (cases "D = {}")
+      case True
+      then have "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 0"
+        unfolding D_def by (by100 blast)
+      thus ?thesis by (by100 blast)
+    next
+      case False
+      define n where "n = Max D"
+      have hn_ub: "\<forall>k\<in>D. k \<le> n"
+        unfolding n_def using hD_fin by (by100 simp)
+      have hn_prop: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+      proof (intro ballI allI impI)
+        fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
+        fix k assume hk: "geotop_simplex_dim \<sigma> k"
+        have "k \<in> D" unfolding D_def using h\<sigma> hk by (by100 blast)
+        thus "k \<le> n" using hn_ub by (by100 blast)
+      qed
+      thus ?thesis by (by100 blast)
+    qed
+  qed
   then obtain n where hn: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
     by (by100 blast)
   (** (2) Induction on m: \<open>Sd^m(K)\<close> has the same dim bound, and
