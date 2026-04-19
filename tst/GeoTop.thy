@@ -7190,10 +7190,57 @@ proof -
   obtain b :: 'a where hb_basis: "b \<in> Basis" using nonempty_Basis by (by100 blast)
   have hb_ne: "(0::'a) \<noteq> b" using hb_basis nonzero_Basis by (by100 blast)
   let ?\<sigma> = "closed_segment (0::'a) b"
+  (** Inline proof of geotop_simplex_dim ?\<sigma> 1 to avoid forward reference. **)
   have h\<sigma>_dim: "geotop_simplex_dim ?\<sigma> 1"
-    sorry \<comment> \<open>Forward reference to geotop_closed_segment_is_simplex; proved at line ~8460.
-              Inline proof is straightforward via geotop_simplex_dim_def but omitted
-              here to avoid duplication.\<close>
+    unfolding geotop_simplex_dim_def
+  proof (intro exI[of _ "{0::'a, b}"] exI[of _ "1::nat"] conjI)
+    show "finite {0::'a, b}" by (by100 simp)
+    show "card {0::'a, b} = 1 + 1" using hb_ne by (by100 simp)
+    show "(1::nat) \<le> 1" by (by100 simp)
+    show "geotop_general_position {0::'a, b} 1"
+      unfolding geotop_general_position_def
+    proof (intro allI impI)
+      fix H :: "'a set" and k :: nat
+      assume hassm: "geotop_hyperplane_dim H k \<and> k < 1"
+      have hk: "k = 0" using hassm by (by100 simp)
+      have hhyp: "geotop_hyperplane_dim H 0" using hassm hk by (by100 simp)
+      have hH_sing: "\<exists>v0. H = {v0}"
+      proof -
+        have hHk_raw:
+          "\<exists>V v0. subspace V
+                \<and> (\<exists>B. independent B \<and> finite B \<and> card B = 0 \<and> span B = V)
+                \<and> H = (\<lambda>v. v + v0) ` V"
+          using hhyp unfolding geotop_hyperplane_dim_def by (by100 simp)
+        obtain V v0 where hV: "subspace V"
+                      and hV_basis: "\<exists>B. independent B \<and> finite B \<and> card B = 0 \<and> span B = V"
+                      and hH': "H = (\<lambda>v. v + v0) ` V"
+          using hHk_raw by (by100 fast)
+        obtain B where hB_fin: "finite B" and hB_card: "card B = 0"
+                   and hB_span: "span B = V"
+          using hV_basis by (by100 blast)
+        have hBempty: "B = {}" using hB_fin hB_card by (by100 simp)
+        have hVzero: "V = {0}" using hBempty hB_span by (by100 simp)
+        have "H = {0 + v0}" using hH' hVzero by (by100 simp)
+        thus ?thesis by (by100 blast)
+      qed
+      then obtain v0 where hH_eq: "H = {v0}" by (by100 blast)
+      have hinter: "{0::'a, b} \<inter> H \<subseteq> {v0}" using hH_eq by (by100 blast)
+      have h1: "finite ({0::'a, b} \<inter> H)" using hinter
+        by (meson finite.emptyI finite.insertI finite_subset)
+      have h2: "card ({0::'a, b} \<inter> H) \<le> 1"
+        using hinter card_mono[of "{v0}"] by (by100 simp)
+      show "finite ({0::'a, b} \<inter> H) \<and> card ({0::'a, b} \<inter> H) \<le> k + 1"
+        using h1 h2 hk by (by100 simp)
+    qed
+    show "closed_segment (0::'a) b = geotop_convex_hull {0, b}"
+    proof -
+      have h_seg: "closed_segment (0::'a) b = convex hull {0, b}"
+        by (rule segment_convex_hull)
+      have h_hull: "geotop_convex_hull {0::'a, b} = convex hull {0, b}"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_seg h_hull by (by100 simp)
+    qed
+  qed
   (** (2) Via HOL: path_image \<gamma> is homeomorphic to [0,1]. **)
   have h_pim_homeo: "path_image \<gamma> homeomorphic {0::real..1}"
   proof -
@@ -7217,11 +7264,24 @@ proof -
   (** (4) Combine: path_image \<gamma> homeomorphic \<sigma>. **)
   have h_pim_homeo_\<sigma>: "path_image \<gamma> homeomorphic ?\<sigma>"
     by (rule homeomorphic_trans[OF h_pim_homeo h_01_homeo_\<sigma>])
-  (** (5-10) Final assembly deferred - extract HOL homeomorphism f, g from
-      h_pim_homeo_σ; lift f and g to top1_continuous via the bridge; package
-      as top1_homeomorphism_on; conclude geotop_is_arc via geotop_is_n_cell_def.
-      Inline attempts hit session timeout (>120s). Left as one final sorry. **)
-  show ?thesis sorry
+  (** (5) Lift HOL homeomorphism to top1_homeomorphism_on via the bridge. **)
+  have h_top1_homeo: "\<exists>f. top1_homeomorphism_on (path_image \<gamma>)
+                    (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))
+                    ?\<sigma> (subspace_topology UNIV geotop_euclidean_topology ?\<sigma>) f"
+    by (rule geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[OF h_pim_homeo_\<sigma>])
+  then obtain f where hf_homeo: "top1_homeomorphism_on (path_image \<gamma>)
+                    (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))
+                    ?\<sigma> (subspace_topology UNIV geotop_euclidean_topology ?\<sigma>) f"
+    by (by100 blast)
+  (** (6) Package as geotop_is_n_cell (n = 1 \<Rightarrow> is_arc). **)
+  have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h_pim_top: "is_topology_on (path_image \<gamma>)
+                    (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl subset_UNIV])
+  show ?thesis
+    unfolding geotop_is_arc_def geotop_is_n_cell_def
+    using h_pim_top h\<sigma>_dim hf_homeo by (by100 blast)
 qed
 
 (** Helper: complement of a geotop-arc in R^n (n \<ge> 2) is connected. **)
