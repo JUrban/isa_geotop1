@@ -5066,8 +5066,32 @@ proof -
             sorry \<comment> \<open>routine: vertices \<subseteq> polyhedron.\<close>
           show ?thesis using hV_sub hVL\<^sub>3_sub_L by (by100 blast)
         qed
+        have hf_inj_L: "inj_on f (geotop_polyhedron L)"
+          using hf_bij unfolding bij_betw_def by (by100 blast)
         have hV_eq_fi_fV: "V = inv_into (geotop_polyhedron L) f ` (f ` V)"
-          sorry \<comment> \<open>For v \<in> V, f_inv(f v) = v (inv_into_f_f applied on |L|).\<close>
+        proof (rule set_eqI)
+          fix v
+          show "(v \<in> V) = (v \<in> inv_into (geotop_polyhedron L) f ` (f ` V))"
+          proof
+            assume hvV: "v \<in> V"
+            have hvL: "v \<in> geotop_polyhedron L" using hvV hV_sub_L by (by100 blast)
+            have h_fi_ff: "inv_into (geotop_polyhedron L) f (f v) = v"
+              by (rule inv_into_f_f[OF hf_inj_L hvL])
+            have "f v \<in> f ` V" using hvV by (by100 blast)
+            thus "v \<in> inv_into (geotop_polyhedron L) f ` (f ` V)"
+              using h_fi_ff by (by100 force)
+          next
+            assume hv: "v \<in> inv_into (geotop_polyhedron L) f ` (f ` V)"
+            obtain w where hwfV: "w \<in> f ` V"
+                      and hv_eq: "v = inv_into (geotop_polyhedron L) f w" using hv by (by100 blast)
+            obtain v' where hv'V: "v' \<in> V" and hw_eq: "w = f v'" using hwfV by (by100 blast)
+            have hv'L: "v' \<in> geotop_polyhedron L" using hv'V hV_sub_L by (by100 blast)
+            have h_fi_f: "inv_into (geotop_polyhedron L) f (f v') = v'"
+              by (rule inv_into_f_f[OF hf_inj_L hv'L])
+            have "v = v'" using hv_eq hw_eq h_fi_f by (by100 simp)
+            thus "v \<in> V" using hv'V by (by100 simp)
+          qed
+        qed
         show "geotop_convex_hull V \<in> L\<^sub>3"
           sorry \<comment> \<open>conv V = f_inv \<sup>\` (conv(f V)) via hull_eq; and f_inv(conv(f V)) \<in> L_3
                      since conv(f V) \<in> K_3 and L_3 = f_inv \<sup>\` K_3.\<close>
