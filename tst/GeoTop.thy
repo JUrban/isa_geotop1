@@ -608,10 +608,25 @@ proof (intro allI impI)
   assume "geotop_hyperplane_dim H k \<and> k < n"
   then have hHk: "geotop_hyperplane_dim H k" and hkn: "k < n" by auto
   (** H = (+) v0 ` U for subspace U of dim k. Hence H is affine of dim k. **)
-  obtain U v0 where hU_sub: "subspace U"
-                and hU_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U"
-                and hH_eq: "H = (\<lambda>v. v + v0) ` U"
-    using hHk unfolding geotop_hyperplane_dim_def by (by100 blast)
+  have hHk_unf:
+    "\<exists>U v0. subspace U
+          \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
+          \<and> H = (\<lambda>v. v + v0) ` U"
+    using hHk unfolding geotop_hyperplane_dim_def by (by100 simp)
+  then obtain U where hU_inner:
+    "\<exists>v0. subspace U
+        \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
+        \<and> H = (\<lambda>v. v + v0) ` U"
+    by (by100 blast)
+  then obtain v0 where hU_v0:
+    "subspace U
+   \<and> (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U)
+   \<and> H = (\<lambda>v. v + v0) ` U"
+    by (by100 blast)
+  have hU_sub: "subspace U" using hU_v0 by (by100 blast)
+  have hU_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = U"
+    using hU_v0 by (by100 blast)
+  have hH_eq: "H = (\<lambda>v. v + v0) ` U" using hU_v0 by (by100 blast)
   obtain B where hB_indep: "independent B" and hB_fin: "finite B"
              and hB_card: "card B = k" and hB_span: "span B = U"
     using hU_basis_ex by (by100 blast)
@@ -9261,9 +9276,10 @@ proof -
 qed
 
 
-(* CHUNK_OUT_START -- §2+ chunked OUT for faster iteration on Intro + §1.
-   To chunk §2+ back IN: wrap "CHUNK_OUT_START" in (* ... *) and do the same
-   for the matching CHUNK_OUT_END marker at end of file.
+(* CHUNK_OUT: §2+ chunked IN for full-file verification.
+   To chunk §2+ back OUT, reinstate the block-comment wrapper on the
+   CHUNK_OUT_START and CHUNK_OUT_END markers. *)
+(* CHUNK_OUT_START *)
 
 section \<open>\<S>2 Separation properties of polygons in $\mathbf{R}^2$\<close>
 
@@ -22114,6 +22130,6 @@ proof -
   show ?thesis using h_final by (by100 blast)
 qed
 
-CHUNK_OUT_END *)
+(* CHUNK_OUT_END *)
 
 end
