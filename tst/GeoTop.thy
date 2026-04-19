@@ -2484,7 +2484,15 @@ lemma geotop_diameter_norm_nonneg:
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
   shows "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) G"
-  sorry \<comment> \<open>diameter \<ge> 0 for norm; SUP of nonneg \<ge> 0.\<close>
+proof (cases "G = {}")
+  case True
+  then show ?thesis unfolding geotop_mesh_def by (by100 simp)
+next
+  case False
+  show ?thesis
+    unfolding geotop_mesh_def using False
+    sorry \<comment> \<open>SUP g\<in>G. diameter g \<ge> 0 (diameter \<ge> 0 + SUP convention).\<close>
+qed
 
 (** from early.tex Cor 4.16: for a finite complex, mesh of iterated barycentric
     subdivision tends to 0. Proof via the shrinkage bound
