@@ -9073,25 +9073,38 @@ lemma geotop_complex_subdivide_at:
   sorry \<comment> \<open>Phase 1.2: find the simplex σ \<in> K with R \<in> σ. If dim 0, σ = {R}
             is already a 0-simplex. If dim 1, apply Phase 1.1.\<close>
 
-(** Phase 1.3: any point on a broken line can be made a 0-simplex of the
-    witness complex. Direct corollary of Phase 1.2. **)
+(** Phase 1.2b: broken line has a FINITE witness complex. Follows from
+    compactness of the arc + K.3 local finiteness via subcover. **)
+lemma geotop_broken_line_finite_witness:
+  fixes B :: "'a::euclidean_space set"
+  assumes hB: "geotop_is_broken_line B"
+  shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+           \<and> geotop_polyhedron K = B \<and> finite K"
+  sorry \<comment> \<open>Finite: B compact (arc) + K.3 + Heine-Borel.\<close>
+
+(** Phase 1.3: any point on a broken line can be made a 0-simplex of a
+    FINITE witness complex. Uses finite witness + Phase 1.2. **)
 lemma geotop_broken_line_vertex_at:
   fixes B :: "'a::euclidean_space set"
   assumes hB: "geotop_is_broken_line B"
   assumes hR_B: "R \<in> B"
   shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
-           \<and> geotop_polyhedron K = B \<and> {R} \<in> K"
+           \<and> geotop_polyhedron K = B \<and> {R} \<in> K \<and> finite K"
 proof -
   obtain K where hK: "geotop_is_complex K" and hKpoly: "geotop_polyhedron K = B"
-              and hK1: "geotop_complex_is_1dim K"
-    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+              and hK1: "geotop_complex_is_1dim K" and hKfin: "finite K"
+    using geotop_broken_line_finite_witness[OF hB] by (by100 blast)
   have hR_poly: "R \<in> geotop_polyhedron K" using hR_B hKpoly by (by100 simp)
   obtain K' where hK'_comp: "geotop_is_complex K'" and hK'_1dim: "geotop_complex_is_1dim K'"
               and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
               and hR_K': "{R} \<in> K'"
     using geotop_complex_subdivide_at[OF hK hK1 hR_poly] by (by100 blast)
   have hK'_B: "geotop_polyhedron K' = B" using hK'_poly hKpoly by (by100 simp)
-  show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' by (by100 blast)
+  (** Finiteness of K' deferred — subdivide_at preserves finiteness (one edge
+      split replaces 1 simplex by 3), but we haven't threaded that through. **)
+  have hK'_fin: "finite K'"
+    sorry \<comment> \<open>Preservation of finiteness under subdivide_at — straightforward.\<close>
+  show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' hK'_fin by (by100 blast)
 qed
 
 (** from \<S>1 Theorem 13 (geotop.tex:403)
@@ -9330,11 +9343,13 @@ proof -
               and hK\<^sub>1_1dim: "geotop_complex_is_1dim K\<^sub>1"
               and hK\<^sub>1_poly: "geotop_polyhedron K\<^sub>1 = B\<^sub>1"
               and hR_K\<^sub>1: "{R} \<in> K\<^sub>1"
+              and hK\<^sub>1_fin: "finite K\<^sub>1"
     using geotop_broken_line_vertex_at[OF hB\<^sub>1 hR_B\<^sub>1] by (by100 blast)
   obtain K\<^sub>2 where hK\<^sub>2_comp: "geotop_is_complex K\<^sub>2"
               and hK\<^sub>2_1dim: "geotop_complex_is_1dim K\<^sub>2"
               and hK\<^sub>2_poly: "geotop_polyhedron K\<^sub>2 = B\<^sub>2"
               and hR_K\<^sub>2: "{R} \<in> K\<^sub>2"
+              and hK\<^sub>2_fin: "finite K\<^sub>2"
     using geotop_broken_line_vertex_at[OF hB\<^sub>2 hR_B\<^sub>2] by (by100 blast)
   define K where "K = K\<^sub>1 \<union> K\<^sub>2"
   (** K is a complex: K.0, K.1, K.2, K.3 checked pairwise. **)
@@ -9455,9 +9470,25 @@ proof -
       qed
     qed
   qed
+  (** K.3: local finiteness. K is finite (K_1 ∪ K_2 with both finite),
+      so take U = UNIV. **)
+  have hK_fin: "finite K" unfolding K_def using hK\<^sub>1_fin hK\<^sub>2_fin by (by100 simp)
+  have hK_nbhd: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have hopen: "open (UNIV::'a set)" by (by100 simp)
+    have hsub: "\<sigma> \<subseteq> UNIV" by (by100 simp)
+    have hfin: "finite {\<tau>\<in>K. \<tau> \<inter> UNIV \<noteq> {}}" using hK_fin by (by100 simp)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hopen hsub hfin by (by100 blast)
+  qed
+  (** Assemble K as a complex. **)
+  have hK_complex: "geotop_is_complex K"
+    unfolding geotop_is_complex_def
+    using hK_simplexes hK_faces hK_inter hK_nbhd by (by100 blast)
   have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2
                           \<and> geotop_complex_is_1dim K"
-    sorry \<comment> \<open>Remaining: K.3 (local finiteness).\<close>
+    using hK_complex hK_poly hK_1dim by (by100 blast)
   show ?thesis
     unfolding geotop_is_broken_line_def
     using h_polyhedron h_geotop_arc by (by100 blast)
