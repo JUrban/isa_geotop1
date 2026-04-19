@@ -3899,9 +3899,44 @@ proof -
       obtain \<tau> where h\<tau>L': "\<tau> \<in> L'"
                  and h_eq: "geotop_convex_hull (?g_inv ` V\<^sub>0) = ?g_inv ` \<tau>"
         using h_img_in_K' unfolding K'_def by (by100 blast)
+      (** V_0 \<subseteq> \<tau>: V_0 \<subseteq> |L|, g(g_inv v) = v. g_inv V_0 \<subseteq> g_inv \<tau>. **)
+      have hV\<^sub>0_sub_L: "V\<^sub>0 \<subseteq> geotop_polyhedron L"
+        using hV\<^sub>0 hV_L'_in_L by (by100 blast)
+      have h\<tau>_sub_L: "\<tau> \<subseteq> geotop_polyhedron L"
+        using h\<tau>L' hL'L unfolding geotop_is_subdivision_def
+        geotop_refines_def geotop_polyhedron_def by (by100 blast)
+      have hV\<^sub>0_sub_\<tau>: "V\<^sub>0 \<subseteq> \<tau>"
+      proof
+        fix v assume hv_in: "v \<in> V\<^sub>0"
+        have hvL: "v \<in> geotop_polyhedron L" using hv_in hV\<^sub>0_sub_L by (by100 blast)
+        (** g_inv v \<in> g_inv V_0. **)
+        have hgivV\<^sub>0: "?g_inv v \<in> ?g_inv ` V\<^sub>0" using hv_in by (by100 blast)
+        (** g_inv V_0 \<subseteq> conv(g_inv V_0) = g_inv \<tau>. **)
+        have h_giV_sub: "?g_inv ` V\<^sub>0 \<subseteq> geotop_convex_hull (?g_inv ` V\<^sub>0)"
+          unfolding geotop_convex_hull_def hull_def by (by100 blast)
+        have h_gi\<tau>: "?g_inv ` V\<^sub>0 \<subseteq> ?g_inv ` \<tau>"
+          using h_giV_sub h_eq by (by100 simp)
+        have hgiv_in_\<tau>: "?g_inv v \<in> ?g_inv ` \<tau>" using hgivV\<^sub>0 h_gi\<tau> by (by100 blast)
+        (** g_inv is inj on |L|, so this gives v \<in> \<tau>. **)
+        obtain w where hw\<tau>: "w \<in> \<tau>" and hgiw: "?g_inv v = ?g_inv w"
+          using hgiv_in_\<tau> by (by100 blast)
+        have hwL: "w \<in> geotop_polyhedron L" using hw\<tau> h\<tau>_sub_L by (by100 blast)
+        have hvw: "v = w"
+          using inj_onD[OF hg_inv_inj hgiw hvL hwL] by (by100 simp)
+        show "v \<in> \<tau>" using hvw hw\<tau> by (by100 simp)
+      qed
+      (** V_0 \<subseteq> V(L') \<inter> \<tau> \<subseteq> V(\<tau>): because L' is a complex with K.2 face-closure,
+          any V(L')-vertex in \<tau> must lie in V(\<tau>). **)
+      have hV\<^sub>0_sub_V\<tau>: "V\<^sub>0 \<subseteq> {v. \<exists>V\<tau>. geotop_simplex_vertices \<tau> V\<tau> \<and> v \<in> V\<tau>}"
+        sorry \<comment> \<open>Vertex v of L' in interior of \<tau> must be vertex of \<tau>
+                   via K.2 face intersection: if v \<in> V(\<sigma>) for \<sigma> \<in> L', \<sigma> \<inter> \<tau>
+                   is a face. v \<in> face. face is conv of V(face) \<subseteq> V(\<tau>).
+                   extreme point argument: v extreme in \<sigma> \<Rightarrow> extreme in face
+                   \<Rightarrow> v \<in> V(face) \<subseteq> V(\<tau>).\<close>
       show "geotop_convex_hull V\<^sub>0 \<in> L'"
-        sorry \<comment> \<open>Apply g to both sides; g \<circ> g_inv = id on |L|;
-                   use linearity of g to get conv V_0 = \<tau>.\<close>
+        sorry \<comment> \<open>With V_0 \<subseteq> V(\<tau>), conv V_0 is a face of \<tau> (assuming V_0 nonempty,
+                   which follows from K' conv(g_inv V_0) being a simplex, hence nonempty).
+                   Then K.1 of L' (face-closure): conv V_0 \<in> L'.\<close>
     qed
   qed
   have hiso_L'K': "geotop_isomorphic L' K'"
