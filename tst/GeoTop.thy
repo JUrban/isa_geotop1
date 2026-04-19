@@ -5031,8 +5031,42 @@ proof -
           using h_convfV_eq_\<tau> h\<tau>K\<^sub>3 by (by100 simp)
       next
         assume hfV_K\<^sub>3: "geotop_convex_hull (f ` V) \<in> K\<^sub>3"
+        (** f_inv(conv(f V)) = conv V via hull_eq + V = f_inv(f V). **)
+        (** conv(f V) \<subseteq> some K_1-simplex (via K_3 < K_1). **)
+        have hK\<^sub>3_ref_K\<^sub>1_b: "geotop_refines K\<^sub>3 K\<^sub>1"
+          using hK\<^sub>3_K\<^sub>1 unfolding geotop_is_subdivision_def by (by100 blast)
+        obtain \<sigma>\<^sub>K\<^sub>1 where h\<sigma>K1: "\<sigma>\<^sub>K\<^sub>1 \<in> K\<^sub>1" and hconvfV_sub_K1: "geotop_convex_hull (f ` V) \<subseteq> \<sigma>\<^sub>K\<^sub>1"
+          using hfV_K\<^sub>3 hK\<^sub>3_ref_K\<^sub>1_b unfolding geotop_refines_def by (by100 blast)
+        have h_lin_\<sigma>K1: "geotop_linear_on \<sigma>\<^sub>K\<^sub>1 (inv_into (geotop_polyhedron L) f)"
+          using hK\<^sub>1_lin h\<sigma>K1 by (by100 blast)
+        have hconvfV_sim: "geotop_is_simplex (geotop_convex_hull (f ` V))"
+          using hfV_K\<^sub>3 conjunct1[OF hK\<^sub>3_comp[unfolded geotop_is_complex_def]]
+          by (by100 blast)
+        have h_lin_convfV: "geotop_linear_on (geotop_convex_hull (f ` V))
+                             (inv_into (geotop_polyhedron L) f)"
+          by (rule geotop_linear_on_sub_simplex[OF h_lin_\<sigma>K1 hconvfV_sim hconvfV_sub_K1])
+        (** Extract bary-preservation on V(conv(f V)) = f V's vertex set via linear_on. **)
+        (** Actually, simplified: directly show conv V = f_inv \<sup>\` conv(f V) via
+            hull_eq on f V (which \<subseteq> V(K_3) \<subseteq> |K|). **)
+        have hf_V_sub_K: "f ` V \<subseteq> geotop_polyhedron K"
+          using hf_V_sub_VK\<^sub>3 hV_K\<^sub>3_in_K by (by100 blast)
+        have hfV_fin: "finite (f ` V)"
+          sorry \<comment> \<open>V(K_3) finite (K_3 finite subdivision); f V \<subseteq> V(K_3) finite.\<close>
+        (** V = f_inv \<sup>\` (f V). **)
+        have hV_sub_L: "V \<subseteq> geotop_polyhedron L"
+        proof -
+          have hVL\<^sub>3_sub_L: "geotop_complex_vertices L\<^sub>3 \<subseteq> geotop_polyhedron L"
+            unfolding geotop_complex_vertices_def geotop_polyhedron_def
+            using hL\<^sub>3_poly unfolding geotop_simplex_vertices_def
+            geotop_convex_hull_def hull_subset
+            sorry \<comment> \<open>routine: vertices \<subseteq> polyhedron.\<close>
+          show ?thesis using hV_sub hVL\<^sub>3_sub_L by (by100 blast)
+        qed
+        have hV_eq_fi_fV: "V = inv_into (geotop_polyhedron L) f ` (f ` V)"
+          sorry \<comment> \<open>For v \<in> V, f_inv(f v) = v (inv_into_f_f applied on |L|).\<close>
         show "geotop_convex_hull V \<in> L\<^sub>3"
-          sorry \<comment> \<open>Backward: symmetric.\<close>
+          sorry \<comment> \<open>conv V = f_inv \<sup>\` (conv(f V)) via hull_eq; and f_inv(conv(f V)) \<in> L_3
+                     since conv(f V) \<in> K_3 and L_3 = f_inv \<sup>\` K_3.\<close>
       qed
     qed
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
