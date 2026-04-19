@@ -3943,9 +3943,104 @@ proof -
       qed
       (** V_0 \<subseteq> V_\<tau>: any L'-vertex in \<tau> must be a V_\<tau>-vertex (extreme point). **)
       have hV\<^sub>0_sub_V\<tau>: "V\<^sub>0 \<subseteq> V\<tau>"
-        sorry \<comment> \<open>v \<in> V_0 \<subseteq> V(L') \<cap> \<tau>. v is vertex of some \<sigma> \<in> L', so
-                   extreme in \<sigma>. K.2: \<sigma> \<inter> \<tau> is face of \<tau> = conv W for W \<subseteq> V_\<tau>.
-                   v extreme in conv W \<Rightarrow> v \<in> W \<subseteq> V_\<tau>.\<close>
+      proof
+        fix v assume hvV\<^sub>0: "v \<in> V\<^sub>0"
+        have hv\<tau>: "v \<in> \<tau>" using hvV\<^sub>0 hV\<^sub>0_sub_\<tau> by (by100 blast)
+        have hvVL': "v \<in> geotop_complex_vertices L'" using hvV\<^sub>0 hV\<^sub>0 by (by100 blast)
+        obtain \<sigma> W_\<sigma> where h\<sigma>L': "\<sigma> \<in> L'"
+                      and hW\<sigma>sv: "geotop_simplex_vertices \<sigma> W_\<sigma>" and hvW\<sigma>: "v \<in> W_\<sigma>"
+          using hvVL' unfolding geotop_complex_vertices_def by (by100 blast)
+        (** v \<in> \<sigma> (vertex is in simplex). **)
+        have h\<sigma>_eq: "\<sigma> = geotop_convex_hull W_\<sigma>"
+          using hW\<sigma>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have h_sub: "W_\<sigma> \<subseteq> convex hull W_\<sigma>" by (rule hull_subset)
+        have h\<sigma>_HOL_pre: "\<sigma> = convex hull W_\<sigma>"
+          using h\<sigma>_eq geotop_convex_hull_eq_HOL by (by100 simp)
+        have hv\<sigma>: "v \<in> \<sigma>"
+          using hvW\<sigma> h_sub h\<sigma>_HOL_pre by (by100 blast)
+        (** \<sigma> \<inter> \<tau> is a face of \<tau> via K.2 of L'. **)
+        have h_inter_ne: "\<sigma> \<inter> \<tau> \<noteq> {}" using hv\<sigma> hv\<tau> by (by100 blast)
+        have hL'_K2: "\<forall>\<sigma>\<in>L'. \<forall>\<tau>\<in>L'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+          using conjunct1[OF conjunct2[OF conjunct2[OF hL'_comp[unfolded geotop_is_complex_def]]]]
+          by (by100 blast)
+        have h_face_\<tau>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+          using hL'_K2 h\<sigma>L' h\<tau>L' h_inter_ne by (by100 blast)
+        have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+          using hL'_K2 h\<sigma>L' h\<tau>L' h_inter_ne by (by100 blast)
+        (** Face \<tau> \<inter> \<sigma> = conv W for some W \<subseteq> V_\<tau>. **)
+        obtain V\<tau>' W where hV\<tau>'sv: "geotop_simplex_vertices \<tau> V\<tau>'"
+                       and hW_ne: "W \<noteq> {}" and hWV\<tau>': "W \<subseteq> V\<tau>'"
+                       and h_inter_hull: "\<sigma> \<inter> \<tau> = geotop_convex_hull W"
+          using h_face_\<tau> unfolding geotop_is_face_def by (by100 blast)
+        have hV\<tau>'_eq: "V\<tau>' = V\<tau>" by (rule geotop_simplex_vertices_unique[OF hV\<tau>'sv hV\<tau>sv])
+        have hWV\<tau>: "W \<subseteq> V\<tau>" using hWV\<tau>' hV\<tau>'_eq by (by100 simp)
+        (** Also need W \<subseteq> W_\<sigma>: via face of \<sigma>. **)
+        obtain W_\<sigma>' W' where hW_\<sigma>'sv: "geotop_simplex_vertices \<sigma> W_\<sigma>'"
+                         and hW'_ne: "W' \<noteq> {}" and hW'W\<sigma>: "W' \<subseteq> W_\<sigma>'"
+                         and h_inter_hull': "\<sigma> \<inter> \<tau> = geotop_convex_hull W'"
+          using h_face_\<sigma> unfolding geotop_is_face_def by (by100 blast)
+        have hW_\<sigma>'_eq: "W_\<sigma>' = W_\<sigma>"
+          by (rule geotop_simplex_vertices_unique[OF hW_\<sigma>'sv hW\<sigma>sv])
+        (** conv W = conv W' (both = \<sigma> \<inter> \<tau>). **)
+        have h_W_W': "geotop_convex_hull W = geotop_convex_hull W'"
+          using h_inter_hull h_inter_hull' by (by100 simp)
+        (** By AI vertex uniqueness on sub-simplex, W = W'. Need AI of W_\<sigma>
+            and W, W' \<subseteq> W_\<sigma>, conv W = conv W' \<Rightarrow> W = W'. **)
+        have hW'W\<sigma>_final: "W' \<subseteq> W_\<sigma>" using hW'W\<sigma> hW_\<sigma>'_eq by (by100 simp)
+        (** Use AI to conclude W' spans uniquely: conv W = conv W' with both W, W'
+            AI subsets of V_\<tau>, V_\<sigma> respectively. Actually simpler: apply
+            simplex_vertices_unique on \<sigma> \<inter> \<tau>. **)
+        have hWsv: "geotop_simplex_vertices (\<sigma> \<inter> \<tau>) W"
+          sorry \<comment> \<open>simplex_vertices with the same set via h_inter_hull.\<close>
+        have hW'sv: "geotop_simplex_vertices (\<sigma> \<inter> \<tau>) W'"
+          sorry \<comment> \<open>same via h_inter_hull'.\<close>
+        have hWW': "W = W'" by (rule geotop_simplex_vertices_unique[OF hWsv hW'sv])
+        have hWW\<sigma>: "W \<subseteq> W_\<sigma>" using hWW' hW'W\<sigma>_final by (by100 simp)
+        (** W AI: W \<subseteq> V_\<tau>, V_\<tau> AI (since \<tau> is simplex), AI is closed under subsets. **)
+        have hW_ai: "\<not> affine_dependent W"
+          using hV\<tau>_ai hWV\<tau> affine_dependent_subset by (by100 blast)
+        (** v \<in> \<sigma> \<inter> \<tau> = conv W. **)
+        have hv_in_inter: "v \<in> \<sigma> \<inter> \<tau>" using hv\<sigma> hv\<tau> by (by100 blast)
+        have hv_hullW: "v \<in> geotop_convex_hull W"
+          using hv_in_inter h_inter_hull by (by100 simp)
+        have h_W_eq_HOL: "geotop_convex_hull W = convex hull W"
+          by (rule geotop_convex_hull_eq_HOL)
+        have hv_hullW_HOL: "v \<in> convex hull W"
+          using hv_hullW h_W_eq_HOL by (by100 simp)
+        (** v is extreme in \<sigma>, hence in \<sigma> \<inter> \<tau> = conv W. **)
+        have hW\<sigma>_ai: "\<not> affine_dependent W_\<sigma>"
+          by (rule geotop_general_position_imp_aff_indep[OF hW\<sigma>sv])
+        have hv_extr_W\<sigma>: "v extreme_point_of (convex hull W_\<sigma>)"
+          using extreme_point_of_convex_hull_affine_independent[OF hW\<sigma>_ai] hvW\<sigma>
+          by (by100 blast)
+        (** v extreme in convex hull W_\<sigma> = \<sigma>, and v \<in> convex hull W \<subseteq> \<sigma>. **)
+        have h\<sigma>_HOL: "\<sigma> = convex hull W_\<sigma>"
+        proof -
+          have "\<sigma> = geotop_convex_hull W_\<sigma>"
+            using hW\<sigma>sv unfolding geotop_simplex_vertices_def by (by100 blast)
+          also have "\<dots> = convex hull W_\<sigma>" by (rule geotop_convex_hull_eq_HOL)
+          finally show ?thesis .
+        qed
+        have h_inter_sub_\<sigma>: "convex hull W \<subseteq> convex hull W_\<sigma>"
+        proof -
+          have h_int: "\<sigma> \<inter> \<tau> \<subseteq> \<sigma>" by (by100 blast)
+          have "geotop_convex_hull W \<subseteq> \<sigma>" using h_int h_inter_hull by (by100 simp)
+          hence h1: "geotop_convex_hull W \<subseteq> convex hull W_\<sigma>"
+            using h\<sigma>_HOL by (by100 simp)
+          have h_W_HOL: "geotop_convex_hull W = convex hull W"
+            by (rule geotop_convex_hull_eq_HOL)
+          show ?thesis using h1 h_W_HOL by (by100 simp)
+        qed
+        (** In HOL, extreme_point_of is preserved going to a subset still containing v. **)
+        have hv_extr_W: "v extreme_point_of (convex hull W)"
+          sorry \<comment> \<open>v extreme in convex hull W_\<sigma> and v \<in> convex hull W \<subseteq> convex hull W_\<sigma>:
+                   v extreme in conv W (HOL lemma extreme_point_of_subset or similar).\<close>
+        have hvW: "v \<in> W"
+          using extreme_point_of_convex_hull_affine_independent[OF hW_ai] hv_extr_W
+          by (by100 blast)
+        show "v \<in> V\<tau>" using hvW hWV\<tau> by (by100 blast)
+      qed
       (** V_0 \<noteq> {}: from conv(g_inv V_0) being a simplex in K', nonempty. **)
       have h_convgV\<^sub>0_sim: "geotop_is_simplex (geotop_convex_hull (?g_inv ` V\<^sub>0))"
         using h_img_in_K' conjunct1[OF hK'_comp[unfolded geotop_is_complex_def]]
