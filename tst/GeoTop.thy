@@ -2474,12 +2474,34 @@ next
   show ?thesis by (rule finite_subset[OF h_sub h_sing_fin])
 qed
 
+(** Bounded case of diameter_norm_nonneg (suffices for finite complexes). **)
+lemma geotop_diameter_norm_nonneg_bdd:
+  fixes M :: "'a::real_normed_vector set"
+  assumes hne: "M \<noteq> {}"
+  assumes hbdd: "bdd_above ((\<lambda>P. (SUP Q\<in>M. norm (P - Q))) ` M)"
+  assumes hbdd_inner: "\<And>P. P \<in> M \<Longrightarrow> bdd_above ((\<lambda>Q. norm (P - Q)) ` M)"
+  shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
+proof -
+  obtain P0 where hP0: "P0 \<in> M" using hne by (by100 blast)
+  have h_inner_ge_0: "0 \<le> (SUP Q\<in>M. norm (P0 - Q))"
+  proof -
+    have h_zero: "norm (P0 - P0) = 0" by (by100 simp)
+    have h_upper: "norm (P0 - P0) \<le> (SUP Q\<in>M. norm (P0 - Q))"
+      using cSUP_upper[OF hP0 hbdd_inner[OF hP0]] by (by100 simp)
+    show ?thesis using h_zero h_upper by (by100 simp)
+  qed
+  have h_outer: "(SUP Q\<in>M. norm (P0 - Q)) \<le> (SUP P\<in>M. (SUP Q\<in>M. norm (P - Q)))"
+    using cSUP_upper[OF hP0 hbdd] by (by100 simp)
+  have h_ge_0: "0 \<le> (SUP P\<in>M. (SUP Q\<in>M. norm (P - Q)))"
+    using h_inner_ge_0 h_outer by (by100 simp)
+  thus ?thesis unfolding geotop_diameter_def using hne by (by100 simp)
+qed
+
 lemma geotop_diameter_norm_nonneg:
   fixes M :: "'a::real_normed_vector set"
   shows "0 \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
-  sorry \<comment> \<open>SUP P\<in>M. SUP Q\<in>M. norm(P-Q). For unbounded M, cSup defaults to 0
-             (HOL convention for real conditional_complete_lattice). For
-             bounded, SUP \<ge> norm(P0-P0) = 0. Either way \<ge> 0.\<close>
+  sorry \<comment> \<open>General case. For bounded M use geotop_diameter_norm_nonneg_bdd.
+             Unbounded requires specific HOL cSUP for unbounded reals.\<close>
 
 lemma geotop_mesh_norm_nonneg:
   fixes G :: "'a::real_normed_vector set set"
