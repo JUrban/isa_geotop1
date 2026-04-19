@@ -3286,10 +3286,23 @@ proof -
                   and hf5: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
     by (by100 meson)
   (** Additional property: f_inv \<tau> \<in> K for each \<tau> \<in> L. **)
+  (** Unpack iso def. **)
+  have h\<phi>_bij: "bij_betw \<phi> (geotop_complex_vertices K) (geotop_complex_vertices L)"
+    using h\<phi> unfolding geotop_isomorphism_def by (by100 blast)
+  have h\<phi>_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+                     (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L)"
+    using h\<phi> unfolding geotop_isomorphism_def by (by100 blast)
+  have hf_bij_poly: "bij_betw f (geotop_polyhedron K) (geotop_polyhedron L)"
+    using hf1 unfolding geotop_PLH_def by (by100 blast)
+  have hf_inv_bij_poly: "bij_betw (inv_into (geotop_polyhedron K) f)
+                                     (geotop_polyhedron L) (geotop_polyhedron K)"
+    by (rule bij_betw_inv_into[OF hf_bij_poly])
+  have hf_inv_inj_L: "inj_on (inv_into (geotop_polyhedron K) f) (geotop_polyhedron L)"
+    using hf_inv_bij_poly unfolding bij_betw_def by (by100 blast)
   have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
-    sorry \<comment> \<open>Core classical fact: for tau in L with vertex set V_tau,
+    sorry \<comment> \<open>Core: for tau in L with V_tau vertex set,
                f_inv = phi_inv on V(L), iso reversed gives conv(phi_inv V_tau) in K,
-               hull_eq: f_inv tau = conv(f_inv V_tau) in K.\<close>
+               hull_eq: f_inv tau = conv(phi_inv V_tau) in K.\<close>
   show "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
                     \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                     \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
