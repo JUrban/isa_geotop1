@@ -3300,12 +3300,31 @@ proof -
   have hf_inv_inj_L: "inj_on (inv_into (geotop_polyhedron K) f) (geotop_polyhedron L)"
     using hf_inv_bij_poly unfolding bij_betw_def by (by100 blast)
   (** For v \<in> V(L): f_inv v = phi_inv v (where phi_inv = inv_into V(K) phi). **)
+  have hVK_sub_polyK: "geotop_complex_vertices K \<subseteq> geotop_polyhedron K"
+    sorry \<comment> \<open>V(K) \<subseteq> |K| — standard fact.\<close>
+  have h\<phi>_inj: "inj_on \<phi> (geotop_complex_vertices K)"
+    using h\<phi>_bij unfolding bij_betw_def by (by100 blast)
+  have hf_inj_polyK: "inj_on f (geotop_polyhedron K)"
+    using hf_bij_poly unfolding bij_betw_def by (by100 blast)
   have hf_inv_eq_\<phi>_inv: "\<forall>v\<in>geotop_complex_vertices L.
                            inv_into (geotop_polyhedron K) f v
                            = inv_into (geotop_complex_vertices K) \<phi> v"
-    sorry \<comment> \<open>Sub-proof: v \<in> V(L); by phi bij V(K)\<leftrightarrow>V(L) obtain u \<in> V(K) with phi u = v;
-               then f u = phi u = v (via hf3); u \<in> V(K) \<subseteq> |K|; so f_inv v = u
-               via bij_betw_inv_into_f; and phi_inv v = u.\<close>
+  proof
+    fix v assume hvVL: "v \<in> geotop_complex_vertices L"
+    have hv_img: "v \<in> \<phi> ` geotop_complex_vertices K"
+      using hvVL h\<phi>_bij unfolding bij_betw_def by (by100 simp)
+    obtain u where huVK: "u \<in> geotop_complex_vertices K" and h\<phi>u: "\<phi> u = v"
+      using hv_img by (by100 blast)
+    have huK: "u \<in> geotop_polyhedron K" using huVK hVK_sub_polyK by (by100 blast)
+    have hfu: "f u = v" using hf3 huVK h\<phi>u by (by100 simp)
+    have hfi_v: "inv_into (geotop_polyhedron K) f v = u"
+      using inv_into_f_f[OF hf_inj_polyK huK] hfu by (by100 simp)
+    have h\<phi>i_v: "inv_into (geotop_complex_vertices K) \<phi> v = u"
+      using inv_into_f_f[OF h\<phi>_inj huVK] h\<phi>u by (by100 simp)
+    show "inv_into (geotop_polyhedron K) f v
+           = inv_into (geotop_complex_vertices K) \<phi> v"
+      using hfi_v h\<phi>i_v by (by100 simp)
+  qed
   have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
     sorry \<comment> \<open>Core: extract V_tau; f_inv V_tau = phi_inv V_tau \<subseteq> V(K);
                conv(phi_inv V_tau) \<in> K via iso reversed on phi W where W = phi_inv V_tau;
