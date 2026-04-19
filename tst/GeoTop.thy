@@ -3270,10 +3270,33 @@ lemma geotop_isomorphic_induces_PLH_strong:
                     \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
                     \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
                     \<and> (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K)"
-  sorry \<comment> \<open>Strengthened form: g_inv maps each L-simplex to a K-simplex.
-             For \<tau> \<in> L with vertex set V_\<tau>, g_inv V_\<tau> \<subseteq> V(K) via vertex bij.
-             By iso simp correspondence: conv(g_inv V_\<tau>) \<in> K. Via linearity + hull_eq:
-             g_inv(\<tau>) = conv(g_inv V_\<tau>) \<in> K.\<close>
+proof -
+  obtain \<phi> where h\<phi>: "geotop_isomorphism K L \<phi>"
+    using hiso unfolding geotop_isomorphic_def by (by100 blast)
+  have hex_full: "\<exists>f::'a\<Rightarrow>'b.
+        geotop_PLH K L f
+         \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+         \<and> (\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v)
+         \<and> (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> f)
+         \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))"
+    by (rule geotop_isomorphism_induces_PLH[OF hK hL h\<phi>])
+  then obtain f where hf1: "geotop_PLH K L f"
+                  and hf2: "f ` (geotop_polyhedron K) = geotop_polyhedron L"
+                  and hf5: "\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f)"
+    by (by100 meson)
+  (** Additional property: f_inv \<tau> \<in> K for each \<tau> \<in> L. Deferred — the proof
+      requires unpacking iso def (bij + simp correspondence), establishing
+      f_inv = \<phi>\<^sup>-\<^sup>1 on V(L), and applying hull_eq. **)
+  have hf_inv_sim: "\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K"
+    sorry \<comment> \<open>Core classical fact: for \<tau> \<in> L with vertex set V_\<tau>, f_inv V_\<tau> \<subseteq> V(K)
+               and conv(f_inv V_\<tau>) \<in> K (iso reversed). Via hull_eq: f_inv \<tau> = conv(f_inv V_\<tau>) \<in> K.
+               ~80-line proof using iso simp-correspondence + hull_eq.\<close>
+  show "\<exists>f::'a \<Rightarrow> 'b. geotop_PLH K L f
+                    \<and> f ` (geotop_polyhedron K) = geotop_polyhedron L
+                    \<and> (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) f))
+                    \<and> (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) f ` \<tau> \<in> K)"
+    by (rule exI[where x=f], intro conjI, rule hf1, rule hf2, rule hf5, rule hf_inv_sim)
+qed
 
 (** Corollary: combinatorial equivalence via isomorphic subdivisions gives a
     PLH between the underlying polyhedra. **)
