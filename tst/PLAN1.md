@@ -76,17 +76,20 @@ Record completions here as they happen:
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
 
-## Session timeout wall
+## Session split DONE (commit 384f54d0)
 
-Hit the 120s ROOT-timeout ceiling when attempting to inline Phase 1.1
-interior's full proof (~100 lines of K.0/K.1/K.2/K.3 verification).
-Each new by100-guarded step adds to cumulative build time, and the
-monolithic proof pushed the whole theory past 120s.
+Split GeoTop.thy into:
+  - `b/GeoTopBase.thy` (Intro + §1, 11 sorries, builds 37s fresh).
+  - `GeoTop.thy` (§§2-36, 529 sorries, builds 14s fresh on cached GeoTopBase).
+  - ROOT has two sessions, each with its own 120s timeout.
 
-Workaround option: split `GeoTop.thy` into `GeoTopBase.thy` (Intro + §1)
-and a thinner `GeoTop.thy` (§2+), each with its own 120s ROOT budget.
-This would also deliver the caching goal even with remaining narrow
-sorries (since `quick_and_dirty` allows sorry-containing sessions).
+Benefits realized:
+  - Cached iteration on §§2+ only rebuilds those (not the 10,000-line §1 prefix).
+  - Per-theory 120s budget lets Phase 1.1 interior's structured proof fit.
+
+Phase 1.1 interior now has structured proof (K.0 derived from 1-dim + simplex_dim;
+1-dim via 4-case explicit disjE; |K'|=|K| via Un_closed_segment; only K.1/K.2/K.3
+verification remains as one focused sorry - commit 0886697b).
 
 ## Remaining work to close §1 sorry-free
 
