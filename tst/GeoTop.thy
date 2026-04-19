@@ -2474,6 +2474,19 @@ next
   show ?thesis by (rule finite_subset[OF h_sub h_sing_fin])
 qed
 
+(** Local duplicate of simplex compactness (used here before its full declaration
+    at ~line 6031). **)
+lemma geotop_is_simplex_compact_early:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "compact \<sigma>"
+proof -
+  obtain V m n where hV: "finite V" and h\<sigma>: "\<sigma> = geotop_convex_hull V"
+    using assms unfolding geotop_is_simplex_def by (by100 blast)
+  have "\<sigma> = convex hull V" using h\<sigma> geotop_convex_hull_eq_HOL by (by100 simp)
+  thus ?thesis using hV finite_imp_compact_convex_hull by (by100 simp)
+qed
+
 (** Bounded case of diameter_norm_nonneg (suffices for finite complexes). **)
 lemma geotop_diameter_norm_nonneg_bdd:
   fixes M :: "'a::real_normed_vector set"
