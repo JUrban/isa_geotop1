@@ -8647,11 +8647,23 @@ qed
     LATEX VERSION: An arc is a 1-cell. **)
 text \<open>Already defined above as \<open>geotop_is_arc\<close>.\<close>
 
+(** Predicate: complex K is at most 1-dimensional (every simplex is a
+    0-simplex or 1-simplex). Moise's broken-line is faithfully 1-dim;
+    any 2+-dim simplex would contradict the arc-homeomorphism anyway. **)
+definition geotop_complex_is_1dim :: "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_complex_is_1dim K \<longleftrightarrow>
+    (\<forall>\<sigma>\<in>K. \<exists>n::nat. n \<le> 1 \<and> geotop_simplex_dim \<sigma> n)"
+
 (** from \<S>1: broken line (geotop.tex:401)
-    LATEX VERSION: A broken line is a polyhedral arc. **)
+    LATEX VERSION: A broken line is a polyhedral arc.
+    Strengthened to require the witnessing complex to be 1-dimensional,
+    faithful to Moise's intent (any 2+-dim simplex would contradict the
+    arc property via invariance of domain; this strengthening makes the
+    sub-complex constructions formally tractable). **)
 definition geotop_is_broken_line :: "'a::real_normed_vector set \<Rightarrow> bool" where
   "geotop_is_broken_line B \<longleftrightarrow>
     (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B
+       \<and> geotop_complex_is_1dim K
        \<and> geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B))"
 
 (** Helper: a closed segment between two distinct points is a 1-simplex (and hence
@@ -9002,9 +9014,32 @@ proof -
   have harc: "geotop_is_arc (closed_segment P Q)
                 (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
     by (rule geotop_closed_segment_is_arc[OF hne])
+  (** K is 1-dimensional: all three simplices are 0 or 1. **)
+  have hK_1dim: "geotop_complex_is_1dim K"
+    unfolding geotop_complex_is_1dim_def K_def
+  proof (intro ballI)
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> {{P}, {Q}, closed_segment P Q}"
+    then consider (P_sing) "\<sigma> = {P}" | (Q_sing) "\<sigma> = {Q}" | (seg) "\<sigma> = closed_segment P Q"
+      by blast
+    thus "\<exists>n \<le> 1. geotop_simplex_dim \<sigma> n"
+    proof cases
+      case P_sing
+      have "geotop_simplex_dim {P} 0" by (rule geotop_singleton_is_simplex)
+      thus ?thesis unfolding P_sing by blast
+    next
+      case Q_sing
+      have "geotop_simplex_dim {Q} 0" by (rule geotop_singleton_is_simplex)
+      thus ?thesis unfolding Q_sing by blast
+    next
+      case seg
+      have "geotop_simplex_dim (closed_segment P Q) 1"
+        by (rule geotop_closed_segment_is_simplex[OF hne])
+      thus ?thesis unfolding seg by blast
+    qed
+  qed
   show ?thesis
     unfolding geotop_is_broken_line_def
-    using hK_complex hK_poly harc by blast
+    using hK_complex hK_poly hK_1dim harc by blast
 qed
 
 (** from \<S>1 Theorem 13 (geotop.tex:403)
@@ -9156,9 +9191,10 @@ next
     by (rule geotop_HOL_arc_imp_geotop_is_arc[OF hsub_arc])
   (** (8) Polyhedral side: ?B' is the polyhedron of a sub-complex of B's
           witnessing complex (classical PL). Deferred. **)
-  have hB'_poly: "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = ?B'"
+  have hB'_poly: "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = ?B'
+                     \<and> geotop_complex_is_1dim K'"
     sorry \<comment> \<open>Classical PL: sub-arc of a 1-complex polyhedron is polyhedron of
-              a sub-complex (after edge subdivision at X, Y if interior to edges).\<close>
+              a 1-dim sub-complex (after edge subdivision at X, Y if interior to edges).\<close>
   have hB'_broken: "geotop_is_broken_line ?B'"
     unfolding geotop_is_broken_line_def using hB'_poly hB'_geotop_arc by (by100 blast)
   (** (9) Construct the pathstart-X, pathfinish-Y arc parametrisation. **)
@@ -9230,9 +9266,10 @@ proof -
     using h_join_pim geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_join] by (by100 simp)
   (** (5) Polyhedral side: take complex union K\<^sub>1 \<union> K\<^sub>2 after subdividing
           at R. This classical PL fact is the remaining content. **)
-  have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2"
-    sorry \<comment> \<open>Classical PL: union of 1-complexes subdivided at shared vertex R
-              is a 1-complex with polyhedron B_1 \<union> B_2.\<close>
+  have h_polyhedron: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B\<^sub>1 \<union> B\<^sub>2
+                          \<and> geotop_complex_is_1dim K"
+    sorry \<comment> \<open>Classical PL: union of two 1-complexes sharing a vertex R is a
+              1-complex with polyhedron B_1 \<union> B_2.\<close>
   show ?thesis
     unfolding geotop_is_broken_line_def
     using h_polyhedron h_geotop_arc by (by100 blast)
