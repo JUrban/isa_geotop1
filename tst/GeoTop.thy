@@ -8847,7 +8847,31 @@ lemma geotop_broken_line_arc_reduction:
   assumes hB\<^sub>1: "geotop_is_broken_line B\<^sub>1" and hB\<^sub>2: "geotop_is_broken_line B\<^sub>2"
   assumes hP: "P \<in> B\<^sub>1" and hQ\<^sub>0_1: "Q\<^sub>0 \<in> B\<^sub>1" and hQ\<^sub>0_2: "Q\<^sub>0 \<in> B\<^sub>2" and hQ: "Q \<in> B\<^sub>2"
   shows "\<exists>B. geotop_is_broken_line B \<and> B \<subseteq> B\<^sub>1 \<union> B\<^sub>2 \<and> P \<in> B \<and> Q \<in> B"
-  sorry \<comment> \<open>Classical PL Hausdorff-Moore arc reduction. Deferred.\<close>
+proof -
+  (** Cheap cases: if \<open>P \<in> B\<^sub>2\<close>, then \<open>B = B\<^sub>2\<close> already contains both \<open>P\<close>
+      and \<open>Q\<close>, is itself a broken line, and sits in \<open>B\<^sub>1 \<union> B\<^sub>2\<close>. Symmetrically
+      if \<open>Q \<in> B\<^sub>1\<close>, take \<open>B = B\<^sub>1\<close>. Only the genuinely cross-arc case
+      (\<open>P \<notin> B\<^sub>2 \<and> Q \<notin> B\<^sub>1\<close>) needs Hausdorff-Moore arc reduction. **)
+  consider (PinB\<^sub>2) "P \<in> B\<^sub>2" | (QinB\<^sub>1) "Q \<in> B\<^sub>1"
+         | (hard) "P \<notin> B\<^sub>2" "Q \<notin> B\<^sub>1" by (by100 blast)
+  then show ?thesis
+  proof cases
+    case PinB\<^sub>2
+    have hsub: "B\<^sub>2 \<subseteq> B\<^sub>1 \<union> B\<^sub>2" by (by100 blast)
+    show ?thesis using hB\<^sub>2 hsub PinB\<^sub>2 hQ by (by100 blast)
+  next
+    case QinB\<^sub>1
+    have hsub: "B\<^sub>1 \<subseteq> B\<^sub>1 \<union> B\<^sub>2" by (by100 blast)
+    show ?thesis using hB\<^sub>1 hsub hP QinB\<^sub>1 by (by100 blast)
+  next
+    case hard
+    show ?thesis sorry \<comment> \<open>Classical PL Hausdorff-Moore arc-reduction (truly cross-arc).
+                          Proof sketch: sub-arc \<open>P \<to> Q\<^sub>0\<close> of \<open>B\<^sub>1\<close>, sub-arc
+                          \<open>Q\<^sub>0 \<to> Q\<close> of \<open>B\<^sub>2\<close>; if intersection = \<open>{Q\<^sub>0}\<close> their union
+                          is an arc by \<open>arc_join\<close>; otherwise take first-intersection
+                          \<open>R\<close> and use sub-arcs \<open>P \<to> R\<close> and \<open>R \<to> Q\<close>. Deferred.\<close>
+  qed
+qed
 
 (** Broken-line concatenation: two broken lines sharing an endpoint combine
     into a single broken line within the ambient set \<open>U\<close>.
