@@ -4774,14 +4774,34 @@ proof -
         Key idea: V \<subseteq> V(L_3) = f_inv \<sup>\` V(K_3), so W = f V \<subseteq> V(K_3), V = f_inv \<sup>\` W.
         Conv V = f_inv \<sup>\` conv W via hull_eq (f_inv linear on K_1-simplex \<supseteq> \<tau>).
         Then conv V \<in> L_3 = f_inv \<sup>\` K_3 iff conv W \<in> K_3 (bijective correspondence). **)
+    (** f_inv is injective on |K| (bij inverse). **)
+    have hf_inv_inj_K_hsimp: "inj_on (inv_into (geotop_polyhedron L) f) (geotop_polyhedron K)"
+      using hf_inv_bij unfolding bij_betw_def by (by100 blast)
     have hiso_simp: "\<forall>V. V \<subseteq> geotop_complex_vertices L\<^sub>3 \<longrightarrow>
                        (geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3)"
-      sorry \<comment> \<open>Full proof analogous to transport hiso_K'L'_simp (~200 lines).
-                 Forward: conv V \<in> L_3 = f_inv \<sup>\` K_3, so conv V = f_inv \<sup>\` \<tau> for \<tau> \<in> K_3.
-                   Then f(conv V) = \<tau> (via bij), and conv(f V) = f(conv V) = \<tau> \<in> K_3
-                   (hull_eq uses f linear on conv V \<subseteq> some L_1-simplex via L_3 < L_1).
-                 Backward: symmetric via f_inv.
-                 Needs auxiliary: L_3 < L_1 (via K_3 < fL_1 pullback) not yet proved here.\<close>
+    proof (intro allI impI)
+      fix V assume hV_sub: "V \<subseteq> geotop_complex_vertices L\<^sub>3"
+      (** Auxiliary: W = f V, and V = f_inv ` W, W \<subseteq> V(K_3). **)
+      have hf_V_sub_VK\<^sub>3: "f ` V \<subseteq> geotop_complex_vertices K\<^sub>3"
+      proof
+        fix w assume hw: "w \<in> f ` V"
+        obtain v where hvV: "v \<in> V" and hwv: "w = f v" using hw by (by100 blast)
+        have hv_VL\<^sub>3: "v \<in> geotop_complex_vertices L\<^sub>3" using hvV hV_sub by (by100 blast)
+        have hv_fimg: "v \<in> inv_into (geotop_polyhedron L) f ` geotop_complex_vertices K\<^sub>3"
+          using hv_VL\<^sub>3 hV_L\<^sub>3_img by (by100 simp)
+        obtain w0 where hw0: "w0 \<in> geotop_complex_vertices K\<^sub>3"
+                    and hv_eq: "v = inv_into (geotop_polyhedron L) f w0"
+          using hv_fimg by (by100 blast)
+        have hw0_K: "w0 \<in> geotop_polyhedron K" using hw0 hV_K\<^sub>3_in_K by (by100 blast)
+        have hfv: "f v = w0"
+          using bij_betw_inv_into_right[OF hf_bij hw0_K] hv_eq by (by100 simp)
+        show "w \<in> geotop_complex_vertices K\<^sub>3" using hwv hfv hw0 by (by100 simp)
+      qed
+      show "geotop_convex_hull V \<in> L\<^sub>3 \<longleftrightarrow> geotop_convex_hull (f ` V) \<in> K\<^sub>3"
+        sorry \<comment> \<open>Remaining: establish conv V = f_inv \<sup>\` (conv(f V)) via hull_eq,
+                   then L_3 = f_inv \<sup>\` K_3 gives the equivalence via f_inv injectivity.
+                   ~100 lines of set-reasoning.\<close>
+    qed
     have hiso_L\<^sub>3_K\<^sub>3: "geotop_isomorphic L\<^sub>3 K\<^sub>3"
       unfolding geotop_isomorphic_def geotop_isomorphism_def
       using hiso_vert hiso_simp by (by100 blast)
