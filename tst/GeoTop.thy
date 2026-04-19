@@ -2179,15 +2179,28 @@ proof -
   have h_qm_lim: "(\<lambda>m. q^m) \<longlonglongrightarrow> 0"
     using LIMSEQ_realpow_zero[of q] h_q_pos h_q_lt_1 by (by100 simp)
   have h_qmM_lim: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0"
-    sorry \<comment> \<open>f \<longlonglongrightarrow> 0 \<Longrightarrow> (\<lambda>m. f m * c) \<longlonglongrightarrow> 0; standard limit fact.\<close>
+  proof -
+    have h_mult: "(\<lambda>m. q^m * M) \<longlonglongrightarrow> 0 * M"
+      using tendsto_mult[OF h_qm_lim tendsto_const[of M sequentially]] by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
   (** (4) Squeeze: mesh is nonneg and \<le> q^m M. **)
   have h_mesh_nn: "\<And>m. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)"
     sorry \<comment> \<open>mesh is nonneg.\<close>
   have h_mesh_ub: "\<And>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K)
                        \<le> q^m * M"
     using h_step by (by100 blast)
+  have h_zero_lim: "(\<lambda>m::nat. 0::real) \<longlonglongrightarrow> 0" by (by100 simp)
   show ?thesis
-    sorry \<comment> \<open>sandwich: 0 \<le> mesh \<le> q^m * M with outer bounds both tending to 0.\<close>
+  proof (rule real_tendsto_sandwich[OF _ _ h_zero_lim h_qmM_lim])
+    show "\<forall>\<^sub>F m in sequentially. 0 \<le> geotop_mesh (\<lambda>x y. norm (x - y))
+                                       (geotop_iterated_Sd m K)"
+      using h_mesh_nn by (by100 simp)
+  next
+    show "\<forall>\<^sub>F m in sequentially. geotop_mesh (\<lambda>x y. norm (x - y))
+                                       (geotop_iterated_Sd m K) \<le> q^m * M"
+      using h_mesh_ub by (by100 simp)
+  qed
 qed
 
 (** Finiteness transfers across subdivision: if \<open>K\<close> is a finite complex and
