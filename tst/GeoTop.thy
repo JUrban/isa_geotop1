@@ -7154,11 +7154,10 @@ proof -
   (** (4) Combine: path_image \<gamma> homeomorphic \<sigma>. **)
   have h_pim_homeo_\<sigma>: "path_image \<gamma> homeomorphic ?\<sigma>"
     by (rule homeomorphic_trans[OF h_pim_homeo h_01_homeo_\<sigma>])
-  (** (5) Extract HOL homeomorphism maps. **)
-  (** (5) Full completion of steps 5-8 deferred: extract HOL homeomorphism,
-      lift to top1_homeomorphism_on via the bridge, package as geotop_is_n_cell.
-      The individual pieces (HOL extract, top1 continuity, bijection) would be
-      straightforward but caused build-timeout when written inline. **)
+  (** (5-10) Final assembly deferred - extract HOL homeomorphism f, g from
+      h_pim_homeo_σ; lift f and g to top1_continuous via the bridge; package
+      as top1_homeomorphism_on; conclude geotop_is_arc via geotop_is_n_cell_def.
+      Inline attempts hit session timeout (>120s). Left as one final sorry. **)
   show ?thesis sorry
 qed
 
