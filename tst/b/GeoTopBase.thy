@@ -11029,6 +11029,93 @@ proof -
   show ?thesis using h_conn_set is_interval_connected_1 by (by100 blast)
 qed
 
+(** Phase 1.A key helper: if {v} is a vertex of a 1-dim complex K and v
+    belongs to a simplex σ ∈ K, then {v} is a face of σ and (when σ is
+    a 1-simplex) v is one of σ's two vertices. Derived from K.2 of K. **)
+lemma geotop_1dim_vertex_in_simplex_is_face:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hv\<sigma>: "v \<in> \<sigma>"
+  shows "geotop_is_face {v} \<sigma>"
+proof -
+  have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have h_cap: "{v} \<inter> \<sigma> = {v}" using hv\<sigma> by (by100 blast)
+  have h_cap_ne: "{v} \<inter> \<sigma> \<noteq> {}" using h_cap by (by100 simp)
+  have h_face_cap: "geotop_is_face ({v} \<inter> \<sigma>) \<sigma>"
+    using hK_inter hvK h\<sigma>K h_cap_ne by (by100 blast)
+  show ?thesis using h_face_cap h_cap by (by100 simp)
+qed
+
+(** Phase 1.A corollary: if σ ∈ K (1-dim) is a 1-simplex with vertices {a, b}
+    (where a ≠ b) and {v} ∈ K with v ∈ σ, then v ∈ {a, b}. **)
+lemma geotop_1dim_vertex_in_1simplex_is_endpoint:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>_eq: "\<sigma> = closed_segment a b" and hab: "a \<noteq> b"
+  assumes hv\<sigma>: "v \<in> \<sigma>"
+  shows "v = a \<or> v = b"
+proof -
+  have h_face: "geotop_is_face {v} \<sigma>"
+    by (rule geotop_1dim_vertex_in_simplex_is_face[OF hK hvK h\<sigma>K hv\<sigma>])
+  have h_sv: "geotop_simplex_vertices \<sigma> {a, b}"
+    using h\<sigma>_eq geotop_closed_segment_simplex_vertices[OF hab] by (by100 simp)
+  obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                and hv_hull: "{v} = geotop_convex_hull W"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  have hV'_eq: "V' = {a, b}"
+    by (rule geotop_simplex_vertices_unique[OF hV'_sv h_sv])
+  have hW_sub: "W \<subseteq> {a, b}" using hW_V' hV'_eq by (by100 simp)
+  have hv_HOL: "{v} = convex hull W"
+    using hv_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  (** {v} is a singleton, so convex hull W = {v}. W nonempty subset of {a,b}.
+      If W = {a}: conv{a} = {a} = {v} ⟹ v = a. Similarly W = {b} gives v = b.
+      If W = {a, b}: conv{a,b} = closed_segment a b ≠ singleton (a ≠ b). **)
+  have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+    using hW_ne hW_sub by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hW_cases])
+    assume hW_a: "W = {a}"
+    have "{v} = convex hull {a}" using hv_HOL hW_a by (by100 simp)
+    also have "\<dots> = {a}" by (by100 simp)
+    finally have "{v} = {a}" .
+    hence "v = a" by (by100 simp)
+    thus ?thesis by (by100 blast)
+  next
+    assume hW_rest: "W = {b} \<or> W = {a, b}"
+    show ?thesis
+    proof (rule disjE[OF hW_rest])
+      assume hW_b: "W = {b}"
+      have "{v} = convex hull {b}" using hv_HOL hW_b by (by100 simp)
+      also have "\<dots> = {b}" by (by100 simp)
+      finally have "{v} = {b}" .
+      hence "v = b" by (by100 simp)
+      thus ?thesis by (by100 blast)
+    next
+      assume hW_ab: "W = {a, b}"
+      have "{v} = convex hull {a, b}" using hv_HOL hW_ab by (by100 simp)
+      also have "\<dots> = closed_segment a b" by (rule segment_convex_hull[symmetric])
+      finally have h_v_seg: "{v} = closed_segment a b" .
+      (** Singleton = segment of two distinct points — contradiction. **)
+      have ha_seg: "a \<in> closed_segment a b" by (by100 simp)
+      have hb_seg: "b \<in> closed_segment a b" by (by100 simp)
+      have ha_v: "a \<in> {v}" using ha_seg h_v_seg by (by100 simp)
+      have hb_v: "b \<in> {v}" using hb_seg h_v_seg by (by100 simp)
+      have "a = v" using ha_v by (by100 simp)
+      moreover have "b = v" using hb_v by (by100 simp)
+      ultimately have "a = b" by (by100 simp)
+      thus ?thesis using hab by (by100 blast)
+    qed
+  qed
+qed
+
 (** Specialisation: the preimage of any simplex of a 1-dim complex whose
     polyhedron is path_image γ is an interval. Key for Phase 1.A. **)
 lemma geotop_arc_preimage_simplex_is_interval:
