@@ -230,6 +230,16 @@ then K' = {σ ∈ K_sub : σ ⊆ ?B'} is a 1-dim complex by the helpers.
 Remaining gap: |K'| = ?B' (needs γ^{-1}(σ)-is-interval + non-crossing
 argument).
 
+**Follow-up:** added `geotop_arc_preimage_is_interval` — for γ an arc
+and σ ⊆ path_image γ connected, `{t ∈ [0,1]. γ t ∈ σ}` is a closed
+interval. Proof via `homeomorphism_arc` + `is_interval_connected_1`.
+This is the key step for Phase 1.A: when σ is a 1-simplex (singleton
+or closed segment, both connected), γ^{-1}(σ) is a sub-interval. The
+union of these sub-intervals over σ ∈ K equals [0,1] (since |K| = B).
+After subdivision at X (=γ(s_X)), Y (=γ(s_Y)), the sub-interval
+[s_lo, s_hi] sits at a breakpoint, so every σ's sub-interval is
+either entirely in [s_lo, s_hi] or entirely out.
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
