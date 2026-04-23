@@ -10936,6 +10936,53 @@ proof -
     using hK'_simp hK'_face hK'_inter_face hK'_locfin by (by100 blast)
 qed
 
+(** Infrastructure for Phase 1.A: the restriction of a complex K to those
+    simplices contained in an ambient set B' is automatically face-closed
+    (faces are subsets of simplices, so inherit the B' containment), hence
+    a complex by geotop_complex_subset_is_complex. **)
+lemma geotop_complex_restrict_subset_is_complex:
+  fixes K :: "'a::euclidean_space set set" and B' :: "'a set"
+  assumes hKcomp: "geotop_is_complex K"
+  shows "geotop_is_complex {\<sigma>\<in>K. \<sigma> \<subseteq> B'}"
+proof -
+  let ?K' = "{\<sigma>\<in>K. \<sigma> \<subseteq> B'}"
+  have hK'_sub: "?K' \<subseteq> K" by (by100 blast)
+  have hK_face: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using conjunct1[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have hK'_face: "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K'"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K': "\<sigma> \<in> ?K'" and h_face: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K' by (by100 simp)
+    have h\<sigma>_sub: "\<sigma> \<subseteq> B'" using h\<sigma>K' by (by100 simp)
+    have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>"
+    proof -
+      obtain V W where hV_sv: "geotop_simplex_vertices \<sigma> V"
+                   and hW_ne: "W \<noteq> {}" and hW_V: "W \<subseteq> V"
+                   and h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+        using h_face unfolding geotop_is_face_def by (by100 blast)
+      have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+        using hV_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h1: "\<tau> = convex hull W" using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have h2: "\<sigma> = convex hull V" using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have h3: "convex hull W \<subseteq> convex hull V" using hW_V hull_mono by (by100 blast)
+      show ?thesis using h1 h2 h3 by (by100 simp)
+    qed
+    have h\<tau>_K: "\<tau> \<in> K" using hK_face h\<sigma>K h_face by (by100 blast)
+    have h\<tau>_sub: "\<tau> \<subseteq> B'" using h\<tau>_sub_\<sigma> h\<sigma>_sub by (by100 blast)
+    show "\<tau> \<in> ?K'" using h\<tau>_K h\<tau>_sub by (by100 simp)
+  qed
+  show ?thesis
+    by (rule geotop_complex_subset_is_complex[OF hKcomp hK'_sub hK'_face])
+qed
+
+(** Infrastructure for Phase 1.A: the restriction preserves 1-dim-ness. **)
+lemma geotop_complex_restrict_preserves_1dim:
+  fixes K :: "'a::euclidean_space set set" and B' :: "'a set"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  shows "geotop_complex_is_1dim {\<sigma>\<in>K. \<sigma> \<subseteq> B'}"
+  using hK1dim unfolding geotop_complex_is_1dim_def by (by100 blast)
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a

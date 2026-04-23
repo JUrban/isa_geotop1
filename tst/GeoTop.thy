@@ -2494,9 +2494,11 @@ proof -
   (** (1) K.1 (closure under faces): for any (\<sigma>, h) \<in> \<K>_1 \<cup> \<K>_2, it lies in \<K>_1 or \<K>_2
          and K.1 holds for each individually. **)
   have hK1_faces: "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> (\<tau>, h) \<in> \<K>\<^sub>1"
-    using hK1 unfolding geotop_PL_complex_def by (by100 simp)
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF
+             hK1[unfolded geotop_PL_complex_def]]]]] by (by100 blast)
   have hK2_faces: "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> (\<tau>, h) \<in> \<K>\<^sub>2"
-    using hK2 unfolding geotop_PL_complex_def by (by100 simp)
+    using conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[OF
+             hK2[unfolded geotop_PL_complex_def]]]]] by (by100 blast)
   have h_K1:
     "\<forall>(\<sigma>, h)\<in>\<K>\<^sub>1 \<union> \<K>\<^sub>2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> (\<tau>, h) \<in> \<K>\<^sub>1 \<union> \<K>\<^sub>2"
     using hK1_faces hK2_faces by (by100 blast)
