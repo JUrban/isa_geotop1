@@ -77,14 +77,48 @@ Record completions here as they happen:
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
 
-## Session 2026-04-23: first_intersection closure
+## Session 2026-04-23: first_intersection + Phase 1.1 infrastructure
 
-- `geotop_arc_first_intersection` FULLY PROVED (commit e8baa6d5) — 41-line
-  compactness argument. This is the key helper for Phase 1.C overlap's
-  first-intersection strategy.
+### Fully proved helpers (this session):
 
-The remaining 6 §1+Intro sorries still need dedicated work for
-direct closure (all require ~80-200 line classical PL proofs).
+- `geotop_arc_first_intersection` (e8baa6d5) — compactness first-intersection.
+- `geotop_subdivide_edge_polyhedron_eq` (3f63ec16) — polyhedron equality.
+- `geotop_subdivide_edge_simplexes` (8b8fe06e) — K.0 axiom.
+- `geotop_subdivide_edge_locfin` (2404680a) — K.3 axiom (finite K').
+- `geotop_subdivide_edge_vertices_in_K` (a4eafd09) — vertex face-closure.
+
+### Skeletons added (sorry with plan):
+
+- `geotop_subdivide_edge_face_closed` (2c4ea14f) — K.1 axiom.
+- `geotop_subdivide_edge_inter_face` (ec69299e) — K.2 axiom.
+
+### Phase 1.1 interior assembly (ec69299e):
+
+`geotop_complex_subdivide_edge_interior` now has a fully structured
+proof that uses all helpers. Only 1 sub-sorry remains (`hK'_comp`
+— fold K.0+K.1+K.2+K.3 into is_complex_def). The face_closed and
+inter_face helpers are the two classical-content sorries.
+
+### Structured-proof lesson applied:
+
+Replaced flaky `by (by100 blast)` on 3-4 element set-membership
+disjunctions with explicit `UnE` + nested `disjE` applications.
+Each step uses `by (by100 simp)` on a singleton-membership claim.
+The new `geotop_subdivide_edge_simplexes` proof demonstrates this
+robust style — passes on first retry under load.
+
+### Remaining real §1+Intro sorries (8 now, same 6 root classical facts):
+
+Still 6 classical-content sorries + 2 new skeleton sorries that
+directly refine Phase 1.1 interior's single previous sorry:
+  - D (L1945) `classical_Sd_exists`
+  - E (L3084) Lebesgue tightening
+  - F (L3313) `h_f_exists`
+  - Phase 1.1 K.1 (face_closed) — case analysis
+  - Phase 1.1 K.2 (inter_face) — 4x4 case analysis
+  - Phase 1.1 assembly (hK'_comp) — unfold + intro K.0/K.1/K.2/K.3
+  - Phase 1.A (subarc polyhedron) — graph sub-complex
+  - Phase 1.C overlap — uses first_intersection helper now.
 
 ## Final state after this extended session
 
