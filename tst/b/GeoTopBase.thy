@@ -9154,6 +9154,25 @@ lemma geotop_subdivide_edge_face_closed:
             via hv0_K and {v0} ≠ e (different cardinalities). (4) σ = seg(R,v1):
             similar.\<close>
 
+(** Phase 1.1 helper — K.2 (intersection is face of both) for K'.
+    Classical case analysis: 4x4 matrix over {K-{e}, {R}, e_l, e_r}. **)
+lemma geotop_subdivide_edge_inter_face:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hR_e: "R \<in> e" and hR_V: "R \<notin> V"
+  shows "\<forall>\<sigma>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
+         \<forall>\<tau>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
+         \<sigma> \<inter> \<tau> \<noteq> {}
+         \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  sorry \<comment> \<open>K.2: 4x4 case analysis. Old pairs: K.2 of K. New pairs (e_l, e_r, {R}):
+            trivial since they meet at R or are disjoint. Cross pairs: σ ∈ K-{e}
+            meeting e_l/e_r/{R}: analyze σ ∩ e via K.2 of K (face of e is
+            {}, {v0}, {v1}, or e; e excluded since σ ≠ e and σ dim ≤ 1).\<close>
+
 (** Phase 1.1 helper — K.3 (local finiteness) via finite K'. **)
 lemma geotop_subdivide_edge_locfin:
   fixes K :: "'a::euclidean_space set set"
@@ -9185,9 +9204,9 @@ proof -
   thus ?thesis unfolding geotop_polyhedron_def by (by100 simp)
 qed
 
-(** Phase 1.1 helper (interior case, top-level). Substantive construction:
-    K' = (K \<setminus> {e}) \<union> {{R}, seg(v0,R), seg(R,v1)}.
-    K.0-K.3 axiom verification deferred. **)
+(** Phase 1.1 helper (interior case, top-level). Assembled from the
+    individual axiom helpers: simplexes (K.0), face_closed (K.1),
+    inter_face (K.2), locfin (K.3), polyhedron_eq. **)
 lemma geotop_complex_subdivide_edge_interior:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
@@ -9199,7 +9218,101 @@ lemma geotop_complex_subdivide_edge_interior:
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
             \<and> (finite K \<longrightarrow> finite K')"
-  sorry
+proof -
+  have hR_v0: "R \<noteq> v\<^sub>0" using hR_V hVeq by (by100 blast)
+  have hR_v1: "R \<noteq> v\<^sub>1" using hR_V hVeq by (by100 blast)
+  (** Establish e = closed_segment v0 v1. **)
+  have he_eq: "e = closed_segment v\<^sub>0 v\<^sub>1"
+  proof -
+    have h_hull_V: "e = geotop_convex_hull V"
+      using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h_hull_HOL: "e = convex hull V"
+      using h_hull_V geotop_convex_hull_eq_HOL by (by100 simp)
+    have h_V_pair: "convex hull V = convex hull {v\<^sub>0, v\<^sub>1}" using hVeq by (by100 simp)
+    have h_pair_seg: "convex hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule segment_convex_hull[symmetric])
+    show ?thesis using h_hull_HOL h_V_pair h_pair_seg by (by100 simp)
+  qed
+  (** The split fact needed for polyhedron_eq. **)
+  have he_split: "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 \<union> {R} = e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_eq by (by100 simp)
+    have h_seg_split:
+      "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 = closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule Un_closed_segment[OF hR_seg])
+    have hR_in_lhs: "R \<in> closed_segment v\<^sub>0 R" by (by100 simp)
+    show ?thesis unfolding he_eq using h_seg_split hR_in_lhs by (by100 auto)
+  qed
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  (** Polyhedron equality via helper. **)
+  have hK'_poly: "geotop_polyhedron ?K' = geotop_polyhedron K"
+    by (rule geotop_subdivide_edge_polyhedron_eq[OF he_K he_split])
+  (** {R} is in K' trivially. **)
+  have hR_K': "{R} \<in> ?K'" by (by100 blast)
+  (** Finite preservation. **)
+  have hK'_fin: "finite K \<longrightarrow> finite ?K'" by (by100 simp)
+  (** K.0 (all simplexes) via helper. **)
+  have hK'_sim: "\<forall>\<sigma>\<in>?K'. geotop_is_simplex \<sigma>"
+    by (rule geotop_subdivide_edge_simplexes[OF hKcomp hR_v0 hR_v1])
+  (** 1-dim preservation: each simplex is 0- or 1-dim. **)
+  have hR_dim: "geotop_simplex_dim {R} 0" by (rule geotop_singleton_is_simplex)
+  have he\<^sub>l_dim: "geotop_simplex_dim (closed_segment v\<^sub>0 R) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hR_v0[symmetric]])
+  have he\<^sub>r_dim: "geotop_simplex_dim (closed_segment R v\<^sub>1) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hR_v1])
+  have hK'_1dim: "geotop_complex_is_1dim ?K'"
+    unfolding geotop_complex_is_1dim_def
+  proof
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> ?K'"
+    show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+    proof (rule UnE[OF h\<sigma>K'])
+      assume h\<sigma>_L: "\<sigma> \<in> K - {e}"
+      have "\<sigma> \<in> K" using h\<sigma>_L by (by100 simp)
+      thus ?thesis using hK1dim unfolding geotop_complex_is_1dim_def by (by100 blast)
+    next
+      assume h\<sigma>_R: "\<sigma> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      have h_ins: "\<sigma> = {R} \<or> \<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        using h\<sigma>_R by (by100 simp)
+      show ?thesis
+      proof (rule disjE[OF h_ins])
+        assume "\<sigma> = {R}" thus ?thesis using hR_dim by (by100 blast)
+      next
+        assume h\<sigma>_R2: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        have h_ins2: "\<sigma> = closed_segment v\<^sub>0 R \<or> \<sigma> = closed_segment R v\<^sub>1"
+          using h\<sigma>_R2 by (by100 simp)
+        show ?thesis
+        proof (rule disjE[OF h_ins2])
+          assume "\<sigma> = closed_segment v\<^sub>0 R"
+          thus ?thesis using he\<^sub>l_dim by (by100 blast)
+        next
+          assume "\<sigma> = closed_segment R v\<^sub>1"
+          thus ?thesis using he\<^sub>r_dim by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  (** K.1, K.2, K.3 via helpers. **)
+  have hv01_in_K: "{v\<^sub>0} \<in> K \<and> {v\<^sub>1} \<in> K"
+    by (rule geotop_subdivide_edge_vertices_in_K[OF hKcomp he_K hV_verts hVeq])
+  have hv0_K: "{v\<^sub>0} \<in> K" using hv01_in_K by (by100 blast)
+  have hv1_K: "{v\<^sub>1} \<in> K" using hv01_in_K by (by100 blast)
+  have hK'_faces: "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K'"
+    by (rule geotop_subdivide_edge_face_closed[OF hKcomp he_K hv0_K hv1_K])
+  have hK'_inter: "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>\<in>?K'. \<sigma> \<inter> \<tau> \<noteq> {}
+                      \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    by (rule geotop_subdivide_edge_inter_face
+               [OF hKcomp hK1dim he_K hV_verts hVeq hv01_ne hR_e hR_V])
+  (** K.3: trivial if K is finite. Otherwise may need more care. **)
+  have hK'_comp: "geotop_is_complex ?K'"
+    sorry \<comment> \<open>Assemble K.0 + K.1 + K.2 + K.3 into is_complex. K.3 needs finite
+              K for the UNIV-nbhd shortcut. Without finite K, need per-simplex
+              careful nbhd choice. Deferred — structural assembly.\<close>
+  have h_all: "geotop_is_complex ?K' \<and> geotop_complex_is_1dim ?K'
+             \<and> geotop_polyhedron ?K' = geotop_polyhedron K \<and> {R} \<in> ?K'
+             \<and> (finite K \<longrightarrow> finite ?K')"
+    using hK'_comp hK'_1dim hK'_poly hR_K' hK'_fin by (by100 blast)
+  show ?thesis using h_all by (rule exI)
+qed
 
 (** Phase 1.1 helper (vertex case): if R is a vertex of an edge e of K,
     then {R} is already in K by face-closure. **)
