@@ -9201,8 +9201,80 @@ lemma geotop_subdivide_edge_locfin_inherit:
            \<exists>U. open U \<and> \<sigma> \<subseteq> U
              \<and> finite {\<tau>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
                         \<tau> \<inter> U \<noteq> {}}"
-  sorry \<comment> \<open>Inherit from K.3 of K. Complex case analysis on σ, using that
-            {τ ∈ K-{e}. τ ∩ U ≠ {}} ⊆ {τ ∈ K. τ ∩ U ≠ {}} is finite. Deferred.\<close>
+proof
+  fix \<sigma>
+  assume h\<sigma>: "\<sigma> \<in> (K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  (** K.3 of K gives a nbhd function. **)
+  have hK_locfin: "\<forall>\<tau>\<in>K. \<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+    using conjunct2[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  (** Main helper: given any U from K.3 of K (applied to some τ ∈ K),
+      {σ ∈ K'. σ ∩ U ≠ {}} is finite. **)
+  have h_finite_meet:
+    "\<And>U. finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}
+        \<Longrightarrow> finite {\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}"
+  proof -
+    fix U :: "'a set"
+    assume hU_fin: "finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+    have h_sub: "{\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}
+                   \<subseteq> {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      by (by100 blast)
+    have h_rhs_fin:
+      "finite ({\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1})"
+      using hU_fin by (by100 simp)
+    show "finite {\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}"
+      by (rule finite_subset[OF h_sub h_rhs_fin])
+  qed
+  (** Case split on σ. **)
+  show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>?K'. \<tau> \<inter> U \<noteq> {}}"
+  proof (rule UnE[OF h\<sigma>])
+    assume h\<sigma>_L: "\<sigma> \<in> K - {e}"
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_L by (by100 simp)
+    have h_U_ex: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+      using hK_locfin h\<sigma>_K by (by100 blast)
+    obtain U where hU_open: "open U" and hU_sub: "\<sigma> \<subseteq> U"
+               and hU_fin: "finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+      using h_U_ex by (by100 blast)
+    have hU_fin': "finite {\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}"
+      using h_finite_meet[OF hU_fin] by (by100 simp)
+    show ?thesis using hU_open hU_sub hU_fin' by (by100 blast)
+  next
+    assume h\<sigma>_R: "\<sigma> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+    (** For new σ, take U_e from K.3 of K applied to e. σ ⊆ e ⊆ U_e. **)
+    have h_Ue_ex: "\<exists>U. open U \<and> e \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+      using hK_locfin he_K by (by100 blast)
+    obtain Ue where hUe_open: "open Ue" and hUe_sub: "e \<subseteq> Ue"
+                and hUe_fin: "finite {\<tau>'\<in>K. \<tau>' \<inter> Ue \<noteq> {}}"
+      using h_Ue_ex by (by100 blast)
+    have h\<sigma>_sub_e: "\<sigma> \<subseteq> e"
+    proof -
+      have h_ins: "\<sigma> = {R} \<or> \<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        using h\<sigma>_R by (by100 simp)
+      show ?thesis
+      proof (rule disjE[OF h_ins])
+        assume "\<sigma> = {R}"
+        thus ?thesis using hR_e by (by100 simp)
+      next
+        assume h\<sigma>_R2: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        have h_ins2: "\<sigma> = closed_segment v\<^sub>0 R \<or> \<sigma> = closed_segment R v\<^sub>1"
+          using h\<sigma>_R2 by (by100 simp)
+        show ?thesis
+        proof (rule disjE[OF h_ins2])
+          assume "\<sigma> = closed_segment v\<^sub>0 R"
+          thus ?thesis using hel_sub_e by (by100 simp)
+        next
+          assume "\<sigma> = closed_segment R v\<^sub>1"
+          thus ?thesis using her_sub_e by (by100 simp)
+        qed
+      qed
+    qed
+    have h\<sigma>_sub_Ue: "\<sigma> \<subseteq> Ue" using h\<sigma>_sub_e hUe_sub by (by100 blast)
+    have hUe_fin': "finite {\<tau>'\<in>?K'. \<tau>' \<inter> Ue \<noteq> {}}"
+      using h_finite_meet[OF hUe_fin] by (by100 simp)
+    show ?thesis using hUe_open h\<sigma>_sub_Ue hUe_fin' by (by100 blast)
+  qed
+qed
 
 (** Phase 1.1 helper — polyhedron equality for the subdivided complex. **)
 lemma geotop_subdivide_edge_polyhedron_eq:
