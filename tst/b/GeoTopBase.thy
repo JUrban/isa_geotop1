@@ -9883,8 +9883,105 @@ proof (intro ballI impI)
         sorry \<comment> \<open>Cross case new × old: symmetric to old × new.\<close>
     next
       assume h\<tau>_new: "\<tau> \<in> {{R}, ?el, ?er}"
+      (** New × new: 3×3 enumerable. **)
+      have h\<sigma>_disj: "\<sigma> = {R} \<or> \<sigma> = ?el \<or> \<sigma> = ?er" using h\<sigma>_new by (by100 simp)
+      have h\<tau>_disj: "\<tau> = {R} \<or> \<tau> = ?el \<or> \<tau> = ?er" using h\<tau>_new by (by100 simp)
+      (** Derived geometric facts. **)
+      have he_V_hull: "e = geotop_convex_hull V"
+        using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+      have he_HOL: "e = convex hull V"
+        using he_V_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have he_cs: "e = closed_segment v\<^sub>0 v\<^sub>1"
+      proof -
+        have h1: "e = convex hull {v\<^sub>0, v\<^sub>1}" using he_HOL hVeq by (by100 simp)
+        have h2: "convex hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+          by (rule segment_convex_hull[symmetric])
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      have hR_cs: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_cs by (by100 simp)
+      have h_el_er: "?el \<inter> ?er = {R}"
+        by (rule geotop_subdivide_edge_el_inter_er[OF hR_cs])
+      have hR_el: "R \<in> ?el" by (by100 simp)
+      have hR_er: "R \<in> ?er" by (by100 simp)
+      (** Face facts. **)
+      have h_R_R: "geotop_is_face {R} {R}" by (rule geotop_singleton_is_face_self)
+      have hv0R_ne: "v\<^sub>0 \<noteq> R" using hR_v0 by (by100 blast)
+      have hRv1_ne: "R \<noteq> v\<^sub>1" using hR_v1 by (by100 blast)
+      have h_R_el: "geotop_is_face {R} ?el"
+        by (rule geotop_closed_segment_is_face_endpoint[OF hv0R_ne]) (by100 simp)
+      have h_R_er: "geotop_is_face {R} ?er"
+        by (rule geotop_closed_segment_is_face_endpoint[OF hRv1_ne]) (by100 simp)
+      have h_el_self: "geotop_is_face ?el ?el"
+        by (rule geotop_closed_segment_is_face_self[OF hv0R_ne])
+      have h_er_self: "geotop_is_face ?er ?er"
+        by (rule geotop_closed_segment_is_face_self[OF hRv1_ne])
       show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-        sorry \<comment> \<open>New × new: 3x3 enumerable cases using el_inter_er helper and endpoint faces.\<close>
+      proof (rule disjE[OF h\<sigma>_disj])
+        assume h\<sigma>_R: "\<sigma> = {R}"
+        show ?thesis
+        proof (rule disjE[OF h\<tau>_disj])
+          assume h\<tau>_R: "\<tau> = {R}"
+          have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_R h\<tau>_R by (by100 simp)
+          show ?thesis using h_int h\<sigma>_R h\<tau>_R h_R_R by (by100 simp)
+        next
+          assume h\<tau>_rest: "\<tau> = ?el \<or> \<tau> = ?er"
+          show ?thesis
+          proof (rule disjE[OF h\<tau>_rest])
+            assume h\<tau>_el: "\<tau> = ?el"
+            have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_R h\<tau>_el hR_el by (by100 simp)
+            show ?thesis using h_int h\<sigma>_R h\<tau>_el h_R_R h_R_el by (by100 simp)
+          next
+            assume h\<tau>_er: "\<tau> = ?er"
+            have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_R h\<tau>_er hR_er by (by100 simp)
+            show ?thesis using h_int h\<sigma>_R h\<tau>_er h_R_R h_R_er by (by100 simp)
+          qed
+        qed
+      next
+        assume h\<sigma>_rest: "\<sigma> = ?el \<or> \<sigma> = ?er"
+        show ?thesis
+        proof (rule disjE[OF h\<sigma>_rest])
+          assume h\<sigma>_el: "\<sigma> = ?el"
+          show ?thesis
+          proof (rule disjE[OF h\<tau>_disj])
+            assume h\<tau>_R: "\<tau> = {R}"
+            have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_el h\<tau>_R hR_el by (by100 simp)
+            show ?thesis using h_int h\<sigma>_el h\<tau>_R h_R_el h_R_R by (by100 simp)
+          next
+            assume h\<tau>_rest: "\<tau> = ?el \<or> \<tau> = ?er"
+            show ?thesis
+            proof (rule disjE[OF h\<tau>_rest])
+              assume h\<tau>_el: "\<tau> = ?el"
+              have h_int: "\<sigma> \<inter> \<tau> = ?el" using h\<sigma>_el h\<tau>_el by (by100 simp)
+              show ?thesis using h_int h\<sigma>_el h\<tau>_el h_el_self by (by100 simp)
+            next
+              assume h\<tau>_er: "\<tau> = ?er"
+              have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_el h\<tau>_er h_el_er by (by100 simp)
+              show ?thesis using h_int h\<sigma>_el h\<tau>_er h_R_el h_R_er by (by100 simp)
+            qed
+          qed
+        next
+          assume h\<sigma>_er: "\<sigma> = ?er"
+          show ?thesis
+          proof (rule disjE[OF h\<tau>_disj])
+            assume h\<tau>_R: "\<tau> = {R}"
+            have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_er h\<tau>_R hR_er by (by100 simp)
+            show ?thesis using h_int h\<sigma>_er h\<tau>_R h_R_er h_R_R by (by100 simp)
+          next
+            assume h\<tau>_rest: "\<tau> = ?el \<or> \<tau> = ?er"
+            show ?thesis
+            proof (rule disjE[OF h\<tau>_rest])
+              assume h\<tau>_el: "\<tau> = ?el"
+              have h_el_er_sym: "?er \<inter> ?el = {R}" using h_el_er by (by100 blast)
+              have h_int: "\<sigma> \<inter> \<tau> = {R}" using h\<sigma>_er h\<tau>_el h_el_er_sym by (by100 simp)
+              show ?thesis using h_int h\<sigma>_er h\<tau>_el h_R_er h_R_el by (by100 simp)
+            next
+              assume h\<tau>_er: "\<tau> = ?er"
+              have h_int: "\<sigma> \<inter> \<tau> = ?er" using h\<sigma>_er h\<tau>_er by (by100 simp)
+              show ?thesis using h_int h\<sigma>_er h\<tau>_er h_er_self by (by100 simp)
+            qed
+          qed
+        qed
+      qed
     qed
   qed
 qed
