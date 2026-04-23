@@ -10883,6 +10883,67 @@ proof -
   show ?thesis by (rule homeomorphism_arc[OF harc]) (rule exI)
 qed
 
+(** Infrastructure for Phase 1.A: for γ an arc and σ ⊆ path_image γ connected,
+    the preimage {t ∈ [0,1]. γ t ∈ σ} is a closed interval in [0,1].
+    This is the key step making γ behave well with 1-simplices of K: each
+    simplex σ ⊆ B maps back to a sub-interval, so X, Y as vertices cut the
+    parameter line at breakpoints. **)
+lemma geotop_arc_preimage_is_interval:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  assumes harc: "arc \<gamma>"
+  assumes h\<sigma>_sub: "\<sigma> \<subseteq> path_image \<gamma>"
+  assumes h\<sigma>_conn: "connected \<sigma>"
+  shows "is_interval {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}"
+proof -
+  have h_ex_h: "\<exists>h. homeomorphism {0..1} (path_image \<gamma>) \<gamma> h"
+    by (rule geotop_arc_homeomorphism_image[OF harc])
+  obtain h where hhomeo: "homeomorphism {0..1} (path_image \<gamma>) \<gamma> h"
+    using h_ex_h by (by100 blast)
+  have hcont_h: "continuous_on (path_image \<gamma>) h"
+    using hhomeo unfolding homeomorphism_def by (by100 blast)
+  have hcont_h_\<sigma>: "continuous_on \<sigma> h"
+    using hcont_h h\<sigma>_sub continuous_on_subset by (by100 blast)
+  have h_conn_img: "connected (h ` \<sigma>)"
+    by (rule connected_continuous_image[OF hcont_h_\<sigma> h\<sigma>_conn])
+  (** Show the preimage set equals h ` σ. **)
+  have h_set_eq: "{t\<in>{0..1}. \<gamma> t \<in> \<sigma>} = h ` \<sigma>"
+  proof
+    show "{t\<in>{0..1}. \<gamma> t \<in> \<sigma>} \<subseteq> h ` \<sigma>"
+    proof
+      fix t assume ht_mem: "t \<in> {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}"
+      have ht_01: "t \<in> {0..1}" using ht_mem by (by100 blast)
+      have ht_\<sigma>: "\<gamma> t \<in> \<sigma>" using ht_mem by (by100 blast)
+      have h_inv: "h (\<gamma> t) = t"
+        using hhomeo ht_01 unfolding homeomorphism_def by (by100 blast)
+      show "t \<in> h ` \<sigma>" using h_inv ht_\<sigma> by (by100 force)
+    qed
+    show "h ` \<sigma> \<subseteq> {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}"
+    proof
+      fix t assume ht_img: "t \<in> h ` \<sigma>"
+      obtain x where hx_\<sigma>: "x \<in> \<sigma>" and ht_eq: "t = h x" using ht_img by (by100 blast)
+      have hx_B: "x \<in> path_image \<gamma>" using hx_\<sigma> h\<sigma>_sub by (by100 blast)
+      have h_t_01: "t \<in> {0..1}"
+      proof -
+        have "h ` path_image \<gamma> = {0..1}"
+          using hhomeo unfolding homeomorphism_def by (by100 blast)
+        hence "h x \<in> {0..1}" using hx_B by (by100 blast)
+        thus ?thesis using ht_eq by (by100 simp)
+      qed
+      have h_\<gamma>t_eq_x: "\<gamma> t = x"
+      proof -
+        have h_inv2: "\<gamma> (h x) = x"
+          using hhomeo hx_B unfolding homeomorphism_def by (by100 blast)
+        show ?thesis using h_inv2 ht_eq by (by100 simp)
+      qed
+      have h_\<gamma>t_\<sigma>: "\<gamma> t \<in> \<sigma>" using h_\<gamma>t_eq_x hx_\<sigma> by (by100 simp)
+      show "t \<in> {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}" using h_t_01 h_\<gamma>t_\<sigma> by (by100 blast)
+    qed
+  qed
+  have h_conn_set: "connected {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}"
+    using h_set_eq h_conn_img by (by100 simp)
+  show ?thesis using h_conn_set is_interval_connected_1 by (by100 blast)
+qed
+
 (** Infrastructure for Phase 1.A: if K is a complex and K' ⊆ K is closed
     under face-taking (within K), then K' is also a complex. This is the
     classical sub-complex construction. **)
