@@ -126,7 +126,25 @@ Now stable in GeoTopBase:
 - `geotop_simplex_diameter_nonneg` — simplex diameter bound.
 - `geotop_mesh_norm_nonneg` — mesh non-negative (with finite/diameter hypotheses).
 
-### Remaining real §1+Intro sorries (7):
+### Session 2026-04-23 continued: CLOSE face_closed (K.1) and singleton_ne_e helpers
+
+Major closure:
+- `geotop_subdivide_edge_singleton_ne_e` FULLY PROVED (commit 69ac3d82).
+- `geotop_closed_segment_simplex_vertices` FULLY PROVED (8ad86dad).
+- `geotop_subdivide_edge_face_closed` (K.1) FULLY PROVED (e4bdecdb).
+
+Phase 1.1 interior hK'_comp now has K.0 ✓, K.1 ✓, K.3 ✓ — only K.2
+(inter_face) remains sorry. Also hardened flaky GeoTop line 8770.
+
+**6 real §1+Intro sorries remaining** (was 7):
+  - D L1945 `classical_Sd_exists`
+  - E L3084 Lebesgue tightening
+  - F L3313 `h_f_exists`
+  - Phase 1.1 K.2 `inter_face` — 4x4 case analysis (last Phase 1.1 piece)
+  - Phase 1.A `subarc` polyhedron
+  - Phase 1.C overlap
+
+### Remaining real §1+Intro sorries (was 7, now 6):
 
 Phase 1.1 interior is now FULLY STRUCTURALLY PROVED using 6 helpers
 (5 fully proved + 2 skeleton = 7 helpers total). Assembly hK'_comp
