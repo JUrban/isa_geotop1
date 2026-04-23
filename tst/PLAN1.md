@@ -207,6 +207,29 @@ Main proof structure (commits dcf2c38f 58c8e0f7 3626af6c 817e92ee e8c1f548 19bca
 All of Phase 1.1 (`complex_subdivide_edge`) is now STRUCTURALLY + CONTENT-COMPLETE.
 Build times unchanged: fresh 51s, cached 8s.
 
+## Session 2026-04-23 continued: Phase 1.A infrastructure
+
+Added reusable helpers for the subarc polyhedron proof (still sorry,
+but the pieces needed are now in place):
+
+- `geotop_1dim_simplex_cases` — a 1-dim complex simplex is a singleton
+  or a closed_segment between distinct points.
+- `geotop_arc_homeomorphism_image` — `arc γ ⟹ ∃h. homeomorphism {0..1}
+  (path_image γ) γ h`. Thin wrapper on `homeomorphism_arc`.
+- `geotop_complex_subset_is_complex` — a face-closed subset of a
+  complex is a complex. General-purpose sub-complex machinery.
+- `geotop_complex_restrict_subset_is_complex` — specialisation:
+  `{σ ∈ K : σ ⊆ B'}` is automatically face-closed (faces are subsets)
+  and hence a complex when K is.
+- `geotop_complex_restrict_preserves_1dim` — 1-dim-ness is inherited
+  by arbitrary subsets.
+
+With these, the Phase 1.A construction becomes: take K (1-dim complex
+with |K| = B), subdivide at X, Y to get K_sub (still 1-dim complex);
+then K' = {σ ∈ K_sub : σ ⊆ ?B'} is a 1-dim complex by the helpers.
+Remaining gap: |K'| = ?B' (needs γ^{-1}(σ)-is-interval + non-crossing
+argument).
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
