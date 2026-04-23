@@ -10883,6 +10883,59 @@ proof -
   show ?thesis by (rule homeomorphism_arc[OF harc]) (rule exI)
 qed
 
+(** Infrastructure for Phase 1.A: if K is a complex and K' ⊆ K is closed
+    under face-taking (within K), then K' is also a complex. This is the
+    classical sub-complex construction. **)
+lemma geotop_complex_subset_is_complex:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK'_sub: "K' \<subseteq> K"
+  assumes hK'_face: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K'"
+  shows "geotop_is_complex K'"
+proof -
+  have hK_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hK_inter_face: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have hK_locfin: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using conjunct2[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  (** K.0 for K'. **)
+  have hK'_simp: "\<forall>\<sigma>\<in>K'. geotop_is_simplex \<sigma>"
+    using hK_simp hK'_sub by (by100 blast)
+  (** K.2 for K'. **)
+  have hK'_inter_face: "\<forall>\<sigma>\<in>K'. \<forall>\<tau>\<in>K'. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                       geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K': "\<sigma> \<in> K'" and h\<tau>K': "\<tau> \<in> K'" and hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K' hK'_sub by (by100 blast)
+    have h\<tau>K: "\<tau> \<in> K" using h\<tau>K' hK'_sub by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hK_inter_face h\<sigma>K h\<tau>K hne by (by100 blast)
+  qed
+  (** K.3 for K'. **)
+  have hK'_locfin: "\<forall>\<sigma>\<in>K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>K' hK'_sub by (by100 blast)
+    have h_ex_U: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK_locfin h\<sigma>K by (by100 blast)
+    obtain U where hopen: "open U" and hsub: "\<sigma> \<subseteq> U"
+               and hfin_K: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using h_ex_U by (by100 blast)
+    have h_sub_sub: "{\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}} \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using hK'_sub by (by100 blast)
+    have hfin_K': "finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+      using finite_subset[OF h_sub_sub hfin_K] by (by100 blast)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+      using hopen hsub hfin_K' by (by100 blast)
+  qed
+  show ?thesis unfolding geotop_is_complex_def
+    using hK'_simp hK'_face hK'_inter_face hK'_locfin by (by100 blast)
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
