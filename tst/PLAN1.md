@@ -263,6 +263,24 @@ With all this infrastructure, the subarc polyhedron proof becomes:
 
 Estimated proof length: 200-300 Isar lines. Plans to close next session.
 
+### Attempted Phase 1.A proof — lesson learned
+
+First attempt (~473 lines monolithic) hit 120s session timeout. Split
+attempt (~140-line preimage_structure helper + main) hit type issue:
+`continuous_injective_image_segment_1` requires `f :: 'a ⇒ real`, not
+`f :: real ⇒ 'a` as we have for γ.
+
+**Fix for next session:** add a projection-based helper
+`geotop_homeomorphism_segment_endpoints`:
+`continuous_on [p..q] γ → inj_on γ [p..q] → γ ` [p..q] = closed_segment a b
+ → {γ p, γ q} = {a, b}`.
+Proof via projection π(x) = inner (b - a) x:
+- π ∘ γ : [p, q] → ℝ continuous injective (π injective on closed_segment a b).
+- Apply continuous_injective_image_segment_1 to π ∘ γ.
+- Get {π(γ p), π(γ q)} = {π a, π b}.
+- π injective on σ gives {γ p, γ q} = {a, b}.
+Then Phase 1.A proof becomes ~200 lines (single monolithic fits under 120s).
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
