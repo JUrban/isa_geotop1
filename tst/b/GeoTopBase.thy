@@ -9059,9 +9059,26 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Phase 1.1 helper — polyhedron equality for the subdivided complex. **)
+lemma geotop_subdivide_edge_polyhedron_eq:
+  fixes K :: "'a::euclidean_space set set"
+  assumes he_K: "e \<in> K"
+  assumes he_split: "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 \<union> {R} = e"
+  shows "geotop_polyhedron ((K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1})
+         = geotop_polyhedron K"
+proof -
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  have h1: "\<Union>?K' = \<Union>(K - {e}) \<union> (closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 \<union> {R})"
+    by (by100 blast)
+  have h3: "\<Union>?K' = \<Union>(K - {e}) \<union> e" using h1 he_split by (by100 simp)
+  have h2: "\<Union>(K - {e}) \<union> e = \<Union>K" using he_K by (by100 blast)
+  have heq: "\<Union>?K' = \<Union>K" using h2 h3 by (by100 simp)
+  thus ?thesis unfolding geotop_polyhedron_def by (by100 simp)
+qed
+
 (** Phase 1.1 helper (interior case, top-level). Substantive construction:
     K' = (K \<setminus> {e}) \<union> {{R}, seg(v0,R), seg(R,v1)}.
-    Full axiom verification deferred as one focused sorry. **)
+    K.0-K.3 axiom verification deferred. **)
 lemma geotop_complex_subdivide_edge_interior:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
