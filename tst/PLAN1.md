@@ -107,18 +107,20 @@ Each step uses `by (by100 simp)` on a singleton-membership claim.
 The new `geotop_subdivide_edge_simplexes` proof demonstrates this
 robust style — passes on first retry under load.
 
-### Remaining real §1+Intro sorries (8 now, same 6 root classical facts):
+### Remaining real §1+Intro sorries (7):
 
-Still 6 classical-content sorries + 2 new skeleton sorries that
-directly refine Phase 1.1 interior's single previous sorry:
+Phase 1.1 interior is now FULLY STRUCTURALLY PROVED using 6 helpers
+(5 fully proved + 2 skeleton = 7 helpers total). Assembly hK'_comp
+is CLOSED. Only K.1 and K.2 content remains as narrow sorries:
   - D (L1945) `classical_Sd_exists`
   - E (L3084) Lebesgue tightening
   - F (L3313) `h_f_exists`
-  - Phase 1.1 K.1 (face_closed) — case analysis
-  - Phase 1.1 K.2 (inter_face) — 4x4 case analysis
-  - Phase 1.1 assembly (hK'_comp) — unfold + intro K.0/K.1/K.2/K.3
+  - Phase 1.1 K.1 (face_closed) — single focused sorry, signature
+    strengthened with 1-dim + R distinctness for the core argument
+  - Phase 1.1 K.2 (inter_face) — 4x4 case analysis sorry
   - Phase 1.A (subarc polyhedron) — graph sub-complex
-  - Phase 1.C overlap — uses first_intersection helper now.
+  - Phase 1.C overlap — uses first_intersection helper now (all
+    structure present, just needs sub-arc construction).
 
 ## Final state after this extended session
 
