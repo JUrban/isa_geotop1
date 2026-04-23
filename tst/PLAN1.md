@@ -70,8 +70,9 @@ Record completions here as they happen:
 - [x] Phase 1.3: `geotop_broken_line_vertex_at` — FULLY PROVED (finite + vertex).
 - [x] Phase 1.B: `glue_disjoint_endpoints` polyhedron — FULLY PROVED structurally (3085cd02, 21f4d9fd).
 - [~] Phase 1.C: disjoint sub-case of `arc_reduction` hard case — CLOSED via glue_disjoint (91784d0b); overlap sub-case still sorry.
-- [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron) — still sorry.
-- [ ] Phase 1.C overlap: first-intersection classical — still sorry.
+- [x] Phase 1.C helper `geotop_arc_first_intersection` — FULLY PROVED (commit e8baa6d5). 41-line compactness argument: S = γ -` T ∩ [0,1] nonempty closed bounded, sstar = Inf S ∈ S, minimality via cInf_lower.
+- [ ] Phase 1.A: close A (`broken_line_subarc` polyhedron) — still sorry (needs graph sub-complex extraction).
+- [ ] Phase 1.C overlap: requires subarc polyhedron (1.A) since the first-intersection argument needs a specific sub-arc construction, not subarc's abstract ∃B'.
 - [ ] Phase 2: close D (`classical_Sd_exists`)
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
