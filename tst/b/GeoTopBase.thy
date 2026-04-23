@@ -9192,11 +9192,91 @@ lemma geotop_subdivide_edge_face_closed:
   shows "\<forall>\<sigma>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
            \<forall>\<tau>. geotop_is_face \<tau> \<sigma>
               \<longrightarrow> \<tau> \<in> (K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
-  sorry \<comment> \<open>K.1: case analysis on σ. (1) σ ∈ K - {e}: face τ ∈ K via K.1;
-            τ ≠ e via 1-dim restriction on σ + simplex_vertices_unique.
-            (2) σ = {R}: face = {R} itself. (3) σ = seg(v0,R): faces
-            {v0}, {R}, seg(v0,R); {v0} ∈ K-{e} via hv0_K and cardinality
-            argument that {v0} ≠ e. (4) σ = seg(R,v1): similar.\<close>
+proof (intro ballI allI impI)
+  fix \<sigma> \<tau>
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  assume h\<sigma>: "\<sigma> \<in> ?K'"
+  assume h_face: "geotop_is_face \<tau> \<sigma>"
+  have hK_face: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'. geotop_is_face \<tau>' \<sigma>' \<longrightarrow> \<tau>' \<in> K"
+    using conjunct1[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have h_v0_ne_e: "{v\<^sub>0} \<noteq> e \<and> {v\<^sub>1} \<noteq> e"
+    by (rule geotop_subdivide_edge_singleton_ne_e[OF hV_verts hVeq hv01_ne])
+  have h_v0_ne: "{v\<^sub>0} \<noteq> e" using h_v0_ne_e by (by100 blast)
+  have h_v1_ne: "{v\<^sub>1} \<noteq> e" using h_v0_ne_e by (by100 blast)
+  show "\<tau> \<in> ?K'"
+  proof (rule UnE[OF h\<sigma>])
+    assume h\<sigma>_old: "\<sigma> \<in> K - {e}"
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_old by (by100 simp)
+    have h\<sigma>_ne_e: "\<sigma> \<noteq> e" using h\<sigma>_old by (by100 simp)
+    have h\<tau>_K: "\<tau> \<in> K" using hK_face h\<sigma>_K h_face by (by100 blast)
+    have h\<tau>_ne_e: "\<tau> \<noteq> e"
+      sorry \<comment> \<open>σ ∈ K - {e} is 1-dim (via K 1-dim); if τ = e (dim 1), then
+                V(σ) ⊇ V(e), |V(σ)| ≤ 2, so V(σ) = V(e) and σ = e,
+                contradicting σ ≠ e.\<close>
+    have h\<tau>_Ke: "\<tau> \<in> K - {e}" using h\<tau>_K h\<tau>_ne_e by (by100 simp)
+    show "\<tau> \<in> ?K'" using h\<tau>_Ke by (by100 blast)
+  next
+    assume h\<sigma>_new: "\<sigma> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+    have h_ins: "\<sigma> = {R} \<or> \<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      using h\<sigma>_new by (by100 simp)
+    show "\<tau> \<in> ?K'"
+    proof (rule disjE[OF h_ins])
+      assume h\<sigma>_R: "\<sigma> = {R}"
+      (** Face of {R} is {R}. **)
+      have h_dim_R: "geotop_simplex_dim {R} 0" by (rule geotop_singleton_is_simplex)
+      have h_sv_R: "geotop_simplex_vertices {R} {R}"
+      proof -
+        obtain V1 m1 where h_V1_fin: "finite V1" and h_V1_card: "card V1 = 0 + 1"
+                       and h_nm1: "0 \<le> m1" and h_gp1: "geotop_general_position V1 m1"
+                       and h_R_hull1: "{R} = geotop_convex_hull V1"
+          using h_dim_R unfolding geotop_simplex_dim_def by (by100 blast)
+        have h_V1_card_1: "card V1 = 1" using h_V1_card by (by100 simp)
+        have h_V1_R: "V1 = {R}"
+        proof -
+          have h_hull_HOL: "{R} = convex hull V1"
+            using h_R_hull1 geotop_convex_hull_eq_HOL by (by100 simp)
+          have h_V1_sing: "\<exists>x. V1 = {x}"
+            using h_V1_card_1 card_1_singletonE by (by100 metis)
+          obtain x where h_V1_x: "V1 = {x}" using h_V1_sing by (by100 blast)
+          have h_x_R: "x = R"
+          proof -
+            have "convex hull {x} = {x}" by (by100 simp)
+            hence "{R} = {x}" using h_hull_HOL h_V1_x by (by100 simp)
+            thus ?thesis by (by100 blast)
+          qed
+          show ?thesis using h_V1_x h_x_R by (by100 simp)
+        qed
+        show ?thesis unfolding geotop_simplex_vertices_def
+          using h_V1_fin h_V1_card h_nm1 h_gp1 h_R_hull1 h_V1_R by (by100 blast)
+      qed
+      obtain V' W' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                      and hW'_ne: "W' \<noteq> {}" and hW'_V': "W' \<subseteq> V'"
+                      and h\<tau>_hull: "\<tau> = geotop_convex_hull W'"
+        using h_face unfolding geotop_is_face_def by (by100 blast)
+      have hV'_sv_R: "geotop_simplex_vertices \<sigma> {R}"
+        using h_sv_R h\<sigma>_R by (by100 simp)
+      have hV'_eq: "V' = {R}"
+        by (rule geotop_simplex_vertices_unique[OF hV'_sv hV'_sv_R])
+      have hW'_sub_R: "W' \<subseteq> {R}" using hW'_V' hV'_eq by (by100 simp)
+      have hW'_R: "W' = {R}" using hW'_ne hW'_sub_R by (by100 blast)
+      have h\<tau>_R: "\<tau> = {R}"
+      proof -
+        have h_step1: "\<tau> = geotop_convex_hull {R}" using h\<tau>_hull hW'_R by (by100 simp)
+        have h_step2: "geotop_convex_hull {R} = convex hull {R}"
+          by (rule geotop_convex_hull_eq_HOL)
+        have h_step3: "(convex hull {R}) = {R}" by (by100 simp)
+        show ?thesis using h_step1 h_step2 h_step3 by (by100 simp)
+      qed
+      show "\<tau> \<in> ?K'" using h\<tau>_R by (by100 blast)
+    next
+      assume h\<sigma>_lr: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      show "\<tau> \<in> ?K'"
+        sorry \<comment> \<open>σ = closed_segment v0 R or closed_segment R v1. Faces are
+                  the vertices ({v0}, {R} or {R}, {v1}) and σ itself, all in K'.\<close>
+    qed
+  qed
+qed
 
 (** Phase 1.1 helper — K.2 (intersection is face of both) for K'.
     Classical case analysis: 4x4 matrix over {K-{e}, {R}, e_l, e_r}. **)
