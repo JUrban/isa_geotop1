@@ -9139,20 +9139,26 @@ proof -
 qed
 
 (** Phase 1.1 helper — K.1 (face closure) for the subdivided complex.
-    Requires knowing {v\<^sub>0}, {v\<^sub>1} \<in> K (from vertices_in_K). **)
+    Requires knowing {v\<^sub>0}, {v\<^sub>1} \<in> K (from vertices_in_K).
+    Additionally requires K 1-dim and that v\<^sub>0 \<noteq> v\<^sub>1 so we can rule
+    out τ = e when σ ∈ K-{e}. **)
 lemma geotop_subdivide_edge_face_closed:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
   assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
   assumes hv0_K: "{v\<^sub>0} \<in> K" and hv1_K: "{v\<^sub>1} \<in> K"
+  assumes hR_v0: "R \<noteq> v\<^sub>0" and hR_v1: "R \<noteq> v\<^sub>1"
   shows "\<forall>\<sigma>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
            \<forall>\<tau>. geotop_is_face \<tau> \<sigma>
               \<longrightarrow> \<tau> \<in> (K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
-  sorry \<comment> \<open>K.1: case analysis on σ. (1) σ ∈ K - {e}: face τ ∈ K via K.1; τ ≠ e
-            via 1-dim restriction on σ. (2) σ = {R}: face = {R} itself.
-            (3) σ = seg(v0,R): faces {v0}, {R}, seg(v0,R). {v0} ∈ K - {e}
-            via hv0_K and {v0} ≠ e (different cardinalities). (4) σ = seg(R,v1):
-            similar.\<close>
+  sorry \<comment> \<open>K.1: case analysis on σ. (1) σ ∈ K - {e}: face τ ∈ K via K.1;
+            τ ≠ e via 1-dim restriction on σ + simplex_vertices_unique.
+            (2) σ = {R}: face = {R} itself. (3) σ = seg(v0,R): faces
+            {v0}, {R}, seg(v0,R); {v0} ∈ K-{e} via hv0_K and cardinality
+            argument that {v0} ≠ e. (4) σ = seg(R,v1): similar.\<close>
 
 (** Phase 1.1 helper — K.2 (intersection is face of both) for K'.
     Classical case analysis: 4x4 matrix over {K-{e}, {R}, e_l, e_r}. **)
@@ -9386,7 +9392,8 @@ proof -
   have hv0_K: "{v\<^sub>0} \<in> K" using hv01_in_K by (by100 blast)
   have hv1_K: "{v\<^sub>1} \<in> K" using hv01_in_K by (by100 blast)
   have hK'_faces: "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K'"
-    by (rule geotop_subdivide_edge_face_closed[OF hKcomp he_K hv0_K hv1_K])
+    by (rule geotop_subdivide_edge_face_closed
+               [OF hKcomp hK1dim he_K hV_verts hVeq hv01_ne hv0_K hv1_K hR_v0 hR_v1])
   have hK'_inter: "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>\<in>?K'. \<sigma> \<inter> \<tau> \<noteq> {}
                       \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
     by (rule geotop_subdivide_edge_inter_face
