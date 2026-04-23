@@ -9059,6 +9059,47 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Helper: in a 1-dim complex, every simplex is either a singleton
+    (dim 0) or a closed segment between two distinct points (dim 1). **)
+lemma geotop_1dim_simplex_cases:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+proof -
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using geotop_1dim_complex_simp_dim_le_1[OF hK1dim h\<sigma>K] by (by100 blast)
+  obtain V m where hV_fin: "finite V" and hV_card: "card V = n + 1"
+                and hnm: "n \<le> m" and hV_gp: "geotop_general_position V m"
+                and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have h_n_cases: "n = 0 \<or> n = 1" using hn_le by (by100 linarith)
+  show ?thesis
+  proof (rule disjE[OF h_n_cases])
+    assume h_n0: "n = 0"
+    have hV_card1: "card V = 1" using hV_card h_n0 by (by100 simp)
+    have "\<exists>v. V = {v}"
+      using hV_card1 card_1_singletonE by (by100 metis)
+    then obtain v where hVv: "V = {v}" by (by100 blast)
+    have "\<sigma> = geotop_convex_hull {v}" using h\<sigma>_hull hVv by (by100 simp)
+    also have "\<dots> = convex hull {v}" by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = {v}" by (by100 simp)
+    finally have "\<sigma> = {v}" .
+    thus ?thesis by (by100 blast)
+  next
+    assume h_n1: "n = 1"
+    have hV_card2: "card V = 2" using hV_card h_n1 by (by100 simp)
+    have "\<exists>a b. a \<noteq> b \<and> V = {a, b}"
+      using hV_card2 card_2_iff by (by100 metis)
+    then obtain a b where hab_ne: "a \<noteq> b" and hVab: "V = {a, b}" by (by100 blast)
+    have "\<sigma> = geotop_convex_hull {a, b}" using h\<sigma>_hull hVab by (by100 simp)
+    also have "\<dots> = convex hull {a, b}" by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = closed_segment a b" by (rule segment_convex_hull[symmetric])
+    finally have "\<sigma> = closed_segment a b" .
+    thus ?thesis using hab_ne by (by100 blast)
+  qed
+qed
+
 (** Helper: closed_segment P Q has vertex set {P, Q} when P ≠ Q. **)
 lemma geotop_closed_segment_simplex_vertices:
   fixes P Q :: "'a::euclidean_space"
