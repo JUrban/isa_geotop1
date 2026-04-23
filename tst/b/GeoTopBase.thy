@@ -9871,8 +9871,172 @@ proof (intro ballI impI)
         using hK_inter_face h\<sigma>_K h\<tau>_K hne by (by100 blast)
     next
       assume h\<tau>_new: "\<tau> \<in> {{R}, ?el, ?er}"
+      (** Cross case old × new. σ ∈ K-{e}, τ new. Use sigma_cap_e_cases. **)
+      have h\<tau>_disj: "\<tau> = {R} \<or> \<tau> = ?el \<or> \<tau> = ?er" using h\<tau>_new by (by100 simp)
+      (** Derived geometric facts. **)
+      have he_V_hull: "e = geotop_convex_hull V"
+        using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+      have he_HOL: "e = convex hull V"
+        using he_V_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have he_cs: "e = closed_segment v\<^sub>0 v\<^sub>1"
+      proof -
+        have h1: "e = convex hull {v\<^sub>0, v\<^sub>1}" using he_HOL hVeq by (by100 simp)
+        have h2: "convex hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+          by (rule segment_convex_hull[symmetric])
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      have hR_cs: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_cs by (by100 simp)
+      have hv0_cs: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1" by (by100 simp)
+      have hv1_cs: "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1" by (by100 simp)
+      have hel_sub: "?el \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+        using hv0_cs hR_cs subset_closed_segment by (by100 blast)
+      have hel_sub_e: "?el \<subseteq> e" using hel_sub he_cs by (by100 simp)
+      have her_sub: "?er \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+        using hR_cs hv1_cs subset_closed_segment by (by100 blast)
+      have her_sub_e: "?er \<subseteq> e" using her_sub he_cs by (by100 simp)
+      have h_v0_notin_er: "v\<^sub>0 \<notin> ?er"
+        by (rule geotop_subdivide_edge_v0_notin_er[OF hR_cs hR_v0])
+      have h_v1_notin_el: "v\<^sub>1 \<notin> ?el"
+        by (rule geotop_subdivide_edge_v1_notin_el[OF hR_cs hR_v1])
+      have hv0R_ne: "v\<^sub>0 \<noteq> R" using hR_v0 by (by100 blast)
+      have hRv1_ne: "R \<noteq> v\<^sub>1" using hR_v1 by (by100 blast)
+      (** σ ∩ e classification. **)
+      have h_cap_cases: "\<sigma> \<inter> e = {} \<or> \<sigma> \<inter> e = {v\<^sub>0} \<or> \<sigma> \<inter> e = {v\<^sub>1}"
+        by (rule geotop_subdivide_edge_sigma_cap_e_cases
+                 [OF hKcomp hK1dim he_K hV_verts hVeq hv01_ne h\<sigma>_old])
+      (** K.2 of K applied to σ, e gives is_face (σ∩e) σ (when σ∩e ≠ {}). **)
+      have h_face_sigma_cap_e:
+        "\<sigma> \<inter> e \<noteq> {} \<Longrightarrow> geotop_is_face (\<sigma> \<inter> e) \<sigma>"
+        using hK_inter_face h\<sigma>_K he_K by (by100 blast)
       show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-        sorry \<comment> \<open>Cross case old × new: σ ∈ K-{e}, τ new. Use sigma_cap_e_cases.\<close>
+      proof (rule disjE[OF h\<tau>_disj])
+        assume h\<tau>_R: "\<tau> = {R}"
+        (** σ ∩ {R} = {R} (since hne). So R ∈ σ ∩ e. But σ ∩ e ∈ {{},{v₀},{v₁}} and R ∉ {v₀,v₁}. Contradiction. **)
+        have h_int_R: "\<sigma> \<inter> \<tau> = \<sigma> \<inter> {R}" using h\<tau>_R by (by100 simp)
+        have hR_sigma: "R \<in> \<sigma>"
+        proof -
+          have "\<sigma> \<inter> {R} \<noteq> {}" using hne h_int_R by (by100 simp)
+          thus ?thesis by (by100 blast)
+        qed
+        have hR_sigma_e: "R \<in> \<sigma> \<inter> e" using hR_sigma hR_e by (by100 blast)
+        have h_contra: False
+        proof (rule disjE[OF h_cap_cases])
+          assume "\<sigma> \<inter> e = {}"
+          thus False using hR_sigma_e by (by100 blast)
+        next
+          assume h_rest: "\<sigma> \<inter> e = {v\<^sub>0} \<or> \<sigma> \<inter> e = {v\<^sub>1}"
+          show False
+          proof (rule disjE[OF h_rest])
+            assume h_v0: "\<sigma> \<inter> e = {v\<^sub>0}"
+            have "R = v\<^sub>0" using hR_sigma_e h_v0 by (by100 blast)
+            thus False using hR_v0 by (by100 blast)
+          next
+            assume h_v1: "\<sigma> \<inter> e = {v\<^sub>1}"
+            have "R = v\<^sub>1" using hR_sigma_e h_v1 by (by100 blast)
+            thus False using hR_v1 by (by100 blast)
+          qed
+        qed
+        show ?thesis using h_contra by (by100 blast)
+      next
+        assume h\<tau>_rest: "\<tau> = ?el \<or> \<tau> = ?er"
+        show ?thesis
+        proof (rule disjE[OF h\<tau>_rest])
+          assume h\<tau>_el: "\<tau> = ?el"
+          (** σ ∩ ?el ⊆ σ ∩ e. σ ∩ ?el ≠ {} ⟹ σ ∩ e ≠ {} ⟹ σ ∩ e ∈ {{v₀},{v₁}}.
+              If {v₁}: σ ∩ ?el ⊆ {v₁} ∩ ?el = {} (v₁ ∉ ?el), contradicting hne.
+              So σ ∩ e = {v₀}, and σ ∩ ?el = {v₀}. **)
+          have h_cap_sub: "\<sigma> \<inter> ?el \<subseteq> \<sigma> \<inter> e" using hel_sub_e by (by100 blast)
+          have hne_cap_el: "\<sigma> \<inter> ?el \<noteq> {}" using hne h\<tau>_el by (by100 simp)
+          have h_cap_v0: "\<sigma> \<inter> e = {v\<^sub>0}"
+          proof (rule disjE[OF h_cap_cases])
+            assume "\<sigma> \<inter> e = {}"
+            hence "\<sigma> \<inter> ?el = {}" using h_cap_sub by (by100 blast)
+            thus ?thesis using hne_cap_el by (by100 blast)
+          next
+            assume h_rest2: "\<sigma> \<inter> e = {v\<^sub>0} \<or> \<sigma> \<inter> e = {v\<^sub>1}"
+            show ?thesis
+            proof (rule disjE[OF h_rest2])
+              assume h_v0: "\<sigma> \<inter> e = {v\<^sub>0}"
+              show ?thesis by (rule h_v0)
+            next
+              assume h_v1: "\<sigma> \<inter> e = {v\<^sub>1}"
+              have "\<sigma> \<inter> ?el \<subseteq> {v\<^sub>1}" using h_cap_sub h_v1 by (by100 blast)
+              have h_cap_el_sub_el: "\<sigma> \<inter> ?el \<subseteq> ?el" by (by100 blast)
+              have "\<sigma> \<inter> ?el \<subseteq> {v\<^sub>1} \<inter> ?el" using h_cap_sub h_v1 h_cap_el_sub_el by (by100 blast)
+              hence "\<sigma> \<inter> ?el = {}" using h_v1_notin_el by (by100 blast)
+              thus ?thesis using hne_cap_el by (by100 blast)
+            qed
+          qed
+          have hv0_sigma: "v\<^sub>0 \<in> \<sigma>" using h_cap_v0 by (by100 blast)
+          have hv0_el: "v\<^sub>0 \<in> ?el" by (by100 simp)
+          have h_int_v0: "\<sigma> \<inter> \<tau> = {v\<^sub>0}"
+          proof -
+            have h_sub_v0: "\<sigma> \<inter> \<tau> \<subseteq> {v\<^sub>0}"
+            proof -
+              have "\<sigma> \<inter> \<tau> \<subseteq> \<sigma> \<inter> e" using h\<tau>_el hel_sub_e by (by100 blast)
+              thus ?thesis using h_cap_v0 by (by100 simp)
+            qed
+            have h_v0_in: "v\<^sub>0 \<in> \<sigma> \<inter> \<tau>" using hv0_sigma hv0_el h\<tau>_el by (by100 simp)
+            show ?thesis using h_sub_v0 h_v0_in by (by100 blast)
+          qed
+          have h_face_v0_sigma: "geotop_is_face {v\<^sub>0} \<sigma>"
+          proof -
+            have h_ne_cap_e: "\<sigma> \<inter> e \<noteq> {}" using h_cap_v0 by (by100 simp)
+            have h_face: "geotop_is_face (\<sigma> \<inter> e) \<sigma>"
+              using h_face_sigma_cap_e h_ne_cap_e by (by100 blast)
+            show ?thesis using h_face h_cap_v0 by (by100 simp)
+          qed
+          have h_face_v0_el: "geotop_is_face {v\<^sub>0} ?el"
+            by (rule geotop_closed_segment_is_face_endpoint[OF hv0R_ne]) (by100 simp)
+          show ?thesis using h_int_v0 h\<tau>_el h_face_v0_sigma h_face_v0_el by (by100 simp)
+        next
+          assume h\<tau>_er: "\<tau> = ?er"
+          (** Symmetric: σ ∩ e = {v₁}, σ ∩ ?er = {v₁}. **)
+          have h_cap_sub: "\<sigma> \<inter> ?er \<subseteq> \<sigma> \<inter> e" using her_sub_e by (by100 blast)
+          have hne_cap_er: "\<sigma> \<inter> ?er \<noteq> {}" using hne h\<tau>_er by (by100 simp)
+          have h_cap_v1: "\<sigma> \<inter> e = {v\<^sub>1}"
+          proof (rule disjE[OF h_cap_cases])
+            assume "\<sigma> \<inter> e = {}"
+            hence "\<sigma> \<inter> ?er = {}" using h_cap_sub by (by100 blast)
+            thus ?thesis using hne_cap_er by (by100 blast)
+          next
+            assume h_rest2: "\<sigma> \<inter> e = {v\<^sub>0} \<or> \<sigma> \<inter> e = {v\<^sub>1}"
+            show ?thesis
+            proof (rule disjE[OF h_rest2])
+              assume h_v0: "\<sigma> \<inter> e = {v\<^sub>0}"
+              have h_cap_er_sub_er: "\<sigma> \<inter> ?er \<subseteq> ?er" by (by100 blast)
+              have "\<sigma> \<inter> ?er \<subseteq> {v\<^sub>0} \<inter> ?er" using h_cap_sub h_v0 h_cap_er_sub_er by (by100 blast)
+              hence "\<sigma> \<inter> ?er = {}" using h_v0_notin_er by (by100 blast)
+              thus ?thesis using hne_cap_er by (by100 blast)
+            next
+              assume h_v1: "\<sigma> \<inter> e = {v\<^sub>1}"
+              show ?thesis by (rule h_v1)
+            qed
+          qed
+          have hv1_sigma: "v\<^sub>1 \<in> \<sigma>" using h_cap_v1 by (by100 blast)
+          have hv1_er: "v\<^sub>1 \<in> ?er" by (by100 simp)
+          have h_int_v1: "\<sigma> \<inter> \<tau> = {v\<^sub>1}"
+          proof -
+            have h_sub_v1: "\<sigma> \<inter> \<tau> \<subseteq> {v\<^sub>1}"
+            proof -
+              have "\<sigma> \<inter> \<tau> \<subseteq> \<sigma> \<inter> e" using h\<tau>_er her_sub_e by (by100 blast)
+              thus ?thesis using h_cap_v1 by (by100 simp)
+            qed
+            have h_v1_in: "v\<^sub>1 \<in> \<sigma> \<inter> \<tau>" using hv1_sigma hv1_er h\<tau>_er by (by100 simp)
+            show ?thesis using h_sub_v1 h_v1_in by (by100 blast)
+          qed
+          have h_face_v1_sigma: "geotop_is_face {v\<^sub>1} \<sigma>"
+          proof -
+            have h_ne_cap_e: "\<sigma> \<inter> e \<noteq> {}" using h_cap_v1 by (by100 simp)
+            have h_face: "geotop_is_face (\<sigma> \<inter> e) \<sigma>"
+              using h_face_sigma_cap_e h_ne_cap_e by (by100 blast)
+            show ?thesis using h_face h_cap_v1 by (by100 simp)
+          qed
+          have h_face_v1_er: "geotop_is_face {v\<^sub>1} ?er"
+            by (rule geotop_closed_segment_is_face_endpoint[OF hRv1_ne]) (by100 simp)
+          show ?thesis using h_int_v1 h\<tau>_er h_face_v1_sigma h_face_v1_er by (by100 simp)
+        qed
+      qed
     qed
   next
     assume h\<sigma>_new: "\<sigma> \<in> {{R}, ?el, ?er}"
