@@ -10731,6 +10731,58 @@ proof -
   qed
 qed
 
+(** Phase 1.A infrastructure: subdivide K at two points X, Y, returning
+    K'' with {X} ∈ K'' and {Y} ∈ K''. The 0-simplex preservation from
+    subdivide_at is essential — after subdividing at X (potentially
+    splitting an edge), {X} is a vertex; when we then subdivide at Y,
+    {X} is a 0-simplex of the intermediate K' and must survive. **)
+lemma geotop_complex_subdivide_at_two:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes hX_poly: "X \<in> geotop_polyhedron K"
+  assumes hY_poly: "Y \<in> geotop_polyhedron K"
+  shows "\<exists>K''. geotop_is_complex K'' \<and> geotop_complex_is_1dim K''
+             \<and> geotop_polyhedron K'' = geotop_polyhedron K
+             \<and> {X} \<in> K'' \<and> {Y} \<in> K''
+             \<and> (finite K \<longrightarrow> finite K'')"
+proof -
+  (** Step 1: subdivide at X. **)
+  have h_ex_K1: "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+               \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {X} \<in> K'
+               \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
+               \<and> (finite K \<longrightarrow> finite K')"
+    by (rule geotop_complex_subdivide_at[OF hK hK1dim hX_poly])
+  obtain K' where hK'_comp: "geotop_is_complex K'"
+               and hK'_1dim: "geotop_complex_is_1dim K'"
+               and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+               and hX_K': "{X} \<in> K'"
+               and hK'_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K'"
+               and hK'_fin: "finite K \<longrightarrow> finite K'"
+    using h_ex_K1 by (by100 blast)
+  (** Step 2: Y ∈ polyhedron K' = polyhedron K. Subdivide K' at Y. **)
+  have hY_K': "Y \<in> geotop_polyhedron K'" using hY_poly hK'_poly by (by100 simp)
+  have h_ex_K2: "\<exists>K''. geotop_is_complex K'' \<and> geotop_complex_is_1dim K''
+               \<and> geotop_polyhedron K'' = geotop_polyhedron K' \<and> {Y} \<in> K''
+               \<and> (\<forall>v. {v} \<in> K' \<longrightarrow> {v} \<in> K'')
+               \<and> (finite K' \<longrightarrow> finite K'')"
+    by (rule geotop_complex_subdivide_at[OF hK'_comp hK'_1dim hY_K'])
+  obtain K'' where hK''_comp: "geotop_is_complex K''"
+                and hK''_1dim: "geotop_complex_is_1dim K''"
+                and hK''_poly: "geotop_polyhedron K'' = geotop_polyhedron K'"
+                and hY_K'': "{Y} \<in> K''"
+                and hK''_preserve: "\<forall>v. {v} \<in> K' \<longrightarrow> {v} \<in> K''"
+                and hK''_fin: "finite K' \<longrightarrow> finite K''"
+    using h_ex_K2 by (by100 blast)
+  (** Derive {X} ∈ K'' via preservation. **)
+  have hX_K'': "{X} \<in> K''" using hX_K' hK''_preserve by (by100 blast)
+  have hK''_poly_K: "geotop_polyhedron K'' = geotop_polyhedron K"
+    using hK''_poly hK'_poly by (by100 simp)
+  have hK''_fin_K: "finite K \<longrightarrow> finite K''" using hK'_fin hK''_fin by (by100 blast)
+  show ?thesis
+    using hK''_comp hK''_1dim hK''_poly_K hX_K'' hY_K'' hK''_fin_K by (by100 blast)
+qed
+
 (** Phase 1.2b: broken line has a FINITE witness complex. Follows from
     compactness of the arc + K.3 local finiteness via subcover. **)
 lemma geotop_broken_line_finite_witness:
