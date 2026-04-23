@@ -107,6 +107,25 @@ Each step uses `by (by100 simp)` on a singleton-membership claim.
 The new `geotop_subdivide_edge_simplexes` proof demonstrates this
 robust style — passes on first retry under load.
 
+### Infrastructure built (reusable):
+
+Now stable in GeoTopBase:
+- `geotop_arc_first_intersection` — Inf of closed preimage.
+- `geotop_subdivide_edge_polyhedron_eq` — polyhedron invariance.
+- `geotop_subdivide_edge_simplexes` — K.0.
+- `geotop_subdivide_edge_locfin` — K.3 (UNIV).
+- `geotop_subdivide_edge_locfin_inherit` — K.3 (inheritance, no finiteness).
+- `geotop_subdivide_edge_vertices_in_K` — vertex face-closure.
+- `geotop_complex_subdivide_edge_vertex` — vertex case of edge subdivision.
+- `geotop_1dim_complex_simp_dim_le_1` — dim bound.
+- `geotop_broken_line_finite_witness` — finite witness via compactE_image.
+- `geotop_broken_line_vertex_at` — subdivide at any point.
+- `geotop_HOL_arc_imp_geotop_is_arc` — reverse arc bridge.
+- `geotop_HOL_homeomorphic_imp_top1_homeomorphism_on` — reverse homeomorphism bridge.
+- `geotop_continuous_on_imp_top1_continuous_map_on` — continuity bridge.
+- `geotop_simplex_diameter_nonneg` — simplex diameter bound.
+- `geotop_mesh_norm_nonneg` — mesh non-negative (with finite/diameter hypotheses).
+
 ### Remaining real §1+Intro sorries (7):
 
 Phase 1.1 interior is now FULLY STRUCTURALLY PROVED using 6 helpers
