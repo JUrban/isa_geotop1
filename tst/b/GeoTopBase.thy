@@ -9634,10 +9634,19 @@ proof -
     also have "\<dots> = closed_segment a b" by (rule segment_convex_hull[symmetric])
     finally show ?thesis by (by100 simp)
   qed
+  have h_conj_inner:
+    "geotop_simplex_vertices (closed_segment a b) {a,b}
+      \<and> ({a,b}::'a set) \<noteq> {} \<and> ({a,b}::'a set) \<subseteq> {a,b}
+      \<and> closed_segment a b = geotop_convex_hull {a,b}"
+    using h_sv h_sub h_ne h_hull_eq by (by100 simp)
+  have h_exists_W:
+    "\<exists>W. geotop_simplex_vertices (closed_segment a b) {a,b}
+         \<and> W \<noteq> {} \<and> W \<subseteq> {a,b} \<and> closed_segment a b = geotop_convex_hull W"
+    by (rule exI[where x="{a,b}"]) (rule h_conj_inner)
   have h_exists:
     "\<exists>V W. geotop_simplex_vertices (closed_segment a b) V
          \<and> W \<noteq> {} \<and> W \<subseteq> V \<and> closed_segment a b = geotop_convex_hull W"
-    using h_sv h_sub h_ne h_hull_eq by (by100 blast)
+    by (rule exI[where x="{a,b}"]) (rule h_exists_W)
   show ?thesis unfolding geotop_is_face_def by (rule h_exists)
 qed
 
@@ -9835,10 +9844,50 @@ lemma geotop_subdivide_edge_inter_face:
          \<forall>\<tau>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
          \<sigma> \<inter> \<tau> \<noteq> {}
          \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-  sorry \<comment> \<open>K.2: 4x4 case analysis. Old pairs: K.2 of K. New pairs (e_l, e_r, {R}):
-            trivial since they meet at R or are disjoint. Cross pairs: σ ∈ K-{e}
-            meeting e_l/e_r/{R}: analyze σ ∩ e via K.2 of K (face of e is
-            {}, {v0}, {v1}, or e; e excluded since σ ≠ e and σ dim ≤ 1).\<close>
+proof (intro ballI impI)
+  fix \<sigma> \<tau>
+  let ?el = "closed_segment v\<^sub>0 R"
+  let ?er = "closed_segment R v\<^sub>1"
+  let ?K' = "(K - {e}) \<union> {{R}, ?el, ?er}"
+  assume h\<sigma>: "\<sigma> \<in> ?K'"
+  assume h\<tau>: "\<tau> \<in> ?K'"
+  assume hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+  (** Derived facts. **)
+  have hR_v0: "R \<noteq> v\<^sub>0" using hR_V hVeq by (by100 simp)
+  have hR_v1: "R \<noteq> v\<^sub>1" using hR_V hVeq by (by100 simp)
+  have hK_inter_face: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (rule UnE[OF h\<sigma>])
+    assume h\<sigma>_old: "\<sigma> \<in> K - {e}"
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_old by (by100 simp)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (rule UnE[OF h\<tau>])
+      assume h\<tau>_old: "\<tau> \<in> K - {e}"
+      have h\<tau>_K: "\<tau> \<in> K" using h\<tau>_old by (by100 simp)
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        using hK_inter_face h\<sigma>_K h\<tau>_K hne by (by100 blast)
+    next
+      assume h\<tau>_new: "\<tau> \<in> {{R}, ?el, ?er}"
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        sorry \<comment> \<open>Cross case old × new: σ ∈ K-{e}, τ new. Use sigma_cap_e_cases.\<close>
+    qed
+  next
+    assume h\<sigma>_new: "\<sigma> \<in> {{R}, ?el, ?er}"
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (rule UnE[OF h\<tau>])
+      assume h\<tau>_old: "\<tau> \<in> K - {e}"
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        sorry \<comment> \<open>Cross case new × old: symmetric to old × new.\<close>
+    next
+      assume h\<tau>_new: "\<tau> \<in> {{R}, ?el, ?er}"
+      show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        sorry \<comment> \<open>New × new: 3x3 enumerable cases using el_inter_er helper and endpoint faces.\<close>
+    qed
+  qed
+qed
 
 (** Phase 1.1 helper — K.3 (local finiteness) via finite K'. **)
 lemma geotop_subdivide_edge_locfin:
