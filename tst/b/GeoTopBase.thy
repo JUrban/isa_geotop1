@@ -9107,6 +9107,20 @@ proof
   qed
 qed
 
+(** Phase 1.1 helper — K.3 (local finiteness) via finite K'. **)
+lemma geotop_subdivide_edge_locfin:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK'_fin: "finite K'"
+  shows "\<forall>\<sigma>\<in>K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+proof
+  fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+  have hopen: "open (UNIV::'a set)" by (by100 simp)
+  have hsub: "\<sigma> \<subseteq> UNIV" by (by100 simp)
+  have hfin: "finite {\<tau>\<in>K'. \<tau> \<inter> UNIV \<noteq> {}}" using hK'_fin by (by100 simp)
+  show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K'. \<tau> \<inter> U \<noteq> {}}"
+    using hopen hsub hfin by (by100 blast)
+qed
+
 (** Phase 1.1 helper — polyhedron equality for the subdivided complex. **)
 lemma geotop_subdivide_edge_polyhedron_eq:
   fixes K :: "'a::euclidean_space set set"
