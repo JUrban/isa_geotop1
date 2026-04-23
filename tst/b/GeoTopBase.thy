@@ -10944,6 +10944,40 @@ proof -
   show ?thesis using h_conn_set is_interval_connected_1 by (by100 blast)
 qed
 
+(** Specialisation: the preimage of any simplex of a 1-dim complex whose
+    polyhedron is path_image γ is an interval. Key for Phase 1.A. **)
+lemma geotop_arc_preimage_simplex_is_interval:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  assumes harc: "arc \<gamma>"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes hpoly: "geotop_polyhedron K = path_image \<gamma>"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "is_interval {t\<in>{0..1}. \<gamma> t \<in> \<sigma>}"
+proof -
+  have h\<sigma>_sub: "\<sigma> \<subseteq> path_image \<gamma>"
+    using h\<sigma>K hpoly unfolding geotop_polyhedron_def by (by100 blast)
+  (** σ is singleton or closed_segment — both connected. **)
+  have h\<sigma>_conn: "connected \<sigma>"
+  proof -
+    have h_cases: "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hK1dim h\<sigma>K])
+    show ?thesis
+    proof (rule disjE[OF h_cases])
+      assume "\<exists>v. \<sigma> = {v}"
+      then obtain v where h_v: "\<sigma> = {v}" by (by100 blast)
+      have "connected {v}" by (by100 simp)
+      thus ?thesis using h_v by (by100 simp)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+      then obtain a b where h_ab: "\<sigma> = closed_segment a b" by (by100 blast)
+      have "connected (closed_segment a b)" by (rule convex_connected[OF convex_closed_segment])
+      thus ?thesis using h_ab by (by100 simp)
+    qed
+  qed
+  show ?thesis
+    by (rule geotop_arc_preimage_is_interval[OF harc h\<sigma>_sub h\<sigma>_conn])
+qed
+
 (** Infrastructure for Phase 1.A: if K is a complex and K' ⊆ K is closed
     under face-taking (within K), then K' is also a complex. This is the
     classical sub-complex construction. **)
