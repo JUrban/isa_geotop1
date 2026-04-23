@@ -10874,6 +10874,15 @@ proof -
     by (rule geotop_convex_open_broken_line_connected[OF hopen hconv])
 qed
 
+(** Infrastructure for Phase 1.A: arc → homeomorphism [0,1] ↔ path_image. **)
+lemma geotop_arc_homeomorphism_image:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  assumes harc: "arc \<gamma>"
+  shows "\<exists>h. homeomorphism {0..1} (path_image \<gamma>) \<gamma> h"
+proof -
+  show ?thesis by (rule homeomorphism_arc[OF harc]) (rule exI)
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
