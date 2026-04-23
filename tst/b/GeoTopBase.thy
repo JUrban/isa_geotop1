@@ -9187,6 +9187,23 @@ proof
     using hopen hsub hfin by (by100 blast)
 qed
 
+(** Phase 1.1 helper — K.3 inheritance from K (without finite K).
+    For each σ ∈ K', pick an open nbhd U: for σ ∈ K-{e}, use K.3 of K at σ;
+    for new simplices, use K.3 of K at e (they sit inside e ⊆ U_e). **)
+lemma geotop_subdivide_edge_locfin_inherit:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes he_K: "e \<in> K"
+  assumes hel_sub_e: "closed_segment v\<^sub>0 R \<subseteq> e"
+  assumes her_sub_e: "closed_segment R v\<^sub>1 \<subseteq> e"
+  assumes hR_e: "R \<in> e"
+  shows "\<forall>\<sigma>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
+           \<exists>U. open U \<and> \<sigma> \<subseteq> U
+             \<and> finite {\<tau>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
+                        \<tau> \<inter> U \<noteq> {}}"
+  sorry \<comment> \<open>Inherit from K.3 of K. Complex case analysis on σ, using that
+            {τ ∈ K-{e}. τ ∩ U ≠ {}} ⊆ {τ ∈ K. τ ∩ U ≠ {}} is finite. Deferred.\<close>
+
 (** Phase 1.1 helper — polyhedron equality for the subdivided complex. **)
 lemma geotop_subdivide_edge_polyhedron_eq:
   fixes K :: "'a::euclidean_space set set"
@@ -9302,11 +9319,29 @@ proof -
                       \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
     by (rule geotop_subdivide_edge_inter_face
                [OF hKcomp hK1dim he_K hV_verts hVeq hv01_ne hR_e hR_V])
-  (** K.3: trivial if K is finite. Otherwise may need more care. **)
+  (** K.3: inherit from K's K.3 (even without finite K). **)
+  have hel_sub_e: "closed_segment v\<^sub>0 R \<subseteq> e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_eq by (by100 simp)
+    have "closed_segment v\<^sub>0 R \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_seg subset_closed_segment by (by100 blast)
+    thus ?thesis using he_eq by (by100 simp)
+  qed
+  have her_sub_e: "closed_segment R v\<^sub>1 \<subseteq> e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1" using hR_e he_eq by (by100 simp)
+    have "closed_segment R v\<^sub>1 \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_seg subset_closed_segment by (by100 blast)
+    thus ?thesis using he_eq by (by100 simp)
+  qed
+  have hK'_locfin: "\<forall>\<sigma>\<in>?K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+                      \<and> finite {\<tau>\<in>?K'. \<tau> \<inter> U \<noteq> {}}"
+    by (rule geotop_subdivide_edge_locfin_inherit
+               [OF hKcomp he_K hel_sub_e her_sub_e hR_e])
+  (** Assemble K.0, K.1, K.2, K.3 into is_complex via def unfold. **)
   have hK'_comp: "geotop_is_complex ?K'"
-    sorry \<comment> \<open>Assemble K.0 + K.1 + K.2 + K.3 into is_complex. K.3 needs finite
-              K for the UNIV-nbhd shortcut. Without finite K, need per-simplex
-              careful nbhd choice. Deferred — structural assembly.\<close>
+    unfolding geotop_is_complex_def
+    using hK'_sim hK'_faces hK'_inter hK'_locfin by (by100 blast)
   have h_all: "geotop_is_complex ?K' \<and> geotop_complex_is_1dim ?K'
              \<and> geotop_polyhedron ?K' = geotop_polyhedron K \<and> {R} \<in> ?K'
              \<and> (finite K \<longrightarrow> finite ?K')"
