@@ -9107,6 +9107,37 @@ proof
   qed
 qed
 
+(** Phase 1.1 helper — {v\<^sub>0} and {v\<^sub>1} are in K (face-closure). **)
+lemma geotop_subdivide_edge_vertices_in_K:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}"
+  shows "{v\<^sub>0} \<in> K \<and> {v\<^sub>1} \<in> K"
+proof -
+  have hv0_V: "{v\<^sub>0} \<subseteq> V" using hVeq by (by100 simp)
+  have hv0_ne: "{v\<^sub>0} \<noteq> {}" by (by100 simp)
+  have h_sing_v0: "{v\<^sub>0} = geotop_convex_hull {v\<^sub>0}"
+    using geotop_convex_hull_eq_HOL[of "{v\<^sub>0}"] by (by100 simp)
+  have h_face_v0: "geotop_is_face {v\<^sub>0} e"
+    unfolding geotop_is_face_def
+    using hV_verts hv0_V hv0_ne h_sing_v0 by (by100 blast)
+  have hv1_V: "{v\<^sub>1} \<subseteq> V" using hVeq by (by100 simp)
+  have hv1_ne: "{v\<^sub>1} \<noteq> {}" by (by100 simp)
+  have h_sing_v1: "{v\<^sub>1} = geotop_convex_hull {v\<^sub>1}"
+    using geotop_convex_hull_eq_HOL[of "{v\<^sub>1}"] by (by100 simp)
+  have h_face_v1: "geotop_is_face {v\<^sub>1} e"
+    unfolding geotop_is_face_def
+    using hV_verts hv1_V hv1_ne h_sing_v1 by (by100 blast)
+  have hK_faces: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using conjunct1[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]
+    by (by100 blast)
+  have hv0_in_K: "{v\<^sub>0} \<in> K" using hK_faces he_K h_face_v0 by (by100 blast)
+  have hv1_in_K: "{v\<^sub>1} \<in> K" using hK_faces he_K h_face_v1 by (by100 blast)
+  show ?thesis using hv0_in_K hv1_in_K by (by100 blast)
+qed
+
 (** Phase 1.1 helper — K.3 (local finiteness) via finite K'. **)
 lemma geotop_subdivide_edge_locfin:
   fixes K :: "'a::euclidean_space set set"
