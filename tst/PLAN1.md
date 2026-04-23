@@ -240,6 +240,29 @@ After subdivision at X (=γ(s_X)), Y (=γ(s_Y)), the sub-interval
 [s_lo, s_hi] sits at a breakpoint, so every σ's sub-interval is
 either entirely in [s_lo, s_hi] or entirely out.
 
+**More follow-up:** strengthened `subdivide_edge`/`subdivide_at` to
+expose `K - {e} ⊆ K'` and `∀v. {v} ∈ K ⟶ {v} ∈ K'`. Added
+`geotop_complex_subdivide_at_two`: given X, Y ∈ |K|, produces K''
+with BOTH {X} ∈ K'' and {Y} ∈ K''. This was essential because
+subdividing at X then at Y requires knowing that {X} survives the
+second subdivision (which it does — it's a 0-simplex, not an edge).
+
+### Phase 1.A proof sketch (for next session)
+
+With all this infrastructure, the subarc polyhedron proof becomes:
+1. Get K witnessing B = |K| (broken_line_finite_witness).
+2. `subdivide_at_two K X Y` → K'' with {X}, {Y} ∈ K''.
+3. `K' = {σ ∈ K'' : σ ⊆ ?B'}` — a sub-complex by restrict_subset_is_complex.
+4. `polyhedron K' ⊆ ?B'`: immediate (σ ⊆ ?B' ⟹ ⋃K' ⊆ ?B').
+5. `?B' ⊆ polyhedron K'`: for x ∈ ?B' = γ[s_lo, s_hi], x = γ(t).
+   Pick σ ∈ K'' with x ∈ σ. Let [a, b] = γ^{-1}(σ) (via preimage_simplex_is_interval).
+   Claim [a, b] ⊆ [s_lo, s_hi]: if s_lo ∈ (a, b), then γ(s_lo) ∈ interior(σ)
+   is a vertex of K''; by K.2 applied to {X/Y} and σ, {X/Y} is face of σ,
+   hence an endpoint — contradiction. Similarly for s_hi. So [a, b] ⊆ [s_lo, s_hi],
+   hence σ = γ[a, b] ⊆ γ[s_lo, s_hi] = ?B', σ ∈ K'.
+
+Estimated proof length: 200-300 Isar lines. Plans to close next session.
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
