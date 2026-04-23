@@ -9059,6 +9059,44 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Phase 1.1 helper — singleton ≠ e when e has 2 distinct vertices. **)
+lemma geotop_subdivide_edge_singleton_ne_e:
+  fixes e :: "'a::euclidean_space set"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
+  shows "{v\<^sub>0} \<noteq> e \<and> {v\<^sub>1} \<noteq> e"
+proof -
+  have hV_fin: "finite V" using hVeq by (by100 simp)
+  have he_eq_V: "e = geotop_convex_hull V"
+    using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+  have he_HOL: "e = convex hull V"
+    using he_eq_V geotop_convex_hull_eq_HOL by (by100 simp)
+  have hv0_in_V: "v\<^sub>0 \<in> V" using hVeq by (by100 simp)
+  have hv1_in_V: "v\<^sub>1 \<in> V" using hVeq by (by100 simp)
+  have hV_sub_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have hv0_in_hull: "v\<^sub>0 \<in> convex hull V"
+    using hv0_in_V hV_sub_hull by (by100 blast)
+  have hv1_in_hull: "v\<^sub>1 \<in> convex hull V"
+    using hv1_in_V hV_sub_hull by (by100 blast)
+  have hv0_in_e: "v\<^sub>0 \<in> e" using hv0_in_hull he_HOL by (by100 simp)
+  have hv1_in_e: "v\<^sub>1 \<in> e" using hv1_in_hull he_HOL by (by100 simp)
+  have h_v0_ne: "{v\<^sub>0} \<noteq> e"
+  proof
+    assume h_eq: "{v\<^sub>0} = e"
+    have "v\<^sub>1 \<in> {v\<^sub>0}" using hv1_in_e h_eq by (by100 simp)
+    hence "v\<^sub>1 = v\<^sub>0" by (by100 simp)
+    thus False using hv01_ne by (by100 blast)
+  qed
+  have h_v1_ne: "{v\<^sub>1} \<noteq> e"
+  proof
+    assume h_eq: "{v\<^sub>1} = e"
+    have "v\<^sub>0 \<in> {v\<^sub>1}" using hv0_in_e h_eq by (by100 simp)
+    hence "v\<^sub>0 = v\<^sub>1" by (by100 simp)
+    thus False using hv01_ne by (by100 blast)
+  qed
+  show ?thesis using h_v0_ne h_v1_ne by (by100 blast)
+qed
+
 (** Phase 1.1 helper — all simplexes in the subdivided complex.
     Proof is fully decomposed into small by100-simp steps using explicit
     rule applications, avoiding flaky disjunctive-eliminations. **)
