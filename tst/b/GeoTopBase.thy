@@ -9694,8 +9694,47 @@ lemma geotop_arc_first_intersection:
   assumes hfin_in_T: "\<gamma> 1 \<in> T"
   obtains sstar where "sstar \<in> {0..1}" and "\<gamma> sstar \<in> T"
                  and "\<forall>s\<in>{0..<sstar}. \<gamma> s \<notin> T"
-  sorry \<comment> \<open>Classical: S = \<gamma>-inv(T) \<inter> [0,1] is nonempty closed bounded,
-            so Inf is attained. Split into its own lemma to isolate cost.\<close>
+proof -
+  have h\<gamma>_cont: "continuous_on {0..1} \<gamma>"
+    using harc unfolding arc_def path_def by (by100 blast)
+  define S where "S = \<gamma> -` T \<inter> {0..1::real}"
+  have hS_sub: "S \<subseteq> {0..1}" unfolding S_def by (by100 blast)
+  have h1_in: "(1::real) \<in> S" unfolding S_def using hfin_in_T by (by100 simp)
+  have hS_ne: "S \<noteq> {}" using h1_in by (by100 blast)
+  have h_unit_closed: "closed ({0..1}::real set)" by (by100 simp)
+  have h_char_iff:
+    "continuous_on {0..1} \<gamma> \<longleftrightarrow> (\<forall>B. closed B \<longrightarrow> closed (\<gamma> -` B \<inter> {0..1}))"
+    by (rule continuous_on_closed_vimage[OF h_unit_closed])
+  have h_pre_closed: "closed (\<gamma> -` T \<inter> {0..1})"
+    using h_char_iff h\<gamma>_cont hT_closed by (by100 blast)
+  have hS_closed: "closed S" unfolding S_def using h_pre_closed by (by100 simp)
+  have hS_bdd: "bounded S" unfolding S_def
+    using bounded_closed_interval bounded_subset Int_lower2 by (by100 blast)
+  have hS_bdd_below: "bdd_below S" by (rule bounded_imp_bdd_below[OF hS_bdd])
+  define sstar where "sstar = Inf S"
+  have hsstar_in_S: "sstar \<in> S"
+    unfolding sstar_def by (rule closed_contains_Inf[OF hS_ne hS_bdd_below hS_closed])
+  have hsstar_in_01: "sstar \<in> {0..1}" using hsstar_in_S hS_sub by (by100 blast)
+  have hsstar_T: "\<gamma> sstar \<in> T" using hsstar_in_S unfolding S_def by (by100 blast)
+  have hsstar_min: "\<forall>s\<in>{0..<sstar}. \<gamma> s \<notin> T"
+  proof
+    fix s assume hs: "s \<in> {0..<sstar}"
+    have hs_lo: "0 \<le> s" using hs by (by100 simp)
+    have hs_lt: "s < sstar" using hs by (by100 simp)
+    have hsstar_le: "sstar \<le> 1" using hsstar_in_01 by (by100 simp)
+    have hs_up: "s \<le> 1" using hs_lt hsstar_le by (by100 simp)
+    have hs_in_01: "s \<in> {0..1}" using hs_lo hs_up by (by100 simp)
+    have hs_notin_S: "s \<notin> S"
+    proof
+      assume hs_in_S: "s \<in> S"
+      have "sstar \<le> s" unfolding sstar_def
+        by (rule cInf_lower[OF hs_in_S hS_bdd_below])
+      thus False using hs_lt by (by100 simp)
+    qed
+    show "\<gamma> s \<notin> T" using hs_notin_S hs_in_01 unfolding S_def by (by100 blast)
+  qed
+  show thesis using hsstar_in_01 hsstar_T hsstar_min that by (by100 blast)
+qed
 
 lemma geotop_broken_line_arc_reduction:
   fixes B\<^sub>1 B\<^sub>2 :: "'a::euclidean_space set"
