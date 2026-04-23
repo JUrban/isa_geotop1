@@ -77,6 +77,15 @@ Record completions here as they happen:
 - [ ] Phase 3: close E (Lebesgue tightening)
 - [ ] Phase 4: close F (`h_f_exists`)
 
+## Session 2026-04-23: first_intersection closure
+
+- `geotop_arc_first_intersection` FULLY PROVED (commit e8baa6d5) — 41-line
+  compactness argument. This is the key helper for Phase 1.C overlap's
+  first-intersection strategy.
+
+The remaining 6 §1+Intro sorries still need dedicated work for
+direct closure (all require ~80-200 line classical PL proofs).
+
 ## Final state after this extended session
 
 **GeoTopBase.thy** (Intro + §1): 6 real sorry tactics (= 11 grep-counted due to
