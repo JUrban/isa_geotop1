@@ -9641,6 +9641,186 @@ proof -
   show ?thesis unfolding geotop_is_face_def by (rule h_exists)
 qed
 
+(** Phase 1.1 helper — for σ ∈ K-{e} in a 1-dim complex K, σ ∩ e is
+    one of {}, {v\<^sub>0}, {v\<^sub>1}. Derived from K.2 of K (faces of e are
+    {v\<^sub>0}, {v\<^sub>1}, e) plus the 1-dim bound that rules out σ ∩ e = e. **)
+lemma geotop_subdivide_edge_sigma_cap_e_cases:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hVeq: "V = {v\<^sub>0, v\<^sub>1}" and hv01_ne: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes h\<sigma>_Ke: "\<sigma> \<in> K - {e}"
+  shows "\<sigma> \<inter> e = {} \<or> \<sigma> \<inter> e = {v\<^sub>0} \<or> \<sigma> \<inter> e = {v\<^sub>1}"
+proof (cases "\<sigma> \<inter> e = {}")
+  case True
+  thus ?thesis by (by100 blast)
+next
+  case h_ne: False
+  have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_Ke by (by100 simp)
+  have h\<sigma>_ne_e: "\<sigma> \<noteq> e" using h\<sigma>_Ke by (by100 simp)
+  (** K.2 of K: \<sigma> \<inter> e is face of e. **)
+  have hK_inter_face: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hKcomp[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have h_face_e: "geotop_is_face (\<sigma> \<inter> e) e"
+    using hK_inter_face h\<sigma>_K he_K h_ne by (by100 blast)
+  have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> e) \<sigma>"
+    using hK_inter_face h\<sigma>_K he_K h_ne by (by100 blast)
+  (** Extract witness W for face-of-e. **)
+  obtain V' W where hV'_sv: "geotop_simplex_vertices e V'"
+                 and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                 and h_cap_hull: "\<sigma> \<inter> e = geotop_convex_hull W"
+    using h_face_e unfolding geotop_is_face_def by (by100 blast)
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF hV'_sv hV_verts])
+  have hW_sub: "W \<subseteq> {v\<^sub>0, v\<^sub>1}" using hW_V' hV'_eq hVeq by (by100 simp)
+  have hW_cases: "W = {v\<^sub>0} \<or> W = {v\<^sub>1} \<or> W = {v\<^sub>0, v\<^sub>1}"
+    using hW_ne hW_sub by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hW_cases])
+    assume hW_v0: "W = {v\<^sub>0}"
+    have "\<sigma> \<inter> e = geotop_convex_hull {v\<^sub>0}" using h_cap_hull hW_v0 by (by100 simp)
+    also have "\<dots> = convex hull {v\<^sub>0}" by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = {v\<^sub>0}" by (by100 simp)
+    finally have "\<sigma> \<inter> e = {v\<^sub>0}" .
+    thus ?thesis by (by100 blast)
+  next
+    assume hW_rest: "W = {v\<^sub>1} \<or> W = {v\<^sub>0, v\<^sub>1}"
+    show ?thesis
+    proof (rule disjE[OF hW_rest])
+      assume hW_v1: "W = {v\<^sub>1}"
+      have "\<sigma> \<inter> e = geotop_convex_hull {v\<^sub>1}" using h_cap_hull hW_v1 by (by100 simp)
+      also have "\<dots> = convex hull {v\<^sub>1}" by (rule geotop_convex_hull_eq_HOL)
+      also have "\<dots> = {v\<^sub>1}" by (by100 simp)
+      finally have "\<sigma> \<inter> e = {v\<^sub>1}" .
+      thus ?thesis by (by100 blast)
+    next
+      assume hW_full: "W = {v\<^sub>0, v\<^sub>1}"
+      (** \<sigma> \<inter> e = convex hull V = e. Derive \<sigma> = e, contradiction. **)
+      have h_cap_eq_e: "\<sigma> \<inter> e = e"
+      proof -
+        have h1: "\<sigma> \<inter> e = geotop_convex_hull V" using h_cap_hull hW_full hVeq by (by100 simp)
+        have h2: "e = geotop_convex_hull V"
+          using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      have he_sub_\<sigma>: "e \<subseteq> \<sigma>" using h_cap_eq_e by (by100 blast)
+      (** Use K.2 again to conclude e is a face of \<sigma>, then \<sigma> = e. **)
+      have he_cap_\<sigma>: "e \<inter> \<sigma> = e" using he_sub_\<sigma> by (by100 blast)
+      have h_ne2: "e \<inter> \<sigma> \<noteq> {}"
+      proof -
+        have hv0_V: "v\<^sub>0 \<in> V" using hVeq by (by100 simp)
+        have hV_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+        have hv0_hull: "v\<^sub>0 \<in> convex hull V" using hv0_V hV_hull by (by100 blast)
+        have he_V: "e = geotop_convex_hull V"
+          using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+        have he_HOL: "e = convex hull V"
+          using he_V geotop_convex_hull_eq_HOL by (by100 simp)
+        have hv0_e: "v\<^sub>0 \<in> e" using hv0_hull he_HOL by (by100 simp)
+        show ?thesis using hv0_e he_cap_\<sigma> by (by100 blast)
+      qed
+      have h_face_\<sigma>_e: "geotop_is_face (e \<inter> \<sigma>) \<sigma>"
+        using hK_inter_face he_K h\<sigma>_K h_ne2 by (by100 blast)
+      have h_face_e_of_\<sigma>: "geotop_is_face e \<sigma>"
+        using h_face_\<sigma>_e he_cap_\<sigma> by (by100 simp)
+      (** Now extract witnesses for e = geotop_convex_hull W'', W'' \<subseteq> V_\<sigma>. **)
+      obtain V\<sigma> W'' where hV\<sigma>_sv: "geotop_simplex_vertices \<sigma> V\<sigma>"
+                       and hW''_ne: "W'' \<noteq> {}" and hW''_V\<sigma>: "W'' \<subseteq> V\<sigma>"
+                       and he_hull'': "e = geotop_convex_hull W''"
+        using h_face_e_of_\<sigma> unfolding geotop_is_face_def by (by100 blast)
+      (** |V_\<sigma>| \<le> 2 by 1-dim bound. **)
+      have h\<sigma>_1dim: "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+        using hK1dim h\<sigma>_K unfolding geotop_complex_is_1dim_def by (by100 blast)
+      obtain n\<sigma> where hn\<sigma>_le: "n\<sigma> \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n\<sigma>"
+        using h\<sigma>_1dim by (by100 blast)
+      obtain V\<sigma>' m\<sigma> where hV\<sigma>'_fin: "finite V\<sigma>'" and hV\<sigma>'_card: "card V\<sigma>' = n\<sigma> + 1"
+                     and hnm\<sigma>: "n\<sigma> \<le> m\<sigma>" and hV\<sigma>'_gp: "geotop_general_position V\<sigma>' m\<sigma>"
+                     and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<sigma>'"
+        using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+      have hV\<sigma>'_sv: "geotop_simplex_vertices \<sigma> V\<sigma>'"
+        unfolding geotop_simplex_vertices_def
+        using hV\<sigma>'_fin hV\<sigma>'_card hnm\<sigma> hV\<sigma>'_gp h\<sigma>_hull by (by100 blast)
+      have hV\<sigma>_eq: "V\<sigma> = V\<sigma>'"
+        by (rule geotop_simplex_vertices_unique[OF hV\<sigma>_sv hV\<sigma>'_sv])
+      have hV\<sigma>_card: "card V\<sigma> \<le> 2" using hV\<sigma>'_card hn\<sigma>_le hV\<sigma>_eq by (by100 simp)
+      have hW''_fin: "finite W''" using hW''_V\<sigma> hV\<sigma>_eq hV\<sigma>'_fin finite_subset by (by100 blast)
+      have hW''_card: "card W'' \<le> 2"
+        using card_mono[OF _ hW''_V\<sigma>] hV\<sigma>'_fin hV\<sigma>_eq hV\<sigma>_card by (by100 simp)
+      have hW''_card_ne0: "card W'' \<noteq> 0"
+      proof
+        assume "card W'' = 0"
+        hence "W'' = {}" using hW''_fin card_0_eq by (by100 blast)
+        thus False using hW''_ne by (by100 blast)
+      qed
+      have hW''_card_ge1: "card W'' \<ge> 1" using hW''_card_ne0 by (by100 simp)
+      have hW''_cases: "card W'' = 1 \<or> card W'' = 2"
+        using hW''_card hW''_card_ge1 by (by100 linarith)
+      (** If |W''| = 1, e = {w}, contradicting v0,v1 distinct both in e. **)
+      have h_contra: False
+      proof (rule disjE[OF hW''_cases])
+        assume hc1: "card W'' = 1"
+        have "\<exists>w. W'' = {w}" using hc1 card_1_singletonE by (by100 metis)
+        then obtain w where hW''_w: "W'' = {w}" by (by100 blast)
+        have he_sing: "e = {w}"
+        proof -
+          have "e = geotop_convex_hull {w}" using he_hull'' hW''_w by (by100 simp)
+          also have "\<dots> = convex hull {w}" by (rule geotop_convex_hull_eq_HOL)
+          also have "\<dots> = {w}" by (by100 simp)
+          finally show ?thesis .
+        qed
+        have hv0_e: "v\<^sub>0 \<in> e"
+        proof -
+          have hv0_V: "v\<^sub>0 \<in> V" using hVeq by (by100 simp)
+          have hV_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+          have hv0_cvx: "v\<^sub>0 \<in> convex hull V" using hv0_V hV_hull by (by100 blast)
+          have he_V: "e = geotop_convex_hull V"
+            using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+          have he_HOL: "e = convex hull V"
+            using he_V geotop_convex_hull_eq_HOL by (by100 simp)
+          show ?thesis using hv0_cvx he_HOL by (by100 simp)
+        qed
+        have hv1_e: "v\<^sub>1 \<in> e"
+        proof -
+          have hv1_V: "v\<^sub>1 \<in> V" using hVeq by (by100 simp)
+          have hV_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+          have hv1_cvx: "v\<^sub>1 \<in> convex hull V" using hv1_V hV_hull by (by100 blast)
+          have he_V: "e = geotop_convex_hull V"
+            using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+          have he_HOL: "e = convex hull V"
+            using he_V geotop_convex_hull_eq_HOL by (by100 simp)
+          show ?thesis using hv1_cvx he_HOL by (by100 simp)
+        qed
+        have "v\<^sub>0 = w" using hv0_e he_sing by (by100 blast)
+        moreover have "v\<^sub>1 = w" using hv1_e he_sing by (by100 blast)
+        ultimately have "v\<^sub>0 = v\<^sub>1" by (by100 simp)
+        thus False using hv01_ne by (by100 blast)
+      next
+        assume hc2: "card W'' = 2"
+        have hV\<sigma>_card_eq2: "card V\<sigma> = 2"
+          using hc2 card_mono[OF _ hW''_V\<sigma>] hV\<sigma>'_fin hV\<sigma>_eq hV\<sigma>_card by (by100 simp)
+        have hV\<sigma>'_fin': "finite V\<sigma>" using hV\<sigma>'_fin hV\<sigma>_eq by (by100 simp)
+        have hW''_eq_V\<sigma>: "W'' = V\<sigma>"
+        proof -
+          have h_card_eq: "card W'' = card V\<sigma>" using hc2 hV\<sigma>_card_eq2 by (by100 simp)
+          show ?thesis by (rule card_subset_eq[OF hV\<sigma>'_fin' hW''_V\<sigma> h_card_eq])
+        qed
+        have he_\<sigma>: "e = \<sigma>"
+        proof -
+          have "e = geotop_convex_hull V\<sigma>" using he_hull'' hW''_eq_V\<sigma> by (by100 simp)
+          also have "\<dots> = geotop_convex_hull V\<sigma>'" using hV\<sigma>_eq by (by100 simp)
+          also have "\<dots> = \<sigma>" using h\<sigma>_hull by (by100 simp)
+          finally show ?thesis .
+        qed
+        show False using he_\<sigma> h\<sigma>_ne_e by (by100 blast)
+      qed
+      show ?thesis using h_contra by (by100 blast)
+    qed
+  qed
+qed
+
 (** Phase 1.1 helper — K.2 (intersection is face of both) for K'.
     Classical case analysis: 4x4 matrix over {K-{e}, {R}, e_l, e_r}. **)
 lemma geotop_subdivide_edge_inter_face:
