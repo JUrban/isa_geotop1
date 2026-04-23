@@ -8767,7 +8767,7 @@ proof -
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
           geotop_manifold_euler M1 = geotop_manifold_euler M2)"
-    using h_equiv by (by100 blast)
+    using h_equiv by (by100 fast)
   show ?thesis using h_final by (by100 blast)
 qed
 

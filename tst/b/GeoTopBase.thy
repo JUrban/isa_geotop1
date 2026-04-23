@@ -9298,9 +9298,120 @@ proof (intro ballI allI impI)
       show "\<tau> \<in> ?K'" using h\<tau>_R by (by100 blast)
     next
       assume h\<sigma>_lr: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      have h_ins_lr: "\<sigma> = closed_segment v\<^sub>0 R \<or> \<sigma> = closed_segment R v\<^sub>1"
+        using h\<sigma>_lr by (by100 simp)
       show "\<tau> \<in> ?K'"
-        sorry \<comment> \<open>σ = closed_segment v0 R or closed_segment R v1. Faces are
-                  the vertices ({v0}, {R} or {R}, {v1}) and σ itself, all in K'.\<close>
+      proof (rule disjE[OF h_ins_lr])
+        assume h\<sigma>_el: "\<sigma> = closed_segment v\<^sub>0 R"
+        (** V(σ) = {v_0, R}; face τ of σ has W ⊆ {v_0, R} nonempty. **)
+        have hR_v0_sym: "v\<^sub>0 \<noteq> R" using hR_v0 by (by100 blast)
+        have h_sv_el: "geotop_simplex_vertices (closed_segment v\<^sub>0 R) {v\<^sub>0, R}"
+          by (rule geotop_closed_segment_simplex_vertices[OF hR_v0_sym])
+        have h_sv_sigma: "geotop_simplex_vertices \<sigma> {v\<^sub>0, R}"
+          using h_sv_el h\<sigma>_el by (by100 simp)
+        obtain V' W' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                        and hW'_ne: "W' \<noteq> {}" and hW'_V': "W' \<subseteq> V'"
+                        and h\<tau>_hull: "\<tau> = geotop_convex_hull W'"
+          using h_face unfolding geotop_is_face_def by (by100 blast)
+        have hV'_eq: "V' = {v\<^sub>0, R}"
+          by (rule geotop_simplex_vertices_unique[OF hV'_sv h_sv_sigma])
+        have hW'_sub: "W' \<subseteq> {v\<^sub>0, R}" using hW'_V' hV'_eq by (by100 simp)
+        (** W' is nonempty subset of 2-element set: W' ∈ {{v0}, {R}, {v0,R}}. **)
+        have h_W'_cases: "W' = {v\<^sub>0} \<or> W' = {R} \<or> W' = {v\<^sub>0, R}"
+          using hW'_ne hW'_sub by (by100 blast)
+        show "\<tau> \<in> ?K'"
+        proof (rule disjE[OF h_W'_cases])
+          assume h_W'_v0: "W' = {v\<^sub>0}"
+          have h\<tau>_eq_v0: "\<tau> = {v\<^sub>0}"
+          proof -
+            have "\<tau> = geotop_convex_hull {v\<^sub>0}" using h\<tau>_hull h_W'_v0 by (by100 simp)
+            also have "\<dots> = convex hull {v\<^sub>0}" by (rule geotop_convex_hull_eq_HOL)
+            also have "\<dots> = {v\<^sub>0}" by (by100 simp)
+            finally show ?thesis .
+          qed
+          have h_v0_Ke: "{v\<^sub>0} \<in> K - {e}" using hv0_K h_v0_ne by (by100 simp)
+          show "\<tau> \<in> ?K'" using h\<tau>_eq_v0 h_v0_Ke by (by100 blast)
+        next
+          assume h_W'_rest: "W' = {R} \<or> W' = {v\<^sub>0, R}"
+          show "\<tau> \<in> ?K'"
+          proof (rule disjE[OF h_W'_rest])
+            assume h_W'_R: "W' = {R}"
+            have h\<tau>_eq_R: "\<tau> = {R}"
+            proof -
+              have "\<tau> = geotop_convex_hull {R}" using h\<tau>_hull h_W'_R by (by100 simp)
+              also have "\<dots> = convex hull {R}" by (rule geotop_convex_hull_eq_HOL)
+              also have "\<dots> = {R}" by (by100 simp)
+              finally show ?thesis .
+            qed
+            show "\<tau> \<in> ?K'" using h\<tau>_eq_R by (by100 blast)
+          next
+            assume h_W'_full: "W' = {v\<^sub>0, R}"
+            have h\<tau>_eq_el: "\<tau> = closed_segment v\<^sub>0 R"
+            proof -
+              have "\<tau> = geotop_convex_hull {v\<^sub>0, R}"
+                using h\<tau>_hull h_W'_full by (by100 simp)
+              also have "\<dots> = convex hull {v\<^sub>0, R}" by (rule geotop_convex_hull_eq_HOL)
+              also have "\<dots> = closed_segment v\<^sub>0 R" by (rule segment_convex_hull[symmetric])
+              finally show ?thesis .
+            qed
+            show "\<tau> \<in> ?K'" using h\<tau>_eq_el by (by100 blast)
+          qed
+        qed
+      next
+        assume h\<sigma>_er: "\<sigma> = closed_segment R v\<^sub>1"
+        have hR_v1_sym: "R \<noteq> v\<^sub>1" using hR_v1 by (by100 blast)
+        have h_sv_er: "geotop_simplex_vertices (closed_segment R v\<^sub>1) {R, v\<^sub>1}"
+          by (rule geotop_closed_segment_simplex_vertices[OF hR_v1_sym])
+        have h_sv_sigma: "geotop_simplex_vertices \<sigma> {R, v\<^sub>1}"
+          using h_sv_er h\<sigma>_er by (by100 simp)
+        obtain V' W' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                        and hW'_ne: "W' \<noteq> {}" and hW'_V': "W' \<subseteq> V'"
+                        and h\<tau>_hull: "\<tau> = geotop_convex_hull W'"
+          using h_face unfolding geotop_is_face_def by (by100 blast)
+        have hV'_eq: "V' = {R, v\<^sub>1}"
+          by (rule geotop_simplex_vertices_unique[OF hV'_sv h_sv_sigma])
+        have hW'_sub: "W' \<subseteq> {R, v\<^sub>1}" using hW'_V' hV'_eq by (by100 simp)
+        have h_W'_cases: "W' = {R} \<or> W' = {v\<^sub>1} \<or> W' = {R, v\<^sub>1}"
+          using hW'_ne hW'_sub by (by100 blast)
+        show "\<tau> \<in> ?K'"
+        proof (rule disjE[OF h_W'_cases])
+          assume h_W'_R: "W' = {R}"
+          have h\<tau>_eq_R: "\<tau> = {R}"
+          proof -
+            have "\<tau> = geotop_convex_hull {R}" using h\<tau>_hull h_W'_R by (by100 simp)
+            also have "\<dots> = convex hull {R}" by (rule geotop_convex_hull_eq_HOL)
+            also have "\<dots> = {R}" by (by100 simp)
+            finally show ?thesis .
+          qed
+          show "\<tau> \<in> ?K'" using h\<tau>_eq_R by (by100 blast)
+        next
+          assume h_W'_rest: "W' = {v\<^sub>1} \<or> W' = {R, v\<^sub>1}"
+          show "\<tau> \<in> ?K'"
+          proof (rule disjE[OF h_W'_rest])
+            assume h_W'_v1: "W' = {v\<^sub>1}"
+            have h\<tau>_eq_v1: "\<tau> = {v\<^sub>1}"
+            proof -
+              have "\<tau> = geotop_convex_hull {v\<^sub>1}" using h\<tau>_hull h_W'_v1 by (by100 simp)
+              also have "\<dots> = convex hull {v\<^sub>1}" by (rule geotop_convex_hull_eq_HOL)
+              also have "\<dots> = {v\<^sub>1}" by (by100 simp)
+              finally show ?thesis .
+            qed
+            have h_v1_Ke: "{v\<^sub>1} \<in> K - {e}" using hv1_K h_v1_ne by (by100 simp)
+            show "\<tau> \<in> ?K'" using h\<tau>_eq_v1 h_v1_Ke by (by100 blast)
+          next
+            assume h_W'_full: "W' = {R, v\<^sub>1}"
+            have h\<tau>_eq_er: "\<tau> = closed_segment R v\<^sub>1"
+            proof -
+              have "\<tau> = geotop_convex_hull {R, v\<^sub>1}"
+                using h\<tau>_hull h_W'_full by (by100 simp)
+              also have "\<dots> = convex hull {R, v\<^sub>1}" by (rule geotop_convex_hull_eq_HOL)
+              also have "\<dots> = closed_segment R v\<^sub>1" by (rule segment_convex_hull[symmetric])
+              finally show ?thesis .
+            qed
+            show "\<tau> \<in> ?K'" using h\<tau>_eq_er by (by100 blast)
+          qed
+        qed
+      qed
     qed
   qed
 qed
