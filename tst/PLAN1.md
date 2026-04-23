@@ -178,6 +178,35 @@ comment mentions). These are the 6 classical-content sorries:
   - Fresh: GeoTopBase 37s + GeoTop 14s = 51s.
   - Cached: 8-10s.
 
+## Session 2026-04-23 continued: CLOSE K.2 inter_face (full 4×4 case analysis)
+
+**K.2 inter_face FULLY PROVED** via 4 macro-cases + 6 new helper lemmas:
+
+Helpers added:
+- `geotop_subdivide_edge_el_inter_er` — ?el ∩ ?er = {R} via library `Int_closed_segment`.
+- `geotop_subdivide_edge_v0_notin_er` — v₀ ∉ cs R v₁ (derived from intersection exactness).
+- `geotop_subdivide_edge_v1_notin_el` — symmetric.
+- `geotop_singleton_is_face_self` — {x} is a face of {x}.
+- `geotop_closed_segment_is_face_endpoint` — endpoints are 0-faces of a segment.
+- `geotop_closed_segment_is_face_self` — segment is a face of itself.
+- `geotop_subdivide_edge_sigma_cap_e_cases` — for σ ∈ K-{e} in 1-dim K, σ∩e ∈ {{},{v₀},{v₁}} via K.2 of K + |V_σ| ≤ 2.
+
+Main proof structure (commits dcf2c38f 58c8e0f7 3626af6c 817e92ee e8c1f548 19bcaa70):
+- Old × old: direct K.2 of K.
+- Old × new: σ∩e classification + endpoint faces; three of the subcases vacuous.
+- New × old: symmetric dual of old × new (duplicated, not extracted).
+- New × new: 3×3 disjE enumeration; ?el∩?er={R} closes the tricky pair.
+
+**5 real §1+Intro sorries remaining** (was 6):
+  1. L1945 `classical_Sd_exists` (D).
+  2. L3084 Lebesgue tightening (E).
+  3. L3313 `h_f_exists` (F).
+  4. L10918 subarc polyhedron (Phase 1.A).
+  5. L11293 arc_reduction overlap (Phase 1.C).
+
+All of Phase 1.1 (`complex_subdivide_edge`) is now STRUCTURALLY + CONTENT-COMPLETE.
+Build times unchanged: fresh 51s, cached 8s.
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
