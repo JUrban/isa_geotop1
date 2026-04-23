@@ -10481,6 +10481,7 @@ lemma geotop_complex_subdivide_edge_interior:
   assumes hR_e: "R \<in> e" and hR_V: "R \<notin> V"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> K - {e} \<subseteq> K'
             \<and> (finite K \<longrightarrow> finite K')"
 proof -
   have hR_v0: "R \<noteq> v\<^sub>0" using hR_V hVeq by (by100 blast)
@@ -10590,10 +10591,12 @@ proof -
   have hK'_comp: "geotop_is_complex ?K'"
     unfolding geotop_is_complex_def
     using hK'_sim hK'_faces hK'_inter hK'_locfin by (by100 blast)
+  have hK'_sup: "K - {e} \<subseteq> ?K'" by (by100 blast)
   have h_all: "geotop_is_complex ?K' \<and> geotop_complex_is_1dim ?K'
              \<and> geotop_polyhedron ?K' = geotop_polyhedron K \<and> {R} \<in> ?K'
+             \<and> K - {e} \<subseteq> ?K'
              \<and> (finite K \<longrightarrow> finite ?K')"
-    using hK'_comp hK'_1dim hK'_poly hR_K' hK'_fin by (by100 blast)
+    using hK'_comp hK'_1dim hK'_poly hR_K' hK'_sup hK'_fin by (by100 blast)
   show ?thesis using h_all by (rule exI)
 qed
 
@@ -10620,7 +10623,8 @@ proof -
 qed
 
 (** Phase 1.1 main: subdivide a 1-simplex of K at a point R \<in> e.
-    Also preserves finiteness when the input is finite. **)
+    Also preserves finiteness when the input is finite. Returns K' that
+    is a super-set of K - {e}, ensuring all 0-simplices of K survive. **)
 lemma geotop_complex_subdivide_edge:
   fixes K :: "'a::euclidean_space set set"
   assumes hKcomp: "geotop_is_complex K"
@@ -10629,6 +10633,7 @@ lemma geotop_complex_subdivide_edge:
   assumes hR_e: "R \<in> e"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> K - {e} \<subseteq> K'
             \<and> (finite K \<longrightarrow> finite K')"
 proof -
   obtain V m where hVfin: "finite V" and hVcard: "card V = 1 + 1"
@@ -10648,7 +10653,8 @@ proof -
     case True
     have hR_K: "{R} \<in> K"
       by (rule geotop_complex_subdivide_edge_vertex[OF hKcomp he_K he_dim hV_verts True])
-    show ?thesis using hKcomp hK1dim hR_K by (by100 blast)
+    have hK_sub_self: "K - {e} \<subseteq> K" by (by100 blast)
+    show ?thesis using hKcomp hK1dim hR_K hK_sub_self by (by100 blast)
   next
     case False
     show ?thesis
@@ -10666,6 +10672,7 @@ lemma geotop_complex_subdivide_at:
   assumes hR_poly: "R \<in> geotop_polyhedron K"
   shows "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
             \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+            \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
             \<and> (finite K \<longrightarrow> finite K')"
 proof -
   (** Find σ ∈ K with R ∈ σ. **)
@@ -10688,13 +10695,39 @@ proof -
       using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
     have hR_v: "R = v" using hR\<sigma> h\<sigma>_sing by (by100 blast)
     have hR_K: "{R} \<in> K" using h\<sigma>K h\<sigma>_sing hR_v by (by100 simp)
-    show ?thesis using hKcomp hK1dim hR_K by (by100 blast)
+    have h_all_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K" by (by100 simp)
+    show ?thesis using hKcomp hK1dim hR_K h_all_preserve by (by100 blast)
   next
     case (Suc k)
     have hn_eq_1: "n = 1" using hn_le Suc by (by100 simp)
     have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_dim hn_eq_1 by (by100 simp)
-    show ?thesis
+    have h_ex_K': "\<exists>K'. geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+              \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+              \<and> K - {\<sigma>} \<subseteq> K'
+              \<and> (finite K \<longrightarrow> finite K')"
       by (rule geotop_complex_subdivide_edge[OF hKcomp hK1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>])
+    obtain K' where hK'_comp: "geotop_is_complex K'" and hK'_1dim: "geotop_complex_is_1dim K'"
+                 and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
+                 and hR_K': "{R} \<in> K'" and hK'_sup: "K - {\<sigma>} \<subseteq> K'"
+                 and hK'_fin: "finite K \<longrightarrow> finite K'"
+      using h_ex_K' by (by100 blast)
+    (** 0-simplex preservation: any {v} ∈ K is ≠ σ (dim mismatch) so {v} ∈ K-{σ} ⊆ K'. **)
+    have h_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K'"
+    proof (intro allI impI)
+      fix v assume hvK: "{v} \<in> K"
+      have h_not_\<sigma>: "{v} \<noteq> \<sigma>"
+      proof
+        assume heq: "{v} = \<sigma>"
+        have h_dim0: "geotop_simplex_dim {v} 0" by (rule geotop_singleton_is_simplex)
+        have h_\<sigma>_dim0: "geotop_simplex_dim \<sigma> 0" using h_dim0 heq by (by100 simp)
+        have h_01: "(0::nat) = 1" by (rule geotop_simplex_dim_unique[OF h_\<sigma>_dim0 h\<sigma>_dim1])
+        have h_ne: "(0::nat) \<noteq> 1" by (by100 simp)
+        show False using h_01 h_ne by (by100 blast)
+      qed
+      have "{v} \<in> K - {\<sigma>}" using hvK h_not_\<sigma> by (by100 simp)
+      thus "{v} \<in> K'" using hK'_sup by (by100 blast)
+    qed
+    show ?thesis using hK'_comp hK'_1dim hK'_poly hR_K' h_preserve hK'_fin by (by100 blast)
   qed
 qed
 
