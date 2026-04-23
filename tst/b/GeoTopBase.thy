@@ -9516,6 +9516,131 @@ proof (intro ballI allI impI)
   qed
 qed
 
+(** Phase 1.1 helper — closed_segment v\<^sub>0 R and closed_segment R v\<^sub>1
+    meet precisely at R, whenever R lies on closed_segment v\<^sub>0 v\<^sub>1.
+    Uses the library lemma Int_closed_segment. **)
+lemma geotop_subdivide_edge_el_inter_er:
+  fixes v\<^sub>0 v\<^sub>1 R :: "'a::euclidean_space"
+  assumes hR_cs: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+  shows "closed_segment v\<^sub>0 R \<inter> closed_segment R v\<^sub>1 = {R}"
+  using hR_cs by (rule Int_closed_segment[OF disjI1])
+
+(** Phase 1.1 helper — v\<^sub>0 \<notin> closed_segment R v\<^sub>1 when R \<in> closed_segment v\<^sub>0 v\<^sub>1
+    and R \<noteq> v\<^sub>0. Derived from the exact intersection lemma. **)
+lemma geotop_subdivide_edge_v0_notin_er:
+  fixes v\<^sub>0 v\<^sub>1 R :: "'a::euclidean_space"
+  assumes hR_cs: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+  assumes hR_v0: "R \<noteq> v\<^sub>0"
+  shows "v\<^sub>0 \<notin> closed_segment R v\<^sub>1"
+proof
+  assume h_in_er: "v\<^sub>0 \<in> closed_segment R v\<^sub>1"
+  have h_in_el: "v\<^sub>0 \<in> closed_segment v\<^sub>0 R" by (by100 simp)
+  have h_in_both: "v\<^sub>0 \<in> closed_segment v\<^sub>0 R \<inter> closed_segment R v\<^sub>1"
+    using h_in_el h_in_er by (by100 blast)
+  have h_int_R: "closed_segment v\<^sub>0 R \<inter> closed_segment R v\<^sub>1 = {R}"
+    by (rule geotop_subdivide_edge_el_inter_er[OF hR_cs])
+  have "v\<^sub>0 \<in> {R}" using h_in_both h_int_R by (by100 simp)
+  hence "v\<^sub>0 = R" by (by100 simp)
+  thus False using hR_v0 by (by100 blast)
+qed
+
+(** Phase 1.1 helper — v\<^sub>1 \<notin> closed_segment v\<^sub>0 R. Symmetric to v0_notin_er. **)
+lemma geotop_subdivide_edge_v1_notin_el:
+  fixes v\<^sub>0 v\<^sub>1 R :: "'a::euclidean_space"
+  assumes hR_cs: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+  assumes hR_v1: "R \<noteq> v\<^sub>1"
+  shows "v\<^sub>1 \<notin> closed_segment v\<^sub>0 R"
+proof
+  assume h_in_el: "v\<^sub>1 \<in> closed_segment v\<^sub>0 R"
+  have h_in_er: "v\<^sub>1 \<in> closed_segment R v\<^sub>1" by (by100 simp)
+  have h_in_both: "v\<^sub>1 \<in> closed_segment v\<^sub>0 R \<inter> closed_segment R v\<^sub>1"
+    using h_in_el h_in_er by (by100 blast)
+  have h_int_R: "closed_segment v\<^sub>0 R \<inter> closed_segment R v\<^sub>1 = {R}"
+    by (rule geotop_subdivide_edge_el_inter_er[OF hR_cs])
+  have "v\<^sub>1 \<in> {R}" using h_in_both h_int_R by (by100 simp)
+  hence "v\<^sub>1 = R" by (by100 simp)
+  thus False using hR_v1[symmetric] by (by100 blast)
+qed
+
+(** Phase 1.1 helper — {x} is a face of {x} for any x. **)
+lemma geotop_singleton_is_face_self:
+  fixes x :: "'a::euclidean_space"
+  shows "geotop_is_face {x} {x}"
+proof -
+  have h_dim: "geotop_simplex_dim {x} 0" by (rule geotop_singleton_is_simplex)
+  obtain V1 m1 where h_V1_fin: "finite V1" and h_V1_card: "card V1 = 0 + 1"
+                 and h_nm1: "0 \<le> m1" and h_gp1: "geotop_general_position V1 m1"
+                 and h_V1_hull: "{x} = geotop_convex_hull V1"
+    using h_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have h_V1_card_1: "card V1 = 1" using h_V1_card by (by100 simp)
+  have h_V1_sing: "\<exists>w. V1 = {w}"
+    using h_V1_card_1 card_1_singletonE by (by100 metis)
+  obtain w where h_V1_w: "V1 = {w}" using h_V1_sing by (by100 blast)
+  have h_x_hull: "{x} = geotop_convex_hull {w}" using h_V1_hull h_V1_w by (by100 simp)
+  have h_gcvh_w: "geotop_convex_hull {w} = convex hull {w}"
+    by (rule geotop_convex_hull_eq_HOL)
+  have h_x_hull_HOL: "{x} = convex hull {w}"
+    using h_x_hull h_gcvh_w by (by100 simp)
+  have h_w_x: "w = x"
+  proof -
+    have h_cvx_w: "convex hull {w} = {w}" by (by100 simp)
+    have "{x} = {w}" using h_x_hull_HOL h_cvx_w by (by100 simp)
+    thus ?thesis by (by100 blast)
+  qed
+  have h_V1_x: "V1 = {x}" using h_V1_w h_w_x by (by100 simp)
+  have h_sv: "geotop_simplex_vertices {x} {x}"
+    unfolding geotop_simplex_vertices_def
+    using h_V1_fin h_V1_card h_nm1 h_gp1 h_V1_hull h_V1_x by (by100 blast)
+  have h_sub: "{x} \<subseteq> {x}" by (by100 simp)
+  have h_ne: "{x} \<noteq> ({}::'a set)" by (by100 simp)
+  have h_hull_eq: "{x} = geotop_convex_hull {x}"
+    using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+  show ?thesis unfolding geotop_is_face_def
+    using h_sv h_sub h_ne h_hull_eq by (by100 blast)
+qed
+
+(** Phase 1.1 helper — {v} is a face of closed_segment a b for v \<in> {a, b}, a \<noteq> b. **)
+lemma geotop_closed_segment_is_face_endpoint:
+  fixes a b v :: "'a::euclidean_space"
+  assumes hab: "a \<noteq> b"
+  assumes hv: "v = a \<or> v = b"
+  shows "geotop_is_face {v} (closed_segment a b)"
+proof -
+  have h_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  have h_v_ab: "v \<in> {a, b}" using hv by (by100 blast)
+  have h_sub: "{v} \<subseteq> {a, b}" using h_v_ab by (by100 blast)
+  have h_ne: "{v} \<noteq> ({}::'a set)" by (by100 simp)
+  have h_hull_eq: "{v} = geotop_convex_hull {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  show ?thesis unfolding geotop_is_face_def
+    using h_sv h_sub h_ne h_hull_eq by (by100 blast)
+qed
+
+(** Phase 1.1 helper — closed_segment a b is a face of itself, a \<noteq> b. **)
+lemma geotop_closed_segment_is_face_self:
+  fixes a b :: "'a::euclidean_space"
+  assumes hab: "a \<noteq> b"
+  shows "geotop_is_face (closed_segment a b) (closed_segment a b)"
+proof -
+  have h_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  have h_sub: "{a, b} \<subseteq> {a, b}" by (by100 simp)
+  have h_ne: "{a, b} \<noteq> ({}::'a set)" by (by100 simp)
+  have h_hull_eq: "closed_segment a b = geotop_convex_hull {a, b}"
+  proof -
+    have "geotop_convex_hull {a, b} = convex hull {a, b}"
+      by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = closed_segment a b" by (rule segment_convex_hull[symmetric])
+    finally show ?thesis by (by100 simp)
+  qed
+  have h_exists:
+    "\<exists>V W. geotop_simplex_vertices (closed_segment a b) V
+         \<and> W \<noteq> {} \<and> W \<subseteq> V \<and> closed_segment a b = geotop_convex_hull W"
+    using h_sv h_sub h_ne h_hull_eq by (by100 blast)
+  show ?thesis unfolding geotop_is_face_def by (rule h_exists)
+qed
+
 (** Phase 1.1 helper — K.2 (intersection is face of both) for K'.
     Classical case analysis: 4x4 matrix over {K-{e}, {R}, e_l, e_r}. **)
 lemma geotop_subdivide_edge_inter_face:
