@@ -9059,6 +9059,54 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Phase 1.1 helper — all simplexes in the subdivided complex.
+    Proof is fully decomposed into small by100-simp steps using explicit
+    rule applications, avoiding flaky disjunctive-eliminations. **)
+lemma geotop_subdivide_edge_simplexes:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hKcomp: "geotop_is_complex K"
+  assumes hR_v0: "R \<noteq> v\<^sub>0" and hR_v1: "R \<noteq> v\<^sub>1"
+  shows "\<forall>\<sigma>\<in>(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}.
+           geotop_is_simplex \<sigma>"
+proof
+  fix \<sigma>
+  assume h\<sigma>: "\<sigma> \<in> (K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  have hK_simp: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    using conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+  have hR_sim: "geotop_is_simplex {R}"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF geotop_singleton_is_simplex])
+  have hseg_v0R: "geotop_is_simplex (closed_segment v\<^sub>0 R)"
+    by (rule geotop_simplex_dim_imp_is_simplex
+             [OF geotop_closed_segment_is_simplex[OF hR_v0[symmetric]]])
+  have hseg_Rv1: "geotop_is_simplex (closed_segment R v\<^sub>1)"
+    by (rule geotop_simplex_dim_imp_is_simplex
+             [OF geotop_closed_segment_is_simplex[OF hR_v1]])
+  show "geotop_is_simplex \<sigma>"
+  proof (rule UnE[OF h\<sigma>])
+    assume h\<sigma>_L: "\<sigma> \<in> K - {e}"
+    have "\<sigma> \<in> K" using h\<sigma>_L by (by100 simp)
+    thus ?thesis using hK_simp by (by100 blast)
+  next
+    assume h\<sigma>_R: "\<sigma> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+    have h_ins: "\<sigma> = {R} \<or> \<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      using h\<sigma>_R by (by100 simp)
+    show ?thesis
+    proof (rule disjE[OF h_ins])
+      assume "\<sigma> = {R}" thus ?thesis using hR_sim by (by100 simp)
+    next
+      assume h\<sigma>_R2: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      have h_ins2: "\<sigma> = closed_segment v\<^sub>0 R \<or> \<sigma> = closed_segment R v\<^sub>1"
+        using h\<sigma>_R2 by (by100 simp)
+      show ?thesis
+      proof (rule disjE[OF h_ins2])
+        assume "\<sigma> = closed_segment v\<^sub>0 R" thus ?thesis using hseg_v0R by (by100 simp)
+      next
+        assume "\<sigma> = closed_segment R v\<^sub>1" thus ?thesis using hseg_Rv1 by (by100 simp)
+      qed
+    qed
+  qed
+qed
+
 (** Phase 1.1 helper — polyhedron equality for the subdivided complex. **)
 lemma geotop_subdivide_edge_polyhedron_eq:
   fixes K :: "'a::euclidean_space set set"
