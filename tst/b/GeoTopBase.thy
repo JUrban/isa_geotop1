@@ -9059,6 +9059,33 @@ lemma geotop_1dim_complex_simp_dim_le_1:
   shows "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
   using hK1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Helper: closed_segment P Q has vertex set {P, Q} when P ≠ Q. **)
+lemma geotop_closed_segment_simplex_vertices:
+  fixes P Q :: "'a::euclidean_space"
+  assumes hne: "P \<noteq> Q"
+  shows "geotop_simplex_vertices (closed_segment P Q) {P, Q}"
+proof -
+  have h_dim: "geotop_simplex_dim (closed_segment P Q) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hne])
+  obtain V1 m1 where h_V1_fin: "finite V1" and h_V1_card: "card V1 = 1 + 1"
+                 and h_nm1: "1 \<le> m1" and h_gp1: "geotop_general_position V1 m1"
+                 and h_V1_hull: "closed_segment P Q = geotop_convex_hull V1"
+    using h_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  (** simplex_vertices via the witness V1. **)
+  have h_sv_V1: "geotop_simplex_vertices (closed_segment P Q) V1"
+    unfolding geotop_simplex_vertices_def
+    using h_V1_fin h_V1_card h_nm1 h_gp1 h_V1_hull by (by100 blast)
+  have h_V1_PQ: "V1 = {P, Q}"
+    by (rule geotop_segment_simplex_vertices[OF hne h_sv_V1])
+  (** Now fold back. **)
+  have h_final_hull: "closed_segment P Q = geotop_convex_hull {P, Q}"
+    using h_V1_hull h_V1_PQ by (by100 simp)
+  have h_PQ_fin: "finite {P, Q}" by (by100 simp)
+  have h_PQ_card: "card {P, Q} = 1 + 1" using hne by (by100 simp)
+  show ?thesis unfolding geotop_simplex_vertices_def
+    using h_PQ_fin h_PQ_card h_nm1 h_gp1 h_V1_PQ h_final_hull by (by100 blast)
+qed
+
 (** Phase 1.1 helper — singleton ≠ e when e has 2 distinct vertices. **)
 lemma geotop_subdivide_edge_singleton_ne_e:
   fixes e :: "'a::euclidean_space set"
