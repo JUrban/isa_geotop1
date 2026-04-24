@@ -3004,6 +3004,120 @@ proof -
   show ?thesis using finite_subset[OF h_sub h_outer_fin] by (by100 simp)
 qed
 
+(** D-support: flags of a complex (strictly-increasing distinct chains). **)
+definition geotop_flags :: "'a::euclidean_space set set \<Rightarrow> 'a set list set" where
+  "geotop_flags K = {c. c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+
+(** D-support: for σ ∈ K (complex), flags ending at σ are finite.
+    Key step: any element of such a flag is a proper combinatorial face of σ
+    (via K.2 of K: τ ⊊ σ, both in K, gives τ face of σ). Faces of σ are
+    finite (simplex_faces_finite). Distinct lists over finite set are finite. **)
+lemma geotop_complex_flags_at_simplex_finite:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "finite {c \<in> geotop_flags K. last c = \<sigma>}"
+proof -
+  have h_simp_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  (** Face set of σ is finite. Extend with σ itself to allow chain ending with σ. **)
+  define F_\<sigma> where "F_\<sigma> = {\<tau>. geotop_is_face \<tau> \<sigma>} \<union> {\<sigma>}"
+  have h_F_fin: "finite F_\<sigma>"
+    unfolding F_\<sigma>_def
+    using geotop_simplex_faces_finite[OF h\<sigma>_simp] by (by100 simp)
+  (** Every flag element is in F_σ. **)
+  have h_flag_in_F: "\<forall>c \<in> {c \<in> geotop_flags K. last c = \<sigma>}. set c \<subseteq> F_\<sigma>"
+  proof (rule ballI)
+    fix c assume hc_cond: "c \<in> {c \<in> geotop_flags K. last c = \<sigma>}"
+    have hc_flags: "c \<in> geotop_flags K" using hc_cond by (by100 blast)
+    have hc_last: "last c = \<sigma>" using hc_cond by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flags unfolding geotop_flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flags unfolding geotop_flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) c"
+      using hc_flags unfolding geotop_flags_def by (by100 blast)
+    have h_append: "butlast c @ [last c] = c" using hc_ne by (rule append_butlast_last_id)
+    have h_sw_split: "sorted_wrt (\<subset>) (butlast c @ [last c])"
+      using hc_sorted h_append by (by100 simp)
+    have h_sw_expand_raw: "sorted_wrt (\<subset>) (butlast c)
+                         \<and> sorted_wrt (\<subset>) [last c]
+                         \<and> (\<forall>x\<in>set (butlast c). \<forall>y\<in>set [last c]. x \<subset> y)"
+      using h_sw_split sorted_wrt_append[of "(\<subset>)" "butlast c" "[last c]"]
+      by (by100 blast)
+    have h_sw_expand: "\<forall>x\<in>set (butlast c). x \<subset> last c"
+      using h_sw_expand_raw by (by100 simp)
+    show "set c \<subseteq> F_\<sigma>"
+    proof
+      fix \<tau> assume h\<tau>_c: "\<tau> \<in> set c"
+      have h_set_split: "set c = set (butlast c) \<union> {last c}"
+      proof -
+        have "set c = set (butlast c @ [last c])" using h_append by (by100 simp)
+        thus ?thesis by (by100 simp)
+      qed
+      have h_cases: "\<tau> \<in> set (butlast c) \<or> \<tau> = last c"
+        using h\<tau>_c h_set_split by (by100 blast)
+      show "\<tau> \<in> F_\<sigma>"
+      proof (rule disjE[OF h_cases])
+        assume h_in_butlast: "\<tau> \<in> set (butlast c)"
+        have h\<tau>_lt_last: "\<tau> \<subset> last c" using h_sw_expand h_in_butlast by (by100 blast)
+        have h\<tau>_lt_\<sigma>: "\<tau> \<subset> \<sigma>" using h\<tau>_lt_last hc_last by (by100 simp)
+        (** τ ∈ K (from hc_subK), τ ⊊ σ ⟹ τ is a face of σ via K.2 of K. **)
+        have h\<tau>K: "\<tau> \<in> K" using h\<tau>_c hc_subK by (by100 blast)
+        have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                         geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+          using conjunct1[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]]
+          by (by100 blast)
+        have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>" using h\<tau>_lt_\<sigma> by (by100 blast)
+        (** τ is a simplex, so τ ≠ {}. **)
+        have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K h_simp_all by (by100 blast)
+        obtain V\<^sub>\<tau> m\<^sub>\<tau> n\<^sub>\<tau> where hV\<^sub>\<tau>_card: "card V\<^sub>\<tau> = n\<^sub>\<tau> + 1" and hV\<^sub>\<tau>fin: "finite V\<^sub>\<tau>"
+                           and h\<tau>_hull: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
+          using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+        have hV\<^sub>\<tau>_ne: "V\<^sub>\<tau> \<noteq> {}"
+        proof
+          assume "V\<^sub>\<tau> = {}"
+          hence "card V\<^sub>\<tau> = 0" by (by100 simp)
+          thus False using hV\<^sub>\<tau>_card by (by100 simp)
+        qed
+        have h\<tau>_ne: "\<tau> \<noteq> {}"
+        proof
+          assume h_empty: "\<tau> = {}"
+          have h_gcvh: "geotop_convex_hull V\<^sub>\<tau> = convex hull V\<^sub>\<tau>"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h_sub: "V\<^sub>\<tau> \<subseteq> convex hull V\<^sub>\<tau>" by (rule hull_subset)
+          have h_V_in_hull: "V\<^sub>\<tau> \<subseteq> geotop_convex_hull V\<^sub>\<tau>"
+            using h_gcvh h_sub by (by100 simp)
+          have "V\<^sub>\<tau> \<subseteq> \<tau>" using h_V_in_hull h\<tau>_hull by (by100 simp)
+          hence "V\<^sub>\<tau> = {}" using h_empty by (by100 blast)
+          thus False using hV\<^sub>\<tau>_ne by (by100 blast)
+        qed
+        have h_cap_ne: "\<tau> \<inter> \<sigma> \<noteq> {}"
+          using h\<tau>_sub_\<sigma> h\<tau>_ne by (by100 blast)
+        have h_face: "geotop_is_face (\<tau> \<inter> \<sigma>) \<sigma>"
+          using hK_inter h\<tau>K h\<sigma>K h_cap_ne by (by100 blast)
+        have h_cap_eq: "\<tau> \<inter> \<sigma> = \<tau>" using h\<tau>_sub_\<sigma> by (by100 blast)
+        have h\<tau>_face_\<sigma>: "geotop_is_face \<tau> \<sigma>" using h_face h_cap_eq by (by100 simp)
+        show "\<tau> \<in> F_\<sigma>" unfolding F_\<sigma>_def using h\<tau>_face_\<sigma> by (by100 blast)
+      next
+        assume h_eq_last: "\<tau> = last c"
+        have "\<tau> = \<sigma>" using h_eq_last hc_last by (by100 simp)
+        thus "\<tau> \<in> F_\<sigma>" unfolding F_\<sigma>_def by (by100 blast)
+      qed
+    qed
+  qed
+  have h_outer_sub: "{c \<in> geotop_flags K. last c = \<sigma>}
+                     \<subseteq> {c. set c \<subseteq> F_\<sigma> \<and> distinct c}"
+  proof
+    fix c assume hc: "c \<in> {c \<in> geotop_flags K. last c = \<sigma>}"
+    have hc_subF: "set c \<subseteq> F_\<sigma>" using h_flag_in_F hc by (by100 blast)
+    have hc_dist: "distinct c" using hc unfolding geotop_flags_def by (by100 blast)
+    show "c \<in> {c. set c \<subseteq> F_\<sigma> \<and> distinct c}" using hc_subF hc_dist by (by100 simp)
+  qed
+  have h_outer_fin: "finite {c. set c \<subseteq> F_\<sigma> \<and> distinct c}"
+    by (rule geotop_finite_distinct_lists_over_finite[OF h_F_fin])
+  show ?thesis using finite_subset[OF h_outer_sub h_outer_fin] by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
