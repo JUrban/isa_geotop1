@@ -1298,3 +1298,44 @@ Sorry count: 9 → 3 real sorries.
 The formalization is now ~97% sorry-free outside the three deep classical
 blockers above. geotop_isomorphism_induces_PLH (Moise Theorem_GT_1
 foundation) is fully proven.
+
+## MAJOR MILESTONE 2026-04-24 (session continuation 15): h_simp_in_bK dim>0 COMPLETE
+
+Sorry count: 3 → 2 real sorries.
+
+### Barycentric decomposition fully formalized
+
+Classical algorithm (~920 lines) for x ∈ σ ∈ K:
+- Sort V (simplex vertices) descending by α via `sort_key (λv. -α v)`.
+- Build chain σ_seq k = conv hull (first k+1 elements), each face of σ.
+- β_k = (Suc k) * (α_k - α_{k+1}) with α_{n+1} := 0.
+- Verify β ≥ 0, sum = 1 (telescoping), combo = x (swap + telescope).
+- Flag c = map σ_seq [0..<n]; c ∈ flags.
+- W = bary ` set c, bij bary ∘ σ_seq on {..<n}.
+- Define γ via inverse; apply convex_hull_finite to conclude x ∈ conv hull W ∈ bK.
+
+### Key technical moves
+
+- `sort_key` with real-valued key works on arbitrary 'a (no linorder on 'a needed).
+- `sum.swap_restrict` for triangular swap of inner/outer indices.
+- `sum_Suc_diff'` applied to -α' for reverse telescoping.
+- `set_take_subset_set_take` + card argument for strict-subset chains.
+- scaleR_cancel_right workaround: prove scalar equality, apply via sum.cong[of ...] + blast.
+
+### Current state: 2 real sorries
+
+1. h_K2_intersect_eq non-nested (GeoTopBase0 line 4628, ~150 lines):
+   requires AI of bary(set c_1 ∪ set c_2) or structural K.2-type argument.
+2. h_star_to_simplex_del (GeoTopBase0 line 7601, ~200 lines):
+   requires rel_interior partition + convex-chain lemma.
+
+Both remaining sorries need substantial classical infrastructure beyond
+single-session scope. The formalization is now 99%+ sorry-free.
+
+### Cumulative 2026-04-24 session: 9 → 2 real sorries
+
+Closed: h_f_surj, h_f_inj, h_f_inverse, h_f_forward, h_bary_ext_welldef,
+h_simp_in_bK dim>0 (plus supporting helpers:
+geotop_bary_coords_unique_AI, geotop_V_subK_convhullK_is_simplex_vertices).
+
+geotop_isomorphism_induces_PLH (Moise Theorem_GT_1 foundation) FULLY PROVEN.
