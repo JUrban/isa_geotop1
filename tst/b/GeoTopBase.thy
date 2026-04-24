@@ -3365,6 +3365,20 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: for c ∈ flags and i < j < length c, c ! i ⊊ c ! j (strict). **)
+lemma geotop_flags_chain_strict:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hc: "c \<in> geotop_flags K"
+  assumes hij: "i < j" and hj_lt: "j < length c"
+  shows "c ! i \<subset> c ! j"
+proof -
+  have hc_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c"
+    using hc unfolding geotop_flags_def by (by100 blast)
+  have h_sw_nth: "\<forall>i' j'. i' < j' \<and> j' < length c \<longrightarrow> c ! i' \<subset> c ! j'"
+    using hc_sorted sorted_wrt_iff_nth_less[of _ c] by (by100 simp)
+  show ?thesis using h_sw_nth hij hj_lt by (by100 blast)
+qed
+
 (** D-support: for c ∈ flags and i ≤ j < length c, c ! i ⊆ c ! j.
     Derived from sorted_wrt (⊊) via sorted_wrt_iff_nth_less. **)
 lemma geotop_flags_chain_subset:
