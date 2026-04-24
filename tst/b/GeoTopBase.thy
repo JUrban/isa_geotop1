@@ -1020,8 +1020,523 @@ proof -
       have hVc_sv: "geotop_simplex_vertices \<sigma>\<^sub>c V\<^sub>c"
         unfolding \<sigma>\<^sub>c_def
         by (rule geotop_V_subK_convhullK_is_simplex_vertices[OF hK hVc_fin hVc_ne hVc_VK h\<sigma>c_K_raw])
-      show "x = y"
-        sorry
+      (** g(x) \<in> conv hull (\<phi> V_c) — since g(x) \<in> \<tau>'_x \<inter> \<tau>'_y and the hulls match. **)
+      have h_gx_in_\<phi>Vc_hull: "g x \<in> convex hull (\<phi> ` V\<^sub>c)"
+      proof -
+        have h_gx_in_inter: "g x \<in> \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'"
+          using h_gx_in\<tau>'x h_gy_in\<tau>'y h_gxy by (by100 simp)
+        have h_hull_eq: "convex hull (\<phi> ` V\<^sub>c) = \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'"
+          using h\<phi>Vc_eq_W h_inter_hullx_HOL by (by100 simp)
+        show ?thesis using h_gx_in_inter h_hull_eq by (by100 simp)
+      qed
+      have h_gy_in_\<phi>Vc_hull: "g y \<in> convex hull (\<phi> ` V\<^sub>c)"
+        using h_gx_in_\<phi>Vc_hull h_gxy by (by100 simp)
+      (** bary coords of g(x) on \<phi> V_c. **)
+      have h_hull_char\<phi>Vc: "convex hull (\<phi> ` V\<^sub>c)
+                            = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>c) = 1
+                                        \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>c. u\<^sub>c w *\<^sub>R w) = u}"
+        using convex_hull_finite[OF h\<phi>Vc_fin] by (by100 simp)
+      have h_ex_gx: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>c) = 1
+                         \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>c. u\<^sub>c w *\<^sub>R w) = g x"
+        using h_gx_in_\<phi>Vc_hull h_hull_char\<phi>Vc by (by100 blast)
+      obtain \<gamma>\<^sub>x where h\<gamma>x_nn: "\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> \<gamma>\<^sub>x w"
+                  and h\<gamma>x_sum: "sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) = 1"
+                  and h\<gamma>x_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w) = g x"
+        using h_ex_gx by (by100 blast)
+      have h_ex_gy: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>c) = 1
+                         \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>c. u\<^sub>c w *\<^sub>R w) = g y"
+        using h_gy_in_\<phi>Vc_hull h_hull_char\<phi>Vc by (by100 blast)
+      obtain \<gamma>\<^sub>y where h\<gamma>y_nn: "\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> \<gamma>\<^sub>y w"
+                  and h\<gamma>y_sum: "sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) = 1"
+                  and h\<gamma>y_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w) = g y"
+        using h_ex_gy by (by100 blast)
+      (** Translate \<gamma>_x on \<phi> V_c to coeffs on V_c via \<phi> injectivity. **)
+      have h\<phi>inj_Vc: "inj_on \<phi> V\<^sub>c"
+        by (rule inj_on_subset[OF h\<phi>_inj_vK hVc_VK])
+      define a_c where "a_c v = \<gamma>\<^sub>x (\<phi> v)" for v
+      define b_c where "b_c v = \<gamma>\<^sub>y (\<phi> v)" for v
+      have ha_c_sum: "sum a_c V\<^sub>c = 1"
+      proof -
+        have h1: "sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) = sum (\<gamma>\<^sub>x \<circ> \<phi>) V\<^sub>c"
+          by (rule sum.reindex[OF h\<phi>inj_Vc])
+        have h2: "sum (\<gamma>\<^sub>x \<circ> \<phi>) V\<^sub>c = sum a_c V\<^sub>c"
+          unfolding a_c_def o_def by (by100 simp)
+        show ?thesis using h\<gamma>x_sum h1 h2 by (by100 simp)
+      qed
+      have hb_c_sum: "sum b_c V\<^sub>c = 1"
+      proof -
+        have h1: "sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) = sum (\<gamma>\<^sub>y \<circ> \<phi>) V\<^sub>c"
+          by (rule sum.reindex[OF h\<phi>inj_Vc])
+        have h2: "sum (\<gamma>\<^sub>y \<circ> \<phi>) V\<^sub>c = sum b_c V\<^sub>c"
+          unfolding b_c_def o_def by (by100 simp)
+        show ?thesis using h\<gamma>y_sum h1 h2 by (by100 simp)
+      qed
+      have ha_c_nn: "\<forall>v\<in>V\<^sub>c. 0 \<le> a_c v"
+        unfolding a_c_def using h\<gamma>x_nn by (by100 blast)
+      have hb_c_nn: "\<forall>v\<in>V\<^sub>c. 0 \<le> b_c v"
+        unfolding b_c_def using h\<gamma>y_nn by (by100 blast)
+      (** Define x_c = \<Sum>_{v \<in> V_c} a_c(v) v; this lies in \<sigma>_c. **)
+      define x\<^sub>c where "x\<^sub>c = (\<Sum>v\<in>V\<^sub>c. a_c v *\<^sub>R v)"
+      define y\<^sub>c where "y\<^sub>c = (\<Sum>v\<in>V\<^sub>c. b_c v *\<^sub>R v)"
+      have hxc_hull: "x\<^sub>c \<in> convex hull V\<^sub>c"
+      proof -
+        have hcc: "convex hull V\<^sub>c
+                   = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
+                               \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = u}"
+          using convex_hull_finite[OF hVc_fin] by (by100 simp)
+        have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
+                         \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = x\<^sub>c"
+          using ha_c_nn ha_c_sum unfolding x\<^sub>c_def by (by100 blast)
+        show ?thesis using hcc h_ex by (by100 blast)
+      qed
+      have hyc_hull: "y\<^sub>c \<in> convex hull V\<^sub>c"
+      proof -
+        have hcc: "convex hull V\<^sub>c
+                   = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
+                               \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = u}"
+          using convex_hull_finite[OF hVc_fin] by (by100 simp)
+        have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
+                         \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = y\<^sub>c"
+          using hb_c_nn hb_c_sum unfolding y\<^sub>c_def by (by100 blast)
+        show ?thesis using hcc h_ex by (by100 blast)
+      qed
+      have hxc_\<sigma>c: "x\<^sub>c \<in> \<sigma>\<^sub>c" using hxc_hull h\<sigma>c_HOL by (by100 simp)
+      have hyc_\<sigma>c: "y\<^sub>c \<in> \<sigma>\<^sub>c" using hyc_hull h\<sigma>c_HOL by (by100 simp)
+      (** Key bary-coord vanishing: show x = x_c by proving \<alpha>(v) = 0 for v \<in> V_x \ V_c
+          and \<alpha>(v) = a_c(v) for v \<in> V_c, via bary uniqueness on AI \<phi> V_x. **)
+      define A\<^sub>x where "A\<^sub>x w = \<alpha> (inv_into V\<^sub>x \<phi> w)" for w
+      define \<gamma>\<^sub>x_ext where "\<gamma>\<^sub>x_ext w = (if w \<in> \<phi> ` V\<^sub>c then \<gamma>\<^sub>x w else 0)" for w
+      (** A_x is bary of g x on \<phi> V_x. **)
+      have hAx_inv: "\<And>v. v \<in> V\<^sub>x \<Longrightarrow> A\<^sub>x (\<phi> v) = \<alpha> v"
+        unfolding A\<^sub>x_def using inv_into_f_f[OF h\<phi>inj_Vx] by (by100 simp)
+      have hAx_nn: "\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> A\<^sub>x w"
+      proof
+        fix w assume hw: "w \<in> \<phi> ` V\<^sub>x"
+        obtain v where hvVx: "v \<in> V\<^sub>x" and hw_eq: "w = \<phi> v" using hw by (by100 blast)
+        have hAx_w: "A\<^sub>x w = \<alpha> v" using hAx_inv[OF hvVx] hw_eq by (by100 simp)
+        show "0 \<le> A\<^sub>x w" using hAx_w h\<alpha>_nn hvVx by (by100 simp)
+      qed
+      have hAx_sum: "sum A\<^sub>x (\<phi> ` V\<^sub>x) = 1"
+      proof -
+        have h1: "sum A\<^sub>x (\<phi> ` V\<^sub>x) = sum (A\<^sub>x \<circ> \<phi>) V\<^sub>x"
+          by (rule sum.reindex[OF h\<phi>inj_Vx])
+        have h2: "\<And>v. v \<in> V\<^sub>x \<Longrightarrow> (A\<^sub>x \<circ> \<phi>) v = \<alpha> v"
+          unfolding o_def using hAx_inv by (by100 simp)
+        have h3: "sum (A\<^sub>x \<circ> \<phi>) V\<^sub>x = sum \<alpha> V\<^sub>x" using h2 by (by100 simp)
+        show ?thesis using h1 h3 h\<alpha>_sum by (by100 simp)
+      qed
+      have hAx_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w) = g x"
+      proof -
+        have h1: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w)
+                   = (\<Sum>v\<in>V\<^sub>x. A\<^sub>x (\<phi> v) *\<^sub>R \<phi> v)"
+          using sum.reindex[OF h\<phi>inj_Vx, of "\<lambda>w. A\<^sub>x w *\<^sub>R w"] by (by100 simp)
+        have h3: "(\<Sum>v\<in>V\<^sub>x. A\<^sub>x (\<phi> v) *\<^sub>R \<phi> v) = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R \<phi> v)"
+          using sum.cong[of V\<^sub>x V\<^sub>x "\<lambda>v. A\<^sub>x (\<phi> v) *\<^sub>R \<phi> v" "\<lambda>v. \<alpha> v *\<^sub>R \<phi> v"] hAx_inv
+          by (by100 simp)
+        show ?thesis using h1 h3 h_gx_phi by (by100 simp)
+      qed
+      (** \<gamma>_x_ext: extension of \<gamma>_x from \<phi> V_c to \<phi> V_x by 0. **)
+      have h\<gamma>ext_nn: "\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> \<gamma>\<^sub>x_ext w"
+      proof
+        fix w assume hw: "w \<in> \<phi> ` V\<^sub>x"
+        show "0 \<le> \<gamma>\<^sub>x_ext w"
+        proof (cases "w \<in> \<phi> ` V\<^sub>c")
+          case True
+          have h_ext_eq: "\<gamma>\<^sub>x_ext w = \<gamma>\<^sub>x w"
+            unfolding \<gamma>\<^sub>x_ext_def using True by (by100 simp)
+          have h_nn: "0 \<le> \<gamma>\<^sub>x w" using h\<gamma>x_nn True by (by100 blast)
+          show ?thesis using h_ext_eq h_nn by (by100 simp)
+        next
+          case False
+          have "\<gamma>\<^sub>x_ext w = 0" unfolding \<gamma>\<^sub>x_ext_def using False by (by100 simp)
+          then show ?thesis by (by100 simp)
+        qed
+      qed
+      (** sum \<gamma>_x_ext over \<phi> V_x = sum \<gamma>_x over \<phi> V_c = 1 (via split on \<phi> V_c \<union> rest). **)
+      have h\<phi>Vx_Vc_disjoint: "\<phi> ` V\<^sub>c \<inter> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c) = {}" by (by100 blast)
+      have h\<phi>Vx_Vc_union: "\<phi> ` V\<^sub>x = \<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)"
+        using h\<phi>Vc_sub_\<phi>Vx by (by100 blast)
+      have h\<phi>Vx_Vc_finDiff: "finite (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)" using h\<phi>Vx_fin by (by100 simp)
+      have h\<gamma>ext_sum: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x) = 1"
+      proof -
+        have h_ud: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c))
+                    = sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)"
+          by (rule sum.union_disjoint[OF h\<phi>Vc_fin h\<phi>Vx_Vc_finDiff h\<phi>Vx_Vc_disjoint])
+        have h_subst: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x)
+                        = sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c))"
+          by (rule arg_cong[where f="sum \<gamma>\<^sub>x_ext", OF h\<phi>Vx_Vc_union])
+        have h_split: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x)
+                       = sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_on_Vc: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>c) = sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c)"
+        proof -
+          have h_eq: "\<And>w. w \<in> \<phi> ` V\<^sub>c \<Longrightarrow> \<gamma>\<^sub>x_ext w = \<gamma>\<^sub>x w"
+            unfolding \<gamma>\<^sub>x_ext_def by (by100 simp)
+          show ?thesis using h_eq by (by100 simp)
+        qed
+        have h_on_rest: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c) = 0"
+        proof -
+          have h_zero_all: "\<forall>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w = 0"
+          proof
+            fix w assume hw: "w \<in> \<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c"
+            show "\<gamma>\<^sub>x_ext w = 0"
+              unfolding \<gamma>\<^sub>x_ext_def using hw by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_step1: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x)
+                          = sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)"
+          using h_split[unfolded h_on_Vc] by (by100 simp)
+        have h_step2: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x) = sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) + 0"
+          using h_step1[unfolded h_on_rest] by (by100 simp)
+        show ?thesis using h_step2 h\<gamma>x_sum by (by100 simp)
+      qed
+      have h\<gamma>ext_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w) = g x"
+      proof -
+        have h_ud: "(\<Sum>w\<in>\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c). \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                    = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                      + (\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)"
+          by (rule sum.union_disjoint[OF h\<phi>Vc_fin h\<phi>Vx_Vc_finDiff h\<phi>Vx_Vc_disjoint])
+        have h_subst: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                         = (\<Sum>w\<in>\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c). \<gamma>\<^sub>x_ext w *\<^sub>R w)"
+          by (rule arg_cong[where f="\<lambda>S. \<Sum>w\<in>S. \<gamma>\<^sub>x_ext w *\<^sub>R w", OF h\<phi>Vx_Vc_union])
+        have h_split: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                       = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                         + (\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_val: "\<And>w. w \<in> \<phi> ` V\<^sub>c \<Longrightarrow> \<gamma>\<^sub>x_ext w = \<gamma>\<^sub>x w"
+          unfolding \<gamma>\<^sub>x_ext_def by (by100 simp)
+        have h_on_Vc: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w)"
+          using sum.cong[of "\<phi> ` V\<^sub>c" "\<phi> ` V\<^sub>c"
+                             "\<lambda>w. \<gamma>\<^sub>x_ext w *\<^sub>R w" "\<lambda>w. \<gamma>\<^sub>x w *\<^sub>R w"] h_val
+          by (by100 force)
+        have h_on_rest: "(\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w) = 0"
+        proof -
+          have h_zero_all: "\<forall>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w = 0"
+          proof
+            fix w assume hw: "w \<in> \<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c"
+            have h_val0: "\<gamma>\<^sub>x_ext w = 0"
+              unfolding \<gamma>\<^sub>x_ext_def using hw by (by100 simp)
+            show "\<gamma>\<^sub>x_ext w *\<^sub>R w = 0" using h_val0 by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_step1: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                          = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w)
+                            + (\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)"
+          using h_split[unfolded h_on_Vc] by (by100 simp)
+        have h_step2: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
+                          = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w) + 0"
+          using h_step1[unfolded h_on_rest] by (by100 simp)
+        show ?thesis using h_step2 h\<gamma>x_combo by (by100 simp)
+      qed
+      (** Apply bary-coords-unique: A_x = \<gamma>_x_ext on \<phi> V_x. **)
+      have hAx_eq_\<gamma>ext: "\<forall>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w = \<gamma>\<^sub>x_ext w"
+      proof -
+        have h_combo_eq: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)"
+          using hAx_combo h\<gamma>ext_combo by (by100 simp)
+        show ?thesis
+          by (rule geotop_bary_coords_unique_AI[OF h\<phi>Vx_fin h\<phi>Vx_ai hAx_sum h\<gamma>ext_sum h_combo_eq])
+      qed
+      (** \<alpha>(v) = \<gamma>_x_ext(\<phi> v) for v \<in> V_x. **)
+      have h\<alpha>_ext_eq: "\<forall>v\<in>V\<^sub>x. \<alpha> v = \<gamma>\<^sub>x_ext (\<phi> v)"
+      proof
+        fix v assume hvVx: "v \<in> V\<^sub>x"
+        have h\<phi>v: "\<phi> v \<in> \<phi> ` V\<^sub>x" using hvVx by (by100 blast)
+        have hAx_\<phi>v: "A\<^sub>x (\<phi> v) = \<alpha> v" by (rule hAx_inv[OF hvVx])
+        have hAx_\<gamma>: "A\<^sub>x (\<phi> v) = \<gamma>\<^sub>x_ext (\<phi> v)" using hAx_eq_\<gamma>ext h\<phi>v by (by100 blast)
+        show "\<alpha> v = \<gamma>\<^sub>x_ext (\<phi> v)" using hAx_\<phi>v hAx_\<gamma> by (by100 simp)
+      qed
+      (** \<alpha>(v) = 0 for v \<in> V_x \ V_c. **)
+      have h\<alpha>_zero: "\<forall>v\<in>V\<^sub>x - V\<^sub>c. \<alpha> v = 0"
+      proof
+        fix v assume hv: "v \<in> V\<^sub>x - V\<^sub>c"
+        have hvVx: "v \<in> V\<^sub>x" using hv by (by100 blast)
+        have hvnVc: "v \<notin> V\<^sub>c" using hv by (by100 blast)
+        (** \<phi> v \<notin> \<phi> V_c: if \<phi> v = \<phi> u for u \<in> V_c, then v = u by inj on V_x \<supseteq> V_c \<union> {v}. **)
+        have h\<phi>v_not_\<phi>Vc: "\<phi> v \<notin> \<phi> ` V\<^sub>c"
+        proof
+          assume h_in: "\<phi> v \<in> \<phi> ` V\<^sub>c"
+          from imageE[OF h_in] obtain u where h\<phi>u_eq: "\<phi> v = \<phi> u" and huVc: "u \<in> V\<^sub>c" .
+          have huVx: "u \<in> V\<^sub>x" using huVc hVc_sub_x by (by100 blast)
+          have h\<phi>uv: "\<phi> u = \<phi> v" using h\<phi>u_eq by (by100 simp)
+          have h_u_eq_v: "u = v"
+            by (rule inj_onD[OF h\<phi>inj_Vx h\<phi>uv huVx hvVx])
+          show False using h_u_eq_v huVc hvnVc by (by100 simp)
+        qed
+        have h\<gamma>ext0: "\<gamma>\<^sub>x_ext (\<phi> v) = 0"
+          unfolding \<gamma>\<^sub>x_ext_def using h\<phi>v_not_\<phi>Vc by (by100 simp)
+        have h\<alpha>_\<gamma>: "\<alpha> v = \<gamma>\<^sub>x_ext (\<phi> v)" using h\<alpha>_ext_eq hvVx by (by100 blast)
+        show "\<alpha> v = 0" using h\<alpha>_\<gamma> h\<gamma>ext0 by (by100 simp)
+      qed
+      (** \<alpha>(v) = a_c(v) for v \<in> V_c. **)
+      have h\<alpha>_eq_ac: "\<forall>v\<in>V\<^sub>c. \<alpha> v = a_c v"
+      proof
+        fix v assume hv: "v \<in> V\<^sub>c"
+        have hvVx: "v \<in> V\<^sub>x" using hv hVc_sub_x by (by100 blast)
+        have h\<phi>v: "\<phi> v \<in> \<phi> ` V\<^sub>c" using hv by (by100 blast)
+        have h\<gamma>ext_v: "\<gamma>\<^sub>x_ext (\<phi> v) = \<gamma>\<^sub>x (\<phi> v)"
+          unfolding \<gamma>\<^sub>x_ext_def using h\<phi>v by (by100 simp)
+        have h\<alpha>_\<gamma>: "\<alpha> v = \<gamma>\<^sub>x (\<phi> v)" using h\<alpha>_ext_eq hvVx h\<gamma>ext_v by (by100 simp)
+        show "\<alpha> v = a_c v" unfolding a_c_def using h\<alpha>_\<gamma> by (by100 simp)
+      qed
+      (** x = x_c via sum split. **)
+      have hx_eq_xc: "x = x\<^sub>c"
+      proof -
+        have hVx_Vc_disjoint: "V\<^sub>c \<inter> (V\<^sub>x - V\<^sub>c) = {}" by (by100 blast)
+        have hVx_Vc_union: "V\<^sub>x = V\<^sub>c \<union> (V\<^sub>x - V\<^sub>c)" using hVc_sub_x by (by100 blast)
+        have hVx_Vc_finDiff: "finite (V\<^sub>x - V\<^sub>c)" using hVx_fin by (by100 simp)
+        have h_ud: "(\<Sum>v\<in>V\<^sub>c \<union> (V\<^sub>x - V\<^sub>c). \<alpha> v *\<^sub>R v)
+                    = (\<Sum>v\<in>V\<^sub>c. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>x - V\<^sub>c. \<alpha> v *\<^sub>R v)"
+          by (rule sum.union_disjoint[OF hVc_fin hVx_Vc_finDiff hVx_Vc_disjoint])
+        have h_subst: "(\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v)
+                         = (\<Sum>v\<in>V\<^sub>c \<union> (V\<^sub>x - V\<^sub>c). \<alpha> v *\<^sub>R v)"
+          by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<alpha> v *\<^sub>R v", OF hVx_Vc_union])
+        have h_split: "(\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v)
+                       = (\<Sum>v\<in>V\<^sub>c. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>x - V\<^sub>c. \<alpha> v *\<^sub>R v)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_rest: "(\<Sum>v\<in>V\<^sub>x - V\<^sub>c. \<alpha> v *\<^sub>R v) = 0"
+        proof -
+          have h_zero_all: "\<forall>v\<in>V\<^sub>x - V\<^sub>c. \<alpha> v *\<^sub>R v = 0"
+          proof
+            fix v assume hv: "v \<in> V\<^sub>x - V\<^sub>c"
+            have h_val0: "\<alpha> v = 0" using h\<alpha>_zero hv by (by100 blast)
+            show "\<alpha> v *\<^sub>R v = 0" using h_val0 by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_Vc: "(\<Sum>v\<in>V\<^sub>c. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>c. a_c v *\<^sub>R v)"
+          using sum.cong[of V\<^sub>c V\<^sub>c "\<lambda>v. \<alpha> v *\<^sub>R v" "\<lambda>v. a_c v *\<^sub>R v"] h\<alpha>_eq_ac
+          by (by100 force)
+        have h_x: "x = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v)" using h\<alpha>_combo by (by100 simp)
+        have h_xc: "x\<^sub>c = (\<Sum>v\<in>V\<^sub>c. a_c v *\<^sub>R v)" unfolding x\<^sub>c_def by (by100 simp)
+        have h_combine: "x = (\<Sum>v\<in>V\<^sub>c. a_c v *\<^sub>R v) + 0"
+          using h_x h_split h_rest h_Vc by (by100 simp)
+        show ?thesis using h_combine h_xc by (by100 simp)
+      qed
+      (** Symmetric argument for y = y_c (full replay with \<beta>, \<gamma>_y, b_c). **)
+      define B\<^sub>y where "B\<^sub>y w = \<beta> (inv_into V\<^sub>y \<phi> w)" for w
+      define \<gamma>\<^sub>y_ext where "\<gamma>\<^sub>y_ext w = (if w \<in> \<phi> ` V\<^sub>c then \<gamma>\<^sub>y w else 0)" for w
+      have hBy_inv: "\<And>v. v \<in> V\<^sub>y \<Longrightarrow> B\<^sub>y (\<phi> v) = \<beta> v"
+        unfolding B\<^sub>y_def using inv_into_f_f[OF h\<phi>inj_Vy] by (by100 simp)
+      have hBy_nn: "\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> B\<^sub>y w"
+      proof
+        fix w assume hw: "w \<in> \<phi> ` V\<^sub>y"
+        obtain v where hvVy: "v \<in> V\<^sub>y" and hw_eq: "w = \<phi> v" using hw by (by100 blast)
+        have hBy_w: "B\<^sub>y w = \<beta> v" using hBy_inv[OF hvVy] hw_eq by (by100 simp)
+        show "0 \<le> B\<^sub>y w" using hBy_w h\<beta>_nn hvVy by (by100 simp)
+      qed
+      have hBy_sum: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = 1"
+      proof -
+        have h1: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = sum (B\<^sub>y \<circ> \<phi>) V\<^sub>y"
+          by (rule sum.reindex[OF h\<phi>inj_Vy])
+        have h2: "\<And>v. v \<in> V\<^sub>y \<Longrightarrow> (B\<^sub>y \<circ> \<phi>) v = \<beta> v"
+          unfolding o_def using hBy_inv by (by100 simp)
+        have h3: "sum (B\<^sub>y \<circ> \<phi>) V\<^sub>y = sum \<beta> V\<^sub>y" using h2 by (by100 simp)
+        show ?thesis using h1 h3 h\<beta>_sum by (by100 simp)
+      qed
+      have hBy_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w) = g y"
+      proof -
+        have h1: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w)
+                   = (\<Sum>v\<in>V\<^sub>y. B\<^sub>y (\<phi> v) *\<^sub>R \<phi> v)"
+          using sum.reindex[OF h\<phi>inj_Vy, of "\<lambda>w. B\<^sub>y w *\<^sub>R w"] by (by100 simp)
+        have h3: "(\<Sum>v\<in>V\<^sub>y. B\<^sub>y (\<phi> v) *\<^sub>R \<phi> v) = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
+          using sum.cong[of V\<^sub>y V\<^sub>y "\<lambda>v. B\<^sub>y (\<phi> v) *\<^sub>R \<phi> v" "\<lambda>v. \<beta> v *\<^sub>R \<phi> v"] hBy_inv
+          by (by100 simp)
+        show ?thesis using h1 h3 h_gy_phi by (by100 simp)
+      qed
+      have h\<gamma>yext_nn: "\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> \<gamma>\<^sub>y_ext w"
+      proof
+        fix w assume hw: "w \<in> \<phi> ` V\<^sub>y"
+        show "0 \<le> \<gamma>\<^sub>y_ext w"
+        proof (cases "w \<in> \<phi> ` V\<^sub>c")
+          case True
+          have h_ext_eq: "\<gamma>\<^sub>y_ext w = \<gamma>\<^sub>y w"
+            unfolding \<gamma>\<^sub>y_ext_def using True by (by100 simp)
+          have h_nn: "0 \<le> \<gamma>\<^sub>y w" using h\<gamma>y_nn True by (by100 blast)
+          show ?thesis using h_ext_eq h_nn by (by100 simp)
+        next
+          case False
+          have "\<gamma>\<^sub>y_ext w = 0" unfolding \<gamma>\<^sub>y_ext_def using False by (by100 simp)
+          then show ?thesis by (by100 simp)
+        qed
+      qed
+      have h\<phi>Vy_Vc_disjoint: "\<phi> ` V\<^sub>c \<inter> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c) = {}" by (by100 blast)
+      have h\<phi>Vc_sub_\<phi>Vy: "\<phi> ` V\<^sub>c \<subseteq> \<phi> ` V\<^sub>y" using hVc_sub_y by (by100 blast)
+      have h\<phi>Vy_Vc_union: "\<phi> ` V\<^sub>y = \<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)"
+        using h\<phi>Vc_sub_\<phi>Vy by (by100 blast)
+      have h\<phi>Vy_Vc_finDiff: "finite (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)" using h\<phi>Vy_fin by (by100 simp)
+      have h\<gamma>yext_sum: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y) = 1"
+      proof -
+        have h_ud: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c))
+                    = sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)"
+          by (rule sum.union_disjoint[OF h\<phi>Vc_fin h\<phi>Vy_Vc_finDiff h\<phi>Vy_Vc_disjoint])
+        have h_subst: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y)
+                        = sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c))"
+          by (rule arg_cong[where f="sum \<gamma>\<^sub>y_ext", OF h\<phi>Vy_Vc_union])
+        have h_split: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y)
+                       = sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_on_Vc: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>c) = sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c)"
+        proof -
+          have h_eq: "\<And>w. w \<in> \<phi> ` V\<^sub>c \<Longrightarrow> \<gamma>\<^sub>y_ext w = \<gamma>\<^sub>y w"
+            unfolding \<gamma>\<^sub>y_ext_def by (by100 simp)
+          show ?thesis using h_eq by (by100 simp)
+        qed
+        have h_on_rest: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c) = 0"
+        proof -
+          have h_zero_all: "\<forall>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w = 0"
+          proof
+            fix w assume hw: "w \<in> \<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c"
+            show "\<gamma>\<^sub>y_ext w = 0"
+              unfolding \<gamma>\<^sub>y_ext_def using hw by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_step1: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y)
+                          = sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)"
+          using h_split[unfolded h_on_Vc] by (by100 simp)
+        have h_step2: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y) = sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) + 0"
+          using h_step1[unfolded h_on_rest] by (by100 simp)
+        show ?thesis using h_step2 h\<gamma>y_sum by (by100 simp)
+      qed
+      have h\<gamma>yext_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w) = g y"
+      proof -
+        have h_ud: "(\<Sum>w\<in>\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c). \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                    = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                      + (\<Sum>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)"
+          by (rule sum.union_disjoint[OF h\<phi>Vc_fin h\<phi>Vy_Vc_finDiff h\<phi>Vy_Vc_disjoint])
+        have h_subst: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                         = (\<Sum>w\<in>\<phi> ` V\<^sub>c \<union> (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c). \<gamma>\<^sub>y_ext w *\<^sub>R w)"
+          by (rule arg_cong[where f="\<lambda>S. \<Sum>w\<in>S. \<gamma>\<^sub>y_ext w *\<^sub>R w", OF h\<phi>Vy_Vc_union])
+        have h_split: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                       = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                         + (\<Sum>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_val: "\<And>w. w \<in> \<phi> ` V\<^sub>c \<Longrightarrow> \<gamma>\<^sub>y_ext w = \<gamma>\<^sub>y w"
+          unfolding \<gamma>\<^sub>y_ext_def by (by100 simp)
+        have h_on_Vc: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w)"
+          using sum.cong[of "\<phi> ` V\<^sub>c" "\<phi> ` V\<^sub>c"
+                             "\<lambda>w. \<gamma>\<^sub>y_ext w *\<^sub>R w" "\<lambda>w. \<gamma>\<^sub>y w *\<^sub>R w"] h_val
+          by (by100 force)
+        have h_on_rest: "(\<Sum>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w) = 0"
+        proof -
+          have h_zero_all: "\<forall>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w = 0"
+          proof
+            fix w assume hw: "w \<in> \<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c"
+            have h_val0: "\<gamma>\<^sub>y_ext w = 0"
+              unfolding \<gamma>\<^sub>y_ext_def using hw by (by100 simp)
+            show "\<gamma>\<^sub>y_ext w *\<^sub>R w = 0" using h_val0 by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_step1: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                          = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w)
+                            + (\<Sum>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)"
+          using h_split[unfolded h_on_Vc] by (by100 simp)
+        have h_step2: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
+                          = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w) + 0"
+          using h_step1[unfolded h_on_rest] by (by100 simp)
+        show ?thesis using h_step2 h\<gamma>y_combo by (by100 simp)
+      qed
+      have hBy_eq_\<gamma>yext: "\<forall>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w = \<gamma>\<^sub>y_ext w"
+      proof -
+        have h_combo_eq: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)"
+          using hBy_combo h\<gamma>yext_combo by (by100 simp)
+        show ?thesis
+          by (rule geotop_bary_coords_unique_AI[OF h\<phi>Vy_fin h\<phi>Vy_ai hBy_sum h\<gamma>yext_sum h_combo_eq])
+      qed
+      have h\<beta>_ext_eq: "\<forall>v\<in>V\<^sub>y. \<beta> v = \<gamma>\<^sub>y_ext (\<phi> v)"
+      proof
+        fix v assume hvVy: "v \<in> V\<^sub>y"
+        have h\<phi>v: "\<phi> v \<in> \<phi> ` V\<^sub>y" using hvVy by (by100 blast)
+        have hBy_\<phi>v: "B\<^sub>y (\<phi> v) = \<beta> v" by (rule hBy_inv[OF hvVy])
+        have hBy_\<gamma>: "B\<^sub>y (\<phi> v) = \<gamma>\<^sub>y_ext (\<phi> v)" using hBy_eq_\<gamma>yext h\<phi>v by (by100 blast)
+        show "\<beta> v = \<gamma>\<^sub>y_ext (\<phi> v)" using hBy_\<phi>v hBy_\<gamma> by (by100 simp)
+      qed
+      have h\<beta>_zero: "\<forall>v\<in>V\<^sub>y - V\<^sub>c. \<beta> v = 0"
+      proof
+        fix v assume hv: "v \<in> V\<^sub>y - V\<^sub>c"
+        have hvVy: "v \<in> V\<^sub>y" using hv by (by100 blast)
+        have hvnVc: "v \<notin> V\<^sub>c" using hv by (by100 blast)
+        have h\<phi>v_not_\<phi>Vc: "\<phi> v \<notin> \<phi> ` V\<^sub>c"
+        proof
+          assume h_in: "\<phi> v \<in> \<phi> ` V\<^sub>c"
+          from imageE[OF h_in] obtain u where h\<phi>u_eq: "\<phi> v = \<phi> u" and huVc: "u \<in> V\<^sub>c" .
+          have huVy: "u \<in> V\<^sub>y" using huVc hVc_sub_y by (by100 blast)
+          have h\<phi>uv: "\<phi> u = \<phi> v" using h\<phi>u_eq by (by100 simp)
+          have h_u_eq_v: "u = v"
+            by (rule inj_onD[OF h\<phi>inj_Vy h\<phi>uv huVy hvVy])
+          show False using h_u_eq_v huVc hvnVc by (by100 simp)
+        qed
+        have h\<gamma>yext0: "\<gamma>\<^sub>y_ext (\<phi> v) = 0"
+          unfolding \<gamma>\<^sub>y_ext_def using h\<phi>v_not_\<phi>Vc by (by100 simp)
+        have h\<beta>_\<gamma>: "\<beta> v = \<gamma>\<^sub>y_ext (\<phi> v)" using h\<beta>_ext_eq hvVy by (by100 blast)
+        show "\<beta> v = 0" using h\<beta>_\<gamma> h\<gamma>yext0 by (by100 simp)
+      qed
+      have h\<beta>_eq_bc: "\<forall>v\<in>V\<^sub>c. \<beta> v = b_c v"
+      proof
+        fix v assume hv: "v \<in> V\<^sub>c"
+        have hvVy: "v \<in> V\<^sub>y" using hv hVc_sub_y by (by100 blast)
+        have h\<phi>v: "\<phi> v \<in> \<phi> ` V\<^sub>c" using hv by (by100 blast)
+        have h\<gamma>yext_v: "\<gamma>\<^sub>y_ext (\<phi> v) = \<gamma>\<^sub>y (\<phi> v)"
+          unfolding \<gamma>\<^sub>y_ext_def using h\<phi>v by (by100 simp)
+        have h\<beta>_\<gamma>: "\<beta> v = \<gamma>\<^sub>y (\<phi> v)" using h\<beta>_ext_eq hvVy h\<gamma>yext_v by (by100 simp)
+        show "\<beta> v = b_c v" unfolding b_c_def using h\<beta>_\<gamma> by (by100 simp)
+      qed
+      have hy_eq_yc: "y = y\<^sub>c"
+      proof -
+        have hVy_Vc_disjoint: "V\<^sub>c \<inter> (V\<^sub>y - V\<^sub>c) = {}" by (by100 blast)
+        have hVy_Vc_union: "V\<^sub>y = V\<^sub>c \<union> (V\<^sub>y - V\<^sub>c)" using hVc_sub_y by (by100 blast)
+        have hVy_Vc_finDiff: "finite (V\<^sub>y - V\<^sub>c)" using hVy_fin by (by100 simp)
+        have h_ud: "(\<Sum>v\<in>V\<^sub>c \<union> (V\<^sub>y - V\<^sub>c). \<beta> v *\<^sub>R v)
+                    = (\<Sum>v\<in>V\<^sub>c. \<beta> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>y - V\<^sub>c. \<beta> v *\<^sub>R v)"
+          by (rule sum.union_disjoint[OF hVc_fin hVy_Vc_finDiff hVy_Vc_disjoint])
+        have h_subst: "(\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v)
+                         = (\<Sum>v\<in>V\<^sub>c \<union> (V\<^sub>y - V\<^sub>c). \<beta> v *\<^sub>R v)"
+          by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<beta> v *\<^sub>R v", OF hVy_Vc_union])
+        have h_split: "(\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v)
+                       = (\<Sum>v\<in>V\<^sub>c. \<beta> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>y - V\<^sub>c. \<beta> v *\<^sub>R v)"
+          by (rule HOL.trans[OF h_subst h_ud])
+        have h_rest: "(\<Sum>v\<in>V\<^sub>y - V\<^sub>c. \<beta> v *\<^sub>R v) = 0"
+        proof -
+          have h_zero_all: "\<forall>v\<in>V\<^sub>y - V\<^sub>c. \<beta> v *\<^sub>R v = 0"
+          proof
+            fix v assume hv: "v \<in> V\<^sub>y - V\<^sub>c"
+            have h_val0: "\<beta> v = 0" using h\<beta>_zero hv by (by100 blast)
+            show "\<beta> v *\<^sub>R v = 0" using h_val0 by (by100 simp)
+          qed
+          show ?thesis by (rule sum.neutral[OF h_zero_all])
+        qed
+        have h_Vc: "(\<Sum>v\<in>V\<^sub>c. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>c. b_c v *\<^sub>R v)"
+          using sum.cong[of V\<^sub>c V\<^sub>c "\<lambda>v. \<beta> v *\<^sub>R v" "\<lambda>v. b_c v *\<^sub>R v"] h\<beta>_eq_bc
+          by (by100 force)
+        have h_y: "y = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v)" using h\<beta>_combo by (by100 simp)
+        have h_yc: "y\<^sub>c = (\<Sum>v\<in>V\<^sub>c. b_c v *\<^sub>R v)" unfolding y\<^sub>c_def by (by100 simp)
+        have h_combine: "y = (\<Sum>v\<in>V\<^sub>c. b_c v *\<^sub>R v) + 0"
+          using h_y h_split h_rest h_Vc by (by100 simp)
+        show ?thesis using h_combine h_yc by (by100 simp)
+      qed
+      (** Final: \<gamma>_x = \<gamma>_y on \<phi> V_c via bary uniqueness; hence a_c = b_c; hence x_c = y_c. **)
+      have h\<gamma>xy_combo_eq: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w)"
+        using h\<gamma>x_combo h\<gamma>y_combo h_gxy by (by100 simp)
+      have h\<gamma>xy_eq: "\<forall>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w = \<gamma>\<^sub>y w"
+        by (rule geotop_bary_coords_unique_AI[OF h\<phi>Vc_fin h\<phi>Vc_ai h\<gamma>x_sum h\<gamma>y_sum h\<gamma>xy_combo_eq])
+      have hac_eq_bc: "\<forall>v\<in>V\<^sub>c. a_c v = b_c v"
+      proof
+        fix v assume hv: "v \<in> V\<^sub>c"
+        have h\<phi>v: "\<phi> v \<in> \<phi> ` V\<^sub>c" using hv by (by100 blast)
+        have h\<gamma>eq: "\<gamma>\<^sub>x (\<phi> v) = \<gamma>\<^sub>y (\<phi> v)" using h\<gamma>xy_eq h\<phi>v by (by100 blast)
+        show "a_c v = b_c v" unfolding a_c_def b_c_def using h\<gamma>eq by (by100 simp)
+      qed
+      have hxc_eq_yc: "x\<^sub>c = y\<^sub>c"
+      proof -
+        have h_sum_eq: "(\<Sum>v\<in>V\<^sub>c. a_c v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>c. b_c v *\<^sub>R v)"
+          using sum.cong[of V\<^sub>c V\<^sub>c "\<lambda>v. a_c v *\<^sub>R v" "\<lambda>v. b_c v *\<^sub>R v"] hac_eq_bc
+          by (by100 force)
+        show ?thesis unfolding x\<^sub>c_def y\<^sub>c_def using h_sum_eq by (by100 simp)
+      qed
+      show "x = y" using hx_eq_xc hy_eq_yc hxc_eq_yc by (by100 simp)
     qed
   qed
   (** (1b) Assemble bij_betw from inj + image_eq. **)
