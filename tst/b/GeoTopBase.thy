@@ -7014,6 +7014,31 @@ proof -
               rel_int sigma, use unique bary coords on V(sigma) and apply phi.
               ~100 lines: define g via SOME + well-definedness from simplex_vertices
               uniqueness + linearity from definition + image via phi ` V in L.\<close>
+  (** (1b.pre) g maps |K| into |L| — immediate from h_img. **)
+  have h_f_into:
+    "\<And>g. (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
+          g ` geotop_polyhedron K \<subseteq> geotop_polyhedron L"
+  proof -
+    fix g :: "'a \<Rightarrow> 'b"
+    assume h_img_hyp: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>"
+    show "g ` geotop_polyhedron K \<subseteq> geotop_polyhedron L"
+    proof (rule subsetI)
+      fix z assume hz: "z \<in> g ` geotop_polyhedron K"
+      obtain x where hx_poly: "x \<in> geotop_polyhedron K" and hz_eq: "z = g x"
+        using hz by (by100 blast)
+      have h_x_ex: "\<exists>\<sigma>\<in>K. x \<in> \<sigma>"
+        using hx_poly unfolding geotop_polyhedron_def by (by100 blast)
+      obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+        using h_x_ex by (by100 blast)
+      have h_tau_ex: "\<exists>\<tau>\<in>L. \<forall>y\<in>\<sigma>. g y \<in> \<tau>"
+        using h_img_hyp h\<sigma>K by (by100 blast)
+      obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and h_gx\<tau>: "\<forall>y\<in>\<sigma>. g y \<in> \<tau>"
+        using h_tau_ex by (by100 blast)
+      have hgx\<tau>: "g x \<in> \<tau>" using h_gx\<tau> hx\<sigma> by (by100 blast)
+      show "z \<in> geotop_polyhedron L"
+        unfolding geotop_polyhedron_def using hz_eq h\<tau>L hgx\<tau> by (by100 blast)
+    qed
+  qed
   (** (1b) Bijection: given (1a)'s g plus phi bijective on vertices, g is
           a bijection on polyhedra. **)
   have h_f_bij:
@@ -7022,8 +7047,9 @@ proof -
           (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
           bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
     sorry \<comment> \<open>F-1b: g is a bijection on polyhedra, from phi's vertex-level
-              bijection + bary-extension. Classical: injectivity from linearity
-              and bary-coord uniqueness; surjectivity via inverse construction.\<close>
+              bijection + bary-extension. Uses h_f_into (proved) + inj_on
+              via bary-coord uniqueness + surjectivity via phi^{-1} inverse
+              construction. Classical ~50 lines remaining.\<close>
   (** (1c) Inverse PL + inverse linear: the classical symmetric argument
           applies phi^{-1} to construct the inverse map. **)
   have h_f_inverse:
