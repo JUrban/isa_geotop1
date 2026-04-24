@@ -5765,6 +5765,135 @@ proof -
         qed
         have h_combo_done: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)) = x"
           using h_sum_to_\<alpha>'_xs h_\<alpha>'_to_x by (by100 simp)
+        (** (8) Construct the flag c = [\<sigma>_seq 0, ..., \<sigma>_seq (n-1)]. **)
+        define c :: "'a set list" where "c = map \<sigma>_seq [0..<n]"
+        have hc_len: "length c = n" unfolding c_def by (by100 simp)
+        have hc_ne: "c \<noteq> []" using hn_pos' hc_len by (by100 auto)
+        have hc_nth: "\<And>k. k < n \<Longrightarrow> c ! k = \<sigma>_seq k"
+          unfolding c_def by (by100 simp)
+        have hc_set: "set c = \<sigma>_seq ` {..<n}"
+        proof -
+          have h1: "set c = \<sigma>_seq ` set [0..<n]"
+            unfolding c_def by (by100 simp)
+          have h2: "set [0..<n] = {..<n}" using atLeast0LessThan by (by100 simp)
+          show ?thesis using h1 h2 by (by100 simp)
+        qed
+        (** (8a) set c \<subseteq> K. **)
+        have hc_subK: "set c \<subseteq> K"
+        proof
+          fix \<tau> assume h\<tau>_c: "\<tau> \<in> set c"
+          obtain k where hk: "k < n" and h\<tau>_eq: "\<tau> = \<sigma>_seq k"
+            using h\<tau>_c hc_set by (by100 blast)
+          have hkn0: "k \<le> n\<^sub>0" using hk hn_eq by (by100 simp)
+          show "\<tau> \<in> K" using h\<tau>_eq h\<sigma>_seq_K[OF hkn0] by (by100 simp)
+        qed
+        (** (8b) Standalone monotonicity: \<sigma>_seq i \<subset> \<sigma>_seq j for i < j < n. **)
+        have h_pss_hull:
+          "\<And>i j. i < j \<Longrightarrow> j < n \<Longrightarrow> \<sigma>_seq i \<subset> \<sigma>_seq j"
+        proof -
+          fix i j assume hij: "i < j" and hjn: "j < n"
+          have hin: "i < n" using hij hjn by (by100 linarith)
+          have h_Vsub_pss: "Vs i \<subset> Vs j"
+          proof -
+            have h_ij_suc: "Suc i \<le> Suc j" using hij by (by100 simp)
+            have h_sub_take: "set (take (Suc i) xs) \<subseteq> set (take (Suc j) xs)"
+              by (rule set_take_subset_set_take[OF h_ij_suc])
+            have h_sub: "Vs i \<subseteq> Vs j"
+              unfolding Vs_def using h_sub_take by (by100 simp)
+            have hi_len: "i < length xs" using hin unfolding n_def .
+            have hj_len: "j < length xs" using hjn unfolding n_def .
+            have h_card_i: "card (Vs i) = Suc i" by (rule hVs_card[OF hi_len])
+            have h_card_j: "card (Vs j) = Suc j" by (rule hVs_card[OF hj_len])
+            have h_card_neq: "card (Vs i) \<noteq> card (Vs j)"
+              using h_card_i h_card_j hij by (by100 simp)
+            have h_neq: "Vs i \<noteq> Vs j"
+            proof
+              assume h_eq: "Vs i = Vs j"
+              have h_cc: "card (Vs i) = card (Vs j)" using h_eq by (by100 simp)
+              show False using h_cc h_card_neq by (by100 simp)
+            qed
+            show "Vs i \<subset> Vs j" using h_sub h_neq by (by100 blast)
+          qed
+          have h_Vsub_sub: "Vs i \<subseteq> Vs j" using h_Vsub_pss by (by100 blast)
+          have h_hull_sub: "convex hull (Vs i) \<subseteq> convex hull (Vs j)"
+            by (rule hull_mono[OF h_Vsub_sub])
+          have h_\<sigma>_HOL_i: "\<sigma>_seq i = convex hull (Vs i)" by (rule h\<sigma>_seq_HOL)
+          have h_\<sigma>_HOL_j: "\<sigma>_seq j = convex hull (Vs j)" by (rule h\<sigma>_seq_HOL)
+          have h_sub: "\<sigma>_seq i \<subseteq> \<sigma>_seq j"
+            using h_hull_sub h_\<sigma>_HOL_i h_\<sigma>_HOL_j by (by100 simp)
+          have h_neq: "\<sigma>_seq i \<noteq> \<sigma>_seq j"
+          proof
+            assume h_eq: "\<sigma>_seq i = \<sigma>_seq j"
+            have h_sv_i: "geotop_simplex_vertices (\<sigma>_seq i) (Vs i)"
+              by (rule h\<sigma>_seq_sv[OF hin[unfolded n_def]])
+            have h_sv_j: "geotop_simplex_vertices (\<sigma>_seq j) (Vs j)"
+              by (rule h\<sigma>_seq_sv[OF hjn[unfolded n_def]])
+            have h_sv_j': "geotop_simplex_vertices (\<sigma>_seq i) (Vs j)"
+              using h_sv_j h_eq by (by100 simp)
+            have h_V_eq: "Vs i = Vs j"
+              by (rule geotop_simplex_vertices_unique[OF h_sv_i h_sv_j'])
+            show False using h_Vsub_pss h_V_eq by (by100 blast)
+          qed
+          show "\<sigma>_seq i \<subset> \<sigma>_seq j" using h_sub h_neq by (by100 blast)
+        qed
+        have hc_sorted: "sorted_wrt (\<lambda>\<sigma>\<^sub>1 \<sigma>\<^sub>2. \<sigma>\<^sub>1 \<subset> \<sigma>\<^sub>2) c"
+        proof -
+          have h_sorted_upt: "sorted_wrt (<) [0..<n]" by (rule sorted_wrt_upt)
+          have h_mono_lift:
+            "\<And>i j. i \<in> set [0..<n] \<Longrightarrow> j \<in> set [0..<n] \<Longrightarrow> i < j
+                    \<Longrightarrow> \<sigma>_seq i \<subset> \<sigma>_seq j"
+          proof -
+            fix i j assume hi: "i \<in> set [0..<n]"
+                        and hj: "j \<in> set [0..<n]" and hij: "i < j"
+            have hjn: "j < n" using hj by (by100 simp)
+            show "\<sigma>_seq i \<subset> \<sigma>_seq j" by (rule h_pss_hull[OF hij hjn])
+          qed
+          have h_sorted_pss: "sorted_wrt (\<lambda>i j. \<sigma>_seq i \<subset> \<sigma>_seq j) [0..<n]"
+            by (rule sorted_wrt_mono_rel[OF h_mono_lift h_sorted_upt])
+          have h_map_eq: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) (map \<sigma>_seq [0..<n])
+                           = sorted_wrt (\<lambda>i j. \<sigma>_seq i \<subset> \<sigma>_seq j) [0..<n]"
+            by (rule sorted_wrt_map)
+          show ?thesis
+            unfolding c_def using h_sorted_pss h_map_eq by (by100 simp)
+        qed
+        (** (8c) distinct c: inj_on \<sigma>_seq via strict inclusion on {..<n}. **)
+        have h_\<sigma>_seq_inj: "inj_on \<sigma>_seq {..<n}"
+        proof (rule inj_onI)
+          fix i j assume hi_in: "i \<in> {..<n}" and hj_in: "j \<in> {..<n}"
+                     and h_eq: "\<sigma>_seq i = \<sigma>_seq j"
+          show "i = j"
+          proof (cases "i < j")
+            case True
+            have hjn: "j < n" using hj_in by (by100 simp)
+            have h_pss: "\<sigma>_seq i \<subset> \<sigma>_seq j"
+              by (rule h_pss_hull[OF True hjn])
+            show ?thesis using h_pss h_eq by (by100 simp)
+          next
+            case False
+            show ?thesis
+            proof (cases "j < i")
+              case True
+              have hin: "i < n" using hi_in by (by100 simp)
+              have h_pss: "\<sigma>_seq j \<subset> \<sigma>_seq i"
+                by (rule h_pss_hull[OF True hin])
+              show ?thesis using h_pss h_eq by (by100 simp)
+            next
+              case False
+              show ?thesis using False \<open>\<not> i < j\<close> by (by100 linarith)
+            qed
+          qed
+        qed
+        have hc_dist: "distinct c"
+        proof -
+          have h_dist_upt: "distinct [0..<n]" by (by100 simp)
+          have h_inj_set: "inj_on \<sigma>_seq (set [0..<n])"
+            using h_\<sigma>_seq_inj atLeast0LessThan by (by100 simp)
+          show ?thesis
+            unfolding c_def using distinct_map h_dist_upt h_inj_set by (by100 blast)
+        qed
+        (** (8d) c \<in> flags. **)
+        have hc_flags: "c \<in> flags"
+          unfolding flags_def using hc_ne hc_subK hc_sorted hc_dist by (by100 blast)
         show "x \<in> geotop_polyhedron bK"
           sorry
       qed
