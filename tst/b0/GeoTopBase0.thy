@@ -5894,8 +5894,103 @@ proof -
         (** (8d) c \<in> flags. **)
         have hc_flags: "c \<in> flags"
           unfolding flags_def using hc_ne hc_subK hc_sorted hc_dist by (by100 blast)
+        (** (9) Build chain-simplex via bary; show x \<in> conv hull (bary ` set c). **)
+        define W where "W = geotop_barycenter ` set c"
+        have hW_fin: "finite W" unfolding W_def using hc_set by (by100 simp)
+        (** card W = length c = n, so bary is injective on set c. **)
+        have hc_geotop: "c \<in> geotop_flags K"
+          using hc_flags h_flags_eq_geotop by (by100 simp)
+        have hW_card: "card W = n"
+          unfolding W_def
+          using geotop_complex_flag_barycenter_card[OF hK hc_subK hc_dist] hc_len by (by100 simp)
+        define b where "b = geotop_barycenter \<circ> \<sigma>_seq"
+        have hb_image: "b ` {..<n} = W"
+        proof -
+          have h_set_c: "set c = \<sigma>_seq ` {..<n}" by (rule hc_set)
+          have h_W: "W = geotop_barycenter ` (\<sigma>_seq ` {..<n})"
+            unfolding W_def using h_set_c by (by100 simp)
+          have h_b: "b ` {..<n} = geotop_barycenter ` (\<sigma>_seq ` {..<n})"
+            unfolding b_def using image_comp[of geotop_barycenter \<sigma>_seq "{..<n}"]
+            by (by100 simp)
+          show ?thesis using h_W h_b by (by100 simp)
+        qed
+        have hb_inj: "inj_on b {..<n}"
+        proof -
+          have h_card_lt: "card (b ` {..<n}) = n" using hb_image hW_card by (by100 simp)
+          have h_card_lt_src: "card ({..<n}::nat set) = n" by (by100 simp)
+          show ?thesis
+            using h_card_lt h_card_lt_src
+                  eq_card_imp_inj_on[of "{..<n}::nat set" b] by (by100 simp)
+        qed
+        (** Define \<gamma> : 'a \<Rightarrow> real via inverse of b on W. **)
+        define \<gamma> :: "'a \<Rightarrow> real" where "\<gamma> w = \<beta> (inv_into {..<n} b w)" for w
+        (** \<gamma> \<ge> 0 on W. **)
+        have h\<gamma>_nn: "\<forall>w\<in>W. 0 \<le> \<gamma> w"
+        proof
+          fix w assume hw: "w \<in> W"
+          have hw_b: "w \<in> b ` {..<n}" using hw hb_image by (by100 simp)
+          have h_inv_in: "inv_into {..<n} b w \<in> {..<n}"
+            by (rule inv_into_into[OF hw_b])
+          show "0 \<le> \<gamma> w" unfolding \<gamma>_def using h\<beta>_nn by (by100 blast)
+        qed
+        (** sum \<gamma> W = 1. **)
+        have h\<gamma>_sum: "sum \<gamma> W = 1"
+        proof -
+          have h1: "sum \<gamma> W = sum \<gamma> (b ` {..<n})" using hb_image by (by100 simp)
+          have h2: "sum \<gamma> (b ` {..<n}) = sum (\<gamma> \<circ> b) {..<n}"
+            by (rule sum.reindex[OF hb_inj])
+          have h3: "\<And>k. k \<in> {..<n} \<Longrightarrow> (\<gamma> \<circ> b) k = \<beta> k"
+            unfolding \<gamma>_def o_def using inv_into_f_f[OF hb_inj] by (by100 simp)
+          have h4: "sum (\<gamma> \<circ> b) {..<n} = sum \<beta> {..<n}"
+            using h3 by (by100 simp)
+          have h5: "sum \<beta> {..<n} = (\<Sum>k<n. \<beta> k)" by (by100 simp)
+          show ?thesis using h1 h2 h4 h5 h\<beta>_sum by (by100 simp)
+        qed
+        (** \<Sum>_{w\<in>W} \<gamma>(w) *_R w = x. **)
+        have h\<gamma>_combo: "(\<Sum>w\<in>W. \<gamma> w *\<^sub>R w) = x"
+        proof -
+          have h1: "(\<Sum>w\<in>W. \<gamma> w *\<^sub>R w) = (\<Sum>w\<in>b ` {..<n}. \<gamma> w *\<^sub>R w)"
+            using hb_image by (by100 simp)
+          have h2: "(\<Sum>w\<in>b ` {..<n}. \<gamma> w *\<^sub>R w)
+                     = (\<Sum>k<n. (\<gamma> \<circ> b) k *\<^sub>R b k)"
+            using sum.reindex[OF hb_inj, of "\<lambda>w. \<gamma> w *\<^sub>R w"] by (by100 simp)
+          have h3: "\<And>k. k \<in> {..<n} \<Longrightarrow> (\<gamma> \<circ> b) k = \<beta> k"
+            unfolding \<gamma>_def o_def using inv_into_f_f[OF hb_inj] by (by100 simp)
+          have h_pt_eq: "\<And>k. k \<in> {..<n} \<Longrightarrow> (\<gamma> \<circ> b) k *\<^sub>R b k = \<beta> k *\<^sub>R b k"
+            using h3 by (by100 simp)
+          have h4: "(\<Sum>k<n. (\<gamma> \<circ> b) k *\<^sub>R b k) = (\<Sum>k<n. \<beta> k *\<^sub>R b k)"
+            using sum.cong[of "{..<n}" "{..<n}"
+                             "\<lambda>k. (\<gamma> \<circ> b) k *\<^sub>R b k" "\<lambda>k. \<beta> k *\<^sub>R b k"] h_pt_eq
+            by (by100 blast)
+          have h5: "\<And>k. b k = geotop_barycenter (\<sigma>_seq k)"
+            unfolding b_def by (by100 simp)
+          have h6: "(\<Sum>k<n. \<beta> k *\<^sub>R b k) = (\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))"
+            using h5 by (by100 simp)
+          show ?thesis using h1 h2 h4 h6 h_combo_done by (by100 simp)
+        qed
+        (** Hence x \<in> conv hull W = geotop_convex_hull W. **)
+        have hx_hullW: "x \<in> convex hull W"
+        proof -
+          have hcc: "convex hull W
+                     = {u. \<exists>u\<^sub>c. (\<forall>v\<in>W. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c W = 1
+                                 \<and> (\<Sum>v\<in>W. u\<^sub>c v *\<^sub>R v) = u}"
+            using convex_hull_finite[OF hW_fin] by (by100 simp)
+          have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>W. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c W = 1
+                           \<and> (\<Sum>v\<in>W. u\<^sub>c v *\<^sub>R v) = x"
+            using h\<gamma>_nn h\<gamma>_sum h\<gamma>_combo by (by100 blast)
+          show ?thesis using hcc h_ex by (by100 blast)
+        qed
+        (** W-conv-hull = geotop_convex_hull W \<in> bK (chain-simplex of c). **)
+        have hx_gW: "x \<in> geotop_convex_hull W"
+        proof -
+          have h1: "geotop_convex_hull W = convex hull W"
+            by (rule geotop_convex_hull_eq_HOL)
+          show ?thesis using h1 hx_hullW by (by100 simp)
+        qed
+        have h_gW_bK: "geotop_convex_hull W \<in> bK"
+          unfolding bK_def W_def using hc_flags by (by100 blast)
         show "x \<in> geotop_polyhedron bK"
-          sorry
+          unfolding geotop_polyhedron_def using hx_gW h_gW_bK by (by100 blast)
       qed
     qed
   qed
