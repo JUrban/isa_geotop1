@@ -3365,6 +3365,29 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: trivial flag membership facts. **)
+lemma geotop_flags_last_in_K:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hc: "c \<in> geotop_flags K"
+  shows "last c \<in> K"
+proof -
+  have hc_ne: "c \<noteq> []" using hc unfolding geotop_flags_def by (by100 blast)
+  have hc_sub: "set c \<subseteq> K" using hc unfolding geotop_flags_def by (by100 blast)
+  have h_last_in: "last c \<in> set c" by (rule last_in_set[OF hc_ne])
+  show ?thesis using h_last_in hc_sub by (by100 blast)
+qed
+
+lemma geotop_flags_hd_in_K:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hc: "c \<in> geotop_flags K"
+  shows "hd c \<in> K"
+proof -
+  have hc_ne: "c \<noteq> []" using hc unfolding geotop_flags_def by (by100 blast)
+  have hc_sub: "set c \<subseteq> K" using hc unfolding geotop_flags_def by (by100 blast)
+  have h_hd_in: "hd c \<in> set c" by (rule hd_in_set[OF hc_ne])
+  show ?thesis using h_hd_in hc_sub by (by100 blast)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
