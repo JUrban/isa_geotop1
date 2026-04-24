@@ -281,6 +281,23 @@ Proof via projection π(x) = inner (b - a) x:
 - π injective on σ gives {γ p, γ q} = {a, b}.
 Then Phase 1.A proof becomes ~200 lines (single monolithic fits under 120s).
 
+### Session discovery: by100 method text limitation
+
+by100 wraps `Method.text_closure`, which apparently doesn't accept compound
+method text like `(simp add: foo)` or `(metis lemma1 lemma2)`. Only bare
+method names work: `by (by100 simp)`, `by (by100 blast)`, `by (by100 auto)`,
+`by (by100 metis)`, etc. For specific lemma injections, use `using foo` +
+bare by100 method.
+
+Workaround patterns:
+- `using facts by (by100 simp)` — puts facts in simp's `using` rules.
+- Pre-derive intermediate facts by explicit rule application:
+  `have h: "..." by (rule specific_lemma[OF ...])` (outside by100).
+- For algebra: use `by (by100 argo)` for real-arithmetic-closed conjectures.
+
+This constraint shaped the endpoint-matching helper proof style — all
+algebraic manipulations had to use explicit rule application + by100 simp.
+
 ## Session split DONE (commit 384f54d0)
 
 Split GeoTop.thy into:
