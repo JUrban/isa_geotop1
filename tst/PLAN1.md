@@ -1211,3 +1211,38 @@ Key by100 lessons learned:
 - sum.cong[OF refl h_pt] sometimes fails "no unifiers" under build load;
   use explicit instantiation instead.
 - sum.union_disjoint combined via arg_cong + HOL.trans for subset split.
+
+## MAJOR MILESTONE 2026-04-24 (session continuation 14): F-series COMPLETE
+
+Sorry count: 6 → 3 real sorries.
+
+### All F-series sorries closed this session
+
+- **h_f_surj** (session 13): ~200 line barycentric surjection.
+- **h_f_inj** (session 14 start): ~520 line injectivity via K.2 of L + bary vanishing.
+- **h_f_inverse** (session 14 mid): ~280 lines, linear + PL inverse.
+- **h_f_forward** (session 14 late): ~230 lines, SOME-based construction + well-def.
+- **h_bary_ext_welldef** (session 14 end): ~310 lines well-definedness via K.2 of K +
+  bary vanishing on both V_1, V_2.
+
+### geotop_isomorphism_induces_PLH is FULLY PROVEN
+
+Theorem: any iso φ: V(K) → V(L) extends to a PLH f: |K| → |L|.
+(Moise's Theorem_GT_1 foundation.)
+
+### Remaining 3 sorries (all in GeoTopBase0, cached session)
+
+1. h_K2_intersect_eq non-nested (line 4628, ~150 lines K.2 chain-simplex)
+2. h_simp_in_bK dim > 0 (line 5030, ~200 lines barycentric decomp algorithm)
+3. h_star_to_simplex_del (line 6641, ~100 lines E-core star→simplex)
+
+Each is in GeoTopBase0 (foundational/early). Closing them breaks the
+split-cache benefit but eliminates last GeoTop Phase-3 sorries.
+
+### Infrastructure added this session
+
+- `geotop_bary_coords_unique_AI` (top-level lemma): AI finite V,
+  Σ α*v = Σ β*v, sum α = sum β = 1 ⟹ α = β on V.
+- `geotop_V_subK_convhullK_is_simplex_vertices` (earlier session):
+  V ⊆ V(K), finite ne, conv hull V ∈ K ⟹ simplex_vertices V.
+- GeoTopBase split: b0/GeoTopBase0.thy cached, b/GeoTopBase.thy active.
