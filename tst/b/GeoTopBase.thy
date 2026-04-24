@@ -2116,7 +2116,7 @@ qed
     the barycentric_Sd_def conjuncts. Each sub-goal is independently
     tractable in future sessions. **)
 lemma geotop_classical_Sd_exists:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   shows "\<exists>bK. geotop_is_barycentric_Sd bK K"
 proof -
@@ -2375,14 +2375,14 @@ proof -
 qed
 
 lemma geotop_Sd_is_barycentric:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_barycentric_Sd (geotop_Sd K) K"
   unfolding geotop_barycentric_subdivision_def
   using someI_ex[OF geotop_classical_Sd_exists[OF hK]] by (by100 blast)
 
 lemma geotop_Sd_is_subdivision:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_Sd K) K"
   using geotop_Sd_is_barycentric[OF hK]
@@ -2390,7 +2390,7 @@ lemma geotop_Sd_is_subdivision:
 
 (** The mesh-shrinkage property as a usable helper. **)
 lemma geotop_Sd_mesh_shrinkage:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   assumes hdim: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
   shows "(\<forall>\<sigma>'\<in>geotop_Sd K. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
@@ -2402,7 +2402,7 @@ lemma geotop_Sd_mesh_shrinkage:
 
 (** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
 lemma geotop_iterated_Sd_is_subdivision:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_iterated_Sd m K) K"
 proof (induction m)
@@ -2423,7 +2423,7 @@ qed
 
 (** \<open>Sd^{Suc m}(K)\<close> is a subdivision of \<open>Sd^m(K)\<close>. **)
 lemma geotop_iterated_Sd_Suc_refines:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
 proof -
@@ -2437,7 +2437,7 @@ qed
 (** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>.
     Proof by induction on \<open>N - m\<close> using Suc-step refinement and transitivity. **)
 lemma geotop_iterated_Sd_mono:
-  fixes K :: "'a::real_normed_vector set set"
+  fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
   assumes hmN: "m \<le> N"
   shows "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
