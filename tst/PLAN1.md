@@ -1122,3 +1122,36 @@ a targeted classical lemma with documented proof sketch.
 6. h_f_inverse (F-1c: inverse is PL + linear, ~100 lines)
 
 Each is now a targeted, well-documented classical sub-lemma.
+
+## MAJOR MILESTONE 2026-04-24: h_f_surj FULLY PROVED
+
+Sorry count: 7 → 6 real sorries.
+
+### The first F-series sorry closed
+
+h_f_surj (surjectivity of barycentric extension g onto |L|) FULLY PROVED
+via ~200 line classical construction:
+- Extract τ ∈ L containing z, get V_τ = simplex_vertices.
+- Decompose z = Σ β w over V_τ via convex_hull_finite.
+- V_σ = phi^{-1}(V_τ) ⊆ V(K).
+- conv hull V_σ ∈ K via h_phi_cond.
+- V_σ is simplex_vertices of σ via new utility
+  geotop_V_subK_convhullK_is_simplex_vertices.
+- α(v) = β(phi v), sum α = 1 via sum.reindex.
+- x = Σ α v ∈ σ via convex_hull_finite.
+- g(x) = z via linear_on σ g + h_ag + reindex.
+
+### Cumulative session: 9 → 6 real sorries
+
+Remaining 6 targeted sorries (each 100-200 lines classical):
+1. h_K2_intersect_eq non-nested
+2. h_simp_in_bK dim > 0
+3. h_star_to_simplex_del
+4. h_f_forward (barycentric extension construction)
+5. h_f_inj (injectivity, classical analog of h_f_surj)
+6. h_f_inverse (inverse PL + linear)
+
+Infrastructure base now includes 2 powerful utility lemmas
+(geotop_V_subK_convhullK_is_simplex_vertices, geotop_V_subK_elt_in_simplex_vertices)
+that were critical for closing h_f_surj. Same infrastructure will be
+key for h_f_inj and h_f_inverse.
