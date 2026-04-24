@@ -7000,8 +7000,43 @@ proof -
                    geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
                    (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g)))"
   (** (1) Existence of such \<open>g\<close> — the classical barycentric-extension construction.
-      This is the remaining deep sorry, replacing the earlier five separate ones plus
-      the new \<open>inv_into\<close> linearity. **)
+      Scaffolded as: first construct a candidate g (agreement + linearity + image),
+      then derive bijection and inverse properties from iso hypotheses. **)
+  (** (1a) Forward: exists g with vertex agreement + linear-on-simplex +
+          maps-into-L-simplex. Classical barycentric extension: for x ∈ σ
+          with bary coords alpha on vertices, g(x) = sum alpha * phi(vertex).
+          Well-defined because coords are unique on rel_interior. **)
+  have h_f_forward:
+    "\<exists>g::'a\<Rightarrow>'b. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
+                  (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
+                  (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>)"
+    sorry \<comment> \<open>F-1a: construct g via barycentric extension. Classical: for x in
+              rel_int sigma, use unique bary coords on V(sigma) and apply phi.
+              ~100 lines: define g via SOME + well-definedness from simplex_vertices
+              uniqueness + linearity from definition + image via phi ` V in L.\<close>
+  (** (1b) Bijection: given (1a)'s g plus phi bijective on vertices, g is
+          a bijection on polyhedra. **)
+  have h_f_bij:
+    "\<And>g. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<Longrightarrow>
+          (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<Longrightarrow>
+          (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
+          bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
+    sorry \<comment> \<open>F-1b: g is a bijection on polyhedra, from phi's vertex-level
+              bijection + bary-extension. Classical: injectivity from linearity
+              and bary-coord uniqueness; surjectivity via inverse construction.\<close>
+  (** (1c) Inverse PL + inverse linear: the classical symmetric argument
+          applies phi^{-1} to construct the inverse map. **)
+  have h_f_inverse:
+    "\<And>g. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<Longrightarrow>
+          (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<Longrightarrow>
+          (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
+          bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<Longrightarrow>
+          geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
+          (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))"
+    sorry \<comment> \<open>F-1c: inverse is PL + linear-on-simplex. Apply symmetric construction:
+              phi^{-1} induces the inverse via bary extension on L; bijectivity
+              + linearity + image conditions transfer.\<close>
+  (** Assemble the three pieces. **)
   have h_f_exists:
     "\<exists>g::'a\<Rightarrow>'b. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
                   (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<and>
@@ -7009,7 +7044,19 @@ proof -
                   bij_betw g (geotop_polyhedron K) (geotop_polyhedron L) \<and>
                   geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
                   (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))"
-    sorry
+  proof -
+    from h_f_forward obtain g where
+               h_ag: "\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v"
+           and h_lin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g"
+           and h_img: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>"
+      by (by100 auto)
+    have h_bij: "bij_betw g (geotop_polyhedron K) (geotop_polyhedron L)"
+      by (rule h_f_bij[OF h_ag h_lin h_img])
+    have h_inv: "geotop_PL_map L K (inv_into (geotop_polyhedron K) g) \<and>
+                 (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g))"
+      by (rule h_f_inverse[OF h_ag h_lin h_img h_bij])
+    show ?thesis using h_ag h_lin h_img h_bij h_inv by (by100 blast)
+  qed
   (** (2) Extract all six properties from SOME. **)
   have h_f_prop:
     "(\<forall>v\<in>geotop_complex_vertices K. f v = \<phi> v) \<and>
