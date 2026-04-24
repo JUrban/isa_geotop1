@@ -938,3 +938,44 @@ part is formally complete modulo the in-scope technicalities.
 - h_f_exists (F classical barycentric extension)
 
 All four are genuinely deep classical results (~150-300 lines each).
+
+## Session progress 2026-04-24 (continuation 8)
+
+### Scaffolded h_poly_sup via per-simplex covering
+
+FULLY PROVE the polyhedron union lifting h_poly_sup in terms of a helper
+h_simp_in_bK (each K-simplex is covered by chain-simplices). The union
+argument is a 5-line direct proof; what remains is the classical barycentric
+decomposition formula inside h_simp_in_bK.
+
+Sorry count unchanged at 4 but structure improved:
+- h_K2_intersect_eq (intersection formula)
+- h_simp_in_bK (D2a-sup per-simplex cover)
+- h_delta_bridge (Lebesgue + star tightening)
+- h_f_exists (barycentric extension)
+
+### Cumulative session summary (2026-04-23/24)
+
+Started: 9 real sorries (plus multiple undetected technical gaps)
+Ended: 4 sorries (all genuinely deep classical ~150-200 lines each)
+
+MAJOR MILESTONE: Moise Lemma 4.11 (mesh shrinkage) FULLY PROVED end-to-end
+via ~20 supporting infrastructure lemmas + finite-K propagation.
+
+Key results formally proven:
+- flag_barycenter_affine_independent (D1.0 core)
+- bK is a complex (K.0, K.1, K.3 proved; K.2 scaffolded)
+- dim_preserve (Moise 4.11 first part)
+- mesh_shrink (Moise 4.11 second part) — complete via:
+  * bary_to_vertex/to_point bounds
+  * chain_barycenter_bound
+  * conv_hull_pt/pair_bound
+  * diameter_le_from_pairs
+  * diameter_ge_HOL_diameter
+  * factor_bd (x/(x+1) monotonicity)
+  * mesh_K_bdd (via finite K)
+  * mesh_K_nn (via bounded diameters)
+- proper_subset_dim_less (classical)
+- h_poly_sup (scaffolded, core classical fact remains)
+
+Build stable: 8s cached, ~46s fresh.
