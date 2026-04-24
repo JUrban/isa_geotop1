@@ -1938,6 +1938,224 @@ qed
 (** D-support: barycenter of a simplex is in its REL_INTERIOR (for
     euclidean_space). Key for proving barycenters of distinct simplices
     are distinct (needed for D step 1 via rel_interior_disjoint). **)
+(** D-infrastructure: barycenter of a simplex equals the uniform-weight sum
+    over its vertex set. The SOME-definition is pinned down by uniqueness
+    of simplex_vertices. **)
+lemma geotop_barycenter_eq_uV:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h_sv: "geotop_simplex_vertices \<sigma> V"
+  shows "geotop_barycenter \<sigma> = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+proof -
+  have hVfin: "finite V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  define u_V where "u_V = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+  have h_ex_witness: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                          u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    unfolding u_V_def using h_sv by (by100 blast)
+  have h_bary_char: "\<forall>u. (\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                 u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)) \<longrightarrow> u = u_V"
+  proof (intro allI impI)
+    fix u assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                            u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                 and hu_val: "u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+      using hu by (by100 blast)
+    have hV'_eq_V: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF hV'_sv h_sv])
+    show "u = u_V" unfolding u_V_def using hu_val hV'_eq_V by (by100 simp)
+  qed
+  have h_bary_eq: "geotop_barycenter \<sigma> = u_V"
+    unfolding geotop_barycenter_def
+  proof (rule someI2[where a = u_V])
+    show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+               u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex_witness)
+  next
+    fix u assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                            u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    show "u = u_V" using h_bary_char hu by (by100 blast)
+  qed
+  show ?thesis using h_bary_eq unfolding u_V_def .
+qed
+
+(** D-infrastructure: distance from barycenter to any vertex is bounded by
+    (k/(k+1)) · diameter σ for a simplex with k+1 vertices. Classical Moise
+    bound used for mesh shrinkage (early.tex Lemma 4.11 second part). **)
+lemma geotop_barycenter_to_vertex_bound:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h_sv: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  shows "norm (geotop_barycenter \<sigma> - v)
+           \<le> (real (card V - 1) / real (card V)) * diameter \<sigma>"
+proof -
+  have hVfin: "finite V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain m nn where hVcard: "card V = nn + 1"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVne: "V \<noteq> {}"
+  proof
+    assume "V = {}"
+    hence "card V = 0" by (by100 simp)
+    thus False using hVcard by (by100 simp)
+  qed
+  have h_card_pos: "card V > 0" using hVfin hVne card_gt_0_iff by (by100 blast)
+  have h_card_eq_k1: "card V = (card V - 1) + 1" using h_card_pos by (by100 simp)
+  define k where "k = card V - 1"
+  have hVcard_k: "card V = k + 1" unfolding k_def using h_card_pos by (by100 simp)
+  (** σ = conv hull V is compact (V finite). **)
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have h\<sigma>_bounded: "bounded \<sigma>"
+    using h\<sigma>_HOL hVfin finite_imp_bounded_convex_hull by (by100 simp)
+  have hV_sub_\<sigma>: "V \<subseteq> \<sigma>"
+  proof -
+    have "V \<subseteq> convex hull V" by (rule hull_subset)
+    thus ?thesis using h\<sigma>_HOL by (by100 simp)
+  qed
+  (** barycenter σ = uniform weighted sum. **)
+  have h_bary_eq: "geotop_barycenter \<sigma> = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+    by (rule geotop_barycenter_eq_uV[OF h_sv])
+  (** bary σ - v = (1/(k+1)) · sum_{w ∈ V \ {v}} (w - v). **)
+  have h_bary_sub_v: "geotop_barycenter \<sigma> - v = (1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. w - v)"
+  proof -
+    have h1: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w) - v
+              = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w) - (1 / real (card V)) *\<^sub>R (real (card V) *\<^sub>R v)"
+      using h_card_pos by (by100 simp)
+    have h_card_v: "real (card V) *\<^sub>R v = (\<Sum>w\<in>V. v)"
+    proof -
+      have h_sum_const: "(\<Sum>w\<in>V. v) = of_nat (card V) *\<^sub>R v"
+        by (rule sum_constant_scaleR)
+      thus ?thesis by (by100 simp)
+    qed
+    have h2: "(1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. v) = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R v)"
+      using scaleR_sum_right[of "1 / real (card V)" "\<lambda>_. v" V] by (by100 simp)
+    have h3: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w) - (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R v)
+              = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w - (1 / real (card V)) *\<^sub>R v)"
+      using sum_subtractf[of "\<lambda>w. (1 / real (card V)) *\<^sub>R w"
+                              "\<lambda>w. (1 / real (card V)) *\<^sub>R v" V]
+      by (by100 simp)
+    have h4: "\<And>w. (1 / real (card V)) *\<^sub>R w - (1 / real (card V)) *\<^sub>R v
+              = (1 / real (card V)) *\<^sub>R (w - v)"
+    proof -
+      fix w
+      have "(1 / real (card V)) *\<^sub>R (w - v)
+             = (1 / real (card V)) *\<^sub>R w - (1 / real (card V)) *\<^sub>R v"
+        by (rule scaleR_diff_right)
+      thus "(1 / real (card V)) *\<^sub>R w - (1 / real (card V)) *\<^sub>R v
+              = (1 / real (card V)) *\<^sub>R (w - v)" by (by100 simp)
+    qed
+    have h5: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w - (1 / real (card V)) *\<^sub>R v)
+              = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R (w - v))"
+      using h4 by (by100 simp)
+    have h6: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R (w - v))
+              = (1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. w - v)"
+      using scaleR_sum_right[of "1 / real (card V)" "\<lambda>w. w - v" V]
+      by (by100 simp)
+    have h_combine: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w) - v
+              = (1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. w - v)"
+    proof -
+      have step1: "(\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w) - v
+                 = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)
+                 - (1 / real (card V)) *\<^sub>R (real (card V) *\<^sub>R v)"
+        using h1 .
+      also have "\<dots> = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)
+                    - (1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. v)"
+        using h_card_v by (by100 simp)
+      also have "\<dots> = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)
+                    - (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R v)"
+        using h2 by (by100 simp)
+      also have "\<dots> = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R (w - v))"
+        using h3 h5 by (by100 simp)
+      also have "\<dots> = (1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. w - v)"
+        using h6 .
+      finally show ?thesis .
+    qed
+    show ?thesis using h_bary_eq h_combine by (by100 simp)
+  qed
+  (** Sum over V of (w-v) = sum over V\{v} (zero at w=v). **)
+  have h_sum_split: "(\<Sum>w\<in>V. w - v) = (\<Sum>w\<in>V - {v}. w - v)"
+  proof -
+    have h_insert: "V = insert v (V - {v})" using hv by (by100 blast)
+    have h_v_notin: "v \<notin> V - {v}" by (by100 blast)
+    have h_Vv_fin: "finite (V - {v})" using hVfin by (by100 simp)
+    have h_sum_ins: "(\<Sum>w\<in>insert v (V - {v}). w - v)
+                     = (v - v) + (\<Sum>w\<in>V - {v}. w - v)"
+      using sum.insert[OF h_Vv_fin h_v_notin, of "\<lambda>w. w - v"] by (by100 simp)
+    have "(\<Sum>w\<in>V. w - v) = (\<Sum>w\<in>insert v (V - {v}). w - v)"
+      using h_insert by (by100 simp)
+    also have "\<dots> = (v - v) + (\<Sum>w\<in>V - {v}. w - v)" using h_sum_ins .
+    also have "\<dots> = (\<Sum>w\<in>V - {v}. w - v)" by (by100 simp)
+    finally show ?thesis .
+  qed
+  (** Bound ||sum_w (w-v)|| by card(V\{v}) · diameter σ. **)
+  have h_diff_fin: "finite (V - {v})" using hVfin by (by100 simp)
+  have h_diff_card: "card (V - {v}) = k"
+    unfolding k_def using hv hVfin by (by100 simp)
+  have h_diff_bound: "\<forall>w \<in> V - {v}. norm (w - v) \<le> diameter \<sigma>"
+  proof
+    fix w assume hw: "w \<in> V - {v}"
+    have hwV: "w \<in> V" using hw by (by100 blast)
+    have hw\<sigma>: "w \<in> \<sigma>" using hwV hV_sub_\<sigma> by (by100 blast)
+    have hv\<sigma>: "v \<in> \<sigma>" using hv hV_sub_\<sigma> by (by100 blast)
+    have h_dist: "dist w v \<le> diameter \<sigma>"
+      by (rule diameter_bounded_bound[OF h\<sigma>_bounded hw\<sigma> hv\<sigma>])
+    have h_dist_norm: "dist w v = norm (w - v)" by (rule dist_norm)
+    show "norm (w - v) \<le> diameter \<sigma>"
+      using h_dist h_dist_norm by (by100 simp)
+  qed
+  have h_sum_norm: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> (\<Sum>w\<in>V - {v}. norm (w - v))"
+    by (rule norm_sum)
+  have h_sum_bd: "(\<Sum>w\<in>V - {v}. norm (w - v)) \<le> real (card (V - {v})) * diameter \<sigma>"
+  proof -
+    have h_step1: "(\<Sum>w\<in>V - {v}. norm (w - v)) \<le> (\<Sum>w\<in>V - {v}. diameter \<sigma>)"
+      by (rule sum_mono, rule h_diff_bound[rule_format])
+    have h_step2: "(\<Sum>w\<in>V - {v}. diameter \<sigma>) = real (card (V - {v})) * diameter \<sigma>"
+      by (by100 simp)
+    show ?thesis using h_step1 h_step2 by (by100 simp)
+  qed
+  have h_sum_bd_k: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> real k * diameter \<sigma>"
+    using h_sum_norm h_sum_bd h_diff_card by (by100 simp)
+  (** Final bound. **)
+  have h_card_pos_real: "real (card V) > 0" using h_card_pos by (by100 simp)
+  have h_bary_norm: "norm (geotop_barycenter \<sigma> - v)
+                      = (1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)"
+  proof -
+    have "norm (geotop_barycenter \<sigma> - v)
+         = norm ((1 / real (card V)) *\<^sub>R (\<Sum>w\<in>V. w - v))"
+      using h_bary_sub_v by (by100 simp)
+    also have "\<dots> = \<bar>1 / real (card V)\<bar> * norm (\<Sum>w\<in>V. w - v)"
+      by (by100 simp)
+    also have "\<dots> = (1 / real (card V)) * norm (\<Sum>w\<in>V. w - v)"
+      using h_card_pos_real by (by100 simp)
+    also have "\<dots> = (1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)"
+      using h_sum_split by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_final: "norm (geotop_barycenter \<sigma> - v) \<le> (1 / real (card V)) * (real k * diameter \<sigma>)"
+  proof -
+    have h_sum_nn: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> real k * diameter \<sigma>"
+      by (rule h_sum_bd_k)
+    have h_inv_pos: "(1 / real (card V)) \<ge> 0" using h_card_pos_real by (by100 simp)
+    have h_mono: "(1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)
+                  \<le> (1 / real (card V)) * (real k * diameter \<sigma>)"
+      using h_sum_nn h_inv_pos mult_left_mono by (by100 blast)
+    show ?thesis using h_bary_norm h_mono by (by100 simp)
+  qed
+  have h_rhs_eq: "(1 / real (card V)) * (real k * diameter \<sigma>)
+                   = (real k / real (card V)) * diameter \<sigma>"
+  proof -
+    have "(1 / real (card V)) * (real k * diameter \<sigma>)
+           = (1 * real k / real (card V)) * diameter \<sigma>"
+      by (by100 simp)
+    also have "\<dots> = (real k / real (card V)) * diameter \<sigma>"
+      by (by100 simp)
+    finally show ?thesis .
+  qed
+  show ?thesis
+    using h_final h_rhs_eq unfolding k_def by (by100 simp)
+qed
+
 lemma geotop_barycenter_in_rel_interior:
   fixes \<sigma> :: "'a::euclidean_space set"
   assumes h_sv: "geotop_simplex_vertices \<sigma> V"
