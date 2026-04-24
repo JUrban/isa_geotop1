@@ -11662,6 +11662,316 @@ proof -
   show ?thesis using h_p_le_q hp_01 hq_01 h_I_eq h_endpoints by (by100 blast)
 qed
 
+(** Phase 1.A main: the sub-arc image γ([s_lo, s_hi]) is the polyhedron
+    of a 1-dim sub-complex. Construction: subdivide K at γ(s_lo), γ(s_hi)
+    then restrict to simplices contained in γ([s_lo, s_hi]). **)
+lemma geotop_subarc_polyhedron:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  fixes B :: "'a set"
+  fixes s_lo s_hi :: real
+  assumes hB: "geotop_is_broken_line B"
+  assumes harc: "arc \<gamma>"
+  assumes hpim: "path_image \<gamma> = B"
+  assumes hs_lo: "s_lo \<in> {0..1}"
+  assumes hs_hi: "s_hi \<in> {0..1}"
+  assumes hs_lt: "s_lo < s_hi"
+  shows "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = \<gamma> ` closed_segment s_lo s_hi
+            \<and> geotop_complex_is_1dim K'"
+proof -
+  let ?X = "\<gamma> s_lo"
+  let ?Y = "\<gamma> s_hi"
+  let ?B' = "\<gamma> ` closed_segment s_lo s_hi"
+  have h_seg_eq: "closed_segment s_lo s_hi = {s_lo..s_hi}"
+    using hs_lt closed_segment_eq_real_ivl by (by100 simp)
+  have hB'_eq: "?B' = \<gamma> ` {s_lo..s_hi}" using h_seg_eq by (by100 simp)
+  (** Witnessing complex K. **)
+  obtain K where hK: "geotop_is_complex K" and hK1: "geotop_complex_is_1dim K"
+              and hKpoly: "geotop_polyhedron K = B"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  have hX_B: "?X \<in> B"
+    using hs_lo hpim unfolding path_image_def by (by100 blast)
+  have hY_B: "?Y \<in> B"
+    using hs_hi hpim unfolding path_image_def by (by100 blast)
+  have hX_poly: "?X \<in> geotop_polyhedron K" using hX_B hKpoly by (by100 simp)
+  have hY_poly: "?Y \<in> geotop_polyhedron K" using hY_B hKpoly by (by100 simp)
+  (** Subdivide at X, Y. **)
+  have h_ex_K'': "\<exists>K''. geotop_is_complex K'' \<and> geotop_complex_is_1dim K''
+                \<and> geotop_polyhedron K'' = geotop_polyhedron K
+                \<and> {?X} \<in> K'' \<and> {?Y} \<in> K''
+                \<and> (finite K \<longrightarrow> finite K'')"
+    by (rule geotop_complex_subdivide_at_two[OF hK hK1 hX_poly hY_poly])
+  obtain K'' where hK''_comp: "geotop_is_complex K''"
+                and hK''_1dim: "geotop_complex_is_1dim K''"
+                and hK''_poly: "geotop_polyhedron K'' = geotop_polyhedron K"
+                and hX_K'': "{?X} \<in> K''" and hY_K'': "{?Y} \<in> K''"
+    using h_ex_K'' by (by100 blast)
+  have hK''_poly_B: "geotop_polyhedron K'' = B"
+    using hK''_poly hKpoly by (by100 simp)
+  have hK''_poly_pim: "geotop_polyhedron K'' = path_image \<gamma>"
+    using hK''_poly_B hpim by (by100 simp)
+  (** K' = {σ ∈ K''. σ ⊆ ?B'}. 1-dim complex by helpers. **)
+  let ?K' = "{\<sigma>\<in>K''. \<sigma> \<subseteq> ?B'}"
+  have hK'_comp: "geotop_is_complex ?K'"
+    by (rule geotop_complex_restrict_subset_is_complex[OF hK''_comp])
+  have hK'_1dim: "geotop_complex_is_1dim ?K'"
+    by (rule geotop_complex_restrict_preserves_1dim[OF hK''_1dim])
+  (** polyhedron K' ⊆ ?B'. **)
+  have hK'_sub_B': "geotop_polyhedron ?K' \<subseteq> ?B'"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron ?K'"
+    then obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> ?K'" and hx\<sigma>: "x \<in> \<sigma>"
+      unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<sigma>_sub_B': "\<sigma> \<subseteq> ?B'" using h\<sigma>K' by (by100 simp)
+    show "x \<in> ?B'" using hx\<sigma> h\<sigma>_sub_B' by (by100 blast)
+  qed
+  (** ?B' ⊆ polyhedron K'. Key direction. **)
+  have hB'_sub_K': "?B' \<subseteq> geotop_polyhedron ?K'"
+  proof
+    fix x assume hx: "x \<in> ?B'"
+    obtain t where ht_mem: "t \<in> closed_segment s_lo s_hi" and hxt: "x = \<gamma> t"
+      using hx by (by100 blast)
+    have ht_seg: "t \<in> {s_lo..s_hi}" using ht_mem h_seg_eq by (by100 simp)
+    have ht_lo: "s_lo \<le> t" using ht_seg by (by100 simp)
+    have ht_hi: "t \<le> s_hi" using ht_seg by (by100 simp)
+    have ht_01: "t \<in> {0..1}" using ht_seg hs_lo hs_hi by (by100 auto)
+    (** Split on boundary vs interior. **)
+    have h_tcases: "t = s_lo \<or> t = s_hi \<or> (s_lo < t \<and> t < s_hi)"
+      using ht_lo ht_hi by (by100 linarith)
+    show "x \<in> geotop_polyhedron ?K'"
+    proof (rule disjE[OF h_tcases])
+      assume h_tlo: "t = s_lo"
+      have hx_X: "x = ?X" using hxt h_tlo by (by100 simp)
+      have hX_B': "?X \<in> ?B'"
+      proof -
+        have hs_lo_seg: "s_lo \<in> closed_segment s_lo s_hi"
+          using h_seg_eq ht_seg h_tlo by (by100 simp)
+        show ?thesis using hs_lo_seg by (by100 blast)
+      qed
+      have hsing_sub: "{?X} \<subseteq> ?B'" using hX_B' by (by100 simp)
+      have hsing_K': "{?X} \<in> ?K'" using hX_K'' hsing_sub by (by100 simp)
+      have hx_sing: "x \<in> {?X}" using hx_X by (by100 simp)
+      show ?thesis using hx_sing hsing_K'
+        unfolding geotop_polyhedron_def by (by100 blast)
+    next
+      assume h_rest1: "t = s_hi \<or> (s_lo < t \<and> t < s_hi)"
+      show ?thesis
+      proof (rule disjE[OF h_rest1])
+        assume h_thi: "t = s_hi"
+        have hx_Y: "x = ?Y" using hxt h_thi by (by100 simp)
+        have hY_B': "?Y \<in> ?B'"
+        proof -
+          have hs_hi_seg: "s_hi \<in> closed_segment s_lo s_hi"
+            using h_seg_eq ht_seg h_thi by (by100 simp)
+          show ?thesis using hs_hi_seg by (by100 blast)
+        qed
+        have hsing_sub: "{?Y} \<subseteq> ?B'" using hY_B' by (by100 simp)
+        have hsing_K': "{?Y} \<in> ?K'" using hY_K'' hsing_sub by (by100 simp)
+        have hx_sing: "x \<in> {?Y}" using hx_Y by (by100 simp)
+        show ?thesis using hx_sing hsing_K'
+          unfolding geotop_polyhedron_def by (by100 blast)
+      next
+        assume h_tint: "s_lo < t \<and> t < s_hi"
+        have h_lo_lt_t: "s_lo < t" using h_tint by (by100 blast)
+        have h_t_lt_hi: "t < s_hi" using h_tint by (by100 blast)
+        have hx_B: "x \<in> B"
+        proof -
+          have "x \<in> path_image \<gamma>"
+            using hxt ht_01 unfolding path_image_def by (by100 blast)
+          thus ?thesis using hpim by (by100 simp)
+        qed
+        have hx_K'': "x \<in> geotop_polyhedron K''" using hx_B hK''_poly_B by (by100 simp)
+        obtain \<sigma> where h\<sigma>_K'': "\<sigma> \<in> K''" and hx\<sigma>: "x \<in> \<sigma>"
+          using hx_K'' unfolding geotop_polyhedron_def by (by100 blast)
+        (** Show σ ⊆ ?B' using 1-simplex analysis. **)
+        have h\<sigma>_cases: "(\<exists>w. \<sigma> = {w}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+          by (rule geotop_1dim_simplex_cases[OF hK''_1dim h\<sigma>_K''])
+        have h\<sigma>_sub_B': "\<sigma> \<subseteq> ?B'"
+        proof (rule disjE[OF h\<sigma>_cases])
+          assume "\<exists>w. \<sigma> = {w}"
+          then obtain w where h\<sigma>_w: "\<sigma> = {w}" by (by100 blast)
+          have h_w_x: "w = x" using hx\<sigma> h\<sigma>_w by (by100 blast)
+          have h_x_B': "x \<in> ?B'" using hx by (by100 blast)
+          show "\<sigma> \<subseteq> ?B'" using h\<sigma>_w h_w_x h_x_B' by (by100 simp)
+        next
+          assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+          then obtain a b where hab_ne: "a \<noteq> b" and h\<sigma>_ab: "\<sigma> = closed_segment a b"
+            by (by100 blast)
+          (** Apply preimage_structure. **)
+          obtain p q where hpq_le: "p \<le> q" and hp_01: "p \<in> {0..1}" and hq_01: "q \<in> {0..1}"
+                        and hI_eq: "{s\<in>{0..1}. \<gamma> s \<in> \<sigma>} = {p..q}"
+                        and h_\<gamma>_ends: "{\<gamma> p, \<gamma> q} = {a, b}"
+            using geotop_arc_1simplex_preimage_structure
+                  [OF harc hK''_1dim hK''_poly_pim h\<sigma>_K'' h\<sigma>_ab hab_ne]
+            by (by100 blast)
+          have ht_in_I: "t \<in> {p..q}"
+          proof -
+            have ht_I: "t \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+              using ht_01 hxt hx\<sigma> by (by100 blast)
+            show ?thesis using ht_I hI_eq by (by100 simp)
+          qed
+          have hp_le_t: "p \<le> t" using ht_in_I by (by100 simp)
+          have ht_le_q: "t \<le> q" using ht_in_I by (by100 simp)
+          (** Show [p, q] ⊆ [s_lo, s_hi]. **)
+          have hpq_sub_lohi: "{p..q} \<subseteq> {s_lo..s_hi}"
+          proof (rule ccontr)
+            assume h_not: "\<not> {p..q} \<subseteq> {s_lo..s_hi}"
+            (** Then either p < s_lo or q > s_hi. **)
+            have h_dir: "p < s_lo \<or> q > s_hi"
+            proof -
+              have h_ex: "\<exists>u\<in>{p..q}. u \<notin> {s_lo..s_hi}"
+                using h_not by (by100 blast)
+              obtain u where hu_pq: "u \<in> {p..q}" and hu_out: "u \<notin> {s_lo..s_hi}"
+                using h_ex by (by100 blast)
+              have hu_01_real: "u < s_lo \<or> u > s_hi" using hu_out by (by100 auto)
+              have hup: "p \<le> u" using hu_pq by (by100 simp)
+              have huq: "u \<le> q" using hu_pq by (by100 simp)
+              show ?thesis
+              proof (rule disjE[OF hu_01_real])
+                assume "u < s_lo"
+                hence "p < s_lo" using hup by (by100 linarith)
+                thus ?thesis by (by100 blast)
+              next
+                assume "u > s_hi"
+                hence "q > s_hi" using huq by (by100 linarith)
+                thus ?thesis by (by100 blast)
+              qed
+            qed
+            (** Derive contradiction from each case. **)
+            show False
+            proof (rule disjE[OF h_dir])
+              assume hp_lo: "p < s_lo"
+              have h_p_le_slo: "p \<le> s_lo" using hp_lo by (by100 linarith)
+              have h_slo_le_q: "s_lo \<le> q" using ht_lo ht_le_q by (by100 linarith)
+              have hs_lo_pq: "s_lo \<in> {p..q}"
+                using h_p_le_slo h_slo_le_q by (by100 simp)
+              have hs_lo_in_I: "s_lo \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+                using hs_lo_pq hI_eq by (by100 simp)
+              have h\<gamma>s_lo_\<sigma>: "\<gamma> s_lo \<in> \<sigma>" using hs_lo_in_I by (by100 simp)
+              have hX_endpoint: "?X = a \<or> ?X = b"
+                by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+                         [OF hK''_comp hX_K'' h\<sigma>_K'' h\<sigma>_ab hab_ne h\<gamma>s_lo_\<sigma>])
+              (** ?X ∈ {γ p, γ q} = {a, b}. By injectivity, s_lo = p or s_lo = q. **)
+              have hX_pq: "?X \<in> {\<gamma> p, \<gamma> q}" using hX_endpoint h_\<gamma>_ends by (by100 blast)
+              have h_cont_\<gamma>: "continuous_on {0..1} \<gamma>"
+                using harc unfolding arc_def path_def by (by100 blast)
+              have h_inj_\<gamma>: "inj_on \<gamma> {0..1}"
+                using harc unfolding arc_def by (by100 blast)
+              have hs_lo_in_01: "s_lo \<in> {0..1}" by (rule hs_lo)
+              have hs_lo_pq_disj: "s_lo = p \<or> s_lo = q"
+              proof -
+                have h_or: "\<gamma> s_lo = \<gamma> p \<or> \<gamma> s_lo = \<gamma> q" using hX_pq by (by100 blast)
+                show ?thesis
+                proof (rule disjE[OF h_or])
+                  assume "\<gamma> s_lo = \<gamma> p"
+                  hence "s_lo = p" using h_inj_\<gamma> hs_lo_in_01 hp_01
+                    unfolding inj_on_def by (by100 blast)
+                  thus ?thesis by (by100 blast)
+                next
+                  assume "\<gamma> s_lo = \<gamma> q"
+                  hence "s_lo = q" using h_inj_\<gamma> hs_lo_in_01 hq_01
+                    unfolding inj_on_def by (by100 blast)
+                  thus ?thesis by (by100 blast)
+                qed
+              qed
+              show False
+              proof (rule disjE[OF hs_lo_pq_disj])
+                assume hs_p: "s_lo = p"
+                show False using hp_lo hs_p by (by100 linarith)
+              next
+                assume hs_q: "s_lo = q"
+                have ht_le_lo: "t \<le> s_lo" using ht_le_q hs_q by (by100 simp)
+                show False using ht_le_lo h_lo_lt_t by (by100 linarith)
+              qed
+            next
+              assume hq_hi: "q > s_hi"
+              have h_shi_le_q: "s_hi \<le> q" using hq_hi by (by100 linarith)
+              have h_p_le_shi: "p \<le> s_hi" using hp_le_t ht_hi by (by100 linarith)
+              have hs_hi_pq: "s_hi \<in> {p..q}"
+                using h_shi_le_q h_p_le_shi by (by100 simp)
+              have hs_hi_in_I: "s_hi \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+                using hs_hi_pq hI_eq by (by100 simp)
+              have h\<gamma>s_hi_\<sigma>: "\<gamma> s_hi \<in> \<sigma>" using hs_hi_in_I by (by100 simp)
+              have hY_endpoint: "?Y = a \<or> ?Y = b"
+                by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+                         [OF hK''_comp hY_K'' h\<sigma>_K'' h\<sigma>_ab hab_ne h\<gamma>s_hi_\<sigma>])
+              have hY_pq: "?Y \<in> {\<gamma> p, \<gamma> q}" using hY_endpoint h_\<gamma>_ends by (by100 blast)
+              have h_inj_\<gamma>: "inj_on \<gamma> {0..1}"
+                using harc unfolding arc_def by (by100 blast)
+              have hs_hi_in_01: "s_hi \<in> {0..1}" by (rule hs_hi)
+              have hs_hi_pq_disj: "s_hi = p \<or> s_hi = q"
+              proof -
+                have h_or: "\<gamma> s_hi = \<gamma> p \<or> \<gamma> s_hi = \<gamma> q" using hY_pq by (by100 blast)
+                show ?thesis
+                proof (rule disjE[OF h_or])
+                  assume "\<gamma> s_hi = \<gamma> p"
+                  hence "s_hi = p" using h_inj_\<gamma> hs_hi_in_01 hp_01
+                    unfolding inj_on_def by (by100 blast)
+                  thus ?thesis by (by100 blast)
+                next
+                  assume "\<gamma> s_hi = \<gamma> q"
+                  hence "s_hi = q" using h_inj_\<gamma> hs_hi_in_01 hq_01
+                    unfolding inj_on_def by (by100 blast)
+                  thus ?thesis by (by100 blast)
+                qed
+              qed
+              show False
+              proof (rule disjE[OF hs_hi_pq_disj])
+                assume hs_p: "s_hi = p"
+                have ht_ge_hi: "s_hi \<le> t" using hp_le_t hs_p by (by100 simp)
+                show False using ht_ge_hi h_t_lt_hi by (by100 linarith)
+              next
+                assume hs_q: "s_hi = q"
+                show False using hq_hi hs_q by (by100 linarith)
+              qed
+            qed
+          qed
+          (** σ = γ([p, q]) ⊆ γ([s_lo, s_hi]) = ?B'. **)
+          have h\<sigma>_eq_im: "\<sigma> = \<gamma> ` {p..q}"
+          proof -
+            have h\<sigma>_sub_pim: "\<sigma> \<subseteq> path_image \<gamma>"
+              using h\<sigma>_K'' hK''_poly_pim unfolding geotop_polyhedron_def by (by100 blast)
+            show ?thesis
+            proof
+              show "\<sigma> \<subseteq> \<gamma> ` {p..q}"
+              proof
+                fix y assume hy: "y \<in> \<sigma>"
+                have h_y_pim: "y \<in> path_image \<gamma>" using hy h\<sigma>_sub_pim by (by100 blast)
+                obtain s where hs_01: "s \<in> {0..1}" and hs_y: "y = \<gamma> s"
+                  using h_y_pim unfolding path_image_def by (by100 blast)
+                have hs_in_I: "s \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+                  using hs_01 hs_y hy by (by100 simp)
+                have hs_pq: "s \<in> {p..q}" using hs_in_I hI_eq by (by100 simp)
+                show "y \<in> \<gamma> ` {p..q}" using hs_pq hs_y by (by100 blast)
+              qed
+              show "\<gamma> ` {p..q} \<subseteq> \<sigma>"
+              proof
+                fix y assume "y \<in> \<gamma> ` {p..q}"
+                then obtain s where hs_pq: "s \<in> {p..q}" and hy: "y = \<gamma> s" by (by100 blast)
+                have hs_in_I: "s \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+                  using hs_pq hI_eq by (by100 simp)
+                show "y \<in> \<sigma>" using hs_in_I hy by (by100 simp)
+              qed
+            qed
+          qed
+          have h\<sigma>_sub_\<gamma>lohi: "\<sigma> \<subseteq> \<gamma> ` {s_lo..s_hi}"
+          proof -
+            have h_im_mono: "\<gamma> ` {p..q} \<subseteq> \<gamma> ` {s_lo..s_hi}"
+              using hpq_sub_lohi by (by100 blast)
+            show ?thesis using h\<sigma>_eq_im h_im_mono by (by100 simp)
+          qed
+          show "\<sigma> \<subseteq> ?B'" using h\<sigma>_sub_\<gamma>lohi hB'_eq by (by100 simp)
+        qed
+        have h\<sigma>_K': "\<sigma> \<in> ?K'" using h\<sigma>_K'' h\<sigma>_sub_B' by (by100 simp)
+        show ?thesis using hx\<sigma> h\<sigma>_K'
+          unfolding geotop_polyhedron_def by (by100 blast)
+      qed
+    qed
+  qed
+  have hK'_poly: "geotop_polyhedron ?K' = ?B'"
+    using hK'_sub_B' hB'_sub_K' by (by100 blast)
+  show ?thesis using hK'_comp hK'_poly hK'_1dim by (by100 blast)
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
