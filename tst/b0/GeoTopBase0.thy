@@ -7497,6 +7497,95 @@ qed
       (d) Assignment: every \<open>\<tau> \<in> Sd^m(K)\<close> lies in some \<open>st_{K'}(v)\<close>; use interior
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
+(** Chain vertex inclusion: for K-simplices s \<subseteq> t, V(s) \<subseteq> V(t).
+    Classical fact via K.2 of K (s is a face of t when s \<subseteq> t non-empty)
+    + simplex_vertices uniqueness. **)
+lemma geotop_chain_vertex_subset:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hsK: "s \<in> K" and htK: "t \<in> K"
+  assumes h_sub: "s \<subseteq> t"
+  assumes h_s_sv: "geotop_simplex_vertices s V\<^sub>s"
+  assumes h_t_sv: "geotop_simplex_vertices t V\<^sub>t"
+  shows "V\<^sub>s \<subseteq> V\<^sub>t"
+proof -
+  (** s nonempty since simplex_vertices s V_s and V_s non-empty (at least 1 vertex). **)
+  have hVs_fin: "finite V\<^sub>s"
+    using h_s_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVs_card: "\<exists>n. card V\<^sub>s = n + 1"
+    using h_s_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVs_ne: "V\<^sub>s \<noteq> {}" using hVs_fin hVs_card by (by100 auto)
+  have hs_hull_g: "s = geotop_convex_hull V\<^sub>s"
+    using h_s_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hs_HOL: "s = convex hull V\<^sub>s"
+    using hs_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+  have hs_ne: "s \<noteq> {}"
+  proof -
+    have h_V_sub: "V\<^sub>s \<subseteq> convex hull V\<^sub>s" by (rule hull_subset)
+    show ?thesis using h_V_sub hVs_ne hs_HOL by (by100 blast)
+  qed
+  (** s \<inter> t = s (since s \<subseteq> t) \<noteq> \<emptyset>. **)
+  have h_int: "s \<inter> t = s" using h_sub by (by100 blast)
+  have h_int_ne: "s \<inter> t \<noteq> {}" using h_int hs_ne by (by100 simp)
+  (** K.2: s \<inter> t = s is a face of t. **)
+  have hK2: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {}
+                \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have h_face_inter: "geotop_is_face (s \<inter> t) t"
+    using hK2 hsK htK h_int_ne by (by100 blast)
+  have h_face: "geotop_is_face s t"
+    using h_face_inter h_int by (by100 simp)
+  (** Unfold face: exists V' W. simplex_vertices t V' \<and> W \<subseteq> V' \<and> s = conv hull W. **)
+  obtain V' W where hV'_sv: "geotop_simplex_vertices t V'"
+                and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                and hs_hull_W: "s = geotop_convex_hull W"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  (** V' = V_t by simplex_vertices_unique. **)
+  have hV'_eq: "V' = V\<^sub>t"
+    by (rule geotop_simplex_vertices_unique[OF hV'_sv h_t_sv])
+  have hW_Vt: "W \<subseteq> V\<^sub>t" using hW_V' hV'_eq by (by100 simp)
+  (** W = V_s: both AI finite with same conv hull. **)
+  have hVt_fin: "finite V\<^sub>t"
+    using h_t_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hW_fin: "finite W"
+    using hW_Vt hVt_fin finite_subset by (by100 blast)
+  have hVt_ai: "\<not> affine_dependent V\<^sub>t"
+    by (rule geotop_general_position_imp_aff_indep[OF h_t_sv])
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule affine_independent_subset[OF hVt_ai hW_Vt])
+  have hs_HOL_W: "s = convex hull W"
+    using hs_hull_W geotop_convex_hull_eq_HOL by (by100 simp)
+  have hVs_ai: "\<not> affine_dependent V\<^sub>s"
+    by (rule geotop_general_position_imp_aff_indep[OF h_s_sv])
+  (** Both W and V_s are AI finite with conv hull W = s = conv hull V_s.
+      By extreme_point characterization, W = V_s. **)
+  have h_hull_eq: "convex hull W = convex hull V\<^sub>s"
+    using hs_HOL hs_HOL_W by (by100 simp)
+  have h_Vs_eq_W: "V\<^sub>s = W"
+  proof (rule set_eqI, rule iffI)
+    fix y assume hyV: "y \<in> V\<^sub>s"
+    have h_ext: "y extreme_point_of convex hull V\<^sub>s"
+      using hyV hVs_ai extreme_point_of_convex_hull_affine_independent
+      by (by100 blast)
+    have h_ext_W: "y extreme_point_of convex hull W"
+      using h_ext h_hull_eq by (by100 simp)
+    show "y \<in> W"
+      using h_ext_W hW_ai extreme_point_of_convex_hull_affine_independent
+      by (by100 blast)
+  next
+    fix y assume hyW: "y \<in> W"
+    have h_ext: "y extreme_point_of convex hull W"
+      using hyW hW_ai extreme_point_of_convex_hull_affine_independent
+      by (by100 blast)
+    have h_ext_Vs: "y extreme_point_of convex hull V\<^sub>s"
+      using h_ext h_hull_eq by (by100 simp)
+    show "y \<in> V\<^sub>s"
+      using h_ext_Vs hVs_ai extreme_point_of_convex_hull_affine_independent
+      by (by100 blast)
+  qed
+  show "V\<^sub>s \<subseteq> V\<^sub>t" using h_Vs_eq_W hW_Vt by (by100 simp)
+qed
+
 (** Support-of-bary-coords lemma: if x is expressed as a bary combo of AI V with
     possibly-zero coefficients, then x lies in the rel_interior of the convex
     hull of the SUPPORT (nonzero-coeff vertices). Consequence of HOL-Analysis'
