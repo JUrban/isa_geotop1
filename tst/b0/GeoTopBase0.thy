@@ -5522,6 +5522,249 @@ proof -
         (** Assemble sum β = 1. **)
         have h\<beta>_sum: "(\<Sum>k<n. \<beta> k) = 1"
           using h\<beta>_sum_to_\<alpha>' h\<alpha>'_\<alpha>xs h_sum_xs h_sum_set h\<alpha>sum by (by100 simp)
+        (** (7) Combo computation: \<Sum>_k \<beta>_k *_R bary(\<sigma>_seq k) = x. **)
+        (** Step A: \<beta> k *_R bary(\<sigma>_seq k) = (\<alpha>'(k) - \<alpha>'(Suc k)) *_R \<Sum>_{i<Suc k} xs ! i. **)
+        have h_simplify: "\<And>k. k < n \<Longrightarrow>
+            \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)
+            = (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+        proof -
+          fix k assume hk: "k < n"
+          have hk_len: "k < length xs" using hk unfolding n_def .
+          have h_bary: "geotop_barycenter (\<sigma>_seq k) = (1 / real (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+            by (rule h_bary_sum[OF hk_len])
+          have hSuc_nz: "real (Suc k) \<noteq> 0" by (by100 simp)
+          have h_step: "\<beta> k *\<^sub>R ((1 / real (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i))
+                          = (\<beta> k * (1 / real (Suc k))) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+            by (by100 simp)
+          have h_factor: "\<beta> k * (1 / real (Suc k)) = \<alpha>' k - \<alpha>' (Suc k)"
+            unfolding \<beta>_def using hSuc_nz by (by100 simp)
+          show "\<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)
+                 = (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+            using h_bary h_step h_factor by (by100 simp)
+        qed
+        (** Step B: (\<alpha>'(k) - \<alpha>'(Suc k)) *_R \<Sum>_{i<Suc k} xs ! i
+             = \<Sum>_{i<Suc k} (\<alpha>'(k) - \<alpha>'(Suc k)) *_R xs ! i. **)
+        have h_dist_scale: "\<And>k.
+            (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)
+            = (\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+        proof -
+          fix k :: nat
+          show "(\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)
+                 = (\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            using scaleR_right.sum[of "\<alpha>' k - \<alpha>' (Suc k)" "\<lambda>i. xs ! i" "{..<Suc k}"]
+            by (by100 simp)
+        qed
+        (** Combined: \<beta> k *_R bary(\<sigma>_seq k) = \<Sum>_{i<Suc k} (\<alpha>' k - \<alpha>' (Suc k)) *_R xs ! i. **)
+        have h_combo_k: "\<And>k. k < n \<Longrightarrow>
+            \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)
+            = (\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+        proof -
+          fix k assume hk: "k < n"
+          show "\<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)
+                 = (\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            using h_simplify[OF hk] h_dist_scale[of k] by (by100 simp)
+        qed
+        (** Sum over k: \<Sum>_{k<n} \<beta> k *_R bary(\<sigma>_seq k)
+             = \<Sum>_{k<n} \<Sum>_{i<Suc k} (\<alpha>'(k) - \<alpha>'(Suc k)) *_R xs ! i. **)
+        have h_sum_combo: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                          = (\<Sum>k<n. \<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+          using h_combo_k by (by100 simp)
+        (** Rewrite \<Sum>_{i<Suc k} as \<Sum>_{i \<in> {i<n. i \<le> k}} (for k < n). **)
+        have h_rewrite_inner: "\<And>k. k < n \<Longrightarrow>
+            (\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+            = (\<Sum>i\<in>{i\<in>{..<n}. i \<le> k}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+        proof -
+          fix k assume hk: "k < n"
+          have h_set_eq: "{..<Suc k} = {i\<in>{..<n}. i \<le> k}"
+            using hk by (by100 auto)
+          show "(\<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                = (\<Sum>i\<in>{i\<in>{..<n}. i \<le> k}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            using h_set_eq by (by100 simp)
+        qed
+        have h_sum_as_restrict: "(\<Sum>k<n. \<Sum>i<Suc k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                                 = (\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
+                                             (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+          using h_rewrite_inner by (by100 simp)
+        (** Swap sums via sum.swap_restrict. **)
+        have h_swap: "(\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
+                              (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                      = (\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                                  (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+        proof -
+          have h_fin_A: "finite ({..<n}::nat set)" by (by100 simp)
+          show ?thesis
+            using sum.swap_restrict[OF h_fin_A h_fin_A,
+                of "\<lambda>k i. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i" "\<lambda>k i. i \<le> k"]
+            by (by100 simp)
+        qed
+        (** Rewrite outer: {k \<in> {..<n}. i \<le> k} = {i..<n}. **)
+        have h_outer_set: "\<And>i. i < n \<Longrightarrow> {k. k \<in> {..<n} \<and> i \<le> k} = {i..<n}"
+        proof -
+          fix i assume hi: "i < n"
+          show "{k. k \<in> {..<n} \<and> i \<le> k} = {i..<n}"
+            by (by100 auto)
+        qed
+        have h_swap_clean: "(\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                                      (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                            = (\<Sum>i<n. \<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+        proof -
+          have h_eq: "\<And>i. i < n \<Longrightarrow>
+                      (\<Sum>k | k \<in> {..<n} \<and> i \<le> k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                      = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+          proof -
+            fix i assume hi: "i < n"
+            have h_set: "{k. k \<in> {..<n} \<and> i \<le> k} = {i..<n}" by (rule h_outer_set[OF hi])
+            show "(\<Sum>k | k \<in> {..<n} \<and> i \<le> k. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                   = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+              using h_set by (by100 simp)
+          qed
+          show ?thesis using h_eq by (by100 simp)
+        qed
+        (** Factor out xs ! i from the inner scaleR sum. **)
+        have h_factor_out: "\<And>i.
+            (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+            = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i"
+        proof -
+          fix i :: nat
+          show "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                 = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i"
+            using scaleR_left.sum[of "\<lambda>k. \<alpha>' k - \<alpha>' (Suc k)" "{i..<n}" "xs ! i"]
+            by (by100 simp)
+        qed
+        (** Inner telescope: \<Sum>_{k\<in>{i..<n}} (\<alpha>'(k) - \<alpha>'(Suc k)) = \<alpha>'(i) - \<alpha>'(n) = \<alpha>'(i). **)
+        have h_tele: "\<And>i. i \<le> n \<Longrightarrow>
+            (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i - \<alpha>' n"
+        proof -
+          fix i assume hi: "i \<le> n"
+          (** Use sum_Suc_diff' directly with -\<alpha>' instead of \<alpha>'. **)
+          have h_tele_raw:
+            "(\<Sum>k\<in>{i..<n}. (- \<alpha>') (Suc k) - (- \<alpha>') k) = (- \<alpha>') n - (- \<alpha>') i"
+            by (rule sum_Suc_diff'[OF hi])
+          have h_cong: "\<And>k. (- \<alpha>') (Suc k) - (- \<alpha>') k = \<alpha>' k - \<alpha>' (Suc k)"
+            by (by100 simp)
+          have h_sum_same: "(\<Sum>k\<in>{i..<n}. (- \<alpha>') (Suc k) - (- \<alpha>') k)
+                             = (\<Sum>k\<in>{i..<n}. \<alpha>' k - \<alpha>' (Suc k))"
+            using h_cong by (by100 simp)
+          have h_right: "(- \<alpha>') n - (- \<alpha>') i = \<alpha>' i - \<alpha>' n" by (by100 simp)
+          show "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i - \<alpha>' n"
+            using h_tele_raw h_sum_same h_right by (by100 simp)
+        qed
+        have h_tele_\<alpha>': "\<And>i. i \<le> n \<Longrightarrow>
+            (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i"
+        proof -
+          fix i assume hi: "i \<le> n"
+          have h1: "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i - \<alpha>' n"
+            by (rule h_tele[OF hi])
+          have h2: "\<alpha>' n = 0" by (rule h\<alpha>'_n)
+          show "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i"
+            using h1 h2 by (by100 simp)
+        qed
+        (** Combine: Σ_{k<n} β k *_R bary = Σ_{i<n} α'(i) *_R xs ! i. **)
+        have h_sum_to_\<alpha>'_xs: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                               = (\<Sum>i<n. \<alpha>' i *\<^sub>R xs ! i)"
+        proof -
+          have h_s1: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                        = (\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
+                                    (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            using h_sum_combo h_sum_as_restrict by (by100 simp)
+          have h_s2: "(\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
+                                (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                      = (\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                                  (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            by (rule h_swap)
+          have h_s3: "(\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                                (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                      = (\<Sum>i<n. \<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            by (rule h_swap_clean)
+          have h_step1a: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                           = (\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                                       (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            using h_s1 h_s2 by (by100 simp)
+          have h_step1: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                         = (\<Sum>i<n. \<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+            by (rule HOL.trans[OF h_step1a h_s3])
+          have h_step2: "(\<Sum>i<n. \<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                          = (\<Sum>i<n. (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i)"
+            using h_factor_out by (by100 simp)
+          have h_cong_tele: "\<And>i. i < n \<Longrightarrow>
+                              (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i
+                              = \<alpha>' i *\<^sub>R xs ! i"
+          proof -
+            fix i assume hi: "i < n"
+            have h_tel: "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) = \<alpha>' i"
+              using h_tele_\<alpha>' hi by (by100 simp)
+            show "(\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i = \<alpha>' i *\<^sub>R xs ! i"
+              using h_tel by (by100 simp)
+          qed
+          have h_cong_tele_set:
+            "\<And>i. i \<in> {..<n} \<Longrightarrow>
+               (\<Sum>k = i..<n. \<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i = \<alpha>' i *\<^sub>R xs ! i"
+          proof -
+            fix i assume hi: "i \<in> {..<n}"
+            have hi': "i < n" using hi by (by100 simp)
+            show "(\<Sum>k = i..<n. \<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i = \<alpha>' i *\<^sub>R xs ! i"
+              by (rule h_cong_tele[OF hi'])
+          qed
+          have h_step3: "(\<Sum>i<n. (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i)
+                         = (\<Sum>i<n. \<alpha>' i *\<^sub>R xs ! i)"
+            using sum.cong[of "{..<n}" "{..<n}"
+                             "\<lambda>i. (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i"
+                             "\<lambda>i. \<alpha>' i *\<^sub>R xs ! i"] h_cong_tele_set
+            by (by100 blast)
+          have h_12: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
+                      = (\<Sum>i<n. (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k))) *\<^sub>R xs ! i)"
+            by (rule HOL.trans[OF h_step1 h_step2])
+          show ?thesis by (rule HOL.trans[OF h_12 h_step3])
+        qed
+        (** Σ_{i<n} α'(i) *_R xs ! i = x. **)
+        have h_\<alpha>'_to_x: "(\<Sum>i<n. \<alpha>' i *\<^sub>R xs ! i) = x"
+        proof -
+          have h_each_eq_set:
+            "\<And>i. i \<in> {..<n} \<Longrightarrow> \<alpha>' i *\<^sub>R xs ! i = \<alpha> (xs ! i) *\<^sub>R xs ! i"
+          proof -
+            fix i assume hi: "i \<in> {..<n}"
+            have hi': "i < n" using hi by (by100 simp)
+            have h_val: "\<alpha>' i = \<alpha> (xs ! i)" unfolding \<alpha>'_def using hi' by (by100 simp)
+            show "\<alpha>' i *\<^sub>R xs ! i = \<alpha> (xs ! i) *\<^sub>R xs ! i" using h_val by (by100 simp)
+          qed
+          have h_sum_rewrite: "(\<Sum>i<n. \<alpha>' i *\<^sub>R xs ! i)
+                                = (\<Sum>i<n. \<alpha> (xs ! i) *\<^sub>R xs ! i)"
+            using sum.cong[of "{..<n}" "{..<n}"
+                             "\<lambda>i. \<alpha>' i *\<^sub>R xs ! i"
+                             "\<lambda>i. \<alpha> (xs ! i) *\<^sub>R xs ! i"] h_each_eq_set
+            by (by100 blast)
+          (** \<Sum>_{i<n} \<alpha>(xs!i) *_R xs!i = sum_list (map (\<lambda>v. \<alpha> v *_R v) xs). **)
+          have h_to_list: "(\<Sum>i<n. \<alpha> (xs ! i) *\<^sub>R xs ! i)
+                            = sum_list (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs)"
+          proof -
+            have h_sum_nth_raw: "sum_list (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs)
+                                  = (\<Sum>i<length (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs).
+                                        (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) ! i)"
+              using sum_list_sum_nth[of "map (\<lambda>v. \<alpha> v *\<^sub>R v) xs"] atLeast0LessThan
+              by (by100 simp)
+            have h_len_eq: "length (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) = n"
+              unfolding n_def by (by100 simp)
+            have h_idx: "\<And>i. i < n \<Longrightarrow> (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) ! i = \<alpha> (xs ! i) *\<^sub>R xs ! i"
+              unfolding n_def by (by100 simp)
+            have h_sum_idx:
+              "(\<Sum>i<length (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs). (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) ! i)
+              = (\<Sum>i<n. (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) ! i)"
+              using h_len_eq by (by100 simp)
+            have h_sum_rewrite2: "(\<Sum>i<n. (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs) ! i)
+                                  = (\<Sum>i<n. \<alpha> (xs ! i) *\<^sub>R xs ! i)"
+              using h_idx by (by100 simp)
+            show ?thesis using h_sum_nth_raw h_sum_idx h_sum_rewrite2 by (by100 simp)
+          qed
+          have h_list_to_set: "sum_list (map (\<lambda>v. \<alpha> v *\<^sub>R v) xs)
+                                = (\<Sum>v\<in>set xs. \<alpha> v *\<^sub>R v)"
+            by (rule sum_list_distinct_conv_sum_set[OF hxs_dist])
+          have h_set_V: "(\<Sum>v\<in>set xs. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+            using hxs_set by (by100 simp)
+          show ?thesis
+            using h_sum_rewrite h_to_list h_list_to_set h_set_V h\<alpha>combo by (by100 simp)
+        qed
+        have h_combo_done: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k)) = x"
+          using h_sum_to_\<alpha>'_xs h_\<alpha>'_to_x by (by100 simp)
         show "x \<in> geotop_polyhedron bK"
           sorry
       qed
