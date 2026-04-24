@@ -7664,6 +7664,21 @@ proof -
   show ?thesis using h_ri_char h_witness by (by100 blast)
 qed
 
+(** CARRIER LEMMA for chains (proof sketch, for future session):
+    For a flag c in K with bary coords β on bary(set c), the K-carrier of
+    x = Σ β_σ · bary σ is σ_max_S, the max (by inclusion) σ in the support
+    S_β = {σ ∈ set c : β_σ > 0}.
+
+    Proof combines (all pieces now available as proven lemmas):
+    - Algebraic expression: via geotop_barycenter_eq_uV, bary σ = (1/|V(σ)|)·ΣV(σ).
+      Expand x = Σ_v α_v · v where α_v = Σ_{σ : v ∈ V(σ)} β_σ / |V(σ)|.
+    - Sum-swap via Fubini: sum α V(σ_top) = sum β (set c) = 1.
+    - Chain structure: for σ in S_β, V(σ) ⊆ V(σ_max_S) via geotop_chain_vertex_subset.
+    - Support of α on V(σ_top) = V(σ_max_S).
+    - geotop_bary_in_rel_interior_support[OF hV_top_fin hV_top_ai h_α_nn h_α_sum hx]:
+      x ∈ rel_interior (conv hull (support α)) = rel_interior σ_max_S.
+    - geotop_complex_point_in_unique_rel_interior: K-carrier is unique, = σ_max_S. **)
+
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
     polyhedral structure — convex sets respect the simplex decomposition.
