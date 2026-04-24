@@ -3388,8 +3388,137 @@ proof -
       with finite {τ ∈ K. τ ∩ U ≠ {}}. Each bK-simplex τ' near U has
       top(τ'_flag) ∈ this finite set, and each simplex has finitely many
       faces (2^|V|-1), bounding the flags ending at it. **)
+  have h_K_simp_all0: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  (** Sub-lemma: every τ ∈ bK is ⊆ last c for its flag c. **)
+  have h_bK_sub_top: "\<forall>\<tau>\<in>bK. \<forall>c\<in>flags. \<tau> = geotop_convex_hull (geotop_barycenter ` set c) \<longrightarrow> \<tau> \<subseteq> last c"
+  proof (intro ballI allI impI)
+    fix \<tau>' c assume h\<tau>'_bK: "\<tau>' \<in> bK" and hc_fl: "c \<in> flags"
+                 and h\<tau>'eq: "\<tau>' = geotop_convex_hull (geotop_barycenter ` set c)"
+    have hc_ne: "c \<noteq> []" using hc_fl unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_fl unfolding flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>\<sigma>\<^sub>1 \<sigma>\<^sub>2. \<sigma>\<^sub>1 \<subset> \<sigma>\<^sub>2) c"
+      using hc_fl unfolding flags_def by (by100 blast)
+    define \<sigma>\<^sub>t :: "'a set" where "\<sigma>\<^sub>t = last c"
+    have h\<sigma>\<^sub>t_in_c: "\<sigma>\<^sub>t \<in> set c" unfolding \<sigma>\<^sub>t_def using hc_ne by (by100 simp)
+    have h\<sigma>\<^sub>t_K: "\<sigma>\<^sub>t \<in> K" using h\<sigma>\<^sub>t_in_c hc_subK by (by100 blast)
+    have h_all_sub: "\<forall>s\<in>set c. s \<subseteq> \<sigma>\<^sub>t"
+    proof
+      fix s assume hs_c: "s \<in> set c"
+      show "s \<subseteq> \<sigma>\<^sub>t"
+      proof (cases "s = \<sigma>\<^sub>t")
+        case True thus ?thesis by (by100 simp)
+      next
+        case h_ne: False
+        have h_append: "butlast c @ [last c] = c" using hc_ne by (rule append_butlast_last_id)
+        have h_set_eq: "set c = set (butlast c) \<union> {last c}"
+        proof -
+          have "set c = set (butlast c @ [last c])" using h_append by (by100 simp)
+          also have "\<dots> = set (butlast c) \<union> set [last c]" by (by100 simp)
+          also have "\<dots> = set (butlast c) \<union> {last c}" by (by100 simp)
+          finally show ?thesis .
+        qed
+        have hs_split: "s \<in> set (butlast c) \<or> s = last c"
+          using hs_c h_set_eq by (by100 blast)
+        have hs_butlast: "s \<in> set (butlast c)" using hs_split h_ne unfolding \<sigma>\<^sub>t_def by (by100 blast)
+        have h_sw_split: "sorted_wrt (\<subset>) (butlast c @ [last c])"
+          using hc_sorted h_append by (by100 simp)
+        have h_sw_exp: "sorted_wrt (\<subset>) (butlast c)
+              \<and> sorted_wrt (\<subset>) [last c]
+              \<and> (\<forall>x\<in>set (butlast c). \<forall>y\<in>set [last c]. x \<subset> y)"
+          using h_sw_split sorted_wrt_append[of "(\<subset>)" "butlast c" "[last c]"]
+          by (by100 blast)
+        have h_aux: "\<forall>x\<in>set (butlast c). x \<subset> last c"
+          using h_sw_exp by (by100 simp)
+        have "s \<subset> \<sigma>\<^sub>t" using h_aux hs_butlast unfolding \<sigma>\<^sub>t_def by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+    have h_bary_sub: "geotop_barycenter ` set c \<subseteq> \<sigma>\<^sub>t"
+    proof
+      fix b assume hb: "b \<in> geotop_barycenter ` set c"
+      obtain s where hs_c: "s \<in> set c" and hb_eq: "b = geotop_barycenter s"
+        using hb by (by100 blast)
+      have hs_K: "s \<in> K" using hs_c hc_subK by (by100 blast)
+      have hs_simp: "geotop_is_simplex s" using hs_K h_K_simp_all0 by (by100 blast)
+      have hb_in_s: "b \<in> s" using hb_eq geotop_barycenter_in_simplex[OF hs_simp] by (by100 simp)
+      have hs_sub: "s \<subseteq> \<sigma>\<^sub>t" using hs_c h_all_sub by (by100 blast)
+      show "b \<in> \<sigma>\<^sub>t" using hb_in_s hs_sub by (by100 blast)
+    qed
+    have h\<sigma>\<^sub>t_cvx: "convex \<sigma>\<^sub>t"
+    proof -
+      obtain V\<^sub>t where hV\<^sub>t: "\<sigma>\<^sub>t = geotop_convex_hull V\<^sub>t"
+        using h\<sigma>\<^sub>t_K h_K_simp_all0 unfolding geotop_is_simplex_def by (by100 blast)
+      have hV\<^sub>t_HOL: "\<sigma>\<^sub>t = convex hull V\<^sub>t"
+        using hV\<^sub>t geotop_convex_hull_eq_HOL by (by100 simp)
+      show ?thesis using hV\<^sub>t_HOL convex_convex_hull by (by100 simp)
+    qed
+    have h_hull_HOL_sub: "convex hull (geotop_barycenter ` set c) \<subseteq> \<sigma>\<^sub>t"
+      using h_bary_sub h\<sigma>\<^sub>t_cvx hull_minimal[of "geotop_barycenter ` set c" \<sigma>\<^sub>t convex]
+      by (by100 blast)
+    have h\<tau>'_HOL: "\<tau>' = convex hull (geotop_barycenter ` set c)"
+      using h\<tau>'eq geotop_convex_hull_eq_HOL by (by100 simp)
+    show "\<tau>' \<subseteq> last c" using h\<tau>'_HOL h_hull_HOL_sub unfolding \<sigma>\<^sub>t_def by (by100 simp)
+  qed
+  have hK_K3_of_K: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
   have h_bK_K3: "\<forall>\<sigma>\<in>bK. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>bK. \<tau> \<inter> U \<noteq> {}}"
-    sorry \<comment> \<open>D-step 1.3: K.3 (local finiteness) via K.3-of-K + finite face count.\<close>
+  proof (rule ballI)
+    fix \<tau> assume h\<tau>_bK: "\<tau> \<in> bK"
+    obtain c where hc_flag: "c \<in> flags"
+               and h\<tau>_hull: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<tau>_bK unfolding bK_def by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
+    define \<sigma> :: "'a set" where "\<sigma> = last c"
+    have h\<sigma>_in_c: "\<sigma> \<in> set c" unfolding \<sigma>_def using hc_ne by (by100 simp)
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_in_c hc_subK by (by100 blast)
+    have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      using h_bK_sub_top h\<tau>_bK hc_flag h\<tau>_hull unfolding \<sigma>_def by (by100 blast)
+    have h_ex_U: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<omega>\<in>K. \<omega> \<inter> U \<noteq> {}}"
+      using hK_K3_of_K h\<sigma>_K by (by100 blast)
+    obtain U where hU_open: "open U" and h\<sigma>_U: "\<sigma> \<subseteq> U"
+               and hT_fin_raw: "finite {\<omega>\<in>K. \<omega> \<inter> U \<noteq> {}}"
+      using h_ex_U by (by100 blast)
+    have h\<tau>_U: "\<tau> \<subseteq> U" using h\<tau>_sub_\<sigma> h\<sigma>_U by (by100 blast)
+    define T where "T = {\<omega>\<in>K. \<omega> \<inter> U \<noteq> {}}"
+    have hT_sub: "T \<subseteq> K" unfolding T_def by (by100 blast)
+    have hT_finite: "finite T" unfolding T_def using hT_fin_raw by (by100 simp)
+    have h_flags_fin: "finite {c' \<in> geotop_flags K. last c' \<in> T}"
+      by (rule geotop_complex_flags_with_top_in_finite_finite[OF hK hT_sub hT_finite])
+    define F where "F = (\<lambda>c'::'a set list. geotop_convex_hull (geotop_barycenter ` set c'))"
+    have h_subset:
+      "{\<tau>'\<in>bK. \<tau>' \<inter> U \<noteq> {}} \<subseteq> F ` {c' \<in> geotop_flags K. last c' \<in> T}"
+    proof
+      fix \<tau>' assume h\<tau>'_in: "\<tau>' \<in> {\<tau>'\<in>bK. \<tau>' \<inter> U \<noteq> {}}"
+      have h\<tau>'_bK: "\<tau>' \<in> bK" using h\<tau>'_in by (by100 blast)
+      have h\<tau>'_meet: "\<tau>' \<inter> U \<noteq> {}" using h\<tau>'_in by (by100 blast)
+      obtain c' where hc'_flag: "c' \<in> flags"
+                and h\<tau>'_hull: "\<tau>' = geotop_convex_hull (geotop_barycenter ` set c')"
+        using h\<tau>'_bK unfolding bK_def by (by100 blast)
+      have hc'_ne: "c' \<noteq> []" using hc'_flag unfolding flags_def by (by100 blast)
+      have hc'_subK: "set c' \<subseteq> K" using hc'_flag unfolding flags_def by (by100 blast)
+      define \<sigma>' where "\<sigma>' = last c'"
+      have h\<sigma>'_in: "\<sigma>' \<in> set c'" unfolding \<sigma>'_def using hc'_ne by (by100 simp)
+      have h\<sigma>'_K: "\<sigma>' \<in> K" using h\<sigma>'_in hc'_subK by (by100 blast)
+      have h\<tau>'_sub_\<sigma>': "\<tau>' \<subseteq> \<sigma>'"
+        using h_bK_sub_top h\<tau>'_bK hc'_flag h\<tau>'_hull unfolding \<sigma>'_def by (by100 blast)
+      have h\<sigma>'_meet: "\<sigma>' \<inter> U \<noteq> {}" using h\<tau>'_meet h\<tau>'_sub_\<sigma>' by (by100 blast)
+      have h\<sigma>'_T: "\<sigma>' \<in> T" unfolding T_def using h\<sigma>'_K h\<sigma>'_meet by (by100 blast)
+      have hc'_in_geotop: "c' \<in> geotop_flags K"
+        using hc'_flag h_flags_eq_geotop by (by100 simp)
+      have hc'_last: "last c' \<in> T" using h\<sigma>'_T unfolding \<sigma>'_def by (by100 simp)
+      have h\<tau>'_F: "\<tau>' = F c'" unfolding F_def using h\<tau>'_hull by (by100 simp)
+      show "\<tau>' \<in> F ` {c' \<in> geotop_flags K. last c' \<in> T}"
+        using hc'_in_geotop hc'_last h\<tau>'_F by (by100 blast)
+    qed
+    have h_img_fin: "finite (F ` {c' \<in> geotop_flags K. last c' \<in> T})"
+      using h_flags_fin by (by100 simp)
+    have h_meet_fin: "finite {\<tau>'\<in>bK. \<tau>' \<inter> U \<noteq> {}}"
+      using h_subset h_img_fin finite_subset by (by100 blast)
+    show "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>bK. \<tau>' \<inter> U \<noteq> {}}"
+      using hU_open h\<tau>_U h_meet_fin by (by100 blast)
+  qed
   (** Assemble K.0–K.3 into complex predicate. **)
   have h_bK_complex: "geotop_is_complex bK"
     unfolding geotop_is_complex_def
