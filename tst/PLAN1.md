@@ -693,3 +693,53 @@ lemma big:
 ```
 
 Each lemma gets its own 120s slice of the session budget.
+
+## Session progress 2026-04-23 (continuation)
+
+### Closed this session (3 major sorries + infrastructure)
+
+1. **`geotop_complex_flag_barycenter_affine_independent`** (line ~3358,
+   previously D1.0 core sorry, ~155 lines). Proof by `rev_induct` on `c`:
+   - Base (singleton): `affine_independent_1`.
+   - Step `init @ [σ]`: IH gives AI on `bary ` set init`. Let `σ_prev = last init ⊊ σ`,
+     both in K. Every `s ∈ set init ⊆ σ_prev` (sorted_wrt butlast), so
+     `bary ` set init ⊆ σ_prev`, hence `aff hull ⊆ aff hull σ_prev`. But
+     `bary σ ∈ rel_interior σ`, and `aff hull σ_prev ∩ rel_interior σ = ∅` via
+     `proper_subset_aff_hull_disjoint_rel_interior`. Close with
+     `affine_independent_insert` + image reshaping.
+
+2. **Sd block reorder** (commit edab4fe5). Moved `geotop_classical_Sd_exists`
+   + companion wrappers from line 2118 down to ~3316, after all D-support
+   helpers but before `geotop_mesh_iterated_Sd_tends_to_zero`. This lets the
+   classical proof use `flag_barycenter_card`, `flag_barycenter_affine_indep`,
+   `flags_with_top_in_finite_finite`, etc. Type classes simultaneously
+   tightened from `real_normed_vector` to `euclidean_space` on all Sd lemmas
+   (no downstream breakage — GeoTop.thy only uses the SOME-definition).
+
+3. **`h_bK_K0`** (D-step 1.0, K.0 simplex property of bK). Each `σ ∈ bK`
+   is `conv hull (bary ` set c)` for some flag c. By flag_barycenter_card,
+   `|V| = length c`. By flag_barycenter_affine_independent, V is AI. By
+   `ai_imp_general_position`, in general position. Assemble `geotop_is_simplex`.
+
+4. **`h_bK_K3`** (D-step 1.3, K.3 local finiteness of bK). Shared sub-lemma
+   `h_bK_sub_top`: every `τ ∈ bK` is contained in `last c` of its flag
+   (same argument as the refines proof). Apply K.3 of K to get open U
+   around `last c` with finite `T = {ω∈K. ω ∩ U ≠ {}}`. Image of
+   `{c' ∈ geotop_flags K. last c' ∈ T}` under `conv-hull ∘ bary`
+   supersets `{τ' ∈ bK. τ' ∩ U ≠ {}}`, and flags-with-top-in-finite-finite
+   gives finite source set.
+
+### Remaining D sorries (6 total)
+
+- **K.1 face closure** (line ~3379). HOL face of `σ = conv hull (bary ` set c)`
+  comes from `W ⊆ bary ` set c`; via barycenter_inj_on, `W = bary ` S'` for
+  unique `S' ⊆ set c`; `S'` sorts to a flag `c'`, giving τ ∈ bK.
+- **K.2 intersection-face** (line ~3385). Two bK-simplices from flags c1, c2;
+  intersection is conv hull of a common sub-flag. Harder than K.1.
+- **D2a polyhedron eq** (line ~3619). Each `σ ∈ K` equals union of
+  barycentric simplices of subdivision; deep geometric fact.
+- **D4+5 dim + mesh** (line ~3734). Moise early.tex Lemma 4.11.
+- **E Lebesgue bridge** (line 4625). Ties h_leb_raw to diameter + simplex tightening.
+- **F h_f_exists** (line 4854). Classical barycentric extension; ~200 lines.
+
+Sorry count: 9 → 6 real content sorries. Build stable: 8s cached, ~42s fresh.
