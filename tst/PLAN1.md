@@ -795,3 +795,34 @@ Remaining targeted sorries:
 All remaining sorries are genuinely deep classical results requiring
 100-300 lines each (plus support lemmas). Infrastructure is now rich
 enough that each can be attacked independently in future sessions.
+
+## Session progress 2026-04-24 (continuation 3)
+
+### Additional D infrastructure lemmas (3 FULLY PROVED)
+
+1. **geotop_barycenter_eq_uV**: bary sigma = (1/|V|) * sum_{w in V} w, pins
+   down SOME-definition via simplex_vertices uniqueness. ~40 lines.
+
+2. **geotop_barycenter_to_vertex_bound**: ||bary sigma - v|| <= (k/(k+1)) * diameter sigma
+   for v in V, k+1 = |V|. Proof via bary - v = (1/(k+1)) * sum_{w in V\{v}} (w - v),
+   triangle inequality, each term bounded by diameter, card(V\{v}) = k. ~150 lines.
+
+3. **geotop_barycenter_to_point_bound**: ||bary sigma - x|| <= (k/(k+1)) * diameter sigma
+   for ANY x in sigma (extension of vertex bound via convex decomposition). ~120 lines.
+
+4. **geotop_complex_chain_barycenter_bound**: for s subseteq t in complex K,
+   ||bary s - bary t|| <= (k_t/(k_t+1)) * diameter t. Direct via bary_to_point_bound.
+
+These provide the numerical ingredients for h_mesh_shrink (Moise Lemma 4.11
+second part). The remaining step is the "convex decomposition" argument:
+for x, y in chain-simplex tau, write both as convex combinations of the
+chain barycenters, then Σ_{i,j} α_i β_j ||bary s_i - bary s_j|| <= max
+pair bound. This plus geotop_diameter-to-HOL-diameter bridge closes D5.
+
+### Sorry count remains 5
+
+- h_K2_intersect_eq
+- h_poly_sup (D2a-sup)
+- h_mesh_shrink (D5 — infrastructure almost complete)
+- h_delta_bridge (E)
+- h_f_exists (F)
