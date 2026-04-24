@@ -506,6 +506,30 @@ Net change from scaffold: +2 (1 D sorry → 3 D sub-sorries, then D3 closed).
 Structural progress: D's proof scaffold is visible and each step is
 independently tractable.
 
+### 2026-04-24 further: D step 2 split + step 2b CLOSED
+
+**D step 2 split** into:
+- **2a polyhedron eq**: |bK| = |K| (sorry; needs barycentric decomposition)
+- **2b refines bK K**: **FULLY PROVED** (~80 lines) using:
+  - `geotop_barycenter_in_simplex` (proven this turn)
+  - sorted_wrt flag chain gives each s ⊆ last c
+  - convex hull minimality + simplex convexity
+
+D's concrete sub-goals now:
+- D1: bK is a complex
+- D2a: polyhedron bK = polyhedron K
+- D3: ✓ 0-simplex preservation
+- D2b: ✓ refines bK K
+- D4+5: dim + mesh shrinkage
+
+Remaining real sorries: 5 (D1, D2a, D4+5, E, F).
+
+Progress pattern: each D sub-sorry decomposes further into provable/deferred
+parts. Total concrete progress: 2 D sub-sorries fully proven + 1 foundational
+helper (barycenter_in_simplex). Net session: 3 → 5 real sorries with
+substantial structural + infrastructure progress; true closure will come
+as remaining D-sub-sorries (polyhedron eq, complex, dim/mesh) are closed.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
