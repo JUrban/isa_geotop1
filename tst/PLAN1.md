@@ -856,3 +856,43 @@ we get diameter τ ≤ (n/(n+1)) mesh K. Sup gives mesh bK bound.
 
 Infrastructure ready: chain_barycenter_bound (have), bary_to_point_bound
 (have), bK_elt_bounded (have). Missing: double-decomposition lemma.
+
+## Session progress 2026-04-24 (continuation 5)
+
+### Additional FULLY PROVEN infrastructure for mesh_shrink (4 lemmas)
+
+1. **geotop_conv_hull_pt_bound**: for x in conv hull V with pointwise ||v-y|| <= B,
+   ||x-y|| <= B via convex decomposition + triangle + sum alpha = 1.
+
+2. **geotop_conv_hull_pair_bound**: for x, y both in conv hull V with pairwise
+   vertex norms <= B, ||x-y|| <= B. Two applications of pt_bound + norm_minus_commute.
+
+3. **geotop_diameter_le_from_pairs**: if pointwise pair bound B, geotop_diameter <= B.
+   Direct double cSUP_least.
+
+4. **geotop_diameter_ge_HOL_diameter**: HOL diameter <= geotop_diameter for nonempty
+   bounded M. Uses triangle bound to establish bdd_above, then nested cSUP_upper
+   to show each pair distance dominated by the iterated SUP, then cSUP_least
+   transfers to HOL diameter. ~100 lines.
+
+### h_mesh_shrink scaffolded into 2 sorries
+
+- h_tau_diam_bound: per-chain-simplex bound (classical geometric fact, infrastructure
+  now COMPLETE to prove it — just needs assembly).
+- h_mesh_K_nn: nonneg of geotop_mesh K (edge case, forward reference).
+
+Proof plan for h_tau_diam_bound (now fully tractable):
+1. For tau in bK with flag c, V = bary ` set c.
+2. For (v, w) = (bary s, bary t) with s, t in set c:
+   - Via sorted_wrt, WLOG s subset t (or equal, giving 0).
+   - chain_barycenter_bound: ||bary s - bary t|| <= (k_t/(k_t+1)) * diameter t (HOL).
+   - k_t <= n (from hypothesis + flag elements in K).
+   - diameter t <= geotop_diameter t (via diameter_ge_HOL_diameter).
+   - geotop_diameter t <= geotop_mesh K (cSUP_upper, assumes bdd_above).
+   - Hence ||bary s - bary t|| <= (n/(n+1)) * geotop_mesh K.
+3. By conv_hull_pair_bound: ||x-y|| <= (n/(n+1)) * geotop_mesh K for all x, y in tau.
+4. By diameter_le_from_pairs: geotop_diameter tau <= (n/(n+1)) * geotop_mesh K.
+
+### Sorry count: 6
+
+Fully-proven assembly work remaining for h_tau_diam_bound (mostly mechanical).
