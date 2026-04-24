@@ -462,6 +462,34 @@ With these, closing E requires ONLY the top-level inductive argument:
 The induction could be ~80-100 lines. Total for E: ~100-120 lines (down
 from original 150 estimate thanks to these helpers).
 
+### Subtle issue discovered: Moise's proof needs more than star cover
+
+The naive Lebesgue-via-vertex-stars argument gives T ⊆ closed_star(v) =
+⋃{σ ∈ K' : v ∈ σ}, NOT T ⊆ single σ ∋ v. Example: K' = {[0, 0.5],
+[0.5, 1], {0}, {0.5}, {1}}, v = {0.5}, T = [0.3, 0.7] is convex,
+T ⊆ open_star(v) = (0, 1), but T is not in any single simplex of K'.
+
+So the claim "T convex ⊆ open_star K' v ⟹ T ⊆ single σ" is FALSE.
+
+**Correct classical argument**: use a STRONGER Lebesgue-like lemma
+(early.tex Lemma 4.12):
+
+> ∃δ > 0. ∀T ⊆ |K'|. diam T < δ ⟹ ∃σ ∈ K'. T ⊆ σ.
+
+Proof uses the "barycentric star" cover (not just vertex star), where
+each barycentric star is guaranteed to fit in a single simplex.
+Specifically, the barycentric subdivision Sd(K') has vertex stars that
+are (subsets of) unique simplices of K'. This links to D: the
+barycentric subdivision construction is needed for a clean E proof.
+
+**Alternative**: Moise's argument uses that T has diameter < δ where
+δ is less than (half of) the minimum edge length in K'. This is
+provable via careful geometric bounds but still substantive.
+
+**Conclusion**: E is tighter than initially thought. D and E may
+need to be tackled together, using Sd-based star cover for the
+Lebesgue argument. ~250 total lines (D + E tightly coupled).
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
