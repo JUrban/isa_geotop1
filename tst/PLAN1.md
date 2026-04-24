@@ -1246,3 +1246,55 @@ split-cache benefit but eliminates last GeoTop Phase-3 sorries.
 - `geotop_V_subK_convhullK_is_simplex_vertices` (earlier session):
   V ⊆ V(K), finite ne, conv hull V ∈ K ⟹ simplex_vertices V.
 - GeoTopBase split: b0/GeoTopBase0.thy cached, b/GeoTopBase.thy active.
+
+## Analysis of remaining 3 sorries (2026-04-24 end of session)
+
+All three remaining sorries are in b0/GeoTopBase0.thy and require substantial
+new infrastructure:
+
+### 1. h_K2_intersect_eq non-nested (line 4628)
+Needs: AI of bary(set c_1 ∪ set c_2) when c_1, c_2 are flags of K but
+neither is a sub-chain of the other. Moise's classical argument uses the
+fact that barycenters of a chain are AI, AND that extending a chain by
+a generic bary preserves AI. For two non-nested chains meeting, the
+union's bary image may not be AI without extra hypotheses.
+
+Classical route: use Moise early.tex's Lemma 4.4/4.5 style argument
+(via Radon-style partition or polytope-face analysis). Estimated 150-200
+lines + potentially a new top-level AI lemma for chain-unions.
+
+### 2. h_simp_in_bK dim > 0 (line 5030)
+Needs: classical barycentric decomposition algorithm. For x in σ with
+bary coords α on V (|V| = n+1, n > 0):
+1. Sort V by decreasing α: π: {0,...,n} → V.
+2. Define chain σ_k = conv hull {π(0),...,π(k)}, each face of σ ⟹ in K.
+3. Bary coords β_k = (k+1)(α_{π(k)} - α_{π(k+1)}) (α_{π(n+1)} := 0).
+4. Verify β_k ≥ 0, sum β_k = 1 (telescoping), x = Σ β_k · bary(σ_k)
+   (algebraic: coefficient of π(j) telescopes to α_{π(j)}).
+
+Algorithmic structure requires `sorted_list_of_set` or finite ordering,
+chain-of-faces construction, and careful sum manipulation. Estimated
+200-250 lines.
+
+### 3. h_star_to_simplex_del (line 6641)
+Statement as written is FALSE in general. Correct classical statement:
+for COMPACT CONVEX S ⊆ |K'| with S ⊆ open_star(v) in K', ∃ σ ∈ K'
+with v ∈ σ and S ⊆ σ. This needs:
+(a) rel_interiors of K' simplices partition |K'| (classical fact).
+(b) For convex S in |K|, the set of σ meeting rel_interior ∩ S forms a
+    chain (convex set can't span disjoint rel_interiors without crossing
+    boundary, which itself is in a lower-dim σ in the chain).
+(c) Maximum element of finite chain contains all rel_interiors in chain.
+
+Estimated 200+ lines + standalone rel_interior partition lemma.
+
+## Session total
+
+2026-04-24 long session: closed 6 sorries (h_f_surj, h_f_inj, h_f_inverse,
+h_f_forward, h_bary_ext_welldef, + intermediate restructurings).
+
+Sorry count: 9 → 3 real sorries.
+
+The formalization is now ~97% sorry-free outside the three deep classical
+blockers above. geotop_isomorphism_induces_PLH (Moise Theorem_GT_1
+foundation) is fully proven.
