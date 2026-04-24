@@ -11305,6 +11305,95 @@ proof (rule inj_onI)
   show "x = y" using hx_eq hy_eq h_uxy_eq by (by100 simp)
 qed
 
+(** Phase 1.A: inner-product projection image of a closed segment.
+    The image is the real closed segment between the projected endpoints. **)
+lemma geotop_inner_diff_image_closed_segment:
+  fixes a b :: "'a::euclidean_space"
+  assumes hab: "a \<noteq> b"
+  shows "(\<lambda>x. inner (b - a) x) ` closed_segment a b
+       = closed_segment (inner (b - a) a) (inner (b - a) b)"
+proof -
+  let ?\<pi> = "\<lambda>x. inner (b - a) x"
+  have h_ba_pos: "0 < inner (b - a) (b - a)" using hab by (by100 simp)
+  have h_ba_eq: "inner (b - a) (b - a) = inner (b - a) b - inner (b - a) a"
+    by (rule inner_diff_right)
+  have h_\<pi>_a_lt_b: "?\<pi> a < ?\<pi> b" using h_ba_eq h_ba_pos by (by100 linarith)
+  (** Real closed_segment = interval. **)
+  have h_cseg_piab: "closed_segment (?\<pi> a) (?\<pi> b) = {?\<pi> a..?\<pi> b}"
+    using h_\<pi>_a_lt_b closed_segment_eq_real_ivl by (by100 simp)
+  (** Parametrization identities. **)
+  have h_inner_add: "\<And>u::real. inner (b - a) ((1-u) *\<^sub>R a + u *\<^sub>R b)
+        = inner (b - a) ((1-u) *\<^sub>R a) + inner (b - a) (u *\<^sub>R b)"
+    by (rule inner_add_right)
+  have h_sc1: "\<And>u::real. inner (b - a) ((1-u) *\<^sub>R a) = (1-u) * inner (b - a) a"
+    by (rule inner_scaleR_right)
+  have h_sc2: "\<And>u::real. inner (b - a) (u *\<^sub>R b) = u * inner (b - a) b"
+    by (rule inner_scaleR_right)
+  have h_\<pi>_param: "\<And>u::real. ?\<pi> ((1-u) *\<^sub>R a + u *\<^sub>R b) = (1-u) * ?\<pi> a + u * ?\<pi> b"
+    using h_inner_add h_sc1 h_sc2 by (by100 simp)
+  show ?thesis
+  proof
+    show "?\<pi> ` closed_segment a b \<subseteq> closed_segment (?\<pi> a) (?\<pi> b)"
+    proof
+      fix y assume hy_img: "y \<in> ?\<pi> ` closed_segment a b"
+      obtain x where hx_seg: "x \<in> closed_segment a b" and hyx: "y = ?\<pi> x"
+        using hy_img by (by100 blast)
+      obtain u where hu_lb: "0 \<le> u" and hu_ub: "u \<le> 1"
+                 and hx_eq: "x = (1-u) *\<^sub>R a + u *\<^sub>R b"
+        using hx_seg unfolding closed_segment_def by (by100 blast)
+      have h_\<pi>_x_val: "?\<pi> x = (1-u) * ?\<pi> a + u * ?\<pi> b"
+        using hx_eq h_\<pi>_param by (by100 simp)
+      have h_y_val: "y = (1-u) * ?\<pi> a + u * ?\<pi> b" using hyx h_\<pi>_x_val by (by100 simp)
+      have h_ba_ge: "?\<pi> b - ?\<pi> a \<ge> 0" using h_\<pi>_a_lt_b by (by100 linarith)
+      have h_y_lb: "?\<pi> a \<le> y"
+      proof -
+        have h_diff_form: "y - ?\<pi> a = u * (?\<pi> b - ?\<pi> a)" using h_y_val by (by100 argo)
+        have h_prod_nn: "u * (?\<pi> b - ?\<pi> a) \<ge> 0"
+          by (rule mult_nonneg_nonneg[OF hu_lb h_ba_ge])
+        have h_ya_nn: "y - ?\<pi> a \<ge> 0" using h_diff_form h_prod_nn by (by100 simp)
+        show ?thesis using h_ya_nn by (by100 simp)
+      qed
+      have h_y_ub: "y \<le> ?\<pi> b"
+      proof -
+        have h_diff_form: "?\<pi> b - y = (1-u) * (?\<pi> b - ?\<pi> a)" using h_y_val by (by100 argo)
+        have h_1mu_nn: "1 - u \<ge> 0" using hu_ub by (by100 simp)
+        have h_prod_nn: "(1-u) * (?\<pi> b - ?\<pi> a) \<ge> 0"
+          by (rule mult_nonneg_nonneg[OF h_1mu_nn h_ba_ge])
+        have h_by_nn: "?\<pi> b - y \<ge> 0" using h_diff_form h_prod_nn by (by100 simp)
+        show ?thesis using h_by_nn by (by100 simp)
+      qed
+      have h_y_ivl: "y \<in> {?\<pi> a..?\<pi> b}" using h_y_lb h_y_ub by (by100 simp)
+      show "y \<in> closed_segment (?\<pi> a) (?\<pi> b)" using h_y_ivl h_cseg_piab by (by100 simp)
+    qed
+    show "closed_segment (?\<pi> a) (?\<pi> b) \<subseteq> ?\<pi> ` closed_segment a b"
+    proof
+      fix y assume hy: "y \<in> closed_segment (?\<pi> a) (?\<pi> b)"
+      have h_y_ivl: "y \<in> {?\<pi> a..?\<pi> b}" using hy h_cseg_piab by (by100 simp)
+      have h_y_lb: "?\<pi> a \<le> y" using h_y_ivl by (by100 simp)
+      have h_y_ub: "y \<le> ?\<pi> b" using h_y_ivl by (by100 simp)
+      have h_ba_pos_real: "?\<pi> b - ?\<pi> a > 0" using h_\<pi>_a_lt_b by (by100 linarith)
+      define u where "u = (y - ?\<pi> a) / (?\<pi> b - ?\<pi> a)"
+      have hu_lb: "0 \<le> u" unfolding u_def using h_y_lb h_ba_pos_real by (by100 simp)
+      have hu_ub: "u \<le> 1"
+      proof -
+        have h_num_le: "y - ?\<pi> a \<le> ?\<pi> b - ?\<pi> a" using h_y_ub by (by100 simp)
+        have h_div_le: "(y - ?\<pi> a) / (?\<pi> b - ?\<pi> a) \<le> 1"
+          using h_num_le h_ba_pos_real divide_le_eq_1_pos by (by100 blast)
+        show ?thesis unfolding u_def using h_div_le by (by100 simp)
+      qed
+      have h_y_from_u: "y = ?\<pi> a + u * (?\<pi> b - ?\<pi> a)"
+        unfolding u_def using h_ba_pos_real by (by100 simp)
+      have hy_param: "y = (1-u) * ?\<pi> a + u * ?\<pi> b" using h_y_from_u by (by100 argo)
+      let ?x = "(1-u) *\<^sub>R a + u *\<^sub>R b"
+      have h_x_seg: "?x \<in> closed_segment a b"
+        unfolding closed_segment_def using hu_lb hu_ub by (by100 blast)
+      have h_\<pi>_x: "?\<pi> ?x = (1-u) * ?\<pi> a + u * ?\<pi> b" by (rule h_\<pi>_param)
+      have h_\<pi>_x_y: "?\<pi> ?x = y" using h_\<pi>_x hy_param by (by100 simp)
+      show "y \<in> ?\<pi> ` closed_segment a b" using h_x_seg h_\<pi>_x_y by (by100 blast)
+    qed
+  qed
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
