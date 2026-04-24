@@ -3155,15 +3155,104 @@ qed
     affine_dependent_explicit_finite), α = β, but β has zero coords on
     V\W nonempty while α has all positive coords — contradiction. **)
 lemma geotop_affine_hull_proper_subset_disjoint_rel_interior:
-  fixes V :: "'a::real_normed_vector set"
+  fixes V :: "'a::euclidean_space set"
   fixes W :: "'a set"
   assumes hVfin: "finite V"
   assumes hV_ai: "\<not> affine_dependent V"
   assumes hW_sub: "W \<subseteq> V" and hW_ne: "W \<noteq> {}" and hW_proper: "W \<noteq> V"
   shows "affine hull W \<inter> rel_interior (convex hull V) = {}"
-  sorry \<comment> \<open>D1.0 classical: aff hull proper subset ∩ rel_interior = ∅,
-              via barycentric coord uniqueness from affine independence.
-              ~60 line proof using affine_hull_finite_iff + affine_dependent_explicit_finite.\<close>
+proof (rule equals0I)
+  fix y assume hy: "y \<in> affine hull W \<inter> rel_interior (convex hull V)"
+  have hy_aff: "y \<in> affine hull W" using hy by (by100 blast)
+  have hy_ri: "y \<in> rel_interior (convex hull V)" using hy by (by100 blast)
+  (** From rel_interior. **)
+  have h_ri_char: "rel_interior (convex hull V)
+                   = {y. \<exists>u. (\<forall>x\<in>V. 0 < u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = y}"
+    using rel_interior_convex_hull_explicit[OF hV_ai] by (by100 simp)
+  obtain \<alpha> where h\<alpha>_pos: "\<forall>v\<in>V. 0 < \<alpha> v"
+              and h\<alpha>_sum: "sum \<alpha> V = 1"
+              and h\<alpha>_combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = y"
+    using hy_ri h_ri_char by (by100 blast)
+  (** From affine hull of W. **)
+  have hWfin: "finite W" using hVfin hW_sub finite_subset by (by100 blast)
+  have h_aff_char: "affine hull W = {y. \<exists>u. sum u W = 1 \<and> (\<Sum>v\<in>W. u v *\<^sub>R v) = y}"
+    by (rule affine_hull_finite[OF hWfin])
+  obtain \<beta> where h\<beta>_sum: "sum \<beta> W = 1"
+              and h\<beta>_combo: "(\<Sum>w\<in>W. \<beta> w *\<^sub>R w) = y"
+    using hy_aff h_aff_char by (by100 blast)
+  (** Extend β to V via zero on V\W. **)
+  define \<beta>' where "\<beta>' = (\<lambda>v. if v \<in> W then \<beta> v else (0::real))"
+  have h\<beta>'_W: "\<And>w. w \<in> W \<Longrightarrow> \<beta>' w = \<beta> w" unfolding \<beta>'_def by (by100 simp)
+  have h\<beta>'_outside: "\<And>v. v \<in> V - W \<Longrightarrow> \<beta>' v = 0" unfolding \<beta>'_def by (by100 simp)
+  have h_V_decomp: "V = W \<union> (V - W)" using hW_sub by (by100 blast)
+  have h_disj: "W \<inter> (V - W) = {}" by (by100 blast)
+  have hWfin_sub: "finite W" by (rule hWfin)
+  have hVWfin: "finite (V - W)" using hVfin by (by100 simp)
+  have h\<beta>'_sum_V: "sum \<beta>' V = 1"
+  proof -
+    have h_split: "sum \<beta>' V = sum \<beta>' (V - W) + sum \<beta>' W"
+      by (rule sum.subset_diff[OF hW_sub hVfin])
+    have h_W_eq: "sum \<beta>' W = sum \<beta> W"
+      using h\<beta>'_W by (by100 simp)
+    have h_VW_zero: "sum \<beta>' (V - W) = 0"
+      using h\<beta>'_outside by (by100 simp)
+    show ?thesis using h_split h_W_eq h_VW_zero h\<beta>_sum by (by100 simp)
+  qed
+  have h\<beta>'_combo_V: "(\<Sum>v\<in>V. \<beta>' v *\<^sub>R v) = y"
+  proof -
+    have h_split: "(\<Sum>v\<in>V. \<beta>' v *\<^sub>R v)
+                   = (\<Sum>v\<in>V - W. \<beta>' v *\<^sub>R v) + (\<Sum>v\<in>W. \<beta>' v *\<^sub>R v)"
+      by (rule sum.subset_diff[OF hW_sub hVfin])
+    have h_W_eq: "(\<Sum>v\<in>W. \<beta>' v *\<^sub>R v) = (\<Sum>w\<in>W. \<beta> w *\<^sub>R w)"
+      using h\<beta>'_W by (by100 simp)
+    have h_VW_zero: "(\<Sum>v\<in>V - W. \<beta>' v *\<^sub>R v) = 0"
+      using h\<beta>'_outside by (by100 simp)
+    show ?thesis using h_split h_W_eq h_VW_zero h\<beta>_combo by (by100 simp)
+  qed
+  (** Uniqueness: α = β' on V from affine independence. **)
+  define \<gamma> where "\<gamma> = (\<lambda>v. \<alpha> v - \<beta>' v)"
+  have h\<gamma>_sum: "sum \<gamma> V = 0"
+  proof -
+    have h_sub: "sum (\<lambda>v. \<alpha> v - \<beta>' v) V = sum \<alpha> V - sum \<beta>' V"
+      by (rule sum_subtractf)
+    have h_val: "sum (\<lambda>v. \<alpha> v - \<beta>' v) V = 1 - 1"
+      using h_sub h\<alpha>_sum h\<beta>'_sum_V by (by100 simp)
+    show ?thesis unfolding \<gamma>_def using h_val by (by100 simp)
+  qed
+  have h\<gamma>_combo: "(\<Sum>v\<in>V. \<gamma> v *\<^sub>R v) = 0"
+  proof -
+    have h_each: "\<And>v. \<gamma> v *\<^sub>R v = \<alpha> v *\<^sub>R v - \<beta>' v *\<^sub>R v"
+      unfolding \<gamma>_def by (rule scaleR_diff_left)
+    have h_sum_eq: "(\<Sum>v\<in>V. \<gamma> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v - \<beta>' v *\<^sub>R v)"
+      using h_each by (by100 simp)
+    have h_split: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v - \<beta>' v *\<^sub>R v)
+                   = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<beta>' v *\<^sub>R v)"
+      by (rule sum_subtractf)
+    show ?thesis using h_sum_eq h_split h\<alpha>_combo h\<beta>'_combo_V by (by100 simp)
+  qed
+  (** Apply affine_dependent_explicit_finite contrapositive. **)
+  have h_not_exists: "\<not> (\<exists>U. sum U V = 0 \<and> (\<exists>v\<in>V. U v \<noteq> 0) \<and> (\<Sum>v\<in>V. U v *\<^sub>R v) = 0)"
+    using hV_ai affine_dependent_explicit_finite[OF hVfin] by (by100 blast)
+  have h\<gamma>_all_zero: "\<forall>v\<in>V. \<gamma> v = 0"
+  proof (rule ccontr)
+    assume "\<not> (\<forall>v\<in>V. \<gamma> v = 0)"
+    then obtain v0 where hv0: "v0 \<in> V" and hv0_ne: "\<gamma> v0 \<noteq> 0" by (by100 blast)
+    have h_exists: "\<exists>U. sum U V = 0 \<and> (\<exists>v\<in>V. U v \<noteq> 0) \<and> (\<Sum>v\<in>V. U v *\<^sub>R v) = 0"
+      using h\<gamma>_sum h\<gamma>_combo hv0 hv0_ne by (by100 blast)
+    show False using h_exists h_not_exists by (by100 blast)
+  qed
+  (** So α = β' on V. **)
+  have h\<alpha>_eq_\<beta>': "\<forall>v\<in>V. \<alpha> v = \<beta>' v"
+    using h\<gamma>_all_zero unfolding \<gamma>_def by (by100 simp)
+  (** Pick v0 ∈ V \ W. β' v0 = 0, but α v0 > 0. **)
+  obtain v0 where hv0_V: "v0 \<in> V" and hv0_notW: "v0 \<notin> W"
+    using hW_proper hW_sub by (by100 blast)
+  have hv0_VW: "v0 \<in> V - W" using hv0_V hv0_notW by (by100 blast)
+  have h\<beta>'_v0: "\<beta>' v0 = 0" using h\<beta>'_outside hv0_VW by (by100 blast)
+  have h\<alpha>_v0: "\<alpha> v0 = 0" using h\<alpha>_eq_\<beta>' hv0_V h\<beta>'_v0 by (by100 simp)
+  have h\<alpha>_v0_pos: "0 < \<alpha> v0" using h\<alpha>_pos hv0_V by (by100 blast)
+  show False using h\<alpha>_v0 h\<alpha>_v0_pos by (by100 simp)
+qed
 
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
