@@ -390,6 +390,29 @@ All 3 require substantive classical PL-topology formalization.
 
 All of Phase 1 content is now SORRY-FREE and ready to cache.
 
+### Post-Phase-1: E-support infrastructure added
+
+Two foundational bridge helpers to enable E (Lebesgue tightening) attack:
+- `geotop_complex_inter_face_HOL` — (σ∩τ) is a HOL face_of σ for σ,τ∈K
+  with σ∩τ ≠ {}. Extracted from the existing open_star_complement proof
+  pattern (used `face_of_convex_hull_affine_independent`).
+- `geotop_complex_rel_interior_disjoint_distinct` — for σ ≠ τ in K
+  (complex), rel_interior σ ∩ rel_interior τ = {}. Derived via
+  face_of_disjoint_rel_interior on the three cases: σ ∩ τ = ∅; σ ⊆ τ;
+  neither ⊆ the other.
+
+These enable attacking E via:
+1. For convex T ⊆ open_star K v, pick x_0 ∈ T with x_0 ∈ rel_int σ_0.
+2. Define path γ(t) = (1-t)x_0 + t y for y ∈ T. γ continuous, image ⊆ T.
+3. S_0 = {t | γ(t) ∈ σ_0} is closed in [0,1]. s* = sup S_0. Show s* = 1.
+4. Needs: continuity of "which rel_int" switching + rel_interior openness
+   in affine hull — still requires more work than I can complete here.
+
+Next session should focus on: either (a) finishing E with the new
+rel_interior disjointness infrastructure via a detailed "sup of bounded
+set" argument, (b) tackling D (barycentric subdivision) which is more
+independent of E, or (c) F (barycentric extension).
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
