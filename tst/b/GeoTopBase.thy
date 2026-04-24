@@ -3365,6 +3365,27 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: for empty K, geotop_flags K = {} (no non-empty chains possible). **)
+lemma geotop_flags_empty:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_empty: "K = {}"
+  shows "geotop_flags K = {}"
+proof -
+  have h_char: "\<forall>c. c \<in> geotop_flags K \<longrightarrow> set c \<subseteq> K"
+    unfolding geotop_flags_def by (by100 blast)
+  show ?thesis
+  proof (rule ccontr)
+    assume "geotop_flags K \<noteq> {}"
+    then obtain c where hc: "c \<in> geotop_flags K" by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc unfolding geotop_flags_def by (by100 blast)
+    have h_set_empty: "set c \<subseteq> K" using h_char hc by (by100 blast)
+    have h_set_in: "set c \<subseteq> {}" using h_set_empty hK_empty by (by100 simp)
+    have h_set_eq: "set c = ({}::'a set set)" using h_set_in by (by100 simp)
+    have h_c_eq: "c = []" using h_set_eq by (by100 simp)
+    show False using h_c_eq hc_ne by (by100 blast)
+  qed
+qed
+
 (** D-support: for finite K, geotop_flags K is finite. **)
 lemma geotop_flags_finite:
   fixes K :: "'a::euclidean_space set set"
