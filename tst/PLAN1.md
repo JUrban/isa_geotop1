@@ -530,6 +530,45 @@ helper (barycenter_in_simplex). Net session: 3 → 5 real sorries with
 substantial structural + infrastructure progress; true closure will come
 as remaining D-sub-sorries (polyhedron eq, complex, dim/mesh) are closed.
 
+## Final session state (April 23-24, 77 commits)
+
+**D-infrastructure helper stack — 13 fully proved helpers + 1 definition:**
+
+For closing D1.3 (K.3 local finiteness):
+- `geotop_simplex_faces_finite`, `geotop_finite_distinct_lists_over_finite`,
+  `geotop_complex_flags_at_simplex_finite`, `geotop_complex_flags_with_top_in_finite_finite`.
+
+For closing D1.0 (K.0 simplex property) — needs one more classical result:
+- Have: `geotop_complex_flag_barycenter_card`, `geotop_barycenter_in_rel_interior`,
+  `geotop_complex_distinct_simplex_distinct_barycenter`, `geotop_complex_barycenter_inj_on`.
+- Missing: "barycenters of a chain σ_0 ⊊ ... ⊊ σ_n are affinely independent".
+  Proof sketch: b_n ∈ rel_interior σ_n, affine hull of {b_i : i<n} ⊆ affine hull σ_{n-1}
+  (proper face), and rel_interior σ_n ∩ affine hull σ_{n-1} = ∅ (stronger than
+  face_of_disjoint_rel_interior; ~50-80 lines of classical affine geometry).
+
+For closing D1.1 (K.1 face closure):
+- Derivable from D1.0 + affine-independence-of-faces argument.
+
+For closing D1.2 (K.2 intersection-face):
+- Needs "intersection of two flag-simplices is a flag-simplex on common sub-chain".
+  Classical combinatorial argument; ~80-100 lines.
+
+For D2a (polyhedron eq), D4+5 (mesh), E, F:
+- Each is classical but substantial (~100-250 lines each).
+
+**Type class issue discovered:**
+`geotop_classical_Sd_exists` uses `'a::real_normed_vector` but some helpers
+(particularly those requiring `simplex_vertices` uniqueness) need
+`'a::euclidean_space`. Future work should either:
+(a) Tighten D's type class to `euclidean_space` (cascades through
+geotop_Sd_is_barycentric, geotop_Sd_is_subdivision, iterated_Sd variants).
+(b) Prove a weaker real_normed_vector variant where possible.
+
+Option (a) is cleaner — Moise's book is about Euclidean simplices anyway.
+
+**Summary: Phase 1 fully closed, D scaffolded + 2 sub-closures, 13 D-helpers
+proven. Remaining: D1.0/1.1/1.2/1.3, D2a, D4+5, E, F. Ready for next session.**
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
