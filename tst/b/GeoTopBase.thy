@@ -3450,6 +3450,213 @@ proof -
     using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
 qed
 
+(** D-infrastructure for dim preservation: in a complex, strict subset
+    between simplices implies strict dim decrease.
+    Proof: s ⊊ t, both in K. K.2 gives s = s ∩ t face of t. Hence vertex
+    set V_s ⊊ V_t (proper subset via face def + distinctness s ≠ t).
+    Then card V_s < card V_t, so dim s = card V_s - 1 < card V_t - 1 = dim t. **)
+lemma geotop_complex_proper_subset_dim_less:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hsK: "s \<in> K" and htK: "t \<in> K"
+  assumes h_prop: "s \<subset> t"
+  assumes h_dim_s: "geotop_simplex_dim s k\<^sub>s"
+  assumes h_dim_t: "geotop_simplex_dim t k\<^sub>t"
+  shows "k\<^sub>s < k\<^sub>t"
+proof -
+  have h_K_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have hs_simp: "geotop_is_simplex s" using hsK h_K_simp by (by100 blast)
+  have ht_simp: "geotop_is_simplex t" using htK h_K_simp by (by100 blast)
+  (** s face of t via K.2. **)
+  have h_sub: "s \<subseteq> t" using h_prop by (by100 blast)
+  have h_ne: "s \<inter> t \<noteq> {}"
+  proof -
+    obtain Vs ms ns where hVs_card: "card Vs = ns + 1"
+                      and hs_hull: "s = geotop_convex_hull Vs"
+      using hs_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have hVs_ne: "Vs \<noteq> {}"
+    proof
+      assume "Vs = {}"
+      hence "card Vs = 0" by (by100 simp)
+      thus False using hVs_card by (by100 simp)
+    qed
+    have hs_ne: "s \<noteq> {}"
+    proof -
+      have h_sub_hull: "Vs \<subseteq> convex hull Vs" by (rule hull_subset)
+      have "convex hull Vs \<noteq> {}" using hVs_ne h_sub_hull by (by100 blast)
+      hence h_geo_ne: "geotop_convex_hull Vs \<noteq> {}"
+        using geotop_convex_hull_eq_HOL[of Vs] by (by100 simp)
+      show ?thesis using h_geo_ne hs_hull by (by100 simp)
+    qed
+    show ?thesis using hs_ne h_sub by (by100 blast)
+  qed
+  have h_inter_eq_s: "s \<inter> t = s" using h_sub by (by100 blast)
+  have h_face: "geotop_is_face s t"
+  proof -
+    have h_K2: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {}
+                  \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hK unfolding geotop_is_complex_def by (by100 blast)
+    have h_pair: "geotop_is_face (s \<inter> t) t"
+      using h_K2 hsK htK h_ne by (by100 blast)
+    show ?thesis using h_pair h_inter_eq_s by (by100 simp)
+  qed
+  (** Face gives W \<subseteq> V_t with s = conv hull W. Show W \<subsetneq> V_t. **)
+  obtain Vt W where hVt_sv: "geotop_simplex_vertices t Vt"
+                and hW_ne: "W \<noteq> {}" and hW_sub_Vt: "W \<subseteq> Vt"
+                and hs_hullW: "s = geotop_convex_hull W"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  (** Get simplex_vertices for s: s = conv hull W but also s = conv hull V_s,
+      so W IS the vertex set of s (once we verify AI + proper cardinality). **)
+  have hVt_fin: "finite Vt" using hVt_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVt_ai: "\<not> affine_dependent Vt"
+    by (rule geotop_general_position_imp_aff_indep[OF hVt_sv])
+  have hW_fin: "finite W" using hW_sub_Vt hVt_fin finite_subset by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    using hVt_ai hW_sub_Vt affine_dependent_subset by (by100 blast)
+  have hW_card_ge: "card W \<ge> 1"
+  proof -
+    have h_card_pos: "card W > 0" using hW_ne hW_fin card_gt_0_iff by (by100 blast)
+    show ?thesis using h_card_pos by (by100 linarith)
+  qed
+  define k where "k = card W - 1"
+  have hW_card: "card W = k + 1" unfolding k_def using hW_card_ge by (by100 simp)
+  have hW_gp: "geotop_general_position W k"
+    by (rule geotop_ai_imp_general_position[OF hW_fin hW_card hW_ai])
+  have h_kk: "k \<le> k" by (by100 simp)
+  have hs_dim_k: "geotop_simplex_dim s k"
+    unfolding geotop_simplex_dim_def
+    using hW_fin hW_card h_kk hW_gp hs_hullW by (by100 blast)
+  have ht_dim_t: "geotop_simplex_dim t (card Vt - 1)"
+  proof -
+    obtain mm nn where hVt_card_eq: "card Vt = nn + 1"
+                   and hnn_mm: "nn \<le> mm"
+                   and hVt_gp_ext: "geotop_general_position Vt mm"
+                   and ht_hull_ext: "t = geotop_convex_hull Vt"
+      using hVt_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h_nn_eq: "nn = card Vt - 1" using hVt_card_eq by (by100 simp)
+    show ?thesis
+      unfolding geotop_simplex_dim_def h_nn_eq[symmetric]
+      using hVt_fin hVt_card_eq hnn_mm hVt_gp_ext ht_hull_ext by (by100 blast)
+  qed
+  (** W \<subsetneq> Vt because s \<ne> t. **)
+  have hW_proper: "W \<subset> Vt"
+  proof (rule psubsetI)
+    show "W \<subseteq> Vt" by (rule hW_sub_Vt)
+  next
+    show "W \<noteq> Vt"
+    proof
+      assume h_eq: "W = Vt"
+      have "s = geotop_convex_hull Vt" using hs_hullW h_eq by (by100 simp)
+      also have "\<dots> = t" using hVt_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      finally have "s = t" .
+      thus False using h_prop by (by100 blast)
+    qed
+  qed
+  have hW_card_lt: "card W < card Vt"
+    using hW_proper hVt_fin psubset_card_mono by (by100 blast)
+  have h_s_dim_k_eq: "k\<^sub>s = k"
+  proof -
+    (** simplex_dim is unique. **)
+    obtain Vs ms\<^sub>s where hVs_card: "card Vs = k\<^sub>s + 1"
+                   and hs_hull\<^sub>s: "s = geotop_convex_hull Vs"
+                   and hVs_fin: "finite Vs"
+                   and hVs_gp: "\<exists>mm. k\<^sub>s \<le> mm \<and> geotop_general_position Vs mm"
+      using h_dim_s unfolding geotop_simplex_dim_def by (by100 blast)
+    have h_s_hull_same: "geotop_convex_hull Vs = geotop_convex_hull W"
+      using hs_hull\<^sub>s hs_hullW by (by100 simp)
+    have hVs_HOL: "convex hull Vs = convex hull W"
+    proof -
+      have h1: "geotop_convex_hull Vs = convex hull Vs"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h2: "geotop_convex_hull W = convex hull W"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_s_hull_same h1 h2 by (by100 simp)
+    qed
+    have hVs_ai: "\<not> affine_dependent Vs"
+    proof -
+      obtain mm where hVs_mmgp: "k\<^sub>s \<le> mm \<and> geotop_general_position Vs mm"
+        using hVs_gp by (by100 blast)
+      have hVs_sv: "geotop_simplex_vertices s Vs"
+        unfolding geotop_simplex_vertices_def
+        using hVs_fin hVs_card hVs_mmgp hs_hull\<^sub>s by (by100 blast)
+      show ?thesis by (rule geotop_general_position_imp_aff_indep[OF hVs_sv])
+    qed
+    have h_Vs_W_eq: "Vs = W"
+    proof (rule set_eqI, rule iffI)
+      fix x assume hxVs: "x \<in> Vs"
+      have h_ext_Vs: "x extreme_point_of convex hull Vs"
+        using hxVs hVs_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+      have h_ext_W: "x extreme_point_of convex hull W"
+        using h_ext_Vs hVs_HOL by (by100 simp)
+      show "x \<in> W"
+        using h_ext_W extreme_point_of_convex_hull by (by100 blast)
+    next
+      fix x assume hxW: "x \<in> W"
+      have h_ext_W: "x extreme_point_of convex hull W"
+        using hxW hW_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+      have h_ext_Vs: "x extreme_point_of convex hull Vs"
+        using h_ext_W hVs_HOL by (by100 simp)
+      show "x \<in> Vs"
+        using h_ext_Vs extreme_point_of_convex_hull by (by100 blast)
+    qed
+    have "card Vs = card W" using h_Vs_W_eq by (by100 simp)
+    thus ?thesis using hVs_card hW_card by (by100 simp)
+  qed
+  have h_t_dim_kt_eq: "k\<^sub>t = card Vt - 1"
+  proof -
+    obtain Vs mt\<^sub>t where hVs_card: "card Vs = k\<^sub>t + 1"
+                   and ht_hull\<^sub>t: "t = geotop_convex_hull Vs"
+                   and hVs_fin: "finite Vs"
+                   and hVs_gp: "\<exists>mm. k\<^sub>t \<le> mm \<and> geotop_general_position Vs mm"
+      using h_dim_t unfolding geotop_simplex_dim_def by (by100 blast)
+    have ht_hull: "t = geotop_convex_hull Vt"
+      using hVt_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h_t_hull_same: "geotop_convex_hull Vs = geotop_convex_hull Vt"
+      using ht_hull\<^sub>t ht_hull by (by100 simp)
+    have hVs_HOL: "convex hull Vs = convex hull Vt"
+    proof -
+      have h1: "geotop_convex_hull Vs = convex hull Vs"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h2: "geotop_convex_hull Vt = convex hull Vt"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_t_hull_same h1 h2 by (by100 simp)
+    qed
+    have hVs_ai: "\<not> affine_dependent Vs"
+    proof -
+      obtain mm where hVs_mmgp: "k\<^sub>t \<le> mm \<and> geotop_general_position Vs mm"
+        using hVs_gp by (by100 blast)
+      have hVs_sv: "geotop_simplex_vertices t Vs"
+        unfolding geotop_simplex_vertices_def
+        using hVs_fin hVs_card hVs_mmgp ht_hull\<^sub>t by (by100 blast)
+      show ?thesis by (rule geotop_general_position_imp_aff_indep[OF hVs_sv])
+    qed
+    have h_Vs_Vt_eq: "Vs = Vt"
+    proof (rule set_eqI, rule iffI)
+      fix x assume hxVs: "x \<in> Vs"
+      have h_ext_Vs: "x extreme_point_of convex hull Vs"
+        using hxVs hVs_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+      have h_ext_Vt: "x extreme_point_of convex hull Vt"
+        using h_ext_Vs hVs_HOL by (by100 simp)
+      show "x \<in> Vt"
+        using h_ext_Vt extreme_point_of_convex_hull by (by100 blast)
+    next
+      fix x assume hxVt: "x \<in> Vt"
+      have h_ext_Vt: "x extreme_point_of convex hull Vt"
+        using hxVt hVt_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+      have h_ext_Vs: "x extreme_point_of convex hull Vs"
+        using h_ext_Vt hVs_HOL by (by100 simp)
+      show "x \<in> Vs"
+        using h_ext_Vs extreme_point_of_convex_hull by (by100 blast)
+    qed
+    have "card Vs = card Vt" using h_Vs_Vt_eq by (by100 simp)
+    hence "k\<^sub>t + 1 = card Vt" using hVs_card by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
+  show ?thesis using h_s_dim_k_eq h_t_dim_kt_eq hW_card_lt hW_card
+    by (by100 linarith)
+qed
+
 lemma geotop_classical_Sd_exists:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
