@@ -2841,6 +2841,39 @@ proof -
   qed
 qed
 
+(** D-support: barycenters of DISTINCT simplices in a complex are distinct.
+    Direct corollary of barycenter ∈ rel_interior + rel_interior_disjoint. **)
+lemma geotop_complex_distinct_simplex_distinct_barycenter:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
+  assumes h_ne: "\<sigma> \<noteq> \<tau>"
+  shows "geotop_barycenter \<sigma> \<noteq> geotop_barycenter \<tau>"
+proof
+  assume h_eq: "geotop_barycenter \<sigma> = geotop_barycenter \<tau>"
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K h_simp_all by (by100 blast)
+  obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  obtain V\<^sub>\<tau> where hV\<^sub>\<tau>: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    using h\<tau>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have h_b\<sigma>_ri: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+    by (rule geotop_barycenter_in_rel_interior[OF hV\<^sub>\<sigma>])
+  have h_b\<tau>_ri: "geotop_barycenter \<tau> \<in> rel_interior \<tau>"
+    by (rule geotop_barycenter_in_rel_interior[OF hV\<^sub>\<tau>])
+  have h_b\<sigma>_in_\<tau>: "geotop_barycenter \<sigma> \<in> rel_interior \<tau>"
+    using h_b\<tau>_ri h_eq by (by100 simp)
+  have h_in_both: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma> \<inter> rel_interior \<tau>"
+    using h_b\<sigma>_ri h_b\<sigma>_in_\<tau> by (by100 blast)
+  have h_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h_ne])
+  show False using h_in_both h_disj by (by100 blast)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
