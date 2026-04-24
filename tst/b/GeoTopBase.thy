@@ -2025,13 +2025,13 @@ proof -
         (** V' ⊆ conv hull V' = {v}, and card V' ≥ 1, so V' = {v}. **)
         have hV'_sub: "V' \<subseteq> convex hull V'" by (rule hull_subset)
         have hV'_sub_v: "V' \<subseteq> {v}" using hV'_sub hV'_sing by (by100 simp)
-        have hV'_card: "card V' = 0 + 1"
-          using hV'_sv unfolding geotop_simplex_vertices_def
-          (** V' has card of form n+1 from simplex definition; for σ = {v} it's 1.
-              Via conv hull V' = {v} and V' ⊆ {v}, card V' ≤ 1. Combined with
-              card V' ≥ 1 (simplex def), card V' = 1. **)
-          sorry
-        have hV'_card1: "card V' = 1" using hV'_card by (by100 simp)
+        obtain n' m' where hV'_card_raw: "card V' = n' + 1"
+                       and hV'_fin_raw: "finite V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_card_ge1: "card V' \<ge> 1" using hV'_card_raw by (by100 simp)
+        have hV'_card_le1: "card V' \<le> 1"
+          using hV'_sub_v hV'_fin_raw card_mono[of "{v}" V'] by (by100 simp)
+        have hV'_card1: "card V' = 1" using hV'_card_ge1 hV'_card_le1 by (by100 linarith)
         have hV'_ne: "V' \<noteq> {}"
         proof
           assume "V' = {}"
