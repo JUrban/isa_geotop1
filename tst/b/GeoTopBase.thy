@@ -2977,6 +2977,33 @@ proof -
   show ?thesis using finite_subset[OF h_face_img h_img_fin] by (by100 simp)
 qed
 
+(** D-support: distinct lists over a finite set are themselves finite.
+    Classical: length ≤ |S| for any distinct list ⊆ S. **)
+lemma geotop_finite_distinct_lists_over_finite:
+  fixes S :: "'b set"
+  assumes hfin: "finite S"
+  shows "finite {c. set c \<subseteq> S \<and> distinct c}"
+proof -
+  define n where "n = card S"
+  have h_len_bound: "\<forall>c. set c \<subseteq> S \<and> distinct c \<longrightarrow> length c \<le> n"
+  proof (intro allI impI)
+    fix c assume hc: "set c \<subseteq> S \<and> distinct c"
+    have hc_set: "set c \<subseteq> S" using hc by (by100 blast)
+    have hc_dist: "distinct c" using hc by (by100 blast)
+    have h_card_set: "card (set c) = length c"
+      by (rule distinct_card[OF hc_dist])
+    have h_card_eq: "length c = card (set c)" using h_card_set by (by100 simp)
+    have h_card_le: "card (set c) \<le> card S"
+      using hc_set hfin card_mono by (by100 blast)
+    show "length c \<le> n" unfolding n_def using h_card_eq h_card_le by (by100 simp)
+  qed
+  have h_sub: "{c. set c \<subseteq> S \<and> distinct c} \<subseteq> {c. set c \<subseteq> S \<and> length c \<le> n}"
+    using h_len_bound by (by100 blast)
+  have h_outer_fin: "finite {c. set c \<subseteq> S \<and> length c \<le> n}"
+    by (rule finite_lists_length_le[OF hfin])
+  show ?thesis using finite_subset[OF h_sub h_outer_fin] by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
