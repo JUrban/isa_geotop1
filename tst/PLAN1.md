@@ -1155,3 +1155,59 @@ Infrastructure base now includes 2 powerful utility lemmas
 (geotop_V_subK_convhullK_is_simplex_vertices, geotop_V_subK_elt_in_simplex_vertices)
 that were critical for closing h_f_surj. Same infrastructure will be
 key for h_f_inj and h_f_inverse.
+
+## MAJOR MILESTONE 2026-04-24 (session continuation 13): h_f_inj FULLY PROVED
+
+Sorry count: 6 → 5 real sorries.
+
+### Second F-series sorry closed
+
+h_f_inj (injectivity of barycentric extension g on |K|) FULLY PROVED via
+~520-line classical argument combining:
+
+1. New bary-coord uniqueness helper:
+   `geotop_bary_coords_unique_AI`: AI finite V, sum α V = sum β V = 1,
+   Σ α*v = Σ β*v ⟹ ∀v∈V. α v = β v. Uses affine_dependent_explicit_finite.
+2. Extract σ_x, σ_y ∈ K carrying x, y; vertex sets V_x, V_y;
+   bary coords α, β via convex_hull_finite.
+3. Image simplices τ'_x = conv hull (φ V_x), τ'_y = conv hull (φ V_y)
+   both in L; φ V_x, φ V_y are simplex_vertices (AI, finite, non-empty).
+4. g(x) ∈ τ'_x and g(y) ∈ τ'_y via reindex (inv_into V_x φ).
+5. z = g(x) = g(y) ∈ τ'_x ∩ τ'_y ≠ ∅ ⟹ face of both via K.2 of L.
+6. Extract W_x' ⊆ φ V_x, W_y' ⊆ φ V_y with same conv hull;
+   simplex_vertices_unique ⟹ W_x' = W_y'.
+7. W_x' ⊆ φ(V_x ∩ V_y) via φ inj on V_x ∪ V_y.
+8. V_c := V_x ∩ V_y; conv hull W_x' = conv hull (φ V_c) via
+   hull_minimal + hull_mono; W_x' = φ V_c via simplex_vertices_unique.
+9. σ_c := conv hull V_c ∈ K via h_phi_cond (τ'_x ∩ τ'_y ∈ L by K.1).
+10. Bary-coord vanishing: γ_x_ext extension of γ_x by 0 on φ V_x is a
+    bary coords of g(x); by geotop_bary_coords_unique_AI, equals A_x on
+    φ V_x. Hence α(v) = 0 for v ∈ V_x \ V_c, α(v) = γ_x(φ v) for v ∈ V_c.
+11. x = Σ_{v∈V_c} α(v) v = x_c; symmetric y = y_c.
+12. g(x) = g(y) ⟹ γ_x = γ_y on AI φ V_c by bary uniqueness ⟹ a_c = b_c
+    on V_c ⟹ x_c = y_c ⟹ x = y.
+
+### Infrastructure: session also split GeoTopBase
+
+GeoTopBase.thy (17k lines) split at line 6907 (PLH section boundary):
+- b0/GeoTopBase0.thy (cached session GeoTopBase0): foundational content.
+- b/GeoTopBase.thy (active session): PL/iso/cells/§1+.
+
+Build savings: ~13s per iteration on content changes in active file.
+
+### Cumulative session: 6 → 5 real sorries
+
+Remaining 5 targeted sorries:
+1. h_K2_intersect_eq non-nested (in b0/GeoTopBase0.thy)
+2. h_simp_in_bK dim > 0 (in b0/GeoTopBase0.thy)
+3. h_star_to_simplex_del (in b0/GeoTopBase0.thy)
+4. h_f_forward (F-1a: barycentric extension construction)
+5. h_f_inverse (F-1c: inverse PL + linear)
+
+Key by100 lessons learned:
+- scaleR_cancel_right eager rewriting: reduce α*v = β*v to α = β ∨ v = 0,
+  blocking sum.cong rewrites. Workaround: explicit sum.cong[of A B f g]
+  + force, or sum.neutral[OF zero_all].
+- sum.cong[OF refl h_pt] sometimes fails "no unifiers" under build load;
+  use explicit instantiation instead.
+- sum.union_disjoint combined via arg_cong + HOL.trans for subset split.
