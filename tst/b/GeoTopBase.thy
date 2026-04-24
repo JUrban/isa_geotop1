@@ -4100,13 +4100,36 @@ proof -
       Mesh: bary(σ_0)-to-bary(σ_n) distance ≤ (n/(n+1)) · diam(σ_n) via
       center-of-mass lemma (distance from centroid to vertex of simplex is
       at most n/(n+1) times diameter). **)
+  (** STEP 4: dim preservation. Each chain-simplex in bK corresponds to a flag
+      of distinct simplices in K. Its dim is length(c) - 1. Key fact: if all
+      K-simplices have dim ≤ n, then K has at most n+1 dim-levels (0..n),
+      so a strictly-increasing chain in K has length ≤ n+1, hence chain-simplex
+      dim ≤ n. **)
+  have h_dim_preserve: "\<forall>n::nat.
+        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+        (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)"
+    sorry \<comment> \<open>D-step 4: dim preservation. For σ' ∈ bK with flag c, σ' has dim
+              length(c) - 1. Bound length(c) ≤ n+1 via strictly-increasing dim
+              (Moise Lemma 4.11 first part).\<close>
+  (** STEP 5: mesh shrinkage. Classical Moise Lemma 4.11 second part: in a
+      chain-simplex conv hull (bary ` set c) the diameter is ≤ (n/(n+1)) ·
+      diameter(last c). Proof: distance between any two barycenters equals
+      d(bary s_i, bary s_j) ≤ (1 - 1/(k+1)) · diam(s_j) where k = |s_j| - 1,
+      and k ≤ n from dim bound. **)
+  have h_mesh_shrink: "\<forall>n::nat.
+        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+        geotop_mesh (\<lambda>x y. norm (x - y)) bK
+          \<le> (real n / real (Suc n))
+           * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    sorry \<comment> \<open>D-step 5: mesh shrinkage via centroid-distance bound
+              (Moise Lemma 4.11 second part).\<close>
   have h_dim_mesh: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
         (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
         \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
           \<le> (real n / real (Suc n))
            * geotop_mesh (\<lambda>x y. norm (x - y)) K"
-    sorry \<comment> \<open>D-step 4+5: dim preservation + mesh shrinkage (Moise Lemma 4.11).\<close>
+    using h_dim_preserve h_mesh_shrink by (by100 blast)
   (** COMBINE into the barycentric-Sd predicate. **)
   have h_bary: "geotop_is_barycentric_Sd bK K"
     unfolding geotop_is_barycentric_Sd_def
