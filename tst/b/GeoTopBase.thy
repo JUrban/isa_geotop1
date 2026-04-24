@@ -2874,6 +2874,29 @@ proof
   show False using h_in_both h_disj by (by100 blast)
 qed
 
+(** D-support: barycenter is injective on any set of distinct K-simplices.
+    Key for showing barycenter images have correct cardinality. **)
+lemma geotop_complex_barycenter_inj_on:
+  fixes K :: "'a::euclidean_space set set"
+  fixes S :: "'a set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hS_subK: "S \<subseteq> K"
+  shows "inj_on geotop_barycenter S"
+proof (rule inj_onI)
+  fix \<sigma> \<tau>
+  assume h\<sigma>_S: "\<sigma> \<in> S" and h\<tau>_S: "\<tau> \<in> S"
+  assume h_bary_eq: "geotop_barycenter \<sigma> = geotop_barycenter \<tau>"
+  have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>_S hS_subK by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K" using h\<tau>_S hS_subK by (by100 blast)
+  show "\<sigma> = \<tau>"
+  proof (rule ccontr)
+    assume h_ne: "\<sigma> \<noteq> \<tau>"
+    have "geotop_barycenter \<sigma> \<noteq> geotop_barycenter \<tau>"
+      by (rule geotop_complex_distinct_simplex_distinct_barycenter[OF hK h\<sigma>K h\<tau>K h_ne])
+    thus False using h_bary_eq by (by100 blast)
+  qed
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
