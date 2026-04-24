@@ -2123,7 +2123,9 @@ proof -
     have h_card_eq: "real (card (V - {v})) = real k" using h_diff_card by (by100 simp)
     have h3: "real (card (V - {v})) * diameter \<sigma> = real k * diameter \<sigma>"
       using h_card_eq by (by100 simp)
-    show ?thesis using h1 h2 h3 by (by100 simp)
+    have h_chain: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> real (card (V - {v})) * diameter \<sigma>"
+      using h1 h2 by (by100 linarith)
+    show ?thesis using h_chain h3 by (by100 linarith)
   qed
   (** Final bound. **)
   have h_card_pos_real: "real (card V) > 0" using h_card_pos by (by100 simp)
