@@ -5026,12 +5026,276 @@ proof -
         unfolding geotop_polyhedron_def using h\<sigma>_bK by (by100 blast)
     next
       case False
+      (** D2a-sup main case: dim > 0 barycentric decomposition.
+          For x in σ with bary coords α_i on V, sort V by decreasing α;
+          the induced chain [σ_0, ..., σ_n = σ] is a flag, and
+          x = Σ β_k · bary σ_k with β_k = (k+1)(α(π k) - α(π(k+1))).
+          Hence x is in the chain-simplex for this flag, in bK. **)
+      have hV_sv: "geotop_simplex_vertices \<sigma> V"
+        unfolding geotop_simplex_vertices_def
+        using hVfin hVcard hnm\<^sub>0 hVgp h\<sigma>_hull by (by100 blast)
+      have hV_ai: "\<not> affine_dependent V"
+        by (rule geotop_general_position_imp_aff_indep[OF hV_sv])
+      have hV_ne: "V \<noteq> {}" using hVcard hVfin by (by100 auto)
+      have h\<sigma>_HOL: "\<sigma> = convex hull V"
+        using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have hV_VK: "V \<subseteq> geotop_complex_vertices K"
+        unfolding geotop_complex_vertices_def
+        using h\<sigma>K hV_sv by (by100 blast)
+      (** Complex structure: K.1 of K (face closure) and K.2 of K (intersection). **)
+      have hK_K1: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+        by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+      (** Main body: for each x \<in> \<sigma>, build a flag c with x in its chain-simplex. **)
       show ?thesis
-        sorry \<comment> \<open>D2a-sup main case: dim > 0 barycentric decomposition.
-                  For x in sigma with bary coords alpha_i on V, sort V by decreasing alpha;
-                  the induced chain [sigma_0, ..., sigma_n = sigma] is a flag, and
-                  x = sum beta_k * bary sigma_k with beta_k = (k+1)(alpha_{pi(k)} - alpha_{pi(k+1)}).
-                  Hence x is in the chain-simplex for this flag, in bK.\<close>
+      proof (rule subsetI)
+        fix x assume hx\<sigma>: "x \<in> \<sigma>"
+        (** (1) Bary coords of x on V. **)
+        have hx_hull: "x \<in> convex hull V" using hx\<sigma> h\<sigma>_HOL by (by100 simp)
+        have hcc: "convex hull V
+                   = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V = 1
+                               \<and> (\<Sum>v\<in>V. u\<^sub>c v *\<^sub>R v) = u}"
+          using convex_hull_finite[OF hVfin] by (by100 simp)
+        obtain \<alpha> where h\<alpha>nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+                     and h\<alpha>sum: "sum \<alpha> V = 1"
+                     and h\<alpha>combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+          using hx_hull hcc by (by100 blast)
+        (** (2) Enumerate V as a list, then sort by -\<alpha> ascending (= \<alpha> descending). **)
+        obtain xs0 :: "'a list" where hxs0_set: "set xs0 = V"
+          using finite_list[OF hVfin] by (by100 blast)
+        define xs where "xs = sort_key (\<lambda>v. - \<alpha> v) (remdups xs0)"
+        have hxs_set: "set xs = V"
+          unfolding xs_def using hxs0_set by (by100 simp)
+        have hxs_dist: "distinct xs"
+          unfolding xs_def by (by100 simp)
+        have hxs_len: "length xs = card V"
+        proof -
+          have h1: "card (set xs) = length xs" by (rule distinct_card[OF hxs_dist])
+          have h2: "card (set xs) = card V" using hxs_set by (by100 simp)
+          show ?thesis using h1 h2 by (by100 simp)
+        qed
+        (** n_0 + 1 = card V = length xs; also card V > 1. **)
+        have hn_pos: "n\<^sub>0 > 0" using False by (by100 simp)
+        have hxs_len_eq: "length xs = n\<^sub>0 + 1" using hxs_len hVcard by (by100 simp)
+        have hn\<^sub>0xs: "n\<^sub>0 = length xs - 1" using hxs_len_eq by (by100 simp)
+        (** xs is sorted descending by \<alpha>, i.e., sorted ascending by -\<alpha>. **)
+        have hxs_sorted_asc: "sorted (map (\<lambda>v. - \<alpha> v) xs)"
+          unfolding xs_def by (rule sorted_sort_key)
+        (** Descending version: \<alpha> (xs ! i) \<ge> \<alpha> (xs ! j) when i \<le> j < length xs. **)
+        have hxs_sorted_desc: "\<forall>i j. i \<le> j \<longrightarrow> j < length xs
+                                 \<longrightarrow> \<alpha> (xs ! j) \<le> \<alpha> (xs ! i)"
+        proof (intro allI impI)
+          fix i j assume hij: "i \<le> j" and hj: "j < length xs"
+          have hi: "i < length xs" using hij hj by (by100 linarith)
+          have h_len_map: "length (map (\<lambda>v. -\<alpha> v) xs) = length xs" by (by100 simp)
+          have hj_map: "j < length (map (\<lambda>v. -\<alpha> v) xs)" using hj h_len_map by (by100 simp)
+          have h_at_map: "(map (\<lambda>v. -\<alpha> v) xs) ! i \<le> (map (\<lambda>v. -\<alpha> v) xs) ! j"
+            by (rule sorted_nth_mono[OF hxs_sorted_asc hij hj_map])
+          have h_i_val: "(map (\<lambda>v. -\<alpha> v) xs) ! i = -\<alpha> (xs ! i)"
+            using hi by (by100 simp)
+          have h_j_val: "(map (\<lambda>v. -\<alpha> v) xs) ! j = -\<alpha> (xs ! j)"
+            using hj by (by100 simp)
+          show "\<alpha> (xs ! j) \<le> \<alpha> (xs ! i)"
+            using h_at_map h_i_val h_j_val by (by100 linarith)
+        qed
+        (** (3) Vertex-set sequences: V_k = set (take (Suc k) xs). **)
+        define Vs :: "nat \<Rightarrow> 'a set" where
+          "Vs k = set (take (Suc k) xs)" for k
+        have hVs_sub_V: "\<And>k. Vs k \<subseteq> V"
+        proof -
+          fix k
+          have h1: "set (take (Suc k) xs) \<subseteq> set xs"
+            by (rule set_take_subset)
+          show "Vs k \<subseteq> V" unfolding Vs_def using h1 hxs_set by (by100 simp)
+        qed
+        have hVs_fin: "\<And>k. finite (Vs k)" unfolding Vs_def by (by100 simp)
+        have hVs_card: "\<And>k. k < length xs \<Longrightarrow> card (Vs k) = Suc k"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h_len_take: "length (take (Suc k) xs) = Suc k"
+            using hk by (by100 simp)
+          have h_dist_take: "distinct (take (Suc k) xs)"
+            using hxs_dist by (by100 simp)
+          have h_card_set: "card (set (take (Suc k) xs)) = length (take (Suc k) xs)"
+            by (rule distinct_card[OF h_dist_take])
+          show "card (Vs k) = Suc k"
+            unfolding Vs_def using h_card_set h_len_take by (by100 simp)
+        qed
+        have hVs_ne: "\<And>k. Vs k \<noteq> {}"
+        proof -
+          fix k
+          have hxs_ne: "xs \<noteq> []" using hxs_len_eq by (by100 auto)
+          have h_take_ne: "take (Suc k) xs \<noteq> []" using hxs_ne by (by100 simp)
+          show "Vs k \<noteq> {}" unfolding Vs_def using h_take_ne by (by100 simp)
+        qed
+        have hVs_ai: "\<And>k. \<not> affine_dependent (Vs k)"
+        proof -
+          fix k
+          show "\<not> affine_dependent (Vs k)"
+            by (rule affine_independent_subset[OF hV_ai hVs_sub_V])
+        qed
+        (** V_k contains xs ! k (k < length xs). **)
+        have hxs_k_in_Vs: "\<And>k. k < length xs \<Longrightarrow> xs ! k \<in> Vs k"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h_take_contains: "xs ! k \<in> set (take (Suc k) xs)"
+            using hk in_set_conv_nth[of "xs ! k" "take (Suc k) xs"]
+                  nth_take[of k "Suc k" xs]
+            by (by100 fastforce)
+          show "xs ! k \<in> Vs k" unfolding Vs_def using h_take_contains by (by100 simp)
+        qed
+        (** V_k \<subseteq> V_{k+1} (proper) — when k+1 < length xs. **)
+        have hVs_mono_pss: "\<And>k. Suc k < length xs \<Longrightarrow> Vs k \<subset> Vs (Suc k)"
+        proof -
+          fix k assume hk1: "Suc k < length xs"
+          have h_take_ext: "take (Suc (Suc k)) xs = take (Suc k) xs @ [xs ! (Suc k)]"
+            by (rule take_Suc_conv_app_nth[OF hk1])
+          have h_sub: "Vs k \<subseteq> Vs (Suc k)"
+            unfolding Vs_def using h_take_ext by (by100 auto)
+          (** The element xs ! (Suc k) is in Vs (Suc k) but not in Vs k. **)
+          have h_newelt: "xs ! (Suc k) \<in> Vs (Suc k)"
+            by (rule hxs_k_in_Vs[OF hk1])
+          have h_not_in: "xs ! (Suc k) \<notin> Vs k"
+          proof
+            assume h_in: "xs ! (Suc k) \<in> Vs k"
+            have h_in_take: "xs ! (Suc k) \<in> set (take (Suc k) xs)"
+              using h_in unfolding Vs_def .
+            then obtain i where hi: "i < Suc k" and h_nth: "xs ! i = xs ! (Suc k)"
+              using in_set_conv_nth[of "xs ! (Suc k)" "take (Suc k) xs"]
+                    nth_take[of _ "Suc k" xs]
+              by (by100 fastforce)
+            have h_i_len: "i < length xs" using hi hk1 by (by100 linarith)
+            have h_i_Suck: "i \<noteq> Suc k" using hi by (by100 linarith)
+            have h_iff: "(xs ! i = xs ! (Suc k)) = (i = Suc k)"
+              by (rule nth_eq_iff_index_eq[OF hxs_dist h_i_len hk1])
+            have h_dist_nth: "xs ! i \<noteq> xs ! (Suc k)"
+              using h_iff h_i_Suck by (by100 simp)
+            show False using h_nth h_dist_nth by (by100 simp)
+          qed
+          show "Vs k \<subset> Vs (Suc k)" using h_sub h_newelt h_not_in by (by100 blast)
+        qed
+        (** (4) Chain simplexes \<sigma>_k = conv hull V_k, each a face of \<sigma> hence in K. **)
+        define \<sigma>_seq :: "nat \<Rightarrow> 'a set" where
+          "\<sigma>_seq k = geotop_convex_hull (Vs k)" for k
+        have h\<sigma>_seq_HOL: "\<And>k. \<sigma>_seq k = convex hull (Vs k)"
+          unfolding \<sigma>_seq_def by (rule geotop_convex_hull_eq_HOL)
+        (** \<sigma>_{n\<^sub>0} = \<sigma> (since V_{n\<^sub>0} = V). **)
+        have hVs_top: "Vs n\<^sub>0 = V"
+        proof -
+          have h_len: "Suc n\<^sub>0 = length xs" using hxs_len_eq by (by100 simp)
+          have h_take_all: "take (Suc n\<^sub>0) xs = xs" using h_len by (by100 simp)
+          show ?thesis unfolding Vs_def using h_take_all hxs_set by (by100 simp)
+        qed
+        have h\<sigma>_seq_top: "\<sigma>_seq n\<^sub>0 = \<sigma>"
+          unfolding \<sigma>_seq_def using hVs_top h\<sigma>_hull by (by100 simp)
+        (** \<sigma>_k is a face of \<sigma> via simplex_vertices \<sigma> V + V_k \<subseteq> V + V_k \<ne> \<emptyset>. **)
+        have h\<sigma>_seq_face: "\<And>k. k \<le> n\<^sub>0 \<Longrightarrow> geotop_is_face (\<sigma>_seq k) \<sigma>"
+        proof -
+          fix k assume hk: "k \<le> n\<^sub>0"
+          have h_Vk_sub: "Vs k \<subseteq> V" by (rule hVs_sub_V)
+          have h_Vk_ne: "Vs k \<noteq> {}" by (rule hVs_ne)
+          have h_hull: "\<sigma>_seq k = geotop_convex_hull (Vs k)" unfolding \<sigma>_seq_def ..
+          have h_ex: "\<exists>V' W. geotop_simplex_vertices \<sigma> V' \<and> W \<noteq> {} \<and> W \<subseteq> V'
+                            \<and> \<sigma>_seq k = geotop_convex_hull W"
+            using hV_sv h_Vk_sub h_Vk_ne h_hull by (by100 blast)
+          show "geotop_is_face (\<sigma>_seq k) \<sigma>"
+            unfolding geotop_is_face_def using h_ex by (by100 blast)
+        qed
+        have h\<sigma>_seq_K: "\<And>k. k \<le> n\<^sub>0 \<Longrightarrow> \<sigma>_seq k \<in> K"
+        proof -
+          fix k assume hk: "k \<le> n\<^sub>0"
+          have h_face: "geotop_is_face (\<sigma>_seq k) \<sigma>" by (rule h\<sigma>_seq_face[OF hk])
+          show "\<sigma>_seq k \<in> K" using hK_K1 h\<sigma>K h_face by (by100 blast)
+        qed
+        (** simplex_vertices (\<sigma>_seq k) (V_k). **)
+        have hVs_VK: "\<And>k. Vs k \<subseteq> geotop_complex_vertices K"
+        proof -
+          fix k
+          show "Vs k \<subseteq> geotop_complex_vertices K"
+            using hVs_sub_V hV_VK by (by100 blast)
+        qed
+        have h\<sigma>_seq_sv: "\<And>k. k < length xs \<Longrightarrow> geotop_simplex_vertices (\<sigma>_seq k) (Vs k)"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h_Vk_card: "card (Vs k) = Suc k" by (rule hVs_card[OF hk])
+          have h_Vk_card2: "card (Vs k) = k + 1" using h_Vk_card by (by100 simp)
+          have h_Vk_ai: "\<not> affine_dependent (Vs k)" by (rule hVs_ai)
+          have h_Vk_gp: "geotop_general_position (Vs k) k"
+            by (rule geotop_ai_imp_general_position[OF hVs_fin h_Vk_card2 h_Vk_ai])
+          have h_nle: "k \<le> k" by (by100 simp)
+          show "geotop_simplex_vertices (\<sigma>_seq k) (Vs k)"
+            unfolding geotop_simplex_vertices_def \<sigma>_seq_def
+            using hVs_fin h_Vk_card2 h_nle h_Vk_gp by (by100 blast)
+        qed
+        (** (5) Barycenter formula: bary(\<sigma>_seq k) = (1 / Suc k) \<Sum>_{v \<in> V_k} v. **)
+        have h_bary_fmla: "\<And>k. k < length xs \<Longrightarrow>
+                              geotop_barycenter (\<sigma>_seq k)
+                              = (1 / real (Suc k)) *\<^sub>R (\<Sum>v\<in>Vs k. v)"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h_sv: "geotop_simplex_vertices (\<sigma>_seq k) (Vs k)"
+            by (rule h\<sigma>_seq_sv[OF hk])
+          have h_raw: "geotop_barycenter (\<sigma>_seq k) = (\<Sum>w\<in>Vs k. (1 / real (card (Vs k))) *\<^sub>R w)"
+            by (rule geotop_barycenter_eq_uV[OF h_sv])
+          have h_card: "card (Vs k) = Suc k" by (rule hVs_card[OF hk])
+          have h_sum_eq: "(\<Sum>w\<in>Vs k. (1 / real (card (Vs k))) *\<^sub>R w)
+                           = (\<Sum>w\<in>Vs k. (1 / real (Suc k)) *\<^sub>R w)"
+            using h_card by (by100 simp)
+          have h_factor: "(\<Sum>w\<in>Vs k. (1 / real (Suc k)) *\<^sub>R w)
+                           = (1 / real (Suc k)) *\<^sub>R (\<Sum>w\<in>Vs k. w)"
+            using scaleR_right.sum[of "1 / real (Suc k)" "\<lambda>w. w" "Vs k"] by (by100 simp)
+          show "geotop_barycenter (\<sigma>_seq k)
+                 = (1 / real (Suc k)) *\<^sub>R (\<Sum>v\<in>Vs k. v)"
+            using h_raw h_sum_eq h_factor by (by100 simp)
+        qed
+        (** \<Sum>_{v\<in>V_k} v = \<Sum>_{i<Suc k} xs ! i via set-to-list conversion. **)
+        have h_Vk_sum: "\<And>k. k < length xs
+                           \<Longrightarrow> (\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. xs ! i)"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h_dist_take: "distinct (take (Suc k) xs)" using hxs_dist by (by100 simp)
+          have h_len_take: "length (take (Suc k) xs) = Suc k" using hk by (by100 simp)
+          have h_sum_set0: "sum_list (map (\<lambda>v. v) (take (Suc k) xs))
+                             = sum (\<lambda>v. v) (set (take (Suc k) xs))"
+            by (rule sum_list_distinct_conv_sum_set[OF h_dist_take])
+          have h_sum_set: "(\<Sum>v\<in>set (take (Suc k) xs). v)
+                           = sum_list (take (Suc k) xs)"
+            using h_sum_set0 by (by100 simp)
+          have h_sum_list: "sum_list (take (Suc k) xs)
+                             = (\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)"
+            using sum_list_sum_nth[of "take (Suc k) xs"] atLeast0LessThan by (by100 simp)
+          have h_len: "(\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)
+                       = (\<Sum>i<Suc k. (take (Suc k) xs) ! i)"
+            using h_len_take by (by100 simp)
+          have h_nth: "\<And>i. i < Suc k \<Longrightarrow> (take (Suc k) xs) ! i = xs ! i"
+            using hk by (by100 simp)
+          have h_sum_nth: "(\<Sum>i<Suc k. (take (Suc k) xs) ! i)
+                           = (\<Sum>i<Suc k. xs ! i)"
+            using h_nth by (by100 simp)
+          have h_Vs_set: "Vs k = set (take (Suc k) xs)" unfolding Vs_def ..
+          have h_step1: "(\<Sum>v\<in>Vs k. v) = sum_list (take (Suc k) xs)"
+            using h_Vs_set h_sum_set by (by100 simp)
+          have h_step2: "(\<Sum>v\<in>Vs k. v)
+                          = (\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)"
+            using h_step1 h_sum_list by (by100 simp)
+          have h_step3: "(\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. (take (Suc k) xs) ! i)"
+            using h_step2 h_len by (by100 simp)
+          show "(\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. xs ! i)"
+            using h_step3 h_sum_nth by (by100 simp)
+        qed
+        have h_bary_sum: "\<And>k. k < length xs
+                            \<Longrightarrow> geotop_barycenter (\<sigma>_seq k)
+                                = (1 / real (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+        proof -
+          fix k assume hk: "k < length xs"
+          have h1: "geotop_barycenter (\<sigma>_seq k) = (1 / real (Suc k)) *\<^sub>R (\<Sum>v\<in>Vs k. v)"
+            by (rule h_bary_fmla[OF hk])
+          have h2: "(\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. xs ! i)" by (rule h_Vk_sum[OF hk])
+          show "geotop_barycenter (\<sigma>_seq k) = (1 / real (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
+            using h1 h2 by (by100 simp)
+        qed
+        show "x \<in> geotop_polyhedron bK"
+          sorry
+      qed
     qed
   qed
   have h_poly_sup: "geotop_polyhedron K \<subseteq> geotop_polyhedron bK"
