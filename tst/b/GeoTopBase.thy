@@ -3376,7 +3376,105 @@ proof -
       Proof: a HOL face of σ = conv hull (bary image of c) corresponds to
       a sub-flag c' ⊆ c (continuous sub-sequence), giving another bK simplex. **)
   have h_bK_K1: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> bK"
-    sorry \<comment> \<open>D-step 1.1: K.1 (face closure) via sub-flag correspondence.\<close>
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>_bK: "\<sigma> \<in> bK" and h_face: "geotop_is_face \<tau> \<sigma>"
+    obtain c where hc_flag: "c \<in> flags"
+               and h\<sigma>_hull: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<sigma>_bK unfolding bK_def by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) c"
+      using hc_flag unfolding flags_def by (by100 blast)
+    have hc_dist: "distinct c" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_geotop: "c \<in> geotop_flags K" using hc_flag h_flags_eq_geotop by (by100 simp)
+    (** Establish σ has bary ` set c as its vertex set. **)
+    define V :: "'a set" where "V = geotop_barycenter ` set c"
+    have hV_fin: "finite V" unfolding V_def by (by100 simp)
+    have hV_card: "card V = length c"
+      unfolding V_def
+      by (rule geotop_complex_flag_barycenter_card[OF hK hc_subK hc_dist])
+    have h_len_pos: "length c \<ge> 1"
+    proof -
+      have "length c > 0" using hc_ne by (by100 simp)
+      thus ?thesis by (by100 linarith)
+    qed
+    define n where "n = length c - 1"
+    have hV_card_n: "card V = n + 1" unfolding n_def using hV_card h_len_pos by (by100 simp)
+    have hV_ai: "\<not> affine_dependent V"
+      unfolding V_def
+      by (rule geotop_complex_flag_barycenter_affine_independent[OF hK hc_geotop])
+    have hV_gp: "geotop_general_position V n"
+      by (rule geotop_ai_imp_general_position[OF hV_fin hV_card_n hV_ai])
+    have h\<sigma>_hull_V: "\<sigma> = geotop_convex_hull V" unfolding V_def using h\<sigma>_hull by (by100 simp)
+    have h_nn: "n \<le> n" by (by100 simp)
+    have h\<sigma>_sv_V: "geotop_simplex_vertices \<sigma> V"
+      unfolding geotop_simplex_vertices_def
+      using hV_fin hV_card_n h_nn hV_gp h\<sigma>_hull_V by (by100 blast)
+    (** Unpack face: ∃V' W. simplex_vertices σ V' ∧ W ⊆ V' ∧ W ≠ ∅ ∧ τ = conv hull W. **)
+    obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                  and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                  and h\<tau>_hullW: "\<tau> = geotop_convex_hull W"
+      using h_face unfolding geotop_is_face_def by (by100 blast)
+    (** V' = V by uniqueness. **)
+    have hV'_eq: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF hV'_sv h\<sigma>_sv_V])
+    have hW_V: "W \<subseteq> V" using hW_V' hV'_eq by (by100 simp)
+    (** Construct c' = filter (λs. bary s ∈ W) c. **)
+    define c' :: "'a set list" where "c' = filter (\<lambda>s. geotop_barycenter s \<in> W) c"
+    have hc'_set: "set c' = {s \<in> set c. geotop_barycenter s \<in> W}"
+      unfolding c'_def by (by100 simp)
+    have hc'_dist: "distinct c'" unfolding c'_def using hc_dist by (by100 simp)
+    have hc'_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) c'"
+      unfolding c'_def using sorted_wrt_filter[OF hc_sorted] by (by100 blast)
+    have hc'_subK: "set c' \<subseteq> K" using hc'_set hc_subK by (by100 blast)
+    (** c' is non-empty: W ≠ ∅, W ⊆ V = bary ` set c, so ∃w∈W, ∃s∈set c. w = bary s. **)
+    have hc'_ne: "c' \<noteq> []"
+    proof -
+      obtain w where hw_W: "w \<in> W" using hW_ne by (by100 blast)
+      have hw_V: "w \<in> V" using hw_W hW_V by (by100 blast)
+      obtain s where hs_c: "s \<in> set c" and hw_eq: "w = geotop_barycenter s"
+        using hw_V unfolding V_def by (by100 blast)
+      have hs_c': "s \<in> set c'"
+        unfolding c'_def using hs_c hw_W hw_eq by (by100 simp)
+      have h_set_ne: "set c' \<noteq> {}"
+      proof
+        assume "set c' = {}"
+        thus False using hs_c' by (by100 simp)
+      qed
+      show ?thesis
+        using h_set_ne by (by100 auto)
+    qed
+    have hc'_flag: "c' \<in> flags"
+      unfolding flags_def
+      using hc'_ne hc'_subK hc'_sorted hc'_dist by (by100 blast)
+    (** bary ` set c' = W. **)
+    have h_bary_img_sub: "geotop_barycenter ` set c' \<subseteq> W"
+    proof
+      fix b assume hb: "b \<in> geotop_barycenter ` set c'"
+      obtain s where hs_c': "s \<in> set c'" and hb_eq: "b = geotop_barycenter s"
+        using hb by (by100 blast)
+      have hs_W: "geotop_barycenter s \<in> W"
+        using hs_c' hc'_set by (by100 blast)
+      show "b \<in> W" using hb_eq hs_W by (by100 simp)
+    qed
+    have h_W_sub_img: "W \<subseteq> geotop_barycenter ` set c'"
+    proof
+      fix w assume hw: "w \<in> W"
+      have hw_V: "w \<in> V" using hw hW_V by (by100 blast)
+      obtain s where hs_c: "s \<in> set c" and hw_eq: "w = geotop_barycenter s"
+        using hw_V unfolding V_def by (by100 blast)
+      have hs_bW: "geotop_barycenter s \<in> W" using hw hw_eq by (by100 simp)
+      have hs_c': "s \<in> set c'"
+        unfolding c'_def using hs_c hs_bW by (by100 simp)
+      show "w \<in> geotop_barycenter ` set c'" using hs_c' hw_eq by (by100 blast)
+    qed
+    have h_bary_img_eq: "geotop_barycenter ` set c' = W"
+      using h_bary_img_sub h_W_sub_img by (by100 blast)
+    have h\<tau>_bK: "\<tau> \<in> bK"
+      unfolding bK_def
+      using hc'_flag h_bary_img_eq h\<tau>_hullW by (by100 blast)
+    show "\<tau> \<in> bK" by (rule h\<tau>_bK)
+  qed
   (** STEP 1.2 (K.2): intersection of two bK-simplices is a face of both.
       Proof: σ_1, σ_2 ∈ bK correspond to flags c_1, c_2. σ_1 ∩ σ_2 = conv
       hull of common vertex subset, which corresponds to a sub-flag of both. **)
