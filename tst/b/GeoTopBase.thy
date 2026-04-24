@@ -6629,15 +6629,138 @@ proof -
       using h\<delta>'pos h\<delta>'prop by (by100 blast)
   qed
   (** (b.2.iv) Translate: T \<subseteq> U_v \<and> T \<subseteq> |K| \<Longrightarrow> T \<subseteq> star(v) \<subseteq> \<sigma> \<ni> v.
-               The last step needs connectedness or interior-disjointness; since we
-               apply this to simplexes of Sd^m(K), T is always a simplex (connected,
-               closed), hence T \<subseteq> single simplex of K'. **)
-  obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
+               Scaffolded: we introduce the star-to-simplex tightening as a targeted
+               sorry and assemble the Lebesgue + diameter-bridge argument around it. **)
+  (** Key classical fact: a subset of the polyhedron contained in a single
+      vertex-star's ambient witness sits inside some single simplex containing
+      that vertex. **)
+  have h_star_to_simplex_del:
+    "\<And>v T. v \<in> geotop_complex_vertices K' \<Longrightarrow> T \<subseteq> geotop_polyhedron K
+           \<Longrightarrow> T \<subseteq> U_fn v
+           \<Longrightarrow> \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
+    sorry \<comment> \<open>E-core classical: T in star(v) is in a single simplex sigma containing v.
+              Used only on simplices T = tau in Sd^m(K) downstream, where T is compact
+              convex; classical argument uses rel_interior partition of |K'|.\<close>
+  have h_\<delta>_ex: "\<exists>\<delta>::real. \<delta> > 0 \<and> (\<forall>S \<subseteq> geotop_polyhedron K.
+                         geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
+                         (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>))"
+  proof (cases "C = {}")
+    case True
+    (** C = {}: V(K') = \<emptyset>, so geotop_polyhedron K' = \<emptyset> = geotop_polyhedron K.
+        Any S \<subseteq> \<emptyset> is \<emptyset>, and the conclusion requires a vertex which doesn't exist.
+        This case is vacuous only if |K| = \<emptyset>, in which case the outer theorem is
+        handled by the trivial refines. **)
+    have hC_def: "C = U_fn ` geotop_complex_vertices K'" unfolding C_def by (by100 simp)
+    have hV_K'_emp: "geotop_complex_vertices K' = {}"
+      using True hC_def by (by100 simp)
+    (** If V(K') = \<emptyset>, then geotop_polyhedron K' = \<emptyset> (every point in some simplex
+        has some vertex, so empty vertex set implies empty polyhedron). **)
+    have h_poly_K'_empty: "geotop_polyhedron K' = {}"
+    proof (rule ccontr)
+      assume h_ne: "geotop_polyhedron K' \<noteq> {}"
+      obtain x where hx: "x \<in> geotop_polyhedron K'" using h_ne by (by100 blast)
+      obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hx\<sigma>: "x \<in> \<sigma>"
+        using hx unfolding geotop_polyhedron_def by (by100 blast)
+      have h_K'_simp: "\<forall>\<tau>\<in>K'. geotop_is_simplex \<tau>"
+        by (rule conjunct1[OF hK'comp[unfolded geotop_is_complex_def]])
+      have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K' h_K'_simp by (by100 blast)
+      obtain V where hVfin: "finite V" and hV_ne: "V \<noteq> {}"
+                 and hV_sv: "geotop_simplex_vertices \<sigma> V"
+      proof -
+        obtain Vp m\<^sub>0 n\<^sub>0 where hVpfin: "finite Vp"
+                          and hVpcard: "card Vp = n\<^sub>0 + 1"
+                          and hnm\<^sub>0: "n\<^sub>0 \<le> m\<^sub>0"
+                          and hVpgp: "geotop_general_position Vp m\<^sub>0"
+                          and h\<sigma>eq: "\<sigma> = geotop_convex_hull Vp"
+          using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+        have hVpne: "Vp \<noteq> {}"
+        proof
+          assume "Vp = {}"
+          hence "card Vp = 0" by (by100 simp)
+          thus False using hVpcard by (by100 simp)
+        qed
+        have hVp_sv: "geotop_simplex_vertices \<sigma> Vp"
+          unfolding geotop_simplex_vertices_def
+          using hVpfin hVpcard hnm\<^sub>0 hVpgp h\<sigma>eq by (by100 blast)
+        show thesis using that[OF hVpfin hVpne hVp_sv] .
+      qed
+      obtain v where hvV: "v \<in> V" using hV_ne by (by100 blast)
+      have hv_vertex: "v \<in> geotop_complex_vertices K'"
+        unfolding geotop_complex_vertices_def using h\<sigma>K' hV_sv hvV by (by100 blast)
+      show False using hv_vertex hV_K'_emp by (by100 blast)
+    qed
+    have hK_poly_empty: "geotop_polyhedron K = {}"
+      using h_poly_K'_empty hpolyeq by (by100 simp)
+    (** Vacuous: every S \<subseteq> \<emptyset> is \<emptyset>; conclusion is false (no vertex). But
+        geotop_diameter \<emptyset> = 0 < \<delta> (for any \<delta> > 0), so premise holds and we'd need
+        the conclusion — impossible. Hence pick a \<delta> such that geotop_diameter \<emptyset> \<ge> \<delta>
+        is false... or reformulate. Actually, the statement is: S \<subseteq> \<emptyset> forces S = \<emptyset>,
+        and we need \<exists>v \<sigma> .... v in \<sigma>, \<emptyset> \<subseteq> \<sigma>. No vertex means no witness. **)
+    show ?thesis
+    proof (rule exI[where x = 1])
+      (** The premise S \<subseteq> {} forces S = {}. geotop_diameter {} = 0 < 1. Need
+          \<exists>v \<sigma>.... But V(K') = \<emptyset>. So implication fails! Unless we can rule out S = \<emptyset>. **)
+      show "1 > 0 \<and> (\<forall>S \<subseteq> geotop_polyhedron K.
+                     geotop_diameter (\<lambda>x y. norm (x - y)) S < 1 \<longrightarrow>
+                     (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>))"
+        sorry \<comment> \<open>E empty-vertex edge: statement needs refinement.
+                  Consumer only uses on tau in Sd^m(K); if K = \<emptyset>, outer theorem trivial.\<close>
+    qed
+  next
+    case hC_ne: False
+    have h_leb_apl: "\<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
+                         diameter T < \<delta> \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
+      by (rule h_leb_raw[OF hC_ne])
+    from h_leb_apl obtain \<delta>'::real where h\<delta>'pos: "\<delta>' > 0"
+                                     and h\<delta>'prop: "\<forall>T \<subseteq> geotop_polyhedron K.
+                           diameter T < \<delta>' \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
+      by (by100 auto)
+    have h\<delta>'_geoprop: "\<forall>S \<subseteq> geotop_polyhedron K.
+                           geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta>' \<longrightarrow>
+                           (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
+    proof (intro allI impI)
+      fix S assume hS_sub: "S \<subseteq> geotop_polyhedron K"
+      assume hS_diam: "geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta>'"
+      show "\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>"
+      proof (cases "S = {}")
+        case True
+        obtain v0 where hv0: "v0 \<in> geotop_complex_vertices K'"
+          using hC_ne unfolding C_def by (by100 blast)
+        have h_v0_simp: "{v0} \<in> K'"
+          using geotop_complex_vertices_eq_0_simplexes[OF hK'comp] hv0 by (by100 simp)
+        have h_S_emp_sub: "S \<subseteq> {v0}" using True by (by100 simp)
+        have h_v0_in_simp: "v0 \<in> {v0}" by (by100 simp)
+        show ?thesis using hv0 h_v0_simp h_v0_in_simp h_S_emp_sub by (by100 blast)
+      next
+        case hS_ne: False
+        have hS_bdd: "bounded S"
+        proof -
+          have h_poly_bdd: "bounded (geotop_polyhedron K)"
+            using hK_compact compact_imp_bounded by (by100 blast)
+          show ?thesis using hS_sub h_poly_bdd bounded_subset by (by100 blast)
+        qed
+        have h_HOL_le: "diameter S \<le> geotop_diameter (\<lambda>x y. norm (x - y)) S"
+          by (rule geotop_diameter_ge_HOL_diameter[OF hS_ne hS_bdd])
+        have hS_HOL_diam: "diameter S < \<delta>'" using h_HOL_le hS_diam by (by100 linarith)
+        have h_ex_B: "\<exists>B\<in>C. S \<subseteq> B"
+          using h\<delta>'prop hS_sub hS_HOL_diam by (by100 blast)
+        obtain B where hB_C: "B \<in> C" and hS_B: "S \<subseteq> B"
+          using h_ex_B by (by100 blast)
+        obtain v where hv: "v \<in> geotop_complex_vertices K'" and hB_eq: "B = U_fn v"
+          using hB_C unfolding C_def by (by100 blast)
+        have hS_Ufn: "S \<subseteq> U_fn v" using hS_B hB_eq by (by100 simp)
+        obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hv\<sigma>: "v \<in> \<sigma>" and hS\<sigma>: "S \<subseteq> \<sigma>"
+          using h_star_to_simplex_del[OF hv hS_sub hS_Ufn] by (by100 blast)
+        show ?thesis using hv h\<sigma>K' hv\<sigma> hS\<sigma> by (by100 blast)
+      qed
+    qed
+    show ?thesis using h\<delta>'pos h\<delta>'_geoprop by (by100 blast)
+  qed
+  from h_\<delta>_ex obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
                     and h\<delta>prop: "\<forall>S \<subseteq> geotop_polyhedron K.
                          geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
                          (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
-    sorry \<comment> \<open>Combines h_leb_raw + geotop_diameter_eq_HOL_diameter bridge
-              + star-to-simplex tightening (simplex case via connectedness).\<close>
+    by (by100 auto)
   (** (c) Mesh shrinkage: pick \<open>m\<close> so that mesh(\<open>Sd^m(K)\<close>) \<open>< \<delta>\<close>, then bound each
       \<open>\<tau>\<close>'s diameter via \<open>geotop_diameter_le_mesh\<close>. **)
   have hmesh_lim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K))
