@@ -11250,6 +11250,61 @@ lemma geotop_complex_restrict_preserves_1dim:
   shows "geotop_complex_is_1dim {\<sigma>\<in>K. \<sigma> \<subseteq> B'}"
   using hK1dim unfolding geotop_complex_is_1dim_def by (by100 blast)
 
+(** Phase 1.A: inner-product projection is injective on a closed segment
+    between two distinct points. Key fact for endpoint-matching. **)
+lemma geotop_inner_diff_inj_on_closed_segment:
+  fixes a b :: "'a::euclidean_space"
+  assumes hab: "a \<noteq> b"
+  shows "inj_on (\<lambda>x. inner (b - a) x) (closed_segment a b)"
+proof (rule inj_onI)
+  fix x y assume hx: "x \<in> closed_segment a b" and hy: "y \<in> closed_segment a b"
+  assume hxy: "inner (b - a) x = inner (b - a) y"
+  obtain ux where hux_lb: "0 \<le> ux" and hux_ub: "ux \<le> 1"
+              and hx_eq: "x = (1-ux) *\<^sub>R a + ux *\<^sub>R b"
+    using hx unfolding closed_segment_def by (by100 blast)
+  obtain uy where huy_lb: "0 \<le> uy" and huy_ub: "uy \<le> 1"
+              and hy_eq: "y = (1-uy) *\<^sub>R a + uy *\<^sub>R b"
+    using hy unfolding closed_segment_def by (by100 blast)
+  have h_ba_pos: "0 < inner (b - a) (b - a)" using hab by (by100 simp)
+  (** Compute π x and π y in closed form. **)
+  have h_inner_add: "\<And>u::real. inner (b - a) ((1-u) *\<^sub>R a + u *\<^sub>R b)
+        = inner (b - a) ((1-u) *\<^sub>R a) + inner (b - a) (u *\<^sub>R b)"
+    by (rule inner_add_right)
+  have h_sc1: "\<And>u::real. inner (b - a) ((1-u) *\<^sub>R a) = (1-u) * inner (b - a) a"
+    by (rule inner_scaleR_right)
+  have h_sc2: "\<And>u::real. inner (b - a) (u *\<^sub>R b) = u * inner (b - a) b"
+    by (rule inner_scaleR_right)
+  have h_\<pi>_x: "inner (b - a) x = (1-ux) * inner (b - a) a + ux * inner (b - a) b"
+    using hx_eq h_inner_add h_sc1 h_sc2 by (by100 simp)
+  have h_\<pi>_y: "inner (b - a) y = (1-uy) * inner (b - a) a + uy * inner (b - a) b"
+    using hy_eq h_inner_add h_sc1 h_sc2 by (by100 simp)
+  (** Set π x = π y, derive ux = uy. **)
+  have h_coef1: "(1-ux) * inner (b - a) a + ux * inner (b - a) b = inner (b - a) x"
+    using h_\<pi>_x by (by100 simp)
+  have h_coef2: "inner (b - a) x = inner (b - a) y" using hxy by (by100 simp)
+  have h_coef3: "inner (b - a) y = (1-uy) * inner (b - a) a + uy * inner (b - a) b"
+    using h_\<pi>_y by (by100 simp)
+  have h_coef: "(1-ux) * inner (b - a) a + ux * inner (b - a) b
+              = (1-uy) * inner (b - a) a + uy * inner (b - a) b"
+    using h_coef1 h_coef2 h_coef3 by (by100 simp)
+  have h_diff_eq: "(ux - uy) * (inner (b - a) b - inner (b - a) a) = 0"
+    using h_coef by (by100 argo)
+  have h_ba_eq: "inner (b - a) (b - a) = inner (b - a) b - inner (b - a) a"
+    by (rule inner_diff_right)
+  have h_diff_pos: "inner (b - a) b - inner (b - a) a > 0"
+    using h_ba_eq h_ba_pos by (by100 linarith)
+  have h_diff_ne0: "inner (b - a) b - inner (b - a) a \<noteq> 0"
+    using h_diff_pos by (by100 linarith)
+  have h_uxy_zero: "ux - uy = 0"
+  proof -
+    have h_or: "ux - uy = 0 \<or> inner (b - a) b - inner (b - a) a = 0"
+      using h_diff_eq by (by100 simp)
+    show ?thesis using h_or h_diff_ne0 by (by100 blast)
+  qed
+  have h_uxy_eq: "ux = uy" using h_uxy_zero by (by100 simp)
+  show "x = y" using hx_eq hy_eq h_uxy_eq by (by100 simp)
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
