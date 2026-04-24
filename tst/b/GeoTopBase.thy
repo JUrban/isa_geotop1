@@ -3862,6 +3862,31 @@ proof -
     using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
 qed
 
+(** D-infrastructure: chain-simplex is compact. Useful for downstream
+    diameter/mesh/topological reasoning. **)
+lemma geotop_bK_elt_compact:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_fl: "c \<in> geotop_flags K"
+  shows "compact (geotop_convex_hull (geotop_barycenter ` set c))"
+proof -
+  have h_bary_fin: "finite (geotop_barycenter ` set c)" by (by100 simp)
+  have h_hull_HOL: "geotop_convex_hull (geotop_barycenter ` set c)
+                     = convex hull (geotop_barycenter ` set c)"
+    by (rule geotop_convex_hull_eq_HOL)
+  have h_compact: "compact (convex hull (geotop_barycenter ` set c))"
+    by (rule finite_imp_compact_convex_hull[OF h_bary_fin])
+  show ?thesis using h_compact h_hull_HOL by (by100 simp)
+qed
+
+(** D-infrastructure: chain-simplex is bounded (immediate from compactness). **)
+lemma geotop_bK_elt_bounded:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_fl: "c \<in> geotop_flags K"
+  shows "bounded (geotop_convex_hull (geotop_barycenter ` set c))"
+  using geotop_bK_elt_compact[OF hK hc_fl] compact_imp_bounded by (by100 blast)
+
 (** D-infrastructure for dim preservation: in a complex, strict subset
     between simplices implies strict dim decrease.
     Proof: s ⊊ t, both in K. K.2 gives s = s ∩ t face of t. Hence vertex
