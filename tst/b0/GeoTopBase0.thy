@@ -7497,6 +7497,84 @@ qed
       (d) Assignment: every \<open>\<tau> \<in> Sd^m(K)\<close> lies in some \<open>st_{K'}(v)\<close>; use interior
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
+(** Support-of-bary-coords lemma: if x is expressed as a bary combo of AI V with
+    possibly-zero coefficients, then x lies in the rel_interior of the convex
+    hull of the SUPPORT (nonzero-coeff vertices). Consequence of HOL-Analysis'
+    rel_interior_convex_hull_explicit applied to the support. Useful for
+    identifying the minimal K-carrier of any point in a chain-simplex. **)
+lemma geotop_bary_in_rel_interior_support:
+  fixes V :: "'a::euclidean_space set"
+  assumes hVfin: "finite V"
+  assumes hVai: "\<not> affine_dependent V"
+  assumes h\<alpha>nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+  assumes h\<alpha>sum: "sum \<alpha> V = 1"
+  assumes hx: "x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+  defines "S \<equiv> {v \<in> V. 0 < \<alpha> v}"
+  shows "x \<in> rel_interior (convex hull S)"
+proof -
+  have hS_sub: "S \<subseteq> V" unfolding S_def by (by100 blast)
+  have hS_fin: "finite S" unfolding S_def using hVfin by (by100 simp)
+  have hS_ai: "\<not> affine_dependent S"
+    by (rule affine_independent_subset[OF hVai hS_sub])
+  (** On V-\<setminus>S, \<alpha>=0, so sum/combo restricts to S. **)
+  have h_VmS_zero: "\<forall>v\<in>V-S. \<alpha> v = 0"
+  proof
+    fix v assume hv: "v \<in> V-S"
+    have hvV: "v \<in> V" using hv by (by100 blast)
+    have hv_nS: "v \<notin> S" using hv by (by100 blast)
+    have h_not_pos: "\<not> (0 < \<alpha> v)" using hv_nS hvV unfolding S_def by (by100 blast)
+    have h_nn: "0 \<le> \<alpha> v" using h\<alpha>nn hvV by (by100 blast)
+    show "\<alpha> v = 0" using h_not_pos h_nn by (by100 linarith)
+  qed
+  (** sum \<alpha> S = sum \<alpha> V - 0 = 1. **)
+  have hV_split: "V = S \<union> (V - S)" using hS_sub by (by100 blast)
+  have h_disj: "S \<inter> (V - S) = {}" by (by100 blast)
+  have h_VmS_fin: "finite (V - S)" using hVfin by (by100 simp)
+  have h_split_sum: "sum \<alpha> V = sum \<alpha> S + sum \<alpha> (V - S)"
+  proof -
+    have h1: "sum \<alpha> (S \<union> (V - S)) = sum \<alpha> S + sum \<alpha> (V - S)"
+      by (rule sum.union_disjoint[OF hS_fin h_VmS_fin h_disj])
+    have h2: "sum \<alpha> V = sum \<alpha> (S \<union> (V - S))"
+      using hV_split by (by100 simp)
+    show ?thesis using h1 h2 by (by100 simp)
+  qed
+  have h_VmS_sum: "sum \<alpha> (V - S) = 0"
+    using h_VmS_zero by (by100 simp)
+  have h\<alpha>S_sum: "sum \<alpha> S = 1"
+    using h_split_sum h_VmS_sum h\<alpha>sum by (by100 linarith)
+  have h_split_combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)
+                       = (\<Sum>v\<in>S. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v)"
+  proof -
+    have h1: "(\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)
+              = (\<Sum>v\<in>S. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v)"
+      by (rule sum.union_disjoint[OF hS_fin h_VmS_fin h_disj])
+    have h2: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)"
+      using hV_split by (by100 simp)
+    show ?thesis using h1 h2 by (by100 simp)
+  qed
+  have h_VmS_combo: "(\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v) = 0"
+  proof -
+    have h_zero_all: "\<forall>v\<in>V - S. \<alpha> v *\<^sub>R v = 0"
+    proof
+      fix v assume hv: "v \<in> V - S"
+      have h_val0: "\<alpha> v = 0" using h_VmS_zero hv by (by100 blast)
+      show "\<alpha> v *\<^sub>R v = 0" using h_val0 by (by100 simp)
+    qed
+    show ?thesis by (rule sum.neutral[OF h_zero_all])
+  qed
+  have h\<alpha>S_combo: "(\<Sum>v\<in>S. \<alpha> v *\<^sub>R v) = x"
+    using h_split_combo h_VmS_combo hx by (by100 simp)
+  (** \<alpha>_v > 0 on S (by definition of S). **)
+  have h\<alpha>S_pos: "\<forall>v\<in>S. 0 < \<alpha> v" unfolding S_def by (by100 blast)
+  (** Apply rel_interior_convex_hull_explicit. **)
+  have h_ri_char: "rel_interior (convex hull S)
+                    = {y. \<exists>u. (\<forall>x\<in>S. 0 < u x) \<and> sum u S = 1 \<and> (\<Sum>x\<in>S. u x *\<^sub>R x) = y}"
+    by (rule rel_interior_convex_hull_explicit[OF hS_ai])
+  have h_witness: "\<exists>u. (\<forall>x\<in>S. 0 < u x) \<and> sum u S = 1 \<and> (\<Sum>x\<in>S. u x *\<^sub>R x) = x"
+    using h\<alpha>S_pos h\<alpha>S_sum h\<alpha>S_combo by (by100 blast)
+  show ?thesis using h_ri_char h_witness by (by100 blast)
+qed
+
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
     polyhedral structure — convex sets respect the simplex decomposition.
