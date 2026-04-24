@@ -3365,6 +3365,19 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: for finite K, geotop_flags K is finite. **)
+lemma geotop_flags_finite:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_fin: "finite K"
+  shows "finite (geotop_flags K)"
+proof -
+  have h_sub: "geotop_flags K \<subseteq> {c. set c \<subseteq> K \<and> distinct c}"
+    unfolding geotop_flags_def by (by100 blast)
+  have h_outer_fin: "finite {c. set c \<subseteq> K \<and> distinct c}"
+    by (rule geotop_finite_distinct_lists_over_finite[OF hK_fin])
+  show ?thesis using finite_subset[OF h_sub h_outer_fin] by (by100 simp)
+qed
+
 (** D-support: for c ∈ flags and i < j < length c, c ! i ⊊ c ! j (strict). **)
 lemma geotop_flags_chain_strict:
   fixes K :: "'a::euclidean_space set set"
