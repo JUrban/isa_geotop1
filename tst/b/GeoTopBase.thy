@@ -3968,9 +3968,30 @@ proof -
     have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>" using h\<tau>_hullHOL h_hull_HOL_sub by (by100 simp)
     show "\<exists>\<sigma>'\<in>K. \<tau> \<subseteq> \<sigma>'" using h\<sigma>_K h\<tau>_sub_\<sigma> by (by100 blast)
   qed
-  (** (2a) polyhedron bK = polyhedron K — deferred (requires barycentric decomposition). **)
+  (** (2a) polyhedron bK = polyhedron K. Split into two inclusions.
+      (⊆) is immediate from refines: each τ ∈ bK is ⊆ some σ ∈ K.
+      (⊇) requires barycentric decomposition: every point in a K-simplex
+      lies in some chain-simplex of bK. **)
+  have h_poly_sub: "geotop_polyhedron bK \<subseteq> geotop_polyhedron K"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron bK"
+    obtain \<tau> where h\<tau>: "\<tau> \<in> bK" and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<sigma>\<^sub>K where h\<sigma>\<^sub>K_K: "\<sigma>\<^sub>K \<in> K" and h\<tau>\<sigma>: "\<tau> \<subseteq> \<sigma>\<^sub>K"
+      using h\<tau> h_bK_refines unfolding geotop_refines_def by (by100 blast)
+    have hx\<sigma>: "x \<in> \<sigma>\<^sub>K" using hx\<tau> h\<tau>\<sigma> by (by100 blast)
+    show "x \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<sigma>\<^sub>K_K hx\<sigma> by (by100 blast)
+  qed
+  have h_poly_sup: "geotop_polyhedron K \<subseteq> geotop_polyhedron bK"
+    sorry \<comment> \<open>D-step 2a-sup: every point in |K| lies in some chain-simplex of bK.
+              Classical barycentric decomposition: induction on dim(σ) for σ ∈ K.
+              Base: σ = {v}, flag [{v}] witnesses v ∈ bK. Step: x ∈ σ of dim d,
+              line from bary σ through x hits boundary at y ∈ face σ' (dim d-1),
+              IH gives y ∈ chain-simplex [..., σ']; prepend σ to get chain-simplex
+              [..., σ', σ] containing x (convex combination of bary σ and y).\<close>
   have h_bK_poly: "geotop_polyhedron bK = geotop_polyhedron K"
-    sorry \<comment> \<open>D-step 2a: polyhedron equality (barycentric decomposition of σ ∈ K).\<close>
+    using h_poly_sub h_poly_sup by (by100 blast)
   (** Assemble (2a) + (2b) + complex assumptions. **)
   have h_bK_sub: "geotop_is_subdivision bK K"
     unfolding geotop_is_subdivision_def
