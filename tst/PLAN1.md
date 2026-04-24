@@ -743,3 +743,55 @@ Each lemma gets its own 120s slice of the session budget.
 - **F h_f_exists** (line 4854). Classical barycentric extension; ~200 lines.
 
 Sorry count: 9 → 6 real content sorries. Build stable: 8s cached, ~42s fresh.
+
+## Session progress 2026-04-24 (continuation 2)
+
+### Closed additionally this session (4 more sorries + infrastructure)
+
+1. **Sd block reorder** — moved classical_Sd_exists past all D-helpers
+   (now at line ~3316) so it can consume flag_barycenter_card,
+   flag_barycenter_affine_independent, flags_with_top_in_finite_finite.
+
+2. **Type class tightening** — all Sd/iterated_Sd lemmas lifted from
+   real_normed_vector to euclidean_space (no downstream breakage).
+
+3. **geotop_bK_elt_subset_top** (top-level): chain-simplex lies in last c.
+
+4. **geotop_bK_elt_simplex_vertices** (top-level): bary ` set c is the
+   unique simplex vertex set of conv hull (bary ` set c).
+
+5. **geotop_bK_elt_simplex** (top-level): chain-simplex is a simplex.
+
+6. **geotop_complex_proper_subset_dim_less** (top-level, ~200 lines):
+   for s subset of t in complex K, simplex_dim s < simplex_dim t. Combines
+   K.2 face-closure with AI vertex set uniqueness via the extreme-point
+   characterization (`extreme_point_of_convex_hull_affine_independent`).
+
+7. **h_bK_K0** (D1.0 wrapper): FULLY PROVE bK elements are simplices.
+
+8. **h_bK_K3** (D1.3 local finiteness): FULLY PROVE via flags_with_top-finite.
+
+9. **h_bK_K1** (D1.1 face closure): FULLY PROVE via filter-by-membership
+   construction for sub-flag.
+
+10. **h_bK_K2 scaffold** (D1.2): reduce to one key classical fact —
+    chain-simplex intersection formula.
+
+11. **h_bK_poly scaffold** (D2a): forward direction ⊆ FULLY PROVE via
+    refines; leave ⊇ as targeted barycentric-decomposition sorry.
+
+12. **h_dim_preserve** (D4, Moise Lemma 4.11 first part): FULLY PROVE via
+    dim-witness inj_on argument, {0..n} cardinality bound.
+
+### Current sorry count: 5
+
+Remaining targeted sorries:
+- `h_K2_intersect_eq` (K.2 classical fact)
+- `h_poly_sup` (D2a-sup barycentric decomposition)
+- `h_mesh_shrink` (D5 Moise Lemma 4.11 second part)
+- `h_delta_bridge` (E Lebesgue tightening)
+- `h_f_exists` (F classical barycentric extension)
+
+All remaining sorries are genuinely deep classical results requiring
+100-300 lines each (plus support lemmas). Infrastructure is now rich
+enough that each can be attacked independently in future sessions.
