@@ -1032,3 +1032,41 @@ Scaffolded two major remaining sorries with their classical structure:
 Each remaining sorry is now targeted to a specific well-understood classical
 fact. Net structural progress per CLAUDE.md Phase 3 "more and more detailed
 formal proof sketches".
+
+## Final state after extended push (5 sorries)
+
+### Remaining sorries with precise classification:
+
+1. **h_K2_intersect_eq non-nested case** (line ~4628)
+   — Core classical fact about chain-simplex intersections when neither chain
+   is contained in the other. Requires Moise's AI argument on combined bary
+   image. ~150 lines.
+
+2. **h_simp_in_bK dim > 0 case** (line ~5030)
+   — Barycentric decomposition: sort vertices by decreasing bary coord,
+   chain of faces gives covering. ~200 lines.
+
+3. **h_star_to_simplex_del** (line ~6641)
+   — E-core: T ⊆ star(v) is in a single simplex containing v. Used only
+   on simplices tau in Sd^m K where T is compact convex. Classical proof
+   via rel_interior partition + convexity. ~100 lines.
+
+4. **C = {} edge case** (line ~6706)
+   — Technical edge case when V(K') = {}. Statement is actually false in
+   this branch (empty vertex set means no v to witness). Requires outer
+   theorem restructuring to handle K = {} separately via trivial
+   reflexive subdivision. ~50 lines restructure.
+
+5. **h_f_exists** (line ~6991)
+   — F: classical barycentric extension of vertex maps. ~200 lines.
+
+### How the sorries relate
+
+- Sorries 1-4 together would complete the classical development of
+  barycentric subdivisions (Moise early.tex §4.4-4.17).
+- Sorry 5 is separate: barycentric extension of homeomorphisms (Moise §3).
+
+All 5 are deep but well-documented. Infrastructure for attacking each is
+comprehensive: barycenter bounds, diameter bridges, flag machinery,
+simplex vertex uniqueness, convex hull bounds, and the Lebesgue + mesh
+shrinkage foundation.
