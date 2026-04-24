@@ -5295,15 +5295,17 @@ proof -
                            = (\<Sum>i<Suc k. xs ! i)"
             using h_nth by (by100 simp)
           have h_Vs_set: "Vs k = set (take (Suc k) xs)" unfolding Vs_def ..
+          have h_Vs_set_sum: "(\<Sum>v\<in>Vs k. v) = (\<Sum>v\<in>set (take (Suc k) xs). v)"
+            using h_Vs_set by (by100 simp)
           have h_step1: "(\<Sum>v\<in>Vs k. v) = sum_list (take (Suc k) xs)"
-            using h_Vs_set h_sum_set by (by100 simp)
+            by (rule HOL.trans[OF h_Vs_set_sum h_sum_set])
           have h_step2: "(\<Sum>v\<in>Vs k. v)
                           = (\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)"
-            using h_step1 h_sum_list by (by100 simp)
+            by (rule HOL.trans[OF h_step1 h_sum_list])
           have h_step3: "(\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. (take (Suc k) xs) ! i)"
-            using h_step2 h_len by (by100 simp)
+            by (rule HOL.trans[OF h_step2 h_len])
           show "(\<Sum>v\<in>Vs k. v) = (\<Sum>i<Suc k. xs ! i)"
-            using h_step3 h_sum_nth by (by100 simp)
+            by (rule HOL.trans[OF h_step3 h_sum_nth])
         qed
         have h_bary_sum: "\<And>k. k < length xs
                             \<Longrightarrow> geotop_barycenter (\<sigma>_seq k)
@@ -7495,6 +7497,24 @@ qed
       (d) Assignment: every \<open>\<tau> \<in> Sd^m(K)\<close> lies in some \<open>st_{K'}(v)\<close>; use interior
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
+(** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
+    is contained in some single simplex. This is a foundational fact about
+    polyhedral structure — convex sets respect the simplex decomposition.
+    Proof sketch: convex T is connected; |K'| is a disjoint union of rel_interiors;
+    straight-line paths through incomparable simplices exit |K'| (affine extrapolation
+    lands outside the simplicial complex); hence T's K-carriers form a structure
+    contained in a single maximal simplex. ~200 lines of combinatorial-topological
+    reasoning (rel_interior partition + affine hull argument). **)
+lemma geotop_convex_in_complex_in_simplex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hT_conv: "convex T"
+  assumes hT_ne: "T \<noteq> {}"
+  assumes hT_sub: "T \<subseteq> geotop_polyhedron K"
+  shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
+  sorry
+
 lemma geotop_iterated_Sd_refines_subdivision:
   fixes K K' :: "'a::euclidean_space set set"
   assumes hK: "finite K"
@@ -7614,18 +7634,46 @@ proof -
   (** (b.2.iv) Translate: T \<subseteq> U_v \<and> T \<subseteq> |K| \<Longrightarrow> T \<subseteq> star(v) \<subseteq> \<sigma> \<ni> v.
                Scaffolded: we introduce the star-to-simplex tightening as a targeted
                sorry and assemble the Lebesgue + diameter-bridge argument around it. **)
-  (** Key classical fact: a subset of the polyhedron contained in a single
-      vertex-star's ambient witness sits inside some single simplex containing
-      that vertex. **)
+  (** Key classical fact: a CONVEX nonempty subset of the polyhedron contained in
+      a single vertex-star's ambient witness sits inside some single simplex
+      containing that vertex. Strengthened to require convex T (downstream usage
+      has T = tau a simplex, hence convex). **)
   have h_star_to_simplex_del:
     "\<And>v T. v \<in> geotop_complex_vertices K' \<Longrightarrow> T \<subseteq> geotop_polyhedron K
-           \<Longrightarrow> T \<subseteq> U_fn v
+           \<Longrightarrow> T \<subseteq> U_fn v \<Longrightarrow> convex T \<Longrightarrow> T \<noteq> {}
            \<Longrightarrow> \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
-    sorry \<comment> \<open>E-core classical: T in star(v) is in a single simplex sigma containing v.
-              Used only on simplices T = tau in Sd^m(K) downstream, where T is compact
-              convex; classical argument uses rel_interior partition of |K'|.\<close>
+  proof -
+    fix v T
+    assume hv: "v \<in> geotop_complex_vertices K'"
+       and hT_sub_K: "T \<subseteq> geotop_polyhedron K"
+       and hT_Ufn: "T \<subseteq> U_fn v"
+       and hT_conv: "convex T" and hT_ne: "T \<noteq> {}"
+    have hT_sub_K': "T \<subseteq> geotop_polyhedron K'" using hT_sub_K hpolyeq by (by100 simp)
+    (** Apply the standalone convex-in-complex lemma. **)
+    obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hT\<sigma>: "T \<subseteq> \<sigma>"
+      using geotop_convex_in_complex_in_simplex[OF hK'comp hK'fin hT_conv hT_ne hT_sub_K']
+      by (by100 blast)
+    (** Show v \<in> \<sigma> via a point x \<in> T landing in rel_interior of a v-containing simplex. **)
+    obtain x where hxT: "x \<in> T" using hT_ne by (by100 blast)
+    have hx_open_star: "x \<in> geotop_open_star K' v"
+    proof -
+      have hx_K': "x \<in> geotop_polyhedron K'" using hxT hT_sub_K' by (by100 blast)
+      have hx_Ufn: "x \<in> U_fn v" using hxT hT_Ufn by (by100 blast)
+      have h_star_eq: "geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
+        using h_U_fn_prop hv by (by100 blast)
+      show ?thesis using hx_K' hx_Ufn h_star_eq by (by100 blast)
+    qed
+    obtain \<sigma>_v where h\<sigma>_vK': "\<sigma>_v \<in> K'" and hv\<sigma>_v: "v \<in> \<sigma>_v"
+                  and hx_ri: "x \<in> rel_interior \<sigma>_v"
+      using hx_open_star unfolding geotop_open_star_def by (by100 blast)
+    have hx\<sigma>: "x \<in> \<sigma>" using hxT hT\<sigma> by (by100 blast)
+    have h\<sigma>v_sub: "\<sigma>_v \<subseteq> \<sigma>"
+      by (rule geotop_complex_rel_interior_imp_subset[OF hK'comp h\<sigma>_vK' h\<sigma>K' hx_ri hx\<sigma>])
+    have hv\<sigma>: "v \<in> \<sigma>" using hv\<sigma>_v h\<sigma>v_sub by (by100 blast)
+    show "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>" using h\<sigma>K' hv\<sigma> hT\<sigma> by (by100 blast)
+  qed
   have h_\<delta>_ex: "\<exists>\<delta>::real. \<delta> > 0 \<and> (\<forall>S \<subseteq> geotop_polyhedron K.
-                         S \<noteq> {} \<longrightarrow>
+                         S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
                          geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
                          (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>))"
   proof (cases "C = {}")
@@ -7681,13 +7729,14 @@ proof -
         is false... or reformulate. Actually, the statement is: S \<subseteq> \<emptyset> forces S = \<emptyset>,
         and we need \<exists>v \<sigma> .... v in \<sigma>, \<emptyset> \<subseteq> \<sigma>. No vertex means no witness. **)
     (** Vacuous: no nonempty S \<subseteq> \<emptyset>. **)
-    have h_vacuous: "\<forall>S \<subseteq> geotop_polyhedron K. S \<noteq> {} \<longrightarrow>
+    have h_vacuous: "\<forall>S \<subseteq> geotop_polyhedron K. S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
                        geotop_diameter (\<lambda>x y. norm (x - y)) S < 1 \<longrightarrow>
                        (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
     proof (intro allI impI)
       fix S :: "'a set"
       assume hS_sub: "S \<subseteq> geotop_polyhedron K"
       assume hS_ne: "S \<noteq> {}"
+      assume hS_conv: "convex S"
       assume hS_diam: "geotop_diameter (\<lambda>x y. norm (x - y)) S < 1"
       have hS_emp: "S = {}" using hS_sub hK_poly_empty by (by100 blast)
       show "\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>"
@@ -7705,12 +7754,13 @@ proof -
                            diameter T < \<delta>' \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
       by (by100 auto)
     have h\<delta>'_geoprop: "\<forall>S \<subseteq> geotop_polyhedron K.
-                           S \<noteq> {} \<longrightarrow>
+                           S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
                            geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta>' \<longrightarrow>
                            (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
     proof (intro allI impI)
       fix S assume hS_sub: "S \<subseteq> geotop_polyhedron K"
       assume hS_ne: "S \<noteq> {}"
+      assume hS_conv: "convex S"
       assume hS_diam: "geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta>'"
       show "\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>"
       proof -
@@ -7731,7 +7781,7 @@ proof -
           using hB_C unfolding C_def by (by100 blast)
         have hS_Ufn: "S \<subseteq> U_fn v" using hS_B hB_eq by (by100 simp)
         obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hv\<sigma>: "v \<in> \<sigma>" and hS\<sigma>: "S \<subseteq> \<sigma>"
-          using h_star_to_simplex_del[OF hv hS_sub hS_Ufn] by (by100 blast)
+          using h_star_to_simplex_del[OF hv hS_sub hS_Ufn hS_conv hS_ne] by (by100 blast)
         show ?thesis using hv h\<sigma>K' hv\<sigma> hS\<sigma> by (by100 blast)
       qed
     qed
@@ -7739,7 +7789,7 @@ proof -
   qed
   from h_\<delta>_ex obtain \<delta>::real where h\<delta>pos: "\<delta> > 0"
                     and h\<delta>prop: "\<forall>S \<subseteq> geotop_polyhedron K.
-                         S \<noteq> {} \<longrightarrow>
+                         S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
                          geotop_diameter (\<lambda>x y. norm (x - y)) S < \<delta> \<longrightarrow>
                          (\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>)"
     by (by100 auto)
@@ -7808,24 +7858,26 @@ proof -
     have h_Sdm_simp: "\<forall>\<sigma>\<in>geotop_iterated_Sd m K. geotop_is_simplex \<sigma>"
       using conjunct1[OF h_Sdm_comp_loc[unfolded geotop_is_complex_def]] by (by100 blast)
     have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau> h_Sdm_simp by (by100 blast)
+    obtain V\<^sub>\<tau> m\<^sub>\<tau> n\<^sub>\<tau> where hV\<tau>fin: "finite V\<^sub>\<tau>" and hV\<tau>card: "card V\<^sub>\<tau> = n\<^sub>\<tau> + 1"
+                       and h\<tau>_hull: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
+      using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have hV\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
+    proof
+      assume "V\<^sub>\<tau> = {}"
+      hence "card V\<^sub>\<tau> = 0" by (by100 simp)
+      thus False using hV\<tau>card by (by100 simp)
+    qed
+    have h\<tau>_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
+      using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
     have h\<tau>_ne: "\<tau> \<noteq> {}"
     proof -
-      obtain V\<^sub>\<tau> m\<^sub>\<tau> n\<^sub>\<tau> where hV\<tau>fin: "finite V\<^sub>\<tau>" and hV\<tau>card: "card V\<^sub>\<tau> = n\<^sub>\<tau> + 1"
-                         and h\<tau>_hull: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
-        using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
-      have hV\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
-      proof
-        assume "V\<^sub>\<tau> = {}"
-        hence "card V\<^sub>\<tau> = 0" by (by100 simp)
-        thus False using hV\<tau>card by (by100 simp)
-      qed
-      have h\<tau>_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
-        using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
       have h_V_sub: "V\<^sub>\<tau> \<subseteq> convex hull V\<^sub>\<tau>" by (rule hull_subset)
       show ?thesis using h_V_sub hV\<tau>ne h\<tau>_HOL by (by100 blast)
     qed
+    have h\<tau>_conv: "convex \<tau>"
+      using h\<tau>_HOL convex_convex_hull[of V\<^sub>\<tau>] by (by100 simp)
     have hstar: "\<exists>v\<in>geotop_complex_vertices K'. \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> \<tau> \<subseteq> \<sigma>"
-      using h\<delta>prop h\<tau>_sub_K h\<tau>_ne h\<tau>_diam by (by100 blast)
+      using h\<delta>prop h\<tau>_sub_K h\<tau>_ne h\<tau>_conv h\<tau>_diam by (by100 blast)
     show "\<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>" using hstar by (by100 blast)
   qed
   (** (e) Putting it together: \<open>Sd^m(K) < K'\<close>, since it refines \<open>K'\<close> and
