@@ -4880,13 +4880,24 @@ proof -
     show "x \<in> geotop_polyhedron K"
       unfolding geotop_polyhedron_def using h\<sigma>\<^sub>K_K hx\<sigma> by (by100 blast)
   qed
+  (** D-step 2a-sup: every point in |K| lies in some chain-simplex of bK.
+      Classical barycentric decomposition. Scaffolded into the core
+      per-simplex fact and the union lifting. **)
+  have h_simp_in_bK:
+    "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> \<sigma> \<subseteq> geotop_polyhedron bK"
+    sorry \<comment> \<open>D2a-sup core: each K-simplex is covered by chain-simplices.
+              Proof: for x in sigma with bary coords alpha_i on vertices, sort
+              vertices by decreasing alpha; chain sigma_0 subsetneq ... subsetneq sigma_n = sigma
+              gives a flag. x = sum beta_k * bary sigma_k with beta_k nonneg, sum 1.\<close>
   have h_poly_sup: "geotop_polyhedron K \<subseteq> geotop_polyhedron bK"
-    sorry \<comment> \<open>D-step 2a-sup: every point in |K| lies in some chain-simplex of bK.
-              Classical barycentric decomposition: induction on dim(σ) for σ ∈ K.
-              Base: σ = {v}, flag [{v}] witnesses v ∈ bK. Step: x ∈ σ of dim d,
-              line from bary σ through x hits boundary at y ∈ face σ' (dim d-1),
-              IH gives y ∈ chain-simplex [..., σ']; prepend σ to get chain-simplex
-              [..., σ', σ] containing x (convex combination of bary σ and y).\<close>
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<sigma>_sub: "\<sigma> \<subseteq> geotop_polyhedron bK"
+      by (rule h_simp_in_bK[OF h\<sigma>K])
+    show "x \<in> geotop_polyhedron bK" using hx\<sigma> h\<sigma>_sub by (by100 blast)
+  qed
   have h_bK_poly: "geotop_polyhedron bK = geotop_polyhedron K"
     using h_poly_sub h_poly_sup by (by100 blast)
   (** Assemble (2a) + (2b) + complex assumptions. **)
