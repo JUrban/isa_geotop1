@@ -1935,6 +1935,92 @@ qed
     subdivision of \<open>K\<close>. The \<open>SOME\<close>-defined witness is selected from the set
     of subdivisions of K whose 0-simplexes contain those of K; this set is
     non-empty (take \<open>K\<close> itself), so \<open>SOME\<close> picks something with that property. **)
+(** D-support: barycenter of a simplex is in the simplex. Classical fact:
+    barycenter = convex combination of vertices with equal weights 1/card V,
+    hence ∈ conv hull V = simplex. **)
+lemma geotop_barycenter_in_simplex:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  shows "geotop_barycenter \<sigma> \<in> \<sigma>"
+proof -
+  obtain V m n where hVfin: "finite V" and hVcard: "card V = n + 1"
+                 and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+                 and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}"
+  proof
+    assume "V = {}"
+    hence "card V = 0" by (by100 simp)
+    thus False using hVcard by (by100 simp)
+  qed
+  have hV_card_pos: "card V > 0" using hVcard by (by100 simp)
+  have h_sv: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hVcard hnm hVgp h\<sigma>_hull by (by100 blast)
+  (** The candidate barycenter = equal-weight combination of V's vertices. **)
+  define u_V where "u_V = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+  have h_ex_witness: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                          u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    unfolding u_V_def using h_sv by (by100 blast)
+  (** barycenter σ picks some such u_V via SOME; its value ∈ σ. **)
+  have h_bary_char:
+    "\<forall>u. (\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+               u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)) \<longrightarrow> u \<in> \<sigma>"
+  proof (intro allI impI)
+    fix u assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                           u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                 and hu_val: "u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+      using hu by (by100 blast)
+    have hV'fin: "finite V'"
+      using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    obtain m' n' where hV'card: "card V' = n' + 1"
+      using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV'_card_pos: "card V' > 0" using hV'card by (by100 simp)
+    have h\<sigma>_hull': "\<sigma> = geotop_convex_hull V'"
+      using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_hull'_HOL: "\<sigma> = convex hull V'"
+      using h\<sigma>_hull' geotop_convex_hull_eq_HOL by (by100 simp)
+    (** u is a convex combination: coefficients 1/card V' ≥ 0, sum = 1. **)
+    have h_coef_nn: "\<forall>w\<in>V'. 1 / real (card V') \<ge> 0" using hV'_card_pos by (by100 simp)
+    have h_coef_sum: "(\<Sum>w\<in>V'. 1 / real (card V')) = 1"
+    proof -
+      have h_const_sum: "(\<Sum>w\<in>V'. 1 / real (card V')) = real (card V') * (1 / real (card V'))"
+        by (by100 simp)
+      have h_mul: "real (card V') * (1 / real (card V')) = 1" using hV'_card_pos by (by100 simp)
+      show ?thesis using h_const_sum h_mul by (by100 simp)
+    qed
+    have h_u_in_hull: "u \<in> convex hull V'"
+    proof -
+      let ?t = "\<lambda>w. (1 / real (card V')::real)"
+      have h_t_nn: "\<forall>w\<in>V'. 0 \<le> ?t w" using h_coef_nn by (by100 simp)
+      have h_t_sum: "sum ?t V' = 1" using h_coef_sum by (by100 simp)
+      have h_t_combo: "(\<Sum>w\<in>V'. ?t w *\<^sub>R w) = u" using hu_val by (by100 simp)
+      have h_hull_char: "convex hull V' = {y. \<exists>u'. (\<forall>x\<in>V'. 0 \<le> u' x)
+                             \<and> sum u' V' = 1 \<and> (\<Sum>x\<in>V'. u' x *\<^sub>R x) = y}"
+        by (rule convex_hull_finite[OF hV'fin])
+      have h_u_form: "\<exists>u'. (\<forall>x\<in>V'. 0 \<le> u' x)
+                       \<and> sum u' V' = 1 \<and> (\<Sum>x\<in>V'. u' x *\<^sub>R x) = u"
+      proof (rule exI[where x = "?t"])
+        show "(\<forall>x\<in>V'. 0 \<le> ?t x) \<and> sum ?t V' = 1 \<and> (\<Sum>x\<in>V'. ?t x *\<^sub>R x) = u"
+          using h_t_nn h_t_sum h_t_combo by (by100 blast)
+      qed
+      show ?thesis using h_u_form h_hull_char by (by100 blast)
+    qed
+    show "u \<in> \<sigma>" using h_u_in_hull h\<sigma>_hull'_HOL by (by100 simp)
+  qed
+  show ?thesis unfolding geotop_barycenter_def
+  proof (rule someI2[where a = u_V])
+    show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+               u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex_witness)
+  next
+    fix u
+    assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                      u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    show "u \<in> \<sigma>" using h_bary_char hu by (by100 blast)
+  qed
+qed
+
 (** Classical existence of a barycentric subdivision satisfying the full spec.
     Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction:
     bK = {conv hull (barycenter ` flag) | flag a chain σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n in K}.
