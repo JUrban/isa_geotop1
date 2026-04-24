@@ -2149,7 +2149,10 @@ proof -
     have h_mono: "(1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)
                   \<le> (1 / real (card V)) * (real k * diameter \<sigma>)"
       using h_sum_nn h_inv_pos mult_left_mono by (by100 blast)
-    show ?thesis using h_bary_norm h_mono by (by100 simp)
+    have h_eq: "norm (geotop_barycenter \<sigma> - v)
+                  = (1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)"
+      by (rule h_bary_norm)
+    show ?thesis using h_eq h_mono by (by100 simp)
   qed
   have h_rhs_eq: "(1 / real (card V)) * (real k * diameter \<sigma>)
                    = (real k / real (card V)) * diameter \<sigma>"
