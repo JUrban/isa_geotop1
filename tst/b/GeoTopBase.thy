@@ -7026,6 +7026,66 @@ proof -
   show ?thesis using hV'_sv hv_V' unfolding \<sigma>_def by (by100 blast)
 qed
 
+(** Utility: for V \<subseteq> V(K) finite nonempty with conv hull V \<in> K, V is the
+    simplex_vertices of conv hull V. Combines V_subK_elt helper + simplex
+    vertices uniqueness + extreme-point characterization. **)
+lemma geotop_V_subK_convhullK_is_simplex_vertices:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hVfin: "finite V"
+  assumes hVne: "V \<noteq> {}"
+  assumes hV_vK: "V \<subseteq> geotop_complex_vertices K"
+  assumes h_hull_K: "geotop_convex_hull V \<in> K"
+  shows "geotop_simplex_vertices (geotop_convex_hull V) V"
+proof -
+  define \<sigma> where "\<sigma> = geotop_convex_hull V"
+  have h\<sigma>K: "\<sigma> \<in> K" unfolding \<sigma>_def using h_hull_K by (by100 simp)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    unfolding \<sigma>_def by (rule geotop_convex_hull_eq_HOL)
+  have h_K_simp: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_K_simp by (by100 blast)
+  obtain W where hW_sv: "geotop_simplex_vertices \<sigma> W"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule geotop_general_position_imp_aff_indep[OF hW_sv])
+  have h\<sigma>_hullW: "\<sigma> = geotop_convex_hull W"
+    using hW_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL_W: "\<sigma> = convex hull W"
+  proof -
+    have h_eq: "geotop_convex_hull W = convex hull W"
+      by (rule geotop_convex_hull_eq_HOL)
+    show ?thesis using h\<sigma>_hullW h_eq by (by100 simp)
+  qed
+  have h_V_sub_W: "V \<subseteq> W"
+  proof
+    fix v assume hvV: "v \<in> V"
+    obtain W' where hW'_sv: "geotop_simplex_vertices \<sigma> W'" and hvW': "v \<in> W'"
+      using geotop_V_subK_elt_in_simplex_vertices[OF hK hV_vK h_hull_K hvV]
+      unfolding \<sigma>_def by (by100 blast)
+    have h_W_eq: "W = W'"
+      using geotop_simplex_vertices_unique[OF hW_sv hW'_sv] by (by100 simp)
+    show "v \<in> W" using hvW' h_W_eq by (by100 simp)
+  qed
+  have hV_ai: "\<not> affine_dependent V"
+    using hW_ai h_V_sub_W affine_dependent_subset by (by100 blast)
+  have h_V_W_eq: "V = W"
+  proof (rule set_eqI, rule iffI)
+    fix x assume hxV: "x \<in> V"
+    show "x \<in> W" using hxV h_V_sub_W by (by100 blast)
+  next
+    fix x assume hxW: "x \<in> W"
+    have h_ext_W: "x extreme_point_of convex hull W"
+      using hxW hW_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+    have h_ext_V: "x extreme_point_of convex hull V"
+      using h_ext_W h\<sigma>_HOL h\<sigma>_HOL_W by (by100 simp)
+    show "x \<in> V"
+      using h_ext_V hV_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+  qed
+  show ?thesis using hW_sv h_V_W_eq unfolding \<sigma>_def by (by100 simp)
+qed
+
 (** Utility: for a finite nonempty AI set V, V is the simplex_vertices of conv hull V. **)
 lemma geotop_AI_finite_ne_is_simplex_vertices:
   fixes V :: "'a::euclidean_space set"
