@@ -7128,7 +7128,21 @@ proof -
           (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<Longrightarrow>
           (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
           geotop_polyhedron L \<subseteq> g ` geotop_polyhedron K"
-    sorry \<comment> \<open>F-1b.surj: surjectivity; classical preimage construction via phi^{-1}.\<close>
+  proof -
+    fix g :: "'a \<Rightarrow> 'b"
+    assume h_ag: "\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v"
+    assume h_lin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g"
+    assume h_img: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>"
+    (** We prove the surjection pointwise, using phi^{-1} to construct preimages. **)
+    have h_pointwise:
+      "\<And>z. z \<in> geotop_polyhedron L \<Longrightarrow> z \<in> g ` geotop_polyhedron K"
+      sorry \<comment> \<open>F-1b.surj core: for z in |L|, pick tau in L with z in tau,
+                extract bary coords beta over V(tau), use phi^{-1} to construct
+                sigma in K with V(sigma) = phi^{-1}(V(tau)), build x = sum beta(phi v) v,
+                apply linear_on sigma g to get g(x) = z.\<close>
+    show "geotop_polyhedron L \<subseteq> g ` geotop_polyhedron K"
+      using h_pointwise by (by100 blast)
+  qed
   (** (1b.inj) g is injective on |K|. Proof: x, y with g x = g y gives bary
       coord equality on their respective carriers; phi bijection forces x = y. **)
   have h_f_inj:
