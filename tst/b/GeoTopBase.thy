@@ -3361,9 +3361,161 @@ lemma geotop_complex_flag_barycenter_affine_independent:
   assumes hK: "geotop_is_complex K"
   assumes hc_flags: "c \<in> geotop_flags K"
   shows "\<not> affine_dependent (geotop_barycenter ` set c)"
-  sorry \<comment> \<open>D1.0 core: flag barycenters are affinely independent.
-              Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
-              + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
+  using hc_flags
+proof (induction c rule: rev_induct)
+  case Nil
+  have "[] \<notin> geotop_flags K" unfolding geotop_flags_def by (by100 simp)
+  thus ?case using Nil.prems by (by100 blast)
+next
+  case (snoc \<sigma> init)
+  (** c = init @ [σ] ∈ flags. **)
+  have h_cons_fl: "init @ [\<sigma>] \<in> geotop_flags K" using snoc.prems .
+  have h_subK: "set (init @ [\<sigma>]) \<subseteq> K"
+    using h_cons_fl unfolding geotop_flags_def by (by100 blast)
+  have h_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) (init @ [\<sigma>])"
+    using h_cons_fl unfolding geotop_flags_def by (by100 blast)
+  have h_distinct: "distinct (init @ [\<sigma>])"
+    using h_cons_fl unfolding geotop_flags_def by (by100 blast)
+  have h\<sigma>K: "\<sigma> \<in> K" using h_subK by (by100 simp)
+  have h\<sigma>_notin: "\<sigma> \<notin> set init" using h_distinct by (by100 simp)
+  (** Case split on init. **)
+  show ?case
+  proof (cases "init = []")
+    case True
+    have h_c_eq: "init @ [\<sigma>] = [\<sigma>]" using True by (by100 simp)
+    have h_set_c: "set (init @ [\<sigma>]) = {\<sigma>}"
+    proof -
+      have "set (init @ [\<sigma>]) = set [\<sigma>]" using h_c_eq by (by100 simp)
+      also have "\<dots> = {\<sigma>}" by (by100 simp)
+      finally show ?thesis .
+    qed
+    have h_img_sing: "geotop_barycenter ` {\<sigma>} = {geotop_barycenter \<sigma>}"
+      by (by100 simp)
+    have h_img: "geotop_barycenter ` set (init @ [\<sigma>]) = {geotop_barycenter \<sigma>}"
+    proof -
+      have "geotop_barycenter ` set (init @ [\<sigma>]) = geotop_barycenter ` {\<sigma>}"
+        using h_set_c by (rule arg_cong)
+      also have "\<dots> = {geotop_barycenter \<sigma>}" by (rule h_img_sing)
+      finally show ?thesis .
+    qed
+    have h_ai_sing: "\<not> affine_dependent {geotop_barycenter \<sigma>}"
+      by (rule affine_independent_1)
+    have h_ai: "\<not> affine_dependent (geotop_barycenter ` set (init @ [\<sigma>]))"
+      unfolding h_img using h_ai_sing .
+    show ?thesis by (rule h_ai)
+  next
+    case hne: False
+    (** init is also a flag. **)
+    have h_init_subK: "set init \<subseteq> K" using h_subK by (by100 simp)
+    have h_sw_exp: "sorted_wrt (\<subset>) init \<and> sorted_wrt (\<subset>) [\<sigma>]
+                    \<and> (\<forall>x\<in>set init. \<forall>y\<in>set [\<sigma>]. x \<subset> y)"
+      using h_sorted sorted_wrt_append[of "(\<subset>)" init "[\<sigma>]"] by (by100 blast)
+    have h_init_sorted: "sorted_wrt (\<subset>) init" using h_sw_exp by (by100 blast)
+    have h_init_dist: "distinct init" using h_distinct by (by100 simp)
+    have h_init_fl: "init \<in> geotop_flags K"
+      unfolding geotop_flags_def using hne h_init_subK h_init_sorted h_init_dist
+      by (by100 blast)
+    (** IH: bary ` set init is AI. **)
+    have h_IH: "\<not> affine_dependent (geotop_barycenter ` set init)"
+      by (rule snoc.IH[OF h_init_fl])
+    (** σ_prev = last init, σ_prev ⊊ σ, σ_prev ∈ K. **)
+    define \<sigma>\<^sub>p where "\<sigma>\<^sub>p = last init"
+    have h_prev_in_init: "\<sigma>\<^sub>p \<in> set init" unfolding \<sigma>\<^sub>p_def using hne by (by100 simp)
+    have h_prev_K: "\<sigma>\<^sub>p \<in> K" using h_prev_in_init h_init_subK by (by100 blast)
+    have h_prev_sub_\<sigma>: "\<sigma>\<^sub>p \<subset> \<sigma>"
+      using h_sw_exp h_prev_in_init by (by100 simp)
+    (** Every s ∈ set init satisfies s ⊆ σ_prev. **)
+    have h_all_sub_prev: "\<forall>s\<in>set init. s \<subseteq> \<sigma>\<^sub>p"
+    proof
+      fix s assume hs_init: "s \<in> set init"
+      show "s \<subseteq> \<sigma>\<^sub>p"
+      proof (cases "s = \<sigma>\<^sub>p")
+        case True thus ?thesis by (by100 simp)
+      next
+        case h_sne: False
+        have h_app: "butlast init @ [last init] = init"
+          using hne by (rule append_butlast_last_id)
+        have h_set_init_eq: "set init = set (butlast init) \<union> {last init}"
+        proof -
+          have "set init = set (butlast init @ [last init])"
+            using h_app by (by100 simp)
+          also have "\<dots> = set (butlast init) \<union> set [last init]" by (by100 simp)
+          also have "\<dots> = set (butlast init) \<union> {last init}" by (by100 simp)
+          finally show ?thesis .
+        qed
+        have hs_split: "s \<in> set (butlast init) \<or> s = last init"
+          using hs_init h_set_init_eq by (by100 blast)
+        have hs_butlast: "s \<in> set (butlast init)"
+          using hs_split h_sne unfolding \<sigma>\<^sub>p_def by (by100 blast)
+        have h_init_sw_split: "sorted_wrt (\<subset>) (butlast init @ [last init])"
+          using h_init_sorted h_app by (by100 simp)
+        have h_init_sw_exp: "sorted_wrt (\<subset>) (butlast init)
+              \<and> sorted_wrt (\<subset>) [last init]
+              \<and> (\<forall>x\<in>set (butlast init). \<forall>y\<in>set [last init]. x \<subset> y)"
+          using h_init_sw_split sorted_wrt_append[of "(\<subset>)" "butlast init" "[last init]"]
+          by (by100 blast)
+        have h_aux: "\<forall>x\<in>set (butlast init). x \<subset> last init"
+          using h_init_sw_exp by (by100 simp)
+        have "s \<subset> \<sigma>\<^sub>p" using h_aux hs_butlast unfolding \<sigma>\<^sub>p_def by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+    (** Each barycenter bary s (for s ∈ set init) is in its simplex ⊆ σ_prev ⊆ σ. **)
+    have h_K_simp_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+      by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+    have h_bary_init_in_prev: "geotop_barycenter ` set init \<subseteq> \<sigma>\<^sub>p"
+    proof
+      fix b assume hb: "b \<in> geotop_barycenter ` set init"
+      obtain s where hs_init: "s \<in> set init" and hb_eq: "b = geotop_barycenter s"
+        using hb by (by100 blast)
+      have hs_K: "s \<in> K" using hs_init h_init_subK by (by100 blast)
+      have hs_simp: "geotop_is_simplex s" using hs_K h_K_simp_all by (by100 blast)
+      have hb_in_s: "b \<in> s" using hb_eq geotop_barycenter_in_simplex[OF hs_simp] by (by100 simp)
+      have hs_sub: "s \<subseteq> \<sigma>\<^sub>p" using hs_init h_all_sub_prev by (by100 blast)
+      show "b \<in> \<sigma>\<^sub>p" using hb_in_s hs_sub by (by100 blast)
+    qed
+    (** affine hull (bary ` set init) ⊆ affine hull σ_prev. **)
+    have h_aff_hull_init_sub: "affine hull (geotop_barycenter ` set init) \<subseteq> affine hull \<sigma>\<^sub>p"
+      using h_bary_init_in_prev hull_mono by (by100 blast)
+    (** bary σ ∈ rel_interior σ. **)
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_K_simp_all by (by100 blast)
+    obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>_sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have h_bary_\<sigma>_ri: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+      by (rule geotop_barycenter_in_rel_interior[OF hV\<^sub>\<sigma>_sv])
+    (** affine hull σ_prev ∩ rel_interior σ = ∅ via proper_subset helper. **)
+    have h_disj: "affine hull \<sigma>\<^sub>p \<inter> rel_interior \<sigma> = {}"
+      by (rule geotop_complex_proper_subset_affine_hull_disjoint_rel_interior
+               [OF hK h_prev_K h\<sigma>K h_prev_sub_\<sigma>])
+    (** bary σ ∉ affine hull σ_prev. **)
+    have h_bary_\<sigma>_notin_prev: "geotop_barycenter \<sigma> \<notin> affine hull \<sigma>\<^sub>p"
+    proof
+      assume h_in: "geotop_barycenter \<sigma> \<in> affine hull \<sigma>\<^sub>p"
+      have h_in_both: "geotop_barycenter \<sigma> \<in> affine hull \<sigma>\<^sub>p \<inter> rel_interior \<sigma>"
+        using h_in h_bary_\<sigma>_ri by (by100 blast)
+      show False using h_in_both h_disj by (by100 blast)
+    qed
+    (** bary σ ∉ affine hull (bary ` set init). **)
+    have h_bary_\<sigma>_notin_init_aff: "geotop_barycenter \<sigma> \<notin> affine hull (geotop_barycenter ` set init)"
+    proof
+      assume h_in: "geotop_barycenter \<sigma> \<in> affine hull (geotop_barycenter ` set init)"
+      have "geotop_barycenter \<sigma> \<in> affine hull \<sigma>\<^sub>p"
+        using h_in h_aff_hull_init_sub by (by100 blast)
+      thus False using h_bary_\<sigma>_notin_prev by (by100 blast)
+    qed
+    (** set (init @ [σ]) = insert σ (set init), then bary image reshaping. **)
+    have h_set_cons: "set (init @ [\<sigma>]) = insert \<sigma> (set init)" by (by100 simp)
+    have h_bary_img_eq:
+      "geotop_barycenter ` set (init @ [\<sigma>])
+         = insert (geotop_barycenter \<sigma>) (geotop_barycenter ` set init)"
+      using h_set_cons by (by100 simp)
+    (** Apply affine_independent_insert. **)
+    have h_AI_new: "\<not> affine_dependent (insert (geotop_barycenter \<sigma>) (geotop_barycenter ` set init))"
+      using affine_independent_insert[OF h_IH h_bary_\<sigma>_notin_init_aff] .
+    show ?thesis using h_AI_new h_bary_img_eq by (by100 simp)
+  qed
+qed
 
 (** D-support: barycenter of a singleton simplex is its sole element. **)
 lemma geotop_barycenter_singleton:
