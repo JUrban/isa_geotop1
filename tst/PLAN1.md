@@ -1094,3 +1094,31 @@ Sorry count: 5 → 4.
 
 Each is a deep, well-documented classical fact. Infrastructure for attack
 is now fully comprehensive.
+
+## Session progress 2026-04-24 (continuation 12)
+
+### Scaffolded h_f_exists into 3 targeted sorries
+
+FULLY PROVE the assembly of the barycentric-extension theorem from its
+three classical components:
+- **h_f_forward**: construct g with vertex agreement, linear-on-simplex,
+  maps-into-L-simplex (classical barycentric extension, ~100 lines).
+- **h_f_bij**: given forward, g is a bijection on polyhedra (from phi's
+  vertex-level bijection).
+- **h_f_inverse**: given bijection, inverse is PL + linear-on-simplex
+  (symmetric construction via phi^{-1}).
+
+Sorry count: 4 → 6 (structural refinement per CLAUDE.md Phase 3:
+"more and more detailed formal proof sketches"). Each new sorry is now
+a targeted classical lemma with documented proof sketch.
+
+### Current state: 6 real sorries
+
+1. h_K2_intersect_eq non-nested case (~150 lines)
+2. h_simp_in_bK dim > 0 (~200 lines)
+3. h_star_to_simplex_del (~100 lines)
+4. h_f_forward (F-1a: barycentric extension construction, ~100 lines)
+5. h_f_bij (F-1b: bijection from vertex iso, ~50 lines)
+6. h_f_inverse (F-1c: inverse is PL + linear, ~100 lines)
+
+Each is now a targeted, well-documented classical sub-lemma.
