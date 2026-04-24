@@ -1364,3 +1364,53 @@ pins support to set c_1 ∩ set c_2. Formalizing this requires ~300 lines.
 This is the largest sorry reduction in a single session for the project.
 Both remaining are Moise early.tex Lemma 4.4/4.5 (h_K2_intersect_eq
 non-nested) and rel_interior partition (h_star_to_simplex_del).
+
+## Final session state (2026-04-24 end)
+
+### Sorry count: 9 → 2 (single-session record reduction)
+
+### Concrete analysis for next session's attack on h_K2_intersect_eq hard direction
+
+From examples (shared top, tree of flags through triangle edges):
+- For x ∈ T_1 ∩ T_2, the unique K-carrier τ(x) (satisfying x ∈ rel_interior τ(x))
+  is in BOTH set c_1 AND set c_2. Provable: τ(x) = top of β's support on c_i
+  (where β_σ is positive iff σ ∈ support; support contains exactly σ's with
+  V(σ) ⊇ support_α, and top of chain support has V equal to support_α = V(τ(x))).
+- The β supports on c_1, c_2 are sub-chains with τ(x) as their common top.
+- These sub-chains' INTERSECTION with each other (= S_1 ∩ S_2 ⊆ set c_1 ∩ set c_2)
+  is a sub-chain of set c_1 ∩ set c_2.
+- Crucially: x ∈ conv hull (bary S_1 ∩ S_2) would close the proof, but this
+  requires showing x lies in the smaller hull despite being in conv hull S_1
+  and conv hull S_2.
+
+This involves a DELICATE recursion/induction on the complex of faces of τ(x),
+as the sub-chains S_1, S_2 within τ(x)'s face-complex satisfy the same
+intersection property we're trying to prove, with smaller dimension.
+
+For the shared-top case (dim τ(x) = dim σ_top), no dimension reduction;
+here concrete linear-algebra analysis (triangular system) forces the
+support equality, but formalizing requires extending geotop's linear-on-simplex
+bary uniqueness to multi-flag constraint systems.
+
+### Concrete analysis for h_star_to_simplex_del
+
+Classical statement: convex compact T ⊆ |K'| with T ⊆ open_star(v) ⟹
+∃ σ ∈ K'. v ∈ σ ∧ T ⊆ σ.
+
+Sketch:
+- |K'| = disjoint union of rel_interior σ for σ ∈ K' (provable from K.2).
+- For T convex connected, {σ : rel_interior σ ∩ T ≠ ∅} forms a chain
+  (convex set can't span two disjoint rel_interiors without crossing
+  boundary, which sits in a lower-dim simplex; chain closure argument).
+- Top of chain contains all T.
+
+Formalization: ~200-300 lines including partition lemma + chain lemma.
+
+Statement likely needs `convex T` hypothesis added (downstream tau is
+a simplex = convex, so this is compatible).
+
+### Both remaining sorries warrant dedicated multi-session effort
+
+Each represents a research-level classical theorem. The infrastructure
+needed (rel_interior partition, coefficient-matching across two flags)
+is substantial and best approached systematically in fresh sessions.
