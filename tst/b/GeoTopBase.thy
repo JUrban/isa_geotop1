@@ -11662,6 +11662,39 @@ proof -
   show ?thesis using h_p_le_q hp_01 hq_01 h_I_eq h_endpoints by (by100 blast)
 qed
 
+(** Every broken line is compact (finite union of compact simplices). **)
+lemma geotop_broken_line_compact:
+  fixes B :: "'a::euclidean_space set"
+  assumes hB: "geotop_is_broken_line B"
+  shows "compact B"
+proof -
+  obtain K where hK: "geotop_is_complex K" and hK_1dim: "geotop_complex_is_1dim K"
+              and hK_poly: "geotop_polyhedron K = B" and hK_fin: "finite K"
+    using geotop_broken_line_finite_witness[OF hB] by (by100 blast)
+  have hsim_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have hK_compact_all: "\<forall>\<sigma>\<in>K. compact \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have hsim: "geotop_is_simplex \<sigma>" using hsim_all h\<sigma>K by (by100 blast)
+    obtain V m n where hV_fin: "finite V" and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using hsim unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<sigma>_hullHOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    show "compact \<sigma>"
+      using h\<sigma>_hullHOL hV_fin finite_imp_compact_convex_hull by (by100 simp)
+  qed
+  have hK_compact: "compact (geotop_polyhedron K)"
+    unfolding geotop_polyhedron_def using hK_fin hK_compact_all by (by100 blast)
+  show ?thesis using hK_compact hK_poly by (by100 simp)
+qed
+
+lemma geotop_broken_line_closed:
+  fixes B :: "'a::euclidean_space set"
+  assumes hB: "geotop_is_broken_line B"
+  shows "closed B"
+  using geotop_broken_line_compact[OF hB] compact_imp_closed by (by100 blast)
+
 (** Phase 1.A main: the sub-arc image γ([s_lo, s_hi]) is the polyhedron
     of a 1-dim sub-complex. Construction: subdivide K at γ(s_lo), γ(s_hi)
     then restrict to simplices contained in γ([s_lo, s_hi]). **)
