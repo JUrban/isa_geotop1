@@ -3254,6 +3254,96 @@ proof (rule equals0I)
   show False using h\<alpha>_v0 h\<alpha>_v0_pos by (by100 simp)
 qed
 
+(** D1.0 direct support: for τ ⊊ σ proper K-simplices (τ, σ ∈ complex),
+    affine hull τ ∩ rel_interior σ = ∅. Combines K.2 (τ is a face of σ)
+    with the aff_hull_proper_subset lemma. **)
+lemma geotop_complex_proper_subset_affine_hull_disjoint_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>K: "\<tau> \<in> K" and h\<sigma>K: "\<sigma> \<in> K"
+  assumes h_proper: "\<tau> \<subset> \<sigma>"
+  shows "affine hull \<tau> \<inter> rel_interior \<sigma> = {}"
+proof -
+  have h\<tau>_sub: "\<tau> \<subseteq> \<sigma>" using h_proper by (by100 blast)
+  have h\<tau>_ne_\<sigma>: "\<tau> \<noteq> \<sigma>" using h_proper by (by100 blast)
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K h_simp_all by (by100 blast)
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  (** Obtain vertex sets. **)
+  obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>_sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hV\<^sub>\<sigma>_fin: "finite V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_hullHOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV\<^sub>\<sigma>_ai: "\<not> affine_dependent V\<^sub>\<sigma>"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>\<sigma>_sv])
+  (** τ is a proper face of σ via K.2. **)
+  have h_\<tau>_ne: "\<tau> \<noteq> {}"
+  proof -
+    obtain V\<^sub>\<tau> m\<^sub>\<tau> n\<^sub>\<tau> where hV\<^sub>\<tau>card: "card V\<^sub>\<tau> = n\<^sub>\<tau> + 1"
+                       and h\<tau>_hull_V: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
+      using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have hV\<^sub>\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
+    proof
+      assume "V\<^sub>\<tau> = {}"
+      hence "card V\<^sub>\<tau> = 0" by (by100 simp)
+      thus False using hV\<^sub>\<tau>card by (by100 simp)
+    qed
+    have h_hull_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
+      using h\<tau>_hull_V geotop_convex_hull_eq_HOL by (by100 simp)
+    have hV\<^sub>\<tau>_sub_hull: "V\<^sub>\<tau> \<subseteq> convex hull V\<^sub>\<tau>" by (rule hull_subset)
+    show ?thesis
+    proof
+      assume "\<tau> = {}"
+      hence "convex hull V\<^sub>\<tau> = {}" using h_hull_HOL by (by100 simp)
+      hence "V\<^sub>\<tau> = {}" using hV\<^sub>\<tau>_sub_hull by (by100 blast)
+      thus False using hV\<^sub>\<tau>ne by (by100 blast)
+    qed
+  qed
+  have h_cap_ne: "\<tau> \<inter> \<sigma> \<noteq> {}" using h\<tau>_sub h_\<tau>_ne by (by100 blast)
+  have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                     geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have h_face_pair: "geotop_is_face (\<tau> \<inter> \<sigma>) \<sigma>"
+    using hK_inter h\<tau>K h\<sigma>K h_cap_ne by (by100 blast)
+  have h_cap_eq_\<tau>: "\<tau> \<inter> \<sigma> = \<tau>" using h\<tau>_sub by (by100 blast)
+  have h_\<tau>_face_\<sigma>: "geotop_is_face \<tau> \<sigma>" using h_face_pair h_cap_eq_\<tau> by (by100 simp)
+  (** Extract W ⊆ V_σ with τ = conv W. **)
+  obtain V_\<sigma>' W where hV_\<sigma>'_sv: "geotop_simplex_vertices \<sigma> V_\<sigma>'"
+                  and hW_ne: "W \<noteq> {}" and hW_V\<sigma>': "W \<subseteq> V_\<sigma>'"
+                  and h\<tau>_hull_W: "\<tau> = geotop_convex_hull W"
+    using h_\<tau>_face_\<sigma> unfolding geotop_is_face_def by (by100 blast)
+  have hV\<sigma>'_eq: "V_\<sigma>' = V\<^sub>\<sigma>"
+    by (rule geotop_simplex_vertices_unique[OF hV_\<sigma>'_sv hV\<^sub>\<sigma>_sv])
+  have hW_V\<sigma>: "W \<subseteq> V\<^sub>\<sigma>" using hW_V\<sigma>' hV\<sigma>'_eq by (by100 simp)
+  have h\<tau>_hullHOL: "\<tau> = convex hull W"
+    using h\<tau>_hull_W geotop_convex_hull_eq_HOL by (by100 simp)
+  (** W ≠ V_σ (else τ = σ). **)
+  have hW_proper: "W \<noteq> V\<^sub>\<sigma>"
+  proof
+    assume h_eq: "W = V\<^sub>\<sigma>"
+    have "\<tau> = convex hull V\<^sub>\<sigma>" using h\<tau>_hullHOL h_eq by (by100 simp)
+    hence "\<tau> = \<sigma>" using h\<sigma>_hullHOL by (by100 simp)
+    thus False using h\<tau>_ne_\<sigma> by (by100 blast)
+  qed
+  (** affine hull τ = affine hull (convex hull W) = affine hull W. **)
+  have h_aff_convex_hull: "affine hull (convex hull W) = affine hull W"
+    by (rule affine_hull_convex_hull)
+  have h_aff_\<tau>_eq: "affine hull \<tau> = affine hull W"
+    using h\<tau>_hullHOL h_aff_convex_hull by (by100 simp)
+  (** Apply the aff hull proper subset lemma. **)
+  have h_disj_raw: "affine hull W \<inter> rel_interior (convex hull V\<^sub>\<sigma>) = {}"
+    by (rule geotop_affine_hull_proper_subset_disjoint_rel_interior
+             [OF hV\<^sub>\<sigma>_fin hV\<^sub>\<sigma>_ai hW_V\<sigma> hW_ne hW_proper])
+  show ?thesis using h_aff_\<tau>_eq h_disj_raw h\<sigma>_hullHOL by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
