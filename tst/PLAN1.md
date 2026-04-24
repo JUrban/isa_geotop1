@@ -896,3 +896,19 @@ Proof plan for h_tau_diam_bound (now fully tractable):
 ### Sorry count: 6
 
 Fully-proven assembly work remaining for h_tau_diam_bound (mostly mechanical).
+
+## Session progress 2026-04-24 (continuation 6)
+
+### h_tau_diam_bound now FULLY SCAFFOLDED
+
+h_mesh_shrink is now decomposed end-to-end:
+- SUP + empty-bK case: FULLY PROVEN
+- h_tau_diam_bound assembly: FULLY PROVEN (uses conv_hull_pair_bound,
+  diameter_le_from_pairs, chain_barycenter_bound, dist-norm bridge).
+- h_factor_bd (x/(x+1) monotonicity): FULLY PROVEN.
+- Remaining: h_mesh_K_bdd, h_mesh_K_nn (mesh K bdd_above / nonneg — technical
+  edge cases depending on finite K, to be provided by the classical caller).
+
+Sorry count: 7. Nearly all substantive classical content for D-step 5
+(mesh shrinkage) is complete; what remains is a couple of cardinality-type
+technicalities about the input complex K.
