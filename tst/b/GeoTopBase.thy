@@ -2154,7 +2154,7 @@ proof -
     have h_eq: "norm (geotop_barycenter \<sigma> - v)
                   = (1 / real (card V)) * norm (\<Sum>w\<in>V - {v}. w - v)"
       by (rule h_bary_norm)
-    show ?thesis using h_eq h_mono by (by100 simp)
+    show ?thesis using h_eq h_mono by (by100 linarith)
   qed
   have h_rhs_eq: "(1 / real (card V)) * (real k * diameter \<sigma>)
                    = (real k / real (card V)) * diameter \<sigma>"
