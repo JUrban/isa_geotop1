@@ -7664,20 +7664,21 @@ proof -
   show ?thesis using h_ri_char h_witness by (by100 blast)
 qed
 
-(** CARRIER LEMMA for chains (proof sketch, for future session):
-    For a flag c in K with bary coords β on bary(set c), the K-carrier of
-    x = Σ β_σ · bary σ is σ_max_S, the max (by inclusion) σ in the support
-    S_β = {σ ∈ set c : β_σ > 0}.
+(** CARRIER LEMMA for chains (proof sketch, detailed for future session):
+    For x = Σ β_σ · bary σ over a flag c in K, with σ_max_S the maximum
+    (by inclusion) of the support of β, x ∈ rel_interior σ_max_S.
 
-    Proof combines (all pieces now available as proven lemmas):
-    - Algebraic expression: via geotop_barycenter_eq_uV, bary σ = (1/|V(σ)|)·ΣV(σ).
-      Expand x = Σ_v α_v · v where α_v = Σ_{σ : v ∈ V(σ)} β_σ / |V(σ)|.
-    - Sum-swap via Fubini: sum α V(σ_top) = sum β (set c) = 1.
-    - Chain structure: for σ in S_β, V(σ) ⊆ V(σ_max_S) via geotop_chain_vertex_subset.
-    - Support of α on V(σ_top) = V(σ_max_S).
-    - geotop_bary_in_rel_interior_support[OF hV_top_fin hV_top_ai h_α_nn h_α_sum hx]:
-      x ∈ rel_interior (conv hull (support α)) = rel_interior σ_max_S.
-    - geotop_complex_point_in_unique_rel_interior: K-carrier is unique, = σ_max_S. **)
+    Setup (now proven with new infrastructure):
+    - σ_max_S ∈ K, simplex_vertices σ_max_S V_max.
+    - For each σ ∈ set c with β σ > 0 (so σ ⊆ σ_max_S by chain-top),
+      V(σ) ⊆ V_max via geotop_chain_vertex_subset.
+    Remaining work (~100 lines, ready for future session):
+    - Expand bary σ = (1/|V_σ|)·ΣV(σ) via geotop_barycenter_eq_uV.
+    - Swap double-sum to get x = Σ_{v ∈ V_max} α_v · v
+      with α_v = Σ_{σ : v ∈ V_σ, β_σ > 0} β_σ / |V_σ|.
+    - Show α ≥ 0 (trivial), sum α = 1 (Fubini + |V_σ ∩ V_max| = |V_σ|),
+      support α = V_max (σ_max_S contributes positively to every v ∈ V_max).
+    - Apply geotop_bary_in_rel_interior_support. **)
 
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
