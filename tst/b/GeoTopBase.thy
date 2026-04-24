@@ -4114,6 +4114,34 @@ proof -
     using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
 qed
 
+(** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
+    is in the barycentric subdivision. Direct from singleton flag. **)
+lemma geotop_bK_covers_0_simplex_helper:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv_sing: "{v} \<in> K"
+  shows "[{v}] \<in> geotop_flags K \<and>
+         geotop_convex_hull (geotop_barycenter ` set [{v}]) = {v}"
+proof -
+  (** [{v}] is a flag: nonempty, sorted_wrt (trivially for length 1), distinct. **)
+  have h_ne: "[{v}] \<noteq> []" by (by100 simp)
+  have h_sub: "set [{v}] \<subseteq> K" using hv_sing by (by100 simp)
+  have h_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) [{v}]" by (by100 simp)
+  have h_dist: "distinct [{v}]" by (by100 simp)
+  have h_flag: "[{v}] \<in> geotop_flags K"
+    unfolding geotop_flags_def using h_ne h_sub h_sorted h_dist by (by100 blast)
+  (** bary ` {{v}} = {bary {v}} = {v}. **)
+  have h_bary_v: "geotop_barycenter {v} = v"
+    by (rule geotop_barycenter_singleton)
+  have h_bary_img: "geotop_barycenter ` set [{v}] = {v}"
+    using h_bary_v by (by100 simp)
+  have h_hull: "geotop_convex_hull {v} = {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  have h_chain: "geotop_convex_hull (geotop_barycenter ` set [{v}]) = {v}"
+    using h_bary_img h_hull by (by100 simp)
+  show ?thesis using h_flag h_chain by (by100 blast)
+qed
+
 (** D-infrastructure: chain-simplex is compact. Useful for downstream
     diameter/mesh/topological reasoning. **)
 lemma geotop_bK_elt_compact:
