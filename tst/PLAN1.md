@@ -331,6 +331,38 @@ Added 2 helpers + closed sorry:
 §1 (broken lines, arcs, sub-arcs, arc reduction) is CACHEABLE as sorry-free
 content. All Phase 1.x theorems fully proven.
 
+## Attack notes for D, E, F (remaining Intro sorries)
+
+### E (L3084) — Lebesgue tightening
+The stated h\<delta>prop is TECHNICALLY UNPROVABLE in the empty K case
+(conclusion requires ∃v ∈ vertices(K') = ∅). Even in the non-empty case,
+the "S connected → S in single σ" step requires rel_interior disjointness
+in a simplicial complex, which is not in HOL-Analysis directly.
+
+Options for closing E:
+- (a) Restructure surrounding proof to handle K = {} case separately;
+  modify h\<delta>prop to require S non-empty + connected; prove rel_int
+  disjointness via face_of_disjoint_rel_interior (from Polytope library)
+  after bridging geotop_is_face to HOL's face_of (itself non-trivial for
+  combinatorial ≠ affine-independence simplices).
+- (b) Derive the weaker claim "∃σ ∈ K'. τ ⊆ σ" directly for simplex τ
+  via a different classical argument (e.g., barycenter of τ in some σ +
+  convexity + closed star containment), avoiding rel_interior.
+
+Both options are substantive (~100+ line proofs with multiple lemmas).
+
+### D (L1945) — classical_Sd_exists (barycentric subdivision)
+Construction per Moise early.tex Def 4.4: bK = all flags of face-barycenters.
+Verification requires: bK is a complex, polyhedron bK = polyhedron K,
+mesh bK ≤ n/(n+1)·mesh K. ~200-250 lines.
+
+### F (L3313) — h_f_exists (barycentric extension)
+Extend vertex-iso φ to PL-homeomorphism between polyhedra. Via barycentric
+coordinates: for x = Σα_v v on σ, set g(x) = Σα_v φ(v). Verify bijective
++ linear on each simplex. ~150-200 lines.
+
+All 3 require substantive classical PL-topology formalization.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
