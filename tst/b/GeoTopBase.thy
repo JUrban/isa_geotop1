@@ -5465,13 +5465,9 @@ proof -
         unfolding geotop_mesh_def using True by (by100 simp)
       (** Need: 0 \<le> (n/(n+1)) * mesh K. **)
       have h_factor_nn: "0 \<le> real n / real (Suc n)" by (by100 simp)
-      have h_mesh_K_nn: "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
-        sorry \<comment> \<open>D-step 5 side: mesh nonneg. True for compact/finite K;
-                 simplex_diameter_nonneg + mesh_norm_nonneg are defined later
-                 than classical_Sd_exists so forward ref is needed.\<close>
       have h_rhs_nn: "0 \<le> (real n / real (Suc n))
                          * geotop_mesh (\<lambda>x y. norm (x - y)) K"
-        using h_factor_nn h_mesh_K_nn by (by100 simp)
+        using h_factor_nn h_mesh_K_nn2 by (by100 simp)
       show ?thesis using h_mesh_0 h_rhs_nn by (by100 simp)
     next
       case hbKne: False
