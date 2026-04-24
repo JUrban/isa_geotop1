@@ -3365,6 +3365,30 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: for c ∈ flags and i ≤ j < length c, c ! i ⊆ c ! j.
+    Derived from sorted_wrt (⊊) via sorted_wrt_iff_nth_less. **)
+lemma geotop_flags_chain_subset:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hc: "c \<in> geotop_flags K"
+  assumes hij: "i \<le> j" and hj_lt: "j < length c"
+  shows "c ! i \<subseteq> c ! j"
+proof -
+  have hc_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c"
+    using hc unfolding geotop_flags_def by (by100 blast)
+  show ?thesis
+  proof (cases "i = j")
+    case True thus ?thesis by (by100 simp)
+  next
+    case h_ne: False
+    have h_lt: "i < j" using hij h_ne by (by100 linarith)
+    have h_sw_nth: "\<forall>i' j'. i' < j' \<and> j' < length c \<longrightarrow> c ! i' \<subset> c ! j'"
+      using hc_sorted sorted_wrt_iff_nth_less[of _ c] by (by100 simp)
+    have h_lt_ci_cj: "c ! i \<subset> c ! j"
+      using h_sw_nth h_lt hj_lt by (by100 blast)
+    show ?thesis using h_lt_ci_cj by (by100 blast)
+  qed
+qed
+
 (** D-support: trivial flag membership facts. **)
 lemma geotop_flags_last_in_K:
   fixes K :: "'a::euclidean_space set set"
