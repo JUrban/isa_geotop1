@@ -1339,3 +1339,28 @@ h_simp_in_bK dim>0 (plus supporting helpers:
 geotop_bary_coords_unique_AI, geotop_V_subK_convhullK_is_simplex_vertices).
 
 geotop_isomorphism_induces_PLH (Moise Theorem_GT_1 foundation) FULLY PROVEN.
+
+## Session continuation 16 (2026-04-24 extension)
+
+### h_K2_intersect_eq non-nested: scaffold refined
+
+Easy direction (⊇) proven: conv hull (bary (set c_1 ∩ set c_2)) ⊆ T_1 ∩ T_2
+via h_chain_inclusion applied to both subset inclusions.
+
+Hard direction (⊆) remains as single sorry. Analysis:
+- x ∈ T_1 ∩ T_2 means x ∈ σ_top_1 ∩ σ_top_2 = π (K.2 of K).
+- Bary coords α of x on V(σ_top_i) vanish outside V(π).
+- Chain-bary coeffs β on c_1 satisfy α_v = Σ_{σ∈c_1, v∈V(σ)} β_σ/|V(σ)|
+  (triangular system, invertible).
+- Support of β ⊆ {σ ∈ set c_1 : σ ⊆ π} in general — but this may not
+  equal set c_1 ∩ set c_2 (π ∈ K doesn't imply π ∈ c_1 or c_2).
+
+The Moise classical argument (Lemma 4.5) forces support equality via
+the CONSTRAINT from x ∈ T_2 too, giving a combined restriction that
+pins support to set c_1 ∩ set c_2. Formalizing this requires ~300 lines.
+
+### Session total (extended 2026-04-24): 9 → 2 real sorries
+
+This is the largest sorry reduction in a single session for the project.
+Both remaining are Moise early.tex Lemma 4.4/4.5 (h_K2_intersect_eq
+non-nested) and rel_interior partition (h_star_to_simplex_del).
