@@ -7513,7 +7513,27 @@ lemma geotop_convex_in_complex_in_simplex:
   assumes hT_ne: "T \<noteq> {}"
   assumes hT_sub: "T \<subseteq> geotop_polyhedron K"
   shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
-  sorry
+proof -
+  (** Define F = family of K-simplices meeting T. Non-empty, finite. **)
+  define F where "F = {\<sigma>\<in>K. \<sigma> \<inter> T \<noteq> {}}"
+  have hF_sub_K: "F \<subseteq> K" unfolding F_def by (by100 blast)
+  have hF_fin: "finite F" using hKfin hF_sub_K finite_subset by (by100 blast)
+  (** F is non-empty: pick x \<in> T, x \<in> some \<sigma> \<in> K. **)
+  obtain x_T where hx_T: "x_T \<in> T" using hT_ne by (by100 blast)
+  have hx_T_K: "x_T \<in> geotop_polyhedron K" using hx_T hT_sub by (by100 blast)
+  obtain \<sigma>_0 where h\<sigma>_0K: "\<sigma>_0 \<in> K" and hx_\<sigma>_0: "x_T \<in> \<sigma>_0"
+    using hx_T_K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>_0_F: "\<sigma>_0 \<in> F"
+    unfolding F_def using h\<sigma>_0K hx_\<sigma>_0 hx_T by (by100 blast)
+  have hF_ne: "F \<noteq> {}" using h\<sigma>_0_F by (by100 blast)
+  (** Pick \<sigma>_* \<in> F with maximum cardinality of vertex set. Simplex vertex cardinality
+      is a well-defined function on K-simplices (via simplex_vertices). **)
+  (** Rest of proof deferred as one sorry: show T subset sigma_star in F with
+      max cardinality. Classical convexity-in-complex argument via carrier
+      analysis along segments. Approx 200 lines of topology. **)
+  show "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
+    sorry
+qed
 
 lemma geotop_iterated_Sd_refines_subdivision:
   fixes K K' :: "'a::euclidean_space set set"
