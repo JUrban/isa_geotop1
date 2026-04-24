@@ -3615,9 +3615,128 @@ proof -
   (** STEP 1.2 (K.2): intersection of two bK-simplices is a face of both.
       Proof: σ_1, σ_2 ∈ bK correspond to flags c_1, c_2. σ_1 ∩ σ_2 = conv
       hull of common vertex subset, which corresponds to a sub-flag of both. **)
+  (** K.2 reduces to the KEY classical fact about barycentric subdivisions:
+      for any two flags c_1, c_2 in K, the intersection of their chain-simplices
+      equals the chain-simplex of the common sub-flag (set c_1 \<inter> set c_2 sorted).
+      Proof idea: every x in sigma_1 \<inter> sigma_2 has unique barycentric coordinates
+      in the bary image of set c_1 \<union> set c_2 (since flag-barycenters extended are
+      AI via Moise Lemma 4.4). The coords must be supported on set c_1 \<inter> set c_2,
+      hence x in conv_hull(bary ` (set c_1 \<inter> set c_2)). **)
+  have h_K2_intersect_eq:
+    "\<forall>c\<^sub>1\<in>flags. \<forall>c\<^sub>2\<in>flags.
+       geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+       geotop_convex_hull (geotop_barycenter ` set c\<^sub>2) \<noteq> {} \<longrightarrow>
+       geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+       geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+       = geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+    sorry \<comment> \<open>Key classical fact: chain-simplex intersection = common-sub-flag chain-simplex.
+              Proof (Moise early.tex): the combined bary image is AI (from chain-union AI),
+              so by uniqueness of bary coords, the intersection is carried by common elements.\<close>
+  (** Given the intersection formula, K.2 follows by producing a common sub-flag. **)
   have h_bK_K2: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>\<in>bK. \<sigma> \<inter> \<tau> \<noteq> {}
                 \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry \<comment> \<open>D-step 1.2: K.2 (intersection-face) via common sub-flag.\<close>
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>_bK: "\<sigma> \<in> bK" and h\<tau>_bK: "\<tau> \<in> bK" and h_meet: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    obtain c\<^sub>1 where hc\<^sub>1_fl: "c\<^sub>1 \<in> flags"
+                and h\<sigma>_hull: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+      using h\<sigma>_bK unfolding bK_def by (by100 blast)
+    obtain c\<^sub>2 where hc\<^sub>2_fl: "c\<^sub>2 \<in> flags"
+                and h\<tau>_hull: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+      using h\<tau>_bK unfolding bK_def by (by100 blast)
+    have hc\<^sub>1_geo: "c\<^sub>1 \<in> geotop_flags K" using hc\<^sub>1_fl h_flags_eq_geotop by (by100 simp)
+    have hc\<^sub>2_geo: "c\<^sub>2 \<in> geotop_flags K" using hc\<^sub>2_fl h_flags_eq_geotop by (by100 simp)
+    have hc\<^sub>1_subK: "set c\<^sub>1 \<subseteq> K" using hc\<^sub>1_fl unfolding flags_def by (by100 blast)
+    have hc\<^sub>2_subK: "set c\<^sub>2 \<subseteq> K" using hc\<^sub>2_fl unfolding flags_def by (by100 blast)
+    have hc\<^sub>1_sorted: "sorted_wrt (\<lambda>a b. a \<subset> b) c\<^sub>1"
+      using hc\<^sub>1_fl unfolding flags_def by (by100 blast)
+    have hc\<^sub>1_dist: "distinct c\<^sub>1" using hc\<^sub>1_fl unfolding flags_def by (by100 blast)
+    (** Apply the key intersection formula. **)
+    have h_inter_eq_raw: "\<sigma> \<inter> \<tau> = geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+      using h_K2_intersect_eq hc\<^sub>1_fl hc\<^sub>2_fl h\<sigma>_hull h\<tau>_hull h_meet by (by100 blast)
+    (** Build common sub-flag c\<^sub>0 = filter (\<lambda>s. s \<in> set c\<^sub>2) c\<^sub>1 (preserves order from c\<^sub>1). **)
+    define c\<^sub>0 :: "'a set list" where "c\<^sub>0 = filter (\<lambda>s. s \<in> set c\<^sub>2) c\<^sub>1"
+    have hc\<^sub>0_set: "set c\<^sub>0 = set c\<^sub>1 \<inter> set c\<^sub>2"
+      unfolding c\<^sub>0_def by (by100 auto)
+    have hc\<^sub>0_dist: "distinct c\<^sub>0" unfolding c\<^sub>0_def using hc\<^sub>1_dist by (by100 simp)
+    have hc\<^sub>0_sorted: "sorted_wrt (\<lambda>a b. a \<subset> b) c\<^sub>0"
+      unfolding c\<^sub>0_def using sorted_wrt_filter[OF hc\<^sub>1_sorted] by (by100 blast)
+    have hc\<^sub>0_subK: "set c\<^sub>0 \<subseteq> K" using hc\<^sub>0_set hc\<^sub>1_subK by (by100 blast)
+    (** c\<^sub>0 is nonempty: \<sigma> \<inter> \<tau> \<noteq> {} forces bary-image nonempty. **)
+    have hc\<^sub>0_ne: "c\<^sub>0 \<noteq> []"
+    proof -
+      have h_hull_ne: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>0) \<noteq> {}"
+        using h_inter_eq_raw h_meet hc\<^sub>0_set by (by100 simp)
+      have h_hull_HOL: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>0)
+                          = convex hull (geotop_barycenter ` set c\<^sub>0)"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_hullHOL_ne: "convex hull (geotop_barycenter ` set c\<^sub>0) \<noteq> {}"
+        using h_hull_ne h_hull_HOL by (by100 simp)
+      have h_img_ne: "geotop_barycenter ` set c\<^sub>0 \<noteq> {}"
+      proof
+        assume h_emp: "geotop_barycenter ` set c\<^sub>0 = {}"
+        have "convex hull (geotop_barycenter ` set c\<^sub>0) = {}"
+          using h_emp convex_hull_empty by (by100 simp)
+        thus False using h_hullHOL_ne by (by100 blast)
+      qed
+      have h_set_ne: "set c\<^sub>0 \<noteq> {}" using h_img_ne by (by100 blast)
+      show ?thesis
+      proof
+        assume h_nil: "c\<^sub>0 = []"
+        have "set c\<^sub>0 = {}" using h_nil by (by100 simp)
+        thus False using h_set_ne by (by100 blast)
+      qed
+    qed
+    have hc\<^sub>0_flag: "c\<^sub>0 \<in> flags"
+      unfolding flags_def
+      using hc\<^sub>0_ne hc\<^sub>0_subK hc\<^sub>0_sorted hc\<^sub>0_dist by (by100 blast)
+    have hc\<^sub>0_geo: "c\<^sub>0 \<in> geotop_flags K" using hc\<^sub>0_flag h_flags_eq_geotop by (by100 simp)
+    have h_inter_eq: "\<sigma> \<inter> \<tau> = geotop_convex_hull (geotop_barycenter ` set c\<^sub>0)"
+      using h_inter_eq_raw hc\<^sub>0_set by (by100 simp)
+    (** Establish σ has bary ` set c\<^sub>1 as vertices, τ has bary ` set c\<^sub>2. **)
+    have h\<sigma>_sv: "geotop_simplex_vertices \<sigma>
+                   (geotop_barycenter ` set c\<^sub>1)"
+      using geotop_bK_elt_simplex_vertices[OF hK hc\<^sub>1_geo] h\<sigma>_hull by (by100 simp)
+    have h\<tau>_sv: "geotop_simplex_vertices \<tau>
+                   (geotop_barycenter ` set c\<^sub>2)"
+      using geotop_bK_elt_simplex_vertices[OF hK hc\<^sub>2_geo] h\<tau>_hull by (by100 simp)
+    (** set c\<^sub>0 \<subseteq> set c\<^sub>1, so bary ` set c\<^sub>0 \<subseteq> bary ` set c\<^sub>1. **)
+    have hc\<^sub>0_sub_c\<^sub>1: "set c\<^sub>0 \<subseteq> set c\<^sub>1" using hc\<^sub>0_set by (by100 blast)
+    have hc\<^sub>0_sub_c\<^sub>2: "set c\<^sub>0 \<subseteq> set c\<^sub>2" using hc\<^sub>0_set by (by100 blast)
+    have h_bary_sub_c\<^sub>1: "geotop_barycenter ` set c\<^sub>0 \<subseteq> geotop_barycenter ` set c\<^sub>1"
+      using hc\<^sub>0_sub_c\<^sub>1 by (by100 blast)
+    have h_bary_sub_c\<^sub>2: "geotop_barycenter ` set c\<^sub>0 \<subseteq> geotop_barycenter ` set c\<^sub>2"
+      using hc\<^sub>0_sub_c\<^sub>2 by (by100 blast)
+    (** bary image of set c\<^sub>0 is nonempty (c\<^sub>0 nonempty). **)
+    have h_bary_c\<^sub>0_ne: "geotop_barycenter ` set c\<^sub>0 \<noteq> {}"
+      using hc\<^sub>0_ne by (by100 auto)
+    (** Assemble faces via geotop_is_face_def. **)
+    have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+      unfolding geotop_is_face_def
+    proof (intro exI conjI)
+      show "geotop_simplex_vertices \<sigma> (geotop_barycenter ` set c\<^sub>1)" by (rule h\<sigma>_sv)
+    next
+      show "geotop_barycenter ` set c\<^sub>0 \<noteq> {}" by (rule h_bary_c\<^sub>0_ne)
+    next
+      show "geotop_barycenter ` set c\<^sub>0 \<subseteq> geotop_barycenter ` set c\<^sub>1"
+        by (rule h_bary_sub_c\<^sub>1)
+    next
+      show "\<sigma> \<inter> \<tau> = geotop_convex_hull (geotop_barycenter ` set c\<^sub>0)" by (rule h_inter_eq)
+    qed
+    have h_face_\<tau>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      unfolding geotop_is_face_def
+    proof (intro exI conjI)
+      show "geotop_simplex_vertices \<tau> (geotop_barycenter ` set c\<^sub>2)" by (rule h\<tau>_sv)
+    next
+      show "geotop_barycenter ` set c\<^sub>0 \<noteq> {}" by (rule h_bary_c\<^sub>0_ne)
+    next
+      show "geotop_barycenter ` set c\<^sub>0 \<subseteq> geotop_barycenter ` set c\<^sub>2"
+        by (rule h_bary_sub_c\<^sub>2)
+    next
+      show "\<sigma> \<inter> \<tau> = geotop_convex_hull (geotop_barycenter ` set c\<^sub>0)" by (rule h_inter_eq)
+    qed
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using h_face_\<sigma> h_face_\<tau> by (by100 blast)
+  qed
   (** STEP 1.3 (K.3): local finiteness.
       Proof: for σ' ∈ bK, σ' ⊆ top(c_flag) = σ ∈ K. K.3 of K gives U ⊇ σ
       with finite {τ ∈ K. τ ∩ U ≠ {}}. Each bK-simplex τ' near U has
