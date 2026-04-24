@@ -5079,13 +5079,65 @@ proof -
       diameter(last c). Proof: distance between any two barycenters equals
       d(bary s_i, bary s_j) ≤ (1 - 1/(k+1)) · diam(s_j) where k = |s_j| - 1,
       and k ≤ n from dim bound. **)
+  (** STEP 5a: classical per-chain-simplex diameter bound. This is the
+      geometric heart of Moise Lemma 4.11. **)
+  have h_tau_diam_bound: "\<forall>n::nat.
+        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+        (\<forall>\<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>
+                   \<le> (real n / real (Suc n))
+                    * geotop_mesh (\<lambda>x y. norm (x - y)) K)"
+    sorry \<comment> \<open>D-step 5a: per-chain-simplex diameter bound. For tau in bK with
+              flag c, any two vertices bary s, bary t (s, t in set c, chain)
+              satisfy ||bary s - bary t|| \<le> (n/(n+1)) mesh K (via chain_bary_bound
+              + diameter-HOL bridge). Hence conv_hull_pair_bound lifts to all
+              points in tau. Thus sup (geotop_diameter) \<le> bound.\<close>
+  (** STEP 5b: the mesh is the sup of diameters, so the bound lifts. **)
   have h_mesh_shrink: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
         geotop_mesh (\<lambda>x y. norm (x - y)) bK
           \<le> (real n / real (Suc n))
            * geotop_mesh (\<lambda>x y. norm (x - y)) K"
-    sorry \<comment> \<open>D-step 5: mesh shrinkage via centroid-distance bound
-              (Moise Lemma 4.11 second part).\<close>
+  proof (intro allI impI)
+    fix n :: nat
+    assume h_K_bound: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    have h_per_tau: "\<forall>\<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>
+                             \<le> (real n / real (Suc n))
+                              * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+      using h_tau_diam_bound h_K_bound by (by100 blast)
+    show "geotop_mesh (\<lambda>x y. norm (x - y)) bK
+            \<le> (real n / real (Suc n))
+             * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    proof (cases "bK = {}")
+      case True
+      have h_mesh_0: "geotop_mesh (\<lambda>x y. norm (x - y)) bK = 0"
+        unfolding geotop_mesh_def using True by (by100 simp)
+      (** Need: 0 \<le> (n/(n+1)) * mesh K. **)
+      have h_factor_nn: "0 \<le> real n / real (Suc n)" by (by100 simp)
+      have h_mesh_K_nn: "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
+        sorry \<comment> \<open>D-step 5 side: mesh nonneg. True for compact/finite K;
+                 simplex_diameter_nonneg + mesh_norm_nonneg are defined later
+                 than classical_Sd_exists so forward ref is needed.\<close>
+      have h_rhs_nn: "0 \<le> (real n / real (Suc n))
+                         * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+        using h_factor_nn h_mesh_K_nn by (by100 simp)
+      show ?thesis using h_mesh_0 h_rhs_nn by (by100 simp)
+    next
+      case hbKne: False
+      (** mesh bK = SUP τ∈bK. geotop_diameter τ. Bound via each τ ≤ RHS. **)
+      define B where "B = (real n / real (Suc n))
+                          * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+      have h_each: "\<forall>\<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> \<le> B"
+        unfolding B_def using h_per_tau by (by100 blast)
+      have h_bdd: "bdd_above ((\<lambda>\<tau>. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>) ` bK)"
+        unfolding bdd_above_def using h_each by (by100 blast)
+      have h_SUP_bd: "(SUP \<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>) \<le> B"
+        by (rule cSUP_least[OF hbKne], rule h_each[rule_format])
+      have h_mesh_SUP: "geotop_mesh (\<lambda>x y. norm (x - y)) bK
+                        = (SUP \<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>)"
+        unfolding geotop_mesh_def using hbKne by (by100 simp)
+      show ?thesis unfolding B_def[symmetric] using h_mesh_SUP h_SUP_bd by (by100 simp)
+    qed
+  qed
   have h_dim_mesh: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
         (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
