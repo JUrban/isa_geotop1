@@ -11467,8 +11467,11 @@ proof -
   have h_seg_eq_\<pi>: "closed_segment (?\<pi> (\<gamma> p)) (?\<pi> (\<gamma> q)) = closed_segment (?\<pi> a) (?\<pi> b)"
     using h_combined h\<pi>_img_seg by (by100 simp)
   (** From equal closed segments in ℝ: {endpoints} are equal as sets. **)
+  have h_cseg_iff: "(closed_segment (?\<pi> (\<gamma> p)) (?\<pi> (\<gamma> q)) = closed_segment (?\<pi> a) (?\<pi> b))
+                    = ({?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)} = {?\<pi> a, ?\<pi> b})"
+    by (rule closed_segment_eq)
   have h_\<pi>_endpoints: "{?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)} = {?\<pi> a, ?\<pi> b}"
-    using h_seg_eq_\<pi> closed_segment_eq by (by100 blast)
+    using h_seg_eq_\<pi> h_cseg_iff by (by100 simp)
   (** γ p, γ q ∈ closed_segment a b. **)
   have hp_in_pq: "p \<in> {p..q}" using hpq by (by100 simp)
   have hq_in_pq: "q \<in> {p..q}" using hpq by (by100 simp)
@@ -12458,13 +12461,222 @@ proof -
       show ?thesis using h_glued h_sub h_P_in h_Q_in by (by100 blast)
     next
       case False
-      (** Overlap case: first-intersection argument deferred. Plan: let
-          S = preimage of B2prime under gamma1prime, intersected with [0,1].
-          S nonempty (1 in S maps to Q0 in B2prime), closed by
-          continuous_on_closed_vimage, bounded. Take sstar = Inf S, R = gamma1prime sstar.
-          Sub-arcs B1prime[P..R] and B2prime[R..Q] meet only at R by minimality.
-          Glue via glue_disjoint_endpoints. **)
-      show ?thesis sorry
+      (** Overlap case: closed via first-intersection + subarc_polyhedron + glue. **)
+      obtain \<gamma>\<^sub>1 where h_arc_1: "arc \<gamma>\<^sub>1" and h_pim_1: "path_image \<gamma>\<^sub>1 = B\<^sub>1'"
+                   and h_ps_1: "pathstart \<gamma>\<^sub>1 = P" and h_pf_1: "pathfinish \<gamma>\<^sub>1 = Q\<^sub>0"
+        using hB\<^sub>1'_arc by (by100 blast)
+      obtain \<gamma>\<^sub>2 where h_arc_2: "arc \<gamma>\<^sub>2" and h_pim_2: "path_image \<gamma>\<^sub>2 = B\<^sub>2'"
+                   and h_ps_2: "pathstart \<gamma>\<^sub>2 = Q\<^sub>0" and h_pf_2: "pathfinish \<gamma>\<^sub>2 = Q"
+        using hB\<^sub>2'_arc by (by100 blast)
+      have h_B\<^sub>2'_closed: "closed B\<^sub>2'" by (rule geotop_broken_line_closed[OF hB\<^sub>2'])
+      have h_\<gamma>\<^sub>1_1_Q\<^sub>0: "\<gamma>\<^sub>1 1 = Q\<^sub>0"
+        using h_pf_1 unfolding pathfinish_def by (by100 simp)
+      have h_\<gamma>\<^sub>1_0_P: "\<gamma>\<^sub>1 0 = P"
+        using h_ps_1 unfolding pathstart_def by (by100 simp)
+      have h_fin_in: "\<gamma>\<^sub>1 1 \<in> B\<^sub>2'" using h_\<gamma>\<^sub>1_1_Q\<^sub>0 hQ\<^sub>0B\<^sub>2' by (by100 simp)
+      obtain sstar where hsstar_01: "sstar \<in> {0..1}" and hsstar_T: "\<gamma>\<^sub>1 sstar \<in> B\<^sub>2'"
+                      and hsstar_min: "\<forall>s\<in>{0..<sstar}. \<gamma>\<^sub>1 s \<notin> B\<^sub>2'"
+        using geotop_arc_first_intersection[OF h_arc_1 h_B\<^sub>2'_closed h_fin_in] by (by100 blast)
+      let ?R = "\<gamma>\<^sub>1 sstar"
+      have hP_notin_B\<^sub>2: "P \<notin> B\<^sub>2" using hard by (by100 blast)
+      have hP_notin_B\<^sub>2': "P \<notin> B\<^sub>2'" using hP_notin_B\<^sub>2 hB\<^sub>2'_sub by (by100 blast)
+      have hsstar_pos: "0 < sstar"
+      proof -
+        have h_0_le: "0 \<le> sstar" using hsstar_01 by (by100 simp)
+        have h_ne: "sstar \<noteq> 0"
+        proof
+          assume hs0: "sstar = 0"
+          have h_\<gamma>_0_in: "\<gamma>\<^sub>1 0 \<in> B\<^sub>2'" using hsstar_T hs0 by (by100 simp)
+          have "P \<in> B\<^sub>2'" using h_\<gamma>_0_in h_\<gamma>\<^sub>1_0_P by (by100 simp)
+          thus False using hP_notin_B\<^sub>2' by (by100 blast)
+        qed
+        show ?thesis using h_0_le h_ne by (by100 linarith)
+      qed
+      have h_R_B\<^sub>1': "?R \<in> B\<^sub>1'"
+      proof -
+        have "?R \<in> path_image \<gamma>\<^sub>1" using hsstar_01 unfolding path_image_def by (by100 blast)
+        thus ?thesis using h_pim_1 by (by100 simp)
+      qed
+      have h_R_B\<^sub>2': "?R \<in> B\<^sub>2'" by (rule hsstar_T)
+      (** R ≠ Q: R ∈ B_1 \<subseteq> B_1' \<subseteq> B_1, Q \<notin> B_1 from hard. **)
+      have hQ_notin_B\<^sub>1: "Q \<notin> B\<^sub>1" using hard by (by100 blast)
+      have h_R_B\<^sub>1: "?R \<in> B\<^sub>1" using h_R_B\<^sub>1' hB\<^sub>1'_sub by (by100 blast)
+      have h_R_ne_Q: "?R \<noteq> Q"
+      proof
+        assume heq: "?R = Q"
+        have "Q \<in> B\<^sub>1" using h_R_B\<^sub>1 heq by (by100 simp)
+        thus False using hQ_notin_B\<^sub>1 by (by100 blast)
+      qed
+      (** R ∈ B_2' ⊆ path_image γ_2: get s* in [0,1]. **)
+      have h_R_pim_2: "?R \<in> path_image \<gamma>\<^sub>2" using h_R_B\<^sub>2' h_pim_2 by (by100 simp)
+      have h_R_img: "?R \<in> \<gamma>\<^sub>2 ` {0..1}"
+        using h_R_pim_2 unfolding path_image_def by (by100 simp)
+      obtain sstar_2 where hsstar_2_01: "sstar_2 \<in> {0..1}" and hsstar_2_eq_sym: "?R = \<gamma>\<^sub>2 sstar_2"
+        by (rule imageE[OF h_R_img])
+      have hsstar_2_eq: "\<gamma>\<^sub>2 sstar_2 = ?R" using hsstar_2_eq_sym by (by100 simp)
+      have h_\<gamma>\<^sub>2_1_Q: "\<gamma>\<^sub>2 1 = Q" using h_pf_2 unfolding pathfinish_def by (by100 simp)
+      have h_sstar_2_lt_1: "sstar_2 < 1"
+      proof -
+        have h_le: "sstar_2 \<le> 1" using hsstar_2_01 by (by100 simp)
+        have h_ne1: "sstar_2 \<noteq> 1"
+        proof
+          assume h1: "sstar_2 = 1"
+          have "\<gamma>\<^sub>2 1 = ?R" using hsstar_2_eq h1 by (by100 simp)
+          hence "?R = Q" using h_\<gamma>\<^sub>2_1_Q by (by100 simp)
+          thus False using h_R_ne_Q by (by100 blast)
+        qed
+        show ?thesis using h_le h_ne1 by (by100 linarith)
+      qed
+      (** Construct B_1'' = γ_1([0, sstar]). **)
+      have h_0_01: "(0::real) \<in> {0..1}" by (by100 simp)
+      obtain K\<^sub>1'' where hK\<^sub>1''_comp: "geotop_is_complex K\<^sub>1''"
+                    and hK\<^sub>1''_poly: "geotop_polyhedron K\<^sub>1'' = \<gamma>\<^sub>1 ` closed_segment 0 sstar"
+                    and hK\<^sub>1''_1dim: "geotop_complex_is_1dim K\<^sub>1''"
+        using geotop_subarc_polyhedron[OF hB\<^sub>1' h_arc_1 h_pim_1 h_0_01 hsstar_01 hsstar_pos]
+        by (by100 blast)
+      let ?B\<^sub>1'' = "\<gamma>\<^sub>1 ` closed_segment 0 sstar"
+      have h_seg_1: "closed_segment 0 sstar = {0..sstar}"
+        using hsstar_pos closed_segment_eq_real_ivl by (by100 simp)
+      have h_sstar_ne_0: "sstar \<noteq> 0" using hsstar_pos by (by100 simp)
+      have h_arc_sub_1: "arc (subpath 0 sstar \<gamma>\<^sub>1)"
+        by (rule arc_subpath_arc[OF h_arc_1 h_0_01 hsstar_01 h_sstar_ne_0[symmetric]])
+      have h_pim_sub_1: "path_image (subpath 0 sstar \<gamma>\<^sub>1) = ?B\<^sub>1''"
+        by (rule path_image_subpath_gen)
+      have h_geotop_arc_1'': "geotop_is_arc ?B\<^sub>1'' (subspace_topology UNIV geotop_euclidean_topology ?B\<^sub>1'')"
+        using geotop_HOL_arc_imp_geotop_is_arc[OF h_arc_sub_1] h_pim_sub_1 by (by100 simp)
+      have h_broken_1'': "geotop_is_broken_line ?B\<^sub>1''"
+        unfolding geotop_is_broken_line_def
+        using hK\<^sub>1''_comp hK\<^sub>1''_poly hK\<^sub>1''_1dim h_geotop_arc_1'' by (by100 blast)
+      (** B_2'' = γ_2([sstar_2, 1]). **)
+      have h_1_01: "(1::real) \<in> {0..1}" by (by100 simp)
+      obtain K\<^sub>2'' where hK\<^sub>2''_comp: "geotop_is_complex K\<^sub>2''"
+                    and hK\<^sub>2''_poly: "geotop_polyhedron K\<^sub>2'' = \<gamma>\<^sub>2 ` closed_segment sstar_2 1"
+                    and hK\<^sub>2''_1dim: "geotop_complex_is_1dim K\<^sub>2''"
+        using geotop_subarc_polyhedron[OF hB\<^sub>2' h_arc_2 h_pim_2 hsstar_2_01 h_1_01 h_sstar_2_lt_1]
+        by (by100 blast)
+      let ?B\<^sub>2'' = "\<gamma>\<^sub>2 ` closed_segment sstar_2 1"
+      have h_seg_2: "closed_segment sstar_2 1 = {sstar_2..1}"
+        using h_sstar_2_lt_1 closed_segment_eq_real_ivl by (by100 simp)
+      have h_s_2_ne_1: "sstar_2 \<noteq> 1" using h_sstar_2_lt_1 by (by100 simp)
+      have h_arc_sub_2: "arc (subpath sstar_2 1 \<gamma>\<^sub>2)"
+        by (rule arc_subpath_arc[OF h_arc_2 hsstar_2_01 h_1_01 h_s_2_ne_1])
+      have h_pim_sub_2: "path_image (subpath sstar_2 1 \<gamma>\<^sub>2) = ?B\<^sub>2''"
+        by (rule path_image_subpath_gen)
+      have h_geotop_arc_2'': "geotop_is_arc ?B\<^sub>2'' (subspace_topology UNIV geotop_euclidean_topology ?B\<^sub>2'')"
+        using geotop_HOL_arc_imp_geotop_is_arc[OF h_arc_sub_2] h_pim_sub_2 by (by100 simp)
+      have h_broken_2'': "geotop_is_broken_line ?B\<^sub>2''"
+        unfolding geotop_is_broken_line_def
+        using hK\<^sub>2''_comp hK\<^sub>2''_poly hK\<^sub>2''_1dim h_geotop_arc_2'' by (by100 blast)
+      (** B_1'' ∩ B_2'' = {R} via minimality. **)
+      have h_B\<^sub>2''_sub_B\<^sub>2': "?B\<^sub>2'' \<subseteq> B\<^sub>2'"
+      proof
+        fix x assume "x \<in> ?B\<^sub>2''"
+        then obtain t where ht_seg: "t \<in> closed_segment sstar_2 1" and hxt: "x = \<gamma>\<^sub>2 t"
+          by (by100 blast)
+        have ht_ivl: "t \<in> {sstar_2..1}" using ht_seg h_seg_2 by (by100 simp)
+        have ht_01: "t \<in> {0..1}" using ht_ivl hsstar_2_01 by (by100 auto)
+        have "x \<in> path_image \<gamma>\<^sub>2" using hxt ht_01 unfolding path_image_def by (by100 blast)
+        thus "x \<in> B\<^sub>2'" using h_pim_2 by (by100 simp)
+      qed
+      have h_int_R: "?B\<^sub>1'' \<inter> ?B\<^sub>2'' = {?R}"
+      proof
+        show "?B\<^sub>1'' \<inter> ?B\<^sub>2'' \<subseteq> {?R}"
+        proof
+          fix x assume hx: "x \<in> ?B\<^sub>1'' \<inter> ?B\<^sub>2''"
+          have hx_1: "x \<in> ?B\<^sub>1''" using hx by (by100 blast)
+          have hx_2: "x \<in> ?B\<^sub>2''" using hx by (by100 blast)
+          obtain t where ht_seg: "t \<in> closed_segment 0 sstar" and hxt: "x = \<gamma>\<^sub>1 t"
+            using hx_1 by (by100 blast)
+          have ht_ivl: "t \<in> {0..sstar}" using ht_seg h_seg_1 by (by100 simp)
+          have ht_0: "0 \<le> t" using ht_ivl by (by100 simp)
+          have ht_sstar: "t \<le> sstar" using ht_ivl by (by100 simp)
+          have hx_B\<^sub>2': "x \<in> B\<^sub>2'" using hx_2 h_B\<^sub>2''_sub_B\<^sub>2' by (by100 blast)
+          have h_\<gamma>t_B\<^sub>2': "\<gamma>\<^sub>1 t \<in> B\<^sub>2'" using hxt hx_B\<^sub>2' by (by100 simp)
+          have h_t_ge: "sstar \<le> t"
+          proof (rule ccontr)
+            assume "\<not> sstar \<le> t"
+            hence h_t_lt: "t < sstar" by (by100 linarith)
+            have h_t_in: "t \<in> {0..<sstar}" using ht_0 h_t_lt by (by100 simp)
+            have h_notin: "\<gamma>\<^sub>1 t \<notin> B\<^sub>2'" using hsstar_min h_t_in by (by100 blast)
+            show False using h_notin h_\<gamma>t_B\<^sub>2' by (by100 simp)
+          qed
+          have h_t_eq: "t = sstar" using ht_sstar h_t_ge by (by100 linarith)
+          have "x = ?R" using hxt h_t_eq by (by100 simp)
+          thus "x \<in> {?R}" by (by100 simp)
+        qed
+        show "{?R} \<subseteq> ?B\<^sub>1'' \<inter> ?B\<^sub>2''"
+        proof -
+          have hR_1: "?R \<in> ?B\<^sub>1''"
+          proof -
+            have hsstar_seg: "sstar \<in> closed_segment 0 sstar"
+              using h_seg_1 hsstar_pos by (by100 simp)
+            show ?thesis using hsstar_seg by (by100 blast)
+          qed
+          have hR_2: "?R \<in> ?B\<^sub>2''"
+          proof -
+            have h_s2_le_1: "sstar_2 \<le> 1" using h_sstar_2_lt_1 by (by100 linarith)
+            have hsstar_2_ivl: "sstar_2 \<in> {sstar_2..1}" using h_s2_le_1 by (by100 simp)
+            have hsstar_2_seg: "sstar_2 \<in> closed_segment sstar_2 1"
+              using hsstar_2_ivl h_seg_2 by (by100 simp)
+            have "\<gamma>\<^sub>2 sstar_2 \<in> ?B\<^sub>2''" using hsstar_2_seg by (by100 blast)
+            thus ?thesis using hsstar_2_eq by (by100 simp)
+          qed
+          show ?thesis using hR_1 hR_2 by (by100 simp)
+        qed
+      qed
+      (** Arc data for glue. **)
+      have h_arc_data_1'': "\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = ?B\<^sub>1'' \<and> pathfinish \<gamma> = ?R"
+      proof -
+        have h_pf_sub: "pathfinish (subpath 0 sstar \<gamma>\<^sub>1) = ?R"
+          unfolding subpath_def pathfinish_def by (by100 simp)
+        show ?thesis using h_arc_sub_1 h_pim_sub_1 h_pf_sub by (by100 blast)
+      qed
+      have h_arc_data_2'': "\<exists>\<gamma>. arc \<gamma> \<and> path_image \<gamma> = ?B\<^sub>2'' \<and> pathstart \<gamma> = ?R"
+      proof -
+        have h_ps_sub: "pathstart (subpath sstar_2 1 \<gamma>\<^sub>2) = ?R"
+          unfolding subpath_def pathstart_def using hsstar_2_eq by (by100 simp)
+        show ?thesis using h_arc_sub_2 h_pim_sub_2 h_ps_sub by (by100 blast)
+      qed
+      (** Glue. **)
+      have h_glued: "geotop_is_broken_line (?B\<^sub>1'' \<union> ?B\<^sub>2'')"
+        by (rule geotop_broken_lines_glue_disjoint_endpoints
+                 [OF h_broken_1'' h_broken_2'' h_arc_data_1'' h_arc_data_2'' h_int_R])
+      (** Containment. **)
+      have h_B\<^sub>1''_sub_B\<^sub>1': "?B\<^sub>1'' \<subseteq> B\<^sub>1'"
+      proof
+        fix x assume "x \<in> ?B\<^sub>1''"
+        then obtain t where ht_seg: "t \<in> closed_segment 0 sstar" and hxt: "x = \<gamma>\<^sub>1 t"
+          by (by100 blast)
+        have ht_ivl: "t \<in> {0..sstar}" using ht_seg h_seg_1 by (by100 simp)
+        have ht_01: "t \<in> {0..1}" using ht_ivl hsstar_01 by (by100 auto)
+        have "x \<in> path_image \<gamma>\<^sub>1" using hxt ht_01 unfolding path_image_def by (by100 blast)
+        thus "x \<in> B\<^sub>1'" using h_pim_1 by (by100 simp)
+      qed
+      have h_union_sub: "?B\<^sub>1'' \<union> ?B\<^sub>2'' \<subseteq> B\<^sub>1 \<union> B\<^sub>2"
+      proof -
+        have h1: "?B\<^sub>1'' \<subseteq> B\<^sub>1" using h_B\<^sub>1''_sub_B\<^sub>1' hB\<^sub>1'_sub by (by100 blast)
+        have h2: "?B\<^sub>2'' \<subseteq> B\<^sub>2" using h_B\<^sub>2''_sub_B\<^sub>2' hB\<^sub>2'_sub by (by100 blast)
+        show ?thesis using h1 h2 by (by100 blast)
+      qed
+      have h_P_in: "P \<in> ?B\<^sub>1'' \<union> ?B\<^sub>2''"
+      proof -
+        have h_sstar_ge: "0 \<le> sstar" using hsstar_pos by (by100 linarith)
+        have h_0_ivl: "(0::real) \<in> {0..sstar}" using h_sstar_ge by (by100 simp)
+        have h_0_seg: "(0::real) \<in> closed_segment 0 sstar"
+          using h_0_ivl h_seg_1 by (by100 simp)
+        have "\<gamma>\<^sub>1 0 \<in> ?B\<^sub>1''" using h_0_seg by (by100 blast)
+        thus ?thesis using h_\<gamma>\<^sub>1_0_P by (by100 simp)
+      qed
+      have h_Q_in: "Q \<in> ?B\<^sub>1'' \<union> ?B\<^sub>2''"
+      proof -
+        have h_s2_le_1: "sstar_2 \<le> 1" using h_sstar_2_lt_1 by (by100 linarith)
+        have h_1_ivl: "(1::real) \<in> {sstar_2..1}" using h_s2_le_1 by (by100 simp)
+        have h_1_seg: "(1::real) \<in> closed_segment sstar_2 1"
+          using h_1_ivl h_seg_2 by (by100 simp)
+        have "\<gamma>\<^sub>2 1 \<in> ?B\<^sub>2''" using h_1_seg by (by100 blast)
+        thus ?thesis using h_\<gamma>\<^sub>2_1_Q by (by100 simp)
+      qed
+      show ?thesis using h_glued h_union_sub h_P_in h_Q_in by (by100 blast)
     qed
   qed
 qed
