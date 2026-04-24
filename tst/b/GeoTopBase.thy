@@ -2475,6 +2475,41 @@ proof -
   qed
 qed
 
+(** D-infrastructure: for two simplices s \<subseteq> t in a complex K, the distance
+    between their barycenters is bounded by (k/(k+1)) · diameter t, where
+    k+1 = card (vertex set of t). Follows from bary_to_point_bound applied
+    to t, using bary s \<in> s \<subseteq> t. **)
+lemma geotop_complex_chain_barycenter_bound:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hsK: "s \<in> K" and htK: "t \<in> K"
+  assumes h_sub: "s \<subseteq> t"
+  shows "\<exists>V\<^sub>t. geotop_simplex_vertices t V\<^sub>t \<and>
+           norm (geotop_barycenter s - geotop_barycenter t)
+             \<le> (real (card V\<^sub>t - 1) / real (card V\<^sub>t)) * diameter t"
+proof -
+  have h_K_simp: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have hs_simp: "geotop_is_simplex s" using hsK h_K_simp by (by100 blast)
+  have ht_simp: "geotop_is_simplex t" using htK h_K_simp by (by100 blast)
+  obtain V\<^sub>t where hVt_sv: "geotop_simplex_vertices t V\<^sub>t"
+    using ht_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have h_bary_s_in_s: "geotop_barycenter s \<in> s"
+    by (rule geotop_barycenter_in_simplex[OF hs_simp])
+  have h_bary_s_in_t: "geotop_barycenter s \<in> t" using h_bary_s_in_s h_sub by (by100 blast)
+  have h_bound: "norm (geotop_barycenter t - geotop_barycenter s)
+                  \<le> (real (card V\<^sub>t - 1) / real (card V\<^sub>t)) * diameter t"
+    by (rule geotop_barycenter_to_point_bound[OF hVt_sv h_bary_s_in_t])
+  have h_norm_sym: "norm (geotop_barycenter s - geotop_barycenter t)
+                     = norm (geotop_barycenter t - geotop_barycenter s)"
+    using norm_minus_commute[of "geotop_barycenter s" "geotop_barycenter t"]
+    by (by100 simp)
+  have h_final: "norm (geotop_barycenter s - geotop_barycenter t)
+                   \<le> (real (card V\<^sub>t - 1) / real (card V\<^sub>t)) * diameter t"
+    using h_bound h_norm_sym by (by100 simp)
+  show ?thesis using hVt_sv h_final by (by100 blast)
+qed
 
 text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
   Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.
