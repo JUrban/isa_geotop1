@@ -1935,6 +1935,92 @@ qed
     subdivision of \<open>K\<close>. The \<open>SOME\<close>-defined witness is selected from the set
     of subdivisions of K whose 0-simplexes contain those of K; this set is
     non-empty (take \<open>K\<close> itself), so \<open>SOME\<close> picks something with that property. **)
+(** D-support: barycenter of a simplex is in its REL_INTERIOR (for
+    euclidean_space). Key for proving barycenters of distinct simplices
+    are distinct (needed for D step 1 via rel_interior_disjoint). **)
+lemma geotop_barycenter_in_rel_interior:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h_sv: "geotop_simplex_vertices \<sigma> V"
+  shows "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+proof -
+  have hVfin: "finite V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain m n where hVcard: "card V = n + 1"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_card_pos: "card V > 0" using hVcard by (by100 simp)
+  have hV_ne: "V \<noteq> {}"
+  proof
+    assume "V = {}"
+    hence "card V = 0" by (by100 simp)
+    thus False using hV_card_pos by (by100 simp)
+  qed
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_hullHOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h_sv])
+  (** Candidate barycenter = equal-weight convex combination. **)
+  define u_V where "u_V = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+  have h_ex_witness: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                          u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    unfolding u_V_def using h_sv by (by100 blast)
+  (** u_V ∈ rel_interior σ via rel_interior_convex_hull_explicit with weights 1/|V| > 0. **)
+  have h_u_V_ri: "u_V \<in> rel_interior \<sigma>"
+  proof -
+    let ?t = "\<lambda>w. (1 / real (card V))::real"
+    have h_t_pos: "\<forall>x\<in>V. 0 < ?t x" using hV_card_pos by (by100 simp)
+    have h_t_sum: "sum ?t V = 1"
+    proof -
+      have "sum ?t V = real (card V) * (1 / real (card V))" by (by100 simp)
+      also have "\<dots> = 1" using hV_card_pos by (by100 simp)
+      finally show ?thesis .
+    qed
+    have h_t_combo: "(\<Sum>w\<in>V. ?t w *\<^sub>R w) = u_V" unfolding u_V_def by (by100 simp)
+    have h_ri_char: "rel_interior (convex hull V)
+                     = {y. \<exists>u. (\<forall>x\<in>V. 0 < u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = y}"
+      by (rule rel_interior_convex_hull_explicit[OF hV_ai])
+    have h_u_V_in_char: "u_V \<in> {y. \<exists>u. (\<forall>x\<in>V. 0 < u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = y}"
+    proof -
+      have h_ex: "\<exists>u. (\<forall>x\<in>V. 0 < u x) \<and> sum u V = 1 \<and> (\<Sum>x\<in>V. u x *\<^sub>R x) = u_V"
+      proof (rule exI[where x = "?t"])
+        show "(\<forall>x\<in>V. 0 < ?t x) \<and> sum ?t V = 1 \<and> (\<Sum>x\<in>V. ?t x *\<^sub>R x) = u_V"
+          using h_t_pos h_t_sum h_t_combo by (by100 blast)
+      qed
+      show ?thesis using h_ex by (by100 blast)
+    qed
+    have "u_V \<in> rel_interior (convex hull V)" using h_u_V_in_char h_ri_char by (by100 simp)
+    thus ?thesis using h\<sigma>_hullHOL by (by100 simp)
+  qed
+  (** SOME witness of barycenter equals u_V (via unique vertices → unique witness). **)
+  have h_bary_eq: "geotop_barycenter \<sigma> = u_V"
+  proof -
+    have h_bary_char:
+      "\<forall>u. (\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                 u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)) \<longrightarrow> u = u_V"
+    proof (intro allI impI)
+      fix u assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                              u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+      obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                   and hu_val: "u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+        using hu by (by100 blast)
+      have hV'_eq_V: "V' = V"
+        by (rule geotop_simplex_vertices_unique[OF hV'_sv h_sv])
+      show "u = u_V" unfolding u_V_def using hu_val hV'_eq_V by (by100 simp)
+    qed
+    show ?thesis unfolding geotop_barycenter_def
+    proof (rule someI2[where a = u_V])
+      show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                 u_V = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex_witness)
+    next
+      fix u assume hu: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                              u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+      show "u = u_V" using h_bary_char hu by (by100 blast)
+    qed
+  qed
+  show ?thesis using h_bary_eq h_u_V_ri by (by100 simp)
+qed
+
 (** D-support: barycenter of a simplex is in the simplex. Classical fact:
     barycenter = convex combination of vertices with equal weights 1/card V,
     hence ∈ conv hull V = simplex. **)
