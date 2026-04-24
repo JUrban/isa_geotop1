@@ -7106,6 +7106,49 @@ proof -
     using hVfin h_card_n h_nn h_gp h_hull_refl by (by100 blast)
 qed
 
+(** Bary-coord uniqueness on affine-independent finite sets. If two weight
+    functions produce the same affine combination with the same sum 1 over
+    an AI finite set, they agree pointwise. Follows from
+    `affine_dependent_explicit_finite` applied to U = alpha - beta. **)
+lemma geotop_bary_coords_unique_AI:
+  fixes V :: "'a::euclidean_space set"
+  assumes hVfin: "finite V"
+  assumes hVai: "\<not> affine_dependent V"
+  assumes h\<alpha>_sum: "sum \<alpha> V = 1"
+  assumes h\<beta>_sum: "sum \<beta> V = 1"
+  assumes h_combo_eq: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+  shows "\<forall>v\<in>V. \<alpha> v = \<beta> v"
+proof -
+  define U where "U v = \<alpha> v - \<beta> v" for v
+  (** sum U V = 0. **)
+  have h_sum_U: "sum U V = 0"
+  proof -
+    have h1: "sum U V = sum \<alpha> V - sum \<beta> V"
+      unfolding U_def using sum_subtractf[of \<alpha> \<beta> V] by (by100 simp)
+    show ?thesis using h1 h\<alpha>_sum h\<beta>_sum by (by100 simp)
+  qed
+  (** (Σ U v *_R v) = 0. **)
+  have h_combo_U: "(\<Sum>v\<in>V. U v *\<^sub>R v) = 0"
+  proof -
+    have h_each: "\<And>v. U v *\<^sub>R v = \<alpha> v *\<^sub>R v - \<beta> v *\<^sub>R v"
+      unfolding U_def by (rule scaleR_left_diff_distrib)
+    have h_sum_split: "(\<Sum>v\<in>V. U v *\<^sub>R v)
+                       = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+      using h_each sum_subtractf[of "\<lambda>v. \<alpha> v *\<^sub>R v" "\<lambda>v. \<beta> v *\<^sub>R v" V]
+      by (by100 simp)
+    show ?thesis using h_sum_split h_combo_eq by (by100 simp)
+  qed
+  (** AI contrapositive: sum U V = 0 and combo = 0 forces U v = 0 for all v. **)
+  have h_AI_char: "(\<exists>U. sum U V = 0 \<and> (\<exists>v\<in>V. U v \<noteq> 0) \<and> (\<Sum>v\<in>V. U v *\<^sub>R v) = 0)
+                     = affine_dependent V"
+    using affine_dependent_explicit_finite[OF hVfin] by (by100 simp)
+  have h_not_ex: "\<not> (\<exists>U. sum U V = 0 \<and> (\<exists>v\<in>V. U v \<noteq> 0) \<and> (\<Sum>v\<in>V. U v *\<^sub>R v) = 0)"
+    using h_AI_char hVai by (by100 simp)
+  have h_U_zero: "\<forall>v\<in>V. U v = 0"
+    using h_not_ex h_sum_U h_combo_U by (by100 blast)
+  show ?thesis using h_U_zero unfolding U_def by (by100 simp)
+qed
+
 lemma geotop_isomorphism_induces_PLH:
   fixes K :: "'a::euclidean_space set set"
   fixes L :: "'b::euclidean_space set set"
@@ -7393,7 +7436,15 @@ proof -
         using h\<phi>_V\<sigma>_eq_V\<tau> by (by100 simp)
       have h_sum_z: "(\<Sum>w\<in>V\<^sub>\<tau>. \<beta> w *\<^sub>R w) = z" using h\<beta>_combo .
       have h_gx_z: "g x = z"
-        using h_gx_phi h_gx_phi_alt h_sum_reindex h_sum_V\<tau> h_sum_z by (by100 simp)
+      proof -
+        have s1: "g x = (\<Sum>v\<in>V\<^sub>\<sigma>. \<beta> (\<phi> v) *\<^sub>R \<phi> v)"
+          using h_gx_phi h_gx_phi_alt by (by100 simp)
+        have s2: "(\<Sum>v\<in>V\<^sub>\<sigma>. \<beta> (\<phi> v) *\<^sub>R \<phi> v) = (\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<beta> w *\<^sub>R w)"
+          using h_sum_reindex by (by100 simp)
+        have s3: "(\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<beta> w *\<^sub>R w) = z"
+          using h_sum_V\<tau> h_sum_z by (by100 simp)
+        show ?thesis using s1 s2 s3 by (by100 simp)
+      qed
       show "z \<in> g ` geotop_polyhedron K"
         using hx_poly h_gx_z by (by100 blast)
     qed
@@ -7407,7 +7458,307 @@ proof -
           (\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g) \<Longrightarrow>
           (\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<Longrightarrow>
           inj_on g (geotop_polyhedron K)"
-    sorry \<comment> \<open>F-1b.inj: injectivity; bary-coord uniqueness on carriers + phi inj.\<close>
+  proof -
+    fix g :: "'a \<Rightarrow> 'b"
+    assume h_ag: "\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v"
+    assume h_lin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g"
+    assume h_img: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>"
+    (** Classical injectivity argument: if g x = g y for x,y \<in> |K|, pull back
+        via the image simplex intersection (face of L by K.2 of L) to a common
+        K-face \<sigma>_c = conv hull V_c (V_c = V_x \<inter> V_y). Then bary-coord uniqueness on
+        \<phi> V_c (AI) transfers to V_c (via phi inj) to show x = y. **)
+    (** Common setup. **)
+    have hK_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+      by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+    have hL_simp: "\<forall>\<omega>\<in>L. geotop_is_simplex \<omega>"
+      by (rule conjunct1[OF hL[unfolded geotop_is_complex_def]])
+    have hL_K1: "\<forall>\<sigma>\<in>L. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> L"
+      by (rule conjunct1[OF conjunct2[OF hL[unfolded geotop_is_complex_def]]])
+    have hL_K2: "\<forall>\<sigma>\<in>L. \<forall>\<tau>\<in>L. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                   geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule conjunct1[OF conjunct2[OF conjunct2[OF hL[unfolded geotop_is_complex_def]]]])
+    have h\<phi>_inj_vK: "inj_on \<phi> (geotop_complex_vertices K)"
+      using hbij\<phi> bij_betw_imp_inj_on by (by100 blast)
+    have h\<phi>_img: "\<phi> ` geotop_complex_vertices K = geotop_complex_vertices L"
+      using hbij\<phi> bij_betw_imp_surj_on by (by100 blast)
+    show "inj_on g (geotop_polyhedron K)"
+    proof (rule inj_onI)
+      fix x y
+      assume hxpoly: "x \<in> geotop_polyhedron K"
+      assume hypoly: "y \<in> geotop_polyhedron K"
+      assume h_gxy: "g x = g y"
+      (** Get \<sigma>_x, \<sigma>_y carrying x, y. **)
+      obtain \<sigma>\<^sub>x where h\<sigma>xK: "\<sigma>\<^sub>x \<in> K" and hx\<sigma>x: "x \<in> \<sigma>\<^sub>x"
+        using hxpoly unfolding geotop_polyhedron_def by (by100 blast)
+      obtain \<sigma>\<^sub>y where h\<sigma>yK: "\<sigma>\<^sub>y \<in> K" and hy\<sigma>y: "y \<in> \<sigma>\<^sub>y"
+        using hypoly unfolding geotop_polyhedron_def by (by100 blast)
+      (** Vertex data on \<sigma>_x. **)
+      have h\<sigma>x_simp: "geotop_is_simplex \<sigma>\<^sub>x" using h\<sigma>xK hK_simp by (by100 blast)
+      obtain V\<^sub>x where hVx_sv: "geotop_simplex_vertices \<sigma>\<^sub>x V\<^sub>x"
+        using h\<sigma>x_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+        by (by100 blast)
+      have hVx_fin: "finite V\<^sub>x"
+        using hVx_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h\<sigma>x_hull_g: "\<sigma>\<^sub>x = geotop_convex_hull V\<^sub>x"
+        using hVx_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h\<sigma>x_hull: "\<sigma>\<^sub>x = convex hull V\<^sub>x"
+      proof -
+        have h1: "geotop_convex_hull V\<^sub>x = convex hull V\<^sub>x"
+          by (rule geotop_convex_hull_eq_HOL)
+        show ?thesis using h\<sigma>x_hull_g h1 by (by100 simp)
+      qed
+      have hVx_ai: "\<not> affine_dependent V\<^sub>x"
+        by (rule geotop_general_position_imp_aff_indep[OF hVx_sv])
+      have hVx_ne: "V\<^sub>x \<noteq> {}"
+      proof -
+        obtain n where h: "card V\<^sub>x = n + 1"
+          using hVx_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        show ?thesis using h hVx_fin by (by100 auto)
+      qed
+      have hVx_VK: "V\<^sub>x \<subseteq> geotop_complex_vertices K"
+        unfolding geotop_complex_vertices_def using h\<sigma>xK hVx_sv by (by100 blast)
+      (** Vertex data on \<sigma>_y. **)
+      have h\<sigma>y_simp: "geotop_is_simplex \<sigma>\<^sub>y" using h\<sigma>yK hK_simp by (by100 blast)
+      obtain V\<^sub>y where hVy_sv: "geotop_simplex_vertices \<sigma>\<^sub>y V\<^sub>y"
+        using h\<sigma>y_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+        by (by100 blast)
+      have hVy_fin: "finite V\<^sub>y"
+        using hVy_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h\<sigma>y_hull_g: "\<sigma>\<^sub>y = geotop_convex_hull V\<^sub>y"
+        using hVy_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h\<sigma>y_hull: "\<sigma>\<^sub>y = convex hull V\<^sub>y"
+      proof -
+        have h1: "geotop_convex_hull V\<^sub>y = convex hull V\<^sub>y"
+          by (rule geotop_convex_hull_eq_HOL)
+        show ?thesis using h\<sigma>y_hull_g h1 by (by100 simp)
+      qed
+      have hVy_ai: "\<not> affine_dependent V\<^sub>y"
+        by (rule geotop_general_position_imp_aff_indep[OF hVy_sv])
+      have hVy_ne: "V\<^sub>y \<noteq> {}"
+      proof -
+        obtain n where h: "card V\<^sub>y = n + 1"
+          using hVy_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        show ?thesis using h hVy_fin by (by100 auto)
+      qed
+      have hVy_VK: "V\<^sub>y \<subseteq> geotop_complex_vertices K"
+        unfolding geotop_complex_vertices_def using h\<sigma>yK hVy_sv by (by100 blast)
+      (** Bary coords of x on V_x. **)
+      have hx_hull: "x \<in> convex hull V\<^sub>x" using hx\<sigma>x h\<sigma>x_hull by (by100 simp)
+      have h_hull_chVx: "convex hull V\<^sub>x
+                         = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>x. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>x = 1
+                                     \<and> (\<Sum>v\<in>V\<^sub>x. u\<^sub>c v *\<^sub>R v) = u}"
+        using convex_hull_finite[OF hVx_fin] by (by100 simp)
+      obtain \<alpha> where h\<alpha>_nn: "\<forall>v\<in>V\<^sub>x. 0 \<le> \<alpha> v"
+                 and h\<alpha>_sum: "sum \<alpha> V\<^sub>x = 1"
+                 and h\<alpha>_combo: "(\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v) = x"
+        using hx_hull h_hull_chVx by (by100 blast)
+      (** Bary coords of y on V_y. **)
+      have hy_hull: "y \<in> convex hull V\<^sub>y" using hy\<sigma>y h\<sigma>y_hull by (by100 simp)
+      have h_hull_chVy: "convex hull V\<^sub>y
+                         = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>y. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>y = 1
+                                     \<and> (\<Sum>v\<in>V\<^sub>y. u\<^sub>c v *\<^sub>R v) = u}"
+        using convex_hull_finite[OF hVy_fin] by (by100 simp)
+      obtain \<beta> where h\<beta>_nn: "\<forall>v\<in>V\<^sub>y. 0 \<le> \<beta> v"
+                 and h\<beta>_sum: "sum \<beta> V\<^sub>y = 1"
+                 and h\<beta>_combo: "(\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v) = y"
+        using hy_hull h_hull_chVy by (by100 blast)
+      (** Apply linearity on \<sigma>_x to compute g(x) = sum \<alpha>(v) \<phi>(v) (over V_x). **)
+      have h_lin_\<sigma>x: "geotop_linear_on \<sigma>\<^sub>x g" using h_lin h\<sigma>xK by (by100 blast)
+      obtain W\<^sub>x where hWx_sv: "geotop_simplex_vertices \<sigma>\<^sub>x W\<^sub>x"
+                  and h_lin_x_prop:
+                        "\<forall>\<alpha>\<^sub>c. (\<forall>v\<in>W\<^sub>x. \<alpha>\<^sub>c v \<ge> 0) \<and> sum \<alpha>\<^sub>c W\<^sub>x = 1 \<longrightarrow>
+                              g (\<Sum>v\<in>W\<^sub>x. \<alpha>\<^sub>c v *\<^sub>R v) = (\<Sum>v\<in>W\<^sub>x. \<alpha>\<^sub>c v *\<^sub>R g v)"
+        using h_lin_\<sigma>x unfolding geotop_linear_on_def by (by100 blast)
+      have hWx_eq_Vx: "W\<^sub>x = V\<^sub>x"
+        using geotop_simplex_vertices_unique[OF hWx_sv hVx_sv] .
+      have h_gx_lin: "g x = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R g v)"
+      proof -
+        have h1: "g x = g (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v)" using h\<alpha>_combo by (by100 simp)
+        have h2: "g (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R g v)"
+          using h_lin_x_prop hWx_eq_Vx h\<alpha>_nn h\<alpha>_sum by (by100 blast)
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      have h_gv_phi_Vx: "\<forall>v\<in>V\<^sub>x. g v = \<phi> v" using h_ag hVx_VK by (by100 blast)
+      have h_gx_phi: "g x = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R \<phi> v)"
+      proof -
+        have h_sum_eq: "(\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R g v) = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R \<phi> v)"
+          using h_gv_phi_Vx by (by100 simp)
+        show ?thesis using h_gx_lin h_sum_eq by (by100 simp)
+      qed
+      (** Symmetric for y. **)
+      have h_lin_\<sigma>y: "geotop_linear_on \<sigma>\<^sub>y g" using h_lin h\<sigma>yK by (by100 blast)
+      obtain W\<^sub>y where hWy_sv: "geotop_simplex_vertices \<sigma>\<^sub>y W\<^sub>y"
+                  and h_lin_y_prop:
+                        "\<forall>\<beta>\<^sub>c. (\<forall>v\<in>W\<^sub>y. \<beta>\<^sub>c v \<ge> 0) \<and> sum \<beta>\<^sub>c W\<^sub>y = 1 \<longrightarrow>
+                              g (\<Sum>v\<in>W\<^sub>y. \<beta>\<^sub>c v *\<^sub>R v) = (\<Sum>v\<in>W\<^sub>y. \<beta>\<^sub>c v *\<^sub>R g v)"
+        using h_lin_\<sigma>y unfolding geotop_linear_on_def by (by100 blast)
+      have hWy_eq_Vy: "W\<^sub>y = V\<^sub>y"
+        using geotop_simplex_vertices_unique[OF hWy_sv hVy_sv] .
+      have h_gy_lin: "g y = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R g v)"
+      proof -
+        have h1: "g y = g (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v)" using h\<beta>_combo by (by100 simp)
+        have h2: "g (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R g v)"
+          using h_lin_y_prop hWy_eq_Vy h\<beta>_nn h\<beta>_sum by (by100 blast)
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      have h_gv_phi_Vy: "\<forall>v\<in>V\<^sub>y. g v = \<phi> v" using h_ag hVy_VK by (by100 blast)
+      have h_gy_phi: "g y = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
+      proof -
+        have h_sum_eq: "(\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R g v) = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
+          using h_gv_phi_Vy by (by100 simp)
+        show ?thesis using h_gy_lin h_sum_eq by (by100 simp)
+      qed
+      (** Image simplices. \<phi> V_x \<subseteq> V(L), AI (via iso), and spans \<tau>'_x \<in> L. **)
+      have h\<phi>Vx_VL: "\<phi> ` V\<^sub>x \<subseteq> geotop_complex_vertices L"
+        using hVx_VK h\<phi>_img by (by100 blast)
+      have h\<phi>Vy_VL: "\<phi> ` V\<^sub>y \<subseteq> geotop_complex_vertices L"
+        using hVy_VK h\<phi>_img by (by100 blast)
+      have h\<sigma>x_K_hull: "geotop_convex_hull V\<^sub>x \<in> K"
+        using h\<sigma>xK h\<sigma>x_hull_g by (by100 simp)
+      have h\<tau>'x_L: "geotop_convex_hull (\<phi> ` V\<^sub>x) \<in> L"
+        using h\<phi>cond hVx_VK h\<sigma>x_K_hull by (by100 blast)
+      have h\<sigma>y_K_hull: "geotop_convex_hull V\<^sub>y \<in> K"
+        using h\<sigma>yK h\<sigma>y_hull_g by (by100 simp)
+      have h\<tau>'y_L: "geotop_convex_hull (\<phi> ` V\<^sub>y) \<in> L"
+        using h\<phi>cond hVy_VK h\<sigma>y_K_hull by (by100 blast)
+      define \<tau>\<^sub>x' where "\<tau>\<^sub>x' = convex hull (\<phi> ` V\<^sub>x)"
+      define \<tau>\<^sub>y' where "\<tau>\<^sub>y' = convex hull (\<phi> ` V\<^sub>y)"
+      have h\<tau>'x_hull_eq: "\<tau>\<^sub>x' = geotop_convex_hull (\<phi> ` V\<^sub>x)"
+        unfolding \<tau>\<^sub>x'_def using geotop_convex_hull_eq_HOL[of "\<phi> ` V\<^sub>x"] by (by100 simp)
+      have h\<tau>'y_hull_eq: "\<tau>\<^sub>y' = geotop_convex_hull (\<phi> ` V\<^sub>y)"
+        unfolding \<tau>\<^sub>y'_def using geotop_convex_hull_eq_HOL[of "\<phi> ` V\<^sub>y"] by (by100 simp)
+      have h\<tau>'x_L2: "\<tau>\<^sub>x' \<in> L" using h\<tau>'x_L h\<tau>'x_hull_eq by (by100 simp)
+      have h\<tau>'y_L2: "\<tau>\<^sub>y' \<in> L" using h\<tau>'y_L h\<tau>'y_hull_eq by (by100 simp)
+      (** \<phi> injective on V_x, V_y (subset of V(K)). **)
+      have h\<phi>inj_Vx: "inj_on \<phi> V\<^sub>x"
+        by (rule inj_on_subset[OF h\<phi>_inj_vK hVx_VK])
+      have h\<phi>inj_Vy: "inj_on \<phi> V\<^sub>y"
+        by (rule inj_on_subset[OF h\<phi>_inj_vK hVy_VK])
+      (** \<phi> V_x, \<phi> V_y finite, nonempty. **)
+      have h\<phi>Vx_fin: "finite (\<phi> ` V\<^sub>x)" using hVx_fin by (by100 simp)
+      have h\<phi>Vx_ne: "\<phi> ` V\<^sub>x \<noteq> {}" using hVx_ne by (by100 simp)
+      have h\<phi>Vy_fin: "finite (\<phi> ` V\<^sub>y)" using hVy_fin by (by100 simp)
+      have h\<phi>Vy_ne: "\<phi> ` V\<^sub>y \<noteq> {}" using hVy_ne by (by100 simp)
+      (** \<phi> V_x, \<phi> V_y are simplex_vertices of \<tau>'_x, \<tau>'_y. **)
+      have h\<phi>Vx_sv: "geotop_simplex_vertices \<tau>\<^sub>x' (\<phi> ` V\<^sub>x)"
+        unfolding \<tau>\<^sub>x'_def
+        using geotop_convex_hull_eq_HOL[of "\<phi> ` V\<^sub>x"]
+              geotop_V_subK_convhullK_is_simplex_vertices[OF hL h\<phi>Vx_fin h\<phi>Vx_ne h\<phi>Vx_VL h\<tau>'x_L]
+        by (by100 simp)
+      have h\<phi>Vy_sv: "geotop_simplex_vertices \<tau>\<^sub>y' (\<phi> ` V\<^sub>y)"
+        unfolding \<tau>\<^sub>y'_def
+        using geotop_convex_hull_eq_HOL[of "\<phi> ` V\<^sub>y"]
+              geotop_V_subK_convhullK_is_simplex_vertices[OF hL h\<phi>Vy_fin h\<phi>Vy_ne h\<phi>Vy_VL h\<tau>'y_L]
+        by (by100 simp)
+      (** AI for the image vertex sets. **)
+      have h\<phi>Vx_ai: "\<not> affine_dependent (\<phi> ` V\<^sub>x)"
+        by (rule geotop_general_position_imp_aff_indep[OF h\<phi>Vx_sv])
+      have h\<phi>Vy_ai: "\<not> affine_dependent (\<phi> ` V\<^sub>y)"
+        by (rule geotop_general_position_imp_aff_indep[OF h\<phi>Vy_sv])
+      (** g(x) \<in> \<tau>'_x. **)
+      have h_gx_in\<tau>'x: "g x \<in> \<tau>\<^sub>x'"
+      proof -
+        have h_hull_char\<tau>x: "convex hull (\<phi> ` V\<^sub>x)
+                             = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>x) = 1
+                                         \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>x. u\<^sub>c w *\<^sub>R w) = u}"
+          using convex_hull_finite[OF h\<phi>Vx_fin] by (by100 simp)
+        (** Use the reindex: g(x) = sum \<alpha>(v) \<phi>(v) = sum_{w \<in> \<phi> V_x} A_x(w) w
+            where A_x(w) = \<alpha>(inv w). **)
+        define A\<^sub>x where "A\<^sub>x w = \<alpha> (inv_into V\<^sub>x \<phi> w)" for w
+        have h_reindex_sum: "sum A\<^sub>x (\<phi> ` V\<^sub>x) = sum \<alpha> V\<^sub>x"
+        proof -
+          have h_step: "sum A\<^sub>x (\<phi> ` V\<^sub>x) = sum (A\<^sub>x \<circ> \<phi>) V\<^sub>x"
+            by (rule sum.reindex[OF h\<phi>inj_Vx])
+          have h_inv: "\<And>v. v \<in> V\<^sub>x \<Longrightarrow> (A\<^sub>x \<circ> \<phi>) v = \<alpha> v"
+            unfolding A\<^sub>x_def o_def using inv_into_f_f[OF h\<phi>inj_Vx] by (by100 simp)
+          have h_step2: "sum (A\<^sub>x \<circ> \<phi>) V\<^sub>x = sum \<alpha> V\<^sub>x"
+            using h_inv by (by100 simp)
+          show ?thesis using h_step h_step2 by (by100 simp)
+        qed
+        have h_reindex_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w) = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R \<phi> v)"
+        proof -
+          have h_step: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w)
+                        = (\<Sum>v\<in>V\<^sub>x. (\<lambda>w. A\<^sub>x w *\<^sub>R w) (\<phi> v))"
+            using sum.reindex[OF h\<phi>inj_Vx, of "\<lambda>w. A\<^sub>x w *\<^sub>R w"] by (by100 simp)
+          have h_inv: "\<And>v. v \<in> V\<^sub>x \<Longrightarrow> A\<^sub>x (\<phi> v) = \<alpha> v"
+            unfolding A\<^sub>x_def using inv_into_f_f[OF h\<phi>inj_Vx] by (by100 simp)
+          have h_step2: "(\<Sum>v\<in>V\<^sub>x. (\<lambda>w. A\<^sub>x w *\<^sub>R w) (\<phi> v))
+                          = (\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R \<phi> v)"
+            using h_inv by (by100 simp)
+          show ?thesis using h_step h_step2 by (by100 simp)
+        qed
+        have hAx_nn: "\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> A\<^sub>x w"
+        proof
+          fix w assume hw: "w \<in> \<phi> ` V\<^sub>x"
+          obtain v where hvVx: "v \<in> V\<^sub>x" and hw_eq: "w = \<phi> v" using hw by (by100 blast)
+          have hAx_w: "A\<^sub>x w = \<alpha> v"
+            unfolding A\<^sub>x_def using hw_eq hvVx inv_into_f_f[OF h\<phi>inj_Vx] by (by100 simp)
+          show "0 \<le> A\<^sub>x w" using hAx_w h\<alpha>_nn hvVx by (by100 simp)
+        qed
+        have hAx_sum: "sum A\<^sub>x (\<phi> ` V\<^sub>x) = 1"
+          using h_reindex_sum h\<alpha>_sum by (by100 simp)
+        have hAx_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. A\<^sub>x w *\<^sub>R w) = g x"
+          using h_reindex_combo h_gx_phi by (by100 simp)
+        have h_ex_Ax: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>x) = 1
+                           \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>x. u\<^sub>c w *\<^sub>R w) = g x"
+          using hAx_nn hAx_sum hAx_combo by (by100 blast)
+        have h_gx_hullfirst: "g x \<in> convex hull (\<phi> ` V\<^sub>x)"
+          using h_hull_char\<tau>x h_ex_Ax by (by100 blast)
+        show ?thesis unfolding \<tau>\<^sub>x'_def using h_gx_hullfirst by (by100 simp)
+      qed
+      (** Symmetrically g(y) \<in> \<tau>'_y. **)
+      have h_gy_in\<tau>'y: "g y \<in> \<tau>\<^sub>y'"
+      proof -
+        have h_hull_char\<tau>y: "convex hull (\<phi> ` V\<^sub>y)
+                             = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>y) = 1
+                                         \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>y. u\<^sub>c w *\<^sub>R w) = u}"
+          using convex_hull_finite[OF h\<phi>Vy_fin] by (by100 simp)
+        define B\<^sub>y where "B\<^sub>y w = \<beta> (inv_into V\<^sub>y \<phi> w)" for w
+        have h_reindex_sum: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = sum \<beta> V\<^sub>y"
+        proof -
+          have h_step: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = sum (B\<^sub>y \<circ> \<phi>) V\<^sub>y"
+            by (rule sum.reindex[OF h\<phi>inj_Vy])
+          have h_inv: "\<And>v. v \<in> V\<^sub>y \<Longrightarrow> (B\<^sub>y \<circ> \<phi>) v = \<beta> v"
+            unfolding B\<^sub>y_def o_def using inv_into_f_f[OF h\<phi>inj_Vy] by (by100 simp)
+          have h_step2: "sum (B\<^sub>y \<circ> \<phi>) V\<^sub>y = sum \<beta> V\<^sub>y"
+            using h_inv by (by100 simp)
+          show ?thesis using h_step h_step2 by (by100 simp)
+        qed
+        have h_reindex_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w) = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
+        proof -
+          have h_step: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w)
+                        = (\<Sum>v\<in>V\<^sub>y. (\<lambda>w. B\<^sub>y w *\<^sub>R w) (\<phi> v))"
+            using sum.reindex[OF h\<phi>inj_Vy, of "\<lambda>w. B\<^sub>y w *\<^sub>R w"] by (by100 simp)
+          have h_inv: "\<And>v. v \<in> V\<^sub>y \<Longrightarrow> B\<^sub>y (\<phi> v) = \<beta> v"
+            unfolding B\<^sub>y_def using inv_into_f_f[OF h\<phi>inj_Vy] by (by100 simp)
+          have h_step2: "(\<Sum>v\<in>V\<^sub>y. (\<lambda>w. B\<^sub>y w *\<^sub>R w) (\<phi> v))
+                          = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
+            using h_inv by (by100 simp)
+          show ?thesis using h_step h_step2 by (by100 simp)
+        qed
+        have hBy_nn: "\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> B\<^sub>y w"
+        proof
+          fix w assume hw: "w \<in> \<phi> ` V\<^sub>y"
+          obtain v where hvVy: "v \<in> V\<^sub>y" and hw_eq: "w = \<phi> v" using hw by (by100 blast)
+          have hBy_w: "B\<^sub>y w = \<beta> v"
+            unfolding B\<^sub>y_def using hw_eq hvVy inv_into_f_f[OF h\<phi>inj_Vy] by (by100 simp)
+          show "0 \<le> B\<^sub>y w" using hBy_w h\<beta>_nn hvVy by (by100 simp)
+        qed
+        have hBy_sum: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = 1"
+          using h_reindex_sum h\<beta>_sum by (by100 simp)
+        have hBy_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w) = g y"
+          using h_reindex_combo h_gy_phi by (by100 simp)
+        have h_ex_By: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>y) = 1
+                           \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>y. u\<^sub>c w *\<^sub>R w) = g y"
+          using hBy_nn hBy_sum hBy_combo by (by100 blast)
+        have h_gy_hullfirst: "g y \<in> convex hull (\<phi> ` V\<^sub>y)"
+          using h_hull_char\<tau>y h_ex_By by (by100 blast)
+        show ?thesis unfolding \<tau>\<^sub>y'_def using h_gy_hullfirst by (by100 simp)
+      qed
+      show "x = y"
+        sorry
+    qed
+  qed
   (** (1b) Assemble bij_betw from inj + image_eq. **)
   have h_f_bij:
     "\<And>g. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<Longrightarrow>
