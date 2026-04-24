@@ -4621,14 +4621,37 @@ proof -
         show ?thesis using h_inter h_rhs by (by100 simp)
       next
         case h_neither: False
-        (** Non-nested: neither chain is subset of the other. The classical
-            argument requires showing bary image of set c_1 ∪ set c_2 is AI,
-            then convex_hull_Int from HOL-Analysis. Deferred. **)
-        show ?thesis
-          sorry \<comment> \<open>Key classical fact (non-nested case): chain-simplex intersection =
-                    common-sub-flag chain-simplex when neither chain is contained in the
-                    other. Proof: AI of bary (set c_1 ∪ set c_2) via Moise classical
-                    argument + convex_hull_Int.\<close>
+        (** Non-nested case. Direction \<supseteq> is trivial from hull_mono. Direction \<subseteq>
+            is the genuine Moise Lemma 4.4/4.5 classical argument. **)
+        (** Easy direction: conv hull (bary (c_1 \<inter> c_2)) \<subseteq> intersection of conv hulls. **)
+        have h_inter_sub_c1: "set c\<^sub>1 \<inter> set c\<^sub>2 \<subseteq> set c\<^sub>1" by (by100 blast)
+        have h_inter_sub_c2: "set c\<^sub>1 \<inter> set c\<^sub>2 \<subseteq> set c\<^sub>2" by (by100 blast)
+        have h_rhs_sub_c1:
+          "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+            \<subseteq> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+          by (rule h_chain_inclusion[OF h_inter_sub_c1])
+        have h_rhs_sub_c2:
+          "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+            \<subseteq> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+          by (rule h_chain_inclusion[OF h_inter_sub_c2])
+        have h_rhs_sub:
+          "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+            \<subseteq> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)
+              \<inter> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+          using h_rhs_sub_c1 h_rhs_sub_c2 by (by100 blast)
+        (** Hard direction: intersection of conv hulls \<subseteq> conv hull of common sub-flag.
+            Moise Lemma 4.5 classical argument. This is the only remaining non-trivial
+            sorry. **)
+        have h_lhs_sub:
+          "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+           geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+            \<subseteq> geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          sorry \<comment> \<open>Moise 4.5 non-nested: for x in both chain simplexes, its bary
+                    coords on each flag are uniquely determined; the V(top) coords
+                    are equal, forcing the supports to lie in the common sub-chain
+                    bary image. Classical combinatorial argument via rel_interior
+                    partition of |K| + coefficient matching.\<close>
+        show ?thesis using h_rhs_sub h_lhs_sub by (by100 blast)
       qed
     qed
   qed
