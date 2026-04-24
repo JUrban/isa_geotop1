@@ -442,6 +442,26 @@ equivalents, (b) finite complex ⟹ finite relevant σ's bound, (c) the
 With all three pieces, E closes in ~150 lines total using existing
 rel_interior disjointness helpers.
 
+### Full E-attack infrastructure (as of session end)
+
+Four foundational bridge helpers (all fully proven, committed):
+1. `geotop_complex_inter_face_HOL` — σ∩τ is HOL face_of σ.
+2. `geotop_complex_rel_interior_disjoint_distinct` — rel_interiors of
+   distinct simplices in a complex are disjoint.
+3. `geotop_complex_point_in_unique_rel_interior` — each point of |K|
+   is in rel_interior of exactly one σ ∈ K.
+4. `geotop_complex_rel_interior_imp_subset` — x ∈ rel_int σ ∧ x ∈ σ'
+   ⟹ σ ⊆ σ'. Super-simplex transition fact.
+
+With these, closing E requires ONLY the top-level inductive argument:
+- For T convex ⊆ open_star K v, pick x ∈ T with x ∈ rel_int σ_x.
+- For y ∈ T, segment xy is in T ⊆ open_star.
+- Argument that y ∈ σ_x (or some super-simplex σ* of σ_x).
+- Finite-complex + super-simplex helper gives σ_max ⊇ σ_x with T ⊆ σ_max.
+
+The induction could be ~80-100 lines. Total for E: ~100-120 lines (down
+from original 150 estimate thanks to these helpers).
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
