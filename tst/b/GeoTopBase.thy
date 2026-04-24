@@ -3344,6 +3344,27 @@ proof -
   show ?thesis using h_aff_\<tau>_eq h_disj_raw h\<sigma>_hullHOL by (by100 simp)
 qed
 
+(** D1.0 core: for a flag c in complex K, the set of barycenters of the flag
+    is affinely independent. Key fact underlying D step 1 K.0 axiom.
+
+    Proof: by contradiction via affine_dependent_explicit_finite. Take k =
+    max index with nonzero coefficient. Then b_k lies in aff hull {b_i}_{i<k}
+    ⊆ aff hull σ_{k-1} (since each b_i ∈ σ_i ⊆ σ_{k-1} in the chain). But
+    b_k ∈ rel_interior σ_k, and σ_{k-1} ⊊ σ_k proper face ⟹ aff hull
+    σ_{k-1} ∩ rel_interior σ_k = ∅ (proper_subset helper). Contradiction.
+
+    Scaffold-only: marked with sorry for the length-based induction/max-index
+    indexing; the mathematical argument is fully in the documentation block. **)
+lemma geotop_complex_flag_barycenter_affine_independent:
+  fixes K :: "'a::euclidean_space set set"
+  fixes c :: "'a set list"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_flags: "c \<in> geotop_flags K"
+  shows "\<not> affine_dependent (geotop_barycenter ` set c)"
+  sorry \<comment> \<open>D1.0 core: flag barycenters are affinely independent.
+              Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
+              + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
