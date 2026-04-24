@@ -2115,7 +2115,16 @@ proof -
     show ?thesis using h_step1 h_step2 by (by100 simp)
   qed
   have h_sum_bd_k: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> real k * diameter \<sigma>"
-    using h_sum_norm h_sum_bd h_diff_card by (by100 simp)
+  proof -
+    have h1: "norm (\<Sum>w\<in>V - {v}. w - v) \<le> (\<Sum>w\<in>V - {v}. norm (w - v))"
+      by (rule h_sum_norm)
+    have h2: "(\<Sum>w\<in>V - {v}. norm (w - v)) \<le> real (card (V - {v})) * diameter \<sigma>"
+      by (rule h_sum_bd)
+    have h_card_eq: "real (card (V - {v})) = real k" using h_diff_card by (by100 simp)
+    have h3: "real (card (V - {v})) * diameter \<sigma> = real k * diameter \<sigma>"
+      using h_card_eq by (by100 simp)
+    show ?thesis using h1 h2 h3 by (by100 simp)
+  qed
   (** Final bound. **)
   have h_card_pos_real: "real (card V) > 0" using h_card_pos by (by100 simp)
   have h_bary_norm: "norm (geotop_barycenter \<sigma> - v)
