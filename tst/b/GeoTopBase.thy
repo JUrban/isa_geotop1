@@ -7134,12 +7134,23 @@ proof -
     assume h_lin: "\<forall>\<sigma>\<in>K. geotop_linear_on \<sigma> g"
     assume h_img: "\<forall>\<sigma>\<in>K. \<exists>\<tau>\<in>L. \<forall>x\<in>\<sigma>. g x \<in> \<tau>"
     (** We prove the surjection pointwise, using phi^{-1} to construct preimages. **)
+    (** Key sub-lemma: for tau in L with vertex set V_tau, V_sigma = phi^{-1}(V_tau)
+        gives a K-simplex sigma with V(sigma) = V_sigma. **)
+    have h_phi_inv_vtx:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow>
+         \<forall>V\<^sub>\<tau>. geotop_simplex_vertices \<tau> V\<^sub>\<tau> \<longrightarrow>
+             geotop_simplex_vertices
+               (geotop_convex_hull ((inv_into (geotop_complex_vertices K) \<phi>) ` V\<^sub>\<tau>))
+               ((inv_into (geotop_complex_vertices K) \<phi>) ` V\<^sub>\<tau>)
+             \<and> (geotop_convex_hull ((inv_into (geotop_complex_vertices K) \<phi>) ` V\<^sub>\<tau>)) \<in> K"
+      sorry \<comment> \<open>F-surj helper: phi^{-1}(V_tau) is the vertex set of a K-simplex.
+                Uses V_tau subset V(L), inv_into(V(L)) into V(K), h_phi_cond
+                for hull membership, V_subK_elt_in_simplex_vertices + card match
+                + extreme point to show vertex set equality.\<close>
     have h_pointwise:
       "\<And>z. z \<in> geotop_polyhedron L \<Longrightarrow> z \<in> g ` geotop_polyhedron K"
-      sorry \<comment> \<open>F-1b.surj core: for z in |L|, pick tau in L with z in tau,
-                extract bary coords beta over V(tau), use phi^{-1} to construct
-                sigma in K with V(sigma) = phi^{-1}(V(tau)), build x = sum beta(phi v) v,
-                apply linear_on sigma g to get g(x) = z.\<close>
+      sorry \<comment> \<open>F-1b.surj assembly: use h_phi_inv_vtx + convex_hull_finite bary
+                decomposition of z + sum.reindex + linear_on to compute g(x) = z.\<close>
     show "geotop_polyhedron L \<subseteq> g ` geotop_polyhedron K"
       using h_pointwise by (by100 blast)
   qed
