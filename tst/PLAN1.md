@@ -1004,3 +1004,31 @@ Each remaining sorry is a classical result of 100-300 lines with specific
 algorithmic or geometric content. The infrastructure to attack each is
 now comprehensive (barycenter bounds, diameter bridges, flag machinery,
 simplex_vertices uniqueness).
+
+## Session progress 2026-04-24 (continuation 10)
+
+### Multi-scaffold decomposition push
+
+Scaffolded two major remaining sorries with their classical structure:
+
+1. **h_K2_intersect_eq** — proven for nested cases (set c_1 ⊆ set c_2 and
+   vice versa); non-nested case remains as targeted sorry. Uses new helper
+   `h_chain_inclusion` (bary images of ⊆ sets give hull inclusion).
+
+2. **h_delta_bridge** — scaffolded end-to-end assembly using h_leb_raw +
+   geotop_diameter_ge_HOL_diameter bridge. Remaining targeted sorries:
+   - `h_star_to_simplex_del` (star-to-single-simplex tightening).
+   - C = {} edge case (empty vertex set V(K'); statement needs K non-empty
+     or outer theorem needs edge case handling).
+
+### Current state: 5 sorries
+
+1. h_K2_intersect_eq non-nested case (one specific sub-case)
+2. h_simp_in_bK dim > 0 case (barycentric decomposition)
+3. h_star_to_simplex_del (E classical core)
+4. C = {} edge case in h_delta (technical)
+5. h_f_exists (F)
+
+Each remaining sorry is now targeted to a specific well-understood classical
+fact. Net structural progress per CLAUDE.md Phase 3 "more and more detailed
+formal proof sketches".
