@@ -281,6 +281,37 @@ Proof via projection π(x) = inner (b - a) x:
 - π injective on σ gives {γ p, γ q} = {a, b}.
 Then Phase 1.A proof becomes ~200 lines (single monolithic fits under 120s).
 
+### 2026-04-24 continuation: PHASE 1.A FULLY PROVED!
+
+Helper stack built and all proven (15 new fully-proven lemmas in Phase 1.A
+infrastructure, spanning from K.2 closure through Phase 1.A):
+
+- `geotop_inner_diff_inj_on_closed_segment` — projection π(x) = (b-a)·x
+  is injective on closed_segment a b for a ≠ b.
+- `geotop_inner_diff_image_closed_segment` — π image of segment equals
+  real closed_segment of endpoint projections.
+- `geotop_homeomorphism_segment_endpoints` — {γ p, γ q} = {a, b} when γ
+  is a cts bijection {p..q} → closed_segment a b. Uses the two projection
+  helpers + `continuous_injective_image_segment_1`.
+- `geotop_arc_1simplex_preimage_structure` — combines preimage_interval
+  + endpoints: for σ = closed_segment a b 1-simplex, γ^{-1}(σ) = {p..q}
+  with {γ p, γ q} = {a, b}.
+- `geotop_subarc_polyhedron` (**Phase 1.A MAIN**) — γ([s_lo, s_hi]) is
+  the polyhedron of a 1-dim sub-complex. ~310-line proof via subdivide_at_two
+  + restrict + case analysis on σ (singleton vs 1-simplex) + interval
+  containment via vertex-in-1simplex endpoint contradiction.
+
+Phase 1.A sorry at geotop_broken_line_subarc closed via direct application.
+
+**4 real §1+Intro sorries remaining** (was 5):
+  1. L1945 `classical_Sd_exists` (D).
+  2. L3084 Lebesgue tightening (E).
+  3. L3313 `h_f_exists` (F).
+  4. L12434 arc_reduction overlap (Phase 1.C).
+
+Phase 1.C is NOW UNBLOCKED (was blocked on 1.A). Plan: use first_intersection
+helper + geotop_subarc_polyhedron directly.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
