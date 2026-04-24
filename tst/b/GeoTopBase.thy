@@ -4315,9 +4315,195 @@ proof -
   have h_dim_preserve: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
         (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)"
-    sorry \<comment> \<open>D-step 4: dim preservation. For σ' ∈ bK with flag c, σ' has dim
-              length(c) - 1. Bound length(c) ≤ n+1 via strictly-increasing dim
-              (Moise Lemma 4.11 first part).\<close>
+  proof (intro allI impI ballI)
+    fix n :: nat and \<sigma>' k
+    assume h_K_bound: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    assume h\<sigma>'_bK: "\<sigma>' \<in> bK" and h_dim_k: "geotop_simplex_dim \<sigma>' k"
+    obtain c where hc_fl: "c \<in> flags"
+               and h\<sigma>'_hull: "\<sigma>' = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<sigma>'_bK unfolding bK_def by (by100 blast)
+    have hc_geo: "c \<in> geotop_flags K" using hc_fl h_flags_eq_geotop by (by100 simp)
+    have hc_ne: "c \<noteq> []" using hc_fl unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_fl unfolding flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>a b. a \<subset> b) c"
+      using hc_fl unfolding flags_def by (by100 blast)
+    have hc_dist: "distinct c" using hc_fl unfolding flags_def by (by100 blast)
+    (** Pick a dim witness per element of set c. **)
+    define d where "d s = (SOME kk. geotop_simplex_dim s kk)" for s :: "'a set"
+    have h_K_has_dim: "\<forall>s\<in>K. \<exists>kk. geotop_simplex_dim s kk"
+    proof
+      fix s assume hs_K: "s \<in> K"
+      have h_K_simp2: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+        by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+      have hs_simp: "geotop_is_simplex s" using hs_K h_K_simp2 by (by100 blast)
+      obtain V m\<^sub>0 n\<^sub>0 where hV_fin: "finite V"
+                       and hV_card: "card V = n\<^sub>0 + 1"
+                       and hnm0: "n\<^sub>0 \<le> m\<^sub>0"
+                       and hV_gp: "geotop_general_position V m\<^sub>0"
+                       and hs_hull: "s = geotop_convex_hull V"
+        using hs_simp unfolding geotop_is_simplex_def by (by100 blast)
+      have hs_dim_n0: "geotop_simplex_dim s n\<^sub>0"
+        unfolding geotop_simplex_dim_def
+        using hV_fin hV_card hnm0 hV_gp hs_hull by (by100 blast)
+      show "\<exists>kk. geotop_simplex_dim s kk" using hs_dim_n0 by (by100 blast)
+    qed
+    have h_d_prop: "\<forall>s\<in>set c. geotop_simplex_dim s (d s)"
+    proof
+      fix s assume hs_c: "s \<in> set c"
+      have hs_K: "s \<in> K" using hs_c hc_subK by (by100 blast)
+      have h_ex: "\<exists>kk. geotop_simplex_dim s kk" using h_K_has_dim hs_K by (by100 blast)
+      show "geotop_simplex_dim s (d s)" unfolding d_def
+        using someI_ex[OF h_ex] by (by100 blast)
+    qed
+    have h_d_bound: "\<forall>s\<in>set c. d s \<le> n"
+    proof
+      fix s assume hs_c: "s \<in> set c"
+      have hs_K: "s \<in> K" using hs_c hc_subK by (by100 blast)
+      have h_dim_ds: "geotop_simplex_dim s (d s)" using h_d_prop hs_c by (by100 blast)
+      show "d s \<le> n" using h_K_bound hs_K h_dim_ds by (by100 blast)
+    qed
+    (** d is strictly monotone along the chain c under \<subset>. **)
+    have h_d_strict: "\<forall>s\<in>set c. \<forall>t\<in>set c. s \<subset> t \<longrightarrow> d s < d t"
+    proof (intro ballI impI)
+      fix s t assume hs: "s \<in> set c" and ht: "t \<in> set c" and h_prop: "s \<subset> t"
+      have hs_K: "s \<in> K" using hs hc_subK by (by100 blast)
+      have ht_K: "t \<in> K" using ht hc_subK by (by100 blast)
+      have h_dim_s: "geotop_simplex_dim s (d s)" using h_d_prop hs by (by100 blast)
+      have h_dim_t: "geotop_simplex_dim t (d t)" using h_d_prop ht by (by100 blast)
+      show "d s < d t"
+        by (rule geotop_complex_proper_subset_dim_less
+                  [OF hK hs_K ht_K h_prop h_dim_s h_dim_t])
+    qed
+    (** Inject d into {0..n}, then card bound. **)
+    have h_d_inj: "inj_on d (set c)"
+    proof (rule inj_onI)
+      fix s t assume hs: "s \<in> set c" and ht: "t \<in> set c" and h_eq: "d s = d t"
+      show "s = t"
+      proof (rule ccontr)
+        assume h_ne: "s \<noteq> t"
+        (** By sorted_wrt, we have s \<subset> t or t \<subset> s. **)
+        have h_ord: "s \<subset> t \<or> t \<subset> s"
+        proof -
+          have hs_nth0: "\<exists>i<length c. c ! i = s"
+            using hs in_set_conv_nth[of s c] by (by100 simp)
+          have ht_nth0: "\<exists>j<length c. c ! j = t"
+            using ht in_set_conv_nth[of t c] by (by100 simp)
+          have hs_nth: "\<exists>i<length c. s = c ! i" using hs_nth0 by (by100 metis)
+          have ht_nth: "\<exists>j<length c. t = c ! j" using ht_nth0 by (by100 metis)
+          obtain i where hi: "i < length c" and hs_eq: "s = c ! i" using hs_nth by (by100 blast)
+          obtain j where hj: "j < length c" and ht_eq: "t = c ! j" using ht_nth by (by100 blast)
+          have hij_ne: "i \<noteq> j" using hs_eq ht_eq h_ne by (by100 blast)
+          consider "i < j" | "j < i" using hij_ne by (by100 linarith)
+          thus ?thesis
+          proof cases
+            case 1
+            have "c ! i \<subset> c ! j"
+              using hc_sorted 1 hj sorted_wrt_nth_less[of "(\<subset>)" c i j] by (by100 blast)
+            thus ?thesis using hs_eq ht_eq by (by100 simp)
+          next
+            case 2
+            have "c ! j \<subset> c ! i"
+              using hc_sorted 2 hi sorted_wrt_nth_less[of "(\<subset>)" c j i] by (by100 blast)
+            thus ?thesis using hs_eq ht_eq by (by100 simp)
+          qed
+        qed
+        show False
+        proof (rule disjE[OF h_ord])
+          assume h_st: "s \<subset> t"
+          have "d s < d t" using h_d_strict hs ht h_st by (by100 blast)
+          thus False using h_eq by (by100 simp)
+        next
+          assume h_ts: "t \<subset> s"
+          have "d t < d s" using h_d_strict ht hs h_ts by (by100 blast)
+          thus False using h_eq by (by100 simp)
+        qed
+      qed
+    qed
+    have h_img_sub: "d ` set c \<subseteq> {0..n}"
+      using h_d_bound by (by100 auto)
+    have h_img_card: "card (d ` set c) \<le> card {0..n::nat}"
+      using h_img_sub finite_atLeastAtMost card_mono by (by100 blast)
+    have h_atLeast_card: "card {0..n::nat} = n + 1" by (by100 simp)
+    have h_c_card: "card (set c) = length c"
+      using hc_dist distinct_card by (by100 blast)
+    have h_img_card_eq: "card (d ` set c) = card (set c)"
+      using card_image[OF h_d_inj] by (by100 simp)
+    have h_len_bd: "length c \<le> n + 1"
+      using h_img_card h_atLeast_card h_c_card h_img_card_eq by (by100 linarith)
+    (** σ' has simplex_dim (length c - 1). **)
+    have h\<sigma>'_sv: "geotop_simplex_vertices \<sigma>' (geotop_barycenter ` set c)"
+      using geotop_bK_elt_simplex_vertices[OF hK hc_geo] h\<sigma>'_hull by (by100 simp)
+    have h_bary_fin: "finite (geotop_barycenter ` set c)" by (by100 simp)
+    have h_bary_card: "card (geotop_barycenter ` set c) = length c"
+      by (rule geotop_complex_flag_barycenter_card[OF hK hc_subK hc_dist])
+    have h_len_pos: "length c \<ge> 1"
+    proof -
+      have "length c > 0" using hc_ne by (by100 simp)
+      thus ?thesis by (by100 linarith)
+    qed
+    define m where "m = length c - 1"
+    have h_bary_card_m: "card (geotop_barycenter ` set c) = m + 1"
+      unfolding m_def using h_bary_card h_len_pos by (by100 simp)
+    have h_bary_ai: "\<not> affine_dependent (geotop_barycenter ` set c)"
+      by (rule geotop_complex_flag_barycenter_affine_independent[OF hK hc_geo])
+    have h_bary_gp: "geotop_general_position (geotop_barycenter ` set c) m"
+      by (rule geotop_ai_imp_general_position[OF h_bary_fin h_bary_card_m h_bary_ai])
+    have h_mm: "m \<le> m" by (by100 simp)
+    have h\<sigma>'_dim_m: "geotop_simplex_dim \<sigma>' m"
+      unfolding geotop_simplex_dim_def
+      using h_bary_fin h_bary_card_m h_mm h_bary_gp h\<sigma>'_hull by (by100 blast)
+    (** Simplex dim uniqueness: k = m. **)
+    have hk_eq_m: "k = m"
+    proof -
+      obtain V\<^sub>k mk\<^sub>k where hVk_fin: "finite V\<^sub>k"
+                     and hVk_card: "card V\<^sub>k = k + 1"
+                     and hnm\<^sub>k: "k \<le> mk\<^sub>k"
+                     and hVk_gp: "geotop_general_position V\<^sub>k mk\<^sub>k"
+                     and h\<sigma>'_hullk: "\<sigma>' = geotop_convex_hull V\<^sub>k"
+        using h_dim_k unfolding geotop_simplex_dim_def by (by100 blast)
+      (** Both V\<^sub>k and bary ` set c have the same convex hull σ'. Both AI. **)
+      have hVk_ai: "\<not> affine_dependent V\<^sub>k"
+      proof -
+        have hVk_sv: "geotop_simplex_vertices \<sigma>' V\<^sub>k"
+          unfolding geotop_simplex_vertices_def
+          using hVk_fin hVk_card hnm\<^sub>k hVk_gp h\<sigma>'_hullk by (by100 blast)
+        show ?thesis by (rule geotop_general_position_imp_aff_indep[OF hVk_sv])
+      qed
+      have h_hull_same: "geotop_convex_hull V\<^sub>k = geotop_convex_hull (geotop_barycenter ` set c)"
+        using h\<sigma>'_hullk h\<sigma>'_hull by (by100 simp)
+      have h_HOL_same: "convex hull V\<^sub>k = convex hull (geotop_barycenter ` set c)"
+      proof -
+        have h1: "geotop_convex_hull V\<^sub>k = convex hull V\<^sub>k"
+          by (rule geotop_convex_hull_eq_HOL)
+        have h2: "geotop_convex_hull (geotop_barycenter ` set c)
+                    = convex hull (geotop_barycenter ` set c)"
+          by (rule geotop_convex_hull_eq_HOL)
+        show ?thesis using h_hull_same h1 h2 by (by100 simp)
+      qed
+      have h_Vk_eq: "V\<^sub>k = geotop_barycenter ` set c"
+      proof (rule set_eqI, rule iffI)
+        fix x assume hxVk: "x \<in> V\<^sub>k"
+        have h_ext_Vk: "x extreme_point_of convex hull V\<^sub>k"
+          using hxVk hVk_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+        have h_ext_bary: "x extreme_point_of convex hull (geotop_barycenter ` set c)"
+          using h_ext_Vk h_HOL_same by (by100 simp)
+        show "x \<in> geotop_barycenter ` set c"
+          using h_ext_bary extreme_point_of_convex_hull by (by100 blast)
+      next
+        fix x assume hx: "x \<in> geotop_barycenter ` set c"
+        have h_ext_bary: "x extreme_point_of convex hull (geotop_barycenter ` set c)"
+          using hx h_bary_ai extreme_point_of_convex_hull_affine_independent by (by100 blast)
+        have h_ext_Vk: "x extreme_point_of convex hull V\<^sub>k"
+          using h_ext_bary h_HOL_same by (by100 simp)
+        show "x \<in> V\<^sub>k" using h_ext_Vk extreme_point_of_convex_hull by (by100 blast)
+      qed
+      have "card V\<^sub>k = card (geotop_barycenter ` set c)" using h_Vk_eq by (by100 simp)
+      hence "k + 1 = m + 1" using hVk_card h_bary_card_m by (by100 simp)
+      thus ?thesis by (by100 simp)
+    qed
+    have h_m_bound: "m \<le> n" unfolding m_def using h_len_bd by (by100 linarith)
+    show "k \<le> n" using hk_eq_m h_m_bound by (by100 simp)
+  qed
   (** STEP 5: mesh shrinkage. Classical Moise Lemma 4.11 second part: in a
       chain-simplex conv hull (bary ` set c) the diameter is ≤ (n/(n+1)) ·
       diameter(last c). Proof: distance between any two barycenters equals
