@@ -2653,6 +2653,27 @@ proof -
     by (rule geotop_conv_hull_pt_bound[OF hVfin hVne h_V_y_bd hx])
 qed
 
+(** D-infrastructure: if every point-pair in M is bounded by B (nonempty M),
+    then geotop_diameter M \<le> B. Direct from cSUP_least twice. **)
+lemma geotop_diameter_le_from_pairs:
+  fixes M :: "'a::real_normed_vector set"
+  fixes B :: real
+  assumes hMne: "M \<noteq> {}"
+  assumes h_pair_bd: "\<forall>x\<in>M. \<forall>y\<in>M. norm (x - y) \<le> B"
+  shows "geotop_diameter (\<lambda>x y. norm (x - y)) M \<le> B"
+proof -
+  have h_inner_bd: "\<forall>x\<in>M. (SUP y\<in>M. norm (x - y)) \<le> B"
+  proof
+    fix x assume hx: "x \<in> M"
+    have h_pt_bd: "\<forall>y\<in>M. norm (x - y) \<le> B" using h_pair_bd hx by (by100 blast)
+    show "(SUP y\<in>M. norm (x - y)) \<le> B"
+      by (rule cSUP_least[OF hMne], rule h_pt_bd[rule_format])
+  qed
+  have h_outer_bd: "(SUP x\<in>M. (SUP y\<in>M. norm (x - y))) \<le> B"
+    by (rule cSUP_least[OF hMne], rule h_inner_bd[rule_format])
+  show ?thesis unfolding geotop_diameter_def using hMne h_outer_bd by (by100 simp)
+qed
+
 text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
   Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.
   Moved up here from the Cells/manifolds subsection so that early.tex infrastructure
