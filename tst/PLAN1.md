@@ -413,6 +413,35 @@ rel_interior disjointness infrastructure via a detailed "sup of bounded
 set" argument, (b) tackling D (barycentric subdivision) which is more
 independent of E, or (c) F (barycentric extension).
 
+Additional E-bridge helper added:
+- `geotop_complex_point_in_unique_rel_interior` — each x in |K|
+  belongs to rel_interior of exactly one σ ∈ K. Immediate from
+  rel_interior_disjoint_distinct.
+
+### Correct classical argument for E (documented for future work)
+
+**Claim**: For T convex ⊆ open_star K v with T ≠ {}, ∃σ ∈ K. v ∈ σ ∧ T ⊆ σ.
+
+**Proof sketch** (from Moise early.tex):
+1. open_star K v = ⋃{rel_int τ : τ ∈ K, v ∈ τ}, a finite union in a
+   finite complex K' = K.
+2. For x, y ∈ T in rel_int σ_1, rel_int σ_2 (possibly equal), the
+   segment xy must stay in open_star K v (T convex).
+3. If σ_1 ≠ σ_2: at generic interior point of xy, z = (1-t)x + ty is
+   NOT in affine hull σ_1 ∪ affine hull σ_2 (when σ_1 ⊄ σ_2 and vv).
+   Hence z ∉ σ_1 ∪ σ_2. z must be in some σ_3 ∋ v with different
+   affine hull. But iterating this around the segment gives infinitely
+   many simplices for a finite complex — contradiction.
+4. So all points of T are in one σ (call it σ_0 = the unique simplex
+   with x ∈ rel_int σ_0 for some x ∈ T). Then T ⊆ σ_0.
+
+Formalising step 3 in Isabelle requires: (a) `affine_independent_span_eq_aff_hull`
+equivalents, (b) finite complex ⟹ finite relevant σ's bound, (c) the
+"segment leaves finite union" classical lemma. ~100 additional lines.
+
+With all three pieces, E closes in ~150 lines total using existing
+rel_interior disjointness helpers.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
