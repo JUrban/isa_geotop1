@@ -912,3 +912,29 @@ h_mesh_shrink is now decomposed end-to-end:
 Sorry count: 7. Nearly all substantive classical content for D-step 5
 (mesh shrinkage) is complete; what remains is a couple of cardinality-type
 technicalities about the input complex K.
+
+## Session progress 2026-04-24 (continuation 7)
+
+### MAJOR PROGRESS: h_mesh_shrink FULLY PROVED
+
+Sorry count: 6 → 4.
+
+- Added `finite K` assumption to `geotop_classical_Sd_exists` and propagated
+  through Sd_is_barycentric, Sd_is_subdivision, Sd_mesh_shrinkage, iterated_Sd_*.
+  All downstream callers (mesh_iterated_Sd_tends_to_zero, iterated_Sd_refines_
+  subdivision, Theorem_GT_1) already had finite K in scope.
+- Moved geotop_subdivision_of_finite_is_finite up before iterated_Sd_is_subdivision.
+- FULLY PROVE h_mesh_K_bdd via finite-image → bdd_above_finite.
+- FULLY PROVE h_mesh_K_nn2 via inline bounded diameter argument + cSUP_upper.
+
+All pieces of h_mesh_shrink now proven end-to-end. Moise Lemma 4.11 second
+part is formally complete modulo the in-scope technicalities.
+
+### Remaining sorries: 4
+
+- h_K2_intersect_eq (classical chain-simplex intersection formula)
+- h_poly_sup (D2a-sup barycentric decomposition)
+- h_delta_bridge (E Lebesgue tightening)
+- h_f_exists (F classical barycentric extension)
+
+All four are genuinely deep classical results (~150-300 lines each).
