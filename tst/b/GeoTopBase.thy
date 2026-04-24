@@ -6966,6 +6966,26 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
       (d) Bijectivity \<open>|K| \<leftrightarrow> |L|\<close> (from bijectivity of \<open>\<phi>\<close> on vertices
           lifted to polyhedra).
       (e) The inverse is the barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>, also PL. **)
+(** Utility: for a finite nonempty AI set V, V is the simplex_vertices of conv hull V. **)
+lemma geotop_AI_finite_ne_is_simplex_vertices:
+  fixes V :: "'a::euclidean_space set"
+  assumes hVfin: "finite V"
+  assumes hVne: "V \<noteq> {}"
+  assumes hVai: "\<not> affine_dependent V"
+  shows "geotop_simplex_vertices (geotop_convex_hull V) V"
+proof -
+  have h_card_pos: "card V > 0" using hVfin hVne card_gt_0_iff by (by100 blast)
+  define n where "n = card V - 1"
+  have h_card_n: "card V = n + 1" unfolding n_def using h_card_pos by (by100 simp)
+  have h_gp: "geotop_general_position V n"
+    by (rule geotop_ai_imp_general_position[OF hVfin h_card_n hVai])
+  have h_nn: "n \<le> n" by (by100 simp)
+  have h_hull_refl: "geotop_convex_hull V = geotop_convex_hull V" by (by100 simp)
+  show ?thesis
+    unfolding geotop_simplex_vertices_def
+    using hVfin h_card_n h_nn h_gp h_hull_refl by (by100 blast)
+qed
+
 lemma geotop_isomorphism_induces_PLH:
   fixes K :: "'a::euclidean_space set set"
   fixes L :: "'b::euclidean_space set set"
