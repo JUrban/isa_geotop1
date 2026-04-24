@@ -2386,6 +2386,26 @@ next
   qed
 qed
 
+(** E-support: a convex subset of the open_star that contains a point of
+    rel_interior σ (for σ ∋ v) is ⊆ σ, provided the convex subset stays
+    within {rel_interior σ} (single simplex case). This trivial corollary
+    exposes the key constraint; the full "T ⊆ open_star ⟹ T ⊆ σ" requires
+    the sup-of-path argument and is still deferred. **)
+lemma geotop_complex_point_in_unique_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>\<^sub>1K: "\<sigma>\<^sub>1 \<in> K" and h\<sigma>\<^sub>2K: "\<sigma>\<^sub>2 \<in> K"
+  assumes hx\<^sub>1: "x \<in> rel_interior \<sigma>\<^sub>1"
+  assumes hx\<^sub>2: "x \<in> rel_interior \<sigma>\<^sub>2"
+  shows "\<sigma>\<^sub>1 = \<sigma>\<^sub>2"
+proof (rule ccontr)
+  assume h_ne: "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2"
+  have h_disj: "rel_interior \<sigma>\<^sub>1 \<inter> rel_interior \<sigma>\<^sub>2 = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>\<^sub>1K h\<sigma>\<^sub>2K h_ne])
+  have hx_in: "x \<in> rel_interior \<sigma>\<^sub>1 \<inter> rel_interior \<sigma>\<^sub>2" using hx\<^sub>1 hx\<^sub>2 by (by100 blast)
+  thus False using h_disj by (by100 blast)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
