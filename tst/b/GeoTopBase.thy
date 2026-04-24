@@ -5200,16 +5200,235 @@ proof -
       and k ≤ n from dim bound. **)
   (** STEP 5a: classical per-chain-simplex diameter bound. This is the
       geometric heart of Moise Lemma 4.11. **)
+  (** D-step 5a: per-chain-simplex diameter bound. Requires: mesh K is bdd_above
+      so that cSUP_upper can transfer diameters to mesh; and a technical
+      (k/(k+1)) ≤ (n/(n+1)) numerical step. Structured into three targeted
+      sub-sorries (the hypothesis of mesh_K_bdd, the numerical factor bound,
+      and B nonnegativity). **)
+  have h_mesh_K_bdd: "bdd_above ((\<lambda>\<sigma>. geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>) ` K)"
+    sorry \<comment> \<open>D-step 5a.i: mesh K bdd_above. True for finite K (not assumed here;
+              will be provided by caller in the downstream usage).\<close>
+  have h_mesh_K_nn2: "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    sorry \<comment> \<open>D-step 5a.ii: mesh K nonneg (as before).\<close>
   have h_tau_diam_bound: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
         (\<forall>\<tau>\<in>bK. geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>
                    \<le> (real n / real (Suc n))
                     * geotop_mesh (\<lambda>x y. norm (x - y)) K)"
-    sorry \<comment> \<open>D-step 5a: per-chain-simplex diameter bound. For tau in bK with
-              flag c, any two vertices bary s, bary t (s, t in set c, chain)
-              satisfy ||bary s - bary t|| \<le> (n/(n+1)) mesh K (via chain_bary_bound
-              + diameter-HOL bridge). Hence conv_hull_pair_bound lifts to all
-              points in tau. Thus sup (geotop_diameter) \<le> bound.\<close>
+  proof (intro allI impI ballI)
+    fix n :: nat and \<tau>
+    assume h_K_bound: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+    assume h\<tau>_bK: "\<tau> \<in> bK"
+    obtain c where hc_flag: "c \<in> flags"
+               and h\<tau>_hull_geo: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<tau>_bK unfolding bK_def by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>a b. a \<subset> b) c"
+      using hc_flag unfolding flags_def by (by100 blast)
+    have hc_dist: "distinct c" using hc_flag unfolding flags_def by (by100 blast)
+    define V :: "'a set" where "V = geotop_barycenter ` set c"
+    have hV_fin: "finite V" unfolding V_def by (by100 simp)
+    have hV_ne: "V \<noteq> {}"
+      unfolding V_def using hc_ne by (by100 auto)
+    have h\<tau>_HOL: "\<tau> = convex hull V"
+      unfolding V_def using h\<tau>_hull_geo geotop_convex_hull_eq_HOL by (by100 simp)
+    have h\<tau>_ne: "\<tau> \<noteq> {}"
+    proof -
+      have h_sub: "V \<subseteq> convex hull V" by (rule hull_subset)
+      have "V \<subseteq> \<tau>" using h_sub h\<tau>_HOL by (by100 simp)
+      thus ?thesis using hV_ne by (by100 blast)
+    qed
+    define B where "B = (real n / real (Suc n))
+                        * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    have h_factor_nn: "0 \<le> real n / real (Suc n)" by (by100 simp)
+    have h_B_nn: "0 \<le> B"
+      unfolding B_def using h_factor_nn h_mesh_K_nn2 by (by100 simp)
+    (** For each s in set c, s \<in> K; pick its dim witness. **)
+    (** Per-pair bound for bary s, bary t with s, t \<in> set c. **)
+    have h_one_way_bd:
+      "\<And>a b. a \<in> set c \<Longrightarrow> b \<in> set c \<Longrightarrow> a \<subset> b
+             \<Longrightarrow> norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+    proof -
+      fix a b assume ha_c: "a \<in> set c" and hb_c: "b \<in> set c" and h_ab: "a \<subset> b"
+      have ha_K: "a \<in> K" using ha_c hc_subK by (by100 blast)
+      have hb_K: "b \<in> K" using hb_c hc_subK by (by100 blast)
+      obtain V\<^sub>b where hVb_sv: "geotop_simplex_vertices b V\<^sub>b"
+                   and h_bary_bd_raw: "norm (geotop_barycenter a - geotop_barycenter b)
+                                        \<le> (real (card V\<^sub>b - 1) / real (card V\<^sub>b))
+                                         * diameter b"
+        using geotop_complex_chain_barycenter_bound[OF hK ha_K hb_K
+                h_ab[THEN order_less_imp_le]] by (by100 blast)
+      obtain m\<^sub>b k\<^sub>b where hVb_card: "card V\<^sub>b = k\<^sub>b + 1"
+                       and hnm\<^sub>b: "k\<^sub>b \<le> m\<^sub>b"
+                       and hVb_gp: "geotop_general_position V\<^sub>b m\<^sub>b"
+                       and hb_hull: "b = geotop_convex_hull V\<^sub>b"
+                       and hVb_fin: "finite V\<^sub>b"
+        using hVb_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+      have h_card_m1: "card V\<^sub>b - 1 = k\<^sub>b" using hVb_card by (by100 simp)
+      have h_kb_dim: "geotop_simplex_dim b k\<^sub>b"
+        unfolding geotop_simplex_dim_def
+        using hVb_fin hVb_card hnm\<^sub>b hVb_gp hb_hull by (by100 blast)
+      have h_kb_bd: "k\<^sub>b \<le> n" using h_K_bound hb_K h_kb_dim by (by100 blast)
+      have h_card_Vb_eq: "card V\<^sub>b = Suc k\<^sub>b" using hVb_card by (by100 simp)
+      have h_factor_ratio: "real (card V\<^sub>b - 1) / real (card V\<^sub>b)
+                             = real k\<^sub>b / real (Suc k\<^sub>b)"
+        using h_card_m1 h_card_Vb_eq by (by100 simp)
+      (** (k_b/(k_b+1)) \<le> (n/(n+1)) by monotonicity of x/(x+1). **)
+      have h_factor_bd: "real k\<^sub>b / real (Suc k\<^sub>b) \<le> real n / real (Suc n)"
+        sorry \<comment> \<open>D-step 5a.iii: x/(x+1) monotonicity for naturals\<close>
+      (** diameter b \<le> geotop_mesh K via geotop_diameter_ge_HOL_diameter + cSUP_upper. **)
+      have hb_ne: "b \<noteq> {}"
+      proof -
+        have hVb_ne: "V\<^sub>b \<noteq> {}"
+        proof
+          assume "V\<^sub>b = {}"
+          hence "card V\<^sub>b = 0" by (by100 simp)
+          thus False using hVb_card by (by100 simp)
+        qed
+        have h_sub: "V\<^sub>b \<subseteq> convex hull V\<^sub>b" by (rule hull_subset)
+        have hb_HOL: "b = convex hull V\<^sub>b"
+          using hb_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have "V\<^sub>b \<subseteq> b" using h_sub hb_HOL by (by100 simp)
+        thus ?thesis using hVb_ne by (by100 blast)
+      qed
+      have hb_bdd: "bounded b"
+      proof -
+        have hb_HOL: "b = convex hull V\<^sub>b"
+          using hb_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        show ?thesis using hb_HOL hVb_fin finite_imp_bounded_convex_hull by (by100 simp)
+      qed
+      have h_diam_b_bd: "diameter b \<le> geotop_diameter (\<lambda>x y. norm (x - y)) b"
+        by (rule geotop_diameter_ge_HOL_diameter[OF hb_ne hb_bdd])
+      have h_geo_diam_b_bd: "geotop_diameter (\<lambda>x y. norm (x - y)) b
+                               \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
+      proof -
+        have h_sup_upper: "geotop_diameter (\<lambda>x y. norm (x - y)) b
+                            \<le> (SUP \<sigma>\<in>K. geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>)"
+          using cSUP_upper[OF hb_K h_mesh_K_bdd] by (by100 simp)
+        have hK_ne: "K \<noteq> {}" using hb_K by (by100 blast)
+        have h_mesh_unf: "geotop_mesh (\<lambda>x y. norm (x - y)) K
+                           = (SUP \<sigma>\<in>K. geotop_diameter (\<lambda>x y. norm (x - y)) \<sigma>)"
+          unfolding geotop_mesh_def using hK_ne by (by100 simp)
+        show ?thesis using h_sup_upper h_mesh_unf by (by100 simp)
+      qed
+      have h_diam_b_mesh: "diameter b \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
+        using h_diam_b_bd h_geo_diam_b_bd by (by100 linarith)
+      (** Now combine: (k_b/(k_b+1)) * diam b \<le> (n/(n+1)) * mesh K. **)
+      have h_kb_factor_nn: "0 \<le> real k\<^sub>b / real (Suc k\<^sub>b)" by (by100 simp)
+      have h_diam_b_nn: "0 \<le> diameter b" by (rule diameter_ge_0[OF hb_bdd])
+      have h_mesh_K_nn3: "0 \<le> geotop_mesh (\<lambda>x y. norm (x - y)) K"
+        by (rule h_mesh_K_nn2)
+      have h_mul_fac: "(real k\<^sub>b / real (Suc k\<^sub>b)) * diameter b
+                        \<le> (real n / real (Suc n)) * diameter b"
+        using h_factor_bd h_diam_b_nn mult_right_mono by (by100 blast)
+      have h_mul_diam: "(real n / real (Suc n)) * diameter b
+                        \<le> (real n / real (Suc n)) * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+        using h_factor_nn h_diam_b_mesh mult_left_mono by (by100 blast)
+      have h_combined: "(real (card V\<^sub>b - 1) / real (card V\<^sub>b)) * diameter b \<le> B"
+      proof -
+        have h_eq_fac: "(real (card V\<^sub>b - 1) / real (card V\<^sub>b)) * diameter b
+                          = (real k\<^sub>b / real (Suc k\<^sub>b)) * diameter b"
+          using h_factor_ratio by (by100 simp)
+        have h_chain_bd: "(real k\<^sub>b / real (Suc k\<^sub>b)) * diameter b
+                          \<le> (real n / real (Suc n)) * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+          using h_mul_fac h_mul_diam by (by100 linarith)
+        show ?thesis unfolding B_def using h_eq_fac h_chain_bd by (by100 linarith)
+      qed
+      show "norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+        using h_bary_bd_raw h_combined by (by100 linarith)
+    qed
+    (** Symmetric pair bound. **)
+    have h_sym_bd:
+      "\<And>a b. a \<in> set c \<Longrightarrow> b \<in> set c \<Longrightarrow> a \<subset> b \<or> b \<subset> a
+             \<Longrightarrow> norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+    proof -
+      fix a b assume ha: "a \<in> set c" and hb: "b \<in> set c" and hor: "a \<subset> b \<or> b \<subset> a"
+      show "norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+      proof (rule disjE[OF hor])
+        assume "a \<subset> b"
+        thus "norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+          using h_one_way_bd[OF ha hb] by (by100 blast)
+      next
+        assume h_ba: "b \<subset> a"
+        have h_ba_bd: "norm (geotop_barycenter b - geotop_barycenter a) \<le> B"
+          using h_one_way_bd[OF hb ha h_ba] .
+        have h_sym: "norm (geotop_barycenter a - geotop_barycenter b)
+                      = norm (geotop_barycenter b - geotop_barycenter a)"
+          using norm_minus_commute[of "geotop_barycenter a" "geotop_barycenter b"]
+          by (by100 simp)
+        show "norm (geotop_barycenter a - geotop_barycenter b) \<le> B"
+          using h_ba_bd h_sym by (by100 simp)
+      qed
+    qed
+    (** Full pair bound: for every s, t in set c, distance bounded. **)
+    have h_set_c_pair_bd: "\<forall>s\<in>set c. \<forall>t\<in>set c.
+                              norm (geotop_barycenter s - geotop_barycenter t) \<le> B"
+    proof (intro ballI)
+      fix s t assume hs: "s \<in> set c" and ht: "t \<in> set c"
+      show "norm (geotop_barycenter s - geotop_barycenter t) \<le> B"
+      proof (cases "s = t")
+        case True
+        have "norm (geotop_barycenter s - geotop_barycenter t) = 0"
+          using True by (by100 simp)
+        thus ?thesis using h_B_nn by (by100 linarith)
+      next
+        case h_ne: False
+        have h_comparable: "s \<subset> t \<or> t \<subset> s"
+        proof -
+          have hs_nth0: "\<exists>i<length c. c ! i = s"
+            using hs in_set_conv_nth[of s c] by (by100 simp)
+          have ht_nth0: "\<exists>j<length c. c ! j = t"
+            using ht in_set_conv_nth[of t c] by (by100 simp)
+          obtain i where hi: "i < length c" and hsi: "c ! i = s" using hs_nth0 by (by100 blast)
+          obtain j where hj: "j < length c" and htj: "c ! j = t" using ht_nth0 by (by100 blast)
+          have hij_ne: "i \<noteq> j" using hsi htj h_ne by (by100 blast)
+          consider "i < j" | "j < i" using hij_ne by (by100 linarith)
+          thus ?thesis
+          proof cases
+            case 1
+            have "c ! i \<subset> c ! j"
+              using hc_sorted 1 hj sorted_wrt_nth_less[of "(\<subset>)" c i j] by (by100 blast)
+            hence "s \<subset> t" using hsi htj by (by100 simp)
+            thus ?thesis by (by100 blast)
+          next
+            case 2
+            have "c ! j \<subset> c ! i"
+              using hc_sorted 2 hi sorted_wrt_nth_less[of "(\<subset>)" c j i] by (by100 blast)
+            hence "t \<subset> s" using hsi htj by (by100 simp)
+            thus ?thesis by (by100 blast)
+          qed
+        qed
+        show ?thesis by (rule h_sym_bd[OF hs ht h_comparable])
+      qed
+    qed
+    (** Lift to V: for v, w in V, ||v - w|| <= B. **)
+    have h_V_pair_bd: "\<forall>v\<in>V. \<forall>w\<in>V. norm (v - w) \<le> B"
+    proof (intro ballI)
+      fix v w assume hv: "v \<in> V" and hw: "w \<in> V"
+      obtain s where hs: "s \<in> set c" and hv_eq: "v = geotop_barycenter s"
+        using hv unfolding V_def by (by100 blast)
+      obtain t where ht: "t \<in> set c" and hw_eq: "w = geotop_barycenter t"
+        using hw unfolding V_def by (by100 blast)
+      have h_bd: "norm (geotop_barycenter s - geotop_barycenter t) \<le> B"
+        using h_set_c_pair_bd hs ht by (by100 blast)
+      show "norm (v - w) \<le> B" using h_bd hv_eq hw_eq by (by100 simp)
+    qed
+    (** Lift to τ = conv hull V. **)
+    have h_\<tau>_pair_bd: "\<forall>x\<in>\<tau>. \<forall>y\<in>\<tau>. norm (x - y) \<le> B"
+    proof (intro ballI)
+      fix x y assume hx: "x \<in> \<tau>" and hy: "y \<in> \<tau>"
+      have hx_HOL: "x \<in> convex hull V" using hx h\<tau>_HOL by (by100 simp)
+      have hy_HOL: "y \<in> convex hull V" using hy h\<tau>_HOL by (by100 simp)
+      show "norm (x - y) \<le> B"
+        by (rule geotop_conv_hull_pair_bound[OF hV_fin hV_ne h_V_pair_bd hx_HOL hy_HOL])
+    qed
+    (** Apply diameter_le_from_pairs. **)
+    show "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> \<le> (real n / real (Suc n))
+                                                    * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+      unfolding B_def[symmetric]
+      by (rule geotop_diameter_le_from_pairs[OF h\<tau>_ne h_\<tau>_pair_bd])
+  qed
   (** STEP 5b: the mesh is the sup of diameters, so the bound lifts. **)
   have h_mesh_shrink: "\<forall>n::nat.
         (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
