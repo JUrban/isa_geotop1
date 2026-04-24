@@ -2299,6 +2299,93 @@ qed
 (** For finite \<open>K\<close>, the complement is closed (finite union of closed simplices),
     hence \<open>star_K(v)\<close> is relatively open in \<open>|K|\<close>. Proof via
     \<open>geotop_open_star_complement\<close> + finite closed simplices + compact-imp-closed. **)
+(** E-support infrastructure: extract the intersection-face → HOL-face-of bridge.
+    For σ, τ ∈ K (complex) with σ ∩ τ ≠ {}, σ ∩ τ is a HOL face_of σ.
+    This enables face_of_disjoint_rel_interior-based disjointness arguments. **)
+lemma geotop_complex_inter_face_HOL:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
+  assumes hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+  shows "(\<sigma> \<inter> \<tau>) face_of \<sigma>"
+proof -
+  have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using conjunct1[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]]
+    by (by100 blast)
+  have h_face_geotop: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+    using hK_inter h\<sigma>K h\<tau>K hne by (by100 blast)
+  obtain V\<^sub>\<sigma> W where hV\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+                 and hW_ne: "W \<noteq> {}" and hW_V\<^sub>\<sigma>: "W \<subseteq> V\<^sub>\<sigma>"
+                 and h\<sigma>\<tau>_hull: "\<sigma> \<inter> \<tau> = geotop_convex_hull W"
+    using h_face_geotop unfolding geotop_is_face_def by (by100 blast)
+  have h\<sigma>\<tau>_hullHOL: "\<sigma> \<inter> \<tau> = convex hull W"
+    using h\<sigma>\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have h\<sigma>_hullHOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma> geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV\<^sub>\<sigma>_ai: "\<not> affine_dependent V\<^sub>\<sigma>"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>\<sigma>])
+  have h_face_V: "(\<sigma> \<inter> \<tau>) face_of (convex hull V\<^sub>\<sigma>)"
+    using hV\<^sub>\<sigma>_ai hW_V\<^sub>\<sigma> h\<sigma>\<tau>_hullHOL
+          face_of_convex_hull_affine_independent[OF hV\<^sub>\<sigma>_ai, of "\<sigma> \<inter> \<tau>"]
+    by (by100 blast)
+  show ?thesis using h_face_V h\<sigma>_hullHOL by (by100 simp)
+qed
+
+(** E-support: rel_interior disjointness for distinct simplices in a complex,
+    restricted to the case where they intersect (so the face is proper in both). **)
+lemma geotop_complex_rel_interior_disjoint_distinct:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
+  assumes h_ne: "\<sigma> \<noteq> \<tau>"
+  shows "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+proof (cases "\<sigma> \<inter> \<tau> = {}")
+  case True
+  have "rel_interior \<sigma> \<subseteq> \<sigma>" by (rule rel_interior_subset)
+  moreover have "rel_interior \<tau> \<subseteq> \<tau>" by (rule rel_interior_subset)
+  ultimately show ?thesis using True by (by100 blast)
+next
+  case h_int_ne: False
+  have h_face_\<sigma>: "(\<sigma> \<inter> \<tau>) face_of \<sigma>"
+    by (rule geotop_complex_inter_face_HOL[OF hK h\<sigma>K h\<tau>K h_int_ne])
+  have h_face_\<tau>: "(\<sigma> \<inter> \<tau>) face_of \<tau>"
+  proof -
+    have h_eq: "\<sigma> \<inter> \<tau> = \<tau> \<inter> \<sigma>" by (by100 blast)
+    have h_ne2: "\<tau> \<inter> \<sigma> \<noteq> {}" using h_int_ne by (by100 blast)
+    have "(\<tau> \<inter> \<sigma>) face_of \<tau>"
+      by (rule geotop_complex_inter_face_HOL[OF hK h\<tau>K h\<sigma>K h_ne2])
+    thus ?thesis using h_eq by (by100 simp)
+  qed
+  (** If σ ∩ τ = σ, then σ ⊆ τ. Face-of gives σ is proper face of τ or equal. **)
+  show ?thesis
+  proof (cases "\<sigma> \<inter> \<tau> = \<sigma>")
+    case h_eq_\<sigma>: True
+    have h\<sigma>_sub: "\<sigma> \<subseteq> \<tau>" using h_eq_\<sigma> by (by100 blast)
+    have h\<sigma>_face_\<tau>: "\<sigma> face_of \<tau>" using h_face_\<tau> h_eq_\<sigma> by (by100 simp)
+    have h\<sigma>_ne_\<tau>: "\<sigma> \<noteq> \<tau>" by (rule h_ne)
+    have h_\<sigma>_disj_int_\<tau>: "\<sigma> \<inter> rel_interior \<tau> = {}"
+      by (rule face_of_disjoint_rel_interior[OF h\<sigma>_face_\<tau> h\<sigma>_ne_\<tau>])
+    have h_ri_\<sigma>_sub: "rel_interior \<sigma> \<subseteq> \<sigma>" by (rule rel_interior_subset)
+    show ?thesis using h_\<sigma>_disj_int_\<tau> h_ri_\<sigma>_sub by (by100 blast)
+  next
+    case h_ne_\<sigma>: False
+    (** σ ∩ τ is a PROPER face of σ. **)
+    have h_cap_disj: "(\<sigma> \<inter> \<tau>) \<inter> rel_interior \<sigma> = {}"
+      by (rule face_of_disjoint_rel_interior[OF h_face_\<sigma> h_ne_\<sigma>])
+    (** rel_interior σ ∩ rel_interior τ ⊆ σ ∩ τ ⊆ σ, then disjoint. **)
+    have h_ri_\<sigma>_sub: "rel_interior \<sigma> \<subseteq> \<sigma>" by (rule rel_interior_subset)
+    have h_ri_\<tau>_sub: "rel_interior \<tau> \<subseteq> \<tau>" by (rule rel_interior_subset)
+    have h_sub_cap: "rel_interior \<sigma> \<inter> rel_interior \<tau> \<subseteq> \<sigma> \<inter> \<tau>"
+      using h_ri_\<sigma>_sub h_ri_\<tau>_sub by (by100 blast)
+    have h_sub_int: "rel_interior \<sigma> \<inter> rel_interior \<tau>
+                      \<subseteq> (\<sigma> \<inter> \<tau>) \<inter> rel_interior \<sigma>"
+      using h_sub_cap h_ri_\<sigma>_sub by (by100 blast)
+    show ?thesis using h_sub_int h_cap_disj by (by100 blast)
+  qed
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
