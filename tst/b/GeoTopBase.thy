@@ -2523,6 +2523,136 @@ proof -
   show ?thesis using hVt_sv h_final by (by100 blast)
 qed
 
+(** D-infrastructure (single-point conv hull bound): if every vertex v \<in> V
+    has ||v - y|| \<le> B, then for any x \<in> conv hull V, ||x - y|| \<le> B.
+    Follows from convex hull decomposition + triangle inequality. **)
+lemma geotop_conv_hull_pt_bound:
+  fixes V :: "'a::real_normed_vector set"
+  fixes y :: "'a"
+  fixes B :: real
+  assumes hVfin: "finite V"
+  assumes hVne: "V \<noteq> {}"
+  assumes hV_bd: "\<forall>v\<in>V. norm (v - y) \<le> B"
+  assumes hx: "x \<in> convex hull V"
+  shows "norm (x - y) \<le> B"
+proof -
+  have h_hull_char: "convex hull V = {u. \<exists>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1
+                                             \<and> (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = u}"
+    using convex_hull_finite[OF hVfin] by (by100 simp)
+  obtain \<alpha> where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+             and h\<alpha>_sum: "sum \<alpha> V = 1"
+             and h\<alpha>_combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+    using hx h_hull_char by (by100 blast)
+  have h_B_nn: "0 \<le> B"
+  proof -
+    obtain v0 where hv0: "v0 \<in> V" using hVne by (by100 blast)
+    have h_n_nn: "0 \<le> norm (v0 - y)" by (by100 simp)
+    have h_bd: "norm (v0 - y) \<le> B" using hV_bd hv0 by (by100 blast)
+    show ?thesis using h_n_nn h_bd by (by100 linarith)
+  qed
+  (** Key: x - y = sum_v alpha_v (v - y). **)
+  have h_y_eq_sum: "y = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R y)"
+  proof -
+    have "y = 1 *\<^sub>R y" by (by100 simp)
+    also have "\<dots> = (sum \<alpha> V) *\<^sub>R y" using h\<alpha>_sum by (by100 simp)
+    also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R y)"
+      using scaleR_left.sum[of \<alpha> V y] by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_x_minus_y: "x - y = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - y))"
+  proof -
+    have h1: "x - y = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R y)"
+      using h\<alpha>_combo h_y_eq_sum by (by100 simp)
+    have h2: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R y)
+               = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R y)"
+      using sum_subtractf[where f = "\<lambda>v. \<alpha> v *\<^sub>R v"
+                            and g = "\<lambda>v. \<alpha> v *\<^sub>R y" and A = V]
+      by (by100 simp)
+    have h3: "\<And>v. \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R y = \<alpha> v *\<^sub>R (v - y)"
+    proof -
+      fix v
+      have "\<alpha> v *\<^sub>R (v - y) = \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R y"
+        by (rule scaleR_diff_right)
+      thus "\<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R y = \<alpha> v *\<^sub>R (v - y)" by (by100 simp)
+    qed
+    have h4: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R y)
+                = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - y))"
+      using h3 by (by100 simp)
+    show ?thesis using h1 h2 h4 by (by100 simp)
+  qed
+  (** Bound via triangle inequality. **)
+  have h_tri: "norm (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - y))
+                \<le> (\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (v - y)))"
+    by (rule norm_sum)
+  have h_each_norm: "\<And>v. v \<in> V \<Longrightarrow> norm (\<alpha> v *\<^sub>R (v - y)) \<le> \<alpha> v * B"
+  proof -
+    fix v assume hv: "v \<in> V"
+    have h_nn: "0 \<le> \<alpha> v" using h\<alpha>_nn hv by (by100 blast)
+    have h_vy_bd: "norm (v - y) \<le> B" using hV_bd hv by (by100 blast)
+    have h_norm_eq: "norm (\<alpha> v *\<^sub>R (v - y)) = \<alpha> v * norm (v - y)"
+    proof -
+      have "norm (\<alpha> v *\<^sub>R (v - y)) = \<bar>\<alpha> v\<bar> * norm (v - y)" by (by100 simp)
+      also have "\<dots> = \<alpha> v * norm (v - y)" using h_nn by (by100 simp)
+      finally show ?thesis .
+    qed
+    have h_mul_bd: "\<alpha> v * norm (v - y) \<le> \<alpha> v * B"
+      using h_nn h_vy_bd mult_left_mono by (by100 blast)
+    have h_chain: "norm (\<alpha> v *\<^sub>R (v - y)) = \<alpha> v * norm (v - y)"
+      by (rule h_norm_eq)
+    show "norm (\<alpha> v *\<^sub>R (v - y)) \<le> \<alpha> v * B"
+      using h_chain h_mul_bd by (by100 linarith)
+  qed
+  have h_sum_bd: "(\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (v - y))) \<le> (\<Sum>v\<in>V. \<alpha> v * B)"
+    by (rule sum_mono, rule h_each_norm)
+  have h_sum_B: "(\<Sum>v\<in>V. \<alpha> v * B) = B"
+  proof -
+    have "(\<Sum>v\<in>V. \<alpha> v * B) = (sum \<alpha> V) * B"
+      using sum_distrib_right[where r = B and f = \<alpha> and A = V] by (by100 simp)
+    also have "\<dots> = 1 * B" using h\<alpha>_sum by (by100 simp)
+    also have "\<dots> = B" by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_final_bd: "norm (x - y) \<le> B"
+  proof -
+    have step1: "norm (x - y) = norm (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - y))"
+      using h_x_minus_y by (by100 simp)
+    also have "\<dots> \<le> (\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (v - y)))" by (rule h_tri)
+    also have "\<dots> \<le> (\<Sum>v\<in>V. \<alpha> v * B)" by (rule h_sum_bd)
+    also have "\<dots> = B" by (rule h_sum_B)
+    finally show ?thesis .
+  qed
+  show ?thesis by (rule h_final_bd)
+qed
+
+(** D-infrastructure: pair bound extension. For x, y both in conv hull V
+    with all pairwise vertex norms \<le> B, ||x - y|| \<le> B. Two applications
+    of the single-point bound, using norm_minus_commute for symmetry. **)
+lemma geotop_conv_hull_pair_bound:
+  fixes V :: "'a::real_normed_vector set"
+  fixes B :: real
+  assumes hVfin: "finite V"
+  assumes hVne: "V \<noteq> {}"
+  assumes hV_bd: "\<forall>v\<in>V. \<forall>w\<in>V. norm (v - w) \<le> B"
+  assumes hx: "x \<in> convex hull V"
+  assumes hy: "y \<in> convex hull V"
+  shows "norm (x - y) \<le> B"
+proof -
+  (** Step 1: \<forall>v \<in> V, ||v - y|| \<le> B via single-point bound on y. **)
+  have h_V_y_bd: "\<forall>v\<in>V. norm (v - y) \<le> B"
+  proof
+    fix v assume hv: "v \<in> V"
+    have h_bd_from_v: "\<forall>w\<in>V. norm (w - v) \<le> B" using hV_bd hv by (by100 blast)
+    have h_y_v: "norm (y - v) \<le> B"
+      by (rule geotop_conv_hull_pt_bound[OF hVfin hVne h_bd_from_v hy])
+    have h_sym: "norm (v - y) = norm (y - v)"
+      using norm_minus_commute[of v y] by (by100 simp)
+    show "norm (v - y) \<le> B" using h_y_v h_sym by (by100 simp)
+  qed
+  (** Step 2: ||x - y|| \<le> B via single-point bound on x. **)
+  show ?thesis
+    by (rule geotop_conv_hull_pt_bound[OF hVfin hVne h_V_y_bd hx])
+qed
+
 text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
   Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.
   Moved up here from the Cells/manifolds subsection so that early.tex infrastructure
