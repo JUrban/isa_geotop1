@@ -6966,6 +6966,66 @@ definition geotop_comb_equiv :: "'a::real_normed_vector set set \<Rightarrow> 'b
       (d) Bijectivity \<open>|K| \<leftrightarrow> |L|\<close> (from bijectivity of \<open>\<phi>\<close> on vertices
           lifted to polyhedra).
       (e) The inverse is the barycentric extension of \<open>\<phi>\<^sup>-\<^sup>1\<close>, also PL. **)
+(** Utility: if V \<subseteq> V(K) has conv hull in K, then every v \<in> V is a vertex
+    of the simplex conv hull V. Proof via K.2 + geotop_is_face_def: {v} is
+    a 0-face of conv hull V, so v is in the simplex vertex set. **)
+lemma geotop_V_subK_elt_in_simplex_vertices:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hV_vK: "V \<subseteq> geotop_complex_vertices K"
+  assumes h_hull_K: "geotop_convex_hull V \<in> K"
+  assumes hv: "v \<in> V"
+  shows "\<exists>W. geotop_simplex_vertices (geotop_convex_hull V) W \<and> v \<in> W"
+proof -
+  define \<sigma> where "\<sigma> = geotop_convex_hull V"
+  have h\<sigma>K: "\<sigma> \<in> K" unfolding \<sigma>_def using h_hull_K by (by100 simp)
+  (** {v} \<in> K: v is a complex vertex, so {v} is a 0-simplex in K. **)
+  have h_singleton_K: "{v} \<in> K"
+  proof -
+    have hv_VK: "v \<in> geotop_complex_vertices K" using hv hV_vK by (by100 blast)
+    have h_eq: "geotop_complex_vertices K = {u. {u} \<in> K}"
+      by (rule geotop_complex_vertices_eq_0_simplexes[OF hK])
+    show ?thesis using hv_VK h_eq by (by100 blast)
+  qed
+  (** v \<in> \<sigma>: V \<subseteq> conv hull V = \<sigma>. **)
+  have hv_\<sigma>: "v \<in> \<sigma>"
+  proof -
+    have h_sub: "V \<subseteq> convex hull V" by (rule hull_subset)
+    have h\<sigma>_eq: "geotop_convex_hull V = convex hull V"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V" unfolding \<sigma>_def using h\<sigma>_eq .
+    show ?thesis using hv h_sub h\<sigma>_HOL by (by100 blast)
+  qed
+  (** {v} \<inter> \<sigma> = {v} \<noteq> \<emptyset>. **)
+  have h_int_ne: "{v} \<inter> \<sigma> \<noteq> {}" using hv_\<sigma> by (by100 blast)
+  (** By K.2 of K, {v} \<inter> \<sigma> = {v} is a face of \<sigma>. **)
+  have h_K2: "\<forall>\<sigma>\<^sub>1\<in>K. \<forall>\<sigma>\<^sub>2\<in>K. \<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 \<noteq> {}
+                \<longrightarrow> geotop_is_face (\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2) \<sigma>\<^sub>1
+                \<and> geotop_is_face (\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2) \<sigma>\<^sub>2"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have h_v_face: "geotop_is_face ({v} \<inter> \<sigma>) \<sigma>"
+    using h_K2 h_singleton_K h\<sigma>K h_int_ne by (by100 blast)
+  have h_int_eq: "{v} \<inter> \<sigma> = {v}" using hv_\<sigma> by (by100 blast)
+  have h_v_is_face: "geotop_is_face {v} \<sigma>"
+    using h_v_face h_int_eq by (by100 simp)
+  (** By geotop_is_face_def: \<exists>V' W. simplex_vertices \<sigma> V' \<and> W \<subseteq> V' \<and> {v} = conv hull W. **)
+  obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                and h_v_hullW: "{v} = geotop_convex_hull W"
+    using h_v_is_face unfolding geotop_is_face_def by (by100 blast)
+  (** conv hull W = {v} means W = {v}. **)
+  have h_W_eq_v: "W = {v}"
+  proof -
+    have h_W_HOL: "{v} = convex hull W"
+      using h_v_hullW geotop_convex_hull_eq_HOL by (by100 simp)
+    have h_W_sub_hull: "W \<subseteq> convex hull W" by (rule hull_subset)
+    have h_W_sub_v: "W \<subseteq> {v}" using h_W_sub_hull h_W_HOL by (by100 simp)
+    show ?thesis using h_W_sub_v hW_ne by (by100 blast)
+  qed
+  have hv_V': "v \<in> V'" using h_W_eq_v hW_V' by (by100 blast)
+  show ?thesis using hV'_sv hv_V' unfolding \<sigma>_def by (by100 blast)
+qed
+
 (** Utility: for a finite nonempty AI set V, V is the simplex_vertices of conv hull V. **)
 lemma geotop_AI_finite_ne_is_simplex_vertices:
   fixes V :: "'a::euclidean_space set"
