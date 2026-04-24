@@ -312,6 +312,25 @@ Phase 1.A sorry at geotop_broken_line_subarc closed via direct application.
 Phase 1.C is NOW UNBLOCKED (was blocked on 1.A). Plan: use first_intersection
 helper + geotop_subarc_polyhedron directly.
 
+### 2026-04-24 continued: PHASE 1.C FULLY PROVED!
+
+Added 2 helpers + closed sorry:
+- `geotop_broken_line_compact` / `_closed` — broken lines are compact/closed
+  (finite union of compact convex hulls).
+- Phase 1.C overlap fully proved inline (~220 lines): extract γ_1, γ_2 arcs;
+  apply `geotop_arc_first_intersection` with T = B_2' to get sstar, R;
+  build B_1'' = γ_1([0, sstar]) and B_2'' = γ_2([sstar_2, 1]) via
+  `geotop_subarc_polyhedron`; B_1'' ∩ B_2'' = {R} by minimality of sstar;
+  glue via `geotop_broken_lines_glue_disjoint_endpoints`.
+
+**PHASE 1 IS NOW FULLY CLOSED.** 3 real sorries remaining (all Intro classical):
+  1. L1945 `classical_Sd_exists` (D) — barycentric subdivision construction.
+  2. L3084 Lebesgue tightening (E).
+  3. L3313 `h_f_exists` (F) — barycentric extension.
+
+§1 (broken lines, arcs, sub-arcs, arc reduction) is CACHEABLE as sorry-free
+content. All Phase 1.x theorems fully proven.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
