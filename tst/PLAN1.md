@@ -1070,3 +1070,27 @@ All 5 are deep but well-documented. Infrastructure for attacking each is
 comprehensive: barycenter bounds, diameter bridges, flag machinery,
 simplex vertex uniqueness, convex hull bounds, and the Lebesgue + mesh
 shrinkage foundation.
+
+## Session progress 2026-04-24 (continuation 11)
+
+### CLOSED C = {} edge case in h_delta_bridge
+
+Refined h_\<delta>_ex statement to quantify over non-empty S only. This makes
+the C = {} edge case (where |K| = {}) vacuous — no non-empty S \<subseteq> \<emptyset>.
+
+Added tau nonempty justification at the consumer site inside
+geotop_iterated_Sd_refines_subdivision: tau in Sd^m K is a simplex (from
+complex property), has finite nonempty vertex set, hence conv hull is
+nonempty.
+
+Sorry count: 5 → 4.
+
+### Current state: 4 sorries
+
+1. h_K2_intersect_eq non-nested case (~150 lines)
+2. h_simp_in_bK dim > 0 case (~200 lines)
+3. h_star_to_simplex_del (E classical core, ~100 lines)
+4. h_f_exists (F classical, ~200 lines)
+
+Each is a deep, well-documented classical fact. Infrastructure for attack
+is now fully comprehensive.
