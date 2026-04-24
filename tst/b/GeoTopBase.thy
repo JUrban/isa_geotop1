@@ -11394,6 +11394,158 @@ proof -
   qed
 qed
 
+(** Phase 1.A endpoint-matching: if γ is a continuous bijection {p..q} →
+    closed_segment a b (with a ≠ b), then {γ p, γ q} = {a, b}.
+    Uses the two projection helpers + continuous_injective_image_segment_1. **)
+lemma geotop_homeomorphism_segment_endpoints:
+  fixes p q :: real
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  fixes a b :: 'a
+  assumes hpq: "p \<le> q"
+  assumes hab: "a \<noteq> b"
+  assumes h_cont: "continuous_on {p..q} \<gamma>"
+  assumes h_inj: "inj_on \<gamma> {p..q}"
+  assumes h_img: "\<gamma> ` {p..q} = closed_segment a b"
+  shows "{\<gamma> p, \<gamma> q} = {a, b}"
+proof -
+  let ?\<pi> = "\<lambda>x. inner (b - a) x"
+  have h\<pi>_cont: "continuous_on UNIV ?\<pi>" by (intro continuous_intros)
+  have h\<pi>_inj_seg: "inj_on ?\<pi> (closed_segment a b)"
+    by (rule geotop_inner_diff_inj_on_closed_segment[OF hab])
+  have h\<pi>_img_seg: "?\<pi> ` closed_segment a b = closed_segment (?\<pi> a) (?\<pi> b)"
+    by (rule geotop_inner_diff_image_closed_segment[OF hab])
+  (** π ∘ γ is continuous injective on {p..q}. **)
+  have h_\<pi>\<gamma>_cont: "continuous_on {p..q} (?\<pi> \<circ> \<gamma>)"
+  proof -
+    have h_cc: "continuous_on {p..q} \<gamma>
+                \<and> continuous_on (\<gamma> ` {p..q}) ?\<pi>"
+    proof
+      show "continuous_on {p..q} \<gamma>" by (rule h_cont)
+      show "continuous_on (\<gamma> ` {p..q}) ?\<pi>"
+        using h\<pi>_cont continuous_on_subset by (by100 blast)
+    qed
+    show ?thesis using h_cc continuous_on_compose by (by100 blast)
+  qed
+  have h_\<pi>\<gamma>_inj: "inj_on (?\<pi> \<circ> \<gamma>) {p..q}"
+  proof (rule inj_onI)
+    fix s1 s2 assume hs1: "s1 \<in> {p..q}" and hs2: "s2 \<in> {p..q}"
+    assume h_eq: "(?\<pi> \<circ> \<gamma>) s1 = (?\<pi> \<circ> \<gamma>) s2"
+    have h\<gamma>s1_seg: "\<gamma> s1 \<in> closed_segment a b" using hs1 h_img by (by100 blast)
+    have h\<gamma>s2_seg: "\<gamma> s2 \<in> closed_segment a b" using hs2 h_img by (by100 blast)
+    have h_\<pi>_eq: "?\<pi> (\<gamma> s1) = ?\<pi> (\<gamma> s2)" using h_eq by (by100 simp)
+    have h\<gamma>_eq: "\<gamma> s1 = \<gamma> s2"
+      using h\<pi>_inj_seg h\<gamma>s1_seg h\<gamma>s2_seg h_\<pi>_eq unfolding inj_on_def by (by100 blast)
+    show "s1 = s2" using h_inj hs1 hs2 h\<gamma>_eq unfolding inj_on_def by (by100 blast)
+  qed
+  (** {p..q} = closed_segment p q for real interval. **)
+  have h_pq_seg: "closed_segment p q = {p..q}"
+    using hpq closed_segment_eq_real_ivl by (by100 simp)
+  have h_\<pi>\<gamma>_cont_seg: "continuous_on (closed_segment p q) (?\<pi> \<circ> \<gamma>)"
+    using h_\<pi>\<gamma>_cont h_pq_seg by (by100 simp)
+  have h_\<pi>\<gamma>_inj_seg: "inj_on (?\<pi> \<circ> \<gamma>) (closed_segment p q)"
+    using h_\<pi>\<gamma>_inj h_pq_seg by (by100 simp)
+  (** Apply library lemma. **)
+  have h_\<pi>\<gamma>_img: "(?\<pi> \<circ> \<gamma>) ` closed_segment p q
+                      = closed_segment ((?\<pi> \<circ> \<gamma>) p) ((?\<pi> \<circ> \<gamma>) q)"
+    by (rule continuous_injective_image_segment_1[OF h_\<pi>\<gamma>_cont_seg h_\<pi>\<gamma>_inj_seg])
+  (** Compute both sides. **)
+  have h_lhs: "(?\<pi> \<circ> \<gamma>) ` closed_segment p q = ?\<pi> ` closed_segment a b"
+  proof -
+    have h_ic: "?\<pi> ` (\<gamma> ` {p..q}) = (?\<pi> \<circ> \<gamma>) ` {p..q}" by (rule image_comp)
+    have h_subst1: "\<gamma> ` {p..q} = closed_segment a b" by (rule h_img)
+    have h_subst2: "?\<pi> ` (\<gamma> ` {p..q}) = ?\<pi> ` closed_segment a b"
+      using h_subst1 by (by100 simp)
+    have h_chain: "(?\<pi> \<circ> \<gamma>) ` {p..q} = ?\<pi> ` closed_segment a b"
+      using h_ic h_subst2 by (by100 simp)
+    have h_seg_eq: "closed_segment p q = {p..q}" by (rule h_pq_seg)
+    show ?thesis using h_chain h_seg_eq by (by100 simp)
+  qed
+  have h_rhs: "closed_segment ((?\<pi> \<circ> \<gamma>) p) ((?\<pi> \<circ> \<gamma>) q)
+             = closed_segment (?\<pi> (\<gamma> p)) (?\<pi> (\<gamma> q))" by (by100 simp)
+  have h_combined: "?\<pi> ` closed_segment a b = closed_segment (?\<pi> (\<gamma> p)) (?\<pi> (\<gamma> q))"
+    using h_lhs h_rhs h_\<pi>\<gamma>_img by (by100 simp)
+  have h_seg_eq_\<pi>: "closed_segment (?\<pi> (\<gamma> p)) (?\<pi> (\<gamma> q)) = closed_segment (?\<pi> a) (?\<pi> b)"
+    using h_combined h\<pi>_img_seg by (by100 simp)
+  (** From equal closed segments in ℝ: {endpoints} are equal as sets. **)
+  have h_\<pi>_endpoints: "{?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)} = {?\<pi> a, ?\<pi> b}"
+    using h_seg_eq_\<pi> closed_segment_eq by (by100 blast)
+  (** γ p, γ q ∈ closed_segment a b. **)
+  have hp_in_pq: "p \<in> {p..q}" using hpq by (by100 simp)
+  have hq_in_pq: "q \<in> {p..q}" using hpq by (by100 simp)
+  have h\<gamma>p_seg: "\<gamma> p \<in> closed_segment a b" using hp_in_pq h_img by (by100 blast)
+  have h\<gamma>q_seg: "\<gamma> q \<in> closed_segment a b" using hq_in_pq h_img by (by100 blast)
+  have ha_seg: "a \<in> closed_segment a b" by (by100 simp)
+  have hb_seg: "b \<in> closed_segment a b" by (by100 simp)
+  (** π inj on closed_segment a b: project equality back. **)
+  have h_\<pi>\<gamma>p_in: "?\<pi> (\<gamma> p) \<in> {?\<pi> a, ?\<pi> b}"
+    using h_\<pi>_endpoints by (by100 blast)
+  have h_\<pi>\<gamma>q_in: "?\<pi> (\<gamma> q) \<in> {?\<pi> a, ?\<pi> b}"
+    using h_\<pi>_endpoints by (by100 blast)
+  have h_\<pi>a_in: "?\<pi> a \<in> {?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)}"
+    using h_\<pi>_endpoints by (by100 blast)
+  have h_\<pi>b_in: "?\<pi> b \<in> {?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)}"
+    using h_\<pi>_endpoints by (by100 blast)
+  have h\<pi>p_disj: "?\<pi> (\<gamma> p) = ?\<pi> a \<or> ?\<pi> (\<gamma> p) = ?\<pi> b"
+    using h_\<pi>\<gamma>p_in by (by100 blast)
+  have h\<pi>q_disj: "?\<pi> (\<gamma> q) = ?\<pi> a \<or> ?\<pi> (\<gamma> q) = ?\<pi> b"
+    using h_\<pi>\<gamma>q_in by (by100 blast)
+  (** π a < π b so they're distinct — use this to rule out both endpoints matching same. **)
+  have h_ba_pos': "0 < inner (b - a) (b - a)" using hab by (by100 simp)
+  have h_ba_eq': "inner (b - a) (b - a) = inner (b - a) b - inner (b - a) a"
+    by (rule inner_diff_right)
+  have h_\<pi>_a_lt_b: "?\<pi> a < ?\<pi> b" using h_ba_eq' h_ba_pos' by (by100 linarith)
+  have h_\<pi>_ne: "?\<pi> a \<noteq> ?\<pi> b" using h_\<pi>_a_lt_b by (by100 linarith)
+  have h_cases: "(?\<pi> (\<gamma> p) = ?\<pi> a \<and> ?\<pi> (\<gamma> q) = ?\<pi> b)
+               \<or> (?\<pi> (\<gamma> p) = ?\<pi> b \<and> ?\<pi> (\<gamma> q) = ?\<pi> a)"
+  proof (rule disjE[OF h\<pi>p_disj])
+    assume h_p_a: "?\<pi> (\<gamma> p) = ?\<pi> a"
+    have h_q_b: "?\<pi> (\<gamma> q) = ?\<pi> b"
+    proof (rule disjE[OF h\<pi>q_disj])
+      assume h_q_a: "?\<pi> (\<gamma> q) = ?\<pi> a"
+      have h_set_small: "{?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)} = {?\<pi> a}"
+        using h_p_a h_q_a by (by100 simp)
+      have h_bab: "?\<pi> b \<in> {?\<pi> a}" using h_\<pi>b_in h_set_small by (by100 simp)
+      have h_ba_eq: "?\<pi> b = ?\<pi> a" using h_bab by (by100 simp)
+      have h_false: False using h_ba_eq h_\<pi>_ne by (by100 simp)
+      show ?thesis using h_false by (by100 blast)
+    next
+      assume h_q_b: "?\<pi> (\<gamma> q) = ?\<pi> b" show ?thesis by (rule h_q_b)
+    qed
+    show ?thesis using h_p_a h_q_b by (by100 blast)
+  next
+    assume h_p_b: "?\<pi> (\<gamma> p) = ?\<pi> b"
+    have h_q_a: "?\<pi> (\<gamma> q) = ?\<pi> a"
+    proof (rule disjE[OF h\<pi>q_disj])
+      assume h_q_a: "?\<pi> (\<gamma> q) = ?\<pi> a" show ?thesis by (rule h_q_a)
+    next
+      assume h_q_b: "?\<pi> (\<gamma> q) = ?\<pi> b"
+      have h_set_small: "{?\<pi> (\<gamma> p), ?\<pi> (\<gamma> q)} = {?\<pi> b}"
+        using h_p_b h_q_b by (by100 simp)
+      have h_aab: "?\<pi> a \<in> {?\<pi> b}" using h_\<pi>a_in h_set_small by (by100 simp)
+      have h_ab_eq: "?\<pi> a = ?\<pi> b" using h_aab by (by100 simp)
+      have h_false: False using h_ab_eq h_\<pi>_ne by (by100 simp)
+      show ?thesis using h_false by (by100 blast)
+    qed
+    show ?thesis using h_p_b h_q_a by (by100 blast)
+  qed
+  show "{\<gamma> p, \<gamma> q} = {a, b}"
+  proof (rule disjE[OF h_cases])
+    assume h_ord: "?\<pi> (\<gamma> p) = ?\<pi> a \<and> ?\<pi> (\<gamma> q) = ?\<pi> b"
+    have h\<gamma>p_a: "\<gamma> p = a"
+      using h\<pi>_inj_seg h\<gamma>p_seg ha_seg h_ord unfolding inj_on_def by (by100 blast)
+    have h\<gamma>q_b: "\<gamma> q = b"
+      using h\<pi>_inj_seg h\<gamma>q_seg hb_seg h_ord unfolding inj_on_def by (by100 blast)
+    show ?thesis using h\<gamma>p_a h\<gamma>q_b by (by100 blast)
+  next
+    assume h_ord: "?\<pi> (\<gamma> p) = ?\<pi> b \<and> ?\<pi> (\<gamma> q) = ?\<pi> a"
+    have h\<gamma>p_b: "\<gamma> p = b"
+      using h\<pi>_inj_seg h\<gamma>p_seg hb_seg h_ord unfolding inj_on_def by (by100 blast)
+    have h\<gamma>q_a: "\<gamma> q = a"
+      using h\<pi>_inj_seg h\<gamma>q_seg ha_seg h_ord unfolding inj_on_def by (by100 blast)
+    show ?thesis using h\<gamma>p_b h\<gamma>q_a by (by100 blast)
+  qed
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
