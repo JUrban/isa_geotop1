@@ -569,6 +569,58 @@ Option (a) is cleaner — Moise's book is about Euclidean simplices anyway.
 **Summary: Phase 1 fully closed, D scaffolded + 2 sub-closures, 13 D-helpers
 proven. Remaining: D1.0/1.1/1.2/1.3, D2a, D4+5, E, F. Ready for next session.**
 
+## FINAL COMPREHENSIVE SESSION STATE (April 23-24, 82 commits, 21 FULLY PROVE lemmas)
+
+### Phase 1 FULLY CLOSED (3 major theorems, ~850 lines combined)
+- K.2 inter_face (4×4 case analysis)
+- Phase 1.A `geotop_subarc_polyhedron`
+- Phase 1.C arc_reduction overlap
+
+### D-foundation helper stack (15 helpers + 1 definition, ALL PROVED)
+
+**Barycenter properties:**
+- `geotop_barycenter_in_simplex` — bary ∈ σ
+- `geotop_barycenter_in_rel_interior` — bary ∈ rel_int σ (euclidean)
+- `geotop_complex_distinct_simplex_distinct_barycenter` — σ ≠ τ ⟹ different barys
+- `geotop_complex_barycenter_inj_on` — bary injective on K-subsets
+- `geotop_complex_flag_barycenter_card` — card (bary ` set c) = length c
+
+**Finite counting:**
+- `geotop_simplex_faces_finite` — faces of σ are finite
+- `geotop_finite_distinct_lists_over_finite` — distinct lists ⊆ finite set are finite
+- `geotop_complex_flags_at_simplex_finite` — flags ending at σ are finite
+- `geotop_complex_flags_with_top_in_finite_finite` — flags with top in finite T are finite
+
+**Rel_interior / face_of bridges:**
+- `geotop_complex_inter_face_HOL` — σ∩τ is HOL face_of σ
+- `geotop_complex_rel_interior_disjoint_distinct` — rel_int disjoint for distinct
+- `geotop_complex_point_in_unique_rel_interior` — unique rel_int per point
+- `geotop_complex_rel_interior_imp_subset` — super-simplex containment
+
+**Affine hull / rel_interior (KEY classical):**
+- **`geotop_affine_hull_proper_subset_disjoint_rel_interior`** — aff hull proper
+  subset of affinely-indep V disjoint from rel_int (conv V). ~90 lines.
+- **`geotop_complex_proper_subset_affine_hull_disjoint_rel_interior`** —
+  simplicial complex version: τ ⊊ σ ⟹ aff hull τ ∩ rel_int σ = ∅. ~90 lines.
+
+**Standalone definitions:**
+- `geotop_flags K` — strictly-increasing distinct chains in K
+
+### Remaining 9 real sorries with attack notes
+
+- **D1.0 (K.0)**: use `flag_barycenter_affine_independent` (scaffolded, proof mechanics attempted) + `flag_barycenter_card` + `geotop_convex_hull_eq_HOL`.
+- **D1.1 (K.1)**: face of flag-simplex = sub-flag simplex; use face_of characterization.
+- **D1.2 (K.2)**: intersection of two flag-simplices via common sub-chain.
+- **D1.3 (K.3)**: composition of `flags_at_simplex_finite` + K.3 of K.
+- **D2a (polyhedron eq)**: barycentric decomposition of each σ ∈ K.
+- **D4+5 (dim + mesh)**: Moise Lemma 4.11 centroid bound.
+- **E (Lebesgue)**: requires D's barycentric star cover.
+- **F (h_f_exists)**: barycentric extension of vertex-iso.
+
+### Status: Phase 1 cacheable; D is 2/5 done with comprehensive toolkit
+
+Ready for next focused session to close remaining sorries using the 15-helper foundation.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
