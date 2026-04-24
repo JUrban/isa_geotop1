@@ -3118,6 +3118,32 @@ proof -
   show ?thesis using finite_subset[OF h_outer_sub h_outer_fin] by (by100 simp)
 qed
 
+(** D-support: for any finite set T of K-simplices, flags in K with top
+    in T form a finite set. Finite union of finite flag-at-σ sets. **)
+lemma geotop_complex_flags_with_top_in_finite_finite:
+  fixes K :: "'a::euclidean_space set set"
+  fixes T :: "'a set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hT_sub: "T \<subseteq> K"
+  assumes hT_fin: "finite T"
+  shows "finite {c \<in> geotop_flags K. last c \<in> T}"
+proof -
+  (** Split by last element: {c. last c ∈ T} = ⋃_{σ ∈ T} {c. last c = σ}. **)
+  have h_union: "{c \<in> geotop_flags K. last c \<in> T}
+               = (\<Union>\<sigma>\<in>T. {c \<in> geotop_flags K. last c = \<sigma>})"
+    by (by100 blast)
+  have h_each_fin: "\<forall>\<sigma>\<in>T. finite {c \<in> geotop_flags K. last c = \<sigma>}"
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>T: "\<sigma> \<in> T"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>T hT_sub by (by100 blast)
+    show "finite {c \<in> geotop_flags K. last c = \<sigma>}"
+      by (rule geotop_complex_flags_at_simplex_finite[OF hK h\<sigma>K])
+  qed
+  have h_union_fin: "finite (\<Union>\<sigma>\<in>T. {c \<in> geotop_flags K. last c = \<sigma>})"
+    using hT_fin h_each_fin by (by100 blast)
+  show ?thesis using h_union h_union_fin by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
