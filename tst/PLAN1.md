@@ -826,3 +826,33 @@ pair bound. This plus geotop_diameter-to-HOL-diameter bridge closes D5.
 - h_mesh_shrink (D5 — infrastructure almost complete)
 - h_delta_bridge (E)
 - h_f_exists (F)
+
+## Session progress 2026-04-24 (continuation 4)
+
+### Added infrastructure lemmas this extension
+
+- **geotop_bK_elt_compact**: chain-simplex is compact (from finite bary image).
+- **geotop_bK_elt_bounded**: chain-simplex is bounded.
+- **Hardened h_sum_bd_k** step in barycenter_to_vertex_bound into 4 atomic
+  rule applications to avoid flaky by100 timeouts under load.
+
+### h_mesh_shrink remains the primary remaining D sorry
+
+Attempted full convex-hull-point-pair-bound proof (~200 lines). Kept
+hitting flaky by100 timeouts on simp rewrites that would normally be fine.
+Reverted. Approach validated but needs break + re-attempt in fresh session.
+
+Key mathematical remaining step for mesh_shrink:
+
+For x, y in τ = conv hull (bary ` set c):
+  x = Σ_v α_v v, y = Σ_w β_w w  (with V = bary ` set c)
+  x - y = Σ_{v,w} α_v β_w (v - w)
+  ||x - y|| ≤ Σ_{v,w} α_v β_w ||v - w||
+            ≤ Σ_{v,w} α_v β_w · max_{v',w'} ||v' - w'||
+            = max_{v',w'} ||v' - w'||                (Σ α Σ β = 1)
+
+With max pair bound ≤ (n/(n+1)) mesh K (via chain_barycenter_bound),
+we get diameter τ ≤ (n/(n+1)) mesh K. Sup gives mesh bK bound.
+
+Infrastructure ready: chain_barycenter_bound (have), bary_to_point_bound
+(have), bK_elt_bounded (have). Missing: double-decomposition lemma.
