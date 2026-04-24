@@ -2653,6 +2653,102 @@ proof -
     by (rule geotop_conv_hull_pt_bound[OF hVfin hVne h_V_y_bd hx])
 qed
 
+(** D-infrastructure: HOL diameter bounded by geotop_diameter for nonempty
+    bounded sets. **)
+lemma geotop_diameter_ge_HOL_diameter:
+  fixes M :: "'a::real_normed_vector set"
+  assumes hMne: "M \<noteq> {}"
+  assumes hMbdd: "bounded M"
+  shows "diameter M \<le> geotop_diameter (\<lambda>x y. norm (x - y)) M"
+proof -
+  obtain r where hr: "\<forall>x\<in>M. norm x \<le> r" using hMbdd bounded_iff by (by100 blast)
+  have h_pair_bd: "\<And>x y. x \<in> M \<Longrightarrow> y \<in> M \<Longrightarrow> norm (x - y) \<le> 2 * r"
+  proof -
+    fix x y assume hx: "x \<in> M" and hy: "y \<in> M"
+    have hnx: "norm x \<le> r" using hx hr by (by100 blast)
+    have hny: "norm y \<le> r" using hy hr by (by100 blast)
+    have h_tri: "norm (x - y) \<le> norm x + norm y" by (rule norm_triangle_ineq4)
+    show "norm (x - y) \<le> 2 * r" using h_tri hnx hny by (by100 simp)
+  qed
+  have h_inner_bdd: "\<And>x. x \<in> M \<Longrightarrow> bdd_above ((\<lambda>y. norm (x - y)) ` M)"
+    unfolding bdd_above_def using h_pair_bd by (by100 blast)
+  have h_inner_upper: "\<And>x y. x \<in> M \<Longrightarrow> y \<in> M
+                                \<Longrightarrow> norm (x - y) \<le> (SUP y'\<in>M. norm (x - y'))"
+  proof -
+    fix x y assume hx: "x \<in> M" and hy: "y \<in> M"
+    have h_bdd: "bdd_above ((\<lambda>y'. norm (x - y')) ` M)"
+      using h_inner_bdd[OF hx] .
+    show "norm (x - y) \<le> (SUP y'\<in>M. norm (x - y'))"
+      using cSUP_upper[OF hy h_bdd] by (by100 simp)
+  qed
+  have h_each_inner_bd: "\<And>x. x \<in> M \<Longrightarrow> (SUP y\<in>M. norm (x - y)) \<le> 2 * r"
+  proof -
+    fix x assume hx: "x \<in> M"
+    show "(SUP y\<in>M. norm (x - y)) \<le> 2 * r"
+      by (rule cSUP_least[OF hMne], rule h_pair_bd[OF hx])
+  qed
+  have h_outer_bdd: "bdd_above ((\<lambda>x. SUP y\<in>M. norm (x - y)) ` M)"
+    unfolding bdd_above_def using h_each_inner_bd by (by100 blast)
+  have h_outer_upper: "\<And>x. x \<in> M \<Longrightarrow> (SUP y\<in>M. norm (x - y))
+                                      \<le> (SUP x'\<in>M. SUP y\<in>M. norm (x' - y))"
+  proof -
+    fix x assume hx: "x \<in> M"
+    show "(SUP y\<in>M. norm (x - y)) \<le> (SUP x'\<in>M. SUP y\<in>M. norm (x' - y))"
+      using cSUP_upper[OF hx h_outer_bdd] by (by100 simp)
+  qed
+  have h_pair_le_geo: "\<And>x y. x \<in> M \<Longrightarrow> y \<in> M
+                             \<Longrightarrow> norm (x - y) \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+  proof -
+    fix x y assume hx: "x \<in> M" and hy: "y \<in> M"
+    have h1: "norm (x - y) \<le> (SUP y'\<in>M. norm (x - y'))"
+      using h_inner_upper[OF hx hy] .
+    have h2: "(SUP y\<in>M. norm (x - y)) \<le> (SUP x'\<in>M. SUP y\<in>M. norm (x' - y))"
+      using h_outer_upper[OF hx] .
+    show "norm (x - y) \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+      using h1 h2 by (by100 linarith)
+  qed
+  have h_dist_norm: "\<And>x y. dist x y = norm (x - y)" by (rule dist_norm)
+  have h_pair_le_geo_dist: "\<And>x y. x \<in> M \<Longrightarrow> y \<in> M
+                                   \<Longrightarrow> dist x y \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+  proof -
+    fix x y assume hx: "x \<in> M" and hy: "y \<in> M"
+    have h1: "norm (x - y) \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+      by (rule h_pair_le_geo[OF hx hy])
+    have h2: "dist x y = norm (x - y)" by (rule dist_norm)
+    show "dist x y \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+      using h1 h2 by (by100 simp)
+  qed
+  have h_diam_eq: "diameter M = (SUP (x, y)\<in>M \<times> M. dist x y)"
+    using hMne diameter_def[of M] by (by100 simp)
+  have h_diam_le: "diameter M \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+  proof -
+    have hMM_ne: "M \<times> M \<noteq> {}" using hMne by (by100 blast)
+    have h_case_bd: "\<And>p. p \<in> M \<times> M
+                       \<Longrightarrow> (case p of (x, y) \<Rightarrow> dist x y)
+                            \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+    proof -
+      fix p :: "'a \<times> 'a"
+      assume hp: "p \<in> M \<times> M"
+      obtain x y where hpxy: "p = (x, y)" and hxM: "x \<in> M" and hyM: "y \<in> M"
+        using hp by (by100 blast)
+      have h_case: "(case p of (x, y) \<Rightarrow> dist x y) = dist x y" using hpxy by (by100 simp)
+      have h_bd: "dist x y \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+        by (rule h_pair_le_geo_dist[OF hxM hyM])
+      show "(case p of (x, y) \<Rightarrow> dist x y)
+              \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+        using h_case h_bd by (by100 simp)
+    qed
+    have h_SUP_bd: "(SUP p\<in>M \<times> M. case p of (x, y) \<Rightarrow> dist x y)
+                     \<le> (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+      by (rule cSUP_least[OF hMM_ne], rule h_case_bd)
+    show ?thesis using h_diam_eq h_SUP_bd by (by100 simp)
+  qed
+  have h_geo_eq: "geotop_diameter (\<lambda>x y. norm (x - y)) M
+                   = (SUP x'\<in>M. SUP y'\<in>M. norm (x' - y'))"
+    unfolding geotop_diameter_def using hMne by (by100 simp)
+  show ?thesis using h_diam_le h_geo_eq by (by100 simp)
+qed
+
 (** D-infrastructure: if every point-pair in M is bounded by B (nonempty M),
     then geotop_diameter M \<le> B. Direct from cSUP_least twice. **)
 lemma geotop_diameter_le_from_pairs:
