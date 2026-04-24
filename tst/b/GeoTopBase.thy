@@ -307,9 +307,380 @@ proof -
        (\<forall>v\<in>V\<^sub>1. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> V\<^sub>1 = 1 \<Longrightarrow> (\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R v) = x \<Longrightarrow>
        (\<forall>v\<in>V\<^sub>2. 0 \<le> \<beta> v) \<Longrightarrow> sum \<beta> V\<^sub>2 = 1 \<Longrightarrow> (\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R v) = x \<Longrightarrow>
        (\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v)"
-    sorry \<comment> \<open>Well-definedness: common face of \<sigma>_1 \<inter> \<sigma>_2 via K.2 + K.1 gives V_c \<subseteq> V_1 \<inter> V_2;
-              bary-vanishing argument (from h_f_inj) shows \<alpha>, \<beta> both vanish outside V_c and
-              agree on V_c; hence \<phi>-weighted sums match.\<close>
+  proof -
+    fix x :: 'a and \<sigma>\<^sub>1 \<sigma>\<^sub>2 V\<^sub>1 V\<^sub>2 :: "'a set" and \<alpha> \<beta> :: "'a \<Rightarrow> real"
+    assume h\<sigma>\<^sub>1K: "\<sigma>\<^sub>1 \<in> K" and h\<sigma>\<^sub>2K: "\<sigma>\<^sub>2 \<in> K"
+    assume hx\<sigma>\<^sub>1: "x \<in> \<sigma>\<^sub>1" and hx\<sigma>\<^sub>2: "x \<in> \<sigma>\<^sub>2"
+    assume hV\<^sub>1sv: "geotop_simplex_vertices \<sigma>\<^sub>1 V\<^sub>1"
+    assume hV\<^sub>2sv: "geotop_simplex_vertices \<sigma>\<^sub>2 V\<^sub>2"
+    assume h\<alpha>nn: "\<forall>v\<in>V\<^sub>1. 0 \<le> \<alpha> v" and h\<alpha>sum: "sum \<alpha> V\<^sub>1 = 1"
+    assume h\<alpha>combo: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R v) = x"
+    assume h\<beta>nn: "\<forall>v\<in>V\<^sub>2. 0 \<le> \<beta> v" and h\<beta>sum: "sum \<beta> V\<^sub>2 = 1"
+    assume h\<beta>combo: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R v) = x"
+    (** Data on V_1, V_2. **)
+    have hV\<^sub>1_fin: "finite V\<^sub>1"
+      using hV\<^sub>1sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV\<^sub>2_fin: "finite V\<^sub>2"
+      using hV\<^sub>2sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV\<^sub>1_ai: "\<not> affine_dependent V\<^sub>1"
+      by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>1sv])
+    have hV\<^sub>2_ai: "\<not> affine_dependent V\<^sub>2"
+      by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>2sv])
+    have h\<sigma>\<^sub>1_hull_g: "\<sigma>\<^sub>1 = geotop_convex_hull V\<^sub>1"
+      using hV\<^sub>1sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>\<^sub>1_HOL: "\<sigma>\<^sub>1 = convex hull V\<^sub>1"
+    proof -
+      have h1: "geotop_convex_hull V\<^sub>1 = convex hull V\<^sub>1"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h\<sigma>\<^sub>1_hull_g h1 by (by100 simp)
+    qed
+    have h\<sigma>\<^sub>2_hull_g: "\<sigma>\<^sub>2 = geotop_convex_hull V\<^sub>2"
+      using hV\<^sub>2sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>\<^sub>2_HOL: "\<sigma>\<^sub>2 = convex hull V\<^sub>2"
+    proof -
+      have h1: "geotop_convex_hull V\<^sub>2 = convex hull V\<^sub>2"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h\<sigma>\<^sub>2_hull_g h1 by (by100 simp)
+    qed
+    (** x \<in> \<sigma>_1 \<inter> \<sigma>_2 nonempty \<Longrightarrow> K.2 gives face structure. **)
+    have h_inter_ne: "\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 \<noteq> {}" using hx\<sigma>\<^sub>1 hx\<sigma>\<^sub>2 by (by100 blast)
+    have h_face_\<sigma>\<^sub>1: "geotop_is_face (\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2) \<sigma>\<^sub>1"
+      using hK_K2 h\<sigma>\<^sub>1K h\<sigma>\<^sub>2K h_inter_ne by (by100 blast)
+    have h_face_\<sigma>\<^sub>2: "geotop_is_face (\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2) \<sigma>\<^sub>2"
+      using hK_K2 h\<sigma>\<^sub>1K h\<sigma>\<^sub>2K h_inter_ne by (by100 blast)
+    (** Extract W_1 \<subseteq> V_1 with \<sigma>_1 \<inter> \<sigma>_2 = conv hull W_1, W_1 \<ne> \<emptyset>. **)
+    obtain V_face_1 W\<^sub>1 where hV_face_1_sv: "geotop_simplex_vertices \<sigma>\<^sub>1 V_face_1"
+                           and hW\<^sub>1_ne: "W\<^sub>1 \<noteq> {}"
+                           and hW\<^sub>1_sub_f1: "W\<^sub>1 \<subseteq> V_face_1"
+                           and h_inter_hull_1: "\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 = geotop_convex_hull W\<^sub>1"
+      using h_face_\<sigma>\<^sub>1 unfolding geotop_is_face_def by (by100 blast)
+    have hV_face_1_eq: "V_face_1 = V\<^sub>1"
+      using geotop_simplex_vertices_unique[OF hV_face_1_sv hV\<^sub>1sv] .
+    have hW\<^sub>1_sub_V\<^sub>1: "W\<^sub>1 \<subseteq> V\<^sub>1" using hW\<^sub>1_sub_f1 hV_face_1_eq by (by100 simp)
+    have h_inter_hull_1_HOL: "\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 = convex hull W\<^sub>1"
+    proof -
+      have h1: "geotop_convex_hull W\<^sub>1 = convex hull W\<^sub>1"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_inter_hull_1 h1 by (by100 simp)
+    qed
+    obtain V_face_2 W\<^sub>2 where hV_face_2_sv: "geotop_simplex_vertices \<sigma>\<^sub>2 V_face_2"
+                           and hW\<^sub>2_ne: "W\<^sub>2 \<noteq> {}"
+                           and hW\<^sub>2_sub_f2: "W\<^sub>2 \<subseteq> V_face_2"
+                           and h_inter_hull_2: "\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 = geotop_convex_hull W\<^sub>2"
+      using h_face_\<sigma>\<^sub>2 unfolding geotop_is_face_def by (by100 blast)
+    have hV_face_2_eq: "V_face_2 = V\<^sub>2"
+      using geotop_simplex_vertices_unique[OF hV_face_2_sv hV\<^sub>2sv] .
+    have hW\<^sub>2_sub_V\<^sub>2: "W\<^sub>2 \<subseteq> V\<^sub>2" using hW\<^sub>2_sub_f2 hV_face_2_eq by (by100 simp)
+    (** W_1 = W_2 via simplex_vertices uniqueness. **)
+    have hW\<^sub>1_fin: "finite W\<^sub>1" using hW\<^sub>1_sub_V\<^sub>1 hV\<^sub>1_fin finite_subset by (by100 blast)
+    have hW\<^sub>2_fin: "finite W\<^sub>2" using hW\<^sub>2_sub_V\<^sub>2 hV\<^sub>2_fin finite_subset by (by100 blast)
+    have hW\<^sub>1_ai: "\<not> affine_dependent W\<^sub>1"
+      by (rule affine_independent_subset[OF hV\<^sub>1_ai hW\<^sub>1_sub_V\<^sub>1])
+    have hW\<^sub>2_ai: "\<not> affine_dependent W\<^sub>2"
+      by (rule affine_independent_subset[OF hV\<^sub>2_ai hW\<^sub>2_sub_V\<^sub>2])
+    have hW\<^sub>1_sv: "geotop_simplex_vertices (geotop_convex_hull W\<^sub>1) W\<^sub>1"
+      by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hW\<^sub>1_fin hW\<^sub>1_ne hW\<^sub>1_ai])
+    have hW\<^sub>2_sv: "geotop_simplex_vertices (geotop_convex_hull W\<^sub>2) W\<^sub>2"
+      by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hW\<^sub>2_fin hW\<^sub>2_ne hW\<^sub>2_ai])
+    have h_hull_same: "geotop_convex_hull W\<^sub>1 = geotop_convex_hull W\<^sub>2"
+      using h_inter_hull_1 h_inter_hull_2 by (by100 simp)
+    have hW\<^sub>2_sv_on_W\<^sub>1: "geotop_simplex_vertices (geotop_convex_hull W\<^sub>1) W\<^sub>2"
+      using hW\<^sub>2_sv h_hull_same by (by100 simp)
+    have hW_eq: "W\<^sub>1 = W\<^sub>2"
+      using geotop_simplex_vertices_unique[OF hW\<^sub>1_sv hW\<^sub>2_sv_on_W\<^sub>1] .
+    define W where "W = W\<^sub>1"
+    have hW_ne: "W \<noteq> {}" unfolding W_def by (rule hW\<^sub>1_ne)
+    have hW_fin: "finite W" unfolding W_def by (rule hW\<^sub>1_fin)
+    have hW_ai: "\<not> affine_dependent W" unfolding W_def by (rule hW\<^sub>1_ai)
+    have hW_sub_V\<^sub>1: "W \<subseteq> V\<^sub>1" unfolding W_def by (rule hW\<^sub>1_sub_V\<^sub>1)
+    have hW_sub_V\<^sub>2: "W \<subseteq> V\<^sub>2" unfolding W_def using hW_eq hW\<^sub>2_sub_V\<^sub>2 by (by100 simp)
+    have h_inter_hull: "\<sigma>\<^sub>1 \<inter> \<sigma>\<^sub>2 = convex hull W"
+      unfolding W_def by (rule h_inter_hull_1_HOL)
+    (** x \<in> \<sigma>_1 \<inter> \<sigma>_2 = conv hull W; bary coords \<gamma> on W. **)
+    have hx_hullW: "x \<in> convex hull W"
+      using hx\<sigma>\<^sub>1 hx\<sigma>\<^sub>2 h_inter_hull by (by100 blast)
+    have hccW: "convex hull W
+                = {u. \<exists>u\<^sub>c. (\<forall>v\<in>W. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c W = 1
+                            \<and> (\<Sum>v\<in>W. u\<^sub>c v *\<^sub>R v) = u}"
+      using convex_hull_finite[OF hW_fin] by (by100 simp)
+    obtain \<gamma> where h\<gamma>nn: "\<forall>v\<in>W. 0 \<le> \<gamma> v"
+                 and h\<gamma>sum: "sum \<gamma> W = 1"
+                 and h\<gamma>combo: "(\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) = x"
+      using hx_hullW hccW by (by100 blast)
+    (** Extend \<gamma> by 0 to V_1. **)
+    define \<gamma>_ext\<^sub>1 where "\<gamma>_ext\<^sub>1 v = (if v \<in> W then \<gamma> v else 0)" for v
+    (** Show \<gamma>_ext_1 is a bary-combo of x on V_1. **)
+    have hV\<^sub>1_W_disjoint: "W \<inter> (V\<^sub>1 - W) = {}" by (by100 blast)
+    have hV\<^sub>1_W_union: "V\<^sub>1 = W \<union> (V\<^sub>1 - W)" using hW_sub_V\<^sub>1 by (by100 blast)
+    have hV\<^sub>1_W_finDiff: "finite (V\<^sub>1 - W)" using hV\<^sub>1_fin by (by100 simp)
+    have h\<gamma>ext\<^sub>1_nn: "\<forall>v\<in>V\<^sub>1. 0 \<le> \<gamma>_ext\<^sub>1 v"
+    proof
+      fix v assume hv: "v \<in> V\<^sub>1"
+      show "0 \<le> \<gamma>_ext\<^sub>1 v"
+      proof (cases "v \<in> W")
+        case True
+        have h_ext_eq: "\<gamma>_ext\<^sub>1 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>1_def using True by (by100 simp)
+        have h_nn: "0 \<le> \<gamma> v" using h\<gamma>nn True by (by100 blast)
+        show ?thesis using h_ext_eq h_nn by (by100 simp)
+      next
+        case False
+        have "\<gamma>_ext\<^sub>1 v = 0" unfolding \<gamma>_ext\<^sub>1_def using False by (by100 simp)
+        then show ?thesis by (by100 simp)
+      qed
+    qed
+    have h\<gamma>ext\<^sub>1_sum: "sum \<gamma>_ext\<^sub>1 V\<^sub>1 = 1"
+    proof -
+      have h_ud: "sum \<gamma>_ext\<^sub>1 (W \<union> (V\<^sub>1 - W))
+                   = sum \<gamma>_ext\<^sub>1 W + sum \<gamma>_ext\<^sub>1 (V\<^sub>1 - W)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>1_W_finDiff hV\<^sub>1_W_disjoint])
+      have h_subst: "sum \<gamma>_ext\<^sub>1 V\<^sub>1 = sum \<gamma>_ext\<^sub>1 (W \<union> (V\<^sub>1 - W))"
+        by (rule arg_cong[where f="sum \<gamma>_ext\<^sub>1", OF hV\<^sub>1_W_union])
+      have h_split: "sum \<gamma>_ext\<^sub>1 V\<^sub>1 = sum \<gamma>_ext\<^sub>1 W + sum \<gamma>_ext\<^sub>1 (V\<^sub>1 - W)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_on_W: "sum \<gamma>_ext\<^sub>1 W = sum \<gamma> W"
+      proof -
+        have h_eq: "\<And>v. v \<in> W \<Longrightarrow> \<gamma>_ext\<^sub>1 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>1_def by (by100 simp)
+        show ?thesis using h_eq by (by100 simp)
+      qed
+      have h_on_rest: "sum \<gamma>_ext\<^sub>1 (V\<^sub>1 - W) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>1 - W"
+          show "\<gamma>_ext\<^sub>1 v = 0"
+            unfolding \<gamma>_ext\<^sub>1_def using hv by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_step1: "sum \<gamma>_ext\<^sub>1 V\<^sub>1 = sum \<gamma> W + sum \<gamma>_ext\<^sub>1 (V\<^sub>1 - W)"
+        using h_split[unfolded h_on_W] by (by100 simp)
+      have h_step2: "sum \<gamma>_ext\<^sub>1 V\<^sub>1 = sum \<gamma> W + 0"
+        using h_step1[unfolded h_on_rest] by (by100 simp)
+      show ?thesis using h_step2 h\<gamma>sum by (by100 simp)
+    qed
+    have h\<gamma>ext\<^sub>1_combo: "(\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v) = x"
+    proof -
+      have h_ud: "(\<Sum>v\<in>W \<union> (V\<^sub>1 - W). \<gamma>_ext\<^sub>1 v *\<^sub>R v)
+                   = (\<Sum>v\<in>W. \<gamma>_ext\<^sub>1 v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v *\<^sub>R v)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>1_W_finDiff hV\<^sub>1_W_disjoint])
+      have h_subst: "(\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v)
+                       = (\<Sum>v\<in>W \<union> (V\<^sub>1 - W). \<gamma>_ext\<^sub>1 v *\<^sub>R v)"
+        by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<gamma>_ext\<^sub>1 v *\<^sub>R v", OF hV\<^sub>1_W_union])
+      have h_split: "(\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v)
+                     = (\<Sum>v\<in>W. \<gamma>_ext\<^sub>1 v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v *\<^sub>R v)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_val: "\<And>v. v \<in> W \<Longrightarrow> \<gamma>_ext\<^sub>1 v = \<gamma> v"
+        unfolding \<gamma>_ext\<^sub>1_def by (by100 simp)
+      have h_on_W: "(\<Sum>v\<in>W. \<gamma>_ext\<^sub>1 v *\<^sub>R v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v)"
+        using sum.cong[of W W "\<lambda>v. \<gamma>_ext\<^sub>1 v *\<^sub>R v" "\<lambda>v. \<gamma> v *\<^sub>R v"] h_val
+        by (by100 force)
+      have h_on_rest: "(\<Sum>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v *\<^sub>R v) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v *\<^sub>R v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>1 - W"
+          have h_val0: "\<gamma>_ext\<^sub>1 v = 0"
+            unfolding \<gamma>_ext\<^sub>1_def using hv by (by100 simp)
+          show "\<gamma>_ext\<^sub>1 v *\<^sub>R v = 0" using h_val0 by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_step1: "(\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v)
+                       = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>1 - W. \<gamma>_ext\<^sub>1 v *\<^sub>R v)"
+        using h_split[unfolded h_on_W] by (by100 simp)
+      have h_step2: "(\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) + 0"
+        using h_step1[unfolded h_on_rest] by (by100 simp)
+      show ?thesis using h_step2 h\<gamma>combo by (by100 simp)
+    qed
+    (** By bary-uniqueness on V_1 AI: \<alpha> = \<gamma>_ext\<^sub>1 on V_1. **)
+    have h\<alpha>_eq_\<gamma>ext\<^sub>1: "\<forall>v\<in>V\<^sub>1. \<alpha> v = \<gamma>_ext\<^sub>1 v"
+    proof -
+      have h_combo_eq: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>1. \<gamma>_ext\<^sub>1 v *\<^sub>R v)"
+        using h\<alpha>combo h\<gamma>ext\<^sub>1_combo by (by100 simp)
+      show ?thesis
+        by (rule geotop_bary_coords_unique_AI[OF hV\<^sub>1_fin hV\<^sub>1_ai h\<alpha>sum h\<gamma>ext\<^sub>1_sum h_combo_eq])
+    qed
+    (** Similarly for V_2. **)
+    define \<gamma>_ext\<^sub>2 where "\<gamma>_ext\<^sub>2 v = (if v \<in> W then \<gamma> v else 0)" for v
+    have hV\<^sub>2_W_disjoint: "W \<inter> (V\<^sub>2 - W) = {}" by (by100 blast)
+    have hV\<^sub>2_W_union: "V\<^sub>2 = W \<union> (V\<^sub>2 - W)" using hW_sub_V\<^sub>2 by (by100 blast)
+    have hV\<^sub>2_W_finDiff: "finite (V\<^sub>2 - W)" using hV\<^sub>2_fin by (by100 simp)
+    have h\<gamma>ext\<^sub>2_nn: "\<forall>v\<in>V\<^sub>2. 0 \<le> \<gamma>_ext\<^sub>2 v"
+    proof
+      fix v assume hv: "v \<in> V\<^sub>2"
+      show "0 \<le> \<gamma>_ext\<^sub>2 v"
+      proof (cases "v \<in> W")
+        case True
+        have h_ext_eq: "\<gamma>_ext\<^sub>2 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>2_def using True by (by100 simp)
+        have h_nn: "0 \<le> \<gamma> v" using h\<gamma>nn True by (by100 blast)
+        show ?thesis using h_ext_eq h_nn by (by100 simp)
+      next
+        case False
+        have "\<gamma>_ext\<^sub>2 v = 0" unfolding \<gamma>_ext\<^sub>2_def using False by (by100 simp)
+        then show ?thesis by (by100 simp)
+      qed
+    qed
+    have h\<gamma>ext\<^sub>2_sum: "sum \<gamma>_ext\<^sub>2 V\<^sub>2 = 1"
+    proof -
+      have h_ud: "sum \<gamma>_ext\<^sub>2 (W \<union> (V\<^sub>2 - W))
+                   = sum \<gamma>_ext\<^sub>2 W + sum \<gamma>_ext\<^sub>2 (V\<^sub>2 - W)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>2_W_finDiff hV\<^sub>2_W_disjoint])
+      have h_subst: "sum \<gamma>_ext\<^sub>2 V\<^sub>2 = sum \<gamma>_ext\<^sub>2 (W \<union> (V\<^sub>2 - W))"
+        by (rule arg_cong[where f="sum \<gamma>_ext\<^sub>2", OF hV\<^sub>2_W_union])
+      have h_split: "sum \<gamma>_ext\<^sub>2 V\<^sub>2 = sum \<gamma>_ext\<^sub>2 W + sum \<gamma>_ext\<^sub>2 (V\<^sub>2 - W)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_on_W: "sum \<gamma>_ext\<^sub>2 W = sum \<gamma> W"
+      proof -
+        have h_eq: "\<And>v. v \<in> W \<Longrightarrow> \<gamma>_ext\<^sub>2 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>2_def by (by100 simp)
+        show ?thesis using h_eq by (by100 simp)
+      qed
+      have h_on_rest: "sum \<gamma>_ext\<^sub>2 (V\<^sub>2 - W) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>2 - W"
+          show "\<gamma>_ext\<^sub>2 v = 0"
+            unfolding \<gamma>_ext\<^sub>2_def using hv by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_step1: "sum \<gamma>_ext\<^sub>2 V\<^sub>2 = sum \<gamma> W + sum \<gamma>_ext\<^sub>2 (V\<^sub>2 - W)"
+        using h_split[unfolded h_on_W] by (by100 simp)
+      have h_step2: "sum \<gamma>_ext\<^sub>2 V\<^sub>2 = sum \<gamma> W + 0"
+        using h_step1[unfolded h_on_rest] by (by100 simp)
+      show ?thesis using h_step2 h\<gamma>sum by (by100 simp)
+    qed
+    have h\<gamma>ext\<^sub>2_combo: "(\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v) = x"
+    proof -
+      have h_ud: "(\<Sum>v\<in>W \<union> (V\<^sub>2 - W). \<gamma>_ext\<^sub>2 v *\<^sub>R v)
+                   = (\<Sum>v\<in>W. \<gamma>_ext\<^sub>2 v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v *\<^sub>R v)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>2_W_finDiff hV\<^sub>2_W_disjoint])
+      have h_subst: "(\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v)
+                       = (\<Sum>v\<in>W \<union> (V\<^sub>2 - W). \<gamma>_ext\<^sub>2 v *\<^sub>R v)"
+        by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<gamma>_ext\<^sub>2 v *\<^sub>R v", OF hV\<^sub>2_W_union])
+      have h_split: "(\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v)
+                     = (\<Sum>v\<in>W. \<gamma>_ext\<^sub>2 v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v *\<^sub>R v)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_val: "\<And>v. v \<in> W \<Longrightarrow> \<gamma>_ext\<^sub>2 v = \<gamma> v"
+        unfolding \<gamma>_ext\<^sub>2_def by (by100 simp)
+      have h_on_W: "(\<Sum>v\<in>W. \<gamma>_ext\<^sub>2 v *\<^sub>R v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v)"
+        using sum.cong[of W W "\<lambda>v. \<gamma>_ext\<^sub>2 v *\<^sub>R v" "\<lambda>v. \<gamma> v *\<^sub>R v"] h_val
+        by (by100 force)
+      have h_on_rest: "(\<Sum>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v *\<^sub>R v) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v *\<^sub>R v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>2 - W"
+          have h_val0: "\<gamma>_ext\<^sub>2 v = 0"
+            unfolding \<gamma>_ext\<^sub>2_def using hv by (by100 simp)
+          show "\<gamma>_ext\<^sub>2 v *\<^sub>R v = 0" using h_val0 by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_step1: "(\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v)
+                       = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) + (\<Sum>v\<in>V\<^sub>2 - W. \<gamma>_ext\<^sub>2 v *\<^sub>R v)"
+        using h_split[unfolded h_on_W] by (by100 simp)
+      have h_step2: "(\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) + 0"
+        using h_step1[unfolded h_on_rest] by (by100 simp)
+      show ?thesis using h_step2 h\<gamma>combo by (by100 simp)
+    qed
+    have h\<beta>_eq_\<gamma>ext\<^sub>2: "\<forall>v\<in>V\<^sub>2. \<beta> v = \<gamma>_ext\<^sub>2 v"
+    proof -
+      have h_combo_eq: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R v) = (\<Sum>v\<in>V\<^sub>2. \<gamma>_ext\<^sub>2 v *\<^sub>R v)"
+        using h\<beta>combo h\<gamma>ext\<^sub>2_combo by (by100 simp)
+      show ?thesis
+        by (rule geotop_bary_coords_unique_AI[OF hV\<^sub>2_fin hV\<^sub>2_ai h\<beta>sum h\<gamma>ext\<^sub>2_sum h_combo_eq])
+    qed
+    (** Final: Σ α(v) φ(v) = Σ_{v∈W} γ(v) φ(v) = Σ β(v) φ(v). **)
+    have h_lhs_to_W: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v)"
+    proof -
+      have h_ud: "(\<Sum>v\<in>W \<union> (V\<^sub>1 - W). \<alpha> v *\<^sub>R \<phi> v)
+                   = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R \<phi> v) + (\<Sum>v\<in>V\<^sub>1 - W. \<alpha> v *\<^sub>R \<phi> v)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>1_W_finDiff hV\<^sub>1_W_disjoint])
+      have h_subst: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v)
+                       = (\<Sum>v\<in>W \<union> (V\<^sub>1 - W). \<alpha> v *\<^sub>R \<phi> v)"
+        by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<alpha> v *\<^sub>R \<phi> v", OF hV\<^sub>1_W_union])
+      have h_split: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v)
+                     = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R \<phi> v) + (\<Sum>v\<in>V\<^sub>1 - W. \<alpha> v *\<^sub>R \<phi> v)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_val_W: "\<And>v. v \<in> W \<Longrightarrow> \<alpha> v = \<gamma> v"
+      proof -
+        fix v assume hvW: "v \<in> W"
+        have hvV\<^sub>1: "v \<in> V\<^sub>1" using hvW hW_sub_V\<^sub>1 by (by100 blast)
+        have h\<alpha>v: "\<alpha> v = \<gamma>_ext\<^sub>1 v" using h\<alpha>_eq_\<gamma>ext\<^sub>1 hvV\<^sub>1 by (by100 blast)
+        have h\<gamma>ext: "\<gamma>_ext\<^sub>1 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>1_def using hvW by (by100 simp)
+        show "\<alpha> v = \<gamma> v" using h\<alpha>v h\<gamma>ext by (by100 simp)
+      qed
+      have h_on_W: "(\<Sum>v\<in>W. \<alpha> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v)"
+        using h_val_W by (by100 simp)
+      have h_on_rest: "(\<Sum>v\<in>V\<^sub>1 - W. \<alpha> v *\<^sub>R \<phi> v) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>1 - W. \<alpha> v *\<^sub>R \<phi> v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>1 - W"
+          have hvV\<^sub>1: "v \<in> V\<^sub>1" using hv by (by100 blast)
+          have hvnW: "v \<notin> W" using hv by (by100 blast)
+          have h\<alpha>v: "\<alpha> v = \<gamma>_ext\<^sub>1 v" using h\<alpha>_eq_\<gamma>ext\<^sub>1 hvV\<^sub>1 by (by100 blast)
+          have h\<gamma>ext0: "\<gamma>_ext\<^sub>1 v = 0"
+            unfolding \<gamma>_ext\<^sub>1_def using hvnW by (by100 simp)
+          have h\<alpha>0: "\<alpha> v = 0" using h\<alpha>v h\<gamma>ext0 by (by100 simp)
+          show "\<alpha> v *\<^sub>R \<phi> v = 0" using h\<alpha>0 by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_combine: "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v) + 0"
+        using h_split[unfolded h_on_W h_on_rest] by (by100 simp)
+      show ?thesis using h_combine by (by100 simp)
+    qed
+    have h_rhs_to_W: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v)"
+    proof -
+      have h_ud: "(\<Sum>v\<in>W \<union> (V\<^sub>2 - W). \<beta> v *\<^sub>R \<phi> v)
+                   = (\<Sum>v\<in>W. \<beta> v *\<^sub>R \<phi> v) + (\<Sum>v\<in>V\<^sub>2 - W. \<beta> v *\<^sub>R \<phi> v)"
+        by (rule sum.union_disjoint[OF hW_fin hV\<^sub>2_W_finDiff hV\<^sub>2_W_disjoint])
+      have h_subst: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v)
+                       = (\<Sum>v\<in>W \<union> (V\<^sub>2 - W). \<beta> v *\<^sub>R \<phi> v)"
+        by (rule arg_cong[where f="\<lambda>S. \<Sum>v\<in>S. \<beta> v *\<^sub>R \<phi> v", OF hV\<^sub>2_W_union])
+      have h_split: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v)
+                     = (\<Sum>v\<in>W. \<beta> v *\<^sub>R \<phi> v) + (\<Sum>v\<in>V\<^sub>2 - W. \<beta> v *\<^sub>R \<phi> v)"
+        by (rule HOL.trans[OF h_subst h_ud])
+      have h_val_W: "\<And>v. v \<in> W \<Longrightarrow> \<beta> v = \<gamma> v"
+      proof -
+        fix v assume hvW: "v \<in> W"
+        have hvV\<^sub>2: "v \<in> V\<^sub>2" using hvW hW_sub_V\<^sub>2 by (by100 blast)
+        have h\<beta>v: "\<beta> v = \<gamma>_ext\<^sub>2 v" using h\<beta>_eq_\<gamma>ext\<^sub>2 hvV\<^sub>2 by (by100 blast)
+        have h\<gamma>ext: "\<gamma>_ext\<^sub>2 v = \<gamma> v"
+          unfolding \<gamma>_ext\<^sub>2_def using hvW by (by100 simp)
+        show "\<beta> v = \<gamma> v" using h\<beta>v h\<gamma>ext by (by100 simp)
+      qed
+      have h_on_W: "(\<Sum>v\<in>W. \<beta> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v)"
+        using h_val_W by (by100 simp)
+      have h_on_rest: "(\<Sum>v\<in>V\<^sub>2 - W. \<beta> v *\<^sub>R \<phi> v) = 0"
+      proof -
+        have h_zero_all: "\<forall>v\<in>V\<^sub>2 - W. \<beta> v *\<^sub>R \<phi> v = 0"
+        proof
+          fix v assume hv: "v \<in> V\<^sub>2 - W"
+          have hvV\<^sub>2: "v \<in> V\<^sub>2" using hv by (by100 blast)
+          have hvnW: "v \<notin> W" using hv by (by100 blast)
+          have h\<beta>v: "\<beta> v = \<gamma>_ext\<^sub>2 v" using h\<beta>_eq_\<gamma>ext\<^sub>2 hvV\<^sub>2 by (by100 blast)
+          have h\<gamma>ext0: "\<gamma>_ext\<^sub>2 v = 0"
+            unfolding \<gamma>_ext\<^sub>2_def using hvnW by (by100 simp)
+          have h\<beta>0: "\<beta> v = 0" using h\<beta>v h\<gamma>ext0 by (by100 simp)
+          show "\<beta> v *\<^sub>R \<phi> v = 0" using h\<beta>0 by (by100 simp)
+        qed
+        show ?thesis by (rule sum.neutral[OF h_zero_all])
+      qed
+      have h_combine: "(\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>W. \<gamma> v *\<^sub>R \<phi> v) + 0"
+        using h_split[unfolded h_on_W h_on_rest] by (by100 simp)
+      show ?thesis using h_combine by (by100 simp)
+    qed
+    show "(\<Sum>v\<in>V\<^sub>1. \<alpha> v *\<^sub>R \<phi> v) = (\<Sum>v\<in>V\<^sub>2. \<beta> v *\<^sub>R \<phi> v)"
+      using h_lhs_to_W h_rhs_to_W by (by100 simp)
+  qed
   (** Construct g via SOME, using well-definedness to prove properties. **)
   have h_f_forward:
     "\<exists>g::'a\<Rightarrow>'b. (\<forall>v\<in>geotop_complex_vertices K. g v = \<phi> v) \<and>
