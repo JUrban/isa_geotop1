@@ -5276,7 +5276,21 @@ proof -
         using h_card_m1 h_card_Vb_eq by (by100 simp)
       (** (k_b/(k_b+1)) \<le> (n/(n+1)) by monotonicity of x/(x+1). **)
       have h_factor_bd: "real k\<^sub>b / real (Suc k\<^sub>b) \<le> real n / real (Suc n)"
-        sorry \<comment> \<open>D-step 5a.iii: x/(x+1) monotonicity for naturals\<close>
+      proof -
+        (** x/(x+1) = 1 - 1/(x+1). Monotone increasing since 1/(x+1) monotone decreasing. **)
+        have h_kb: "real k\<^sub>b / real (Suc k\<^sub>b) = 1 - 1 / real (Suc k\<^sub>b)"
+          using diff_divide_distrib[of "real (Suc k\<^sub>b)" 1 "real (Suc k\<^sub>b)"] by (by100 simp)
+        have h_n: "real n / real (Suc n) = 1 - 1 / real (Suc n)"
+          using diff_divide_distrib[of "real (Suc n)" 1 "real (Suc n)"] by (by100 simp)
+        have h_Suc_kb_pos: "(0::real) < real (Suc k\<^sub>b)" by (by100 simp)
+        have h_Suc_n_pos: "(0::real) < real (Suc n)" by (by100 simp)
+        have h_Suc_kb_le_Suc_n: "real (Suc k\<^sub>b) \<le> real (Suc n)"
+          using h_kb_bd by (by100 simp)
+        have h_inv_mono: "1 / real (Suc n) \<le> 1 / real (Suc k\<^sub>b)"
+          using h_Suc_kb_pos h_Suc_kb_le_Suc_n frac_le[of 1 1 "real (Suc k\<^sub>b)" "real (Suc n)"]
+          by (by100 simp)
+        show ?thesis using h_kb h_n h_inv_mono by (by100 linarith)
+      qed
       (** diameter b \<le> geotop_mesh K via geotop_diameter_ge_HOL_diameter + cSUP_upper. **)
       have hb_ne: "b \<noteq> {}"
       proof -
