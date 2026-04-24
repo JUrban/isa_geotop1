@@ -2107,374 +2107,6 @@ proof -
   qed
 qed
 
-(** Classical existence of a barycentric subdivision satisfying the full spec.
-    Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction:
-    bK = {conv hull (barycenter ` flag) | flag a chain σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n in K}.
-
-    Detailed proof sketch (CLAUDE.md Phase 3 "more and more detailed formal
-    proof sketches"): scaffold into 5 sub-goals, each representing one of
-    the barycentric_Sd_def conjuncts. Each sub-goal is independently
-    tractable in future sessions. **)
-lemma geotop_classical_Sd_exists:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  shows "\<exists>bK. geotop_is_barycentric_Sd bK K"
-proof -
-  (** CONSTRUCTION: A flag in K is a non-empty strictly-increasing chain
-      of K-simplices [σ_0, σ_1, ..., σ_n] with σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n.
-      bK = set of convex hulls of barycenter sets of all such flags. **)
-  define flags :: "'a set list set" where
-    "flags = {c. c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
-  define bK :: "'a set set" where
-    "bK = {geotop_convex_hull (geotop_barycenter ` set c) | c. c \<in> flags}"
-  (** STEP 1: bK is a simplicial complex (K.0, K.1, K.2, K.3 axioms).
-      Scaffold per CLAUDE.md Phase 3 — split into 4 sub-goals, each
-      independently tractable with the D-support helper stack. **)
-  (** STEP 1.0 (K.0): Each σ ∈ bK is a simplex.
-      Proof: σ = conv hull (barycenter ` set c). By flag_barycenter_card,
-      |barycenter ` set c| = length c. Barycenters of a chain are affinely
-      independent (classical Moise argument). General position then holds. **)
-  have h_bK_K0: "\<forall>\<sigma>\<in>bK. geotop_is_simplex \<sigma>"
-    sorry \<comment> \<open>D-step 1.0: K.0 (simplex property) via barycenter affine independence.\<close>
-  (** STEP 1.1 (K.1): bK is face-closed.
-      Proof: a HOL face of σ = conv hull (bary image of c) corresponds to
-      a sub-flag c' ⊆ c (continuous sub-sequence), giving another bK simplex. **)
-  have h_bK_K1: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> bK"
-    sorry \<comment> \<open>D-step 1.1: K.1 (face closure) via sub-flag correspondence.\<close>
-  (** STEP 1.2 (K.2): intersection of two bK-simplices is a face of both.
-      Proof: σ_1, σ_2 ∈ bK correspond to flags c_1, c_2. σ_1 ∩ σ_2 = conv
-      hull of common vertex subset, which corresponds to a sub-flag of both. **)
-  have h_bK_K2: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>\<in>bK. \<sigma> \<inter> \<tau> \<noteq> {}
-                \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry \<comment> \<open>D-step 1.2: K.2 (intersection-face) via common sub-flag.\<close>
-  (** STEP 1.3 (K.3): local finiteness.
-      Proof: for σ' ∈ bK, σ' ⊆ top(c_flag) = σ ∈ K. K.3 of K gives U ⊇ σ
-      with finite {τ ∈ K. τ ∩ U ≠ {}}. Each bK-simplex τ' near U has
-      top(τ'_flag) ∈ this finite set, and each simplex has finitely many
-      faces (2^|V|-1), bounding the flags ending at it. **)
-  have h_bK_K3: "\<forall>\<sigma>\<in>bK. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>bK. \<tau> \<inter> U \<noteq> {}}"
-    sorry \<comment> \<open>D-step 1.3: K.3 (local finiteness) via K.3-of-K + finite face count.\<close>
-  (** Assemble K.0–K.3 into complex predicate. **)
-  have h_bK_complex: "geotop_is_complex bK"
-    unfolding geotop_is_complex_def
-    using h_bK_K0 h_bK_K1 h_bK_K2 h_bK_K3 by (by100 blast)
-  (** STEP 2: bK is a subdivision of K (same polyhedron, each bK simplex ⊆ some K simplex).
-      Split into: (2a) polyhedron eq, (2b) refines. Refines provable via
-      geotop_barycenter_in_simplex + sorted_wrt structure; polyhedron eq
-      needs barycentric decomposition (deferred). **)
-  have h_K_simp_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
-    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
-  (** (2b) refines bK K: each τ ∈ bK sits inside the TOP simplex of its flag. **)
-  have h_bK_refines: "geotop_refines bK K"
-    unfolding geotop_refines_def
-  proof (rule ballI)
-    fix \<tau> assume h\<tau>_bK: "\<tau> \<in> bK"
-    obtain c where hc_flag: "c \<in> flags"
-                and h\<tau>_hull: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
-      using h\<tau>_bK unfolding bK_def by (by100 blast)
-    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
-    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
-    have hc_sorted: "sorted_wrt (\<lambda>\<sigma>\<^sub>1 \<sigma>\<^sub>2. \<sigma>\<^sub>1 \<subset> \<sigma>\<^sub>2) c"
-      using hc_flag unfolding flags_def by (by100 blast)
-    (** σ = last c ∈ K. **)
-    define \<sigma> :: "'a set" where "\<sigma> = last c"
-    have h\<sigma>_in_c: "\<sigma> \<in> set c" unfolding \<sigma>_def using hc_ne by (by100 simp)
-    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_in_c hc_subK by (by100 blast)
-    (** Every element s ∈ set c satisfies s ⊆ σ (last c). **)
-    have h_all_sub: "\<forall>s\<in>set c. s \<subseteq> \<sigma>"
-    proof
-      fix s assume hs_c: "s \<in> set c"
-      show "s \<subseteq> \<sigma>"
-      proof (cases "s = \<sigma>")
-        case True thus ?thesis by (by100 simp)
-      next
-        case h_ne: False
-        (** s ≠ last c; sorted gives s ⊊ last c. **)
-        have hs_lt: "s \<subset> \<sigma>"
-        proof -
-          have h_append: "butlast c @ [last c] = c" using hc_ne by (rule append_butlast_last_id)
-          have h_set_eq: "set c = set (butlast c) \<union> {last c}"
-          proof -
-            have "set c = set (butlast c @ [last c])" using h_append by (by100 simp)
-            also have "\<dots> = set (butlast c) \<union> set [last c]" by (by100 simp)
-            also have "\<dots> = set (butlast c) \<union> {last c}" by (by100 simp)
-            finally show ?thesis .
-          qed
-          have hs_in_split: "s \<in> set (butlast c) \<or> s = last c"
-            using hs_c h_set_eq by (by100 blast)
-          have hs_butlast: "s \<in> set (butlast c)" using hs_in_split h_ne unfolding \<sigma>_def by (by100 blast)
-          have h_last_in: "last c \<in> set c" using hc_ne last_in_set by (by100 blast)
-          (** Apply sorted_wrt: for s ∈ butlast, last follows s. **)
-          have h_sw_split: "sorted_wrt (\<subset>) (butlast c @ [last c])"
-            using hc_sorted h_append by (by100 simp)
-          have h_sw_split_expand: "sorted_wrt (\<subset>) (butlast c)
-                \<and> sorted_wrt (\<subset>) [last c]
-                \<and> (\<forall>x\<in>set (butlast c). \<forall>y\<in>set [last c]. x \<subset> y)"
-            using h_sw_split sorted_wrt_append[of "(\<subset>)" "butlast c" "[last c]"]
-            by (by100 blast)
-          have h_sw_aux: "\<forall>x\<in>set (butlast c). x \<subset> last c"
-            using h_sw_split_expand by (by100 simp)
-          show ?thesis using h_sw_aux hs_butlast unfolding \<sigma>_def by (by100 blast)
-        qed
-        thus ?thesis by (by100 blast)
-      qed
-    qed
-    (** Each barycenter is in its simplex ⊆ σ. **)
-    have h_bary_sub_\<sigma>: "geotop_barycenter ` set c \<subseteq> \<sigma>"
-    proof
-      fix b assume hb: "b \<in> geotop_barycenter ` set c"
-      obtain s where hs_c: "s \<in> set c" and hb_eq: "b = geotop_barycenter s"
-        using hb by (by100 blast)
-      have hs_K: "s \<in> K" using hs_c hc_subK by (by100 blast)
-      have hs_simp: "geotop_is_simplex s" using hs_K h_K_simp_all by (by100 blast)
-      have hb_in_s: "b \<in> s" using hb_eq geotop_barycenter_in_simplex[OF hs_simp] by (by100 simp)
-      have hs_sub_\<sigma>: "s \<subseteq> \<sigma>" using hs_c h_all_sub by (by100 blast)
-      show "b \<in> \<sigma>" using hb_in_s hs_sub_\<sigma> by (by100 blast)
-    qed
-    (** σ is convex (simplex = conv hull). **)
-    have h\<sigma>_cvx: "convex \<sigma>"
-    proof -
-      obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
-        using h\<sigma>_K h_K_simp_all unfolding geotop_is_simplex_def by (by100 blast)
-      have hV\<^sub>\<sigma>_HOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
-        using hV\<^sub>\<sigma> geotop_convex_hull_eq_HOL by (by100 simp)
-      show ?thesis using hV\<^sub>\<sigma>_HOL convex_convex_hull by (by100 simp)
-    qed
-    (** conv hull of barycenters ⊆ σ (convex). **)
-    have h_hull_HOL_sub: "convex hull (geotop_barycenter ` set c) \<subseteq> \<sigma>"
-      using h_bary_sub_\<sigma> h\<sigma>_cvx hull_minimal[of "geotop_barycenter ` set c" \<sigma> convex]
-      by (by100 blast)
-    have h\<tau>_hullHOL: "\<tau> = convex hull (geotop_barycenter ` set c)"
-      using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
-    have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>" using h\<tau>_hullHOL h_hull_HOL_sub by (by100 simp)
-    show "\<exists>\<sigma>'\<in>K. \<tau> \<subseteq> \<sigma>'" using h\<sigma>_K h\<tau>_sub_\<sigma> by (by100 blast)
-  qed
-  (** (2a) polyhedron bK = polyhedron K — deferred (requires barycentric decomposition). **)
-  have h_bK_poly: "geotop_polyhedron bK = geotop_polyhedron K"
-    sorry \<comment> \<open>D-step 2a: polyhedron equality (barycentric decomposition of σ ∈ K).\<close>
-  (** Assemble (2a) + (2b) + complex assumptions. **)
-  have h_bK_sub: "geotop_is_subdivision bK K"
-    unfolding geotop_is_subdivision_def
-    using h_bK_complex hK h_bK_poly h_bK_refines by (by100 blast)
-  (** STEP 3: 0-simplices of K are preserved in bK.
-      Proof: for σ = {v} ∈ K with dim 0, the flag [{v}] is a valid 1-element
-      chain. barycenter {v} = v. conv hull {v} = {v} = σ ∈ bK. **)
-  have h_bK_0simp: "\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK"
-  proof (intro allI impI)
-    fix \<sigma> assume h\<sigma>: "geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K"
-    have h\<sigma>_dim: "geotop_simplex_dim \<sigma> 0" using h\<sigma> by (by100 blast)
-    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma> by (by100 blast)
-    (** Extract σ = {v}. **)
-    obtain V m where hVfin: "finite V" and hVcard: "card V = 0 + 1"
-                 and hnm: "0 \<le> m" and hVgp: "geotop_general_position V m"
-                 and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
-      using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
-    have hVcard1: "card V = 1" using hVcard by (by100 simp)
-    have hVsing: "\<exists>v. V = {v}"
-      using hVcard1 card_1_singletonE by (by100 metis)
-    obtain v where hVeq: "V = {v}" using hVsing by (by100 blast)
-    have h\<sigma>_sing: "\<sigma> = {v}"
-      using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
-    (** Flag [σ] = [{v}] is in flags. **)
-    let ?c = "[\<sigma>]"
-    have h_c_ne: "?c \<noteq> []" by (by100 simp)
-    have h_set_c: "set ?c = {\<sigma>}" by (by100 simp)
-    have h_c_subK: "set ?c \<subseteq> K" using h_set_c h\<sigma>_K by (by100 simp)
-    have h_c_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) ?c" by (by100 simp)
-    have h_c_dist: "distinct ?c" by (by100 simp)
-    have h_c_flag: "?c \<in> flags"
-      unfolding flags_def using h_c_ne h_c_subK h_c_sorted h_c_dist by (by100 simp)
-    (** barycenter ` set c = {barycenter σ}. **)
-    have h_bary_img: "geotop_barycenter ` set ?c = {geotop_barycenter \<sigma>}"
-      using h_set_c by (by100 simp)
-    (** barycenter σ = v. Key: for σ = {v}, any V' with conv hull V' = σ must
-        be {v}, so barycenter's weighted average is always v. **)
-    have h_bary_v: "geotop_barycenter \<sigma> = v"
-    proof -
-      have h_sv: "geotop_simplex_vertices \<sigma> V"
-        unfolding geotop_simplex_vertices_def
-        using hVfin hVcard hnm hVgp h\<sigma>_hull by (by100 blast)
-      have h_v_val: "v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
-        using hVeq hVcard1 by (by100 simp)
-      have h_ex: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
-                      v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
-        using h_sv h_v_val by (by100 blast)
-      (** For any V' with simplex_vertices σ V': V' = {v}. **)
-      have h_V'_char: "\<And>V'. geotop_simplex_vertices \<sigma> V' \<Longrightarrow> V' = {v}"
-      proof -
-        fix V' assume hV'_sv: "geotop_simplex_vertices \<sigma> V'"
-        have hV'fin: "finite V'"
-          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
-        have hV'_hull: "\<sigma> = geotop_convex_hull V'"
-          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
-        have hV'_hull_HOL: "\<sigma> = convex hull V'"
-          using hV'_hull geotop_convex_hull_eq_HOL by (by100 simp)
-        have hV'_sing: "convex hull V' = {v}" using hV'_hull_HOL h\<sigma>_sing by (by100 simp)
-        (** V' ⊆ conv hull V' = {v}, and card V' ≥ 1, so V' = {v}. **)
-        have hV'_sub: "V' \<subseteq> convex hull V'" by (rule hull_subset)
-        have hV'_sub_v: "V' \<subseteq> {v}" using hV'_sub hV'_sing by (by100 simp)
-        obtain n' m' where hV'_card_raw: "card V' = n' + 1"
-                       and hV'_fin_raw: "finite V'"
-          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
-        have hV'_card_ge1: "card V' \<ge> 1" using hV'_card_raw by (by100 simp)
-        have hV'_card_le1: "card V' \<le> 1"
-          using hV'_sub_v hV'_fin_raw card_mono[of "{v}" V'] by (by100 simp)
-        have hV'_card1: "card V' = 1" using hV'_card_ge1 hV'_card_le1 by (by100 linarith)
-        have hV'_ne: "V' \<noteq> {}"
-        proof
-          assume "V' = {}"
-          hence "card V' = 0" by (by100 simp)
-          thus False using hV'_card1 by (by100 simp)
-        qed
-        show "V' = {v}" using hV'_sub_v hV'_ne by (by100 blast)
-      qed
-      show ?thesis unfolding geotop_barycenter_def
-      proof (rule someI2[where a = v])
-        show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
-                 v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex)
-      next
-        fix w assume hw: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
-                                w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
-        obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
-                     and hw_val: "w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
-          using hw by (by100 blast)
-        have hV'_eq_v: "V' = {v}" using h_V'_char hV'_sv by (by100 simp)
-        have hw_sum: "w = (\<Sum>x\<in>{v}. (1 / real (card {v})) *\<^sub>R x)"
-          using hw_val hV'_eq_v by (by100 simp)
-        have hw_v: "w = v" using hw_sum by (by100 simp)
-        show "w = v" by (rule hw_v)
-      qed
-    qed
-    (** conv hull {v} = {v} = σ. **)
-    have h_hull_v: "geotop_convex_hull {v} = {v}"
-      using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
-    (** So σ = hull of barycenters of flag c. **)
-    have h_\<sigma>_bK: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set ?c)"
-      using h\<sigma>_sing h_bary_img h_bary_v h_hull_v by (by100 simp)
-    have h_\<sigma>_bK_set: "\<sigma> \<in> bK"
-      unfolding bK_def using h_c_flag h_\<sigma>_bK by (by100 blast)
-    show "\<sigma> \<in> bK" by (rule h_\<sigma>_bK_set)
-  qed
-  (** STEP 4 (combined with STEP 5): dim preservation AND mesh shrinkage.
-      Moise early.tex Lemma 4.11: flag of length ≤ n+1 gives simplex of dim ≤ n.
-      Mesh: bary(σ_0)-to-bary(σ_n) distance ≤ (n/(n+1)) · diam(σ_n) via
-      center-of-mass lemma (distance from centroid to vertex of simplex is
-      at most n/(n+1) times diameter). **)
-  have h_dim_mesh: "\<forall>n::nat.
-        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
-        (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
-        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
-          \<le> (real n / real (Suc n))
-           * geotop_mesh (\<lambda>x y. norm (x - y)) K"
-    sorry \<comment> \<open>D-step 4+5: dim preservation + mesh shrinkage (Moise Lemma 4.11).\<close>
-  (** COMBINE into the barycentric-Sd predicate. **)
-  have h_bary: "geotop_is_barycentric_Sd bK K"
-    unfolding geotop_is_barycentric_Sd_def
-    using h_bK_sub h_bK_0simp h_dim_mesh by (by100 blast)
-  show ?thesis using h_bary by (by100 blast)
-qed
-
-lemma geotop_Sd_is_barycentric:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  shows "geotop_is_barycentric_Sd (geotop_Sd K) K"
-  unfolding geotop_barycentric_subdivision_def
-  using someI_ex[OF geotop_classical_Sd_exists[OF hK]] by (by100 blast)
-
-lemma geotop_Sd_is_subdivision:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  shows "geotop_is_subdivision (geotop_Sd K) K"
-  using geotop_Sd_is_barycentric[OF hK]
-  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
-
-(** The mesh-shrinkage property as a usable helper. **)
-lemma geotop_Sd_mesh_shrinkage:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  assumes hdim: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
-  shows "(\<forall>\<sigma>'\<in>geotop_Sd K. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
-       \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_Sd K)
-         \<le> (real n / real (Suc n))
-          * geotop_mesh (\<lambda>x y. norm (x - y)) K"
-  using geotop_Sd_is_barycentric[OF hK] hdim
-  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
-
-(** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
-lemma geotop_iterated_Sd_is_subdivision:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  shows "geotop_is_subdivision (geotop_iterated_Sd m K) K"
-proof (induction m)
-  case 0
-  show ?case by (simp add: geotop_is_subdivision_refl[OF hK])
-next
-  case (Suc m)
-  (** \<open>Sd^m(K) < K\<close> (IH), hence \<open>Sd^m(K)\<close> is a complex; then \<open>Sd(Sd^m K) < Sd^m K\<close>
-      by \<open>geotop_Sd_is_subdivision\<close>; then \<open>Sd^{Suc m} K < K\<close> by transitivity. **)
-  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
-    using Suc.IH unfolding geotop_is_subdivision_def by (by100 blast)
-  have hSuc_m: "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K)
-                                        (geotop_iterated_Sd m K)"
-    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
-  show ?case
-    by (rule geotop_is_subdivision_trans[OF Suc.IH hSuc_m])
-qed
-
-(** \<open>Sd^{Suc m}(K)\<close> is a subdivision of \<open>Sd^m(K)\<close>. **)
-lemma geotop_iterated_Sd_Suc_refines:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
-proof -
-  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
-    using geotop_iterated_Sd_is_subdivision[OF hK, of m]
-    unfolding geotop_is_subdivision_def by (by100 blast)
-  show ?thesis
-    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
-qed
-
-(** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>.
-    Proof by induction on \<open>N - m\<close> using Suc-step refinement and transitivity. **)
-lemma geotop_iterated_Sd_mono:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  assumes hmN: "m \<le> N"
-  shows "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
-  using hmN
-proof (induction N)
-  case 0
-  (** \<open>m \<le> 0\<close> forces \<open>m = 0\<close>, and any complex is a subdivision of itself. **)
-  have hmzero: "m = 0" using "0.prems" by (by100 simp)
-  have hSdK: "geotop_is_complex (geotop_iterated_Sd 0 K)"
-    using hK by (by100 simp)
-  show ?case
-    using hmzero hSdK geotop_is_subdivision_refl[OF hK]
-    by (by100 simp)
-next
-  case (Suc N)
-  (** Two cases: \<open>m = Suc N\<close> (reflexivity) or \<open>m \<le> N\<close> (IH + Suc_refines + trans). **)
-  show ?case
-  proof (cases "m = Suc N")
-    case True
-    have hcomp: "geotop_is_complex (geotop_iterated_Sd (Suc N) K)"
-      using geotop_iterated_Sd_is_subdivision[OF hK, of "Suc N"]
-      unfolding geotop_is_subdivision_def by (by100 blast)
-    show ?thesis
-      using True hcomp geotop_is_subdivision_refl[OF hcomp]
-      by (by100 simp)
-  next
-    case False
-    have hmN: "m \<le> N" using Suc.prems False by (by100 simp)
-    have hIH: "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
-      using Suc.IH[OF hmN] .
-    have hsuc: "geotop_is_subdivision (geotop_iterated_Sd (Suc N) K)
-                                       (geotop_iterated_Sd N K)"
-      by (rule geotop_iterated_Sd_Suc_refines[OF hK])
-    show ?thesis
-      by (rule geotop_is_subdivision_trans[OF hIH hsuc])
-  qed
-qed
 
 text \<open>The Euclidean topology on a normed vector space, expressed as a topology in
   Top0's set-of-sets formulation, via the distance function \<open>\<lambda>x y. norm (x - y)\<close>.
@@ -3673,6 +3305,412 @@ proof -
   show ?thesis using h_hd_in hc_sub by (by100 blast)
 qed
 
+(** Classical existence of a barycentric subdivision satisfying the full spec.
+    Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction:
+    bK = {conv hull (barycenter ` flag) | flag a chain σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n in K}.
+
+    Detailed proof sketch (CLAUDE.md Phase 3 "more and more detailed formal
+    proof sketches"): scaffold into 5 sub-goals, each representing one of
+    the barycentric_Sd_def conjuncts. Each sub-goal is independently
+    tractable in future sessions. **)
+lemma geotop_classical_Sd_exists:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "\<exists>bK. geotop_is_barycentric_Sd bK K"
+proof -
+  (** CONSTRUCTION: A flag in K is a non-empty strictly-increasing chain
+      of K-simplices [σ_0, σ_1, ..., σ_n] with σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n.
+      bK = set of convex hulls of barycenter sets of all such flags. **)
+  define flags :: "'a set list set" where
+    "flags = {c. c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+  define bK :: "'a set set" where
+    "bK = {geotop_convex_hull (geotop_barycenter ` set c) | c. c \<in> flags}"
+  (** STEP 1: bK is a simplicial complex (K.0, K.1, K.2, K.3 axioms).
+      Scaffold per CLAUDE.md Phase 3 — split into 4 sub-goals, each
+      independently tractable with the D-support helper stack. **)
+  (** STEP 1.0 (K.0): Each σ ∈ bK is a simplex.
+      Proof: σ = conv hull (barycenter ` set c). By flag_barycenter_card,
+      |barycenter ` set c| = length c. Barycenters of a chain are affinely
+      independent (classical Moise argument). General position then holds. **)
+  (** Local flag set equals the defined geotop_flags K (identical body). **)
+  have h_flags_eq_geotop: "flags = geotop_flags K"
+    unfolding flags_def geotop_flags_def by (by100 simp)
+  have h_bK_K0: "\<forall>\<sigma>\<in>bK. geotop_is_simplex \<sigma>"
+  proof (rule ballI)
+    fix \<sigma> assume h\<sigma>_bK: "\<sigma> \<in> bK"
+    obtain c where hc_flag: "c \<in> flags"
+               and h\<sigma>_hull: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<sigma>_bK unfolding bK_def by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_dist: "distinct c" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_geotop: "c \<in> geotop_flags K" using hc_flag h_flags_eq_geotop by (by100 simp)
+    (** V = bary ` set c has card = length c. **)
+    define V :: "'a set" where "V = geotop_barycenter ` set c"
+    have hV_card: "card V = length c"
+      unfolding V_def
+      by (rule geotop_complex_flag_barycenter_card[OF hK hc_subK hc_dist])
+    have hV_fin: "finite V" unfolding V_def by (by100 simp)
+    have h_len_pos: "length c \<ge> 1"
+    proof -
+      have h_pos: "length c > 0" using hc_ne by (by100 simp)
+      show ?thesis using h_pos by (by100 linarith)
+    qed
+    define n where "n = length c - 1"
+    have hV_card_n: "card V = n + 1" unfolding n_def using hV_card h_len_pos by (by100 simp)
+    (** V is affinely independent (D1.0 core). **)
+    have hV_ai: "\<not> affine_dependent V"
+      unfolding V_def
+      by (rule geotop_complex_flag_barycenter_affine_independent[OF hK hc_geotop])
+    (** Hence V is in general position. **)
+    have hV_gp: "geotop_general_position V n"
+      by (rule geotop_ai_imp_general_position[OF hV_fin hV_card_n hV_ai])
+    (** σ = conv hull V. Assemble simplex_dim. **)
+    have h\<sigma>_hull_V: "\<sigma> = geotop_convex_hull V" unfolding V_def using h\<sigma>_hull by (by100 simp)
+    have h_nn: "n \<le> n" by (by100 simp)
+    show "geotop_is_simplex \<sigma>"
+      unfolding geotop_is_simplex_def
+      using hV_fin hV_card_n h_nn hV_gp h\<sigma>_hull_V by (by100 blast)
+  qed
+  (** STEP 1.1 (K.1): bK is face-closed.
+      Proof: a HOL face of σ = conv hull (bary image of c) corresponds to
+      a sub-flag c' ⊆ c (continuous sub-sequence), giving another bK simplex. **)
+  have h_bK_K1: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> bK"
+    sorry \<comment> \<open>D-step 1.1: K.1 (face closure) via sub-flag correspondence.\<close>
+  (** STEP 1.2 (K.2): intersection of two bK-simplices is a face of both.
+      Proof: σ_1, σ_2 ∈ bK correspond to flags c_1, c_2. σ_1 ∩ σ_2 = conv
+      hull of common vertex subset, which corresponds to a sub-flag of both. **)
+  have h_bK_K2: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>\<in>bK. \<sigma> \<inter> \<tau> \<noteq> {}
+                \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry \<comment> \<open>D-step 1.2: K.2 (intersection-face) via common sub-flag.\<close>
+  (** STEP 1.3 (K.3): local finiteness.
+      Proof: for σ' ∈ bK, σ' ⊆ top(c_flag) = σ ∈ K. K.3 of K gives U ⊇ σ
+      with finite {τ ∈ K. τ ∩ U ≠ {}}. Each bK-simplex τ' near U has
+      top(τ'_flag) ∈ this finite set, and each simplex has finitely many
+      faces (2^|V|-1), bounding the flags ending at it. **)
+  have h_bK_K3: "\<forall>\<sigma>\<in>bK. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>bK. \<tau> \<inter> U \<noteq> {}}"
+    sorry \<comment> \<open>D-step 1.3: K.3 (local finiteness) via K.3-of-K + finite face count.\<close>
+  (** Assemble K.0–K.3 into complex predicate. **)
+  have h_bK_complex: "geotop_is_complex bK"
+    unfolding geotop_is_complex_def
+    using h_bK_K0 h_bK_K1 h_bK_K2 h_bK_K3 by (by100 blast)
+  (** STEP 2: bK is a subdivision of K (same polyhedron, each bK simplex ⊆ some K simplex).
+      Split into: (2a) polyhedron eq, (2b) refines. Refines provable via
+      geotop_barycenter_in_simplex + sorted_wrt structure; polyhedron eq
+      needs barycentric decomposition (deferred). **)
+  have h_K_simp_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  (** (2b) refines bK K: each τ ∈ bK sits inside the TOP simplex of its flag. **)
+  have h_bK_refines: "geotop_refines bK K"
+    unfolding geotop_refines_def
+  proof (rule ballI)
+    fix \<tau> assume h\<tau>_bK: "\<tau> \<in> bK"
+    obtain c where hc_flag: "c \<in> flags"
+                and h\<tau>_hull: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
+      using h\<tau>_bK unfolding bK_def by (by100 blast)
+    have hc_ne: "c \<noteq> []" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_subK: "set c \<subseteq> K" using hc_flag unfolding flags_def by (by100 blast)
+    have hc_sorted: "sorted_wrt (\<lambda>\<sigma>\<^sub>1 \<sigma>\<^sub>2. \<sigma>\<^sub>1 \<subset> \<sigma>\<^sub>2) c"
+      using hc_flag unfolding flags_def by (by100 blast)
+    (** σ = last c ∈ K. **)
+    define \<sigma> :: "'a set" where "\<sigma> = last c"
+    have h\<sigma>_in_c: "\<sigma> \<in> set c" unfolding \<sigma>_def using hc_ne by (by100 simp)
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_in_c hc_subK by (by100 blast)
+    (** Every element s ∈ set c satisfies s ⊆ σ (last c). **)
+    have h_all_sub: "\<forall>s\<in>set c. s \<subseteq> \<sigma>"
+    proof
+      fix s assume hs_c: "s \<in> set c"
+      show "s \<subseteq> \<sigma>"
+      proof (cases "s = \<sigma>")
+        case True thus ?thesis by (by100 simp)
+      next
+        case h_ne: False
+        (** s ≠ last c; sorted gives s ⊊ last c. **)
+        have hs_lt: "s \<subset> \<sigma>"
+        proof -
+          have h_append: "butlast c @ [last c] = c" using hc_ne by (rule append_butlast_last_id)
+          have h_set_eq: "set c = set (butlast c) \<union> {last c}"
+          proof -
+            have "set c = set (butlast c @ [last c])" using h_append by (by100 simp)
+            also have "\<dots> = set (butlast c) \<union> set [last c]" by (by100 simp)
+            also have "\<dots> = set (butlast c) \<union> {last c}" by (by100 simp)
+            finally show ?thesis .
+          qed
+          have hs_in_split: "s \<in> set (butlast c) \<or> s = last c"
+            using hs_c h_set_eq by (by100 blast)
+          have hs_butlast: "s \<in> set (butlast c)" using hs_in_split h_ne unfolding \<sigma>_def by (by100 blast)
+          have h_last_in: "last c \<in> set c" using hc_ne last_in_set by (by100 blast)
+          (** Apply sorted_wrt: for s ∈ butlast, last follows s. **)
+          have h_sw_split: "sorted_wrt (\<subset>) (butlast c @ [last c])"
+            using hc_sorted h_append by (by100 simp)
+          have h_sw_split_expand: "sorted_wrt (\<subset>) (butlast c)
+                \<and> sorted_wrt (\<subset>) [last c]
+                \<and> (\<forall>x\<in>set (butlast c). \<forall>y\<in>set [last c]. x \<subset> y)"
+            using h_sw_split sorted_wrt_append[of "(\<subset>)" "butlast c" "[last c]"]
+            by (by100 blast)
+          have h_sw_aux: "\<forall>x\<in>set (butlast c). x \<subset> last c"
+            using h_sw_split_expand by (by100 simp)
+          show ?thesis using h_sw_aux hs_butlast unfolding \<sigma>_def by (by100 blast)
+        qed
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+    (** Each barycenter is in its simplex ⊆ σ. **)
+    have h_bary_sub_\<sigma>: "geotop_barycenter ` set c \<subseteq> \<sigma>"
+    proof
+      fix b assume hb: "b \<in> geotop_barycenter ` set c"
+      obtain s where hs_c: "s \<in> set c" and hb_eq: "b = geotop_barycenter s"
+        using hb by (by100 blast)
+      have hs_K: "s \<in> K" using hs_c hc_subK by (by100 blast)
+      have hs_simp: "geotop_is_simplex s" using hs_K h_K_simp_all by (by100 blast)
+      have hb_in_s: "b \<in> s" using hb_eq geotop_barycenter_in_simplex[OF hs_simp] by (by100 simp)
+      have hs_sub_\<sigma>: "s \<subseteq> \<sigma>" using hs_c h_all_sub by (by100 blast)
+      show "b \<in> \<sigma>" using hb_in_s hs_sub_\<sigma> by (by100 blast)
+    qed
+    (** σ is convex (simplex = conv hull). **)
+    have h\<sigma>_cvx: "convex \<sigma>"
+    proof -
+      obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+        using h\<sigma>_K h_K_simp_all unfolding geotop_is_simplex_def by (by100 blast)
+      have hV\<^sub>\<sigma>_HOL: "\<sigma> = convex hull V\<^sub>\<sigma>"
+        using hV\<^sub>\<sigma> geotop_convex_hull_eq_HOL by (by100 simp)
+      show ?thesis using hV\<^sub>\<sigma>_HOL convex_convex_hull by (by100 simp)
+    qed
+    (** conv hull of barycenters ⊆ σ (convex). **)
+    have h_hull_HOL_sub: "convex hull (geotop_barycenter ` set c) \<subseteq> \<sigma>"
+      using h_bary_sub_\<sigma> h\<sigma>_cvx hull_minimal[of "geotop_barycenter ` set c" \<sigma> convex]
+      by (by100 blast)
+    have h\<tau>_hullHOL: "\<tau> = convex hull (geotop_barycenter ` set c)"
+      using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have h\<tau>_sub_\<sigma>: "\<tau> \<subseteq> \<sigma>" using h\<tau>_hullHOL h_hull_HOL_sub by (by100 simp)
+    show "\<exists>\<sigma>'\<in>K. \<tau> \<subseteq> \<sigma>'" using h\<sigma>_K h\<tau>_sub_\<sigma> by (by100 blast)
+  qed
+  (** (2a) polyhedron bK = polyhedron K — deferred (requires barycentric decomposition). **)
+  have h_bK_poly: "geotop_polyhedron bK = geotop_polyhedron K"
+    sorry \<comment> \<open>D-step 2a: polyhedron equality (barycentric decomposition of σ ∈ K).\<close>
+  (** Assemble (2a) + (2b) + complex assumptions. **)
+  have h_bK_sub: "geotop_is_subdivision bK K"
+    unfolding geotop_is_subdivision_def
+    using h_bK_complex hK h_bK_poly h_bK_refines by (by100 blast)
+  (** STEP 3: 0-simplices of K are preserved in bK.
+      Proof: for σ = {v} ∈ K with dim 0, the flag [{v}] is a valid 1-element
+      chain. barycenter {v} = v. conv hull {v} = {v} = σ ∈ bK. **)
+  have h_bK_0simp: "\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK"
+  proof (intro allI impI)
+    fix \<sigma> assume h\<sigma>: "geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K"
+    have h\<sigma>_dim: "geotop_simplex_dim \<sigma> 0" using h\<sigma> by (by100 blast)
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma> by (by100 blast)
+    (** Extract σ = {v}. **)
+    obtain V m where hVfin: "finite V" and hVcard: "card V = 0 + 1"
+                 and hnm: "0 \<le> m" and hVgp: "geotop_general_position V m"
+                 and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+    have hVcard1: "card V = 1" using hVcard by (by100 simp)
+    have hVsing: "\<exists>v. V = {v}"
+      using hVcard1 card_1_singletonE by (by100 metis)
+    obtain v where hVeq: "V = {v}" using hVsing by (by100 blast)
+    have h\<sigma>_sing: "\<sigma> = {v}"
+      using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    (** Flag [σ] = [{v}] is in flags. **)
+    let ?c = "[\<sigma>]"
+    have h_c_ne: "?c \<noteq> []" by (by100 simp)
+    have h_set_c: "set ?c = {\<sigma>}" by (by100 simp)
+    have h_c_subK: "set ?c \<subseteq> K" using h_set_c h\<sigma>_K by (by100 simp)
+    have h_c_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) ?c" by (by100 simp)
+    have h_c_dist: "distinct ?c" by (by100 simp)
+    have h_c_flag: "?c \<in> flags"
+      unfolding flags_def using h_c_ne h_c_subK h_c_sorted h_c_dist by (by100 simp)
+    (** barycenter ` set c = {barycenter σ}. **)
+    have h_bary_img: "geotop_barycenter ` set ?c = {geotop_barycenter \<sigma>}"
+      using h_set_c by (by100 simp)
+    (** barycenter σ = v. Key: for σ = {v}, any V' with conv hull V' = σ must
+        be {v}, so barycenter's weighted average is always v. **)
+    have h_bary_v: "geotop_barycenter \<sigma> = v"
+    proof -
+      have h_sv: "geotop_simplex_vertices \<sigma> V"
+        unfolding geotop_simplex_vertices_def
+        using hVfin hVcard hnm hVgp h\<sigma>_hull by (by100 blast)
+      have h_v_val: "v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+        using hVeq hVcard1 by (by100 simp)
+      have h_ex: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                      v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+        using h_sv h_v_val by (by100 blast)
+      (** For any V' with simplex_vertices σ V': V' = {v}. **)
+      have h_V'_char: "\<And>V'. geotop_simplex_vertices \<sigma> V' \<Longrightarrow> V' = {v}"
+      proof -
+        fix V' assume hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+        have hV'fin: "finite V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_hull: "\<sigma> = geotop_convex_hull V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_hull_HOL: "\<sigma> = convex hull V'"
+          using hV'_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have hV'_sing: "convex hull V' = {v}" using hV'_hull_HOL h\<sigma>_sing by (by100 simp)
+        (** V' ⊆ conv hull V' = {v}, and card V' ≥ 1, so V' = {v}. **)
+        have hV'_sub: "V' \<subseteq> convex hull V'" by (rule hull_subset)
+        have hV'_sub_v: "V' \<subseteq> {v}" using hV'_sub hV'_sing by (by100 simp)
+        obtain n' m' where hV'_card_raw: "card V' = n' + 1"
+                       and hV'_fin_raw: "finite V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_card_ge1: "card V' \<ge> 1" using hV'_card_raw by (by100 simp)
+        have hV'_card_le1: "card V' \<le> 1"
+          using hV'_sub_v hV'_fin_raw card_mono[of "{v}" V'] by (by100 simp)
+        have hV'_card1: "card V' = 1" using hV'_card_ge1 hV'_card_le1 by (by100 linarith)
+        have hV'_ne: "V' \<noteq> {}"
+        proof
+          assume "V' = {}"
+          hence "card V' = 0" by (by100 simp)
+          thus False using hV'_card1 by (by100 simp)
+        qed
+        show "V' = {v}" using hV'_sub_v hV'_ne by (by100 blast)
+      qed
+      show ?thesis unfolding geotop_barycenter_def
+      proof (rule someI2[where a = v])
+        show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                 v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex)
+      next
+        fix w assume hw: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                                w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
+        obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                     and hw_val: "w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
+          using hw by (by100 blast)
+        have hV'_eq_v: "V' = {v}" using h_V'_char hV'_sv by (by100 simp)
+        have hw_sum: "w = (\<Sum>x\<in>{v}. (1 / real (card {v})) *\<^sub>R x)"
+          using hw_val hV'_eq_v by (by100 simp)
+        have hw_v: "w = v" using hw_sum by (by100 simp)
+        show "w = v" by (rule hw_v)
+      qed
+    qed
+    (** conv hull {v} = {v} = σ. **)
+    have h_hull_v: "geotop_convex_hull {v} = {v}"
+      using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    (** So σ = hull of barycenters of flag c. **)
+    have h_\<sigma>_bK: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set ?c)"
+      using h\<sigma>_sing h_bary_img h_bary_v h_hull_v by (by100 simp)
+    have h_\<sigma>_bK_set: "\<sigma> \<in> bK"
+      unfolding bK_def using h_c_flag h_\<sigma>_bK by (by100 blast)
+    show "\<sigma> \<in> bK" by (rule h_\<sigma>_bK_set)
+  qed
+  (** STEP 4 (combined with STEP 5): dim preservation AND mesh shrinkage.
+      Moise early.tex Lemma 4.11: flag of length ≤ n+1 gives simplex of dim ≤ n.
+      Mesh: bary(σ_0)-to-bary(σ_n) distance ≤ (n/(n+1)) · diam(σ_n) via
+      center-of-mass lemma (distance from centroid to vertex of simplex is
+      at most n/(n+1) times diameter). **)
+  have h_dim_mesh: "\<forall>n::nat.
+        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+        (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
+          \<le> (real n / real (Suc n))
+           * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    sorry \<comment> \<open>D-step 4+5: dim preservation + mesh shrinkage (Moise Lemma 4.11).\<close>
+  (** COMBINE into the barycentric-Sd predicate. **)
+  have h_bary: "geotop_is_barycentric_Sd bK K"
+    unfolding geotop_is_barycentric_Sd_def
+    using h_bK_sub h_bK_0simp h_dim_mesh by (by100 blast)
+  show ?thesis using h_bary by (by100 blast)
+qed
+
+lemma geotop_Sd_is_barycentric:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_barycentric_Sd (geotop_Sd K) K"
+  unfolding geotop_barycentric_subdivision_def
+  using someI_ex[OF geotop_classical_Sd_exists[OF hK]] by (by100 blast)
+
+lemma geotop_Sd_is_subdivision:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_Sd K) K"
+  using geotop_Sd_is_barycentric[OF hK]
+  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
+
+(** The mesh-shrinkage property as a usable helper. **)
+lemma geotop_Sd_mesh_shrinkage:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hdim: "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n"
+  shows "(\<forall>\<sigma>'\<in>geotop_Sd K. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+       \<and> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_Sd K)
+         \<le> (real n / real (Suc n))
+          * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+  using geotop_Sd_is_barycentric[OF hK] hdim
+  unfolding geotop_is_barycentric_Sd_def by (by100 blast)
+
+(** \<open>Sd^m(K)\<close> is a subdivision of \<open>K\<close> (induction on \<open>m\<close>). **)
+lemma geotop_iterated_Sd_is_subdivision:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+proof (induction m)
+  case 0
+  show ?case by (simp add: geotop_is_subdivision_refl[OF hK])
+next
+  case (Suc m)
+  (** \<open>Sd^m(K) < K\<close> (IH), hence \<open>Sd^m(K)\<close> is a complex; then \<open>Sd(Sd^m K) < Sd^m K\<close>
+      by \<open>geotop_Sd_is_subdivision\<close>; then \<open>Sd^{Suc m} K < K\<close> by transitivity. **)
+  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using Suc.IH unfolding geotop_is_subdivision_def by (by100 blast)
+  have hSuc_m: "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K)
+                                        (geotop_iterated_Sd m K)"
+    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
+  show ?case
+    by (rule geotop_is_subdivision_trans[OF Suc.IH hSuc_m])
+qed
+
+(** \<open>Sd^{Suc m}(K)\<close> is a subdivision of \<open>Sd^m(K)\<close>. **)
+lemma geotop_iterated_Sd_Suc_refines:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_subdivision (geotop_iterated_Sd (Suc m) K) (geotop_iterated_Sd m K)"
+proof -
+  have hSdm_comp: "geotop_is_complex (geotop_iterated_Sd m K)"
+    using geotop_iterated_Sd_is_subdivision[OF hK, of m]
+    unfolding geotop_is_subdivision_def by (by100 blast)
+  show ?thesis
+    by (simp add: geotop_Sd_is_subdivision[OF hSdm_comp])
+qed
+
+(** Monotonicity: \<open>Sd^N(K)\<close> is a subdivision of \<open>Sd^m(K)\<close> whenever \<open>N \<ge> m\<close>.
+    Proof by induction on \<open>N - m\<close> using Suc-step refinement and transitivity. **)
+lemma geotop_iterated_Sd_mono:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hmN: "m \<le> N"
+  shows "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
+  using hmN
+proof (induction N)
+  case 0
+  (** \<open>m \<le> 0\<close> forces \<open>m = 0\<close>, and any complex is a subdivision of itself. **)
+  have hmzero: "m = 0" using "0.prems" by (by100 simp)
+  have hSdK: "geotop_is_complex (geotop_iterated_Sd 0 K)"
+    using hK by (by100 simp)
+  show ?case
+    using hmzero hSdK geotop_is_subdivision_refl[OF hK]
+    by (by100 simp)
+next
+  case (Suc N)
+  (** Two cases: \<open>m = Suc N\<close> (reflexivity) or \<open>m \<le> N\<close> (IH + Suc_refines + trans). **)
+  show ?case
+  proof (cases "m = Suc N")
+    case True
+    have hcomp: "geotop_is_complex (geotop_iterated_Sd (Suc N) K)"
+      using geotop_iterated_Sd_is_subdivision[OF hK, of "Suc N"]
+      unfolding geotop_is_subdivision_def by (by100 blast)
+    show ?thesis
+      using True hcomp geotop_is_subdivision_refl[OF hcomp]
+      by (by100 simp)
+  next
+    case False
+    have hmN: "m \<le> N" using Suc.prems False by (by100 simp)
+    have hIH: "geotop_is_subdivision (geotop_iterated_Sd N K) (geotop_iterated_Sd m K)"
+      using Suc.IH[OF hmN] .
+    have hsuc: "geotop_is_subdivision (geotop_iterated_Sd (Suc N) K)
+                                       (geotop_iterated_Sd N K)"
+      by (rule geotop_iterated_Sd_Suc_refines[OF hK])
+    show ?thesis
+      by (rule geotop_is_subdivision_trans[OF hIH hsuc])
+  qed
+qed
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
