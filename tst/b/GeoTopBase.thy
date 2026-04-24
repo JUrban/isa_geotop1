@@ -12051,11 +12051,13 @@ next
   have hB'_geotop_arc: "geotop_is_arc ?B' (subspace_topology UNIV geotop_euclidean_topology ?B')"
     by (rule geotop_HOL_arc_imp_geotop_is_arc[OF hsub_arc])
   (** (8) Polyhedral side: ?B' is the polyhedron of a sub-complex of B's
-          witnessing complex (classical PL). Deferred. **)
+          witnessing complex (classical PL). Closed via geotop_subarc_polyhedron. **)
+  have hB'_poly_im: "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = \<gamma> ` closed_segment s_lo s_hi
+                       \<and> geotop_complex_is_1dim K'"
+    by (rule geotop_subarc_polyhedron[OF hB harc hpim hs_lo_range hs_hi_range hs_lt])
   have hB'_poly: "\<exists>K'. geotop_is_complex K' \<and> geotop_polyhedron K' = ?B'
                      \<and> geotop_complex_is_1dim K'"
-    sorry \<comment> \<open>Classical PL: sub-arc of a 1-complex polyhedron is polyhedron of
-              a 1-dim sub-complex (after edge subdivision at X, Y if interior to edges).\<close>
+    using hB'_poly_im hpim_eq by (by100 simp)
   have hB'_broken: "geotop_is_broken_line ?B'"
     unfolding geotop_is_broken_line_def using hB'_poly hB'_geotop_arc by (by100 blast)
   (** (9) Construct the pathstart-X, pathfinish-Y arc parametrisation. **)
