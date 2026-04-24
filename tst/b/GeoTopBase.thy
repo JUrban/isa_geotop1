@@ -11546,6 +11546,122 @@ proof -
   qed
 qed
 
+(** Phase 1.A: for σ ∈ K a 1-simplex (closed_segment a b, a ≠ b) with
+    K 1-dim and polyhedron K = path_image γ (γ arc), the preimage of σ
+    under γ is a closed interval [p, q] such that γ p, γ q are exactly
+    the vertices {a, b} of σ. Composes preimage_simplex_is_interval
+    with homeomorphism_segment_endpoints. **)
+lemma geotop_arc_1simplex_preimage_structure:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  fixes K :: "'a set set"
+  fixes \<sigma> :: "'a set" and a b :: 'a
+  assumes harc: "arc \<gamma>"
+  assumes hK1dim: "geotop_complex_is_1dim K"
+  assumes hKpoly: "geotop_polyhedron K = path_image \<gamma>"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>ab: "\<sigma> = closed_segment a b" and hab: "a \<noteq> b"
+  shows "\<exists>p q. p \<le> q \<and> p \<in> {0..1} \<and> q \<in> {0..1}
+           \<and> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>} = {p..q}
+           \<and> {\<gamma> p, \<gamma> q} = {a, b}"
+proof -
+  let ?I = "{s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
+  have h_cont_\<gamma>: "continuous_on {0..1} \<gamma>"
+    using harc unfolding arc_def path_def by (by100 blast)
+  have h_inj_\<gamma>: "inj_on \<gamma> {0..1}"
+    using harc unfolding arc_def by (by100 blast)
+  have h_pre_int: "is_interval ?I"
+    by (rule geotop_arc_preimage_simplex_is_interval[OF harc hK1dim hKpoly h\<sigma>K])
+  have h_a_\<sigma>: "a \<in> \<sigma>" using h\<sigma>ab by (by100 simp)
+  have h\<sigma>_sub_pim: "\<sigma> \<subseteq> path_image \<gamma>"
+    using h\<sigma>K hKpoly unfolding geotop_polyhedron_def by (by100 blast)
+  have h_a_pim: "a \<in> path_image \<gamma>" using h_a_\<sigma> h\<sigma>_sub_pim by (by100 blast)
+  obtain sa where hsa_01: "sa \<in> {0..1}" and hsa_eq: "\<gamma> sa = a"
+    using h_a_pim unfolding path_image_def by (by100 blast)
+  have hsa_I: "sa \<in> ?I" using hsa_01 hsa_eq h_a_\<sigma> by (by100 simp)
+  have h_I_ne: "?I \<noteq> {}" using hsa_I by (by100 blast)
+  have h_I_sub_01: "?I \<subseteq> {0..1}" by (by100 blast)
+  have h_\<sigma>_closed: "closed \<sigma>" using h\<sigma>ab by (by100 simp)
+  have h_I_closed: "closed ?I"
+  proof -
+    have h_eq: "?I = \<gamma> -` \<sigma> \<inter> {0..1}" by (by100 blast)
+    have h_01_closed: "closed ({0..1}::real set)" by (by100 simp)
+    have h_cl: "closed (\<gamma> -` \<sigma> \<inter> {0..1})"
+      using continuous_on_closed_vimage[OF h_01_closed] h_cont_\<gamma> h_\<sigma>_closed by (by100 blast)
+    show ?thesis using h_eq h_cl by (by100 simp)
+  qed
+  have h_I_bd: "bounded ?I"
+    using h_I_sub_01 bounded_closed_interval bounded_subset by (by100 blast)
+  have h_I_bdd_below: "bdd_below ?I" by (rule bounded_imp_bdd_below[OF h_I_bd])
+  have h_I_bdd_above: "bdd_above ?I" by (rule bounded_imp_bdd_above[OF h_I_bd])
+  define p where "p = Inf ?I"
+  define q where "q = Sup ?I"
+  have hp_min: "p \<in> ?I"
+    unfolding p_def by (rule closed_contains_Inf[OF h_I_ne h_I_bdd_below h_I_closed])
+  have hq_max: "q \<in> ?I"
+    unfolding q_def by (rule closed_contains_Sup[OF h_I_ne h_I_bdd_above h_I_closed])
+  have hp_le: "\<forall>y\<in>?I. p \<le> y"
+  proof
+    fix y assume hy: "y \<in> ?I"
+    show "p \<le> y" unfolding p_def by (rule cInf_lower[OF hy h_I_bdd_below])
+  qed
+  have hq_ge: "\<forall>y\<in>?I. y \<le> q"
+  proof
+    fix y assume hy: "y \<in> ?I"
+    show "y \<le> q" unfolding q_def by (rule cSup_upper[OF hy h_I_bdd_above])
+  qed
+  have h_p_le_q: "p \<le> q" using hp_min hq_ge by (by100 blast)
+  have hp_01: "p \<in> {0..1}" using hp_min by (by100 simp)
+  have hq_01: "q \<in> {0..1}" using hq_max by (by100 simp)
+  have h_I_sub_pq: "?I \<subseteq> {p..q}"
+  proof
+    fix y assume hy: "y \<in> ?I"
+    have h1: "p \<le> y" using hp_le hy by (by100 blast)
+    have h2: "y \<le> q" using hq_ge hy by (by100 blast)
+    show "y \<in> {p..q}" using h1 h2 by (by100 simp)
+  qed
+  have h_pq_sub_I: "{p..q} \<subseteq> ?I"
+  proof
+    fix s assume hs: "s \<in> {p..q}"
+    have h_s_ge: "p \<le> s" using hs by (by100 simp)
+    have h_s_le: "s \<le> q" using hs by (by100 simp)
+    show "s \<in> ?I" using h_pre_int hp_min hq_max h_s_ge h_s_le
+      unfolding is_interval_1 by (by100 blast)
+  qed
+  have h_I_eq: "?I = {p..q}" using h_I_sub_pq h_pq_sub_I by (by100 blast)
+  (** γ on {p..q} is cts inj with image σ. **)
+  have h_pq_sub_01: "{p..q} \<subseteq> {0..1}" using h_I_eq h_I_sub_01 by (by100 simp)
+  have h_cont_pq: "continuous_on {p..q} \<gamma>"
+    using h_cont_\<gamma> h_pq_sub_01 continuous_on_subset by (by100 blast)
+  have h_inj_pq: "inj_on \<gamma> {p..q}"
+    using h_inj_\<gamma> h_pq_sub_01 inj_on_subset by (by100 blast)
+  have h_\<gamma>_pq_eq_\<sigma>: "\<gamma> ` {p..q} = \<sigma>"
+  proof
+    show "\<gamma> ` {p..q} \<subseteq> \<sigma>"
+    proof
+      fix y assume "y \<in> \<gamma> ` {p..q}"
+      then obtain s where hs: "s \<in> {p..q}" and hy: "y = \<gamma> s" by (by100 blast)
+      have hs_I: "s \<in> ?I" using hs h_I_eq by (by100 simp)
+      show "y \<in> \<sigma>" using hs_I hy by (by100 simp)
+    qed
+    show "\<sigma> \<subseteq> \<gamma> ` {p..q}"
+    proof
+      fix y assume hy: "y \<in> \<sigma>"
+      have h_y_pim: "y \<in> path_image \<gamma>" using hy h\<sigma>_sub_pim by (by100 blast)
+      obtain s where hs_01: "s \<in> {0..1}" and hs_y: "y = \<gamma> s"
+        using h_y_pim unfolding path_image_def by (by100 blast)
+      have hs_in_I: "s \<in> ?I" using hs_01 hs_y hy by (by100 simp)
+      have hs_pq: "s \<in> {p..q}" using hs_in_I h_I_eq by (by100 simp)
+      show "y \<in> \<gamma> ` {p..q}" using hs_pq hs_y by (by100 blast)
+    qed
+  qed
+  (** Apply endpoint helper. **)
+  have h_\<gamma>_img_ab: "\<gamma> ` {p..q} = closed_segment a b" using h_\<gamma>_pq_eq_\<sigma> h\<sigma>ab by (by100 simp)
+  have h_endpoints: "{\<gamma> p, \<gamma> q} = {a, b}"
+    by (rule geotop_homeomorphism_segment_endpoints
+             [OF h_p_le_q hab h_cont_pq h_inj_pq h_\<gamma>_img_ab])
+  show ?thesis using h_p_le_q hp_01 hq_01 h_I_eq h_endpoints by (by100 blast)
+qed
+
 (** PL Helper 1: a sub-arc of a broken line between any two of its points
     is again a broken line. Proof: the arc parametrisation of \<open>B\<close> is a
     homeomorphism from \<open>[0,1]\<close> onto \<open>B\<close>, so the sub-arc is the image of a
