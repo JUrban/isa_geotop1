@@ -2941,6 +2941,42 @@ proof -
   show ?thesis using h_card_img h_card_set by (by100 simp)
 qed
 
+(** D-support: a simplex has finitely many combinatorial faces.
+    Proof: faces = {conv hull W | W ⊆ V, W ≠ ∅} where V = simplex_vertices.
+    V is finite, so Pow V is finite, so faces are finite. Needed for D1.3. **)
+lemma geotop_simplex_faces_finite:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  shows "finite {\<tau>. geotop_is_face \<tau> \<sigma>}"
+proof -
+  (** Get V, the unique vertex set. **)
+  obtain V where hV_sv: "geotop_simplex_vertices \<sigma> V"
+    using h\<sigma> unfolding geotop_is_simplex_def geotop_simplex_vertices_def by (by100 blast)
+  have hV_fin: "finite V"
+    using hV_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  (** For any face τ, τ = conv hull W with W ⊆ V. Collect as image of Pow V. **)
+  have h_face_img: "{\<tau>. geotop_is_face \<tau> \<sigma>}
+                   \<subseteq> (\<lambda>W. geotop_convex_hull W) ` (Pow V - {{}})"
+  proof
+    fix \<tau> assume h\<tau>_face: "\<tau> \<in> {\<tau>. geotop_is_face \<tau> \<sigma>}"
+    have h_face: "geotop_is_face \<tau> \<sigma>" using h\<tau>_face by (by100 simp)
+    obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                  and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                  and h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+      using h_face unfolding geotop_is_face_def by (by100 blast)
+    have hV'_eq: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF hV'_sv hV_sv])
+    have hW_V: "W \<subseteq> V" using hW_V' hV'_eq by (by100 simp)
+    have hW_Pow: "W \<in> Pow V - {{}}" using hW_V hW_ne by (by100 blast)
+    show "\<tau> \<in> (\<lambda>W. geotop_convex_hull W) ` (Pow V - {{}})"
+      using h\<tau>_hull hW_Pow by (by100 blast)
+  qed
+  have h_pow_fin: "finite (Pow V - {{}})" using hV_fin by (by100 simp)
+  have h_img_fin: "finite ((\<lambda>W. geotop_convex_hull W) ` (Pow V - {{}}))"
+    using h_pow_fin by (by100 simp)
+  show ?thesis using finite_subset[OF h_face_img h_img_fin] by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
