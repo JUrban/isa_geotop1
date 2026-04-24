@@ -490,6 +490,22 @@ provable via careful geometric bounds but still substantive.
 need to be tackled together, using Sd-based star cover for the
 Lebesgue argument. ~250 total lines (D + E tightly coupled).
 
+## 2026-04-24 continued: D scaffold + D step 3 closed
+
+D (`classical_Sd_exists`) scaffolded into 3 sub-sorries per CLAUDE.md
+Phase 3 directive:
+- **D step 1**: bK is a complex (K.0/1/2/3 via flag simplex structure).
+- **D step 2**: bK subdivides K (polyhedron eq + refines).
+- **D step 3**: 0-simplices preserved — **FULLY PROVED** via singleton-flag
+  barycenter computation (~60 lines). Key: for σ = {v} ∈ K, the
+  1-element flag [{v}] gives barycenter v, hull {v} = σ ∈ bK.
+- **D step 4+5**: dim preservation + mesh shrinkage (Moise Lemma 4.11).
+
+Current sorries: 8 grep / 5 real content (D1, D2, D4+5, E, F).
+Net change from scaffold: +2 (1 D sorry → 3 D sub-sorries, then D3 closed).
+Structural progress: D's proof scaffold is visible and each step is
+independently tractable.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
