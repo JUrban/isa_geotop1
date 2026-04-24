@@ -979,3 +979,28 @@ Key results formally proven:
 - h_poly_sup (scaffolded, core classical fact remains)
 
 Build stable: 8s cached, ~46s fresh.
+
+## Session progress 2026-04-24 (continuation 9)
+
+### dim-0 case of h_simp_in_bK FULLY PROVED
+
+Added infrastructure helper `geotop_bK_covers_0_simplex_helper`:
+for {v} in K, the 1-element flag [{v}] is a valid flag with chain-simplex
+equal to {v}.
+
+Used this helper to close the dim-0 case of h_simp_in_bK via simplex_vertices
+extraction + singleton characterization + bK definition.
+
+Dim > 0 case remains as targeted sorry (classical barycentric decomposition).
+
+### Current state: 4 sorries
+
+1. h_K2_intersect_eq
+2. h_simp_in_bK (dim > 0 only)
+3. h_delta_bridge (with h_star_to_simplex as core sub-sorry)
+4. h_f_exists
+
+Each remaining sorry is a classical result of 100-300 lines with specific
+algorithmic or geometric content. The infrastructure to attack each is
+now comprehensive (barycenter bounds, diameter bridges, flag machinery,
+simplex_vertices uniqueness).
