@@ -4547,6 +4547,30 @@ proof -
       in the bary image of set c_1 \<union> set c_2 (since flag-barycenters extended are
       AI via Moise Lemma 4.4). The coords must be supported on set c_1 \<inter> set c_2,
       hence x in conv_hull(bary ` (set c_1 \<inter> set c_2)). **)
+  (** Sub-lemma: for sets of simplices S1 ⊆ S2 ⊆ K, the chain-simplex
+      inclusion holds. **)
+  have h_chain_inclusion:
+    "\<And>S\<^sub>1 S\<^sub>2::'a set set. S\<^sub>1 \<subseteq> S\<^sub>2
+            \<Longrightarrow> geotop_convex_hull (geotop_barycenter ` S\<^sub>1)
+                \<subseteq> geotop_convex_hull (geotop_barycenter ` S\<^sub>2)"
+  proof -
+    fix S\<^sub>1 S\<^sub>2 :: "'a set set"
+    assume hS: "S\<^sub>1 \<subseteq> S\<^sub>2"
+    have h_img: "geotop_barycenter ` S\<^sub>1 \<subseteq> geotop_barycenter ` S\<^sub>2"
+      using hS by (by100 blast)
+    have h_HOL1: "geotop_convex_hull (geotop_barycenter ` S\<^sub>1)
+                   = convex hull (geotop_barycenter ` S\<^sub>1)"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h_HOL2: "geotop_convex_hull (geotop_barycenter ` S\<^sub>2)
+                   = convex hull (geotop_barycenter ` S\<^sub>2)"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h_hull_mono: "convex hull (geotop_barycenter ` S\<^sub>1)
+                        \<subseteq> convex hull (geotop_barycenter ` S\<^sub>2)"
+      using h_img hull_mono by (by100 blast)
+    show "geotop_convex_hull (geotop_barycenter ` S\<^sub>1)
+          \<subseteq> geotop_convex_hull (geotop_barycenter ` S\<^sub>2)"
+      using h_HOL1 h_HOL2 h_hull_mono by (by100 simp)
+  qed
   have h_K2_intersect_eq:
     "\<forall>c\<^sub>1\<in>flags. \<forall>c\<^sub>2\<in>flags.
        geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
@@ -4554,9 +4578,60 @@ proof -
        geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
        geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
        = geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-    sorry \<comment> \<open>Key classical fact: chain-simplex intersection = common-sub-flag chain-simplex.
-              Proof (Moise early.tex): the combined bary image is AI (from chain-union AI),
-              so by uniqueness of bary coords, the intersection is carried by common elements.\<close>
+  proof (intro ballI impI)
+    fix c\<^sub>1 c\<^sub>2
+    assume hc\<^sub>1: "c\<^sub>1 \<in> flags" and hc\<^sub>2: "c\<^sub>2 \<in> flags"
+    assume h_meet: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+                    geotop_convex_hull (geotop_barycenter ` set c\<^sub>2) \<noteq> {}"
+    show "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+          geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+          = geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+    proof (cases "set c\<^sub>1 \<subseteq> set c\<^sub>2")
+      case h12: True
+      (** Nested: set c_1 ⊆ set c_2 gives σ_{c_1} ⊆ σ_{c_2}, intersection = σ_{c_1}. **)
+      have h_inter_set: "set c\<^sub>1 \<inter> set c\<^sub>2 = set c\<^sub>1" using h12 by (by100 blast)
+      have h_sub: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)
+                    \<subseteq> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+        by (rule h_chain_inclusion[OF h12])
+      have h_inter: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+                     geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+                     = geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+        using h_sub by (by100 blast)
+      have h_rhs: "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+                     = geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+        using h_inter_set by (by100 simp)
+      show ?thesis using h_inter h_rhs by (by100 simp)
+    next
+      case h12_not: False
+      show ?thesis
+      proof (cases "set c\<^sub>2 \<subseteq> set c\<^sub>1")
+        case h21: True
+        (** Symmetric case. **)
+        have h_inter_set: "set c\<^sub>1 \<inter> set c\<^sub>2 = set c\<^sub>2" using h21 by (by100 blast)
+        have h_sub: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+                      \<subseteq> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+          by (rule h_chain_inclusion[OF h21])
+        have h_inter: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
+                       geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+                       = geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+          using h_sub by (by100 blast)
+        have h_rhs: "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+                       = geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+          using h_inter_set by (by100 simp)
+        show ?thesis using h_inter h_rhs by (by100 simp)
+      next
+        case h_neither: False
+        (** Non-nested: neither chain is subset of the other. The classical
+            argument requires showing bary image of set c_1 ∪ set c_2 is AI,
+            then convex_hull_Int from HOL-Analysis. Deferred. **)
+        show ?thesis
+          sorry \<comment> \<open>Key classical fact (non-nested case): chain-simplex intersection =
+                    common-sub-flag chain-simplex when neither chain is contained in the
+                    other. Proof: AI of bary (set c_1 ∪ set c_2) via Moise classical
+                    argument + convex_hull_Int.\<close>
+      qed
+    qed
+  qed
   (** Given the intersection formula, K.2 follows by producing a common sub-flag. **)
   have h_bK_K2: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>\<in>bK. \<sigma> \<inter> \<tau> \<noteq> {}
                 \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
