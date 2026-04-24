@@ -948,6 +948,78 @@ proof -
           using hull_subset[of "\<phi> ` V\<^sub>y" convex] by (by100 simp)
         show ?thesis unfolding \<tau>\<^sub>y'_def using h_sub h_inhull by (by100 blast)
       qed
+      have h\<phi>Vc_sub_inter: "\<phi> ` V\<^sub>c \<subseteq> \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'"
+        using h\<phi>Vc_sub_\<tau>'x h\<phi>Vc_sub_\<tau>'y by (by100 blast)
+      (** Show W_x' = \<phi> V_c via simplex_vertices uniqueness. **)
+      have hVc_fin: "finite V\<^sub>c" unfolding V\<^sub>c_def using hVx_fin by (by100 simp)
+      have hVc_VK: "V\<^sub>c \<subseteq> geotop_complex_vertices K"
+        using hVc_sub_x hVx_VK by (by100 blast)
+      have hVc_ai: "\<not> affine_dependent V\<^sub>c"
+        by (rule affine_independent_subset[OF hVx_ai hVc_sub_x])
+      have h\<phi>Vc_fin: "finite (\<phi> ` V\<^sub>c)" using hVc_fin by (by100 simp)
+      have h\<phi>Vc_sub_\<phi>Vx: "\<phi> ` V\<^sub>c \<subseteq> \<phi> ` V\<^sub>x" using hVc_sub_x by (by100 blast)
+      have h\<phi>Vc_ai: "\<not> affine_dependent (\<phi> ` V\<^sub>c)"
+        by (rule affine_independent_subset[OF h\<phi>Vx_ai h\<phi>Vc_sub_\<phi>Vx])
+      (** V_c non-empty: W_x' \<noteq> {} and W_x' \<subseteq> \<phi> V_c. **)
+      have h\<phi>Vc_ne: "\<phi> ` V\<^sub>c \<noteq> {}" using hWx'_ne hWx'_sub_\<phi>Vc by (by100 blast)
+      have hVc_ne: "V\<^sub>c \<noteq> {}" using h\<phi>Vc_ne by (by100 blast)
+      (** conv hull (\<phi> V_c) \<subseteq> \<tau>'_x \<inter> \<tau>'_y (as it's convex). **)
+      have h\<phi>Vc_hull_sub: "convex hull (\<phi> ` V\<^sub>c) \<subseteq> \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'"
+      proof -
+        have h_conv_tx: "convex \<tau>\<^sub>x'"
+          unfolding \<tau>\<^sub>x'_def using convex_convex_hull[of "\<phi> ` V\<^sub>x"] by (by100 simp)
+        have h_conv_ty: "convex \<tau>\<^sub>y'"
+          unfolding \<tau>\<^sub>y'_def using convex_convex_hull[of "\<phi> ` V\<^sub>y"] by (by100 simp)
+        have h_conv_inter: "convex (\<tau>\<^sub>x' \<inter> \<tau>\<^sub>y')"
+          using convex_Int[OF h_conv_tx h_conv_ty] by (by100 simp)
+        show ?thesis
+          using h\<phi>Vc_sub_inter h_conv_inter hull_minimal[of "\<phi> ` V\<^sub>c" "\<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'" convex]
+          by (by100 simp)
+      qed
+      (** conv hull W_x' = \<tau>'_x \<inter> \<tau>'_y \<subseteq> ? \<and> W_x' \<subseteq> \<phi> V_c gives \<subseteq> conv hull \<phi> V_c. **)
+      have hW_hull_sub_\<phi>Vc: "convex hull W\<^sub>x' \<subseteq> convex hull (\<phi> ` V\<^sub>c)"
+        using hull_mono[OF hWx'_sub_\<phi>Vc] by (by100 simp)
+      (** Combined: conv hull \<phi> V_c = conv hull W_x' = \<tau>'_x \<inter> \<tau>'_y. **)
+      have h\<phi>Vc_eq_W: "convex hull (\<phi> ` V\<^sub>c) = convex hull W\<^sub>x'"
+      proof -
+        have h_inter_W: "\<tau>\<^sub>x' \<inter> \<tau>\<^sub>y' = convex hull W\<^sub>x'" by (rule h_inter_hullx_HOL)
+        show ?thesis using h\<phi>Vc_hull_sub hW_hull_sub_\<phi>Vc h_inter_W by (by100 blast)
+      qed
+      (** simplex_vertices uniqueness \<Longrightarrow> W_x' = \<phi> V_c. **)
+      have h\<phi>Vc_sv: "geotop_simplex_vertices (geotop_convex_hull (\<phi> ` V\<^sub>c)) (\<phi> ` V\<^sub>c)"
+        by (rule geotop_AI_finite_ne_is_simplex_vertices[OF h\<phi>Vc_fin h\<phi>Vc_ne h\<phi>Vc_ai])
+      have h\<phi>Vc_sv_hullg: "geotop_simplex_vertices (convex hull (\<phi> ` V\<^sub>c)) (\<phi> ` V\<^sub>c)"
+        using h\<phi>Vc_sv geotop_convex_hull_eq_HOL[of "\<phi> ` V\<^sub>c"] by (by100 simp)
+      have hWx'_sv_hullW_HOL: "geotop_simplex_vertices (convex hull W\<^sub>x') W\<^sub>x'"
+        using hWx'_sv_hullWx' geotop_convex_hull_eq_HOL[of "W\<^sub>x'"] by (by100 simp)
+      have hWx'_sv_\<phi>Vc_hull: "geotop_simplex_vertices (convex hull (\<phi> ` V\<^sub>c)) W\<^sub>x'"
+        using hWx'_sv_hullW_HOL h\<phi>Vc_eq_W by (by100 simp)
+      have hWxeq: "W\<^sub>x' = \<phi> ` V\<^sub>c"
+        using geotop_simplex_vertices_unique[OF hWx'_sv_\<phi>Vc_hull h\<phi>Vc_sv_hullg] .
+      (** \<tau>'_x \<inter> \<tau>'_y \<in> L via K.1 (face of simplex in L). **)
+      have h_inter_L: "\<tau>\<^sub>x' \<inter> \<tau>\<^sub>y' \<in> L" using hL_K1 h\<tau>'x_L2 h_face_\<tau>x by (by100 blast)
+      (** \<sigma>_c := conv hull V_c; conv hull (\<phi> V_c) = \<tau>'_x \<inter> \<tau>'_y \<in> L \<Longrightarrow> \<sigma>_c \<in> K via h\<phi>cond. **)
+      define \<sigma>\<^sub>c where "\<sigma>\<^sub>c = geotop_convex_hull V\<^sub>c"
+      have h\<phi>Vc_hull_g_eq_inter: "geotop_convex_hull (\<phi> ` V\<^sub>c) = \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'"
+      proof -
+        have h1: "geotop_convex_hull (\<phi> ` V\<^sub>c) = convex hull (\<phi> ` V\<^sub>c)"
+          by (rule geotop_convex_hull_eq_HOL)
+        have h2: "convex hull (\<phi> ` V\<^sub>c) = convex hull W\<^sub>x'" by (rule h\<phi>Vc_eq_W)
+        have h3: "convex hull W\<^sub>x' = \<tau>\<^sub>x' \<inter> \<tau>\<^sub>y'" using h_inter_hullx_HOL by (by100 simp)
+        show ?thesis using h1 h2 h3 by (by100 simp)
+      qed
+      have h\<phi>Vc_hull_g_L: "geotop_convex_hull (\<phi> ` V\<^sub>c) \<in> L"
+        using h\<phi>Vc_hull_g_eq_inter h_inter_L by (by100 simp)
+      have h\<sigma>c_K_raw: "geotop_convex_hull V\<^sub>c \<in> K"
+        using h\<phi>cond hVc_VK h\<phi>Vc_hull_g_L by (by100 blast)
+      have h\<sigma>c_K: "\<sigma>\<^sub>c \<in> K"
+        unfolding \<sigma>\<^sub>c_def by (rule h\<sigma>c_K_raw)
+      have h\<sigma>c_HOL: "\<sigma>\<^sub>c = convex hull V\<^sub>c"
+        unfolding \<sigma>\<^sub>c_def by (rule geotop_convex_hull_eq_HOL)
+      (** simplex_vertices \<sigma>_c V_c. **)
+      have hVc_sv: "geotop_simplex_vertices \<sigma>\<^sub>c V\<^sub>c"
+        unfolding \<sigma>\<^sub>c_def
+        by (rule geotop_V_subK_convhullK_is_simplex_vertices[OF hK hVc_fin hVc_ne hVc_VK h\<sigma>c_K_raw])
       show "x = y"
         sorry
     qed
