@@ -5293,6 +5293,235 @@ proof -
           show "geotop_barycenter (\<sigma>_seq k) = (1 / real (Suc k)) *\<^sub>R (\<Sum>i<Suc k. xs ! i)"
             using h1 h2 by (by100 simp)
         qed
+        (** (6) Define \<alpha>' (extended) and \<beta>. **)
+        define n where "n = length xs"
+        have hn_eq: "n = Suc n\<^sub>0" unfolding n_def using hxs_len_eq by (by100 simp)
+        have hn_pos': "n > 0" unfolding n_def using hxs_len_eq by (by100 simp)
+        define \<alpha>' :: "nat \<Rightarrow> real" where
+          "\<alpha>' k = (if k < n then \<alpha> (xs ! k) else 0)" for k
+        define \<beta> :: "nat \<Rightarrow> real" where
+          "\<beta> k = real (Suc k) * (\<alpha>' k - \<alpha>' (Suc k))" for k
+        (** \<alpha>' nonneg. **)
+        have h\<alpha>'_nn: "\<forall>k. 0 \<le> \<alpha>' k"
+        proof
+          fix k
+          show "0 \<le> \<alpha>' k"
+          proof (cases "k < n")
+            case True
+            have h_klen: "k < length xs" using True unfolding n_def by (by100 simp)
+            have hxk_in: "xs ! k \<in> set xs" using h_klen nth_mem by (by100 blast)
+            have hxk_V: "xs ! k \<in> V" using hxk_in hxs_set by (by100 simp)
+            have h\<alpha>xk: "0 \<le> \<alpha> (xs ! k)" using h\<alpha>nn hxk_V by (by100 blast)
+            show ?thesis unfolding \<alpha>'_def using True h\<alpha>xk by (by100 simp)
+          next
+            case False
+            show ?thesis unfolding \<alpha>'_def using False by (by100 simp)
+          qed
+        qed
+        (** \<alpha>' descending: \<alpha>'(k) \<ge> \<alpha>'(Suc k) for all k. **)
+        have h\<alpha>'_desc: "\<forall>k. \<alpha>' (Suc k) \<le> \<alpha>' k"
+        proof
+          fix k
+          show "\<alpha>' (Suc k) \<le> \<alpha>' k"
+          proof (cases "Suc k < n")
+            case True
+            have hk: "k < n" using True by (by100 simp)
+            have h_sorted: "\<alpha> (xs ! Suc k) \<le> \<alpha> (xs ! k)"
+              using hxs_sorted_desc True unfolding n_def by (by100 simp)
+            have h_\<alpha>'_k: "\<alpha>' k = \<alpha> (xs ! k)" unfolding \<alpha>'_def using hk by (by100 simp)
+            have h_\<alpha>'_suck: "\<alpha>' (Suc k) = \<alpha> (xs ! Suc k)"
+              unfolding \<alpha>'_def using True by (by100 simp)
+            show ?thesis using h_sorted h_\<alpha>'_k h_\<alpha>'_suck by (by100 simp)
+          next
+            case False
+            have h_\<alpha>'_suck: "\<alpha>' (Suc k) = 0" unfolding \<alpha>'_def using False by (by100 simp)
+            have h_nn: "0 \<le> \<alpha>' k" using h\<alpha>'_nn by (by100 blast)
+            show ?thesis using h_\<alpha>'_suck h_nn by (by100 simp)
+          qed
+        qed
+        (** \<beta> nonneg. **)
+        have h\<beta>_nn: "\<forall>k. 0 \<le> \<beta> k"
+        proof
+          fix k
+          have h_diff: "0 \<le> \<alpha>' k - \<alpha>' (Suc k)" using h\<alpha>'_desc by (by100 simp)
+          have h_pos: "(0::real) \<le> real (Suc k)" by (by100 simp)
+          show "0 \<le> \<beta> k" unfolding \<beta>_def using h_diff h_pos by (by100 simp)
+        qed
+        (** \<alpha>'(k) = 0 for k \<ge> n. **)
+        have h\<alpha>'_zero: "\<And>k. n \<le> k \<Longrightarrow> \<alpha>' k = 0"
+          unfolding \<alpha>'_def by (by100 simp)
+        (** Sum telescoping: \<Sum>_{k<n} \<beta>_k = \<Sum>_{k<n} \<alpha>'(k). **)
+        have h\<beta>_sum_raw: "(\<Sum>k<n. \<beta> k) = (\<Sum>k<n. real (Suc k) * \<alpha>' k) - (\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))"
+        proof -
+          have h_each: "\<And>k. \<beta> k = real (Suc k) * \<alpha>' k - real (Suc k) * \<alpha>' (Suc k)"
+            unfolding \<beta>_def using right_diff_distrib by (by100 simp)
+          have h_sum: "(\<Sum>k<n. \<beta> k)
+                         = (\<Sum>k<n. real (Suc k) * \<alpha>' k - real (Suc k) * \<alpha>' (Suc k))"
+            using h_each by (by100 simp)
+          show ?thesis using h_sum sum_subtractf
+              [of "\<lambda>k. real (Suc k) * \<alpha>' k" "\<lambda>k. real (Suc k) * \<alpha>' (Suc k)" "{..<n}"]
+            by (by100 simp)
+        qed
+        (** Reindex the second sum: \<Sum>_{k<n} (Suc k) \<alpha>'(Suc k) = \<Sum>_{j=1..n} j \<alpha>'(j). **)
+        have h_reindex: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))
+                         = (\<Sum>j\<in>{1..n}. real j * \<alpha>' j)"
+        proof -
+          have h_sft: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))
+                         = (\<Sum>k<n. (\<lambda>j. real j * \<alpha>' j) (Suc k))"
+            by (by100 simp)
+          have h_reidx: "(\<Sum>k<n. (\<lambda>j. real j * \<alpha>' j) (Suc k))
+                         = (\<Sum>j\<in>Suc ` {..<n}. real j * \<alpha>' j)"
+            using sum.reindex[OF inj_Suc, of "\<lambda>j. real j * \<alpha>' j" "{..<n}"]
+            by (by100 simp)
+          have h_img: "Suc ` {..<n} = {1..n}"
+            by (rule image_Suc_lessThan)
+          have h_step_AB: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))
+                            = (\<Sum>j\<in>Suc ` {..<n}. real j * \<alpha>' j)"
+            using h_sft h_reidx by (by100 simp)
+          show ?thesis using h_step_AB h_img by (by100 simp)
+        qed
+        (** \<Sum>_{k<n} (Suc k) \<alpha>'(k) = \<Sum>_{j<n} (Suc j) \<alpha>'(j). **)
+        have h_first_sum: "(\<Sum>k<n. real (Suc k) * \<alpha>' k)
+                            = (\<Sum>j<n. real (Suc j) * \<alpha>' j)" by (by100 simp)
+        (** Split first sum: j=0 term + j=1..n-1. **)
+        have h_split1: "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
+                         = real (Suc 0) * \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j)"
+        proof -
+          have h_split0: "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
+                            = (\<Sum>j\<in>{0..<n}. real (Suc j) * \<alpha>' j)"
+            using lessThan_atLeast0 by (by100 simp)
+          have h_insert: "{0..<n} = insert 0 {1..<n}"
+            using hn_pos' by (by100 auto)
+          have h_finite: "finite {1..<n}" by (by100 simp)
+          have h_notin: "(0::nat) \<notin> {1..<n}" by (by100 simp)
+          have h_si: "(\<Sum>j\<in>insert 0 {1..<n}. real (Suc j) * \<alpha>' j)
+                         = real (Suc 0) * \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j)"
+            by (rule sum.insert[OF h_finite h_notin])
+          have h_step1: "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
+                           = (\<Sum>j\<in>insert 0 {1..<n}. real (Suc j) * \<alpha>' j)"
+            using h_split0 h_insert by (by100 simp)
+          show ?thesis using h_step1 h_si by (by100 simp)
+        qed
+        (** Split second sum: {1..n} = {1..<n} ∪ {n}; extract j=n term. **)
+        have h_split2: "(\<Sum>j\<in>{1..n}. real j * \<alpha>' j)
+                         = (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j) + real n * \<alpha>' n"
+        proof -
+          have h_set: "{1..n} = insert n {1..<n}" using hn_pos' by (by100 auto)
+          have h_fin: "finite {1..<n}" by (by100 simp)
+          have h_notin: "n \<notin> {1..<n}" by (by100 simp)
+          have h_si: "(\<Sum>j\<in>insert n {1..<n}. real j * \<alpha>' j)
+                         = real n * \<alpha>' n + (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
+            by (rule sum.insert[OF h_fin h_notin])
+          show ?thesis using h_set h_si by (by100 simp)
+        qed
+        have h\<alpha>'_n: "\<alpha>' n = 0" using h\<alpha>'_zero by (by100 simp)
+        (** Compute the diff on {1..<n}. **)
+        have h_diff_1n: "(\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j) - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)
+                          = (\<Sum>j\<in>{1..<n}. \<alpha>' j)"
+        proof -
+          have h_each: "\<And>j. real (Suc j) * \<alpha>' j - real j * \<alpha>' j = \<alpha>' j"
+          proof -
+            fix j :: nat
+            have h_eq: "real (Suc j) * \<alpha>' j - real j * \<alpha>' j
+                         = (real (Suc j) - real j) * \<alpha>' j"
+              using left_diff_distrib[of "real (Suc j)" "real j" "\<alpha>' j"]
+              by (by100 linarith)
+            have h_diff: "real (Suc j) - real j = 1" by (by100 simp)
+            show "real (Suc j) * \<alpha>' j - real j * \<alpha>' j = \<alpha>' j"
+              using h_eq h_diff by (by100 simp)
+          qed
+          have h_diff: "(\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j - real j * \<alpha>' j)
+                          = (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j) - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
+            by (rule sum_subtractf)
+          have h_cong: "(\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j - real j * \<alpha>' j)
+                        = (\<Sum>j\<in>{1..<n}. \<alpha>' j)"
+            using h_each by (by100 simp)
+          show ?thesis using h_diff h_cong by (by100 linarith)
+        qed
+        (** Assemble \<Sum>_{k<n} \<beta>_k = \<Sum>_{j<n} \<alpha>'(j). **)
+        have h\<beta>_sum_to_\<alpha>': "(\<Sum>k<n. \<beta> k) = (\<Sum>j<n. \<alpha>' j)"
+        proof -
+          have hB: "(\<Sum>k<n. \<beta> k)
+                    = (\<Sum>k<n. real (Suc k) * \<alpha>' k) - (\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))"
+            by (rule h\<beta>_sum_raw)
+          have hC: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k)) = (\<Sum>j\<in>{1..n}. real j * \<alpha>' j)"
+            by (rule h_reindex)
+          have hD: "(\<Sum>j\<in>{1..n}. real j * \<alpha>' j)
+                     = (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j) + real n * \<alpha>' n"
+            by (rule h_split2)
+          have hD': "(\<Sum>j\<in>{1..n}. real j * \<alpha>' j)
+                      = (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
+            using hD h\<alpha>'_n by (by100 simp)
+          have hE: "(\<Sum>k<n. real (Suc k) * \<alpha>' k) = (\<Sum>j<n. real (Suc j) * \<alpha>' j)"
+            by (rule h_first_sum)
+          have hE': "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
+                       = real (Suc 0) * \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j)"
+            by (rule h_split1)
+          have hB': "(\<Sum>k<n. \<beta> k)
+                      = (\<Sum>j<n. real (Suc j) * \<alpha>' j) - (\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))"
+            using hB hE by (by100 simp)
+          have hB'': "(\<Sum>k<n. \<beta> k)
+                      = (\<Sum>j<n. real (Suc j) * \<alpha>' j) - (\<Sum>j\<in>{1..n}. real j * \<alpha>' j)"
+            using hB' hC by (by100 linarith)
+          have hB''': "(\<Sum>k<n. \<beta> k)
+                       = (\<Sum>j<n. real (Suc j) * \<alpha>' j) - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
+            using hB'' hD' by (by100 linarith)
+          have h_step1: "(\<Sum>k<n. \<beta> k)
+                         = (real (Suc 0) * \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j))
+                           - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
+            using hB''' hE' by (by100 simp)
+          have h_step2: "(\<Sum>k<n. \<beta> k)
+                         = \<alpha>' 0 + ((\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j)
+                                    - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j))"
+            using h_step1 by (by100 simp)
+          have h_step3: "(\<Sum>k<n. \<beta> k) = \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. \<alpha>' j)"
+            using h_step2 h_diff_1n by (by100 simp)
+          (** Now \<alpha>'(0) + \<Sum>_{j\<in>{1..<n}} \<alpha>'(j) = \<Sum>_{j<n} \<alpha>'(j). **)
+          have h_total: "\<alpha>' 0 + (\<Sum>j\<in>{1..<n}. \<alpha>' j) = (\<Sum>j<n. \<alpha>' j)"
+          proof -
+            have hI: "{0..<n} = insert 0 {1..<n}" using hn_pos' by (by100 auto)
+            have hFin: "finite {1..<n}" by (by100 simp)
+            have hNotIn: "(0::nat) \<notin> {1..<n}" by (by100 simp)
+            have hIns: "(\<Sum>j\<in>insert 0 {1..<n}. \<alpha>' j) = \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. \<alpha>' j)"
+              by (rule sum.insert[OF hFin hNotIn])
+            have hL: "(\<Sum>j<n. \<alpha>' j) = (\<Sum>j\<in>{0..<n}. \<alpha>' j)"
+              using lessThan_atLeast0 by (by100 simp)
+            show ?thesis using hI hIns hL by (by100 simp)
+          qed
+          show ?thesis using h_step3 h_total by (by100 simp)
+        qed
+        (** \<Sum>_{j<n} \<alpha>'(j) = \<Sum>_{j<n} \<alpha>(xs!j). **)
+        have h\<alpha>'_\<alpha>xs: "(\<Sum>j<n. \<alpha>' j) = (\<Sum>j<n. \<alpha> (xs ! j))"
+        proof -
+          have h_each: "\<And>j. j < n \<Longrightarrow> \<alpha>' j = \<alpha> (xs ! j)"
+            unfolding \<alpha>'_def by (by100 simp)
+          show ?thesis using h_each by (by100 simp)
+        qed
+        (** \<Sum>_{j<n} \<alpha>(xs!j) = sum_list (map \<alpha> xs). **)
+        have h_sum_xs: "(\<Sum>j<n. \<alpha> (xs ! j)) = sum_list (map \<alpha> xs)"
+        proof -
+          have h_map_len: "length (map \<alpha> xs) = n" unfolding n_def by (by100 simp)
+          have h_sum_nth: "sum_list (map \<alpha> xs) = (\<Sum>j<length (map \<alpha> xs). (map \<alpha> xs) ! j)"
+            using sum_list_sum_nth[of "map \<alpha> xs"] atLeast0LessThan by (by100 simp)
+          have h_idx: "\<And>j. j < n \<Longrightarrow> (map \<alpha> xs) ! j = \<alpha> (xs ! j)"
+            unfolding n_def by (by100 simp)
+          have h_sum_idx: "(\<Sum>j<length (map \<alpha> xs). (map \<alpha> xs) ! j)
+                            = (\<Sum>j<n. (map \<alpha> xs) ! j)"
+            using h_map_len by (by100 simp)
+          have h_sum_alpha: "(\<Sum>j<n. (map \<alpha> xs) ! j) = (\<Sum>j<n. \<alpha> (xs ! j))"
+            using h_idx by (by100 simp)
+          show ?thesis using h_sum_nth h_sum_idx h_sum_alpha by (by100 simp)
+        qed
+        (** sum_list (map \<alpha> xs) = sum \<alpha> (set xs) = sum \<alpha> V. **)
+        have h_sum_set: "sum_list (map \<alpha> xs) = sum \<alpha> V"
+        proof -
+          have h1: "sum_list (map \<alpha> xs) = sum \<alpha> (set xs)"
+            by (rule sum_list_distinct_conv_sum_set[OF hxs_dist])
+          show ?thesis using h1 hxs_set by (by100 simp)
+        qed
+        (** Assemble sum β = 1. **)
+        have h\<beta>_sum: "(\<Sum>k<n. \<beta> k) = 1"
+          using h\<beta>_sum_to_\<alpha>' h\<alpha>'_\<alpha>xs h_sum_xs h_sum_set h\<alpha>sum by (by100 simp)
         show "x \<in> geotop_polyhedron bK"
           sorry
       qed
