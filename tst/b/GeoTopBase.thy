@@ -1936,15 +1936,61 @@ qed
     of subdivisions of K whose 0-simplexes contain those of K; this set is
     non-empty (take \<open>K\<close> itself), so \<open>SOME\<close> picks something with that property. **)
 (** Classical existence of a barycentric subdivision satisfying the full spec.
-    Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction.
-    Deferred as a single classical sorry at the existence level. **)
+    Moise early.tex Def 4.4 + Lemma 4.11 give the concrete construction:
+    bK = {conv hull (barycenter ` flag) | flag a chain σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n in K}.
+
+    Detailed proof sketch (CLAUDE.md Phase 3 "more and more detailed formal
+    proof sketches"): scaffold into 5 sub-goals, each representing one of
+    the barycentric_Sd_def conjuncts. Each sub-goal is independently
+    tractable in future sessions. **)
 lemma geotop_classical_Sd_exists:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
   shows "\<exists>bK. geotop_is_barycentric_Sd bK K"
-  sorry \<comment> \<open>Deep classical: barycentric subdivision construction.
-             Proof: take bK = flags of face-barycenters (Moise Def 4.4),
-             verify subdivision + mesh \<le> n/(n+1) \<cdot> mesh K (Moise Lemma 4.11).\<close>
+proof -
+  (** CONSTRUCTION: A flag in K is a non-empty strictly-increasing chain
+      of K-simplices [σ_0, σ_1, ..., σ_n] with σ_0 ⊊ σ_1 ⊊ ⋯ ⊊ σ_n.
+      bK = set of convex hulls of barycenter sets of all such flags. **)
+  define flags :: "'a set list set" where
+    "flags = {c. c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+  define bK :: "'a set set" where
+    "bK = {geotop_convex_hull (geotop_barycenter ` set c) | c. c \<in> flags}"
+  (** STEP 1: bK is a simplicial complex (K.0, K.1, K.2, K.3 axioms).
+      Classical PL fact (Moise early.tex Lemma 4.9-like argument):
+      - K.0: each hull of |flag| ≤ (n+1) affinely-indep barycenters is a simplex.
+      - K.1: faces of a flag-simplex = hulls of sub-flags.
+      - K.2: two flag-simplices intersect in the hull of their common sub-flag.
+      - K.3: inherits from finite (in finite K) or local finiteness of K. **)
+  have h_bK_complex: "geotop_is_complex bK"
+    sorry \<comment> \<open>D-step 1: bK is a complex (K.0/1/2/3 via flag-based simplex structure).\<close>
+  (** STEP 2: bK is a subdivision of K (same polyhedron, each bK simplex ⊆ some K simplex).
+      Polyhedron equality: ⋃bK = |K| via barycentric decomposition of each σ ∈ K.
+      Refinement: each flag's convex hull sits in σ_n (the top of the chain). **)
+  have h_bK_sub: "geotop_is_subdivision bK K"
+    sorry \<comment> \<open>D-step 2: bK subdivides K (polyhedron eq + refines).\<close>
+  (** STEP 3: 0-simplices of K are preserved in bK.
+      Proof: for σ = {v} ∈ K with dim 0, the flag [{v}] is a valid 1-element
+      chain. barycenter {v} = v. conv hull {v} = {v} = σ ∈ bK. **)
+  have h_bK_0simp: "\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK"
+    sorry \<comment> \<open>D-step 3: 0-simplex preservation via singleton-flag barycenters.\<close>
+  (** STEP 4 (combined with STEP 5): dim preservation AND mesh shrinkage.
+      Moise early.tex Lemma 4.11: flag of length ≤ n+1 gives simplex of dim ≤ n.
+      Mesh: bary(σ_0)-to-bary(σ_n) distance ≤ (n/(n+1)) · diam(σ_n) via
+      center-of-mass lemma (distance from centroid to vertex of simplex is
+      at most n/(n+1) times diameter). **)
+  have h_dim_mesh: "\<forall>n::nat.
+        (\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> n) \<longrightarrow>
+        (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
+        \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
+          \<le> (real n / real (Suc n))
+           * geotop_mesh (\<lambda>x y. norm (x - y)) K"
+    sorry \<comment> \<open>D-step 4+5: dim preservation + mesh shrinkage (Moise Lemma 4.11).\<close>
+  (** COMBINE into the barycentric-Sd predicate. **)
+  have h_bary: "geotop_is_barycentric_Sd bK K"
+    unfolding geotop_is_barycentric_Sd_def
+    using h_bK_sub h_bK_0simp h_dim_mesh by (by100 blast)
+  show ?thesis using h_bary by (by100 blast)
+qed
 
 lemma geotop_Sd_is_barycentric:
   fixes K :: "'a::real_normed_vector set set"
