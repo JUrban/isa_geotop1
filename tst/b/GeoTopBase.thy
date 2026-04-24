@@ -2156,6 +2156,156 @@ proof -
     using h_final h_rhs_eq unfolding k_def by (by100 simp)
 qed
 
+(** D-infrastructure: distance from barycenter to any point in σ is bounded
+    by (k/(k+1)) · diameter σ. Extension of the vertex bound via convex
+    decomposition and triangle inequality. **)
+lemma geotop_barycenter_to_point_bound:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h_sv: "geotop_simplex_vertices \<sigma> V"
+  assumes hx: "x \<in> \<sigma>"
+  shows "norm (geotop_barycenter \<sigma> - x)
+           \<le> (real (card V - 1) / real (card V)) * diameter \<sigma>"
+proof -
+  have hVfin: "finite V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain m nn where hVcard: "card V = nn + 1"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hVne: "V \<noteq> {}"
+  proof
+    assume "V = {}"
+    hence "card V = 0" by (by100 simp)
+    thus False using hVcard by (by100 simp)
+  qed
+  have h_card_pos: "card V > 0" using hVfin hVne card_gt_0_iff by (by100 blast)
+  have h_card_pos_real: "real (card V) > 0" using h_card_pos by (by100 simp)
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  (** Express x as convex combination of V. **)
+  have h_hull_char: "convex hull V = {y. \<exists>u. (\<forall>v\<in>V. 0 \<le> u v) \<and> sum u V = 1
+                                             \<and> (\<Sum>v\<in>V. u v *\<^sub>R v) = y}"
+    using convex_hull_finite[OF hVfin] by (by100 simp)
+  have hx_hull: "x \<in> convex hull V" using hx h\<sigma>_HOL by (by100 simp)
+  obtain \<alpha> where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+             and h\<alpha>_sum: "sum \<alpha> V = 1"
+             and h\<alpha>_combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+    using hx_hull h_hull_char by (by100 blast)
+  (** bary σ - x = sum over V of λ_v (bary σ - v). **)
+  have h_bary_minus_x: "geotop_barycenter \<sigma> - x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))"
+  proof -
+    have h_scale_sum: "geotop_barycenter \<sigma> = (\<Sum>v\<in>V. \<alpha> v) *\<^sub>R geotop_barycenter \<sigma>"
+      using h\<alpha>_sum by (by100 simp)
+    have h_scale_sum_distrib:
+      "(\<Sum>v\<in>V. \<alpha> v) *\<^sub>R geotop_barycenter \<sigma> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma>)"
+      using scaleR_left.sum[of \<alpha> V "geotop_barycenter \<sigma>"] by (by100 simp)
+    have h_bary_sum: "geotop_barycenter \<sigma> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma>)"
+      using h_scale_sum h_scale_sum_distrib by (by100 simp)
+    have h_sub: "geotop_barycenter \<sigma> - x
+                   = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma>) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+      using h_bary_sum h\<alpha>_combo by (by100 simp)
+    have h_diff_sum:
+      "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma>) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)
+         = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma> - \<alpha> v *\<^sub>R v)"
+      using sum_subtractf[of "\<lambda>v. \<alpha> v *\<^sub>R geotop_barycenter \<sigma>"
+                             "\<lambda>v. \<alpha> v *\<^sub>R v" V]
+      by (by100 simp)
+    have h_term: "\<And>v. \<alpha> v *\<^sub>R geotop_barycenter \<sigma> - \<alpha> v *\<^sub>R v
+                       = \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)"
+    proof -
+      fix v
+      have "\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)
+             = \<alpha> v *\<^sub>R geotop_barycenter \<sigma> - \<alpha> v *\<^sub>R v"
+        by (rule scaleR_diff_right)
+      thus "\<alpha> v *\<^sub>R geotop_barycenter \<sigma> - \<alpha> v *\<^sub>R v
+              = \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)"
+        by (by100 simp)
+    qed
+    have h_sum_transform:
+      "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R geotop_barycenter \<sigma> - \<alpha> v *\<^sub>R v)
+         = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))"
+      using h_term by (by100 simp)
+    show ?thesis
+      using h_sub h_diff_sum h_sum_transform by (by100 simp)
+  qed
+  (** Triangle inequality + bound each ||bary - v|| by (k/(k+1)) diam σ. **)
+  have h_triangle: "norm (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))
+                    \<le> (\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)))"
+    by (rule norm_sum)
+  have h_norm_split: "\<forall>v\<in>V. norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))
+                               = \<alpha> v * norm (geotop_barycenter \<sigma> - v)"
+  proof
+    fix v assume hv_V: "v \<in> V"
+    have h_nn: "0 \<le> \<alpha> v" using h\<alpha>_nn hv_V by (by100 blast)
+    have "norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))
+           = \<bar>\<alpha> v\<bar> * norm (geotop_barycenter \<sigma> - v)"
+      by (by100 simp)
+    also have "\<dots> = \<alpha> v * norm (geotop_barycenter \<sigma> - v)"
+      using h_nn by (by100 simp)
+    finally show "norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))
+                    = \<alpha> v * norm (geotop_barycenter \<sigma> - v)" .
+  qed
+  have h_sum_norm_split:
+    "(\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)))
+       = (\<Sum>v\<in>V. \<alpha> v * norm (geotop_barycenter \<sigma> - v))"
+  proof -
+    have h_pt: "\<And>v. v \<in> V \<Longrightarrow> norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))
+                            = \<alpha> v * norm (geotop_barycenter \<sigma> - v)"
+      using h_norm_split by (by100 blast)
+    have h_V_eq: "V = V" by (by100 simp)
+    show ?thesis
+      using sum.cong[OF h_V_eq, of
+                       "\<lambda>v. norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))"
+                       "\<lambda>v. \<alpha> v * norm (geotop_barycenter \<sigma> - v)"] h_pt
+      by (by100 blast)
+  qed
+  define D where "D = (real (card V - 1) / real (card V)) * diameter \<sigma>"
+  (** σ is bounded (finite vertex set → compact → bounded). **)
+  have h\<sigma>_bounded: "bounded \<sigma>"
+    using h\<sigma>_HOL hVfin finite_imp_bounded_convex_hull by (by100 simp)
+  have h_D_nn: "0 \<le> D"
+  proof -
+    have h_r_nn: "0 \<le> real (card V - 1) / real (card V)" by (by100 simp)
+    have h_diam_nn: "0 \<le> diameter \<sigma>" by (rule diameter_ge_0[OF h\<sigma>_bounded])
+    show ?thesis unfolding D_def using h_r_nn h_diam_nn by (by100 simp)
+  qed
+  have h_vertex_bound: "\<forall>v\<in>V. norm (geotop_barycenter \<sigma> - v) \<le> D"
+  proof
+    fix v assume hv_V: "v \<in> V"
+    show "norm (geotop_barycenter \<sigma> - v) \<le> D"
+      unfolding D_def
+      by (rule geotop_barycenter_to_vertex_bound[OF h_sv hv_V])
+  qed
+  have h_sum_bounded:
+    "(\<Sum>v\<in>V. \<alpha> v * norm (geotop_barycenter \<sigma> - v)) \<le> (\<Sum>v\<in>V. \<alpha> v * D)"
+  proof (rule sum_mono)
+    fix v assume hv_V: "v \<in> V"
+    have h_nn: "0 \<le> \<alpha> v" using h\<alpha>_nn hv_V by (by100 blast)
+    have h_bd: "norm (geotop_barycenter \<sigma> - v) \<le> D"
+      using h_vertex_bound hv_V by (by100 blast)
+    show "\<alpha> v * norm (geotop_barycenter \<sigma> - v) \<le> \<alpha> v * D"
+      using h_nn h_bd mult_left_mono by (by100 blast)
+  qed
+  have h_sum_collect: "(\<Sum>v\<in>V. \<alpha> v * D) = (sum \<alpha> V) * D"
+    using sum_distrib_right[of \<alpha> V D] by (by100 simp)
+  have h_sum_eq_D: "(\<Sum>v\<in>V. \<alpha> v * D) = D"
+    using h_sum_collect h\<alpha>_sum by (by100 simp)
+  have h_norm_bd: "norm (geotop_barycenter \<sigma> - x) \<le> D"
+  proof -
+    have "norm (geotop_barycenter \<sigma> - x)
+           = norm (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v))"
+      using h_bary_minus_x by (by100 simp)
+    also have "\<dots> \<le> (\<Sum>v\<in>V. norm (\<alpha> v *\<^sub>R (geotop_barycenter \<sigma> - v)))"
+      by (rule h_triangle)
+    also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v * norm (geotop_barycenter \<sigma> - v))"
+      by (rule h_sum_norm_split)
+    also have "\<dots> \<le> (\<Sum>v\<in>V. \<alpha> v * D)" by (rule h_sum_bounded)
+    also have "\<dots> = D" by (rule h_sum_eq_D)
+    finally show ?thesis .
+  qed
+  show ?thesis using h_norm_bd unfolding D_def .
+qed
+
 lemma geotop_barycenter_in_rel_interior:
   fixes \<sigma> :: "'a::euclidean_space set"
   assumes h_sv: "geotop_simplex_vertices \<sigma> V"
