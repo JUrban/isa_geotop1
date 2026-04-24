@@ -2406,6 +2406,36 @@ proof (rule ccontr)
   thus False using h_disj by (by100 blast)
 qed
 
+(** E-support: if x ∈ rel_interior σ and x ∈ σ' (both simplices of a complex),
+    then σ ⊆ σ'. I.e., the "smallest simplex whose rel_interior contains x"
+    is a face of every σ' ∈ K containing x. Key classical fact. **)
+lemma geotop_complex_rel_interior_imp_subset:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<sigma>'K: "\<sigma>' \<in> K"
+  assumes hx_rel: "x \<in> rel_interior \<sigma>"
+  assumes hx\<sigma>': "x \<in> \<sigma>'"
+  shows "\<sigma> \<subseteq> \<sigma>'"
+proof -
+  have hx\<sigma>: "x \<in> \<sigma>" using hx_rel rel_interior_subset by (by100 blast)
+  have h_int_ne: "\<sigma> \<inter> \<sigma>' \<noteq> {}" using hx\<sigma> hx\<sigma>' by (by100 blast)
+  have h_face_HOL: "(\<sigma> \<inter> \<sigma>') face_of \<sigma>"
+    by (rule geotop_complex_inter_face_HOL[OF hK h\<sigma>K h\<sigma>'K h_int_ne])
+  show ?thesis
+  proof (cases "\<sigma> \<inter> \<sigma>' = \<sigma>")
+    case True
+    thus ?thesis by (by100 blast)
+  next
+    case h_proper: False
+    have h_disj: "(\<sigma> \<inter> \<sigma>') \<inter> rel_interior \<sigma> = {}"
+      by (rule face_of_disjoint_rel_interior[OF h_face_HOL h_proper])
+    have hx_in: "x \<in> (\<sigma> \<inter> \<sigma>') \<inter> rel_interior \<sigma>"
+      using hx\<sigma> hx\<sigma>' hx_rel by (by100 blast)
+    have "False" using hx_in h_disj by (by100 blast)
+    thus ?thesis by (by100 blast)
+  qed
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
