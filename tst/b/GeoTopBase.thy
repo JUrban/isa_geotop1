@@ -4910,13 +4910,55 @@ proof -
   qed
   (** D-step 2a-sup: every point in |K| lies in some chain-simplex of bK.
       Classical barycentric decomposition. Scaffolded into the core
-      per-simplex fact and the union lifting. **)
+      per-simplex fact (split by dim = 0 vs dim > 0) and the union lifting.
+      The dim = 0 case is PROVEN using geotop_bK_covers_0_simplex_helper;
+      the dim > 0 case requires the sorted-chain barycentric decomposition. **)
   have h_simp_in_bK:
     "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> \<sigma> \<subseteq> geotop_polyhedron bK"
-    sorry \<comment> \<open>D2a-sup core: each K-simplex is covered by chain-simplices.
-              Proof: for x in sigma with bary coords alpha_i on vertices, sort
-              vertices by decreasing alpha; chain sigma_0 subsetneq ... subsetneq sigma_n = sigma
-              gives a flag. x = sum beta_k * bary sigma_k with beta_k nonneg, sum 1.\<close>
+  proof -
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have h_K_simp: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+      by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_K_simp by (by100 blast)
+    obtain V m\<^sub>0 n\<^sub>0 where hVfin: "finite V"
+                     and hVcard: "card V = n\<^sub>0 + 1"
+                     and hnm\<^sub>0: "n\<^sub>0 \<le> m\<^sub>0"
+                     and hVgp: "geotop_general_position V m\<^sub>0"
+                     and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    show "\<sigma> \<subseteq> geotop_polyhedron bK"
+    proof (cases "n\<^sub>0 = 0")
+      case True
+      (** dim σ = 0: σ = {v}. Use geotop_bK_covers_0_simplex_helper. **)
+      have hVcard1: "card V = 1" using hVcard True by (by100 simp)
+      obtain v where hVeq: "V = {v}"
+        using hVcard1 card_1_singletonE by (by100 metis)
+      have h\<sigma>_sing: "\<sigma> = {v}"
+        using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+      have h_v_sing_K: "{v} \<in> K" using h\<sigma>_sing h\<sigma>K by (by100 simp)
+      have h_helper: "[{v}] \<in> geotop_flags K \<and>
+                       geotop_convex_hull (geotop_barycenter ` set [{v}]) = {v}"
+        by (rule geotop_bK_covers_0_simplex_helper[OF hK h_v_sing_K])
+      have h_flag_local: "[{v}] \<in> flags"
+        using h_helper h_flags_eq_geotop by (by100 simp)
+      have h_chain: "geotop_convex_hull (geotop_barycenter ` set [{v}]) = {v}"
+        using h_helper by (by100 blast)
+      have h_singleton_in_bK: "{v} \<in> bK"
+        unfolding bK_def
+        using h_flag_local h_chain by (by100 blast)
+      have h\<sigma>_bK: "\<sigma> \<in> bK" using h_singleton_in_bK h\<sigma>_sing by (by100 simp)
+      show ?thesis
+        unfolding geotop_polyhedron_def using h\<sigma>_bK by (by100 blast)
+    next
+      case False
+      show ?thesis
+        sorry \<comment> \<open>D2a-sup main case: dim > 0 barycentric decomposition.
+                  For x in sigma with bary coords alpha_i on V, sort V by decreasing alpha;
+                  the induced chain [sigma_0, ..., sigma_n = sigma] is a flag, and
+                  x = sum beta_k * bary sigma_k with beta_k = (k+1)(alpha_{pi(k)} - alpha_{pi(k+1)}).
+                  Hence x is in the chain-simplex for this flag, in bK.\<close>
+    qed
+  qed
   have h_poly_sup: "geotop_polyhedron K \<subseteq> geotop_polyhedron bK"
   proof
     fix x assume hx: "x \<in> geotop_polyhedron K"
