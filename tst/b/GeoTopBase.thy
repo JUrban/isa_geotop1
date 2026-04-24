@@ -2128,13 +2128,36 @@ proof -
   define bK :: "'a set set" where
     "bK = {geotop_convex_hull (geotop_barycenter ` set c) | c. c \<in> flags}"
   (** STEP 1: bK is a simplicial complex (K.0, K.1, K.2, K.3 axioms).
-      Classical PL fact (Moise early.tex Lemma 4.9-like argument):
-      - K.0: each hull of |flag| ≤ (n+1) affinely-indep barycenters is a simplex.
-      - K.1: faces of a flag-simplex = hulls of sub-flags.
-      - K.2: two flag-simplices intersect in the hull of their common sub-flag.
-      - K.3: inherits from finite (in finite K) or local finiteness of K. **)
+      Scaffold per CLAUDE.md Phase 3 — split into 4 sub-goals, each
+      independently tractable with the D-support helper stack. **)
+  (** STEP 1.0 (K.0): Each σ ∈ bK is a simplex.
+      Proof: σ = conv hull (barycenter ` set c). By flag_barycenter_card,
+      |barycenter ` set c| = length c. Barycenters of a chain are affinely
+      independent (classical Moise argument). General position then holds. **)
+  have h_bK_K0: "\<forall>\<sigma>\<in>bK. geotop_is_simplex \<sigma>"
+    sorry \<comment> \<open>D-step 1.0: K.0 (simplex property) via barycenter affine independence.\<close>
+  (** STEP 1.1 (K.1): bK is face-closed.
+      Proof: a HOL face of σ = conv hull (bary image of c) corresponds to
+      a sub-flag c' ⊆ c (continuous sub-sequence), giving another bK simplex. **)
+  have h_bK_K1: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> bK"
+    sorry \<comment> \<open>D-step 1.1: K.1 (face closure) via sub-flag correspondence.\<close>
+  (** STEP 1.2 (K.2): intersection of two bK-simplices is a face of both.
+      Proof: σ_1, σ_2 ∈ bK correspond to flags c_1, c_2. σ_1 ∩ σ_2 = conv
+      hull of common vertex subset, which corresponds to a sub-flag of both. **)
+  have h_bK_K2: "\<forall>\<sigma>\<in>bK. \<forall>\<tau>\<in>bK. \<sigma> \<inter> \<tau> \<noteq> {}
+                \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry \<comment> \<open>D-step 1.2: K.2 (intersection-face) via common sub-flag.\<close>
+  (** STEP 1.3 (K.3): local finiteness.
+      Proof: for σ' ∈ bK, σ' ⊆ top(c_flag) = σ ∈ K. K.3 of K gives U ⊇ σ
+      with finite {τ ∈ K. τ ∩ U ≠ {}}. Each bK-simplex τ' near U has
+      top(τ'_flag) ∈ this finite set, and each simplex has finitely many
+      faces (2^|V|-1), bounding the flags ending at it. **)
+  have h_bK_K3: "\<forall>\<sigma>\<in>bK. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>bK. \<tau> \<inter> U \<noteq> {}}"
+    sorry \<comment> \<open>D-step 1.3: K.3 (local finiteness) via K.3-of-K + finite face count.\<close>
+  (** Assemble K.0–K.3 into complex predicate. **)
   have h_bK_complex: "geotop_is_complex bK"
-    sorry \<comment> \<open>D-step 1: bK is a complex (K.0/1/2/3 via flag-based simplex structure).\<close>
+    unfolding geotop_is_complex_def
+    using h_bK_K0 h_bK_K1 h_bK_K2 h_bK_K3 by (by100 blast)
   (** STEP 2: bK is a subdivision of K (same polyhedron, each bK simplex ⊆ some K simplex).
       Split into: (2a) polyhedron eq, (2b) refines. Refines provable via
       geotop_barycenter_in_simplex + sorted_wrt structure; polyhedron eq
