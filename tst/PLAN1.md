@@ -363,6 +363,33 @@ coordinates: for x = Σα_v v on σ, set g(x) = Σα_v φ(v). Verify bijective
 
 All 3 require substantive classical PL-topology formalization.
 
+## Session 2026-04-23/24 grand total
+
+- **K.2 inter_face** FULLY PROVED (major Phase 1.1 piece).
+- **Phase 1.A subarc polyhedron** FULLY PROVED (310-line main + 7+ helpers).
+- **Phase 1.C arc_reduction overlap** FULLY PROVED (220-line inline).
+- **GeoTopBase: 6 → 3 real sorries** (4 grep sorries + 3 text comments).
+- ~53 commits spanning K.2 closure + Phase 1.A infrastructure + Phase 1.C.
+- Build stable: 7-9s cached, ~65s fresh.
+- Phase 1 (§1 content) is NOW SORRY-FREE and cacheable.
+- Remaining blockers for full GeoTopBase cache: D, E, F (all Intro classical).
+
+**Key reusable helpers added this session** (all fully proven):
+- `geotop_arc_homeomorphism_image`
+- `geotop_1dim_simplex_cases`
+- `geotop_arc_preimage_is_interval`, `_simplex_is_interval`
+- `geotop_complex_subset_is_complex`
+- `geotop_complex_restrict_subset_is_complex`, `_preserves_1dim`
+- `geotop_complex_subdivide_at_two` (strengthened `subdivide_edge/at`)
+- `geotop_1dim_vertex_in_simplex_is_face`, `_is_endpoint`
+- `geotop_inner_diff_inj_on_closed_segment`, `_image_closed_segment`
+- `geotop_homeomorphism_segment_endpoints`
+- `geotop_arc_1simplex_preimage_structure`
+- `geotop_subarc_polyhedron` (Phase 1.A main)
+- `geotop_broken_line_compact`, `_closed`
+
+All of Phase 1 content is now SORRY-FREE and ready to cache.
+
 ### Session discovery: by100 method text limitation
 
 by100 wraps `Method.text_closure`, which apparently doesn't accept compound
