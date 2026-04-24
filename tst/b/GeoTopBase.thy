@@ -3365,6 +3365,67 @@ lemma geotop_complex_flag_barycenter_affine_independent:
               Proof via max-index argument + proper_subset_aff_hull_disjoint_rel_int
               + barycenter_in_rel_interior. ~100 line induction on chain length.\<close>
 
+(** D-support: barycenter of a singleton simplex is its sole element. **)
+lemma geotop_barycenter_singleton:
+  fixes v :: "'a::real_normed_vector"
+  shows "geotop_barycenter {v} = v"
+proof -
+  have h_char: "\<forall>V. geotop_simplex_vertices {v} V \<longrightarrow> V = {v}"
+  proof (intro allI impI)
+    fix V assume hV: "geotop_simplex_vertices {v} V"
+    have hVfin: "finite V" using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    obtain m n where hVcard: "card V = n + 1"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV_hull: "{v} = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV_hull_HOL: "{v} = convex hull V"
+      using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have hV_sub_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+    have hV_sub_v: "V \<subseteq> {v}" using hV_sub_hull hV_hull_HOL by (by100 simp)
+    have hV_card_ge_1: "card V \<ge> 1" using hVcard by (by100 simp)
+    have hV_card_le_1: "card V \<le> 1"
+      using hV_sub_v hVfin card_mono[of "{v}" V] by (by100 simp)
+    have hV_card_1: "card V = 1" using hV_card_ge_1 hV_card_le_1 by (by100 linarith)
+    have hV_ne: "V \<noteq> {}"
+    proof
+      assume "V = {}"
+      hence "card V = 0" by (by100 simp)
+      thus False using hV_card_1 by (by100 simp)
+    qed
+    show "V = {v}" using hV_sub_v hV_ne by (by100 blast)
+  qed
+  have h_v_val: "v = (\<Sum>w\<in>{v}. (1 / real (card {v})) *\<^sub>R w)" by (by100 simp)
+  have h_sv_v: "geotop_simplex_vertices {v} {v}"
+  proof -
+    have h_hull_v: "{v} = geotop_convex_hull {v}"
+      using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    have h_fin: "finite {v}" by (by100 simp)
+    have h_card: "card ({v}::'a set) = 0 + 1" by (by100 simp)
+    have h_gp: "geotop_general_position {v} 0"
+      unfolding geotop_general_position_def by (by100 simp)
+    show ?thesis unfolding geotop_simplex_vertices_def
+      using h_hull_v h_fin h_card h_gp by (by100 blast)
+  qed
+  have h_ex_witness: "\<exists>V'. geotop_simplex_vertices {v} V' \<and>
+                          v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    using h_sv_v h_v_val by (by100 blast)
+  show ?thesis unfolding geotop_barycenter_def
+  proof (rule someI2[where a = v])
+    show "\<exists>V'. geotop_simplex_vertices {v} V' \<and>
+               v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex_witness)
+  next
+    fix u assume hu: "\<exists>V'. geotop_simplex_vertices {v} V' \<and>
+                            u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+    obtain V' where hV'_sv: "geotop_simplex_vertices {v} V'"
+                 and hu_val: "u = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+      using hu by (by100 blast)
+    have hV'_eq: "V' = {v}" using h_char hV'_sv by (by100 blast)
+    have hu_sum: "u = (\<Sum>w\<in>{v}. (1 / real (card {v})) *\<^sub>R w)"
+      using hu_val hV'_eq by (by100 simp)
+    show "u = v" using hu_sum by (by100 simp)
+  qed
+qed
+
 (** D-support: for empty K, geotop_flags K = {} (no non-empty chains possible). **)
 lemma geotop_flags_empty:
   fixes K :: "'a::euclidean_space set set"
