@@ -3144,6 +3144,27 @@ proof -
   show ?thesis using h_union h_union_fin by (by100 simp)
 qed
 
+(** D1.0-support: the KEY classical fact needed for affine independence of
+    flag barycenters. For V affinely independent and W ⊊ V nonempty,
+    affine hull W is DISJOINT from rel_interior (conv V).
+
+    Proof: rel_interior (conv V) = {y = Σ α_v v | all α_v > 0, Σ = 1}
+    (via rel_interior_convex_hull_explicit). affine hull W = {y = Σ β_w w
+    | w ∈ W, Σ β = 1} extendable to V with β_v = 0 for v ∉ W. By uniqueness
+    of barycentric coordinates (V affinely independent via
+    affine_dependent_explicit_finite), α = β, but β has zero coords on
+    V\W nonempty while α has all positive coords — contradiction. **)
+lemma geotop_affine_hull_proper_subset_disjoint_rel_interior:
+  fixes V :: "'a::real_normed_vector set"
+  fixes W :: "'a set"
+  assumes hVfin: "finite V"
+  assumes hV_ai: "\<not> affine_dependent V"
+  assumes hW_sub: "W \<subseteq> V" and hW_ne: "W \<noteq> {}" and hW_proper: "W \<noteq> V"
+  shows "affine hull W \<inter> rel_interior (convex hull V) = {}"
+  sorry \<comment> \<open>D1.0 classical: aff hull proper subset ∩ rel_interior = ∅,
+              via barycentric coord uniqueness from affine independence.
+              ~60 line proof using affine_hull_finite_iff + affine_dependent_explicit_finite.\<close>
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
