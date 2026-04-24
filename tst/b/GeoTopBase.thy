@@ -1972,7 +1972,101 @@ proof -
       Proof: for σ = {v} ∈ K with dim 0, the flag [{v}] is a valid 1-element
       chain. barycenter {v} = v. conv hull {v} = {v} = σ ∈ bK. **)
   have h_bK_0simp: "\<forall>\<sigma>. geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K \<longrightarrow> \<sigma> \<in> bK"
-    sorry \<comment> \<open>D-step 3: 0-simplex preservation via singleton-flag barycenters.\<close>
+  proof (intro allI impI)
+    fix \<sigma> assume h\<sigma>: "geotop_simplex_dim \<sigma> 0 \<and> \<sigma> \<in> K"
+    have h\<sigma>_dim: "geotop_simplex_dim \<sigma> 0" using h\<sigma> by (by100 blast)
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma> by (by100 blast)
+    (** Extract σ = {v}. **)
+    obtain V m where hVfin: "finite V" and hVcard: "card V = 0 + 1"
+                 and hnm: "0 \<le> m" and hVgp: "geotop_general_position V m"
+                 and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+    have hVcard1: "card V = 1" using hVcard by (by100 simp)
+    have hVsing: "\<exists>v. V = {v}"
+      using hVcard1 card_1_singletonE by (by100 metis)
+    obtain v where hVeq: "V = {v}" using hVsing by (by100 blast)
+    have h\<sigma>_sing: "\<sigma> = {v}"
+      using h\<sigma>_hull hVeq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    (** Flag [σ] = [{v}] is in flags. **)
+    let ?c = "[\<sigma>]"
+    have h_c_ne: "?c \<noteq> []" by (by100 simp)
+    have h_set_c: "set ?c = {\<sigma>}" by (by100 simp)
+    have h_c_subK: "set ?c \<subseteq> K" using h_set_c h\<sigma>_K by (by100 simp)
+    have h_c_sorted: "sorted_wrt (\<lambda>\<tau>\<^sub>1 \<tau>\<^sub>2. \<tau>\<^sub>1 \<subset> \<tau>\<^sub>2) ?c" by (by100 simp)
+    have h_c_dist: "distinct ?c" by (by100 simp)
+    have h_c_flag: "?c \<in> flags"
+      unfolding flags_def using h_c_ne h_c_subK h_c_sorted h_c_dist by (by100 simp)
+    (** barycenter ` set c = {barycenter σ}. **)
+    have h_bary_img: "geotop_barycenter ` set ?c = {geotop_barycenter \<sigma>}"
+      using h_set_c by (by100 simp)
+    (** barycenter σ = v. Key: for σ = {v}, any V' with conv hull V' = σ must
+        be {v}, so barycenter's weighted average is always v. **)
+    have h_bary_v: "geotop_barycenter \<sigma> = v"
+    proof -
+      have h_sv: "geotop_simplex_vertices \<sigma> V"
+        unfolding geotop_simplex_vertices_def
+        using hVfin hVcard hnm hVgp h\<sigma>_hull by (by100 blast)
+      have h_v_val: "v = (\<Sum>w\<in>V. (1 / real (card V)) *\<^sub>R w)"
+        using hVeq hVcard1 by (by100 simp)
+      have h_ex: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                      v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)"
+        using h_sv h_v_val by (by100 blast)
+      (** For any V' with simplex_vertices σ V': V' = {v}. **)
+      have h_V'_char: "\<And>V'. geotop_simplex_vertices \<sigma> V' \<Longrightarrow> V' = {v}"
+      proof -
+        fix V' assume hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+        have hV'fin: "finite V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_hull: "\<sigma> = geotop_convex_hull V'"
+          using hV'_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+        have hV'_hull_HOL: "\<sigma> = convex hull V'"
+          using hV'_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have hV'_sing: "convex hull V' = {v}" using hV'_hull_HOL h\<sigma>_sing by (by100 simp)
+        (** V' ⊆ conv hull V' = {v}, and card V' ≥ 1, so V' = {v}. **)
+        have hV'_sub: "V' \<subseteq> convex hull V'" by (rule hull_subset)
+        have hV'_sub_v: "V' \<subseteq> {v}" using hV'_sub hV'_sing by (by100 simp)
+        have hV'_card: "card V' = 0 + 1"
+          using hV'_sv unfolding geotop_simplex_vertices_def
+          (** V' has card of form n+1 from simplex definition; for σ = {v} it's 1.
+              Via conv hull V' = {v} and V' ⊆ {v}, card V' ≤ 1. Combined with
+              card V' ≥ 1 (simplex def), card V' = 1. **)
+          sorry
+        have hV'_card1: "card V' = 1" using hV'_card by (by100 simp)
+        have hV'_ne: "V' \<noteq> {}"
+        proof
+          assume "V' = {}"
+          hence "card V' = 0" by (by100 simp)
+          thus False using hV'_card1 by (by100 simp)
+        qed
+        show "V' = {v}" using hV'_sub_v hV'_ne by (by100 blast)
+      qed
+      show ?thesis unfolding geotop_barycenter_def
+      proof (rule someI2[where a = v])
+        show "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                 v = (\<Sum>w\<in>V'. (1 / real (card V')) *\<^sub>R w)" by (rule h_ex)
+      next
+        fix w assume hw: "\<exists>V'. geotop_simplex_vertices \<sigma> V' \<and>
+                                w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
+        obtain V' where hV'_sv: "geotop_simplex_vertices \<sigma> V'"
+                     and hw_val: "w = (\<Sum>x\<in>V'. (1 / real (card V')) *\<^sub>R x)"
+          using hw by (by100 blast)
+        have hV'_eq_v: "V' = {v}" using h_V'_char hV'_sv by (by100 simp)
+        have hw_sum: "w = (\<Sum>x\<in>{v}. (1 / real (card {v})) *\<^sub>R x)"
+          using hw_val hV'_eq_v by (by100 simp)
+        have hw_v: "w = v" using hw_sum by (by100 simp)
+        show "w = v" by (rule hw_v)
+      qed
+    qed
+    (** conv hull {v} = {v} = σ. **)
+    have h_hull_v: "geotop_convex_hull {v} = {v}"
+      using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+    (** So σ = hull of barycenters of flag c. **)
+    have h_\<sigma>_bK: "\<sigma> = geotop_convex_hull (geotop_barycenter ` set ?c)"
+      using h\<sigma>_sing h_bary_img h_bary_v h_hull_v by (by100 simp)
+    have h_\<sigma>_bK_set: "\<sigma> \<in> bK"
+      unfolding bK_def using h_c_flag h_\<sigma>_bK by (by100 blast)
+    show "\<sigma> \<in> bK" by (rule h_\<sigma>_bK_set)
+  qed
   (** STEP 4 (combined with STEP 5): dim preservation AND mesh shrinkage.
       Moise early.tex Lemma 4.11: flag of length ≤ n+1 gives simplex of dim ≤ n.
       Mesh: bary(σ_0)-to-bary(σ_n) distance ≤ (n/(n+1)) · diam(σ_n) via
