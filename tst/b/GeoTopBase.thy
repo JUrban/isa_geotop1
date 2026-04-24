@@ -2897,6 +2897,27 @@ proof (rule inj_onI)
   qed
 qed
 
+(** D-support: for a flag (distinct list of K-simplices), the barycenter
+    image has cardinality equal to the list length. Combines:
+    - distinct c ⟹ card (set c) = length c
+    - barycenter_inj_on ⟹ card (barycenter ` set c) = card (set c).  **)
+lemma geotop_complex_flag_barycenter_card:
+  fixes K :: "'a::euclidean_space set set"
+  fixes c :: "'a set list"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_subK: "set c \<subseteq> K"
+  assumes hc_dist: "distinct c"
+  shows "card (geotop_barycenter ` set c) = length c"
+proof -
+  have h_inj: "inj_on geotop_barycenter (set c)"
+    by (rule geotop_complex_barycenter_inj_on[OF hK hc_subK])
+  have h_card_img: "card (geotop_barycenter ` set c) = card (set c)"
+    by (rule card_image[OF h_inj])
+  have h_card_set: "card (set c) = length c"
+    using hc_dist distinct_card by (by100 blast)
+  show ?thesis using h_card_img h_card_set by (by100 simp)
+qed
+
 lemma geotop_open_star_open_in_subspace:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K" and hKfin: "finite K"
