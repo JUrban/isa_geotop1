@@ -258,3 +258,70 @@ After completion:
 The single sorry currently blocking would have made any downstream
 proof using `Theorem_GT_1` recursive-sorry. After this plan's
 completion, that path is clear.
+
+## ADDENDUM 2026-04-25 (continued analysis): Session A sub-decomposition
+
+After repeated review, the "vertices concentrate in K'-simplex" lemma
+needs explicit decomposition. Here is the sub-strategy.
+
+### Why naive Lebesgue + open star fails
+
+For x near a K'-vertex v inside a K-simplex σ_K, the open star of v in
+K' restricted to σ_K is NOT covered by a single K'-simplex containing
+v. Multiple K'-simplices share v, and a small simplex τ around v may
+have vertices in different ones with no upper bound in K'. The
+counterexample is the "small disk on K'-vertex" case.
+
+### Why barycentric-chain structure of Sd^m K rescues this
+
+A vertex of Sd^m K is a barycenter b(σ_0...σ_m) for a chain σ_0 < ... < σ_m
+in K (actually m levels deep after m subdivisions). The KEY structural
+property: any TWO vertices of an Sd^m K simplex τ correspond to chains
+σ^A, σ^B that share a common chain TOP (the K-carrier of τ is determined
+by the top of all vertex-chains).
+
+### Sub-claim (Session A.1): chain-tops align
+
+For τ a face of Sd^m K with vertices b_0, ..., b_k, let chain_i be the
+K-flag whose barycenter is b_i. The K-carrier of τ is max_i top(chain_i),
+where top is the maximum K-simplex in the flag.
+
+### Sub-claim (Session A.2): vertex containment
+
+If x_i ∈ σ_K is a barycenter from chain_i ⊆ σ_K (for all i), then x_i
+all share the SAME K-carrier σ_K. Moreover, for m large the chains
+chain_i differ only in their top portions, all bounded inside σ_K.
+
+### Sub-claim (Session A.3): K'-carrier match
+
+Given x_i all in σ_K with chain-tops aligned, for m large all x_i have
+the SAME K'-carrier σ' ⊆ σ_K. Hence τ = conv hull {x_0, ..., x_k} ⊆ σ'
+(by convexity).
+
+### Why this is harder than it looks
+
+Sub-claim A.3 is where the actual analytic work lies. It requires
+quantitative control over how Sd-iteration shrinks chains relative to
+K' vertex spacing. The standard Munkres argument uses the fact that
+mesh(Sd^m K) → 0 (already proven via geotop_mesh_iterated_Sd) plus a
+specific Lebesgue number for K' relative to σ_K (a per-simplex quantity).
+
+### Direct alternative: bypass via diameter-ratio recursion
+
+Munkres-style proofs of refinement-by-mesh use a more subtle observation:
+for a simplex τ ⊆ K-simplex σ_K, if τ has its MIN vertex (in chain order)
+in rel_interior of some K'-simplex σ' ⊆ σ_K, and τ has diameter less
+than the rel-distance from rel_interior σ' to its rel_frontier, then
+τ ⊆ σ'.
+
+This requires per-K'-simplex rel-distance lower bounds (positive due to
+finite K' and compact K'-simplices), which is provable but adds
+~150 lines of analytic infrastructure.
+
+### Recommendation
+
+Session A is genuinely deep classical work (~500-800 lines total). It
+should be attempted in a fresh focused session with no other competing
+work. The current state (sorry at line 9985 with full documentation;
+all bridge infrastructure in place) is a stable checkpoint suitable
+for handoff or pause.
