@@ -9488,6 +9488,63 @@ proof -
   show ?thesis by (rule geotop_subdivision_simplex_in_parent[OF h_sub h\<tau>])
 qed
 
+(** PLAN2 Session N+1 — bridge lemma for K vs K' carriers.
+    For x with K'-carrier \<sigma>' and K-carrier \<tau>, \<sigma>' \<subseteq> \<tau>.
+    Equivalently: x \<in> rel_interior \<sigma>' \<and> x \<in> \<sigma> \<in> K \<Rightarrow> \<sigma>' \<subseteq> \<sigma>.
+    This is the analogue of geotop_complex_rel_interior_imp_subset that
+    bridges the K' and K complexes via the subdivision relation. **)
+lemma geotop_K'_carrier_in_K_simplex:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK': "geotop_is_complex K'"
+  assumes hsub: "geotop_is_subdivision K' K"
+  assumes h\<sigma>': "\<sigma>' \<in> K'"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx_ri: "x \<in> rel_interior \<sigma>'"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  shows "\<sigma>' \<subseteq> \<sigma>"
+  sorry \<comment> \<open>PLAN2 Session N+1: prove via aff hull comparison + connected
+              partition of rel_interior \<sigma>' by K-carriers. Roughly:
+              for y \<in> rel_interior \<sigma>', show y's K-carrier equals \<tau>_x
+              (K-carrier of x). By connected rel_interior \<sigma>' and finite
+              K, the K-carrier function on rel_interior \<sigma>' is constant.
+              Hence rel_interior \<sigma>' \<subseteq> rel_interior \<tau>_x \<subseteq> \<tau>_x \<subseteq> \<sigma>.
+              Take closure to get \<sigma>' \<subseteq> \<tau>_x \<subseteq> \<sigma>.\<close>
+
+(** PLAN2 Session N+1 — main covering lemma. **)
+lemma geotop_subdivision_covers_simplex:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK': "geotop_is_complex K'"
+  assumes hKfin: "finite K"
+  assumes hK'fin: "finite K'"
+  assumes hsub: "geotop_is_subdivision K' K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "\<sigma> = \<Union>{\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>}"
+proof
+  show "\<Union>{\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>} \<subseteq> \<sigma>" by (by100 blast)
+next
+  show "\<sigma> \<subseteq> \<Union>{\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>}"
+  proof
+    fix x assume hx: "x \<in> \<sigma>"
+    (** x \<in> \<sigma> \<subseteq> |K| = |K'|, so x has a K'-carrier. **)
+    have hx_K: "x \<in> geotop_polyhedron K"
+      using hx h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+    have h_polyeq: "geotop_polyhedron K = geotop_polyhedron K'"
+      using hsub unfolding geotop_is_subdivision_def by (by100 simp)
+    have hx_K': "x \<in> geotop_polyhedron K'" using hx_K h_polyeq by (by100 simp)
+    obtain \<sigma>' where h\<sigma>'K': "\<sigma>' \<in> K'" and hx_ri: "x \<in> rel_interior \<sigma>'"
+      using geotop_complex_polyhedron_point_carrier[OF hK' hK'fin hx_K'] by (by100 blast)
+    (** \<sigma>' \<subseteq> \<sigma> by the bridge lemma. **)
+    have h\<sigma>'_sub: "\<sigma>' \<subseteq> \<sigma>"
+      by (rule geotop_K'_carrier_in_K_simplex[OF hK hK' hsub h\<sigma>'K' h\<sigma>K hx_ri hx])
+    (** x \<in> \<sigma>' (since rel_interior \<subseteq> closure). **)
+    have hx_\<sigma>': "x \<in> \<sigma>'" using hx_ri rel_interior_subset by (by100 blast)
+    show "x \<in> \<Union>{\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>}"
+      using h\<sigma>'K' h\<sigma>'_sub hx_\<sigma>' by (by100 blast)
+  qed
+qed
+
 (** BUG FIX 2026-04-25: The original statement of this lemma was FALSE.
     Counterexample: a small convex disk centered on a vertex in a 2-triangle
     simplicial complex spans multiple simplices (rel_interior of T_1, T_2,
