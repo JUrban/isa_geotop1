@@ -10277,8 +10277,39 @@ proof -
   show ?thesis by (rule geotop_simplex_closure_rel_interior[OF h\<sigma>_simp])
 qed
 
-(** K-carrier of a barycenter b(σ) (with σ ∈ K) is exactly σ.
-    Direct from geotop_barycenter_in_rel_interior + geotop_K_carrier_eq. **)
+(** K-carrier of a vertex v ∈ V(σ) (σ ∈ K complex) is exactly {v}.
+    Combines: (a) {v} is a face of σ since {v} ⊆ V; (b) K closed under
+    faces, so {v} ∈ K; (c) rel_interior {v} = {v} (singleton case);
+    (d) K_carrier_eq. **)
+lemma geotop_K_carrier_vertex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hVsv: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  shows "geotop_K_carrier K v = {v}"
+proof -
+  (** {v} is a face of σ: take W = {v}, V from hVsv, ⊆ V, nonempty,
+      conv hull {v} = {v}. **)
+  have h_v_hull: "{v} = geotop_convex_hull {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}::'a set"] by (by100 simp)
+  have hWne: "({v}::'a set) \<noteq> {}" by (by100 simp)
+  have hWsubV: "{v} \<subseteq> V" using hvV by (by100 blast)
+  have h_face: "geotop_is_face {v} \<sigma>"
+    unfolding geotop_is_face_def
+    using hVsv hWne hWsubV h_v_hull by (by100 blast)
+  (** K closed under faces ⟹ {v} ∈ K. **)
+  have h_face_closed:
+    "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+  have h_vK: "{v} \<in> K" using h_face_closed h\<sigma>K h_face by (by100 blast)
+  (** v ∈ rel_interior {v}: singleton's relative interior = singleton. **)
+  have h_v_ri: "v \<in> rel_interior {v}"
+    using rel_interior_sing[of v] by (by100 simp)
+  show ?thesis by (rule geotop_K_carrier_eq[OF hK h_vK h_v_ri])
+qed
+
+(** K-carrier of a barycenter b(σ) (with σ ∈ K) is exactly σ. **)
 lemma geotop_K_carrier_barycenter:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
