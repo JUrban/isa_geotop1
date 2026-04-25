@@ -9863,9 +9863,60 @@ proof -
   qed
   (** Hence each v \<in> V_\<sigma>' is in conv hull U = F. **)
   have hV\<sigma>'_sub_F: "V\<^sub>\<sigma>\<^sub>' \<subseteq> F"
-    sorry \<comment> \<open>For v \<in> V_\<sigma>': v = \<Sum>_{w \<in> V_\<theta>} \<alpha>_v_w w. By h\<alpha>_supp_in_U,
-                this restricts to support \<subseteq> U. v = \<Sum>_{w \<in> U} \<alpha>_v_w w \<in>
-                conv hull U = F via convex_hull_finite witness.\<close>
+  proof
+    fix v assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'"
+    (** \<alpha> v is zero outside U. **)
+    have h\<alpha>v_zero_off_U: "\<forall>w\<in>V\<^sub>\<theta> - U. \<alpha> v w = 0"
+    proof (rule ballI)
+      fix w assume hw: "w \<in> V\<^sub>\<theta> - U"
+      have hwV: "w \<in> V\<^sub>\<theta>" using hw by (by100 blast)
+      have hw_nU: "w \<notin> U" using hw by (by100 blast)
+      have h\<alpha>_nn: "0 \<le> \<alpha> v w" using h\<alpha>_prop hv hwV by (by100 blast)
+      have h_not_pos: "\<not> (0 < \<alpha> v w)"
+        using h\<alpha>_supp_in_U hv hwV hw_nU by (by100 blast)
+      show "\<alpha> v w = 0" using h\<alpha>_nn h_not_pos by (by100 force)
+    qed
+    (** sum \<alpha> v U = 1. **)
+    have h\<alpha>v_sum_V\<theta>: "sum (\<alpha> v) V\<^sub>\<theta> = 1" using h\<alpha>_prop hv by (by100 blast)
+    have h_VmU_fin': "finite (V\<^sub>\<theta> - U)" using hV\<theta>_fin by (by100 simp)
+    have h_V_split': "V\<^sub>\<theta> = U \<union> (V\<^sub>\<theta> - U)" using hU_sub by (by100 blast)
+    have h_disj': "U \<inter> (V\<^sub>\<theta> - U) = {}" by (by100 blast)
+    have h\<alpha>v_split: "sum (\<alpha> v) V\<^sub>\<theta> = sum (\<alpha> v) U + sum (\<alpha> v) (V\<^sub>\<theta> - U)"
+      using sum.union_disjoint[OF hU_fin h_VmU_fin' h_disj'] h_V_split'
+      by (by100 simp)
+    have h\<alpha>v_VmU_zero: "sum (\<alpha> v) (V\<^sub>\<theta> - U) = 0" using h\<alpha>v_zero_off_U by (by100 simp)
+    have h\<alpha>v_U_sum: "sum (\<alpha> v) U = 1"
+      using h\<alpha>v_split h\<alpha>v_VmU_zero h\<alpha>v_sum_V\<theta> by (by100 linarith)
+    (** \<alpha> v ≥ 0 on U. **)
+    have h\<alpha>v_U_nn: "\<forall>w\<in>U. 0 \<le> \<alpha> v w"
+    proof
+      fix w assume hwU: "w \<in> U"
+      have hw_V\<theta>: "w \<in> V\<^sub>\<theta>" using hwU hU_sub by (by100 blast)
+      show "0 \<le> \<alpha> v w" using h\<alpha>_prop hv hw_V\<theta> by (by100 blast)
+    qed
+    (** \<Sum>_{w\<in>U} \<alpha> v w *\<^sub>R w = v. **)
+    have h\<alpha>v_combo_V\<theta>: "(\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = v" using h\<alpha>_prop hv by (by100 blast)
+    have h_combo_split: "(\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w)
+                          = (\<Sum>w\<in>U. \<alpha> v w *\<^sub>R w) + (\<Sum>w\<in>V\<^sub>\<theta> - U. \<alpha> v w *\<^sub>R w)"
+      using sum.union_disjoint[OF hU_fin h_VmU_fin' h_disj', of "\<lambda>w. \<alpha> v w *\<^sub>R w"]
+            h_V_split' by (by100 simp)
+    have h_VmU_combo_zero: "(\<Sum>w\<in>V\<^sub>\<theta> - U. \<alpha> v w *\<^sub>R w) = 0"
+    proof (rule sum.neutral)
+      show "\<forall>w\<in>V\<^sub>\<theta> - U. \<alpha> v w *\<^sub>R w = 0" using h\<alpha>v_zero_off_U by (by100 simp)
+    qed
+    have h\<alpha>v_U_combo: "(\<Sum>w\<in>U. \<alpha> v w *\<^sub>R w) = v"
+      using h_combo_split h_VmU_combo_zero h\<alpha>v_combo_V\<theta> by (by100 simp)
+    (** Apply convex_hull_finite. **)
+    have h_F_chull: "convex hull U
+                       = {y. \<exists>u. (\<forall>w\<in>U. 0 \<le> u w) \<and> sum u U = 1
+                                 \<and> (\<Sum>w\<in>U. u w *\<^sub>R w) = y}"
+      by (rule convex_hull_finite[OF hU_fin])
+    have h_witness: "\<exists>u. (\<forall>w\<in>U. 0 \<le> u w) \<and> sum u U = 1
+                          \<and> (\<Sum>w\<in>U. u w *\<^sub>R w) = v"
+      using h\<alpha>v_U_nn h\<alpha>v_U_sum h\<alpha>v_U_combo by (by100 blast)
+    have hv_F: "v \<in> convex hull U" using h_F_chull h_witness by (by100 blast)
+    show "v \<in> F" unfolding F_def using hv_F by (by100 simp)
+  qed
   have h\<sigma>'_sub_F: "\<sigma>' \<subseteq> F"
   proof -
     have h_F_conv: "convex F" unfolding F_def by (by100 simp)
