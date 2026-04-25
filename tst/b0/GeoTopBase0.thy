@@ -9459,6 +9459,35 @@ proof -
   show ?thesis using h\<tau>_K hx_ri by (by100 blast)
 qed
 
+(** USEFUL TRUE COROLLARY: For K' a subdivision of K, every K'-simplex is
+    contained in some K-simplex. Trivially follows from geotop_refines.
+    Useful for future iterated_Sd refinement work. **)
+lemma geotop_subdivision_simplex_in_parent:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  assumes h\<sigma>'K': "\<sigma>' \<in> K'"
+  shows "\<exists>\<sigma>\<in>K. \<sigma>' \<subseteq> \<sigma>"
+proof -
+  have h_refines: "geotop_refines K' K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  show ?thesis using h_refines h\<sigma>'K' unfolding geotop_refines_def by (by100 blast)
+qed
+
+(** USEFUL TRUE COROLLARY: For K finite complex and tau in iterated Sd^m K,
+    tau is contained in some K-simplex. Foundational for the Munkres-style
+    fix of iterated_Sd_refines_subdivision. **)
+lemma geotop_iterated_Sd_simplex_in_K_simplex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<tau>: "\<tau> \<in> geotop_iterated_Sd m K"
+  shows "\<exists>\<sigma>\<in>K. \<tau> \<subseteq> \<sigma>"
+proof -
+  have h_sub: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
+    by (rule geotop_iterated_Sd_is_subdivision[OF hK hKfin])
+  show ?thesis by (rule geotop_subdivision_simplex_in_parent[OF h_sub h\<tau>])
+qed
+
 (** WARNING: This lemma is FALSE as stated. Counterexample: A small convex
     disk centered on a vertex in a 2-triangle simplicial complex spans
     multiple simplices (rel_interior of T_1, T_2, edge e, etc.) and is not
