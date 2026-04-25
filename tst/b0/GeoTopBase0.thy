@@ -5372,17 +5372,73 @@ proof -
               \<inter> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
           using h_rhs_sub_c1 h_rhs_sub_c2 by (by100 blast)
         (** Hard direction: intersection of conv hulls \<subseteq> conv hull of common sub-flag.
-            Moise Lemma 4.5 classical argument. This is the only remaining non-trivial
-            sorry. **)
+            Uses carrier lemma machinery to reduce to the deep "support in c_1 \<inter> c_2"
+            combinatorial step. **)
+        have hc\<^sub>1_subK: "set c\<^sub>1 \<subseteq> K" using hc\<^sub>1 unfolding flags_def by (by100 blast)
+        have hc\<^sub>1_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c\<^sub>1"
+          using hc\<^sub>1 unfolding flags_def by (by100 blast)
+        have hc\<^sub>1_dist: "distinct c\<^sub>1" using hc\<^sub>1 unfolding flags_def by (by100 blast)
+        have hc\<^sub>2_subK: "set c\<^sub>2 \<subseteq> K" using hc\<^sub>2 unfolding flags_def by (by100 blast)
+        have hc\<^sub>2_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c\<^sub>2"
+          using hc\<^sub>2 unfolding flags_def by (by100 blast)
+        have hc\<^sub>2_dist: "distinct c\<^sub>2" using hc\<^sub>2 unfolding flags_def by (by100 blast)
         have h_lhs_sub:
           "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1) \<inter>
            geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
             \<subseteq> geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-          sorry \<comment> \<open>Moise 4.5 non-nested: for x in both chain simplexes, its bary
-                    coords on each flag are uniquely determined; the V(top) coords
-                    are equal, forcing the supports to lie in the common sub-chain
-                    bary image. Classical combinatorial argument via rel_interior
-                    partition of |K| + coefficient matching.\<close>
+        proof
+          fix x assume hx_in: "x \<in> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)
+                                  \<inter> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+          have hx_T1: "x \<in> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+            using hx_in by (by100 blast)
+          have hx_T2: "x \<in> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+            using hx_in by (by100 blast)
+          obtain \<alpha> :: "'a set \<Rightarrow> real"
+            where h\<alpha>_nn: "\<forall>\<sigma>\<in>set c\<^sub>1. 0 \<le> \<alpha> \<sigma>"
+              and h\<alpha>_sum: "sum \<alpha> (set c\<^sub>1) = 1"
+              and h\<alpha>_combo: "x = (\<Sum>\<sigma>\<in>set c\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using geotop_in_T_chain_to_alpha[OF hK hc\<^sub>1_subK hx_T1] by (by100 blast)
+          obtain \<beta> :: "'a set \<Rightarrow> real"
+            where h\<beta>_nn: "\<forall>\<sigma>\<in>set c\<^sub>2. 0 \<le> \<beta> \<sigma>"
+              and h\<beta>_sum: "sum \<beta> (set c\<^sub>2) = 1"
+              and h\<beta>_combo: "x = (\<Sum>\<sigma>\<in>set c\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using geotop_in_T_chain_to_alpha[OF hK hc\<^sub>2_subK hx_T2] by (by100 blast)
+          obtain \<sigma>\<^sub>1 where h\<sigma>\<^sub>1_c\<^sub>1: "\<sigma>\<^sub>1 \<in> set c\<^sub>1"
+                       and h\<sigma>\<^sub>1_pos: "0 < \<alpha> \<sigma>\<^sub>1"
+                       and h\<sigma>\<^sub>1_top: "\<forall>\<tau>\<in>set c\<^sub>1. 0 < \<alpha> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>1"
+            using geotop_chain_support_max[OF hc\<^sub>1_sorted hc\<^sub>1_dist h\<alpha>_nn h\<alpha>_sum]
+            by (by100 blast)
+          have h\<sigma>\<^sub>1_top_inst: "\<And>\<tau>. \<tau> \<in> set c\<^sub>1 \<Longrightarrow> 0 < \<alpha> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>1"
+            using h\<sigma>\<^sub>1_top by (by100 blast)
+          have hx_ri\<^sub>1: "x \<in> rel_interior \<sigma>\<^sub>1"
+            by (rule geotop_chain_bary_rel_interior[OF hK hc\<^sub>1_subK h\<alpha>_nn h\<alpha>_sum
+                  h\<alpha>_combo h\<sigma>\<^sub>1_c\<^sub>1 h\<sigma>\<^sub>1_pos h\<sigma>\<^sub>1_top_inst])
+          obtain \<sigma>\<^sub>2 where h\<sigma>\<^sub>2_c\<^sub>2: "\<sigma>\<^sub>2 \<in> set c\<^sub>2"
+                       and h\<sigma>\<^sub>2_pos: "0 < \<beta> \<sigma>\<^sub>2"
+                       and h\<sigma>\<^sub>2_top: "\<forall>\<tau>\<in>set c\<^sub>2. 0 < \<beta> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>2"
+            using geotop_chain_support_max[OF hc\<^sub>2_sorted hc\<^sub>2_dist h\<beta>_nn h\<beta>_sum]
+            by (by100 blast)
+          have h\<sigma>\<^sub>2_top_inst: "\<And>\<tau>. \<tau> \<in> set c\<^sub>2 \<Longrightarrow> 0 < \<beta> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>2"
+            using h\<sigma>\<^sub>2_top by (by100 blast)
+          have hx_ri\<^sub>2: "x \<in> rel_interior \<sigma>\<^sub>2"
+            by (rule geotop_chain_bary_rel_interior[OF hK hc\<^sub>2_subK h\<beta>_nn h\<beta>_sum
+                  h\<beta>_combo h\<sigma>\<^sub>2_c\<^sub>2 h\<sigma>\<^sub>2_pos h\<sigma>\<^sub>2_top_inst])
+          have h\<sigma>\<^sub>1_K: "\<sigma>\<^sub>1 \<in> K" using h\<sigma>\<^sub>1_c\<^sub>1 hc\<^sub>1_subK by (by100 blast)
+          have h\<sigma>\<^sub>2_K: "\<sigma>\<^sub>2 \<in> K" using h\<sigma>\<^sub>2_c\<^sub>2 hc\<^sub>2_subK by (by100 blast)
+          have h\<sigma>_eq: "\<sigma>\<^sub>1 = \<sigma>\<^sub>2"
+            by (rule geotop_complex_point_in_unique_rel_interior[OF hK h\<sigma>\<^sub>1_K h\<sigma>\<^sub>2_K
+                  hx_ri\<^sub>1 hx_ri\<^sub>2])
+          have h\<tau>_c\<^sub>2: "\<sigma>\<^sub>1 \<in> set c\<^sub>2" using h\<sigma>\<^sub>2_c\<^sub>2 h\<sigma>_eq by (by100 simp)
+          have h\<tau>_in_inter: "\<sigma>\<^sub>1 \<in> set c\<^sub>1 \<inter> set c\<^sub>2"
+            using h\<sigma>\<^sub>1_c\<^sub>1 h\<tau>_c\<^sub>2 by (by100 blast)
+          (** DEEP STEP (Moise 4.5 combinatorial argument): support of \<alpha>, \<beta>
+              are forced to lie in (set c_1 \<inter> set c_2) by unique-bary-coord on V(\<tau>). **)
+          show "x \<in> geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+            sorry \<comment> \<open>Deep combinatorial step: support of \<alpha> on c_1 (and \<beta> on c_2)
+                      is contained in set c_1 \<inter> set c_2, via unique bary coords \<gamma>
+                      on V(\<tau>) where \<tau> = \<sigma>_1 = \<sigma>_2. Reduces to: \<alpha>=0 outside
+                      c_1 \<inter> c_2.\<close>
+        qed
         show ?thesis using h_rhs_sub h_lhs_sub by (by100 blast)
       qed
     qed
