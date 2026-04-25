@@ -325,3 +325,61 @@ should be attempted in a fresh focused session with no other competing
 work. The current state (sorry at line 9985 with full documentation;
 all bridge infrastructure in place) is a stable checkpoint suitable
 for handoff or pause.
+
+## NEW INFRASTRUCTURE 2026-04-25 (post-bridge-stabilization session)
+
+A 21-piece carrier-map infrastructure layer has been added on top of
+the bridge lemma. All commits green-built. Files: `b0/GeoTopBase0.thy`.
+
+### Carrier-map function
+
+- `geotop_K_carrier K x = THE σ. σ ∈ K ∧ x ∈ rel_interior σ`
+- `geotop_K_carrier_eq`: σ witness ⟹ K_carrier = σ
+- `geotop_K_carrier_in`: K_carrier ∈ K
+- `geotop_K_carrier_rel_interior`: x ∈ rel_interior (K_carrier x)
+- `geotop_K_carrier_subdiv_subset`: K'-carrier x ⊆ K-carrier x
+- `geotop_K_carrier_contains_point`: x ∈ K_carrier x
+- `geotop_K_carrier_in_polyhedron`: K_carrier ⊆ |K|
+- `geotop_K_carrier_self_in_rel_interior`: alias for K_carrier_eq
+- `geotop_K_carrier_subset_containing_simplex`: x ∈ σ ⟹ K_carrier x ⊆ σ
+- `geotop_K_carrier_shared_rel_interior`: same rel_interior ⟹ same carrier
+- `geotop_K_carrier_barycenter`: K_carrier (b σ) = σ for σ ∈ K
+- `geotop_K_carrier_vertex`: K_carrier v = {v} for v ∈ V(σ), σ ∈ K
+- `geotop_K_carrier_chain_combo`: K_carrier of chain-positive-combo = chain top
+
+### Uniqueness facts
+
+- `geotop_carrier_unique`: rel_interior membership determines K-simplex uniquely
+- `geotop_complex_polyhedron_point_carrier_unique`: ∃! σ. σ ∈ K ∧ x ∈ rel_interior σ
+- `geotop_K'_carrier_in_K_carrier`: bridge in carrier-function form
+
+### Simplex/complex/polyhedron exports
+
+- `geotop_simplex_is_convex`, `_compact`, `_closed`, `_nonempty`
+- `geotop_simplex_vertices_subset`, `_obtain_HOL`
+- `geotop_simplex_closure_rel_interior`
+- `geotop_simplex_rel_interior_nonempty`
+- `geotop_finite_subset_simplex_hull_subset`
+- Complex-context corollaries for each (`_complex_simplex_*`)
+- `geotop_complex_polyhedron_compact`, `_closed`, `_bounded`
+- `geotop_subK'_family_finite`
+
+### Stability fix
+
+`geotop_K'_carrier_in_K_simplex` (the bridge) had a 5-fact
+by100 simp chain that flaked under load. Decomposed into three
+2-fact stages (commit `d9b226f7`).
+
+### How this maps to N+2 reformulation
+
+For an Sd^m K-simplex τ with chain σ_0 ⊊ ... ⊊ σ_p in K:
+- Each Sd-vertex b_i = barycenter of some sub-flag of K
+- K_carrier(b_i) = chain-top of that sub-flag (via K_carrier_chain_combo)
+- For any positive convex-combination interior point x ∈ rel_interior τ,
+  K_carrier(x) = max chain-top across positive contributors
+- The bridge gives: K'_carrier(x) ⊆ K_carrier(x)
+- Refinement claim: for m large, K'_carrier(x) is constant on V_τ
+
+The refinement claim (constancy on V_τ as m → ∞) is the remaining
+Sd-vertex-concentration argument. The infrastructure to STATE and
+manipulate it is now all in place.
