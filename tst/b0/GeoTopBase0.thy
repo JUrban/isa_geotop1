@@ -9770,8 +9770,55 @@ proof -
   qed
   (** By AI uniqueness on V_\<theta>: ux = u_combined. **)
   have h_ux_eq: "\<forall>w\<in>V\<^sub>\<theta>. ux w = u_combined w"
-    sorry \<comment> \<open>Both are nonneg V_\<theta>-bary representations of x; by AI uniqueness
-                via affine_dependent_explicit_finite, equal pointwise.\<close>
+  proof -
+    define lam_diff where "lam_diff = (\<lambda>w. ux w - u_combined w)"
+    have h_diff_sum: "sum lam_diff V\<^sub>\<theta> = 0"
+    proof -
+      have h_split: "sum lam_diff V\<^sub>\<theta> = sum ux V\<^sub>\<theta> - sum u_combined V\<^sub>\<theta>"
+        unfolding lam_diff_def
+        using sum_subtractf[of ux u_combined V\<^sub>\<theta>] by (by100 simp)
+      show ?thesis using h_split hux_sum h_combined_sum by (by100 simp)
+    qed
+    have h_diff_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. lam_diff w *\<^sub>R w) = 0"
+    proof -
+      have h_each: "\<And>w. lam_diff w *\<^sub>R w = (ux w *\<^sub>R w) - (u_combined w *\<^sub>R w)"
+      proof -
+        fix w :: 'a
+        have h_ldd: "(ux w - u_combined w) *\<^sub>R w = (ux w) *\<^sub>R w - (u_combined w) *\<^sub>R w"
+          by (rule scaleR_left_diff_distrib)
+        show "lam_diff w *\<^sub>R w = (ux w *\<^sub>R w) - (u_combined w *\<^sub>R w)"
+          unfolding lam_diff_def using h_ldd by (by100 simp)
+      qed
+      have h_split_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. lam_diff w *\<^sub>R w)
+                             = (\<Sum>w\<in>V\<^sub>\<theta>. ux w *\<^sub>R w - u_combined w *\<^sub>R w)"
+        using h_each by (by100 simp)
+      have h_subtractf: "(\<Sum>w\<in>V\<^sub>\<theta>. ux w *\<^sub>R w - u_combined w *\<^sub>R w)
+                          = (\<Sum>w\<in>V\<^sub>\<theta>. ux w *\<^sub>R w) - (\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w)"
+        using sum_subtractf[of "\<lambda>w. ux w *\<^sub>R w" "\<lambda>w. u_combined w *\<^sub>R w" V\<^sub>\<theta>]
+        by (by100 simp)
+      show ?thesis using h_split_combo h_subtractf hux_combo h_combined_combo by (by100 simp)
+    qed
+    have h_ai_explicit: "affine_dependent V\<^sub>\<theta>
+                          = (\<exists>U. sum U V\<^sub>\<theta> = 0 \<and> (\<exists>v\<in>V\<^sub>\<theta>. U v \<noteq> 0)
+                                  \<and> (\<Sum>v\<in>V\<^sub>\<theta>. U v *\<^sub>R v) = 0)"
+      using affine_dependent_explicit_finite[OF hV\<theta>_fin] by (by100 blast)
+    have h_no_witness: "\<not> (\<exists>U. sum U V\<^sub>\<theta> = 0 \<and> (\<exists>v\<in>V\<^sub>\<theta>. U v \<noteq> 0)
+                              \<and> (\<Sum>v\<in>V\<^sub>\<theta>. U v *\<^sub>R v) = 0)"
+      using h_ai_explicit hV\<theta>_ai by (by100 blast)
+    show "\<forall>w\<in>V\<^sub>\<theta>. ux w = u_combined w"
+    proof
+      fix w assume hw: "w \<in> V\<^sub>\<theta>"
+      show "ux w = u_combined w"
+      proof (rule ccontr)
+        assume h_ne: "ux w \<noteq> u_combined w"
+        have h_diff_ne: "lam_diff w \<noteq> 0" unfolding lam_diff_def using h_ne by (by100 simp)
+        have h_witness: "\<exists>U. sum U V\<^sub>\<theta> = 0 \<and> (\<exists>v\<in>V\<^sub>\<theta>. U v \<noteq> 0)
+                              \<and> (\<Sum>v\<in>V\<^sub>\<theta>. U v *\<^sub>R v) = 0"
+          using h_diff_sum h_diff_combo hw h_diff_ne by (by100 blast)
+        show False using h_witness h_no_witness by (by100 blast)
+      qed
+    qed
+  qed
   (** For w \<notin> U: ux w = 0, hence u_combined w = 0, hence each \<gamma>_v * \<alpha>_v_w = 0
       (as terms are \<ge> 0 and sum to 0). \<gamma>_v > 0, so \<alpha>_v_w = 0. **)
   have h\<alpha>_supp_in_U: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. \<forall>w\<in>V\<^sub>\<theta>. 0 < \<alpha> v w \<longrightarrow> w \<in> U"
