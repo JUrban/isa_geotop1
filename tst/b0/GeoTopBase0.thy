@@ -10277,6 +10277,26 @@ proof -
   show ?thesis by (rule geotop_simplex_closure_rel_interior[OF h\<sigma>_simp])
 qed
 
+(** K-carrier of a point in a K-simplex σ is contained in σ.
+    Direct from geotop_complex_rel_interior_imp_subset. **)
+lemma geotop_K_carrier_subset_containing_simplex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  shows "geotop_K_carrier K x \<subseteq> \<sigma>"
+proof -
+  have hx_K: "x \<in> geotop_polyhedron K"
+    unfolding geotop_polyhedron_def using h\<sigma>K hx\<sigma> by (by100 blast)
+  have h\<tau>_K: "geotop_K_carrier K x \<in> K"
+    by (rule geotop_K_carrier_in[OF hK hKfin hx_K])
+  have hx_ri: "x \<in> rel_interior (geotop_K_carrier K x)"
+    by (rule geotop_K_carrier_rel_interior[OF hK hKfin hx_K])
+  show ?thesis
+    by (rule geotop_complex_rel_interior_imp_subset[OF hK h\<tau>_K h\<sigma>K hx_ri hx\<sigma>])
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
