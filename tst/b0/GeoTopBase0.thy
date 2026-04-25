@@ -4189,6 +4189,21 @@ lemma geotop_subK'_family_finite:
   shows "finite {\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>}"
   using hK'fin by (by100 simp)
 
+(** Vertex set of a simplex is a subset of the simplex. Used repeatedly
+    inline; named export reduces 3-line duplication. **)
+lemma geotop_simplex_vertices_subset:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  shows "V \<subseteq> \<sigma>"
+proof -
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  show ?thesis using h\<sigma>_HOL hV_hull by (by100 simp)
+qed
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
