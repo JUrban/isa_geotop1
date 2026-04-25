@@ -11042,9 +11042,50 @@ proof -
 
       The TRUE classical claim (Munkres \<S>15-16): for K finite complex and K' a
       subdivision of K, \<exists>m. \<forall>\<tau> \<in> Sd^m K. \<exists>\<sigma>' \<in> K'. \<tau> \<subseteq> \<sigma>'.
-      Proof requires the carrier-map structure of Sd-vertices (now in place
-      via Munkres 14.4 biconditional, geotop_K_carrier function, closed_star,
-      and geotop_chain_simplex_vertices_in_top). **)
+
+      DETAILED PROOF SKETCH (CLAUDE.md Phase 3, sorry-only structure to be
+      filled in):
+
+      1. Setup: |K| = |K'| compact (finite-complex polyhedron). The K'-vertex
+         open stars {open_star(v, K') : v \<in> V(K')} form an open cover of |K|.
+         By compactness, get Lebesgue number \<epsilon> > 0:
+            \<forall>T \<subseteq> |K|. T \<noteq> {} \<longrightarrow> diam T < \<epsilon> \<longrightarrow> \<exists>v \<in> V(K'). T \<subseteq> open_star(v, K')
+
+      2. Mesh shrinkage: lim_{m\<rightarrow>\<infinity>} mesh(Sd^m K) = 0 (already proven via
+         geotop_mesh_iterated_Sd_tends_to_zero). Pick m\<^sub>0 with mesh(Sd^m\<^sub>0 K) < \<epsilon>.
+
+      3. For each \<tau> \<in> Sd^m\<^sub>0 K: diam \<tau> \<le> mesh(Sd^m\<^sub>0 K) < \<epsilon>, so by Lebesgue,
+         \<tau> \<subseteq> open_star(v, K') for some K'-vertex v. Hence V_\<tau> \<subseteq> open_star(v, K').
+
+      4. KEY ANALYTIC STEP (the actual Sd-vertex concentration): show that
+         V_\<tau> has the open-star intersection property in K':
+            \<bigcap>_{w \<in> V_\<tau>} open_star(w, K') \<noteq> \<emptyset>
+
+         Proof uses:
+         (a) Sd-vertex barycentric structure: V_\<tau> = barycenter ` (set c) for
+             some K-flag chain c (the underlying K-flag of \<tau>).
+             [Established via geotop_chain_simplex_vertices_in_top.]
+         (b) Each barycenter w \<in> V_\<tau> has K'-carrier(w) \<subseteq> K-carrier(w) (bridge
+             lemma geotop_K'_carrier_in_K_simplex).
+         (c) The K-carriers form a chain in K (chain top \<sigma>_top = last c).
+         (d) For mesh small (< \<epsilon>), the K'-carriers \<sigma>'_w = K'-carrier(w) all
+             contain v as a K'-vertex (from V_\<tau> \<subseteq> open_star(v, K')).
+         (e) ANALYTIC ARGUMENT: in \<sigma>_top \<in> K (chain top), the K'-simplices
+             \<sigma>'_w containing v form a finite collection. By Sd-flag chain
+             structure + mesh bound, there's a SINGLE K'-simplex
+             \<sigma>'_max ⊇ \<sigma>'_w for all w. Specifically, the K'-simplex
+             \<sigma>'_max = K'-carrier(barycenter \<tau>) contains all V_\<tau>.
+
+         Alternative: direct construction using carrier-map + chain top.
+
+      5. By Munkres 14.4 \<Longleftarrow> (geotop_open_star_inter_to_simplex applied in K'),
+         step 4 gives \<exists>\<sigma>' \<in> K'. V_\<tau> \<subseteq> \<sigma>'.
+
+      6. Convexity: \<tau> = conv hull V_\<tau>. Since \<sigma>' \<in> K' is convex (simplex),
+         \<tau> \<subseteq> \<sigma>'.
+
+      Step 4(e) is THE remaining hard step. Step 5 onwards uses already-built
+      Munkres 14.4 + carrier-map infrastructure. **)
   have h_refines_aux: "\<exists>m. \<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
     sorry
   obtain m where hSdm_in_K': "\<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
