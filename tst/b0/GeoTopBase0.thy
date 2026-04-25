@@ -10732,6 +10732,25 @@ proof -
   show ?thesis by (rule geotop_chain_barycenters_in_top[OF hK h_chain_top h_in_K_set])
 qed
 
+(** Munkres 14.4 + chain-vertex-in-top: For c a K-flag, V_\<tau> = barycenter ` (set c)
+    is contained in last c \<in> K. So by Munkres 14.4 we get
+    \<bigcap>_{w \<in> V_\<tau>} open_star(w, K) \<noteq> {}. Useful for refinement arguments. **)
+lemma geotop_chain_simplex_open_star_inter:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_fl: "c \<in> geotop_flags K"
+  shows "(\<Inter>w \<in> geotop_barycenter ` set c. geotop_open_star K w) \<noteq> {}"
+proof -
+  have hc_ne: "c \<noteq> []" using hc_fl unfolding geotop_flags_def by (by100 blast)
+  have h_last_in: "last c \<in> set c" using hc_ne by (by100 simp)
+  have hc_subK: "set c \<subseteq> K" using hc_fl unfolding geotop_flags_def by (by100 blast)
+  have h_last_K: "last c \<in> K" using h_last_in hc_subK by (by100 blast)
+  have hV_sub: "geotop_barycenter ` set c \<subseteq> last c"
+    by (rule geotop_chain_simplex_vertices_in_top[OF hK hc_fl])
+  show ?thesis
+    by (rule geotop_simplex_to_open_star_inter[OF hK h_last_K hV_sub])
+qed
+
 (** K-carriers of barycenters of K-simplices match the simplices. For S \<subseteq> K
     a finite set of K-simplices, the K-carrier image equals S itself
     (each barycenter recovers its source K-simplex). **)
