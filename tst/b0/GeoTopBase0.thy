@@ -9205,14 +9205,22 @@ qed
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
 
-(** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
-    is contained in some single simplex. This is a foundational fact about
-    polyhedral structure — convex sets respect the simplex decomposition.
-    Proof sketch: convex T is connected; |K'| is a disjoint union of rel_interiors;
-    straight-line paths through incomparable simplices exit |K'| (affine extrapolation
-    lands outside the simplicial complex); hence T's K-carriers form a structure
-    contained in a single maximal simplex. ~200 lines of combinatorial-topological
-    reasoning (rel_interior partition + affine hull argument). **)
+(** WARNING: This lemma is FALSE as stated. Counterexample: A small convex
+    disk centered on a vertex in a 2-triangle simplicial complex spans
+    multiple simplices (rel_interior of T_1, T_2, edge e, etc.) and is not
+    contained in any single one. The earlier "proof sketch" claim that
+    "convex set's K-carriers form a chain" is incorrect — non-comparable
+    simplices T_1, T_2 sharing an edge can both contain points of T.
+
+    Correct statement (TRUE): For T convex \<subseteq> |K|, T \<subseteq> closed_star(v)
+    = union of K-simplices containing some vertex v. (T may span multiple
+    simplices; cannot be put in single σ.)
+
+    The downstream user h_star_to_simplex_del needs single \<sigma>, which is
+    true under STRONGER hypotheses (e.g., T = simplex of a subdivision
+    that's known to refine K'). The current iterated_Sd_refines_subdivision
+    proof strategy via convex_in_complex_in_simplex is fundamentally flawed
+    and needs refactoring (~300 lines, ~Munkres' carrier-map approach). **)
 lemma geotop_convex_in_complex_in_simplex:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
