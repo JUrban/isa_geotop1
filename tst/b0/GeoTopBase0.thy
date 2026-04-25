@@ -10277,6 +10277,25 @@ proof -
   show ?thesis by (rule geotop_simplex_closure_rel_interior[OF h\<sigma>_simp])
 qed
 
+(** K-carrier of a barycenter b(σ) (with σ ∈ K) is exactly σ.
+    Direct from geotop_barycenter_in_rel_interior + geotop_K_carrier_eq. **)
+lemma geotop_K_carrier_barycenter:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "geotop_K_carrier K (geotop_barycenter \<sigma>) = \<sigma>"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  obtain V where h_sv: "geotop_simplex_vertices \<sigma> V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have h_bary_ri: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+    by (rule geotop_barycenter_in_rel_interior[OF h_sv])
+  show ?thesis by (rule geotop_K_carrier_eq[OF hK h\<sigma>K h_bary_ri])
+qed
+
 (** K-carrier of a point in a K-simplex σ is contained in σ.
     Direct from geotop_complex_rel_interior_imp_subset. **)
 lemma geotop_K_carrier_subset_containing_simplex:
