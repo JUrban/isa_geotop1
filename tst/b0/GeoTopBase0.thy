@@ -5308,8 +5308,72 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             convex_hull_insert_Int_eq with z = bary \<sigma>_1, S = \<sigma>_1,
             T = conv hull (bary ` D_1), U = conv hull (bary ` D_2).
             Then apply IH to sorted sub-flags from D_1, D_2. **)
+        (** Construct sorted sub-flags d_1, d_2 from D_1, D_2. **)
+        define d\<^sub>1 where "d\<^sub>1 = filter (\<lambda>\<sigma>. \<sigma> \<in> D\<^sub>1) c\<^sub>1"
+        define d\<^sub>2 where "d\<^sub>2 = filter (\<lambda>\<sigma>. \<sigma> \<in> D\<^sub>2) c\<^sub>2"
+        have hd\<^sub>1_set: "set d\<^sub>1 = D\<^sub>1"
+          unfolding d\<^sub>1_def D\<^sub>1_def by (by100 auto)
+        have hd\<^sub>2_set: "set d\<^sub>2 = D\<^sub>2"
+          unfolding d\<^sub>2_def D\<^sub>2_def by (by100 auto)
+        have hd\<^sub>1_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) d\<^sub>1"
+          unfolding d\<^sub>1_def using sorted_wrt_filter[OF hc\<^sub>1_sorted] by (by100 blast)
+        have hd\<^sub>2_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) d\<^sub>2"
+          unfolding d\<^sub>2_def using sorted_wrt_filter[OF hc\<^sub>2_sorted] by (by100 blast)
+        have hd\<^sub>1_dist: "distinct d\<^sub>1"
+          unfolding d\<^sub>1_def using hc\<^sub>1_dist by (by100 simp)
+        have hd\<^sub>2_dist: "distinct d\<^sub>2"
+          unfolding d\<^sub>2_def using hc\<^sub>2_dist by (by100 simp)
+        have hd\<^sub>1_ne: "d\<^sub>1 \<noteq> []" using hD\<^sub>1_ne hd\<^sub>1_set by (by100 auto)
+        have hd\<^sub>2_ne: "d\<^sub>2 \<noteq> []" using hD\<^sub>2_ne hd\<^sub>2_set by (by100 auto)
+        have hD\<^sub>1_sub_c\<^sub>1: "D\<^sub>1 \<subseteq> set c\<^sub>1" unfolding D\<^sub>1_def by (by100 blast)
+        have hD\<^sub>2_sub_c\<^sub>2: "D\<^sub>2 \<subseteq> set c\<^sub>2" unfolding D\<^sub>2_def by (by100 blast)
+        have hd\<^sub>1_subK: "set d\<^sub>1 \<subseteq> K"
+          using hd\<^sub>1_set hD\<^sub>1_sub_c\<^sub>1 hc\<^sub>1_subK by (by100 blast)
+        have hd\<^sub>2_subK: "set d\<^sub>2 \<subseteq> K"
+          using hd\<^sub>2_set hD\<^sub>2_sub_c\<^sub>2 hc\<^sub>2_subK by (by100 blast)
+        have hd\<^sub>1_flag: "d\<^sub>1 \<in> geotop_flags K"
+          unfolding geotop_flags_def
+          using hd\<^sub>1_ne hd\<^sub>1_subK hd\<^sub>1_sorted hd\<^sub>1_dist by (by100 blast)
+        have hd\<^sub>2_flag: "d\<^sub>2 \<in> geotop_flags K"
+          unfolding geotop_flags_def
+          using hd\<^sub>2_ne hd\<^sub>2_subK hd\<^sub>2_sorted hd\<^sub>2_dist by (by100 blast)
+        (** d_i are sub-chains of c_i excluding \<sigma>_1. So union strictly smaller. **)
+        have hd\<^sub>1_exclude: "\<sigma>\<^sub>1 \<notin> set d\<^sub>1"
+          using hd\<^sub>1_set D\<^sub>1_def by (by100 blast)
+        have hd\<^sub>2_exclude: "\<sigma>\<^sub>1 \<notin> set d\<^sub>2"
+          using hd\<^sub>2_set D\<^sub>2_def by (by100 blast)
+        have hd\<^sub>1_sub_c\<^sub>1: "set d\<^sub>1 \<subseteq> set c\<^sub>1"
+          using hd\<^sub>1_set D\<^sub>1_def by (by100 blast)
+        have hd\<^sub>2_sub_c\<^sub>2: "set d\<^sub>2 \<subseteq> set c\<^sub>2"
+          using hd\<^sub>2_set D\<^sub>2_def by (by100 blast)
+        have hc_union_fin: "finite (set c\<^sub>1 \<union> set c\<^sub>2)" by (by100 simp)
+        have h_union_sub: "set d\<^sub>1 \<union> set d\<^sub>2 \<subseteq> (set c\<^sub>1 \<union> set c\<^sub>2) - {\<sigma>\<^sub>1}"
+          using hd\<^sub>1_sub_c\<^sub>1 hd\<^sub>2_sub_c\<^sub>2 hd\<^sub>1_exclude hd\<^sub>2_exclude by (by100 blast)
+        have h\<sigma>\<^sub>1_in_union: "\<sigma>\<^sub>1 \<in> set c\<^sub>1 \<union> set c\<^sub>2" using h\<sigma>\<^sub>1_c\<^sub>1 by (by100 blast)
+        have h_card_diff: "card ((set c\<^sub>1 \<union> set c\<^sub>2) - {\<sigma>\<^sub>1})
+                            < card (set c\<^sub>1 \<union> set c\<^sub>2)"
+          using card_Diff1_less[OF hc_union_fin h\<sigma>\<^sub>1_in_union] by (by100 simp)
+        have h_card_less: "card (set d\<^sub>1 \<union> set d\<^sub>2) < card (set c\<^sub>1 \<union> set c\<^sub>2)"
+        proof -
+          have h_fin_diff: "finite ((set c\<^sub>1 \<union> set c\<^sub>2) - {\<sigma>\<^sub>1})"
+            using hc_union_fin by (by100 simp)
+          have h_sub_card: "card (set d\<^sub>1 \<union> set d\<^sub>2)
+                             \<le> card ((set c\<^sub>1 \<union> set c\<^sub>2) - {\<sigma>\<^sub>1})"
+            by (rule card_mono[OF h_fin_diff h_union_sub])
+          show ?thesis using h_sub_card h_card_diff by (by100 linarith)
+        qed
+        (** Apply IH. **)
+        have h_IH: "convex hull (geotop_barycenter ` set d\<^sub>1)
+                    \<inter> convex hull (geotop_barycenter ` set d\<^sub>2)
+                    \<subseteq> convex hull (geotop_barycenter ` (set d\<^sub>1 \<inter> set d\<^sub>2))"
+          by (rule less.hyps[OF h_card_less hd\<^sub>1_flag hd\<^sub>2_flag])
+        (** The main inductive argument (convex_hull_insert_Int_eq + chain-hull).
+            Remaining work: apply convex_hull_insert_Int_eq with z = bary \<sigma>_1 in
+            rel_interior \<sigma>_1 (by geotop_barycenter_in_rel_interior), T/U subsets of
+            rel_frontier \<sigma>_1 (via face_of_disjoint_rel_interior), then chain the
+            IH through. **)
         show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-          sorry \<comment> \<open>Main inductive step: convex_hull_insert_Int_eq reduction + IH.\<close>
+          sorry \<comment> \<open>Apply convex_hull_insert_Int_eq + chain through h_IH.\<close>
       qed
     qed
   qed
