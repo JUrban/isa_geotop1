@@ -3197,6 +3197,47 @@ proof (rule ccontr)
   show False using hx_in h_disj by (by100 blast)
 qed
 
+(** Munkres Lemma 14.4 (\<Longrightarrow> direction):
+    If V \<subseteq> \<sigma> for some \<sigma> \<in> K (with K a finite complex), then
+    \<bigcap>_{v\<in>V} open_star(v,K) is non-empty.
+
+    Proof: Take p = any point in rel_interior \<sigma> (nonempty since \<sigma> is a
+    simplex). For each v \<in> V \<subseteq> \<sigma>, \<sigma> \<in> K with v \<in> \<sigma>, so
+    rel_interior \<sigma> \<subseteq> open_star(v, K). p \<in> rel_interior \<sigma> gives
+    p \<in> open_star(v, K) for each v. **)
+lemma geotop_simplex_to_open_star_inter:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hV_sub: "V \<subseteq> \<sigma>"
+  shows "(\<Inter>v\<in>V. geotop_open_star K v) \<noteq> {}"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  obtain V\<^sub>\<sigma> m\<^sub>\<sigma> n\<^sub>\<sigma> where hV\<sigma>fin: "finite V\<^sub>\<sigma>" and hV\<sigma>card: "card V\<^sub>\<sigma> = n\<^sub>\<sigma> + 1"
+                       and hn\<sigma>m: "n\<^sub>\<sigma> \<le> m\<^sub>\<sigma>" and hV\<sigma>gp: "geotop_general_position V\<^sub>\<sigma> m\<^sub>\<sigma>"
+                       and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have h_sv: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    unfolding geotop_simplex_vertices_def
+    using hV\<sigma>fin hV\<sigma>card hn\<sigma>m hV\<sigma>gp h\<sigma>_hull by (by100 blast)
+  have h_bary_ri: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+    by (rule geotop_barycenter_in_rel_interior[OF h_sv])
+  define p where "p = geotop_barycenter \<sigma>"
+  have hp: "p \<in> rel_interior \<sigma>" unfolding p_def using h_bary_ri by (by100 simp)
+  have hp_in_each: "\<forall>v\<in>V. p \<in> geotop_open_star K v"
+  proof
+    fix v assume hv: "v \<in> V"
+    have hv_\<sigma>: "v \<in> \<sigma>" using hv hV_sub by (by100 blast)
+    show "p \<in> geotop_open_star K v"
+      unfolding geotop_open_star_def
+      using h\<sigma>K hv_\<sigma> hp by (by100 blast)
+  qed
+  have hp_inter: "p \<in> (\<Inter>v\<in>V. geotop_open_star K v)" using hp_in_each by (by100 blast)
+  show ?thesis using hp_inter by (by100 blast)
+qed
+
 (** Munkres Lemma 14.4 (\<Longleftarrow> direction):
     If \<bigcap>_{v\<in>V} open_star(v,K) is non-empty for finite nonempty V, then
     V is contained in some K-simplex.
