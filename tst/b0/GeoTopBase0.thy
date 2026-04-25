@@ -10572,6 +10572,43 @@ lemma geotop_K_carrier_self_in_rel_interior:
   shows "geotop_K_carrier K x = \<sigma>"
   by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx_ri])
 
+(** open_star characterization via K-carrier:
+    x \<in> open_star(v, K) iff v is in K-carrier(x). **)
+lemma geotop_open_star_eq_carrier_contains_vertex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "geotop_open_star K v = {x \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K x}"
+proof
+  show "geotop_open_star K v \<subseteq> {x \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K x}"
+  proof
+    fix x assume hx: "x \<in> geotop_open_star K v"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hv\<sigma>: "v \<in> \<sigma>" and hx_ri: "x \<in> rel_interior \<sigma>"
+      using hx unfolding geotop_open_star_def by (by100 blast)
+    have hxK: "x \<in> geotop_polyhedron K"
+      using hx geotop_open_star_subset by (by100 blast)
+    have h_eq: "geotop_K_carrier K x = \<sigma>"
+      by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx_ri])
+    have hv_carrier: "v \<in> geotop_K_carrier K x" using hv\<sigma> h_eq by (by100 simp)
+    show "x \<in> {x \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K x}"
+      using hxK hv_carrier by (by100 blast)
+  qed
+next
+  show "{x \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K x} \<subseteq> geotop_open_star K v"
+  proof
+    fix x assume hx: "x \<in> {x \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K x}"
+    have hxK: "x \<in> geotop_polyhedron K" using hx by (by100 blast)
+    have hv_carrier: "v \<in> geotop_K_carrier K x" using hx by (by100 blast)
+    have h\<sigma>K: "geotop_K_carrier K x \<in> K"
+      by (rule geotop_K_carrier_in[OF hK hKfin hxK])
+    have hx_ri: "x \<in> rel_interior (geotop_K_carrier K x)"
+      by (rule geotop_K_carrier_rel_interior[OF hK hKfin hxK])
+    show "x \<in> geotop_open_star K v"
+      unfolding geotop_open_star_def
+      using h\<sigma>K hv_carrier hx_ri by (by100 blast)
+  qed
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
