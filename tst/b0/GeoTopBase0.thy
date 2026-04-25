@@ -9681,7 +9681,53 @@ proof -
   (** Combine: ux = sum_v \<gamma>_v \<alpha>_v on V_\<theta> by bary uniqueness on AI V_\<theta>. **)
   define u_combined where "u_combined = (\<lambda>w. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w)"
   have h_combined_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w) = x"
-    sorry \<comment> \<open>Substitute v = \<Sum>_w \<alpha>_v_w w into x = \<Sum>_v \<gamma>_v v, swap sums.\<close>
+  proof -
+    have h_v_combo: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. v = (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w)"
+      using h\<alpha>_prop by (by100 metis)
+    have h_step1: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R v)
+                    = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w))"
+      using h_v_combo by (by100 simp)
+    have h_step2: "\<And>v. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<theta>. (\<gamma> v * \<alpha> v w) *\<^sub>R w)"
+    proof -
+      fix v :: 'a
+      have h_a: "\<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v *\<^sub>R (\<alpha> v w *\<^sub>R w))"
+        by (rule scaleR_right.sum)
+      have h_b: "\<And>w. \<gamma> v *\<^sub>R (\<alpha> v w *\<^sub>R w) = (\<gamma> v * \<alpha> v w) *\<^sub>R w"
+        by (by100 simp)
+      show "\<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<theta>. (\<gamma> v * \<alpha> v w) *\<^sub>R w)"
+        using h_a h_b by (by100 simp)
+    qed
+    have h_step3: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w))
+                    = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. (\<gamma> v * \<alpha> v w) *\<^sub>R w)"
+      using h_step2 by (by100 simp)
+    have h_step4: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. (\<gamma> v * \<alpha> v w) *\<^sub>R w)
+                    = (\<Sum>w\<in>V\<^sub>\<theta>. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<gamma> v * \<alpha> v w) *\<^sub>R w)"
+      by (rule sum.swap)
+    have h_step5: "\<And>w. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<gamma> v * \<alpha> v w) *\<^sub>R w) = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w"
+    proof -
+      fix w :: 'a
+      have h_sl: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w
+                    = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<gamma> v * \<alpha> v w) *\<^sub>R w)"
+        by (rule scaleR_left.sum)
+      show "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<gamma> v * \<alpha> v w) *\<^sub>R w) = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w"
+        using h_sl by (by100 simp)
+    qed
+    have h_step6: "(\<Sum>w\<in>V\<^sub>\<theta>. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<gamma> v * \<alpha> v w) *\<^sub>R w)
+                    = (\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)"
+      using h_step5 by (by100 simp)
+    have h_step7: "(\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)
+                    = (\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w)"
+      unfolding u_combined_def by (by100 simp)
+    have h_chain_a: "x = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w))"
+      using h\<gamma>_combo h_step1 by (by100 simp)
+    have h_chain_b: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w))
+                       = (\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)"
+      using h_step3 h_step4 h_step6 by (by100 simp)
+    have h_chain_c: "(\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)
+                       = (\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w)"
+      by (rule h_step7)
+    show ?thesis using h_chain_a h_chain_b h_chain_c by (by100 simp)
+  qed
   have h_combined_sum: "sum u_combined V\<^sub>\<theta> = 1"
   proof -
     have h_swap: "sum u_combined V\<^sub>\<theta>
