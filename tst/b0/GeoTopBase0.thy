@@ -4204,6 +4204,37 @@ proof -
   show ?thesis using h\<sigma>_HOL hV_hull by (by100 simp)
 qed
 
+(** A simplex is nonempty: V \<noteq> {} (since card V = n + 1 \<ge> 1)
+    and V \<subseteq> \<sigma>, so \<sigma> \<noteq> {}. **)
+lemma geotop_simplex_nonempty:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "\<sigma> \<noteq> {}"
+proof -
+  obtain V n where hVfin: "finite V" and hV_card: "card V = n + 1"
+                 and hV_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_card_pos: "0 < card V" using hV_card by (by100 simp)
+  have hV_ne: "V \<noteq> {}" using hV_card_pos by (by100 auto)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_sub_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have hV_sub_\<sigma>: "V \<subseteq> \<sigma>" using hV_sub_hull h\<sigma>_HOL by (by100 simp)
+  show ?thesis using hV_ne hV_sub_\<sigma> by (by100 blast)
+qed
+
+lemma geotop_complex_simplex_nonempty:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "\<sigma> \<noteq> {}"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  show ?thesis by (rule geotop_simplex_nonempty[OF h\<sigma>_simp])
+qed
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
