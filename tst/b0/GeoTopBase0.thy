@@ -10370,6 +10370,32 @@ proof -
     by (rule geotop_complex_rel_interior_imp_subset[OF hK h\<tau>_K h\<sigma>K hx_ri hx\<sigma>])
 qed
 
+(** K-carrier ⊆ |K|: every K-carrier sits inside the polyhedron. **)
+lemma geotop_K_carrier_in_polyhedron:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "geotop_K_carrier K x \<subseteq> geotop_polyhedron K"
+proof -
+  have h_in_K: "geotop_K_carrier K x \<in> K"
+    by (rule geotop_K_carrier_in[OF hK hKfin hx])
+  show ?thesis using h_in_K unfolding geotop_polyhedron_def by (by100 blast)
+qed
+
+(** K-carrier of x contains x. **)
+lemma geotop_K_carrier_contains_point:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "x \<in> geotop_K_carrier K x"
+proof -
+  have hx_ri: "x \<in> rel_interior (geotop_K_carrier K x)"
+    by (rule geotop_K_carrier_rel_interior[OF hK hKfin hx])
+  show ?thesis using hx_ri rel_interior_subset by (by100 blast)
+qed
+
 (** K-carrier function maps rel_interior pieces to themselves: for any
     σ \<in> K (complex) and x \<in> rel_interior σ, K_carrier K x = σ. This is
     just a re-statement of geotop_K_carrier_eq for emphasis. **)
