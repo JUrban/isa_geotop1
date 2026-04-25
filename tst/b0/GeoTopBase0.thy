@@ -2846,6 +2846,76 @@ definition geotop_open_star ::
   "'a::euclidean_space set set \<Rightarrow> 'a \<Rightarrow> 'a set" where
   "geotop_open_star K v = \<Union>{rel_interior \<sigma> |\<sigma>. \<sigma> \<in> K \<and> v \<in> \<sigma>}"
 
+(** Closed star: union of all K-simplices containing v. **)
+definition geotop_closed_star ::
+  "'a::euclidean_space set set \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "geotop_closed_star K v = \<Union>{\<sigma>. \<sigma> \<in> K \<and> v \<in> \<sigma>}"
+
+lemma geotop_closed_star_subset_polyhedron:
+  fixes K :: "'a::euclidean_space set set"
+  shows "geotop_closed_star K v \<subseteq> geotop_polyhedron K"
+  unfolding geotop_closed_star_def geotop_polyhedron_def by (by100 blast)
+
+lemma geotop_open_star_subset_closed_star:
+  fixes K :: "'a::euclidean_space set set"
+  shows "geotop_open_star K v \<subseteq> geotop_closed_star K v"
+  unfolding geotop_open_star_def geotop_closed_star_def
+  using rel_interior_subset by (by100 blast)
+
+(** Closed star of a K-vertex contains v itself. **)
+lemma geotop_closed_star_contains_vertex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "v \<in> geotop_closed_star K v"
+proof -
+  obtain \<sigma> V where h\<sigma>K: "\<sigma> \<in> K" and h_sv: "geotop_simplex_vertices \<sigma> V"
+                 and hvV: "v \<in> V"
+    using hv unfolding geotop_complex_vertices_def by (by100 blast)
+  have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_hull_sub: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have hV_sub: "V \<subseteq> \<sigma>" using h\<sigma>_HOL hV_hull_sub by (by100 simp)
+  have hv\<sigma>: "v \<in> \<sigma>" using hvV hV_sub by (by100 blast)
+  show ?thesis unfolding geotop_closed_star_def using h\<sigma>K hv\<sigma> by (by100 blast)
+qed
+
+(** Closed star is a finite union of compact simplexes when K is a finite
+    complex, hence closed. **)
+lemma geotop_closed_star_closed:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "closed (geotop_closed_star K v)"
+proof -
+  define F where "F = {\<sigma>. \<sigma> \<in> K \<and> v \<in> \<sigma>}"
+  have hF_sub: "F \<subseteq> K" unfolding F_def by (by100 blast)
+  have hF_fin: "finite F" using hF_sub hKfin finite_subset by (by100 blast)
+  have h_eq: "geotop_closed_star K v = \<Union>F"
+    unfolding geotop_closed_star_def F_def by (by100 simp)
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h_each_closed: "\<forall>\<sigma>\<in>F. closed \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> F"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma> unfolding F_def by (by100 blast)
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+    obtain V where hVfin: "finite V" and hV_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have hV_HOL: "\<sigma> = convex hull V"
+      using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have hV_compact: "compact V" using hVfin by (rule finite_imp_compact)
+    have h_hull_compact: "compact (convex hull V)"
+      by (rule compact_convex_hull[OF hV_compact])
+    have h\<sigma>_compact: "compact \<sigma>" using hV_HOL h_hull_compact by (by100 simp)
+    show "closed \<sigma>" using h\<sigma>_compact compact_imp_closed by (by100 blast)
+  qed
+  have h_union_closed: "closed (\<Union>F)"
+    using hF_fin h_each_closed closed_Union by (by100 blast)
+  show ?thesis using h_eq h_union_closed by (by100 simp)
+qed
+
 (** from early.tex Lemma 4.11: the open star is relatively open in \<open>|K|\<close>,
     i.e. its intersection with \<open>|K|\<close> equals itself and is open in the subspace. **)
 lemma geotop_open_star_subset:
