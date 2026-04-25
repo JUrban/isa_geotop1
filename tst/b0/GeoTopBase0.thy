@@ -5522,10 +5522,443 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             which equals conv hull (bary ` supp_\<alpha>). We have x \<in> conv hull (bary ` set c_1)
             which is bigger. But we also know that x = \<Sum> \<alpha> \<sigma> \<cdot> bary \<sigma> with \<alpha> supported
             on supp_\<alpha>, which gives x \<in> conv hull (bary ` supp_\<alpha>). **)
+        (** Show x \<in> conv hull (insert z T). Strategy: x = \<alpha> \<sigma>_1 \<cdot> z
+            + \<Sum>_{\<sigma> \<in> set d_1} \<alpha> \<sigma> \<cdot> bary \<sigma> (after zeroing out non-support)
+            shows x is a conv combo over {z} \<union> bary ` set d_1, which is
+            \<subseteq> insert z T. **)
+        have h_bary_inj_c\<^sub>1: "inj_on geotop_barycenter (set c\<^sub>1)"
+          by (rule geotop_complex_barycenter_inj_on[OF hK hc\<^sub>1_subK])
+        have h_bary_inj_d\<^sub>1: "inj_on geotop_barycenter (set d\<^sub>1)"
+          using h_bary_inj_c\<^sub>1 hd\<^sub>1_sub_c\<^sub>1 inj_on_subset by (by100 blast)
+        have h_bary_inj_c\<^sub>2: "inj_on geotop_barycenter (set c\<^sub>2)"
+          by (rule geotop_complex_barycenter_inj_on[OF hK hc\<^sub>2_subK])
+        have h_bary_inj_d\<^sub>2: "inj_on geotop_barycenter (set d\<^sub>2)"
+          using h_bary_inj_c\<^sub>2 hd\<^sub>2_sub_c\<^sub>2 inj_on_subset by (by100 blast)
+        (** Key fact: z \<notin> bary ` set d_1 since \<sigma>_1 \<notin> set d_1 and bary inj on set c_1. **)
+        have hz_notin_d\<^sub>1: "z \<notin> geotop_barycenter ` set d\<^sub>1"
+        proof
+          assume hz_in: "z \<in> geotop_barycenter ` set d\<^sub>1"
+          obtain \<sigma> where h\<sigma>_d: "\<sigma> \<in> set d\<^sub>1" and h_eq: "z = geotop_barycenter \<sigma>"
+            using hz_in by (by100 blast)
+          have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>1" using h\<sigma>_d hd\<^sub>1_sub_c\<^sub>1 by (by100 blast)
+          have h_eq2: "geotop_barycenter \<sigma> = geotop_barycenter \<sigma>\<^sub>1"
+            using h_eq unfolding z_def by (by100 simp)
+          have h\<sigma>_eq: "\<sigma> = \<sigma>\<^sub>1"
+            by (rule inj_onD[OF h_bary_inj_c\<^sub>1 h_eq2 h\<sigma>_c h\<sigma>\<^sub>1_c\<^sub>1])
+          show False using h\<sigma>_eq hd\<^sub>1_exclude h\<sigma>_d by (by100 blast)
+        qed
+        have hz_notin_d\<^sub>2: "z \<notin> geotop_barycenter ` set d\<^sub>2"
+        proof
+          assume hz_in: "z \<in> geotop_barycenter ` set d\<^sub>2"
+          obtain \<sigma> where h\<sigma>_d: "\<sigma> \<in> set d\<^sub>2" and h_eq: "z = geotop_barycenter \<sigma>"
+            using hz_in by (by100 blast)
+          have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>2" using h\<sigma>_d hd\<^sub>2_sub_c\<^sub>2 by (by100 blast)
+          have h_eq2: "geotop_barycenter \<sigma> = geotop_barycenter \<sigma>\<^sub>1"
+            using h_eq unfolding z_def by (by100 simp)
+          have h\<sigma>_eq: "\<sigma> = \<sigma>\<^sub>1"
+            by (rule inj_onD[OF h_bary_inj_c\<^sub>2 h_eq2 h\<sigma>_c h\<tau>_c\<^sub>2])
+          show False using h\<sigma>_eq hd\<^sub>2_exclude h\<sigma>_d by (by100 blast)
+        qed
+        (** Construct u: w \<mapsto> \<alpha>(bary\<inverse> w) on insert z (bary ` set d_1).
+            u(z) = \<alpha> \<sigma>_1. u(bary \<sigma>) = \<alpha> \<sigma> for \<sigma> \<in> set d_1. **)
+        define u\<^sub>1 :: "'a \<Rightarrow> real" where
+          "u\<^sub>1 = (\<lambda>w. if w = z then \<alpha> \<sigma>\<^sub>1
+                       else \<alpha> (SOME \<sigma>. \<sigma> \<in> set d\<^sub>1 \<and> geotop_barycenter \<sigma> = w))"
+        define u\<^sub>2 :: "'a \<Rightarrow> real" where
+          "u\<^sub>2 = (\<lambda>w. if w = z then \<beta> \<sigma>\<^sub>1
+                       else \<beta> (SOME \<sigma>. \<sigma> \<in> set d\<^sub>2 \<and> geotop_barycenter \<sigma> = w))"
+        (** Properties of u_1. **)
+        have hS\<^sub>1_fin: "finite (insert z (geotop_barycenter ` set d\<^sub>1))" by (by100 simp)
+        have h_u\<^sub>1_on_d\<^sub>1: "\<And>\<sigma>. \<sigma> \<in> set d\<^sub>1 \<Longrightarrow> u\<^sub>1 (geotop_barycenter \<sigma>) = \<alpha> \<sigma>"
+        proof -
+          fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>1"
+          have h_ne_z: "geotop_barycenter \<sigma> \<noteq> z"
+            using h\<sigma> hz_notin_d\<^sub>1 by (by100 blast)
+          have h_some: "(SOME \<sigma>'. \<sigma>' \<in> set d\<^sub>1 \<and> geotop_barycenter \<sigma>'
+                                  = geotop_barycenter \<sigma>) = \<sigma>"
+          proof (rule some_equality)
+            show "\<sigma> \<in> set d\<^sub>1 \<and> geotop_barycenter \<sigma> = geotop_barycenter \<sigma>"
+              using h\<sigma> by (by100 simp)
+          next
+            fix \<sigma>' assume h\<sigma>': "\<sigma>' \<in> set d\<^sub>1 \<and> geotop_barycenter \<sigma>'
+                                = geotop_barycenter \<sigma>"
+            have h\<sigma>'_d: "\<sigma>' \<in> set d\<^sub>1" using h\<sigma>' by (by100 blast)
+            have h\<sigma>'_eq: "geotop_barycenter \<sigma>' = geotop_barycenter \<sigma>" using h\<sigma>' by (by100 blast)
+            show "\<sigma>' = \<sigma>"
+              by (rule inj_onD[OF h_bary_inj_d\<^sub>1 h\<sigma>'_eq h\<sigma>'_d h\<sigma>])
+          qed
+          show "u\<^sub>1 (geotop_barycenter \<sigma>) = \<alpha> \<sigma>"
+            unfolding u\<^sub>1_def using h_ne_z h_some by (by100 simp)
+        qed
+        have h_u\<^sub>1_z: "u\<^sub>1 z = \<alpha> \<sigma>\<^sub>1" unfolding u\<^sub>1_def by (by100 simp)
+        (** u_1 nonneg on insert z (bary ` set d_1). **)
+        have h_u\<^sub>1_nn: "\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). 0 \<le> u\<^sub>1 w"
+        proof
+          fix w assume hw: "w \<in> insert z (geotop_barycenter ` set d\<^sub>1)"
+          show "0 \<le> u\<^sub>1 w"
+          proof (cases "w = z")
+            case True
+            have "0 \<le> \<alpha> \<sigma>\<^sub>1" using h\<alpha>_nn h\<sigma>\<^sub>1_c\<^sub>1 by (by100 blast)
+            thus ?thesis using True h_u\<^sub>1_z by (by100 simp)
+          next
+            case False
+            have hw_img: "w \<in> geotop_barycenter ` set d\<^sub>1" using hw False by (by100 blast)
+            obtain \<sigma> where h\<sigma>: "\<sigma> \<in> set d\<^sub>1" and hw_eq: "w = geotop_barycenter \<sigma>"
+              using hw_img by (by100 blast)
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>1" using h\<sigma> hd\<^sub>1_sub_c\<^sub>1 by (by100 blast)
+            have h_uw: "u\<^sub>1 w = \<alpha> \<sigma>" using hw_eq h_u\<^sub>1_on_d\<^sub>1 h\<sigma> by (by100 simp)
+            have "0 \<le> \<alpha> \<sigma>" using h\<alpha>_nn h\<sigma>_c by (by100 blast)
+            thus ?thesis using h_uw by (by100 simp)
+          qed
+        qed
+        (** Sum u_1 = 1. **)
+        have h_sum_u\<^sub>1: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1)) = 1"
+        proof -
+          have h_reindex_d\<^sub>1: "sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1)
+                               = sum \<alpha> (set d\<^sub>1)"
+          proof -
+            have h_step: "sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1)
+                            = (\<Sum>\<sigma>\<in>set d\<^sub>1. u\<^sub>1 (geotop_barycenter \<sigma>))"
+              using sum.reindex[OF h_bary_inj_d\<^sub>1, of u\<^sub>1] by (by100 simp)
+            have h_cong: "(\<Sum>\<sigma>\<in>set d\<^sub>1. u\<^sub>1 (geotop_barycenter \<sigma>))
+                            = (\<Sum>\<sigma>\<in>set d\<^sub>1. \<alpha> \<sigma>)"
+            proof (rule sum.cong)
+              show "set d\<^sub>1 = set d\<^sub>1" by (by100 simp)
+            next
+              fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>1"
+              show "u\<^sub>1 (geotop_barycenter \<sigma>) = \<alpha> \<sigma>"
+                by (rule h_u\<^sub>1_on_d\<^sub>1[OF h\<sigma>])
+            qed
+            show ?thesis using h_step h_cong by (by100 simp)
+          qed
+          have h_insert_sum: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1))
+                                = u\<^sub>1 z + sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1)"
+            using sum.insert[OF _ hz_notin_d\<^sub>1, of u\<^sub>1] by (by100 simp)
+          (** sum \<alpha> on set c_1: split into \<sigma>_1 and the rest. **)
+          have hc\<^sub>1_fin: "finite (set c\<^sub>1)" by (by100 simp)
+          have h_\<alpha>_split: "sum \<alpha> (set c\<^sub>1)
+                             = \<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set c\<^sub>1 - {\<sigma>\<^sub>1})"
+            using sum.remove[OF hc\<^sub>1_fin h\<sigma>\<^sub>1_c\<^sub>1, of \<alpha>] by (by100 simp)
+          (** sum \<alpha> (set c_1 - {\<sigma>_1}) = sum \<alpha> (set d_1) since \<alpha> = 0 outside supp. **)
+          have h_rest_zero_outside: "\<forall>\<sigma> \<in> (set c\<^sub>1 - {\<sigma>\<^sub>1}) - set d\<^sub>1. \<alpha> \<sigma> = 0"
+          proof (rule ballI)
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> (set c\<^sub>1 - {\<sigma>\<^sub>1}) - set d\<^sub>1"
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>1" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1" and h\<sigma>_nd: "\<sigma> \<notin> set d\<^sub>1"
+              using h\<sigma> by (by100 blast)+
+            have h_nn: "0 \<le> \<alpha> \<sigma>" using h\<alpha>_nn h\<sigma>_c by (by100 blast)
+            have h_not_pos: "\<not> (0 < \<alpha> \<sigma>)"
+            proof
+              assume h_pos: "0 < \<alpha> \<sigma>"
+              have h\<sigma>_D: "\<sigma> \<in> D\<^sub>1" unfolding D\<^sub>1_def using h\<sigma>_c h_pos h\<sigma>_ne by (by100 blast)
+              have h\<sigma>_in_d: "\<sigma> \<in> set d\<^sub>1" using h\<sigma>_D hd\<^sub>1_set by (by100 simp)
+              show False using h\<sigma>_in_d h\<sigma>_nd by (by100 blast)
+            qed
+            show "\<alpha> \<sigma> = 0"
+            proof (cases "0 < \<alpha> \<sigma>")
+              case True thus ?thesis using h_not_pos by (by100 blast)
+            next
+              case False thus ?thesis using h_nn by (by100 force)
+            qed
+          qed
+          have hd\<^sub>1_sub_c\<^sub>1': "set d\<^sub>1 \<subseteq> set c\<^sub>1 - {\<sigma>\<^sub>1}"
+            using hd\<^sub>1_sub_c\<^sub>1 hd\<^sub>1_exclude by (by100 blast)
+          have h_c1_fin_diff: "finite (set c\<^sub>1 - {\<sigma>\<^sub>1})" using hc\<^sub>1_fin by (by100 simp)
+          have h_rest_as_d\<^sub>1: "sum \<alpha> (set c\<^sub>1 - {\<sigma>\<^sub>1}) = sum \<alpha> (set d\<^sub>1)"
+            using sum.mono_neutral_right[OF h_c1_fin_diff hd\<^sub>1_sub_c\<^sub>1' h_rest_zero_outside]
+            by (by100 simp)
+          have h_big_eq: "\<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set d\<^sub>1) = 1"
+            using h_\<alpha>_split h_rest_as_d\<^sub>1 h\<alpha>_sum by (by100 simp)
+          have h_step1: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1))
+                           = \<alpha> \<sigma>\<^sub>1 + sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1)"
+            using h_insert_sum h_u\<^sub>1_z by (by100 simp)
+          have h_step2: "sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1) = sum \<alpha> (set d\<^sub>1)"
+            by (rule h_reindex_d\<^sub>1)
+          show ?thesis using h_step1 h_step2 h_big_eq by (by100 simp)
+        qed
+        (** x = \<Sum> u_1 w \<cdot> w over insert z (bary ` set d_1). **)
+        have h_u\<^sub>1_combo: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w) = x"
+        proof -
+          have h_insert_combo:
+            "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w)
+               = u\<^sub>1 z *\<^sub>R z
+                 + (\<Sum>w \<in> geotop_barycenter ` set d\<^sub>1. u\<^sub>1 w *\<^sub>R w)"
+            using sum.insert[OF _ hz_notin_d\<^sub>1, of "\<lambda>w. u\<^sub>1 w *\<^sub>R w"] by (by100 simp)
+          have h_reindex_d\<^sub>1: "(\<Sum>w \<in> geotop_barycenter ` set d\<^sub>1. u\<^sub>1 w *\<^sub>R w)
+                               = (\<Sum>\<sigma> \<in> set d\<^sub>1.
+                                    u\<^sub>1 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.reindex[OF h_bary_inj_d\<^sub>1, of "\<lambda>w. u\<^sub>1 w *\<^sub>R w"] by (by100 simp)
+          have h_cong_d\<^sub>1: "(\<Sum>\<sigma> \<in> set d\<^sub>1. u\<^sub>1 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)
+                            = (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+          proof (rule sum.cong)
+            show "set d\<^sub>1 = set d\<^sub>1" by (by100 simp)
+          next
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>1"
+            have h_uw: "u\<^sub>1 (geotop_barycenter \<sigma>) = \<alpha> \<sigma>"
+              by (rule h_u\<^sub>1_on_d\<^sub>1[OF h\<sigma>])
+            show "u\<^sub>1 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>
+                    = \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"
+              using h_uw by (by100 simp)
+          qed
+          (** \<Sum>_{\<sigma> \<in> set c_1} \<alpha> \<sigma> \<cdot> bary \<sigma> = \<alpha> \<sigma>_1 \<cdot> bary \<sigma>_1 + \<Sum> over set d_1. **)
+          have hc\<^sub>1_fin: "finite (set c\<^sub>1)" by (by100 simp)
+          have h_combo_split: "(\<Sum>\<sigma> \<in> set c\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                                 = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                                   + (\<Sum>\<sigma> \<in> set c\<^sub>1 - {\<sigma>\<^sub>1}.
+                                       \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.remove[OF hc\<^sub>1_fin h\<sigma>\<^sub>1_c\<^sub>1, of "\<lambda>\<sigma>. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"]
+            by (by100 simp)
+          have h_rest_outside_zero: "\<forall>\<sigma> \<in> (set c\<^sub>1 - {\<sigma>\<^sub>1}) - set d\<^sub>1.
+                                         \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0"
+          proof (rule ballI)
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> (set c\<^sub>1 - {\<sigma>\<^sub>1}) - set d\<^sub>1"
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>1" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1" and h\<sigma>_nd: "\<sigma> \<notin> set d\<^sub>1"
+              using h\<sigma> by (by100 blast)+
+            have h_nn: "0 \<le> \<alpha> \<sigma>" using h\<alpha>_nn h\<sigma>_c by (by100 blast)
+            have h_zero: "\<alpha> \<sigma> = 0"
+            proof (cases "0 < \<alpha> \<sigma>")
+              case True
+              have h\<sigma>_D: "\<sigma> \<in> D\<^sub>1" unfolding D\<^sub>1_def using h\<sigma>_c True h\<sigma>_ne by (by100 blast)
+              have h\<sigma>_in_d: "\<sigma> \<in> set d\<^sub>1" using h\<sigma>_D hd\<^sub>1_set by (by100 simp)
+              thus ?thesis using h\<sigma>_in_d h\<sigma>_nd by (by100 blast)
+            next
+              case False
+              thus ?thesis using h_nn by (by100 force)
+            qed
+            show "\<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0" using h_zero by (by100 simp)
+          qed
+          have hd\<^sub>1_sub_c\<^sub>1': "set d\<^sub>1 \<subseteq> set c\<^sub>1 - {\<sigma>\<^sub>1}"
+            using hd\<^sub>1_sub_c\<^sub>1 hd\<^sub>1_exclude by (by100 blast)
+          have h_c1_fin_diff: "finite (set c\<^sub>1 - {\<sigma>\<^sub>1})" using hc\<^sub>1_fin by (by100 simp)
+          have h_rest_as_d\<^sub>1_combo: "(\<Sum>\<sigma> \<in> set c\<^sub>1 - {\<sigma>\<^sub>1}. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                                     = (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.mono_neutral_right[OF h_c1_fin_diff hd\<^sub>1_sub_c\<^sub>1' h_rest_outside_zero]
+            by (by100 simp)
+          have h_full: "x = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                            + (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h\<alpha>_combo h_combo_split h_rest_as_d\<^sub>1_combo by (by100 simp)
+          have h_step_a: "(\<Sum>w \<in> geotop_barycenter ` set d\<^sub>1. u\<^sub>1 w *\<^sub>R w)
+                            = (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_reindex_d\<^sub>1 h_cong_d\<^sub>1 by (by100 simp)
+          have h_step1: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w)
+                           = u\<^sub>1 z *\<^sub>R z
+                             + (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_insert_combo h_step_a by (by100 simp)
+          have h_step2: "u\<^sub>1 z *\<^sub>R z = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
+            using h_u\<^sub>1_z unfolding z_def by (by100 simp)
+          show ?thesis using h_step1 h_step2 h_full by (by100 simp)
+        qed
+        (** x in conv hull (insert z (bary ` set d_1)). **)
+        have hx_small\<^sub>1: "x \<in> convex hull (insert z (geotop_barycenter ` set d\<^sub>1))"
+        proof -
+          have h_char: "convex hull (insert z (geotop_barycenter ` set d\<^sub>1))
+                          = {y. \<exists>u. (\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). 0 \<le> u w)
+                                    \<and> sum u (insert z (geotop_barycenter ` set d\<^sub>1)) = 1
+                                    \<and> (\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u w *\<^sub>R w) = y}"
+            by (rule convex_hull_finite[OF hS\<^sub>1_fin])
+          have h_witness: "\<exists>u. (\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). 0 \<le> u w)
+                                \<and> sum u (insert z (geotop_barycenter ` set d\<^sub>1)) = 1
+                                \<and> (\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u w *\<^sub>R w) = x"
+            using h_u\<^sub>1_nn h_sum_u\<^sub>1 h_u\<^sub>1_combo by (by100 blast)
+          show ?thesis using h_char h_witness by (by100 blast)
+        qed
+        (** insert z (bary ` set d_1) \<subseteq> insert z T. **)
+        have h_bary_sub_T: "geotop_barycenter ` set d\<^sub>1 \<subseteq> T"
+          unfolding T_def
+          using hull_subset[of "geotop_barycenter ` set d\<^sub>1" convex] by (by100 blast)
+        have h_insert_sub_T: "insert z (geotop_barycenter ` set d\<^sub>1) \<subseteq> insert z T"
+          using h_bary_sub_T by (by100 blast)
+        have h_hull_sub: "convex hull (insert z (geotop_barycenter ` set d\<^sub>1))
+                           \<subseteq> convex hull (insert z T)"
+          using hull_mono[OF h_insert_sub_T] by (by100 blast)
         have hx_T1_restrict: "x \<in> convex hull (insert z T)"
-          sorry
+          using hx_small\<^sub>1 h_hull_sub by (by100 blast)
+        (** Symmetric argument for \<beta>/c_2. **)
+        have hS\<^sub>2_fin: "finite (insert z (geotop_barycenter ` set d\<^sub>2))" by (by100 simp)
+        have h_u\<^sub>2_on_d\<^sub>2: "\<And>\<sigma>. \<sigma> \<in> set d\<^sub>2 \<Longrightarrow> u\<^sub>2 (geotop_barycenter \<sigma>) = \<beta> \<sigma>"
+        proof -
+          fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>2"
+          have h_ne_z: "geotop_barycenter \<sigma> \<noteq> z"
+            using h\<sigma> hz_notin_d\<^sub>2 by (by100 blast)
+          have h_some: "(SOME \<sigma>'. \<sigma>' \<in> set d\<^sub>2 \<and> geotop_barycenter \<sigma>'
+                                  = geotop_barycenter \<sigma>) = \<sigma>"
+          proof (rule some_equality)
+            show "\<sigma> \<in> set d\<^sub>2 \<and> geotop_barycenter \<sigma> = geotop_barycenter \<sigma>"
+              using h\<sigma> by (by100 simp)
+          next
+            fix \<sigma>' assume h\<sigma>': "\<sigma>' \<in> set d\<^sub>2 \<and> geotop_barycenter \<sigma>'
+                                = geotop_barycenter \<sigma>"
+            have h\<sigma>'_d: "\<sigma>' \<in> set d\<^sub>2" using h\<sigma>' by (by100 blast)
+            have h\<sigma>'_eq: "geotop_barycenter \<sigma>' = geotop_barycenter \<sigma>" using h\<sigma>' by (by100 blast)
+            show "\<sigma>' = \<sigma>"
+              by (rule inj_onD[OF h_bary_inj_d\<^sub>2 h\<sigma>'_eq h\<sigma>'_d h\<sigma>])
+          qed
+          show "u\<^sub>2 (geotop_barycenter \<sigma>) = \<beta> \<sigma>"
+            unfolding u\<^sub>2_def using h_ne_z h_some by (by100 simp)
+        qed
+        have h_u\<^sub>2_z: "u\<^sub>2 z = \<beta> \<sigma>\<^sub>1" unfolding u\<^sub>2_def by (by100 simp)
+        have h_u\<^sub>2_nn: "\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). 0 \<le> u\<^sub>2 w"
+        proof
+          fix w assume hw: "w \<in> insert z (geotop_barycenter ` set d\<^sub>2)"
+          show "0 \<le> u\<^sub>2 w"
+          proof (cases "w = z")
+            case True
+            have "0 \<le> \<beta> \<sigma>\<^sub>1" using h\<beta>_nn h\<tau>_c\<^sub>2 by (by100 blast)
+            thus ?thesis using True h_u\<^sub>2_z by (by100 simp)
+          next
+            case False
+            have hw_img: "w \<in> geotop_barycenter ` set d\<^sub>2" using hw False by (by100 blast)
+            obtain \<sigma> where h\<sigma>: "\<sigma> \<in> set d\<^sub>2" and hw_eq: "w = geotop_barycenter \<sigma>"
+              using hw_img by (by100 blast)
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>2" using h\<sigma> hd\<^sub>2_sub_c\<^sub>2 by (by100 blast)
+            have h_uw: "u\<^sub>2 w = \<beta> \<sigma>" using hw_eq h_u\<^sub>2_on_d\<^sub>2 h\<sigma> by (by100 simp)
+            have "0 \<le> \<beta> \<sigma>" using h\<beta>_nn h\<sigma>_c by (by100 blast)
+            thus ?thesis using h_uw by (by100 simp)
+          qed
+        qed
+        have h_sum_u\<^sub>2: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2)) = 1"
+        proof -
+          have h_reindex_d\<^sub>2: "sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2) = sum \<beta> (set d\<^sub>2)"
+          proof -
+            have h_step: "sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2)
+                            = (\<Sum>\<sigma>\<in>set d\<^sub>2. u\<^sub>2 (geotop_barycenter \<sigma>))"
+              using sum.reindex[OF h_bary_inj_d\<^sub>2, of u\<^sub>2] by (by100 simp)
+            have h_cong: "(\<Sum>\<sigma>\<in>set d\<^sub>2. u\<^sub>2 (geotop_barycenter \<sigma>))
+                            = (\<Sum>\<sigma>\<in>set d\<^sub>2. \<beta> \<sigma>)"
+            proof (rule sum.cong)
+              show "set d\<^sub>2 = set d\<^sub>2" by (by100 simp)
+            next
+              fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>2"
+              show "u\<^sub>2 (geotop_barycenter \<sigma>) = \<beta> \<sigma>" by (rule h_u\<^sub>2_on_d\<^sub>2[OF h\<sigma>])
+            qed
+            show ?thesis using h_step h_cong by (by100 simp)
+          qed
+          have h_insert_sum: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
+                                = u\<^sub>2 z + sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2)"
+            using sum.insert[OF _ hz_notin_d\<^sub>2, of u\<^sub>2] by (by100 simp)
+          have hc\<^sub>2_fin: "finite (set c\<^sub>2)" by (by100 simp)
+          have h_\<beta>_split: "sum \<beta> (set c\<^sub>2)
+                             = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set c\<^sub>2 - {\<sigma>\<^sub>1})"
+            using sum.remove[OF hc\<^sub>2_fin h\<tau>_c\<^sub>2, of \<beta>] by (by100 simp)
+          have h_rest_zero_outside: "\<forall>\<sigma> \<in> (set c\<^sub>2 - {\<sigma>\<^sub>1}) - set d\<^sub>2. \<beta> \<sigma> = 0"
+          proof (rule ballI)
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> (set c\<^sub>2 - {\<sigma>\<^sub>1}) - set d\<^sub>2"
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>2" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1" and h\<sigma>_nd: "\<sigma> \<notin> set d\<^sub>2"
+              using h\<sigma> by (by100 blast)+
+            have h_nn: "0 \<le> \<beta> \<sigma>" using h\<beta>_nn h\<sigma>_c by (by100 blast)
+            show "\<beta> \<sigma> = 0"
+            proof (cases "0 < \<beta> \<sigma>")
+              case True
+              have h\<sigma>_D: "\<sigma> \<in> D\<^sub>2" unfolding D\<^sub>2_def using h\<sigma>_c True h\<sigma>_ne by (by100 blast)
+              have h\<sigma>_in_d: "\<sigma> \<in> set d\<^sub>2" using h\<sigma>_D hd\<^sub>2_set by (by100 simp)
+              thus ?thesis using h\<sigma>_in_d h\<sigma>_nd by (by100 blast)
+            next
+              case False thus ?thesis using h_nn by (by100 force)
+            qed
+          qed
+          have hd\<^sub>2_sub_c\<^sub>2': "set d\<^sub>2 \<subseteq> set c\<^sub>2 - {\<sigma>\<^sub>1}"
+            using hd\<^sub>2_sub_c\<^sub>2 hd\<^sub>2_exclude by (by100 blast)
+          have h_c2_fin_diff: "finite (set c\<^sub>2 - {\<sigma>\<^sub>1})" using hc\<^sub>2_fin by (by100 simp)
+          have h_rest_as_d\<^sub>2: "sum \<beta> (set c\<^sub>2 - {\<sigma>\<^sub>1}) = sum \<beta> (set d\<^sub>2)"
+            using sum.mono_neutral_right[OF h_c2_fin_diff hd\<^sub>2_sub_c\<^sub>2' h_rest_zero_outside]
+            by (by100 simp)
+          have h_big_eq: "\<beta> \<sigma>\<^sub>1 + sum \<beta> (set d\<^sub>2) = 1"
+            using h_\<beta>_split h_rest_as_d\<^sub>2 h\<beta>_sum by (by100 simp)
+          have h_step1: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
+                           = \<beta> \<sigma>\<^sub>1 + sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2)"
+            using h_insert_sum h_u\<^sub>2_z by (by100 simp)
+          have h_step2: "sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2) = sum \<beta> (set d\<^sub>2)"
+            by (rule h_reindex_d\<^sub>2)
+          show ?thesis using h_step1 h_step2 h_big_eq by (by100 simp)
+        qed
+        have h_u\<^sub>2_combo: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w) = x"
+        proof -
+          have h_insert_combo:
+            "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
+               = u\<^sub>2 z *\<^sub>R z
+                 + (\<Sum>w \<in> geotop_barycenter ` set d\<^sub>2. u\<^sub>2 w *\<^sub>R w)"
+            using sum.insert[OF _ hz_notin_d\<^sub>2, of "\<lambda>w. u\<^sub>2 w *\<^sub>R w"] by (by100 simp)
+          have h_reindex_d\<^sub>2: "(\<Sum>w \<in> geotop_barycenter ` set d\<^sub>2. u\<^sub>2 w *\<^sub>R w)
+                               = (\<Sum>\<sigma> \<in> set d\<^sub>2.
+                                    u\<^sub>2 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.reindex[OF h_bary_inj_d\<^sub>2, of "\<lambda>w. u\<^sub>2 w *\<^sub>R w"] by (by100 simp)
+          have h_cong_d\<^sub>2: "(\<Sum>\<sigma> \<in> set d\<^sub>2. u\<^sub>2 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)
+                            = (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+          proof (rule sum.cong)
+            show "set d\<^sub>2 = set d\<^sub>2" by (by100 simp)
+          next
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set d\<^sub>2"
+            have h_uw: "u\<^sub>2 (geotop_barycenter \<sigma>) = \<beta> \<sigma>"
+              by (rule h_u\<^sub>2_on_d\<^sub>2[OF h\<sigma>])
+            show "u\<^sub>2 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>
+                    = \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"
+              using h_uw by (by100 simp)
+          qed
+          have hc\<^sub>2_fin: "finite (set c\<^sub>2)" by (by100 simp)
+          have h_combo_split: "(\<Sum>\<sigma> \<in> set c\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                                 = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                                   + (\<Sum>\<sigma> \<in> set c\<^sub>2 - {\<sigma>\<^sub>1}.
+                                       \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.remove[OF hc\<^sub>2_fin h\<tau>_c\<^sub>2, of "\<lambda>\<sigma>. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"]
+            by (by100 simp)
+          have h_rest_outside_zero: "\<forall>\<sigma> \<in> (set c\<^sub>2 - {\<sigma>\<^sub>1}) - set d\<^sub>2.
+                                         \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0"
+          proof (rule ballI)
+            fix \<sigma> assume h\<sigma>: "\<sigma> \<in> (set c\<^sub>2 - {\<sigma>\<^sub>1}) - set d\<^sub>2"
+            have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>2" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1" and h\<sigma>_nd: "\<sigma> \<notin> set d\<^sub>2"
+              using h\<sigma> by (by100 blast)+
+            have h_nn: "0 \<le> \<beta> \<sigma>" using h\<beta>_nn h\<sigma>_c by (by100 blast)
+            have h_zero: "\<beta> \<sigma> = 0"
+            proof (cases "0 < \<beta> \<sigma>")
+              case True
+              have h\<sigma>_D: "\<sigma> \<in> D\<^sub>2" unfolding D\<^sub>2_def using h\<sigma>_c True h\<sigma>_ne by (by100 blast)
+              have h\<sigma>_in_d: "\<sigma> \<in> set d\<^sub>2" using h\<sigma>_D hd\<^sub>2_set by (by100 simp)
+              thus ?thesis using h\<sigma>_in_d h\<sigma>_nd by (by100 blast)
+            next
+              case False thus ?thesis using h_nn by (by100 force)
+            qed
+            show "\<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0" using h_zero by (by100 simp)
+          qed
+          have hd\<^sub>2_sub_c\<^sub>2': "set d\<^sub>2 \<subseteq> set c\<^sub>2 - {\<sigma>\<^sub>1}"
+            using hd\<^sub>2_sub_c\<^sub>2 hd\<^sub>2_exclude by (by100 blast)
+          have h_c2_fin_diff: "finite (set c\<^sub>2 - {\<sigma>\<^sub>1})" using hc\<^sub>2_fin by (by100 simp)
+          have h_rest_as_d\<^sub>2_combo: "(\<Sum>\<sigma> \<in> set c\<^sub>2 - {\<sigma>\<^sub>1}. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                                     = (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using sum.mono_neutral_right[OF h_c2_fin_diff hd\<^sub>2_sub_c\<^sub>2' h_rest_outside_zero]
+            by (by100 simp)
+          have h_full: "x = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                            + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h\<beta>_combo h_combo_split h_rest_as_d\<^sub>2_combo by (by100 simp)
+          have h_step1: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
+                           = u\<^sub>2 z *\<^sub>R z
+                             + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_insert_combo h_reindex_d\<^sub>2 h_cong_d\<^sub>2 by (by100 simp)
+          have h_step2: "u\<^sub>2 z *\<^sub>R z = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
+            using h_u\<^sub>2_z unfolding z_def by (by100 simp)
+          show ?thesis using h_step1 h_step2 h_full by (by100 simp)
+        qed
+        have hx_small\<^sub>2: "x \<in> convex hull (insert z (geotop_barycenter ` set d\<^sub>2))"
+        proof -
+          have h_char: "convex hull (insert z (geotop_barycenter ` set d\<^sub>2))
+                          = {y. \<exists>u. (\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). 0 \<le> u w)
+                                    \<and> sum u (insert z (geotop_barycenter ` set d\<^sub>2)) = 1
+                                    \<and> (\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u w *\<^sub>R w) = y}"
+            by (rule convex_hull_finite[OF hS\<^sub>2_fin])
+          have h_witness: "\<exists>u. (\<forall>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). 0 \<le> u w)
+                                \<and> sum u (insert z (geotop_barycenter ` set d\<^sub>2)) = 1
+                                \<and> (\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u w *\<^sub>R w) = x"
+            using h_u\<^sub>2_nn h_sum_u\<^sub>2 h_u\<^sub>2_combo by (by100 blast)
+          show ?thesis using h_char h_witness by (by100 blast)
+        qed
+        have h_bary_sub_U: "geotop_barycenter ` set d\<^sub>2 \<subseteq> U"
+          unfolding U_def
+          using hull_subset[of "geotop_barycenter ` set d\<^sub>2" convex] by (by100 blast)
+        have h_insert_sub_U: "insert z (geotop_barycenter ` set d\<^sub>2) \<subseteq> insert z U"
+          using h_bary_sub_U by (by100 blast)
+        have h_hull_sub_U: "convex hull (insert z (geotop_barycenter ` set d\<^sub>2))
+                             \<subseteq> convex hull (insert z U)"
+          using hull_mono[OF h_insert_sub_U] by (by100 blast)
         have hx_T2_restrict: "x \<in> convex hull (insert z U)"
-          sorry
+          using hx_small\<^sub>2 h_hull_sub_U by (by100 blast)
         (** Combine: x in intersection = conv hull (insert z (T \<inter> U)). **)
         have hx_Int: "x \<in> convex hull (insert z (T \<inter> U))"
           using hx_T1_restrict hx_T2_restrict h_insert_Int_eq by (by100 blast)
