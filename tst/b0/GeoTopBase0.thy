@@ -4114,6 +4114,32 @@ proof -
     using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
 qed
 
+(** Small named exports: simplex convexity + finite-subset hull containment.
+    These were previously inlined; pulling them out as named lemmas reduces
+    duplication across downstream proofs. **)
+
+lemma geotop_simplex_is_convex:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "convex \<sigma>"
+proof -
+  obtain V where hV: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_HOL: "\<sigma> = convex hull V"
+    using hV geotop_convex_hull_eq_HOL by (by100 simp)
+  show ?thesis using hV_HOL convex_convex_hull[of V] by (by100 simp)
+qed
+
+lemma geotop_finite_subset_simplex_hull_subset:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  assumes hV_sub: "V \<subseteq> \<sigma>"
+  shows "convex hull V \<subseteq> \<sigma>"
+proof -
+  have h\<sigma>_conv: "convex \<sigma>" by (rule geotop_simplex_is_convex[OF h\<sigma>_simp])
+  show ?thesis using hull_minimal[of V \<sigma> convex] hV_sub h\<sigma>_conv by (by100 blast)
+qed
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
