@@ -10309,6 +10309,29 @@ proof -
   show ?thesis by (rule geotop_K_carrier_eq[OF hK h_vK h_v_ri])
 qed
 
+(** K-carrier of a chain-positive-combination point (chain c ⊆ K, β
+    nonnegative, summing to 1, with chain-top σ_max having β > 0 and all
+    positive-β simplices ⊆ σ_max) is exactly σ_max. Direct from
+    geotop_chain_bary_rel_interior + geotop_K_carrier_eq. **)
+lemma geotop_K_carrier_chain_combo:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_subK: "set c \<subseteq> K"
+  assumes h\<beta>_nn: "\<forall>\<sigma>\<in>set c. 0 \<le> \<beta> \<sigma>"
+  assumes h\<beta>_sum: "sum \<beta> (set c) = 1"
+  assumes hx_def: "x = (\<Sum>\<sigma>\<in>set c. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+  assumes h\<sigma>_max_in: "\<sigma>\<^sub>m\<^sub>a\<^sub>x \<in> set c"
+  assumes h\<sigma>_max_pos: "0 < \<beta> \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+  assumes h_chain_top: "\<And>\<tau>. \<tau> \<in> set c \<Longrightarrow> 0 < \<beta> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+  shows "geotop_K_carrier K x = \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+proof -
+  have h\<sigma>_max_K: "\<sigma>\<^sub>m\<^sub>a\<^sub>x \<in> K" using h\<sigma>_max_in hc_subK by (by100 blast)
+  have hx_ri: "x \<in> rel_interior \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+    by (rule geotop_chain_bary_rel_interior[OF hK hc_subK h\<beta>_nn h\<beta>_sum hx_def
+              h\<sigma>_max_in h\<sigma>_max_pos h_chain_top])
+  show ?thesis by (rule geotop_K_carrier_eq[OF hK h\<sigma>_max_K hx_ri])
+qed
+
 (** K-carrier of a barycenter b(σ) (with σ ∈ K) is exactly σ. **)
 lemma geotop_K_carrier_barycenter:
   fixes K :: "'a::euclidean_space set set"
