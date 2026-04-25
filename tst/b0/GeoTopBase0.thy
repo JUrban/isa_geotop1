@@ -5106,6 +5106,19 @@ proof -
   show ?thesis using h\<alpha>_nn h\<alpha>_sum h\<alpha>_combo by (by100 blast)
 qed
 
+(** Moise 4.5 chain-simplex intersection (KEY theorem). By strong induction on
+    card (set c_1 \<union> set c_2). Uses convex_hull_insert_Int_eq to reduce each
+    induction step by factoring out the chain-top barycenter. **)
+lemma geotop_flag_intersect_hull_sub:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc\<^sub>1: "c\<^sub>1 \<in> geotop_flags K"
+  assumes hc\<^sub>2: "c\<^sub>2 \<in> geotop_flags K"
+  shows "convex hull (geotop_barycenter ` set c\<^sub>1)
+          \<inter> convex hull (geotop_barycenter ` set c\<^sub>2)
+          \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+  sorry
+
 lemma geotop_classical_Sd_exists:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
@@ -5431,13 +5444,33 @@ proof -
           have h\<tau>_c\<^sub>2: "\<sigma>\<^sub>1 \<in> set c\<^sub>2" using h\<sigma>\<^sub>2_c\<^sub>2 h\<sigma>_eq by (by100 simp)
           have h\<tau>_in_inter: "\<sigma>\<^sub>1 \<in> set c\<^sub>1 \<inter> set c\<^sub>2"
             using h\<sigma>\<^sub>1_c\<^sub>1 h\<tau>_c\<^sub>2 by (by100 blast)
-          (** DEEP STEP (Moise 4.5 combinatorial argument): support of \<alpha>, \<beta>
-              are forced to lie in (set c_1 \<inter> set c_2) by unique-bary-coord on V(\<tau>). **)
+          (** Apply the Moise 4.5 induction lemma to close. **)
+          have hc\<^sub>1_geo: "c\<^sub>1 \<in> geotop_flags K" using hc\<^sub>1 h_flags_eq_geotop by (by100 simp)
+          have hc\<^sub>2_geo: "c\<^sub>2 \<in> geotop_flags K" using hc\<^sub>2 h_flags_eq_geotop by (by100 simp)
+          have h_sub_HOL: "convex hull (geotop_barycenter ` set c\<^sub>1)
+                            \<inter> convex hull (geotop_barycenter ` set c\<^sub>2)
+                            \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+            by (rule geotop_flag_intersect_hull_sub[OF hK hc\<^sub>1_geo hc\<^sub>2_geo])
+          have h_HOL_eq1: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)
+                            = convex hull (geotop_barycenter ` set c\<^sub>1)"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h_HOL_eq2: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+                            = convex hull (geotop_barycenter ` set c\<^sub>2)"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h_HOL_eq3: "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+                            = convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+            by (rule geotop_convex_hull_eq_HOL)
+          have hx_HOL1: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>1)"
+            using hx_T1 h_HOL_eq1 by (by100 simp)
+          have hx_HOL2: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>2)"
+            using hx_T2 h_HOL_eq2 by (by100 simp)
+          have hx_HOL_both: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>1)
+                              \<inter> convex hull (geotop_barycenter ` set c\<^sub>2)"
+            using hx_HOL1 hx_HOL2 by (by100 blast)
+          have hx_HOL_sub: "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+            using h_sub_HOL hx_HOL_both by (by100 blast)
           show "x \<in> geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-            sorry \<comment> \<open>Deep combinatorial step: support of \<alpha> on c_1 (and \<beta> on c_2)
-                      is contained in set c_1 \<inter> set c_2, via unique bary coords \<gamma>
-                      on V(\<tau>) where \<tau> = \<sigma>_1 = \<sigma>_2. Reduces to: \<alpha>=0 outside
-                      c_1 \<inter> c_2.\<close>
+            using hx_HOL_sub h_HOL_eq3 by (by100 simp)
         qed
         show ?thesis using h_rhs_sub h_lhs_sub by (by100 blast)
       qed
