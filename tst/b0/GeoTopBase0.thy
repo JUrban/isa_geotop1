@@ -5106,6 +5106,101 @@ proof -
   show ?thesis using h\<alpha>_nn h\<alpha>_sum h\<alpha>_combo by (by100 blast)
 qed
 
+(** Helper: conv hull of barycenters of a flag d strictly inside \<tau> lies in
+    rel_frontier \<tau>. Uses: d has top d_max \<subset> \<tau>, so bary \<sigma> \<in> \<sigma> \<subseteq> d_max
+    for all \<sigma> \<in> set d; d_max convex contains bary ` set d, so conv hull of
+    bary's is in d_max; d_max face_of \<tau> strictly \<Rightarrow> d_max \<subseteq> rel_frontier \<tau>. **)
+lemma geotop_chain_hull_in_rel_frontier:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>_K: "\<tau> \<in> K"
+  assumes hd: "d \<in> geotop_flags K"
+  assumes hd_strict: "\<forall>\<sigma> \<in> set d. \<sigma> \<subset> \<tau>"
+  shows "convex hull (geotop_barycenter ` set d) \<subseteq> rel_frontier \<tau>"
+proof -
+  have hd_ne: "d \<noteq> []" using hd unfolding geotop_flags_def by (by100 blast)
+  have hd_subK: "set d \<subseteq> K" using hd unfolding geotop_flags_def by (by100 blast)
+  have hd_dist: "distinct d" using hd unfolding geotop_flags_def by (by100 blast)
+  have hd_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) d" using hd unfolding geotop_flags_def by (by100 blast)
+  define d_max where "d_max = last d"
+  have hd_max_in: "d_max \<in> set d"
+    unfolding d_max_def using hd_ne last_in_set by (by100 blast)
+  have hd_max_K: "d_max \<in> K" using hd_max_in hd_subK by (by100 blast)
+  have hd_max_strict: "d_max \<subset> \<tau>" using hd_strict hd_max_in by (by100 blast)
+  have hd_max_sub_\<tau>: "d_max \<subseteq> \<tau>" using hd_max_strict by (by100 blast)
+  have hd_max_ne_\<tau>: "d_max \<noteq> \<tau>" using hd_max_strict by (by100 blast)
+  (** All \<sigma> in set d are \<subseteq> d_max (chain property with d_max at last index). **)
+  have h_sub_dmax: "\<forall>\<sigma>\<in>set d. \<sigma> \<subseteq> d_max"
+  proof
+    fix \<sigma> assume h\<sigma>_d: "\<sigma> \<in> set d"
+    obtain i where hi_lt: "i < length d" and hi_eq: "d ! i = \<sigma>"
+      using h\<sigma>_d in_set_conv_nth by (by100 metis)
+    have h_last_eq: "d ! (length d - 1) = d_max"
+      unfolding d_max_def using hd_ne last_conv_nth[of d] by (by100 simp)
+    have hi_le: "i \<le> length d - 1" using hi_lt by (by100 linarith)
+    have h_last_lt: "length d - 1 < length d" using hd_ne by (by100 simp)
+    have h_sub_nth: "d ! i \<subseteq> d ! (length d - 1)"
+      by (rule geotop_flags_chain_subset[OF hd hi_le h_last_lt])
+    show "\<sigma> \<subseteq> d_max" using h_sub_nth hi_eq h_last_eq by (by100 simp)
+  qed
+  (** d_max is a simplex. Hence convex. **)
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have hd_max_simp: "geotop_is_simplex d_max" using hd_max_K h_simp_all by (by100 blast)
+  obtain V where hV: "geotop_simplex_vertices d_max V"
+    using hd_max_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hd_max_hull_g: "d_max = geotop_convex_hull V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hd_max_hull: "d_max = convex hull V"
+    using hd_max_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_conv_dmax: "convex d_max"
+    using hd_max_hull convex_convex_hull by (by100 simp)
+  (** bary \<sigma> \<in> \<sigma> \<subseteq> d_max for all \<sigma> \<in> set d. **)
+  have h_bary_in_dmax: "\<forall>\<sigma>\<in>set d. geotop_barycenter \<sigma> \<in> d_max"
+  proof
+    fix \<sigma> assume h\<sigma>_d: "\<sigma> \<in> set d"
+    have h\<sigma>_K: "\<sigma> \<in> K" using h\<sigma>_d hd_subK by (by100 blast)
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>_K h_simp_all by (by100 blast)
+    obtain V\<^sub>\<sigma> where hV\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have h_bary_in: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+      by (rule geotop_barycenter_in_rel_interior[OF hV\<^sub>\<sigma>])
+    have h_bary_in_\<sigma>: "geotop_barycenter \<sigma> \<in> \<sigma>"
+      using h_bary_in rel_interior_subset by (by100 blast)
+    have h\<sigma>_sub: "\<sigma> \<subseteq> d_max" using h_sub_dmax h\<sigma>_d by (by100 blast)
+    show "geotop_barycenter \<sigma> \<in> d_max" using h_bary_in_\<sigma> h\<sigma>_sub by (by100 blast)
+  qed
+  have h_bary_img_sub: "geotop_barycenter ` set d \<subseteq> d_max"
+    using h_bary_in_dmax by (by100 blast)
+  (** conv hull (bary ` set d) \<subseteq> d_max via hull_minimal with convex d_max. **)
+  have h_hull_sub_dmax: "convex hull (geotop_barycenter ` set d) \<subseteq> d_max"
+    using hull_minimal[of "geotop_barycenter ` set d" d_max convex] h_bary_img_sub h_conv_dmax
+    by (by100 blast)
+  (** d_max face_of \<tau>: via K.2 since d_max ⊂ τ and d_max \<inter> \<tau> = d_max nonempty. **)
+  (** d_max nonempty since V \<subseteq> d_max (hull_subset) and V nonempty. **)
+  have hV_fin: "finite V" using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_card: "\<exists>n. card V = n + 1" using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}" using hV_fin hV_card by (by100 auto)
+  have h_V_sub_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have h_dmax_ne: "d_max \<noteq> {}" using hV_ne h_V_sub_hull hd_max_hull by (by100 blast)
+  have h_int_eq: "d_max \<inter> \<tau> = d_max" using hd_max_sub_\<tau> by (by100 blast)
+  have h_int_ne: "d_max \<inter> \<tau> \<noteq> {}" using h_int_eq h_dmax_ne by (by100 simp)
+  have h_face_inter: "(d_max \<inter> \<tau>) face_of \<tau>"
+  proof -
+    have h_int_eq_swap: "d_max \<inter> \<tau> = \<tau> \<inter> d_max" by (by100 blast)
+    have h_ne_swap: "\<tau> \<inter> d_max \<noteq> {}" using h_int_ne h_int_eq_swap by (by100 simp)
+    have h_face: "(\<tau> \<inter> d_max) face_of \<tau>"
+      by (rule geotop_complex_inter_face_HOL[OF hK h\<tau>_K hd_max_K h_ne_swap])
+    show ?thesis using h_face h_int_eq_swap by (by100 simp)
+  qed
+  have h_face_dmax: "d_max face_of \<tau>" using h_face_inter h_int_eq by (by100 simp)
+  have h_dmax_rf: "d_max \<subseteq> rel_frontier \<tau>"
+    by (rule face_of_subset_rel_frontier[OF h_face_dmax hd_max_ne_\<tau>])
+  show ?thesis using h_hull_sub_dmax h_dmax_rf by (by100 blast)
+qed
+
 (** Moise 4.5 chain-simplex intersection (KEY theorem). By strong induction on
     card (set c_1 \<union> set c_2). Uses convex_hull_insert_Int_eq to reduce each
     induction step by factoring out the chain-top barycenter. **)
