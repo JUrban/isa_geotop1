@@ -10609,6 +10609,59 @@ next
   qed
 qed
 
+(** Open-star intersection in carrier-function form: \<bigcap>_{v\<in>V} open_star(v, K)
+    equals {x \<in> |K| : V \<subseteq> K-carrier(x)}. Direct from the per-vertex
+    characterization. **)
+lemma geotop_open_star_inter_carrier:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hVne: "V \<noteq> {}"
+  shows "(\<Inter>v\<in>V. geotop_open_star K v)
+           = {x \<in> geotop_polyhedron K. V \<subseteq> geotop_K_carrier K x}"
+proof
+  show "(\<Inter>v\<in>V. geotop_open_star K v) \<subseteq>
+        {x \<in> geotop_polyhedron K. V \<subseteq> geotop_K_carrier K x}"
+  proof
+    fix x assume hx: "x \<in> (\<Inter>v\<in>V. geotop_open_star K v)"
+    obtain v\<^sub>0 where hv\<^sub>0: "v\<^sub>0 \<in> V" using hVne by (by100 blast)
+    have hx_v\<^sub>0_star: "x \<in> geotop_open_star K v\<^sub>0" using hx hv\<^sub>0 by (by100 blast)
+    have hx_K: "x \<in> geotop_polyhedron K"
+      using hx_v\<^sub>0_star geotop_open_star_subset by (by100 blast)
+    have h_per_v: "\<forall>v\<in>V. v \<in> geotop_K_carrier K x"
+    proof
+      fix v assume hv: "v \<in> V"
+      have hx_v_star: "x \<in> geotop_open_star K v" using hx hv by (by100 blast)
+      have h_in_set: "x \<in> {y \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K y}"
+        using geotop_open_star_eq_carrier_contains_vertex[OF hK hKfin] hx_v_star
+        by (by100 simp)
+      show "v \<in> geotop_K_carrier K x" using h_in_set by (by100 blast)
+    qed
+    have hV_sub: "V \<subseteq> geotop_K_carrier K x" using h_per_v by (by100 blast)
+    show "x \<in> {x \<in> geotop_polyhedron K. V \<subseteq> geotop_K_carrier K x}"
+      using hx_K hV_sub by (by100 blast)
+  qed
+next
+  show "{x \<in> geotop_polyhedron K. V \<subseteq> geotop_K_carrier K x}
+          \<subseteq> (\<Inter>v\<in>V. geotop_open_star K v)"
+  proof
+    fix x assume hx: "x \<in> {x \<in> geotop_polyhedron K. V \<subseteq> geotop_K_carrier K x}"
+    have hx_K: "x \<in> geotop_polyhedron K" using hx by (by100 blast)
+    have hV_sub: "V \<subseteq> geotop_K_carrier K x" using hx by (by100 blast)
+    have h_per_v: "\<forall>v\<in>V. x \<in> geotop_open_star K v"
+    proof
+      fix v assume hv: "v \<in> V"
+      have hv_carrier: "v \<in> geotop_K_carrier K x" using hV_sub hv by (by100 blast)
+      have h_in_set: "x \<in> {y \<in> geotop_polyhedron K. v \<in> geotop_K_carrier K y}"
+        using hx_K hv_carrier by (by100 blast)
+      show "x \<in> geotop_open_star K v"
+        using geotop_open_star_eq_carrier_contains_vertex[OF hK hKfin] h_in_set
+        by (by100 simp)
+    qed
+    show "x \<in> (\<Inter>v\<in>V. geotop_open_star K v)" using h_per_v by (by100 blast)
+  qed
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
