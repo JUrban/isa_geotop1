@@ -1437,3 +1437,36 @@ Net sorry count unchanged at 2, but structural quality improved:
   useful beyond this specific theorem).
 
 ### Final state: 2 sorries (both cleanly structured standalone lemmas)
+
+## Session 2026-04-25: CARRIER LEMMA fully proven
+
+`geotop_chain_bary_rel_interior` in /project/tst/b0/GeoTopBase0.thy is
+fully proven (~250 lines).
+
+Statement: For a flag chain c in K, x = \<Sum>_{\<sigma>\<in>set c} \<beta> \<sigma> \<cdot> bary \<sigma>
+with \<beta> nonneg summing to 1, \<sigma>_max in support with all positive-\<beta>
+\<tau> satisfying \<tau> \<subseteq> \<sigma>_max:
+  x \<in> rel_interior \<sigma>_max.
+
+Proof outline:
+1. Extract V_max = simplex_vertices \<sigma>_max via geotop_is_complex.
+2. Define Vof selector for each simplex in chain.
+3. Show Vof \<tau> \<subseteq> V_max for \<beta> \<tau> > 0 (geotop_chain_vertex_subset).
+4. Expand bary \<tau> = (1/|V_\<tau>|)\<Sum>V_\<tau> via geotop_barycenter_eq_uV.
+5. Define \<alpha> v = sum over chain of \<beta>/|V_\<sigma>|.
+6. Prove x = \<Sum>_{v\<in>V_max} \<alpha> v \<cdot> v via sum.swap + sum.If_cases.
+7. Prove sum \<alpha> = 1 via swap + per-\<tau> evaluation.
+8. Prove \<alpha> > 0 on V_max via \<sigma>_max contributing positively.
+9. Apply rel_interior_convex_hull_explicit on V_max (AI).
+
+This is the KEY infrastructure piece for h_K2_intersect_eq Moise Lemma 4.5.
+
+For h_K2_intersect_eq future attack:
+- Apply carrier to c_1 representation: \<sigma>_max1 \<in> K, x \<in> rel_interior \<sigma>_max1.
+- Apply carrier to c_2 representation: \<sigma>_max2 \<in> K, x \<in> rel_interior \<sigma>_max2.
+- By geotop_complex_point_in_unique_rel_interior: \<sigma>_max1 = \<sigma>_max2 = \<tau>.
+- \<tau> \<in> set c_1 \<inter> set c_2 (top of support is in both supports).
+- DEEP STEP REMAINING: construct \<gamma> on set c_1 \<inter> set c_2 expressing x.
+
+### Sorry count after this session: 2 (unchanged structurally — carrier
+    lemma is enabling infrastructure, not a sorry-closer by itself).
