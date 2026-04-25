@@ -5117,7 +5117,12 @@ lemma geotop_flag_intersect_hull_sub:
   shows "convex hull (geotop_barycenter ` set c\<^sub>1)
           \<inter> convex hull (geotop_barycenter ` set c\<^sub>2)
           \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-  sorry
+  using hc\<^sub>1 hc\<^sub>2
+proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1 c\<^sub>2 rule: less_induct)
+  case less
+  show ?case
+    sorry
+qed
 
 lemma geotop_classical_Sd_exists:
   fixes K :: "'a::euclidean_space set set"
