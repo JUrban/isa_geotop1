@@ -9503,13 +9503,154 @@ lemma geotop_K'_carrier_in_K_simplex:
   assumes hx_ri: "x \<in> rel_interior \<sigma>'"
   assumes hx\<sigma>: "x \<in> \<sigma>"
   shows "\<sigma>' \<subseteq> \<sigma>"
-  sorry \<comment> \<open>PLAN2 Session N+1: prove via aff hull comparison + connected
-              partition of rel_interior \<sigma>' by K-carriers. Roughly:
-              for y \<in> rel_interior \<sigma>', show y's K-carrier equals \<tau>_x
-              (K-carrier of x). By connected rel_interior \<sigma>' and finite
-              K, the K-carrier function on rel_interior \<sigma>' is constant.
-              Hence rel_interior \<sigma>' \<subseteq> rel_interior \<tau>_x \<subseteq> \<tau>_x \<subseteq> \<sigma>.
-              Take closure to get \<sigma>' \<subseteq> \<tau>_x \<subseteq> \<sigma>.\<close>
+proof -
+  (** Get \<theta> \<in> K with \<sigma>' \<subseteq> \<theta> via the refines property of subdivision. **)
+  have h_refines: "geotop_refines K' K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  obtain \<theta> where h\<theta>K: "\<theta> \<in> K" and h\<sigma>'_\<theta>: "\<sigma>' \<subseteq> \<theta>"
+    using h_refines h\<sigma>' unfolding geotop_refines_def by (by100 blast)
+  (** Get vertices V_\<theta> of \<theta>; \<theta> = conv hull V_\<theta>, V_\<theta> finite AI. **)
+  have hK_simp: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<theta>_simp: "geotop_is_simplex \<theta>" using hK_simp h\<theta>K by (by100 blast)
+  obtain V\<^sub>\<theta> where hV\<theta>: "geotop_simplex_vertices \<theta> V\<^sub>\<theta>"
+    using h\<theta>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hV\<theta>_fin: "finite V\<^sub>\<theta>"
+    using hV\<theta> unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV\<theta>_ai: "\<not> affine_dependent V\<^sub>\<theta>"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<theta>])
+  have h\<theta>_hull_g: "\<theta> = geotop_convex_hull V\<^sub>\<theta>"
+    using hV\<theta> unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<theta>_hull: "\<theta> = convex hull V\<^sub>\<theta>"
+    using h\<theta>_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+  (** Get vertices V_\<sigma>' of \<sigma>'; \<sigma>' = conv hull V_\<sigma>'. **)
+  have hK'_simp: "\<forall>\<rho>\<in>K'. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK'[unfolded geotop_is_complex_def]])
+  have h\<sigma>'_simp: "geotop_is_simplex \<sigma>'" using hK'_simp h\<sigma>' by (by100 blast)
+  obtain V\<^sub>\<sigma>\<^sub>' where hV\<sigma>': "geotop_simplex_vertices \<sigma>' V\<^sub>\<sigma>\<^sub>'"
+    using h\<sigma>'_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hV\<sigma>'_fin: "finite V\<^sub>\<sigma>\<^sub>'"
+    using hV\<sigma>' unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>'_hull_g: "\<sigma>' = geotop_convex_hull V\<^sub>\<sigma>\<^sub>'"
+    using hV\<sigma>' unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>'_hull: "\<sigma>' = convex hull V\<^sub>\<sigma>\<^sub>'"
+    using h\<sigma>'_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV\<sigma>'_sub_\<theta>: "V\<^sub>\<sigma>\<^sub>' \<subseteq> \<theta>"
+  proof -
+    have h_subhull: "V\<^sub>\<sigma>\<^sub>' \<subseteq> convex hull V\<^sub>\<sigma>\<^sub>'"
+      using hull_subset[of V\<^sub>\<sigma>\<^sub>' convex] by (by100 blast)
+    show ?thesis using h_subhull h\<sigma>'_hull h\<sigma>'_\<theta> by (by100 blast)
+  qed
+  (** Express x in V_\<theta>-bary coords; get support U of x. **)
+  have hx_\<theta>: "x \<in> \<theta>" using hx_ri rel_interior_subset h\<sigma>'_\<theta> by (by100 blast)
+  have h_\<theta>_chull: "convex hull V\<^sub>\<theta>
+                    = {y. \<exists>u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w)
+                            \<and> sum u V\<^sub>\<theta> = 1
+                            \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = y}"
+    by (rule convex_hull_finite[OF hV\<theta>_fin])
+  have hx_set: "x \<in> {y. \<exists>u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w)
+                            \<and> sum u V\<^sub>\<theta> = 1
+                            \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = y}"
+    using hx_\<theta> h\<theta>_hull h_\<theta>_chull by (by100 metis)
+  obtain ux where hux_nn: "\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> ux w"
+              and hux_sum: "sum ux V\<^sub>\<theta> = 1"
+              and hux_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. ux w *\<^sub>R w) = x"
+    using hx_set by (by100 blast)
+  define U where "U = {w \<in> V\<^sub>\<theta>. 0 < ux w}"
+  define F where "F = convex hull U"
+  (** F is a face of \<theta>; F \<in> K (K is face-closed). **)
+  have hU_sub: "U \<subseteq> V\<^sub>\<theta>" unfolding U_def by (by100 blast)
+  have hU_ai: "\<not> affine_dependent U"
+    by (rule affine_independent_subset[OF hV\<theta>_ai hU_sub])
+  have hU_fin: "finite U" using hU_sub hV\<theta>_fin finite_subset by (by100 blast)
+  (** x \<in> rel_interior F via the support characterization. **)
+  (** First: x = sum ux w over U (since ux = 0 outside U). **)
+  have h_VmU_zero: "\<forall>w\<in>V\<^sub>\<theta> - U. ux w = 0"
+  proof
+    fix w assume hw: "w \<in> V\<^sub>\<theta> - U"
+    have hwV: "w \<in> V\<^sub>\<theta>" using hw by (by100 blast)
+    have hw_nU: "w \<notin> U" using hw by (by100 blast)
+    have h_nn: "0 \<le> ux w" using hux_nn hwV by (by100 blast)
+    have h_not_pos: "\<not> (0 < ux w)" using hw_nU hwV unfolding U_def by (by100 blast)
+    show "ux w = 0" using h_nn h_not_pos by (by100 force)
+  qed
+  have hux_U_pos: "\<forall>w\<in>U. 0 < ux w" unfolding U_def by (by100 blast)
+  have hux_U_nn: "\<forall>w\<in>U. 0 \<le> ux w" using hux_U_pos by (by100 force)
+  have h_VmU_fin: "finite (V\<^sub>\<theta> - U)" using hV\<theta>_fin by (by100 simp)
+  have h_V_split: "V\<^sub>\<theta> = U \<union> (V\<^sub>\<theta> - U)" using hU_sub by (by100 blast)
+  have h_disj: "U \<inter> (V\<^sub>\<theta> - U) = {}" by (by100 blast)
+  have h_split_sum: "sum ux V\<^sub>\<theta> = sum ux U + sum ux (V\<^sub>\<theta> - U)"
+    using sum.union_disjoint[OF hU_fin h_VmU_fin h_disj] h_V_split by (by100 simp)
+  have h_VmU_sum: "sum ux (V\<^sub>\<theta> - U) = 0" using h_VmU_zero by (by100 simp)
+  have hux_U_sum: "sum ux U = 1" using h_split_sum h_VmU_sum hux_sum by (by100 linarith)
+  have h_split_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. ux w *\<^sub>R w)
+                        = (\<Sum>w\<in>U. ux w *\<^sub>R w) + (\<Sum>w\<in>V\<^sub>\<theta> - U. ux w *\<^sub>R w)"
+    using sum.union_disjoint[OF hU_fin h_VmU_fin h_disj, of "\<lambda>w. ux w *\<^sub>R w"] h_V_split
+    by (by100 simp)
+  have h_VmU_combo_zero: "(\<Sum>w\<in>V\<^sub>\<theta> - U. ux w *\<^sub>R w) = 0"
+  proof (rule sum.neutral)
+    show "\<forall>w\<in>V\<^sub>\<theta> - U. ux w *\<^sub>R w = 0" using h_VmU_zero by (by100 simp)
+  qed
+  have hux_U_combo: "(\<Sum>w\<in>U. ux w *\<^sub>R w) = x"
+    using h_split_combo h_VmU_combo_zero hux_combo by (by100 simp)
+  (** Apply rel_interior_convex_hull_explicit on U (AI). **)
+  have h_F_ri_char: "rel_interior F
+                      = {y. \<exists>u. (\<forall>v\<in>U. 0 < u v) \<and> sum u U = 1
+                                \<and> (\<Sum>v\<in>U. u v *\<^sub>R v) = y}"
+    unfolding F_def
+    by (rule rel_interior_convex_hull_explicit[OF hU_ai])
+  have h_witness: "\<exists>u. (\<forall>v\<in>U. 0 < u v) \<and> sum u U = 1
+                       \<and> (\<Sum>v\<in>U. u v *\<^sub>R v) = x"
+    using hux_U_pos hux_U_sum hux_U_combo by (by100 blast)
+  have hx_F_ri: "x \<in> rel_interior F"
+    using h_F_ri_char h_witness by (by100 blast)
+  (** F is a face of \<theta>: F = conv hull W with W \<subseteq> V_\<theta> and \<theta> = conv hull V_\<theta>. **)
+  have hU_ne: "U \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> U \<noteq> {}"
+    hence hU_emp: "U = {}" by (by100 simp)
+    have h_all_zero: "\<forall>w\<in>V\<^sub>\<theta>. ux w = 0"
+    proof (rule ballI)
+      fix w assume hw: "w \<in> V\<^sub>\<theta>"
+      have h_nn: "0 \<le> ux w" using hux_nn hw by (by100 blast)
+      have h_not_pos: "\<not> (0 < ux w)" using hw hU_emp unfolding U_def by (by100 blast)
+      show "ux w = 0" using h_nn h_not_pos by (by100 force)
+    qed
+    have h_sum_zero: "sum ux V\<^sub>\<theta> = 0" using h_all_zero by (by100 simp)
+    show False using h_sum_zero hux_sum by (by100 simp)
+  qed
+  have h_HOL_eq_U: "geotop_convex_hull U = convex hull U"
+    by (rule geotop_convex_hull_eq_HOL)
+  have hF_geo: "F = geotop_convex_hull U"
+    unfolding F_def using h_HOL_eq_U by (by100 simp)
+  have hF_face: "geotop_is_face F \<theta>"
+    unfolding geotop_is_face_def
+    using hV\<theta> hU_sub hU_ne hF_geo by (by100 blast)
+  (** F \<in> K via face-closure of K. **)
+  have h_face_closed: "\<forall>\<rho>\<in>K. \<forall>\<phi>. geotop_is_face \<phi> \<rho> \<longrightarrow> \<phi> \<in> K"
+    by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+  have hFK: "F \<in> K" using h_face_closed h\<theta>K hF_face by (by100 blast)
+  (** F \<subseteq> \<sigma> via geotop_complex_rel_interior_imp_subset (in K). **)
+  have hF_sub_\<sigma>: "F \<subseteq> \<sigma>"
+    by (rule geotop_complex_rel_interior_imp_subset[OF hK hFK h\<sigma>K hx_F_ri hx\<sigma>])
+  (** Now show \<sigma>' \<subseteq> F. Each v \<in> V_\<sigma>' has V_\<theta>-bary support \<subseteq> U. **)
+  have hV\<sigma>'_sub_F: "V\<^sub>\<sigma>\<^sub>' \<subseteq> F"
+    sorry \<comment> \<open>For each v \<in> V_\<sigma>': v \<in> \<theta> has V_\<theta>-bary representation. The
+                rel_interior of \<sigma>' has positive bary coords on V_\<sigma>', so
+                x = sum \<gamma>_v v with \<gamma>_v > 0. The V_\<theta>-bary coords of x are
+                ux. Each v's V_\<theta>-support \<subseteq> {w : ux w > 0} = U. So v \<in>
+                conv hull (v's V_\<theta>-support) \<subseteq> conv hull U = F.\<close>
+  have h\<sigma>'_sub_F: "\<sigma>' \<subseteq> F"
+  proof -
+    have h_F_conv: "convex F" unfolding F_def by (by100 simp)
+    have h_hull_min: "convex hull V\<^sub>\<sigma>\<^sub>' \<subseteq> F"
+      using hull_minimal[of V\<^sub>\<sigma>\<^sub>' F convex] hV\<sigma>'_sub_F h_F_conv by (by100 blast)
+    show ?thesis using h\<sigma>'_hull h_hull_min by (by100 simp)
+  qed
+  show ?thesis using h\<sigma>'_sub_F hF_sub_\<sigma> by (by100 blast)
+qed
 
 (** PLAN2 Session N+1 — main covering lemma. **)
 lemma geotop_subdivision_covers_simplex:
