@@ -7680,6 +7680,400 @@ qed
       support α = V_max (σ_max_S contributes positively to every v ∈ V_max).
     - Apply geotop_bary_in_rel_interior_support. **)
 
+lemma geotop_chain_bary_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_subK: "set c \<subseteq> K"
+  assumes h\<beta>_nn: "\<forall>\<sigma>\<in>set c. 0 \<le> \<beta> \<sigma>"
+  assumes h\<beta>_sum: "sum \<beta> (set c) = 1"
+  assumes hx_def: "x = (\<Sum>\<sigma>\<in>set c. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+  assumes h\<sigma>_max_in: "\<sigma>\<^sub>m\<^sub>a\<^sub>x \<in> set c"
+  assumes h\<sigma>_max_pos: "0 < \<beta> \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+  assumes h_chain_top: "\<And>\<tau>. \<tau> \<in> set c \<Longrightarrow> 0 < \<beta> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+  shows "x \<in> rel_interior \<sigma>\<^sub>m\<^sub>a\<^sub>x"
+proof -
+  (** Step 1: \<sigma>_max is a simplex (since set c \<subseteq> K and \<sigma>_max \<in> set c).
+      Extract its vertices V_max. **)
+  have h\<sigma>_max_K: "\<sigma>\<^sub>m\<^sub>a\<^sub>x \<in> K" using h\<sigma>_max_in hc_subK by (by100 blast)
+  have h_all_simp: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_max_sim: "geotop_is_simplex \<sigma>\<^sub>m\<^sub>a\<^sub>x" using h\<sigma>_max_K h_all_simp by (by100 blast)
+  obtain V\<^sub>m\<^sub>a\<^sub>x where hV\<^sub>m\<^sub>a\<^sub>x: "geotop_simplex_vertices \<sigma>\<^sub>m\<^sub>a\<^sub>x V\<^sub>m\<^sub>a\<^sub>x"
+    using h\<sigma>_max_sim unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have hV\<^sub>m\<^sub>a\<^sub>x_fin: "finite V\<^sub>m\<^sub>a\<^sub>x"
+    using hV\<^sub>m\<^sub>a\<^sub>x unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV\<^sub>m\<^sub>a\<^sub>x_card: "\<exists>n. card V\<^sub>m\<^sub>a\<^sub>x = n + 1"
+    using hV\<^sub>m\<^sub>a\<^sub>x unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV\<^sub>m\<^sub>a\<^sub>x_ne: "V\<^sub>m\<^sub>a\<^sub>x \<noteq> {}" using hV\<^sub>m\<^sub>a\<^sub>x_fin hV\<^sub>m\<^sub>a\<^sub>x_card by (by100 auto)
+  have hV\<^sub>m\<^sub>a\<^sub>x_card_pos: "0 < card V\<^sub>m\<^sub>a\<^sub>x" using hV\<^sub>m\<^sub>a\<^sub>x_fin hV\<^sub>m\<^sub>a\<^sub>x_ne card_gt_0_iff by (by100 blast)
+  have h\<sigma>_max_hull_g: "\<sigma>\<^sub>m\<^sub>a\<^sub>x = geotop_convex_hull V\<^sub>m\<^sub>a\<^sub>x"
+    using hV\<^sub>m\<^sub>a\<^sub>x unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_max_hull: "\<sigma>\<^sub>m\<^sub>a\<^sub>x = convex hull V\<^sub>m\<^sub>a\<^sub>x"
+    using h\<sigma>_max_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV\<^sub>m\<^sub>a\<^sub>x_ai: "\<not> affine_dependent V\<^sub>m\<^sub>a\<^sub>x"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<^sub>m\<^sub>a\<^sub>x])
+  (** Step 2: Vof \<tau> = simplex_vertices of \<tau> for each \<tau> \<in> set c. Use SOME. **)
+  define Vof :: "'a set \<Rightarrow> 'a set"
+    where "Vof = (\<lambda>\<tau>. SOME V. geotop_simplex_vertices \<tau> V)"
+  have h_Vof_sv: "\<forall>\<tau>\<in>set c. geotop_simplex_vertices \<tau> (Vof \<tau>)"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+    have h\<tau>K: "\<tau> \<in> K" using h\<tau> hc_subK by (by100 blast)
+    have h\<tau>_sim: "geotop_is_simplex \<tau>" using h\<tau>K h_all_simp by (by100 blast)
+    have h_ex: "\<exists>V. geotop_simplex_vertices \<tau> V"
+      using h\<tau>_sim unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have h_some: "geotop_simplex_vertices \<tau> (SOME V. geotop_simplex_vertices \<tau> V)"
+      using h_ex by (rule someI_ex)
+    show "geotop_simplex_vertices \<tau> (Vof \<tau>)"
+      unfolding Vof_def using h_some by (by100 simp)
+  qed
+  have h_Vof_max: "Vof \<sigma>\<^sub>m\<^sub>a\<^sub>x = V\<^sub>m\<^sub>a\<^sub>x"
+    using h_Vof_sv h\<sigma>_max_in hV\<^sub>m\<^sub>a\<^sub>x geotop_simplex_vertices_unique by (by100 blast)
+  (** Step 3: For \<tau> \<in> set c with \<beta> \<tau> > 0, Vof \<tau> \<subseteq> V_max. **)
+  have h_Vof_sub: "\<forall>\<tau>\<in>set c. 0 < \<beta> \<tau> \<longrightarrow> Vof \<tau> \<subseteq> V\<^sub>m\<^sub>a\<^sub>x"
+  proof (rule ballI, rule impI)
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c" and h\<tau>_pos: "0 < \<beta> \<tau>"
+    have h\<tau>_sub: "\<tau> \<subseteq> \<sigma>\<^sub>m\<^sub>a\<^sub>x" by (rule h_chain_top[OF h\<tau> h\<tau>_pos])
+    have h\<tau>K: "\<tau> \<in> K" using h\<tau> hc_subK by (by100 blast)
+    have h\<tau>_sv: "geotop_simplex_vertices \<tau> (Vof \<tau>)" using h_Vof_sv h\<tau> by (by100 blast)
+    show "Vof \<tau> \<subseteq> V\<^sub>m\<^sub>a\<^sub>x"
+      by (rule geotop_chain_vertex_subset[OF hK h\<tau>K h\<sigma>_max_K h\<tau>_sub h\<tau>_sv hV\<^sub>m\<^sub>a\<^sub>x])
+  qed
+  have h_Vof_fin: "\<forall>\<tau>\<in>set c. finite (Vof \<tau>)"
+    using h_Vof_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h_Vof_card_pos: "\<forall>\<tau>\<in>set c. 0 < card (Vof \<tau>)"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+    have h_sv: "geotop_simplex_vertices \<tau> (Vof \<tau>)" using h_Vof_sv h\<tau> by (by100 blast)
+    have h_card: "\<exists>n. card (Vof \<tau>) = n + 1"
+      using h_sv unfolding geotop_simplex_vertices_def by (by100 blast)
+    show "0 < card (Vof \<tau>)" using h_card by (by100 auto)
+  qed
+  (** Step 4: bary \<tau> = (1/|V_\<tau>|) \<Sum>_{v \<in> V_\<tau>} v. **)
+  have h_bary_eq: "\<forall>\<tau>\<in>set c. geotop_barycenter \<tau>
+                       = (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+    have h_sv: "geotop_simplex_vertices \<tau> (Vof \<tau>)" using h_Vof_sv h\<tau> by (by100 blast)
+    show "geotop_barycenter \<tau>
+            = (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)"
+      by (rule geotop_barycenter_eq_uV[OF h_sv])
+  qed
+  (** Step 5: Define \<alpha> v = \<Sum>_{\<tau> in set c, v \<in> Vof \<tau>} \<beta> \<tau> / card (Vof \<tau>). **)
+  have hc_fin: "finite (set c)" by (by100 simp)
+  define \<alpha> where
+    "\<alpha> = (\<lambda>v. \<Sum>\<tau>\<in>{\<tau>\<in>set c. v \<in> Vof \<tau>}. \<beta> \<tau> / real (card (Vof \<tau>)))"
+  (** Step 6: Show x = \<Sum>_{v \<in> V_max} \<alpha> v *\<^sub>R v.
+      Approach: rewrite each summand \<beta> \<tau> *\<^sub>R bary \<tau>, swap sums.
+      Per-\<tau> identity: \<beta> \<tau> *\<^sub>R bary \<tau> = (\<Sum>v\<in>V_max. (if v\<in>Vof \<tau> then \<beta>\<tau>/|Vof\<tau>| else 0)\<cdot>v).
+      Cases on whether \<beta> \<tau> > 0 (then Vof \<tau> \<subseteq> V_max) or \<beta> \<tau> = 0 (both sides 0). **)
+  have h_per_tau: "\<And>\<tau>. \<tau> \<in> set c \<Longrightarrow>
+      \<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+        = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+  proof -
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+    have h_card_pos: "0 < card (Vof \<tau>)" using h_Vof_card_pos h\<tau> by (by100 blast)
+    have h_Vof_fin\<tau>: "finite (Vof \<tau>)" using h_Vof_fin h\<tau> by (by100 blast)
+    have h_\<beta>nn: "0 \<le> \<beta> \<tau>" using h\<beta>_nn h\<tau> by (by100 blast)
+    show "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+            = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+    proof (cases "0 < \<beta> \<tau>")
+      case True
+      have h_Vof_subVmax: "Vof \<tau> \<subseteq> V\<^sub>m\<^sub>a\<^sub>x" using h_Vof_sub h\<tau> True by (by100 blast)
+      have h_int: "V\<^sub>m\<^sub>a\<^sub>x \<inter> Vof \<tau> = Vof \<tau>" using h_Vof_subVmax by (by100 blast)
+      have h_bary: "geotop_barycenter \<tau> = (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)"
+        using h_bary_eq h\<tau> by (by100 blast)
+      have h_LHS: "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+                     = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
+      proof -
+        have h1: "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+                    = \<beta> \<tau> *\<^sub>R (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)"
+          using h_bary by (by100 simp)
+        have h2: "\<beta> \<tau> *\<^sub>R (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)
+                    = (\<Sum>w\<in>Vof \<tau>. \<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w))"
+          by (rule scaleR_right.sum)
+        have h3: "\<And>w::'a. \<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w)
+                       = (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w"
+        proof -
+          fix w :: 'a
+          have h_a: "\<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w)
+                       = (\<beta> \<tau> * (1 / real (card (Vof \<tau>)))) *\<^sub>R w"
+            using scaleR_scaleR[of "\<beta> \<tau>" "1/real (card (Vof \<tau>))" w] by (by100 simp)
+          have h_b: "\<beta> \<tau> * (1 / real (card (Vof \<tau>))) = \<beta> \<tau> / real (card (Vof \<tau>))"
+            by (by100 simp)
+          show "\<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w)
+                  = (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w"
+            using h_a h_b by (by100 simp)
+        qed
+        have h4: "(\<Sum>w\<in>Vof \<tau>. \<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w))
+                    = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
+          using h3 by (by100 simp)
+        show ?thesis using h1 h2 h4 by (by100 simp)
+      qed
+      have h_RHS: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                     = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
+      proof -
+        have h_distrib: "\<And>v::'a. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v
+                       = (if v \<in> Vof \<tau> then (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v else 0)"
+          by (by100 simp)
+        have h1: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                    = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau>
+                              then (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v else 0)"
+          using h_distrib by (by100 simp)
+        have h2: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau>
+                          then (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v else 0)
+                    = sum (\<lambda>v. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v) (V\<^sub>m\<^sub>a\<^sub>x \<inter> {v. v \<in> Vof \<tau>})
+                       + sum (\<lambda>_. 0) (V\<^sub>m\<^sub>a\<^sub>x \<inter> -{v. v \<in> Vof \<tau>})"
+          using sum.If_cases[OF hV\<^sub>m\<^sub>a\<^sub>x_fin,
+            of "\<lambda>v. v \<in> Vof \<tau>" "\<lambda>v. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v" "\<lambda>_. 0"]
+          by (by100 blast)
+        have h_setI: "V\<^sub>m\<^sub>a\<^sub>x \<inter> {v. v \<in> Vof \<tau>} = V\<^sub>m\<^sub>a\<^sub>x \<inter> Vof \<tau>" by (by100 blast)
+        have h_setI': "V\<^sub>m\<^sub>a\<^sub>x \<inter> Vof \<tau> = Vof \<tau>" using h_int by (by100 simp)
+        have h3: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau>
+                          then (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v else 0)
+                    = (\<Sum>v\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v)"
+          using h2 h_setI h_setI' by (by100 simp)
+        show ?thesis using h1 h3 by (by100 simp)
+      qed
+      show ?thesis using h_LHS h_RHS by (by100 simp)
+    next
+      case False
+      hence h\<beta>0: "\<beta> \<tau> = 0" using h_\<beta>nn by (by100 linarith)
+      have h_LHS: "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau> = 0" using h\<beta>0 by (by100 simp)
+      have h_zero_div: "\<beta> \<tau> / real (card (Vof \<tau>)) = 0" using h\<beta>0 by (by100 simp)
+      have h_RHS_zero: "\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x.
+                  (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v = 0"
+        using h_zero_div by (by100 simp)
+      have h_RHS: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                      = 0"
+        by (rule sum.neutral) (use h_RHS_zero in \<open>by100 blast\<close>)
+      show ?thesis using h_LHS h_RHS by (by100 simp)
+    qed
+  qed
+  have h_x_inner: "x = (\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau>
+                                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+  proof -
+    have h_eq_sum: "(\<Sum>\<tau>\<in>set c. \<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>)
+                    = (\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau>
+                                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+    proof (rule sum.cong)
+      show "set c = set c" by (by100 simp)
+    next
+      fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+      show "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+              = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+        by (rule h_per_tau[OF h\<tau>])
+    qed
+    show ?thesis using hx_def h_eq_sum by (by100 simp)
+  qed
+  (** \<alpha> v rewritten as sum-with-if over set c. **)
+  have h_\<alpha>_if: "\<And>v. \<alpha> v = (\<Sum>\<tau>\<in>set c. if v \<in> Vof \<tau>
+                                       then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+  proof -
+    fix v
+    have h_inter: "{\<tau> \<in> set c. v \<in> Vof \<tau>} = set c \<inter> {\<tau>. v \<in> Vof \<tau>}" by (by100 blast)
+    have h1: "(\<Sum>\<tau>\<in>{\<tau> \<in> set c. v \<in> Vof \<tau>}. \<beta> \<tau> / real (card (Vof \<tau>)))
+                = (\<Sum>\<tau>\<in>set c \<inter> {\<tau>. v \<in> Vof \<tau>}. \<beta> \<tau> / real (card (Vof \<tau>)))"
+      using h_inter by (by100 simp)
+    have h2: "(\<Sum>\<tau>\<in>set c \<inter> {\<tau>. v \<in> Vof \<tau>}. \<beta> \<tau> / real (card (Vof \<tau>)))
+                = (\<Sum>\<tau>\<in>set c. if \<tau> \<in> {\<tau>. v \<in> Vof \<tau>}
+                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      by (rule sum.inter_restrict[OF hc_fin])
+    have h3: "(\<Sum>\<tau>\<in>set c. if \<tau> \<in> {\<tau>. v \<in> Vof \<tau>}
+                          then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                = (\<Sum>\<tau>\<in>set c. if v \<in> Vof \<tau>
+                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      by (by100 simp)
+    show "\<alpha> v = (\<Sum>\<tau>\<in>set c. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      unfolding \<alpha>_def using h1 h2 h3 by (by100 simp)
+  qed
+  (** Swap sum order, factor v out. **)
+  have h_x_swap: "x = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<alpha> v *\<^sub>R v)"
+  proof -
+    have h_inner_def: "\<And>\<tau> v. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v
+                              = (if v \<in> Vof \<tau> then (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R v else 0)"
+      by (by100 simp)
+    have h_swap: "(\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau>
+                                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                  = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau>
+                                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)"
+      by (rule sum.swap)
+    have h_factor: "\<And>v::'a. v \<in> V\<^sub>m\<^sub>a\<^sub>x \<Longrightarrow>
+                       (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                       = (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0))
+                            *\<^sub>R v"
+    proof -
+      fix v :: 'a assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+      have h_sl: "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0))
+                       *\<^sub>R v
+                  = (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                                  *\<^sub>R v)"
+        by (rule scaleR_left.sum)
+      show "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+              = (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0))
+                  *\<^sub>R v"
+        using h_sl by (by100 simp)
+    qed
+    have h_alpha_eq: "\<And>v. v \<in> V\<^sub>m\<^sub>a\<^sub>x \<Longrightarrow>
+                          (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                                       *\<^sub>R v)
+                          = \<alpha> v *\<^sub>R v"
+    proof -
+      fix v assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+      have h1: "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                = (\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0))
+                    *\<^sub>R v"
+        by (rule h_factor[OF hv])
+      have h2: "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0))
+                  = \<alpha> v"
+        using h_\<alpha>_if[of v] by (by100 simp)
+      show "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+              = \<alpha> v *\<^sub>R v" using h1 h2 by (by100 simp)
+    qed
+    have h_outer: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau>
+                                              then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+                    = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<alpha> v *\<^sub>R v)"
+    proof (rule sum.cong)
+      show "V\<^sub>m\<^sub>a\<^sub>x = V\<^sub>m\<^sub>a\<^sub>x" by (by100 simp)
+    next
+      fix v assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+      show "(\<Sum>\<tau>\<in>set c. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
+              = \<alpha> v *\<^sub>R v"
+        by (rule h_alpha_eq[OF hv])
+    qed
+    show ?thesis using h_x_inner h_swap h_outer by (by100 simp)
+  qed
+  (** Step 7: \<alpha> v \<ge> 0 for all v. Each summand \<beta> \<tau> / card (Vof \<tau>) is nonneg. **)
+  have h\<alpha>_nn: "\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x. 0 \<le> \<alpha> v"
+  proof
+    fix v assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+    have h_each_nn: "\<forall>\<tau>\<in>{\<tau>\<in>set c. v \<in> Vof \<tau>}. 0 \<le> \<beta> \<tau> / real (card (Vof \<tau>))"
+    proof
+      fix \<tau> assume h\<tau>S: "\<tau> \<in> {\<tau>\<in>set c. v \<in> Vof \<tau>}"
+      have h\<tau>: "\<tau> \<in> set c" using h\<tau>S by (by100 blast)
+      have h_\<beta>nn: "0 \<le> \<beta> \<tau>" using h\<beta>_nn h\<tau> by (by100 blast)
+      have h_card_pos: "0 < card (Vof \<tau>)" using h_Vof_card_pos h\<tau> by (by100 blast)
+      show "0 \<le> \<beta> \<tau> / real (card (Vof \<tau>))" using h_\<beta>nn h_card_pos by (by100 simp)
+    qed
+    show "0 \<le> \<alpha> v" unfolding \<alpha>_def by (rule sum_nonneg) (use h_each_nn in \<open>by100 blast\<close>)
+  qed
+  (** Step 8: sum \<alpha> V_max = 1. Strategy: rewrite \<alpha> v via h_\<alpha>_if as sum-with-if,
+      swap order, evaluate inner sum. **)
+  have h_inner_eval: "\<And>\<tau>. \<tau> \<in> set c \<Longrightarrow>
+                      (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = \<beta> \<tau>"
+  proof -
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+    have h_card_pos: "0 < card (Vof \<tau>)" using h_Vof_card_pos h\<tau> by (by100 blast)
+    have h_Vof_fin\<tau>: "finite (Vof \<tau>)" using h_Vof_fin h\<tau> by (by100 blast)
+    have h_\<beta>nn: "0 \<le> \<beta> \<tau>" using h\<beta>_nn h\<tau> by (by100 blast)
+    show "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = \<beta> \<tau>"
+    proof (cases "0 < \<beta> \<tau>")
+      case True
+      have h_Vof_subVmax: "Vof \<tau> \<subseteq> V\<^sub>m\<^sub>a\<^sub>x" using h_Vof_sub h\<tau> True by (by100 blast)
+      have h_int: "V\<^sub>m\<^sub>a\<^sub>x \<inter> Vof \<tau> = Vof \<tau>" using h_Vof_subVmax by (by100 blast)
+      have h1: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                  = sum (\<lambda>_. \<beta> \<tau> / real (card (Vof \<tau>))) (V\<^sub>m\<^sub>a\<^sub>x \<inter> {v. v \<in> Vof \<tau>})
+                       + sum (\<lambda>_. 0) (V\<^sub>m\<^sub>a\<^sub>x \<inter> -{v. v \<in> Vof \<tau>})"
+        using sum.If_cases[OF hV\<^sub>m\<^sub>a\<^sub>x_fin,
+          of "\<lambda>v. v \<in> Vof \<tau>" "\<lambda>_. \<beta> \<tau> / real (card (Vof \<tau>))" "\<lambda>_. 0"]
+        by (by100 blast)
+      have h_setI: "V\<^sub>m\<^sub>a\<^sub>x \<inter> {v. v \<in> Vof \<tau>} = V\<^sub>m\<^sub>a\<^sub>x \<inter> Vof \<tau>" by (by100 blast)
+      have h2: "sum (\<lambda>_. \<beta> \<tau> / real (card (Vof \<tau>))) (V\<^sub>m\<^sub>a\<^sub>x \<inter> {v. v \<in> Vof \<tau>})
+                  = real (card (Vof \<tau>)) * (\<beta> \<tau> / real (card (Vof \<tau>)))"
+        using h_setI h_int by (by100 simp)
+      have h3: "real (card (Vof \<tau>)) * (\<beta> \<tau> / real (card (Vof \<tau>))) = \<beta> \<tau>"
+        using h_card_pos by (by100 simp)
+      show ?thesis using h1 h2 h3 by (by100 simp)
+    next
+      case False
+      hence h\<beta>0: "\<beta> \<tau> = 0" using h_\<beta>nn by (by100 linarith)
+      have h_zero_div: "\<beta> \<tau> / real (card (Vof \<tau>)) = 0" using h\<beta>0 by (by100 simp)
+      have h_inner_zero: "\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x.
+                  (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = 0"
+        using h_zero_div by (by100 simp)
+      have h_sum_zero: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = 0"
+        by (rule sum.neutral) (use h_inner_zero in \<open>by100 blast\<close>)
+      show ?thesis using h_sum_zero h\<beta>0 by (by100 simp)
+    qed
+  qed
+  have h\<alpha>_sum: "sum \<alpha> V\<^sub>m\<^sub>a\<^sub>x = 1"
+  proof -
+    have h_alpha_unfold: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<alpha> v)
+                          = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<Sum>\<tau>\<in>set c.
+                                if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+    proof (rule sum.cong)
+      show "V\<^sub>m\<^sub>a\<^sub>x = V\<^sub>m\<^sub>a\<^sub>x" by (by100 simp)
+    next
+      fix v assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+      show "\<alpha> v = (\<Sum>\<tau>\<in>set c. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+        by (rule h_\<alpha>_if)
+    qed
+    have h_swap: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<Sum>\<tau>\<in>set c.
+                          if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                  = (\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x.
+                          if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      by (rule sum.swap)
+    have h_eval: "(\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x.
+                          if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                  = (\<Sum>\<tau>\<in>set c. \<beta> \<tau>)"
+    proof (rule sum.cong)
+      show "set c = set c" by (by100 simp)
+    next
+      fix \<tau> assume h\<tau>: "\<tau> \<in> set c"
+      show "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = \<beta> \<tau>"
+        by (rule h_inner_eval[OF h\<tau>])
+    qed
+    show ?thesis using h_alpha_unfold h_swap h_eval h\<beta>_sum by (by100 simp)
+  qed
+  (** Step 9: \<alpha> v > 0 for all v \<in> V_max (\<sigma>_max contributes positively
+      since Vof \<sigma>_max = V_max contains v, and \<beta> \<sigma>_max > 0; other terms nonneg). **)
+  have h\<alpha>_pos: "\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x. 0 < \<alpha> v"
+  proof
+    fix v assume hv: "v \<in> V\<^sub>m\<^sub>a\<^sub>x"
+    define S where "S = {\<tau>\<in>set c. v \<in> Vof \<tau>}"
+    have hS_fin: "finite S" unfolding S_def using hc_fin by (by100 simp)
+    have h\<sigma>_max_in_S: "\<sigma>\<^sub>m\<^sub>a\<^sub>x \<in> S"
+      unfolding S_def using h\<sigma>_max_in hv h_Vof_max by (by100 blast)
+    have h\<sigma>_max_card: "real (card (Vof \<sigma>\<^sub>m\<^sub>a\<^sub>x)) = real (card V\<^sub>m\<^sub>a\<^sub>x)"
+      using h_Vof_max by (by100 simp)
+    have h_term_pos: "0 < \<beta> \<sigma>\<^sub>m\<^sub>a\<^sub>x / real (card (Vof \<sigma>\<^sub>m\<^sub>a\<^sub>x))"
+      using h\<sigma>_max_pos h\<sigma>_max_card hV\<^sub>m\<^sub>a\<^sub>x_card_pos by (by100 simp)
+    have h_each_nn: "\<forall>\<tau>\<in>S. 0 \<le> \<beta> \<tau> / real (card (Vof \<tau>))"
+    proof
+      fix \<tau> assume h\<tau>S: "\<tau> \<in> S"
+      have h\<tau>: "\<tau> \<in> set c" unfolding S_def using h\<tau>S unfolding S_def by (by100 blast)
+      have h_\<beta>nn: "0 \<le> \<beta> \<tau>" using h\<beta>_nn h\<tau> by (by100 blast)
+      have h_card_pos: "0 < card (Vof \<tau>)" using h_Vof_card_pos h\<tau> by (by100 blast)
+      show "0 \<le> \<beta> \<tau> / real (card (Vof \<tau>))" using h_\<beta>nn h_card_pos by (by100 simp)
+    qed
+    have h_sum_split: "(\<Sum>\<tau>\<in>S. \<beta> \<tau> / real (card (Vof \<tau>)))
+                          = \<beta> \<sigma>\<^sub>m\<^sub>a\<^sub>x / real (card (Vof \<sigma>\<^sub>m\<^sub>a\<^sub>x))
+                            + (\<Sum>\<tau>\<in>S - {\<sigma>\<^sub>m\<^sub>a\<^sub>x}. \<beta> \<tau> / real (card (Vof \<tau>)))"
+      using sum.remove[OF hS_fin h\<sigma>_max_in_S, of "\<lambda>\<tau>. \<beta> \<tau> / real (card (Vof \<tau>))"]
+      by (by100 simp)
+    have h_each_nn_rest: "\<forall>\<tau>\<in>S - {\<sigma>\<^sub>m\<^sub>a\<^sub>x}. 0 \<le> \<beta> \<tau> / real (card (Vof \<tau>))"
+      using h_each_nn by (by100 blast)
+    have h_rest_nn: "0 \<le> (\<Sum>\<tau>\<in>S - {\<sigma>\<^sub>m\<^sub>a\<^sub>x}. \<beta> \<tau> / real (card (Vof \<tau>)))"
+      by (rule sum_nonneg) (use h_each_nn_rest in \<open>by100 blast\<close>)
+    have h_sum_pos: "0 < (\<Sum>\<tau>\<in>S. \<beta> \<tau> / real (card (Vof \<tau>)))"
+      using h_sum_split h_term_pos h_rest_nn by (by100 linarith)
+    show "0 < \<alpha> v" unfolding \<alpha>_def S_def[symmetric] using h_sum_pos by (by100 simp)
+  qed
+  (** Step 10: Apply rel_interior characterization for AI hull directly. **)
+  have h_ri_char: "rel_interior (convex hull V\<^sub>m\<^sub>a\<^sub>x)
+                    = {y. \<exists>u. (\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x. 0 < u v) \<and> sum u V\<^sub>m\<^sub>a\<^sub>x = 1
+                              \<and> (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. u v *\<^sub>R v) = y}"
+    by (rule rel_interior_convex_hull_explicit[OF hV\<^sub>m\<^sub>a\<^sub>x_ai])
+  have h_witness: "\<exists>u. (\<forall>v\<in>V\<^sub>m\<^sub>a\<^sub>x. 0 < u v) \<and> sum u V\<^sub>m\<^sub>a\<^sub>x = 1
+                       \<and> (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. u v *\<^sub>R v) = x"
+    using h\<alpha>_pos h\<alpha>_sum h_x_swap by (by100 blast)
+  have h_x_in: "x \<in> rel_interior (convex hull V\<^sub>m\<^sub>a\<^sub>x)"
+    using h_ri_char h_witness by (by100 blast)
+  show "x \<in> rel_interior \<sigma>\<^sub>m\<^sub>a\<^sub>x" using h_x_in h\<sigma>_max_hull by (by100 simp)
+qed
+
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
     polyhedral structure — convex sets respect the simplex decomposition.
