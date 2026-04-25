@@ -4264,6 +4264,24 @@ lemma geotop_complex_polyhedron_bounded:
   shows "bounded (geotop_polyhedron K)"
   using geotop_complex_polyhedron_compact[OF hK hKfin] compact_imp_bounded by (by100 blast)
 
+(** Convex-hull form for geotop_is_simplex: extract \<sigma> = convex hull V
+    with V finite + nonempty. Eliminates the unfolding ritual at many
+    inline sites. **)
+lemma geotop_simplex_obtain_HOL:
+  fixes \<sigma> :: "'a::real_vector set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  obtains V where "finite V" and "V \<noteq> {}" and "\<sigma> = convex hull V"
+proof -
+  obtain V n where hVfin: "finite V" and hV_card: "card V = n + 1"
+                 and hV_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_card_pos: "0 < card V" using hV_card by (by100 simp)
+  have hV_ne: "V \<noteq> {}" using hV_card_pos by (by100 auto)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  show thesis using that[OF hVfin hV_ne h\<sigma>_HOL] .
+qed
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
