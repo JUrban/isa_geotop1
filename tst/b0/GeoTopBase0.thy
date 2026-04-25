@@ -3273,6 +3273,25 @@ proof -
   show ?thesis using h\<sigma>\<^sub>pK hV_sub_\<sigma>\<^sub>p by (by100 blast)
 qed
 
+(** Munkres Lemma 14.4 (FULL biconditional):
+    For nonempty V (any finite set in |K|, not just K-vertices),
+    V \<subseteq> some K-simplex iff \<bigcap>_{v\<in>V} open_star(v,K) is non-empty. **)
+theorem geotop_open_star_inter_simplex_iff:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hVne: "V \<noteq> {}"
+  shows "(\<Inter>v\<in>V. geotop_open_star K v) \<noteq> {} \<longleftrightarrow> (\<exists>\<sigma>\<in>K. V \<subseteq> \<sigma>)"
+proof
+  assume h_inter_ne: "(\<Inter>v\<in>V. geotop_open_star K v) \<noteq> {}"
+  show "\<exists>\<sigma>\<in>K. V \<subseteq> \<sigma>"
+    by (rule geotop_open_star_inter_to_simplex[OF hK hVne h_inter_ne])
+next
+  assume h_in_simplex: "\<exists>\<sigma>\<in>K. V \<subseteq> \<sigma>"
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hV_sub: "V \<subseteq> \<sigma>" using h_in_simplex by (by100 blast)
+  show "(\<Inter>v\<in>V. geotop_open_star K v) \<noteq> {}"
+    by (rule geotop_simplex_to_open_star_inter[OF hK h\<sigma>K hV_sub])
+qed
+
 (** E-support: a convex subset of the open_star that contains a point of
     rel_interior σ (for σ ∋ v) is ⊆ σ, provided the convex subset stays
     within {rel_interior σ} (single simplex case). This trivial corollary
