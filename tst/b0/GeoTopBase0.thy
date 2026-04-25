@@ -10277,6 +10277,22 @@ proof -
   show ?thesis by (rule geotop_simplex_closure_rel_interior[OF h\<sigma>_simp])
 qed
 
+(** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
+lemma geotop_K_carrier_shared_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx: "x \<in> rel_interior \<sigma>"
+  assumes hy: "y \<in> rel_interior \<sigma>"
+  shows "geotop_K_carrier K x = geotop_K_carrier K y"
+proof -
+  have h_x_eq: "geotop_K_carrier K x = \<sigma>"
+    by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx])
+  have h_y_eq: "geotop_K_carrier K y = \<sigma>"
+    by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hy])
+  show ?thesis using h_x_eq h_y_eq by (by100 simp)
+qed
+
 (** Bridge: for x \<in> |K| with K' a subdivision of K, the K'-carrier of x
     (as a function) is contained in the K-carrier of x. **)
 lemma geotop_K_carrier_subdiv_subset:
