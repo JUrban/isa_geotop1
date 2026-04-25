@@ -4161,6 +4161,34 @@ lemma geotop_simplex_closed:
   shows "closed \<sigma>"
   using geotop_simplex_compact[OF h\<sigma>_simp] compact_imp_closed by (by100 blast)
 
+(** N+2 infrastructure: the family of K'-simplices contained in a given
+    K-simplex is finite, and each member is compact/closed. **)
+
+lemma geotop_complex_simplex_compact:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "compact \<sigma>"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  show ?thesis by (rule geotop_simplex_compact[OF h\<sigma>_simp])
+qed
+
+lemma geotop_complex_simplex_closed:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "closed \<sigma>"
+  using geotop_complex_simplex_compact[OF hK h\<sigma>K] compact_imp_closed by (by100 blast)
+
+lemma geotop_subK'_family_finite:
+  fixes K' :: "'a::euclidean_space set set"
+  assumes hK'fin: "finite K'"
+  shows "finite {\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma>}"
+  using hK'fin by (by100 simp)
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
