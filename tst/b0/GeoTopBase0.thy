@@ -9697,6 +9697,62 @@ proof -
   qed
 qed
 
+(** The K-carrier function: for x \<in> |K|, the unique K-simplex with
+    x \<in> rel_interior. Uses THE since uniqueness is established. **)
+definition geotop_K_carrier :: "'a::euclidean_space set set \<Rightarrow> 'a \<Rightarrow> 'a set" where
+  "geotop_K_carrier K x = (THE \<sigma>. \<sigma> \<in> K \<and> x \<in> rel_interior \<sigma>)"
+
+lemma geotop_K_carrier_eq:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx_ri: "x \<in> rel_interior \<sigma>"
+  shows "geotop_K_carrier K x = \<sigma>"
+proof -
+  have h_witness: "\<sigma> \<in> K \<and> x \<in> rel_interior \<sigma>" using h\<sigma>K hx_ri by (by100 blast)
+  have h_uniq: "\<And>\<tau>. \<tau> \<in> K \<and> x \<in> rel_interior \<tau> \<Longrightarrow> \<tau> = \<sigma>"
+  proof -
+    fix \<tau> :: "'a set"
+    assume h\<tau>: "\<tau> \<in> K \<and> x \<in> rel_interior \<tau>"
+    have h\<tau>K: "\<tau> \<in> K" using h\<tau> by (by100 blast)
+    have hx_\<tau>: "x \<in> rel_interior \<tau>" using h\<tau> by (by100 blast)
+    show "\<tau> = \<sigma>"
+      by (rule geotop_carrier_unique[OF hK h\<tau>K h\<sigma>K hx_\<tau> hx_ri])
+  qed
+  have h_the_eq: "(THE \<tau>. \<tau> \<in> K \<and> x \<in> rel_interior \<tau>) = \<sigma>"
+    using the_equality[of "\<lambda>\<tau>. \<tau> \<in> K \<and> x \<in> rel_interior \<tau>" \<sigma>] h_witness h_uniq
+    by (by100 blast)
+  show ?thesis unfolding geotop_K_carrier_def using h_the_eq by (by100 simp)
+qed
+
+lemma geotop_K_carrier_in:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "geotop_K_carrier K x \<in> K"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx_ri: "x \<in> rel_interior \<sigma>"
+    using geotop_complex_polyhedron_point_carrier[OF hK hKfin hx] by (by100 blast)
+  have h_eq: "geotop_K_carrier K x = \<sigma>"
+    by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx_ri])
+  show ?thesis using h_eq h\<sigma>K by (by100 simp)
+qed
+
+lemma geotop_K_carrier_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "x \<in> rel_interior (geotop_K_carrier K x)"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx_ri: "x \<in> rel_interior \<sigma>"
+    using geotop_complex_polyhedron_point_carrier[OF hK hKfin hx] by (by100 blast)
+  have h_eq: "geotop_K_carrier K x = \<sigma>"
+    by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx_ri])
+  show ?thesis using h_eq hx_ri by (by100 simp)
+qed
+
 (** USEFUL TRUE COROLLARY: For K' a subdivision of K, every K'-simplex is
     contained in some K-simplex. Trivially follows from geotop_refines.
     Useful for future iterated_Sd refinement work. **)
