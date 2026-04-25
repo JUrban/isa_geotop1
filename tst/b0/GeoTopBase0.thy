@@ -4140,6 +4140,27 @@ proof -
   show ?thesis using hull_minimal[of V \<sigma> convex] hV_sub h\<sigma>_conv by (by100 blast)
 qed
 
+lemma geotop_simplex_compact:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "compact \<sigma>"
+proof -
+  obtain V where hVfin: "finite V" and hV_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_HOL: "\<sigma> = convex hull V"
+    using hV_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_compact: "compact V" using hVfin by (rule finite_imp_compact)
+  have h_hull_compact: "compact (convex hull V)"
+    by (rule compact_convex_hull[OF hV_compact])
+  show ?thesis using hV_HOL h_hull_compact by (by100 simp)
+qed
+
+lemma geotop_simplex_closed:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "closed \<sigma>"
+  using geotop_simplex_compact[OF h\<sigma>_simp] compact_imp_closed by (by100 blast)
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
