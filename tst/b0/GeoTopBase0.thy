@@ -3197,6 +3197,41 @@ proof (rule ccontr)
   show False using hx_in h_disj by (by100 blast)
 qed
 
+(** Munkres Lemma 14.4 (\<Longleftarrow> direction):
+    If \<bigcap>_{v\<in>V} open_star(v,K) is non-empty for finite nonempty V, then
+    V is contained in some K-simplex.
+
+    Proof: Take p in the intersection. Each v \<in> V has p \<in> rel_interior \<sigma>_v
+    for some \<sigma>_v \<in> K with v \<in> \<sigma>_v. By K-carrier uniqueness all \<sigma>_v are
+    equal, say to \<sigma>\<^sub>p. So V \<subseteq> \<sigma>\<^sub>p \<in> K. **)
+lemma geotop_open_star_inter_to_simplex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hVne: "V \<noteq> {}"
+  assumes h_inter_ne:
+    "(\<Inter>v\<in>V. geotop_open_star K v) \<noteq> {}"
+  shows "\<exists>\<sigma>\<in>K. V \<subseteq> \<sigma>"
+proof -
+  obtain p where hp: "p \<in> (\<Inter>v\<in>V. geotop_open_star K v)" using h_inter_ne by (by100 blast)
+  obtain v\<^sub>0 where hv\<^sub>0: "v\<^sub>0 \<in> V" using hVne by (by100 blast)
+  have hp_v\<^sub>0: "p \<in> geotop_open_star K v\<^sub>0" using hp hv\<^sub>0 by (by100 blast)
+  obtain \<sigma>\<^sub>p where h\<sigma>\<^sub>pK: "\<sigma>\<^sub>p \<in> K" and hv\<^sub>0_\<sigma>\<^sub>p: "v\<^sub>0 \<in> \<sigma>\<^sub>p"
+                and hp_ri: "p \<in> rel_interior \<sigma>\<^sub>p"
+    using hp_v\<^sub>0 unfolding geotop_open_star_def by (by100 blast)
+  have hV_sub_\<sigma>\<^sub>p: "V \<subseteq> \<sigma>\<^sub>p"
+  proof
+    fix v assume hv: "v \<in> V"
+    have hp_v: "p \<in> geotop_open_star K v" using hp hv by (by100 blast)
+    obtain \<sigma>\<^sub>v where h\<sigma>\<^sub>vK: "\<sigma>\<^sub>v \<in> K" and hv_\<sigma>\<^sub>v: "v \<in> \<sigma>\<^sub>v"
+                  and hp_ri_v: "p \<in> rel_interior \<sigma>\<^sub>v"
+      using hp_v unfolding geotop_open_star_def by (by100 blast)
+    have h\<sigma>_eq: "\<sigma>\<^sub>v = \<sigma>\<^sub>p"
+      by (rule geotop_carrier_unique[OF hK h\<sigma>\<^sub>vK h\<sigma>\<^sub>pK hp_ri_v hp_ri])
+    show "v \<in> \<sigma>\<^sub>p" using hv_\<sigma>\<^sub>v h\<sigma>_eq by (by100 simp)
+  qed
+  show ?thesis using h\<sigma>\<^sub>pK hV_sub_\<sigma>\<^sub>p by (by100 blast)
+qed
+
 (** E-support: a convex subset of the open_star that contains a point of
     rel_interior σ (for σ ∋ v) is ⊆ σ, provided the convex subset stays
     within {rel_interior σ} (single simplex case). This trivial corollary
