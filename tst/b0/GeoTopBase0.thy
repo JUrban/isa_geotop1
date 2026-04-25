@@ -10249,6 +10249,34 @@ proof -
     by (rule geotop_K'_carrier_in_K_simplex[OF hK hK' hsub h\<sigma>' h\<sigma>K hx_ri\<sigma>' hx\<sigma>])
 qed
 
+(** Closure of rel_interior recovers a simplex (since simplexes are
+    convex compact in euclidean_space). **)
+lemma geotop_simplex_closure_rel_interior:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "closure (rel_interior \<sigma>) = \<sigma>"
+proof -
+  have h\<sigma>_conv: "convex \<sigma>" by (rule geotop_simplex_is_convex[OF h\<sigma>_simp])
+  have h\<sigma>_compact: "compact \<sigma>" by (rule geotop_simplex_compact[OF h\<sigma>_simp])
+  have h\<sigma>_closed: "closed \<sigma>" using h\<sigma>_compact compact_imp_closed by (by100 blast)
+  have h_close_rel: "closure (rel_interior \<sigma>) = closure \<sigma>"
+    using convex_closure_rel_interior[OF h\<sigma>_conv] by (by100 simp)
+  have h_close_eq: "closure \<sigma> = \<sigma>" using h\<sigma>_closed by (by100 simp)
+  show ?thesis using h_close_rel h_close_eq by (by100 simp)
+qed
+
+lemma geotop_complex_simplex_closure_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "closure (rel_interior \<sigma>) = \<sigma>"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  show ?thesis by (rule geotop_simplex_closure_rel_interior[OF h\<sigma>_simp])
+qed
+
 (** Bridge: for x \<in> |K| with K' a subdivision of K, the K'-carrier of x
     (as a function) is contained in the K-carrier of x. **)
 lemma geotop_K_carrier_subdiv_subset:
