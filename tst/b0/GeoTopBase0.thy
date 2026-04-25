@@ -4312,6 +4312,7 @@ proof -
   show ?thesis by (rule geotop_simplex_rel_interior_nonempty[OF h\<sigma>_simp])
 qed
 
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
@@ -10131,6 +10132,26 @@ proof -
     show ?thesis using h\<sigma>'_hull h_hull_min by (by100 simp)
   qed
   show ?thesis using h\<sigma>'_sub_F hF_sub_\<sigma> by (by100 blast)
+qed
+
+(** Useful packaging of the bridge lemma: if x lies in BOTH rel_interior \<sigma>'
+    (\<sigma>' \<in> K') and rel_interior \<sigma> (\<sigma> \<in> K), then \<sigma>' \<subseteq> \<sigma>. This is
+    the K'-carrier-in-K-carrier statement: K'-decomposition refines
+    K-decomposition at every interior point. **)
+lemma geotop_K'_carrier_in_K_carrier:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK': "geotop_is_complex K'"
+  assumes hsub: "geotop_is_subdivision K' K"
+  assumes h\<sigma>': "\<sigma>' \<in> K'"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx_ri\<sigma>': "x \<in> rel_interior \<sigma>'"
+  assumes hx_ri\<sigma>: "x \<in> rel_interior \<sigma>"
+  shows "\<sigma>' \<subseteq> \<sigma>"
+proof -
+  have hx\<sigma>: "x \<in> \<sigma>" using hx_ri\<sigma> rel_interior_subset by (by100 blast)
+  show ?thesis
+    by (rule geotop_K'_carrier_in_K_simplex[OF hK hK' hsub h\<sigma>' h\<sigma>K hx_ri\<sigma>' hx\<sigma>])
 qed
 
 (** PLAN2 Session N+1 — main covering lemma. **)
