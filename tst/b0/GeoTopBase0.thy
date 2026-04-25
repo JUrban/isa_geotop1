@@ -8165,6 +8165,70 @@ proof -
   show ?thesis using h\<sigma>_max_c h\<sigma>_max_pos h_all_le by (by100 blast)
 qed
 
+(** Chain-coordinate extraction: for x in the bary-chain simplex
+    conv hull (bary ` set c), x has nonneg coefficients \<alpha> on set c summing
+    to 1 with x = \<Sum> \<alpha> \<sigma> *\<^sub>R bary \<sigma>. Uses bary injectivity on K-simplices
+    and convex_hull_finite. **)
+lemma geotop_in_T_chain_to_alpha:
+  fixes K :: "'a::euclidean_space set set"
+  fixes c :: "'a set list"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_subK: "set c \<subseteq> K"
+  assumes hx_T: "x \<in> geotop_convex_hull (geotop_barycenter ` set c)"
+  shows "\<exists>\<alpha>::'a set \<Rightarrow> real. (\<forall>\<sigma>\<in>set c. 0 \<le> \<alpha> \<sigma>)
+                          \<and> sum \<alpha> (set c) = 1
+                          \<and> x = (\<Sum>\<sigma>\<in>set c. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+proof -
+  have hVfin: "finite (geotop_barycenter ` set c)" by (by100 simp)
+  have h_HOL_eq: "geotop_convex_hull (geotop_barycenter ` set c)
+                    = convex hull (geotop_barycenter ` set c)"
+    by (rule geotop_convex_hull_eq_HOL)
+  have hx_HOL: "x \<in> convex hull (geotop_barycenter ` set c)"
+    using hx_T h_HOL_eq by (by100 simp)
+  have h_chull_finite: "convex hull (geotop_barycenter ` set c)
+                          = {y. \<exists>u. (\<forall>w\<in>geotop_barycenter ` set c. 0 \<le> u w)
+                                  \<and> sum u (geotop_barycenter ` set c) = 1
+                                  \<and> (\<Sum>w\<in>geotop_barycenter ` set c. u w *\<^sub>R w) = y}"
+    by (rule convex_hull_finite[OF hVfin])
+  have hx_set: "x \<in> {y. \<exists>u. (\<forall>w\<in>geotop_barycenter ` set c. 0 \<le> u w)
+                            \<and> sum u (geotop_barycenter ` set c) = 1
+                            \<and> (\<Sum>w\<in>geotop_barycenter ` set c. u w *\<^sub>R w) = y}"
+    using hx_HOL h_chull_finite by (by100 metis)
+  have hx_ex: "\<exists>u. (\<forall>w\<in>geotop_barycenter ` set c. 0 \<le> u w)
+                  \<and> sum u (geotop_barycenter ` set c) = 1
+                  \<and> (\<Sum>w\<in>geotop_barycenter ` set c. u w *\<^sub>R w) = x"
+    using hx_set by (by100 blast)
+  obtain u where hu_nn: "\<forall>w\<in>geotop_barycenter ` set c. 0 \<le> u w"
+             and hu_sum: "sum u (geotop_barycenter ` set c) = 1"
+             and hu_combo: "(\<Sum>w\<in>geotop_barycenter ` set c. u w *\<^sub>R w) = x"
+    using hx_ex by (by100 blast)
+  define \<alpha> :: "'a set \<Rightarrow> real" where "\<alpha> = (\<lambda>\<sigma>. u (geotop_barycenter \<sigma>))"
+  have h_bary_inj: "inj_on geotop_barycenter (set c)"
+    by (rule geotop_complex_barycenter_inj_on[OF hK hc_subK])
+  have h\<alpha>_nn: "\<forall>\<sigma>\<in>set c. 0 \<le> \<alpha> \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set c"
+    have hb\<sigma>: "geotop_barycenter \<sigma> \<in> geotop_barycenter ` set c"
+      using h\<sigma> by (by100 blast)
+    show "0 \<le> \<alpha> \<sigma>" unfolding \<alpha>_def using hu_nn hb\<sigma> by (by100 blast)
+  qed
+  have h\<alpha>_sum: "sum \<alpha> (set c) = 1"
+  proof -
+    have h_reindex: "sum u (geotop_barycenter ` set c)
+                      = (\<Sum>\<sigma>\<in>set c. u (geotop_barycenter \<sigma>))"
+      using sum.reindex[OF h_bary_inj, of u] by (by100 simp)
+    show ?thesis using h_reindex hu_sum unfolding \<alpha>_def by (by100 simp)
+  qed
+  have h\<alpha>_combo: "x = (\<Sum>\<sigma>\<in>set c. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+  proof -
+    have h_reindex: "(\<Sum>w\<in>geotop_barycenter ` set c. u w *\<^sub>R w)
+                      = (\<Sum>\<sigma>\<in>set c. u (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)"
+      using sum.reindex[OF h_bary_inj, of "\<lambda>w. u w *\<^sub>R w"] by (by100 simp)
+    show ?thesis using h_reindex hu_combo unfolding \<alpha>_def by (by100 simp)
+  qed
+  show ?thesis using h\<alpha>_nn h\<alpha>_sum h\<alpha>_combo by (by100 blast)
+qed
+
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
     polyhedral structure — convex sets respect the simplex decomposition.
