@@ -9982,10 +9982,30 @@ lemma geotop_subdivision_lebesgue_per_simplex:
   shows "\<exists>\<delta>::real>0. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
                 geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
                 \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-  sorry \<comment> \<open>PLAN2 Session N+2: build open cover of \<sigma> from open stars of K'-vertices
-              \<sigma>'-V(K') restricted to \<sigma>; apply Lebesgue_number_lemma; bridge from
-              "T \<subseteq> open star" to "T \<subseteq> single K'-simplex" via the K-K' carrier
-              bridge (geotop_K'_carrier_in_K_simplex applied to a point of T).\<close>
+  sorry \<comment> \<open>PLAN2 Session N+2: GENUINELY HARD CLASSICAL CLAIM.
+              Initial approach: build open cover of \<sigma> from K'-vertex open stars,
+              apply Lebesgue_number_lemma, bridge to single K'-simplex.
+
+              However, the direct bridge fails: a small convex T \<subseteq> open_star_K'(v)
+              can still span multiple K'-simplices around v (e.g., a small disk
+              centered on a K'-vertex inside \<sigma>). The lemma as stated may require
+              additional hypothesis (T = simplex, or T has bounded affine
+              dimension matching K'-simplices, or specific Sd^m structure).
+
+              Munkres' actual proof of iterated_Sd_refines_subdivision uses
+              the structural property that Sd^m K simplices have vertices
+              that are barycenters of K-flags, and these vertices CONCENTRATE
+              in specific patterns as m grows, eventually fitting inside
+              single K'-simplices. This is INHERENTLY about Sd^m simplices,
+              not arbitrary convex T.
+
+              FALLBACK PLAN: restate this lemma with T = simplex, and use the
+              K'-vertex argument: for small simplex T, vertices are close
+              together, hence (by SD-flag structure) they all lie in a common
+              K'-simplex. This requires additional carrier-map infrastructure.
+
+              Estimated effort: ~200-300 more lines of carrier-map argument
+              + reformulation. Multi-session classical work.\<close>
 
 (** PLAN2 Session N+3: uniform Lebesgue \<delta> over all K-simplices.
     Take \<delta> = Min over finite K of \<delta>_\<sigma> from Session N+2 lemma. **)
