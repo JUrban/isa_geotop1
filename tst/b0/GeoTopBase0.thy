@@ -5120,8 +5120,147 @@ lemma geotop_flag_intersect_hull_sub:
   using hc\<^sub>1 hc\<^sub>2
 proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1 c\<^sub>2 rule: less_induct)
   case less
+  (** Extract flag properties. **)
+  have hc\<^sub>1_subK: "set c\<^sub>1 \<subseteq> K"
+    using less.prems(1) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>2_subK: "set c\<^sub>2 \<subseteq> K"
+    using less.prems(2) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>1_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c\<^sub>1"
+    using less.prems(1) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>2_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c\<^sub>2"
+    using less.prems(2) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>1_dist: "distinct c\<^sub>1"
+    using less.prems(1) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>2_dist: "distinct c\<^sub>2"
+    using less.prems(2) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>1_ne: "c\<^sub>1 \<noteq> []"
+    using less.prems(1) unfolding geotop_flags_def by (by100 blast)
+  have hc\<^sub>2_ne: "c\<^sub>2 \<noteq> []"
+    using less.prems(2) unfolding geotop_flags_def by (by100 blast)
   show ?case
-    sorry
+  proof
+    fix x assume hx_in: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>1)
+                          \<inter> convex hull (geotop_barycenter ` set c\<^sub>2)"
+    have hx_T1: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>1)"
+      using hx_in by (by100 blast)
+    have hx_T2: "x \<in> convex hull (geotop_barycenter ` set c\<^sub>2)"
+      using hx_in by (by100 blast)
+    (** Convert to geotop conv hull for extraction lemma. **)
+    have h_HOL_eq1: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)
+                      = convex hull (geotop_barycenter ` set c\<^sub>1)"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h_HOL_eq2: "geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)
+                      = convex hull (geotop_barycenter ` set c\<^sub>2)"
+      by (rule geotop_convex_hull_eq_HOL)
+    have h_HOL_eq3: "geotop_convex_hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))
+                      = convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+      by (rule geotop_convex_hull_eq_HOL)
+    have hx_geo1: "x \<in> geotop_convex_hull (geotop_barycenter ` set c\<^sub>1)"
+      using hx_T1 h_HOL_eq1 by (by100 simp)
+    have hx_geo2: "x \<in> geotop_convex_hull (geotop_barycenter ` set c\<^sub>2)"
+      using hx_T2 h_HOL_eq2 by (by100 simp)
+    (** Extract \<alpha>, \<beta> coefficients. **)
+    obtain \<alpha> :: "'a set \<Rightarrow> real"
+      where h\<alpha>_nn: "\<forall>\<sigma>\<in>set c\<^sub>1. 0 \<le> \<alpha> \<sigma>"
+        and h\<alpha>_sum: "sum \<alpha> (set c\<^sub>1) = 1"
+        and h\<alpha>_combo: "x = (\<Sum>\<sigma>\<in>set c\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+      using geotop_in_T_chain_to_alpha[OF hK hc\<^sub>1_subK hx_geo1] by (by100 blast)
+    obtain \<beta> :: "'a set \<Rightarrow> real"
+      where h\<beta>_nn: "\<forall>\<sigma>\<in>set c\<^sub>2. 0 \<le> \<beta> \<sigma>"
+        and h\<beta>_sum: "sum \<beta> (set c\<^sub>2) = 1"
+        and h\<beta>_combo: "x = (\<Sum>\<sigma>\<in>set c\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+      using geotop_in_T_chain_to_alpha[OF hK hc\<^sub>2_subK hx_geo2] by (by100 blast)
+    (** Extract chain tops. **)
+    obtain \<sigma>\<^sub>1 where h\<sigma>\<^sub>1_c\<^sub>1: "\<sigma>\<^sub>1 \<in> set c\<^sub>1"
+                 and h\<sigma>\<^sub>1_pos: "0 < \<alpha> \<sigma>\<^sub>1"
+                 and h\<sigma>\<^sub>1_top: "\<forall>\<tau>\<in>set c\<^sub>1. 0 < \<alpha> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>1"
+      using geotop_chain_support_max[OF hc\<^sub>1_sorted hc\<^sub>1_dist h\<alpha>_nn h\<alpha>_sum] by (by100 blast)
+    obtain \<sigma>\<^sub>2 where h\<sigma>\<^sub>2_c\<^sub>2: "\<sigma>\<^sub>2 \<in> set c\<^sub>2"
+                 and h\<sigma>\<^sub>2_pos: "0 < \<beta> \<sigma>\<^sub>2"
+                 and h\<sigma>\<^sub>2_top: "\<forall>\<tau>\<in>set c\<^sub>2. 0 < \<beta> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>2"
+      using geotop_chain_support_max[OF hc\<^sub>2_sorted hc\<^sub>2_dist h\<beta>_nn h\<beta>_sum] by (by100 blast)
+    (** Apply carrier lemma. **)
+    have h\<sigma>\<^sub>1_top_inst: "\<And>\<tau>. \<tau> \<in> set c\<^sub>1 \<Longrightarrow> 0 < \<alpha> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>1"
+      using h\<sigma>\<^sub>1_top by (by100 blast)
+    have hx_ri\<^sub>1: "x \<in> rel_interior \<sigma>\<^sub>1"
+      by (rule geotop_chain_bary_rel_interior[OF hK hc\<^sub>1_subK h\<alpha>_nn h\<alpha>_sum
+            h\<alpha>_combo h\<sigma>\<^sub>1_c\<^sub>1 h\<sigma>\<^sub>1_pos h\<sigma>\<^sub>1_top_inst])
+    have h\<sigma>\<^sub>2_top_inst: "\<And>\<tau>. \<tau> \<in> set c\<^sub>2 \<Longrightarrow> 0 < \<beta> \<tau> \<Longrightarrow> \<tau> \<subseteq> \<sigma>\<^sub>2"
+      using h\<sigma>\<^sub>2_top by (by100 blast)
+    have hx_ri\<^sub>2: "x \<in> rel_interior \<sigma>\<^sub>2"
+      by (rule geotop_chain_bary_rel_interior[OF hK hc\<^sub>2_subK h\<beta>_nn h\<beta>_sum
+            h\<beta>_combo h\<sigma>\<^sub>2_c\<^sub>2 h\<sigma>\<^sub>2_pos h\<sigma>\<^sub>2_top_inst])
+    have h\<sigma>\<^sub>1_K: "\<sigma>\<^sub>1 \<in> K" using h\<sigma>\<^sub>1_c\<^sub>1 hc\<^sub>1_subK by (by100 blast)
+    have h\<sigma>\<^sub>2_K: "\<sigma>\<^sub>2 \<in> K" using h\<sigma>\<^sub>2_c\<^sub>2 hc\<^sub>2_subK by (by100 blast)
+    have h\<sigma>_eq: "\<sigma>\<^sub>1 = \<sigma>\<^sub>2"
+      by (rule geotop_complex_point_in_unique_rel_interior[OF hK h\<sigma>\<^sub>1_K h\<sigma>\<^sub>2_K
+            hx_ri\<^sub>1 hx_ri\<^sub>2])
+    (** Define \<tau> = \<sigma>_1 = \<sigma>_2. \<tau> in set c_1 \<inter> set c_2. **)
+    have h\<tau>_c\<^sub>2: "\<sigma>\<^sub>1 \<in> set c\<^sub>2" using h\<sigma>\<^sub>2_c\<^sub>2 h\<sigma>_eq by (by100 simp)
+    have h\<tau>_inter: "\<sigma>\<^sub>1 \<in> set c\<^sub>1 \<inter> set c\<^sub>2" using h\<sigma>\<^sub>1_c\<^sub>1 h\<tau>_c\<^sub>2 by (by100 blast)
+    (** Define D_1 = supp_\<alpha> \<setminus> {\<sigma>_1}, D_2 = supp_\<beta> \<setminus> {\<sigma>_1}. **)
+    define D\<^sub>1 where "D\<^sub>1 = {\<sigma>\<in>set c\<^sub>1. 0 < \<alpha> \<sigma> \<and> \<sigma> \<noteq> \<sigma>\<^sub>1}"
+    define D\<^sub>2 where "D\<^sub>2 = {\<sigma>\<in>set c\<^sub>2. 0 < \<beta> \<sigma> \<and> \<sigma> \<noteq> \<sigma>\<^sub>1}"
+    show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+    proof (cases "D\<^sub>1 = {} \<and> D\<^sub>2 = {}")
+      case True
+      (** \<alpha> supported only at \<sigma>_1. Hence \<alpha> \<sigma>_1 = 1 and x = bary \<sigma>_1. **)
+      have hD\<^sub>1_em: "D\<^sub>1 = {}" using True by (by100 blast)
+      have h_support: "\<forall>\<sigma>\<in>set c\<^sub>1. \<sigma> \<noteq> \<sigma>\<^sub>1 \<longrightarrow> \<alpha> \<sigma> = 0"
+      proof (rule ballI, rule impI)
+        fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set c\<^sub>1" and h_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1"
+        have h_nn: "0 \<le> \<alpha> \<sigma>" using h\<alpha>_nn h\<sigma> by (by100 blast)
+        show "\<alpha> \<sigma> = 0"
+        proof (cases "0 < \<alpha> \<sigma>")
+          case True
+          have h\<sigma>_D\<^sub>1: "\<sigma> \<in> D\<^sub>1" unfolding D\<^sub>1_def using h\<sigma> True h_ne by (by100 blast)
+          thus ?thesis using hD\<^sub>1_em by (by100 blast)
+        next
+          case False
+          thus ?thesis using h_nn by (by100 force)
+        qed
+      qed
+      have hc\<^sub>1_fin: "finite (set c\<^sub>1)" by (by100 simp)
+      have h_sum_split: "sum \<alpha> (set c\<^sub>1)
+                          = \<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set c\<^sub>1 - {\<sigma>\<^sub>1})"
+        using sum.remove[OF hc\<^sub>1_fin h\<sigma>\<^sub>1_c\<^sub>1, of \<alpha>] by (by100 simp)
+      have h_rest_zero: "sum \<alpha> (set c\<^sub>1 - {\<sigma>\<^sub>1}) = 0"
+      proof (rule sum.neutral)
+        show "\<forall>\<sigma>\<in>set c\<^sub>1 - {\<sigma>\<^sub>1}. \<alpha> \<sigma> = 0"
+          using h_support by (by100 blast)
+      qed
+      have h\<alpha>\<sigma>\<^sub>1_one: "\<alpha> \<sigma>\<^sub>1 = 1"
+        using h_sum_split h_rest_zero h\<alpha>_sum by (by100 linarith)
+      have h_combo_zero: "\<forall>\<sigma>\<in>set c\<^sub>1 - {\<sigma>\<^sub>1}. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0"
+        using h_support by (by100 simp)
+      have h_rest_combo_zero: "(\<Sum>\<sigma>\<in>set c\<^sub>1 - {\<sigma>\<^sub>1}. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>) = 0"
+        by (rule sum.neutral) (use h_combo_zero in \<open>by100 blast\<close>)
+      have h_combo_split: "(\<Sum>\<sigma>\<in>set c\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                            = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                              + (\<Sum>\<sigma>\<in>set c\<^sub>1 - {\<sigma>\<^sub>1}. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+        using sum.remove[OF hc\<^sub>1_fin h\<sigma>\<^sub>1_c\<^sub>1, of "\<lambda>\<sigma>. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"]
+        by (by100 simp)
+      have hx_bary: "x = geotop_barycenter \<sigma>\<^sub>1"
+        using h\<alpha>_combo h_combo_split h_rest_combo_zero h\<alpha>\<sigma>\<^sub>1_one by (by100 simp)
+      have h_bary_in_img: "geotop_barycenter \<sigma>\<^sub>1
+                            \<in> geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)"
+        using h\<tau>_inter by (by100 blast)
+      have h_bary_in_hull: "geotop_barycenter \<sigma>\<^sub>1
+                             \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+        using h_bary_in_img
+              hull_subset[of "geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)" convex]
+        by (by100 blast)
+      show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+        using hx_bary h_bary_in_hull by (by100 simp)
+    next
+      case False
+      (** Inductive step: apply convex_hull_insert_Int_eq with z = bary \<sigma>_1, S = \<sigma>_1. **)
+      show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+        sorry \<comment> \<open>Inductive step: factor out bary \<sigma>_1 via convex_hull_insert_Int_eq,
+                  apply IH to sub-chains d_1, d_2 (sorted versions of D_1, D_2) with
+                  strictly smaller card (set d_1 \<union> set d_2) < card (set c_1 \<union> set c_2).\<close>
+    qed
+  qed
 qed
 
 lemma geotop_classical_Sd_exists:
