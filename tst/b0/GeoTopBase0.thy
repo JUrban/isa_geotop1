@@ -10249,6 +10249,33 @@ proof -
     by (rule geotop_K'_carrier_in_K_simplex[OF hK hK' hsub h\<sigma>' h\<sigma>K hx_ri\<sigma>' hx\<sigma>])
 qed
 
+(** Bridge: for x \<in> |K| with K' a subdivision of K, the K'-carrier of x
+    (as a function) is contained in the K-carrier of x. **)
+lemma geotop_K_carrier_subdiv_subset:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK': "geotop_is_complex K'"
+  assumes hKfin: "finite K"
+  assumes hK'fin: "finite K'"
+  assumes hsub: "geotop_is_subdivision K' K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "geotop_K_carrier K' x \<subseteq> geotop_K_carrier K x"
+proof -
+  have h_polyeq: "geotop_polyhedron K = geotop_polyhedron K'"
+    using hsub unfolding geotop_is_subdivision_def by (by100 simp)
+  have hx': "x \<in> geotop_polyhedron K'" using hx h_polyeq by (by100 simp)
+  have h\<sigma>'_K': "geotop_K_carrier K' x \<in> K'"
+    by (rule geotop_K_carrier_in[OF hK' hK'fin hx'])
+  have h\<sigma>_K: "geotop_K_carrier K x \<in> K"
+    by (rule geotop_K_carrier_in[OF hK hKfin hx])
+  have hx_ri\<sigma>': "x \<in> rel_interior (geotop_K_carrier K' x)"
+    by (rule geotop_K_carrier_rel_interior[OF hK' hK'fin hx'])
+  have hx_ri\<sigma>: "x \<in> rel_interior (geotop_K_carrier K x)"
+    by (rule geotop_K_carrier_rel_interior[OF hK hKfin hx])
+  show ?thesis
+    by (rule geotop_K'_carrier_in_K_carrier[OF hK hK' hsub h\<sigma>'_K' h\<sigma>_K hx_ri\<sigma>' hx_ri\<sigma>])
+qed
+
 (** PLAN2 Session N+1 — main covering lemma. **)
 lemma geotop_subdivision_covers_simplex:
   fixes K K' :: "'a::euclidean_space set set"
