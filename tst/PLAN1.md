@@ -1470,3 +1470,38 @@ For h_K2_intersect_eq future attack:
 
 ### Sorry count after this session: 2 (unchanged structurally — carrier
     lemma is enabling infrastructure, not a sorry-closer by itself).
+
+## Session 2026-04-25 Part 2: FACTOR OUT K.2 INTO STANDALONE LEMMA
+
+Introduced `geotop_flag_intersect_hull_sub` as standalone lemma (sorry'd)
+stating: for c_1, c_2 flags in K, `conv hull (bary ` set c_1) \<inter>
+conv hull (bary ` set c_2) \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2))`.
+
+K.2 hard direction is now FULLY CLOSED (modulo the standalone lemma)
+via geotop_convex_hull_eq_HOL conversions.
+
+### Attack plan for `geotop_flag_intersect_hull_sub`
+
+Strong induction on N = card (set c_1 \<union> set c_2).
+
+Base case (N = 1): single common simplex, trivial.
+
+Inductive step (N > 1): for x \<in> T_1 \<inter> T_2:
+1. Extract \<alpha>, \<beta> via geotop_in_T_chain_to_alpha.
+2. Extract chain-tops \<sigma>_1, \<sigma>_2 via geotop_chain_support_max.
+3. Apply carrier lemma: x \<in> rel_interior \<sigma>_i.
+4. By rel_interior uniqueness: \<sigma>_1 = \<sigma>_2 = \<tau> \<in> set c_1 \<inter> set c_2.
+5. CASE A: supp_\<alpha> = {\<tau>} or supp_\<beta> = {\<tau>}: then x = bary \<tau>, done.
+6. CASE B: both have elements besides \<tau>: apply
+   `Polytope.convex_hull_insert_Int_eq` with z = bary \<tau>, S = \<tau>,
+   T = conv hull (bary ` (supp_\<alpha> - {\<tau>})), U = conv hull (bary ` (supp_\<beta> - {\<tau>})).
+   Faces of \<tau> are in rel_frontier \<tau> (from face_of_disjoint_rel_interior).
+   conv hull of bary-of-sub-chain \<subseteq> chain-top < \<tau>, which \<subseteq> rel_frontier \<tau>.
+   x \<in> conv hull (insert z T) \<inter> conv hull (insert z U) = conv hull (insert z (T \<inter> U)).
+7. Apply IH to smaller sub-chains d_1 (supp_\<alpha> - {\<tau>} sorted), d_2:
+   T \<inter> U \<subseteq> conv hull (bary ` (set d_1 \<inter> set d_2)).
+8. set d_1 \<inter> set d_2 \<subseteq> set c_1 \<inter> set c_2 - {\<tau>}.
+9. bary \<tau> \<in> bary ` (set c_1 \<inter> set c_2). So
+   conv hull (insert (bary \<tau>) (T \<inter> U)) \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2)).
+
+Estimated ~300 lines of detailed proof.
