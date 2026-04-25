@@ -4282,6 +4282,36 @@ proof -
   show thesis using that[OF hVfin hV_ne h\<sigma>_HOL] .
 qed
 
+(** rel_interior of a simplex is nonempty (contains the barycenter). **)
+lemma geotop_simplex_rel_interior_nonempty:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+  shows "rel_interior \<sigma> \<noteq> {}"
+proof -
+  obtain V m n where hVfin: "finite V" and hV_card: "card V = n + 1"
+                 and hn_le: "n \<le> m" and hV_gp: "geotop_general_position V m"
+                 and hV_hull: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+  have h_sv: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hV_card hn_le hV_gp hV_hull by (by100 blast)
+  have h_bary_in: "geotop_barycenter \<sigma> \<in> rel_interior \<sigma>"
+    by (rule geotop_barycenter_in_rel_interior[OF h_sv])
+  show ?thesis using h_bary_in by (by100 blast)
+qed
+
+lemma geotop_complex_simplex_rel_interior_nonempty:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  shows "rel_interior \<sigma> \<noteq> {}"
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  show ?thesis by (rule geotop_simplex_rel_interior_nonempty[OF h\<sigma>_simp])
+qed
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
