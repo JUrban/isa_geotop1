@@ -199,6 +199,52 @@ remains green and no other usage breaks.
 of ~2 minutes per iteration with `-o threads=1`. Sorry count goal: **0
 in `b0/GeoTopBase0.thy`** (currently 1).
 
+## REVISED ANALYSIS (after Session N+1 + N+3 work)
+
+Sessions N+1 and N+3 turned out as planned. Session N+2 needs major
+revision because the original formulation is too strong:
+
+**Original N+2 statement (too strong):**
+> For σ ∈ K and T ⊆ σ convex non-empty with diam T < δ_σ, ∃ σ' ∈ K' with σ' ⊆ σ and T ⊆ σ'.
+
+**Counterexample:** Take K = single 2-simplex σ. K' = a subdivision of σ adding
+a vertex m in interior + several new triangles. Take T = small disk centered
+on m. Then T is convex, diam < δ for any positive δ, but T spans multiple
+K'-simplices around m.
+
+**Correct N+2 (per Munkres):** This must be reformulated to use SD-SPECIFIC
+structure of Sd^m K simplices. Their vertices are barycenters of K-flags;
+their geometry is specific.
+
+Alternative: directly prove `iterated_Sd_refines_subdivision` without going
+through a generic Lebesgue lemma, using:
+- Each Sd^m K simplex tau has K-carrier σ_K ∈ K.
+- tau's vertices V_T are inside σ_K, forming a chain of barycenters.
+- For m large, V_T concentrates near a specific point x_0 ∈ σ_K.
+- x_0 has K'-carrier σ'_0 ⊆ σ_K (bridge lemma).
+- For m large, ALL of V_T is in σ'_0 (specific calculation using
+  bary chain structure).
+- Hence tau = conv hull V_T ⊆ σ'_0 (convex).
+
+This bypasses the buggy generic Lebesgue path entirely.
+
+## NEXT SESSION FOCUS
+
+Skip N+2 as originally formulated. Instead:
+
+**Session A**: Prove the "vertices concentrate in K'-simplex" lemma:
+For Sd^m K simplex tau with K-carrier σ_K, ∃ m_0 such that for all
+m ≥ m_0, tau's vertices V_T ⊆ σ' for some K'-simplex σ' ⊆ σ_K.
+
+**Session B**: Use this to directly close `iterated_Sd_refines_subdivision`,
+deleting the buggy h_δ_ex / h_star_to_simplex_del chain.
+
+**Session C**: Verify Theorem_GT_1 builds with no recursive sorries.
+
+This is approximately the same total effort as the original 5-session
+plan, but with a different decomposition that avoids the generic-Lebesgue
+dead end.
+
 ## Why this fixes the no-recursive-sorries goal
 
 After completion:
