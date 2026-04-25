@@ -3110,6 +3110,23 @@ next
   qed
 qed
 
+(** rel_interior membership in two K-simplices forces equality (uniqueness
+    of K-carrier). Contrapositive of geotop_complex_rel_interior_disjoint_distinct. **)
+lemma geotop_carrier_unique:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
+  assumes hx_\<sigma>: "x \<in> rel_interior \<sigma>"
+  assumes hx_\<tau>: "x \<in> rel_interior \<tau>"
+  shows "\<sigma> = \<tau>"
+proof (rule ccontr)
+  assume h_ne: "\<sigma> \<noteq> \<tau>"
+  have h_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h_ne])
+  have hx_in: "x \<in> rel_interior \<sigma> \<inter> rel_interior \<tau>" using hx_\<sigma> hx_\<tau> by (by100 blast)
+  show False using hx_in h_disj by (by100 blast)
+qed
+
 (** E-support: a convex subset of the open_star that contains a point of
     rel_interior σ (for σ ∋ v) is ⊆ σ, provided the convex subset stays
     within {rel_interior σ} (single simplex case). This trivial corollary
@@ -9658,6 +9675,28 @@ proof -
   show ?thesis using h\<tau>_K hx_ri by (by100 blast)
 qed
 
+(** Existence + uniqueness of K-carrier for x \<in> |K|. **)
+lemma geotop_complex_polyhedron_point_carrier_unique:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "\<exists>!\<tau>. \<tau> \<in> K \<and> x \<in> rel_interior \<tau>"
+proof -
+  obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hx_ri: "x \<in> rel_interior \<tau>"
+    using geotop_complex_polyhedron_point_carrier[OF hK hKfin hx] by (by100 blast)
+  show ?thesis
+  proof (rule ex1I[where a = \<tau>])
+    show "\<tau> \<in> K \<and> x \<in> rel_interior \<tau>" using h\<tau>K hx_ri by (by100 blast)
+  next
+    fix \<tau>' assume h\<tau>': "\<tau>' \<in> K \<and> x \<in> rel_interior \<tau>'"
+    have h\<tau>'K: "\<tau>' \<in> K" using h\<tau>' by (by100 blast)
+    have hx_ri': "x \<in> rel_interior \<tau>'" using h\<tau>' by (by100 blast)
+    show "\<tau>' = \<tau>"
+      using geotop_carrier_unique[OF hK h\<tau>'K h\<tau>K hx_ri' hx_ri] by (by100 blast)
+  qed
+qed
+
 (** USEFUL TRUE COROLLARY: For K' a subdivision of K, every K'-simplex is
     contained in some K-simplex. Trivially follows from geotop_refines.
     Useful for future iterated_Sd refinement work. **)
@@ -10132,23 +10171,6 @@ proof -
     show ?thesis using h\<sigma>'_hull h_hull_min by (by100 simp)
   qed
   show ?thesis using h\<sigma>'_sub_F hF_sub_\<sigma> by (by100 blast)
-qed
-
-(** rel_interior membership in two K-simplices forces equality (uniqueness
-    of K-carrier). Direct contrapositive of geotop_complex_rel_interior_disjoint_distinct. **)
-lemma geotop_carrier_unique:
-  fixes K :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
-  assumes hx_\<sigma>: "x \<in> rel_interior \<sigma>"
-  assumes hx_\<tau>: "x \<in> rel_interior \<tau>"
-  shows "\<sigma> = \<tau>"
-proof (rule ccontr)
-  assume h_ne: "\<sigma> \<noteq> \<tau>"
-  have h_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
-    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h_ne])
-  have hx_in: "x \<in> rel_interior \<sigma> \<inter> rel_interior \<tau>" using hx_\<sigma> hx_\<tau> by (by100 blast)
-  show False using hx_in h_disj by (by100 blast)
 qed
 
 (** Useful packaging of the bridge lemma: if x lies in BOTH rel_interior \<sigma>'
