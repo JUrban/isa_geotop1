@@ -4235,6 +4235,35 @@ proof -
   show ?thesis by (rule geotop_simplex_nonempty[OF h\<sigma>_simp])
 qed
 
+(** Polyhedron of a finite complex is compact (finite union of compact simplexes).
+    Inlined at iterated_Sd_refines_subdivision (~line 10160). **)
+lemma geotop_complex_polyhedron_compact:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "compact (geotop_polyhedron K)"
+proof -
+  have hK_simp_compact: "\<forall>\<sigma>\<in>K. compact \<sigma>"
+    using geotop_complex_simplex_compact[OF hK] by (by100 blast)
+  show ?thesis
+    unfolding geotop_polyhedron_def
+    using hKfin hK_simp_compact by (by100 blast)
+qed
+
+lemma geotop_complex_polyhedron_closed:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "closed (geotop_polyhedron K)"
+  using geotop_complex_polyhedron_compact[OF hK hKfin] compact_imp_closed by (by100 blast)
+
+lemma geotop_complex_polyhedron_bounded:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "bounded (geotop_polyhedron K)"
+  using geotop_complex_polyhedron_compact[OF hK hKfin] compact_imp_bounded by (by100 blast)
+
 (** D-infrastructure: for sigma in K with sigma = {v} (dim 0), sigma itself
     is in the barycentric subdivision. Direct from singleton flag. **)
 lemma geotop_bK_covers_0_simplex_helper:
