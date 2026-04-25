@@ -8074,6 +8074,97 @@ proof -
   show "x \<in> rel_interior \<sigma>\<^sub>m\<^sub>a\<^sub>x" using h_x_in h\<sigma>_max_hull by (by100 simp)
 qed
 
+(** Chain-support max: for a strict-chain c (sorted by \<subset>) and a nonneg \<alpha>
+    on set c summing to 1, there's a maximum in support: \<sigma>_max with \<alpha>\<sigma>_max > 0
+    and every \<tau> in support is \<subseteq> \<sigma>_max. Used for applying carrier lemma to
+    bary chain-simplex representations. **)
+lemma geotop_chain_support_max:
+  fixes c :: "'a set list"
+  fixes \<alpha> :: "'a set \<Rightarrow> real"
+  assumes hc_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c"
+  assumes hc_dist: "distinct c"
+  assumes h\<alpha>_nn: "\<forall>\<sigma>\<in>set c. 0 \<le> \<alpha> \<sigma>"
+  assumes h\<alpha>_sum: "sum \<alpha> (set c) = 1"
+  shows "\<exists>\<sigma>_m\<^sub>a\<^sub>x \<in> set c. 0 < \<alpha> \<sigma>_m\<^sub>a\<^sub>x \<and>
+                   (\<forall>\<tau>\<in>set c. 0 < \<alpha> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>_m\<^sub>a\<^sub>x)"
+proof -
+  define S where "S = {\<sigma>\<in>set c. 0 < \<alpha> \<sigma>}"
+  have hS_sub: "S \<subseteq> set c" unfolding S_def by (by100 blast)
+  have hc_fin: "finite (set c)" by (by100 simp)
+  have hS_fin: "finite S" using hS_sub hc_fin finite_subset by (by100 blast)
+  (** Support is nonempty since sum is 1. **)
+  have hS_ne: "S \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> S \<noteq> {}"
+    hence hS_em: "S = {}" by (by100 simp)
+    have h_zero: "\<forall>\<sigma>\<in>set c. \<alpha> \<sigma> = 0"
+    proof
+      fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set c"
+      have h_nn: "0 \<le> \<alpha> \<sigma>" using h\<alpha>_nn h\<sigma> by (by100 blast)
+      show "\<alpha> \<sigma> = 0"
+      proof (cases "0 < \<alpha> \<sigma>")
+        case True
+        have h\<sigma>_S: "\<sigma> \<in> S" unfolding S_def using h\<sigma> True by (by100 blast)
+        thus ?thesis using hS_em by (by100 blast)
+      next
+        case False
+        have h_le_zero: "\<alpha> \<sigma> \<le> 0" using False by (by100 simp)
+        show ?thesis using h_nn h_le_zero by (by100 linarith)
+      qed
+    qed
+    have h_sum_zero: "sum \<alpha> (set c) = 0"
+      using h_zero by (by100 simp)
+    have h_one_eq_zero: "(1::real) = 0" using h_sum_zero h\<alpha>_sum by (by100 simp)
+    show False using h_one_eq_zero by (by100 simp)
+  qed
+  (** Pick the max-index element of S in c. **)
+  define I where "I = {i. i < length c \<and> c ! i \<in> S}"
+  have hI_sub: "I \<subseteq> {..<length c}" unfolding I_def by (by100 blast)
+  have hI_fin: "finite I" using hI_sub finite_lessThan finite_subset by (by100 blast)
+  have hI_ne: "I \<noteq> {}"
+  proof -
+    obtain \<sigma> where h\<sigma>_S: "\<sigma> \<in> S" using hS_ne by (by100 blast)
+    have h\<sigma>_c: "\<sigma> \<in> set c" using h\<sigma>_S hS_sub by (by100 blast)
+    obtain i where hi_lt: "i < length c" and hi_eq: "c ! i = \<sigma>"
+      using h\<sigma>_c in_set_conv_nth by (by100 metis)
+    have hi_I: "i \<in> I" unfolding I_def using hi_lt hi_eq h\<sigma>_S by (by100 blast)
+    show ?thesis using hi_I by (by100 blast)
+  qed
+  define i_max where "i_max = Max I"
+  have hi_max_I: "i_max \<in> I" unfolding i_max_def using hI_fin hI_ne Max_in by (by100 blast)
+  have hi_max_lt: "i_max < length c" using hi_max_I unfolding I_def by (by100 blast)
+  have hi_max_S: "c ! i_max \<in> S" using hi_max_I unfolding I_def by (by100 blast)
+  define \<sigma>_m\<^sub>a\<^sub>x where "\<sigma>_m\<^sub>a\<^sub>x = c ! i_max"
+  have h\<sigma>_max_c: "\<sigma>_m\<^sub>a\<^sub>x \<in> set c"
+    unfolding \<sigma>_m\<^sub>a\<^sub>x_def using hi_max_lt nth_mem by (by100 blast)
+  have h\<sigma>_max_pos: "0 < \<alpha> \<sigma>_m\<^sub>a\<^sub>x" using hi_max_S unfolding \<sigma>_m\<^sub>a\<^sub>x_def S_def by (by100 blast)
+  (** Every \<tau> in S has \<tau> \<subseteq> \<sigma>_max via chain ordering: index of \<tau> \<le> i_max. **)
+  have h_all_le: "\<forall>\<tau>\<in>set c. 0 < \<alpha> \<tau> \<longrightarrow> \<tau> \<subseteq> \<sigma>_m\<^sub>a\<^sub>x"
+  proof (rule ballI, rule impI)
+    fix \<tau> assume h\<tau>: "\<tau> \<in> set c" and h\<tau>_pos: "0 < \<alpha> \<tau>"
+    have h\<tau>_S: "\<tau> \<in> S" unfolding S_def using h\<tau> h\<tau>_pos by (by100 blast)
+    obtain j where hj_lt: "j < length c" and hj_eq: "c ! j = \<tau>"
+      using h\<tau> in_set_conv_nth by (by100 metis)
+    have hj_I: "j \<in> I" unfolding I_def using hj_lt hj_eq h\<tau>_S by (by100 blast)
+    have hj_le: "j \<le> i_max" unfolding i_max_def using hI_fin hj_I Max_ge by (by100 blast)
+    show "\<tau> \<subseteq> \<sigma>_m\<^sub>a\<^sub>x"
+    proof (cases "j = i_max")
+      case True
+      have "\<tau> = \<sigma>_m\<^sub>a\<^sub>x" using hj_eq True unfolding \<sigma>_m\<^sub>a\<^sub>x_def by (by100 simp)
+      thus ?thesis by (by100 blast)
+    next
+      case False
+      have hj_lt_imax: "j < i_max" using hj_le False by (by100 linarith)
+      have h_sub_strict: "c ! j \<subset> c ! i_max"
+        using hc_sorted hj_lt_imax hi_max_lt
+              sorted_wrt_iff_nth_less[of "(\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>)" c]
+        by (by100 blast)
+      show ?thesis using h_sub_strict hj_eq unfolding \<sigma>_m\<^sub>a\<^sub>x_def by (by100 blast)
+    qed
+  qed
+  show ?thesis using h\<sigma>_max_c h\<sigma>_max_pos h_all_le by (by100 blast)
+qed
+
 (** Classical lemma: a convex subset of a finite simplicial complex's polyhedron
     is contained in some single simplex. This is a foundational fact about
     polyhedral structure — convex sets respect the simplex decomposition.
