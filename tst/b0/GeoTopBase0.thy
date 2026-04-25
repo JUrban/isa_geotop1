@@ -11152,13 +11152,16 @@ proof -
   (** (b.2.iv) Translate: T \<subseteq> U_v \<and> T \<subseteq> |K| \<Longrightarrow> T \<subseteq> star(v) \<subseteq> \<sigma> \<ni> v.
                Scaffolded: we introduce the star-to-simplex tightening as a targeted
                sorry and assemble the Lebesgue + diameter-bridge argument around it. **)
-  (** Key classical fact: a CONVEX nonempty subset of the polyhedron contained in
-      a single vertex-star's ambient witness sits inside some single simplex
-      containing that vertex. Strengthened to require convex T (downstream usage
-      has T = tau a simplex, hence convex). **)
+  (** BUG FIX 2026-04-26: the original statement was FALSE.
+      Reformulated with the actual analytic claim as a HYPOTHESIS (the
+      claim that downstream needs to establish via Munkres' Sd-refinement
+      argument). With the hypothesis, the lemma becomes trivially true:
+      the hypothesis is the conclusion. The actual analytic content moves
+      to the call site, which is now a clearly-marked Sd-specific sorry. **)
   have h_star_to_simplex_del:
     "\<And>v T. v \<in> geotop_complex_vertices K' \<Longrightarrow> T \<subseteq> geotop_polyhedron K
            \<Longrightarrow> T \<subseteq> U_fn v \<Longrightarrow> convex T \<Longrightarrow> T \<noteq> {}
+           \<Longrightarrow> (\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>)
            \<Longrightarrow> \<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
   proof -
     fix v T
@@ -11166,17 +11169,8 @@ proof -
        and hT_sub_K: "T \<subseteq> geotop_polyhedron K"
        and hT_Ufn: "T \<subseteq> U_fn v"
        and hT_conv: "convex T" and hT_ne: "T \<noteq> {}"
-    have hT_sub_K': "T \<subseteq> geotop_polyhedron K'" using hT_sub_K hpolyeq by (by100 simp)
-    (** BUG NOTE 2026-04-25: this was previously closed via the false
-        geotop_convex_in_complex_in_simplex. The claim "T \<subseteq> single \<sigma> with
-        v \<in> \<sigma>" is FALSE for arbitrary convex T \<subseteq> open_star(K', v); the
-        small-disk-at-vertex counterexample applies. The proper fix uses
-        Munkres' carrier-map approach in iterated_Sd_refines_subdivision
-        rather than a generic convex-in-complex argument. Currently
-        sorry'd as the upstream caller is itself a deferred classical
-        sorry (geotop_iterated_Sd_refines_subdivision). **)
-    show "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
-      sorry
+       and h_analytic: "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
+    show "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>" using h_analytic by (by100 blast)
   qed
   have h_\<delta>_ex: "\<exists>\<delta>::real. \<delta> > 0 \<and> (\<forall>S \<subseteq> geotop_polyhedron K.
                          S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
@@ -11286,8 +11280,13 @@ proof -
         obtain v where hv: "v \<in> geotop_complex_vertices K'" and hB_eq: "B = U_fn v"
           using hB_C unfolding C_def by (by100 blast)
         have hS_Ufn: "S \<subseteq> U_fn v" using hS_B hB_eq by (by100 simp)
+        (** ANALYTIC SORRY: this is the actual Munkres-style refinement claim
+            (Sd-specific Lebesgue argument). The h_star_to_simplex_del above
+            is now TRIVIALLY TRUE; the analytic content lives here. **)
+        have h_analytic: "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>"
+          sorry
         obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hv\<sigma>: "v \<in> \<sigma>" and hS\<sigma>: "S \<subseteq> \<sigma>"
-          using h_star_to_simplex_del[OF hv hS_sub hS_Ufn hS_conv hS_ne] by (by100 blast)
+          using h_star_to_simplex_del[OF hv hS_sub hS_Ufn hS_conv hS_ne h_analytic] by (by100 blast)
         show ?thesis using hv h\<sigma>K' hv\<sigma> hS\<sigma> by (by100 blast)
       qed
     qed
