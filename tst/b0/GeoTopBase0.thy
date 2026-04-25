@@ -9636,12 +9636,105 @@ proof -
   have hF_sub_\<sigma>: "F \<subseteq> \<sigma>"
     by (rule geotop_complex_rel_interior_imp_subset[OF hK hFK h\<sigma>K hx_F_ri hx\<sigma>])
   (** Now show \<sigma>' \<subseteq> F. Each v \<in> V_\<sigma>' has V_\<theta>-bary support \<subseteq> U. **)
+  (** Get V_\<sigma>'-bary coords of x (positive on V_\<sigma>'). **)
+  have hV\<sigma>'_ai: "\<not> affine_dependent V\<^sub>\<sigma>\<^sub>'"
+    by (rule geotop_general_position_imp_aff_indep[OF hV\<sigma>'])
+  have h_\<sigma>'_ri_char: "rel_interior \<sigma>'
+                        = {y. \<exists>u. (\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. 0 < u v) \<and> sum u V\<^sub>\<sigma>\<^sub>' = 1
+                                  \<and> (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. u v *\<^sub>R v) = y}"
+    using rel_interior_convex_hull_explicit[OF hV\<sigma>'_ai] h\<sigma>'_hull by (by100 simp)
+  have hx_\<sigma>'_set: "x \<in> {y. \<exists>u. (\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. 0 < u v) \<and> sum u V\<^sub>\<sigma>\<^sub>' = 1
+                                \<and> (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. u v *\<^sub>R v) = y}"
+    using hx_ri h_\<sigma>'_ri_char by (by100 metis)
+  obtain \<gamma> where h\<gamma>_pos: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. 0 < \<gamma> v"
+             and h\<gamma>_sum: "sum \<gamma> V\<^sub>\<sigma>\<^sub>' = 1"
+             and h\<gamma>_combo: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R v) = x"
+    using hx_\<sigma>'_set by (by100 blast)
+  (** For each v \<in> V_\<sigma>', get its V_\<theta>-bary representation. **)
+  have h_v_in_\<theta>_chull: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. v \<in> convex hull V\<^sub>\<theta>"
+    using hV\<sigma>'_sub_\<theta> h\<theta>_hull by (by100 blast)
+  have h_v_chull_set: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. v \<in> {y. \<exists>u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w)
+                                          \<and> sum u V\<^sub>\<theta> = 1
+                                          \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = y}"
+    using h_v_in_\<theta>_chull h_\<theta>_chull by (by100 metis)
+  define \<alpha> where "\<alpha> = (\<lambda>v. SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w)
+                                      \<and> sum u V\<^sub>\<theta> = 1
+                                      \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v)"
+  have h\<alpha>_prop: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> \<alpha> v w) \<and> sum (\<alpha> v) V\<^sub>\<theta> = 1
+                          \<and> (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = v"
+  proof
+    fix v assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'"
+    have h_ex: "\<exists>u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
+                    \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v"
+      using h_v_chull_set hv by (by100 blast)
+    have h_some: "(\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> (SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
+                                      \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v) w)
+                  \<and> sum (SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
+                                  \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v) V\<^sub>\<theta> = 1
+                  \<and> (\<Sum>w\<in>V\<^sub>\<theta>. (SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
+                                          \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v) w *\<^sub>R w) = v"
+      using h_ex by (rule someI_ex)
+    show "(\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> \<alpha> v w) \<and> sum (\<alpha> v) V\<^sub>\<theta> = 1
+          \<and> (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = v"
+      unfolding \<alpha>_def using h_some by (by100 simp)
+  qed
+  (** Combine: ux = sum_v \<gamma>_v \<alpha>_v on V_\<theta> by bary uniqueness on AI V_\<theta>. **)
+  define u_combined where "u_combined = (\<lambda>w. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w)"
+  have h_combined_combo: "(\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w) = x"
+    sorry \<comment> \<open>Substitute v = \<Sum>_w \<alpha>_v_w w into x = \<Sum>_v \<gamma>_v v, swap sums.\<close>
+  have h_combined_sum: "sum u_combined V\<^sub>\<theta> = 1"
+  proof -
+    have h_swap: "sum u_combined V\<^sub>\<theta>
+                    = (\<Sum>w\<in>V\<^sub>\<theta>. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w)"
+      unfolding u_combined_def by (by100 simp)
+    have h_swap2: "(\<Sum>w\<in>V\<^sub>\<theta>. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w)
+                     = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v * \<alpha> v w)"
+      using sum.swap[of "\<lambda>w v. \<gamma> v * \<alpha> v w" V\<^sub>\<sigma>\<^sub>' V\<^sub>\<theta>] by (by100 simp)
+    have h_factor: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v * \<alpha> v w)
+                      = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * sum (\<alpha> v) V\<^sub>\<theta>)"
+    proof (rule sum.cong)
+      show "V\<^sub>\<sigma>\<^sub>' = V\<^sub>\<sigma>\<^sub>'" by (by100 simp)
+    next
+      fix v assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'"
+      show "(\<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v * \<alpha> v w) = \<gamma> v * sum (\<alpha> v) V\<^sub>\<theta>"
+        using sum_distrib_left[of "\<gamma> v" "\<alpha> v" V\<^sub>\<theta>] by (by100 simp)
+    qed
+    have h_unit: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * sum (\<alpha> v) V\<^sub>\<theta>) = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v)"
+    proof (rule sum.cong)
+      show "V\<^sub>\<sigma>\<^sub>' = V\<^sub>\<sigma>\<^sub>'" by (by100 simp)
+    next
+      fix v assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'"
+      have h_sum_one: "sum (\<alpha> v) V\<^sub>\<theta> = 1" using h\<alpha>_prop hv by (by100 blast)
+      show "\<gamma> v * sum (\<alpha> v) V\<^sub>\<theta> = \<gamma> v" using h_sum_one by (by100 simp)
+    qed
+    show ?thesis using h_swap h_swap2 h_factor h_unit h\<gamma>_sum by (by100 simp)
+  qed
+  have h_combined_nn: "\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u_combined w"
+  proof
+    fix w assume hw: "w \<in> V\<^sub>\<theta>"
+    have h_each_nn: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. 0 \<le> \<gamma> v * \<alpha> v w"
+    proof
+      fix v assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'"
+      have h\<gamma>_nn: "0 \<le> \<gamma> v" using h\<gamma>_pos hv by (by100 force)
+      have h\<alpha>_nn: "0 \<le> \<alpha> v w" using h\<alpha>_prop hv hw by (by100 blast)
+      show "0 \<le> \<gamma> v * \<alpha> v w" using h\<gamma>_nn h\<alpha>_nn by (by100 simp)
+    qed
+    show "0 \<le> u_combined w"
+      unfolding u_combined_def by (rule sum_nonneg) (use h_each_nn in \<open>by100 blast\<close>)
+  qed
+  (** By AI uniqueness on V_\<theta>: ux = u_combined. **)
+  have h_ux_eq: "\<forall>w\<in>V\<^sub>\<theta>. ux w = u_combined w"
+    sorry \<comment> \<open>Both are nonneg V_\<theta>-bary representations of x; by AI uniqueness
+                via affine_dependent_explicit_finite, equal pointwise.\<close>
+  (** For w \<notin> U: ux w = 0, hence u_combined w = 0, hence each \<gamma>_v * \<alpha>_v_w = 0
+      (as terms are \<ge> 0 and sum to 0). \<gamma>_v > 0, so \<alpha>_v_w = 0. **)
+  have h\<alpha>_supp_in_U: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. \<forall>w\<in>V\<^sub>\<theta>. 0 < \<alpha> v w \<longrightarrow> w \<in> U"
+    sorry \<comment> \<open>Direct from bary uniqueness + positivity of \<gamma>.\<close>
+  (** Hence each v \<in> V_\<sigma>' is in conv hull U = F. **)
   have hV\<sigma>'_sub_F: "V\<^sub>\<sigma>\<^sub>' \<subseteq> F"
-    sorry \<comment> \<open>For each v \<in> V_\<sigma>': v \<in> \<theta> has V_\<theta>-bary representation. The
-                rel_interior of \<sigma>' has positive bary coords on V_\<sigma>', so
-                x = sum \<gamma>_v v with \<gamma>_v > 0. The V_\<theta>-bary coords of x are
-                ux. Each v's V_\<theta>-support \<subseteq> {w : ux w > 0} = U. So v \<in>
-                conv hull (v's V_\<theta>-support) \<subseteq> conv hull U = F.\<close>
+    sorry \<comment> \<open>For v \<in> V_\<sigma>': v = \<Sum>_{w \<in> V_\<theta>} \<alpha>_v_w w. By h\<alpha>_supp_in_U,
+                this restricts to support \<subseteq> U. v = \<Sum>_{w \<in> U} \<alpha>_v_w w \<in>
+                conv hull U = F via convex_hull_finite witness.\<close>
   have h\<sigma>'_sub_F: "\<sigma>' \<subseteq> F"
   proof -
     have h_F_conv: "convex F" unfolding F_def by (by100 simp)
