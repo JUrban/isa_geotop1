@@ -10134,6 +10134,23 @@ proof -
   show ?thesis using h\<sigma>'_sub_F hF_sub_\<sigma> by (by100 blast)
 qed
 
+(** rel_interior membership in two K-simplices forces equality (uniqueness
+    of K-carrier). Direct contrapositive of geotop_complex_rel_interior_disjoint_distinct. **)
+lemma geotop_carrier_unique:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K"
+  assumes hx_\<sigma>: "x \<in> rel_interior \<sigma>"
+  assumes hx_\<tau>: "x \<in> rel_interior \<tau>"
+  shows "\<sigma> = \<tau>"
+proof (rule ccontr)
+  assume h_ne: "\<sigma> \<noteq> \<tau>"
+  have h_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h_ne])
+  have hx_in: "x \<in> rel_interior \<sigma> \<inter> rel_interior \<tau>" using hx_\<sigma> hx_\<tau> by (by100 blast)
+  show False using hx_in h_disj by (by100 blast)
+qed
+
 (** Useful packaging of the bridge lemma: if x lies in BOTH rel_interior \<sigma>'
     (\<sigma>' \<in> K') and rel_interior \<sigma> (\<sigma> \<in> K), then \<sigma>' \<subseteq> \<sigma>. This is
     the K'-carrier-in-K-carrier statement: K'-decomposition refines
