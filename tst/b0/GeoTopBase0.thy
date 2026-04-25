@@ -5462,13 +5462,111 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
                     \<inter> convex hull (geotop_barycenter ` set d\<^sub>2)
                     \<subseteq> convex hull (geotop_barycenter ` (set d\<^sub>1 \<inter> set d\<^sub>2))"
           by (rule less.hyps[OF h_card_less hd\<^sub>1_flag hd\<^sub>2_flag])
-        (** The main inductive argument (convex_hull_insert_Int_eq + chain-hull).
-            Remaining work: apply convex_hull_insert_Int_eq with z = bary \<sigma>_1 in
-            rel_interior \<sigma>_1 (by geotop_barycenter_in_rel_interior), T/U subsets of
-            rel_frontier \<sigma>_1 (via face_of_disjoint_rel_interior), then chain the
-            IH through. **)
+        (** Setup for convex_hull_insert_Int_eq: z = bary \<sigma>_1. **)
+        define z where "z = geotop_barycenter \<sigma>\<^sub>1"
+        define T where "T = convex hull (geotop_barycenter ` set d\<^sub>1)"
+        define U where "U = convex hull (geotop_barycenter ` set d\<^sub>2)"
+        (** z \<in> rel_interior \<sigma>_1. **)
+        have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+          by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+        have h\<sigma>\<^sub>1_simp: "geotop_is_simplex \<sigma>\<^sub>1" using h\<sigma>\<^sub>1_K h_simp_all by (by100 blast)
+        obtain V\<^sub>1 where hV\<^sub>1: "geotop_simplex_vertices \<sigma>\<^sub>1 V\<^sub>1"
+          using h\<sigma>\<^sub>1_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+          by (by100 blast)
+        have hz_rel: "z \<in> rel_interior \<sigma>\<^sub>1"
+          unfolding z_def by (rule geotop_barycenter_in_rel_interior[OF hV\<^sub>1])
+        (** \<sigma>_1 convex (simplex). **)
+        have h\<sigma>\<^sub>1_hull_g: "\<sigma>\<^sub>1 = geotop_convex_hull V\<^sub>1"
+          using hV\<^sub>1 unfolding geotop_simplex_vertices_def by (by100 blast)
+        have h\<sigma>\<^sub>1_hull: "\<sigma>\<^sub>1 = convex hull V\<^sub>1"
+          using h\<sigma>\<^sub>1_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+        have h_conv_\<sigma>\<^sub>1: "convex \<sigma>\<^sub>1"
+          using h\<sigma>\<^sub>1_hull convex_convex_hull by (by100 simp)
+        have h_conv_T: "convex T" unfolding T_def by (by100 simp)
+        have h_conv_U: "convex U" unfolding U_def by (by100 simp)
+        (** d_1 elements are strict subsets of \<sigma>_1 (via D_1 strict + D_1 = set d_1). **)
+        have hd\<^sub>1_strict: "\<forall>\<sigma>\<in>set d\<^sub>1. \<sigma> \<subset> \<sigma>\<^sub>1"
+        proof
+          fix \<sigma> assume h\<sigma>_d: "\<sigma> \<in> set d\<^sub>1"
+          have h\<sigma>_D: "\<sigma> \<in> D\<^sub>1" using hd\<^sub>1_set h\<sigma>_d by (by100 simp)
+          have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>1" and h\<sigma>_pos: "0 < \<alpha> \<sigma>" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1"
+            using h\<sigma>_D unfolding D\<^sub>1_def by (by100 blast)+
+          have h\<sigma>_sub: "\<sigma> \<subseteq> \<sigma>\<^sub>1" using h\<sigma>\<^sub>1_top h\<sigma>_c h\<sigma>_pos by (by100 blast)
+          show "\<sigma> \<subset> \<sigma>\<^sub>1" using h\<sigma>_sub h\<sigma>_ne by (by100 blast)
+        qed
+        have hd\<^sub>2_strict: "\<forall>\<sigma>\<in>set d\<^sub>2. \<sigma> \<subset> \<sigma>\<^sub>1"
+        proof
+          fix \<sigma> assume h\<sigma>_d: "\<sigma> \<in> set d\<^sub>2"
+          have h\<sigma>_D: "\<sigma> \<in> D\<^sub>2" using hd\<^sub>2_set h\<sigma>_d by (by100 simp)
+          have h\<sigma>_c: "\<sigma> \<in> set c\<^sub>2" and h\<sigma>_pos: "0 < \<beta> \<sigma>" and h\<sigma>_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1"
+            using h\<sigma>_D unfolding D\<^sub>2_def by (by100 blast)+
+          have h\<sigma>_sub_\<sigma>\<^sub>2: "\<sigma> \<subseteq> \<sigma>\<^sub>2" using h\<sigma>\<^sub>2_top h\<sigma>_c h\<sigma>_pos by (by100 blast)
+          have h\<sigma>_sub_\<sigma>\<^sub>1: "\<sigma> \<subseteq> \<sigma>\<^sub>1" using h\<sigma>_sub_\<sigma>\<^sub>2 h\<sigma>_eq by (by100 simp)
+          show "\<sigma> \<subset> \<sigma>\<^sub>1" using h\<sigma>_sub_\<sigma>\<^sub>1 h\<sigma>_ne by (by100 blast)
+        qed
+        (** T, U subsets of rel_frontier \<sigma>_1 via helper. **)
+        have hT_rf: "T \<subseteq> rel_frontier \<sigma>\<^sub>1"
+          unfolding T_def
+          by (rule geotop_chain_hull_in_rel_frontier[OF hK h\<sigma>\<^sub>1_K hd\<^sub>1_flag hd\<^sub>1_strict])
+        have hU_rf: "U \<subseteq> rel_frontier \<sigma>\<^sub>1"
+          unfolding U_def
+          by (rule geotop_chain_hull_in_rel_frontier[OF hK h\<sigma>\<^sub>1_K hd\<^sub>2_flag hd\<^sub>2_strict])
+        (** Apply convex_hull_insert_Int_eq. **)
+        have h_insert_Int_eq:
+          "convex hull (insert z T) \<inter> convex hull (insert z U)
+           = convex hull (insert z (T \<inter> U))"
+          by (rule convex_hull_insert_Int_eq[OF hz_rel hT_rf hU_rf h_conv_\<sigma>\<^sub>1 h_conv_T h_conv_U])
+        (** x lies in both conv hull (insert z T) and conv hull (insert z U).
+            Proof: x \<in> conv hull (bary ` set c_1) \<supseteq> conv hull (bary ` supp_\<alpha>) where
+            supp_\<alpha> = insert \<sigma>_1 (set d_1). Hmm, but we need x \<in> conv hull (insert z T),
+            which equals conv hull (bary ` supp_\<alpha>). We have x \<in> conv hull (bary ` set c_1)
+            which is bigger. But we also know that x = \<Sum> \<alpha> \<sigma> \<cdot> bary \<sigma> with \<alpha> supported
+            on supp_\<alpha>, which gives x \<in> conv hull (bary ` supp_\<alpha>). **)
+        have hx_T1_restrict: "x \<in> convex hull (insert z T)"
+          sorry
+        have hx_T2_restrict: "x \<in> convex hull (insert z U)"
+          sorry
+        (** Combine: x in intersection = conv hull (insert z (T \<inter> U)). **)
+        have hx_Int: "x \<in> convex hull (insert z (T \<inter> U))"
+          using hx_T1_restrict hx_T2_restrict h_insert_Int_eq by (by100 blast)
+        (** T \<inter> U \<subseteq> conv hull (bary ` (set d_1 \<inter> set d_2)) via h_IH. **)
+        have hTU_IH: "T \<inter> U \<subseteq> convex hull (geotop_barycenter ` (set d\<^sub>1 \<inter> set d\<^sub>2))"
+          using h_IH unfolding T_def U_def by (by100 blast)
+        (** Chain: conv hull (insert z (T \<inter> U))
+                   \<subseteq> conv hull (insert z (conv hull (bary ` (set d_1 \<inter> set d_2))))
+                   \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2))
+           using z \<in> bary ` (set c_1 \<inter> set c_2) and set d_1 \<inter> set d_2 \<subseteq> set c_1 \<inter> set c_2. **)
+        have h_d_int_sub: "set d\<^sub>1 \<inter> set d\<^sub>2 \<subseteq> set c\<^sub>1 \<inter> set c\<^sub>2"
+          using hd\<^sub>1_sub_c\<^sub>1 hd\<^sub>2_sub_c\<^sub>2 by (by100 blast)
+        have h_bary_img_sub: "geotop_barycenter ` (set d\<^sub>1 \<inter> set d\<^sub>2)
+                                \<subseteq> geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)"
+          using h_d_int_sub by (by100 blast)
+        have hz_in_img: "z \<in> geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)"
+          unfolding z_def using h\<tau>_inter by (by100 blast)
+        have hz_in_hull: "z \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using hz_in_img
+                hull_subset[of "geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)" convex]
+          by (by100 blast)
+        have h_hull_IH_sub: "convex hull (geotop_barycenter ` (set d\<^sub>1 \<inter> set d\<^sub>2))
+                              \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using h_bary_img_sub hull_mono by (by100 blast)
+        (** T \<inter> U \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2)). **)
+        have hTU_big: "T \<inter> U \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using hTU_IH h_hull_IH_sub by (by100 blast)
+        (** insert z (T \<inter> U) \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2)). **)
+        have h_insert_sub: "insert z (T \<inter> U)
+                             \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using hz_in_hull hTU_big by (by100 blast)
+        (** conv hull (insert z (T \<inter> U)) \<subseteq> conv hull (bary ` (set c_1 \<inter> set c_2)). **)
+        have h_target_conv: "convex (convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)))"
+          by (by100 simp)
+        have h_final_sub: "convex hull (insert z (T \<inter> U))
+                            \<subseteq> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using hull_minimal[of "insert z (T \<inter> U)"
+                                "convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))" convex]
+                h_insert_sub h_target_conv by (by100 blast)
         show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-          sorry \<comment> \<open>Apply convex_hull_insert_Int_eq + chain through h_IH.\<close>
+          using hx_Int h_final_sub by (by100 blast)
       qed
     qed
   qed
