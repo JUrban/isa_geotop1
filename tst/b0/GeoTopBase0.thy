@@ -10370,6 +10370,17 @@ proof -
     by (rule geotop_complex_rel_interior_imp_subset[OF hK h\<tau>_K h\<sigma>K hx_ri hx\<sigma>])
 qed
 
+(** K-carrier function maps rel_interior pieces to themselves: for any
+    σ \<in> K (complex) and x \<in> rel_interior σ, K_carrier K x = σ. This is
+    just a re-statement of geotop_K_carrier_eq for emphasis. **)
+lemma geotop_K_carrier_self_in_rel_interior:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx_ri: "x \<in> rel_interior \<sigma>"
+  shows "geotop_K_carrier K x = \<sigma>"
+  by (rule geotop_K_carrier_eq[OF hK h\<sigma>K hx_ri])
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
