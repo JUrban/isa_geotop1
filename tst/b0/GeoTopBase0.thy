@@ -11280,9 +11280,13 @@ proof -
         obtain v where hv: "v \<in> geotop_complex_vertices K'" and hB_eq: "B = U_fn v"
           using hB_C unfolding C_def by (by100 blast)
         have hS_Ufn: "S \<subseteq> U_fn v" using hS_B hB_eq by (by100 simp)
-        (** ANALYTIC SORRY: this is the actual Munkres-style refinement claim
-            (Sd-specific Lebesgue argument). The h_star_to_simplex_del above
-            is now TRIVIALLY TRUE; the analytic content lives here. **)
+        (** WARNING (BUG NOTE 2026-04-26): this h_analytic is FALSE for
+            arbitrary convex S \<subseteq> U_fn v (small-disk-on-K'-vertex
+            counterexample). The TRUE replacement requires Sd-simplex
+            structure on S (which the downstream caller does provide,
+            but the h_\<delta>_ex statement does not currently capture). The
+            buggy h_\<delta>_ex statement should ultimately be replaced with
+            an Sd-specific version; for now both sorries are tracked. **)
         have h_analytic: "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> S \<subseteq> \<sigma>"
           sorry
         obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hv\<sigma>: "v \<in> \<sigma>" and hS\<sigma>: "S \<subseteq> \<sigma>"
