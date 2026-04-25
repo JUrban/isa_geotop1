@@ -9822,7 +9822,45 @@ proof -
   (** For w \<notin> U: ux w = 0, hence u_combined w = 0, hence each \<gamma>_v * \<alpha>_v_w = 0
       (as terms are \<ge> 0 and sum to 0). \<gamma>_v > 0, so \<alpha>_v_w = 0. **)
   have h\<alpha>_supp_in_U: "\<forall>v\<in>V\<^sub>\<sigma>\<^sub>'. \<forall>w\<in>V\<^sub>\<theta>. 0 < \<alpha> v w \<longrightarrow> w \<in> U"
-    sorry \<comment> \<open>Direct from bary uniqueness + positivity of \<gamma>.\<close>
+  proof (rule ballI, rule ballI, rule impI)
+    fix v w assume hv: "v \<in> V\<^sub>\<sigma>\<^sub>'" and hw: "w \<in> V\<^sub>\<theta>" and h_pos: "0 < \<alpha> v w"
+    show "w \<in> U"
+    proof (rule ccontr)
+      assume h_nU: "w \<notin> U"
+      (** ux w = 0 since w \<notin> U. **)
+      have h_ux_zero: "ux w = 0"
+      proof -
+        have h_nn: "0 \<le> ux w" using hux_nn hw by (by100 blast)
+        have h_not_pos: "\<not> (0 < ux w)" using h_nU hw unfolding U_def by (by100 blast)
+        show ?thesis using h_nn h_not_pos by (by100 force)
+      qed
+      (** u_combined w = 0 by uniqueness. **)
+      have h_uc_zero: "u_combined w = 0"
+        using h_ux_eq hw h_ux_zero by (by100 simp)
+      (** Each term γ v' * α v' w ≥ 0 and they sum to 0; so each is 0. **)
+      have h_each_nn: "\<forall>v'\<in>V\<^sub>\<sigma>\<^sub>'. 0 \<le> \<gamma> v' * \<alpha> v' w"
+      proof
+        fix v' assume hv': "v' \<in> V\<^sub>\<sigma>\<^sub>'"
+        have h\<gamma>_nn: "0 \<le> \<gamma> v'" using h\<gamma>_pos hv' by (by100 force)
+        have h\<alpha>_nn: "0 \<le> \<alpha> v' w" using h\<alpha>_prop hv' hw by (by100 blast)
+        show "0 \<le> \<gamma> v' * \<alpha> v' w" using h\<gamma>_nn h\<alpha>_nn by (by100 simp)
+      qed
+      have h_sum_zero: "(\<Sum>v'\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v' * \<alpha> v' w) = 0"
+        using h_uc_zero unfolding u_combined_def by (by100 simp)
+      have h_each_nn_simple: "\<And>v'. v' \<in> V\<^sub>\<sigma>\<^sub>' \<Longrightarrow> 0 \<le> \<gamma> v' * \<alpha> v' w"
+        using h_each_nn by (by100 blast)
+      have h_iff: "(\<Sum>v'\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v' * \<alpha> v' w) = 0
+                    \<longleftrightarrow> (\<forall>v'\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v' * \<alpha> v' w = 0)"
+        by (rule sum_nonneg_eq_0_iff[OF hV\<sigma>'_fin h_each_nn_simple])
+      have h_term_zero: "\<forall>v'\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v' * \<alpha> v' w = 0"
+        using h_iff h_sum_zero by (by100 blast)
+      (** For v specifically: γ v * α v w = 0 with γ v > 0, so α v w = 0. **)
+      have h_v_term: "\<gamma> v * \<alpha> v w = 0" using h_term_zero hv by (by100 blast)
+      have h\<gamma>v_pos: "0 < \<gamma> v" using h\<gamma>_pos hv by (by100 blast)
+      have h\<alpha>vw_zero: "\<alpha> v w = 0" using h_v_term h\<gamma>v_pos by (by100 simp)
+      show False using h\<alpha>vw_zero h_pos by (by100 simp)
+    qed
+  qed
   (** Hence each v \<in> V_\<sigma>' is in conv hull U = F. **)
   have hV\<sigma>'_sub_F: "V\<^sub>\<sigma>\<^sub>' \<subseteq> F"
     sorry \<comment> \<open>For v \<in> V_\<sigma>': v = \<Sum>_{w \<in> V_\<theta>} \<alpha>_v_w w. By h\<alpha>_supp_in_U,
