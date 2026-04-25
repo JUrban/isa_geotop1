@@ -10859,132 +10859,14 @@ next
   qed
 qed
 
-(** PLAN2 Session N+2: per-K-simplex Lebesgue lemma.
-    For \<sigma> \<in> K compact and the K'-simplices contained in \<sigma> covering it
-    (by Lemma 1), there's a \<delta>_\<sigma> > 0 such that any T \<subseteq> \<sigma> with
-    diam T < \<delta>_\<sigma> fits in some K' simplex \<sigma>' \<subseteq> \<sigma>.
+(** PLAN2 Session N+2 lemmas DELETED 2026-04-26:
+    The two PLAN2-N+2 / N+3 lemmas (geotop_subdivision_lebesgue_per_simplex
+    and geotop_subdivision_lebesgue_uniform) had FALSE statements (small
+    disk on K'-vertex counterexample). Per CLAUDE.md "fix buggy statements
+    IMMEDIATELY", removed entirely. The TRUE replacement uses Sd-specific
+    structure directly in iterated_Sd_refines_subdivision (see below).
 
-    Strategy: cover \<sigma> by open stars of K'-vertices (in subspace topology
-    of \<sigma>); these form a finite open cover; apply Lebesgue_number_lemma
-    to this open cover. Bridge: a small T contained in some open star
-    has all its points' K'-carriers containing the corresponding vertex,
-    and small diameter forces a single K'-simplex. **)
-lemma geotop_subdivision_lebesgue_per_simplex:
-  fixes K K' :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  assumes hK': "geotop_is_complex K'"
-  assumes hKfin: "finite K"
-  assumes hK'fin: "finite K'"
-  assumes hsub: "geotop_is_subdivision K' K"
-  assumes h\<sigma>K: "\<sigma> \<in> K"
-  shows "\<exists>\<delta>::real>0. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-  sorry \<comment> \<open>PLAN2 Session N+2: GENUINELY HARD CLASSICAL CLAIM.
-              Initial approach: build open cover of \<sigma> from K'-vertex open stars,
-              apply Lebesgue_number_lemma, bridge to single K'-simplex.
-
-              However, the direct bridge fails: a small convex T \<subseteq> open_star_K'(v)
-              can still span multiple K'-simplices around v (e.g., a small disk
-              centered on a K'-vertex inside \<sigma>). The lemma as stated may require
-              additional hypothesis (T = simplex, or T has bounded affine
-              dimension matching K'-simplices, or specific Sd^m structure).
-
-              Munkres' actual proof of iterated_Sd_refines_subdivision uses
-              the structural property that Sd^m K simplices have vertices
-              that are barycenters of K-flags, and these vertices CONCENTRATE
-              in specific patterns as m grows, eventually fitting inside
-              single K'-simplices. This is INHERENTLY about Sd^m simplices,
-              not arbitrary convex T.
-
-              FALLBACK PLAN: restate this lemma with T = simplex, and use the
-              K'-vertex argument: for small simplex T, vertices are close
-              together, hence (by SD-flag structure) they all lie in a common
-              K'-simplex. This requires additional carrier-map infrastructure.
-
-              Estimated effort: ~200-300 more lines of carrier-map argument
-              + reformulation. Multi-session classical work.\<close>
-
-(** PLAN2 Session N+3: uniform Lebesgue \<delta> over all K-simplices.
-    Take \<delta> = Min over finite K of \<delta>_\<sigma> from Session N+2 lemma. **)
-lemma geotop_subdivision_lebesgue_uniform:
-  fixes K K' :: "'a::euclidean_space set set"
-  assumes hK: "geotop_is_complex K"
-  assumes hK': "geotop_is_complex K'"
-  assumes hKfin: "finite K"
-  assumes hK'fin: "finite K'"
-  assumes hKne: "K \<noteq> {}"
-  assumes hsub: "geotop_is_subdivision K' K"
-  shows "\<exists>\<delta>::real>0. \<forall>\<sigma>\<in>K. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-proof -
-  (** For each \<sigma> \<in> K, get \<delta>_\<sigma> > 0 from Session N+2. **)
-  have h_per_\<sigma>: "\<forall>\<sigma>\<in>K. \<exists>\<delta>::real>0. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                  geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                  \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-    using geotop_subdivision_lebesgue_per_simplex[OF hK hK' hKfin hK'fin hsub] by (by100 blast)
-  (** Use SOME-witness to extract \<delta>_\<sigma>. **)
-  define \<delta>fn :: "'a set \<Rightarrow> real" where
-    "\<delta>fn = (\<lambda>\<sigma>. SOME \<delta>::real. \<delta> > 0 \<and> (\<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                            geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                            \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')))"
-  have h_\<delta>fn_pos: "\<forall>\<sigma>\<in>K. 0 < \<delta>fn \<sigma>"
-  proof
-    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
-    have h_ex: "\<exists>\<delta>::real>0. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                  geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                  \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-      using h_per_\<sigma> h\<sigma> by (by100 blast)
-    have h_some: "\<delta>fn \<sigma> > 0 \<and> (\<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                            geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>fn \<sigma>
-                            \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>'))"
-      unfolding \<delta>fn_def using h_ex by (rule someI_ex)
-    show "0 < \<delta>fn \<sigma>" using h_some by (by100 blast)
-  qed
-  have h_\<delta>fn_prop: "\<forall>\<sigma>\<in>K. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                          geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>fn \<sigma>
-                          \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-  proof
-    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
-    have h_ex: "\<exists>\<delta>::real>0. \<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                  geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>
-                  \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-      using h_per_\<sigma> h\<sigma> by (by100 blast)
-    have h_some: "\<delta>fn \<sigma> > 0 \<and> (\<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                            geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>fn \<sigma>
-                            \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>'))"
-      unfolding \<delta>fn_def using h_ex by (rule someI_ex)
-    show "\<forall>T. T \<subseteq> \<sigma> \<longrightarrow> T \<noteq> {} \<longrightarrow>
-                geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>fn \<sigma>
-                \<longrightarrow> (\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>')"
-      using h_some by (by100 blast)
-  qed
-  (** Take \<delta> = Min over K of \<delta>fn. **)
-  have h_imageK_fin: "finite (\<delta>fn ` K)" using hKfin by (by100 simp)
-  have h_imageK_ne: "\<delta>fn ` K \<noteq> {}" using hKne by (by100 blast)
-  define \<delta> where "\<delta> = Min (\<delta>fn ` K)"
-  have h_\<delta>_in: "\<delta> \<in> \<delta>fn ` K"
-    unfolding \<delta>_def using Min_in[OF h_imageK_fin h_imageK_ne] by (by100 blast)
-  obtain \<sigma>\<^sub>0 where h\<sigma>\<^sub>0K: "\<sigma>\<^sub>0 \<in> K" and h\<delta>\<sigma>\<^sub>0: "\<delta> = \<delta>fn \<sigma>\<^sub>0" using h_\<delta>_in by (by100 blast)
-  have h_\<delta>_pos: "0 < \<delta>"
-    using h_\<delta>fn_pos h\<sigma>\<^sub>0K h\<delta>\<sigma>\<^sub>0 by (by100 simp)
-  have h_\<delta>_le: "\<forall>\<sigma>\<in>K. \<delta> \<le> \<delta>fn \<sigma>"
-    unfolding \<delta>_def using Min_le[OF h_imageK_fin] by (by100 blast)
-  (** Conclude the uniform property. **)
-  show ?thesis
-  proof (intro exI conjI ballI allI impI)
-    show "0 < \<delta>" using h_\<delta>_pos by (by100 simp)
-  next
-    fix \<sigma> T assume h\<sigma>: "\<sigma> \<in> K" and hTsub: "T \<subseteq> \<sigma>" and hTne: "T \<noteq> {}"
-       and hTdiam: "geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>"
-    have h_\<delta>_le_\<sigma>: "\<delta> \<le> \<delta>fn \<sigma>" using h_\<delta>_le h\<sigma> by (by100 blast)
-    have hTdiam': "geotop_diameter (\<lambda>x y. norm (x - y)) T < \<delta>fn \<sigma>"
-      using hTdiam h_\<delta>_le_\<sigma> by (by100 linarith)
-    show "\<exists>\<sigma>'\<in>K'. \<sigma>' \<subseteq> \<sigma> \<and> T \<subseteq> \<sigma>'"
-      using h_\<delta>fn_prop h\<sigma> hTsub hTne hTdiam' by (by100 blast)
-  qed
-qed
+    Original sorry'd statements preserved in git history at commit 12136d03. **)
 
 (** BUG FIX 2026-04-25: The original statement of this lemma was FALSE.
     Counterexample: a small convex disk centered on a vertex in a 2-triangle
