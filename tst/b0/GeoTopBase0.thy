@@ -10689,6 +10689,37 @@ proof
   show "b \<in> \<sigma>\<^sub>p" using hb_\<sigma> h\<sigma>_top by (by100 blast)
 qed
 
+(** K-carriers of barycenters of K-simplices match the simplices. For S \<subseteq> K
+    a finite set of K-simplices, the K-carrier image equals S itself
+    (each barycenter recovers its source K-simplex). **)
+lemma geotop_K_carriers_of_barycenters:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hS_sub: "S \<subseteq> K"
+  shows "(\<lambda>\<sigma>. geotop_K_carrier K (geotop_barycenter \<sigma>)) ` S = S"
+proof
+  show "(\<lambda>\<sigma>. geotop_K_carrier K (geotop_barycenter \<sigma>)) ` S \<subseteq> S"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> (\<lambda>\<sigma>. geotop_K_carrier K (geotop_barycenter \<sigma>)) ` S"
+    obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S" and h\<tau>_eq: "\<tau> = geotop_K_carrier K (geotop_barycenter \<sigma>)"
+      using h\<tau> by (by100 blast)
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>S hS_sub by (by100 blast)
+    have h_eq_sigma: "geotop_K_carrier K (geotop_barycenter \<sigma>) = \<sigma>"
+      by (rule geotop_K_carrier_barycenter[OF hK h\<sigma>K])
+    show "\<tau> \<in> S" using h\<tau>_eq h_eq_sigma h\<sigma>S by (by100 simp)
+  qed
+next
+  show "S \<subseteq> (\<lambda>\<sigma>. geotop_K_carrier K (geotop_barycenter \<sigma>)) ` S"
+  proof
+    fix \<sigma> assume h\<sigma>S: "\<sigma> \<in> S"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>S hS_sub by (by100 blast)
+    have h_eq_sigma: "geotop_K_carrier K (geotop_barycenter \<sigma>) = \<sigma>"
+      by (rule geotop_K_carrier_barycenter[OF hK h\<sigma>K])
+    show "\<sigma> \<in> (\<lambda>\<sigma>. geotop_K_carrier K (geotop_barycenter \<sigma>)) ` S"
+      using h\<sigma>S h_eq_sigma by (by100 force)
+  qed
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
