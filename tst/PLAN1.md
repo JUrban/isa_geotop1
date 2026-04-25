@@ -1471,6 +1471,46 @@ For h_K2_intersect_eq future attack:
 ### Sorry count after this session: 2 (unchanged structurally — carrier
     lemma is enabling infrastructure, not a sorry-closer by itself).
 
+## Session 2026-04-25 Part 3: MOISE 4.5 FULLY CLOSED. Sorry count 2 -> 1.
+
+`geotop_flag_intersect_hull_sub` (Moise 4.5) is now FULLY PROVEN by
+strong induction on card(set c_1 union set c_2) using
+convex_hull_insert_Int_eq + the helpers
+geotop_chain_hull_in_rel_frontier + carrier machinery.
+
+Only one real sorry remains in b0/GeoTopBase0.thy: line ~9243,
+`geotop_convex_in_complex_in_simplex`.
+
+### IMPORTANT FINDING: geotop_convex_in_complex_in_simplex IS FALSE AS STATED
+
+Counterexample: Let K be a complex of two triangles T_1, T_2 sharing
+an edge e. Let T be a small disk centered on a vertex a where the
+two triangles meet. T is convex, T \<subseteq> |K|, T \<noteq> {}. But T contains
+points in rel_interior of T_1, rel_interior of T_2, rel_interior of e,
+etc. - all distinct simplices. So T is NOT contained in any single
+simplex of K.
+
+The PLAN1.md sketch claim "{σ : rel_interior σ ∩ T ≠ ∅} forms a chain"
+is INCORRECT for this counterexample (T_1 and T_2 are non-comparable).
+
+### NEEDED FIX
+
+The lemma needs strengthening of hypotheses or weakening of conclusion:
+- Strengthen: Add a small-diameter hypothesis (e.g., diam < δ for
+  Lebesgue δ).
+- Or: Require T to be small enough to fit in star_v's "minimal
+  simplex" structure.
+
+The downstream usage (h_star_to_simplex_del) actually has the diameter
+constraint via h_δ_ex. So the right fix may be to refactor:
+- Change geotop_convex_in_complex_in_simplex statement to add diameter
+  constraint, OR
+- Remove the lemma and inline a direct proof in h_star_to_simplex_del
+  using the diameter constraint.
+
+This requires substantial refactoring of the iterated_Sd refinement
+proof structure. ~200+ lines of work.
+
 ## Session 2026-04-25 Part 2: FACTOR OUT K.2 INTO STANDALONE LEMMA
 
 Introduced `geotop_flag_intersect_hull_sub` as standalone lemma (sorry'd)
