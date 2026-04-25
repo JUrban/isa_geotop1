@@ -5673,7 +5673,10 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             using h_insert_sum h_u\<^sub>1_z by (by100 simp)
           have h_step2: "sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1) = sum \<alpha> (set d\<^sub>1)"
             by (rule h_reindex_d\<^sub>1)
-          show ?thesis using h_step1 h_step2 h_big_eq by (by100 simp)
+          have h_step3: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1))
+                           = \<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set d\<^sub>1)"
+            using h_step1 h_step2 by (by100 simp)
+          show ?thesis using h_step3 h_big_eq by (by100 simp)
         qed
         (** x = \<Sum> u_1 w \<cdot> w over insert z (bary ` set d_1). **)
         have h_u\<^sub>1_combo: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w) = x"
@@ -5868,7 +5871,10 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             using h_insert_sum h_u\<^sub>2_z by (by100 simp)
           have h_step2: "sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2) = sum \<beta> (set d\<^sub>2)"
             by (rule h_reindex_d\<^sub>2)
-          show ?thesis using h_step1 h_step2 h_big_eq by (by100 simp)
+          have h_step3: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
+                           = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set d\<^sub>2)"
+            using h_step1 h_step2 by (by100 simp)
+          show ?thesis using h_step3 h_big_eq by (by100 simp)
         qed
         have h_u\<^sub>2_combo: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w) = x"
         proof -
@@ -5928,10 +5934,13 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
           have h_full: "x = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
                             + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
             using h\<beta>_combo h_combo_split h_rest_as_d\<^sub>2_combo by (by100 simp)
+          have h_step_a: "(\<Sum>w \<in> geotop_barycenter ` set d\<^sub>2. u\<^sub>2 w *\<^sub>R w)
+                            = (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_reindex_d\<^sub>2 h_cong_d\<^sub>2 by (by100 simp)
           have h_step1: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
                            = u\<^sub>2 z *\<^sub>R z
                              + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
-            using h_insert_combo h_reindex_d\<^sub>2 h_cong_d\<^sub>2 by (by100 simp)
+            using h_insert_combo h_step_a by (by100 simp)
           have h_step2: "u\<^sub>2 z *\<^sub>R z = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
             using h_u\<^sub>2_z unfolding z_def by (by100 simp)
           show ?thesis using h_step1 h_step2 h_full by (by100 simp)
@@ -9204,6 +9213,251 @@ qed
       (d) Assignment: every \<open>\<tau> \<in> Sd^m(K)\<close> lies in some \<open>st_{K'}(v)\<close>; use interior
           disjointness in \<open>K'\<close> to conclude \<open>\<tau>\<close> is contained in a single simplex
           of \<open>K'\<close>. **)
+
+(** USEFUL TRUE LEMMA: K-carrier existence. For x in |K| (finite complex),
+    there's a unique K-simplex \<tau> with x \<in> rel_interior \<tau>. The carrier \<tau>
+    is the K-simplex of MINIMUM cardinality containing x. This is the key
+    fact needed for fixing the convex_in_complex bug downstream. **)
+lemma geotop_complex_polyhedron_point_carrier:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "\<exists>\<tau>\<in>K. x \<in> rel_interior \<tau>"
+proof -
+  (** F = K-simplices containing x. Nonempty (x \<in> some \<sigma>), finite (K finite). **)
+  define F where "F = {\<sigma>\<in>K. x \<in> \<sigma>}"
+  have hF_sub: "F \<subseteq> K" unfolding F_def by (by100 blast)
+  have hF_fin: "finite F" using hKfin hF_sub finite_subset by (by100 blast)
+  obtain \<sigma>\<^sub>0 where h\<sigma>\<^sub>0K: "\<sigma>\<^sub>0 \<in> K" and hx_\<sigma>\<^sub>0: "x \<in> \<sigma>\<^sub>0"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>\<^sub>0_F: "\<sigma>\<^sub>0 \<in> F" unfolding F_def using h\<sigma>\<^sub>0K hx_\<sigma>\<^sub>0 by (by100 blast)
+  have hF_ne: "F \<noteq> {}" using h\<sigma>\<^sub>0_F by (by100 blast)
+  (** Define cardinality of vertex set per K-simplex. **)
+  define card_v :: "'a set \<Rightarrow> nat" where
+    "card_v = (\<lambda>\<sigma>. card (SOME V::'a set. geotop_simplex_vertices \<sigma> V))"
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  (** Each \<sigma> \<in> F has a positive vertex count. **)
+  have h_card_pos_F: "\<forall>\<sigma>\<in>F. 0 < card_v \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> F"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma> hF_sub by (by100 blast)
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+    have h_ex: "\<exists>V. geotop_simplex_vertices \<sigma> V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have h_some: "geotop_simplex_vertices \<sigma> (SOME V. geotop_simplex_vertices \<sigma> V)"
+      using h_ex by (rule someI_ex)
+    have h_card: "\<exists>n. card (SOME V. geotop_simplex_vertices \<sigma> V) = n + 1"
+      using h_some unfolding geotop_simplex_vertices_def by (by100 blast)
+    show "0 < card_v \<sigma>" unfolding card_v_def using h_card by (by100 auto)
+  qed
+  (** Pick \<tau> \<in> F with min card_v. **)
+  define n_min where "n_min = Min (card_v ` F)"
+  have hcF_fin: "finite (card_v ` F)" using hF_fin by (by100 simp)
+  have hcF_ne: "card_v ` F \<noteq> {}" using hF_ne by (by100 blast)
+  have h_n_min_in: "n_min \<in> card_v ` F"
+    unfolding n_min_def using Min_in[OF hcF_fin hcF_ne] by (by100 blast)
+  obtain \<tau> where h\<tau>_F: "\<tau> \<in> F" and h\<tau>_min: "card_v \<tau> = n_min"
+    using h_n_min_in by (by100 blast)
+  have h\<tau>_min_prop: "\<forall>\<sigma>\<in>F. card_v \<tau> \<le> card_v \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>F: "\<sigma> \<in> F"
+    have h_image: "card_v \<sigma> \<in> card_v ` F" using h\<sigma>F by (by100 blast)
+    have h_min_le: "Min (card_v ` F) \<le> card_v \<sigma>"
+      using Min_le[OF hcF_fin h_image] by (by100 blast)
+    show "card_v \<tau> \<le> card_v \<sigma>"
+      using h\<tau>_min h_min_le unfolding n_min_def by (by100 simp)
+  qed
+  have h\<tau>_K: "\<tau> \<in> K" using h\<tau>_F hF_sub by (by100 blast)
+  have hx_\<tau>: "x \<in> \<tau>" using h\<tau>_F unfolding F_def by (by100 blast)
+  (** Show x \<in> rel_interior \<tau>. By contradiction: assume x \<in> \<tau> but
+      x \<notin> rel_interior \<tau>. Then x is in a proper face of \<tau>, contradicting min. **)
+  have hx_ri: "x \<in> rel_interior \<tau>"
+  proof (rule ccontr)
+    assume h_not_ri: "x \<notin> rel_interior \<tau>"
+    (** Get \<tau>'s vertex set. **)
+    have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>_K h_simp_all by (by100 blast)
+    obtain V where hV: "geotop_simplex_vertices \<tau> V"
+      using h\<tau>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have hV_fin: "finite V" using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hV_ai: "\<not> affine_dependent V"
+      by (rule geotop_general_position_imp_aff_indep[OF hV])
+    have h\<tau>_hull_g: "\<tau> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<tau>_hull: "\<tau> = convex hull V"
+      using h\<tau>_hull_g geotop_convex_hull_eq_HOL by (by100 simp)
+    (** x \<in> \<tau> = conv hull V. Get bary coords. **)
+    have h_chull_finite: "convex hull V
+                          = {y. \<exists>u. (\<forall>w\<in>V. 0 \<le> u w)
+                                  \<and> sum u V = 1
+                                  \<and> (\<Sum>w\<in>V. u w *\<^sub>R w) = y}"
+      by (rule convex_hull_finite[OF hV_fin])
+    have hx_in_set: "x \<in> {y. \<exists>u. (\<forall>w\<in>V. 0 \<le> u w)
+                                  \<and> sum u V = 1
+                                  \<and> (\<Sum>w\<in>V. u w *\<^sub>R w) = y}"
+      using hx_\<tau> h\<tau>_hull h_chull_finite by (by100 metis)
+    obtain u where hu_nn: "\<forall>w\<in>V. 0 \<le> u w"
+               and hu_sum: "sum u V = 1"
+               and hu_combo: "(\<Sum>w\<in>V. u w *\<^sub>R w) = x"
+      using hx_in_set by (by100 blast)
+    (** rel_interior of \<tau> = points with all u's strictly positive. **)
+    have h_ri_char: "rel_interior \<tau>
+                       = {y. \<exists>u. (\<forall>v\<in>V. 0 < u v)
+                                 \<and> sum u V = 1
+                                 \<and> (\<Sum>v\<in>V. u v *\<^sub>R v) = y}"
+      using rel_interior_convex_hull_explicit[OF hV_ai] h\<tau>_hull by (by100 simp)
+    (** x \<notin> rel_interior \<tau> means some u has u w = 0. **)
+    have h_some_zero: "\<exists>w\<in>V. u w = 0"
+    proof (rule ccontr)
+      assume h_no: "\<not> (\<exists>w\<in>V. u w = 0)"
+      have h_all_pos: "\<forall>w\<in>V. 0 < u w"
+      proof
+        fix w assume hw: "w \<in> V"
+        have h_nn: "0 \<le> u w" using hu_nn hw by (by100 blast)
+        have h_ne: "u w \<noteq> 0" using h_no hw by (by100 blast)
+        show "0 < u w" using h_nn h_ne by (by100 force)
+      qed
+      have hx_in_ri: "x \<in> rel_interior \<tau>"
+        unfolding h_ri_char using h_all_pos hu_sum hu_combo by (by100 blast)
+      show False using hx_in_ri h_not_ri by (by100 blast)
+    qed
+    (** Define W = support of u (strictly positive subset). W \<subsetneq> V. **)
+    define W where "W = {w\<in>V. 0 < u w}"
+    have hW_sub: "W \<subseteq> V" unfolding W_def by (by100 blast)
+    have hW_fin: "finite W" using finite_subset[OF hW_sub hV_fin] by (by100 simp)
+    have hW_strict: "W \<noteq> V"
+    proof
+      assume h_eq: "W = V"
+      obtain w where hw_V: "w \<in> V" and hw_zero: "u w = 0" using h_some_zero by (by100 blast)
+      have hw_W: "w \<in> W" using hw_V h_eq by (by100 simp)
+      have h_pos_W: "0 < u w" using hw_W unfolding W_def by (by100 blast)
+      show False using h_pos_W hw_zero by (by100 linarith)
+    qed
+    have hW_ne: "W \<noteq> {}"
+    proof (rule ccontr)
+      assume hW_em: "\<not> W \<noteq> {}"
+      have hW_emp: "W = {}" using hW_em by (by100 blast)
+      have h_all_zero: "\<forall>w\<in>V. u w = 0"
+      proof
+        fix w assume hw: "w \<in> V"
+        have h_nn: "0 \<le> u w" using hu_nn hw by (by100 blast)
+        have h_not_pos: "\<not> (0 < u w)"
+          using hw hW_emp unfolding W_def by (by100 blast)
+        thus "u w = 0" using h_nn by (by100 force)
+      qed
+      have h_sum_zero: "sum u V = 0" using h_all_zero by (by100 simp)
+      show False using h_sum_zero hu_sum by (by100 simp)
+    qed
+    (** x = \<Sum>_{w \<in> W} u w *\<^sub>R w (since u = 0 on V - W). **)
+    have h_VmW_zero: "\<forall>w\<in>V - W. u w = 0"
+    proof
+      fix w assume hw: "w \<in> V - W"
+      have hw_V: "w \<in> V" using hw by (by100 blast)
+      have hw_nW: "w \<notin> W" using hw by (by100 blast)
+      have h_nn: "0 \<le> u w" using hu_nn hw_V by (by100 blast)
+      have h_not_pos: "\<not> (0 < u w)" using hw_nW hw_V unfolding W_def by (by100 blast)
+      show "u w = 0" using h_nn h_not_pos by (by100 force)
+    qed
+    have h_VmW_combo_zero: "(\<Sum>w\<in>V-W. u w *\<^sub>R w) = 0"
+    proof (rule sum.neutral)
+      show "\<forall>w\<in>V-W. u w *\<^sub>R w = 0" using h_VmW_zero by (by100 simp)
+    qed
+    have h_V_split: "V = W \<union> (V - W)" using hW_sub by (by100 blast)
+    have h_disj: "W \<inter> (V - W) = {}" by (by100 blast)
+    have h_VmW_fin: "finite (V - W)" using hV_fin by (by100 simp)
+    have h_split_combo: "(\<Sum>w\<in>V. u w *\<^sub>R w) = (\<Sum>w\<in>W. u w *\<^sub>R w) + (\<Sum>w\<in>V-W. u w *\<^sub>R w)"
+    proof -
+      have h1: "(\<Sum>w\<in>W \<union> (V - W). u w *\<^sub>R w)
+                  = (\<Sum>w\<in>W. u w *\<^sub>R w) + (\<Sum>w\<in>V-W. u w *\<^sub>R w)"
+        by (rule sum.union_disjoint[OF hW_fin h_VmW_fin h_disj])
+      have h2: "(\<Sum>w\<in>V. u w *\<^sub>R w) = (\<Sum>w\<in>W \<union> (V - W). u w *\<^sub>R w)"
+        using h_V_split by (by100 simp)
+      show ?thesis using h1 h2 by (by100 simp)
+    qed
+    have hx_W_combo: "x = (\<Sum>w\<in>W. u w *\<^sub>R w)"
+      using hu_combo h_split_combo h_VmW_combo_zero by (by100 simp)
+    (** sum u W = 1. **)
+    have h_VmW_sum_zero: "sum u (V - W) = 0"
+      using h_VmW_zero by (by100 simp)
+    have h_split_sum: "sum u V = sum u W + sum u (V - W)"
+      using sum.union_disjoint[OF hW_fin h_VmW_fin h_disj] h_V_split by (by100 simp)
+    have hu_W_sum: "sum u W = 1"
+      using h_split_sum h_VmW_sum_zero hu_sum by (by100 simp)
+    (** W gives a face F = conv hull W of \<tau>. **)
+    define F\<^sub>x where "F\<^sub>x = convex hull W"
+    have h_HOL_eq_W: "geotop_convex_hull W = convex hull W"
+      by (rule geotop_convex_hull_eq_HOL)
+    have hF\<^sub>x_g: "F\<^sub>x = geotop_convex_hull W"
+      unfolding F\<^sub>x_def using h_HOL_eq_W by (by100 simp)
+    have h_face: "geotop_is_face F\<^sub>x \<tau>"
+      unfolding geotop_is_face_def
+      using hV hW_ne hW_sub hF\<^sub>x_g by (by100 blast)
+    (** F_x \<in> K (face-closure). **)
+    have h_face_closed: "\<forall>\<rho>\<in>K. \<forall>\<phi>. geotop_is_face \<phi> \<rho> \<longrightarrow> \<phi> \<in> K"
+      by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+    have hF\<^sub>x_K: "F\<^sub>x \<in> K"
+      using h_face_closed h\<tau>_K h_face by (by100 blast)
+    (** x \<in> F_x = conv hull W via convex_hull_finite witness u|_W. **)
+    have h_F_chull_finite: "convex hull W
+                              = {y. \<exists>u. (\<forall>w\<in>W. 0 \<le> u w)
+                                       \<and> sum u W = 1
+                                       \<and> (\<Sum>w\<in>W. u w *\<^sub>R w) = y}"
+      by (rule convex_hull_finite[OF hW_fin])
+    have hu_W_nn: "\<forall>w\<in>W. 0 \<le> u w" using hu_nn hW_sub by (by100 blast)
+    have hx_F\<^sub>x: "x \<in> F\<^sub>x"
+      unfolding F\<^sub>x_def
+      using h_F_chull_finite hu_W_nn hu_W_sum hx_W_combo by (by100 blast)
+    have hF\<^sub>x_F: "F\<^sub>x \<in> F" unfolding F_def using hF\<^sub>x_K hx_F\<^sub>x by (by100 blast)
+    (** card_v F\<^sub>x < card_v \<tau>: since W \<subsetneq> V, |W| < |V|. **)
+    have h_W_psub: "W \<subset> V" using hW_sub hW_strict by (by100 blast)
+    have h_W_card_lt: "card W < card V"
+      using psubset_card_mono[OF hV_fin h_W_psub] by (by100 simp)
+    have hF\<^sub>x_card: "card_v F\<^sub>x = card W"
+    proof -
+      have hF\<^sub>x_simp: "geotop_is_simplex F\<^sub>x" using hF\<^sub>x_K h_simp_all by (by100 blast)
+      (** simplex_vertices of F\<^sub>x is W (W is AI subset of V). **)
+      have hW_ai: "\<not> affine_dependent W"
+        by (rule affine_independent_subset[OF hV_ai hW_sub])
+      have hF\<^sub>x_HOL: "F\<^sub>x = convex hull W" unfolding F\<^sub>x_def by (by100 simp)
+      have hF\<^sub>x_geo: "F\<^sub>x = geotop_convex_hull W"
+        using hF\<^sub>x_HOL h_HOL_eq_W by (by100 simp)
+      have hW_card_pos: "0 < card W"
+        using hW_fin hW_ne card_gt_0_iff by (by100 blast)
+      define n where "n = card W - 1"
+      have h_card_n: "card W = n + 1" unfolding n_def using hW_card_pos by (by100 linarith)
+      have h_n_le_n: "n \<le> n" by (by100 simp)
+      have hW_gp: "geotop_general_position W n"
+        by (rule geotop_ai_imp_general_position[OF hW_fin h_card_n hW_ai])
+      have hF\<^sub>x_sv: "geotop_simplex_vertices F\<^sub>x W"
+        unfolding geotop_simplex_vertices_def
+        using hW_fin h_card_n h_n_le_n hW_gp hF\<^sub>x_geo by (by100 blast)
+      have hF\<^sub>x_ex: "\<exists>V'. geotop_simplex_vertices F\<^sub>x V'" using hF\<^sub>x_sv by (by100 blast)
+      have hF\<^sub>x_some: "geotop_simplex_vertices F\<^sub>x (SOME V'. geotop_simplex_vertices F\<^sub>x V')"
+        using hF\<^sub>x_ex by (rule someI_ex)
+      have h_some_eq: "(SOME V'. geotop_simplex_vertices F\<^sub>x V') = W"
+        by (rule geotop_simplex_vertices_unique[OF hF\<^sub>x_some hF\<^sub>x_sv])
+      show "card_v F\<^sub>x = card W" unfolding card_v_def using h_some_eq by (by100 simp)
+    qed
+    have h\<tau>_card: "card_v \<tau> = card V"
+    proof -
+      have h_ex: "\<exists>V'. geotop_simplex_vertices \<tau> V'" using hV by (by100 blast)
+      have h_some: "geotop_simplex_vertices \<tau> (SOME V'. geotop_simplex_vertices \<tau> V')"
+        using h_ex by (rule someI_ex)
+      have h_some_eq: "(SOME V'. geotop_simplex_vertices \<tau> V') = V"
+        by (rule geotop_simplex_vertices_unique[OF h_some hV])
+      show "card_v \<tau> = card V" unfolding card_v_def using h_some_eq by (by100 simp)
+    qed
+    have h_lt: "card_v F\<^sub>x < card_v \<tau>"
+      using hF\<^sub>x_card h\<tau>_card h_W_card_lt by (by100 simp)
+    have h_min_violate: "card_v \<tau> \<le> card_v F\<^sub>x"
+      using h\<tau>_min_prop hF\<^sub>x_F by (by100 blast)
+    show False using h_lt h_min_violate by (by100 linarith)
+  qed
+  show ?thesis using h\<tau>_K hx_ri by (by100 blast)
+qed
 
 (** WARNING: This lemma is FALSE as stated. Counterexample: A small convex
     disk centered on a vertex in a 2-triangle simplicial complex spans
