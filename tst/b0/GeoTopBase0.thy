@@ -9488,22 +9488,24 @@ proof -
   show ?thesis by (rule geotop_subdivision_simplex_in_parent[OF h_sub h\<tau>])
 qed
 
-(** WARNING: This lemma is FALSE as stated. Counterexample: A small convex
-    disk centered on a vertex in a 2-triangle simplicial complex spans
-    multiple simplices (rel_interior of T_1, T_2, edge e, etc.) and is not
-    contained in any single one. The earlier "proof sketch" claim that
-    "convex set's K-carriers form a chain" is incorrect — non-comparable
-    simplices T_1, T_2 sharing an edge can both contain points of T.
+(** BUG FIX 2026-04-25: The original statement of this lemma was FALSE.
+    Counterexample: a small convex disk centered on a vertex in a 2-triangle
+    simplicial complex spans multiple simplices (rel_interior of T_1, T_2,
+    edge e, etc.) and is not contained in any single \<sigma> \<in> K.
 
-    Correct statement (TRUE): For T convex \<subseteq> |K|, T \<subseteq> closed_star(v)
-    = union of K-simplices containing some vertex v. (T may span multiple
-    simplices; cannot be put in single σ.)
+    The lemma is now restated with a TRUE strong hypothesis: T must be
+    contained in rel_interior of some K-simplex \<sigma>. Under this hypothesis,
+    T \<subseteq> \<sigma> follows trivially via rel_interior_subset.
 
-    The downstream user h_star_to_simplex_del needs single \<sigma>, which is
-    true under STRONGER hypotheses (e.g., T = simplex of a subdivision
-    that's known to refine K'). The current iterated_Sd_refines_subdivision
-    proof strategy via convex_in_complex_in_simplex is fundamentally flawed
-    and needs refactoring (~300 lines, ~Munkres' carrier-map approach). **)
+    The downstream usage in h_star_to_simplex_del relied on the false form;
+    that call site is now sorry'd with a WARNING and remains as a known
+    blocker in iterated_Sd_refines_subdivision. The proper fix uses
+    Munkres' carrier-map approach: each Sd^m K simplex tau has a unique
+    K-carrier (chain top of tau's vertices' K-flag), and Lebesgue applied
+    to each K-simplex's K'-subdivision finds the K' simplex containing
+    tau when diam tau is small. The required infrastructure
+    (geotop_complex_polyhedron_point_carrier, subdivision corollaries)
+    is now in place; the carrier-map refactor is multi-session work. **)
 lemma geotop_convex_in_complex_in_simplex:
   fixes K :: "'a::euclidean_space set set"
   assumes hK: "geotop_is_complex K"
@@ -9511,28 +9513,27 @@ lemma geotop_convex_in_complex_in_simplex:
   assumes hT_conv: "convex T"
   assumes hT_ne: "T \<noteq> {}"
   assumes hT_sub: "T \<subseteq> geotop_polyhedron K"
+  assumes hT_in_rel: "\<exists>\<sigma>\<in>K. T \<subseteq> rel_interior \<sigma>"
   shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
 proof -
-  (** Define F = family of K-simplices meeting T. Non-empty, finite. **)
-  define F where "F = {\<sigma>\<in>K. \<sigma> \<inter> T \<noteq> {}}"
-  have hF_sub_K: "F \<subseteq> K" unfolding F_def by (by100 blast)
-  have hF_fin: "finite F" using hKfin hF_sub_K finite_subset by (by100 blast)
-  (** F is non-empty: pick x \<in> T, x \<in> some \<sigma> \<in> K. **)
-  obtain x_T where hx_T: "x_T \<in> T" using hT_ne by (by100 blast)
-  have hx_T_K: "x_T \<in> geotop_polyhedron K" using hx_T hT_sub by (by100 blast)
-  obtain \<sigma>_0 where h\<sigma>_0K: "\<sigma>_0 \<in> K" and hx_\<sigma>_0: "x_T \<in> \<sigma>_0"
-    using hx_T_K unfolding geotop_polyhedron_def by (by100 blast)
-  have h\<sigma>_0_F: "\<sigma>_0 \<in> F"
-    unfolding F_def using h\<sigma>_0K hx_\<sigma>_0 hx_T by (by100 blast)
-  have hF_ne: "F \<noteq> {}" using h\<sigma>_0_F by (by100 blast)
-  (** Pick \<sigma>_* \<in> F with maximum cardinality of vertex set. Simplex vertex cardinality
-      is a well-defined function on K-simplices (via simplex_vertices). **)
-  (** Rest of proof deferred as one sorry: show T subset sigma_star in F with
-      max cardinality. Classical convexity-in-complex argument via carrier
-      analysis along segments. Approx 200 lines of topology. **)
-  show "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
-    sorry
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hT_ri: "T \<subseteq> rel_interior \<sigma>"
+    using hT_in_rel by (by100 blast)
+  have h_ri_sub: "rel_interior \<sigma> \<subseteq> \<sigma>" by (rule rel_interior_subset)
+  have hT\<sigma>: "T \<subseteq> \<sigma>" using hT_ri h_ri_sub by (by100 blast)
+  show ?thesis using h\<sigma>K hT\<sigma> by (by100 blast)
 qed
+
+(** Original buggy version DELETED. The body below was the (sorry'd)
+    structural attempt; preserved here as a reference for future fix work. *)
+lemma geotop_convex_in_complex_in_simplex_DEFERRED:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes hT_conv: "convex T"
+  assumes hT_ne: "T \<noteq> {}"
+  assumes hT_sub: "T \<subseteq> geotop_polyhedron K"
+  shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
+  oops
 
 lemma geotop_iterated_Sd_refines_subdivision:
   fixes K K' :: "'a::euclidean_space set set"
@@ -9668,28 +9669,16 @@ proof -
        and hT_Ufn: "T \<subseteq> U_fn v"
        and hT_conv: "convex T" and hT_ne: "T \<noteq> {}"
     have hT_sub_K': "T \<subseteq> geotop_polyhedron K'" using hT_sub_K hpolyeq by (by100 simp)
-    (** Apply the standalone convex-in-complex lemma. **)
-    obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hT\<sigma>: "T \<subseteq> \<sigma>"
-      using geotop_convex_in_complex_in_simplex[OF hK'comp hK'fin hT_conv hT_ne hT_sub_K']
-      by (by100 blast)
-    (** Show v \<in> \<sigma> via a point x \<in> T landing in rel_interior of a v-containing simplex. **)
-    obtain x where hxT: "x \<in> T" using hT_ne by (by100 blast)
-    have hx_open_star: "x \<in> geotop_open_star K' v"
-    proof -
-      have hx_K': "x \<in> geotop_polyhedron K'" using hxT hT_sub_K' by (by100 blast)
-      have hx_Ufn: "x \<in> U_fn v" using hxT hT_Ufn by (by100 blast)
-      have h_star_eq: "geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
-        using h_U_fn_prop hv by (by100 blast)
-      show ?thesis using hx_K' hx_Ufn h_star_eq by (by100 blast)
-    qed
-    obtain \<sigma>_v where h\<sigma>_vK': "\<sigma>_v \<in> K'" and hv\<sigma>_v: "v \<in> \<sigma>_v"
-                  and hx_ri: "x \<in> rel_interior \<sigma>_v"
-      using hx_open_star unfolding geotop_open_star_def by (by100 blast)
-    have hx\<sigma>: "x \<in> \<sigma>" using hxT hT\<sigma> by (by100 blast)
-    have h\<sigma>v_sub: "\<sigma>_v \<subseteq> \<sigma>"
-      by (rule geotop_complex_rel_interior_imp_subset[OF hK'comp h\<sigma>_vK' h\<sigma>K' hx_ri hx\<sigma>])
-    have hv\<sigma>: "v \<in> \<sigma>" using hv\<sigma>_v h\<sigma>v_sub by (by100 blast)
-    show "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>" using h\<sigma>K' hv\<sigma> hT\<sigma> by (by100 blast)
+    (** BUG NOTE 2026-04-25: this was previously closed via the false
+        geotop_convex_in_complex_in_simplex. The claim "T \<subseteq> single \<sigma> with
+        v \<in> \<sigma>" is FALSE for arbitrary convex T \<subseteq> open_star(K', v); the
+        small-disk-at-vertex counterexample applies. The proper fix uses
+        Munkres' carrier-map approach in iterated_Sd_refines_subdivision
+        rather than a generic convex-in-complex argument. Currently
+        sorry'd as the upstream caller is itself a deferred classical
+        sorry (geotop_iterated_Sd_refines_subdivision). **)
+    show "\<exists>\<sigma>\<in>K'. v \<in> \<sigma> \<and> T \<subseteq> \<sigma>"
+      sorry
   qed
   have h_\<delta>_ex: "\<exists>\<delta>::real. \<delta> > 0 \<and> (\<forall>S \<subseteq> geotop_polyhedron K.
                          S \<noteq> {} \<longrightarrow> convex S \<longrightarrow>
