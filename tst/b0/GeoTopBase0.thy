@@ -5201,8 +5201,21 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
     (** Define D_1 = supp_\<alpha> \<setminus> {\<sigma>_1}, D_2 = supp_\<beta> \<setminus> {\<sigma>_1}. **)
     define D\<^sub>1 where "D\<^sub>1 = {\<sigma>\<in>set c\<^sub>1. 0 < \<alpha> \<sigma> \<and> \<sigma> \<noteq> \<sigma>\<^sub>1}"
     define D\<^sub>2 where "D\<^sub>2 = {\<sigma>\<in>set c\<^sub>2. 0 < \<beta> \<sigma> \<and> \<sigma> \<noteq> \<sigma>\<^sub>1}"
+    (** Helper: if D_i = \<emptyset> then the i-th support collapses to {\<sigma>_1}, giving
+        x = bary \<sigma>_1 and conclusion via hull_subset. **)
+    have h_bary_in_hull: "geotop_barycenter \<sigma>\<^sub>1
+                           \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+    proof -
+      have h_bary_in_img: "geotop_barycenter \<sigma>\<^sub>1
+                            \<in> geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)"
+        using h\<tau>_inter by (by100 blast)
+      show ?thesis
+        using h_bary_in_img
+              hull_subset[of "geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)" convex]
+        by (by100 blast)
+    qed
     show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-    proof (cases "D\<^sub>1 = {} \<and> D\<^sub>2 = {}")
+    proof (cases "D\<^sub>1 = {}")
       case True
       (** \<alpha> supported only at \<sigma>_1. Hence \<alpha> \<sigma>_1 = 1 and x = bary \<sigma>_1. **)
       have hD\<^sub>1_em: "D\<^sub>1 = {}" using True by (by100 blast)
@@ -5242,23 +5255,62 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
         by (by100 simp)
       have hx_bary: "x = geotop_barycenter \<sigma>\<^sub>1"
         using h\<alpha>_combo h_combo_split h_rest_combo_zero h\<alpha>\<sigma>\<^sub>1_one by (by100 simp)
-      have h_bary_in_img: "geotop_barycenter \<sigma>\<^sub>1
-                            \<in> geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)"
-        using h\<tau>_inter by (by100 blast)
-      have h_bary_in_hull: "geotop_barycenter \<sigma>\<^sub>1
-                             \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-        using h_bary_in_img
-              hull_subset[of "geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2)" convex]
-        by (by100 blast)
       show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
         using hx_bary h_bary_in_hull by (by100 simp)
     next
-      case False
-      (** Inductive step: apply convex_hull_insert_Int_eq with z = bary \<sigma>_1, S = \<sigma>_1. **)
+      case hD\<^sub>1_ne: False
       show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
-        sorry \<comment> \<open>Inductive step: factor out bary \<sigma>_1 via convex_hull_insert_Int_eq,
-                  apply IH to sub-chains d_1, d_2 (sorted versions of D_1, D_2) with
-                  strictly smaller card (set d_1 \<union> set d_2) < card (set c_1 \<union> set c_2).\<close>
+      proof (cases "D\<^sub>2 = {}")
+        case True
+        (** Symmetric argument using \<beta>. **)
+        have hD\<^sub>2_em: "D\<^sub>2 = {}" using True by (by100 blast)
+        have h_support: "\<forall>\<sigma>\<in>set c\<^sub>2. \<sigma> \<noteq> \<sigma>\<^sub>1 \<longrightarrow> \<beta> \<sigma> = 0"
+        proof (rule ballI, rule impI)
+          fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set c\<^sub>2" and h_ne: "\<sigma> \<noteq> \<sigma>\<^sub>1"
+          have h_nn: "0 \<le> \<beta> \<sigma>" using h\<beta>_nn h\<sigma> by (by100 blast)
+          show "\<beta> \<sigma> = 0"
+          proof (cases "0 < \<beta> \<sigma>")
+            case True
+            have h\<sigma>_D\<^sub>2: "\<sigma> \<in> D\<^sub>2" unfolding D\<^sub>2_def using h\<sigma> True h_ne by (by100 blast)
+            thus ?thesis using hD\<^sub>2_em by (by100 blast)
+          next
+            case False
+            thus ?thesis using h_nn by (by100 force)
+          qed
+        qed
+        have hc\<^sub>2_fin: "finite (set c\<^sub>2)" by (by100 simp)
+        have h_sum_split: "sum \<beta> (set c\<^sub>2)
+                            = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set c\<^sub>2 - {\<sigma>\<^sub>1})"
+          using sum.remove[OF hc\<^sub>2_fin h\<tau>_c\<^sub>2, of \<beta>] by (by100 simp)
+        have h_rest_zero: "sum \<beta> (set c\<^sub>2 - {\<sigma>\<^sub>1}) = 0"
+        proof (rule sum.neutral)
+          show "\<forall>\<sigma>\<in>set c\<^sub>2 - {\<sigma>\<^sub>1}. \<beta> \<sigma> = 0"
+            using h_support by (by100 blast)
+        qed
+        have h\<beta>\<sigma>\<^sub>1_one: "\<beta> \<sigma>\<^sub>1 = 1"
+          using h_sum_split h_rest_zero h\<beta>_sum by (by100 linarith)
+        have h_combo_zero: "\<forall>\<sigma>\<in>set c\<^sub>2 - {\<sigma>\<^sub>1}. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma> = 0"
+          using h_support by (by100 simp)
+        have h_rest_combo_zero: "(\<Sum>\<sigma>\<in>set c\<^sub>2 - {\<sigma>\<^sub>1}. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>) = 0"
+          by (rule sum.neutral) (use h_combo_zero in \<open>by100 blast\<close>)
+        have h_combo_split: "(\<Sum>\<sigma>\<in>set c\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)
+                              = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                                + (\<Sum>\<sigma>\<in>set c\<^sub>2 - {\<sigma>\<^sub>1}. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+          using sum.remove[OF hc\<^sub>2_fin h\<tau>_c\<^sub>2, of "\<lambda>\<sigma>. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>"]
+          by (by100 simp)
+        have hx_bary: "x = geotop_barycenter \<sigma>\<^sub>1"
+          using h\<beta>_combo h_combo_split h_rest_combo_zero h\<beta>\<sigma>\<^sub>1_one by (by100 simp)
+        show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          using hx_bary h_bary_in_hull by (by100 simp)
+      next
+        case hD\<^sub>2_ne: False
+        (** Main inductive step: D_1, D_2 both nonempty. Apply
+            convex_hull_insert_Int_eq with z = bary \<sigma>_1, S = \<sigma>_1,
+            T = conv hull (bary ` D_1), U = conv hull (bary ` D_2).
+            Then apply IH to sorted sub-flags from D_1, D_2. **)
+        show "x \<in> convex hull (geotop_barycenter ` (set c\<^sub>1 \<inter> set c\<^sub>2))"
+          sorry \<comment> \<open>Main inductive step: convex_hull_insert_Int_eq reduction + IH.\<close>
+      qed
     qed
   qed
 qed
