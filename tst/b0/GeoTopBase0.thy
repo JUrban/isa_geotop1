@@ -9753,7 +9753,15 @@ proof -
       have h_sum_one: "sum (\<alpha> v) V\<^sub>\<theta> = 1" using h\<alpha>_prop hv by (by100 blast)
       show "\<gamma> v * sum (\<alpha> v) V\<^sub>\<theta> = \<gamma> v" using h_sum_one by (by100 simp)
     qed
-    show ?thesis using h_swap h_swap2 h_factor h_unit h\<gamma>_sum by (by100 simp)
+    have h_chain_a: "sum u_combined V\<^sub>\<theta>
+                       = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v * \<alpha> v w)"
+      using h_swap h_swap2 by (by100 simp)
+    have h_chain_b: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<Sum>w\<in>V\<^sub>\<theta>. \<gamma> v * \<alpha> v w)
+                       = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v)"
+      using h_factor h_unit by (by100 simp)
+    have h_chain_eq: "sum u_combined V\<^sub>\<theta> = (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v)"
+      using h_chain_a h_chain_b by (by100 simp)
+    show ?thesis using h_chain_eq h\<gamma>_sum by (by100 simp)
   qed
   have h_combined_nn: "\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u_combined w"
   proof
