@@ -10689,6 +10689,49 @@ proof
   show "b \<in> \<sigma>\<^sub>p" using hb_\<sigma> h\<sigma>_top by (by100 blast)
 qed
 
+(** Sd-vertex K-carrier alignment: For c a K-flag with chain-top \<sigma>_top = last c,
+    the Sd-vertices V = barycenter ` (set c) all lie inside \<sigma>_top.
+    Direct from chain structure + barycenter-in-simplex. **)
+lemma geotop_chain_simplex_vertices_in_top:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hc_fl: "c \<in> geotop_flags K"
+  shows "geotop_barycenter ` set c \<subseteq> last c"
+proof -
+  have hc_ne: "c \<noteq> []" using hc_fl unfolding geotop_flags_def by (by100 blast)
+  have hc_subK: "set c \<subseteq> K" using hc_fl unfolding geotop_flags_def by (by100 blast)
+  have hc_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c"
+    using hc_fl unfolding geotop_flags_def by (by100 blast)
+  have h_last_in: "last c \<in> set c" using hc_ne by (by100 simp)
+  have h_chain_top: "\<forall>\<sigma>\<in>set c. \<sigma> \<subseteq> last c"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> set c"
+    obtain i where hi_lt: "i < length c" and h\<sigma>_eq: "\<sigma> = c ! i"
+      using h\<sigma> in_set_conv_nth[of \<sigma> c] by (by100 blast)
+    have h_last_eq: "last c = c ! (length c - 1)"
+      using last_conv_nth[OF hc_ne] by (by100 simp)
+    have h_len_pos: "0 < length c" using hc_ne by (by100 simp)
+    have h_last_idx: "length c - 1 < length c" using h_len_pos by (by100 simp)
+    have h_le: "\<sigma> = last c \<or> \<sigma> \<subset> last c"
+    proof (cases "i = length c - 1")
+      case True
+      have "\<sigma> = c ! (length c - 1)" using h\<sigma>_eq True by (by100 simp)
+      then have "\<sigma> = last c" using h_last_eq by (by100 simp)
+      then show ?thesis by (by100 blast)
+    next
+      case h_ne_idx: False
+      have h_lt: "i < length c - 1" using hi_lt h_ne_idx by (by100 linarith)
+      have h_chain: "(c ! i) \<subset> (c ! (length c - 1))"
+        by (rule sorted_wrt_nth_less[OF hc_sorted h_lt h_last_idx])
+      have "\<sigma> \<subset> last c" using h_chain h\<sigma>_eq h_last_eq by (by100 simp)
+      then show ?thesis by (by100 blast)
+    qed
+    show "\<sigma> \<subseteq> last c" using h_le by (by100 blast)
+  qed
+  have h_in_K_set: "\<forall>\<sigma>\<in>set c. \<sigma> \<in> K" using hc_subK by (by100 blast)
+  show ?thesis by (rule geotop_chain_barycenters_in_top[OF hK h_chain_top h_in_K_set])
+qed
+
 (** K-carriers of barycenters of K-simplices match the simplices. For S \<subseteq> K
     a finite set of K-simplices, the K-carrier image equals S itself
     (each barycenter recovers its source K-simplex). **)
