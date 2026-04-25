@@ -10662,6 +10662,33 @@ next
   qed
 qed
 
+(** Chain-K-carrier alignment: for V a set of barycenters of K-simplices
+    \<sigma>\<^sub>0, ..., \<sigma>\<^sub>p forming a chain in K (i.e., \<sigma>\<^sub>0 \<subseteq> ... \<subseteq> \<sigma>\<^sub>p), V \<subseteq> \<sigma>\<^sub>p
+    (chain top). **)
+lemma geotop_chain_barycenters_in_top:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h_chain_top: "\<forall>\<sigma>\<in>S. \<sigma> \<subseteq> \<sigma>\<^sub>p"
+  assumes h_in_K: "\<forall>\<sigma>\<in>S. \<sigma> \<in> K"
+  shows "(geotop_barycenter ` S) \<subseteq> \<sigma>\<^sub>p"
+proof
+  fix b assume hb: "b \<in> geotop_barycenter ` S"
+  obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S" and hb_eq: "b = geotop_barycenter \<sigma>"
+    using hb by (by100 blast)
+  have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>S h_in_K by (by100 blast)
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma>K h_simp_all by (by100 blast)
+  obtain V where h_sv: "geotop_simplex_vertices \<sigma> V"
+    using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+    by (by100 blast)
+  have h_bary_in: "geotop_barycenter \<sigma> \<in> \<sigma>"
+    by (rule geotop_barycenter_in_simplex[OF h\<sigma>_simp])
+  have hb_\<sigma>: "b \<in> \<sigma>" using hb_eq h_bary_in by (by100 simp)
+  have h\<sigma>_top: "\<sigma> \<subseteq> \<sigma>\<^sub>p" using h\<sigma>S h_chain_top by (by100 blast)
+  show "b \<in> \<sigma>\<^sub>p" using hb_\<sigma> h\<sigma>_top by (by100 blast)
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
