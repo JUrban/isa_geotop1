@@ -12930,6 +12930,248 @@ next
   show "\<Union>{S \<in> geotop_order_complex C. S \<subseteq> A} \<subseteq> A" by (by100 blast)
 qed
 
+(** ============================================================
+    Step 5.6d (K.2): pairwise intersection is common face.
+
+    Foundation lemmas:
+    (a) AI-bary-uniqueness: for AI V, x has unique barycentric coords.
+    (b) top-of-supp = carrier: for x \<in> chain_simplex c, max-supp cell
+        equals carrier(x).
+    (c) common-top: for x \<in> \<sigma>_c1 \<inter> \<sigma>_c2, both top-supports = carrier(x).
+    Then K.2 follows by induction on chain length.
+    ============================================================ **)
+
+(** Step 5.6d.a: barycentric coordinates are unique on AI vertex sets. **)
+lemma geotop_AI_bary_unique:
+  fixes V :: "'a::euclidean_space set"
+  fixes \<alpha> \<beta> :: "'a \<Rightarrow> real"
+  assumes hV_AI: "\<not> affine_dependent V"
+  assumes hV_fin: "finite V"
+  assumes h_\<alpha>_sum: "sum \<alpha> V = 1"
+  assumes h_\<beta>_sum: "sum \<beta> V = 1"
+  assumes h_eq: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+  shows "\<forall>v\<in>V. \<alpha> v = \<beta> v"
+proof -
+  define U where "U = (\<lambda>v. \<alpha> v - \<beta> v)"
+  have hU_sum: "sum U V = 0"
+    using h_\<alpha>_sum h_\<beta>_sum unfolding U_def
+    by (simp add: sum_subtractf)
+  have hU_vec: "(\<Sum>v\<in>V. U v *\<^sub>R v) = 0"
+  proof -
+    have "(\<Sum>v\<in>V. U v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v - \<beta> v *\<^sub>R v)"
+      unfolding U_def by (simp add: scaleR_diff_left)
+    also have "... = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<beta> v *\<^sub>R v)"
+      by (rule sum_subtractf)
+    also have "... = 0" using h_eq by (by100 simp)
+    finally show ?thesis .
+  qed
+  show ?thesis
+  proof
+    fix w assume hw: "w \<in> V"
+    show "\<alpha> w = \<beta> w"
+    proof (rule ccontr)
+      assume h_neq: "\<alpha> w \<noteq> \<beta> w"
+      hence h_Uw_ne: "U w \<noteq> 0" unfolding U_def by (by100 simp)
+      have h_dep: "affine_dependent V"
+        unfolding affine_dependent_explicit_finite[OF hV_fin]
+        using hU_sum hU_vec hw h_Uw_ne by (by100 blast)
+      thus False using hV_AI by (by100 blast)
+    qed
+  qed
+qed
+
+(** Step 5.6d.b: every point of a chain-simplex \<sigma>_c lies in rel_interior
+    of some cell A in set c. (This is the carrier identification.)
+    Proof: rev_induct on c.
+    - Base c = []: vacuous (flag is non-empty).
+    - Step c = c0 @ [A]:
+      x \<in> conv_hull(V_c0 \<union> {b A}). By convex_hull_insert,
+      x = u·b(A) + v·y with u,v\<ge>0, u+v=1, y \<in> conv_hull V_c0.
+      * If c0 = []: y in conv hull {} (empty case handled separately).
+      * If u = 0: x = y \<in> chain_simplex(c0); IH gives A' \<in> set c0.
+      * If u = 1: x = b(A) \<in> rel_interior(A).
+      * If u \<in> (0,1): all b(A_i) for A_i \<in> set c0 are in A
+        (since A_i \<subset> A by chain); y \<in> conv hull V_c0 \<subseteq> A;
+        rel_interior_closure_convex_segment gives x \<in> rel_interior(A). **)
+lemma geotop_chain_simplex_carrier_in_set:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "\<forall>x c. c \<in> geotop_cell_flags C \<longrightarrow> x \<in> geotop_cell_chain_simplex c \<longrightarrow>
+                (\<exists>A \<in> set c. x \<in> rel_interior A)"
+proof (intro allI impI)
+  fix x c
+  assume hc: "c \<in> geotop_cell_flags C"
+  assume hx: "x \<in> geotop_cell_chain_simplex c"
+  show "\<exists>A \<in> set c. x \<in> rel_interior A"
+    using hc hx
+  proof (induct c arbitrary: x rule: rev_induct)
+    case Nil
+    have "[] \<in> geotop_cell_flags C" using Nil.prems(1) by (by100 blast)
+    then have False unfolding geotop_cell_flags_def by (by100 simp)
+    thus ?case by (by100 blast)
+  next
+    case (snoc A c0)
+    have hc_flag: "(c0 @ [A]) \<in> geotop_cell_flags C" using snoc.prems(1) by (by100 blast)
+    have hx_in: "x \<in> geotop_cell_chain_simplex (c0 @ [A])"
+      using snoc.prems(2) by (by100 blast)
+    have h_set_c: "set (c0 @ [A]) \<subseteq> C"
+      using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+    have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (c0 @ [A])"
+      using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+    have hA_in_C: "A \<in> C" using h_set_c by (by100 simp)
+    have hA_cell: "geotop_cell A"
+      using hC hA_in_C unfolding geotop_cell_complex_def by (by100 blast)
+    have hA_conv: "convex A" by (rule geotop_cell_convex[OF hA_cell])
+    have hA_compact: "compact A" by (rule geotop_cell_compact[OF hA_cell])
+    have hA_closed: "closed A" using hA_compact compact_imp_closed by (by100 blast)
+    have h_bA_ri: "geotop_cell_barycenter A \<in> rel_interior A"
+      by (rule geotop_cell_barycenter_in_rel_interior[OF hA_cell])
+    show ?case
+    proof (cases "c0 = []")
+      case h_c0_e: True
+      (* c = [A], chain_simplex = conv hull {b A} = {b A}, x = b A *)
+      have h_app: "c0 @ [A] = [A]" using h_c0_e by (by100 simp)
+      have h_chain_eq: "geotop_cell_chain_simplex (c0 @ [A])
+                          = {geotop_cell_barycenter A}"
+        unfolding geotop_cell_chain_simplex_def
+        using h_app by (by100 simp)
+      have h_x_eq: "x = geotop_cell_barycenter A"
+        using hx_in h_chain_eq by (by100 simp)
+      have h_x_ri: "x \<in> rel_interior A" using h_x_eq h_bA_ri by (by100 simp)
+      have hA_in: "A \<in> set (c0 @ [A])" by (by100 simp)
+      show ?thesis using h_x_ri hA_in by (by100 blast)
+    next
+      case h_c0_ne: False
+      (* c0 is a flag *)
+      have hc0_flag: "c0 \<in> geotop_cell_flags C"
+        by (rule geotop_cell_flags_init[OF hc_flag h_c0_ne])
+      (* All cells in c0 are properly contained in A *)
+      have h_chain: "\<forall>X \<in> set c0. X \<subset> A"
+        using h_sorted unfolding sorted_wrt_append by (by100 simp)
+      (* Image structure: V_c = V_c0 \<union> {b A} *)
+      have h_set_un: "set (c0 @ [A]) = set c0 \<union> {A}" by (by100 simp)
+      have h_img_un: "geotop_cell_barycenter ` set (c0 @ [A])
+                        = insert (geotop_cell_barycenter A)
+                                 (geotop_cell_barycenter ` set c0)"
+        using h_set_un by (by100 simp)
+      have h_set_c0_ne: "set c0 \<noteq> {}" using h_c0_ne by (by100 simp)
+      have h_V_c0_ne: "geotop_cell_barycenter ` set c0 \<noteq> {}"
+        using h_set_c0_ne by (by100 simp)
+      (* Apply convex_hull_insert *)
+      have h_chain_eq: "geotop_cell_chain_simplex (c0 @ [A])
+                         = convex hull (insert (geotop_cell_barycenter A)
+                                               (geotop_cell_barycenter ` set c0))"
+        unfolding geotop_cell_chain_simplex_def using h_img_un by (by100 simp)
+      have h_x_in_insert: "x \<in> convex hull (insert (geotop_cell_barycenter A)
+                                                  (geotop_cell_barycenter ` set c0))"
+        using hx_in h_chain_eq by (by100 simp)
+      have h_decomp: "x \<in> {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
+                            u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
+                            \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
+        using h_x_in_insert
+              convex_hull_insert[OF h_V_c0_ne,
+                of "geotop_cell_barycenter A"]
+        by (by100 simp)
+      obtain u v y where hu: "u \<ge> 0" and hv: "v \<ge> 0" and huv: "u + v = 1"
+                     and hy_hull: "y \<in> convex hull (geotop_cell_barycenter ` set c0)"
+                     and hx_eq: "x = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
+        using h_decomp by (by100 blast)
+      have hy_chain: "y \<in> geotop_cell_chain_simplex c0"
+        using hy_hull unfolding geotop_cell_chain_simplex_def by (by100 simp)
+      (* All barycenters of c0 are in A (chain) *)
+      have h_bary_sub_A: "geotop_cell_barycenter ` set c0 \<subseteq> A"
+      proof
+        fix b assume hb: "b \<in> geotop_cell_barycenter ` set c0"
+        obtain X where hX: "X \<in> set c0" and hb_eq: "b = geotop_cell_barycenter X"
+          using hb by (by100 blast)
+        have hX_sub_A: "X \<subset> A" using hX h_chain by (by100 blast)
+        have hX_in_set_c: "X \<in> set (c0 @ [A])" using hX by (by100 simp)
+        have hX_C: "X \<in> C" using hX_in_set_c h_set_c by (by100 blast)
+        have hX_cell: "geotop_cell X"
+          using hC hX_C unfolding geotop_cell_complex_def by (by100 blast)
+        have hbX_X: "geotop_cell_barycenter X \<in> X"
+          by (rule geotop_cell_barycenter_in_cell[OF hX_cell])
+        have hb_X: "b \<in> X" using hb_eq hbX_X by (by100 simp)
+        show "b \<in> A" using hb_X hX_sub_A by (by100 blast)
+      qed
+      have hy_in_A: "y \<in> A"
+      proof -
+        have hA_eq_hull: "convex hull A = A"
+          by (rule iffD2[OF convex_hull_eq hA_conv])
+        have h_bary_sub_hull: "geotop_cell_barycenter ` set c0 \<subseteq> convex hull A"
+          using h_bary_sub_A hA_eq_hull by (by100 simp)
+        have h_hull_sub: "convex hull (geotop_cell_barycenter ` set c0) \<subseteq> A"
+          using convex_hull_subset[OF h_bary_sub_hull] hA_eq_hull by (by100 simp)
+        show ?thesis using hy_hull h_hull_sub by (by100 blast)
+      qed
+      have hA_eq_clos: "closure A = A" using hA_closed by (by100 simp)
+      show ?thesis
+      proof (cases "u = 0")
+        case h_u_zero: True
+        have h_v_one: "v = 1" using huv h_u_zero by (by100 simp)
+        have h_x_eq_y: "x = y"
+          using hx_eq h_u_zero h_v_one by (by100 simp)
+        have h_y_chain: "y \<in> geotop_cell_chain_simplex c0"
+          using hy_chain by (by100 simp)
+        have h_IH: "\<exists>A' \<in> set c0. y \<in> rel_interior A'"
+          using snoc.hyps[OF hc0_flag h_y_chain] by (by100 blast)
+        obtain A' where hA': "A' \<in> set c0" and hy_ri: "y \<in> rel_interior A'"
+          using h_IH by (by100 blast)
+        have hA'_in: "A' \<in> set (c0 @ [A])" using hA' by (by100 simp)
+        have hx_ri: "x \<in> rel_interior A'" using h_x_eq_y hy_ri by (by100 simp)
+        show ?thesis using hA'_in hx_ri by (by100 blast)
+      next
+        case h_u_nz: False
+        show ?thesis
+        proof (cases "u = 1")
+          case h_u_one: True
+          have h_v_zero: "v = 0" using huv h_u_one by (by100 simp)
+          have h_x_eq_bA: "x = geotop_cell_barycenter A"
+            using hx_eq h_u_one h_v_zero by (by100 simp)
+          have hx_ri: "x \<in> rel_interior A" using h_x_eq_bA h_bA_ri by (by100 simp)
+          have hA_in: "A \<in> set (c0 @ [A])" by (by100 simp)
+          show ?thesis using hA_in hx_ri by (by100 blast)
+        next
+          case h_u_lt: False
+          have hu_pos: "0 < u" using hu h_u_nz by (by100 simp)
+          have hu_lt1: "u < 1"
+          proof (rule ccontr)
+            assume "\<not> u < 1"
+            then have "1 \<le> u" by (by100 simp)
+            then have "u = 1" using huv hv by (by100 simp)
+            thus False using h_u_lt by (by100 simp)
+          qed
+          have hv_pos: "0 < v" using huv hu_lt1 by (by100 simp)
+          have hv_lt1: "v < 1" using huv hu_pos by (by100 simp)
+          have hy_clos: "y \<in> closure A" using hy_in_A hA_eq_clos by (by100 simp)
+          have hx_ri: "x \<in> rel_interior A"
+          proof (cases "geotop_cell_barycenter A = y")
+            case h_eq_by: True
+            have h_combo: "u *\<^sub>R y + v *\<^sub>R y = (u + v) *\<^sub>R y"
+              using scaleR_left_distrib[of u v y, symmetric] by (by100 simp)
+            have hx_eq_y: "x = y"
+              using hx_eq h_eq_by h_combo huv by (by100 simp)
+            show ?thesis using hx_eq_y h_eq_by h_bA_ri by (by100 simp)
+          next
+            case h_neq_by: False
+            have h_open_seg: "open_segment (geotop_cell_barycenter A) y
+                                \<subseteq> rel_interior A"
+              by (rule rel_interior_closure_convex_segment
+                      [OF hA_conv h_bA_ri hy_clos])
+            have hx_eq_alt: "x = (1 - v) *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
+              using hx_eq huv by (by100 simp)
+            have hx_in_seg: "x \<in> open_segment (geotop_cell_barycenter A) y"
+              using in_segment(2) hx_eq_alt hv_pos hv_lt1 h_neq_by by (by100 metis)
+            show ?thesis using hx_in_seg h_open_seg by (by100 blast)
+          qed
+          have hA_in: "A \<in> set (c0 @ [A])" by (by100 simp)
+          show ?thesis using hA_in hx_ri by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
