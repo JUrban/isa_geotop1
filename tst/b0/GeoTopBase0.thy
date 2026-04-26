@@ -11552,19 +11552,164 @@ proof -
   have hF2_face_F2: "F2 face_of F2" by (rule face_of_refl[OF hF2_conv])
   (** F1 \<inter> F2 face_of F1 by face_of_Int (HOL-Analysis): face of A intersect
       face of A is a face of A. But F1 and F2 are faces of DIFFERENT cells. **)
-  (** PROPER ARGUMENT (per ANSWER_REPORT §16): F1 \<inter> F2 is the intersection
-      of two faces of two cells. The classical PL fact is that the
-      intersection of faces is a face of each, when the faces lie inside
-      well-aligned cells.
-
-      For the overlay complex, both F1 and F2 lie in the COMMON polyhedron
-      |L1| = |L2|. The convex sets F1 and F2 are polytopes. Their intersection
-      F1 \<inter> F2 is a polytope. By a HOL-Analysis lemma, F1 \<inter> F2 face_of F1 (and
-      F2) when... hmm, this is the difficult direction.
-
-      For now, leave as a sorry'd claim documenting the geometric fact.
-      Will need to either find a HOL-Analysis lemma or prove from scratch. **)
-  show ?thesis sorry
+  (** PROOF: F1 face_of A1 = \<sigma>1 \<inter> \<tau>1, F2 face_of A2 = \<sigma>2 \<inter> \<tau>2.
+      For F1 \<inter> F2 face_of F1: take a, b \<in> F1 with x \<in> F1 \<inter> F2 and
+      x \<in> open_segment(a, b). Use:
+      - x \<in> \<sigma>1 \<inter> \<sigma>2 (since x \<in> A1 \<inter> A2)
+      - a, b \<in> \<sigma>1 (since F1 \<subseteq> A1 \<subseteq> \<sigma>1)
+      - K.2 of L1: \<sigma>1 \<inter> \<sigma>2 face_of \<sigma>1, hence a, b \<in> \<sigma>1 \<inter> \<sigma>2.
+      - Similarly a, b \<in> \<tau>1 \<inter> \<tau>2.
+      - So a, b \<in> A2. By F2 face_of A2, a, b \<in> F2. **)
+  obtain A1 where hA1: "A1 \<in> geotop_overlay_cells L1 L2"
+              and hF1_face_A1: "geotop_cell_face F1 A1"
+    using hF1 unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  obtain A2 where hA2: "A2 \<in> geotop_overlay_cells L1 L2"
+              and hF2_face_A2: "geotop_cell_face F2 A2"
+    using hF2 unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  obtain \<sigma>1 \<tau>1 where h\<sigma>1: "\<sigma>1 \<in> L1" and h\<tau>1: "\<tau>1 \<in> L2"
+                  and hA1_eq: "A1 = \<sigma>1 \<inter> \<tau>1"
+    using hA1 unfolding geotop_overlay_cells_def by (by100 blast)
+  obtain \<sigma>2 \<tau>2 where h\<sigma>2: "\<sigma>2 \<in> L1" and h\<tau>2: "\<tau>2 \<in> L2"
+                  and hA2_eq: "A2 = \<sigma>2 \<inter> \<tau>2"
+    using hA2 unfolding geotop_overlay_cells_def by (by100 blast)
+  have hF1_face_HOL: "F1 face_of A1"
+    using hF1_face_A1 unfolding geotop_cell_face_def by (by100 blast)
+  have hF2_face_HOL: "F2 face_of A2"
+    using hF2_face_A2 unfolding geotop_cell_face_def by (by100 blast)
+  have hF1_sub_A1: "F1 \<subseteq> A1" using face_of_imp_subset[OF hF1_face_HOL] by (by100 simp)
+  have hF2_sub_A2: "F2 \<subseteq> A2" using face_of_imp_subset[OF hF2_face_HOL] by (by100 simp)
+  (** L1 K.2: \<sigma>1 \<inter> \<sigma>2 is empty or face of \<sigma>1 (and \<sigma>2). **)
+  have hL1_K2: "\<forall>\<sigma>\<in>L1. \<forall>\<sigma>'\<in>L1. \<sigma> \<inter> \<sigma>' \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<sigma> \<inter> \<sigma>') \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<sigma>') \<sigma>'"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+              hL1[unfolded geotop_is_complex_def]]]])
+  have hL2_K2: "\<forall>\<tau>\<in>L2. \<forall>\<tau>'\<in>L2. \<tau> \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<tau> \<inter> \<tau>') \<tau> \<and> geotop_is_face (\<tau> \<inter> \<tau>') \<tau>'"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+              hL2[unfolded geotop_is_complex_def]]]])
+  (** Show F1 \<inter> F2 face_of F1 via the open-segment criterion. **)
+  have hF1_int_F2_sub_F1: "F1 \<inter> F2 \<subseteq> F1" by (by100 blast)
+  have hF1_conv: "convex F1" by (rule geotop_cell_convex[OF hF1_cell])
+  have hF2_conv: "convex F2" by (rule geotop_cell_convex[OF hF2_cell])
+  have hF1_int_F2_conv: "convex (F1 \<inter> F2)" using hF1_conv hF2_conv convex_Int by (by100 blast)
+  have hF_face_F1_seg:
+    "\<forall>a\<in>F1. \<forall>b\<in>F1. \<forall>x\<in>F1\<inter>F2. x \<in> open_segment a b \<longrightarrow> a \<in> F1\<inter>F2 \<and> b \<in> F1\<inter>F2"
+  proof (intro ballI impI)
+    fix a b x assume ha: "a \<in> F1" and hb: "b \<in> F1"
+                  and hx: "x \<in> F1 \<inter> F2" and h_open: "x \<in> open_segment a b"
+    (** ab \<subseteq> F1 \<subseteq> A1 \<subseteq> \<sigma>1 (and \<tau>1). **)
+    have ha_F1: "a \<in> F1" using ha by (by100 simp)
+    have hb_F1: "b \<in> F1" using hb by (by100 simp)
+    have ha_A1: "a \<in> A1" using ha_F1 hF1_sub_A1 by (by100 blast)
+    have hb_A1: "b \<in> A1" using hb_F1 hF1_sub_A1 by (by100 blast)
+    have ha_\<sigma>1: "a \<in> \<sigma>1" using ha_A1 hA1_eq by (by100 simp)
+    have hb_\<sigma>1: "b \<in> \<sigma>1" using hb_A1 hA1_eq by (by100 simp)
+    have ha_\<tau>1: "a \<in> \<tau>1" using ha_A1 hA1_eq by (by100 simp)
+    have hb_\<tau>1: "b \<in> \<tau>1" using hb_A1 hA1_eq by (by100 simp)
+    have hx_F1: "x \<in> F1" using hx by (by100 blast)
+    have hx_F2: "x \<in> F2" using hx by (by100 blast)
+    have hx_A1: "x \<in> A1" using hx_F1 hF1_sub_A1 by (by100 blast)
+    have hx_A2: "x \<in> A2" using hx_F2 hF2_sub_A2 by (by100 blast)
+    have hx_\<sigma>1: "x \<in> \<sigma>1" using hx_A1 hA1_eq by (by100 simp)
+    have hx_\<sigma>2: "x \<in> \<sigma>2" using hx_A2 hA2_eq by (by100 simp)
+    have hx_\<tau>1: "x \<in> \<tau>1" using hx_A1 hA1_eq by (by100 simp)
+    have hx_\<tau>2: "x \<in> \<tau>2" using hx_A2 hA2_eq by (by100 simp)
+    (** \<sigma>1 \<inter> \<sigma>2 is non-empty (contains x), hence common face by L1 K.2. **)
+    have h\<sigma>12_ne: "\<sigma>1 \<inter> \<sigma>2 \<noteq> {}" using hx_\<sigma>1 hx_\<sigma>2 by (by100 blast)
+    have h\<sigma>12_face_HOL_\<sigma>1: "(\<sigma>1 \<inter> \<sigma>2) face_of \<sigma>1"
+      by (rule geotop_complex_inter_face_HOL[OF hL1 h\<sigma>1 h\<sigma>2 h\<sigma>12_ne])
+    (** Apply face_of to ab inside \<sigma>1: a, b \<in> \<sigma>1, x \<in> ab interior, x \<in> \<sigma>1 \<inter> \<sigma>2.
+        Hence a, b \<in> \<sigma>1 \<inter> \<sigma>2. **)
+    have hx_\<sigma>12: "x \<in> \<sigma>1 \<inter> \<sigma>2" using hx_\<sigma>1 hx_\<sigma>2 by (by100 blast)
+    have ha_\<sigma>12: "a \<in> \<sigma>1 \<inter> \<sigma>2" and hb_\<sigma>12: "b \<in> \<sigma>1 \<inter> \<sigma>2"
+      using face_ofD[OF h\<sigma>12_face_HOL_\<sigma>1 h_open ha_\<sigma>1 hb_\<sigma>1 hx_\<sigma>12] by (by100 blast)+
+    have ha_\<sigma>2: "a \<in> \<sigma>2" using ha_\<sigma>12 by (by100 blast)
+    have hb_\<sigma>2: "b \<in> \<sigma>2" using hb_\<sigma>12 by (by100 blast)
+    (** Similarly for \<tau>: a, b \<in> \<tau>2. **)
+    have h\<tau>12_ne: "\<tau>1 \<inter> \<tau>2 \<noteq> {}" using hx_\<tau>1 hx_\<tau>2 by (by100 blast)
+    have h\<tau>12_face_HOL_\<tau>1: "(\<tau>1 \<inter> \<tau>2) face_of \<tau>1"
+      by (rule geotop_complex_inter_face_HOL[OF hL2 h\<tau>1 h\<tau>2 h\<tau>12_ne])
+    have hx_\<tau>12: "x \<in> \<tau>1 \<inter> \<tau>2" using hx_\<tau>1 hx_\<tau>2 by (by100 blast)
+    have ha_\<tau>12: "a \<in> \<tau>1 \<inter> \<tau>2" and hb_\<tau>12: "b \<in> \<tau>1 \<inter> \<tau>2"
+      using face_ofD[OF h\<tau>12_face_HOL_\<tau>1 h_open ha_\<tau>1 hb_\<tau>1 hx_\<tau>12] by (by100 blast)+
+    have ha_\<tau>2: "a \<in> \<tau>2" using ha_\<tau>12 by (by100 blast)
+    have hb_\<tau>2: "b \<in> \<tau>2" using hb_\<tau>12 by (by100 blast)
+    (** Hence a, b \<in> A2 = \<sigma>2 \<inter> \<tau>2. **)
+    have ha_A2: "a \<in> A2" using ha_\<sigma>2 ha_\<tau>2 hA2_eq by (by100 simp)
+    have hb_A2: "b \<in> A2" using hb_\<sigma>2 hb_\<tau>2 hA2_eq by (by100 simp)
+    (** Apply F2 face_of A2: a, b \<in> F2. **)
+    have ha_F2: "a \<in> F2" and hb_F2: "b \<in> F2"
+      using face_ofD[OF hF2_face_HOL h_open ha_A2 hb_A2 hx_F2] by (by100 blast)+
+    show "a \<in> F1 \<inter> F2 \<and> b \<in> F1 \<inter> F2"
+      using ha_F1 hb_F1 ha_F2 hb_F2 by (by100 blast)
+  qed
+  have hF_face_F1: "(F1 \<inter> F2) face_of F1"
+    unfolding face_of_def
+    using hF1_int_F2_sub_F1 hF1_int_F2_conv hF_face_F1_seg by (by100 blast)
+  (** Symmetric argument for F1 \<inter> F2 face_of F2. **)
+  have hF_face_F2_seg:
+    "\<forall>a\<in>F2. \<forall>b\<in>F2. \<forall>x\<in>F1\<inter>F2. x \<in> open_segment a b \<longrightarrow> a \<in> F1\<inter>F2 \<and> b \<in> F1\<inter>F2"
+  proof (intro ballI impI)
+    fix a b x assume ha: "a \<in> F2" and hb: "b \<in> F2"
+                  and hx: "x \<in> F1 \<inter> F2" and h_open: "x \<in> open_segment a b"
+    have ha_A2: "a \<in> A2" using ha hF2_sub_A2 by (by100 blast)
+    have hb_A2: "b \<in> A2" using hb hF2_sub_A2 by (by100 blast)
+    have ha_\<sigma>2: "a \<in> \<sigma>2" using ha_A2 hA2_eq by (by100 simp)
+    have hb_\<sigma>2: "b \<in> \<sigma>2" using hb_A2 hA2_eq by (by100 simp)
+    have ha_\<tau>2: "a \<in> \<tau>2" using ha_A2 hA2_eq by (by100 simp)
+    have hb_\<tau>2: "b \<in> \<tau>2" using hb_A2 hA2_eq by (by100 simp)
+    have hx_F1: "x \<in> F1" using hx by (by100 blast)
+    have hx_F2: "x \<in> F2" using hx by (by100 blast)
+    have hx_A1: "x \<in> A1" using hx_F1 hF1_sub_A1 by (by100 blast)
+    have hx_A2: "x \<in> A2" using hx_F2 hF2_sub_A2 by (by100 blast)
+    have hx_\<sigma>1: "x \<in> \<sigma>1" using hx_A1 hA1_eq by (by100 simp)
+    have hx_\<sigma>2: "x \<in> \<sigma>2" using hx_A2 hA2_eq by (by100 simp)
+    have hx_\<tau>1: "x \<in> \<tau>1" using hx_A1 hA1_eq by (by100 simp)
+    have hx_\<tau>2: "x \<in> \<tau>2" using hx_A2 hA2_eq by (by100 simp)
+    have h\<sigma>12_ne: "\<sigma>1 \<inter> \<sigma>2 \<noteq> {}" using hx_\<sigma>1 hx_\<sigma>2 by (by100 blast)
+    have h\<sigma>12_face_HOL_\<sigma>2: "(\<sigma>1 \<inter> \<sigma>2) face_of \<sigma>2"
+    proof -
+      have h_eq: "\<sigma>1 \<inter> \<sigma>2 = \<sigma>2 \<inter> \<sigma>1" by (by100 blast)
+      have h_ne2: "\<sigma>2 \<inter> \<sigma>1 \<noteq> {}" using h\<sigma>12_ne by (by100 blast)
+      have "(\<sigma>2 \<inter> \<sigma>1) face_of \<sigma>2"
+        by (rule geotop_complex_inter_face_HOL[OF hL1 h\<sigma>2 h\<sigma>1 h_ne2])
+      thus ?thesis using h_eq by (by100 simp)
+    qed
+    have hx_\<sigma>12: "x \<in> \<sigma>1 \<inter> \<sigma>2" using hx_\<sigma>1 hx_\<sigma>2 by (by100 blast)
+    have ha_\<sigma>12: "a \<in> \<sigma>1 \<inter> \<sigma>2" and hb_\<sigma>12: "b \<in> \<sigma>1 \<inter> \<sigma>2"
+      using face_ofD[OF h\<sigma>12_face_HOL_\<sigma>2 h_open ha_\<sigma>2 hb_\<sigma>2 hx_\<sigma>12] by (by100 blast)+
+    have ha_\<sigma>1: "a \<in> \<sigma>1" using ha_\<sigma>12 by (by100 blast)
+    have hb_\<sigma>1: "b \<in> \<sigma>1" using hb_\<sigma>12 by (by100 blast)
+    have h\<tau>12_ne: "\<tau>1 \<inter> \<tau>2 \<noteq> {}" using hx_\<tau>1 hx_\<tau>2 by (by100 blast)
+    have h\<tau>12_face_HOL_\<tau>2: "(\<tau>1 \<inter> \<tau>2) face_of \<tau>2"
+    proof -
+      have h_eq: "\<tau>1 \<inter> \<tau>2 = \<tau>2 \<inter> \<tau>1" by (by100 blast)
+      have h_ne2: "\<tau>2 \<inter> \<tau>1 \<noteq> {}" using h\<tau>12_ne by (by100 blast)
+      have "(\<tau>2 \<inter> \<tau>1) face_of \<tau>2"
+        by (rule geotop_complex_inter_face_HOL[OF hL2 h\<tau>2 h\<tau>1 h_ne2])
+      thus ?thesis using h_eq by (by100 simp)
+    qed
+    have hx_\<tau>12: "x \<in> \<tau>1 \<inter> \<tau>2" using hx_\<tau>1 hx_\<tau>2 by (by100 blast)
+    have ha_\<tau>12: "a \<in> \<tau>1 \<inter> \<tau>2" and hb_\<tau>12: "b \<in> \<tau>1 \<inter> \<tau>2"
+      using face_ofD[OF h\<tau>12_face_HOL_\<tau>2 h_open ha_\<tau>2 hb_\<tau>2 hx_\<tau>12] by (by100 blast)+
+    have ha_\<tau>1: "a \<in> \<tau>1" using ha_\<tau>12 by (by100 blast)
+    have hb_\<tau>1: "b \<in> \<tau>1" using hb_\<tau>12 by (by100 blast)
+    have ha_A1: "a \<in> A1" using ha_\<sigma>1 ha_\<tau>1 hA1_eq by (by100 simp)
+    have hb_A1: "b \<in> A1" using hb_\<sigma>1 hb_\<tau>1 hA1_eq by (by100 simp)
+    have ha_F1: "a \<in> F1" and hb_F1: "b \<in> F1"
+      using face_ofD[OF hF1_face_HOL h_open ha_A1 hb_A1 hx_F1] by (by100 blast)+
+    show "a \<in> F1 \<inter> F2 \<and> b \<in> F1 \<inter> F2"
+      using ha_F1 hb_F1 ha hb by (by100 blast)
+  qed
+  have hF_face_F2: "(F1 \<inter> F2) face_of F2"
+    unfolding face_of_def
+    using hF1_int_F2_conv hF_face_F2_seg by (by100 blast)
+  have h_int_ne_actual: "F1 \<inter> F2 \<noteq> {}" using h_int_ne by (by100 simp)
+  show ?thesis
+    unfolding geotop_cell_face_def
+    using hF1_cell hF2_cell h_int_ne_actual hF_face_F1 hF_face_F2 by (by100 blast)
 qed
 
 (** Step 4.12: Overlay complex is a cell complex. **)
