@@ -9939,6 +9939,37 @@ proof -
   show ?thesis using h_refines h\<sigma>'K' unfolding geotop_refines_def by (by100 blast)
 qed
 
+(** PLAN3 WEEK 1 (W1.1): Sd^0 K = K. Trivial unfold. **)
+lemma geotop_iterated_Sd_zero:
+  fixes K :: "'a::real_normed_vector set set"
+  shows "geotop_iterated_Sd 0 K = K"
+  by (by100 simp)
+
+(** PLAN3 WEEK 1 (W1.2): For \<tau> \<in> Sd^1 K = Sd K, extract the underlying
+    K-flag c such that V_\<tau> = barycenter ` (set c). Uses the strengthened
+    chain-simplex clause in geotop_is_barycentric_Sd (W1.0). **)
+lemma geotop_Sd_simplex_chain_form:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<tau>: "\<tau> \<in> geotop_iterated_Sd 1 K"
+  shows "\<exists>c. c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c
+              \<and> \<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
+proof -
+  have h\<tau>_Sd: "\<tau> \<in> geotop_Sd K" using h\<tau> by (by100 simp)
+  have h_bary: "geotop_is_barycentric_Sd (geotop_Sd K) K"
+    by (rule geotop_Sd_is_barycentric[OF hK hKfin])
+  have h_chain_form:
+    "geotop_Sd K = {geotop_convex_hull (geotop_barycenter ` set c) | c.
+                     c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+    by (rule conjunct2[OF conjunct2[OF conjunct2[OF
+              h_bary[unfolded geotop_is_barycentric_Sd_def]]]])
+  have h\<tau>_in_set: "\<tau> \<in> {geotop_convex_hull (geotop_barycenter ` set c) | c.
+                         c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+    using h\<tau>_Sd h_chain_form by (by100 simp)
+  show ?thesis using h\<tau>_in_set by (by100 blast)
+qed
+
 (** USEFUL TRUE COROLLARY: For K finite complex and tau in iterated Sd^m K,
     tau is contained in some K-simplex. Foundational for the Munkres-style
     fix of iterated_Sd_refines_subdivision. **)
