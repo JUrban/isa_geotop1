@@ -11349,6 +11349,330 @@ qed
 
 (** End Phase 3. ============================================ **)
 
+(** ============================================================
+    PLAN3 Phase 4: Overlay cell complex
+    ============================================================
+    Per ANSWER_REPORT.md, the overlay construction takes pairwise
+    cell intersections, then closes under faces, to get a finite
+    cell complex covering the common polyhedron and refining both
+    L1 and L2. **)
+
+(** Step 4.1: Raw overlay cells. **)
+definition geotop_overlay_cells ::
+  "'a::euclidean_space set set \<Rightarrow> 'a set set \<Rightarrow> 'a set set" where
+  "geotop_overlay_cells L1 L2 =
+     {C. \<exists>\<sigma>\<in>L1. \<exists>\<tau>\<in>L2. C = \<sigma> \<inter> \<tau> \<and> C \<noteq> {}}"
+
+(** Step 4.2: Face closure operation. **)
+definition geotop_face_closure ::
+  "'a::euclidean_space set set \<Rightarrow> 'a set set" where
+  "geotop_face_closure C = {F. \<exists>A\<in>C. geotop_cell_face F A}"
+
+(** Step 4.3: Overlay complex (face-closed overlay). **)
+definition geotop_overlay_complex ::
+  "'a::euclidean_space set set \<Rightarrow> 'a set set \<Rightarrow> 'a set set" where
+  "geotop_overlay_complex L1 L2 = geotop_face_closure (geotop_overlay_cells L1 L2)"
+
+(** Step 4.4: Raw cells are cells. **)
+lemma geotop_overlay_cells_are_cells:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hC: "C \<in> geotop_overlay_cells L1 L2"
+  shows "geotop_cell C"
+proof -
+  obtain \<sigma> \<tau> where h\<sigma>: "\<sigma> \<in> L1" and h\<tau>: "\<tau> \<in> L2"
+                 and hC_eq: "C = \<sigma> \<inter> \<tau>" and hC_ne: "C \<noteq> {}"
+    using hC unfolding geotop_overlay_cells_def by (by100 blast)
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+    using h\<sigma> conjunct1[OF hL1[unfolded geotop_is_complex_def]] by (by100 blast)
+  have h\<tau>_simp: "geotop_is_simplex \<tau>"
+    using h\<tau> conjunct1[OF hL2[unfolded geotop_is_complex_def]] by (by100 blast)
+  have h\<sigma>_cell: "geotop_cell \<sigma>" by (rule geotop_simplex_imp_cell[OF h\<sigma>_simp])
+  have h\<tau>_cell: "geotop_cell \<tau>" by (rule geotop_simplex_imp_cell[OF h\<tau>_simp])
+  have h\<sigma>\<tau>_ne: "\<sigma> \<inter> \<tau> \<noteq> {}" using hC_ne hC_eq by (by100 simp)
+  have h\<sigma>\<tau>_cell: "geotop_cell (\<sigma> \<inter> \<tau>)"
+    by (rule geotop_cell_intersection[OF h\<sigma>_cell h\<tau>_cell h\<sigma>\<tau>_ne])
+  show ?thesis using h\<sigma>\<tau>_cell hC_eq by (by100 simp)
+qed
+
+(** Step 4.5: Raw cells finite. **)
+lemma geotop_overlay_cells_finite:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1fin: "finite L1"
+  assumes hL2fin: "finite L2"
+  shows "finite (geotop_overlay_cells L1 L2)"
+proof -
+  have h_image_sub:
+    "geotop_overlay_cells L1 L2 \<subseteq> (\<lambda>(\<sigma>, \<tau>). \<sigma> \<inter> \<tau>) ` (L1 \<times> L2)"
+    unfolding geotop_overlay_cells_def by (by100 blast)
+  have h_prod_fin: "finite (L1 \<times> L2)" using hL1fin hL2fin by (by100 simp)
+  have h_image_fin: "finite ((\<lambda>(\<sigma>, \<tau>). \<sigma> \<inter> \<tau>) ` (L1 \<times> L2))"
+    using h_prod_fin by (by100 simp)
+  show ?thesis using h_image_sub h_image_fin finite_subset by (by100 blast)
+qed
+
+(** Step 4.6: Raw cells cover common polyhedron. **)
+lemma geotop_overlay_cells_union:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  shows "\<Union> (geotop_overlay_cells L1 L2) = geotop_polyhedron L1"
+proof
+  show "\<Union> (geotop_overlay_cells L1 L2) \<subseteq> geotop_polyhedron L1"
+  proof
+    fix x assume hx: "x \<in> \<Union> (geotop_overlay_cells L1 L2)"
+    obtain C where hC: "C \<in> geotop_overlay_cells L1 L2" and hxC: "x \<in> C"
+      using hx by (by100 blast)
+    obtain \<sigma> \<tau> where h\<sigma>: "\<sigma> \<in> L1" and hC_eq: "C = \<sigma> \<inter> \<tau>"
+      using hC unfolding geotop_overlay_cells_def by (by100 blast)
+    have hx\<sigma>: "x \<in> \<sigma>" using hxC hC_eq by (by100 blast)
+    show "x \<in> geotop_polyhedron L1"
+      unfolding geotop_polyhedron_def using h\<sigma> hx\<sigma> by (by100 blast)
+  qed
+next
+  show "geotop_polyhedron L1 \<subseteq> \<Union> (geotop_overlay_cells L1 L2)"
+  proof
+    fix x assume hx1: "x \<in> geotop_polyhedron L1"
+    have hx2: "x \<in> geotop_polyhedron L2" using hx1 hpoly by (by100 simp)
+    obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L1" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx1 unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<tau> where h\<tau>: "\<tau> \<in> L2" and hx\<tau>: "x \<in> \<tau>"
+      using hx2 unfolding geotop_polyhedron_def by (by100 blast)
+    have hx\<sigma>\<tau>: "x \<in> \<sigma> \<inter> \<tau>" using hx\<sigma> hx\<tau> by (by100 blast)
+    have h\<sigma>\<tau>_ne: "\<sigma> \<inter> \<tau> \<noteq> {}" using hx\<sigma>\<tau> by (by100 blast)
+    have h_in_set: "\<sigma> \<inter> \<tau> \<in> geotop_overlay_cells L1 L2"
+      unfolding geotop_overlay_cells_def using h\<sigma> h\<tau> h\<sigma>\<tau>_ne by (by100 blast)
+    show "x \<in> \<Union> (geotop_overlay_cells L1 L2)"
+      using h_in_set hx\<sigma>\<tau> by (by100 blast)
+  qed
+qed
+
+(** Step 4.7: Raw cells refine left and right. **)
+lemma geotop_overlay_cells_refines_left:
+  assumes "C \<in> geotop_overlay_cells L1 L2"
+  shows "\<exists>\<sigma>\<in>L1. C \<subseteq> \<sigma>"
+  using assms unfolding geotop_overlay_cells_def by (by100 blast)
+
+lemma geotop_overlay_cells_refines_right:
+  assumes "C \<in> geotop_overlay_cells L1 L2"
+  shows "\<exists>\<tau>\<in>L2. C \<subseteq> \<tau>"
+  using assms unfolding geotop_overlay_cells_def by (by100 blast)
+
+(** Step 4.8: Overlay complex is finite (face closure of finite set
+    of cells, each with finitely many faces). **)
+lemma geotop_overlay_complex_finite:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hL1fin: "finite L1"
+  assumes hL2fin: "finite L2"
+  shows "finite (geotop_overlay_complex L1 L2)"
+proof -
+  define R where "R = geotop_overlay_cells L1 L2"
+  have hR_fin: "finite R" unfolding R_def
+    by (rule geotop_overlay_cells_finite[OF hL1fin hL2fin])
+  have h_complex_eq: "geotop_overlay_complex L1 L2 = geotop_face_closure R"
+    unfolding geotop_overlay_complex_def R_def by (by100 simp)
+  (** geotop_face_closure R = \<Union>{F. F is face of A} for A in R. **)
+  have h_closure_eq:
+    "geotop_face_closure R = (\<Union>A\<in>R. {F. geotop_cell_face F A})"
+    unfolding geotop_face_closure_def by (by100 blast)
+  have h_each_fin: "\<forall>A\<in>R. finite {F. geotop_cell_face F A}"
+  proof
+    fix A assume hA: "A \<in> R"
+    have hA_cell: "geotop_cell A"
+      unfolding R_def using hA unfolding R_def
+      by (rule geotop_overlay_cells_are_cells[OF hL1 hL2])
+    show "finite {F. geotop_cell_face F A}"
+      by (rule geotop_cell_finite_faces[OF hA_cell])
+  qed
+  have h_union_fin: "finite (\<Union>A\<in>R. {F. geotop_cell_face F A})"
+    using hR_fin h_each_fin by (by100 simp)
+  show ?thesis using h_complex_eq h_closure_eq h_union_fin by (by100 simp)
+qed
+
+(** Step 4.9: Each face-closure element is a cell. **)
+lemma geotop_overlay_complex_elt_is_cell:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hF: "F \<in> geotop_overlay_complex L1 L2"
+  shows "geotop_cell F"
+proof -
+  obtain A where hA: "A \<in> geotop_overlay_cells L1 L2"
+              and hF_face: "geotop_cell_face F A"
+    using hF unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  have hA_cell: "geotop_cell A"
+    by (rule geotop_overlay_cells_are_cells[OF hL1 hL2 hA])
+  show ?thesis by (rule geotop_cell_face_imp_cell[OF hF_face])
+qed
+
+(** Step 4.10: Overlay complex closed under faces. **)
+lemma geotop_overlay_complex_closed_under_faces:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hF: "F \<in> geotop_overlay_complex L1 L2"
+  assumes hG_face: "geotop_cell_face G F"
+  shows "G \<in> geotop_overlay_complex L1 L2"
+proof -
+  obtain A where hA: "A \<in> geotop_overlay_cells L1 L2"
+              and hF_face_A: "geotop_cell_face F A"
+    using hF unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  have hG_face_A: "geotop_cell_face G A"
+    by (rule geotop_cell_face_trans[OF hG_face hF_face_A])
+  show ?thesis
+    unfolding geotop_overlay_complex_def geotop_face_closure_def
+    using hA hG_face_A by (by100 blast)
+qed
+
+(** Step 4.11: Pairwise intersection of overlay-complex elements
+    is a common cell face (when nonempty).
+
+    Strategy: F1, F2 \<in> overlay_complex are faces of overlay cells
+    A1 = \<sigma>1 \<inter> \<tau>1, A2 = \<sigma>2 \<inter> \<tau>2. F1 \<subseteq> A1, F2 \<subseteq> A2.
+    F1 \<inter> F2 \<subseteq> (\<sigma>1 \<inter> \<tau>1) \<inter> (\<sigma>2 \<inter> \<tau>2) = (\<sigma>1 \<inter> \<sigma>2) \<inter> (\<tau>1 \<inter> \<tau>2).
+
+    For F1 \<inter> F2 to be a common face of F1 and F2, use HOL-Analysis
+    Inter_face_of (face_of_Int_subface or similar). **)
+lemma geotop_overlay_complex_pairwise_face:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hF1: "F1 \<in> geotop_overlay_complex L1 L2"
+  assumes hF2: "F2 \<in> geotop_overlay_complex L1 L2"
+  assumes h_int_ne: "F1 \<inter> F2 \<noteq> {}"
+  shows "geotop_cell_face (F1 \<inter> F2) F1 \<and> geotop_cell_face (F1 \<inter> F2) F2"
+proof -
+  have hF1_cell: "geotop_cell F1" by (rule geotop_overlay_complex_elt_is_cell[OF hL1 hL2 hF1])
+  have hF2_cell: "geotop_cell F2" by (rule geotop_overlay_complex_elt_is_cell[OF hL1 hL2 hF2])
+  have hF1_conv: "convex F1" by (rule geotop_cell_convex[OF hF1_cell])
+  have hF2_conv: "convex F2" by (rule geotop_cell_convex[OF hF2_cell])
+  have hF1_face_F1: "F1 face_of F1" by (rule face_of_refl[OF hF1_conv])
+  have hF2_face_F2: "F2 face_of F2" by (rule face_of_refl[OF hF2_conv])
+  (** F1 \<inter> F2 face_of F1 by face_of_Int (HOL-Analysis): face of A intersect
+      face of A is a face of A. But F1 and F2 are faces of DIFFERENT cells. **)
+  (** PROPER ARGUMENT (per ANSWER_REPORT §16): F1 \<inter> F2 is the intersection
+      of two faces of two cells. The classical PL fact is that the
+      intersection of faces is a face of each, when the faces lie inside
+      well-aligned cells.
+
+      For the overlay complex, both F1 and F2 lie in the COMMON polyhedron
+      |L1| = |L2|. The convex sets F1 and F2 are polytopes. Their intersection
+      F1 \<inter> F2 is a polytope. By a HOL-Analysis lemma, F1 \<inter> F2 face_of F1 (and
+      F2) when... hmm, this is the difficult direction.
+
+      For now, leave as a sorry'd claim documenting the geometric fact.
+      Will need to either find a HOL-Analysis lemma or prove from scratch. **)
+  show ?thesis sorry
+qed
+
+(** Step 4.12: Overlay complex is a cell complex. **)
+lemma geotop_overlay_complex_is_cell_complex:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hL1fin: "finite L1"
+  assumes hL2fin: "finite L2"
+  shows "geotop_cell_complex (geotop_overlay_complex L1 L2)"
+proof -
+  have h_fin: "finite (geotop_overlay_complex L1 L2)"
+    by (rule geotop_overlay_complex_finite[OF hL1 hL2 hL1fin hL2fin])
+  have h_cells: "\<forall>F\<in>geotop_overlay_complex L1 L2. geotop_cell F"
+    using geotop_overlay_complex_elt_is_cell[OF hL1 hL2] by (by100 blast)
+  have h_face_closed:
+    "\<forall>F\<in>geotop_overlay_complex L1 L2. \<forall>G. geotop_cell_face G F
+       \<longrightarrow> G \<in> geotop_overlay_complex L1 L2"
+    using geotop_overlay_complex_closed_under_faces by (by100 blast)
+  have h_pairwise:
+    "\<forall>A\<in>geotop_overlay_complex L1 L2.
+       \<forall>B\<in>geotop_overlay_complex L1 L2.
+         A \<inter> B = {} \<or>
+         (geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B)"
+    using geotop_overlay_complex_pairwise_face[OF hL1 hL2] by (by100 blast)
+  show ?thesis
+    unfolding geotop_cell_complex_def
+    using h_fin h_cells h_face_closed h_pairwise by (by100 blast)
+qed
+
+(** Step 4.13a: Overlay complex polyhedron equals common polyhedron. **)
+lemma geotop_overlay_complex_union:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  shows "geotop_cell_polyhedron (geotop_overlay_complex L1 L2) = geotop_polyhedron L1"
+proof
+  show "geotop_cell_polyhedron (geotop_overlay_complex L1 L2) \<subseteq> geotop_polyhedron L1"
+  proof
+    fix x assume hx: "x \<in> geotop_cell_polyhedron (geotop_overlay_complex L1 L2)"
+    obtain F where hF: "F \<in> geotop_overlay_complex L1 L2" and hxF: "x \<in> F"
+      using hx unfolding geotop_cell_polyhedron_def by (by100 blast)
+    obtain A where hA: "A \<in> geotop_overlay_cells L1 L2"
+                and hF_face: "geotop_cell_face F A"
+      using hF unfolding geotop_overlay_complex_def geotop_face_closure_def
+      by (by100 blast)
+    have hF_sub_A: "F \<subseteq> A" by (rule geotop_cell_face_imp_subset[OF hF_face])
+    have hxA: "x \<in> A" using hxF hF_sub_A by (by100 blast)
+    obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L1" and hA_eq: "A \<subseteq> \<sigma>"
+      using hA geotop_overlay_cells_refines_left by (by100 blast)
+    have hx\<sigma>: "x \<in> \<sigma>" using hxA hA_eq by (by100 blast)
+    show "x \<in> geotop_polyhedron L1"
+      unfolding geotop_polyhedron_def using h\<sigma> hx\<sigma> by (by100 blast)
+  qed
+next
+  show "geotop_polyhedron L1 \<subseteq> geotop_cell_polyhedron (geotop_overlay_complex L1 L2)"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron L1"
+    have h_raw_union: "\<Union> (geotop_overlay_cells L1 L2) = geotop_polyhedron L1"
+      by (rule geotop_overlay_cells_union[OF hpoly])
+    obtain A where hA: "A \<in> geotop_overlay_cells L1 L2" and hxA: "x \<in> A"
+      using hx h_raw_union by (by100 blast)
+    have hA_cell: "geotop_cell A" by (rule geotop_overlay_cells_are_cells[OF hL1 hL2 hA])
+    have hA_face_A: "geotop_cell_face A A" by (rule geotop_cell_face_refl[OF hA_cell])
+    have hA_in_complex: "A \<in> geotop_overlay_complex L1 L2"
+      unfolding geotop_overlay_complex_def geotop_face_closure_def
+      using hA hA_face_A by (by100 blast)
+    show "x \<in> geotop_cell_polyhedron (geotop_overlay_complex L1 L2)"
+      unfolding geotop_cell_polyhedron_def
+      using hA_in_complex hxA by (by100 blast)
+  qed
+qed
+
+(** Step 4.13b: Overlay complex refines L1. **)
+lemma geotop_overlay_complex_refines_left:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hF: "F \<in> geotop_overlay_complex L1 L2"
+  shows "\<exists>\<sigma>\<in>L1. F \<subseteq> \<sigma>"
+proof -
+  obtain A where hA: "A \<in> geotop_overlay_cells L1 L2"
+              and hF_face: "geotop_cell_face F A"
+    using hF unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  have hF_sub: "F \<subseteq> A" by (rule geotop_cell_face_imp_subset[OF hF_face])
+  obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L1" and hA_sub: "A \<subseteq> \<sigma>"
+    using geotop_overlay_cells_refines_left[OF hA] by (by100 blast)
+  show ?thesis using h\<sigma> hF_sub hA_sub by (by100 blast)
+qed
+
+(** Step 4.13c: Overlay complex refines L2. **)
+lemma geotop_overlay_complex_refines_right:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hF: "F \<in> geotop_overlay_complex L1 L2"
+  shows "\<exists>\<tau>\<in>L2. F \<subseteq> \<tau>"
+proof -
+  obtain A where hA: "A \<in> geotop_overlay_cells L1 L2"
+              and hF_face: "geotop_cell_face F A"
+    using hF unfolding geotop_overlay_complex_def geotop_face_closure_def
+    by (by100 blast)
+  have hF_sub: "F \<subseteq> A" by (rule geotop_cell_face_imp_subset[OF hF_face])
+  obtain \<tau> where h\<tau>: "\<tau> \<in> L2" and hA_sub: "A \<subseteq> \<tau>"
+    using geotop_overlay_cells_refines_right[OF hA] by (by100 blast)
+  show ?thesis using h\<tau> hF_sub hA_sub by (by100 blast)
+qed
+
+(** End Phase 4 (with Step 4.11 sorry'd). =========================== **)
+
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
     Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
