@@ -11099,8 +11099,27 @@ proof -
                                     (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
       using h_leb_eps by (by100 auto)
     (** Step 2: Pick m\<^sub>0 with mesh(Sd^m\<^sub>0 K) < \<epsilon> via mesh shrinkage. **)
+    have hmesh_lim: "(\<lambda>m. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K))
+                       \<longlonglongrightarrow> 0"
+      by (rule geotop_mesh_iterated_Sd_tends_to_zero[OF hKcomp hK])
     have hm_ex: "\<exists>m::nat. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<epsilon>"
-      sorry
+    proof -
+      have hLIMD: "\<exists>no::nat. \<forall>n\<ge>no.
+                     norm (geotop_mesh (\<lambda>x y. norm (x - y))
+                              (geotop_iterated_Sd n K) - 0) < \<epsilon>"
+        using LIMSEQ_D[OF hmesh_lim h\<epsilon>pos] by (by100 blast)
+      obtain N where hN: "\<forall>n\<ge>N. norm (geotop_mesh (\<lambda>x y. norm (x - y))
+                                          (geotop_iterated_Sd n K) - 0) < \<epsilon>"
+        using hLIMD by (by100 blast)
+      have hN_N: "norm (geotop_mesh (\<lambda>x y. norm (x - y))
+                              (geotop_iterated_Sd N K) - 0) < \<epsilon>"
+        using hN by (by100 blast)
+      have hnorm: "\<bar>geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd N K)\<bar> < \<epsilon>"
+        using hN_N by (by100 simp)
+      have h_lt: "geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd N K) < \<epsilon>"
+        using hnorm by (by100 linarith)
+      show ?thesis using h_lt by (by100 blast)
+    qed
     obtain m\<^sub>0 where hm\<^sub>0: "geotop_mesh (\<lambda>x y. norm (x - y))
                               (geotop_iterated_Sd m\<^sub>0 K) < \<epsilon>"
       using hm_ex by (by100 blast)
