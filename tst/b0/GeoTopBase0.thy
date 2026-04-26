@@ -13372,6 +13372,96 @@ proof -
   show ?thesis using hx_eq_y hy_chain h_butlast by (by100 simp)
 qed
 
+(** Step 5.6d.e (rel_frontier ray uniqueness):
+    For convex S, b in rel_interior S, two points y, y' on rel_frontier S
+    on the same ray from b must be equal. Reason: if y ≠ y' on same ray,
+    one lies in open_segment(b, the_other), which is in rel_interior
+    (rel_interior_closure_convex_segment), contradicting rel_frontier. **)
+lemma geotop_rel_frontier_ray_unique:
+  fixes S :: "'a::euclidean_space set"
+  assumes hS_conv: "convex S"
+  assumes hb: "b \<in> rel_interior S"
+  assumes hy: "y \<in> rel_frontier S"
+  assumes hy': "y' \<in> rel_frontier S"
+  assumes hs_pos: "0 < s"
+  assumes h_ray: "y' - b = s *\<^sub>R (y - b)"
+  shows "y = y'"
+proof (rule ccontr)
+  assume h_ne: "y \<noteq> y'"
+  have hy_clos: "y \<in> closure S" using hy unfolding rel_frontier_def by (by100 blast)
+  have hy'_clos: "y' \<in> closure S" using hy' unfolding rel_frontier_def by (by100 blast)
+  have hy_not_ri: "y \<notin> rel_interior S"
+    using hy unfolding rel_frontier_def by (by100 blast)
+  have hy'_not_ri: "y' \<notin> rel_interior S"
+    using hy' unfolding rel_frontier_def by (by100 blast)
+  have h_sne1: "s \<noteq> 1"
+  proof
+    assume "s = 1"
+    hence "y' - b = y - b" using h_ray by (by100 simp)
+    hence "y' = y" by (by100 simp)
+    thus False using h_ne by (by100 blast)
+  qed
+  show False
+  proof (cases "s < 1")
+    case h_s_lt: True
+    (* y' is between b and y *)
+    have h_y'_eq: "y' = (1 - s) *\<^sub>R b + s *\<^sub>R y"
+    proof -
+      have "y' = (y' - b) + b" by (by100 simp)
+      also have "... = s *\<^sub>R (y - b) + b" using h_ray by (by100 simp)
+      also have "... = s *\<^sub>R y - s *\<^sub>R b + b"
+        using scaleR_diff_right[of s y b] by (by100 simp)
+      also have "... = s *\<^sub>R y + (1 - s) *\<^sub>R b"
+        using scaleR_diff_left[of 1 s b] by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have h_b_ne_y: "b \<noteq> y"
+    proof
+      assume "b = y"
+      hence "y' = b" using h_y'_eq by (by100 simp)
+      hence "y' = y" using \<open>b = y\<close> by (by100 simp)
+      thus False using h_ne by (by100 blast)
+    qed
+    have h_y'_in_open: "y' \<in> open_segment b y"
+      unfolding in_segment(2) using h_b_ne_y hs_pos h_s_lt h_y'_eq by (by100 blast)
+    have h_open_seg: "open_segment b y \<subseteq> rel_interior S"
+      by (rule rel_interior_closure_convex_segment[OF hS_conv hb hy_clos])
+    have "y' \<in> rel_interior S" using h_y'_in_open h_open_seg by (by100 blast)
+    thus False using hy'_not_ri by (by100 blast)
+  next
+    case h_s_ge: False
+    have h_s_gt: "1 < s" using h_sne1 h_s_ge by (by100 simp)
+    (* y is between b and y' *)
+    have h_y_eq: "y = (1 - 1/s) *\<^sub>R b + (1/s) *\<^sub>R y'"
+    proof -
+      have hs_nz: "s \<noteq> 0" using hs_pos by (by100 simp)
+      have h1: "(1/s) *\<^sub>R (y' - b) = y - b" using h_ray hs_nz by (by100 simp)
+      have "y = (1/s) *\<^sub>R (y' - b) + b" using h1 by (by100 simp)
+      also have "... = (1/s) *\<^sub>R y' - (1/s) *\<^sub>R b + b"
+        using scaleR_diff_right[of "1/s" y' b] by (by100 simp)
+      also have "... = (1/s) *\<^sub>R y' + (1 - 1/s) *\<^sub>R b"
+        using scaleR_diff_left[of 1 "1/s" b] by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have h_inv_s_pos: "0 < 1/s" using h_s_gt by (by100 simp)
+    have h_inv_s_lt: "1/s < 1" using h_s_gt by (by100 simp)
+    have h_b_ne_y': "b \<noteq> y'"
+    proof
+      assume "b = y'"
+      hence "y = b" using h_y_eq by (by100 simp)
+      hence "y = y'" using \<open>b = y'\<close> by (by100 simp)
+      thus False using h_ne by (by100 blast)
+    qed
+    have h_y_in_open: "y \<in> open_segment b y'"
+      unfolding in_segment(2)
+      using h_b_ne_y' h_inv_s_pos h_inv_s_lt h_y_eq by (by100 blast)
+    have h_open_seg: "open_segment b y' \<subseteq> rel_interior S"
+      by (rule rel_interior_closure_convex_segment[OF hS_conv hb hy'_clos])
+    have "y \<in> rel_interior S" using h_y_in_open h_open_seg by (by100 blast)
+    thus False using hy_not_ri by (by100 blast)
+  qed
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
