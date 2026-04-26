@@ -1,170 +1,86 @@
-# PLAN3.md — Closing the final basis sorry (h_inter_ne)
+# PLAN3.md — Closing the final basis sorry (REVISED 2026-04-26)
+
+## SUPERSEDED — see ANSWER_REPORT.md and ACK_ANSWER_REPORT.md
+
+The original PLAN3 (and PLAN3_WEEK1, PLAN3_WEEK2) followed the strategy of proving an iterated barycentric subdivision refinement theorem:
+
+> Sd^N K refines K' for some N when K' is a subdivision of K.
+
+**This claim is FALSE.** A 1-dimensional counterexample (subdivision of [0,1] at 1/3, dyadic-only Sd^N vertices) decisively disproves it. See `ANSWER_REPORT.md` for the mathematician's full analysis.
+
+The correct strategy is the classical **overlay-cell-complex construction** (Hudson, *Piecewise Linear Topology*, Chapter I §2). This is documented in `ANSWER_REPORT.md` with an 8-phase Isabelle development plan.
 
 ## Status
 
-**As of 2026-04-26 (commit `f9601f00`):**
+**As of 2026-04-26 (commit `d7789231`):**
 
-The basis (`b0/GeoTopBase0.thy` + `b/GeoTopBase.thy`) has **exactly 1 sorry**, on a TRUE statement. Build green at 21-22s. All other infrastructure is in place.
+- Basis (`b0/GeoTopBase0.thy` + `b/GeoTopBase.thy`) has **1 sorry** on the FALSE theorem, now renamed to `geotop_iterated_Sd_refines_subdivision_FALSE` (marked, quarantined).
+- Build green at ~22-23s.
+- All 28+ supporting carrier-map infrastructure exports from prior work are preserved (still useful for Phase 5 of the new strategy).
 
-The single remaining sorry is `h_inter_ne` inside `geotop_iterated_Sd_refines_subdivision`:
+## New strategy (per ANSWER_REPORT.md)
 
-```isabelle
-have h_inter_ne: "(\<Inter>w\<in>V\<^sub>\<tau>. geotop_open_star K' w) \<noteq> {}"
-  sorry
+### Overview
+
+```text
+Given finite simplicial complexes L1, L2 with |L1| = |L2|:
+1. Form the raw overlay cells {σ ∩ τ : σ ∈ L1, τ ∈ L2, σ ∩ τ ≠ ∅}.
+2. Close under faces to get a finite convex cell complex C.
+3. Triangulate C (Hudson Lemma 1.4 OR order-complex triangulation).
+4. The triangulation M is the common subdivision: every simplex of M
+   is contained in σ ∩ τ for some σ ∈ L1 and τ ∈ L2.
 ```
 
-Where:
-- `τ ∈ Sd^m₀ K` (an iterated barycentric subdivision simplex)
-- `m₀` chosen via mesh shrinkage so `mesh(Sd^m₀ K) < ε`
-- `ε` is a Lebesgue number for the K'-vertex-star open cover of |K|
-- `V_τ` is the simplex vertex set of τ
-- `V_τ ⊆ open_star(v, K')` for some K'-vertex v (already established)
+The new vertices created at boundaries of L1 ∪ L2 (e.g., at 1/3 in the counterexample) avoid the dyadic-vs-irrational issue.
 
-The claim is TRUE (Munkres §15-16 classical refinement). Its proof requires ~200-400 lines of Isar synthesizing Sd-vertex recursive structure with carrier-map machinery.
+### 8-phase development plan (per mathematician)
 
-## Infrastructure already in place
+- **Phase 0**: Disable / quarantine the false theorem. ✅ DONE (commit `d7789231`).
+- **Phase 1**: Convex cells (definition, simplex⇒cell, cell∩cell=cell). ~150-200 lines.
+- **Phase 2**: Cell faces (definition, basic lemmas, finite-faces). ~100-150 lines.
+- **Phase 3**: Convex cell complex (definition, polyhedron, subdivision). ~80-100 lines.
+- **Phase 4**: Overlay cell complex (raw + face closure + properties). ~150-200 lines.
+- **Phase 5**: Triangulating a cell complex (Hudson 1.4 or order-complex). ~200-300 lines.
+- **Phase 6**: Bridge from cell-subdivision to simplicial-subdivision. ~100-150 lines.
+- **Phase 7**: Final `geotop_common_subdivision_finite` theorem. ~50 lines.
+- **Phase 8**: Reprove `Theorem_GT_1` using new theorem. ~50 lines.
 
-The session of 2026-04-26 (commits `b859ecf6` through `f9601f00`) built up extensive supporting infrastructure:
+**Total estimated:** ~900-1200 lines of new Isar across 4-6 weeks.
 
-**K-carrier machinery (~14 exports):**
-- `geotop_K_carrier` definition (THE σ ∈ K with x ∈ rel_interior σ)
-- `geotop_K_carrier_eq`, `_in`, `_rel_interior`
-- `geotop_K_carrier_subdiv_subset`: K'-carrier ⊆ K-carrier
-- `geotop_K_carrier_contains_point`, `_in_polyhedron`
-- `geotop_K_carrier_self_in_rel_interior`
-- `geotop_K_carrier_subset_containing_simplex` (smallest enclosing)
-- `geotop_K_carrier_shared_rel_interior` (locally constant)
-- `geotop_K_carrier_barycenter`: K_carrier(b σ) = σ
-- `geotop_K_carrier_vertex`: K_carrier v = {v} for v ∈ V(σ)
-- `geotop_K_carrier_chain_combo` (the chain-positive-combo K-carrier law)
-- `geotop_carrier_unique`
-- `geotop_complex_polyhedron_point_carrier_unique`
-- `geotop_K'_carrier_in_K_carrier` (functional bridge)
+### Recommendations from mathematician
 
-**Munkres Lemma 14.4 biconditional:**
-- `geotop_open_star_inter_to_simplex` (⟸ direction)
-- `geotop_simplex_to_open_star_inter` (⟹ direction)
-- `geotop_open_star_inter_simplex_iff` (named theorem)
-- `geotop_open_star_inter_carrier` (carrier-form characterization)
-- `geotop_open_star_eq_carrier_contains_vertex`
+1. **Use face-closure approach** (don't require all cell faces present in original overlay). Add face closure as a definition step. Safer for formalization.
 
-**Closed star + complex/simplex/polyhedron exports:**
-- `geotop_closed_star` definition with `_subset_polyhedron`, `_contains_vertex`, `_closed`
-- `geotop_simplex_is_convex`, `_compact`, `_closed`, `_nonempty`
-- `geotop_simplex_obtain_HOL` (combined obtains-form)
-- `geotop_simplex_vertices_subset`
-- `geotop_simplex_closure_rel_interior` (rel_interior dense in σ)
-- `geotop_simplex_rel_interior_nonempty`
-- `geotop_complex_polyhedron_compact/closed/bounded`
-- `geotop_finite_subset_simplex_hull_subset`
-- `geotop_subK'_family_finite`
-- `geotop_chain_simplex_vertices_in_top` (V_τ ⊆ chain top)
-- `geotop_chain_barycenters_in_top`
-- `geotop_K_carriers_of_barycenters` (K_carrier ∘ barycenter = id on K)
+2. **Use Option B (order-complex triangulation)** for Phase 5. Leverages our existing barycentric subdivision machinery (W1.0-W1.5 from previous work). Vertices = barycenters of cells, simplices = chains of cells under proper-face order.
 
-**Surgical restructure of `iterated_Sd_refines_subdivision`** (commits `7232b44a`, `4cd1cc7f`, `9ac596c4`, `f6db0a3a`, `b00db318`, `20e24b7e`):
-- Deleted ~340 lines of buggy h_δ_ex / h_star_to_simplex_del chain (FALSE statements)
-- Replaced with sorry-only Isar 6-step structure
-- 5 of 6 sub-steps **FULLY PROVEN**:
-  - Step 1: Lebesgue ε for K'-vertex stars (✓)
-  - Step 2: mesh shrinkage to m₀ (✓)
-  - Step 3: τ ⊆ open_star(v, K') for some K'-vertex v (✓)
-  - Step 4: vertex extraction V_τ (✓)
-  - Step 5: Munkres 14.4 ⟸ in K' (✓)
-  - Step 6: convexity τ = conv hull V_τ ⊆ σ' (✓)
-- Step 4(b) (the deep analytic claim h_inter_ne) is the SOLE remaining sorry
+3. **Watch the union condition** carefully. "Every coarse simplex = finite union of finer simplices" is NOT automatic from containment + finiteness. Requires face-compatible triangulation, which is given by face-closure of overlay + cell-by-cell triangulation.
 
-## What's blocked
+4. **Hyperplane arrangement** as fallback. If overlay intersection property gets hard, switch to representing cells as sign/equality patterns over a finite set of supporting hyperplanes.
 
-`geotop_iterated_Sd_refines_subdivision` is the sole gate to:
-- `Theorem_GT_1` (Moise's first theorem: common subdivision)
-- All §§2-36 content downstream of Theorem_GT_1
+## What's preserved from prior work (still useful)
 
-After h_inter_ne discharges, the basis is sorry-free. `Theorem_GT_1` builds. Downstream content unblocks.
+The Week 1 lemmas (W1.0-W1.5) about Sd^m K simplex structure are NOT directly applicable to the new strategy (no longer using iterated barycentric subdivision). However:
 
-## Continuation-mode limitations encountered
+- **Carrier-map infrastructure (~14 K_carrier exports)**: useful for Phase 5 (relating cell rel-interiors to simplex rel-interiors, bridging cell-complex to simplicial-complex notions).
+- **Munkres 14.4 biconditional**: applies to the order-complex triangulation (verifying it's a simplicial complex).
+- **Closed star definition**: useful for Phase 5 cell-complex topology arguments.
+- **Chain-simplex barycenter machinery (`geotop_chain_barycenters_in_top`, etc.)**: directly applies to order-complex of cell poset (chains of cells correspond to chains of simplices, but at cell level instead of simplex level).
+- **Bridge stabilization fix (`d9b226f7`)**: still applies, build remains stable.
 
-The session tried multiple times to discharge h_inter_ne but ran into:
+The ~28+ infrastructure exports are NOT wasted.
 
-1. **Build cycle latency**: each iteration (write → submit → wait 21s+ → debug) takes 5-10 cycles per substantive change.
-2. **Load-induced by100 flakes**: ~1/3 of builds hit 100ms timeout on unrelated lines (load varies during run).
-3. **Forward-reference debugging**: each typo / position error costs a full 21s retry.
-4. **No interactive editor**: cannot use Isabelle/jEdit's instant validation; every change is a full file rebuild.
+## Next steps
 
-For the analytic synthesis (~200-400 lines), this overhead makes continuation-mode infeasible. Estimate: 100+ continuation cycles, mostly waiting on builds.
+1. ✅ Phase 0 done.
+2. Read `hudson1-3.tex` Chapter I §2 carefully (50-100 page extraction).
+3. Write `PLAN3_PHASE1.md` with concrete attack outline for Phase 1 (convex cells).
+4. Begin Phase 1 implementation in fresh focused session.
 
-## Proposed multi-session plan
+## Files
 
-### Week 1: Sd-vertex recursive structure formalization (~300 lines)
-
-**Goal**: For τ ∈ Sd^m K, extract the recursive K-flag chain underlying V_τ. Each Sd-vertex w ∈ V_τ traces back to a K-simplex w_K via barycenter recursion.
-
-**Concrete deliverables:**
-- `geotop_Sd_iter_simplex_vertex_K_simplex`: for τ ∈ Sd^m K with vertex w ∈ V_τ, the recursive barycenter unwinding gives w = barycenter of some K-simplex (or recursively a Sd^{m-1} K-simplex). Specifically:
-  - For m = 0: V_τ ⊆ V(K) (trivial — Sd^0 K = K).
-  - For m = 1: V_τ = barycenter ` (set c) for some K-flag c (already proven via `geotop_bK_elt_simplex_vertices`).
-  - For m ≥ 2: V_τ = barycenter ` (set c) where c is a Sd^{m-1} K-flag. Each barycenter recursively unwinds.
-- `geotop_Sd_iter_vertex_to_K_carrier`: for w ∈ V_τ (any iterate), K_carrier_K w is a specific K-simplex (the chain top after recursive unwinding).
-- `geotop_Sd_iter_V_τ_in_K_simplex`: V_τ ⊆ σ_K for some σ_K ∈ K (the recursive chain top).
-
-**Risk**: high — requires careful inductive structure on m.
-
-### Week 2: core analytic step — rel-distance + chain alignment (~200-300 lines)
-
-**Goal**: prove the core claim "for τ ⊆ σ_K with diam τ < δ_τ (specific positive bound), V_τ ⊆ σ' for one K'-simplex σ' ⊆ σ_K".
-
-**Concrete deliverables:**
-- `geotop_simplex_rel_dist_bound`: for σ' ⊆ σ_K with σ' ∈ K' AND σ' a face of σ_K (sub-simplex with vertices in V(σ_K), not arbitrary subset), the rel-distance dist({x}, σ_K \ σ') > 0 for x ∈ rel_interior σ' — this circumvents the original counterexample by using the FACE structure.
-- `geotop_Sd_simplex_K_face_alignment`: for τ ∈ Sd^m K with V_τ in σ_K, the recursive Sd-flag chain ensures V_τ are in a SPECIFIC K'-FACE-OF-σ_K-SIMPLEX (not arbitrary K'-simplex). Uses Sd-vertex barycenter structure + face axiom of K'.
-- Combine: V_τ all in one K'-face-of-σ_K-simplex σ', via mesh < δ.
-
-**Risk**: high — requires the precise Munkres §16 argument. The KEY observation is that Sd-simplices DO end up in K'-FACES of σ_K (not just any K'-simplex), making the rel-distance bound work.
-
-### Week 3: discharge h_inter_ne (~50 lines)
-
-**Goal**: with Weeks 1+2 in hand, prove h_inter_ne in a clean ~50-line proof.
-
-**Concrete deliverable:**
-```isabelle
-have h_inter_ne: "(⋂w∈V_τ. geotop_open_star K' w) ≠ {}"
-proof -
-  obtain σ' where hσ': "σ' ∈ K'" and hVσ': "V_τ ⊆ σ'"
-    using week2_lemma[OF ...] by ...
-  show ?thesis
-    using geotop_simplex_to_open_star_inter[OF hK'comp hσ' hVσ'] by ...
-qed
-```
-
-**Risk**: low if Weeks 1+2 succeed.
-
-### Week 4: verify and clean up (~50 lines)
-
-**Goal**: verify `Theorem_GT_1` fully closes; downstream §§2-36 sorries no longer transitively-recursive.
-
-**Concrete deliverables:**
-- Run full build, verify 0 basis sorries.
-- Update PLAN2.md, MEMORY.md to reflect milestone.
-- Update REPORT_*.md with final status.
-
-**Risk**: low.
-
-## Recommended workflow
-
-For each week:
-1. **Fresh focused session** with full context handoff (read this PLAN3.md + relevant commits).
-2. **Interactive Isabelle/jEdit** for rapid 1-2s build feedback during iteration.
-3. **Commit on every successful sub-lemma** to preserve incremental progress.
-4. **Drop back to continuation-mode** only for status updates and small touch-ups.
-
-## Critical context preservation
-
-If switching to a different operator:
-- Read `PLAN2.md` ADDENDUM for the buggy original h_δ_ex chain analysis (corrected by surgical restructure).
-- Read this PLAN3.md for the structured 4-week plan.
-- Inspect commit `f9601f00` for the current state.
-- The 28+ carrier-map exports listed above are the substantive infrastructure; do not duplicate.
-- **Never attempt to discharge h_inter_ne with the OLD h_δ_ex generic-convex approach** — that's the bug we already fixed (small-disk-on-K'-vertex counterexample).
-
-## Estimated total effort
-
-~600-800 lines of new Isar across 4 weeks. Each week is independently checkpoint-able. Sorry count target: **0 in basis** (currently 1).
+- `ANSWER_REPORT.md`: mathematician's full response.
+- `ACK_ANSWER_REPORT.md`: my acknowledgment.
+- `hudson1-3.tex`: Hudson's PL topology Chapter I-III.
+- `REPORT_LITERAL.md`: prior self-contained statement of the false claim.
+- This file (`PLAN3.md`): SUPERSEDED original plan; revised to reflect new strategy.
+- `PLAN3_WEEK1.md`, `PLAN3_WEEK2.md`: SUPERSEDED Week 1/2 sub-plans of the failed strategy.
