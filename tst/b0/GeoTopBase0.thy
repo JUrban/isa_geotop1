@@ -12242,7 +12242,7 @@ proof (rule inj_onI)
   qed
 qed
 
-(** Phase 5 PROGRESS NOTE (2026-04-26 / updated 2026-04-25 session):
+(** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
     - 5.1, 5.2, 5.4, 5.5: definitions (cell barycenter, flags,
@@ -12253,19 +12253,32 @@ qed
     - 5.3c: barycenter image \<subseteq> chain top
     - 5.3d: init of cell-flag is a cell-flag
     - 5.3 MAIN: cell-flag barycenters are affinely independent
-      (~80 lines using HOL-Analysis affine_hull_face_of_disjoint_rel_interior
+      (~80 lines via HOL-Analysis affine_hull_face_of_disjoint_rel_interior
        and affine_independent_insert).
+    - 5.6a (K.0): chain_simplex of cell-flag is a Moise simplex.
+    - 5.6c (K.3 / finiteness): order_complex is finite.
+    - 5.6b helpers: barycenter_distinct (A \<subset> B \<Longrightarrow> b(A) \<noteq> b(B))
+      and barycenter_inj (inj_on barycenter (set c)).
 
     Remaining Phase 5 steps:
-    - 5.6: order complex satisfies K.0/K.1/K.2/K.3 (uses 5.3 main)
-    - 5.7: polyhedron equality |order_complex C| = |C|
-    - 5.8: order_complex refines C
-    - 5.9: cell-by-cell coverage (induced subdivisions)
-    - 5.10: main triangulation theorem
+    - 5.6b MAIN (K.1 face closure): face of chain_simplex c is
+      chain_simplex of a sub-flag. Strategy: face \<tau> of \<sigma> = conv hull V_c
+      gives \<tau> = conv hull W with W \<subseteq> V_c (via face_of_convex_hull_affine_independent
+      and simplex_vertices_unique); inj_on lets W = barycenter ` S for
+      unique S \<subseteq> set c; sub-flag c' = filter (\<lambda>x. x \<in> S) c is a flag
+      and chain_simplex c' = conv hull W = \<tau>.
+    - 5.6d (K.2 pairwise intersection): hardest step. Standard
+      barycentric-subdivision argument: chain_simplex(c1) \<inter> chain_simplex(c2)
+      = chain_simplex(c1 \<inter> c2) where c1 \<inter> c2 is the chain at common cells.
+    - 5.7: polyhedron equality |order_complex C| = |C|.
+    - 5.8: order_complex refines C.
+    - 5.9: cell-by-cell coverage (induced subdivisions).
+    - 5.10: main triangulation theorem.
 
     Phases 6-8 still pending (depend on remaining Phase 5 completion). **)
 
-(** End Phase 5 (Step 5.3 main DONE; 5.6-5.10 still pending). ============= **)
+(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/c, 5.6b helpers DONE;
+    5.6b MAIN, 5.6d, 5.7-5.10 still pending). ============================ **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
