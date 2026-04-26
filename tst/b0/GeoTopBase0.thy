@@ -10995,7 +10995,33 @@ lemma geotop_convex_in_complex_in_simplex_DEFERRED:
   shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
   oops
 
-lemma geotop_iterated_Sd_refines_subdivision:
+(** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
+
+    Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
+    K' = subdivision of [0,1] at 1/3 (so K' = {[0,1/3], [1/3,1], {0}, {1/3}, {1}}).
+    Iterated barycentric subdivisions Sd^m K only produce DYADIC vertex points
+    (m/2^k for various m, k). The point 1/3 is never a vertex of Sd^m K for any m.
+    Therefore some sub-interval of Sd^m K always contains 1/3 strictly in its
+    interior, so it is contained in NEITHER [0,1/3] NOR [1/3,1].
+    Hence Sd^m K never refines K' literally.
+
+    The downstream Theorem_GT_1 proof was using this false theorem. The fix is
+    the overlay-cell-complex construction (Hudson Lemma 1.4):
+      - take pairwise intersections σ ∩ τ for σ ∈ L1, τ ∈ L2 (cells, not simplices)
+      - close under cell-faces, get a finite convex cell complex
+      - triangulate via Hudson's induction-by-dimension or the order-complex method
+      - the triangulation refines both L1 and L2 literally
+
+    This new approach creates new vertices at boundaries of L2 (e.g., at 1/3 above)
+    that are not Sd^m K vertices, avoiding the counterexample.
+
+    The proof body below is preserved as a record of the structural decomposition
+    work (Lebesgue + mesh shrinkage + 6-step Isar), which contains TRUE sub-lemmas.
+    Only Step 4 (h_inter_ne) is the FALSE analytic claim.
+
+    Marked as `oops`-style sorry'd theorem. Should be replaced via the new
+    geotop_common_subdivision_finite (PLAN3 Phase 7). **)
+lemma geotop_iterated_Sd_refines_subdivision_FALSE:
   fixes K K' :: "'a::euclidean_space set set"
   assumes hK: "finite K"
   assumes hsub: "geotop_is_subdivision K' K"
@@ -11426,9 +11452,9 @@ proof -
   (** (2) By early.tex Lemma 4.17, \<open>Sd^m(K)\<close> eventually refines \<open>L1\<close>, and
          \<open>Sd^n(K)\<close> eventually refines \<open>L2\<close>. **)
   obtain m where hm: "geotop_is_subdivision (geotop_iterated_Sd m K) L1"
-    using geotop_iterated_Sd_refines_subdivision[OF hKfin hL1] by (by100 blast)
+    using geotop_iterated_Sd_refines_subdivision_FALSE[OF hKfin hL1] by (by100 blast)
   obtain n where hn: "geotop_is_subdivision (geotop_iterated_Sd n K) L2"
-    using geotop_iterated_Sd_refines_subdivision[OF hKfin hL2] by (by100 blast)
+    using geotop_iterated_Sd_refines_subdivision_FALSE[OF hKfin hL2] by (by100 blast)
   (** (3) Let \<open>N = max m n\<close>. By monotonicity, \<open>Sd^N(K)\<close> is a subdivision of
          \<open>Sd^m(K)\<close> and of \<open>Sd^n(K)\<close>; by transitivity of subdivision it is a
          subdivision of both \<open>L1\<close> and \<open>L2\<close>. **)
