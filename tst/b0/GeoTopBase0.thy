@@ -11846,17 +11846,59 @@ definition geotop_order_complex ::
   "geotop_order_complex C =
      {S. \<exists>c \<in> geotop_cell_flags C. S = geotop_cell_chain_simplex c}"
 
-(** Phase 5 STRUCTURAL DEFINITIONS DONE. The substantive theorems
-    (5.3 affine independence of cell-flag barycenters, 5.6 order
-    complex is simplicial complex, 5.7 polyhedron equality, 5.9
-    cell-by-cell coverage) are deferred — they require the kind of
-    extended classical-mathematics work that this formalization
-    has reached the limit of.
+(** Step 5.3a: In a cell complex, proper subset implies face. Direct
+    from K.2 axiom (A \<inter> B = common face) applied with A \<subseteq> B. **)
+lemma geotop_cell_complex_subset_imp_face:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hA: "A \<in> C" and hB: "B \<in> C"
+  assumes hAB: "A \<subseteq> B"
+  assumes hA_ne: "A \<noteq> {}"
+  shows "geotop_cell_face A B"
+proof -
+  have h_K2: "\<forall>X\<in>C. \<forall>Y\<in>C. X \<inter> Y = {} \<or>
+                 (geotop_cell_face (X \<inter> Y) X \<and> geotop_cell_face (X \<inter> Y) Y)"
+    using hC unfolding geotop_cell_complex_def by (by100 blast)
+  have h_AB_eq: "A \<inter> B = A" using hAB by (by100 blast)
+  have h_AB_ne: "A \<inter> B \<noteq> {}" using h_AB_eq hA_ne by (by100 simp)
+  have h_face: "geotop_cell_face (A \<inter> B) B"
+    using h_K2 hA hB h_AB_ne by (by100 blast)
+  show ?thesis using h_face h_AB_eq by (by100 simp)
+qed
 
-    The definitions are in place so future work (or a more capable
-    operator with rapid build cycles) can attempt them. **)
+(** Step 5.3b: Proper subset of cells in a cell complex gives strict
+    aff_dim inequality. **)
+lemma geotop_cell_complex_psubset_aff_dim:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hA: "A \<in> C" and hB: "B \<in> C"
+  assumes hAB: "A \<subset> B"
+  shows "aff_dim A < aff_dim B"
+proof -
+  have hA_cell: "geotop_cell A"
+    using hC hA unfolding geotop_cell_complex_def by (by100 blast)
+  have hA_ne: "A \<noteq> {}" by (rule geotop_cell_nonempty[OF hA_cell])
+  have hAB_sub: "A \<subseteq> B" using hAB by (by100 blast)
+  have h_face_cell: "geotop_cell_face A B"
+    by (rule geotop_cell_complex_subset_imp_face[OF hC hA hB hAB_sub hA_ne])
+  have hA_face_HOL: "A face_of B"
+    using h_face_cell unfolding geotop_cell_face_def by (by100 blast)
+  have hB_cell: "geotop_cell B"
+    using hC hB unfolding geotop_cell_complex_def by (by100 blast)
+  have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+  have hA_neB: "A \<noteq> B" using hAB by (by100 blast)
+  show ?thesis by (rule face_of_aff_dim_lt[OF hB_conv hA_face_HOL hA_neB])
+qed
 
-(** End Phase 5 (definitions only; theorems deferred). ============== **)
+(** Phase 5 ATTEMPTS DONE. Steps 5.3a, 5.3b proven (~50 lines).
+
+    Remaining (deferred): the FULL Step 5.3 (affine independence of
+    cell-flag barycenters), Steps 5.6-5.10. Need substantially more
+    machinery: proving that barycenters at strict-increasing dimensions
+    are affinely independent (analog of the Moise simplex argument
+    requires careful adaptation to cells). **)
+
+(** End Phase 5 (Steps 5.1-5.3b done; rest deferred). =============== **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
