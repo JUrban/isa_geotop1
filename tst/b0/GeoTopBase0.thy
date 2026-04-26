@@ -12160,6 +12160,88 @@ proof -
   show ?thesis using h_oc_eq h_flags_fin by (by100 simp)
 qed
 
+(** Step 5.6b helper: barycenter is injective on cells of a cell-flag.
+    Proof: for distinct A, B in chain, WLOG A \<subset> B; then A face_of B,
+    so aff_hull A \<inter> rel_interior B = \<emptyset>; b(B) \<in> rel_interior B \<Longrightarrow>
+    b(B) \<notin> aff_hull A; but b(A) \<in> A \<subseteq> aff_hull A. **)
+lemma geotop_cell_flag_barycenter_distinct:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  assumes hA: "A \<in> set c" and hB: "B \<in> set c"
+  assumes hAB: "A \<subset> B"
+  shows "geotop_cell_barycenter A \<noteq> geotop_cell_barycenter B"
+proof -
+  have h_set: "set c \<subseteq> C" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have hA_C: "A \<in> C" using hA h_set by (by100 blast)
+  have hB_C: "B \<in> C" using hB h_set by (by100 blast)
+  have hA_cell: "geotop_cell A"
+    using hC hA_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hA_ne: "A \<noteq> {}" by (rule geotop_cell_nonempty[OF hA_cell])
+  have hB_cell: "geotop_cell B"
+    using hC hB_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+  have hAB_sub: "A \<subseteq> B" using hAB by (by100 blast)
+  have h_face_cell: "geotop_cell_face A B"
+    by (rule geotop_cell_complex_subset_imp_face[OF hC hA_C hB_C hAB_sub hA_ne])
+  have h_face_HOL: "A face_of B"
+    using h_face_cell unfolding geotop_cell_face_def by (by100 blast)
+  have h_AneB: "A \<noteq> B" using hAB by (by100 blast)
+  have h_disj: "affine hull A \<inter> rel_interior B = {}"
+    by (rule affine_hull_face_of_disjoint_rel_interior[OF hB_conv h_face_HOL h_AneB])
+  have h_bB_ri: "geotop_cell_barycenter B \<in> rel_interior B"
+    by (rule geotop_cell_barycenter_in_rel_interior[OF hB_cell])
+  have h_bB_not_aff: "geotop_cell_barycenter B \<notin> affine hull A"
+    using h_disj h_bB_ri by (by100 blast)
+  have h_bA_in_A: "geotop_cell_barycenter A \<in> A"
+    by (rule geotop_cell_barycenter_in_cell[OF hA_cell])
+  have h_A_sub_aff: "A \<subseteq> affine hull A" by (rule hull_subset)
+  have h_bA_aff: "geotop_cell_barycenter A \<in> affine hull A"
+    using h_bA_in_A h_A_sub_aff by (by100 blast)
+  show ?thesis using h_bA_aff h_bB_not_aff by (by100 metis)
+qed
+
+lemma geotop_cell_flag_barycenter_inj:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  shows "inj_on geotop_cell_barycenter (set c)"
+proof (rule inj_onI)
+  fix A B
+  assume hA: "A \<in> set c" and hB: "B \<in> set c"
+  assume hbeq: "geotop_cell_barycenter A = geotop_cell_barycenter B"
+  have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c"
+    using hc unfolding geotop_cell_flags_def by (by100 blast)
+  show "A = B"
+  proof (rule ccontr)
+    assume h_ne: "A \<noteq> B"
+    obtain i where hi_lt: "i < length c" and hci: "c ! i = A"
+      using hA in_set_conv_nth by (by100 metis)
+    obtain j where hj_lt: "j < length c" and hcj: "c ! j = B"
+      using hB in_set_conv_nth by (by100 metis)
+    have hij_ne: "i \<noteq> j" using hci hcj h_ne by (by100 blast)
+    consider (lt) "i < j" | (gt) "j < i" using hij_ne by (by100 linarith)
+    then show False
+    proof cases
+      case lt
+      have h_AB: "A \<subset> B"
+        using sorted_wrt_nth_less[OF h_sorted lt hj_lt] hci hcj by (by100 simp)
+      have h_neq:
+          "geotop_cell_barycenter A \<noteq> geotop_cell_barycenter B"
+        by (rule geotop_cell_flag_barycenter_distinct[OF hC hc hA hB h_AB])
+      show False using h_neq hbeq by (by100 blast)
+    next
+      case gt
+      have h_BA: "B \<subset> A"
+        using sorted_wrt_nth_less[OF h_sorted gt hi_lt] hci hcj by (by100 simp)
+      have h_neq:
+          "geotop_cell_barycenter B \<noteq> geotop_cell_barycenter A"
+        by (rule geotop_cell_flag_barycenter_distinct[OF hC hc hB hA h_BA])
+      show False using h_neq hbeq by (by100 metis)
+    qed
+  qed
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-26 / updated 2026-04-25 session):
 
     Steps DONE:
