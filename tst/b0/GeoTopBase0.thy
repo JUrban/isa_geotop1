@@ -12839,6 +12839,92 @@ lemma geotop_order_complex_polyhedron:
         geotop_order_complex_polyhedron_supset[OF hC]
   by (by100 blast)
 
+(** Helper: in cell complex C, if B \<in> C and B \<subseteq> A \<in> C is forced
+    by x \<in> rel_interior B and x \<in> A. **)
+lemma geotop_cell_complex_carrier_in_cell:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hA: "A \<in> C" and hB: "B \<in> C"
+  assumes hxA: "x \<in> A"
+  assumes hxB_ri: "x \<in> rel_interior B"
+  shows "B \<subseteq> A"
+proof -
+  have hB_cell: "geotop_cell B"
+    using hC hB unfolding geotop_cell_complex_def by (by100 blast)
+  have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+  have hxB: "x \<in> B" using hxB_ri rel_interior_subset by (by100 blast)
+  have h_AB_int: "x \<in> A \<inter> B" using hxA hxB by (by100 blast)
+  have h_AB_ne: "A \<inter> B \<noteq> {}" using h_AB_int by (by100 blast)
+  have h_K2: "geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B"
+    using hC hA hB h_AB_ne unfolding geotop_cell_complex_def by (by100 blast)
+  have h_AB_face_B: "(A \<inter> B) face_of B"
+    using h_K2 unfolding geotop_cell_face_def by (by100 blast)
+  have h_AB_eq_B: "A \<inter> B = B"
+  proof (rule ccontr)
+    assume h_neq: "A \<inter> B \<noteq> B"
+    have h_disj: "affine hull (A \<inter> B) \<inter> rel_interior B = {}"
+      by (rule affine_hull_face_of_disjoint_rel_interior
+              [OF hB_conv h_AB_face_B h_neq])
+    have h_sub: "(A \<inter> B) \<subseteq> affine hull (A \<inter> B)" by (rule hull_subset)
+    have h_x_aff: "x \<in> affine hull (A \<inter> B)" using h_AB_int h_sub by (by100 blast)
+    show False using h_disj h_x_aff hxB_ri by (by100 blast)
+  qed
+  thus "B \<subseteq> A" by (by100 blast)
+qed
+
+(** Step 5.9: induced subdivisions. Each cell A in C is the union of
+    chain-simplices of order_complex C contained in A. **)
+lemma geotop_order_complex_induced_subdivision:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hA: "A \<in> C"
+  shows "A = \<Union>{S \<in> geotop_order_complex C. S \<subseteq> A}"
+proof
+  show "A \<subseteq> \<Union>{S \<in> geotop_order_complex C. S \<subseteq> A}"
+  proof
+    fix x assume hxA: "x \<in> A"
+    have hx_poly: "x \<in> geotop_cell_polyhedron C"
+      unfolding geotop_cell_polyhedron_def using hA hxA by (by100 blast)
+    obtain B where hB_C: "B \<in> C" and hxB_ri: "x \<in> rel_interior B"
+      using geotop_cell_complex_carrier[OF hC hx_poly] by (by100 blast)
+    have hB_sub_A: "B \<subseteq> A"
+      by (rule geotop_cell_complex_carrier_in_cell[OF hC hA hB_C hxA hxB_ri])
+    obtain c where hc: "c \<in> geotop_cell_flags C"
+                and hc_last: "last c = B"
+                and hx_in: "x \<in> geotop_cell_chain_simplex c"
+      using geotop_cell_x_in_chain_simplex[OF hC, of B, rule_format, OF hB_C hxB_ri]
+      by (by100 blast)
+    define S where "S = geotop_cell_chain_simplex c"
+    have hS_in: "S \<in> geotop_order_complex C"
+      unfolding S_def geotop_order_complex_def using hc by (by100 blast)
+    have hSub_S_B: "S \<subseteq> B"
+    proof -
+      have h_set: "set c \<subseteq> C"
+        using hc unfolding geotop_cell_flags_def by (by100 blast)
+      have h_barys_in_lastc: "geotop_cell_barycenter ` set c \<subseteq> last c"
+        by (rule geotop_cell_flag_init_barycenters_in_top[OF hC hc])
+      have h_barys_in_B: "geotop_cell_barycenter ` set c \<subseteq> B"
+        using h_barys_in_lastc hc_last by (by100 simp)
+      have hB_cell: "geotop_cell B"
+        using hC hB_C unfolding geotop_cell_complex_def by (by100 blast)
+      have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+      have hB_eq: "convex hull B = B"
+        by (rule iffD2[OF convex_hull_eq hB_conv])
+      have h_barys_sub: "geotop_cell_barycenter ` set c \<subseteq> convex hull B"
+        using h_barys_in_B hB_eq by (by100 simp)
+      have "convex hull (geotop_cell_barycenter ` set c) \<subseteq> B"
+        using convex_hull_subset[OF h_barys_sub] hB_eq by (by100 simp)
+      thus ?thesis unfolding S_def geotop_cell_chain_simplex_def by (by100 simp)
+    qed
+    have hSub_S_A: "S \<subseteq> A" using hSub_S_B hB_sub_A by (by100 blast)
+    have hx_S: "x \<in> S" using hx_in unfolding S_def by (by100 simp)
+    show "x \<in> \<Union>{S \<in> geotop_order_complex C. S \<subseteq> A}"
+      using hS_in hSub_S_A hx_S by (by100 blast)
+  qed
+next
+  show "\<Union>{S \<in> geotop_order_complex C. S \<subseteq> A} \<subseteq> A" by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
