@@ -13172,6 +13172,50 @@ proof (intro allI impI)
   qed
 qed
 
+(** Step 5.6d.c: For x in \<sigma>_c1 \<inter> \<sigma>_c2, there's a common cell A in
+    set c1 \<inter> set c2 with x \<in> rel_interior A. (Proof: 5.6d.b on each
+    flag gives A1 \<in> set c1, A2 \<in> set c2 with x in their rel_interior;
+    by carrier uniqueness, A1 = A2.) **)
+lemma geotop_chain_simplex_intersection_common_cell:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc1: "c1 \<in> geotop_cell_flags C"
+  assumes hc2: "c2 \<in> geotop_cell_flags C"
+  assumes hx1: "x \<in> geotop_cell_chain_simplex c1"
+  assumes hx2: "x \<in> geotop_cell_chain_simplex c2"
+  shows "\<exists>A. A \<in> set c1 \<and> A \<in> set c2 \<and> x \<in> rel_interior A"
+proof -
+  have h_main_lemma:
+      "\<forall>x c. c \<in> geotop_cell_flags C \<longrightarrow> x \<in> geotop_cell_chain_simplex c \<longrightarrow>
+              (\<exists>A \<in> set c. x \<in> rel_interior A)"
+    by (rule geotop_chain_simplex_carrier_in_set[OF hC])
+  have h1: "\<exists>A1 \<in> set c1. x \<in> rel_interior A1"
+    using h_main_lemma hc1 hx1 by (by100 blast)
+  have h2: "\<exists>A2 \<in> set c2. x \<in> rel_interior A2"
+    using h_main_lemma hc2 hx2 by (by100 blast)
+  obtain A1 where hA1_set: "A1 \<in> set c1" and hA1_ri: "x \<in> rel_interior A1"
+    using h1 by (by100 blast)
+  obtain A2 where hA2_set: "A2 \<in> set c2" and hA2_ri: "x \<in> rel_interior A2"
+    using h2 by (by100 blast)
+  have h_set1: "set c1 \<subseteq> C" using hc1 unfolding geotop_cell_flags_def by (by100 blast)
+  have h_set2: "set c2 \<subseteq> C" using hc2 unfolding geotop_cell_flags_def by (by100 blast)
+  have hA1_C: "A1 \<in> C" using hA1_set h_set1 by (by100 blast)
+  have hA2_C: "A2 \<in> C" using hA2_set h_set2 by (by100 blast)
+  have hx_poly: "x \<in> geotop_cell_polyhedron C"
+  proof -
+    have hA1_cell: "geotop_cell A1"
+      using hC hA1_C unfolding geotop_cell_complex_def by (by100 blast)
+    have hx_A1: "x \<in> A1" using hA1_ri rel_interior_subset by (by100 blast)
+    show ?thesis
+      unfolding geotop_cell_polyhedron_def using hA1_C hx_A1 by (by100 blast)
+  qed
+  have h_carrier: "\<exists>!A. A \<in> C \<and> x \<in> rel_interior A"
+    by (rule geotop_cell_complex_carrier[OF hC hx_poly])
+  have hA1_eq_A2: "A1 = A2"
+    using h_carrier hA1_C hA1_ri hA2_C hA2_ri by (by100 blast)
+  show ?thesis using hA1_set hA2_set hA1_ri hA1_eq_A2 by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
