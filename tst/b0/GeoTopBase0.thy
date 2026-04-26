@@ -12394,16 +12394,19 @@ qed
     - 5.6b helpers: barycenter_distinct (A \<subset> B \<Longrightarrow> b(A) \<noteq> b(B))
       and barycenter_inj (inj_on barycenter (set c)).
 
+    - 5.6b MAIN (K.1 face closure): order_complex_face_closed —
+      DONE (~80 lines using simplex_vertices_unique + filter sub-flag).
+    - 5.6a': geotop_chain_simplex_vertices (barycenter image is
+      simplex_vertices of chain-simplex).
+    - 5.6b sub-helper: geotop_cell_flags_filter (filter preserves flag).
+
     Remaining Phase 5 steps:
-    - 5.6b MAIN (K.1 face closure): face of chain_simplex c is
-      chain_simplex of a sub-flag. Strategy: face \<tau> of \<sigma> = conv hull V_c
-      gives \<tau> = conv hull W with W \<subseteq> V_c (via face_of_convex_hull_affine_independent
-      and simplex_vertices_unique); inj_on lets W = barycenter ` S for
-      unique S \<subseteq> set c; sub-flag c' = filter (\<lambda>x. x \<in> S) c is a flag
-      and chain_simplex c' = conv hull W = \<tau>.
-    - 5.6d (K.2 pairwise intersection): hardest step. Standard
-      barycentric-subdivision argument: chain_simplex(c1) \<inter> chain_simplex(c2)
-      = chain_simplex(c1 \<inter> c2) where c1 \<inter> c2 is the chain at common cells.
+    - 5.6d (K.2 pairwise intersection): hardest step. Munkres §17
+      argument: chain_simplex(c1) \<inter> chain_simplex(c2) = chain_simplex
+      of common sub-flag, OR disjoint. Uses cell-poset compatibility
+      (when both flags fit into a common total chain) plus
+      disjoint_affine_hull from HOL-Analysis.
+    - 5.6 main packaging: K.0 + K.1 + K.2 + K.3 \<Longrightarrow> geotop_is_complex.
     - 5.7: polyhedron equality |order_complex C| = |C|.
     - 5.8: order_complex refines C.
     - 5.9: cell-by-cell coverage (induced subdivisions).
@@ -12411,8 +12414,8 @@ qed
 
     Phases 6-8 still pending (depend on remaining Phase 5 completion). **)
 
-(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/c, 5.6b helpers DONE;
-    5.6b MAIN, 5.6d, 5.7-5.10 still pending). ============================ **)
+(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/b/c DONE;
+    5.6d, 5.6 main, 5.7-5.10 still pending). ============================ **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
