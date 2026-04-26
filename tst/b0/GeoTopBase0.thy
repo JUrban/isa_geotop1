@@ -12521,6 +12521,296 @@ proof -
   qed
 qed
 
+(** Helper: barycenter of singleton cell {v} is v. **)
+lemma geotop_cell_barycenter_singleton:
+  fixes v :: "'a::euclidean_space"
+  shows "geotop_cell_barycenter {v} = v"
+proof -
+  have h_ri: "rel_interior {v} = {v}" by (by100 simp)
+  have h_v_in: "v \<in> rel_interior {v}" using h_ri by (by100 simp)
+  show ?thesis
+    unfolding geotop_cell_barycenter_def
+    using someI[of "\<lambda>b. b \<in> rel_interior {v}" v] h_v_in h_ri by (by100 simp)
+qed
+
+(** Step 5.7 (\<supseteq> direction) MAIN: each x in |C| is in some chain-simplex.
+    Strong induction on aff_dim(carrier(x)).
+    Base (aff_dim 0): A = {v}, x = v = b({v}) \<in> chain_simplex([{v}]).
+    Step: pick z on rel_frontier(A) along segment from b(A) through x;
+    z is in some proper face F of A; carrier(z) \<subset> A;
+    by IH, z \<in> chain_simplex(c') with last c' = carrier(z) \<subset> A;
+    extend c = c' @ [A]; x \<in> closed_segment b(A) z \<subseteq> chain_simplex c. **)
+lemma geotop_cell_x_in_chain_simplex:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "\<forall>x. A \<in> C \<longrightarrow> x \<in> rel_interior A \<longrightarrow>
+              (\<exists>c \<in> geotop_cell_flags C. last c = A
+                                          \<and> x \<in> geotop_cell_chain_simplex c)"
+proof (induct A rule: measure_induct_rule[where f="\<lambda>A. nat (aff_dim A)"])
+  case (less A)
+  show ?case
+  proof (intro allI impI)
+    fix x assume hA: "A \<in> C" and hx_ri: "x \<in> rel_interior A"
+    have hA_cell: "geotop_cell A"
+      using hC hA unfolding geotop_cell_complex_def by (by100 blast)
+    have hA_ne: "A \<noteq> {}" by (rule geotop_cell_nonempty[OF hA_cell])
+    have hA_polytope: "polytope A"
+      using hA_cell unfolding geotop_cell_def by (by100 blast)
+    have hA_conv: "convex A" by (rule geotop_cell_convex[OF hA_cell])
+    have hA_compact: "compact A" by (rule geotop_cell_compact[OF hA_cell])
+    have hA_bnd: "bounded A" using hA_compact compact_imp_bounded by (by100 blast)
+    have hA_aff_nn: "0 \<le> aff_dim A"
+      using hA_ne aff_dim_geq[of A] aff_dim_empty[of A] by (by100 simp)
+    have hA_poly: "polyhedron A" by (rule polytope_imp_polyhedron[OF hA_polytope])
+    show "\<exists>c \<in> geotop_cell_flags C. last c = A
+                                     \<and> x \<in> geotop_cell_chain_simplex c"
+    proof (cases "aff_dim A = 0")
+      case h_dim0: True
+      obtain v where hA_eq: "A = {v}"
+        using h_dim0 aff_dim_eq_0[of A] hA_ne by (by100 blast)
+      have h_xv: "x = v" using hx_ri hA_eq by (by100 simp)
+      have h_bary: "geotop_cell_barycenter A = v"
+        using hA_eq geotop_cell_barycenter_singleton[of v] by (by100 simp)
+      define c where "c = [A]"
+      have hc_set: "set c = {A}" unfolding c_def by (by100 simp)
+      have hc_flag: "c \<in> geotop_cell_flags C"
+        unfolding c_def geotop_cell_flags_def
+        using hA by (by100 simp)
+      have hc_last: "last c = A" unfolding c_def by (by100 simp)
+      have h_chain_eq: "geotop_cell_chain_simplex c = {v}"
+      proof -
+        have "geotop_cell_chain_simplex c
+                = convex hull (geotop_cell_barycenter ` set c)"
+          unfolding geotop_cell_chain_simplex_def by (by100 simp)
+        also have "... = convex hull {geotop_cell_barycenter A}"
+          using hc_set by (by100 simp)
+        also have "... = convex hull {v}" using h_bary by (by100 simp)
+        also have "... = {v}" by (by100 simp)
+        finally show ?thesis .
+      qed
+      have h_x_in: "x \<in> geotop_cell_chain_simplex c"
+        using h_chain_eq h_xv by (by100 simp)
+      show ?thesis using hc_flag hc_last h_x_in by (by100 blast)
+    next
+      case h_dim_pos: False
+      have h_dim_gt0: "aff_dim A > 0"
+        using hA_aff_nn h_dim_pos by (by100 simp)
+      have h_A_not_sing: "\<nexists>v. A = {v}"
+        using h_dim_pos aff_dim_eq_0[of A] by (by100 blast)
+      have h_bA_ri: "geotop_cell_barycenter A \<in> rel_interior A"
+        by (rule geotop_cell_barycenter_in_rel_interior[OF hA_cell])
+      have h_x_in_A: "x \<in> A" using hx_ri rel_interior_subset by (by100 blast)
+      have h_not_xy_sing:
+          "\<not>(geotop_cell_barycenter A = x \<and> A = {geotop_cell_barycenter A})"
+        using h_A_not_sing by (by100 blast)
+      obtain z where hz_rfront: "z \<in> rel_frontier A"
+                  and hxz_seg: "x \<in> closed_segment (geotop_cell_barycenter A) z"
+                  and h_open_seg:
+                    "open_segment (geotop_cell_barycenter A) z \<subseteq> rel_interior A"
+        using segment_to_rel_frontier[OF hA_conv hA_bnd h_bA_ri h_x_in_A
+                                          h_not_xy_sing] by (by100 metis)
+      have hz_in_pf: "\<exists>F. F face_of A \<and> F \<noteq> A \<and> z \<in> F"
+        using hz_rfront rel_frontier_of_polyhedron_alt[OF hA_poly] by (by100 blast)
+      obtain F where hF_face: "F face_of A" and hF_neq: "F \<noteq> A" and hzF: "z \<in> F"
+        using hz_in_pf by (by100 blast)
+      have hF_ne: "F \<noteq> {}" using hzF by (by100 blast)
+      have hF_cell_face: "geotop_cell_face F A"
+        unfolding geotop_cell_face_def using hA_cell hF_face hF_ne by (by100 blast)
+      have hF_C: "F \<in> C"
+        using hC hA hF_cell_face unfolding geotop_cell_complex_def by (by100 blast)
+      have hz_polyhedron: "z \<in> geotop_cell_polyhedron C"
+        unfolding geotop_cell_polyhedron_def using hF_C hzF by (by100 blast)
+      obtain B where hB_C: "B \<in> C" and hz_B_ri: "z \<in> rel_interior B"
+        using geotop_cell_complex_carrier[OF hC hz_polyhedron]
+        by (by100 blast)
+      have hB_cell: "geotop_cell B"
+        using hC hB_C unfolding geotop_cell_complex_def by (by100 blast)
+      have hB_x_in_B: "z \<in> B" using hz_B_ri rel_interior_subset by (by100 blast)
+      (** B is a face of A and B \<subset> A: same argument as in carrier uniqueness. **)
+      have hB_sub_A: "B \<subseteq> A"
+      proof -
+        have h_AB_ne: "A \<inter> B \<noteq> {}" using h_x_in_A hB_x_in_B hzF
+          using hzF \<comment> \<open>z \<in> A via z \<in> F \<subseteq> A\<close>
+          using hF_face face_of_imp_subset[OF hF_face] by (by100 blast)
+        have h_K2: "geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B"
+          using hC hA hB_C h_AB_ne unfolding geotop_cell_complex_def
+          by (by100 blast)
+        have h_AB_face_B: "(A \<inter> B) face_of B"
+          using h_K2 unfolding geotop_cell_face_def by (by100 blast)
+        have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+        have h_AB_eq_B: "A \<inter> B = B"
+        proof (rule ccontr)
+          assume h_neq: "A \<inter> B \<noteq> B"
+          have h_disj: "affine hull (A \<inter> B) \<inter> rel_interior B = {}"
+            by (rule affine_hull_face_of_disjoint_rel_interior
+                    [OF hB_conv h_AB_face_B h_neq])
+          have h_z_AB: "z \<in> A \<inter> B"
+            using hzF face_of_imp_subset[OF hF_face] hB_x_in_B by (by100 blast)
+          have h_sub: "(A \<inter> B) \<subseteq> affine hull (A \<inter> B)" by (rule hull_subset)
+          have h_z_aff: "z \<in> affine hull (A \<inter> B)" using h_z_AB h_sub by (by100 blast)
+          show False using h_disj h_z_aff hz_B_ri by (by100 blast)
+        qed
+        thus "B \<subseteq> A" by (by100 blast)
+      qed
+      have hB_ne_A: "B \<noteq> A"
+      proof
+        assume h_eq: "B = A"
+        have "z \<in> rel_interior A" using hz_B_ri h_eq by (by100 simp)
+        moreover have "z \<notin> rel_interior A"
+          using hz_rfront unfolding rel_frontier_def by (by100 blast)
+        ultimately show False by (by100 blast)
+      qed
+      have hB_psub: "B \<subset> A" using hB_sub_A hB_ne_A by (by100 blast)
+      have hB_face: "B face_of A"
+      proof -
+        have hB_cell_face: "geotop_cell_face B A"
+          by (rule geotop_cell_complex_subset_imp_face
+                  [OF hC hB_C hA hB_sub_A geotop_cell_nonempty[OF hB_cell]])
+        show ?thesis using hB_cell_face unfolding geotop_cell_face_def by (by100 blast)
+      qed
+      have hB_dim_lt: "aff_dim B < aff_dim A"
+        by (rule face_of_aff_dim_lt[OF hA_conv hB_face hB_ne_A])
+      have hB_ne: "B \<noteq> {}" by (rule geotop_cell_nonempty[OF hB_cell])
+      have hB_dim_nn: "0 \<le> aff_dim B"
+        using hB_ne aff_dim_geq[of B] aff_dim_empty[of B] by (by100 simp)
+      have hB_dim_nat_lt: "nat (aff_dim B) < nat (aff_dim A)"
+        using hB_dim_lt hB_dim_nn by (by100 simp)
+      (** Apply IH to B and z. **)
+      have h_IH: "\<exists>c \<in> geotop_cell_flags C. last c = B
+                                              \<and> z \<in> geotop_cell_chain_simplex c"
+        using less.hyps[OF hB_dim_nat_lt] hB_C hz_B_ri by (by100 blast)
+      obtain c' where hc'_flag: "c' \<in> geotop_cell_flags C"
+                   and hc'_last: "last c' = B"
+                   and hz_c': "z \<in> geotop_cell_chain_simplex c'"
+        using h_IH by (by100 blast)
+      define c where "c = c' @ [A]"
+      (** c is a flag. **)
+      have hc'_ne: "c' \<noteq> []" using hc'_flag unfolding geotop_cell_flags_def by (by100 blast)
+      have hc'_set: "set c' \<subseteq> C"
+        using hc'_flag unfolding geotop_cell_flags_def by (by100 blast)
+      have hc'_dist: "distinct c'"
+        using hc'_flag unfolding geotop_cell_flags_def by (by100 blast)
+      have hc'_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c'"
+        using hc'_flag unfolding geotop_cell_flags_def by (by100 blast)
+      have hc'_last_in: "last c' \<in> set c'" using hc'_ne by (by100 simp)
+      have hc'_last_C: "B \<in> C" using hc'_last hc'_last_in hc'_set by (by100 blast)
+      (** All elements of c' are \<subseteq> B = last c' (since c' is a flag). **)
+      have hc'_init_sub_B: "\<forall>X \<in> set c'. X \<subseteq> B"
+      proof
+        fix X assume hX: "X \<in> set c'"
+        obtain i where hi_lt: "i < length c'" and hci: "c' ! i = X"
+          using hX in_set_conv_nth by (by100 metis)
+        have h_last_eq: "last c' = c' ! (length c' - 1)"
+          using last_conv_nth[OF hc'_ne] by (by100 simp)
+        have h_len_pos: "0 < length c'" using hc'_ne by (by100 simp)
+        have h_last_idx: "length c' - 1 < length c'" using h_len_pos by (by100 simp)
+        show "X \<subseteq> B"
+        proof (cases "i = length c' - 1")
+          case True
+          have "X = c' ! (length c' - 1)" using hci True by (by100 simp)
+          then have "X = last c'" using h_last_eq by (by100 simp)
+          then have "X = B" using hc'_last by (by100 simp)
+          thus ?thesis by (by100 simp)
+        next
+          case h_ne_idx: False
+          have h_lt: "i < length c' - 1" using hi_lt h_ne_idx by (by100 linarith)
+          have h_chain: "(c' ! i) \<subset> (c' ! (length c' - 1))"
+            by (rule sorted_wrt_nth_less[OF hc'_sorted h_lt h_last_idx])
+          have "X \<subset> last c'" using h_chain hci h_last_eq by (by100 simp)
+          have "X \<subset> B" using \<open>X \<subset> last c'\<close> hc'_last by (by100 simp)
+          thus ?thesis by (by100 blast)
+        qed
+      qed
+      have h_all_psub_A: "\<forall>X \<in> set c'. X \<subset> A"
+      proof
+        fix X assume hX: "X \<in> set c'"
+        have hXB: "X \<subseteq> B" using hX hc'_init_sub_B by (by100 blast)
+        show "X \<subset> A" using hXB hB_psub by (by100 blast)
+      qed
+      have hA_notin: "A \<notin> set c'"
+      proof
+        assume hA_in: "A \<in> set c'"
+        have "A \<subset> A" using hA_in h_all_psub_A by (by100 blast)
+        thus False by (by100 blast)
+      qed
+      have hc_set: "set c \<subseteq> C" unfolding c_def
+        using hc'_set hA by (by100 simp)
+      have hc_dist: "distinct c"
+        unfolding c_def using hc'_dist hA_notin by (by100 simp)
+      have hc_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c"
+        unfolding c_def sorted_wrt_append
+        using hc'_sorted h_all_psub_A by (by100 simp)
+      have hc_ne: "c \<noteq> []" unfolding c_def by (by100 simp)
+      have hc_flag: "c \<in> geotop_cell_flags C"
+        unfolding geotop_cell_flags_def
+        using hc_ne hc_set hc_sorted hc_dist by (by100 blast)
+      have hc_last: "last c = A" unfolding c_def by (by100 simp)
+      (** chain_simplex c = conv hull (V_{c'} \<union> {b(A)}) **)
+      have hc_set_eq: "set c = set c' \<union> {A}" unfolding c_def by (by100 simp)
+      have h_chain_c: "geotop_cell_chain_simplex c
+                          = convex hull (geotop_cell_barycenter ` set c)"
+        unfolding geotop_cell_chain_simplex_def by (by100 simp)
+      have h_image_eq: "geotop_cell_barycenter ` set c
+                          = geotop_cell_barycenter ` set c' \<union> {geotop_cell_barycenter A}"
+        using hc_set_eq by (by100 simp)
+      (** \<sigma>_c' \<subseteq> \<sigma>_c since V_{c'} \<subseteq> V_{c} **)
+      have h_sub_c'_c: "set c' \<subseteq> set c" unfolding c_def by (by100 auto)
+      have h_bary_sub: "geotop_cell_barycenter ` set c'
+                            \<subseteq> geotop_cell_barycenter ` set c"
+        using h_sub_c'_c by (by100 blast)
+      have h_chain_c'_sub: "geotop_cell_chain_simplex c'
+                              \<subseteq> geotop_cell_chain_simplex c"
+        unfolding geotop_cell_chain_simplex_def
+        using h_bary_sub hull_mono by (by100 blast)
+      have hz_c: "z \<in> geotop_cell_chain_simplex c"
+        using hz_c' h_chain_c'_sub by (by100 blast)
+      have h_bA_in_c: "geotop_cell_barycenter A \<in> geotop_cell_chain_simplex c"
+      proof -
+        have h_A_in_set: "A \<in> set c" using hc_set_eq by (by100 blast)
+        have h_bA_in_img:
+            "geotop_cell_barycenter A \<in> geotop_cell_barycenter ` set c"
+          using h_A_in_set by (by100 blast)
+        have h_img_sub:
+            "geotop_cell_barycenter ` set c
+                \<subseteq> convex hull (geotop_cell_barycenter ` set c)"
+          by (rule hull_subset)
+        show ?thesis
+          unfolding geotop_cell_chain_simplex_def
+          using h_bA_in_img h_img_sub by (by100 blast)
+      qed
+      have h_chain_conv: "convex (geotop_cell_chain_simplex c)"
+        unfolding geotop_cell_chain_simplex_def using convex_convex_hull by (by100 blast)
+      have h_seg_sub: "closed_segment (geotop_cell_barycenter A) z
+                        \<subseteq> geotop_cell_chain_simplex c"
+        using h_bA_in_c hz_c h_chain_conv closed_segment_subset by (by100 blast)
+      have hx_in: "x \<in> geotop_cell_chain_simplex c"
+        using hxz_seg h_seg_sub by (by100 blast)
+      show ?thesis using hc_flag hc_last hx_in by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_order_complex_polyhedron_supset:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "geotop_cell_polyhedron C
+           \<subseteq> geotop_polyhedron (geotop_order_complex C)"
+proof
+  fix x assume hx: "x \<in> geotop_cell_polyhedron C"
+  obtain A where hA: "A \<in> C" and hx_ri: "x \<in> rel_interior A"
+    using geotop_cell_complex_carrier[OF hC hx] by (by100 blast)
+  obtain c where hc: "c \<in> geotop_cell_flags C"
+              and hc_last: "last c = A"
+              and hx_in: "x \<in> geotop_cell_chain_simplex c"
+    using geotop_cell_x_in_chain_simplex[OF hC, of A, rule_format, OF hA hx_ri]
+    by (by100 blast)
+  have h_chain_in: "geotop_cell_chain_simplex c \<in> geotop_order_complex C"
+    unfolding geotop_order_complex_def using hc by (by100 blast)
+  show "x \<in> geotop_polyhedron (geotop_order_complex C)"
+    unfolding geotop_polyhedron_def
+    using h_chain_in hx_in by (by100 blast)
+qed
+
 (** Step 5.7 (easy direction): polyhedron of order complex \<subseteq>
     polyhedron of cell complex. Direct from 5.8. **)
 lemma geotop_order_complex_polyhedron_subset:
@@ -12538,6 +12828,16 @@ proof
     unfolding geotop_cell_polyhedron_def
     using hA h\<sigma>A hx\<sigma> by (by100 blast)
 qed
+
+(** Step 5.7 MAIN: polyhedron equality |order_complex C| = |C|. **)
+lemma geotop_order_complex_polyhedron:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "geotop_polyhedron (geotop_order_complex C)
+           = geotop_cell_polyhedron C"
+  using geotop_order_complex_polyhedron_subset[OF hC]
+        geotop_order_complex_polyhedron_supset[OF hC]
+  by (by100 blast)
 
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
@@ -12563,6 +12863,11 @@ qed
       simplex_vertices of chain-simplex).
     - 5.6b sub-helper: geotop_cell_flags_filter (filter preserves flag).
     - 5.8: order_complex_refines (each chain-simplex \<subseteq> last c \<in> C).
+    - 5.7 (\<subseteq> direction): order_complex_polyhedron_subset.
+    - CARRIER lemma: each x in |C| has unique smallest cell A with
+      x in rel_interior A. ~80 lines using rel_frontier_of_polyhedron_alt
+      + cell complex K.2 + affine_hull_face_of_disjoint_rel_interior.
+      Foundation for K.2 and 5.7 (\<supseteq>).
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Munkres §17
