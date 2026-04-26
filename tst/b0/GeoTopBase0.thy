@@ -12242,6 +12242,140 @@ proof (rule inj_onI)
   qed
 qed
 
+(** Step 5.6a': barycenter image is a vertex set of the chain-simplex.
+    Same argument as 5.6a, packaged for use in K.1 / K.2. **)
+lemma geotop_chain_simplex_vertices:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  shows "geotop_simplex_vertices (geotop_cell_chain_simplex c)
+            (geotop_cell_barycenter ` set c)"
+proof -
+  let ?V = "geotop_cell_barycenter ` set c"
+  have h_AI: "\<not> affine_dependent ?V"
+    by (rule geotop_cell_flag_barycenters_affine_indep[OF hC hc])
+  have h_finV: "finite ?V" by (by100 simp)
+  have h_c_ne: "c \<noteq> []" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_setc_ne: "set c \<noteq> {}" using h_c_ne by (by100 simp)
+  have h_V_ne: "?V \<noteq> {}" using h_setc_ne by (by100 simp)
+  have h_card_pos: "card ?V \<ge> 1"
+  proof -
+    have "card ?V > 0" using h_V_ne h_finV card_gt_0_iff by (by100 blast)
+    thus ?thesis by (by100 simp)
+  qed
+  define n where "n = card ?V - 1"
+  have h_card_eq: "card ?V = n + 1" using h_card_pos n_def by (by100 simp)
+  have h_GP: "geotop_general_position ?V n"
+    by (rule geotop_ai_imp_general_position[OF h_finV h_card_eq h_AI])
+  have h_chain_eq: "geotop_cell_chain_simplex c = geotop_convex_hull ?V"
+    unfolding geotop_cell_chain_simplex_def
+    using geotop_convex_hull_eq_HOL[of ?V] by (by100 simp)
+  have h_n_le: "n \<le> n" by (by100 simp)
+  show ?thesis
+    unfolding geotop_simplex_vertices_def
+    using h_finV h_card_eq h_n_le h_GP h_chain_eq by (by100 blast)
+qed
+
+(** Step 5.6b sub-helper: filter of a cell-flag (when non-empty) is a cell-flag. **)
+lemma geotop_cell_flags_filter:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  assumes h_filt_ne: "filter P c \<noteq> []"
+  shows "filter P c \<in> geotop_cell_flags C"
+proof -
+  have h_set: "set c \<subseteq> C" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_dist: "distinct c" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c"
+    using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_set_filt_sub: "set (filter P c) \<subseteq> set c" by (by100 simp)
+  have h_set_sub_C: "set (filter P c) \<subseteq> C" using h_set_filt_sub h_set by (by100 blast)
+  have h_dist_filt: "distinct (filter P c)" using h_dist by (by100 simp)
+  have h_sorted_filt: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (filter P c)"
+    by (rule sorted_wrt_filter[OF h_sorted])
+  show ?thesis
+    using h_filt_ne h_set_sub_C h_sorted_filt h_dist_filt
+    unfolding geotop_cell_flags_def by (by100 blast)
+qed
+
+(** Step 5.6b MAIN (K.1): order complex is closed under faces. **)
+lemma geotop_order_complex_face_closed:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes h\<sigma>: "\<sigma> \<in> geotop_order_complex C"
+  assumes h\<tau>_face: "geotop_is_face \<tau> \<sigma>"
+  shows "\<tau> \<in> geotop_order_complex C"
+proof -
+  obtain c where hc: "c \<in> geotop_cell_flags C"
+             and h\<sigma>_eq: "\<sigma> = geotop_cell_chain_simplex c"
+    using h\<sigma> unfolding geotop_order_complex_def by (by100 blast)
+  let ?V_c = "geotop_cell_barycenter ` set c"
+  have h_Vsv_c: "geotop_simplex_vertices \<sigma> ?V_c"
+    using h\<sigma>_eq geotop_chain_simplex_vertices[OF hC hc] by (by100 simp)
+  obtain V W where hVsv: "geotop_simplex_vertices \<sigma> V"
+              and hWne: "W \<noteq> {}"
+              and hWV: "W \<subseteq> V"
+              and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    using h\<tau>_face unfolding geotop_is_face_def by (by100 blast)
+  have h_V_eq: "V = ?V_c"
+    by (rule geotop_simplex_vertices_unique[OF hVsv h_Vsv_c])
+  have hW_sub_Vc: "W \<subseteq> ?V_c" using hWV h_V_eq by (by100 simp)
+  define S where "S = {x \<in> set c. geotop_cell_barycenter x \<in> W}"
+  have h_S_sub: "S \<subseteq> set c" unfolding S_def by (by100 blast)
+  have h_bary_S_eq_W: "geotop_cell_barycenter ` S = W"
+  proof (rule set_eqI, rule iffI)
+    fix w assume hw: "w \<in> geotop_cell_barycenter ` S"
+    obtain x where hx: "x \<in> S" and hw_eq: "w = geotop_cell_barycenter x"
+      using hw by (by100 blast)
+    have "geotop_cell_barycenter x \<in> W" using hx unfolding S_def by (by100 blast)
+    thus "w \<in> W" using hw_eq by (by100 simp)
+  next
+    fix w assume hw: "w \<in> W"
+    have hw_Vc: "w \<in> ?V_c" using hw hW_sub_Vc by (by100 blast)
+    obtain x where hx: "x \<in> set c" and hwx: "w = geotop_cell_barycenter x"
+      using hw_Vc by (by100 blast)
+    have hxS: "x \<in> S" unfolding S_def using hx hwx hw by (by100 blast)
+    show "w \<in> geotop_cell_barycenter ` S" using hxS hwx by (by100 blast)
+  qed
+  define c' where "c' = filter (\<lambda>x. x \<in> S) c"
+  have h_set_c': "set c' = S"
+  proof -
+    have "set c' = {x \<in> set c. x \<in> S}"
+      unfolding c'_def by (by100 simp)
+    also have "... = S \<inter> set c" by (by100 blast)
+    also have "... = S" using h_S_sub by (by100 blast)
+    finally show ?thesis .
+  qed
+  have h_S_ne: "S \<noteq> {}"
+    using h_bary_S_eq_W hWne by (by100 blast)
+  have h_c'_ne: "c' \<noteq> []"
+  proof -
+    have "set c' \<noteq> {}" using h_set_c' h_S_ne by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
+  have h_c'_filt_ne: "filter (\<lambda>x. x \<in> S) c \<noteq> []"
+    using h_c'_ne unfolding c'_def by (by100 simp)
+  have h_c'_flag: "c' \<in> geotop_cell_flags C"
+    unfolding c'_def
+    by (rule geotop_cell_flags_filter[OF hc h_c'_filt_ne])
+  have h_chain_c': "geotop_cell_chain_simplex c' = geotop_convex_hull W"
+  proof -
+    have "geotop_cell_chain_simplex c'
+            = convex hull (geotop_cell_barycenter ` set c')"
+      unfolding geotop_cell_chain_simplex_def by (by100 simp)
+    also have "... = convex hull (geotop_cell_barycenter ` S)"
+      using h_set_c' by (by100 simp)
+    also have "... = convex hull W" using h_bary_S_eq_W by (by100 simp)
+    also have "... = geotop_convex_hull W"
+      using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_\<tau>_chain: "\<tau> = geotop_cell_chain_simplex c'"
+    using h\<tau>_eq h_chain_c' by (by100 simp)
+  show ?thesis
+    unfolding geotop_order_complex_def
+    using h_c'_flag h_\<tau>_chain by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
