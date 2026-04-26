@@ -11087,7 +11087,57 @@ proof -
       Step 4(e) is THE remaining hard step. Step 5 onwards uses already-built
       Munkres 14.4 + carrier-map infrastructure. **)
   have h_refines_aux: "\<exists>m. \<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
-    sorry
+  proof -
+    (** Step 1: Lebesgue number for K'-vertex open-star cover of |K|. **)
+    have h_leb_eps: "\<exists>\<epsilon>::real > 0. \<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow>
+                       diameter T < \<epsilon> \<longrightarrow>
+                       (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
+      sorry
+    obtain \<epsilon>::real where h\<epsilon>pos: "\<epsilon> > 0"
+                      and h\<epsilon>prop: "\<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow>
+                                    diameter T < \<epsilon> \<longrightarrow>
+                                    (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
+      using h_leb_eps by (by100 auto)
+    (** Step 2: Pick m\<^sub>0 with mesh(Sd^m\<^sub>0 K) < \<epsilon> via mesh shrinkage. **)
+    have hm_ex: "\<exists>m::nat. geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m K) < \<epsilon>"
+      sorry
+    obtain m\<^sub>0 where hm\<^sub>0: "geotop_mesh (\<lambda>x y. norm (x - y))
+                              (geotop_iterated_Sd m\<^sub>0 K) < \<epsilon>"
+      using hm_ex by (by100 blast)
+    (** Step 3-6: For each \<tau> \<in> Sd^m\<^sub>0 K, conclude \<exists>\<sigma>'\<in>K'. \<tau> \<subseteq> \<sigma>'. **)
+    have h_main: "\<forall>\<tau>\<in>geotop_iterated_Sd m\<^sub>0 K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
+    proof
+      fix \<tau> assume h\<tau>: "\<tau> \<in> geotop_iterated_Sd m\<^sub>0 K"
+      (** Step 3: \<tau> \<subseteq> open_star(v, K') for some K'-vertex v (via diameter < \<epsilon>). **)
+      have h\<tau>_open_star: "\<exists>v\<in>geotop_complex_vertices K'. \<tau> \<subseteq> geotop_open_star K' v"
+        sorry
+      obtain v where hv: "v \<in> geotop_complex_vertices K'"
+                 and h\<tau>_v: "\<tau> \<subseteq> geotop_open_star K' v"
+        using h\<tau>_open_star by (by100 blast)
+      (** Step 4 (KEY): the open-star intersection over V_\<tau> in K' is non-empty.
+          Uses Sd-flag chain structure + carrier-map. **)
+      obtain V\<^sub>\<tau> where hV\<tau>fin: "finite V\<^sub>\<tau>" and hV\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
+                   and h\<tau>_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
+        sorry
+      have h_inter_ne: "(\<Inter>w\<in>V\<^sub>\<tau>. geotop_open_star K' w) \<noteq> {}"
+        sorry
+      (** Step 5: Apply Munkres 14.4 \<Longleftarrow> in K' to get V_\<tau> \<subseteq> \<sigma>' for some \<sigma>' \<in> K'. **)
+      have hK'comp_loc: "geotop_is_complex K'"
+        using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+      obtain \<sigma>' where h\<sigma>'K': "\<sigma>' \<in> K'" and hV\<tau>_\<sigma>': "V\<^sub>\<tau> \<subseteq> \<sigma>'"
+        using geotop_open_star_inter_to_simplex[OF hK'comp_loc hV\<tau>ne h_inter_ne]
+        by (by100 blast)
+      (** Step 6: \<tau> = conv hull V_\<tau> \<subseteq> \<sigma>' by convexity of K'-simplex \<sigma>'. **)
+      have h\<sigma>'_simp: "geotop_is_simplex \<sigma>'"
+        using h\<sigma>'K' conjunct1[OF hK'comp_loc[unfolded geotop_is_complex_def]]
+        by (by100 blast)
+      have h_chull_sub: "convex hull V\<^sub>\<tau> \<subseteq> \<sigma>'"
+        by (rule geotop_finite_subset_simplex_hull_subset[OF h\<sigma>'_simp hV\<tau>_\<sigma>'])
+      have h\<tau>\<sigma>': "\<tau> \<subseteq> \<sigma>'" using h\<tau>_HOL h_chull_sub by (by100 simp)
+      show "\<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>" using h\<sigma>'K' h\<tau>\<sigma>' by (by100 blast)
+    qed
+    show ?thesis using h_main by (by100 blast)
+  qed
   obtain m where hSdm_in_K': "\<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
     using h_refines_aux by (by100 blast)
   have hSdm_sub_K: "geotop_is_subdivision (geotop_iterated_Sd m K) K"
