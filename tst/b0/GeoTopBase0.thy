@@ -10820,6 +10820,24 @@ next
   qed
 qed
 
+(** PLAN3 WEEK 1 (W1.5): For \<tau> \<in> Sd^m K (general m), V_\<tau> \<subseteq> some K-simplex.
+    Direct combination of geotop_iterated_Sd_simplex_in_K_simplex (W1.4 reuse)
+    with simplex_vertices_subset (V_\<tau> \<subseteq> \<tau>). **)
+lemma geotop_iterated_Sd_simplex_V_in_K_simplex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<tau>: "\<tau> \<in> geotop_iterated_Sd m K"
+  assumes h_sv: "geotop_simplex_vertices \<tau> V"
+  shows "\<exists>\<sigma>\<^sub>K\<in>K. V \<subseteq> \<sigma>\<^sub>K"
+proof -
+  obtain \<sigma>\<^sub>K where h\<sigma>\<^sub>K: "\<sigma>\<^sub>K \<in> K" and h\<tau>\<sigma>\<^sub>K: "\<tau> \<subseteq> \<sigma>\<^sub>K"
+    using geotop_iterated_Sd_simplex_in_K_simplex[OF hK hKfin h\<tau>] by (by100 blast)
+  have hV_\<tau>: "V \<subseteq> \<tau>" by (rule geotop_simplex_vertices_subset[OF h_sv])
+  have hV_\<sigma>\<^sub>K: "V \<subseteq> \<sigma>\<^sub>K" using hV_\<tau> h\<tau>\<sigma>\<^sub>K by (by100 blast)
+  show ?thesis using h\<sigma>\<^sub>K hV_\<sigma>\<^sub>K by (by100 blast)
+qed
+
 (** PLAN3 WEEK 1 (W1.3): For \<tau> \<in> Sd^1 K, V_\<tau> \<subseteq> chain top \<sigma>_K \<in> K.
     Combines W1.2 (chain form extraction) with chain_simplex_vertices_in_top. **)
 lemma geotop_Sd_simplex_V_in_K_top:
