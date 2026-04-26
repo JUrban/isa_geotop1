@@ -12409,6 +12409,118 @@ proof -
   show ?thesis using h_last_C h_\<sigma>_sub by (by100 blast)
 qed
 
+(** Cell complex carrier lemma: each x in |C| has a UNIQUE smallest
+    cell A in C with x in rel_interior A. Foundation for K.2 and
+    Step 5.7 (\<supseteq>). **)
+lemma geotop_cell_complex_carrier:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hx: "x \<in> geotop_cell_polyhedron C"
+  shows "\<exists>! A. A \<in> C \<and> x \<in> rel_interior A"
+proof -
+  have hC_fin: "finite C" using hC unfolding geotop_cell_complex_def by (by100 blast)
+  have h_x_in_some: "\<exists>A \<in> C. x \<in> A"
+    using hx unfolding geotop_cell_polyhedron_def by (by100 blast)
+  define D where "D = {A \<in> C. x \<in> A}"
+  have hD_ne: "D \<noteq> {}" using h_x_in_some unfolding D_def by (by100 blast)
+  have hD_fin: "finite D" using hC_fin unfolding D_def by (by100 simp)
+  have h_dim_set_fin: "finite (aff_dim ` D)" using hD_fin by (by100 simp)
+  have h_dim_ne: "aff_dim ` D \<noteq> {}" using hD_ne by (by100 simp)
+  define dmin where "dmin = Min (aff_dim ` D)"
+  have hdmin_in: "dmin \<in> aff_dim ` D"
+    using h_dim_set_fin h_dim_ne dmin_def Min_in by (by100 blast)
+  have hdmin_le: "\<forall>d \<in> aff_dim ` D. dmin \<le> d"
+    using h_dim_set_fin dmin_def Min_le by (by100 blast)
+  obtain A where hA_D: "A \<in> D" and hA_dim: "aff_dim A = dmin"
+    using hdmin_in by (by100 blast)
+  have hA_C: "A \<in> C" using hA_D unfolding D_def by (by100 blast)
+  have hA_x: "x \<in> A" using hA_D unfolding D_def by (by100 blast)
+  have hA_min: "\<forall>B \<in> C. x \<in> B \<longrightarrow> aff_dim A \<le> aff_dim B"
+  proof (intro ballI impI)
+    fix B assume hB: "B \<in> C" and hxB: "x \<in> B"
+    have hB_D: "B \<in> D" unfolding D_def using hB hxB by (by100 blast)
+    have "dmin \<le> aff_dim B" using hB_D hdmin_le by (by100 blast)
+    thus "aff_dim A \<le> aff_dim B" using hA_dim by (by100 simp)
+  qed
+  have hA_cell: "geotop_cell A"
+    using hC hA_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hA_poly: "polyhedron A"
+  proof -
+    have "polytope A" using hA_cell unfolding geotop_cell_def by (by100 blast)
+    thus ?thesis by (rule polytope_imp_polyhedron)
+  qed
+  (* x is in rel_interior A *)
+  have hA_ri: "x \<in> rel_interior A"
+  proof (rule ccontr)
+    assume hx_not: "x \<notin> rel_interior A"
+    have hA_closed: "closed A"
+      using hA_cell geotop_cell_compact compact_imp_closed by (by100 blast)
+    have h_close_eq: "closure A = A" using hA_closed by (by100 simp)
+    have hx_rfront: "x \<in> rel_frontier A"
+      unfolding rel_frontier_def
+      using hA_x hx_not h_close_eq by (by100 simp)
+    have hx_face: "\<exists>F. F face_of A \<and> F \<noteq> A \<and> x \<in> F"
+      using hx_rfront rel_frontier_of_polyhedron_alt[OF hA_poly] by (by100 blast)
+    obtain F where hF_face: "F face_of A" and hF_neq: "F \<noteq> A" and hxF: "x \<in> F"
+      using hx_face by (by100 blast)
+    have hF_ne: "F \<noteq> {}" using hxF by (by100 blast)
+    have hF_cell_face: "geotop_cell_face F A"
+      unfolding geotop_cell_face_def using hA_cell hF_face hF_ne by (by100 blast)
+    have hF_C: "F \<in> C"
+      using hC hA_C hF_cell_face unfolding geotop_cell_complex_def by (by100 blast)
+    have hA_conv: "convex A" by (rule geotop_cell_convex[OF hA_cell])
+    have hF_lt: "aff_dim F < aff_dim A"
+      by (rule face_of_aff_dim_lt[OF hA_conv hF_face hF_neq])
+    have h_min_le_F: "aff_dim A \<le> aff_dim F"
+      using hA_min hF_C hxF by (by100 blast)
+    show False using hF_lt h_min_le_F by (by100 simp)
+  qed
+  show ?thesis
+  proof (rule ex1I[of _ A])
+    show "A \<in> C \<and> x \<in> rel_interior A" using hA_C hA_ri by (by100 blast)
+  next
+    fix B assume hB: "B \<in> C \<and> x \<in> rel_interior B"
+    have hB_C: "B \<in> C" using hB by (by100 blast)
+    have hB_ri: "x \<in> rel_interior B" using hB by (by100 blast)
+    have hB_x: "x \<in> B" using hB_ri rel_interior_subset by (by100 blast)
+    have h_AB_int: "x \<in> A \<inter> B" using hA_x hB_x by (by100 blast)
+    have h_AB_ne: "A \<inter> B \<noteq> {}" using h_AB_int by (by100 blast)
+    have h_K2: "geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B"
+      using hC hA_C hB_C h_AB_ne unfolding geotop_cell_complex_def by (by100 blast)
+    have h_AB_face_A: "(A \<inter> B) face_of A"
+      using h_K2 unfolding geotop_cell_face_def by (by100 blast)
+    have h_AB_face_B: "(A \<inter> B) face_of B"
+      using h_K2 unfolding geotop_cell_face_def by (by100 blast)
+    have h_AB_eq_A: "A \<inter> B = A"
+    proof (rule ccontr)
+      assume h_neq: "A \<inter> B \<noteq> A"
+      have hA_conv: "convex A" by (rule geotop_cell_convex[OF hA_cell])
+      have h_disj: "affine hull (A \<inter> B) \<inter> rel_interior A = {}"
+        by (rule affine_hull_face_of_disjoint_rel_interior
+                [OF hA_conv h_AB_face_A h_neq])
+      have h_sub: "(A \<inter> B) \<subseteq> affine hull (A \<inter> B)" by (rule hull_subset)
+      have hx_in_aff: "x \<in> affine hull (A \<inter> B)"
+        using h_AB_int h_sub by (by100 blast)
+      show False using h_disj hx_in_aff hA_ri by (by100 blast)
+    qed
+    have h_AB_eq_B: "A \<inter> B = B"
+    proof (rule ccontr)
+      assume h_neq: "A \<inter> B \<noteq> B"
+      have hB_cell: "geotop_cell B"
+        using hC hB_C unfolding geotop_cell_complex_def by (by100 blast)
+      have hB_conv: "convex B" by (rule geotop_cell_convex[OF hB_cell])
+      have h_disj: "affine hull (A \<inter> B) \<inter> rel_interior B = {}"
+        by (rule affine_hull_face_of_disjoint_rel_interior
+                [OF hB_conv h_AB_face_B h_neq])
+      have h_sub: "(A \<inter> B) \<subseteq> affine hull (A \<inter> B)" by (rule hull_subset)
+      have hx_in_aff: "x \<in> affine hull (A \<inter> B)"
+        using h_AB_int h_sub by (by100 blast)
+      show False using h_disj hx_in_aff hB_ri by (by100 blast)
+    qed
+    show "B = A" using h_AB_eq_A h_AB_eq_B by (by100 blast)
+  qed
+qed
+
 (** Step 5.7 (easy direction): polyhedron of order complex \<subseteq>
     polyhedron of cell complex. Direct from 5.8. **)
 lemma geotop_order_complex_polyhedron_subset:
