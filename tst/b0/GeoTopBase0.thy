@@ -12376,6 +12376,39 @@ proof -
     using h_c'_flag h_\<tau>_chain by (by100 blast)
 qed
 
+(** Step 5.8: order_complex refines C. Each chain-simplex \<sigma>_c
+    is contained in last c (a cell of C).
+    Proof: barycenter ` set c \<subseteq> last c (Step 5.3c); last c is convex
+    (cell); convex hull \<subseteq> last c. **)
+lemma geotop_order_complex_refines:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes h\<sigma>: "\<sigma> \<in> geotop_order_complex C"
+  shows "\<exists>A \<in> C. \<sigma> \<subseteq> A"
+proof -
+  obtain c where hc: "c \<in> geotop_cell_flags C"
+             and h\<sigma>_eq: "\<sigma> = geotop_cell_chain_simplex c"
+    using h\<sigma> unfolding geotop_order_complex_def by (by100 blast)
+  have h_set: "set c \<subseteq> C" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_c_ne: "c \<noteq> []" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_last_in: "last c \<in> set c" using h_c_ne by (by100 simp)
+  have h_last_C: "last c \<in> C" using h_last_in h_set by (by100 blast)
+  have h_last_cell: "geotop_cell (last c)"
+    using hC h_last_C unfolding geotop_cell_complex_def by (by100 blast)
+  have h_last_conv: "convex (last c)" by (rule geotop_cell_convex[OF h_last_cell])
+  have h_barys_sub: "geotop_cell_barycenter ` set c \<subseteq> last c"
+    by (rule geotop_cell_flag_init_barycenters_in_top[OF hC hc])
+  have h_last_eq: "convex hull (last c) = last c"
+    by (rule iffD2[OF convex_hull_eq h_last_conv])
+  have h_barys_sub_hull: "geotop_cell_barycenter ` set c \<subseteq> convex hull (last c)"
+    using h_barys_sub h_last_eq by (by100 simp)
+  have h_hull_sub: "convex hull (geotop_cell_barycenter ` set c) \<subseteq> last c"
+    using convex_hull_subset[OF h_barys_sub_hull] h_last_eq by (by100 simp)
+  have h_\<sigma>_sub: "\<sigma> \<subseteq> last c"
+    using h\<sigma>_eq h_hull_sub unfolding geotop_cell_chain_simplex_def by (by100 simp)
+  show ?thesis using h_last_C h_\<sigma>_sub by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
