@@ -23,6 +23,71 @@ grep -n "^lemma geotop_K_carriers_of_barycenters\|^lemma geotop_K_carrier_baryce
 
 5. Re-read PLAN3.md and PLAN3_WEEK1.md to refresh the overall plan.
 
+## ⚠ CRITICAL FINDING (2026-04-26 fresh-session setup)
+
+**Setup analysis revealed W2.1 as stated is unprovable via rel-distance.**
+
+Counterexample: σ_K = triangle [a,b,c], σ' = edge [a,b] (a FACE of σ_K, V_σ' = {a,b} ⊆ V_σ_K = {a,b,c}). Take x = midpoint of [a,b] ∈ rel_interior σ'. Points in σ_K \ σ' (triangle interior) can be arbitrarily close to x. So dist(x, σ_K \ σ') = 0. Same for σ_K \ rel_interior σ'.
+
+**Conclusion:** σ_K \ σ' (or \ rel_interior σ') is NOT closed for σ' a face of σ_K when dim σ' < dim σ_K. The rel-distance approach fundamentally cannot work this way.
+
+**Implication for Week 2 plan:** the Munkres §16 argument must use a DIFFERENT analytic technique. The W2.1 + W2.3 structure as drafted is unworkable.
+
+## Revised approach (Munkres §16 "open star" argument)
+
+The classical proof does NOT use rel-distance bounds. Instead:
+
+1. Lebesgue ε for K'-vertex-star cover (already proven in `iterated_Sd_refines_subdivision`).
+2. For τ ⊆ open_star(v, K') (one K'-vertex v), each w ∈ V_τ has v ∈ V(K'-carrier(w)).
+3. **Key new claim**: for τ a Sd-simplex (V_τ are barycenters of a K-flag chain), the K'-carriers σ'_i = K'-carrier(barycenter σ_i) for i = 0..p (chain) all contain v, AND they are NESTED: σ'_0 ⊆ σ'_1 ⊆ ... ⊆ σ'_p.
+
+The nesting claim is the actual deep fact. It comes from:
+- σ'_i ⊆ σ_i ⊆ σ_p (chain).
+- v ∈ σ'_i for each i (from open_star).
+- σ'_i ∩ σ'_p contains v, hence non-empty. By K.2 axiom, σ'_i ∩ σ'_p is a face of both.
+- For σ'_i ⊆ σ'_p, we need σ'_i = σ'_i ∩ σ'_p, i.e., σ'_p ⊇ σ'_i.
+
+The "σ'_p ⊇ σ'_i" claim requires σ'_p to be the K'-CARRIER of barycenter σ_p, which has DIMENSION = dim σ_p (since barycenter σ_p is in rel_interior σ_p, which is "deepest" in σ_p). The dim hierarchy might give σ'_i face of σ'_p.
+
+**This is still a non-trivial claim.** Will need careful argument.
+
+## Revised W2 plan
+
+- **W2.1 (REVISED)**: K'-carrier dimension = K-carrier dimension when point in rel_interior of K-simplex (~80 lines). For x ∈ rel_interior σ_K, the K'-carrier σ'_x has same dim as σ_K (or related dim relationship).
+- **W2.2**: K-flag chain elements form a face-chain in K (~60 lines). Same as before — uses face axiom.
+- **W2.3 (REVISED)**: K'-carriers σ'_i along the K-flag chain are nested (~80 lines). The deep analytic claim.
+- **W2.4**: Discharge h_inter_ne (~50 lines). With nested K'-carriers, σ'_p contains all V_τ, giving Munkres 14.4 ⟹ result.
+
+## Mathematical correctness check
+
+Before proceeding with W2.1 revised, need to verify the nesting claim itself by hand on a small example. The fresh session should START by working a 2D example:
+
+K = single triangle [a,b,c]. K' = some specific subdivision. For an Sd^1 K-simplex τ with K-flag c = [{a}, [a,b]] (a chain), V_τ = {barycenter {a}, barycenter [a,b]} = {a, midpoint ab}.
+
+K'-carriers:
+- K'-carrier(a) = some K'-simplex with a in its rel_interior. Since {a} ∈ K' (subdivision preserves K-vertices), K'-carrier(a) = {a}.
+- K'-carrier(midpoint ab) = some K'-simplex with midpoint ab in its rel_interior. Depends on K' structure.
+
+For nesting: {a} ⊆ K'-carrier(midpoint ab)? This requires the K'-simplex containing midpoint ab in rel_interior to also contain a. Since a is on the boundary of K'-carrier(midpoint ab) (assuming the K'-simplex extends to include endpoint a), this is plausible.
+
+But for a K' that subdivides edge ab into many segments, K'-carrier(midpoint ab) might be a tiny segment NOT containing a. Then {a} ⊄ K'-carrier(midpoint ab), and the nesting claim FAILS.
+
+**This suggests the nesting claim is actually FALSE in general.** Need to think harder.
+
+## Revised conclusion
+
+The classical Munkres §16 argument is more subtle than direct nesting. Possible approaches:
+
+1. Use ITERATION m large enough that ALL Sd^m K-vertices fall into the SAME K'-simplex. This requires a quantitative argument about how Sd-iteration "concentrates" vertices.
+
+2. Use a more elaborate carrier-chain argument that doesn't require literal nesting but exploits Sd-flag-chain refinement.
+
+3. Use Munkres' §16.4 direct subdivision-mapping argument (different proof path).
+
+Given the difficulty, Week 2 may need to expand to a 2-3 week effort, with W2 being preparatory and the actual h_inter_ne discharge happening in W3.
+
+Continuing investigation is required before code is written.
+
 ---
 
 ## Week 2 attack outline
