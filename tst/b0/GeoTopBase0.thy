@@ -11958,15 +11958,51 @@ proof
   show "b \<in> last c" using hb_A hA_sub_last by (by100 blast)
 qed
 
-(** Phase 5 ATTEMPTS so far: Steps 5.1a/b, 5.3a/b/c (~120 lines).
+(** Phase 5 PROGRESS NOTE (2026-04-26):
 
-    Remaining (deferred): the FULL Step 5.3 (affine independence of
-    cell-flag barycenters), Steps 5.6-5.10. Need substantially more
-    machinery: proving that barycenters at strict-increasing dimensions
-    are affinely independent (analog of the Moise simplex argument
-    requires careful adaptation to cells). **)
+    Steps DONE:
+    - 5.1, 5.2, 5.4, 5.5: definitions (cell barycenter, flags,
+      chain-simplex, order complex)
+    - 5.1a/b: barycenter in rel_interior / in cell
+    - 5.3a: subset \<Longrightarrow> face in cell complex
+    - 5.3b: psubset \<Longrightarrow> strict aff_dim
+    - 5.3c: barycenter image \<subseteq> chain top
 
-(** End Phase 5 (Steps 5.1-5.3b done; rest deferred). =============== **)
+    Step DEFERRED — full 5.3 (cell-flag barycenters affinely
+    independent):
+
+    The classical Moise argument for SIMPLICES uses
+    general_position of vertex sets and is in
+    geotop_complex_flag_barycenter_affine_independent (~150 lines).
+    For CELLS, we lack a canonical \"vertex set\" with general_position;
+    the SOME-witness barycenter doesn't auto-satisfy AI.
+
+    Two routes forward (multi-week work):
+    (a) Use HOL-Analysis aff_dim machinery + induction on chain
+        length: assume AI of barycenters along init c, then show
+        b(last c) \<notin> aff_hull(barycenters of init c). Subtle:
+        b(last c) \<in> rel_interior(last c) doesn't directly contradict
+        membership in aff_hull(init c)'s subspace.
+    (b) Define cell barycenter as centroid of extreme points
+        (which exist as a finite set for polytopes), then prove AI
+        from extreme-point structure.
+
+    Either approach requires significant new infrastructure
+    (~150-300 lines).
+
+    Other deferred Phase 5 steps:
+    - 5.6: order complex satisfies K.0/K.1/K.2/K.3 (depends on 5.3)
+    - 5.7: polyhedron equality |order_complex C| = |C|
+    - 5.8: order_complex refines C
+    - 5.9: cell-by-cell coverage (induced subdivisions)
+    - 5.10: main triangulation theorem
+
+    Phases 6-8 deferred (depend on Phase 5 completion).
+
+    Current Phase 5 progress: ~145 lines done, ~150-450 lines
+    remaining. **)
+
+(** End Phase 5 (Steps 5.1-5.3c done; rest deferred). =============== **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
