@@ -11183,6 +11183,172 @@ qed
 
 (** End Phase 2. ============================================ **)
 
+(** ============================================================
+    PLAN3 Phase 3: Convex cell complexes (Hudson Chapter I §2)
+    ============================================================ **)
+
+(** Step 3.1: Convex cell complex definition (Hudson §2). **)
+definition geotop_cell_complex :: "'a::euclidean_space set set \<Rightarrow> bool" where
+  "geotop_cell_complex C \<longleftrightarrow>
+     finite C
+     \<and> (\<forall>A\<in>C. geotop_cell A)
+     \<and> (\<forall>A\<in>C. \<forall>F. geotop_cell_face F A \<longrightarrow> F \<in> C)
+     \<and> (\<forall>A\<in>C. \<forall>B\<in>C. A \<inter> B = {} \<or>
+          (geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B))"
+
+(** Step 3.2: Cell complex polyhedron. **)
+definition geotop_cell_polyhedron :: "'a::euclidean_space set set \<Rightarrow> 'a set" where
+  "geotop_cell_polyhedron C = \<Union>C"
+
+(** Step 3.3: Cell complex subdivision. **)
+definition geotop_cell_is_subdivision ::
+  "'a::euclidean_space set set \<Rightarrow> 'a::euclidean_space set set \<Rightarrow> bool" where
+  "geotop_cell_is_subdivision C' C \<longleftrightarrow>
+     geotop_cell_complex C' \<and> geotop_cell_complex C
+     \<and> geotop_cell_polyhedron C' = geotop_cell_polyhedron C
+     \<and> (\<forall>A\<in>C'. \<exists>B\<in>C. A \<subseteq> B)"
+
+(** Step 3.5: Polyhedron coincidence. Trivially same definition.
+    (Note: Step 3.5 placed before 3.4 as it's used inside 3.4 implicitly.) **)
+lemma geotop_simplicial_polyhedron_eq_cell_polyhedron:
+  fixes K :: "'a::euclidean_space set set"
+  shows "geotop_polyhedron K = geotop_cell_polyhedron K"
+  unfolding geotop_polyhedron_def geotop_cell_polyhedron_def by (by100 simp)
+
+(** Step 3.4: Bridge - simplicial complex is a cell complex. **)
+lemma geotop_simplicial_complex_imp_cell_complex:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  shows "geotop_cell_complex K"
+proof -
+  have h_simp_all: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h_face_closed:
+    "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+  have h_inter_face:
+    "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+              hK[unfolded geotop_is_complex_def]]]])
+  (** Each simplex is a cell. **)
+  have h_K_cells: "\<forall>\<sigma>\<in>K. geotop_cell \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> K"
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma> h_simp_all by (by100 blast)
+    show "geotop_cell \<sigma>" by (rule geotop_simplex_imp_cell[OF h\<sigma>_simp])
+  qed
+  (** Closed under cell faces. For \<sigma> \<in> K and F a cell face of \<sigma>:
+      F is a polytope, F face_of \<sigma>. Need F \<in> K.
+      This requires showing F has the geotop_is_face form (vertex subset
+      hull). Not automatic from cell-face form. **)
+  have h_K_face_closed:
+    "\<forall>\<sigma>\<in>K. \<forall>F. geotop_cell_face F \<sigma> \<longrightarrow> F \<in> K"
+  proof (rule ballI, rule allI, rule impI)
+    fix \<sigma> F assume h\<sigma>: "\<sigma> \<in> K" and hF: "geotop_cell_face F \<sigma>"
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>" using h\<sigma> h_simp_all by (by100 blast)
+    obtain V where hV: "geotop_simplex_vertices \<sigma> V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+      by (by100 blast)
+    have hVfin: "finite V" using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+      using hV unfolding geotop_simplex_vertices_def
+      using geotop_convex_hull_eq_HOL by (by100 blast)
+    have hV_ai: "\<not> affine_dependent V"
+      by (rule geotop_general_position_imp_aff_indep[OF hV])
+    have hF_face: "F face_of \<sigma>" using hF unfolding geotop_cell_face_def by (by100 blast)
+    have hF_face_V: "F face_of (convex hull V)" using hF_face h\<sigma>_HOL by (by100 simp)
+    (** By face_of_convex_hull_affine_independent:
+        F = convex hull W for some W \<subseteq> V. **)
+    obtain W where hW_V: "W \<subseteq> V" and hF_W: "F = convex hull W"
+      using face_of_convex_hull_affine_independent[OF hV_ai, of F] hF_face_V
+      by (by100 blast)
+    have hF_ne: "F \<noteq> {}" using hF unfolding geotop_cell_face_def by (by100 blast)
+    have hW_ne: "W \<noteq> {}"
+    proof
+      assume hW_e: "W = {}"
+      have "F = convex hull {}" using hF_W hW_e by (by100 simp)
+      then have "F = {}" by (by100 simp)
+      thus False using hF_ne by (by100 blast)
+    qed
+    have h_geotop_eq: "geotop_convex_hull W = convex hull W"
+      by (rule geotop_convex_hull_eq_HOL)
+    have hF_geotop: "F = geotop_convex_hull W"
+      using hF_W h_geotop_eq by (by100 simp)
+    have hF_geotop_face: "geotop_is_face F \<sigma>"
+      unfolding geotop_is_face_def
+      using hV hW_ne hW_V hF_geotop by (by100 blast)
+    show "F \<in> K" using h_face_closed h\<sigma> hF_geotop_face by (by100 blast)
+  qed
+  (** Pairwise intersection is a common cell face. **)
+  have h_K_pairwise:
+    "\<forall>A\<in>K. \<forall>B\<in>K. A \<inter> B = {} \<or>
+       (geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B)"
+  proof (rule ballI, rule ballI)
+    fix A B assume hA: "A \<in> K" and hB: "B \<in> K"
+    show "A \<inter> B = {} \<or>
+       (geotop_cell_face (A \<inter> B) A \<and> geotop_cell_face (A \<inter> B) B)"
+    proof (cases "A \<inter> B = {}")
+      case True
+      then show ?thesis by (by100 blast)
+    next
+      case h_ne: False
+      have hAB_face_A: "(A \<inter> B) face_of A"
+        by (rule geotop_complex_inter_face_HOL[OF hK hA hB h_ne])
+      have hBA_ne: "B \<inter> A \<noteq> {}" using h_ne by (by100 blast)
+      have h_BA_face: "(B \<inter> A) face_of B"
+        by (rule geotop_complex_inter_face_HOL[OF hK hB hA hBA_ne])
+      have h_eq: "A \<inter> B = B \<inter> A" by (by100 blast)
+      have hAB_face_B: "(A \<inter> B) face_of B" using h_BA_face h_eq by (by100 simp)
+      have hA_cell: "geotop_cell A" using hA h_K_cells by (by100 blast)
+      have hB_cell: "geotop_cell B" using hB h_K_cells by (by100 blast)
+      have h_face_A: "geotop_cell_face (A \<inter> B) A"
+        unfolding geotop_cell_face_def using hA_cell h_ne hAB_face_A by (by100 blast)
+      have h_face_B: "geotop_cell_face (A \<inter> B) B"
+        unfolding geotop_cell_face_def using hB_cell h_ne hAB_face_B by (by100 blast)
+      show ?thesis using h_face_A h_face_B by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    unfolding geotop_cell_complex_def
+    using hKfin h_K_cells h_K_face_closed h_K_pairwise by (by100 blast)
+qed
+
+(** Step 3.6: Subdivision bridge. **)
+lemma geotop_simplicial_subdivision_imp_cell_subdivision:
+  fixes K K' :: "'a::euclidean_space set set"
+  assumes hK_subdiv: "geotop_is_subdivision K' K"
+  assumes hKfin: "finite K"
+  shows "geotop_cell_is_subdivision K' K"
+proof -
+  have hK: "geotop_is_complex K"
+    using hK_subdiv unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK': "geotop_is_complex K'"
+    using hK_subdiv unfolding geotop_is_subdivision_def by (by100 blast)
+  have hK'fin: "finite K'"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hKfin hK_subdiv])
+  have hK_cell: "geotop_cell_complex K"
+    by (rule geotop_simplicial_complex_imp_cell_complex[OF hK hKfin])
+  have hK'_cell: "geotop_cell_complex K'"
+    by (rule geotop_simplicial_complex_imp_cell_complex[OF hK' hK'fin])
+  have h_polyeq_simpl: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hK_subdiv unfolding geotop_is_subdivision_def by (by100 blast)
+  have h_polyeq: "geotop_cell_polyhedron K' = geotop_cell_polyhedron K"
+    using h_polyeq_simpl
+          geotop_simplicial_polyhedron_eq_cell_polyhedron[of K']
+          geotop_simplicial_polyhedron_eq_cell_polyhedron[of K]
+    by (by100 simp)
+  have h_refines: "\<forall>A\<in>K'. \<exists>B\<in>K. A \<subseteq> B"
+    using hK_subdiv unfolding geotop_is_subdivision_def geotop_refines_def
+    by (by100 blast)
+  show ?thesis
+    unfolding geotop_cell_is_subdivision_def
+    using hK'_cell hK_cell h_polyeq h_refines by (by100 blast)
+qed
+
+(** End Phase 3. ============================================ **)
+
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
     Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
