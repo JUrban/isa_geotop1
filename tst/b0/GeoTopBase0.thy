@@ -14729,6 +14729,51 @@ proof -
             [OF hL2 hM hMC h_C_in_L h_L_covered])
 qed
 
+(** ============================================================
+    PLAN3 Phase 7: Common subdivision theorem
+    ============================================================ **)
+
+(** Main theorem: any two simplicial complexes L1, L2 with the same
+    polyhedron have a common simplicial subdivision M.
+    Witness: M = order_complex (overlay_complex L1 L2). **)
+theorem geotop_common_subdivision_finite:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hL1fin: "finite L1"
+  assumes hL2fin: "finite L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  shows "\<exists>M. geotop_is_subdivision M L1 \<and> geotop_is_subdivision M L2"
+proof -
+  define C where "C = geotop_overlay_complex L1 L2"
+  have hC_cell: "geotop_cell_complex C"
+    unfolding C_def
+    by (rule geotop_overlay_complex_is_cell_complex[OF hL1 hL2 hL1fin hL2fin])
+  have h_subdiv_ex: "\<exists>M. geotop_is_complex M \<and> finite M
+                          \<and> geotop_cell_is_subdivision M C
+                          \<and> (\<forall>A\<in>C. A = \<Union>{S\<in>M. S \<subseteq> A})"
+    by (rule geotop_cell_complex_has_simplicial_subdivision[OF hC_cell])
+  define M where "M = (SOME M. geotop_is_complex M \<and> finite M
+                          \<and> geotop_cell_is_subdivision M C
+                          \<and> (\<forall>A\<in>C. A = \<Union>{S\<in>M. S \<subseteq> A}))"
+  have hM_all: "geotop_is_complex M \<and> finite M
+                  \<and> geotop_cell_is_subdivision M C
+                  \<and> (\<forall>A\<in>C. A = \<Union>{S\<in>M. S \<subseteq> A})"
+    unfolding M_def using someI_ex[OF h_subdiv_ex] by (by100 simp)
+  have hM_simp: "geotop_is_complex M" using hM_all by (by100 blast)
+  have hMfin: "finite M" using hM_all by (by100 blast)
+  have hMC_subdiv: "geotop_cell_is_subdivision M C" using hM_all by (by100 blast)
+  have hMC_overlay: "geotop_cell_is_subdivision M (geotop_overlay_complex L1 L2)"
+    using hMC_subdiv C_def by (by100 simp)
+  have hML1: "geotop_is_subdivision M L1"
+    by (rule geotop_overlay_triangulation_subdivides_left
+            [OF hL1 hL2 hpoly hM_simp hMC_overlay])
+  have hML2: "geotop_is_subdivision M L2"
+    by (rule geotop_overlay_triangulation_subdivides_right
+            [OF hL1 hL2 hpoly hM_simp hMC_overlay])
+  show ?thesis using hML1 hML2 by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
