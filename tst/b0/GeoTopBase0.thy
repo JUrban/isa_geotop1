@@ -11958,7 +11958,130 @@ proof
   show "b \<in> last c" using hb_A hA_sub_last by (by100 blast)
 qed
 
-(** Phase 5 PROGRESS NOTE (2026-04-26):
+(** Step 5.3d: Init of a non-empty cell-flag is itself a cell-flag.
+    Used in the rev_induct proof of Step 5.3 main below. **)
+lemma geotop_cell_flags_init:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hc: "(c0 @ [A]) \<in> geotop_cell_flags C"
+  assumes hc0_ne: "c0 \<noteq> []"
+  shows "c0 \<in> geotop_cell_flags C"
+proof -
+  have h_set: "set (c0 @ [A]) \<subseteq> C"
+    using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_set0: "set c0 \<subseteq> C" using h_set by (by100 simp)
+  have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (c0 @ [A])"
+    using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_sorted0: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c0"
+    using h_sorted sorted_wrt_append by (by100 fast)
+  have h_dist: "distinct (c0 @ [A])"
+    using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_dist0: "distinct c0" using h_dist by (by100 simp)
+  show ?thesis using hc0_ne h_set0 h_sorted0 h_dist0
+    unfolding geotop_cell_flags_def by (by100 blast)
+qed
+
+(** Step 5.3 (MAIN): cell-flag barycenters are affinely independent.
+    Proof: rev_induct on c. For c = c0 @ [A]:
+    - If c0 = []: singleton, trivially AI.
+    - Else: by IH, AI of barycenters of c0. Need b(A) \<notin> aff_hull
+      (barycenter ` set c0). Argument:
+        last c0 \<subset> A (sorted chain) \<Longrightarrow> last c0 face_of A (5.3a)
+        \<Longrightarrow> aff_hull (last c0) \<inter> rel_interior A = \<emptyset>
+              (HOL-Analysis: affine_hull_face_of_disjoint_rel_interior)
+        \<Longrightarrow> b(A) \<notin> aff_hull (last c0)  (since b(A) \<in> rel_interior A)
+        Also barycenter ` set c0 \<subseteq> last c0 (Step 5.3c)
+        \<Longrightarrow> aff_hull (barycenter ` set c0) \<subseteq> aff_hull (last c0)
+        \<Longrightarrow> b(A) \<notin> aff_hull (barycenter ` set c0).
+      Then affine_independent_insert finishes. **)
+lemma geotop_cell_flag_barycenters_affine_indep:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  shows "\<not> affine_dependent (geotop_cell_barycenter ` set c)"
+  using hc
+proof (induction c rule: rev_induct)
+  case Nil
+  then have "[] \<in> geotop_cell_flags C" by (by100 blast)
+  then have False unfolding geotop_cell_flags_def by (by100 simp)
+  thus ?case by (by100 blast)
+next
+  case (snoc A c0)
+  show ?case
+  proof (cases "c0 = []")
+    case h_c0_empty: True
+    have h_app: "c0 @ [A] = [A]" using h_c0_empty by (by100 simp)
+    have h_img: "geotop_cell_barycenter ` set (c0 @ [A])
+                   = {geotop_cell_barycenter A}"
+      using h_app by (by100 simp)
+    have h_AI: "\<not> affine_dependent {geotop_cell_barycenter A}"
+      by (by100 simp)
+    from h_AI h_img show ?thesis by (by100 metis)
+  next
+    case h_c0_ne: False
+    have hc_flag: "(c0 @ [A]) \<in> geotop_cell_flags C" using snoc.prems by (by100 blast)
+    have hc0_flag: "c0 \<in> geotop_cell_flags C"
+      by (rule geotop_cell_flags_init[OF hc_flag h_c0_ne])
+    have h_IH: "\<not> affine_dependent (geotop_cell_barycenter ` set c0)"
+      using snoc.IH hc0_flag by (by100 blast)
+    have h_set: "set (c0 @ [A]) \<subseteq> C"
+      using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+    have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (c0 @ [A])"
+      using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+    have h_chain: "\<forall>y\<in>set c0. y \<subset> A"
+      using h_sorted unfolding sorted_wrt_append by (by100 simp)
+    have h_last_in: "last c0 \<in> set c0" using h_c0_ne by (by100 simp)
+    have h_last_sub_A: "last c0 \<subset> A" using h_chain h_last_in by (by100 blast)
+    have h_A_C: "A \<in> set (c0 @ [A])" by (by100 simp)
+    have h_A_C': "A \<in> C" using h_A_C h_set by (by100 blast)
+    have h_lastc0_C: "last c0 \<in> C" using h_set h_last_in by (by100 auto)
+    have h_A_cell: "geotop_cell A"
+      using hC h_A_C' unfolding geotop_cell_complex_def by (by100 blast)
+    have h_A_conv: "convex A" by (rule geotop_cell_convex[OF h_A_cell])
+    have h_lastc0_cell: "geotop_cell (last c0)"
+      using hC h_lastc0_C unfolding geotop_cell_complex_def by (by100 blast)
+    have h_lastc0_ne: "last c0 \<noteq> {}"
+      by (rule geotop_cell_nonempty[OF h_lastc0_cell])
+    have h_lastc0_sub_A: "last c0 \<subseteq> A" using h_last_sub_A by (by100 blast)
+    have h_face_cell: "geotop_cell_face (last c0) A"
+      by (rule geotop_cell_complex_subset_imp_face
+              [OF hC h_lastc0_C h_A_C' h_lastc0_sub_A h_lastc0_ne])
+    have h_face_HOL: "(last c0) face_of A"
+      using h_face_cell unfolding geotop_cell_face_def by (by100 blast)
+    have h_face_neq: "(last c0) \<noteq> A" using h_last_sub_A by (by100 blast)
+    have h_disjoint: "affine hull (last c0) \<inter> rel_interior A = {}"
+      by (rule affine_hull_face_of_disjoint_rel_interior
+              [OF h_A_conv h_face_HOL h_face_neq])
+    have h_bA_ri: "geotop_cell_barycenter A \<in> rel_interior A"
+      by (rule geotop_cell_barycenter_in_rel_interior[OF h_A_cell])
+    have h_bA_not_aff_lastc0:
+        "geotop_cell_barycenter A \<notin> affine hull (last c0)"
+      using h_disjoint h_bA_ri by (by100 blast)
+    have h_barys_in_lastc0:
+        "geotop_cell_barycenter ` set c0 \<subseteq> last c0"
+      by (rule geotop_cell_flag_init_barycenters_in_top[OF hC hc0_flag])
+    have h_aff_sub:
+        "affine hull (geotop_cell_barycenter ` set c0)
+           \<subseteq> affine hull (last c0)"
+      by (rule hull_mono[OF h_barys_in_lastc0])
+    have h_bA_not_aff:
+        "geotop_cell_barycenter A
+           \<notin> affine hull (geotop_cell_barycenter ` set c0)"
+      using h_aff_sub h_bA_not_aff_lastc0 by (by100 blast)
+    have h_img:
+        "geotop_cell_barycenter ` set (c0 @ [A])
+           = insert (geotop_cell_barycenter A)
+                    (geotop_cell_barycenter ` set c0)"
+      by (by100 simp)
+    have h_AI:
+        "\<not> affine_dependent
+           (insert (geotop_cell_barycenter A)
+                   (geotop_cell_barycenter ` set c0))"
+      by (rule affine_independent_insert[OF h_IH h_bA_not_aff])
+    show ?thesis using h_AI h_img by (by100 simp)
+  qed
+qed
+
+(** Phase 5 PROGRESS NOTE (2026-04-26 / updated 2026-04-25 session):
 
     Steps DONE:
     - 5.1, 5.2, 5.4, 5.5: definitions (cell barycenter, flags,
@@ -11967,42 +12090,21 @@ qed
     - 5.3a: subset \<Longrightarrow> face in cell complex
     - 5.3b: psubset \<Longrightarrow> strict aff_dim
     - 5.3c: barycenter image \<subseteq> chain top
+    - 5.3d: init of cell-flag is a cell-flag
+    - 5.3 MAIN: cell-flag barycenters are affinely independent
+      (~80 lines using HOL-Analysis affine_hull_face_of_disjoint_rel_interior
+       and affine_independent_insert).
 
-    Step DEFERRED — full 5.3 (cell-flag barycenters affinely
-    independent):
-
-    The classical Moise argument for SIMPLICES uses
-    general_position of vertex sets and is in
-    geotop_complex_flag_barycenter_affine_independent (~150 lines).
-    For CELLS, we lack a canonical \"vertex set\" with general_position;
-    the SOME-witness barycenter doesn't auto-satisfy AI.
-
-    Two routes forward (multi-week work):
-    (a) Use HOL-Analysis aff_dim machinery + induction on chain
-        length: assume AI of barycenters along init c, then show
-        b(last c) \<notin> aff_hull(barycenters of init c). Subtle:
-        b(last c) \<in> rel_interior(last c) doesn't directly contradict
-        membership in aff_hull(init c)'s subspace.
-    (b) Define cell barycenter as centroid of extreme points
-        (which exist as a finite set for polytopes), then prove AI
-        from extreme-point structure.
-
-    Either approach requires significant new infrastructure
-    (~150-300 lines).
-
-    Other deferred Phase 5 steps:
-    - 5.6: order complex satisfies K.0/K.1/K.2/K.3 (depends on 5.3)
+    Remaining Phase 5 steps:
+    - 5.6: order complex satisfies K.0/K.1/K.2/K.3 (uses 5.3 main)
     - 5.7: polyhedron equality |order_complex C| = |C|
     - 5.8: order_complex refines C
     - 5.9: cell-by-cell coverage (induced subdivisions)
     - 5.10: main triangulation theorem
 
-    Phases 6-8 deferred (depend on Phase 5 completion).
+    Phases 6-8 still pending (depend on remaining Phase 5 completion). **)
 
-    Current Phase 5 progress: ~145 lines done, ~150-450 lines
-    remaining. **)
-
-(** End Phase 5 (Steps 5.1-5.3c done; rest deferred). =============== **)
+(** End Phase 5 (Step 5.3 main DONE; 5.6-5.10 still pending). ============= **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
