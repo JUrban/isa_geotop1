@@ -12863,31 +12863,31 @@ lemma geotop_order_complex_polyhedron:
       simplex_vertices of chain-simplex).
     - 5.6b sub-helper: geotop_cell_flags_filter (filter preserves flag).
     - 5.8: order_complex_refines (each chain-simplex \<subseteq> last c \<in> C).
-    - 5.7 (\<subseteq> direction): order_complex_polyhedron_subset.
+    - 5.7 (\<subseteq>): order_complex_polyhedron_subset.
     - CARRIER lemma: each x in |C| has unique smallest cell A with
-      x in rel_interior A. ~80 lines using rel_frontier_of_polyhedron_alt
+      x in rel_interior A. ~80 lines via rel_frontier_of_polyhedron_alt
       + cell complex K.2 + affine_hull_face_of_disjoint_rel_interior.
-      Foundation for K.2 and 5.7 (\<supseteq>).
+    - 5.7 (\<supseteq>) MAIN: x \<in> rel_interior A \<Longrightarrow> \<exists>flag c. last c = A
+      \<and> x \<in> chain_simplex(c). ~200 lines via measure_induct on aff_dim,
+      using segment_to_rel_frontier + carrier lemma + flag extension.
+    - 5.7 MAIN: polyhedron equality |order_complex C| = |C|.
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Munkres §17
       argument: chain_simplex(c1) \<inter> chain_simplex(c2) = chain_simplex
-      of common sub-flag, OR disjoint. Uses cell-poset compatibility
-      (when both flags fit into a common total chain) plus
-      disjoint_affine_hull from HOL-Analysis.
+      of common sub-flag. Strategy: each x in chain_simplex(c) has a
+      unique \"sub-flag witness\" f(x,c) \<subseteq> c with x in rel_interior of
+      chain_simplex(f(x,c)). For x in c1 \<inter> c2, f(x,c1) = f(x,c2)
+      (uniqueness of carrier-cell + barycentric coordinates). Hence
+      f(x) is sub-flag of both c1 and c2.
     - 5.6 main packaging: K.0 + K.1 + K.2 + K.3 \<Longrightarrow> geotop_is_complex.
-    - 5.7: polyhedron equality |order_complex C| = |C|.
-      \<subseteq> direction follows directly from 5.8. \<supseteq> needs inductive
-      coverage on cell dim: x \<in> rel_interior(A) lies on segment from
-      b(A) to some y \<in> rel_boundary(A); y in smaller cell by IH; then
-      x \<in> chain-simplex via (c' @ [A]).
     - 5.9: cell-by-cell coverage (induced subdivisions).
     - 5.10: main triangulation theorem.
 
     Phases 6-8 still pending (depend on remaining Phase 5 completion). **)
 
-(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/b/c DONE;
-    5.6d, 5.6 main, 5.7-5.10 still pending). ============================ **)
+(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/b/c, 5.7, 5.8, carrier
+    DONE; 5.6d, 5.6 main, 5.9-5.10 still pending). ====================== **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
