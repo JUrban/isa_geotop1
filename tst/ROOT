@@ -5,6 +5,10 @@ session Top0 in i = "HOL-Analysis" +
     Top1_Ch3
     Top1_Ch4
     Top1_Ch5_8
+
+session AlgTop in at = Top0 +
+  options [quick_and_dirty]
+  theories
     AlgTop
 
 session GeoTopBase0 in b0 = Top0 +
@@ -19,5 +23,7 @@ session GeoTopBase in b = GeoTopBase0 +
 
 session GeoTop = GeoTopBase +
   options [quick_and_dirty, timeout = 120]
+  sessions
+    AlgTop
   theories
     GeoTop

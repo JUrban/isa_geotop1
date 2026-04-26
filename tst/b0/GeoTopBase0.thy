@@ -1,5 +1,5 @@
 theory GeoTopBase0
-  imports "Top0.AlgTop" "HOL-Analysis.Cartesian_Euclidean_Space"
+  imports "Top0.Top1_Ch5_8" "HOL-Analysis.Cartesian_Euclidean_Space"
           "HOL-Analysis.Smooth_Paths" "HOL-Analysis.Further_Topology"
 begin
 

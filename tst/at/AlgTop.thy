@@ -1,5 +1,5 @@
 theory AlgTop
-  imports Top1_Ch5_8
+  imports "Top0.Top1_Ch5_8"
 begin
 
 text \<open>
@@ -1333,37 +1333,6 @@ definition top1_B2 :: "(real \<times> real) set" where
 definition top1_B2_topology :: "(real \<times> real) set set" where
   "top1_B2_topology = subspace_topology UNIV
      (product_topology_on top1_open_sets top1_open_sets) top1_B2"
-
-text \<open>Helper: if f : X \<rightarrow> A is continuous (with subspace topology from ambient Z),
-  and A \<subseteq> B \<subseteq> Z, then f : X \<rightarrow> B is also continuous (with subspace topology from Z).\<close>
-lemma top1_continuous_map_on_codomain_enlarge:
-  assumes hcont: "top1_continuous_map_on X TX A (subspace_topology Z TZ A) f"
-      and hAB: "A \<subseteq> B" and hBZ: "B \<subseteq> Z"
-  shows "top1_continuous_map_on X TX B (subspace_topology Z TZ B) f"
-proof -
-  have hfA: "\<forall>x\<in>X. f x \<in> A"
-    using hcont unfolding top1_continuous_map_on_def by blast
-  have hfB: "\<forall>x\<in>X. f x \<in> B" using hfA hAB by blast
-  have hpreimage: "\<forall>V\<in>subspace_topology Z TZ B. {x\<in>X. f x \<in> V} \<in> TX"
-  proof (intro ballI)
-    fix V assume hV: "V \<in> subspace_topology Z TZ B"
-    obtain U where hU: "U \<in> TZ" and hV_eq: "V = B \<inter> U"
-      using hV unfolding subspace_topology_def by blast
-    have hAU_in: "A \<inter> U \<in> subspace_topology Z TZ A"
-      unfolding subspace_topology_def using hU by blast
-    have hpre_eq: "{x\<in>X. f x \<in> V} = {x\<in>X. f x \<in> A \<inter> U}"
-    proof (rule set_eqI)
-      fix x
-      show "x \<in> {x\<in>X. f x \<in> V} \<longleftrightarrow> x \<in> {x\<in>X. f x \<in> A \<inter> U}"
-        using hfA hAB hV_eq by auto
-    qed
-    have "{x\<in>X. f x \<in> A \<inter> U} \<in> TX"
-      using hcont hAU_in unfolding top1_continuous_map_on_def by blast
-    thus "{x\<in>X. f x \<in> V} \<in> TX" using hpre_eq by simp
-  qed
-  show ?thesis
-    unfolding top1_continuous_map_on_def using hfB hpreimage by blast
-qed
 
 (** from \<S>55 Lemma 55.1: if A is a retract of X, then (\<pi>_1 A, x0) \<rightarrow> (\<pi>_1 X, x0)
     is injective (induced by inclusion) **)

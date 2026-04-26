@@ -1,5 +1,5 @@
 theory GeoTop
-  imports "GeoTopBase.GeoTopBase"
+  imports "GeoTopBase.GeoTopBase" "AlgTop.AlgTop"
 begin
 
 
