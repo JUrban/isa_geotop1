@@ -2169,7 +2169,7 @@ proof -
     finally show ?thesis .
   qed
   show ?thesis
-    using h_final h_rhs_eq unfolding k_def by (by100 simp)
+    using h_final h_rhs_eq unfolding k_def by (by100 metis)
 qed
 
 (** D-infrastructure: distance from barycenter to any point in σ is bounded
@@ -4899,7 +4899,7 @@ proof -
       by (rule sum.union_disjoint[OF hS_fin h_VmS_fin h_disj])
     have h2: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)"
       using hV_split by (by100 simp)
-    show ?thesis using h1 h2 by (by100 simp)
+    show ?thesis using h1 h2 by (by100 metis)
   qed
   have h_VmS_combo: "(\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v) = 0"
   proof -
@@ -5147,7 +5147,7 @@ proof -
                               then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
       by (by100 simp)
     show "\<alpha> v = (\<Sum>\<tau>\<in>set c. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
-      unfolding \<alpha>_def using h1 h2 h3 by (by100 simp)
+      unfolding \<alpha>_def using h1 h2 h3 by (by100 metis)
   qed
   (** Swap sum order, factor v out. **)
   have h_x_swap: "x = (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<alpha> v *\<^sub>R v)"
@@ -5245,7 +5245,12 @@ proof -
         using h_setI h_int by (by100 simp)
       have h3: "real (card (Vof \<tau>)) * (\<beta> \<tau> / real (card (Vof \<tau>))) = \<beta> \<tau>"
         using h_card_pos by (by100 simp)
-      show ?thesis using h1 h2 h3 by (by100 simp)
+      have h_zero: "sum (\<lambda>_. (0::real)) (V\<^sub>m\<^sub>a\<^sub>x \<inter> -{v. v \<in> Vof \<tau>}) = 0"
+        by (by100 simp)
+      have h_lhs_eq: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)
+                       = real (card (Vof \<tau>)) * (\<beta> \<tau> / real (card (Vof \<tau>))) + 0"
+        using h1 h2 h_zero by (by100 metis)
+      show ?thesis using h_lhs_eq h3 by (by100 simp)
     next
       case False
       hence h\<beta>0: "\<beta> \<tau> = 0" using h_\<beta>nn by (by100 linarith)
@@ -6058,7 +6063,7 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             by (rule h_reindex_d\<^sub>1)
           have h_step3: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1))
                            = \<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set d\<^sub>1)"
-            using h_step1 h_step2 by (by100 simp)
+            using h_step1 h_step2 by (by100 metis)
           show ?thesis using h_step3 h_big_eq by (by100 simp)
         qed
         (** x = \<Sum> u_1 w \<cdot> w over insert z (bary ` set d_1). **)
@@ -6128,7 +6133,7 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
           have h_step1: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w)
                            = u\<^sub>1 z *\<^sub>R z
                              + (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
-            using h_insert_combo h_step_a by (by100 simp)
+            using h_insert_combo h_step_a by (by100 metis)
           have h_step2: "u\<^sub>1 z *\<^sub>R z = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
             using h_u\<^sub>1_z unfolding z_def by (by100 simp)
           show ?thesis using h_step1 h_step2 h_full by (by100 simp)
@@ -6323,7 +6328,7 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
           have h_step1: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
                            = u\<^sub>2 z *\<^sub>R z
                              + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
-            using h_insert_combo h_step_a by (by100 simp)
+            using h_insert_combo h_step_a by (by100 metis)
           have h_step2: "u\<^sub>2 z *\<^sub>R z = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
             using h_u\<^sub>2_z unfolding z_def by (by100 simp)
           show ?thesis using h_step1 h_step2 h_full by (by100 simp)
@@ -7484,7 +7489,7 @@ proof -
             using h_each by (by100 simp)
           show ?thesis using h_sum sum_subtractf
               [of "\<lambda>k. real (Suc k) * \<alpha>' k" "\<lambda>k. real (Suc k) * \<alpha>' (Suc k)" "{..<n}"]
-            by (by100 simp)
+            by (by100 metis)
         qed
         (** Reindex the second sum: \<Sum>_{k<n} (Suc k) \<alpha>'(Suc k) = \<Sum>_{j=1..n} j \<alpha>'(j). **)
         have h_reindex: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))
@@ -7502,7 +7507,7 @@ proof -
           have h_step_AB: "(\<Sum>k<n. real (Suc k) * \<alpha>' (Suc k))
                             = (\<Sum>j\<in>Suc ` {..<n}. real j * \<alpha>' j)"
             using h_sft h_reidx by (by100 simp)
-          show ?thesis using h_step_AB h_img by (by100 simp)
+          show ?thesis using h_step_AB h_img by (by100 metis)
         qed
         (** \<Sum>_{k<n} (Suc k) \<alpha>'(k) = \<Sum>_{j<n} (Suc j) \<alpha>'(j). **)
         have h_first_sum: "(\<Sum>k<n. real (Suc k) * \<alpha>' k)
@@ -7524,7 +7529,7 @@ proof -
           have h_step1: "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
                            = (\<Sum>j\<in>insert 0 {1..<n}. real (Suc j) * \<alpha>' j)"
             using h_split0 h_insert by (by100 simp)
-          show ?thesis using h_step1 h_si by (by100 simp)
+          show ?thesis using h_step1 h_si by (by100 metis)
         qed
         (** Split second sum: {1..n} = {1..<n} ∪ {n}; extract j=n term. **)
         have h_split2: "(\<Sum>j\<in>{1..n}. real j * \<alpha>' j)
@@ -7593,13 +7598,13 @@ proof -
           have h_step1: "(\<Sum>k<n. \<beta> k)
                          = (real (Suc 0) * \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j))
                            - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
-            using hB''' hE' by (by100 simp)
+            using hB''' hE' by (by100 metis)
           have h_step2: "(\<Sum>k<n. \<beta> k)
                          = \<alpha>' 0 + ((\<Sum>j\<in>{1..<n}. real (Suc j) * \<alpha>' j)
                                     - (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j))"
             using h_step1 by (by100 simp)
           have h_step3: "(\<Sum>k<n. \<beta> k) = \<alpha>' 0 + (\<Sum>j\<in>{1..<n}. \<alpha>' j)"
-            using h_step2 h_diff_1n by (by100 simp)
+            using h_step2 h_diff_1n by (by100 metis)
           (** Now \<alpha>'(0) + \<Sum>_{j\<in>{1..<n}} \<alpha>'(j) = \<Sum>_{j<n} \<alpha>'(j). **)
           have h_total: "\<alpha>' 0 + (\<Sum>j\<in>{1..<n}. \<alpha>' j) = (\<Sum>j<n. \<alpha>' j)"
           proof -
@@ -7610,9 +7615,9 @@ proof -
               by (rule sum.insert[OF hFin hNotIn])
             have hL: "(\<Sum>j<n. \<alpha>' j) = (\<Sum>j\<in>{0..<n}. \<alpha>' j)"
               using lessThan_atLeast0 by (by100 simp)
-            show ?thesis using hI hIns hL by (by100 simp)
+            show ?thesis using hI hIns hL by (by100 metis)
           qed
-          show ?thesis using h_step3 h_total by (by100 simp)
+          show ?thesis using h_step3 h_total by (by100 metis)
         qed
         (** \<Sum>_{j<n} \<alpha>'(j) = \<Sum>_{j<n} \<alpha>(xs!j). **)
         have h\<alpha>'_\<alpha>xs: "(\<Sum>j<n. \<alpha>' j) = (\<Sum>j<n. \<alpha> (xs ! j))"
@@ -7645,7 +7650,7 @@ proof -
         qed
         (** Assemble sum β = 1. **)
         have h\<beta>_sum: "(\<Sum>k<n. \<beta> k) = 1"
-          using h\<beta>_sum_to_\<alpha>' h\<alpha>'_\<alpha>xs h_sum_xs h_sum_set h\<alpha>sum by (by100 simp)
+          using h\<beta>_sum_to_\<alpha>' h\<alpha>'_\<alpha>xs h_sum_xs h_sum_set h\<alpha>sum by (by100 metis)
         (** (7) Combo computation: \<Sum>_k \<beta>_k *_R bary(\<sigma>_seq k) = x. **)
         (** Step A: \<beta> k *_R bary(\<sigma>_seq k) = (\<alpha>'(k) - \<alpha>'(Suc k)) *_R \<Sum>_{i<Suc k} xs ! i. **)
         have h_simplify: "\<And>k. k < n \<Longrightarrow>
@@ -7790,7 +7795,7 @@ proof -
           have h_s1: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
                         = (\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
                                     (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
-            using h_sum_combo h_sum_as_restrict by (by100 simp)
+            using h_sum_combo h_sum_as_restrict by (by100 metis)
           have h_s2: "(\<Sum>k<n. \<Sum>i\<in>{i\<in>{..<n}. i \<le> k}.
                                 (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
                       = (\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
@@ -7803,7 +7808,7 @@ proof -
           have h_step1a: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
                            = (\<Sum>i<n. \<Sum>k | k \<in> {..<n} \<and> i \<le> k.
                                        (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
-            using h_s1 h_s2 by (by100 simp)
+            using h_s1 h_s2 by (by100 metis)
           have h_step1: "(\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))
                          = (\<Sum>i<n. \<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
             by (rule HOL.trans[OF h_step1a h_s3])
@@ -8068,7 +8073,7 @@ proof -
           have h4: "sum (\<gamma> \<circ> b) {..<n} = sum \<beta> {..<n}"
             using h3 by (by100 simp)
           have h5: "sum \<beta> {..<n} = (\<Sum>k<n. \<beta> k)" by (by100 simp)
-          show ?thesis using h1 h2 h4 h5 h\<beta>_sum by (by100 simp)
+          show ?thesis using h1 h2 h4 h5 h\<beta>_sum by (by100 metis)
         qed
         (** \<Sum>_{w\<in>W} \<gamma>(w) *_R w = x. **)
         have h\<gamma>_combo: "(\<Sum>w\<in>W. \<gamma> w *\<^sub>R w) = x"
@@ -8090,7 +8095,7 @@ proof -
             unfolding b_def by (by100 simp)
           have h6: "(\<Sum>k<n. \<beta> k *\<^sub>R b k) = (\<Sum>k<n. \<beta> k *\<^sub>R geotop_barycenter (\<sigma>_seq k))"
             using h5 by (by100 simp)
-          show ?thesis using h1 h2 h4 h6 h_combo_done by (by100 simp)
+          show ?thesis using h1 h2 h4 h6 h_combo_done by (by100 metis)
         qed
         (** Hence x \<in> conv hull W = geotop_convex_hull W. **)
         have hx_hullW: "x \<in> convex hull W"
@@ -10219,7 +10224,7 @@ proof -
       using h\<gamma>_combo h_step1 by (by100 simp)
     have h_chain_b: "(\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v *\<^sub>R (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w))
                        = (\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)"
-      using h_step3 h_step4 h_step6 by (by100 simp)
+      using h_step3 h_step4 h_step6 by (by100 metis)
     have h_chain_c: "(\<Sum>w\<in>V\<^sub>\<theta>. (\<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w) *\<^sub>R w)
                        = (\<Sum>w\<in>V\<^sub>\<theta>. u_combined w *\<^sub>R w)"
       by (rule h_step7)
@@ -12957,23 +12962,29 @@ qed
       \<and> x \<in> chain_simplex(c). ~200 lines via measure_induct on aff_dim,
       using segment_to_rel_frontier + carrier lemma + flag extension.
     - 5.7 MAIN: polyhedron equality |order_complex C| = |C|.
+    - 5.9: induced subdivisions — each cell A in C equals union of
+      chain-simplices contained in A. Uses carrier + 5.7 (\<supseteq>) + 5.8.
 
     Remaining Phase 5 steps:
-    - 5.6d (K.2 pairwise intersection): hardest step. Munkres §17
-      argument: chain_simplex(c1) \<inter> chain_simplex(c2) = chain_simplex
-      of common sub-flag. Strategy: each x in chain_simplex(c) has a
-      unique \"sub-flag witness\" f(x,c) \<subseteq> c with x in rel_interior of
-      chain_simplex(f(x,c)). For x in c1 \<inter> c2, f(x,c1) = f(x,c2)
-      (uniqueness of carrier-cell + barycentric coordinates). Hence
-      f(x) is sub-flag of both c1 and c2.
+    - 5.6d (K.2 pairwise intersection): hardest step. Strategy:
+      (a) Lemma A (barycentric coord uniqueness for AI vertex sets).
+      (b) Lemma B (max of support cell = carrier(x)).
+      (c) Lemma C (max-of-support agrees in c1 and c2 for x in
+          \<sigma>_c1 \<inter> \<sigma>_c2).
+      (d) Lemma D (recursive support agreement) \<Longrightarrow> \<sigma>_c1 \<inter> \<sigma>_c2 \<subseteq>
+          conv hull (V_c1 \<inter> V_c2).
+      (e) Bridge to geotop_is_face via face_of_convex_hull_affine_independent
+          + simplex_vertices.
+      Estimated ~200-250 lines.
     - 5.6 main packaging: K.0 + K.1 + K.2 + K.3 \<Longrightarrow> geotop_is_complex.
+    - 5.10: main triangulation theorem. Combines 5.6 + 5.7 + 5.8 + 5.9.
     - 5.9: cell-by-cell coverage (induced subdivisions).
     - 5.10: main triangulation theorem.
 
     Phases 6-8 still pending (depend on remaining Phase 5 completion). **)
 
-(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/b/c, 5.7, 5.8, carrier
-    DONE; 5.6d, 5.6 main, 5.9-5.10 still pending). ====================== **)
+(** End Phase 5 (Steps 5.1-5.5, 5.3a-MAIN, 5.6a/b/c, 5.7, 5.8, 5.9, carrier
+    DONE; 5.6d, 5.6 main, 5.10 still pending). ====================== **)
 
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 

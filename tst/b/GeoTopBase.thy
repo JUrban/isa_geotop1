@@ -402,7 +402,7 @@ proof -
     have hccW: "convex hull W
                 = {u. \<exists>u\<^sub>c. (\<forall>v\<in>W. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c W = 1
                             \<and> (\<Sum>v\<in>W. u\<^sub>c v *\<^sub>R v) = u}"
-      using convex_hull_finite[OF hW_fin] by (by100 simp)
+      by (rule convex_hull_finite[OF hW_fin])
     obtain \<gamma> where h\<gamma>nn: "\<forall>v\<in>W. 0 \<le> \<gamma> v"
                  and h\<gamma>sum: "sum \<gamma> W = 1"
                  and h\<gamma>combo: "(\<Sum>v\<in>W. \<gamma> v *\<^sub>R v) = x"
@@ -716,7 +716,7 @@ proof -
       have hcc: "convex hull V
                   = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V = 1
                               \<and> (\<Sum>v\<in>V. u\<^sub>c v *\<^sub>R v) = u}"
-        using convex_hull_finite[OF hV_fin] by (by100 simp)
+        by (rule convex_hull_finite[OF hV_fin])
       obtain \<alpha> where h\<alpha>nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
                    and h\<alpha>sum: "sum \<alpha> V = 1"
                    and h\<alpha>combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
@@ -834,7 +834,7 @@ proof -
           have hcc: "convex hull V
                      = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V = 1
                                  \<and> (\<Sum>v\<in>V. u\<^sub>c v *\<^sub>R v) = u}"
-            using convex_hull_finite[OF hV_fin] by (by100 simp)
+            by (rule convex_hull_finite[OF hV_fin])
           have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V = 1
                            \<and> (\<Sum>v\<in>V. u\<^sub>c v *\<^sub>R v) = x"
             using h\<alpha>nn h\<alpha>sum unfolding x_def by (by100 blast)
@@ -899,7 +899,7 @@ proof -
         have hcc: "convex hull V
                    = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V = 1
                                \<and> (\<Sum>v\<in>V. u\<^sub>c v *\<^sub>R v) = u}"
-          using convex_hull_finite[OF hV_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF hV_fin])
         obtain \<alpha> where h\<alpha>nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
                      and h\<alpha>sum: "sum \<alpha> V = 1"
                      and h\<alpha>combo: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
@@ -943,7 +943,7 @@ proof -
         have hcc\<tau>: "convex hull (\<phi> ` V)
                     = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V) = 1
                                 \<and> (\<Sum>w\<in>\<phi> ` V. u\<^sub>c w *\<^sub>R w) = u}"
-          using convex_hull_finite[OF h\<phi>V_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF h\<phi>V_fin])
         have h_ex: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V) = 1
                          \<and> (\<Sum>w\<in>\<phi> ` V. u\<^sub>c w *\<^sub>R w) = g x"
           using h\<beta>nn h\<beta>sum h\<beta>combo by (by100 blast)
@@ -1036,7 +1036,7 @@ proof -
       have h_hull_char\<tau>: "convex hull V\<^sub>\<tau>
                          = {u. \<exists>u\<^sub>c. (\<forall>w\<in>V\<^sub>\<tau>. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c V\<^sub>\<tau> = 1
                                      \<and> (\<Sum>w\<in>V\<^sub>\<tau>. u\<^sub>c w *\<^sub>R w) = u}"
-        using convex_hull_finite[OF hV\<tau>_fin] by (by100 simp)
+        by (rule convex_hull_finite[OF hV\<tau>_fin])
       have hz_hull: "z \<in> convex hull V\<^sub>\<tau>" using hz\<tau> h\<tau>_HOL by (by100 simp)
       obtain \<beta> where h\<beta>_nn: "\<forall>w\<in>V\<^sub>\<tau>. 0 \<le> \<beta> w"
                  and h\<beta>_sum: "sum \<beta> V\<^sub>\<tau> = 1"
@@ -1147,7 +1147,7 @@ proof -
         have h_hull_char\<sigma>: "convex hull V\<^sub>\<sigma>
                          = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>\<sigma>. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>\<sigma> = 1
                                      \<and> (\<Sum>v\<in>V\<^sub>\<sigma>. u\<^sub>c v *\<^sub>R v) = u}"
-          using convex_hull_finite[OF hV\<sigma>_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF hV\<sigma>_fin])
         have h_ex: "\<exists>\<alpha>\<^sub>c. (\<forall>v\<in>V\<^sub>\<sigma>. 0 \<le> \<alpha>\<^sub>c v) \<and> sum \<alpha>\<^sub>c V\<^sub>\<sigma> = 1
                          \<and> (\<Sum>v\<in>V\<^sub>\<sigma>. \<alpha>\<^sub>c v *\<^sub>R v) = x"
           using h\<alpha>_nn h\<alpha>_sum unfolding x_def by (by100 blast)
@@ -1305,7 +1305,7 @@ proof -
       have h_hull_chVx: "convex hull V\<^sub>x
                          = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>x. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>x = 1
                                      \<and> (\<Sum>v\<in>V\<^sub>x. u\<^sub>c v *\<^sub>R v) = u}"
-        using convex_hull_finite[OF hVx_fin] by (by100 simp)
+        by (rule convex_hull_finite[OF hVx_fin])
       obtain \<alpha> where h\<alpha>_nn: "\<forall>v\<in>V\<^sub>x. 0 \<le> \<alpha> v"
                  and h\<alpha>_sum: "sum \<alpha> V\<^sub>x = 1"
                  and h\<alpha>_combo: "(\<Sum>v\<in>V\<^sub>x. \<alpha> v *\<^sub>R v) = x"
@@ -1315,7 +1315,7 @@ proof -
       have h_hull_chVy: "convex hull V\<^sub>y
                          = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>y. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>y = 1
                                      \<and> (\<Sum>v\<in>V\<^sub>y. u\<^sub>c v *\<^sub>R v) = u}"
-        using convex_hull_finite[OF hVy_fin] by (by100 simp)
+        by (rule convex_hull_finite[OF hVy_fin])
       obtain \<beta> where h\<beta>_nn: "\<forall>v\<in>V\<^sub>y. 0 \<le> \<beta> v"
                  and h\<beta>_sum: "sum \<beta> V\<^sub>y = 1"
                  and h\<beta>_combo: "(\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R v) = y"
@@ -1419,7 +1419,7 @@ proof -
         have h_hull_char\<tau>x: "convex hull (\<phi> ` V\<^sub>x)
                              = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>x. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>x) = 1
                                          \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>x. u\<^sub>c w *\<^sub>R w) = u}"
-          using convex_hull_finite[OF h\<phi>Vx_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF h\<phi>Vx_fin])
         (** Use the reindex: g(x) = sum \<alpha>(v) \<phi>(v) = sum_{w \<in> \<phi> V_x} A_x(w) w
             where A_x(w) = \<alpha>(inv w). **)
         define A\<^sub>x where "A\<^sub>x w = \<alpha> (inv_into V\<^sub>x \<phi> w)" for w
@@ -1470,7 +1470,7 @@ proof -
         have h_hull_char\<tau>y: "convex hull (\<phi> ` V\<^sub>y)
                              = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>y. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>y) = 1
                                          \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>y. u\<^sub>c w *\<^sub>R w) = u}"
-          using convex_hull_finite[OF h\<phi>Vy_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF h\<phi>Vy_fin])
         define B\<^sub>y where "B\<^sub>y w = \<beta> (inv_into V\<^sub>y \<phi> w)" for w
         have h_reindex_sum: "sum B\<^sub>y (\<phi> ` V\<^sub>y) = sum \<beta> V\<^sub>y"
         proof -
@@ -1480,7 +1480,7 @@ proof -
             unfolding B\<^sub>y_def o_def using inv_into_f_f[OF h\<phi>inj_Vy] by (by100 simp)
           have h_step2: "sum (B\<^sub>y \<circ> \<phi>) V\<^sub>y = sum \<beta> V\<^sub>y"
             using h_inv by (by100 simp)
-          show ?thesis using h_step h_step2 by (by100 simp)
+          show ?thesis using h_step h_step2 by (by100 metis)
         qed
         have h_reindex_combo: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. B\<^sub>y w *\<^sub>R w) = (\<Sum>v\<in>V\<^sub>y. \<beta> v *\<^sub>R \<phi> v)"
         proof -
@@ -1695,7 +1695,7 @@ proof -
       have h_hull_char\<phi>Vc: "convex hull (\<phi> ` V\<^sub>c)
                             = {u. \<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>c) = 1
                                         \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>c. u\<^sub>c w *\<^sub>R w) = u}"
-        using convex_hull_finite[OF h\<phi>Vc_fin] by (by100 simp)
+        by (rule convex_hull_finite[OF h\<phi>Vc_fin])
       have h_ex_gx: "\<exists>u\<^sub>c. (\<forall>w\<in>\<phi> ` V\<^sub>c. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c (\<phi> ` V\<^sub>c) = 1
                          \<and> (\<Sum>w\<in>\<phi> ` V\<^sub>c. u\<^sub>c w *\<^sub>R w) = g x"
         using h_gx_in_\<phi>Vc_hull h_hull_char\<phi>Vc by (by100 blast)
@@ -1743,7 +1743,7 @@ proof -
         have hcc: "convex hull V\<^sub>c
                    = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
                                \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = u}"
-          using convex_hull_finite[OF hVc_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF hVc_fin])
         have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
                          \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = x\<^sub>c"
           using ha_c_nn ha_c_sum unfolding x\<^sub>c_def by (by100 blast)
@@ -1754,7 +1754,7 @@ proof -
         have hcc: "convex hull V\<^sub>c
                    = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
                                \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = u}"
-          using convex_hull_finite[OF hVc_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF hVc_fin])
         have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
                          \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = y\<^sub>c"
           using hb_c_nn hb_c_sum unfolding y\<^sub>c_def by (by100 blast)
@@ -1846,7 +1846,7 @@ proof -
         qed
         have h_step1: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x)
                           = sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c)"
-          using h_split[unfolded h_on_Vc] by (by100 simp)
+          using h_split[unfolded h_on_Vc] by (by100 metis)
         have h_step2: "sum \<gamma>\<^sub>x_ext (\<phi> ` V\<^sub>x) = sum \<gamma>\<^sub>x (\<phi> ` V\<^sub>c) + 0"
           using h_step1[unfolded h_on_rest] by (by100 simp)
         show ?thesis using h_step2 h\<gamma>x_sum by (by100 simp)
@@ -1884,7 +1884,7 @@ proof -
         have h_step1: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
                           = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w)
                             + (\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w)"
-          using h_split[unfolded h_on_Vc] by (by100 simp)
+          using h_split[unfolded h_on_Vc] by (by100 metis)
         have h_step2: "(\<Sum>w\<in>\<phi> ` V\<^sub>x. \<gamma>\<^sub>x_ext w *\<^sub>R w)
                           = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w) + 0"
           using h_step1[unfolded h_on_rest] by (by100 simp)
@@ -2055,7 +2055,7 @@ proof -
         qed
         have h_step1: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y)
                           = sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) + sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c)"
-          using h_split[unfolded h_on_Vc] by (by100 simp)
+          using h_split[unfolded h_on_Vc] by (by100 metis)
         have h_step2: "sum \<gamma>\<^sub>y_ext (\<phi> ` V\<^sub>y) = sum \<gamma>\<^sub>y (\<phi> ` V\<^sub>c) + 0"
           using h_step1[unfolded h_on_rest] by (by100 simp)
         show ?thesis using h_step2 h\<gamma>y_sum by (by100 simp)
@@ -2093,7 +2093,7 @@ proof -
         have h_step1: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
                           = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w)
                             + (\<Sum>w\<in>\<phi> ` V\<^sub>y - \<phi> ` V\<^sub>c. \<gamma>\<^sub>y_ext w *\<^sub>R w)"
-          using h_split[unfolded h_on_Vc] by (by100 simp)
+          using h_split[unfolded h_on_Vc] by (by100 metis)
         have h_step2: "(\<Sum>w\<in>\<phi> ` V\<^sub>y. \<gamma>\<^sub>y_ext w *\<^sub>R w)
                           = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>y w *\<^sub>R w) + 0"
           using h_step1[unfolded h_on_rest] by (by100 simp)
@@ -2449,7 +2449,7 @@ proof -
           have hcc: "convex hull V\<^sub>\<sigma>
                      = {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>\<sigma>. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>\<sigma> = 1
                                  \<and> (\<Sum>v\<in>V\<^sub>\<sigma>. u\<^sub>c v *\<^sub>R v) = u}"
-            using convex_hull_finite[OF hV\<sigma>_fin] by (by100 simp)
+            by (rule convex_hull_finite[OF hV\<sigma>_fin])
           have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>\<sigma>. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>\<sigma> = 1
                            \<and> (\<Sum>v\<in>V\<^sub>\<sigma>. u\<^sub>c v *\<^sub>R v) = y"
             using h\<beta>_nn h\<beta>_sum unfolding y_def by (by100 blast)
@@ -2556,7 +2556,7 @@ proof -
         have hcc: "convex hull V\<^sub>\<tau>
                    = {u. \<exists>u\<^sub>c. (\<forall>w\<in>V\<^sub>\<tau>. 0 \<le> u\<^sub>c w) \<and> sum u\<^sub>c V\<^sub>\<tau> = 1
                                \<and> (\<Sum>w\<in>V\<^sub>\<tau>. u\<^sub>c w *\<^sub>R w) = u}"
-          using convex_hull_finite[OF hV\<tau>_fin] by (by100 simp)
+          by (rule convex_hull_finite[OF hV\<tau>_fin])
         obtain \<alpha> where h\<alpha>_nn: "\<forall>w\<in>V\<^sub>\<tau>. 0 \<le> \<alpha> w"
                      and h\<alpha>_sum: "sum \<alpha> V\<^sub>\<tau> = 1"
                      and h\<alpha>_combo: "(\<Sum>w\<in>V\<^sub>\<tau>. \<alpha> w *\<^sub>R w) = x"
@@ -3167,11 +3167,12 @@ proof -
                (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) gwit)) \<and>
                (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) gwit ` \<tau> \<in> K)"
     unfolding gwit_def using someI_ex[OF hg_strong_ex] by (by100 blast)
-  obtain g :: "'a \<Rightarrow> 'b" where hg_all:
+  define g where "g = gwit"
+  have hg_all:
     "geotop_PLH K L g \<and> g ` (geotop_polyhedron K) = geotop_polyhedron L \<and>
      (\<forall>\<tau>\<in>L. geotop_linear_on \<tau> (inv_into (geotop_polyhedron K) g)) \<and>
      (\<forall>\<tau>\<in>L. inv_into (geotop_polyhedron K) g ` \<tau> \<in> K)"
-    using hgwit by (by100 blast)
+    unfolding g_def using hgwit by (by100 blast)
   have hg: "geotop_PLH K L g" using hg_all by (by100 blast)
   have hg_img: "g ` (geotop_polyhedron K) = geotop_polyhedron L"
     using hg_all by (by100 blast)
@@ -4258,7 +4259,13 @@ proof -
                                  \<inter> inv_into (geotop_polyhedron L) f ` \<tau>_K"
         by (rule inj_on_image_Int[OF hf_inv_inj_K_b h\<sigma>_K_in_K h\<tau>_K_in_K])
       have h_sigma_tau_K_nonempty: "\<sigma>_K \<inter> \<tau>_K \<noteq> {}"
-        using h_nonempty h\<sigma>_eq h\<tau>_eq h_image_int_raw by (by100 auto)
+      proof -
+        have h_st_sub: "\<sigma> \<inter> \<tau> = inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K)"
+          using h\<sigma>_eq h\<tau>_eq h_image_int_raw by (by100 simp)
+        have h_img_ne: "inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K) \<noteq> {}"
+          using h_nonempty h_st_sub by (by100 simp)
+        thus ?thesis by (by100 blast)
+      qed
       have h_intface_\<sigma>_K: "geotop_is_face (\<sigma>_K \<inter> \<tau>_K) \<sigma>_K"
         using h_K\<^sub>3_K2 h\<sigma>_K_K\<^sub>3 h\<tau>_K_K\<^sub>3 h_sigma_tau_K_nonempty by (by100 blast)
       (** Image of face is face. Apply the helper for \<sigma>_K. **)
