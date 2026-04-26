@@ -11128,8 +11128,39 @@ proof -
     proof
       fix \<tau> assume h\<tau>: "\<tau> \<in> geotop_iterated_Sd m\<^sub>0 K"
       (** Step 3: \<tau> \<subseteq> open_star(v, K') for some K'-vertex v (via diameter < \<epsilon>). **)
+      have hSdm\<^sub>0_sub_K_pre: "geotop_is_subdivision (geotop_iterated_Sd m\<^sub>0 K) K"
+        by (rule geotop_iterated_Sd_is_subdivision[OF hKcomp hK])
+      have hSdm\<^sub>0_refines_K: "geotop_refines (geotop_iterated_Sd m\<^sub>0 K) K"
+        using hSdm\<^sub>0_sub_K_pre unfolding geotop_is_subdivision_def by (by100 blast)
+      obtain \<sigma>\<^sub>K where h\<sigma>\<^sub>K: "\<sigma>\<^sub>K \<in> K" and h\<tau>\<sigma>\<^sub>K: "\<tau> \<subseteq> \<sigma>\<^sub>K"
+        using h\<tau> hSdm\<^sub>0_refines_K unfolding geotop_refines_def by (by100 blast)
+      have h\<tau>_sub_K: "\<tau> \<subseteq> geotop_polyhedron K"
+        using h\<sigma>\<^sub>K h\<tau>\<sigma>\<^sub>K unfolding geotop_polyhedron_def by (by100 blast)
+      have hSdm\<^sub>0_fin: "finite (geotop_iterated_Sd m\<^sub>0 K)"
+        by (rule geotop_subdivision_of_finite_is_finite[OF hK hSdm\<^sub>0_sub_K_pre])
+      have h\<tau>_diam_le: "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>
+                          \<le> geotop_mesh (\<lambda>x y. norm (x - y)) (geotop_iterated_Sd m\<^sub>0 K)"
+        by (rule geotop_diameter_le_mesh[OF hSdm\<^sub>0_fin h\<tau>])
+      have h\<tau>_diam_lt: "geotop_diameter (\<lambda>x y. norm (x - y)) \<tau> < \<epsilon>"
+        using h\<tau>_diam_le hm\<^sub>0 by (by100 linarith)
+      have h\<tau>_simp_pre: "geotop_is_simplex \<tau>"
+      proof -
+        have hSdm\<^sub>0_comp_pre: "geotop_is_complex (geotop_iterated_Sd m\<^sub>0 K)"
+          using hSdm\<^sub>0_sub_K_pre unfolding geotop_is_subdivision_def by (by100 blast)
+        show ?thesis using h\<tau> conjunct1[OF hSdm\<^sub>0_comp_pre[unfolded geotop_is_complex_def]]
+          by (by100 blast)
+      qed
+      have h\<tau>_ne: "\<tau> \<noteq> {}" by (rule geotop_simplex_nonempty[OF h\<tau>_simp_pre])
+      have hS_bdd: "bounded \<tau>"
+      proof -
+        have h\<tau>_compact: "compact \<tau>" by (rule geotop_simplex_compact[OF h\<tau>_simp_pre])
+        show ?thesis using h\<tau>_compact compact_imp_bounded by (by100 blast)
+      qed
+      have h_HOL_le: "diameter \<tau> \<le> geotop_diameter (\<lambda>x y. norm (x - y)) \<tau>"
+        by (rule geotop_diameter_ge_HOL_diameter[OF h\<tau>_ne hS_bdd])
+      have h\<tau>_HOL_diam: "diameter \<tau> < \<epsilon>" using h_HOL_le h\<tau>_diam_lt by (by100 linarith)
       have h\<tau>_open_star: "\<exists>v\<in>geotop_complex_vertices K'. \<tau> \<subseteq> geotop_open_star K' v"
-        sorry
+        using h\<epsilon>prop h\<tau>_sub_K h\<tau>_ne h\<tau>_HOL_diam by (by100 blast)
       obtain v where hv: "v \<in> geotop_complex_vertices K'"
                  and h\<tau>_v: "\<tau> \<subseteq> geotop_open_star K' v"
         using h\<tau>_open_star by (by100 blast)
