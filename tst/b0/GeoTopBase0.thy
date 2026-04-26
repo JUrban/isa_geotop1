@@ -12081,6 +12081,85 @@ next
   qed
 qed
 
+(** Step 5.6a (K.0): Each chain-simplex is a (Moise) simplex. **)
+lemma geotop_chain_simplex_is_simplex:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  shows "geotop_is_simplex (geotop_cell_chain_simplex c)"
+proof -
+  let ?V = "geotop_cell_barycenter ` set c"
+  have h_AI: "\<not> affine_dependent ?V"
+    by (rule geotop_cell_flag_barycenters_affine_indep[OF hC hc])
+  have h_finV: "finite ?V" by (by100 simp)
+  have h_c_ne: "c \<noteq> []" using hc unfolding geotop_cell_flags_def by (by100 blast)
+  have h_setc_ne: "set c \<noteq> {}" using h_c_ne by (by100 simp)
+  have h_V_ne: "?V \<noteq> {}" using h_setc_ne by (by100 simp)
+  have h_card_pos: "card ?V \<ge> 1"
+  proof -
+    have "card ?V > 0"
+      using h_V_ne h_finV card_gt_0_iff by (by100 blast)
+    thus ?thesis by (by100 simp)
+  qed
+  define n where "n = card ?V - 1"
+  have h_card_eq: "card ?V = n + 1"
+    using h_card_pos n_def by (by100 simp)
+  have h_GP: "geotop_general_position ?V n"
+    by (rule geotop_ai_imp_general_position[OF h_finV h_card_eq h_AI])
+  have h_chain_eq: "geotop_cell_chain_simplex c = geotop_convex_hull ?V"
+    unfolding geotop_cell_chain_simplex_def
+    using geotop_convex_hull_eq_HOL[of ?V] by (by100 simp)
+  have h_n_le: "n \<le> n" by (by100 simp)
+  have h_witness: "finite ?V \<and> card ?V = n + 1 \<and> n \<le> n
+                     \<and> geotop_general_position ?V n
+                     \<and> geotop_cell_chain_simplex c = geotop_convex_hull ?V"
+    using h_finV h_card_eq h_n_le h_GP h_chain_eq by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_simplex_def
+    using h_witness by (by100 blast)
+qed
+
+(** Step 5.6c (K.3): Order complex of a finite cell complex is finite,
+    hence trivially locally finite. **)
+lemma geotop_cell_flags_finite:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "finite (geotop_cell_flags C)"
+proof -
+  have hC_fin: "finite C"
+    using hC unfolding geotop_cell_complex_def by (by100 blast)
+  have h_len_bd: "\<forall>c \<in> geotop_cell_flags C. length c \<le> card C"
+  proof
+    fix c assume hc: "c \<in> geotop_cell_flags C"
+    have h_set: "set c \<subseteq> C" using hc unfolding geotop_cell_flags_def by (by100 blast)
+    have h_dist: "distinct c" using hc unfolding geotop_cell_flags_def by (by100 blast)
+    have h_card_eq: "length c = card (set c)"
+      using distinct_card[OF h_dist] by (by100 simp)
+    have h_card_mono: "card (set c) \<le> card C"
+      using h_set hC_fin card_mono by (by100 blast)
+    show "length c \<le> card C" using h_card_eq h_card_mono by (by100 simp)
+  qed
+  have h_flags_sub:
+      "geotop_cell_flags C \<subseteq> {l. set l \<subseteq> C \<and> length l \<le> card C}"
+    using h_len_bd unfolding geotop_cell_flags_def by (by100 blast)
+  have h_fin_lists: "finite {l. set l \<subseteq> C \<and> length l \<le> card C}"
+    by (rule finite_lists_length_le[OF hC_fin])
+  show ?thesis using h_flags_sub h_fin_lists finite_subset by (by100 blast)
+qed
+
+lemma geotop_order_complex_finite:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "finite (geotop_order_complex C)"
+proof -
+  have h_flags_fin: "finite (geotop_cell_flags C)"
+    by (rule geotop_cell_flags_finite[OF hC])
+  have h_oc_eq: "geotop_order_complex C
+                   = geotop_cell_chain_simplex ` (geotop_cell_flags C)"
+    unfolding geotop_order_complex_def by (by100 blast)
+  show ?thesis using h_oc_eq h_flags_fin by (by100 simp)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-26 / updated 2026-04-25 session):
 
     Steps DONE:
