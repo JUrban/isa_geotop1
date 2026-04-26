@@ -11824,12 +11824,35 @@ qed
     barycentric-subdivision machinery)
     ============================================================ **)
 
-(** Step 5.1: Cell barycenter. For a cell C = conv hull V (V finite),
-    define barycenter as 1/|V| * sum V (geometric center). **)
+(** Step 5.1: Cell barycenter. SOME witness in rel_interior.
+    For non-empty convex sets in euclidean_space, rel_interior is
+    non-empty, so this is well-defined. **)
 definition geotop_cell_barycenter :: "'a::euclidean_space set \<Rightarrow> 'a" where
-  "geotop_cell_barycenter C =
-     (SOME b. \<exists>V. finite V \<and> V \<noteq> {} \<and> C = convex hull V \<and>
-                  b = (1 / real (card V)) *\<^sub>R (\<Sum>v\<in>V. v))"
+  "geotop_cell_barycenter C = (SOME b. b \<in> rel_interior C)"
+
+(** Step 5.1a: Cell barycenter is in rel_interior. **)
+lemma geotop_cell_barycenter_in_rel_interior:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "geotop_cell_barycenter C \<in> rel_interior C"
+proof -
+  have hC_ne: "C \<noteq> {}" by (rule geotop_cell_nonempty[OF assms])
+  have hC_conv: "convex C" by (rule geotop_cell_convex[OF assms])
+  have h_ri_ne: "rel_interior C \<noteq> {}"
+    using rel_interior_eq_empty[of C] hC_ne hC_conv by (by100 blast)
+  obtain b where hb: "b \<in> rel_interior C" using h_ri_ne by (by100 blast)
+  show ?thesis
+    unfolding geotop_cell_barycenter_def using someI[of "\<lambda>b. b \<in> rel_interior C" b] hb
+    by (by100 blast)
+qed
+
+(** Step 5.1b: Cell barycenter is in C. **)
+lemma geotop_cell_barycenter_in_cell:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "geotop_cell_barycenter C \<in> C"
+  using geotop_cell_barycenter_in_rel_interior[OF assms] rel_interior_subset
+  by (by100 blast)
 
 (** Step 5.2: Cell flag (chain of cells under proper inclusion). **)
 definition geotop_cell_flags :: "'a::euclidean_space set set \<Rightarrow> 'a set list set" where
@@ -11890,7 +11913,52 @@ proof -
   show ?thesis by (rule face_of_aff_dim_lt[OF hB_conv hA_face_HOL hA_neB])
 qed
 
-(** Phase 5 ATTEMPTS DONE. Steps 5.3a, 5.3b proven (~50 lines).
+(** Step 5.3c: For a cell-flag c with chain-top last c, the barycenters
+    of cells preceding the chain-top all live in the chain-top. **)
+lemma geotop_cell_flag_init_barycenters_in_top:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc_fl: "c \<in> geotop_cell_flags C"
+  shows "geotop_cell_barycenter ` set c \<subseteq> last c"
+proof
+  fix b assume hb: "b \<in> geotop_cell_barycenter ` set c"
+  obtain A where hA: "A \<in> set c" and hb_eq: "b = geotop_cell_barycenter A"
+    using hb by (by100 blast)
+  have hA_C: "A \<in> C" using hc_fl hA unfolding geotop_cell_flags_def by (by100 blast)
+  have hA_cell: "geotop_cell A"
+    using hC hA_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hb_A: "b \<in> A"
+    using hb_eq geotop_cell_barycenter_in_cell[OF hA_cell] by (by100 simp)
+  have hc_ne: "c \<noteq> []" using hc_fl unfolding geotop_cell_flags_def by (by100 blast)
+  have h_last_in: "last c \<in> set c" using hc_ne by (by100 simp)
+  have hc_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) c"
+    using hc_fl unfolding geotop_cell_flags_def by (by100 blast)
+  have hA_sub_last: "A \<subseteq> last c"
+  proof -
+    obtain i where hi_lt: "i < length c" and hA_eq: "A = c ! i"
+      using hA in_set_conv_nth[of A c] by (by100 blast)
+    have h_last_eq: "last c = c ! (length c - 1)"
+      using last_conv_nth[OF hc_ne] by (by100 simp)
+    have h_len_pos: "0 < length c" using hc_ne by (by100 simp)
+    have h_last_idx: "length c - 1 < length c" using h_len_pos by (by100 simp)
+    show ?thesis
+    proof (cases "i = length c - 1")
+      case True
+      have "A = c ! (length c - 1)" using hA_eq True by (by100 simp)
+      then have "A = last c" using h_last_eq by (by100 simp)
+      thus ?thesis by (by100 blast)
+    next
+      case h_ne_idx: False
+      have h_lt: "i < length c - 1" using hi_lt h_ne_idx by (by100 linarith)
+      have h_chain: "(c ! i) \<subset> (c ! (length c - 1))"
+        by (rule sorted_wrt_nth_less[OF hc_sorted h_lt h_last_idx])
+      show ?thesis using h_chain hA_eq h_last_eq by (by100 blast)
+    qed
+  qed
+  show "b \<in> last c" using hb_A hA_sub_last by (by100 blast)
+qed
+
+(** Phase 5 ATTEMPTS so far: Steps 5.1a/b, 5.3a/b/c (~120 lines).
 
     Remaining (deferred): the FULL Step 5.3 (affine independence of
     cell-flag barycenters), Steps 5.6-5.10. Need substantially more
