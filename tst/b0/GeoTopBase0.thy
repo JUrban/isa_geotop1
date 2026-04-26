@@ -11079,6 +11079,110 @@ qed
 
 (** End Phase 1. ============================================ **)
 
+(** ============================================================
+    PLAN3 Phase 2: Cell faces (Hudson appendix + HOL-Analysis face_of)
+    ============================================================
+    Per ANSWER_REPORT.md, use HOL-Analysis face_of directly. **)
+
+(** Step 2.1: Definition. F is a face of cell C iff F is non-empty
+    and F face_of C in HOL-Analysis sense. **)
+definition geotop_cell_face :: "'a::euclidean_space set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_cell_face F C \<longleftrightarrow> geotop_cell C \<and> F \<noteq> {} \<and> F face_of C"
+
+(** Step 2.2: Reflexivity. **)
+lemma geotop_cell_face_refl:
+  assumes "geotop_cell C"
+  shows "geotop_cell_face C C"
+proof -
+  have hC_conv: "convex C" by (rule geotop_cell_convex[OF assms])
+  have hC_face: "C face_of C" by (rule face_of_refl[OF hC_conv])
+  have hC_ne: "C \<noteq> {}" by (rule geotop_cell_nonempty[OF assms])
+  show ?thesis unfolding geotop_cell_face_def
+    using assms hC_ne hC_face by (by100 blast)
+qed
+
+(** Step 2.3: Subset property. **)
+lemma geotop_cell_face_imp_subset:
+  assumes "geotop_cell_face F C"
+  shows "F \<subseteq> C"
+  using assms unfolding geotop_cell_face_def
+  using face_of_imp_subset by (by100 blast)
+
+(** Step 2.4: Face of a cell is a cell. Direct HOL-Analysis. **)
+lemma geotop_cell_face_imp_cell:
+  fixes F C :: "'a::euclidean_space set"
+  assumes "geotop_cell_face F C"
+  shows "geotop_cell F"
+proof -
+  have hC_pt: "polytope C"
+    using assms unfolding geotop_cell_face_def geotop_cell_def by (by100 blast)
+  have hF_face: "F face_of C"
+    using assms unfolding geotop_cell_face_def by (by100 blast)
+  have hF_pt: "polytope F" by (rule face_of_polytope_polytope[OF hC_pt hF_face])
+  have hF_ne: "F \<noteq> {}"
+    using assms unfolding geotop_cell_face_def by (by100 blast)
+  show ?thesis unfolding geotop_cell_def using hF_ne hF_pt by (by100 blast)
+qed
+
+(** Step 2.5: Transitivity. **)
+lemma geotop_cell_face_trans:
+  fixes F G C :: "'a::euclidean_space set"
+  assumes hFG: "geotop_cell_face F G"
+  assumes hGC: "geotop_cell_face G C"
+  shows "geotop_cell_face F C"
+proof -
+  have hC: "geotop_cell C" using hGC unfolding geotop_cell_face_def by (by100 blast)
+  have hF_ne: "F \<noteq> {}" using hFG unfolding geotop_cell_face_def by (by100 blast)
+  have hFG_face: "F face_of G" using hFG unfolding geotop_cell_face_def by (by100 blast)
+  have hGC_face: "G face_of C" using hGC unfolding geotop_cell_face_def by (by100 blast)
+  have hFC_face: "F face_of C" using face_of_trans[OF hFG_face hGC_face] by (by100 simp)
+  show ?thesis unfolding geotop_cell_face_def using hC hF_ne hFC_face by (by100 blast)
+qed
+
+(** Step 2.6: Cells have finitely many faces. **)
+lemma geotop_cell_finite_faces:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "finite {F. geotop_cell_face F C}"
+proof -
+  have hC_pt: "polytope C" using assms unfolding geotop_cell_def by (by100 blast)
+  have h_HOL_fin: "finite {F. F face_of C}" by (rule finite_polytope_faces[OF hC_pt])
+  have h_sub: "{F. geotop_cell_face F C} \<subseteq> {F. F face_of C}"
+    unfolding geotop_cell_face_def by (by100 blast)
+  show ?thesis using h_HOL_fin h_sub finite_subset by (by100 blast)
+qed
+
+(** Step 2.7: Simplex face (geotop sense) is a cell face. **)
+lemma geotop_simplex_face_imp_cell_face:
+  fixes \<sigma> \<tau> :: "'a::euclidean_space set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  assumes h_face: "geotop_is_face \<tau> \<sigma>"
+  shows "geotop_cell_face \<tau> \<sigma>"
+proof -
+  obtain V W where hV: "geotop_simplex_vertices \<sigma> V"
+                 and hW_ne: "W \<noteq> {}" and hW_V: "W \<subseteq> V"
+                 and h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+    using h_face unfolding geotop_is_face_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using hV unfolding geotop_simplex_vertices_def
+    using geotop_convex_hull_eq_HOL by (by100 blast)
+  have h\<tau>_HOL: "\<tau> = convex hull W"
+    using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hV_ai: "\<not> affine_dependent V" by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have h\<tau>_face: "\<tau> face_of (convex hull V)"
+    using face_of_convex_hull_affine_independent[OF hV_ai, of \<tau>]
+          hW_V h\<tau>_HOL by (by100 blast)
+  have h\<sigma>_cell: "geotop_cell \<sigma>" by (rule geotop_simplex_imp_cell[OF h\<sigma>])
+  have hV_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+  have hW_hull: "W \<subseteq> convex hull W" by (rule hull_subset)
+  have h\<tau>_ne: "\<tau> \<noteq> {}" using hW_ne hW_hull h\<tau>_HOL by (by100 blast)
+  have h\<tau>_face_\<sigma>: "\<tau> face_of \<sigma>" using h\<tau>_face h\<sigma>_HOL by (by100 simp)
+  show ?thesis unfolding geotop_cell_face_def
+    using h\<sigma>_cell h\<tau>_ne h\<tau>_face_\<sigma> by (by100 blast)
+qed
+
+(** End Phase 2. ============================================ **)
+
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
     Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
