@@ -11818,6 +11818,46 @@ qed
 
 (** End Phase 4 (with Step 4.11 sorry'd). =========================== **)
 
+(** ============================================================
+    PLAN3 Phase 5: Triangulating a cell complex via order-complex
+    (Option B from ANSWER_REPORT.md, leveraging existing
+    barycentric-subdivision machinery)
+    ============================================================ **)
+
+(** Step 5.1: Cell barycenter. For a cell C = conv hull V (V finite),
+    define barycenter as 1/|V| * sum V (geometric center). **)
+definition geotop_cell_barycenter :: "'a::euclidean_space set \<Rightarrow> 'a" where
+  "geotop_cell_barycenter C =
+     (SOME b. \<exists>V. finite V \<and> V \<noteq> {} \<and> C = convex hull V \<and>
+                  b = (1 / real (card V)) *\<^sub>R (\<Sum>v\<in>V. v))"
+
+(** Step 5.2: Cell flag (chain of cells under proper inclusion). **)
+definition geotop_cell_flags :: "'a::euclidean_space set set \<Rightarrow> 'a set list set" where
+  "geotop_cell_flags C =
+     {c. c \<noteq> [] \<and> set c \<subseteq> C \<and> sorted_wrt (\<lambda>A B. A \<subset> B) c \<and> distinct c}"
+
+(** Step 5.4: Cell chain-simplex. **)
+definition geotop_cell_chain_simplex :: "'a::euclidean_space set list \<Rightarrow> 'a set" where
+  "geotop_cell_chain_simplex c = convex hull (geotop_cell_barycenter ` set c)"
+
+(** Step 5.5: Order complex of a cell complex. **)
+definition geotop_order_complex ::
+  "'a::euclidean_space set set \<Rightarrow> 'a set set" where
+  "geotop_order_complex C =
+     {S. \<exists>c \<in> geotop_cell_flags C. S = geotop_cell_chain_simplex c}"
+
+(** Phase 5 STRUCTURAL DEFINITIONS DONE. The substantive theorems
+    (5.3 affine independence of cell-flag barycenters, 5.6 order
+    complex is simplicial complex, 5.7 polyhedron equality, 5.9
+    cell-by-cell coverage) are deferred — they require the kind of
+    extended classical-mathematics work that this formalization
+    has reached the limit of.
+
+    The definitions are in place so future work (or a more capable
+    operator with rapid build cycles) can attempt them. **)
+
+(** End Phase 5 (definitions only; theorems deferred). ============== **)
+
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
     Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
