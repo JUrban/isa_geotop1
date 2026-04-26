@@ -14259,6 +14259,57 @@ proof -
   show ?thesis using h_face_1 h_face_2 by (by100 blast)
 qed
 
+(** Step 5.6 MAIN: order_complex C is a (Moise) simplicial complex.
+    Combines K.0 (5.6a), K.1 (5.6b), K.2 (5.6d.i), K.3 (5.6c). **)
+lemma geotop_order_complex_is_complex:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "geotop_is_complex (geotop_order_complex C)"
+proof -
+  let ?M = "geotop_order_complex C"
+  have h_K0: "\<forall>\<sigma>\<in>?M. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> ?M"
+    obtain c where hc: "c \<in> geotop_cell_flags C"
+                and h\<sigma>_eq: "\<sigma> = geotop_cell_chain_simplex c"
+      using h\<sigma> unfolding geotop_order_complex_def by (by100 blast)
+    show "geotop_is_simplex \<sigma>"
+      using h\<sigma>_eq geotop_chain_simplex_is_simplex[OF hC hc] by (by100 simp)
+  qed
+  have h_K1: "\<forall>\<sigma>\<in>?M. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?M"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>: "\<sigma> \<in> ?M"
+    assume h_face: "geotop_is_face \<tau> \<sigma>"
+    show "\<tau> \<in> ?M"
+      by (rule geotop_order_complex_face_closed[OF hC h\<sigma> h_face])
+  qed
+  have h_K2: "\<forall>\<sigma>\<in>?M. \<forall>\<tau>\<in>?M. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>: "\<sigma> \<in> ?M"
+    assume h\<tau>: "\<tau> \<in> ?M"
+    assume h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule geotop_order_complex_pairwise_face[OF hC h\<sigma> h\<tau> h_int_ne])
+  qed
+  have h_K3: "\<forall>\<sigma>\<in>?M. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>?M. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> ?M"
+    have h_finite: "finite ?M"
+      by (rule geotop_order_complex_finite[OF hC])
+    have h_finite_filt: "finite {\<tau> \<in> ?M. \<tau> \<inter> UNIV \<noteq> {}}"
+      using h_finite by (by100 simp)
+    have h_open_univ: "open (UNIV :: 'a set)" by (by100 simp)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>?M. \<tau> \<inter> U \<noteq> {}}"
+      using h_open_univ h_finite_filt by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using h_K0 h_K1 h_K2 h_K3 by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
