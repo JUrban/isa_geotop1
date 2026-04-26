@@ -1865,7 +1865,9 @@ definition geotop_is_barycentric_Sd ::
           (\<forall>\<sigma>'\<in>bK. \<forall>k. geotop_simplex_dim \<sigma>' k \<longrightarrow> k \<le> n)
           \<and> geotop_mesh (\<lambda>x y. norm (x - y)) bK
             \<le> (real n / real (Suc n))
-             * geotop_mesh (\<lambda>x y. norm (x - y)) K)"
+             * geotop_mesh (\<lambda>x y. norm (x - y)) K)
+    \<and> bK = {geotop_convex_hull (geotop_barycenter ` set c) | c.
+                c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
 
 definition geotop_barycentric_subdivision ::
   "'a::real_normed_vector set set \<Rightarrow> 'a set set" where
@@ -8816,10 +8818,15 @@ proof -
           \<le> (real n / real (Suc n))
            * geotop_mesh (\<lambda>x y. norm (x - y)) K"
     using h_dim_preserve h_mesh_shrink by (by100 blast)
+  (** Chain-simplex form clause for the strengthened predicate. **)
+  have h_bK_chain_form:
+    "bK = {geotop_convex_hull (geotop_barycenter ` set c) | c.
+                c \<noteq> [] \<and> set c \<subseteq> K \<and> sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c \<and> distinct c}"
+    unfolding bK_def flags_def by (by100 simp)
   (** COMBINE into the barycentric-Sd predicate. **)
   have h_bary: "geotop_is_barycentric_Sd bK K"
     unfolding geotop_is_barycentric_Sd_def
-    using h_bK_sub h_bK_0simp h_dim_mesh by (by100 blast)
+    using h_bK_sub h_bK_0simp h_dim_mesh h_bK_chain_form by (by100 blast)
   show ?thesis using h_bary by (by100 blast)
 qed
 
