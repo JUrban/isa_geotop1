@@ -19,6 +19,65 @@
 grep -n "definition geotop_iterated_Sd\|definition geotop_is_barycentric_Sd\|^lemma geotop_bK_elt_simplex_vertices" b0/GeoTopBase0.thy
 ```
 
+## ⚠ CRITICAL FINDING (2026-04-26 fresh-session setup)
+
+**Blocker discovered during setup:**
+
+```isabelle
+definition geotop_barycentric_subdivision K = (SOME bK. geotop_is_barycentric_Sd bK K)
+abbreviation geotop_Sd K ≡ geotop_barycentric_subdivision K
+primrec geotop_iterated_Sd 0 K = K | geotop_iterated_Sd (Suc m) K = geotop_Sd (geotop_iterated_Sd m K)
+```
+
+`geotop_Sd K` is a **SOME-witness** based on the predicate `geotop_is_barycentric_Sd bK K`. The predicate constrains bK to be:
+- A subdivision of K (subdiv + |bK|=|K|)
+- Containing 0-simplices of K
+- Having dim/mesh bounds
+
+**The predicate does NOT require bK's simplices to be chain-simplices** of K-flag barycenters. Other subdivisions could satisfy the predicate (e.g., further subdivisions of the chain-simplex bK).
+
+`geotop_classical_Sd_exists` (line ~6398) provides ONE such bK that IS the chain-simplex set, but the SOME-witness might pick a different one.
+
+**Implications:**
+- W1.2 as stated (extract V_τ = barycenter ` set c) is **NOT PROVABLE** from `geotop_iterated_Sd 1 K`'s abstract definition.
+- The recursive Sd-vertex structure used in Munkres §16 requires chain-simplex form.
+- PLAN3 strategy needs revision.
+
+**Two paths forward:**
+
+### Path A: Strengthen `geotop_is_barycentric_Sd` to require chain-simplex form
+
+Add clause: `bK = {geotop_convex_hull (geotop_barycenter ` set c) | c. c ∈ geotop_flags K}`.
+
+Then SOME-witness gives chain-simplex form.
+
+**Risk**: downstream uses of `geotop_is_barycentric_Sd` may break if they only assume the weaker predicate. Audit needed: search all uses of `geotop_is_barycentric_Sd`. `geotop_classical_Sd_exists` would need to satisfy the strengthened predicate (it does — bK is exactly chain-simplex set).
+
+### Path B: Replace `geotop_barycentric_subdivision` with explicit constructive definition
+
+Change:
+```isabelle
+definition geotop_barycentric_subdivision K =
+  {geotop_convex_hull (geotop_barycenter ` set c) | c. c ∈ geotop_flags K}
+```
+
+This makes `geotop_Sd K` directly accessible as the chain-simplex set.
+
+**Risk**: must re-prove `geotop_is_barycentric_Sd (geotop_Sd K) K` (currently free via SOME-witness); audit downstream uses.
+
+### Recommendation
+
+Path A (strengthen predicate) is less invasive. The strengthened predicate is still satisfied by the existing `geotop_classical_Sd_exists` proof. Downstream uses that only need the weaker predicate continue to work (since stronger ⟹ weaker).
+
+**Updated Week 1 attack plan**: replace W1.1-W1.5 with:
+- **W1.0 (NEW)**: strengthen `geotop_is_barycentric_Sd` definition with chain-simplex clause. Audit downstream. Re-verify `geotop_classical_Sd_exists`.
+- **W1.1**: Sd-simplex vertex extraction (m=1) — now straightforward with strengthened definition.
+- **W1.2** through **W1.4**: recursive case via primrec.
+
+Estimated effort revised: Week 1 likely needs ~150 lines (W1.0) + ~150 lines (W1.1-W1.4), total ~300 lines.
+
+**Prerequisites for moving forward**: confirm Path A is acceptable (no breaking downstream uses of the weaker predicate); if so, proceed with W1.0 first.
+
 ---
 
 ## Week 1 attack outline
