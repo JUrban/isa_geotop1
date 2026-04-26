@@ -11088,11 +11088,99 @@ proof -
       Munkres 14.4 + carrier-map infrastructure. **)
   have h_refines_aux: "\<exists>m. \<forall>\<tau>\<in>geotop_iterated_Sd m K. \<exists>\<sigma>\<in>K'. \<tau> \<subseteq> \<sigma>"
   proof -
-    (** Step 1: Lebesgue number for K'-vertex open-star cover of |K|. **)
+    (** Step 1: Lebesgue number for K'-vertex open-star cover of |K|.
+        Build from existing h_leb_raw + bridge open_star = polyhedron \<inter> U_fn v. **)
     have h_leb_eps: "\<exists>\<epsilon>::real > 0. \<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow>
                        diameter T < \<epsilon> \<longrightarrow>
                        (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
-      sorry
+    proof (cases "C = {}")
+      case True
+      (** C = \<emptyset> \<Longrightarrow> V(K') = \<emptyset> \<Longrightarrow> |K'| = \<emptyset> = |K| (any vertexless complex is empty
+          via geotop_polyhedron / vertex relation). So no T \<noteq> \<emptyset> sub of |K| exists,
+          hence the implication is vacuously true. Pick \<epsilon> = 1. **)
+      have hC_def_eq: "C = U_fn ` geotop_complex_vertices K'" unfolding C_def by (by100 simp)
+      have hV_K'_emp: "geotop_complex_vertices K' = {}"
+        using True hC_def_eq by (by100 simp)
+      have h_poly_K'_empty: "geotop_polyhedron K' = {}"
+      proof (rule ccontr)
+        assume h_ne: "geotop_polyhedron K' \<noteq> {}"
+        obtain x where hx: "x \<in> geotop_polyhedron K'" using h_ne by (by100 blast)
+        obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and hx\<sigma>: "x \<in> \<sigma>"
+          using hx unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+          using h\<sigma>K' conjunct1[OF hK'comp[unfolded geotop_is_complex_def]] by (by100 blast)
+        obtain V where hVfin: "finite V" and hV_ne: "V \<noteq> {}"
+                   and hV_sv: "geotop_simplex_vertices \<sigma> V"
+        proof -
+          obtain Vp m\<^sub>p n\<^sub>p where hVpfin: "finite Vp" and hVpcard: "card Vp = n\<^sub>p + 1"
+                            and hnm\<^sub>p: "n\<^sub>p \<le> m\<^sub>p" and hVpgp: "geotop_general_position Vp m\<^sub>p"
+                            and h\<sigma>eq: "\<sigma> = geotop_convex_hull Vp"
+            using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+          have hVpne: "Vp \<noteq> {}"
+          proof
+            assume "Vp = {}"
+            hence "card Vp = 0" by (by100 simp)
+            thus False using hVpcard by (by100 simp)
+          qed
+          have hVp_sv: "geotop_simplex_vertices \<sigma> Vp"
+            unfolding geotop_simplex_vertices_def
+            using hVpfin hVpcard hnm\<^sub>p hVpgp h\<sigma>eq by (by100 blast)
+          show thesis using that[OF hVpfin hVpne hVp_sv] .
+        qed
+        obtain v where hvV: "v \<in> V" using hV_ne by (by100 blast)
+        have hv_vertex: "v \<in> geotop_complex_vertices K'"
+          unfolding geotop_complex_vertices_def using h\<sigma>K' hV_sv hvV by (by100 blast)
+        show False using hv_vertex hV_K'_emp by (by100 blast)
+      qed
+      have hK_poly_empty: "geotop_polyhedron K = {}"
+        using h_poly_K'_empty hpolyeq by (by100 simp)
+      have h_vacuous: "\<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow>
+                          diameter T < 1 \<longrightarrow>
+                          (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
+      proof (intro allI impI)
+        fix T :: "'a set"
+        assume hT_sub: "T \<subseteq> geotop_polyhedron K"
+        assume hT_ne: "T \<noteq> {}"
+        have "T = {}" using hT_sub hK_poly_empty by (by100 blast)
+        thus "\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v"
+          using hT_ne by (by100 blast)
+      qed
+      have h_one_pos: "(1::real) > 0" by (by100 simp)
+      show ?thesis
+        apply (rule exI[of _ 1])
+        using h_one_pos h_vacuous by (by100 blast)
+    next
+      case hC_ne: False
+      have h_leb_apl: "\<exists>\<delta>::real>0. \<forall>T \<subseteq> geotop_polyhedron K.
+                           diameter T < \<delta> \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
+        by (rule h_leb_raw[OF hC_ne])
+      from h_leb_apl obtain \<delta>'::real where h\<delta>'pos: "\<delta>' > 0"
+                                       and h\<delta>'prop: "\<forall>T \<subseteq> geotop_polyhedron K.
+                                  diameter T < \<delta>' \<longrightarrow> (\<exists>B\<in>C. T \<subseteq> B)"
+        by (by100 auto)
+      have h\<delta>'_geoprop: "\<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow> diameter T < \<delta>' \<longrightarrow>
+                            (\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v)"
+      proof (intro allI impI)
+        fix T assume hT_sub: "T \<subseteq> geotop_polyhedron K"
+        assume hT_ne: "T \<noteq> {}"
+        assume hT_diam: "diameter T < \<delta>'"
+        have h_ex_B: "\<exists>B\<in>C. T \<subseteq> B"
+          using h\<delta>'prop hT_sub hT_diam by (by100 blast)
+        obtain B where hB_C: "B \<in> C" and hT_B: "T \<subseteq> B"
+          using h_ex_B by (by100 blast)
+        obtain v where hv: "v \<in> geotop_complex_vertices K'" and hB_eq: "B = U_fn v"
+          using hB_C unfolding C_def by (by100 blast)
+        have hT_Ufn: "T \<subseteq> U_fn v" using hT_B hB_eq by (by100 simp)
+        have h_star_eq: "geotop_open_star K' v = geotop_polyhedron K' \<inter> U_fn v"
+          using h_U_fn_prop hv by (by100 blast)
+        have hT_K': "T \<subseteq> geotop_polyhedron K'" using hT_sub hpolyeq by (by100 simp)
+        have hT_open_star: "T \<subseteq> geotop_open_star K' v"
+          using hT_K' hT_Ufn h_star_eq by (by100 blast)
+        show "\<exists>v\<in>geotop_complex_vertices K'. T \<subseteq> geotop_open_star K' v"
+          using hv hT_open_star by (by100 blast)
+      qed
+      show ?thesis using h\<delta>'pos h\<delta>'_geoprop by (by100 blast)
+    qed
     obtain \<epsilon>::real where h\<epsilon>pos: "\<epsilon> > 0"
                       and h\<epsilon>prop: "\<forall>T \<subseteq> geotop_polyhedron K. T \<noteq> {} \<longrightarrow>
                                     diameter T < \<epsilon> \<longrightarrow>
