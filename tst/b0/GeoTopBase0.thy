@@ -11135,9 +11135,16 @@ proof -
         using h\<tau>_open_star by (by100 blast)
       (** Step 4 (KEY): the open-star intersection over V_\<tau> in K' is non-empty.
           Uses Sd-flag chain structure + carrier-map. **)
+      have hSdm\<^sub>0_sub_K: "geotop_is_subdivision (geotop_iterated_Sd m\<^sub>0 K) K"
+        by (rule geotop_iterated_Sd_is_subdivision[OF hKcomp hK])
+      have hSdm\<^sub>0_comp: "geotop_is_complex (geotop_iterated_Sd m\<^sub>0 K)"
+        using hSdm\<^sub>0_sub_K unfolding geotop_is_subdivision_def by (by100 blast)
+      have h\<tau>_simp: "geotop_is_simplex \<tau>"
+        using h\<tau> conjunct1[OF hSdm\<^sub>0_comp[unfolded geotop_is_complex_def]]
+        by (by100 blast)
       obtain V\<^sub>\<tau> where hV\<tau>fin: "finite V\<^sub>\<tau>" and hV\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
                    and h\<tau>_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
-        sorry
+        using geotop_simplex_obtain_HOL[OF h\<tau>_simp] by (by100 metis)
       have h_inter_ne: "(\<Inter>w\<in>V\<^sub>\<tau>. geotop_open_star K' w) \<noteq> {}"
         sorry
       (** Step 5: Apply Munkres 14.4 \<Longleftarrow> in K' to get V_\<tau> \<subseteq> \<sigma>' for some \<sigma>' \<in> K'. **)
