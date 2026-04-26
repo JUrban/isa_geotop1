@@ -26,17 +26,46 @@ moment: the proof attempt we *started* with turned out to be founded on a
 
 ---
 
-## 1. The original (failed) approach: iterated barycentric subdivision
+## 1. What Moise actually says
 
-Moise's textbook proof of Theorem 1 cites his earlier development of barycentric
-subdivision: given a complex `K` and a subdivision `K'` of `K`, *some* iterated
-barycentric subdivision `Sd^N K` should refine `K'`, i.e. every simplex of
-`Sd^N K` should be contained in some simplex of `K'`. Once you have that, a
-common subdivision of two subdivisions `L1, L2` of `K` falls out immediately:
-take `N = max(m, n)` where `Sd^m K` refines `L1` and `Sd^n K` refines `L2`,
-and use transitivity of subdivision.
+Moise's text (`geotop.tex` here) is, in this part of the book, a survey
+chapter. Theorem 1 is *stated* on p. 7 without proof. The general
+common-subdivision claim never gets a direct proof in the chapter; instead,
+Moise defers the work to the problem set, where it is broken up by dimension:
 
-This is the path the formalization originally followed. The textbook step
+| Problem | Statement |
+|--------|-----------|
+| 0.18 | Let `K` be a finite complex in `R²`, and `{L_i}` a finite collection of lines. Then `K` has a subdivision `K_1` in which each `L_i ∩ |K|` forms a subcomplex. |
+| **0.19** | **Every two subdivisions `K_1, K_2` of a 2-simplex `σ² ⊂ R²` have a common subdivision.** |
+| **0.20** | **Let `K` be a 2-dimensional complex. Then every two subdivisions of `K` have a common subdivision.** |
+| 0.26 | (R³ analogue of 0.18 with planes.) |
+| **0.27** | **Every two subdivisions of a 3-simplex have a common subdivision.** |
+| **0.28** | **Let `K` be a 3-dimensional complex. Then every two subdivisions of `K` have a common subdivision.** |
+
+The relevant tools Moise gives the reader for these problems are the
+inductive definition of the (first) barycentric subdivision `bK` (p. 35-ish
+in our text, line 1197 in `geotop.tex`) plus the three facts numbered there:
+
+> 5. For each `K`, `bK` is a complex.
+> 6. `bK` is a subdivision of `K`.
+> 7. `‖b σⁿ‖ ≤ ½ ‖σⁿ‖`, for each `σⁿ`.
+
+So the *spirit* of the textbook approach to common subdivision in arbitrary
+dimension is "iterate `b` until things fit"; the *letter* of the textbook
+proof is left to the reader. Our own writeup of this folkloric argument lives
+in `early.tex §4` and was the original target of the formalization.
+
+## 2. The original (failed) approach: iterated barycentric subdivision
+
+The plan we tried to formalize was the standard one. Given a complex `K` and
+a subdivision `K'` of `K`, we wanted to show that *some* iterated barycentric
+subdivision `Sd^N K` refines `K'`, i.e. every simplex of `Sd^N K` is
+contained in some simplex of `K'`. Once we had that, a common subdivision
+of two subdivisions `L1, L2` of `K` falls out: take `N = max(m, n)` where
+`Sd^m K` refines `L1` and `Sd^n K` refines `L2`, and use transitivity of
+subdivision.
+
+This is the path the formalization originally followed. The auxiliary step
 became, in Isabelle, the lemma
 
 ```isabelle
@@ -55,7 +84,7 @@ It failed. The structural sub-lemmas were fine, but the analytic step `Step 4`
 sat on a `sorry` at that step and gradually realized the lemma surrounding the
 sorry was just *false*.
 
-### 1.1 The 1-dimensional counterexample
+### 2.1 The 1-dimensional counterexample
 
 The cleanest disproof is one-dimensional. Take
 
@@ -70,14 +99,34 @@ interior contains `1/3`. That sub-interval is contained in **neither**
 `[0, 1/3]` nor `[1/3, 1]`. Hence `Sd^N K` never refines `K'` literally,
 contradicting the lemma we were trying to prove.
 
-### 1.2 What this means for the proof strategy
+### 2.2 Why the folkloric argument fails
 
-Moise's textbook argument is morally correct but it is a *non-literal*
-refinement: each `Sd^N` simplex `τ` is contained in a simplex of `K'` *up to
-some measure-theoretic / closure flexibility*. To turn that into a literal
-refinement (which is what `geotop_is_subdivision` demands in our
-formalization), iterated barycentric subdivision is genuinely the wrong
-machine. We needed a different one.
+Our writeup in `early.tex §4.5` had a subtle bug. The argument went:
+
+> Choose `m` so each simplex `τ` of `Sd^m(K)` has diameter `< δ`. Then `τ` is
+> contained in some open star `st_{K'}(v)`. Pick `x ∈ int(τ)`. Since
+> `τ ⊂ st_{K'}(v)`, the point `x` lies in `int(σ)` for some `σ ∈ K'` having
+> `v` as a vertex. Both `τ` and `σ` lie in some simplex of `K`. Inside that
+> ambient simplex, `x ∈ int(τ) ∩ int(σ)`; since interiors of distinct
+> simplices in a simplicial complex are disjoint, `τ ⊂ σ`.
+
+The mistake is in the last sentence: "interiors of distinct simplices in a
+simplicial complex are disjoint" is true *within one* complex, but `τ` and
+`σ` belong to **different** complexes (`τ ∈ Sd^m K`, `σ ∈ K'`). They both
+subdivide `K`, but the disjointness fact does not transfer across two
+subdivisions of the same complex.
+
+In the dyadic counterexample above (with `m = 1`, `Sd K = K|_{1/2}`), the
+simplex `τ = [0, 1/2]` has interior `(0, 1/2)`, which intersects both the
+interior `(0, 1/3)` of `[0,1/3] ∈ K'` and the interior `(1/3, 1)` of
+`[1/3, 1] ∈ K'`, so `τ` is contained in neither. The Lebesgue argument
+correctly places `τ` *in some open star* of `K'`, but cannot place it
+inside any single closed simplex of `K'`.
+
+So iterated barycentric subdivision does give a refinement of the
+*non-literal* / "Munkres-type-with-closure" sort, but cannot give a
+literal-containment refinement, which is what
+`geotop_is_subdivision` demands. We needed a different machine.
 
 We asked a mathematician (`ANSWER_REPORT.md`) and they pointed us at Hudson's
 *Piecewise Linear Topology* (Chapter I, §2-3) and the **overlay cell
@@ -85,7 +134,7 @@ complex** construction. That became PLAN3.
 
 ---
 
-## 2. The replacement strategy: overlay cell complex + order-complex
+## 3. The replacement strategy: overlay cell complex + order-complex
   triangulation
 
 The classical PL fix factors through *cells* (convex polytopes) rather than
@@ -110,7 +159,7 @@ an honest vertex. No analytic limit argument is required.
 
 ---
 
-## 3. The 8-phase formalization (PLAN3)
+## 4. The 8-phase formalization (PLAN3)
 
 We split the work into eight phases, each with a `PLAN3_PHASE_n.md` plan
 file. The first commit landed `2026-04-26`-ish (commit `9533507c`); Phase 8
@@ -135,7 +184,7 @@ Phases 1-4 are mostly bookkeeping on top of HOL-Analysis polytope theory
 (`Polytope.thy`, `Convex.thy`). Phases 5-8 are where the substantial
 mathematics lives.
 
-### 3.1 Phase 5: order-complex triangulation (the hard core)
+### 4.1 Phase 5: order-complex triangulation (the hard core)
 
 Phase 5 says: *every finite cell complex `C` has a simplicial subdivision*.
 The witness is the **order complex**: the simplicial complex whose simplices
@@ -212,7 +261,7 @@ to the farther one, and that open segment is contained in `rel_interior S`
 (the lemma `rel_interior_closure_convex_segment` in HOL-Analysis), which
 contradicts the closer point being in `rel_frontier`.
 
-### 3.2 Phase 6: bridging back to simplicial subdivisions
+### 4.2 Phase 6: bridging back to simplicial subdivisions
 
 The general bridge is a clean 80-line argument:
 
@@ -233,7 +282,7 @@ from Phase 4, and `σ = ⋃ {A ∈ overlay_complex. A ⊆ σ}` is a small new le
 that proves *any* `x ∈ σ ∈ L1` lies in the overlay cell `σ ∩ τ` for some
 `τ ∈ L2` containing `x` (existence of `τ` follows from `|L1| = |L2|`).
 
-### 3.3 Phase 7: the common-subdivision theorem
+### 4.3 Phase 7: the common-subdivision theorem
 
 ```isabelle
 theorem geotop_common_subdivision_finite:
@@ -254,7 +303,7 @@ The proof is now mechanical assembly:
 3. `M` is a simplicial subdivision of `L1` (Phase 6.2).
 4. `M` is a simplicial subdivision of `L2` (Phase 6.3).
 
-### 3.4 Phase 8: closing the loop
+### 4.4 Phase 8: closing the loop
 
 `Theorem_GT_1` is now four lines of bookkeeping plus an `apply` of
 `geotop_common_subdivision_finite`. The `~430-line` previous proof body that
@@ -289,9 +338,9 @@ Sorry count in the basis: **0**. Build green.
 
 ---
 
-## 4. Engineering notes
+## 5. Engineering notes
 
-### 4.1 The `by100` discipline
+### 5.1 The `by100` discipline
 
 Per `CLAUDE.md`, every `by` step uses the `by100` wrapper which times out the
 inner method at 100 ms. The motivation is simple: in a file this long
@@ -320,7 +369,7 @@ then attack any line over `~0.06s` first. Two big wins:
 After this pass the build dropped from "5–10 retries" to "1–2 retries" under
 typical load.
 
-### 4.2 Choice of barycenter
+### 5.2 Choice of barycenter
 
 `geotop_cell_barycenter` is defined as `SOME b. b ∈ rel_interior C`, *not*
 "centroid of vertices". This makes the affine independence proof clean (we
@@ -328,7 +377,7 @@ don't need to manage an explicit vertex set) and matches what
 HOL-Analysis's lemmas expect. The cost is that we never compute concrete
 coordinates — which in fairness was never the goal.
 
-### 4.3 What we got from HOL-Analysis
+### 5.3 What we got from HOL-Analysis
 
 The proof would not have been feasible in the time budget without
 HOL-Analysis's `Polytope.thy` and friends. Critical imports:
@@ -348,7 +397,7 @@ HOL-Analysis's `Polytope.thy` and friends. Critical imports:
 * `extreme_point_of_convex_hull_affine_independent` (extreme points = vertex
   set when AI) — used for `simplex_vertices_unique`.
 
-### 4.4 What turned out to be subtle
+### 5.4 What turned out to be subtle
 
 The single most painful phase, both intellectually and in lines, was K.2.
 A small list of things that *looked* like they should work and didn't:
@@ -371,7 +420,7 @@ must coincide.
 
 ---
 
-## 5. Numerical postscript
+## 6. Numerical postscript
 
 * Final `b0/GeoTopBase0.thy`: 14 886 lines, 262 top-level declarations, build
   ~36–48 s.
@@ -388,7 +437,7 @@ statement.
 
 ---
 
-## 6. Acknowledgements
+## 7. Acknowledgements
 
 The decisive course-correction came from a mathematician's review which
 diagnosed the false iterated-`Sd` lemma and pointed at Hudson's overlay
