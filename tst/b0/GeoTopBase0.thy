@@ -14158,6 +14158,107 @@ proof (induct "length c1 + length c2" arbitrary: c1 c2 x rule: less_induct)
   qed
 qed
 
+(** Step 5.6d.h: σ_c1 ∩ σ_c2 = chain_simplex(filter (∈ set c2) c1).
+    Combines K.2 main (⊆) with the easy ⊇ direction (sub-flag inclusion). **)
+lemma geotop_chain_simplex_inter_eq:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc1: "c1 \<in> geotop_cell_flags C"
+  assumes hc2: "c2 \<in> geotop_cell_flags C"
+  assumes h_inter_ne: "geotop_cell_chain_simplex c1 \<inter> geotop_cell_chain_simplex c2 \<noteq> {}"
+  shows "geotop_cell_chain_simplex c1 \<inter> geotop_cell_chain_simplex c2
+           = geotop_cell_chain_simplex (filter (\<lambda>X. X \<in> set c2) c1)"
+proof (rule set_eqI, rule iffI)
+  fix x assume hx: "x \<in> geotop_cell_chain_simplex c1 \<inter> geotop_cell_chain_simplex c2"
+  show "x \<in> geotop_cell_chain_simplex (filter (\<lambda>X. X \<in> set c2) c1)"
+    using hx geotop_chain_simplex_inter_subset[OF hC hc1 hc2] by (by100 blast)
+next
+  fix x assume hx_filt: "x \<in> geotop_cell_chain_simplex (filter (\<lambda>X. X \<in> set c2) c1)"
+  have h_filt_set: "set (filter (\<lambda>X. X \<in> set c2) c1) \<subseteq> set c1" by (by100 simp)
+  have h_filt_set2: "set (filter (\<lambda>X. X \<in> set c2) c1) \<subseteq> set c2" by (by100 auto)
+  have h_V_sub1: "geotop_cell_barycenter ` set (filter (\<lambda>X. X \<in> set c2) c1)
+                    \<subseteq> geotop_cell_barycenter ` set c1"
+    using h_filt_set by (by100 blast)
+  have h_V_sub2: "geotop_cell_barycenter ` set (filter (\<lambda>X. X \<in> set c2) c1)
+                    \<subseteq> geotop_cell_barycenter ` set c2"
+    using h_filt_set2 by (by100 blast)
+  have h_chain_sub1: "geotop_cell_chain_simplex (filter (\<lambda>X. X \<in> set c2) c1)
+                       \<subseteq> geotop_cell_chain_simplex c1"
+    unfolding geotop_cell_chain_simplex_def using h_V_sub1 hull_mono by (by100 blast)
+  have h_chain_sub2: "geotop_cell_chain_simplex (filter (\<lambda>X. X \<in> set c2) c1)
+                       \<subseteq> geotop_cell_chain_simplex c2"
+    unfolding geotop_cell_chain_simplex_def using h_V_sub2 hull_mono by (by100 blast)
+  show "x \<in> geotop_cell_chain_simplex c1 \<inter> geotop_cell_chain_simplex c2"
+    using hx_filt h_chain_sub1 h_chain_sub2 by (by100 blast)
+qed
+
+(** Step 5.6d.i: K.2 final form — σ_c1 ∩ σ_c2 is geotop_is_face of both.
+    Uses 5.6d.h + 5.6a' (chain_simplex_vertices) + filter sub-flag. **)
+lemma geotop_order_complex_pairwise_face:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes h\<sigma>1: "\<sigma>1 \<in> geotop_order_complex C"
+  assumes h\<sigma>2: "\<sigma>2 \<in> geotop_order_complex C"
+  assumes h_int_ne: "\<sigma>1 \<inter> \<sigma>2 \<noteq> {}"
+  shows "geotop_is_face (\<sigma>1 \<inter> \<sigma>2) \<sigma>1 \<and> geotop_is_face (\<sigma>1 \<inter> \<sigma>2) \<sigma>2"
+proof -
+  obtain c1 where hc1_flag: "c1 \<in> geotop_cell_flags C"
+              and h\<sigma>1_eq: "\<sigma>1 = geotop_cell_chain_simplex c1"
+    using h\<sigma>1 unfolding geotop_order_complex_def by (by100 blast)
+  obtain c2 where hc2_flag: "c2 \<in> geotop_cell_flags C"
+              and h\<sigma>2_eq: "\<sigma>2 = geotop_cell_chain_simplex c2"
+    using h\<sigma>2 unfolding geotop_order_complex_def by (by100 blast)
+  define c0 where "c0 = filter (\<lambda>X. X \<in> set c2) c1"
+  have h_inter_eq: "\<sigma>1 \<inter> \<sigma>2 = geotop_cell_chain_simplex c0"
+    using h\<sigma>1_eq h\<sigma>2_eq h_int_ne
+          geotop_chain_simplex_inter_eq[OF hC hc1_flag hc2_flag]
+    unfolding c0_def by (by100 simp)
+  (* c0 is non-empty: get a witness x in the intersection *)
+  have h_c0_chain_ne: "geotop_cell_chain_simplex c0 \<noteq> {}"
+    using h_inter_eq h_int_ne by (by100 simp)
+  have h_set_c0_ne: "set c0 \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> set c0 \<noteq> {}"
+    hence "set c0 = {}" by (by100 blast)
+    hence "geotop_cell_barycenter ` set c0 = {}" by (by100 simp)
+    hence "geotop_cell_chain_simplex c0 = {}"
+      unfolding geotop_cell_chain_simplex_def by (by100 simp)
+    thus False using h_c0_chain_ne by (by100 blast)
+  qed
+  have hc0_ne: "c0 \<noteq> []" using h_set_c0_ne by (by100 simp)
+  have hc0_flag: "c0 \<in> geotop_cell_flags C"
+    unfolding c0_def by (rule geotop_cell_flags_filter[OF hc1_flag hc0_ne[unfolded c0_def]])
+  (* W = V_c0 \<subseteq> V_c1, V_c1 is simplex_vertices of \<sigma>_c1 *)
+  define W where "W = geotop_cell_barycenter ` set c0"
+  have hW_ne: "W \<noteq> {}" unfolding W_def using h_set_c0_ne by (by100 simp)
+  have h_V_c0_sub_c1: "set c0 \<subseteq> set c1" unfolding c0_def by (by100 simp)
+  have h_V_c0_sub_c2: "set c0 \<subseteq> set c2" unfolding c0_def by (by100 auto)
+  have hW_sub_V_c1: "W \<subseteq> geotop_cell_barycenter ` set c1"
+    unfolding W_def using h_V_c0_sub_c1 by (by100 blast)
+  have hW_sub_V_c2: "W \<subseteq> geotop_cell_barycenter ` set c2"
+    unfolding W_def using h_V_c0_sub_c2 by (by100 blast)
+  have h_inter_eq_geo: "\<sigma>1 \<inter> \<sigma>2 = geotop_convex_hull W"
+  proof -
+    have h_ch: "geotop_cell_chain_simplex c0
+                  = convex hull (geotop_cell_barycenter ` set c0)"
+      unfolding geotop_cell_chain_simplex_def by (by100 simp)
+    have h_geo: "geotop_convex_hull W = convex hull W"
+      using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    show ?thesis using h_inter_eq h_ch h_geo W_def by (by100 simp)
+  qed
+  have h_sv_c1: "geotop_simplex_vertices \<sigma>1 (geotop_cell_barycenter ` set c1)"
+    using h\<sigma>1_eq geotop_chain_simplex_vertices[OF hC hc1_flag] by (by100 simp)
+  have h_sv_c2: "geotop_simplex_vertices \<sigma>2 (geotop_cell_barycenter ` set c2)"
+    using h\<sigma>2_eq geotop_chain_simplex_vertices[OF hC hc2_flag] by (by100 simp)
+  have h_face_1: "geotop_is_face (\<sigma>1 \<inter> \<sigma>2) \<sigma>1"
+    unfolding geotop_is_face_def
+    using h_sv_c1 hW_ne hW_sub_V_c1 h_inter_eq_geo by (by100 blast)
+  have h_face_2: "geotop_is_face (\<sigma>1 \<inter> \<sigma>2) \<sigma>2"
+    unfolding geotop_is_face_def
+    using h_sv_c2 hW_ne hW_sub_V_c2 h_inter_eq_geo by (by100 blast)
+  show ?thesis using h_face_1 h_face_2 by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
