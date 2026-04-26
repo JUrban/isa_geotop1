@@ -13462,6 +13462,100 @@ proof (rule ccontr)
   qed
 qed
 
+(** Step 5.6d.f (radial decomposition uniqueness):
+    For convex S, b in rel_interior S, x in rel_interior S (x \<noteq> b),
+    if x = u·b + (1-u)·y = u'·b + (1-u')·y' with y, y' in rel_frontier S
+    and u, u' in [0, 1), then u = u' and y = y'.
+    Uses ray uniqueness (5.6d.e) plus arithmetic. **)
+lemma geotop_radial_decomp_unique:
+  fixes S :: "'a::euclidean_space set"
+  fixes b x :: 'a
+  fixes u u' :: real
+  assumes hS_conv: "convex S"
+  assumes hb: "b \<in> rel_interior S"
+  assumes hx: "x \<in> rel_interior S"
+  assumes hx_ne_b: "x \<noteq> b"
+  assumes hy: "y \<in> rel_frontier S"
+  assumes hy': "y' \<in> rel_frontier S"
+  assumes hu: "0 \<le> u" and hu_lt: "u < 1"
+  assumes hu': "0 \<le> u'" and hu'_lt: "u' < 1"
+  assumes hxy: "x = u *\<^sub>R b + (1 - u) *\<^sub>R y"
+  assumes hxy': "x = u' *\<^sub>R b + (1 - u') *\<^sub>R y'"
+  shows "u = u' \<and> y = y'"
+proof -
+  have h1mu_pos: "0 < 1 - u" using hu_lt by (by100 simp)
+  have h1mu'_pos: "0 < 1 - u'" using hu'_lt by (by100 simp)
+  have h_combine_b: "\<And>u :: real. u *\<^sub>R b + (1 - u) *\<^sub>R b = b"
+  proof -
+    fix u :: real
+    have "u *\<^sub>R b + (1 - u) *\<^sub>R b = (u + (1 - u)) *\<^sub>R b"
+      using scaleR_left_distrib[of u "1 - u" b, symmetric] by (by100 simp)
+    thus "u *\<^sub>R b + (1 - u) *\<^sub>R b = b" by (by100 simp)
+  qed
+  have h_y_minus_b: "(1 - u) *\<^sub>R (y - b) = x - b"
+  proof -
+    have h1: "(1 - u) *\<^sub>R (y - b) = (1 - u) *\<^sub>R y - (1 - u) *\<^sub>R b"
+      by (rule scaleR_diff_right)
+    have h2: "x = u *\<^sub>R b + (1 - u) *\<^sub>R y" by (rule hxy)
+    have h3: "x - b = u *\<^sub>R b + (1 - u) *\<^sub>R y - b" using h2 by (by100 simp)
+    have h4: "x - b = u *\<^sub>R b + (1 - u) *\<^sub>R y - (u *\<^sub>R b + (1 - u) *\<^sub>R b)"
+      using h3 h_combine_b[of u] by (by100 simp)
+    have h5: "x - b = (1 - u) *\<^sub>R y - (1 - u) *\<^sub>R b" using h4 by (by100 simp)
+    show ?thesis using h1 h5 by (by100 simp)
+  qed
+  have h_y'_minus_b: "(1 - u') *\<^sub>R (y' - b) = x - b"
+  proof -
+    have h1: "(1 - u') *\<^sub>R (y' - b) = (1 - u') *\<^sub>R y' - (1 - u') *\<^sub>R b"
+      by (rule scaleR_diff_right)
+    have h2: "x = u' *\<^sub>R b + (1 - u') *\<^sub>R y'" by (rule hxy')
+    have h3: "x - b = u' *\<^sub>R b + (1 - u') *\<^sub>R y' - b" using h2 by (by100 simp)
+    have h4: "x - b = u' *\<^sub>R b + (1 - u') *\<^sub>R y' - (u' *\<^sub>R b + (1 - u') *\<^sub>R b)"
+      using h3 h_combine_b[of u'] by (by100 simp)
+    have h5: "x - b = (1 - u') *\<^sub>R y' - (1 - u') *\<^sub>R b" using h4 by (by100 simp)
+    show ?thesis using h1 h5 by (by100 simp)
+  qed
+  (* y - b and y' - b are both positive multiples of x - b *)
+  have h_y_to_y': "y' - b = ((1 - u) / (1 - u')) *\<^sub>R (y - b)"
+  proof -
+    have h1mu'_nz: "1 - u' \<noteq> 0" using h1mu'_pos by (by100 simp)
+    have heq1: "(1 - u') *\<^sub>R (y' - b) = (1 - u) *\<^sub>R (y - b)"
+      using h_y_minus_b h_y'_minus_b by (by100 simp)
+    have heq2: "(1 / (1 - u')) *\<^sub>R ((1 - u') *\<^sub>R (y' - b))
+                  = (1 / (1 - u')) *\<^sub>R ((1 - u) *\<^sub>R (y - b))"
+      using heq1 by (by100 simp)
+    have heq3: "y' - b = (1 / (1 - u')) *\<^sub>R ((1 - u) *\<^sub>R (y - b))"
+      using heq2 h1mu'_nz by (by100 simp)
+    have heq4: "(1 / (1 - u')) *\<^sub>R ((1 - u) *\<^sub>R (y - b))
+                  = ((1 - u) / (1 - u')) *\<^sub>R (y - b)"
+      by (by100 simp)
+    show ?thesis using heq3 heq4 by (by100 simp)
+  qed
+  define s where "s = (1 - u) / (1 - u')"
+  have hs_pos: "0 < s"
+    unfolding s_def using h1mu_pos h1mu'_pos by (by100 simp)
+  have h_ray: "y' - b = s *\<^sub>R (y - b)"
+    unfolding s_def using h_y_to_y' by (by100 simp)
+  have hyy': "y = y'"
+    by (rule geotop_rel_frontier_ray_unique[OF hS_conv hb hy hy' hs_pos h_ray])
+  have hu_eq_u': "u = u'"
+  proof -
+    have h1: "(1 - u) *\<^sub>R (y - b) = (1 - u') *\<^sub>R (y - b)"
+      using h_y_minus_b h_y'_minus_b hyy' by (by100 simp)
+    have hy_ne_b: "y \<noteq> b"
+    proof
+      assume hyb: "y = b"
+      have "x = u *\<^sub>R b + (1 - u) *\<^sub>R b" using hxy hyb by (by100 simp)
+      hence "x = b" using scaleR_left_diff_distrib[of 1 u b] by (by100 simp)
+      thus False using hx_ne_b by (by100 blast)
+    qed
+    have hyb_diff: "y - b \<noteq> 0" using hy_ne_b by (by100 simp)
+    have h_eq: "1 - u = 1 - u'"
+      by (rule scaleR_right_imp_eq[OF hyb_diff h1])
+    show ?thesis using h_eq by (by100 simp)
+  qed
+  show ?thesis using hu_eq_u' hyy' by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
