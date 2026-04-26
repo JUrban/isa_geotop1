@@ -10995,6 +10995,90 @@ lemma geotop_convex_in_complex_in_simplex_DEFERRED:
   shows "\<exists>\<sigma>\<in>K. T \<subseteq> \<sigma>"
   oops
 
+(** ============================================================
+    PLAN3 Phase 1: Convex linear cells (Hudson Chapter I §2)
+    ============================================================
+    Per ANSWER_REPORT.md, the new strategy uses convex cell complexes
+    to construct common subdivisions via the overlay construction.
+    Phase 1 defines the cell predicate and basic properties. **)
+
+(** Step 1.1: Definition. A cell is a non-empty polytope (convex hull
+    of a finite set), per Hudson Chapter I appendix and ANSWER_REPORT.md
+    Option B. We reuse HOL-Analysis's `polytope` predicate. **)
+definition geotop_cell :: "'a::euclidean_space set \<Rightarrow> bool" where
+  "geotop_cell C \<longleftrightarrow> C \<noteq> {} \<and> polytope C"
+
+(** Step 1.2: Basic properties. **)
+lemma geotop_cell_nonempty:
+  assumes "geotop_cell C"
+  shows "C \<noteq> {}"
+  using assms unfolding geotop_cell_def by (by100 blast)
+
+lemma geotop_cell_convex:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "convex C"
+proof -
+  obtain V where hVfin: "finite V" and hV_hull: "C = convex hull V"
+    using assms unfolding geotop_cell_def polytope_def by (by100 blast)
+  show ?thesis using hV_hull convex_convex_hull[of V] by (by100 simp)
+qed
+
+lemma geotop_cell_compact:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "compact C"
+proof -
+  obtain V where hVfin: "finite V" and hV_hull: "C = convex hull V"
+    using assms unfolding geotop_cell_def polytope_def by (by100 blast)
+  have hV_compact: "compact V" using hVfin by (rule finite_imp_compact)
+  have h_hull_compact: "compact (convex hull V)"
+    by (rule compact_convex_hull[OF hV_compact])
+  show ?thesis using hV_hull h_hull_compact by (by100 simp)
+qed
+
+lemma geotop_cell_closed:
+  fixes C :: "'a::euclidean_space set"
+  assumes "geotop_cell C"
+  shows "closed C"
+  using geotop_cell_compact[OF assms] compact_imp_closed by (by100 blast)
+
+(** Step 1.3: Every Euclidean simplex is a cell. **)
+lemma geotop_simplex_imp_cell:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes "geotop_is_simplex \<sigma>"
+  shows "geotop_cell \<sigma>"
+proof -
+  obtain V where hVfin: "finite V" and hV_ne: "V \<noteq> {}"
+              and hV_HOL: "\<sigma> = convex hull V"
+    using geotop_simplex_obtain_HOL[OF assms] by (by100 metis)
+  have h_polytope: "polytope \<sigma>"
+    unfolding polytope_def using hVfin hV_HOL by (by100 blast)
+  have h_ne: "\<sigma> \<noteq> {}"
+  proof -
+    have hV_sub_hull: "V \<subseteq> convex hull V" by (rule hull_subset)
+    show ?thesis using hV_ne hV_sub_hull hV_HOL by (by100 blast)
+  qed
+  show ?thesis unfolding geotop_cell_def using h_ne h_polytope by (by100 blast)
+qed
+
+(** Step 1.4: Intersection of cells is a cell (when non-empty).
+    Direct application of HOL-Analysis polytope_Int. **)
+lemma geotop_cell_intersection:
+  fixes A B :: "'a::euclidean_space set"
+  assumes hA: "geotop_cell A"
+  assumes hB: "geotop_cell B"
+  assumes h_int_ne: "A \<inter> B \<noteq> {}"
+  shows "geotop_cell (A \<inter> B)"
+proof -
+  have hA_pt: "polytope A" using hA unfolding geotop_cell_def by (by100 blast)
+  have hB_pt: "polytope B" using hB unfolding geotop_cell_def by (by100 blast)
+  have h_int_pt: "polytope (A \<inter> B)" by (rule polytope_Int[OF hA_pt hB_pt])
+  show ?thesis unfolding geotop_cell_def using h_int_ne h_int_pt by (by100 blast)
+qed
+
+(** End Phase 1. ============================================ **)
+
 (** ⚠ THIS THEOREM IS FALSE ⚠ (2026-04-26 finding)
 
     Counterexample (1-dimensional): K = [0,1] (single 1-simplex with faces).
