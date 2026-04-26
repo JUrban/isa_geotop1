@@ -13556,6 +13556,81 @@ proof -
   show ?thesis using hu_eq_u' hyy' by (by100 blast)
 qed
 
+(** Step 5.6d.g: chain_simplex(butlast c) \<subseteq> rel_frontier(last c).
+    Proof: chain_simplex(butlast c) \<subseteq> last(butlast c) (5.8 applied to butlast c).
+    last(butlast c) = penultimate of c, which is \<subset> last c (sorted_wrt strict).
+    Hence penultimate face_of last c (5.3a). penultimate \<noteq> last c (proper subset).
+    So penultimate \<subseteq> rel_frontier(last c) (face_of_subset_rel_frontier). **)
+lemma geotop_chain_simplex_butlast_in_rel_frontier:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  assumes h_long: "length c \<ge> 2"
+  shows "geotop_cell_chain_simplex (butlast c) \<subseteq> rel_frontier (last c)"
+proof -
+  define c0 where "c0 = butlast c"
+  define A where "A = last c"
+  have hc_ne: "c \<noteq> []" using h_long length_0_conv by (by100 fastforce)
+  have hc_eq: "c = c0 @ [A]"
+    unfolding c0_def A_def using append_butlast_last_id[OF hc_ne] by (by100 simp)
+  have hc0_ne: "c0 \<noteq> []"
+  proof -
+    have h1: "length c0 + 1 = length c" using hc_eq by (by100 simp)
+    hence h2: "length c0 \<ge> 1" using h_long by (by100 simp)
+    show ?thesis using h2 length_0_conv by (by100 fastforce)
+  qed
+  have hc_flag: "(c0 @ [A]) \<in> geotop_cell_flags C" using hc hc_eq by (by100 simp)
+  have hc0_flag: "c0 \<in> geotop_cell_flags C"
+    by (rule geotop_cell_flags_init[OF hc_flag hc0_ne])
+  have h_set_c: "set (c0 @ [A]) \<subseteq> C"
+    using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+  have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (c0 @ [A])"
+    using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+  have hA_C: "A \<in> C" using h_set_c by (by100 simp)
+  have hA_cell: "geotop_cell A"
+    using hC hA_C unfolding geotop_cell_complex_def by (by100 blast)
+  define P where "P = last c0"
+  have hP_in_c0: "P \<in> set c0" unfolding P_def using hc0_ne by (by100 simp)
+  have hP_in_c: "P \<in> set (c0 @ [A])" using hP_in_c0 by (by100 simp)
+  have hP_C: "P \<in> C" using hP_in_c h_set_c by (by100 blast)
+  have hP_cell: "geotop_cell P"
+    using hC hP_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hP_ne: "P \<noteq> {}" by (rule geotop_cell_nonempty[OF hP_cell])
+  have hP_psub_A: "P \<subset> A"
+    using h_sorted hP_in_c0 unfolding sorted_wrt_append by (by100 simp)
+  have hP_sub_A: "P \<subseteq> A" using hP_psub_A by (by100 blast)
+  have h_face_cell: "geotop_cell_face P A"
+    by (rule geotop_cell_complex_subset_imp_face[OF hC hP_C hA_C hP_sub_A hP_ne])
+  have hP_face_HOL: "P face_of A"
+    using h_face_cell unfolding geotop_cell_face_def by (by100 blast)
+  have hP_neq_A: "P \<noteq> A" using hP_psub_A by (by100 blast)
+  have hP_in_rel_frontier: "P \<subseteq> rel_frontier A"
+    by (rule face_of_subset_rel_frontier[OF hP_face_HOL hP_neq_A])
+  (* chain_simplex c0 \<subseteq> last c0 = P *)
+  have h_chain_sub_P: "geotop_cell_chain_simplex c0 \<subseteq> P"
+  proof -
+    have h_barys_in_P: "geotop_cell_barycenter ` set c0 \<subseteq> P"
+    proof -
+      have h_main: "geotop_cell_barycenter ` set c0 \<subseteq> last c0"
+        by (rule geotop_cell_flag_init_barycenters_in_top[OF hC hc0_flag])
+      show ?thesis using h_main P_def by (by100 simp)
+    qed
+    have hP_conv: "convex P" by (rule geotop_cell_convex[OF hP_cell])
+    have hP_eq_hull: "convex hull P = P"
+      by (rule iffD2[OF convex_hull_eq hP_conv])
+    have h_barys_sub_hull: "geotop_cell_barycenter ` set c0 \<subseteq> convex hull P"
+      using h_barys_in_P hP_eq_hull by (by100 simp)
+    have h_hull_sub: "convex hull (geotop_cell_barycenter ` set c0) \<subseteq> P"
+      using convex_hull_subset[OF h_barys_sub_hull] hP_eq_hull by (by100 simp)
+    show ?thesis
+      unfolding geotop_cell_chain_simplex_def using h_hull_sub by (by100 simp)
+  qed
+  have h_butlast_eq: "butlast c = c0" using hc_eq by (by100 simp)
+  have h_A_eq: "last c = A" using A_def by (by100 simp)
+  show ?thesis
+    using h_chain_sub_P hP_in_rel_frontier h_butlast_eq h_A_eq by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
