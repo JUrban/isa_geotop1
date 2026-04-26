@@ -13216,6 +13216,162 @@ proof -
   show ?thesis using hA1_set hA2_set hA1_ri hA1_eq_A2 by (by100 blast)
 qed
 
+(** Step 5.6d.d (Stripping lemma): if last c is NOT the carrier of x,
+    then x \<in> chain_simplex(init c). I.e., the top of the chain can
+    be peeled when it's not the carrier.
+
+    Proof: c = init c @ [last c]. By convex_hull_insert,
+    x = u\<cdot>b(last c) + (1-u)\<cdot>y for some y \<in> chain_simplex(init c)
+    (or trivial if init c = []). Show u = 0:
+    - u = 1 \<Longrightarrow> x = b(last c) \<Longrightarrow> carrier(x) = last c, contradiction.
+    - 0 < u < 1 \<Longrightarrow> x in open_segment(b(last c), y) \<subseteq> rel_interior(last c)
+      via rel_interior_closure_convex_segment, since y \<in> last c (chain).
+      Hence carrier(x) = last c, contradiction.
+    - y = b(last c) case: x = b(last c), same as u = 1 case.
+    Hence u = 0, so x = y \<in> chain_simplex(init c). **)
+lemma geotop_chain_simplex_strip_last:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  assumes hc: "c \<in> geotop_cell_flags C"
+  assumes hc_long: "length c \<ge> 2"
+  assumes hx: "x \<in> geotop_cell_chain_simplex c"
+  assumes h_not_carrier: "x \<notin> rel_interior (last c)"
+  shows "x \<in> geotop_cell_chain_simplex (butlast c)"
+proof -
+  define c0 where "c0 = butlast c"
+  define A where "A = last c"
+  have hc_ne: "c \<noteq> []" using hc_long length_0_conv by (by100 fastforce)
+  have hc_eq: "c = c0 @ [A]"
+    unfolding c0_def A_def using append_butlast_last_id[OF hc_ne] by (by100 simp)
+  have hA_last: "A = last c" unfolding A_def by (by100 simp)
+  have hc0_ne: "c0 \<noteq> []"
+  proof -
+    have h1: "length c0 + 1 = length c" using hc_eq by (by100 simp)
+    hence h2: "length c0 \<ge> 1" using hc_long by (by100 simp)
+    show ?thesis using h2 length_0_conv by (by100 fastforce)
+  qed
+  have hc_flag: "(c0 @ [A]) \<in> geotop_cell_flags C" using hc hc_eq by (by100 simp)
+  have h_set_c: "set (c0 @ [A]) \<subseteq> C"
+    using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+  have h_sorted: "sorted_wrt (\<lambda>X Y. X \<subset> Y) (c0 @ [A])"
+    using hc_flag unfolding geotop_cell_flags_def by (by100 blast)
+  have hA_C: "A \<in> C" using h_set_c by (by100 simp)
+  have hA_cell: "geotop_cell A"
+    using hC hA_C unfolding geotop_cell_complex_def by (by100 blast)
+  have hA_conv: "convex A" by (rule geotop_cell_convex[OF hA_cell])
+  have hA_compact: "compact A" by (rule geotop_cell_compact[OF hA_cell])
+  have hA_closed: "closed A" using hA_compact compact_imp_closed by (by100 blast)
+  have h_bA_ri: "geotop_cell_barycenter A \<in> rel_interior A"
+    by (rule geotop_cell_barycenter_in_rel_interior[OF hA_cell])
+  have h_chain: "\<forall>X \<in> set c0. X \<subset> A"
+    using h_sorted unfolding sorted_wrt_append by (by100 simp)
+  have h_set_un: "set (c0 @ [A]) = set c0 \<union> {A}" by (by100 simp)
+  have h_img_un: "geotop_cell_barycenter ` set (c0 @ [A])
+                    = insert (geotop_cell_barycenter A)
+                             (geotop_cell_barycenter ` set c0)"
+    using h_set_un by (by100 simp)
+  have h_set_c0_ne: "set c0 \<noteq> {}" using hc0_ne by (by100 simp)
+  have h_V_c0_ne: "geotop_cell_barycenter ` set c0 \<noteq> {}"
+    using h_set_c0_ne by (by100 simp)
+  have h_chain_eq: "geotop_cell_chain_simplex (c0 @ [A])
+                     = convex hull (insert (geotop_cell_barycenter A)
+                                           (geotop_cell_barycenter ` set c0))"
+    unfolding geotop_cell_chain_simplex_def using h_img_un by (by100 simp)
+  have hx_in: "x \<in> geotop_cell_chain_simplex (c0 @ [A])"
+    using hx hc_eq by (by100 simp)
+  have h_x_in_insert: "x \<in> convex hull (insert (geotop_cell_barycenter A)
+                                              (geotop_cell_barycenter ` set c0))"
+    using hx_in h_chain_eq by (by100 simp)
+  have h_decomp: "x \<in> {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
+                        u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
+                        \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
+    using h_x_in_insert
+          convex_hull_insert[OF h_V_c0_ne, of "geotop_cell_barycenter A"]
+    by (by100 simp)
+  obtain u v y where hu: "u \<ge> 0" and hv: "v \<ge> 0" and huv: "u + v = 1"
+                 and hy_hull: "y \<in> convex hull (geotop_cell_barycenter ` set c0)"
+                 and hx_eq: "x = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
+    using h_decomp by (by100 blast)
+  have hy_chain: "y \<in> geotop_cell_chain_simplex c0"
+    using hy_hull unfolding geotop_cell_chain_simplex_def by (by100 simp)
+  have h_bary_sub_A: "geotop_cell_barycenter ` set c0 \<subseteq> A"
+  proof
+    fix b assume hb: "b \<in> geotop_cell_barycenter ` set c0"
+    obtain X where hX: "X \<in> set c0" and hb_eq: "b = geotop_cell_barycenter X"
+      using hb by (by100 blast)
+    have hX_sub_A: "X \<subset> A" using hX h_chain by (by100 blast)
+    have hX_in_c: "X \<in> set (c0 @ [A])" using hX by (by100 simp)
+    have hX_C: "X \<in> C" using hX_in_c h_set_c by (by100 blast)
+    have hX_cell: "geotop_cell X"
+      using hC hX_C unfolding geotop_cell_complex_def by (by100 blast)
+    have hbX_X: "geotop_cell_barycenter X \<in> X"
+      by (rule geotop_cell_barycenter_in_cell[OF hX_cell])
+    have hb_X: "b \<in> X" using hb_eq hbX_X by (by100 simp)
+    show "b \<in> A" using hb_X hX_sub_A by (by100 blast)
+  qed
+  have hy_in_A: "y \<in> A"
+  proof -
+    have hA_eq_hull: "convex hull A = A"
+      by (rule iffD2[OF convex_hull_eq hA_conv])
+    have h_bary_sub_hull: "geotop_cell_barycenter ` set c0 \<subseteq> convex hull A"
+      using h_bary_sub_A hA_eq_hull by (by100 simp)
+    have h_hull_sub: "convex hull (geotop_cell_barycenter ` set c0) \<subseteq> A"
+      using convex_hull_subset[OF h_bary_sub_hull] hA_eq_hull by (by100 simp)
+    show ?thesis using hy_hull h_hull_sub by (by100 blast)
+  qed
+  have hA_eq_clos: "closure A = A" using hA_closed by (by100 simp)
+  have hu_zero: "u = 0"
+  proof (rule ccontr)
+    assume hu_nz: "u \<noteq> 0"
+    have hu_pos: "0 < u" using hu hu_nz by (by100 simp)
+    have h_x_eq_alt: "x = (1 - v) *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
+      using hx_eq huv by (by100 simp)
+    have h_x_ri: "x \<in> rel_interior A"
+    proof (cases "u = 1")
+      case h_u_one: True
+      have h_v_zero: "v = 0" using huv h_u_one by (by100 simp)
+      have h_x_eq_bA: "x = geotop_cell_barycenter A"
+        using hx_eq h_u_one h_v_zero by (by100 simp)
+      show ?thesis using h_x_eq_bA h_bA_ri by (by100 simp)
+    next
+      case h_u_lt: False
+      have hu_lt1: "u < 1"
+      proof (rule ccontr)
+        assume "\<not> u < 1"
+        then have "1 \<le> u" by (by100 simp)
+        then have "u = 1" using huv hv by (by100 simp)
+        thus False using h_u_lt by (by100 simp)
+      qed
+      have hv_pos: "0 < v" using huv hu_lt1 by (by100 simp)
+      have hv_lt1: "v < 1" using huv hu_pos by (by100 simp)
+      have hy_clos: "y \<in> closure A" using hy_in_A hA_eq_clos by (by100 simp)
+      show ?thesis
+      proof (cases "geotop_cell_barycenter A = y")
+        case h_eq_by: True
+        have h_combo: "u *\<^sub>R y + v *\<^sub>R y = (u + v) *\<^sub>R y"
+          using scaleR_left_distrib[of u v y, symmetric] by (by100 simp)
+        have hx_eq_y: "x = y"
+          using hx_eq h_eq_by h_combo huv by (by100 simp)
+        show ?thesis using hx_eq_y h_eq_by h_bA_ri by (by100 simp)
+      next
+        case h_neq_by: False
+        have h_open_seg: "open_segment (geotop_cell_barycenter A) y
+                            \<subseteq> rel_interior A"
+          by (rule rel_interior_closure_convex_segment
+                  [OF hA_conv h_bA_ri hy_clos])
+        have hx_in_seg: "x \<in> open_segment (geotop_cell_barycenter A) y"
+          using in_segment(2) h_x_eq_alt hv_pos hv_lt1 h_neq_by by (by100 metis)
+        show ?thesis using hx_in_seg h_open_seg by (by100 blast)
+      qed
+    qed
+    show False using h_x_ri h_not_carrier hA_last by (by100 blast)
+  qed
+  have h_v_one: "v = 1" using huv hu_zero by (by100 simp)
+  have hx_eq_y: "x = y" using hx_eq hu_zero h_v_one by (by100 simp)
+  have h_butlast: "butlast c = c0" using hc_eq by (by100 simp)
+  show ?thesis using hx_eq_y hy_chain h_butlast by (by100 simp)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
