@@ -11264,6 +11264,28 @@ proof -
       obtain V\<^sub>\<tau> where hV\<tau>fin: "finite V\<^sub>\<tau>" and hV\<tau>ne: "V\<^sub>\<tau> \<noteq> {}"
                    and h\<tau>_HOL: "\<tau> = convex hull V\<^sub>\<tau>"
         using geotop_simplex_obtain_HOL[OF h\<tau>_simp] by (by100 metis)
+      (** Step 4 sketch (the deep analytic claim — sorry-only Isar structure):
+
+          We need \<exists>x. \<forall>w \<in> V_\<tau>. x \<in> open_star(w, K').
+          Equivalently (by carrier characterization): \<exists>x \<in> |K|. V_\<tau> \<subseteq> K_carrier K' x.
+
+          Classical Munkres approach: pick x = a specific point in \<tau> (e.g.,
+          barycenter or chain-derived point) and show its K'-carrier contains V_\<tau>.
+
+          The key analytic input: V_\<tau> are barycenters of a K-flag chain c_\<tau>
+          (Sd^m\<^sub>0 K simplex \<tau> has this structure). Their K-CARRIERS form a chain in K.
+          The K'-carriers, being faces of K-carriers (bridge), inherit related
+          structure. For mesh small enough, the K'-carriers all "concentrate"
+          near a common point inside \<tau> whose K'-carrier contains V_\<tau>.
+
+          Detailed sub-claims to be filled in:
+          (a) Establish V_\<tau> = barycenter ` (set c_\<tau>) for some K-flag c_\<tau> of K
+              (using the recursive Sd-vertex-as-barycenter structure).
+          (b) Take x = the specific point of \<tau> minimizing K'-carrier-dimension
+              (or a barycenter of the chain top).
+          (c) Show V_\<tau> \<subseteq> K_carrier K' x via Sd-flag-chain alignment +
+              mesh-bound argument.
+          (d) Use carrier characterization to conclude \<bigcap> open_star \<noteq> \<emptyset>. **)
       have h_inter_ne: "(\<Inter>w\<in>V\<^sub>\<tau>. geotop_open_star K' w) \<noteq> {}"
         sorry
       (** Step 5: Apply Munkres 14.4 \<Longleftarrow> in K' to get V_\<tau> \<subseteq> \<sigma>' for some \<sigma>' \<in> K'. **)
