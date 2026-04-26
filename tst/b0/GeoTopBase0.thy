@@ -12409,6 +12409,24 @@ proof -
   show ?thesis using h_last_C h_\<sigma>_sub by (by100 blast)
 qed
 
+(** Step 5.7 (easy direction): polyhedron of order complex \<subseteq>
+    polyhedron of cell complex. Direct from 5.8. **)
+lemma geotop_order_complex_polyhedron_subset:
+  fixes C :: "'a::euclidean_space set set"
+  assumes hC: "geotop_cell_complex C"
+  shows "geotop_polyhedron (geotop_order_complex C)
+           \<subseteq> geotop_cell_polyhedron C"
+proof
+  fix x assume hx: "x \<in> geotop_polyhedron (geotop_order_complex C)"
+  obtain \<sigma> where h\<sigma>: "\<sigma> \<in> geotop_order_complex C" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  obtain A where hA: "A \<in> C" and h\<sigma>A: "\<sigma> \<subseteq> A"
+    using geotop_order_complex_refines[OF hC h\<sigma>] by (by100 blast)
+  show "x \<in> geotop_cell_polyhedron C"
+    unfolding geotop_cell_polyhedron_def
+    using hA h\<sigma>A hx\<sigma> by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
@@ -12432,6 +12450,7 @@ qed
     - 5.6a': geotop_chain_simplex_vertices (barycenter image is
       simplex_vertices of chain-simplex).
     - 5.6b sub-helper: geotop_cell_flags_filter (filter preserves flag).
+    - 5.8: order_complex_refines (each chain-simplex \<subseteq> last c \<in> C).
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Munkres §17
@@ -12441,7 +12460,10 @@ qed
       disjoint_affine_hull from HOL-Analysis.
     - 5.6 main packaging: K.0 + K.1 + K.2 + K.3 \<Longrightarrow> geotop_is_complex.
     - 5.7: polyhedron equality |order_complex C| = |C|.
-    - 5.8: order_complex refines C.
+      \<subseteq> direction follows directly from 5.8. \<supseteq> needs inductive
+      coverage on cell dim: x \<in> rel_interior(A) lies on segment from
+      b(A) to some y \<in> rel_boundary(A); y in smaller cell by IH; then
+      x \<in> chain-simplex via (c' @ [A]).
     - 5.9: cell-by-cell coverage (induced subdivisions).
     - 5.10: main triangulation theorem.
 
