@@ -14593,6 +14593,142 @@ proof -
     using hM_simp hL h_refines h_polyh_eq by (by100 blast)
 qed
 
+(** Step 6.1a: Each \<sigma> in L1 is the union of overlay_complex cells
+    contained in it. Proof: for x in \<sigma>, find \<tau> in L2 with x in \<tau> (via
+    |L1| = |L2|); then \<sigma> \<inter> \<tau> is a non-empty overlay cell, contained in
+    \<sigma>, containing x. **)
+lemma geotop_overlay_complex_covers_each_left:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  assumes h\<sigma>: "\<sigma> \<in> L1"
+  shows "\<sigma> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>}"
+proof
+  show "\<sigma> \<subseteq> \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>}"
+  proof
+    fix x assume hx: "x \<in> \<sigma>"
+    have hx_polyL1: "x \<in> geotop_polyhedron L1"
+      unfolding geotop_polyhedron_def using h\<sigma> hx by (by100 blast)
+    have hx_polyL2: "x \<in> geotop_polyhedron L2"
+      using hx_polyL1 hpoly by (by100 simp)
+    obtain \<tau> where h\<tau>: "\<tau> \<in> L2" and hx\<tau>: "x \<in> \<tau>"
+      using hx_polyL2 unfolding geotop_polyhedron_def by (by100 blast)
+    define A where "A = \<sigma> \<inter> \<tau>"
+    have hA_ne: "A \<noteq> {}" unfolding A_def using hx hx\<tau> by (by100 blast)
+    have hA_in_cells: "A \<in> geotop_overlay_cells L1 L2"
+      unfolding geotop_overlay_cells_def
+      using h\<sigma> h\<tau> hA_ne A_def by (by100 blast)
+    have hA_cell: "geotop_cell A"
+      by (rule geotop_overlay_cells_are_cells[OF hL1 hL2 hA_in_cells])
+    have hA_face_A: "geotop_cell_face A A" by (rule geotop_cell_face_refl[OF hA_cell])
+    have hA_in_complex: "A \<in> geotop_overlay_complex L1 L2"
+      unfolding geotop_overlay_complex_def geotop_face_closure_def
+      using hA_in_cells hA_face_A by (by100 blast)
+    have hA_sub_\<sigma>: "A \<subseteq> \<sigma>" unfolding A_def by (by100 blast)
+    have hxA: "x \<in> A" unfolding A_def using hx hx\<tau> by (by100 blast)
+    show "x \<in> \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>}"
+      using hA_in_complex hA_sub_\<sigma> hxA by (by100 blast)
+  qed
+next
+  show "\<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>} \<subseteq> \<sigma>" by (by100 blast)
+qed
+
+(** Symmetric: each \<tau> in L2 is the union of overlay_complex cells
+    contained in it. **)
+lemma geotop_overlay_complex_covers_each_right:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  assumes h\<tau>: "\<tau> \<in> L2"
+  shows "\<tau> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>}"
+proof
+  show "\<tau> \<subseteq> \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>}"
+  proof
+    fix x assume hx: "x \<in> \<tau>"
+    have hx_polyL2: "x \<in> geotop_polyhedron L2"
+      unfolding geotop_polyhedron_def using h\<tau> hx by (by100 blast)
+    have hx_polyL1: "x \<in> geotop_polyhedron L1"
+      using hx_polyL2 hpoly by (by100 simp)
+    obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L1" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx_polyL1 unfolding geotop_polyhedron_def by (by100 blast)
+    define A where "A = \<sigma> \<inter> \<tau>"
+    have hA_ne: "A \<noteq> {}" unfolding A_def using hx hx\<sigma> by (by100 blast)
+    have hA_in_cells: "A \<in> geotop_overlay_cells L1 L2"
+      unfolding geotop_overlay_cells_def
+      using h\<sigma> h\<tau> hA_ne A_def by (by100 blast)
+    have hA_cell: "geotop_cell A"
+      by (rule geotop_overlay_cells_are_cells[OF hL1 hL2 hA_in_cells])
+    have hA_face_A: "geotop_cell_face A A" by (rule geotop_cell_face_refl[OF hA_cell])
+    have hA_in_complex: "A \<in> geotop_overlay_complex L1 L2"
+      unfolding geotop_overlay_complex_def geotop_face_closure_def
+      using hA_in_cells hA_face_A by (by100 blast)
+    have hA_sub_\<tau>: "A \<subseteq> \<tau>" unfolding A_def by (by100 blast)
+    have hxA: "x \<in> A" unfolding A_def using hx hx\<sigma> by (by100 blast)
+    show "x \<in> \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>}"
+      using hA_in_complex hA_sub_\<tau> hxA by (by100 blast)
+  qed
+next
+  show "\<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>} \<subseteq> \<tau>" by (by100 blast)
+qed
+
+(** Step 6.2: Apply 6.1 to overlay scenario, left side. **)
+lemma geotop_overlay_triangulation_subdivides_left:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  fixes M :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  assumes hM: "geotop_is_complex M"
+  assumes hMC: "geotop_cell_is_subdivision M (geotop_overlay_complex L1 L2)"
+  shows "geotop_is_subdivision M L1"
+proof -
+  have h_C_in_L: "\<forall>A \<in> geotop_overlay_complex L1 L2. \<exists>\<sigma> \<in> L1. A \<subseteq> \<sigma>"
+  proof
+    fix A assume hA: "A \<in> geotop_overlay_complex L1 L2"
+    show "\<exists>\<sigma> \<in> L1. A \<subseteq> \<sigma>"
+      by (rule geotop_overlay_complex_refines_left[OF hA])
+  qed
+  have h_L_covered: "\<forall>\<sigma> \<in> L1. \<sigma> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>}"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> L1"
+    show "\<sigma> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<sigma>}"
+      by (rule geotop_overlay_complex_covers_each_left[OF hL1 hL2 hpoly h\<sigma>])
+  qed
+  show ?thesis
+    by (rule geotop_simplicial_subdivision_from_cell_subdivision
+            [OF hL1 hM hMC h_C_in_L h_L_covered])
+qed
+
+(** Step 6.3: Symmetric, right side. **)
+lemma geotop_overlay_triangulation_subdivides_right:
+  fixes L1 L2 :: "'a::euclidean_space set set"
+  fixes M :: "'a::euclidean_space set set"
+  assumes hL1: "geotop_is_complex L1"
+  assumes hL2: "geotop_is_complex L2"
+  assumes hpoly: "geotop_polyhedron L1 = geotop_polyhedron L2"
+  assumes hM: "geotop_is_complex M"
+  assumes hMC: "geotop_cell_is_subdivision M (geotop_overlay_complex L1 L2)"
+  shows "geotop_is_subdivision M L2"
+proof -
+  have h_C_in_L: "\<forall>A \<in> geotop_overlay_complex L1 L2. \<exists>\<tau> \<in> L2. A \<subseteq> \<tau>"
+  proof
+    fix A assume hA: "A \<in> geotop_overlay_complex L1 L2"
+    show "\<exists>\<tau> \<in> L2. A \<subseteq> \<tau>"
+      by (rule geotop_overlay_complex_refines_right[OF hA])
+  qed
+  have h_L_covered: "\<forall>\<tau> \<in> L2. \<tau> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>}"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> L2"
+    show "\<tau> = \<Union>{A \<in> geotop_overlay_complex L1 L2. A \<subseteq> \<tau>}"
+      by (rule geotop_overlay_complex_covers_each_right[OF hL1 hL2 hpoly h\<tau>])
+  qed
+  show ?thesis
+    by (rule geotop_simplicial_subdivision_from_cell_subdivision
+            [OF hL2 hM hMC h_C_in_L h_L_covered])
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
