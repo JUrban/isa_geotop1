@@ -10820,6 +10820,30 @@ next
   qed
 qed
 
+(** PLAN3 WEEK 1 (W1.3): For \<tau> \<in> Sd^1 K, V_\<tau> \<subseteq> chain top \<sigma>_K \<in> K.
+    Combines W1.2 (chain form extraction) with chain_simplex_vertices_in_top. **)
+lemma geotop_Sd_simplex_V_in_K_top:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKfin: "finite K"
+  assumes h\<tau>: "\<tau> \<in> geotop_iterated_Sd 1 K"
+  shows "\<exists>\<sigma>\<^sub>K\<in>K. \<exists>V. geotop_simplex_vertices \<tau> V \<and> V \<subseteq> \<sigma>\<^sub>K"
+proof -
+  obtain c where hc_ne: "c \<noteq> []" and hc_subK: "set c \<subseteq> K"
+             and hc_sorted: "sorted_wrt (\<lambda>\<sigma> \<tau>. \<sigma> \<subset> \<tau>) c" and hc_dist: "distinct c"
+             and h\<tau>_eq: "\<tau> = geotop_convex_hull (geotop_barycenter ` set c)"
+    using geotop_Sd_simplex_chain_form[OF hK hKfin h\<tau>] by (by100 blast)
+  have hc_fl: "c \<in> geotop_flags K"
+    unfolding geotop_flags_def using hc_ne hc_subK hc_sorted hc_dist by (by100 blast)
+  have h_sv: "geotop_simplex_vertices \<tau> (geotop_barycenter ` set c)"
+    using geotop_bK_elt_simplex_vertices[OF hK hc_fl] h\<tau>_eq by (by100 simp)
+  have h_last_in: "last c \<in> set c" using hc_ne by (by100 simp)
+  have h_last_K: "last c \<in> K" using h_last_in hc_subK by (by100 blast)
+  have hV_sub: "geotop_barycenter ` set c \<subseteq> last c"
+    by (rule geotop_chain_simplex_vertices_in_top[OF hK hc_fl])
+  show ?thesis using h_last_K h_sv hV_sub by (by100 blast)
+qed
+
 (** Two points sharing a rel_interior have equal K-carrier (= that simplex). **)
 lemma geotop_K_carrier_shared_rel_interior:
   fixes K :: "'a::euclidean_space set set"
