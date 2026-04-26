@@ -14520,6 +14520,79 @@ proof -
     using h_simp h_finM h_subdiv h_induced by (by100 blast)
 qed
 
+(** ============================================================
+    PLAN3 Phase 6: bridge from cell-subdivision to simplicial-subdivision
+    ============================================================ **)
+
+(** Step 6.1: General bridge lemma — given M is a simplicial subdivision
+    of cell complex C in the (a) it is a complex, (b) it is a
+    cell-subdivision, (c) every cell of C is in some simplex of L,
+    (d) every simplex of L equals the union of cells contained in it,
+    (e) every cell of C equals the union of M-simplices contained in it,
+    we get M is a Munkres-style simplicial subdivision of L. **)
+lemma geotop_simplicial_subdivision_from_cell_subdivision:
+  fixes M C :: "'a::euclidean_space set set"
+  fixes L :: "'a::euclidean_space set set"
+  assumes hL: "geotop_is_complex L"
+  assumes hM_simp: "geotop_is_complex M"
+  assumes hMC: "geotop_cell_is_subdivision M C"
+  assumes h_C_in_L: "\<forall>A \<in> C. \<exists>\<sigma> \<in> L. A \<subseteq> \<sigma>"
+  assumes h_L_covered: "\<forall>\<sigma> \<in> L. \<sigma> = \<Union>{A \<in> C. A \<subseteq> \<sigma>}"
+  shows "geotop_is_subdivision M L"
+proof -
+  (* Refinement: \<forall>\<rho> \<in> M. \<exists>\<sigma> \<in> L. \<rho> \<subseteq> \<sigma> *)
+  have h_M_in_C: "\<forall>\<rho>\<in>M. \<exists>A\<in>C. \<rho> \<subseteq> A"
+    using hMC unfolding geotop_cell_is_subdivision_def by (by100 blast)
+  have h_refines: "geotop_refines M L"
+    unfolding geotop_refines_def
+  proof
+    fix \<rho> assume h\<rho>: "\<rho> \<in> M"
+    obtain A where hA: "A \<in> C" and h\<rho>A: "\<rho> \<subseteq> A"
+      using h_M_in_C h\<rho> by (by100 blast)
+    obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L" and hA\<sigma>: "A \<subseteq> \<sigma>"
+      using h_C_in_L hA by (by100 blast)
+    have h\<rho>\<sigma>: "\<rho> \<subseteq> \<sigma>" using h\<rho>A hA\<sigma> by (by100 blast)
+    show "\<exists>\<sigma>\<in>L. \<rho> \<subseteq> \<sigma>" using h\<sigma> h\<rho>\<sigma> by (by100 blast)
+  qed
+  (* Polyhedron equality: |M| = |C| (from cell-subdiv) and |C| = |L| *)
+  have h_polyhM_eq_polyhM_cell: "geotop_polyhedron M = geotop_cell_polyhedron M"
+    unfolding geotop_polyhedron_def geotop_cell_polyhedron_def by (by100 simp)
+  have h_polyhM_eq_polyhC: "geotop_cell_polyhedron M = geotop_cell_polyhedron C"
+    using hMC unfolding geotop_cell_is_subdivision_def by (by100 blast)
+  have h_polyhC_eq_polyhL: "geotop_cell_polyhedron C = geotop_polyhedron L"
+  proof
+    show "geotop_cell_polyhedron C \<subseteq> geotop_polyhedron L"
+    proof
+      fix x assume hx: "x \<in> geotop_cell_polyhedron C"
+      obtain A where hA: "A \<in> C" and hxA: "x \<in> A"
+        using hx unfolding geotop_cell_polyhedron_def by (by100 blast)
+      obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L" and hA\<sigma>: "A \<subseteq> \<sigma>"
+        using h_C_in_L hA by (by100 blast)
+      have hx\<sigma>: "x \<in> \<sigma>" using hxA hA\<sigma> by (by100 blast)
+      show "x \<in> geotop_polyhedron L"
+        unfolding geotop_polyhedron_def using h\<sigma> hx\<sigma> by (by100 blast)
+    qed
+  next
+    show "geotop_polyhedron L \<subseteq> geotop_cell_polyhedron C"
+    proof
+      fix x assume hx: "x \<in> geotop_polyhedron L"
+      obtain \<sigma> where h\<sigma>: "\<sigma> \<in> L" and hx\<sigma>: "x \<in> \<sigma>"
+        using hx unfolding geotop_polyhedron_def by (by100 blast)
+      have h\<sigma>_eq: "\<sigma> = \<Union>{A \<in> C. A \<subseteq> \<sigma>}"
+        using h_L_covered h\<sigma> by (by100 blast)
+      obtain A where hA: "A \<in> C \<and> A \<subseteq> \<sigma>" and hxA: "x \<in> A"
+        using hx\<sigma> h\<sigma>_eq by (by100 blast)
+      show "x \<in> geotop_cell_polyhedron C"
+        unfolding geotop_cell_polyhedron_def using hA hxA by (by100 blast)
+    qed
+  qed
+  have h_polyh_eq: "geotop_polyhedron M = geotop_polyhedron L"
+    using h_polyhM_eq_polyhM_cell h_polyhM_eq_polyhC h_polyhC_eq_polyhL by (by100 simp)
+  show ?thesis
+    unfolding geotop_is_subdivision_def
+    using hM_simp hL h_refines h_polyh_eq by (by100 blast)
+qed
+
 (** Phase 5 PROGRESS NOTE (2026-04-25 marathon session, updated):
 
     Steps DONE:
