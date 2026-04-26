@@ -13415,6 +13415,10 @@ qed
     - 5.6d.c (geotop_chain_simplex_intersection_common_cell): for
       x in \<sigma>_c1 \<inter> \<sigma>_c2, carrier(x) is in set c1 \<inter> set c2. ~40 lines
       via 5.6d.b on each flag + carrier uniqueness.
+    - 5.6d.d (geotop_chain_simplex_strip_last): if last c \<noteq> carrier(x),
+      then x \<in> chain_simplex(butlast c). ~150 lines using
+      convex_hull_insert + rel_interior_closure_convex_segment +
+      in_segment(2). The Stripping lemma.
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Strategy:
