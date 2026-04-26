@@ -13206,6 +13206,12 @@ qed
     - 5.7 MAIN: polyhedron equality |order_complex C| = |C|.
     - 5.9: induced subdivisions — each cell A in C equals union of
       chain-simplices contained in A. Uses carrier + 5.7 (\<supseteq>) + 5.8.
+    - 5.6d.a (geotop_AI_bary_unique): barycentric coords on AI are
+      unique. ~30 lines via affine_dependent_explicit_finite.
+    - 5.6d.b (geotop_chain_simplex_carrier_in_set): for x in
+      chain_simplex c, exists A in set c with x in rel_interior A.
+      ~140 lines via rev_induct + convex_hull_insert +
+      rel_interior_closure_convex_segment + in_segment(2).
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Strategy:
