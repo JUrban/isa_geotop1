@@ -13256,6 +13256,9 @@ qed
       chain_simplex c, exists A in set c with x in rel_interior A.
       ~140 lines via rev_induct + convex_hull_insert +
       rel_interior_closure_convex_segment + in_segment(2).
+    - 5.6d.c (geotop_chain_simplex_intersection_common_cell): for
+      x in \<sigma>_c1 \<inter> \<sigma>_c2, carrier(x) is in set c1 \<inter> set c2. ~40 lines
+      via 5.6d.b on each flag + carrier uniqueness.
 
     Remaining Phase 5 steps:
     - 5.6d (K.2 pairwise intersection): hardest step. Strategy:
