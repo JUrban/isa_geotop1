@@ -6483,8 +6483,181 @@ proof -
                 by (simp add: dist_norm norm_minus_commute)
               show ?thesis using h1 h2 h3 by (by100 simp)
             qed
-            \<comment> \<open>Same Schoenflies-like gap as Hp: show u_w_t ∈ U.\<close>
-            have hu_w_t_U: "u_w_t \<in> U" sorry
+            \<comment> \<open>Path argument (mirror Hp): γ(t) = u_w + t·(y-x), continuous,
+              stays in ball x δ_iso2 with NEGATIVE constant halfplane sign,
+              avoids M, hence γ ⊆ U via connected_component_maximal.\<close>
+            define \<gamma> where "\<gamma> = (\<lambda>t::real. u_w + t *\<^sub>R (y - x))"
+            have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+            proof -
+              have h_id: "continuous_on {0..1::real} (\<lambda>t. t)"
+                by (rule continuous_on_id)
+              have h_scale: "continuous_on {0..1::real} (\<lambda>t. t *\<^sub>R (y - x))"
+                using h_id by (rule continuous_on_scaleR[OF _ continuous_on_const])
+              show ?thesis unfolding \<gamma>_def
+                using h_scale continuous_on_const continuous_on_add by (by100 blast)
+            qed
+            have h\<gamma>0: "\<gamma> 0 = u_w" unfolding \<gamma>_def by simp
+            have h\<gamma>1: "\<gamma> 1 = u_w_t"
+              unfolding \<gamma>_def u_w_t_def by simp
+            have h\<gamma>_in_ball: "\<forall>t\<in>{0..1::real}. \<gamma> t \<in> ball x \<delta>_iso2"
+            proof
+              fix t :: real assume ht: "t \<in> {0..1}"
+              have ht_pos: "0 \<le> t" using ht by simp
+              have ht_le1: "t \<le> 1" using ht by simp
+              have hgt_x: "\<gamma> t - x = (u_w - x) + t *\<^sub>R (y - x)"
+                unfolding \<gamma>_def by simp
+              have h_tri: "norm ((u_w - x) + t *\<^sub>R (y - x))
+                          \<le> norm (u_w - x) + norm (t *\<^sub>R (y - x))"
+                by (rule norm_triangle_ineq)
+              have h_scale: "norm (t *\<^sub>R (y - x)) = \<bar>t\<bar> * norm (y - x)"
+                by (rule norm_scaleR)
+              have h_norm_eq: "norm (\<gamma> t - x) = norm ((u_w - x) + t *\<^sub>R (y - x))"
+                using arg_cong[where f="norm", OF hgt_x] by (by100 simp)
+              have h_norm_le: "norm (\<gamma> t - x) \<le> norm (u_w - x) + \<bar>t\<bar> * norm (y - x)"
+                using h_norm_eq h_tri h_scale by (by100 linarith)
+              have h_abs_t: "\<bar>t\<bar> = t" using ht_pos by simp
+              have h_norm_le2: "norm (\<gamma> t - x) \<le> norm (u_w - x) + t * norm (y - x)"
+                using h_norm_le h_abs_t by (by100 simp)
+              have h_norm_uw: "norm (u_w - x) = dist u_w x"
+                by (simp add: dist_norm)
+              have h_norm_yx: "norm (y - x) = dist y x"
+                by (simp add: dist_norm)
+              have h_le_t1: "t * norm (y - x) \<le> 1 * norm (y - x)"
+                using ht_le1 norm_ge_zero[of "y - x"] mult_right_mono by (by100 blast)
+              have h_norm_le3: "norm (\<gamma> t - x) \<le> dist u_w x + dist y x"
+                using h_norm_le2 h_norm_uw h_norm_yx h_le_t1 by (by100 linarith)
+              have h_lt_eps: "dist u_w x < \<epsilon>" using hu_w_dist_eps .
+              have h_eps_dy_le: "\<epsilon> + dist y x \<le> (\<delta>_iso2 + dist y x) / 2"
+              proof -
+                have h1: "\<epsilon> \<le> (\<delta>_iso2 - dist y x) / 2" using h\<epsilon>_le_half_iso2 .
+                have h2: "(\<delta>_iso2 - dist y x) / 2 + dist y x = (\<delta>_iso2 + dist y x) / 2"
+                  by argo
+                show ?thesis using h1 h2 by (by100 linarith)
+              qed
+              have h_avg_lt: "(\<delta>_iso2 + dist y x) / 2 < \<delta>_iso2"
+              proof -
+                have h_lt: "dist y x < \<delta>_iso2" using hy_dist_lt_iso2 .
+                show ?thesis using h_lt by (by100 argo)
+              qed
+              have h_lt_iso2: "dist u_w x + dist y x < \<delta>_iso2"
+              proof -
+                have hlt1: "dist u_w x + dist y x < \<epsilon> + dist y x"
+                  using h_lt_eps by (by100 linarith)
+                have hle2: "\<epsilon> + dist y x \<le> (\<delta>_iso2 + dist y x) / 2"
+                  using h_eps_dy_le .
+                have hlt3: "(\<delta>_iso2 + dist y x) / 2 < \<delta>_iso2" using h_avg_lt .
+                show ?thesis using hlt1 hle2 hlt3 by (by100 linarith)
+              qed
+              have h_lt: "norm (\<gamma> t - x) < \<delta>_iso2"
+                using h_norm_le3 h_lt_iso2 by (by100 linarith)
+              have h_dist_eq: "dist x (\<gamma> t) = norm (\<gamma> t - x)"
+                by (simp add: dist_norm norm_minus_commute)
+              have h_dist_lt: "dist x (\<gamma> t) < \<delta>_iso2"
+                using h_lt h_dist_eq by (by100 simp)
+              show "\<gamma> t \<in> ball x \<delta>_iso2"
+                using h_dist_lt by (by100 simp)
+            qed
+            have h\<gamma>_neg_sign: "\<forall>t\<in>{0..1::real}. inner (\<gamma> t - x) n < 0"
+            proof
+              fix t :: real assume ht: "t \<in> {0..1}"
+              have hgt_x: "\<gamma> t - x = (u_w - x) + t *\<^sub>R (y - x)"
+                unfolding \<gamma>_def by simp
+              have h_inner_eq: "inner (\<gamma> t - x) n
+                                = inner ((u_w - x) + t *\<^sub>R (y - x)) n"
+                using arg_cong[where f="\<lambda>z. inner z n", OF hgt_x] by (by100 simp)
+              have h_distrib: "inner ((u_w - x) + t *\<^sub>R (y - x)) n
+                               = inner (u_w - x) n + inner (t *\<^sub>R (y - x)) n"
+                by (rule inner_left_distrib)
+              have h_scale_eq: "inner (t *\<^sub>R (y - x)) n = t * inner (y - x) n"
+                by (rule inner_scaleR_left)
+              have h_inner: "inner (\<gamma> t - x) n
+                            = inner (u_w - x) n + t * inner (y - x) n"
+                using h_inner_eq h_distrib h_scale_eq by (by100 simp)
+              have h_inner_yx: "inner (y - x) n = 0" using hy_L .
+              have h_inner_uw_neg: "inner (u_w - x) n < 0"
+                using hu_w_UHm Hm_def by (by100 blast)
+              show "inner (\<gamma> t - x) n < 0"
+                using h_inner h_inner_yx h_inner_uw_neg by (by100 simp)
+            qed
+            have h_ball_M_sub_seg: "ball x \<delta>_iso2 \<inter> M \<subseteq> \<sigma>_x"
+            proof
+              fix z assume hz: "z \<in> ball x \<delta>_iso2 \<inter> M"
+              have hz_M: "z \<in> M" using hz by (by100 blast)
+              have hz_ball: "z \<in> ball x \<delta>_iso2" using hz by (by100 blast)
+              have hz_iso: "z \<in> ball x \<delta>_iso"
+                using hz_ball h\<delta>_iso2_le by (by100 auto)
+              have hz_iso_M: "z \<in> ball x \<delta>_iso \<inter> M"
+                using hz_iso hz_M by (by100 blast)
+              have hz_i: "z \<in> i" using hz_iso_M h_ball_iso_M by (by100 blast)
+              have hz_iso_i: "z \<in> ball x \<delta>_iso \<inter> i"
+                using hz_iso hz_i by (by100 blast)
+              have hz_or: "z \<in> \<Union> EdgesAtX \<union> {x}"
+                using hz_iso_i h_ball_cov by (by100 blast)
+              have h_EAX_x: "\<Union> EdgesAtX \<union> {x} \<subseteq> \<sigma>_x"
+                using h_EAX_eq hx\<sigma>_x by (by100 blast)
+              show "z \<in> \<sigma>_x" using hz_or h_EAX_x by (by100 blast)
+            qed
+            have h_seg_sub_L: "\<sigma>_x \<subseteq> {z. inner (z - x) n = 0}"
+            proof -
+              have h_aff_x_eq: "affine hull \<sigma>_x = {z. inner (z - x) n = 0}"
+                using h_aff_seg h\<sigma>_x_seg by (by100 simp)
+              have hL_eq_form: "L = {z. inner (z - x) n = 0}"
+                using L_def h_aff_x_eq by (by100 simp)
+              show ?thesis using h\<sigma>_x_in_L hL_eq_form by (by100 simp)
+            qed
+            have h_ball_M_sub_L: "ball x \<delta>_iso2 \<inter> M \<subseteq> {z. inner (z - x) n = 0}"
+              using h_ball_M_sub_seg h_seg_sub_L by (by100 blast)
+            have h\<gamma>_avoid_M: "\<gamma> ` {0..1} \<inter> M = {}"
+            proof (rule equals0I)
+              fix p assume hp: "p \<in> \<gamma> ` {0..1} \<inter> M"
+              obtain t where ht: "t \<in> {0..1}" and hp_eq: "p = \<gamma> t"
+                using hp by (by100 blast)
+              have hp_M: "p \<in> M" using hp by (by100 blast)
+              have hp_ball: "p \<in> ball x \<delta>_iso2"
+                using hp_eq ht h\<gamma>_in_ball by (by100 blast)
+              have hp_in: "p \<in> ball x \<delta>_iso2 \<inter> M"
+                using hp_ball hp_M by (by100 blast)
+              have hp_L: "inner (p - x) n = 0"
+                using hp_in h_ball_M_sub_L by (by100 blast)
+              have hp_neg: "inner (p - x) n < 0"
+                using hp_eq ht h\<gamma>_neg_sign by (by100 blast)
+              show False using hp_L hp_neg by (by100 simp)
+            qed
+            have h\<gamma>_image_conn: "connected (\<gamma> ` {0..1::real})"
+            proof -
+              have h_conn_Icc: "connected {0..1::real}" by (by100 simp)
+              show ?thesis
+                using connected_continuous_image[OF h\<gamma>_cont h_conn_Icc] .
+            qed
+            have h\<gamma>_sub_compl_M: "\<gamma> ` {0..1::real} \<subseteq> UNIV - M"
+              using h\<gamma>_avoid_M by (by100 blast)
+            have hu_w_in_image: "u_w \<in> \<gamma> ` {0..1::real}"
+              using h\<gamma>0 by (by100 force)
+            have h\<gamma>_in_cc:
+              "\<gamma> ` {0..1::real} \<subseteq> connected_component_set (UNIV - M) u_w"
+              using connected_component_maximal[OF hu_w_in_image h\<gamma>_image_conn h\<gamma>_sub_compl_M] .
+            have hu_wU: "u_w \<in> U" using hu_w_UHm by (by100 blast)
+            have hU_cc_u_w: "U = connected_component_set (UNIV - M) u_w"
+            proof -
+              obtain z where hz_in: "z \<in> UNIV - M"
+                          and hU_eq_z: "U = connected_component_set (UNIV - M) z"
+                using hU_in componentsE by (by100 metis)
+              have hu_w_eq_z: "connected_component_set (UNIV - M) u_w
+                              = connected_component_set (UNIV - M) z"
+                using hu_wU hU_eq_z connected_component_eq by (by100 blast)
+              show ?thesis using hU_eq_z hu_w_eq_z by (by100 simp)
+            qed
+            have h\<gamma>_in_U: "\<gamma> ` {0..1::real} \<subseteq> U"
+              using h\<gamma>_in_cc hU_cc_u_w by (by100 simp)
+            have hu_w_t_U: "u_w_t \<in> U"
+            proof -
+              have h_one: "(1::real) \<in> {0..1::real}" by simp
+              have h_image: "\<gamma> 1 \<in> \<gamma> ` {0..1::real}" using h_one by (by100 force)
+              have h_eq: "\<gamma> 1 = u_w_t" using h\<gamma>1 .
+              have h_uwt_image: "u_w_t \<in> \<gamma> ` {0..1::real}"
+                using h_image h_eq by (by100 simp)
+              show ?thesis using h_uwt_image h\<gamma>_in_U by (by100 blast)
+            qed
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
               using hu_w_t_lt_r h_r3_lt by (by100 linarith)
