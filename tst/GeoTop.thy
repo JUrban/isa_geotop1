@@ -5463,6 +5463,23 @@ proof -
             have hz_dist': "dist z x < r" using hz_dist h_swap by (by100 simp)
             show "\<exists>u\<in>U \<inter> Hp. dist u x < r" using hz hz_dist' by (by100 blast)
           qed
+          \<comment> \<open>Combining h_Hp_witness + h_Hp_near_y: for y on L, witnesses near x
+            in Hp are also on the positive halfplane side relative to y.\<close>
+          have h_Hp_witness_pos_at_y:
+            "\<And>y r. \<lbrakk>inner (y - x) n = 0; r > 0\<rbrakk>
+                    \<Longrightarrow> \<exists>u\<in>U. dist u x < r \<and> inner (u - y) n > 0"
+          proof -
+            fix y :: "real^2" and r :: real
+            assume hy_L: "inner (y - x) n = 0" and hr: "r > 0"
+            obtain u where hu_in: "u \<in> U \<inter> Hp" and hu_dist: "dist u x < r"
+              using h_Hp_witness[OF hr] by (by100 blast)
+            have hu_U: "u \<in> U" using hu_in by (by100 blast)
+            have hu_Hp: "u \<in> Hp" using hu_in by (by100 blast)
+            have hu_pos_y: "inner (u - y) n > 0"
+              using h_Hp_near_y[OF hy_L hu_Hp] .
+            show "\<exists>u\<in>U. dist u x < r \<and> inner (u - y) n > 0"
+              using hu_U hu_dist hu_pos_y by (by100 blast)
+          qed
           \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
             local flatness of U near σ_x. Path-component infrastructure
             (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
