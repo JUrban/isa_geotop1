@@ -5421,6 +5421,27 @@ proof -
         proof -
           assume hx_cl_Hm: "x \<in> closure (U \<inter> Hm)"
           \<comment> \<open>Symmetric to the Hp case via path_component_in_halfplane_neg.\<close>
+          have h_y_in_EAX:
+            "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
+                  \<Longrightarrow> y \<in> \<Union> EdgesAtX"
+          proof -
+            fix y :: "real^2"
+            assume hy: "y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E"
+               and hy_ne: "y \<noteq> x"
+            have hy_ball_iso2: "y \<in> ball x \<delta>_iso2" using hy by (by100 blast)
+            have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
+            have hy_i: "y \<in> i"
+              using hy_int unfolding geotop_arc_interior_def by (by100 blast)
+            have h_ball_sub: "ball x \<delta>_iso2 \<subseteq> ball x \<delta>_iso"
+              using h\<delta>_iso2_le by (by100 auto)
+            have hy_ball_iso: "y \<in> ball x \<delta>_iso"
+              using hy_ball_iso2 h_ball_sub by (by100 blast)
+            have hy_in: "y \<in> ball x \<delta>_iso \<inter> i"
+              using hy_ball_iso hy_i by (by100 blast)
+            have hy_or: "y \<in> \<Union> EdgesAtX \<union> {x}"
+              using hy_in h_ball_cov by (by100 blast)
+            show "y \<in> \<Union> EdgesAtX" using hy_or hy_ne by (by100 blast)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
