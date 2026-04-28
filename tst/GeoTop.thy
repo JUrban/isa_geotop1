@@ -4891,6 +4891,33 @@ proof -
             using h_x_open_seg unfolding open_segment_def by (by100 blast)
           show ?thesis using hx_ne_b by (by100 simp)
         qed
+        \<comment> \<open>Step 10c: define refined radius δ_iso2 ≤ min(δ_iso, dist x a, dist x b)
+          for the helper application. Provided as parallel infrastructure;
+          existing chain still uses δ_iso.\<close>
+        define \<delta>_iso2 where "\<delta>_iso2 = min \<delta>_iso (min (dist x a / 2) (dist x b / 2))"
+        have h\<delta>_iso2_pos: "\<delta>_iso2 > 0"
+          unfolding \<delta>_iso2_def
+          using h\<delta>_iso_pos h_dist_xa_pos h_dist_xb_pos by (by100 simp)
+        have h\<delta>_iso2_le: "\<delta>_iso2 \<le> \<delta>_iso" unfolding \<delta>_iso2_def by (by100 simp)
+        have h\<delta>_iso2_le_a: "\<delta>_iso2 \<le> dist x a"
+        proof -
+          have h1: "\<delta>_iso2 \<le> dist x a / 2" unfolding \<delta>_iso2_def by (by100 simp)
+          have h2: "dist x a / 2 \<le> dist x a"
+            using h_dist_xa_pos by (by100 linarith)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        have h\<delta>_iso2_le_b: "\<delta>_iso2 \<le> dist x b"
+        proof -
+          have h1: "\<delta>_iso2 \<le> dist x b / 2" unfolding \<delta>_iso2_def by (by100 simp)
+          have h2: "dist x b / 2 \<le> dist x b"
+            using h_dist_xb_pos by (by100 linarith)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        \<comment> \<open>Step 10d: apply ball_intersect_aff_hull_segment_in_segment helper.\<close>
+        have h_helper_applied: "ball x \<delta>_iso2 \<inter> affine hull (closed_segment a b)
+                                  \<subseteq> closed_segment a b"
+          by (rule ball_intersect_aff_hull_segment_in_segment[OF hab_ne h_x_open_seg
+                   h\<delta>_iso2_pos h\<delta>_iso2_le_a h\<delta>_iso2_le_b])
         \<comment> \<open>Step 11: derive the line L = aff_hull σ_x. Pick a unit normal n so that
           L = {y. inner n (y - x) = 0}. Since σ_x has aff_dim 1 (it's a 1-simplex
           and aff_dim of convex hull of 2 distinct points is 1), and we're in
