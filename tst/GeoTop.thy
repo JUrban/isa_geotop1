@@ -6212,6 +6212,23 @@ proof -
             obtain u_w where hu_w_UHm: "u_w \<in> U \<inter> Hm"
                          and hu_w_dist: "dist u_w x < r/3"
               using h_Hm_witness[OF hr3_pos] by (by100 blast)
+            have hu_w_in_Wbar: "u_w \<in> U \<inter> ball x \<delta>_iso2"
+            proof -
+              have hu_wU: "u_w \<in> U" using hu_w_UHm by (by100 blast)
+              have hu_w_Hm_only: "u_w \<in> Hm" using hu_w_UHm by (by100 blast)
+              have hu_w_ball: "u_w \<in> ball x \<delta>_iso2"
+                using hu_w_Hm_only Hm_def by (by100 blast)
+              show ?thesis using hu_wU hu_w_ball by (by100 blast)
+            qed
+            have hu_w_neg: "inner n u_w < inner n x"
+            proof -
+              have h_neg: "inner (u_w - x) n < 0"
+                using hu_w_UHm Hm_def by (by100 blast)
+              show ?thesis using h_neg by (simp add: inner_diff_right inner_commute)
+            qed
+            have hV_uw_in_neg:
+              "path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<subseteq> {z. inner n z < inner n x}"
+              using h_pc_in_Hm_global[OF hu_w_in_Wbar hu_w_neg] .
             have h_tri: "dist u_w y \<le> dist u_w x + dist x y"
               by (rule dist_triangle)
             have h_dist_xy: "dist x y = dist y x" by (rule dist_commute)
