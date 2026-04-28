@@ -5568,7 +5568,7 @@ proof -
                 {x} is not a face of σ_x; the face must be σ_x itself.
                 (iv) σ_x ⊆ σ' both 1-simplexes (with 2-element vertex sets)
                 ⟹ σ' = σ_x.\<close>
-              show "\<sigma>' \<in> {\<sigma>_x}" sorry
+              show "\<sigma>' \<in> {\<sigma>_x}" using h\<sigma>_x_eq_\<sigma>' by (by100 simp)
             qed
           qed
           \<comment> \<open>Hence y ∈ σ_x for relevant y.\<close>
@@ -5834,7 +5834,7 @@ proof -
               have h\<sigma>_x_eq_\<sigma>': "\<sigma>_x = \<sigma>'"
                 using h\<sigma>_x_W'' hW''_eq_V hV_\<sigma>'_hull by (by100 simp)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
-              show "\<sigma>' \<in> {\<sigma>_x}" sorry
+              show "\<sigma>' \<in> {\<sigma>_x}" using h\<sigma>_x_eq_\<sigma>' by (by100 simp)
             qed
           qed
           have h_y_in_seg:
