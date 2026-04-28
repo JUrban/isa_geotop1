@@ -4996,10 +4996,19 @@ proof -
           \<comment> \<open>Vertex case: x ∈ {a, b}. The goal `x ∈ open_segment a b` is
             genuinely FALSE here. h_local_open's outer conclusion still holds
             (multiple edges meet at x, parallel halfplane analyses needed).
-            To close: hoist the {x} ∈ K_i case-split to the OUTER h_local_open,
-            with vertex case running parallel path-arguments per edge.
-            Estimated ~500-800 lines of new proof. The path-argument
-            machinery (proven in single-edge case) IS the model.\<close>
+
+            **Closure plan:** hoist the {x} ∈ K_i case-split to the OUTER
+            h_local_open, with vertex case running parallel path-arguments
+            per edge σ_j ∈ EdgesAtX. For each y ∈ ball x δ ∩ Int Bi (y ≠ x):
+            (a) by Step 5, y ∈ ⋃ EdgesAtX, so y ∈ σ_y for some σ_y ∈ EdgesAtX.
+            (b) σ_y has line L_y (different per σ_y).
+            (c) For each line L_y, derive halfplane structure + dominant case.
+            (d) Apply straight_line_path_in_face helper (now PROVEN in
+                GeoTopBase) for that L_y.
+            (e) The key challenge: ball x δ ∩ M ⊆ L_y is FALSE in vertex
+                case (M includes other edges' lines). Need SECTOR analysis
+                instead of single halfplane.
+            Estimated ~500-800 lines of new proof.\<close>
           show ?thesis sorry
         next
           case False
