@@ -12770,6 +12770,94 @@ proof -
   qed
 qed
 
+text \<open>For an open set W disjoint from a hyperplane, the path-component of
+  a witness on the positive side is entirely on the positive side. This
+  packages the connected_open_disjoint_from_line + path-component pattern
+  used in h_open_in_int's local-side propagation.\<close>
+
+lemma path_component_in_halfplane_pos:
+  fixes W :: "(real^2) set" and n :: "real^2" and c :: real and u\<^sub>0 :: "real^2"
+  assumes hW_open: "open W"
+      and hW_disj: "W \<inter> {y. inner n y = c} = {}"
+      and hu\<^sub>0_W: "u\<^sub>0 \<in> W"
+      and hu\<^sub>0_pos: "inner n u\<^sub>0 > c"
+  shows "path_component_set W u\<^sub>0 \<subseteq> {y. inner n y > c}"
+proof -
+  define V where "V = path_component_set W u\<^sub>0"
+  have hV_open: "open V"
+    unfolding V_def using hW_open open_path_component by blast
+  have hV_path_conn: "path_connected V"
+    unfolding V_def by (rule path_connected_path_component)
+  have hV_conn: "connected V"
+    using hV_path_conn path_connected_imp_connected by blast
+  have hV_sub: "V \<subseteq> W"
+    unfolding V_def by (rule path_component_subset)
+  have hV_disj: "V \<inter> {y. inner n y = c} = {}"
+    using hV_sub hW_disj by blast
+  have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
+  proof -
+    have h_refl: "path_component W u\<^sub>0 u\<^sub>0"
+      by (rule path_component_refl[OF hu\<^sub>0_W])
+    show ?thesis unfolding V_def using h_refl by simp
+  qed
+  have hV_or: "V \<subseteq> {y. inner n y > c} \<or> V \<subseteq> {y. inner n y < c}"
+    by (rule connected_open_disjoint_from_line_in_halfplane[OF hV_open hV_conn hV_disj])
+  show "path_component_set W u\<^sub>0 \<subseteq> {y. inner n y > c}"
+  proof (cases "V \<subseteq> {y. inner n y > c}")
+    case True
+    thus ?thesis unfolding V_def by simp
+  next
+    case False
+    hence hV_neg: "V \<subseteq> {y. inner n y < c}" using hV_or by blast
+    hence "u\<^sub>0 \<in> {y. inner n y < c}" using hu\<^sub>0_V by blast
+    hence "inner n u\<^sub>0 < c" by simp
+    thus ?thesis using hu\<^sub>0_pos by simp
+  qed
+qed
+
+text \<open>Symmetric: path-component of a witness on the negative side stays
+  on the negative side.\<close>
+
+lemma path_component_in_halfplane_neg:
+  fixes W :: "(real^2) set" and n :: "real^2" and c :: real and u\<^sub>0 :: "real^2"
+  assumes hW_open: "open W"
+      and hW_disj: "W \<inter> {y. inner n y = c} = {}"
+      and hu\<^sub>0_W: "u\<^sub>0 \<in> W"
+      and hu\<^sub>0_neg: "inner n u\<^sub>0 < c"
+  shows "path_component_set W u\<^sub>0 \<subseteq> {y. inner n y < c}"
+proof -
+  define V where "V = path_component_set W u\<^sub>0"
+  have hV_open: "open V"
+    unfolding V_def using hW_open open_path_component by blast
+  have hV_path_conn: "path_connected V"
+    unfolding V_def by (rule path_connected_path_component)
+  have hV_conn: "connected V"
+    using hV_path_conn path_connected_imp_connected by blast
+  have hV_sub: "V \<subseteq> W"
+    unfolding V_def by (rule path_component_subset)
+  have hV_disj: "V \<inter> {y. inner n y = c} = {}"
+    using hV_sub hW_disj by blast
+  have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
+  proof -
+    have h_refl: "path_component W u\<^sub>0 u\<^sub>0"
+      by (rule path_component_refl[OF hu\<^sub>0_W])
+    show ?thesis unfolding V_def using h_refl by simp
+  qed
+  have hV_or: "V \<subseteq> {y. inner n y > c} \<or> V \<subseteq> {y. inner n y < c}"
+    by (rule connected_open_disjoint_from_line_in_halfplane[OF hV_open hV_conn hV_disj])
+  show "path_component_set W u\<^sub>0 \<subseteq> {y. inner n y < c}"
+  proof (cases "V \<subseteq> {y. inner n y < c}")
+    case True
+    thus ?thesis unfolding V_def by simp
+  next
+    case False
+    hence hV_pos: "V \<subseteq> {y. inner n y > c}" using hV_or by blast
+    hence "u\<^sub>0 \<in> {y. inner n y > c}" using hu\<^sub>0_V by blast
+    hence "inner n u\<^sub>0 > c" by simp
+    thus ?thesis using hu\<^sub>0_neg by simp
+  qed
+qed
+
 text \<open>An open ball minus a hyperplane through its center in R^2 splits into
   two open connected non-empty disjoint half-balls.\<close>
 
