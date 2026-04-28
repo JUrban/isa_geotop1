@@ -21197,6 +21197,18 @@ proof -
           (\<forall>P\<in>UNIV - D3. h\<^sub>0 P = P)" sorry
   (** (4) Restrict h~ to M^3 (trivially, h~ fixes M^3 - W \<subseteq> UNIV - D_3). h'(N) = N
          because h~ maps the collar's + side in N to itself. **)
+  \<comment> \<open>Sub-claim T27_1-A: h' is a PL homeomorphism M3 \<leftrightarrow> M3.\<close>
+  have hT27_1_homeo:
+    "\<exists>h'. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+            M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
+          (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
+                    geotop_PLH K1 K1' h')" sorry
+  \<comment> \<open>Sub-claim T27_1-B: h' preserves N (sends collar's + side in N to itself).\<close>
+  have hT27_1_preserves_N:
+    "\<exists>h'. h' ` N = N" sorry
+  \<comment> \<open>Sub-claim T27_1-C: h' agrees with h on M2 and is identity on M3 - W.\<close>
+  have hT27_1_agreement:
+    "\<exists>h'. (\<forall>P\<in>M2. h' P = h P) \<and> (\<forall>P\<in>M3 - W. h' P = P)" sorry
   have h_final: "\<exists>h'. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
                  M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
               (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
