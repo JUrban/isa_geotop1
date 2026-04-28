@@ -5793,6 +5793,34 @@ proof -
             equivalently y ∈ frontier U.\<close>
           have h_fr_in_M: "frontier U \<subseteq> M"
             using h_frontier_in_M hU_in by (by100 blast)
+          \<comment> \<open>Apply path_component_in_halfplane_pos: any path-component of
+            a witness u₀ ∈ U ∩ Hp ∩ ball x δ_iso2 in W = U ∩ ball x δ_iso2
+            stays in the positive halfplane {z. inner n z > inner n x}.\<close>
+          have hW_open: "open (U \<inter> ball x \<delta>_iso2)"
+            using hU_open open_ball by (by100 blast)
+          have hW_disj_L: "(U \<inter> ball x \<delta>_iso2) \<inter> {z. inner n z = inner n x} = {}"
+          proof
+            show "(U \<inter> ball x \<delta>_iso2) \<inter> {z. inner n z = inner n x} \<subseteq> {}"
+            proof
+              fix z assume hz: "z \<in> (U \<inter> ball x \<delta>_iso2)
+                                \<inter> {z. inner n z = inner n x}"
+              have hz_U: "z \<in> U" using hz by (by100 blast)
+              have hz_ball: "z \<in> ball x \<delta>_iso2" using hz by (by100 blast)
+              have hz_eq: "inner n z = inner n x" using hz by (by100 blast)
+              have hz_diff: "inner (z - x) n = 0"
+                using hz_eq by (simp add: inner_diff_right inner_commute)
+              have hz_in_L_ball: "z \<in> ball x \<delta>_iso2 \<inter> {y. inner (y - x) n = 0}"
+                using hz_ball hz_diff by (by100 blast)
+              have hz_M: "z \<in> M" using hz_in_L_ball h_local_L_in_M by (by100 blast)
+              have "z \<in> U \<inter> M" using hz_U hz_M by (by100 blast)
+              thus "z \<in> {}" using hU_disj_M by (by100 blast)
+            qed
+          qed (by100 blast)
+          have h_pc_in_Hp_global:
+            "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso2 \<Longrightarrow> inner n u\<^sub>0 > inner n x \<Longrightarrow>
+                  path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0
+                    \<subseteq> {z. inner n z > inner n x}"
+            by (rule path_component_in_halfplane_pos[OF hW_open hW_disj_L])
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
