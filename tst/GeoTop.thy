@@ -5785,7 +5785,14 @@ proof -
           \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
             local flatness of U near σ_x. Path-component infrastructure
             (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
-            from GeoTopBase support the formalization. Multi-day work.\<close>
+            from GeoTopBase support the formalization. Multi-day work.
+
+            Equivalent reformulation: y ∈ frontier U (since y ∈ M, y ∉ U,
+            and closure U ⊇ frontier U via h_frontier_in_M ⊆ M). So showing
+            ball y r ∩ U ≠ ∅ for all r > 0 is showing y ∈ closure U,
+            equivalently y ∈ frontier U.\<close>
+          have h_fr_in_M: "frontier U \<subseteq> M"
+            using h_frontier_in_M hU_in by (by100 blast)
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
