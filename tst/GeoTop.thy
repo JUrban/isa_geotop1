@@ -16514,6 +16514,26 @@ proof -
          from the trefoil diagram. By the 3-fold symmetry of the trefoil, permuting
          (1 2 3) \<to> (2 3 1) \<to> (3 1 2) gives
            r_2 = g_2 g_1^{-1} g_3^{-1} g_1,  r_3 = g_3 g_2^{-1} g_1^{-1} g_2. **)
+  \<comment> \<open>Sub-claim T16_6-A: existence of 3 generators g_1, g_2, g_3 from the trefoil
+    diagram with the relations r_i null-homotopic in R^3 - K.\<close>
+  have hT16_6_gens:
+    "\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>1 \<and>
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>2 \<and>
+        geotop_closed_path_on (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>3 \<and>
+        geotop_path_equiv (UNIV - K)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K))
+          P\<^sub>0 (geotop_path_mult g\<^sub>1 g\<^sub>2) (geotop_path_mult g\<^sub>1 g\<^sub>2)" sorry
+  \<comment> \<open>Sub-claim T16_6-B: \<pi>(R^3 - K) is non-commutative (using S_3 surjection).\<close>
+  have hT16_6_noncomm:
+    "\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
+              geotop_pi_mult (UNIV - K)
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C" sorry
   have h_relations:
     "(\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
         geotop_closed_path_on (UNIV - K)
@@ -16530,7 +16550,8 @@ proof -
               geotop_pi_mult (UNIV - K)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
               geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C)" sorry
+                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C)"
+    using hT16_6_gens hT16_6_noncomm by (by100 blast)
   (** (2) Define h: F(g_1, g_2, g_3) \<rightarrow> S_3 by h(g_1) = (2 3), h(g_2) = (1 3),
          h(g_3) = (1 2). Extend multiplicatively. **)
   have h_into_S3:
