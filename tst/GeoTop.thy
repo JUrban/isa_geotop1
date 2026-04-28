@@ -5041,15 +5041,46 @@ proof -
           \<comment> \<open>Sub-claim V4: x \<in> frontier U — already in scope as hxFr.\<close>
           have hVX_x_frontier: "x \<in> frontier U" using hxFr by (by100 simp)
           \<comment> \<open>Sub-claim V5: for each y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E
-            with y \<noteq> x, y \<in> frontier U.
-            Justification (sector analysis): by h_ball_cov, y \<in> \<Union> EdgesAtX
-            \<union> {x}; since y \<noteq> x, pick \<sigma>_y \<in> EdgesAtX with y \<in> \<sigma>_y. Use
-            the line L_y = aff_hull \<sigma>_y. Apply the path-argument from
-            straight_line_path_in_face restricted to the half-sector
-            adjacent to \<sigma>_y (avoiding the other edges' lines).\<close>
+            with y \<noteq> x, y \<in> frontier U. Decomposed into V5a-V5d.\<close>
           have hVX_frontier_main:
             "\<forall>y. y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E \<and> y \<noteq> x
-                  \<longrightarrow> y \<in> frontier U" sorry
+                  \<longrightarrow> y \<in> frontier U"
+          proof (intro allI impI)
+            fix y assume hy_cond: "y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E
+                                    \<and> y \<noteq> x"
+            have hy_ball: "y \<in> ball x \<delta>_v" using hy_cond by (by100 blast)
+            have hy_int: "y \<in> geotop_arc_interior i E" using hy_cond by (by100 blast)
+            have hy_ne_x: "y \<noteq> x" using hy_cond by (by100 blast)
+            have hy_i: "y \<in> i" using hy_int unfolding geotop_arc_interior_def
+              by (by100 blast)
+            \<comment> \<open>V5a: y \<in> M (since i \<subseteq> M).\<close>
+            have hy_M: "y \<in> M" using hy_i hi_sub_M by (by100 blast)
+            \<comment> \<open>V5b: y \<notin> U (since U \<inter> M = {}).\<close>
+            have hy_notU: "y \<notin> U" using hy_M hU_disj_M by (by100 blast)
+            \<comment> \<open>V5c: pick \<sigma>_y \<in> EdgesAtX with y \<in> \<sigma>_y, via h_ball_cov.\<close>
+            have hy_ball_iso: "y \<in> ball x \<delta>_iso"
+              using hy_ball unfolding \<delta>_v_def by (by100 simp)
+            have hy_in_cov: "y \<in> ball x \<delta>_iso \<inter> i" using hy_ball_iso hy_i
+              by (by100 blast)
+            have hy_union: "y \<in> \<Union> EdgesAtX \<union> {x}"
+              using hy_in_cov h_ball_cov by (by100 blast)
+            have hy_not_sing: "y \<notin> {x}" using hy_ne_x by (by100 simp)
+            have hy_union_only: "y \<in> \<Union> EdgesAtX"
+              using hy_union hy_not_sing by (by100 blast)
+            obtain \<sigma>_y where h\<sigma>_y_EAX: "\<sigma>_y \<in> EdgesAtX" and hy\<sigma>_y: "y \<in> \<sigma>_y"
+              using hy_union_only by (by100 blast)
+            \<comment> \<open>V5d: y \<in> closure U (sector path argument — the deep step).
+              Plan: use straight_line_path_in_face for \<sigma>_y's line L_y
+              restricted to the half-sector adjacent to \<sigma>_y. Multi-day work.\<close>
+            have hy_clos: "y \<in> closure U" sorry
+            \<comment> \<open>V5e: combine to frontier U.\<close>
+            have h_int_U: "interior U = U" using hU_open interior_open
+              by (by100 blast)
+            have hy_notInt: "y \<notin> interior U" using hy_notU h_int_U
+              by (by100 simp)
+            show "y \<in> frontier U"
+              using hy_clos hy_notInt unfolding frontier_def by (by100 blast)
+          qed
           \<comment> \<open>Sub-claim V6: combine V4 and V5 to conclude the show.\<close>
           have hVX_main:
             "ball x \<delta>_v \<inter> geotop_arc_interior i E
