@@ -6140,6 +6140,10 @@ proof -
             have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
             have hy_seg: "y \<in> \<sigma>_x" using h_y_in_seg[OF hy hy_ne] .
             have hy_L: "inner (y - x) n = 0" using h_y_on_L[OF hy hy_ne] .
+            have hr3_pos: "r/3 > 0" using hr_pos by (by100 simp)
+            obtain u_w where hu_w_UHm: "u_w \<in> U \<inter> Hm"
+                         and hu_w_dist: "dist u_w x < r/3"
+              using h_Hm_witness[OF hr3_pos] by (by100 blast)
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
