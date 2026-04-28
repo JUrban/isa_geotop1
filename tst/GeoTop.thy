@@ -5488,6 +5488,12 @@ proof -
                 using h_int_eq_seg h\<sigma>_x_seg by (by100 simp)
               have h\<sigma>_x_sub_\<sigma>': "\<sigma>_x \<subseteq> \<sigma>'"
                 using h_int_eq_x by (by100 blast)
+              \<comment> \<open>σ_x is also a face of σ' by symmetric complex axiom.\<close>
+              have h_face_\<sigma>': "geotop_is_face (\<sigma>' \<inter> \<sigma>_x) \<sigma>'"
+                using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
+                unfolding geotop_is_complex_def by (by100 blast)
+              have h\<sigma>_x_face_\<sigma>': "geotop_is_face \<sigma>_x \<sigma>'"
+                using h_face_\<sigma>' h_int_eq_x by (by100 simp)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5685,6 +5691,12 @@ proof -
                 using h_int_eq_seg h\<sigma>_x_seg by (by100 simp)
               have h\<sigma>_x_sub_\<sigma>': "\<sigma>_x \<subseteq> \<sigma>'"
                 using h_int_eq_x by (by100 blast)
+              \<comment> \<open>σ_x is also a face of σ' by symmetric complex axiom.\<close>
+              have h_face_\<sigma>': "geotop_is_face (\<sigma>' \<inter> \<sigma>_x) \<sigma>'"
+                using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
+                unfolding geotop_is_complex_def by (by100 blast)
+              have h\<sigma>_x_face_\<sigma>': "geotop_is_face \<sigma>_x \<sigma>'"
+                using h_face_\<sigma>' h_int_eq_x by (by100 simp)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
