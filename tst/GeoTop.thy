@@ -6165,6 +6165,13 @@ proof -
             have h_dist_xy: "dist x y = dist y x" by (rule dist_commute)
             have hu_w_dist_y: "dist u_w y < r/3 + dist y x"
               using h_tri hu_w_dist h_dist_xy by (by100 simp)
+            define u_w_t where "u_w_t = u_w + (y - x)"
+            have hu_w_t_y: "u_w_t - y = u_w - x"
+              unfolding u_w_t_def by (by100 simp)
+            have hu_w_t_dist: "dist u_w_t y = dist u_w x"
+              using hu_w_t_y by (simp add: dist_norm)
+            have hu_w_t_lt_r: "dist u_w_t y < r/3"
+              using hu_w_t_dist hu_w_dist by (by100 simp)
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
