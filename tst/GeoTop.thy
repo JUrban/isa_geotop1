@@ -5537,7 +5537,20 @@ proof -
             show "y \<in> \<Union> EdgesAtX" using hy_or hy_ne by (by100 blast)
           qed
           \<comment> \<open>Same single-edge derivation as in the Hp case.\<close>
-          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}" sorry
+          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}"
+          proof
+            show "{\<sigma>_x} \<subseteq> EdgesAtX" using h\<sigma>_x_EAX by (by100 blast)
+            show "EdgesAtX \<subseteq> {\<sigma>_x}"
+            proof
+              fix \<sigma>' assume h\<sigma>': "\<sigma>' \<in> EdgesAtX"
+              have hx\<sigma>': "x \<in> \<sigma>'" using h\<sigma>' hEAX_x_in by (by100 blast)
+              have h\<sigma>'_K: "\<sigma>' \<in> K_i" using h\<sigma>' hEAX_sub by (by100 blast)
+              have h\<sigma>'_dim: "geotop_simplex_dim \<sigma>' 1"
+                using h\<sigma>' unfolding EdgesAtX_def by (by100 blast)
+              \<comment> \<open>Same face-axiom argument as Hp case.\<close>
+              show "\<sigma>' \<in> {\<sigma>_x}" sorry
+            qed
+          qed
           have h_y_in_seg:
             "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
                   \<Longrightarrow> y \<in> \<sigma>_x"
