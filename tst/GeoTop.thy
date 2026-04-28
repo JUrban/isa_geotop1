@@ -5433,6 +5433,15 @@ proof -
                   by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
                 show ?thesis using h_seg_sv h\<sigma>_x_seg by (by100 simp)
               qed
+              \<comment> \<open>Unfold the face: σ' ∩ σ_x = geotop_convex_hull W for some
+                W ⊆ {a, b}, W ≠ ∅.\<close>
+              obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma>_x V'"
+                            and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                            and h_int_hull: "\<sigma>' \<inter> \<sigma>_x = geotop_convex_hull W"
+                using h_face unfolding geotop_is_face_def by (by100 blast)
+              have hV'_eq: "V' = {a, b}"
+                using geotop_simplex_vertices_unique[OF hV'_sv h_sv_x] .
+              have hW_sub_ab: "W \<subseteq> {a, b}" using hW_V' hV'_eq by (by100 simp)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5575,6 +5584,15 @@ proof -
                   by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
                 show ?thesis using h_seg_sv h\<sigma>_x_seg by (by100 simp)
               qed
+              \<comment> \<open>Unfold the face: σ' ∩ σ_x = geotop_convex_hull W for some
+                W ⊆ {a, b}, W ≠ ∅.\<close>
+              obtain V' W where hV'_sv: "geotop_simplex_vertices \<sigma>_x V'"
+                            and hW_ne: "W \<noteq> {}" and hW_V': "W \<subseteq> V'"
+                            and h_int_hull: "\<sigma>' \<inter> \<sigma>_x = geotop_convex_hull W"
+                using h_face unfolding geotop_is_face_def by (by100 blast)
+              have hV'_eq: "V' = {a, b}"
+                using geotop_simplex_vertices_unique[OF hV'_sv h_sv_x] .
+              have hW_sub_ab: "W \<subseteq> {a, b}" using hW_V' hV'_eq by (by100 simp)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
