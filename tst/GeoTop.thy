@@ -5450,6 +5450,19 @@ proof -
               by (rule h_halfplane_invariant[OF hy_L])
             show "inner (u - y) n > 0" using hu_pos h_inv by (by100 simp)
           qed
+          \<comment> \<open>From hx_cl_Hp, witnesses in U ∩ Hp at every scale r > 0.\<close>
+          have h_Hp_witness:
+            "\<And>r::real. r > 0 \<Longrightarrow> \<exists>u\<in>U \<inter> Hp. dist u x < r"
+          proof -
+            fix r :: real assume hr: "r > 0"
+            have h_ex: "\<exists>z\<in>U \<inter> Hp. dist x z < r"
+              by (rule closure_approachableD[OF hx_cl_Hp hr])
+            obtain z where hz: "z \<in> U \<inter> Hp" and hz_dist: "dist x z < r"
+              using h_ex by (by100 blast)
+            have h_swap: "dist z x = dist x z" by (rule dist_commute)
+            have hz_dist': "dist z x < r" using hz_dist h_swap by (by100 simp)
+            show "\<exists>u\<in>U \<inter> Hp. dist u x < r" using hz hz_dist' by (by100 blast)
+          qed
           \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
             local flatness of U near σ_x. Path-component infrastructure
             (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
