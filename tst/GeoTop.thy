@@ -4947,17 +4947,99 @@ proof -
             one endpoint (since {x} \<in> K_i is a vertex face of \<sigma>, and \<sigma> is
             a 1-simplex with vertices its two endpoints).\<close>
           have hVX_segs: "\<forall>\<sigma>\<in>EdgesAtX. \<exists>p. \<sigma> = closed_segment x p \<and> p \<noteq> x"
-            sorry
+          proof
+            fix \<sigma> assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+            have h\<sigma>_K: "\<sigma> \<in> K_i" using h\<sigma>_EAX hEAX_sub by (by100 blast)
+            have hx\<sigma>: "x \<in> \<sigma>" using h\<sigma>_EAX hEAX_x_in by (by100 blast)
+            obtain a b where hab_ne: "a \<noteq> b" and h\<sigma>_seg: "\<sigma> = closed_segment a b"
+              using h\<sigma>_EAX hEAX_closed_segs by (by100 blast)
+            have h_sv_\<sigma>: "geotop_simplex_vertices \<sigma> {a, b}"
+            proof -
+              have h_seg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+                by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
+              show ?thesis using h_seg_sv h\<sigma>_seg by (by100 simp)
+            qed
+            have hxs_eq: "{x} \<inter> \<sigma> = {x}" using hx\<sigma> by (by100 blast)
+            have hxs_ne: "{x} \<inter> \<sigma> \<noteq> {}" using hx\<sigma> by (by100 blast)
+            have h_int_face: "\<forall>\<sigma>\<in>K_i. \<forall>\<tau>\<in>K_i. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                                geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+              by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+                  hK_i_complex[unfolded geotop_is_complex_def]]]])
+            have hxs_face: "geotop_is_face ({x} \<inter> \<sigma>) \<sigma>"
+              using hxK h\<sigma>_K hxs_ne h_int_face by (by100 blast)
+            have h_x_face: "geotop_is_face {x} \<sigma>"
+              using hxs_face hxs_eq by (by100 simp)
+            obtain V'' W'' where hV''_sv: "geotop_simplex_vertices \<sigma> V''"
+                              and hW''_ne: "W'' \<noteq> {}" and hW''_V'': "W'' \<subseteq> V''"
+                              and h_x_W'': "{x} = geotop_convex_hull W''"
+              using h_x_face unfolding geotop_is_face_def by (by100 blast)
+            have hV''_eq: "V'' = {a, b}"
+              using geotop_simplex_vertices_unique[OF hV''_sv h_sv_\<sigma>] .
+            have hW''_sub: "W'' \<subseteq> {a, b}" using hW''_V'' hV''_eq by (by100 simp)
+            have h_x_HOL: "{x} = convex hull W''"
+            proof -
+              have h_eq: "geotop_convex_hull W'' = convex hull W''"
+                by (rule geotop_convex_hull_eq_HOL)
+              show ?thesis using h_x_W'' h_eq by (by100 simp)
+            qed
+            have hx_in_ab: "x = a \<or> x = b"
+            proof (cases "W'' = {a}")
+              case True
+              have "convex hull W'' = {a}" using True by (by100 simp)
+              hence "{x} = {a}" using h_x_HOL by (by100 simp)
+              thus ?thesis by (by100 simp)
+            next
+              case False
+              show ?thesis
+              proof (cases "W'' = {b}")
+                case True
+                have "convex hull W'' = {b}" using True by (by100 simp)
+                hence "{x} = {b}" using h_x_HOL by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                case False
+                have hW''_cases: "W'' = {a} \<or> W'' = {b} \<or> W'' = {a, b}"
+                  using hW''_sub hW''_ne by (by100 blast)
+                have h_eq_ab: "W'' = {a, b}"
+                  using hW''_cases \<open>W'' \<noteq> {a}\<close> False by (by100 blast)
+                have h_seg_eq: "closed_segment a b = convex hull {a, b}"
+                  by (rule segment_convex_hull)
+                have "convex hull W'' = closed_segment a b"
+                  using h_eq_ab h_seg_eq by (by100 simp)
+                hence h_x_seg: "{x} = closed_segment a b" using h_x_HOL by (by100 simp)
+                have ha_in: "a \<in> closed_segment a b" by (by100 simp)
+                have hb_in: "b \<in> closed_segment a b" by (by100 simp)
+                have ha_x: "a = x" using ha_in h_x_seg by (by100 blast)
+                have hb_x: "b = x" using hb_in h_x_seg by (by100 blast)
+                have "a = b" using ha_x hb_x by (by100 simp)
+                thus ?thesis using hab_ne by (by100 blast)
+              qed
+            qed
+            show "\<exists>p. \<sigma> = closed_segment x p \<and> p \<noteq> x"
+            proof (cases "x = a")
+              case True
+              have h_seg_p: "\<sigma> = closed_segment x b" using h\<sigma>_seg True by (by100 simp)
+              have hp_ne: "b \<noteq> x" using True hab_ne by (by100 blast)
+              show ?thesis using h_seg_p hp_ne by (by100 blast)
+            next
+              case False
+              hence hxb: "x = b" using hx_in_ab by (by100 blast)
+              have h_seg_ba: "closed_segment a b = closed_segment b a"
+                by (rule closed_segment_commute)
+              have h_seg_xa: "closed_segment x a = closed_segment a b"
+                using hxb h_seg_ba by (by100 simp)
+              have h_seg_p: "\<sigma> = closed_segment x a"
+                using h\<sigma>_seg h_seg_xa by (by100 simp)
+              have hp_ne: "a \<noteq> x" using hxb hab_ne by (by100 blast)
+              show ?thesis using h_seg_p hp_ne by (by100 blast)
+            qed
+          qed
           \<comment> \<open>Sub-claim V3: pick the working radius. Use \<delta>_iso unchanged.\<close>
           define \<delta>_v where "\<delta>_v = \<delta>_iso"
           have h\<delta>_v_pos: "\<delta>_v > 0"
             using h\<delta>_iso_pos unfolding \<delta>_v_def by (by100 simp)
-          \<comment> \<open>Sub-claim V4: x itself lies in frontier U.
-            Justification: any open ball around x intersects U (since some
-            component U of UNIV - M has frontier containing x via an
-            approach through one of EdgesAtX's halfplanes), and x \<in> M so
-            x \<notin> U; hence x \<in> closure U \<setminus> interior U = frontier U.\<close>
-          have hVX_x_frontier: "x \<in> frontier U" sorry
+          \<comment> \<open>Sub-claim V4: x \<in> frontier U — already in scope as hxFr.\<close>
+          have hVX_x_frontier: "x \<in> frontier U" using hxFr by (by100 simp)
           \<comment> \<open>Sub-claim V5: for each y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E
             with y \<noteq> x, y \<in> frontier U.
             Justification (sector analysis): by h_ball_cov, y \<in> \<Union> EdgesAtX
