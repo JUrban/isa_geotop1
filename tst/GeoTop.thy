@@ -6199,7 +6199,17 @@ proof -
             have hu_w_t_neg_y: "inner (u_w_t - y) n < 0"
               using hu_w_t_y hu_w_neg_x by (by100 simp)
             \<comment> \<open>Same Schoenflies-like gap as Hp: show u_w_t ∈ U.\<close>
-            show "ball y r \<inter> U \<noteq> {}" sorry
+            have hu_w_t_U: "u_w_t \<in> U" sorry
+            have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
+            have hu_w_t_dist_r: "dist u_w_t y < r"
+              using hu_w_t_lt_r h_r3_lt by (by100 linarith)
+            have h_dist_yt: "dist y u_w_t = dist u_w_t y" by (rule dist_commute)
+            have hu_w_t_dist_yr: "dist y u_w_t < r"
+              using hu_w_t_dist_r h_dist_yt by (by100 simp)
+            have hu_w_t_in_ball: "u_w_t \<in> ball y r"
+              using hu_w_t_dist_yr by (by100 simp)
+            show "ball y r \<inter> U \<noteq> {}"
+              using hu_w_t_in_ball hu_w_t_U by (by100 blast)
           qed
         qed
         have h_CLAIM_A_off_small:
