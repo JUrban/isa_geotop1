@@ -17557,6 +17557,20 @@ proof -
          send R^3 - C_1 to R^3 - C_2 homeomorphically, identifying their fundamental
          groups. Contradiction. (There is a homeomorphism C_1 \<leftrightarrow> C_2 at the
          intrinsic-Cantor-set level by Brouwer's theorem, but it cannot extend.) **)
+  \<comment> \<open>Sub-claim T18_5-A: there exists an intrinsic homeomorphism h: C_1 \<leftrightarrow> C_2
+    (Brouwer's theorem on Cantor sets).\<close>
+  have hT18_5_homeo:
+    "\<exists>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) h" sorry
+  \<comment> \<open>Sub-claim T18_5-B: any such h has no homeomorphic extension R^3 \<leftrightarrow> R^3
+    (else the extended H would send R^3 - C_1 \<leftrightarrow> R^3 - C_2 homeomorphically,
+    contradicting the simply-connected vs not-simply-connected conclusions).\<close>
+  have hT18_5_no_extension:
+    "\<forall>h. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) h \<longrightarrow>
+         (\<nexists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology H \<and>
+              (\<forall>P\<in>C1. H P = h P))" sorry
   have h_final: "\<exists>C1 C2 :: (real^3) set.
            geotop_is_cantor_set C1 (subspace_topology UNIV geotop_euclidean_topology C1) \<and>
            geotop_is_cantor_set C2 (subspace_topology UNIV geotop_euclidean_topology C2) \<and>
