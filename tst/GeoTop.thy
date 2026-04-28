@@ -11256,7 +11256,36 @@ theorem Theorem_GT_4_4:
       two open sets U\<^sub>Q, U\<^sub>S in I - A'; Q,S sit in Fr U\<^sub>Q, Fr U\<^sub>S. Then U\<^sub>Q, U\<^sub>S
       refine to components of I - (A\<^sub>1 \<union> A\<^sub>2) after re-extracting the detour.
       Under the cyclic-order hypothesis, Q and S end up in a common component. **)
-  sorry  \<comment> \<open>Full sketch deferred: argument uses 4.2 + detour construction.\<close>
+proof -
+  \<comment> \<open>Sub-claim D44-1: detour construction — combine A1, A2 via a broken-line
+    inside I to produce a single arc A' from P to R in closure I.\<close>
+  have hD44_detour:
+    "\<exists>A'. geotop_is_arc A' (subspace_topology UNIV geotop_euclidean_topology A') \<and>
+          A' \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
+          A' \<inter> J = {P, R} \<and>
+          A1 \<union> A2 \<subseteq> A'"
+    sorry
+  \<comment> \<open>Sub-claim D44-2: apply Theorem 4.2 to A' obtaining U_Q, U_S.\<close>
+  have hD44_apply42:
+    "\<exists>U\<^sub>Q U\<^sub>S A'. geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S \<and>
+                  U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+                  U\<^sub>Q \<in> geotop_euclidean_topology \<and>
+                  U\<^sub>S \<in> geotop_euclidean_topology \<and>
+                  Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+                  S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
+                  A1 \<union> A2 \<subseteq> A'"
+    sorry
+  \<comment> \<open>Sub-claim D44-3: cyclic-order argument places Q and S in the SAME
+    component of I - (A1 \<union> A2), refining U_Q and U_S into one component.\<close>
+  have hD44_common:
+    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
+       \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
+       \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J - (A1 \<union> A2)) P')"
+    sorry
+  show ?thesis using hD44_common by (by100 blast)
+qed
 
 (** from \<S>4: brick-decomposition (geotop.tex:943)
     LATEX VERSION: By a brick-decomposition of the plane we mean a collection G = {g_i} of
