@@ -6061,6 +6061,8 @@ proof -
             show "\<exists>u\<in>U. dist u x < r \<and> inner (u - y) n < 0"
               using hu_U hu_dist hu_neg_y by (by100 blast)
           qed
+          have h_fr_in_M: "frontier U \<subseteq> M"
+            using h_frontier_in_M hU_in by (by100 blast)
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
