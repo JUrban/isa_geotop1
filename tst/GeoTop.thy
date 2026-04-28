@@ -5923,14 +5923,21 @@ proof -
                 by (simp add: dist_norm norm_minus_commute)
               show ?thesis using h1 h2 h3 by (by100 simp)
             qed
-            \<comment> \<open>Key insight: closure is provable via a STRAIGHT-LINE path argument.
-              Define γ(t) = u_w + t·(y-x) on [0,1]. γ is continuous, γ([0,1])
-              connected. γ stays in ball x δ_iso2 (for u_w close enough to x).
-              γ stays on positive halfplane (constant inner sign). Hence γ
-              avoids L locally. By h_local_L_in_M, γ ∩ M = ∅. By
-              connected_component_maximal, γ ⊆ U (since u_w ∈ U). So
-              u_w_t = γ(1) ∈ U. The arg requires u_w with dist u_w x < ε
-              where ε = min(r/3, (δ_iso2 - dist y x)/2).\<close>
+            \<comment> \<open>Define straight-line path γ(t) = u_w + t·(y-x) on [0,1] from u_w
+              to u_w_t. γ is continuous (linear).\<close>
+            define \<gamma> where "\<gamma> = (\<lambda>t::real. u_w + t *\<^sub>R (y - x))"
+            have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+            proof -
+              have h_id: "continuous_on {0..1::real} (\<lambda>t. t)"
+                by (rule continuous_on_id)
+              have h_scale: "continuous_on {0..1::real} (\<lambda>t. t *\<^sub>R (y - x))"
+                using h_id by (rule continuous_on_scaleR[OF _ continuous_on_const])
+              show ?thesis unfolding \<gamma>_def
+                using h_scale continuous_on_const continuous_on_add by (by100 blast)
+            qed
+            have h\<gamma>0: "\<gamma> 0 = u_w" unfolding \<gamma>_def by simp
+            have h\<gamma>1: "\<gamma> 1 = u_w_t"
+              unfolding \<gamma>_def u_w_t_def by simp
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
