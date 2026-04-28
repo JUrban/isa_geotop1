@@ -5036,6 +5036,64 @@ proof -
             using h_U_meets_at h\<delta>'_pos h\<delta>'_le by (by100 blast)
           show False using h_emp_both h_meet by (by100 blast)
         qed
+        \<comment> \<open>Step 18: halfplane direction is invariant along L. For y ∈ L
+          (i.e., inner (y-x) n = 0) and any point z, the sign of inner (z-y) n
+          equals the sign of inner (z-x) n.\<close>
+        have h_halfplane_invariant:
+          "\<And>y z. inner (y - x) n = 0 \<Longrightarrow>
+                  inner (z - y) n = inner (z - x) n"
+        proof -
+          fix y z :: "real^2"
+          assume h_y_L: "inner (y - x) n = 0"
+          have h1: "inner (z - y) n = inner z n - inner y n"
+            by (rule inner_diff_left)
+          have h2: "inner (z - x) n = inner z n - inner x n"
+            by (rule inner_diff_left)
+          have h3: "inner (y - x) n = inner y n - inner x n"
+            by (rule inner_diff_left)
+          have h4: "inner y n = inner x n" using h_y_L h3 by (by100 simp)
+          show "inner (z - y) n = inner (z - x) n"
+            using h1 h2 h4 by (by100 simp)
+        qed
+        \<comment> \<open>Step 19: extract a sequence of U-points in the dominant halfball
+          approaching x. From Step 17, x ∈ closure(U ∩ Hp) ∨ x ∈ closure(U ∩ Hm).
+          So we have witness sets in either halfplane direction.\<close>
+        have h_witness_Hp_or_Hm:
+          "(\<forall>r>0. \<exists>u. u \<in> U \<inter> Hp \<and> dist x u < r)
+           \<or> (\<forall>r>0. \<exists>u. u \<in> U \<inter> Hm \<and> dist x u < r)"
+        proof -
+          have hP_imp: "x \<in> closure (U \<inter> Hp) \<Longrightarrow>
+                          \<forall>r>0. \<exists>u. u \<in> U \<inter> Hp \<and> dist x u < r"
+          proof -
+            assume hxP: "x \<in> closure (U \<inter> Hp)"
+            show "\<forall>r>0. \<exists>u. u \<in> U \<inter> Hp \<and> dist x u < r"
+            proof (intro allI impI)
+              fix r :: real assume hr_pos: "r > 0"
+              have h_ex: "\<exists>u\<in>U \<inter> Hp. dist x u < r"
+                by (rule closure_approachableD[OF hxP hr_pos])
+              obtain u where hu_in: "u \<in> U \<inter> Hp" and hu_dist: "dist x u < r"
+                using h_ex by (by100 blast)
+              show "\<exists>u. u \<in> U \<inter> Hp \<and> dist x u < r"
+                using hu_in hu_dist by (by100 blast)
+            qed
+          qed
+          have hM_imp: "x \<in> closure (U \<inter> Hm) \<Longrightarrow>
+                          \<forall>r>0. \<exists>u. u \<in> U \<inter> Hm \<and> dist x u < r"
+          proof -
+            assume hxM: "x \<in> closure (U \<inter> Hm)"
+            show "\<forall>r>0. \<exists>u. u \<in> U \<inter> Hm \<and> dist x u < r"
+            proof (intro allI impI)
+              fix r :: real assume hr_pos: "r > 0"
+              have h_ex: "\<exists>u\<in>U \<inter> Hm. dist x u < r"
+                by (rule closure_approachableD[OF hxM hr_pos])
+              obtain u where hu_in: "u \<in> U \<inter> Hm" and hu_dist: "dist x u < r"
+                using h_ex by (by100 blast)
+              show "\<exists>u. u \<in> U \<inter> Hm \<and> dist x u < r"
+                using hu_in hu_dist by (by100 blast)
+            qed
+          qed
+          show ?thesis using h_x_closure_or hP_imp hM_imp by (by100 blast)
+        qed
         \<comment> \<open>The genuinely deep remaining step (subclaim 4): combine these
           preconditions with U's connectedness for local-side propagation.
           Multi-day per project_h_open_in_int_strategy.md.\<close>
