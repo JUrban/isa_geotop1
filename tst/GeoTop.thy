@@ -16885,6 +16885,20 @@ proof -
          PLH h by flattening \<sigma>^3 onto the plane of \<sigma>^2, reflecting D_2 across that plane,
          then lifting back: h acts as the folding-along-\<sigma>^2 isotopy, agrees with identity
          outside N by taking the support inside a thin polyhedral collar of \<sigma>^3 in N. **)
+  \<comment> \<open>Sub-claim T17_4-A: for each polyhedral neighbourhood N, the folding PLH exists.\<close>
+  have hT17_4_PLH_per_N:
+    "\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N) \<and>
+         (\<sigma>3 - (geotop_frontier UNIV geotop_euclidean_topology \<sigma>2)) \<subseteq>
+            geotop_top_interior UNIV geotop_euclidean_topology N \<longrightarrow>
+         (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h \<and>
+              (\<exists>KR KR'. geotop_PLH KR KR' h) \<and>
+              h ` \<sigma>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - (\<sigma>2 -
+                         geotop_frontier UNIV geotop_euclidean_topology \<sigma>2) \<and>
+              (\<forall>P\<in>UNIV - N. h P = P))" sorry
+  \<comment> \<open>Sub-claim T17_4-B: this gives the push property at \<sigma>2.\<close>
+  have hT17_4_has_push: "geotop_has_push_property_at \<sigma>3 \<sigma>2" sorry
   have h_PLH:
     "(\<forall>N. closedin_on UNIV geotop_euclidean_topology N \<and>
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = N) \<and>
@@ -16896,7 +16910,8 @@ proof -
               h ` \<sigma>2 = geotop_frontier UNIV geotop_euclidean_topology \<sigma>3 - (\<sigma>2 -
                          geotop_frontier UNIV geotop_euclidean_topology \<sigma>2) \<and>
               (\<forall>P\<in>UNIV - N. h P = P))) \<and>
-     geotop_has_push_property_at \<sigma>3 \<sigma>2" sorry
+     geotop_has_push_property_at \<sigma>3 \<sigma>2"
+    using hT17_4_PLH_per_N hT17_4_has_push by (by100 blast)
   have h_final: "geotop_has_push_property_at \<sigma>3 \<sigma>2" using h_PLH by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
