@@ -5094,10 +5094,34 @@ proof -
           qed
           show ?thesis using h_x_closure_or hP_imp hM_imp by (by100 blast)
         qed
-        \<comment> \<open>The genuinely deep remaining step (subclaim 4): combine these
-          preconditions with U's connectedness for local-side propagation.
-          Multi-day per project_h_open_in_int_strategy.md.\<close>
-        show ?thesis sorry
+        \<comment> \<open>Step 20: extract a CLAIM_A — every ball x δ ∩ Int i point is in
+          closure U. The deep geometric fact is local-side propagation along L.
+          Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
+        have hi_sub_M_local: "geotop_arc_interior i E \<subseteq> M"
+          using hi_sub_M unfolding geotop_arc_interior_def by (by100 blast)
+        have h_CLAIM_A: "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                         y \<in> closure U"
+          sorry
+        obtain \<delta>A where h\<delta>A_pos: "\<delta>A > 0"
+                    and h\<delta>A_clos: "\<forall>y \<in> ball x \<delta>A \<inter> geotop_arc_interior i E.
+                                     y \<in> closure U"
+          using h_CLAIM_A by (by100 blast)
+        have h_final_sub: "ball x \<delta>A \<inter> geotop_arc_interior i E
+                          \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+        proof
+          fix y assume hy: "y \<in> ball x \<delta>A \<inter> geotop_arc_interior i E"
+          have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
+          have hy_M: "y \<in> M" using hy_int hi_sub_M_local by (by100 blast)
+          have hy_notU: "y \<notin> U" using hy_M hU_disj_M by (by100 blast)
+          have hy_clos: "y \<in> closure U" using hy h\<delta>A_clos by (by100 blast)
+          have h_int_U: "interior U = U" using hU_open interior_open by (by100 blast)
+          have hy_notInt: "y \<notin> interior U" using hy_notU h_int_U by (by100 simp)
+          have hy_frontier: "y \<in> frontier U"
+            using hy_clos hy_notInt unfolding frontier_def by (by100 blast)
+          show "y \<in> frontier U \<inter> geotop_arc_interior i E"
+            using hy_frontier hy_int by (by100 blast)
+        qed
+        show ?thesis using h\<delta>A_pos h_final_sub by (by100 blast)
       qed
       obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
                   and h\<delta>_sub: "ball x \<delta> \<inter> geotop_arc_interior i E
