@@ -4993,9 +4993,13 @@ proof -
               thus ?thesis using hab_ne by (by100 blast)
             qed
           qed
-          \<comment> \<open>Vertex case: x ∈ {a, b}. The proof goal h_local_open's conclusion
-            still holds (multiple edges meet at x), but proof body's
-            single-σ_x structure doesn't cover this. Multi-day work.\<close>
+          \<comment> \<open>Vertex case: x ∈ {a, b}. The goal `x ∈ open_segment a b` is
+            genuinely FALSE here. h_local_open's outer conclusion still holds
+            (multiple edges meet at x, parallel halfplane analyses needed).
+            To close: hoist the {x} ∈ K_i case-split to the OUTER h_local_open,
+            with vertex case running parallel path-arguments per edge.
+            Estimated ~500-800 lines of new proof. The path-argument
+            machinery (proven in single-edge case) IS the model.\<close>
           show ?thesis sorry
         next
           case False
