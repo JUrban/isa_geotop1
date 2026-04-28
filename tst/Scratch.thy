@@ -257,4 +257,46 @@ proof
     using hy_uv2 hv_in by (auto simp: closed_segment_def)
 qed
 
+text \<open>If a continuous path on [0,1] avoids a hyperplane and starts in the
+  positive half, it stays in the positive half throughout.\<close>
+
+lemma scratch_path_avoid_line_pos:
+  fixes \<gamma> :: "real \<Rightarrow> real^2" and n :: "real^2" and c :: real
+  assumes h_cont: "continuous_on {0..1::real} \<gamma>"
+      and h_avoid: "\<forall>t\<in>{0..1}. inner n (\<gamma> t) \<noteq> c"
+      and h_start: "inner n (\<gamma> 0) > c"
+  shows "\<forall>t\<in>{0..1}. inner n (\<gamma> t) > c"
+proof (rule ccontr)
+  assume "\<not> (\<forall>t\<in>{0..1}. inner n (\<gamma> t) > c)"
+  then obtain t1 where ht1: "t1 \<in> {0..1}" and ht1_le: "inner n (\<gamma> t1) \<le> c"
+    by (auto simp: not_less)
+  have ht1_ne: "inner n (\<gamma> t1) \<noteq> c" using ht1 h_avoid by blast
+  hence ht1_lt: "inner n (\<gamma> t1) < c" using ht1_le by linarith
+  define f where "f t = inner n (\<gamma> t) - c" for t :: real
+  have hf_cont: "continuous_on {0..1::real} f"
+    unfolding f_def using h_cont continuous_on_diff continuous_on_const
+    by (force intro: continuous_intros)
+  have hf0: "f 0 > 0" unfolding f_def using h_start by simp
+  have hf1: "f t1 < 0" unfolding f_def using ht1_lt by simp
+  have ht1_pos: "t1 \<ge> 0" using ht1 by simp
+  have hf_cont_seg: "continuous_on {0..t1} f"
+    using hf_cont continuous_on_subset[of "{0..1}" f "{0..t1}"]
+          ht1 by (auto)
+  have h_y_in: "0 \<in> closed_segment (f 0) (f t1)"
+    using hf0 hf1 by (simp add: closed_segment_eq_real_ivl)
+  have hf_cont_cs: "continuous_on (closed_segment 0 t1) f"
+    using hf_cont_seg ht1_pos
+    by (simp add: closed_segment_eq_real_ivl)
+  have h_ivt: "\<exists>x \<in> closed_segment 0 t1. f x = 0"
+    by (rule IVT'_closed_segment_real[OF h_y_in hf_cont_cs])
+  obtain s where hs: "s \<in> closed_segment 0 t1" and hfs: "f s = 0"
+    using h_ivt by blast
+  have hs_in: "s \<in> {0..1}"
+    using hs ht1 by (auto simp: closed_segment_eq_real_ivl)
+  have hs_avoid: "inner n (\<gamma> s) \<noteq> c" using hs_in h_avoid by blast
+  have "f s = inner n (\<gamma> s) - c" unfolding f_def by simp
+  hence "inner n (\<gamma> s) = c" using hfs by simp
+  thus False using hs_avoid by simp
+qed
+
 end
