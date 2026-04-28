@@ -14988,11 +14988,22 @@ proof -
                 M2 \<inter> (B1 \<union> B2) \<subseteq> B2 - {Q, S})" sorry
   (** (3) Apply Theorem 13.3 to C^2, B_1, B_2, M_1, M_2 to conclude Q, S in the same
          component of C^2 - (M_1 \<union> M_2) \<subseteq> C^2 - M \<subseteq> U - M. **)
+  \<comment> \<open>Sub-claim T13_4-A: any two Q, S in U - M share a component (apply 13.3
+    via the 2-cell C2 from h_cell + the splitting from h_split).\<close>
+  have hT13_4_share_comp:
+    "\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
+        geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
+      = geotop_component_at UNIV geotop_euclidean_topology (U - M) S" sorry
+  \<comment> \<open>Sub-claim T13_4-B: U - M is connected (since all points share one component).\<close>
+  have hT13_4_conn:
+    "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
+    sorry
   have h_same_comp:
     "(\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
         geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
       = geotop_component_at UNIV geotop_euclidean_topology (U - M) S) \<and>
-     top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))" sorry
+     top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
+    using hT13_4_share_comp hT13_4_conn by (by100 blast)
   (** (4) Since all points of U - M share a single component, U - M is connected. **)
   have h_final: "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
     using h_same_comp by (by100 blast)
