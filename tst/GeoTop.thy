@@ -6241,6 +6241,15 @@ proof -
             have hV_uw_in_neg:
               "path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<subseteq> {z. inner n z < inner n x}"
               using h_pc_in_Hm_global[OF hu_w_in_Wbar hu_w_neg] .
+            have h_pc_imp_U:
+              "u_w_t \<in> path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<Longrightarrow> u_w_t \<in> U"
+            proof -
+              assume hu_w_t_pc: "u_w_t \<in> path_component_set (U \<inter> ball x \<delta>_iso2) u_w"
+              have h_sub: "path_component_set (U \<inter> ball x \<delta>_iso2) u_w
+                           \<subseteq> U \<inter> ball x \<delta>_iso2"
+                by (rule path_component_subset)
+              show "u_w_t \<in> U" using hu_w_t_pc h_sub by (by100 blast)
+            qed
             have h_tri: "dist u_w y \<le> dist u_w x + dist x y"
               by (rule dist_triangle)
             have h_dist_xy: "dist x y = dist y x" by (rule dist_commute)
