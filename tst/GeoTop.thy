@@ -4933,15 +4933,60 @@ proof -
         show ?thesis
         proof (cases "{x} \<in> K_i")
           case True
-          \<comment> \<open>Vertex case: |EdgesAtX| ≥ 2 (multiple edges meet at vertex x);
-            requires sector analysis with parallel path-arguments per edge
-            σ_j ∈ EdgesAtX. For y ∈ ball x δ ∩ Int Bi (y ≠ x):
-            (a) y ∈ σ_y for some σ_y ∈ EdgesAtX (Step 5 coverage).
-            (b) σ_y has line L_y; ball x δ ∩ M ⊈ L_y in vertex case.
-            (c) Sector analysis instead of single halfplane.
-            (d) Apply straight_line_path_in_face per σ_y's line.
-            Estimated 500-800 lines. See strategy memo.\<close>
-          show ?thesis sorry
+          note hxK = True
+          \<comment> \<open>Vertex case scaffolding (Phase 3 declarative proof sketch):
+            structured sub-claims with sorry stubs for gradual closure.
+            x is a vertex of K_i (i.e. {x} \<in> K_i), so several edges of K_i
+            meet at x. Coverage from Step 5 (h_ball_cov) lets us localise.\<close>
+          \<comment> \<open>Sub-claim V1: |EdgesAtX| \<ge> 2 (since K_i is a 1-dim broken-line
+            complex, x is an internal point of i (not an endpoint), and
+            x is a 0-simplex of K_i, so two or more 1-simplexes of K_i
+            must meet at x to cover a neighbourhood of x in i).\<close>
+          have hVX_card_ge_2: "card EdgesAtX \<ge> 2" sorry
+          \<comment> \<open>Sub-claim V2: each \<sigma> \<in> EdgesAtX is a closed-segment with x as
+            one endpoint (since {x} \<in> K_i is a vertex face of \<sigma>, and \<sigma> is
+            a 1-simplex with vertices its two endpoints).\<close>
+          have hVX_segs: "\<forall>\<sigma>\<in>EdgesAtX. \<exists>p. \<sigma> = closed_segment x p \<and> p \<noteq> x"
+            sorry
+          \<comment> \<open>Sub-claim V3: pick the working radius. Use \<delta>_iso unchanged.\<close>
+          define \<delta>_v where "\<delta>_v = \<delta>_iso"
+          have h\<delta>_v_pos: "\<delta>_v > 0"
+            using h\<delta>_iso_pos unfolding \<delta>_v_def by (by100 simp)
+          \<comment> \<open>Sub-claim V4: x itself lies in frontier U.
+            Justification: any open ball around x intersects U (since some
+            component U of UNIV - M has frontier containing x via an
+            approach through one of EdgesAtX's halfplanes), and x \<in> M so
+            x \<notin> U; hence x \<in> closure U \<setminus> interior U = frontier U.\<close>
+          have hVX_x_frontier: "x \<in> frontier U" sorry
+          \<comment> \<open>Sub-claim V5: for each y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E
+            with y \<noteq> x, y \<in> frontier U.
+            Justification (sector analysis): by h_ball_cov, y \<in> \<Union> EdgesAtX
+            \<union> {x}; since y \<noteq> x, pick \<sigma>_y \<in> EdgesAtX with y \<in> \<sigma>_y. Use
+            the line L_y = aff_hull \<sigma>_y. Apply the path-argument from
+            straight_line_path_in_face restricted to the half-sector
+            adjacent to \<sigma>_y (avoiding the other edges' lines).\<close>
+          have hVX_frontier_main:
+            "\<forall>y. y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E \<and> y \<noteq> x
+                  \<longrightarrow> y \<in> frontier U" sorry
+          \<comment> \<open>Sub-claim V6: combine V4 and V5 to conclude the show.\<close>
+          have hVX_main:
+            "ball x \<delta>_v \<inter> geotop_arc_interior i E
+               \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+          proof
+            fix y assume hy: "y \<in> ball x \<delta>_v \<inter> geotop_arc_interior i E"
+            have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
+            have hy_fr: "y \<in> frontier U"
+            proof (cases "y = x")
+              case True
+              show ?thesis using True hVX_x_frontier by (by100 simp)
+            next
+              case False
+              show ?thesis using hVX_frontier_main hy False by (by100 blast)
+            qed
+            show "y \<in> frontier U \<inter> geotop_arc_interior i E"
+              using hy_fr hy_int by (by100 blast)
+          qed
+          show ?thesis using h\<delta>_v_pos hVX_main by (by100 blast)
         next
           case False
           \<comment> \<open>Single-edge case: {x} ∉ K_i. Hence x ≠ a, x ≠ b.\<close>
