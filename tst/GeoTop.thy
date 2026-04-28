@@ -5445,6 +5445,38 @@ proof -
               \<comment> \<open>W ⊆ {a, b}, W ≠ ∅ ⟹ W ∈ {{a}, {b}, {a, b}}.\<close>
               have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
                 using hW_sub_ab hW_ne by (by100 blast)
+              \<comment> \<open>Rule out W = {a} and W = {b} via h_x_open_seg.\<close>
+              have hx_ne_a: "x \<noteq> a"
+                using h_x_open_seg unfolding open_segment_def by (by100 blast)
+              have hx_ne_b: "x \<noteq> b"
+                using h_x_open_seg unfolding open_segment_def by (by100 blast)
+              have h_int_HOL: "\<sigma>' \<inter> \<sigma>_x = convex hull W"
+              proof -
+                have h_eq: "geotop_convex_hull W = convex hull W"
+                  by (rule geotop_convex_hull_eq_HOL)
+                show ?thesis using h_int_hull h_eq by (by100 simp)
+              qed
+              have hW_eq_ab: "W = {a, b}"
+              proof (cases "W = {a}")
+                case True
+                have h_int_a: "\<sigma>' \<inter> \<sigma>_x = {a}"
+                  using h_int_HOL True by (by100 simp)
+                have hxa: "x = a" using hx_int h_int_a by (by100 blast)
+                thus ?thesis using hx_ne_a by (by100 blast)
+              next
+                case False
+                show ?thesis
+                proof (cases "W = {b}")
+                  case True
+                  have h_int_b: "\<sigma>' \<inter> \<sigma>_x = {b}"
+                    using h_int_HOL True by (by100 simp)
+                  have hxb: "x = b" using hx_int h_int_b by (by100 blast)
+                  thus ?thesis using hx_ne_b by (by100 blast)
+                next
+                  case False
+                  thus ?thesis using hW_cases \<open>W \<noteq> {a}\<close> by (by100 blast)
+                qed
+              qed
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5599,6 +5631,38 @@ proof -
               \<comment> \<open>W ⊆ {a, b}, W ≠ ∅ ⟹ W ∈ {{a}, {b}, {a, b}}.\<close>
               have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
                 using hW_sub_ab hW_ne by (by100 blast)
+              \<comment> \<open>Rule out W = {a} and W = {b} via h_x_open_seg.\<close>
+              have hx_ne_a: "x \<noteq> a"
+                using h_x_open_seg unfolding open_segment_def by (by100 blast)
+              have hx_ne_b: "x \<noteq> b"
+                using h_x_open_seg unfolding open_segment_def by (by100 blast)
+              have h_int_HOL: "\<sigma>' \<inter> \<sigma>_x = convex hull W"
+              proof -
+                have h_eq: "geotop_convex_hull W = convex hull W"
+                  by (rule geotop_convex_hull_eq_HOL)
+                show ?thesis using h_int_hull h_eq by (by100 simp)
+              qed
+              have hW_eq_ab: "W = {a, b}"
+              proof (cases "W = {a}")
+                case True
+                have h_int_a: "\<sigma>' \<inter> \<sigma>_x = {a}"
+                  using h_int_HOL True by (by100 simp)
+                have hxa: "x = a" using hx_int h_int_a by (by100 blast)
+                thus ?thesis using hx_ne_a by (by100 blast)
+              next
+                case False
+                show ?thesis
+                proof (cases "W = {b}")
+                  case True
+                  have h_int_b: "\<sigma>' \<inter> \<sigma>_x = {b}"
+                    using h_int_HOL True by (by100 simp)
+                  have hxb: "x = b" using hx_int h_int_b by (by100 blast)
+                  thus ?thesis using hx_ne_b by (by100 blast)
+                next
+                  case False
+                  thus ?thesis using hW_cases \<open>W \<noteq> {a}\<close> by (by100 blast)
+                qed
+              qed
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
