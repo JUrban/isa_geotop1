@@ -5106,9 +5106,34 @@ proof -
           Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
         have hi_sub_M_local: "geotop_arc_interior i E \<subseteq> M"
           using hi_sub_M unfolding geotop_arc_interior_def by (by100 blast)
+        \<comment> \<open>h_CLAIM_A skeleton with y = x trivially handled via hxClosU,
+          and the deep step isolated to y ≠ x via h_CLAIM_A_off.\<close>
+        have h_CLAIM_A_off:
+          "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow> y \<in> closure U"
+          sorry
         have h_CLAIM_A: "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                          y \<in> closure U"
-          sorry
+        proof -
+          obtain \<delta>off where h\<delta>off_pos: "\<delta>off > 0"
+                        and h\<delta>off_sub: "\<forall>y \<in> ball x \<delta>off \<inter> geotop_arc_interior i E.
+                                          y \<noteq> x \<longrightarrow> y \<in> closure U"
+            using h_CLAIM_A_off by (by100 blast)
+          have h_full: "\<forall>y \<in> ball x \<delta>off \<inter> geotop_arc_interior i E.
+                          y \<in> closure U"
+          proof
+            fix y assume hy: "y \<in> ball x \<delta>off \<inter> geotop_arc_interior i E"
+            show "y \<in> closure U"
+            proof (cases "y = x")
+              case True
+              show ?thesis using True hxClosU by (by100 simp)
+            next
+              case False
+              show ?thesis using False hy h\<delta>off_sub by (by100 blast)
+            qed
+          qed
+          show ?thesis using h\<delta>off_pos h_full by (by100 blast)
+        qed
         obtain \<delta>A where h\<delta>A_pos: "\<delta>A > 0"
                     and h\<delta>A_clos: "\<forall>y \<in> ball x \<delta>A \<inter> geotop_arc_interior i E.
                                      y \<in> closure U"
