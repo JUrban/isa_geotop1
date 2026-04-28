@@ -15106,6 +15106,19 @@ proof -
          {P. \<exists>Q\<in>g1. norm (P - Q) < \<alpha>} \<inter> {P. \<exists>Q\<in>g2. norm (P - Q) < \<alpha>} = {})" sorry
   (** (3) Pick \<delta> = min(\<alpha>, \<epsilon>/3). If N \<subseteq> N(M, \<delta>) then every component of N lies in some
          single N(g_i, \<delta>) since the neighbourhoods are disjoint. **)
+  \<comment> \<open>Sub-claim T13_6-A: for some \<delta>>0, components of N are confined to a single
+    N(g_i, \<delta>) (using disjoint \<alpha>-neighborhoods).\<close>
+  have hT13_6_confined:
+    "\<exists>\<delta>>0. \<forall>N gs. finite gs \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<and>
+                  (\<forall>g\<in>gs. geotop_diameter (\<lambda>x y. norm (x - y)) g < \<epsilon>/3) \<and>
+                  M = \<Union>gs \<longrightarrow>
+       (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))" sorry
+  \<comment> \<open>Sub-claim T13_6-B: confined component has diameter \<le> g-diam + 2\<delta> < \<epsilon>.\<close>
+  have hT13_6_diameter:
+    "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
+           (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>)" sorry
   have h_component_confined:
     "(\<exists>\<delta>>0. \<forall>N gs. finite gs \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<and>
                   (\<forall>g\<in>gs. geotop_diameter (\<lambda>x y. norm (x - y)) g < \<epsilon>/3) \<and>
@@ -15114,7 +15127,8 @@ proof -
          (\<exists>g\<in>gs. C \<subseteq> {P. \<exists>Q\<in>g. norm (P - Q) < \<delta>}))) \<and>
      (\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
-               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>))" sorry
+               geotop_diameter (\<lambda>x y. norm (x - y)) C < \<epsilon>))"
+    using hT13_6_confined hT13_6_diameter by (by100 blast)
   (** (4) Diameter of such a component is < \<epsilon>/3 + 2\<delta> < \<epsilon>. **)
   have h_final: "\<exists>\<delta>>0. \<forall>N U. geotop_is_U_frame M U N \<and> N \<subseteq> {P. \<exists>Q\<in>M. norm (P - Q) < \<delta>} \<longrightarrow>
            (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
