@@ -6211,6 +6211,18 @@ proof -
               using hu_w_Hm unfolding Hm_def by (by100 blast)
             have hu_w_t_neg_y: "inner (u_w_t - y) n < 0"
               using hu_w_t_y hu_w_neg_x by (by100 simp)
+            have hu_w_t_minus_u_w: "u_w_t - u_w = y - x"
+              unfolding u_w_t_def by (by100 simp)
+            have h_dist_uw_uw_t: "dist u_w u_w_t = dist x y"
+            proof -
+              have h1: "dist u_w u_w_t = norm (u_w_t - u_w)"
+                by (simp add: dist_norm norm_minus_commute)
+              have h2: "norm (u_w_t - u_w) = norm (y - x)"
+                using hu_w_t_minus_u_w by (by100 simp)
+              have h3: "norm (y - x) = dist x y"
+                by (simp add: dist_norm norm_minus_commute)
+              show ?thesis using h1 h2 h3 by (by100 simp)
+            qed
             \<comment> \<open>Same Schoenflies-like gap as Hp: show u_w_t ∈ U.\<close>
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
