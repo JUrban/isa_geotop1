@@ -7427,7 +7427,51 @@ proof -
     "\<exists>!k. k \<in> {B1, B2, B3} \<and>
           (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
                  geotop_is_polygon (i \<union> j) \<and>
-                 geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))" sorry
+                 geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))"
+  proof -
+    \<comment> \<open>Sub-claim MU1: existence — there is at least one middle arc.
+      Argument (Moise): each pair of arcs forms a polygon dividing the
+      plane into interior and exterior. The third arc's interior, being
+      connected and disjoint from this polygon, lies entirely in one
+      component. For one of the three pairs, the third arc lies in the
+      interior — that arc is the middle.\<close>
+    have hMU_exists:
+      "\<exists>k. k \<in> {B1, B2, B3} \<and>
+            (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+                   geotop_is_polygon (i \<union> j) \<and>
+                   geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))"
+      sorry
+    \<comment> \<open>Sub-claim MU2: uniqueness — only one middle is possible.
+      Argument: if two arcs Bk1, Bk2 were both middle (each inside the
+      polygon of the other two), then Bk1 ⊆ interior(Bk2 \<union> Bother) and
+      Bk2 ⊆ interior(Bk1 \<union> Bother). But polygon-interiors are bounded
+      regions; the third arc Bother is on the frontier of both. The
+      mutual containment plus connectedness yields contradiction via
+      Jordan-curve separation (a point can't be on both sides).\<close>
+    have hMU_unique:
+      "\<forall>k1 k2. (k1 \<in> {B1, B2, B3} \<and>
+                 (\<exists>i j. {i, j} = {B1, B2, B3} - {k1} \<and> i \<noteq> j \<and>
+                        geotop_is_polygon (i \<union> j) \<and>
+                        geotop_arc_interior k1 E \<subseteq> geotop_polygon_interior (i \<union> j))) \<and>
+                (k2 \<in> {B1, B2, B3} \<and>
+                 (\<exists>i j. {i, j} = {B1, B2, B3} - {k2} \<and> i \<noteq> j \<and>
+                        geotop_is_polygon (i \<union> j) \<and>
+                        geotop_arc_interior k2 E \<subseteq> geotop_polygon_interior (i \<union> j)))
+                \<longrightarrow> k1 = k2"
+      sorry
+    \<comment> \<open>Combine MU1 + MU2 via Ex1 — explicit unpacking.\<close>
+    define P :: "(real^2) set \<Rightarrow> bool" where
+      "P k = (k \<in> {B1, B2, B3} \<and>
+              (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+                     geotop_is_polygon (i \<union> j) \<and>
+                     geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+      for k
+    have hP_ex: "\<exists>k. P k" using hMU_exists unfolding P_def by (by100 blast)
+    have hP_uniq: "\<forall>k1 k2. P k1 \<and> P k2 \<longrightarrow> k1 = k2"
+      using hMU_unique unfolding P_def by (by100 blast)
+    have hP_ex1: "\<exists>!k. P k" using hP_ex hP_uniq by (by100 blast)
+    show ?thesis using hP_ex1 unfolding P_def by (by100 blast)
+  qed
   show "\<forall>U. (U \<in> {C. \<exists>P\<in>UNIV - M.
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P})
          \<longrightarrow> (\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
