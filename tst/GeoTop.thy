@@ -4927,112 +4927,46 @@ proof -
           using h\<sigma>_x_K_top ha_face h_face_closure by (by100 blast)
         have hb_K: "{b} \<in> K_i"
           using h\<sigma>_x_K_top hb_face h_face_closure by (by100 blast)
-        \<comment> \<open>Case split: {x} ∉ K_i (single-edge interior case) closes h_x_open_seg.
-          {x} ∈ K_i (vertex case) requires multi-edge analysis — sorry.\<close>
-        have h_x_open_seg: "x \<in> open_segment a b"
+        \<comment> \<open>OUTER case split for h_local_open: vertex case ({x} ∈ K_i) is
+          stubbed at this clean outer scope; single-edge case ({x} ∉ K_i)
+          closes via the existing chain (h_x_open_seg + downstream).\<close>
+        show ?thesis
         proof (cases "{x} \<in> K_i")
           case True
-          \<comment> \<open>Vertex case: {x} ∈ K_i. Derive x ∈ {a, b}.\<close>
-          have hx_x_eq: "{x} \<inter> \<sigma>_x = {x}"
-            using hx\<sigma>_x by (by100 blast)
-          have hx_x_ne: "{x} \<inter> \<sigma>_x \<noteq> {}"
-            using hx\<sigma>_x by (by100 blast)
-          have h_int_face: "\<forall>\<sigma>\<in>K_i. \<forall>\<tau>\<in>K_i. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                              geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-            by (rule conjunct1[OF conjunct2[OF conjunct2[OF
-                hK_i_complex[unfolded geotop_is_complex_def]]]])
-          have hxx_face: "geotop_is_face ({x} \<inter> \<sigma>_x) \<sigma>_x"
-            using True h\<sigma>_x_K_top hx_x_ne h_int_face by (by100 blast)
-          have h_x_face: "geotop_is_face {x} \<sigma>_x"
-            using hxx_face hx_x_eq by (by100 simp)
-          obtain V'' W'' where hV''_sv: "geotop_simplex_vertices \<sigma>_x V''"
-                            and hW''_ne: "W'' \<noteq> {}" and hW''_V'': "W'' \<subseteq> V''"
-                            and h_x_W'': "{x} = geotop_convex_hull W''"
-            using h_x_face unfolding geotop_is_face_def by (by100 blast)
-          have hV''_eq: "V'' = {a, b}"
-            using geotop_simplex_vertices_unique[OF hV''_sv h_sv_x_top] .
-          have hW''_sub: "W'' \<subseteq> {a, b}"
-            using hW''_V'' hV''_eq by (by100 simp)
-          have h_x_HOL: "{x} = convex hull W''"
-          proof -
-            have h_eq: "geotop_convex_hull W'' = convex hull W''"
-              by (rule geotop_convex_hull_eq_HOL)
-            show ?thesis using h_x_W'' h_eq by (by100 simp)
-          qed
-          have hx_in_ab: "x = a \<or> x = b"
-          proof (cases "W'' = {a}")
-            case True
-            have "convex hull W'' = {a}" using True by (by100 simp)
-            hence "{x} = {a}" using h_x_HOL by (by100 simp)
-            thus ?thesis by (by100 simp)
-          next
-            case False
-            show ?thesis
-            proof (cases "W'' = {b}")
-              case True
-              have "convex hull W'' = {b}" using True by (by100 simp)
-              hence "{x} = {b}" using h_x_HOL by (by100 simp)
-              thus ?thesis by (by100 simp)
-            next
-              case False
-              have hW''_cases: "W'' = {a} \<or> W'' = {b} \<or> W'' = {a, b}"
-                using hW''_sub hW''_ne by (by100 blast)
-              have h_eq_ab: "W'' = {a, b}"
-                using hW''_cases \<open>W'' \<noteq> {a}\<close> False by (by100 blast)
-              have h_seg_eq: "closed_segment a b = convex hull {a, b}"
-                by (rule segment_convex_hull)
-              have "convex hull W'' = closed_segment a b"
-                using h_eq_ab h_seg_eq by (by100 simp)
-              hence h_x_seg: "{x} = closed_segment a b" using h_x_HOL by (by100 simp)
-              \<comment> \<open>{x} = closed_segment a b, but |{x}|=1 and |closed_segment a b| ≥ 2.\<close>
-              have ha_in: "a \<in> closed_segment a b" by (by100 simp)
-              have hb_in: "b \<in> closed_segment a b" by (by100 simp)
-              have ha_x: "a = x" using ha_in h_x_seg by (by100 blast)
-              have hb_x: "b = x" using hb_in h_x_seg by (by100 blast)
-              have "a = b" using ha_x hb_x by (by100 simp)
-              thus ?thesis using hab_ne by (by100 blast)
-            qed
-          qed
-          \<comment> \<open>Vertex case: x ∈ {a, b}. The goal `x ∈ open_segment a b` is
-            genuinely FALSE here. h_local_open's outer conclusion still holds
-            (multiple edges meet at x, parallel halfplane analyses needed).
-
-            **Closure plan:** hoist the {x} ∈ K_i case-split to the OUTER
-            h_local_open, with vertex case running parallel path-arguments
-            per edge σ_j ∈ EdgesAtX. For each y ∈ ball x δ ∩ Int Bi (y ≠ x):
-            (a) by Step 5, y ∈ ⋃ EdgesAtX, so y ∈ σ_y for some σ_y ∈ EdgesAtX.
-            (b) σ_y has line L_y (different per σ_y).
-            (c) For each line L_y, derive halfplane structure + dominant case.
-            (d) Apply straight_line_path_in_face helper (now PROVEN in
-                GeoTopBase) for that L_y.
-            (e) The key challenge: ball x δ ∩ M ⊆ L_y is FALSE in vertex
-                case (M includes other edges' lines). Need SECTOR analysis
-                instead of single halfplane.
-            Estimated ~500-800 lines of new proof.\<close>
+          \<comment> \<open>Vertex case: |EdgesAtX| ≥ 2 (multiple edges meet at vertex x);
+            requires sector analysis with parallel path-arguments per edge
+            σ_j ∈ EdgesAtX. For y ∈ ball x δ ∩ Int Bi (y ≠ x):
+            (a) y ∈ σ_y for some σ_y ∈ EdgesAtX (Step 5 coverage).
+            (b) σ_y has line L_y; ball x δ ∩ M ⊈ L_y in vertex case.
+            (c) Sector analysis instead of single halfplane.
+            (d) Apply straight_line_path_in_face per σ_y's line.
+            Estimated 500-800 lines. See strategy memo.\<close>
           show ?thesis sorry
         next
           case False
           \<comment> \<open>Single-edge case: {x} ∉ K_i. Hence x ≠ a, x ≠ b.\<close>
-          have hx_ne_a: "x \<noteq> a"
-          proof
-            assume "x = a"
-            hence h_eq: "{x} = {a}" by simp
-            hence "{x} \<in> K_i" using ha_K h_eq by (by100 simp)
-            thus False using False by (by100 blast)
+          have h_x_open_seg: "x \<in> open_segment a b"
+          proof -
+            have hx_ne_a: "x \<noteq> a"
+            proof
+              assume "x = a"
+              hence h_eq: "{x} = {a}" by simp
+              hence "{x} \<in> K_i" using ha_K h_eq by (by100 simp)
+              thus False using False by (by100 blast)
+            qed
+            have hx_ne_b: "x \<noteq> b"
+            proof
+              assume "x = b"
+              hence h_eq: "{x} = {b}" by simp
+              hence "{x} \<in> K_i" using hb_K h_eq by (by100 simp)
+              thus False using False by (by100 blast)
+            qed
+            have hx_seg: "x \<in> closed_segment a b"
+              using hx\<sigma>_x h\<sigma>_x_seg by (by100 simp)
+            show "x \<in> open_segment a b"
+              using hx_seg hx_ne_a hx_ne_b
+              unfolding open_segment_def by (by100 blast)
           qed
-          have hx_ne_b: "x \<noteq> b"
-          proof
-            assume "x = b"
-            hence h_eq: "{x} = {b}" by simp
-            hence "{x} \<in> K_i" using hb_K h_eq by (by100 simp)
-            thus False using False by (by100 blast)
-          qed
-          have hx_seg: "x \<in> closed_segment a b"
-            using hx\<sigma>_x h\<sigma>_x_seg by (by100 simp)
-          show "x \<in> open_segment a b"
-            using hx_seg hx_ne_a hx_ne_b
-            unfolding open_segment_def by (by100 blast)
-        qed
         have h_dist_xa_pos: "dist x a > 0"
         proof -
           have hx_ne_a: "x \<noteq> a"
@@ -6791,6 +6725,7 @@ proof -
             using hy_frontier hy_int by (by100 blast)
         qed
         show ?thesis using h\<delta>A_pos h_final_sub by (by100 blast)
+        qed
       qed
       obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
                   and h\<delta>_sub: "ball x \<delta> \<inter> geotop_arc_interior i E
