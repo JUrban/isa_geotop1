@@ -6188,6 +6188,7 @@ proof -
               using hu_w_Hm unfolding Hm_def by (by100 blast)
             have hu_w_t_neg_y: "inner (u_w_t - y) n < 0"
               using hu_w_t_y hu_w_neg_x by (by100 simp)
+            \<comment> \<open>Same Schoenflies-like gap as Hp: show u_w_t ∈ U.\<close>
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
