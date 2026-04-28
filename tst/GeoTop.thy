@@ -17329,6 +17329,20 @@ proof -
          C_i and Bd T_1 is a solid slab that retracts onto its outer face in Bd T_1. These
          per-component retractions glue along the complement of \<union>C_i to a retraction of
          T_1 - (\<union>C_i \<union> \<union>D_i) onto Bd T_1. **)
+  \<comment> \<open>Sub-claim T18_1-A: explicit retraction r exists (radial slab construction).\<close>
+  have hT18_1_explicit_r:
+    "\<exists>r. (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology T1. r P = P) \<and>
+         (\<forall>P\<in>T1 - (\<Union>Cs \<union> \<Union>Ds). r P \<in> geotop_frontier UNIV geotop_euclidean_topology T1) \<and>
+         top1_continuous_map_on (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier UNIV geotop_euclidean_topology T1)) r" sorry
+  \<comment> \<open>Sub-claim T18_1-B: existence of r implies T1 - (Cs \<union> Ds) retracts to Fr T1.\<close>
+  have hT18_1_is_retract:
+    "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
+           (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
+           (geotop_frontier UNIV geotop_euclidean_topology T1)" sorry
   have h_retract:
     "(\<exists>r. (\<forall>P\<in>geotop_frontier UNIV geotop_euclidean_topology T1. r P = P) \<and>
          (\<forall>P\<in>T1 - (\<Union>Cs \<union> \<Union>Ds). r P \<in> geotop_frontier UNIV geotop_euclidean_topology T1) \<and>
@@ -17339,7 +17353,8 @@ proof -
               (geotop_frontier UNIV geotop_euclidean_topology T1)) r) \<and>
      geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
            (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
-           (geotop_frontier UNIV geotop_euclidean_topology T1)" sorry
+           (geotop_frontier UNIV geotop_euclidean_topology T1)"
+    using hT18_1_explicit_r hT18_1_is_retract by (by100 blast)
   have h_final: "geotop_is_retract (T1 - (\<Union>Cs \<union> \<Union>Ds))
            (subspace_topology UNIV geotop_euclidean_topology (T1 - (\<Union>Cs \<union> \<Union>Ds)))
            (geotop_frontier UNIV geotop_euclidean_topology T1)"
