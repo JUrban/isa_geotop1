@@ -10737,13 +10737,27 @@ proof -
   (** (2) Extend f to an affine map A: R^m \<to> R^m (where m is the ambient dimension),
          since both \<sigma> and \<tau> are n-simplexes in R^m with n = m (same dim). The affine
          extension is uniquely determined by images of V \<cup> {V's affine basis complement}. **)
+  \<comment> \<open>Sub-claim AE-1: \<exists>g plane homeo extending f on \<sigma> (affine extension).\<close>
+  have h_affine_extension:
+    "\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
+         top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology g"
+    sorry
+  \<comment> \<open>Sub-claim AE-2: the extension g is also simplicial on \<sigma> with g(\<sigma>) \<subseteq> \<tau>.
+    Follows from AE-1 + simplicial property of f preserved through extension.\<close>
+  have h_affine_simplicial:
+    "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g
+         \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
+    sorry
   have h_affine_ext:
     "(\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
          top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology g) \<and>
      (\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
-          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>)" sorry
+          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>)"
+    using h_affine_extension h_affine_simplicial by (by100 blast)
   have h_final: "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
           \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
