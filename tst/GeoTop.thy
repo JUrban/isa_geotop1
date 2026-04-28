@@ -5880,8 +5880,8 @@ proof -
               "path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<subseteq> {z. inner n z > inner n x}"
               using h_pc_in_Hp_global[OF hu_w_in_Wbar hu_w_pos] .
             \<comment> \<open>If u_w_t ∈ path-component of u_w in U ∩ ball x δ_iso2, then u_w_t ∈ U.
-              Reduces the Schoenflies-like gap to "u_w_t in same path-component
-              as u_w".\<close>
+              Used in the path-component approach (eventually superseded by
+              direct straight-line path argument).\<close>
             have h_pc_imp_U:
               "u_w_t \<in> path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<Longrightarrow> u_w_t \<in> U"
             proof -
@@ -5898,8 +5898,8 @@ proof -
             have hu_w_dist_y: "dist u_w y < r/3 + dist y x"
               using h_tri hu_w_dist h_dist_xy by (by100 simp)
             \<comment> \<open>Translated witness u_w_t = u_w + (y - x) has dist u_w_t y = dist u_w x.
-              If u_w_t ∈ U (Schoenflies-like local flatness), then u_w_t ∈ ball y r.
-              Without the local-flatness step, can't conclude u_w_t ∈ U.\<close>
+              u_w_t ∈ U (proved below via straight-line path argument), so
+              u_w_t ∈ ball y r ∩ U.\<close>
             define u_w_t where "u_w_t = u_w + (y - x)"
             have hu_w_t_y: "u_w_t - y = u_w - x"
               unfolding u_w_t_def by (by100 simp)
