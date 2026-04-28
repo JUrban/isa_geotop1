@@ -14379,8 +14379,20 @@ next
                       \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
     using Theorem_GT_12_2[OF hTX hmetr hMcmp hAcl hBcl hABdisj h_ins] by blast
   (** M' is connected (else the Moise irreducibility argument separates A, B). **)
+  \<comment> \<open>Sub-claim T12_3-A: M' is connected. If disconnected M' = H \<union> K,
+    irreducibility forces A, B to separate in each piece, hence in M' too,
+    contradicting inseparability.\<close>
+  have hT12_3_M'_conn:
+    "top1_connected_on M' (subspace_topology X T M')" sorry
+  \<comment> \<open>Sub-claim T12_3-B: M' meets A. Else M' \<subseteq> X - A, but X - A is open and
+    closed in X (where ? actually...). Justification: if M' \<inter> A = \<emptyset>, then
+    setting U = \<emptyset>, V = M' separates A, B in M', contradicting inseparability.\<close>
+  have hT12_3_meets_A: "M' \<inter> A \<noteq> {}" sorry
+  \<comment> \<open>Sub-claim T12_3-C: M' meets B. Symmetric to T12_3-B.\<close>
+  have hT12_3_meets_B: "M' \<inter> B \<noteq> {}" sorry
   have hM'_conn: "top1_connected_on M' (subspace_topology X T M') \<and>
-                   M' \<inter> A \<noteq> {} \<and> M' \<inter> B \<noteq> {}" sorry
+                   M' \<inter> A \<noteq> {} \<and> M' \<inter> B \<noteq> {}"
+    using hT12_3_M'_conn hT12_3_meets_A hT12_3_meets_B by (by100 blast)
   show ?thesis using hM'_sub hM'_conn by (by100 blast)
 qed
 
