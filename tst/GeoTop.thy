@@ -6088,15 +6088,7 @@ proof -
             \<comment> \<open>U is the connected component containing u_w.\<close>
             have hu_wU: "u_w \<in> U" using hu_w_UHp by (by100 blast)
             have hU_cc_u_w: "U = connected_component_set (UNIV - M) u_w"
-            proof -
-              obtain z where hz_in: "z \<in> UNIV - M"
-                          and hU_eq_z: "U = connected_component_set (UNIV - M) z"
-                using hU_in componentsE by (by100 metis)
-              have hu_w_eq_z: "connected_component_set (UNIV - M) u_w
-                              = connected_component_set (UNIV - M) z"
-                using hu_wU hU_eq_z connected_component_eq by (by100 blast)
-              show ?thesis using hU_eq_z hu_w_eq_z by (by100 simp)
-            qed
+              by (rule component_eq_connected_component_set[OF hU_in hu_wU])
             have h\<gamma>_in_U: "\<gamma> ` {0..1::real} \<subseteq> U"
               using h\<gamma>_in_cc hU_cc_u_w by (by100 simp)
             have hu_w_t_U: "u_w_t \<in> U"
@@ -6641,15 +6633,7 @@ proof -
               using connected_component_maximal[OF hu_w_in_image h\<gamma>_image_conn h\<gamma>_sub_compl_M] .
             have hu_wU: "u_w \<in> U" using hu_w_UHm by (by100 blast)
             have hU_cc_u_w: "U = connected_component_set (UNIV - M) u_w"
-            proof -
-              obtain z where hz_in: "z \<in> UNIV - M"
-                          and hU_eq_z: "U = connected_component_set (UNIV - M) z"
-                using hU_in componentsE by (by100 metis)
-              have hu_w_eq_z: "connected_component_set (UNIV - M) u_w
-                              = connected_component_set (UNIV - M) z"
-                using hu_wU hU_eq_z connected_component_eq by (by100 blast)
-              show ?thesis using hU_eq_z hu_w_eq_z by (by100 simp)
-            qed
+              by (rule component_eq_connected_component_set[OF hU_in hu_wU])
             have h\<gamma>_in_U: "\<gamma> ` {0..1::real} \<subseteq> U"
               using h\<gamma>_in_cc hU_cc_u_w by (by100 simp)
             have hu_w_t_U: "u_w_t \<in> U"
