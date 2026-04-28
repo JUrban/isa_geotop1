@@ -13364,6 +13364,18 @@ proof -
     using Theorem_GT_10_2[OF hS2 hJ' hJ'sub] by blast
   (** Extend h: J \<leftrightarrow> J' to each C_i \<leftrightarrow> C_i' via Theorem_GT_5_6 (combinatorial
       2-cell PLH extension) and its topological analogue. **)
+  \<comment> \<open>Sub-claim T10_3-A: extend h to H1: C1 \<leftrightarrow> C1' (via 5_6 cell-extension).\<close>
+  have hT10_3_H1: "\<exists>H1. top1_homeomorphism_on C1
+                          (subspace_topology UNIV geotop_euclidean_topology C1)
+                          C1' (subspace_topology UNIV geotop_euclidean_topology C1') H1
+                       \<and> (\<forall>x\<in>J. H1 x = h x)" sorry
+  \<comment> \<open>Sub-claim T10_3-B: extend h to H2: C2 \<leftrightarrow> C2' (via 5_6 cell-extension).\<close>
+  have hT10_3_H2: "\<exists>H2. top1_homeomorphism_on C2
+                          (subspace_topology UNIV geotop_euclidean_topology C2)
+                          C2' (subspace_topology UNIV geotop_euclidean_topology C2') H2
+                       \<and> (\<forall>x\<in>J. H2 x = h x)" sorry
+  \<comment> \<open>Sub-claim T10_3-C: paste H1 and H2 along J to get H: S2 \<leftrightarrow> S2.
+    H1, H2 agree on J ∩ C1 ∩ C2 = J (their common closure) so paste is well-defined.\<close>
   have hH: "\<exists>H. top1_homeomorphism_on S2 (subspace_topology UNIV geotop_euclidean_topology S2)
                    S2 (subspace_topology UNIV geotop_euclidean_topology S2) H
                  \<and> (\<forall>x\<in>J. H x = h x)"
