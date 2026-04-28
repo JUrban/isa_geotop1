@@ -6178,6 +6178,11 @@ proof -
               using hu_w_t_y by (simp add: dist_norm)
             have hu_w_t_lt_r: "dist u_w_t y < r/3"
               using hu_w_t_dist hu_w_dist by (by100 simp)
+            have hu_w_Hm: "u_w \<in> Hm" using hu_w_UHm by (by100 blast)
+            have hu_w_neg_x: "inner (u_w - x) n < 0"
+              using hu_w_Hm unfolding Hm_def by (by100 blast)
+            have hu_w_t_neg_y: "inner (u_w_t - y) n < 0"
+              using hu_w_t_y hu_w_neg_x by (by100 simp)
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
