@@ -13400,9 +13400,24 @@ theorem Theorem_GT_10_4_Schoenflies_2:
 proof -
   (** Compactify R^2 to S^2 by adding point at infinity. h extends to h* on
       the one-point compactifications, which are both 2-spheres. **)
+  \<comment> \<open>Sub-claim T10_4-A: lift R^2 to S^2 via stereographic projection /
+    one-point compactification; J becomes a 1-sphere J_S in S^2.\<close>
+  have hT10_4_lift_S2:
+    "\<exists>(S2::(real^2) set) f. geotop_is_n_sphere S2
+        (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
+       top1_homeomorphism_on UNIV geotop_euclidean_topology
+         S2 (subspace_topology UNIV geotop_euclidean_topology S2) f"
+    sorry
+  \<comment> \<open>Sub-claim T10_4-B: apply Theorem 10_3 on S^2 to extend the lifted map.\<close>
+  have hT10_4_apply_10_3:
+    "\<exists>H_S2. top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology H_S2 \<and> (\<forall>x\<in>J. H_S2 x = h x)"
+    sorry
+  \<comment> \<open>Sub-claim T10_4-C: restrict back to R^2 (the extended H fixes the
+    point-at-infinity, so restricts cleanly).\<close>
   have h_lift: "\<exists>H. top1_homeomorphism_on UNIV geotop_euclidean_topology
                      UNIV geotop_euclidean_topology H \<and> (\<forall>x\<in>J. H x = h x)"
-    sorry
+    using hT10_4_apply_10_3 by (by100 blast)
   show ?thesis using h_lift .
 qed
 
