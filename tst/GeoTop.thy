@@ -4888,7 +4888,75 @@ proof -
             using hK_i_poly unfolding geotop_polyhedron_def by (by100 simp)
           show ?thesis using hxi hK_eq_i by (by100 blast)
         qed
-        have h_x_open_seg: "x \<in> open_segment a b" sorry
+        \<comment> \<open>σ_x ∈ K_i (since σ_x ∈ EdgesAtX ⊆ K_i).\<close>
+        have h\<sigma>_x_K_top: "\<sigma>_x \<in> K_i"
+          using h\<sigma>_x_EAX hEAX_sub by (by100 blast)
+        \<comment> \<open>simplex_vertices σ_x = {a, b}.\<close>
+        have h_sv_x_top: "geotop_simplex_vertices \<sigma>_x {a, b}"
+        proof -
+          have h_seg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+            by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
+          show ?thesis using h_seg_sv h\<sigma>_x_seg by (by100 simp)
+        qed
+        \<comment> \<open>{a} and {b} are faces of σ_x, hence in K_i.\<close>
+        have ha_face: "geotop_is_face {a} \<sigma>_x"
+        proof -
+          have h_hull_eq: "geotop_convex_hull {a} = convex hull {a}"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h_HOL_a: "convex hull {a::real^2} = {a}"
+            by (rule hull_same) (rule convex_singleton)
+          have h_hull_a: "{a} = geotop_convex_hull {a}"
+            using h_hull_eq h_HOL_a by (by100 simp)
+          show ?thesis unfolding geotop_is_face_def
+            using h_sv_x_top h_hull_a by (by100 blast)
+        qed
+        have hb_face: "geotop_is_face {b} \<sigma>_x"
+        proof -
+          have h_hull_eq: "geotop_convex_hull {b} = convex hull {b}"
+            by (rule geotop_convex_hull_eq_HOL)
+          have h_HOL_b: "convex hull {b::real^2} = {b}"
+            by (rule hull_same) (rule convex_singleton)
+          have h_hull_b: "{b} = geotop_convex_hull {b}"
+            using h_hull_eq h_HOL_b by (by100 simp)
+          show ?thesis unfolding geotop_is_face_def
+            using h_sv_x_top h_hull_b by (by100 blast)
+        qed
+        have h_face_closure: "\<forall>\<sigma>\<in>K_i. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K_i"
+          by (rule conjunct1[OF conjunct2[OF hK_i_complex[unfolded geotop_is_complex_def]]])
+        have ha_K: "{a} \<in> K_i"
+          using h\<sigma>_x_K_top ha_face h_face_closure by (by100 blast)
+        have hb_K: "{b} \<in> K_i"
+          using h\<sigma>_x_K_top hb_face h_face_closure by (by100 blast)
+        \<comment> \<open>Case split: {x} ∉ K_i (single-edge interior case) closes h_x_open_seg.
+          {x} ∈ K_i (vertex case) requires multi-edge analysis — sorry.\<close>
+        have h_x_open_seg: "x \<in> open_segment a b"
+        proof (cases "{x} \<in> K_i")
+          case True
+          \<comment> \<open>Vertex case: x is a vertex of K_i. Multi-edge analysis required.\<close>
+          show ?thesis sorry
+        next
+          case False
+          \<comment> \<open>Single-edge case: {x} ∉ K_i. Hence x ≠ a, x ≠ b.\<close>
+          have hx_ne_a: "x \<noteq> a"
+          proof
+            assume "x = a"
+            hence h_eq: "{x} = {a}" by simp
+            hence "{x} \<in> K_i" using ha_K h_eq by (by100 simp)
+            thus False using False by (by100 blast)
+          qed
+          have hx_ne_b: "x \<noteq> b"
+          proof
+            assume "x = b"
+            hence h_eq: "{x} = {b}" by simp
+            hence "{x} \<in> K_i" using hb_K h_eq by (by100 simp)
+            thus False using False by (by100 blast)
+          qed
+          have hx_seg: "x \<in> closed_segment a b"
+            using hx\<sigma>_x h\<sigma>_x_seg by (by100 simp)
+          show "x \<in> open_segment a b"
+            using hx_seg hx_ne_a hx_ne_b
+            unfolding open_segment_def by (by100 blast)
+        qed
         have h_dist_xa_pos: "dist x a > 0"
         proof -
           have hx_ne_a: "x \<noteq> a"
