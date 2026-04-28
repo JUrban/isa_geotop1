@@ -4979,15 +4979,15 @@ proof -
             using h_helper_applied .
           show ?thesis using h_chain h_in_seg h_seg_in_M by (by100 blast)
         qed
-        \<comment> \<open>Step 13: half-ball decomposition of ball x δ_iso minus L.\<close>
+        \<comment> \<open>Step 13: half-ball decomposition of ball x δ_iso2 minus L.\<close>
         have h_two_halves: "\<exists>U_pos U_neg.
-            ball x \<delta>_iso - {y. inner (y - x) n = 0} = U_pos \<union> U_neg \<and>
+            ball x \<delta>_iso2 - {y. inner (y - x) n = 0} = U_pos \<union> U_neg \<and>
             U_pos \<inter> U_neg = {} \<and> U_pos \<noteq> {} \<and> U_neg \<noteq> {} \<and>
             connected U_pos \<and> connected U_neg \<and> open U_pos \<and> open U_neg"
-          by (rule ball_minus_hyperplane_has_two_components[OF hn_ne h\<delta>_iso_pos])
-        \<comment> \<open>Step 14: define explicit half-balls Hp, Hm at x.\<close>
-        define Hp where "Hp = ball x \<delta>_iso \<inter> {y. inner (y - x) n > 0}"
-        define Hm where "Hm = ball x \<delta>_iso \<inter> {y. inner (y - x) n < 0}"
+          by (rule ball_minus_hyperplane_has_two_components[OF hn_ne h\<delta>_iso2_pos])
+        \<comment> \<open>Step 14: define explicit half-balls Hp, Hm at x (using refined δ_iso2).\<close>
+        define Hp where "Hp = ball x \<delta>_iso2 \<inter> {y. inner (y - x) n > 0}"
+        define Hm where "Hm = ball x \<delta>_iso2 \<inter> {y. inner (y - x) n < 0}"
         have h_Hp_eq: "{y. inner (y - x) n > 0} = {y. inner n y > inner n x}"
           by (auto simp: inner_diff_right inner_commute)
         have h_Hm_eq: "{y. inner (y - x) n < 0} = {y. inner n y < inner n x}"
@@ -5000,16 +5000,15 @@ proof -
         have hHm_open: "open Hm"
           unfolding Hm_def h_Hm_eq
           using h_open_half_m open_ball by (intro open_Int)
-        \<comment> \<open>Step 15: assuming ball x δ_iso ∩ L ⊆ M (single-edge case), show
-          U-points in ball x δ_iso are in Hp ∪ Hm.\<close>
-        \<comment> \<open>This precondition needs to be derived from a refined δ-radius (single-
-          edge case) or handled separately (vertex case). Leave as sub-sorry.\<close>
-        have h_local_L_in_M: "ball x \<delta>_iso \<inter> {y. inner (y - x) n = 0} \<subseteq> M" sorry
-        have h_U_in_halfballs: "U \<inter> ball x \<delta>_iso \<subseteq> Hp \<union> Hm"
+        \<comment> \<open>Step 15: ball x δ_iso2 ∩ L ⊆ M (closed via h_local_L_in_M_at_iso2);
+          U-points in ball x δ_iso2 are in Hp ∪ Hm.\<close>
+        have h_local_L_in_M: "ball x \<delta>_iso2 \<inter> {y. inner (y - x) n = 0} \<subseteq> M"
+          using h_local_L_in_M_at_iso2 .
+        have h_U_in_halfballs: "U \<inter> ball x \<delta>_iso2 \<subseteq> Hp \<union> Hm"
         proof
-          fix u assume hu: "u \<in> U \<inter> ball x \<delta>_iso"
+          fix u assume hu: "u \<in> U \<inter> ball x \<delta>_iso2"
           have huU: "u \<in> U" using hu by (by100 blast)
-          have hu_ball: "u \<in> ball x \<delta>_iso" using hu by (by100 blast)
+          have hu_ball: "u \<in> ball x \<delta>_iso2" using hu by (by100 blast)
           have hu_notM: "u \<notin> M" using huU hU_disj_M by (by100 blast)
           have hu_notL: "u \<notin> {y. inner (y - x) n = 0}"
             using hu_ball hu_notM h_local_L_in_M by (by100 blast)
@@ -5029,20 +5028,20 @@ proof -
         qed
         \<comment> \<open>Step 16: For any δ' ∈ (0, δ_iso], U meets ball x δ' inside Hp ∪ Hm.
           Combines hU_meets_ball with Step 15.\<close>
-        have h_U_meets_at: "\<And>\<delta>'. \<lbrakk>0 < \<delta>'; \<delta>' \<le> \<delta>_iso\<rbrakk> \<Longrightarrow>
+        have h_U_meets_at: "\<And>\<delta>'. \<lbrakk>0 < \<delta>'; \<delta>' \<le> \<delta>_iso2\<rbrakk> \<Longrightarrow>
                               ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) \<noteq> {}"
         proof -
-          fix \<delta>' :: real assume h\<delta>'_pos: "0 < \<delta>'" and h\<delta>'_le: "\<delta>' \<le> \<delta>_iso"
+          fix \<delta>' :: real assume h\<delta>'_pos: "0 < \<delta>'" and h\<delta>'_le: "\<delta>' \<le> \<delta>_iso2"
           have h_meet: "ball x \<delta>' \<inter> U \<noteq> {}"
             using hU_meets_ball h\<delta>'_pos by (by100 blast)
           obtain u where hu: "u \<in> ball x \<delta>' \<inter> U" using h_meet by (by100 blast)
-          have hu_ball_iso: "u \<in> ball x \<delta>_iso"
+          have hu_ball_iso: "u \<in> ball x \<delta>_iso2"
           proof -
-            have h_sub: "ball x \<delta>' \<subseteq> ball x \<delta>_iso" using h\<delta>'_le by (by100 auto)
+            have h_sub: "ball x \<delta>' \<subseteq> ball x \<delta>_iso2" using h\<delta>'_le by (by100 auto)
             show ?thesis using hu h_sub by (by100 blast)
           qed
           have huU: "u \<in> U" using hu by (by100 blast)
-          have hu_in: "u \<in> U \<inter> ball x \<delta>_iso" using huU hu_ball_iso by (by100 blast)
+          have hu_in: "u \<in> U \<inter> ball x \<delta>_iso2" using huU hu_ball_iso by (by100 blast)
           have hu_HpHm: "u \<in> Hp \<union> Hm" using hu_in h_U_in_halfballs by (by100 blast)
           have hu_ball': "u \<in> ball x \<delta>'" using hu by (by100 blast)
           show "ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) \<noteq> {}"
@@ -5101,10 +5100,10 @@ proof -
           obtain dM where hdM_pos: "dM > 0"
                       and hdM_empty: "ball x dM \<inter> (U \<inter> Hm) = {}"
             using h_ex_dM by (by100 blast)
-          define \<delta>' where "\<delta>' = min dP (min dM \<delta>_iso)"
+          define \<delta>' where "\<delta>' = min dP (min dM \<delta>_iso2)"
           have h\<delta>'_pos: "\<delta>' > 0"
-            unfolding \<delta>'_def using hdP_pos hdM_pos h\<delta>_iso_pos by (by100 simp)
-          have h\<delta>'_le: "\<delta>' \<le> \<delta>_iso" unfolding \<delta>'_def by (by100 simp)
+            unfolding \<delta>'_def using hdP_pos hdM_pos h\<delta>_iso2_pos by (by100 simp)
+          have h\<delta>'_le: "\<delta>' \<le> \<delta>_iso2" unfolding \<delta>'_def by (by100 simp)
           have h\<delta>'_dP: "\<delta>' \<le> dP" unfolding \<delta>'_def by (by100 simp)
           have h\<delta>'_dM: "\<delta>' \<le> dM" unfolding \<delta>'_def by (by100 simp)
           have h_sub_P: "ball x \<delta>' \<subseteq> ball x dP" using h\<delta>'_dP by (by100 auto)
@@ -5189,19 +5188,19 @@ proof -
           halfplane lemma applies since L is a hyperplane.\<close>
         have h_L_eq_canon: "{y. inner (y - x) n = 0} = {y. inner n y = inner n x}"
           by (auto simp: inner_diff_right inner_commute)
-        have h_Hp_eq_canon: "Hp = ball x \<delta>_iso \<inter> {y. inner n y > inner n x}"
+        have h_Hp_eq_canon: "Hp = ball x \<delta>_iso2 \<inter> {y. inner n y > inner n x}"
           unfolding Hp_def by (auto simp: inner_diff_right inner_commute)
-        have h_Hm_eq_canon: "Hm = ball x \<delta>_iso \<inter> {y. inner n y < inner n x}"
+        have h_Hm_eq_canon: "Hm = ball x \<delta>_iso2 \<inter> {y. inner n y < inner n x}"
           unfolding Hm_def by (auto simp: inner_diff_right inner_commute)
         have h_conn_subset_in_halfball:
-          "\<And>V. \<lbrakk>open V; connected V; V \<subseteq> U \<inter> ball x \<delta>_iso\<rbrakk>
+          "\<And>V. \<lbrakk>open V; connected V; V \<subseteq> U \<inter> ball x \<delta>_iso2\<rbrakk>
                 \<Longrightarrow> V \<subseteq> Hp \<or> V \<subseteq> Hm"
         proof -
           fix V :: "(real^2) set"
           assume hV_open: "open V" and hV_conn: "connected V"
-             and hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso"
+             and hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso2"
           have hV_sub_U: "V \<subseteq> U" using hV_sub by (by100 blast)
-          have hV_sub_ball: "V \<subseteq> ball x \<delta>_iso" using hV_sub by (by100 blast)
+          have hV_sub_ball: "V \<subseteq> ball x \<delta>_iso2" using hV_sub by (by100 blast)
           have hV_disj_L: "V \<inter> {y. inner n y = inner n x} = {}"
           proof -
             have h1: "V \<inter> {y. inner (y - x) n = 0} = {}"
@@ -5211,8 +5210,8 @@ proof -
                 fix v assume hv: "v \<in> V \<inter> {y. inner (y - x) n = 0}"
                 have hvV: "v \<in> V" using hv by (by100 blast)
                 have hv_L: "v \<in> {y. inner (y - x) n = 0}" using hv by (by100 blast)
-                have hv_ball: "v \<in> ball x \<delta>_iso" using hvV hV_sub_ball by (by100 blast)
-                have hv_in_ball_L: "v \<in> ball x \<delta>_iso \<inter> {y. inner (y - x) n = 0}"
+                have hv_ball: "v \<in> ball x \<delta>_iso2" using hvV hV_sub_ball by (by100 blast)
+                have hv_in_ball_L: "v \<in> ball x \<delta>_iso2 \<inter> {y. inner (y - x) n = 0}"
                   using hv_ball hv_L by (by100 blast)
                 have hv_M: "v \<in> M" using hv_in_ball_L h_local_L_in_M by (by100 blast)
                 have hv_U: "v \<in> U" using hvV hV_sub_U by (by100 blast)
@@ -5240,13 +5239,13 @@ proof -
         \<comment> \<open>Step 25: For a witness u₀ ∈ U ∩ Hp ∩ ball x δ_iso, its path-component
           in U ∩ ball x δ_iso is in Hp. Symmetric for Hm.\<close>
         have h_path_comp_Hp:
-          "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> Hp \<inter> ball x \<delta>_iso \<Longrightarrow>
-                  path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hp"
+          "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> Hp \<inter> ball x \<delta>_iso2 \<Longrightarrow>
+                  path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0 \<subseteq> Hp"
         proof -
           fix u\<^sub>0 :: "real^2"
-          assume hu\<^sub>0: "u\<^sub>0 \<in> U \<inter> Hp \<inter> ball x \<delta>_iso"
-          define V where "V = path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0"
-          have hUball_open: "open (U \<inter> ball x \<delta>_iso)"
+          assume hu\<^sub>0: "u\<^sub>0 \<in> U \<inter> Hp \<inter> ball x \<delta>_iso2"
+          define V where "V = path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0"
+          have hUball_open: "open (U \<inter> ball x \<delta>_iso2)"
             using hU_open open_ball by (by100 blast)
           have hV_open: "open V"
             unfolding V_def
@@ -5255,17 +5254,17 @@ proof -
             unfolding V_def by (rule path_connected_path_component)
           have hV_conn: "connected V"
             using hV_path_conn path_connected_imp_connected by (by100 blast)
-          have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso"
+          have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso2"
             unfolding V_def by (rule path_component_subset)
           have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
           proof -
-            have hu\<^sub>0_in: "u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso" using hu\<^sub>0 by (by100 blast)
-            have h_refl: "path_component (U \<inter> ball x \<delta>_iso) u\<^sub>0 u\<^sub>0"
+            have hu\<^sub>0_in: "u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso2" using hu\<^sub>0 by (by100 blast)
+            have h_refl: "path_component (U \<inter> ball x \<delta>_iso2) u\<^sub>0 u\<^sub>0"
               by (rule path_component_refl[OF hu\<^sub>0_in])
             show ?thesis unfolding V_def using h_refl by (by100 simp)
           qed
           have hV_or: "V \<subseteq> Hp \<or> V \<subseteq> Hm"
-            using h_conn_subset_in_halfball hV_open hV_conn hV_sub by (by100 blast)
+            by (rule h_conn_subset_in_halfball[OF hV_open hV_conn hV_sub])
           have hu\<^sub>0_Hp: "u\<^sub>0 \<in> Hp" using hu\<^sub>0 by (by100 blast)
           have hu\<^sub>0_notHm: "u\<^sub>0 \<notin> Hm"
           proof -
@@ -5283,19 +5282,19 @@ proof -
             hence "u\<^sub>0 \<in> Hm" using hu\<^sub>0_V by (by100 blast)
             thus ?thesis using hu\<^sub>0_notHm by (by100 blast)
           qed
-          thus "path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hp"
+          thus "path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0 \<subseteq> Hp"
             unfolding V_def .
         qed
         \<comment> \<open>Step 25b (symmetric): For a witness u₀ ∈ U ∩ Hm ∩ ball x δ_iso,
           its path-component in U ∩ ball x δ_iso is in Hm.\<close>
         have h_path_comp_Hm:
-          "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso \<Longrightarrow>
-                  path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hm"
+          "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso2 \<Longrightarrow>
+                  path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0 \<subseteq> Hm"
         proof -
           fix u\<^sub>0 :: "real^2"
-          assume hu\<^sub>0: "u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso"
-          define V where "V = path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0"
-          have hUball_open: "open (U \<inter> ball x \<delta>_iso)"
+          assume hu\<^sub>0: "u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso2"
+          define V where "V = path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0"
+          have hUball_open: "open (U \<inter> ball x \<delta>_iso2)"
             using hU_open open_ball by (by100 blast)
           have hV_open: "open V"
             unfolding V_def
@@ -5304,17 +5303,17 @@ proof -
             unfolding V_def by (rule path_connected_path_component)
           have hV_conn: "connected V"
             using hV_path_conn path_connected_imp_connected by (by100 blast)
-          have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso"
+          have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso2"
             unfolding V_def by (rule path_component_subset)
           have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
           proof -
-            have hu\<^sub>0_in: "u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso" using hu\<^sub>0 by (by100 blast)
-            have h_refl: "path_component (U \<inter> ball x \<delta>_iso) u\<^sub>0 u\<^sub>0"
+            have hu\<^sub>0_in: "u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso2" using hu\<^sub>0 by (by100 blast)
+            have h_refl: "path_component (U \<inter> ball x \<delta>_iso2) u\<^sub>0 u\<^sub>0"
               by (rule path_component_refl[OF hu\<^sub>0_in])
             show ?thesis unfolding V_def using h_refl by (by100 simp)
           qed
           have hV_or: "V \<subseteq> Hp \<or> V \<subseteq> Hm"
-            using h_conn_subset_in_halfball hV_open hV_conn hV_sub by (by100 blast)
+            by (rule h_conn_subset_in_halfball[OF hV_open hV_conn hV_sub])
           have hu\<^sub>0_Hm: "u\<^sub>0 \<in> Hm" using hu\<^sub>0 by (by100 blast)
           have hu\<^sub>0_notHp: "u\<^sub>0 \<notin> Hp"
           proof -
@@ -5332,7 +5331,7 @@ proof -
             hence "u\<^sub>0 \<in> Hp" using hu\<^sub>0_V by (by100 blast)
             thus ?thesis using hu\<^sub>0_notHp by (by100 blast)
           qed
-          thus "path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hm"
+          thus "path_component_set (U \<inter> ball x \<delta>_iso2) u\<^sub>0 \<subseteq> Hm"
             unfolding V_def .
         qed
         \<comment> \<open>Step 20: extract a CLAIM_A — every ball x δ ∩ Int i point is in
