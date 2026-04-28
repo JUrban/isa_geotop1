@@ -13786,13 +13786,27 @@ proof -
   define J where "J = (geotop_std_sphere :: (real^2) set)"
   define I where "I = geotop_polygon_interior J"
   (** Step 2: Int C^2 is connected (from 2-cell def). **)
+  \<comment> \<open>Sub-claim T11-A: Int C^2 is connected (continuous image of open ball).\<close>
+  have hT11_intC2_conn:
+    "top1_connected_on (geotop_top_interior UNIV geotop_euclidean_topology C2)
+       (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_top_interior UNIV geotop_euclidean_topology C2))" sorry
+  \<comment> \<open>Sub-claim T11-B: Int C^2 is NOT entirely in the exterior (E = UNIV - closure I - J),
+    else radial projection retracts C^2 to J, contradicting 10_10.\<close>
+  have hT11_not_in_E:
+    "\<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq>
+        UNIV - closure_on UNIV geotop_euclidean_topology I - J)" sorry
+  \<comment> \<open>Sub-claim T11-C: Int C^2 = I (the polygon interior of J).\<close>
+  have hT11_eq_I: "geotop_top_interior UNIV geotop_euclidean_topology C2 = I" sorry
+  \<comment> \<open>Sub-claim T11-D: C2 = std_ball (closure I + frontier J = closure of polygon interior = std_ball).\<close>
+  have hT11_C2_ball: "C2 = (geotop_std_ball :: (real^2) set)" sorry
   have hIntC2_full: "top1_connected_on (geotop_top_interior UNIV geotop_euclidean_topology C2)
      (subspace_topology UNIV geotop_euclidean_topology
         (geotop_top_interior UNIV geotop_euclidean_topology C2)) \<and>
      \<not> (geotop_top_interior UNIV geotop_euclidean_topology C2 \<subseteq> UNIV - closure_on UNIV geotop_euclidean_topology I - J) \<and>
      geotop_top_interior UNIV geotop_euclidean_topology C2 = I \<and>
      C2 = (geotop_std_ball :: (real^2) set)"
-    sorry
+    using hT11_intC2_conn hT11_not_in_E hT11_eq_I hT11_C2_ball by (by100 blast)
   (** Step 5: Conclude C^2 = closure I = B^2 = std_ball. **)
   have h_final: "C2 = (geotop_std_ball :: (real^2) set)" using hIntC2_full by (by100 blast)
   show ?thesis using h_final by (by100 blast)
