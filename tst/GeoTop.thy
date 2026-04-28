@@ -5288,12 +5288,36 @@ proof -
         qed
         \<comment> \<open>Step 23: isolate the SMALL-r case as h_CLAIM_A_off_small.
           For y close to x, the easy r > dist y x case follows from h_easy_half;
-          the genuinely deep small-r case is the precise gap.\<close>
+          the genuinely deep small-r case is the precise gap. We further split
+          on the dominant halfball (Hp or Hm) per Step 17.\<close>
+        have h_CLAIM_A_off_small_Hp:
+          "x \<in> closure (U \<inter> Hp) \<Longrightarrow>
+           \<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow>
+                    (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+          sorry
+        have h_CLAIM_A_off_small_Hm:
+          "x \<in> closure (U \<inter> Hm) \<Longrightarrow>
+           \<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow>
+                    (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+          sorry
         have h_CLAIM_A_off_small:
           "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
-          sorry
+        proof -
+          consider (Hp) "x \<in> closure (U \<inter> Hp)" | (Hm) "x \<in> closure (U \<inter> Hm)"
+            using h_x_closure_or by (by100 blast)
+          thus ?thesis
+          proof cases
+            case Hp
+            show ?thesis using h_CLAIM_A_off_small_Hp[OF Hp] by (by100 blast)
+          next
+            case Hm
+            show ?thesis using h_CLAIM_A_off_small_Hm[OF Hm] by (by100 blast)
+          qed
+        qed
         \<comment> \<open>h_CLAIM_A_off built from h_easy_half (r > dist y x) and
           h_CLAIM_A_off_small (r ≤ dist y x).\<close>
         have h_CLAIM_A_off:
