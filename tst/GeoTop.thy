@@ -5488,6 +5488,20 @@ proof -
             have hy_un: "y \<in> \<Union> {\<sigma>_x}" using hy_EAX h_EAX_eq by (by100 simp)
             show "y \<in> \<sigma>_x" using hy_un by (by100 blast)
           qed
+          have h_y_on_L:
+            "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
+                  \<Longrightarrow> inner (y - x) n = 0"
+          proof -
+            fix y :: "real^2"
+            assume hy: "y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E"
+               and hy_ne: "y \<noteq> x"
+            have hy_seg: "y \<in> \<sigma>_x" using h_y_in_seg[OF hy hy_ne] .
+            have hy_L: "y \<in> L" using hy_seg h\<sigma>_x_in_L by (by100 blast)
+            have h_inner_eq: "n \<bullet> y = n \<bullet> x"
+              using hy_L hL_eq hd_eq by (by100 blast)
+            show "inner (y - x) n = 0"
+              using h_inner_eq by (simp add: inner_diff_right inner_commute)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
