@@ -5419,6 +5419,14 @@ proof -
               have h\<sigma>'_K: "\<sigma>' \<in> K_i" using h\<sigma>' hEAX_sub by (by100 blast)
               have h\<sigma>'_dim: "geotop_simplex_dim \<sigma>' 1"
                 using h\<sigma>' unfolding EdgesAtX_def by (by100 blast)
+              have h\<sigma>_x_K: "\<sigma>_x \<in> K_i"
+                using h\<sigma>_x_EAX hEAX_sub by (by100 blast)
+              have h_int_ne: "\<sigma>' \<inter> \<sigma>_x \<noteq> {}"
+                using hx\<sigma>' hx\<sigma>_x by (by100 blast)
+              have h_face: "geotop_is_face (\<sigma>' \<inter> \<sigma>_x) \<sigma>_x"
+                using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
+                unfolding geotop_is_complex_def by (by100 blast)
+              have hx_int: "x \<in> \<sigma>' \<inter> \<sigma>_x" using hx\<sigma>' hx\<sigma>_x by (by100 blast)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5547,6 +5555,14 @@ proof -
               have h\<sigma>'_K: "\<sigma>' \<in> K_i" using h\<sigma>' hEAX_sub by (by100 blast)
               have h\<sigma>'_dim: "geotop_simplex_dim \<sigma>' 1"
                 using h\<sigma>' unfolding EdgesAtX_def by (by100 blast)
+              have h\<sigma>_x_K: "\<sigma>_x \<in> K_i"
+                using h\<sigma>_x_EAX hEAX_sub by (by100 blast)
+              have h_int_ne: "\<sigma>' \<inter> \<sigma>_x \<noteq> {}"
+                using hx\<sigma>' hx\<sigma>_x by (by100 blast)
+              have h_face: "geotop_is_face (\<sigma>' \<inter> \<sigma>_x) \<sigma>_x"
+                using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
+                unfolding geotop_is_complex_def by (by100 blast)
+              have hx_int: "x \<in> \<sigma>' \<inter> \<sigma>_x" using hx\<sigma>' hx\<sigma>_x by (by100 blast)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
