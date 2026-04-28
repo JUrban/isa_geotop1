@@ -5494,6 +5494,24 @@ proof -
                 unfolding geotop_is_complex_def by (by100 blast)
               have h\<sigma>_x_face_\<sigma>': "geotop_is_face \<sigma>_x \<sigma>'"
                 using h_face_\<sigma>' h_int_eq_x by (by100 simp)
+              \<comment> \<open>Extract σ' simplex vertices: card V_σ' = 2 from dim 1.\<close>
+              obtain V_\<sigma>' m_\<sigma>' where hV_\<sigma>'_fin: "finite V_\<sigma>'"
+                and hV_\<sigma>'_card: "card V_\<sigma>' = 1 + 1"
+                and hV_\<sigma>'_nm: "1 \<le> m_\<sigma>'"
+                and hV_\<sigma>'_gp: "geotop_general_position V_\<sigma>' m_\<sigma>'"
+                and hV_\<sigma>'_hull: "\<sigma>' = geotop_convex_hull V_\<sigma>'"
+                using h\<sigma>'_dim unfolding geotop_simplex_dim_def by (by100 blast)
+              have hV_\<sigma>'_sv: "geotop_simplex_vertices \<sigma>' V_\<sigma>'"
+                unfolding geotop_simplex_vertices_def
+                using hV_\<sigma>'_fin hV_\<sigma>'_card hV_\<sigma>'_nm hV_\<sigma>'_gp hV_\<sigma>'_hull by (by100 blast)
+              \<comment> \<open>σ_x face of σ' ⟹ ∃W''. W'' ⊆ V_σ', W'' ≠ ∅, σ_x = conv_hull W''.\<close>
+              obtain V'' W'' where hV''_sv: "geotop_simplex_vertices \<sigma>' V''"
+                                and hW''_ne: "W'' \<noteq> {}" and hW''_V'': "W'' \<subseteq> V''"
+                                and h\<sigma>_x_W'': "\<sigma>_x = geotop_convex_hull W''"
+                using h\<sigma>_x_face_\<sigma>' unfolding geotop_is_face_def by (by100 blast)
+              have hV''_eq: "V'' = V_\<sigma>'"
+                using geotop_simplex_vertices_unique[OF hV''_sv hV_\<sigma>'_sv] .
+              have hW''_sub: "W'' \<subseteq> V_\<sigma>'" using hW''_V'' hV''_eq by (by100 simp)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5697,6 +5715,24 @@ proof -
                 unfolding geotop_is_complex_def by (by100 blast)
               have h\<sigma>_x_face_\<sigma>': "geotop_is_face \<sigma>_x \<sigma>'"
                 using h_face_\<sigma>' h_int_eq_x by (by100 simp)
+              \<comment> \<open>Extract σ' simplex vertices: card V_σ' = 2 from dim 1.\<close>
+              obtain V_\<sigma>' m_\<sigma>' where hV_\<sigma>'_fin: "finite V_\<sigma>'"
+                and hV_\<sigma>'_card: "card V_\<sigma>' = 1 + 1"
+                and hV_\<sigma>'_nm: "1 \<le> m_\<sigma>'"
+                and hV_\<sigma>'_gp: "geotop_general_position V_\<sigma>' m_\<sigma>'"
+                and hV_\<sigma>'_hull: "\<sigma>' = geotop_convex_hull V_\<sigma>'"
+                using h\<sigma>'_dim unfolding geotop_simplex_dim_def by (by100 blast)
+              have hV_\<sigma>'_sv: "geotop_simplex_vertices \<sigma>' V_\<sigma>'"
+                unfolding geotop_simplex_vertices_def
+                using hV_\<sigma>'_fin hV_\<sigma>'_card hV_\<sigma>'_nm hV_\<sigma>'_gp hV_\<sigma>'_hull by (by100 blast)
+              \<comment> \<open>σ_x face of σ' ⟹ ∃W''. W'' ⊆ V_σ', W'' ≠ ∅, σ_x = conv_hull W''.\<close>
+              obtain V'' W'' where hV''_sv: "geotop_simplex_vertices \<sigma>' V''"
+                                and hW''_ne: "W'' \<noteq> {}" and hW''_V'': "W'' \<subseteq> V''"
+                                and h\<sigma>_x_W'': "\<sigma>_x = geotop_convex_hull W''"
+                using h\<sigma>_x_face_\<sigma>' unfolding geotop_is_face_def by (by100 blast)
+              have hV''_eq: "V'' = V_\<sigma>'"
+                using geotop_simplex_vertices_unique[OF hV''_sv hV_\<sigma>'_sv] .
+              have hW''_sub: "W'' \<subseteq> V_\<sigma>'" using hW''_V'' hV''_eq by (by100 simp)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
