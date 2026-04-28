@@ -5908,9 +5908,14 @@ proof -
                 by (simp add: dist_norm norm_minus_commute)
               show ?thesis using h1 h2 h3 by (by100 simp)
             qed
-            \<comment> \<open>**Remaining gap (Schoenflies-like local flatness):** show u_w_t ∈ U.
-              Reducible via h_pc_imp_U to "u_w_t in path-component of u_w in
-              U ∩ ball x δ_iso2", via Schoenflies for θ-graph faces.\<close>
+            \<comment> \<open>Key insight: closure is provable via a STRAIGHT-LINE path argument.
+              Define γ(t) = u_w + t·(y-x) on [0,1]. γ is continuous, γ([0,1])
+              connected. γ stays in ball x δ_iso2 (for u_w close enough to x).
+              γ stays on positive halfplane (constant inner sign). Hence γ
+              avoids L locally. By h_local_L_in_M, γ ∩ M = ∅. By
+              connected_component_maximal, γ ⊆ U (since u_w ∈ U). So
+              u_w_t = γ(1) ∈ U. The arg requires u_w with dist u_w x < ε
+              where ε = min(r/3, (δ_iso2 - dist y x)/2).\<close>
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
