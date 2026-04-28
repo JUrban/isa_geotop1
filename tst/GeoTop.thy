@@ -4932,7 +4932,14 @@ proof -
         have h_x_open_seg: "x \<in> open_segment a b"
         proof (cases "{x} \<in> K_i")
           case True
-          \<comment> \<open>Vertex case: x is a vertex of K_i. Multi-edge analysis required.\<close>
+          \<comment> \<open>Vertex case: {x} ∈ K_i. By complex face axiom, {x} = σ_x ∩ {x}
+            is a face of σ_x. Faces of σ_x: {a}, {b}, σ_x. {x} ≠ σ_x since
+            |{x}|=1 < |σ_x|. So x ∈ {a, b}, contradicting x ∈ open_segment a b.
+
+            The proof goal h_local_open ITSELF still holds: x being at a
+            broken-line vertex implies multiple edges meeting at x, requiring
+            parallel halfplane analyses (one per edge). Proof body's
+            single-σ_x structure doesn't cover this. Multi-day work.\<close>
           show ?thesis sorry
         next
           case False
