@@ -11165,12 +11165,37 @@ theorem Theorem_GT_4_2:
 proof -
   (** By contradiction: suppose no such decomposition. Then \<exists>Q' \<in> I near Q and S' \<in> I
       near S in the same component of I - A. **)
+  \<comment> \<open>Sub-claim D42-1: I - A has at least one component touching Q in its
+    frontier (since Q \<in> J = Fr(I), and A doesn't reach Q except via P/R).\<close>
+  have hD42_UQ_ex:
+    "\<exists>U\<^sub>Q. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
+            U\<^sub>Q \<subseteq> geotop_polygon_interior J - A \<and>
+            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+    sorry
+  \<comment> \<open>Sub-claim D42-2: similarly there's a U_S with S in its frontier.\<close>
+  have hD42_US_ex:
+    "\<exists>U\<^sub>S. U\<^sub>S \<in> geotop_euclidean_topology \<and>
+            U\<^sub>S \<subseteq> geotop_polygon_interior J - A \<and>
+            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+    sorry
+  \<comment> \<open>Sub-claim D42-3: U_Q and U_S are DIFFERENT components, hence disjoint.
+    Argument: if they coincided (same component), broken-line from Q' to S'
+    in I - A could be detoured into a closed broken line B; B would
+    separate P, R into different components of I - B, contradicting 2.8.\<close>
+  have hD42_disjoint:
+    "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
+              U\<^sub>S \<in> geotop_euclidean_topology \<and>
+              Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+              S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
+              U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+              geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+    sorry
   have hdecomp:
     "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and> U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
             U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
             Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
             S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-    sorry  \<comment> \<open>Contradiction argument using broken-line concatenation + 2.8.\<close>
+    using hD42_disjoint by (by100 blast)
   show ?thesis using hdecomp .
 qed
 
