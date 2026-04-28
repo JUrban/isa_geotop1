@@ -20952,6 +20952,22 @@ proof -
      \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
      geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
      C = \<Delta> \<inter> M2" sorry
+  \<comment> \<open>Sub-claim T26_4-A: \<Delta> has the geometric properties (5-conjunct from h_loop_thm_applied).\<close>
+  have hT26_4_geom:
+    "geotop_is_n_cell \<Delta> (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+     (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>) \<and>
+     \<Delta> \<subseteq> geotop_manifold_interior M3 (\<lambda>x y. norm (x - y)) \<and>
+     geotop_frontier UNIV geotop_euclidean_topology \<Delta> = C \<and>
+     C = \<Delta> \<inter> M2"
+    using h_loop_thm_applied by (by100 blast)
+  \<comment> \<open>Sub-claim T26_4-B: Bd \<Delta> = C carries a non-contractible loop in M2 (loop theorem
+    consequence from hker_nontriv combined with the cut-and-fill construction).\<close>
+  have hT26_4_loop_C:
+    "\<exists>P\<^sub>0\<in>C. \<exists>p.
+        geotop_closed_path_on C (subspace_topology UNIV geotop_euclidean_topology C)
+          P\<^sub>0 p \<and>
+        \<not> geotop_path_equiv M2 (subspace_topology UNIV geotop_euclidean_topology M2)
+             P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
   have h_final: "\<exists>\<Delta> C. geotop_is_n_cell \<Delta>
                (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
              (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = \<Delta>) \<and>
