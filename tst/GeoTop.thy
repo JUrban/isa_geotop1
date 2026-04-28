@@ -5909,11 +5909,8 @@ proof -
               show ?thesis using h1 h2 h3 by (by100 simp)
             qed
             \<comment> \<open>**Remaining gap (Schoenflies-like local flatness):** show u_w_t ∈ U.
-              We have u_w_t = u_w + (y - x) with u_w ∈ U, and dist u_w_t y < r/3.
-              Geometrically u_w_t is the y-translate of u_w. For θ-graph face U
-              with x, y both on its boundary edge σ_x, U is locally homeomorphic
-              to a halfplane (Schoenflies), so the translation along σ_x's
-              direction stays in U. Multi-day formalization.\<close>
+              Reducible via h_pc_imp_U to "u_w_t in path-component of u_w in
+              U ∩ ball x δ_iso2", via Schoenflies for θ-graph faces.\<close>
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
