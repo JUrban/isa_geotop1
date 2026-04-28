@@ -10928,9 +10928,19 @@ proof -
     by (rule geotop_simplex_is_n_cell[OF h\<sigma>])
   (** Preimage of a 2-cell under a homeomorphism is a 2-cell. **)
   define D :: "(real^2) set" where "D = {P. h P \<in> \<sigma>}"
+  \<comment> \<open>Sub-claim D1: D is a 2-cell (preimage of 2-cell under plane homeo).\<close>
+  have hD_2cell: "geotop_is_n_cell D
+                    (subspace_topology UNIV geotop_euclidean_topology D) 2"
+    sorry
+  \<comment> \<open>Sub-claim D2: J = frontier D. Since frontier commutes with plane
+    homeomorphism, h(D) = \<sigma>, so frontier D = h-inverse(frontier \<sigma>) =
+    h-inverse(h(J)) = J.\<close>
+  have hD_frontier:
+    "J = geotop_frontier UNIV geotop_euclidean_topology D"
+    sorry
   have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                    J = geotop_frontier UNIV geotop_euclidean_topology D"
-    sorry
+    using hD_2cell hD_frontier by (by100 blast)
   show ?thesis using hD_ncell by (by100 blast)
 qed
 
