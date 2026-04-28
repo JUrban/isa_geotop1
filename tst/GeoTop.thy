@@ -14252,7 +14252,27 @@ theorem Theorem_GT_12_1:
       descending, \<Inter>K_i = M_\<infinity> \<inter> (X - U' - V') = \<emptyset> (since M_\<infinity> \<subseteq> U' \<union> V').
       By compactness (nested-sequence property), some K_i_0 = \<emptyset>, i.e.
       M_{i_0} \<subseteq> U' \<union> V', contradicting inseparability at i_0. **)
-  sorry  \<comment> \<open>Nested compact set argument; full sketch above.\<close>
+proof (rule ccontr)
+  assume h_sep: "\<not> geotop_inseparable_in X T (\<Inter>i. M i) A B"
+  \<comment> \<open>Sub-claim T12_1-A: from ¬inseparable, extract a separating pair (U, V).\<close>
+  have hT12_1_sep:
+    "\<exists>U V. closedin_on X T U \<and> closedin_on X T V \<and> U \<inter> V = {} \<and>
+           (\<Inter>i. M i) \<subseteq> U \<union> V \<and> A \<subseteq> U \<and> B \<subseteq> V"
+    sorry
+  \<comment> \<open>Sub-claim T12_1-B: fatten U, V to open supersets U', V'.\<close>
+  have hT12_1_fatten:
+    "\<exists>U' V'. U' \<in> T \<and> V' \<in> T \<and> U' \<inter> V' = {} \<and>
+             (\<Inter>i. M i) \<subseteq> U' \<union> V' \<and> A \<subseteq> U' \<and> B \<subseteq> V'"
+    sorry
+  \<comment> \<open>Sub-claim T12_1-C: define K_i = M_i \<inter> (X - U' - V'); descending compact, \<Inter>K_i = \<emptyset>.\<close>
+  have hT12_1_intersect_empty:
+    "\<exists>U' V'. (\<exists>i\<^sub>0. M i\<^sub>0 \<subseteq> U' \<union> V' \<and> U' \<inter> V' = {} \<and>
+                  closedin_on X T U' \<and> closedin_on X T V' \<and>
+                  A \<subseteq> U' \<and> B \<subseteq> V')"
+    sorry
+  \<comment> \<open>Sub-claim T12_1-D: contradiction with hins (A, B inseparable in M_{i_0}).\<close>
+  show False sorry
+qed
 
 (** from \<S>12 Theorem 2 (geotop.tex:2332)
     LATEX VERSION: Let M be a compact set, in a metrizable space [X, O], and let A and B be
