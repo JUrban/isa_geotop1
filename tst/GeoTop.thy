@@ -13748,11 +13748,22 @@ proof (rule ccontr)
              and hB_QS: "Q \<in> B \<and> S \<in> B"
     sorry
   (** r(B) connected + contained in J - {P, R}; contradiction via Theorem_GT_1_10. **)
+  \<comment> \<open>Sub-claim T10-A: r(B) is connected (continuous image of connected B).\<close>
+  have hrB_conn: "top1_connected_on (r ` B)
+                    (subspace_topology UNIV geotop_euclidean_topology (r ` B))"
+    sorry
+  \<comment> \<open>Sub-claim T10-B: r(B) misses {P, R} (else contradicts B \<subseteq> C^2 - (M1 \<union> M2)).\<close>
+  have hrB_sub: "r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R}"
+    sorry
+  \<comment> \<open>Sub-claim T10-C: J \ {P, R} is the disjoint union of two separated arcs
+    H, K with Q in one and S in the other (cyclic order); r(B) connected
+    intersects both, contradicting Theorem_GT_1_10.\<close>
+  have hT10_contradiction: "False" sorry
   have hrB_all:
     "top1_connected_on (r ` B) (subspace_topology UNIV geotop_euclidean_topology (r ` B)) \<and>
      r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R} \<and>
      False"
-    sorry
+    using hrB_conn hrB_sub hT10_contradiction by (by100 blast)
   show False using hrB_all by (by100 blast)
 qed
 
