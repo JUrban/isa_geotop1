@@ -5135,12 +5135,81 @@ proof -
           have huU: "u \<in> U" using hu by (by100 blast)
           show "ball y r \<inter> U \<noteq> {}" using hu_in_ball huU by (by100 blast)
         qed
-        \<comment> \<open>h_CLAIM_A skeleton with y = x trivially handled via hxClosU,
-          and the deep step isolated to y ≠ x via h_CLAIM_A_off.\<close>
+        \<comment> \<open>Step 23: isolate the SMALL-r case as h_CLAIM_A_off_small.
+          For y close to x, the easy r > dist y x case follows from h_easy_half;
+          the genuinely deep small-r case is the precise gap.\<close>
+        have h_CLAIM_A_off_small:
+          "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow>
+                    (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+          sorry
+        \<comment> \<open>h_CLAIM_A_off built from h_easy_half (r > dist y x) and
+          h_CLAIM_A_off_small (r ≤ dist y x).\<close>
         have h_CLAIM_A_off:
           "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow> y \<in> closure U"
-          sorry
+        proof -
+          obtain \<delta>s where h\<delta>s_pos: "\<delta>s > 0"
+                      and h\<delta>s_sub: "\<forall>y \<in> ball x \<delta>s \<inter> geotop_arc_interior i E.
+                                      y \<noteq> x \<longrightarrow>
+                                        (\<forall>r. 0 < r \<and> r \<le> dist y x
+                                              \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+            using h_CLAIM_A_off_small by (by100 blast)
+          define \<delta>off where "\<delta>off = min \<delta>s \<delta>_iso"
+          have h\<delta>off_pos: "\<delta>off > 0"
+            unfolding \<delta>off_def using h\<delta>s_pos h\<delta>_iso_pos by (by100 simp)
+          have h\<delta>off_le_s: "\<delta>off \<le> \<delta>s" unfolding \<delta>off_def by (by100 simp)
+          have h\<delta>off_le_iso: "\<delta>off \<le> \<delta>_iso" unfolding \<delta>off_def by (by100 simp)
+          have h_sub_s: "ball x \<delta>off \<subseteq> ball x \<delta>s"
+            using h\<delta>off_le_s by (by100 auto)
+          have h_sub_iso: "ball x \<delta>off \<subseteq> ball x \<delta>_iso"
+            using h\<delta>off_le_iso by (by100 auto)
+          have h_full: "\<forall>y \<in> ball x \<delta>off \<inter> geotop_arc_interior i E.
+                          y \<noteq> x \<longrightarrow> y \<in> closure U"
+          proof (intro ballI impI)
+            fix y assume hy: "y \<in> ball x \<delta>off \<inter> geotop_arc_interior i E"
+                     and hy_ne: "y \<noteq> x"
+            have hy_ball_off: "y \<in> ball x \<delta>off" using hy by (by100 blast)
+            have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
+            have hy_ball_iso: "y \<in> ball x \<delta>_iso"
+              using hy_ball_off h_sub_iso by (by100 blast)
+            have hy_ball_s: "y \<in> ball x \<delta>s"
+              using hy_ball_off h_sub_s by (by100 blast)
+            have hy_in_s: "y \<in> ball x \<delta>s \<inter> geotop_arc_interior i E"
+              using hy_ball_s hy_int by (by100 blast)
+            have h_small: "\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {}"
+              using hy_in_s hy_ne h\<delta>s_sub by (by100 blast)
+            \<comment> \<open>Show every ball y r meets U via easy/small dichotomy,
+              then use closure_approachable.\<close>
+            have h_all_meet: "\<forall>r>0. ball y r \<inter> U \<noteq> {}"
+            proof (intro allI impI)
+              fix r :: real assume hr_pos: "r > 0"
+              show "ball y r \<inter> U \<noteq> {}"
+              proof (cases "r > dist y x")
+                case True
+                show ?thesis
+                  using h_easy_half[OF hy_ball_iso hr_pos True] by (by100 blast)
+              next
+                case False
+                hence h_le: "r \<le> dist y x" by (by100 simp)
+                show ?thesis using h_small hr_pos h_le by (by100 blast)
+              qed
+            qed
+            show "y \<in> closure U"
+            proof (subst closure_approachable, intro allI impI)
+              fix \<epsilon> :: real assume h\<epsilon>_pos: "\<epsilon> > 0"
+              have h_meet: "ball y \<epsilon> \<inter> U \<noteq> {}"
+                using h_all_meet h\<epsilon>_pos by (by100 blast)
+              obtain u where hu: "u \<in> ball y \<epsilon> \<inter> U" using h_meet by (by100 blast)
+              have huU: "u \<in> U" using hu by (by100 blast)
+              have hu_yu: "dist y u < \<epsilon>" using hu by (by100 simp)
+              have h_dist_eq: "dist u y = dist y u" by (rule dist_commute)
+              have hu_dist: "dist u y < \<epsilon>" using hu_yu h_dist_eq by (by100 simp)
+              show "\<exists>z\<in>U. dist z y < \<epsilon>" using huU hu_dist by (by100 blast)
+            qed
+          qed
+          show ?thesis using h\<delta>off_pos h_full by (by100 blast)
+        qed
         have h_CLAIM_A: "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                          y \<in> closure U"
         proof -
