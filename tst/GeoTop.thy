@@ -5460,6 +5460,19 @@ proof -
               using hy_in h_ball_cov by (by100 blast)
             show "y \<in> \<Union> EdgesAtX" using hy_or hy_ne by (by100 blast)
           qed
+          \<comment> \<open>Same single-edge derivation as in the Hp case.\<close>
+          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}" sorry
+          have h_y_in_seg:
+            "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
+                  \<Longrightarrow> y \<in> \<sigma>_x"
+          proof -
+            fix y :: "real^2"
+            assume hy: "y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E"
+               and hy_ne: "y \<noteq> x"
+            have hy_EAX: "y \<in> \<Union> EdgesAtX" using h_y_in_EAX[OF hy hy_ne] .
+            have hy_un: "y \<in> \<Union> {\<sigma>_x}" using hy_EAX h_EAX_eq by (by100 simp)
+            show "y \<in> \<sigma>_x" using hy_un by (by100 blast)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
