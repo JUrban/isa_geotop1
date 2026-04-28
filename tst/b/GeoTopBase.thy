@@ -12863,7 +12863,10 @@ text \<open>Straight-line path-argument: for a face U of UNIV - M with
   d - dist y x) on the positive halfplane of L, with y on L and y ∈ ball x d,
   yields u_w + (y - x) ∈ U.
 
-  This packages the path-argument used in h_open_in_int's deep step.\<close>
+  This packages the path-argument used in h_open_in_int's deep step.
+  Proof is INLINE in GeoTop.thy's h_CLAIM_A_off_small_Hp/Hm — extracting it
+  here as a sorry to enable reuse for the vertex case (where multiple
+  edges/lines meet at x).\<close>
 
 lemma straight_line_path_in_face:
   fixes U M :: "(real^2) set" and x y u_w :: "real^2" and n :: "real^2"
