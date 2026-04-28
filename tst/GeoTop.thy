@@ -17395,6 +17395,18 @@ proof -
        (UNIV - T1) (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1)) r \<and>
      (\<forall>P\<in>UNIV - T1. r P = P)" sorry
   (** (3) The composite g = r \<circ> f is a continuous null-homotopy of p in R^3 - T_1. **)
+  \<comment> \<open>Sub-claim T18_2-A: g = r \<circ> f is a null-homotopy of p in R^3 - T_1.\<close>
+  have hT18_2_homotopy:
+    "\<exists>g::real \<times> real \<Rightarrow> real^3.
+        (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (t, y) \<in> UNIV - T1) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 0) = p t) \<and>
+        (\<forall>t. 0 \<le> t \<and> t \<le> 1 \<longrightarrow> g (t, 1) = P\<^sub>0) \<and>
+        (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (0, y) = P\<^sub>0 \<and> g (1, y) = P\<^sub>0)" sorry
+  \<comment> \<open>Sub-claim T18_2-B: existence of g implies p \<cong> e in R^3 - T_1.\<close>
+  have hT18_2_equiv:
+    "geotop_path_equiv (UNIV - T1)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
+        P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
   have h_null:
     "(\<exists>g::real \<times> real \<Rightarrow> real^3.
         (\<forall>t y. 0 \<le> t \<and> t \<le> 1 \<and> 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (t, y) \<in> UNIV - T1) \<and>
@@ -17403,7 +17415,8 @@ proof -
         (\<forall>y. 0 \<le> y \<and> y \<le> 1 \<longrightarrow> g (0, y) = P\<^sub>0 \<and> g (1, y) = P\<^sub>0)) \<and>
      geotop_path_equiv (UNIV - T1)
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
-           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+    using hT18_2_homotopy hT18_2_equiv by (by100 blast)
   have h_final: "geotop_path_equiv (UNIV - T1)
            (subspace_topology UNIV geotop_euclidean_topology (UNIV - T1))
            P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
