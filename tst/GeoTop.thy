@@ -15050,13 +15050,24 @@ proof -
               (geotop_frontier UNIV geotop_euclidean_topology C))" sorry
   (** (5) The connected frontier Bd C is a 1-sphere (polyhedral simple closed curve from
          the PL frame construction). **)
+  \<comment> \<open>Sub-claim T13_5-A: connected frontier is a 1-sphere (PL frame is a polygon).\<close>
+  have hT13_5_bd_sphere:
+    "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_frontier UNIV geotop_euclidean_topology C)) 1" sorry
+  \<comment> \<open>Sub-claim T13_5-B: with 1-sphere frontier, C is a 2-cell via Schoenflies.\<close>
+  have hT13_5_C_2cell:
+    "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
+         geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2" sorry
   have h_bd_1sphere:
     "(\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
          geotop_is_n_sphere (geotop_frontier UNIV geotop_euclidean_topology C)
            (subspace_topology UNIV geotop_euclidean_topology
               (geotop_frontier UNIV geotop_euclidean_topology C)) 1) \<and>
      (\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
-           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2)" sorry
+           geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 2)"
+    using hT13_5_bd_sphere hT13_5_C_2cell by (by100 blast)
   (** (6) Applying Schoenflies (\<S>10.6), the bounded region C with 1-sphere boundary is
          a 2-cell. **)
   have h_final: "\<forall>C. (\<exists>P\<in>N. C = geotop_component_at UNIV geotop_euclidean_topology N P) \<longrightarrow>
