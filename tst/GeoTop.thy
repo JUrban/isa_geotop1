@@ -11614,6 +11614,24 @@ proof -
   proof
     fix v assume hv: "v \<in> geotop_complex_vertices K"
     (** Same five lemmas as in 4.8 but weakened L3: each edge in \<ge> 1 triangle. **)
+    \<comment> \<open>L1: \<exists> incident edge at v.\<close>
+    have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e" sorry
+    \<comment> \<open>L2: every incident edge is contained in some 2-simplex.\<close>
+    have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+                (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)" sorry
+    \<comment> \<open>L3-with-boundary: each incident edge in \<le> 2 triangles
+      (\<le> 2, not = 2 — this is the manifold-with-boundary case).\<close>
+    have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+                card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
+    \<comment> \<open>L4: link |L(v)| is connected.\<close>
+    have hL4: "top1_connected_on (\<Union>(geotop_link K v))
+                 (subspace_topology UNIV geotop_euclidean_topology
+                    (\<Union>(geotop_link K v)))" sorry
+    \<comment> \<open>L5: link is a broken line or polygon.\<close>
+    have hL5: "geotop_is_broken_line (\<Union>(geotop_link K v)) \<or>
+                geotop_is_polygon (\<Union>(geotop_link K v))" sorry
+    \<comment> \<open>L6 (main conclusion): Star is a combinatorial 2-cell.\<close>
+    have hL6: "geotop_comb_n_cell (geotop_star K v) 2" sorry
     have hL_all:
       "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
        (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
@@ -11624,8 +11642,9 @@ proof -
                  (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
        (geotop_is_broken_line (\<Union>(geotop_link K v))
                      \<or> geotop_is_polygon (\<Union>(geotop_link K v))) \<and>
-       geotop_comb_n_cell (geotop_star K v) 2" sorry
-    show "geotop_comb_n_cell (geotop_star K v) 2" using hL_all by (by100 blast)
+       geotop_comb_n_cell (geotop_star K v) 2"
+      using hL1 hL2 hL3 hL4 hL5 hL6 by (by100 blast)
+    show "geotop_comb_n_cell (geotop_star K v) 2" using hL6 .
   qed
 next
   (** Bd |K| = union of edges lying in only one 2-simplex. **)
