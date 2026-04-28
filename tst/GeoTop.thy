@@ -5101,6 +5101,59 @@ proof -
           using hU_in in_components_connected by (by100 blast)
         have hU_path_conn: "path_connected U"
           using hU_open hU_conn connected_open_path_connected by (by100 blast)
+        \<comment> \<open>Step 24: Any connected open subset V of U ∩ ball x δ_iso is in Hp
+          or in Hm. By h_local_L_in_M, V is disjoint from L; the global
+          halfplane lemma applies since L is a hyperplane.\<close>
+        have h_L_eq_canon: "{y. inner (y - x) n = 0} = {y. inner n y = inner n x}"
+          by (auto simp: inner_diff_right inner_commute)
+        have h_Hp_eq_canon: "Hp = ball x \<delta>_iso \<inter> {y. inner n y > inner n x}"
+          unfolding Hp_def by (auto simp: inner_diff_right inner_commute)
+        have h_Hm_eq_canon: "Hm = ball x \<delta>_iso \<inter> {y. inner n y < inner n x}"
+          unfolding Hm_def by (auto simp: inner_diff_right inner_commute)
+        have h_conn_subset_in_halfball:
+          "\<And>V. \<lbrakk>open V; connected V; V \<subseteq> U \<inter> ball x \<delta>_iso\<rbrakk>
+                \<Longrightarrow> V \<subseteq> Hp \<or> V \<subseteq> Hm"
+        proof -
+          fix V :: "(real^2) set"
+          assume hV_open: "open V" and hV_conn: "connected V"
+             and hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso"
+          have hV_sub_U: "V \<subseteq> U" using hV_sub by (by100 blast)
+          have hV_sub_ball: "V \<subseteq> ball x \<delta>_iso" using hV_sub by (by100 blast)
+          have hV_disj_L: "V \<inter> {y. inner n y = inner n x} = {}"
+          proof -
+            have h1: "V \<inter> {y. inner (y - x) n = 0} = {}"
+            proof
+              show "V \<inter> {y. inner (y - x) n = 0} \<subseteq> {}"
+              proof
+                fix v assume hv: "v \<in> V \<inter> {y. inner (y - x) n = 0}"
+                have hvV: "v \<in> V" using hv by (by100 blast)
+                have hv_L: "v \<in> {y. inner (y - x) n = 0}" using hv by (by100 blast)
+                have hv_ball: "v \<in> ball x \<delta>_iso" using hvV hV_sub_ball by (by100 blast)
+                have hv_in_ball_L: "v \<in> ball x \<delta>_iso \<inter> {y. inner (y - x) n = 0}"
+                  using hv_ball hv_L by (by100 blast)
+                have hv_M: "v \<in> M" using hv_in_ball_L h_local_L_in_M by (by100 blast)
+                have hv_U: "v \<in> U" using hvV hV_sub_U by (by100 blast)
+                have "v \<in> U \<inter> M" using hv_U hv_M by (by100 blast)
+                thus "v \<in> {}" using hU_disj_M by (by100 blast)
+              qed
+            qed (by100 blast)
+            show ?thesis using h1 h_L_eq_canon by (by100 simp)
+          qed
+          have hV_in_one:
+            "V \<subseteq> {y. inner n y > inner n x} \<or> V \<subseteq> {y. inner n y < inner n x}"
+            by (rule connected_open_disjoint_from_line_in_halfplane[OF hV_open hV_conn hV_disj_L])
+          show "V \<subseteq> Hp \<or> V \<subseteq> Hm"
+          proof (cases "V \<subseteq> {y. inner n y > inner n x}")
+            case True
+            have "V \<subseteq> Hp" using True hV_sub_ball h_Hp_eq_canon by (by100 blast)
+            thus ?thesis by (by100 blast)
+          next
+            case False
+            hence "V \<subseteq> {y. inner n y < inner n x}" using hV_in_one by (by100 blast)
+            hence "V \<subseteq> Hm" using hV_sub_ball h_Hm_eq_canon by (by100 blast)
+            thus ?thesis by (by100 blast)
+          qed
+        qed
         \<comment> \<open>Step 20: extract a CLAIM_A — every ball x δ ∩ Int i point is in
           closure U. The deep geometric fact is local-side propagation along L.
           Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
