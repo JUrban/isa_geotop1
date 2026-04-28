@@ -4874,6 +4874,23 @@ proof -
         obtain a b where hab_ne: "a \<noteq> b"
                      and h\<sigma>_x_seg: "\<sigma>_x = closed_segment a b"
           using h\<sigma>_x_EAX hEAX_closed_segs by (by100 blast)
+        \<comment> \<open>Step 10b (single-edge case assumption): For h_local_L_in_M to hold,
+          we need x interior to σ_x (single-edge case) AND δ_iso refined enough.
+          The vertex case (x = a or x = b) requires separate analysis with
+          multiple lines. Captured here as a single sub-sorry.\<close>
+        have h_x_open_seg: "x \<in> open_segment a b" sorry
+        have h_dist_xa_pos: "dist x a > 0"
+        proof -
+          have hx_ne_a: "x \<noteq> a"
+            using h_x_open_seg unfolding open_segment_def by (by100 blast)
+          show ?thesis using hx_ne_a by (by100 simp)
+        qed
+        have h_dist_xb_pos: "dist x b > 0"
+        proof -
+          have hx_ne_b: "x \<noteq> b"
+            using h_x_open_seg unfolding open_segment_def by (by100 blast)
+          show ?thesis using hx_ne_b by (by100 simp)
+        qed
         \<comment> \<open>Step 11: derive the line L = aff_hull σ_x. Pick a unit normal n so that
           L = {y. inner n (y - x) = 0}. Since σ_x has aff_dim 1 (it's a 1-simplex
           and aff_dim of convex hull of 2 distinct points is 1), and we're in
