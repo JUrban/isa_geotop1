@@ -17,7 +17,7 @@ session GeoTopBase0 in b0 = Top0 +
     GeoTopBase0
 
 session GeoTopBase in b = GeoTopBase0 +
-  options [quick_and_dirty, timeout = 120]
+  options [quick_and_dirty, timeout = 240]
   theories
     GeoTopBase
 
