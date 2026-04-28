@@ -5938,6 +5938,65 @@ proof -
             have h\<gamma>0: "\<gamma> 0 = u_w" unfolding \<gamma>_def by simp
             have h\<gamma>1: "\<gamma> 1 = u_w_t"
               unfolding \<gamma>_def u_w_t_def by simp
+            \<comment> \<open>γ([0,1]) ⊆ ball x δ_iso2 via norm bound.\<close>
+            have h\<gamma>_in_ball: "\<forall>t\<in>{0..1::real}. \<gamma> t \<in> ball x \<delta>_iso2"
+            proof
+              fix t :: real assume ht: "t \<in> {0..1}"
+              have ht_pos: "0 \<le> t" using ht by simp
+              have ht_le1: "t \<le> 1" using ht by simp
+              have hgt_x: "\<gamma> t - x = (u_w - x) + t *\<^sub>R (y - x)"
+                unfolding \<gamma>_def by simp
+              have h_tri: "norm ((u_w - x) + t *\<^sub>R (y - x))
+                          \<le> norm (u_w - x) + norm (t *\<^sub>R (y - x))"
+                by (rule norm_triangle_ineq)
+              have h_scale: "norm (t *\<^sub>R (y - x)) = \<bar>t\<bar> * norm (y - x)"
+                by (rule norm_scaleR)
+              have h_norm_eq: "norm (\<gamma> t - x) = norm ((u_w - x) + t *\<^sub>R (y - x))"
+                using arg_cong[where f=norm, OF hgt_x] by (by100 simp)
+              have h_norm_le: "norm (\<gamma> t - x) \<le> norm (u_w - x) + \<bar>t\<bar> * norm (y - x)"
+                using h_norm_eq h_tri h_scale by (by100 linarith)
+              have h_abs_t: "\<bar>t\<bar> = t" using ht_pos by simp
+              have h_norm_le2: "norm (\<gamma> t - x) \<le> norm (u_w - x) + t * norm (y - x)"
+                using h_norm_le h_abs_t by (by100 simp)
+              have h_norm_uw: "norm (u_w - x) = dist u_w x"
+                by (simp add: dist_norm)
+              have h_norm_yx: "norm (y - x) = dist y x"
+                by (simp add: dist_norm)
+              have h_le_t1: "t * norm (y - x) \<le> 1 * norm (y - x)"
+                using ht_le1 norm_ge_zero[of "y - x"] mult_right_mono by (by100 blast)
+              have h_norm_le3: "norm (\<gamma> t - x) \<le> dist u_w x + dist y x"
+                using h_norm_le2 h_norm_uw h_norm_yx h_le_t1 by (by100 linarith)
+              have h_lt_eps: "dist u_w x < \<epsilon>" using hu_w_dist_eps .
+              have h_eps_dy_le: "\<epsilon> + dist y x \<le> (\<delta>_iso2 + dist y x) / 2"
+              proof -
+                have h1: "\<epsilon> \<le> (\<delta>_iso2 - dist y x) / 2" using h\<epsilon>_le_half_iso2 .
+                have h2: "(\<delta>_iso2 - dist y x) / 2 + dist y x = (\<delta>_iso2 + dist y x) / 2"
+                  by argo
+                show ?thesis using h1 h2 by (by100 linarith)
+              qed
+              have h_avg_lt: "(\<delta>_iso2 + dist y x) / 2 < \<delta>_iso2"
+              proof -
+                have h_lt: "dist y x < \<delta>_iso2" using hy_dist_lt_iso2 .
+                show ?thesis using h_lt by (by100 argo)
+              qed
+              have h_lt_iso2: "dist u_w x + dist y x < \<delta>_iso2"
+              proof -
+                have hlt1: "dist u_w x + dist y x < \<epsilon> + dist y x"
+                  using h_lt_eps by (by100 linarith)
+                have hle2: "\<epsilon> + dist y x \<le> (\<delta>_iso2 + dist y x) / 2"
+                  using h_eps_dy_le .
+                have hlt3: "(\<delta>_iso2 + dist y x) / 2 < \<delta>_iso2" using h_avg_lt .
+                show ?thesis using hlt1 hle2 hlt3 by (by100 linarith)
+              qed
+              have h_lt: "norm (\<gamma> t - x) < \<delta>_iso2"
+                using h_norm_le3 h_lt_iso2 by (by100 linarith)
+              have h_dist_eq: "dist x (\<gamma> t) = norm (\<gamma> t - x)"
+                by (simp add: dist_norm norm_minus_commute)
+              have h_dist_lt: "dist x (\<gamma> t) < \<delta>_iso2"
+                using h_lt h_dist_eq by (by100 simp)
+              show "\<gamma> t \<in> ball x \<delta>_iso2"
+                using h_dist_lt by (by100 simp)
+            qed
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
