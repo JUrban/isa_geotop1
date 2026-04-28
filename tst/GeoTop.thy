@@ -5512,6 +5512,56 @@ proof -
               have hV''_eq: "V'' = V_\<sigma>'"
                 using geotop_simplex_vertices_unique[OF hV''_sv hV_\<sigma>'_sv] .
               have hW''_sub: "W'' \<subseteq> V_\<sigma>'" using hW''_V'' hV''_eq by (by100 simp)
+              \<comment> \<open>σ_x has 2 distinct elements (a, b). Convert to HOL convex_hull
+                and rule out |W''| = 1.\<close>
+              have h\<sigma>_x_HOL: "\<sigma>_x = convex hull W''"
+              proof -
+                have h_eq: "geotop_convex_hull W'' = convex hull W''"
+                  by (rule geotop_convex_hull_eq_HOL)
+                show ?thesis using h\<sigma>_x_W'' h_eq by (by100 simp)
+              qed
+              have ha_in_x: "a \<in> \<sigma>_x"
+                using h\<sigma>_x_seg by (by100 simp)
+              have hb_in_x: "b \<in> \<sigma>_x"
+                using h\<sigma>_x_seg by (by100 simp)
+              have hW''_card: "card W'' \<ge> 2"
+              proof (rule ccontr)
+                assume "\<not> card W'' \<ge> 2"
+                hence h_card_lt: "card W'' < 2" by (by100 simp)
+                have hW''_fin: "finite W''"
+                  using hW''_sub hV_\<sigma>'_fin finite_subset by (by100 blast)
+                have h_card_pos: "card W'' \<ge> 1"
+                proof -
+                  have h_ne_0: "card W'' \<noteq> 0"
+                    using hW''_ne hW''_fin card_0_eq by (by100 blast)
+                  show ?thesis using h_ne_0 by (by100 simp)
+                qed
+                have h_card_eq_1: "card W'' = 1"
+                  using h_card_lt h_card_pos by (by100 simp)
+                obtain p where hW''_eq: "W'' = {p}"
+                  using h_card_eq_1 card_1_singletonE by (by100 metis)
+                have h_hull_p: "convex hull W'' = {p}"
+                  using hW''_eq by (by100 simp)
+                have h\<sigma>_x_p: "\<sigma>_x = {p}" using h\<sigma>_x_HOL h_hull_p by (by100 simp)
+                have ha_p: "a = p" using ha_in_x h\<sigma>_x_p by (by100 blast)
+                have hb_p: "b = p" using hb_in_x h\<sigma>_x_p by (by100 blast)
+                have ha_b: "a = b" using ha_p hb_p by (by100 simp)
+                show False using ha_b hab_ne by (by100 simp)
+              qed
+              \<comment> \<open>card W'' ≥ 2, W'' ⊆ V_σ' (card 2) ⟹ W'' = V_σ'.\<close>
+              have hW''_eq_V: "W'' = V_\<sigma>'"
+              proof -
+                have h_le: "card W'' \<le> card V_\<sigma>'"
+                  using hW''_sub hV_\<sigma>'_fin card_mono by (by100 blast)
+                have h_card_eq: "card W'' = card V_\<sigma>'"
+                  using hW''_card h_le hV_\<sigma>'_card by (by100 simp)
+                show ?thesis
+                  using card_subset_eq[OF hV_\<sigma>'_fin hW''_sub h_card_eq]
+                  by (by100 simp)
+              qed
+              \<comment> \<open>σ_x = conv W'' = conv V_σ' = σ'.\<close>
+              have h\<sigma>_x_eq_\<sigma>': "\<sigma>_x = \<sigma>'"
+                using h\<sigma>_x_W'' hW''_eq_V hV_\<sigma>'_hull by (by100 simp)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5733,6 +5783,56 @@ proof -
               have hV''_eq: "V'' = V_\<sigma>'"
                 using geotop_simplex_vertices_unique[OF hV''_sv hV_\<sigma>'_sv] .
               have hW''_sub: "W'' \<subseteq> V_\<sigma>'" using hW''_V'' hV''_eq by (by100 simp)
+              \<comment> \<open>σ_x has 2 distinct elements (a, b). Convert to HOL convex_hull
+                and rule out |W''| = 1.\<close>
+              have h\<sigma>_x_HOL: "\<sigma>_x = convex hull W''"
+              proof -
+                have h_eq: "geotop_convex_hull W'' = convex hull W''"
+                  by (rule geotop_convex_hull_eq_HOL)
+                show ?thesis using h\<sigma>_x_W'' h_eq by (by100 simp)
+              qed
+              have ha_in_x: "a \<in> \<sigma>_x"
+                using h\<sigma>_x_seg by (by100 simp)
+              have hb_in_x: "b \<in> \<sigma>_x"
+                using h\<sigma>_x_seg by (by100 simp)
+              have hW''_card: "card W'' \<ge> 2"
+              proof (rule ccontr)
+                assume "\<not> card W'' \<ge> 2"
+                hence h_card_lt: "card W'' < 2" by (by100 simp)
+                have hW''_fin: "finite W''"
+                  using hW''_sub hV_\<sigma>'_fin finite_subset by (by100 blast)
+                have h_card_pos: "card W'' \<ge> 1"
+                proof -
+                  have h_ne_0: "card W'' \<noteq> 0"
+                    using hW''_ne hW''_fin card_0_eq by (by100 blast)
+                  show ?thesis using h_ne_0 by (by100 simp)
+                qed
+                have h_card_eq_1: "card W'' = 1"
+                  using h_card_lt h_card_pos by (by100 simp)
+                obtain p where hW''_eq: "W'' = {p}"
+                  using h_card_eq_1 card_1_singletonE by (by100 metis)
+                have h_hull_p: "convex hull W'' = {p}"
+                  using hW''_eq by (by100 simp)
+                have h\<sigma>_x_p: "\<sigma>_x = {p}" using h\<sigma>_x_HOL h_hull_p by (by100 simp)
+                have ha_p: "a = p" using ha_in_x h\<sigma>_x_p by (by100 blast)
+                have hb_p: "b = p" using hb_in_x h\<sigma>_x_p by (by100 blast)
+                have ha_b: "a = b" using ha_p hb_p by (by100 simp)
+                show False using ha_b hab_ne by (by100 simp)
+              qed
+              \<comment> \<open>card W'' ≥ 2, W'' ⊆ V_σ' (card 2) ⟹ W'' = V_σ'.\<close>
+              have hW''_eq_V: "W'' = V_\<sigma>'"
+              proof -
+                have h_le: "card W'' \<le> card V_\<sigma>'"
+                  using hW''_sub hV_\<sigma>'_fin card_mono by (by100 blast)
+                have h_card_eq: "card W'' = card V_\<sigma>'"
+                  using hW''_card h_le hV_\<sigma>'_card by (by100 simp)
+                show ?thesis
+                  using card_subset_eq[OF hV_\<sigma>'_fin hW''_sub h_card_eq]
+                  by (by100 simp)
+              qed
+              \<comment> \<open>σ_x = conv W'' = conv V_σ' = σ'.\<close>
+              have h\<sigma>_x_eq_\<sigma>': "\<sigma>_x = \<sigma>'"
+                using h\<sigma>_x_W'' hW''_eq_V hV_\<sigma>'_hull by (by100 simp)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
