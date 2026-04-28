@@ -5094,6 +5094,13 @@ proof -
           qed
           show ?thesis using h_x_closure_or hP_imp hM_imp by (by100 blast)
         qed
+        \<comment> \<open>Step 21: U is path-connected (open + connected in ℝ²). This will
+          be used in the deep step for halfplane-preservation arguments along
+          paths γ : [0,1] → U.\<close>
+        have hU_conn: "connected U"
+          using hU_in in_components_connected by (by100 blast)
+        have hU_path_conn: "path_connected U"
+          using hU_open hU_conn connected_open_path_connected by (by100 blast)
         \<comment> \<open>Step 20: extract a CLAIM_A — every ball x δ ∩ Int i point is in
           closure U. The deep geometric fact is local-side propagation along L.
           Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
