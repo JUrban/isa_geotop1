@@ -5540,6 +5540,18 @@ proof -
               by (rule h_halfplane_invariant[OF hy_L])
             show "inner (u - y) n < 0" using hu_neg h_inv by (by100 simp)
           qed
+          have h_Hm_witness:
+            "\<And>r::real. r > 0 \<Longrightarrow> \<exists>u\<in>U \<inter> Hm. dist u x < r"
+          proof -
+            fix r :: real assume hr: "r > 0"
+            have h_ex: "\<exists>z\<in>U \<inter> Hm. dist x z < r"
+              by (rule closure_approachableD[OF hx_cl_Hm hr])
+            obtain z where hz: "z \<in> U \<inter> Hm" and hz_dist: "dist x z < r"
+              using h_ex by (by100 blast)
+            have h_swap: "dist z x = dist x z" by (rule dist_commute)
+            have hz_dist': "dist z x < r" using hz_dist h_swap by (by100 simp)
+            show "\<exists>u\<in>U \<inter> Hm. dist u x < r" using hz hz_dist' by (by100 blast)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
