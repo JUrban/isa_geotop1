@@ -5515,6 +5515,18 @@ proof -
             show "inner (y - x) n = 0"
               using h_inner_eq by (simp add: inner_diff_right inner_commute)
           qed
+          \<comment> \<open>Symmetric: for y on L and any u ∈ Hm, inner (u - y) n < 0.\<close>
+          have h_Hm_near_y:
+            "\<And>y u. \<lbrakk>inner (y - x) n = 0; u \<in> Hm\<rbrakk> \<Longrightarrow> inner (u - y) n < 0"
+          proof -
+            fix y u :: "real^2"
+            assume hy_L: "inner (y - x) n = 0" and hu_Hm: "u \<in> Hm"
+            have hu_neg: "inner (u - x) n < 0"
+              using hu_Hm unfolding Hm_def by (by100 blast)
+            have h_inv: "inner (u - y) n = inner (u - x) n"
+              by (rule h_halfplane_invariant[OF hy_L])
+            show "inner (u - y) n < 0" using hu_neg h_inv by (by100 simp)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
