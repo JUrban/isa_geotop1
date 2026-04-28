@@ -6150,6 +6150,11 @@ proof -
             obtain u_w where hu_w_UHm: "u_w \<in> U \<inter> Hm"
                          and hu_w_dist: "dist u_w x < r/3"
               using h_Hm_witness[OF hr3_pos] by (by100 blast)
+            have h_tri: "dist u_w y \<le> dist u_w x + dist x y"
+              by (rule dist_triangle)
+            have h_dist_xy: "dist x y = dist y x" by (rule dist_commute)
+            have hu_w_dist_y: "dist u_w y < r/3 + dist y x"
+              using h_tri hu_w_dist h_dist_xy by (by100 simp)
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
