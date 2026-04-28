@@ -5916,7 +5916,16 @@ proof -
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
-            sorry
+          proof (intro exI[where x="\<delta>_iso2"] conjI ballI impI allI)
+            show "\<delta>_iso2 > 0" using h\<delta>_iso2_pos .
+            fix y :: "real^2"
+            assume hy: "y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E"
+            assume hy_ne: "y \<noteq> x"
+            fix r :: real
+            assume hr_in: "0 < r \<and> r \<le> dist y x"
+            \<comment> \<open>Symmetric to Hp case but with negative halfplane direction.\<close>
+            show "ball y r \<inter> U \<noteq> {}" sorry
+          qed
         qed
         have h_CLAIM_A_off_small:
           "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
