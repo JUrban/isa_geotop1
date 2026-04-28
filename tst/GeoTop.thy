@@ -5409,7 +5409,25 @@ proof -
             (complex axiom). The face containing x ∈ σ' ∩ σ_x must be σ_x
             itself (since {x} not a face of σ_x when x ∈ open_segment). Then
             σ_x ⊆ σ' both 1-simplexes ⟹ σ' = σ_x.\<close>
-          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}" sorry
+          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}"
+          proof
+            show "{\<sigma>_x} \<subseteq> EdgesAtX" using h\<sigma>_x_EAX by (by100 blast)
+            show "EdgesAtX \<subseteq> {\<sigma>_x}"
+            proof
+              fix \<sigma>' assume h\<sigma>': "\<sigma>' \<in> EdgesAtX"
+              have hx\<sigma>': "x \<in> \<sigma>'" using h\<sigma>' hEAX_x_in by (by100 blast)
+              have h\<sigma>'_K: "\<sigma>' \<in> K_i" using h\<sigma>' hEAX_sub by (by100 blast)
+              have h\<sigma>'_dim: "geotop_simplex_dim \<sigma>' 1"
+                using h\<sigma>' unfolding EdgesAtX_def by (by100 blast)
+              \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
+                Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
+                (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
+                {x} is not a face of σ_x; the face must be σ_x itself.
+                (iv) σ_x ⊆ σ' both 1-simplexes (with 2-element vertex sets)
+                ⟹ σ' = σ_x.\<close>
+              show "\<sigma>' \<in> {\<sigma>_x}" sorry
+            qed
+          qed
           \<comment> \<open>Hence y ∈ σ_x for relevant y.\<close>
           have h_y_in_seg:
             "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
