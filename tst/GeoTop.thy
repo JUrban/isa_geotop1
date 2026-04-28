@@ -16477,6 +16477,21 @@ proof -
              P\<^sub>0 g\<^sub>1 g\<^sub>2" sorry
   (** (2) By Theorem 16.4, {g_1, g_2} freely generates \<pi>(R^3 - (J_1 \<union> J_3)) as well
          (J_2 plays no role outside D, and (J_1, J_3) is a 2-component unknotted link). **)
+  \<comment> \<open>Sub-claim T16_5-A: g_1, g_2 freely generate \<pi>(R^3 - (J_1 \<union> J_3)) (via 16.4).\<close>
+  have hT16_5_big_free_gen:
+    "\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2 (G::(real \<Rightarrow> real^3) set).
+        g\<^sub>1 \<in> G \<and> g\<^sub>2 \<in> G \<and> card G = 2 \<and>
+        (\<forall>q. geotop_closed_path_on (UNIV - (J1 \<union> J3))
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3))) P\<^sub>0 q \<longrightarrow>
+           geotop_path_equiv (UNIV - (J1 \<union> J3))
+             (subspace_topology UNIV geotop_euclidean_topology (UNIV - (J1 \<union> J3)))
+             P\<^sub>0 q q)" sorry
+  \<comment> \<open>Sub-claim T16_5-B: p reduces to e in U via free-group moves
+    (each local triangle move respects confinement to D - (J_1 \<union> J_2 \<union> J_3)).\<close>
+  have hT16_5_local_null:
+    "geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
+           (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
   have h_big_free:
     "(\<exists>(g\<^sub>1::real \<Rightarrow> real^3) g\<^sub>2 (G::(real \<Rightarrow> real^3) set).
         g\<^sub>1 \<in> G \<and> g\<^sub>2 \<in> G \<and> card G = 2 \<and>
@@ -16488,7 +16503,8 @@ proof -
              P\<^sub>0 q q)) \<and>
      geotop_path_equiv (D - (J1 \<union> J2 \<union> J3))
            (subspace_topology UNIV geotop_euclidean_topology (D - (J1 \<union> J2 \<union> J3)))
-           P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+           P\<^sub>0 p (\<lambda>t. P\<^sub>0)"
+    using hT16_5_big_free_gen hT16_5_local_null by (by100 blast)
   (** (3) p \<cong> e in R^3 - (J_1 \<union> J_3) means the word of p in g_1, g_2 reduces to empty
          using only free-group moves (no extra relations). The same moves are valid
          inside U, since each local triangle move in the PL sweep respects the
