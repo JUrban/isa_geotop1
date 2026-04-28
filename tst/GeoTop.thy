@@ -10875,6 +10875,40 @@ proof -
     using Theorem_GT_2_2[OF hJ] by blast
   (** By induction on #2-simplexes of K, with base case \"exactly 1 two-simplex\"
       (K = single 2-simplex \<sigma>, h = id, h(J) = Fr \<sigma>). **)
+  \<comment> \<open>Sub-claim 34-Base: if K has exactly one 2-simplex sigma_0, then h = identity
+    works since the polyhedron's frontier is exactly J = Fr sigma_0.\<close>
+  have ind_base:
+    "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+          geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 1 \<Longrightarrow>
+          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+                \<and> geotop_simplex_dim \<sigma> 2
+                \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    sorry
+  \<comment> \<open>Sub-claim 34-Step: if K has > 1 two-simplex, find a free 2-simplex (via
+    GT_3_3); fold it to reduce #2-simplexes; apply IH on the reduced complex.
+    Each fold gives a homeomorphism plane → plane; compose at the end.\<close>
+  have ind_step:
+    "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+          geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
+          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+                \<and> geotop_simplex_dim \<sigma> 2
+                \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    sorry
+  \<comment> \<open>Sub-claim 34-NonEmpty: any triangulation K of closure(polygon_interior J)
+    has at least one 2-simplex (since the polyhedron has non-empty interior
+    and 2-simplexes are the dim-2 simplexes that contribute to the polyhedron).\<close>
+  have ind_nonempty:
+    "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+          geotop_polyhedron K =
+            closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 1"
+    sorry
   have ind_claim:
     "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
           geotop_polyhedron K =
@@ -10883,7 +10917,28 @@ proof -
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-    sorry
+  proof -
+    fix K' :: "(real^2) set set"
+    assume h1: "geotop_is_complex K'"
+    assume h2: "finite K'"
+    assume h3: "geotop_polyhedron K' =
+                  closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    have h_card_pos: "card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2} \<ge> 1"
+      using ind_nonempty[OF h1 h2 h3] .
+    show "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+                \<and> geotop_simplex_dim \<sigma> 2
+                \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    proof (cases "card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2} = 1")
+      case True
+      show ?thesis using ind_base[OF h1 h2 h3 True] .
+    next
+      case False
+      have h_card_gt: "card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2} > 1"
+        using h_card_pos False by (by100 simp)
+      show ?thesis using ind_step[OF h1 h2 h3 h_card_gt] .
+    qed
+  qed
   show ?thesis using ind_claim[OF hK hK_fin hK_poly] .
 qed
 
