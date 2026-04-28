@@ -4932,13 +4932,69 @@ proof -
         have h_x_open_seg: "x \<in> open_segment a b"
         proof (cases "{x} \<in> K_i")
           case True
-          \<comment> \<open>Vertex case: {x} ∈ K_i. By complex face axiom, {x} = σ_x ∩ {x}
-            is a face of σ_x. Faces of σ_x: {a}, {b}, σ_x. {x} ≠ σ_x since
-            |{x}|=1 < |σ_x|. So x ∈ {a, b}, contradicting x ∈ open_segment a b.
-
-            The proof goal h_local_open ITSELF still holds: x being at a
-            broken-line vertex implies multiple edges meeting at x, requiring
-            parallel halfplane analyses (one per edge). Proof body's
+          \<comment> \<open>Vertex case: {x} ∈ K_i. Derive x ∈ {a, b}.\<close>
+          have hx_x_eq: "{x} \<inter> \<sigma>_x = {x}"
+            using hx\<sigma>_x by (by100 blast)
+          have hx_x_ne: "{x} \<inter> \<sigma>_x \<noteq> {}"
+            using hx\<sigma>_x by (by100 blast)
+          have h_int_face: "\<forall>\<sigma>\<in>K_i. \<forall>\<tau>\<in>K_i. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                              geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+            by (rule conjunct1[OF conjunct2[OF conjunct2[OF
+                hK_i_complex[unfolded geotop_is_complex_def]]]])
+          have hxx_face: "geotop_is_face ({x} \<inter> \<sigma>_x) \<sigma>_x"
+            using True h\<sigma>_x_K_top hx_x_ne h_int_face by (by100 blast)
+          have h_x_face: "geotop_is_face {x} \<sigma>_x"
+            using hxx_face hx_x_eq by (by100 simp)
+          obtain V'' W'' where hV''_sv: "geotop_simplex_vertices \<sigma>_x V''"
+                            and hW''_ne: "W'' \<noteq> {}" and hW''_V'': "W'' \<subseteq> V''"
+                            and h_x_W'': "{x} = geotop_convex_hull W''"
+            using h_x_face unfolding geotop_is_face_def by (by100 blast)
+          have hV''_eq: "V'' = {a, b}"
+            using geotop_simplex_vertices_unique[OF hV''_sv h_sv_x_top] .
+          have hW''_sub: "W'' \<subseteq> {a, b}"
+            using hW''_V'' hV''_eq by (by100 simp)
+          have h_x_HOL: "{x} = convex hull W''"
+          proof -
+            have h_eq: "geotop_convex_hull W'' = convex hull W''"
+              by (rule geotop_convex_hull_eq_HOL)
+            show ?thesis using h_x_W'' h_eq by (by100 simp)
+          qed
+          have hx_in_ab: "x = a \<or> x = b"
+          proof (cases "W'' = {a}")
+            case True
+            have "convex hull W'' = {a}" using True by (by100 simp)
+            hence "{x} = {a}" using h_x_HOL by (by100 simp)
+            thus ?thesis by (by100 simp)
+          next
+            case False
+            show ?thesis
+            proof (cases "W'' = {b}")
+              case True
+              have "convex hull W'' = {b}" using True by (by100 simp)
+              hence "{x} = {b}" using h_x_HOL by (by100 simp)
+              thus ?thesis by (by100 simp)
+            next
+              case False
+              have hW''_cases: "W'' = {a} \<or> W'' = {b} \<or> W'' = {a, b}"
+                using hW''_sub hW''_ne by (by100 blast)
+              have h_eq_ab: "W'' = {a, b}"
+                using hW''_cases \<open>W'' \<noteq> {a}\<close> False by (by100 blast)
+              have h_seg_eq: "closed_segment a b = convex hull {a, b}"
+                by (rule segment_convex_hull)
+              have "convex hull W'' = closed_segment a b"
+                using h_eq_ab h_seg_eq by (by100 simp)
+              hence h_x_seg: "{x} = closed_segment a b" using h_x_HOL by (by100 simp)
+              \<comment> \<open>{x} = closed_segment a b, but |{x}|=1 and |closed_segment a b| ≥ 2.\<close>
+              have ha_in: "a \<in> closed_segment a b" by (by100 simp)
+              have hb_in: "b \<in> closed_segment a b" by (by100 simp)
+              have ha_x: "a = x" using ha_in h_x_seg by (by100 blast)
+              have hb_x: "b = x" using hb_in h_x_seg by (by100 blast)
+              have "a = b" using ha_x hb_x by (by100 simp)
+              thus ?thesis using hab_ne by (by100 blast)
+            qed
+          qed
+          \<comment> \<open>Vertex case: x ∈ {a, b}. The proof goal h_local_open's conclusion
+            still holds (multiple edges meet at x), but proof body's
             single-σ_x structure doesn't cover this. Multi-day work.\<close>
           show ?thesis sorry
         next
