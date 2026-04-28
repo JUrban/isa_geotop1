@@ -7083,15 +7083,20 @@ proof -
       have hE_ne: "E \<noteq> {}" using hE_card by (by100 force)
       show ?thesis using hE_ne by (by100 blast)
     qed
+    obtain P where hP_E: "P \<in> E" using hAM_P_ex by (by100 blast)
     \<comment> \<open>Sub-claim AM2: small ball around P minus M has finitely many
-      components, each touching at most 2 of the 3 arcs Bi.\<close>
+      components, each touching at most 2 of the 3 arcs Bi.
+      (Geometrically, near a theta-vertex P, the 3 arcs partition a small
+      disk into a finite number of sectors; each sector is bounded by a
+      pair of consecutive arcs.)\<close>
     have hAM_local_sectors:
-      "\<exists>\<delta>>0. \<forall>C \<in> components (ball undefined \<delta> - M).
+      "\<exists>\<delta>>0. \<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}. Bi \<inter> closure C \<noteq> {}} \<le> 2"
       sorry
-    \<comment> \<open>Sub-claim AM3: U \<inter> ball P \<delta> is a non-empty open subset; it intersects
-      some sector C, hence frontier U \<inter> ball P \<delta> \<subseteq> closure C \<inter> M, which
-      hits at most 2 of the Bi near P.\<close>
+    \<comment> \<open>Sub-claim AM3: from AM2, U intersects some sector C; the frontier
+      of U near P is contained in closure C \<inter> M, which hits at most 2
+      of the Bi. The remaining Bi has neighborhood points missing
+      frontier U, hence Bi \<not>\<subseteq> frontier U.\<close>
     have hAM_U_misses_one:
       "\<exists>Bi \<in> {B1, B2, B3}. \<not> (Bi \<subseteq> frontier U)"
       sorry
