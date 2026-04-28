@@ -5377,13 +5377,33 @@ proof -
            \<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
-          sorry
+        proof -
+          assume hx_cl_Hp: "x \<in> closure (U \<inter> Hp)"
+          \<comment> \<open>Use δ = δ_iso2 (refined radius from Step 10c). For each y in
+            ball x δ_iso2 ∩ Int i with y ≠ x, by Step 5 + single-edge case
+            (h_x_open_seg) y is on σ_x, so y is on the line L. The deep
+            Schoenflies-like step shows U has points in any ball y r via
+            local flatness of U near σ_x. Path-component infrastructure
+            (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
+            from GeoTopBase support the formalization.\<close>
+          show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow>
+                    (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+            sorry
+        qed
         have h_CLAIM_A_off_small_Hm:
           "x \<in> closure (U \<inter> Hm) \<Longrightarrow>
            \<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
-          sorry
+        proof -
+          assume hx_cl_Hm: "x \<in> closure (U \<inter> Hm)"
+          \<comment> \<open>Symmetric to the Hp case via path_component_in_halfplane_neg.\<close>
+          show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
+                  y \<noteq> x \<longrightarrow>
+                    (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
+            sorry
+        qed
         have h_CLAIM_A_off_small:
           "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
