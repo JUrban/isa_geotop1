@@ -13197,6 +13197,22 @@ proof -
   have hIbar_eq: "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
     sorry
   (** Step 6: use copy-in-B2 construction and Theorem 5.6 to assemble homeo. **)
+  \<comment> \<open>Sub-claim T9_6-A: Ibar (= closure of polygon interior) is a 2-cell.
+    Built from C0 + nested Cs via copy-in-B2 + 5_6 cell-extension at each level.\<close>
+  have hT9_6_Ibar_2cell:
+    "geotop_is_n_cell Ibar (subspace_topology UNIV geotop_euclidean_topology Ibar) 2"
+    sorry
+  \<comment> \<open>Sub-claim T9_6-B: the bounded component of UNIV - J has 2-cell closure.
+    Use Ibar = closure(polygon_interior J) and bridging via T9_6-A.\<close>
+  have hT9_6_bdd_cell:
+    "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and>
+            I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+            \<and> geotop_bounded_R2 I) \<and>
+         geotop_is_n_cell
+           (closure_on UNIV geotop_euclidean_topology I)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (closure_on UNIV geotop_euclidean_topology I)) 2"
+    sorry
   have hIbar_cell: "geotop_is_n_cell Ibar
                       (subspace_topology UNIV geotop_euclidean_topology Ibar) 2 \<and>
                     (\<exists>I. (\<exists>P. P \<in> UNIV - J \<and>
@@ -13206,7 +13222,7 @@ proof -
                            (closure_on UNIV geotop_euclidean_topology I)
                            (subspace_topology UNIV geotop_euclidean_topology
                               (closure_on UNIV geotop_euclidean_topology I)) 2)"
-    sorry
+    using hT9_6_Ibar_2cell hT9_6_bdd_cell by (by100 blast)
   have h_final: "\<exists>I. (\<exists>P. P \<in> UNIV - J \<and> I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
                 \<and> geotop_bounded_R2 I) \<and>
            geotop_is_n_cell
