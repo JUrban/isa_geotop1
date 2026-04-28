@@ -16702,10 +16702,18 @@ proof -
          of R^3 contained in M). At every P \<in> U, M is locally Euclidean. **)
   define U :: "(real^3) set"
     where "U = M - geotop_frontier UNIV geotop_euclidean_topology M"
+  \<comment> \<open>Sub-claim T17_1-A: U is contained in the topological interior of M.\<close>
+  have hT17_1_U_in_int:
+    "U \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology M" sorry
+  \<comment> \<open>Sub-claim T17_1-B: Bd M \<subseteq> Fr M (boundary inclusion in frontier).\<close>
+  have hT17_1_bd_sub_fr:
+    "geotop_manifold_boundary M (\<lambda>x y. norm (x - y))
+       \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M" sorry
   have h_U_interior:
     "U \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology M \<and>
      geotop_manifold_boundary M (\<lambda>x y. norm (x - y))
-       \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M" sorry
+       \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M"
+    using hT17_1_U_in_int hT17_1_bd_sub_fr by (by100 blast)
   (** (2) Converse inclusion Fr M \<subseteq> Bd M: suppose P \<in> Fr M has an open neighbourhood V
          in M homeomorphic to R^3. Since P \<in> V, V cannot be open in R^3; this contradicts
          Invariance of domain (Theorem 0.4). **)
