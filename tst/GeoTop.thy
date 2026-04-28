@@ -5203,6 +5203,55 @@ proof -
           thus "path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hp"
             unfolding V_def .
         qed
+        \<comment> \<open>Step 25b (symmetric): For a witness u₀ ∈ U ∩ Hm ∩ ball x δ_iso,
+          its path-component in U ∩ ball x δ_iso is in Hm.\<close>
+        have h_path_comp_Hm:
+          "\<And>u\<^sub>0. u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso \<Longrightarrow>
+                  path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hm"
+        proof -
+          fix u\<^sub>0 :: "real^2"
+          assume hu\<^sub>0: "u\<^sub>0 \<in> U \<inter> Hm \<inter> ball x \<delta>_iso"
+          define V where "V = path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0"
+          have hUball_open: "open (U \<inter> ball x \<delta>_iso)"
+            using hU_open open_ball by (by100 blast)
+          have hV_open: "open V"
+            unfolding V_def
+            using hUball_open open_path_component by (by100 blast)
+          have hV_path_conn: "path_connected V"
+            unfolding V_def by (rule path_connected_path_component)
+          have hV_conn: "connected V"
+            using hV_path_conn path_connected_imp_connected by (by100 blast)
+          have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso"
+            unfolding V_def by (rule path_component_subset)
+          have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
+          proof -
+            have hu\<^sub>0_in: "u\<^sub>0 \<in> U \<inter> ball x \<delta>_iso" using hu\<^sub>0 by (by100 blast)
+            have h_refl: "path_component (U \<inter> ball x \<delta>_iso) u\<^sub>0 u\<^sub>0"
+              by (rule path_component_refl[OF hu\<^sub>0_in])
+            show ?thesis unfolding V_def using h_refl by (by100 simp)
+          qed
+          have hV_or: "V \<subseteq> Hp \<or> V \<subseteq> Hm"
+            using h_conn_subset_in_halfball hV_open hV_conn hV_sub by (by100 blast)
+          have hu\<^sub>0_Hm: "u\<^sub>0 \<in> Hm" using hu\<^sub>0 by (by100 blast)
+          have hu\<^sub>0_notHp: "u\<^sub>0 \<notin> Hp"
+          proof -
+            have h_disj: "Hp \<inter> Hm = {}"
+              unfolding Hp_def Hm_def by (by100 auto)
+            show ?thesis using hu\<^sub>0_Hm h_disj by (by100 blast)
+          qed
+          have "V \<subseteq> Hm"
+          proof (cases "V \<subseteq> Hm")
+            case True
+            thus ?thesis .
+          next
+            case False
+            hence "V \<subseteq> Hp" using hV_or by (by100 blast)
+            hence "u\<^sub>0 \<in> Hp" using hu\<^sub>0_V by (by100 blast)
+            thus ?thesis using hu\<^sub>0_notHp by (by100 blast)
+          qed
+          thus "path_component_set (U \<inter> ball x \<delta>_iso) u\<^sub>0 \<subseteq> Hm"
+            unfolding V_def .
+        qed
         \<comment> \<open>Step 20: extract a CLAIM_A — every ball x δ ∩ Int i point is in
           closure U. The deep geometric fact is local-side propagation along L.
           Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
