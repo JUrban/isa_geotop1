@@ -12898,7 +12898,102 @@ lemma straight_line_path_in_face:
       and hu_w_pos: "inner (u_w - x) n > 0"
       and hy_L: "inner (y - x) n = 0"
   shows "u_w + (y - x) \<in> U"
-  sorry
+proof -
+  define u_w_t where "u_w_t = u_w + (y - x)"
+  define \<gamma> where "\<gamma> = (\<lambda>t::real. u_w + t *\<^sub>R (y - x))"
+  have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+  proof -
+    have h_id: "continuous_on {0..1::real} (\<lambda>t. t)"
+      by (rule continuous_on_id)
+    have h_scale: "continuous_on {0..1::real} (\<lambda>t. t *\<^sub>R (y - x))"
+      using h_id by (rule continuous_on_scaleR[OF _ continuous_on_const])
+    show ?thesis unfolding \<gamma>_def
+      using h_scale continuous_on_const continuous_on_add by blast
+  qed
+  have h\<gamma>0: "\<gamma> 0 = u_w" unfolding \<gamma>_def by simp
+  have h\<gamma>1: "\<gamma> 1 = u_w_t" unfolding \<gamma>_def u_w_t_def by simp
+  have h\<gamma>_in_ball: "\<forall>t\<in>{0..1::real}. \<gamma> t \<in> ball x d"
+  proof
+    fix t :: real assume ht: "t \<in> {0..1}"
+    have ht_pos: "0 \<le> t" using ht by simp
+    have ht_le1: "t \<le> 1" using ht by simp
+    have h_rew: "u_w + t *\<^sub>R (y - x) - x = (u_w - x) + t *\<^sub>R (y - x)"
+      by simp
+    have h_norm_eq: "norm (u_w + t *\<^sub>R (y - x) - x)
+                     = norm ((u_w - x) + t *\<^sub>R (y - x))"
+      using h_rew by (rule arg_cong)
+    have h_tri: "norm ((u_w - x) + t *\<^sub>R (y - x))
+                \<le> norm (u_w - x) + norm (t *\<^sub>R (y - x))"
+      by (rule norm_triangle_ineq)
+    have h_scale: "norm (t *\<^sub>R (y - x)) = \<bar>t\<bar> * norm (y - x)"
+      by (rule norm_scaleR)
+    have h_abs_t: "\<bar>t\<bar> = t" using ht_pos by simp
+    have h_t_le_1: "t * norm (y - x) \<le> 1 * norm (y - x)"
+      using ht_le1 norm_ge_zero[of "y - x"] mult_right_mono by blast
+    have h_norm_le: "norm (\<gamma> t - x) \<le> norm (u_w - x) + norm (y - x)"
+    proof -
+      have h1: "norm (\<gamma> t - x) \<le> norm (u_w - x) + \<bar>t\<bar> * norm (y - x)"
+        unfolding \<gamma>_def using h_norm_eq h_tri h_scale by linarith
+      have h2: "norm (u_w - x) + \<bar>t\<bar> * norm (y - x)
+                \<le> norm (u_w - x) + norm (y - x)"
+        using h_abs_t h_t_le_1 by simp
+      show ?thesis using h1 h2 by linarith
+    qed
+    have h_lt: "norm (\<gamma> t - x) < d"
+      using h_norm_le hu_w_dist by (simp add: dist_norm)
+    show "\<gamma> t \<in> ball x d"
+      using h_lt by (simp add: dist_norm norm_minus_commute)
+  qed
+  have h\<gamma>_pos_sign: "\<forall>t\<in>{0..1::real}. inner (\<gamma> t - x) n > 0"
+  proof
+    fix t :: real assume ht: "t \<in> {0..1}"
+    have h_rew: "u_w + t *\<^sub>R (y - x) - x = (u_w - x) + t *\<^sub>R (y - x)"
+      by simp
+    have h_inner_eq: "inner (u_w + t *\<^sub>R (y - x) - x) n
+                      = inner ((u_w - x) + t *\<^sub>R (y - x)) n"
+      using h_rew by (rule arg_cong)
+    have h_distrib: "inner ((u_w - x) + t *\<^sub>R (y - x)) n
+                     = inner (u_w - x) n + inner (t *\<^sub>R (y - x)) n"
+      by (rule inner_left_distrib)
+    have h_scale_eq: "inner (t *\<^sub>R (y - x)) n = t * inner (y - x) n"
+      by (rule inner_scaleR_left)
+    have h_inner: "inner (u_w + t *\<^sub>R (y - x) - x) n
+                  = inner (u_w - x) n + t * inner (y - x) n"
+      using h_inner_eq h_distrib h_scale_eq by simp
+    show "inner (\<gamma> t - x) n > 0"
+      unfolding \<gamma>_def using h_inner hy_L hu_w_pos by simp
+  qed
+  have h\<gamma>_avoid_M: "\<gamma> ` {0..1::real} \<inter> M = {}"
+  proof (rule equals0I)
+    fix p assume hp: "p \<in> \<gamma> ` {0..1::real} \<inter> M"
+    obtain t where ht: "t \<in> {0..1::real}" and hp_eq: "p = \<gamma> t"
+      using hp by blast
+    have hp_M: "p \<in> M" using hp by blast
+    have hp_ball: "p \<in> ball x d" using hp_eq ht h\<gamma>_in_ball by blast
+    have hp_in: "p \<in> ball x d \<inter> M" using hp_ball hp_M by blast
+    have hp_L: "inner (p - x) n = 0" using hp_in h_ball_M_L by blast
+    have hp_pos: "inner (p - x) n > 0"
+      using hp_eq ht h\<gamma>_pos_sign by blast
+    show False using hp_L hp_pos by simp
+  qed
+  have h\<gamma>_image_conn: "connected (\<gamma> ` {0..1::real})"
+    using connected_continuous_image[OF h\<gamma>_cont] by simp
+  have h\<gamma>_sub_compl_M: "\<gamma> ` {0..1::real} \<subseteq> UNIV - M"
+    using h\<gamma>_avoid_M by blast
+  have hu_w_in_image: "u_w \<in> \<gamma> ` {0..1::real}"
+    using h\<gamma>0 by force
+  have h\<gamma>_in_cc:
+    "\<gamma> ` {0..1::real} \<subseteq> connected_component_set (UNIV - M) u_w"
+    using connected_component_maximal[OF hu_w_in_image h\<gamma>_image_conn h\<gamma>_sub_compl_M] .
+  have hU_cc_u_w: "U = connected_component_set (UNIV - M) u_w"
+    by (rule component_eq_connected_component_set[OF hU_comp hu_w_U])
+  have h\<gamma>_in_U: "\<gamma> ` {0..1::real} \<subseteq> U"
+    using h\<gamma>_in_cc hU_cc_u_w by simp
+  have h_uwt_image: "u_w_t \<in> \<gamma> ` {0..1::real}"
+    using h\<gamma>1 by force
+  have hu_w_t_U: "u_w_t \<in> U" using h_uwt_image h\<gamma>_in_U by blast
+  show ?thesis using hu_w_t_U unfolding u_w_t_def .
+qed
 
 text \<open>An open ball minus a hyperplane through its center in R^2 splits into
   two open connected non-empty disjoint half-balls.\<close>
