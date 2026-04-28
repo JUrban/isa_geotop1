@@ -13837,10 +13837,18 @@ proof -
                  = geotop_top_interior UNIV geotop_euclidean_topology (h ` C2)"
     sorry
   (** By 10.11, h(C^2) = std_ball, so its top-interior = polygon-interior of std_sphere. **)
+  \<comment> \<open>Sub-claim T12-A: h(C2) = std_ball (apply 10_11 to h(C2)).\<close>
+  have hT12_hC2_ball: "h ` C2 = (geotop_std_ball::(real^2) set)" sorry
+  \<comment> \<open>Sub-claim T12-B: combining h_Int + T12-A + 10_11 + frontier transport,
+    Int C^2 = polygon_interior(Bd C^2).\<close>
+  have hT12_int_eq:
+    "geotop_top_interior UNIV geotop_euclidean_topology C2 =
+     geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
+    sorry
   have hhC2_ball: "h ` C2 = (geotop_std_ball::(real^2) set) \<and>
                     geotop_top_interior UNIV geotop_euclidean_topology C2 =
                      geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
-    sorry
+    using hT12_hC2_ball hT12_int_eq by (by100 blast)
   have h_conclude: "geotop_top_interior UNIV geotop_euclidean_topology C2 =
                      geotop_polygon_interior (geotop_frontier UNIV geotop_euclidean_topology C2)"
     using hhC2_ball by (by100 blast)
