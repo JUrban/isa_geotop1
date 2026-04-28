@@ -7063,7 +7063,37 @@ proof -
   have h_at_most_two:
     "\<forall>U\<in>components (UNIV - M).
         \<not> (B1 \<subseteq> frontier U \<and> B2 \<subseteq> frontier U \<and> B3 \<subseteq> frontier U)"
-    sorry
+  proof (intro ballI notI)
+    fix U assume hU: "U \<in> components (UNIV - M)"
+    assume hAll: "B1 \<subseteq> frontier U \<and> B2 \<subseteq> frontier U \<and> B3 \<subseteq> frontier U"
+    have hB1_fr: "B1 \<subseteq> frontier U" using hAll by (by100 blast)
+    have hB2_fr: "B2 \<subseteq> frontier U" using hAll by (by100 blast)
+    have hB3_fr: "B3 \<subseteq> frontier U" using hAll by (by100 blast)
+    \<comment> \<open>Endpoint P of the theta graph (P \<in> E, common vertex of all 3 arcs).
+      At P, a small ball minus the 3 arcs splits into a finite number of
+      components (sectors); each sector touches AT MOST 2 of the 3
+      incident arcs (a sector is bounded by two arcs of the wedge it sits
+      between). Hence frontier U near P misses at least one of the arcs
+      ⟹ contradiction with all three Bi \<subseteq> frontier U.\<close>
+    \<comment> \<open>Sub-claim AM1: pick an endpoint P \<in> E.\<close>
+    have hAM_P_ex: "\<exists>P. P \<in> E"
+      sorry
+    \<comment> \<open>Sub-claim AM2: small ball around P minus M has finitely many
+      components, each touching at most 2 of the 3 arcs Bi.\<close>
+    have hAM_local_sectors:
+      "\<exists>\<delta>>0. \<forall>C \<in> components (ball undefined \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}. Bi \<inter> closure C \<noteq> {}} \<le> 2"
+      sorry
+    \<comment> \<open>Sub-claim AM3: U \<inter> ball P \<delta> is a non-empty open subset; it intersects
+      some sector C, hence frontier U \<inter> ball P \<delta> \<subseteq> closure C \<inter> M, which
+      hits at most 2 of the Bi near P.\<close>
+    have hAM_U_misses_one:
+      "\<exists>Bi \<in> {B1, B2, B3}. \<not> (Bi \<subseteq> frontier U)"
+      sorry
+    \<comment> \<open>Sub-claim AM4: contradiction from hAll.\<close>
+    show False
+      using hAM_U_misses_one hAll by (by100 blast)
+  qed
   text \<open>Combining (a)-(d): frontier U is exactly some pair \<open>Bi \<union> Bj\<close>.\<close>
   have h_component_frontiers_HOL:
     "\<forall>U\<in>components (UNIV - M).
