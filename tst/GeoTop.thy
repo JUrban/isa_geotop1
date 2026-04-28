@@ -5477,6 +5477,17 @@ proof -
                   thus ?thesis using hW_cases \<open>W \<noteq> {a}\<close> by (by100 blast)
                 qed
               qed
+              \<comment> \<open>So σ' ∩ σ_x = closed_segment a b = σ_x. Hence σ_x ⊆ σ'.\<close>
+              have h_int_eq_seg: "\<sigma>' \<inter> \<sigma>_x = closed_segment a b"
+              proof -
+                have h1: "closed_segment a b = convex hull {a, b}"
+                  by (rule segment_convex_hull)
+                show ?thesis using h_int_HOL hW_eq_ab h1 by (by100 simp)
+              qed
+              have h_int_eq_x: "\<sigma>' \<inter> \<sigma>_x = \<sigma>_x"
+                using h_int_eq_seg h\<sigma>_x_seg by (by100 simp)
+              have h\<sigma>_x_sub_\<sigma>': "\<sigma>_x \<subseteq> \<sigma>'"
+                using h_int_eq_x by (by100 blast)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5663,6 +5674,17 @@ proof -
                   thus ?thesis using hW_cases \<open>W \<noteq> {a}\<close> by (by100 blast)
                 qed
               qed
+              \<comment> \<open>So σ' ∩ σ_x = closed_segment a b = σ_x. Hence σ_x ⊆ σ'.\<close>
+              have h_int_eq_seg: "\<sigma>' \<inter> \<sigma>_x = closed_segment a b"
+              proof -
+                have h1: "closed_segment a b = convex hull {a, b}"
+                  by (rule segment_convex_hull)
+                show ?thesis using h_int_HOL hW_eq_ab h1 by (by100 simp)
+              qed
+              have h_int_eq_x: "\<sigma>' \<inter> \<sigma>_x = \<sigma>_x"
+                using h_int_eq_seg h\<sigma>_x_seg by (by100 simp)
+              have h\<sigma>_x_sub_\<sigma>': "\<sigma>_x \<subseteq> \<sigma>'"
+                using h_int_eq_x by (by100 blast)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
