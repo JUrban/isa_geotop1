@@ -16413,6 +16413,18 @@ proof -
   (** (2) By Theorem 15.4, \<pi>(R^3 - L, P_0) \<cong> F(G) / N([R]) for generators G (one per arc
          of diagram) and relations R (one per crossing). With no crossings, R is empty
          (or trivially closes) and each component contributes exactly one free generator. **)
+  \<comment> \<open>Sub-claim T16_4-A: a Wirtinger-style presentation with empty relation set R.\<close>
+  have hT16_4_pres:
+    "\<exists>(G::'a set) (R::('a \<times> int) list set set).
+        finite G \<and> card G = k \<and> R = {} \<and>
+        (\<exists>\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set.
+           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))" sorry
+  \<comment> \<open>Sub-claim T16_4-B: bij_betw the group-of-link to the free group on k generators
+    (transposing direction from the presentation isomorphism).\<close>
+  have hT16_4_free:
+    "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
+           finite G \<and> card G = k \<and>
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)" sorry
   have h_presentation:
     "(\<exists>(G::'a set) (R::('a \<times> int) list set set).
         finite G \<and> card G = k \<and> R = {} \<and>
@@ -16420,7 +16432,8 @@ proof -
            bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))) \<and>
      (\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
-           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G))" sorry
+           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G))"
+    using hT16_4_pres hT16_4_free by (by100 blast)
   (** (3) Hence group of L \<cong> F(G), the free group on k generators. **)
   have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
