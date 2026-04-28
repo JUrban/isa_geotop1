@@ -5838,11 +5838,26 @@ proof -
             have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
             have hy_seg: "y \<in> \<sigma>_x" using h_y_in_seg[OF hy hy_ne] .
             have hy_L: "inner (y - x) n = 0" using h_y_on_L[OF hy hy_ne] .
-            \<comment> \<open>Extract a small-scale witness u_w ∈ U ∩ Hp at distance < r/3 from x.\<close>
-            have hr3_pos: "r/3 > 0" using hr_pos by (by100 simp)
+            \<comment> \<open>Pick ε = min(r/3, (δ_iso2 - dist y x)/2). Both terms positive.\<close>
+            have hy_dist_lt_iso2: "dist y x < \<delta>_iso2"
+            proof -
+              have hy_ball: "y \<in> ball x \<delta>_iso2" using hy by (by100 blast)
+              have h_dxy: "dist x y < \<delta>_iso2" using hy_ball by (by100 simp)
+              have h_swap: "dist y x = dist x y" by (rule dist_commute)
+              show ?thesis using h_dxy h_swap by (by100 simp)
+            qed
+            define \<epsilon> where "\<epsilon> = min (r/3) ((\<delta>_iso2 - dist y x)/2)"
+            have h\<epsilon>_pos: "\<epsilon> > 0"
+              unfolding \<epsilon>_def using hr_pos hy_dist_lt_iso2 by (by100 simp)
+            have h\<epsilon>_le_r3: "\<epsilon> \<le> r/3" unfolding \<epsilon>_def by (by100 linarith)
+            have h\<epsilon>_le_half_iso2: "\<epsilon> \<le> (\<delta>_iso2 - dist y x)/2"
+              unfolding \<epsilon>_def by (by100 linarith)
+            \<comment> \<open>Extract small-scale witness u_w ∈ U ∩ Hp at distance < ε from x.\<close>
             obtain u_w where hu_w_UHp: "u_w \<in> U \<inter> Hp"
-                         and hu_w_dist: "dist u_w x < r/3"
-              using h_Hp_witness[OF hr3_pos] by (by100 blast)
+                         and hu_w_dist_eps: "dist u_w x < \<epsilon>"
+              using h_Hp_witness[OF h\<epsilon>_pos] by (by100 blast)
+            have hu_w_dist: "dist u_w x < r/3"
+              using hu_w_dist_eps h\<epsilon>_le_r3 by (by100 simp)
             \<comment> \<open>u_w's path-component in U ∩ ball x δ_iso2 is in Hp.\<close>
             have hu_w_in_Wbar: "u_w \<in> U \<inter> ball x \<delta>_iso2"
             proof -
