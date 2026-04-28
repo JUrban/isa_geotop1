@@ -13308,12 +13308,27 @@ proof -
   (** Step 2: Closure of each is a 2-cell via Theorem 9_6. **)
   define C1 where "C1 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) U"
   define C2 where "C2 = closure_on S2 (subspace_topology UNIV geotop_euclidean_topology S2) V"
+  \<comment> \<open>Sub-claim T2-1: C1 is a 2-cell (via stereographic projection to R^2 + 9_6).\<close>
+  have hC1_2cell: "geotop_is_n_cell C1
+                     (subspace_topology UNIV geotop_euclidean_topology C1) 2"
+    sorry
+  \<comment> \<open>Sub-claim T2-2: C2 is a 2-cell (symmetric to T2-1).\<close>
+  have hC2_2cell: "geotop_is_n_cell C2
+                     (subspace_topology UNIV geotop_euclidean_topology C2) 2"
+    sorry
+  \<comment> \<open>Sub-claim T2-3: S2 = C1 \<union> C2 (closures cover S2).\<close>
+  have hS2_eq: "S2 = C1 \<union> C2" sorry
+  \<comment> \<open>Sub-claim T2-4: J is the common frontier.\<close>
+  have hJ_fr_C1: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1"
+    sorry
+  have hJ_fr_C2: "J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
+    sorry
   have hC1_cell: "geotop_is_n_cell C1 (subspace_topology UNIV geotop_euclidean_topology C1) 2 \<and>
                    geotop_is_n_cell C2 (subspace_topology UNIV geotop_euclidean_topology C2) 2 \<and>
                    S2 = C1 \<union> C2 \<and>
                    J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C1 \<and>
                    J = geotop_frontier S2 (subspace_topology UNIV geotop_euclidean_topology S2) C2"
-    sorry
+    using hC1_2cell hC2_2cell hS2_eq hJ_fr_C1 hJ_fr_C2 by (by100 blast)
   show ?thesis using hC1_cell by (by100 blast)
 qed
 
