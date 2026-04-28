@@ -17491,6 +17491,18 @@ proof -
          P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
   (** (2) If p were null-homotopic in R^3 - Q, then by Theorem 18.3 it would be
          null-homotopic in R^3 - T_1, contradicting the choice of p. **)
+  \<comment> \<open>Sub-claim T18_4-A: p is not null-homotopic in R^3 - Q (else by 18.3 it
+    would be null-homotopic in R^3 - T_1, contradicting h_nontrivial_in_T1).\<close>
+  have hT18_4_p_nontrivial_Q:
+    "\<not> geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
+         (subspace_topology UNIV geotop_euclidean_topology
+            (UNIV - geotop_antoine_set k T1 T2 T))
+         P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  \<comment> \<open>Sub-claim T18_4-B: hence R^3 - Q is not simply connected.\<close>
+  have hT18_4_not_sc:
+    "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0" sorry
   have h_contra:
     "\<not> geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
          (subspace_topology UNIV geotop_euclidean_topology
@@ -17498,7 +17510,8 @@ proof -
          P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
      \<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
            (subspace_topology UNIV geotop_euclidean_topology
-              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0" sorry
+              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
+    using hT18_4_p_nontrivial_Q hT18_4_not_sc by (by100 blast)
   have h_final: "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
            (subspace_topology UNIV geotop_euclidean_topology
               (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
