@@ -4940,6 +4940,45 @@ proof -
           using hn_part by (by100 blast)
         have hx_L: "x \<in> L" unfolding L_def by (rule hull_inc[OF hx\<sigma>_x])
         have hd_eq: "d = n \<bullet> x" using hx_L hL_eq by (by100 blast)
+        \<comment> \<open>Step 12b: h_local_L_in_M holds at δ_iso2 (proven via helper).
+          Combine h_helper_applied + σ_x = closed_segment a b ⊆ M + L's
+          normal form to derive ball x δ_iso2 ∩ L ⊆ M.\<close>
+        have h_seg_in_M: "closed_segment a b \<subseteq> M"
+        proof -
+          have hi_sub_M: "i \<subseteq> M" using hi hM_eq by (by100 blast)
+          have h\<sigma>_x_in_K: "\<sigma>_x \<in> K_i"
+            using h\<sigma>_x_EAX hEAX_sub by (by100 blast)
+          have hK_eq_i: "\<Union>K_i = i"
+            using hK_i_poly unfolding geotop_polyhedron_def by (by100 simp)
+          have h\<sigma>_x_in_i: "\<sigma>_x \<subseteq> i"
+            using h\<sigma>_x_in_K hK_eq_i by (by100 blast)
+          have h\<sigma>_x_in_M: "\<sigma>_x \<subseteq> M" using h\<sigma>_x_in_i hi_sub_M by (by100 blast)
+          show ?thesis using h\<sigma>_x_in_M h\<sigma>_x_seg by (by100 simp)
+        qed
+        have h_aff_seg: "affine hull (closed_segment a b) = {y. inner (y - x) n = 0}"
+        proof -
+          have h_aff_L: "affine hull (closed_segment a b) = L"
+            using h\<sigma>_x_seg L_def by (by100 simp)
+          have h_L_form: "L = {y. inner (y - x) n = 0}"
+          proof -
+            have h_eq1: "L = {y. n \<bullet> y = inner n x}" using hL_eq hd_eq by (by100 simp)
+            have h_eq2: "{y. n \<bullet> y = inner n x} = {y. inner (y - x) n = 0}"
+              by (auto simp: inner_diff_right inner_commute)
+            show ?thesis using h_eq1 h_eq2 by (by100 simp)
+          qed
+          show ?thesis using h_aff_L h_L_form by (by100 simp)
+        qed
+        have h_local_L_in_M_at_iso2:
+          "ball x \<delta>_iso2 \<inter> {y. inner (y - x) n = 0} \<subseteq> M"
+        proof -
+          have h_chain: "ball x \<delta>_iso2 \<inter> {y. inner (y - x) n = 0}
+                         = ball x \<delta>_iso2 \<inter> affine hull (closed_segment a b)"
+            using h_aff_seg by (by100 simp)
+          have h_in_seg: "ball x \<delta>_iso2 \<inter> affine hull (closed_segment a b)
+                          \<subseteq> closed_segment a b"
+            using h_helper_applied .
+          show ?thesis using h_chain h_in_seg h_seg_in_M by (by100 blast)
+        qed
         \<comment> \<open>Step 13: half-ball decomposition of ball x δ_iso minus L.\<close>
         have h_two_halves: "\<exists>U_pos U_neg.
             ball x \<delta>_iso - {y. inner (y - x) n = 0} = U_pos \<union> U_neg \<and>
