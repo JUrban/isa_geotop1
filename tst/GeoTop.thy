@@ -4874,10 +4874,13 @@ proof -
         obtain a b where hab_ne: "a \<noteq> b"
                      and h\<sigma>_x_seg: "\<sigma>_x = closed_segment a b"
           using h\<sigma>_x_EAX hEAX_closed_segs by (by100 blast)
-        \<comment> \<open>Step 10b (single-edge case assumption): For h_local_L_in_M to hold,
-          we need x interior to σ_x (single-edge case) AND δ_iso refined enough.
-          The vertex case (x = a or x = b) requires separate analysis with
-          multiple lines. Captured here as a single sub-sorry.\<close>
+        \<comment> \<open>Step 10b (single-edge case assumption): equivalent to {x} ∉ K_i,
+          i.e., x is NOT a vertex of K_i. Implication: x is interior of unique
+          edge of K_i, hence EdgesAtX = {σ_x} and x ∈ open_segment a b.
+
+          Vertex case ({x} ∈ K_i ⟹ |EdgesAtX| ≥ 2) requires entirely
+          separate proof structure with multiple lines (one per edge),
+          parallel halfplane analyses. Multi-day work.\<close>
         have h_x_open_seg: "x \<in> open_segment a b" sorry
         have h_dist_xa_pos: "dist x a > 0"
         proof -
