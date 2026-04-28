@@ -5833,8 +5833,12 @@ proof -
             assume hr_in: "0 < r \<and> r \<le> dist y x"
             \<comment> \<open>Need: ball y r ∩ U ≠ ∅. y ∈ σ_x (h_y_in_seg), y on L
               (h_y_on_L). Witnesses near x in Hp (h_Hp_witness) on positive
-              halfplane side at y too (h_Hp_witness_pos_at_y). The Schoenflies-
-              like step constructs U-witness within r of y.\<close>
+              halfplane side at y too (h_Hp_witness_pos_at_y).\<close>
+            have hr_pos: "r > 0" using hr_in by (by100 blast)
+            have hy_int: "y \<in> geotop_arc_interior i E" using hy by (by100 blast)
+            have hy_seg: "y \<in> \<sigma>_x" using h_y_in_seg[OF hy hy_ne] .
+            have hy_L: "inner (y - x) n = 0" using h_y_on_L[OF hy hy_ne] .
+            \<comment> \<open>The Schoenflies-like step constructs U-witness within r of y.\<close>
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
