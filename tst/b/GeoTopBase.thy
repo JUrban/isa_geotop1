@@ -12588,6 +12588,20 @@ proof -
   show ?thesis using h_diff_open by (by100 simp)
 qed
 
+text \<open>For x in the interior of a segment ab, a small ball intersected with
+  the line through ab is contained in the segment ab. Useful for the
+  single-edge case of h_local_L_in_M in h_open_in_int.\<close>
+
+lemma ball_intersect_aff_hull_segment_in_segment:
+  fixes a b x :: "real^2"
+  assumes hab_ne: "a \<noteq> b"
+      and hx_open: "x \<in> open_segment a b"
+      and h\<delta>_pos: "\<delta> > 0"
+      and h\<delta>_le_a: "\<delta> \<le> dist x a"
+      and h\<delta>_le_b: "\<delta> \<le> dist x b"
+  shows "ball x \<delta> \<inter> affine hull (closed_segment a b) \<subseteq> closed_segment a b"
+  sorry
+
 text \<open>A connected open set in R^2 disjoint from an affine line lies entirely
   in one of the two open half-planes determined by the line.\<close>
 
