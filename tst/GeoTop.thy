@@ -11574,7 +11574,25 @@ theorem Theorem_GT_4_8:
       between (St v, L(v)) and a standard cone over a polygon (Fig 4.10). **)
 proof
   fix v assume hv: "v \<in> geotop_complex_vertices K"
-  (** L1-L5 + link is polygon + cone gives combinatorial 2-cell. **)
+  \<comment> \<open>L1: every vertex lies in some edge (no isolated points in 2-manifold).\<close>
+  have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e" sorry
+  \<comment> \<open>L2: every incident edge in \<ge>1 two-simplex.\<close>
+  have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)" sorry
+  \<comment> \<open>L3: every incident edge in \<ge>2 two-simplexes (manifold without boundary).\<close>
+  have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2" sorry
+  \<comment> \<open>L4: every incident edge in \<le>2 two-simplexes.\<close>
+  have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
+  \<comment> \<open>L5: link |L(v)| is connected.\<close>
+  have hL5: "top1_connected_on (\<Union>(geotop_link K v))
+               (subspace_topology UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)))" sorry
+  \<comment> \<open>L6: link is a polygon (single 1-sphere from L2-L4 + L5).\<close>
+  have hL6: "geotop_is_polygon (\<Union>(geotop_link K v))" sorry
+  \<comment> \<open>L7 (main conclusion): Star is a combinatorial 2-cell.\<close>
+  have hL7: "geotop_comb_n_cell (geotop_star K v) 2" sorry
   have hL_all:
     "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
@@ -11587,8 +11605,8 @@ proof
                (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
      geotop_is_polygon (\<Union>(geotop_link K v)) \<and>
      geotop_comb_n_cell (geotop_star K v) 2"
-    sorry
-  show "geotop_comb_n_cell (geotop_star K v) 2" using hL_all by (by100 blast)
+    using hL1 hL2 hL3 hL4 hL5 hL6 hL7 by (by100 blast)
+  show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
 (** from \<S>4 Theorem 9 (geotop.tex:1052)
