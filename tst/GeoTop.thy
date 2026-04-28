@@ -1,5 +1,5 @@
 theory GeoTop
-  imports "GeoTopBase.GeoTopBase" "AlgTop.AlgTop"
+  imports "GeoTopBase.GeoTopBase" "AlgTop.AlgTop" "HOL-Analysis.Jordan_Curve"
 begin
 
 
@@ -41,73 +41,987 @@ definition geotop_is_polygon :: "'a::real_normed_vector set \<Rightarrow> bool" 
 text \<open>A triangulation of a set $M$ is a complex $K$ with $|K| = M$.
   Formalized inline as \<open>geotop_polyhedron K = M\<close>.\<close>
 
+subsection \<open>Bridge \<open>real^2\<close> \<leftrightarrow> \<open>complex\<close>\<close>
+
+text \<open>HOL-Analysis's planar Jordan-curve theorem (\<open>Jordan_curve\<close>) is stated for
+  \<open>real \<Rightarrow> complex\<close> paths, with the key dependency \<open>Janiszewski\<close> also
+  \<open>complex\<close>-typed. To use it for our \<open>real^2\<close> polygons, we set up a canonical
+  homeomorphism \<open>R2_to_C\<close> between \<open>real^2\<close> and \<open>complex\<close> that preserves all
+  the Euclidean structure we need (norm, openness, paths, components).\<close>
+
+definition R2_to_C :: "real^2 \<Rightarrow> complex" where
+  "R2_to_C v = Complex (v $ 1) (v $ 2)"
+
+definition C_to_R2 :: "complex \<Rightarrow> real^2" where
+  "C_to_R2 z = vector [Re z, Im z]"
+
+lemma C_to_R2_R2_to_C: "C_to_R2 (R2_to_C v) = v"
+  unfolding C_to_R2_def R2_to_C_def
+  by (simp add: vec_eq_iff forall_2)
+
+lemma R2_to_C_C_to_R2: "R2_to_C (C_to_R2 z) = z"
+  by (simp add: C_to_R2_def R2_to_C_def)
+
+lemma R2_to_C_inj: "inj R2_to_C"
+  using C_to_R2_R2_to_C by (metis injI)
+
+lemma C_to_R2_inj: "inj C_to_R2"
+  using R2_to_C_C_to_R2 by (metis injI)
+
+lemma R2_to_C_surj: "surj R2_to_C"
+  using R2_to_C_C_to_R2 by (metis surjI)
+
+lemma C_to_R2_surj: "surj C_to_R2"
+  using C_to_R2_R2_to_C by (metis surjI)
+
+lemma R2_to_C_bij: "bij R2_to_C"
+  using R2_to_C_inj R2_to_C_surj by (simp add: bijI)
+
+lemma C_to_R2_bij: "bij C_to_R2"
+  using C_to_R2_inj C_to_R2_surj by (simp add: bijI)
+
+lemma R2_to_C_inv: "inv R2_to_C = C_to_R2"
+  using R2_to_C_inj C_to_R2_R2_to_C by (metis inv_equality R2_to_C_C_to_R2)
+
+lemma C_to_R2_inv: "inv C_to_R2 = R2_to_C"
+  using C_to_R2_inj R2_to_C_C_to_R2 by (metis inv_equality C_to_R2_R2_to_C)
+
+lemma R2_to_C_add: "R2_to_C (u + v) = R2_to_C u + R2_to_C v"
+  unfolding R2_to_C_def by (simp add: complex_add)
+
+lemma R2_to_C_scaleR: "R2_to_C (a *\<^sub>R v) = a *\<^sub>R R2_to_C v"
+  by (simp add: R2_to_C_def complex_eq_iff)
+
+lemma C_to_R2_add: "C_to_R2 (z + w) = C_to_R2 z + C_to_R2 w"
+  unfolding C_to_R2_def
+  by (simp add: vec_eq_iff forall_2)
+
+lemma C_to_R2_scaleR: "C_to_R2 (a *\<^sub>R z) = a *\<^sub>R C_to_R2 z"
+  unfolding C_to_R2_def
+  by (simp add: vec_eq_iff forall_2)
+
+lemma norm_vec2_sq: "(norm (v::real^2))\<^sup>2 = (v $ 1)\<^sup>2 + (v $ 2)\<^sup>2"
+proof -
+  have huniv: "(UNIV :: 2 set) = {1, 2}" using UNIV_2 by blast
+  have hne: "(1::2) \<noteq> 2" by simp
+  have hsum: "(\<Sum>i\<in>UNIV. (v $ i)\<^sup>2) = (v $ 1)\<^sup>2 + (v $ 2)\<^sup>2"
+    by (simp add: huniv hne)
+  show ?thesis using hsum by (simp add: norm_vec_def L2_set_def)
+qed
+
+lemma R2_to_C_norm: "norm (R2_to_C v) = norm v"
+  unfolding R2_to_C_def
+  by (simp add: norm_vec2_sq complex_norm real_sqrt_unique)
+
+lemma C_to_R2_norm: "norm (C_to_R2 z) = norm z"
+  by (metis C_to_R2_R2_to_C R2_to_C_C_to_R2 R2_to_C_norm)
+
+lemma bounded_linear_R2_to_C: "bounded_linear R2_to_C"
+proof (rule bounded_linearI')
+  fix u v :: "real^2" show "R2_to_C (u + v) = R2_to_C u + R2_to_C v" by (rule R2_to_C_add)
+next
+  fix r :: real and v :: "real^2" show "R2_to_C (r *\<^sub>R v) = r *\<^sub>R R2_to_C v" by (rule R2_to_C_scaleR)
+qed
+
+lemma bounded_linear_C_to_R2: "bounded_linear C_to_R2"
+proof (rule bounded_linearI')
+  fix u v :: complex show "C_to_R2 (u + v) = C_to_R2 u + C_to_R2 v" by (rule C_to_R2_add)
+next
+  fix r :: real and v :: complex show "C_to_R2 (r *\<^sub>R v) = r *\<^sub>R C_to_R2 v" by (rule C_to_R2_scaleR)
+qed
+
+lemma continuous_on_R2_to_C: "continuous_on UNIV R2_to_C"
+  using bounded_linear_R2_to_C linear_continuous_on bounded_linear.linear by blast
+
+lemma continuous_on_C_to_R2: "continuous_on UNIV C_to_R2"
+  using bounded_linear_C_to_R2 linear_continuous_on bounded_linear.linear by blast
+
+lemma homeomorphism_R2_C: "homeomorphism UNIV UNIV R2_to_C C_to_R2"
+proof (rule homeomorphismI)
+  show "continuous_on UNIV R2_to_C" by (rule continuous_on_R2_to_C)
+  show "continuous_on UNIV C_to_R2" by (rule continuous_on_C_to_R2)
+  show "R2_to_C ` UNIV \<subseteq> UNIV" by simp
+  show "C_to_R2 ` UNIV \<subseteq> UNIV" by simp
+  show "\<And>x. x \<in> UNIV \<Longrightarrow> C_to_R2 (R2_to_C x) = x" by (rule C_to_R2_R2_to_C)
+  show "\<And>y. y \<in> UNIV \<Longrightarrow> R2_to_C (C_to_R2 y) = y" by (rule R2_to_C_C_to_R2)
+qed
+
+lemma C_to_R2_continuous_at: "continuous (at z) C_to_R2"
+  using continuous_on_C_to_R2 by (simp add: continuous_on_eq_continuous_at)
+
+lemma R2_to_C_continuous_at: "continuous (at v) R2_to_C"
+  using continuous_on_R2_to_C by (simp add: continuous_on_eq_continuous_at)
+
+lemma C_to_R2_vimage_eq_R2_to_C_image: "C_to_R2 -` S = R2_to_C ` S"
+proof
+  show "C_to_R2 -` S \<subseteq> R2_to_C ` S"
+  proof
+    fix z assume "z \<in> C_to_R2 -` S"
+    hence "C_to_R2 z \<in> S" by simp
+    moreover have "z = R2_to_C (C_to_R2 z)" by (simp add: R2_to_C_C_to_R2)
+    ultimately show "z \<in> R2_to_C ` S" by blast
+  qed
+next
+  show "R2_to_C ` S \<subseteq> C_to_R2 -` S"
+  proof
+    fix z assume "z \<in> R2_to_C ` S"
+    then obtain v where hv: "v \<in> S" "z = R2_to_C v" by blast
+    hence "C_to_R2 z = v" by (simp add: C_to_R2_R2_to_C)
+    thus "z \<in> C_to_R2 -` S" using hv by simp
+  qed
+qed
+
+lemma R2_to_C_vimage_eq_C_to_R2_image: "R2_to_C -` S = C_to_R2 ` S"
+proof
+  show "R2_to_C -` S \<subseteq> C_to_R2 ` S"
+  proof
+    fix v assume "v \<in> R2_to_C -` S"
+    hence "R2_to_C v \<in> S" by simp
+    moreover have "v = C_to_R2 (R2_to_C v)" by (simp add: C_to_R2_R2_to_C)
+    ultimately show "v \<in> C_to_R2 ` S" by blast
+  qed
+next
+  show "C_to_R2 ` S \<subseteq> R2_to_C -` S"
+  proof
+    fix v assume "v \<in> C_to_R2 ` S"
+    then obtain z where hz: "z \<in> S" "v = C_to_R2 z" by blast
+    hence "R2_to_C v = z" by (simp add: R2_to_C_C_to_R2)
+    thus "v \<in> R2_to_C -` S" using hz by simp
+  qed
+qed
+
+lemma R2_to_C_image_open: "open S \<Longrightarrow> open (R2_to_C ` S)"
+proof -
+  assume hS: "open S"
+  have "open (C_to_R2 -` S)"
+    using hS C_to_R2_continuous_at by (rule continuous_open_vimage)
+  thus "open (R2_to_C ` S)" by (simp add: C_to_R2_vimage_eq_R2_to_C_image)
+qed
+
+lemma C_to_R2_image_open: "open S \<Longrightarrow> open (C_to_R2 ` S)"
+proof -
+  assume hS: "open S"
+  have "open (R2_to_C -` S)"
+    using hS R2_to_C_continuous_at by (rule continuous_open_vimage)
+  thus "open (C_to_R2 ` S)" by (simp add: R2_to_C_vimage_eq_C_to_R2_image)
+qed
+
+lemma R2_to_C_image_bounded: "bounded (R2_to_C ` S) \<longleftrightarrow> bounded S"
+proof
+  assume "bounded (R2_to_C ` S)"
+  then obtain B where hB: "\<forall>x \<in> R2_to_C ` S. norm x \<le> B"
+    by (auto simp: bounded_iff)
+  have "\<forall>x \<in> S. norm x \<le> B"
+    using hB R2_to_C_norm by force
+  thus "bounded S" by (auto simp: bounded_iff)
+next
+  assume "bounded S"
+  then obtain B where hB: "\<forall>x \<in> S. norm x \<le> B"
+    by (auto simp: bounded_iff)
+  have "\<forall>y \<in> R2_to_C ` S. norm y \<le> B"
+    using hB R2_to_C_norm by force
+  thus "bounded (R2_to_C ` S)" by (auto simp: bounded_iff)
+qed
+
+lemma R2_to_C_image_connected: "connected (R2_to_C ` S) \<longleftrightarrow> connected S"
+proof
+  assume "connected (R2_to_C ` S)"
+  hence "connected (C_to_R2 ` (R2_to_C ` S))"
+    by (rule connected_continuous_image[OF continuous_on_subset[OF continuous_on_C_to_R2 subset_UNIV]])
+  moreover have "C_to_R2 ` (R2_to_C ` S) = S"
+    by (auto simp: image_iff C_to_R2_R2_to_C)
+  ultimately show "connected S" by simp
+next
+  assume "connected S"
+  thus "connected (R2_to_C ` S)"
+    by (rule connected_continuous_image[OF continuous_on_subset[OF continuous_on_R2_to_C subset_UNIV]])
+qed
+
+lemma R2_to_C_image_compl: "R2_to_C ` (- S) = - R2_to_C ` S"
+  using R2_to_C_bij by (rule bij_image_Compl_eq)
+
+lemma C_to_R2_image_closure: "C_to_R2 ` closure S = closure (C_to_R2 ` S)"
+proof
+  show "C_to_R2 ` closure S \<subseteq> closure (C_to_R2 ` S)"
+    using continuous_image_closure_subset[OF continuous_on_C_to_R2, of S] by simp
+next
+  show "closure (C_to_R2 ` S) \<subseteq> C_to_R2 ` closure S"
+  proof
+    fix v assume hv: "v \<in> closure (C_to_R2 ` S)"
+    have "R2_to_C v \<in> R2_to_C ` closure (C_to_R2 ` S)"
+      using hv by simp
+    moreover have "R2_to_C ` closure (C_to_R2 ` S) \<subseteq> closure (R2_to_C ` (C_to_R2 ` S))"
+      using continuous_image_closure_subset[OF continuous_on_R2_to_C, of "C_to_R2 ` S"] by simp
+    moreover have "R2_to_C ` (C_to_R2 ` S) = S"
+      by (auto simp: image_iff R2_to_C_C_to_R2)
+    ultimately have "R2_to_C v \<in> closure S" by auto
+    hence "C_to_R2 (R2_to_C v) \<in> C_to_R2 ` closure S" by simp
+    thus "v \<in> C_to_R2 ` closure S" by (simp add: C_to_R2_R2_to_C)
+  qed
+qed
+
+lemma C_to_R2_image_frontier: "C_to_R2 ` frontier S = frontier (C_to_R2 ` S)"
+proof -
+  have "C_to_R2 ` frontier S = C_to_R2 ` (closure S - interior S)"
+    by (simp add: frontier_def)
+  also have "\<dots> = C_to_R2 ` closure S - C_to_R2 ` interior S"
+    using C_to_R2_inj image_set_diff by metis
+  also have "\<dots> = closure (C_to_R2 ` S) - C_to_R2 ` interior S"
+    by (simp add: C_to_R2_image_closure)
+  also have "C_to_R2 ` interior S = interior (C_to_R2 ` S)"
+  proof
+    show "C_to_R2 ` interior S \<subseteq> interior (C_to_R2 ` S)"
+      using C_to_R2_image_open[OF open_interior] interior_subset
+      by (meson image_mono interior_maximal)
+    show "interior (C_to_R2 ` S) \<subseteq> C_to_R2 ` interior S"
+    proof
+      fix v assume hv: "v \<in> interior (C_to_R2 ` S)"
+      then obtain U where hU_open: "open U" and hUv: "v \<in> U" and hU_sub: "U \<subseteq> C_to_R2 ` S"
+        by (auto simp: interior_def)
+      have "R2_to_C ` U \<subseteq> S"
+        using hU_sub by (auto simp: image_iff R2_to_C_C_to_R2)
+      moreover have "open (R2_to_C ` U)" using hU_open R2_to_C_image_open by blast
+      moreover have "R2_to_C v \<in> R2_to_C ` U" using hUv by simp
+      ultimately have "R2_to_C v \<in> interior S"
+        by (auto simp: interior_def)
+      hence "C_to_R2 (R2_to_C v) \<in> C_to_R2 ` interior S" by simp
+      thus "v \<in> C_to_R2 ` interior S" by (simp add: C_to_R2_R2_to_C)
+    qed
+  qed
+  finally show ?thesis by (simp add: frontier_def)
+qed
+
+lemma R2_to_C_image_closure: "R2_to_C ` closure S = closure (R2_to_C ` S)"
+proof
+  show "R2_to_C ` closure S \<subseteq> closure (R2_to_C ` S)"
+    using continuous_image_closure_subset[OF continuous_on_R2_to_C, of S] by simp
+next
+  show "closure (R2_to_C ` S) \<subseteq> R2_to_C ` closure S"
+  proof
+    fix z assume hz: "z \<in> closure (R2_to_C ` S)"
+    have "C_to_R2 z \<in> C_to_R2 ` closure (R2_to_C ` S)"
+      using hz by simp
+    moreover have "C_to_R2 ` closure (R2_to_C ` S) \<subseteq> closure (C_to_R2 ` (R2_to_C ` S))"
+      using continuous_image_closure_subset[OF continuous_on_C_to_R2, of "R2_to_C ` S"] by simp
+    moreover have "C_to_R2 ` (R2_to_C ` S) = S"
+      by (auto simp: image_iff C_to_R2_R2_to_C)
+    ultimately have "C_to_R2 z \<in> closure S" by auto
+    hence "R2_to_C (C_to_R2 z) \<in> R2_to_C ` closure S" by simp
+    thus "z \<in> R2_to_C ` closure S" by (simp add: R2_to_C_C_to_R2)
+  qed
+qed
+
+lemma R2_to_C_image_frontier: "R2_to_C ` frontier S = frontier (R2_to_C ` S)"
+proof -
+  have "R2_to_C ` frontier S = R2_to_C ` (closure S - interior S)"
+    by (simp add: frontier_def)
+  also have "\<dots> = R2_to_C ` closure S - R2_to_C ` interior S"
+    using R2_to_C_inj image_set_diff by metis
+  also have "\<dots> = closure (R2_to_C ` S) - R2_to_C ` interior S"
+    by (simp add: R2_to_C_image_closure)
+  also have "R2_to_C ` interior S = interior (R2_to_C ` S)"
+  proof
+    show "R2_to_C ` interior S \<subseteq> interior (R2_to_C ` S)"
+      using R2_to_C_image_open[OF open_interior] interior_subset
+      by (meson image_mono interior_maximal)
+    show "interior (R2_to_C ` S) \<subseteq> R2_to_C ` interior S"
+    proof
+      fix z assume hz: "z \<in> interior (R2_to_C ` S)"
+      then obtain U where hU_open: "open U" and hUz: "z \<in> U" and hU_sub: "U \<subseteq> R2_to_C ` S"
+        by (auto simp: interior_def)
+      have "C_to_R2 ` U \<subseteq> S"
+        using hU_sub by (auto simp: image_iff C_to_R2_R2_to_C)
+      moreover have "open (C_to_R2 ` U)" using hU_open C_to_R2_image_open by blast
+      moreover have "C_to_R2 z \<in> C_to_R2 ` U" using hUz by simp
+      ultimately have "C_to_R2 z \<in> interior S"
+        by (auto simp: interior_def)
+      hence "R2_to_C (C_to_R2 z) \<in> R2_to_C ` interior S" by simp
+      thus "z \<in> R2_to_C ` interior S" by (simp add: R2_to_C_C_to_R2)
+    qed
+  qed
+  finally show ?thesis by (simp add: frontier_def)
+qed
+
+lemma R2_to_C_path:
+  "path c \<longleftrightarrow> path (R2_to_C \<circ> c)"
+proof
+  assume "path c"
+  thus "path (R2_to_C \<circ> c)"
+    using continuous_on_R2_to_C continuous_on_compose continuous_on_subset
+    unfolding path_def by blast
+next
+  assume "path (R2_to_C \<circ> c)"
+  hence "path (C_to_R2 \<circ> (R2_to_C \<circ> c))"
+    using continuous_on_C_to_R2 continuous_on_compose continuous_on_subset
+    unfolding path_def by blast
+  moreover have "C_to_R2 \<circ> (R2_to_C \<circ> c) = c"
+    by (auto simp: fun_eq_iff C_to_R2_R2_to_C)
+  ultimately show "path c" by simp
+qed
+
+lemma R2_to_C_path_image:
+  "path_image (R2_to_C \<circ> c) = R2_to_C ` path_image c"
+  unfolding path_image_def by (auto simp: image_iff)
+
+lemma R2_to_C_pathstart:
+  "pathstart (R2_to_C \<circ> c) = R2_to_C (pathstart c)"
+  unfolding pathstart_def by simp
+
+lemma R2_to_C_pathfinish:
+  "pathfinish (R2_to_C \<circ> c) = R2_to_C (pathfinish c)"
+  unfolding pathfinish_def by simp
+
+lemma R2_to_C_simple_path:
+  "simple_path c \<longleftrightarrow> simple_path (R2_to_C \<circ> c)"
+proof -
+  have hinj: "inj R2_to_C" by (rule R2_to_C_inj)
+  have hpath: "path c \<longleftrightarrow> path (R2_to_C \<circ> c)" by (rule R2_to_C_path)
+  have h_inj_eq: "\<And>x y. R2_to_C x = R2_to_C y \<longleftrightarrow> x = y"
+    using hinj by (auto dest: injD)
+  have hloop: "loop_free c \<longleftrightarrow> loop_free (R2_to_C \<circ> c)"
+    unfolding loop_free_def o_def by (simp add: h_inj_eq)
+  show ?thesis unfolding simple_path_def using hpath hloop by blast
+qed
+
+theorem Jordan_curve_real2:
+  fixes c :: "real \<Rightarrow> real^2"
+  assumes hsp: "simple_path c" and hloop: "pathfinish c = pathstart c"
+  obtains inner outer where
+                "inner \<noteq> {}" "open inner" "connected inner"
+                "outer \<noteq> {}" "open outer" "connected outer"
+                "bounded inner" "\<not> bounded outer" "inner \<inter> outer = {}"
+                "inner \<union> outer = - path_image c"
+                "frontier inner = path_image c"
+                "frontier outer = path_image c"
+proof -
+  define cC :: "real \<Rightarrow> complex" where "cC = R2_to_C \<circ> c"
+  have hsp_C: "simple_path cC"
+    using hsp R2_to_C_simple_path unfolding cC_def by blast
+  have hloop_C: "pathfinish cC = pathstart cC"
+    using hloop unfolding cC_def by (simp add: R2_to_C_pathstart R2_to_C_pathfinish)
+  obtain innerC outerC where
+    h1: "innerC \<noteq> {}" "open innerC" "connected innerC"
+        "outerC \<noteq> {}" "open outerC" "connected outerC"
+        "bounded innerC" "\<not> bounded outerC" "innerC \<inter> outerC = {}"
+        "innerC \<union> outerC = - path_image cC"
+        "frontier innerC = path_image cC"
+        "frontier outerC = path_image cC"
+    using Jordan_curve[OF hsp_C hloop_C] by metis
+  define inner :: "(real^2) set" where "inner = C_to_R2 ` innerC"
+  define outer :: "(real^2) set" where "outer = C_to_R2 ` outerC"
+  have h_path_eq: "path_image cC = R2_to_C ` path_image c"
+    unfolding cC_def by (rule R2_to_C_path_image)
+  have h_inner_ne: "inner \<noteq> {}" using h1(1) unfolding inner_def by simp
+  have h_outer_ne: "outer \<noteq> {}" using h1(4) unfolding outer_def by simp
+  have h_inner_open: "open inner"
+    using h1(2) unfolding inner_def by (rule C_to_R2_image_open)
+  have h_outer_open: "open outer"
+    using h1(5) unfolding outer_def by (rule C_to_R2_image_open)
+  have h_inner_conn: "connected inner"
+  proof -
+    have "connected (R2_to_C ` (C_to_R2 ` innerC))"
+      using h1(3) by (simp add: image_image R2_to_C_C_to_R2)
+    thus ?thesis using R2_to_C_image_connected unfolding inner_def by blast
+  qed
+  have h_outer_conn: "connected outer"
+  proof -
+    have "connected (R2_to_C ` (C_to_R2 ` outerC))"
+      using h1(6) by (simp add: image_image R2_to_C_C_to_R2)
+    thus ?thesis using R2_to_C_image_connected unfolding outer_def by blast
+  qed
+  have h_inner_bd: "bounded inner"
+  proof -
+    have "bounded (R2_to_C ` (C_to_R2 ` innerC))"
+      using h1(7) by (simp add: image_image R2_to_C_C_to_R2)
+    thus ?thesis using R2_to_C_image_bounded unfolding inner_def by blast
+  qed
+  have h_outer_unbd: "\<not> bounded outer"
+  proof
+    assume hbd: "bounded outer"
+    have "bounded (R2_to_C ` (C_to_R2 ` outerC))"
+      using hbd unfolding outer_def using R2_to_C_image_bounded by blast
+    hence "bounded outerC" by (simp add: image_image R2_to_C_C_to_R2)
+    thus False using h1(8) by simp
+  qed
+  have h_disjoint: "inner \<inter> outer = {}"
+    unfolding inner_def outer_def
+    using h1(9) C_to_R2_inj by (auto simp: image_iff dest: injD)
+  have h_path_C_R2_union: "C_to_R2 ` path_image cC = path_image c"
+  proof -
+    have "C_to_R2 ` (R2_to_C ` path_image c) = path_image c"
+      by (auto simp: image_iff C_to_R2_R2_to_C)
+    thus ?thesis by (simp add: h_path_eq)
+  qed
+  have h_union: "inner \<union> outer = - path_image c"
+  proof -
+    have h_C_inv: "C_to_R2 ` innerC \<union> C_to_R2 ` outerC = C_to_R2 ` (- path_image cC)"
+      using h1(10) image_Un by (metis image_Un)
+    have h_compl: "C_to_R2 ` (- path_image cC) = - C_to_R2 ` path_image cC"
+      using C_to_R2_bij by (rule bij_image_Compl_eq)
+    show ?thesis unfolding inner_def outer_def
+      using h_C_inv h_compl h_path_C_R2_union by simp
+  qed
+  have h_path_C_R2: "C_to_R2 ` path_image cC = path_image c"
+  proof -
+    have "C_to_R2 ` (R2_to_C ` path_image c) = path_image c"
+      by (auto simp: image_iff C_to_R2_R2_to_C)
+    thus ?thesis by (simp add: h_path_eq)
+  qed
+  have h_inner_fr: "frontier inner = path_image c"
+  proof -
+    have "frontier inner = frontier (C_to_R2 ` innerC)" unfolding inner_def by simp
+    also have "\<dots> = C_to_R2 ` frontier innerC"
+      by (rule C_to_R2_image_frontier[symmetric])
+    also have "\<dots> = C_to_R2 ` path_image cC" using h1(11) by simp
+    also have "\<dots> = path_image c" by (rule h_path_C_R2)
+    finally show ?thesis .
+  qed
+  have h_outer_fr: "frontier outer = path_image c"
+  proof -
+    have "frontier outer = frontier (C_to_R2 ` outerC)" unfolding outer_def by simp
+    also have "\<dots> = C_to_R2 ` frontier outerC"
+      by (rule C_to_R2_image_frontier[symmetric])
+    also have "\<dots> = C_to_R2 ` path_image cC" using h1(12) by simp
+    also have "\<dots> = path_image c" by (rule h_path_C_R2)
+    finally show ?thesis .
+  qed
+  show ?thesis
+    using h_inner_ne h_outer_ne h_inner_open h_outer_open h_inner_conn h_outer_conn
+          h_inner_bd h_outer_unbd h_disjoint h_union h_inner_fr h_outer_fr that
+    by blast
+qed
+
+subsection \<open>Parametrising the unit circle in \<open>real^2\<close>\<close>
+
+definition circle_path_R2 :: "real \<Rightarrow> real^2" where
+  "circle_path_R2 t = vector [cos (2 * pi * t), sin (2 * pi * t)]"
+
+lemma continuous_on_circle_path_R2_components:
+  "continuous_on UNIV (\<lambda>t::real. cos (2 * pi * t))"
+  "continuous_on UNIV (\<lambda>t::real. sin (2 * pi * t))"
+  by (auto intro!: continuous_intros)
+
+definition cp_C :: "real \<Rightarrow> complex" where
+  "cp_C t = Complex (cos (2 * pi * t)) (sin (2 * pi * t))"
+
+lemma circle_path_R2_via_C: "circle_path_R2 = C_to_R2 \<circ> cp_C"
+  by (auto simp: fun_eq_iff circle_path_R2_def cp_C_def C_to_R2_def)
+
+lemma continuous_on_cp_C: "continuous_on UNIV cp_C"
+proof -
+  have h1: "continuous_on UNIV (\<lambda>t::real. cos (2 * pi * t))"
+    by (rule continuous_on_circle_path_R2_components(1))
+  have h2: "continuous_on UNIV (\<lambda>t::real. sin (2 * pi * t))"
+    by (rule continuous_on_circle_path_R2_components(2))
+  have h3: "continuous_on UNIV (\<lambda>t. complex_of_real (cos (2 * pi * t)) + \<i> * complex_of_real (sin (2 * pi * t)))"
+    using h1 h2 by (auto intro!: continuous_intros)
+  have h4: "(\<lambda>t. complex_of_real (cos (2 * pi * t)) + \<i> * complex_of_real (sin (2 * pi * t))) = cp_C"
+    by (auto simp: fun_eq_iff cp_C_def complex_eq_iff)
+  show ?thesis using h3 by (subst h4[symmetric]) simp
+qed
+
+lemma path_circle_path_R2: "path circle_path_R2"
+proof -
+  have h_path_C: "path cp_C"
+    using continuous_on_cp_C continuous_on_subset
+    by (auto simp: path_def)
+  have h_C_to_R2_path: "path (C_to_R2 \<circ> cp_C)"
+    using h_path_C continuous_on_C_to_R2 continuous_on_compose continuous_on_subset
+    unfolding path_def by blast
+  show ?thesis using h_C_to_R2_path circle_path_R2_via_C by simp
+qed
+
+lemma pathstart_circle_path_R2: "pathstart circle_path_R2 = vector [1, 0]"
+  unfolding pathstart_def circle_path_R2_def by simp
+
+lemma pathfinish_circle_path_R2: "pathfinish circle_path_R2 = vector [1, 0]"
+  unfolding pathfinish_def circle_path_R2_def by simp
+
+lemma loop_circle_path_R2: "pathfinish circle_path_R2 = pathstart circle_path_R2"
+  by (simp add: pathstart_circle_path_R2 pathfinish_circle_path_R2)
+
+text \<open>The complex parametrisation \<open>cp_C\<close> traces out the unit circle in \<open>complex\<close>:
+  this is a standard fact (Pythagoras + surjectivity from \<open>arctan\<close>).\<close>
+
+lemma path_image_cp_C: "path_image cp_C = sphere (0::complex) 1"
+proof
+  show "path_image cp_C \<subseteq> sphere 0 1"
+  proof
+    fix z assume "z \<in> path_image cp_C"
+    then obtain t where ht: "t \<in> {0..1}" "z = cp_C t"
+      unfolding path_image_def by auto
+    have hnorm: "(cmod z)\<^sup>2 = (cos (2 * pi * t))\<^sup>2 + (sin (2 * pi * t))\<^sup>2"
+      using ht(2) unfolding cp_C_def by (simp add: cmod_def)
+    also have "\<dots> = 1" by simp
+    finally have h_sq: "(cmod z)\<^sup>2 = 1" .
+    have "cmod z \<ge> 0" by simp
+    hence "cmod z = 1"
+      using h_sq by (metis abs_of_nonneg power2_eq_1_iff real_sqrt_abs real_sqrt_one)
+    thus "z \<in> sphere 0 1" by simp
+  qed
+next
+  show "sphere 0 1 \<subseteq> path_image cp_C"
+  proof
+    fix z :: complex assume hz: "z \<in> sphere 0 1"
+    hence hcmod: "cmod z = 1" by simp
+    obtain \<theta> where h\<theta>_lo: "0 \<le> \<theta>" and h\<theta>_hi: "\<theta> < 2 * pi"
+                and h\<theta>_eq: "z = Complex (cos \<theta>) (sin \<theta>)"
+      using hcmod complex_unimodular_polar by metis
+    define t where "t = \<theta> / (2 * pi)"
+    have hpi_pos: "(2::real) * pi > 0" by simp
+    have ht_lo: "0 \<le> t"
+      unfolding t_def using h\<theta>_lo hpi_pos by simp
+    have ht_hi: "t < 1"
+      unfolding t_def using h\<theta>_hi hpi_pos by (simp add: divide_less_eq)
+    have ht_in: "t \<in> {0..1}" using ht_lo ht_hi by auto
+    have h_2pi_t: "2 * pi * t = \<theta>"
+      unfolding t_def using hpi_pos by simp
+    have hcos: "cos (2 * pi * t) = cos \<theta>" by (simp add: h_2pi_t)
+    have hsin: "sin (2 * pi * t) = sin \<theta>" by (simp add: h_2pi_t)
+    have "cp_C t = z" unfolding cp_C_def using h\<theta>_eq hcos hsin by simp
+    thus "z \<in> path_image cp_C" using ht_in unfolding path_image_def by auto
+  qed
+qed
+
+lemma path_image_circle_path_R2: "path_image circle_path_R2 = sphere (0::real^2) 1"
+proof -
+  have h1: "path_image circle_path_R2 = path_image (C_to_R2 \<circ> cp_C)"
+    by (simp add: circle_path_R2_via_C)
+  also have "\<dots> = C_to_R2 ` path_image cp_C"
+    unfolding path_image_def by (auto simp: image_iff)
+  also have "\<dots> = C_to_R2 ` sphere 0 1"
+    by (simp add: path_image_cp_C)
+  also have "\<dots> = sphere (0::real^2) 1"
+  proof
+    show "C_to_R2 ` sphere (0::complex) 1 \<subseteq> sphere (0::real^2) 1"
+      using C_to_R2_norm by force
+    show "sphere (0::real^2) 1 \<subseteq> C_to_R2 ` sphere 0 1"
+    proof
+      fix v :: "real^2" assume hv: "v \<in> sphere 0 1"
+      have "norm (R2_to_C v) = 1" using R2_to_C_norm hv by force
+      hence "R2_to_C v \<in> sphere 0 1" by simp
+      moreover have "v = C_to_R2 (R2_to_C v)" by (simp add: C_to_R2_R2_to_C)
+      ultimately show "v \<in> C_to_R2 ` sphere 0 1" by blast
+    qed
+  qed
+  finally show ?thesis .
+qed
+
+lemma cp_C_eq_iff:
+  assumes "x \<in> {0..1}" "y \<in> {0..1}"
+  shows "cp_C x = cp_C y \<longleftrightarrow> x = y \<or> (x = 0 \<and> y = 1) \<or> (x = 1 \<and> y = 0)"
+proof
+  assume heq: "cp_C x = cp_C y"
+  have hcos: "cos (2 * pi * x) = cos (2 * pi * y)"
+    using heq unfolding cp_C_def complex_eq_iff by simp
+  have hsin: "sin (2 * pi * x) = sin (2 * pi * y)"
+    using heq unfolding cp_C_def complex_eq_iff by simp
+  have hpi_pos': "(2::real) * pi > 0" by simp
+  have hpi_geq: "(2::real) * pi \<ge> 0" by simp
+  have h2pi_x_lo: "0 \<le> 2 * pi * x"
+    using assms(1) hpi_geq by simp
+  have h2pi_x_hi: "2 * pi * x \<le> 2 * pi"
+    using assms(1) hpi_geq by (simp add: mult_left_le)
+  have h2pi_y_lo: "0 \<le> 2 * pi * y"
+    using assms(2) hpi_geq by simp
+  have h2pi_y_hi: "2 * pi * y \<le> 2 * pi"
+    using assms(2) hpi_geq by (simp add: mult_left_le)
+  have h_diff_lo: "- (2 * pi) \<le> 2 * pi * x - 2 * pi * y"
+    using h2pi_x_lo h2pi_y_hi by linarith
+  have h_diff_hi: "2 * pi * x - 2 * pi * y \<le> 2 * pi"
+    using h2pi_x_hi h2pi_y_lo by linarith
+  obtain k :: int where hk_raw: "2 * pi * x = 2 * pi * y + 2 * pi * real_of_int k"
+    using sin_cos_eq_iff[of "2*pi*x" "2*pi*y"] hcos hsin by blast
+  hence hk: "2 * pi * x - 2 * pi * y = 2 * pi * real_of_int k" by simp
+  have hpi_pos: "(2::real) * pi > 0" by simp
+  have hk_lo: "-1 \<le> real_of_int k"
+  proof -
+    have "- (2 * pi) \<le> 2 * pi * real_of_int k" using hk h_diff_lo by simp
+    hence "- 1 * (2 * pi) \<le> real_of_int k * (2 * pi)" by (simp add: mult.commute)
+    thus ?thesis using hpi_pos by (rule mult_right_le_imp_le)
+  qed
+  have hk_hi: "real_of_int k \<le> 1"
+  proof -
+    have "2 * pi * real_of_int k \<le> 2 * pi" using hk h_diff_hi by simp
+    hence "real_of_int k * (2 * pi) \<le> 1 * (2 * pi)" by (simp add: mult.commute)
+    thus ?thesis using hpi_pos by (rule mult_right_le_imp_le)
+  qed
+  have hk_bound: "real_of_int k \<in> {-1..1}" using hk_lo hk_hi by simp
+  have hk_int: "k = -1 \<or> k = 0 \<or> k = 1"
+    using hk_bound by (auto simp: minus_le_iff)
+  show "x = y \<or> (x = 0 \<and> y = 1) \<or> (x = 1 \<and> y = 0)"
+  proof (cases "k = 0")
+    case True
+    hence "x = y" using hk hpi_pos by (auto simp: divide_simps)
+    thus ?thesis by simp
+  next
+    case False
+    hence hk_pm: "k = -1 \<or> k = 1" using hk_int by simp
+    show ?thesis
+    proof (cases "k = 1")
+      case True
+      hence h_diff: "2 * pi * x - 2 * pi * y = 2 * pi" using hk by simp
+      hence h_eq: "2 * pi * (x - y) = 2 * pi * 1"
+        by (simp add: algebra_simps)
+      have hpi_ne: "(2 * pi :: real) \<noteq> 0" using hpi_pos by simp
+      have h_xy: "x - y = 1"
+        using h_eq hpi_ne mult_cancel_left[of "2 * pi" "x - y" 1] by simp
+      have "x = 1" using h_xy assms by auto
+      moreover have "y = 0" using h_xy assms by auto
+      ultimately show ?thesis by simp
+    next
+      case False
+      hence "k = -1" using hk_pm by simp
+      hence h_diff: "2 * pi * x - 2 * pi * y = - (2 * pi)" using hk by simp
+      hence h_eq: "2 * pi * (x - y) = 2 * pi * (-1)"
+        by (simp add: algebra_simps)
+      have hpi_ne: "(2 * pi :: real) \<noteq> 0" using hpi_pos by simp
+      have h_xy: "x - y = -1"
+        using h_eq hpi_ne mult_cancel_left[of "2 * pi" "x - y" "-1"] by simp
+      have "x = 0" using h_xy assms by auto
+      moreover have "y = 1" using h_xy assms by auto
+      ultimately show ?thesis by simp
+    qed
+  qed
+next
+  assume "x = y \<or> (x = 0 \<and> y = 1) \<or> (x = 1 \<and> y = 0)"
+  thus "cp_C x = cp_C y"
+    unfolding cp_C_def by (auto simp: complex_eq_iff)
+qed
+
+lemma simple_path_cp_C: "simple_path cp_C"
+proof -
+  have h_path: "path cp_C"
+    using continuous_on_cp_C continuous_on_subset
+    by (auto simp: path_def)
+  have h_loop_free: "loop_free cp_C"
+    unfolding loop_free_def using cp_C_eq_iff by blast
+  show ?thesis unfolding simple_path_def using h_path h_loop_free by blast
+qed
+
+lemma simple_path_circle_path_R2: "simple_path circle_path_R2"
+proof -
+  have "simple_path (C_to_R2 \<circ> cp_C)"
+  proof -
+    have h1: "simple_path cp_C" by (rule simple_path_cp_C)
+    have h2: "inj C_to_R2" by (rule C_to_R2_inj)
+    have h_inj_eq: "\<And>x y. C_to_R2 x = C_to_R2 y \<longleftrightarrow> x = y"
+      using h2 by (auto dest: injD)
+    have h_loop_free: "loop_free (C_to_R2 \<circ> cp_C) \<longleftrightarrow> loop_free cp_C"
+      unfolding loop_free_def o_def by (simp add: h_inj_eq)
+    have h_path: "path (C_to_R2 \<circ> cp_C)"
+      using h1 continuous_on_C_to_R2 continuous_on_compose continuous_on_subset
+      unfolding path_def simple_path_def by blast
+    show ?thesis using h1 h_path h_loop_free unfolding simple_path_def by blast
+  qed
+  thus ?thesis by (simp add: circle_path_R2_via_C)
+qed
+
+subsection \<open>Polygon parametrisation: from \<open>geotop_is_polygon J\<close> to a simple closed path\<close>
+
+text \<open>Key: composing a simple closed path with a homeomorphism on the image
+  yields a simple closed path with the transported image.\<close>
+
+lemma simple_path_compose_homeomorphism:
+  fixes c :: "real \<Rightarrow> 'a::t2_space" and h :: "'a \<Rightarrow> 'b::t2_space"
+  assumes hsp: "simple_path c"
+      and hcont: "continuous_on (path_image c) h"
+      and hinj: "inj_on h (path_image c)"
+  shows "simple_path (h \<circ> c)"
+proof -
+  have h_path_c: "path c" using hsp by (simp add: simple_path_def)
+  have h_image_sub: "c ` {0..1} = path_image c" by (simp add: path_image_def)
+  have h_path_hc: "path (h \<circ> c)"
+  proof -
+    have hcont_c: "continuous_on {0..1} c" using h_path_c by (simp add: path_def)
+    have hcont_h_on_c: "continuous_on (c ` {0..1}) h"
+      using hcont h_image_sub by simp
+    have "continuous_on {0..1} (h \<circ> c)"
+      by (rule continuous_on_compose[OF hcont_c hcont_h_on_c])
+    thus ?thesis by (simp add: path_def)
+  qed
+  have h_loop_free_c: "loop_free c"
+    using hsp by (simp add: simple_path_def)
+  have h_loop_free_hc: "loop_free (h \<circ> c)"
+    unfolding loop_free_def
+  proof (intro ballI impI)
+    fix x y assume hx: "x \<in> {0..1}" and hy: "y \<in> {0..1}" and heq: "(h \<circ> c) x = (h \<circ> c) y"
+    have hcx: "c x \<in> path_image c" using hx by (simp add: path_image_def)
+    have hcy: "c y \<in> path_image c" using hy by (simp add: path_image_def)
+    from heq have hheq: "h (c x) = h (c y)" by simp
+    have hcxy: "c x = c y" using hinj inj_onD[OF hinj hheq hcx hcy] by simp
+    show "x = y \<or> x = 0 \<and> y = 1 \<or> x = 1 \<and> y = 0"
+      using h_loop_free_c hx hy hcxy unfolding loop_free_def by blast
+  qed
+  show ?thesis unfolding simple_path_def using h_path_hc h_loop_free_hc by blast
+qed
+
+lemma path_image_compose: "path_image (h \<circ> c) = h ` path_image c"
+  by (auto simp: path_image_def image_iff)
+
+lemma pathstart_compose: "pathstart (h \<circ> c) = h (pathstart c)"
+  by (simp add: pathstart_def)
+
+lemma pathfinish_compose: "pathfinish (h \<circ> c) = h (pathfinish c)"
+  by (simp add: pathfinish_def)
+
+text \<open>The polygon parametrisation: from \<open>geotop_is_polygon J\<close> we extract a
+  simple closed path whose image is \<open>J\<close>.\<close>
+
+lemma polygon_simple_closed_path:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  obtains c where "simple_path c" "pathfinish c = pathstart c" "path_image c = J"
+proof -
+  from hJ have h_n_sphere: "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    unfolding geotop_is_polygon_def by blast
+  then obtain f where hf: "top1_homeomorphism_on J
+        (subspace_topology UNIV geotop_euclidean_topology J)
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_std_sphere::(real^2) set)) f"
+    unfolding geotop_is_n_sphere_def by blast
+  have hstd_sphere: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  have h_homeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hf top1_homeomorphism_on_geotop_imp_HOL_homeomorphic by blast
+  hence h_homeo_HOL_sph: "J homeomorphic (sphere (0::real^2) 1)"
+    using hstd_sphere by simp
+  from h_homeo_HOL_sph have h_sym: "(sphere (0::real^2) 1) homeomorphic J"
+    using homeomorphic_sym by blast
+  then obtain g g' where hg_homeo: "homeomorphism (sphere (0::real^2) 1) J g g'"
+    using homeomorphic_def by blast
+  define hg_g where "hg_g = g"
+  have hg: "homeomorphism (sphere (0::real^2) 1) J g g'" using hg_homeo .
+  hence hg_cont_sphere: "continuous_on (sphere (0::real^2) 1) g"
+    by (simp add: homeomorphism_def)
+  hence hg_image: "g ` (sphere (0::real^2) 1) = J"
+    using hg by (simp add: homeomorphism_def)
+  have hg_inv: "\<And>x. x \<in> sphere (0::real^2) 1 \<Longrightarrow> g' (g x) = x"
+    using hg unfolding homeomorphism_def by blast
+  have hg_inj: "inj_on g (sphere (0::real^2) 1)"
+  proof (rule inj_onI)
+    fix x y assume hx: "x \<in> sphere 0 1" and hy: "y \<in> sphere 0 1" and heq: "g x = g y"
+    from heq have "g' (g x) = g' (g y)" by simp
+    thus "x = y" using hg_inv hx hy by simp
+  qed
+  define c where "c = g \<circ> circle_path_R2"
+  have h_path_image_c: "path_image c = J"
+  proof -
+    have "path_image c = path_image (g \<circ> circle_path_R2)" by (simp add: c_def)
+    also have "\<dots> = g ` path_image circle_path_R2" by (rule path_image_compose)
+    also have "\<dots> = g ` sphere 0 1" by (simp add: path_image_circle_path_R2)
+    finally show ?thesis using hg_image by simp
+  qed
+  have h_pathstart_c: "pathstart c = g (vector [1, 0])"
+    by (simp add: c_def pathstart_compose pathstart_circle_path_R2)
+  have h_pathfinish_c: "pathfinish c = g (vector [1, 0])"
+    by (simp add: c_def pathfinish_compose pathfinish_circle_path_R2)
+  have h_loop_c: "pathfinish c = pathstart c"
+    using h_pathstart_c h_pathfinish_c by simp
+  have h_simple_c: "simple_path c"
+  proof -
+    have h_g_cont_image: "continuous_on (path_image circle_path_R2) g"
+      using hg_cont_sphere path_image_circle_path_R2 by simp
+    have h_g_inj_image: "inj_on g (path_image circle_path_R2)"
+      using hg_inj path_image_circle_path_R2 by simp
+    show ?thesis unfolding c_def
+      by (rule simple_path_compose_homeomorphism[OF simple_path_circle_path_R2
+                                                    h_g_cont_image h_g_inj_image])
+  qed
+  from h_simple_c h_loop_c h_path_image_c that show ?thesis by blast
+qed
+
 (** from \<S>2 Theorem 1 - Lemma 1 (geotop.tex:514)
     LATEX VERSION: R^2 - J has at most two components. **)
+text \<open>The set of \<open>geotop_component_at\<close> components of \<open>UNIV - J\<close> equals the
+  HOL-Analysis \<open>components (UNIV - J)\<close>.\<close>
+
+lemma geotop_polygon_components_set_eq:
+  fixes J :: "(real^2) set"
+  shows "{C. \<exists>P. P \<in> UNIV - J \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P}
+       = components (UNIV - J)"
+proof -
+  have h_bridge: "\<And>P. geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+              = connected_component_set (UNIV - J) P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  show ?thesis
+    using h_bridge unfolding components_def by auto
+qed
+
+text \<open>Jordan curve theorem for polygons: \<open>R^2 - J\<close> has exactly two components.\<close>
+
+lemma polygon_components_card:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "card (components (UNIV - J)) = 2"
+proof -
+  obtain c where hsp: "simple_path c" and hloop: "pathfinish c = pathstart c"
+              and h_image: "path_image c = J"
+    using polygon_simple_closed_path[OF hJ] by blast
+  obtain inner outer where
+    h_inner_ne: "inner \<noteq> {}" and h_inner_open: "open inner" and h_inner_conn: "connected inner"
+    and h_outer_ne: "outer \<noteq> {}" and h_outer_open: "open outer" and h_outer_conn: "connected outer"
+    and h_inner_bd: "bounded inner" and h_outer_unbd: "\<not> bounded outer"
+    and h_disjoint: "inner \<inter> outer = {}"
+    and h_union: "inner \<union> outer = - path_image c"
+    and h_inner_fr: "frontier inner = path_image c"
+    and h_outer_fr: "frontier outer = path_image c"
+    using Jordan_curve_real2[OF hsp hloop] by metis
+  have h_inner_neq_outer: "inner \<noteq> outer"
+    using h_inner_bd h_outer_unbd by auto
+  have h_X: "UNIV - J = inner \<union> outer"
+    using h_union h_image by auto
+  have h_components_eq: "components (UNIV - J) = {inner, outer}"
+  proof
+    show "components (UNIV - J) \<subseteq> {inner, outer}"
+    proof
+      fix C assume hC: "C \<in> components (UNIV - J)"
+      then obtain P where hP: "P \<in> UNIV - J" and hC_eq: "C = connected_component_set (UNIV - J) P"
+        by (rule componentsE)
+      have hP_in: "P \<in> inner \<or> P \<in> outer" using hP h_X by blast
+      have h_conn_in_inner_or_outer:
+        "connected_component_set (UNIV - J) P \<subseteq> inner \<or> connected_component_set (UNIV - J) P \<subseteq> outer"
+      proof -
+        define C0 where "C0 = connected_component_set (UNIV - J) P"
+        have hC0_conn: "connected C0" unfolding C0_def by (rule connected_connected_component)
+        have hC0_sub: "C0 \<subseteq> UNIV - J" unfolding C0_def by (rule connected_component_subset)
+        hence hC0_in_union: "C0 \<subseteq> inner \<union> outer" using h_X by simp
+        have hP_C0: "P \<in> C0"
+          unfolding C0_def using hP connected_component_refl by simp
+        have h_inter1: "C0 \<inter> inner \<noteq> {} \<or> C0 \<inter> outer \<noteq> {}"
+          using hP_C0 hP_in by blast
+        have h_inter2: "C0 \<inter> inner = {} \<or> C0 \<inter> outer = {}"
+          using hC0_conn hC0_in_union h_inner_open h_outer_open h_disjoint
+                connectedD[OF hC0_conn h_inner_open h_outer_open]
+          by (metis Int_assoc inf_bot_right inf_commute)
+        show ?thesis
+        proof (cases "C0 \<inter> inner = {}")
+          case True
+          hence "C0 \<subseteq> outer" using hC0_in_union by blast
+          thus ?thesis unfolding C0_def by simp
+        next
+          case False
+          hence "C0 \<inter> outer = {}" using h_inter2 by blast
+          hence "C0 \<subseteq> inner" using hC0_in_union by blast
+          thus ?thesis unfolding C0_def by simp
+        qed
+      qed
+      have h_conn_eq: "connected_component_set (UNIV - J) P = inner \<or>
+                       connected_component_set (UNIV - J) P = outer"
+      proof -
+        consider (Inner) "P \<in> inner" | (Outer) "P \<in> outer" using hP_in by blast
+        thus ?thesis
+        proof cases
+          case Inner
+          have "inner \<subseteq> connected_component_set (UNIV - J) P"
+            using Inner h_inner_conn connected_component_maximal[of P inner "UNIV - J"] h_X
+            by blast
+          moreover have "connected_component_set (UNIV - J) P \<subseteq> inner"
+          proof -
+            have "connected_component_set (UNIV - J) P \<subseteq> outer \<Longrightarrow> P \<in> outer"
+              using hP connected_component_refl by auto
+            hence "\<not> (connected_component_set (UNIV - J) P \<subseteq> outer)"
+              using Inner h_disjoint by auto
+            thus ?thesis using h_conn_in_inner_or_outer by blast
+          qed
+          ultimately show ?thesis by simp
+        next
+          case Outer
+          have "outer \<subseteq> connected_component_set (UNIV - J) P"
+            using Outer h_outer_conn connected_component_maximal[of P outer "UNIV - J"] h_X
+            by blast
+          moreover have "connected_component_set (UNIV - J) P \<subseteq> outer"
+          proof -
+            have "connected_component_set (UNIV - J) P \<subseteq> inner \<Longrightarrow> P \<in> inner"
+              using hP connected_component_refl by auto
+            hence "\<not> (connected_component_set (UNIV - J) P \<subseteq> inner)"
+              using Outer h_disjoint by auto
+            thus ?thesis using h_conn_in_inner_or_outer by blast
+          qed
+          ultimately show ?thesis by simp
+        qed
+      qed
+      thus "C \<in> {inner, outer}" using hC_eq by blast
+    qed
+  next
+    show "{inner, outer} \<subseteq> components (UNIV - J)"
+    proof
+      fix C assume hC: "C \<in> {inner, outer}"
+      show "C \<in> components (UNIV - J)"
+      proof (cases "C = inner")
+        case True
+        obtain P where hP: "P \<in> inner" using h_inner_ne by blast
+        hence hP_X: "P \<in> UNIV - J" using h_X by auto
+        have h1: "inner \<subseteq> connected_component_set (UNIV - J) P"
+          using hP h_inner_conn h_X connected_component_maximal[of P inner "UNIV - J"] by blast
+        define C0 where "C0 = connected_component_set (UNIV - J) P"
+        have hC0_conn: "connected C0" unfolding C0_def by (rule connected_connected_component)
+        have hC0_sub: "C0 \<subseteq> UNIV - J" unfolding C0_def by (rule connected_component_subset)
+        hence hC0_in_union: "C0 \<subseteq> inner \<union> outer" using h_X by simp
+        have hP_C0: "P \<in> C0"
+          unfolding C0_def using hP_X connected_component_refl by simp
+        have hC0_inter_inner: "C0 \<inter> inner \<noteq> {}" using hP_C0 hP by blast
+        have hC0_or: "C0 \<inter> inner = {} \<or> C0 \<inter> outer = {}"
+          using connectedD[OF hC0_conn h_inner_open h_outer_open]
+                hC0_in_union h_disjoint
+          by (metis Int_assoc inf_bot_right inf_commute)
+        hence hC0_inter_outer: "C0 \<inter> outer = {}" using hC0_inter_inner by blast
+        have hC0_in_inner: "C0 \<subseteq> inner" using hC0_in_union hC0_inter_outer by blast
+        have h2: "connected_component_set (UNIV - J) P \<subseteq> inner"
+          using hC0_in_inner unfolding C0_def by simp
+        have "inner = connected_component_set (UNIV - J) P" using h1 h2 by simp
+        hence "inner \<in> components (UNIV - J)" using hP_X componentsI by metis
+        thus ?thesis using True by simp
+      next
+        case False
+        hence hC_outer: "C = outer" using hC by simp
+        obtain P where hP: "P \<in> outer" using h_outer_ne by blast
+        hence hP_X: "P \<in> UNIV - J" using h_X by auto
+        have h1: "outer \<subseteq> connected_component_set (UNIV - J) P"
+          using hP h_outer_conn h_X connected_component_maximal[of P outer "UNIV - J"] by blast
+        define C0 where "C0 = connected_component_set (UNIV - J) P"
+        have hC0_conn: "connected C0" unfolding C0_def by (rule connected_connected_component)
+        have hC0_sub: "C0 \<subseteq> UNIV - J" unfolding C0_def by (rule connected_component_subset)
+        hence hC0_in_union: "C0 \<subseteq> inner \<union> outer" using h_X by simp
+        have hP_C0: "P \<in> C0"
+          unfolding C0_def using hP_X connected_component_refl by simp
+        have hC0_inter_outer: "C0 \<inter> outer \<noteq> {}" using hP_C0 hP by blast
+        have hC0_or: "C0 \<inter> inner = {} \<or> C0 \<inter> outer = {}"
+          using connectedD[OF hC0_conn h_inner_open h_outer_open]
+                hC0_in_union h_disjoint
+          by (metis Int_assoc inf_bot_right inf_commute)
+        hence hC0_inter_inner: "C0 \<inter> inner = {}" using hC0_inter_outer by blast
+        have hC0_in_outer: "C0 \<subseteq> outer" using hC0_in_union hC0_inter_inner by blast
+        have h2: "connected_component_set (UNIV - J) P \<subseteq> outer"
+          using hC0_in_outer unfolding C0_def by simp
+        have "outer = connected_component_set (UNIV - J) P" using h1 h2 by simp
+        hence "outer \<in> components (UNIV - J)" using hP_X componentsI by metis
+        thus ?thesis using hC_outer by simp
+      qed
+    qed
+  qed
+  have "card (components (UNIV - J)) = card {inner, outer}"
+    using h_components_eq by simp
+  also have "\<dots> = 2" using h_inner_neq_outer by simp
+  finally show ?thesis .
+qed
+
 theorem Lemma_GT_2_1a:
   fixes J :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
   shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
-proof -
-  (** (1) Parametrise J = e_1 \<cup> ... \<cup> e_n as a cyclic sequence of 1-simplexes (edges)
-         with consecutive edges sharing a vertex. **)
-  obtain es :: "(real^2) set list" where hes:
-    "set es \<noteq> {} \<and> J = \<Union>(set es)"
-  proof -
-    assume *: "\<And>es. set es \<noteq> {} \<and> J = \<Union>(set es) \<Longrightarrow> thesis"
-    from * [of "[J]"] show thesis by (by100 simp)
-  qed
-  (** (2) For each pair (P, Q) with P, Q \<in> R^2 - J, compute the crossing parity: the
-         number of times a polygonal path from P to Q (avoiding vertices of J) crosses
-         edges of J, mod 2. This parity depends only on P, Q (it is an invariant of the
-         connected component they lie in). **)
-  have h_parity:
-    "(\<exists>\<pi>::real^2 \<Rightarrow> nat.
-        \<forall>P\<in>UNIV - J. \<forall>Q\<in>UNIV - J.
-          (\<pi> P = \<pi> Q \<longleftrightarrow>
-             geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P
-             = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) Q) \<and>
-          \<pi> P < 2) \<and>
-     card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
-    sorry
-  (** (3) There are at most two parity classes (mod 2), hence at most two components. **)
-  have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<le> 2"
-    using h_parity by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
-qed
+  using polygon_components_card[OF hJ] geotop_polygon_components_set_eq[of J] by simp
 
-(** from \<S>2 Theorem 1 - Lemma 2 (geotop.tex:527)
-    LATEX VERSION: R^2 - J has at least two components. **)
 theorem Lemma_GT_2_1b:
   fixes J :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
   shows "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
-proof -
-  (** (1) The polygon J is compact and has a bounded complement: there is a large enough
-         ball B(0, R) with J \<subseteq> B(0, R), so R^2 - B(0, R) is an unbounded component of
-         R^2 - J. **)
-  have h_unbounded_comp:
-    "\<exists>P. P \<in> UNIV - J \<and> \<not> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
-                                                ((UNIV::(real^2) set) - J) P)" sorry
-  (** (2) There is also a bounded component: an edge e of J has a neighborhood whose
-         both sides (via local transversal to e) contain points of R^2 - J; at least one
-         side is interior (since a loop encloses a bounded region). Pick an interior
-         point; its component is bounded. **)
-  have h_bounded_comp:
-    "(\<exists>P. P \<in> UNIV - J \<and> geotop_bounded_R2 (geotop_component_at UNIV geotop_euclidean_topology
-                                                ((UNIV::(real^2) set) - J) P)) \<and>
-     card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
-    sorry
-  (** (3) The bounded and unbounded components are distinct, so \<ge> 2 components. **)
-  have h_final: "card {C. \<exists>P. P \<in> (UNIV::(real^2) set) - J \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} \<ge> 2"
-    using h_bounded_comp by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
-qed
+  using polygon_components_card[OF hJ] geotop_polygon_components_set_eq[of J] by simp
 
 (** from \<S>2 Theorem 1 (geotop.tex:502)
     LATEX VERSION: Let J be a polygon in R^2. Then R^2 - J has exactly two components. **)
@@ -143,71 +1057,504 @@ definition geotop_polygon_exterior :: "(real^2) set \<Rightarrow> (real^2) set" 
        (\<forall>P\<in>E. geotop_component_at UNIV geotop_euclidean_topology
                    ((UNIV::(real^2) set) - J) P = E))"
 
-(** from \<S>2 Theorem 2 (geotop.tex:555)
-    LATEX VERSION: Let I be the interior of the polygon J in R^2. Then \<bar>I\<close> is a finite polyhedron. **)
-theorem Theorem_GT_2_2:
-  fixes J :: "(real^2) set"
-  assumes hJ: "geotop_is_polygon J"
-  shows "\<exists>K. geotop_is_complex K \<and> finite K \<and>
-    geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  (** Moise proof (geotop.tex:557). Let L\<^sub>1, \<dots>, L\<^sub>n be the lines that
-      contain edges of J; finite in number. Each L\<^sub>i splits R\<^sup>2 into two closed
-      half-planes; any finite intersection of closed half-planes is closed and
-      convex. So \<Union>L\<^sub>i decomposes R\<^sup>2 into a finite collection of closed convex
-      regions R\<^sub>1, \<dots>, R\<^sub>m with Fr R\<^sub>j \<subseteq> \<Union>L\<^sub>i.
-      Now R\<^sub>j \<inter> J \<subseteq> Fr R\<^sub>j, so either R\<^sub>j \<inter> \<bar>I\<close> \<subseteq> J or R\<^sub>j \<subseteq> \<bar>I\<close>.
-      Write \<bar>I\<close> = \<Union>\<^sub>{j\<le>k} R\<^sub>j (reindexing). For each j \<le> k, triangulate Fr R\<^sub>j
-      minimally; pick w\<^sub>j \<in> R\<^sub>j - Fr R\<^sub>j; for each 1-simplex vv' of Fr R\<^sub>j
-      form the 2-simplex w\<^sub>j v v'. Union gives a triangulation of \<bar>I\<close>. **)
+text \<open>\<open>geotop_simplex_dim_imp_hyperplane_dim\<close> moved to GeoTopBase.\<close>
+
+text \<open>Prerequisite for Theorem_GT_2_2 (Moise's "finite polyhedron" content):
+  any complex with compact polyhedron is finite. This is the standard
+  compactness-plus-local-finiteness argument, modelled on
+  \<open>geotop_subdivision_of_finite_is_finite\<close> in \<open>b0/GeoTopBase0.thy\<close>.\<close>
+
+lemma compact_polyhedron_imp_finite_complex:
+  fixes K :: "(real^2) set set"
+  assumes hKcomp: "geotop_is_complex K"
+      and hK_poly_comp: "compact (geotop_polyhedron K)"
+  shows "finite K"
 proof -
-  (** (1) The lines containing edges of J are finite in number. **)
-  obtain Ls :: "(real^2) set set" where hLs_fin: "finite Ls"
-     and hLs_lines: "\<forall>L\<in>Ls. geotop_hyperplane_dim L 1"
-     and hLs_cover: "\<forall>e. geotop_is_edge e \<and> e \<subseteq> J \<longrightarrow> (\<exists>L\<in>Ls. e \<subseteq> L)"
-    sorry
-  (** (2) The union of these lines decomposes R\<^sup>2 into finitely many closed
-      convex regions R\<^sub>j with Fr R\<^sub>j \<subseteq> \<Union>Ls. **)
-  obtain Rs :: "(real^2) set set" where hRs_fin: "finite Rs"
-     and hRs_conv: "\<forall>R\<in>Rs. convex R"
-     and hRs_closed: "\<forall>R\<in>Rs. closed R"
-     and hRs_fr: "\<forall>R\<in>Rs. frontier R \<subseteq> \<Union>Ls"
-     and hRs_cover: "\<Union>Rs = (UNIV::(real^2) set)"
-    sorry
-  (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
-  define Ibar where
-    "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  have hRj_dichotomy: "(\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J) \<and>
-                        \<Union>{R\<in>Rs. R \<subseteq> Ibar} = Ibar"
-    sorry
-  (** (4) Select the \"inside\" regions Rs_in = {R \<in> Rs. R \<subseteq> \<bar>I\<close>}; their union covers \<bar>I\<close>. **)
-  define Rs_in where "Rs_in = {R\<in>Rs. R \<subseteq> Ibar}"
-  have hRs_in_fin: "finite Rs_in" using hRs_fin Rs_in_def by simp
-  have hRs_in_cover: "\<Union>Rs_in = Ibar" using hRj_dichotomy Rs_in_def by (by100 simp)
-  (** (5) Triangulate each R \<in> Rs_in: pick w \<in> R - Fr R (nonempty interior;
-      legitimate since R is a 2-dim closed convex region with nonempty interior
-      in the \<bar>I\<close> case), and for each 1-simplex vv' of a minimal triangulation
-      of Fr R, form the 2-simplex w v v'. **)
-  obtain wpt :: "(real^2) set \<Rightarrow> real^2" where
-    hwpt: "\<forall>R\<in>Rs_in. wpt R \<in> R - frontier R"
-    sorry
-  obtain FrTri :: "(real^2) set \<Rightarrow> (real^2) set set" where
-    hFrTri_fin: "\<forall>R\<in>Rs_in. finite (FrTri R)"
-    and hFrTri_edges: "\<forall>R\<in>Rs_in. \<forall>e\<in>FrTri R. geotop_is_edge e \<and> e \<subseteq> frontier R"
-    and hFrTri_cover: "\<forall>R\<in>Rs_in. \<Union>(FrTri R) = frontier R"
-    and hFrTri_disj: "\<forall>R\<in>Rs_in. \<forall>e1\<in>FrTri R. \<forall>e2\<in>FrTri R.
-                         e1 \<noteq> e2 \<longrightarrow> geotop_is_face (e1 \<inter> e2) e1 \<or> e1 \<inter> e2 = {}"
-    sorry
-  (** Simplexes of the triangulation of R\<^sub>j: the 2-simplex w\<^sub>j v v' per edge vv',
-      plus all faces. **)
-  define K_R :: "(real^2) set \<Rightarrow> (real^2) set set" where
-    "K_R R = {\<sigma>. \<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
-                  \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}"
-  define K :: "(real^2) set set" where "K = (\<Union>R\<in>Rs_in. K_R R)"
-  (** (6a-c) K is a finite complex with |K| = Ibar. **)
-  have hK_complex: "geotop_is_complex K \<and> finite K \<and> geotop_polyhedron K = Ibar" sorry
-  show ?thesis using hK_complex Ibar_def by (by100 blast)
+  (** K.3 (local finiteness): each \<tau> \<in> K has open nbhd touching only finitely many. **)
+  have hK_locfin: "\<forall>\<tau>\<in>K. \<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+    using hKcomp unfolding geotop_is_complex_def by (by100 blast)
+  define Uf :: "(real^2) set \<Rightarrow> (real^2) set" where
+    "Uf \<tau> = (SOME U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}})" for \<tau>
+  have hUf_spec: "\<forall>\<tau>\<in>K. open (Uf \<tau>) \<and> \<tau> \<subseteq> Uf \<tau>
+                          \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}}"
+  proof
+    fix \<tau> assume h\<tau>K: "\<tau> \<in> K"
+    have hex: "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
+      using hK_locfin h\<tau>K by (by100 blast)
+    show "open (Uf \<tau>) \<and> \<tau> \<subseteq> Uf \<tau> \<and> finite {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}}"
+      unfolding Uf_def using someI_ex[OF hex] by (by100 blast)
+  qed
+  (** The U_\<tau>'s cover |K|. **)
+  have hcover: "geotop_polyhedron K \<subseteq> (\<Union>\<tau>\<in>K. Uf \<tau>)"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K"
+    obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hx_Uf: "x \<in> Uf \<tau>" using hx\<tau> h\<tau>K hUf_spec by (by100 blast)
+    show "x \<in> (\<Union>\<tau>\<in>K. Uf \<tau>)" using h\<tau>K hx_Uf by (by100 blast)
+  qed
+  have hUf_open_img: "\<forall>B\<in>Uf ` K. open B"
+    using hUf_spec by (by100 blast)
+  have hcover_img: "geotop_polyhedron K \<subseteq> \<Union>(Uf ` K)"
+    using hcover by (by100 blast)
+  have hcover_fin: "\<exists>\<T>\<subseteq>Uf ` K. finite \<T> \<and> geotop_polyhedron K \<subseteq> \<Union>\<T>"
+  proof (rule compactE[OF hK_poly_comp hcover_img])
+    fix B assume "B \<in> Uf ` K"
+    thus "open B" using hUf_open_img by (by100 blast)
+  next
+    fix \<T> assume "\<T> \<subseteq> Uf ` K" "finite \<T>" "geotop_polyhedron K \<subseteq> \<Union>\<T>"
+    thus "\<exists>\<T>\<subseteq>Uf ` K. finite \<T> \<and> geotop_polyhedron K \<subseteq> \<Union>\<T>"
+      by (by100 blast)
+  qed
+  obtain \<T> where h\<T>_sub: "\<T> \<subseteq> Uf ` K" and h\<T>fin: "finite \<T>"
+              and h\<T>_cover: "geotop_polyhedron K \<subseteq> \<Union>\<T>"
+    using hcover_fin by (by100 blast)
+  define S where "S = (\<lambda>B. SOME \<tau>. \<tau> \<in> K \<and> B = Uf \<tau>) ` \<T>"
+  have hSfin: "finite S" unfolding S_def using h\<T>fin by (by100 blast)
+  have hS_sub: "S \<subseteq> K"
+  proof
+    fix \<tau> assume h\<tau>S: "\<tau> \<in> S"
+    then obtain B where hBT: "B \<in> \<T>"
+      and h\<tau>_some: "\<tau> = (SOME \<tau>'. \<tau>' \<in> K \<and> B = Uf \<tau>')"
+      unfolding S_def by (by100 blast)
+    have hB_img: "B \<in> Uf ` K" using hBT h\<T>_sub by (by100 blast)
+    have hex_some: "\<exists>\<tau>'. \<tau>' \<in> K \<and> B = Uf \<tau>'" using hB_img by (by100 blast)
+    show "\<tau> \<in> K" using h\<tau>_some someI_ex[OF hex_some] by (by100 blast)
+  qed
+  have hS_cover: "geotop_polyhedron K \<subseteq> (\<Union>\<tau>\<in>S. Uf \<tau>)"
+  proof
+    fix x assume hx: "x \<in> geotop_polyhedron K"
+    obtain B where hBT: "B \<in> \<T>" and hxB: "x \<in> B"
+      using hx h\<T>_cover by (by100 blast)
+    have hB_img: "B \<in> Uf ` K" using hBT h\<T>_sub by (by100 blast)
+    have hex_some: "\<exists>\<tau>'. \<tau>' \<in> K \<and> B = Uf \<tau>'" using hB_img by (by100 blast)
+    define \<tau> where "\<tau> = (SOME \<tau>'. \<tau>' \<in> K \<and> B = Uf \<tau>')"
+    have h\<tau>_props: "\<tau> \<in> K \<and> B = Uf \<tau>"
+      unfolding \<tau>_def using someI_ex[OF hex_some] by (by100 blast)
+    have h\<tau>S: "\<tau> \<in> S" unfolding S_def using hBT \<tau>_def by (by100 blast)
+    show "x \<in> (\<Union>\<tau>\<in>S. Uf \<tau>)" using h\<tau>S h\<tau>_props hxB by (by100 blast)
+  qed
+  (** Every \<tau>' \<in> K meets some Uf \<tau> with \<tau> \<in> S. **)
+  have h\<tau>'_S: "\<forall>\<tau>'\<in>K. \<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}"
+  proof
+    fix \<tau>' assume h\<tau>'K: "\<tau>' \<in> K"
+    have hK_simp_all: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+      using conjunct1[OF hKcomp[unfolded geotop_is_complex_def]] by (by100 blast)
+    have h\<tau>'_simp: "geotop_is_simplex \<tau>'"
+      using h\<tau>'K hK_simp_all by (by100 blast)
+    have h\<tau>'ne: "\<tau>' \<noteq> {}"
+    proof -
+      obtain V m n where hV_fin: "finite V" and hVcard: "card V = n + 1"
+                  and h\<tau>'_hull: "\<tau>' = geotop_convex_hull V"
+        using h\<tau>'_simp unfolding geotop_is_simplex_def by (by100 blast)
+      have hVne: "V \<noteq> {}"
+        using hV_fin hVcard card_gt_0_iff by (by100 fastforce)
+      obtain v where hv: "v \<in> V" using hVne by (by100 blast)
+      have hvhull: "v \<in> convex hull V" using hv hull_inc[of v V] by (by100 simp)
+      have h\<tau>'_hullHOL: "\<tau>' = convex hull V"
+        using h\<tau>'_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      show "\<tau>' \<noteq> {}" using hvhull h\<tau>'_hullHOL by (by100 blast)
+    qed
+    obtain x where hx\<tau>': "x \<in> \<tau>'" using h\<tau>'ne by (by100 blast)
+    have hx_Kpoly: "x \<in> geotop_polyhedron K"
+      using h\<tau>'K hx\<tau>' unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<tau> where h\<tau>S: "\<tau> \<in> S" and hx_Uf\<tau>: "x \<in> Uf \<tau>"
+      using hS_cover hx_Kpoly by (by100 blast)
+    have hmeet: "\<tau>' \<inter> Uf \<tau> \<noteq> {}" using hx\<tau>' hx_Uf\<tau> by (by100 blast)
+    show "\<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}" using h\<tau>S hmeet by (by100 blast)
+  qed
+  have hK_sub: "K \<subseteq> (\<Union>\<tau>\<in>S. {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+  proof
+    fix \<tau>' assume h\<tau>'K: "\<tau>' \<in> K"
+    have h\<tau>'_meet: "\<exists>\<tau>\<in>S. \<tau>' \<inter> Uf \<tau> \<noteq> {}"
+      using h\<tau>'_S h\<tau>'K by (by100 blast)
+    obtain \<tau> where h\<tau>S: "\<tau> \<in> S" and hmeet: "\<tau>' \<inter> Uf \<tau> \<noteq> {}"
+      using h\<tau>'_meet by (by100 blast)
+    show "\<tau>' \<in> (\<Union>\<tau>\<in>S. {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+      using h\<tau>S h\<tau>'K hmeet by (by100 blast)
+  qed
+  have hSfin_sub: "finite (\<Union>\<tau>\<in>S. {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}})"
+  proof (rule finite_UN_I[OF hSfin])
+    fix \<tau> assume h\<tau>S: "\<tau> \<in> S"
+    have h\<tau>K: "\<tau> \<in> K" using h\<tau>S hS_sub by (by100 blast)
+    show "finite {\<tau>'\<in>K. \<tau>' \<inter> Uf \<tau> \<noteq> {}}" using hUf_spec h\<tau>K by (by100 blast)
+  qed
+  show "finite K"
+    using hK_sub hSfin_sub finite_subset by (by100 blast)
 qed
 
+text \<open>Polygons admit a finite triangulating complex (Moise implicit fact: the
+  polyhedron of a polygon is compact, so any complex realising it is finite by
+  \<open>compact_polyhedron_imp_finite_complex\<close>).\<close>
+
+lemma geotop_polygon_finite_triangulation:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "\<exists>K. geotop_is_complex K \<and> finite K \<and> geotop_polyhedron K = J"
+proof -
+  obtain K0 where hK0c: "geotop_is_complex K0"
+              and hK0p: "geotop_polyhedron K0 = J"
+              and hJsph: "geotop_is_n_sphere J
+                            (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  obtain f where hf: "top1_homeomorphism_on J
+                        (subspace_topology UNIV geotop_euclidean_topology J)
+                        (geotop_std_sphere::(real^2) set)
+                        (subspace_topology UNIV geotop_euclidean_topology
+                           (geotop_std_sphere::(real^2) set)) f"
+    using hJsph unfolding geotop_is_n_sphere_def by (by100 blast)
+  have h_homeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hf top1_homeomorphism_on_geotop_imp_HOL_homeomorphic by (by100 blast)
+  have h_std_eq: "(geotop_std_sphere::(real^2) set) = sphere (0::real^2) 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  have h_homeo_sph: "J homeomorphic sphere (0::real^2) 1"
+    using h_homeo_HOL h_std_eq by (by100 simp)
+  have h_compact_sph: "compact (sphere (0::real^2) 1)" by simp
+  have hJ_compact: "compact J"
+    using h_compact_sph h_homeo_sph homeomorphic_compactness by (by100 blast)
+  have hK0_poly_comp: "compact (geotop_polyhedron K0)"
+    using hJ_compact hK0p by (by100 simp)
+  have hK0_fin: "finite K0"
+    using compact_polyhedron_imp_finite_complex[OF hK0c hK0_poly_comp] by (by100 simp)
+  show ?thesis using hK0c hK0_fin hK0p by (by100 blast)
+qed
+
+text \<open>Polygon \<open>J\<close> in \<open>real^2\<close> is homeomorphic to the unit sphere
+  \<open>sphere 0 1\<close> (HOL homeomorphism, not the geotop topological version).\<close>
+
+lemma polygon_homeomorphic_S1_helper:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "J homeomorphic sphere (0::real^2) 1"
+proof -
+  have hJsph: "geotop_is_n_sphere J
+                (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  obtain f0 where hf0: "top1_homeomorphism_on J
+                          (subspace_topology UNIV geotop_euclidean_topology J)
+                          (geotop_std_sphere::(real^2) set)
+                          (subspace_topology UNIV geotop_euclidean_topology
+                             (geotop_std_sphere::(real^2) set)) f0"
+    using hJsph unfolding geotop_is_n_sphere_def by (by100 blast)
+  have h_J_std: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hf0 top1_homeomorphism_on_geotop_imp_HOL_homeomorphic by (by100 blast)
+  have h_std_eq: "(geotop_std_sphere::(real^2) set) = sphere (0::real^2) 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  show ?thesis using h_J_std h_std_eq by (by100 simp)
+qed
+
+text \<open>A polygon \<open>J \<subseteq> real^2\<close> has empty topological interior. Proof: combine
+  \<open>polygon_homeomorphic_S1_helper\<close>, \<open>homeomorphic_punctured_sphere_hyperplane\<close>, and
+  \<open>invariance_of_dimension_affine_sets\<close> on a small ball missing one fixed point.\<close>
+
+lemma polygon_set_interior_empty:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "interior J = {}"
+proof (rule ccontr)
+  assume "interior J \<noteq> {}"
+  then obtain x0 where hx0: "x0 \<in> interior J" by (by100 blast)
+  obtain f f' where hff': "homeomorphism J (sphere (0::real^2) 1) f f'"
+    using polygon_homeomorphic_S1_helper[OF hJ] unfolding homeomorphic_def by (by100 blast)
+  define b :: "real^2" where "b = vector [1, 0]"
+  have hb_norm: "norm b = 1"
+  proof -
+    have h1: "b $ 1 = 1" unfolding b_def by simp
+    have h2: "b $ 2 = 0" unfolding b_def by simp
+    have hsum: "(\<Sum>i\<in>(UNIV::2 set). (b $ i)\<^sup>2) = 1"
+      using h1 h2 by (simp add: UNIV_2)
+    show ?thesis unfolding norm_vec_def L2_set_def using hsum by simp
+  qed
+  have hb_sph: "b \<in> sphere (0::real^2) 1"
+    using hb_norm by (by100 simp)
+  define q where "q = f' b"
+  have hq_J: "q \<in> J"
+    using hb_sph hff' unfolding homeomorphism_def q_def by (by100 blast)
+  have hf_q: "f q = b"
+    using hq_J hff' hb_sph unfolding homeomorphism_def q_def by (by100 metis)
+  (** Open interior J non-empty hence has a ball; pick x \<in> interior J with x \<noteq> q. **)
+  obtain r00 where hr00: "r00 > 0" and hball00: "ball x0 r00 \<subseteq> interior J"
+    using hx0 by (metis interior_subset open_contains_ball open_interior)
+  define x where "x = (if x0 = q then x0 + (r00/2) *\<^sub>R b else x0)"
+  have hx_ne_q: "x \<noteq> q"
+  proof (cases "x0 = q")
+    case True
+    have h_diff: "x - x0 = (r00/2) *\<^sub>R b" unfolding x_def using True by (by100 simp)
+    have h_diff_norm: "norm (x - x0) = r00/2"
+      using hb_norm h_diff hr00 by (auto simp: norm_scaleR)
+    have h_ne: "x \<noteq> x0"
+      using h_diff_norm hr00 by force
+    show ?thesis using h_ne True x_def by (by100 simp)
+  next
+    case False
+    show ?thesis unfolding x_def using False by (by100 simp)
+  qed
+  have hx_in_int: "x \<in> interior J"
+  proof (cases "x0 = q")
+    case True
+    have h_dist: "dist x x0 = r00/2"
+    proof -
+      have "dist x x0 = norm (x - x0)" by (simp add: dist_norm)
+      also have "x - x0 = (r00/2) *\<^sub>R b" unfolding x_def using True by (by100 simp)
+      finally show ?thesis using hb_norm hr00 by (auto simp: norm_scaleR)
+    qed
+    have h_lt: "dist x x0 < r00" using h_dist hr00 by simp
+    have hx_in: "x \<in> ball x0 r00" using h_lt by (simp add: dist_commute)
+    show ?thesis using hx_in hball00 by (by100 blast)
+  next
+    case False
+    show ?thesis unfolding x_def using False hx0 by (by100 simp)
+  qed
+  obtain r0 where hr0: "r0 > 0" and hball0: "ball x r0 \<subseteq> interior J"
+    using hx_in_int by (metis interior_subset open_contains_ball open_interior)
+  define r where "r = min r0 (dist x q / 2)"
+  have hdxq: "dist x q > 0" using hx_ne_q by simp
+  have hr_pos: "r > 0"
+    unfolding r_def using hr0 hdxq by (by100 simp)
+  have hr_le: "r \<le> r0" unfolding r_def by simp
+  have hball_int: "ball x r \<subseteq> interior J" using hball0 hr_le by auto
+  have hball_J: "ball x r \<subseteq> J" using hball_int interior_subset by (by100 blast)
+  have hq_notin: "q \<notin> ball x r"
+  proof
+    assume hqb: "q \<in> ball x r"
+    have hr_lt: "r \<le> dist x q / 2" unfolding r_def by (by100 simp)
+    have "dist x q < r" using hqb by (simp add: dist_commute)
+    thus False using hr_lt hdxq by (by100 simp)
+  qed
+  have hball_Jq: "ball x r \<subseteq> J - {q}" using hball_J hq_notin by (by100 blast)
+  (** S^1 - {b} homeomorphic to 1-dim hyperplane H = {y. b \<bullet> y = 0}. **)
+  define H :: "(real^2) set" where "H = {y::real^2. b \<bullet> y = 0}"
+  have hb_ne0: "b \<noteq> 0"
+    unfolding b_def by (simp add: vec_eq_iff forall_2)
+  have hSb_hom: "(sphere (0::real^2) 1 - {b}) homeomorphic H"
+    unfolding H_def
+    using homeomorphic_punctured_sphere_hyperplane[of 1 b 0 b 0] hb_sph hb_ne0
+    by (by100 simp)
+  obtain g g' where hgg': "homeomorphism (sphere (0::real^2) 1 - {b}) H g g'"
+    using hSb_hom unfolding homeomorphic_def by (by100 blast)
+  (** f maps ball x r into S^1 - {b}. **)
+  have hf_J: "f ` J = sphere (0::real^2) 1"
+    using hff' unfolding homeomorphism_def by (by100 blast)
+  have hf_inj_J: "inj_on f J"
+    using hff' unfolding homeomorphism_def by (auto simp: inj_on_def)
+  have hf_im_ball_in_S1: "f ` ball x r \<subseteq> sphere (0::real^2) 1"
+    using hball_J hf_J by (by100 blast)
+  have hf_im_ball: "f ` ball x r \<subseteq> sphere (0::real^2) 1 - {b}"
+  proof
+    fix y assume "y \<in> f ` ball x r"
+    then obtain z where hz: "z \<in> ball x r" and hyz: "y = f z" by (by100 blast)
+    have hzJ: "z \<in> J" using hz hball_J by (by100 blast)
+    have hzq: "z \<noteq> q" using hz hq_notin by (by100 blast)
+    have hy_S1: "y \<in> sphere (0::real^2) 1" using hf_im_ball_in_S1 hz hyz by (by100 blast)
+    have hy_ne_b: "y \<noteq> b"
+    proof
+      assume "y = b"
+      hence "f z = f q" using hyz hf_q by (by100 simp)
+      hence "z = q" using hzJ hq_J hf_inj_J unfolding inj_on_def by (by100 blast)
+      thus False using hzq by (by100 simp)
+    qed
+    show "y \<in> sphere (0::real^2) 1 - {b}" using hy_S1 hy_ne_b by (by100 blast)
+  qed
+  (** Define F = g \<circ> f, which is continuous and injective on ball x r, image in H. **)
+  have hf_cont_J: "continuous_on J f"
+    by (rule homeomorphism_cont1[OF hff'])
+  have hf_cont_ball: "continuous_on (ball x r) f"
+    using hf_cont_J hball_J continuous_on_subset by (by100 blast)
+  have hg_cont: "continuous_on (sphere (0::real^2) 1 - {b}) g"
+    by (rule homeomorphism_cont1[OF hgg'])
+  have hg_cont_im: "continuous_on (f ` ball x r) g"
+    using hg_cont hf_im_ball continuous_on_subset by (by100 blast)
+  have hF_cont: "continuous_on (ball x r) (g \<circ> f)"
+    using hf_cont_ball hg_cont_im continuous_on_compose by (by100 blast)
+  have hf_inj_ball: "inj_on f (ball x r)"
+    using hf_inj_J hball_J inj_on_subset by (by100 blast)
+  have hg_inj: "inj_on g (sphere (0::real^2) 1 - {b})"
+  proof (rule inj_onI)
+    fix u v assume hu: "u \<in> sphere (0::real^2) 1 - {b}"
+                and hv: "v \<in> sphere (0::real^2) 1 - {b}"
+                and h_eq: "g u = g v"
+    have hgu: "g' (g u) = u" by (rule homeomorphism_apply1[OF hgg' hu])
+    have hgv: "g' (g v) = v" by (rule homeomorphism_apply1[OF hgg' hv])
+    show "u = v" using h_eq hgu hgv by (by100 metis)
+  qed
+  have hF_inj: "inj_on (g \<circ> f) (ball x r)"
+  proof (rule comp_inj_on)
+    show "inj_on f (ball x r)" by (rule hf_inj_ball)
+    show "inj_on g (f ` ball x r)"
+      using hg_inj hf_im_ball inj_on_subset by (by100 blast)
+  qed
+  have hg_im: "g ` (sphere (0::real^2) 1 - {b}) \<subseteq> H"
+  proof -
+    have h_eq: "g ` (sphere (0::real^2) 1 - {b}) = H"
+      by (rule homeomorphism_image1[OF hgg'])
+    show ?thesis using h_eq by (by100 simp)
+  qed
+  have hF_im: "(g \<circ> f) \<in> ball x r \<rightarrow> H"
+  proof
+    fix y assume hy: "y \<in> ball x r"
+    have "f y \<in> sphere (0::real^2) 1 - {b}" using hy hf_im_ball by (by100 blast)
+    hence "g (f y) \<in> H" using hg_im by (by100 blast)
+    thus "(g \<circ> f) y \<in> H" by (by100 simp)
+  qed
+  have hball_open: "openin (top_of_set (UNIV::(real^2) set)) (ball x r)" by (by100 simp)
+  have hUNIV_aff: "affine (UNIV::(real^2) set)" by (by100 simp)
+  have hH_aff: "affine H" unfolding H_def by (rule affine_hyperplane)
+  have hball_ne: "ball x r \<noteq> {}" using hr_pos by (by100 simp)
+  have h_aff_le: "aff_dim (UNIV::(real^2) set) \<le> aff_dim H"
+    using invariance_of_dimension_affine_sets[OF hball_open hUNIV_aff hH_aff
+            hF_cont hF_im hF_inj hball_ne] by (by100 simp)
+  have h_aff_UNIV: "aff_dim (UNIV::(real^2) set) = 2" by (simp add: aff_dim_UNIV)
+  have h_aff_H: "aff_dim H = 1"
+    unfolding H_def using hb_ne0 aff_dim_hyperplane[of b 0] by (by100 simp)
+  show False using h_aff_le h_aff_UNIV h_aff_H by (by100 simp)
+qed
+
+text \<open>Every simplex of a polygon's complex has dimension \<le> 1: a 2-cell would
+  have non-empty interior in \<open>real^2\<close>, contradicting \<open>polygon_set_interior_empty\<close>.\<close>
+
+lemma polygon_complex_dim_le_1:
+  fixes K :: "(real^2) set set" and J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+      and hKc: "geotop_is_complex K"
+      and hKp: "geotop_polyhedron K = J"
+  shows "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 1"
+proof (intro ballI allI impI)
+  fix \<sigma> k assume h\<sigma>K: "\<sigma> \<in> K" and h\<sigma>k: "geotop_simplex_dim \<sigma> k"
+  show "k \<le> 1"
+  proof (rule ccontr)
+    assume hcontra: "\<not> k \<le> 1"
+    hence hk2: "k \<ge> 2" by (by100 simp)
+    obtain V m where hVfin: "finite V" and hVcard: "card V = k + 1"
+                 and hVgp: "geotop_general_position V m"
+                 and hknm: "k \<le> m" and h\<sigma>V: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>k unfolding geotop_simplex_dim_def by (by100 blast)
+    have hVai: "\<not> affine_dependent V"
+    proof -
+      have h_simp_verts: "geotop_simplex_vertices \<sigma> V"
+        unfolding geotop_simplex_vertices_def
+        using hVfin hVcard hknm hVgp h\<sigma>V by (by100 blast)
+      show ?thesis by (rule geotop_general_position_imp_aff_indep[OF h_simp_verts])
+    qed
+    have h\<sigma>HOL: "\<sigma> = convex hull V"
+      using h\<sigma>V geotop_convex_hull_eq_HOL by (by100 simp)
+    have h_aff_V: "aff_dim V = int (card V) - 1"
+      using hVai affine_independent_iff_card hVfin by (by100 blast)
+    have h_aff_\<sigma>: "aff_dim \<sigma> = int k"
+      using h\<sigma>HOL aff_dim_convex_hull[of V] h_aff_V hVcard by (by100 simp)
+    (** \<open>aff_dim \<sigma> = k \<ge> 2 = DIM(real^2)\<close>, but also \<open>aff_dim \<sigma> \<le> 2\<close>. **)
+    have h_aff_\<sigma>_le: "aff_dim \<sigma> \<le> int (DIM(real^2))"
+      by (rule aff_dim_le_DIM)
+    have h_DIM: "DIM(real^2) = 2" by simp
+    have h_aff_\<sigma>_eq: "aff_dim \<sigma> = int (DIM(real^2))"
+      using h_aff_\<sigma> hk2 h_aff_\<sigma>_le h_DIM by (by100 simp)
+    (** Hence interior \<sigma> = rel_interior \<sigma> in real^2. **)
+    have h_int_eq: "interior \<sigma> = rel_interior \<sigma>"
+      using h_aff_\<sigma>_eq interior_rel_interior_gen[of \<sigma>] by (by100 simp)
+    (** \<sigma> is non-empty convex (convex hull of non-empty V); rel_interior \<sigma> non-empty. **)
+    have hVne: "V \<noteq> {}"
+      using hVcard hVfin card_gt_0_iff by (by100 fastforce)
+    have h\<sigma>ne: "\<sigma> \<noteq> {}"
+      using h\<sigma>HOL hVne by (by100 simp)
+    have h\<sigma>_conv: "convex \<sigma>" using h\<sigma>HOL convex_convex_hull by (by100 simp)
+    have h_relint_ne: "rel_interior \<sigma> \<noteq> {}"
+      using h\<sigma>ne h\<sigma>_conv rel_interior_eq_empty by (by100 blast)
+    have h_int_\<sigma>_ne: "interior \<sigma> \<noteq> {}"
+      using h_int_eq h_relint_ne by (by100 simp)
+    (** \<sigma> \<subseteq> J, so interior \<sigma> (open in real^2, in J) \<subseteq> interior J. **)
+    have h\<sigma>_subJ: "\<sigma> \<subseteq> J"
+      using h\<sigma>K hKp unfolding geotop_polyhedron_def by (by100 blast)
+    have h_int_open: "open (interior \<sigma>)" by simp
+    have h_int_subJ: "interior \<sigma> \<subseteq> J"
+      using interior_subset h\<sigma>_subJ by (by100 blast)
+    have h_int_subIntJ: "interior \<sigma> \<subseteq> interior J"
+      using h_int_open h_int_subJ interior_maximal by (by100 blast)
+    have hIntJ_ne: "interior J \<noteq> {}"
+      using h_int_\<sigma>_ne h_int_subIntJ by (by100 blast)
+    show False using hIntJ_ne polygon_set_interior_empty[OF hJ] by (by100 blast)
+  qed
+qed
+
+text \<open>Polygon \<open>J\<close> in \<open>real^2\<close> is connected (homeomorphic image of connected
+  \<open>sphere 0 1\<close>) and not a singleton; hence each \<open>v \<in> J\<close> is a limit point of
+  \<open>J\<close> (no isolated points).\<close>
+
+lemma polygon_islimpt:
+  fixes J :: "(real^2) set" and v :: "real^2"
+  assumes hJ: "geotop_is_polygon J" and hv: "v \<in> J"
+  shows "v islimpt J"
+proof -
+  have h_homeo: "J homeomorphic sphere (0::real^2) 1"
+    by (rule polygon_homeomorphic_S1_helper[OF hJ])
+  have h_DIM: "(2::nat) \<le> DIM(real^2)" by simp
+  have h_S1_conn: "connected (sphere (0::real^2) 1)"
+    by (rule connected_sphere[OF h_DIM])
+  have h_J_conn: "connected J"
+    using h_homeo h_S1_conn homeomorphic_connectedness by (by100 blast)
+  (** \<open>J\<close> has at least two points (homeomorphic image of \<open>S\<^sup>1\<close> in \<open>real^2\<close>). **)
+  obtain ff ff' where hff': "homeomorphism J (sphere (0::real^2) 1) ff ff'"
+    using h_homeo unfolding homeomorphic_def by (by100 blast)
+  have hff_inv: "homeomorphism (sphere (0::real^2) 1) J ff' ff"
+    by (rule homeomorphism_symD[OF hff'])
+  define f where "f = ff'"
+  define f' where "f' = ff"
+  have hff_homeo: "homeomorphism (sphere (0::real^2) 1) J f f'"
+    unfolding f_def f'_def by (rule hff_inv)
+  define p :: "real^2" where "p = vector [1, 0]"
+  define q :: "real^2" where "q = vector [-1, 0]"
+  have hp_norm: "norm p = 1"
+  proof -
+    have h1: "p $ 1 = 1" unfolding p_def by simp
+    have h2: "p $ 2 = 0" unfolding p_def by simp
+    have hsum: "(\<Sum>i\<in>(UNIV::2 set). (p $ i)\<^sup>2) = 1"
+      using h1 h2 by (simp add: UNIV_2)
+    show ?thesis unfolding norm_vec_def L2_set_def using hsum by simp
+  qed
+  have hq_norm: "norm q = 1"
+  proof -
+    have h1: "q $ 1 = -1" unfolding q_def by simp
+    have h2: "q $ 2 = 0" unfolding q_def by simp
+    have hsum: "(\<Sum>i\<in>(UNIV::2 set). (q $ i)\<^sup>2) = 1"
+      using h1 h2 by (simp add: UNIV_2)
+    show ?thesis unfolding norm_vec_def L2_set_def using hsum by simp
+  qed
+  have hp_S1: "p \<in> sphere (0::real^2) 1" using hp_norm by (by100 simp)
+  have hq_S1: "q \<in> sphere (0::real^2) 1" using hq_norm by (by100 simp)
+  have hpq: "p \<noteq> q"
+  proof
+    assume "p = q"
+    hence "p $ 1 = q $ 1" by simp
+    thus False unfolding p_def q_def by simp
+  qed
+  have hf_im: "f ` (sphere (0::real^2) 1) = J"
+    using hff_homeo homeomorphism_image1 by (by100 blast)
+  have hfp_J: "f p \<in> J"
+    using hp_S1 hf_im by (by100 blast)
+  have hfq_J: "f q \<in> J"
+    using hq_S1 hf_im by (by100 blast)
+  have hfp_ne_fq: "f p \<noteq> f q"
+  proof
+    assume "f p = f q"
+    hence "f' (f p) = f' (f q)" by (by100 simp)
+    moreover have "f' (f p) = p" by (rule homeomorphism_apply1[OF hff_homeo hp_S1])
+    moreover have "f' (f q) = q" by (rule homeomorphism_apply1[OF hff_homeo hq_S1])
+    ultimately have "p = q" by (by100 simp)
+    thus False using hpq by (by100 simp)
+  qed
+  have h_J_not_sing: "\<And>x. J \<noteq> {x}"
+  proof -
+    fix x
+    show "J \<noteq> {x}"
+    proof
+      assume hJ_sing: "J = {x}"
+      have "f p = x" using hfp_J hJ_sing by (by100 blast)
+      moreover have "f q = x" using hfq_J hJ_sing by (by100 blast)
+      ultimately have "f p = f q" by (by100 simp)
+      thus False using hfp_ne_fq by (by100 simp)
+    qed
+  qed
+  show "v islimpt J"
+    by (rule connected_imp_perfect[OF h_J_conn hv h_J_not_sing])
+qed
 (** from \<S>2 Theorem 3 (geotop.tex:579)
     LATEX VERSION: No broken line separates R^2. That is, if B is a broken line in R^2,
       then R^2 - B is connected. **)
@@ -640,6 +1987,2486 @@ definition geotop_is_polyhedral_theta_graph ::
     geotop_is_theta_graph M B1 B2 B3 E \<and>
     geotop_is_broken_line B1 \<and> geotop_is_broken_line B2 \<and> geotop_is_broken_line B3"
 
+text \<open>Direct accessor lemmas for the polyhedral-theta-graph predicate to avoid
+  repeated unfolding-and-blast in proofs (which can flake under load).\<close>
+
+lemma polyhedral_theta_graph_imp_theta:
+  "geotop_is_polyhedral_theta_graph M B1 B2 B3 E \<Longrightarrow> geotop_is_theta_graph M B1 B2 B3 E"
+  unfolding geotop_is_polyhedral_theta_graph_def by (rule conjunct1)
+
+
+lemma polyhedral_theta_graph_imp_bl_1:
+  "geotop_is_polyhedral_theta_graph M B1 B2 B3 E \<Longrightarrow> geotop_is_broken_line B1"
+  unfolding geotop_is_polyhedral_theta_graph_def by (by100 simp)
+
+lemma polyhedral_theta_graph_imp_bl_2:
+  "geotop_is_polyhedral_theta_graph M B1 B2 B3 E \<Longrightarrow> geotop_is_broken_line B2"
+  unfolding geotop_is_polyhedral_theta_graph_def by (by100 simp)
+
+lemma polyhedral_theta_graph_imp_bl_3:
+  "geotop_is_polyhedral_theta_graph M B1 B2 B3 E \<Longrightarrow> geotop_is_broken_line B3"
+  unfolding geotop_is_polyhedral_theta_graph_def by (by100 simp)
+
+subsection \<open>Pair of arcs sharing endpoints is a polygon\<close>
+
+text \<open>Helper used by Theorem_GT_2_7 and Theorem_GT_2_8: if two broken lines
+  share endpoints \<open>{P, Q}\<close> with disjoint open interiors, then their union is
+  a polygon (i.e., a polyhedral 1-sphere).\<close>
+
+lemma arc_endpoints_imp_arc_HOL:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "\<exists>f::real \<Rightarrow> real^2.
+            arc f \<and>
+            path_image f = B \<and>
+            E = {pathstart f, pathfinish f}"
+proof -
+  from hE obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    and hE_eq: "E = {f0 0, f0 1}"
+    unfolding geotop_arc_endpoints_def by blast
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+  have h_cont_top1: "top1_continuous_map_on {0..1}
+        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using h_homeo h_unit_iv unfolding top1_homeomorphism_on_def by simp
+  have h_f0_cont: "continuous_on {0..1::real} f0"
+    using h_cont_top1 top1_continuous_map_on_geotop_imp_continuous_on by blast
+  have h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
+    using h_homeo h_unit_iv unfolding top1_homeomorphism_on_def by simp
+  have h_f0_inj: "inj_on f0 {0..1::real}"
+    using h_f0_bij_betw by (simp add: bij_betw_def)
+  have h_path_f0: "path f0"
+    unfolding path_def using h_f0_cont by simp
+  have h_arc_f0: "arc f0"
+    unfolding arc_def using h_path_f0 h_f0_inj by blast
+  have h_path_image_f0: "path_image f0 = B"
+  proof -
+    have "path_image f0 = f0 ` {0..1}" unfolding path_image_def by simp
+    also have "\<dots> = B" using h_f0_bij_betw by (simp add: bij_betw_def)
+    finally show ?thesis .
+  qed
+  have h_endpoints: "E = {pathstart f0, pathfinish f0}"
+    using hE_eq by (simp add: pathstart_def pathfinish_def)
+  show ?thesis using h_arc_f0 h_path_image_f0 h_endpoints by blast
+qed
+
+lemma arc_join_image_eq:
+  fixes f g :: "real \<Rightarrow> 'a::topological_space"
+  assumes "pathfinish f = pathstart g"
+  shows "path_image (f +++ g) = path_image f \<union> path_image g"
+  using assms by (rule path_image_join)
+
+lemma pair_of_arcs_image_homeomorphic_sphere:
+  fixes B1 B2 :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+      and h_distinct: "B1 \<noteq> B2"
+  shows "B1 \<union> B2 homeomorphic sphere (0::real^2) 1"
+proof -
+  obtain f1 :: "real \<Rightarrow> real^2" where
+    harc1: "arc f1" and himg1: "path_image f1 = B1" and hE1_eq: "E = {pathstart f1, pathfinish f1}"
+    using arc_endpoints_imp_arc_HOL[OF hE1] by blast
+  obtain f2 :: "real \<Rightarrow> real^2" where
+    harc2: "arc f2" and himg2: "path_image f2 = B2" and hE2_eq: "E = {pathstart f2, pathfinish f2}"
+    using arc_endpoints_imp_arc_HOL[OF hE2] by blast
+  define P where "P = pathstart f1"
+  define Q where "Q = pathfinish f1"
+  have hPQ_E: "{P, Q} = E" using hE1_eq P_def Q_def by simp
+  have hPQ_card: "card E = 2" using hE1 unfolding geotop_arc_endpoints_def by blast
+  have hP_ne_Q: "P \<noteq> Q"
+  proof
+    assume "P = Q"
+    hence "{P, Q} = {P}" by simp
+    hence "card E = card {P}" using hPQ_E by simp
+    hence "card E = 1" by simp
+    thus False using hPQ_card by simp
+  qed
+  text \<open>Either f2 starts at P (forward) or starts at Q (reverse).\<close>
+  define g2 :: "real \<Rightarrow> real^2"
+    where "g2 = (if pathstart f2 = Q then f2 else reversepath f2)"
+  have h_g2_arc: "arc g2"
+  proof (cases "pathstart f2 = Q")
+    case True thus ?thesis unfolding g2_def using harc2 by simp
+  next
+    case False thus ?thesis unfolding g2_def using harc2 arc_reversepath by simp
+  qed
+  have hPQ_set: "{pathstart f2, pathfinish f2} = {P, Q}" using hE2_eq hPQ_E by simp
+  have h_g2_pathstart: "pathstart g2 = Q"
+  proof (cases "pathstart f2 = Q")
+    case True thus ?thesis unfolding g2_def by simp
+  next
+    case False
+    hence h_ps: "pathstart f2 = P" using hPQ_set by (metis doubleton_eq_iff)
+    hence h_pf: "pathfinish f2 = Q" using hPQ_set hP_ne_Q by (metis doubleton_eq_iff)
+    show ?thesis unfolding g2_def using False h_pf by (simp add: pathstart_reversepath)
+  qed
+  have h_g2_pathfinish: "pathfinish g2 = P"
+  proof (cases "pathstart f2 = Q")
+    case True
+    hence h_pf: "pathfinish f2 = P" using hPQ_set hP_ne_Q by (metis doubleton_eq_iff)
+    show ?thesis unfolding g2_def using True h_pf by simp
+  next
+    case False
+    hence h_ps: "pathstart f2 = P" using hPQ_set by (metis doubleton_eq_iff)
+    show ?thesis unfolding g2_def using False h_ps by (simp add: pathfinish_reversepath)
+  qed
+  have h_g2_image: "path_image g2 = B2"
+    unfolding g2_def using himg2 path_image_reversepath by simp
+  text \<open>Set up join.\<close>
+  have h_pf1_eq_ps_g2: "pathfinish f1 = pathstart g2"
+    using h_g2_pathstart Q_def by simp
+  have h_pf2_eq_ps_f1: "pathfinish g2 = pathstart f1"
+    using h_g2_pathfinish P_def by simp
+  text \<open>The two path-images intersect only at \<open>{P, Q}\<close>.\<close>
+  have h_inter_PQ: "path_image f1 \<inter> path_image g2 \<subseteq> {pathstart f1, pathstart g2}"
+  proof -
+    have h_inter: "B1 \<inter> B2 \<subseteq> E"
+      using h_disj unfolding geotop_arc_interior_def by blast
+    have h_subs: "{pathstart f1, pathstart g2} = {P, Q}"
+      using P_def h_g2_pathstart by simp
+    show ?thesis using h_inter himg1 h_g2_image hPQ_E h_subs by blast
+  qed
+  have h_simple_join: "simple_path (f1 +++ g2)"
+    by (rule simple_path_join_loop[OF harc1 h_g2_arc h_pf1_eq_ps_g2 h_pf2_eq_ps_f1 h_inter_PQ])
+  have h_loop: "pathfinish (f1 +++ g2) = pathstart (f1 +++ g2)"
+    by (simp add: pathstart_join pathfinish_join h_pf2_eq_ps_f1)
+  have h_join_image: "path_image (f1 +++ g2) = B1 \<union> B2"
+    using h_pf1_eq_ps_g2 himg1 h_g2_image by (subst path_image_join) auto
+  text \<open>Apply HOL-Analysis to get homeomorphism with the unit sphere in complex.\<close>
+  have h_pi_pos: "(0::real) < 1" by simp
+  have h_to_C_sphere: "B1 \<union> B2 homeomorphic sphere (0::complex) 1"
+    using homeomorphic_simple_path_image_circle[OF h_simple_join h_loop h_pi_pos]
+          h_join_image
+    by simp
+  have h_DIM: "DIM(complex) = DIM(real^2)" by simp
+  have h_spheres_homeo: "sphere (0::complex) 1 homeomorphic sphere (0::real^2) 1"
+    using homeomorphic_spheres_gen[of 1 1 "0::complex" "0::real^2"] h_DIM by simp
+  show ?thesis using h_to_C_sphere h_spheres_homeo homeomorphic_trans by blast
+qed
+
+text \<open>Refine a broken-line complex so that a specific point on the line
+  becomes a vertex of the complex.\<close>
+
+lemma broken_line_make_vertex:
+  fixes B :: "(real^2) set" and P :: "real^2"
+  assumes hB: "geotop_is_broken_line B"
+      and hP: "P \<in> B"
+  shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+              \<and> geotop_polyhedron K = B \<and> {P} \<in> K"
+proof -
+  from hB obtain K0 where hK0_complex: "geotop_is_complex K0"
+                       and hK0_1dim: "geotop_complex_is_1dim K0"
+                       and hK0_poly: "geotop_polyhedron K0 = B"
+    unfolding geotop_is_broken_line_def by blast
+  have hP_in_union: "P \<in> \<Union>K0" using hP hK0_poly unfolding geotop_polyhedron_def by simp
+  obtain \<sigma> where h\<sigma>_K0: "\<sigma> \<in> K0" and hP\<sigma>: "P \<in> \<sigma>" using hP_in_union by blast
+  have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+    using hK0_complex h\<sigma>_K0
+    unfolding geotop_is_complex_def by simp
+  have h\<sigma>_dim_le_1: "\<exists>n. n \<le> 1 \<and> geotop_simplex_dim \<sigma> n"
+    using hK0_1dim h\<sigma>_K0 unfolding geotop_complex_is_1dim_def by blast
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using h\<sigma>_dim_le_1 by blast
+  show ?thesis
+  proof (cases n)
+    case 0
+    have h\<sigma>_dim0: "geotop_simplex_dim \<sigma> 0" using h\<sigma>_dim 0 by simp
+    have h\<sigma>_singleton: "\<exists>v. \<sigma> = {v}"
+      using h\<sigma>_dim0 unfolding geotop_simplex_dim_def
+      by (auto simp: geotop_convex_hull_eq_HOL card_1_singleton_iff)
+    then obtain v where h\<sigma>_eq: "\<sigma> = {v}" by blast
+    have hP_eq_v: "P = v" using hP\<sigma> h\<sigma>_eq by simp
+    have "{P} \<in> K0" using hP_eq_v h\<sigma>_K0 h\<sigma>_eq by simp
+    thus ?thesis using hK0_complex hK0_1dim hK0_poly by blast
+  next
+    case (Suc k)
+    hence hn_eq_1: "n = 1" using hn_le by simp
+    have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_dim hn_eq_1 by simp
+    have h_ex: "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+              \<and> geotop_polyhedron K = geotop_polyhedron K0 \<and> {P} \<in> K
+              \<and> K0 - {\<sigma>} \<subseteq> K
+              \<and> (finite K0 \<longrightarrow> finite K)"
+      by (rule geotop_complex_subdivide_edge[OF hK0_complex hK0_1dim h\<sigma>_K0 h\<sigma>_dim1 hP\<sigma>])
+    then obtain K where hK_complex: "geotop_is_complex K"
+                     and hK_1dim: "geotop_complex_is_1dim K"
+                     and hK_poly: "geotop_polyhedron K = geotop_polyhedron K0"
+                     and hPK: "{P} \<in> K" by blast
+    have hK_polyB: "geotop_polyhedron K = B" using hK_poly hK0_poly by simp
+    show ?thesis using hK_complex hK_1dim hK_polyB hPK by blast
+  qed
+qed
+
+text \<open>Refining a complex preserves an existing vertex (subdivide_edge ensures
+  K - {edge} \<subseteq> K').\<close>
+
+lemma broken_line_make_two_vertices:
+  fixes B :: "(real^2) set" and P Q :: "real^2"
+  assumes hB: "geotop_is_broken_line B"
+      and hP: "P \<in> B" and hQ: "Q \<in> B"
+  shows "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+              \<and> geotop_polyhedron K = B \<and> {P} \<in> K \<and> {Q} \<in> K"
+proof -
+  text \<open>Step 1: refine to add P as vertex.\<close>
+  obtain K1 where hK1_complex: "geotop_is_complex K1"
+              and hK1_1dim: "geotop_complex_is_1dim K1"
+              and hK1_poly: "geotop_polyhedron K1 = B"
+              and hPK1: "{P} \<in> K1"
+    using broken_line_make_vertex[OF hB hP] by blast
+  text \<open>Step 2: re-cast \<open>K1\<close> as a broken line, then refine to add Q as vertex.\<close>
+  have hQ_K1: "Q \<in> B" using hQ by simp
+  have hQ_in_union: "Q \<in> \<Union>K1" using hQ_K1 hK1_poly unfolding geotop_polyhedron_def by simp
+  obtain \<sigma> where h\<sigma>_K1: "\<sigma> \<in> K1" and hQ\<sigma>: "Q \<in> \<sigma>" using hQ_in_union by blast
+  have h\<sigma>_dim_le_1: "\<exists>n. n \<le> 1 \<and> geotop_simplex_dim \<sigma> n"
+    using hK1_1dim h\<sigma>_K1 unfolding geotop_complex_is_1dim_def by blast
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using h\<sigma>_dim_le_1 by blast
+  show ?thesis
+  proof (cases n)
+    case 0
+    have h\<sigma>_dim0: "geotop_simplex_dim \<sigma> 0" using h\<sigma>_dim 0 by simp
+    have h\<sigma>_singleton: "\<exists>v. \<sigma> = {v}"
+      using h\<sigma>_dim0 unfolding geotop_simplex_dim_def
+      by (auto simp: geotop_convex_hull_eq_HOL card_1_singleton_iff)
+    then obtain v where h\<sigma>_eq: "\<sigma> = {v}" by blast
+    have hQ_eq_v: "Q = v" using hQ\<sigma> h\<sigma>_eq by simp
+    have "{Q} \<in> K1" using hQ_eq_v h\<sigma>_K1 h\<sigma>_eq by simp
+    thus ?thesis using hK1_complex hK1_1dim hK1_poly hPK1 by blast
+  next
+    case (Suc k)
+    hence hn_eq_1: "n = 1" using hn_le by simp
+    have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_dim hn_eq_1 by simp
+    have h_ex: "\<exists>K. geotop_is_complex K \<and> geotop_complex_is_1dim K
+              \<and> geotop_polyhedron K = geotop_polyhedron K1 \<and> {Q} \<in> K
+              \<and> K1 - {\<sigma>} \<subseteq> K
+              \<and> (finite K1 \<longrightarrow> finite K)"
+      by (rule geotop_complex_subdivide_edge[OF hK1_complex hK1_1dim h\<sigma>_K1 h\<sigma>_dim1 hQ\<sigma>])
+    then obtain K where hK_complex: "geotop_is_complex K"
+                     and hK_1dim: "geotop_complex_is_1dim K"
+                     and hK_poly: "geotop_polyhedron K = geotop_polyhedron K1"
+                     and hQK: "{Q} \<in> K"
+                     and hK_super: "K1 - {\<sigma>} \<subseteq> K" by blast
+    have hK_polyB: "geotop_polyhedron K = B" using hK_poly hK1_poly by simp
+    text \<open>P stays a vertex: \<open>{P}\<close> is a 0-simplex \<open>\<noteq> \<sigma>\<close> (which is a 1-simplex), so it
+      survives the subdivision in \<open>K1 - {\<sigma>} \<subseteq> K\<close>.\<close>
+    have hP_ne_\<sigma>: "{P} \<noteq> \<sigma>"
+    proof
+      assume h_eq: "{P} = \<sigma>"
+      have h_dim0: "geotop_simplex_dim {P} 0"
+        unfolding geotop_simplex_dim_def
+        apply (rule exI[of _ "{P}"])
+        apply (rule exI[of _ 0])
+        by (simp add: geotop_convex_hull_eq_HOL geotop_general_position_def)
+      hence h_dim_eq: "geotop_simplex_dim \<sigma> 0" using h_eq by simp
+      have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF h_dim_eq h\<sigma>_dim1])
+      thus False by simp
+    qed
+    have hPK: "{P} \<in> K" using hPK1 hP_ne_\<sigma> hK_super by blast
+    show ?thesis using hK_complex hK_1dim hK_polyB hPK hQK by blast
+  qed
+qed
+
+text \<open>For \<open>pair_of_arcs_polyhedron\<close>, we refine the two complexes so
+  endpoints are vertices in both, then take the union. The cross-complex
+  intersection axiom holds because any common simplex lies in
+  \<open>B1 \<inter> B2 \<subseteq> E = {P, Q}\<close>, and \<open>P, Q\<close> are vertices of both refined
+  complexes. The complete proof requires extensive case analysis on
+  simplex dimensions; we leave the detailed write-out as a session-sized
+  follow-up.\<close>
+
+text \<open>If \<open>\<sigma>\<close> is a simplex in a 1-dim complex \<open>K\<close>, with two distinct vertices
+  \<open>{P}, {Q} \<in> K\<close> both lying in \<open>\<sigma>\<close>, then \<open>\<sigma> = \<close>convex hull \<open>{P, Q}\<close>.\<close>
+
+lemma onedim_simplex_with_two_endpoints_eq_hull:
+  fixes \<sigma> :: "(real^2) set" and P Q :: "real^2"
+  assumes h_complex: "geotop_is_complex K"
+      and h_1dim: "geotop_complex_is_1dim K"
+      and h_\<sigma>_K: "\<sigma> \<in> K"
+      and hPK: "{P} \<in> K"
+      and hQK: "{Q} \<in> K"
+      and hP\<sigma>: "P \<in> \<sigma>"
+      and hQ\<sigma>: "Q \<in> \<sigma>"
+      and hP_ne_Q: "P \<noteq> Q"
+  shows "\<sigma> = geotop_convex_hull {P, Q}"
+proof -
+  have hK_c: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using h_complex unfolding geotop_is_complex_def by simp
+  text \<open>P is a vertex of \<sigma>.\<close>
+  have h_P_face_\<sigma>: "geotop_is_face {P} \<sigma>"
+  proof -
+    have h_inter_eq: "{P} \<inter> \<sigma> = {P}" using hP\<sigma> by blast
+    have h_inter_ne: "{P} \<inter> \<sigma> \<noteq> {}" by (simp add: h_inter_eq)
+    have "geotop_is_face ({P} \<inter> \<sigma>) \<sigma>"
+      using hK_c[rule_format, OF hPK h_\<sigma>_K] h_inter_ne by blast
+    thus ?thesis using h_inter_eq by simp
+  qed
+  obtain V_P W_P where hV_P: "geotop_simplex_vertices \<sigma> V_P"
+                   and hW_P_ne: "W_P \<noteq> {}" and hW_P_sub: "W_P \<subseteq> V_P"
+                   and hP_hull: "{P} = geotop_convex_hull W_P"
+    using h_P_face_\<sigma> unfolding geotop_is_face_def by blast
+  text \<open>From \<open>{P} = convex_hull(W_P)\<close>, deduce \<open>W_P = {P}\<close>.\<close>
+  have hW_P_eq: "W_P = {P}"
+  proof -
+    have hW_P_finite: "finite W_P"
+      using hV_P hW_P_sub unfolding geotop_simplex_vertices_def
+      by (auto intro: finite_subset)
+    have hW_P_card1: "card W_P = 1"
+    proof -
+      have hW_P_sub_hull: "W_P \<subseteq> geotop_convex_hull W_P"
+        by (auto simp: geotop_convex_hull_eq_HOL hull_inc)
+      hence "W_P \<subseteq> {P}" using hP_hull by simp
+      thus ?thesis using hW_P_ne by (auto simp: subset_singleton_iff)
+    qed
+    have "\<exists>v. W_P = {v}"
+      using hW_P_card1 by (auto simp: card_1_singleton_iff)
+    then obtain v where "W_P = {v}" by blast
+    moreover have "v = P"
+    proof -
+      have "geotop_convex_hull {v} = {v}"
+        by (simp add: geotop_convex_hull_eq_HOL)
+      thus ?thesis using hP_hull \<open>W_P = {v}\<close> by simp
+    qed
+    ultimately show ?thesis by simp
+  qed
+  have hP_V_P: "P \<in> V_P"
+    using hW_P_eq hW_P_sub by blast
+  text \<open>Similarly Q is a vertex of \<sigma>; uniqueness gives same V.\<close>
+  have h_Q_face_\<sigma>: "geotop_is_face {Q} \<sigma>"
+  proof -
+    have h_inter_eq: "{Q} \<inter> \<sigma> = {Q}" using hQ\<sigma> by blast
+    have h_inter_ne: "{Q} \<inter> \<sigma> \<noteq> {}" by (simp add: h_inter_eq)
+    have "geotop_is_face ({Q} \<inter> \<sigma>) \<sigma>"
+      using hK_c[rule_format, OF hQK h_\<sigma>_K] h_inter_ne by blast
+    thus ?thesis using h_inter_eq by simp
+  qed
+  obtain V_Q W_Q where hV_Q: "geotop_simplex_vertices \<sigma> V_Q"
+                   and hW_Q_ne: "W_Q \<noteq> {}" and hW_Q_sub: "W_Q \<subseteq> V_Q"
+                   and hQ_hull: "{Q} = geotop_convex_hull W_Q"
+    using h_Q_face_\<sigma> unfolding geotop_is_face_def by blast
+  have h_V_eq: "V_Q = V_P" using hV_P hV_Q geotop_simplex_vertices_unique by blast
+  have hW_Q_eq: "W_Q = {Q}"
+  proof -
+    have hW_Q_finite: "finite W_Q"
+      using hV_Q hW_Q_sub unfolding geotop_simplex_vertices_def
+      by (auto intro: finite_subset)
+    have hW_Q_card1: "card W_Q = 1"
+    proof -
+      have hW_Q_sub_hull: "W_Q \<subseteq> geotop_convex_hull W_Q"
+        by (auto simp: geotop_convex_hull_eq_HOL hull_inc)
+      hence "W_Q \<subseteq> {Q}" using hQ_hull by simp
+      thus ?thesis using hW_Q_ne by (auto simp: subset_singleton_iff)
+    qed
+    have "\<exists>v. W_Q = {v}"
+      using hW_Q_card1 by (auto simp: card_1_singleton_iff)
+    then obtain v where "W_Q = {v}" by blast
+    moreover have "v = Q"
+    proof -
+      have "geotop_convex_hull {v} = {v}"
+        by (simp add: geotop_convex_hull_eq_HOL)
+      thus ?thesis using hQ_hull \<open>W_Q = {v}\<close> by simp
+    qed
+    ultimately show ?thesis by simp
+  qed
+  have hQ_V_P: "Q \<in> V_P"
+    using hW_Q_eq hW_Q_sub h_V_eq by blast
+  text \<open>\<sigma> in 1-dim K, so |V_P| \<le> 2.\<close>
+  have h\<sigma>_dim_le_1: "\<exists>n. n \<le> 1 \<and> geotop_simplex_dim \<sigma> n"
+    using h_1dim h_\<sigma>_K unfolding geotop_complex_is_1dim_def by blast
+  obtain n where hn_le: "n \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+    using h\<sigma>_dim_le_1 by blast
+  obtain V' m' where hV'_fin: "finite V'" and hV'_card: "card V' = n + 1"
+                 and hnm': "n \<le> m'" and hV'_gp: "geotop_general_position V' m'"
+                 and h\<sigma>_eq_V': "\<sigma> = geotop_convex_hull V'"
+    using h\<sigma>_dim unfolding geotop_simplex_dim_def by blast
+  have hV': "geotop_simplex_vertices \<sigma> V'"
+    unfolding geotop_simplex_vertices_def
+    using hV'_fin hV'_card hnm' hV'_gp h\<sigma>_eq_V' by blast
+  have hV'_eq_V_P: "V' = V_P"
+    using hV' hV_P geotop_simplex_vertices_unique by blast
+  have hV_P_card: "card V_P = n + 1"
+    using hV'_card hV'_eq_V_P by simp
+  text \<open>P, Q ∈ V_P with P ≠ Q gives card V_P ≥ 2 ⟹ n + 1 ≥ 2 ⟹ n ≥ 1.\<close>
+  have h_VP_finite: "finite V_P" using hV'_fin hV'_eq_V_P by simp
+  have h_2_in_VP: "{P, Q} \<subseteq> V_P" using hP_V_P hQ_V_P by blast
+  have h_card_VP_geq2: "card V_P \<ge> 2"
+  proof -
+    have "card {P, Q} = 2" using hP_ne_Q by simp
+    moreover have "card {P, Q} \<le> card V_P"
+      using h_2_in_VP h_VP_finite card_mono by blast
+    ultimately show ?thesis by simp
+  qed
+  have hn_ge_1: "n \<ge> 1" using h_card_VP_geq2 hV_P_card by simp
+  have hn_eq_1: "n = 1" using hn_le hn_ge_1 by simp
+  have h_card_VP: "card V_P = 2" using hV_P_card hn_eq_1 by simp
+  have h_VP_eq_PQ: "V_P = {P, Q}"
+  proof -
+    have h_card_PQ: "card {P, Q} = card V_P" using hP_ne_Q h_card_VP by simp
+    have h_PQ_sub: "{P, Q} \<subseteq> V_P" using h_2_in_VP .
+    show ?thesis
+      using card_subset_eq[OF h_VP_finite h_PQ_sub] h_card_PQ by simp
+  qed
+  have h\<sigma>_eq: "\<sigma> = geotop_convex_hull V_P"
+    using h\<sigma>_eq_V' hV'_eq_V_P by simp
+  show ?thesis using h\<sigma>_eq h_VP_eq_PQ by simp
+qed
+
+lemma pair_of_arcs_polyhedron:
+  fixes B1 B2 :: "(real^2) set" and E :: "(real^2) set"
+  assumes hB1: "geotop_is_broken_line B1"
+      and hB2: "geotop_is_broken_line B2"
+      and hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+  shows "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B1 \<union> B2"
+proof -
+  text \<open>Endpoints are in both broken lines.\<close>
+  have hE_card: "card E = 2" using hE1 unfolding geotop_arc_endpoints_def by blast
+  have hE_sub_B1: "E \<subseteq> B1" using hE1 unfolding geotop_arc_endpoints_def by blast
+  have hE_sub_B2: "E \<subseteq> B2" using hE2 unfolding geotop_arc_endpoints_def by blast
+  obtain P Q where hPQ_E: "E = {P, Q}" and hP_ne_Q: "P \<noteq> Q"
+    using hE_card card_2_iff by metis
+  have hP_B1: "P \<in> B1" using hPQ_E hE_sub_B1 by blast
+  have hP_B2: "P \<in> B2" using hPQ_E hE_sub_B2 by blast
+  have hQ_B1: "Q \<in> B1" using hPQ_E hE_sub_B1 by blast
+  have hQ_B2: "Q \<in> B2" using hPQ_E hE_sub_B2 by blast
+  text \<open>Refine the two complexes to have endpoints as vertices.\<close>
+  obtain K1 where hK1_complex: "geotop_is_complex K1"
+              and hK1_1dim: "geotop_complex_is_1dim K1"
+              and hK1_poly: "geotop_polyhedron K1 = B1"
+              and hPK1: "{P} \<in> K1" and hQK1: "{Q} \<in> K1"
+    using broken_line_make_two_vertices[OF hB1 hP_B1 hQ_B1] by blast
+  obtain K2 where hK2_complex: "geotop_is_complex K2"
+              and hK2_1dim: "geotop_complex_is_1dim K2"
+              and hK2_poly: "geotop_polyhedron K2 = B2"
+              and hPK2: "{P} \<in> K2" and hQK2: "{Q} \<in> K2"
+    using broken_line_make_two_vertices[OF hB2 hP_B2 hQ_B2] by blast
+  define K where "K = K1 \<union> K2"
+  text \<open>Standard fact: \<open>B1 \<inter> B2 = E\<close>.\<close>
+  have hB1B2_inter: "B1 \<inter> B2 = E"
+  proof
+    show "B1 \<inter> B2 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B1 \<inter> B2"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume "x \<notin> E"
+        hence hxB1E: "x \<in> B1 - E" using hx by blast
+        have hxB2E: "x \<in> B2 - E" using hx \<open>x \<notin> E\<close> by blast
+        have "x \<in> geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E"
+          unfolding geotop_arc_interior_def using hxB1E hxB2E by blast
+        thus False using h_disj by blast
+      qed
+    qed
+    show "E \<subseteq> B1 \<inter> B2" using hE_sub_B1 hE_sub_B2 by blast
+  qed
+  text \<open>Axiom (a): every element of K is a simplex.\<close>
+  have hK1_a: "\<forall>\<sigma>\<in>K1. geotop_is_simplex \<sigma>"
+   and hK1_b: "\<forall>\<sigma>\<in>K1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K1"
+   and hK1_c: "\<forall>\<sigma>\<in>K1. \<forall>\<tau>\<in>K1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hK1_complex unfolding geotop_is_complex_def by simp_all
+  have hK2_a: "\<forall>\<sigma>\<in>K2. geotop_is_simplex \<sigma>"
+   and hK2_b: "\<forall>\<sigma>\<in>K2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K2"
+   and hK2_c: "\<forall>\<sigma>\<in>K2. \<forall>\<tau>\<in>K2. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                  geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hK2_complex unfolding geotop_is_complex_def by simp_all
+  have hK_a: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    using hK1_a hK2_a unfolding K_def by blast
+  text \<open>Axiom (b): K is closed under face.\<close>
+  have hK_b: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK1_b hK2_b unfolding K_def by blast
+  text \<open>Helper: every K1-simplex lies in B1; every K2-simplex lies in B2.\<close>
+  have hK1_subB1: "\<forall>\<sigma>\<in>K1. \<sigma> \<subseteq> B1"
+    using hK1_poly unfolding geotop_polyhedron_def by blast
+  have hK2_subB2: "\<forall>\<sigma>\<in>K2. \<sigma> \<subseteq> B2"
+    using hK2_poly unfolding geotop_polyhedron_def by blast
+  text \<open>Helper: \<open>{P, Q}\<close> cannot be the cross-intersection because that would
+    force \<open>\<sigma>, \<tau>\<close> both equal to segment PQ, but segment PQ has uncountably
+    many points and would force PQ \<subseteq> E (finite). So the cross-intersection,
+    if non-empty, is exactly \<open>{P}\<close> or \<open>{Q}\<close>.\<close>
+  have h_PQ_seg_not_in_E: "geotop_convex_hull {P, Q} \<noteq> {P, Q}"
+  proof -
+    text \<open>The convex hull of two distinct points contains the midpoint, which
+      is neither of them.\<close>
+    define M where "M = (1/2) *\<^sub>R P + (1/2) *\<^sub>R Q"
+    have hM_in_hull: "M \<in> geotop_convex_hull {P, Q}"
+    proof -
+      have hM_HOL: "M \<in> convex hull {P, Q}"
+      proof -
+        have hMM: "M = (1/2 :: real) *\<^sub>R P + (1/2 :: real) *\<^sub>R Q" by (simp add: M_def)
+        have hCH_eq: "convex hull {P, Q} =
+              {u *\<^sub>R P + v *\<^sub>R Q | u v. 0 \<le> u \<and> 0 \<le> v \<and> u + v = 1}"
+          by (rule convex_hull_2)
+        show "M \<in> convex hull {P, Q}"
+          unfolding hCH_eq using hMM
+          by (intro CollectI exI[of _ "1/2 :: real"] exI[of _ "1/2 :: real"]) auto
+      qed
+      thus ?thesis by (simp add: geotop_convex_hull_eq_HOL)
+    qed
+    have hM_eq_simp: "M = (1/2) *\<^sub>R P + (1/2) *\<^sub>R Q" by (simp add: M_def)
+    have h_2M_eq: "(2::real) *\<^sub>R M = P + Q"
+      using hM_eq_simp by (simp add: algebra_simps)
+    have h_2_scaleR: "\<And>v::real^2. (2::real) *\<^sub>R v = v + v"
+      by (simp add: scaleR_2)
+    have hM_ne_P: "M \<noteq> P"
+    proof
+      assume "M = P"
+      hence "(2::real) *\<^sub>R P = P + Q" using h_2M_eq by simp
+      hence "P + P = P + Q" by (simp add: h_2_scaleR)
+      hence "P = Q" by simp
+      thus False using hP_ne_Q by simp
+    qed
+    have hM_ne_Q: "M \<noteq> Q"
+    proof
+      assume "M = Q"
+      hence "(2::real) *\<^sub>R Q = P + Q" using h_2M_eq by simp
+      hence "Q + Q = P + Q" by (simp add: h_2_scaleR)
+      hence "Q = P" by simp
+      thus False using hP_ne_Q by simp
+    qed
+    have hM_not_in_PQ: "M \<notin> {P, Q}" using hM_ne_P hM_ne_Q by simp
+    show ?thesis using hM_in_hull hM_not_in_PQ by blast
+  qed
+  text \<open>Axiom (c) — main case-split.\<close>
+  have hK_c: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau> assume h\<sigma>: "\<sigma> \<in> K" and h\<tau>: "\<tau> \<in> K" and h_inter: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>_cases: "\<sigma> \<in> K1 \<or> \<sigma> \<in> K2" using h\<sigma> unfolding K_def by blast
+    have h\<tau>_cases: "\<tau> \<in> K1 \<or> \<tau> \<in> K2" using h\<tau> unfolding K_def by blast
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (cases "\<sigma> \<in> K1 \<and> \<tau> \<in> K1")
+      case True thus ?thesis using hK1_c h_inter by blast
+    next
+      case False
+      show ?thesis
+      proof (cases "\<sigma> \<in> K2 \<and> \<tau> \<in> K2")
+        case True thus ?thesis using hK2_c h_inter by blast
+      next
+        case False
+        text \<open>So \<open>\<sigma>, \<tau>\<close> are in different complexes.\<close>
+        have h_cross: "(\<sigma> \<in> K1 \<and> \<tau> \<in> K2) \<or> (\<sigma> \<in> K2 \<and> \<tau> \<in> K1)"
+          using \<open>\<not> (\<sigma> \<in> K1 \<and> \<tau> \<in> K1)\<close> False h\<sigma>_cases h\<tau>_cases by blast
+        have h_cross_inter_in_E: "\<sigma> \<inter> \<tau> \<subseteq> E"
+        proof -
+          have "\<sigma> \<inter> \<tau> \<subseteq> B1 \<inter> B2"
+            using h_cross hK1_subB1 hK2_subB2 by blast
+          thus ?thesis using hB1B2_inter by simp
+        qed
+        have h_cross_inter_sub: "\<sigma> \<inter> \<tau> \<subseteq> {P, Q}"
+          using h_cross_inter_in_E hPQ_E by blast
+        text \<open>Show \<open>\<sigma> \<inter> \<tau> = {P}\<close> or \<open>\<sigma> \<inter> \<tau> = {Q}\<close> (both endpoints case excluded).\<close>
+        have h_inter_singleton: "\<sigma> \<inter> \<tau> = {P} \<or> \<sigma> \<inter> \<tau> = {Q}"
+        proof -
+          have h_inter_sub_PQ: "\<sigma> \<inter> \<tau> \<subseteq> {P, Q}" using h_cross_inter_sub .
+          have h_subsets_of_PQ: "\<And>S::(real^2) set. S \<subseteq> {P, Q} \<Longrightarrow>
+                                  S = {} \<or> S = {P} \<or> S = {Q} \<or> S = {P, Q}"
+          proof -
+            fix S :: "(real^2) set" assume hS: "S \<subseteq> {P, Q}"
+            consider "P \<in> S \<and> Q \<in> S" | "P \<in> S \<and> Q \<notin> S"
+                   | "P \<notin> S \<and> Q \<in> S" | "P \<notin> S \<and> Q \<notin> S" by blast
+            thus "S = {} \<or> S = {P} \<or> S = {Q} \<or> S = {P, Q}"
+            proof cases
+              case 1 thus ?thesis using hS by blast
+            next
+              case 2 thus ?thesis using hS by blast
+            next
+              case 3 thus ?thesis using hS by blast
+            next
+              case 4 thus ?thesis using hS by blast
+            qed
+          qed
+          have h_inter_options: "\<sigma> \<inter> \<tau> = {} \<or> \<sigma> \<inter> \<tau> = {P} \<or>
+                                  \<sigma> \<inter> \<tau> = {Q} \<or> \<sigma> \<inter> \<tau> = {P, Q}"
+            using h_subsets_of_PQ[OF h_inter_sub_PQ] .
+          consider "\<sigma> \<inter> \<tau> = {P}" | "\<sigma> \<inter> \<tau> = {Q}" | "\<sigma> \<inter> \<tau> = {P, Q}"
+            using h_inter_options h_inter by blast
+          thus ?thesis
+          proof cases
+            case 1 thus ?thesis by simp
+          next
+            case 2 thus ?thesis by simp
+          next
+            case 3
+            text \<open>Need to derive contradiction. Both \<open>\<sigma>\<close> and \<open>\<tau>\<close> contain
+              \<open>{P, Q}\<close>, so they are 1-simplices with \<open>{P, Q}\<close> as vertex set.
+              But then \<open>\<sigma> = \<tau> = \<close> segment PQ, hence segment PQ \<subseteq> B1 \<inter> B2 = E,
+              contradicting that segment PQ has uncountably many points.\<close>
+            have hP\<sigma>: "P \<in> \<sigma>" using 3 by blast
+            have hQ\<sigma>: "Q \<in> \<sigma>" using 3 by blast
+            have hP\<tau>: "P \<in> \<tau>" using 3 by blast
+            have hQ\<tau>: "Q \<in> \<tau>" using 3 by blast
+            have h\<sigma>_K: "\<sigma> \<in> K1 \<or> \<sigma> \<in> K2" using h_cross by blast
+            text \<open>From \<open>{P} \<in> Ki, \<sigma> \<in> Ki\<close>, P is a vertex of \<sigma> (so \<sigma> contains P
+              as a vertex; similarly Q). With \<open>\<sigma>\<close> in a 1-dim complex, \<sigma> is a
+              1-simplex, hence \<open>\<sigma> = \<close> convex hull \<open>{P, Q}\<close>.\<close>
+            have h\<sigma>_eq_PQ: "\<sigma> = geotop_convex_hull {P, Q}"
+            proof (cases "\<sigma> \<in> K1")
+              case True
+              show ?thesis
+                by (rule onedim_simplex_with_two_endpoints_eq_hull
+                          [OF hK1_complex hK1_1dim True hPK1 hQK1 hP\<sigma> hQ\<sigma> hP_ne_Q])
+            next
+              case False
+              hence "\<sigma> \<in> K2" using h_cross by blast
+              show ?thesis
+                by (rule onedim_simplex_with_two_endpoints_eq_hull
+                          [OF hK2_complex hK2_1dim \<open>\<sigma> \<in> K2\<close> hPK2 hQK2 hP\<sigma> hQ\<sigma> hP_ne_Q])
+            qed
+            have h\<tau>_eq_PQ: "\<tau> = geotop_convex_hull {P, Q}"
+            proof (cases "\<tau> \<in> K1")
+              case True
+              show ?thesis
+                by (rule onedim_simplex_with_two_endpoints_eq_hull
+                          [OF hK1_complex hK1_1dim True hPK1 hQK1 hP\<tau> hQ\<tau> hP_ne_Q])
+            next
+              case False
+              hence "\<tau> \<in> K2" using h_cross by blast
+              show ?thesis
+                by (rule onedim_simplex_with_two_endpoints_eq_hull
+                          [OF hK2_complex hK2_1dim \<open>\<tau> \<in> K2\<close> hPK2 hQK2 hP\<tau> hQ\<tau> hP_ne_Q])
+            qed
+            have h\<sigma>_subB1: "\<sigma> \<subseteq> B1 \<and> \<tau> \<subseteq> B2 \<or> \<sigma> \<subseteq> B2 \<and> \<tau> \<subseteq> B1"
+              using h_cross hK1_subB1 hK2_subB2 by blast
+            have h_seg_in_inter: "geotop_convex_hull {P, Q} \<subseteq> B1 \<inter> B2"
+              using h\<sigma>_eq_PQ h\<tau>_eq_PQ h\<sigma>_subB1 by blast
+            hence "geotop_convex_hull {P, Q} \<subseteq> {P, Q}"
+              using hB1B2_inter hPQ_E by simp
+            moreover have "{P, Q} \<subseteq> geotop_convex_hull {P, Q}"
+              by (auto simp: geotop_convex_hull_eq_HOL hull_inc)
+            ultimately have "geotop_convex_hull {P, Q} = {P, Q}" by blast
+            thus ?thesis using h_PQ_seg_not_in_E by blast
+          qed
+        qed
+        text \<open>The singleton intersection case: both \<open>\<sigma>\<close> and \<open>\<tau>\<close> have the
+          singleton vertex (since the singleton is in both K1 and K2, and the
+          complex axiom of either Ki forces the intersection with the
+          singleton to be a face).\<close>
+        have h_singleton_face_of_simplex:
+          "\<And>v Kx \<rho>. \<lbrakk>v \<in> {P, Q}; {v} \<in> Kx; \<rho> \<in> Kx; v \<in> \<rho>;
+                    \<forall>\<sigma>\<in>Kx. \<forall>\<tau>\<in>Kx. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                       geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>\<rbrakk>
+                  \<Longrightarrow> geotop_is_face {v} \<rho>"
+        proof -
+          fix v Kx \<rho> assume hv_PQ: "v \<in> {P, Q}" and hvKx: "{v} \<in> Kx"
+                       and h\<rho>_Kx: "\<rho> \<in> Kx" and hv\<rho>: "v \<in> \<rho>"
+                       and hKx_c: "\<forall>\<sigma>\<in>Kx. \<forall>\<tau>\<in>Kx. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+          have h_inter_eq: "{v} \<inter> \<rho> = {v}" using hv\<rho> by blast
+          have h_inter_ne: "{v} \<inter> \<rho> \<noteq> {}" using h_inter_eq by simp
+          have "geotop_is_face ({v} \<inter> \<rho>) \<rho>"
+            using hKx_c[rule_format, OF hvKx h\<rho>_Kx] h_inter_ne by blast
+          thus "geotop_is_face {v} \<rho>" using h_inter_eq by simp
+        qed
+        consider (P_case) "\<sigma> \<inter> \<tau> = {P}" | (Q_case) "\<sigma> \<inter> \<tau> = {Q}"
+          using h_inter_singleton by blast
+        thus ?thesis
+        proof cases
+          case P_case
+          have hP\<sigma>: "P \<in> \<sigma>" using P_case by blast
+          have hP\<tau>: "P \<in> \<tau>" using P_case by blast
+          have hP_PQ: "P \<in> {P, Q}" by simp
+          have h_sf\<sigma>: "geotop_is_face {P} \<sigma>"
+          proof (cases "\<sigma> \<in> K1")
+            case True
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hP_PQ hPK1 True hP\<sigma> hK1_c])
+          next
+            case False
+            hence "\<sigma> \<in> K2" using h_cross by blast
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hP_PQ hPK2 \<open>\<sigma> \<in> K2\<close> hP\<sigma> hK2_c])
+          qed
+          have h_sf\<tau>: "geotop_is_face {P} \<tau>"
+          proof (cases "\<tau> \<in> K1")
+            case True
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hP_PQ hPK1 True hP\<tau> hK1_c])
+          next
+            case False
+            hence "\<tau> \<in> K2" using h_cross by blast
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hP_PQ hPK2 \<open>\<tau> \<in> K2\<close> hP\<tau> hK2_c])
+          qed
+          show ?thesis using P_case h_sf\<sigma> h_sf\<tau> by simp
+        next
+          case Q_case
+          have hQ\<sigma>: "Q \<in> \<sigma>" using Q_case by blast
+          have hQ\<tau>: "Q \<in> \<tau>" using Q_case by blast
+          have hQ_PQ: "Q \<in> {P, Q}" by simp
+          have h_sf\<sigma>: "geotop_is_face {Q} \<sigma>"
+          proof (cases "\<sigma> \<in> K1")
+            case True
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hQ_PQ hQK1 True hQ\<sigma> hK1_c])
+          next
+            case False
+            hence "\<sigma> \<in> K2" using h_cross by blast
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hQ_PQ hQK2 \<open>\<sigma> \<in> K2\<close> hQ\<sigma> hK2_c])
+          qed
+          have h_sf\<tau>: "geotop_is_face {Q} \<tau>"
+          proof (cases "\<tau> \<in> K1")
+            case True
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hQ_PQ hQK1 True hQ\<tau> hK1_c])
+          next
+            case False
+            hence "\<tau> \<in> K2" using h_cross by blast
+            show ?thesis
+              by (rule h_singleton_face_of_simplex[OF hQ_PQ hQK2 \<open>\<tau> \<in> K2\<close> hQ\<tau> hK2_c])
+          qed
+          show ?thesis using Q_case h_sf\<sigma> h_sf\<tau> by simp
+        qed
+      qed
+    qed
+  qed
+  text \<open>For local finiteness we need \<open>B2\<close> closed. From \<open>geotop_arc_endpoints B2 E\<close>
+    we extract a homeomorphism \<open>[0,1] \<to> B2\<close>, so \<open>B2\<close> is the continuous image of a
+    compact set, hence compact, hence closed.\<close>
+  have hB1_closed: "closed B1"
+  proof -
+    obtain f0 :: "real \<Rightarrow> real^2" where
+      h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+          (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B1
+          (subspace_topology UNIV geotop_euclidean_topology B1) f0"
+      using hE1 unfolding geotop_arc_endpoints_def by blast
+    have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+    have h_homeo_HOL: "{0..1::real} homeomorphic B1"
+      using h_homeo top1_homeomorphism_on_geotop_imp_HOL_homeomorphic h_unit_iv by metis
+    have h_compact_01: "compact {0..1::real}" by simp
+    have h_compact_B1: "compact B1"
+      using h_compact_01 h_homeo_HOL homeomorphic_compactness by blast
+    show ?thesis using h_compact_B1 compact_imp_closed by blast
+  qed
+  have hB2_closed: "closed B2"
+  proof -
+    obtain f0 :: "real \<Rightarrow> real^2" where
+      h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+          (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B2
+          (subspace_topology UNIV geotop_euclidean_topology B2) f0"
+      using hE2 unfolding geotop_arc_endpoints_def by blast
+    have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+    have h_homeo_HOL: "{0..1::real} homeomorphic B2"
+      using h_homeo top1_homeomorphism_on_geotop_imp_HOL_homeomorphic h_unit_iv by metis
+    have h_compact_01: "compact {0..1::real}" by simp
+    have h_compact_B2: "compact B2"
+      using h_compact_01 h_homeo_HOL homeomorphic_compactness by blast
+    show ?thesis using h_compact_B2 compact_imp_closed by blast
+  qed
+  text \<open>Axiom (d): local finiteness.\<close>
+  have hK1_d: "\<forall>\<sigma>\<in>K1. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K1. \<tau> \<inter> U \<noteq> {}}"
+    using hK1_complex unfolding geotop_is_complex_def by simp
+  have hK2_d: "\<forall>\<sigma>\<in>K2. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K2. \<tau> \<inter> U \<noteq> {}}"
+    using hK2_complex unfolding geotop_is_complex_def by simp
+  have hK_d: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>_K: "\<sigma> \<in> K"
+    obtain U2_P where hU2_P_open: "open U2_P" and hPU2_P: "{P} \<subseteq> U2_P"
+                 and hfin_K2_P: "finite {\<tau>\<in>K2. \<tau> \<inter> U2_P \<noteq> {}}"
+      using hK2_d hPK2 by blast
+    obtain U2_Q where hU2_Q_open: "open U2_Q" and hQU2_Q: "{Q} \<subseteq> U2_Q"
+                 and hfin_K2_Q: "finite {\<tau>\<in>K2. \<tau> \<inter> U2_Q \<noteq> {}}"
+      using hK2_d hQK2 by blast
+    obtain U1_P where hU1_P_open: "open U1_P" and hPU1_P: "{P} \<subseteq> U1_P"
+                 and hfin_K1_P: "finite {\<tau>\<in>K1. \<tau> \<inter> U1_P \<noteq> {}}"
+      using hK1_d hPK1 by blast
+    obtain U1_Q where hU1_Q_open: "open U1_Q" and hQU1_Q: "{Q} \<subseteq> U1_Q"
+                 and hfin_K1_Q: "finite {\<tau>\<in>K1. \<tau> \<inter> U1_Q \<noteq> {}}"
+      using hK1_d hQK1 by blast
+    consider (Ks1) "\<sigma> \<in> K1" | (Ks2) "\<sigma> \<in> K2 \<and> \<sigma> \<notin> K1"
+      using h\<sigma>_K unfolding K_def by blast
+    thus "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    proof cases
+      case Ks1
+      obtain U1 where hU1_open: "open U1" and h\<sigma>_U1: "\<sigma> \<subseteq> U1"
+                  and hfin_U1: "finite {\<tau>\<in>K1. \<tau> \<inter> U1 \<noteq> {}}"
+        using hK1_d Ks1 by blast
+      define V where "V = U1 \<inter> (UNIV - (B2 - U2_P - U2_Q))"
+      have hV_open: "open V"
+      proof -
+        have h_closed_part: "closed (B2 - U2_P - U2_Q)"
+          using hB2_closed hU2_P_open hU2_Q_open
+          by (simp add: closed_Diff)
+        have h_open_compl: "open (UNIV - (B2 - U2_P - U2_Q))"
+        proof -
+          have "open (- (B2 - U2_P - U2_Q))"
+            using h_closed_part open_Compl by blast
+          thus ?thesis by (simp add: Compl_eq_Diff_UNIV)
+        qed
+        show ?thesis unfolding V_def using hU1_open h_open_compl by blast
+      qed
+      have h\<sigma>_sub_B1: "\<sigma> \<subseteq> B1" using hK1_subB1 Ks1 by blast
+      have h\<sigma>_inter_B2: "\<sigma> \<inter> B2 \<subseteq> {P, Q}"
+        using h\<sigma>_sub_B1 hB1B2_inter hPQ_E by blast
+      have h\<sigma>_V: "\<sigma> \<subseteq> V"
+      proof
+        fix x assume hx: "x \<in> \<sigma>"
+        have hxU1: "x \<in> U1" using hx h\<sigma>_U1 by blast
+        have "x \<notin> B2 - U2_P - U2_Q"
+        proof
+          assume hxB2: "x \<in> B2 - U2_P - U2_Q"
+          hence "x \<in> B2" by blast
+          hence "x \<in> \<sigma> \<inter> B2" using hx by blast
+          hence "x \<in> {P, Q}" using h\<sigma>_inter_B2 by blast
+          hence "x \<in> U2_P \<union> U2_Q" using hPU2_P hQU2_Q by blast
+          thus False using hxB2 by blast
+        qed
+        thus "x \<in> V" unfolding V_def using hxU1 by blast
+      qed
+      have hfin_K_V: "finite {\<tau>\<in>K. \<tau> \<inter> V \<noteq> {}}"
+      proof -
+        have h_K1_part: "{\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}} \<subseteq> {\<tau>\<in>K1. \<tau> \<inter> U1 \<noteq> {}}"
+          unfolding V_def by blast
+        have hfin_K1_V: "finite {\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}}"
+          using h_K1_part hfin_U1 by (rule finite_subset)
+        have h_K2_part:
+          "{\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}} \<subseteq>
+            {\<tau>\<in>K2. \<tau> \<inter> U2_P \<noteq> {}} \<union> {\<tau>\<in>K2. \<tau> \<inter> U2_Q \<noteq> {}}"
+        proof
+          fix \<tau> assume h\<tau>: "\<tau> \<in> {\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}}"
+          hence h\<tau>K2: "\<tau> \<in> K2" and h\<tau>V: "\<tau> \<inter> V \<noteq> {}" by blast+
+          obtain x where hx_\<tau>: "x \<in> \<tau>" and hxV: "x \<in> V" using h\<tau>V by blast
+          have hx_B2: "x \<in> B2" using hx_\<tau> hK2_subB2 h\<tau>K2 by blast
+          have hxU1: "x \<in> U1" using hxV unfolding V_def by blast
+          have hx_not_B2_minus: "x \<notin> B2 - U2_P - U2_Q" using hxV unfolding V_def by blast
+          have "x \<in> U2_P \<or> x \<in> U2_Q" using hx_B2 hx_not_B2_minus by blast
+          thus "\<tau> \<in> {\<tau>\<in>K2. \<tau> \<inter> U2_P \<noteq> {}} \<union> {\<tau>\<in>K2. \<tau> \<inter> U2_Q \<noteq> {}}"
+            using h\<tau>K2 hx_\<tau> by blast
+        qed
+        have hfin_K2_V: "finite {\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}}"
+          using h_K2_part hfin_K2_P hfin_K2_Q by (auto intro: finite_subset)
+        have h_K_decomp: "{\<tau>\<in>K. \<tau> \<inter> V \<noteq> {}} = {\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}} \<union> {\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}}"
+          unfolding K_def by blast
+        show ?thesis using h_K_decomp hfin_K1_V hfin_K2_V by simp
+      qed
+      show ?thesis using hV_open h\<sigma>_V hfin_K_V by blast
+    next
+      case Ks2
+      hence h\<sigma>_K2: "\<sigma> \<in> K2" by blast
+      obtain U2 where hU2_open: "open U2" and h\<sigma>_U2: "\<sigma> \<subseteq> U2"
+                  and hfin_U2: "finite {\<tau>\<in>K2. \<tau> \<inter> U2 \<noteq> {}}"
+        using hK2_d h\<sigma>_K2 by blast
+      define V where "V = U2 \<inter> (UNIV - (B1 - U1_P - U1_Q))"
+      have hV_open: "open V"
+      proof -
+        have h_closed_part: "closed (B1 - U1_P - U1_Q)"
+          using hB1_closed hU1_P_open hU1_Q_open
+          by (simp add: closed_Diff)
+        have h_open_compl: "open (UNIV - (B1 - U1_P - U1_Q))"
+        proof -
+          have "open (- (B1 - U1_P - U1_Q))"
+            using h_closed_part open_Compl by blast
+          thus ?thesis by (simp add: Compl_eq_Diff_UNIV)
+        qed
+        show ?thesis unfolding V_def using hU2_open h_open_compl by blast
+      qed
+      have h\<sigma>_sub_B2: "\<sigma> \<subseteq> B2" using hK2_subB2 h\<sigma>_K2 by blast
+      have h\<sigma>_inter_B1: "\<sigma> \<inter> B1 \<subseteq> {P, Q}"
+        using h\<sigma>_sub_B2 hB1B2_inter hPQ_E by blast
+      have h\<sigma>_V: "\<sigma> \<subseteq> V"
+      proof
+        fix x assume hx: "x \<in> \<sigma>"
+        have hxU2: "x \<in> U2" using hx h\<sigma>_U2 by blast
+        have "x \<notin> B1 - U1_P - U1_Q"
+        proof
+          assume hxB1: "x \<in> B1 - U1_P - U1_Q"
+          hence "x \<in> B1" by blast
+          hence "x \<in> \<sigma> \<inter> B1" using hx by blast
+          hence "x \<in> {P, Q}" using h\<sigma>_inter_B1 by blast
+          hence "x \<in> U1_P \<union> U1_Q" using hPU1_P hQU1_Q by blast
+          thus False using hxB1 by blast
+        qed
+        thus "x \<in> V" unfolding V_def using hxU2 by blast
+      qed
+      have hfin_K_V: "finite {\<tau>\<in>K. \<tau> \<inter> V \<noteq> {}}"
+      proof -
+        have h_K2_part: "{\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}} \<subseteq> {\<tau>\<in>K2. \<tau> \<inter> U2 \<noteq> {}}"
+          unfolding V_def by blast
+        have hfin_K2_V: "finite {\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}}"
+          using h_K2_part hfin_U2 by (rule finite_subset)
+        have h_K1_part:
+          "{\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}} \<subseteq>
+            {\<tau>\<in>K1. \<tau> \<inter> U1_P \<noteq> {}} \<union> {\<tau>\<in>K1. \<tau> \<inter> U1_Q \<noteq> {}}"
+        proof
+          fix \<tau> assume h\<tau>: "\<tau> \<in> {\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}}"
+          hence h\<tau>K1: "\<tau> \<in> K1" and h\<tau>V: "\<tau> \<inter> V \<noteq> {}" by blast+
+          obtain x where hx_\<tau>: "x \<in> \<tau>" and hxV: "x \<in> V" using h\<tau>V by blast
+          have hx_B1: "x \<in> B1" using hx_\<tau> hK1_subB1 h\<tau>K1 by blast
+          have hx_not_B1_minus: "x \<notin> B1 - U1_P - U1_Q" using hxV unfolding V_def by blast
+          have "x \<in> U1_P \<or> x \<in> U1_Q" using hx_B1 hx_not_B1_minus by blast
+          thus "\<tau> \<in> {\<tau>\<in>K1. \<tau> \<inter> U1_P \<noteq> {}} \<union> {\<tau>\<in>K1. \<tau> \<inter> U1_Q \<noteq> {}}"
+            using h\<tau>K1 hx_\<tau> by blast
+        qed
+        have hfin_K1_V: "finite {\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}}"
+          using h_K1_part hfin_K1_P hfin_K1_Q by (auto intro: finite_subset)
+        have h_K_decomp: "{\<tau>\<in>K. \<tau> \<inter> V \<noteq> {}} = {\<tau>\<in>K1. \<tau> \<inter> V \<noteq> {}} \<union> {\<tau>\<in>K2. \<tau> \<inter> V \<noteq> {}}"
+          unfolding K_def by blast
+        show ?thesis using h_K_decomp hfin_K1_V hfin_K2_V by simp
+      qed
+      show ?thesis using hV_open h\<sigma>_V hfin_K_V by blast
+    qed
+  qed
+  have hK_complex: "geotop_is_complex K"
+    unfolding geotop_is_complex_def using hK_a hK_b hK_c hK_d by blast
+  text \<open>Polyhedron equality.\<close>
+  have hK_poly: "geotop_polyhedron K = B1 \<union> B2"
+  proof -
+    have "geotop_polyhedron K = \<Union>K" unfolding geotop_polyhedron_def by simp
+    also have "\<dots> = \<Union>K1 \<union> \<Union>K2" unfolding K_def by blast
+    also have "\<dots> = geotop_polyhedron K1 \<union> geotop_polyhedron K2"
+      unfolding geotop_polyhedron_def by simp
+    also have "\<dots> = B1 \<union> B2" using hK1_poly hK2_poly by simp
+    finally show ?thesis .
+  qed
+  show "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = B1 \<union> B2"
+    using hK_complex hK_poly by blast
+qed
+
+lemma arc_interior_nonempty:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "geotop_arc_interior B E \<noteq> {}"
+proof -
+  from hE obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    and hE_eq: "E = {f0 0, f0 1}"
+    unfolding geotop_arc_endpoints_def by blast
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+  have h_bij: "bij_betw f0 {0..1::real} B"
+    using h_homeo h_unit_iv unfolding top1_homeomorphism_on_def by simp
+  have h_inj: "inj_on f0 {0..1::real}"
+    using h_bij by (simp add: bij_betw_def)
+  have h_half_in: "(1/2::real) \<in> {0..1}" by simp
+  have h_f_half: "f0 (1/2) \<in> B"
+    using h_bij h_half_in unfolding bij_betw_def by blast
+  have h_half_ne_0: "(1/2::real) \<noteq> 0" by simp
+  have h_half_ne_1: "(1/2::real) \<noteq> 1" by simp
+  have h_0_in: "(0::real) \<in> {0..1}" by simp
+  have h_1_in: "(1::real) \<in> {0..1}" by simp
+  have h_f_half_ne_0: "f0 (1/2) \<noteq> f0 0"
+    using h_inj h_half_ne_0 h_half_in h_0_in inj_onD by metis
+  have h_f_half_ne_1: "f0 (1/2) \<noteq> f0 1"
+    using h_inj h_half_ne_1 h_half_in h_1_in inj_onD by metis
+  have h_not_in_E: "f0 (1/2) \<notin> E"
+    using hE_eq h_f_half_ne_0 h_f_half_ne_1 by simp
+  show ?thesis
+    unfolding geotop_arc_interior_def
+    using h_f_half h_not_in_E by blast
+qed
+
+lemma pair_of_arcs_is_polygon:
+  fixes B1 B2 :: "(real^2) set" and E :: "(real^2) set"
+  assumes hB1: "geotop_is_broken_line B1"
+      and hB2: "geotop_is_broken_line B2"
+      and hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+  shows "geotop_is_polygon (B1 \<union> B2)"
+proof -
+  have h_distinct: "B1 \<noteq> B2"
+  proof
+    assume "B1 = B2"
+    hence "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = geotop_arc_interior B1 E"
+      by simp
+    hence "geotop_arc_interior B1 E = {}" using h_disj by simp
+    thus False using arc_interior_nonempty[OF hE1] by simp
+  qed
+  obtain K where hK_complex: "geotop_is_complex K"
+              and hK_poly: "geotop_polyhedron K = B1 \<union> B2"
+    using pair_of_arcs_polyhedron[OF hB1 hB2 hE1 hE2 h_disj] by blast
+  have h_homeo: "B1 \<union> B2 homeomorphic sphere (0::real^2) 1"
+    using pair_of_arcs_image_homeomorphic_sphere[OF hE1 hE2 h_disj h_distinct] by blast
+  have h_std_sphere_eq: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  have h_homeo_std: "B1 \<union> B2 homeomorphic (geotop_std_sphere::(real^2) set)"
+    using h_homeo h_std_sphere_eq by simp
+  have h_n_sphere: "geotop_is_n_sphere (B1 \<union> B2)
+        (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+  proof -
+    obtain f where h_top1_homeo: "top1_homeomorphism_on (B1 \<union> B2)
+        (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2))
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_std_sphere::(real^2) set)) f"
+      using geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[OF h_homeo_std] by blast
+    have h_eucl_top: "is_topology_on UNIV (geotop_euclidean_topology::(real^2) set set)"
+      using top1_open_sets_is_topology_on_UNIV
+      by (simp add: geotop_euclidean_topology_eq_open_sets)
+    have h_topology: "is_topology_on (B1 \<union> B2)
+        (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2))"
+      using subspace_topology_is_topology_on h_eucl_top by blast
+    show ?thesis
+      unfolding geotop_is_n_sphere_def
+      using h_top1_homeo h_topology by blast
+  qed
+  show ?thesis
+    unfolding geotop_is_polygon_def
+    using hK_complex hK_poly h_n_sphere by blast
+qed
+
+text \<open>A broken line is closed (compact arc).\<close>
+
+lemma broken_line_closed:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "closed B"
+proof -
+  obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using hE unfolding geotop_arc_endpoints_def by blast
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+  have h_homeo_HOL: "{0..1::real} homeomorphic B"
+    using h_homeo top1_homeomorphism_on_geotop_imp_HOL_homeomorphic h_unit_iv by metis
+  have h_compact_01: "compact {0..1::real}" by simp
+  have h_compact_B: "compact B"
+    using h_compact_01 h_homeo_HOL homeomorphic_compactness by blast
+  show ?thesis using h_compact_B compact_imp_closed by blast
+qed
+
+text \<open>Subclaim 4 of h_open_in_int (the deepest local-component-constancy step):
+  if x is a frontier point of an open set U with U disjoint from broken line Bi,
+  and y is sufficiently close to x along Int Bi, then y is also a frontier point
+  of U. This requires that U "sticks" to the same local side of Bi across small
+  Bi-displacements — a connectivity-of-complement argument tying back to
+  components of UNIV - Bi.
+
+  Target form (for future sessions to formalize):
+  \<open>\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior Bi E. y \<in> frontier U\<close>
+  given x \<in> frontier U, x \<in> Int Bi, U open, U disjoint from B1\<union>B2\<union>B3.
+
+  Proof outline:
+  (1) obtain the isolating \<epsilon> from `theta_arc_interior_isolated_ball`,
+  (2) obtain half-balls H+, H- via `ball_minus_hyperplane_has_two_components`,
+  (3) WLOG U meets H+ near x (since x \<in> frontier U),
+  (4) for y close to x on Int Bi, the corresponding half-ball at y still meets U
+      (via path-connectedness of U + arc-connectedness of Int Bi).\<close>
+
+text \<open>At each interior point of an arc Bi of a theta-graph, an open ball around x
+  isolates Bi from the other two arcs (since arc-interiors are pairwise disjoint
+  and each Bj is closed).\<close>
+
+text \<open>For a broken line B and a point x \<in> B, exists a finite complex K with
+  |K| = B and a small ball around x contained in the union of K-simplices
+  containing x. This bridges `finite_union_closed_local_isolation` to broken
+  lines. It is the second piece needed for h_open_in_int's local geometry
+  (after the theta-graph isolation step).\<close>
+
+lemma broken_line_local_simplex_isolation:
+  fixes B :: "(real^2) set" and x :: "real^2"
+  assumes hB: "geotop_is_broken_line B"
+      and hxB: "x \<in> B"
+  shows "\<exists>K. geotop_is_complex K \<and> finite K \<and> geotop_polyhedron K = B \<and>
+              geotop_complex_is_1dim K \<and>
+              (\<exists>\<delta>>0. ball x \<delta> \<inter> B \<subseteq> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>})"
+proof -
+  obtain K where hK_complex: "geotop_is_complex K"
+              and hK_1dim: "geotop_complex_is_1dim K"
+              and hK_poly: "geotop_polyhedron K = B"
+              and hK_fin: "finite K"
+    using geotop_broken_line_finite_witness[OF hB] by (by100 blast)
+  have hK_simp_all: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK_complex[unfolded geotop_is_complex_def]])
+  have hK_closed_all: "\<forall>\<sigma>\<in>K. closed \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    have hsim: "geotop_is_simplex \<sigma>" using hK_simp_all h\<sigma>K by (by100 blast)
+    obtain V m n where hVfin: "finite V" and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using hsim unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have h_compact: "compact (convex hull V)"
+      using hVfin finite_imp_compact_convex_hull by (by100 blast)
+    have h_closed_hull: "closed (convex hull V)"
+      using h_compact compact_imp_closed by (by100 blast)
+    show "closed \<sigma>" using h\<sigma>_HOL h_closed_hull by (by100 simp)
+  qed
+  have hB_union: "B = \<Union>K"
+    using hK_poly unfolding geotop_polyhedron_def by (by100 simp)
+  obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+              and h\<delta>_sub: "ball x \<delta> \<inter> B \<subseteq> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>}"
+    using finite_union_closed_local_isolation[OF hK_fin hK_closed_all hB_union hxB]
+    by (by100 blast)
+  show ?thesis using hK_complex hK_fin hK_poly hK_1dim h\<delta>_pos h\<delta>_sub by (by100 blast)
+qed
+
+lemma theta_arc_interior_isolated_ball:
+  fixes B1 B2 B3 E :: "(real^2) set" and x :: "real^2"
+  assumes hcl_B2: "closed B2" and hcl_B3: "closed B3"
+      and h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+      and h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+      and hx1: "x \<in> geotop_arc_interior B1 E"
+  shows "\<exists>\<epsilon>>0. ball x \<epsilon> \<inter> (B1 \<union> B2 \<union> B3) \<subseteq> B1"
+proof -
+  have h_int12_diff: "(B1 - E) \<inter> (B2 - E) = {}"
+    using h_int12 unfolding geotop_arc_interior_def by (by100 simp)
+  have h_int13_diff: "(B1 - E) \<inter> (B3 - E) = {}"
+    using h_int13 unfolding geotop_arc_interior_def by (by100 simp)
+  have hx1_diff: "x \<in> B1 - E"
+    using hx1 unfolding geotop_arc_interior_def by (by100 simp)
+  have hxB1: "x \<in> B1" using hx1_diff by (by100 blast)
+  have hxnE: "x \<notin> E" using hx1_diff by (by100 blast)
+  have hxnB2: "x \<notin> B2"
+  proof
+    assume hxB2: "x \<in> B2"
+    have h: "x \<in> (B1 - E) \<inter> (B2 - E)"
+      using hx1_diff hxB2 hxnE by (by100 blast)
+    thus False using h_int12_diff by (by100 blast)
+  qed
+  have hxnB3: "x \<notin> B3"
+  proof
+    assume hxB3: "x \<in> B3"
+    have h: "x \<in> (B1 - E) \<inter> (B3 - E)"
+      using hx1_diff hxB3 hxnE by (by100 blast)
+    thus False using h_int13_diff by (by100 blast)
+  qed
+  have h_in_compl_B2: "x \<in> -B2" using hxnB2 by (by100 simp)
+  have h_open_compl_B2: "open (-B2)" using hcl_B2 closed_def by (by100 blast)
+  obtain \<epsilon>\<^sub>2 where h\<epsilon>2_pos: "\<epsilon>\<^sub>2 > 0" and h\<epsilon>2_sub: "ball x \<epsilon>\<^sub>2 \<subseteq> -B2"
+    using h_in_compl_B2 h_open_compl_B2 open_contains_ball by (by100 metis)
+  have h_in_compl_B3: "x \<in> -B3" using hxnB3 by (by100 simp)
+  have h_open_compl_B3: "open (-B3)" using hcl_B3 closed_def by (by100 blast)
+  obtain \<epsilon>\<^sub>3 where h\<epsilon>3_pos: "\<epsilon>\<^sub>3 > 0" and h\<epsilon>3_sub: "ball x \<epsilon>\<^sub>3 \<subseteq> -B3"
+    using h_in_compl_B3 h_open_compl_B3 open_contains_ball by (by100 metis)
+  define \<epsilon> where "\<epsilon> = min \<epsilon>\<^sub>2 \<epsilon>\<^sub>3"
+  have h\<epsilon>_pos: "\<epsilon> > 0" using h\<epsilon>2_pos h\<epsilon>3_pos \<epsilon>_def by (by100 simp)
+  have h\<epsilon>_sub2: "ball x \<epsilon> \<subseteq> ball x \<epsilon>\<^sub>2" using \<epsilon>_def by (by100 auto)
+  have h\<epsilon>_sub3: "ball x \<epsilon> \<subseteq> ball x \<epsilon>\<^sub>3" using \<epsilon>_def by (by100 auto)
+  have h_int2: "ball x \<epsilon> \<inter> B2 = {}" using h\<epsilon>_sub2 h\<epsilon>2_sub by (by100 blast)
+  have h_int3: "ball x \<epsilon> \<inter> B3 = {}" using h\<epsilon>_sub3 h\<epsilon>3_sub by (by100 blast)
+  have h_subset: "ball x \<epsilon> \<inter> (B1 \<union> B2 \<union> B3) \<subseteq> B1"
+    using h_int2 h_int3 by (by100 blast)
+  show ?thesis using h\<epsilon>_pos h_subset by (by100 blast)
+qed
+
+text \<open>Generic bridge: the geotop component-set on \<open>UNIV - X\<close> equals
+  HOL-Analysis \<open>components (UNIV - X)\<close>.\<close>
+
+lemma geotop_components_complement_eq:
+  fixes X :: "(real^2) set"
+  shows "{C. \<exists>P. P \<in> UNIV - X \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - X) P}
+       = components (UNIV - X)"
+proof -
+  have h_bridge: "\<And>P. geotop_component_at UNIV geotop_euclidean_topology (UNIV - X) P
+              = connected_component_set (UNIV - X) P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  show ?thesis using h_bridge unfolding components_def by auto
+qed
+
+text \<open>Extract a parametrising arc \<open>f0 : [0,1] \<to> B\<close> from
+  \<open>geotop_arc_endpoints B E\<close>. This bundles the standard data we repeatedly
+  need: continuity, bijection, injectivity, image, endpoint equality.\<close>
+
+lemma arc_endpoints_imp_param:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  obtains f0 :: "real \<Rightarrow> real^2"
+    where "continuous_on {0..1::real} f0"
+      and "bij_betw f0 {0..1::real} B"
+      and "f0 ` {0..1} = B"
+      and "inj_on f0 {0..1::real}"
+      and "E = {f0 0, f0 1}"
+proof -
+  obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    and hE_eq: "E = {f0 0, f0 1}"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by (by100 auto)
+  have h_homeo_01: "top1_homeomorphism_on {0..1::real}
+        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using h_homeo h_unit_iv by (by100 simp)
+  have h_cont_top1: "top1_continuous_map_on {0..1}
+        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    by (rule top1_homeomorphism_on_imp_cont1[OF h_homeo_01])
+  have h_f0_cont: "continuous_on {0..1::real} f0"
+    using h_cont_top1 top1_continuous_map_on_geotop_imp_continuous_on by (by100 blast)
+  have h_f0_bij_J: "bij_betw f0 {t::real. 0 \<le> t \<and> t \<le> 1} B"
+    by (rule top1_homeomorphism_on_imp_bij[OF h_homeo])
+  have h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
+    using h_f0_bij_J h_unit_iv by (by100 simp)
+  have h_f0_image: "f0 ` {0..1} = B"
+    using h_f0_bij_betw unfolding bij_betw_def by (by100 simp)
+  have h_f0_inj: "inj_on f0 {0..1::real}"
+    using h_f0_bij_betw unfolding bij_betw_def by (by100 simp)
+  show ?thesis using h_f0_cont h_f0_bij_betw h_f0_image h_f0_inj hE_eq that by (by100 blast)
+qed
+
+text \<open>The open interior of an arc is connected (homeomorphic to \<open>(0,1)\<close>).\<close>
+
+lemma arc_interior_connected:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "connected (geotop_arc_interior B E)"
+proof -
+  obtain f0 :: "real \<Rightarrow> real^2"
+    where h_f0_cont: "continuous_on {0..1::real} f0"
+      and h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
+      and h_f0_image: "f0 ` {0..1} = B"
+      and h_f0_inj: "inj_on f0 {0..1::real}"
+      and hE_eq: "E = {f0 0, f0 1}"
+    using arc_endpoints_imp_param[OF hE] by (by100 blast)
+  have h_open_iv_connected: "connected {0<..<(1::real)}" by simp
+  have h_open_iv_sub: "{0<..<(1::real)} \<subseteq> {0..1}" by auto
+  have h_f0_cont_on_open_iv: "continuous_on {0<..<1} f0"
+    using h_f0_cont h_open_iv_sub continuous_on_subset by blast
+  have h_image_connected: "connected (f0 ` {0<..<1})"
+    using connected_continuous_image[OF h_f0_cont_on_open_iv h_open_iv_connected] .
+  text \<open>Show \<open>f0 ` {0<..<1} = geotop_arc_interior B E\<close>.\<close>
+  have h_image_eq: "f0 ` {0<..<1} = geotop_arc_interior B E"
+  proof
+    show "f0 ` {0<..<1} \<subseteq> geotop_arc_interior B E"
+    proof
+      fix x assume "x \<in> f0 ` {0<..<1}"
+      then obtain t where ht: "t \<in> {0<..<1}" and hx_eq: "x = f0 t" by blast
+      have ht_in: "t \<in> {0..1}" using ht by simp
+      have ht_ne_0: "t \<noteq> 0" using ht by simp
+      have ht_ne_1: "t \<noteq> 1" using ht by simp
+      have hx_in_B: "x \<in> B" using hx_eq h_f0_image ht_in by blast
+      have hx_ne_0: "x \<noteq> f0 0" using hx_eq ht_ne_0 ht_in h_f0_inj by (auto dest: inj_onD)
+      have hx_ne_1: "x \<noteq> f0 1" using hx_eq ht_ne_1 ht_in h_f0_inj by (auto dest: inj_onD)
+      have hx_notin_E: "x \<notin> E" using hE_eq hx_ne_0 hx_ne_1 by simp
+      show "x \<in> geotop_arc_interior B E"
+        unfolding geotop_arc_interior_def using hx_in_B hx_notin_E by blast
+    qed
+    show "geotop_arc_interior B E \<subseteq> f0 ` {0<..<1}"
+    proof
+      fix x assume hx: "x \<in> geotop_arc_interior B E"
+      have hxB: "x \<in> B" using hx unfolding geotop_arc_interior_def by blast
+      have hx_notin_E: "x \<notin> E" using hx unfolding geotop_arc_interior_def by blast
+      then obtain t where ht_in: "t \<in> {0..1}" and hx_eq: "x = f0 t"
+        using hxB h_f0_image by blast
+      have ht_ne_0: "t \<noteq> 0" using hx_notin_E hE_eq hx_eq by blast
+      have ht_ne_1: "t \<noteq> 1" using hx_notin_E hE_eq hx_eq by blast
+      have ht_in_open: "t \<in> {0<..<1}"
+        using ht_in ht_ne_0 ht_ne_1 by auto
+      show "x \<in> f0 ` {0<..<1}" using ht_in_open hx_eq by blast
+    qed
+  qed
+  show ?thesis using h_image_connected h_image_eq by simp
+qed
+
+text \<open>A broken line in \<open>real^2\<close> has empty topological interior (1-dim subset
+  of 2-dim space, via invariance of dimension).\<close>
+
+lemma broken_line_interior_empty:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "interior B = {}"
+proof (rule ccontr)
+  assume "interior B \<noteq> {}"
+  then obtain x where hx_int: "x \<in> interior B" by blast
+  text \<open>From the arc parametrisation, extract the inverse homeomorphism
+    \<open>g : B \<to> [0,1]\<close> as a function \<open>real^2 \<to> real\<close>.\<close>
+  obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using hE unfolding geotop_arc_endpoints_def by blast
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+  have h_homeo_HOL: "{0..1::real} homeomorphic B"
+    using h_homeo top1_homeomorphism_on_geotop_imp_HOL_homeomorphic h_unit_iv by metis
+  then obtain g g' where hgg': "homeomorphism {0..1::real} B g g'"
+    using homeomorphic_def by blast
+  text \<open>\<open>g'\<close> is continuous on \<open>B\<close> with image in \<open>{0..1}\<close>, injective on \<open>B\<close>.\<close>
+  have hg'_cont_B: "continuous_on B g'"
+    using hgg' unfolding homeomorphism_def by blast
+  have hg'_inj_B: "inj_on g' B"
+  proof (rule inj_onI)
+    fix x y assume hx: "x \<in> B" and hy: "y \<in> B" and h_eq: "g' x = g' y"
+    have hg_x: "g (g' x) = x" using hgg' hx unfolding homeomorphism_def by (by100 blast)
+    have hg_y: "g (g' y) = y" using hgg' hy unfolding homeomorphism_def by (by100 blast)
+    show "x = y" using h_eq hg_x hg_y by (by100 metis)
+  qed
+  have hO_open: "open (interior B)" by simp
+  have hO_sub_B: "interior B \<subseteq> B" by (rule interior_subset)
+  have hg'_cont_O: "continuous_on (interior B) g'"
+    using hg'_cont_B hO_sub_B continuous_on_subset by blast
+  have hg'_inj_O: "inj_on g' (interior B)"
+    using hg'_inj_B hO_sub_B inj_on_subset by blast
+  have hO_ne: "interior B \<noteq> {}" using hx_int by blast
+  text \<open>Apply invariance_of_dimension: \<open>g' : real^2 \<to> real\<close> continuous,
+    \<open>interior B\<close> open, injective on it, non-empty \<Longrightarrow> \<open>DIM(real^2) \<le> DIM(real)\<close>.\<close>
+  have h_dim_le: "DIM(real^2) \<le> DIM(real)"
+    by (rule invariance_of_dimension[OF hg'_cont_O hO_open hg'_inj_O hO_ne])
+  have h_dim_R2: "DIM(real^2) = 2" by simp
+  have h_dim_R: "DIM(real) = 1" by simp
+  show False using h_dim_le h_dim_R2 h_dim_R by simp
+qed
+
+
+text \<open>The closure of the open interior of an arc (in \<open>real^2\<close>) is the whole arc.
+  Endpoints are limits of interior points (continuous image of \<open>0\<close> and \<open>1\<close> as
+  limits of \<open>(0,1)\<close>).\<close>
+
+lemma arc_closure_interior_eq_arc:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "closure (geotop_arc_interior B E) = B"
+proof
+  text \<open>Forward: closure(B - E) ⊆ B.\<close>
+  show "closure (geotop_arc_interior B E) \<subseteq> B"
+  proof -
+    have h_closed_B: "closed B" by (rule broken_line_closed[OF hE])
+    have "geotop_arc_interior B E \<subseteq> B"
+      unfolding geotop_arc_interior_def by blast
+    thus ?thesis using h_closed_B closure_minimal by blast
+  qed
+next
+  text \<open>Backward: B ⊆ closure(B - E). Suffices Int Bi ⊆ closure(Int Bi) (trivial)
+    plus E ⊆ closure(Int Bi) (each endpoint is a limit of interior points).\<close>
+  show "B \<subseteq> closure (geotop_arc_interior B E)"
+  proof
+    fix x assume hxB: "x \<in> B"
+    show "x \<in> closure (geotop_arc_interior B E)"
+    proof (cases "x \<in> E")
+      case False
+      hence "x \<in> geotop_arc_interior B E"
+        unfolding geotop_arc_interior_def using hxB by (by100 blast)
+      thus ?thesis using closure_subset by (by100 blast)
+    next
+      case True
+      text \<open>x is one of the two endpoints. We show x is a limit of points in
+        the interior using the arc homeomorphism with [0,1].\<close>
+      obtain f0 :: "real \<Rightarrow> real^2"
+        where h_f0_cont: "continuous_on {0..1::real} f0"
+          and h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
+          and h_f0_image: "f0 ` {0..1} = B"
+          and h_f0_inj: "inj_on f0 {0..1::real}"
+          and hE_eq: "E = {f0 0, f0 1}"
+        using arc_endpoints_imp_param[OF hE] by (by100 blast)
+      have hx_eq: "x = f0 0 \<or> x = f0 1" using True hE_eq by blast
+      show ?thesis
+      proof (cases "x = f0 0")
+        case True
+        text \<open>Approach \<open>f0 0\<close> via \<open>f0 (1/Suc n)\<close>.\<close>
+        define seq where "seq n = f0 (1 / real (Suc (Suc n)))" for n :: nat
+        have h_t_in: "\<forall>n. (1 / real (Suc (Suc n))) \<in> {0..1}"
+          by (auto simp: divide_le_eq)
+        have h_t_pos: "\<forall>n. (1 / real (Suc (Suc n))) > 0"
+          by simp
+        have h_t_lt_1: "\<forall>n. (1 / real (Suc (Suc n))) < 1"
+        proof
+          fix n :: nat
+          have "real (Suc (Suc n)) > 1" by simp
+          thus "1 / real (Suc (Suc n)) < 1" by simp
+        qed
+        have h_seq_in_int: "\<forall>n. seq n \<in> geotop_arc_interior B E"
+        proof
+          fix n :: nat
+          have h_t_ne_0: "(1 / real (Suc (Suc n))) \<noteq> 0" using h_t_pos by simp
+          have h_t_ne_1: "(1 / real (Suc (Suc n))) \<noteq> 1" using h_t_lt_1 by force
+          have h_in: "(1 / real (Suc (Suc n))) \<in> {0..1}" using h_t_in by simp
+          have h_seq_in_B: "seq n \<in> B" using h_in h_f0_image unfolding seq_def by blast
+          have h_seq_ne_f00: "seq n \<noteq> f0 0"
+            unfolding seq_def
+            using h_t_ne_0 h_in h_f0_inj inj_onD by fastforce
+          have h_seq_ne_f01: "seq n \<noteq> f0 1"
+            unfolding seq_def
+            using h_t_ne_1 h_in h_f0_inj inj_onD by fastforce
+          have h_seq_notin_E: "seq n \<notin> E" using hE_eq h_seq_ne_f00 h_seq_ne_f01 by blast
+          show "seq n \<in> geotop_arc_interior B E"
+            unfolding geotop_arc_interior_def using h_seq_in_B h_seq_notin_E by blast
+        qed
+        have h_seq_to_x: "seq \<longlonglongrightarrow> x"
+        proof -
+          have h_t_to_0: "(\<lambda>n. 1 / real (Suc (Suc n))) \<longlonglongrightarrow> 0"
+          proof -
+            have h_inv: "(\<lambda>n. inverse (real (Suc n))) \<longlonglongrightarrow> 0"
+              by (rule LIMSEQ_inverse_real_of_nat)
+            have h_s: "(\<lambda>n. inverse (real (Suc (Suc n)))) \<longlonglongrightarrow> 0"
+              using h_inv LIMSEQ_Suc by blast
+            have h_eq: "(\<lambda>n. 1 / real (Suc (Suc n))) = (\<lambda>n. inverse (real (Suc (Suc n))))"
+              by (simp add: inverse_eq_divide)
+            show ?thesis using h_s h_eq by simp
+          qed
+          have h_0_in: "(0::real) \<in> {0..1}" by simp
+          have h_seq_lim: "(\<lambda>n. f0 (1 / real (Suc (Suc n)))) \<longlonglongrightarrow> f0 0"
+            using continuous_on_tendsto_compose[OF h_f0_cont h_t_to_0 h_0_in] h_t_in
+            by simp
+          show ?thesis using h_seq_lim True unfolding seq_def by simp
+        qed
+        show ?thesis
+          using h_seq_to_x h_seq_in_int closure_sequential by blast
+      next
+        case False
+        hence hx_eq_f01: "x = f0 1" using hx_eq by blast
+        define seq where "seq n = f0 (1 - 1 / real (Suc (Suc n)))" for n :: nat
+        have h_t_in: "\<forall>n. (1 - 1 / real (Suc (Suc n))) \<in> {0..1}"
+          by (auto simp: divide_le_eq)
+        have h_t_lt_1: "\<forall>n. (1 - 1 / real (Suc (Suc n))) < 1"
+          by simp
+        have h_t_pos: "\<forall>n. (1 - 1 / real (Suc (Suc n))) > 0"
+        proof
+          fix n :: nat
+          have "real (Suc (Suc n)) > 1" by simp
+          hence "1 / real (Suc (Suc n)) < 1" by simp
+          thus "(1 - 1 / real (Suc (Suc n))) > 0" by simp
+        qed
+        have h_seq_in_int: "\<forall>n. seq n \<in> geotop_arc_interior B E"
+        proof
+          fix n :: nat
+          have h_t_ne_1: "(1 - 1 / real (Suc (Suc n))) \<noteq> 1" using h_t_lt_1 by force
+          have h_t_ne_0: "(1 - 1 / real (Suc (Suc n))) \<noteq> 0" using h_t_pos by force
+          have h_in: "(1 - 1 / real (Suc (Suc n))) \<in> {0..1}" using h_t_in by simp
+          have h_seq_in_B: "seq n \<in> B" using h_in h_f0_image unfolding seq_def by blast
+          have h_seq_ne_f00: "seq n \<noteq> f0 0"
+            unfolding seq_def
+            using h_t_ne_0 h_in h_f0_inj inj_onD by fastforce
+          have h_seq_ne_f01: "seq n \<noteq> f0 1"
+            unfolding seq_def
+            using h_t_ne_1 h_in h_f0_inj inj_onD by fastforce
+          have h_seq_notin_E: "seq n \<notin> E" using hE_eq h_seq_ne_f00 h_seq_ne_f01 by blast
+          show "seq n \<in> geotop_arc_interior B E"
+            unfolding geotop_arc_interior_def using h_seq_in_B h_seq_notin_E by blast
+        qed
+        have h_seq_to_x: "seq \<longlonglongrightarrow> x"
+        proof -
+          have h_t_to_1: "(\<lambda>n. 1 - 1 / real (Suc (Suc n))) \<longlonglongrightarrow> 1"
+          proof -
+            have "(\<lambda>n. 1 / real (Suc (Suc n))) \<longlonglongrightarrow> 0"
+            proof -
+              have h_inv: "(\<lambda>n. inverse (real (Suc n))) \<longlonglongrightarrow> 0"
+                by (rule LIMSEQ_inverse_real_of_nat)
+              have h_s: "(\<lambda>n. inverse (real (Suc (Suc n)))) \<longlonglongrightarrow> 0"
+                using h_inv LIMSEQ_Suc by blast
+              have h_eq: "(\<lambda>n. 1 / real (Suc (Suc n))) = (\<lambda>n. inverse (real (Suc (Suc n))))"
+                by (simp add: inverse_eq_divide)
+              show ?thesis using h_s h_eq by simp
+            qed
+            thus ?thesis by (auto intro: tendsto_eq_intros)
+          qed
+          have h_1_in: "(1::real) \<in> {0..1}" by simp
+          have h_seq_lim: "(\<lambda>n. f0 (1 - 1 / real (Suc (Suc n)))) \<longlonglongrightarrow> f0 1"
+            using continuous_on_tendsto_compose[OF h_f0_cont h_t_to_1 h_1_in] h_t_in
+            by simp
+          show ?thesis using h_seq_lim hx_eq_f01 unfolding seq_def by simp
+        qed
+        show ?thesis
+          using h_seq_to_x h_seq_in_int closure_sequential by blast
+      qed
+    qed
+  qed
+qed
+
+text \<open>A broken line is bounded (compact arc).\<close>
+
+lemma broken_line_bounded:
+  fixes B :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "bounded B"
+proof -
+  obtain f0 :: "real \<Rightarrow> real^2" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using hE unfolding geotop_arc_endpoints_def by blast
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
+  have h_homeo_HOL: "{0..1::real} homeomorphic B"
+    using h_homeo top1_homeomorphism_on_geotop_imp_HOL_homeomorphic h_unit_iv by metis
+  have h_compact_01: "compact {0..1::real}" by simp
+  have h_compact_B: "compact B"
+    using h_compact_01 h_homeo_HOL homeomorphic_compactness by blast
+  show ?thesis using h_compact_B compact_imp_bounded by blast
+qed
+
+text \<open>The complement of a polyhedral \<theta>-graph has at least 2 components.\<close>
+
+lemma theta_graph_complement_has_two_components:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<exists>D1 D2. D1 \<in> components (UNIV - M) \<and> D2 \<in> components (UNIV - M) \<and> D1 \<noteq> D2"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hM_eq: "M = B1 \<union> B2 \<union> B3"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have hB1_bl: "geotop_is_broken_line B1"
+   and hB2_bl: "geotop_is_broken_line B2"
+   and hB3_bl: "geotop_is_broken_line B3"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast+
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have h_poly_12: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB2_bl hE1 hE2 h_int12])
+  text \<open>Polygon \<open>B1 \<union> B2\<close> separates \<open>R^2\<close> into 2 components.\<close>
+  have h_card_12: "card (components (UNIV - (B1 \<union> B2))) = 2"
+    by (rule polygon_components_card[OF h_poly_12])
+  obtain C1 C2 where hC12_set: "components (UNIV - (B1 \<union> B2)) = {C1, C2}"
+                and hC12_ne: "C1 \<noteq> C2"
+    using h_card_12 card_2_iff by metis
+  text \<open>Both \<open>C1\<close> and \<open>C2\<close> have a point not in M.\<close>
+  have h_B3_int_empty: "interior B3 = {}" by (rule broken_line_interior_empty[OF hE3])
+  have h_each_C_minus_M_ne: "\<forall>C\<in>components (UNIV - (B1 \<union> B2)). C - M \<noteq> {}"
+  proof
+    fix C assume hC: "C \<in> components (UNIV - (B1 \<union> B2))"
+    have hcl_B12: "closed (B1 \<union> B2)"
+      using broken_line_closed[OF hE1] broken_line_closed[OF hE2] closed_Un by blast
+    have hC_open: "open C"
+    proof -
+      have "open (- (B1 \<union> B2))" using hcl_B12 open_Compl by blast
+      hence "open (UNIV - (B1 \<union> B2))" by (simp add: Compl_eq_Diff_UNIV)
+      thus ?thesis using open_components hC by blast
+    qed
+    have hC_ne: "C \<noteq> {}" using hC in_components_nonempty by blast
+    text \<open>If \<open>C \<subseteq> M\<close>: \<open>C \<subseteq> M \<setminus> (B1 \<union> B2) \<subseteq> B3 \<setminus> (B1 \<union> B2)\<close>, so \<open>C \<subseteq> interior B3 = \<emptyset>\<close>.\<close>
+    have h_not_C_sub_M: "\<not> C \<subseteq> M"
+    proof
+      assume hC_sub_M: "C \<subseteq> M"
+      have hC_sub_compl: "C \<subseteq> UNIV - (B1 \<union> B2)"
+        using hC in_components_subset by blast
+      have hC_sub_M_minus: "C \<subseteq> M - (B1 \<union> B2)"
+        using hC_sub_M hC_sub_compl by blast
+      have h_M_minus: "M - (B1 \<union> B2) \<subseteq> B3"
+        using hM_eq by blast
+      have hC_sub_B3: "C \<subseteq> B3" using hC_sub_M_minus h_M_minus by blast
+      have "C \<subseteq> interior B3"
+        using hC_open hC_sub_B3 interior_maximal by blast
+      hence "C = {}" using h_B3_int_empty by simp
+      thus False using hC_ne by simp
+    qed
+    show "C - M \<noteq> {}" using h_not_C_sub_M by blast
+  qed
+  text \<open>Take points \<open>x_1 \<in> C1 - M\<close> and \<open>x_2 \<in> C2 - M\<close>.\<close>
+  obtain x1 where hx1_C1: "x1 \<in> C1" and hx1_notM: "x1 \<notin> M"
+    using h_each_C_minus_M_ne hC12_set by blast
+  obtain x2 where hx2_C2: "x2 \<in> C2" and hx2_notM: "x2 \<notin> M"
+    using h_each_C_minus_M_ne hC12_set by blast
+  have hx1_in: "x1 \<in> UNIV - M" using hx1_notM by blast
+  have hx2_in: "x2 \<in> UNIV - M" using hx2_notM by blast
+  text \<open>The components of \<open>UNIV - M\<close> through \<open>x1, x2\<close>.\<close>
+  define D1 where "D1 = connected_component_set (UNIV - M) x1"
+  define D2 where "D2 = connected_component_set (UNIV - M) x2"
+  have hD1_comp: "D1 \<in> components (UNIV - M)"
+    unfolding D1_def using hx1_in componentsI by metis
+  have hD2_comp: "D2 \<in> components (UNIV - M)"
+    unfolding D2_def using hx2_in componentsI by metis
+  text \<open>\<open>D1 \<subseteq> C1\<close> and \<open>D2 \<subseteq> C2\<close>.\<close>
+  have hD1_sub_compl12: "D1 \<subseteq> UNIV - (B1 \<union> B2)"
+    unfolding D1_def using connected_component_subset hM_eq by force
+  have hD1_conn: "connected D1"
+    unfolding D1_def by (rule connected_connected_component)
+  have hD1_in_some: "\<exists>C \<in> components (UNIV - (B1 \<union> B2)). D1 \<subseteq> C"
+  proof -
+    have hx1_compl12: "x1 \<in> UNIV - (B1 \<union> B2)"
+      using hx1_notM hM_eq by blast
+    define D1' where "D1' = connected_component_set (UNIV - (B1 \<union> B2)) x1"
+    have "D1' \<in> components (UNIV - (B1 \<union> B2))"
+      unfolding D1'_def using hx1_compl12 componentsI by metis
+    moreover have "D1 \<subseteq> D1'"
+      unfolding D1_def D1'_def
+      by (rule connected_component_mono) (use hM_eq in blast)
+    ultimately show ?thesis by blast
+  qed
+  obtain D1' where hD1'_comp: "D1' \<in> components (UNIV - (B1 \<union> B2))"
+                and hD1_sub_D1': "D1 \<subseteq> D1'"
+    using hD1_in_some by blast
+  have hD2_in_some: "\<exists>C \<in> components (UNIV - (B1 \<union> B2)). D2 \<subseteq> C"
+  proof -
+    have hx2_compl12: "x2 \<in> UNIV - (B1 \<union> B2)"
+      using hx2_notM hM_eq by blast
+    define D2' where "D2' = connected_component_set (UNIV - (B1 \<union> B2)) x2"
+    have "D2' \<in> components (UNIV - (B1 \<union> B2))"
+      unfolding D2'_def using hx2_compl12 componentsI by metis
+    moreover have "D2 \<subseteq> D2'"
+      unfolding D2_def D2'_def
+      by (rule connected_component_mono) (use hM_eq in blast)
+    ultimately show ?thesis by blast
+  qed
+  obtain D2' where hD2'_comp: "D2' \<in> components (UNIV - (B1 \<union> B2))"
+                and hD2_sub_D2': "D2 \<subseteq> D2'"
+    using hD2_in_some by blast
+  text \<open>Show \<open>D1 \<noteq> D2\<close> by showing \<open>D1' = C1\<close> and \<open>D2' = C2\<close> (so disjoint).\<close>
+  have hx1_in_D1': "x1 \<in> D1'"
+    using hD1_sub_D1' connected_component_refl unfolding D1_def
+    by (metis hx1_in mem_Collect_eq subset_iff)
+  have hx2_in_D2': "x2 \<in> D2'"
+    using hD2_sub_D2' connected_component_refl unfolding D2_def
+    by (metis hx2_in mem_Collect_eq subset_iff)
+  have hC1_C2_disj: "C1 \<inter> C2 = {}"
+  proof -
+    have hC1_in: "C1 \<in> components (UNIV - (B1 \<union> B2))" using hC12_set by simp
+    have hC2_in: "C2 \<in> components (UNIV - (B1 \<union> B2))" using hC12_set by simp
+    show ?thesis
+      using components_nonoverlap[of C1 "UNIV - (B1 \<union> B2)" C2] hC1_in hC2_in hC12_ne
+      by (by100 blast)
+  qed
+  have hD1'_eq: "D1' = C1"
+  proof -
+    have "D1' \<in> {C1, C2}" using hD1'_comp hC12_set by (by100 simp)
+    moreover have "x1 \<notin> C2"
+    proof
+      assume "x1 \<in> C2"
+      hence "x1 \<notin> C1" using hC1_C2_disj by (by100 blast)
+      thus False using hx1_C1 by (by100 blast)
+    qed
+    ultimately show "D1' = C1" using hx1_in_D1' by (by100 blast)
+  qed
+  have hD2'_eq: "D2' = C2"
+  proof -
+    have "D2' \<in> {C1, C2}" using hD2'_comp hC12_set by (by100 simp)
+    moreover have "x2 \<notin> C1"
+    proof
+      assume "x2 \<in> C1"
+      hence "x2 \<notin> C2" using hC1_C2_disj by (by100 blast)
+      thus False using hx2_C2 by (by100 blast)
+    qed
+    ultimately show "D2' = C2" using hx2_in_D2' by (by100 blast)
+  qed
+  have hD1_D2_disj: "D1 \<inter> D2 = {}"
+  proof -
+    have "D1 \<subseteq> C1" using hD1_sub_D1' hD1'_eq by (by100 simp)
+    moreover have "D2 \<subseteq> C2" using hD2_sub_D2' hD2'_eq by (by100 simp)
+    ultimately show ?thesis using hC1_C2_disj by (by100 blast)
+  qed
+  have hx1_in_D1: "x1 \<in> D1"
+    unfolding D1_def using hx1_in connected_component_refl by simp
+  have hD1_ne: "D1 \<noteq> {}" using hx1_in_D1 by blast
+  have hD1_ne_D2: "D1 \<noteq> D2"
+    using hD1_D2_disj hD1_ne by blast
+  show "\<exists>D1 D2. D1 \<in> components (UNIV - M) \<and> D2 \<in> components (UNIV - M) \<and> D1 \<noteq> D2"
+    using hD1_comp hD2_comp hD1_ne_D2 by blast
+qed
+
+text \<open>The \<theta>-graph M is bounded (union of 3 bounded arcs).\<close>
+
+lemma theta_graph_bounded:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "bounded M"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hM_eq: "M = B1 \<union> B2 \<union> B3"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have hB1_bdd: "bounded B1" by (rule broken_line_bounded[OF hE1])
+  have hB2_bdd: "bounded B2" by (rule broken_line_bounded[OF hE2])
+  have hB3_bdd: "bounded B3" by (rule broken_line_bounded[OF hE3])
+  show ?thesis using hM_eq hB1_bdd hB2_bdd hB3_bdd by simp
+qed
+
+text \<open>The polygon exterior is unbounded.\<close>
+
+lemma polygon_exterior_unbounded:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<not> bounded (geotop_polygon_exterior J)"
+proof -
+  obtain P where hP_compl: "P \<in> UNIV - J"
+            and hE_eq: "geotop_polygon_exterior J
+                        = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using geotop_polygon_exterior_is_component[OF hJ] by blast
+  text \<open>The SOME predicate ensures the result is not \<open>geotop_bounded_R2\<close>.\<close>
+  have h_dim: "(2::nat) \<le> DIM(real^2)" by simp
+  have h_exists_unbd: "\<exists>c. c \<in> components (- J) \<and> \<not> bounded c"
+    using geotop_1sphere_has_bounded_unbounded_components[OF hJ h_dim] by blast
+  then obtain C where hC_comp: "C \<in> components (- J)" and hC_unbd: "\<not> bounded C"
+    by blast
+  obtain Q where hQ: "Q \<in> -J" and hC_eq_Q: "C = connected_component_set (- J) Q"
+    using hC_comp unfolding components_def by blast
+  have hC_sub: "C \<subseteq> UNIV - J"
+    using hC_eq_Q connected_component_subset by (metis Compl_eq_Diff_UNIV)
+  have hC_unbd_R2: "\<not> geotop_bounded_R2 C"
+    using hC_unbd geotop_bounded_R2_iff_bounded by blast
+  have hC_conn: "connected C" using hC_comp in_components_connected by blast
+  have hC_topconn: "top1_connected_on C
+                     (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC_conn top1_connected_on_geotop_iff_connected by blast
+  have hC_comp_at: "\<forall>R\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                             ((UNIV::(real^2) set) - J) R = C"
+  proof
+    fix R assume hR_C: "R \<in> C"
+    have "R \<in> -J" using hR_C hC_eq_Q connected_component_subset by blast
+    have hC_eq_R: "C = connected_component_set (-J) R"
+      using connected_component_eq hC_eq_Q hR_C by blast
+    hence "connected_component_set (UNIV - J) R = C"
+      using Compl_eq_Diff_UNIV by metis
+    thus "geotop_component_at UNIV geotop_euclidean_topology
+            ((UNIV::(real^2) set) - J) R = C"
+      using geotop_component_at_UNIV_eq_connected_component_set by metis
+  qed
+  have hC_ne: "C \<noteq> {}" using hC_comp in_components_nonempty by blast
+  have hpred_C: "C \<noteq> {} \<and> C \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 C \<and>
+                 top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C) \<and>
+                 (\<forall>R\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) R = C)"
+    using hC_ne hC_sub hC_unbd_R2 hC_topconn hC_comp_at by blast
+  have hpred_ex: "\<exists>E'. E' \<noteq> {} \<and> E' \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 E' \<and>
+                       top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
+                       (\<forall>R\<in>E'. geotop_component_at UNIV geotop_euclidean_topology
+                                  ((UNIV::(real^2) set) - J) R = E')"
+    using hpred_C by blast
+  let ?E = "geotop_polygon_exterior J"
+  have hE_pred: "?E \<noteq> {} \<and> ?E \<subseteq> UNIV - J \<and> \<not> geotop_bounded_R2 ?E \<and>
+                 top1_connected_on ?E (subspace_topology UNIV geotop_euclidean_topology ?E) \<and>
+                 (\<forall>R\<in>?E. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) R = ?E)"
+    unfolding geotop_polygon_exterior_def
+    by (rule someI_ex[OF hpred_ex])
+  hence "\<not> geotop_bounded_R2 ?E" by blast
+  thus ?thesis using geotop_bounded_R2_iff_bounded by blast
+qed
+
+text \<open>The polygon exterior is a HOL component of \<open>UNIV - J\<close>.\<close>
+
+lemma polygon_exterior_is_HOL_component:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "geotop_polygon_exterior J \<in> components (UNIV - J)"
+proof -
+  obtain P where hP: "P \<in> UNIV - J"
+            and hE_eq: "geotop_polygon_exterior J
+                        = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using geotop_polygon_exterior_is_component[OF hJ] by blast
+  have h_bridge: "geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+                  = connected_component_set (UNIV - J) P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  hence "geotop_polygon_exterior J = connected_component_set (UNIV - J) P"
+    using hE_eq by simp
+  thus ?thesis using hP componentsI by metis
+qed
+
+text \<open>A polygon (polyhedral 1-sphere) in \<open>real^2\<close> is bounded.\<close>
+
+lemma polygon_bounded:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "bounded J"
+proof -
+  have h_n_sphere: "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by blast
+  have h_std_sphere_eq: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  obtain f where hf: "top1_homeomorphism_on J
+        (subspace_topology UNIV geotop_euclidean_topology J)
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+           (geotop_std_sphere::(real^2) set)) f"
+    using h_n_sphere unfolding geotop_is_n_sphere_def by blast
+  have h_homeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hf top1_homeomorphism_on_geotop_imp_HOL_homeomorphic by blast
+  hence h_homeo_sph: "J homeomorphic sphere (0::real^2) 1"
+    using h_std_sphere_eq by simp
+  have h_compact_sph: "compact (sphere (0::real^2) 1)" by simp
+  have h_compact_J: "compact J"
+    using h_compact_sph h_homeo_sph homeomorphic_compactness by blast
+  show ?thesis using h_compact_J compact_imp_bounded by blast
+qed
+
+text \<open>The polygon interior is a HOL component of \<open>UNIV - J\<close> (bridge from
+  geotop-style component to HOL-Analysis form).\<close>
+
+lemma polygon_interior_is_HOL_component:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "geotop_polygon_interior J \<in> components (UNIV - J)"
+proof -
+  obtain P where hP: "P \<in> UNIV - J"
+            and hI_eq: "geotop_polygon_interior J
+                        = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+    using geotop_polygon_interior_is_bounded_component[OF hJ] by blast
+  have h_bridge: "geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+                  = connected_component_set (UNIV - J) P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  hence "geotop_polygon_interior J = connected_component_set (UNIV - J) P"
+    using hI_eq by simp
+  thus ?thesis using hP componentsI by metis
+qed
+
+text \<open>The polygon interior is bounded (extracts the bounded predicate from the
+  SOME definition).\<close>
+
+lemma polygon_interior_bounded:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "bounded (geotop_polygon_interior J)"
+proof -
+  have h_dim: "(2::nat) \<le> DIM(real^2)" by simp
+  have h_exists_bd: "\<exists>c. c \<in> components (- J) \<and> bounded c"
+    using geotop_1sphere_has_bounded_unbounded_components[OF hJ h_dim] by blast
+  then obtain C where hC_comp: "C \<in> components (- J)" and hC_bd: "bounded C"
+    by blast
+  obtain Q where hQ: "Q \<in> -J" and hC_eq_Q: "C = connected_component_set (- J) Q"
+    using hC_comp unfolding components_def by blast
+  have hC_sub: "C \<subseteq> UNIV - J"
+    using hC_eq_Q connected_component_subset by (metis Compl_eq_Diff_UNIV)
+  have hC_bd_R2: "geotop_bounded_R2 C"
+    using hC_bd geotop_bounded_R2_iff_bounded by blast
+  have hC_conn: "connected C" using hC_comp in_components_connected by blast
+  have hC_topconn: "top1_connected_on C
+                     (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC_conn top1_connected_on_geotop_iff_connected by blast
+  have hC_comp_at: "\<forall>R\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                             ((UNIV::(real^2) set) - J) R = C"
+  proof
+    fix R assume hR_C: "R \<in> C"
+    have "R \<in> -J" using hR_C hC_eq_Q connected_component_subset by blast
+    have hC_eq_R: "C = connected_component_set (-J) R"
+      using connected_component_eq hC_eq_Q hR_C by blast
+    hence "connected_component_set (UNIV - J) R = C"
+      using Compl_eq_Diff_UNIV by metis
+    thus "geotop_component_at UNIV geotop_euclidean_topology
+            ((UNIV::(real^2) set) - J) R = C"
+      using geotop_component_at_UNIV_eq_connected_component_set by metis
+  qed
+  have hC_ne: "C \<noteq> {}" using hC_comp in_components_nonempty by blast
+  have hpred_C: "C \<noteq> {} \<and> C \<subseteq> UNIV - J \<and> geotop_bounded_R2 C \<and>
+                 top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C) \<and>
+                 (\<forall>R\<in>C. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) R = C)"
+    using hC_ne hC_sub hC_bd_R2 hC_topconn hC_comp_at by blast
+  have hpred_ex: "\<exists>I. I \<noteq> {} \<and> I \<subseteq> UNIV - J \<and> geotop_bounded_R2 I \<and>
+                       top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
+                       (\<forall>R\<in>I. geotop_component_at UNIV geotop_euclidean_topology
+                                  ((UNIV::(real^2) set) - J) R = I)"
+    using hpred_C by blast
+  let ?I = "geotop_polygon_interior J"
+  have hI_pred: "?I \<noteq> {} \<and> ?I \<subseteq> UNIV - J \<and> geotop_bounded_R2 ?I \<and>
+                 top1_connected_on ?I (subspace_topology UNIV geotop_euclidean_topology ?I) \<and>
+                 (\<forall>R\<in>?I. geotop_component_at UNIV geotop_euclidean_topology
+                            ((UNIV::(real^2) set) - J) R = ?I)"
+    unfolding geotop_polygon_interior_def
+    by (rule someI_ex[OF hpred_ex])
+  hence "geotop_bounded_R2 ?I" by blast
+  thus ?thesis using geotop_bounded_R2_iff_bounded by blast
+qed
+
+text \<open>For a polygon J (with exactly 2 components), the polygon interior is
+  the UNIQUE bounded component of \<open>UNIV - J\<close>.\<close>
+
+lemma polygon_interior_unique:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  assumes hC: "C \<in> components (UNIV - J) \<and> bounded C"
+  shows "C = geotop_polygon_interior J"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have h_card_2: "card (components (UNIV - J)) = 2"
+    by (rule polygon_components_card[OF hJ_poly])
+  have hI_in: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hE_in: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF hJ_sph])
+  have hI_bd: "bounded (geotop_polygon_interior J)"
+    by (rule polygon_interior_bounded[OF hJ_sph])
+  have hE_unbd: "\<not> bounded (geotop_polygon_exterior J)"
+    by (rule polygon_exterior_unbounded[OF hJ_sph])
+  have hIE_ne: "geotop_polygon_interior J \<noteq> geotop_polygon_exterior J"
+  proof
+    assume "geotop_polygon_interior J = geotop_polygon_exterior J"
+    hence "bounded (geotop_polygon_exterior J)" using hI_bd by simp
+    thus False using hE_unbd by simp
+  qed
+  have hIE_set: "{geotop_polygon_interior J, geotop_polygon_exterior J}
+                  \<subseteq> components (UNIV - J)"
+    using hI_in hE_in by simp
+  have hIE_card: "card {geotop_polygon_interior J, geotop_polygon_exterior J} = 2"
+    using hIE_ne by simp
+  have h_finite_comps: "finite (components (UNIV - J))"
+  proof (rule ccontr)
+    assume "\<not> finite (components (UNIV - J))"
+    hence "card (components (UNIV - J)) = 0" by simp
+    thus False using h_card_2 by simp
+  qed
+  have hIE_eq: "{geotop_polygon_interior J, geotop_polygon_exterior J}
+                  = components (UNIV - J)"
+    using hIE_set hIE_card h_card_2 h_finite_comps card_subset_eq by metis
+  text \<open>C is in components, so C is interior or exterior.\<close>
+  have hC_comp: "C \<in> components (UNIV - J)" using hC by blast
+  have hC_bd: "bounded C" using hC by blast
+  have hC_in_set: "C \<in> {geotop_polygon_interior J, geotop_polygon_exterior J}"
+    using hC_comp hIE_eq by simp
+  have hC_ne_E: "C \<noteq> geotop_polygon_exterior J"
+    using hC_bd hE_unbd by blast
+  show "C = geotop_polygon_interior J"
+    using hC_in_set hC_ne_E by blast
+qed
+
+text \<open>The polygon exterior is the UNIQUE unbounded component of \<open>UNIV - J\<close>.\<close>
+
+lemma polygon_exterior_unique:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  assumes hC: "C \<in> components (UNIV - J) \<and> \<not> bounded C"
+  shows "C = geotop_polygon_exterior J"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hJ_bdd: "bounded J" by (rule polygon_bounded[OF hJ_poly])
+  have hJ_compl_bdd: "bounded (- (UNIV - J))" using hJ_bdd by simp
+  have hE_in: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF hJ_sph])
+  have hE_unbd: "\<not> bounded (geotop_polygon_exterior J)"
+    by (rule polygon_exterior_unbounded[OF hJ_sph])
+  have h_dim: "(2::nat) \<le> DIM(real^2)" by simp
+  show ?thesis
+    using cobounded_unique_unbounded_components
+            [OF hJ_compl_bdd, of C "geotop_polygon_exterior J"]
+          hC hE_in hE_unbd h_dim by blast
+qed
+
+text \<open>The closure of the polygon interior is the interior plus the polygon
+  itself.\<close>
+
+lemma polygon_interior_closure_eq:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "closure (geotop_polygon_interior J) = geotop_polygon_interior J \<union> J"
+proof -
+  have hI_front: "geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J) = J"
+    using Theorem_GT_2_6(1)[OF hJ] by simp
+  have hI_front_HOL: "frontier (geotop_polygon_interior J) = J"
+    using hI_front geotop_frontier_UNIV_eq_frontier by metis
+  show ?thesis using hI_front_HOL closure_Un_frontier by metis
+qed
+
+text \<open>Similarly for the polygon exterior.\<close>
+
+lemma polygon_exterior_closure_eq:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "closure (geotop_polygon_exterior J) = geotop_polygon_exterior J \<union> J"
+proof -
+  have hE_front: "geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J) = J"
+    using Theorem_GT_2_6(2)[OF hJ] by simp
+  have hE_front_HOL: "frontier (geotop_polygon_exterior J) = J"
+    using hE_front geotop_frontier_UNIV_eq_frontier by metis
+  show ?thesis using hE_front_HOL closure_Un_frontier by metis
+qed
+
+text \<open>Two polygons with the same interior are equal (since the polygon is the
+  frontier of its interior, by GT_2_6).\<close>
+
+lemma polygon_interior_injective:
+  fixes J1 J2 :: "(real^2) set"
+  assumes hJ1: "geotop_is_polygon J1"
+      and hJ2: "geotop_is_polygon J2"
+      and heq: "geotop_polygon_interior J1 = geotop_polygon_interior J2"
+  shows "J1 = J2"
+proof -
+  have h1: "J1 = geotop_frontier UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J1)"
+    using Theorem_GT_2_6(1)[OF hJ1] by (by100 simp)
+  have h2: "J2 = geotop_frontier UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J2)"
+    using Theorem_GT_2_6(1)[OF hJ2] by (by100 simp)
+  show ?thesis using h1 h2 heq by (by100 simp)
+qed
+
+text \<open>The polygon interior is disjoint from the polygon itself.\<close>
+
+lemma polygon_interior_disjoint_polygon:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  shows "geotop_polygon_interior J \<inter> J = {}"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hI_in: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hI_sub: "geotop_polygon_interior J \<subseteq> UNIV - J"
+    using hI_in in_components_subset by blast
+  thus ?thesis by blast
+qed
+
+text \<open>The polygon exterior is disjoint from the polygon itself.\<close>
+
+lemma polygon_exterior_disjoint_polygon:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  shows "geotop_polygon_exterior J \<inter> J = {}"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hE_in: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF hJ_sph])
+  have hE_sub: "geotop_polygon_exterior J \<subseteq> UNIV - J"
+    using hE_in in_components_subset by blast
+  thus ?thesis by blast
+qed
+
+text \<open>The polygon interior and exterior are disjoint from each other.\<close>
+
+lemma polygon_interior_exterior_disjoint:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  shows "geotop_polygon_interior J \<inter> geotop_polygon_exterior J = {}"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have hI_in: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hE_in: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF hJ_sph])
+  have hI_bd: "bounded (geotop_polygon_interior J)"
+    by (rule polygon_interior_bounded[OF hJ_sph])
+  have hE_unbd: "\<not> bounded (geotop_polygon_exterior J)"
+    by (rule polygon_exterior_unbounded[OF hJ_sph])
+  have hIE_ne: "geotop_polygon_interior J \<noteq> geotop_polygon_exterior J"
+  proof
+    assume "geotop_polygon_interior J = geotop_polygon_exterior J"
+    hence "bounded (geotop_polygon_exterior J)" using hI_bd by simp
+    thus False using hE_unbd by simp
+  qed
+  show ?thesis using hI_in hE_in hIE_ne
+    using components_nonoverlap by blast
+qed
+
+text \<open>For two arcs sharing only endpoints, their intersection is exactly the
+  endpoint set E.\<close>
+
+lemma pair_of_arcs_intersection:
+  fixes B1 B2 :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+  shows "B1 \<inter> B2 = E"
+proof
+  show "B1 \<inter> B2 \<subseteq> E"
+  proof
+    fix x assume hx: "x \<in> B1 \<inter> B2"
+    show "x \<in> E"
+    proof (rule ccontr)
+      assume "x \<notin> E"
+      hence "x \<in> geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E"
+        unfolding geotop_arc_interior_def using hx by blast
+      thus False using h_disj by blast
+    qed
+  qed
+  show "E \<subseteq> B1 \<inter> B2"
+  proof -
+    have "E \<subseteq> B1" using hE1 unfolding geotop_arc_endpoints_def by blast
+    moreover have "E \<subseteq> B2" using hE2 unfolding geotop_arc_endpoints_def by blast
+    ultimately show ?thesis by blast
+  qed
+qed
+
+text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
+  from the other arc entirely (since the interior excludes E).\<close>
+
+lemma arc_interior_disjoint_other_arc:
+  fixes B1 B2 :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+  shows "geotop_arc_interior B1 E \<inter> B2 = {}"
+proof -
+  have h_inter: "B1 \<inter> B2 = E"
+    by (rule pair_of_arcs_intersection[OF hE1 hE2 h_disj])
+  have hI1_sub_B1: "geotop_arc_interior B1 E \<subseteq> B1"
+    unfolding geotop_arc_interior_def by blast
+  have hI1_disj_E: "geotop_arc_interior B1 E \<inter> E = {}"
+    unfolding geotop_arc_interior_def by blast
+  have "geotop_arc_interior B1 E \<inter> B2
+        = geotop_arc_interior B1 E \<inter> B1 \<inter> B2"
+    using hI1_sub_B1 by blast
+  also have "\<dots> = geotop_arc_interior B1 E \<inter> E"
+    using h_inter by blast
+  also have "\<dots> = {}" using hI1_disj_E .
+  finally show ?thesis .
+qed
+
+text \<open>The components of the polygon's complement are exactly the polygon
+  interior and polygon exterior.\<close>
+
+lemma polygon_components_eq:
+  fixes J :: "(real^2) set"
+  assumes hJ_poly: "geotop_is_polygon J"
+  shows "components (UNIV - J) = {geotop_polygon_interior J, geotop_polygon_exterior J}"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ_poly unfolding geotop_is_polygon_def by blast
+  have h_card_2: "card (components (UNIV - J)) = 2"
+    by (rule polygon_components_card[OF hJ_poly])
+  have hI_in: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hE_in: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF hJ_sph])
+  have hI_bd: "bounded (geotop_polygon_interior J)"
+    by (rule polygon_interior_bounded[OF hJ_sph])
+  have hE_unbd: "\<not> bounded (geotop_polygon_exterior J)"
+    by (rule polygon_exterior_unbounded[OF hJ_sph])
+  have hIE_ne: "geotop_polygon_interior J \<noteq> geotop_polygon_exterior J"
+  proof
+    assume "geotop_polygon_interior J = geotop_polygon_exterior J"
+    hence "bounded (geotop_polygon_exterior J)" using hI_bd by simp
+    thus False using hE_unbd by simp
+  qed
+  have hIE_set: "{geotop_polygon_interior J, geotop_polygon_exterior J}
+                  \<subseteq> components (UNIV - J)"
+    using hI_in hE_in by simp
+  have hIE_card: "card {geotop_polygon_interior J, geotop_polygon_exterior J} = 2"
+    using hIE_ne by simp
+  have h_finite_comps: "finite (components (UNIV - J))"
+  proof (rule ccontr)
+    assume "\<not> finite (components (UNIV - J))"
+    hence "card (components (UNIV - J)) = 0" by simp
+    thus False using h_card_2 by simp
+  qed
+  show ?thesis
+    using hIE_set hIE_card h_card_2 h_finite_comps card_subset_eq
+    by metis
+qed
+
+text \<open>The decomposition of a θ-graph M into 3 arc interiors + the endpoint set.\<close>
+
+lemma theta_graph_M_decomposition:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "M = geotop_arc_interior B1 E \<union> geotop_arc_interior B2 E \<union> geotop_arc_interior B3 E \<union> E"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hM_eq: "M = B1 \<union> B2 \<union> B3"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have hE_sub_B1: "E \<subseteq> B1" using hE1 unfolding geotop_arc_endpoints_def by blast
+  have h_B1_decomp: "B1 = geotop_arc_interior B1 E \<union> E"
+    unfolding geotop_arc_interior_def using hE_sub_B1 by blast
+  have hE_sub_B2: "E \<subseteq> B2" using hE2 unfolding geotop_arc_endpoints_def by blast
+  have h_B2_decomp: "B2 = geotop_arc_interior B2 E \<union> E"
+    unfolding geotop_arc_interior_def using hE_sub_B2 by blast
+  have hE_sub_B3: "E \<subseteq> B3" using hE3 unfolding geotop_arc_endpoints_def by blast
+  have h_B3_decomp: "B3 = geotop_arc_interior B3 E \<union> E"
+    unfolding geotop_arc_interior_def using hE_sub_B3 by blast
+  show ?thesis using hM_eq h_B1_decomp h_B2_decomp h_B3_decomp by blast
+qed
+
+text \<open>For a polyhedral θ-graph, every pair of arcs forms a polygon.\<close>
+
+lemma theta_graph_pair_is_polygon:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+      and hi: "i \<in> {B1, B2, B3}" and hj: "j \<in> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+  shows "geotop_is_polygon (i \<union> j)"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hB1_bl: "geotop_is_broken_line B1"
+   and hB2_bl: "geotop_is_broken_line B2"
+   and hB3_bl: "geotop_is_broken_line B3"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast+
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+   and h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+   and h_int23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_poly_12: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB2_bl hE1 hE2 h_int12])
+  have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB3_bl hE1 hE3 h_int13])
+  have h_poly_23: "geotop_is_polygon (B2 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB2_bl hB3_bl hE2 hE3 h_int23])
+  have h_i: "i = B1 \<or> i = B2 \<or> i = B3" using hi by simp
+  have h_j: "j = B1 \<or> j = B2 \<or> j = B3" using hj by simp
+  show ?thesis
+    using h_i h_j hij_ne h_poly_12 h_poly_13 h_poly_23
+    by (elim disjE) (auto simp: Un_commute)
+qed
+
+text \<open>For three arcs sharing endpoints (θ-graph configuration), the interior
+  of one arc is fully in either the polygon interior or polygon exterior of
+  the other two arcs.\<close>
+
+lemma theta_arc_in_one_side_of_pair_polygon:
+  fixes Bi Bj Bk :: "(real^2) set" and E :: "(real^2) set"
+  assumes hEi: "geotop_arc_endpoints Bi E"
+      and hEj: "geotop_arc_endpoints Bj E"
+      and hEk: "geotop_arc_endpoints Bk E"
+      and hBj_bl: "geotop_is_broken_line Bj"
+      and hBk_bl: "geotop_is_broken_line Bk"
+      and h_disj_ij: "geotop_arc_interior Bi E \<inter> geotop_arc_interior Bj E = {}"
+      and h_disj_ik: "geotop_arc_interior Bi E \<inter> geotop_arc_interior Bk E = {}"
+      and h_disj_jk: "geotop_arc_interior Bj E \<inter> geotop_arc_interior Bk E = {}"
+  shows "geotop_arc_interior Bi E \<subseteq> geotop_polygon_interior (Bj \<union> Bk)
+       \<or> geotop_arc_interior Bi E \<subseteq> geotop_polygon_exterior (Bj \<union> Bk)"
+proof -
+  have h_poly_jk: "geotop_is_polygon (Bj \<union> Bk)"
+    by (rule pair_of_arcs_is_polygon[OF hBj_bl hBk_bl hEj hEk h_disj_jk])
+  have h_sph_jk: "geotop_is_n_sphere (Bj \<union> Bk)
+        (subspace_topology UNIV geotop_euclidean_topology (Bj \<union> Bk)) 1"
+    using h_poly_jk unfolding geotop_is_polygon_def by blast
+  have hI_in: "geotop_polygon_interior (Bj \<union> Bk) \<in> components (UNIV - (Bj \<union> Bk))"
+    by (rule polygon_interior_is_HOL_component[OF h_sph_jk])
+  have hE_in: "geotop_polygon_exterior (Bj \<union> Bk) \<in> components (UNIV - (Bj \<union> Bk))"
+    by (rule polygon_exterior_is_HOL_component[OF h_sph_jk])
+  have h_card_2: "card (components (UNIV - (Bj \<union> Bk))) = 2"
+    by (rule polygon_components_card[OF h_poly_jk])
+  have h_Bi_disj_Bj: "geotop_arc_interior Bi E \<inter> Bj = {}"
+    by (rule arc_interior_disjoint_other_arc[OF hEi hEj h_disj_ij])
+  have h_Bi_disj_Bk: "geotop_arc_interior Bi E \<inter> Bk = {}"
+    by (rule arc_interior_disjoint_other_arc[OF hEi hEk h_disj_ik])
+  have h_Bi_sub_compl_jk: "geotop_arc_interior Bi E \<subseteq> UNIV - (Bj \<union> Bk)"
+    using h_Bi_disj_Bj h_Bi_disj_Bk by blast
+  have h_Bi_conn: "connected (geotop_arc_interior Bi E)"
+    by (rule arc_interior_connected[OF hEi])
+  show ?thesis
+  proof (cases "geotop_arc_interior Bi E = {}")
+    case True
+    thus ?thesis by simp
+  next
+    case False
+    obtain x where hx_int: "x \<in> geotop_arc_interior Bi E" using False by blast
+    have hx_compl: "x \<in> UNIV - (Bj \<union> Bk)" using hx_int h_Bi_sub_compl_jk by blast
+    define Cx where "Cx = connected_component_set (UNIV - (Bj \<union> Bk)) x"
+    have hCx_in: "Cx \<in> components (UNIV - (Bj \<union> Bk))"
+      unfolding Cx_def using hx_compl componentsI by metis
+    have hBi_sub_Cx: "geotop_arc_interior Bi E \<subseteq> Cx"
+      unfolding Cx_def
+      using h_Bi_conn hx_int h_Bi_sub_compl_jk connected_component_maximal by blast
+    have hI_bd: "bounded (geotop_polygon_interior (Bj \<union> Bk))"
+      by (rule polygon_interior_bounded[OF h_sph_jk])
+    have hE_unbd: "\<not> bounded (geotop_polygon_exterior (Bj \<union> Bk))"
+      by (rule polygon_exterior_unbounded[OF h_sph_jk])
+    have h_IE_ne: "geotop_polygon_interior (Bj \<union> Bk) \<noteq> geotop_polygon_exterior (Bj \<union> Bk)"
+    proof
+      assume "geotop_polygon_interior (Bj \<union> Bk) = geotop_polygon_exterior (Bj \<union> Bk)"
+      hence "bounded (geotop_polygon_exterior (Bj \<union> Bk))" using hI_bd by simp
+      thus False using hE_unbd by simp
+    qed
+    have h_IE_set: "{geotop_polygon_interior (Bj \<union> Bk), geotop_polygon_exterior (Bj \<union> Bk)}
+                    \<subseteq> components (UNIV - (Bj \<union> Bk))"
+      using hI_in hE_in by simp
+    have h_IE_card: "card {geotop_polygon_interior (Bj \<union> Bk),
+                            geotop_polygon_exterior (Bj \<union> Bk)} = 2"
+      using h_IE_ne by simp
+    have h_finite_comps: "finite (components (UNIV - (Bj \<union> Bk)))"
+    proof (rule ccontr)
+      assume "\<not> finite (components (UNIV - (Bj \<union> Bk)))"
+      hence "card (components (UNIV - (Bj \<union> Bk))) = 0" by simp
+      thus False using h_card_2 by simp
+    qed
+    have h_IE_eq: "{geotop_polygon_interior (Bj \<union> Bk),
+                     geotop_polygon_exterior (Bj \<union> Bk)}
+                    = components (UNIV - (Bj \<union> Bk))"
+      using h_IE_set h_IE_card h_card_2 h_finite_comps card_subset_eq by metis
+    have hCx_in_set: "Cx \<in> {geotop_polygon_interior (Bj \<union> Bk),
+                              geotop_polygon_exterior (Bj \<union> Bk)}"
+      using hCx_in h_IE_eq by simp
+    show ?thesis
+    proof (cases "Cx = geotop_polygon_interior (Bj \<union> Bk)")
+      case True
+      thus ?thesis using hBi_sub_Cx by simp
+    next
+      case False
+      hence "Cx = geotop_polygon_exterior (Bj \<union> Bk)" using hCx_in_set by blast
+      thus ?thesis using hBi_sub_Cx by simp
+    qed
+  qed
+qed
+
+text \<open>The polygon interior, plus any subset of the polygon (its frontier),
+  remains connected. This is a useful structural lemma for arguments that
+  glue parts of the polygon to its interior (e.g., GT_2_8 piece connectedness).\<close>
+
+lemma polygon_interior_union_subset_connected:
+  fixes J :: "(real^2) set" and S :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+      and hS_sub: "S \<subseteq> J"
+  shows "connected (geotop_polygon_interior J \<union> S)"
+proof -
+  have hJ_sph: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by blast
+  have hI_in: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hI_conn: "connected (geotop_polygon_interior J)"
+    using hI_in in_components_connected by blast
+  have hI_front: "geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J) = J"
+    using Theorem_GT_2_6(1)[OF hJ] by simp
+  have hI_front_HOL: "frontier (geotop_polygon_interior J) = J"
+    using hI_front geotop_frontier_UNIV_eq_frontier by metis
+  have hI_sub: "geotop_polygon_interior J \<subseteq> geotop_polygon_interior J \<union> S" by blast
+  have h_cl_eq: "closure (geotop_polygon_interior J) = geotop_polygon_interior J \<union> J"
+    using hI_front_HOL closure_Un_frontier by metis
+  have hUnion_sub_cl: "geotop_polygon_interior J \<union> S \<subseteq> closure (geotop_polygon_interior J)"
+    using h_cl_eq hS_sub by blast
+  show ?thesis
+    by (rule connected_intermediate_closure[OF hI_conn hI_sub hUnion_sub_cl])
+qed
+
+text \<open>For a θ-graph M, the unbounded component E_M of \<open>UNIV - M\<close> is
+  contained in \<open>polygon_exterior(Bi \<union> Bj)\<close> for any pair \<open>i \<ne> j\<close>.\<close>
+
+lemma theta_graph_unbounded_in_pair_exterior:
+  fixes M B1 B2 B3 E :: "(real^2) set" and U :: "(real^2) set"
+        and i j :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+      and hU_comp: "U \<in> components (UNIV - M)"
+      and hU_unbd: "\<not> bounded U"
+      and hi: "i \<in> {B1, B2, B3}" and hj: "j \<in> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+  shows "U \<subseteq> geotop_polygon_exterior (i \<union> j)"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hM_eq: "M = B1 \<union> B2 \<union> B3"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have hB1_bl: "geotop_is_broken_line B1"
+   and hB2_bl: "geotop_is_broken_line B2"
+   and hB3_bl: "geotop_is_broken_line B3"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast+
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+   and h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+   and h_int23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  text \<open>The pair \<open>i \<union> j\<close> is a polygon.\<close>
+  have h_poly_ij: "geotop_is_polygon (i \<union> j)"
+  proof -
+    have h_i: "i = B1 \<or> i = B2 \<or> i = B3" using hi by simp
+    have h_j: "j = B1 \<or> j = B2 \<or> j = B3" using hj by simp
+    have h_poly_12: "geotop_is_polygon (B1 \<union> B2)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl hB2_bl hE1 hE2 h_int12])
+    have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl hB3_bl hE1 hE3 h_int13])
+    have h_poly_23: "geotop_is_polygon (B2 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB2_bl hB3_bl hE2 hE3 h_int23])
+    show ?thesis
+      using h_i h_j hij_ne h_poly_12 h_poly_13 h_poly_23
+      by (elim disjE) (auto simp: Un_commute)
+  qed
+  text \<open>U is contained in \<open>UNIV - (i \<union> j)\<close>.\<close>
+  have hU_subM: "U \<subseteq> UNIV - M" using hU_comp in_components_subset by blast
+  have h_ij_subM: "i \<union> j \<subseteq> M" using hi hj hM_eq by blast
+  have hU_sub_compl_ij: "U \<subseteq> UNIV - (i \<union> j)" using hU_subM h_ij_subM by blast
+  text \<open>U is connected, so contained in one component of \<open>UNIV - (i \<union> j)\<close>.\<close>
+  have hU_conn: "connected U" using hU_comp in_components_connected by blast
+  have hU_ne: "U \<noteq> {}" using hU_comp in_components_nonempty by blast
+  obtain x where hxU: "x \<in> U" using hU_ne by blast
+  have hx_compl_ij: "x \<in> UNIV - (i \<union> j)" using hxU hU_sub_compl_ij by blast
+  define Cx where "Cx = connected_component_set (UNIV - (i \<union> j)) x"
+  have hCx_in: "Cx \<in> components (UNIV - (i \<union> j))"
+    unfolding Cx_def using hx_compl_ij componentsI by metis
+  have hU_sub_Cx: "U \<subseteq> Cx"
+    unfolding Cx_def
+    using hU_conn hxU hU_sub_compl_ij connected_component_maximal by blast
+  have hCx_unbd: "\<not> bounded Cx" using hU_sub_Cx hU_unbd bounded_subset by blast
+  have hCx_eq: "Cx = geotop_polygon_exterior (i \<union> j)"
+    using polygon_exterior_unique[OF h_poly_ij] hCx_in hCx_unbd by blast
+  show ?thesis using hU_sub_Cx hCx_eq by simp
+qed
+
+text \<open>The complement of a polyhedral \<theta>-graph has both an unbounded
+  component (since M is bounded) and at least one bounded component
+  (since the complement is not connected, by ≥ 2 components).\<close>
+
+lemma theta_graph_has_unbounded_component:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<exists>U. U \<in> components (UNIV - M) \<and> \<not> bounded U"
+proof -
+  have h_bdd_M: "bounded M" by (rule theta_graph_bounded[OF h\<theta>])
+  have h_bdd_compl_compl: "bounded (- (UNIV - M))"
+    using h_bdd_M by simp
+  show ?thesis
+    using cobounded_unbounded_components[OF h_bdd_compl_compl] by simp
+qed
+
+lemma theta_graph_unique_unbounded_component:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<exists>!U. U \<in> components (UNIV - M) \<and> \<not> bounded U"
+proof -
+  have h_bdd_M: "bounded M" by (rule theta_graph_bounded[OF h\<theta>])
+  have h_bdd_compl_compl: "bounded (- (UNIV - M))"
+    using h_bdd_M by simp
+  obtain U where hU: "U \<in> components (UNIV - M)" and hU_unbdd: "\<not> bounded U"
+    using theta_graph_has_unbounded_component[OF h\<theta>] by blast
+  show ?thesis
+  proof (rule ex1I[of _ U])
+    show "U \<in> components (UNIV - M) \<and> \<not> bounded U" using hU hU_unbdd by blast
+  next
+    fix V assume hV: "V \<in> components (UNIV - M) \<and> \<not> bounded V"
+    have h_DIM: "(2::nat) \<le> DIM(real^2)" by simp
+    show "V = U"
+      using cobounded_unique_unbounded_components
+              [OF h_bdd_compl_compl, of V U] hV hU hU_unbdd h_DIM
+      by blast
+  qed
+qed
+
+lemma theta_graph_has_bounded_component:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<exists>F. F \<in> components (UNIV - M) \<and> bounded F"
+proof -
+  have h_bdd_M: "bounded M" by (rule theta_graph_bounded[OF h\<theta>])
+  have h_bdd_compl_compl: "bounded (- (UNIV - M))"
+    using h_bdd_M by simp
+  obtain D1 D2 where hD1: "D1 \<in> components (UNIV - M)"
+                  and hD2: "D2 \<in> components (UNIV - M)" and hD12: "D1 \<noteq> D2"
+    using theta_graph_complement_has_two_components[OF h\<theta>] by blast
+  have h_not_conn: "\<not> connected (UNIV - M)"
+  proof
+    assume h_conn: "connected (UNIV - M)"
+    have hD1_ne: "D1 \<noteq> {}" using hD1 in_components_nonempty by blast
+    have hD1_eq: "D1 = UNIV - M"
+      using h_conn hD1 hD1_ne
+      by (metis components_iff in_components_subset
+                connected_iff_eq_connected_component_set subset_antisym)
+    have hD2_eq: "D2 = UNIV - M"
+      using h_conn hD2 in_components_nonempty
+      by (metis components_iff in_components_subset
+                connected_iff_eq_connected_component_set subset_antisym)
+    show False using hD12 hD1_eq hD2_eq by simp
+  qed
+  have h_DIM: "(2::nat) \<le> DIM(real^2)" by simp
+  show ?thesis
+    using cobounded_has_bounded_component[OF h_bdd_compl_compl h_not_conn h_DIM] by metis
+qed
+
+text \<open>The \<theta>-graph M is closed (union of 3 closed arcs).\<close>
+
+lemma theta_graph_closed:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "closed M"
+proof -
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hM_eq: "M = B1 \<union> B2 \<union> B3"
+    using h_theta unfolding geotop_is_theta_graph_def by blast
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have hcl_B1: "closed B1" by (rule broken_line_closed[OF hE1])
+  have hcl_B2: "closed B2" by (rule broken_line_closed[OF hE2])
+  have hcl_B3: "closed B3" by (rule broken_line_closed[OF hE3])
+  have h_cl_B12: "closed (B1 \<union> B2)" using hcl_B1 hcl_B2 by (rule closed_Un)
+  have h_cl_M: "closed (B1 \<union> B2 \<union> B3)" using h_cl_B12 hcl_B3 by (rule closed_Un)
+  show ?thesis using hM_eq h_cl_M by simp
+qed
+
 (** from \<S>2 Theorem 7 (geotop.tex:621)
     LATEX VERSION: Let M = B_1 \<union> B_2 \<union> B_3 be a polyhedral \<theta>-graph in R^2, with Bd B_i = {P,Q}.
       Then (1) Every component of R^2 - M has a polygon B_i \<union> B_j as its frontier, and
@@ -659,17 +4486,1061 @@ theorem Theorem_GT_2_7:
 proof -
   (** (1) Each pair B_i \<cup> B_j forms a polygon (two arcs with common endpoints) by the
          definition of polyhedral \<theta>-graph. **)
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hB1_bl: "geotop_is_broken_line B1"
+   and hB2_bl: "geotop_is_broken_line B2"
+   and hB3_bl: "geotop_is_broken_line B3"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast+
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+   and h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+   and h_int23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta unfolding geotop_is_theta_graph_def by blast+
+  have h_poly_12: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB2_bl hE1 hE2 h_int12])
+  have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB3_bl hE1 hE3 h_int13])
+  have h_poly_23: "geotop_is_polygon (B2 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB2_bl hB3_bl hE2 hE3 h_int23])
   have h_pairs_polygons:
     "\<forall>i j. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<longrightarrow>
-       geotop_is_polygon (i \<union> j)" sorry
+       geotop_is_polygon (i \<union> j)"
+  proof (intro allI impI)
+    fix i j assume hij: "i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j"
+    have h_i: "i = B1 \<or> i = B2 \<or> i = B3" using hij by simp
+    have h_j: "j = B1 \<or> j = B2 \<or> j = B3" using hij by simp
+    have h_ne: "i \<noteq> j" using hij by simp
+    show "geotop_is_polygon (i \<union> j)"
+      using h_i h_j h_ne h_poly_12 h_poly_13 h_poly_23
+      by (elim disjE) (auto simp: Un_commute)
+  qed
   (** (2) R^2 - M splits into 3 components: interior of B_1 \<cup> B_2, interior of B_2 \<cup> B_3
          minus B_1's influence, and exterior of B_1 \<cup> B_3. The one \<theta>-interior region is
          further split by the middle arc. **)
+  text \<open>Structural setup: every \<open>geotop\<close> component of \<open>UNIV - M\<close> is a HOL component.\<close>
+  have h_M_closed: "closed M" by (rule theta_graph_closed[OF h\<theta>])
+  have h_geotop_eq_HOL: "{C. \<exists>P\<in>UNIV - M.
+        C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P}
+        = components (UNIV - M)"
+    using geotop_components_complement_eq[of M] by blast
+  text \<open>For each component, frontier ⊆ M.\<close>
+  have h_frontier_in_M: "\<forall>U\<in>components (UNIV - M). frontier U \<subseteq> M"
+    using h_M_closed frontier_of_components_closed_complement
+    by (metis Compl_eq_Diff_UNIV)
+  text \<open>The deep geometric step (Moise:626) decomposed into named substeps:\<close>
+  text \<open>(a-1) Closed-in-Int_Bi: trivially closed since frontier U is closed.\<close>
+  have h_closed_in_int:
+    "\<forall>U\<in>components (UNIV - M). \<forall>i\<in>{B1, B2, B3}.
+        closedin (top_of_set (geotop_arc_interior i E))
+                 (frontier U \<inter> geotop_arc_interior i E)"
+  proof (intro ballI)
+    fix U i assume "U \<in> components (UNIV - M)" and "i \<in> {B1, B2, B3}"
+    have h_fr_closed: "closed (frontier U)" by simp
+    show "closedin (top_of_set (geotop_arc_interior i E))
+                 (frontier U \<inter> geotop_arc_interior i E)"
+    proof -
+      have "frontier U \<inter> geotop_arc_interior i E
+            = (geotop_arc_interior i E) \<inter> (frontier U)" by blast
+      thus ?thesis using h_fr_closed
+        by (simp add: closedin_closed_Int)
+    qed
+  qed
+  text \<open>(a-2) Open-in-Int_Bi: requires local 1-simplex structure of broken line.
+    For \<open>x \<in> frontier U \<inter> Int Bi\<close>, a small Bi-neighborhood is also in
+    frontier U, since locally Bi is a line segment and U sits on a fixed
+    side(s) of it. This is the deep local-geometry step from Moise.
+
+    PROOF STRATEGY (textbook reference: Moise §2 Theorem 7, geotop.tex:626;
+    Moise's argument is informal "easy to see geometrically" + circular nbhd):
+
+    Take \<open>x \<in> frontier U \<inter> Int Bi\<close>. Want: open V in subspace topology of
+    Int Bi with \<open>x \<in> V \<subseteq> frontier U \<inter> Int Bi\<close>.
+
+    SUBCLAIM 1 (\<epsilon>-ball isolates Bi): \<exists>\<epsilon>>0. \<open>ball x \<epsilon> \<inter> M = ball x \<epsilon> \<inter> Bi\<close>.
+    Proof: x \<in> Int Bi = Bi - E. For j \<noteq> i, theta-graph axioms give
+    \<open>arc_interior Bi \<inter> arc_interior Bj = \<emptyset>\<close>, hence \<open>Bi \<inter> Bj \<subseteq> E\<close>.
+    Since x \<notin> E, x \<notin> Bj. Each Bj is closed, so dist(x, Bj) > 0.
+    \<epsilon> = min over j \<noteq> i.
+
+    SUBCLAIM 2 (local broken-line structure): within \<open>ball x \<epsilon>\<close>, Bi is
+    locally a piecewise-linear curve. By compactness/finite-edge structure
+    of broken line, there's \<delta> \<le> \<epsilon> such that \<open>ball x \<delta> \<inter> Bi\<close> is contained
+    in at most TWO line segments (the segments incident at x, if x is a
+    broken-line vertex; else one segment if x is on the relative interior
+    of an edge).
+
+    SUBCLAIM 3 (local separation): \<open>ball x \<delta> - Bi\<close> has 2 components in the
+    one-edge case (half-planes), or 2 components in the two-edge case
+    (angular wedges). U is open, x \<in> frontier U, so U meets at least one
+    of these components in arbitrarily small \<delta>.
+
+    SUBCLAIM 4 (transfer to nearby y): for y \<in> Int Bi \<inter> ball x \<delta>, the SAME
+    local component(s) of \<open>ball x \<delta> - Bi\<close> are meet-by U (since U is locally
+    constant on connected pieces of the complement). Hence y \<in> closure U.
+    Combined with y \<in> Bi \<subseteq> M \<Rightarrow> y \<notin> U, we get y \<in> frontier U.
+
+    SUBCLAIM 5: \<open>ball x \<delta> \<inter> Int Bi \<subseteq> frontier U\<close>, which is open in subspace
+    topology, contains x. Done.
+
+    STATUS (session 76 update):
+    - Subclaim 1 \<checkmark> proven as `theta_arc_interior_isolated_ball` (oracle-empty).
+    - Subclaim 2 \<checkmark> proven as `finite_union_closed_local_isolation` (generic
+      form for finite unions of closed sets).
+    - Bridge \<checkmark> proven as `arc_interior_relatively_open_in_arc` (subspace
+      topology: A - E open in A when E finite).
+    - Subclaim 3 \<checkmark> proven as `ball_minus_hyperplane_has_two_components`:
+      ball minus hyperplane in R^2 splits into 2 open connected non-empty
+      disjoint half-balls (proof: trichotomy of inner products + convex_connected).
+      For local segment separation: use the affine hull (line) of the broken-line
+      edge as the hyperplane.
+    - Subclaim 4 (transfer to nearby y): the deepest, requires that local
+      component-of-complement is constant across small displacements along Bi.\<close>
+  have h_open_in_int:
+    "\<forall>U\<in>components (UNIV - M). \<forall>i\<in>{B1, B2, B3}.
+        openin (top_of_set (geotop_arc_interior i E))
+               (frontier U \<inter> geotop_arc_interior i E)"
+  proof (intro ballI)
+    fix U i assume hU_in: "U \<in> components (UNIV - M)" and hi: "i \<in> {B1, B2, B3}"
+    have h_M_open_compl: "open (UNIV - M)"
+      using h_M_closed open_Diff by (by100 blast)
+    have hU_open: "open U" using hU_in h_M_open_compl open_components by (by100 blast)
+    show "openin (top_of_set (geotop_arc_interior i E))
+                 (frontier U \<inter> geotop_arc_interior i E)"
+    proof (subst openin_subopen, intro ballI)
+      fix x assume hx_inter: "x \<in> frontier U \<inter> geotop_arc_interior i E"
+      have hxFr: "x \<in> frontier U" using hx_inter by (by100 blast)
+      have hxInt: "x \<in> geotop_arc_interior i E" using hx_inter by (by100 blast)
+      \<comment> \<open>The deepest step: subclaim 4 — there exists a small ball around x
+        on Int Bi where every point is also a frontier point of U. This requires
+        the full local-component-constancy argument tying back to U being a
+        connected component of UNIV - M and the broken-line local linear
+        structure. Documented in detail in the strategy comment block above.
+        Uses the 6 helpers: theta_arc_interior_isolated_ball,
+        broken_line_local_simplex_isolation, ball_minus_hyperplane_has_two_components,
+        connected_open_disjoint_from_line_in_halfplane,
+        arc_interior_relatively_open_in_arc, finite_union_closed_local_isolation.\<close>
+      have h_local_open: "\<exists>\<delta>>0. ball x \<delta> \<inter> geotop_arc_interior i E
+                                  \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+      proof -
+        have hM_eq: "M = B1 \<union> B2 \<union> B3"
+          using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+        have hcl_B1: "closed B1" by (rule broken_line_closed[OF hE1])
+        have hcl_B2: "closed B2" by (rule broken_line_closed[OF hE2])
+        have hcl_B3: "closed B3" by (rule broken_line_closed[OF hE3])
+        \<comment> \<open>Step 1 (subclaim 1): ε-ball isolating Bi from the other two arcs.\<close>
+        have h_int_sym_12: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B1 E = {}"
+          using h_int12 by (by100 blast)
+        have h_int_sym_13: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B1 E = {}"
+          using h_int13 by (by100 blast)
+        have h_int_sym_23: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B2 E = {}"
+          using h_int23 by (by100 blast)
+        have h_iso_ball: "\<exists>\<epsilon>>0. ball x \<epsilon> \<inter> M \<subseteq> i"
+        proof -
+          consider (c1) "i = B1" | (c2) "i = B2" | (c3) "i = B3" using hi by (by100 blast)
+          thus ?thesis
+          proof cases
+            case c1
+            have hxB1: "x \<in> geotop_arc_interior B1 E" using hxInt c1 by (by100 simp)
+            have h_iso: "\<exists>\<epsilon>>0. ball x \<epsilon> \<inter> (B1 \<union> B2 \<union> B3) \<subseteq> B1"
+              by (rule theta_arc_interior_isolated_ball[OF hcl_B2 hcl_B3
+                       h_int12 h_int13 hxB1])
+            show ?thesis using h_iso hM_eq c1 by (by100 simp)
+          next
+            case c2
+            have hxB2: "x \<in> geotop_arc_interior B2 E" using hxInt c2 by (by100 simp)
+            have h_iso: "\<exists>\<epsilon>>0. ball x \<epsilon> \<inter> (B2 \<union> B1 \<union> B3) \<subseteq> B2"
+              by (rule theta_arc_interior_isolated_ball[OF hcl_B1 hcl_B3
+                       h_int_sym_12 h_int23 hxB2])
+            have h_M_perm: "B2 \<union> B1 \<union> B3 = M" using hM_eq by (by100 blast)
+            show ?thesis using h_iso h_M_perm c2 by (by100 blast)
+          next
+            case c3
+            have hxB3: "x \<in> geotop_arc_interior B3 E" using hxInt c3 by (by100 simp)
+            have h_iso: "\<exists>\<epsilon>>0. ball x \<epsilon> \<inter> (B3 \<union> B1 \<union> B2) \<subseteq> B3"
+              by (rule theta_arc_interior_isolated_ball[OF hcl_B1 hcl_B2
+                       h_int_sym_13 h_int_sym_23 hxB3])
+            have h_M_perm: "B3 \<union> B1 \<union> B2 = M" using hM_eq by (by100 blast)
+            show ?thesis using h_iso h_M_perm c3 by (by100 blast)
+          qed
+        qed
+        obtain \<epsilon> where h\<epsilon>_pos: "\<epsilon> > 0" and h\<epsilon>_iso: "ball x \<epsilon> \<inter> M \<subseteq> i"
+          using h_iso_ball by (by100 blast)
+        \<comment> \<open>Step 2 (subclaim 2): Get the local broken-line simplex structure.
+          The arc i = Bi is a broken line, so it has a finite complex K_i with
+          |K_i| = i. By `broken_line_local_simplex_isolation`, a small ball
+          around x sees only the simplexes (edges/vertices) containing x.\<close>
+        have hi_bl: "geotop_is_broken_line i"
+          using hi hB1_bl hB2_bl hB3_bl by (by100 blast)
+        have hxi: "x \<in> i"
+          using hxInt unfolding geotop_arc_interior_def by (by100 blast)
+        obtain K_i \<delta>2 where hK_i_complex: "geotop_is_complex K_i"
+                       and hK_i_fin: "finite K_i"
+                       and hK_i_poly: "geotop_polyhedron K_i = i"
+                       and hK_i_1dim: "geotop_complex_is_1dim K_i"
+                       and h\<delta>2_pos: "\<delta>2 > 0"
+                       and h\<delta>2_sub: "ball x \<delta>2 \<inter> i \<subseteq> \<Union>{\<sigma>\<in>K_i. x \<in> \<sigma>}"
+          using broken_line_local_simplex_isolation[OF hi_bl hxi] by (by100 blast)
+        \<comment> \<open>Step 3 (subclaim 3): Pick the line through x's local edge.
+          The simplexes containing x are 1-simplexes (edges) of K_i; their
+          affine hulls are lines through x. Define δ_min = min(ε, δ_2) so that
+          ball x δ_min isolates Bi locally, and ball x δ_min ∩ Bi only meets
+          x's containing simplexes. Then ball x δ_min - (those simplexes)
+          locally has the half-plane structure via
+          `ball_minus_hyperplane_has_two_components`.\<close>
+        define \<delta>_iso where "\<delta>_iso = min \<epsilon> \<delta>2"
+        have h\<delta>_iso_pos: "\<delta>_iso > 0" using h\<epsilon>_pos h\<delta>2_pos \<delta>_iso_def by (by100 simp)
+        have h\<delta>_iso_le_\<epsilon>: "\<delta>_iso \<le> \<epsilon>" unfolding \<delta>_iso_def by (by100 simp)
+        have h\<delta>_iso_le_\<delta>2: "\<delta>_iso \<le> \<delta>2" unfolding \<delta>_iso_def by (by100 simp)
+        have h_ball_iso_M: "ball x \<delta>_iso \<inter> M \<subseteq> i"
+          using h\<epsilon>_iso h\<delta>_iso_le_\<epsilon> by (by100 auto)
+        have h_ball_iso_simp: "ball x \<delta>_iso \<inter> i \<subseteq> \<Union>{\<sigma>\<in>K_i. x \<in> \<sigma>}"
+          using h\<delta>2_sub h\<delta>_iso_le_\<delta>2 by (by100 auto)
+        \<comment> \<open>Step 4: characterize x's local structure via edges (1-simplexes) of K_i
+          containing x. Define EdgesAtX as those 1-simplexes; from K_i being 1-dim
+          each simplex containing x is dim 0 or 1.\<close>
+        define EdgesAtX where "EdgesAtX = {\<sigma>\<in>K_i. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}"
+        have hEAX_fin: "finite EdgesAtX"
+          unfolding EdgesAtX_def using hK_i_fin by (by100 simp)
+        have hEAX_sub: "EdgesAtX \<subseteq> K_i" unfolding EdgesAtX_def by (by100 blast)
+        have hEAX_x_in: "\<forall>\<sigma>\<in>EdgesAtX. x \<in> \<sigma>" unfolding EdgesAtX_def by (by100 blast)
+        \<comment> \<open>Step 5: Coverage — ball x δ_iso ∩ i ⊆ \<Union> EdgesAtX ∪ {x}. Since K_i is
+          1-dim, simplexes containing x are dim 0 or 1; dim-0 simplexes
+          containing x reduce to {x}; dim-1 simplexes are precisely EdgesAtX.\<close>
+        have h_ball_cov: "ball x \<delta>_iso \<inter> i \<subseteq> \<Union> EdgesAtX \<union> {x}"
+        proof
+          fix y assume hy: "y \<in> ball x \<delta>_iso \<inter> i"
+          obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K_i" and hx\<sigma>: "x \<in> \<sigma>" and hy\<sigma>: "y \<in> \<sigma>"
+            using hy h_ball_iso_simp by (by100 blast)
+          have hdim_le: "\<exists>k\<le>1. geotop_simplex_dim \<sigma> k"
+            using hK_i_1dim h\<sigma>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+          obtain k where hk_le: "k \<le> 1" and h\<sigma>_dim: "geotop_simplex_dim \<sigma> k"
+            using hdim_le by (by100 blast)
+          consider (d0) "k = 0" | (d1) "k = 1" using hk_le by linarith
+          thus "y \<in> \<Union> EdgesAtX \<union> {x}"
+          proof cases
+            case d0
+            have h\<sigma>_dim0: "geotop_simplex_dim \<sigma> 0" using h\<sigma>_dim d0 by (by100 simp)
+            have h\<sigma>_dim0_unfold:
+              "\<exists>V m. finite V \<and> card V = 0 + 1 \<and> 0 \<le> m \<and> geotop_general_position V m
+                   \<and> \<sigma> = geotop_convex_hull V"
+              using h\<sigma>_dim0 unfolding geotop_simplex_dim_def by (by100 blast)
+            obtain V m where hVcard: "card V = 0 + 1" and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+              using h\<sigma>_dim0_unfold by (by100 blast)
+            have hVcard1: "card V = 1" using hVcard by (by100 simp)
+            obtain v where hVeq: "V = {v}" using hVcard1 card_1_singletonE by (by100 metis)
+            have h\<sigma>_HOL: "\<sigma> = convex hull V"
+              using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+            have h\<sigma>_sing: "\<sigma> = {v}"
+              using h\<sigma>_HOL hVeq by (by100 simp)
+            have hy_eq_v: "y = v" using hy\<sigma> h\<sigma>_sing by (by100 blast)
+            have hx_eq_v: "x = v" using hx\<sigma> h\<sigma>_sing by (by100 blast)
+            show ?thesis using hy_eq_v hx_eq_v by (by100 blast)
+          next
+            case d1
+            have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_dim d1 by (by100 simp)
+            have h\<sigma>_in_EAX: "\<sigma> \<in> EdgesAtX"
+              unfolding EdgesAtX_def using h\<sigma>K hx\<sigma> h\<sigma>_dim1 by (by100 simp)
+            show ?thesis using hy\<sigma> h\<sigma>_in_EAX by (by100 blast)
+          qed
+        qed
+        \<comment> \<open>Step 6: U is disjoint from M (since U is a component of UNIV - M),
+          hence U-disjoint from i, hence U-disjoint from \<Union>EdgesAtX ∪ {x}
+          (which is contained in i locally).\<close>
+        have hU_sub_compl_M: "U \<subseteq> UNIV - M"
+          using hU_in in_components_subset by (by100 blast)
+        have hU_disj_M: "U \<inter> M = {}" using hU_sub_compl_M by (by100 blast)
+        have hi_sub_M: "i \<subseteq> M" using hi hM_eq by (by100 blast)
+        have hU_disj_i: "U \<inter> i = {}" using hU_disj_M hi_sub_M by (by100 blast)
+        \<comment> \<open>Step 7: since x \<in> frontier U and U is open, every open neighborhood
+          of x meets U. In particular, every open ball around x meets U.\<close>
+        have hxClosU: "x \<in> closure U"
+          using hxFr unfolding frontier_def by (by100 blast)
+        have hU_meets_ball: "\<forall>\<delta>'>0. ball x \<delta>' \<inter> U \<noteq> {}"
+        proof (intro allI impI)
+          fix \<delta>' :: real assume h\<delta>'_pos: "\<delta>' > 0"
+          have h_ball_open: "open (ball x \<delta>')" by (by100 simp)
+          have hxBall: "x \<in> ball x \<delta>'" using h\<delta>'_pos by (by100 simp)
+          have h_meet: "U \<inter> ball x \<delta>' \<noteq> {}"
+            using hxClosU closure_iff_nhds_not_empty[of x U] h_ball_open hxBall
+            by (by100 blast)
+          show "ball x \<delta>' \<inter> U \<noteq> {}" using h_meet by (by100 blast)
+        qed
+        \<comment> \<open>Step 8: each σ ∈ EdgesAtX is a closed segment between two distinct
+          points, since dim 1 = convex hull of card-2 vertex set.\<close>
+        have hEAX_closed_segs: "\<forall>\<sigma>\<in>EdgesAtX.
+            \<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+        proof
+          fix \<sigma> assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+          have h\<sigma>_dim: "geotop_simplex_dim \<sigma> 1"
+            using h\<sigma>_EAX unfolding EdgesAtX_def by (by100 blast)
+          have h\<sigma>_unfold:
+            "\<exists>V m. finite V \<and> card V = 1 + 1 \<and> 1 \<le> m \<and> geotop_general_position V m
+                 \<and> \<sigma> = geotop_convex_hull V"
+            using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+          obtain V m where hVfin: "finite V" and hVcard: "card V = 1 + 1"
+                       and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+            using h\<sigma>_unfold by (by100 blast)
+          have hVcard2: "card V = 2" using hVcard by (by100 simp)
+          obtain a b where hab_ne: "a \<noteq> b" and hVab: "V = {a, b}"
+            using hVcard2 card_2_iff by (by100 metis)
+          have h\<sigma>_HOL: "\<sigma> = convex hull V"
+            using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+          have h_hull_seg: "convex hull {a, b} = closed_segment a b"
+            by (rule segment_convex_hull[symmetric])
+          have h\<sigma>_seg: "\<sigma> = closed_segment a b"
+            using h\<sigma>_HOL hVab h_hull_seg by (by100 simp)
+          show "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+            using hab_ne h\<sigma>_seg by (by100 blast)
+        qed
+        \<comment> \<open>Step 9: EdgesAtX is non-empty. Reason: x \<in> Int Bi (so x \<notin> E, x is
+          on a non-trivial arc), so x is a limit point of i. If EdgesAtX = ∅,
+          then ball x δ_iso ∩ i ⊆ {x} (from coverage), contradicting x islimpt i.\<close>
+        have h_EAX_ne: "EdgesAtX \<noteq> {}"
+        proof (rule ccontr)
+          assume "\<not> EdgesAtX \<noteq> {}"
+          hence hEAX_empty: "EdgesAtX = {}" by (by100 simp)
+          have h_ball_in_x: "ball x \<delta>_iso \<inter> i \<subseteq> {x}"
+            using h_ball_cov hEAX_empty by (by100 blast)
+          \<comment> \<open>x is a limit point of i (from i connected + i has > 1 point).\<close>
+          have hi_arc: "geotop_is_arc i (subspace_topology UNIV geotop_euclidean_topology i)"
+            using hi_bl unfolding geotop_is_broken_line_def by (by100 blast)
+          have hi_homeo_01: "i homeomorphic {0..1::real}"
+          proof -
+            have hi_ncell: "geotop_is_n_cell i (subspace_topology UNIV geotop_euclidean_topology i) 1"
+              using hi_arc unfolding geotop_is_arc_def by (by100 blast)
+            have hi_ncell_unfold:
+              "\<exists>(\<sigma>::(real^2) set) f. geotop_simplex_dim \<sigma> 1 \<and>
+                  top1_homeomorphism_on i
+                    (subspace_topology UNIV geotop_euclidean_topology i)
+                    \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+              by (rule geotop_is_n_cell_imp_homeo_ex[OF hi_ncell])
+            obtain \<sigma> :: "(real^2) set" where h\<sigma>_part:
+              "\<exists>f. geotop_simplex_dim \<sigma> 1 \<and>
+                   top1_homeomorphism_on i
+                     (subspace_topology UNIV geotop_euclidean_topology i)
+                     \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+              using hi_ncell_unfold by (by100 blast)
+            obtain f where h\<sigma>_dim: "geotop_simplex_dim \<sigma> 1"
+                       and hf_homeo: "top1_homeomorphism_on i
+                            (subspace_topology UNIV geotop_euclidean_topology i)
+                            \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+              using h\<sigma>_part by (by100 blast)
+            have hi_homeo_\<sigma>: "i homeomorphic \<sigma>"
+              by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hf_homeo])
+            \<comment> \<open>1-simplex σ is homeomorphic to [0,1] via convex hull of 2 points.\<close>
+            have h\<sigma>_homeo_01: "\<sigma> homeomorphic {0..1::real}"
+              by (rule simplex_dim_1_homeomorphic_unit_interval[OF h\<sigma>_dim])
+            show ?thesis using hi_homeo_\<sigma> h\<sigma>_homeo_01 homeomorphic_trans by (by100 blast)
+          qed
+          have h01_conn: "connected {0..1::real}" by (by100 simp)
+          have hi_conn: "connected i"
+            using hi_homeo_01 h01_conn homeomorphic_connectedness by (by100 blast)
+          have hi_card_gt_1: "\<exists>p q. p \<noteq> q \<and> p \<in> i \<and> q \<in> i"
+          proof -
+            have hi_endp: "geotop_arc_endpoints i E"
+              using hi hE1 hE2 hE3 by (by100 blast)
+            have hE_card: "card E = 2"
+              using hi_endp unfolding geotop_arc_endpoints_def by (by100 blast)
+            obtain p q where hpq_ne: "p \<noteq> q" and hE_eq: "E = {p, q}"
+              using hE_card card_2_iff by (by100 metis)
+            have hE_sub: "E \<subseteq> i"
+              using hi_endp unfolding geotop_arc_endpoints_def by (by100 blast)
+            have hpi: "p \<in> i" using hE_eq hE_sub by (by100 blast)
+            have hqi: "q \<in> i" using hE_eq hE_sub by (by100 blast)
+            show ?thesis using hpq_ne hpi hqi by (by100 blast)
+          qed
+          have hi_not_sing: "\<And>z. i \<noteq> {z}"
+            using hi_card_gt_1 by (by100 blast)
+          have hx_limpt: "x islimpt i"
+            using connected_imp_perfect[OF hi_conn hxi hi_not_sing] by (by100 blast)
+          have h_ball_open: "open (ball x \<delta>_iso)" by (by100 simp)
+          have hxBall: "x \<in> ball x \<delta>_iso" using h\<delta>_iso_pos by (by100 simp)
+          have h_meets_i: "ball x \<delta>_iso \<inter> i - {x} \<noteq> {}"
+          proof -
+            have h_ex_y: "\<exists>y\<in>ball x \<delta>_iso. y \<noteq> x \<and> y \<in> i"
+              using hx_limpt h_ball_open hxBall unfolding islimpt_def by (by100 blast)
+            show ?thesis using h_ex_y by (by100 blast)
+          qed
+          show False using h_ball_in_x h_meets_i by (by100 blast)
+        qed
+        \<comment> \<open>Step 10: pick a witness edge σ_x ∈ EdgesAtX. Get its closed-segment
+          form σ_x = closed_segment a b with a ≠ b, x ∈ σ_x.\<close>
+        obtain \<sigma>_x where h\<sigma>_x_EAX: "\<sigma>_x \<in> EdgesAtX" using h_EAX_ne by (by100 blast)
+        have hx\<sigma>_x: "x \<in> \<sigma>_x" using h\<sigma>_x_EAX hEAX_x_in by (by100 blast)
+        obtain a b where hab_ne: "a \<noteq> b"
+                     and h\<sigma>_x_seg: "\<sigma>_x = closed_segment a b"
+          using h\<sigma>_x_EAX hEAX_closed_segs by (by100 blast)
+        \<comment> \<open>Step 11: derive the line L = aff_hull σ_x. Pick a unit normal n so that
+          L = {y. inner n (y - x) = 0}. Since σ_x has aff_dim 1 (it's a 1-simplex
+          and aff_dim of convex hull of 2 distinct points is 1), and we're in
+          R^2, the line L is a hyperplane.\<close>
+        define L where "L = affine hull \<sigma>_x"
+        have h\<sigma>_x_in_L: "\<sigma>_x \<subseteq> L" unfolding L_def by (rule hull_subset)
+        have hx_L: "x \<in> L" using hx\<sigma>_x h\<sigma>_x_in_L by (by100 blast)
+        have h\<sigma>_x_dim: "geotop_simplex_dim \<sigma>_x 1"
+          using h\<sigma>_x_EAX unfolding EdgesAtX_def by (by100 blast)
+        have hL_aff_dim: "geotop_hyperplane_dim L 1"
+          using geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>_x_dim] L_def
+          by (by100 simp)
+        \<comment> \<open>Step 12: extract normal-vector form of L: L = {y. n·y = d}.\<close>
+        have hL_normal_ex: "\<exists>n d. n \<noteq> (0::real^2) \<and> L = {y. n \<bullet> y = d}"
+          by (rule geotop_hyperplane_dim_1_R2_normal_form[OF hL_aff_dim])
+        obtain n where hn_part: "\<exists>d. n \<noteq> (0::real^2) \<and> L = {y. n \<bullet> y = d}"
+          using hL_normal_ex by (by100 blast)
+        obtain d where hn_ne: "n \<noteq> (0::real^2)"
+                   and hL_eq: "L = {y. n \<bullet> y = d}"
+          using hn_part by (by100 blast)
+        have hx_L: "x \<in> L" unfolding L_def by (rule hull_inc[OF hx\<sigma>_x])
+        have hd_eq: "d = n \<bullet> x" using hx_L hL_eq by (by100 blast)
+        \<comment> \<open>Step 13: half-ball decomposition of ball x δ_iso minus L.\<close>
+        have h_two_halves: "\<exists>U_pos U_neg.
+            ball x \<delta>_iso - {y. inner (y - x) n = 0} = U_pos \<union> U_neg \<and>
+            U_pos \<inter> U_neg = {} \<and> U_pos \<noteq> {} \<and> U_neg \<noteq> {} \<and>
+            connected U_pos \<and> connected U_neg \<and> open U_pos \<and> open U_neg"
+          by (rule ball_minus_hyperplane_has_two_components[OF hn_ne h\<delta>_iso_pos])
+        \<comment> \<open>Step 14: define explicit half-balls Hp, Hm at x.\<close>
+        define Hp where "Hp = ball x \<delta>_iso \<inter> {y. inner (y - x) n > 0}"
+        define Hm where "Hm = ball x \<delta>_iso \<inter> {y. inner (y - x) n < 0}"
+        have h_Hp_eq: "{y. inner (y - x) n > 0} = {y. inner n y > inner n x}"
+          by (auto simp: inner_diff_right inner_commute)
+        have h_Hm_eq: "{y. inner (y - x) n < 0} = {y. inner n y < inner n x}"
+          by (auto simp: inner_diff_right inner_commute)
+        have h_open_half_p: "open {y. inner n y > inner n x}" by (rule open_halfspace_gt)
+        have h_open_half_m: "open {y. inner n y < inner n x}" by (rule open_halfspace_lt)
+        have hHp_open: "open Hp"
+          unfolding Hp_def h_Hp_eq
+          using h_open_half_p open_ball by (intro open_Int)
+        have hHm_open: "open Hm"
+          unfolding Hm_def h_Hm_eq
+          using h_open_half_m open_ball by (intro open_Int)
+        \<comment> \<open>Step 15: assuming ball x δ_iso ∩ L ⊆ M (single-edge case), show
+          U-points in ball x δ_iso are in Hp ∪ Hm.\<close>
+        \<comment> \<open>This precondition needs to be derived from a refined δ-radius (single-
+          edge case) or handled separately (vertex case). Leave as sub-sorry.\<close>
+        have h_local_L_in_M: "ball x \<delta>_iso \<inter> {y. inner (y - x) n = 0} \<subseteq> M" sorry
+        have h_U_in_halfballs: "U \<inter> ball x \<delta>_iso \<subseteq> Hp \<union> Hm"
+        proof
+          fix u assume hu: "u \<in> U \<inter> ball x \<delta>_iso"
+          have huU: "u \<in> U" using hu by (by100 blast)
+          have hu_ball: "u \<in> ball x \<delta>_iso" using hu by (by100 blast)
+          have hu_notM: "u \<notin> M" using huU hU_disj_M by (by100 blast)
+          have hu_notL: "u \<notin> {y. inner (y - x) n = 0}"
+            using hu_ball hu_notM h_local_L_in_M by (by100 blast)
+          have hu_inner_ne: "inner (u - x) n \<noteq> 0" using hu_notL by (by100 simp)
+          consider (pos) "inner (u - x) n > 0" | (neg) "inner (u - x) n < 0"
+            using hu_inner_ne by (by100 force)
+          thus "u \<in> Hp \<union> Hm"
+          proof cases
+            case pos
+            have "u \<in> Hp" unfolding Hp_def using hu_ball pos by (by100 simp)
+            thus ?thesis by (by100 blast)
+          next
+            case neg
+            have "u \<in> Hm" unfolding Hm_def using hu_ball neg by (by100 simp)
+            thus ?thesis by (by100 blast)
+          qed
+        qed
+        \<comment> \<open>Step 16: For any δ' ∈ (0, δ_iso], U meets ball x δ' inside Hp ∪ Hm.
+          Combines hU_meets_ball with Step 15.\<close>
+        have h_U_meets_at: "\<And>\<delta>'. \<lbrakk>0 < \<delta>'; \<delta>' \<le> \<delta>_iso\<rbrakk> \<Longrightarrow>
+                              ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) \<noteq> {}"
+        proof -
+          fix \<delta>' :: real assume h\<delta>'_pos: "0 < \<delta>'" and h\<delta>'_le: "\<delta>' \<le> \<delta>_iso"
+          have h_meet: "ball x \<delta>' \<inter> U \<noteq> {}"
+            using hU_meets_ball h\<delta>'_pos by (by100 blast)
+          obtain u where hu: "u \<in> ball x \<delta>' \<inter> U" using h_meet by (by100 blast)
+          have hu_ball_iso: "u \<in> ball x \<delta>_iso"
+          proof -
+            have h_sub: "ball x \<delta>' \<subseteq> ball x \<delta>_iso" using h\<delta>'_le by (by100 auto)
+            show ?thesis using hu h_sub by (by100 blast)
+          qed
+          have huU: "u \<in> U" using hu by (by100 blast)
+          have hu_in: "u \<in> U \<inter> ball x \<delta>_iso" using huU hu_ball_iso by (by100 blast)
+          have hu_HpHm: "u \<in> Hp \<union> Hm" using hu_in h_U_in_halfballs by (by100 blast)
+          have hu_ball': "u \<in> ball x \<delta>'" using hu by (by100 blast)
+          show "ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) \<noteq> {}"
+            using hu_ball' huU hu_HpHm by (by100 blast)
+        qed
+        \<comment> \<open>Step 17: pigeonhole — x ∈ closure(U ∩ Hp) or x ∈ closure(U ∩ Hm).
+          From Step 16, every small ball ∩ U meets Hp ∪ Hm; so x is in the
+          closure of at least one.\<close>
+        have h_x_closure_or:
+          "x \<in> closure (U \<inter> Hp) \<or> x \<in> closure (U \<inter> Hm)"
+        proof (rule ccontr)
+          assume h_neither: "\<not> (x \<in> closure (U \<inter> Hp) \<or> x \<in> closure (U \<inter> Hm))"
+          have hxP: "x \<notin> closure (U \<inter> Hp)" using h_neither by (by100 blast)
+          have hxM: "x \<notin> closure (U \<inter> Hm)" using h_neither by (by100 blast)
+          have h_ex_dP: "\<exists>d>0. ball x d \<inter> (U \<inter> Hp) = {}"
+          proof -
+            have h_not_app: "\<not> (\<forall>\<epsilon>>0. \<exists>y\<in>U \<inter> Hp. dist y x < \<epsilon>)"
+              using hxP closure_approachable by (by100 blast)
+            obtain e where he_pos: "e > 0"
+                       and h_no_y: "\<not> (\<exists>y\<in>U \<inter> Hp. dist y x < e)"
+              using h_not_app by (by100 blast)
+            have h_disj: "ball x e \<inter> (U \<inter> Hp) = {}"
+            proof (rule equals0I)
+              fix y assume hy: "y \<in> ball x e \<inter> (U \<inter> Hp)"
+              have hy_ball: "y \<in> ball x e" using hy by (by100 blast)
+              have hy_UH: "y \<in> U \<inter> Hp" using hy by (by100 blast)
+              have h1: "dist x y < e" using hy_ball by (by100 simp)
+              have h2: "dist y x = dist x y" by (rule dist_commute)
+              have h3: "dist y x < e" using h1 h2 by (by100 simp)
+              show False using hy_UH h3 h_no_y by (by100 blast)
+            qed
+            show ?thesis using he_pos h_disj by (by100 blast)
+          qed
+          obtain dP where hdP_pos: "dP > 0"
+                      and hdP_empty: "ball x dP \<inter> (U \<inter> Hp) = {}"
+            using h_ex_dP by (by100 blast)
+          have h_ex_dM: "\<exists>d>0. ball x d \<inter> (U \<inter> Hm) = {}"
+          proof -
+            have h_not_app: "\<not> (\<forall>\<epsilon>>0. \<exists>y\<in>U \<inter> Hm. dist y x < \<epsilon>)"
+              using hxM closure_approachable by (by100 blast)
+            obtain e where he_pos: "e > 0"
+                       and h_no_y: "\<not> (\<exists>y\<in>U \<inter> Hm. dist y x < e)"
+              using h_not_app by (by100 blast)
+            have h_disj: "ball x e \<inter> (U \<inter> Hm) = {}"
+            proof (rule equals0I)
+              fix y assume hy: "y \<in> ball x e \<inter> (U \<inter> Hm)"
+              have hy_ball: "y \<in> ball x e" using hy by (by100 blast)
+              have hy_UH: "y \<in> U \<inter> Hm" using hy by (by100 blast)
+              have h1: "dist x y < e" using hy_ball by (by100 simp)
+              have h2: "dist y x = dist x y" by (rule dist_commute)
+              have h3: "dist y x < e" using h1 h2 by (by100 simp)
+              show False using hy_UH h3 h_no_y by (by100 blast)
+            qed
+            show ?thesis using he_pos h_disj by (by100 blast)
+          qed
+          obtain dM where hdM_pos: "dM > 0"
+                      and hdM_empty: "ball x dM \<inter> (U \<inter> Hm) = {}"
+            using h_ex_dM by (by100 blast)
+          define \<delta>' where "\<delta>' = min dP (min dM \<delta>_iso)"
+          have h\<delta>'_pos: "\<delta>' > 0"
+            unfolding \<delta>'_def using hdP_pos hdM_pos h\<delta>_iso_pos by (by100 simp)
+          have h\<delta>'_le: "\<delta>' \<le> \<delta>_iso" unfolding \<delta>'_def by (by100 simp)
+          have h\<delta>'_dP: "\<delta>' \<le> dP" unfolding \<delta>'_def by (by100 simp)
+          have h\<delta>'_dM: "\<delta>' \<le> dM" unfolding \<delta>'_def by (by100 simp)
+          have h_sub_P: "ball x \<delta>' \<subseteq> ball x dP" using h\<delta>'_dP by (by100 auto)
+          have h_sub_M: "ball x \<delta>' \<subseteq> ball x dM" using h\<delta>'_dM by (by100 auto)
+          have h_emp_P: "ball x \<delta>' \<inter> (U \<inter> Hp) = {}"
+            using h_sub_P hdP_empty by (by100 blast)
+          have h_emp_M: "ball x \<delta>' \<inter> (U \<inter> Hm) = {}"
+            using h_sub_M hdM_empty by (by100 blast)
+          have h_emp_both: "ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) = {}"
+            using h_emp_P h_emp_M by (by100 blast)
+          have h_meet: "ball x \<delta>' \<inter> U \<inter> (Hp \<union> Hm) \<noteq> {}"
+            using h_U_meets_at h\<delta>'_pos h\<delta>'_le by (by100 blast)
+          show False using h_emp_both h_meet by (by100 blast)
+        qed
+        \<comment> \<open>The genuinely deep remaining step (subclaim 4): combine these
+          preconditions with U's connectedness for local-side propagation.
+          Multi-day per project_h_open_in_int_strategy.md.\<close>
+        show ?thesis sorry
+      qed
+      obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+                  and h\<delta>_sub: "ball x \<delta> \<inter> geotop_arc_interior i E
+                                \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+        using h_local_open by (by100 blast)
+      define T where "T = ball x \<delta> \<inter> geotop_arc_interior i E"
+      have hT_eq: "T = geotop_arc_interior i E \<inter> ball x \<delta>"
+        unfolding T_def by (by100 blast)
+      have hT_open_subspace: "openin (top_of_set (geotop_arc_interior i E)) T"
+      proof -
+        have h_ball_open: "open (ball x \<delta>)" by (rule open_ball)
+        have h_inter_open: "openin (top_of_set (geotop_arc_interior i E))
+                                   (geotop_arc_interior i E \<inter> ball x \<delta>)"
+          using h_ball_open by (rule openin_open_Int)
+        show ?thesis using h_inter_open hT_eq by (by100 simp)
+      qed
+      have hxT: "x \<in> T" unfolding T_def using h\<delta>_pos hxInt by (by100 simp)
+      have hT_sub: "T \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+        unfolding T_def using h\<delta>_sub by (by100 blast)
+      show "\<exists>T. openin (top_of_set (geotop_arc_interior i E)) T \<and> x \<in> T \<and>
+                T \<subseteq> frontier U \<inter> geotop_arc_interior i E"
+        using hT_open_subspace hxT hT_sub by (by100 blast)
+    qed
+  qed
+  text \<open>(a-3) Combining: closed + open + connected \<Rightarrow> empty or whole.\<close>
+  have h_clopen_in_int:
+    "\<forall>U\<in>components (UNIV - M). \<forall>i\<in>{B1, B2, B3}.
+        frontier U \<inter> geotop_arc_interior i E = {} \<or>
+        geotop_arc_interior i E \<subseteq> frontier U"
+  proof (intro ballI)
+    fix U i assume hU: "U \<in> components (UNIV - M)" and hi: "i \<in> {B1, B2, B3}"
+    have h_arc_eps: "geotop_arc_endpoints i E"
+      using hi hE1 hE2 hE3 by blast
+    have h_int_conn: "connected (geotop_arc_interior i E)"
+      by (rule arc_interior_connected[OF h_arc_eps])
+    have h_closed: "closedin (top_of_set (geotop_arc_interior i E))
+                 (frontier U \<inter> geotop_arc_interior i E)"
+      using h_closed_in_int hU hi by blast
+    have h_open: "openin (top_of_set (geotop_arc_interior i E))
+                 (frontier U \<inter> geotop_arc_interior i E)"
+      using h_open_in_int hU hi by blast
+    text \<open>Clopen non-empty subset of connected = whole. Else empty.\<close>
+    show "frontier U \<inter> geotop_arc_interior i E = {} \<or>
+          geotop_arc_interior i E \<subseteq> frontier U"
+    proof (cases "frontier U \<inter> geotop_arc_interior i E = {}")
+      case True thus ?thesis by simp
+    next
+      case False
+      hence h_ne: "frontier U \<inter> geotop_arc_interior i E \<noteq> {}" by simp
+      have h_sub: "frontier U \<inter> geotop_arc_interior i E \<subseteq> geotop_arc_interior i E"
+        by blast
+      have h_clopen: "(frontier U \<inter> geotop_arc_interior i E)
+                       = geotop_arc_interior i E"
+        using connected_clopen[of "geotop_arc_interior i E"] h_int_conn
+              h_closed h_open h_sub h_ne by blast
+      thus ?thesis by blast
+    qed
+  qed
+  text \<open>(b) frontier U is closed and contained in M; combined with (a) and the
+    closure of \<open>Bi = closure (Int Bi)\<close>, if frontier U covers Int Bi then it
+    also covers the closure, hence contains all of Bi.\<close>
+  have h_full_arc:
+    "\<forall>U\<in>components (UNIV - M). \<forall>i\<in>{B1, B2, B3}.
+        geotop_arc_interior i E \<subseteq> frontier U \<longrightarrow> i \<subseteq> frontier U"
+  proof (intro ballI impI)
+    fix U i assume hU: "U \<in> components (UNIV - M)"
+                  and hi: "i \<in> {B1, B2, B3}"
+                  and h_int_sub: "geotop_arc_interior i E \<subseteq> frontier U"
+    have h_arc_eps: "geotop_arc_endpoints i E"
+      using hi hE1 hE2 hE3 by blast
+    have h_cl_int: "closure (geotop_arc_interior i E) = i"
+      by (rule arc_closure_interior_eq_arc[OF h_arc_eps])
+    have h_fr_closed: "closed (frontier U)" by simp
+    have "closure (geotop_arc_interior i E) \<subseteq> closure (frontier U)"
+      using h_int_sub closure_mono by blast
+    hence "i \<subseteq> closure (frontier U)" using h_cl_int by simp
+    thus "i \<subseteq> frontier U" using h_fr_closed by (simp add: closure_closed)
+  qed
+  text \<open>The 3 arcs are pairwise distinct (disjoint interiors + non-empty interiors).\<close>
+  have h_int_ne_1: "geotop_arc_interior B1 E \<noteq> {}"
+    by (rule arc_interior_nonempty[OF hE1])
+  have h_int_ne_2: "geotop_arc_interior B2 E \<noteq> {}"
+    by (rule arc_interior_nonempty[OF hE2])
+  have h_int_ne_3: "geotop_arc_interior B3 E \<noteq> {}"
+    by (rule arc_interior_nonempty[OF hE3])
+  have h_B1_ne_B2: "B1 \<noteq> B2" using h_int12 h_int_ne_1 by force
+  have h_B1_ne_B3: "B1 \<noteq> B3" using h_int13 h_int_ne_1 by force
+  have h_B2_ne_B3: "B2 \<noteq> B3" using h_int23 h_int_ne_2 by force
+  text \<open>(c) Theorem_GT_2_3 (broken line non-separation) rules out the case
+    "frontier U = single Bi": \<open>R^2 - Bi\<close> is connected, contains \<open>U\<close> (open) and
+    a point of \<open>Int Bj\<close> (not in \<open>U\<close>), so by \<open>connected_Int_frontier\<close>,
+    \<open>(R^2 - Bi) \<inter> frontier U \<noteq> \<emptyset>\<close> — but \<open>frontier U = Bi\<close> would force this
+    intersection to be empty, contradiction.\<close>
+  have h_at_least_two:
+    "\<forall>U\<in>components (UNIV - M).
+        \<not> (\<exists>i\<in>{B1, B2, B3}. frontier U = i \<and>
+              (\<forall>j\<in>{B1, B2, B3}. j \<noteq> i \<longrightarrow> j \<inter> frontier U = E))"
+  proof (intro ballI notI)
+    fix U assume hU: "U \<in> components (UNIV - M)"
+    assume "\<exists>i\<in>{B1, B2, B3}. frontier U = i \<and>
+              (\<forall>j\<in>{B1, B2, B3}. j \<noteq> i \<longrightarrow> j \<inter> frontier U = E)"
+    then obtain i where hi_set: "i \<in> {B1, B2, B3}"
+                   and h_fr_eq_i: "frontier U = i"
+      by blast
+    text \<open>Pick \<open>j\<close> different from \<open>i\<close> (using arc distinctness).\<close>
+    obtain j where hj_set: "j \<in> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+      using hi_set h_B1_ne_B2 h_B1_ne_B3 h_B2_ne_B3 by blast
+    have h_arc_i: "geotop_is_broken_line i"
+      using hi_set hB1_bl hB2_bl hB3_bl by blast
+    have h_arc_eps_i: "geotop_arc_endpoints i E"
+      using hi_set hE1 hE2 hE3 by blast
+    have h_arc_eps_j: "geotop_arc_endpoints j E"
+      using hj_set hE1 hE2 hE3 by blast
+    have h_arc_j: "geotop_is_broken_line j"
+      using hj_set hB1_bl hB2_bl hB3_bl by blast
+    have h_int_ij: "geotop_arc_interior i E \<inter> geotop_arc_interior j E = {}"
+    proof -
+      have h_i_cases: "i = B1 \<or> i = B2 \<or> i = B3" using hi_set by simp
+      have h_j_cases: "j = B1 \<or> j = B2 \<or> j = B3" using hj_set by simp
+      show ?thesis
+        using h_i_cases h_j_cases hij_ne h_int12 h_int13 h_int23
+        by (auto simp: Int_commute)
+    qed
+    text \<open>Connected \<open>R^2 - i\<close> via Theorem_GT_2_3.\<close>
+    have h_top1_conn: "top1_connected_on (UNIV - i)
+              (subspace_topology UNIV geotop_euclidean_topology (UNIV - i))"
+      by (rule Theorem_GT_2_3[OF h_arc_i])
+    have h_conn_compl: "connected (UNIV - i)"
+      using h_top1_conn top1_connected_on_geotop_iff_connected by blast
+    text \<open>U is non-empty and U \<subseteq> UNIV - M \<subseteq> UNIV - i.\<close>
+    have hU_ne: "U \<noteq> {}" using hU in_components_nonempty by blast
+    have hU_subM: "U \<subseteq> UNIV - M" using hU in_components_subset by blast
+    have hM_eq: "M = B1 \<union> B2 \<union> B3"
+      using h_theta unfolding geotop_is_theta_graph_def by blast
+    have hi_subM: "i \<subseteq> M" using hi_set hM_eq by blast
+    have hU_sub: "U \<subseteq> UNIV - i" using hU_subM hi_subM by blast
+    have h_inter_ne: "(UNIV - i) \<inter> U \<noteq> {}" using hU_ne hU_sub by blast
+    text \<open>There's a point in \<open>R^2 - i\<close> outside \<open>U\<close>: take an interior point of \<open>j\<close>.\<close>
+    obtain x where hx_int_j: "x \<in> geotop_arc_interior j E"
+      using arc_interior_nonempty[OF h_arc_eps_j] by blast
+    have hx_in_j: "x \<in> j" using hx_int_j unfolding geotop_arc_interior_def by blast
+    have hx_notin_E: "x \<notin> E" using hx_int_j unfolding geotop_arc_interior_def by blast
+    have hx_notin_i: "x \<notin> i"
+    proof
+      assume "x \<in> i"
+      have "i \<inter> j \<subseteq> E"
+      proof
+        fix y assume hy_ij: "y \<in> i \<inter> j"
+        show "y \<in> E"
+        proof (rule ccontr)
+          assume "y \<notin> E"
+          hence "y \<in> geotop_arc_interior i E \<inter> geotop_arc_interior j E"
+            unfolding geotop_arc_interior_def using hy_ij by blast
+          thus False using h_int_ij by blast
+        qed
+      qed
+      hence "x \<in> E" using \<open>x \<in> i\<close> hx_in_j by blast
+      thus False using hx_notin_E by blast
+    qed
+    have hx_in_compl_i: "x \<in> UNIV - i" using hx_notin_i by simp
+    text \<open>x is not in U: \<open>x \<in> j \<subseteq> M\<close>, but \<open>U \<subseteq> R^2 - M\<close>.\<close>
+    have hj_subM: "j \<subseteq> M" using hj_set hM_eq by blast
+    have hx_notin_U: "x \<notin> U" using hx_in_j hj_subM hU_subM by blast
+    have h_diff_ne: "(UNIV - i) - U \<noteq> {}" using hx_in_compl_i hx_notin_U by blast
+    text \<open>Apply connected_Int_frontier to get \<open>(R^2 - i) \<inter> frontier U \<noteq> \<emptyset>\<close>.\<close>
+    have h_fr_inter: "(UNIV - i) \<inter> frontier U \<noteq> {}"
+      by (rule connected_Int_frontier[OF h_conn_compl h_inter_ne h_diff_ne])
+    text \<open>But \<open>frontier U = i\<close>, so \<open>(R^2 - i) \<inter> frontier U = (R^2 - i) \<inter> i = \<emptyset>\<close>.\<close>
+    have h_empty: "(UNIV - i) \<inter> frontier U = {}"
+      using h_fr_eq_i by blast
+    show False using h_fr_inter h_empty by blast
+  qed
+  text \<open>(d) Local analysis at endpoint \<open>P\<close>: a small ball around \<open>P\<close> minus
+    the 3 arcs has finitely many components; \<open>U \<inter> N\<close> is union of finitely
+    many of them, and the frontier near \<open>P\<close> contains \<open>P\<close> and at most 2 of
+    the arcs (since each component touches at most 2 of the 3 incident arcs).\<close>
+  have h_at_most_two:
+    "\<forall>U\<in>components (UNIV - M).
+        \<not> (B1 \<subseteq> frontier U \<and> B2 \<subseteq> frontier U \<and> B3 \<subseteq> frontier U)"
+    sorry
+  text \<open>Combining (a)-(d): frontier U is exactly some pair \<open>Bi \<union> Bj\<close>.\<close>
+  have h_component_frontiers_HOL:
+    "\<forall>U\<in>components (UNIV - M).
+       \<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and> frontier U = i \<union> j"
+  proof
+    fix U assume hU: "U \<in> components (UNIV - M)"
+    have hU_open: "open U"
+    proof -
+      have h_open_compl: "open (UNIV - M)"
+        using h_M_closed by (simp add: open_Diff)
+      show ?thesis using hU h_open_compl open_components by blast
+    qed
+    have hU_ne: "U \<noteq> {}" using hU in_components_nonempty by blast
+    have hU_subM: "U \<subseteq> UNIV - M" using hU in_components_subset by blast
+    have hU_ne_UNIV: "U \<noteq> UNIV"
+    proof
+      assume "U = UNIV"
+      hence "M = {}" using hU_subM by blast
+      have h_int_ne_1: "geotop_arc_interior B1 E \<noteq> {}"
+        by (rule arc_interior_nonempty[OF hE1])
+      hence "B1 \<noteq> {}" unfolding geotop_arc_interior_def by blast
+      moreover have "B1 \<subseteq> M"
+        using h_theta unfolding geotop_is_theta_graph_def by blast
+      ultimately show False using \<open>M = {}\<close> by blast
+    qed
+    have h_fr_in_M: "frontier U \<subseteq> M" using h_frontier_in_M hU by blast
+    text \<open>Define S = set of arcs entirely in frontier U.\<close>
+    define S where "S = {Bi \<in> {B1, B2, B3}. Bi \<subseteq> frontier U}"
+    have hS_sub: "S \<subseteq> {B1, B2, B3}" unfolding S_def by blast
+    text \<open>For any \<open>Bi \<notin> S\<close>, the intersection \<open>frontier U \<inter> Int Bi\<close> is empty.\<close>
+    have h_not_S_empty_int: "\<forall>Bi\<in>{B1, B2, B3} - S.
+        frontier U \<inter> geotop_arc_interior Bi E = {}"
+    proof
+      fix Bi assume hBi: "Bi \<in> {B1, B2, B3} - S"
+      hence hBi_in: "Bi \<in> {B1, B2, B3}" by blast
+      hence h_dichotomy:
+        "frontier U \<inter> geotop_arc_interior Bi E = {} \<or>
+         geotop_arc_interior Bi E \<subseteq> frontier U"
+        using h_clopen_in_int hU by blast
+      show "frontier U \<inter> geotop_arc_interior Bi E = {}"
+      proof (rule ccontr)
+        assume "frontier U \<inter> geotop_arc_interior Bi E \<noteq> {}"
+        hence h_int_sub: "geotop_arc_interior Bi E \<subseteq> frontier U"
+          using h_dichotomy by blast
+        have "Bi \<subseteq> frontier U"
+          using h_full_arc hU hBi_in h_int_sub by blast
+        hence "Bi \<in> S" unfolding S_def using hBi_in by blast
+        thus False using hBi by blast
+      qed
+    qed
+    text \<open>So frontier U is contained in (\<Union>S) \<union> E.\<close>
+    have h_fr_decomp: "frontier U \<subseteq> (\<Union>S) \<union> E"
+    proof
+      fix x assume hx: "x \<in> frontier U"
+      have hx_M: "x \<in> M" using hx h_fr_in_M by blast
+      have hM_eq: "M = B1 \<union> B2 \<union> B3"
+        using h_theta unfolding geotop_is_theta_graph_def by blast
+      then obtain Bi where hBi_in: "Bi \<in> {B1, B2, B3}" and hx_Bi: "x \<in> Bi"
+        using hx_M by blast
+      show "x \<in> (\<Union>S) \<union> E"
+      proof (cases "Bi \<in> S")
+        case True
+        hence "x \<in> Bi" using hx_Bi by blast
+        moreover have "Bi \<in> S" using True .
+        ultimately show ?thesis by blast
+      next
+        case False
+        hence h_Bi_notin: "Bi \<in> {B1, B2, B3} - S" using hBi_in by blast
+        have h_x_notin_int: "x \<notin> geotop_arc_interior Bi E"
+          using h_not_S_empty_int hx h_Bi_notin by blast
+        have "x \<in> Bi - geotop_arc_interior Bi E"
+          using hx_Bi h_x_notin_int by blast
+        hence "x \<in> E"
+          unfolding geotop_arc_interior_def by blast
+        thus ?thesis by blast
+      qed
+    qed
+    text \<open>Conversely \<Union>S \<subseteq> frontier U (each Bi \<in> S is contained in frontier U).\<close>
+    have h_S_in_fr: "(\<Union>S) \<subseteq> frontier U"
+      unfolding S_def by blast
+    text \<open>Cardinality of S: by h_at_least_two and h_at_most_two, |S| \<noteq> 1, 3.
+      Also \<open>|S| \<noteq> 0\<close> (frontier finite would imply U cofinite, hence M finite).\<close>
+    have hS_finite: "finite S" using hS_sub by (simp add: finite_subset)
+    have h_B123_card: "card {B1, B2, B3} = 3"
+      using h_B1_ne_B2 h_B1_ne_B3 h_B2_ne_B3 by simp
+    have hS_card: "card S \<le> 3"
+    proof -
+      have h_finB123: "finite {B1, B2, B3}" by simp
+      have "card S \<le> card {B1, B2, B3}"
+        by (rule card_mono[OF h_finB123 hS_sub])
+      thus ?thesis using h_B123_card by simp
+    qed
+    text \<open>Rule out |S| = 3 via h_at_most_two.\<close>
+    have hS_ne_3: "card S \<noteq> 3"
+    proof
+      assume hcard3: "card S = 3"
+      have "S = {B1, B2, B3}"
+        using hS_sub hcard3 h_B123_card hS_finite
+        by (auto simp: card_subset_eq)
+      hence h_all_in_S: "B1 \<in> S \<and> B2 \<in> S \<and> B3 \<in> S" by simp
+      hence "B1 \<subseteq> frontier U \<and> B2 \<subseteq> frontier U \<and> B3 \<subseteq> frontier U"
+        unfolding S_def by simp
+      thus False using h_at_most_two hU by blast
+    qed
+    text \<open>Rule out |S| = 1 via h_at_least_two.\<close>
+    have hS_ne_1: "card S \<noteq> 1"
+    proof
+      assume hcard1: "card S = 1"
+      then obtain Bi where hS_eq_1: "S = {Bi}"
+        using hcard1 card_1_singleton_iff by (auto simp: card_1_singleton_iff)
+      have hBi_in: "Bi \<in> {B1, B2, B3}" using hS_eq_1 hS_sub by blast
+      have hBi_in_S: "Bi \<in> S" using hS_eq_1 by simp
+      have hBi_sub_fr: "Bi \<subseteq> frontier U"
+      proof -
+        have "Bi \<in> {Bi'. Bi' \<in> {B1, B2, B3} \<and> Bi' \<subseteq> frontier U}"
+          using hBi_in_S unfolding S_def by simp
+        thus ?thesis by simp
+      qed
+      have hfr_sub_Bi: "frontier U \<subseteq> Bi"
+      proof
+        fix x assume hx: "x \<in> frontier U"
+        have "x \<in> (\<Union>S) \<union> E" using hx h_fr_decomp by blast
+        thus "x \<in> Bi"
+        proof
+          assume "x \<in> \<Union>S"
+          thus "x \<in> Bi" using hS_eq_1 by simp
+        next
+          assume "x \<in> E"
+          have "geotop_arc_endpoints Bi E"
+            using hBi_in hE1 hE2 hE3 by blast
+          hence "E \<subseteq> Bi" unfolding geotop_arc_endpoints_def by blast
+          thus "x \<in> Bi" using \<open>x \<in> E\<close> by blast
+        qed
+      qed
+      have h_fr_eq_Bi: "frontier U = Bi" using hBi_sub_fr hfr_sub_Bi by blast
+      text \<open>Match against h_at_least_two's awkward statement.\<close>
+      have h_other_arcs_E: "\<forall>j\<in>{B1, B2, B3}. j \<noteq> Bi \<longrightarrow> j \<inter> frontier U = E"
+      proof (intro ballI impI)
+        fix j assume hj_in: "j \<in> {B1, B2, B3}" and hj_ne: "j \<noteq> Bi"
+        show "j \<inter> frontier U = E"
+        proof
+          show "j \<inter> frontier U \<subseteq> E"
+            using h_fr_eq_Bi hj_in hj_ne h_int12 h_int13 h_int23
+                  \<open>Bi \<in> {B1, B2, B3}\<close>
+            unfolding geotop_arc_interior_def
+            by (auto simp: Int_commute)
+          show "E \<subseteq> j \<inter> frontier U"
+          proof -
+            have "E \<subseteq> j" using hj_in hE1 hE2 hE3
+              unfolding geotop_arc_endpoints_def by blast
+            moreover have "E \<subseteq> Bi"
+              using \<open>Bi \<in> {B1, B2, B3}\<close> hE1 hE2 hE3
+              unfolding geotop_arc_endpoints_def by blast
+            ultimately show ?thesis using h_fr_eq_Bi by blast
+          qed
+        qed
+      qed
+      have "\<exists>i\<in>{B1, B2, B3}. frontier U = i \<and>
+              (\<forall>j\<in>{B1, B2, B3}. j \<noteq> i \<longrightarrow> j \<inter> frontier U = E)"
+        using \<open>Bi \<in> {B1, B2, B3}\<close> h_fr_eq_Bi h_other_arcs_E by blast
+      thus False using h_at_least_two hU by blast
+    qed
+    text \<open>Rule out |S| = 0 (frontier U cannot be finite + U non-trivial).\<close>
+    have hS_ne_0: "card S \<noteq> 0"
+    proof
+      assume "card S = 0"
+      hence hS_empty: "S = {}" using hS_finite by simp
+      hence h_fr_in_E: "frontier U \<subseteq> E"
+        using h_fr_decomp by simp
+      have hE_finite: "finite E" using hE1 unfolding geotop_arc_endpoints_def
+        using card_eq_0_iff by force
+      have h_fr_finite: "finite (frontier U)"
+        using h_fr_in_E hE_finite finite_subset by blast
+      have h_fr_countable: "countable (frontier U)"
+        using h_fr_finite uncountable_infinite by auto
+      text \<open>R² - frontier U is path-connected (DIM = 2, frontier U countable).\<close>
+      have h_DIM: "(2::nat) \<le> DIM(real^2)" by simp
+      have h_pc_compl: "path_connected (- frontier U)"
+        by (rule path_connected_complement_countable[OF h_DIM h_fr_countable])
+      have h_conn_compl: "connected (- frontier U)"
+        using h_pc_compl path_connected_imp_connected by blast
+      text \<open>U is open, R² - closure U is open, both disjoint and union = R² - frontier U.\<close>
+      have h_clU_eq: "closure U = U \<union> frontier U"
+        by (rule closure_Un_frontier)
+      have h_partition: "(- frontier U) = U \<union> (UNIV - closure U)"
+      proof
+        show "(- frontier U) \<subseteq> U \<union> (UNIV - closure U)"
+        proof
+          fix x assume "x \<in> - frontier U"
+          hence hx_notin_fr: "x \<notin> frontier U" by blast
+          show "x \<in> U \<union> (UNIV - closure U)"
+          proof (cases "x \<in> closure U")
+            case True
+            have "x \<in> U \<or> x \<in> frontier U"
+              using True h_clU_eq by blast
+            thus ?thesis using hx_notin_fr by blast
+          next
+            case False
+            thus ?thesis by blast
+          qed
+        qed
+      next
+        show "U \<union> (UNIV - closure U) \<subseteq> - frontier U"
+        proof
+          fix x assume "x \<in> U \<union> (UNIV - closure U)"
+          thus "x \<in> - frontier U"
+          proof
+            assume hxU: "x \<in> U"
+            have "x \<in> interior U" using hxU hU_open by (simp add: interior_open)
+            thus ?thesis by (simp add: frontier_def)
+          next
+            assume "x \<in> UNIV - closure U"
+            thus ?thesis by (auto simp: frontier_def)
+          qed
+        qed
+      qed
+      have hU_open': "open U" by (rule hU_open)
+      have hRclU_open: "open (UNIV - closure U)"
+        using closed_closure by (simp add: open_Diff)
+      have hU_Rcl_disj: "U \<inter> (UNIV - closure U) = {}"
+        using closure_subset by blast
+      text \<open>Connected set partitioned into 2 disjoint opens \<Rightarrow> one is empty.\<close>
+      have h_one_empty: "U = {} \<or> UNIV - closure U = {}"
+      proof (rule ccontr)
+        assume "\<not> (U = {} \<or> UNIV - closure U = {})"
+        hence hUne: "U \<noteq> {}" and hRclne: "UNIV - closure U \<noteq> {}" by auto
+        have h_sub: "(- frontier U) \<subseteq> U \<union> (UNIV - closure U)"
+          using h_partition by simp
+        have h_inter_empty: "U \<inter> (UNIV - closure U) \<inter> (- frontier U) = {}"
+          using closure_subset by blast
+        have h_split: "U \<inter> (- frontier U) = {} \<or> (UNIV - closure U) \<inter> (- frontier U) = {}"
+          using connectedD[OF h_conn_compl hU_open' hRclU_open h_inter_empty h_sub]
+          by blast
+        have h_U_in: "U \<inter> (- frontier U) = U"
+          using h_partition by blast
+        have h_RclU_in: "(UNIV - closure U) \<inter> (- frontier U) = UNIV - closure U"
+          using h_partition by blast
+        show False using h_split h_U_in h_RclU_in hUne hRclne by simp
+      qed
+      text \<open>U \<noteq> {} so UNIV - closure U = {}, i.e. closure U = UNIV.\<close>
+      have h_clU_UNIV: "closure U = UNIV" using h_one_empty hU_ne by blast
+      text \<open>U is in -M, so M is in -U. With closure U = UNIV, -U is in frontier U,
+        so M is in frontier U which is in E.\<close>
+      have h_M_in_E: "M \<subseteq> E"
+      proof
+        fix x assume hxM: "x \<in> M"
+        have "x \<notin> U" using hxM hU_subM by blast
+        have "x \<in> closure U" using h_clU_UNIV by simp
+        have "x \<in> U \<or> x \<in> frontier U" using \<open>x \<in> closure U\<close> h_clU_eq by blast
+        hence "x \<in> frontier U" using \<open>x \<notin> U\<close> by blast
+        thus "x \<in> E" using h_fr_in_E by blast
+      qed
+      text \<open>But M has uncountable interior (Int B1 \<noteq> {}), so M can't be \<subseteq> E (size 2).\<close>
+      have hB1_subM: "B1 \<subseteq> M"
+        using h_theta unfolding geotop_is_theta_graph_def by blast
+      obtain x where hx_int_B1: "x \<in> geotop_arc_interior B1 E"
+        using h_int_ne_1 by blast
+      have hx_B1: "x \<in> B1" using hx_int_B1 unfolding geotop_arc_interior_def by blast
+      have hx_notE: "x \<notin> E" using hx_int_B1 unfolding geotop_arc_interior_def by blast
+      have hx_M: "x \<in> M" using hx_B1 hB1_subM by blast
+      have "x \<in> E" using hx_M h_M_in_E by blast
+      thus False using hx_notE by blast
+    qed
+    text \<open>Now |S| = 2.\<close>
+    have hS_card_2: "card S = 2"
+      using hS_card hS_ne_3 hS_ne_1 hS_ne_0
+      by linarith
+    text \<open>So S has exactly 2 elements; pick them.\<close>
+    obtain i j where hS_eq: "S = {i, j}" and hij_ne: "i \<noteq> j"
+      using hS_card_2 card_2_iff by metis
+    have hij_sub: "{i, j} \<subseteq> {B1, B2, B3}" using hS_eq hS_sub by simp
+    have h_fr_eq: "frontier U = i \<union> j"
+    proof
+      show "frontier U \<subseteq> i \<union> j"
+      proof
+        fix x assume hx: "x \<in> frontier U"
+        have hx_S_or_E: "x \<in> (\<Union>S) \<union> E" using h_fr_decomp hx by blast
+        have hE_sub_ij: "E \<subseteq> i \<union> j"
+        proof -
+          have "i \<in> S" using hS_eq by blast
+          hence "i \<in> {B1, B2, B3}" using hS_sub by blast
+          have h_Ei: "geotop_arc_endpoints i E"
+            using \<open>i \<in> {B1, B2, B3}\<close> hE1 hE2 hE3 by blast
+          have "E \<subseteq> i" using h_Ei unfolding geotop_arc_endpoints_def by blast
+          thus ?thesis by blast
+        qed
+        show "x \<in> i \<union> j"
+          using hx_S_or_E hS_eq hE_sub_ij by blast
+      qed
+    next
+      have "i \<in> S" using hS_eq by blast
+      have "j \<in> S" using hS_eq by blast
+      have "i \<subseteq> frontier U" using \<open>i \<in> S\<close> unfolding S_def by blast
+      moreover have "j \<subseteq> frontier U" using \<open>j \<in> S\<close> unfolding S_def by blast
+      ultimately show "i \<union> j \<subseteq> frontier U" by blast
+    qed
+    show "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and> frontier U = i \<union> j"
+      using hij_sub hij_ne h_fr_eq by blast
+  qed
   have h_component_frontiers:
     "\<forall>U\<in>{C. \<exists>P\<in>UNIV - M. C = geotop_component_at UNIV geotop_euclidean_topology
                                 ((UNIV::(real^2) set) - M) P}.
        \<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
-             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j" sorry
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+  proof
+    fix U assume hU: "U \<in> {C. \<exists>P\<in>UNIV - M. C = geotop_component_at UNIV geotop_euclidean_topology
+                                ((UNIV::(real^2) set) - M) P}"
+    have hU_HOL: "U \<in> components (UNIV - M)" using hU h_geotop_eq_HOL by blast
+    have hU_ex: "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and> frontier U = i \<union> j"
+      using h_component_frontiers_HOL hU_HOL by simp
+    obtain i j where hij_sub: "{i, j} \<subseteq> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+                 and hij_fr: "frontier U = i \<union> j"
+      using hU_ex by blast
+    have h_geotop_fr: "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
+      by (rule geotop_frontier_UNIV_eq_frontier)
+    have h_geotop_eq: "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hij_fr h_geotop_fr by simp
+    show "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hij_sub hij_ne h_geotop_eq by blast
+  qed
   (** (3) Uniqueness of the middle arc: exactly one B_k has Int B_k inside the polygon
          formed by the other two; geometrically the \<theta>-graph has a canonical "middle"
          determined by which arc is inside the combined polygon of the other two. **)
@@ -682,11 +5553,240 @@ proof -
            C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P})
          \<longrightarrow> (\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
               geotop_is_polygon (i \<union> j) \<and>
-              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)" sorry
+              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)"
+  proof (intro allI impI)
+    fix U assume hU: "U \<in> {C. \<exists>P\<in>UNIV - M.
+           C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P}"
+    have h_cf_U: "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using h_component_frontiers hU by simp
+    obtain i j where hij_sub: "{i, j} \<subseteq> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+                 and hij_fr: "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using h_cf_U by blast
+    have hi: "i \<in> {B1, B2, B3}" using hij_sub by blast
+    have hj: "j \<in> {B1, B2, B3}" using hij_sub by blast
+    have h_poly_ij: "geotop_is_polygon (i \<union> j)"
+      using h_pairs_polygons hi hj hij_ne by blast
+    show "\<exists>i j. {i,j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+              geotop_is_polygon (i \<union> j) \<and>
+              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hij_sub hij_ne h_poly_ij hij_fr by blast
+  qed
   show "(\<exists>!k. k \<in> {B1, B2, B3} \<and>
           (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
             geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
     using h_middle_unique by (by100 blast)
+qed
+
+text \<open>Algebraic closure-additivity helper for GT_2_8: given the components
+  decomposition \<open>I13 - IB2 = I12 \<union> I23\<close> together with polygon-interior
+  closure expansions and \<open>IB2 = B2 - E \<subseteq> I13\<close>, derive
+  \<open>closure I13 = closure I12 \<union> closure I23\<close>.\<close>
+
+lemma gt28_closures_helper:
+  fixes I12 I23 I13 :: "(real^2) set" and B1 B2 B3 E IB2 :: "(real^2) set"
+  assumes h_E_B1: "E \<subseteq> B1"
+      and h_cl_I12: "closure I12 = I12 \<union> (B1 \<union> B2)"
+      and h_cl_I23: "closure I23 = I23 \<union> (B2 \<union> B3)"
+      and h_cl_I13: "closure I13 = I13 \<union> (B1 \<union> B3)"
+      and h_IB2_eq: "IB2 = B2 - E"
+      and h_IB2_in_I13: "IB2 \<subseteq> I13"
+      and h_I12_sub: "I12 \<subseteq> I13 - IB2"
+      and h_I23_sub: "I23 \<subseteq> I13 - IB2"
+      and h_split_union: "I13 - IB2 = I12 \<union> I23"
+  shows "closure I13 = closure I12 \<union> closure I23"
+proof
+  show "closure I13 \<subseteq> closure I12 \<union> closure I23"
+  proof
+    fix x assume hxCl: "x \<in> closure I13"
+    have hxIB13: "x \<in> I13 \<union> B1 \<union> B3" using h_cl_I13 hxCl by (by100 simp)
+    show "x \<in> closure I12 \<union> closure I23"
+    proof -
+      consider (a) "x \<in> I13" | (b) "x \<in> B1" | (c) "x \<in> B3"
+        using hxIB13 by (by100 blast)
+      then show ?thesis
+      proof cases
+        case a
+        show ?thesis
+        proof (cases "x \<in> IB2")
+          case True
+          have "x \<in> B2" using True h_IB2_eq by (by100 blast)
+          thus ?thesis using h_cl_I12 by (by100 blast)
+        next
+          case False
+          have "x \<in> I13 - IB2" using a False by (by100 blast)
+          hence "x \<in> I12 \<union> I23" using h_split_union by (by100 blast)
+          thus ?thesis using h_cl_I12 h_cl_I23 closure_subset by (by100 blast)
+        qed
+      next
+        case b thus ?thesis using h_cl_I12 by (by100 blast)
+      next
+        case c thus ?thesis using h_cl_I23 by (by100 blast)
+      qed
+    qed
+  qed
+  show "closure I12 \<union> closure I23 \<subseteq> closure I13"
+  proof
+    fix x assume hx: "x \<in> closure I12 \<union> closure I23"
+    have h_B1_cl13: "B1 \<subseteq> closure I13" using h_cl_I13 by (by100 blast)
+    have h_B3_cl13: "B3 \<subseteq> closure I13" using h_cl_I13 by (by100 blast)
+    have h_I13_cl13: "I13 \<subseteq> closure I13" by (rule closure_subset)
+    have h_I12_cl13: "I12 \<subseteq> closure I13" using h_I12_sub h_I13_cl13 by (by100 blast)
+    have h_I23_cl13: "I23 \<subseteq> closure I13" using h_I23_sub h_I13_cl13 by (by100 blast)
+    have h_B2_cl13: "B2 \<subseteq> closure I13"
+    proof
+      fix y assume hyB2: "y \<in> B2"
+      show "y \<in> closure I13"
+      proof (cases "y \<in> E")
+        case True thus ?thesis using h_E_B1 h_B1_cl13 by (by100 blast)
+      next
+        case False
+        have "y \<in> B2 - E" using hyB2 False by (by100 blast)
+        hence "y \<in> IB2" using h_IB2_eq by (by100 blast)
+        hence "y \<in> I13" using h_IB2_in_I13 by (by100 blast)
+        thus ?thesis using closure_subset by (by100 blast)
+      qed
+    qed
+    have h_cl12_sub: "closure I12 \<subseteq> closure I13"
+      using h_cl_I12 h_I12_cl13 h_B1_cl13 h_B2_cl13 by (by100 blast)
+    have h_cl23_sub: "closure I23 \<subseteq> closure I13"
+      using h_cl_I23 h_I23_cl13 h_B3_cl13 h_B2_cl13 by (by100 blast)
+    show "x \<in> closure I13" using hx h_cl12_sub h_cl23_sub by (by100 blast)
+  qed
+qed
+
+text \<open>Abstract set-arithmetic helper for h_separated in GT_2_8: given closure
+  expansions of polygon-interior unions with arc interiors, polygon disjointness,
+  and theta-graph cross disjointness, derive both directions of geotop_separated.\<close>
+
+lemma gt28_separated_helper:
+  fixes I12 I23 :: "(real^2) set" and IB1 IB3 :: "(real^2) set"
+      and B1 B2 B3 E :: "(real^2) set"
+  assumes h_cl_intB1: "closure IB1 = B1"
+      and h_cl_intB3: "closure IB3 = B3"
+      and h_cl_I12: "closure I12 = I12 \<union> (B1 \<union> B2)"
+      and h_cl_I23: "closure I23 = I23 \<union> (B2 \<union> B3)"
+      and h_intB1_eq: "IB1 = B1 - E"
+      and h_intB3_eq: "IB3 = B3 - E"
+      and h_B1_B2_E: "B1 \<inter> B2 \<subseteq> E"
+      and h_B1_B3_E: "B1 \<inter> B3 \<subseteq> E"
+      and h_B2_B3_E: "B2 \<inter> B3 \<subseteq> E"
+      and h_I12_disj_B12: "I12 \<inter> (B1 \<union> B2) = {}"
+      and h_I23_disj_B23: "I23 \<inter> (B2 \<union> B3) = {}"
+      and h_I12_I23_disj: "I12 \<inter> I23 = {}"
+      and h_I12_B3_disj: "I12 \<inter> B3 = {}"
+      and h_I23_B1_disj: "I23 \<inter> B1 = {}"
+  shows "closure (I12 \<union> IB1) \<inter> (I23 \<union> IB3) = {} \<and>
+         (I12 \<union> IB1) \<inter> closure (I23 \<union> IB3) = {}"
+proof -
+  have h_intB1_sub: "IB1 \<subseteq> B1" using h_intB1_eq by (by100 blast)
+  have h_intB3_sub: "IB3 \<subseteq> B3" using h_intB3_eq by (by100 blast)
+  have h_intB1_E_disj: "IB1 \<inter> E = {}" using h_intB1_eq by (by100 blast)
+  have h_intB3_E_disj: "IB3 \<inter> E = {}" using h_intB3_eq by (by100 blast)
+  have h_cl_lhs: "closure (I12 \<union> IB1) = I12 \<union> (B1 \<union> B2)"
+  proof -
+    have h1: "closure (I12 \<union> IB1) = closure I12 \<union> closure IB1"
+      by (rule closure_Un)
+    have h2: "closure I12 \<union> closure IB1 = (I12 \<union> (B1 \<union> B2)) \<union> B1"
+      using h_cl_I12 h_cl_intB1 by (by100 simp)
+    have h3: "(I12 \<union> (B1 \<union> B2)) \<union> B1 = I12 \<union> (B1 \<union> B2)" by (by100 blast)
+    show ?thesis using h1 h2 h3 by (by100 simp)
+  qed
+  have h_cl_rhs: "closure (I23 \<union> IB3) = I23 \<union> (B2 \<union> B3)"
+  proof -
+    have h1: "closure (I23 \<union> IB3) = closure I23 \<union> closure IB3"
+      by (rule closure_Un)
+    have h2: "closure I23 \<union> closure IB3 = (I23 \<union> (B2 \<union> B3)) \<union> B3"
+      using h_cl_I23 h_cl_intB3 by (by100 simp)
+    have h3: "(I23 \<union> (B2 \<union> B3)) \<union> B3 = I23 \<union> (B2 \<union> B3)" by (by100 blast)
+    show ?thesis using h1 h2 h3 by (by100 simp)
+  qed
+  have h_I12_B2_disj: "I12 \<inter> B2 = {}" using h_I12_disj_B12 by (by100 blast)
+  have h_I12_B1_disj: "I12 \<inter> B1 = {}" using h_I12_disj_B12 by (by100 blast)
+  have h_I23_B2_disj: "I23 \<inter> B2 = {}" using h_I23_disj_B23 by (by100 blast)
+  have h_I23_B3_disj: "I23 \<inter> B3 = {}" using h_I23_disj_B23 by (by100 blast)
+  have h_I12_intB3_disj: "I12 \<inter> IB3 = {}"
+    using h_I12_B3_disj h_intB3_sub by (by100 blast)
+  have h_I23_intB1_disj: "I23 \<inter> IB1 = {}"
+    using h_I23_B1_disj h_intB1_sub by (by100 blast)
+  have h_B2_IB3_disj: "B2 \<inter> IB3 = {}"
+  proof
+    show "B2 \<inter> IB3 \<subseteq> {}"
+    proof
+      fix x assume hx: "x \<in> B2 \<inter> IB3"
+      have hxB2: "x \<in> B2" using hx by (by100 blast)
+      have hxIB3: "x \<in> IB3" using hx by (by100 blast)
+      have hxB3: "x \<in> B3" using hxIB3 h_intB3_sub by (by100 blast)
+      have "x \<in> B2 \<inter> B3" using hxB2 hxB3 by (by100 blast)
+      hence "x \<in> E" using h_B2_B3_E by (by100 blast)
+      thus "x \<in> {}" using hxIB3 h_intB3_E_disj by (by100 blast)
+    qed
+    show "{} \<subseteq> B2 \<inter> IB3" by (by100 simp)
+  qed
+  have h_IB1_B2_disj: "IB1 \<inter> B2 = {}"
+  proof
+    show "IB1 \<inter> B2 \<subseteq> {}"
+    proof
+      fix x assume hx: "x \<in> IB1 \<inter> B2"
+      have hxIB1: "x \<in> IB1" using hx by (by100 blast)
+      have hxB2: "x \<in> B2" using hx by (by100 blast)
+      have hxB1: "x \<in> B1" using hxIB1 h_intB1_sub by (by100 blast)
+      have "x \<in> B1 \<inter> B2" using hxB1 hxB2 by (by100 blast)
+      hence "x \<in> E" using h_B1_B2_E by (by100 blast)
+      thus "x \<in> {}" using hxIB1 h_intB1_E_disj by (by100 blast)
+    qed
+    show "{} \<subseteq> IB1 \<inter> B2" by (by100 simp)
+  qed
+  have h_IB1_B3_disj: "IB1 \<inter> B3 = {}"
+  proof
+    show "IB1 \<inter> B3 \<subseteq> {}"
+    proof
+      fix x assume hx: "x \<in> IB1 \<inter> B3"
+      have hxIB1: "x \<in> IB1" using hx by (by100 blast)
+      have hxB3: "x \<in> B3" using hx by (by100 blast)
+      have hxB1: "x \<in> B1" using hxIB1 h_intB1_sub by (by100 blast)
+      have "x \<in> B1 \<inter> B3" using hxB1 hxB3 by (by100 blast)
+      hence "x \<in> E" using h_B1_B3_E by (by100 blast)
+      thus "x \<in> {}" using hxIB1 h_intB1_E_disj by (by100 blast)
+    qed
+    show "{} \<subseteq> IB1 \<inter> B3" by (by100 simp)
+  qed
+  have h_lhs_disj: "(I12 \<union> (B1 \<union> B2)) \<inter> (I23 \<union> IB3) = {}"
+  proof -
+    have hA: "I12 \<inter> I23 = {}" by (rule h_I12_I23_disj)
+    have hB: "I12 \<inter> IB3 = {}" by (rule h_I12_intB3_disj)
+    have hC: "B1 \<inter> I23 = {}" using h_I23_B1_disj by (by100 blast)
+    have hD: "B1 \<inter> IB3 = {}"
+    proof
+      show "B1 \<inter> IB3 \<subseteq> {}"
+      proof
+        fix x assume hx: "x \<in> B1 \<inter> IB3"
+        have hxB1: "x \<in> B1" using hx by (by100 blast)
+        have hxIB3: "x \<in> IB3" using hx by (by100 blast)
+        have hxB3: "x \<in> B3" using hxIB3 h_intB3_sub by (by100 blast)
+        have "x \<in> B1 \<inter> B3" using hxB1 hxB3 by (by100 blast)
+        hence "x \<in> E" using h_B1_B3_E by (by100 blast)
+        thus "x \<in> {}" using hxIB3 h_intB3_E_disj by (by100 blast)
+      qed
+      show "{} \<subseteq> B1 \<inter> IB3" by (by100 simp)
+    qed
+    have hE_disj: "B2 \<inter> I23 = {}" using h_I23_B2_disj by (by100 blast)
+    have hF: "B2 \<inter> IB3 = {}" by (rule h_B2_IB3_disj)
+    show ?thesis using hA hB hC hD hE_disj hF by (by100 blast)
+  qed
+  have h_rhs_disj: "(I12 \<union> IB1) \<inter> (I23 \<union> (B2 \<union> B3)) = {}"
+  proof -
+    have hA: "I12 \<inter> I23 = {}" by (rule h_I12_I23_disj)
+    have hB: "I12 \<inter> B2 = {}" by (rule h_I12_B2_disj)
+    have hC: "I12 \<inter> B3 = {}" by (rule h_I12_B3_disj)
+    have hD: "IB1 \<inter> I23 = {}" using h_I23_intB1_disj by (by100 blast)
+    have hE_disj: "IB1 \<inter> B2 = {}" by (rule h_IB1_B2_disj)
+    have hF: "IB1 \<inter> B3 = {}" by (rule h_IB1_B3_disj)
+    have h_I12_part: "I12 \<inter> (I23 \<union> (B2 \<union> B3)) = {}" using hA hB hC by (by100 blast)
+    have h_IB1_part: "IB1 \<inter> (I23 \<union> (B2 \<union> B3)) = {}" using hD hE_disj hF by (by100 blast)
+    show ?thesis using h_I12_part h_IB1_part by (by100 blast)
+  qed
+  show ?thesis using h_cl_lhs h_cl_rhs h_lhs_disj h_rhs_disj by (by100 simp)
 qed
 
 (** from \<S>2 Theorem 8 (geotop.tex:651)
@@ -719,7 +5819,54 @@ theorem Theorem_GT_2_8:
            (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
 proof -
   (** (1) B_2 lies in I_13, cutting it into two parts. The polygon B_1 \<cup> B_2 encloses one
-         side of the cut (I_12), and B_2 \<cup> B_3 encloses the other (I_23). **)
+         side of the cut (I_12), and B_2 \<cup> B_3 encloses the other (I_23).
+
+      PROOF STRATEGY (for future sessions to formalize):
+
+      Direction \<supseteq>: show I_12, I_23 \<in> components(I_13 - Int B_2).
+        Need:
+        (a) I_12 \<subseteq> I_13     (geometric: chord B_2 inside polygon B_1 \<cup> B_3, so its
+                              "B_1-side" piece I_12 is inside I_13). Itself non-trivial.
+                              Standard Jordan-style: take any P \<in> I_12, show P \<in> I_13
+                              by checking the path from a "deep interior" reference
+                              point doesn't cross B_1 \<cup> B_3.
+        (b) I_12 \<inter> Int B_2 = \<emptyset>  (immediate: I_12 \<inter> (B_1 \<union> B_2) = \<emptyset> by polygon-int
+                                  disjoint, Int B_2 \<subseteq> B_2).
+        Hence I_12 \<subseteq> I_13 - Int B_2.
+
+        I_12 is open in R^2 (poly_int_open).
+        I_12 is closed in I_13 - Int B_2: closure I_12 = I_12 \<union> B_1 \<union> B_2; intersected
+          with I_13 - Int B_2 gives I_12 \<union> (B_1 \<inter> I_13) \<union> (B_2 \<inter> I_13) - Int B_2
+          = I_12 \<union> \<emptyset> \<union> Int B_2 - Int B_2 = I_12.
+        I_12 connected (poly_int connected).
+        \<Rightarrow> I_12 is exactly one component of I_13 - Int B_2.
+
+        Symmetric for I_23.
+
+      Direction \<subseteq>: show every component of I_13 - Int B_2 is I_12 or I_23.
+        Equivalent to: I_13 - Int B_2 \<subseteq> I_12 \<union> I_23 (each point's component contains it).
+
+        Take x \<in> I_13 - Int B_2. Using polygon B_1 \<union> B_2 splits plane into I_12 and
+        poly_ext(B_1 \<union> B_2):
+          - x \<notin> B_1 (since x \<in> I_13, polygon-disjoint),
+          - x \<notin> B_2 (since x \<notin> Int B_2 and x \<notin> E since E \<subseteq> B_1).
+          So x \<in> I_12 \<union> poly_ext(B_1 \<union> B_2).
+
+        Symmetrically, x \<in> I_23 \<union> poly_ext(B_2 \<union> B_3).
+
+        Suppose x \<notin> I_12 \<union> I_23. Then x \<in> I_13 \<inter> poly_ext(B_1 \<union> B_2) \<inter> poly_ext(B_2 \<union> B_3).
+        DEEP STEP (Jordan-style separation): this intersection is empty under
+        hB2_inner. Argument: poly_ext(B_1 \<union> B_2) is the unbounded component;
+        connecting x to "infinity" via path in poly_ext(B_1 \<union> B_2) must stay in
+        UNIV - (B_1 \<union> B_2). But x \<in> I_13, so the path must cross B_1 \<union> B_3 (frontier
+        of I_13). It can't cross B_1 (already in poly_ext(B_1 \<union> B_2)). So it crosses
+        B_3. So x is in the same component (of UNIV - (B_1 \<union> B_2)) as a point of
+        B_3. But B_3 \<subseteq> closure I_12 \<union> closure(poly_ext(B_1 \<union> B_2)). If x's
+        component is poly_ext(B_1 \<union> B_2), then B_3 \<subseteq> closure(poly_ext(B_1 \<union> B_2)).
+        Symmetrically, B_1 \<subseteq> closure(poly_ext(B_2 \<union> B_3)). Combined with x \<in>
+        poly_ext(B_2 \<union> B_3) and the ray-to-infinity argument... requires more
+        careful component analysis tying back to GT_2_7's component-frontier
+        description. **)
   have h_split_I13:
     "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
@@ -729,26 +5876,440 @@ proof -
   have h_closures:
     "closure_on UNIV geotop_euclidean_topology I13 =
          closure_on UNIV geotop_euclidean_topology I12
-         \<union> closure_on UNIV geotop_euclidean_topology I23" sorry
+         \<union> closure_on UNIV geotop_euclidean_topology I23"
+  proof -
+    have h_theta_loc: "geotop_is_theta_graph M B1 B2 B3 E"
+      by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
+    have hB1_bl_loc: "geotop_is_broken_line B1"
+      by (rule polyhedral_theta_graph_imp_bl_1[OF h\<theta>])
+    have hB2_bl_loc: "geotop_is_broken_line B2"
+      by (rule polyhedral_theta_graph_imp_bl_2[OF h\<theta>])
+    have hB3_bl_loc: "geotop_is_broken_line B3"
+      by (rule polyhedral_theta_graph_imp_bl_3[OF h\<theta>])
+    have hE1_loc: "geotop_arc_endpoints B1 E"
+     and hE2_loc: "geotop_arc_endpoints B2 E"
+     and hE3_loc: "geotop_arc_endpoints B3 E"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_int12_loc: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+     and h_int13_loc: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+     and h_int23_loc: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_poly_12_loc: "geotop_is_polygon (B1 \<union> B2)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_loc hB2_bl_loc hE1_loc hE2_loc h_int12_loc])
+    have h_poly_23_loc: "geotop_is_polygon (B2 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB2_bl_loc hB3_bl_loc hE2_loc hE3_loc h_int23_loc])
+    have h_poly_13_loc: "geotop_is_polygon (B1 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_loc hB3_bl_loc hE1_loc hE3_loc h_int13_loc])
+    have h_E_B1: "E \<subseteq> B1" using hE1_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_cl_I12: "closure I12 = I12 \<union> (B1 \<union> B2)"
+      using polygon_interior_closure_eq[OF h_poly_12_loc] I12_def by (by100 simp)
+    have h_cl_I23: "closure I23 = I23 \<union> (B2 \<union> B3)"
+      using polygon_interior_closure_eq[OF h_poly_23_loc] I23_def by (by100 simp)
+    have h_cl_I13: "closure I13 = I13 \<union> (B1 \<union> B3)"
+      using polygon_interior_closure_eq[OF h_poly_13_loc] I13_def by (by100 simp)
+    have h_IB2_eq: "geotop_arc_interior B2 E = B2 - E"
+      unfolding geotop_arc_interior_def by (by100 simp)
+    have h_IB2_in_I13: "geotop_arc_interior B2 E \<subseteq> I13"
+      using hB2_inner I13_def by (by100 simp)
+    define IB2 where "IB2 = geotop_arc_interior B2 E"
+    have h_HOL_split: "components (I13 - geotop_arc_interior B2 E) = {I12, I23}"
+    proof -
+      have hbridge: "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P}
+           = components (I13 - geotop_arc_interior B2 E)"
+        unfolding components_def
+        using geotop_component_at_UNIV_eq_connected_component_set by (by100 auto)
+      show ?thesis using h_split_I13 hbridge by (by100 simp)
+    qed
+    have hI12_comp: "I12 \<in> components (I13 - geotop_arc_interior B2 E)"
+      using h_HOL_split by (by100 blast)
+    have hI23_comp: "I23 \<in> components (I13 - geotop_arc_interior B2 E)"
+      using h_HOL_split by (by100 blast)
+    have h_I12_sub: "I12 \<subseteq> I13 - IB2"
+    proof -
+      have h_sub: "I12 \<subseteq> I13 - geotop_arc_interior B2 E"
+        using hI12_comp in_components_subset by (by100 blast)
+      show ?thesis using h_sub IB2_def by (by100 simp)
+    qed
+    have h_I23_sub: "I23 \<subseteq> I13 - IB2"
+    proof -
+      have h_sub: "I23 \<subseteq> I13 - geotop_arc_interior B2 E"
+        using hI23_comp in_components_subset by (by100 blast)
+      show ?thesis using h_sub IB2_def by (by100 simp)
+    qed
+    have h_split_union: "I13 - IB2 = I12 \<union> I23"
+    proof -
+      have h1: "\<Union> (components (I13 - geotop_arc_interior B2 E))
+                = I13 - geotop_arc_interior B2 E"
+        by (rule Union_components)
+      have h2: "\<Union> {I12, I23} = I12 \<union> I23" by (by100 blast)
+      show ?thesis using h1 h2 h_HOL_split IB2_def by (by100 simp)
+    qed
+    have h_HOL_eq: "closure I13 = closure I12 \<union> closure I23"
+      by (rule gt28_closures_helper[OF h_E_B1 h_cl_I12 h_cl_I23 h_cl_I13
+                _ _ h_I12_sub h_I23_sub h_split_union])
+         (use IB2_def h_IB2_eq h_IB2_in_I13 in simp_all)
+    have h_clos_eq_13: "closure_on UNIV geotop_euclidean_topology I13 = closure I13"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have h_clos_eq_12: "closure_on UNIV geotop_euclidean_topology I12 = closure I12"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have h_clos_eq_23: "closure_on UNIV geotop_euclidean_topology I23 = closure I23"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis using h_HOL_eq h_clos_eq_13 h_clos_eq_12 h_clos_eq_23 by (by100 simp)
+  qed
   (** (3) Cl(I_13) - B_2: contains Int B_1 and Int B_3, each glued to its respective
          I_{1i}. **)
   have h_subtract_B2:
     "closure_on UNIV geotop_euclidean_topology I13 - B2 =
-         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)" sorry
-  (** (4) Each piece I_{1i} \<cup> Int B_i is connected (path-connected by joining any I_{1i}
-         point to the shared interior edge B_i via a straight segment inside the convex
-         interior region). **)
+         (I12 \<union> geotop_arc_interior B1 E) \<union> (I23 \<union> geotop_arc_interior B3 E)"
+  proof -
+    have h_theta_loc: "geotop_is_theta_graph M B1 B2 B3 E"
+      by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
+    have hB1_bl_loc: "geotop_is_broken_line B1"
+      by (rule polyhedral_theta_graph_imp_bl_1[OF h\<theta>])
+    have hB2_bl_loc: "geotop_is_broken_line B2"
+      by (rule polyhedral_theta_graph_imp_bl_2[OF h\<theta>])
+    have hB3_bl_loc: "geotop_is_broken_line B3"
+      by (rule polyhedral_theta_graph_imp_bl_3[OF h\<theta>])
+    have hE1_loc: "geotop_arc_endpoints B1 E"
+     and hE2_loc: "geotop_arc_endpoints B2 E"
+     and hE3_loc: "geotop_arc_endpoints B3 E"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_int12_loc: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+     and h_int23_loc: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_poly_12_loc: "geotop_is_polygon (B1 \<union> B2)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_loc hB2_bl_loc hE1_loc hE2_loc h_int12_loc])
+    have h_poly_23_loc: "geotop_is_polygon (B2 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB2_bl_loc hB3_bl_loc hE2_loc hE3_loc h_int23_loc])
+    have h_E1: "E \<subseteq> B1" using hE1_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_E2: "E \<subseteq> B2" using hE2_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_E3: "E \<subseteq> B3" using hE3_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_int12_diff: "(B1 - E) \<inter> (B2 - E) = {}"
+      using h_int12_loc unfolding geotop_arc_interior_def by (by100 simp)
+    have h_int23_diff: "(B2 - E) \<inter> (B3 - E) = {}"
+      using h_int23_loc unfolding geotop_arc_interior_def by (by100 simp)
+    have h_cl_I12_HOL: "closure I12 = I12 \<union> (B1 \<union> B2)"
+      using polygon_interior_closure_eq[OF h_poly_12_loc] I12_def by (by100 simp)
+    have h_cl_I23_HOL: "closure I23 = I23 \<union> (B2 \<union> B3)"
+      using polygon_interior_closure_eq[OF h_poly_23_loc] I23_def by (by100 simp)
+    have h_I12_disj: "I12 \<inter> (B1 \<union> B2) = {}"
+      using polygon_interior_disjoint_polygon[OF h_poly_12_loc] I12_def by (by100 simp)
+    have h_I23_disj: "I23 \<inter> (B2 \<union> B3) = {}"
+      using polygon_interior_disjoint_polygon[OF h_poly_23_loc] I23_def by (by100 simp)
+    have h_cl_I13_HOL: "closure I13 = closure I12 \<union> closure I23"
+    proof -
+      have h_clos_13: "closure_on UNIV geotop_euclidean_topology I13 = closure I13"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have h_clos_12: "closure_on UNIV geotop_euclidean_topology I12 = closure I12"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have h_clos_23: "closure_on UNIV geotop_euclidean_topology I23 = closure I23"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      show ?thesis using h_closures h_clos_13 h_clos_12 h_clos_23 by (by100 simp)
+    qed
+    have hB1_B2: "B1 \<inter> B2 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B1 \<inter> B2"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume hxnE: "x \<notin> E"
+        have "x \<in> (B1 - E) \<inter> (B2 - E)" using hx hxnE by (by100 blast)
+        thus False using h_int12_diff by (by100 blast)
+      qed
+    qed
+    have hB3_B2: "B3 \<inter> B2 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B3 \<inter> B2"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume hxnE: "x \<notin> E"
+        have "x \<in> (B2 - E) \<inter> (B3 - E)" using hx hxnE by (by100 blast)
+        thus False using h_int23_diff by (by100 blast)
+      qed
+    qed
+    have hB1mB2: "B1 - B2 = B1 - E"
+    proof
+      show "B1 - B2 \<subseteq> B1 - E" using h_E2 by (by100 blast)
+      show "B1 - E \<subseteq> B1 - B2"
+      proof
+        fix x assume hxBE: "x \<in> B1 - E"
+        hence hxB1: "x \<in> B1" and hxnE: "x \<notin> E" by (by100 blast)+
+        have hxnB2: "x \<notin> B2"
+        proof
+          assume hxB2: "x \<in> B2"
+          have "x \<in> B1 \<inter> B2" using hxB1 hxB2 by (by100 blast)
+          hence "x \<in> E" using hB1_B2 by (by100 blast)
+          thus False using hxnE by (by100 blast)
+        qed
+        show "x \<in> B1 - B2" using hxB1 hxnB2 by (by100 blast)
+      qed
+    qed
+    have hB3mB2: "B3 - B2 = B3 - E"
+    proof
+      show "B3 - B2 \<subseteq> B3 - E" using h_E2 by (by100 blast)
+      show "B3 - E \<subseteq> B3 - B2"
+      proof
+        fix x assume hxBE: "x \<in> B3 - E"
+        hence hxB3: "x \<in> B3" and hxnE: "x \<notin> E" by (by100 blast)+
+        have hxnB2: "x \<notin> B2"
+        proof
+          assume hxB2: "x \<in> B2"
+          have "x \<in> B3 \<inter> B2" using hxB3 hxB2 by (by100 blast)
+          hence "x \<in> E" using hB3_B2 by (by100 blast)
+          thus False using hxnE by (by100 blast)
+        qed
+        show "x \<in> B3 - B2" using hxB3 hxnB2 by (by100 blast)
+      qed
+    qed
+    have h_I12_B2: "I12 \<inter> B2 = {}" using h_I12_disj by (by100 blast)
+    have h_I23_B2: "I23 \<inter> B2 = {}" using h_I23_disj by (by100 blast)
+    have h_diff_12: "closure I12 - B2 = I12 \<union> (B1 - E)"
+    proof -
+      have h2: "(I12 \<union> (B1 \<union> B2)) - B2 = (I12 - B2) \<union> (B1 - B2) \<union> (B2 - B2)"
+        by (by100 blast)
+      have h3: "(I12 - B2) = I12" using h_I12_B2 by (by100 blast)
+      have h4: "B2 - B2 = {}" by (by100 simp)
+      have h1: "closure I12 - B2 = (I12 - B2) \<union> (B1 - B2) \<union> (B2 - B2)"
+        using h_cl_I12_HOL h2 by (by100 simp)
+      show ?thesis using h1 h3 h4 hB1mB2 by (by100 simp)
+    qed
+    have h_diff_23: "closure I23 - B2 = I23 \<union> (B3 - E)"
+    proof -
+      have h2: "(I23 \<union> (B2 \<union> B3)) - B2 = (I23 - B2) \<union> (B2 - B2) \<union> (B3 - B2)"
+        by (by100 blast)
+      have h3: "(I23 - B2) = I23" using h_I23_B2 by (by100 blast)
+      have h4: "B2 - B2 = {}" by (by100 simp)
+      have h1: "closure I23 - B2 = (I23 - B2) \<union> (B2 - B2) \<union> (B3 - B2)"
+        using h_cl_I23_HOL h2 by (by100 simp)
+      show ?thesis using h1 h3 h4 hB3mB2 by (by100 simp)
+    qed
+    have h_split: "closure I13 - B2 = (closure I12 - B2) \<union> (closure I23 - B2)"
+      using h_cl_I13_HOL by (by100 blast)
+    have h_HOL_eq: "closure I13 - B2 = (I12 \<union> (B1 - E)) \<union> (I23 \<union> (B3 - E))"
+      using h_split h_diff_12 h_diff_23 by (by100 simp)
+    have h_arc1: "geotop_arc_interior B1 E = B1 - E"
+      unfolding geotop_arc_interior_def by (by100 simp)
+    have h_arc3: "geotop_arc_interior B3 E = B3 - E"
+      unfolding geotop_arc_interior_def by (by100 simp)
+    have h_clos_eq: "closure_on UNIV geotop_euclidean_topology I13 = closure I13"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis using h_HOL_eq h_arc1 h_arc3 h_clos_eq by (by100 simp)
+  qed
+  (** (4) Each piece I_{1i} \<cup> Int B_i is connected (the polygon interior I_{1i} is
+         connected, and Int B_i is contained in the polygon's frontier, so the union
+         is contained in the closure and hence connected by polygon_interior_union_subset_connected). **)
+  have h_theta_8: "geotop_is_theta_graph M B1 B2 B3 E"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast
+  have hB1_bl_8: "geotop_is_broken_line B1"
+   and hB2_bl_8: "geotop_is_broken_line B2"
+   and hB3_bl_8: "geotop_is_broken_line B3"
+    using h\<theta> unfolding geotop_is_polyhedral_theta_graph_def by blast+
+  have hE1_8: "geotop_arc_endpoints B1 E"
+   and hE2_8: "geotop_arc_endpoints B2 E"
+   and hE3_8: "geotop_arc_endpoints B3 E"
+    using h_theta_8 unfolding geotop_is_theta_graph_def by blast+
+  have h_int12_8: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+   and h_int23_8: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta_8 unfolding geotop_is_theta_graph_def by blast+
+  have h_poly_12_8: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl_8 hB2_bl_8 hE1_8 hE2_8 h_int12_8])
+  have h_poly_23_8: "geotop_is_polygon (B2 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB2_bl_8 hB3_bl_8 hE2_8 hE3_8 h_int23_8])
+  have hIntB1_sub: "geotop_arc_interior B1 E \<subseteq> B1 \<union> B2"
+    unfolding geotop_arc_interior_def by blast
+  have hIntB3_sub: "geotop_arc_interior B3 E \<subseteq> B2 \<union> B3"
+    unfolding geotop_arc_interior_def by blast
+  have h_conn_12_HOL: "connected (geotop_polygon_interior (B1 \<union> B2) \<union> geotop_arc_interior B1 E)"
+    by (rule polygon_interior_union_subset_connected[OF h_poly_12_8 hIntB1_sub])
+  have h_conn_23_HOL: "connected (geotop_polygon_interior (B2 \<union> B3) \<union> geotop_arc_interior B3 E)"
+    by (rule polygon_interior_union_subset_connected[OF h_poly_23_8 hIntB3_sub])
+  have h_conn_12_top1: "top1_connected_on
+        (geotop_polygon_interior (B1 \<union> B2) \<union> geotop_arc_interior B1 E)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polygon_interior (B1 \<union> B2) \<union> geotop_arc_interior B1 E))"
+    using h_conn_12_HOL top1_connected_on_geotop_iff_connected by blast
+  have h_conn_23_top1: "top1_connected_on
+        (geotop_polygon_interior (B2 \<union> B3) \<union> geotop_arc_interior B3 E)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polygon_interior (B2 \<union> B3) \<union> geotop_arc_interior B3 E))"
+    using h_conn_23_HOL top1_connected_on_geotop_iff_connected by blast
+  have h_conn_12: "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
+        (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E))"
+    using h_conn_12_top1 unfolding I12_def by simp
+  have h_conn_23: "top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
+        (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
+    using h_conn_23_top1 unfolding I23_def by simp
   have h_connected_pieces:
     "top1_connected_on (I12 \<union> geotop_arc_interior B1 E)
         (subspace_topology UNIV geotop_euclidean_topology (I12 \<union> geotop_arc_interior B1 E)) \<and>
      top1_connected_on (I23 \<union> geotop_arc_interior B3 E)
         (subspace_topology UNIV geotop_euclidean_topology (I23 \<union> geotop_arc_interior B3 E))"
-    sorry
+    using h_conn_12 h_conn_23 by blast
   (** (5) The two pieces are separated: they share no closure point (since they are in
          disjoint sides of the middle arc B_2, which is a 1-dim barrier). **)
   have h_separated:
     "geotop_separated UNIV geotop_euclidean_topology
-        (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)" sorry
+        (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
+  proof -
+    have h_theta_loc: "geotop_is_theta_graph M B1 B2 B3 E"
+      by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
+    have hB1_bl_loc: "geotop_is_broken_line B1"
+      by (rule polyhedral_theta_graph_imp_bl_1[OF h\<theta>])
+    have hB2_bl_loc: "geotop_is_broken_line B2"
+      by (rule polyhedral_theta_graph_imp_bl_2[OF h\<theta>])
+    have hB3_bl_loc: "geotop_is_broken_line B3"
+      by (rule polyhedral_theta_graph_imp_bl_3[OF h\<theta>])
+    have hE1_loc: "geotop_arc_endpoints B1 E"
+     and hE2_loc: "geotop_arc_endpoints B2 E"
+     and hE3_loc: "geotop_arc_endpoints B3 E"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_int12_loc: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+     and h_int13_loc: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+     and h_int23_loc: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+      using h_theta_loc unfolding geotop_is_theta_graph_def by (by100 blast)+
+    have h_poly_12_loc: "geotop_is_polygon (B1 \<union> B2)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_loc hB2_bl_loc hE1_loc hE2_loc h_int12_loc])
+    have h_poly_23_loc: "geotop_is_polygon (B2 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB2_bl_loc hB3_bl_loc hE2_loc hE3_loc h_int23_loc])
+    have h_poly_13_loc: "geotop_is_polygon (B1 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_loc hB3_bl_loc hE1_loc hE3_loc h_int13_loc])
+    have h_E_B1: "E \<subseteq> B1" using hE1_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_E_B2: "E \<subseteq> B2" using hE2_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_E_B3: "E \<subseteq> B3" using hE3_loc unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_cl_I12: "closure I12 = I12 \<union> (B1 \<union> B2)"
+      using polygon_interior_closure_eq[OF h_poly_12_loc] I12_def by (by100 simp)
+    have h_cl_I23: "closure I23 = I23 \<union> (B2 \<union> B3)"
+      using polygon_interior_closure_eq[OF h_poly_23_loc] I23_def by (by100 simp)
+    have h_I12_disj_B12: "I12 \<inter> (B1 \<union> B2) = {}"
+      using polygon_interior_disjoint_polygon[OF h_poly_12_loc] I12_def by (by100 simp)
+    have h_I23_disj_B23: "I23 \<inter> (B2 \<union> B3) = {}"
+      using polygon_interior_disjoint_polygon[OF h_poly_23_loc] I23_def by (by100 simp)
+    have h_I13_disj_B13: "I13 \<inter> (B1 \<union> B3) = {}"
+      using polygon_interior_disjoint_polygon[OF h_poly_13_loc] I13_def by (by100 simp)
+    have h_int12_diff: "(B1 - E) \<inter> (B2 - E) = {}"
+      using h_int12_loc unfolding geotop_arc_interior_def by (by100 simp)
+    have h_int13_diff: "(B1 - E) \<inter> (B3 - E) = {}"
+      using h_int13_loc unfolding geotop_arc_interior_def by (by100 simp)
+    have h_int23_diff: "(B2 - E) \<inter> (B3 - E) = {}"
+      using h_int23_loc unfolding geotop_arc_interior_def by (by100 simp)
+    have h_B1_B2_E: "B1 \<inter> B2 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B1 \<inter> B2"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume hxnE: "x \<notin> E"
+        have "x \<in> (B1 - E) \<inter> (B2 - E)" using hx hxnE by (by100 blast)
+        thus False using h_int12_diff by (by100 blast)
+      qed
+    qed
+    have h_B1_B3_E: "B1 \<inter> B3 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B1 \<inter> B3"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume hxnE: "x \<notin> E"
+        have "x \<in> (B1 - E) \<inter> (B3 - E)" using hx hxnE by (by100 blast)
+        thus False using h_int13_diff by (by100 blast)
+      qed
+    qed
+    have h_B2_B3_E: "B2 \<inter> B3 \<subseteq> E"
+    proof
+      fix x assume hx: "x \<in> B2 \<inter> B3"
+      show "x \<in> E"
+      proof (rule ccontr)
+        assume hxnE: "x \<notin> E"
+        have "x \<in> (B2 - E) \<inter> (B3 - E)" using hx hxnE by (by100 blast)
+        thus False using h_int23_diff by (by100 blast)
+      qed
+    qed
+    have h_cl_intB1: "closure (geotop_arc_interior B1 E) = B1"
+      by (rule arc_closure_interior_eq_arc[OF hE1_loc])
+    have h_cl_intB3: "closure (geotop_arc_interior B3 E) = B3"
+      by (rule arc_closure_interior_eq_arc[OF hE3_loc])
+    have h_intB1_eq: "geotop_arc_interior B1 E = B1 - E"
+      unfolding geotop_arc_interior_def by (by100 simp)
+    have h_intB3_eq: "geotop_arc_interior B3 E = B3 - E"
+      unfolding geotop_arc_interior_def by (by100 simp)
+    \<comment> \<open>From h_split_I13 derive components(I13 - Int B2) = {I12, I23},
+       hence I12 \<subseteq> I13, I23 \<subseteq> I13, plus eventually I12 \<inter> I23 = {}.\<close>
+    have h_HOL_split: "components (I13 - geotop_arc_interior B2 E) = {I12, I23}"
+    proof -
+      have hbridge: "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P}
+           = components (I13 - geotop_arc_interior B2 E)"
+        unfolding components_def
+        using geotop_component_at_UNIV_eq_connected_component_set by (by100 auto)
+      show ?thesis using h_split_I13 hbridge by (by100 simp)
+    qed
+    have hI12_comp: "I12 \<in> components (I13 - geotop_arc_interior B2 E)"
+      using h_HOL_split by (by100 blast)
+    have hI23_comp: "I23 \<in> components (I13 - geotop_arc_interior B2 E)"
+      using h_HOL_split by (by100 blast)
+    have h_I12_sub: "I12 \<subseteq> I13 - geotop_arc_interior B2 E"
+      using hI12_comp in_components_subset by (by100 blast)
+    have h_I23_sub: "I23 \<subseteq> I13 - geotop_arc_interior B2 E"
+      using hI23_comp in_components_subset by (by100 blast)
+    have h_I12_in_I13: "I12 \<subseteq> I13" using h_I12_sub by (by100 blast)
+    have h_I23_in_I13: "I23 \<subseteq> I13" using h_I23_sub by (by100 blast)
+    have h_I12_B3_disj: "I12 \<inter> B3 = {}"
+      using h_I12_in_I13 h_I13_disj_B13 by (by100 blast)
+    have h_I23_B1_disj: "I23 \<inter> B1 = {}"
+      using h_I23_in_I13 h_I13_disj_B13 by (by100 blast)
+    \<comment> \<open>Derive I12 \<noteq> I23 via polygon_interior_injective + theta-graph contradiction.\<close>
+    have h_I12_ne_I23: "I12 \<noteq> I23"
+    proof
+      assume heq: "I12 = I23"
+      have hpiE: "geotop_polygon_interior (B1 \<union> B2) = geotop_polygon_interior (B2 \<union> B3)"
+        using heq I12_def I23_def by (by100 simp)
+      have hBeq: "B1 \<union> B2 = B2 \<union> B3"
+        by (rule polygon_interior_injective[OF h_poly_12_loc h_poly_23_loc hpiE])
+      have h_intB1_ne: "geotop_arc_interior B1 E \<noteq> {}"
+        by (rule arc_interior_nonempty[OF hE1_loc])
+      obtain x where hxIB1: "x \<in> geotop_arc_interior B1 E" using h_intB1_ne by (by100 blast)
+      have hxB1: "x \<in> B1" using hxIB1 unfolding geotop_arc_interior_def by (by100 blast)
+      have hxnE: "x \<notin> E" using hxIB1 unfolding geotop_arc_interior_def by (by100 blast)
+      have hxB23: "x \<in> B2 \<union> B3" using hxB1 hBeq by (by100 blast)
+      consider (b2) "x \<in> B2" | (b3) "x \<in> B3" using hxB23 by (by100 blast)
+      thus False
+      proof cases
+        case b2
+        have "x \<in> B1 \<inter> B2" using hxB1 b2 by (by100 blast)
+        hence "x \<in> E" using h_B1_B2_E by (by100 blast)
+        thus False using hxnE by (by100 blast)
+      next
+        case b3
+        have "x \<in> B1 \<inter> B3" using hxB1 b3 by (by100 blast)
+        hence "x \<in> E" using h_B1_B3_E by (by100 blast)
+        thus False using hxnE by (by100 blast)
+      qed
+    qed
+    have h_I12_I23_disj: "I12 \<inter> I23 = {}"
+    proof -
+      have h_iff: "I12 \<inter> I23 = {} \<longleftrightarrow> I12 \<noteq> I23"
+        using components_nonoverlap[OF hI12_comp hI23_comp] .
+      show ?thesis using h_iff h_I12_ne_I23 by (by100 simp)
+    qed
+    have h_HOL_eq: "closure (I12 \<union> geotop_arc_interior B1 E)
+                       \<inter> (I23 \<union> geotop_arc_interior B3 E) = {} \<and>
+                    (I12 \<union> geotop_arc_interior B1 E)
+                       \<inter> closure (I23 \<union> geotop_arc_interior B3 E) = {}"
+      by (rule gt28_separated_helper[OF h_cl_intB1 h_cl_intB3 h_cl_I12 h_cl_I23
+              h_intB1_eq h_intB3_eq h_B1_B2_E h_B1_B3_E h_B2_B3_E
+              h_I12_disj_B12 h_I23_disj_B23 h_I12_I23_disj h_I12_B3_disj h_I23_B1_disj])
+    have h_clos_lhs: "closure_on UNIV geotop_euclidean_topology
+                        (I12 \<union> geotop_arc_interior B1 E)
+                      = closure (I12 \<union> geotop_arc_interior B1 E)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    have h_clos_rhs: "closure_on UNIV geotop_euclidean_topology
+                        (I23 \<union> geotop_arc_interior B3 E)
+                      = closure (I23 \<union> geotop_arc_interior B3 E)"
+      by (rule closure_on_geotop_UNIV_eq_closure)
+    show ?thesis
+      unfolding geotop_separated_def
+      using h_HOL_eq h_clos_lhs h_clos_rhs by (by100 simp)
+  qed
   show "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
          = {I12, I23}"
@@ -770,6 +6331,2426 @@ proof -
            (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
     using h_separated by (by100 blast)
 qed
+
+
+text \<open>Polygon J is closed (compact + Euclidean).\<close>
+
+lemma polygon_closed:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "closed J"
+proof -
+  have h_homeo: "J homeomorphic sphere (0::real^2) 1"
+    by (rule polygon_homeomorphic_S1_helper[OF hJ])
+  have h_compact_S1: "compact (sphere (0::real^2) 1)" by simp
+  have h_compact_J: "compact J"
+    using h_homeo h_compact_S1 homeomorphic_compactness by (by100 blast)
+  show "closed J" using h_compact_J compact_imp_closed by (by100 simp)
+qed
+
+text \<open>Polygon interior is open (component of open set \<open>UNIV - J\<close>).\<close>
+
+lemma polygon_interior_open:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "open (geotop_polygon_interior J)"
+proof -
+  have h_J_sph: "geotop_is_n_sphere J
+                  (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  have h_I_comp: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+  have h_J_closed: "closed J" by (rule polygon_closed[OF hJ])
+  have h_open: "open (UNIV - J)" using h_J_closed open_Diff by (by100 blast)
+  show ?thesis using h_I_comp h_open open_components by (by100 blast)
+qed
+
+lemma polygon_exterior_open:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "open (geotop_polygon_exterior J)"
+proof -
+  have h_J_sph: "geotop_is_n_sphere J
+                  (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  have h_E_comp: "geotop_polygon_exterior J \<in> components (UNIV - J)"
+    by (rule polygon_exterior_is_HOL_component[OF h_J_sph])
+  have h_J_closed: "closed J" by (rule polygon_closed[OF hJ])
+  have h_open: "open (UNIV - J)" using h_J_closed open_Diff by (by100 blast)
+  show ?thesis using h_E_comp h_open open_components by (by100 blast)
+qed
+
+
+text \<open>A polytope of \<open>aff_dim 1\<close> is exactly a closed segment between 2 distinct
+  points (its extreme points by Krein-Milman). Useful for extracting endpoints
+  of facet edges.\<close>
+
+lemma polytope_aff_dim_1_is_segment:
+  fixes F :: "'a::euclidean_space set"
+  assumes hF_poly: "polytope F" and hF_dim: "aff_dim F = 1"
+  shows "\<exists>v1 v2. v1 \<noteq> v2 \<and> F = closed_segment v1 v2"
+proof -
+  have hF_compact: "compact F" by (rule polytope_imp_compact[OF hF_poly])
+  have hF_convex: "convex F" by (rule polytope_imp_convex[OF hF_poly])
+  have hF_ne: "F \<noteq> {}" using hF_dim aff_dim_negative_iff by (by100 force)
+  define V where "V = {x. x extreme_point_of F}"
+  have hV_fin: "finite V"
+  proof -
+    have hF_polyhedron: "polyhedron F" using hF_poly polytope_imp_polyhedron by (by100 blast)
+    have h_fin: "finite {x. x extreme_point_of F}"
+      using hF_polyhedron finite_polyhedron_extreme_points by (by100 blast)
+    show "finite V" unfolding V_def using h_fin by (by100 simp)
+  qed
+  have hF_eq_conv: "F = convex hull V"
+    using Krein_Milman_Minkowski[OF hF_compact hF_convex] V_def by (by100 simp)
+  have hV_ne: "V \<noteq> {}"
+    using hF_eq_conv hF_ne convex_hull_empty by (by100 fastforce)
+  have hV_aff_dim: "aff_dim V = 1"
+    using hF_eq_conv hF_dim aff_dim_convex_hull[of V] by (by100 simp)
+  have hV_card_ge_2: "card V \<ge> 2"
+  proof (rule ccontr)
+    assume "\<not> card V \<ge> 2"
+    hence h_le_1: "card V \<le> 1" by (by100 simp)
+    have h_disj: "card V = 0 \<or> card V = 1" using h_le_1 by (by100 linarith)
+    show False
+    proof (cases "card V = 0")
+      case True
+      have "V = {}" using True hV_fin by (by100 simp)
+      thus False using hV_ne by (by100 simp)
+    next
+      case False
+      have h_card1: "card V = 1" using False h_disj by (by100 simp)
+      obtain v where hV_eq: "V = {v}"
+        using h_card1 card_1_singletonE by (by100 metis)
+      have h_aff_eq: "aff_dim V = 0" using hV_eq aff_dim_sing by (by100 simp)
+      show False using h_aff_eq hV_aff_dim by (by100 simp)
+    qed
+  qed
+  obtain v1 v2 where hv1_V: "v1 \<in> V" and hv2_V: "v2 \<in> V" and hv1_v2_ne: "v1 \<noteq> v2"
+  proof -
+    have h_ex: "\<exists>v1 v2. v1 \<in> V \<and> v2 \<in> V \<and> v1 \<noteq> v2"
+    proof (rule ccontr)
+      assume "\<not> (\<exists>v1 v2. v1 \<in> V \<and> v2 \<in> V \<and> v1 \<noteq> v2)"
+      hence h_all_eq: "\<forall>v1\<in>V. \<forall>v2\<in>V. v1 = v2" by blast
+      then obtain v0 where hv0_V: "v0 \<in> V" using hV_ne by blast
+      have hV_sing: "V \<subseteq> {v0}" using h_all_eq hv0_V by blast
+      have hV_card_le_1: "card V \<le> 1"
+        using hV_sing card_mono[of "{v0}" V] hV_fin
+        by (auto simp: card_mono finite_subset)
+      show False using hV_card_le_1 hV_card_ge_2 by simp
+    qed
+    show ?thesis using h_ex that by blast
+  qed
+  have h_V_sub: "V \<subseteq> {v1, v2}"
+  proof
+    fix v assume hv_V: "v \<in> V"
+    have hv_extreme: "v extreme_point_of F" using hv_V V_def by (by100 simp)
+    have hv_F: "v \<in> F" using hv_extreme extreme_point_of_def by (by100 blast)
+    have hv1_extreme: "v1 extreme_point_of F" using hv1_V V_def by (by100 simp)
+    have hv2_extreme: "v2 extreme_point_of F" using hv2_V V_def by (by100 simp)
+    have hv1_F: "v1 \<in> F" using hv1_extreme extreme_point_of_def by (by100 blast)
+    have hv2_F: "v2 \<in> F" using hv2_extreme extreme_point_of_def by (by100 blast)
+    show "v \<in> {v1, v2}"
+    proof (rule ccontr)
+      assume hv_no: "v \<notin> {v1, v2}"
+      have hv_ne_v1: "v \<noteq> v1" and hv_ne_v2: "v \<noteq> v2" using hv_no by (by100 simp)+
+      have h_3_in_F: "{v, v1, v2} \<subseteq> F"
+        using hv_F hv1_F hv2_F by (by100 blast)
+      have h_3_aff_le_F: "aff_dim {v, v1, v2} \<le> aff_dim F"
+        by (rule aff_dim_subset[OF h_3_in_F])
+      have h_3_aff_le: "aff_dim {v, v1, v2} \<le> 1"
+        using h_3_aff_le_F hF_dim by (by100 simp)
+      have h_collinear: "collinear {v, v1, v2}"
+        using h_3_aff_le collinear_aff_dim by (by100 blast)
+      have h_between: "between (v1, v2) v \<or> between (v2, v) v1 \<or> between (v, v1) v2"
+        using h_collinear collinear_between_cases[of v v1 v2] by (by100 simp)
+      from h_between have False
+      proof (elim disjE)
+        assume "between (v1, v2) v"
+        hence h_v_in: "v \<in> closed_segment v1 v2" using between_mem_segment by (by100 blast)
+        have h_v_open: "v \<in> open_segment v1 v2"
+          using h_v_in hv_ne_v1 hv_ne_v2 open_segment_def by (by100 blast)
+        have "\<not> v extreme_point_of F"
+          unfolding extreme_point_of_def using hv1_F hv2_F h_v_open by (by100 blast)
+        thus False using hv_extreme by (by100 simp)
+      next
+        assume "between (v2, v) v1"
+        hence h_v1_in: "v1 \<in> closed_segment v2 v" using between_mem_segment by (by100 blast)
+        have h_v1_open: "v1 \<in> open_segment v2 v"
+          using h_v1_in hv1_v2_ne hv_ne_v1 open_segment_def by (by100 blast)
+        have "\<not> v1 extreme_point_of F"
+          unfolding extreme_point_of_def using hv2_F hv_F h_v1_open by (by100 blast)
+        moreover have "v1 extreme_point_of F" using hv1_V V_def by (by100 simp)
+        ultimately show False by (by100 simp)
+      next
+        assume "between (v, v1) v2"
+        hence h_v2_in: "v2 \<in> closed_segment v v1" using between_mem_segment by (by100 blast)
+        have h_v2_open: "v2 \<in> open_segment v v1"
+          using h_v2_in hv1_v2_ne hv_ne_v2 open_segment_def by (by100 blast)
+        have "\<not> v2 extreme_point_of F"
+          unfolding extreme_point_of_def using hv_F hv1_F h_v2_open by (by100 blast)
+        moreover have "v2 extreme_point_of F" using hv2_V V_def by (by100 simp)
+        ultimately show False by (by100 simp)
+      qed
+      thus False by (by100 simp)
+    qed
+  qed
+  have h_V_eq: "V = {v1, v2}"
+    using h_V_sub hv1_V hv2_V by (by100 blast)
+  have h_F_seg: "F = closed_segment v1 v2"
+  proof -
+    have h1: "F = convex hull {v1, v2}" using hF_eq_conv h_V_eq by (by100 simp)
+    have h2: "convex hull {v1, v2} = closed_segment v1 v2"
+      using segment_convex_hull[of v1 v2] by (by100 simp)
+    show ?thesis using h1 h2 by (by100 simp)
+  qed
+  show ?thesis using hv1_v2_ne h_F_seg by (by100 blast)
+qed
+
+text \<open>Two distinct 1-dim affine subspaces in a Euclidean space meet in at most
+  one point. Used in the line-arrangement structure of GT_2_2.\<close>
+
+lemma affine_dim_1_distinct_meet_singleton:
+  fixes A B :: "'a::euclidean_space set"
+  assumes hA: "affine A" and hB: "affine B"
+      and hA_dim: "aff_dim A = 1" and hB_dim: "aff_dim B = 1"
+      and h_ne: "A \<noteq> B"
+  shows "\<exists>P. A \<inter> B \<subseteq> {P}"
+proof -
+  have h_int_aff: "affine (A \<inter> B)" using hA hB affine_Int by (by100 blast)
+  have h_int_sub_A: "A \<inter> B \<subseteq> A" by (by100 blast)
+  have h_int_sub_B: "A \<inter> B \<subseteq> B" by (by100 blast)
+  have h_int_aff_le_1: "aff_dim (A \<inter> B) \<le> 1"
+  proof -
+    have h: "aff_dim (A \<inter> B) \<le> aff_dim A" by (rule aff_dim_subset[OF h_int_sub_A])
+    show ?thesis using h hA_dim by (by100 simp)
+  qed
+  have h_int_aff_lt_1: "aff_dim (A \<inter> B) < 1"
+  proof (rule ccontr)
+    assume "\<not> aff_dim (A \<inter> B) < 1"
+    hence h_eq_1: "aff_dim (A \<inter> B) = 1" using h_int_aff_le_1 by (by100 simp)
+    have h_int_ne: "A \<inter> B \<noteq> {}"
+      using h_eq_1 aff_dim_negative_iff by (by100 force)
+    have h_dim_A: "aff_dim (A \<inter> B) = aff_dim A" using h_eq_1 hA_dim by (by100 simp)
+    have h_dim_B: "aff_dim (A \<inter> B) = aff_dim B" using h_eq_1 hB_dim by (by100 simp)
+    have h_eq_A: "A \<inter> B = A"
+      by (rule affine_dim_equal[OF h_int_aff hA h_int_ne h_int_sub_A h_dim_A])
+    have h_eq_B: "A \<inter> B = B"
+      by (rule affine_dim_equal[OF h_int_aff hB h_int_ne h_int_sub_B h_dim_B])
+    have "A = B" using h_eq_A h_eq_B by (by100 simp)
+    thus False using h_ne by (by100 simp)
+  qed
+  have h_int_le_0: "aff_dim (A \<inter> B) \<le> 0" using h_int_aff_lt_1 by (by100 linarith)
+  have h_int_ge: "aff_dim (A \<inter> B) \<ge> -1" by (rule aff_dim_geq)
+  have h_int_disj: "aff_dim (A \<inter> B) = -1 \<or> aff_dim (A \<inter> B) = 0"
+    using h_int_le_0 h_int_ge by (by100 linarith)
+  show "\<exists>P. A \<inter> B \<subseteq> {P}"
+  proof (cases "aff_dim (A \<inter> B) = -1")
+    case True
+    hence h_lt_0: "aff_dim (A \<inter> B) < 0" by (by100 simp)
+    have h_iff: "(aff_dim (A \<inter> B) < 0) = (A \<inter> B = {})"
+      by (rule aff_dim_negative_iff)
+    have "A \<inter> B = {}" using h_lt_0 h_iff by (by100 blast)
+    thus ?thesis by (by100 blast)
+  next
+    case False
+    have h_eq_0: "aff_dim (A \<inter> B) = 0" using h_int_disj False by (by100 simp)
+    obtain P where "A \<inter> B = {P}" using h_eq_0 aff_dim_eq_0 by (by100 metis)
+    thus ?thesis by (by100 blast)
+  qed
+qed
+
+text \<open>For a closed segment \<open>e = closed_segment v1 v2\<close> with \<open>v1 \<noteq> v2\<close>
+  contained in finite union of distinct lines, \<open>aff hull e\<close> equals one of
+  the lines.\<close>
+
+lemma closed_segment_in_lines_aff_hull:
+  fixes e :: "'a::euclidean_space set" and Ls :: "'a set set"
+  assumes hLs_fin: "finite Ls"
+      and h_lines: "\<forall>L\<in>Ls. affine L \<and> aff_dim L = 1"
+      and h_e_aff_dim: "aff_dim e = 1"
+      and h_e_conn: "connected e"
+      and h_e_aff: "affine (affine hull e)"
+      and h_e_sub: "e \<subseteq> \<Union>Ls"
+      and h_e_in_aff: "e \<subseteq> affine hull e"
+      and h_e_pt: "\<exists>x y. x \<in> e \<and> y \<in> e \<and> x \<noteq> y"
+  shows "affine hull e \<in> Ls"
+proof (rule ccontr)
+  assume h_no: "affine hull e \<notin> Ls"
+  have h_aff_e_aff: "affine (affine hull e)" by (rule h_e_aff)
+  have h_aff_e_dim: "aff_dim (affine hull e) = 1"
+    using h_e_aff_dim aff_dim_affine_hull by (by100 simp)
+  (** For each L \<in> Ls: aff hull e \<noteq> L (since aff hull e \<notin> Ls and L \<in> Ls). **)
+  have h_aff_e_ne_L: "\<forall>L\<in>Ls. affine hull e \<noteq> L" using h_no by (by100 blast)
+  (** Each L meets aff hull e in \<le> 1 point. **)
+  have h_aff_meet: "\<forall>L\<in>Ls. \<exists>P. (affine hull e) \<inter> L \<subseteq> {P}"
+  proof
+    fix L assume hL: "L \<in> Ls"
+    have hL_aff: "affine L" using hL h_lines by (by100 blast)
+    have hL_dim: "aff_dim L = 1" using hL h_lines by (by100 blast)
+    have hL_ne: "affine hull e \<noteq> L" using h_aff_e_ne_L hL by (by100 blast)
+    show "\<exists>P. (affine hull e) \<inter> L \<subseteq> {P}"
+      by (rule affine_dim_1_distinct_meet_singleton[OF h_aff_e_aff hL_aff h_aff_e_dim hL_dim hL_ne])
+  qed
+  define point_of where
+    "point_of L = (SOME P. (affine hull e) \<inter> L \<subseteq> {P})" for L
+  have h_point_subset:
+    "\<forall>L\<in>Ls. (affine hull e) \<inter> L \<subseteq> {point_of L}"
+  proof
+    fix L assume hL: "L \<in> Ls"
+    have h_ex: "\<exists>P. (affine hull e) \<inter> L \<subseteq> {P}" using hL h_aff_meet by (by100 blast)
+    show "(affine hull e) \<inter> L \<subseteq> {point_of L}"
+      unfolding point_of_def by (rule someI_ex[OF h_ex])
+  qed
+  define Ps where "Ps = point_of ` Ls"
+  have hPs_fin: "finite Ps" unfolding Ps_def using hLs_fin by (by100 simp)
+  (** \<open>e \<subseteq> Ps\<close>: each \<open>x \<in> e\<close> is in \<open>aff hull e \<inter> L\<close> for some L. **)
+  have h_e_sub_Ps: "e \<subseteq> Ps"
+  proof
+    fix x assume hx: "x \<in> e"
+    have hx_aff: "x \<in> affine hull e" using hx h_e_in_aff by (by100 blast)
+    have hx_uls: "x \<in> \<Union>Ls" using hx h_e_sub by (by100 blast)
+    obtain L where hL: "L \<in> Ls" and hxL: "x \<in> L" using hx_uls by (by100 blast)
+    have hx_int: "x \<in> (affine hull e) \<inter> L" using hx_aff hxL by (by100 blast)
+    have hx_pt: "x \<in> {point_of L}" using h_point_subset hL hx_int by (by100 blast)
+    have hpt: "point_of L \<in> Ps" unfolding Ps_def using hL by (by100 blast)
+    show "x \<in> Ps" using hx_pt hpt by (by100 blast)
+  qed
+  (** \<open>e\<close> connected, contained in finite set Ps, hence \<open>|e| \<le> 1\<close>. But \<open>e\<close>
+      has \<ge> 2 points by \<open>h_e_pt\<close>. **)
+  have h_e_finite: "finite e" using h_e_sub_Ps hPs_fin finite_subset by (by100 blast)
+  obtain x y where hxe: "x \<in> e" and hye: "y \<in> e" and hxy_ne: "x \<noteq> y"
+    using h_e_pt by (by100 blast)
+  (** Connected finite set of size \<ge> 2 in 'a::euclidean_space — contradiction
+      since connected finite subsets of T1 spaces have card \<le> 1. **)
+  have h_e_card_ge_2: "card e \<ge> 2"
+  proof -
+    have h_2_sub: "{x, y} \<subseteq> e" using hxe hye by (by100 blast)
+    have h_2_card: "card {x, y} = 2" using hxy_ne by (by100 simp)
+    have h_card_mono: "card {x, y} \<le> card e"
+      using h_2_sub h_e_finite card_mono by (by100 blast)
+    show ?thesis using h_2_card h_card_mono by (by100 simp)
+  qed
+  (** Connected set with \<ge> 2 elements is uncountable in 'a::euclidean_space, but
+      \<open>e\<close> is finite. Use \<open>connected_finite_iff_sing\<close> if exists. **)
+  have h_e_sing: "e = {} \<or> (\<exists>z. e = {z})"
+    using h_e_conn h_e_finite connected_finite_iff_sing by (by100 blast)
+  show False
+  proof (cases "e = {}")
+    case True thus ?thesis using hxe by (by100 simp)
+  next
+    case False
+    obtain z where h_e_eq: "e = {z}" using h_e_sing False by (by100 blast)
+    have h_x_z: "x = z" using hxe h_e_eq by (by100 simp)
+    have h_y_z: "y = z" using hye h_e_eq by (by100 simp)
+    show ?thesis using h_x_z h_y_z hxy_ne by (by100 simp)
+  qed
+qed
+
+text \<open>Combined helper: for the line-arrangement region \<open>R\<close> of GT_2_2 with
+  \<open>wpt R \<in> interior R\<close> and \<open>e\<close> a 1-dim closed segment in
+  \<open>frontier R \<subseteq> \<Union>Ls\<close>, the interior point \<open>wpt R\<close> is not on
+  the affine line through \<open>e\<close>. Combines \<open>closed_segment_in_lines_aff_hull\<close>
+  with disjointness of interior R from the lines.\<close>
+
+lemma wpt_not_in_aff_hull_segment:
+  fixes Ls :: "(real^2) set set" and e :: "(real^2) set" and wpt :: "real^2"
+  assumes hLs_fin: "finite Ls"
+      and h_lines: "\<forall>L\<in>Ls. affine L \<and> aff_dim L = 1"
+      and h_e_aff_dim: "aff_dim e = 1"
+      and h_e_conn: "connected e"
+      and h_e_in_uls: "e \<subseteq> \<Union>Ls"
+      and h_e_pt: "\<exists>x y. x \<in> e \<and> y \<in> e \<and> x \<noteq> y"
+      and h_wpt_no_uls: "wpt \<notin> \<Union>Ls"
+  shows "wpt \<notin> affine hull e"
+proof -
+  have h_e_aff: "affine (affine hull e)" by (rule affine_affine_hull)
+  have h_e_in_aff: "e \<subseteq> affine hull e" by (rule hull_subset)
+  have h_aff_e_in_Ls: "affine hull e \<in> Ls"
+    by (rule closed_segment_in_lines_aff_hull[OF hLs_fin h_lines h_e_aff_dim
+              h_e_conn h_e_aff h_e_in_uls h_e_in_aff h_e_pt])
+  show "wpt \<notin> affine hull e"
+  proof
+    assume "wpt \<in> affine hull e"
+    hence "wpt \<in> \<Union>Ls" using h_aff_e_in_Ls by (by100 blast)
+    thus False using h_wpt_no_uls by (by100 simp)
+  qed
+qed
+
+text \<open>Bridge: \<open>geotop_hyperplane_dim L k\<close> implies \<open>affine L\<close> and
+  \<open>aff_dim L = int k\<close>. Used inside GT_2_2 as a 1-line derivation.\<close>
+
+lemma geotop_hyperplane_dim_imp_affine_aff_dim:
+  fixes L :: "'a::euclidean_space set"
+  assumes "geotop_hyperplane_dim L k"
+  shows "affine L \<and> aff_dim L = int k"
+proof -
+  have h_unfold: "\<exists>V v0. subspace V \<and>
+                  (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = V)
+                  \<and> L = (\<lambda>v. v + v0) ` V"
+    using assms unfolding geotop_hyperplane_dim_def by (by100 blast)
+  obtain V where hV_part: "\<exists>v0. subspace V \<and>
+                  (\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = V)
+                  \<and> L = (\<lambda>v. v + v0) ` V"
+    using h_unfold by (by100 blast)
+  obtain v0 where hV_sub: "subspace V"
+              and hV_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = k \<and> span B = V"
+              and hL_form: "L = (\<lambda>v. v + v0) ` V"
+    using hV_part by (by100 blast)
+  obtain B where hB_indep: "independent B" and hB_fin: "finite B"
+             and hB_card: "card B = k" and hB_span: "span B = V"
+    using hV_basis_ex by (by100 blast)
+  have hV_aff: "affine V" using hV_sub subspace_imp_affine by (by100 blast)
+  have hV_aff_dim: "aff_dim V = int k"
+  proof -
+    have h1: "aff_dim V = int (dim V)" by (rule aff_dim_subspace[OF hV_sub])
+    have h2: "dim V = dim (span B)" using hB_span by (by100 simp)
+    have h3: "dim (span B) = dim B" by (rule dim_span)
+    have h4: "dim B = card B" using hB_indep dim_eq_card_independent by (by100 blast)
+    show ?thesis using h1 h2 h3 h4 hB_card by (by100 simp)
+  qed
+  have hL_eq_translate: "L = (+) v0 ` V"
+    using hL_form by (auto simp: add.commute)
+  have hL_aff: "affine L"
+  proof -
+    have h_trans: "affine ((+) v0 ` V)" using hV_aff affine_translation by (by100 blast)
+    show ?thesis using hL_eq_translate h_trans by (by100 simp)
+  qed
+  have hL_aff_dim: "aff_dim L = int k"
+  proof -
+    have h_eq: "aff_dim L = aff_dim ((+) v0 ` V)" using hL_eq_translate by (by100 simp)
+    have h_trans: "aff_dim ((+) v0 ` V) = aff_dim V" by (rule aff_dim_translation_eq)
+    show ?thesis using h_eq h_trans hV_aff_dim by (by100 simp)
+  qed
+  show ?thesis using hL_aff hL_aff_dim by (by100 blast)
+qed
+
+text \<open>Fan triangulation cover: closed bounded convex \<open>R\<close> with \<open>wpt \<in> interior R\<close>
+  and full aff_dim, given \<open>FrTri\<close> with \<open>\<Union>FrTri = frontier R\<close>, equals
+  the union of fan-triangles \<open>conv({wpt} \<union> e)\<close> over \<open>e \<in> FrTri\<close>.\<close>
+
+lemma fan_triangulation_cover:
+  fixes R :: "'a::euclidean_space set" and FrTri :: "'a set set" and wpt :: 'a
+  assumes hR_conv: "convex R" and hR_bdd: "bounded R" and hR_closed: "closed R"
+      and hR_aff: "aff_dim R = int (DIM('a))"
+      and hwpt_int: "wpt \<in> interior R"
+      and hFrTri_cover: "\<Union>FrTri = frontier R"
+  shows "R = (\<Union>e\<in>FrTri. convex hull ({wpt} \<union> e))"
+proof
+  show "R \<subseteq> (\<Union>e\<in>FrTri. convex hull ({wpt} \<union> e))"
+  proof
+    fix y assume hyR: "y \<in> R"
+    have h_int_eq: "interior R = rel_interior R"
+      using hR_aff interior_rel_interior_gen[of R] by (by100 simp)
+    have h_rel_int: "wpt \<in> rel_interior R"
+      using hwpt_int h_int_eq by (by100 simp)
+    have hR_int_ne: "interior R \<noteq> {}" using hwpt_int by (by100 blast)
+    have hR_ne_sing: "\<not>(wpt = y \<and> R = {wpt})"
+    proof
+      assume hbad: "wpt = y \<and> R = {wpt}"
+      hence "interior R = {}" by (by100 simp)
+      thus False using hR_int_ne by (by100 simp)
+    qed
+    obtain z where hz_fr: "z \<in> rel_frontier R"
+                and hy_seg: "y \<in> closed_segment wpt z"
+      using segment_to_rel_frontier[OF hR_conv hR_bdd h_rel_int hyR hR_ne_sing] by (by100 metis)
+    have h_rel_fr_eq: "rel_frontier R = frontier R"
+    proof -
+      have h1: "rel_frontier R = closure R - rel_interior R"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "frontier R = closure R - interior R"
+        unfolding frontier_def by (by100 simp)
+      show ?thesis using h1 h2 h_int_eq by (by100 simp)
+    qed
+    have hz_uls: "z \<in> \<Union>FrTri" using hz_fr h_rel_fr_eq hFrTri_cover by (by100 simp)
+    obtain e where he_FrTri: "e \<in> FrTri" and hz_e: "z \<in> e"
+      using hz_uls by (by100 blast)
+    have h_seg_in_conv: "closed_segment wpt z \<subseteq> convex hull ({wpt} \<union> e)"
+    proof -
+      have h_wpt_set: "wpt \<in> {wpt} \<union> e" by (by100 simp)
+      have hz_set: "z \<in> {wpt} \<union> e" using hz_e by (by100 simp)
+      have h_wpt_hull: "wpt \<in> convex hull ({wpt} \<union> e)"
+        by (rule hull_inc[OF h_wpt_set])
+      have hz_hull: "z \<in> convex hull ({wpt} \<union> e)"
+        by (rule hull_inc[OF hz_set])
+      have h_conv: "convex (convex hull ({wpt} \<union> e))" by (rule convex_convex_hull)
+      show ?thesis by (rule closed_segment_subset[OF h_wpt_hull hz_hull h_conv])
+    qed
+    have hy_conv: "y \<in> convex hull ({wpt} \<union> e)"
+      using hy_seg h_seg_in_conv by (by100 blast)
+    show "y \<in> (\<Union>e\<in>FrTri. convex hull ({wpt} \<union> e))"
+      using he_FrTri hy_conv by (by100 blast)
+  qed
+  show "(\<Union>e\<in>FrTri. convex hull ({wpt} \<union> e)) \<subseteq> R"
+  proof
+    fix y assume "y \<in> (\<Union>e\<in>FrTri. convex hull ({wpt} \<union> e))"
+    then obtain e where he_FrTri: "e \<in> FrTri" and hy: "y \<in> convex hull ({wpt} \<union> e)"
+      by (by100 blast)
+    have he_fr: "e \<subseteq> frontier R" using he_FrTri hFrTri_cover by (by100 blast)
+    have he_R: "e \<subseteq> R"
+    proof -
+      have h_fr_sub: "frontier R \<subseteq> R"
+        unfolding frontier_def using hR_closed by (auto simp: closure_closed)
+      show ?thesis using he_fr h_fr_sub by (by100 blast)
+    qed
+    have hwpt_R: "wpt \<in> R" using hwpt_int interior_subset by (by100 blast)
+    have h_set_R: "{wpt} \<union> e \<subseteq> R" using hwpt_R he_R by (by100 blast)
+    have h_hull: "convex hull ({wpt} \<union> e) \<subseteq> R"
+      by (rule hull_minimal[where S=convex, OF h_set_R hR_conv])
+    show "y \<in> R" using hy h_hull by (by100 blast)
+  qed
+qed
+
+(** from \<S>2 Theorem 2 (geotop.tex:555)
+    LATEX VERSION: Let I be the interior of the polygon J in R^2. Then \<bar>I\<close> is a finite polyhedron. **)
+theorem Theorem_GT_2_2:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "\<exists>K. geotop_is_complex K \<and> finite K \<and>
+    geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  (** Moise proof (geotop.tex:557). Let L\<^sub>1, \<dots>, L\<^sub>n be the lines that
+      contain edges of J; finite in number. Each L\<^sub>i splits R\<^sup>2 into two closed
+      half-planes; any finite intersection of closed half-planes is closed and
+      convex. So \<Union>L\<^sub>i decomposes R\<^sup>2 into a finite collection of closed convex
+      regions R\<^sub>1, \<dots>, R\<^sub>m with Fr R\<^sub>j \<subseteq> \<Union>L\<^sub>i.
+      Now R\<^sub>j \<inter> J \<subseteq> Fr R\<^sub>j, so either R\<^sub>j \<inter> \<bar>I\<close> \<subseteq> J or R\<^sub>j \<subseteq> \<bar>I\<close>.
+      Write \<bar>I\<close> = \<Union>\<^sub>{j\<le>k} R\<^sub>j (reindexing). For each j \<le> k, triangulate Fr R\<^sub>j
+      minimally; pick w\<^sub>j \<in> R\<^sub>j - Fr R\<^sub>j; for each 1-simplex vv' of Fr R\<^sub>j
+      form the 2-simplex w\<^sub>j v v'. Union gives a triangulation of \<bar>I\<close>. **)
+proof -
+  (** (1) The lines containing edges of J are finite in number.
+      Use the (finite) triangulating complex K0 of J; for each 1-cell of K0,
+      take its affine hull. **)
+  obtain K0 :: "(real^2) set set"
+    where hK0c: "geotop_is_complex K0"
+      and hK0fin: "finite K0"
+      and hK0p: "geotop_polyhedron K0 = J"
+    using geotop_polygon_finite_triangulation[OF hJ] by (by100 blast)
+  define K0_edges where
+    "K0_edges = {\<sigma>\<in>K0. geotop_simplex_dim \<sigma> 1}"
+  have hK0e_fin: "finite K0_edges" using hK0fin K0_edges_def by (by100 simp)
+  define Ls :: "(real^2) set set" where
+    "Ls = (\<lambda>\<sigma>. affine hull \<sigma>) ` K0_edges"
+  have hLs_fin: "finite Ls" using hK0e_fin Ls_def by (by100 simp)
+  have hLs_lines: "\<forall>L\<in>Ls. geotop_hyperplane_dim L 1"
+  proof
+    fix L assume hL: "L \<in> Ls"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K0_edges" and hL_eq: "L = affine hull \<sigma>"
+      using hL Ls_def by (by100 blast)
+    have h\<sigma>_dim1: "geotop_simplex_dim \<sigma> 1"
+      using h\<sigma>K K0_edges_def by (by100 simp)
+    show "geotop_hyperplane_dim L 1"
+      using geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>_dim1] hL_eq by (by100 simp)
+  qed
+  (** Each 1-cell \<sigma> \<in> K0 lies in its own affine hull \<in> Ls; so the union
+      of 1-cells of K0 is contained in \<Union>Ls. **)
+  have hLs_cover_edges: "\<Union>K0_edges \<subseteq> \<Union>Ls"
+  proof
+    fix x assume hx: "x \<in> \<Union>K0_edges"
+    then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K0_edges" and hx\<sigma>: "x \<in> \<sigma>" by (by100 blast)
+    have h\<sigma>_aff: "\<sigma> \<subseteq> affine hull \<sigma>" by (rule hull_subset)
+    have hL_in: "affine hull \<sigma> \<in> Ls" using h\<sigma>K Ls_def by (by100 blast)
+    show "x \<in> \<Union>Ls" using hx\<sigma> h\<sigma>_aff hL_in by (by100 blast)
+  qed
+  (** The full statement \<open>J \<subseteq> \<Union>Ls\<close>: every \<open>x \<in> J\<close> lies in some
+      1-cell of K0 (whose affine hull is then a line in Ls). The "no isolated
+      points" property of J (from \<open>polygon_islimpt\<close>) plus local finiteness
+      forces \<open>x\<close> to lie on a 1-cell touching its local-finiteness nbhd. **)
+  have hLs_cover: "J \<subseteq> \<Union>Ls"
+  proof
+    fix x assume hxJ: "x \<in> J"
+    have hx_K0: "x \<in> \<Union>K0"
+      using hxJ hK0p unfolding geotop_polyhedron_def by (by100 simp)
+    then obtain \<sigma>0 where h\<sigma>0K: "\<sigma>0 \<in> K0" and hx\<sigma>0: "x \<in> \<sigma>0" by (by100 blast)
+    show "x \<in> \<Union>Ls"
+    proof (cases "\<exists>\<sigma>\<in>K0. geotop_simplex_dim \<sigma> 1 \<and> x \<in> \<sigma>")
+      case True
+      then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K0"
+                       and h\<sigma>dim: "geotop_simplex_dim \<sigma> 1"
+                       and hx\<sigma>: "x \<in> \<sigma>" by (by100 blast)
+      have h\<sigma>_in_edges: "\<sigma> \<in> K0_edges"
+        using h\<sigma>K h\<sigma>dim K0_edges_def by (by100 simp)
+      have "x \<in> \<Union>K0_edges" using h\<sigma>_in_edges hx\<sigma> by (by100 blast)
+      thus "x \<in> \<Union>Ls" using hLs_cover_edges by (by100 blast)
+    next
+      case False
+      hence h_no1: "\<forall>\<sigma>\<in>K0. geotop_simplex_dim \<sigma> 1 \<longrightarrow> x \<notin> \<sigma>" by (by100 blast)
+      (** Local finiteness: open U with \<sigma>0 \<subseteq> U and finitely many cells of K0 touch U. **)
+      have h_locfin: "\<exists>U. open U \<and> \<sigma>0 \<subseteq> U \<and> finite {\<tau>\<in>K0. \<tau> \<inter> U \<noteq> {}}"
+        using h\<sigma>0K hK0c unfolding geotop_is_complex_def by (by100 blast)
+      obtain U where hU_open: "open U" and h\<sigma>0_U: "\<sigma>0 \<subseteq> U"
+                 and hU_fin: "finite {\<tau>\<in>K0. \<tau> \<inter> U \<noteq> {}}" using h_locfin by (by100 blast)
+      have hxU: "x \<in> U" using hx\<sigma>0 h\<sigma>0_U by (by100 blast)
+      (** Pick \<epsilon>1 \<le> \<epsilon>_U so ball x \<epsilon>1 \<subseteq> U. **)
+      obtain eU where heU_pos: "eU > 0" and heU_ball: "ball x eU \<subseteq> U"
+        using hxU hU_open open_contains_ball by (by100 metis)
+      (** Cells touching U other than ones containing x: all closed, x \<notin> \<tau>, so dist x \<tau> > 0. **)
+      define D where "D = {\<tau>\<in>K0. \<tau> \<inter> U \<noteq> {} \<and> x \<notin> \<tau>}"
+      have hD_sub: "D \<subseteq> {\<tau>\<in>K0. \<tau> \<inter> U \<noteq> {}}" unfolding D_def by (by100 blast)
+      have hD_fin: "finite D"
+        using hU_fin hD_sub finite_subset by (by100 blast)
+      (** Each \<tau> \<in> K0 is a simplex hence compact (and so closed and bounded). **)
+      have h_simp_all: "\<forall>\<tau>\<in>K0. geotop_is_simplex \<tau>"
+        using conjunct1[OF hK0c[unfolded geotop_is_complex_def]] by (by100 blast)
+      have h_compact_all: "\<forall>\<tau>\<in>K0. compact \<tau>"
+      proof
+        fix \<tau> assume h\<tau>K: "\<tau> \<in> K0"
+        have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K h_simp_all by (by100 blast)
+        obtain V where hVfin: "finite V" and h\<tau>V: "\<tau> = geotop_convex_hull V"
+          using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+        have h\<tau>HOL: "\<tau> = convex hull V"
+          using h\<tau>V geotop_convex_hull_eq_HOL by (by100 simp)
+        show "compact \<tau>"
+          using h\<tau>HOL hVfin finite_imp_compact_convex_hull by (by100 simp)
+      qed
+      have hD_closed: "\<forall>\<tau>\<in>D. closed \<tau> \<and> \<tau> \<noteq> {} \<and> x \<notin> \<tau>"
+      proof
+        fix \<tau> assume h\<tau>D: "\<tau> \<in> D"
+        have h\<tau>K: "\<tau> \<in> K0" using h\<tau>D D_def by (by100 simp)
+        have h\<tau>_meets: "\<tau> \<inter> U \<noteq> {}" using h\<tau>D D_def by (by100 simp)
+        have h\<tau>_ne: "\<tau> \<noteq> {}" using h\<tau>_meets by (by100 blast)
+        have h\<tau>_compact: "compact \<tau>" using h\<tau>K h_compact_all by (by100 blast)
+        have h\<tau>_closed: "closed \<tau>" using h\<tau>_compact compact_imp_closed by (by100 simp)
+        have h\<tau>_no_x: "x \<notin> \<tau>" using h\<tau>D D_def by (by100 simp)
+        show "closed \<tau> \<and> \<tau> \<noteq> {} \<and> x \<notin> \<tau>" using h\<tau>_closed h\<tau>_ne h\<tau>_no_x by (by100 blast)
+      qed
+      (** For \<tau> \<in> D, infdist x \<tau> > 0. **)
+      have h_infdist_pos: "\<forall>\<tau>\<in>D. infdist x \<tau> > 0"
+      proof
+        fix \<tau> assume h\<tau>D: "\<tau> \<in> D"
+        have h\<tau>_closed: "closed \<tau>" and h\<tau>_ne: "\<tau> \<noteq> {}" and h_no_x: "x \<notin> \<tau>"
+          using h\<tau>D hD_closed by (by100 blast)+
+        have h_iff: "(x \<in> \<tau>) = (infdist x \<tau> = 0)"
+          using h\<tau>_closed h\<tau>_ne in_closed_iff_infdist_zero by (by100 simp)
+        have h_nz: "infdist x \<tau> \<noteq> 0" using h_iff h_no_x by (by100 simp)
+        have h_ge: "infdist x \<tau> \<ge> 0" by (rule infdist_nonneg)
+        show "infdist x \<tau> > 0" using h_nz h_ge by (by100 linarith)
+      qed
+      (** Take \<epsilon> = min {\<epsilon>U} \<union> {infdist x \<tau> | \<tau> \<in> D}. **)
+      define eps where
+        "eps = (if D = {} then eU else min eU (Min ((\<lambda>\<tau>. infdist x \<tau>) ` D)))"
+      have heps_pos: "eps > 0"
+      proof (cases "D = {}")
+        case True
+        thus ?thesis unfolding eps_def using heU_pos by (by100 simp)
+      next
+        case False
+        have h_img_fin: "finite ((\<lambda>\<tau>. infdist x \<tau>) ` D)" using hD_fin by (by100 simp)
+        have h_img_ne: "(\<lambda>\<tau>. infdist x \<tau>) ` D \<noteq> {}" using False by (by100 simp)
+        have h_Min_in: "Min ((\<lambda>\<tau>. infdist x \<tau>) ` D) \<in> ((\<lambda>\<tau>. infdist x \<tau>) ` D)"
+          using h_img_fin h_img_ne Min_in by (by100 blast)
+        then obtain \<tau>0 where h\<tau>0D: "\<tau>0 \<in> D"
+                     and h\<tau>0_eq: "Min ((\<lambda>\<tau>. infdist x \<tau>) ` D) = infdist x \<tau>0"
+          by (by100 blast)
+        have h_pos: "infdist x \<tau>0 > 0" using h\<tau>0D h_infdist_pos by (by100 blast)
+        show ?thesis unfolding eps_def using False heU_pos h\<tau>0_eq h_pos by (by100 simp)
+      qed
+      have heps_le_eU: "eps \<le> eU" unfolding eps_def by (by100 simp)
+      have hball_U: "ball x eps \<subseteq> U"
+        using heU_ball heps_le_eU by (auto simp: ball_def)
+      (** For \<tau> \<in> D, ball x eps \<inter> \<tau> = {}. **)
+      have hball_disj: "\<forall>\<tau>\<in>D. ball x eps \<inter> \<tau> = {}"
+      proof
+        fix \<tau> assume h\<tau>D: "\<tau> \<in> D"
+        have h_pos: "infdist x \<tau> > 0" using h\<tau>D h_infdist_pos by (by100 blast)
+        have heps_le: "eps \<le> infdist x \<tau>"
+        proof -
+          have h_img_fin: "finite ((\<lambda>\<tau>'. infdist x \<tau>') ` D)" using hD_fin by (by100 simp)
+          have h_in: "infdist x \<tau> \<in> ((\<lambda>\<tau>'. infdist x \<tau>') ` D)" using h\<tau>D by (by100 blast)
+          have hMin_le: "Min ((\<lambda>\<tau>'. infdist x \<tau>') ` D) \<le> infdist x \<tau>"
+            using h_img_fin h_in Min_le by (by100 blast)
+          have hD_ne: "D \<noteq> {}" using h\<tau>D by (by100 blast)
+          show ?thesis unfolding eps_def using hD_ne hMin_le by (by100 simp)
+        qed
+        show "ball x eps \<inter> \<tau> = {}"
+        proof (rule ccontr)
+          assume "ball x eps \<inter> \<tau> \<noteq> {}"
+          then obtain y where hy_ball: "y \<in> ball x eps" and hy\<tau>: "y \<in> \<tau>" by (by100 blast)
+          have h_dist_lt: "dist x y < eps" using hy_ball by (by100 simp)
+          have h_inf_le: "infdist x \<tau> \<le> dist x y" using hy\<tau> infdist_le by (by100 blast)
+          show False using h_dist_lt h_inf_le heps_le by (by100 simp)
+        qed
+      qed
+      (** \<open>x islimpt J\<close>: pick \<open>y\<close> in \<open>ball x eps \<inter> J - {x}\<close>. **)
+      have h_lim: "x islimpt J" by (rule polygon_islimpt[OF hJ hxJ])
+      have hball_open: "open (ball x eps)" by (by100 simp)
+      have hx_ball: "x \<in> ball x eps" using heps_pos by (by100 simp)
+      have h_islimpt_unf: "\<exists>y\<in>J. y \<in> ball x eps \<and> y \<noteq> x"
+        using h_lim hball_open hx_ball unfolding islimpt_def by (by100 blast)
+      obtain y where hyJ: "y \<in> J" and hy_ball: "y \<in> ball x eps" and hyx: "y \<noteq> x"
+        using h_islimpt_unf by (by100 blast)
+      have hy_K0: "y \<in> \<Union>K0" using hyJ hK0p unfolding geotop_polyhedron_def by (by100 simp)
+      then obtain \<tau> where h\<tau>K: "\<tau> \<in> K0" and hy\<tau>: "y \<in> \<tau>" by (by100 blast)
+      have hy_U: "y \<in> U" using hy_ball hball_U by (by100 blast)
+      have h\<tau>_meets_U: "\<tau> \<inter> U \<noteq> {}" using hy\<tau> hy_U by (by100 blast)
+      (** \<tau> contains y. Either x \<in> \<tau> or x \<notin> \<tau>. **)
+      show "x \<in> \<Union>Ls"
+      proof (cases "x \<in> \<tau>")
+        case True
+        (** \<tau> contains x: by \<open>polygon_complex_dim_le_1\<close>, dim \<le> 1. **)
+        have h\<tau>_simp: "geotop_is_simplex \<tau>" using h\<tau>K h_simp_all by (by100 blast)
+        obtain V m n where hVfin: "finite V" and hVcard: "card V = n + 1"
+                       and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+                       and h\<tau>V: "\<tau> = geotop_convex_hull V"
+          using h\<tau>_simp unfolding geotop_is_simplex_def by (by100 blast)
+        have h\<tau>_dim: "geotop_simplex_dim \<tau> n"
+          unfolding geotop_simplex_dim_def
+          using hVfin hVcard hnm hVgp h\<tau>V by (by100 blast)
+        have hn_le: "n \<le> 1"
+          using polygon_complex_dim_le_1[OF hJ hK0c hK0p] h\<tau>K h\<tau>_dim by (by100 blast)
+        consider (zero) "n = 0" | (one) "n = 1" using hn_le by (by100 linarith)
+        thus "x \<in> \<Union>Ls"
+        proof cases
+          case one
+          have h\<tau>_in_edges: "\<tau> \<in> K0_edges"
+            using h\<tau>K h\<tau>_dim one K0_edges_def by (by100 simp)
+          have "x \<in> \<Union>K0_edges" using h\<tau>_in_edges True by (by100 blast)
+          thus ?thesis using hLs_cover_edges by (by100 blast)
+        next
+          case zero
+          (** \<tau> = {v} for some v; x = v hence \<tau> = {x}; but y \<in> \<tau>, y \<noteq> x — contradiction. **)
+          have hVcard1: "card V = 1" using hVcard zero by (by100 simp)
+          obtain v where hVeq: "V = {v}" using hVfin hVcard1 card_1_singletonE by (by100 metis)
+          have h\<tau>HOL: "\<tau> = convex hull V"
+            using h\<tau>V geotop_convex_hull_eq_HOL by (by100 simp)
+          have h\<tau>_eq: "\<tau> = {v}" using h\<tau>HOL hVeq by (by100 simp)
+          have hxv: "x = v" using True h\<tau>_eq by (by100 simp)
+          have hyv: "y = v" using hy\<tau> h\<tau>_eq by (by100 simp)
+          have "y = x" using hxv hyv by (by100 simp)
+          thus ?thesis using hyx by (by100 simp)
+        qed
+      next
+        case False
+        (** \<tau> \<in> D, but ball x eps \<inter> \<tau> = {}, contradicting y \<in> ball x eps \<inter> \<tau>. **)
+        have h\<tau>D: "\<tau> \<in> D" unfolding D_def using h\<tau>K h\<tau>_meets_U False by (by100 blast)
+        have h_disj: "ball x eps \<inter> \<tau> = {}" using h\<tau>D hball_disj by (by100 blast)
+        show ?thesis using hy_ball hy\<tau> h_disj by (by100 blast)
+      qed
+    qed
+  qed
+  (** (2) The union of these lines decomposes R\<^sup>2 into finitely many closed
+      convex regions R\<^sub>j with Fr R\<^sub>j \<subseteq> \<Union>Ls. Each region is regular
+      (\<open>R = closure (interior R)\<close>) with non-empty interior, since the
+      arrangement of \<open>n\<close> distinct lines in \<open>real^2\<close> always produces full-2D
+      regions. **)
+  (** Construct \<open>Rs\<close> via sign-vector regions \<open>R_of s = \<Inter>L\<in>Ls. hp L (s L)\<close>. **)
+  define line_norm :: "(real^2) set \<Rightarrow> real^2" where
+    "line_norm L = (SOME n. n \<noteq> 0 \<and> (\<exists>d. L = {x. n \<bullet> x = d}))" for L
+  define line_off :: "(real^2) set \<Rightarrow> real" where
+    "line_off L = (SOME d. L = {x. line_norm L \<bullet> x = d})" for L
+  have h_line_form: "\<forall>L\<in>Ls. line_norm L \<noteq> 0 \<and> L = {x. line_norm L \<bullet> x = line_off L}"
+  proof
+    fix L assume hL: "L \<in> Ls"
+    have hL_hp: "geotop_hyperplane_dim L 1" using hL hLs_lines by (by100 blast)
+    have h_ex: "\<exists>n. n \<noteq> 0 \<and> (\<exists>d. L = {x. n \<bullet> x = d})"
+      using geotop_hyperplane_dim_1_R2_normal_form[OF hL_hp] by (by100 blast)
+    have h_norm: "line_norm L \<noteq> 0 \<and> (\<exists>d. L = {x. line_norm L \<bullet> x = d})"
+      unfolding line_norm_def by (rule someI_ex[OF h_ex])
+    have h_norm_ne: "line_norm L \<noteq> 0" using h_norm by (by100 blast)
+    obtain d where hL_d: "L = {x. line_norm L \<bullet> x = d}" using h_norm by (by100 blast)
+    have h_off_ex: "\<exists>d. L = {x. line_norm L \<bullet> x = d}" using hL_d by (by100 blast)
+    have h_off: "L = {x. line_norm L \<bullet> x = line_off L}"
+      unfolding line_off_def by (rule someI_ex[OF h_off_ex])
+    show "line_norm L \<noteq> 0 \<and> L = {x. line_norm L \<bullet> x = line_off L}"
+      using h_norm_ne h_off by (by100 blast)
+  qed
+  define hp :: "(real^2) set \<Rightarrow> bool \<Rightarrow> (real^2) set" where
+    "hp L b = (if b then {x. line_norm L \<bullet> x \<le> line_off L}
+                    else {x. line_norm L \<bullet> x \<ge> line_off L})" for L b
+  define R_of :: "((real^2) set \<Rightarrow> bool) \<Rightarrow> (real^2) set" where
+    "R_of s = (\<Inter>L\<in>Ls. hp L (s L))" for s
+  (** Sign-vector candidates: any function \<open>(real^2) set \<Rightarrow> bool\<close>; restricted
+      to \<open>Ls\<close> it gives \<open>2^|Ls|\<close> distinct regions. We collect candidate regions
+      by enumerating sign functions. The set of all sign functions is uncountable
+      but \<open>R_of\<close> only depends on values on \<open>Ls\<close>, so the image is finite. **)
+  define Rs :: "(real^2) set set" where
+    "Rs = {R. \<exists>s. R = R_of s \<and> interior R \<noteq> {}}"
+  (** Properties of Rs. **)
+  (** Each \<open>hp L b\<close> is a closed half-plane; closed and convex. **)
+  have h_hp_closed: "\<forall>L. \<forall>b. closed (hp L b)"
+  proof (intro allI)
+    fix L :: "(real^2) set" and b :: bool
+    show "closed (hp L b)"
+    proof (cases b)
+      case True
+      have h1: "hp L b = {x. line_norm L \<bullet> x \<le> line_off L}"
+        unfolding hp_def using True by (by100 simp)
+      have h2: "closed {x::real^2. line_norm L \<bullet> x \<le> line_off L}"
+        by (rule closed_halfspace_le)
+      show ?thesis using h1 h2 by (by100 simp)
+    next
+      case False
+      have h1: "hp L b = {x. line_norm L \<bullet> x \<ge> line_off L}"
+        unfolding hp_def using False by (by100 simp)
+      have h2: "closed {x::real^2. line_norm L \<bullet> x \<ge> line_off L}"
+        by (rule closed_halfspace_ge)
+      show ?thesis using h1 h2 by (by100 simp)
+    qed
+  qed
+  have h_hp_conv: "\<forall>L. \<forall>b. convex (hp L b)"
+  proof (intro allI)
+    fix L :: "(real^2) set" and b :: bool
+    show "convex (hp L b)"
+    proof (cases b)
+      case True
+      have h1: "hp L b = {x. line_norm L \<bullet> x \<le> line_off L}"
+        unfolding hp_def using True by (by100 simp)
+      have h2: "convex {x::real^2. line_norm L \<bullet> x \<le> line_off L}"
+        by (rule convex_halfspace_le)
+      show ?thesis using h1 h2 by (by100 simp)
+    next
+      case False
+      have h1: "hp L b = {x. line_norm L \<bullet> x \<ge> line_off L}"
+        unfolding hp_def using False by (by100 simp)
+      have h2: "convex {x::real^2. line_norm L \<bullet> x \<ge> line_off L}"
+        by (rule convex_halfspace_ge)
+      show ?thesis using h1 h2 by (by100 simp)
+    qed
+  qed
+  have h_R_of_closed: "\<forall>s. closed (R_of s)"
+  proof
+    fix s
+    have h_each: "\<forall>L\<in>Ls. closed (hp L (s L))" using h_hp_closed by (by100 simp)
+    show "closed (R_of s)" unfolding R_of_def using h_each closed_INT by (by100 blast)
+  qed
+  have h_R_of_conv: "\<forall>s. convex (R_of s)"
+  proof
+    fix s
+    have h_each: "\<And>L. L \<in> Ls \<Longrightarrow> convex (hp L (s L))" using h_hp_conv by (by100 simp)
+    have h_int: "convex (\<Inter>L\<in>Ls. hp L (s L))" by (rule convex_INT[OF h_each])
+    show "convex (R_of s)" unfolding R_of_def using h_int by (by100 simp)
+  qed
+  have hRs_conv: "\<forall>R\<in>Rs. convex R"
+  proof
+    fix R assume "R \<in> Rs"
+    then obtain s where "R = R_of s" unfolding Rs_def by (by100 blast)
+    thus "convex R" using h_R_of_conv by (by100 simp)
+  qed
+  have hRs_closed: "\<forall>R\<in>Rs. closed R"
+  proof
+    fix R assume "R \<in> Rs"
+    then obtain s where "R = R_of s" unfolding Rs_def by (by100 blast)
+    thus "closed R" using h_R_of_closed by (by100 simp)
+  qed
+  (** Finite: Rs is at most \<open>2^|Ls|\<close>; bounded by image of \<open>R_of\<close> over functions
+      determined by their values on \<open>Ls\<close>. Use the "characteristic function" of
+      \<open>S \<subseteq> Ls\<close>. **)
+  have hRs_fin: "finite Rs"
+  proof -
+    define s_of where "s_of S L = (L \<in> S)" for S :: "(real^2) set set" and L :: "(real^2) set"
+    define Rs_full where
+      "Rs_full = (\<lambda>S. R_of (s_of S)) ` Pow Ls"
+    have hRs_full_fin: "finite Rs_full"
+      unfolding Rs_full_def using hLs_fin by (by100 simp)
+    have hRs_in_full: "Rs \<subseteq> Rs_full"
+    proof
+      fix R assume hR_in_Rs: "R \<in> Rs"
+      then obtain s where hR_eq: "R = R_of s"
+        unfolding Rs_def by (by100 blast)
+      define S where "S = {L\<in>Ls. s L}"
+      have hS_sub: "S \<subseteq> Ls" unfolding S_def by (by100 blast)
+      have h_agree: "\<forall>L\<in>Ls. s_of S L = s L"
+        unfolding s_of_def S_def by (by100 simp)
+      have h_R_eq': "R_of (s_of S) = R_of s"
+      proof -
+        have "(\<Inter>L\<in>Ls. hp L (s_of S L)) = (\<Inter>L\<in>Ls. hp L (s L))"
+          using h_agree by (by100 simp)
+        thus ?thesis unfolding R_of_def by (by100 simp)
+      qed
+      have hR_eq2: "R = R_of (s_of S)" using hR_eq h_R_eq' by (by100 simp)
+      have hS_in_Pow: "S \<in> Pow Ls" using hS_sub by (by100 simp)
+      show "R \<in> Rs_full" unfolding Rs_full_def using hS_in_Pow hR_eq2 by (by100 blast)
+    qed
+    show "finite Rs" using hRs_in_full hRs_full_fin finite_subset by (by100 blast)
+  qed
+  have hRs_fr: "\<forall>R\<in>Rs. frontier R \<subseteq> \<Union>Ls"
+  proof
+    fix R assume hR_in: "R \<in> Rs"
+    obtain s where hR_eq: "R = R_of s"
+      using hR_in unfolding Rs_def by (by100 blast)
+    have hR_closed: "closed R" using hR_in hRs_closed by (by100 blast)
+    have h_fr_eq: "frontier R = R - interior R"
+      using hR_closed by (auto simp: frontier_def closure_closed)
+    show "frontier R \<subseteq> \<Union>Ls"
+    proof
+      fix x assume hx_fr: "x \<in> frontier R"
+      have hx_R: "x \<in> R" using hx_fr h_fr_eq by (by100 blast)
+      have hx_no_int: "x \<notin> interior R" using hx_fr h_fr_eq by (by100 blast)
+      show "x \<in> \<Union>Ls"
+      proof (rule ccontr)
+        assume "x \<notin> \<Union>Ls"
+        hence hx_no_L: "\<forall>L\<in>Ls. x \<notin> L" by (by100 blast)
+        (** For each L, \<open>n_L \<bullet> x \<noteq> d_L\<close>; combined with R-membership, strict inequality. **)
+        have h_strict: "\<forall>L\<in>Ls. x \<in> interior (hp L (s L))"
+        proof
+          fix L assume hL: "L \<in> Ls"
+          have hL_form: "L = {y. line_norm L \<bullet> y = line_off L}"
+            using hL h_line_form by (by100 blast)
+          have hL_norm_ne: "line_norm L \<noteq> 0" using hL h_line_form by (by100 blast)
+          have hx_no_eq: "line_norm L \<bullet> x \<noteq> line_off L"
+          proof
+            assume h_eq: "line_norm L \<bullet> x = line_off L"
+            have h_in_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}" using h_eq by (by100 simp)
+            hence "x \<in> L" using hL_form by (by100 simp)
+            thus False using hx_no_L hL by (by100 blast)
+          qed
+          have hx_in_hp: "x \<in> hp L (s L)"
+          proof -
+            have h_R_sub: "R \<subseteq> hp L (s L)"
+              unfolding hR_eq R_of_def using hL by (by100 blast)
+            show ?thesis using hx_R h_R_sub by (by100 blast)
+          qed
+          show "x \<in> interior (hp L (s L))"
+          proof (cases "s L")
+            case True
+            have hp_eq: "hp L (s L) = {y. line_norm L \<bullet> y \<le> line_off L}"
+              unfolding hp_def using True by (by100 simp)
+            have hx_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_in_hp hp_eq by (by100 simp)
+            have hx_lt: "line_norm L \<bullet> x < line_off L"
+              using hx_le hx_no_eq by (by100 linarith)
+            have h_int_eq: "interior {y. line_norm L \<bullet> y \<le> line_off L}
+                              = {y. line_norm L \<bullet> y < line_off L}"
+              by (rule interior_halfspace_le[OF hL_norm_ne])
+            show ?thesis using hx_lt hp_eq h_int_eq by (by100 simp)
+          next
+            case False
+            have hp_eq: "hp L (s L) = {y. line_norm L \<bullet> y \<ge> line_off L}"
+              unfolding hp_def using False by (by100 simp)
+            have hx_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_in_hp hp_eq by (by100 simp)
+            have hx_gt: "line_norm L \<bullet> x > line_off L"
+              using hx_ge hx_no_eq by (by100 linarith)
+            have h_int_eq: "interior {y. line_norm L \<bullet> y \<ge> line_off L}
+                              = {y. line_norm L \<bullet> y > line_off L}"
+              by (rule interior_halfspace_ge[OF hL_norm_ne])
+            show ?thesis using hx_gt hp_eq h_int_eq by (by100 simp)
+          qed
+        qed
+        (** \<open>x\<close> in finite intersection of opens \<subseteq> R, so \<open>x \<in> interior R\<close>. **)
+        define U where "U = (\<Inter>L\<in>Ls. interior (hp L (s L)))"
+        have hU_open: "open U"
+          unfolding U_def
+          by (rule open_INT[OF hLs_fin]) (by100 simp)
+        have hxU: "x \<in> U" unfolding U_def using h_strict by (by100 blast)
+        have hU_sub_R: "U \<subseteq> R"
+        proof
+          fix y assume hyU: "y \<in> U"
+          have h_each: "\<forall>L\<in>Ls. y \<in> interior (hp L (s L))" using hyU U_def by (by100 blast)
+          have h_each_in: "\<forall>L\<in>Ls. y \<in> hp L (s L)"
+            using h_each interior_subset by (by100 blast)
+          show "y \<in> R" unfolding hR_eq R_of_def using h_each_in by (by100 blast)
+        qed
+        have hx_int_R: "x \<in> interior R"
+          using hU_open hxU hU_sub_R interior_maximal by (by100 blast)
+        show False using hx_int_R hx_no_int by (by100 blast)
+      qed
+    qed
+  qed
+  (** Auxiliary: every generic point (off all lines) is in the interior of its
+      sign-region, hence the region is in Rs. **)
+  have h_generic_in_Rs: "\<forall>x. x \<notin> \<Union>Ls \<longrightarrow>
+                            (\<exists>R\<in>Rs. x \<in> interior R)"
+  proof (intro allI impI)
+    fix x :: "real^2" assume hx_no: "x \<notin> \<Union>Ls"
+    define s_x where "s_x L = (line_norm L \<bullet> x \<le> line_off L)" for L
+    have hx_in_hp: "\<forall>L\<in>Ls. x \<in> hp L (s_x L)"
+    proof
+      fix L assume hL: "L \<in> Ls"
+      show "x \<in> hp L (s_x L)"
+      proof (cases "s_x L")
+        case True
+        have hp_eq: "hp L (s_x L) = {y. line_norm L \<bullet> y \<le> line_off L}"
+          unfolding hp_def using True by (by100 simp)
+        have hx_le: "line_norm L \<bullet> x \<le> line_off L" using True s_x_def by (by100 simp)
+        show ?thesis using hx_le hp_eq by (by100 simp)
+      next
+        case False
+        have hp_eq: "hp L (s_x L) = {y. line_norm L \<bullet> y \<ge> line_off L}"
+          unfolding hp_def using False by (by100 simp)
+        have hx_gt: "line_norm L \<bullet> x > line_off L" using False s_x_def by (by100 simp)
+        show ?thesis using hx_gt hp_eq by (by100 simp)
+      qed
+    qed
+    have hx_in_R: "x \<in> R_of s_x"
+      unfolding R_of_def using hx_in_hp by (by100 blast)
+    have hx_in_int_hp: "\<forall>L\<in>Ls. x \<in> interior (hp L (s_x L))"
+    proof
+      fix L assume hL: "L \<in> Ls"
+      have hL_form: "L = {y. line_norm L \<bullet> y = line_off L}"
+        using hL h_line_form by (by100 blast)
+      have hL_norm_ne: "line_norm L \<noteq> 0" using hL h_line_form by (by100 blast)
+      have hx_no_eq: "line_norm L \<bullet> x \<noteq> line_off L"
+      proof
+        assume h_eq: "line_norm L \<bullet> x = line_off L"
+        have h_in_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}" using h_eq by (by100 simp)
+        hence "x \<in> L" using hL_form by (by100 simp)
+        thus False using hx_no hL by (by100 blast)
+      qed
+      show "x \<in> interior (hp L (s_x L))"
+      proof (cases "s_x L")
+        case True
+        hence hx_le: "line_norm L \<bullet> x \<le> line_off L" using s_x_def by (by100 simp)
+        have hx_lt: "line_norm L \<bullet> x < line_off L" using hx_le hx_no_eq by (by100 linarith)
+        have hp_eq: "hp L (s_x L) = {y. line_norm L \<bullet> y \<le> line_off L}"
+          unfolding hp_def using True by (by100 simp)
+        have h_int_eq: "interior {y. line_norm L \<bullet> y \<le> line_off L}
+                          = {y. line_norm L \<bullet> y < line_off L}"
+          by (rule interior_halfspace_le[OF hL_norm_ne])
+        show ?thesis using hx_lt hp_eq h_int_eq by (by100 simp)
+      next
+        case False
+        hence hx_gt0: "\<not> (line_norm L \<bullet> x \<le> line_off L)" using s_x_def by (by100 simp)
+        have hx_gt: "line_norm L \<bullet> x > line_off L" using hx_gt0 by (by100 linarith)
+        have hp_eq: "hp L (s_x L) = {y. line_norm L \<bullet> y \<ge> line_off L}"
+          unfolding hp_def using False by (by100 simp)
+        have h_int_eq: "interior {y. line_norm L \<bullet> y \<ge> line_off L}
+                          = {y. line_norm L \<bullet> y > line_off L}"
+          by (rule interior_halfspace_ge[OF hL_norm_ne])
+        show ?thesis using hx_gt hp_eq h_int_eq by (by100 simp)
+      qed
+    qed
+    define U where "U = (\<Inter>L\<in>Ls. interior (hp L (s_x L)))"
+    have hU_open: "open U"
+      unfolding U_def by (rule open_INT[OF hLs_fin]) (by100 simp)
+    have hxU: "x \<in> U" unfolding U_def using hx_in_int_hp by (by100 blast)
+    have hU_sub: "U \<subseteq> R_of s_x"
+    proof
+      fix y assume hyU: "y \<in> U"
+      have hy_each: "\<forall>L\<in>Ls. y \<in> interior (hp L (s_x L))" using hyU U_def by (by100 blast)
+      have hy_each_in: "\<forall>L\<in>Ls. y \<in> hp L (s_x L)"
+        using hy_each interior_subset by (by100 blast)
+      show "y \<in> R_of s_x" unfolding R_of_def using hy_each_in by (by100 blast)
+    qed
+    have hx_int_R: "x \<in> interior (R_of s_x)"
+      using hU_open hxU hU_sub interior_maximal by (by100 blast)
+    have h_int_ne: "interior (R_of s_x) \<noteq> {}" using hx_int_R by (by100 blast)
+    have hR_in_Rs: "R_of s_x \<in> Rs" unfolding Rs_def using h_int_ne by (by100 blast)
+    show "\<exists>R\<in>Rs. x \<in> interior R" using hR_in_Rs hx_int_R by (by100 blast)
+  qed
+  (** \<open>\<Union>Ls\<close> is closed (finite union of closed lines). Each line is closed. **)
+  have h_lines_closed: "\<forall>L\<in>Ls. closed L"
+  proof
+    fix L assume hL: "L \<in> Ls"
+    have hL_form: "L = {y. line_norm L \<bullet> y = line_off L}"
+      using hL h_line_form by (by100 blast)
+    have h_closed_eq: "closed {y::real^2. line_norm L \<bullet> y = line_off L}"
+      by (rule closed_hyperplane)
+    show "closed L" using hL_form h_closed_eq by (by100 simp)
+  qed
+  have h_Ls_closed: "closed (\<Union>Ls)"
+    using hLs_fin h_lines_closed closed_Union by (by100 blast)
+  (** Cover: \<open>\<Union>Rs = UNIV\<close>. \<open>\<Union>Rs\<close> closed (finite Rs, each R closed).
+      \<open>\<Union>Ls\<close> negligible (finite union of hyperplanes). If \<open>\<Union>Rs \<noteq> UNIV\<close>,
+      \<open>UNIV - \<Union>Rs\<close> is non-empty open and cannot be subset of negligible
+      \<open>\<Union>Ls\<close>; so a generic point \<open>x \<notin> \<Union>Ls\<close> exists; \<open>h_generic_in_Rs\<close>
+      places \<open>x \<in> R \<in> Rs\<close>, contradiction. **)
+  have hRs_cover: "\<Union>Rs = (UNIV::(real^2) set)"
+  proof (rule ccontr)
+    assume "\<Union>Rs \<noteq> UNIV"
+    hence h_proper: "UNIV - \<Union>Rs \<noteq> {}" by (by100 blast)
+    have h_Rs_closed: "closed (\<Union>Rs)"
+      using hRs_fin hRs_closed closed_Union by (by100 blast)
+    have h_compl_open: "open (UNIV - \<Union>Rs)"
+      using h_Rs_closed open_Diff by (by100 blast)
+    have h_Ls_negligible: "negligible (\<Union>Ls::(real^2) set)"
+    proof -
+      have h_each_neg: "\<forall>L\<in>Ls. negligible L"
+      proof
+        fix L assume hL: "L \<in> Ls"
+        have hL_form: "L = {y. line_norm L \<bullet> y = line_off L}"
+          using hL h_line_form by (by100 blast)
+        have hL_norm_ne: "line_norm L \<noteq> 0" using hL h_line_form by (by100 blast)
+        have h_neg_set: "negligible {y::real^2. line_norm L \<bullet> y = line_off L}"
+          using hL_norm_ne negligible_hyperplane by (by100 blast)
+        show "negligible L" using hL_form h_neg_set by (by100 simp)
+      qed
+      show ?thesis using hLs_fin h_each_neg negligible_Union by (by100 blast)
+    qed
+    have h_compl_minus_Ls: "(UNIV - \<Union>Rs) - \<Union>Ls \<noteq> {}"
+    proof (rule ccontr)
+      assume "\<not> (UNIV - \<Union>Rs) - \<Union>Ls \<noteq> {}"
+      hence h_sub: "UNIV - \<Union>Rs \<subseteq> \<Union>Ls" by (by100 blast)
+      have h_neg: "negligible (UNIV - \<Union>Rs)"
+        using h_sub h_Ls_negligible negligible_subset by (by100 blast)
+      have h_not_neg: "\<not> negligible (UNIV - \<Union>Rs)"
+        using h_compl_open h_proper open_not_negligible by (by100 blast)
+      show False using h_neg h_not_neg by (by100 blast)
+    qed
+    obtain x where hx_no_Rs: "x \<in> UNIV - \<Union>Rs" and hx_no_Ls: "x \<notin> \<Union>Ls"
+      using h_compl_minus_Ls by (by100 blast)
+    obtain R where hR_in: "R \<in> Rs" and hxR: "x \<in> interior R"
+      using h_generic_in_Rs hx_no_Ls by (by100 blast)
+    have hxR_in: "x \<in> R" using hxR interior_subset by (by100 blast)
+    have hx_in_Rs: "x \<in> \<Union>Rs" using hR_in hxR_in by (by100 blast)
+    show False using hx_in_Rs hx_no_Rs by (by100 blast)
+  qed
+  have hRs_interior_ne: "\<forall>R\<in>Rs. interior R \<noteq> {}"
+    unfolding Rs_def by (by100 blast)
+  have hRs_int_no_Ls: "\<forall>R\<in>Rs. interior R \<inter> \<Union>Ls = {}"
+  proof
+    fix R assume hR_in: "R \<in> Rs"
+    obtain s where hR_eq: "R = R_of s"
+      using hR_in unfolding Rs_def by (by100 blast)
+    show "interior R \<inter> \<Union>Ls = {}"
+    proof (rule ccontr)
+      assume "interior R \<inter> \<Union>Ls \<noteq> {}"
+      then obtain x L0 where hxR: "x \<in> interior R" and hL0: "L0 \<in> Ls" and hxL0: "x \<in> L0"
+        by (by100 blast)
+      have hL0_eq: "L0 = {y. line_norm L0 \<bullet> y = line_off L0}"
+        using hL0 h_line_form by (by100 blast)
+      have hL0_norm_ne: "line_norm L0 \<noteq> 0" using hL0 h_line_form by (by100 blast)
+      have hx_eq: "line_norm L0 \<bullet> x = line_off L0"
+      proof -
+        have "x \<in> {y. line_norm L0 \<bullet> y = line_off L0}" using hxL0 hL0_eq by (by100 simp)
+        thus ?thesis by (by100 simp)
+      qed
+      (** \<open>interior R \<subseteq> interior (hp L0 (s L0))\<close>: ball at x in R lies in hp L0. **)
+      have hR_sub_hp: "R \<subseteq> hp L0 (s L0)"
+        unfolding hR_eq R_of_def using hL0 by (by100 blast)
+      have hint_sub: "interior R \<subseteq> interior (hp L0 (s L0))"
+        using hR_sub_hp interior_mono by (by100 blast)
+      have hx_int_hp: "x \<in> interior (hp L0 (s L0))" using hxR hint_sub by (by100 blast)
+      show False
+      proof (cases "s L0")
+        case True
+        have hp_eq: "hp L0 (s L0) = {y. line_norm L0 \<bullet> y \<le> line_off L0}"
+          unfolding hp_def using True by (by100 simp)
+        have h_int_eq: "interior {y. line_norm L0 \<bullet> y \<le> line_off L0}
+                          = {y. line_norm L0 \<bullet> y < line_off L0}"
+          by (rule interior_halfspace_le[OF hL0_norm_ne])
+        have hx_strict: "line_norm L0 \<bullet> x < line_off L0"
+          using hx_int_hp hp_eq h_int_eq by (by100 simp)
+        show False using hx_eq hx_strict by (by100 simp)
+      next
+        case False
+        have hp_eq: "hp L0 (s L0) = {y. line_norm L0 \<bullet> y \<ge> line_off L0}"
+          unfolding hp_def using False by (by100 simp)
+        have h_int_eq: "interior {y. line_norm L0 \<bullet> y \<ge> line_off L0}
+                          = {y. line_norm L0 \<bullet> y > line_off L0}"
+          by (rule interior_halfspace_ge[OF hL0_norm_ne])
+        have hx_strict: "line_norm L0 \<bullet> x > line_off L0"
+          using hx_int_hp hp_eq h_int_eq by (by100 simp)
+        show False using hx_eq hx_strict by (by100 simp)
+      qed
+    qed
+  qed
+  have hRs_regular: "\<forall>R\<in>Rs. R = closure (interior R)"
+  proof
+    fix R assume hR_in: "R \<in> Rs"
+    have hR_conv: "convex R" using hR_in hRs_conv by (by100 blast)
+    have hR_closed: "closed R" using hR_in hRs_closed by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in hRs_interior_ne by (by100 blast)
+    have h_clos_eq_clos: "closure (interior R) = closure R"
+      by (rule convex_closure_interior[OF hR_conv hR_int_ne])
+    have h_clos_R: "closure R = R" using hR_closed by (by100 simp)
+    show "R = closure (interior R)" using h_clos_eq_clos h_clos_R by (by100 simp)
+  qed
+  (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
+  define Ibar where
+    "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  define I where "I = geotop_polygon_interior J"
+  define Ee where "Ee = geotop_polygon_exterior J"
+  have hI_open: "open I"
+    unfolding I_def by (rule polygon_interior_open[OF hJ])
+  have hEe_open: "open Ee"
+    unfolding Ee_def by (rule polygon_exterior_open[OF hJ])
+  have hI_E_disj: "I \<inter> Ee = {}"
+    unfolding I_def Ee_def
+    using polygon_interior_exterior_disjoint[OF hJ] by simp
+  have hI_J_disj: "I \<inter> J = {}"
+    unfolding I_def
+    using polygon_interior_disjoint_polygon[OF hJ] by simp
+  have hE_J_disj: "Ee \<inter> J = {}"
+    unfolding Ee_def
+    using polygon_exterior_disjoint_polygon[OF hJ] by simp
+  have h_clI_HOL: "closure I = I \<union> J"
+    unfolding I_def
+    using polygon_interior_closure_eq[OF hJ] by simp
+  have h_clE_HOL: "closure Ee = Ee \<union> J"
+    unfolding Ee_def
+    using polygon_exterior_closure_eq[OF hJ] by simp
+  have hIbar_HOL: "Ibar = I \<union> J"
+  proof -
+    have h1: "Ibar = closure (geotop_polygon_interior J)"
+      unfolding Ibar_def by (rule closure_on_geotop_UNIV_eq_closure)
+    have h2: "closure (geotop_polygon_interior J) = geotop_polygon_interior J \<union> J"
+      by (rule polygon_interior_closure_eq[OF hJ])
+    show ?thesis using h1 h2 unfolding I_def by simp
+  qed
+  have h_components: "components (UNIV - J) = {I, Ee}"
+    unfolding I_def Ee_def
+    using polygon_components_eq[OF hJ] by simp
+  have hUNIV_decomp: "UNIV = I \<union> J \<union> Ee"
+  proof -
+    have h_union: "\<Union>(components (UNIV - J)) = UNIV - J"
+      using Union_components by metis
+    have "I \<union> Ee = UNIV - J"
+      using h_components h_union by simp
+    thus ?thesis by blast
+  qed
+  have hRj_dichotomy_part1: "\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J"
+  proof
+    fix R assume hR: "R \<in> Rs"
+    have hR_conv: "convex R" using hR hRs_conv by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR hRs_interior_ne by (by100 blast)
+    have hR_reg: "R = closure (interior R)" using hR hRs_regular by (by100 blast)
+    have hR_int_no_Ls: "interior R \<inter> \<Union>Ls = {}" using hR hRs_int_no_Ls by (by100 blast)
+    have hR_int_conv: "convex (interior R)" using hR_conv convex_interior by (by100 blast)
+    have hR_int_conn: "connected (interior R)" using hR_int_conv convex_connected by (by100 blast)
+    have hR_int_no_J: "interior R \<inter> J = {}"
+      using hR_int_no_Ls hLs_cover by (by100 blast)
+    have hsub_IE: "interior R \<subseteq> I \<union> Ee"
+      using hR_int_no_J hUNIV_decomp by (by100 blast)
+    have h_int_disj_or: "interior R \<inter> I = {} \<or> interior R \<inter> Ee = {}"
+    proof (rule ccontr)
+      assume "\<not> (interior R \<inter> I = {} \<or> interior R \<inter> Ee = {})"
+      hence h_both_I: "interior R \<inter> I \<noteq> {}" and h_both_E: "interior R \<inter> Ee \<noteq> {}"
+        by (by100 blast)+
+      have h_IE_int: "I \<inter> Ee \<inter> interior R = {}" using hI_E_disj by (by100 blast)
+      have h_I_int: "I \<inter> interior R \<noteq> {}" using h_both_I by (by100 blast)
+      have h_E_int: "Ee \<inter> interior R \<noteq> {}" using h_both_E by (by100 blast)
+      have h_conn_unf: "\<not> (\<exists>A B. open A \<and> open B \<and> interior R \<subseteq> A \<union> B \<and>
+               A \<inter> B \<inter> interior R = {} \<and>
+               A \<inter> interior R \<noteq> {} \<and> B \<inter> interior R \<noteq> {})"
+        using hR_int_conn unfolding connected_def by (by100 blast)
+      have h_witness:
+        "open I \<and> open Ee \<and> interior R \<subseteq> I \<union> Ee \<and>
+         I \<inter> Ee \<inter> interior R = {} \<and>
+         I \<inter> interior R \<noteq> {} \<and> Ee \<inter> interior R \<noteq> {}"
+        using hI_open hEe_open hsub_IE h_IE_int h_I_int h_E_int by (by100 blast)
+      have h_ex: "\<exists>A B. open A \<and> open B \<and> interior R \<subseteq> A \<union> B \<and>
+               A \<inter> B \<inter> interior R = {} \<and>
+               A \<inter> interior R \<noteq> {} \<and> B \<inter> interior R \<noteq> {}"
+        apply (rule exI[of _ I])
+        apply (rule exI[of _ Ee])
+        using h_witness by (by100 blast)
+      thus False using h_conn_unf by (by100 blast)
+    qed
+    show "R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J"
+    proof (cases "interior R \<subseteq> I")
+      case True
+      have h_R_clI: "R \<subseteq> closure I"
+      proof -
+        have hcl_mono: "closure (interior R) \<subseteq> closure I" using True closure_mono by (by100 blast)
+        show ?thesis using hR_reg hcl_mono by (by100 simp)
+      qed
+      have "R \<subseteq> I \<union> J" using h_R_clI h_clI_HOL by (by100 simp)
+      thus ?thesis using hIbar_HOL by (by100 blast)
+    next
+      case False
+      hence hRE: "interior R \<subseteq> Ee" using hsub_IE h_int_disj_or by (by100 blast)
+      have h_R_clE: "R \<subseteq> closure Ee"
+      proof -
+        have hcl_mono: "closure (interior R) \<subseteq> closure Ee" using hRE closure_mono by (by100 blast)
+        show ?thesis using hR_reg hcl_mono by (by100 simp)
+      qed
+      have h_R_EJ: "R \<subseteq> Ee \<union> J" using h_R_clE h_clE_HOL by (by100 simp)
+      have "R \<inter> Ibar \<subseteq> (Ee \<union> J) \<inter> (I \<union> J)" using h_R_EJ hIbar_HOL by (by100 blast)
+      also have "(Ee \<union> J) \<inter> (I \<union> J) = J" using hI_E_disj hE_J_disj hI_J_disj by (by100 blast)
+      finally have "R \<inter> Ibar \<subseteq> J" .
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+  have hRj_dichotomy_part2: "\<Union>{R\<in>Rs. R \<subseteq> Ibar} = Ibar"
+  proof
+    show "\<Union>{R\<in>Rs. R \<subseteq> Ibar} \<subseteq> Ibar" by (by100 blast)
+    show "Ibar \<subseteq> \<Union>{R\<in>Rs. R \<subseteq> Ibar}"
+    proof
+      fix x assume hx_Ibar: "x \<in> Ibar"
+      have hxIJ: "x \<in> I \<or> x \<in> J" using hx_Ibar hIbar_HOL by (by100 blast)
+      (** Key sublemma: there's R \<in> Rs with x \<in> R that contains some I-point. **)
+      have h_R_with_I:
+        "\<exists>R\<in>Rs. x \<in> R \<and> R \<inter> I \<noteq> {}"
+      proof (cases "x \<in> I")
+        case True
+        obtain R0 where hR0K: "R0 \<in> Rs" and hxR0: "x \<in> R0"
+          using hRs_cover by (by100 blast)
+        have hR0I: "R0 \<inter> I \<noteq> {}" using hxR0 True by (by100 blast)
+        show ?thesis using hR0K hxR0 hR0I by (by100 blast)
+      next
+        case False
+        hence hxJ: "x \<in> J" using hxIJ by (by100 blast)
+        (** \<open>x\<close> is a limit point of \<open>I\<close> by Theorem_GT_2_5. **)
+        have h_x_lim_I_geotop:
+          "is_limit_point_of x (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
+          using Theorem_GT_2_5[OF hJ] hxJ by (by100 blast)
+        have h_x_islimpt: "x islimpt I"
+          unfolding I_def
+          using h_x_lim_I_geotop is_limit_point_of_UNIV_geotop_iff_islimpt by (by100 blast)
+        (** Define the "non-x-containing" regions; their min distance to x is positive. **)
+        define Rs_off where "Rs_off = {R\<in>Rs. x \<notin> R}"
+        have hRs_off_fin: "finite Rs_off" unfolding Rs_off_def using hRs_fin by (by100 simp)
+        have hRs_off_closed: "\<forall>R\<in>Rs_off. closed R \<and> x \<notin> R"
+          unfolding Rs_off_def using hRs_closed by (by100 blast)
+        have hRs_off_pos:
+          "\<forall>R\<in>Rs_off. R \<noteq> {} \<longrightarrow> infdist x R > 0"
+        proof
+          fix R assume hR_off: "R \<in> Rs_off"
+          show "R \<noteq> {} \<longrightarrow> infdist x R > 0"
+          proof
+            assume hR_ne: "R \<noteq> {}"
+            have hR_cl: "closed R" using hR_off hRs_off_closed by (by100 blast)
+            have hxR: "x \<notin> R" using hR_off hRs_off_closed by (by100 blast)
+            have h_iff: "(x \<in> R) = (infdist x R = 0)"
+              using hR_cl hR_ne in_closed_iff_infdist_zero by (by100 simp)
+            have h_nz: "infdist x R \<noteq> 0" using h_iff hxR by (by100 simp)
+            have h_ge: "infdist x R \<ge> 0" by (rule infdist_nonneg)
+            show "infdist x R > 0" using h_nz h_ge by (by100 linarith)
+          qed
+        qed
+        define dset where "dset = (\<lambda>R. infdist x R) ` {R\<in>Rs_off. R \<noteq> {}}"
+        define eps where "eps = (if dset = {} then 1 else Min dset)"
+        have h_dset_fin: "finite dset" unfolding dset_def using hRs_off_fin by (by100 simp)
+        have heps_pos: "eps > 0"
+        proof (cases "dset = {}")
+          case True thus ?thesis unfolding eps_def by (by100 simp)
+        next
+          case False
+          have h_min_in: "Min dset \<in> dset" using h_dset_fin False Min_in by (by100 blast)
+          then obtain R0 where hR0_off: "R0 \<in> Rs_off" and hR0_ne: "R0 \<noteq> {}"
+                          and hR0_eq: "Min dset = infdist x R0"
+            unfolding dset_def by (by100 blast)
+          have h_pos: "infdist x R0 > 0" using hR0_off hR0_ne hRs_off_pos by (by100 blast)
+          show ?thesis unfolding eps_def using False hR0_eq h_pos by (by100 simp)
+        qed
+        (** \<open>ball x eps\<close> avoids all R \<in> Rs_off (those that don't contain x). **)
+        have h_ball_disj: "\<forall>R\<in>Rs_off. ball x eps \<inter> R = {}"
+        proof
+          fix R assume hR_off: "R \<in> Rs_off"
+          show "ball x eps \<inter> R = {}"
+          proof (cases "R = {}")
+            case True thus ?thesis by (by100 simp)
+          next
+            case False
+            have h_pos: "infdist x R > 0" using hR_off False hRs_off_pos by (by100 blast)
+            have h_in_dset: "infdist x R \<in> dset"
+              unfolding dset_def using hR_off False by (by100 blast)
+            have h_dset_ne: "dset \<noteq> {}" using h_in_dset by (by100 blast)
+            have h_min_le: "Min dset \<le> infdist x R"
+              using h_dset_fin h_in_dset Min_le by (by100 blast)
+            have heps_le: "eps \<le> infdist x R"
+              unfolding eps_def using h_dset_ne h_min_le by (by100 simp)
+            show ?thesis
+            proof (rule ccontr)
+              assume "ball x eps \<inter> R \<noteq> {}"
+              then obtain y where hy_b: "y \<in> ball x eps" and hyR: "y \<in> R" by (by100 blast)
+              have h_dist: "dist x y < eps" using hy_b by (by100 simp)
+              have h_inf_le: "infdist x R \<le> dist x y" using hyR infdist_le by (by100 blast)
+              show False using h_dist h_inf_le heps_le by (by100 simp)
+            qed
+          qed
+        qed
+        (** Pick \<open>y \<in> I \<inter> ball x eps - {x}\<close> via islimpt. **)
+        have h_ball_open: "open (ball x eps)" by (by100 simp)
+        have h_x_in_ball: "x \<in> ball x eps" using heps_pos by (by100 simp)
+        have h_islim_ex: "\<exists>y\<in>I. y \<in> ball x eps \<and> y \<noteq> x"
+          using h_x_islimpt h_ball_open h_x_in_ball
+          unfolding islimpt_def by (by100 blast)
+        obtain y where hyI: "y \<in> I" and hy_b: "y \<in> ball x eps" and hyx: "y \<noteq> x"
+          using h_islim_ex by (by100 blast)
+        (** \<open>y \<in> some R \<in> Rs\<close>; this R must contain x (else \<open>y \<in> R \<in> Rs_off\<close>
+            and \<open>y \<in> ball x eps\<close>, contradicting disjointness). **)
+        have hy_UNIV: "y \<in> UNIV" by (by100 simp)
+        then obtain R where hRK: "R \<in> Rs" and hyR: "y \<in> R" using hRs_cover by (by100 blast)
+        have hxR: "x \<in> R"
+        proof (rule ccontr)
+          assume "x \<notin> R"
+          hence hR_off: "R \<in> Rs_off" unfolding Rs_off_def using hRK by (by100 simp)
+          have hR_ball_disj: "ball x eps \<inter> R = {}" using hR_off h_ball_disj by (by100 blast)
+          show False using hy_b hyR hR_ball_disj by (by100 blast)
+        qed
+        have hRI: "R \<inter> I \<noteq> {}" using hyI hyR by (by100 blast)
+        show ?thesis using hRK hxR hRI by (by100 blast)
+      qed
+      (** With \<open>R\<close> containing both \<open>x\<close> and an \<open>I\<close>-point, dichotomy forces \<open>R \<subseteq> Ibar\<close>. **)
+      obtain R where hRK: "R \<in> Rs" and hxR: "x \<in> R" and hRI: "R \<inter> I \<noteq> {}"
+        using h_R_with_I by (by100 blast)
+      have h_R_dich: "R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J"
+        using hRK hRj_dichotomy_part1 by (by100 blast)
+      have h_R_sub: "R \<subseteq> Ibar"
+      proof (rule ccontr)
+        assume "\<not> R \<subseteq> Ibar"
+        hence hR_int_J: "R \<inter> Ibar \<subseteq> J" using h_R_dich by (by100 blast)
+        obtain z where hzR: "z \<in> R" and hzI: "z \<in> I" using hRI by (by100 blast)
+        have hz_Ibar: "z \<in> Ibar" using hzI hIbar_HOL by (by100 blast)
+        have hz_J: "z \<in> J" using hzR hz_Ibar hR_int_J by (by100 blast)
+        show False using hzI hz_J hI_J_disj by (by100 blast)
+      qed
+      show "x \<in> \<Union>{R\<in>Rs. R \<subseteq> Ibar}" using hRK hxR h_R_sub by (by100 blast)
+    qed
+  qed
+  have hRj_dichotomy: "(\<forall>R\<in>Rs. R \<subseteq> Ibar \<or> R \<inter> Ibar \<subseteq> J) \<and>
+                        \<Union>{R\<in>Rs. R \<subseteq> Ibar} = Ibar"
+    using hRj_dichotomy_part1 hRj_dichotomy_part2 by (by100 blast)
+  (** (4) Select the \"inside\" regions Rs_in = {R \<in> Rs. R \<subseteq> \<bar>I\<close>}; their union covers \<bar>I\<close>. **)
+  define Rs_in where "Rs_in = {R\<in>Rs. R \<subseteq> Ibar}"
+  have hRs_in_fin: "finite Rs_in" using hRs_fin Rs_in_def by simp
+  have hRs_in_cover: "\<Union>Rs_in = Ibar" using hRj_dichotomy Rs_in_def by (by100 simp)
+  (** (5) Triangulate each R \<in> Rs_in: pick w \<in> R - Fr R (nonempty interior;
+      legitimate since R is a 2-dim closed convex region with nonempty interior
+      in the \<bar>I\<close> case), and for each 1-simplex vv' of a minimal triangulation
+      of Fr R, form the 2-simplex w v v'. **)
+  define wpt :: "(real^2) set \<Rightarrow> real^2" where
+    "wpt R = (SOME w. w \<in> interior R)" for R
+  have hwpt: "\<forall>R\<in>Rs_in. wpt R \<in> R - frontier R"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have hR: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_int_ne: "interior R \<noteq> {}" using hR hRs_interior_ne by (by100 blast)
+    have h_ex: "\<exists>w. w \<in> interior R" using hR_int_ne by (by100 blast)
+    have h_some: "(SOME w. w \<in> interior R) \<in> interior R"
+      by (rule someI_ex[OF h_ex])
+    have hwpt_in: "wpt R \<in> interior R"
+      using h_some unfolding wpt_def by (by100 simp)
+    have h_int_in_R: "interior R \<subseteq> R" by (rule interior_subset)
+    have h_int_no_fr: "interior R \<inter> frontier R = {}"
+      by (simp add: frontier_def)
+    have hwpt_in_R: "wpt R \<in> R" using hwpt_in h_int_in_R by (by100 blast)
+    have hwpt_no_fr: "wpt R \<notin> frontier R" using hwpt_in h_int_no_fr by (by100 blast)
+    show "wpt R \<in> R - frontier R" using hwpt_in_R hwpt_no_fr by (by100 blast)
+  qed
+  (** Each \<open>R \<in> Rs_in\<close> is a 2D bounded closed convex polyhedron (intersection of
+      finite closed half-planes), hence a polytope. Define \<open>FrTri R\<close> as its
+      set of facets (= 1-dim faces). Each property is split as a sub-sorry. **)
+  define FrTri :: "(real^2) set \<Rightarrow> (real^2) set set" where
+    "FrTri R = {F. F facet_of R}" for R
+  (** Each \<open>R \<in> Rs_in\<close> is a polyhedron (finite intersection of half-spaces). **)
+  have h_R_polyhedron: "\<forall>R\<in>Rs_in. polyhedron R"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    obtain s where hR_eq: "R = R_of s"
+      using hR_in_Rs Rs_def by (by100 blast)
+    define F where "F = (\<lambda>L. hp L (s L)) ` Ls"
+    have hF_fin: "finite F" unfolding F_def using hLs_fin by (by100 simp)
+    have hR_inter: "R = \<Inter>F" unfolding hR_eq R_of_def F_def by (by100 simp)
+    have h_each_form: "\<forall>h\<in>F. \<exists>a b. a \<noteq> 0 \<and> h = {x. a \<bullet> x \<le> b}"
+    proof
+      fix h assume "h \<in> F"
+      then obtain L where hL: "L \<in> Ls" and hh: "h = hp L (s L)"
+        unfolding F_def by (by100 blast)
+      have hL_norm_ne: "line_norm L \<noteq> 0" using hL h_line_form by (by100 blast)
+      show "\<exists>a b. a \<noteq> 0 \<and> h = {x. a \<bullet> x \<le> b}"
+      proof (cases "s L")
+        case True
+        have hh_eq: "h = {x. line_norm L \<bullet> x \<le> line_off L}"
+          unfolding hh hp_def using True by (by100 simp)
+        show ?thesis using hL_norm_ne hh_eq by (by100 blast)
+      next
+        case False
+        have hh_eq: "h = {x. line_norm L \<bullet> x \<ge> line_off L}"
+          unfolding hh hp_def using False by (by100 simp)
+        have h_neg: "h = {x. (- line_norm L) \<bullet> x \<le> - line_off L}"
+        proof
+          show "h \<subseteq> {x. (- line_norm L) \<bullet> x \<le> - line_off L}"
+            using hh_eq by (by100 auto)
+          show "{x. (- line_norm L) \<bullet> x \<le> - line_off L} \<subseteq> h"
+            using hh_eq by (by100 auto)
+        qed
+        have h_neg_ne: "- line_norm L \<noteq> 0" using hL_norm_ne by (by100 simp)
+        show ?thesis using h_neg_ne h_neg by (by100 blast)
+      qed
+    qed
+    show "polyhedron R"
+      unfolding polyhedron_def using hF_fin hR_inter h_each_form by (by100 blast)
+  qed
+  have hFrTri_fin: "\<forall>R\<in>Rs_in. finite (FrTri R)"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have hR_poly: "polyhedron R" using hR_in h_R_polyhedron by (by100 blast)
+    have h_facets_fin: "finite {F. F facet_of R}"
+      using hR_poly finite_polyhedron_facets by (by100 blast)
+    show "finite (FrTri R)" unfolding FrTri_def using h_facets_fin by (by100 simp)
+  qed
+  have hFrTri_edges: "\<forall>R\<in>Rs_in. \<forall>e\<in>FrTri R. geotop_is_edge e \<and> e \<subseteq> frontier R"
+  proof (intro ballI)
+    fix R e assume hR_in: "R \<in> Rs_in" and he_FrTri: "e \<in> FrTri R"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_poly: "polyhedron R" using hR_in h_R_polyhedron by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = int (DIM(real^2))"
+      using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have hR_aff_dim_2: "aff_dim R = 2" using hR_aff_dim by (by100 simp)
+    have hR_bounded: "bounded R"
+    proof -
+      have hR_subIbar: "R \<subseteq> Ibar" using hR_in Rs_in_def by (by100 simp)
+      have hJ_n_sph: "geotop_is_n_sphere J
+                       (subspace_topology UNIV geotop_euclidean_topology J) 1"
+        using hJ unfolding geotop_is_polygon_def by (by100 blast)
+      have hI_bdd: "bounded I"
+        unfolding I_def by (rule polygon_interior_bounded[OF hJ_n_sph])
+      have h_clI_bdd: "bounded (closure I)"
+        using hI_bdd bounded_closure by (by100 blast)
+      have h_clI_eq: "closure I = I \<union> J" by (rule h_clI_HOL)
+      have h_Ibar_HOL_def: "Ibar = closure I" using h_clI_eq hIbar_HOL by (by100 simp)
+      have hIbar_bdd: "bounded Ibar" using h_clI_bdd h_Ibar_HOL_def by (by100 simp)
+      show "bounded R" using hR_subIbar hIbar_bdd bounded_subset by (by100 blast)
+    qed
+    have hR_polytope: "polytope R"
+      using hR_poly hR_bounded polytope_eq_bounded_polyhedron by (by100 blast)
+    (** \<open>e\<close> is a facet of \<open>R\<close>: face_of \<open>R\<close>, aff_dim \<open>e\<close> = aff_dim \<open>R\<close> - 1 = 1. **)
+    have he_facet: "e facet_of R" using he_FrTri FrTri_def by (by100 simp)
+    have he_face: "e face_of R" using he_facet facet_of_imp_face_of by (by100 blast)
+    have he_aff_dim: "aff_dim e = aff_dim R - 1"
+      using he_facet unfolding facet_of_def by (by100 simp)
+    have he_aff_dim_1: "aff_dim e = 1" using he_aff_dim hR_aff_dim_2 by (by100 simp)
+    have he_polytope: "polytope e"
+      using face_of_polytope_polytope hR_polytope he_face by (by100 blast)
+    obtain v1 v2 where hv1v2_ne: "v1 \<noteq> v2" and he_seg: "e = closed_segment v1 v2"
+      using polytope_aff_dim_1_is_segment[OF he_polytope he_aff_dim_1] by (by100 blast)
+    (** Now \<open>e = conv {v1, v2}\<close> with \<open>v1 \<noteq> v2\<close>: is_edge. **)
+    have he_conv: "e = convex hull {v1, v2}"
+      using he_seg segment_convex_hull by (by100 simp)
+    have he_HOL: "e = geotop_convex_hull {v1, v2}"
+    proof -
+      have h_eq: "geotop_convex_hull {v1, v2} = convex hull {v1, v2}"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using he_conv h_eq by (by100 simp)
+    qed
+    define V where "V = {v1, v2}"
+    have hV_fin: "finite V" unfolding V_def by (by100 simp)
+    have hV_card: "card V = 2" unfolding V_def using hv1v2_ne by (by100 simp)
+    have hV_ai: "\<not> affine_dependent V"
+      unfolding V_def by (rule affine_independent_2)
+    have hV_card_eq: "card V = 1 + 1" using hV_card by (by100 simp)
+    have hV_gp: "geotop_general_position V 1"
+      by (rule geotop_ai_imp_general_position[OF hV_fin hV_card_eq hV_ai])
+    have he_simp_dim: "geotop_simplex_dim e 1"
+    proof -
+      have h_one_le: "(1::nat) \<le> 1" by simp
+      have h_witness: "finite V \<and> card V = 1 + 1 \<and> (1::nat) \<le> 1
+                       \<and> geotop_general_position V 1 \<and> e = geotop_convex_hull V"
+        using hV_fin hV_card_eq h_one_le hV_gp he_HOL V_def by (by100 simp)
+      show ?thesis
+        unfolding geotop_simplex_dim_def
+        using h_witness by (intro exI[of _ V] exI[of _ "1::nat"]) (by100 blast)
+    qed
+    have he_edge: "geotop_is_edge e" unfolding geotop_is_edge_def using he_simp_dim by (by100 simp)
+    (** \<open>e \<subseteq> frontier R\<close>: \<open>e \<subseteq> rel_frontier R = frontier R\<close>. **)
+    have he_sub_R: "e \<subseteq> R" using he_facet facet_of_imp_subset by (by100 blast)
+    have he_sub_relf: "e \<subseteq> rel_frontier R"
+    proof -
+      have he_ne_R: "e \<noteq> R"
+      proof
+        assume "e = R"
+        hence "aff_dim e = aff_dim R" by (by100 simp)
+        thus False using he_aff_dim_1 hR_aff_dim_2 by (by100 simp)
+      qed
+      show ?thesis
+        by (rule face_of_subset_rel_frontier[OF he_face he_ne_R])
+    qed
+    have h_relf_eq_fr: "rel_frontier R = frontier R"
+    proof -
+      have h_int_eq: "interior R = rel_interior R"
+        using hR_aff_dim interior_rel_interior_gen[of R] by (by100 simp)
+      have h_R_closed: "closed R" using hR_in_Rs hRs_closed by (by100 blast)
+      have h1: "rel_frontier R = closure R - rel_interior R"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "frontier R = closure R - interior R"
+        unfolding frontier_def using h_R_closed by (auto simp: closure_closed)
+      show ?thesis using h1 h2 h_int_eq by (by100 simp)
+    qed
+    have he_sub_fr: "e \<subseteq> frontier R" using he_sub_relf h_relf_eq_fr by (by100 simp)
+    show "geotop_is_edge e \<and> e \<subseteq> frontier R" using he_edge he_sub_fr by (by100 blast)
+  qed
+  have hFrTri_cover: "\<forall>R\<in>Rs_in. \<Union>(FrTri R) = frontier R"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_poly: "polyhedron R" using hR_in h_R_polyhedron by (by100 blast)
+    have hR_closed: "closed R" using hR_in_Rs hRs_closed by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = int (DIM(real^2))"
+      using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have h_rel_int_eq: "rel_interior R = interior R"
+      using hR_aff_dim interior_rel_interior_gen[of R] by (by100 simp)
+    have h_rel_fr_eq: "rel_frontier R = frontier R"
+    proof -
+      have h1: "rel_frontier R = closure R - rel_interior R"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "closure R = R" using hR_closed by (by100 simp)
+      have h3: "frontier R = closure R - interior R"
+        unfolding frontier_def
+        using hR_closed by (auto simp: closure_closed interior_open)
+      show ?thesis using h1 h2 h3 h_rel_int_eq by (by100 simp)
+    qed
+    have h_facets_eq: "rel_frontier R = \<Union>{F. F facet_of R}"
+      by (rule rel_frontier_of_polyhedron[OF hR_poly])
+    have hFrTri_eq: "FrTri R = {F. F facet_of R}" unfolding FrTri_def by (by100 simp)
+    show "\<Union>(FrTri R) = frontier R"
+      using h_rel_fr_eq h_facets_eq hFrTri_eq by (by100 simp)
+  qed
+  have hFrTri_disj: "\<forall>R\<in>Rs_in. \<forall>e1\<in>FrTri R. \<forall>e2\<in>FrTri R.
+                       e1 \<noteq> e2 \<longrightarrow> geotop_is_face (e1 \<inter> e2) e1 \<or> e1 \<inter> e2 = {}"
+  proof (intro ballI impI)
+    fix R e1 e2 assume hR_in: "R \<in> Rs_in"
+                  and he1_FrTri: "e1 \<in> FrTri R" and he2_FrTri: "e2 \<in> FrTri R"
+                  and he1_ne_e2: "e1 \<noteq> e2"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_poly: "polyhedron R" using hR_in h_R_polyhedron by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = 2"
+    proof -
+      have h1: "aff_dim R = int (DIM(real^2))"
+        using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+      show ?thesis using h1 by (by100 simp)
+    qed
+    have hR_polytope: "polytope R"
+    proof -
+      have hR_bounded: "bounded R"
+      proof -
+        have hR_subIbar: "R \<subseteq> Ibar" using hR_in Rs_in_def by (by100 simp)
+        have hJ_n_sph: "geotop_is_n_sphere J
+                         (subspace_topology UNIV geotop_euclidean_topology J) 1"
+          using hJ unfolding geotop_is_polygon_def by (by100 blast)
+        have hI_bdd: "bounded I"
+          unfolding I_def by (rule polygon_interior_bounded[OF hJ_n_sph])
+        have hIbar_bdd: "bounded Ibar"
+        proof -
+          have h_cl_bdd: "bounded (closure I)"
+            using hI_bdd bounded_closure by (by100 blast)
+          have h_eq: "Ibar = closure I" using hIbar_HOL h_clI_HOL by (by100 simp)
+          show ?thesis using h_cl_bdd h_eq by (by100 simp)
+        qed
+        show "bounded R" using hR_subIbar hIbar_bdd bounded_subset by (by100 blast)
+      qed
+      show ?thesis using hR_poly hR_bounded polytope_eq_bounded_polyhedron by (by100 blast)
+    qed
+    have he1_facet: "e1 facet_of R" using he1_FrTri FrTri_def by (by100 simp)
+    have he2_facet: "e2 facet_of R" using he2_FrTri FrTri_def by (by100 simp)
+    have he1_face: "e1 face_of R" using he1_facet facet_of_imp_face_of by (by100 blast)
+    have he2_face: "e2 face_of R" using he2_facet facet_of_imp_face_of by (by100 blast)
+    have he1_aff_1: "aff_dim e1 = 1"
+      using he1_facet hR_aff_dim unfolding facet_of_def by (by100 simp)
+    have he2_aff_1: "aff_dim e2 = 1"
+      using he2_facet hR_aff_dim unfolding facet_of_def by (by100 simp)
+    have he1_polytope: "polytope e1"
+      using face_of_polytope_polytope hR_polytope he1_face by (by100 blast)
+    obtain a b where hab_ne: "a \<noteq> b" and he1_seg: "e1 = closed_segment a b"
+      using polytope_aff_dim_1_is_segment[OF he1_polytope he1_aff_1] by (by100 blast)
+    (** \<open>e1 \<inter> e2\<close> is a face of \<open>e1\<close> (HOL face) since both are face of R. **)
+    have h_int_face_R: "(e1 \<inter> e2) face_of R"
+      using he1_face he2_face face_of_Int by (by100 blast)
+    have h_int_sub_e1: "e1 \<inter> e2 \<subseteq> e1" by (by100 blast)
+    have h_int_face_e1: "(e1 \<inter> e2) face_of e1"
+      using face_of_face[OF he1_face] h_int_face_R h_int_sub_e1 by (by100 blast)
+    show "geotop_is_face (e1 \<inter> e2) e1 \<or> e1 \<inter> e2 = {}"
+    proof (cases "e1 \<inter> e2 = {}")
+      case True thus ?thesis by (by100 simp)
+    next
+      case False
+      have h_int_ne: "e1 \<inter> e2 \<noteq> {}" using False by (by100 simp)
+      (** \<open>e1 \<inter> e2\<close> is a non-empty face of \<open>e1\<close>. Faces of \<open>closed_segment a b\<close>
+          are: \<open>{}\<close>, \<open>{a}\<close>, \<open>{b}\<close>, the segment itself. **)
+      have h_aff_int_le: "aff_dim (e1 \<inter> e2) \<le> 1"
+      proof -
+        have h_sub: "e1 \<inter> e2 \<subseteq> e1" by (by100 blast)
+        have h_sub_dim: "aff_dim (e1 \<inter> e2) \<le> aff_dim e1"
+          by (rule aff_dim_subset[OF h_sub])
+        show ?thesis using h_sub_dim he1_aff_1 by (by100 simp)
+      qed
+      have h_aff_int_lt: "aff_dim (e1 \<inter> e2) < 1"
+      proof (rule ccontr)
+        assume "\<not> aff_dim (e1 \<inter> e2) < 1"
+        hence h_eq: "aff_dim (e1 \<inter> e2) = 1" using h_aff_int_le by (by100 simp)
+        (** \<open>e1 \<inter> e2\<close> is a face of \<open>R\<close> with aff_dim 1, hence not = R (different aff_dim). **)
+        have h_int_ne_R: "e1 \<inter> e2 \<noteq> R"
+        proof
+          assume "e1 \<inter> e2 = R"
+          hence "aff_dim (e1 \<inter> e2) = aff_dim R" by (by100 simp)
+          thus False using h_eq hR_aff_dim by (by100 simp)
+        qed
+        (** Hmm, simpler argument: e1 \<inter> e2 \<subseteq> e1 \<inter> e2 ⊆ e2. With aff_dim 1
+            same as e2 (also aff_dim 1), and since e1 \<inter> e2 \<subseteq> e2 with same
+            aff_dim... they should be equal via face structure. **)
+        have h_int_face_e2: "(e1 \<inter> e2) face_of e2"
+          using face_of_face[OF he2_face] h_int_face_R by (by100 blast)
+        have h_e2_polytope: "polytope e2"
+          using face_of_polytope_polytope hR_polytope he2_face by (by100 blast)
+        obtain a' b' where hab'_ne: "a' \<noteq> b'" and he2_seg: "e2 = closed_segment a' b'"
+          using polytope_aff_dim_1_is_segment[OF h_e2_polytope he2_aff_1] by (by100 blast)
+        (** Face of \<open>closed_segment a b\<close> with aff_dim 1 is the segment itself. **)
+        have h_e1_eq: "e1 \<inter> e2 = e1"
+        proof -
+          have h_face: "(e1 \<inter> e2) face_of (closed_segment a b)"
+            using h_int_face_e1 he1_seg by (by100 simp)
+          have hab_ai: "\<not> affine_dependent {a, b}" by (rule affine_independent_2)
+          have h_seg_eq: "closed_segment a b = convex hull {a, b}"
+            by (rule segment_convex_hull)
+          have h_face_eq: "(e1 \<inter> e2) face_of (convex hull {a, b})"
+            using h_face h_seg_eq by (by100 simp)
+          have h_ex_c: "\<exists>c. c \<subseteq> {a, b} \<and> (e1 \<inter> e2) = convex hull c"
+            using h_face_eq face_of_convex_hull_affine_independent[OF hab_ai] by (by100 simp)
+          obtain c where hc_sub: "c \<subseteq> {a, b}" and h_int_c: "e1 \<inter> e2 = convex hull c"
+            using h_ex_c by (by100 blast)
+          have h_seg_faces: "(e1 \<inter> e2) = {} \<or> (e1 \<inter> e2) = {a} \<or>
+                             (e1 \<inter> e2) = {b} \<or> (e1 \<inter> e2) = closed_segment a b"
+          proof -
+            have h_c_cases: "c = {} \<or> c = {a} \<or> c = {b} \<or> c = {a, b}"
+              using hc_sub by (by100 blast)
+            show ?thesis
+            proof (cases "c = {}")
+              case True
+              have "e1 \<inter> e2 = {}" using h_int_c True by (by100 simp)
+              thus ?thesis by (by100 simp)
+            next
+              case False
+              have h_c_else: "c = {a} \<or> c = {b} \<or> c = {a, b}"
+                using h_c_cases False by (by100 simp)
+              from h_c_else show ?thesis
+              proof (elim disjE)
+                assume hc_eq: "c = {a}"
+                have h1: "convex hull {a} = {a}" by (rule convex_hull_singleton)
+                have "e1 \<inter> e2 = {a}" using h_int_c hc_eq h1 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                assume hc_eq: "c = {b}"
+                have h2: "convex hull {b} = {b}" by (rule convex_hull_singleton)
+                have "e1 \<inter> e2 = {b}" using h_int_c hc_eq h2 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                assume hc_eq: "c = {a, b}"
+                have h3: "convex hull {a, b} = closed_segment a b"
+                  using h_seg_eq by (by100 simp)
+                have "e1 \<inter> e2 = closed_segment a b" using h_int_c hc_eq h3 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              qed
+            qed
+          qed
+          have h_not_singleton_a: "e1 \<inter> e2 \<noteq> {a}"
+          proof
+            assume "e1 \<inter> e2 = {a}"
+            hence "aff_dim (e1 \<inter> e2) = aff_dim {a}" by (by100 simp)
+            also have "\<dots> = 0" by (rule aff_dim_sing)
+            finally show False using h_eq by (by100 simp)
+          qed
+          have h_not_singleton_b: "e1 \<inter> e2 \<noteq> {b}"
+          proof
+            assume "e1 \<inter> e2 = {b}"
+            hence "aff_dim (e1 \<inter> e2) = aff_dim {b}" by (by100 simp)
+            also have "\<dots> = 0" by (rule aff_dim_sing)
+            finally show False using h_eq by (by100 simp)
+          qed
+          have h_not_empty: "e1 \<inter> e2 \<noteq> {}" using h_int_ne by (by100 simp)
+          from h_seg_faces have "e1 \<inter> e2 = closed_segment a b"
+          proof (elim disjE)
+            assume "e1 \<inter> e2 = {}"
+            thus ?thesis using h_not_empty by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = {a}"
+            thus ?thesis using h_not_singleton_a by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = {b}"
+            thus ?thesis using h_not_singleton_b by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = closed_segment a b"
+            thus ?thesis by (by100 simp)
+          qed
+          thus ?thesis using he1_seg by (by100 simp)
+        qed
+        (** Symmetrically e1 \<inter> e2 = e2. **)
+        have h_e2_eq: "e1 \<inter> e2 = e2"
+        proof -
+          have h_face_e2: "(e1 \<inter> e2) face_of (closed_segment a' b')"
+            using h_int_face_e2 he2_seg by (by100 simp)
+          have ha'b'_ai: "\<not> affine_dependent {a', b'}" by (rule affine_independent_2)
+          have h_seg_eq': "closed_segment a' b' = convex hull {a', b'}"
+            by (rule segment_convex_hull)
+          have h_face_eq': "(e1 \<inter> e2) face_of (convex hull {a', b'})"
+            using h_face_e2 h_seg_eq' by (by100 simp)
+          have h_ex_c': "\<exists>c. c \<subseteq> {a', b'} \<and> (e1 \<inter> e2) = convex hull c"
+            using h_face_eq' face_of_convex_hull_affine_independent[OF ha'b'_ai] by (by100 simp)
+          obtain c where hc_sub: "c \<subseteq> {a', b'}" and h_int_c: "e1 \<inter> e2 = convex hull c"
+            using h_ex_c' by (by100 blast)
+          have h_seg_faces: "(e1 \<inter> e2) = {} \<or> (e1 \<inter> e2) = {a'} \<or>
+                             (e1 \<inter> e2) = {b'} \<or> (e1 \<inter> e2) = closed_segment a' b'"
+          proof -
+            have h_c_cases: "c = {} \<or> c = {a'} \<or> c = {b'} \<or> c = {a', b'}"
+              using hc_sub by (by100 blast)
+            show ?thesis
+            proof (cases "c = {}")
+              case True
+              have "e1 \<inter> e2 = {}" using h_int_c True by (by100 simp)
+              thus ?thesis by (by100 simp)
+            next
+              case False
+              have h_c_else: "c = {a'} \<or> c = {b'} \<or> c = {a', b'}"
+                using h_c_cases False by (by100 simp)
+              from h_c_else show ?thesis
+              proof (elim disjE)
+                assume hc_eq: "c = {a'}"
+                have h1: "convex hull {a'} = {a'}" by (rule convex_hull_singleton)
+                have "e1 \<inter> e2 = {a'}" using h_int_c hc_eq h1 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                assume hc_eq: "c = {b'}"
+                have h2: "convex hull {b'} = {b'}" by (rule convex_hull_singleton)
+                have "e1 \<inter> e2 = {b'}" using h_int_c hc_eq h2 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                assume hc_eq: "c = {a', b'}"
+                have h3: "convex hull {a', b'} = closed_segment a' b'"
+                  using h_seg_eq' by (by100 simp)
+                have "e1 \<inter> e2 = closed_segment a' b'" using h_int_c hc_eq h3 by (by100 simp)
+                thus ?thesis by (by100 simp)
+              qed
+            qed
+          qed
+          have h_not_a': "e1 \<inter> e2 \<noteq> {a'}"
+          proof
+            assume "e1 \<inter> e2 = {a'}"
+            hence "aff_dim (e1 \<inter> e2) = aff_dim {a'}" by (by100 simp)
+            also have "\<dots> = 0" by (rule aff_dim_sing)
+            finally show False using h_eq by (by100 simp)
+          qed
+          have h_not_b': "e1 \<inter> e2 \<noteq> {b'}"
+          proof
+            assume "e1 \<inter> e2 = {b'}"
+            hence "aff_dim (e1 \<inter> e2) = aff_dim {b'}" by (by100 simp)
+            also have "\<dots> = 0" by (rule aff_dim_sing)
+            finally show False using h_eq by (by100 simp)
+          qed
+          from h_seg_faces have "e1 \<inter> e2 = closed_segment a' b'"
+          proof (elim disjE)
+            assume "e1 \<inter> e2 = {}"
+            thus ?thesis using h_int_ne by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = {a'}"
+            thus ?thesis using h_not_a' by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = {b'}"
+            thus ?thesis using h_not_b' by (by100 simp)
+          next
+            assume "e1 \<inter> e2 = closed_segment a' b'"
+            thus ?thesis by (by100 simp)
+          qed
+          thus ?thesis using he2_seg by (by100 simp)
+        qed
+        have "e1 = e2" using h_e1_eq h_e2_eq by (by100 simp)
+        thus False using he1_ne_e2 by (by100 simp)
+      qed
+      have h_aff_int_le0: "aff_dim (e1 \<inter> e2) \<le> 0" using h_aff_int_lt by (by100 linarith)
+      (** Aff_dim ≤ 0 + non-empty = singleton. **)
+      have h_aff_int_eq_0: "aff_dim (e1 \<inter> e2) = 0"
+      proof -
+        have h_ge_neg1: "aff_dim (e1 \<inter> e2) \<ge> -1" by (rule aff_dim_geq)
+        have h_ne_neg: "aff_dim (e1 \<inter> e2) \<noteq> -1"
+        proof
+          assume "aff_dim (e1 \<inter> e2) = -1"
+          hence h_lt_0: "aff_dim (e1 \<inter> e2) < 0" by (by100 simp)
+          have h_iff: "(aff_dim (e1 \<inter> e2) < 0) = (e1 \<inter> e2 = {})"
+            by (rule aff_dim_negative_iff)
+          have "e1 \<inter> e2 = {}" using h_lt_0 h_iff by (by100 blast)
+          thus False using h_int_ne by (by100 simp)
+        qed
+        have h_ge_0: "aff_dim (e1 \<inter> e2) \<ge> 0"
+          using h_ge_neg1 h_ne_neg by (by100 linarith)
+        show ?thesis using h_aff_int_le0 h_ge_0 by (by100 linarith)
+      qed
+      have h_int_singleton: "\<exists>v. e1 \<inter> e2 = {v}"
+        using h_aff_int_eq_0 aff_dim_eq_0 by (by100 metis)
+      obtain v where h_int_eq: "e1 \<inter> e2 = {v}" using h_int_singleton by (by100 blast)
+      have hv_in_e1: "v \<in> e1" using h_int_eq by (by100 blast)
+      (** \<open>e1 = closed_segment a b\<close>; \<open>{v} face_of e1\<close>; faces are \<open>{a}\<close> or \<open>{b}\<close>. **)
+      have h_v_face_e1: "{v} face_of e1" using h_int_face_e1 h_int_eq by (by100 simp)
+      have h_v_face_seg: "{v} face_of closed_segment a b"
+        using h_v_face_e1 he1_seg by (by100 simp)
+      have hab_ai: "\<not> affine_dependent {a, b}" by (rule affine_independent_2)
+      have h_seg_eq2: "closed_segment a b = convex hull {a, b}" by (rule segment_convex_hull)
+      have h_v_face_conv: "{v} face_of (convex hull {a, b})"
+        using h_v_face_seg h_seg_eq2 by (by100 simp)
+      have h_v_ex_c: "\<exists>c. c \<subseteq> {a, b} \<and> {v} = convex hull c"
+        using h_v_face_conv face_of_convex_hull_affine_independent[OF hab_ai] by (by100 simp)
+      obtain c where hc_sub: "c \<subseteq> {a, b}" and h_v_eq: "{v} = convex hull c"
+        using h_v_ex_c by (by100 blast)
+      have h_v_in_ab: "v = a \<or> v = b"
+      proof -
+        have h_c_cases: "c = {} \<or> c = {a} \<or> c = {b} \<or> c = {a, b}" using hc_sub by (by100 blast)
+        from h_c_cases show ?thesis
+        proof (elim disjE)
+          assume "c = {}"
+          hence "{v} = {}" using h_v_eq by (by100 simp)
+          thus ?thesis by (by100 simp)
+        next
+          assume "c = {a}"
+          hence "{v} = {a}" using h_v_eq convex_hull_singleton by (by100 simp)
+          thus ?thesis by (by100 simp)
+        next
+          assume "c = {b}"
+          hence "{v} = {b}" using h_v_eq convex_hull_singleton by (by100 simp)
+          thus ?thesis by (by100 simp)
+        next
+          assume "c = {a, b}"
+          hence "{v} = closed_segment a b" using h_v_eq h_seg_eq2 by (by100 simp)
+          (** Singleton equal to segment of distinct points: contradiction. **)
+          have h_aff_v: "aff_dim {v} = 0" by (rule aff_dim_sing)
+          have h_aff_seg: "aff_dim (closed_segment a b) = 1"
+          proof -
+            have h1: "closed_segment a b = convex hull {a, b}" by (rule segment_convex_hull)
+            have h_aff_2: "aff_dim {a, b} = 1"
+              using hab_ne hab_ai affine_independent_iff_card[of "{a,b}"] by (by100 simp)
+            have h_conv_aff: "aff_dim (convex hull {a, b}) = aff_dim {a, b}"
+              by (rule aff_dim_convex_hull)
+            show ?thesis using h1 h_aff_2 h_conv_aff by (by100 simp)
+          qed
+          have "aff_dim {v} = aff_dim (closed_segment a b)"
+            using \<open>{v} = closed_segment a b\<close> by (by100 simp)
+          hence "(0::int) = 1" using h_aff_v h_aff_seg by (by100 simp)
+          thus ?thesis by (by100 simp)
+        qed
+      qed
+      (** Now construct geotop_is_face {v} e1 with V = {a, b}, W = {v}. **)
+      have he1_HOL: "e1 = geotop_convex_hull {a, b}"
+      proof -
+        have h1: "e1 = convex hull {a, b}" using he1_seg segment_convex_hull by (by100 simp)
+        have h2: "geotop_convex_hull {a, b} = convex hull {a, b}"
+          by (rule geotop_convex_hull_eq_HOL)
+        show ?thesis using h1 h2 by (by100 simp)
+      qed
+      define V_e1 where "V_e1 = {a, b}"
+      have hV_fin: "finite V_e1" unfolding V_e1_def by (by100 simp)
+      have hV_card: "card V_e1 = 1 + 1" unfolding V_e1_def using hab_ne by (by100 simp)
+      have hV_ai: "\<not> affine_dependent V_e1"
+        unfolding V_e1_def by (rule affine_independent_2)
+      have hV_gp: "geotop_general_position V_e1 1"
+        by (rule geotop_ai_imp_general_position[OF hV_fin hV_card hV_ai])
+      have h_simp_v: "geotop_simplex_vertices e1 V_e1"
+        unfolding geotop_simplex_vertices_def
+        using hV_fin hV_card hV_gp he1_HOL V_e1_def by (intro exI[of _ "1::nat"] exI[of _ "1::nat"]) (by100 blast)
+      define W where "W = {v}"
+      have hW_ne: "W \<noteq> {}" unfolding W_def by (by100 simp)
+      have hW_sub: "W \<subseteq> V_e1" unfolding W_def V_e1_def using h_v_in_ab by (by100 simp)
+      have h_int_W: "e1 \<inter> e2 = geotop_convex_hull W"
+      proof -
+        have h_HOL: "geotop_convex_hull W = convex hull W"
+          by (rule geotop_convex_hull_eq_HOL)
+        have h_W_sing: "convex hull {v} = {v}" by (rule convex_hull_singleton)
+        show ?thesis using h_int_eq h_HOL h_W_sing W_def by (by100 simp)
+      qed
+      have h_face_geotop: "geotop_is_face (e1 \<inter> e2) e1"
+        unfolding geotop_is_face_def
+        using h_simp_v hW_ne hW_sub h_int_W by (by100 blast)
+      thus ?thesis by (by100 simp)
+    qed
+  qed
+  have hFrTri_2cell_cover: "\<forall>R\<in>Rs_in. R = (\<Union>e\<in>FrTri R. geotop_convex_hull ({wpt R} \<union> e))"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_conv: "convex R" using hR_in_Rs hRs_conv by (by100 blast)
+    have hR_closed: "closed R" using hR_in_Rs hRs_closed by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = int (DIM(real^2))"
+      using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have hR_bdd: "bounded R"
+    proof -
+      have hR_subIbar: "R \<subseteq> Ibar" using hR_in Rs_in_def by (by100 simp)
+      have hJ_n_sph: "geotop_is_n_sphere J
+                       (subspace_topology UNIV geotop_euclidean_topology J) 1"
+        using hJ unfolding geotop_is_polygon_def by (by100 blast)
+      have hI_bdd: "bounded I"
+        unfolding I_def by (rule polygon_interior_bounded[OF hJ_n_sph])
+      have hIbar_bdd: "bounded Ibar"
+      proof -
+        have h_cl_bdd: "bounded (closure I)" using hI_bdd bounded_closure by (by100 blast)
+        have h_eq: "Ibar = closure I" using hIbar_HOL h_clI_HOL by (by100 simp)
+        show ?thesis using h_cl_bdd h_eq by (by100 simp)
+      qed
+      show "bounded R" using hR_subIbar hIbar_bdd bounded_subset by (by100 blast)
+    qed
+    have hwpt_int: "wpt R \<in> interior R"
+    proof -
+      have hwpt_R_minus_fr: "wpt R \<in> R - frontier R" using hR_in hwpt by (by100 blast)
+      have h_fr: "frontier R = R - interior R"
+        unfolding frontier_def using hR_closed by (by100 simp)
+      have h_int_sub: "interior R \<subseteq> R" by (rule interior_subset)
+      have h_eq: "R - frontier R = interior R" using h_fr h_int_sub by (by100 blast)
+      show ?thesis using hwpt_R_minus_fr h_eq by (by100 simp)
+    qed
+    have h_FrTri_cover_R: "\<Union>(FrTri R) = frontier R"
+      using hR_in hFrTri_cover by (by100 blast)
+    have h_R_conv_eq: "R = (\<Union>e\<in>FrTri R. convex hull ({wpt R} \<union> e))"
+      by (rule fan_triangulation_cover[OF hR_conv hR_bdd hR_closed hR_aff_dim
+                hwpt_int h_FrTri_cover_R])
+    have h_geotop_eq: "\<forall>e. geotop_convex_hull ({wpt R} \<union> e) = convex hull ({wpt R} \<union> e)"
+      by (intro allI) (rule geotop_convex_hull_eq_HOL)
+    show "R = (\<Union>e\<in>FrTri R. geotop_convex_hull ({wpt R} \<union> e))"
+      using h_R_conv_eq h_geotop_eq by (by100 simp)
+  qed
+  have hFrTri_2cell_simp:
+      "\<forall>R\<in>Rs_in. \<forall>e\<in>FrTri R. geotop_is_simplex (geotop_convex_hull ({wpt R} \<union> e))"
+  proof (intro ballI)
+    fix R e assume hR_in: "R \<in> Rs_in" and he_FrTri: "e \<in> FrTri R"
+    have hR_in_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_poly: "polyhedron R" using hR_in h_R_polyhedron by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_in_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = 2"
+    proof -
+      have h1: "aff_dim R = int (DIM(real^2))"
+        using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+      show ?thesis using h1 by (by100 simp)
+    qed
+    have hR_polytope: "polytope R"
+    proof -
+      have hR_bounded: "bounded R"
+      proof -
+        have hR_subIbar: "R \<subseteq> Ibar" using hR_in Rs_in_def by (by100 simp)
+        have hJ_n_sph: "geotop_is_n_sphere J
+                         (subspace_topology UNIV geotop_euclidean_topology J) 1"
+          using hJ unfolding geotop_is_polygon_def by (by100 blast)
+        have hI_bdd: "bounded I"
+          unfolding I_def by (rule polygon_interior_bounded[OF hJ_n_sph])
+        have hIbar_bdd: "bounded Ibar"
+        proof -
+          have h_cl_bdd: "bounded (closure I)"
+            using hI_bdd bounded_closure by (by100 blast)
+          have h_eq: "Ibar = closure I" using hIbar_HOL h_clI_HOL by (by100 simp)
+          show ?thesis using h_cl_bdd h_eq by (by100 simp)
+        qed
+        show "bounded R" using hR_subIbar hIbar_bdd bounded_subset by (by100 blast)
+      qed
+      show ?thesis using hR_poly hR_bounded polytope_eq_bounded_polyhedron by (by100 blast)
+    qed
+    have he_facet: "e facet_of R" using he_FrTri FrTri_def by (by100 simp)
+    have he_face: "e face_of R" using he_facet facet_of_imp_face_of by (by100 blast)
+    have he_aff_1: "aff_dim e = 1"
+      using he_facet hR_aff_dim unfolding facet_of_def by (by100 simp)
+    have he_polytope: "polytope e"
+      using face_of_polytope_polytope hR_polytope he_face by (by100 blast)
+    obtain v1 v2 where hv1v2_ne: "v1 \<noteq> v2" and he_seg: "e = closed_segment v1 v2"
+      using polytope_aff_dim_1_is_segment[OF he_polytope he_aff_1] by (by100 blast)
+    have hv1_e: "v1 \<in> e" using he_seg by (by100 simp)
+    have hv2_e: "v2 \<in> e" using he_seg by (by100 simp)
+    have h_conv_eq: "convex hull ({wpt R} \<union> e) = convex hull {wpt R, v1, v2}"
+    proof
+      show "convex hull ({wpt R} \<union> e) \<subseteq> convex hull {wpt R, v1, v2}"
+      proof (rule hull_minimal)
+        show "{wpt R} \<union> e \<subseteq> convex hull {wpt R, v1, v2}"
+        proof
+          fix x assume "x \<in> {wpt R} \<union> e"
+          hence h_disj: "x = wpt R \<or> x \<in> closed_segment v1 v2" using he_seg by (by100 blast)
+          show "x \<in> convex hull {wpt R, v1, v2}"
+          proof -
+            have h_seg_sub: "closed_segment v1 v2 \<subseteq> convex hull {v1, v2}"
+              using segment_convex_hull[of v1 v2] by (by100 simp)
+            have h_sub_set: "{v1, v2} \<subseteq> {wpt R, v1, v2}" by (by100 blast)
+            have h_v_sub: "convex hull {v1, v2} \<subseteq> convex hull {wpt R, v1, v2}"
+              by (rule hull_mono[OF h_sub_set])
+            have h_wpt_in: "wpt R \<in> {wpt R, v1, v2}" by (by100 simp)
+            have h_wpt_hull: "wpt R \<in> convex hull {wpt R, v1, v2}"
+              by (rule hull_inc[OF h_wpt_in])
+            show ?thesis using h_disj h_seg_sub h_v_sub h_wpt_hull by (by100 blast)
+          qed
+        qed
+        show "convex (convex hull {wpt R, v1, v2})" by (rule convex_convex_hull)
+      qed
+      show "convex hull {wpt R, v1, v2} \<subseteq> convex hull ({wpt R} \<union> e)"
+      proof (rule hull_minimal)
+        show "{wpt R, v1, v2} \<subseteq> convex hull ({wpt R} \<union> e)"
+        proof
+          fix x assume hx: "x \<in> {wpt R, v1, v2}"
+          have hwpt_set: "wpt R \<in> {wpt R} \<union> e" by (by100 simp)
+          have hwpt_in: "wpt R \<in> convex hull ({wpt R} \<union> e)"
+            by (rule hull_inc[OF hwpt_set])
+          have hv1_set: "v1 \<in> {wpt R} \<union> e" using hv1_e by (by100 blast)
+          have hv1_in: "v1 \<in> convex hull ({wpt R} \<union> e)"
+            by (rule hull_inc[OF hv1_set])
+          have hv2_set: "v2 \<in> {wpt R} \<union> e" using hv2_e by (by100 blast)
+          have hv2_in: "v2 \<in> convex hull ({wpt R} \<union> e)"
+            by (rule hull_inc[OF hv2_set])
+          show "x \<in> convex hull ({wpt R} \<union> e)"
+            using hx hwpt_in hv1_in hv2_in by (by100 blast)
+        qed
+        show "convex (convex hull ({wpt R} \<union> e))" by (rule convex_convex_hull)
+      qed
+    qed
+    have h_target: "geotop_convex_hull ({wpt R} \<union> e) = convex hull {wpt R, v1, v2}"
+    proof -
+      have h_HOL_eq: "geotop_convex_hull ({wpt R} \<union> e) = convex hull ({wpt R} \<union> e)"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_HOL_eq h_conv_eq by (by100 simp)
+    qed
+    define V where "V = {wpt R, v1, v2}"
+    have hV_fin: "finite V" unfolding V_def by (by100 simp)
+    have hwpt_int: "wpt R \<in> interior R"
+    proof -
+      have hwpt_R_minus_fr: "wpt R \<in> R - frontier R" using hR_in hwpt by (by100 blast)
+      have h_R_closed: "closed R" using hR_in_Rs hRs_closed by (by100 blast)
+      have h_eq: "R - frontier R = interior R"
+      proof -
+        have h_fr: "frontier R = R - interior R"
+          unfolding frontier_def using h_R_closed by (by100 simp)
+        have h_int_sub: "interior R \<subseteq> R" by (rule interior_subset)
+        show ?thesis using h_fr h_int_sub by (by100 blast)
+      qed
+      show ?thesis using hwpt_R_minus_fr h_eq by (by100 simp)
+    qed
+    have he_sub_fr: "e \<subseteq> frontier R"
+      using he_FrTri hR_in hFrTri_edges by (by100 blast)
+    have hv1_fr: "v1 \<in> frontier R" using hv1_e he_sub_fr by (by100 blast)
+    have hv2_fr: "v2 \<in> frontier R" using hv2_e he_sub_fr by (by100 blast)
+    have h_int_fr_disj: "interior R \<inter> frontier R = {}"
+      by (auto simp: frontier_def)
+    have hwpt_ne_v1: "wpt R \<noteq> v1" using hwpt_int hv1_fr h_int_fr_disj by (by100 blast)
+    have hwpt_ne_v2: "wpt R \<noteq> v2" using hwpt_int hv2_fr h_int_fr_disj by (by100 blast)
+    have hV_card: "card V = 2 + 1"
+    proof -
+      have h_3_distinct: "wpt R \<noteq> v1 \<and> wpt R \<noteq> v2 \<and> v1 \<noteq> v2"
+        using hwpt_ne_v1 hwpt_ne_v2 hv1v2_ne by (by100 blast)
+      show ?thesis unfolding V_def using h_3_distinct by (by100 simp)
+    qed
+    have h_wpt_no_aff_e: "wpt R \<notin> affine hull e"
+    proof -
+      have h_lines_prop: "\<forall>L\<in>Ls. affine L \<and> aff_dim L = 1"
+        using hLs_lines geotop_hyperplane_dim_imp_affine_aff_dim by (by100 fastforce)
+      have he_conn: "connected e"
+      proof -
+        have h_seg_conv: "convex (closed_segment v1 v2)" by (rule convex_closed_segment)
+        have h_seg_conn: "connected (closed_segment v1 v2)" by (rule convex_connected[OF h_seg_conv])
+        show ?thesis using he_seg h_seg_conn by (by100 simp)
+      qed
+      have he_in_uls: "e \<subseteq> \<Union>Ls"
+        using he_sub_fr hRs_fr hR_in_Rs by (by100 blast)
+      have he_pt: "\<exists>x y. x \<in> e \<and> y \<in> e \<and> x \<noteq> y"
+        using hv1_e hv2_e hv1v2_ne by (by100 blast)
+      have h_wpt_no_uls: "wpt R \<notin> \<Union>Ls"
+        using hwpt_int hR_in_Rs hRs_int_no_Ls by (by100 blast)
+      show ?thesis
+        by (rule wpt_not_in_aff_hull_segment[OF hLs_fin h_lines_prop he_aff_1
+                  he_conn he_in_uls he_pt h_wpt_no_uls])
+    qed
+    have hV_ai: "\<not> affine_dependent V"
+    proof -
+      have h_seg_eq: "closed_segment v1 v2 = convex hull {v1, v2}"
+        by (rule segment_convex_hull)
+      have he_conv: "e = convex hull {v1, v2}"
+        using he_seg h_seg_eq by (by100 simp)
+      have h_aff_e: "affine hull e = affine hull (convex hull {v1, v2})"
+        using he_conv by (by100 simp)
+      have h_aff_conv: "affine hull (convex hull {v1, v2}) = affine hull {v1, v2}"
+        by (rule affine_hull_convex_hull)
+      have h_aff_v1v2: "affine hull {v1, v2} = affine hull e"
+        using h_aff_e h_aff_conv by (by100 simp)
+      have h_wpt_no_aff: "wpt R \<notin> affine hull {v1, v2}"
+        using h_wpt_no_aff_e h_aff_v1v2 by (by100 simp)
+      have h_v_AI: "\<not> affine_dependent {v1, v2}" by (rule affine_independent_2)
+      have h_card_v: "card {v1, v2} = 2" using hv1v2_ne by (by100 simp)
+      have h_card_V: "card V = 3" using hV_card V_def by (by100 simp)
+      have h_aff_v: "aff_dim {v1, v2} = 1"
+      proof -
+        have h_iff: "(\<not> affine_dependent {v1, v2}) = (aff_dim {v1, v2} = int (card {v1, v2}) - 1)"
+          using affine_independent_iff_card[of "{v1, v2}"] by (by100 simp)
+        show ?thesis using h_v_AI h_iff h_card_v by (by100 simp)
+      qed
+      have h_V_eq: "V = insert (wpt R) {v1, v2}" unfolding V_def by (by100 simp)
+      have h_aff_insert: "aff_dim (insert (wpt R) {v1, v2}) = aff_dim {v1, v2} + 1"
+      proof -
+        have h_eq: "aff_dim (insert (wpt R) {v1, v2}) =
+                    (if wpt R \<in> affine hull {v1, v2}
+                     then aff_dim {v1, v2} else aff_dim {v1, v2} + 1)"
+          by (rule aff_dim_insert)
+        show ?thesis using h_eq h_wpt_no_aff by (by100 simp)
+      qed
+      have h_aff_V_eq: "aff_dim V = aff_dim {v1, v2} + 1"
+        using h_V_eq h_aff_insert by (by100 simp)
+      have h_aff_V_2: "aff_dim V = 2" using h_aff_V_eq h_aff_v by (by100 simp)
+      have h_iff: "(\<not> affine_dependent V) = (aff_dim V = int (card V) - 1)"
+        using affine_independent_iff_card[of V] hV_fin by (by100 simp)
+      show ?thesis using h_iff h_aff_V_2 h_card_V by (by100 simp)
+    qed
+    have hV_gp: "geotop_general_position V 2"
+      by (rule geotop_ai_imp_general_position[OF hV_fin hV_card hV_ai])
+    have h_eq2: "geotop_convex_hull ({wpt R} \<union> e) = geotop_convex_hull V"
+    proof -
+      have h_HOL: "geotop_convex_hull V = convex hull V"
+        by (rule geotop_convex_hull_eq_HOL)
+      show ?thesis using h_target h_HOL V_def by (by100 simp)
+    qed
+    show "geotop_is_simplex (geotop_convex_hull ({wpt R} \<union> e))"
+      unfolding geotop_is_simplex_def
+      using hV_fin hV_card hV_gp h_eq2
+      by (intro exI[of _ V] exI[of _ "2::nat"] exI[of _ "2::nat"]) (by100 blast)
+  qed
+  (** Simplexes of the triangulation of R\<^sub>j: the 2-simplex w\<^sub>j v v' per edge vv',
+      plus all faces. **)
+  define K_R :: "(real^2) set \<Rightarrow> (real^2) set set" where
+    "K_R R = {\<sigma>. \<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                  \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}" for R
+  define K :: "(real^2) set set" where "K = (\<Union>R\<in>Rs_in. K_R R)"
+  (** (6a) K is finite. **)
+  have hK_R_fin: "\<forall>R\<in>Rs_in. finite (K_R R)"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have h_FrTri_fin_R: "finite (FrTri R)" using hR_in hFrTri_fin by (by100 blast)
+    have h_per_e_fin: "\<forall>e\<in>FrTri R.
+                         finite {\<sigma>. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                                  \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}"
+    proof
+      fix e assume heFr: "e \<in> FrTri R"
+      have h_simp: "geotop_is_simplex (geotop_convex_hull ({wpt R} \<union> e))"
+        using hR_in heFr hFrTri_2cell_simp by (by100 blast)
+      have h_faces_fin: "finite {\<tau>. geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e))}"
+        by (rule geotop_simplex_faces_finite[OF h_simp])
+      have h_eq: "{\<sigma>. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                       \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}
+                  = {\<tau>. geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e))}
+                    \<union> {geotop_convex_hull ({wpt R} \<union> e)}" by (by100 blast)
+      show "finite {\<sigma>. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                        \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)}"
+        using h_eq h_faces_fin by (by100 simp)
+    qed
+    have hK_R_eq:
+      "K_R R = (\<Union>e\<in>FrTri R.
+                 {\<sigma>. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                      \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)})"
+      unfolding K_R_def by (by100 blast)
+    show "finite (K_R R)"
+      using hK_R_eq h_FrTri_fin_R h_per_e_fin by (by100 simp)
+  qed
+  have hK_fin: "finite K"
+    unfolding K_def using hRs_in_fin hK_R_fin by (by100 simp)
+  (** (6b) \<open>geotop_polyhedron K = Ibar\<close>. **)
+  have h_K_R_polyhedron: "\<forall>R\<in>Rs_in. \<Union>(K_R R) = R"
+  proof
+    fix R assume hR_in: "R \<in> Rs_in"
+    have h_R_eq: "R = (\<Union>e\<in>FrTri R. geotop_convex_hull ({wpt R} \<union> e))"
+      using hR_in hFrTri_2cell_cover by (by100 blast)
+    show "\<Union>(K_R R) = R"
+    proof
+      show "\<Union>(K_R R) \<subseteq> R"
+      proof
+        fix x assume hx: "x \<in> \<Union>(K_R R)"
+        then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K_R R" and hx\<sigma>: "x \<in> \<sigma>" by (by100 blast)
+        have h\<sigma>_def_unf: "\<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                                       \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+          using h\<sigma>K K_R_def by (by100 blast)
+        obtain e where heFr: "e \<in> FrTri R"
+                   and h\<sigma>_disj: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                                  \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+          using h\<sigma>_def_unf by (by100 blast)
+        have h\<sigma>_in_s2: "\<sigma> \<subseteq> geotop_convex_hull ({wpt R} \<union> e)"
+        proof (cases "\<sigma> = geotop_convex_hull ({wpt R} \<union> e)")
+          case True thus ?thesis by (by100 simp)
+        next
+          case False
+          have hf: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))"
+            using h\<sigma>_disj False by (by100 simp)
+          obtain V W where h_simp_V: "geotop_simplex_vertices (geotop_convex_hull ({wpt R} \<union> e)) V"
+                       and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+                       and h\<sigma>_W: "\<sigma> = geotop_convex_hull W"
+            using hf unfolding geotop_is_face_def by (by100 blast)
+          have hs2_V: "geotop_convex_hull ({wpt R} \<union> e) = geotop_convex_hull V"
+            using h_simp_V unfolding geotop_simplex_vertices_def by (by100 blast)
+          have h\<sigma>HOL: "\<sigma> = convex hull W"
+            using h\<sigma>_W geotop_convex_hull_eq_HOL by (by100 simp)
+          have hs2HOL: "geotop_convex_hull ({wpt R} \<union> e) = convex hull V"
+            using hs2_V geotop_convex_hull_eq_HOL by (by100 simp)
+          have h_W_in_V: "W \<subseteq> V" using hW_sub by (by100 simp)
+          have h_hull_mono: "convex hull W \<subseteq> convex hull V" by (rule hull_mono[OF h_W_in_V])
+          show "\<sigma> \<subseteq> geotop_convex_hull ({wpt R} \<union> e)"
+            using h\<sigma>HOL hs2HOL h_hull_mono by (by100 simp)
+        qed
+        have hs2_in_R: "geotop_convex_hull ({wpt R} \<union> e) \<subseteq> R"
+          using h_R_eq heFr by (by100 blast)
+        show "x \<in> R" using hx\<sigma> h\<sigma>_in_s2 hs2_in_R by (by100 blast)
+      qed
+      show "R \<subseteq> \<Union>(K_R R)"
+      proof
+        fix x assume hxR: "x \<in> R"
+        obtain e where heFr: "e \<in> FrTri R"
+                  and hx_s2: "x \<in> geotop_convex_hull ({wpt R} \<union> e)"
+          using h_R_eq hxR by (by100 blast)
+        have h_s2_in_KR: "geotop_convex_hull ({wpt R} \<union> e) \<in> K_R R"
+          unfolding K_R_def using heFr by (by100 blast)
+        show "x \<in> \<Union>(K_R R)" using hx_s2 h_s2_in_KR by (by100 blast)
+      qed
+    qed
+  qed
+  have hK_polyhedron: "geotop_polyhedron K = Ibar"
+  proof -
+    have h1: "\<Union>K = (\<Union>R\<in>Rs_in. \<Union>(K_R R))" unfolding K_def by (by100 blast)
+    have h2: "(\<Union>R\<in>Rs_in. \<Union>(K_R R)) = (\<Union>R\<in>Rs_in. R)"
+    proof -
+      have h_eq: "\<forall>R\<in>Rs_in. \<Union>(K_R R) = R" by (rule h_K_R_polyhedron)
+      show ?thesis using h_eq by (by100 simp)
+    qed
+    have h3: "(\<Union>R\<in>Rs_in. R) = \<Union>Rs_in" by (by100 blast)
+    have h4: "\<Union>Rs_in = Ibar" by (rule hRs_in_cover)
+    have hK_eq: "\<Union>K = Ibar" using h1 h2 h3 h4 by (by100 simp)
+    show ?thesis unfolding geotop_polyhedron_def using hK_eq by (by100 simp)
+  qed
+  (** (6c) \<open>geotop_is_complex K\<close>: split into 4 axioms; close K.3 trivially. **)
+  (** \<sigma> \<in> K = \<Union>R\<in>Rs_in K_R R; in K_R R, \<sigma> is a face of \<open>conv({wpt R} \<union> e)\<close>
+      (or equals it). The 2-simplex itself is a simplex (hFrTri_2cell_simp), and a
+      face of a simplex is a simplex. **)
+  have hK_axiom1: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+    obtain R where hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R"
+      using h\<sigma>K K_def by (by100 blast)
+    have h\<sigma>_unf: "\<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                              \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+      using h\<sigma>_KR K_R_def by (by100 blast)
+    obtain e where heFr: "e \<in> FrTri R"
+                and h\<sigma>_disj: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                              \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+      using h\<sigma>_unf by (by100 blast)
+    have h_s2_simp: "geotop_is_simplex (geotop_convex_hull ({wpt R} \<union> e))"
+      using hR_in heFr hFrTri_2cell_simp by (by100 blast)
+    show "geotop_is_simplex \<sigma>"
+    proof (cases "\<sigma> = geotop_convex_hull ({wpt R} \<union> e)")
+      case True
+      thus ?thesis using h_s2_simp by (by100 simp)
+    next
+      case False
+      have hf: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))"
+        using h\<sigma>_disj False by (by100 simp)
+      obtain V W where h_simp_v: "geotop_simplex_vertices (geotop_convex_hull ({wpt R} \<union> e)) V"
+                  and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+                  and h\<sigma>_W: "\<sigma> = geotop_convex_hull W"
+        using hf unfolding geotop_is_face_def by (by100 blast)
+      obtain m n where hVfin: "finite V" and hVcard: "card V = n + 1"
+                   and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+        using h_simp_v unfolding geotop_simplex_vertices_def by (by100 blast)
+      have hVai: "\<not> affine_dependent V"
+        by (rule geotop_general_position_imp_aff_indep[OF h_simp_v])
+      have hWfin: "finite W" using hVfin hW_sub finite_subset by (by100 blast)
+      have hWne_card: "card W \<ge> 1"
+      proof -
+        have h_iff: "(0 < card W) = (W \<noteq> {} \<and> finite W)" by (rule card_gt_0_iff)
+        have h_pos: "card W > 0" using h_iff hW_ne hWfin by (by100 simp)
+        show ?thesis using h_pos by (by100 linarith)
+      qed
+      define k where "k = card W - 1"
+      have hk_card: "card W = k + 1" using hWne_card k_def by (by100 simp)
+      have hWai: "\<not> affine_dependent W"
+        using hVai hW_sub affine_dependent_subset by (by100 blast)
+      have hW_gp: "geotop_general_position W k"
+        using hWfin hk_card hWai geotop_ai_imp_general_position by (by100 blast)
+      show "geotop_is_simplex \<sigma>"
+        unfolding geotop_is_simplex_def
+        using hWfin hk_card hW_gp h\<sigma>_W
+        by (intro exI[of _ W] exI[of _ k] exI[of _ k]) (by100 blast)
+    qed
+  qed
+  (** K.2: face closure. \<sigma> \<in> K_R R is either \<open>conv({wpt R} \<union> e)\<close> or its face;
+      if \<tau> is a face of \<sigma>, by transitivity \<tau> is a face of \<open>conv({wpt R} \<union> e)\<close>,
+      so \<tau> \<in> K_R R \<subseteq> K. **)
+  have hK_axiom2: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>K: "\<sigma> \<in> K" and hf_\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    obtain R where hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R"
+      using h\<sigma>K K_def by (by100 blast)
+    have h\<sigma>_unf: "\<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                              \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+      using h\<sigma>_KR K_R_def by (by100 blast)
+    obtain e where heFr: "e \<in> FrTri R"
+                and h\<sigma>_disj: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                              \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+      using h\<sigma>_unf by (by100 blast)
+    define s2 where "s2 = geotop_convex_hull ({wpt R} \<union> e)"
+    have h_s2_simp: "geotop_is_simplex s2"
+      unfolding s2_def using hR_in heFr hFrTri_2cell_simp by (by100 blast)
+    (** Either \<sigma> = s2, or \<sigma> is a proper face of s2; in both cases \<sigma> is a face of s2
+        (using \<open>geotop_is_face_refl_of_simplex\<close>). **)
+    have h\<sigma>_face_s2: "geotop_is_face \<sigma> s2"
+    proof (cases "\<sigma> = s2")
+      case True
+      have h_refl: "geotop_is_face s2 s2" by (rule geotop_is_face_refl_of_simplex[OF h_s2_simp])
+      show ?thesis using True h_refl by (by100 simp)
+    next
+      case False thus ?thesis using h\<sigma>_disj s2_def by (by100 simp)
+    qed
+    (** Show \<tau> is a face of s2 by transitivity. \<sigma> = conv W with W \<subseteq> V (vertices of s2);
+        \<tau> = conv W' with W' \<subseteq> W (vertices of \<sigma>). Hence \<tau> = conv W' with W' \<subseteq> V. **)
+    obtain V W where h_simp_v: "geotop_simplex_vertices s2 V"
+                  and hW_ne: "W \<noteq> {}" and hW_sub_V: "W \<subseteq> V"
+                  and h\<sigma>_W: "\<sigma> = geotop_convex_hull W"
+      using h\<sigma>_face_s2 unfolding geotop_is_face_def by (by100 blast)
+    obtain W' V' where h_\<sigma>_simpv: "geotop_simplex_vertices \<sigma> V'"
+                   and hW'_ne: "W' \<noteq> {}" and hW'_sub_V': "W' \<subseteq> V'"
+                   and h\<tau>_W': "\<tau> = geotop_convex_hull W'"
+      using hf_\<tau>\<sigma> unfolding geotop_is_face_def by (by100 blast)
+    (** \<sigma> = conv W (vertex set W) by face structure. The vertex set is unique:
+        V' = W. Hence W' \<subseteq> W \<subseteq> V. **)
+    have hW_simpv: "geotop_simplex_vertices \<sigma> W"
+    proof -
+      have hVfin_total: "finite V"
+        using h_simp_v unfolding geotop_simplex_vertices_def by (by100 blast)
+      have hVgp: "\<exists>m. geotop_general_position V m"
+        using h_simp_v unfolding geotop_simplex_vertices_def by (by100 blast)
+      have hVai: "\<not> affine_dependent V"
+        by (rule geotop_general_position_imp_aff_indep[OF h_simp_v])
+      have hWfin: "finite W" using hVfin_total hW_sub_V finite_subset by (by100 blast)
+      have hWai: "\<not> affine_dependent W"
+        using hVai hW_sub_V affine_dependent_subset by (by100 blast)
+      have hWne_card: "card W \<ge> 1"
+      proof -
+        have h_iff: "(0 < card W) = (W \<noteq> {} \<and> finite W)" by (rule card_gt_0_iff)
+        have h_pos: "card W > 0" using h_iff hW_ne hWfin by (by100 simp)
+        show ?thesis using h_pos by (by100 linarith)
+      qed
+      define n where "n = card W - 1"
+      have hWcard: "card W = n + 1" using hWne_card n_def by (by100 simp)
+      have hW_gp: "geotop_general_position W n"
+        using hWfin hWcard hWai geotop_ai_imp_general_position by (by100 blast)
+      show ?thesis
+        unfolding geotop_simplex_vertices_def
+        using hWfin hWcard hW_gp h\<sigma>_W
+        by (intro exI[of _ n] exI[of _ n]) (by100 blast)
+    qed
+    have hV'_eq_W: "V' = W"
+      by (rule geotop_simplex_vertices_unique[OF h_\<sigma>_simpv hW_simpv])
+    have hW'_sub_W: "W' \<subseteq> W" using hW'_sub_V' hV'_eq_W by (by100 simp)
+    have hW'_sub_V: "W' \<subseteq> V" using hW'_sub_W hW_sub_V by (by100 simp)
+    have h\<tau>_face_s2: "geotop_is_face \<tau> s2"
+      unfolding geotop_is_face_def
+      using h_simp_v hW'_ne hW'_sub_V h\<tau>_W' by (by100 blast)
+    have h\<tau>_in_KR: "\<tau> \<in> K_R R"
+      unfolding K_R_def using heFr h\<tau>_face_s2 s2_def by (by100 blast)
+    show "\<tau> \<in> K"
+      unfolding K_def using hR_in h\<tau>_in_KR by (by100 blast)
+  qed
+  have hK_axiom3: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>" sorry
+  have hK_axiom4: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume "\<sigma> \<in> K"
+    have h_finite_total: "finite {\<tau>\<in>K. \<tau> \<inter> UNIV \<noteq> {}}"
+      using hK_fin by (by100 simp)
+    have h_open_UNIV: "open (UNIV::(real^2) set)" by (by100 simp)
+    have h_sub_UNIV: "\<sigma> \<subseteq> UNIV" by (by100 simp)
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using h_open_UNIV h_sub_UNIV h_finite_total by (by100 blast)
+  qed
+  have hK_iscomplex: "geotop_is_complex K"
+    unfolding geotop_is_complex_def
+    using hK_axiom1 hK_axiom2 hK_axiom3 hK_axiom4 by (by100 blast)
+  have hK_complex: "geotop_is_complex K \<and> finite K \<and> geotop_polyhedron K = Ibar"
+    using hK_iscomplex hK_fin hK_polyhedron by (by100 blast)
+  show ?thesis using hK_complex Ibar_def by (by100 blast)
+qed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
@@ -1367,7 +9348,17 @@ proof -
   (** Step 1: Exists a \"bounded component\" (from Jordan_Brouwer_separation + bdd). **)
   have h_exists_bdd: "\<exists>C. geotop_bounded_R2 C \<and>
             (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)"
-    sorry
+  proof -
+    obtain P where hP: "P \<in> UNIV - J"
+               and hI_eq: "geotop_polygon_interior J
+                           = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+      using geotop_polygon_interior_is_bounded_component[OF hJ] by (by100 blast)
+    have h_bdd: "bounded (geotop_polygon_interior J)"
+      by (rule polygon_interior_bounded[OF hJ])
+    have h_geotop_bdd: "geotop_bounded_R2 (geotop_polygon_interior J)"
+      using h_bdd geotop_bounded_R2_iff_bounded by (by100 blast)
+    show ?thesis using hP hI_eq h_geotop_bdd by (by100 blast)
+  qed
   (** Step 2: At most one bounded component, by the Moise contradiction argument:
       any second bounded component U would give Fr U \<subset> arc of J, contradicting 2.5. **)
   have h_atmost: "\<forall>C1 C2.
@@ -2282,7 +10273,7 @@ proof -
     proof
       fix y assume hy: "y \<in> \<sigma>\<^sub>h"
       have hbij: "bij_betw \<phi> \<sigma>\<^sub>g \<sigma>\<^sub>h"
-        using h\<phi>_homeo unfolding top1_homeomorphism_on_def by (by100 blast)
+        by (rule top1_homeomorphism_on_imp_bij[OF h\<phi>_homeo])
       have himg: "\<phi> ` \<sigma>\<^sub>g = \<sigma>\<^sub>h" using hbij unfolding bij_betw_def by (by100 blast)
       then obtain x where hxg: "x \<in> \<sigma>\<^sub>g" and h\<phi>x: "\<phi> x = y" using hy by (by100 blast)
       have h\<psi>y_eq: "\<psi> y = x"
@@ -3799,7 +11790,7 @@ proof -
           (\<lambda>Q. \<phi> (Q, t))"
       using h\<phi>_slice_homeo ht by (by100 blast)
     have h_bij: "bij_betw (\<lambda>Q. \<phi> (Q, t)) ({Q::'a. norm Q \<le> 1}) ({Q::'a. norm Q \<le> 1})"
-      using h_slice unfolding top1_homeomorphism_on_def by (by100 blast)
+      by (rule top1_homeomorphism_on_imp_bij[OF h_slice])
     have h_into: "(\<lambda>Q. \<phi> (Q, t)) ` ({Q::'a. norm Q \<le> 1}) \<subseteq> ({Q::'a. norm Q \<le> 1})"
       using h_bij unfolding bij_betw_def by (by100 blast)
     have hP_in: "P \<in> {Q::'a. norm Q \<le> 1}" using hP by (by100 simp)
@@ -12829,34 +20820,6 @@ proof -
           (\<forall>P\<in>M - V. g' P = P) \<and>
           (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)" sorry
   show ?thesis using h_extend by (by100 blast)
-qed
-
-(** from \<S>36 Theorem 4 (geotop.tex:7174)
-    LATEX VERSION: In R^3, or in a PL 3-manifold, every locally tame set is tame. **)
-theorem Theorem_GT_36_4:
-  fixes M L :: "(real^3) set"
-  assumes hM_mfd: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 3"
-  assumes hM_poly: "\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = M"
-  assumes hL_sub: "L \<subseteq> M"
-  assumes hL_loctame: "geotop_is_locally_tame L"
-  shows "geotop_is_tame L"
-proof -
-  (** (1) By local tameness at each P \<in> L, pick finitely many closed nbhds N_i \<ni> P_i with
-         homeomorphisms h_i: N_i \<to> |K_i| making h_i(N_i \<inter> L) polyhedral. **)
-  have h_at: "\<forall>P\<in>L. geotop_is_locally_tame_at L P"
-    using hL_loctame unfolding geotop_is_locally_tame_def by (by100 blast)
-  have h_loc_charts:
-    "\<forall>P\<in>L. \<exists>N h. closedin_on UNIV geotop_euclidean_topology N \<and> P \<in> N \<and>
-                  top1_homeomorphism_on N (subspace_topology UNIV geotop_euclidean_topology N)
-                     (h ` N) (subspace_topology UNIV geotop_euclidean_topology (h ` N)) h \<and>
-                  (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = h ` (N \<inter> L))" sorry
-  (** (2) Local tameness implies semi-local tameness: extend each local chart to a
-         common open set via a compatible atlas (finite cover + partition of unity on
-         the compact L), obtaining U \<supseteq> L with U \<to> |K| PL-embedding L. **)
-  have h_slt: "geotop_is_semi_locally_tame L \<and> geotop_is_tame L" sorry
-  (** (3) Apply Theorem 36_3: semi-locally tame implies tame. **)
-  have h_final: "geotop_is_tame L" using h_slt by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
 qed
 
 (* CHUNK_OUT_END *)

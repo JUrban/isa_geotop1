@@ -241,7 +241,7 @@ proof -
                      = affine_dependent V"
     using affine_dependent_explicit_finite[OF hVfin] by (by100 simp)
   have h_not_ex: "\<not> (\<exists>U. sum U V = 0 \<and> (\<exists>v\<in>V. U v \<noteq> 0) \<and> (\<Sum>v\<in>V. U v *\<^sub>R v) = 0)"
-    using h_AI_char hVai by (by100 simp)
+    using h_AI_char hVai by (by100 blast)
   have h_U_zero: "\<forall>v\<in>V. U v = 0"
     using h_not_ex h_sum_U h_combo_U by (by100 blast)
   show ?thesis using h_U_zero unfolding U_def by (by100 simp)
@@ -6891,7 +6891,7 @@ proof -
       by (rule geotop_general_position_mono[OF hV\<^sub>\<sigma>gp hWV\<^sub>\<sigma> hWfin])
     have hWcard_pos: "card W > 0"
       using hWne hWfin card_gt_0_iff by (by100 blast)
-    have hWcard_ex: "\<exists>n'. card W = n' + 1" using hWcard_pos by (by100 presburger)
+    have hWcard_ex: "\<exists>n'. card W = n' + 1" using hWcard_pos gr0_implies_Suc Suc_eq_plus1 by (by100 metis)
     obtain n' where hWcard: "card W = n' + 1" using hWcard_ex by (by100 blast)
     have hcard_leq: "card W \<le> card V\<^sub>\<sigma>"
       using hWV\<^sub>\<sigma> hV\<^sub>\<sigma>_unp card_mono by (by100 blast)
@@ -6953,7 +6953,7 @@ proof -
       by (rule geotop_general_position_mono[OF hV\<^sub>\<sigma>gp hWV\<^sub>\<sigma> hWfin])
     have hWcard_pos: "card W > 0"
       using hWne hWfin card_gt_0_iff by (by100 blast)
-    have hWcard_ex: "\<exists>n'. card W = n' + 1" using hWcard_pos by (by100 presburger)
+    have hWcard_ex: "\<exists>n'. card W = n' + 1" using hWcard_pos gr0_implies_Suc Suc_eq_plus1 by (by100 metis)
     obtain n' where hWcard: "card W = n' + 1" using hWcard_ex by (by100 blast)
     have hcard_leq: "card W \<le> card V\<^sub>\<sigma>"
       using hWV\<^sub>\<sigma> hV\<^sub>\<sigma>_unp card_mono by (by100 blast)
@@ -9731,7 +9731,20 @@ proof
     assume hU_fin: "finite {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}}"
     have h_sub: "{\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}
                    \<subseteq> {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
-      by (by100 blast)
+    proof
+      fix \<tau>' assume h\<tau>'_in: "\<tau>' \<in> {\<tau>'\<in>?K'. \<tau>' \<inter> U \<noteq> {}}"
+      have h\<tau>'K': "\<tau>' \<in> ?K'" using h\<tau>'_in by (by100 simp)
+      have h\<tau>'_ne: "\<tau>' \<inter> U \<noteq> {}" using h\<tau>'_in by (by100 simp)
+      consider (a) "\<tau>' \<in> K" |
+               (b) "\<tau>' \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        using h\<tau>'K' by (by100 blast)
+      thus "\<tau>' \<in> {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      proof cases
+        case a thus ?thesis using h\<tau>'_ne by (by100 blast)
+      next
+        case b thus ?thesis by (by100 blast)
+      qed
+    qed
     have h_rhs_fin:
       "finite ({\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1})"
       using hU_fin by (by100 simp)
@@ -10043,11 +10056,16 @@ proof -
               \<and> K - {\<sigma>} \<subseteq> K'
               \<and> (finite K \<longrightarrow> finite K')"
       by (rule geotop_complex_subdivide_edge[OF hKcomp hK1dim h\<sigma>K h\<sigma>_dim1 hR\<sigma>])
-    obtain K' where hK'_comp: "geotop_is_complex K'" and hK'_1dim: "geotop_complex_is_1dim K'"
-                 and hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K"
-                 and hR_K': "{R} \<in> K'" and hK'_sup: "K - {\<sigma>} \<subseteq> K'"
-                 and hK'_fin: "finite K \<longrightarrow> finite K'"
-      using h_ex_K' by (by100 blast)
+    from h_ex_K' obtain K' where hK'_all: "geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+              \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+              \<and> K - {\<sigma>} \<subseteq> K'
+              \<and> (finite K \<longrightarrow> finite K')" by (by100 blast)
+    have hK'_comp: "geotop_is_complex K'" using hK'_all by (by100 simp)
+    have hK'_1dim: "geotop_complex_is_1dim K'" using hK'_all by (by100 simp)
+    have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K" using hK'_all by (by100 simp)
+    have hR_K': "{R} \<in> K'" using hK'_all by (by100 simp)
+    have hK'_sup: "K - {\<sigma>} \<subseteq> K'" using hK'_all by (by100 simp)
+    have hK'_fin: "finite K \<longrightarrow> finite K'" using hK'_all by (by100 simp)
     (** 0-simplex preservation: any {v} ∈ K is ≠ σ (dim mismatch) so {v} ∈ K-{σ} ⊆ K'. **)
     have h_preserve: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K'"
     proof (intro allI impI)
@@ -12461,6 +12479,554 @@ proof -
     using assms(2) by blast
   show ?thesis
     using hPN hsub by blast
+qed
+
+text \<open>Generic local-isolation lemma: a finite union of closed sets is locally
+  exhausted (within any small ball) by those members containing the point.\<close>
+
+lemma finite_union_closed_local_isolation:
+  fixes B :: "'a::metric_space set" and K :: "'a set set" and x :: 'a
+  assumes hKfin: "finite K"
+      and hKclosed: "\<forall>\<sigma>\<in>K. closed \<sigma>"
+      and hB: "B = \<Union>K"
+      and hxB: "x \<in> B"
+  shows "\<exists>\<delta>>0. ball x \<delta> \<inter> B \<subseteq> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>}"
+proof -
+  define K' where "K' = {\<sigma>\<in>K. x \<notin> \<sigma>}"
+  have hK'fin: "finite K'" using hKfin K'_def by (by100 simp)
+  have hK'closed: "\<forall>\<sigma>\<in>K'. closed \<sigma>" using hKclosed K'_def by (by100 simp)
+  have hK'_no_x: "\<forall>\<sigma>\<in>K'. x \<notin> \<sigma>" using K'_def by (by100 simp)
+  have h_dist_pos: "\<forall>\<sigma>\<in>K'. \<exists>\<delta>>0. ball x \<delta> \<inter> \<sigma> = {}"
+  proof
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    have hxn\<sigma>: "x \<notin> \<sigma>" using hK'_no_x h\<sigma>K' by (by100 blast)
+    have h\<sigma>cl: "closed \<sigma>" using hK'closed h\<sigma>K' by (by100 blast)
+    have h_in_compl: "x \<in> -\<sigma>" using hxn\<sigma> by (by100 simp)
+    have h_open_compl: "open (-\<sigma>)" using h\<sigma>cl closed_def by (by100 blast)
+    obtain \<delta> where h\<delta>_pos: "\<delta> > 0" and h\<delta>_sub: "ball x \<delta> \<subseteq> -\<sigma>"
+      using h_in_compl h_open_compl open_contains_ball by (by100 metis)
+    have h_disj: "ball x \<delta> \<inter> \<sigma> = {}" using h\<delta>_sub by (by100 blast)
+    show "\<exists>\<delta>>0. ball x \<delta> \<inter> \<sigma> = {}" using h\<delta>_pos h_disj by (by100 blast)
+  qed
+  define f :: "'a set \<Rightarrow> real" where
+    "f = (\<lambda>\<sigma>. SOME \<delta>. \<delta> > 0 \<and> ball x \<delta> \<inter> \<sigma> = {})"
+  have hf_pos: "\<forall>\<sigma>\<in>K'. f \<sigma> > 0 \<and> ball x (f \<sigma>) \<inter> \<sigma> = {}"
+  proof
+    fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+    have h_ex: "\<exists>\<delta>. \<delta> > 0 \<and> ball x \<delta> \<inter> \<sigma> = {}" using h_dist_pos h\<sigma>K' by (by100 blast)
+    have h_some: "f \<sigma> > 0 \<and> ball x (f \<sigma>) \<inter> \<sigma> = {}"
+      unfolding f_def using h_ex someI_ex[of "\<lambda>\<delta>. \<delta> > 0 \<and> ball x \<delta> \<inter> \<sigma> = {}"]
+      by (by100 blast)
+    show "f \<sigma> > 0 \<and> ball x (f \<sigma>) \<inter> \<sigma> = {}" by (rule h_some)
+  qed
+  show "\<exists>\<delta>>0. ball x \<delta> \<inter> B \<subseteq> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>}"
+  proof (cases "K' = {}")
+    case True
+    have h_no_K': "\<forall>\<sigma>\<in>K. x \<in> \<sigma>" using True K'_def by (by100 blast)
+    have h_all_eq: "\<Union>{\<sigma>\<in>K. x \<in> \<sigma>} = B"
+      using h_no_K' hB by (by100 blast)
+    show ?thesis using h_all_eq zero_less_one by (by100 blast)
+  next
+    case False
+    define \<delta>0 where "\<delta>0 = Min (f ` K')"
+    have hfK'fin: "finite (f ` K')" using hK'fin by (by100 simp)
+    have hfK'_ne: "f ` K' \<noteq> {}" using False by (by100 simp)
+    have h\<delta>0_pos: "\<delta>0 > 0"
+    proof -
+      have h_in_set: "\<delta>0 \<in> f ` K'" unfolding \<delta>0_def using hfK'fin hfK'_ne by (by100 simp)
+      obtain \<sigma> where h\<sigma>K': "\<sigma> \<in> K'" and h_eq: "\<delta>0 = f \<sigma>" using h_in_set by (by100 blast)
+      have h_pos: "f \<sigma> > 0" using hf_pos h\<sigma>K' by (by100 blast)
+      show ?thesis using h_pos h_eq by (by100 simp)
+    qed
+    have h_min_le: "\<forall>\<sigma>\<in>K'. \<delta>0 \<le> f \<sigma>" unfolding \<delta>0_def using hfK'fin by (by100 simp)
+    have h_isolate: "\<forall>\<sigma>\<in>K'. ball x \<delta>0 \<inter> \<sigma> = {}"
+    proof
+      fix \<sigma> assume h\<sigma>K': "\<sigma> \<in> K'"
+      have h_le: "\<delta>0 \<le> f \<sigma>" using h_min_le h\<sigma>K' by (by100 blast)
+      have h_sub: "ball x \<delta>0 \<subseteq> ball x (f \<sigma>)" using h_le by (by100 auto)
+      have h_disj: "ball x (f \<sigma>) \<inter> \<sigma> = {}" using hf_pos h\<sigma>K' by (by100 blast)
+      show "ball x \<delta>0 \<inter> \<sigma> = {}" using h_sub h_disj by (by100 blast)
+    qed
+    have h_subset: "ball x \<delta>0 \<inter> B \<subseteq> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>}"
+    proof
+      fix y assume hy: "y \<in> ball x \<delta>0 \<inter> B"
+      have hyB: "y \<in> B" using hy by (by100 blast)
+      obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hy\<sigma>: "y \<in> \<sigma>" using hyB hB by (by100 blast)
+      have h_x\<sigma>: "x \<in> \<sigma>"
+      proof (rule ccontr)
+        assume hxn\<sigma>: "x \<notin> \<sigma>"
+        have h\<sigma>K': "\<sigma> \<in> K'" using h\<sigma>K hxn\<sigma> K'_def by (by100 simp)
+        have h_disj: "ball x \<delta>0 \<inter> \<sigma> = {}" using h_isolate h\<sigma>K' by (by100 blast)
+        have hy_ball: "y \<in> ball x \<delta>0" using hy by (by100 blast)
+        show False using h_disj hy_ball hy\<sigma> by (by100 blast)
+      qed
+      show "y \<in> \<Union>{\<sigma>\<in>K. x \<in> \<sigma>}" using h\<sigma>K h_x\<sigma> hy\<sigma> by (by100 blast)
+    qed
+    show ?thesis using h\<delta>0_pos h_subset by (by100 blast)
+  qed
+qed
+
+text \<open>For a 2-element subset E of A, A - E is open in subspace topology of A.\<close>
+
+lemma arc_interior_relatively_open_in_arc:
+  fixes A :: "(real^2) set" and E :: "(real^2) set"
+  assumes hE_card: "card E = 2"
+      and hE_sub: "E \<subseteq> A"
+  shows "openin (top_of_set A) (A - E)"
+proof -
+  have hE_fin: "finite E"
+    using hE_card by (metis card.infinite zero_neq_numeral)
+  have hE_closed: "closed E" using hE_fin finite_imp_closed by (by100 blast)
+  have hE_inter: "E = A \<inter> E" using hE_sub by (by100 blast)
+  have h_AE_closedin: "closedin (top_of_set A) (A \<inter> E)"
+    using hE_closed by (rule closedin_closed_Int)
+  have hE_closedin: "closedin (top_of_set A) E"
+    using h_AE_closedin hE_inter by (by100 simp)
+  have h_A_open: "openin (top_of_set A) A" by (by100 simp)
+  have h_diff_open: "openin (top_of_set A) (A - E)"
+    using h_A_open hE_closedin by (rule openin_diff)
+  show ?thesis using h_diff_open by (by100 simp)
+qed
+
+text \<open>A connected open set in R^2 disjoint from an affine line lies entirely
+  in one of the two open half-planes determined by the line.\<close>
+
+lemma connected_open_disjoint_from_line_in_halfplane:
+  fixes U :: "(real^2) set" and n :: "real^2" and c :: real
+  assumes hU_open: "open U"
+      and hU_conn: "connected U"
+      and hU_disj: "U \<inter> {y. inner n y = c} = {}"
+  shows "U \<subseteq> {y. inner n y > c} \<or> U \<subseteq> {y. inner n y < c}"
+proof -
+  define Hp where "Hp = {y::real^2. inner n y > c}"
+  define Hm where "Hm = {y::real^2. inner n y < c}"
+  have h_open_Hp: "open Hp" unfolding Hp_def by (rule open_halfspace_gt)
+  have h_open_Hm: "open Hm" unfolding Hm_def by (rule open_halfspace_lt)
+  have h_Hp_Hm_disj: "Hp \<inter> Hm = {}" unfolding Hp_def Hm_def by (by100 auto)
+  have h_U_sub_union: "U \<subseteq> Hp \<union> Hm"
+  proof
+    fix y assume hyU: "y \<in> U"
+    have hy_not_eq: "inner n y \<noteq> c" using hyU hU_disj by (by100 blast)
+    show "y \<in> Hp \<union> Hm"
+      using hy_not_eq unfolding Hp_def Hm_def by (by100 auto)
+  qed
+  have hU_inter_disj: "Hp \<inter> Hm \<inter> U = {}" using h_Hp_Hm_disj by (by100 blast)
+  have h_alt: "Hp \<inter> U = {} \<or> Hm \<inter> U = {}"
+  proof (rule ccontr)
+    assume "\<not> ?thesis"
+    hence h_both_ne: "Hp \<inter> U \<noteq> {} \<and> Hm \<inter> U \<noteq> {}" by (by100 simp)
+    have h_disconn: "\<not> connected U"
+      unfolding connected_def
+      using h_open_Hp h_open_Hm hU_inter_disj h_U_sub_union h_both_ne
+      by (by100 blast)
+    show False using h_disconn hU_conn by (by100 blast)
+  qed
+  show ?thesis
+  proof (cases "Hp \<inter> U = {}")
+    case True
+    have hU_Hm: "U \<subseteq> Hm"
+    proof
+      fix y assume hyU: "y \<in> U"
+      have hy_in_union: "y \<in> Hp \<union> Hm" using hyU h_U_sub_union by (by100 blast)
+      have hy_notHp: "y \<notin> Hp" using True hyU by (by100 blast)
+      show "y \<in> Hm" using hy_in_union hy_notHp by (by100 blast)
+    qed
+    show ?thesis using hU_Hm Hm_def by (by100 blast)
+  next
+    case False
+    have hHm_empty: "Hm \<inter> U = {}" using h_alt False by (by100 blast)
+    have hU_Hp: "U \<subseteq> Hp"
+    proof
+      fix y assume hyU: "y \<in> U"
+      have hy_in_union: "y \<in> Hp \<union> Hm" using hyU h_U_sub_union by (by100 blast)
+      have hy_notHm: "y \<notin> Hm" using hHm_empty hyU by (by100 blast)
+      show "y \<in> Hp" using hy_in_union hy_notHm by (by100 blast)
+    qed
+    show ?thesis using hU_Hp Hp_def by (by100 blast)
+  qed
+qed
+
+text \<open>An open ball minus a hyperplane through its center in R^2 splits into
+  two open connected non-empty disjoint half-balls.\<close>
+
+lemma ball_minus_hyperplane_has_two_components:
+  fixes x :: "real^2" and n :: "real^2" and \<delta> :: real
+  assumes hn: "n \<noteq> 0" and h\<delta>: "\<delta> > 0"
+  shows "\<exists>U V. ball x \<delta> - {y. inner (y - x) n = 0} = U \<union> V \<and>
+                U \<inter> V = {} \<and> U \<noteq> {} \<and> V \<noteq> {} \<and>
+                connected U \<and> connected V \<and> open U \<and> open V"
+proof -
+  define U where "U = ball x \<delta> \<inter> {y. inner (y - x) n > 0}"
+  define V where "V = ball x \<delta> \<inter> {y. inner (y - x) n < 0}"
+  have h_union: "ball x \<delta> - {y. inner (y - x) n = 0} = U \<union> V"
+    unfolding U_def V_def by (by100 auto)
+  have h_disj: "U \<inter> V = {}" unfolding U_def V_def by (by100 auto)
+  have h_eq_U: "{y. inner (y - x) n > 0} = {y. inner n y > inner n x}"
+    by (auto simp: inner_diff_right inner_commute)
+  have h_eq_V: "{y. inner (y - x) n < 0} = {y. inner n y < inner n x}"
+    by (auto simp: inner_diff_right inner_commute)
+  have h_open_half_U: "open {y. inner n y > inner n x}" by (rule open_halfspace_gt)
+  have h_open_half_V: "open {y. inner n y < inner n x}" by (rule open_halfspace_lt)
+  have h_open_U: "open U"
+    unfolding U_def h_eq_U using h_open_half_U open_ball by (intro open_Int)
+  have h_open_V: "open V"
+    unfolding V_def h_eq_V using h_open_half_V open_ball by (intro open_Int)
+  have h_conv_U: "convex U"
+    unfolding U_def h_eq_U by (intro convex_Int convex_ball convex_halfspace_gt)
+  have h_conv_V: "convex V"
+    unfolding V_def h_eq_V by (intro convex_Int convex_ball convex_halfspace_lt)
+  have h_conn_U: "connected U" using h_conv_U convex_connected by (by100 simp)
+  have h_conn_V: "connected V" using h_conv_V convex_connected by (by100 simp)
+  obtain w :: "real^2" where hw: "inner w n > 0"
+  proof -
+    assume *: "\<And>w. inner w n > 0 \<Longrightarrow> thesis"
+    have h_nn: "inner n n > 0" using hn by (by100 simp)
+    show thesis using *[of n] h_nn by (by100 blast)
+  qed
+  have hw_ne: "w \<noteq> 0" using hw by (by100 force)
+  have h_norm_w_pos: "norm w > 0" using hw_ne by (by100 simp)
+  define t :: real where "t = \<delta> / (2 * norm w)"
+  have ht_pos: "t > 0" using h\<delta> h_norm_w_pos t_def by (by100 simp)
+  define p where "p = x + t *\<^sub>R w"
+  have h_dist_p: "dist x p = t * norm w"
+    unfolding p_def dist_norm using ht_pos by (simp add: norm_minus_commute)
+  have h_dist_lt: "dist x p < \<delta>"
+    unfolding h_dist_p t_def using h\<delta> h_norm_w_pos by (by100 simp)
+  have hp_ball: "p \<in> ball x \<delta>" using h_dist_lt by (by100 simp)
+  have h_inner_p: "inner (p - x) n = t * inner w n"
+    unfolding p_def by (by100 simp)
+  have h_inner_p_pos: "inner (p - x) n > 0"
+    using h_inner_p ht_pos hw by (by100 simp)
+  have hp_U: "p \<in> U" unfolding U_def using hp_ball h_inner_p_pos by (by100 simp)
+  have hU_ne: "U \<noteq> {}" using hp_U by (by100 blast)
+  define q where "q = x - t *\<^sub>R w"
+  have h_dist_q: "dist x q = t * norm w"
+    unfolding q_def dist_norm using ht_pos by simp
+  have h_dist_q_lt: "dist x q < \<delta>"
+    unfolding h_dist_q t_def using h\<delta> h_norm_w_pos by (by100 simp)
+  have hq_ball: "q \<in> ball x \<delta>" using h_dist_q_lt by (by100 simp)
+  have h_inner_q: "inner (q - x) n = - (t * inner w n)"
+    unfolding q_def by (by100 simp)
+  have h_inner_q_neg: "inner (q - x) n < 0"
+    using h_inner_q ht_pos hw by (by100 simp)
+  have hq_V: "q \<in> V" unfolding V_def using hq_ball h_inner_q_neg by (by100 simp)
+  have hV_ne: "V \<noteq> {}" using hq_V by (by100 blast)
+  show ?thesis using h_union h_disj hU_ne hV_ne h_conn_U h_conn_V h_open_U h_open_V
+    by (by100 blast)
+qed
+
+text \<open>Direct accessors for top1_homeomorphism_on. These avoid repeated slow
+  unfolding+blast under the by100 100ms cap.\<close>
+
+lemma top1_homeomorphism_on_imp_bij:
+  "top1_homeomorphism_on X TX Y TY f \<Longrightarrow> bij_betw f X Y"
+  unfolding top1_homeomorphism_on_def by (by100 simp)
+
+lemma top1_homeomorphism_on_imp_cont1:
+  "top1_homeomorphism_on X TX Y TY f \<Longrightarrow> top1_continuous_map_on X TX Y TY f"
+  unfolding top1_homeomorphism_on_def by (by100 simp)
+
+lemma top1_homeomorphism_on_imp_cont2:
+  "top1_homeomorphism_on X TX Y TY f \<Longrightarrow> top1_continuous_map_on Y TY X TX (inv_into X f)"
+  unfolding top1_homeomorphism_on_def by (by100 simp)
+
+text \<open>Direct accessor for geotop_is_n_cell to extract the simplex+homeomorphism
+  existential. Avoids the by100 cap pressure when used inline in proofs.\<close>
+
+text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
+
+lemma geotop_simplex_dim_imp_hyperplane_dim:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h: "geotop_simplex_dim \<sigma> n"
+  shows "geotop_hyperplane_dim (affine hull \<sigma>) n"
+proof -
+  obtain V m where hVfin: "finite V" and hVcard: "card V = n + 1"
+                and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+                and h\<sigma>V: "\<sigma> = geotop_convex_hull V"
+    using h unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>V geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_aff_eq: "affine hull \<sigma> = affine hull V"
+    using h\<sigma>_HOL affine_hull_convex_hull[of V] by (by100 simp)
+  have h_simp_verts: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hVcard hnm hVgp h\<sigma>V by (by100 blast)
+  have hVai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h_simp_verts])
+  have hVne: "V \<noteq> {}"
+    using hVfin hVcard card_gt_0_iff by (by100 fastforce)
+  obtain a where ha: "a \<in> V" using hVne by (by100 blast)
+  define W where "W = (+)(-a) ` (V - {a})"
+  define L where "L = span W"
+  have hL_sub: "subspace L" unfolding L_def by (by100 simp)
+  have haff_form: "affine hull V = (+) a ` L"
+    using ha unfolding L_def W_def by (rule affine_hull_span2)
+  have h_L_from: "(+) (-a) ` (affine hull V) = L"
+  proof -
+    have "(+) (-a) ` ((+) a ` L) = L"
+      by (by100 force)
+    thus ?thesis using haff_form by (by100 simp)
+  qed
+  have h_parallel: "affine_parallel (affine hull V) L"
+    unfolding affine_parallel_def
+    apply (rule exI[of _ "-a"])
+    using h_L_from by (by100 simp)
+  have h_aff_V_dim: "aff_dim V = int (dim L)"
+    by (rule aff_dim_parallel_subspace[OF hVne hL_sub h_parallel])
+  have h_aff_V_card: "aff_dim V = int (card V) - 1"
+    using hVai affine_independent_iff_card hVfin by (by100 blast)
+  have h_aff_V_n: "aff_dim V = int n" using h_aff_V_card hVcard by (by100 simp)
+  have hL_dim: "dim L = n" using h_aff_V_dim h_aff_V_n by (by100 simp)
+  obtain B where hB_sub: "B \<subseteq> L" and hB_indep: "independent B"
+             and hB_span_sup: "L \<subseteq> span B" and hBcard_dim: "card B = dim L"
+    using basis_exists[of L] by (by100 blast)
+  have hBfin: "finite B" using independent_bound[OF hB_indep] by (by100 blast)
+  have hBcard: "card B = n" using hBcard_dim hL_dim by (by100 simp)
+  have hB_span_sub: "span B \<subseteq> L"
+    by (rule span_minimal[OF hB_sub hL_sub])
+  have hB_span: "span B = L"
+    using hB_span_sub hB_span_sup by (by100 blast)
+  define H where "H = (+) a ` L"
+  have hH_eq_aff: "H = affine hull \<sigma>" unfolding H_def
+    using haff_form h_aff_eq by (by100 simp)
+  have h_plusa_eq: "(+) a = (\<lambda>v. v + a)"
+    by (intro ext) (rule add.commute)
+  have h_plusa: "(+) a ` L = (\<lambda>v. v + a) ` L"
+    using h_plusa_eq by (by100 simp)
+  have hH_hpdim: "geotop_hyperplane_dim H n"
+    unfolding geotop_hyperplane_dim_def H_def
+    apply (rule exI[of _ L])
+    apply (rule exI[of _ a])
+    using hL_sub hB_indep hBfin hBcard hB_span h_plusa by (by100 blast)
+  show "geotop_hyperplane_dim (affine hull \<sigma>) n"
+    using hH_hpdim hH_eq_aff by (by100 simp)
+qed
+
+subsection \<open>Line arrangement helpers (for GT_2_2 sorry #2)\<close>
+
+text \<open>Perpendicular vector in \<open>real^2\<close>: \<open>perp2 (b1, b2) = (b2, -b1)\<close>.\<close>
+
+definition geotop_perp2 :: "real^2 \<Rightarrow> real^2" where
+  "geotop_perp2 b = vector [b $ 2, - (b $ 1)]"
+
+lemma geotop_perp2_dot_zero: "geotop_perp2 b \<bullet> b = 0"
+  unfolding geotop_perp2_def by (simp add: inner_vec_def sum_2)
+
+lemma geotop_perp2_ne_zero:
+  fixes b :: "real^2"
+  assumes "b \<noteq> 0"
+  shows "geotop_perp2 b \<noteq> 0"
+proof
+  assume hperp: "geotop_perp2 b = 0"
+  have h1: "geotop_perp2 b $ 1 = b $ 2" unfolding geotop_perp2_def by simp
+  have h2: "geotop_perp2 b $ 2 = - b $ 1" unfolding geotop_perp2_def by simp
+  have hb2: "b $ 2 = 0" using h1 hperp by (simp add: vec_eq_iff)
+  have hb1: "b $ 1 = 0" using h2 hperp by (simp add: vec_eq_iff)
+  have "b = 0" using hb1 hb2 by (simp add: vec_eq_iff forall_2)
+  thus False using assms by simp
+qed
+
+lemma geotop_in_span_b_via_perp2:
+  fixes b v :: "real^2"
+  assumes hb: "b \<noteq> 0"
+      and hv_dot: "geotop_perp2 b \<bullet> v = 0"
+  shows "v \<in> span {b}"
+proof -
+  have h_dot_eq: "geotop_perp2 b \<bullet> v = (b $ 2) * (v $ 1) - (b $ 1) * (v $ 2)"
+    unfolding geotop_perp2_def by (simp add: inner_vec_def sum_2)
+  have h_eq: "(b $ 2) * (v $ 1) = (b $ 1) * (v $ 2)"
+    using hv_dot h_dot_eq by simp
+  show "v \<in> span {b}"
+  proof (cases "b $ 1 = 0")
+    case True
+    have hb2_ne: "b $ 2 \<noteq> 0"
+    proof
+      assume "b $ 2 = 0"
+      hence "b = 0" using True by (simp add: vec_eq_iff forall_2)
+      thus False using hb by simp
+    qed
+    have hv1_eq: "v $ 1 = 0" using h_eq True hb2_ne by simp
+    define t where "t = v $ 2 / b $ 2"
+    have hv2_eq: "v $ 2 = t * b $ 2" unfolding t_def using hb2_ne by simp
+    have hv1_eq2: "v $ 1 = t * b $ 1" unfolding True by (simp add: hv1_eq)
+    have hv_scale: "v = t *\<^sub>R b"
+      using hv1_eq2 hv2_eq by (simp add: vec_eq_iff forall_2 scaleR_vec_def)
+    show ?thesis using hv_scale span_scale span_base by (metis singletonI)
+  next
+    case False
+    define t where "t = v $ 1 / b $ 1"
+    have hv1_eq: "v $ 1 = t * b $ 1" unfolding t_def using False by simp
+    have hv2_eq: "v $ 2 = t * b $ 2"
+    proof -
+      have h1: "b $ 2 * v $ 1 = b $ 1 * v $ 2" using h_eq by simp
+      have h2: "v $ 2 = b $ 2 * v $ 1 / b $ 1" using h1 False by (simp add: field_simps)
+      have h3: "b $ 2 * v $ 1 / b $ 1 = (v $ 1 / b $ 1) * b $ 2" by simp
+      show ?thesis using h2 h3 t_def by simp
+    qed
+    have hv_scale: "v = t *\<^sub>R b"
+      using hv1_eq hv2_eq by (simp add: vec_eq_iff forall_2 scaleR_vec_def)
+    show ?thesis using hv_scale span_scale span_base by (metis singletonI)
+  qed
+qed
+
+text \<open>1-dim affine subspace \<open>v0 + V\<close> in \<open>real^2\<close> is the orthogonal hyperplane
+  \<open>{x. n \<bullet> x = n \<bullet> v0}\<close> for some \<open>n \<noteq> 0\<close>.\<close>
+
+lemma geotop_line_normal_form:
+  fixes V :: "(real^2) set" and v0 :: "real^2"
+  assumes hV: "subspace V"
+      and hVdim: "dim V = 1"
+  shows "\<exists>n. n \<noteq> 0 \<and> ((\<lambda>v. v + v0) ` V) = {x. n \<bullet> x = n \<bullet> v0}"
+proof -
+  obtain B where hB_sub: "B \<subseteq> V" and hB_indep: "independent B"
+              and hB_span_sup: "V \<subseteq> span B" and hB_card_dim: "card B = dim V"
+    using basis_exists[of V] by (by100 metis)
+  have hB_card: "card B = 1" using hB_card_dim hVdim by (by100 simp)
+  have hB_fin: "finite B" using hB_indep independent_bound by (by100 blast)
+  have hB_span_sub: "span B \<subseteq> V" by (rule span_minimal[OF hB_sub hV])
+  have hB_span: "span B = V" using hB_span_sub hB_span_sup by (by100 blast)
+  obtain b where hB_eq: "B = {b}" using hB_card card_1_singletonE by (by100 metis)
+  have hb_ne: "b \<noteq> 0" using hB_indep hB_eq dependent_zero by (by100 blast)
+  have hV_span: "V = span {b}" using hB_span hB_eq by (by100 simp)
+  define n where "n = geotop_perp2 b"
+  have hn_ne: "n \<noteq> 0" unfolding n_def using hb_ne geotop_perp2_ne_zero by (by100 simp)
+  show ?thesis
+  proof (intro exI[of _ n] conjI)
+    show "n \<noteq> 0" by (rule hn_ne)
+    show "(\<lambda>v. v + v0) ` V = {x. n \<bullet> x = n \<bullet> v0}"
+    proof
+      show "(\<lambda>v. v + v0) ` V \<subseteq> {x. n \<bullet> x = n \<bullet> v0}"
+      proof
+        fix x assume "x \<in> (\<lambda>v. v + v0) ` V"
+        then obtain v where hvV: "v \<in> V" and hxv: "x = v + v0" by (by100 blast)
+        have hv_span: "v \<in> span {b}" using hvV hV_span by (by100 simp)
+        have h_dot_v: "n \<bullet> v = 0"
+        proof -
+          have h_nb: "n \<bullet> b = 0" unfolding n_def by (rule geotop_perp2_dot_zero)
+          obtain a where hva: "v = a *\<^sub>R b"
+            using hv_span span_singleton[of b] by (by100 blast)
+          show "n \<bullet> v = 0" using hva h_nb by (by100 simp)
+        qed
+        have h_dot_x: "n \<bullet> x = n \<bullet> v0"
+        proof -
+          have "n \<bullet> x = n \<bullet> (v + v0)" using hxv by (by100 simp)
+          also have "\<dots> = n \<bullet> v + n \<bullet> v0" by (rule inner_right_distrib)
+          also have "\<dots> = n \<bullet> v0" using h_dot_v by (by100 simp)
+          finally show ?thesis .
+        qed
+        show "x \<in> {x. n \<bullet> x = n \<bullet> v0}" using h_dot_x by (by100 simp)
+      qed
+      show "{x. n \<bullet> x = n \<bullet> v0} \<subseteq> (\<lambda>v. v + v0) ` V"
+      proof
+        fix x assume hx: "x \<in> {x. n \<bullet> x = n \<bullet> v0}"
+        hence h_dot: "n \<bullet> x = n \<bullet> v0" by (by100 simp)
+        have h_dot_diff: "n \<bullet> (x - v0) = 0"
+          using h_dot by (simp add: inner_diff_right)
+        have h_dot_perp_diff: "geotop_perp2 b \<bullet> (x - v0) = 0"
+          using h_dot_diff n_def by (by100 simp)
+        have h_in_span_b: "x - v0 \<in> span {b}"
+          by (rule geotop_in_span_b_via_perp2[OF hb_ne h_dot_perp_diff])
+        have h_in_V: "x - v0 \<in> V" using h_in_span_b hV_span by (by100 simp)
+        have hx_eq: "x = (x - v0) + v0" by (by100 simp)
+        show "x \<in> (\<lambda>v. v + v0) ` V" using h_in_V hx_eq by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
+text \<open>For a 1-dim hyperplane in \<open>real^2\<close>, extract its orthogonal-form
+  representation \<open>L = {x. n \<bullet> x = d}\<close> with \<open>n \<noteq> 0\<close>.\<close>
+
+lemma geotop_hyperplane_dim_1_R2_normal_form:
+  fixes L :: "(real^2) set"
+  assumes h: "geotop_hyperplane_dim L 1"
+  shows "\<exists>n d. n \<noteq> 0 \<and> L = {x. n \<bullet> x = d}"
+proof -
+  have h_unfold: "\<exists>V v0. subspace V \<and>
+                  (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
+                  \<and> L = (\<lambda>v. v + v0) ` V"
+    using h unfolding geotop_hyperplane_dim_def by (by100 blast)
+  obtain V where hV_part: "\<exists>v0. subspace V \<and>
+                  (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
+                  \<and> L = (\<lambda>v. v + v0) ` V"
+    using h_unfold by (by100 blast)
+  obtain v0 where hV_sub: "subspace V"
+              and hV_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V"
+              and hL_form: "L = (\<lambda>v. v + v0) ` V"
+    using hV_part by (by100 blast)
+  obtain B where hB_indep: "independent B" and hB_fin: "finite B"
+             and hB_card: "card B = 1" and hB_span: "span B = V"
+    using hV_basis_ex by (by100 blast)
+  have h_dim_V: "dim V = 1"
+  proof -
+    have h1: "dim V = dim (span B)" using hB_span by (by100 simp)
+    have h2: "dim (span B) = dim B" by (rule dim_span)
+    have h3: "dim B = card B" using hB_indep by (rule dim_eq_card_independent)
+    show ?thesis using h1 h2 h3 hB_card by (by100 simp)
+  qed
+  obtain n where hn_ne: "n \<noteq> 0"
+              and hL_eq: "(\<lambda>v. v + v0) ` V = {x. n \<bullet> x = n \<bullet> v0}"
+    using geotop_line_normal_form[OF hV_sub h_dim_V] by (by100 blast)
+  define d where "d = n \<bullet> v0"
+  have hL_eq2: "L = {x. n \<bullet> x = d}" unfolding d_def using hL_form hL_eq by (by100 simp)
+  show ?thesis using hn_ne hL_eq2 by (by100 blast)
+qed
+
+text \<open>1-simplex in R^2 is homeomorphic to {0..1} (via linepath
+  parameterization of the underlying closed segment).\<close>
+
+lemma simplex_dim_1_homeomorphic_unit_interval:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>_dim: "geotop_simplex_dim \<sigma> 1"
+  shows "\<sigma> homeomorphic {0..1::real}"
+proof -
+  have h_unfold:
+    "\<exists>V m. finite V \<and> card V = 1 + 1 \<and> 1 \<le> m \<and> geotop_general_position V m
+         \<and> \<sigma> = geotop_convex_hull V"
+    using h\<sigma>_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  obtain V m where hVcard: "card V = 1 + 1"
+               and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+    using h_unfold by (by100 blast)
+  have hVcard2: "card V = 2" using hVcard by (by100 simp)
+  obtain a b where hab_ne: "a \<noteq> b" and hVab: "V = {a, b}"
+    using hVcard2 card_2_iff by (by100 metis)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_seg: "convex hull {a, b} = closed_segment a b"
+    by (rule segment_convex_hull[symmetric])
+  have h\<sigma>_seg: "\<sigma> = closed_segment a b"
+    using h\<sigma>_HOL hVab h_seg by (by100 simp)
+  have h_image: "linepath a b ` {0..1} = closed_segment a b"
+    by (rule linepath_image_01)
+  have h_inj: "inj_on (linepath a b) {0..1}"
+    by (rule inj_on_linepath[OF hab_ne])
+  have h_cont: "continuous_on {0..1::real} (linepath a b)"
+    unfolding linepath_def by (intro continuous_intros)
+  have h_compact: "compact {0..1::real}" by (by100 simp)
+  have h_homeo: "\<exists>g. homeomorphism {0..1} (linepath a b ` {0..1}) (linepath a b) g"
+    using h_compact h_cont h_inj homeomorphism_compact by (by100 blast)
+  have h_homeomorphic: "{0..1::real} homeomorphic (linepath a b ` {0..1})"
+    using h_homeo unfolding homeomorphic_def by (by100 blast)
+  have h_homeomorphic_seg: "{0..1::real} homeomorphic closed_segment a b"
+    using h_homeomorphic h_image by (by100 simp)
+  have h_seg_homeo_01: "closed_segment a b homeomorphic {0..1::real}"
+    using h_homeomorphic_seg homeomorphic_sym by (by100 blast)
+  show ?thesis using h_seg_homeo_01 h\<sigma>_seg by (by100 simp)
+qed
+
+lemma geotop_is_n_cell_imp_homeo_ex:
+  fixes X :: "'a::real_normed_vector set" and TX :: "'a set set" and n :: nat
+  assumes "geotop_is_n_cell X TX n"
+  shows "\<exists>(\<sigma>::'a set) f. geotop_simplex_dim \<sigma> n \<and>
+            top1_homeomorphism_on X TX \<sigma>
+              (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+proof -
+  have h: "is_topology_on X TX \<and>
+           (\<exists>(\<sigma>::'a set) f. geotop_simplex_dim \<sigma> n \<and>
+              top1_homeomorphism_on X TX \<sigma>
+                (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f)"
+    using assms unfolding geotop_is_n_cell_def by (by100 simp)
+  show ?thesis using h by (by100 blast)
 qed
 
 

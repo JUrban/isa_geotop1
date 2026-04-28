@@ -33309,27 +33309,6 @@ proof -
   show ?thesis using h12 h23 h31 by blast
 qed
 
-text \<open>Counterexample: LP-compact does not imply compact in general topological spaces.
-  The standard counterexample is S_Ω = [0, Ω) with the order topology, where Ω is the
-  first uncountable ordinal. Every infinite subset has a limit point (any increasing
-  sequence in [0, Ω) has a sup below Ω), but the open cover \{[0,α) | α < Ω\} has
-  no finite subcover.
-
-  Note: The cocountable topology on an uncountable set (like ℝ) does NOT work as a
-  counterexample — it is actually compact (any open set has countable complement, so
-  finitely many open sets cover all but countably many points, and more sets cover the
-  rest).
-
-  The ordinal construction requires ordinal arithmetic not currently available in the
-  standard Isabelle/HOL library (Complex\_Main). We state the gap formally as an axiom
-  justified by the mathematical literature.\<close>
-
-text \<open>The following is provable in ZFC but requires ordinal spaces to formalize.
-  We state it as sorry, documented by the discussion above.\<close>
-lemma lp_compact_not_imp_compact_in_general:
-  "\<exists>(X::'a set) T. top1_limit_point_compact_on X T \<and> \<not> top1_compact_on X T"
-  sorry
-
 text \<open>In first-countable T₁ spaces, LP-compact implies sequentially compact.
   This generalizes part of Theorem 28.2 beyond metric spaces.\<close>
 lemma lp_compact_first_countable_imp_seq_compact:
