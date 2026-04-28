@@ -5861,6 +5861,18 @@ proof -
             have hV_uw_in_pos:
               "path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<subseteq> {z. inner n z > inner n x}"
               using h_pc_in_Hp_global[OF hu_w_in_Wbar hu_w_pos] .
+            \<comment> \<open>If u_w_t ∈ path-component of u_w in U ∩ ball x δ_iso2, then u_w_t ∈ U.
+              Reduces the Schoenflies-like gap to "u_w_t in same path-component
+              as u_w".\<close>
+            have h_pc_imp_U:
+              "u_w_t \<in> path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<Longrightarrow> u_w_t \<in> U"
+            proof -
+              assume hu_w_t_pc: "u_w_t \<in> path_component_set (U \<inter> ball x \<delta>_iso2) u_w"
+              have h_sub: "path_component_set (U \<inter> ball x \<delta>_iso2) u_w
+                           \<subseteq> U \<inter> ball x \<delta>_iso2"
+                by (rule path_component_subset)
+              show "u_w_t \<in> U" using hu_w_t_pc h_sub by (by100 blast)
+            qed
             \<comment> \<open>Triangle: dist u_w y ≤ dist u_w x + dist x y < r/3 + dist y x.\<close>
             have h_tri: "dist u_w y \<le> dist u_w x + dist x y"
               by (rule dist_triangle)
