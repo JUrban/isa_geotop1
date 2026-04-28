@@ -7075,9 +7075,14 @@ proof -
       incident arcs (a sector is bounded by two arcs of the wedge it sits
       between). Hence frontier U near P misses at least one of the arcs
       ⟹ contradiction with all three Bi \<subseteq> frontier U.\<close>
-    \<comment> \<open>Sub-claim AM1: pick an endpoint P \<in> E.\<close>
+    \<comment> \<open>Sub-claim AM1: pick an endpoint P \<in> E (E has card 2 from arc-endpoint).\<close>
     have hAM_P_ex: "\<exists>P. P \<in> E"
-      sorry
+    proof -
+      have hE_card: "card E = 2"
+        using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+      have hE_ne: "E \<noteq> {}" using hE_card by (by100 force)
+      show ?thesis using hE_ne by (by100 blast)
+    qed
     \<comment> \<open>Sub-claim AM2: small ball around P minus M has finitely many
       components, each touching at most 2 of the 3 arcs Bi.\<close>
     have hAM_local_sectors:
