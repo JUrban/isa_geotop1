@@ -12600,7 +12600,75 @@ lemma ball_intersect_aff_hull_segment_in_segment:
       and h\<delta>_le_a: "\<delta> \<le> dist x a"
       and h\<delta>_le_b: "\<delta> \<le> dist x b"
   shows "ball x \<delta> \<inter> affine hull (closed_segment a b) \<subseteq> closed_segment a b"
-  sorry
+proof
+  fix y assume hy: "y \<in> ball x \<delta> \<inter> affine hull (closed_segment a b)"
+  have hy_ball: "y \<in> ball x \<delta>" using hy by blast
+  have hy_aff_seg: "y \<in> affine hull (closed_segment a b)" using hy by blast
+  have h_aff_eq: "affine hull (closed_segment a b) = affine hull {a, b}"
+    using segment_convex_hull[of a b] affine_hull_convex_hull[of "{a, b}"]
+    by simp
+  have hy_aff: "y \<in> affine hull {a, b}" using hy_aff_seg h_aff_eq by simp
+  have h_aff_form: "affine hull {a, b}
+                     = {u *\<^sub>R a + v *\<^sub>R b | u v. u + v = 1}"
+    by (rule affine_hull_2)
+  obtain u v where huv: "u + v = 1" and hy_uv: "y = u *\<^sub>R a + v *\<^sub>R b"
+    using hy_aff h_aff_form by blast
+  obtain s where hs_pos: "0 < s" and hs_lt: "s < 1"
+              and hx_eq: "x = (1 - s) *\<^sub>R a + s *\<^sub>R b"
+    using hx_open in_segment(2) by blast
+  have hu_eq: "u = 1 - v" using huv by simp
+  have hy_uv2: "y = (1 - v) *\<^sub>R a + v *\<^sub>R b" using hy_uv hu_eq by simp
+  have hyx_eq: "y - x = (v - s) *\<^sub>R (b - a)"
+  proof -
+    have "y - x = ((1-v) *\<^sub>R a + v *\<^sub>R b) - ((1-s) *\<^sub>R a + s *\<^sub>R b)"
+      using hy_uv2 hx_eq by simp
+    also have "\<dots> = (v - s) *\<^sub>R (b - a)" by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have h_norm_yx: "norm (y - x) = \<bar>v - s\<bar> * norm (b - a)"
+    using hyx_eq by simp
+  have h_dist_xy: "dist x y = \<bar>v - s\<bar> * norm (b - a)"
+    using h_norm_yx by (simp add: dist_norm norm_minus_commute)
+  have h_xa_eq: "x - a = s *\<^sub>R (b - a)"
+  proof -
+    have "x - a = (1-s) *\<^sub>R a + s *\<^sub>R b - a" using hx_eq by simp
+    also have "\<dots> = s *\<^sub>R (b - a)" by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have h_dist_xa: "dist x a = s * norm (b - a)"
+    using h_xa_eq hs_pos by (simp add: dist_norm)
+  have h_xb_eq: "x - b = (1-s) *\<^sub>R (a - b)"
+  proof -
+    have "x - b = (1-s) *\<^sub>R a + s *\<^sub>R b - b" using hx_eq by simp
+    also have "\<dots> = (1-s) *\<^sub>R (a - b)" by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have h_dist_xb: "dist x b = (1-s) * norm (b - a)"
+    using h_xb_eq hs_lt by (simp add: dist_norm norm_minus_commute)
+  have h_dist_lt: "dist x y < \<delta>" using hy_ball by simp
+  have h_norm_pos: "norm (b - a) > 0" using hab_ne by simp
+  have h_abs_lt_s: "\<bar>v - s\<bar> < s"
+  proof -
+    have "\<bar>v - s\<bar> * norm (b - a) < \<delta>" using h_dist_lt h_dist_xy by simp
+    also have "\<dots> \<le> dist x a" using h\<delta>_le_a .
+    also have "\<dots> = s * norm (b - a)" using h_dist_xa .
+    finally have "\<bar>v - s\<bar> * norm (b - a) < s * norm (b - a)" .
+    thus ?thesis using h_norm_pos by simp
+  qed
+  have h_abs_lt_1ms: "\<bar>v - s\<bar> < 1 - s"
+  proof -
+    have "\<bar>v - s\<bar> * norm (b - a) < \<delta>" using h_dist_lt h_dist_xy by simp
+    also have "\<dots> \<le> dist x b" using h\<delta>_le_b .
+    also have "\<dots> = (1-s) * norm (b - a)" using h_dist_xb .
+    finally have "\<bar>v - s\<bar> * norm (b - a) < (1-s) * norm (b - a)" .
+    thus ?thesis using h_norm_pos by simp
+  qed
+  have hv_pos: "v > 0" using h_abs_lt_s by linarith
+  have hv_lt_1: "v < 1" using h_abs_lt_1ms by linarith
+  have hv_in: "0 \<le> v \<and> v \<le> 1" using hv_pos hv_lt_1 by simp
+  show "y \<in> closed_segment a b"
+    using hy_uv2 hv_in by (auto simp: closed_segment_def)
+qed
 
 text \<open>A connected open set in R^2 disjoint from an affine line lies entirely
   in one of the two open half-planes determined by the line.\<close>
