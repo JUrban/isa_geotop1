@@ -5569,6 +5569,21 @@ proof -
             have hz_dist': "dist z x < r" using hz_dist h_swap by (by100 simp)
             show "\<exists>u\<in>U \<inter> Hm. dist u x < r" using hz hz_dist' by (by100 blast)
           qed
+          have h_Hm_witness_neg_at_y:
+            "\<And>y r. \<lbrakk>inner (y - x) n = 0; r > 0\<rbrakk>
+                    \<Longrightarrow> \<exists>u\<in>U. dist u x < r \<and> inner (u - y) n < 0"
+          proof -
+            fix y :: "real^2" and r :: real
+            assume hy_L: "inner (y - x) n = 0" and hr: "r > 0"
+            obtain u where hu_in: "u \<in> U \<inter> Hm" and hu_dist: "dist u x < r"
+              using h_Hm_witness[OF hr] by (by100 blast)
+            have hu_U: "u \<in> U" using hu_in by (by100 blast)
+            have hu_Hm: "u \<in> Hm" using hu_in by (by100 blast)
+            have hu_neg_y: "inner (u - y) n < 0"
+              using h_Hm_near_y[OF hy_L hu_Hm] .
+            show "\<exists>u\<in>U. dist u x < r \<and> inner (u - y) n < 0"
+              using hu_U hu_dist hu_neg_y by (by100 blast)
+          qed
           show "\<exists>\<delta>>0. \<forall>y \<in> ball x \<delta> \<inter> geotop_arc_interior i E.
                   y \<noteq> x \<longrightarrow>
                     (\<forall>r. 0 < r \<and> r \<le> dist y x \<longrightarrow> ball y r \<inter> U \<noteq> {})"
