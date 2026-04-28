@@ -10898,7 +10898,20 @@ proof -
                    and h\<tau>: "geotop_simplex_dim \<tau> 2"
                    and hf2J': "f\<^sub>2 ` J' = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
     using Theorem_GT_3_4[OF hJ'] by blast
-  (** Theorem 2 (3_2): homeomorphism g: R\<^sup>2 \<leftrightarrow> R\<^sup>2 with g(\<sigma>) = \<tau>. Need vertex sets for \<sigma>, \<tau>. **)
+  (** Theorem 2 (3_2): homeomorphism g: plane homeomorphism with g(\<sigma>) = \<tau>. **)
+  \<comment> \<open>Sub-claim 35-A: \<exists>f3 plane-homeo with f3(Fr \<sigma>) = Fr \<tau>.
+    Requires Theorem 3_2 applied to \<sigma>, \<tau> — both 2-simplexes.\<close>
+  have hf3_ex: "\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology f\<^sub>3
+                  \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
+                    = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+    sorry
+  \<comment> \<open>Sub-claim 35-B: \<exists>h plane-homeo with h(J) = J'.
+    Argument: pick f3 from 35-A; let h = f2-inverse \<circ> f3 \<circ> f1.\<close>
+  have hh_ex: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                  UNIV geotop_euclidean_topology h
+                \<and> h ` J = J'"
+    sorry
   have hf3_hh: "(\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
                     UNIV geotop_euclidean_topology f\<^sub>3
                   \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
@@ -10906,7 +10919,7 @@ proof -
                 (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                   UNIV geotop_euclidean_topology h
                 \<and> h ` J = J')"
-    sorry
+    using hf3_ex hh_ex by (by100 blast)
   show ?thesis using hf3_hh by (by100 blast)
 qed
 
