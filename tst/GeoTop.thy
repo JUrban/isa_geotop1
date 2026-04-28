@@ -4881,6 +4881,13 @@ proof -
           Vertex case ({x} ∈ K_i ⟹ |EdgesAtX| ≥ 2) requires entirely
           separate proof structure with multiple lines (one per edge),
           parallel halfplane analyses. Multi-day work.\<close>
+        \<comment> \<open>x is in some simplex of K_i (since K_i covers i).\<close>
+        have h_x_in_K_simp: "\<exists>\<sigma>\<in>K_i. x \<in> \<sigma>"
+        proof -
+          have hK_eq_i: "\<Union>K_i = i"
+            using hK_i_poly unfolding geotop_polyhedron_def by (by100 simp)
+          show ?thesis using hxi hK_eq_i by (by100 blast)
+        qed
         have h_x_open_seg: "x \<in> open_segment a b" sorry
         have h_dist_xa_pos: "dist x a > 0"
         proof -
