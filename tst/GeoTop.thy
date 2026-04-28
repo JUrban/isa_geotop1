@@ -5427,6 +5427,12 @@ proof -
                 using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
                 unfolding geotop_is_complex_def by (by100 blast)
               have hx_int: "x \<in> \<sigma>' \<inter> \<sigma>_x" using hx\<sigma>' hx\<sigma>_x by (by100 blast)
+              have h_sv_x: "geotop_simplex_vertices \<sigma>_x {a, b}"
+              proof -
+                have h_seg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+                  by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
+                show ?thesis using h_seg_sv h\<sigma>_x_seg by (by100 simp)
+              qed
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5563,6 +5569,12 @@ proof -
                 using h\<sigma>'_K h\<sigma>_x_K h_int_ne hK_i_complex
                 unfolding geotop_is_complex_def by (by100 blast)
               have hx_int: "x \<in> \<sigma>' \<inter> \<sigma>_x" using hx\<sigma>' hx\<sigma>_x by (by100 blast)
+              have h_sv_x: "geotop_simplex_vertices \<sigma>_x {a, b}"
+              proof -
+                have h_seg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+                  by (rule geotop_closed_segment_simplex_vertices[OF hab_ne])
+                show ?thesis using h_seg_sv h\<sigma>_x_seg by (by100 simp)
+              qed
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
