@@ -5786,10 +5786,9 @@ proof -
             show "\<exists>u\<in>U. dist u x < r \<and> inner (u - y) n > 0"
               using hu_U hu_dist hu_pos_y by (by100 blast)
           qed
-          \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
-            local flatness of U near σ_x. Path-component infrastructure
-            (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
-            from GeoTopBase support the formalization. Multi-day work.
+          \<comment> \<open>The deep step (PROVED): U has points in any ball y r via
+            straight-line path argument + connected_component_maximal.
+            No Schoenflies needed.
 
             Equivalent reformulation: y ∈ frontier U (since y ∈ M, y ∉ U,
             and closure U ⊇ frontier U via h_frontier_in_M ⊆ M). So showing
