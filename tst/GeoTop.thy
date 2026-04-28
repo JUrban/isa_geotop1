@@ -5865,7 +5865,12 @@ proof -
               using hu_w_Hp unfolding Hp_def by (by100 blast)
             have hu_w_t_pos_y: "inner (u_w_t - y) n > 0"
               using hu_w_t_y hu_w_pos_x by (by100 simp)
-            \<comment> \<open>The Schoenflies-like step: u_w_t ∈ U.\<close>
+            \<comment> \<open>**Remaining gap (Schoenflies-like local flatness):** show u_w_t ∈ U.
+              We have u_w_t = u_w + (y - x) with u_w ∈ U, and dist u_w_t y < r/3.
+              Geometrically u_w_t is the y-translate of u_w. For θ-graph face U
+              with x, y both on its boundary edge σ_x, U is locally homeomorphic
+              to a halfplane (Schoenflies), so the translation along σ_x's
+              direction stays in U. Multi-day formalization.\<close>
             show "ball y r \<inter> U \<noteq> {}" sorry
           qed
         qed
