@@ -5997,6 +5997,76 @@ proof -
               show "\<gamma> t \<in> ball x \<delta>_iso2"
                 using h_dist_lt by (by100 simp)
             qed
+            \<comment> \<open>γ has constant positive halfplane sign (since y on L makes
+              t-coefficient inner zero).\<close>
+            have h\<gamma>_pos_sign: "\<forall>t\<in>{0..1::real}. inner (\<gamma> t - x) n > 0"
+            proof
+              fix t :: real assume ht: "t \<in> {0..1}"
+              have hgt_x: "\<gamma> t - x = (u_w - x) + t *\<^sub>R (y - x)"
+                unfolding \<gamma>_def by simp
+              have h_inner_eq: "inner (\<gamma> t - x) n
+                                = inner ((u_w - x) + t *\<^sub>R (y - x)) n"
+                using arg_cong[where f="\<lambda>z. inner z n", OF hgt_x] by (by100 simp)
+              have h_distrib: "inner ((u_w - x) + t *\<^sub>R (y - x)) n
+                               = inner (u_w - x) n + inner (t *\<^sub>R (y - x)) n"
+                by (rule inner_left_distrib)
+              have h_scale_eq: "inner (t *\<^sub>R (y - x)) n = t * inner (y - x) n"
+                by (rule inner_scaleR_left)
+              have h_inner: "inner (\<gamma> t - x) n
+                            = inner (u_w - x) n + t * inner (y - x) n"
+                using h_inner_eq h_distrib h_scale_eq by (by100 simp)
+              have h_inner_yx: "inner (y - x) n = 0" using hy_L .
+              have h_inner_uw_pos: "inner (u_w - x) n > 0"
+                using hu_w_UHp Hp_def by (by100 blast)
+              show "inner (\<gamma> t - x) n > 0"
+                using h_inner h_inner_yx h_inner_uw_pos by (by100 simp)
+            qed
+            \<comment> \<open>ball x δ_iso2 ∩ M ⊆ σ_x ⊆ L. Hence γ ⊆ ball x δ_iso2 plus
+              γ has nonzero halfplane sign ⟹ γ ∩ M = ∅.\<close>
+            have h_ball_M_sub_seg: "ball x \<delta>_iso2 \<inter> M \<subseteq> \<sigma>_x"
+            proof
+              fix z assume hz: "z \<in> ball x \<delta>_iso2 \<inter> M"
+              have hz_M: "z \<in> M" using hz by (by100 blast)
+              have hz_ball: "z \<in> ball x \<delta>_iso2" using hz by (by100 blast)
+              have hz_iso: "z \<in> ball x \<delta>_iso"
+                using hz_ball h\<delta>_iso2_le by (by100 auto)
+              have hz_iso_M: "z \<in> ball x \<delta>_iso \<inter> M"
+                using hz_iso hz_M by (by100 blast)
+              have hz_i: "z \<in> i" using hz_iso_M h_ball_iso_M by (by100 blast)
+              have hz_iso_i: "z \<in> ball x \<delta>_iso \<inter> i"
+                using hz_iso hz_i by (by100 blast)
+              have hz_or: "z \<in> \<Union> EdgesAtX \<union> {x}"
+                using hz_iso_i h_ball_cov by (by100 blast)
+              have h_EAX_x: "\<Union> EdgesAtX \<union> {x} \<subseteq> \<sigma>_x"
+                using h_EAX_eq hx\<sigma>_x by (by100 blast)
+              show "z \<in> \<sigma>_x" using hz_or h_EAX_x by (by100 blast)
+            qed
+            have h_seg_sub_L: "\<sigma>_x \<subseteq> {z. inner (z - x) n = 0}"
+            proof -
+              have h_aff_x_eq: "affine hull \<sigma>_x = {z. inner (z - x) n = 0}"
+                using h_aff_seg h\<sigma>_x_seg by (by100 simp)
+              have hL_eq_form: "L = {z. inner (z - x) n = 0}"
+                using L_def h_aff_x_eq by (by100 simp)
+              show ?thesis using h\<sigma>_x_in_L hL_eq_form by (by100 simp)
+            qed
+            have h_ball_M_sub_L: "ball x \<delta>_iso2 \<inter> M \<subseteq> {z. inner (z - x) n = 0}"
+              using h_ball_M_sub_seg h_seg_sub_L by (by100 blast)
+            have h\<gamma>_avoid_M: "\<gamma> ` {0..1} \<inter> M = {}"
+            proof (rule equals0I)
+              fix p assume hp: "p \<in> \<gamma> ` {0..1} \<inter> M"
+              obtain t where ht: "t \<in> {0..1}" and hp_eq: "p = \<gamma> t"
+                using hp by (by100 blast)
+              have hp_M: "p \<in> M" using hp by (by100 blast)
+              have hp_ball: "p \<in> ball x \<delta>_iso2"
+                using hp_eq ht h\<gamma>_in_ball by (by100 blast)
+              have hp_in: "p \<in> ball x \<delta>_iso2 \<inter> M"
+                using hp_ball hp_M by (by100 blast)
+              have hp_L: "inner (p - x) n = 0"
+                using hp_in h_ball_M_sub_L by (by100 blast)
+              have hp_pos: "inner (p - x) n > 0"
+                using hp_eq ht h\<gamma>_pos_sign by (by100 blast)
+              show False using hp_L hp_pos by (by100 simp)
+            qed
             have hu_w_t_U: "u_w_t \<in> U" sorry
             have h_r3_lt: "r/3 < r" using hr_pos by (by100 linarith)
             have hu_w_t_dist_r: "dist u_w_t y < r"
