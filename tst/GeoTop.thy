@@ -11461,24 +11461,33 @@ theorem Jordan_curve_theorem:
            J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology E"
 proof -
-  (** (1) Approximate J by a polygonal 1-sphere J' in R^2 arbitrarily close to J
-         (tame imbedding / PL approximation; R^2 is 2-dim so every 1-sphere is tame). **)
+  (** (1) Approximate J by a polygonal 1-sphere J' in plane via a plane homeomorphism h.
+         (Tame imbedding / PL approximation; R^2 is 2-dim so every 1-sphere is tame.) **)
+  \<comment> \<open>Sub-claim JCT-1: \<exists>J' polygon and h plane-homeo with h(J) = J'.\<close>
   have h_approx_polygon:
     "\<exists>J'. geotop_is_polygon J' \<and>
           (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                   UNIV geotop_euclidean_topology h \<and> h ` J = J')" sorry
-  (** (2) For the polygonal J', apply Theorem 2.1: R^2 - J' has exactly two connected
+  (** (2) For the polygonal J', apply Theorem 2.1: plane minus J' has exactly two connected
          components with Jordan property (bounded I' and unbounded E', each with frontier
          J'). **)
+  \<comment> \<open>Sub-claim JCT-2: for any polygon J', plane \ J' splits into 2 connected
+    components (I', E') via Theorem_GT_2_1 / Jordan_Brouwer_separation +
+    geotop_polygon_interior infrastructure.\<close>
   have h_polygon_JCT:
-    "\<exists>I' E'. UNIV - (SOME J'. geotop_is_polygon J') = I' \<union> E' \<and>
-             I' \<inter> E' = {} \<and>
-             top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
-             top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E')"
+    "\<forall>J'. geotop_is_polygon J' \<longrightarrow>
+          (\<exists>I' E'. UNIV - J' = I' \<union> E' \<and> I' \<inter> E' = {} \<and>
+                   top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
+                   top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
+                   J' = geotop_frontier UNIV geotop_euclidean_topology I' \<and>
+                   J' = geotop_frontier UNIV geotop_euclidean_topology E')"
     sorry
   (** (3) Pull the Jordan decomposition back through the homeomorphism h: I = h^{-1}(I'),
          E = h^{-1}(E'). The connectivity, disjointness, and frontier relations transport
          through the homeomorphism. **)
+  \<comment> \<open>Sub-claim JCT-3: pullback through h. Connectivity preserved by homeo;
+    frontier preserved by plane-homeo via geotop_frontier_UNIV_eq_frontier
+    + frontier-image lemmas.\<close>
   have h_pullback:
     "\<exists>I E. UNIV - J = I \<union> E \<and> I \<inter> E = {} \<and>
            top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
