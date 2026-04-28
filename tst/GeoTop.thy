@@ -5843,6 +5843,24 @@ proof -
             obtain u_w where hu_w_UHp: "u_w \<in> U \<inter> Hp"
                          and hu_w_dist: "dist u_w x < r/3"
               using h_Hp_witness[OF hr3_pos] by (by100 blast)
+            \<comment> \<open>u_w's path-component in U ∩ ball x δ_iso2 is in Hp.\<close>
+            have hu_w_in_Wbar: "u_w \<in> U \<inter> ball x \<delta>_iso2"
+            proof -
+              have hu_wU: "u_w \<in> U" using hu_w_UHp by (by100 blast)
+              have hu_w_Hp_only: "u_w \<in> Hp" using hu_w_UHp by (by100 blast)
+              have hu_w_ball: "u_w \<in> ball x \<delta>_iso2"
+                using hu_w_Hp_only Hp_def by (by100 blast)
+              show ?thesis using hu_wU hu_w_ball by (by100 blast)
+            qed
+            have hu_w_pos: "inner n u_w > inner n x"
+            proof -
+              have h_pos: "inner (u_w - x) n > 0"
+                using hu_w_UHp Hp_def by (by100 blast)
+              show ?thesis using h_pos by (simp add: inner_diff_right inner_commute)
+            qed
+            have hV_uw_in_pos:
+              "path_component_set (U \<inter> ball x \<delta>_iso2) u_w \<subseteq> {z. inner n z > inner n x}"
+              using h_pc_in_Hp_global[OF hu_w_in_Wbar hu_w_pos] .
             \<comment> \<open>Triangle: dist u_w y ≤ dist u_w x + dist x y < r/3 + dist y x.\<close>
             have h_tri: "dist u_w y \<le> dist u_w x + dist x y"
               by (rule dist_triangle)
