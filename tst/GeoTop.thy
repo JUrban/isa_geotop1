@@ -5106,6 +5106,35 @@ proof -
           Then frontier U follows from U ∩ M = ∅ and Int i ⊆ M.\<close>
         have hi_sub_M_local: "geotop_arc_interior i E \<subseteq> M"
           using hi_sub_M unfolding geotop_arc_interior_def by (by100 blast)
+        \<comment> \<open>Step 22: For any y near x, the easy case r > dist y x of
+          "ball y r meets U" follows from x ∈ closure U via triangle inequality.
+          Only the small-r case needs the deep argument.\<close>
+        have h_easy_half: "\<And>y r. \<lbrakk>y \<in> ball x \<delta>_iso; r > 0; r > dist y x\<rbrakk>
+                            \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
+        proof -
+          fix y :: "real^2" and r :: real
+          assume hy_ball: "y \<in> ball x \<delta>_iso"
+             and hr_pos: "r > 0"
+             and hr_gt: "r > dist y x"
+          define \<eta> where "\<eta> = r - dist y x"
+          have h\<eta>_pos: "\<eta> > 0" unfolding \<eta>_def using hr_gt by (by100 simp)
+          have h_meet: "ball x \<eta> \<inter> U \<noteq> {}"
+            using hU_meets_ball h\<eta>_pos by (by100 blast)
+          obtain u where hu: "u \<in> ball x \<eta> \<inter> U" using h_meet by (by100 blast)
+          have hu_dist_xu: "dist x u < \<eta>" using hu by (by100 simp)
+          have h_dux_eq: "dist u x = dist x u" by (rule dist_commute)
+          have hu_dist_ux: "dist u x < \<eta>"
+            using hu_dist_xu h_dux_eq by (by100 simp)
+          have h_tri: "dist u y \<le> dist u x + dist x y" by (rule dist_triangle)
+          have h_dist_xy: "dist x y = dist y x" by (rule dist_commute)
+          have hu_dist_uy: "dist u y < r"
+            using h_tri hu_dist_ux h_dist_xy \<eta>_def by (by100 simp)
+          have h_dyu_eq: "dist y u = dist u y" by (rule dist_commute)
+          have hu_in_ball: "u \<in> ball y r"
+            using hu_dist_uy h_dyu_eq by (by100 simp)
+          have huU: "u \<in> U" using hu by (by100 blast)
+          show "ball y r \<inter> U \<noteq> {}" using hu_in_ball huU by (by100 blast)
+        qed
         \<comment> \<open>h_CLAIM_A skeleton with y = x trivially handled via hxClosU,
           and the deep step isolated to y ≠ x via h_CLAIM_A_off.\<close>
         have h_CLAIM_A_off:
