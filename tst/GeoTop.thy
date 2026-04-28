@@ -5865,6 +5865,19 @@ proof -
               using hu_w_Hp unfolding Hp_def by (by100 blast)
             have hu_w_t_pos_y: "inner (u_w_t - y) n > 0"
               using hu_w_t_y hu_w_pos_x by (by100 simp)
+            \<comment> \<open>u_w_t - u_w = y - x: the translation has size dist y x.\<close>
+            have hu_w_t_minus_u_w: "u_w_t - u_w = y - x"
+              unfolding u_w_t_def by (by100 simp)
+            have h_dist_uw_uw_t: "dist u_w u_w_t = dist x y"
+            proof -
+              have h1: "dist u_w u_w_t = norm (u_w_t - u_w)"
+                by (simp add: dist_norm norm_minus_commute)
+              have h2: "norm (u_w_t - u_w) = norm (y - x)"
+                using hu_w_t_minus_u_w by (by100 simp)
+              have h3: "norm (y - x) = dist x y"
+                by (simp add: dist_norm norm_minus_commute)
+              show ?thesis using h1 h2 h3 by (by100 simp)
+            qed
             \<comment> \<open>**Remaining gap (Schoenflies-like local flatness):** show u_w_t ∈ U.
               We have u_w_t = u_w + (y - x) with u_w ∈ U, and dist u_w_t y < r/3.
               Geometrically u_w_t is the y-translate of u_w. For θ-graph face U
