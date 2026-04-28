@@ -5404,6 +5404,24 @@ proof -
               using hy_in h_ball_cov by (by100 blast)
             show "y \<in> \<Union> EdgesAtX" using hy_or hy_ne by (by100 blast)
           qed
+          \<comment> \<open>Under h_x_open_seg (single-edge interior case), EdgesAtX = {σ_x}.
+            Proof: any other σ' ∈ EdgesAtX would have σ' ∩ σ_x as a common face
+            (complex axiom). The face containing x ∈ σ' ∩ σ_x must be σ_x
+            itself (since {x} not a face of σ_x when x ∈ open_segment). Then
+            σ_x ⊆ σ' both 1-simplexes ⟹ σ' = σ_x.\<close>
+          have h_EAX_eq: "EdgesAtX = {\<sigma>_x}" sorry
+          \<comment> \<open>Hence y ∈ σ_x for relevant y.\<close>
+          have h_y_in_seg:
+            "\<And>y. \<lbrakk>y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E; y \<noteq> x\<rbrakk>
+                  \<Longrightarrow> y \<in> \<sigma>_x"
+          proof -
+            fix y :: "real^2"
+            assume hy: "y \<in> ball x \<delta>_iso2 \<inter> geotop_arc_interior i E"
+               and hy_ne: "y \<noteq> x"
+            have hy_EAX: "y \<in> \<Union> EdgesAtX" using h_y_in_EAX[OF hy hy_ne] .
+            have hy_un: "y \<in> \<Union> {\<sigma>_x}" using hy_EAX h_EAX_eq by (by100 simp)
+            show "y \<in> \<sigma>_x" using hy_un by (by100 blast)
+          qed
           \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
             local flatness of U near σ_x. Path-component infrastructure
             (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
