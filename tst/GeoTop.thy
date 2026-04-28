@@ -5442,6 +5442,9 @@ proof -
               have hV'_eq: "V' = {a, b}"
                 using geotop_simplex_vertices_unique[OF hV'_sv h_sv_x] .
               have hW_sub_ab: "W \<subseteq> {a, b}" using hW_V' hV'_eq by (by100 simp)
+              \<comment> \<open>W ⊆ {a, b}, W ≠ ∅ ⟹ W ∈ {{a}, {b}, {a, b}}.\<close>
+              have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+                using hW_sub_ab hW_ne by (by100 blast)
               \<comment> \<open>The deep face-axiom argument: under h_x_open_seg, σ' = σ_x.
                 Steps: (i) σ' ∩ σ_x is a face of σ_x by complex axiom.
                 (ii) The face contains x. (iii) Since x ∉ {a, b} (h_x_open_seg),
@@ -5593,6 +5596,9 @@ proof -
               have hV'_eq: "V' = {a, b}"
                 using geotop_simplex_vertices_unique[OF hV'_sv h_sv_x] .
               have hW_sub_ab: "W \<subseteq> {a, b}" using hW_V' hV'_eq by (by100 simp)
+              \<comment> \<open>W ⊆ {a, b}, W ≠ ∅ ⟹ W ∈ {{a}, {b}, {a, b}}.\<close>
+              have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+                using hW_sub_ab hW_ne by (by100 blast)
               \<comment> \<open>Same face-axiom argument as Hp case.\<close>
               show "\<sigma>' \<in> {\<sigma>_x}" sorry
             qed
