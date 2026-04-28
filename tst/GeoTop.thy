@@ -5437,6 +5437,19 @@ proof -
             show "inner (y - x) n = 0"
               using h_inner_eq by (simp add: inner_diff_right inner_commute)
           qed
+          \<comment> \<open>By Step 18 (halfplane invariance), for y on L and any u ∈ Hp,
+            inner (u - y) n > 0 (same halfplane sign at y as at x).\<close>
+          have h_Hp_near_y:
+            "\<And>y u. \<lbrakk>inner (y - x) n = 0; u \<in> Hp\<rbrakk> \<Longrightarrow> inner (u - y) n > 0"
+          proof -
+            fix y u :: "real^2"
+            assume hy_L: "inner (y - x) n = 0" and hu_Hp: "u \<in> Hp"
+            have hu_pos: "inner (u - x) n > 0"
+              using hu_Hp unfolding Hp_def by (by100 blast)
+            have h_inv: "inner (u - y) n = inner (u - x) n"
+              by (rule h_halfplane_invariant[OF hy_L])
+            show "inner (u - y) n > 0" using hu_pos h_inv by (by100 simp)
+          qed
           \<comment> \<open>The deep Schoenflies-like step: U has points in any ball y r via
             local flatness of U near σ_x. Path-component infrastructure
             (Steps 25, 25b) plus path_avoid_hyperplane_constant_sign_pos
