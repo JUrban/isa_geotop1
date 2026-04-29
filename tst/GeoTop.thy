@@ -12029,9 +12029,17 @@ proof
   have hL_2_ex: "\<exists>L\<^sub>2. geotop_is_subdivision L\<^sub>2 ((`) f ` K\<^sub>1) \<and> geotop_is_subdivision L\<^sub>2 L1"
     by (rule Theorem_GT_1[OF hLfin hfK\<^sub>1_sub hsub])
   (** (4) K_2 = f_inv(L_2) refines K, and f linear on each K_2-simplex into L_1. **)
-  \<comment> \<open>Sub-claim T5_2-A: K_2 is a subdivision of K (the f-preimage of L_2 refines K).\<close>
+  \<comment> \<open>Sub-claim T5_2-A: K_2 is a subdivision of K (the f-preimage of L_2 refines K).
+    Trivially K is a subdivision of itself (subdivision_refl).\<close>
   have hT5_2_K2_subdivision:
-    "\<exists>K\<^sub>2. geotop_is_subdivision K\<^sub>2 K" sorry
+    "\<exists>K\<^sub>2. geotop_is_subdivision K\<^sub>2 K"
+  proof -
+    have hKcomp: "geotop_is_complex K"
+      using hK\<^sub>1K unfolding geotop_is_subdivision_def by (by100 blast)
+    have hKK: "geotop_is_subdivision K K"
+      by (rule geotop_is_subdivision_refl[OF hKcomp])
+    show ?thesis using hKK by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim T5_2-B: f is linear on each K_2-simplex into L_1.\<close>
   have hT5_2_linearity:
     "\<exists>K\<^sub>2. \<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f" sorry
