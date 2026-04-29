@@ -13473,6 +13473,17 @@ lemma top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism:
   shows "homeomorphism UNIV UNIV h (inv_into UNIV h)"
   sorry
 
+text \<open>Obtains-form variant of the bridge: extracts a witness $k$
+  for the HOL homeomorphism. Easier to apply when destructuring the
+  result.\<close>
+
+lemma top1_homeomorphism_on_UNIV_obtain_HOL_homeomorphism:
+  fixes h :: "'a::real_normed_vector \<Rightarrow> 'a"
+  assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology h"
+  obtains k where "homeomorphism UNIV UNIV h k"
+  using top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism[OF hhomeo] by blast
+
 text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
 
 lemma geotop_simplex_dim_imp_hyperplane_dim:
