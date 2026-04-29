@@ -18550,13 +18550,25 @@ proof -
               geotop_open_cell_refines \<C>1 \<C>2)" sorry
   (** (2) Convert K_1, K_2 to open cell-complexes \<C>_1, \<C>_2 and K to \<C>; both refine \<C>_1
          and \<C>_2. **)
+  \<comment> \<open>Sub-claim T21_5-A: open-cell complexes \<C>1, \<C>2, \<C> exist with \<C> refining both \<C>1 and \<C>2.\<close>
+  have hT21_5_open_cell_complexes:
+    "\<exists>\<C>1 \<C>2 \<C>. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
+              geotop_is_open_cell_complex \<C> \<and>
+              geotop_open_cell_refines \<C> \<C>1 \<and>
+              geotop_open_cell_refines \<C> \<C>2 \<and>
+              \<Union>\<C>1 = M \<and> \<Union>\<C>2 = M \<and> \<Union>\<C> = M" sorry
+  \<comment> \<open>Sub-claim T21_5-B: \<chi>(K_1) = \<chi>(K_2) (apply Theorem 21_4 twice through the common
+    refinement \<C>).\<close>
+  have hT21_5_chi_eq:
+    "geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
   have h_refine:
     "(\<exists>\<C>1 \<C>2 \<C>. geotop_is_open_cell_complex \<C>1 \<and> geotop_is_open_cell_complex \<C>2 \<and>
                geotop_is_open_cell_complex \<C> \<and>
                geotop_open_cell_refines \<C> \<C>1 \<and>
                geotop_open_cell_refines \<C> \<C>2 \<and>
                \<Union>\<C>1 = M \<and> \<Union>\<C>2 = M \<and> \<Union>\<C> = M) \<and>
-     geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
+     geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+    using hT21_5_open_cell_complexes hT21_5_chi_eq by (by100 blast)
   (** (3) Apply Theorem 21_4 twice: \<chi>(K_1) = \<chi>(\<C>_1) = \<chi>(\<C>) = \<chi>(\<C>_2) = \<chi>(K_2). **)
   have h_final: "geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
     using h_refine by (by100 blast)
