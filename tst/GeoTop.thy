@@ -10722,6 +10722,17 @@ proof -
                           P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)" sorry
   (** (2) Define f: \<sigma> \<to> \<tau> by f(P) = \<Sigma>_{v \<in> V} \<alpha>_v \<phi>(v). This is affine on each face and
          bijective (barycentric coordinates are unique). **)
+  \<comment> \<open>Sub-claim T3_1-A: f restricted to V agrees with \<phi>.\<close>
+  have hT3_1_vertex_match:
+    "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v)" sorry
+  \<comment> \<open>Sub-claim T3_1-B: f is simplicial on \<sigma> with image \<tau>.\<close>
+  have hT3_1_simplicial:
+    "\<exists>f. geotop_simplicial_on \<sigma> f \<tau>" sorry
+  \<comment> \<open>Sub-claim T3_1-C: f is a homeomorphism \<sigma> \<leftrightarrow> \<tau>.\<close>
+  have hT3_1_homeo:
+    "\<exists>f. top1_homeomorphism_on \<sigma>
+           (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
+           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
   have h_f_def:
     "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v) \<and>
          geotop_simplicial_on \<sigma> f \<tau> \<and>
