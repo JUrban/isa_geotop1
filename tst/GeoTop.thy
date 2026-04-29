@@ -12186,6 +12186,20 @@ proof -
     using exI[of _ "{}::(real^2) set set"]
     unfolding geotop_is_complex_def by (by100 blast)
   (** Step 2: Extend to each 2-simplex via Schoenflies + barycentric interpolation. **)
+  \<comment> \<open>Sub-claim T6_3-A: f is a homeomorphism of polyhedra |K| \<leftrightarrow> |L|.\<close>
+  have hT6_3_homeo:
+    "\<exists>f L. geotop_is_complex L \<and>
+          top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             (geotop_polyhedron L)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) f"
+    sorry
+  \<comment> \<open>Sub-claim T6_3-B: f is PL between K and L.\<close>
+  have hT6_3_PLH:
+    "\<exists>f L. geotop_PLH K L f" sorry
+  \<comment> \<open>Sub-claim T6_3-C: f is a \<phi>-approximation of h.\<close>
+  have hT6_3_phi:
+    "\<exists>f. geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K)" sorry
   have h_final: "\<exists>f L. geotop_is_complex L \<and>
           top1_homeomorphism_on (geotop_polyhedron K)
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
