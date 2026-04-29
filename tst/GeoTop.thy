@@ -12396,9 +12396,10 @@ proof -
   \<comment> \<open>Sub-claim T6_2-C: f is a \<phi>-approximation of h.\<close>
   have hT6_2_phi:
     "\<exists>f. geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
-  \<comment> \<open>Sub-claim T6_2-D: f agrees with h on vertices.\<close>
+  \<comment> \<open>Sub-claim T6_2-D: f agrees with h on vertices. Trivial witness f = h.\<close>
   have hT6_2_vertices:
-    "\<exists>f. \<forall>v\<in>geotop_complex_vertices K1. h v = f v" sorry
+    "\<exists>f. \<forall>v\<in>geotop_complex_vertices K1. h v = f v"
+    using exI[of _ h] by (by100 blast)
   have h_final: "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
                 UNIV geotop_euclidean_topology f
