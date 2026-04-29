@@ -16592,21 +16592,8 @@ proof -
     "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
            finite G \<and> card G = k \<and>
            bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)" sorry
-  have h_presentation:
-    "(\<exists>(G::'a set) (R::('a \<times> int) list set set).
-        finite G \<and> card G = k \<and> R = {} \<and>
-        (\<exists>\<Phi>::('a \<times> int) list set \<Rightarrow> (real \<Rightarrow> real^3) set.
-           bij_betw \<Phi> (geotop_free_group G) (geotop_group_of_link L P\<^sub>0))) \<and>
-     (\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
-           finite G \<and> card G = k \<and>
-           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G))"
-    using hT16_4_pres hT16_4_free by (by100 blast)
   (** (3) Hence group of L \<cong> F(G), the free group on k generators. **)
-  have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^3) set \<Rightarrow> ('a \<times> int) list set).
-           finite G \<and> card G = k \<and>
-           bij_betw \<Phi> (geotop_group_of_link L P\<^sub>0) (geotop_free_group G)"
-    using h_presentation by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using hT16_4_free by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 5 (geotop.tex:3261)
