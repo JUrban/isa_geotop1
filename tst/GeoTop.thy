@@ -14629,7 +14629,16 @@ theorem Theorem_GT_12_1:
       M_{i_0} \<subseteq> U' \<union> V', contradicting inseparability at i_0. **)
 proof (rule ccontr)
   assume h_sep: "\<not> geotop_inseparable_in X T (\<Inter>i. M i) A B"
-  \<comment> \<open>Sub-claim T12_1-A: from ¬inseparable, extract a separating pair (U, V).\<close>
+  \<comment> \<open>Sub-claim T12_1-A: from ¬inseparable, extract a separating pair (U, V).
+    Decomposed: T12_1-A1 obtain MA, MB witnessing separability;
+    T12_1-A2 fatten/extend MA to U \<supseteq> A and MB to V \<supseteq> B without breaking
+    closedness/disjointness.\<close>
+  have hT12_1_A1_sep_witness:
+    "\<exists>MA MB. closedin_on X T MA \<and> closedin_on X T MB \<and>
+       MA \<inter> MB = {} \<and> (\<Inter>i. M i) = MA \<union> MB \<and>
+       (\<Inter>i. M i) \<inter> A \<subseteq> MA \<and> (\<Inter>i. M i) \<inter> B \<subseteq> MB"
+    using h_sep unfolding geotop_inseparable_in_def geotop_separable_in_def
+    by (by100 blast)
   have hT12_1_sep:
     "\<exists>U V. closedin_on X T U \<and> closedin_on X T V \<and> U \<inter> V = {} \<and>
            (\<Inter>i. M i) \<subseteq> U \<union> V \<and> A \<subseteq> U \<and> B \<subseteq> V"
