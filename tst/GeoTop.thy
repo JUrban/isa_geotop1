@@ -11007,21 +11007,12 @@ proof -
                   \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
                     = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
     sorry
-  \<comment> \<open>Sub-claim 35-B: \<exists>h plane-homeo with h(J) = J'.
-    Argument: pick f3 from 35-A; let h = f2-inverse \<circ> f3 \<circ> f1.\<close>
+  \<comment> \<open>Sub-claim 35-B: composing h = f2-inverse \<circ> f3 \<circ> f1 yields h(J) = J'.\<close>
   have hh_ex: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                   UNIV geotop_euclidean_topology h
                 \<and> h ` J = J'"
     sorry
-  have hf3_hh: "(\<exists>f\<^sub>3. top1_homeomorphism_on UNIV geotop_euclidean_topology
-                    UNIV geotop_euclidean_topology f\<^sub>3
-                  \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
-                    = geotop_frontier UNIV geotop_euclidean_topology \<tau>) \<and>
-                (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
-                  UNIV geotop_euclidean_topology h
-                \<and> h ` J = J')"
-    using hf3_ex hh_ex by (by100 blast)
-  show ?thesis using hf3_hh by (by100 blast)
+  show ?thesis using hh_ex by (by100 blast)
 qed
 
 (** from \<S>3 Theorem 6 (geotop.tex:821)
