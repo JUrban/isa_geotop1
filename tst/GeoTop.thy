@@ -11289,13 +11289,79 @@ proof -
     sorry
   \<comment> \<open>Sub-claim 34-NonEmpty: any triangulation K of closure(polygon_interior J)
     has at least one 2-simplex (since the polyhedron has non-empty interior
-    and 2-simplexes are the dim-2 simplexes that contribute to the polyhedron).\<close>
+    and 2-simplexes are the dim-2 simplexes that contribute to the polyhedron).
+    Decomposed: 34-NE-A (no 2-simplex \<Longrightarrow> all simplices dim \<le> 1) is the
+    deep face-closure-induction step; 34-NE-B (dim \<le> 1 \<Longrightarrow> empty interior
+    of polyhedron contradicts non-empty interior of polygon_interior) follows
+    directly from the cached empty-interior infrastructure.\<close>
   have ind_nonempty:
     "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
           geotop_polyhedron K =
             closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
           card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 1"
-    sorry
+  proof -
+    fix K :: "(real^2) set set"
+    assume hK: "geotop_is_complex K"
+       and hK_fin: "finite K"
+       and hK_poly: "geotop_polyhedron K =
+                       closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    show "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 1"
+    proof (rule ccontr)
+      assume hneg: "\<not> 1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+      have h_set_fin: "finite {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+        using hK_fin finite_Collect_conjI by (by100 simp)
+      have h_card_zero: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 0"
+        using hneg by (by100 simp)
+      have h_no_2: "\<forall>\<sigma>\<in>K. \<not> geotop_simplex_dim \<sigma> 2"
+        using h_card_zero h_set_fin by (by100 simp)
+      \<comment> \<open>34-NE-A: under no-2-simplex + face-closure, every simplex has dim \<le> 1.
+        Argument: for any \<sigma>\<in>K with dim \<sigma> = n \<ge> 2, K contains a 2-face of \<sigma>
+        (face-closure axiom K.1), contradicting h_no_2. For n \<le> 1, trivial.
+        Multi-day combinatorial face-counting work — left as sub-claim.\<close>
+      have h_all_le_1: "\<forall>\<sigma>\<in>K. \<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+        sorry
+      \<comment> \<open>34-NE-B: each \<sigma>\<in>K is closed with empty interior in real^2 (cached).\<close>
+      have h_each_cl_int: "\<forall>\<sigma>\<in>K. closed \<sigma> \<and> interior \<sigma> = {}"
+      proof
+        fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+        obtain n where hn_le: "n \<le> 1" and h_dim: "geotop_simplex_dim \<sigma> n"
+          using h_all_le_1 h\<sigma>K by (by100 blast)
+        have h_cl: "closed \<sigma>" by (rule geotop_simplex_dim_closed[OF h_dim])
+        have h_int: "interior \<sigma> = {}"
+          by (rule geotop_simplex_dim_le_1_empty_interior_R2[OF h_dim hn_le])
+        show "closed \<sigma> \<and> interior \<sigma> = {}" using h_cl h_int by (by100 blast)
+      qed
+      \<comment> \<open>Polyhedron K = \<Union>K has empty interior (cached finite-union helper).\<close>
+      have h_poly_eq_Union: "geotop_polyhedron K = \<Union>K"
+        unfolding geotop_polyhedron_def by (by100 simp)
+      have h_int_empty: "interior (geotop_polyhedron K) = {}"
+        using hK_fin h_each_cl_int h_poly_eq_Union
+              finite_Union_closed_empty_interior by (by100 simp)
+      \<comment> \<open>But polyhedron K = closure(polygon_interior J) has non-empty interior.\<close>
+      have h_J_sph: "geotop_is_n_sphere J
+                       (subspace_topology UNIV geotop_euclidean_topology J) 1"
+        using hJ unfolding geotop_is_polygon_def by (by100 blast)
+      have h_pint_open: "open (geotop_polygon_interior J)"
+        by (rule polygon_interior_open[OF hJ])
+      have h_pint_comp: "geotop_polygon_interior J \<in> components (UNIV - J)"
+        by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+      have h_pint_ne: "geotop_polygon_interior J \<noteq> {}"
+        using h_pint_comp in_components_nonempty by (by100 blast)
+      have h_clos_eq: "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+                       = closure (geotop_polygon_interior J)"
+        by (rule closure_on_geotop_UNIV_eq_closure)
+      have h_poly_HOL: "geotop_polyhedron K = closure (geotop_polygon_interior J)"
+        using hK_poly h_clos_eq by (by100 simp)
+      have h_pint_sub_int: "geotop_polygon_interior J
+                            \<subseteq> interior (closure (geotop_polygon_interior J))"
+        using h_pint_open closure_subset interior_maximal by blast
+      have h_pint_sub_polyint: "geotop_polygon_interior J \<subseteq> interior (geotop_polyhedron K)"
+        using h_pint_sub_int h_poly_HOL by (by100 simp)
+      have h_int_ne: "interior (geotop_polyhedron K) \<noteq> {}"
+        using h_pint_ne h_pint_sub_polyint by (by100 blast)
+      show False using h_int_empty h_int_ne by (by100 simp)
+    qed
+  qed
   have ind_claim:
     "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
           geotop_polyhedron K =
