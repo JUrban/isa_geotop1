@@ -17376,13 +17376,6 @@ proof -
     "\<exists>L. geotop_is_complex L \<and>
          geotop_polyhedron L = ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)"
     sorry
-  have h_S_2sphere:
-    "geotop_is_n_sphere ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)
-       (subspace_topology UNIV geotop_euclidean_topology
-          ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)) 2 \<and>
-     (\<exists>L. geotop_is_complex L \<and>
-          geotop_polyhedron L = ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D))"
-    using hT17_11_2sphere hT17_11_polyhedral by (by100 blast)
   (** (2) Given a convex open W \<supseteq> S: take a convex open W' \<supseteq> S_1 \<cup> S_2 (if needed, replace
          by the convex hull). By hS1, there is a PLH f_1 with f_1(S_1) = Bd \<sigma>_1^3 and
          support in W'; by hS2, analogously f_2 with f_2(S_2) = Bd \<sigma>_2^3, support in W'. **)
