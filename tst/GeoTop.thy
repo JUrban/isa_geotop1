@@ -11374,6 +11374,17 @@ proof -
     sorry
   \<comment> \<open>Sub-claim D44-3: cyclic-order argument places Q and S in the SAME
     component of I - (A1 \<union> A2), refining U_Q and U_S into one component.\<close>
+  \<comment> \<open>Sub-claim T4_4-A: \<exists>C with Q in frontier C.\<close>
+  have hT4_4_Q_frontier:
+    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C" sorry
+  \<comment> \<open>Sub-claim T4_4-B: same C also has S in frontier (cyclic-order forces same component).\<close>
+  have hT4_4_S_frontier:
+    "\<exists>C. S \<in> geotop_frontier UNIV geotop_euclidean_topology C" sorry
+  \<comment> \<open>Sub-claim T4_4-C: C is a component of I - (A1 \<union> A2).\<close>
+  have hT4_4_component:
+    "\<exists>C. \<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_polygon_interior J - (A1 \<union> A2)) P'" sorry
   have hD44_common:
     "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
