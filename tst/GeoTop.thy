@@ -23032,6 +23032,14 @@ proof -
              E \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2" sorry
   (** (3) Each U_i contains the "side" of C_i' that faces N' \<setminus> (C_1' \<cup> C_2'), so
          Bd C_i' \<cap> Bd N' \<subseteq> Fr U_i. **)
+  \<comment> \<open>Sub-claim T32_2-A: U_i contains the "outer side" of C_i' (Bd C_i' \<inter> Bd N' part).\<close>
+  have hT32_2_outer_side:
+    "\<exists>U1 U2. geotop_frontier UNIV geotop_euclidean_topology C1' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U1 \<and>
+             geotop_frontier UNIV geotop_euclidean_topology C2' \<inter>
+               geotop_frontier UNIV geotop_euclidean_topology N'
+               \<subseteq> geotop_frontier UNIV geotop_euclidean_topology U2" sorry
   have h_final: "\<exists>E U1 U2. geotop_is_pseudo_cell E \<and>
              U1 \<inter> U2 = {} \<and>
              (C1' \<union> C2') - E = U1 \<union> U2 \<and>
