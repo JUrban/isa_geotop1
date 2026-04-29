@@ -22597,6 +22597,16 @@ proof -
   (** (2) The bounded component of R^3 - B, together with B itself, is a polyhedral
          3-cell C (PL Schoenflies, Theorem 17_12) containing C_1 in its interior and
          contained in Int C_2. **)
+  \<comment> \<open>Sub-claim T30_5-A: PL Schoenflies gives a polyhedral 3-cell C with frontier B.\<close>
+  have hT30_5_PL_3cell:
+    "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<and>
+         (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C) \<and>
+         geotop_frontier UNIV geotop_euclidean_topology C = B" sorry
+  \<comment> \<open>Sub-claim T30_5-B: C contains C_1 in its interior and lies in Int C_2 (from
+    the separation property of B).\<close>
+  have hT30_5_inclusion:
+    "\<exists>C. C1 \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C \<and>
+         C \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology C2" sorry
   have h_C_is_3cell:
     "\<exists>C. geotop_is_n_cell C (subspace_topology UNIV geotop_euclidean_topology C) 3 \<and>
          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = C) \<and>
