@@ -10720,7 +10720,6 @@ qed
 
 
 (* CHUNK_OUT_3PLUS_START *)
-(*
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
 
 (** from \<S>3 Theorem 1 (geotop.tex:724)
@@ -23754,7 +23753,6 @@ proof -
   show ?thesis using h_extend by (by100 blast)
 qed
 
-*)
 (* CHUNK_OUT_3PLUS_END *)
 (* CHUNK_OUT_END *)
 
