@@ -12947,6 +12947,107 @@ next
   show "?C \<subseteq> S" using hT_eq_C by blast
 qed
 
+text \<open>Union of two closed sets each with empty interior has empty interior.
+  Proof: if (A \<union> B) had nonempty interior with witness ball U, then either
+  U \<subseteq> A (so int A nonempty) or U - A is a nonempty open subset of B
+  (so int B nonempty). Both contradict the hypotheses.\<close>
+
+lemma closed_Un_empty_interior:
+  fixes A B :: "'a::topological_space set"
+  assumes hA_cl: "closed A"
+      and hB_cl: "closed B"
+      and hA_int: "interior A = {}"
+      and hB_int: "interior B = {}"
+  shows "interior (A \<union> B) = {}"
+proof (rule ccontr)
+  assume "interior (A \<union> B) \<noteq> {}"
+  then obtain x where hx: "x \<in> interior (A \<union> B)" by blast
+  obtain U where hU_open: "open U" and hxU: "x \<in> U" and hU_sub: "U \<subseteq> A \<union> B"
+    using hx unfolding interior_def by blast
+  show False
+  proof (cases "U \<subseteq> A")
+    case True
+    have "x \<in> interior A"
+      using hU_open hxU True interior_maximal by blast
+    thus False using hA_int by blast
+  next
+    case False
+    then obtain y where hyU: "y \<in> U" and hyA: "y \<notin> A" by blast
+    let ?V = "U - A"
+    have h_open: "open ?V" using hU_open hA_cl by (rule open_Diff)
+    have h_y: "y \<in> ?V" using hyU hyA by blast
+    have h_sub_B: "?V \<subseteq> B" using hU_sub by blast
+    have "y \<in> interior B"
+      using h_open h_y h_sub_B interior_maximal by blast
+    thus False using hB_int by blast
+  qed
+qed
+
+text \<open>A simplex of dimension \<le> 1 in $\mathbb{R}^2$ has empty interior.
+  Argument: a $k$-simplex with $k \le 1$ has $k+1 \le 2$ vertices in
+  $\mathrm{DIM}(\mathbb{R}^2) = 2$ ambient dimensions, so by
+  $\mathit{empty\_interior\_convex\_hull}$ its interior is empty.\<close>
+
+lemma geotop_simplex_dim_le_1_empty_interior_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n" and hn: "n \<le> 1"
+  shows "interior \<sigma> = {}"
+proof -
+  obtain V m where hV_fin: "finite V"
+               and hV_card: "card V = n + 1"
+               and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by blast
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL by simp
+  have hDIM: "DIM(real^2) = 2"
+    by simp
+  have hcard_le: "card V \<le> DIM(real^2)"
+    using hV_card hn hDIM by linarith
+  show ?thesis
+    using h\<sigma>_HOL hV_fin hcard_le empty_interior_convex_hull by metis
+qed
+
+text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
+  in finite-dimensional space).\<close>
+
+lemma geotop_simplex_dim_closed:
+  fixes \<sigma> :: "'a::euclidean_space set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "closed \<sigma>"
+proof -
+  obtain V m where hV_fin: "finite V"
+               and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by blast
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL by simp
+  have h_compact: "compact \<sigma>"
+    using h\<sigma>_HOL hV_fin finite_imp_compact_convex_hull by metis
+  show ?thesis using h_compact compact_imp_closed by blast
+qed
+
+text \<open>Finite union of closed sets each with empty interior has empty interior.\<close>
+
+lemma finite_Union_closed_empty_interior:
+  fixes \<F> :: "'a::topological_space set set"
+  assumes hfin: "finite \<F>"
+      and hcl: "\<forall>A\<in>\<F>. closed A \<and> interior A = {}"
+  shows "interior (\<Union>\<F>) = {}"
+  using hfin hcl
+proof (induction \<F> rule: finite_induct)
+  case empty
+  show ?case by simp
+next
+  case (insert A \<F>')
+  have hA: "closed A \<and> interior A = {}" using insert.prems by blast
+  have hF: "\<forall>B\<in>\<F>'. closed B \<and> interior B = {}" using insert.prems by blast
+  have hIH: "interior (\<Union>\<F>') = {}" using insert.IH hF by blast
+  have hcl_F: "closed (\<Union>\<F>')" using insert.hyps hF by (simp add: closed_Union)
+  have h_eq: "\<Union>(insert A \<F>') = A \<union> (\<Union>\<F>')" by simp
+  have "interior (A \<union> (\<Union>\<F>')) = {}"
+    using hA hcl_F hIH closed_Un_empty_interior by blast
+  thus ?case using h_eq by simp
+qed
+
 text \<open>Straight-line path-argument: for a face U of UNIV - M with
   ball x d ∩ M ⊆ L (one local line), a U-witness u_w near x (within
   d - dist y x) on the positive halfplane of L, with y on L and y ∈ ball x d,
