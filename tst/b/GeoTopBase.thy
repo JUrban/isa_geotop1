@@ -13189,6 +13189,37 @@ proof -
     using h_diff h_clos h_int by simp
 qed
 
+text \<open>Cached helper: in a metric/metrizable topology, an intersection
+  of compact subsets is closed. Packages the chain
+  metric \<rightarrow> Hausdorff \<rightarrow> compact-imp-closed \<rightarrow> Inter-closed
+  to bypass GeoTop session timeouts on multi-step proofs.\<close>
+
+lemma metric_compact_family_inter_closed:
+  fixes X :: "'a::metric_space set" and T :: "'a set set" and Ms :: "nat \<Rightarrow> 'a set"
+  assumes hTX: "is_topology_on X T"
+      and hmetr: "top1_metrizable_on X T"
+      and hMs_cmp: "\<forall>i. top1_compact_on (Ms i) (subspace_topology X T (Ms i))"
+      and hMs_sub: "\<forall>i. Ms i \<subseteq> X"
+  shows "closedin_on X T (\<Inter>(range Ms))"
+proof -
+  obtain d where hd: "top1_metric_on X d" and hT_eq: "T = top1_metric_topology_on X d"
+    using hmetr unfolding top1_metrizable_on_def by blast
+  have h_haus: "is_hausdorff_on X T"
+    using metric_topology_hausdorff[OF hd] hT_eq by simp
+  have hMs_closed: "\<forall>i. closedin_on X T (Ms i)"
+  proof
+    fix i
+    show "closedin_on X T (Ms i)"
+      by (rule compact_in_hausdorff_closed
+              [OF h_haus hMs_cmp[rule_format] hMs_sub[rule_format]])
+  qed
+  have hRange_cl: "\<forall>A\<in>range Ms. closedin_on X T A"
+    using hMs_closed by blast
+  have hRange_ne: "range Ms \<noteq> {}" by simp
+  show "closedin_on X T (\<Inter>(range Ms))"
+    by (rule Top1_Ch2.closedin_Inter[OF hTX hRange_ne hRange_cl])
+qed
+
 text \<open>Alternate-form image helpers with $Y = h\verb|`|X$ as explicit premise.
   Provided to attempt working around higher-order unification blocks at
   call sites — though empirically these still hit the same issue when
