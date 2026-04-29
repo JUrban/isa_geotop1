@@ -13474,7 +13474,51 @@ lemma geotop_linear_on_eq_on:
   assumes hf: "geotop_linear_on \<sigma> f"
       and heq: "\<forall>x\<in>\<sigma>. g x = f x"
   shows "geotop_linear_on \<sigma> g"
-  sorry
+proof -
+  obtain V where hV: "geotop_simplex_vertices \<sigma> V"
+             and hf_eq: "\<forall>\<alpha>. (\<forall>v\<in>V. \<alpha> v \<ge> 0) \<and> sum \<alpha> V = 1
+                              \<longrightarrow> f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using hf unfolding geotop_linear_on_def by blast
+  have h\<sigma>_eq: "\<sigma> = convex hull V"
+  proof -
+    obtain m n :: nat where "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by blast
+    thus ?thesis using geotop_convex_hull_eq_HOL by simp
+  qed
+  have hV_sub: "V \<subseteq> \<sigma>" using h\<sigma>_eq hull_subset by simp
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by blast
+  have hg_eq: "\<forall>\<alpha>. (\<forall>v\<in>V. \<alpha> v \<ge> 0) \<and> sum \<alpha> V = 1
+                    \<longrightarrow> g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+  proof (intro allI impI)
+    fix \<alpha> :: "'a \<Rightarrow> real"
+    assume h\<alpha>: "(\<forall>v\<in>V. \<alpha> v \<ge> 0) \<and> sum \<alpha> V = 1"
+    have h\<alpha>_pos: "\<forall>v\<in>V. \<alpha> v \<ge> 0" using h\<alpha> by blast
+    have h\<alpha>_sum: "sum \<alpha> V = 1" using h\<alpha> by blast
+    have hbary_in: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) \<in> convex hull V"
+      using convex_hull_finite[OF hV_fin] h\<alpha>_pos h\<alpha>_sum by blast
+    have hbary_\<sigma>: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) \<in> \<sigma>"
+      using hbary_in h\<sigma>_eq by simp
+    have h_ff_eq: "f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      using hf_eq h\<alpha> by blast
+    have h_gf_bary: "g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+      using heq hbary_\<sigma> by simp
+    have h_gv_fv: "\<forall>v\<in>V. g v = f v"
+      using heq hV_sub by blast
+    have h_sum_eq: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    proof (rule sum.cong)
+      show "V = V" by simp
+      fix v assume hvV: "v \<in> V"
+      have "g v = f v" using h_gv_fv hvV by blast
+      thus "\<alpha> v *\<^sub>R g v = \<alpha> v *\<^sub>R f v" by simp
+    qed
+    show "g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+      using h_gf_bary h_ff_eq h_sum_eq by simp
+  qed
+  show ?thesis
+    unfolding geotop_linear_on_def
+    using hV hg_eq by blast
+qed
 
 text \<open>If $f$ and $g$ agree on $\sigma$, then $\mathit{simplicial\_on}\,\sigma\,f\,\tau$
   iff $\mathit{simplicial\_on}\,\sigma\,g\,\tau$ — both depend only on the
@@ -13486,7 +13530,32 @@ lemma geotop_simplicial_on_eq_on:
   assumes hf: "geotop_simplicial_on \<sigma> f \<tau>"
       and heq: "\<forall>x\<in>\<sigma>. g x = f x"
   shows "geotop_simplicial_on \<sigma> g \<tau>"
-  sorry
+proof -
+  obtain V W where hV: "geotop_simplex_vertices \<sigma> V"
+               and hW: "geotop_simplex_vertices \<tau> W"
+               and hfVW: "\<forall>v\<in>V. f v \<in> W"
+               and hflin: "geotop_linear_on \<sigma> f"
+    using hf unfolding geotop_simplicial_on_def by blast
+  have h\<sigma>_eq: "\<sigma> = convex hull V"
+  proof -
+    obtain m n :: nat where "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by blast
+    thus ?thesis using geotop_convex_hull_eq_HOL by simp
+  qed
+  have hV_sub: "V \<subseteq> \<sigma>" using h\<sigma>_eq hull_subset by simp
+  have hgVW: "\<forall>v\<in>V. g v \<in> W"
+  proof
+    fix v assume hvV: "v \<in> V"
+    have hv\<sigma>: "v \<in> \<sigma>" using hvV hV_sub by blast
+    have "g v = f v" using heq hv\<sigma> by simp
+    thus "g v \<in> W" using hfVW hvV by simp
+  qed
+  have hglin: "geotop_linear_on \<sigma> g"
+    by (rule geotop_linear_on_eq_on[OF hflin heq])
+  show ?thesis
+    unfolding geotop_simplicial_on_def
+    using hV hW hgVW hglin by blast
+qed
 
 lemma frontier_image_explicit:
   fixes h k :: "'a::topological_space \<Rightarrow> 'a"
