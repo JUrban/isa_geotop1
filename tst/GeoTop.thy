@@ -19292,12 +19292,22 @@ proof -
   have h_chi: "geotop_manifold_euler M = 2 - (2 * int h + int m)" sorry
   (** (3) Theorem 22.6 case analysis: orientable iff m = 0, and p^1 = 2h if m \<le> 1,
          = 2h + 1 if m = 2. **)
+  \<comment> \<open>Sub-claim T22_7-A: orientability iff no crosscap (m = 0).\<close>
+  have hT22_7_orient_iff_m_zero:
+    "geotop_is_orientable K \<longleftrightarrow> m = 0" sorry
+  \<comment> \<open>Sub-claim T22_7-B: \<chi> formula in both cases (orientable + non-orientable).\<close>
+  have hT22_7_chi_formula:
+    "(geotop_is_orientable K \<longrightarrow>
+        geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
+     (\<not> geotop_is_orientable K \<longrightarrow>
+        geotop_manifold_euler M = 1 - int (geotop_first_betti_number M))" sorry
   have h_orient_cases:
     "(geotop_is_orientable K \<longleftrightarrow> m = 0) \<and>
      ((geotop_is_orientable K \<longrightarrow>
          geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
       (\<not> geotop_is_orientable K \<longrightarrow>
-         geotop_manifold_euler M = 1 - int (geotop_first_betti_number M)))" sorry
+         geotop_manifold_euler M = 1 - int (geotop_first_betti_number M)))"
+    using hT22_7_orient_iff_m_zero hT22_7_chi_formula by (by100 blast)
   have h_final: "(geotop_is_orientable K \<longrightarrow>
             geotop_manifold_euler M = 2 - int (geotop_first_betti_number M)) \<and>
          (\<not> geotop_is_orientable K \<longrightarrow>
