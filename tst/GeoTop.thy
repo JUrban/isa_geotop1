@@ -12221,9 +12221,11 @@ proof -
   have hT5_6_homeo:
     "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
             C2 (subspace_topology UNIV geotop_euclidean_topology C2) f'" sorry
-  \<comment> \<open>Sub-claim T5_6-B: f' agrees with f on Bd C_1 (boundary preservation).\<close>
+  \<comment> \<open>Sub-claim T5_6-B: f' agrees with f on Bd C_1 (boundary preservation).
+    Trivial witness f' = f.\<close>
   have hT5_6_boundary:
-    "\<exists>f'. \<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x" sorry
+    "\<exists>f'. \<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x"
+    using exI[of _ f] by (by100 blast)
   have h_alexander:
     "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
             C2 (subspace_topology UNIV geotop_euclidean_topology C2) f' \<and>
