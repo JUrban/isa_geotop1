@@ -12903,6 +12903,50 @@ proof -
   show ?thesis using hU_eq_z hu_eq_z by simp
 qed
 
+text \<open>If S is a clopen connected nonempty subset of an ambient set Y, then
+  S equals the connected component of Y containing each of its points.
+  This packages the standard "clopen + connected $\Rightarrow$ component"
+  argument used to identify $I_{12}, I_{23}$ as components of $I_{13} - \mathrm{Int}\,B_2$.\<close>
+
+lemma clopen_connected_subspace_eq_component:
+  fixes Y S :: "'a::topological_space set" and P :: 'a
+  assumes hSsub: "S \<subseteq> Y"
+      and hSconn: "connected S"
+      and hSopen: "openin (top_of_set Y) S"
+      and hSclosed: "closedin (top_of_set Y) S"
+      and hP: "P \<in> S"
+  shows "S = connected_component_set Y P"
+proof
+  show "S \<subseteq> connected_component_set Y P"
+    using hSconn hSsub hP connected_component_maximal by metis
+next
+  let ?C = "connected_component_set Y P"
+  have hP_Y: "P \<in> Y" using hP hSsub by blast
+  have hP_C: "P \<in> ?C" using hP_Y by simp
+  have hC_sub_Y: "?C \<subseteq> Y"
+    using connected_component_subset by blast
+  have hC_conn: "connected ?C" by simp
+  have hT_open_C: "openin (top_of_set ?C) (S \<inter> ?C)"
+  proof -
+    obtain U where hU_open: "open U" and hSU: "S = Y \<inter> U"
+      using hSopen by (auto simp: openin_open)
+    have h_eq: "S \<inter> ?C = ?C \<inter> U" using hSU hC_sub_Y by blast
+    show ?thesis using hU_open h_eq by (auto simp: openin_open)
+  qed
+  have hT_closed_C: "closedin (top_of_set ?C) (S \<inter> ?C)"
+  proof -
+    obtain F where hF_closed: "closed F" and hSF: "S = Y \<inter> F"
+      using hSclosed by (auto simp: closedin_closed)
+    have h_eq: "S \<inter> ?C = ?C \<inter> F" using hSF hC_sub_Y by blast
+    show ?thesis using hF_closed h_eq by (auto simp: closedin_closed)
+  qed
+  have hT_ne: "S \<inter> ?C \<noteq> {}" using hP hP_C by blast
+  have hT_or: "S \<inter> ?C = {} \<or> S \<inter> ?C = ?C"
+    using hC_conn hT_open_C hT_closed_C connected_clopen by blast
+  have hT_eq_C: "S \<inter> ?C = ?C" using hT_or hT_ne by blast
+  show "?C \<subseteq> S" using hT_eq_C by blast
+qed
+
 text \<open>Straight-line path-argument: for a face U of UNIV - M with
   ball x d ∩ M ⊆ L (one local line), a U-witness u_w near x (within
   d - dist y x) on the positive halfplane of L, with y on L and y ∈ ball x d,
