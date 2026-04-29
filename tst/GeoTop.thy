@@ -23544,6 +23544,16 @@ proof -
   (** (3) The composite f^{-1} \<circ> h_0: U \<to> U is a PLH-close-to-identity homeomorphism
          mapping L onto a polyhedron. Extend by identity on M - V (using a PL cut-off
          supported in V). **)
+  \<comment> \<open>Sub-claim T36_3-A: g' is a self-homeomorphism of M.\<close>
+  have hT36_3_homeo:
+    "\<exists>g'. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
+            M (subspace_topology UNIV geotop_euclidean_topology M) g'" sorry
+  \<comment> \<open>Sub-claim T36_3-B: g'(L) is a polyhedron.\<close>
+  have hT36_3_polyL:
+    "\<exists>g' K. geotop_is_complex K \<and> geotop_polyhedron K = g' ` L" sorry
+  \<comment> \<open>Sub-claim T36_3-C: g' is identity on M - V and \<psi>-close to identity on V.\<close>
+  have hT36_3_localised:
+    "\<exists>g'. (\<forall>P\<in>M - V. g' P = P) \<and> (\<forall>P\<in>V. norm (g' P - P) < \<psi> P)" sorry
   have h_extend:
     "\<exists>g'. top1_homeomorphism_on M (subspace_topology UNIV geotop_euclidean_topology M)
             M (subspace_topology UNIV geotop_euclidean_topology M) g' \<and>
