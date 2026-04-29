@@ -4942,6 +4942,23 @@ proof -
             complex, x is an internal point of i (not an endpoint), and
             x is a 0-simplex of K_i, so two or more 1-simplexes of K_i
             must meet at x to cover a neighbourhood of x in i).\<close>
+          \<comment> \<open>V1 strategy: contradiction. Suppose card EdgesAtX < 2. Combined
+            with EdgesAtX \<noteq> \<emptyset> (h_EAX_ne), this means EdgesAtX = {\<sigma>} for some
+            single 1-simplex \<sigma>. Then ball x \<delta>_iso \<inter> i \<subseteq> \<sigma> \<union> {x} (h_ball_cov)
+            \<subseteq> \<sigma>. So locally i lies inside the single segment \<sigma> = closed_segment a b.
+            Since {x} \<in> K_i and \<sigma> \<in> K_i, x must be a face-vertex of \<sigma>, i.e.
+            x = a or x = b. Then locally the broken line i extends past x only
+            in one direction (toward the other endpoint), contradicting x \<in> Int B_i.\<close>
+          \<comment> \<open>Sub-claim V1a: if cardEdgesAtX < 2, the unique \<sigma> would force x to
+            lie at a single segment endpoint; but x is internal in arc i (not
+            an arc-endpoint) so a small ball-in-i extends in two distinct
+            directions away from x. Multi-day textbook content.\<close>
+          have hVX_card_pos: "card EdgesAtX \<ge> 1"
+          proof -
+            have h0: "card EdgesAtX > 0"
+              using h_EAX_ne hEAX_fin card_gt_0_iff by (by100 blast)
+            show ?thesis using h0 by (by100 simp)
+          qed
           have hVX_card_ge_2: "card EdgesAtX \<ge> 2" sorry
           \<comment> \<open>Sub-claim V2: each \<sigma> \<in> EdgesAtX is a closed-segment with x as
             one endpoint (since {x} \<in> K_i is a vertex face of \<sigma>, and \<sigma> is
@@ -10702,6 +10719,8 @@ qed
 
 
 
+(* CHUNK_OUT_3PLUS_START *)
+(*
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
 
 (** from \<S>3 Theorem 1 (geotop.tex:724)
@@ -23735,6 +23754,8 @@ proof -
   show ?thesis using h_extend by (by100 blast)
 qed
 
+*)
+(* CHUNK_OUT_3PLUS_END *)
 (* CHUNK_OUT_END *)
 
 end
