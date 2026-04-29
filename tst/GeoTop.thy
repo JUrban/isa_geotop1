@@ -13970,11 +13970,28 @@ proof -
     using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (2) Apply Theorem 3_7 to each polygon cycle in M: there is a PLH supported in a
          small neighbourhood U_C \<subseteq> U of C that folds C onto Fr \<sigma> for a 2-simplex. **)
+  \<comment> \<open>Trivial witness hC = id satisfies the bare \<exists>hC ... in this sub-claim.
+    The full theorem still requires the stronger \<phi>-approximation closure below.\<close>
   have h_per_cycle:
     "\<forall>C. geotop_is_polygon C \<and> C \<subseteq> M \<longrightarrow>
        (\<exists>hC. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology hC \<and>
-             (\<forall>P\<in>UNIV - U. hC P = P))" sorry
+             (\<forall>P\<in>UNIV - U. hC P = P))"
+  proof (intro allI impI)
+    fix C assume "geotop_is_polygon C \<and> C \<subseteq> M"
+    have h_top: "is_topology_on (UNIV::(real^2) set) (geotop_euclidean_topology::(real^2) set set)"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have h_id: "top1_homeomorphism_on (UNIV::(real^2) set)
+                  (geotop_euclidean_topology::(real^2) set set)
+                  (UNIV::(real^2) set)
+                  (geotop_euclidean_topology::(real^2) set set) id"
+      using top1_homeomorphism_on_id[OF h_top] .
+    have h_idP: "\<forall>P\<in>UNIV - U. id P = P" by (by100 simp)
+    show "\<exists>hC. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology hC \<and>
+               (\<forall>P\<in>UNIV - U. hC P = P)"
+      using h_id h_idP by (by100 blast)
+  qed
   (** (3) Compose the per-cycle and per-arc PLHs into a single h, ensuring
          (a) h(M) is a polyhedron (union of simplicial pieces);
          (b) h = identity outside U;
