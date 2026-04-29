@@ -21969,7 +21969,19 @@ theorem Theorem_GT_28_12:
   shows "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_closed_path_on S
                (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p"
-  sorry
+proof -
+  \<comment> \<open>Sub-claim T28_12-A: J is non-contractible on T (assumption);
+    by 28_5/28_8, J is latitudinal on S since it bounds \<Delta> in R^3 - S.\<close>
+  have hT28_12_latitudinal:
+    "geotop_is_latitudinal S J" sorry
+  \<comment> \<open>Sub-claim T28_12-B: latitudinal J carries a generator of H_1(S),
+    realized as a closed path in S.\<close>
+  have hT28_12_path:
+    "\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
+             geotop_closed_path_on S
+               (subspace_topology UNIV geotop_euclidean_topology S) P\<^sub>0 p" sorry
+  show ?thesis using hT28_12_path by (by100 blast)
+qed
 
 (** from \<S>28 Theorem 13 (geotop.tex:5904)
     LATEX VERSION: Let S be a regular neighborhood of a polygon J_0 in R^3 (or S^3). Let
