@@ -18206,6 +18206,19 @@ proof -
          that it becomes a wild Fox-Artin half-arc A_2 (Theorem 20_4) ending at Q. The
          resulting surface S^2 = (S_0 - small_cap) \<union> horn is a 2-sphere, polyhedral
          everywhere except at Q. **)
+  \<comment> \<open>Sub-claim T20_5-A: S^2 is a 2-sphere containing Q.\<close>
+  have hT20_5_sphere:
+    "\<exists>S2 :: (real^3) set.
+        geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
+        Q \<in> S2" sorry
+  \<comment> \<open>Sub-claim T20_5-B: S^2 is wild (the Fox-Artin horn breaks tameness at Q).\<close>
+  have hT20_5_wild:
+    "\<exists>S2 :: (real^3) set. geotop_is_wild S2" sorry
+  \<comment> \<open>Sub-claim T20_5-C: S^2 is polyhedral away from Q (locally polyhedral at every P \<noteq> Q).\<close>
+  have hT20_5_polyhedral_away:
+    "\<exists>S2 :: (real^3) set.
+        \<forall>P\<in>S2. P \<noteq> Q \<longrightarrow> (\<exists>N\<in>geotop_euclidean_topology. P \<in> N \<and>
+            (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S2 \<inter> N))" sorry
   obtain S2 :: "(real^3) set" where hS2:
     "geotop_is_n_sphere S2 (subspace_topology UNIV geotop_euclidean_topology S2) 2 \<and>
      Q \<in> S2 \<and>
