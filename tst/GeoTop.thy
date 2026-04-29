@@ -16713,24 +16713,6 @@ proof -
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
               geotop_pi_mult (UNIV - K)
                 (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C" sorry
-  have h_relations:
-    "(\<exists>g\<^sub>1 g\<^sub>2 g\<^sub>3::(real \<Rightarrow> real^3).
-        geotop_closed_path_on (UNIV - K)
-          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>1 \<and>
-        geotop_closed_path_on (UNIV - K)
-          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>2 \<and>
-        geotop_closed_path_on (UNIV - K)
-          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 g\<^sub>3 \<and>
-        \<comment> \<open>each r_i = g_i g_{k}^{-1} g_j^{-1} g_k is null-homotopic in R^3 - K\<close>
-        geotop_path_equiv (UNIV - K)
-          (subspace_topology UNIV geotop_euclidean_topology (UNIV - K))
-          P\<^sub>0 (geotop_path_mult g\<^sub>1 g\<^sub>2) (geotop_path_mult g\<^sub>1 g\<^sub>2)) \<and>
-     (\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
-              geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
-              geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C)"
-    using hT16_6_gens hT16_6_noncomm by (by100 blast)
   (** (2) Define h: F(g_1, g_2, g_3) \<rightarrow> S_3 by h(g_1) = (2 3), h(g_2) = (1 3),
          h(g_3) = (1 2). Extend multiplicatively. **)
   have h_into_S3:
@@ -16746,13 +16728,7 @@ proof -
   (** (4) h* is surjective (the transpositions generate S_3). S_3 is non-commutative,
          so F/N(R) is non-commutative, so \<pi>(R^3 - K, P_0) (which is isomorphic to
          F/N(R) by Theorem 15.4) is non-commutative. **)
-  have h_final: "\<exists>C D. C \<in> geotop_group_of_link K P\<^sub>0 \<and> D \<in> geotop_group_of_link K P\<^sub>0 \<and>
-              geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 C D \<noteq>
-              geotop_pi_mult (UNIV - K)
-                (subspace_topology UNIV geotop_euclidean_topology (UNIV - K)) P\<^sub>0 D C"
-    using h_relations by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using hT16_6_noncomm by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 7 (geotop.tex:3367)
