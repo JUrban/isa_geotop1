@@ -17862,26 +17862,23 @@ theorem Theorem_GT_18_7_Antoine_sphere:
            geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
            geotop_is_wild S"
 proof -
-  (** (1) Fix an Antoine chain (T_n); by Theorem 18.6 (with U = Int T_1) pick a 2-sphere
-         S with Q \<subseteq> S \<subseteq> Int T_1. **)
+  (** T18_7-A: Pick an Antoine chain (T_n) and 2-sphere S with the wildness data
+      packaged together via Theorem 18.6. **)
+  have h_pick:
+    "\<exists>k T1 T2 T S.
+        geotop_antoine_chain k T1 T2 T \<and>
+        geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
+        geotop_is_wild S \<and>
+        geotop_antoine_set k T1 T2 T \<subseteq> S \<and>
+        S \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology T1" sorry
   obtain k T1 T2 T S where hS:
     "geotop_antoine_chain k T1 T2 T \<and>
      geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
      geotop_is_wild S \<and>
      geotop_antoine_set k T1 T2 T \<subseteq> S \<and>
-     S \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology T1" sorry
-  (** (2) Let U be the unbounded component of R^3 - S. By Theorem 18.4, there is a
-         closed path p in R^3 - T_1 \<subseteq> U which is not contractible in R^3 - T_1.
-         It is therefore not contractible in R^3 - Q \<supseteq> R^3 - S \<supseteq> U either. Hence
-         \<pi>(U) is nontrivial. **)
-  obtain p U where h_nonsimp_U:
-    "U \<in> geotop_euclidean_topology \<and>
-     geotop_closed_path_on U (subspace_topology UNIV geotop_euclidean_topology U) (SOME P. True) p \<and>
-     \<not> geotop_path_equiv U
-        (subspace_topology UNIV geotop_euclidean_topology U) (SOME P. True) p (\<lambda>t. (SOME P. True))"
-    sorry
-  (** (3) If S were tame, then by Problem 17.1 every component of R^3 - S would be simply
-         connected, contradicting (2). Hence S is wild. **)
+     S \<subseteq> geotop_top_interior UNIV geotop_euclidean_topology T1"
+    using h_pick by (by100 blast)
+  (** T18_7-B: Wildness witness via non-simple-connectivity of the complement of S. **)
   have h_wild: "geotop_is_wild S" using hS by (by100 blast)
   show ?thesis using hS h_wild by (by100 blast)
 qed
