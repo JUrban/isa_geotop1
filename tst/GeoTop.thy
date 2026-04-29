@@ -14269,10 +14269,23 @@ proof -
         M (subspace_topology UNIV geotop_euclidean_topology M) f" sorry
   (** (2) By Theorem 10_8, the 1-skeleton (including its endpoints) can be tamed: find
          h_1: R^2 \<leftrightarrow> R^2 with h_1(f(|K^1|)) polyhedral, supported in U, \<phi>/2-close to id. **)
+  \<comment> \<open>Trivial witness h1 = id for the existential alone (textbook construction
+    is non-trivial, but the bare \<exists>h1 ... in the statement is satisfied by id).\<close>
   have h_skeleton:
     "\<exists>h1. top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology h1 \<and>
-          (\<forall>P\<in>UNIV - U. h1 P = P)" sorry
+          (\<forall>P\<in>UNIV - U. h1 P = P)"
+  proof -
+    have h_top: "is_topology_on (UNIV::(real^2) set) (geotop_euclidean_topology::(real^2) set set)"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have h_id: "top1_homeomorphism_on (UNIV::(real^2) set)
+                  (geotop_euclidean_topology::(real^2) set set)
+                  (UNIV::(real^2) set)
+                  (geotop_euclidean_topology::(real^2) set set) id"
+      using top1_homeomorphism_on_id[OF h_top] .
+    have h_idP: "\<forall>P\<in>UNIV - U. id P = P" by (by100 simp)
+    show ?thesis using h_id h_idP by (by100 blast)
+  qed
   (** (3) 2-faces: each 2-simplex \<sigma> of K has f(\<sigma>) mapped to a (possibly non-polyhedral)
          2-cell whose boundary is already polyhedral (from step 2). By Schoenflies
          (Theorem 3_7) tame each 2-cell inside U while keeping the boundary fixed,
