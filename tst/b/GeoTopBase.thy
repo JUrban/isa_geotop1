@@ -13484,6 +13484,16 @@ lemma top1_homeomorphism_on_UNIV_obtain_HOL_homeomorphism:
   obtains k where "homeomorphism UNIV UNIV h k"
   using top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism[OF hhomeo] by blast
 
+text \<open>R^2-specific bridge variant: avoids polymorphism issues in higher-order
+  unification when applied to specific homeomorphisms in concrete real^2 contexts.\<close>
+
+lemma top1_homeomorphism_on_UNIV_R2_obtain_HOL_homeomorphism:
+  fixes h :: "(real^2) \<Rightarrow> (real^2)"
+  assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology h"
+  obtains k where "homeomorphism UNIV UNIV h k"
+  using top1_homeomorphism_on_UNIV_obtain_HOL_homeomorphism[OF hhomeo] by blast
+
 text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
 
 lemma geotop_simplex_dim_imp_hyperplane_dim:
