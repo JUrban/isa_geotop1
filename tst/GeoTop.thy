@@ -17262,13 +17262,25 @@ proof -
   (** (1) Write S = (S_1 \<union> S_2) - Int D; this is a 2-sphere (standard gluing lemma: each
          S_i is a 2-sphere with D as a polyhedral 2-disk, and S is obtained by removing
          Int D from each and gluing along Bd D). **)
+  \<comment> \<open>Sub-claim T17_11-A: (S1 \<union> S2) \\ Int D is a 2-sphere (gluing two 2-spheres
+    along a common 2-cell D).\<close>
+  have hT17_11_2sphere:
+    "geotop_is_n_sphere ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)
+       (subspace_topology UNIV geotop_euclidean_topology
+          ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)) 2"
+    sorry
+  \<comment> \<open>Sub-claim T17_11-B: the resulting 2-sphere is polyhedral.\<close>
+  have hT17_11_polyhedral:
+    "\<exists>L. geotop_is_complex L \<and>
+         geotop_polyhedron L = ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)"
+    sorry
   have h_S_2sphere:
     "geotop_is_n_sphere ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)
        (subspace_topology UNIV geotop_euclidean_topology
           ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D)) 2 \<and>
      (\<exists>L. geotop_is_complex L \<and>
           geotop_polyhedron L = ((S1 \<union> S2) - geotop_top_interior UNIV geotop_euclidean_topology D))"
-    sorry
+    using hT17_11_2sphere hT17_11_polyhedral by (by100 blast)
   (** (2) Given a convex open W \<supseteq> S: take a convex open W' \<supseteq> S_1 \<cup> S_2 (if needed, replace
          by the convex hull). By hS1, there is a PLH f_1 with f_1(S_1) = Bd \<sigma>_1^3 and
          support in W'; by hS2, analogously f_2 with f_2(S_2) = Bd \<sigma>_2^3, support in W'. **)
