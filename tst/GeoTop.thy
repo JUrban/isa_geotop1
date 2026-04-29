@@ -18054,14 +18054,15 @@ proof -
          (c) extend on the "filler" polyhedral 3-cell E_i = Cl[C_i - (D_i \<cup> C_{i+1})]
              matching boundary with E_i' analogously.
          Continuity at P: the diameters of the shells tend to 0. **)
-  have h_extension:
-    "(\<exists>\<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+  (** T19_3-A: assemble the global PLH \<phi>: R^3 \<leftrightarrow> R^3 carrying A_1 to A_1' stage by
+      stage; continuity at P from shell-diameters tending to 0. **)
+  have h_extend_phi:
+    "\<exists>\<phi>. top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology \<phi> \<and>
-          \<phi> ` A1 = A1') \<and>
-     geotop_is_tame A1" sorry
-  (** (5) A_1' is a linear interval (straight line segment from P_1 to P), hence trivially
-         tame. Pulling back via \<phi>^{-1}, A_1 is tame. **)
-  have h_final: "geotop_is_tame A1" using h_extension by (by100 blast)
+          \<phi> ` A1 = A1'" sorry
+  (** T19_3-B: A_1' is a linear interval, hence trivially tame; pulling back via
+      \<phi>^{-1} yields tameness for A_1. **)
+  have h_final: "geotop_is_tame A1" sorry
   show ?thesis using h_final by (by100 blast)
 qed
 
