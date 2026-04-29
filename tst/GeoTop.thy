@@ -15655,24 +15655,14 @@ proof -
                 \<exists>q\<in>geotop_CP X T P\<^sub>0.
                   geotop_path_equiv X T P\<^sub>0 (geotop_path_mult p q) e\<^sub>c \<and>
                   geotop_path_equiv X T P\<^sub>0 (geotop_path_mult q p) e\<^sub>c" sorry
-  (** (4) Associativity: (pq)r \<cong> p(qr) via the standard linear reparametrisation
-         homotopy that shifts the interior break point from 1/4 \<to> 1/2. **)
-  have h_assoc: "(\<forall>p\<in>geotop_CP X T P\<^sub>0. \<forall>q\<in>geotop_CP X T P\<^sub>0. \<forall>r\<in>geotop_CP X T P\<^sub>0.
+  (** T14_3-A: associativity at the path-multiplication level. **)
+  have hT14_3_assoc:
+    "\<forall>p\<in>geotop_CP X T P\<^sub>0. \<forall>q\<in>geotop_CP X T P\<^sub>0. \<forall>r\<in>geotop_CP X T P\<^sub>0.
                    geotop_path_equiv X T P\<^sub>0
                      (geotop_path_mult (geotop_path_mult p q) r)
-                     (geotop_path_mult p (geotop_path_mult q r))) \<and>
-     (\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
-           geotop_pi_mult X T P\<^sub>0 e C = C \<and>
-           geotop_pi_mult X T P\<^sub>0 C e = C \<and>
-           (\<exists>D\<in>geotop_pi X T P\<^sub>0.
-              geotop_pi_mult X T P\<^sub>0 C D = e \<and>
-              geotop_pi_mult X T P\<^sub>0 D C = e) \<and>
-           (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
-              geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
-              geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E)))"
-    sorry
-  (** (5) By Theorem 14.2 (congruence) these pointwise facts descend to \<pi>-classes and
-         give the group laws. **)
+                     (geotop_path_mult p (geotop_path_mult q r))" sorry
+  (** T14_3-B: the path-level facts (h_id, h_inv, hT14_3_assoc) descend to
+      \<pi>-classes via Theorem 14.2 (congruence). **)
   have h_final: "\<exists>e\<in>geotop_pi X T P\<^sub>0. \<forall>C\<in>geotop_pi X T P\<^sub>0.
            geotop_pi_mult X T P\<^sub>0 e C = C \<and>
            geotop_pi_mult X T P\<^sub>0 C e = C \<and>
@@ -15682,7 +15672,7 @@ proof -
            (\<forall>D\<in>geotop_pi X T P\<^sub>0. \<forall>E\<in>geotop_pi X T P\<^sub>0.
               geotop_pi_mult X T P\<^sub>0 (geotop_pi_mult X T P\<^sub>0 C D) E =
               geotop_pi_mult X T P\<^sub>0 C (geotop_pi_mult X T P\<^sub>0 D E))"
-    using h_assoc by (by100 blast)
+    sorry
   show ?thesis using h_final by (by100 blast)
 qed
 
