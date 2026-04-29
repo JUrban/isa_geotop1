@@ -13189,6 +13189,32 @@ proof -
     using h_diff h_clos h_int by simp
 qed
 
+text \<open>Alternate-form image helpers with $Y = h\verb|`|X$ as explicit premise.
+  Provided to attempt working around higher-order unification blocks at
+  call sites — though empirically these still hit the same issue when
+  applied via [OF ...].\<close>
+
+lemma homeomorphism_UNIV_image_closure_alt:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+      and hY: "Y = h ` X"
+  shows "closure Y = h ` closure X"
+  using hY homeomorphism_UNIV_image_closure[OF hhk] by simp
+
+lemma homeomorphism_UNIV_image_interior_alt:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+      and hY: "Y = h ` X"
+  shows "interior Y = h ` interior X"
+  using hY homeomorphism_UNIV_image_interior[OF hhk] by simp
+
+lemma homeomorphism_UNIV_image_frontier_alt:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+      and hY: "Y = h ` X"
+  shows "frontier Y = h ` frontier X"
+  using hY homeomorphism_UNIV_image_frontier[OF hhk] by simp
+
 text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
   in finite-dimensional space).\<close>
 
