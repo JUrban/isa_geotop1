@@ -21259,6 +21259,17 @@ proof -
         (foldr (\<circ>) hs id) ` J = J' \<and>
         (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)).
             (foldr (\<circ>) hs id) P = P)" sorry
+  \<comment> \<open>Sub-claim T27_2-A: the composition of the cellular chain is a homeo A \<leftrightarrow> A
+    sending J to J' and fixing Bd A.\<close>
+  have hT27_2_homeo_JtoJ':
+    "\<exists>h. top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+            A (subspace_topology UNIV geotop_euclidean_topology A) h \<and>
+         h ` J = J' \<and>
+         (\<forall>P\<in>geotop_manifold_boundary A (\<lambda>x y. norm (x - y)). h P = P)" sorry
+  \<comment> \<open>Sub-claim T27_2-B: the homeomorphism is a cellular-PLH composition.\<close>
+  have hT27_2_cellular:
+    "\<exists>h hs. h = foldr (\<circ>) hs id \<and> hs \<noteq> [] \<and>
+            (\<forall>hi\<in>set hs. geotop_is_cellular_PLH A hi)" sorry
   have h_combined: "\<exists>h. top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
               A (subspace_topology UNIV geotop_euclidean_topology A) h \<and>
               h ` J = J' \<and>
