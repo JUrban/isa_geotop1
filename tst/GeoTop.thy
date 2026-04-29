@@ -11511,13 +11511,27 @@ proof -
   qed
   (** Step 2: At most one bounded component, by the Moise contradiction argument:
       any second bounded component U would give Fr U \<subset> arc of J, contradicting 2.5. **)
+  \<comment> \<open>Sub-claim T4_7-A: any bounded component of UNIV - J equals geotop_polygon_interior J.\<close>
+  have hT4_7_eq_polygon_interior:
+    "\<forall>C. geotop_bounded_R2 C \<and>
+         (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)
+         \<longrightarrow> C = geotop_polygon_interior J" sorry
+  \<comment> \<open>Sub-claim T4_7-B: from T4_7-A, any two such components coincide.\<close>
+  have hT4_7_unique:
+    "\<forall>C1 C2.
+          (geotop_bounded_R2 C1 \<and>
+             (\<exists>P\<in>UNIV - J. C1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)) \<and>
+          (geotop_bounded_R2 C2 \<and>
+             (\<exists>P\<in>UNIV - J. C2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P))
+          \<longrightarrow> C1 = C2"
+    using hT4_7_eq_polygon_interior by (by100 blast)
   have h_atmost: "\<forall>C1 C2.
           (geotop_bounded_R2 C1 \<and>
              (\<exists>P\<in>UNIV - J. C1 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)) \<and>
           (geotop_bounded_R2 C2 \<and>
              (\<exists>P\<in>UNIV - J. C2 = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P))
           \<longrightarrow> C1 = C2"
-    sorry
+    using hT4_7_unique by (by100 blast)
   (** Conclude card = 1. **)
   define S where "S = {C. geotop_bounded_R2 C \<and>
             (\<exists>P\<in>UNIV - J.
