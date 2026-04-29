@@ -12926,8 +12926,15 @@ theorem Theorem_GT_8_5_Hauptvermutung_2d:
 proof -
   (** (1) Apply Theorem 8_4 with U = |K_1| and a strongly positive \<phi>: obtain a PLH f:
          |K_1| \<to> |K_2| approximating h with f(|K_1|) = h(|K_1|) = |K_2|. **)
+  \<comment> \<open>Sub-claim T8_5-A: a PLH f between K1 and K2 exists (via Theorem 8_4 application).\<close>
+  have hT8_5_PLH_exists:
+    "\<exists>f. geotop_PLH K1 K2 f" sorry
+  \<comment> \<open>Sub-claim T8_5-B: combinatorial equivalence follows from PLH (via subdivision).\<close>
+  have hT8_5_comb:
+    "geotop_comb_equiv K1 K2" sorry
   have h_PLH:
-    "(\<exists>f. geotop_PLH K1 K2 f) \<and> geotop_comb_equiv K1 K2" sorry
+    "(\<exists>f. geotop_PLH K1 K2 f) \<and> geotop_comb_equiv K1 K2"
+    using hT8_5_PLH_exists hT8_5_comb by (by100 blast)
   (** (2) A PLH between triangulations is (up to subdivision) a simplicial isomorphism,
          hence combinatorial equivalence. **)
   have h_comb: "geotop_comb_equiv K1 K2" using h_PLH by (by100 blast)
