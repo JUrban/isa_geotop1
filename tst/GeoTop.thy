@@ -16468,17 +16468,19 @@ proof -
               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
           geotop_path_equiv A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p p)"
     sorry
-  (** (3) No relations: pushing a PL path across a triangle of A can only insert or delete
-         g_1^{\<plusminus>1} g_1^{\<mp>1} (since A has no crossings). Hence \<pi>(A) is the free abelian/free
-         group on one generator, i.e. Z. **)
-  have h_no_rel:
+  (** T16_1-A: \<pi>(A) \<leftrightarrow> Z is a bijection of sets (free abelian/free group on one generator). **)
+  have hT16_1_bij:
+    "\<exists>\<Phi>. bij_betw \<Phi> (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
+                    (UNIV::int set)" sorry
+  (** T16_1-B: the bijection is also a homomorphism (winding number sums under loop-mult). **)
+  have hT16_1_hom:
     "\<exists>\<Phi>. bij_betw \<Phi> (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
                     (UNIV::int set) \<and>
          (\<forall>C\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
           \<forall>D\<in>geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0.
             \<Phi> (geotop_pi_mult A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 C D)
             = \<Phi> C + \<Phi> D)" sorry
-  show ?thesis using h_no_rel by (by100 blast)
+  show ?thesis using hT16_1_bij by (by100 blast)
 qed
 
 (** from \<S>16: solid torus (geotop.tex:3235)
