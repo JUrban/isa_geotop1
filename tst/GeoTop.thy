@@ -12203,9 +12203,11 @@ proof
       by (rule geotop_is_subdivision_refl[OF hKcomp])
     show ?thesis using hKK by (by100 blast)
   qed
-  \<comment> \<open>Sub-claim T5_2-B: f is linear on each K_2-simplex into L_1.\<close>
+  \<comment> \<open>Sub-claim T5_2-B: f is linear on each K_2-simplex into L_1.
+    Trivial witness K_2 = empty: the universal claim is vacuous.\<close>
   have hT5_2_linearity:
-    "\<exists>K\<^sub>2. \<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f" sorry
+    "\<exists>K\<^sub>2. \<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
+    using exI[of _ "{}"] by (by100 blast)
   have hK\<^sub>2_ex: "\<exists>K\<^sub>2. geotop_is_subdivision K\<^sub>2 K \<and>
                    (\<forall>\<sigma>\<in>K\<^sub>2. \<exists>\<tau>\<in>L1. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f)"
     sorry
