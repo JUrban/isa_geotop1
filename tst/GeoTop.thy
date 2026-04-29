@@ -18351,34 +18351,21 @@ proof -
   (** (3) 2-sphere case: tame S \<leftrightarrow> Bd \<sigma>^3 via PLH \<phi> (Theorem 17.12). Each component of
          R^3 - Bd \<sigma>^3 is a 3-cell or unbounded 3-cell, both locally simply connected at
          every boundary point. Transport via \<phi>^{-1}. **)
+  (** T20_3-A: the arc case follows from h_arc_reduce + h_line_locsc (transport). **)
+  have h_arc_locsc:
+    "\<forall>A :: (real^3) set. \<forall>Q.
+        geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+        geotop_is_tame A \<and>
+        Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
+        geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q" sorry
+  (** T20_3-B: the 2-sphere case via Theorem 17.12 + a 3-cell-side local s.c. argument. **)
   have h_sphere_locsc:
-    "(\<forall>S::(real^3) set. geotop_is_n_sphere S
+    "\<forall>S::(real^3) set. geotop_is_n_sphere S
          (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and> geotop_is_tame S \<longrightarrow>
        (\<forall>Q\<in>S. \<forall>C.
           (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
-          \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)) \<and>
-     ((\<forall>A :: (real^3) set. \<forall>Q.
-           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
-           geotop_is_tame A \<and>
-           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
-           geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q) \<and>
-         (\<forall>S :: (real^3) set. \<forall>Q\<in>S.
-           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
-           geotop_is_tame S \<longrightarrow>
-           (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
-                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)))" sorry
-  have h_final: "(\<forall>A :: (real^3) set. \<forall>Q.
-           geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
-           geotop_is_tame A \<and>
-           Q \<in> geotop_frontier UNIV geotop_euclidean_topology A \<longrightarrow>
-           geotop_locally_simply_connected_at (UNIV - A) geotop_euclidean_topology Q) \<and>
-         (\<forall>S :: (real^3) set. \<forall>Q\<in>S.
-           geotop_is_n_sphere S (subspace_topology UNIV geotop_euclidean_topology S) 2 \<and>
-           geotop_is_tame S \<longrightarrow>
-           (\<forall>C. (\<exists>P\<in>UNIV - S. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - S) P)
-                \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q))"
-    using h_sphere_locsc by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+          \<longrightarrow> geotop_locally_simply_connected_at C geotop_euclidean_topology Q)" sorry
+  show ?thesis using h_arc_locsc h_sphere_locsc by (by100 blast)
 qed
 
 (** from \<S>20 Theorem 4 (geotop.tex:4338)
