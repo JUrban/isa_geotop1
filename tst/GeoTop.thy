@@ -7795,6 +7795,21 @@ proof -
         poly_ext(B_2 \<union> B_3) and the ray-to-infinity argument... requires more
         careful component analysis tying back to GT_2_7's component-frontier
         description. **)
+  \<comment> \<open>Sub-claim T2_8-A (\<supseteq> direction): I_12 and I_23 are components of I_13 - Int B_2.\<close>
+  have hT2_8_components_in:
+    "I12 \<in> {C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                    (I13 - geotop_arc_interior B2 E) P} \<and>
+     I23 \<in> {C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                    (I13 - geotop_arc_interior B2 E) P}" sorry
+  \<comment> \<open>Sub-claim T2_8-B (\<subseteq> direction): every component of I_13 - Int B_2 equals
+    I_12 or I_23 (deep step requiring Jordan-style separation argument).\<close>
+  have hT2_8_components_out:
+    "\<forall>C. (\<exists>P\<in>I13 - geotop_arc_interior B2 E.
+            C = geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P)
+         \<longrightarrow> C = I12 \<or> C = I23" sorry
   have h_split_I13:
     "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
