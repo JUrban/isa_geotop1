@@ -8013,8 +8013,46 @@ proof -
       using h_in_top1 geotop_euclidean_topology_eq_open_sets[where 'a="real^2"]
       by (by100 simp)
   qed
+  \<comment> \<open>A4 for I_23: symmetric to A4_I12. Uses A4-deep B2-in-I13 + B3-disj-I13.\<close>
+  have hT2_8_A4'_aux_clos: "closure I23 = I23 \<union> (B2 \<union> B3)"
+    using polygon_interior_closure_eq[OF h_poly_23_t28] I23_def by (by100 simp)
+  have hT2_8_A4'_B3_disj_I13: "B3 \<inter> I13 = {}"
+  proof -
+    have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+    proof -
+      have h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+        using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+      show ?thesis
+        by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB3_bl_t28 hE1_t28 hE3_t28 h_int13])
+    qed
+    have h_disj: "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+      by (rule polygon_interior_disjoint_polygon[OF h_poly_13])
+    show ?thesis using h_disj I13_def by (by100 blast)
+  qed
   have hT2_8_A4_I23_closed_rel:
-    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I23" sorry
+    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I23"
+  proof -
+    have h_clos_int: "closure I23 \<inter> (I13 - geotop_arc_interior B2 E) = I23"
+    proof -
+      have h_lhs: "closure I23 \<inter> (I13 - geotop_arc_interior B2 E)
+                 = (I23 \<union> (B2 \<union> B3)) \<inter> (I13 - geotop_arc_interior B2 E)"
+        using hT2_8_A4'_aux_clos by (by100 simp)
+      have h_I23_part: "I23 \<inter> (I13 - geotop_arc_interior B2 E) = I23"
+        using hT2_8_A1_I23 by (by100 blast)
+      have h_B2_part: "B2 \<inter> (I13 - geotop_arc_interior B2 E) = {}"
+        using hT2_8_A4_B2_in_I13 by (by100 blast)
+      have h_B3_part: "B3 \<inter> (I13 - geotop_arc_interior B2 E) = {}"
+        using hT2_8_A4'_B3_disj_I13 by (by100 blast)
+      show ?thesis using h_lhs h_I23_part h_B2_part h_B3_part by (by100 blast)
+    qed
+    have h_clos_closed: "closed (closure I23)" by (by100 simp)
+    have h_closedin: "closedin (top_of_set (I13 - geotop_arc_interior B2 E))
+                      ((I13 - geotop_arc_interior B2 E) \<inter> closure I23)"
+      by (rule closedin_closed_Int[OF h_clos_closed])
+    have h_eq: "(I13 - geotop_arc_interior B2 E) \<inter> closure I23 = I23"
+      using h_clos_int by (by100 blast)
+    show ?thesis using h_closedin h_eq by (by100 simp)
+  qed
   have hT2_8_components_in:
     "I12 \<in> {C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
               C = geotop_component_at UNIV geotop_euclidean_topology
