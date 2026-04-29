@@ -12429,10 +12429,14 @@ proof -
   (** Step 2: define K = {convex_hull(f(\<phi>)) | \<phi>\<in>\<Phi>}. **)
   define K :: "(real^'b) set set" where
     "K = {geotop_convex_hull (f ` \<phi>) | \<phi>. \<phi>\<in>\<Phi>}"
-  (** Step 3: K is a Euclidean complex (via general-position intersection property). **)
-  have hK_complex: "geotop_is_complex K \<and>
-                     geotop_abstract_iso \<Phi> (geotop_diagram K) f" sorry
-  show ?thesis using hK_complex by (by100 blast)
+  (** T7_1-A: K is a Euclidean complex.  Each \<phi> \<in> \<Phi> has at most n+1 vertices, so
+      f(\<phi>) (in general position) spans a Euclidean simplex. Faces match because
+      f(\<phi>) \<inter> f(\<psi>) = f(\<phi> \<inter> \<psi>) (injectivity + general position). **)
+  have hT7_1_A: "geotop_is_complex K" sorry
+  (** T7_1-B: f induces an abstract isomorphism \<Phi> \<cong> \<Phi>(K).  By construction
+      f(\<phi>) is the vertex set of geotop_convex_hull (f`\<phi>) \<in> K. **)
+  have hT7_1_B: "geotop_abstract_iso \<Phi> (geotop_diagram K) f" sorry
+  show ?thesis using hT7_1_A hT7_1_B by (by100 blast)
 qed
 
 (** from \<S>7: Euclidean realization (geotop.tex:1473)
