@@ -14522,11 +14522,18 @@ proof -
     using Theorem_GT_12_1[OF hTX hmetr hMs_cmp hMs_desc hAcl hBcl hABdisj hMs_ins] M'_def
     by simp
   (** Step 5: irreducibility: argue by contradiction using basis. **)
+  (** T12_2-A: M' is closed (intersection of closed M_i). **)
+  have hM'_cl: "closedin_on X T M'" sorry
+  (** T12_2-B: irreducibility — every proper closed subset of M' fails (1)\<or>(2).
+      Pick P \<in> M' - M''; basis U_i with P \<in> U_i, U_i \<inter> M'' = \<emptyset>; the construction
+      step would have removed U_i, contradicting P \<in> M'. **)
+  have hM'_irred_only: "\<forall>M''. M'' \<subset> M' \<longrightarrow>
+                     \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)"
+    sorry
   have hM'_irred: "(\<forall>M''. M'' \<subset> M' \<longrightarrow>
                      \<not> (closedin_on X T M'' \<and> geotop_inseparable_in X T M'' A B)) \<and>
                    closedin_on X T M'"
-    sorry
-  have hM'_cl: "closedin_on X T M'" using hM'_irred by (by100 blast)
+    using hM'_irred_only hM'_cl by (by100 blast)
   have hMs_0: "Ms 0 = M"
     unfolding Ms_def by (by100 simp)
   have hM'_sub: "M' \<subseteq> M"
