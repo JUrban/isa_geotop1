@@ -7915,8 +7915,53 @@ proof -
   qed
   \<comment> \<open>T2_8-A4: I_12 is closed in I_13 - Int B_2 (relative-closure of
     open polygon interior in larger ambient open set).\<close>
+  \<comment> \<open>A4: I_12 closedin (I_13 - Int B_2). Witness via closure I_12 \<inter> (I_13 - Int B_2) = I_12.
+    closure I_12 = I_12 \<union> (B_1 \<union> B_2). The intersection with (I_13 - Int B_2) reduces:
+    I_12 part stays via A1; B_1 part vanishes since B_1 \<inter> I_13 = \<emptyset>; B_2 part vanishes
+    since (B_2 \<inter> I_13) - Int B_2 = Int B_2 - Int B_2 = \<emptyset> (using hB2_inner + E \<subseteq> B_1).
+    The deep ingredient B_2 \<inter> I_13 = Int B_2 is left as A4-deep sub-claim.\<close>
+  have hT2_8_A4_aux_clos: "closure I12 = I12 \<union> (B1 \<union> B2)"
+    using polygon_interior_closure_eq[OF h_poly_12_t28] I12_def by (by100 simp)
+  \<comment> \<open>A4-deep: B_2 \<inter> I_13 = Int B_2 (using hB2_inner + E \<subseteq> B_1 + B_1 \<inter> I_13 = \<emptyset>).\<close>
+  have hT2_8_A4_B2_in_I13: "B2 \<inter> I13 = geotop_arc_interior B2 E" sorry
+  \<comment> \<open>A4-aux2: B_1 \<inter> I_13 = \<emptyset> (polygon-int disjoint from polygon B_1\<union>B_3).\<close>
+  have hT2_8_A4_B1_disj_I13: "B1 \<inter> I13 = {}"
+  proof -
+    have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+    proof -
+      have h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+        using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+      show ?thesis
+        by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB3_bl_t28 hE1_t28 hE3_t28 h_int13])
+    qed
+    have h_disj: "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+      by (rule polygon_interior_disjoint_polygon[OF h_poly_13])
+    show ?thesis using h_disj I13_def by (by100 blast)
+  qed
   have hT2_8_A4_I12_closed_rel:
-    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I12" sorry
+    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I12"
+  proof -
+    have h_clos_int: "closure I12 \<inter> (I13 - geotop_arc_interior B2 E) = I12"
+    proof -
+      have h_lhs: "closure I12 \<inter> (I13 - geotop_arc_interior B2 E)
+                 = (I12 \<union> (B1 \<union> B2)) \<inter> (I13 - geotop_arc_interior B2 E)"
+        using hT2_8_A4_aux_clos by (by100 simp)
+      have h_I12_part: "I12 \<inter> (I13 - geotop_arc_interior B2 E) = I12"
+        using hT2_8_A1_I12 by (by100 blast)
+      have h_B1_part: "B1 \<inter> (I13 - geotop_arc_interior B2 E) = {}"
+        using hT2_8_A4_B1_disj_I13 by (by100 blast)
+      have h_B2_part: "B2 \<inter> (I13 - geotop_arc_interior B2 E) = {}"
+        using hT2_8_A4_B2_in_I13 by (by100 blast)
+      show ?thesis using h_lhs h_I12_part h_B1_part h_B2_part by (by100 blast)
+    qed
+    have h_clos_closed: "closed (closure I12)" by (by100 simp)
+    have h_closedin: "closedin (top_of_set (I13 - geotop_arc_interior B2 E))
+                      ((I13 - geotop_arc_interior B2 E) \<inter> closure I12)"
+      by (rule closedin_closed_Int[OF h_clos_closed])
+    have h_eq: "(I13 - geotop_arc_interior B2 E) \<inter> closure I12 = I12"
+      using h_clos_int by (by100 blast)
+    show ?thesis using h_closedin h_eq by (by100 simp)
+  qed
   \<comment> \<open>T2_8-A1', A2', A3', A4' for I_23: symmetric.\<close>
   \<comment> \<open>A1b' for I_23: I_23 \<inter> Int B_2 = \<emptyset>.\<close>
   have hT2_8_A1b_I23_disj: "I23 \<inter> geotop_arc_interior B2 E = {}"
