@@ -13118,6 +13118,77 @@ proof -
   show ?thesis using h_subset h_rev by blast
 qed
 
+text \<open>For a HOL-level homeomorphism $h: \mathrm{UNIV} \leftrightarrow \mathrm{UNIV}$,
+  $h$ is a HOL bijection.\<close>
+
+lemma homeomorphism_UNIV_imp_bij:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  shows "bij h"
+proof -
+  have hkh: "k (h x) = x" for x
+    using hhk by (simp add: homeomorphism_def)
+  have hhk_eq: "h (k y) = y" for y
+    using hhk by (simp add: homeomorphism_def)
+  have h_inj: "inj h"
+  proof (rule injI)
+    fix x y assume "h x = h y"
+    hence "k (h x) = k (h y)" by simp
+    thus "x = y" using hkh by simp
+  qed
+  have h_surj: "surj h"
+  proof (rule surjI)
+    fix y show "h (k y) = y" using hhk_eq by simp
+  qed
+  show "bij h" using h_inj h_surj by (simp add: bij_def)
+qed
+
+text \<open>For a HOL-level homeomorphism $h: \mathrm{UNIV} \leftrightarrow \mathrm{UNIV}$,
+  $h$ commutes with interior. Argument: $\mathrm{int}\,S = \mathrm{compl}\,(\mathrm{closure}\,(\mathrm{compl}\,S))$,
+  bijectivity gives $h\,(\mathrm{compl}\,T) = \mathrm{compl}\,(h\,T)$, and
+  $h$ commutes with closure.\<close>
+
+lemma homeomorphism_UNIV_image_interior:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  shows "h ` interior S = interior (h ` S)"
+proof -
+  have h_bij: "bij h" by (rule homeomorphism_UNIV_imp_bij[OF hhk])
+  have h_compl: "h ` (- T) = - h ` T" for T
+    using h_bij by (rule bij_image_Compl_eq)
+  have h_clos_compl: "h ` closure (- S) = closure (h ` (- S))"
+    by (rule homeomorphism_UNIV_image_closure[OF hhk])
+  have h_clos_compl': "h ` closure (- S) = closure (- h ` S)"
+    using h_clos_compl h_compl by simp
+  have h_int_S: "interior S = - closure (- S)"
+    by (simp add: interior_closure)
+  have h_int_hS: "interior (h ` S) = - closure (- h ` S)"
+    by (simp add: interior_closure)
+  show ?thesis
+    using h_int_S h_int_hS h_clos_compl' h_compl by simp
+qed
+
+text \<open>For a HOL-level homeomorphism $h$, $h$ commutes with frontier
+  (since frontier = closure - interior, and $h$ is bijective).\<close>
+
+lemma homeomorphism_UNIV_image_frontier:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  shows "h ` frontier S = frontier (h ` S)"
+proof -
+  have h_bij: "bij h" by (rule homeomorphism_UNIV_imp_bij[OF hhk])
+  have h_inj: "inj h" using h_bij by (simp add: bij_def)
+  have h_clos: "h ` closure S = closure (h ` S)"
+    by (rule homeomorphism_UNIV_image_closure[OF hhk])
+  have h_int: "h ` interior S = interior (h ` S)"
+    by (rule homeomorphism_UNIV_image_interior[OF hhk])
+  have h_diff: "h ` (closure S - interior S) = h ` closure S - h ` interior S"
+    using h_inj by (rule image_set_diff)
+  show ?thesis
+    unfolding frontier_def
+    using h_diff h_clos h_int by simp
+qed
+
 text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
   in finite-dimensional space).\<close>
 
