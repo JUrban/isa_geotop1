@@ -11940,12 +11940,22 @@ proof -
   (** (2) f on the boundaries conjugates to a PLH f_0: Bd \<sigma>_1 \<leftrightarrow> Bd \<sigma>_2. Extend f_0
          radially from the barycenter of \<sigma>_1 to all of \<sigma>_1 (cone construction): this
          is a PLH on \<sigma>_1 preserving the boundary behaviour. **)
+  \<comment> \<open>Sub-claim T5_4-A: standard simplex pairing \<sigma>_1 \<leftrightarrow> \<sigma>_2 via radial homeomorphism.\<close>
+  have hT5_4_simplex_pair:
+    "\<exists>g. top1_homeomorphism_on \<sigma>1
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>1) \<sigma>2
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>2) g" sorry
+  \<comment> \<open>Sub-claim T5_4-B: f extends to PLH K_1 \<leftrightarrow> K_2 preserving Bd K_1.\<close>
+  have hT5_4_PLH_ext:
+    "\<exists>f'. geotop_PLH K1 K2 f' \<and>
+          (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x)" sorry
   have h_radial_ext:
     "(\<exists>g. top1_homeomorphism_on \<sigma>1
             (subspace_topology UNIV geotop_euclidean_topology \<sigma>1) \<sigma>2
             (subspace_topology UNIV geotop_euclidean_topology \<sigma>2) g) \<and>
      (\<exists>f'. geotop_PLH K1 K2 f' \<and>
-              (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x))" sorry
+              (\<forall>x\<in>geotop_polyhedron (geotop_comb_boundary K1 2). f' x = f x))"
+    using hT5_4_simplex_pair hT5_4_PLH_ext by (by100 blast)
   (** (3) Transport back through \<phi>_1^{-1} and \<phi>_2 to get the PLH f': |K_1| \<leftrightarrow> |K_2|
          extending f on Bd K_1. **)
   have h_final: "\<exists>f'. geotop_PLH K1 K2 f' \<and>
