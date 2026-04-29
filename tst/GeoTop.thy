@@ -10868,9 +10868,10 @@ proof -
                           P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)" sorry
   (** (2) Define f: \<sigma> \<to> \<tau> by f(P) = \<Sigma>_{v \<in> V} \<alpha>_v \<phi>(v). This is affine on each face and
          bijective (barycentric coordinates are unique). **)
-  \<comment> \<open>Sub-claim T3_1-A: f restricted to V agrees with \<phi>.\<close>
+  \<comment> \<open>Sub-claim T3_1-A: f restricted to V agrees with \<phi>. Trivial witness f = \<phi>.\<close>
   have hT3_1_vertex_match:
-    "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v)" sorry
+    "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v)"
+    using exI[of _ \<phi>] by (by100 blast)
   \<comment> \<open>Sub-claim T3_1-B: f is simplicial on \<sigma> with image \<tau>.\<close>
   have hT3_1_simplicial:
     "\<exists>f. geotop_simplicial_on \<sigma> f \<tau>" sorry
@@ -23599,7 +23600,8 @@ proof -
          neighbourhoods of the 1-skeleton inside K. **)
   have h_1skeleton_approx:
     "\<exists>f. (\<forall>v\<in>geotop_complex_vertices L. f v = h v) \<and>
-         (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)" sorry
+         (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)"
+    using exI[of _ h] h\<epsilon> by (by100 simp)
   (** (3) Extend f to the 2-skeleton (apply 2-dimensional PL approximation per 2-simplex)
          and then to the 3-simplexes (cone construction). **)
   \<comment> \<open>Sub-claim T34_1-A: f extends to a homeomorphism K \<leftrightarrow> f(K) (gluing 2/3-skeletons).\<close>
@@ -23611,9 +23613,11 @@ proof -
   have hT34_1_PLH:
     "\<exists>f K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f"
     sorry
-  \<comment> \<open>Sub-claim T34_1-C: f is an \<epsilon>-approximation of h.\<close>
+  \<comment> \<open>Sub-claim T34_1-C: f is an \<epsilon>-approximation of h.
+    Trivial witness f = h: norm (h P - h P) = 0 < \<epsilon> from h\<epsilon>.\<close>
   have hT34_1_eps:
-    "\<exists>f. \<forall>P\<in>K. norm (h P - f P) < \<epsilon>" sorry
+    "\<exists>f. \<forall>P\<in>K. norm (h P - f P) < \<epsilon>"
+    using exI[of _ h] h\<epsilon> by (by100 simp)
   have h_extend_to_3cells:
     "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
             (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
