@@ -19389,6 +19389,17 @@ proof -
   (** (2) Apply Theorem 22_8: M_1 \<cong> M_2 iff (h_1 = h_2 \<and> m_1 = m_2). Combined with
          (2h_i + m_i = 2 - \<chi>(M_i)) from Theorem 22_5 and orientability \<Leftrightarrow> m_i = 0,
          the right-hand side of 22.9 is equivalent. **)
+  \<comment> \<open>Sub-claim T22_9-A: numerical equivalence — (h_1=h_2 \<and> m_1=m_2) iff (orientable+\<chi>) match.\<close>
+  have hT22_9_numeric:
+    "(h1 = h2 \<and> m1 = m2) \<longleftrightarrow>
+     ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
+      geotop_manifold_euler M1 = geotop_manifold_euler M2)" sorry
+  \<comment> \<open>Sub-claim T22_9-B: M_1 \<cong> M_2 iff (orientable+\<chi>) match (via 22_8 + numeric).\<close>
+  have hT22_9_homeo_iff:
+    "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
+                M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
+         ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
+          geotop_manifold_euler M1 = geotop_manifold_euler M2)" sorry
   have h_equiv:
     "((h1 = h2 \<and> m1 = m2) \<longleftrightarrow>
      ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
@@ -19396,7 +19407,8 @@ proof -
      ((\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
-          geotop_manifold_euler M1 = geotop_manifold_euler M2))" sorry
+          geotop_manifold_euler M1 = geotop_manifold_euler M2))"
+    using hT22_9_numeric hT22_9_homeo_iff by (by100 blast)
   have h_final: "(\<exists>f. top1_homeomorphism_on M1 (subspace_topology UNIV geotop_euclidean_topology M1)
                 M2 (subspace_topology UNIV geotop_euclidean_topology M2) f) \<longleftrightarrow>
          ((geotop_is_orientable K1 \<longleftrightarrow> geotop_is_orientable K2) \<and>
