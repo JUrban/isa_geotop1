@@ -14777,10 +14777,40 @@ next
     "top1_connected_on M' (subspace_topology X T M')" sorry
   \<comment> \<open>Sub-claim T12_3-B: M' meets A. Else M' \<subseteq> X - A, but X - A is open and
     closed in X (where ? actually...). Justification: if M' \<inter> A = \<emptyset>, then
-    setting U = \<emptyset>, V = M' separates A, B in M', contradicting inseparability.\<close>
-  have hT12_3_meets_A: "M' \<inter> A \<noteq> {}" sorry
+    setting MA = \<emptyset>, MB = M' separates A, B in M', contradicting inseparability.\<close>
+  have hT12_3_meets_A: "M' \<inter> A \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> M' \<inter> A \<noteq> {}"
+    hence h_empty: "M' \<inter> A = {}" by (by100 simp)
+    have h_X_in_T: "X \<in> T" using hTX unfolding is_topology_on_def by (by100 blast)
+    have h_empty_closed: "closedin_on X T {}"
+      unfolding closedin_on_def using h_X_in_T by (by100 simp)
+    have h_M'_subset_X: "M' \<subseteq> X"
+      using hM'_cl unfolding closedin_on_def by (by100 blast)
+    have h_sep: "geotop_separable_in X T M' A B"
+      unfolding geotop_separable_in_def
+      using h_empty_closed hM'_cl h_empty h_M'_subset_X by (by100 blast)
+    have h_not_ins: "\<not> geotop_inseparable_in X T M' A B"
+      using h_sep unfolding geotop_inseparable_in_def by (by100 blast)
+    show False using h_not_ins hM'_ins by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim T12_3-C: M' meets B. Symmetric to T12_3-B.\<close>
-  have hT12_3_meets_B: "M' \<inter> B \<noteq> {}" sorry
+  have hT12_3_meets_B: "M' \<inter> B \<noteq> {}"
+  proof (rule ccontr)
+    assume "\<not> M' \<inter> B \<noteq> {}"
+    hence h_empty: "M' \<inter> B = {}" by (by100 simp)
+    have h_X_in_T: "X \<in> T" using hTX unfolding is_topology_on_def by (by100 blast)
+    have h_empty_closed: "closedin_on X T {}"
+      unfolding closedin_on_def using h_X_in_T by (by100 simp)
+    have h_M'_subset_X: "M' \<subseteq> X"
+      using hM'_cl unfolding closedin_on_def by (by100 blast)
+    have h_sep: "geotop_separable_in X T M' A B"
+      unfolding geotop_separable_in_def
+      using h_empty_closed hM'_cl h_empty h_M'_subset_X by (by100 blast)
+    have h_not_ins: "\<not> geotop_inseparable_in X T M' A B"
+      using h_sep unfolding geotop_inseparable_in_def by (by100 blast)
+    show False using h_not_ins hM'_ins by (by100 blast)
+  qed
   have hM'_conn: "top1_connected_on M' (subspace_topology X T M') \<and>
                    M' \<inter> A \<noteq> {} \<and> M' \<inter> B \<noteq> {}"
     using hT12_3_M'_conn hT12_3_meets_A hT12_3_meets_B by (by100 blast)
