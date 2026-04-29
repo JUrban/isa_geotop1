@@ -12053,6 +12053,13 @@ proof -
     sorry
   (** (2) Alexander's trick: any homeomorphism g: S^1 \<leftrightarrow> S^1 extends to a homeomorphism
          D^2 \<leftrightarrow> D^2 by \<tilde>g(r, \<theta>) = (r, g(\<theta>)) for r \<in> [0, 1]. (r = 0 is the centre, fixed.) **)
+  \<comment> \<open>Sub-claim T5_6-A: f' is a homeomorphism C_1 \<leftrightarrow> C_2 (Alexander extension).\<close>
+  have hT5_6_homeo:
+    "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
+            C2 (subspace_topology UNIV geotop_euclidean_topology C2) f'" sorry
+  \<comment> \<open>Sub-claim T5_6-B: f' agrees with f on Bd C_1 (boundary preservation).\<close>
+  have hT5_6_boundary:
+    "\<exists>f'. \<forall>x\<in>geotop_frontier UNIV geotop_euclidean_topology C1. f' x = f x" sorry
   have h_alexander:
     "\<exists>f'. top1_homeomorphism_on C1 (subspace_topology UNIV geotop_euclidean_topology C1)
             C2 (subspace_topology UNIV geotop_euclidean_topology C2) f' \<and>
