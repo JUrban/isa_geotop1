@@ -11456,11 +11456,73 @@ proof -
                   \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
                     = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
     sorry
-  \<comment> \<open>Sub-claim 35-B: composing h = f2-inverse \<circ> f3 \<circ> f1 yields h(J) = J'.\<close>
+  \<comment> \<open>Sub-claim 35-B: composing h = f2-inverse \<circ> f3 \<circ> f1 yields h(J) = J'.
+    Uses cached top1_homeomorphism_on_comp + top1_homeomorphism_on_sym +
+    bij_betw image inversion.\<close>
   have hh_ex: "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
                   UNIV geotop_euclidean_topology h
                 \<and> h ` J = J'"
-    sorry
+  proof -
+    obtain f\<^sub>3 where hf3: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                              UNIV geotop_euclidean_topology f\<^sub>3"
+                  and hf3FF: "f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
+                              = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+      using hf3_ex by (by100 blast)
+    define f\<^sub>2_inv where "f\<^sub>2_inv = inv_into (UNIV::(real^2) set) f\<^sub>2"
+    have hf2_inv_homeo:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+         UNIV geotop_euclidean_topology f\<^sub>2_inv"
+      using top1_homeomorphism_on_sym[OF hf2] f\<^sub>2_inv_def by (by100 simp)
+    define hh where "hh = f\<^sub>2_inv \<circ> (f\<^sub>3 \<circ> f\<^sub>1)"
+    have hh_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                       UNIV geotop_euclidean_topology hh"
+    proof -
+      have h31: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology (f\<^sub>3 \<circ> f\<^sub>1)"
+        by (rule top1_homeomorphism_on_comp[OF hf1 hf3])
+      show ?thesis
+        unfolding hh_def
+        by (rule top1_homeomorphism_on_comp[OF h31 hf2_inv_homeo])
+    qed
+    have h_f3f1_J: "(f\<^sub>3 \<circ> f\<^sub>1) ` J = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+    proof -
+      have h_f1_J: "f\<^sub>1 ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+        by (rule hf1J)
+      have h_chain: "(f\<^sub>3 \<circ> f\<^sub>1) ` J = f\<^sub>3 ` (f\<^sub>1 ` J)"
+        by (rule image_comp[symmetric])
+      show ?thesis using h_chain h_f1_J hf3FF by (by100 simp)
+    qed
+    have hf2_bij: "bij_betw f\<^sub>2 UNIV UNIV"
+      using hf2 unfolding top1_homeomorphism_on_def by (by100 blast)
+    have h_J'_eq_inv: "J' = f\<^sub>2_inv ` (geotop_frontier UNIV geotop_euclidean_topology \<tau>)"
+    proof -
+      have hf2_inj: "inj_on f\<^sub>2 UNIV"
+        using hf2_bij bij_betw_imp_inj_on by blast
+      have h_J'_sub: "J' \<subseteq> UNIV" by simp
+      have h_inv: "f\<^sub>2_inv ` (f\<^sub>2 ` J') = J'"
+        unfolding f\<^sub>2_inv_def
+        using inv_into_image_cancel[OF hf2_inj h_J'_sub] .
+      show ?thesis using h_inv hf2J' by (by100 simp)
+    qed
+    have hh_image_J: "hh ` J = J'"
+    proof -
+      have h_chain: "hh ` J = f\<^sub>2_inv ` ((f\<^sub>3 \<circ> f\<^sub>1) ` J)"
+        unfolding hh_def by (rule image_comp[symmetric])
+      have h_step: "f\<^sub>2_inv ` ((f\<^sub>3 \<circ> f\<^sub>1) ` J)
+                    = f\<^sub>2_inv ` (geotop_frontier UNIV geotop_euclidean_topology \<tau>)"
+        using h_f3f1_J by (by100 simp)
+      show ?thesis using h_chain h_step h_J'_eq_inv by (by100 simp)
+    qed
+    have h_witness:
+      "top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology hh
+       \<and> hh ` J = J'"
+      using hh_homeo hh_image_J by (by100 blast)
+    show "\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                UNIV geotop_euclidean_topology h
+            \<and> h ` J = J'"
+      using h_witness by (by100 blast)
+  qed
   show ?thesis using hh_ex by (by100 blast)
 qed
 
