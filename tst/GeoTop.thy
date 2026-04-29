@@ -13175,6 +13175,19 @@ proof -
   (** (2) Pick w_0 \<in> v_0 v_0' \<inter> T close to v_0, and w_1 \<in> v_1 v_1' \<inter> T close to v_1.
          Use broken-line connectedness of T (§1.13) to get a polygonal path from w_0 to
          w_1 inside T. **)
+  \<comment> \<open>Sub-claim T9_5-A: a polygonal bA from w_0 to w_1 inside the tube T \<subseteq> I \<inter> N(A,\<epsilon>).\<close>
+  have hT9_5_polygon:
+    "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+                w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
+                bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon> \<and>
+                bA \<subseteq> I" sorry
+  \<comment> \<open>Sub-claim T9_5-B: truncate bA so it meets v_0 v_0' and v_1 v_1' only at w_0, w_1.\<close>
+  have hT9_5_truncate:
+    "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
+           w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
+           bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
+           bA \<subseteq> I \<and>
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>" sorry
   have h_broken_line_in_tube:
     "(\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
                 w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
@@ -13184,7 +13197,8 @@ proof -
            w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
            bA \<inter> geotop_segment v0 v0' = {w0} \<and> bA \<inter> geotop_segment v1 v1' = {w1} \<and>
            bA \<subseteq> I \<and>
-           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>)" sorry
+           bA \<subseteq> geotop_nbhd_set UNIV (\<lambda>x y. norm (x - y)) A \<epsilon>)"
+    using hT9_5_polygon hT9_5_truncate by (by100 blast)
   (** (3) Truncate bA to meet v_0 v_0' and v_1 v_1' only at single points w_0, w_1. **)
   have h_final: "\<exists>bA w0 w1. geotop_is_broken_line bA \<and>
            w0 \<in> geotop_segment v0 v0' \<and> w1 \<in> geotop_segment v1 v1' \<and>
