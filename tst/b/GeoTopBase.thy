@@ -13007,21 +13007,77 @@ proof -
     using h\<sigma>_HOL hV_fin hcard_le empty_interior_convex_hull by metis
 qed
 
-text \<open>An $n$-simplex with $n \ge 2$ has a $2$-face. Argument: pick any 3
-  vertices $W$ from the $n+1$ vertices $V$ of $\sigma$; $W$ inherits general
-  position from $V$ at the same parameter $m$ (a subset-monotonicity argument
-  about $W \cap H \subseteq V \cap H$ for hyperplanes $H$), and the convex hull
-  of $W$ is a $2$-simplex that is a face of $\sigma$ (face-closure axiom).
+text \<open>General position is preserved under taking subsets of the vertex set:
+  if $V$ satisfies the constraint $\forall H, k < m: |V \cap H| \le k+1$,
+  then $W \subseteq V$ also does, since $W \cap H \subseteq V \cap H$.\<close>
 
-  Proof sketched but stubbed for now (Isabelle type-inference quirks on the
-  unfolding+blast steps caused timeouts in a direct attempt). Correct
-  mathematical content; multi-step formal proof deferred.\<close>
+lemma geotop_general_position_subset_aux:
+  fixes V W :: "'a::real_vector set" and H :: "'a set" and k :: nat and m :: nat
+  assumes hgp: "geotop_general_position V m"
+      and hW: "W \<subseteq> V"
+      and hHk: "geotop_hyperplane_dim H k"
+      and hk_lt: "k < m"
+  shows "finite (W \<inter> H) \<and> card (W \<inter> H) \<le> k + 1"
+proof -
+  have hV_int_fin: "finite (V \<inter> H)"
+    using hgp hHk hk_lt unfolding geotop_general_position_def by blast
+  have hV_int_card: "card (V \<inter> H) \<le> k + 1"
+    using hgp hHk hk_lt unfolding geotop_general_position_def by blast
+  have hWH_sub: "W \<inter> H \<subseteq> V \<inter> H" using hW by blast
+  have hWH_fin: "finite (W \<inter> H)"
+    using hWH_sub hV_int_fin finite_subset by blast
+  have hWH_card: "card (W \<inter> H) \<le> card (V \<inter> H)"
+    using hWH_sub hV_int_fin card_mono by blast
+  show ?thesis using hWH_fin hWH_card hV_int_card by linarith
+qed
+
+lemma geotop_general_position_subset:
+  fixes V W :: "'a::real_vector set"
+  assumes hgp: "geotop_general_position V m" and hW: "W \<subseteq> V"
+  shows "geotop_general_position W m"
+  unfolding geotop_general_position_def
+  using geotop_general_position_subset_aux[OF hgp hW] by blast
+
+text \<open>An $n$-simplex with $n \ge 2$ has a $2$-face: pick 3 of the $n+1$
+  vertices; they inherit general position; their convex hull is a $2$-simplex,
+  and being the convex hull of a nonempty subset of $\sigma$'s vertices,
+  it is a face of $\sigma$ by the definition of face.\<close>
 
 lemma geotop_simplex_dim_ge_2_has_2_face:
   fixes \<sigma> :: "'a::real_normed_vector set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> n" and hn: "2 \<le> n"
   shows "\<exists>\<tau>. geotop_is_face \<tau> \<sigma> \<and> geotop_simplex_dim \<tau> 2"
-  sorry
+proof -
+  obtain V m where hV_fin: "finite V"
+               and hV_card: "card V = n + 1"
+               and hn_le_m: "n \<le> m"
+               and hgp: "geotop_general_position V m"
+               and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by blast
+  have hV_ge_3: "card V \<ge> 3" using hV_card hn by linarith
+  obtain W where hW_sub: "W \<subseteq> V" and hW_card: "card W = 3"
+    using hV_ge_3 hV_fin obtain_subset_with_card_n by metis
+  have hW_fin: "finite W" using hW_sub hV_fin finite_subset by blast
+  have hW_ne: "W \<noteq> {}" using hW_card by force
+  have hgp_W: "geotop_general_position W m"
+    by (rule geotop_general_position_subset[OF hgp hW_sub])
+  have hm_ge_2: "(2::nat) \<le> m" using hn_le_m hn by linarith
+  define \<tau> where "\<tau> = geotop_convex_hull W"
+  have h\<tau>_dim: "geotop_simplex_dim \<tau> 2"
+  proof -
+    have h_card_eq: "card W = 2 + 1" using hW_card by simp
+    show ?thesis
+      unfolding geotop_simplex_dim_def \<tau>_def
+      using hW_fin h_card_eq hm_ge_2 hgp_W by blast
+  qed
+  have h\<sigma>_vertices: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card hn_le_m hgp h\<sigma>_eq by blast
+  have h\<tau>_face: "geotop_is_face \<tau> \<sigma>"
+    unfolding geotop_is_face_def
+    using h\<sigma>_vertices hW_ne hW_sub \<tau>_def by blast
+  show ?thesis using h\<tau>_face h\<tau>_dim by blast
+qed
 
 text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
   in finite-dimensional space).\<close>
