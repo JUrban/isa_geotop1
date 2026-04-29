@@ -12240,6 +12240,11 @@ proof -
     using exI[of _ "{}::(real^2) set set"]
     unfolding geotop_is_complex_def by (by100 blast)
   (** Step 2: adjust f_1 to land in K_2 using subdivision matching. **)
+  \<comment> \<open>Sub-claim T6_4-A: f is PL between K1 and K2.\<close>
+  have hT6_4_PLH: "\<exists>f. geotop_PLH K1 K2 f" sorry
+  \<comment> \<open>Sub-claim T6_4-B: f is a \<phi>-approximation of h.\<close>
+  have hT6_4_phi:
+    "\<exists>f. geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
   have h_final: "\<exists>f. geotop_PLH K1 K2 f
           \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
   show ?thesis using h_final by (by100 blast)
