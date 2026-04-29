@@ -17892,13 +17892,24 @@ proof -
     sorry
   (** (3) Local commutativity is a homeomorphism invariant. Transporting through \<phi>^{-1},
          R^3 - A would be locally commutative at P, contradicting the hypothesis. **)
+  \<comment> \<open>Sub-claim T19_4-A: local commutativity is a homeomorphism invariant
+    (transports through any plane homeomorphism \<phi>).\<close>
+  have hT19_4_invariant:
+    "\<forall>\<phi> Y. top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology \<phi> \<and> \<phi> ` A = Y \<and>
+           (\<forall>P'\<in>Y. geotop_pi_locally_commutative_at (UNIV - Y)
+                     geotop_euclidean_topology P') \<longrightarrow>
+       geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P" sorry
+  \<comment> \<open>Sub-claim T19_4-B: A is wild (using the contrapositive on the invariance).\<close>
+  have hT19_4_wild: "geotop_is_wild A" sorry
   have h_invariant:
     "(\<forall>\<phi> Y. top1_homeomorphism_on UNIV geotop_euclidean_topology
              UNIV geotop_euclidean_topology \<phi> \<and> \<phi> ` A = Y \<and>
            (\<forall>P'\<in>Y. geotop_pi_locally_commutative_at (UNIV - Y)
                      geotop_euclidean_topology P') \<longrightarrow>
        geotop_pi_locally_commutative_at (UNIV - A) geotop_euclidean_topology P) \<and>
-     geotop_is_wild A" sorry
+     geotop_is_wild A"
+    using hT19_4_invariant hT19_4_wild by (by100 blast)
   have h_final: "geotop_is_wild A" using h_invariant by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
