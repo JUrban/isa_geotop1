@@ -7858,8 +7858,24 @@ proof -
     by (rule pair_of_arcs_is_polygon[OF hB2_bl_t28 hB3_bl_t28 hE2_t28 hE3_t28 h_int23_t28])
   \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
     its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
-    polygon-int axiom).\<close>
-  have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
+    polygon-int axiom).
+    Decomposed: A1a (I_12 \<subseteq> I_13, the deep Jordan-style step) and
+    A1b (I_12 \<inter> Int B_2 = \<emptyset>, derivable from polygon_interior_disjoint_polygon).\<close>
+  \<comment> \<open>A1b: I_12 \<inter> Int B_2 = \<emptyset> from polygon-int axiom + Int B_2 \<subseteq> B_2.\<close>
+  have hT2_8_A1b_I12_disj: "I12 \<inter> geotop_arc_interior B2 E = {}"
+  proof -
+    have h_disj_J: "geotop_polygon_interior (B1 \<union> B2) \<inter> (B1 \<union> B2) = {}"
+      by (rule polygon_interior_disjoint_polygon[OF h_poly_12_t28])
+    have h_disj_B2: "I12 \<inter> B2 = {}"
+      using h_disj_J I12_def by (by100 blast)
+    have h_intB2_sub: "geotop_arc_interior B2 E \<subseteq> B2"
+      unfolding geotop_arc_interior_def by (by100 blast)
+    show ?thesis using h_disj_B2 h_intB2_sub by (by100 blast)
+  qed
+  \<comment> \<open>A1a: I_12 \<subseteq> I_13 (deep — chord-inside-polygon Jordan-style).\<close>
+  have hT2_8_A1a_I12_in_I13: "I12 \<subseteq> I13" sorry
+  have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E"
+    using hT2_8_A1a_I12_in_I13 hT2_8_A1b_I12_disj by (by100 blast)
   \<comment> \<open>T2_8-A2: I_12 is connected (polygon-interior connected).\<close>
   have hT2_8_A2_I12_conn:
     "top1_connected_on I12 (subspace_topology UNIV geotop_euclidean_topology I12)"
