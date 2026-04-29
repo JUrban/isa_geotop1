@@ -23367,6 +23367,18 @@ proof -
       (\<forall>P\<in>C. norm (h P - fs C P) < \<phi> P)" sorry
   (** (3) Glue per-cell PLHs into a single PLH f: K \<leftrightarrow> h(K) using a shared combinatorial
          structure on overlapping faces (barycentric refinement ensures compatibility). **)
+  \<comment> \<open>Sub-claim T35_2-A: the glued f is a homeomorphism K \<leftrightarrow> f(K).\<close>
+  have hT35_2_homeo:
+    "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+            (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f"
+    sorry
+  \<comment> \<open>Sub-claim T35_2-B: f is PL between complexes.\<close>
+  have hT35_2_PLH:
+    "\<exists>f K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f"
+    sorry
+  \<comment> \<open>Sub-claim T35_2-C: f is a \<phi>-approximation of h.\<close>
+  have hT35_2_phi_approx:
+    "\<exists>f. \<forall>P\<in>K. norm (h P - f P) < \<phi> P" sorry
   have h_final: "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
                (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
              (\<exists>K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f) \<and>
