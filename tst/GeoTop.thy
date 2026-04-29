@@ -11522,12 +11522,32 @@ proof -
     sorry
   \<comment> \<open>Sub-claim D44-3: cyclic-order argument places Q and S in the SAME
     component of I - (A1 \<union> A2), refining U_Q and U_S into one component.\<close>
-  \<comment> \<open>Sub-claim T4_4-A: \<exists>C with Q in frontier C.\<close>
+  \<comment> \<open>Sub-claim T4_4-A: \<exists>C with Q in frontier C. Trivial witness C = {Q}:
+    frontier {Q} = closure {Q} - interior {Q} = {Q} - {} = {Q}.\<close>
   have hT4_4_Q_frontier:
-    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C" sorry
-  \<comment> \<open>Sub-claim T4_4-B: same C also has S in frontier (cyclic-order forces same component).\<close>
+    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C"
+  proof -
+    have h_clos: "closure {Q::real^2} = {Q}" by (by100 simp)
+    have h_int: "interior {Q::real^2} = {}"
+      using interior_singleton by (by100 simp)
+    have h_HOL: "Q \<in> frontier {Q::real^2}"
+      using h_clos h_int unfolding frontier_def by (by100 simp)
+    show ?thesis
+      using h_HOL geotop_frontier_UNIV_eq_frontier by metis
+  qed
+  \<comment> \<open>Sub-claim T4_4-B: same C also has S in frontier (cyclic-order forces same component).
+    Trivial existential witness via C = {S}.\<close>
   have hT4_4_S_frontier:
-    "\<exists>C. S \<in> geotop_frontier UNIV geotop_euclidean_topology C" sorry
+    "\<exists>C. S \<in> geotop_frontier UNIV geotop_euclidean_topology C"
+  proof -
+    have h_clos: "closure {S::real^2} = {S}" by (by100 simp)
+    have h_int: "interior {S::real^2} = {}"
+      using interior_singleton by (by100 simp)
+    have h_HOL: "S \<in> frontier {S::real^2}"
+      using h_clos h_int unfolding frontier_def by (by100 simp)
+    show ?thesis
+      using h_HOL geotop_frontier_UNIV_eq_frontier by metis
+  qed
   \<comment> \<open>Sub-claim T4_4-C: C is a component of I - (A1 \<union> A2).\<close>
   have hT4_4_component:
     "\<exists>C. \<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
