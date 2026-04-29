@@ -15755,6 +15755,19 @@ proof -
           (geotop_path_mult p_inv (geotop_path_mult q p))" sorry
   (** (3) By Theorem 14.2, if q \<cong> q' then p^{-1} q p \<cong> p^{-1} q' p, so \<phi>_0 descends to
          a function \<phi>: \<pi>(X, P_0) \<rightarrow> \<pi>(X, P_1). **)
+  (** T14_4-A: well-defined descent of conjugation to homotopy classes. **)
+  have h_phi_welldef_descent:
+    "\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi X T P\<^sub>1) \<and>
+         (\<forall>q\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 q) =
+              geotop_pi_class X T P\<^sub>1 (geotop_path_mult p_inv (geotop_path_mult q p)))"
+    sorry
+  (** T14_4-B: \<phi> is a bijective group homomorphism. Inverse \<psi>([r]) = [p r p^{-1}],
+      verified using p p^{-1} \<cong> e (Theorem 14.3) and associativity. **)
+  have h_phi_welldef_bij:
+    "\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
+         (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
+              \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D))"
+    sorry
   have h_phi_welldef:
     "(\<exists>\<phi>. (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<phi> C \<in> geotop_pi X T P\<^sub>1) \<and>
          (\<forall>q\<in>geotop_CP X T P\<^sub>0. \<phi> (geotop_pi_class X T P\<^sub>0 q) =
@@ -15762,7 +15775,7 @@ proof -
      (\<exists>\<phi>. bij_betw \<phi> (geotop_pi X T P\<^sub>0) (geotop_pi X T P\<^sub>1) \<and>
          (\<forall>C\<in>geotop_pi X T P\<^sub>0. \<forall>D\<in>geotop_pi X T P\<^sub>0.
               \<phi> (geotop_pi_mult X T P\<^sub>0 C D) = geotop_pi_mult X T P\<^sub>1 (\<phi> C) (\<phi> D)))"
-    sorry
+    using h_phi_welldef_descent h_phi_welldef_bij by (by100 blast)
   (** (4) \<phi> is a group homomorphism:
          p^{-1} q_1 q_2 p = p^{-1} q_1 (p p^{-1}) q_2 p \<cong> (p^{-1} q_1 p)(p^{-1} q_2 p)
          using p p^{-1} \<cong> e (Theorem 14.3) and associativity. **)
