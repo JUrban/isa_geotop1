@@ -13466,6 +13466,16 @@ text \<open>Frontier-image helper with explicit continuous_on + inverse premises
   unification difficulties when the function argument is inv h.\<close>
 
 
+text \<open>geotop_linear_on depends only on values on $\sigma$ — a quick
+  cached helper for the simplicial-on closure below.\<close>
+
+lemma geotop_linear_on_eq_on:
+  fixes f g :: "'a::real_vector \<Rightarrow> 'b::real_vector" and \<sigma> :: "'a set"
+  assumes hf: "geotop_linear_on \<sigma> f"
+      and heq: "\<forall>x\<in>\<sigma>. g x = f x"
+  shows "geotop_linear_on \<sigma> g"
+  sorry
+
 text \<open>If $f$ and $g$ agree on $\sigma$, then $\mathit{simplicial\_on}\,\sigma\,f\,\tau$
   iff $\mathit{simplicial\_on}\,\sigma\,g\,\tau$ — both depend only on the
   values of the function on $\sigma$ (since vertices $V \subseteq \sigma$ and
