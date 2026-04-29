@@ -21530,6 +21530,16 @@ proof -
   (** (2) Put J in standard position by: (a) remove tangencies of J with J_x via small
          finger-pushes inside S; (b) straighten J into the cylindrical diagram. Combine
          into a single PLH h supported inside W. **)
+  \<comment> \<open>Sub-claim T28_2-A: the standardizing PLH h is a homeo on M3 preserving S.\<close>
+  have hT28_2_homeo:
+    "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+             M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+         h ` S = S" sorry
+  \<comment> \<open>Sub-claim T28_2-B: h sends J to standard-position relative to Jx and is
+    identity outside W.\<close>
+  have hT28_2_position:
+    "\<exists>h. geotop_in_standard_position S (h ` J) Jx \<and>
+         (\<forall>P\<in>M3 - W. h P = P)" sorry
   have h_standardize:
     "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
              M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
