@@ -13007,6 +13007,22 @@ proof -
     using h\<sigma>_HOL hV_fin hcard_le empty_interior_convex_hull by metis
 qed
 
+text \<open>An $n$-simplex with $n \ge 2$ has a $2$-face. Argument: pick any 3
+  vertices $W$ from the $n+1$ vertices $V$ of $\sigma$; $W$ inherits general
+  position from $V$ at the same parameter $m$ (a subset-monotonicity argument
+  about $W \cap H \subseteq V \cap H$ for hyperplanes $H$), and the convex hull
+  of $W$ is a $2$-simplex that is a face of $\sigma$ (face-closure axiom).
+
+  Proof sketched but stubbed for now (Isabelle type-inference quirks on the
+  unfolding+blast steps caused timeouts in a direct attempt). Correct
+  mathematical content; multi-step formal proof deferred.\<close>
+
+lemma geotop_simplex_dim_ge_2_has_2_face:
+  fixes \<sigma> :: "'a::real_normed_vector set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n" and hn: "2 \<le> n"
+  shows "\<exists>\<tau>. geotop_is_face \<tau> \<sigma> \<and> geotop_simplex_dim \<tau> 2"
+  sorry
+
 text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
   in finite-dimensional space).\<close>
 

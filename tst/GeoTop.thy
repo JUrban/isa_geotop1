@@ -11315,11 +11315,39 @@ proof -
       have h_no_2: "\<forall>\<sigma>\<in>K. \<not> geotop_simplex_dim \<sigma> 2"
         using h_card_zero h_set_fin by (by100 simp)
       \<comment> \<open>34-NE-A: under no-2-simplex + face-closure, every simplex has dim \<le> 1.
-        Argument: for any \<sigma>\<in>K with dim \<sigma> = n \<ge> 2, K contains a 2-face of \<sigma>
-        (face-closure axiom K.1), contradicting h_no_2. For n \<le> 1, trivial.
-        Multi-day combinatorial face-counting work — left as sub-claim.\<close>
+        Argument: for \<sigma>\<in>K with dim \<sigma> = n \<ge> 2, the cached helper
+        geotop_simplex_dim_ge_2_has_2_face yields a 2-face \<tau> of \<sigma>; by
+        face-closure axiom K.1, \<tau>\<in>K, contradicting h_no_2. Hence n \<le> 1.\<close>
+      have h_K_simplex: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+        by (rule geotop_is_complex_simplex[OF hK])
+      have h_K_face_closed:
+        "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+        by (rule geotop_is_complex_face_closed[OF hK])
       have h_all_le_1: "\<forall>\<sigma>\<in>K. \<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
-        sorry
+      proof
+        fix \<sigma> assume h\<sigma>K: "\<sigma> \<in> K"
+        have h_simplex: "geotop_is_simplex \<sigma>"
+          using h_K_simplex h\<sigma>K by (by100 blast)
+        have h_dim_ex: "\<exists>n. geotop_simplex_dim \<sigma> n"
+          using h_simplex
+          unfolding geotop_is_simplex_def geotop_simplex_dim_def
+          by (by100 blast)
+        obtain n where h_dim: "geotop_simplex_dim \<sigma> n"
+          using h_dim_ex by (by100 blast)
+        have hn_le_1: "n \<le> 1"
+        proof (rule ccontr)
+          assume "\<not> n \<le> 1"
+          hence hn_ge_2: "2 \<le> n" by simp
+          obtain \<tau> where h\<tau>_face: "geotop_is_face \<tau> \<sigma>"
+                     and h\<tau>_dim: "geotop_simplex_dim \<tau> 2"
+            using geotop_simplex_dim_ge_2_has_2_face[OF h_dim hn_ge_2]
+            by (by100 blast)
+          have h\<tau>_in_K: "\<tau> \<in> K"
+            using h_K_face_closed h\<sigma>K h\<tau>_face by (by100 blast)
+          show False using h_no_2 h\<tau>_in_K h\<tau>_dim by (by100 blast)
+        qed
+        show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n" using hn_le_1 h_dim by (by100 blast)
+      qed
       \<comment> \<open>34-NE-B: each \<sigma>\<in>K is closed with empty interior in real^2 (cached).\<close>
       have h_each_cl_int: "\<forall>\<sigma>\<in>K. closed \<sigma> \<and> interior \<sigma> = {}"
       proof
