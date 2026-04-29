@@ -7097,6 +7097,12 @@ proof -
       of U near P is contained in closure C \<inter> M, which hits at most 2
       of the Bi. The remaining Bi has neighborhood points missing
       frontier U, hence Bi \<not>\<subseteq> frontier U.\<close>
+    \<comment> \<open>Sub-claim AM3a: there is a sector C in ball P \<delta> - M whose closure
+      contains points near P from U (i.e. C is locally a U-sector).\<close>
+    have hAM_sector_in_U:
+      "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U" sorry
+    \<comment> \<open>Sub-claim AM3b: that sector's closure misses at least one Bi locally,
+      hence so does the frontier of U near P; so Bi \<not>\<subseteq> frontier U.\<close>
     have hAM_U_misses_one:
       "\<exists>Bi \<in> {B1, B2, B3}. \<not> (Bi \<subseteq> frontier U)"
       sorry
