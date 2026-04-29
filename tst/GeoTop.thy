@@ -12994,25 +12994,10 @@ proof -
          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
          \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f)"
     sorry
-  have h_PL_approx:
-    "(\<exists>f. geotop_PL_map KU K2 f \<and>
-         (\<forall>P\<in>U. norm (h P - f P) < \<phi> P)) \<and>
-     (\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
-               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f
-          \<and> f ` U = h ` U
-          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
-          \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f))"
-    using h_PL_approx_part h_PL_homeo_part by (by100 blast)
   (** (3) Adjust f on Bd K_U (if needed) so that f(U) = h(U): since U is open in K_1
          without boundary constraints, slight boundary retraction gives f a bijection
          onto h(U). **)
-  have h_final: "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
-               (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f
-          \<and> f ` U = h ` U
-          \<and> geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> U
-          \<and> (\<exists>KU. geotop_is_complex KU \<and> geotop_polyhedron KU = U \<and> geotop_PL_map KU K2 f)"
-    using h_PL_approx by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using h_PL_homeo_part by (by100 blast)
 qed
 
 (** from \<S>8 Theorem 5 (Hauptvermutung for 2-manifolds) (geotop.tex:1844)
