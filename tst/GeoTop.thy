@@ -23459,6 +23459,13 @@ proof -
          (\<forall>P\<in>U. norm (h P - f P) < \<phi> P)" sorry
   (** (3) f(U) = h(U): the \<phi>-approximation + inductive construction ensures surjectivity
          onto h(U) by a "handle" argument matching each h(K_n) exactly. **)
+  \<comment> \<open>Sub-claim T36_1-A: f is PL between complexes (the inductive limit preserves PLH).\<close>
+  have hT36_1_PLH:
+    "\<exists>f K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f"
+    sorry
+  \<comment> \<open>Sub-claim T36_1-B: f(U) = h(U) (handle argument matching each h(K_n)).\<close>
+  have hT36_1_image_eq:
+    "\<exists>f. f ` U = h ` U" sorry
   have h_final: "\<exists>f. top1_homeomorphism_on U (subspace_topology UNIV geotop_euclidean_topology U)
                (f ` U) (subspace_topology UNIV geotop_euclidean_topology (f ` U)) f \<and>
              (\<exists>K K'. geotop_is_complex K \<and> geotop_is_complex K' \<and> geotop_PLH K K' f) \<and>
