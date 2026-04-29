@@ -22708,16 +22708,7 @@ proof -
   \<comment> \<open>Sub-claim T30_1-B: from explicit separation, conclude C or D separates H, K.\<close>
   have hT30_1_separates:
     "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K" sorry
-  have h_dichotomy:
-    "((\<exists>U\<^sub>1 V\<^sub>1. U\<^sub>1 \<in> T \<and> V\<^sub>1 \<in> T \<and> U\<^sub>1 \<inter> V\<^sub>1 = {} \<and>
-              X - C = U\<^sub>1 \<union> V\<^sub>1 \<and> H \<subseteq> U\<^sub>1 \<and> K \<subseteq> V\<^sub>1) \<or>
-     (\<exists>U\<^sub>2 V\<^sub>2. U\<^sub>2 \<in> T \<and> V\<^sub>2 \<in> T \<and> U\<^sub>2 \<inter> V\<^sub>2 = {} \<and>
-              X - D = U\<^sub>2 \<union> V\<^sub>2 \<and> H \<subseteq> U\<^sub>2 \<and> K \<subseteq> V\<^sub>2)) \<and>
-     (geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K)"
-    using hT30_1_explicit_sep hT30_1_separates by (by100 blast)
-  have h_final: "geotop_separates_in X T C H K \<or> geotop_separates_in X T D H K"
-    using h_dichotomy by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using hT30_1_separates by (by100 blast)
 qed
 
 (** from \<S>30 Theorem 2 (geotop.tex:6123)
