@@ -18606,6 +18606,23 @@ proof -
   (** (2) Inductive step: given K with n + 1 2-faces, pick a free 2-face \<tau>^2 by Theorem
          17_2 (2-cell with boundary arc on Bd K); remove Int \<tau>^2 and its free edge(s),
          getting K' with n 2-faces whose underlying space is still a 2-cell. **)
+  \<comment> \<open>Sub-claim T21_7-A: a free 2-face reduction step preserves Euler characteristic
+    and shrinks the 2-face count.\<close>
+  have hT21_7_reduction_step:
+    "\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 2 \<and>
+         geotop_is_n_cell (geotop_polyhedron K)
+           (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)) 2 \<longrightarrow>
+         (\<exists>K' \<tau>. geotop_is_complex K' \<and> K' \<subseteq> K \<and>
+                 \<tau> \<in> K - K' \<and> geotop_simplex_dim \<tau> 2 \<and>
+                 geotop_euler_characteristic K' = geotop_euler_characteristic K \<and>
+                 card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2}
+                   = card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} - 1 \<and>
+                 geotop_is_n_cell (geotop_polyhedron K')
+                   (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')) 2)"
+    sorry
+  \<comment> \<open>Sub-claim T21_7-B: induction on the 2-face count (using h_base + reduction step).\<close>
+  have hT21_7_eq_one:
+    "geotop_euler_characteristic K = 1" sorry
   have h_free_reduction:
     "(\<forall>K. geotop_is_complex K \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} \<ge> 2 \<and>
          geotop_is_n_cell (geotop_polyhedron K)
@@ -18618,7 +18635,7 @@ proof -
                  geotop_is_n_cell (geotop_polyhedron K')
                    (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K')) 2)) \<and>
      geotop_euler_characteristic K = 1"
-    sorry
+    using hT21_7_reduction_step hT21_7_eq_one by (by100 blast)
   have h_final: "geotop_euler_characteristic K = 1" using h_free_reduction by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
