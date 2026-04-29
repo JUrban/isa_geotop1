@@ -18663,6 +18663,21 @@ proof -
   (** (2) Count simplexes of each dimension in K_1 \<union> K_2 by inclusion-exclusion:
          V(K_1 \<cup> K_2) = V(K_1) + V(K_2) - V(K_J), similarly for E. The 2-face count is
          F(K_1) + F(K_2) since K_J has no 2-faces. **)
+  \<comment> \<open>Sub-claim T21_8-A: vertex-count inclusion-exclusion (V(K1\<union>K2) = V(K1)+V(K2)-V(KJ)).\<close>
+  have hT21_8_V:
+    "int (geotop_num_simplexes_of_dim (K1 \<union> K2) 0)
+       = int (geotop_num_simplexes_of_dim K1 0) + int (geotop_num_simplexes_of_dim K2 0)
+         - int (geotop_num_simplexes_of_dim K\<^sub>J 0)" sorry
+  \<comment> \<open>Sub-claim T21_8-B: edge-count inclusion-exclusion (E(K1\<union>K2) = E(K1)+E(K2)-E(KJ)).\<close>
+  have hT21_8_E:
+    "int (geotop_num_simplexes_of_dim (K1 \<union> K2) 1)
+       = int (geotop_num_simplexes_of_dim K1 1) + int (geotop_num_simplexes_of_dim K2 1)
+         - int (geotop_num_simplexes_of_dim K\<^sub>J 1)" sorry
+  \<comment> \<open>Sub-claim T21_8-C: face-count additivity (F(K1\<union>K2) = F(K1)+F(K2), since KJ has no 2-faces).\<close>
+  have hT21_8_F:
+    "int (geotop_num_simplexes_of_dim (K1 \<union> K2) 2)
+       = int (geotop_num_simplexes_of_dim K1 2) + int (geotop_num_simplexes_of_dim K2 2)"
+    sorry
   have h_counts:
     "int (geotop_num_simplexes_of_dim (K1 \<union> K2) 0)
        = int (geotop_num_simplexes_of_dim K1 0) + int (geotop_num_simplexes_of_dim K2 0)
@@ -18672,7 +18687,7 @@ proof -
          - int (geotop_num_simplexes_of_dim K\<^sub>J 1) \<and>
      int (geotop_num_simplexes_of_dim (K1 \<union> K2) 2)
        = int (geotop_num_simplexes_of_dim K1 2) + int (geotop_num_simplexes_of_dim K2 2)"
-    sorry
+    using hT21_8_V hT21_8_E hT21_8_F by (by100 blast)
   (** (3) Thus \<chi>(K_1 \<cup> K_2) = \<chi>(K_1) + \<chi>(K_2) - \<chi>(K_J) = \<chi>(K_1) + \<chi>(K_2). **)
   have hKJ_F0: "geotop_num_simplexes_of_dim K\<^sub>J 2 = 0"
     using hKJ by (by100 blast)
