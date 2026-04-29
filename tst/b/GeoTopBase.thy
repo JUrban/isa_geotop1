@@ -13079,6 +13079,45 @@ proof -
   show ?thesis using h\<tau>_face h\<tau>_dim by blast
 qed
 
+text \<open>For a HOL-level homeomorphism $h: \mathrm{UNIV} \leftrightarrow \mathrm{UNIV}$
+  (single-typed), $h$ commutes with closure: $h\,(\mathrm{closure}\,S) =
+  \mathrm{closure}\,(h\,S)$.\<close>
+
+lemma homeomorphism_UNIV_image_closure:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hhk: "homeomorphism UNIV UNIV h k"
+  shows "h ` closure S = closure (h ` S)"
+proof -
+  have hf_cont: "continuous_on UNIV h"
+    using hhk by (simp add: homeomorphism_def)
+  have hg_cont: "continuous_on UNIV k"
+    using hhk by (simp add: homeomorphism_def)
+  have hkh: "k (h x) = x" for x
+    using hhk by (simp add: homeomorphism_def)
+  have hhk_eq: "h (k y) = y" for y
+    using hhk by (simp add: homeomorphism_def)
+  have h_subset: "h ` closure S \<subseteq> closure (h ` S)"
+    using continuous_image_closure_subset[OF hf_cont] by simp
+  have hk_eq: "k ` (h ` S) = S"
+  proof
+    show "k ` h ` S \<subseteq> S" using hkh by force
+    show "S \<subseteq> k ` h ` S" using hkh by (auto, metis image_eqI)
+  qed
+  have hk_subset: "k ` closure (h ` S) \<subseteq> closure (k ` (h ` S))"
+    using continuous_image_closure_subset[OF hg_cont] by simp
+  have hk_subset': "k ` closure (h ` S) \<subseteq> closure S"
+    using hk_subset hk_eq by simp
+  have h_rev: "closure (h ` S) \<subseteq> h ` closure S"
+  proof
+    fix y assume hy: "y \<in> closure (h ` S)"
+    hence "k y \<in> k ` closure (h ` S)" by blast
+    hence "k y \<in> closure S" using hk_subset' by blast
+    hence "h (k y) \<in> h ` closure S" by blast
+    thus "y \<in> h ` closure S" using hhk_eq by simp
+  qed
+  show ?thesis using h_subset h_rev by blast
+qed
+
 text \<open>A simplex (in any euclidean_space) is closed (it is compact, hence closed
   in finite-dimensional space).\<close>
 
