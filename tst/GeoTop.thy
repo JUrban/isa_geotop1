@@ -19702,11 +19702,21 @@ theorem Theorem_GT_23_8:
 proof -
   (** (1) Mirror of Theorem 17_1. Let U = M' - Fr_M M'; then M' is locally Euclidean at
          every point of U. **)
+  \<comment> \<open>Sub-claim T23_8-A: U = M' - Fr_M M' is contained in M's topological interior of M'.\<close>
+  have hT23_8_U_in_int:
+    "M' - geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'
+       \<subseteq> geotop_top_interior M (subspace_topology UNIV geotop_euclidean_topology M) M'"
+    sorry
+  \<comment> \<open>Sub-claim T23_8-B: manifold boundary of M' lies inside Fr_M M'.\<close>
+  have hT23_8_bd_in_fr:
+    "geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) \<subseteq>
+       geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'" sorry
   have h_U_locE:
     "M' - geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'
        \<subseteq> geotop_top_interior M (subspace_topology UNIV geotop_euclidean_topology M) M' \<and>
      geotop_manifold_boundary M' (\<lambda>x y. norm (x - y)) \<subseteq>
-       geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'" sorry
+       geotop_frontier M (subspace_topology UNIV geotop_euclidean_topology M) M'"
+    using hT23_8_U_in_int hT23_8_bd_in_fr by (by100 blast)
   (** (2) Converse: if P \<in> Fr_M M' has an open neighbourhood V in M' homeomorphic to R^3,
          then V would be open in M (3-manifold is open mapping on interior points);
          contradicts invariance of domain. **)
