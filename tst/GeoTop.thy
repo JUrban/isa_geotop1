@@ -21696,6 +21696,26 @@ proof -
     "\<forall>J\<in>Js. \<exists>Jx. geotop_is_latitudinal S Jx \<and> J = Jx" sorry
   (** (2) T - \<union> J_i has exactly card(Js) components, each an annulus sandwiched between
          two consecutive J_i's. **)
+  \<comment> \<open>Sub-claim T28_6-A: each component U is an annulus (closure homeomorphic to
+    the standard 1-annulus).\<close>
+  have hT28_6_annulus:
+    "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+                U = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
+             (\<exists>A::(real^2) set. \<exists>f. geotop_is_k_annulus 1 A \<and>
+                top1_homeomorphism_on A (subspace_topology UNIV geotop_euclidean_topology A)
+                  (closure_on UNIV geotop_euclidean_topology U)
+                  (subspace_topology UNIV geotop_euclidean_topology
+                     (closure_on UNIV geotop_euclidean_topology U)) f)" sorry
+  \<comment> \<open>Sub-claim T28_6-B: the boundary of closure U is exactly J_i \<union> J_j for two
+    distinct elements of Js.\<close>
+  have hT28_6_bd_pair:
+    "\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
+                U = geotop_component_at UNIV geotop_euclidean_topology
+                     (geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js) P) \<longrightarrow>
+             (\<exists>i\<in>Js. \<exists>j\<in>Js. i \<noteq> j \<and>
+               geotop_frontier UNIV geotop_euclidean_topology
+                  (closure_on UNIV geotop_euclidean_topology U) = i \<union> j)" sorry
   have h_annuli:
     "(\<forall>U. (\<exists>P\<in>geotop_manifold_boundary S (\<lambda>x y. norm (x - y)) - \<Union>Js.
                 U = geotop_component_at UNIV geotop_euclidean_topology
