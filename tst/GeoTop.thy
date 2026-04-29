@@ -13123,6 +13123,18 @@ proof -
          (\<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H j. geotop_segment v v' \<inter> geotop_segment w w' \<noteq> {}
                        \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v')"
     using exI[of _ "\<lambda>i::nat. {}::((real^2) \<times> (real^2)) set"] by (by100 simp)
+  \<comment> \<open>Sub-claim T9_4-A: each H_i element vv' satisfies the access property and
+    is anchored at an endpoint v of some g \<in> G_i.\<close>
+  have hT9_4_access:
+    "\<exists>H. \<forall>i. \<forall>(v, v')\<in>H i. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I
+                    \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)" sorry
+  \<comment> \<open>Sub-claim T9_4-B: per-vertex unique-interval (combination of h_per_vertex
+    with disjointness within H_i).\<close>
+  have hT9_4_unique:
+    "\<exists>H. (\<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
+          (\<forall>v\<in>E. \<exists>!v'. (v, v') \<in> H i)) \<and>
+         (\<forall>i. \<forall>(v,v')\<in>H i. \<forall>(w,w')\<in>H i. (v,v') \<noteq> (w,w')
+              \<longrightarrow> geotop_segment v v' \<inter> geotop_segment w w' = {})" sorry
   have h_final: "\<exists>H :: nat \<Rightarrow> ((real^2) \<times> (real^2)) set.
     (\<forall>i. \<forall>(v, v')\<in>H i. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I
                     \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)) \<and>
