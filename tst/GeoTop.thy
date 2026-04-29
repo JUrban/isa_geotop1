@@ -22656,6 +22656,14 @@ proof -
          geotop_separates_in UNIV geotop_euclidean_topology T T0 T1" sorry
   (** (3) PL-approximate the topological torus T by a polyhedral torus T' (Tame imbedding
          for tori, Theorem 6.2 / Rado). **)
+  \<comment> \<open>Sub-claim T30_6-A: PL-approximate T by polyhedral torus T' in Int Y.\<close>
+  have hT30_6_PL_approx:
+    "\<exists>T'. geotop_is_torus T' \<and>
+          (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T') \<and>
+          T' \<subseteq> geotop_manifold_interior Y (\<lambda>x y. norm (x - y))" sorry
+  \<comment> \<open>Sub-claim T30_6-B: T' separates T_0 from T_1 (preserves separation).\<close>
+  have hT30_6_separates:
+    "\<exists>T'. geotop_separates_in UNIV geotop_euclidean_topology T' T0 T1" sorry
   have h_PL_torus:
     "\<exists>T'. geotop_is_torus T' \<and>
           (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = T') \<and>
