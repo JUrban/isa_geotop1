@@ -23261,6 +23261,18 @@ proof -
          (\<forall>P\<in>K. norm (h P - f P) < \<epsilon>)" sorry
   (** (3) Extend f to the 2-skeleton (apply 2-dimensional PL approximation per 2-simplex)
          and then to the 3-simplexes (cone construction). **)
+  \<comment> \<open>Sub-claim T34_1-A: f extends to a homeomorphism K \<leftrightarrow> f(K) (gluing 2/3-skeletons).\<close>
+  have hT34_1_homeo:
+    "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
+            (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f"
+    sorry
+  \<comment> \<open>Sub-claim T34_1-B: extended f is PL between complexes K' and K''.\<close>
+  have hT34_1_PLH:
+    "\<exists>f K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and> geotop_PLH K' K'' f"
+    sorry
+  \<comment> \<open>Sub-claim T34_1-C: f is an \<epsilon>-approximation of h.\<close>
+  have hT34_1_eps:
+    "\<exists>f. \<forall>P\<in>K. norm (h P - f P) < \<epsilon>" sorry
   have h_extend_to_3cells:
     "\<exists>f. top1_homeomorphism_on K (subspace_topology UNIV geotop_euclidean_topology K)
             (f ` K) (subspace_topology UNIV geotop_euclidean_topology (f ` K)) f \<and>
