@@ -12621,7 +12621,23 @@ theorem Theorem_GT_7_5:
              (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
              (geotop_PL_support \<K>) (subspace_topology X TX (geotop_PL_support \<K>)) f
          \<and> \<K> = {(\<sigma>, \<lambda>x\<in>\<sigma>. f x) |\<sigma>. \<sigma> \<in> K}"
-  sorry
+proof -
+  \<comment> \<open>Sub-claim T7_5-A: build the abstract complex \<Phi>(\<K>) = {\<phi>_h | [h] \<in> \<K>} via the
+    coordinate mappings of \<K>; apply Theorem 7_1 to realise it as a Euclidean K.\<close>
+  have hT7_5_realisation:
+    "\<exists>(K::'a set set) (f::'a \<Rightarrow> 'b).
+         geotop_is_complex K \<and>
+         top1_homeomorphism_on (geotop_polyhedron K)
+             (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+             (geotop_PL_support \<K>) (subspace_topology X TX (geotop_PL_support \<K>)) f"
+    sorry
+  \<comment> \<open>Sub-claim T7_5-B: extend the vertex iso of T7_5-A simplicially so that the
+    transported simplicial structure on K matches \<K> tile-by-tile.\<close>
+  have hT7_5_match:
+    "\<exists>(K::'a set set) (f::'a \<Rightarrow> 'b).
+         \<K> = {(\<sigma>, \<lambda>x\<in>\<sigma>. f x) |\<sigma>. \<sigma> \<in> K}" sorry
+  show ?thesis sorry
+qed
 
 (** from \<S>7 Theorem 6 (geotop.tex:1593)
     LATEX VERSION: Let \<K>_1 and \<K>_2 be PL complexes in the same space [X, \<O>]. Suppose that
