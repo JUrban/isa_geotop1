@@ -13470,7 +13470,7 @@ lemma top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism:
   fixes h :: "'a::real_normed_vector \<Rightarrow> 'a"
   assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
                       UNIV geotop_euclidean_topology h"
-  shows "homeomorphism UNIV UNIV h (inv_into UNIV h)"
+  shows "homeomorphism UNIV UNIV h (inv h)"
   sorry
 
 text \<open>Obtains-form variant of the bridge: extracts a witness $k$
