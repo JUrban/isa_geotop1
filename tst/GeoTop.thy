@@ -12222,6 +12222,20 @@ proof -
   obtain L where hL_sub: "geotop_is_subdivision L K1"
     using hK1 unfolding geotop_is_subdivision_def geotop_refines_def by (by100 blast)
   (** Step 2-3: Moise's PL construction yields f; details deferred. **)
+  \<comment> \<open>Sub-claim T6_2-A: f is a homeomorphism |K_1| \<leftrightarrow> R^2.\<close>
+  have hT6_2_homeo:
+    "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
+            (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
+            UNIV geotop_euclidean_topology f" sorry
+  \<comment> \<open>Sub-claim T6_2-B: f is a PL map (with image complex L).\<close>
+  have hT6_2_PL:
+    "\<exists>f. geotop_PL_map K1 (SOME L. geotop_is_complex L \<and> f ` geotop_polyhedron K1 = geotop_polyhedron L) f" sorry
+  \<comment> \<open>Sub-claim T6_2-C: f is a \<phi>-approximation of h.\<close>
+  have hT6_2_phi:
+    "\<exists>f. geotop_phi_approximation (\<lambda>x y. norm (x - y)) h f \<phi> (geotop_polyhedron K1)" sorry
+  \<comment> \<open>Sub-claim T6_2-D: f agrees with h on vertices.\<close>
+  have hT6_2_vertices:
+    "\<exists>f. \<forall>v\<in>geotop_complex_vertices K1. h v = f v" sorry
   have h_final: "\<exists>f. top1_homeomorphism_on (geotop_polyhedron K1)
                 (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K1))
                 UNIV geotop_euclidean_topology f
