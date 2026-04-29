@@ -7918,7 +7918,21 @@ proof -
   have hT2_8_A4_I12_closed_rel:
     "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I12" sorry
   \<comment> \<open>T2_8-A1', A2', A3', A4' for I_23: symmetric.\<close>
-  have hT2_8_A1_I23: "I23 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
+  \<comment> \<open>A1b' for I_23: I_23 \<inter> Int B_2 = \<emptyset>.\<close>
+  have hT2_8_A1b_I23_disj: "I23 \<inter> geotop_arc_interior B2 E = {}"
+  proof -
+    have h_disj_J: "geotop_polygon_interior (B2 \<union> B3) \<inter> (B2 \<union> B3) = {}"
+      by (rule polygon_interior_disjoint_polygon[OF h_poly_23_t28])
+    have h_disj_B2: "I23 \<inter> B2 = {}"
+      using h_disj_J I23_def by (by100 blast)
+    have h_intB2_sub: "geotop_arc_interior B2 E \<subseteq> B2"
+      unfolding geotop_arc_interior_def by (by100 blast)
+    show ?thesis using h_disj_B2 h_intB2_sub by (by100 blast)
+  qed
+  \<comment> \<open>A1a' for I_23: I_23 \<subseteq> I_13.\<close>
+  have hT2_8_A1a_I23_in_I13: "I23 \<subseteq> I13" sorry
+  have hT2_8_A1_I23: "I23 \<subseteq> I13 - geotop_arc_interior B2 E"
+    using hT2_8_A1a_I23_in_I13 hT2_8_A1b_I23_disj by (by100 blast)
   have hT2_8_A2_I23_conn:
     "top1_connected_on I23 (subspace_topology UNIV geotop_euclidean_topology I23)"
   proof -
