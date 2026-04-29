@@ -7836,15 +7836,7 @@ proof -
   \<comment> \<open>Sub-claim T2_8-A (\<supseteq> direction): I_12 and I_23 are components of I_13 - Int B_2.
     Decomposed into named sub-pieces capturing each step of the standard
     Jordan-style component identification.\<close>
-  \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
-    its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
-    polygon-int axiom).\<close>
-  have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
-  \<comment> \<open>T2_8-A2: I_12 is connected (polygon-interior connected).\<close>
-  have hT2_8_A2_I12_conn:
-    "top1_connected_on I12 (subspace_topology UNIV geotop_euclidean_topology I12)"
-    sorry
-  \<comment> \<open>T2_8-A3: I_12 is open in R^2 (poly_int_open).\<close>
+  \<comment> \<open>Common theta-graph helpers used by all A1-A4 sub-claims.\<close>
   have h_theta_t28: "geotop_is_theta_graph M B1 B2 B3 E"
     by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
   have hB1_bl_t28: "geotop_is_broken_line B1"
@@ -7864,6 +7856,25 @@ proof -
     by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB2_bl_t28 hE1_t28 hE2_t28 h_int12_t28])
   have h_poly_23_t28: "geotop_is_polygon (B2 \<union> B3)"
     by (rule pair_of_arcs_is_polygon[OF hB2_bl_t28 hB3_bl_t28 hE2_t28 hE3_t28 h_int23_t28])
+  \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
+    its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
+    polygon-int axiom).\<close>
+  have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
+  \<comment> \<open>T2_8-A2: I_12 is connected (polygon-interior connected).\<close>
+  have hT2_8_A2_I12_conn:
+    "top1_connected_on I12 (subspace_topology UNIV geotop_euclidean_topology I12)"
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B1 \<union> B2)
+                  (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+      using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    have h_I_comp: "geotop_polygon_interior (B1 \<union> B2) \<in> components (UNIV - (B1 \<union> B2))"
+      by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+    have h_conn_HOL: "connected I12"
+      using h_I_comp I12_def in_components_connected by (by100 blast)
+    show ?thesis
+      using h_conn_HOL top1_connected_on_geotop_iff_connected by metis
+  qed
+  \<comment> \<open>T2_8-A3: I_12 is open in R^2 (poly_int_open).\<close>
   have hT2_8_A3_I12_open: "I12 \<in> geotop_euclidean_topology"
   proof -
     have h_J_sph: "geotop_is_n_sphere (B1 \<union> B2)
@@ -7894,7 +7905,17 @@ proof -
   have hT2_8_A1_I23: "I23 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
   have hT2_8_A2_I23_conn:
     "top1_connected_on I23 (subspace_topology UNIV geotop_euclidean_topology I23)"
-    sorry
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B2 \<union> B3)
+                  (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+      using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    have h_I_comp: "geotop_polygon_interior (B2 \<union> B3) \<in> components (UNIV - (B2 \<union> B3))"
+      by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+    have h_conn_HOL: "connected I23"
+      using h_I_comp I23_def in_components_connected by (by100 blast)
+    show ?thesis
+      using h_conn_HOL top1_connected_on_geotop_iff_connected by metis
+  qed
   have hT2_8_A3_I23_open: "I23 \<in> geotop_euclidean_topology"
   proof -
     have h_J_sph: "geotop_is_n_sphere (B2 \<union> B3)
