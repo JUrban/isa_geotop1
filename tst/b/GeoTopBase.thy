@@ -13602,7 +13602,47 @@ lemma top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism:
   assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
                       UNIV geotop_euclidean_topology h"
   shows "homeomorphism UNIV UNIV h (inv h)"
-  sorry
+proof -
+  have hbij: "bij_betw h UNIV UNIV"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have h_inj: "inj h" using hbij by (simp add: bij_betw_def)
+  have h_surj: "h ` UNIV = UNIV" using hbij by (simp add: bij_betw_def)
+  have hcont_h_top1: "top1_continuous_map_on UNIV geotop_euclidean_topology
+                          UNIV geotop_euclidean_topology h"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  have hcont_h: "continuous_on UNIV h"
+    by (rule top1_continuous_map_on_UNIV_geo_imp_continuous_on[OF hcont_h_top1])
+  have hcont_inv_top1: "top1_continuous_map_on UNIV geotop_euclidean_topology
+                           UNIV geotop_euclidean_topology (inv_into UNIV h)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have hcont_inv: "continuous_on UNIV (inv h)"
+    using top1_continuous_map_on_UNIV_geo_imp_continuous_on[OF hcont_inv_top1]
+    by simp
+  have hkh: "\<And>x. inv h (h x) = x"
+  proof -
+    fix x
+    show "inv h (h x) = x" using h_inj inv_into_f_f by fastforce
+  qed
+  have hhk: "\<And>y. h (inv h y) = y"
+  proof -
+    fix y
+    have "y \<in> h ` UNIV" using h_surj by simp
+    thus "h (inv h y) = y" by (simp add: f_inv_into_f)
+  qed
+  have h_inv_image: "(inv h) ` UNIV = UNIV"
+  proof
+    show "(inv h) ` UNIV \<subseteq> UNIV" by simp
+    show "UNIV \<subseteq> (inv h) ` UNIV"
+    proof
+      fix x :: 'a assume "x \<in> UNIV"
+      have "x = inv h (h x)" using hkh by simp
+      thus "x \<in> (inv h) ` UNIV" by blast
+    qed
+  qed
+  show ?thesis
+    unfolding homeomorphism_def
+    using hcont_h hcont_inv hkh hhk h_surj h_inv_image by blast
+qed
 
 text \<open>Obtains-form variant of the bridge: extracts a witness $k$
   for the HOL homeomorphism. Easier to apply when destructuring the
