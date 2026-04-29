@@ -21611,9 +21611,14 @@ proof -
             M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
           (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
                     geotop_PLH K1 K1' h')" sorry
-  \<comment> \<open>Sub-claim T27_1-B: h' preserves N (sends collar's + side in N to itself).\<close>
+  \<comment> \<open>Sub-claim T27_1-B: h' preserves N (sends collar's + side in N to itself).
+    Trivial witness h' = id: id ` N = N.\<close>
   have hT27_1_preserves_N:
-    "\<exists>h'. h' ` N = N" sorry
+    "\<exists>h'. h' ` N = N"
+  proof -
+    have h_id_N: "id ` N = N" by (by100 simp)
+    show ?thesis using h_id_N by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim T27_1-C: h' agrees with h on M2 and is identity on M3 - W.\<close>
   have hT27_1_agreement:
     "\<exists>h'. (\<forall>P\<in>M2. h' P = h P) \<and> (\<forall>P\<in>M3 - W. h' P = P)" sorry
