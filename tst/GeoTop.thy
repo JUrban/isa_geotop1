@@ -19134,6 +19134,15 @@ proof -
                M = D \<union> D' \<union> \<Union>Ss" sorry
   (** (4) Disjointness of interiors: the regular neighbourhoods N(T), N(T'), and strip
          S_i = thick(e) have pairwise disjoint interiors by construction. **)
+  \<comment> \<open>Sub-claim T22_3-A: D, D' have disjoint interiors (regular nbhd of disjoint acyclic graphs).\<close>
+  have hT22_3_DD'_disj:
+    "\<exists>D D'. geotop_top_interior UNIV geotop_euclidean_topology D \<inter>
+            geotop_top_interior UNIV geotop_euclidean_topology D' = {}" sorry
+  \<comment> \<open>Sub-claim T22_3-B: each strip S has disjoint interior from D, D'.\<close>
+  have hT22_3_strips_disj:
+    "\<exists>D D' Ss. \<forall>S\<in>Ss. geotop_top_interior UNIV geotop_euclidean_topology S \<inter>
+                (geotop_top_interior UNIV geotop_euclidean_topology D \<union>
+                 geotop_top_interior UNIV geotop_euclidean_topology D') = {}" sorry
   have h_final: "\<exists>D D' Ss n. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
              geotop_is_n_cell D' (subspace_topology UNIV geotop_euclidean_topology D') 2 \<and>
              finite Ss \<and> card Ss = n \<and>
