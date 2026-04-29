@@ -14556,9 +14556,29 @@ proof (rule ccontr)
   have hrB_conn: "top1_connected_on (r ` B)
                     (subspace_topology UNIV geotop_euclidean_topology (r ` B))"
     sorry
-  \<comment> \<open>Sub-claim T10-B: r(B) misses {P, R} (else contradicts B \<subseteq> C^2 - (M1 \<union> M2)).\<close>
+  \<comment> \<open>Sub-claim T10-B: r(B) misses {P, R} since B avoids r-preimages of P,R,
+    and r maps C2 into frontier C2 (by retraction codomain).\<close>
   have hrB_sub: "r ` B \<subseteq> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R}"
-    sorry
+  proof
+    fix y assume "y \<in> r ` B"
+    then obtain x where hxB: "x \<in> B" and hyx: "y = r x" by blast
+    have hxC2: "x \<in> C2" using hxB hB_in by blast
+    have hx_nM1: "x \<notin> M1" using hxB hB_in by blast
+    have hx_nM2: "x \<notin> M2" using hxB hB_in by blast
+    have hrx_neP: "r x \<noteq> P"
+      using hxC2 hx_nM1 unfolding M1_def by blast
+    have hrx_neR: "r x \<noteq> R"
+      using hxC2 hx_nM2 unfolding M2_def by blast
+    have hrx_in_fr: "r x \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+    proof -
+      have h_maps_to: "\<forall>x\<in>C2. r x \<in> geotop_frontier UNIV geotop_euclidean_topology C2"
+        using hr unfolding geotop_is_retraction_def
+              top1_continuous_map_on_def by blast
+      show ?thesis using h_maps_to hxC2 by blast
+    qed
+    show "y \<in> geotop_frontier UNIV geotop_euclidean_topology C2 - {P, R}"
+      using hyx hrx_in_fr hrx_neP hrx_neR by blast
+  qed
   \<comment> \<open>Sub-claim T10-C: J \ {P, R} is the disjoint union of two separated arcs
     H, K with Q in one and S in the other (cyclic order); r(B) connected
     intersects both, contradicting Theorem_GT_1_10.\<close>
