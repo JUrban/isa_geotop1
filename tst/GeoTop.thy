@@ -22490,6 +22490,17 @@ proof -
   (** (1) Splitting C at \<Delta> replaces \<Delta> (lying in C) by two parallel copies \<Delta>_+, \<Delta>_-
          (each a polyhedral 2-cell) and keeps the D_2 part of the local decomposition
          D_1 \<cup> D_2 fixed. The resulting set C' still separates M into two sides. **)
+  \<comment> \<open>Sub-claim T30_3-A: explicit \<Delta>p, \<Delta>m witnesses for the local replacement.\<close>
+  have hT30_3_local_witness:
+    "\<exists>\<Delta>p \<Delta>m::(real^3) set.
+        geotop_is_n_cell \<Delta>p (subspace_topology UNIV geotop_euclidean_topology \<Delta>p) 2 \<and>
+        geotop_is_n_cell \<Delta>m (subspace_topology UNIV geotop_euclidean_topology \<Delta>m) 2 \<and>
+        \<Delta>p \<inter> \<Delta>m = geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<and>
+        C' \<subseteq> (C - \<Delta>) \<union> \<Delta>p \<union> \<Delta>m" sorry
+  \<comment> \<open>Sub-claim T30_3-B: separation preserved after the local replacement.\<close>
+  have hT30_3_sep_preserved:
+    "geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk"
+    sorry
   have h_local_replacement:
     "(\<exists>\<Delta>p \<Delta>m::(real^3) set.
         geotop_is_n_cell \<Delta>p (subspace_topology UNIV geotop_euclidean_topology \<Delta>p) 2 \<and>
@@ -22497,7 +22508,8 @@ proof -
         \<Delta>p \<inter> \<Delta>m = geotop_frontier UNIV geotop_euclidean_topology \<Delta> \<and>
         C' \<subseteq> (C - \<Delta>) \<union> \<Delta>p \<union> \<Delta>m)
         \<comment> \<open>\<Delta> replaced by two copies \<Delta>_+ = \<Delta>p, \<Delta>_- = \<Delta>m; D_2 fixed\<close> \<and>
-     geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk" sorry
+     geotop_separates_in M (subspace_topology UNIV geotop_euclidean_topology M) C' H Kk"
+    using hT30_3_local_witness hT30_3_sep_preserved by (by100 blast)
   (** (2) The separation between H and K is preserved because no path from H to K in M
          was forced to cross \<Delta> in a way that the replacement breaks; locally the two
          copies serve the same cutting function. **)
