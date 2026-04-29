@@ -8053,6 +8053,55 @@ proof -
       using h_clos_int by (by100 blast)
     show ?thesis using h_closedin h_eq by (by100 simp)
   qed
+  \<comment> \<open>Combine A1-A4 to get the components-in claim. Witness P \<in> I_12 from
+    polygon-interior non-emptiness; I_12 = connected_component_set ... P via
+    clopen-connected pattern.\<close>
+  \<comment> \<open>Sub-claim: I_12 is non-empty (polygon-interior contains a point).\<close>
+  have hT2_8_I12_ne: "I12 \<noteq> {}"
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B1 \<union> B2)
+                  (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+      using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    obtain P where hP_notJ: "P \<in> UNIV - (B1 \<union> B2)" and
+                  hP_eq: "geotop_polygon_interior (B1 \<union> B2) =
+                          geotop_component_at UNIV geotop_euclidean_topology
+                            (UNIV - (B1 \<union> B2)) P"
+      using geotop_polygon_interior_is_bounded_component[OF h_J_sph] by (by100 blast)
+    have h_top: "is_topology_on (UNIV::(real^2) set) (geotop_euclidean_topology::(real^2) set set)"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hP_in_univ: "P \<in> (UNIV::(real^2) set)" by (by100 simp)
+    have hsing: "top1_connected_on {P}
+                  (subspace_topology UNIV geotop_euclidean_topology {P})"
+      using top1_connected_on_singleton[OF h_top hP_in_univ] .
+    have h_in_comp: "P \<in> geotop_component_at UNIV geotop_euclidean_topology
+                          (UNIV - (B1 \<union> B2)) P"
+      by (rule geotop_self_in_component_at[OF hP_notJ hsing])
+    have h_P_in_I12: "P \<in> I12" using h_in_comp hP_eq I12_def by (by100 simp)
+    show ?thesis using h_P_in_I12 by (by100 blast)
+  qed
+  \<comment> \<open>Sub-claim: I_23 is non-empty (similar to I_12).\<close>
+  have hT2_8_I23_ne: "I23 \<noteq> {}"
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B2 \<union> B3)
+                  (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+      using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    obtain P where hP_notJ: "P \<in> UNIV - (B2 \<union> B3)" and
+                  hP_eq: "geotop_polygon_interior (B2 \<union> B3) =
+                          geotop_component_at UNIV geotop_euclidean_topology
+                            (UNIV - (B2 \<union> B3)) P"
+      using geotop_polygon_interior_is_bounded_component[OF h_J_sph] by (by100 blast)
+    have h_top: "is_topology_on (UNIV::(real^2) set) (geotop_euclidean_topology::(real^2) set set)"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have hP_in_univ: "P \<in> (UNIV::(real^2) set)" by (by100 simp)
+    have hsing: "top1_connected_on {P}
+                  (subspace_topology UNIV geotop_euclidean_topology {P})"
+      using top1_connected_on_singleton[OF h_top hP_in_univ] .
+    have h_in_comp: "P \<in> geotop_component_at UNIV geotop_euclidean_topology
+                          (UNIV - (B2 \<union> B3)) P"
+      by (rule geotop_self_in_component_at[OF hP_notJ hsing])
+    have h_P_in_I23: "P \<in> I23" using h_in_comp hP_eq I23_def by (by100 simp)
+    show ?thesis using h_P_in_I23 by (by100 blast)
+  qed
   have hT2_8_components_in:
     "I12 \<in> {C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
               C = geotop_component_at UNIV geotop_euclidean_topology
