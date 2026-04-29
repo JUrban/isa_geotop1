@@ -22333,6 +22333,28 @@ proof -
          Int L can have Bd \<Delta> non-contractible on M^2 (since such a \<Delta> would force
          orientability of M^2 by the argument of Theorem 26_4 requiring the two-sidedness
          hypothesis). **)
+  \<comment> \<open>Sub-claim T29_1-A: \<exists>p in M^2 non-contractible on M^2 but contractible in L.\<close>
+  have hT29_1_loop:
+    "\<exists>P\<^sub>0\<in>M2. \<exists>p. geotop_closed_path_on M2
+               (subspace_topology UNIV geotop_euclidean_topology M2) P\<^sub>0 p \<and>
+               \<not> geotop_path_equiv M2
+                    (subspace_topology UNIV geotop_euclidean_topology M2)
+                    P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
+               geotop_path_equiv L (subspace_topology UNIV geotop_euclidean_topology L)
+                 P\<^sub>0 p (\<lambda>t. P\<^sub>0)" sorry
+  \<comment> \<open>Sub-claim T29_1-B: no polyhedral 2-cell \<Delta> witnesses Loop-theorem in this case
+    (the two-sidedness hypothesis is essential).\<close>
+  have hT29_1_no_Delta:
+    "\<nexists>\<Delta>. geotop_is_n_cell \<Delta>
+            (subspace_topology UNIV geotop_euclidean_topology \<Delta>) 2 \<and>
+          \<Delta> \<subseteq> geotop_manifold_interior L (\<lambda>x y. norm (x - y)) \<and>
+          geotop_frontier UNIV geotop_euclidean_topology \<Delta> = \<Delta> \<inter> M2 \<and>
+          (\<exists>P\<^sub>0\<in>\<Delta> \<inter> M2. \<exists>p.
+             geotop_closed_path_on (\<Delta> \<inter> M2)
+               (subspace_topology UNIV geotop_euclidean_topology (\<Delta> \<inter> M2)) P\<^sub>0 p \<and>
+             \<not> geotop_path_equiv M2
+                  (subspace_topology UNIV geotop_euclidean_topology M2)
+                  P\<^sub>0 p (\<lambda>t. P\<^sub>0))" sorry
   have h_final: "\<exists>(L::(real^3) set) (M2::(real^3) set).
            geotop_is_lens_space 6 1 L \<and>
            top1_compact_on M2 (subspace_topology UNIV geotop_euclidean_topology M2) \<and>
