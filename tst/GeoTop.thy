@@ -7833,7 +7833,31 @@ proof -
         poly_ext(B_2 \<union> B_3) and the ray-to-infinity argument... requires more
         careful component analysis tying back to GT_2_7's component-frontier
         description. **)
-  \<comment> \<open>Sub-claim T2_8-A (\<supseteq> direction): I_12 and I_23 are components of I_13 - Int B_2.\<close>
+  \<comment> \<open>Sub-claim T2_8-A (\<supseteq> direction): I_12 and I_23 are components of I_13 - Int B_2.
+    Decomposed into named sub-pieces capturing each step of the standard
+    Jordan-style component identification.\<close>
+  \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
+    its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
+    polygon-int axiom).\<close>
+  have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
+  \<comment> \<open>T2_8-A2: I_12 is connected (polygon-interior connected).\<close>
+  have hT2_8_A2_I12_conn:
+    "top1_connected_on I12 (subspace_topology UNIV geotop_euclidean_topology I12)"
+    sorry
+  \<comment> \<open>T2_8-A3: I_12 is open in R^2 (poly_int_open).\<close>
+  have hT2_8_A3_I12_open: "I12 \<in> geotop_euclidean_topology" sorry
+  \<comment> \<open>T2_8-A4: I_12 is closed in I_13 - Int B_2 (relative-closure of
+    open polygon interior in larger ambient open set).\<close>
+  have hT2_8_A4_I12_closed_rel:
+    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I12" sorry
+  \<comment> \<open>T2_8-A1', A2', A3', A4' for I_23: symmetric.\<close>
+  have hT2_8_A1_I23: "I23 \<subseteq> I13 - geotop_arc_interior B2 E" sorry
+  have hT2_8_A2_I23_conn:
+    "top1_connected_on I23 (subspace_topology UNIV geotop_euclidean_topology I23)"
+    sorry
+  have hT2_8_A3_I23_open: "I23 \<in> geotop_euclidean_topology" sorry
+  have hT2_8_A4_I23_closed_rel:
+    "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I23" sorry
   have hT2_8_components_in:
     "I12 \<in> {C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
               C = geotop_component_at UNIV geotop_euclidean_topology
