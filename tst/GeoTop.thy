@@ -18722,11 +18722,20 @@ proof -
   (** (2) Each triangulation K_i of M extends to a triangulation K_i' of M' where K_i
          and each D_j form subcomplexes. By Theorem 21.5 (closed 2-manifold case),
          \<chi>(K_1') = \<chi>(K_2'). **)
+  \<comment> \<open>Sub-claim T21_9-A: each K_i extends to a triangulation K_i' of M' (with K_i a subcomplex).\<close>
+  have hT21_9_extend:
+    "\<exists>K1' K2'. geotop_is_complex K1' \<and> geotop_is_complex K2' \<and>
+               geotop_polyhedron K1' = M' \<and> geotop_polyhedron K2' = M' \<and>
+               K1 \<subseteq> K1' \<and> K2 \<subseteq> K2'" sorry
+  \<comment> \<open>Sub-claim T21_9-B: \<chi>(K_1) = \<chi>(K_2) (using closed 2-mfd uniqueness via 21.5 + 21.8).\<close>
+  have hT21_9_eq_chi:
+    "geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
   have h_extend:
     "(\<exists>K1' K2'. geotop_is_complex K1' \<and> geotop_is_complex K2' \<and>
                geotop_polyhedron K1' = M' \<and> geotop_polyhedron K2' = M' \<and>
                K1 \<subseteq> K1' \<and> K2 \<subseteq> K2') \<and>
-     geotop_euler_characteristic K1 = geotop_euler_characteristic K2" sorry
+     geotop_euler_characteristic K1 = geotop_euler_characteristic K2"
+    using hT21_9_extend hT21_9_eq_chi by (by100 blast)
   (** (3) By Theorem 21.8 applied to M = K_i and \<union>_j D_j glued along \<union>_j J_j, we have
          \<chi>(K_i') = \<chi>(K_i) + (\<Sigma>_j \<chi>(D_j)) - (\<Sigma>_j \<chi>(J_j))
          = \<chi>(K_i) + n (by 21.7 and 21.6 respectively). Hence \<chi>(K_1) = \<chi>(K_2). **)
