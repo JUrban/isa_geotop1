@@ -13442,6 +13442,25 @@ lemma subspace_topology_UNIV_UNIV:
   "subspace_topology UNIV T UNIV = T"
   unfolding subspace_topology_def by auto
 
+text \<open>UNIV variant of the top1$\to$HOL continuous bridge: a top1 continuous
+  map on UNIV with the bare geotop topology gives a HOL continuous_on UNIV.
+  Uses subst to insert subspace_topology UNIV T UNIV = T in the right
+  positions before applying the existing subspace-form bridge.\<close>
+
+lemma top1_continuous_map_on_UNIV_geo_imp_continuous_on:
+  fixes f :: "'a::real_normed_vector \<Rightarrow> 'b::real_normed_vector"
+  assumes hcont: "top1_continuous_map_on UNIV geotop_euclidean_topology
+                                          UNIV geotop_euclidean_topology f"
+  shows "continuous_on UNIV f"
+proof -
+  have hcont_sub: "top1_continuous_map_on UNIV
+                       (subspace_topology UNIV geotop_euclidean_topology UNIV)
+                       UNIV (subspace_topology UNIV geotop_euclidean_topology UNIV) f"
+    by (subst (1 2) subspace_topology_UNIV_UNIV) (rule hcont)
+  show "continuous_on UNIV f"
+    by (rule top1_continuous_map_on_geotop_imp_continuous_on[OF hcont_sub])
+qed
+
 text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
 
 lemma geotop_simplex_dim_imp_hyperplane_dim:
