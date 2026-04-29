@@ -17353,6 +17353,20 @@ proof -
          y = y_i and y = y_{i+1}, triangulable as the join of E_i \<inter> |K| with a point of
          E_{i+1} \<inter> |K| (Theorem 17_10). Hence Bd of the union is simply imbedded via
          Theorem 17_11. **)
+  \<comment> \<open>Sub-claim T17_12-A: zero-singular-points case admits a slab decomposition by joins.\<close>
+  have hT17_12_slab_decomp:
+    "\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
+       geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
+       (\<exists>L. geotop_is_complex L \<and> geotop_polyhedron L = S') \<and>
+       sing = {} \<longrightarrow>
+       (\<exists>Ms::nat \<Rightarrow> (real^3) set.
+          (\<forall>i. geotop_is_n_cell (Ms i)
+                 (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
+               (\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+                      Ms i = geotop_join D {v})))" sorry
+  \<comment> \<open>Sub-claim T17_12-B: S is simply imbedded (the final conclusion).\<close>
+  have hT17_12_simply_imbedded:
+    "geotop_is_simply_imbedded S" sorry
   have h_zerosing_simple:
     "(\<forall>S'::(real^3) set. \<forall>sing::(real^3) set.
        geotop_is_n_sphere S' (subspace_topology UNIV geotop_euclidean_topology S') 2 \<and>
@@ -17363,7 +17377,8 @@ proof -
                  (subspace_topology UNIV geotop_euclidean_topology (Ms i)) 3 \<and>
                (\<exists>D v. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                       Ms i = geotop_join D {v})))) \<and>
-     geotop_is_simply_imbedded S" sorry
+     geotop_is_simply_imbedded S"
+    using hT17_12_slab_decomp hT17_12_simply_imbedded by (by100 blast)
   have h_final: "geotop_is_simply_imbedded S" using h_zerosing_simple by (by100 blast)
   show ?thesis using h_final by (by100 blast)
 qed
