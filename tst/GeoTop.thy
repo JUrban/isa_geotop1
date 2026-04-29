@@ -21830,8 +21830,23 @@ proof -
     show ?thesis using h_id_N by (by100 blast)
   qed
   \<comment> \<open>Sub-claim T27_1-C: h' agrees with h on M2 and is identity on M3 - W.\<close>
+  \<comment> \<open>Sub-claim T27_1-C: h' agrees with h on M2 and is identity on M3 - W.
+    Witness h' = (\<lambda>P. if P \<in> M2 then h P else P). Disjointness M2 \<inter> (M3 - W) = \<emptyset>
+    follows from hM2_in_W: M2 \<subseteq> W.\<close>
   have hT27_1_agreement:
-    "\<exists>h'. (\<forall>P\<in>M2. h' P = h P) \<and> (\<forall>P\<in>M3 - W. h' P = P)" sorry
+    "\<exists>h'. (\<forall>P\<in>M2. h' P = h P) \<and> (\<forall>P\<in>M3 - W. h' P = P)"
+  proof -
+    define h_glue :: "real^3 \<Rightarrow> real^3" where
+      "h_glue = (\<lambda>P. if P \<in> M2 then h P else P)"
+    have h_M2: "\<forall>P\<in>M2. h_glue P = h P" unfolding h_glue_def by (by100 simp)
+    have h_outside: "\<forall>P\<in>M3 - W. h_glue P = P"
+    proof
+      fix P assume hP: "P \<in> M3 - W"
+      have hP_notM2: "P \<notin> M2" using hP hM2_in_W by (by100 blast)
+      show "h_glue P = P" using hP_notM2 unfolding h_glue_def by (by100 simp)
+    qed
+    show ?thesis using h_M2 h_outside by (by100 blast)
+  qed
   have h_final: "\<exists>h'. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
                  M3 (subspace_topology UNIV geotop_euclidean_topology M3) h' \<and>
               (\<exists>K1 K1'. geotop_is_complex K1 \<and> geotop_is_complex K1' \<and>
