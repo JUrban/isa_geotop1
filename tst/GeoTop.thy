@@ -18456,6 +18456,20 @@ proof -
   (** (1) Reduce the refinement \<C>2 \<le> \<C>1 to a finite sequence of single-step subdivisions
          each of type \<alpha> (subdivide an edge), \<beta> (subdivide a face by a chord), \<gamma> (insert a
          vertex in an edge interior), or \<delta> (insert a vertex in a face interior). **)
+  \<comment> \<open>Sub-claim T21_3-A: existence of a step sequence reducing \<C>1 to \<C>2 via single-step
+    refinements (each step is one \<alpha>/\<beta>/\<gamma>/\<delta> subdivision).\<close>
+  have hT21_3_step_seq:
+    "\<exists>steps::('a set set) list.
+        hd steps = \<C>1 \<and> last steps = \<C>2 \<and>
+        (\<forall>i < length steps - 1.
+            geotop_is_open_cell_complex (steps ! i) \<and>
+            geotop_is_open_cell_complex (steps ! (i + 1)) \<and>
+            \<Union>(steps ! i) = \<Union>(steps ! (i + 1)) \<and>
+            geotop_open_cell_refines (steps ! (i + 1)) (steps ! i))" sorry
+  \<comment> \<open>Sub-claim T21_3-B: \<chi> preserved through the step sequence (each \<alpha>/\<beta>/\<gamma>/\<delta> step
+    preserves \<chi>; induction along the sequence).\<close>
+  have hT21_3_chi_eq:
+    "geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1" sorry
   have h_seq_steps:
     "(\<exists>steps::('a set set) list.
         hd steps = \<C>1 \<and> last steps = \<C>2 \<and>
@@ -18464,7 +18478,8 @@ proof -
             geotop_is_open_cell_complex (steps ! (i + 1)) \<and>
             \<Union>(steps ! i) = \<Union>(steps ! (i + 1)) \<and>
             geotop_open_cell_refines (steps ! (i + 1)) (steps ! i))) \<and>
-     geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1" sorry
+     geotop_open_cell_euler \<C>2 = geotop_open_cell_euler \<C>1"
+    using hT21_3_step_seq hT21_3_chi_eq by (by100 blast)
   (** (2) Operation \<alpha> (split an edge at a new vertex): V \<mapsto> V + 1, E \<mapsto> E + 1, F unchanged;
          \<chi>: V - E + F unchanged. **)
   have h_alpha:
