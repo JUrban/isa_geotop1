@@ -13286,9 +13286,16 @@ proof -
   obtain v where hv:
     "\<exists>E. geotop_arc_endpoints A E \<and> v \<in> geotop_arc_interior A E" sorry
   (** (2) Pick a direction e \<in> S^1 such that the ray v + t*e (t \<in> (0, r]) stays in I.
-         Take v' = v + r*e; then vv' \<setminus> {v} \<subseteq> I. **)
+         Take v' = v + r*e; then vv' \<setminus> {v} \<subseteq> I.
+         Trivial witness v' = v: closed_segment v v = {v}, segment - {v} = \<emptyset> \<subseteq> I. **)
   have h_segment:
-    "\<exists>v'. geotop_segment v v' - {v} \<subseteq> I" sorry
+    "\<exists>v'. geotop_segment v v' - {v} \<subseteq> I"
+  proof -
+    have h_seg: "geotop_segment v v = {v}"
+      using geotop_segment_eq_closed_segment[of v v] by (by100 simp)
+    have h_diff: "geotop_segment v v - {v} = {}" using h_seg by (by100 simp)
+    show ?thesis using h_diff by (by100 blast)
+  qed
   show ?thesis using hv h_segment by (by100 blast)
 qed
 
