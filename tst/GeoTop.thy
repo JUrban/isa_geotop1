@@ -7845,7 +7845,47 @@ proof -
     "top1_connected_on I12 (subspace_topology UNIV geotop_euclidean_topology I12)"
     sorry
   \<comment> \<open>T2_8-A3: I_12 is open in R^2 (poly_int_open).\<close>
-  have hT2_8_A3_I12_open: "I12 \<in> geotop_euclidean_topology" sorry
+  have h_theta_t28: "geotop_is_theta_graph M B1 B2 B3 E"
+    by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
+  have hB1_bl_t28: "geotop_is_broken_line B1"
+    by (rule polyhedral_theta_graph_imp_bl_1[OF h\<theta>])
+  have hB2_bl_t28: "geotop_is_broken_line B2"
+    by (rule polyhedral_theta_graph_imp_bl_2[OF h\<theta>])
+  have hB3_bl_t28: "geotop_is_broken_line B3"
+    by (rule polyhedral_theta_graph_imp_bl_3[OF h\<theta>])
+  have hE1_t28: "geotop_arc_endpoints B1 E"
+    and hE2_t28: "geotop_arc_endpoints B2 E"
+    and hE3_t28: "geotop_arc_endpoints B3 E"
+    using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have h_int12_t28: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+    and h_int23_t28: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have h_poly_12_t28: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB2_bl_t28 hE1_t28 hE2_t28 h_int12_t28])
+  have h_poly_23_t28: "geotop_is_polygon (B2 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB2_bl_t28 hB3_bl_t28 hE2_t28 hE3_t28 h_int23_t28])
+  have hT2_8_A3_I12_open: "I12 \<in> geotop_euclidean_topology"
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B1 \<union> B2)
+                  (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+      using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    have h_I_comp: "geotop_polygon_interior (B1 \<union> B2) \<in> components (UNIV - (B1 \<union> B2))"
+      by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+    have h_BL_compact: "compact (B1 \<union> B2)"
+      using polygon_homeomorphic_S1_helper[OF h_poly_12_t28]
+            compact_sphere homeomorphic_compactness by (by100 blast)
+    have h_BL_closed: "closed (B1 \<union> B2)"
+      using h_BL_compact compact_imp_closed by (by100 simp)
+    have h_diff_open: "open (UNIV - (B1 \<union> B2))"
+      using h_BL_closed open_Diff by (by100 blast)
+    have h_open_I12: "open I12"
+      using h_I_comp h_diff_open open_components I12_def by (by100 blast)
+    have h_in_top1: "I12 \<in> top1_open_sets"
+      using h_open_I12 unfolding top1_open_sets_def by (by100 simp)
+    show ?thesis
+      using h_in_top1 geotop_euclidean_topology_eq_open_sets[where 'a="real^2"]
+      by (by100 simp)
+  qed
   \<comment> \<open>T2_8-A4: I_12 is closed in I_13 - Int B_2 (relative-closure of
     open polygon interior in larger ambient open set).\<close>
   have hT2_8_A4_I12_closed_rel:
@@ -7855,7 +7895,28 @@ proof -
   have hT2_8_A2_I23_conn:
     "top1_connected_on I23 (subspace_topology UNIV geotop_euclidean_topology I23)"
     sorry
-  have hT2_8_A3_I23_open: "I23 \<in> geotop_euclidean_topology" sorry
+  have hT2_8_A3_I23_open: "I23 \<in> geotop_euclidean_topology"
+  proof -
+    have h_J_sph: "geotop_is_n_sphere (B2 \<union> B3)
+                  (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+      using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    have h_I_comp: "geotop_polygon_interior (B2 \<union> B3) \<in> components (UNIV - (B2 \<union> B3))"
+      by (rule polygon_interior_is_HOL_component[OF h_J_sph])
+    have h_BL_compact: "compact (B2 \<union> B3)"
+      using polygon_homeomorphic_S1_helper[OF h_poly_23_t28]
+            compact_sphere homeomorphic_compactness by (by100 blast)
+    have h_BL_closed: "closed (B2 \<union> B3)"
+      using h_BL_compact compact_imp_closed by (by100 simp)
+    have h_diff_open: "open (UNIV - (B2 \<union> B3))"
+      using h_BL_closed open_Diff by (by100 blast)
+    have h_open_I23: "open I23"
+      using h_I_comp h_diff_open open_components I23_def by (by100 blast)
+    have h_in_top1: "I23 \<in> top1_open_sets"
+      using h_open_I23 unfolding top1_open_sets_def by (by100 simp)
+    show ?thesis
+      using h_in_top1 geotop_euclidean_topology_eq_open_sets[where 'a="real^2"]
+      by (by100 simp)
+  qed
   have hT2_8_A4_I23_closed_rel:
     "closedin (top_of_set (I13 - geotop_arc_interior B2 E)) I23" sorry
   have hT2_8_components_in:
