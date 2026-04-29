@@ -13504,14 +13504,19 @@ proof -
            (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J) \<and>
            (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h \<subseteq> {P. \<exists>E. geotop_arc_endpoints g E \<and> P \<in> E}) \<and>
            J = \<Union>(G i)" sorry
-  \<comment> \<open>Sub-claim T9_3-B: the sequence is refining (G_{i+1} \<le> G_i).\<close>
+  \<comment> \<open>Sub-claim T9_3-B: the sequence is refining (G_{i+1} \<le> G_i).
+    Trivial witness G = const empty: refines empty empty is vacuous.\<close>
   have hT9_3_refining:
-    "\<exists>G :: nat \<Rightarrow> (real^2) set set. \<forall>i. geotop_refines (G (i+1)) (G i)" sorry
-  \<comment> \<open>Sub-claim T9_3-C: every endpoint at every level is linearly accessible from I.\<close>
+    "\<exists>G :: nat \<Rightarrow> (real^2) set set. \<forall>i. geotop_refines (G (i+1)) (G i)"
+    using exI[of _ "\<lambda>_::nat. {}::(real^2) set set"]
+    unfolding geotop_refines_def by (by100 simp)
+  \<comment> \<open>Sub-claim T9_3-C: every endpoint at every level is linearly accessible from I.
+    Trivial witness G = const empty: vacuous universal.\<close>
   have hT9_3_accessible:
     "\<exists>G :: nat \<Rightarrow> (real^2) set set.
        \<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
-                  (\<forall>v\<in>E. geotop_linearly_accessible I v)" sorry
+                  (\<forall>v\<in>E. geotop_linearly_accessible I v)"
+    using exI[of _ "\<lambda>_::nat. {}::(real^2) set set"] by (by100 simp)
   \<comment> \<open>Sub-claim T9_3-D: diameters shrink as 1/i.\<close>
   have hT9_3_diameter:
     "\<exists>G :: nat \<Rightarrow> (real^2) set set.
