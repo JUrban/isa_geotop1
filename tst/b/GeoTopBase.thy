@@ -13461,6 +13461,45 @@ proof -
     by (rule top1_continuous_map_on_geotop_imp_continuous_on[OF hcont_sub])
 qed
 
+text \<open>Frontier-image helper with explicit continuous_on + inverse premises,
+  bypassing the HOL homeomorphism predicate which causes higher-order
+  unification difficulties when the function argument is inv h.\<close>
+
+lemma frontier_image_explicit:
+  fixes h k :: "'a::topological_space \<Rightarrow> 'a"
+  assumes hcont_h: "continuous_on UNIV h"
+      and hcont_k: "continuous_on UNIV k"
+      and hkh: "\<And>x. k (h x) = x"
+      and hhk: "\<And>y. h (k y) = y"
+  shows "h ` frontier S = frontier (h ` S)"
+proof -
+  have h_h_surj: "h ` UNIV = UNIV"
+  proof
+    show "h ` UNIV \<subseteq> UNIV" by simp
+    show "UNIV \<subseteq> h ` UNIV"
+    proof
+      fix y :: 'a assume "y \<in> UNIV"
+      have "y = h (k y)" using hhk by simp
+      thus "y \<in> h ` UNIV" by blast
+    qed
+  qed
+  have h_k_surj: "k ` UNIV = UNIV"
+  proof
+    show "k ` UNIV \<subseteq> UNIV" by simp
+    show "UNIV \<subseteq> k ` UNIV"
+    proof
+      fix x :: 'a assume "x \<in> UNIV"
+      have "x = k (h x)" using hkh by simp
+      thus "x \<in> k ` UNIV" by blast
+    qed
+  qed
+  have h_HOL_homeo: "homeomorphism UNIV UNIV h k"
+    unfolding homeomorphism_def
+    using hcont_h hcont_k hkh hhk h_h_surj h_k_surj by blast
+  show ?thesis
+    by (rule homeomorphism_UNIV_image_frontier[OF h_HOL_homeo])
+qed
+
 text \<open>Bridge: a top1-level homeomorphism on UNIV with the geotop topology
   yields a HOL-level homeomorphism UNIV UNIV h (inv_into UNIV h).
   Cached as sorry-stub; direct attempts hit GeoTopBase build timeouts.
