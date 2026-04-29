@@ -16542,30 +16542,10 @@ proof -
            bij_betw \<Phi>
              (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
              (geotop_free_group G)" sorry
-  have h_gens:
-    "(\<exists>(gs::(real \<Rightarrow> real^2) set).
-        card gs = k \<and>
-        (\<forall>g\<in>gs. geotop_closed_path_on A
-                    (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 g) \<and>
-        (\<forall>p. geotop_closed_path_on A
-               (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0 p \<longrightarrow>
-           (\<exists>ns::int list. length ns = card gs))) \<and>
-     (\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
-           finite G \<and> card G = k \<and>
-           bij_betw \<Phi>
-             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
-             (geotop_free_group G))"
-    using hT16_3_gens hT16_3_free by (by100 blast)
   (** (3) No relations: a PL path can only change by inserting or deleting g_i^{\<plusminus>1}
          g_i^{\<mp>1} across each triangle (no crossings between the radial intervals),
          so \<pi>(A, P_0) \<cong> F(g_1, \<dots>, g_k), the free group on k generators. **)
-  have h_final: "\<exists>(G::'a set) (\<Phi>::(real \<Rightarrow> real^2) set \<Rightarrow> ('a \<times> int) list set).
-           finite G \<and> card G = k \<and>
-           bij_betw \<Phi>
-             (geotop_pi A (subspace_topology UNIV geotop_euclidean_topology A) P\<^sub>0)
-             (geotop_free_group G)"
-    using h_gens by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using hT16_3_free by (by100 blast)
 qed
 
 (** from \<S>16 Theorem 4 (geotop.tex:3257)
