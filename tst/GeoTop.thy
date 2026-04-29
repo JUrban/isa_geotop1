@@ -17713,20 +17713,7 @@ proof -
     "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
            (subspace_topology UNIV geotop_euclidean_topology
               (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0" sorry
-  have h_contra:
-    "\<not> geotop_path_equiv (UNIV - geotop_antoine_set k T1 T2 T)
-         (subspace_topology UNIV geotop_euclidean_topology
-            (UNIV - geotop_antoine_set k T1 T2 T))
-         P\<^sub>0 p (\<lambda>t. P\<^sub>0) \<and>
-     \<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
-           (subspace_topology UNIV geotop_euclidean_topology
-              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
-    using hT18_4_p_nontrivial_Q hT18_4_not_sc by (by100 blast)
-  have h_final: "\<not> geotop_simply_connected (UNIV - geotop_antoine_set k T1 T2 T)
-           (subspace_topology UNIV geotop_euclidean_topology
-              (UNIV - geotop_antoine_set k T1 T2 T)) P\<^sub>0"
-    using h_contra by (by100 blast)
-  show ?thesis using h_final by (by100 blast)
+  show ?thesis using hT18_4_not_sc by (by100 blast)
 qed
 
 (** from \<S>18 Theorem 5 (geotop.tex:3930)
