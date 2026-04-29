@@ -11744,11 +11744,15 @@ theorem Theorem_GT_4_10:
           (Theorem 4 = our Theorem_GT_4_invariance_of_domain) would give such a nbhd
           open in R\<^sup>2, contradicting P \<in> Fr M. Hence Fr M \<subseteq> Bd M. **)
 proof -
-  (** (1) Bd M \<subseteq> Fr M. **)
-  have h_incl: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M \<and>
-                 geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
+  (** T4_10-A: Bd M \<subseteq> Fr M. Each P \<in> M - Fr M has a locally Euclidean nbhd
+      open in M; hence P \<in> Int M = M - Bd M. **)
+  have h_A: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M"
     sorry
-  show ?thesis using h_incl by (by100 blast)
+  (** T4_10-B: Fr M \<subseteq> Bd M. P \<in> Fr M cannot have plane-homeomorphic open nbhd
+      open in M (Invariance of Domain would extend it to be open in R\<^sup>2). **)
+  have h_B: "geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
+    sorry
+  show ?thesis using h_A h_B by (by100 blast)
 qed
 
 
