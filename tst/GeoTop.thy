@@ -4959,7 +4959,22 @@ proof -
               using h_EAX_ne hEAX_fin card_gt_0_iff by (by100 blast)
             show ?thesis using h0 by (by100 simp)
           qed
-          have hVX_card_ge_2: "card EdgesAtX \<ge> 2" sorry
+          \<comment> \<open>V1 closes via cached helper \<open>broken_line_internal_vertex_card_edges_ge2\<close>
+            applied to K_i (1-dim broken-line complex of arc i), with x \<in> Int_i
+            and {x} \<in> K_i (vertex case).\<close>
+          have hi_arc_v: "geotop_is_arc i (subspace_topology UNIV geotop_euclidean_topology i)"
+            using hi_bl unfolding geotop_is_broken_line_def by (by100 blast)
+          have hi_endp_v: "geotop_arc_endpoints i E"
+            using hi hE1 hE2 hE3 by (by100 blast)
+          have hVX_card_ge_2: "card EdgesAtX \<ge> 2"
+          proof -
+            have h_apply: "card {\<sigma>\<in>K_i. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+              using broken_line_internal_vertex_card_edges_ge2[where
+                  K=K_i and B=i and E=E and x=x]
+                hK_i_complex hK_i_poly hK_i_1dim hi_arc_v hi_endp_v hxK hxInt
+              by (by100 blast)
+            show ?thesis using h_apply unfolding EdgesAtX_def by (by100 simp)
+          qed
           \<comment> \<open>Sub-claim V2: each \<sigma> \<in> EdgesAtX is a closed-segment with x as
             one endpoint (since {x} \<in> K_i is a vertex face of \<sigma>, and \<sigma> is
             a 1-simplex with vertices its two endpoints).\<close>

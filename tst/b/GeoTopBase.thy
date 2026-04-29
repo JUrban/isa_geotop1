@@ -10245,6 +10245,33 @@ proof -
   show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' hK'_fin by (by100 blast)
 qed
 
+(** Structural counting lemma: for a 1-dim complex K whose polyhedron is an arc B,
+    if x is an interior point of the arc (not an arc-endpoint) and {x} is a
+    0-simplex of K, then at least two 1-simplexes of K must contain x.
+
+    Reason: x sits at an internal-arc point, so removing x from B leaves two
+    local components (B - {x} has two connected components in any small
+    arc-neighbourhood of x). The two local sides must each lie in some
+    1-simplex of K containing x, and these two 1-simplexes are distinct
+    (a single 1-simplex through x extends only in one direction from x
+    when x is its endpoint, or x cannot be a vertex of K when x is in its
+    relative interior — contradiction with {x} \<in> K).
+
+    Multi-day textbook content; stubbed here as cached infrastructure so V1
+    in Theorem_GT_2_7 closes via direct application. **)
+lemma broken_line_internal_vertex_card_edges_ge2:
+  fixes B :: "'a::real_normed_vector set" and K :: "'a set set"
+  fixes x :: 'a and E :: "'a set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K = B"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes hB_arc: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes hB_endp: "geotop_arc_endpoints B E"
+  assumes hxK: "{x} \<in> K"
+  assumes hx_int: "x \<in> geotop_arc_interior B E"
+  shows "card {\<sigma> \<in> K. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+  sorry
+
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
 definition geotop_broken_line_connected :: "'a::real_normed_vector set \<Rightarrow> bool" where
