@@ -13056,6 +13056,26 @@ proof -
     using exI[of _ "{}::(real^2) set set"] by (by100 simp)
   (** (3) Inductive refinement: G_{i+1} refines G_i by subdividing each g \<in> G_i into
          smaller sub-arcs, chosen compatibly with accessibility. **)
+  \<comment> \<open>Sub-claim T9_3-A: existence of a sequence G with each level a finite arc decomposition
+    of J (intersecting only at endpoints) and J = \<Union>(G i).\<close>
+  have hT9_3_decomp_seq:
+    "\<exists>G :: nat \<Rightarrow> (real^2) set set.
+       \<forall>i. finite (G i) \<and>
+           (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J) \<and>
+           (\<forall>g\<in>G i. \<forall>h\<in>G i. g \<noteq> h \<longrightarrow> g \<inter> h \<subseteq> {P. \<exists>E. geotop_arc_endpoints g E \<and> P \<in> E}) \<and>
+           J = \<Union>(G i)" sorry
+  \<comment> \<open>Sub-claim T9_3-B: the sequence is refining (G_{i+1} \<le> G_i).\<close>
+  have hT9_3_refining:
+    "\<exists>G :: nat \<Rightarrow> (real^2) set set. \<forall>i. geotop_refines (G (i+1)) (G i)" sorry
+  \<comment> \<open>Sub-claim T9_3-C: every endpoint at every level is linearly accessible from I.\<close>
+  have hT9_3_accessible:
+    "\<exists>G :: nat \<Rightarrow> (real^2) set set.
+       \<forall>i. \<forall>g\<in>G i. \<forall>E. geotop_arc_endpoints g E \<longrightarrow>
+                  (\<forall>v\<in>E. geotop_linearly_accessible I v)" sorry
+  \<comment> \<open>Sub-claim T9_3-D: diameters shrink as 1/i.\<close>
+  have hT9_3_diameter:
+    "\<exists>G :: nat \<Rightarrow> (real^2) set set.
+       \<forall>i>0. \<forall>g\<in>G i. \<forall>P\<in>g. g \<subseteq> geotop_nbhd_pt UNIV (\<lambda>x y. norm (x - y)) P (1 / real i)" sorry
   have h_final: "\<exists>G :: nat \<Rightarrow> (real^2) set set.
     (\<forall>i. finite (G i) \<and>
          (\<forall>g\<in>G i. geotop_is_arc g (subspace_topology UNIV geotop_euclidean_topology g) \<and> g \<subseteq> J) \<and>
