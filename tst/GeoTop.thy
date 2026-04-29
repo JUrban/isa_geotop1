@@ -23209,6 +23209,13 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology
                (f ` geotop_polyhedron N)) f \<and>
          (\<forall>P\<in>geotop_polyhedron N. norm (h P - f P) < \<epsilon>)" sorry
+  \<comment> \<open>Sub-claim T33_1-A: f is PL on N (PLH between complexes K' and K'').\<close>
+  have hT33_1_PLH:
+    "\<exists>N f K' K''. geotop_is_complex K' \<and> geotop_is_complex K'' \<and>
+                  geotop_PLH K' K'' f" sorry
+  \<comment> \<open>Sub-claim T33_1-B: image of K covered by f-image of N (X is a neighborhood of K').\<close>
+  have hT33_1_cover:
+    "\<exists>N f. h ` geotop_polyhedron K \<subseteq> f ` geotop_polyhedron N" sorry
   have h_final: "\<exists>N f. geotop_is_complex N \<and>
                geotop_polyhedron N = geotop_regular_neighborhood K K \<and>
                geotop_polyhedron N \<subseteq> U \<and>
