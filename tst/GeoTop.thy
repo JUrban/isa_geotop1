@@ -15120,19 +15120,16 @@ proof -
          relative interior of the corresponding semicircle. **)
   have h_image_split:
     "h ` M1 \<inter> h ` M2 = {} \<and> h ` M1 \<subseteq> {P. norm P \<le> 1} \<and> h ` M2 \<subseteq> {P. norm P \<le> 1}" sorry
-  (** (3) Theorem 10.9 in the unit-disk coordinates: (1, 0) and (-1, 0) lie in the same
-         component of D - (h(M_1) \<union> h(M_2)). **)
-  have h_109:
+  (** T13_3-A: Theorem 10.9 in the unit-disk coordinates: (1, 0) and (-1, 0) lie in
+      the same component of D - (h(M_1) \<union> h(M_2)). **)
+  have hT13_3_109:
     "geotop_component_at UNIV geotop_euclidean_topology
        ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h Q)
      = geotop_component_at UNIV geotop_euclidean_topology
-       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S) \<and>
-     geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
-         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
-  (** (4) Pull back the conclusion through h. **)
+       ({P. norm P \<le> 1} - (h ` M1 \<union> h ` M2)) (h S)" sorry
+  (** T13_3-B: pull back the conclusion through h. **)
   have h_final: "geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) Q
-         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S"
-    using h_109 by (by100 blast)
+         = geotop_component_at UNIV geotop_euclidean_topology (C2 - (M1 \<union> M2)) S" sorry
   show ?thesis using h_final by (by100 blast)
 qed
 
