@@ -15794,7 +15794,59 @@ proof -
   \<comment> \<open>Sub-claim T13_4-B: U - M is connected (since all points share one component).\<close>
   have hT13_4_conn:
     "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
-    sorry
+  proof (cases "U - M = {}")
+    case True
+    have h_top: "is_topology_on (UNIV::(real^2) set)
+                    (geotop_euclidean_topology::(real^2) set set)"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have h_sub_top: "is_topology_on ({}::(real^2) set)
+                      (subspace_topology UNIV geotop_euclidean_topology {})"
+      by (rule subspace_topology_is_topology_on[OF h_top empty_subsetI])
+    have h_empty_conn: "top1_connected_on ({}::(real^2) set)
+                          (subspace_topology UNIV geotop_euclidean_topology {})"
+      unfolding top1_connected_on_def using h_sub_top by blast
+    have h_UM_empty: "U - M = ({}::(real^2) set)" using True by simp
+    show "top1_connected_on (U - M) (subspace_topology UNIV geotop_euclidean_topology (U - M))"
+      using h_empty_conn unfolding h_UM_empty .
+  next
+    case False
+    obtain P where hP_UM: "P \<in> U - M" using False by blast
+    define C where "C = connected_component_set (U - M) P"
+    have hC_conn: "connected C" unfolding C_def by simp
+    have hC_sub: "C \<subseteq> U - M" unfolding C_def
+      using connected_component_subset by blast
+    have h_UM_sub_C: "U - M \<subseteq> C"
+    proof
+      fix Q assume hQ_UM: "Q \<in> U - M"
+      have h_Q_eq_P: "geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
+                    = geotop_component_at UNIV geotop_euclidean_topology (U - M) P"
+        using hT13_4_share_comp hQ_UM hP_UM by (by100 blast)
+      have h_Q_in_compQ: "Q \<in> geotop_component_at UNIV geotop_euclidean_topology (U - M) Q"
+      proof -
+        have h_top: "is_topology_on (UNIV::(real^2) set)
+                       (geotop_euclidean_topology::(real^2) set set)"
+          by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+        have h_Q_univ: "Q \<in> (UNIV::(real^2) set)" by simp
+        have hsing_conn: "top1_connected_on {Q}
+                            (subspace_topology UNIV geotop_euclidean_topology {Q})"
+          by (rule top1_connected_on_singleton[OF h_top h_Q_univ])
+        show ?thesis
+          by (rule geotop_self_in_component_at[OF hQ_UM hsing_conn])
+      qed
+      have h_Q_in_compP: "Q \<in> geotop_component_at UNIV geotop_euclidean_topology (U - M) P"
+        using h_Q_in_compQ h_Q_eq_P by simp
+      have h_compP_HOL: "geotop_component_at UNIV geotop_euclidean_topology (U - M) P
+                       = connected_component_set (U - M) P"
+        by (rule geotop_component_at_UNIV_eq_connected_component_set)
+      show "Q \<in> C" using h_Q_in_compP h_compP_HOL C_def by simp
+    qed
+    have h_UM_eq_C: "U - M = C"
+      using h_UM_sub_C hC_sub by blast
+    have h_UM_conn_HOL: "connected (U - M)"
+      using h_UM_eq_C hC_conn by simp
+    show ?thesis
+      using h_UM_conn_HOL top1_connected_on_geotop_iff_connected by metis
+  qed
   have h_same_comp:
     "(\<forall>Q\<in>U - M. \<forall>S\<in>U - M.
         geotop_component_at UNIV geotop_euclidean_topology (U - M) Q
