@@ -18794,9 +18794,16 @@ proof -
      K\<^sub>J \<subseteq> K' \<and> K\<^sub>J' \<subseteq> K'" sorry
   (** (2) Count simplex changes: V(K') = V(K) + V_J, E(K') = E(K) + E_J, F(K') = F(K).
          Since J is a polygon, V_J = E_J, so the changes cancel and \<chi>(K') = \<chi>(K). **)
+  \<comment> \<open>Sub-claim T21_10-A: simplex-count change is zero (V_J = E_J for polygon J).\<close>
+  have hT21_10_zero_change:
+    "\<chi>\<^sub>K' - \<chi>\<^sub>K = (0::int)" sorry
+  \<comment> \<open>Sub-claim T21_10-B: \<chi>(M) = \<chi>(M') (well-defined Euler invariant).\<close>
+  have hT21_10_chi_eq:
+    "geotop_manifold_euler M = geotop_manifold_euler M'" sorry
   have h_counts:
     "\<chi>\<^sub>K' - \<chi>\<^sub>K = (0::int) \<comment> \<open>placeholder: V_J - E_J = 0 for the polygon J\<close> \<and>
-     geotop_manifold_euler M = geotop_manifold_euler M'" sorry
+     geotop_manifold_euler M = geotop_manifold_euler M'"
+    using hT21_10_zero_change hT21_10_chi_eq by (by100 blast)
   have h_final: "geotop_manifold_euler M = geotop_manifold_euler M'"
     using h_counts by (by100 blast)
   show ?thesis using h_final by (by100 blast)
