@@ -13465,6 +13465,19 @@ text \<open>Frontier-image helper with explicit continuous_on + inverse premises
   bypassing the HOL homeomorphism predicate which causes higher-order
   unification difficulties when the function argument is inv h.\<close>
 
+
+text \<open>If $f$ and $g$ agree on $\sigma$, then $\mathit{simplicial\_on}\,\sigma\,f\,\tau$
+  iff $\mathit{simplicial\_on}\,\sigma\,g\,\tau$ — both depend only on the
+  values of the function on $\sigma$ (since vertices $V \subseteq \sigma$ and
+  the linear-on barycentric points are in $\sigma$).\<close>
+
+lemma geotop_simplicial_on_eq_on:
+  fixes f g :: "'a::real_vector \<Rightarrow> 'b::real_vector" and \<sigma> :: "'a set" and \<tau> :: "'b set"
+  assumes hf: "geotop_simplicial_on \<sigma> f \<tau>"
+      and heq: "\<forall>x\<in>\<sigma>. g x = f x"
+  shows "geotop_simplicial_on \<sigma> g \<tau>"
+  sorry
+
 lemma frontier_image_explicit:
   fixes h k :: "'a::topological_space \<Rightarrow> 'a"
   assumes hcont_h: "continuous_on UNIV h"

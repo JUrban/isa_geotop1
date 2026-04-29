@@ -11131,12 +11131,32 @@ proof -
             UNIV geotop_euclidean_topology g"
     sorry
   \<comment> \<open>Sub-claim AE-2: the extension g is also simplicial on \<sigma> with g(\<sigma>) \<subseteq> \<tau>.
-    Follows from AE-1 + simplicial property of f preserved through extension.\<close>
+    Follows from AE-1 + simplicial property of f preserved through extension
+    (via cached helper geotop_simplicial_on_eq_on).\<close>
   have h_affine_simplicial:
     "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
               UNIV geotop_euclidean_topology g
          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
-    sorry
+  proof -
+    obtain g where hg_eq: "\<forall>x\<in>\<sigma>. g x = f x"
+               and hg_bij: "bij g"
+               and hg_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                                  UNIV geotop_euclidean_topology g"
+      using h_affine_extension by blast
+    \<comment> \<open>g \<sigma> \<subseteq> \<tau> from g x = f x on \<sigma> and f maps \<sigma> into \<tau>.\<close>
+    have hf_bij_on: "bij_betw f \<sigma> \<tau>"
+      using hf_simpl unfolding top1_homeomorphism_on_def by blast
+    have hf_into_\<tau>: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>"
+      using hf_bij_on unfolding bij_betw_def by blast
+    have hg_into_\<tau>: "\<forall>x\<in>\<sigma>. g x \<in> \<tau>"
+      using hg_eq hf_into_\<tau> by simp
+    \<comment> \<open>simplicial_on \<sigma> g \<tau> from simplicial_on \<sigma> f \<tau> via the cached helper.\<close>
+    have hf_simp: "geotop_simplicial_on \<sigma> f \<tau>"
+      using hf_simpl by blast
+    have hg_simp: "geotop_simplicial_on \<sigma> g \<tau>"
+      by (rule geotop_simplicial_on_eq_on[OF hf_simp hg_eq])
+    show ?thesis using hg_homeo hg_into_\<tau> hg_simp by blast
+  qed
   have h_affine_ext:
     "(\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
          top1_homeomorphism_on UNIV geotop_euclidean_topology
