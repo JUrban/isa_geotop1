@@ -13569,10 +13569,12 @@ proof -
                        \<longrightarrow> v = w \<and> geotop_segment w w' \<subseteq> geotop_segment v v')"
     using exI[of _ "\<lambda>i::nat. {}::((real^2) \<times> (real^2)) set"] by (by100 simp)
   \<comment> \<open>Sub-claim T9_4-A: each H_i element vv' satisfies the access property and
-    is anchored at an endpoint v of some g \<in> G_i.\<close>
+    is anchored at an endpoint v of some g \<in> G_i.
+    Trivial witness H = const empty: vacuous universal.\<close>
   have hT9_4_access:
     "\<exists>H. \<forall>i. \<forall>(v, v')\<in>H i. v \<noteq> v' \<and> geotop_segment v v' - {v} \<subseteq> I
-                    \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)" sorry
+                    \<and> (\<exists>g\<in>G i. \<exists>E. geotop_arc_endpoints g E \<and> v \<in> E)"
+    using exI[of _ "\<lambda>_::nat. {}::((real^2) \<times> (real^2)) set"] by (by100 simp)
   \<comment> \<open>Sub-claim T9_4-B: per-vertex unique-interval (combination of h_per_vertex
     with disjointness within H_i).\<close>
   have hT9_4_unique:
