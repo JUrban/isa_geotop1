@@ -13436,6 +13436,12 @@ lemma top1_homeomorphism_on_imp_cont2:
 text \<open>Direct accessor for geotop_is_n_cell to extract the simplex+homeomorphism
   existential. Avoids the by100 cap pressure when used inline in proofs.\<close>
 
+text \<open>The subspace topology of the whole universe is the topology itself.\<close>
+
+lemma subspace_topology_UNIV_UNIV:
+  "subspace_topology UNIV T UNIV = T"
+  unfolding subspace_topology_def by auto
+
 text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
 
 lemma geotop_simplex_dim_imp_hyperplane_dim:
