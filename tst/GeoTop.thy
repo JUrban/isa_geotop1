@@ -7851,7 +7851,8 @@ proof -
   have h_split_I13:
     "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
-         = {I12, I23}" sorry
+         = {I12, I23}"
+    using hT2_8_components_in hT2_8_components_out by (by100 blast)
   (** (2) Closure additivity: Cl(I_13) = Cl(I_12) \<cup> Cl(I_23) because I_13 \<setminus> Int B_2 =
          I_12 \<union> I_23 and the middle arc B_2 is shared between the closures. **)
   have h_closures:
