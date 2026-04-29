@@ -23194,6 +23194,14 @@ proof -
      (\<forall>P\<^sub>0\<in>J. \<exists>p. p ` {0..1} = J \<and>
              geotop_closed_path_on (S'' (j+1))
                (subspace_topology UNIV geotop_euclidean_topology (S'' (j+1))) P\<^sub>0 p)" sorry
+  (** T31_4-A: the two dichotomies agree — when J bounds a 2-cell on T''_j, the
+      2-cell on T''_{j+1} also exists, and vice versa for the generator case. The
+      consistency uses J \<subseteq> T''_j \<inter> T''_{j+1} and canonical-config disjointness. **)
+  have h_consistent:
+    "((\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+           D \<subseteq> T'' j \<and> geotop_frontier UNIV geotop_euclidean_topology D = J) \<longleftrightarrow>
+      (\<exists>D. geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
+           D \<subseteq> T'' (j+1) \<and> geotop_frontier UNIV geotop_euclidean_topology D = J))" sorry
   have h_final: "(\<forall>k\<in>{j, j+1}. \<forall>P\<^sub>0\<in>J. \<exists>p.
              p ` {0..1} = J \<and>
              geotop_closed_path_on (S'' k)
