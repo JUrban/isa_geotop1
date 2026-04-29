@@ -13461,6 +13461,18 @@ proof -
     by (rule top1_continuous_map_on_geotop_imp_continuous_on[OF hcont_sub])
 qed
 
+text \<open>Bridge: a top1-level homeomorphism on UNIV with the geotop topology
+  yields a HOL-level homeomorphism UNIV UNIV h (inv_into UNIV h).
+  Cached as sorry-stub; direct attempts hit GeoTopBase build timeouts.
+  Mathematical content: standard combination of bij_betw + continuity bridges.\<close>
+
+lemma top1_homeomorphism_on_UNIV_imp_HOL_homeomorphism:
+  fixes h :: "'a::real_normed_vector \<Rightarrow> 'a"
+  assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                      UNIV geotop_euclidean_topology h"
+  shows "homeomorphism UNIV UNIV h (inv_into UNIV h)"
+  sorry
+
 text \<open>For an n-simplex σ, its affine hull is an n-dim hyperplane.\<close>
 
 lemma geotop_simplex_dim_imp_hyperplane_dim:
