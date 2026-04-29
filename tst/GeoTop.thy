@@ -21578,6 +21578,15 @@ proof -
                  geotop_in_standard_position S (hJ ` J) Jx \<and>
                  (\<forall>P\<in>M3 - W. hJ P = P)" sorry
   (** (2) Assemble composed PLH h supported in W. **)
+  \<comment> \<open>Sub-claim T28_3-A: composing per-J PLHs gives a homeo M3 \<leftrightarrow> M3 preserving S.\<close>
+  have hT28_3_homeo:
+    "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
+            M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
+         h ` S = S" sorry
+  \<comment> \<open>Sub-claim T28_3-B: each J in Js ends in standard position; identity outside W.\<close>
+  have hT28_3_position:
+    "\<exists>h. (\<forall>J\<in>Js. geotop_in_standard_position S (h ` J) Jx) \<and>
+         (\<forall>P\<in>M3 - W. h P = P)" sorry
   have h_final: "\<exists>h. top1_homeomorphism_on M3 (subspace_topology UNIV geotop_euclidean_topology M3)
               M3 (subspace_topology UNIV geotop_euclidean_topology M3) h \<and>
               h ` S = S \<and>
