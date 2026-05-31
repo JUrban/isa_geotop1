@@ -6280,7 +6280,17 @@ proof -
                   + cos (2*pi*real ?k/real n) * sin (2*pi*\<theta>)" by (rule sin_add)
               finally have hs: "sin (2*pi*?t/real n) = sin (2*pi*real ?k/real n) * cos (2*pi*\<theta>)
                   + cos (2*pi*real ?k/real n) * sin (2*pi*\<theta>)" .
-              show ?thesis using hc hs hs_eq by (by100 simp)
+              have hfst: "fst s = cos (2*pi*\<theta>)" using hs_eq by (by100 simp)
+              have hsnd: "snd s = sin (2*pi*\<theta>)" using hs_eq by (by100 simp)
+              have h1: "fst (cos (2*pi*?t / real n), sin (2*pi*?t / real n))
+                  = fst (cos (2*pi*real ?k/real n) * fst s - sin (2*pi*real ?k/real n) * snd s,
+                         sin (2*pi*real ?k/real n) * fst s + cos (2*pi*real ?k/real n) * snd s)"
+                using hc hfst hsnd by (by100 simp)
+              have h2: "snd (cos (2*pi*?t / real n), sin (2*pi*?t / real n))
+                  = snd (cos (2*pi*real ?k/real n) * fst s - sin (2*pi*real ?k/real n) * snd s,
+                         sin (2*pi*real ?k/real n) * fst s + cos (2*pi*real ?k/real n) * snd s)"
+                using hs hfst hsnd by (by100 simp)
+              show ?thesis by (rule prod_eqI[OF h1 h2])
             qed
             hence "q s = q (cos (2*pi*?t / real n), sin (2*pi*?t / real n))"
               using hq_iff hk_lt by (by100 blast)

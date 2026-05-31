@@ -10550,7 +10550,8 @@ proof -
             moreover have "W1_S2 \<inter> (top1_S2 - C') = W1_S2" using hW1_sub_C' by (by100 blast)
             ultimately have "W1_S2 \<in> subspace_topology top1_S2 top1_S2_topology (top1_S2 - C')"
               by simp
-            thus ?thesis unfolding subspace_topology_def by (by100 blast)
+            moreover have "W1_S2 \<inter> Ca = Ca \<inter> W1_S2" by (by100 blast)
+            ultimately show ?thesis unfolding subspace_topology_def by (by100 blast)
           qed
           moreover have "W2_S2 \<inter> Ca \<in> subspace_topology (top1_S2 - C')
               (subspace_topology top1_S2 top1_S2_topology (top1_S2 - C')) Ca"
@@ -10560,7 +10561,8 @@ proof -
             moreover have "W2_S2 \<inter> (top1_S2 - C') = W2_S2" using hW2_sub_C' by (by100 blast)
             ultimately have "W2_S2 \<in> subspace_topology top1_S2 top1_S2_topology (top1_S2 - C')"
               by simp
-            thus ?thesis unfolding subspace_topology_def by (by100 blast)
+            moreover have "W2_S2 \<inter> Ca = Ca \<inter> W2_S2" by (by100 blast)
+            ultimately show ?thesis unfolding subspace_topology_def by (by100 blast)
           qed
           moreover have "W1_S2 \<inter> Ca \<noteq> {}" using hw hCa(2) by (by100 blast)
           moreover have "W2_S2 \<inter> Ca \<noteq> {}" using \<open>y \<in> W2_S2\<close> \<open>y \<in> Ca\<close> by (by100 blast)

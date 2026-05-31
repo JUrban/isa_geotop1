@@ -2005,46 +2005,6 @@ text \<open>Helper used by Theorem_GT_2_7 and Theorem_GT_2_8: if two broken line
   share endpoints \<open>{P, Q}\<close> with disjoint open interiors, then their union is
   a polygon (i.e., a polyhedral 1-sphere).\<close>
 
-lemma arc_endpoints_imp_arc_HOL:
-  fixes B :: "(real^2) set" and E :: "(real^2) set"
-  assumes hE: "geotop_arc_endpoints B E"
-  shows "\<exists>f::real \<Rightarrow> real^2.
-            arc f \<and>
-            path_image f = B \<and>
-            E = {pathstart f, pathfinish f}"
-proof -
-  from hE obtain f0 :: "real \<Rightarrow> real^2" where
-    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
-        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
-        (subspace_topology UNIV geotop_euclidean_topology B) f0"
-    and hE_eq: "E = {f0 0, f0 1}"
-    unfolding geotop_arc_endpoints_def by blast
-  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by auto
-  have h_cont_top1: "top1_continuous_map_on {0..1}
-        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
-        (subspace_topology UNIV geotop_euclidean_topology B) f0"
-    using h_homeo h_unit_iv unfolding top1_homeomorphism_on_def by simp
-  have h_f0_cont: "continuous_on {0..1::real} f0"
-    using h_cont_top1 top1_continuous_map_on_geotop_imp_continuous_on by blast
-  have h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
-    using h_homeo h_unit_iv unfolding top1_homeomorphism_on_def by simp
-  have h_f0_inj: "inj_on f0 {0..1::real}"
-    using h_f0_bij_betw by (simp add: bij_betw_def)
-  have h_path_f0: "path f0"
-    unfolding path_def using h_f0_cont by simp
-  have h_arc_f0: "arc f0"
-    unfolding arc_def using h_path_f0 h_f0_inj by blast
-  have h_path_image_f0: "path_image f0 = B"
-  proof -
-    have "path_image f0 = f0 ` {0..1}" unfolding path_image_def by simp
-    also have "\<dots> = B" using h_f0_bij_betw by (simp add: bij_betw_def)
-    finally show ?thesis .
-  qed
-  have h_endpoints: "E = {pathstart f0, pathfinish f0}"
-    using hE_eq by (simp add: pathstart_def pathfinish_def)
-  show ?thesis using h_arc_f0 h_path_image_f0 h_endpoints by blast
-qed
-
 lemma arc_join_image_eq:
   fixes f g :: "real \<Rightarrow> 'a::topological_space"
   assumes "pathfinish f = pathstart g"

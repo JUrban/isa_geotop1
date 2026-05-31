@@ -796,7 +796,7 @@ proof -
       have h\<alpha>nn: "\<forall>v'\<in>{v}. 0 \<le> \<alpha> v'" unfolding \<alpha>_def by (by100 simp)
       have h\<alpha>sum: "sum \<alpha> {v} = 1" unfolding \<alpha>_def by (by100 simp)
       have h\<alpha>combo: "(\<Sum>v'\<in>{v}. \<alpha> v' *\<^sub>R v') = v" unfolding \<alpha>_def by (by100 simp)
-      have hx\<sigma>: "v \<in> {v}" by (by100 simp)
+      have hx\<sigma>: "v \<in> {v}" by (rule singletonI)
       have h_gv: "g v = (\<Sum>v'\<in>{v}. \<alpha> v' *\<^sub>R \<phi> v')"
         by (rule hg_eq[OF hv_singleton_K hx\<sigma> hV_sv h\<alpha>nn h\<alpha>sum h\<alpha>combo])
       have h_sum: "(\<Sum>v'\<in>{v}. \<alpha> v' *\<^sub>R \<phi> v') = \<phi> v"
@@ -1201,7 +1201,9 @@ proof -
           using h_sum_reindex by (by100 simp)
         have s3: "(\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<beta> w *\<^sub>R w) = z"
           using h_sum_V\<tau> h_sum_z by (by100 simp)
-        show ?thesis using s1 s2 s3 by (by100 simp)
+        have s4: "g x = (\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<beta> w *\<^sub>R w)"
+          by (rule trans[OF s1 s2])
+        show ?thesis by (rule trans[OF s4 s3])
       qed
       show "z \<in> g ` geotop_polyhedron K"
         using hx_poly h_gx_z by (by100 blast)
@@ -1758,7 +1760,10 @@ proof -
         have h_ex: "\<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
                          \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = y\<^sub>c"
           using hb_c_nn hb_c_sum unfolding y\<^sub>c_def by (by100 blast)
-        show ?thesis using hcc h_ex by (by100 blast)
+        have hyc_set: "y\<^sub>c \<in> {u. \<exists>u\<^sub>c. (\<forall>v\<in>V\<^sub>c. 0 \<le> u\<^sub>c v) \<and> sum u\<^sub>c V\<^sub>c = 1
+                             \<and> (\<Sum>v\<in>V\<^sub>c. u\<^sub>c v *\<^sub>R v) = u}"
+          using h_ex by (by100 blast)
+        show ?thesis by (subst hcc, rule hyc_set)
       qed
       have hxc_\<sigma>c: "x\<^sub>c \<in> \<sigma>\<^sub>c" using hxc_hull h\<sigma>c_HOL by (by100 simp)
       have hyc_\<sigma>c: "y\<^sub>c \<in> \<sigma>\<^sub>c" using hyc_hull h\<sigma>c_HOL by (by100 simp)
@@ -2441,7 +2446,13 @@ proof -
             unfolding \<beta>_def o_def by (by100 simp)
           have h3: "sum \<alpha> (\<phi> ` V\<^sub>\<sigma>) = sum \<alpha> V\<^sub>\<tau>"
             using h\<phi>_V\<sigma>_eq_V\<tau> by (by100 simp)
-          show ?thesis using h1 h2 h3 h\<alpha>_sum by (by100 simp)
+          have h4: "sum \<beta> V\<^sub>\<sigma> = sum (\<alpha> \<circ> \<phi>) V\<^sub>\<sigma>"
+            by (rule h2[symmetric])
+          have h5: "sum \<beta> V\<^sub>\<sigma> = sum \<alpha> (\<phi> ` V\<^sub>\<sigma>)"
+            by (rule trans[OF h4 h1[symmetric]])
+          have h6: "sum \<beta> V\<^sub>\<sigma> = sum \<alpha> V\<^sub>\<tau>"
+            by (rule trans[OF h5 h3])
+          show ?thesis using h6 h\<alpha>_sum by (by100 simp)
         qed
         (** y \<in> conv hull V_\<sigma> = \<sigma>. **)
         have hy_hull: "y \<in> convex hull V\<^sub>\<sigma>"
@@ -2828,7 +2839,8 @@ proof -
         then obtain w' where hw'V\<tau>: "w' \<in> V\<tau>"
                           and hw_eq: "w = \<phi> (inv_into (geotop_complex_vertices K) \<phi> w')"
           by (by100 blast)
-        have hw'_VL: "w' \<in> geotop_complex_vertices L" using hw'V\<tau> hV\<tau>_sub_VL by (by100 blast)
+        have hw'_VL: "w' \<in> geotop_complex_vertices L"
+          by (rule subsetD[OF hV\<tau>_sub_VL hw'V\<tau>])
         have hw'_img: "w' \<in> \<phi> ` geotop_complex_vertices K"
           using hw'_VL h\<phi>_bij unfolding bij_betw_def by (by100 simp)
         have h_round: "\<phi> (inv_into (geotop_complex_vertices K) \<phi> w') = w'"
@@ -4039,8 +4051,12 @@ proof -
         by (rule geotop_linear_inj_image_preserves_face[OF h\<tau>_L_lin hf_inj_\<tau>_L h_intface_\<tau>_L])
       have h_int_eq: "\<sigma> \<inter> \<tau> = f ` (\<sigma>_L \<inter> \<tau>_L)"
         using h\<sigma>_eq h\<tau>_eq h_image_int by (by100 simp)
+      have h_face_\<sigma>_final: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+        by (subst h_int_eq, subst h\<sigma>_eq, rule h_face_\<sigma>)
+      have h_face_\<tau>_final: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        by (subst h_int_eq, subst h\<tau>_eq, rule h_face_\<tau>)
       show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-        using h_int_eq h\<sigma>_eq h\<tau>_eq h_face_\<sigma> h_face_\<tau> by (by100 simp)
+        using h_face_\<sigma>_final h_face_\<tau>_final by (by100 blast)
     qed
     (** (b3) K.3: local finiteness. f is continuous (PL-homeomorphism),
             so pull back L_1's local-finiteness witness through f. **)
@@ -8018,6 +8034,52 @@ definition geotop_arc_endpoints :: "'a::real_normed_vector set \<Rightarrow> 'a 
 definition geotop_arc_interior :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
   "geotop_arc_interior A E = A - E"
 
+lemma arc_endpoints_imp_arc_HOL:
+  fixes B :: "'a::real_normed_vector set" and E :: "'a set"
+  assumes hE: "geotop_arc_endpoints B E"
+  shows "\<exists>f::real \<Rightarrow> 'a.
+            arc f \<and>
+            path_image f = B \<and>
+            E = {pathstart f, pathfinish f}"
+proof -
+  from hE obtain f0 :: "real \<Rightarrow> 'a" where
+    h_homeo: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    and hE_eq: "E = {f0 0, f0 1}"
+    unfolding geotop_arc_endpoints_def by (by100 blast)
+  have h_unit_iv: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}" by (by100 auto)
+  have h_homeo_iv: "top1_homeomorphism_on {0..1}
+        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    using h_homeo h_unit_iv by (by100 simp)
+  have h_cont_top1: "top1_continuous_map_on {0..1}
+        (subspace_topology UNIV geotop_euclidean_topology {0..1}) B
+        (subspace_topology UNIV geotop_euclidean_topology B) f0"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[OF conjunct2[
+        OF h_homeo_iv[unfolded top1_homeomorphism_on_def]]]]])
+  have h_f0_cont: "continuous_on {0..1::real} f0"
+    using h_cont_top1 top1_continuous_map_on_geotop_imp_continuous_on by (by100 blast)
+  have h_f0_bij_betw: "bij_betw f0 {0..1::real} B"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[
+        OF h_homeo_iv[unfolded top1_homeomorphism_on_def]]]])
+  have h_f0_inj: "inj_on f0 {0..1::real}"
+    using h_f0_bij_betw unfolding bij_betw_def by (by100 simp)
+  have h_path_f0: "path f0"
+    unfolding path_def using h_f0_cont by (by100 simp)
+  have h_arc_f0: "arc f0"
+    unfolding arc_def using h_path_f0 h_f0_inj by (by100 blast)
+  have h_path_image_f0: "path_image f0 = B"
+  proof -
+    have "path_image f0 = f0 ` {0..1}" unfolding path_image_def by (by100 simp)
+    also have "\<dots> = B" using h_f0_bij_betw unfolding bij_betw_def by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_endpoints: "E = {pathstart f0, pathfinish f0}"
+    using hE_eq unfolding pathstart_def pathfinish_def by (by100 simp)
+  show ?thesis using h_arc_f0 h_path_image_f0 h_endpoints by (by100 blast)
+qed
+
 (** Helper: a closed segment between two distinct points is a 1-simplex (and hence
     both an arc and a polyhedron; i.e., a broken line). **)
 lemma geotop_closed_segment_is_simplex:
@@ -10074,7 +10136,14 @@ proof -
     from h_ex_K' obtain K' where hK'_all: "geotop_is_complex K' \<and> geotop_complex_is_1dim K'
               \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
               \<and> K - {\<sigma>} \<subseteq> K'
-              \<and> (finite K \<longrightarrow> finite K')" by (by100 blast)
+              \<and> (finite K \<longrightarrow> finite K')"
+    proof
+      fix K' assume hK': "geotop_is_complex K' \<and> geotop_complex_is_1dim K'
+              \<and> geotop_polyhedron K' = geotop_polyhedron K \<and> {R} \<in> K'
+              \<and> K - {\<sigma>} \<subseteq> K'
+              \<and> (finite K \<longrightarrow> finite K')"
+      show thesis by (rule that[OF hK'])
+    qed
     have hK'_comp: "geotop_is_complex K'" using hK'_all by (by100 simp)
     have hK'_1dim: "geotop_complex_is_1dim K'" using hK'_all by (by100 simp)
     have hK'_poly: "geotop_polyhedron K' = geotop_polyhedron K" using hK'_all by (by100 simp)
@@ -10259,33 +10328,6 @@ proof -
   have hK'_fin: "finite K'" using hK'_fin_imp hKfin by (by100 simp)
   show ?thesis using hK'_comp hK'_1dim hK'_B hR_K' hK'_fin by (by100 blast)
 qed
-
-(** Structural counting lemma: for a 1-dim complex K whose polyhedron is an arc B,
-    if x is an interior point of the arc (not an arc-endpoint) and {x} is a
-    0-simplex of K, then at least two 1-simplexes of K must contain x.
-
-    Reason: x sits at an internal-arc point, so removing x from B leaves two
-    local components (B - {x} has two connected components in any small
-    arc-neighbourhood of x). The two local sides must each lie in some
-    1-simplex of K containing x, and these two 1-simplexes are distinct
-    (a single 1-simplex through x extends only in one direction from x
-    when x is its endpoint, or x cannot be a vertex of K when x is in its
-    relative interior — contradiction with {x} \<in> K).
-
-    Multi-day textbook content; stubbed here as cached infrastructure so V1
-    in Theorem_GT_2_7 closes via direct application. **)
-lemma broken_line_internal_vertex_card_edges_ge2:
-  fixes B :: "'a::real_normed_vector set" and K :: "'a set set"
-  fixes x :: 'a and E :: "'a set"
-  assumes hK_complex: "geotop_is_complex K"
-  assumes hK_poly: "geotop_polyhedron K = B"
-  assumes hK_1dim: "geotop_complex_is_1dim K"
-  assumes hB_arc: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
-  assumes hB_endp: "geotop_arc_endpoints B E"
-  assumes hxK: "{x} \<in> K"
-  assumes hx_int: "x \<in> geotop_arc_interior B E"
-  shows "card {\<sigma> \<in> K. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
-  sorry
 
 (** from \<S>1 Theorem 13 (geotop.tex:403)
     LATEX VERSION: In R^n, every connected open set U is broken-line-wise connected. **)
@@ -10853,7 +10895,7 @@ proof -
     have h_subst2: "?\<pi> ` (\<gamma> ` {p..q}) = ?\<pi> ` closed_segment a b"
       using h_subst1 by (by100 simp)
     have h_chain: "(?\<pi> \<circ> \<gamma>) ` {p..q} = ?\<pi> ` closed_segment a b"
-      using h_ic h_subst2 by (by100 simp)
+      by (rule trans[OF h_ic[symmetric] h_subst2])
     have h_seg_eq: "closed_segment p q = {p..q}" by (rule h_pq_seg)
     show ?thesis using h_chain h_seg_eq by (by100 simp)
   qed
@@ -11060,6 +11102,169 @@ proof -
     by (rule geotop_homeomorphism_segment_endpoints
              [OF h_p_le_q hab h_cont_pq h_inj_pq h_\<gamma>_img_ab])
   show ?thesis using h_p_le_q hp_01 hq_01 h_I_eq h_endpoints by (by100 blast)
+qed
+
+lemma geotop_arc_interior_not_locally_one_sided_segment:
+  fixes \<gamma> :: "real \<Rightarrow> 'a::euclidean_space"
+  fixes x p :: 'a and s\<^sub>x \<delta> :: real
+  assumes harc: "arc \<gamma>"
+  assumes hsx_01: "s\<^sub>x \<in> {0..1}"
+  assumes hsx_gt0: "0 < s\<^sub>x" and hsx_lt1: "s\<^sub>x < 1"
+  assumes hx_eq: "\<gamma> s\<^sub>x = x"
+  assumes hp_ne: "p \<noteq> x"
+  assumes hdelta: "\<delta> > 0"
+  assumes hlocal: "ball x \<delta> \<inter> path_image \<gamma> \<subseteq> closed_segment x p"
+  shows False
+proof -
+  have hcont_01: "continuous_on {0..1} \<gamma>"
+    using harc unfolding arc_def path_def by (by100 blast)
+  have hinj_01: "inj_on \<gamma> {0..1}"
+    using harc unfolding arc_def by (by100 blast)
+  have hcont_at: "continuous (at s\<^sub>x within {0..1}) \<gamma>"
+    using hcont_01 hsx_01 unfolding continuous_on_eq_continuous_within by (by100 blast)
+  obtain \<eta>\<^sub>0 where h\<eta>0_pos: "\<eta>\<^sub>0 > 0"
+      and h\<eta>0: "\<forall>s\<in>{0..1}. dist s s\<^sub>x < \<eta>\<^sub>0 \<longrightarrow> dist (\<gamma> s) x < \<delta>"
+  proof -
+    have "\<exists>d>0. \<forall>s\<in>{0..1}. dist s s\<^sub>x < d \<longrightarrow> dist (\<gamma> s) (\<gamma> s\<^sub>x) < \<delta>"
+      using hcont_at hdelta unfolding continuous_within_eps_delta by (by100 blast)
+    then obtain d where hd_pos: "d > 0"
+        and hd: "\<forall>s\<in>{0..1}. dist s s\<^sub>x < d \<longrightarrow> dist (\<gamma> s) (\<gamma> s\<^sub>x) < \<delta>"
+      by (by100 blast)
+    have hd_all: "\<forall>s\<in>{0..1}. dist s s\<^sub>x < d \<longrightarrow> dist (\<gamma> s) x < \<delta>"
+    proof (intro ballI impI)
+      fix s assume hs: "s \<in> {0..1}" and hsd: "dist s s\<^sub>x < d"
+      show "dist (\<gamma> s) x < \<delta>" using hd hs hsd hx_eq by (by100 simp)
+    qed
+    show ?thesis using hd_pos hd_all that by (by100 blast)
+  qed
+  define \<eta> where "\<eta> = min (\<eta>\<^sub>0 / 2) (min (s\<^sub>x / 2) ((1 - s\<^sub>x) / 2))"
+  have h\<eta>_pos: "\<eta> > 0"
+    unfolding \<eta>_def using h\<eta>0_pos hsx_gt0 hsx_lt1 by (by100 simp)
+  have h\<eta>_le_\<eta>0: "\<eta> < \<eta>\<^sub>0"
+  proof -
+    have "\<eta> \<le> \<eta>\<^sub>0 / 2" unfolding \<eta>_def by (by100 linarith)
+    moreover have "\<eta>\<^sub>0 / 2 < \<eta>\<^sub>0" using h\<eta>0_pos by (by100 linarith)
+    ultimately show ?thesis by (by100 linarith)
+  qed
+  have h\<eta>_le_sx: "\<eta> < s\<^sub>x"
+  proof -
+    have "\<eta> \<le> s\<^sub>x / 2" unfolding \<eta>_def by (by100 linarith)
+    moreover have "s\<^sub>x / 2 < s\<^sub>x" using hsx_gt0 by (by100 linarith)
+    ultimately show ?thesis by (by100 linarith)
+  qed
+  have h\<eta>_le_1sx: "\<eta> < 1 - s\<^sub>x"
+  proof -
+    have "\<eta> \<le> (1 - s\<^sub>x) / 2" unfolding \<eta>_def by (by100 linarith)
+    moreover have "(1 - s\<^sub>x) / 2 < 1 - s\<^sub>x" using hsx_lt1 by (by100 simp)
+    ultimately show ?thesis by (by100 linarith)
+  qed
+  define a where "a = s\<^sub>x - \<eta>"
+  define b where "b = s\<^sub>x + \<eta>"
+  have ha_lt: "a < s\<^sub>x" unfolding a_def using h\<eta>_pos by (by100 simp)
+  have hb_gt: "s\<^sub>x < b" unfolding b_def using h\<eta>_pos by (by100 simp)
+  have ha_0: "0 \<le> a" unfolding a_def using h\<eta>_le_sx by (by100 simp)
+  have hb_1: "b \<le> 1" unfolding b_def using h\<eta>_le_1sx by (by100 simp)
+  have ha_01: "a \<in> {0..1}" using ha_0 ha_lt hsx_lt1 by (by100 simp)
+  have hb_01: "b \<in> {0..1}" using hb_1 hb_gt hsx_gt0 by (by100 simp)
+  have hab_sub_01: "{a..b} \<subseteq> {0..1}"
+    using ha_0 hb_1 by (by100 auto)
+  have hseg_img: "\<gamma> ` {a..b} \<subseteq> closed_segment x p"
+  proof
+    fix y assume hy: "y \<in> \<gamma> ` {a..b}"
+    obtain s where hs_ab: "s \<in> {a..b}" and hy_eq: "y = \<gamma> s"
+      using hy by (by100 blast)
+    have hs_01: "s \<in> {0..1}" using hs_ab hab_sub_01 by (by100 blast)
+    have hs_dist: "dist s s\<^sub>x < \<eta>\<^sub>0"
+    proof -
+      have "abs (s - s\<^sub>x) \<le> \<eta>"
+      proof -
+        have hlo: "s\<^sub>x - \<eta> \<le> s" using hs_ab unfolding a_def by (by100 simp)
+        have hhi: "s \<le> s\<^sub>x + \<eta>" using hs_ab unfolding b_def by (by100 simp)
+        have hneg: "-\<eta> \<le> s - s\<^sub>x" using hlo by (by100 linarith)
+        have hpos: "s - s\<^sub>x \<le> \<eta>" using hhi by (by100 linarith)
+        show ?thesis using hneg hpos by (by100 simp)
+      qed
+      hence "dist s s\<^sub>x \<le> \<eta>" unfolding dist_real_def by (by100 simp)
+      thus ?thesis using h\<eta>_le_\<eta>0 by (by100 linarith)
+    qed
+    have hy_ball: "y \<in> ball x \<delta>"
+    proof -
+      have hdist: "dist (\<gamma> s) x < \<delta>" using h\<eta>0 hs_01 hs_dist by (by100 blast)
+      have hsym: "dist x (\<gamma> s) = dist (\<gamma> s) x" by (rule dist_commute)
+      have "dist x (\<gamma> s) < \<delta>" using hsym hdist by (by100 simp)
+      hence "dist x y < \<delta>" using hy_eq by (by100 simp)
+      thus ?thesis unfolding ball_def by (by100 simp)
+    qed
+    have hy_pim: "y \<in> path_image \<gamma>"
+      using hs_01 hy_eq unfolding path_image_def by (by100 blast)
+    show "y \<in> closed_segment x p" using hlocal hy_ball hy_pim by (by100 blast)
+  qed
+  let ?\<pi> = "\<lambda>y. inner (p - x) y"
+  have h\<pi>_cont: "continuous_on UNIV ?\<pi>" by (intro continuous_intros)
+  have hcont_ab: "continuous_on {a..b} \<gamma>"
+    using hcont_01 hab_sub_01 continuous_on_subset by (by100 blast)
+  have hcont_\<pi>\<gamma>: "continuous_on {a..b} (?\<pi> \<circ> \<gamma>)"
+  proof -
+    have "continuous_on {a..b} (\<lambda>t. ?\<pi> (\<gamma> t))"
+      by (rule continuous_on_compose2[OF h\<pi>_cont hcont_ab]) (by100 blast)
+    thus ?thesis unfolding comp_def by (by100 simp)
+  qed
+  have hinj_ab: "inj_on \<gamma> {a..b}"
+    using hinj_01 hab_sub_01 inj_on_subset by (by100 blast)
+  have h\<pi>_inj_seg: "inj_on ?\<pi> (closed_segment x p)"
+    by (rule geotop_inner_diff_inj_on_closed_segment[OF hp_ne[symmetric]])
+  have hinj_\<pi>\<gamma>: "inj_on (?\<pi> \<circ> \<gamma>) {a..b}"
+  proof (rule inj_onI)
+    fix u v assume hu: "u \<in> {a..b}" and hv: "v \<in> {a..b}"
+    assume huv: "(?\<pi> \<circ> \<gamma>) u = (?\<pi> \<circ> \<gamma>) v"
+    have hgu_seg: "\<gamma> u \<in> closed_segment x p" using hseg_img hu by (by100 blast)
+    have hgv_seg: "\<gamma> v \<in> closed_segment x p" using hseg_img hv by (by100 blast)
+    have hpi_eq: "?\<pi> (\<gamma> u) = ?\<pi> (\<gamma> v)" using huv by (by100 simp)
+    have hguv: "\<gamma> u = \<gamma> v"
+      by (rule inj_onD[OF h\<pi>_inj_seg hpi_eq hgu_seg hgv_seg])
+    show "u = v" using hinj_ab hu hv hguv unfolding inj_on_def by (by100 blast)
+  qed
+  have hmono_cases:
+    "((?\<pi> \<circ> \<gamma>) a < (?\<pi> \<circ> \<gamma>) s\<^sub>x \<and> (?\<pi> \<circ> \<gamma>) s\<^sub>x < (?\<pi> \<circ> \<gamma>) b)
+     \<or> ((?\<pi> \<circ> \<gamma>) b < (?\<pi> \<circ> \<gamma>) s\<^sub>x \<and> (?\<pi> \<circ> \<gamma>) s\<^sub>x < (?\<pi> \<circ> \<gamma>) a)"
+    by (rule continuous_inj_imp_mono[OF ha_lt hb_gt hcont_\<pi>\<gamma> hinj_\<pi>\<gamma>])
+  have h\<pi>x_lt_p: "?\<pi> x < ?\<pi> p"
+  proof -
+    have hpos: "0 < inner (p - x) (p - x)" using hp_ne by (by100 simp)
+    have heq: "inner (p - x) (p - x) = ?\<pi> p - ?\<pi> x"
+      by (rule inner_diff_right)
+    show ?thesis using hpos heq by (by100 linarith)
+  qed
+  have hseg_real: "?\<pi> ` closed_segment x p = {?\<pi> x..?\<pi> p}"
+  proof -
+    have "?\<pi> ` closed_segment x p = closed_segment (?\<pi> x) (?\<pi> p)"
+      by (rule geotop_inner_diff_image_closed_segment[OF hp_ne[symmetric]])
+    also have "\<dots> = {?\<pi> x..?\<pi> p}"
+      using h\<pi>x_lt_p closed_segment_eq_real_ivl by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h_a_ge: "(?\<pi> \<circ> \<gamma>) a \<ge> (?\<pi> \<circ> \<gamma>) s\<^sub>x"
+  proof -
+    have ha_ab: "a \<in> {a..b}" using ha_lt hb_gt by (by100 simp)
+    have hga_seg: "\<gamma> a \<in> closed_segment x p" using hseg_img ha_ab by (by100 blast)
+    have "?\<pi> (\<gamma> a) \<in> {?\<pi> x..?\<pi> p}" using hga_seg hseg_real by (by100 blast)
+    thus ?thesis using hx_eq by (by100 simp)
+  qed
+  have h_b_ge: "(?\<pi> \<circ> \<gamma>) b \<ge> (?\<pi> \<circ> \<gamma>) s\<^sub>x"
+  proof -
+    have hb_ab: "b \<in> {a..b}" using ha_lt hb_gt by (by100 simp)
+    have hgb_seg: "\<gamma> b \<in> closed_segment x p" using hseg_img hb_ab by (by100 blast)
+    have "?\<pi> (\<gamma> b) \<in> {?\<pi> x..?\<pi> p}" using hgb_seg hseg_real by (by100 blast)
+    thus ?thesis using hx_eq by (by100 simp)
+  qed
+  show False
+  proof (rule disjE[OF hmono_cases])
+    assume hcase: "(?\<pi> \<circ> \<gamma>) a < (?\<pi> \<circ> \<gamma>) s\<^sub>x \<and> (?\<pi> \<circ> \<gamma>) s\<^sub>x < (?\<pi> \<circ> \<gamma>) b"
+    show False using hcase h_a_ge by (by100 linarith)
+  next
+    assume hcase: "(?\<pi> \<circ> \<gamma>) b < (?\<pi> \<circ> \<gamma>) s\<^sub>x \<and> (?\<pi> \<circ> \<gamma>) s\<^sub>x < (?\<pi> \<circ> \<gamma>) a"
+    show False using hcase h_b_ge by (by100 linarith)
+  qed
 qed
 
 (** Every broken line is compact (finite union of compact simplices). **)
@@ -12608,6 +12813,275 @@ proof -
   qed
 qed
 
+(** Structural counting lemma: for a 1-dim complex K whose polyhedron is an arc B,
+    if x is an interior point of the arc (not an arc-endpoint) and {x} is a
+    0-simplex of K, then at least two 1-simplexes of K must contain x. **)
+lemma broken_line_internal_vertex_card_edges_ge2:
+  fixes B :: "'a::euclidean_space set" and K :: "'a set set"
+  fixes x :: 'a and E :: "'a set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K = B"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes hB_arc: "geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B)"
+  assumes hB_endp: "geotop_arc_endpoints B E"
+  assumes hxK: "{x} \<in> K"
+  assumes hx_int: "x \<in> geotop_arc_interior B E"
+  shows "card {\<sigma> \<in> K. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+proof -
+  let ?A = "{\<sigma> \<in> K. x \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}"
+  obtain \<gamma> :: "real \<Rightarrow> 'a" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_pim: "path_image \<gamma> = B"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hB_endp] by (by100 blast)
+  have hxB: "x \<in> B" using hx_int unfolding geotop_arc_interior_def by (by100 blast)
+  have hx_not_E: "x \<notin> E" using hx_int unfolding geotop_arc_interior_def by (by100 blast)
+  obtain s\<^sub>x where hsx_01: "s\<^sub>x \<in> {0..1}" and h\<gamma>sx: "\<gamma> s\<^sub>x = x"
+    using hxB h\<gamma>_pim unfolding path_image_def by (by100 blast)
+  have hsx_gt0: "0 < s\<^sub>x"
+  proof -
+    have "s\<^sub>x \<noteq> 0"
+    proof
+      assume hs0: "s\<^sub>x = 0"
+      have "x = pathstart \<gamma>" using h\<gamma>sx hs0 unfolding pathstart_def by (by100 simp)
+      hence "x \<in> E" using hE_eq by (by100 blast)
+      thus False using hx_not_E by (by100 blast)
+    qed
+    thus ?thesis using hsx_01 by (by100 simp)
+  qed
+  have hsx_lt1: "s\<^sub>x < 1"
+  proof -
+    have "s\<^sub>x \<noteq> 1"
+    proof
+      assume hs1: "s\<^sub>x = 1"
+      have "x = pathfinish \<gamma>" using h\<gamma>sx hs1 unfolding pathfinish_def by (by100 simp)
+      hence "x \<in> E" using hE_eq by (by100 blast)
+      thus False using hx_not_E by (by100 blast)
+    qed
+    thus ?thesis using hsx_01 by (by100 simp)
+  qed
+  have hK_locfin: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hK_complex unfolding geotop_is_complex_def by (by100 blast)
+  have hloc_x: "\<exists>U. open U \<and> {x} \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hK_locfin by (rule bspec[OF _ hxK])
+  obtain U where hU_all: "open U \<and> {x} \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hloc_x by (by100 blast)
+  have hU_open: "open U" using hU_all by (by100 simp)
+  have hxU_sub: "{x} \<subseteq> U" using hU_all by (by100 simp)
+  have hFU_fin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}" using hU_all by (by100 simp)
+  have hxU: "x \<in> U" using hxU_sub by (by100 blast)
+  have hA_fin: "finite ?A"
+  proof -
+    have hsub: "?A \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    proof
+      fix \<sigma> assume h\<sigma>: "\<sigma> \<in> ?A"
+      have h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>" using h\<sigma> by (by100 simp_all)
+      have "\<sigma> \<inter> U \<noteq> {}" using hx\<sigma> hxU by (by100 blast)
+      thus "\<sigma> \<in> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}" using h\<sigma>K by (by100 simp)
+    qed
+    show ?thesis by (rule finite_subset[OF hsub hFU_fin])
+  qed
+  have hE_nonempty: "E \<noteq> {}"
+  proof -
+    have hcardE: "card E = 2" using hB_endp unfolding geotop_arc_endpoints_def by (by100 blast)
+    show ?thesis
+    proof
+      assume "E = {}"
+      hence "card E = 0" by (by100 simp)
+      thus False using hcardE by (by100 simp)
+    qed
+  qed
+  obtain p\<^sub>0 where hp0E: "p\<^sub>0 \<in> E" using hE_nonempty by (by100 blast)
+  have hp0_ne_x: "p\<^sub>0 \<noteq> x" using hp0E hx_not_E by (by100 blast)
+  have hball_ex: "\<exists>\<delta>\<^sub>U>0. ball x \<delta>\<^sub>U \<subseteq> U"
+  proof -
+    have "\<forall>z\<in>U. \<exists>e>0. ball z e \<subseteq> U"
+      using hU_open unfolding open_contains_ball by (by100 simp)
+    thus ?thesis using hxU by (by100 blast)
+  qed
+  obtain \<delta>\<^sub>U where h\<delta>U_pos: "\<delta>\<^sub>U > 0" and hball_U: "ball x \<delta>\<^sub>U \<subseteq> U"
+    using hball_ex by (by100 blast)
+  let ?F = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  have hK_simplexes: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK_complex[unfolded geotop_is_complex_def]])
+  have hF_closed: "\<forall>\<sigma>\<in>?F. closed \<sigma>"
+  proof
+    fix \<sigma> assume h\<sigma>F: "\<sigma> \<in> ?F"
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>F by (by100 simp)
+    have hsim: "geotop_is_simplex \<sigma>"
+      by (rule bspec[OF hK_simplexes h\<sigma>K])
+    obtain V m n where hV_fin: "finite V" and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using hsim unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have "compact (convex hull V)" by (rule finite_imp_compact_convex_hull[OF hV_fin])
+    hence "compact \<sigma>" using h\<sigma>_HOL by (by100 simp)
+    thus "closed \<sigma>" by (rule compact_imp_closed)
+  qed
+  have hx_unionF: "x \<in> \<Union>?F"
+  proof -
+    have "{x} \<inter> U \<noteq> {}" using hxU by (by100 blast)
+    hence "{x} \<in> ?F" using hxK by (by100 simp)
+    thus ?thesis by (by100 blast)
+  qed
+  have h_iso_ex: "\<exists>\<delta>\<^sub>I>0. ball x \<delta>\<^sub>I \<inter> \<Union>?F \<subseteq> \<Union>{\<sigma>\<in>?F. x \<in> \<sigma>}"
+    by (rule finite_union_closed_local_isolation[OF hFU_fin hF_closed refl hx_unionF])
+  obtain \<delta>\<^sub>I where h\<delta>I_pos: "\<delta>\<^sub>I > 0"
+      and hlocal_F: "ball x \<delta>\<^sub>I \<inter> \<Union>?F \<subseteq> \<Union>{\<sigma>\<in>?F. x \<in> \<sigma>}"
+  proof -
+    define d where "d = (SOME d. d > 0 \<and> ball x d \<inter> \<Union>?F \<subseteq> \<Union>{\<sigma>\<in>?F. x \<in> \<sigma>})"
+    have hd: "d > 0 \<and> ball x d \<inter> \<Union>?F \<subseteq> \<Union>{\<sigma>\<in>?F. x \<in> \<sigma>}"
+      unfolding d_def by (rule someI_ex[OF h_iso_ex])
+    show ?thesis using that[of d] hd by (by100 simp)
+  qed
+  define \<delta> where "\<delta> = min \<delta>\<^sub>U \<delta>\<^sub>I"
+  have h\<delta>_pos: "\<delta> > 0" unfolding \<delta>_def using h\<delta>U_pos h\<delta>I_pos by (by100 simp)
+  have h\<delta>_le_U: "\<delta> \<le> \<delta>\<^sub>U" unfolding \<delta>_def by (by100 simp)
+  have h\<delta>_le_I: "\<delta> \<le> \<delta>\<^sub>I" unfolding \<delta>_def by (by100 simp)
+  have hlocal_edges: "ball x \<delta> \<inter> B \<subseteq> \<Union>?A \<union> {x}"
+  proof
+    fix y assume hy: "y \<in> ball x \<delta> \<inter> B"
+    have hy_ballU: "y \<in> ball x \<delta>\<^sub>U" using hy h\<delta>_le_U by (by100 auto)
+    have hyU: "y \<in> U" using hball_U hy_ballU by (by100 blast)
+    have hy_poly: "y \<in> geotop_polyhedron K" using hy hK_poly by (by100 simp)
+    obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hy\<tau>: "y \<in> \<tau>"
+      using hy_poly unfolding geotop_polyhedron_def by (by100 blast)
+    have h\<tau>F: "\<tau> \<in> ?F"
+    proof -
+      have "\<tau> \<inter> U \<noteq> {}" using hy\<tau> hyU by (by100 blast)
+      thus ?thesis using h\<tau>K by (by100 simp)
+    qed
+    have hy_unionF: "y \<in> \<Union>?F" using h\<tau>F hy\<tau> by (by100 blast)
+    have hy_ballI: "y \<in> ball x \<delta>\<^sub>I" using hy h\<delta>_le_I by (by100 auto)
+    have "y \<in> \<Union>{\<sigma>\<in>?F. x \<in> \<sigma>}" using hlocal_F hy_unionF hy_ballI by (by100 blast)
+    then obtain \<sigma> where h\<sigma>F: "\<sigma> \<in> ?F" and hx\<sigma>: "x \<in> \<sigma>" and hy\<sigma>: "y \<in> \<sigma>"
+      by (by100 blast)
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>F by (by100 simp)
+    have hcases: "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hK_1dim h\<sigma>K])
+    show "y \<in> \<Union>?A \<union> {x}"
+    proof (rule disjE[OF hcases])
+      assume "\<exists>v. \<sigma> = {v}"
+      then obtain v where h\<sigma>v: "\<sigma> = {v}" by (by100 blast)
+      have "y = x" using hx\<sigma> hy\<sigma> h\<sigma>v by (by100 blast)
+      thus ?thesis by (by100 blast)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+      then obtain a b where hab: "a \<noteq> b" and h\<sigma>ab: "\<sigma> = closed_segment a b"
+        by (by100 blast)
+      have hdim1: "geotop_simplex_dim \<sigma> 1"
+        using geotop_closed_segment_is_simplex[OF hab] h\<sigma>ab by (by100 simp)
+      have "\<sigma> \<in> ?A" using h\<sigma>K hx\<sigma> hdim1 by (by100 simp)
+      thus ?thesis using hy\<sigma> by (by100 blast)
+    qed
+  qed
+  show ?thesis
+  proof (rule ccontr)
+    assume hnot: "\<not> 2 \<le> card ?A"
+    have hcard_le1: "card ?A \<le> 1" using hnot by (by100 simp)
+    have hA_cases: "?A = {} \<or> (\<exists>e. ?A = {e})"
+    proof -
+      have hcard_cases: "card ?A = 0 \<or> card ?A = 1" using hcard_le1 by (by100 linarith)
+      show ?thesis
+      proof (rule disjE[OF hcard_cases])
+        assume h0: "card ?A = 0"
+        have "?A = {}"
+        proof (rule ccontr)
+          assume "?A \<noteq> {}"
+          hence "card ?A > 0" using hA_fin card_gt_0_iff by (by100 blast)
+          thus False using h0 by (by100 simp)
+        qed
+        thus ?thesis by (by100 blast)
+      next
+        assume h1: "card ?A = 1"
+        obtain e where "?A = {e}" by (rule card_1_singletonE[OF h1])
+        hence "\<exists>e. ?A = {e}" by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+    show False
+    proof (rule disjE[OF hA_cases])
+      assume hA_empty: "?A = {}"
+      have hlocal_seg: "ball x \<delta> \<inter> path_image \<gamma> \<subseteq> closed_segment x p\<^sub>0"
+      proof
+        fix y assume hy: "y \<in> ball x \<delta> \<inter> path_image \<gamma>"
+        have hyB: "y \<in> B" using hy h\<gamma>_pim by (by100 simp)
+        have "y \<in> \<Union>?A \<union> {x}" using hlocal_edges hy hyB by (by100 blast)
+        hence "y = x" using hA_empty by (by100 blast)
+        thus "y \<in> closed_segment x p\<^sub>0" by (by100 simp)
+      qed
+      show False
+        by (rule geotop_arc_interior_not_locally_one_sided_segment
+            [OF h\<gamma>_arc hsx_01 hsx_gt0 hsx_lt1 h\<gamma>sx hp0_ne_x h\<delta>_pos hlocal_seg])
+    next
+      assume "\<exists>e. ?A = {e}"
+      then obtain e where hA_single: "?A = {e}" by (by100 blast)
+      have heA: "e \<in> ?A" using hA_single by (by100 simp)
+      have heK: "e \<in> K" and hxe: "x \<in> e" and hedim: "geotop_simplex_dim e 1"
+        using heA by (by100 simp_all)
+      have he_cases: "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
+      proof -
+        have hcases: "(\<exists>v. e = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> e = closed_segment a b)"
+          by (rule geotop_1dim_simplex_cases[OF hK_1dim heK])
+        show ?thesis
+        proof (rule disjE[OF hcases])
+          assume "\<exists>v. e = {v}"
+          then obtain v where hev: "e = {v}" by (by100 blast)
+          have hdim0: "geotop_simplex_dim e 0"
+            using hev geotop_singleton_is_simplex by (by100 simp)
+          have h01: "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 hedim])
+          have hne: "0 \<noteq> (1::nat)" by (rule zero_neq_one)
+          have False using hne h01 by contradiction
+          thus ?thesis by (by100 blast)
+        next
+          assume "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
+          thus ?thesis .
+        qed
+      qed
+      obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+        using he_cases by (by100 blast)
+      have hx_endpoint: "x = a \<or> x = b"
+        by (rule geotop_1dim_vertex_in_1simplex_is_endpoint[OF hK_complex hxK heK heab hab hxe])
+      show False
+      proof (rule disjE[OF hx_endpoint])
+        assume hxa: "x = a"
+        have hb_ne_x: "b \<noteq> x" using hab hxa by (by100 blast)
+        have he_xb: "e = closed_segment x b" using heab hxa by (by100 simp)
+        have hlocal_seg: "ball x \<delta> \<inter> path_image \<gamma> \<subseteq> closed_segment x b"
+        proof
+          fix y assume hy: "y \<in> ball x \<delta> \<inter> path_image \<gamma>"
+          have hyB: "y \<in> B" using hy h\<gamma>_pim by (by100 simp)
+          have hy_loc: "y \<in> \<Union>?A \<union> {x}" using hlocal_edges hy hyB by (by100 blast)
+          have "y \<in> e" using hy_loc hA_single hxe by (by100 blast)
+          thus "y \<in> closed_segment x b" using he_xb by (by100 simp)
+        qed
+        show False
+          by (rule geotop_arc_interior_not_locally_one_sided_segment
+              [OF h\<gamma>_arc hsx_01 hsx_gt0 hsx_lt1 h\<gamma>sx hb_ne_x h\<delta>_pos hlocal_seg])
+      next
+        assume hxb: "x = b"
+        have ha_ne_x: "a \<noteq> x" using hab hxb by (by100 blast)
+        have he_ba: "e = closed_segment b a"
+        proof -
+          have "closed_segment a b = closed_segment b a" by (rule closed_segment_commute)
+          thus ?thesis using heab by (by100 simp)
+        qed
+        have he_xa: "e = closed_segment x a" using he_ba hxb by (by100 simp)
+        have hlocal_seg: "ball x \<delta> \<inter> path_image \<gamma> \<subseteq> closed_segment x a"
+        proof
+          fix y assume hy: "y \<in> ball x \<delta> \<inter> path_image \<gamma>"
+          have hyB: "y \<in> B" using hy h\<gamma>_pim by (by100 simp)
+          have hy_loc: "y \<in> \<Union>?A \<union> {x}" using hlocal_edges hy hyB by (by100 blast)
+          have "y \<in> e" using hy_loc hA_single hxe by (by100 blast)
+          thus "y \<in> closed_segment x a" using he_xa by (by100 simp)
+        qed
+        show False
+          by (rule geotop_arc_interior_not_locally_one_sided_segment
+              [OF h\<gamma>_arc hsx_01 hsx_gt0 hsx_lt1 h\<gamma>sx ha_ne_x h\<delta>_pos hlocal_seg])
+      qed
+    qed
+  qed
+qed
+
 text \<open>For a 2-element subset E of A, A - E is open in subspace topology of A.\<close>
 
 lemma arc_interior_relatively_open_in_arc:
@@ -13950,17 +14424,13 @@ proof -
                   (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
                   \<and> L = (\<lambda>v. v + v0) ` V"
     using h unfolding geotop_hyperplane_dim_def by (by100 blast)
-  obtain V where hV_part: "\<exists>v0. subspace V \<and>
-                  (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
-                  \<and> L = (\<lambda>v. v + v0) ` V"
-    using h_unfold by (by100 blast)
-  obtain v0 where hV_sub: "subspace V"
-              and hV_basis_ex: "\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V"
+  obtain V v0 where hV_sub: "subspace V"
+              and hB_ex: "\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V"
               and hL_form: "L = (\<lambda>v. v + v0) ` V"
-    using hV_part by (by100 blast)
+    using h_unfold by (by100 blast)
   obtain B where hB_indep: "independent B" and hB_fin: "finite B"
-             and hB_card: "card B = 1" and hB_span: "span B = V"
-    using hV_basis_ex by (by100 blast)
+              and hB_card: "card B = 1" and hB_span: "span B = V"
+    using hB_ex by (by100 blast)
   have h_dim_V: "dim V = 1"
   proof -
     have h1: "dim V = dim (span B)" using hB_span by (by100 simp)
