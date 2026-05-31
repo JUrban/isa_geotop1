@@ -8003,6 +8003,21 @@ definition geotop_is_broken_line :: "'a::real_normed_vector set \<Rightarrow> bo
        \<and> geotop_complex_is_1dim K
        \<and> geotop_is_arc B (subspace_topology UNIV geotop_euclidean_topology B))"
 
+(** from \<S>2: endpoint set of an arc (geotop.tex:619).
+    Kept in the base theory because Section 1 broken-line infrastructure
+    already needs the interior/end-point distinction. **)
+definition geotop_arc_endpoints :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_arc_endpoints A E \<longleftrightarrow>
+    geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
+    card E = 2 \<and> E \<subseteq> A \<and>
+    (\<exists>f::real\<Rightarrow>'a. top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) A
+        (subspace_topology UNIV geotop_euclidean_topology A) f
+      \<and> E = {f 0, f 1})"
+
+definition geotop_arc_interior :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "geotop_arc_interior A E = A - E"
+
 (** Helper: a closed segment between two distinct points is a 1-simplex (and hence
     both an arc and a polyhedron; i.e., a broken line). **)
 lemma geotop_closed_segment_is_simplex:

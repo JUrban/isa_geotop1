@@ -1960,19 +1960,9 @@ qed
 
 (** from \<S>2: \<theta>-graph (geotop.tex:619)
     LATEX VERSION: Let M be the union of three arcs B_1, B_2, B_3 with the same end-points P, Q
-      but with disjoint interiors. Then M is called a \<theta>-graph. **)
-definition geotop_arc_endpoints :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> bool" where
-  "geotop_arc_endpoints A E \<longleftrightarrow>
-    geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A) \<and>
-    card E = 2 \<and> E \<subseteq> A \<and>
-    (\<exists>f::real\<Rightarrow>'a. top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
-        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) A
-        (subspace_topology UNIV geotop_euclidean_topology A) f
-      \<and> E = {f 0, f 1})"
-
-definition geotop_arc_interior :: "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
-  "geotop_arc_interior A E = A - E"
-
+      but with disjoint interiors. Then M is called a \<theta>-graph.
+    The endpoint/interior primitives are defined in GeoTopBase because Section 1
+    broken-line infrastructure already needs them. **)
 definition geotop_is_theta_graph ::
   "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
   "geotop_is_theta_graph M B1 B2 B3 E \<longleftrightarrow>
