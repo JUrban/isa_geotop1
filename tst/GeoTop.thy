@@ -1,6 +1,8 @@
 theory GeoTop
-  imports "GeoTopBase.GeoTopBase" "AlgTop.AlgTop" "HOL-Analysis.Jordan_Curve"
+  imports "GeoTopDeps.GeoTopDeps" "HOL-Analysis.Jordan_Curve"
 begin
+
+hide_const (open) AlgTopCached.frontier
 
 
 (* CHUNK_OUT: §2+ chunked IN for full-file verification.
@@ -261,9 +263,9 @@ next
 qed
 
 lemma C_to_R2_image_frontier: "C_to_R2 ` frontier S = frontier (C_to_R2 ` S)"
-proof -
-  have "C_to_R2 ` frontier S = C_to_R2 ` (closure S - interior S)"
-    by (simp add: frontier_def)
+	proof -
+	  have "C_to_R2 ` frontier S = C_to_R2 ` (closure S - interior S)"
+	    by (simp add: Elementary_Topology.frontier_def)
   also have "\<dots> = C_to_R2 ` closure S - C_to_R2 ` interior S"
     using C_to_R2_inj image_set_diff by metis
   also have "\<dots> = closure (C_to_R2 ` S) - C_to_R2 ` interior S"
@@ -288,7 +290,7 @@ proof -
       thus "v \<in> C_to_R2 ` interior S" by (simp add: C_to_R2_R2_to_C)
     qed
   qed
-  finally show ?thesis by (simp add: frontier_def)
+	  finally show ?thesis by (simp add: Elementary_Topology.frontier_def)
 qed
 
 lemma R2_to_C_image_closure: "R2_to_C ` closure S = closure (R2_to_C ` S)"
@@ -312,9 +314,9 @@ next
 qed
 
 lemma R2_to_C_image_frontier: "R2_to_C ` frontier S = frontier (R2_to_C ` S)"
-proof -
-  have "R2_to_C ` frontier S = R2_to_C ` (closure S - interior S)"
-    by (simp add: frontier_def)
+	proof -
+	  have "R2_to_C ` frontier S = R2_to_C ` (closure S - interior S)"
+	    by (simp add: Elementary_Topology.frontier_def)
   also have "\<dots> = R2_to_C ` closure S - R2_to_C ` interior S"
     using R2_to_C_inj image_set_diff by metis
   also have "\<dots> = closure (R2_to_C ` S) - R2_to_C ` interior S"
@@ -339,7 +341,7 @@ proof -
       thus "z \<in> R2_to_C ` interior S" by (simp add: R2_to_C_C_to_R2)
     qed
   qed
-  finally show ?thesis by (simp add: frontier_def)
+	  finally show ?thesis by (simp add: Elementary_Topology.frontier_def)
 qed
 
 lemma R2_to_C_path:
@@ -400,13 +402,13 @@ proof -
   have hloop_C: "pathfinish cC = pathstart cC"
     using hloop unfolding cC_def by (simp add: R2_to_C_pathstart R2_to_C_pathfinish)
   obtain innerC outerC where
-    h1: "innerC \<noteq> {}" "open innerC" "connected innerC"
-        "outerC \<noteq> {}" "open outerC" "connected outerC"
-        "bounded innerC" "\<not> bounded outerC" "innerC \<inter> outerC = {}"
-        "innerC \<union> outerC = - path_image cC"
-        "frontier innerC = path_image cC"
-        "frontier outerC = path_image cC"
-    using Jordan_curve[OF hsp_C hloop_C] by metis
+	    h1: "innerC \<noteq> {}" "open innerC" "connected innerC"
+	        "outerC \<noteq> {}" "open outerC" "connected outerC"
+	        "bounded innerC" "\<not> bounded outerC" "innerC \<inter> outerC = {}"
+	        "innerC \<union> outerC = - path_image cC"
+	        "frontier innerC = path_image cC"
+	        "frontier outerC = path_image cC"
+	    by (rule Jordan_curve[OF hsp_C hloop_C])
   define inner :: "(real^2) set" where "inner = C_to_R2 ` innerC"
   define outer :: "(real^2) set" where "outer = C_to_R2 ` outerC"
   have h_path_eq: "path_image cC = R2_to_C ` path_image c"
@@ -1923,8 +1925,8 @@ proof
     using Theorem_GT_2_6(1)[OF hJ_poly] by simp
   have hI_front_HOL: "frontier (geotop_polygon_interior J) = J"
     using hI_front geotop_frontier_UNIV_eq_frontier by metis
-  have hP_closureI: "P \<in> closure (geotop_polygon_interior J)"
-    using hPJ hI_front_HOL unfolding frontier_def by blast
+	  have hP_closureI: "P \<in> closure (geotop_polygon_interior J)"
+	    using hPJ hI_front_HOL unfolding Elementary_Topology.frontier_def by blast
   have hP_notI: "P \<notin> geotop_polygon_interior J"
     using hPJ hI_sub by blast
   have hP_islimptI: "P islimpt (geotop_polygon_interior J)"
@@ -1944,7 +1946,7 @@ proof
   have hE_front_HOL: "frontier (geotop_polygon_exterior J) = J"
     using hE_front geotop_frontier_UNIV_eq_frontier by metis
   have hP_closureE: "P \<in> closure (geotop_polygon_exterior J)"
-    using hPJ hE_front_HOL unfolding frontier_def by blast
+    using hPJ hE_front_HOL unfolding Elementary_Topology.frontier_def by blast
   have hP_notE: "P \<notin> geotop_polygon_exterior J"
     using hPJ hE_sub by blast
   have hP_islimptE: "P islimpt (geotop_polygon_exterior J)"
@@ -2098,10 +2100,11 @@ proof -
   have h_g2_pathstart: "pathstart g2 = Q"
   proof (cases "pathstart f2 = Q")
     case True thus ?thesis unfolding g2_def by simp
-  next
-    case False
-    hence h_ps: "pathstart f2 = P" using hPQ_set by (metis doubleton_eq_iff)
-    hence h_pf: "pathfinish f2 = Q" using hPQ_set hP_ne_Q by (metis doubleton_eq_iff)
+	  next
+	    case False
+	    have "pathstart f2 \<in> {P, Q}" using hPQ_set by blast
+	    hence h_ps: "pathstart f2 = P" using False by blast
+	    hence h_pf: "pathfinish f2 = Q" using hPQ_set hP_ne_Q by (metis doubleton_eq_iff)
     show ?thesis unfolding g2_def using False h_pf by (simp add: pathstart_reversepath)
   qed
   have h_g2_pathfinish: "pathfinish g2 = P"
@@ -2109,11 +2112,12 @@ proof -
     case True
     hence h_pf: "pathfinish f2 = P" using hPQ_set hP_ne_Q by (metis doubleton_eq_iff)
     show ?thesis unfolding g2_def using True h_pf by simp
-  next
-    case False
-    hence h_ps: "pathstart f2 = P" using hPQ_set by (metis doubleton_eq_iff)
-    show ?thesis unfolding g2_def using False h_ps by (simp add: pathfinish_reversepath)
-  qed
+	  next
+	    case False
+	    have "pathstart f2 \<in> {P, Q}" using hPQ_set by blast
+	    hence h_ps: "pathstart f2 = P" using False by blast
+	    show ?thesis unfolding g2_def using False h_ps by (simp add: pathfinish_reversepath)
+	  qed
   have h_g2_image: "path_image g2 = B2"
     unfolding g2_def using himg2 path_image_reversepath by simp
   text \<open>Set up join.\<close>
@@ -4757,8 +4761,8 @@ proof -
         have hU_disj_i: "U \<inter> i = {}" using hU_disj_M hi_sub_M by (by100 blast)
         \<comment> \<open>Step 7: since x \<in> frontier U and U is open, every open neighborhood
           of x meets U. In particular, every open ball around x meets U.\<close>
-        have hxClosU: "x \<in> closure U"
-          using hxFr unfolding frontier_def by (by100 blast)
+	        have hxClosU: "x \<in> closure U"
+	          using hxFr unfolding Elementary_Topology.frontier_def by (by100 blast)
         have hU_meets_ball: "\<forall>\<delta>'>0. ball x \<delta>' \<inter> U \<noteq> {}"
         proof (intro allI impI)
           fix \<delta>' :: real assume h\<delta>'_pos: "\<delta>' > 0"
@@ -5111,7 +5115,7 @@ proof -
             have hy_notInt: "y \<notin> interior U" using hy_notU h_int_U
               by (by100 simp)
             show "y \<in> frontier U"
-              using hy_clos hy_notInt unfolding frontier_def by (by100 blast)
+              using hy_clos hy_notInt unfolding Elementary_Topology.frontier_def by (by100 blast)
           qed
           \<comment> \<open>Sub-claim V6: combine V4 and V5 to conclude the show.\<close>
           have hVX_main:
@@ -5528,10 +5532,10 @@ proof -
           have hV_open: "open V"
             unfolding V_def
             using hUball_open open_path_component by (by100 blast)
-          have hV_path_conn: "path_connected V"
-            unfolding V_def by (rule path_connected_path_component)
-          have hV_conn: "connected V"
-            using hV_path_conn path_connected_imp_connected by (by100 blast)
+	          have hV_path_conn: "path_connected V"
+	            unfolding V_def by (rule path_connected_path_component)
+	          have hV_conn: "connected V"
+	            by (rule Path_Connected.path_connected_imp_connected[OF hV_path_conn])
           have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso2"
             unfolding V_def by (rule path_component_subset)
           have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
@@ -5577,10 +5581,10 @@ proof -
           have hV_open: "open V"
             unfolding V_def
             using hUball_open open_path_component by (by100 blast)
-          have hV_path_conn: "path_connected V"
-            unfolding V_def by (rule path_connected_path_component)
-          have hV_conn: "connected V"
-            using hV_path_conn path_connected_imp_connected by (by100 blast)
+	          have hV_path_conn: "path_connected V"
+	            unfolding V_def by (rule path_connected_path_component)
+	          have hV_conn: "connected V"
+	            by (rule Path_Connected.path_connected_imp_connected[OF hV_path_conn])
           have hV_sub: "V \<subseteq> U \<inter> ball x \<delta>_iso2"
             unfolding V_def by (rule path_component_subset)
           have hu\<^sub>0_V: "u\<^sub>0 \<in> V"
@@ -6910,7 +6914,7 @@ proof -
           have h_int_U: "interior U = U" using hU_open interior_open by (by100 blast)
           have hy_notInt: "y \<notin> interior U" using hy_notU h_int_U by (by100 simp)
           have hy_frontier: "y \<in> frontier U"
-            using hy_clos hy_notInt unfolding frontier_def by (by100 blast)
+            using hy_clos hy_notInt unfolding Elementary_Topology.frontier_def by (by100 blast)
           show "y \<in> frontier U \<inter> geotop_arc_interior i E"
             using hy_frontier hy_int by (by100 blast)
         qed
@@ -7322,7 +7326,7 @@ proof -
       have h_pc_compl: "path_connected (- frontier U)"
         by (rule path_connected_complement_countable[OF h_DIM h_fr_countable])
       have h_conn_compl: "connected (- frontier U)"
-        using h_pc_compl path_connected_imp_connected by blast
+        using h_pc_compl Path_Connected.path_connected_imp_connected by blast
       text \<open>U is open, R² - closure U is open, both disjoint and union = R² - frontier U.\<close>
       have h_clU_eq: "closure U = U \<union> frontier U"
         by (rule closure_Un_frontier)
@@ -7351,10 +7355,10 @@ proof -
           proof
             assume hxU: "x \<in> U"
             have "x \<in> interior U" using hxU hU_open by (simp add: interior_open)
-            thus ?thesis by (simp add: frontier_def)
+            thus ?thesis by (simp add: Elementary_Topology.frontier_def)
           next
             assume "x \<in> UNIV - closure U"
-            thus ?thesis by (auto simp: frontier_def)
+            thus ?thesis by (auto simp: Elementary_Topology.frontier_def)
           qed
         qed
       qed
@@ -9060,8 +9064,8 @@ proof
     proof -
       have h1: "rel_frontier R = closure R - rel_interior R"
         unfolding rel_frontier_def by (by100 simp)
-      have h2: "frontier R = closure R - interior R"
-        unfolding frontier_def by (by100 simp)
+	      have h2: "frontier R = closure R - interior R"
+	        unfolding Elementary_Topology.frontier_def by (by100 simp)
       show ?thesis using h1 h2 h_int_eq by (by100 simp)
     qed
     have hz_uls: "z \<in> \<Union>FrTri" using hz_fr h_rel_fr_eq hFrTri_cover by (by100 simp)
@@ -9092,7 +9096,7 @@ proof
     have he_R: "e \<subseteq> R"
     proof -
       have h_fr_sub: "frontier R \<subseteq> R"
-        unfolding frontier_def using hR_closed by (auto simp: closure_closed)
+        unfolding Elementary_Topology.frontier_def using hR_closed by (auto simp: closure_closed)
       show ?thesis using he_fr h_fr_sub by (by100 blast)
     qed
     have hwpt_R: "wpt \<in> R" using hwpt_int interior_subset by (by100 blast)
@@ -9472,7 +9476,7 @@ proof -
       using hR_in unfolding Rs_def by (by100 blast)
     have hR_closed: "closed R" using hR_in hRs_closed by (by100 blast)
     have h_fr_eq: "frontier R = R - interior R"
-      using hR_closed by (auto simp: frontier_def closure_closed)
+      using hR_closed by (auto simp: Elementary_Topology.frontier_def closure_closed)
     show "frontier R \<subseteq> \<Union>Ls"
     proof
       fix x assume hx_fr: "x \<in> frontier R"
@@ -10007,7 +10011,7 @@ proof -
       using h_some unfolding wpt_def by (by100 simp)
     have h_int_in_R: "interior R \<subseteq> R" by (rule interior_subset)
     have h_int_no_fr: "interior R \<inter> frontier R = {}"
-      by (simp add: frontier_def)
+      by (simp add: Elementary_Topology.frontier_def)
     have hwpt_in_R: "wpt R \<in> R" using hwpt_in h_int_in_R by (by100 blast)
     have hwpt_no_fr: "wpt R \<notin> frontier R" using hwpt_in h_int_no_fr by (by100 blast)
     show "wpt R \<in> R - frontier R" using hwpt_in_R hwpt_no_fr by (by100 blast)
@@ -10150,7 +10154,7 @@ proof -
       have h1: "rel_frontier R = closure R - rel_interior R"
         unfolding rel_frontier_def by (by100 simp)
       have h2: "frontier R = closure R - interior R"
-        unfolding frontier_def using h_R_closed by (auto simp: closure_closed)
+        unfolding Elementary_Topology.frontier_def using h_R_closed by (auto simp: closure_closed)
       show ?thesis using h1 h2 h_int_eq by (by100 simp)
     qed
     have he_sub_fr: "e \<subseteq> frontier R" using he_sub_relf h_relf_eq_fr by (by100 simp)
@@ -10173,7 +10177,7 @@ proof -
         unfolding rel_frontier_def by (by100 simp)
       have h2: "closure R = R" using hR_closed by (by100 simp)
       have h3: "frontier R = closure R - interior R"
-        unfolding frontier_def
+        unfolding Elementary_Topology.frontier_def
         using hR_closed by (auto simp: closure_closed interior_open)
       show ?thesis using h1 h2 h3 h_rel_int_eq by (by100 simp)
     qed
@@ -10565,7 +10569,7 @@ proof -
     proof -
       have hwpt_R_minus_fr: "wpt R \<in> R - frontier R" using hR_in hwpt by (by100 blast)
       have h_fr: "frontier R = R - interior R"
-        unfolding frontier_def using hR_closed by (by100 simp)
+        unfolding Elementary_Topology.frontier_def using hR_closed by (by100 simp)
       have h_int_sub: "interior R \<subseteq> R" by (rule interior_subset)
       have h_eq: "R - frontier R = interior R" using h_fr h_int_sub by (by100 blast)
       show ?thesis using hwpt_R_minus_fr h_eq by (by100 simp)
@@ -10682,7 +10686,7 @@ proof -
       have h_eq: "R - frontier R = interior R"
       proof -
         have h_fr: "frontier R = R - interior R"
-          unfolding frontier_def using h_R_closed by (by100 simp)
+          unfolding Elementary_Topology.frontier_def using h_R_closed by (by100 simp)
         have h_int_sub: "interior R \<subseteq> R" by (rule interior_subset)
         show ?thesis using h_fr h_int_sub by (by100 blast)
       qed
@@ -10693,7 +10697,7 @@ proof -
     have hv1_fr: "v1 \<in> frontier R" using hv1_e he_sub_fr by (by100 blast)
     have hv2_fr: "v2 \<in> frontier R" using hv2_e he_sub_fr by (by100 blast)
     have h_int_fr_disj: "interior R \<inter> frontier R = {}"
-      by (auto simp: frontier_def)
+      by (auto simp: Elementary_Topology.frontier_def)
     have hwpt_ne_v1: "wpt R \<noteq> v1" using hwpt_int hv1_fr h_int_fr_disj by (by100 blast)
     have hwpt_ne_v2: "wpt R \<noteq> v2" using hwpt_int hv2_fr h_int_fr_disj by (by100 blast)
     have hV_card: "card V = 2 + 1"
@@ -11922,7 +11926,7 @@ proof -
     have h_int: "interior {Q::real^2} = {}"
       using interior_singleton by (by100 simp)
     have h_HOL: "Q \<in> frontier {Q::real^2}"
-      using h_clos h_int unfolding frontier_def by (by100 simp)
+      using h_clos h_int unfolding Elementary_Topology.frontier_def by (by100 simp)
     show ?thesis
       using h_HOL geotop_frontier_UNIV_eq_frontier by metis
   qed
@@ -11935,7 +11939,7 @@ proof -
     have h_int: "interior {S::real^2} = {}"
       using interior_singleton by (by100 simp)
     have h_HOL: "S \<in> frontier {S::real^2}"
-      using h_clos h_int unfolding frontier_def by (by100 simp)
+      using h_clos h_int unfolding Elementary_Topology.frontier_def by (by100 simp)
     show ?thesis
       using h_HOL geotop_frontier_UNIV_eq_frontier by metis
   qed

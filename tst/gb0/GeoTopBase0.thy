@@ -4883,9 +4883,14 @@ proof -
   proof -
     have h1: "sum \<alpha> (S \<union> (V - S)) = sum \<alpha> S + sum \<alpha> (V - S)"
       by (rule sum.union_disjoint[OF hS_fin h_VmS_fin h_disj])
-    have h2: "sum \<alpha> V = sum \<alpha> (S \<union> (V - S))"
-      using hV_split by (by100 simp)
-    show ?thesis using h1 h2 by (by100 simp)
+	    have h2: "sum \<alpha> V = sum \<alpha> (S \<union> (V - S))"
+	      using hV_split by (by100 simp)
+	    show ?thesis
+	    proof -
+	      have "sum \<alpha> V = sum \<alpha> (S \<union> (V - S))" by (rule h2)
+	      also have "\<dots> = sum \<alpha> S + sum \<alpha> (V - S)" by (rule h1)
+	      finally show ?thesis .
+	    qed
   qed
   have h_VmS_sum: "sum \<alpha> (V - S) = 0"
     using h_VmS_zero by (by100 simp)
@@ -4897,10 +4902,15 @@ proof -
     have h1: "(\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)
               = (\<Sum>v\<in>S. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v)"
       by (rule sum.union_disjoint[OF hS_fin h_VmS_fin h_disj])
-    have h2: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)"
-      using hV_split by (by100 simp)
-    show ?thesis using h1 h2 by (by100 metis)
-  qed
+	    have h2: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)"
+	      using hV_split by (by100 simp)
+	    show ?thesis
+	    proof -
+	      have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>S \<union> (V - S). \<alpha> v *\<^sub>R v)" by (rule h2)
+	      also have "\<dots> = (\<Sum>v\<in>S. \<alpha> v *\<^sub>R v) + (\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v)" by (rule h1)
+	      finally show ?thesis .
+	    qed
+	  qed
   have h_VmS_combo: "(\<Sum>v\<in>V - S. \<alpha> v *\<^sub>R v) = 0"
   proof -
     have h_zero_all: "\<forall>v\<in>V - S. \<alpha> v *\<^sub>R v = 0"

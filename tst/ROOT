@@ -1,29 +1,143 @@
-session Top0 in i = "HOL-Analysis" +
-  options [quick_and_dirty]
+session Top0 in i = HOL +
+  options [system_heaps, timeout = 600]
   theories
     Top1_Ch2
     Top1_Ch3
     Top1_Ch4
     Top1_Ch5_8
+    Top1_Ch9_13
 
-session AlgTop in at = Top0 +
-  options [quick_and_dirty]
+session AlgTopH in h = HOL +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopHelpers
+
+session AlgTopBase0 in b0 = Top0 +
+  options [system_heaps, timeout = 600]
+  sessions
+    AlgTopH
+  theories
+    AlgTop_JCT_Base0
+
+session AlgTopBase in b = AlgTopBase0 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTop_JCT_Base
+
+session AlgTop0 in a0 = AlgTopBase +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTop0
+
+session AlgTopC in ac = AlgTop0 +
+  options [system_heaps, timeout = 1800]
+  theories
+    AlgTopCached
+
+session AlgIsoFixedBase in fib = AlgTopC +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgIsoFixedBase
+
+session AlgIsoFixed in fi = AlgIsoFixedBase +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgIsoFixed
+
+session K5 in k5 = AlgIsoFixed +
+  options [system_heaps, timeout = 600]
+  theories
+    K5_nonplanar
+
+session AlgTopGroups in ag = K5 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopGroups
+
+session AlgTopSvK in svk = PolygonDisk +
+  options [system_heaps, timeout = 600]
+  sessions
+    AlgTopGroups
+  theories
+    AlgTopSvK
+
+session AlgTopWedgeHelpers in wh = AlgTopSvK +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopWedgeHelpers
+
+session AlgTopChain in at = AlgTopWedgeHelpers +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopChain
+
+
+session PolygonDisk in pd = AlgTopGroups +
+  options [system_heaps, timeout = 600]
+  theories
+    PolygonDisk
+
+session AlgTopCached2 in ac2 = AlgTopChain +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached2
+
+
+session AlgTopCached3 in ac3 = AlgTopCached2 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached3
+
+session AlgTopCached4 in ac4 = AlgTopCached3 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached4
+
+session AlgTopCached5 in ac5 = AlgTopCached4 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached5
+
+session AlgTopCached6 in ac6 = AlgTopCached5 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached6
+
+session AlgTopCached7 in ac7 = AlgTopCached6 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached7
+
+session AlgTopCached8 in ac8 = AlgTopCached7 +
+  options [system_heaps, timeout = 600]
+  theories
+    AlgTopCached8
+
+session AlgTop in algtop_session = AlgTopCached8 +
+  options [system_heaps, quick_and_dirty, timeout = 600]
   theories
     AlgTop
 
-session GeoTopBase0 in b0 = Top0 +
-  options [quick_and_dirty, timeout = 120]
+session GeoTopBase0 in gb0 = Top0 +
+  options [system_heaps, timeout = 600]
+  sessions
+    "HOL-Analysis"
   theories
     GeoTopBase0
 
-session GeoTopBase in b = GeoTopBase0 +
-  options [quick_and_dirty, timeout = 240]
+session GeoTopBase in gb = GeoTopBase0 +
+  options [system_heaps, quick_and_dirty, timeout = 240]
   theories
     GeoTopBase
 
-session GeoTop = GeoTopBase +
-  options [quick_and_dirty, timeout = 120]
+session GeoTopDeps in gd = GeoTopBase +
+  options [system_heaps, quick_and_dirty, timeout = 1800]
   sessions
     AlgTop
+  theories
+    GeoTopDeps
+
+session GeoTop = GeoTopDeps +
+  options [system_heaps, quick_and_dirty, timeout = 240]
   theories
     GeoTop
