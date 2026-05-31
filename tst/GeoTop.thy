@@ -7548,6 +7548,117 @@ proof -
     using h_middle_unique by (by100 blast)
 qed
 
+lemma theta_middle_arc_unique_excludes_3:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  assumes hB2_mid: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+  shows "\<not> geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+proof
+  assume hB3_mid: "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+  have h_theta: "geotop_is_theta_graph M B1 B2 B3 E"
+    by (rule polyhedral_theta_graph_imp_theta[OF h\<theta>])
+  have hB1_bl: "geotop_is_broken_line B1"
+    by (rule polyhedral_theta_graph_imp_bl_1[OF h\<theta>])
+  have hB2_bl: "geotop_is_broken_line B2"
+    by (rule polyhedral_theta_graph_imp_bl_2[OF h\<theta>])
+  have hB3_bl: "geotop_is_broken_line B3"
+    by (rule polyhedral_theta_graph_imp_bl_3[OF h\<theta>])
+  have hE1: "geotop_arc_endpoints B1 E"
+   and hE2: "geotop_arc_endpoints B2 E"
+   and hE3: "geotop_arc_endpoints B3 E"
+    using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have h_int12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+   and h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+   and h_int23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have hB1_ne_B2: "B1 \<noteq> B2"
+  proof
+    assume h_eq: "B1 = B2"
+    have "geotop_arc_interior B1 E = {}"
+      using h_int12 h_eq by (by100 blast)
+    thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+  qed
+  have hB1_ne_B3: "B1 \<noteq> B3"
+  proof
+    assume h_eq: "B1 = B3"
+    have "geotop_arc_interior B1 E = {}"
+      using h_int13 h_eq by (by100 blast)
+    thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+  qed
+  have hB2_ne_B3: "B2 \<noteq> B3"
+  proof
+    assume h_eq: "B2 = B3"
+    have "geotop_arc_interior B2 E = {}"
+      using h_int23 h_eq by (by100 blast)
+    thus False using arc_interior_nonempty[OF hE2] by (by100 blast)
+  qed
+  have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB3_bl hE1 hE3 h_int13])
+  have h_poly_12: "geotop_is_polygon (B1 \<union> B2)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl hB2_bl hE1 hE2 h_int12])
+  let ?P = "\<lambda>k. k \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i,j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))"
+  have huniq: "\<exists>!k. ?P k"
+    using Theorem_GT_2_7(2)[OF h\<theta>] by (by100 blast)
+  have hP2: "?P B2"
+  proof -
+    have h_diff: "{B1, B2, B3} - {B2} = {B1, B3}"
+      using hB1_ne_B2 hB2_ne_B3 by (by100 blast)
+    have h_pair_eq: "{B1, B3} = {B1, B2, B3} - {B2}"
+      using h_diff by (by100 simp)
+    show ?thesis
+    proof (intro conjI)
+      show "B2 \<in> {B1, B2, B3}" by (by100 simp)
+      show "\<exists>i j. {i, j} = {B1, B2, B3} - {B2} \<and>
+              i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+              geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+      proof (rule exI[where x=B1])
+        show "\<exists>j. {B1, j} = {B1, B2, B3} - {B2} \<and>
+              B1 \<noteq> j \<and> geotop_is_polygon (B1 \<union> j) \<and>
+              geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> j)"
+        proof (rule exI[where x=B3])
+          show "{B1, B3} = {B1, B2, B3} - {B2} \<and>
+              B1 \<noteq> B3 \<and> geotop_is_polygon (B1 \<union> B3) \<and>
+              geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+            using h_pair_eq hB1_ne_B3 h_poly_13 hB2_mid by (by100 simp)
+        qed
+      qed
+    qed
+  qed
+  have hP3: "?P B3"
+  proof -
+    have h_diff: "{B1, B2, B3} - {B3} = {B1, B2}"
+      using hB1_ne_B3 hB2_ne_B3 by (by100 blast)
+    have h_pair_eq: "{B1, B2} = {B1, B2, B3} - {B3}"
+      using h_diff by (by100 simp)
+    show ?thesis
+    proof (intro conjI)
+      show "B3 \<in> {B1, B2, B3}" by (by100 simp)
+      show "\<exists>i j. {i, j} = {B1, B2, B3} - {B3} \<and>
+              i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+              geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+      proof (rule exI[where x=B1])
+        show "\<exists>j. {B1, j} = {B1, B2, B3} - {B3} \<and>
+              B1 \<noteq> j \<and> geotop_is_polygon (B1 \<union> j) \<and>
+              geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> j)"
+        proof (rule exI[where x=B2])
+          show "{B1, B2} = {B1, B2, B3} - {B3} \<and>
+              B1 \<noteq> B2 \<and> geotop_is_polygon (B1 \<union> B2) \<and>
+              geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+            using h_pair_eq hB1_ne_B2 h_poly_12 hB3_mid by (by100 simp)
+        qed
+      qed
+    qed
+  qed
+  have h_the_B2: "(THE k. ?P k) = B2"
+    by (rule the1_equality[OF huniq hP2])
+  have h_the_B3: "(THE k. ?P k) = B3"
+    by (rule the1_equality[OF huniq hP3])
+  have "B2 = B3" using h_the_B2 h_the_B3 by (by100 simp)
+  thus False using hB2_ne_B3 by (by100 blast)
+qed
+
 text \<open>Algebraic closure-additivity helper for GT_2_8: given the components
   decomposition \<open>I13 - IB2 = I12 \<union> I23\<close> together with polygon-interior
   closure expansions and \<open>IB2 = B2 - E \<subseteq> I13\<close>, derive
@@ -7927,7 +8038,35 @@ proof -
   have hT2_8_A4_aux_clos: "closure I12 = I12 \<union> (B1 \<union> B2)"
     using polygon_interior_closure_eq[OF h_poly_12_t28] I12_def by (by100 simp)
   \<comment> \<open>A4-deep: B_2 \<inter> I_13 = Int B_2 (using hB2_inner + E \<subseteq> B_1 + B_1 \<inter> I_13 = \<emptyset>).\<close>
-  have hT2_8_A4_B2_in_I13: "B2 \<inter> I13 = geotop_arc_interior B2 E" sorry
+  have hT2_8_A4_B2_in_I13: "B2 \<inter> I13 = geotop_arc_interior B2 E"
+  proof -
+    have h_int13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+      using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+    have h_poly_13: "geotop_is_polygon (B1 \<union> B3)"
+      by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB3_bl_t28 hE1_t28 hE3_t28 h_int13])
+    have h_disj_J: "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+      by (rule polygon_interior_disjoint_polygon[OF h_poly_13])
+    have hE_sub_B1: "E \<subseteq> B1"
+      using hE1_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_left_sub: "B2 \<inter> I13 \<subseteq> geotop_arc_interior B2 E"
+    proof
+      fix x assume hx: "x \<in> B2 \<inter> I13"
+      have hx_B2: "x \<in> B2" using hx by (by100 blast)
+      have hx_I13: "x \<in> geotop_polygon_interior (B1 \<union> B3)"
+        using hx I13_def by (by100 simp)
+      have hx_notE: "x \<notin> E"
+      proof
+        assume hxE: "x \<in> E"
+        have hx_J: "x \<in> B1 \<union> B3" using hxE hE_sub_B1 by (by100 blast)
+        show False using hx_I13 hx_J h_disj_J by (by100 blast)
+      qed
+      show "x \<in> geotop_arc_interior B2 E"
+        using hx_B2 hx_notE unfolding geotop_arc_interior_def by (by100 blast)
+    qed
+    have h_right_sub: "geotop_arc_interior B2 E \<subseteq> B2 \<inter> I13"
+      using hB2_inner I13_def unfolding geotop_arc_interior_def by (by100 blast)
+    show ?thesis using h_left_sub h_right_sub by (by100 blast)
+  qed
   \<comment> \<open>A4-aux2: B_1 \<inter> I_13 = \<emptyset> (polygon-int disjoint from polygon B_1\<union>B_3).\<close>
   have hT2_8_A4_B1_disj_I13: "B1 \<inter> I13 = {}"
   proof -
@@ -8637,6 +8776,78 @@ proof -
            (I12 \<union> geotop_arc_interior B1 E) (I23 \<union> geotop_arc_interior B3 E)"
     using h_separated by (by100 blast)
 qed
+
+(** from \<S>2: D separates P from Q in C (geotop.tex:658)
+    LATEX VERSION: Let C be a connected set, D a subset of C, and P,Q points of C-D. If
+      C-D is the union of two separated sets containing P,Q respectively, then D separates
+      P from Q in C. **)
+definition geotop_separates_pts ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_separates_pts X T C D P Q \<longleftrightarrow>
+    C \<subseteq> X \<and> D \<subseteq> C \<and> P \<in> C - D \<and> Q \<in> C - D \<and>
+    top1_connected_on C (subspace_topology X T C) \<and>
+    (\<exists>H K. H \<union> K = C - D \<and> geotop_separated X T H K \<and> P \<in> H \<and> Q \<in> K)"
+
+(** from \<S>2: D separates H\<^sub>1 from H\<^sub>2 in C (geotop.tex:660) **)
+definition geotop_separates_sets ::
+  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_separates_sets X T C D H\<^sub>1 H\<^sub>2 \<longleftrightarrow>
+    C \<subseteq> X \<and> D \<subseteq> C \<and> H\<^sub>1 \<subseteq> C - D \<and> H\<^sub>2 \<subseteq> C - D \<and> H\<^sub>1 \<inter> H\<^sub>2 = {} \<and>
+    top1_connected_on C (subspace_topology X T C) \<and>
+    (\<exists>H K. H \<union> K = C - D \<and> geotop_separated X T H K \<and> H\<^sub>1 \<subseteq> H \<and> H\<^sub>2 \<subseteq> K)"
+
+(** from \<S>2: linear graph -- a 1-dimensional complex (geotop.tex:663) **)
+definition geotop_is_linear_graph ::
+  "'a::real_normed_vector set set \<Rightarrow> bool" where
+  "geotop_is_linear_graph K \<longleftrightarrow>
+    geotop_is_complex K \<and>
+    (\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i)"
+
+(** from \<S>2: topological linear graph (geotop.tex:664) **)
+definition geotop_is_topological_linear_graph ::
+  "'a::real_normed_vector set \<Rightarrow> bool" where
+  "geotop_is_topological_linear_graph L \<longleftrightarrow>
+    (\<exists>K f. geotop_is_linear_graph K \<and>
+      top1_homeomorphism_on (geotop_polyhedron K)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))
+        L (subspace_topology UNIV geotop_euclidean_topology L) f)"
+
+(** from \<S>2: an arc touches a set at an endpoint (geotop.tex:666) **)
+definition geotop_arc_touches_at ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_arc_touches_at A E M P \<longleftrightarrow>
+    geotop_arc_endpoints A E \<and> P \<in> E \<and> A \<inter> M = {P}"
+
+definition geotop_arc_touches_at_endpoints ::
+  "'a::real_normed_vector set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> bool" where
+  "geotop_arc_touches_at_endpoints A E M \<longleftrightarrow>
+    geotop_arc_endpoints A E \<and> A \<inter> M = E"
+
+(** from \<S>2: B crosses A at P in N (geotop.tex:667) **)
+definition geotop_arc_crosses_arc_at_in ::
+  "(real^2) set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow>
+    real^2 \<Rightarrow> (real^2) set \<Rightarrow> bool" where
+  "geotop_arc_crosses_arc_at_in B E\<^sub>B A E\<^sub>A P N \<longleftrightarrow>
+    geotop_arc_endpoints A E\<^sub>A \<and> geotop_arc_endpoints B E\<^sub>B \<and>
+    A \<inter> B = {P} \<and>
+    P \<in> geotop_arc_interior A E\<^sub>A \<inter> geotop_arc_interior B E\<^sub>B \<and>
+    neighborhood_of P UNIV geotop_euclidean_topology N \<and>
+    (\<exists>H K. N - A = H \<union> K \<and> geotop_separated UNIV geotop_euclidean_topology H K \<and>
+      is_limit_point_of P (B \<inter> H) UNIV geotop_euclidean_topology \<and>
+      is_limit_point_of P (B \<inter> K) UNIV geotop_euclidean_topology)"
+
+definition geotop_arc_crosses_arc_at ::
+  "(real^2) set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow> (real^2) set \<Rightarrow>
+    real^2 \<Rightarrow> bool" where
+  "geotop_arc_crosses_arc_at B E\<^sub>B A E\<^sub>A P \<longleftrightarrow>
+    (\<exists>N. geotop_arc_crosses_arc_at_in B E\<^sub>B A E\<^sub>A P N)"
+
+(** from \<S>2: crossing for arcs or 1-spheres via crossing subarcs (geotop.tex:674) **)
+definition geotop_crosses_1dim_at ::
+  "(real^2) set \<Rightarrow> (real^2) set \<Rightarrow> real^2 \<Rightarrow> bool" where
+  "geotop_crosses_1dim_at B A P \<longleftrightarrow>
+    (\<exists>A\<^sub>1 B\<^sub>1 E\<^sub>A E\<^sub>B. A\<^sub>1 \<subseteq> A \<and> B\<^sub>1 \<subseteq> B \<and>
+      geotop_arc_crosses_arc_at B\<^sub>1 E\<^sub>B A\<^sub>1 E\<^sub>A P)"
 
 
 text \<open>Polygon J is closed (compact + Euclidean).\<close>
@@ -13610,16 +13821,7 @@ qed
 
 section \<open>\<S>9 The Schönflies theorem\<close>
 
-(** from \<S>9: D separates P from Q in C (definition from \<S>2, recalled) (geotop.tex:1850)
-    LATEX VERSION: Let C be a connected set, D a subset of C, and P,Q points of C-D. If
-      C-D is the union of two separated sets containing P,Q respectively, then D separates
-      P from Q in C. **)
-definition geotop_separates_pts ::
-  "'a set \<Rightarrow> 'a set set \<Rightarrow> 'a set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
-  "geotop_separates_pts X T C D P Q \<longleftrightarrow>
-    C \<subseteq> X \<and> D \<subseteq> C \<and> P \<in> C - D \<and> Q \<in> C - D \<and>
-    top1_connected_on C (subspace_topology X T C) \<and>
-    (\<exists>H K. H \<union> K = C - D \<and> geotop_separated X T H K \<and> P \<in> H \<and> Q \<in> K)"
+text \<open>The point-separation predicate used below is defined in \<S>2.\<close>
 
 (** from \<S>9 Theorem 1 (geotop.tex:1852)
     LATEX VERSION: Let J be a 1-sphere in R^2 which is the union of an arc A and a broken
@@ -14327,12 +14529,7 @@ definition geotop_graph_endpoint ::
     v \<in> geotop_complex_vertices K \<and>
     card {e\<in>K. geotop_is_edge e \<and> v \<in> e} = 1"
 
-(** from \<S>10: linear graph — a 1-dimensional complex **)
-definition geotop_is_linear_graph ::
-  "'a::real_normed_vector set set \<Rightarrow> bool" where
-  "geotop_is_linear_graph K \<longleftrightarrow>
-    geotop_is_complex K \<and>
-    (\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i)"
+text \<open>Linear graphs are defined in \<S>2.\<close>
 
 (** from \<S>10: contracting collection (geotop.tex:2024)
     LATEX VERSION: Let G be a collection of sets in a metric space. G is contracting if for
