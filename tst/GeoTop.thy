@@ -5152,17 +5152,24 @@ proof -
           using hP_E hE_sub_B1 hB1_fr by (by100 blast)
         have hP_cl: "P \<in> closure U"
           using hP_fr unfolding Elementary_Topology.frontier_def by (by100 blast)
-        have h_ball_meets_U: "ball P \<delta> \<inter> U \<noteq> {}"
+        define \<delta>u where "\<delta>u = \<delta> / 2"
+        have h\<delta>u_pos: "\<delta>u > 0"
+          unfolding \<delta>u_def using h\<delta>_pos by (by100 simp)
+        have h\<delta>u_le: "\<delta>u \<le> \<delta>"
+          unfolding \<delta>u_def using h\<delta>_pos by (by100 simp)
+        have h_ball_meets_U: "ball P \<delta>u \<inter> U \<noteq> {}"
         proof -
-          have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
-          have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
-          have "U \<inter> ball P \<delta> \<noteq> {}"
+          have h_ball_open: "open (ball P \<delta>u)" by (by100 simp)
+          have hP_ball: "P \<in> ball P \<delta>u" using h\<delta>u_pos by (by100 simp)
+          have "U \<inter> ball P \<delta>u \<noteq> {}"
             using hP_cl closure_iff_nhds_not_empty[of P U] h_ball_open hP_ball
             by (by100 blast)
           thus ?thesis by (by100 blast)
         qed
-        obtain u where hu_ball: "u \<in> ball P \<delta>" and huU: "u \<in> U"
+        obtain u where hu_ball_small: "u \<in> ball P \<delta>u" and huU: "u \<in> U"
           using h_ball_meets_U by (by100 blast)
+        have hu_ball: "u \<in> ball P \<delta>"
+          using hu_ball_small h\<delta>u_le by (by100 auto)
         have hU_subM: "U \<subseteq> UNIV - M"
           using hU in_components_subset by (by100 blast)
         have hu_not_M: "u \<notin> M" using huU hU_subM by (by100 blast)
@@ -5187,12 +5194,21 @@ proof -
           "card {Bi \<in> {B1, B2, B3}.
                     geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
           using h\<delta>_sectors hC_comp by (by100 blast)
+        have hlocal_open: "open (ball P \<delta> - M)"
+          by (rule open_Diff[OF open_ball h_M_closed])
+        have hC_open: "open C"
+          using hC_comp hlocal_open open_components by (by100 blast)
+        have hC_meets_U: "C \<inter> U \<noteq> {}"
+          using huC huU by (by100 blast)
         \<comment> \<open>Figure 2.6 local-sector uniqueness: after shrinking around the
           endpoint, the global component \<open>U\<close> occupies the single local
           sector \<open>C\<close> of \<open>ball P \<delta> - M\<close>.\<close>
-        have hC_local_U:
+        have h_endpoint_component_stability:
           "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
           sorry
+        have hC_local_U:
+          "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
+          using h_endpoint_component_stability .
         show ?thesis using h\<delta>_pos hC_comp hC_sub_U hC_local_U hC_touch by (by100 blast)
       qed
       obtain \<delta> C where h\<delta>_pos: "\<delta> > 0"
