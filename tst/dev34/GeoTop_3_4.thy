@@ -2306,6 +2306,198 @@ proof -
     using hcover hdisj hI_conn hE_conn hI_front hE_front by (by100 blast)
 qed
 
+(** Local combinatorial helper for Theorems 4.8 and 4.9, L1. If a simplex has
+    two distinct vertices, the segment on those vertices is a 1-face. **)
+lemma geotop_simplex_vertices_pair_edge_face:
+  fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hvw: "v \<noteq> w"
+  shows "\<exists>e. geotop_is_face e \<sigma> \<and> geotop_is_edge e \<and> v \<in> e"
+proof -
+  obtain m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hpair_sub: "{v, w} \<subseteq> V"
+    using hv hw by (by100 blast)
+  have hpair_fin: "finite {v, w}"
+    by (by100 simp)
+  have hpair_card: "card {v, w} = 2"
+    using hvw by (by100 simp)
+  have hpair_card_le: "card {v, w} \<le> card V"
+    by (rule card_mono[OF hV_fin hpair_sub])
+  have hn_ge1: "1 \<le> n"
+    using hV_card hpair_card hpair_card_le by linarith
+  have hm_ge1: "1 \<le> m"
+    using hn_ge1 hn_le_m by linarith
+  have hgp_pair: "geotop_general_position {v, w} m"
+    by (rule geotop_general_position_subset[OF hgp hpair_sub])
+  define e where "e = geotop_convex_hull {v, w}"
+  have hedge_dim: "geotop_simplex_dim e 1"
+    unfolding geotop_simplex_dim_def
+  proof (intro exI conjI)
+    show "finite {v, w}"
+      by (rule hpair_fin)
+    show "card {v, w} = 1 + 1"
+      using hpair_card by (by100 simp)
+    show "1 \<le> m"
+      by (rule hm_ge1)
+    show "geotop_general_position {v, w} m"
+      by (rule hgp_pair)
+    show "e = geotop_convex_hull {v, w}"
+      unfolding e_def by (by100 simp)
+  qed
+  have hedge: "geotop_is_edge e"
+    using hedge_dim unfolding geotop_is_edge_def by (by100 simp)
+  have hface: "geotop_is_face e \<sigma>"
+    unfolding geotop_is_face_def
+  proof (intro exI conjI)
+    show "geotop_simplex_vertices \<sigma> V"
+      by (rule h\<sigma>V)
+    show "{v, w} \<noteq> {}"
+      by (by100 simp)
+    show "{v, w} \<subseteq> V"
+      by (rule hpair_sub)
+    show "e = geotop_convex_hull {v, w}"
+      unfolding e_def by (by100 simp)
+  qed
+  have hv_e: "v \<in> e"
+  proof -
+    have hv_hol: "v \<in> convex hull {v, w}"
+      using hull_inc[of v "{v, w}"] by (by100 simp)
+    have "geotop_convex_hull {v, w} = convex hull {v, w}"
+      by (rule geotop_convex_hull_eq_HOL)
+    thus ?thesis
+      unfolding e_def using hv_hol by (by100 simp)
+  qed
+  show ?thesis
+    using hface hedge hv_e by (by100 blast)
+qed
+
+(** Complex face-closure turns the preceding 1-face into an actual incident edge
+    of the complex. **)
+lemma geotop_complex_simplex_vertex_incident_edge:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hvw: "v \<noteq> w"
+  shows "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+proof -
+  obtain e where hface: "geotop_is_face e \<sigma>"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    using geotop_simplex_vertices_pair_edge_face[OF h\<sigma>V hv hw hvw]
+    by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have heK: "e \<in> K"
+    using hface_closed h\<sigma>K hface by (by100 blast)
+  show ?thesis
+    using heK hedge hv_e by (by100 blast)
+qed
+
+(** If no edge of \<open>K\<close> contains \<open>v\<close>, then any simplex of \<open>K\<close> that has
+    \<open>v\<close> as a vertex has \<open>v\<close> as its only vertex. **)
+lemma geotop_complex_no_incident_edge_simplex_vertices_singleton:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hno_edge: "\<not> (\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  shows "V = {v}"
+proof -
+  have hV_sub: "V \<subseteq> {v}"
+  proof
+    fix w assume hw: "w \<in> V"
+    show "w \<in> {v}"
+    proof (rule ccontr)
+      assume hw_not: "w \<notin> {v}"
+      have hvw: "v \<noteq> w"
+        using hw_not by (by100 simp)
+      have "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+        by (rule geotop_complex_simplex_vertex_incident_edge
+            [OF hK h\<sigma>K h\<sigma>V hv hw hvw])
+      thus False
+        using hno_edge by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hV_sub hv by (by100 blast)
+qed
+
+(** If \<open>{v}\<close> is a vertex simplex of a complex and another simplex contains
+    \<open>v\<close> as a point, then \<open>v\<close> is among the vertices of that simplex. **)
+lemma geotop_complex_singleton_point_is_simplex_vertex:
+  fixes K :: "(real^2) set set" and \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes hv\<tau>: "v \<in> \<tau>"
+  shows "\<exists>V. geotop_simplex_vertices \<tau> V \<and> v \<in> V"
+proof -
+  have hnonempty: "{v} \<inter> \<tau> \<noteq> {}"
+    using hv\<tau> by (by100 simp)
+  have hface_int: "geotop_is_face ({v} \<inter> \<tau>) \<tau>"
+    using hK hvK h\<tau>K hnonempty unfolding geotop_is_complex_def by (by100 blast)
+  have hface: "geotop_is_face {v} \<tau>"
+    using hface_int hv\<tau> by (by100 simp)
+  obtain V W where h\<tau>V: "geotop_simplex_vertices \<tau> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and hW_hull: "{v} = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  obtain w where hw: "w \<in> W"
+    using hW_ne by (by100 blast)
+  have hw_hull: "w \<in> geotop_convex_hull W"
+  proof -
+    have "w \<in> convex hull W"
+      using hw hull_inc[of w W] by (by100 simp)
+    moreover have "geotop_convex_hull W = convex hull W"
+      by (rule geotop_convex_hull_eq_HOL)
+    ultimately show ?thesis by (by100 simp)
+  qed
+  have hw_v: "w = v"
+    using hW_hull hw_hull by (by100 blast)
+  have hvV: "v \<in> V"
+    using hw hw_v hW_sub by (by100 blast)
+  show ?thesis
+    using h\<tau>V hvV by (by100 blast)
+qed
+
+(** Hence a no-incident-edge complex has an isolated vertex simplex: every
+    simplex containing \<open>v\<close> is the singleton \<open>{v}\<close>. **)
+lemma geotop_complex_no_incident_edge_simplex_containing_vertex_eq_singleton:
+  fixes K :: "(real^2) set set" and \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hno_edge: "\<not> (\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e)"
+  assumes hvK: "{v} \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes hv\<tau>: "v \<in> \<tau>"
+  shows "\<tau> = {v}"
+proof -
+  obtain V where h\<tau>V: "geotop_simplex_vertices \<tau> V"
+    and hvV: "v \<in> V"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<tau>K hv\<tau>]
+    by (by100 blast)
+  have hV_eq: "V = {v}"
+    by (rule geotop_complex_no_incident_edge_simplex_vertices_singleton
+        [OF hK hno_edge h\<tau>K h\<tau>V hvV])
+  obtain m n where h\<tau>_eq: "\<tau> = geotop_convex_hull V"
+    using h\<tau>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsing_hull: "geotop_convex_hull {v} = {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  show ?thesis
+    using h\<tau>_eq hV_eq hsing_hull by (by100 simp)
+qed
+
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
