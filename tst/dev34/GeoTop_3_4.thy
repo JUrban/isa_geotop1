@@ -4639,6 +4639,24 @@ proof
       by (rule geotop_complex_edge_in_2_simplex_imp_face_count_ge_1
           [OF hK heK hedge hex])
   qed
+  \<comment> \<open>Counterexample form for L3: if an incident edge is not in at least
+    two adjacent two-simplexes, Lemma 2 says it is in exactly one; name that
+    unique two-simplex for the book's semicircle contradiction.\<close>
+  have hL3_counterexample_face: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2 \<longrightarrow>
+              (\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)"
+  proof (intro ballI impI)
+    fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+      and hnot_ge2: "\<not> 2 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    have hedge: "geotop_is_edge e"
+      using he_inc by (by100 blast)
+    have hge1: "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      using hL2_count heK he_inc by (by100 blast)
+    have hcard1: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      using hge1 hnot_ge2 by (by100 linarith)
+    show "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      by (rule geotop_complex_edge_face_count_eq_1_unique[OF hK heK hedge hcard1])
+  qed
   \<comment> \<open>L3: every incident edge in \<ge>2 two-simplexes (manifold without boundary).\<close>
   have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2" sorry
