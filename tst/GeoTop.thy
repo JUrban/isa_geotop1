@@ -8626,6 +8626,24 @@ proof -
           assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
           let ?Touch = "{S \<in> {?S1, ?S2, ?S3}.
                       (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+          have hR_closed: "closed ?R"
+          proof -
+            have hS1_closed: "closed ?S1" by (rule closed_segment)
+            have hS2_closed: "closed ?S2" by (rule closed_segment)
+            have hS3_closed: "closed ?S3" by (rule closed_segment)
+            have hS12_closed: "closed (?S1 \<union> ?S2)"
+              by (rule closed_Un[OF hS1_closed hS2_closed])
+            show ?thesis
+              by (rule closed_Un[OF hS12_closed hS3_closed])
+          qed
+          have h_local_open: "open (ball P \<delta> - ?R)"
+            by (rule open_Diff[OF open_ball hR_closed])
+          have hC_conn: "connected C"
+            using hC_comp in_components_connected by (by100 blast)
+          have hC_sub_local: "C \<subseteq> ball P \<delta> - ?R"
+            using hC_comp in_components_subset by (by100 blast)
+          have hC_open: "open C"
+            using hC_comp h_local_open open_components by (by100 blast)
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
             sorry
