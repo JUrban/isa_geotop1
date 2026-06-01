@@ -485,6 +485,134 @@ proof
         by (by100 blast)
     qed
   qed
+  have hlink_vertices_two_opposite_face_link_edges:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      (\<exists>e \<sigma> \<tau> u\<^sub>\<sigma> u\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> u\<^sub>\<sigma> \<in> \<sigma> \<and> u\<^sub>\<sigma> \<noteq> v \<and> u\<^sub>\<sigma> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>
+        \<and> geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<tau> \<in> \<tau> \<and> u\<^sub>\<tau> \<noteq> v \<and> u\<^sub>\<tau> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>
+        \<and> geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}
+        \<and> u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>})"
+  proof
+    fix w
+    show "{w} \<in> geotop_link K v \<longrightarrow>
+      (\<exists>e \<sigma> \<tau> u\<^sub>\<sigma> u\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> u\<^sub>\<sigma> \<in> \<sigma> \<and> u\<^sub>\<sigma> \<noteq> v \<and> u\<^sub>\<sigma> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>
+        \<and> geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<tau> \<in> \<tau> \<and> u\<^sub>\<tau> \<noteq> v \<and> u\<^sub>\<tau> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>
+        \<and> geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}
+        \<and> u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>})"
+    proof
+      assume hwL: "{w} \<in> geotop_link K v"
+      have hvK: "{v} \<in> K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+      obtain e where heK: "e \<in> K"
+        and hedge: "geotop_is_edge e"
+        and hv_e: "v \<in> e"
+        and hw_e: "w \<in> e"
+        using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
+        by (by100 blast)
+      have htwo_imp: "geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+          (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+            \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+            \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+        using hL_two_faces heK by (by100 simp)
+      have hinc: "geotop_is_edge e \<and> v \<in> e"
+        using hedge hv_e by (by100 blast)
+      have htwo_e: "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+            \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+            \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+        by (rule mp[OF htwo_imp hinc])
+      from htwo_e obtain \<sigma> where h\<sigma>ex:
+        "\<exists>\<tau>. \<sigma> \<noteq> \<tau>
+            \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+            \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}" ..
+      from h\<sigma>ex obtain \<tau> where hpair:
+        "\<sigma> \<noteq> \<tau>
+            \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+            \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+            \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}" ..
+      have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+        using hpair by (by100 simp)
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using hpair by (by100 simp)
+      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        using hpair by (by100 simp)
+      have h\<sigma>face: "geotop_is_face e \<sigma>"
+        using hpair by (by100 simp)
+      have h\<tau>K: "\<tau> \<in> K"
+        using hpair by (by100 simp)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using hpair by (by100 simp)
+      have h\<tau>face: "geotop_is_face e \<tau>"
+        using hpair by (by100 simp)
+      obtain u\<^sub>\<sigma> where hu\<sigma>\<sigma>: "u\<^sub>\<sigma> \<in> \<sigma>"
+        and hu\<sigma>_ne_v: "u\<^sub>\<sigma> \<noteq> v"
+        and hu\<sigma>_ne_w: "u\<^sub>\<sigma> \<noteq> w"
+        and hface_l\<sigma>: "geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>"
+        and hl\<sigma>L: "geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v"
+        and hl\<sigma>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})"
+        and hw_l\<sigma>: "w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}"
+        and hu\<sigma>_l\<sigma>: "u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}"
+        using geotop_link_vertex_incident_2simplex_opposite_face_link_edge
+          [OF hK hvK hwL heK hedge hv_e hw_e h\<sigma>K h\<sigma>2 h\<sigma>face]
+        by (by100 blast)
+      obtain u\<^sub>\<tau> where hu\<tau>\<tau>: "u\<^sub>\<tau> \<in> \<tau>"
+        and hu\<tau>_ne_v: "u\<^sub>\<tau> \<noteq> v"
+        and hu\<tau>_ne_w: "u\<^sub>\<tau> \<noteq> w"
+        and hface_l\<tau>: "geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>"
+        and hl\<tau>L: "geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v"
+        and hl\<tau>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})"
+        and hw_l\<tau>: "w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+        and hu\<tau>_l\<tau>: "u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+        using geotop_link_vertex_incident_2simplex_opposite_face_link_edge
+          [OF hK hvK hwL heK hedge hv_e hw_e h\<tau>K h\<tau>2 h\<tau>face]
+        by (by100 blast)
+      show "\<exists>e \<sigma> \<tau> u\<^sub>\<sigma> u\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> u\<^sub>\<sigma> \<in> \<sigma> \<and> u\<^sub>\<sigma> \<noteq> v \<and> u\<^sub>\<sigma> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>
+        \<and> geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+        \<and> u\<^sub>\<tau> \<in> \<tau> \<and> u\<^sub>\<tau> \<noteq> v \<and> u\<^sub>\<tau> \<noteq> w
+        \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>
+        \<and> geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v
+        \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})
+        \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}
+        \<and> u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+        using heK hedge hv_e hw_e h\<sigma>\<tau> h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face
+          hu\<sigma>\<sigma> hu\<sigma>_ne_v hu\<sigma>_ne_w hface_l\<sigma> hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hu\<sigma>_l\<sigma>
+          hu\<tau>\<tau> hu\<tau>_ne_v hu\<tau>_ne_w hface_l\<tau> hl\<tau>L hl\<tau>edge hw_l\<tau> hu\<tau>_l\<tau>
+        by (by100 blast)
+    qed
+  qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology
