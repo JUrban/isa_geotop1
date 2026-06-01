@@ -2264,22 +2264,80 @@ proof -
                         in \<open>U\<close> by
                         \<open>h_path_in_local_two_edge_complement_stays_U\<close>.\<close>
                       have h_positive_exterior_path_wrap:
-                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < r;
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < min (r / 2) (\<delta>_iso / 2);
                           inner (p\<tau>_y - x) n_y > 0;
                           inner (u - x) n_y > 0;
                           ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                            (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0))\<rbrakk>
                          \<Longrightarrow> \<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y < 0"
-                        sorry
+                      proof -
+                        fix r u
+                        assume hr_pos: "r > 0"
+                          and huU: "u \<in> U"
+                          and hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          and hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                          and hu_pos: "inner (u - x) n_y > 0"
+                          and hu_exterior_m:
+                            "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
+                        have hu_dist_delta_half: "dist u x < \<delta>_iso / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_ball_iso: "u \<in> ball x \<delta>_iso"
+                        proof -
+                          have "dist u x < \<delta>_iso"
+                            using hu_dist_delta_half h\<delta>_iso_pos by (by100 linarith)
+                          hence "dist x u < \<delta>_iso"
+                            by (simp add: dist_commute)
+                          thus ?thesis by (by100 simp)
+                        qed
+                        have hu_local:
+                          "u \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          by (rule h_U_ball_point_in_local_two_edge_complement
+                              [OF huU hu_ball_iso])
+                        \<comment> \<open>Pure Figure 2.6 geometry: in the exterior sector
+                          of the two local rays, draw a small circular arc in
+                          the punctured disk from \<open>u\<close> around \<open>x\<close> to the
+                          opposite side of the selected edge.\<close>
+                        have h_positive_circular_sector_path:
+                          "\<exists>w \<gamma>. w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
+                            dist w x < r \<and> inner (w - x) n_y < 0 \<and>
+                            continuous_on {0..1::real} \<gamma> \<and>
+                            \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
+                            \<gamma> 0 = u \<and> \<gamma> 1 = w"
+                          sorry
+                        obtain w \<gamma> where hw_local:
+                            "w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          and hw_dist: "dist w x < r"
+                          and hw_neg: "inner (w - x) n_y < 0"
+                          and h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                          and h\<gamma>_sub:
+                            "\<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          and h\<gamma>0: "\<gamma> 0 = u"
+                          and h\<gamma>1: "\<gamma> 1 = w"
+                          using h_positive_circular_sector_path by (by100 blast)
+                        have h\<gamma>0_U: "\<gamma> 0 \<in> U"
+                          using h\<gamma>0 huU by (by100 simp)
+                        have h1: "(1::real) \<in> {0..1}"
+                          by (by100 simp)
+                        have h\<gamma>1_U: "\<gamma> 1 \<in> U"
+                          by (rule h_path_in_local_two_edge_complement_stays_U
+                              [OF h\<gamma>_cont h\<gamma>_sub h\<gamma>0_U h1])
+                        have hwU: "w \<in> U"
+                          using h\<gamma>1 h\<gamma>1_U by (by100 simp)
+                        show "\<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y < 0"
+                          using hwU hw_dist hw_neg by (by100 blast)
+                      qed
                       show ?thesis
                       proof (intro allI impI)
                         fix r :: real
                         assume hr_pos: "r > 0"
-                        define r0 where "r0 = min r r_between"
+                        define r0 where "r0 = min r_between (min (r / 2) (\<delta>_iso / 2))"
                         have hr0_pos: "r0 > 0"
-                          unfolding r0_def using hr_pos hr_between_pos by (by100 simp)
-                        have hr0_le_r: "r0 \<le> r"
+                          unfolding r0_def using hr_pos hr_between_pos h\<delta>_iso_pos by (by100 simp)
+                        have hr0_le_r_half: "r0 \<le> r / 2"
                           unfolding r0_def by (by100 simp)
+                        have hr0_le_small: "r0 \<le> min (r / 2) (\<delta>_iso / 2)"
+                          unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
                           unfolding r0_def by (by100 simp)
                         obtain u where huU: "u \<in> U"
@@ -2287,7 +2345,9 @@ proof -
                           and hu_pos: "inner (u - x) n_y > 0"
                           using hU_pos_acc hr0_pos by (by100 blast)
                         have hu_dist_r: "dist u x < r"
-                          using hu_dist0 hr0_le_r by (by100 linarith)
+                          using hu_dist0 hr0_le_r_half hr_pos by (by100 linarith)
+                        have hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          using hu_dist0 hr0_le_small by (by100 linarith)
                         have hu_dist_between: "dist u x < r_between"
                           using hu_dist0 hr0_le_between by (by100 linarith)
                         have hu_off: "inner (u - x) n_y \<noteq> 0"
@@ -2311,7 +2371,7 @@ proof -
                           using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
                         show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
                           by (rule h_positive_exterior_path_wrap
-                              [OF hr_pos huU hu_dist_r hp_pos hu_pos hu_exterior_m])
+                              [OF hr_pos huU hu_dist_small hp_pos hu_pos hu_exterior_m])
                       qed
                     qed
                     \<comment> \<open>Symmetric Figure 2.6 exterior-sector wrap, negative
@@ -2331,22 +2391,76 @@ proof -
                              (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))"
                         using hnot_between by (by100 blast)
                       have h_negative_exterior_path_wrap:
-                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < r;
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < min (r / 2) (\<delta>_iso / 2);
                           inner (p\<tau>_y - x) n_y < 0;
                           inner (u - x) n_y < 0;
                           ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                            (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0))\<rbrakk>
                          \<Longrightarrow> \<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y > 0"
-                        sorry
+                      proof -
+                        fix r u
+                        assume hr_pos: "r > 0"
+                          and huU: "u \<in> U"
+                          and hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          and hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                          and hu_neg: "inner (u - x) n_y < 0"
+                          and hu_exterior_m:
+                            "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
+                        have hu_dist_delta_half: "dist u x < \<delta>_iso / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_ball_iso: "u \<in> ball x \<delta>_iso"
+                        proof -
+                          have "dist u x < \<delta>_iso"
+                            using hu_dist_delta_half h\<delta>_iso_pos by (by100 linarith)
+                          hence "dist x u < \<delta>_iso"
+                            by (simp add: dist_commute)
+                          thus ?thesis by (by100 simp)
+                        qed
+                        have hu_local:
+                          "u \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          by (rule h_U_ball_point_in_local_two_edge_complement
+                              [OF huU hu_ball_iso])
+                        have h_negative_circular_sector_path:
+                          "\<exists>w \<gamma>. w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
+                            dist w x < r \<and> inner (w - x) n_y > 0 \<and>
+                            continuous_on {0..1::real} \<gamma> \<and>
+                            \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
+                            \<gamma> 0 = u \<and> \<gamma> 1 = w"
+                          sorry
+                        obtain w \<gamma> where hw_local:
+                            "w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          and hw_dist: "dist w x < r"
+                          and hw_pos: "inner (w - x) n_y > 0"
+                          and h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                          and h\<gamma>_sub:
+                            "\<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          and h\<gamma>0: "\<gamma> 0 = u"
+                          and h\<gamma>1: "\<gamma> 1 = w"
+                          using h_negative_circular_sector_path by (by100 blast)
+                        have h\<gamma>0_U: "\<gamma> 0 \<in> U"
+                          using h\<gamma>0 huU by (by100 simp)
+                        have h1: "(1::real) \<in> {0..1}"
+                          by (by100 simp)
+                        have h\<gamma>1_U: "\<gamma> 1 \<in> U"
+                          by (rule h_path_in_local_two_edge_complement_stays_U
+                              [OF h\<gamma>_cont h\<gamma>_sub h\<gamma>0_U h1])
+                        have hwU: "w \<in> U"
+                          using h\<gamma>1 h\<gamma>1_U by (by100 simp)
+                        show "\<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y > 0"
+                          using hwU hw_dist hw_pos by (by100 blast)
+                      qed
                       show ?thesis
                       proof (intro allI impI)
                         fix r :: real
                         assume hr_pos: "r > 0"
-                        define r0 where "r0 = min r r_between"
+                        define r0 where "r0 = min r_between (min (r / 2) (\<delta>_iso / 2))"
                         have hr0_pos: "r0 > 0"
-                          unfolding r0_def using hr_pos hr_between_pos by (by100 simp)
-                        have hr0_le_r: "r0 \<le> r"
+                          unfolding r0_def using hr_pos hr_between_pos h\<delta>_iso_pos by (by100 simp)
+                        have hr0_le_r_half: "r0 \<le> r / 2"
                           unfolding r0_def by (by100 simp)
+                        have hr0_le_small: "r0 \<le> min (r / 2) (\<delta>_iso / 2)"
+                          unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
                           unfolding r0_def by (by100 simp)
                         obtain u where huU: "u \<in> U"
@@ -2354,7 +2468,9 @@ proof -
                           and hu_neg: "inner (u - x) n_y < 0"
                           using hU_neg_acc hr0_pos by (by100 blast)
                         have hu_dist_r: "dist u x < r"
-                          using hu_dist0 hr0_le_r by (by100 linarith)
+                          using hu_dist0 hr0_le_r_half hr_pos by (by100 linarith)
+                        have hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          using hu_dist0 hr0_le_small by (by100 linarith)
                         have hu_dist_between: "dist u x < r_between"
                           using hu_dist0 hr0_le_between by (by100 linarith)
                         have hu_off: "inner (u - x) n_y \<noteq> 0"
@@ -2378,7 +2494,7 @@ proof -
                           using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
                         show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
                           by (rule h_negative_exterior_path_wrap
-                              [OF hr_pos huU hu_dist_r hp_neg hu_neg hu_exterior_m])
+                              [OF hr_pos huU hu_dist_small hp_neg hu_neg hu_exterior_m])
                       qed
                     qed
                     show ?thesis
