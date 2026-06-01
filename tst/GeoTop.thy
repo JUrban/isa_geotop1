@@ -2225,7 +2225,166 @@ proof -
                         (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
                       (inner (p\<tau>_y - x) n_y < 0 \<and>
                         (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
-                    sorry
+                  proof -
+                    assume hnot_between:
+                      "\<not> (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))"
+                    \<comment> \<open>Figure 2.6 exterior-sector wrap, positive orientation:
+                      if the other edge lies on the positive side of the selected
+                      edge and \<open>U\<close> accumulates in the exterior sector rather
+                      than the sector between the two rays, then the same local
+                      component of the punctured circular neighbourhood wraps
+                      around to the negative side of the selected edge.
+
+                      This is to be proved from the already established local
+                      model
+                      \<open>ball x \<delta>_iso - M = ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)\<close>
+                      and
+                      \<open>h_path_in_local_two_edge_complement_stays_U\<close>.\<close>
+                    have h_exterior_wrap_pos:
+                      "\<lbrakk>inner (p\<tau>_y - x) n_y > 0;
+                        \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0\<rbrakk>
+                       \<Longrightarrow> \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
+                    proof -
+                      assume hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                        and hU_pos_acc:
+                          "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
+                      obtain r_between where hr_between_pos: "r_between > 0"
+                        and hr_between_no:
+                          "\<not> (\<exists>u\<in>U. dist u x < r_between \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                            ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))"
+                        using hnot_between by (by100 blast)
+                      \<comment> \<open>The remaining positive-orientation geometric core:
+                        an exterior-sector point of the local two-edge
+                        complement can be joined, inside
+                        \<open>ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)\<close>, to a point on the
+                        negative side of the selected line. The path then stays
+                        in \<open>U\<close> by
+                        \<open>h_path_in_local_two_edge_complement_stays_U\<close>.\<close>
+                      have h_positive_exterior_path_wrap:
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < r;
+                          inner (p\<tau>_y - x) n_y > 0;
+                          inner (u - x) n_y > 0;
+                          ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                           (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0))\<rbrakk>
+                         \<Longrightarrow> \<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y < 0"
+                        sorry
+                      show ?thesis
+                      proof (intro allI impI)
+                        fix r :: real
+                        assume hr_pos: "r > 0"
+                        define r0 where "r0 = min r r_between"
+                        have hr0_pos: "r0 > 0"
+                          unfolding r0_def using hr_pos hr_between_pos by (by100 simp)
+                        have hr0_le_r: "r0 \<le> r"
+                          unfolding r0_def by (by100 simp)
+                        have hr0_le_between: "r0 \<le> r_between"
+                          unfolding r0_def by (by100 simp)
+                        obtain u where huU: "u \<in> U"
+                          and hu_dist0: "dist u x < r0"
+                          and hu_pos: "inner (u - x) n_y > 0"
+                          using hU_pos_acc hr0_pos by (by100 blast)
+                        have hu_dist_r: "dist u x < r"
+                          using hu_dist0 hr0_le_r by (by100 linarith)
+                        have hu_dist_between: "dist u x < r_between"
+                          using hu_dist0 hr0_le_between by (by100 linarith)
+                        have hu_off: "inner (u - x) n_y \<noteq> 0"
+                          using hu_pos by (by100 simp)
+                        have hnot_same_m:
+                          "\<not> ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                                (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                        proof
+                          assume hsame:
+                            "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)"
+                          have "\<exists>u\<in>U. dist u x < r_between \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                            ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                            using huU hu_dist_between hu_off hsame by (by100 blast)
+                          thus False using hr_between_no by (by100 blast)
+                        qed
+                        have hu_exterior_m:
+                          "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                           (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
+                          using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
+                        show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
+                          by (rule h_positive_exterior_path_wrap
+                              [OF hr_pos huU hu_dist_r hp_pos hu_pos hu_exterior_m])
+                      qed
+                    qed
+                    \<comment> \<open>Symmetric Figure 2.6 exterior-sector wrap, negative
+                      orientation.\<close>
+                    have h_exterior_wrap_neg:
+                      "\<lbrakk>inner (p\<tau>_y - x) n_y < 0;
+                        \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0\<rbrakk>
+                       \<Longrightarrow> \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
+                    proof -
+                      assume hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                        and hU_neg_acc:
+                          "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
+                      obtain r_between where hr_between_pos: "r_between > 0"
+                        and hr_between_no:
+                          "\<not> (\<exists>u\<in>U. dist u x < r_between \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                            ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))"
+                        using hnot_between by (by100 blast)
+                      have h_negative_exterior_path_wrap:
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < r;
+                          inner (p\<tau>_y - x) n_y < 0;
+                          inner (u - x) n_y < 0;
+                          ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                           (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0))\<rbrakk>
+                         \<Longrightarrow> \<exists>w\<in>U. dist w x < r \<and> inner (w - x) n_y > 0"
+                        sorry
+                      show ?thesis
+                      proof (intro allI impI)
+                        fix r :: real
+                        assume hr_pos: "r > 0"
+                        define r0 where "r0 = min r r_between"
+                        have hr0_pos: "r0 > 0"
+                          unfolding r0_def using hr_pos hr_between_pos by (by100 simp)
+                        have hr0_le_r: "r0 \<le> r"
+                          unfolding r0_def by (by100 simp)
+                        have hr0_le_between: "r0 \<le> r_between"
+                          unfolding r0_def by (by100 simp)
+                        obtain u where huU: "u \<in> U"
+                          and hu_dist0: "dist u x < r0"
+                          and hu_neg: "inner (u - x) n_y < 0"
+                          using hU_neg_acc hr0_pos by (by100 blast)
+                        have hu_dist_r: "dist u x < r"
+                          using hu_dist0 hr0_le_r by (by100 linarith)
+                        have hu_dist_between: "dist u x < r_between"
+                          using hu_dist0 hr0_le_between by (by100 linarith)
+                        have hu_off: "inner (u - x) n_y \<noteq> 0"
+                          using hu_neg by (by100 simp)
+                        have hnot_same_m:
+                          "\<not> ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                                (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                        proof
+                          assume hsame:
+                            "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)"
+                          have "\<exists>u\<in>U. dist u x < r_between \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                            ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                             (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                            using huU hu_dist_between hu_off hsame by (by100 blast)
+                          thus False using hr_between_no by (by100 blast)
+                        qed
+                        have hu_exterior_m:
+                          "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
+                           (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
+                          using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
+                        show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
+                          by (rule h_negative_exterior_path_wrap
+                              [OF hr_pos huU hu_dist_r hp_neg hu_neg hu_exterior_m])
+                      qed
+                    qed
+                    show ?thesis
+                      using h_same_side_remaining h_exterior_wrap_pos h_exterior_wrap_neg
+                      by (by100 blast)
+                  qed
                   have h_two_ray_circular_sector_dichotomy:
                     "(\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
                         ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
