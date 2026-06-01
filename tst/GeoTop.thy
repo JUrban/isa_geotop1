@@ -3809,7 +3809,31 @@ proof -
           qed
           have h_circle_trace_not_all:
             "\<not> {q1, q2, q3} \<subseteq> closure (\<rho> ` C)"
-            sorry
+          proof
+            assume h_all: "{q1, q2, q3} \<subseteq> closure (\<rho> ` C)"
+            have hC_ne: "C \<noteq> {}"
+              using hC_comp in_components_nonempty by (by100 blast)
+            have htrace_ne: "\<rho> ` C \<noteq> {}"
+              using hC_ne by (by100 blast)
+            have htrace_punctured:
+              "\<rho> ` C \<subseteq> sphere P r - {q1, q2, q3}"
+              using h\<rho>_sphere h\<rho>_avoid_qs by (by100 blast)
+            have hcl_trace_sphere:
+              "closure (\<rho> ` C) \<subseteq> sphere P r"
+              by (rule h\<rho>_closure_sphere)
+            have hcl_trace_conn:
+              "connected (closure (\<rho> ` C))"
+              by (rule h\<rho>_closure_conn)
+            have hq1_cl: "q1 \<in> closure (\<rho> ` C)"
+              using h_all by (by100 blast)
+            have hq2_cl: "q2 \<in> closure (\<rho> ` C)"
+              using h_all by (by100 blast)
+            have hq3_cl: "q3 \<in> closure (\<rho> ` C)"
+              using h_all by (by100 blast)
+            have h_circle_sector_contradiction: False
+              sorry
+            show False by (rule h_circle_sector_contradiction)
+          qed
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure (\<rho> ` C)) \<le> 2"
           proof -
