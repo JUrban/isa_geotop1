@@ -3773,6 +3773,40 @@ proof -
     using \<open>\<sigma> \<subseteq> connected_component_set ?M x\<close> hC_eq_x by (by100 simp)
 qed
 
+lemma geotop_link_component_inherits_incident_link_edges:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+  shows "\<forall>w. {w} \<in> {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C} \<longrightarrow>
+        (\<exists>l\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}. geotop_is_edge l \<and> w \<in> l)"
+proof (intro allI impI)
+  fix w
+  let ?L = "{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+  assume hwL: "{w} \<in> ?L"
+  have hw_link: "{w} \<in> geotop_link K v"
+    using hwL by (by100 simp)
+  have hwC: "w \<in> C"
+    using hwL by (by100 simp)
+  obtain l where hl_link: "l \<in> geotop_link K v"
+    and hledge: "geotop_is_edge l"
+    and hwl: "w \<in> l"
+    using hvertices hw_link by (by100 blast)
+  have hmeet: "l \<inter> C \<noteq> {}"
+    using hwl hwC by (by100 blast)
+  have hl_sub_C: "l \<subseteq> C"
+    by (rule geotop_link_component_contains_meeting_simplex
+        [OF hK hP hC hl_link hmeet])
+  have hl_L: "l \<in> ?L"
+    using hl_link hl_sub_C by (by100 simp)
+  show "\<exists>l\<in>?L. geotop_is_edge l \<and> w \<in> l"
+    using hl_L hledge hwl by (by100 blast)
+qed
+
 lemma geotop_link_component_subcomplex_witness:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
