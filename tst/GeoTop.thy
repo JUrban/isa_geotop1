@@ -4351,7 +4351,77 @@ proof -
                         qed
                         have h\<phi>_between:
                           "\<phi> ` Lc \<subseteq> {0<..<D}"
-                          sorry
+                        proof
+                          fix t assume htT: "t \<in> \<phi> ` Lc"
+                          have ht_ne0: "t \<noteq> 0"
+                          proof
+                            assume ht0: "t = 0"
+                            have "t \<in> \<phi> ` Lc \<inter> {0, D}"
+                              using htT ht0 by (by100 blast)
+                            thus False using h\<phi>_cut_avoid by (by100 simp)
+                          qed
+                          have ht_neD: "t \<noteq> D"
+                          proof
+                            assume htD: "t = D"
+                            have "t \<in> \<phi> ` Lc \<inter> {0, D}"
+                              using htT htD by (by100 blast)
+                            thus False using h\<phi>_cut_avoid by (by100 simp)
+                          qed
+                          have ht_pos: "0 < t"
+                          proof (rule ccontr)
+                            assume "\<not> 0 < t"
+                            hence ht_le0: "t \<le> 0" by (by100 simp)
+                            obtain y where hyT: "y \<in> \<phi> ` Lc"
+                              and hy_dist: "dist D y < D / 2"
+                              using closure_approachableD[OF hD_cl, of "D / 2"] hD_pos
+                              by (by100 auto)
+                            have hD_minus_y: "D - y < D / 2"
+                            proof -
+                              have h_abs: "\<bar>D - y\<bar> < D / 2"
+                                using hy_dist by (simp add: dist_real_def)
+                              have "D - y \<le> \<bar>D - y\<bar>"
+                                by (by100 simp)
+                              thus ?thesis
+                                using h_abs by (by100 linarith)
+                            qed
+                            have hy_ge0: "0 \<le> y"
+                              using hD_minus_y hD_pos by (by100 linarith)
+                            have h0_in_T: "0 \<in> \<phi> ` Lc"
+                              by (rule connectedD_interval
+                                  [OF h\<phi>_conn htT hyT ht_le0 hy_ge0])
+                            have "0 \<in> \<phi> ` Lc \<inter> {0, D}"
+                              using h0_in_T by (by100 blast)
+                            thus False using h\<phi>_cut_avoid by (by100 simp)
+                          qed
+                          have ht_ltD: "t < D"
+                          proof (rule ccontr)
+                            assume "\<not> t < D"
+                            hence hD_le_t: "D \<le> t" by (by100 simp)
+                            obtain y where hyT: "y \<in> \<phi> ` Lc"
+                              and hy_dist: "dist 0 y < D / 2"
+                              using closure_approachableD[OF h0_cl, of "D / 2"] hD_pos
+                              by (by100 auto)
+                            have hy_lt_half: "y < D / 2"
+                            proof -
+                              have h_abs: "\<bar>y\<bar> < D / 2"
+                                using hy_dist by (simp add: dist_real_def)
+                              have "y \<le> \<bar>y\<bar>"
+                                by (by100 simp)
+                              thus ?thesis
+                                using h_abs by (by100 linarith)
+                            qed
+                            have hy_leD: "y \<le> D"
+                              using hy_lt_half hD_pos by (by100 linarith)
+                            have hD_in_T: "D \<in> \<phi> ` Lc"
+                              by (rule connectedD_interval
+                                  [OF h\<phi>_conn hyT htT hy_leD hD_le_t])
+                            have "D \<in> \<phi> ` Lc \<inter> {0, D}"
+                              using hD_in_T by (by100 blast)
+                            thus False using h\<phi>_cut_avoid by (by100 simp)
+                          qed
+                          show "t \<in> {0<..<D}"
+                            using ht_pos ht_ltD by (by100 simp)
+                        qed
                         have hLc_sub_segment:
                           "Lc \<subseteq> closed_segment a b"
                           sorry
