@@ -2403,6 +2403,109 @@ proof -
     using heK hedge hv_e by (by100 blast)
 qed
 
+lemma geotop_simplex_vertices_pair_edge_face_between:
+  fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hvw: "v \<noteq> w"
+  shows "\<exists>e. geotop_is_face e \<sigma> \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e"
+proof -
+  obtain m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hpair_sub: "{v, w} \<subseteq> V"
+    using hv hw by (by100 blast)
+  have hpair_fin: "finite {v, w}"
+    by (by100 simp)
+  have hpair_card: "card {v, w} = 2"
+    using hvw by (by100 simp)
+  have hpair_card_le: "card {v, w} \<le> card V"
+    by (rule card_mono[OF hV_fin hpair_sub])
+  have hn_ge1: "1 \<le> n"
+    using hV_card hpair_card hpair_card_le by (by100 linarith)
+  have hm_ge1: "1 \<le> m"
+    using hn_ge1 hn_le_m by (by100 linarith)
+  have hgp_pair: "geotop_general_position {v, w} m"
+    by (rule geotop_general_position_subset[OF hgp hpair_sub])
+  define e where "e = geotop_convex_hull {v, w}"
+  have hedge_dim: "geotop_simplex_dim e 1"
+    unfolding geotop_simplex_dim_def
+  proof (intro exI conjI)
+    show "finite {v, w}"
+      by (rule hpair_fin)
+    show "card {v, w} = 1 + 1"
+      using hpair_card by (by100 simp)
+    show "1 \<le> m"
+      by (rule hm_ge1)
+    show "geotop_general_position {v, w} m"
+      by (rule hgp_pair)
+    show "e = geotop_convex_hull {v, w}"
+      unfolding e_def by (by100 simp)
+  qed
+  have hedge: "geotop_is_edge e"
+    using hedge_dim unfolding geotop_is_edge_def by (by100 simp)
+  have hface: "geotop_is_face e \<sigma>"
+    unfolding geotop_is_face_def
+  proof (intro exI conjI)
+    show "geotop_simplex_vertices \<sigma> V"
+      by (rule h\<sigma>V)
+    show "{v, w} \<noteq> {}"
+      by (by100 simp)
+    show "{v, w} \<subseteq> V"
+      by (rule hpair_sub)
+    show "e = geotop_convex_hull {v, w}"
+      unfolding e_def by (by100 simp)
+  qed
+  have hv_e: "v \<in> e"
+  proof -
+    have "v \<in> convex hull {v, w}"
+      using hull_inc[of v "{v, w}"] by (by100 simp)
+    moreover have "geotop_convex_hull {v, w} = convex hull {v, w}"
+      by (rule geotop_convex_hull_eq_HOL)
+    ultimately show ?thesis
+      unfolding e_def by (by100 simp)
+  qed
+  have hw_e: "w \<in> e"
+  proof -
+    have "w \<in> convex hull {v, w}"
+      using hull_inc[of w "{v, w}"] by (by100 simp)
+    moreover have "geotop_convex_hull {v, w} = convex hull {v, w}"
+      by (rule geotop_convex_hull_eq_HOL)
+    ultimately show ?thesis
+      unfolding e_def by (by100 simp)
+  qed
+  show ?thesis
+    using hface hedge hv_e hw_e by (by100 blast)
+qed
+
+lemma geotop_complex_simplex_vertices_incident_edge_between:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hvw: "v \<noteq> w"
+  shows "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e \<and> w \<in> e"
+proof -
+  obtain e where hface: "geotop_is_face e \<sigma>"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    using geotop_simplex_vertices_pair_edge_face_between[OF h\<sigma>V hv hw hvw]
+    by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have heK: "e \<in> K"
+    using hface_closed h\<sigma>K hface by (by100 blast)
+  show ?thesis
+    using heK hedge hv_e hw_e by (by100 blast)
+qed
+
 (** If no edge of \<open>K\<close> contains \<open>v\<close>, then any simplex of \<open>K\<close> that has
     \<open>v\<close> as a vertex has \<open>v\<close> as its only vertex. **)
 lemma geotop_complex_no_incident_edge_simplex_vertices_singleton:
@@ -4195,6 +4298,56 @@ proof -
     show "{w} \<in> geotop_link K v"
       by (rule hw_link)
   qed
+qed
+
+lemma geotop_link_vertex_incident_edge_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  shows "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e \<and> w \<in> e"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and hv\<sigma>: "v \<in> \<sigma>"
+    and hw_face_case: "geotop_is_face {w} \<sigma> \<or> {w} = \<sigma>"
+    using hwL unfolding geotop_link_def geotop_star_def by (by100 blast)
+  have hv_not_singleton: "v \<notin> {w}"
+    using hwL unfolding geotop_link_def by (by100 blast)
+  have hvw: "v \<noteq> w"
+    using hv_not_singleton by (by100 simp)
+  have hlink_sub: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  have hwK: "{w} \<in> K"
+    using hlink_sub hwL by (by100 blast)
+  have hw\<sigma>: "w \<in> \<sigma>"
+  proof (rule disjE[OF hw_face_case])
+    assume hface: "geotop_is_face {w} \<sigma>"
+    have "{w} \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF hface])
+    thus ?thesis
+      by (by100 simp)
+  next
+    assume hw_eq: "{w} = \<sigma>"
+    have "w \<in> {w}"
+      by (by100 simp)
+    show ?thesis
+      using hw_eq \<open>w \<in> {w}\<close> by (by100 blast)
+  qed
+  obtain V\<^sub>v where h\<sigma>Vv: "geotop_simplex_vertices \<sigma> V\<^sub>v"
+    and hvVv: "v \<in> V\<^sub>v"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<sigma>K hv\<sigma>]
+    by (by100 blast)
+  obtain V\<^sub>w where h\<sigma>Vw: "geotop_simplex_vertices \<sigma> V\<^sub>w"
+    and hwVw: "w \<in> V\<^sub>w"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hwK h\<sigma>K hw\<sigma>]
+    by (by100 blast)
+  have hVw_eq: "V\<^sub>w = V\<^sub>v"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>Vw h\<sigma>Vv])
+  have hwVv: "w \<in> V\<^sub>v"
+    using hwVw hVw_eq by (by100 simp)
+  show ?thesis
+    by (rule geotop_complex_simplex_vertices_incident_edge_between
+        [OF hK h\<sigma>K h\<sigma>Vv hvVv hwVv hvw])
 qed
 
 lemma geotop_edge_face_witness_card_two:
