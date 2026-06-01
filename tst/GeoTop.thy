@@ -1687,6 +1687,12 @@ proof -
                     by (rule h_opposite_side_choice[OF True])
                 next
                   case False
+                  have h_same_side_remaining:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0))"
+                    using False h\<tau>_y_side_cases hU_meets_one_side_L_y by (by100 blast)
                   \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
                     the same side of \<open>L_y\<close> as the other edge. This is the
                     actual circular-sector step, not a half-plane consequence.\<close>
