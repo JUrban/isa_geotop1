@@ -8544,7 +8544,99 @@ proof -
       "(I13 - geotop_arc_interior B2 E)
         \<inter> geotop_polygon_exterior (B1 \<union> B2)
         \<inter> geotop_polygon_exterior (B2 \<union> B3) = {}"
-      sorry
+    proof -
+      have hT2_8_no_global_component_between_exteriors:
+        "\<forall>U\<in>components (UNIV - M).
+            U \<inter> I13 \<noteq> {} \<longrightarrow>
+            U \<subseteq> geotop_polygon_exterior (B1 \<union> B2) \<longrightarrow>
+            U \<subseteq> geotop_polygon_exterior (B2 \<union> B3) \<longrightarrow> False"
+        sorry
+      show ?thesis
+      proof (rule equals0I)
+        fix x assume hx:
+          "x \<in> (I13 - geotop_arc_interior B2 E)
+              \<inter> geotop_polygon_exterior (B1 \<union> B2)
+              \<inter> geotop_polygon_exterior (B2 \<union> B3)"
+        have hx_I13: "x \<in> I13" using hx by (by100 blast)
+        have hx_ext12: "x \<in> geotop_polygon_exterior (B1 \<union> B2)" using hx by (by100 blast)
+        have hx_ext23: "x \<in> geotop_polygon_exterior (B2 \<union> B3)" using hx by (by100 blast)
+        have hx_notM: "x \<in> UNIV - M"
+        proof -
+          have hM_eq: "M = B1 \<union> B2 \<union> B3"
+            using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+          have h_ext12_disj: "geotop_polygon_exterior (B1 \<union> B2) \<inter> (B1 \<union> B2) = {}"
+            by (rule polygon_exterior_disjoint_polygon[OF h_poly_12_t28])
+          have h_ext23_disj: "geotop_polygon_exterior (B2 \<union> B3) \<inter> (B2 \<union> B3) = {}"
+            by (rule polygon_exterior_disjoint_polygon[OF h_poly_23_t28])
+          have hx_not_B1: "x \<notin> B1" using hx_ext12 h_ext12_disj by (by100 blast)
+          have hx_not_B2: "x \<notin> B2" using hx_ext12 h_ext12_disj by (by100 blast)
+          have hx_not_B3: "x \<notin> B3" using hx_ext23 h_ext23_disj by (by100 blast)
+          show ?thesis using hM_eq hx_not_B1 hx_not_B2 hx_not_B3 by (by100 blast)
+        qed
+        define U where "U = connected_component_set (UNIV - M) x"
+        have hU_comp: "U \<in> components (UNIV - M)"
+          unfolding U_def
+          by (rule componentsI) (fact hx_notM)
+        have hU_meets_I13: "U \<inter> I13 \<noteq> {}"
+        proof -
+          have hx_U: "x \<in> U"
+            unfolding U_def using hx_notM connected_component_refl by (by100 simp)
+          show ?thesis using hx_U hx_I13 by (by100 blast)
+        qed
+        have hU_sub_ext12: "U \<subseteq> geotop_polygon_exterior (B1 \<union> B2)"
+        proof -
+          have hM_eq: "M = B1 \<union> B2 \<union> B3"
+            using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+          have h_ext_comp:
+            "geotop_polygon_exterior (B1 \<union> B2) \<in> components (UNIV - (B1 \<union> B2))"
+          proof -
+            have h_sph: "geotop_is_n_sphere (B1 \<union> B2)
+                    (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+              using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+            show ?thesis by (rule polygon_exterior_is_HOL_component[OF h_sph])
+          qed
+          have h_ext_eq:
+            "geotop_polygon_exterior (B1 \<union> B2)
+              = connected_component_set (UNIV - (B1 \<union> B2)) x"
+            by (rule component_eq_connected_component_set[OF h_ext_comp hx_ext12])
+          have h_compl_sub: "UNIV - M \<subseteq> UNIV - (B1 \<union> B2)"
+            using hM_eq by (by100 blast)
+          have hU_sub_C12:
+            "U \<subseteq> connected_component_set (UNIV - (B1 \<union> B2)) x"
+            unfolding U_def
+            by (rule connected_component_mono) (fact h_compl_sub)
+          show ?thesis using hU_sub_C12 h_ext_eq by (by100 simp)
+        qed
+        have hU_sub_ext23: "U \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
+        proof -
+          have hM_eq: "M = B1 \<union> B2 \<union> B3"
+            using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+          have h_ext_comp:
+            "geotop_polygon_exterior (B2 \<union> B3) \<in> components (UNIV - (B2 \<union> B3))"
+          proof -
+            have h_sph: "geotop_is_n_sphere (B2 \<union> B3)
+                    (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+              using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+            show ?thesis by (rule polygon_exterior_is_HOL_component[OF h_sph])
+          qed
+          have h_ext_eq:
+            "geotop_polygon_exterior (B2 \<union> B3)
+              = connected_component_set (UNIV - (B2 \<union> B3)) x"
+            by (rule component_eq_connected_component_set[OF h_ext_comp hx_ext23])
+          have h_compl_sub: "UNIV - M \<subseteq> UNIV - (B2 \<union> B3)"
+            using hM_eq by (by100 blast)
+          have hU_sub_C23:
+            "U \<subseteq> connected_component_set (UNIV - (B2 \<union> B3)) x"
+            unfolding U_def
+            by (rule connected_component_mono) (fact h_compl_sub)
+          show ?thesis using hU_sub_C23 h_ext_eq by (by100 simp)
+        qed
+        show False
+          using hT2_8_no_global_component_between_exteriors hU_comp hU_meets_I13
+                hU_sub_ext12 hU_sub_ext23
+          by (by100 blast)
+      qed
+    qed
     show ?thesis
     proof
       fix x assume hxY: "x \<in> I13 - geotop_arc_interior B2 E"
