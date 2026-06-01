@@ -9517,10 +9517,17 @@ proof -
                   B \<in> components (UNIV - (i \<union> j)) \<and>
                   c \<in> A \<and> d \<in> B \<and> A \<noteq> B"
               proof -
-                obtain c where hcC: "c \<in> C"
-                  using hC_comp in_components_nonempty by (by100 blast)
-                obtain d where hdD: "d \<in> D"
-                  using hD_comp in_components_nonempty by (by100 blast)
+                define c where "c = u"
+                have hcC: "c \<in> C"
+                  unfolding c_def using huC .
+                have hc_ball_small: "c \<in> ball P \<delta>u"
+                  unfolding c_def using hu_ball_small .
+                obtain d where hdD: "d \<in> D" and hd_dist_P: "dist d P < \<delta>u"
+                  using hP_cl_D h\<delta>u_pos unfolding closure_approachable by (by100 blast)
+                have hdist_P_d: "dist P d = dist d P"
+                  by (rule dist_commute)
+                have hd_ball_small: "d \<in> ball P \<delta>u"
+                  using hd_dist_P hdist_P_d by (by100 simp)
                 have h_pair_components_for_points:
                   "\<And>i j. \<lbrakk>i \<in> {B1, B2, B3}; j \<in> {B1, B2, B3}; i \<noteq> j\<rbrakk>
                     \<Longrightarrow> \<exists>A B. A \<in> components (UNIV - (i \<union> j)) \<and>
@@ -9670,6 +9677,7 @@ proof -
                     qed
                     have h_all_pair_same_gives_local_connector:
                       "\<lbrakk>A12 = D12; A13 = D13; A23 = D23\<rbrakk>
+                        \<Longrightarrow> c \<in> ball P \<delta>u \<Longrightarrow> d \<in> ball P \<delta>u
                         \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - M \<and> c \<in> T \<and> d \<in> T"
                       sorry
                     have h_same_local_sector: "C = D"
@@ -9685,7 +9693,8 @@ proof -
                         and hcT: "c \<in> T"
                         and hdT: "d \<in> T"
                         using h_all_pair_same_gives_local_connector
-                          [OF hA12D12 hA13D13 hA23D23] by (by100 blast)
+                          [OF hA12D12 hA13D13 hA23D23 hc_ball_small hd_ball_small]
+                        by (by100 blast)
                       have hC_meet_T: "C \<inter> T \<noteq> {}"
                         using hcC hcT by (by100 blast)
                       have hD_meet_T: "D \<inter> T \<noteq> {}"
