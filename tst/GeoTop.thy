@@ -9640,7 +9640,39 @@ proof -
                   qed
                   have h_one_pair_distinguishes:
                     "A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23"
-                    sorry
+                  proof (rule ccontr)
+                    assume hnone:
+                      "\<not> (A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23)"
+                    have h_same_all_pair_sides:
+                      "A12 = D12 \<and> A13 = D13 \<and> A23 = D23"
+                    proof (intro conjI)
+                      show "A12 = D12"
+                      proof (rule ccontr)
+                        assume "A12 \<noteq> D12"
+                        hence "A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23"
+                          by (by100 blast)
+                        thus False using hnone by (by100 blast)
+                      qed
+                      show "A13 = D13"
+                      proof (rule ccontr)
+                        assume "A13 \<noteq> D13"
+                        hence "A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23"
+                          by (by100 blast)
+                        thus False using hnone by (by100 blast)
+                      qed
+                      show "A23 = D23"
+                      proof (rule ccontr)
+                        assume "A23 \<noteq> D23"
+                        hence "A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23"
+                          by (by100 blast)
+                        thus False using hnone by (by100 blast)
+                      qed
+                    qed
+                    have h_same_local_sector: "C = D"
+                      sorry
+                    show False
+                      using h_same_local_sector hD_ne_C by (by100 blast)
+                  qed
                   show ?thesis
                   proof -
                     consider (pair12) "A12 \<noteq> D12"
