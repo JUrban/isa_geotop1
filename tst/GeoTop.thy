@@ -1103,6 +1103,52 @@ proof -
               show "z \<in> \<sigma>_y \<union> \<tau>_y"
                 using hz_cov hEdgesAtX_eq_pair hx_in_pair by (by100 blast)
             qed
+            have h\<tau>_y_sub_M: "\<tau>_y \<subseteq> M"
+            proof -
+              have h\<tau>_y_K: "\<tau>_y \<in> K_i"
+                using h\<tau>_y_EAX hEAX_sub by (by100 blast)
+              have h\<tau>_y_sub_i: "\<tau>_y \<subseteq> i"
+                using h\<tau>_y_K hK_eq_i by (by100 blast)
+              show ?thesis
+                using h\<tau>_y_sub_i hi_sub_M by (by100 blast)
+            qed
+            have h_ball_x_compl_eq_two_edges:
+              "ball x \<delta>_iso - M = ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+            proof
+              show "ball x \<delta>_iso - M \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+              proof
+                fix z
+                assume hz: "z \<in> ball x \<delta>_iso - M"
+                have hz_ball: "z \<in> ball x \<delta>_iso"
+                  using hz by (by100 blast)
+                have hz_not_M: "z \<notin> M"
+                  using hz by (by100 blast)
+                have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                  using hz_not_M h\<sigma>_y_sub_M h\<tau>_y_sub_M by (by100 blast)
+                show "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                  using hz_ball hz_not_pair by (by100 blast)
+              qed
+              show "ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<subseteq> ball x \<delta>_iso - M"
+              proof
+                fix z
+                assume hz: "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                have hz_ball: "z \<in> ball x \<delta>_iso"
+                  using hz by (by100 blast)
+                have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                  using hz by (by100 blast)
+                have hz_not_M: "z \<notin> M"
+                proof
+                  assume hz_M: "z \<in> M"
+                  have "z \<in> ball x \<delta>_iso \<inter> M"
+                    using hz_ball hz_M by (by100 blast)
+                  hence "z \<in> \<sigma>_y \<union> \<tau>_y"
+                    using h_ball_x_M_sub_two_edges by (by100 blast)
+                  thus False using hz_not_pair by (by100 blast)
+                qed
+                show "z \<in> ball x \<delta>_iso - M"
+                  using hz_ball hz_not_M by (by100 blast)
+              qed
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
