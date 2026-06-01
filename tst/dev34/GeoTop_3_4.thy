@@ -3326,6 +3326,10 @@ lemma geotop_link_polyhedron_subset_star_polyhedron:
   "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
   unfolding geotop_link_def by (by100 blast)
 
+lemma geotop_link_polyhedron_subset_punctured_star_polyhedron:
+  "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v) - {v}"
+  unfolding geotop_link_def by (by100 blast)
+
 lemma geotop_star_polyhedron_subset_polyhedron:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
