@@ -3513,6 +3513,132 @@ proof -
           qed
           have h\<rho>_conn: "connected (\<rho> ` C)"
             by (rule connected_continuous_image[OF h\<rho>_cont hC_conn])
+          have h_radial_preimage_segment:
+            "\<And>x p. \<lbrakk>x \<in> ball P \<delta>; x \<noteq> P; p \<noteq> P; \<delta> \<le> dist P p;
+                       \<rho> x \<in> closed_segment P p\<rbrakk>
+              \<Longrightarrow> x \<in> closed_segment P p"
+          proof -
+            fix x p :: "real^2"
+            assume hx_ball: "x \<in> ball P \<delta>"
+              and hx_ne: "x \<noteq> P"
+              and hp_ne: "p \<noteq> P"
+              and h\<delta>_p: "\<delta> \<le> dist P p"
+              and h\<rho>_seg: "\<rho> x \<in> closed_segment P p"
+            obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+              and h\<rho>_t: "\<rho> x = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+              using h\<rho>_seg unfolding closed_segment_def by (by100 blast)
+            have hr_pos: "r > 0"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hx_dist_pos: "dist P x > 0"
+              using hx_ne by (by100 simp)
+            have hp_dist_pos: "dist P p > 0"
+              using hp_ne by (by100 simp)
+            have h\<rho>_vec: "\<rho> x = P + (r / dist P x) *\<^sub>R (x - P)"
+              unfolding \<rho>_def by (by100 simp)
+            have h\<rho>_t_vec: "\<rho> x = P + t *\<^sub>R (p - P)"
+              using h\<rho>_t by (simp add: algebra_simps)
+            have hdist_\<rho>_r: "dist P (\<rho> x) = r"
+              unfolding \<rho>_def using hx_dist_pos hr_pos
+              by (simp add: dist_norm norm_minus_commute)
+            have hdist_\<rho>_t: "dist P (\<rho> x) = t * dist P p"
+              using h\<rho>_t_vec ht0 by (simp add: dist_norm norm_minus_commute)
+            have ht_eq: "t = r / dist P p"
+            proof -
+              have "t * dist P p = r"
+                using hdist_\<rho>_r hdist_\<rho>_t by (by100 simp)
+              thus ?thesis using hp_dist_pos by (simp add: field_simps)
+            qed
+            have hscale_eq:
+              "(r / dist P x) *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+              using h\<rho>_vec h\<rho>_t_vec by (by100 simp)
+            have hx_vec: "x - P = (dist P x / dist P p) *\<^sub>R (p - P)"
+            proof -
+              define a where "a = r / dist P x"
+              have ha_ne: "a \<noteq> 0"
+                unfolding a_def using hr_pos hx_dist_pos by (by100 simp)
+              have ha_eq: "a *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+                unfolding a_def using hscale_eq .
+              have h1: "x - P = inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+              proof -
+                have "inverse a *\<^sub>R (a *\<^sub>R (x - P)) =
+                      inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+                  using ha_eq by (by100 simp)
+                thus ?thesis using ha_ne by (by100 simp)
+              qed
+              show ?thesis
+                using h1 ht_eq hr_pos hx_dist_pos a_def
+                by (simp add: algebra_simps)
+            qed
+            define s where "s = dist P x / dist P p"
+            have hs0: "0 \<le> s"
+              unfolding s_def using hx_dist_pos hp_dist_pos by (by100 simp)
+            have hs1: "s \<le> 1"
+            proof -
+              have hx_dist_lt: "dist P x < \<delta>"
+                using hx_ball by (by100 simp)
+              have hx_dist_le_p: "dist P x \<le> dist P p"
+                using hx_dist_lt h\<delta>_p by (by100 linarith)
+              show ?thesis
+                unfolding s_def using hx_dist_le_p hp_dist_pos by (by100 simp)
+            qed
+            have hx_conv: "x = (1 - s) *\<^sub>R P + s *\<^sub>R p"
+              using hx_vec unfolding s_def by (simp add: algebra_simps)
+            show "x \<in> closed_segment P p"
+              unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
+          qed
+          have h\<rho>_avoid_R: "\<rho> ` C \<inter> ?R = {}"
+          proof (rule equals0I)
+            fix y assume hy: "y \<in> \<rho> ` C \<inter> ?R"
+            obtain x where hxC: "x \<in> C" and hy_eq: "y = \<rho> x"
+              using hy by (by100 blast)
+            have hx_ball: "x \<in> ball P \<delta>"
+              using hxC hC_sub_ball by (by100 blast)
+            have hx_ne: "x \<noteq> P"
+              using hxC hP_not_C by (by100 blast)
+            have hyR: "y \<in> ?R" using hy by (by100 blast)
+            have hp1_ne': "p1 \<noteq> P" using hpack by (by100 blast)
+            have hp2_ne': "p2 \<noteq> P" using hpack by (by100 blast)
+            have hp3_ne': "p3 \<noteq> P" using hpack by (by100 blast)
+            have h\<delta>_p1: "\<delta> \<le> dist P p1" using hpack by (by100 blast)
+            have h\<delta>_p2: "\<delta> \<le> dist P p2" using hpack by (by100 blast)
+            have h\<delta>_p3: "\<delta> \<le> dist P p3" using hpack by (by100 blast)
+            consider (S1) "y \<in> ?S1" | (S2) "y \<in> ?S2" | (S3) "y \<in> ?S3"
+              using hyR by (by100 blast)
+            hence "x \<in> ?R"
+            proof cases
+              case S1
+              have h\<rho>x_S1: "\<rho> x \<in> ?S1"
+                using hy_eq S1 by (by100 simp)
+              have "x \<in> ?S1"
+                by (rule h_radial_preimage_segment
+                    [OF hx_ball hx_ne hp1_ne' h\<delta>_p1 h\<rho>x_S1])
+              thus ?thesis by (by100 blast)
+            next
+              case S2
+              have h\<rho>x_S2: "\<rho> x \<in> ?S2"
+                using hy_eq S2 by (by100 simp)
+              have "x \<in> ?S2"
+                by (rule h_radial_preimage_segment
+                    [OF hx_ball hx_ne hp2_ne' h\<delta>_p2 h\<rho>x_S2])
+              thus ?thesis by (by100 blast)
+            next
+              case S3
+              have h\<rho>x_S3: "\<rho> x \<in> ?S3"
+                using hy_eq S3 by (by100 simp)
+              have "x \<in> ?S3"
+                by (rule h_radial_preimage_segment
+                    [OF hx_ball hx_ne hp3_ne' h\<delta>_p3 h\<rho>x_S3])
+              thus ?thesis by (by100 blast)
+            qed
+            have "x \<in> C \<inter> ?R" using hxC \<open>x \<in> ?R\<close> by (by100 blast)
+            thus False using hC_disj_R by (by100 blast)
+          qed
+          have h\<rho>_avoid_qs: "\<rho> ` C \<inter> {q1, q2, q3} = {}"
+          proof -
+            have hq_sub_R: "{q1, q2, q3} \<subseteq> ?R"
+              using h_radial_circle_model by (fast elim: conjE)
+            show ?thesis using h\<rho>_avoid_R hq_sub_R by (by100 blast)
+          qed
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
             sorry
