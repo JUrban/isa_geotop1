@@ -4034,11 +4034,35 @@ proof -
                           hence "f (g x) \<in> f ` (g ` Lc)"
                             by (rule imageI)
                           thus "x \<in> f ` (g ` Lc)"
-                            using hfgx by (by100 simp)
+                          using hfgx by (by100 simp)
                         qed
                       qed
                       have "a \<in> closure Lc"
-                        sorry
+                      proof -
+                        obtain s where hs_in: "\<And>n. s n \<in> g ` Lc"
+                          and hs_lim: "(s \<longlongrightarrow> q2) sequentially"
+                          using hq2_cl_gLc unfolding closure_sequential by (by100 blast)
+                        have hs_dom: "\<And>n. s n \<in> ?S - {q1}"
+                          using hs_in hg_Lc_dom by (by100 blast)
+                        have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        have hfs_lim: "((f \<circ> s) \<longlongrightarrow> f q2) sequentially"
+                          using hf_cont_dom unfolding continuous_on_sequentially
+                          using hq2_dom hs_dom hs_lim by (by100 blast)
+                        have hfs_in: "\<And>n. (f \<circ> s) n \<in> Lc"
+                        proof -
+                          fix n
+                          have "f (s n) \<in> f ` (g ` Lc)"
+                            using hs_in[of n] by (rule imageI)
+                          thus "(f \<circ> s) n \<in> Lc"
+                            using hfg_Lc by (by100 simp)
+                        qed
+                        have "f q2 \<in> closure Lc"
+                          unfolding closure_sequential
+                          using hfs_in hfs_lim by (by100 blast)
+                        thus ?thesis
+                          unfolding a_def .
+                      qed
                       thus False
                         using ha_miss by (by100 blast)
                     qed
@@ -4084,11 +4108,35 @@ proof -
                           hence "f (g x) \<in> f ` (g ` Lc)"
                             by (rule imageI)
                           thus "x \<in> f ` (g ` Lc)"
-                            using hfgx by (by100 simp)
+                          using hfgx by (by100 simp)
                         qed
                       qed
                       have "b \<in> closure Lc"
-                        sorry
+                      proof -
+                        obtain s where hs_in: "\<And>n. s n \<in> g ` Lc"
+                          and hs_lim: "(s \<longlongrightarrow> q3) sequentially"
+                          using hq3_cl_gLc unfolding closure_sequential by (by100 blast)
+                        have hs_dom: "\<And>n. s n \<in> ?S - {q1}"
+                          using hs_in hg_Lc_dom by (by100 blast)
+                        have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        have hfs_lim: "((f \<circ> s) \<longlongrightarrow> f q3) sequentially"
+                          using hf_cont_dom unfolding continuous_on_sequentially
+                          using hq3_dom hs_dom hs_lim by (by100 blast)
+                        have hfs_in: "\<And>n. (f \<circ> s) n \<in> Lc"
+                        proof -
+                          fix n
+                          have "f (s n) \<in> f ` (g ` Lc)"
+                            using hs_in[of n] by (rule imageI)
+                          thus "(f \<circ> s) n \<in> Lc"
+                            using hfg_Lc by (by100 simp)
+                        qed
+                        have "f q3 \<in> closure Lc"
+                          unfolding closure_sequential
+                          using hfs_in hfs_lim by (by100 blast)
+                        thus ?thesis
+                          unfolding b_def .
+                      qed
                       thus False
                         using hb_miss by (by100 blast)
                     qed
