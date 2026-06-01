@@ -892,6 +892,23 @@ proof -
                 thus ?thesis using h\<rho>o_disj by (by100 blast)
               qed
             qed
+            have h\<sigma>_y_sub_L_y_centered: "\<sigma>_y \<subseteq> {z. inner (z - y) n_y = 0}"
+            proof
+              fix z
+              assume hz: "z \<in> \<sigma>_y"
+              have hz_L: "z \<in> L_y"
+                unfolding L_y_def by (rule hull_inc[OF hz])
+              have hz_x: "inner (z - x) n_y = 0"
+                using hz_L hL_y_eq_centered by (by100 simp)
+              have hzy_eq: "inner (z - y) n_y =
+                  inner (z - x) n_y - inner (y - x) n_y"
+                by (simp add: inner_diff_left)
+              show "z \<in> {z. inner (z - y) n_y = 0}"
+                using hzy_eq hz_x hy_L_y_centered by (by100 simp)
+            qed
+            have h_ball_y_M_sub_L_y:
+              "ball y \<rho>y \<inter> M \<subseteq> {z. inner (z - y) n_y = 0}"
+              using h_ball_y_M_sub_sigma_y h\<sigma>_y_sub_L_y_centered by (by100 blast)
             have h_sector_path_to_y:
               "y \<in> closure U"
               sorry
