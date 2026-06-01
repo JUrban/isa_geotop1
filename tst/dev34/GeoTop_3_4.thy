@@ -3559,6 +3559,32 @@ proof -
     by (rule compact_imp_closed[OF hcompact])
 qed
 
+lemma geotop_link_component_summary:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  shows "C \<subseteq> \<Union>(geotop_link K v)
+       \<and> P \<in> C
+       \<and> top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)
+       \<and> compact C
+       \<and> closed C"
+proof -
+  have hbasic:
+    "C \<subseteq> \<Union>(geotop_link K v)
+       \<and> P \<in> C
+       \<and> top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)"
+    by (rule geotop_link_component_basic[OF hP hC])
+  have hcompact: "compact C"
+    by (rule geotop_link_component_compact[OF hK hv hC])
+  have hclosed: "closed C"
+    by (rule geotop_link_component_closed[OF hK hv hC])
+  show ?thesis
+    using hbasic hcompact hclosed by (by100 blast)
+qed
+
 lemma geotop_finite_components_real_line_minus_two_dev34:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
