@@ -4125,22 +4125,70 @@ proof -
                       "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
                     proof -
                       have hLc_conn: "connected Lc"
-                        sorry
+                        using hLc_comp in_components_connected by (by100 blast)
                       have hLc_sub_line: "Lc \<subseteq> ?L - {a, b}"
-                        sorry
+                        using hLc_comp in_components_subset by (by100 blast)
                       have ha_line: "a \<in> ?L"
-                        sorry
+                      proof -
+                        have hf_img: "f ` (?S - {q1}) = ?L"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        show ?thesis
+                          unfolding a_def using hq2_dom hf_img by (by100 blast)
+                      qed
                       have hb_line: "b \<in> ?L"
-                        sorry
+                      proof -
+                        have hf_img: "f ` (?S - {q1}) = ?L"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        show ?thesis
+                          unfolding b_def using hq3_dom hf_img by (by100 blast)
+                      qed
                       have hab_ne: "a \<noteq> b"
-                        sorry
+                      proof
+                        assume hab: "a = b"
+                        have hgf:
+                          "\<And>x. x \<in> ?S - {q1} \<Longrightarrow> g (f x) = x"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        have "f q2 = f q3"
+                          using hab unfolding a_def b_def by (by100 simp)
+                        hence "g (f q2) = g (f q3)"
+                          by (by100 simp)
+                        hence "q2 = q3"
+                          using hgf[OF hq2_dom] hgf[OF hq3_dom] by (by100 simp)
+                        thus False
+                          using hq23_out by (by100 blast)
+                      qed
                       have h_line_component_trichotomy:
                         "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
                         sorry
                       show ?thesis by (rule h_line_component_trichotomy)
                     qed
                     show ?thesis
-                      sorry
+                    proof -
+                      consider (miss_a) "a \<notin> closure Lc"
+                        | (miss_b) "b \<notin> closure Lc"
+                        | (bounded) "bounded Lc"
+                        using hLc_sector_case by (by100 blast)
+                      thus ?thesis
+                      proof cases
+                        case miss_a
+                        have "q2 \<notin> closure K"
+                          by (rule hq2_miss_if_a_miss[OF miss_a])
+                        thus ?thesis
+                          by (by100 blast)
+                      next
+                        case miss_b
+                        have "q3 \<notin> closure K"
+                          by (rule hq3_miss_if_b_miss[OF miss_b])
+                        thus ?thesis
+                          by (by100 blast)
+                      next
+                        case bounded
+                        have "q1 \<notin> closure K"
+                          by (rule hq1_miss_if_bounded[OF bounded])
+                        thus ?thesis
+                          by (by100 blast)
+                      qed
+                    qed
                   qed
                   show ?thesis by (rule h_line_three_sectors)
                 qed
