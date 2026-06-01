@@ -170,6 +170,7 @@ theorem Theorem_GT_3_2:
   assumes h\<phi>_mem: "\<phi> \<in> V \<rightarrow>\<^sub>E W" and h\<phi>_bij: "bij_betw \<phi> V W"
   shows "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
+          \<and> g ` \<sigma> = \<tau>
           \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
 proof -
   (** (1) By Theorem 3.1 there is a simplicial homeomorphism f: \<sigma> \<leftrightarrow> \<tau> with f | V = \<phi>. **)
@@ -201,6 +202,7 @@ proof -
   have h_affine_simplicial:
     "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
               UNIV geotop_euclidean_topology g
+         \<and> g ` \<sigma> = \<tau>
          \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
   proof -
     obtain g where hg_eq: "\<forall>x\<in>\<sigma>. g x = f x"
@@ -215,12 +217,16 @@ proof -
       using hf_bij_on unfolding bij_betw_def by blast
     have hg_into_\<tau>: "\<forall>x\<in>\<sigma>. g x \<in> \<tau>"
       using hg_eq hf_into_\<tau> by simp
+    have hf_image: "f ` \<sigma> = \<tau>"
+      using hf_bij_on unfolding bij_betw_def by (by100 blast)
+    have hg_image: "g ` \<sigma> = \<tau>"
+      using hg_eq hf_image by (by100 force)
     \<comment> \<open>simplicial_on \<sigma> g \<tau> from simplicial_on \<sigma> f \<tau> via the cached helper.\<close>
     have hf_simp: "geotop_simplicial_on \<sigma> f \<tau>"
       using hf_simpl by blast
     have hg_simp: "geotop_simplicial_on \<sigma> g \<tau>"
       by (rule geotop_simplicial_on_eq_on[OF hf_simp hg_eq])
-    show ?thesis using hg_homeo hg_into_\<tau> hg_simp by blast
+    show ?thesis using hg_homeo hg_image hg_into_\<tau> hg_simp by blast
   qed
   have h_affine_ext:
     "(\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
@@ -228,10 +234,12 @@ proof -
             UNIV geotop_euclidean_topology g) \<and>
      (\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
+          \<and> g ` \<sigma> = \<tau>
           \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>)"
     using h_affine_extension h_affine_simplicial by (by100 blast)
   have h_final: "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology g
+          \<and> g ` \<sigma> = \<tau>
           \<and> (\<forall>x\<in>\<sigma>. g x \<in> \<tau>) \<and> geotop_simplicial_on \<sigma> g \<tau>"
     using h_affine_ext by (by100 blast)
   show ?thesis using h_final by (by100 blast)
