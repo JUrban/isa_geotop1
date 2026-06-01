@@ -5567,6 +5567,93 @@ proof -
         [OF hK hvK hwL heK hedge hv_e hw_e hcount])
 qed
 
+lemma geotop_link_vertex_two_adjacent_faces_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes htwo:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  shows "\<exists>e \<sigma> \<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+      \<and> \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+proof -
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
+    by (by100 blast)
+  obtain \<sigma> \<tau> where h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<tau>face: "geotop_is_face e \<tau>"
+    and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    using htwo heK hedge hv_e by (by100 blast)
+  show ?thesis
+    using heK hedge hv_e hw_e h\<sigma>\<tau> h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face hfaces
+    by (by100 blast)
+qed
+
+lemma geotop_link_vertex_two_adjacent_link_edge_witnesses:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes htwo:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  shows "\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+      \<and> \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+      \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>"
+proof -
+  obtain e \<sigma> \<tau> where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<tau>face: "geotop_is_face e \<tau>"
+    and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    using geotop_link_vertex_two_adjacent_faces_witness[OF hK hvK hwL htwo]
+    by (by100 blast)
+  obtain l\<^sub>\<sigma> where hl\<sigma>L: "l\<^sub>\<sigma> \<in> geotop_link K v"
+    and hl\<sigma>edge: "geotop_is_edge l\<^sub>\<sigma>"
+    and hw_l\<sigma>: "w \<in> l\<^sub>\<sigma>"
+    using geotop_link_vertex_incident_2simplex_incident_link_edge
+      [OF hK hvK hwL heK hedge hv_e hw_e h\<sigma>K h\<sigma>2 h\<sigma>face]
+    by (by100 blast)
+  obtain l\<^sub>\<tau> where hl\<tau>L: "l\<^sub>\<tau> \<in> geotop_link K v"
+    and hl\<tau>edge: "geotop_is_edge l\<^sub>\<tau>"
+    and hw_l\<tau>: "w \<in> l\<^sub>\<tau>"
+    using geotop_link_vertex_incident_2simplex_incident_link_edge
+      [OF hK hvK hwL heK hedge hv_e hw_e h\<tau>K h\<tau>2 h\<tau>face]
+    by (by100 blast)
+  show ?thesis
+    using heK hedge hv_e hw_e h\<sigma>\<tau> h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face
+      hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau>
+    by (by100 blast)
+qed
+
 lemma geotop_complex_edge_face_count_eq_1_unique:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
