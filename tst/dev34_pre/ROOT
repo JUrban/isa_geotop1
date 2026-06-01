@@ -1,0 +1,4 @@
+session GeoTopPre3Dirty in "." = GeoTopPrefix +
+  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
+  theories
+    GeoTop

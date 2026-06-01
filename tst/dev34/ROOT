@@ -1,0 +1,4 @@
+session GeoTop34Dev in "." = GeoTopPre3Dirty +
+  options [system_heaps, quick_and_dirty, timeout = 240]
+  theories
+    GeoTop_3_4
