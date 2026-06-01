@@ -2,6 +2,93 @@ theory GeoTop
   imports "GeoTopPrefix.GeoTop_Prefix"
 begin
 
+lemma finite_components_real_complement_two_points:
+  fixes a b :: real
+  shows "finite (components (UNIV - {a, b}))"
+proof (cases "a = b")
+  case True
+  define A where "A = {{..<a}, {a<..}}"
+  have hpair: "pairwise disjnt A"
+    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
+  have hUnion: "\<Union>A = UNIV - {a, b}"
+    unfolding A_def using True by (by100 auto)
+  have hsets:
+    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
+  proof -
+    fix X assume hX: "X \<in> A"
+    consider (L) "X = {..<a}" | (R) "X = {a<..}"
+      using hX unfolding A_def by (by100 blast)
+    thus "open X \<and> connected X \<and> X \<noteq> {}"
+    proof cases
+      case L
+      have "(a - 1) \<in> {..<a}" by (by100 simp)
+      thus ?thesis using L by (by100 simp)
+    next
+      case R
+      have "(a + 1) \<in> {a<..}" by (by100 simp)
+      thus ?thesis using R by (by100 simp)
+    qed
+  qed
+  have hcomp: "components (UNIV - {a, b}) = A"
+    by (rule components_open_unique[OF hpair hUnion hsets])
+  show ?thesis unfolding hcomp A_def by (by100 simp)
+next
+  case False
+  let ?l = "min a b"
+  let ?u = "max a b"
+  define A where "A = {{..< ?l}, {?l <..< ?u}, {?u <..}}"
+  have hlu: "?l < ?u"
+    using False by (by100 simp)
+  have hpair: "pairwise disjnt A"
+    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
+  have hUnion: "\<Union>A = UNIV - {a, b}"
+    unfolding A_def using False by (by100 auto)
+  have hsets:
+    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
+  proof -
+    fix X assume hX: "X \<in> A"
+    consider (L) "X = {..< ?l}" | (M) "X = {?l <..< ?u}" | (R) "X = {?u <..}"
+      using hX unfolding A_def by (by100 blast)
+    thus "open X \<and> connected X \<and> X \<noteq> {}"
+    proof cases
+      case L
+      have hla: "?l \<le> a" by (rule min.cobounded1)
+      have hlb: "?l \<le> b" by (rule min.cobounded2)
+      have hlt_a: "?l - 1 < a" using hla by (by100 linarith)
+      have hlt_b: "?l - 1 < b" using hlb by (by100 linarith)
+      have hmem: "(?l - 1) \<in> {..< ?l}"
+        using hlt_a hlt_b by (by100 simp)
+      have "open X" using L by (by100 simp)
+      moreover have "connected X" using L by (by100 simp)
+      moreover have "X \<noteq> {}" using L hmem by (by100 blast)
+      ultimately show ?thesis by (by100 blast)
+    next
+      case M
+      have hmem: "((?l + ?u) / 2) \<in> {?l <..< ?u}"
+        using hlu by (by100 simp)
+      have "open X" using M by (by100 simp)
+      moreover have "connected X" using M by (by100 simp)
+      moreover have "X \<noteq> {}" using M hmem by (by100 blast)
+      ultimately show ?thesis by (by100 blast)
+    next
+      case R
+      have hau: "a \<le> ?u" by (rule max.cobounded1)
+      have hbu: "b \<le> ?u" by (rule max.cobounded2)
+      have hlt_a: "a < ?u + 1" using hau by (by100 linarith)
+      have hlt_b: "b < ?u + 1" using hbu by (by100 linarith)
+      have hmem: "(?u + 1) \<in> {?u <..}"
+        using hlt_a hlt_b by (by100 simp)
+      have "open X" using R by (by100 simp)
+      moreover have "connected X" using R by (by100 simp)
+      moreover have "X \<noteq> {}" using R hmem by (by100 blast)
+      ultimately show ?thesis by (by100 blast)
+    qed
+  qed
+  have hcomp: "components (UNIV - {a, b}) = A"
+    by (rule components_open_unique[OF hpair hUnion hsets])
+  show ?thesis unfolding hcomp A_def by (by100 simp)
+qed
+
 (** from \<S>2 Theorem 7 (geotop.tex:621)
     LATEX VERSION: Let M = B_1 \<union> B_2 \<union> B_3 be a polyhedral \<theta>-graph in R^2, with Bd B_i = {P,Q}.
       Then (1) Every component of R^2 - M has a polygon B_i \<union> B_j as its frontier, and
@@ -7855,93 +7942,7 @@ proof -
             proof -
               have h_real_line_minus_two_components_finite:
                 "\<And>a b :: real. finite (components (UNIV - {a, b}))"
-              proof -
-                fix a b :: real
-                show "finite (components (UNIV - {a, b}))"
-                proof (cases "a = b")
-                  case True
-                  define A where "A = {{..<a}, {a<..}}"
-                  have hpair: "pairwise disjnt A"
-                    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
-                  have hUnion: "\<Union>A = UNIV - {a, b}"
-                    unfolding A_def using True by (by100 auto)
-                  have hsets:
-                    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
-                  proof -
-                    fix X assume hX: "X \<in> A"
-                    consider (L) "X = {..<a}" | (R) "X = {a<..}"
-                      using hX unfolding A_def by (by100 blast)
-                    thus "open X \<and> connected X \<and> X \<noteq> {}"
-                    proof cases
-                      case L
-                      have "(a - 1) \<in> {..<a}" by (by100 simp)
-                      thus ?thesis using L by (by100 simp)
-                    next
-                      case R
-                      have "(a + 1) \<in> {a<..}" by (by100 simp)
-                      thus ?thesis using R by (by100 simp)
-                    qed
-                  qed
-                  have hcomp: "components (UNIV - {a, b}) = A"
-                    by (rule components_open_unique[OF hpair hUnion hsets])
-                  show ?thesis unfolding hcomp A_def by (by100 simp)
-                next
-                  case False
-                  let ?l = "min a b"
-                  let ?u = "max a b"
-                  define A where "A = {{..< ?l}, {?l <..< ?u}, {?u <..}}"
-                  have hlu: "?l < ?u"
-                    using False by (by100 simp)
-                  have hpair: "pairwise disjnt A"
-                    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
-                  have hUnion: "\<Union>A = UNIV - {a, b}"
-                    unfolding A_def using False by (by100 auto)
-                  have hsets:
-                    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
-                  proof -
-                    fix X assume hX: "X \<in> A"
-                    consider (L) "X = {..< ?l}" | (M) "X = {?l <..< ?u}" | (R) "X = {?u <..}"
-                      using hX unfolding A_def by (by100 blast)
-                    thus "open X \<and> connected X \<and> X \<noteq> {}"
-                    proof cases
-                      case L
-                      have hla: "?l \<le> a" by (rule min.cobounded1)
-                      have hlb: "?l \<le> b" by (rule min.cobounded2)
-                      have hlt_a: "?l - 1 < a" using hla by (by100 linarith)
-                      have hlt_b: "?l - 1 < b" using hlb by (by100 linarith)
-                      have hmem: "(?l - 1) \<in> {..< ?l}"
-                        using hlt_a hlt_b by (by100 simp)
-                      have "open X" using L by (by100 simp)
-                      moreover have "connected X" using L by (by100 simp)
-                      moreover have "X \<noteq> {}" using L hmem by (by100 blast)
-                      ultimately show ?thesis by (by100 blast)
-                    next
-                      case M
-                      have hmem: "((?l + ?u) / 2) \<in> {?l <..< ?u}"
-                        using hlu by (by100 simp)
-                      have "open X" using M by (by100 simp)
-                      moreover have "connected X" using M by (by100 simp)
-                      moreover have "X \<noteq> {}" using M hmem by (by100 blast)
-                      ultimately show ?thesis by (by100 blast)
-                    next
-                      case R
-                      have hau: "a \<le> ?u" by (rule max.cobounded1)
-                      have hbu: "b \<le> ?u" by (rule max.cobounded2)
-                      have hlt_a: "a < ?u + 1" using hau by (by100 linarith)
-                      have hlt_b: "b < ?u + 1" using hbu by (by100 linarith)
-                      have hmem: "(?u + 1) \<in> {?u <..}"
-                        using hlt_a hlt_b by (by100 simp)
-                      have "open X" using R by (by100 simp)
-                      moreover have "connected X" using R by (by100 simp)
-                      moreover have "X \<noteq> {}" using R hmem by (by100 blast)
-                      ultimately show ?thesis by (by100 blast)
-                    qed
-                  qed
-                  have hcomp: "components (UNIV - {a, b}) = A"
-                    by (rule components_open_unique[OF hpair hUnion hsets])
-                  show ?thesis unfolding hcomp A_def by (by100 simp)
-                qed
-              qed
+                by (rule finite_components_real_complement_two_points)
               have h_finite_components_homeomorphic:
                 "\<And>A B f g. homeomorphism A B f g \<Longrightarrow>
                   finite (components B) \<Longrightarrow> finite (components A)"
