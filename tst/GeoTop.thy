@@ -8560,7 +8560,446 @@ proof -
                 \<forall>D \<in> components (ball P \<delta> - ?R).
                   (\<exists>K \<in> components (sphere P r - {q1, q2, q3}).
                     \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K) \<longrightarrow> C = D"
-              sorry
+            proof -
+              have hr_pos: "r > 0"
+                unfolding r_def using h\<delta>_pos by (by100 simp)
+              have hr_lt_\<delta>: "r < \<delta>"
+                unfolding r_def using h\<delta>_pos by (by100 simp)
+              have hp1_dist_pos: "dist P p1 > 0" using hp1_ne by (by100 simp)
+              have hp2_dist_pos: "dist P p2 > 0" using hp2_ne by (by100 simp)
+              have hp3_dist_pos: "dist P p3 > 0" using hp3_ne by (by100 simp)
+              have hr_le_p1: "r \<le> dist P p1"
+                unfolding r_def using hp1_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p2: "r \<le> dist P p2"
+                unfolding r_def using hp2_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p3: "r \<le> dist P p3"
+                unfolding r_def using hp3_len h\<delta>_pos by (by100 linarith)
+              have h_segment_sphere_unique:
+                "\<And>p q. \<lbrakk>p \<noteq> P; r > 0; r \<le> dist P p;
+                         q = P + (r / dist P p) *\<^sub>R (p - P)\<rbrakk>
+                  \<Longrightarrow> (closed_segment P p - {P}) \<inter> sphere P r = {q}"
+              proof -
+                fix p q :: "real^2"
+                assume hp_ne': "p \<noteq> P"
+                  and hr: "r > 0"
+                  and hr_le: "r \<le> dist P p"
+                  and hq_def': "q = P + (r / dist P p) *\<^sub>R (p - P)"
+                have hp_dist_pos': "dist P p > 0" using hp_ne' by (by100 simp)
+                have hq_seg: "q \<in> closed_segment P p"
+                proof -
+                  let ?t = "r / dist P p"
+                  have ht_nonneg: "0 \<le> ?t" using hr hp_dist_pos' by (by100 simp)
+                  have ht_le1: "?t \<le> 1" using hr_le hp_dist_pos' by (by100 simp)
+                  have hq_conv: "q = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p"
+                    using hq_def' by (simp add: algebra_simps)
+                  show ?thesis
+                    unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+                qed
+                have hq_ne: "q \<noteq> P"
+                proof
+                  assume hqP: "q = P"
+                  have "(r / dist P p) *\<^sub>R (p - P) = 0"
+                    using hqP hq_def' by (by100 simp)
+                  hence "r / dist P p = 0"
+                    using hp_ne' by (by100 simp)
+                  thus False using hr hp_dist_pos' by (by100 simp)
+                qed
+                have hq_sphere: "q \<in> sphere P r"
+                  unfolding hq_def' using hp_dist_pos' hr
+                  by (simp add: dist_norm norm_minus_commute)
+                show "(closed_segment P p - {P}) \<inter> sphere P r = {q}"
+                proof
+                  show "(closed_segment P p - {P}) \<inter> sphere P r \<subseteq> {q}"
+                  proof
+                    fix z assume hz: "z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+                    have hz_seg: "z \<in> closed_segment P p" using hz by (by100 blast)
+                    have hz_sphere: "z \<in> sphere P r" using hz by (by100 blast)
+                    obtain t where ht_nonneg: "0 \<le> t" and ht_le1: "t \<le> 1"
+                      and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+                      using hz_seg unfolding closed_segment_def by (by100 blast)
+                    have hz_vec: "z = P + t *\<^sub>R (p - P)"
+                      using hz_t by (simp add: algebra_simps)
+                    have hdist_z: "dist P z = t * dist P p"
+                      using hz_vec ht_nonneg
+                      by (simp add: dist_norm norm_minus_commute)
+                    have hdist_eq: "dist P z = r" using hz_sphere by (by100 simp)
+                    have ht_eq: "t = r / dist P p"
+                      using hdist_z hdist_eq hp_dist_pos' by (by100 simp)
+                    have "z = q" using hz_vec ht_eq hq_def' by (by100 simp)
+                    thus "z \<in> {q}" by (by100 simp)
+                  qed
+                  show "{q} \<subseteq> (closed_segment P p - {P}) \<inter> sphere P r"
+                    using hq_seg hq_ne hq_sphere by (by100 blast)
+                qed
+              qed
+              have hS1_sphere_r:
+                "(?S1 - {P}) \<inter> sphere P r = {q1}"
+                by (rule h_segment_sphere_unique[OF hp1_ne hr_pos hr_le_p1 q1_def])
+              have hS2_sphere_r:
+                "(?S2 - {P}) \<inter> sphere P r = {q2}"
+                by (rule h_segment_sphere_unique[OF hp2_ne hr_pos hr_le_p2 q2_def])
+              have hS3_sphere_r:
+                "(?S3 - {P}) \<inter> sphere P r = {q3}"
+                by (rule h_segment_sphere_unique[OF hp3_ne hr_pos hr_le_p3 q3_def])
+              have hS1_sphere_full:
+                "?S1 \<inter> sphere P r = {q1}"
+              proof
+                show "?S1 \<inter> sphere P r \<subseteq> {q1}"
+                proof
+                  fix z assume hz: "z \<in> ?S1 \<inter> sphere P r"
+                  have hzS: "z \<in> ?S1" using hz by (by100 blast)
+                  have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+                  have hz_ne: "z \<noteq> P"
+                  proof
+                    assume h_eq: "z = P"
+                    have "dist P z = r" using hzsp by (by100 simp)
+                    hence "r = 0" using h_eq by (by100 simp)
+                    thus False using hr_pos by (by100 simp)
+                  qed
+                  have "z \<in> (?S1 - {P}) \<inter> sphere P r"
+                    using hzS hzsp hz_ne by (by100 blast)
+                  thus "z \<in> {q1}" using hS1_sphere_r by (by100 simp)
+                qed
+                show "{q1} \<subseteq> ?S1 \<inter> sphere P r"
+                  using hS1_sphere_r by (by100 blast)
+              qed
+              have hS2_sphere_full:
+                "?S2 \<inter> sphere P r = {q2}"
+              proof
+                show "?S2 \<inter> sphere P r \<subseteq> {q2}"
+                proof
+                  fix z assume hz: "z \<in> ?S2 \<inter> sphere P r"
+                  have hzS: "z \<in> ?S2" using hz by (by100 blast)
+                  have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+                  have hz_ne: "z \<noteq> P"
+                  proof
+                    assume h_eq: "z = P"
+                    have "dist P z = r" using hzsp by (by100 simp)
+                    hence "r = 0" using h_eq by (by100 simp)
+                    thus False using hr_pos by (by100 simp)
+                  qed
+                  have "z \<in> (?S2 - {P}) \<inter> sphere P r"
+                    using hzS hzsp hz_ne by (by100 blast)
+                  thus "z \<in> {q2}" using hS2_sphere_r by (by100 simp)
+                qed
+                show "{q2} \<subseteq> ?S2 \<inter> sphere P r"
+                  using hS2_sphere_r by (by100 blast)
+              qed
+              have hS3_sphere_full:
+                "?S3 \<inter> sphere P r = {q3}"
+              proof
+                show "?S3 \<inter> sphere P r \<subseteq> {q3}"
+                proof
+                  fix z assume hz: "z \<in> ?S3 \<inter> sphere P r"
+                  have hzS: "z \<in> ?S3" using hz by (by100 blast)
+                  have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+                  have hz_ne: "z \<noteq> P"
+                  proof
+                    assume h_eq: "z = P"
+                    have "dist P z = r" using hzsp by (by100 simp)
+                    hence "r = 0" using h_eq by (by100 simp)
+                    thus False using hr_pos by (by100 simp)
+                  qed
+                  have "z \<in> (?S3 - {P}) \<inter> sphere P r"
+                    using hzS hzsp hz_ne by (by100 blast)
+                  thus "z \<in> {q3}" using hS3_sphere_r by (by100 simp)
+                qed
+                show "{q3} \<subseteq> ?S3 \<inter> sphere P r"
+                  using hS3_sphere_r by (by100 blast)
+              qed
+              have hR_sphere_r:
+                "?R \<inter> sphere P r = {q1, q2, q3}"
+                using hS1_sphere_full hS2_sphere_full hS3_sphere_full by (by100 blast)
+              have hP_R: "P \<in> ?R" by (by100 simp)
+              have h_radial_ray_preimage_segment:
+                "\<And>x z p. \<lbrakk>x \<in> ball P \<delta> - ?R; z \<in> closed_segment x (\<rho> x);
+                           z \<in> closed_segment P p; p \<noteq> P; \<delta> \<le> dist P p\<rbrakk>
+                  \<Longrightarrow> x \<in> closed_segment P p"
+              proof -
+                fix x z p :: "real^2"
+                assume hx_local: "x \<in> ball P \<delta> - ?R"
+                  and hz_x: "z \<in> closed_segment x (\<rho> x)"
+                  and hz_p: "z \<in> closed_segment P p"
+                  and hp_ne': "p \<noteq> P"
+                  and h\<delta>_p: "\<delta> \<le> dist P p"
+                have hx_ball: "x \<in> ball P \<delta>" using hx_local by (by100 blast)
+                have hx_not_R: "x \<notin> ?R" using hx_local by (by100 blast)
+                have hx_ne: "x \<noteq> P" using hx_not_R hP_R by (by100 blast)
+                have hx_dist_pos: "dist P x > 0" using hx_ne by (by100 simp)
+                obtain u where hu0: "0 \<le> u" and hu1: "u \<le> 1"
+                  and hz_u: "z = (1 - u) *\<^sub>R x + u *\<^sub>R (\<rho> x)"
+                  using hz_x unfolding closed_segment_def by (by100 blast)
+                define a where "a = 1 + u * (r / dist P x - 1)"
+                have ha_alt: "a = (1 - u) + u * (r / dist P x)"
+                  unfolding a_def by (simp add: algebra_simps)
+                have ha_pos: "a > 0"
+                proof -
+                  have hratio_pos: "0 < r / dist P x"
+                    using hr_pos hx_dist_pos by (by100 simp)
+                  have hterm_nonneg: "0 \<le> u * (r / dist P x)"
+                  proof -
+                    have "0 \<le> u * r"
+                      using hu0 hr_pos by (by100 simp)
+                    thus ?thesis using hx_dist_pos by (by100 simp)
+                  qed
+                  show ?thesis
+                  proof (cases "u = 1")
+                    case True
+                    show ?thesis
+                      using True hratio_pos ha_alt by (by100 simp)
+                  next
+                    case False
+                    have "0 < 1 - u" using hu1 False by (by100 linarith)
+                    thus ?thesis
+                      using ha_alt hterm_nonneg by (by100 linarith)
+                  qed
+                qed
+                have hz_vec: "z = P + a *\<^sub>R (x - P)"
+                proof -
+                  have hz1: "z = x + u *\<^sub>R (\<rho> x - x)"
+                    using hz_u
+                    by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                        scaleR_diff_left scaleR_diff_right)
+                  have hdiff: "\<rho> x - x = (r / dist P x - 1) *\<^sub>R (x - P)"
+                    unfolding \<rho>_def
+                    by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                        scaleR_diff_left scaleR_diff_right)
+                  have "z = x + (u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+                    using hz1 hdiff by (by100 simp)
+                  also have "\<dots> = P + (1 + u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+                    by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                        scaleR_diff_left scaleR_diff_right)
+                  also have "\<dots> = P + a *\<^sub>R (x - P)"
+                    unfolding a_def by (by100 simp)
+                  finally show ?thesis .
+                qed
+                obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+                  and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+                  using hz_p unfolding closed_segment_def by (by100 blast)
+                have hz_t_vec: "z = P + t *\<^sub>R (p - P)"
+                  using hz_t by (simp add: algebra_simps)
+                have hp_dist_pos': "dist P p > 0" using hp_ne' by (by100 simp)
+                have hscale_eq: "a *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+                  using hz_vec hz_t_vec by (by100 simp)
+                have hx_vec: "x - P = (t / a) *\<^sub>R (p - P)"
+                proof -
+                  have hscaled:
+                    "(inverse a * a) *\<^sub>R (x - P) =
+                      (inverse a * t) *\<^sub>R (p - P)"
+                  proof -
+                    have "inverse a *\<^sub>R (a *\<^sub>R (x - P)) =
+                          inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+                      using hscale_eq by (by100 simp)
+                    thus ?thesis by (simp only: scaleR_scaleR)
+                  qed
+                  have hx_vec_inv: "x - P = (inverse a * t) *\<^sub>R (p - P)"
+                    using hscaled ha_pos by (by100 simp)
+                  have "inverse a * t = t / a"
+                    using ha_pos by (simp add: field_simps)
+                  thus ?thesis using hx_vec_inv by (by100 simp)
+                qed
+                define s where "s = t / a"
+                have hs0: "0 \<le> s"
+                  unfolding s_def using ht0 ha_pos by (by100 simp)
+                have hx_dist_eq: "dist P x = s * dist P p"
+                proof -
+                  have "dist P x = norm (x - P)"
+                    by (simp add: dist_norm norm_minus_commute)
+                  also have "\<dots> = norm (s *\<^sub>R (p - P))"
+                    using hx_vec unfolding s_def by (by100 simp)
+                  also have "\<dots> = s * norm (p - P)"
+                    using hs0 by (by100 simp)
+                  also have "\<dots> = s * dist P p"
+                    by (simp add: dist_norm norm_minus_commute)
+                  finally show ?thesis .
+                qed
+                have hs1: "s \<le> 1"
+                proof -
+                  have hx_dist_lt: "dist P x < \<delta>"
+                    using hx_ball by (by100 simp)
+                  have hx_dist_le_p: "dist P x \<le> dist P p"
+                    using hx_dist_lt h\<delta>_p by (by100 linarith)
+                  have "s * dist P p \<le> 1 * dist P p"
+                    using hx_dist_eq hx_dist_le_p by (by100 simp)
+                  show ?thesis
+                    using \<open>s * dist P p \<le> 1 * dist P p\<close> hp_dist_pos'
+                    by (simp add: mult_le_cancel_right_pos)
+                qed
+                have hx_conv: "x = (1 - s) *\<^sub>R P + s *\<^sub>R p"
+                  using hx_vec unfolding s_def by (simp add: algebra_simps)
+                show "x \<in> closed_segment P p"
+                  unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
+              qed
+              have h_radial_segment_subset:
+                "\<And>x. x \<in> ball P \<delta> - ?R \<Longrightarrow> closed_segment x (\<rho> x) \<subseteq> ball P \<delta> - ?R"
+              proof
+                fix x z
+                assume hx_local: "x \<in> ball P \<delta> - ?R"
+                  and hz_seg: "z \<in> closed_segment x (\<rho> x)"
+                have hx_ball: "x \<in> ball P \<delta>" using hx_local by (by100 blast)
+                have hx_not_R: "x \<notin> ?R" using hx_local by (by100 blast)
+                have hx_ne: "x \<noteq> P" using hx_not_R hP_R by (by100 blast)
+                have hx_dist_pos: "dist P x > 0" using hx_ne by (by100 simp)
+                have h\<rho>x_ball: "\<rho> x \<in> ball P \<delta>"
+                proof -
+                  have "dist P (\<rho> x) = r"
+                    unfolding \<rho>_def using hx_dist_pos hr_pos
+                    by (simp add: dist_norm norm_minus_commute)
+                  thus ?thesis using hr_lt_\<delta> by (by100 simp)
+                qed
+                have hz_ball: "z \<in> ball P \<delta>"
+                  using closed_segment_subset[OF hx_ball h\<rho>x_ball convex_ball] hz_seg
+                  by (by100 blast)
+                have hz_not_R: "z \<notin> ?R"
+                proof
+                  assume hzR: "z \<in> ?R"
+                  consider (S1) "z \<in> ?S1" | (S2) "z \<in> ?S2" | (S3) "z \<in> ?S3"
+                    using hzR by (by100 blast)
+                  hence "x \<in> ?R"
+                  proof cases
+                    case S1
+                    have "x \<in> ?S1"
+                      by (rule h_radial_ray_preimage_segment
+                          [OF hx_local hz_seg S1 hp1_ne hp1_len])
+                    thus ?thesis by (by100 blast)
+                  next
+                    case S2
+                    have "x \<in> ?S2"
+                      by (rule h_radial_ray_preimage_segment
+                          [OF hx_local hz_seg S2 hp2_ne hp2_len])
+                    thus ?thesis by (by100 blast)
+                  next
+                    case S3
+                    have "x \<in> ?S3"
+                      by (rule h_radial_ray_preimage_segment
+                          [OF hx_local hz_seg S3 hp3_ne hp3_len])
+                    thus ?thesis by (by100 blast)
+                  qed
+                  thus False using hx_not_R by (by100 blast)
+                qed
+                show "z \<in> ball P \<delta> - ?R"
+                  using hz_ball hz_not_R by (by100 blast)
+              qed
+              have h_circle_component_subset_local:
+                "\<And>K. K \<in> components (sphere P r - {q1, q2, q3})
+                  \<Longrightarrow> K \<subseteq> ball P \<delta> - ?R"
+              proof
+                fix K z
+                assume hK_comp: "K \<in> components (sphere P r - {q1, q2, q3})"
+                  and hzK: "z \<in> K"
+                have hK_sub: "K \<subseteq> sphere P r - {q1, q2, q3}"
+                  using hK_comp in_components_subset by (by100 blast)
+                have hz_sphere: "z \<in> sphere P r" using hzK hK_sub by (by100 blast)
+                have hz_not_qs: "z \<notin> {q1, q2, q3}" using hzK hK_sub by (by100 blast)
+                have hz_ball: "z \<in> ball P \<delta>"
+                  using hz_sphere hr_lt_\<delta> by (by100 simp)
+                have hz_not_R: "z \<notin> ?R"
+                proof
+                  assume hzR: "z \<in> ?R"
+                  have "z \<in> ?R \<inter> sphere P r"
+                    using hzR hz_sphere by (by100 blast)
+                  hence "z \<in> {q1, q2, q3}"
+                    using hR_sphere_r by (by100 simp)
+                  thus False using hz_not_qs by (by100 blast)
+                qed
+                show "z \<in> ball P \<delta> - ?R"
+                  using hz_ball hz_not_R by (by100 blast)
+              qed
+              have h_same_aux:
+                "\<And>C D. \<lbrakk>C \<in> components (ball P \<delta> - ?R);
+                    D \<in> components (ball P \<delta> - ?R);
+                    \<exists>K\<in>components (sphere P r - {q1, q2, q3}).
+                      \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K\<rbrakk>
+                  \<Longrightarrow> C = D"
+              proof -
+                fix C D
+                assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
+                  and hD_comp: "D \<in> components (ball P \<delta> - ?R)"
+                  and htrace_same:
+                    "\<exists>K\<in>components (sphere P r - {q1, q2, q3}).
+                      \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K"
+                  obtain K where hK_comp: "K \<in> components (sphere P r - {q1, q2, q3})"
+                    and hC_trace: "\<rho> ` C \<subseteq> K"
+                    and hD_trace: "\<rho> ` D \<subseteq> K"
+                    using htrace_same by (by100 clarify)
+                  obtain x where hxC: "x \<in> C"
+                    using hC_comp in_components_nonempty by (by100 blast)
+                  obtain y where hyD: "y \<in> D"
+                    using hD_comp in_components_nonempty by (by100 blast)
+                  have hC_sub: "C \<subseteq> ball P \<delta> - ?R"
+                    using hC_comp in_components_subset by (by100 blast)
+                  have hD_sub: "D \<subseteq> ball P \<delta> - ?R"
+                    using hD_comp in_components_subset by (by100 blast)
+                  have hx_local: "x \<in> ball P \<delta> - ?R"
+                    using hxC hC_sub by (by100 blast)
+                  have hy_local: "y \<in> ball P \<delta> - ?R"
+                    using hyD hD_sub by (by100 blast)
+                  have h\<rho>x_K: "\<rho> x \<in> K"
+                    using hxC hC_trace by (by100 blast)
+                  have h\<rho>y_K: "\<rho> y \<in> K"
+                    using hyD hD_trace by (by100 blast)
+                  let ?T = "closed_segment x (\<rho> x) \<union> K \<union> closed_segment y (\<rho> y)"
+                  have hsegx_conn: "connected (closed_segment x (\<rho> x))"
+                    by (rule convex_connected[OF convex_closed_segment])
+                  have hK_conn: "connected K"
+                    using hK_comp in_components_connected by (by100 blast)
+                  have hsegy_conn: "connected (closed_segment y (\<rho> y))"
+                    by (rule convex_connected[OF convex_closed_segment])
+                  have hsegx_K_meet: "closed_segment x (\<rho> x) \<inter> K \<noteq> {}"
+                  proof -
+                    have "\<rho> x \<in> closed_segment x (\<rho> x)"
+                      by (by100 simp)
+                    thus ?thesis using h\<rho>x_K by (by100 blast)
+                  qed
+                  have hleft_conn: "connected (closed_segment x (\<rho> x) \<union> K)"
+                    by (rule connected_Un[OF hsegx_conn hK_conn hsegx_K_meet])
+                  have hleft_segy_meet:
+                    "(closed_segment x (\<rho> x) \<union> K) \<inter> closed_segment y (\<rho> y) \<noteq> {}"
+                  proof -
+                    have "\<rho> y \<in> closed_segment y (\<rho> y)"
+                      by (by100 simp)
+                    thus ?thesis using h\<rho>y_K by (by100 blast)
+                  qed
+                  have hT_conn: "connected ?T"
+                    by (rule connected_Un[OF hleft_conn hsegy_conn hleft_segy_meet])
+                  have hT_sub: "?T \<subseteq> ball P \<delta> - ?R"
+                  proof
+                    fix z assume hzT: "z \<in> ?T"
+                    consider (X) "z \<in> closed_segment x (\<rho> x)" | (K) "z \<in> K"
+                      | (Y) "z \<in> closed_segment y (\<rho> y)"
+                      using hzT by (by100 blast)
+                    thus "z \<in> ball P \<delta> - ?R"
+                    proof cases
+                      case X
+                      show ?thesis using h_radial_segment_subset[OF hx_local] X by (by100 blast)
+                    next
+                      case K
+                      show ?thesis using h_circle_component_subset_local[OF hK_comp] K by (by100 blast)
+                    next
+                      case Y
+                      show ?thesis using h_radial_segment_subset[OF hy_local] Y by (by100 blast)
+                    qed
+                  qed
+                  have hC_meet_T: "C \<inter> ?T \<noteq> {}"
+                  proof -
+                    have "x \<in> closed_segment x (\<rho> x)" by (by100 simp)
+                    thus ?thesis using hxC by (by100 blast)
+                  qed
+                  have hD_meet_T: "D \<inter> ?T \<noteq> {}"
+                  proof -
+                    have "y \<in> closed_segment y (\<rho> y)" by (by100 simp)
+                    thus ?thesis using hyD by (by100 blast)
+                  qed
+                  have hjoin: "connected ?T \<and> ?T \<subseteq> ball P \<delta> - ?R \<and>
+                    C \<in> components (ball P \<delta> - ?R) \<and>
+                    D \<in> components (ball P \<delta> - ?R) \<and>
+                    C \<inter> ?T \<noteq> {} \<and> D \<inter> ?T \<noteq> {}"
+                    using hT_conn hT_sub hC_comp hD_comp hC_meet_T hD_meet_T
+                    by (by100 blast)
+                  show "C = D" by (rule joinable_components_eq[OF hjoin])
+              qed
+              show ?thesis using h_same_aux by (by100 blast)
+            qed
             have h_disk_components_inject_circle:
               "\<exists>f. inj_on f (components (ball P \<delta> - ?R)) \<and>
                     f ` components (ball P \<delta> - ?R) \<subseteq>
