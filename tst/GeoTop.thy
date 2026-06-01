@@ -2304,7 +2304,57 @@ proof -
                             continuous_on {0..1::real} \<gamma> \<and>
                             \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
                             \<gamma> 0 = u \<and> \<gamma> 1 = w"
-                          sorry
+                        proof -
+                          let ?Lcomp = "ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          have h_pair_closed: "closed (\<sigma>_y \<union> \<tau>_y)"
+                          proof -
+                            have h\<sigma>_closed: "closed \<sigma>_y"
+                              using h\<sigma>_y_seg by (by100 simp)
+                            have h\<tau>_closed: "closed \<tau>_y"
+                              using h\<tau>_y_segment by (by100 simp)
+                            show ?thesis by (rule closed_Un[OF h\<sigma>_closed h\<tau>_closed])
+                          qed
+                          have hLcomp_open: "open ?Lcomp"
+                            by (rule open_Diff[OF open_ball h_pair_closed])
+                          define C where "C = connected_component_set ?Lcomp u"
+                          have hC_comp: "C \<in> components ?Lcomp"
+                            unfolding C_def by (rule componentsI[OF hu_local])
+                          have huC: "u \<in> C"
+                            unfolding C_def using hu_local by (by100 simp)
+                          have hC_sub: "C \<subseteq> ?Lcomp"
+                            unfolding C_def by (rule connected_component_subset)
+                          have hC_path: "path_connected C"
+                            by (rule component_of_open_path_connected[OF hLcomp_open hC_comp])
+                          \<comment> \<open>Pure sector-incidence statement: the component of the
+                            two-ray punctured disk containing an exterior-sector
+                            point has points on the opposite side of the selected
+                            ray, arbitrarily close to the vertex.\<close>
+                          have h_positive_sector_component_hits_opposite:
+                            "\<exists>w\<in>C. dist w x < r \<and> inner (w - x) n_y < 0"
+                            sorry
+                          obtain w where hwC: "w \<in> C"
+                            and hw_dist: "dist w x < r"
+                            and hw_neg: "inner (w - x) n_y < 0"
+                            using h_positive_sector_component_hits_opposite by (by100 blast)
+                          have hw_local: "w \<in> ?Lcomp"
+                            using hwC hC_sub by (by100 blast)
+                          obtain \<gamma> where h\<gamma>_path: "path \<gamma>"
+                            and h\<gamma>_im: "path_image \<gamma> \<subseteq> C"
+                            and h\<gamma>_start: "pathstart \<gamma> = u"
+                            and h\<gamma>_finish: "pathfinish \<gamma> = w"
+                            using hC_path huC hwC unfolding path_connected_def by (by100 blast)
+                          have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                            using h\<gamma>_path unfolding path_def by (by100 blast)
+                          have h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ?Lcomp"
+                            using h\<gamma>_im hC_sub unfolding path_image_def by (by100 blast)
+                          have h\<gamma>0: "\<gamma> 0 = u"
+                            using h\<gamma>_start unfolding pathstart_def by (by100 simp)
+                          have h\<gamma>1: "\<gamma> 1 = w"
+                            using h\<gamma>_finish unfolding pathfinish_def by (by100 simp)
+                          show ?thesis
+                            using hw_local hw_dist hw_neg h\<gamma>_cont h\<gamma>_sub h\<gamma>0 h\<gamma>1
+                            by (by100 blast)
+                        qed
                         obtain w \<gamma> where hw_local:
                             "w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
                           and hw_dist: "dist w x < r"
@@ -2427,7 +2477,53 @@ proof -
                             continuous_on {0..1::real} \<gamma> \<and>
                             \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<and>
                             \<gamma> 0 = u \<and> \<gamma> 1 = w"
-                          sorry
+                        proof -
+                          let ?Lcomp = "ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                          have h_pair_closed: "closed (\<sigma>_y \<union> \<tau>_y)"
+                          proof -
+                            have h\<sigma>_closed: "closed \<sigma>_y"
+                              using h\<sigma>_y_seg by (by100 simp)
+                            have h\<tau>_closed: "closed \<tau>_y"
+                              using h\<tau>_y_segment by (by100 simp)
+                            show ?thesis by (rule closed_Un[OF h\<sigma>_closed h\<tau>_closed])
+                          qed
+                          have hLcomp_open: "open ?Lcomp"
+                            by (rule open_Diff[OF open_ball h_pair_closed])
+                          define C where "C = connected_component_set ?Lcomp u"
+                          have hC_comp: "C \<in> components ?Lcomp"
+                            unfolding C_def by (rule componentsI[OF hu_local])
+                          have huC: "u \<in> C"
+                            unfolding C_def using hu_local by (by100 simp)
+                          have hC_sub: "C \<subseteq> ?Lcomp"
+                            unfolding C_def by (rule connected_component_subset)
+                          have hC_path: "path_connected C"
+                            by (rule component_of_open_path_connected[OF hLcomp_open hC_comp])
+                          have h_negative_sector_component_hits_opposite:
+                            "\<exists>w\<in>C. dist w x < r \<and> inner (w - x) n_y > 0"
+                            sorry
+                          obtain w where hwC: "w \<in> C"
+                            and hw_dist: "dist w x < r"
+                            and hw_pos: "inner (w - x) n_y > 0"
+                            using h_negative_sector_component_hits_opposite by (by100 blast)
+                          have hw_local: "w \<in> ?Lcomp"
+                            using hwC hC_sub by (by100 blast)
+                          obtain \<gamma> where h\<gamma>_path: "path \<gamma>"
+                            and h\<gamma>_im: "path_image \<gamma> \<subseteq> C"
+                            and h\<gamma>_start: "pathstart \<gamma> = u"
+                            and h\<gamma>_finish: "pathfinish \<gamma> = w"
+                            using hC_path huC hwC unfolding path_connected_def by (by100 blast)
+                          have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                            using h\<gamma>_path unfolding path_def by (by100 blast)
+                          have h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ?Lcomp"
+                            using h\<gamma>_im hC_sub unfolding path_image_def by (by100 blast)
+                          have h\<gamma>0: "\<gamma> 0 = u"
+                            using h\<gamma>_start unfolding pathstart_def by (by100 simp)
+                          have h\<gamma>1: "\<gamma> 1 = w"
+                            using h\<gamma>_finish unfolding pathfinish_def by (by100 simp)
+                          show ?thesis
+                            using hw_local hw_dist hw_pos h\<gamma>_cont h\<gamma>_sub h\<gamma>0 h\<gamma>1
+                            by (by100 blast)
+                        qed
                         obtain w \<gamma> where hw_local:
                             "w \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
                           and hw_dist: "dist w x < r"
