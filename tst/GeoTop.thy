@@ -2677,8 +2677,12 @@ proof -
                           by (by100 simp)
                         have hr0_pos: "r0 > 0"
                           unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
+                        have hrsmall_le_r_half: "rsmall \<le> r / 2"
+                          unfolding rsmall_def
+                          by (rule min.cobounded1)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def rsmall_def by (by100 simp)
+                          unfolding r0_def
+                          by (rule order.trans[OF min.cobounded2 hrsmall_le_r_half])
                         have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
@@ -3145,8 +3149,12 @@ proof -
                           by (by100 simp)
                         have hr0_pos: "r0 > 0"
                           unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
+                        have hrsmall_le_r_half: "rsmall \<le> r / 2"
+                          unfolding rsmall_def
+                          by (rule min.cobounded1)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def rsmall_def by (by100 simp)
+                          unfolding r0_def
+                          by (rule order.trans[OF min.cobounded2 hrsmall_le_r_half])
                         have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
@@ -7822,9 +7830,85 @@ proof -
         have hlocal_components_finite:
           "finite (components (ball P \<delta> - M))"
         proof -
+          define r where "r = \<delta> / 2"
+          define q1 where "q1 = P + (r / dist P p1) *\<^sub>R (p1 - P)"
+          define q2 where "q2 = P + (r / dist P p2) *\<^sub>R (p2 - P)"
+          define q3 where "q3 = P + (r / dist P p3) *\<^sub>R (p3 - P)"
+          define \<rho> where "\<rho> = (\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P))"
           have hR_components_finite:
             "finite (components (ball P \<delta> - ?R))"
-            sorry
+          proof -
+            have h_radial_components_reduce_to_circle:
+              "\<exists>F. finite F \<and>
+                (\<forall>C \<in> components (ball P \<delta> - ?R).
+                    \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3}))"
+              sorry
+            have h_same_circle_component_same_disk_component:
+              "\<forall>C \<in> components (ball P \<delta> - ?R).
+                \<forall>D \<in> components (ball P \<delta> - ?R).
+                  (\<exists>K \<in> components (sphere P r - {q1, q2, q3}).
+                    \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K) \<longrightarrow> C = D"
+              sorry
+            have h_circle_components_finite:
+              "finite (components (sphere P r - {q1, q2, q3}))"
+              sorry
+            have h_disk_components_inject_circle:
+              "\<exists>f. inj_on f (components (ball P \<delta> - ?R)) \<and>
+                    f ` components (ball P \<delta> - ?R) \<subseteq>
+                      components (sphere P r - {q1, q2, q3})"
+            proof -
+              obtain F where hF_fin: "finite F"
+                and hF:
+                  "\<forall>C \<in> components (ball P \<delta> - ?R).
+                    \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3})"
+                using h_radial_components_reduce_to_circle by (by100 blast)
+              obtain f where hf:
+                "\<forall>C \<in> components (ball P \<delta> - ?R).
+                    f C \<in> F \<and> \<rho> ` C \<subseteq> f C \<and>
+                      f C \<in> components (sphere P r - {q1, q2, q3})"
+                using bchoice[of "components (ball P \<delta> - ?R)"
+                    "\<lambda>C K. K \<in> F \<and> \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3})"]
+                  hF by (by100 blast)
+              have hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+              proof (unfold inj_on_def, intro ballI impI)
+                fix C D
+                assume hC: "C \<in> components (ball P \<delta> - ?R)"
+                  and hD: "D \<in> components (ball P \<delta> - ?R)"
+                  and hf_eq: "f C = f D"
+                have hfC_comp:
+                  "f C \<in> components (sphere P r - {q1, q2, q3})"
+                  using hf hC by (by100 blast)
+                have hC_sub: "\<rho> ` C \<subseteq> f C"
+                  using hf hC by (by100 blast)
+                have hD_sub: "\<rho> ` D \<subseteq> f C"
+                  using hf hD hf_eq by (by100 blast)
+                show "C = D"
+                  using h_same_circle_component_same_disk_component
+                    hC hD hfC_comp hC_sub hD_sub by (by100 blast)
+              qed
+              have hf_sub:
+                "f ` components (ball P \<delta> - ?R) \<subseteq>
+                  components (sphere P r - {q1, q2, q3})"
+                using hf by (by100 blast)
+              show ?thesis using hf_inj hf_sub by (by100 blast)
+            qed
+            show ?thesis
+            proof -
+              obtain f where hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+                and hf_sub:
+                  "f ` components (ball P \<delta> - ?R) \<subseteq>
+                    components (sphere P r - {q1, q2, q3})"
+                using h_disk_components_inject_circle by (by100 blast)
+              have hf_image_finite:
+                "finite (f ` components (ball P \<delta> - ?R))"
+                by (rule finite_subset[OF hf_sub h_circle_components_finite])
+              show ?thesis
+                by (rule finite_imageD[OF hf_image_finite hf_inj])
+            qed
+          qed
           show ?thesis
             using hR_components_finite hlocal_compl by (by100 simp)
         qed
