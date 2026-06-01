@@ -8439,6 +8439,157 @@ proof -
               using hq2_set hq3_set hq2_ball h_eq by (by100 blast)
             thus False using hS23_empty by (by100 blast)
           qed
+          have h_segment_sphere_unique:
+            "\<And>p q. \<lbrakk>p \<noteq> P; r > 0; r \<le> dist P p;
+                     q = P + (r / dist P p) *\<^sub>R (p - P)\<rbrakk>
+              \<Longrightarrow> (closed_segment P p - {P}) \<inter> sphere P r = {q}"
+          proof -
+            fix p q :: "real^2"
+            assume hp_ne: "p \<noteq> P"
+              and hr: "r > 0"
+              and hr_le: "r \<le> dist P p"
+              and hq_def: "q = P + (r / dist P p) *\<^sub>R (p - P)"
+            have hp_dist_pos: "dist P p > 0" using hp_ne by (by100 simp)
+            have hq_seg: "q \<in> closed_segment P p"
+            proof -
+              let ?t = "r / dist P p"
+              have ht_nonneg: "0 \<le> ?t" using hr hp_dist_pos by (by100 simp)
+              have ht_le1: "?t \<le> 1" using hr_le hp_dist_pos by (by100 simp)
+              have hq_conv: "q = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p"
+                using hq_def by (simp add: algebra_simps)
+              show ?thesis
+                unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+            qed
+            have hq_ne: "q \<noteq> P"
+            proof
+              assume hqP: "q = P"
+              have "(r / dist P p) *\<^sub>R (p - P) = 0"
+                using hqP hq_def by (by100 simp)
+              hence "r / dist P p = 0"
+                using hp_ne by (by100 simp)
+              thus False using hr hp_dist_pos by (by100 simp)
+            qed
+            have hq_sphere: "q \<in> sphere P r"
+              unfolding hq_def using hp_dist_pos hr
+              by (simp add: dist_norm norm_minus_commute)
+            show "(closed_segment P p - {P}) \<inter> sphere P r = {q}"
+            proof
+              show "(closed_segment P p - {P}) \<inter> sphere P r \<subseteq> {q}"
+              proof
+                fix z assume hz: "z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+                have hz_seg: "z \<in> closed_segment P p" using hz by (by100 blast)
+                have hz_sphere: "z \<in> sphere P r" using hz by (by100 blast)
+                obtain t where ht_nonneg: "0 \<le> t" and ht_le1: "t \<le> 1"
+                  and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+                  using hz_seg unfolding closed_segment_def by (by100 blast)
+                have hz_vec: "z = P + t *\<^sub>R (p - P)"
+                  using hz_t by (simp add: algebra_simps)
+                have hdist_z: "dist P z = t * dist P p"
+                  using hz_vec ht_nonneg
+                  by (simp add: dist_norm norm_minus_commute)
+                have hdist_eq: "dist P z = r" using hz_sphere by (by100 simp)
+                have ht_eq: "t = r / dist P p"
+                  using hdist_z hdist_eq hp_dist_pos by (by100 simp)
+                have "z = q" using hz_vec ht_eq hq_def by (by100 simp)
+                thus "z \<in> {q}" by (by100 simp)
+              qed
+              show "{q} \<subseteq> (closed_segment P p - {P}) \<inter> sphere P r"
+                using hq_seg hq_ne hq_sphere by (by100 blast)
+            qed
+          qed
+          have hS1_sphere_r:
+            "(?S1 - {P}) \<inter> sphere P r = {q1}"
+          proof -
+            have hr_le_dist: "r \<le> dist P p1"
+              unfolding r_def using h\<delta>_p1 h\<delta>_pos by (by100 linarith)
+            show ?thesis
+              by (rule h_segment_sphere_unique[OF hp1_ne' hr_pos hr_le_dist q1_def])
+          qed
+          have hS2_sphere_r:
+            "(?S2 - {P}) \<inter> sphere P r = {q2}"
+          proof -
+            have hr_le_dist: "r \<le> dist P p2"
+              unfolding r_def using h\<delta>_p2 h\<delta>_pos by (by100 linarith)
+            show ?thesis
+              by (rule h_segment_sphere_unique[OF hp2_ne' hr_pos hr_le_dist q2_def])
+          qed
+          have hS3_sphere_r:
+            "(?S3 - {P}) \<inter> sphere P r = {q3}"
+          proof -
+            have hr_le_dist: "r \<le> dist P p3"
+              unfolding r_def using h\<delta>_p3 h\<delta>_pos by (by100 linarith)
+            show ?thesis
+              by (rule h_segment_sphere_unique[OF hp3_ne' hr_pos hr_le_dist q3_def])
+          qed
+          have hS1_sphere_full:
+            "?S1 \<inter> sphere P r = {q1}"
+          proof
+            show "?S1 \<inter> sphere P r \<subseteq> {q1}"
+            proof
+              fix z assume hz: "z \<in> ?S1 \<inter> sphere P r"
+              have hzS: "z \<in> ?S1" using hz by (by100 blast)
+              have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+              have hz_ne: "z \<noteq> P"
+              proof
+                assume h_eq: "z = P"
+                have "dist P z = r" using hzsp by (by100 simp)
+                hence "r = 0" using h_eq by (by100 simp)
+                thus False using hr_pos by (by100 simp)
+              qed
+              have "z \<in> (?S1 - {P}) \<inter> sphere P r"
+                using hzS hzsp hz_ne by (by100 blast)
+              thus "z \<in> {q1}" using hS1_sphere_r by (by100 simp)
+            qed
+            show "{q1} \<subseteq> ?S1 \<inter> sphere P r"
+              using hS1_sphere_r by (by100 blast)
+          qed
+          have hS2_sphere_full:
+            "?S2 \<inter> sphere P r = {q2}"
+          proof
+            show "?S2 \<inter> sphere P r \<subseteq> {q2}"
+            proof
+              fix z assume hz: "z \<in> ?S2 \<inter> sphere P r"
+              have hzS: "z \<in> ?S2" using hz by (by100 blast)
+              have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+              have hz_ne: "z \<noteq> P"
+              proof
+                assume h_eq: "z = P"
+                have "dist P z = r" using hzsp by (by100 simp)
+                hence "r = 0" using h_eq by (by100 simp)
+                thus False using hr_pos by (by100 simp)
+              qed
+              have "z \<in> (?S2 - {P}) \<inter> sphere P r"
+                using hzS hzsp hz_ne by (by100 blast)
+              thus "z \<in> {q2}" using hS2_sphere_r by (by100 simp)
+            qed
+            show "{q2} \<subseteq> ?S2 \<inter> sphere P r"
+              using hS2_sphere_r by (by100 blast)
+          qed
+          have hS3_sphere_full:
+            "?S3 \<inter> sphere P r = {q3}"
+          proof
+            show "?S3 \<inter> sphere P r \<subseteq> {q3}"
+            proof
+              fix z assume hz: "z \<in> ?S3 \<inter> sphere P r"
+              have hzS: "z \<in> ?S3" using hz by (by100 blast)
+              have hzsp: "z \<in> sphere P r" using hz by (by100 blast)
+              have hz_ne: "z \<noteq> P"
+              proof
+                assume h_eq: "z = P"
+                have "dist P z = r" using hzsp by (by100 simp)
+                hence "r = 0" using h_eq by (by100 simp)
+                thus False using hr_pos by (by100 simp)
+              qed
+              have "z \<in> (?S3 - {P}) \<inter> sphere P r"
+                using hzS hzsp hz_ne by (by100 blast)
+              thus "z \<in> {q3}" using hS3_sphere_r by (by100 simp)
+            qed
+            show "{q3} \<subseteq> ?S3 \<inter> sphere P r"
+              using hS3_sphere_r by (by100 blast)
+          qed
+          have hR_sphere_r:
+            "?R \<inter> sphere P r = {q1, q2, q3}"
+            using hS1_sphere_full hS2_sphere_full hS3_sphere_full by (by100 blast)
           show ?thesis
             using hr_pos hq1 hq2 hq3 hq12 hq13 hq23 by (by100 blast)
         qed
