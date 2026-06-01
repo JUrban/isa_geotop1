@@ -4113,11 +4113,25 @@ proof -
                           by (rule continuous_on_subset[OF hg_cont_line hclLc_sub_line])
                       qed
                       have hcl_gLc_sub_g_clLc: "closure (g ` Lc) \<subseteq> g ` closure Lc"
-                        sorry
+                      proof (rule closure_minimal)
+                        show "g ` Lc \<subseteq> g ` closure Lc"
+                          by (rule image_mono[OF closure_subset])
+                        have "compact (g ` closure Lc)"
+                          by (rule compact_continuous_image[OF hg_cont_clLc hclLc_compact])
+                        thus "closed (g ` closure Lc)"
+                          by (rule compact_imp_closed)
+                      qed
                       have hq1_in_g_clLc: "q1 \<in> g ` closure Lc"
-                        sorry
+                        using hq1_cl_gLc hcl_gLc_sub_g_clLc by (by100 blast)
                       have "q1 \<notin> g ` closure Lc"
-                        sorry
+                      proof -
+                        have hg_img: "g ` ?L = ?S - {q1}"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        have "g ` closure Lc \<subseteq> ?S - {q1}"
+                          using image_mono[OF hclLc_sub_line, of g] hg_img by (by100 blast)
+                        thus ?thesis
+                          by (by100 blast)
+                      qed
                       thus False
                         using hq1_in_g_clLc by (by100 blast)
                     qed
