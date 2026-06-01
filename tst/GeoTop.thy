@@ -5517,9 +5517,10 @@ proof -
       disk into a finite number of sectors; each sector is bounded by a
       pair of consecutive arcs.)\<close>
     have hAM_local_sectors:
-      "\<exists>\<delta>>0. \<forall>C \<in> components (ball P \<delta> - M).
+      "\<exists>\<delta>>0. finite (components (ball P \<delta> - M)) \<and>
+          (\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
-                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
     proof -
       \<comment> \<open>Book's "small circular neighborhood of P": choose it so that each
         incident broken line is represented by its first straight segment at
@@ -7818,16 +7819,31 @@ proof -
             show "x \<in> ball P \<delta> - M" using hx_ball hx_notM by (by100 blast)
           qed
         qed
+        have hlocal_components_finite:
+          "finite (components (ball P \<delta> - M))"
+        proof -
+          have hR_components_finite:
+            "finite (components (ball P \<delta> - ?R))"
+            sorry
+          show ?thesis
+            using hR_components_finite hlocal_compl by (by100 simp)
+        qed
         show ?thesis
-        proof (intro exI[where x=\<delta>] conjI ballI)
+        proof (intro exI[where x=\<delta>] conjI)
           show "\<delta> > 0" using h\<delta>_pos .
-          fix C
-          assume hC: "C \<in> components (ball P \<delta> - M)"
-          let ?TouchB = "{Bi \<in> {B1, B2, B3}.
-                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
-          let ?TouchS = "{S \<in> {?S1, ?S2, ?S3}.
-                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
-          let ?f = "\<lambda>Bi. if Bi = B1 then ?S1 else if Bi = B2 then ?S2 else ?S3"
+          show "finite (components (ball P \<delta> - M))"
+            using hlocal_components_finite .
+          show "\<forall>C \<in> components (ball P \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          proof
+            fix C
+            assume hC: "C \<in> components (ball P \<delta> - M)"
+            let ?TouchB = "{Bi \<in> {B1, B2, B3}.
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+            let ?TouchS = "{S \<in> {?S1, ?S2, ?S3}.
+                          (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+            let ?f = "\<lambda>Bi. if Bi = B1 then ?S1 else if Bi = B2 then ?S2 else ?S3"
           have hC_R: "C \<in> components (ball P \<delta> - ?R)"
             using hC hlocal_compl by (by100 simp)
           have hcardS: "card ?TouchS \<le> 2"
@@ -7928,6 +7944,7 @@ proof -
             by (rule card_mono[OF hfinS himg_sub])
           show "card ?TouchB \<le> 2"
             using hcard_img hcard_img_le hcardS by (by100 linarith)
+          qed
         qed
       qed
     qed
@@ -7941,6 +7958,7 @@ proof -
       "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U"
     proof -
       obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
         and h\<delta>_sectors:
           "\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
@@ -8001,6 +8019,7 @@ proof -
                     geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
       proof -
         obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+          and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
           and h\<delta>_sectors:
             "\<forall>C \<in> components (ball P \<delta> - M).
                 card {Bi \<in> {B1, B2, B3}.
@@ -8090,7 +8109,7 @@ proof -
           qed
           have h_local_components_finite:
             "finite (components (ball P \<delta> - M))"
-            sorry
+            using h\<delta>_finite .
           have h_other_components_meet_near:
             "\<forall>\<eta>>0. \<exists>D \<in> components (ball P \<delta> - M).
                 D \<noteq> C \<and> D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
@@ -8248,7 +8267,72 @@ proof -
           qed
           have h_figure_2_6_pair_separation:
             False
-            sorry
+          proof -
+            obtain D where hD_comp: "D \<in> components (ball P \<delta> - M)"
+              and hD_ne_C: "D \<noteq> C"
+              and hD_sub_U: "D \<subseteq> U"
+              and hP_cl_D: "P \<in> closure D"
+              using h_two_local_U_sectors by (by100 blast)
+            have h_local_sectors_separated_by_pair:
+              "\<exists>i j A B. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                A \<in> components (UNIV - (i \<union> j)) \<and>
+                B \<in> components (UNIV - (i \<union> j)) \<and> A \<noteq> B \<and>
+                C \<inter> A \<noteq> {} \<and> D \<inter> B \<noteq> {}"
+              sorry
+            obtain i j A B where hi_set: "i \<in> {B1, B2, B3}"
+              and hj_set: "j \<in> {B1, B2, B3}"
+              and hij_ne: "i \<noteq> j"
+              and hA_comp: "A \<in> components (UNIV - (i \<union> j))"
+              and hB_comp: "B \<in> components (UNIV - (i \<union> j))"
+              and hA_ne_B: "A \<noteq> B"
+              and hC_A_meet: "C \<inter> A \<noteq> {}"
+              and hD_B_meet: "D \<inter> B \<noteq> {}"
+              using h_local_sectors_separated_by_pair
+            proof (elim exE conjE)
+              fix i j A B
+              assume hi_set': "i \<in> {B1, B2, B3}"
+              assume hj_set': "j \<in> {B1, B2, B3}"
+              assume hij_ne': "i \<noteq> j"
+              assume hA_comp': "A \<in> components (UNIV - (i \<union> j))"
+              assume hB_comp': "B \<in> components (UNIV - (i \<union> j))"
+              assume hA_ne_B': "A \<noteq> B"
+              assume hC_A_meet': "C \<inter> A \<noteq> {}"
+              assume hD_B_meet': "D \<inter> B \<noteq> {}"
+              show thesis
+                by (rule that[OF hi_set' hj_set' hij_ne' hA_comp' hB_comp'
+                    hA_ne_B' hC_A_meet' hD_B_meet'])
+            qed
+            have hM_eq: "M = B1 \<union> B2 \<union> B3"
+              using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+            have hij_sub_M: "i \<union> j \<subseteq> M"
+              using hi_set hj_set hM_eq by (by100 blast)
+            have hU_sub_pair_compl: "U \<subseteq> UNIV - (i \<union> j)"
+            proof -
+              have hU_sub_M_compl: "U \<subseteq> UNIV - M"
+                using hU in_components_subset by (by100 blast)
+              show ?thesis using hU_sub_M_compl hij_sub_M by (by100 blast)
+            qed
+            obtain c where hcC: "c \<in> C" and hcA: "c \<in> A"
+              using hC_A_meet by (by100 blast)
+            have hcU: "c \<in> U" using hcC hC_sub_U by (by100 blast)
+            have hU_conn: "connected U"
+              using hU in_components_connected by (by100 blast)
+            have hA_eq: "A = connected_component_set (UNIV - (i \<union> j)) c"
+              by (rule component_eq_connected_component_set[OF hA_comp hcA])
+            have hU_sub_A: "U \<subseteq> A"
+            proof -
+              have "U \<subseteq> connected_component_set (UNIV - (i \<union> j)) c"
+                by (rule connected_component_maximal[OF hcU hU_conn hU_sub_pair_compl])
+              thus ?thesis using hA_eq by (by100 simp)
+            qed
+            obtain d where hdD: "d \<in> D" and hdB: "d \<in> B"
+              using hD_B_meet by (by100 blast)
+            have hdU: "d \<in> U" using hdD hD_sub_U by (by100 blast)
+            have hdA: "d \<in> A" using hdU hU_sub_A by (by100 blast)
+            have "A \<inter> B = {}"
+              using components_nonoverlap[OF hA_comp hB_comp] hA_ne_B by (by100 simp)
+            thus False using hdA hdB by (by100 blast)
+          qed
           show False
             using h_figure_2_6_pair_separation .
         qed
