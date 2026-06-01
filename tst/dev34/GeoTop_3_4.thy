@@ -4438,6 +4438,149 @@ proof -
   qed
 qed
 
+lemma geotop_simplex_vertex_notin_hull_of_other_vertices:
+  fixes \<sigma> :: "(real^2) set" and V W :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_sub: "W \<subseteq> V - {v}"
+  shows "v \<notin> geotop_convex_hull W"
+proof -
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule affine_independent_subset[OF hV_ai hW_sub_V])
+  have hinsert_sub: "insert v W \<subseteq> V"
+    using hvV hW_sub by (by100 blast)
+  have hinsert_ai: "\<not> affine_dependent (insert v W)"
+    by (rule affine_independent_subset[OF hV_ai hinsert_sub])
+  have hv_not_W: "v \<notin> W"
+    using hW_sub by (by100 blast)
+  have hv_not_aff: "v \<notin> affine hull W"
+  proof
+    assume hv_aff: "v \<in> affine hull W"
+    have "affine_dependent (insert v W)"
+      using affine_dependent_choose[OF hW_ai, of v] hv_not_W hv_aff
+      by (by100 simp)
+    thus False
+      using hinsert_ai by (by100 blast)
+  qed
+  have hconv_sub_aff: "convex hull W \<subseteq> affine hull W"
+    by (rule convex_hull_subset_affine_hull)
+  show ?thesis
+  proof
+    assume hv_hull: "v \<in> geotop_convex_hull W"
+    have "v \<in> convex hull W"
+      using hv_hull geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    hence "v \<in> affine hull W"
+      using hconv_sub_aff by (by100 blast)
+    thus False
+      using hv_not_aff by (by100 blast)
+  qed
+qed
+
+lemma geotop_simplex_opposite_edge_in_link:
+  fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hwV: "w \<in> V"
+  assumes huV: "u \<in> V"
+  assumes hvw: "v \<noteq> w"
+  assumes hvu: "v \<noteq> u"
+  assumes hwu: "w \<noteq> u"
+  shows "geotop_convex_hull {w, u} \<in> geotop_link K v
+      \<and> geotop_is_edge (geotop_convex_hull {w, u})
+      \<and> w \<in> geotop_convex_hull {w, u}
+      \<and> u \<in> geotop_convex_hull {w, u}"
+proof -
+  obtain m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  let ?\<tau> = "geotop_convex_hull {w, u}"
+  have hpair_sub: "{w, u} \<subseteq> V"
+    using hwV huV by (by100 blast)
+  have hpair_fin: "finite {w, u}"
+    by (by100 simp)
+  have hpair_card: "card {w, u} = 2"
+    using hwu by (by100 simp)
+  have hpair_card_le: "card {w, u} \<le> card V"
+    by (rule card_mono[OF hV_fin hpair_sub])
+  have hn_ge1: "1 \<le> n"
+    using hV_card hpair_card hpair_card_le by (by100 linarith)
+  have hm_ge1: "1 \<le> m"
+    using hn_ge1 hn_le_m by (by100 linarith)
+  have hgp_pair: "geotop_general_position {w, u} m"
+    by (rule geotop_general_position_subset[OF hgp hpair_sub])
+  have h\<tau>dim: "geotop_simplex_dim ?\<tau> 1"
+    unfolding geotop_simplex_dim_def
+  proof (intro exI conjI)
+    show "finite {w, u}"
+      by (rule hpair_fin)
+    show "card {w, u} = 1 + 1"
+      using hpair_card by (by100 simp)
+    show "1 \<le> m"
+      by (rule hm_ge1)
+    show "geotop_general_position {w, u} m"
+      by (rule hgp_pair)
+    show "?\<tau> = geotop_convex_hull {w, u}"
+      by (by100 simp)
+  qed
+  have h\<tau>edge: "geotop_is_edge ?\<tau>"
+    using h\<tau>dim unfolding geotop_is_edge_def by (by100 simp)
+  have h\<tau>face: "geotop_is_face ?\<tau> \<sigma>"
+    unfolding geotop_is_face_def
+  proof (intro exI conjI)
+    show "geotop_simplex_vertices \<sigma> V"
+      by (rule h\<sigma>V)
+    show "{w, u} \<noteq> {}"
+      by (by100 simp)
+    show "{w, u} \<subseteq> V"
+      by (rule hpair_sub)
+    show "?\<tau> = geotop_convex_hull {w, u}"
+      by (by100 simp)
+  qed
+  have hv\<sigma>: "v \<in> \<sigma>"
+  proof -
+    have "v \<in> convex hull V"
+      using hvV hull_inc[of v V] by (by100 simp)
+    moreover have "\<sigma> = convex hull V"
+      using h\<sigma>_eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+    ultimately show ?thesis
+      by (by100 simp)
+  qed
+  have hpair_other: "{w, u} \<subseteq> V - {v}"
+    using hwV huV hvw hvu by (by100 blast)
+  have hv_not_\<tau>: "v \<notin> ?\<tau>"
+    by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+        [OF h\<sigma>V hvV hpair_other])
+  have h\<tau>star: "?\<tau> \<in> geotop_star K v"
+    unfolding geotop_star_def using h\<sigma>K hv\<sigma> h\<tau>face by (by100 blast)
+  have h\<tau>link: "?\<tau> \<in> geotop_link K v"
+    unfolding geotop_link_def using h\<tau>star hv_not_\<tau> by (by100 blast)
+  have hw\<tau>: "w \<in> ?\<tau>"
+  proof -
+    have "w \<in> convex hull {w, u}"
+      using hull_inc[of w "{w, u}"] by (by100 simp)
+    thus ?thesis
+      using geotop_convex_hull_eq_HOL[of "{w, u}"] by (by100 simp)
+  qed
+  have hu\<tau>: "u \<in> ?\<tau>"
+  proof -
+    have "u \<in> convex hull {w, u}"
+      using hull_inc[of u "{w, u}"] by (by100 simp)
+    thus ?thesis
+      using geotop_convex_hull_eq_HOL[of "{w, u}"] by (by100 simp)
+  qed
+  show ?thesis
+    using h\<tau>link h\<tau>edge hw\<tau> hu\<tau> by (by100 blast)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
