@@ -3908,6 +3908,52 @@ proof -
     using hL_complex hL_1dim hL_fin hL_poly hL_conn by (by100 blast)
 qed
 
+lemma geotop_link_component_nonisolated_subcomplex_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+  shows "\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l))"
+proof -
+  obtain L where hL_eq: "L = {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+    and hL_complex: "geotop_is_complex L"
+    and hL_1dim: "geotop_complex_is_1dim L"
+    and hL_fin: "finite L"
+    and hL_poly: "geotop_polyhedron L = C"
+    using geotop_link_component_subcomplex_witness[OF hK hv hP hC]
+    by (by100 blast)
+  have hC_conn: "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+    using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
+  have hpoly_conn: "top1_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hC_conn hL_poly by (by100 simp)
+  have hpath: "top1_path_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  have hL_conn: "geotop_complex_connected L"
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+  have hinc_raw:
+    "\<forall>w. {w} \<in> {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C} \<longrightarrow>
+        (\<exists>l\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}. geotop_is_edge l \<and> w \<in> l)"
+    by (rule geotop_link_component_inherits_incident_link_edges
+        [OF hK hP hC hvertices])
+  have hinc_L: "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)"
+    using hinc_raw hL_eq by (by100 simp)
+  show ?thesis
+    using hL_complex hL_1dim hL_fin hL_poly hL_conn hinc_L by (by100 blast)
+qed
+
 lemma geotop_finite_components_real_line_minus_two_dev34:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
