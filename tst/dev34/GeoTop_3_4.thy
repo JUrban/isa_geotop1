@@ -3452,6 +3452,69 @@ next
     unfolding geotop_component_at_def using hPM hconn by (by100 blast)
 qed
 
+lemma geotop_component_at_UNIV_subset:
+  fixes M :: "'a::real_normed_vector set"
+  shows "geotop_component_at UNIV geotop_euclidean_topology M P \<subseteq> M"
+proof -
+  have h_eq: "geotop_component_at UNIV geotop_euclidean_topology M P =
+      connected_component_set M P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  show ?thesis
+    using h_eq connected_component_subset by (by100 simp)
+qed
+
+lemma geotop_component_at_UNIV_connected:
+  fixes M :: "'a::real_normed_vector set"
+  shows "top1_connected_on (geotop_component_at UNIV geotop_euclidean_topology M P)
+           (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_component_at UNIV geotop_euclidean_topology M P))"
+proof -
+  have h_eq: "geotop_component_at UNIV geotop_euclidean_topology M P =
+      connected_component_set M P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have "connected (geotop_component_at UNIV geotop_euclidean_topology M P)"
+    using h_eq connected_connected_component by (by100 simp)
+  show ?thesis
+    using \<open>connected (geotop_component_at UNIV geotop_euclidean_topology M P)\<close>
+      top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
+lemma geotop_component_at_UNIV_self:
+  fixes M :: "'a::real_normed_vector set"
+  assumes hP: "P \<in> M"
+  shows "P \<in> geotop_component_at UNIV geotop_euclidean_topology M P"
+proof -
+  have h_eq: "geotop_component_at UNIV geotop_euclidean_topology M P =
+      connected_component_set M P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  have "P \<in> connected_component_set M P"
+    using hP connected_component_refl by (by100 simp)
+  show ?thesis
+    using h_eq \<open>P \<in> connected_component_set M P\<close> by (by100 simp)
+qed
+
+lemma geotop_link_component_basic:
+  fixes K :: "(real^2) set set"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  shows "C \<subseteq> \<Union>(geotop_link K v)
+       \<and> P \<in> C
+       \<and> top1_connected_on C (subspace_topology UNIV geotop_euclidean_topology C)"
+proof -
+  have hsub: "C \<subseteq> \<Union>(geotop_link K v)"
+    using hC geotop_component_at_UNIV_subset[of "\<Union>(geotop_link K v)" P]
+    by (by100 simp)
+  have hself: "P \<in> C"
+    using hC geotop_component_at_UNIV_self[OF hP] by (by100 simp)
+  have hconn: "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+    using hC geotop_component_at_UNIV_connected[of "\<Union>(geotop_link K v)" P]
+    by (by100 simp)
+  show ?thesis
+    using hsub hself hconn by (by100 blast)
+qed
+
 lemma geotop_finite_components_real_line_minus_two_dev34:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
