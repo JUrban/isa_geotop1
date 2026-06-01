@@ -8062,10 +8062,196 @@ proof -
           using huC huU by (by100 blast)
         \<comment> \<open>Figure 2.6 local-sector uniqueness: after shrinking around the
           endpoint, the global component \<open>U\<close> occupies the single local
-          sector \<open>C\<close> of \<open>ball P \<delta> - M\<close>.\<close>
+          sector \<open>C\<close> of \<open>ball P \<delta> - M\<close>.  This is the book's small circular
+          neighbourhood argument: if another local sector of
+          \<open>ball P \<delta> - M\<close> also contained points of the same global component
+          arbitrarily near \<open>P\<close>, then a pair of the incident arcs would form a
+          polygon whose two complementary sides both meet the connected set
+          \<open>U\<close>, impossible.\<close>
         have h_endpoint_component_stability:
           "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
-          sorry
+        proof (rule ccontr)
+          assume hnot:
+            "\<not> (\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C)"
+          have h_other_sector_arbitrarily_close:
+            "\<forall>\<eta>>0. \<exists>v. v \<in> ball P \<eta> \<and> v \<in> U \<and> v \<notin> C"
+          proof (intro allI impI)
+            fix \<eta> :: real
+            assume h\<eta>_pos: "\<eta> > 0"
+            show "\<exists>v. v \<in> ball P \<eta> \<and> v \<in> U \<and> v \<notin> C"
+            proof (rule ccontr)
+              assume hno: "\<not> (\<exists>v. v \<in> ball P \<eta> \<and> v \<in> U \<and> v \<notin> C)"
+              have "ball P \<eta> \<inter> U \<subseteq> C"
+                using hno by (by100 blast)
+              hence "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
+                using h\<eta>_pos by (by100 blast)
+              thus False using hnot by (by100 blast)
+            qed
+          qed
+          have h_local_components_finite:
+            "finite (components (ball P \<delta> - M))"
+            sorry
+          have h_other_components_meet_near:
+            "\<forall>\<eta>>0. \<exists>D \<in> components (ball P \<delta> - M).
+                D \<noteq> C \<and> D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+          proof (intro allI impI)
+            fix \<eta> :: real
+            assume h\<eta>_pos: "\<eta> > 0"
+            define \<rho> where "\<rho> = min \<eta> (\<delta> / 2)"
+            have h\<rho>_pos: "\<rho> > 0"
+              unfolding \<rho>_def using h\<eta>_pos h\<delta>_pos by (by100 simp)
+            have h\<rho>_le_\<eta>: "\<rho> \<le> \<eta>"
+              unfolding \<rho>_def by (by100 simp)
+            have h\<rho>_lt_\<delta>: "\<rho> < \<delta>"
+              unfolding \<rho>_def using h\<delta>_pos by (by100 simp)
+            obtain v where hv_ball_\<rho>: "v \<in> ball P \<rho>"
+              and hvU: "v \<in> U" and hv_not_C: "v \<notin> C"
+              using h_other_sector_arbitrarily_close h\<rho>_pos by (by100 blast)
+            have hv_ball_\<delta>: "v \<in> ball P \<delta>"
+              using hv_ball_\<rho> h\<rho>_lt_\<delta> by (by100 auto)
+            have hv_not_M: "v \<notin> M"
+              using hvU hU_subM by (by100 blast)
+            have hv_local: "v \<in> ball P \<delta> - M"
+              using hv_ball_\<delta> hv_not_M by (by100 blast)
+            define D where "D = connected_component_set (ball P \<delta> - M) v"
+            have hD_comp: "D \<in> components (ball P \<delta> - M)"
+              unfolding D_def using hv_local componentsI by metis
+            have hvD: "v \<in> D"
+              unfolding D_def using hv_local by (by100 simp)
+            have hD_ne_C: "D \<noteq> C"
+              using hvD hv_not_C by (by100 blast)
+            have hv_ball_\<eta>: "v \<in> ball P \<eta>"
+              using hv_ball_\<rho> h\<rho>_le_\<eta> by (by100 auto)
+            have hD_meets: "D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+              using hvD hv_ball_\<eta> hvU by (by100 blast)
+            show "\<exists>D \<in> components (ball P \<delta> - M).
+                D \<noteq> C \<and> D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+              using hD_comp hD_ne_C hD_meets by (by100 blast)
+          qed
+          have h_other_component_accumulates:
+            "\<exists>D \<in> components (ball P \<delta> - M).
+                D \<noteq> C \<and> P \<in> closure D \<and>
+                (\<forall>\<eta>>0. D \<inter> ball P \<eta> \<inter> U \<noteq> {})"
+          proof (rule ccontr)
+            let ?S = "components (ball P \<delta> - M) - {C}"
+            assume hno:
+              "\<not> (\<exists>D \<in> components (ball P \<delta> - M).
+                D \<noteq> C \<and> P \<in> closure D \<and>
+                (\<forall>\<eta>>0. D \<inter> ball P \<eta> \<inter> U \<noteq> {}))"
+            have hS_fin: "finite ?S"
+              using h_local_components_finite by (by100 simp)
+            have hS_meets:
+              "\<forall>\<eta>>0. \<exists>D \<in> ?S. D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+              using h_other_components_meet_near by (by100 blast)
+            have hS_ne: "?S \<noteq> {}"
+            proof -
+              have hone_pos: "(1::real) > 0" by (by100 simp)
+              obtain D where "D \<in> ?S"
+                using hS_meets hone_pos by (by100 blast)
+              thus ?thesis by (by100 blast)
+            qed
+            have h_each_avoids:
+              "\<forall>D \<in> ?S. \<exists>\<eta>>0. D \<inter> ball P \<eta> \<inter> U = {}"
+            proof
+              fix D
+              assume hD_S: "D \<in> ?S"
+              show "\<exists>\<eta>>0. D \<inter> ball P \<eta> \<inter> U = {}"
+              proof (rule ccontr)
+                assume hD_no_avoid:
+                  "\<not> (\<exists>\<eta>>0. D \<inter> ball P \<eta> \<inter> U = {})"
+                have hD_meets_all:
+                  "\<forall>\<eta>>0. D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+                  using hD_no_avoid by (by100 blast)
+                have hP_cl_D: "P \<in> closure D"
+                proof (subst closure_approachable, intro allI impI)
+                  fix e :: real
+                  assume he_pos: "e > 0"
+                  have "D \<inter> ball P e \<inter> U \<noteq> {}"
+                    using hD_meets_all he_pos by (by100 blast)
+                  then obtain z where hzD: "z \<in> D" and hz_ball: "z \<in> ball P e"
+                    by (by100 blast)
+                  have hdist_comm: "dist z P = dist P z"
+                    by (rule dist_commute)
+                  have "dist z P < e"
+                    using hz_ball hdist_comm by (by100 simp)
+                  thus "\<exists>z\<in>D. dist z P < e"
+                    using hzD by (by100 blast)
+                qed
+                have hD_comp: "D \<in> components (ball P \<delta> - M)"
+                  using hD_S by (by100 blast)
+                have hD_ne_C: "D \<noteq> C"
+                  using hD_S by (by100 blast)
+                have "\<exists>D \<in> components (ball P \<delta> - M).
+                    D \<noteq> C \<and> P \<in> closure D \<and>
+                    (\<forall>\<eta>>0. D \<inter> ball P \<eta> \<inter> U \<noteq> {})"
+                  using hD_comp hD_ne_C hP_cl_D hD_meets_all by (by100 blast)
+                thus False using hno by (by100 blast)
+              qed
+            qed
+            obtain eps where heps:
+              "\<forall>D \<in> ?S. eps D > 0 \<and> D \<inter> ball P (eps D) \<inter> U = {}"
+              using bchoice[OF h_each_avoids] by (by100 blast)
+            define r where "r = Min (eps ` ?S)"
+            have h_img_fin: "finite (eps ` ?S)"
+              using hS_fin by (by100 simp)
+            have h_img_ne: "eps ` ?S \<noteq> {}"
+              using hS_ne by (by100 simp)
+            have h_img_pos: "\<forall>x \<in> eps ` ?S. x > 0"
+              using heps by (by100 blast)
+            have hr_pos: "r > 0"
+              unfolding r_def using Min_gr_iff[OF h_img_fin h_img_ne] h_img_pos
+              by (by100 blast)
+            obtain D where hD_S: "D \<in> ?S"
+              and hD_meet_r: "D \<inter> ball P r \<inter> U \<noteq> {}"
+              using hS_meets hr_pos by (by100 blast)
+            have hr_le_epsD: "r \<le> eps D"
+              unfolding r_def using Min_le[OF h_img_fin] hD_S by (by100 blast)
+            obtain z where hzD: "z \<in> D" and hz_ball_r: "z \<in> ball P r" and hzU: "z \<in> U"
+              using hD_meet_r by (by100 blast)
+            have hz_ball_eps: "z \<in> ball P (eps D)"
+              using hz_ball_r hr_le_epsD by (by100 auto)
+            have "D \<inter> ball P (eps D) \<inter> U = {}"
+              using heps hD_S by (by100 blast)
+            thus False using hzD hz_ball_eps hzU by (by100 blast)
+          qed
+          have h_two_local_U_sectors:
+            "\<exists>D \<in> components (ball P \<delta> - M).
+                D \<noteq> C \<and> D \<subseteq> U \<and> P \<in> closure D"
+          proof -
+            obtain D where hD_comp: "D \<in> components (ball P \<delta> - M)"
+              and hD_ne_C: "D \<noteq> C"
+              and hP_cl_D: "P \<in> closure D"
+              and hD_meets_U_near:
+                "\<forall>\<eta>>0. D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
+              using h_other_component_accumulates by (by100 blast)
+            have hD_sub_U: "D \<subseteq> U"
+            proof -
+              have hD_conn: "connected D"
+                using hD_comp in_components_connected by (by100 blast)
+              have hD_sub_local: "D \<subseteq> ball P \<delta> - M"
+                using hD_comp in_components_subset by (by100 blast)
+              have hD_sub_global: "D \<subseteq> UNIV - M"
+                using hD_sub_local by (by100 blast)
+              have hone_pos: "(1::real) > 0" by (by100 simp)
+              have hD_meets: "D \<inter> ball P 1 \<inter> U \<noteq> {}"
+                using hD_meets_U_near hone_pos by (by100 blast)
+              obtain w where hwD: "w \<in> D" and hwU: "w \<in> U"
+                using hD_meets by (by100 blast)
+              have hU_eq: "U = connected_component_set (UNIV - M) w"
+                by (rule component_eq_connected_component_set[OF hU hwU])
+              show ?thesis
+                unfolding hU_eq
+                using connected_component_maximal[OF hwD hD_conn hD_sub_global] .
+            qed
+            show ?thesis
+              using hD_comp hD_ne_C hD_sub_U hP_cl_D by (by100 blast)
+          qed
+          have h_figure_2_6_pair_separation:
+            False
+            sorry
+          show False
+            using h_figure_2_6_pair_separation .
+        qed
         have hC_local_U:
           "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
           using h_endpoint_component_stability .
