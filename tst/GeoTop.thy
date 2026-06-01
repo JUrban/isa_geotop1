@@ -1102,10 +1102,22 @@ proof -
               define \<epsilon> where "\<epsilon> = min r ((\<delta>_iso - dist y x) / 2)"
               have h\<epsilon>_pos: "\<epsilon> > 0"
                 unfolding \<epsilon>_def using hr_pos hy_dist_x_lt_iso by (by100 simp)
+              \<comment> \<open>The one-sided half-plane information alone is not enough at a
+                broken-line vertex: a translate parallel to \<open>\<sigma>_y\<close> can cross
+                another incident edge unless the starting point is chosen in
+                the local sector adjacent to \<open>\<sigma>_y\<close>. This is the remaining
+                local vertex-sector step from Moise's circular-neighbourhood
+                argument.\<close>
+              have h_adjacent_sector_choice:
+                "\<exists>u\<in>U. dist u x < \<epsilon> \<and> s * inner (u - x) n_y > 0 \<and>
+                  ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                sorry
               obtain u where huU: "u \<in> U"
                 and hu_dist_eps: "dist u x < \<epsilon>"
                 and hu_side: "s * inner (u - x) n_y > 0"
-                using hside h\<epsilon>_pos by (by100 blast)
+                and hu_avoid_other_edges:
+                  "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                using h_adjacent_sector_choice by (by100 blast)
               define \<gamma> where "\<gamma> = (\<lambda>t::real. u + t *\<^sub>R (y - x))"
               have hu_dist_r: "dist u x < r"
               proof -
@@ -1204,7 +1216,22 @@ proof -
               qed
               have h\<gamma>_avoid_each_other_edge:
                 "\<And>\<tau>. \<tau> \<in> OtherEdges_y \<Longrightarrow> \<gamma> ` {0..1::real} \<inter> \<tau> = {}"
-                sorry
+              proof -
+                fix \<tau>
+                assume h\<tau>_Other: "\<tau> \<in> OtherEdges_y"
+                show "\<gamma> ` {0..1::real} \<inter> \<tau> = {}"
+                proof (rule equals0I)
+                  fix p
+                  assume hp: "p \<in> \<gamma> ` {0..1::real} \<inter> \<tau>"
+                  have hp_img: "p \<in> \<gamma> ` {0..1::real}" using hp by (by100 blast)
+                  have hp_tau: "p \<in> \<tau>" using hp by (by100 blast)
+                  have hp_other: "p \<in> \<Union>OtherEdges_y"
+                    using h\<tau>_Other hp_tau by (by100 blast)
+                  have "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y)"
+                    using hp_img hp_other unfolding \<gamma>_def by (by100 blast)
+                  thus False using hu_avoid_other_edges by (by100 blast)
+                qed
+              qed
               have h\<gamma>_avoid_other_edges: "\<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y = {}"
               proof (rule equals0I)
                 fix p
