@@ -11312,6 +11312,115 @@ proof -
                            \<Longrightarrow> \<rho> x \<in> K"
                           by (rule h_radial_trace_same_pair
                               [OF _ h_radial_segment_stays_pair23])
+                        have h_sphere_pair_subset:
+                          "\<And>A B pA pB qA qB. \<lbrakk>
+                            ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
+                            ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
+                            (closed_segment P pA - {P}) \<inter> sphere P r = {qA};
+                            (closed_segment P pB - {P}) \<inter> sphere P r = {qB}\<rbrakk>
+                           \<Longrightarrow> sphere P r - {qA, qB} \<subseteq> UNIV - (A \<union> B)"
+                        proof
+                          fix A B pA pB qA qB z
+                          assume hA_model:
+                              "ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA"
+                            and hB_model:
+                              "ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB"
+                            and hA_sphere:
+                              "(closed_segment P pA - {P}) \<inter> sphere P r = {qA}"
+                            and hB_sphere:
+                              "(closed_segment P pB - {P}) \<inter> sphere P r = {qB}"
+                            and hz: "z \<in> sphere P r - {qA, qB}"
+                          have hr_pos: "r > 0"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          have hr_lt_\<delta>: "r < \<delta>"
+                            unfolding r_def using h\<delta>_pos by (by100 simp)
+                          have hz_sphere: "z \<in> sphere P r" using hz by (by100 blast)
+                          have hz_ball_\<delta>: "z \<in> ball P \<delta>"
+                            using hz_sphere hr_lt_\<delta> by (by100 simp)
+                          have hz_ne_P: "z \<noteq> P"
+                          proof
+                            assume hzP: "z = P"
+                            have "dist P z = r" using hz_sphere by (by100 simp)
+                            thus False using hzP hr_pos by (by100 simp)
+                          qed
+                          have hz_not_A: "z \<notin> A"
+                          proof
+                            assume hzA: "z \<in> A"
+                            have hz_pA: "z \<in> closed_segment P pA"
+                              using hA_model hz_ball_\<delta> hzA by (by100 blast)
+                            have "z \<in> (closed_segment P pA - {P}) \<inter> sphere P r"
+                              using hz_pA hz_ne_P hz_sphere by (by100 blast)
+                            hence "z = qA" using hA_sphere by (by100 blast)
+                            thus False using hz by (by100 blast)
+                          qed
+                          have hz_not_B: "z \<notin> B"
+                          proof
+                            assume hzB: "z \<in> B"
+                            have hz_pB: "z \<in> closed_segment P pB"
+                              using hB_model hz_ball_\<delta> hzB by (by100 blast)
+                            have "z \<in> (closed_segment P pB - {P}) \<inter> sphere P r"
+                              using hz_pB hz_ne_P hz_sphere by (by100 blast)
+                            hence "z = qB" using hB_sphere by (by100 blast)
+                            thus False using hz by (by100 blast)
+                          qed
+                          show "z \<in> UNIV - (A \<union> B)"
+                            using hz_not_A hz_not_B by (by100 blast)
+                        qed
+                        have h_circle_pair12_subset_pair_compl:
+                          "sphere P r - {q1, q2} \<subseteq> UNIV - (B1 \<union> B2)"
+                        proof (rule h_sphere_pair_subset
+                            [OF hB1_model_loc hB2_model_loc])
+                          show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                        qed
+                        have h_circle_pair13_subset_pair_compl:
+                          "sphere P r - {q1, q3} \<subseteq> UNIV - (B1 \<union> B3)"
+                        proof (rule h_sphere_pair_subset
+                            [OF hB1_model_loc hB3_model_loc])
+                          show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                        qed
+                        have h_circle_pair23_subset_pair_compl:
+                          "sphere P r - {q2, q3} \<subseteq> UNIV - (B2 \<union> B3)"
+                        proof (rule h_sphere_pair_subset
+                            [OF hB2_model_loc hB3_model_loc])
+                          show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                        qed
+                        have h_circle_component_lies_in_pair_component:
+                          "\<And>S A B K. \<lbrakk>K \<in> components S; S \<subseteq> UNIV - (A \<union> B)\<rbrakk>
+                           \<Longrightarrow> \<exists>C \<in> components (UNIV - (A \<union> B)). K \<subseteq> C"
+                        proof -
+                          fix S A B K
+                          assume hK_comp: "K \<in> components S"
+                            and hS_sub: "S \<subseteq> UNIV - (A \<union> B)"
+                          have hK_conn: "connected K"
+                            using hK_comp in_components_connected by (by100 blast)
+                          have hK_sub_S: "K \<subseteq> S"
+                            by (rule in_components_subset[OF hK_comp])
+                          have hK_ne: "K \<noteq> {}"
+                            by (rule in_components_nonempty[OF hK_comp])
+                          obtain x where hxK: "x \<in> K"
+                            using hK_ne by (by100 blast)
+                          have hx_pair: "x \<in> UNIV - (A \<union> B)"
+                            using hxK hK_sub_S hS_sub by (by100 blast)
+                          define C where "C = connected_component_set (UNIV - (A \<union> B)) x"
+                          have hC_comp: "C \<in> components (UNIV - (A \<union> B))"
+                            unfolding C_def by (rule componentsI[OF hx_pair])
+                          have hK_sub_pair: "K \<subseteq> UNIV - (A \<union> B)"
+                            by (rule subset_trans[OF hK_sub_S hS_sub])
+                          have hK_sub_C: "K \<subseteq> C"
+                            unfolding C_def
+                            by (rule connected_component_maximal[OF hxK hK_conn hK_sub_pair])
+                          show "\<exists>C \<in> components (UNIV - (A \<union> B)). K \<subseteq> C"
+                            using hC_comp hK_sub_C by (by100 blast)
+                        qed
                         have h_pair12_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K\<rbrakk>
