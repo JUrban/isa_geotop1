@@ -10125,6 +10125,97 @@ proof -
   show ?thesis using h_E_comp h_open open_components by (by100 blast)
 qed
 
+text \<open>Bridge between the book's geotop face predicate and HOL-Analysis faces.\<close>
+
+lemma geotop_is_face_imp_face_of:
+  fixes \<tau> \<sigma> :: "'a::euclidean_space set"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<tau> face_of \<sigma>"
+proof -
+  obtain V W where hV: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+    and h\<tau>: "\<tau> = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using hV geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<tau>_HOL: "\<tau> = convex hull W"
+    using h\<tau> geotop_convex_hull_eq_HOL by (by100 simp)
+  have "\<tau> face_of (convex hull V)"
+    using face_of_convex_hull_affine_independent[OF hV_ai] hW_sub h\<tau>_HOL
+    by (by100 blast)
+  thus ?thesis using h\<sigma>_HOL by (by100 simp)
+qed
+
+lemma face_of_nonempty_imp_geotop_is_face:
+  fixes \<tau> \<sigma> :: "'a::euclidean_space set"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+    and hface: "\<tau> face_of \<sigma>"
+    and hne: "\<tau> \<noteq> {}"
+  shows "geotop_is_face \<tau> \<sigma>"
+proof -
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using hV geotop_convex_hull_eq_HOL
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hface_HOL: "\<tau> face_of convex hull V"
+    using hface h\<sigma>_HOL by (by100 simp)
+  have h_face_char:
+    "\<tau> face_of convex hull V \<longleftrightarrow> (\<exists>W. W \<subseteq> V \<and> \<tau> = convex hull W)"
+    by (rule face_of_convex_hull_affine_independent[OF hV_ai])
+  obtain W where hW_sub: "W \<subseteq> V" and h\<tau>_HOL: "\<tau> = convex hull W"
+    using h_face_char hface_HOL by (by100 blast)
+  have hW_ne: "W \<noteq> {}"
+  proof
+    assume "W = {}"
+    hence "\<tau> = {}" using h\<tau>_HOL by (by100 simp)
+    thus False using hne by (by100 simp)
+  qed
+  have h\<tau>_geo: "\<tau> = geotop_convex_hull W"
+  proof -
+    have h_eq: "geotop_convex_hull W = convex hull W"
+      by (rule geotop_convex_hull_eq_HOL)
+    show ?thesis using h\<tau>_HOL h_eq by (by100 simp)
+  qed
+  show ?thesis
+    unfolding geotop_is_face_def
+    using hV hW_ne hW_sub h\<tau>_geo by (by100 blast)
+qed
+
+lemma geotop_is_face_has_simplex_vertices:
+  fixes \<tau> \<sigma> :: "'a::euclidean_space set"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<exists>W. geotop_simplex_vertices \<tau> W"
+proof -
+  obtain V W where hV: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+    and h\<tau>: "\<tau> = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  obtain m n where hV_fin: "finite V" and hV_card: "card V = n + 1"
+    and hV_gp: "geotop_general_position V m"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have hW_fin: "finite W"
+    using hV_fin hW_sub finite_subset by (by100 blast)
+  have hW_card_pos: "card W > 0"
+    using hW_fin hW_ne card_gt_0_iff by (by100 blast)
+  define k where "k = card W - 1"
+  have hW_card: "card W = k + 1"
+    using hW_card_pos unfolding k_def by (by100 simp)
+  have hW_ai: "\<not> affine_dependent W"
+    using hV_ai hW_sub affine_dependent_subset by (by100 blast)
+  have hW_gp: "geotop_general_position W k"
+    by (rule geotop_ai_imp_general_position[OF hW_fin hW_card hW_ai])
+  show ?thesis
+    unfolding geotop_simplex_vertices_def
+    using hW_fin hW_card hW_gp h\<tau>
+    by (intro exI[of _ W] exI[of _ k] exI[of _ k]) (by100 blast)
+qed
+
 
 text \<open>A polytope of \<open>aff_dim 1\<close> is exactly a closed segment between 2 distinct
   points (its extreme points by Krein-Milman). Useful for extracting endpoints
@@ -12664,7 +12755,162 @@ proof -
         geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e2)) \<longrightarrow>
         \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
         geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry
+  proof (intro ballI allI impI)
+    fix R e1 e2 \<sigma> \<tau>
+    assume hR_in: "R \<in> Rs_in"
+      and he1_Fr: "e1 \<in> FrTri R"
+      and he2_Fr: "e2 \<in> FrTri R"
+      and h\<sigma>_face_geo: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e1))"
+      and h\<tau>_face_geo: "geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e2))"
+      and h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    define S1 where "S1 = geotop_convex_hull ({wpt R} \<union> e1)"
+    define S2 where "S2 = geotop_convex_hull ({wpt R} \<union> e2)"
+    have hR_Rs: "R \<in> Rs" using hR_in Rs_in_def by (by100 simp)
+    have hR_conv: "convex R" using hR_Rs hRs_conv by (by100 blast)
+    have hR_closed: "closed R" using hR_Rs hRs_closed by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = int (DIM(real^2))"
+      using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have h_rel_int_eq: "rel_interior R = interior R"
+      using hR_aff_dim interior_rel_interior_gen[of R] by (by100 simp)
+    have hwpt_int: "wpt R \<in> interior R"
+    proof -
+      have hwpt_R_minus_fr: "wpt R \<in> R - frontier R" using hR_in hwpt by (by100 blast)
+      have h_fr: "frontier R = R - interior R"
+        unfolding Elementary_Topology.frontier_def using hR_closed by (by100 simp)
+      have h_int_sub: "interior R \<subseteq> R" by (rule interior_subset)
+      have h_eq: "R - frontier R = interior R" using h_fr h_int_sub by (by100 blast)
+      show ?thesis using hwpt_R_minus_fr h_eq by (by100 simp)
+    qed
+    have hwpt_rel: "wpt R \<in> rel_interior R"
+      using hwpt_int h_rel_int_eq by (by100 simp)
+    have h_rel_fr_eq: "rel_frontier R = frontier R"
+    proof -
+      have h1: "rel_frontier R = closure R - rel_interior R"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "frontier R = closure R - interior R"
+        unfolding Elementary_Topology.frontier_def using hR_closed by (by100 simp)
+      show ?thesis using h1 h2 h_rel_int_eq by (by100 simp)
+    qed
+    have he1_facet: "e1 facet_of R" using he1_Fr unfolding FrTri_def by (by100 simp)
+    have he2_facet: "e2 facet_of R" using he2_Fr unfolding FrTri_def by (by100 simp)
+    have he1_face_R: "e1 face_of R" using he1_facet facet_of_imp_face_of by (by100 blast)
+    have he2_face_R: "e2 face_of R" using he2_facet facet_of_imp_face_of by (by100 blast)
+    have he1_conv: "convex e1" using he1_face_R face_of_imp_convex by (by100 blast)
+    have he2_conv: "convex e2" using he2_face_R face_of_imp_convex by (by100 blast)
+    have he1_sub_relfr: "e1 \<subseteq> rel_frontier R"
+      using hR_in he1_Fr hFrTri_edges h_rel_fr_eq by (by100 blast)
+    have he2_sub_relfr: "e2 \<subseteq> rel_frontier R"
+      using hR_in he2_Fr hFrTri_edges h_rel_fr_eq by (by100 blast)
+    have hS1_HOL: "S1 = convex hull (insert (wpt R) e1)"
+    proof -
+      have h_geo: "geotop_convex_hull ({wpt R} \<union> e1) = convex hull ({wpt R} \<union> e1)"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_set: "{wpt R} \<union> e1 = insert (wpt R) e1" by (by100 blast)
+      show ?thesis unfolding S1_def using h_geo h_set by (by100 simp)
+    qed
+    have hS2_HOL: "S2 = convex hull (insert (wpt R) e2)"
+    proof -
+      have h_geo: "geotop_convex_hull ({wpt R} \<union> e2) = convex hull ({wpt R} \<union> e2)"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_set: "{wpt R} \<union> e2 = insert (wpt R) e2" by (by100 blast)
+      show ?thesis unfolding S2_def using h_geo h_set by (by100 simp)
+    qed
+    have h_top_inter:
+      "S1 \<inter> S2 = convex hull (insert (wpt R) (e1 \<inter> e2))"
+    proof -
+      have h_int_eq:
+        "convex hull (insert (wpt R) e1) \<inter> convex hull (insert (wpt R) e2)
+         = convex hull (insert (wpt R) (e1 \<inter> e2))"
+        by (rule convex_hull_insert_Int_eq
+            [OF hwpt_rel he1_sub_relfr he2_sub_relfr hR_conv he1_conv he2_conv])
+      show ?thesis using hS1_HOL hS2_HOL h_int_eq by (by100 simp)
+    qed
+    have hF_face_R: "(e1 \<inter> e2) face_of R"
+      using he1_face_R he2_face_R face_of_Int by (by100 blast)
+    have hF_face_e1: "(e1 \<inter> e2) face_of e1"
+      using face_of_face[OF he1_face_R] hF_face_R by (by100 blast)
+    have hF_face_e2: "(e1 \<inter> e2) face_of e2"
+      using face_of_face[OF he2_face_R] hF_face_R by (by100 blast)
+    have h_cone_face:
+      "\<And>e F. e \<in> FrTri R \<Longrightarrow> F face_of e \<Longrightarrow>
+        convex hull (insert (wpt R) F) face_of convex hull (insert (wpt R) e)"
+    proof -
+      fix e F assume he_Fr: "e \<in> FrTri R" and hF_face_e: "F face_of e"
+      have he_facet: "e facet_of R" using he_Fr unfolding FrTri_def by (by100 simp)
+      have he_face_R: "e face_of R" using he_facet facet_of_imp_face_of by (by100 blast)
+      have he_ne_R: "e \<noteq> R" using he_facet by (by100 auto)
+      have h_w_not_aff_e: "wpt R \<notin> affine hull e"
+      proof
+        assume hw_aff: "wpt R \<in> affine hull e"
+        have h_disj: "affine hull e \<inter> rel_interior R = {}"
+          by (rule affine_hull_face_of_disjoint_rel_interior[OF hR_conv he_face_R he_ne_R])
+        show False using hw_aff hwpt_rel h_disj by (by100 blast)
+      qed
+      have he_edge: "geotop_is_edge e"
+        using hR_in he_Fr hFrTri_edges by (by100 blast)
+      obtain V m where hV_fin: "finite V" and hV_card: "card V = 1 + 1"
+        and hV_gp: "geotop_general_position V m"
+        and he_geo: "e = geotop_convex_hull V"
+      proof -
+        have hdim: "geotop_simplex_dim e 1"
+          using he_edge unfolding geotop_is_edge_def by (by100 blast)
+        obtain V m where "finite V" and "card V = 1 + 1"
+          and "1 \<le> m" and "geotop_general_position V m"
+          and "e = geotop_convex_hull V"
+          using hdim unfolding geotop_simplex_dim_def by (by100 blast)
+        thus ?thesis using that by (by100 blast)
+      qed
+      have he_HOL: "e = convex hull V"
+        using he_geo geotop_convex_hull_eq_HOL by (by100 simp)
+      have h_w_not_aff_V: "wpt R \<notin> affine hull V"
+      proof
+        assume "wpt R \<in> affine hull V"
+        hence "wpt R \<in> affine hull e"
+          using he_HOL affine_hull_convex_hull[of V] by (by100 simp)
+        thus False using h_w_not_aff_e by (by100 simp)
+      qed
+      have hF_face_convV: "F face_of convex hull V"
+        using hF_face_e he_HOL by (by100 simp)
+      have h_face_insert:
+        "convex hull (insert (wpt R) F) face_of convex hull (insert (wpt R) V)"
+        by (rule face_of_convex_hull_insert2[OF hV_fin h_w_not_aff_V hF_face_convV])
+      have h_insert_eq:
+        "convex hull (insert (wpt R) V) = convex hull (insert (wpt R) e)"
+      proof -
+        have "convex hull (insert (wpt R) V)
+              = convex hull (insert (wpt R) (convex hull V))"
+          by (rule hull_insert)
+        thus ?thesis using he_HOL by (by100 simp)
+      qed
+      show "convex hull (insert (wpt R) F) face_of convex hull (insert (wpt R) e)"
+        using h_face_insert h_insert_eq by (by100 simp)
+    qed
+    have h_top_face_S1: "(S1 \<inter> S2) face_of S1"
+      using h_cone_face[OF he1_Fr hF_face_e1] h_top_inter hS1_HOL by (by100 simp)
+    have h_top_face_S2: "(S1 \<inter> S2) face_of S2"
+      using h_cone_face[OF he2_Fr hF_face_e2] h_top_inter hS2_HOL by (by100 simp)
+    have h\<sigma>_HOL: "\<sigma> face_of S1"
+      unfolding S1_def using geotop_is_face_imp_face_of[OF h\<sigma>_face_geo] by (by100 simp)
+    have h\<tau>_HOL: "\<tau> face_of S2"
+      unfolding S2_def using geotop_is_face_imp_face_of[OF h\<tau>_face_geo] by (by100 simp)
+    have h_common_HOL: "(\<sigma> \<inter> \<tau>) face_of \<sigma> \<and> (\<sigma> \<inter> \<tau>) face_of \<tau>"
+      by (rule face_of_Int_subface[OF h_top_face_S1 h_top_face_S2 h\<sigma>_HOL h\<tau>_HOL])
+    obtain V\<sigma> where hV\<sigma>: "geotop_simplex_vertices \<sigma> V\<sigma>"
+      using geotop_is_face_has_simplex_vertices[OF h\<sigma>_face_geo] by (by100 blast)
+    obtain V\<tau> where hV\<tau>: "geotop_simplex_vertices \<tau> V\<tau>"
+      using geotop_is_face_has_simplex_vertices[OF h\<tau>_face_geo] by (by100 blast)
+    have h_common_\<sigma>_HOL: "(\<sigma> \<inter> \<tau>) face_of \<sigma>"
+      using h_common_HOL by (by100 blast)
+    have h_common_\<tau>_HOL: "(\<sigma> \<inter> \<tau>) face_of \<tau>"
+      using h_common_HOL by (by100 blast)
+    have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+      by (rule face_of_nonempty_imp_geotop_is_face[OF hV\<sigma> h_common_\<sigma>_HOL h_int_ne])
+    have h_face_\<tau>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule face_of_nonempty_imp_geotop_is_face[OF hV\<tau> h_common_\<tau>_HOL h_int_ne])
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using h_face_\<sigma> h_face_\<tau> by (by100 blast)
+  qed
   \<comment> \<open>K.3 within a single line-arrangement region: both simplices belong to
     the same fan triangulation of R, so their intersection is a common face.
     This is the same-region part of the fan construction.\<close>
