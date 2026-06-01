@@ -331,6 +331,40 @@ proof
       by (rule geotop_link_vertices_count_ge_1_incident_link_edges
           [OF hK hvK hL2_count])
   qed
+  \<comment> \<open>L2-L4 local link picture: at each link vertex the two
+    adjacent two-simplexes over the incident edge yield two link-edge
+    witnesses through that link vertex.\<close>
+  have hlink_vertices_two_adjacent_link_edges:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      (\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+        \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>)"
+  proof
+    fix w
+    show "{w} \<in> geotop_link K v \<longrightarrow>
+      (\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+        \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>)"
+    proof
+      assume hwL: "{w} \<in> geotop_link K v"
+      have hvK: "{v} \<in> K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+      show "\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+        \<and> \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+        \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>"
+        by (rule geotop_link_vertex_two_adjacent_link_edge_witnesses
+            [OF hK hvK hwL hL_two_faces])
+    qed
+  qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology
