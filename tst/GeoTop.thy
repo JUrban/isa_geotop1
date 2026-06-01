@@ -11187,6 +11187,194 @@ proof -
                           show "x \<in> closed_segment P p"
                             unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
                         qed
+                        have h_radial_ray_preimage_segment_nonendpoint:
+                          "\<And>x z p. \<lbrakk>x \<in> ball P \<delta>; x \<noteq> P;
+                                     z \<in> closed_segment x (\<rho> x);
+                                     z \<in> closed_segment P p; p \<noteq> P;
+                                     \<delta> \<le> dist P p\<rbrakk>
+                            \<Longrightarrow> x \<in> closed_segment P p"
+                        proof -
+                          fix x z p :: "real^2"
+                          assume hx_ball: "x \<in> ball P \<delta>"
+                            and hx_ne: "x \<noteq> P"
+                            and hz_x: "z \<in> closed_segment x (\<rho> x)"
+                            and hz_p: "z \<in> closed_segment P p"
+                            and hp_ne': "p \<noteq> P"
+                            and h\<delta>_p: "\<delta> \<le> dist P p"
+                          have hx_dist_pos: "dist P x > 0" using hx_ne by (by100 simp)
+                          have hr_pos: "r > 0"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          obtain u where hu0: "0 \<le> u" and hu1: "u \<le> 1"
+                            and hz_u: "z = (1 - u) *\<^sub>R x + u *\<^sub>R (\<rho> x)"
+                            using hz_x unfolding closed_segment_def by (by100 blast)
+                          define a where "a = 1 + u * (r / dist P x - 1)"
+                          have ha_alt: "a = (1 - u) + u * (r / dist P x)"
+                            unfolding a_def by (simp add: algebra_simps)
+                          have ha_pos: "a > 0"
+                          proof -
+                            have hratio_pos: "0 < r / dist P x"
+                              using hr_pos hx_dist_pos by (by100 simp)
+                            have hterm_nonneg: "0 \<le> u * (r / dist P x)"
+                              using hu0 hr_pos hx_dist_pos by (by100 simp)
+                            show ?thesis
+                            proof (cases "u = 1")
+                              case True
+                              show ?thesis
+                                using True hratio_pos ha_alt by (by100 simp)
+                            next
+                              case False
+                              have "0 < 1 - u" using hu1 False by (by100 linarith)
+                              thus ?thesis
+                                using ha_alt hterm_nonneg by (by100 linarith)
+                            qed
+                          qed
+                          have hz_vec: "z = P + a *\<^sub>R (x - P)"
+                          proof -
+                            have hz1: "z = x + u *\<^sub>R (\<rho> x - x)"
+                              using hz_u
+                              by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                                  scaleR_diff_left scaleR_diff_right)
+                            have hdiff: "\<rho> x - x = (r / dist P x - 1) *\<^sub>R (x - P)"
+                              unfolding \<rho>_def
+                              by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                                  scaleR_diff_left scaleR_diff_right)
+                            have "z = x + (u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+                              using hz1 hdiff by (by100 simp)
+                            also have "\<dots> = P + (1 + u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+                              by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+                                  scaleR_diff_left scaleR_diff_right)
+                            also have "\<dots> = P + a *\<^sub>R (x - P)"
+                              unfolding a_def by (by100 simp)
+                            finally show ?thesis .
+                          qed
+                          obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+                            and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+                            using hz_p unfolding closed_segment_def by (by100 blast)
+                          have hz_t_vec: "z = P + t *\<^sub>R (p - P)"
+                            using hz_t by (simp add: algebra_simps)
+                          have hp_dist_pos': "dist P p > 0" using hp_ne' by (by100 simp)
+                          have hscale_eq: "a *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+                            using hz_vec hz_t_vec by (by100 simp)
+                          have hx_vec: "x - P = (t / a) *\<^sub>R (p - P)"
+                          proof -
+                            have hscaled:
+                              "(inverse a * a) *\<^sub>R (x - P) =
+                                (inverse a * t) *\<^sub>R (p - P)"
+                            proof -
+                              have "inverse a *\<^sub>R (a *\<^sub>R (x - P)) =
+                                    inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+                                using hscale_eq by (by100 simp)
+                              thus ?thesis by (simp only: scaleR_scaleR)
+                            qed
+                            have hx_vec_inv: "x - P = (inverse a * t) *\<^sub>R (p - P)"
+                              using hscaled ha_pos by (by100 simp)
+                            have "inverse a * t = t / a"
+                              using ha_pos by (simp add: field_simps)
+                            thus ?thesis using hx_vec_inv by (by100 simp)
+                          qed
+                          define s where "s = t / a"
+                          have hs0: "0 \<le> s"
+                            unfolding s_def using ht0 ha_pos by (by100 simp)
+                          have hx_dist_eq: "dist P x = s * dist P p"
+                          proof -
+                            have "dist P x = norm (x - P)"
+                              by (simp add: dist_norm norm_minus_commute)
+                            also have "\<dots> = norm (s *\<^sub>R (p - P))"
+                              using hx_vec unfolding s_def by (by100 simp)
+                            also have "\<dots> = s * norm (p - P)"
+                              using hs0 by (by100 simp)
+                            also have "\<dots> = s * dist P p"
+                              by (simp add: dist_norm norm_minus_commute)
+                            finally show ?thesis .
+                          qed
+                          have hs1: "s \<le> 1"
+                          proof -
+                            have hx_dist_lt: "dist P x < \<delta>"
+                              using hx_ball by (by100 simp)
+                            have hx_dist_le_p: "dist P x \<le> dist P p"
+                              using hx_dist_lt h\<delta>_p by (by100 linarith)
+                            have "s * dist P p \<le> 1 * dist P p"
+                              using hx_dist_eq hx_dist_le_p by (by100 simp)
+                            show ?thesis
+                              using \<open>s * dist P p \<le> 1 * dist P p\<close> hp_dist_pos'
+                              by (simp add: mult_le_cancel_right_pos)
+                          qed
+                          have hx_conv: "x = (1 - s) *\<^sub>R P + s *\<^sub>R p"
+                            using hx_vec unfolding s_def by (simp add: algebra_simps)
+                          show "x \<in> closed_segment P p"
+                            unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
+                        qed
+                        have h_radial_segment_stays_local_pair:
+                          "\<And>x A B pA pB. \<lbrakk>x \<in> ball P r;
+                            x \<notin> closed_segment P pA; x \<notin> closed_segment P pB;
+                            ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
+                            ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
+                            pA \<noteq> P; pB \<noteq> P; \<delta> \<le> dist P pA; \<delta> \<le> dist P pB\<rbrakk>
+                           \<Longrightarrow> closed_segment x (\<rho> x) \<subseteq> UNIV - (A \<union> B)"
+                        proof
+                          fix x A B pA pB z
+                          assume hx_r: "x \<in> ball P r"
+                            and hx_not_pA: "x \<notin> closed_segment P pA"
+                            and hx_not_pB: "x \<notin> closed_segment P pB"
+                            and hA_model:
+                              "ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA"
+                            and hB_model:
+                              "ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB"
+                            and hpA_ne: "pA \<noteq> P"
+                            and hpB_ne: "pB \<noteq> P"
+                            and h\<delta>_pA: "\<delta> \<le> dist P pA"
+                            and h\<delta>_pB: "\<delta> \<le> dist P pB"
+                            and hz_seg: "z \<in> closed_segment x (\<rho> x)"
+                          have hr_pos: "r > 0"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          have hr_lt_\<delta>: "r < \<delta>"
+                            unfolding r_def using h\<delta>_pos by (by100 simp)
+                          have hx_ne: "x \<noteq> P"
+                          proof
+                            assume hxP: "x = P"
+                            have "P \<in> closed_segment P pA"
+                              by (by100 simp)
+                            thus False using hxP hx_not_pA by (by100 blast)
+                          qed
+                          have hx_ball_\<delta>: "x \<in> ball P \<delta>"
+                            using hx_r hr_lt_\<delta> by (by100 auto)
+                          have hx_dist_pos: "dist P x > 0"
+                            using hx_ne by (by100 simp)
+                          have h\<rho>x_sphere: "\<rho> x \<in> sphere P r"
+                          proof -
+                            have "dist P (\<rho> x) = r"
+                              unfolding \<rho>_def using hx_dist_pos hr_pos
+                              by (simp add: dist_norm norm_minus_commute)
+                            thus ?thesis by (by100 simp)
+                          qed
+                          have h\<rho>x_ball_\<delta>: "\<rho> x \<in> ball P \<delta>"
+                            using h\<rho>x_sphere hr_lt_\<delta> by (by100 simp)
+                          have hz_ball_\<delta>: "z \<in> ball P \<delta>"
+                            using closed_segment_subset[OF hx_ball_\<delta> h\<rho>x_ball_\<delta> convex_ball] hz_seg
+                            by (by100 blast)
+                          have hz_not_A: "z \<notin> A"
+                          proof
+                            assume hzA: "z \<in> A"
+                            have hz_pA: "z \<in> closed_segment P pA"
+                              using hA_model hz_ball_\<delta> hzA by (by100 blast)
+                            have "x \<in> closed_segment P pA"
+                              by (rule h_radial_ray_preimage_segment_nonendpoint
+                                  [OF hx_ball_\<delta> hx_ne hz_seg hz_pA hpA_ne h\<delta>_pA])
+                            thus False using hx_not_pA by (by100 blast)
+                          qed
+                          have hz_not_B: "z \<notin> B"
+                          proof
+                            assume hzB: "z \<in> B"
+                            have hz_pB: "z \<in> closed_segment P pB"
+                              using hB_model hz_ball_\<delta> hzB by (by100 blast)
+                            have "x \<in> closed_segment P pB"
+                              by (rule h_radial_ray_preimage_segment_nonendpoint
+                                  [OF hx_ball_\<delta> hx_ne hz_seg hz_pB hpB_ne h\<delta>_pB])
+                            thus False using hx_not_pB by (by100 blast)
+                          qed
+                          show "z \<in> UNIV - (A \<union> B)"
+                            using hz_not_A hz_not_B by (by100 blast)
+                        qed
                         have h_radial_segment_stays_pair:
                           "\<And>x A B pA pB. \<lbrakk>x \<in> ball P r - ?R;
                             ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
