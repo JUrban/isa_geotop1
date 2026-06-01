@@ -1051,6 +1051,37 @@ proof -
             qed
             have hOther_union_closed: "closed (\<Union>OtherEdges_y)"
               by (rule closed_Union[OF hOther_fin hOther_closed])
+            have hOther_card_eq_1: "card OtherEdges_y = 1"
+            proof -
+              have hcard_diff: "card (EdgesAtX - {\<sigma>_y}) = card EdgesAtX - 1"
+                using hEAX_fin h\<sigma>_y_EAX by (by100 simp)
+              show ?thesis
+                unfolding OtherEdges_y_def using hcard_diff hVX_card_eq_2 by (by100 simp)
+            qed
+            have hOther_singleton:
+              "\<exists>\<tau>_y. OtherEdges_y = {\<tau>_y} \<and> \<tau>_y \<in> EdgesAtX \<and> \<tau>_y \<noteq> \<sigma>_y"
+            proof -
+              obtain \<tau>_y where hOther_eq: "OtherEdges_y = {\<tau>_y}"
+                using hOther_card_eq_1 card_1_singletonE by (by100 metis)
+              have h\<tau>_Other: "\<tau>_y \<in> OtherEdges_y"
+                using hOther_eq by (by100 simp)
+              have h\<tau>_EAX: "\<tau>_y \<in> EdgesAtX"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              have h\<tau>_ne: "\<tau>_y \<noteq> \<sigma>_y"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              show ?thesis using hOther_eq h\<tau>_EAX h\<tau>_ne by (by100 blast)
+            qed
+            obtain \<tau>_y where hOther_eq_singleton: "OtherEdges_y = {\<tau>_y}"
+              and h\<tau>_y_EAX: "\<tau>_y \<in> EdgesAtX"
+              and h\<tau>_y_ne: "\<tau>_y \<noteq> \<sigma>_y"
+              using hOther_singleton by (by100 blast)
+            obtain p\<tau>_y where h\<tau>_y_segment: "\<tau>_y = closed_segment x p\<tau>_y"
+              and hp\<tau>_y_ne_x: "p\<tau>_y \<noteq> x"
+              using hVX_segs h\<tau>_y_EAX by (by100 blast)
+            have h\<sigma>_y_inter_\<tau>_y: "\<sigma>_y \<inter> \<tau>_y = {x}"
+              by (rule h_other_edge_meets_sigma_y_only_at_x[OF h\<tau>_y_EAX h\<tau>_y_ne])
+            have hOther_union_eq_\<tau>_y: "\<Union>OtherEdges_y = \<tau>_y"
+              using hOther_eq_singleton by (by100 simp)
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
