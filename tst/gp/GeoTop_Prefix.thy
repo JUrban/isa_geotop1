@@ -93,23 +93,25 @@ lemma R2_to_pair_surj: "surj R2_to_pair"
 lemma R2_to_pair_bij: "bij R2_to_pair"
   using R2_to_pair_inj R2_to_pair_surj by (simp add: bij_def)
 
+lemma continuous_on_R2_to_pair: "continuous_on (UNIV::(real^2) set) R2_to_pair"
+  unfolding R2_to_pair_def by (intro continuous_intros)
+
+lemma continuous_on_pair_to_R2: "continuous_on (UNIV::(real \<times> real) set) pair_to_R2"
+  unfolding pair_to_R2_def
+  apply (rule continuous_on_vec_lambda)
+  apply (case_tac "i = 1")
+   apply (simp add: continuous_intros)
+  apply (simp add: continuous_intros)
+  done
+
 lemma R2_pair_homeomorphism_UNIV:
   "homeomorphism (UNIV::(real^2) set) (UNIV::(real \<times> real) set)
      R2_to_pair pair_to_R2"
 proof -
-  have h_cont_f: "continuous_on (UNIV::(real^2) set) R2_to_pair"
-    unfolding R2_to_pair_def by (intro continuous_intros)
-  have h_cont_g: "continuous_on (UNIV::(real \<times> real) set) pair_to_R2"
-    unfolding pair_to_R2_def
-    apply (rule continuous_on_vec_lambda)
-    apply (case_tac "i = 1")
-     apply (simp add: continuous_intros)
-    apply (simp add: continuous_intros)
-    done
   show ?thesis
   proof (rule homeomorphismI)
-    show "continuous_on UNIV R2_to_pair" by (rule h_cont_f)
-    show "continuous_on UNIV pair_to_R2" by (rule h_cont_g)
+    show "continuous_on UNIV R2_to_pair" by (rule continuous_on_R2_to_pair)
+    show "continuous_on UNIV pair_to_R2" by (rule continuous_on_pair_to_R2)
     show "R2_to_pair ` UNIV \<subseteq> UNIV" by simp
     show "pair_to_R2 ` UNIV \<subseteq> UNIV" by simp
     show "\<And>x. x \<in> UNIV \<Longrightarrow> pair_to_R2 (R2_to_pair x) = x"
@@ -117,6 +119,72 @@ proof -
     show "\<And>y. y \<in> UNIV \<Longrightarrow> R2_to_pair (pair_to_R2 y) = y"
       by (rule R2_to_pair_pair_to_R2)
   qed
+qed
+
+lemma R2_pair_top1_homeomorphism_UNIV:
+  "top1_homeomorphism_on (UNIV::(real^2) set)
+     (geotop_euclidean_topology::(real^2) set set)
+     (UNIV::(real \<times> real) set)
+     (product_topology_on top1_open_sets top1_open_sets)
+     R2_to_pair"
+proof -
+  have h_src_top:
+    "is_topology_on (UNIV::(real^2) set)
+       (geotop_euclidean_topology::(real^2) set set)"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h_tgt_top:
+    "is_topology_on (UNIV::(real \<times> real) set)
+       (product_topology_on top1_open_sets top1_open_sets)"
+    using product_topology_on_open_sets_real2 top1_open_sets_is_topology_on_UNIV
+    by (by100 simp)
+  have h_bij: "bij_betw R2_to_pair (UNIV::(real^2) set) (UNIV::(real \<times> real) set)"
+    using R2_to_pair_bij unfolding bij_betw_def by (by100 simp)
+  have hf_geo:
+    "top1_continuous_map_on (UNIV::(real^2) set)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
+       (UNIV::(real \<times> real) set)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real \<times> real) set))
+       R2_to_pair"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on
+        [OF continuous_on_R2_to_pair subset_UNIV])
+  have hf_top:
+    "top1_continuous_map_on (UNIV::(real^2) set)
+       (geotop_euclidean_topology::(real^2) set set)
+       (UNIV::(real \<times> real) set)
+       (product_topology_on top1_open_sets top1_open_sets)
+       R2_to_pair"
+    using hf_geo
+    by (simp add: subspace_topology_UNIV_UNIV
+                  geotop_euclidean_topology_eq_open_sets
+                  product_topology_on_open_sets_real2)
+  have hinv_eq: "inv_into (UNIV::(real^2) set) R2_to_pair = pair_to_R2"
+  proof
+    fix y :: "real \<times> real"
+    show "inv_into (UNIV::(real^2) set) R2_to_pair y = pair_to_R2 y"
+      using R2_to_pair_inj R2_to_pair_pair_to_R2
+      by (metis UNIV_I inv_into_f_eq)
+  qed
+  have hg_geo:
+    "top1_continuous_map_on (UNIV::(real \<times> real) set)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real \<times> real) set))
+       (UNIV::(real^2) set)
+       (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
+       pair_to_R2"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on
+        [OF continuous_on_pair_to_R2 subset_UNIV])
+  have hg_top:
+    "top1_continuous_map_on (UNIV::(real \<times> real) set)
+       (product_topology_on top1_open_sets top1_open_sets)
+       (UNIV::(real^2) set)
+       (geotop_euclidean_topology::(real^2) set set)
+       (inv_into (UNIV::(real^2) set) R2_to_pair)"
+    using hg_geo
+    by (simp add: hinv_eq subspace_topology_UNIV_UNIV
+                  geotop_euclidean_topology_eq_open_sets
+                  product_topology_on_open_sets_real2)
+  show ?thesis
+    unfolding top1_homeomorphism_on_def
+    using h_src_top h_tgt_top h_bij hf_top hg_top by (by100 blast)
 qed
 
 lemma R2_to_C_surj: "surj R2_to_C"
