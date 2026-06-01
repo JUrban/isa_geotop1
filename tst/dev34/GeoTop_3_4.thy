@@ -2469,14 +2469,113 @@ next
     sorry
 qed
 
+lemma top1_norm_metric_on_UNIV:
+  "top1_metric_on (UNIV::'a::real_normed_vector set) (\<lambda>x y. norm (x - y))"
+  unfolding top1_metric_on_def
+  by (auto simp: dist_norm [symmetric] dist_commute intro: dist_triangle)
+
+lemma top1_norm_metric_topology_on_eq_geotop_subspace:
+  fixes M :: "'a::real_normed_vector set"
+  shows "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
+         subspace_topology UNIV geotop_euclidean_topology M"
+proof -
+  have hsub:
+    "subspace_topology UNIV
+        (top1_metric_topology_on UNIV (\<lambda>x y. norm (x - y))) M =
+     top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+    by (rule subspace_metric_topology_eq_metric_topology[
+        OF top1_norm_metric_on_UNIV subset_UNIV])
+  show ?thesis
+    using hsub unfolding geotop_euclidean_topology_def by (by100 simp)
+qed
+
+lemma geotop_open_ball_homeomorphic_UNIV:
+  fixes a :: "'a::real_normed_vector"
+  assumes hr: "0 < r"
+  shows "\<exists>f. top1_homeomorphism_on (ball a r)
+              (subspace_topology UNIV geotop_euclidean_topology (ball a r))
+              (UNIV::'a set) geotop_euclidean_topology f"
+proof -
+  obtain f where hf:
+    "top1_homeomorphism_on (ball a r)
+       (subspace_topology UNIV geotop_euclidean_topology (ball a r))
+       (UNIV::'a set) (subspace_topology UNIV geotop_euclidean_topology UNIV) f"
+    using geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[
+        OF homeomorphic_ball_UNIV[OF hr]]
+    by (by100 blast)
+  have hUNIV: "subspace_topology UNIV geotop_euclidean_topology (UNIV::'a set) =
+               geotop_euclidean_topology"
+    by (rule subspace_topology_self_carrier) (by100 simp)
+  show ?thesis
+    by (rule exI[where x=f]) (use hf hUNIV in \<open>by100 simp\<close>)
+qed
+
+lemma geotop_manifold_interior_if_HOL_interior:
+  fixes M :: "(real^2) set"
+  assumes hP: "P \<in> interior M"
+  shows "P \<in> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+proof -
+  obtain r where hr: "0 < r" and hball_sub_int: "ball P r \<subseteq> interior M"
+  proof -
+    have "\<forall>x\<in>interior M. \<exists>e>0. ball x e \<subseteq> interior M"
+      using open_interior open_contains_ball by (by100 blast)
+    thus ?thesis using hP that by (by100 blast)
+  qed
+  let ?U = "ball P r"
+  have hU_sub_M: "?U \<subseteq> M"
+    using hball_sub_int interior_subset by (by100 blast)
+  have hP_U: "P \<in> ?U"
+    using hr by (by100 simp)
+  have hP_M: "P \<in> M"
+    using hP_U hU_sub_M by (by100 blast)
+  have hU_geotop_open: "?U \<in> geotop_euclidean_topology"
+    using open_ball unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hU_subspace: "?U \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  proof -
+    have "?U = M \<inter> ?U"
+      using hU_sub_M by (by100 blast)
+    thus ?thesis
+      unfolding subspace_topology_def using hU_geotop_open by (by100 blast)
+  qed
+  have htopM: "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
+               subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace)
+  have hU_openin: "openin_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U"
+    unfolding openin_on_def using htopM hU_sub_M hU_subspace by (by100 simp)
+  obtain f where hf:
+    "top1_homeomorphism_on ?U
+        (subspace_topology UNIV geotop_euclidean_topology ?U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using geotop_open_ball_homeomorphic_UNIV[OF hr] by (by100 blast)
+  have hsubU:
+    "subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U =
+     subspace_topology UNIV geotop_euclidean_topology ?U"
+  proof -
+    have "subspace_topology M (subspace_topology UNIV geotop_euclidean_topology M) ?U =
+          subspace_topology UNIV geotop_euclidean_topology ?U"
+      by (rule subspace_topology_trans[OF hU_sub_M])
+    thus ?thesis using htopM by (by100 simp)
+  qed
+  have hf_metric:
+    "top1_homeomorphism_on ?U
+        (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hf hsubU by (by100 simp)
+  show ?thesis
+    unfolding geotop_manifold_interior_def
+    using hP_M hU_openin hP_U hf_metric by (by100 blast)
+qed
+
 (** from \<S>4 Theorem 10 (geotop.tex:1058)
     LATEX VERSION: Let M be a 2-manifold with boundary, lying in R^2. If M is closed, then
       Bd M = Fr M. **)
 theorem Theorem_GT_4_10:
-  fixes M :: "(real^2) set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
-  assumes hM: "geotop_n_manifold_with_boundary_on M d 2"
+  fixes M :: "(real^2) set"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
   assumes hMcl: "closedin_on UNIV geotop_euclidean_topology M"
-  shows "geotop_manifold_boundary M d = geotop_frontier UNIV geotop_euclidean_topology M"
+  shows "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) =
+         geotop_frontier UNIV geotop_euclidean_topology M"
   (** Moise proof (geotop.tex:1060): Two inclusions.
       (1) Since Fr M is closed, every point of M - Fr M has a locally Euclidean
           open neighborhood in M. Hence M - Fr M \<subseteq> Int M = M - Bd M, i.e. Bd M \<subseteq> Fr M.
@@ -2487,12 +2586,89 @@ theorem Theorem_GT_4_10:
 proof -
   (** T4_10-A: Bd M \<subseteq> Fr M. Each P \<in> M - Fr M has a locally Euclidean nbhd
       open in M; hence P \<in> Int M = M - Bd M. **)
-  have h_A: "geotop_manifold_boundary M d \<subseteq> geotop_frontier UNIV geotop_euclidean_topology M"
-    sorry
+  have h_A: "geotop_manifold_boundary M (\<lambda>x y. norm (x - y)) \<subseteq>
+             geotop_frontier UNIV geotop_euclidean_topology M"
+  proof
+    fix P
+    assume hP_bd: "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+    have hP_M: "P \<in> M"
+      using hP_bd unfolding geotop_manifold_boundary_def by (by100 blast)
+    have hP_not_mint: "P \<notin> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+      using hP_bd unfolding geotop_manifold_boundary_def by (by100 blast)
+    show "P \<in> geotop_frontier UNIV geotop_euclidean_topology M"
+    proof (rule ccontr)
+      assume hP_not_front: "P \<notin> geotop_frontier UNIV geotop_euclidean_topology M"
+      have hP_not_front_HOL: "P \<notin> frontier M"
+        using hP_not_front geotop_frontier_UNIV_eq_frontier[of M] by (by100 simp)
+      have hP_closure: "P \<in> closure M"
+        using hP_M closure_subset by (by100 blast)
+      have hP_int: "P \<in> interior M"
+        using hP_not_front_HOL hP_closure
+        unfolding Elementary_Topology.frontier_def by (by100 blast)
+      have hP_mint: "P \<in> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+        by (rule geotop_manifold_interior_if_HOL_interior[OF hP_int])
+      show False using hP_not_mint hP_mint by (by100 blast)
+    qed
+  qed
   (** T4_10-B: Fr M \<subseteq> Bd M. P \<in> Fr M cannot have plane-homeomorphic open nbhd
       open in M (Invariance of Domain would extend it to be open in R\<^sup>2). **)
-  have h_B: "geotop_frontier UNIV geotop_euclidean_topology M \<subseteq> geotop_manifold_boundary M d"
-    sorry
+  have h_B: "geotop_frontier UNIV geotop_euclidean_topology M \<subseteq>
+             geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+  proof
+    fix P
+    assume hP_front: "P \<in> geotop_frontier UNIV geotop_euclidean_topology M"
+    have hP_front_HOL: "P \<in> frontier M"
+      using hP_front geotop_frontier_UNIV_eq_frontier[of M] by (by100 simp)
+    have hM_closed: "closed M"
+      using hMcl closedin_on_geotop_UNIV_iff_closed by (by100 blast)
+    have hP_M: "P \<in> M"
+      using hP_front_HOL hM_closed
+      unfolding Elementary_Topology.frontier_def by (by100 simp)
+    have hP_not_int: "P \<notin> interior M"
+      using hP_front_HOL unfolding Elementary_Topology.frontier_def by (by100 blast)
+    have hP_not_mint: "P \<notin> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+    proof
+      assume hP_mint: "P \<in> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+      obtain U f where hU_openin:
+          "openin_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+        and hP_U: "P \<in> U"
+        and hf:
+          "top1_homeomorphism_on U
+             (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+             (UNIV::(real^2) set) geotop_euclidean_topology f"
+        using hP_mint unfolding geotop_manifold_interior_def by (by100 blast)
+      have hU_sub_M: "U \<subseteq> M"
+        using hU_openin unfolding openin_on_def by (by100 blast)
+      have htopM: "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
+                   subspace_topology UNIV geotop_euclidean_topology M"
+        by (rule top1_norm_metric_topology_on_eq_geotop_subspace)
+      have hsubU:
+        "subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U =
+         subspace_topology UNIV geotop_euclidean_topology U"
+      proof -
+        have "subspace_topology M (subspace_topology UNIV geotop_euclidean_topology M) U =
+              subspace_topology UNIV geotop_euclidean_topology U"
+          by (rule subspace_topology_trans[OF hU_sub_M])
+        thus ?thesis using htopM by (by100 simp)
+      qed
+      have hf_geotop:
+        "top1_homeomorphism_on U
+           (subspace_topology UNIV geotop_euclidean_topology U)
+           (UNIV::(real^2) set) geotop_euclidean_topology f"
+        using hf hsubU by (by100 simp)
+      have hU_geotop_open: "U \<in> geotop_euclidean_topology"
+        by (rule Theorem_GT_4_invariance_of_domain[OF hf_geotop])
+      have hU_open: "open U"
+        using hU_geotop_open
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hP_int: "P \<in> interior M"
+        by (rule interiorI[OF hU_open hP_U hU_sub_M])
+      show False using hP_not_int hP_int by (by100 blast)
+    qed
+    show "P \<in> geotop_manifold_boundary M (\<lambda>x y. norm (x - y))"
+      unfolding geotop_manifold_boundary_def using hP_M hP_not_mint by (by100 blast)
+  qed
   show ?thesis using h_A h_B by (by100 blast)
 qed
 
