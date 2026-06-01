@@ -3998,13 +3998,45 @@ proof -
                       assume ha_miss: "a \<notin> closure Lc"
                       assume hq2_clK: "q2 \<in> closure K"
                       have hq2_cl_gLc: "q2 \<in> closure (g ` Lc)"
-                        sorry
+                        using hq2_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
                       have hLc_sub_line: "Lc \<subseteq> ?L"
-                        sorry
+                        using hLc_comp in_components_subset by (by100 blast)
                       have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
-                        sorry
+                      proof -
+                        have hg_img: "g ` ?L = ?S - {q1}"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        show ?thesis
+                          using image_mono[OF hLc_sub_line, of g] hg_img by (by100 blast)
+                      qed
                       have hfg_Lc: "f ` (g ` Lc) = Lc"
-                        sorry
+                      proof
+                        show "f ` (g ` Lc) \<subseteq> Lc"
+                        proof
+                          fix y assume hy: "y \<in> f ` (g ` Lc)"
+                          obtain x where hx: "x \<in> Lc" and hy_eq: "y = f (g x)"
+                            using hy by (by100 blast)
+                          have hx_line: "x \<in> ?L"
+                            using hx hLc_sub_line by (by100 blast)
+                          have "f (g x) = x"
+                            using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                          thus "y \<in> Lc"
+                            using hx hy_eq by (by100 simp)
+                        qed
+                        show "Lc \<subseteq> f ` (g ` Lc)"
+                        proof
+                          fix x assume hx: "x \<in> Lc"
+                          have hx_line: "x \<in> ?L"
+                            using hx hLc_sub_line by (by100 blast)
+                          have hfgx: "f (g x) = x"
+                            using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                          have "g x \<in> g ` Lc"
+                            using hx by (rule imageI)
+                          hence "f (g x) \<in> f ` (g ` Lc)"
+                            by (rule imageI)
+                          thus "x \<in> f ` (g ` Lc)"
+                            using hfgx by (by100 simp)
+                        qed
+                      qed
                       have "a \<in> closure Lc"
                         sorry
                       thus False
@@ -4016,13 +4048,45 @@ proof -
                       assume hb_miss: "b \<notin> closure Lc"
                       assume hq3_clK: "q3 \<in> closure K"
                       have hq3_cl_gLc: "q3 \<in> closure (g ` Lc)"
-                        sorry
+                        using hq3_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
                       have hLc_sub_line: "Lc \<subseteq> ?L"
-                        sorry
+                        using hLc_comp in_components_subset by (by100 blast)
                       have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
-                        sorry
+                      proof -
+                        have hg_img: "g ` ?L = ?S - {q1}"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        show ?thesis
+                          using image_mono[OF hLc_sub_line, of g] hg_img by (by100 blast)
+                      qed
                       have hfg_Lc: "f ` (g ` Lc) = Lc"
-                        sorry
+                      proof
+                        show "f ` (g ` Lc) \<subseteq> Lc"
+                        proof
+                          fix y assume hy: "y \<in> f ` (g ` Lc)"
+                          obtain x where hx: "x \<in> Lc" and hy_eq: "y = f (g x)"
+                            using hy by (by100 blast)
+                          have hx_line: "x \<in> ?L"
+                            using hx hLc_sub_line by (by100 blast)
+                          have "f (g x) = x"
+                            using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                          thus "y \<in> Lc"
+                            using hx hy_eq by (by100 simp)
+                        qed
+                        show "Lc \<subseteq> f ` (g ` Lc)"
+                        proof
+                          fix x assume hx: "x \<in> Lc"
+                          have hx_line: "x \<in> ?L"
+                            using hx hLc_sub_line by (by100 blast)
+                          have hfgx: "f (g x) = x"
+                            using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                          have "g x \<in> g ` Lc"
+                            using hx by (rule imageI)
+                          hence "f (g x) \<in> f ` (g ` Lc)"
+                            by (rule imageI)
+                          thus "x \<in> f ` (g ` Lc)"
+                            using hfgx by (by100 simp)
+                        qed
+                      qed
                       have "b \<in> closure Lc"
                         sorry
                       thus False
@@ -4034,15 +4098,20 @@ proof -
                       assume hLc_bounded: "bounded Lc"
                       assume hq1_clK: "q1 \<in> closure K"
                       have hq1_cl_gLc: "q1 \<in> closure (g ` Lc)"
-                        sorry
+                        using hq1_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
                       have hLc_sub_line: "Lc \<subseteq> ?L"
-                        sorry
+                        using hLc_comp in_components_subset by (by100 blast)
                       have hclLc_sub_line: "closure Lc \<subseteq> ?L"
-                        sorry
+                        by (rule closure_minimal[OF hLc_sub_line closed_hyperplane])
                       have hclLc_compact: "compact (closure Lc)"
-                        sorry
+                        using hLc_bounded by (by100 simp)
                       have hg_cont_clLc: "continuous_on (closure Lc) g"
-                        sorry
+                      proof -
+                        have hg_cont_line: "continuous_on ?L g"
+                          using hfg unfolding homeomorphism_def by (by100 blast)
+                        show ?thesis
+                          by (rule continuous_on_subset[OF hg_cont_line hclLc_sub_line])
+                      qed
                       have hcl_gLc_sub_g_clLc: "closure (g ` Lc) \<subseteq> g ` closure Lc"
                         sorry
                       have hq1_in_g_clLc: "q1 \<in> g ` closure Lc"
