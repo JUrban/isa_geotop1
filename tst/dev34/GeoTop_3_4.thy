@@ -2876,6 +2876,20 @@ proof -
     unfolding geotop_polyhedron_def using hsub by (by100 blast)
 qed
 
+lemma geotop_nonempty_complex_polyhedron_nonempty:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hne: "K \<noteq> {}"
+  shows "geotop_polyhedron K \<noteq> {}"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    using hne by (by100 blast)
+  have h\<sigma>ne: "\<sigma> \<noteq> {}"
+    by (rule geotop_complex_simplex_nonempty[OF hK h\<sigma>K])
+  show ?thesis
+    unfolding geotop_polyhedron_def using h\<sigma>K h\<sigma>ne by (by100 blast)
+qed
+
 lemma geotop_incident_edge_link_nonempty:
   fixes K :: "(real^2) set set" and e :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -5052,6 +5066,16 @@ proof
     show ?thesis
       by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
   qed
+  have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
+  proof -
+    have hlink_complex: "geotop_is_complex (geotop_link K v)"
+      by (rule geotop_link_is_complex[OF hK])
+    have "geotop_polyhedron (geotop_link K v) \<noteq> {}"
+      by (rule geotop_nonempty_complex_polyhedron_nonempty
+          [OF hlink_complex hL1_link_nonempty])
+    thus ?thesis
+      unfolding geotop_polyhedron_def by (by100 simp)
+  qed
   \<comment> \<open>L2: every incident edge in \<ge>1 two-simplex.\<close>
   have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
@@ -5421,6 +5445,16 @@ proof -
         using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
       show ?thesis
         by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
+    qed
+    have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
+    proof -
+      have hlink_complex: "geotop_is_complex (geotop_link K v)"
+        by (rule geotop_link_is_complex[OF hK])
+      have "geotop_polyhedron (geotop_link K v) \<noteq> {}"
+        by (rule geotop_nonempty_complex_polyhedron_nonempty
+            [OF hlink_complex hL1_link_nonempty])
+      thus ?thesis
+        unfolding geotop_polyhedron_def by (by100 simp)
     qed
     \<comment> \<open>L2: every incident edge is contained in some 2-simplex.\<close>
     have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
