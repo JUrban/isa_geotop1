@@ -3462,6 +3462,8 @@ proof -
             using hC_comp in_components_subset by (by100 blast)
           have hC_open: "open C"
             using hC_comp h_local_open open_components by (by100 blast)
+          have hC_path: "path_connected C"
+            by (rule component_of_open_path_connected[OF h_local_open hC_comp])
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
             sorry
