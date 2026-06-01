@@ -7086,7 +7086,52 @@ proof -
     \<comment> \<open>Sub-claim AM3a: there is a sector C in ball P \<delta> - M whose closure
       contains points near P from U (i.e. C is locally a U-sector).\<close>
     have hAM_sector_in_U:
-      "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U" sorry
+      "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U"
+    proof -
+      obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        and h\<delta>_sectors:
+          "\<forall>C \<in> components (ball P \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}. Bi \<inter> closure C \<noteq> {}} \<le> 2"
+        using hAM_local_sectors by (by100 blast)
+      have hE_sub_B1: "E \<subseteq> B1"
+        using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+      have hP_fr: "P \<in> frontier U"
+        using hP_E hE_sub_B1 hB1_fr by (by100 blast)
+      have hP_cl: "P \<in> closure U"
+        using hP_fr unfolding Elementary_Topology.frontier_def by (by100 blast)
+      have h_ball_meets_U: "ball P \<delta> \<inter> U \<noteq> {}"
+      proof -
+        have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
+        have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
+        have "U \<inter> ball P \<delta> \<noteq> {}"
+          using hP_cl closure_iff_nhds_not_empty[of P U] h_ball_open hP_ball
+          by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+      obtain u where hu_ball: "u \<in> ball P \<delta>" and huU: "u \<in> U"
+        using h_ball_meets_U by (by100 blast)
+      have hU_subM: "U \<subseteq> UNIV - M"
+        using hU in_components_subset by (by100 blast)
+      have hu_not_M: "u \<notin> M" using huU hU_subM by (by100 blast)
+      have hu_local: "u \<in> ball P \<delta> - M" using hu_ball hu_not_M by (by100 blast)
+      define C where "C = connected_component_set (ball P \<delta> - M) u"
+      have hC_comp: "C \<in> components (ball P \<delta> - M)"
+        unfolding C_def using hu_local componentsI by metis
+      have hC_conn: "connected C"
+        unfolding C_def by (by100 simp)
+      have hC_sub_local: "C \<subseteq> ball P \<delta> - M"
+        unfolding C_def using connected_component_subset by (by100 blast)
+      have hC_sub_global: "C \<subseteq> UNIV - M"
+        using hC_sub_local by (by100 blast)
+      have huC: "u \<in> C"
+        unfolding C_def using hu_local by (by100 simp)
+      have hU_eq: "U = connected_component_set (UNIV - M) u"
+        by (rule component_eq_connected_component_set[OF hU huU])
+      have hC_sub_U: "C \<subseteq> U"
+        unfolding hU_eq using hC_conn hC_sub_global huC
+        using connected_component_maximal by (by100 blast)
+      show ?thesis using h\<delta>_pos hC_comp hC_sub_U by (by100 blast)
+    qed
     \<comment> \<open>Sub-claim AM3b: that sector's closure misses at least one Bi locally,
       hence so does the frontier of U near P; so Bi \<not>\<subseteq> frontier U.\<close>
     have hAM_U_misses_one:
