@@ -7610,6 +7610,18 @@ proof -
         by (rule geotop_complex_edge_face_count_between_1_2_cases
             [OF hK heK hedge hge hle])
     qed
+    \<comment> \<open>Boundary-case analogue: every link vertex is incident to a link edge.\<close>
+    have hlink_vertices_incident_edges:
+      "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+          (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+    proof (intro allI impI)
+      fix w assume hwL: "{w} \<in> geotop_link K v"
+      have hvK: "{v} \<in> K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+      show "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+        by (rule geotop_link_vertex_count_ge_1_incident_link_edge
+            [OF hK hvK hwL hL2_count])
+    qed
     \<comment> \<open>L4: link |L(v)| is connected.\<close>
     have hL4: "top1_connected_on (\<Union>(geotop_link K v))
                  (subspace_topology UNIV geotop_euclidean_topology
