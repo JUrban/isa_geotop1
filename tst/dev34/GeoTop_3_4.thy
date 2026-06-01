@@ -2861,6 +2861,31 @@ proof -
     unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
 qed
 
+lemma geotop_simplex_face_complex_finite_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  shows "finite {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have hfaces_fin: "finite {\<tau>. geotop_is_face \<tau> \<sigma>}"
+    by (rule geotop_simplex_faces_finite[OF h\<sigma>])
+  have "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} =
+        {\<tau>. geotop_is_face \<tau> \<sigma>} \<union> {\<sigma>}"
+    by (by100 blast)
+  thus ?thesis
+    using hfaces_fin by (by100 simp)
+qed
+
+lemma geotop_simplex_dim_face_complex_finite_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "finite {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  show ?thesis
+    by (rule geotop_simplex_face_complex_finite_R2[OF hsimplex])
+qed
+
 lemma geotop_star_finite_at_vertex:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
