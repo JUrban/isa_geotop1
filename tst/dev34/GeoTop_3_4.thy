@@ -101,7 +101,15 @@ proof -
     "top1_homeomorphism_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
         \<tau> (subspace_topology UNIV geotop_euclidean_topology \<tau>) f \<and>
      geotop_simplicial_on \<sigma> f \<tau> \<and>
-     (\<forall>v\<in>V. f v = \<phi> v)" sorry
+     (\<forall>v\<in>V. f v = \<phi> v)"
+  proof -
+    have hV_fin: "finite V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hcard: "card V = card W"
+      using h\<phi>_bij hV_fin bij_betw_same_card by (by100 blast)
+    show ?thesis
+      using Theorem_GT_3_1[OF hV hW hcard h\<phi>_mem h\<phi>_bij] that by (by100 blast)
+  qed
   (** (2) Extend f to an affine map A: R^m \<to> R^m (where m is the ambient dimension),
          since both \<sigma> and \<tau> are n-simplexes in R^m with n = m (same dim). The affine
          extension is uniquely determined by images of V \<cup> {V's affine basis complement}. **)
