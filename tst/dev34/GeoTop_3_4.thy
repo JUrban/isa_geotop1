@@ -3521,6 +3521,26 @@ proof -
     using hUV unfolding subspace_topology_def by (by100 blast)
 qed
 
+lemma top1_norm_metric_on_UNIV_R2_dev34:
+  "top1_metric_on (UNIV::(real^2) set) (\<lambda>x y. norm (x - y))"
+  unfolding top1_metric_on_def
+  by (auto simp: dist_norm [symmetric] dist_commute intro: dist_triangle)
+
+lemma top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34:
+  fixes M :: "(real^2) set"
+  shows "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
+         subspace_topology UNIV geotop_euclidean_topology M"
+proof -
+  have hsub:
+    "subspace_topology UNIV
+        (top1_metric_topology_on UNIV (\<lambda>x y. norm (x - y))) M =
+     top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+    by (rule subspace_metric_topology_eq_metric_topology[
+        OF top1_norm_metric_on_UNIV_R2_dev34 subset_UNIV])
+  show ?thesis
+    using hsub unfolding geotop_euclidean_topology_def by (by100 simp)
+qed
+
 lemma geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood:
   fixes M e :: "(real^2) set" and p :: "real^2"
   assumes hM: "geotop_n_manifold_on M (\<lambda>x y. norm (x - y)) 2"
@@ -3532,7 +3552,75 @@ lemma geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood:
       \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)
       \<and> top1_connected_on (N - {p})
           (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
-  sorry
+proof -
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on M ?d"
+  let ?GM = "subspace_topology UNIV geotop_euclidean_topology M"
+  have hpM: "p \<in> M"
+    using hp hsub by (by100 blast)
+  obtain U f where hUopen: "openin_on M ?TM U" and hpU: "p \<in> U"
+      and hhomeo: "top1_homeomorphism_on U (subspace_topology M ?TM U)
+          (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUmemTM: "U \<in> ?TM"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hTM_eq: "?TM = ?GM"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hUmemG: "U \<in> ?GM"
+    using hUmemTM hTM_eq by (by100 simp)
+  have hsource_eq: "subspace_topology M ?TM U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    have htrans: "subspace_topology M ?GM U =
+        subspace_topology UNIV geotop_euclidean_topology U"
+      by (rule subspace_topology_trans[OF hUsubM])
+    show ?thesis
+      using hTM_eq htrans by (by100 simp)
+  qed
+  have hhomeo_geo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hhomeo hsource_eq by (by100 simp)
+  define A where "A = U \<inter> rel_interior e"
+  have hpA: "p \<in> A"
+    unfolding A_def using hp hpU by (by100 blast)
+  have hAsubU: "A \<subseteq> U"
+    unfolding A_def by (by100 blast)
+  have hAopenU: "A \<in> subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    obtain W where hWtop: "W \<in> geotop_euclidean_topology"
+        and hrel_eq: "rel_interior e = M \<inter> W"
+      using hopen unfolding subspace_topology_def by (by100 blast)
+    have hAeq: "A = U \<inter> W"
+      unfolding A_def using hUsubM hrel_eq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hWtop hAeq by (by100 blast)
+  qed
+  have hAopenRel: "A \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+  proof -
+    obtain V where hVtop: "V \<in> geotop_euclidean_topology" and hUeq: "U = M \<inter> V"
+      using hUmemG unfolding subspace_topology_def by (by100 blast)
+    have hAeq: "A = rel_interior e \<inter> V"
+      unfolding A_def using hsub hUeq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hVtop hAeq by (by100 blast)
+  qed
+  obtain N where hpN: "p \<in> N" and hNsubA: "N \<subseteq> A"
+      and hNopenA: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+      and hNconn: "top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using geotop_plane_chart_open_subset_connected_punctured_neighborhood
+      [OF hhomeo_geo hAopenU hAsubU hpA]
+    by (by100 blast)
+  have hNsubRel: "N \<subseteq> rel_interior e"
+    using hNsubA unfolding A_def by (by100 blast)
+  have hNopenRel: "N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+    by (rule geotop_subspace_open_trans[OF hAopenRel hNopenA])
+  show ?thesis
+    using hpN hNsubRel hNopenRel hNconn by (by100 blast)
+qed
 
 lemma geotop_2_manifold_no_open_edge_rel_interior:
   fixes M e :: "(real^2) set"
