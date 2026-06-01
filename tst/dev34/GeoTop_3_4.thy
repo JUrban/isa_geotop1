@@ -3209,6 +3209,67 @@ proof -
     using h\<sigma>\<tau> hSeq h\<sigma>S h\<tau>S by (by100 blast)
 qed
 
+lemma geotop_complex_edge_face_count_ge_3_obtain:
+  fixes K :: "(real^2) set set"
+  assumes hcard: "3 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  shows "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  obtain W where hW_sub: "W \<subseteq> ?S" and hW_card: "card W = 3"
+    using obtain_subset_with_card_n[OF hcard] by auto
+  have hW_three:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
+      \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
+    using hW_card unfolding card_3_iff by (by100 simp)
+  from hW_three obtain \<sigma>1 where hW1:
+    "\<exists>\<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
+      \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3" ..
+  from hW1 obtain \<sigma>2 where hW2:
+    "\<exists>\<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3}
+      \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3" ..
+  from hW2 obtain \<sigma>3 where hW3:
+    "W = {\<sigma>1, \<sigma>2, \<sigma>3}
+      \<and> \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3" ..
+  have hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
+    using hW3 by (by100 simp)
+  have h12: "\<sigma>1 \<noteq> \<sigma>2"
+    using hW3 by (by100 simp)
+  have h23: "\<sigma>2 \<noteq> \<sigma>3"
+    using hW3 by (by100 simp)
+  have h13: "\<sigma>1 \<noteq> \<sigma>3"
+    using hW3 by (by100 simp)
+  have h\<sigma>1S: "\<sigma>1 \<in> ?S"
+    using hW_eq hW_sub by (by100 blast)
+  have h\<sigma>2S: "\<sigma>2 \<in> ?S"
+    using hW_eq hW_sub by (by100 blast)
+  have h\<sigma>3S: "\<sigma>3 \<in> ?S"
+    using hW_eq hW_sub by (by100 blast)
+  have hbody: "\<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  proof (intro conjI)
+    show "\<sigma>1 \<noteq> \<sigma>2" by (rule h12)
+    show "\<sigma>2 \<noteq> \<sigma>3" by (rule h23)
+    show "\<sigma>1 \<noteq> \<sigma>3" by (rule h13)
+    show "\<sigma>1 \<in> K" using h\<sigma>1S by (by100 simp)
+    show "geotop_simplex_dim \<sigma>1 2" using h\<sigma>1S by (by100 simp)
+    show "geotop_is_face e \<sigma>1" using h\<sigma>1S by (by100 simp)
+    show "\<sigma>2 \<in> K" using h\<sigma>2S by (by100 simp)
+    show "geotop_simplex_dim \<sigma>2 2" using h\<sigma>2S by (by100 simp)
+    show "geotop_is_face e \<sigma>2" using h\<sigma>2S by (by100 simp)
+    show "\<sigma>3 \<in> K" using h\<sigma>3S by (by100 simp)
+    show "geotop_simplex_dim \<sigma>3 2" using h\<sigma>3S by (by100 simp)
+    show "geotop_is_face e \<sigma>3" using h\<sigma>3S by (by100 simp)
+  qed
+  show ?thesis
+    by (rule exI[where x=\<sigma>1], rule exI[where x=\<sigma>2],
+        rule exI[where x=\<sigma>3], rule hbody)
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -4486,6 +4547,26 @@ proof
   \<comment> \<open>L3: every incident edge in \<ge>2 two-simplexes (manifold without boundary).\<close>
   have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2" sorry
+  \<comment> \<open>Counterexample form for L4: if an incident edge has more than two
+    adjacent two-simplexes, name the three simplexes used to build the two
+    semicircles in the book's Jordan-curve contradiction.\<close>
+  have hL4_counterexample_faces: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2 \<longrightarrow>
+              (\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+                \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+                \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+                \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3)"
+  proof (intro ballI impI)
+    fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+      and hnot_le2: "\<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    have hge3: "3 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      using hnot_le2 by (by100 simp)
+    show "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+                \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+                \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+                \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+      by (rule geotop_complex_edge_face_count_ge_3_obtain[OF hge3])
+  qed
   \<comment> \<open>L4: every incident edge in \<le>2 two-simplexes.\<close>
   have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
@@ -4538,6 +4619,12 @@ proof
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2 \<longrightarrow>
+             (\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+               \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+               \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+               \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3)) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2) \<and>
@@ -4550,7 +4637,8 @@ proof
                (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
      geotop_is_polygon (\<Union>(geotop_link K v)) \<and>
      geotop_comb_n_cell (geotop_star K v) 2"
-    using hL1 hL2 hL2_count hL3 hL4 hL_count_eq2 hL_two_faces hL5 hL6 hL7
+    using hL1 hL2 hL2_count hL3 hL4_counterexample_faces hL4 hL_count_eq2
+      hL_two_faces hL5 hL6 hL7
     by (by100 blast)
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
