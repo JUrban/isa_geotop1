@@ -11375,6 +11375,50 @@ proof -
                           show "z \<in> UNIV - (A \<union> B)"
                             using hz_not_A hz_not_B by (by100 blast)
                         qed
+                        have h_radial_trace_same_local_pair:
+                          "\<And>x A B pA pB K. \<lbrakk>x \<in> ball P r;
+                            x \<notin> closed_segment P pA; x \<notin> closed_segment P pB;
+                            ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
+                            ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
+                            pA \<noteq> P; pB \<noteq> P; \<delta> \<le> dist P pA; \<delta> \<le> dist P pB;
+                            K \<in> components (UNIV - (A \<union> B)); x \<in> K\<rbrakk>
+                           \<Longrightarrow> \<rho> x \<in> K"
+                        proof -
+                          fix x A B pA pB K
+                          assume hx_r: "x \<in> ball P r"
+                            and hx_not_pA: "x \<notin> closed_segment P pA"
+                            and hx_not_pB: "x \<notin> closed_segment P pB"
+                            and hA_model:
+                              "ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA"
+                            and hB_model:
+                              "ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB"
+                            and hpA_ne: "pA \<noteq> P"
+                            and hpB_ne: "pB \<noteq> P"
+                            and h\<delta>_pA: "\<delta> \<le> dist P pA"
+                            and h\<delta>_pB: "\<delta> \<le> dist P pB"
+                            and hK_comp: "K \<in> components (UNIV - (A \<union> B))"
+                            and hxK: "x \<in> K"
+                          have hseg_sub:
+                            "closed_segment x (\<rho> x) \<subseteq> UNIV - (A \<union> B)"
+                            by (rule h_radial_segment_stays_local_pair
+                                [OF hx_r hx_not_pA hx_not_pB hA_model hB_model
+                                    hpA_ne hpB_ne h\<delta>_pA h\<delta>_pB])
+                          have hseg_conn: "connected (closed_segment x (\<rho> x))"
+                            by (rule convex_connected[OF convex_closed_segment])
+                          have hx_seg: "x \<in> closed_segment x (\<rho> x)"
+                            by (by100 simp)
+                          have hseg_sub_cc:
+                            "closed_segment x (\<rho> x)
+                              \<subseteq> connected_component_set (UNIV - (A \<union> B)) x"
+                            by (rule connected_component_maximal[OF hx_seg hseg_conn hseg_sub])
+                          have hK_eq:
+                            "K = connected_component_set (UNIV - (A \<union> B)) x"
+                            by (rule component_eq_connected_component_set[OF hK_comp hxK])
+                          have "\<rho> x \<in> closed_segment x (\<rho> x)"
+                            by (by100 simp)
+                          thus "\<rho> x \<in> K"
+                            using hseg_sub_cc hK_eq by (by100 blast)
+                        qed
                         have h_radial_segment_stays_pair:
                           "\<And>x A B pA pB. \<lbrakk>x \<in> ball P r - ?R;
                             ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
