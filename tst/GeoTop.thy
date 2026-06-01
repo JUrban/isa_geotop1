@@ -943,6 +943,151 @@ proof -
               show "ball y r \<inter> U \<noteq> {}"
                 using hu_ball huU by (by100 blast)
             qed
+            have hU_meets_off_L_y:
+              "\<And>r. r > 0 \<Longrightarrow>
+                \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0"
+            proof -
+              fix r :: real
+              assume hr_pos: "r > 0"
+              define r2 where "r2 = r / 2"
+              have hr2_pos: "r2 > 0"
+                unfolding r2_def using hr_pos by (by100 simp)
+              have h_meet: "ball x r2 \<inter> U \<noteq> {}"
+                using hU_meets_ball hr2_pos by (by100 blast)
+              obtain u0 where hu0_ball: "u0 \<in> ball x r2" and hu0U: "u0 \<in> U"
+                using h_meet by (by100 blast)
+              have hdist_u0x_eq: "dist u0 x = dist x u0"
+                by (rule dist_commute)
+              have hu0_dist_x: "dist u0 x < r2"
+                using hu0_ball hdist_u0x_eq by (by100 simp)
+              have hu0_dist_r: "dist u0 x < r"
+                using hu0_dist_x hr_pos unfolding r2_def by (by100 simp)
+              show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0"
+              proof (cases "inner (u0 - x) n_y \<noteq> 0")
+                case True
+                show ?thesis using hu0U hu0_dist_r True by (by100 blast)
+              next
+                case False
+                have hU_ball_ex: "\<exists>e>0. ball u0 e \<subseteq> U"
+                  using hU_open hu0U unfolding open_contains_ball by (by100 blast)
+                obtain e where he_pos: "e > 0" and he_sub: "ball u0 e \<subseteq> U"
+                  using hU_ball_ex by (by100 blast)
+                have hmargin_pos: "r - dist u0 x > 0"
+                  using hu0_dist_r by (by100 simp)
+                define \<eta> where "\<eta> = min (e / 2) ((r - dist u0 x) / 2)"
+                have h\<eta>_pos: "\<eta> > 0"
+                  unfolding \<eta>_def using he_pos hmargin_pos by (by100 simp)
+                have h\<eta>_lt_e: "\<eta> < e"
+                proof -
+                  have hle: "\<eta> \<le> e / 2"
+                    unfolding \<eta>_def by (rule min.cobounded1)
+                  have "e / 2 < e" using he_pos by (by100 simp)
+                  show ?thesis using hle \<open>e / 2 < e\<close> by (by100 linarith)
+                qed
+                have h\<eta>_lt_margin: "\<eta> < r - dist u0 x"
+                proof -
+                  have hle: "\<eta> \<le> (r - dist u0 x) / 2"
+                    unfolding \<eta>_def by (rule min.cobounded2)
+                  have "(r - dist u0 x) / 2 < r - dist u0 x"
+                    using hmargin_pos by (by100 simp)
+                  show ?thesis using hle \<open>(r - dist u0 x) / 2 < r - dist u0 x\<close>
+                    by (by100 linarith)
+                qed
+                have hn_norm_pos: "norm n_y > 0"
+                  using hn_y_ne by (by100 simp)
+                define v where "v = u0 + (\<eta> / norm n_y) *\<^sub>R n_y"
+                have hdist_u0_v: "dist u0 v = \<eta>"
+                proof -
+                  have hv_diff: "v - u0 = (\<eta> / norm n_y) *\<^sub>R n_y"
+                    unfolding v_def by (by100 simp)
+                  have hdist: "dist u0 v = norm (v - u0)"
+                    by (simp add: dist_norm norm_minus_commute)
+                  have hnorm: "norm ((\<eta> / norm n_y) *\<^sub>R n_y) = \<eta>"
+                    using h\<eta>_pos hn_norm_pos by (by100 simp)
+                  show ?thesis using hdist hv_diff hnorm by (by100 simp)
+                qed
+                have hv_ball_u0: "v \<in> ball u0 e"
+                proof -
+                  have "dist u0 v < e" using hdist_u0_v h\<eta>_lt_e by (by100 simp)
+                  thus ?thesis by (by100 simp)
+                qed
+                have hvU: "v \<in> U"
+                  using hv_ball_u0 he_sub by (by100 blast)
+                have htri: "dist v x \<le> dist v u0 + dist u0 x"
+                  by (rule dist_triangle)
+                have hdist_vu0_eq: "dist v u0 = dist u0 v"
+                  by (rule dist_commute)
+                have hdist_v_u0: "dist v u0 = \<eta>"
+                  using hdist_u0_v hdist_vu0_eq by (by100 simp)
+                have hv_dist_r: "dist v x < r"
+                  using htri hdist_v_u0 h\<eta>_lt_margin by (by100 linarith)
+                have hinner_v:
+                  "inner (v - x) n_y = inner (u0 - x) n_y +
+                    (\<eta> / norm n_y) * inner n_y n_y"
+                  unfolding v_def by (simp add: inner_add_left inner_diff_left)
+                have hinner_pos: "inner (v - x) n_y > 0"
+                proof -
+                  have hsq: "inner n_y n_y = (norm n_y)\<^sup>2"
+                    by (simp add: power2_norm_eq_inner)
+                  have "(\<eta> / norm n_y) * inner n_y n_y > 0"
+                    using h\<eta>_pos hn_norm_pos hsq by (by100 simp)
+                  thus ?thesis using hinner_v False by (by100 simp)
+                qed
+                have hinner_ne: "inner (v - x) n_y \<noteq> 0"
+                  using hinner_pos by (by100 simp)
+                show ?thesis using hvU hv_dist_r hinner_ne by (by100 blast)
+              qed
+            qed
+            have hU_meets_one_side_L_y:
+              "(\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0) \<or>
+               (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)"
+            proof (rule ccontr)
+              assume hnot:
+                "\<not> ((\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0) \<or>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0))"
+              have hnot_pos:
+                "\<not> (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)"
+                using hnot by (by100 blast)
+              have hnot_neg:
+                "\<not> (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)"
+                using hnot by (by100 blast)
+              obtain rp where hrp_pos: "rp > 0"
+                and hrp_no: "\<not> (\<exists>u\<in>U. dist u x < rp \<and> inner (u - x) n_y > 0)"
+                using hnot_pos by (by100 blast)
+              obtain rn where hrn_pos: "rn > 0"
+                and hrn_no: "\<not> (\<exists>u\<in>U. dist u x < rn \<and> inner (u - x) n_y < 0)"
+                using hnot_neg by (by100 blast)
+              define \<rho> where "\<rho> = min rp rn"
+              have h\<rho>_pos: "\<rho> > 0"
+                unfolding \<rho>_def using hrp_pos hrn_pos by (by100 simp)
+              have h\<rho>_le_p: "\<rho> \<le> rp"
+                unfolding \<rho>_def by (by100 simp)
+              have h\<rho>_le_n: "\<rho> \<le> rn"
+                unfolding \<rho>_def by (by100 simp)
+              obtain u where huU: "u \<in> U"
+                and hu_dist: "dist u x < \<rho>"
+                and hu_off: "inner (u - x) n_y \<noteq> 0"
+                using hU_meets_off_L_y[OF h\<rho>_pos] by (by100 blast)
+              have hu_dist_p: "dist u x < rp"
+                using hu_dist h\<rho>_le_p by (by100 linarith)
+              have hu_dist_n: "dist u x < rn"
+                using hu_dist h\<rho>_le_n by (by100 linarith)
+              consider (pos) "inner (u - x) n_y > 0" |
+                       (neg) "inner (u - x) n_y < 0"
+                using hu_off by (by100 linarith)
+              thus False
+              proof cases
+                case pos
+                have "\<exists>u\<in>U. dist u x < rp \<and> inner (u - x) n_y > 0"
+                  using huU hu_dist_p pos by (by100 blast)
+                thus False using hrp_no by (by100 blast)
+              next
+                case neg
+                have "\<exists>u\<in>U. dist u x < rn \<and> inner (u - x) n_y < 0"
+                  using huU hu_dist_n neg by (by100 blast)
+                thus False using hrn_no by (by100 blast)
+              qed
+            qed
             have h_selected_edge_parallel_sector:
               "\<And>r. r > 0 \<Longrightarrow>
                 \<exists>u. u \<in> U \<and> dist u x < r \<and>
