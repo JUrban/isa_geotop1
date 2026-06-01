@@ -1689,6 +1689,74 @@ proof -
                 have hy_L\<tau>_y_side_cases:
                   "inner (y - x) m\<tau>_y > 0 \<or> inner (y - x) m\<tau>_y < 0"
                   using hy_off_L\<tau>_y by (by100 linarith)
+                have hp_y_L\<tau>_same_side_pos:
+                  "inner (y - x) m\<tau>_y > 0 \<Longrightarrow> inner (p_y - x) m\<tau>_y > 0"
+                proof -
+                  assume hy_pos: "inner (y - x) m\<tau>_y > 0"
+                  have hy_seg: "y \<in> closed_segment x p_y"
+                    using hy\<sigma>_y h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hy_eq: "y = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hy_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "y = x" using hy_eq by (by100 simp)
+                      thus False using hy_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hy_minus: "y - x = s *\<^sub>R (p_y - x)"
+                    using hy_eq by (simp add: algebra_simps)
+                  have hinner: "inner (y - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hy_minus by (by100 simp)
+                  show ?thesis
+                  proof (rule ccontr)
+                    assume hnot: "\<not> 0 < inner (p_y - x) m\<tau>_y"
+                    have hp_nonpos: "inner (p_y - x) m\<tau>_y \<le> 0"
+                      using hnot by (by100 linarith)
+                    have "s * inner (p_y - x) m\<tau>_y \<le> 0"
+                      by (rule mult_nonneg_nonpos[OF hs_ge0 hp_nonpos])
+                    thus False using hinner hy_pos by (by100 linarith)
+                  qed
+                qed
+                have hp_y_L\<tau>_same_side_neg:
+                  "inner (y - x) m\<tau>_y < 0 \<Longrightarrow> inner (p_y - x) m\<tau>_y < 0"
+                proof -
+                  assume hy_neg: "inner (y - x) m\<tau>_y < 0"
+                  have hy_seg: "y \<in> closed_segment x p_y"
+                    using hy\<sigma>_y h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hy_eq: "y = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hy_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "y = x" using hy_eq by (by100 simp)
+                      thus False using hy_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hy_minus: "y - x = s *\<^sub>R (p_y - x)"
+                    using hy_eq by (simp add: algebra_simps)
+                  have hinner: "inner (y - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hy_minus by (by100 simp)
+                  show ?thesis
+                  proof (rule ccontr)
+                    assume hnot: "\<not> inner (p_y - x) m\<tau>_y < 0"
+                    have hp_nonneg: "0 \<le> inner (p_y - x) m\<tau>_y"
+                      using hnot by (by100 linarith)
+                    have "0 \<le> s * inner (p_y - x) m\<tau>_y"
+                      by (rule mult_nonneg_nonneg[OF hs_ge0 hp_nonneg])
+                    thus False using hinner hy_neg by (by100 linarith)
+                  qed
+                qed
                 have h\<tau>_y_pos_side:
                   "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
                     (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
