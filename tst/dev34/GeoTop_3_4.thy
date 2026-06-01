@@ -3083,6 +3083,46 @@ proof -
     using hW_top hpoly_inter_W by (by100 blast)
 qed
 
+lemma geotop_complex_2_faces_over_edge_finite:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  shows "finite {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+proof -
+  have hlocal:
+    "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule geotop_is_complex_locally_finite[OF hK])
+  obtain U where hU_open: "open U" and heU: "e \<subseteq> U"
+      and hU_fin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using bspec[OF hlocal heK] by (elim exE conjE)
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have he_simplex: "geotop_is_simplex e"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+  have he_ne: "e \<noteq> {}"
+    by (rule geotop_simplex_nonempty[OF he_simplex])
+  have hsub: "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}
+      \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>: "\<sigma> \<in> {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using h\<sigma> by (by100 simp)
+    have hface: "geotop_is_face e \<sigma>"
+      using h\<sigma> by (by100 simp)
+    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF hface])
+    obtain x where hxe: "x \<in> e"
+      using he_ne by (by100 blast)
+    have "x \<in> \<sigma> \<inter> U"
+      using hxe he_sub_\<sigma> heU by (by100 blast)
+    thus "\<sigma> \<in> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using h\<sigma>K by (by100 blast)
+  qed
+  show ?thesis
+    by (rule finite_subset[OF hsub hU_fin])
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
