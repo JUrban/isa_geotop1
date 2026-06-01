@@ -5679,7 +5679,18 @@ proof -
       "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
              geotop_is_polygon (i \<union> j) \<and>
              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
-      using hT27_frontiers hU_geotop by (by100 blast)
+    proof -
+      have hU_imp:
+        "U \<in> {C. \<exists>P\<in>UNIV - M.
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                    ((UNIV::(real^2) set) - M) P} \<longrightarrow>
+          (\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                 geotop_is_polygon (i \<union> j) \<and>
+                 geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j)"
+        by (rule spec[OF hT27_frontiers])
+      show ?thesis
+        by (rule mp[OF hU_imp hU_geotop])
+    qed
     obtain i j where hUij:
       "{i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
        geotop_is_polygon (i \<union> j) \<and>
