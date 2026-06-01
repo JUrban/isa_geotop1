@@ -4285,21 +4285,70 @@ proof -
                           thus "x = a + (\<phi> x / D) *\<^sub>R d"
                             using hx_u by (by100 simp)
                         qed
-                        have h\<phi>_cut_avoid:
-                          "\<phi> ` Lc \<inter> {0, D} = {}"
-                          sorry
-                        have h\<phi>_conn: "connected (\<phi> ` Lc)"
-                          sorry
                         have h\<phi>_cont_L: "continuous_on ?L \<phi>"
                           unfolding \<phi>_def by (intro continuous_intros)
+                        have h\<phi>_cut_avoid:
+                          "\<phi> ` Lc \<inter> {0, D} = {}"
+                        proof (rule equals0I)
+                          fix y assume hy: "y \<in> \<phi> ` Lc \<inter> {0, D}"
+                          obtain x where hxLc: "x \<in> Lc" and hy_eq: "y = \<phi> x"
+                            using hy by (by100 blast)
+                          have hxL: "x \<in> ?L"
+                            using hxLc hLc_sub_L by (by100 blast)
+                          have hx_not_a: "x \<noteq> a"
+                            using hxLc hLc_sub_line by (by100 blast)
+                          have hx_not_b: "x \<noteq> b"
+                            using hxLc hLc_sub_line by (by100 blast)
+                          consider (zero) "y = 0" | (D) "y = D"
+                            using hy by (by100 blast)
+                          thus False
+                          proof cases
+                            case zero
+                            have "\<phi> x / D = 0"
+                              using zero hy_eq hD_pos by (by100 simp)
+                            hence "x = a"
+                              using h\<phi>_coord[OF hxL] by (by100 simp)
+                            thus False
+                              using hx_not_a by (by100 blast)
+                          next
+                            case D
+                            have "\<phi> x / D = 1"
+                              using D hy_eq hD_pos by (by100 simp)
+                            hence "x = b"
+                              using h\<phi>_coord[OF hxL] unfolding d_def by (by100 simp)
+                            thus False
+                              using hx_not_b by (by100 blast)
+                          qed
+                        qed
+                        have h\<phi>_conn: "connected (\<phi> ` Lc)"
+                        proof -
+                          have h\<phi>_cont_Lc: "continuous_on Lc \<phi>"
+                            by (rule continuous_on_subset[OF h\<phi>_cont_L hLc_sub_L])
+                          show ?thesis
+                            by (rule connected_continuous_image[OF h\<phi>_cont_Lc hLc_conn])
+                        qed
                         have h\<phi>_cl_subset:
                           "\<phi> ` closure Lc \<subseteq> closure (\<phi> ` Lc)"
                           by (rule continuous_image_closure_subset
                               [OF h\<phi>_cont_L hclLc_sub_L])
                         have h0_cl: "0 \<in> closure (\<phi> ` Lc)"
-                          sorry
+                        proof -
+                          have h\<phi>a_img: "\<phi> a \<in> \<phi> ` closure Lc"
+                            using ha_cl_Lc by (rule imageI)
+                          have h\<phi>a_cl: "\<phi> a \<in> closure (\<phi> ` Lc)"
+                            using h\<phi>_cl_subset h\<phi>a_img by (rule subsetD)
+                          thus ?thesis
+                            using h\<phi>_a by (by100 simp)
+                        qed
                         have hD_cl: "D \<in> closure (\<phi> ` Lc)"
-                          sorry
+                        proof -
+                          have h\<phi>b_img: "\<phi> b \<in> \<phi> ` closure Lc"
+                            using hb_cl_Lc by (rule imageI)
+                          have h\<phi>b_cl: "\<phi> b \<in> closure (\<phi> ` Lc)"
+                            using h\<phi>_cl_subset h\<phi>b_img by (rule subsetD)
+                          thus ?thesis
+                            using h\<phi>_b by (by100 simp)
+                        qed
                         have h\<phi>_between:
                           "\<phi> ` Lc \<subseteq> {0<..<D}"
                           sorry
