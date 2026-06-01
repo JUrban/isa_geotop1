@@ -3682,6 +3682,101 @@ proof -
     using hpN hNsubA hNopenA hconn by (by100 blast)
 qed
 
+lemma geotop_plane_chart_arc_complement_connected:
+  fixes U A :: "(real^2) set"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hAsub: "A \<subseteq> U"
+  assumes hAimg: "geotop_is_arc (f ` A)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
+  shows "top1_connected_on (U - A)
+      (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+proof -
+  let ?B = "f ` A"
+  have hconn_img: "top1_connected_on (UNIV - ?B)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV - ?B))"
+    by (rule Theorem_GT_4_5[OF hAimg])
+  have hbij: "bij_betw f U (UNIV::(real^2) set)"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinj: "inj_on f U"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hcont_inv: "top1_continuous_map_on (UNIV::(real^2) set) geotop_euclidean_topology
+      U (subspace_topology UNIV geotop_euclidean_topology U) (inv_into U f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have himage_eq: "(inv_into U f) ` (UNIV - ?B) = U - A"
+  proof
+    show "(inv_into U f) ` (UNIV - ?B) \<subseteq> U - A"
+    proof
+      fix y assume hy: "y \<in> (inv_into U f) ` (UNIV - ?B)"
+      then obtain z where hz: "z \<in> UNIV - ?B" and hyz: "y = inv_into U f z"
+        by (by100 blast)
+      have hznot: "z \<notin> ?B"
+        using hz by (by100 simp)
+      have hfyz: "f y = z"
+        using hyz bij_betw_inv_into_right[OF hbij, of z] by (by100 simp)
+      have hzin: "z \<in> f ` U"
+        using hbij unfolding bij_betw_def by (by100 simp)
+      obtain u where huU: "u \<in> U" and hfuz: "f u = z"
+        using hzin by (by100 blast)
+      have hyU: "y \<in> U"
+        using hyz huU hfuz inv_into_f_eq[OF hinj huU hfuz] by (by100 simp)
+      have hyA: "y \<notin> A"
+      proof
+        assume "y \<in> A"
+        hence "z \<in> ?B"
+          using hfyz by (by100 blast)
+        thus False
+          using hznot by (by100 blast)
+      qed
+      show "y \<in> U - A"
+        using hyU hyA by (by100 simp)
+    qed
+  next
+    show "U - A \<subseteq> (inv_into U f) ` (UNIV - ?B)"
+    proof
+      fix y assume hy: "y \<in> U - A"
+      have hyU: "y \<in> U"
+        using hy by (by100 simp)
+      have hyA: "y \<notin> A"
+        using hy by (by100 simp)
+      have hfynot: "f y \<notin> ?B"
+      proof
+        assume "f y \<in> ?B"
+        then obtain a where haA: "a \<in> A" and hfya: "f y = f a"
+          by (by100 blast)
+        have haU: "a \<in> U"
+          using haA hAsub by (by100 blast)
+        have "y = a"
+          using inj_onD[OF hinj hfya hyU haU] .
+        thus False
+          using hyA haA by (by100 simp)
+      qed
+      have hfy: "f y \<in> UNIV - ?B"
+        using hfynot by (by100 simp)
+      have hy_inv: "y = inv_into U f (f y)"
+        using bij_betw_inv_into_left[OF hbij hyU] by (by100 simp)
+      show "y \<in> (inv_into U f) ` (UNIV - ?B)"
+        using image_eqI[of y "inv_into U f" "f y" "UNIV - ?B"] hfy hy_inv
+        by (by100 blast)
+    qed
+  qed
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htop_U: "is_topology_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  have hconn_U: "top1_connected_on (U - A)
+      (subspace_topology U (subspace_topology UNIV geotop_euclidean_topology U) (U - A))"
+    by (rule Theorem_GT_1_8[OF htop_UNIV htop_U hcont_inv subset_UNIV himage_eq hconn_img])
+  have hsub_eq: "subspace_topology U
+        (subspace_topology UNIV geotop_euclidean_topology U) (U - A) =
+      subspace_topology UNIV geotop_euclidean_topology (U - A)"
+    by (rule subspace_topology_trans[OF Diff_subset])
+  show ?thesis
+    using hconn_U hsub_eq by (by100 simp)
+qed
+
 lemma geotop_subspace_open_trans:
   fixes A B N :: "(real^2) set"
   assumes hA: "A \<in> subspace_topology UNIV geotop_euclidean_topology B"
