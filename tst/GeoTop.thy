@@ -11500,11 +11500,78 @@ proof -
   \<comment> \<open>K.3 across distinct line-arrangement regions: intersections lie in
     the common frontier of the two regions, hence in common frontier
     simplices/faces of the two fan triangulations.\<close>
+  have hK_distinct_region_fan_faces:
+    "\<forall>R\<in>Rs_in. \<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
+       (\<forall>eR\<in>FrTri R. \<forall>eS\<in>FrTri S. \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+    sorry
   have hK_distinct_region_axiom3:
     "\<forall>R\<in>Rs_in. \<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
        (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
         geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
-    sorry
+  proof (intro ballI impI)
+    fix R S \<sigma> \<tau>
+    assume hR_in: "R \<in> Rs_in" and hS_in: "S \<in> Rs_in" and hRS_ne: "R \<noteq> S"
+      and h\<sigma>_KR: "\<sigma> \<in> K_R R" and h\<tau>_KS: "\<tau> \<in> K_R S"
+      and h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    obtain eR where heR: "eR \<in> FrTri R"
+      and h\<sigma>_face: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR))"
+      using hK_R_face_of_fan_triangle hR_in h\<sigma>_KR by (by100 blast)
+    obtain eS where heS: "eS \<in> FrTri S"
+      and h\<tau>_face: "geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS))"
+      using hK_R_face_of_fan_triangle hS_in h\<tau>_KS by (by100 blast)
+    have h_sub_frontier: "\<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S"
+      using hK_distinct_region_inter_frontier hR_in hS_in hRS_ne h\<sigma>_KR h\<tau>_KS
+      by (by100 blast)
+    have hR_all:
+      "\<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
+       (\<forall>eR\<in>FrTri R. \<forall>eS\<in>FrTri S. \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+      by (rule bspec[OF hK_distinct_region_fan_faces hR_in])
+    have hS_imp:
+      "R \<noteq> S \<longrightarrow>
+       (\<forall>eR\<in>FrTri R. \<forall>eS\<in>FrTri S. \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+      by (rule bspec[OF hR_all hS_in])
+    have hES:
+      "\<forall>eR\<in>FrTri R. \<forall>eS\<in>FrTri S. \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hS_imp hRS_ne by (by100 simp)
+    have h_eR:
+      "\<forall>eS\<in>FrTri S. \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule bspec[OF hES heR])
+    have h_eS:
+      "\<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule bspec[OF h_eR heS])
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using h_eS h\<sigma>_face h\<tau>_face h_int_ne h_sub_frontier by (by100 blast)
+  qed
   have hK_axiom3: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
   proof (intro ballI impI)
