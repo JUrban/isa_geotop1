@@ -1094,7 +1094,160 @@ proof -
                   r > 0\<rbrakk> \<Longrightarrow>
                 \<exists>u. u \<in> U \<and> dist u x < r \<and>
                     ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
-              sorry
+            proof -
+              fix s r :: real
+              assume hs: "s \<in> {-1::real, 1}"
+                and hside: "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> s * inner (u - x) n_y > 0"
+                and hr_pos: "r > 0"
+              define \<epsilon> where "\<epsilon> = min r ((\<delta>_iso - dist y x) / 2)"
+              have h\<epsilon>_pos: "\<epsilon> > 0"
+                unfolding \<epsilon>_def using hr_pos hy_dist_x_lt_iso by (by100 simp)
+              obtain u where huU: "u \<in> U"
+                and hu_dist_eps: "dist u x < \<epsilon>"
+                and hu_side: "s * inner (u - x) n_y > 0"
+                using hside h\<epsilon>_pos by (by100 blast)
+              define \<gamma> where "\<gamma> = (\<lambda>t::real. u + t *\<^sub>R (y - x))"
+              have hu_dist_r: "dist u x < r"
+              proof -
+                have "\<epsilon> \<le> r" unfolding \<epsilon>_def by (by100 simp)
+                show ?thesis using hu_dist_eps \<open>\<epsilon> \<le> r\<close> by (by100 linarith)
+              qed
+              have h\<gamma>_ball_iso: "\<forall>t\<in>{0..1::real}. \<gamma> t \<in> ball x \<delta>_iso"
+              proof
+                fix t :: real
+                assume ht: "t \<in> {0..1}"
+                have ht_nonneg: "0 \<le> t" using ht by (by100 simp)
+                have ht_le1: "t \<le> 1" using ht by (by100 simp)
+                have hgt_x: "\<gamma> t - x = (u - x) + t *\<^sub>R (y - x)"
+                  unfolding \<gamma>_def by (by100 simp)
+                have htri_norm: "norm ((u - x) + t *\<^sub>R (y - x))
+                    \<le> norm (u - x) + norm (t *\<^sub>R (y - x))"
+                  by (rule norm_triangle_ineq)
+                have hscale: "norm (t *\<^sub>R (y - x)) = \<bar>t\<bar> * norm (y - x)"
+                  by (rule norm_scaleR)
+                have habs: "\<bar>t\<bar> = t" using ht_nonneg by (by100 simp)
+                have hnorm_eq: "norm (\<gamma> t - x) =
+                    norm ((u - x) + t *\<^sub>R (y - x))"
+                  using arg_cong[where f=norm, OF hgt_x] by (by100 simp)
+                have hnorm_le: "norm (\<gamma> t - x) \<le> norm (u - x) + t * norm (y - x)"
+                  using hnorm_eq htri_norm hscale habs by (by100 linarith)
+                have hnorm_u: "norm (u - x) = dist u x"
+                  by (simp add: dist_norm)
+                have hnorm_y: "norm (y - x) = dist y x"
+                  by (simp add: dist_norm)
+                have ht_y_le: "t * norm (y - x) \<le> 1 * norm (y - x)"
+                  using ht_le1 norm_ge_zero[of "y - x"] mult_right_mono by (by100 blast)
+                have hnorm_le2: "norm (\<gamma> t - x) \<le> dist u x + dist y x"
+                  using hnorm_le hnorm_u hnorm_y ht_y_le by (by100 linarith)
+                have h\<epsilon>_le_margin: "\<epsilon> \<le> (\<delta>_iso - dist y x) / 2"
+                  unfolding \<epsilon>_def by (rule min.cobounded2)
+                have heps_plus_le: "\<epsilon> + dist y x \<le> (\<delta>_iso + dist y x) / 2"
+                proof -
+                  have "(\<delta>_iso - dist y x) / 2 + dist y x =
+                      (\<delta>_iso + dist y x) / 2"
+                    by argo
+                  thus ?thesis using h\<epsilon>_le_margin by (by100 linarith)
+                qed
+                have havg_lt: "(\<delta>_iso + dist y x) / 2 < \<delta>_iso"
+                  using hy_dist_x_lt_iso by (by100 argo)
+                have hdist_sum_lt: "dist u x + dist y x < \<delta>_iso"
+                proof -
+                  have "dist u x + dist y x < \<epsilon> + dist y x"
+                    using hu_dist_eps by (by100 linarith)
+                  thus ?thesis using heps_plus_le havg_lt by (by100 linarith)
+                qed
+                have hnorm_lt: "norm (\<gamma> t - x) < \<delta>_iso"
+                  using hnorm_le2 hdist_sum_lt by (by100 linarith)
+                have hdist_eq: "dist x (\<gamma> t) = norm (\<gamma> t - x)"
+                  by (simp add: dist_norm norm_minus_commute)
+                have "dist x (\<gamma> t) < \<delta>_iso"
+                  using hnorm_lt hdist_eq by (by100 simp)
+                thus "\<gamma> t \<in> ball x \<delta>_iso" by (by100 simp)
+              qed
+              have h\<gamma>_off_selected_line:
+                "\<forall>t\<in>{0..1::real}. inner (\<gamma> t - x) n_y \<noteq> 0"
+              proof
+                fix t :: real
+                assume ht: "t \<in> {0..1}"
+                have hgt_x: "\<gamma> t - x = (u - x) + t *\<^sub>R (y - x)"
+                  unfolding \<gamma>_def by (by100 simp)
+                have hinner_eq:
+                  "inner (\<gamma> t - x) n_y =
+                   inner (u - x) n_y + t * inner (y - x) n_y"
+                  using arg_cong[where f="\<lambda>z. inner z n_y", OF hgt_x]
+                  by (simp add: inner_add_left)
+                have hinner_u: "inner (\<gamma> t - x) n_y = inner (u - x) n_y"
+                  using hinner_eq hy_L_y_centered by (by100 simp)
+                have hinner_u_ne: "inner (u - x) n_y \<noteq> 0"
+                proof
+                  assume hzero: "inner (u - x) n_y = 0"
+                  have "s * inner (u - x) n_y = 0" using hzero by (by100 simp)
+                  thus False using hu_side by (by100 simp)
+                qed
+                show "inner (\<gamma> t - x) n_y \<noteq> 0"
+                  using hinner_u hinner_u_ne by (by100 simp)
+              qed
+              have h\<gamma>_avoid_sigma_y: "\<gamma> ` {0..1::real} \<inter> \<sigma>_y = {}"
+              proof (rule equals0I)
+                fix p
+                assume hp: "p \<in> \<gamma> ` {0..1::real} \<inter> \<sigma>_y"
+                obtain t where ht: "t \<in> {0..1::real}" and hp_eq: "p = \<gamma> t"
+                  using hp by (by100 blast)
+                have hp_sigma: "p \<in> \<sigma>_y" using hp by (by100 blast)
+                have hp_L: "p \<in> L_y"
+                  unfolding L_y_def by (rule hull_inc[OF hp_sigma])
+                have hp_inner0: "inner (p - x) n_y = 0"
+                  using hp_L hL_y_eq_centered by (by100 simp)
+                have hp_inner_ne: "inner (p - x) n_y \<noteq> 0"
+                  using h\<gamma>_off_selected_line ht hp_eq by (by100 simp)
+                show False using hp_inner0 hp_inner_ne by (by100 blast)
+              qed
+              have h\<gamma>_avoid_other_edges: "\<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y = {}"
+                sorry
+              have h\<gamma>_avoid_M: "\<gamma> ` {0..1::real} \<inter> M = {}"
+              proof (rule equals0I)
+                fix p
+                assume hp: "p \<in> \<gamma> ` {0..1::real} \<inter> M"
+                obtain t where ht: "t \<in> {0..1::real}" and hp_eq: "p = \<gamma> t"
+                  using hp by (by100 blast)
+                have hp_M: "p \<in> M" using hp by (by100 blast)
+                have hp_ball: "p \<in> ball x \<delta>_iso"
+                  using h\<gamma>_ball_iso ht hp_eq by (by100 blast)
+                have hp_i: "p \<in> i"
+                  using hp_ball hp_M h_ball_iso_M by (by100 blast)
+                have hp_cov: "p \<in> \<Union>EdgesAtX \<union> {x}"
+                  using hp_ball hp_i h_ball_cov by (by100 blast)
+                have hp_not_x: "p \<noteq> x"
+                proof
+                  assume hpx: "p = x"
+                  have "inner (p - x) n_y = 0" using hpx by (by100 simp)
+                  moreover have "inner (p - x) n_y \<noteq> 0"
+                    using h\<gamma>_off_selected_line ht hp_eq by (by100 simp)
+                  ultimately show False by (by100 blast)
+                qed
+                have hp_edges: "p \<in> \<Union>EdgesAtX"
+                  using hp_cov hp_not_x by (by100 blast)
+                obtain \<tau> where h\<tau>_EAX: "\<tau> \<in> EdgesAtX" and hp\<tau>: "p \<in> \<tau>"
+                  using hp_edges by (by100 blast)
+                show False
+                proof (cases "\<tau> = \<sigma>_y")
+                  case True
+                  have "p \<in> \<gamma> ` {0..1::real} \<inter> \<sigma>_y"
+                    using hp ht hp_eq hp\<tau> True by (by100 blast)
+                  thus ?thesis using h\<gamma>_avoid_sigma_y by (by100 blast)
+                next
+                  case False
+                  have h\<tau>_Other: "\<tau> \<in> OtherEdges_y"
+                    using h\<tau>_EAX False unfolding OtherEdges_y_def by (by100 blast)
+                  have "p \<in> \<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y"
+                    using hp ht hp_eq hp\<tau> h\<tau>_Other by (by100 blast)
+                  thus ?thesis using h\<gamma>_avoid_other_edges by (by100 blast)
+                qed
+              qed
+              show "\<exists>u. u \<in> U \<and> dist u x < r \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
+                using huU hu_dist_r h\<gamma>_avoid_M unfolding \<gamma>_def by (by100 blast)
+            qed
             have h_selected_edge_parallel_sector:
               "\<And>r. r > 0 \<Longrightarrow>
                 \<exists>u. u \<in> U \<and> dist u x < r \<and>
