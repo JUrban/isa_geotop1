@@ -4039,6 +4039,95 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_plane_chart_point_complement_connected:
+  fixes U :: "(real^2) set" and p :: "real^2"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hpU: "p \<in> U"
+  shows "top1_connected_on (U - {p})
+      (subspace_topology UNIV geotop_euclidean_topology (U - {p}))"
+proof -
+  let ?q = "f p"
+  have hconn_img: "top1_connected_on (UNIV - {?q})
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV - {?q}))"
+    by (rule geotop_punctured_plane_connected)
+  have hbij: "bij_betw f U (UNIV::(real^2) set)"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinj: "inj_on f U"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hcont_inv: "top1_continuous_map_on (UNIV::(real^2) set) geotop_euclidean_topology
+      U (subspace_topology UNIV geotop_euclidean_topology U) (inv_into U f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have himage_eq: "(inv_into U f) ` (UNIV - {?q}) = U - {p}"
+  proof
+    show "(inv_into U f) ` (UNIV - {?q}) \<subseteq> U - {p}"
+    proof
+      fix y assume hy: "y \<in> (inv_into U f) ` (UNIV - {?q})"
+      then obtain z where hz: "z \<in> UNIV - {?q}" and hyz: "y = inv_into U f z"
+        by (by100 blast)
+      have hzneq: "z \<noteq> ?q"
+        using hz by (by100 simp)
+      have hz_img_U: "z \<in> f ` U"
+        using hbij unfolding bij_betw_def by (by100 simp)
+      then obtain u where huU: "u \<in> U" and hfuz: "f u = z"
+        by (by100 blast)
+      have hy_u: "y = u"
+        using hyz inv_into_f_eq[OF hinj huU hfuz] by (by100 simp)
+      have hyU: "y \<in> U"
+        using hy_u huU by (by100 simp)
+      have hyp: "y \<noteq> p"
+      proof
+        assume "y = p"
+        hence "z = ?q"
+          using hy_u hfuz by (by100 simp)
+        thus False
+          using hzneq by (by100 blast)
+      qed
+      show "y \<in> U - {p}"
+        using hyU hyp by (by100 simp)
+    qed
+  next
+    show "U - {p} \<subseteq> (inv_into U f) ` (UNIV - {?q})"
+    proof
+      fix y assume hy: "y \<in> U - {p}"
+      have hyU: "y \<in> U"
+        using hy by (by100 simp)
+      have hyp: "y \<noteq> p"
+        using hy by (by100 simp)
+      have hfyneq: "f y \<noteq> ?q"
+      proof
+        assume hEq: "f y = ?q"
+        have "y = p"
+          using inj_onD[OF hinj hEq hyU hpU] .
+        thus False
+          using hyp by (by100 simp)
+      qed
+      have hfy: "f y \<in> UNIV - {?q}"
+        using hfyneq by (by100 simp)
+      have hy_inv: "y = inv_into U f (f y)"
+        using bij_betw_inv_into_left[OF hbij hyU] by (by100 simp)
+      show "y \<in> (inv_into U f) ` (UNIV - {?q})"
+        using image_eqI[of y "inv_into U f" "f y" "UNIV - {?q}"] hfy hy_inv
+        by (by100 blast)
+    qed
+  qed
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htop_U: "is_topology_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  have hconn_U: "top1_connected_on (U - {p})
+      (subspace_topology U (subspace_topology UNIV geotop_euclidean_topology U) (U - {p}))"
+    by (rule Theorem_GT_1_8[OF htop_UNIV htop_U hcont_inv subset_UNIV himage_eq hconn_img])
+  have hsub_eq: "subspace_topology U
+        (subspace_topology UNIV geotop_euclidean_topology U) (U - {p}) =
+      subspace_topology UNIV geotop_euclidean_topology (U - {p})"
+    by (rule subspace_topology_trans[OF Diff_subset])
+  show ?thesis
+    using hconn_U hsub_eq by (by100 simp)
+qed
+
 lemma geotop_2_simplex_ball_inter_aff_dim:
   fixes \<sigma> :: "(real^2) set" and p :: "real^2"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
