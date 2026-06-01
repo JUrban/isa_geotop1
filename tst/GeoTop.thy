@@ -1893,6 +1893,74 @@ proof -
                   show "inner (z - x) n_y < 0"
                     using hinner hprod by (by100 simp)
                 qed
+                have h_opposite_L\<tau>_side_avoids_\<sigma>_y:
+                  "\<And>z. ((inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0))
+                    \<Longrightarrow> z \<notin> \<sigma>_y"
+                proof
+                  fix z
+                  assume hsign:
+                    "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                     (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                  assume hz\<sigma>: "z \<in> \<sigma>_y"
+                  have hz_ne_x: "z \<noteq> x"
+                  proof
+                    assume hz_eq: "z = x"
+                    have "inner (z - x) m\<tau>_y = 0"
+                      using hz_eq by (by100 simp)
+                    thus False using hsign by (by100 linarith)
+                  qed
+                  have hz_nonvertex: "z \<in> \<sigma>_y - {x}"
+                    using hz\<sigma> hz_ne_x by (by100 blast)
+                  show False
+                  proof (cases "inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0")
+                    case True
+                    have hz_pos: "inner (z - x) m\<tau>_y > 0"
+                      using h\<sigma>_y_pos_L\<tau>_side[OF conjunct1[OF True]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_pos conjunct2[OF True] by (by100 linarith)
+                  next
+                    case False
+                    have hneg: "inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0"
+                      using hsign False by (by100 blast)
+                    have hz_neg: "inner (z - x) m\<tau>_y < 0"
+                      using h\<sigma>_y_neg_L\<tau>_side[OF conjunct1[OF hneg]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_neg conjunct2[OF hneg] by (by100 linarith)
+                  qed
+                qed
+                have h_opposite_L_y_side_avoids_\<tau>_y:
+                  "\<And>z. ((inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                         (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0))
+                    \<Longrightarrow> z \<notin> \<tau>_y"
+                proof
+                  fix z
+                  assume hsign:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)"
+                  assume hz\<tau>: "z \<in> \<tau>_y"
+                  have hz_ne_x: "z \<noteq> x"
+                  proof
+                    assume hz_eq: "z = x"
+                    have "inner (z - x) n_y = 0"
+                      using hz_eq by (by100 simp)
+                    thus False using hsign by (by100 linarith)
+                  qed
+                  have hz_nonvertex: "z \<in> \<tau>_y - {x}"
+                    using hz\<tau> hz_ne_x by (by100 blast)
+                  show False
+                  proof (cases "inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0")
+                    case True
+                    have hz_pos: "inner (z - x) n_y > 0"
+                      using h\<tau>_y_pos_side[OF conjunct1[OF True]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_pos conjunct2[OF True] by (by100 linarith)
+                  next
+                    case False
+                    have hneg: "inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0"
+                      using hsign False by (by100 blast)
+                    have hz_neg: "inner (z - x) n_y < 0"
+                      using h\<tau>_y_neg_side[OF conjunct1[OF hneg]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_neg conjunct2[OF hneg] by (by100 linarith)
+                  qed
+                qed
                 have h_opposite_side_choice:
                   "\<lbrakk>(inner (p\<tau>_y - x) n_y > 0 \<and>
                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
