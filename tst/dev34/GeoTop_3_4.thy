@@ -2861,6 +2861,75 @@ proof -
     unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
 qed
 
+lemma geotop_star_finite_at_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  shows "finite (geotop_star K v)"
+proof -
+  let ?I = "{\<sigma>\<in>K. v \<in> \<sigma>}"
+  have hK_simplex: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have hK_local: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+      finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule conjunct2[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]])
+  have hlocal_v: "\<exists>U. open U \<and> {v} \<subseteq> U \<and>
+      finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule bspec[OF hK_local hvK])
+  obtain U where hUopen: "open U" and hvUsub: "{v} \<subseteq> U"
+    and hUfin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hlocal_v by (by100 blast)
+  have hvU: "v \<in> U"
+    using hvUsub by (by100 blast)
+  have hI_sub: "?I \<subseteq> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>I: "\<sigma> \<in> ?I"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using h\<sigma>I by (by100 blast)
+    have hv\<sigma>: "v \<in> \<sigma>"
+      using h\<sigma>I by (by100 blast)
+    have "\<sigma> \<inter> U \<noteq> {}"
+      using hv\<sigma> hvU by (by100 blast)
+    show "\<sigma> \<in> {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+      using h\<sigma>K \<open>\<sigma> \<inter> U \<noteq> {}\<close> by (by100 blast)
+  qed
+  have hI_fin: "finite ?I"
+    by (rule finite_subset[OF hI_sub hUfin])
+  have hstar_eq:
+    "geotop_star K v =
+      (\<Union>\<sigma>\<in>?I. {(\<tau>::(real^2) set). geotop_is_face \<tau> \<sigma>} \<union> {\<sigma>})"
+    unfolding geotop_star_def by (by100 blast)
+  have hfaces_fin:
+    "finite (\<Union>\<sigma>\<in>?I. {(\<tau>::(real^2) set). geotop_is_face \<tau> \<sigma>} \<union> {\<sigma>})"
+  proof (rule finite_UN_I[OF hI_fin])
+    fix \<sigma> assume h\<sigma>I: "\<sigma> \<in> ?I"
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using h\<sigma>I by (by100 blast)
+    have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+      using hK_simplex h\<sigma>K by (by100 blast)
+    have "finite {(\<tau>::(real^2) set). geotop_is_face \<tau> \<sigma>}"
+      by (rule geotop_simplex_faces_finite[OF h\<sigma>simplex])
+    thus "finite ({(\<tau>::(real^2) set). geotop_is_face \<tau> \<sigma>} \<union> {\<sigma>})"
+      by (by100 simp)
+  qed
+  show ?thesis
+    using hstar_eq hfaces_fin by (by100 simp)
+qed
+
+lemma geotop_link_finite_at_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  shows "finite (geotop_link K v)"
+proof -
+  have hstar_fin: "finite (geotop_star K v)"
+    by (rule geotop_star_finite_at_vertex[OF hK hvK])
+  have hlink_sub: "geotop_link K v \<subseteq> geotop_star K v"
+    unfolding geotop_link_def by (by100 blast)
+  show ?thesis
+    by (rule finite_subset[OF hlink_sub hstar_fin])
+qed
+
 lemma geotop_link_polyhedron_subset_star_polyhedron:
   "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
   unfolding geotop_link_def by (by100 blast)
