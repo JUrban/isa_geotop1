@@ -662,6 +662,23 @@ proof -
             have hL_y_hyperplane: "geotop_hyperplane_dim L_y 1"
               using geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>_y_dim] L_y_def
               by (by100 simp)
+            have hL_y_normal_ex: "\<exists>n d. n \<noteq> (0::real^2) \<and> L_y = {z. n \<bullet> z = d}"
+              by (rule geotop_hyperplane_dim_1_R2_normal_form[OF hL_y_hyperplane])
+            obtain n_y d_y where hn_y_ne: "n_y \<noteq> (0::real^2)"
+              and hL_y_eq: "L_y = {z. n_y \<bullet> z = d_y}"
+              using hL_y_normal_ex by (by100 blast)
+            have hd_y_eq: "d_y = n_y \<bullet> x"
+              using hx_L_y hL_y_eq by (by100 blast)
+            have hL_y_eq_centered: "L_y = {z. inner (z - x) n_y = 0}"
+            proof -
+              have h_eq1: "L_y = {z. n_y \<bullet> z = inner n_y x}"
+                using hL_y_eq hd_y_eq by (by100 simp)
+              have h_eq2: "{z. n_y \<bullet> z = inner n_y x} = {z. inner (z - x) n_y = 0}"
+                by (auto simp: inner_diff_right inner_commute)
+              show ?thesis using h_eq1 h_eq2 by (by100 simp)
+            qed
+            have hy_L_y_centered: "inner (y - x) n_y = 0"
+              using hy_L_y hL_y_eq_centered by (by100 simp)
             have h_sector_path_to_y:
               "y \<in> closure U"
               sorry
