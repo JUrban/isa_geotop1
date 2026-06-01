@@ -1555,13 +1555,145 @@ proof -
     "\<exists>U\<^sub>Q. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
             U\<^sub>Q \<subseteq> geotop_polygon_interior J - A \<and>
             Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
-    sorry
+  proof -
+    let ?U = "geotop_polygon_interior J - A"
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have hA_closed: "closed A"
+      using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+    have hI_open: "open (geotop_polygon_interior J)"
+      by (rule polygon_interior_open[OF hJ])
+    have hU_open_HOL: "open ?U"
+      by (rule open_Diff[OF hI_open hA_closed])
+    have hU_open: "?U \<in> geotop_euclidean_topology"
+      by (metis hU_open_HOL geotop_euclidean_topology_eq_open_sets
+                mem_Collect_eq top1_open_sets_def)
+    have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+    proof
+      show "Q \<noteq> P"
+      proof
+        assume "Q = P"
+        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
+        thus False using hcard by (by100 simp)
+      qed
+      show "Q \<noteq> R"
+      proof
+        assume "Q = R"
+        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
+        thus False using hcard by (by100 simp)
+      qed
+    qed
+    have hQ_not_A: "Q \<notin> A"
+    proof
+      assume hQA: "Q \<in> A"
+      have "Q \<in> A \<inter> J" using hQA hQ by (by100 blast)
+      hence "Q = P \<or> Q = R" using hAJ by (by100 blast)
+      thus False using hQ_ne_PR by (by100 blast)
+    qed
+    have hQ_not_I: "Q \<notin> geotop_polygon_interior J"
+      using hQ polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    have hlim_top:
+      "is_limit_point_of Q (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
+      using Theorem_GT_2_5[OF hJ] hQ by (by100 blast)
+    have hlim_I: "Q islimpt geotop_polygon_interior J"
+      using hlim_top is_limit_point_of_UNIV_geotop_iff_islimpt[of Q "geotop_polygon_interior J"]
+      by (by100 blast)
+    have hnotA_open: "open (- A)"
+      by (rule open_Compl[OF hA_closed])
+    have hQ_in_notA: "Q \<in> - A"
+      using hQ_not_A by (by100 simp)
+    have hevent_not_A: "eventually (\<lambda>x. x \<in> - A) (at Q)"
+      by (rule eventually_at_in_open'[OF hnotA_open hQ_in_notA])
+    have hlim_U: "Q islimpt ?U"
+    proof -
+      have "Q islimpt (geotop_polygon_interior J \<inter> - A)"
+        by (rule islimpt_Int_eventually[OF hlim_I hevent_not_A])
+      thus ?thesis by (simp add: Diff_eq)
+    qed
+    have hQ_closure: "Q \<in> closure ?U"
+      using hlim_U unfolding closure_def by (by100 simp)
+    have hQ_not_int: "Q \<notin> interior ?U"
+      using hQ_not_I interior_subset[of ?U] by (by100 blast)
+    have hQ_front_HOL: "Q \<in> frontier ?U"
+      using hQ_closure hQ_not_int
+      unfolding Elementary_Topology.frontier_def by (by100 blast)
+    have hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology ?U"
+      using hQ_front_HOL geotop_frontier_UNIV_eq_frontier[of ?U] by (by100 simp)
+    show ?thesis using hU_open hQ_front by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim D42-2: similarly there's a U_S with S in its frontier.\<close>
   have hD42_US_ex:
     "\<exists>U\<^sub>S. U\<^sub>S \<in> geotop_euclidean_topology \<and>
             U\<^sub>S \<subseteq> geotop_polygon_interior J - A \<and>
             S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-    sorry
+  proof -
+    let ?U = "geotop_polygon_interior J - A"
+    obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = A"
+      using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+    have hA_closed: "closed A"
+      using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+    have hI_open: "open (geotop_polygon_interior J)"
+      by (rule polygon_interior_open[OF hJ])
+    have hU_open_HOL: "open ?U"
+      by (rule open_Diff[OF hI_open hA_closed])
+    have hU_open: "?U \<in> geotop_euclidean_topology"
+      by (metis hU_open_HOL geotop_euclidean_topology_eq_open_sets
+                mem_Collect_eq top1_open_sets_def)
+    have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+    proof
+      show "S \<noteq> P"
+      proof
+        assume "S = P"
+        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
+        thus False using hcard by (by100 simp)
+      qed
+      show "S \<noteq> R"
+      proof
+        assume "S = R"
+        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
+        thus False using hcard by (by100 simp)
+      qed
+    qed
+    have hS_not_A: "S \<notin> A"
+    proof
+      assume hSA: "S \<in> A"
+      have "S \<in> A \<inter> J" using hSA hS by (by100 blast)
+      hence "S = P \<or> S = R" using hAJ by (by100 blast)
+      thus False using hS_ne_PR by (by100 blast)
+    qed
+    have hS_not_I: "S \<notin> geotop_polygon_interior J"
+      using hS polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+    have hlim_top:
+      "is_limit_point_of S (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
+      using Theorem_GT_2_5[OF hJ] hS by (by100 blast)
+    have hlim_I: "S islimpt geotop_polygon_interior J"
+      using hlim_top is_limit_point_of_UNIV_geotop_iff_islimpt[of S "geotop_polygon_interior J"]
+      by (by100 blast)
+    have hnotA_open: "open (- A)"
+      by (rule open_Compl[OF hA_closed])
+    have hS_in_notA: "S \<in> - A"
+      using hS_not_A by (by100 simp)
+    have hevent_not_A: "eventually (\<lambda>x. x \<in> - A) (at S)"
+      by (rule eventually_at_in_open'[OF hnotA_open hS_in_notA])
+    have hlim_U: "S islimpt ?U"
+    proof -
+      have "S islimpt (geotop_polygon_interior J \<inter> - A)"
+        by (rule islimpt_Int_eventually[OF hlim_I hevent_not_A])
+      thus ?thesis by (simp add: Diff_eq)
+    qed
+    have hS_closure: "S \<in> closure ?U"
+      using hlim_U unfolding closure_def by (by100 simp)
+    have hS_not_int: "S \<notin> interior ?U"
+      using hS_not_I interior_subset[of ?U] by (by100 blast)
+    have hS_front_HOL: "S \<in> frontier ?U"
+      using hS_closure hS_not_int
+      unfolding Elementary_Topology.frontier_def by (by100 blast)
+    have hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology ?U"
+      using hS_front_HOL geotop_frontier_UNIV_eq_frontier[of ?U] by (by100 simp)
+    show ?thesis using hU_open hS_front by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim D42-3: U_Q and U_S are DIFFERENT components, hence disjoint.
     Argument: if they coincided (same component), broken-line from Q' to S'
     in I - A could be detoured into a closed broken line B; B would
