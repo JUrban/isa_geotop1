@@ -1082,6 +1082,27 @@ proof -
               by (rule h_other_edge_meets_sigma_y_only_at_x[OF h\<tau>_y_EAX h\<tau>_y_ne])
             have hOther_union_eq_\<tau>_y: "\<Union>OtherEdges_y = \<tau>_y"
               using hOther_eq_singleton by (by100 simp)
+            have hEdgesAtX_eq_pair: "EdgesAtX = {\<sigma>_y, \<tau>_y}"
+              using hOther_eq_singleton h\<sigma>_y_EAX unfolding OtherEdges_y_def
+              by (by100 blast)
+            have h_ball_x_M_sub_two_edges:
+              "ball x \<delta>_iso \<inter> M \<subseteq> \<sigma>_y \<union> \<tau>_y"
+            proof
+              fix z
+              assume hz: "z \<in> ball x \<delta>_iso \<inter> M"
+              have hz_ball: "z \<in> ball x \<delta>_iso"
+                using hz by (by100 blast)
+              have hz_M: "z \<in> M"
+                using hz by (by100 blast)
+              have hz_i: "z \<in> i"
+                using hz_ball hz_M h_ball_iso_M by (by100 blast)
+              have hz_cov: "z \<in> \<Union>EdgesAtX \<union> {x}"
+                using hz_ball hz_i h_ball_cov by (by100 blast)
+              have hx_in_pair: "x \<in> \<sigma>_y \<union> \<tau>_y"
+                using h\<sigma>_y_EAX hEAX_x_in by (by100 blast)
+              show "z \<in> \<sigma>_y \<union> \<tau>_y"
+                using hz_cov hEdgesAtX_eq_pair hx_in_pair by (by100 blast)
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
