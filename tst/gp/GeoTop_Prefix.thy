@@ -4659,6 +4659,53 @@ proof -
     using hQR hQR_open hfronts by (by100 blast)
 qed
 
+lemma geotop_two_arcs_R2_to_S2_frontier_components:
+  fixes B1 B2 E :: "(real^2) set"
+  assumes hE1: "geotop_arc_endpoints B1 E"
+      and hE2: "geotop_arc_endpoints B2 E"
+      and h_disj: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+  shows "\<exists>Q R. Q \<noteq> {} \<and> R \<noteq> {} \<and> Q \<inter> R = {}
+      \<and> Q \<union> R = top1_S2 - (R2_to_S2 ` B1 \<union> R2_to_S2 ` B2)
+      \<and> top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)
+      \<and> top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)
+      \<and> Q \<in> top1_S2_topology \<and> R \<in> top1_S2_topology
+      \<and> geotop_frontier top1_S2 top1_S2_topology Q = R2_to_S2 ` B1 \<union> R2_to_S2 ` B2
+      \<and> geotop_frontier top1_S2 top1_S2_topology R = R2_to_S2 ` B1 \<union> R2_to_S2 ` B2"
+proof -
+  have hE_card: "card E = 2"
+    using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+  obtain a b where hab: "a \<noteq> b" and hE_eq: "E = {a, b}"
+    using hE_card card_2_iff by (by100 metis)
+  have himg_ne: "R2_to_S2 a \<noteq> R2_to_S2 b"
+    using R2_to_S2_inj_on_UNIV hab unfolding inj_on_def by (by100 blast)
+  have hA1: "top1_is_arc_on (R2_to_S2 ` B1)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B1))"
+    by (rule R2_to_S2_geotop_arc_top1_arc[OF hE1 hE_eq hab])
+  have hA2: "top1_is_arc_on (R2_to_S2 ` B2)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B2))"
+    by (rule R2_to_S2_geotop_arc_top1_arc[OF hE2 hE_eq hab])
+  have hEP1: "top1_arc_endpoints_on (R2_to_S2 ` B1)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B1))
+       = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule R2_to_S2_geotop_arc_top1_arc_endpoints[OF hE1 hE_eq hab])
+  have hEP2: "top1_arc_endpoints_on (R2_to_S2 ` B2)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B2))
+       = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule R2_to_S2_geotop_arc_top1_arc_endpoints[OF hE2 hE_eq hab])
+  have hsub1: "R2_to_S2 ` B1 \<subseteq> top1_S2"
+    using R2_to_S2_image_subset_S2_minus_north[of B1] by (by100 blast)
+  have hsub2: "R2_to_S2 ` B2 \<subseteq> top1_S2"
+    using R2_to_S2_image_subset_S2_minus_north[of B2] by (by100 blast)
+  have hB12: "B1 \<inter> B2 = E"
+    by (rule pair_of_arcs_intersection[OF hE1 hE2 h_disj])
+  have hImg12:
+    "R2_to_S2 ` B1 \<inter> R2_to_S2 ` B2 = {R2_to_S2 a, R2_to_S2 b}"
+    using R2_to_S2_image_Int[of B1 B2] hB12 hE_eq by (by100 simp)
+  show ?thesis
+    by (rule S2_two_arcs_frontier_components[
+        OF hsub1 hsub2 hA1 hA2 hImg12 himg_ne hEP1 hEP2])
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
