@@ -1088,33 +1088,28 @@ proof -
                 thus False using hrn_no by (by100 blast)
               qed
             qed
-            have h_parallel_sector_from_side:
-              "\<And>s r. \<lbrakk>s \<in> {-1::real, 1};
-                  \<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> s * inner (u - x) n_y > 0;
-                  r > 0\<rbrakk> \<Longrightarrow>
+            have h_parallel_sector_from_adjacent_choice:
+              "\<And>r. r > 0 \<Longrightarrow>
                 \<exists>u. u \<in> U \<and> dist u x < r \<and>
                     ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
             proof -
-              fix s r :: real
-              assume hs: "s \<in> {-1::real, 1}"
-                and hside: "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> s * inner (u - x) n_y > 0"
-                and hr_pos: "r > 0"
+              fix r :: real
+              assume hr_pos: "r > 0"
               define \<epsilon> where "\<epsilon> = min r ((\<delta>_iso - dist y x) / 2)"
               have h\<epsilon>_pos: "\<epsilon> > 0"
                 unfolding \<epsilon>_def using hr_pos hy_dist_x_lt_iso by (by100 simp)
-              \<comment> \<open>The one-sided half-plane information alone is not enough at a
-                broken-line vertex: a translate parallel to \<open>\<sigma>_y\<close> can cross
-                another incident edge unless the starting point is chosen in
-                the local sector adjacent to \<open>\<sigma>_y\<close>. This is the remaining
-                local vertex-sector step from Moise's circular-neighbourhood
-                argument.\<close>
+              \<comment> \<open>The remaining book step chooses points of \<open>U\<close> in the local
+                sector adjacent to the selected incident edge \<open>\<sigma>_y\<close>. This is
+                stronger than merely choosing a half-plane side of \<open>L_y\<close>:
+                the wrong half-plane sector can cross another incident edge
+                under translation parallel to \<open>\<sigma>_y\<close>.\<close>
               have h_adjacent_sector_choice:
-                "\<exists>u\<in>U. dist u x < \<epsilon> \<and> s * inner (u - x) n_y > 0 \<and>
+                "\<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
                   ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
                 sorry
               obtain u where huU: "u \<in> U"
                 and hu_dist_eps: "dist u x < \<epsilon>"
-                and hu_side: "s * inner (u - x) n_y > 0"
+                and hu_off_L_y: "inner (u - x) n_y \<noteq> 0"
                 and hu_avoid_other_edges:
                   "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
                 using h_adjacent_sector_choice by (by100 blast)
@@ -1190,14 +1185,8 @@ proof -
                   by (simp add: inner_add_left)
                 have hinner_u: "inner (\<gamma> t - x) n_y = inner (u - x) n_y"
                   using hinner_eq hy_L_y_centered by (by100 simp)
-                have hinner_u_ne: "inner (u - x) n_y \<noteq> 0"
-                proof
-                  assume hzero: "inner (u - x) n_y = 0"
-                  have "s * inner (u - x) n_y = 0" using hzero by (by100 simp)
-                  thus False using hu_side by (by100 simp)
-                qed
                 show "inner (\<gamma> t - x) n_y \<noteq> 0"
-                  using hinner_u hinner_u_ne by (by100 simp)
+                  using hinner_u hu_off_L_y by (by100 simp)
               qed
               have h\<gamma>_avoid_sigma_y: "\<gamma> ` {0..1::real} \<inter> \<sigma>_y = {}"
               proof (rule equals0I)
@@ -1294,28 +1283,9 @@ proof -
             proof -
               fix r :: real
               assume hr_pos: "r > 0"
-              consider (pos)
-                "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> inner (u - x) n_y > 0" |
-                (neg)
-                "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> inner (u - x) n_y < 0"
-                using hU_meets_one_side_L_y by (by100 blast)
-              thus "\<exists>u. u \<in> U \<and> dist u x < r \<and>
+              show "\<exists>u. u \<in> U \<and> dist u x < r \<and>
                     ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
-              proof cases
-                case pos
-                have hside:
-                  "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> (1::real) * inner (u - x) n_y > 0"
-                  using pos by (by100 simp)
-                show ?thesis
-                  by (rule h_parallel_sector_from_side[OF _ hside hr_pos], by100 simp)
-              next
-                case neg
-                have hside:
-                  "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> (-1::real) * inner (u - x) n_y > 0"
-                  using neg by (by100 simp)
-                show ?thesis
-                  by (rule h_parallel_sector_from_side[OF _ hside hr_pos], by100 simp)
-              qed
+                by (rule h_parallel_sector_from_adjacent_choice[OF hr_pos])
             qed
             have h_sector_small_to_y:
               "\<And>r. \<lbrakk>r > 0; r \<le> dist y x\<rbrakk> \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
