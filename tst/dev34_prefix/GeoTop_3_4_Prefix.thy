@@ -4769,6 +4769,49 @@ proof -
     using h\<tau>link h\<tau>edge hw\<tau> hu\<tau> by (by100 blast)
 qed
 
+lemma geotop_simplex_opposite_edge_face_in_link:
+  fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hwV: "w \<in> V"
+  assumes huV: "u \<in> V"
+  assumes hvw: "v \<noteq> w"
+  assumes hvu: "v \<noteq> u"
+  assumes hwu: "w \<noteq> u"
+  shows "geotop_is_face (geotop_convex_hull {w, u}) \<sigma>
+      \<and> geotop_convex_hull {w, u} \<in> geotop_link K v
+      \<and> geotop_is_edge (geotop_convex_hull {w, u})
+      \<and> w \<in> geotop_convex_hull {w, u}
+      \<and> u \<in> geotop_convex_hull {w, u}"
+proof -
+  let ?\<tau> = "geotop_convex_hull {w, u}"
+  have hpair_sub: "{w, u} \<subseteq> V"
+    using hwV huV by (by100 blast)
+  have hface: "geotop_is_face ?\<tau> \<sigma>"
+    unfolding geotop_is_face_def
+  proof (intro exI conjI)
+    show "geotop_simplex_vertices \<sigma> V"
+      by (rule h\<sigma>V)
+    show "{w, u} \<noteq> {}"
+      by (by100 simp)
+    show "{w, u} \<subseteq> V"
+      by (rule hpair_sub)
+    show "?\<tau> = geotop_convex_hull {w, u}"
+      by (by100 simp)
+  qed
+  have hopposite:
+    "?\<tau> \<in> geotop_link K v
+      \<and> geotop_is_edge ?\<tau>
+      \<and> w \<in> ?\<tau>
+      \<and> u \<in> ?\<tau>"
+    by (rule geotop_simplex_opposite_edge_in_link
+        [OF hK h\<sigma>K h\<sigma>V hvV hwV huV hvw hvu hwu])
+  show ?thesis
+    using hface hopposite by (by100 blast)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -5015,6 +5058,112 @@ proof -
       \<and> w \<in> geotop_convex_hull {w, u}
       \<and> u \<in> geotop_convex_hull {w, u}"
     by (rule geotop_simplex_opposite_edge_in_link
+        [OF hK h\<sigma>K h\<sigma>V hvV hwV huV hv_ne_w hv_ne_u hw_ne_u])
+  show ?thesis
+    using hu\<sigma> hv_ne_u hw_ne_u hopposite by (by100 blast)
+qed
+
+lemma geotop_link_vertex_incident_2simplex_opposite_face_link_edge:
+  fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  assumes hw_e: "w \<in> e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hface: "geotop_is_face e \<sigma>"
+  shows "\<exists>u. u \<in> \<sigma> \<and> u \<noteq> v \<and> u \<noteq> w
+      \<and> geotop_is_face (geotop_convex_hull {w, u}) \<sigma>
+      \<and> geotop_convex_hull {w, u} \<in> geotop_link K v
+      \<and> geotop_is_edge (geotop_convex_hull {w, u})
+      \<and> w \<in> geotop_convex_hull {w, u}
+      \<and> u \<in> geotop_convex_hull {w, u}"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two[OF hedge hface])
+  obtain V2 m where hV2_fin: "finite V2"
+    and hV2_card: "card V2 = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V2: "geotop_general_position V2 m"
+    and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+    unfolding geotop_simplex_vertices_def
+    using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+  have hV_eq: "V = V2"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+  have hV_card: "card V = 3"
+    using hV_eq hV2_card by (by100 simp)
+  have hV_fin: "finite V"
+    using hV_eq hV2_fin by (by100 simp)
+  obtain Wv where heWv: "geotop_simplex_vertices e Wv"
+    and hvWv: "v \<in> Wv"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK heK hv_e]
+    by (by100 blast)
+  have hWv_eq: "Wv = W"
+    by (rule geotop_simplex_vertices_unique[OF heWv heW])
+  have hvW: "v \<in> W"
+    using hvWv hWv_eq by (by100 simp)
+  have hvV: "v \<in> V"
+    using hW_sub hvW by (by100 blast)
+  have hlink_sub: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  have hwK: "{w} \<in> K"
+    using hlink_sub hwL by (by100 blast)
+  obtain Ww where heWw: "geotop_simplex_vertices e Ww"
+    and hwWw: "w \<in> Ww"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hwK heK hw_e]
+    by (by100 blast)
+  have hWw_eq: "Ww = W"
+    by (rule geotop_simplex_vertices_unique[OF heWw heW])
+  have hwW: "w \<in> W"
+    using hwWw hWw_eq by (by100 simp)
+  have hwV: "w \<in> V"
+    using hW_sub hwW by (by100 blast)
+  have hW_fin: "finite W"
+    using hW_sub hV_fin by (rule finite_subset)
+  have hV_not_sub_W: "\<not> V \<subseteq> W"
+  proof
+    assume hsub: "V \<subseteq> W"
+    have "card V \<le> card W"
+      by (rule card_mono[OF hW_fin hsub])
+    thus False
+      using hV_card hW_card by (by100 simp)
+  qed
+  obtain u where huV: "u \<in> V" and hu_not_W: "u \<notin> W"
+    using hV_not_sub_W by (by100 blast)
+  have h\<sigma>_eq_V: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hu\<sigma>: "u \<in> \<sigma>"
+  proof -
+    have "u \<in> convex hull V"
+      using huV hull_inc[of u V] by (by100 simp)
+    moreover have "geotop_convex_hull V = convex hull V"
+      by (rule geotop_convex_hull_eq_HOL)
+    ultimately show ?thesis
+      using h\<sigma>_eq_V by (by100 simp)
+  qed
+  have hv_ne_w: "v \<noteq> w"
+    using hwL unfolding geotop_link_def by (by100 blast)
+  have hv_ne_u: "v \<noteq> u"
+    using hvW hu_not_W by (by100 blast)
+  have hw_ne_u: "w \<noteq> u"
+    using hwW hu_not_W by (by100 blast)
+  have hopposite:
+    "geotop_is_face (geotop_convex_hull {w, u}) \<sigma>
+      \<and> geotop_convex_hull {w, u} \<in> geotop_link K v
+      \<and> geotop_is_edge (geotop_convex_hull {w, u})
+      \<and> w \<in> geotop_convex_hull {w, u}
+      \<and> u \<in> geotop_convex_hull {w, u}"
+    by (rule geotop_simplex_opposite_edge_face_in_link
         [OF hK h\<sigma>K h\<sigma>V hvV hwV huV hv_ne_w hv_ne_u hw_ne_u])
   show ?thesis
     using hu\<sigma> hv_ne_u hw_ne_u hopposite by (by100 blast)
