@@ -1175,6 +1175,28 @@ proof -
                 unfolding hU_eq
                 using connected_component_maximal[OF huC hC_conn hC_sub_global] .
             qed
+            have h_path_in_local_two_edge_complement_stays_U:
+              "\<And>\<gamma> t. \<lbrakk>continuous_on {0..1::real} \<gamma>;
+                        \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y);
+                        \<gamma> 0 \<in> U; t \<in> {0..1::real}\<rbrakk> \<Longrightarrow> \<gamma> t \<in> U"
+            proof -
+              fix \<gamma> :: "real \<Rightarrow> real^2" and t :: real
+              assume h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                and h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                and h\<gamma>0_U: "\<gamma> 0 \<in> U"
+                and ht: "t \<in> {0..1::real}"
+              have h\<gamma>_conn: "connected (\<gamma> ` {0..1::real})"
+                using connected_continuous_image[OF h\<gamma>_cont] by (by100 simp)
+              have h\<gamma>0_img: "\<gamma> 0 \<in> \<gamma> ` {0..1::real}"
+                by (by100 simp)
+              have h\<gamma>_img_sub_U: "\<gamma> ` {0..1::real} \<subseteq> U"
+                by (rule h_connected_local_two_edge_subset_stays_U
+                    [OF h\<gamma>_conn h\<gamma>0_img h\<gamma>0_U h\<gamma>_sub])
+              have "\<gamma> t \<in> \<gamma> ` {0..1::real}"
+                using ht by (by100 blast)
+              thus "\<gamma> t \<in> U"
+                using h\<gamma>_img_sub_U by (by100 blast)
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
