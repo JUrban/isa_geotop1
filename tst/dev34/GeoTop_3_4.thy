@@ -1097,13 +1097,52 @@ proof -
     components (I', E') via Theorem_GT_2_1 / Jordan_Brouwer_separation +
     geotop_polygon_interior infrastructure.\<close>
   have h_polygon_JCT:
-    "\<forall>J'. geotop_is_polygon J' \<longrightarrow>
+    "\<forall>J'::(real^2) set. geotop_is_polygon J' \<longrightarrow>
           (\<exists>I' E'. UNIV - J' = I' \<union> E' \<and> I' \<inter> E' = {} \<and>
                    top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
                    top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
                    J' = geotop_frontier UNIV geotop_euclidean_topology I' \<and>
                    J' = geotop_frontier UNIV geotop_euclidean_topology E')"
-    sorry
+  proof (intro allI impI)
+    fix J' :: "(real^2) set"
+    assume hJ': "geotop_is_polygon J'"
+    let ?I = "geotop_polygon_interior J'"
+    let ?E = "geotop_polygon_exterior J'"
+    have hcomps: "components (UNIV - J') = {?I, ?E}"
+      by (rule polygon_components_eq[OF hJ'])
+    have hcover: "UNIV - J' = ?I \<union> ?E"
+    proof -
+      have "\<Union>(components (UNIV - J')) = UNIV - J'"
+        by (rule Union_components)
+      thus ?thesis using hcomps by (by100 simp)
+    qed
+    have hdisj: "?I \<inter> ?E = {}"
+      by (rule polygon_interior_exterior_disjoint[OF hJ'])
+    have hI_comp: "?I \<in> components (UNIV - J')"
+      using hcomps by (by100 simp)
+    have hE_comp: "?E \<in> components (UNIV - J')"
+      using hcomps by (by100 simp)
+    have hI_conn_HOL: "connected ?I"
+      using hI_comp in_components_connected by (by100 blast)
+    have hE_conn_HOL: "connected ?E"
+      using hE_comp in_components_connected by (by100 blast)
+    have hI_conn:
+      "top1_connected_on ?I (subspace_topology UNIV geotop_euclidean_topology ?I)"
+      using hI_conn_HOL top1_connected_on_geotop_iff_connected[of ?I] by (by100 simp)
+    have hE_conn:
+      "top1_connected_on ?E (subspace_topology UNIV geotop_euclidean_topology ?E)"
+      using hE_conn_HOL top1_connected_on_geotop_iff_connected[of ?E] by (by100 simp)
+    have hI_front: "J' = geotop_frontier UNIV geotop_euclidean_topology ?I"
+      by (rule Theorem_GT_2_6(1)[OF hJ'])
+    have hE_front: "J' = geotop_frontier UNIV geotop_euclidean_topology ?E"
+      by (rule Theorem_GT_2_6(2)[OF hJ'])
+    show "(\<exists>I' E'. UNIV - J' = I' \<union> E' \<and> I' \<inter> E' = {} \<and>
+                 top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
+                 top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
+                 J' = geotop_frontier UNIV geotop_euclidean_topology I' \<and>
+                 J' = geotop_frontier UNIV geotop_euclidean_topology E')"
+      using hcover hdisj hI_conn hE_conn hI_front hE_front by (by100 blast)
+  qed
   (** (3) Pull the Jordan decomposition back through the homeomorphism h: I = h^{-1}(I'),
          E = h^{-1}(E'). The connectivity, disjointness, and frontier relations transport
          through the homeomorphism. **)
