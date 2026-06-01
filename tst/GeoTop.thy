@@ -6721,7 +6721,14 @@ proof -
             "(i = B1 \<and> j = B2) \<or> (i = B2 \<and> j = B1) \<or>
              (i = B1 \<and> j = B3) \<or> (i = B3 \<and> j = B1) \<or>
              (i = B2 \<and> j = B3) \<or> (i = B3 \<and> j = B2)"
-            using hi_mem hj_mem hij_ne by (by100 auto)
+          proof -
+            have hi_cases: "i = B1 \<or> i = B2 \<or> i = B3"
+              using hi_mem by (by100 simp)
+            have hj_cases: "j = B1 \<or> j = B2 \<or> j = B3"
+              using hj_mem by (by100 simp)
+            show ?thesis
+              using hi_cases hj_cases hij_ne by (elim disjE) (by100 simp_all)
+          qed
           show ?thesis
             using hfr hij_cases by (by100 auto)
         qed
@@ -9523,18 +9530,56 @@ proof -
       case True
       have h_R_clI: "R \<subseteq> closure I"
       proof -
-        have hcl_mono: "closure (interior R) \<subseteq> closure I" using True closure_mono by (by100 blast)
-        show ?thesis using hR_reg hcl_mono by (by100 simp)
+        have hcl_mono: "closure (interior R) \<subseteq> closure I"
+          by (rule closure_mono[OF True])
+        show ?thesis
+        proof
+          fix x
+          assume hx: "x \<in> R"
+          have "x \<in> closure (interior R)" using hx hR_reg by (by100 simp)
+          thus "x \<in> closure I" using hcl_mono by (by100 blast)
+        qed
       qed
       have "R \<subseteq> I \<union> J" using h_R_clI h_clI_HOL by (by100 simp)
       thus ?thesis using hIbar_HOL by (by100 blast)
     next
       case False
-      hence hRE: "interior R \<subseteq> Ee" using hsub_IE h_int_disj_or by (by100 blast)
+      have hRE: "interior R \<subseteq> Ee"
+      proof
+        fix x
+        assume hx: "x \<in> interior R"
+        have hx_IE: "x \<in> I \<union> Ee" using hsub_IE hx by (by100 blast)
+        show "x \<in> Ee"
+        proof (cases "interior R \<inter> I = {}")
+          case True
+          have "x \<notin> I" using True hx by (by100 blast)
+          thus ?thesis using hx_IE by (by100 blast)
+        next
+          case not_I_empty: False
+          have hE_empty: "interior R \<inter> Ee = {}"
+            using h_int_disj_or not_I_empty by (by100 blast)
+          have "interior R \<subseteq> I"
+          proof
+            fix y
+            assume hy: "y \<in> interior R"
+            have hy_IE: "y \<in> I \<union> Ee" using hsub_IE hy by (by100 blast)
+            have "y \<notin> Ee" using hE_empty hy by (by100 blast)
+            thus "y \<in> I" using hy_IE by (by100 blast)
+          qed
+          thus ?thesis using False by (by100 blast)
+        qed
+      qed
       have h_R_clE: "R \<subseteq> closure Ee"
       proof -
-        have hcl_mono: "closure (interior R) \<subseteq> closure Ee" using hRE closure_mono by (by100 blast)
-        show ?thesis using hR_reg hcl_mono by (by100 simp)
+        have hcl_mono: "closure (interior R) \<subseteq> closure Ee"
+          by (rule closure_mono[OF hRE])
+        show ?thesis
+        proof
+          fix x
+          assume hx: "x \<in> R"
+          have "x \<in> closure (interior R)" using hx hR_reg by (by100 simp)
+          thus "x \<in> closure Ee" using hcl_mono by (by100 blast)
+        qed
       qed
       have h_R_EJ: "R \<subseteq> Ee \<union> J" using h_R_clE h_clE_HOL by (by100 simp)
       have "R \<inter> Ibar \<subseteq> (Ee \<union> J) \<inter> (I \<union> J)" using h_R_EJ hIbar_HOL by (by100 blast)
