@@ -1571,6 +1571,9 @@ proof -
                     using h\<tau>_y_sub_L_y hL_y_eq_centered by (by100 simp)
                   show False using False h\<tau>_y_sub_L_y_centered by (by100 blast)
                 qed
+                have hy_L\<tau>_y_side_cases:
+                  "inner (y - x) m\<tau>_y > 0 \<or> inner (y - x) m\<tau>_y < 0"
+                  using hy_off_L\<tau>_y by (by100 linarith)
                 have h\<tau>_y_pos_side:
                   "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
                     (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
@@ -1753,6 +1756,84 @@ proof -
                   show ?thesis
                     using hopp h_pos_other_neg_U h_neg_other_pos_U by (by100 blast)
                 qed
+                have h_same_L\<tau>_side_choice:
+                  "\<lbrakk>\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                     (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))\<rbrakk>
+                   \<Longrightarrow> \<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                proof -
+                  assume hacc:
+                    "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                      ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                  obtain u where huU: "u \<in> U"
+                    and hu_dist: "dist u x < \<epsilon>"
+                    and hu_off_L_y: "inner (u - x) n_y \<noteq> 0"
+                    and hu_same_L\<tau>:
+                      "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)"
+                    using hacc h\<epsilon>_pos by (by100 blast)
+                  have h_translate_avoid_\<tau>:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                  proof (rule equals0I)
+                    fix p
+                    assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                    obtain t :: real where ht: "t \<in> {0..1}"
+                      and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                      using hp by (by100 blast)
+                    have ht_nonneg: "0 \<le> t"
+                      using ht by (by100 simp)
+                    have hp_\<tau>: "p \<in> \<tau>_y"
+                      using hp by (by100 blast)
+                    have hp_L\<tau>: "inner (p - x) m\<tau>_y = 0"
+                      using hp_\<tau> h\<tau>_y_sub_L\<tau>_y_centered by (by100 blast)
+                    have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                      using hp_eq by (by100 simp)
+                    have hp_inner_eq:
+                      "inner (p - x) m\<tau>_y =
+                       inner (u - x) m\<tau>_y + t * inner (y - x) m\<tau>_y"
+                      using arg_cong[where f="\<lambda>z. inner z m\<tau>_y", OF hp_x_eq]
+                      by (simp add: inner_add_left)
+                    have hp_off_L\<tau>: "inner (p - x) m\<tau>_y \<noteq> 0"
+                    proof (cases "inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0")
+                      case True
+                      then have hy_pos: "inner (y - x) m\<tau>_y > 0"
+                        and hu_pos: "inner (u - x) m\<tau>_y > 0"
+                        by (by100 blast)+
+                      have hprod_nonneg: "0 \<le> t * inner (y - x) m\<tau>_y"
+                      proof (rule mult_nonneg_nonneg)
+                        show "0 \<le> t" by (rule ht_nonneg)
+                        show "0 \<le> inner (y - x) m\<tau>_y"
+                          using hy_pos by (by100 linarith)
+                      qed
+                      have "inner (p - x) m\<tau>_y > 0"
+                        using hp_inner_eq hu_pos hprod_nonneg by (by100 linarith)
+                      thus ?thesis by (by100 simp)
+                    next
+                      case False
+                      have hneg: "inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0"
+                        using hu_same_L\<tau> False by (by100 blast)
+                      then have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                        and hu_neg: "inner (u - x) m\<tau>_y < 0"
+                        by (by100 blast)+
+                      have hprod_nonpos: "t * inner (y - x) m\<tau>_y \<le> 0"
+                      proof (rule mult_nonneg_nonpos)
+                        show "0 \<le> t" by (rule ht_nonneg)
+                        show "inner (y - x) m\<tau>_y \<le> 0"
+                          using hy_neg by (by100 linarith)
+                      qed
+                      have "inner (p - x) m\<tau>_y < 0"
+                        using hp_inner_eq hu_neg hprod_nonpos by (by100 linarith)
+                      thus ?thesis by (by100 simp)
+                    qed
+                    show False using hp_L\<tau> hp_off_L\<tau> by (by100 blast)
+                  qed
+                  have h_translate_avoid_other:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                    using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                  show ?thesis using huU hu_dist hu_off_L_y h_translate_avoid_other by (by100 blast)
+                qed
                 \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
                   circular-neighborhood step from Figure 2.6.  The component
                   \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
@@ -1778,8 +1859,13 @@ proof -
                   \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
                     the same side of \<open>L_y\<close> as the other edge. This is the
                     actual circular-sector step, not a half-plane consequence.\<close>
-                  show ?thesis
+                  have h_between_rays_accumulation:
+                    "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                      ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
                     sorry
+                  show ?thesis
+                    by (rule h_same_L\<tau>_side_choice[OF h_between_rays_accumulation])
                 qed
               qed
               obtain u where huU: "u \<in> U"
