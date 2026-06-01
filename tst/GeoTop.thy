@@ -667,6 +667,275 @@ proof -
             show "\<sigma> \<inter> \<tau> = {x}"
               using h_subset_singleton h_x_subset by (by100 blast)
           qed
+          \<comment> \<open>Arc-order refinement: an internal vertex of the broken-line arc
+            has at most one incident edge on each side of the parameter value
+            mapping to \<open>x\<close>. Together with \<open>hVX_card_ge_2\<close>, this will give
+            exactly two local branches at \<open>x\<close>.\<close>
+          have hVX_card_le_2: "card EdgesAtX \<le> 2"
+          proof (rule ccontr)
+            assume hnot_le: "\<not> card EdgesAtX \<le> 2"
+            have hcard_gt: "card EdgesAtX > 2"
+              using hnot_le by (by100 simp)
+            obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+              and h\<gamma>_pim: "path_image \<gamma> = i"
+              and hE_eq_\<gamma>: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+              using arc_endpoints_imp_arc_HOL[OF hi_endp_v] by (by100 blast)
+            obtain sx where hsx_01: "sx \<in> {0..1}" and h\<gamma>sx: "\<gamma> sx = x"
+            proof -
+              have hx_pim: "x \<in> path_image \<gamma>"
+                using hxi h\<gamma>_pim by (by100 simp)
+              obtain sx where hsx: "sx \<in> {0..1}" and hsx_eq: "\<gamma> sx = x"
+                using hx_pim unfolding path_image_def by (by100 blast)
+              show ?thesis using that[OF hsx hsx_eq] .
+            qed
+            have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
+              using h\<gamma>_arc unfolding arc_def by (by100 blast)
+            have hK_poly_path: "geotop_polyhedron K_i = path_image \<gamma>"
+              using hK_i_poly h\<gamma>_pim by (by100 simp)
+            let ?Pre = "\<lambda>\<sigma>. {s\<in>{0..1::real}. \<gamma> s \<in> \<sigma>}"
+            define Right where
+              "Right \<sigma> \<longleftrightarrow> (\<exists>q>sx. ?Pre \<sigma> = {sx..q})" for \<sigma>
+            define Left where
+              "Left \<sigma> \<longleftrightarrow> (\<exists>p<sx. ?Pre \<sigma> = {p..sx})" for \<sigma>
+            have h_edge_side:
+              "\<And>\<sigma>. \<sigma> \<in> EdgesAtX \<Longrightarrow> Right \<sigma> \<or> Left \<sigma>"
+            proof -
+              fix \<sigma>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+              obtain pnt where h\<sigma>_seg: "\<sigma> = closed_segment x pnt"
+                and hpnt_ne: "pnt \<noteq> x"
+                using hVX_segs h\<sigma>_EAX by (by100 blast)
+              have hx_ne_pnt: "x \<noteq> pnt"
+                using hpnt_ne by (by100 blast)
+              have h\<sigma>_K: "\<sigma> \<in> K_i"
+                using h\<sigma>_EAX hEAX_sub by (by100 blast)
+              obtain p q where hpq_le: "p \<le> q"
+                and hp_01: "p \<in> {0..1::real}"
+                and hq_01: "q \<in> {0..1::real}"
+                and hPre_eq: "?Pre \<sigma> = {p..q}"
+                and hendpoints: "{\<gamma> p, \<gamma> q} = {x, pnt}"
+                using geotop_arc_1simplex_preimage_structure
+                  [OF h\<gamma>_arc hK_i_1dim hK_poly_path h\<sigma>_K h\<sigma>_seg hx_ne_pnt]
+                by (by100 blast)
+              have hsx_pre: "sx \<in> ?Pre \<sigma>"
+              proof -
+                have hx\<sigma>: "x \<in> \<sigma>"
+                  using h\<sigma>_EAX hEAX_x_in by (by100 blast)
+                show ?thesis using hsx_01 h\<gamma>sx hx\<sigma> by (by100 simp)
+              qed
+              have hsx_pq: "sx \<in> {p..q}"
+                using hsx_pre hPre_eq by (by100 simp)
+              have hpq_ne: "p \<noteq> q"
+              proof
+                assume hpq: "p = q"
+                have hsingle: "{\<gamma> p, \<gamma> q} = {\<gamma> p}"
+                  using hpq by (by100 simp)
+                have hx_eq_pnt: "x = pnt"
+                  using hendpoints hsingle by (by100 auto)
+                show False using hpnt_ne hx_eq_pnt by (by100 blast)
+              qed
+              have hp_lt_q: "p < q" using hpq_le hpq_ne by (by100 simp)
+              have hp_or_hq_x: "\<gamma> p = x \<or> \<gamma> q = x"
+              proof -
+                have "x \<in> {\<gamma> p, \<gamma> q}"
+                  using hendpoints by (by100 simp)
+                thus ?thesis by (by100 auto)
+              qed
+              have hp_sx_or_hq_sx: "p = sx \<or> q = sx"
+              proof (rule disjE[OF hp_or_hq_x])
+                assume hp_x: "\<gamma> p = x"
+                have "\<gamma> p = \<gamma> sx" using hp_x h\<gamma>sx by (by100 simp)
+                hence "p = sx"
+                  using h\<gamma>_inj hp_01 hsx_01 unfolding inj_on_def by (by100 blast)
+                thus ?thesis by (by100 blast)
+              next
+                assume hq_x: "\<gamma> q = x"
+                have "\<gamma> q = \<gamma> sx" using hq_x h\<gamma>sx by (by100 simp)
+                hence "q = sx"
+                  using h\<gamma>_inj hq_01 hsx_01 unfolding inj_on_def by (by100 blast)
+                thus ?thesis by (by100 blast)
+              qed
+              show "Right \<sigma> \<or> Left \<sigma>"
+              proof (rule disjE[OF hp_sx_or_hq_sx])
+                assume hp_sx: "p = sx"
+                have hq_gt: "q > sx" using hp_lt_q hp_sx by (by100 simp)
+                have "?Pre \<sigma> = {sx..q}" using hPre_eq hp_sx by (by100 simp)
+                hence "Right \<sigma>"
+                  unfolding Right_def using hq_gt by (by100 blast)
+                thus ?thesis by (by100 blast)
+              next
+                assume hq_sx: "q = sx"
+                have hp_lt: "p < sx" using hp_lt_q hq_sx by (by100 simp)
+                have "?Pre \<sigma> = {p..sx}" using hPre_eq hq_sx by (by100 simp)
+                hence "Left \<sigma>"
+                  unfolding Left_def using hp_lt by (by100 blast)
+                thus ?thesis by (by100 blast)
+              qed
+            qed
+            have h_no_two_right:
+              "\<And>\<sigma> \<tau> q\<sigma> q\<tau>. \<lbrakk>\<sigma> \<in> EdgesAtX; \<tau> \<in> EdgesAtX; \<sigma> \<noteq> \<tau>;
+                    q\<sigma> > sx; ?Pre \<sigma> = {sx..q\<sigma>};
+                    q\<tau> > sx; ?Pre \<tau> = {sx..q\<tau>}\<rbrakk> \<Longrightarrow> False"
+            proof -
+              fix \<sigma> \<tau> q\<sigma> q\<tau>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+                and h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                and h\<sigma>\<tau>_ne: "\<sigma> \<noteq> \<tau>"
+                and hq\<sigma>_gt: "q\<sigma> > sx"
+                and hPre\<sigma>: "?Pre \<sigma> = {sx..q\<sigma>}"
+                and hq\<tau>_gt: "q\<tau> > sx"
+                and hPre\<tau>: "?Pre \<tau> = {sx..q\<tau>}"
+              define t where "t = (sx + min q\<sigma> q\<tau>) / 2"
+              have hmin_gt: "min q\<sigma> q\<tau> > sx"
+                using hq\<sigma>_gt hq\<tau>_gt by (by100 simp)
+              have ht_gt: "t > sx"
+                unfolding t_def using hmin_gt by (by100 argo)
+              have hmin_le_q\<sigma>: "min q\<sigma> q\<tau> \<le> q\<sigma>" by (rule min.cobounded1)
+              have hmin_le_q\<tau>: "min q\<sigma> q\<tau> \<le> q\<tau>" by (rule min.cobounded2)
+              have ht_le_q\<sigma>: "t \<le> q\<sigma>"
+                unfolding t_def using hq\<sigma>_gt hmin_le_q\<sigma> by (by100 argo)
+              have ht_le_q\<tau>: "t \<le> q\<tau>"
+                unfolding t_def using hq\<tau>_gt hmin_le_q\<tau> by (by100 argo)
+              have ht_pre\<sigma>: "t \<in> ?Pre \<sigma>"
+                using ht_gt ht_le_q\<sigma> hPre\<sigma> by (by100 simp)
+              have ht_pre\<tau>: "t \<in> ?Pre \<tau>"
+                using ht_gt ht_le_q\<tau> hPre\<tau> by (by100 simp)
+              have ht_01: "t \<in> {0..1::real}" using ht_pre\<sigma> by (by100 simp)
+              have hgt_in_inter: "\<gamma> t \<in> \<sigma> \<inter> \<tau>"
+                using ht_pre\<sigma> ht_pre\<tau> by (by100 simp)
+              have h_inter_eq: "\<sigma> \<inter> \<tau> = {x}"
+                by (rule hVX_edges_meet_only_at_x[OF h\<sigma>_EAX h\<tau>_EAX h\<sigma>\<tau>_ne])
+              have hgt_x: "\<gamma> t = x"
+                using hgt_in_inter h_inter_eq by (by100 simp)
+              have "\<gamma> t = \<gamma> sx" using hgt_x h\<gamma>sx by (by100 simp)
+              hence "t = sx"
+                using h\<gamma>_inj ht_01 hsx_01 unfolding inj_on_def by (by100 blast)
+              thus False using ht_gt by (by100 simp)
+            qed
+            have h_no_two_left:
+              "\<And>\<sigma> \<tau> p\<sigma> p\<tau>. \<lbrakk>\<sigma> \<in> EdgesAtX; \<tau> \<in> EdgesAtX; \<sigma> \<noteq> \<tau>;
+                    p\<sigma> < sx; ?Pre \<sigma> = {p\<sigma>..sx};
+                    p\<tau> < sx; ?Pre \<tau> = {p\<tau>..sx}\<rbrakk> \<Longrightarrow> False"
+            proof -
+              fix \<sigma> \<tau> p\<sigma> p\<tau>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+                and h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                and h\<sigma>\<tau>_ne: "\<sigma> \<noteq> \<tau>"
+                and hp\<sigma>_lt: "p\<sigma> < sx"
+                and hPre\<sigma>: "?Pre \<sigma> = {p\<sigma>..sx}"
+                and hp\<tau>_lt: "p\<tau> < sx"
+                and hPre\<tau>: "?Pre \<tau> = {p\<tau>..sx}"
+              define t where "t = (sx + max p\<sigma> p\<tau>) / 2"
+              have hmax_lt: "max p\<sigma> p\<tau> < sx"
+                using hp\<sigma>_lt hp\<tau>_lt by (by100 simp)
+              have ht_lt: "t < sx"
+                unfolding t_def using hmax_lt by (by100 argo)
+              have hp\<sigma>_le_max: "p\<sigma> \<le> max p\<sigma> p\<tau>" by (rule max.cobounded1)
+              have hp\<tau>_le_max: "p\<tau> \<le> max p\<sigma> p\<tau>" by (rule max.cobounded2)
+              have hp\<sigma>_le_t: "p\<sigma> \<le> t"
+                unfolding t_def using hp\<sigma>_le_max hp\<sigma>_lt by (by100 argo)
+              have hp\<tau>_le_t: "p\<tau> \<le> t"
+                unfolding t_def using hp\<tau>_le_max hp\<tau>_lt by (by100 argo)
+              have ht_pre\<sigma>: "t \<in> ?Pre \<sigma>"
+                using hp\<sigma>_le_t ht_lt hPre\<sigma> by (by100 simp)
+              have ht_pre\<tau>: "t \<in> ?Pre \<tau>"
+                using hp\<tau>_le_t ht_lt hPre\<tau> by (by100 simp)
+              have ht_01: "t \<in> {0..1::real}" using ht_pre\<sigma> by (by100 simp)
+              have hgt_in_inter: "\<gamma> t \<in> \<sigma> \<inter> \<tau>"
+                using ht_pre\<sigma> ht_pre\<tau> by (by100 simp)
+              have h_inter_eq: "\<sigma> \<inter> \<tau> = {x}"
+                by (rule hVX_edges_meet_only_at_x[OF h\<sigma>_EAX h\<tau>_EAX h\<sigma>\<tau>_ne])
+              have hgt_x: "\<gamma> t = x"
+                using hgt_in_inter h_inter_eq by (by100 simp)
+              have "\<gamma> t = \<gamma> sx" using hgt_x h\<gamma>sx by (by100 simp)
+              hence "t = sx"
+                using h\<gamma>_inj ht_01 hsx_01 unfolding inj_on_def by (by100 blast)
+              thus False using ht_lt by (by100 simp)
+            qed
+            have h3_le_card: "3 \<le> card EdgesAtX"
+              using hcard_gt by (by100 simp)
+            obtain W where hW_sub: "W \<subseteq> EdgesAtX" and hW_card: "card W = 3"
+              and hW_fin: "finite W"
+              using obtain_subset_with_card_n[OF h3_le_card] by (by100 blast)
+            have hW_three:
+              "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3} \<and>
+                \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
+              using hW_card unfolding card_3_iff by (by100 simp)
+            obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
+              and h12: "\<sigma>1 \<noteq> \<sigma>2" and h23: "\<sigma>2 \<noteq> \<sigma>3" and h13: "\<sigma>1 \<noteq> \<sigma>3"
+              using hW_three
+            proof (elim exE conjE)
+              fix a b c
+              assume hWabc: "W = {a, b, c}"
+                and hab: "a \<noteq> b"
+                and hbc: "b \<noteq> c"
+                and hac: "a \<noteq> c"
+              show thesis by (rule that[OF hWabc hab hbc hac])
+            qed
+            have h\<sigma>1: "\<sigma>1 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have h\<sigma>2: "\<sigma>2 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have h\<sigma>3: "\<sigma>3 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have hside1: "Right \<sigma>1 \<or> Left \<sigma>1" by (rule h_edge_side[OF h\<sigma>1])
+            have hside2: "Right \<sigma>2 \<or> Left \<sigma>2" by (rule h_edge_side[OF h\<sigma>2])
+            have hside3: "Right \<sigma>3 \<or> Left \<sigma>3" by (rule h_edge_side[OF h\<sigma>3])
+            have hpigeon:
+              "(Right \<sigma>1 \<and> Right \<sigma>2) \<or> (Right \<sigma>1 \<and> Right \<sigma>3) \<or>
+               (Right \<sigma>2 \<and> Right \<sigma>3) \<or> (Left \<sigma>1 \<and> Left \<sigma>2) \<or>
+               (Left \<sigma>1 \<and> Left \<sigma>3) \<or> (Left \<sigma>2 \<and> Left \<sigma>3)"
+              using hside1 hside2 hside3 by (by100 blast)
+            thus False
+            proof (elim disjE conjE)
+              assume hR1: "Right \<sigma>1" and hR2: "Right \<sigma>2"
+              obtain q1 where hq1: "q1 > sx" and hPre1: "?Pre \<sigma>1 = {sx..q1}"
+                using hR1 unfolding Right_def by (by100 blast)
+              obtain q2 where hq2: "q2 > sx" and hPre2: "?Pre \<sigma>2 = {sx..q2}"
+                using hR2 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>1 h\<sigma>2 h12 hq1 hPre1 hq2 hPre2])
+            next
+              assume hR1: "Right \<sigma>1" and hR3: "Right \<sigma>3"
+              obtain q1 where hq1: "q1 > sx" and hPre1: "?Pre \<sigma>1 = {sx..q1}"
+                using hR1 unfolding Right_def by (by100 blast)
+              obtain q3 where hq3: "q3 > sx" and hPre3: "?Pre \<sigma>3 = {sx..q3}"
+                using hR3 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>1 h\<sigma>3 h13 hq1 hPre1 hq3 hPre3])
+            next
+              assume hR2: "Right \<sigma>2" and hR3: "Right \<sigma>3"
+              obtain q2 where hq2: "q2 > sx" and hPre2: "?Pre \<sigma>2 = {sx..q2}"
+                using hR2 unfolding Right_def by (by100 blast)
+              obtain q3 where hq3: "q3 > sx" and hPre3: "?Pre \<sigma>3 = {sx..q3}"
+                using hR3 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>2 h\<sigma>3 h23 hq2 hPre2 hq3 hPre3])
+            next
+              assume hL1: "Left \<sigma>1" and hL2: "Left \<sigma>2"
+              obtain p1 where hp1: "p1 < sx" and hPre1: "?Pre \<sigma>1 = {p1..sx}"
+                using hL1 unfolding Left_def by (by100 blast)
+              obtain p2 where hp2: "p2 < sx" and hPre2: "?Pre \<sigma>2 = {p2..sx}"
+                using hL2 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>1 h\<sigma>2 h12 hp1 hPre1 hp2 hPre2])
+            next
+              assume hL1: "Left \<sigma>1" and hL3: "Left \<sigma>3"
+              obtain p1 where hp1: "p1 < sx" and hPre1: "?Pre \<sigma>1 = {p1..sx}"
+                using hL1 unfolding Left_def by (by100 blast)
+              obtain p3 where hp3: "p3 < sx" and hPre3: "?Pre \<sigma>3 = {p3..sx}"
+                using hL3 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>1 h\<sigma>3 h13 hp1 hPre1 hp3 hPre3])
+            next
+              assume hL2: "Left \<sigma>2" and hL3: "Left \<sigma>3"
+              obtain p2 where hp2: "p2 < sx" and hPre2: "?Pre \<sigma>2 = {p2..sx}"
+                using hL2 unfolding Left_def by (by100 blast)
+              obtain p3 where hp3: "p3 < sx" and hPre3: "?Pre \<sigma>3 = {p3..sx}"
+                using hL3 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>2 h\<sigma>3 h23 hp2 hPre2 hp3 hPre3])
+            qed
+          qed
+          have hVX_card_eq_2: "card EdgesAtX = 2"
+            using hVX_card_ge_2 hVX_card_le_2 by (by100 linarith)
           \<comment> \<open>Sub-claim V3: pick the working radius. Use \<delta>_iso unchanged.\<close>
           define \<delta>_v where "\<delta>_v = \<delta>_iso"
           have h\<delta>_v_pos: "\<delta>_v > 0"
