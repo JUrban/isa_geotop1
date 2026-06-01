@@ -3301,6 +3301,27 @@ proof -
     by (rule geotop_link_finite_at_vertex[OF hK hvK])
 qed
 
+lemma geotop_link_polyhedron_finite_1dim_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = \<Union>(geotop_link K v)"
+proof -
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hlink_1dim: "geotop_complex_is_1dim (geotop_link K v)"
+    by (rule geotop_link_complex_is_1dim_R2[OF hK])
+  have hlink_fin: "finite (geotop_link K v)"
+    by (rule geotop_link_finite_at_complex_vertex[OF hK hv])
+  have hpoly_eq: "geotop_polyhedron (geotop_link K v) = \<Union>(geotop_link K v)"
+    unfolding geotop_polyhedron_def by (by100 simp)
+  show ?thesis
+    using hlink_complex hlink_1dim hlink_fin hpoly_eq by (by100 blast)
+qed
+
 lemma geotop_link_polyhedron_subset_star_polyhedron:
   "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
   unfolding geotop_link_def by (by100 blast)
