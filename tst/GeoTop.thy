@@ -11406,7 +11406,31 @@ proof -
                               have h_pair_component_homeomorphic_interval:
                                 "\<exists>(f::real^2 \<Rightarrow> real) g I.
                                     homeomorphism C I f g \<and> is_interval I \<and> q \<in> C"
-                                sorry
+                              proof -
+                                have hqC: "q \<in> C"
+                                proof (rule ccontr)
+                                  assume hq_not_C: "q \<notin> C"
+                                  have hdelete_eq: "C - {q} = C"
+                                    using hq_not_C by (by100 blast)
+                                  have hK_comp_C: "K \<in> components C"
+                                    using hK_delete_comp hdelete_eq by (by100 simp)
+                                  have hC_ne: "C \<noteq> {}"
+                                    by (rule in_components_nonempty[OF hC_pair_comp])
+                                  have h_components_C: "components C = {C}"
+                                    using hC_pair_conn hC_ne
+                                    unfolding components_eq_sing_iff by (by100 simp)
+                                  have "K = C"
+                                    using hK_comp_C h_components_C by (by100 blast)
+                                  thus False
+                                    using hK_delete_proper hdelete_eq by (by100 blast)
+                                qed
+                                have h_pair_component_line_interval:
+                                  "\<exists>(f::real^2 \<Rightarrow> real) g I.
+                                      homeomorphism C I f g \<and> is_interval I"
+                                  sorry
+                                show ?thesis
+                                  using h_pair_component_line_interval hqC by (by100 blast)
+                              qed
                               obtain f :: "real^2 \<Rightarrow> real" and g :: "real \<Rightarrow> real^2"
                                 and I :: "real set"
                                 where hCI_homeo: "homeomorphism C I f g"
