@@ -4659,7 +4659,79 @@ proof
   qed
   \<comment> \<open>L3: every incident edge in \<ge>2 two-simplexes (manifold without boundary).\<close>
   have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2" sorry
+              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2"
+  proof (intro ballI impI)
+    fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+    show "2 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    proof (rule ccontr)
+      assume hnot_ge2:
+        "\<not> 2 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      have hedge: "geotop_is_edge e"
+        using he_inc by (by100 blast)
+      have hL3_at: "geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2 \<longrightarrow>
+              (\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)"
+        using hL3_counterexample_face heK by (by100 simp)
+      have hnot_ge2': "\<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2"
+        using hnot_ge2 by (by100 simp)
+      have hL3_imp: "\<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2 \<longrightarrow>
+              (\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)"
+        by (rule mp[OF hL3_at he_inc])
+      have hunique_ex:
+        "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+        by (rule mp[OF hL3_imp hnot_ge2'])
+      then obtain \<sigma> where h\<sigma>prop: "\<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+        and h\<sigma>uniq: "\<forall>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau> \<longrightarrow> \<tau> = \<sigma>"
+        unfolding Ex1_def by (by100 blast)
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using h\<sigma>prop by (by100 blast)
+      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        using h\<sigma>prop by (by100 blast)
+      have he_face_\<sigma>: "geotop_is_face e \<sigma>"
+        using h\<sigma>prop by (by100 blast)
+      obtain p where hp: "p \<in> rel_interior e"
+        using geotop_edge_rel_interior_nonempty[OF hedge] by (by100 blast)
+      have hpM: "p \<in> geotop_polyhedron K"
+        using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
+      let ?M = "geotop_polyhedron K"
+      let ?d = "\<lambda>x y. norm (x - y)"
+      let ?TM = "top1_metric_topology_on ?M ?d"
+      obtain U f where hUopen: "openin_on ?M ?TM U"
+        and hpU: "p \<in> U"
+        and hhomeo_metric: "top1_homeomorphism_on U (subspace_topology ?M ?TM U)
+            (UNIV::(real^2) set) geotop_euclidean_topology f"
+        using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
+      have hUsubM: "U \<subseteq> ?M"
+        using hUopen unfolding openin_on_def by (by100 blast)
+      have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
+        by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+      have hsource_eq: "subspace_topology ?M ?TM U =
+          subspace_topology UNIV geotop_euclidean_topology U"
+      proof -
+        have htrans: "subspace_topology ?M
+            (subspace_topology UNIV geotop_euclidean_topology ?M) U =
+          subspace_topology UNIV geotop_euclidean_topology U"
+          by (rule subspace_topology_trans[OF hUsubM])
+        show ?thesis
+          using hTM_eq htrans by (by100 simp)
+      qed
+      have hhomeo_geo: "top1_homeomorphism_on U
+          (subspace_topology UNIV geotop_euclidean_topology U)
+          (UNIV::(real^2) set) geotop_euclidean_topology f"
+        using hhomeo_metric hsource_eq by (by100 simp)
+      obtain A where hAsubU: "A \<subseteq> U"
+        and hAimg: "geotop_is_arc (f ` A)
+            (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
+        and hAsep: "\<not> top1_connected_on (U - A)
+            (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+        sorry
+      have hconn: "top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+        by (rule geotop_plane_chart_arc_complement_connected[OF hhomeo_geo hAsubU hAimg])
+      show False
+        using hconn hAsep by (by100 blast)
+    qed
+  qed
   \<comment> \<open>Counterexample form for L4: if an incident edge has more than two
     adjacent two-simplexes, name the three simplexes used to build the two
     semicircles in the book's Jordan-curve contradiction.\<close>
