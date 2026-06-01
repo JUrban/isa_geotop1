@@ -4221,7 +4221,62 @@ proof -
                       qed
                       have h_line_component_trichotomy:
                         "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
-                        sorry
+                      proof (cases "a \<in> closure Lc \<and> b \<in> closure Lc")
+                        case False
+                        thus ?thesis
+                          by (by100 blast)
+                      next
+                        case True
+                        have ha_cl_Lc: "a \<in> closure Lc"
+                          using True by (by100 blast)
+                        have hb_cl_Lc: "b \<in> closure Lc"
+                          using True by (by100 blast)
+                        have hLc_sub_L: "Lc \<subseteq> ?L"
+                          using hLc_sub_line by (by100 blast)
+                        have hclLc_sub_L: "closure Lc \<subseteq> ?L"
+                          by (rule closure_minimal[OF hLc_sub_L closed_hyperplane])
+                        define d where "d = b - a"
+                        define D where "D = d \<bullet> d"
+                        define \<phi> where "\<phi> = (\<lambda>x::real^2. (x - a) \<bullet> d)"
+                        have hd_ne: "d \<noteq> 0"
+                          using hab_ne unfolding d_def by (by100 simp)
+                        have hD_pos: "D > 0"
+                          unfolding D_def using hd_ne by (by100 simp)
+                        have hL_eq_aff: "?L = affine hull {a, b}"
+                          sorry
+                        have h\<phi>_a: "\<phi> a = 0"
+                          sorry
+                        have h\<phi>_b: "\<phi> b = D"
+                          sorry
+                        have h\<phi>_coord:
+                          "\<And>x. x \<in> ?L \<Longrightarrow> x = a + (\<phi> x / D) *\<^sub>R d"
+                          sorry
+                        have h\<phi>_cut_avoid:
+                          "\<phi> ` Lc \<inter> {0, D} = {}"
+                          sorry
+                        have h\<phi>_conn: "connected (\<phi> ` Lc)"
+                          sorry
+                        have h\<phi>_cont_L: "continuous_on ?L \<phi>"
+                          unfolding \<phi>_def by (intro continuous_intros)
+                        have h\<phi>_cl_subset:
+                          "\<phi> ` closure Lc \<subseteq> closure (\<phi> ` Lc)"
+                          by (rule continuous_image_closure_subset
+                              [OF h\<phi>_cont_L hclLc_sub_L])
+                        have h0_cl: "0 \<in> closure (\<phi> ` Lc)"
+                          sorry
+                        have hD_cl: "D \<in> closure (\<phi> ` Lc)"
+                          sorry
+                        have h\<phi>_between:
+                          "\<phi> ` Lc \<subseteq> {0<..<D}"
+                          sorry
+                        have hLc_sub_segment:
+                          "Lc \<subseteq> closed_segment a b"
+                          sorry
+                        have "bounded Lc"
+                          sorry
+                        thus ?thesis
+                          sorry
+                      qed
                       show ?thesis by (rule h_line_component_trichotomy)
                     qed
                     show ?thesis
