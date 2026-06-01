@@ -3109,7 +3109,139 @@ lemma geotop_edge_rel_interior_open_neighborhood_two_sides:
     and "\<forall>z\<in>rel_interior e. z \<noteq> p \<longrightarrow>
           inner (b - a) z < inner (b - a) p \<or>
           inner (b - a) p < inner (b - a) z"
-  sorry
+proof -
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain[OF hedge])
+  have hrel_eq: "rel_interior e = open_segment a b"
+    using he_seg hab rel_interior_closed_segment[of a b] by (by100 simp)
+  obtain U where hUtop: "U \<in> geotop_euclidean_topology"
+    and hN_eq: "N = rel_interior e \<inter> U"
+    using hNopen unfolding subspace_topology_def by (by100 blast)
+  have hUopen: "open U"
+    using hUtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hpU: "p \<in> U"
+    using hpN hN_eq by (by100 blast)
+  have hU_ball: "\<forall>q\<in>U. \<exists>\<epsilon>>0. ball q \<epsilon> \<subseteq> U"
+    using hUopen unfolding open_contains_ball by (by100 simp)
+  obtain \<delta> where h\<delta>pos: "\<delta> > 0" and hballU: "ball p \<delta> \<subseteq> U"
+    using hU_ball hpU by (by100 blast)
+  have hp_open: "p \<in> open_segment a b"
+    using hp hrel_eq by (by100 simp)
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    using hp_open unfolding in_segment by (by100 auto)
+  have hnorm_pos: "0 < norm (b - a)"
+    using hab by (by100 simp)
+  define s where "s = min (min t (1 - t)) (\<delta> / norm (b - a)) / 2"
+  have hs_pos: "0 < s"
+    unfolding s_def using ht0 ht1 h\<delta>pos hnorm_pos by (by100 simp)
+  have hs_t: "s < t"
+    unfolding s_def using ht0 ht1 h\<delta>pos hnorm_pos by (by100 simp)
+  have hs_1t: "s < 1 - t"
+    unfolding s_def using ht0 ht1 h\<delta>pos hnorm_pos by (by100 simp)
+  have hs_delta: "s * norm (b - a) < \<delta>"
+  proof -
+    have hs_le: "s \<le> (\<delta> / norm (b - a)) / 2"
+      unfolding s_def by (by100 simp)
+    have "s * norm (b - a) \<le> ((\<delta> / norm (b - a)) / 2) * norm (b - a)"
+      by (rule mult_right_mono[OF hs_le]) (use hnorm_pos in \<open>by100 simp\<close>)
+    also have "\<dots> = \<delta> / 2"
+      using hnorm_pos by (by100 simp)
+    also have "\<dots> < \<delta>"
+      using h\<delta>pos by (by100 simp)
+    finally show ?thesis .
+  qed
+  define x where "x = (1 - (t - s)) *\<^sub>R a + (t - s) *\<^sub>R b"
+  define y where "y = (1 - (t + s)) *\<^sub>R a + (t + s) *\<^sub>R b"
+  have htms0: "0 < t - s"
+    using hs_t by (by100 simp)
+  have htms1: "t - s < 1"
+    using ht1 hs_pos by (by100 simp)
+  have htps0: "0 < t + s"
+    using ht0 hs_pos by (by100 simp)
+  have htps1: "t + s < 1"
+    using hs_1t by (by100 simp)
+  have hxrel: "x \<in> rel_interior e"
+    unfolding hrel_eq x_def using hab htms0 htms1 in_segment(2) by (by100 blast)
+  have hyrel: "y \<in> rel_interior e"
+    unfolding hrel_eq y_def using hab htps0 htps1 in_segment(2) by (by100 blast)
+  have hxp: "x = p - s *\<^sub>R (b - a)"
+    unfolding x_def hp_eq by (simp add: algebra_simps)
+  have hyp: "y = p + s *\<^sub>R (b - a)"
+    unfolding y_def hp_eq by (simp add: algebra_simps)
+  have hx_ball: "x \<in> ball p \<delta>"
+  proof -
+    have "dist p x = s * norm (b - a)"
+      unfolding hxp dist_norm using hs_pos by (by100 simp)
+    thus ?thesis
+      using hs_delta by (by100 simp)
+  qed
+  have hy_ball: "y \<in> ball p \<delta>"
+  proof -
+    have "dist p y = s * norm (b - a)"
+      unfolding hyp dist_norm using hs_pos by (by100 simp)
+    thus ?thesis
+      using hs_delta by (by100 simp)
+  qed
+  have hxU: "x \<in> U"
+    using hballU hx_ball by (by100 blast)
+  have hyU: "y \<in> U"
+    using hballU hy_ball by (by100 blast)
+  have hxN: "x \<in> N"
+    using hN_eq hxrel hxU by (by100 blast)
+  have hyN: "y \<in> N"
+    using hN_eq hyrel hyU by (by100 blast)
+  let ?d = "b - a"
+  have hd_pos: "0 < inner ?d ?d"
+    using hab by (by100 simp)
+  have hxlt: "inner ?d x < inner ?d p"
+  proof -
+    have "inner ?d p - inner ?d x = s * inner ?d ?d"
+      unfolding hxp by (simp add: algebra_simps inner_diff_right)
+    moreover have "0 < s * inner ?d ?d"
+      using hs_pos hd_pos by (by100 simp)
+    ultimately show ?thesis by (by100 linarith)
+  qed
+  have hygt: "inner ?d p < inner ?d y"
+  proof -
+    have "inner ?d y - inner ?d p = s * inner ?d ?d"
+      unfolding hyp by (simp add: algebra_simps)
+    moreover have "0 < s * inner ?d ?d"
+      using hs_pos hd_pos by (by100 simp)
+    ultimately show ?thesis by (by100 linarith)
+  qed
+  have hx_ne: "x \<noteq> p"
+    using hxlt by (by100 blast)
+  have hy_ne: "y \<noteq> p"
+    using hygt by (by100 blast)
+  have hxNp: "x \<in> N - {p}"
+    using hxN hx_ne by (by100 blast)
+  have hyNp: "y \<in> N - {p}"
+    using hyN hy_ne by (by100 blast)
+  have hsplit:
+    "\<forall>z\<in>rel_interior e. z \<noteq> p \<longrightarrow>
+          inner ?d z < inner ?d p \<or> inner ?d p < inner ?d z"
+  proof
+    fix z assume hzrel: "z \<in> rel_interior e"
+    show "z \<noteq> p \<longrightarrow> inner ?d z < inner ?d p \<or> inner ?d p < inner ?d z"
+    proof
+      assume hz_ne: "z \<noteq> p"
+      have hzseg: "z \<in> closed_segment a b"
+        using hzrel hrel_eq open_closed_segment by (by100 blast)
+      have hpseg: "p \<in> closed_segment a b"
+        using hp hrel_eq open_closed_segment by (by100 blast)
+      have hinj: "inj_on (\<lambda>w. inner ?d w) (closed_segment a b)"
+        by (rule geotop_inner_diff_inj_on_closed_segment[OF hab])
+      have hneq: "inner ?d z \<noteq> inner ?d p"
+        using hinj hzseg hpseg hz_ne unfolding inj_on_def by (by100 blast)
+      show "inner ?d z < inner ?d p \<or> inner ?d p < inner ?d z"
+        using hneq by (by100 linarith)
+    qed
+  qed
+  show ?thesis
+    by (rule that[OF hab he_seg hxNp hyNp hxlt hygt hsplit])
+qed
 
 lemma geotop_edge_rel_interior_punctured_open_neighborhood_disconnected:
   fixes e N :: "(real^2) set" and p :: "real^2"
