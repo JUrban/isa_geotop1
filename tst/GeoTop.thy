@@ -3513,6 +3513,17 @@ proof -
           qed
           have h\<rho>_conn: "connected (\<rho> ` C)"
             by (rule connected_continuous_image[OF h\<rho>_cont hC_conn])
+          have h\<rho>_path: "path_connected (\<rho> ` C)"
+            by (rule path_connected_continuous_image[OF h\<rho>_cont hC_path])
+          have h\<rho>_closure_conn: "connected (closure (\<rho> ` C))"
+            by (rule connected_imp_connected_closure[OF h\<rho>_conn])
+          have h\<rho>_closure_sphere: "closure (\<rho> ` C) \<subseteq> sphere P r"
+          proof -
+            have hsphere_closed: "closed (sphere P r)"
+              by (by100 simp)
+            show ?thesis
+              by (rule closure_minimal[OF h\<rho>_sphere hsphere_closed])
+          qed
           have h_radial_preimage_segment:
             "\<And>x p. \<lbrakk>x \<in> ball P \<delta>; x \<noteq> P; p \<noteq> P; \<delta> \<le> dist P p;
                        \<rho> x \<in> closed_segment P p\<rbrakk>
