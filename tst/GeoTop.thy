@@ -33,6 +33,13 @@ proof -
   show ?thesis unfolding hcomp A_def by (by100 simp)
 qed
 
+lemma same_component_real_complement_singleton_iff:
+  fixes a x y :: real
+  assumes "x \<noteq> a" "y \<noteq> a"
+  shows "(\<exists>K \<in> components (UNIV - {a}). x \<in> K \<and> y \<in> K)
+    \<longleftrightarrow> (x < a \<and> y < a) \<or> (a < x \<and> a < y)"
+  using assms components_real_complement_singleton[of a] by (by100 auto)
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
