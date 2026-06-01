@@ -1149,6 +1149,32 @@ proof -
                   using hz_ball hz_not_M by (by100 blast)
               qed
             qed
+            have h_connected_local_two_edge_subset_stays_U:
+              "\<And>C u. \<lbrakk>connected C; u \<in> C; u \<in> U;
+                       C \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)\<rbrakk> \<Longrightarrow> C \<subseteq> U"
+            proof -
+              fix C u
+              assume hC_conn: "connected C"
+                and huC: "u \<in> C"
+                and huU: "u \<in> U"
+                and hC_sub_local: "C \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+              have hC_sub_global: "C \<subseteq> UNIV - M"
+              proof
+                fix z
+                assume hzC: "z \<in> C"
+                have hz_local_pair: "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                  using hzC hC_sub_local by (by100 blast)
+                have hz_local_M: "z \<in> ball x \<delta>_iso - M"
+                  using hz_local_pair h_ball_x_compl_eq_two_edges by (by100 simp)
+                show "z \<in> UNIV - M"
+                  using hz_local_M by (by100 blast)
+              qed
+              have hU_eq: "U = connected_component_set (UNIV - M) u"
+                by (rule component_eq_connected_component_set[OF hU_in huU])
+              show "C \<subseteq> U"
+                unfolding hU_eq
+                using connected_component_maximal[OF huC hC_conn hC_sub_global] .
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
