@@ -3854,7 +3854,125 @@ proof -
               proof -
                 have hK_misses_cut:
                   "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
-                  sorry
+                proof -
+                  let ?S = "sphere P r"
+                  let ?L = "{x::real^2. (q2 - q1) \<bullet> x = 0}"
+                  have hr_pos: "r > 0"
+                    using h_radial_circle_model by (fast elim: conjE)
+                  have hq1_sphere: "q1 \<in> ?S"
+                    using h_radial_circle_model by (by100 simp)
+                  have hq2_sphere: "q2 \<in> ?S"
+                    using h_radial_circle_model by (by100 simp)
+                  have hq3_sphere: "q3 \<in> ?S"
+                    using h_radial_circle_model by (by100 simp)
+                  have hc_nonzero: "q2 - q1 \<noteq> 0"
+                    using hq12_out by (by100 auto)
+                  have hpunctured_homeo_line:
+                    "(?S - {q1}) homeomorphic ?L"
+                    by (rule homeomorphic_punctured_sphere_hyperplane
+                        [OF hr_pos hq1_sphere hc_nonzero])
+                  obtain f g where hfg:
+                    "homeomorphism (?S - {q1}) ?L f g"
+                    using hpunctured_homeo_line unfolding homeomorphic_def by (by100 blast)
+                  define a where "a = f q2"
+                  define b where "b = f q3"
+                  have hK_sub_punctured:
+                    "K \<subseteq> ?S - {q1}"
+                  proof -
+                    have hK_sub_full: "K \<subseteq> ?S - {q1, q2, q3}"
+                      using hK_comp in_components_subset by (by100 blast)
+                    show ?thesis using hK_sub_full by (by100 blast)
+                  qed
+                  have hK_image_line:
+                    "f ` K \<subseteq> ?L - {a, b}"
+                  proof
+                    fix y assume hy: "y \<in> f ` K"
+                    obtain x where hxK: "x \<in> K" and hy_eq: "y = f x"
+                      using hy by (by100 blast)
+                    have hK_sub_full: "K \<subseteq> ?S - {q1, q2, q3}"
+                      using hK_comp in_components_subset by (by100 blast)
+                    have hx_dom: "x \<in> ?S - {q1}"
+                      using hxK hK_sub_punctured by (by100 blast)
+                    have hx_not_q2: "x \<noteq> q2"
+                      using hxK hK_sub_full by (by100 blast)
+                    have hx_not_q3: "x \<noteq> q3"
+                      using hxK hK_sub_full by (by100 blast)
+                    have hq2_dom: "q2 \<in> ?S - {q1}"
+                      using hq2_sphere hq12_out by (by100 blast)
+                    have hq3_dom: "q3 \<in> ?S - {q1}"
+                      using hq3_sphere hq13_out by (by100 blast)
+                    have hf_img: "f ` (?S - {q1}) = ?L"
+                      using hfg unfolding homeomorphism_def by (by100 blast)
+                    have hgf:
+                      "\<And>x. x \<in> ?S - {q1} \<Longrightarrow> g (f x) = x"
+                      using hfg unfolding homeomorphism_def by (by100 blast)
+                    have hinj: "inj_on f (?S - {q1})"
+                    proof (unfold inj_on_def, intro ballI impI)
+                      fix x y
+                      assume hx: "x \<in> ?S - {q1}"
+                        and hy: "y \<in> ?S - {q1}"
+                        and hxy: "f x = f y"
+                      have "g (f x) = g (f y)"
+                        using hxy by (by100 simp)
+                      thus "x = y"
+                        using hgf[OF hx] hgf[OF hy] by (by100 simp)
+                    qed
+                    have hy_L: "y \<in> ?L"
+                      using hy_eq hx_dom hf_img by (by100 blast)
+                    have hy_ne_a: "y \<noteq> a"
+                    proof
+                      assume hya: "y = a"
+                      have "f x = f q2"
+                        using hya hy_eq unfolding a_def by (by100 simp)
+                      hence "x = q2"
+                        using hinj hx_dom hq2_dom unfolding inj_on_def by (by100 blast)
+                      thus False using hx_not_q2 by (by100 blast)
+                    qed
+                    have hy_ne_b: "y \<noteq> b"
+                    proof
+                      assume hyb: "y = b"
+                      have "f x = f q3"
+                        using hyb hy_eq unfolding b_def by (by100 simp)
+                      hence "x = q3"
+                        using hinj hx_dom hq3_dom unfolding inj_on_def by (by100 blast)
+                      thus False using hx_not_q3 by (by100 blast)
+                    qed
+                    show "y \<in> ?L - {a, b}"
+                      using hy_L hy_ne_a hy_ne_b by (by100 blast)
+                  qed
+                  have hK_image_component:
+                    "\<exists>Lc \<in> components (?L - {a, b}). f ` K \<subseteq> Lc"
+                  proof -
+                    have hK_ne: "K \<noteq> {}"
+                      using hK_comp in_components_nonempty by (by100 blast)
+                    obtain y where hyK: "y \<in> K"
+                      using hK_ne by (by100 blast)
+                    have hfy_img: "f y \<in> f ` K"
+                      using hyK by (by100 blast)
+                    have hfy_cut: "f y \<in> ?L - {a, b}"
+                      using hfy_img hK_image_line by (by100 blast)
+                    define Lc where "Lc = connected_component_set (?L - {a, b}) (f y)"
+                    have hLc_comp: "Lc \<in> components (?L - {a, b})"
+                      unfolding Lc_def by (rule componentsI[OF hfy_cut])
+                    have hK_conn: "connected K"
+                      using hK_comp in_components_connected by (by100 blast)
+                    have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                      using hfg unfolding homeomorphism_def by (by100 blast)
+                    have hf_cont_K: "continuous_on K f"
+                      by (rule continuous_on_subset[OF hf_cont_dom hK_sub_punctured])
+                    have h_img_conn: "connected (f ` K)"
+                      by (rule connected_continuous_image[OF hf_cont_K hK_conn])
+                    have h_img_sub_Lc: "f ` K \<subseteq> Lc"
+                      unfolding Lc_def
+                      by (rule connected_component_maximal
+                          [OF hfy_img h_img_conn hK_image_line])
+                    show ?thesis using hLc_comp h_img_sub_Lc by (by100 blast)
+                  qed
+                  have h_line_three_sectors:
+                    "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
+                    sorry
+                  show ?thesis by (rule h_line_three_sectors)
+                qed
                 obtain q where hq_cut: "q \<in> {q1, q2, q3}"
                   and hq_not_clK: "q \<notin> closure K"
                   using hK_misses_cut by (by100 blast)
