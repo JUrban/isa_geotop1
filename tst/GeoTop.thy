@@ -9516,7 +9516,101 @@ proof -
                   A \<in> components (UNIV - (i \<union> j)) \<and>
                   B \<in> components (UNIV - (i \<union> j)) \<and>
                   c \<in> A \<and> d \<in> B \<and> A \<noteq> B"
-                sorry
+              proof -
+                obtain c where hcC: "c \<in> C"
+                  using hC_comp in_components_nonempty by (by100 blast)
+                obtain d where hdD: "d \<in> D"
+                  using hD_comp in_components_nonempty by (by100 blast)
+                have h_pair_components_for_points:
+                  "\<And>i j. \<lbrakk>i \<in> {B1, B2, B3}; j \<in> {B1, B2, B3}; i \<noteq> j\<rbrakk>
+                    \<Longrightarrow> \<exists>A B. A \<in> components (UNIV - (i \<union> j)) \<and>
+                        B \<in> components (UNIV - (i \<union> j)) \<and> c \<in> A \<and> d \<in> B"
+                proof -
+                  fix i j
+                  assume hi': "i \<in> {B1, B2, B3}"
+                    and hj': "j \<in> {B1, B2, B3}"
+                    and hij': "i \<noteq> j"
+                  have hM_eq_local: "M = B1 \<union> B2 \<union> B3"
+                    using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+                  have hij_sub_M: "i \<union> j \<subseteq> M"
+                    using hi' hj' hM_eq_local by (by100 blast)
+                  have hC_sub_local: "C \<subseteq> ball P \<delta> - M"
+                    using hC_comp in_components_subset by (by100 blast)
+                  have hD_sub_local: "D \<subseteq> ball P \<delta> - M"
+                    using hD_comp in_components_subset by (by100 blast)
+                  have hc_pair: "c \<in> UNIV - (i \<union> j)"
+                    using hcC hC_sub_local hij_sub_M by (by100 blast)
+                  have hd_pair: "d \<in> UNIV - (i \<union> j)"
+                    using hdD hD_sub_local hij_sub_M by (by100 blast)
+                  define A where "A = connected_component_set (UNIV - (i \<union> j)) c"
+                  define B where "B = connected_component_set (UNIV - (i \<union> j)) d"
+                  have hA_comp: "A \<in> components (UNIV - (i \<union> j))"
+                    unfolding A_def by (rule componentsI[OF hc_pair])
+                  have hB_comp: "B \<in> components (UNIV - (i \<union> j))"
+                    unfolding B_def by (rule componentsI[OF hd_pair])
+                  have hcA: "c \<in> A"
+                    unfolding A_def using hc_pair by (by100 simp)
+                  have hdB: "d \<in> B"
+                    unfolding B_def using hd_pair by (by100 simp)
+                  show "\<exists>A B. A \<in> components (UNIV - (i \<union> j)) \<and>
+                        B \<in> components (UNIV - (i \<union> j)) \<and> c \<in> A \<and> d \<in> B"
+                    apply (rule exI[where x=A])
+                    apply (rule exI[where x=B])
+                    apply (intro conjI)
+                    using hA_comp apply assumption
+                    using hB_comp apply assumption
+                    using hcA apply assumption
+                    using hdB apply assumption
+                    done
+                qed
+                have h_some_pair_distinguishes:
+                  "\<exists>i j A B. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                    A \<in> components (UNIV - (i \<union> j)) \<and>
+                    B \<in> components (UNIV - (i \<union> j)) \<and>
+                    c \<in> A \<and> d \<in> B \<and> A \<noteq> B"
+                  sorry
+                obtain i j A B where hi': "i \<in> {B1, B2, B3}"
+                  and hj': "j \<in> {B1, B2, B3}"
+                  and hij': "i \<noteq> j"
+                  and hA': "A \<in> components (UNIV - (i \<union> j))"
+                  and hB': "B \<in> components (UNIV - (i \<union> j))"
+                  and hcA': "c \<in> A"
+                  and hdB': "d \<in> B"
+                  and hAB': "A \<noteq> B"
+                  using h_some_pair_distinguishes
+                proof (elim exE conjE)
+                  fix i j A B
+                  assume hi'': "i \<in> {B1, B2, B3}"
+                  assume hj'': "j \<in> {B1, B2, B3}"
+                  assume hij'': "i \<noteq> j"
+                  assume hA'': "A \<in> components (UNIV - (i \<union> j))"
+                  assume hB'': "B \<in> components (UNIV - (i \<union> j))"
+                  assume hcA'': "c \<in> A"
+                  assume hdB'': "d \<in> B"
+                  assume hAB'': "A \<noteq> B"
+                  show thesis
+                    by (rule that[OF hi'' hj'' hij'' hA'' hB'' hcA'' hdB'' hAB''])
+                qed
+                show ?thesis
+                  apply (rule exI[where x=i])
+                  apply (rule exI[where x=j])
+                  apply (rule exI[where x=c])
+                  apply (rule exI[where x=d])
+                  apply (rule exI[where x=A])
+                  apply (rule exI[where x=B])
+                  apply (intro conjI)
+                  using hi' apply assumption
+                  using hj' apply assumption
+                  using hij' apply assumption
+                  using hcC apply assumption
+                  using hdD apply assumption
+                  using hA' apply assumption
+                  using hB' apply assumption
+                  using hcA' apply assumption
+                  using hdB' apply assumption
+                  using hAB' apply assumption
+                  done
+              qed
               obtain i j c d A B where hi: "i \<in> {B1, B2, B3}"
                 and hj: "j \<in> {B1, B2, B3}"
                 and hij: "i \<noteq> j"
