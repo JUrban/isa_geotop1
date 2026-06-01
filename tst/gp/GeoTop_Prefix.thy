@@ -57,6 +57,12 @@ definition R2_to_C :: "real^2 \<Rightarrow> complex" where
 definition C_to_R2 :: "complex \<Rightarrow> real^2" where
   "C_to_R2 z = vector [Re z, Im z]"
 
+definition R2_to_pair :: "real^2 \<Rightarrow> real \<times> real" where
+  "R2_to_pair v = (v $ 1, v $ 2)"
+
+definition pair_to_R2 :: "real \<times> real \<Rightarrow> real^2" where
+  "pair_to_R2 p = (\<chi> i. if i = 1 then fst p else snd p)"
+
 lemma C_to_R2_R2_to_C: "C_to_R2 (R2_to_C v) = v"
   unfolding C_to_R2_def R2_to_C_def
   by (simp add: vec_eq_iff forall_2)
@@ -64,11 +70,54 @@ lemma C_to_R2_R2_to_C: "C_to_R2 (R2_to_C v) = v"
 lemma R2_to_C_C_to_R2: "R2_to_C (C_to_R2 z) = z"
   by (simp add: C_to_R2_def R2_to_C_def)
 
+lemma pair_to_R2_R2_to_pair: "pair_to_R2 (R2_to_pair v) = v"
+  unfolding pair_to_R2_def R2_to_pair_def
+  by (simp add: vec_eq_iff forall_2)
+
+lemma R2_to_pair_pair_to_R2: "R2_to_pair (pair_to_R2 p) = p"
+  unfolding pair_to_R2_def R2_to_pair_def
+  by (by100 simp)
+
 lemma R2_to_C_inj: "inj R2_to_C"
   using C_to_R2_R2_to_C by (metis injI)
 
 lemma C_to_R2_inj: "inj C_to_R2"
   using R2_to_C_C_to_R2 by (metis injI)
+
+lemma R2_to_pair_inj: "inj R2_to_pair"
+  using pair_to_R2_R2_to_pair by (metis injI)
+
+lemma R2_to_pair_surj: "surj R2_to_pair"
+  using R2_to_pair_pair_to_R2 by (metis surjI)
+
+lemma R2_to_pair_bij: "bij R2_to_pair"
+  using R2_to_pair_inj R2_to_pair_surj by (simp add: bij_def)
+
+lemma R2_pair_homeomorphism_UNIV:
+  "homeomorphism (UNIV::(real^2) set) (UNIV::(real \<times> real) set)
+     R2_to_pair pair_to_R2"
+proof -
+  have h_cont_f: "continuous_on (UNIV::(real^2) set) R2_to_pair"
+    unfolding R2_to_pair_def by (intro continuous_intros)
+  have h_cont_g: "continuous_on (UNIV::(real \<times> real) set) pair_to_R2"
+    unfolding pair_to_R2_def
+    apply (rule continuous_on_vec_lambda)
+    apply (case_tac "i = 1")
+     apply (simp add: continuous_intros)
+    apply (simp add: continuous_intros)
+    done
+  show ?thesis
+  proof (rule homeomorphismI)
+    show "continuous_on UNIV R2_to_pair" by (rule h_cont_f)
+    show "continuous_on UNIV pair_to_R2" by (rule h_cont_g)
+    show "R2_to_pair ` UNIV \<subseteq> UNIV" by simp
+    show "pair_to_R2 ` UNIV \<subseteq> UNIV" by simp
+    show "\<And>x. x \<in> UNIV \<Longrightarrow> pair_to_R2 (R2_to_pair x) = x"
+      by (rule pair_to_R2_R2_to_pair)
+    show "\<And>y. y \<in> UNIV \<Longrightarrow> R2_to_pair (pair_to_R2 y) = y"
+      by (rule R2_to_pair_pair_to_R2)
+  qed
+qed
 
 lemma R2_to_C_surj: "surj R2_to_C"
   using R2_to_C_C_to_R2 by (metis surjI)

@@ -2540,145 +2540,153 @@ gp/GeoTop_Prefix.thy:22 definition geotop_std_sphere :: geotop_std_sphere = {P. 
 gp/GeoTop_Prefix.thy:27 definition geotop_is_n_sphere :: geotop_is_n_sphere X TX n <-> is_topology_on X TX & (EX f. top1_homeomorphism_on X TX (geotop_std_sphere::'a set) (subspace_topology UNIV geotop_euclidean_topology geotop_std_sphere) f) 'a::real_normed_vector set => bool
 gp/GeoTop_Prefix.thy:36 definition geotop_is_polygon :: geotop_is_polygon J <-> (EX K. geotop_is_complex K & geotop_polyhedron K = J & geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1)
 gp/GeoTop_Prefix.thy:54 definition R2_to_C :: R2_to_C v = Complex (v $ 1) (v $ 2) complex => real^2
-gp/GeoTop_Prefix.thy:57 definition C_to_R2 :: C_to_R2 z = vector [Re z, Im z] C_to_R2 (R2_to_C v) = v
-gp/GeoTop_Prefix.thy:60 lemma C_to_R2_R2_to_C :: C_to_R2 (R2_to_C v) = v
-gp/GeoTop_Prefix.thy:64 lemma R2_to_C_C_to_R2 :: R2_to_C (C_to_R2 z) = z
-gp/GeoTop_Prefix.thy:67 lemma R2_to_C_inj :: inj R2_to_C
-gp/GeoTop_Prefix.thy:70 lemma C_to_R2_inj :: inj C_to_R2
-gp/GeoTop_Prefix.thy:73 lemma R2_to_C_surj :: surj R2_to_C
-gp/GeoTop_Prefix.thy:76 lemma C_to_R2_surj :: surj C_to_R2
-gp/GeoTop_Prefix.thy:79 lemma R2_to_C_bij :: bij R2_to_C
-gp/GeoTop_Prefix.thy:82 lemma C_to_R2_bij :: bij C_to_R2
-gp/GeoTop_Prefix.thy:85 lemma R2_to_C_inv :: inv R2_to_C = C_to_R2
-gp/GeoTop_Prefix.thy:88 lemma C_to_R2_inv :: inv C_to_R2 = R2_to_C
-gp/GeoTop_Prefix.thy:91 lemma R2_to_C_add :: R2_to_C (u + v) = R2_to_C u + R2_to_C v
-gp/GeoTop_Prefix.thy:94 lemma R2_to_C_scaleR :: R2_to_C (a *\<^sub>R v) = a *\<^sub>R R2_to_C v
-gp/GeoTop_Prefix.thy:97 lemma C_to_R2_add :: C_to_R2 (z + w) = C_to_R2 z + C_to_R2 w
-gp/GeoTop_Prefix.thy:101 lemma C_to_R2_scaleR :: C_to_R2 (a *\<^sub>R z) = a *\<^sub>R C_to_R2 z
-gp/GeoTop_Prefix.thy:105 lemma norm_vec2_sq :: (norm (v::real^2))\<^sup>2 = (v $ 1)\<^sup>2 + (v $ 2)\<^sup>2
-gp/GeoTop_Prefix.thy:114 lemma R2_to_C_norm :: norm (R2_to_C v) = norm v
-gp/GeoTop_Prefix.thy:118 lemma C_to_R2_norm :: norm (C_to_R2 z) = norm z
-gp/GeoTop_Prefix.thy:121 lemma bounded_linear_R2_to_C :: bounded_linear R2_to_C
-gp/GeoTop_Prefix.thy:128 lemma bounded_linear_C_to_R2 :: bounded_linear C_to_R2
-gp/GeoTop_Prefix.thy:135 lemma continuous_on_R2_to_C :: continuous_on UNIV R2_to_C
-gp/GeoTop_Prefix.thy:138 lemma continuous_on_C_to_R2 :: continuous_on UNIV C_to_R2
-gp/GeoTop_Prefix.thy:141 lemma homeomorphism_R2_C :: homeomorphism UNIV UNIV R2_to_C C_to_R2
-gp/GeoTop_Prefix.thy:151 lemma C_to_R2_continuous_at :: continuous (at z) C_to_R2
-gp/GeoTop_Prefix.thy:154 lemma R2_to_C_continuous_at :: continuous (at v) R2_to_C
-gp/GeoTop_Prefix.thy:157 lemma C_to_R2_vimage_eq_R2_to_C_image :: C_to_R2 -` S = R2_to_C ` S
-gp/GeoTop_Prefix.thy:176 lemma R2_to_C_vimage_eq_C_to_R2_image :: R2_to_C -` S = C_to_R2 ` S
-gp/GeoTop_Prefix.thy:195 lemma R2_to_C_image_open :: open S ==> open (R2_to_C ` S)
-gp/GeoTop_Prefix.thy:203 lemma C_to_R2_image_open :: open S ==> open (C_to_R2 ` S)
-gp/GeoTop_Prefix.thy:211 lemma R2_to_C_image_bounded :: bounded (R2_to_C ` S) <-> bounded S
-gp/GeoTop_Prefix.thy:228 lemma R2_to_C_image_connected :: connected (R2_to_C ` S) <-> connected S
-gp/GeoTop_Prefix.thy:242 lemma R2_to_C_image_compl :: R2_to_C ` (- S) = - R2_to_C ` S
-gp/GeoTop_Prefix.thy:245 lemma C_to_R2_image_closure :: C_to_R2 ` closure S = closure (C_to_R2 ` S)
-gp/GeoTop_Prefix.thy:265 lemma C_to_R2_image_frontier :: C_to_R2 ` frontier S = frontier (C_to_R2 ` S)
-gp/GeoTop_Prefix.thy:296 lemma R2_to_C_image_closure :: R2_to_C ` closure S = closure (R2_to_C ` S)
-gp/GeoTop_Prefix.thy:316 lemma R2_to_C_image_frontier :: R2_to_C ` frontier S = frontier (R2_to_C ` S)
-gp/GeoTop_Prefix.thy:347 lemma R2_to_C_path :: path c <-> path (R2_to_C o c)
-gp/GeoTop_Prefix.thy:364 lemma R2_to_C_path_image :: path_image (R2_to_C o c) = R2_to_C ` path_image c
-gp/GeoTop_Prefix.thy:368 lemma R2_to_C_pathstart :: pathstart (R2_to_C o c) = R2_to_C (pathstart c)
-gp/GeoTop_Prefix.thy:372 lemma R2_to_C_pathfinish :: pathfinish (R2_to_C o c) = R2_to_C (pathfinish c)
-gp/GeoTop_Prefix.thy:376 lemma R2_to_C_simple_path :: simple_path c <-> simple_path (R2_to_C o c)
-gp/GeoTop_Prefix.thy:388 theorem Jordan_curve_real2 :: real => real^2 simple_path c pathfinish c = pathstart c inner ~= {} open inner connected inner outer ~= {} open outer connected outer bounded inner ~ bounded outer inner Int outer = {} inner Un outer = - path_image c frontier inner = path_image c frontier outer = path_image c
-gp/GeoTop_Prefix.thy:498 definition circle_path_R2 :: circle_path_R2 t = vector [cos (2 * pi * t), sin (2 * pi * t)]
-gp/GeoTop_Prefix.thy:501 lemma continuous_on_circle_path_R2_components :: continuous_on UNIV (%t::real. cos (2 * pi * t)) continuous_on UNIV (%t::real. sin (2 * pi * t))
-gp/GeoTop_Prefix.thy:506 definition cp_C :: cp_C t = Complex (cos (2 * pi * t)) (sin (2 * pi * t)) circle_path_R2 = C_to_R2 o cp_C
-gp/GeoTop_Prefix.thy:509 lemma circle_path_R2_via_C :: circle_path_R2 = C_to_R2 o cp_C
-gp/GeoTop_Prefix.thy:512 lemma continuous_on_cp_C :: continuous_on UNIV cp_C
-gp/GeoTop_Prefix.thy:525 lemma path_circle_path_R2 :: path circle_path_R2
-gp/GeoTop_Prefix.thy:536 lemma pathstart_circle_path_R2 :: pathstart circle_path_R2 = vector [1, 0]
-gp/GeoTop_Prefix.thy:539 lemma pathfinish_circle_path_R2 :: pathfinish circle_path_R2 = vector [1, 0]
-gp/GeoTop_Prefix.thy:542 lemma loop_circle_path_R2 :: pathfinish circle_path_R2 = pathstart circle_path_R2
-gp/GeoTop_Prefix.thy:548 lemma path_image_cp_C :: path_image cp_C = sphere (0::complex) 1
-gp/GeoTop_Prefix.thy:588 lemma path_image_circle_path_R2 :: path_image circle_path_R2 = sphere (0::real^2) 1
-gp/GeoTop_Prefix.thy:612 lemma cp_C_eq_iff :: x : {0..1} y : {0..1} ==> cp_C x = cp_C y <-> x = y | (x = 0 & y = 1) | (x = 1 & y = 0)
-gp/GeoTop_Prefix.thy:694 lemma simple_path_cp_C :: simple_path cp_C
-gp/GeoTop_Prefix.thy:704 lemma simple_path_circle_path_R2 :: simple_path circle_path_R2
-gp/GeoTop_Prefix.thy:727 lemma simple_path_compose_homeomorphism :: simple_path c continuous_on (path_image c) h inj_on h (path_image c) ==> simple_path (h o c)
-gp/GeoTop_Prefix.thy:761 lemma path_image_compose :: path_image (h o c) = h ` path_image c
-gp/GeoTop_Prefix.thy:764 lemma pathstart_compose :: pathstart (h o c) = h (pathstart c)
-gp/GeoTop_Prefix.thy:767 lemma pathfinish_compose :: pathfinish (h o c) = h (pathfinish c)
-gp/GeoTop_Prefix.thy:773 lemma polygon_simple_closed_path :: (real^2) set geotop_is_polygon J simple_path c pathfinish c = pathstart c path_image c = J
-gp/GeoTop_Prefix.thy:843 lemma geotop_polygon_components_set_eq :: {C. EX P. P : UNIV - J & C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P} = components (UNIV - J)
-gp/GeoTop_Prefix.thy:858 lemma polygon_components_card :: geotop_is_polygon J ==> card (components (UNIV - J)) = 2
-gp/GeoTop_Prefix.thy:1014 theorem Lemma_GT_2_1a :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} <= 2
-gp/GeoTop_Prefix.thy:1021 theorem Lemma_GT_2_1b :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} >= 2
-gp/GeoTop_Prefix.thy:1030 theorem Theorem_GT_2_1 :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} = 2
-gp/GeoTop_Prefix.thy:1045 definition geotop_bounded_R2 :: geotop_bounded_R2 A <-> (EX r>0. ALL P : A. norm P < r) (real^2) set => (real^2) set
-gp/GeoTop_Prefix.thy:1048 definition geotop_polygon_interior :: geotop_polygon_interior J = (SOME I. I ~= {} & I <= UNIV - J & geotop_bounded_R2 I & top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) & (ALL P : I. geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P = I)) (real^2) set => (real^2) set
-gp/GeoTop_Prefix.thy:1055 definition geotop_polygon_exterior :: geotop_polygon_exterior J = (SOME E. E ~= {} & E <= UNIV - J & ~ geotop_bounded_R2 E & top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) & (ALL P : E. geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P = E))
-gp/GeoTop_Prefix.thy:1069 lemma compact_polyhedron_imp_finite_complex :: geotop_is_complex K compact (geotop_polyhedron K) ==> finite K
-gp/GeoTop_Prefix.thy:1192 lemma geotop_polygon_finite_triangulation :: geotop_is_polygon J ==> EX K. geotop_is_complex K & finite K & geotop_polyhedron K = J
-gp/GeoTop_Prefix.thy:1227 lemma polygon_homeomorphic_S1_helper :: geotop_is_polygon J ==> J homeomorphic sphere (0::real^2) 1
-gp/GeoTop_Prefix.thy:1252 lemma polygon_set_interior_empty :: geotop_is_polygon J ==> interior J = {}
-gp/GeoTop_Prefix.thy:1417 lemma polygon_complex_dim_le_1 :: geotop_is_polygon J geotop_is_complex K geotop_polyhedron K = J ==> ALL sigma : K. ALL k. geotop_simplex_dim sigma k --> k <= 1
-gp/GeoTop_Prefix.thy:1483 lemma polygon_islimpt :: geotop_is_polygon J v : J ==> v islimpt J
-gp/GeoTop_Prefix.thy:1563 theorem Theorem_GT_2_3 :: geotop_is_broken_line B ==> top1_connected_on (UNIV - B) (subspace_topology UNIV geotop_euclidean_topology (UNIV - B))
-gp/GeoTop_Prefix.thy:1578 theorem Theorem_GT_2_4 :: is_topology_on X T U : T U <= X ==> geotop_frontier X T U = closure_on X T U - U
-gp/GeoTop_Prefix.thy:1604 lemma is_limit_point_of_UNIV_geotop_iff_islimpt :: is_limit_point_of P A UNIV geotop_euclidean_topology <-> P islimpt A
-gp/GeoTop_Prefix.thy:1643 lemma top1_frontier_component_of_geotop_1sphere :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 EX P : UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P 2 <= DIM('a) ==> J = geotop_frontier UNIV geotop_euclidean_topology U
-gp/GeoTop_Prefix.thy:1679 lemma geotop_1sphere_has_bounded_unbounded_components :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 2 <= DIM('a) ==> (EX c. c : components (- J) & bounded c) & (EX c. c : components (- J) & ~ bounded c)
-gp/GeoTop_Prefix.thy:1715 lemma geotop_bounded_R2_iff_bounded :: geotop_bounded_R2 A <-> bounded A
-gp/GeoTop_Prefix.thy:1738 lemma geotop_polygon_interior_is_bounded_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> EX P : UNIV - J. geotop_polygon_interior J = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
-gp/GeoTop_Prefix.thy:1803 lemma geotop_polygon_exterior_is_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> EX P : UNIV - J. geotop_polygon_exterior J = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
-gp/GeoTop_Prefix.thy:1868 theorem Theorem_GT_2_6 :: geotop_is_polygon J ==> J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J) J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)
-gp/GeoTop_Prefix.thy:1902 theorem Theorem_GT_2_5 :: geotop_is_polygon J ==> ALL P : J. is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology & is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology
-gp/GeoTop_Prefix.thy:1966 definition geotop_is_theta_graph :: geotop_is_theta_graph M B1 B2 B3 E <-> M = B1 Un B2 Un B3 & geotop_arc_endpoints B1 E & geotop_arc_endpoints B2 E & geotop_arc_endpoints B3 E & geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} & geotop_arc_interior B1 E Int geotop_arc_interior B3 E = {} & geotop_arc_interior B2 E Int geotop_arc_interior B3 E = {}
-gp/GeoTop_Prefix.thy:1976 definition geotop_is_polyhedral_theta_graph :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E <-> geotop_is_theta_graph M B1 B2 B3 E & geotop_is_broken_line B1 & geotop_is_broken_line B2 & geotop_is_broken_line B3
-gp/GeoTop_Prefix.thy:1985 lemma polyhedral_theta_graph_imp_theta :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_theta_graph M B1 B2 B3 E
-gp/GeoTop_Prefix.thy:1990 lemma polyhedral_theta_graph_imp_bl_1 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B1
-gp/GeoTop_Prefix.thy:1994 lemma polyhedral_theta_graph_imp_bl_2 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B2
-gp/GeoTop_Prefix.thy:1998 lemma polyhedral_theta_graph_imp_bl_3 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B3
-gp/GeoTop_Prefix.thy:2008 lemma arc_join_image_eq :: pathfinish f = pathstart g ==> path_image (f +++ g) = path_image f Un path_image g
-gp/GeoTop_Prefix.thy:2014 lemma pair_of_arcs_image_homeomorphic_sphere :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} B1 ~= B2 ==> B1 Un B2 homeomorphic sphere (0::real^2) 1
-gp/GeoTop_Prefix.thy:2108 lemma broken_line_make_vertex :: geotop_is_broken_line B P : B ==> EX K. geotop_is_complex K & geotop_complex_is_1dim K & geotop_polyhedron K = B & {P} : K
-gp/GeoTop_Prefix.thy:2160 lemma broken_line_make_two_vertices :: geotop_is_broken_line B P : B Q : B ==> EX K. geotop_is_complex K & geotop_complex_is_1dim K & geotop_polyhedron K = B & {P} : K & {Q} : K
-gp/GeoTop_Prefix.thy:2237 lemma onedim_simplex_with_two_endpoints_eq_hull :: geotop_is_complex K geotop_complex_is_1dim K sigma : K {P} : K {Q} : K P : sigma Q : sigma P ~= Q ==> sigma = geotop_convex_hull {P, Q}
-gp/GeoTop_Prefix.thy:2371 lemma pair_of_arcs_polyhedron :: geotop_is_broken_line B1 geotop_is_broken_line B2 geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> EX K. geotop_is_complex K & geotop_polyhedron K = B1 Un B2
-gp/GeoTop_Prefix.thy:2884 lemma arc_interior_nonempty :: geotop_arc_endpoints B E ==> geotop_arc_interior B E ~= {}
-gp/GeoTop_Prefix.thy:2918 lemma pair_of_arcs_is_polygon :: geotop_is_broken_line B1 geotop_is_broken_line B2 geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> geotop_is_polygon (B1 Un B2)
-gp/GeoTop_Prefix.thy:2969 lemma broken_line_closed :: geotop_arc_endpoints B E ==> closed B
-gp/GeoTop_Prefix.thy:3016 lemma broken_line_local_simplex_isolation :: geotop_is_broken_line B x : B ==> EX K. geotop_is_complex K & finite K & geotop_polyhedron K = B & geotop_complex_is_1dim K & (EX delta>0. ball x delta Int B <= UN{sigma : K. x : sigma})
-gp/GeoTop_Prefix.thy:3054 lemma theta_arc_interior_isolated_ball :: closed B2 closed B3 geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} geotop_arc_interior B1 E Int geotop_arc_interior B3 E = {} x : geotop_arc_interior B1 E ==> EX epsilon>0. ball x epsilon Int (B1 Un B2 Un B3) <= B1
-gp/GeoTop_Prefix.thy:3106 lemma geotop_components_complement_eq :: {C. EX P. P : UNIV - X & C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - X) P} = components (UNIV - X)
-gp/GeoTop_Prefix.thy:3122 lemma arc_endpoints_imp_param :: (real^2) set (real^2) set geotop_arc_endpoints B E real => real^2 continuous_on {0..1::real} f0 bij_betw f0 {0..1::real} B f0 ` {0..1} = B inj_on f0 {0..1::real} E = {f0 0, f0 1}
-gp/GeoTop_Prefix.thy:3162 lemma arc_interior_connected :: geotop_arc_endpoints B E ==> connected (geotop_arc_interior B E)
-gp/GeoTop_Prefix.thy:3217 lemma broken_line_interior_empty :: geotop_arc_endpoints B E ==> interior B = {}
-gp/GeoTop_Prefix.thy:3267 lemma arc_closure_interior_eq_arc :: geotop_arc_endpoints B E ==> closure (geotop_arc_interior B E) = B
-gp/GeoTop_Prefix.thy:3419 lemma broken_line_bounded :: geotop_arc_endpoints B E ==> bounded B
-gp/GeoTop_Prefix.thy:3440 lemma theta_graph_complement_has_two_components :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX D1 D2. D1 : components (UNIV - M) & D2 : components (UNIV - M) & D1 ~= D2
-gp/GeoTop_Prefix.thy:3602 lemma theta_graph_bounded :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> bounded M
-gp/GeoTop_Prefix.thy:3623 lemma polygon_exterior_unbounded :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> ~ bounded (geotop_polygon_exterior J)
-gp/GeoTop_Prefix.thy:3685 lemma polygon_exterior_is_HOL_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> geotop_polygon_exterior J : components (UNIV - J)
-gp/GeoTop_Prefix.thy:3704 lemma polygon_bounded :: geotop_is_polygon J ==> bounded J
-gp/GeoTop_Prefix.thy:3733 lemma polygon_interior_is_HOL_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> geotop_polygon_interior J : components (UNIV - J)
-gp/GeoTop_Prefix.thy:3753 lemma polygon_interior_bounded :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> bounded (geotop_polygon_interior J)
-gp/GeoTop_Prefix.thy:3811 lemma polygon_interior_unique :: geotop_is_polygon J C : components (UNIV - J) & bounded C ==> C = geotop_polygon_interior J
-gp/GeoTop_Prefix.thy:3862 lemma polygon_exterior_unique :: geotop_is_polygon J C : components (UNIV - J) & ~ bounded C ==> C = geotop_polygon_exterior J
-gp/GeoTop_Prefix.thy:3886 lemma polygon_interior_closure_eq :: geotop_is_polygon J ==> closure (geotop_polygon_interior J) = geotop_polygon_interior J Un J
-gp/GeoTop_Prefix.thy:3900 lemma polygon_exterior_closure_eq :: geotop_is_polygon J ==> closure (geotop_polygon_exterior J) = geotop_polygon_exterior J Un J
-gp/GeoTop_Prefix.thy:3915 lemma polygon_interior_injective :: geotop_is_polygon J1 geotop_is_polygon J2 geotop_polygon_interior J1 = geotop_polygon_interior J2 ==> J1 = J2
-gp/GeoTop_Prefix.thy:3933 lemma polygon_interior_disjoint_polygon :: geotop_is_polygon J ==> geotop_polygon_interior J Int J = {}
-gp/GeoTop_Prefix.thy:3949 lemma polygon_exterior_disjoint_polygon :: geotop_is_polygon J ==> geotop_polygon_exterior J Int J = {}
-gp/GeoTop_Prefix.thy:3965 lemma polygon_interior_exterior_disjoint :: geotop_is_polygon J ==> geotop_polygon_interior J Int geotop_polygon_exterior J = {}
-gp/GeoTop_Prefix.thy:3993 lemma pair_of_arcs_intersection :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> B1 Int B2 = E
-gp/GeoTop_Prefix.thy:4022 lemma arc_interior_disjoint_other_arc :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> geotop_arc_interior B1 E Int B2 = {}
-gp/GeoTop_Prefix.thy:4047 lemma polygon_components_eq :: geotop_is_polygon J ==> components (UNIV - J) = {geotop_polygon_interior J, geotop_polygon_exterior J}
-gp/GeoTop_Prefix.thy:4088 lemma theta_graph_M_decomposition :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> M = geotop_arc_interior B1 E Un geotop_arc_interior B2 E Un geotop_arc_interior B3 E Un E
-gp/GeoTop_Prefix.thy:4115 lemma theta_graph_pair_is_polygon :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E i : {B1, B2, B3} j : {B1, B2, B3} i ~= j ==> geotop_is_polygon (i Un j)
-gp/GeoTop_Prefix.thy:4152 lemma theta_arc_in_one_side_of_pair_polygon :: geotop_arc_endpoints Bi E geotop_arc_endpoints Bj E geotop_arc_endpoints Bk E geotop_is_broken_line Bj geotop_is_broken_line Bk geotop_arc_interior Bi E Int geotop_arc_interior Bj E = {} geotop_arc_interior Bi E Int geotop_arc_interior Bk E = {} geotop_arc_interior Bj E Int geotop_arc ==> geotop_arc_interior Bi E <= geotop_polygon_interior (Bj Un Bk) | geotop_arc_interior Bi E <= geotop_polygon_exterior (Bj Un Bk)
-gp/GeoTop_Prefix.thy:4243 lemma polygon_interior_union_subset_connected :: geotop_is_polygon J S <= J ==> connected (geotop_polygon_interior J Un S)
-gp/GeoTop_Prefix.thy:4271 lemma theta_graph_unbounded_in_pair_exterior :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E U : components (UNIV - M) ~ bounded U i : {B1, B2, B3} j : {B1, B2, B3} i ~= j ==> U <= geotop_polygon_exterior (i Un j)
-gp/GeoTop_Prefix.thy:4336 lemma theta_graph_has_unbounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX U. U : components (UNIV - M) & ~ bounded U
-gp/GeoTop_Prefix.thy:4348 lemma theta_graph_unique_unbounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX !U. U : components (UNIV - M) & ~ bounded U
-gp/GeoTop_Prefix.thy:4371 lemma theta_graph_has_bounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX F. F : components (UNIV - M) & bounded F
-gp/GeoTop_Prefix.thy:4403 lemma theta_graph_closed :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> closed M
-gp/GeoTop_Prefix.thy:4430 lemma theta_two_middle_arcs_contradict :: geotop_arc_endpoints A E geotop_arc_endpoints B E geotop_arc_endpoints C E geotop_arc_interior A E Int geotop_arc_interior B E = {} geotop_arc_interior A E Int geotop_arc_interior C E = {} geotop_arc_interior B E Int geotop_arc_interior C E = {} geotop_is_polygon (B Un C) geotop ==> False proof -
-gp/GeoTop_Prefix.thy:4559 lemma nondegenerate_segment_meets_ball :: p ~= P delta > 0 ==> EX q. q : (closed_segment P p - {P}) Int ball P delta
-gp/GeoTop_Prefix.thy:4620 lemma segment_face_with_endpoint_and_extra_eq :: geotop_is_face F (closed_segment P p) p ~= P P : F z : F z ~= P ==> F = closed_segment P p
-gp/GeoTop_Prefix.thy:4674 lemma broken_line_endpoint_local_segment :: geotop_is_broken_line B geotop_arc_endpoints B E P : E ==> EX delta>0. EX p. p ~= P & ball P delta Int B = ball P delta Int closed_segment P p & ball P delta Int geotop_arc_interior B E <= closed_segment P p - {P}
+gp/GeoTop_Prefix.thy:57 definition C_to_R2 :: C_to_R2 z = vector [Re z, Im z] real^2 => real * real
+gp/GeoTop_Prefix.thy:60 definition R2_to_pair :: R2_to_pair v = (v $ 1, v $ 2) real * real => real^2
+gp/GeoTop_Prefix.thy:63 definition pair_to_R2 :: pair_to_R2 p = (chi i. if i = 1 then fst p else snd p) C_to_R2 (R2_to_C v) = v
+gp/GeoTop_Prefix.thy:66 lemma C_to_R2_R2_to_C :: C_to_R2 (R2_to_C v) = v
+gp/GeoTop_Prefix.thy:70 lemma R2_to_C_C_to_R2 :: R2_to_C (C_to_R2 z) = z
+gp/GeoTop_Prefix.thy:73 lemma pair_to_R2_R2_to_pair :: pair_to_R2 (R2_to_pair v) = v
+gp/GeoTop_Prefix.thy:77 lemma R2_to_pair_pair_to_R2 :: R2_to_pair (pair_to_R2 p) = p
+gp/GeoTop_Prefix.thy:81 lemma R2_to_C_inj :: inj R2_to_C
+gp/GeoTop_Prefix.thy:84 lemma C_to_R2_inj :: inj C_to_R2
+gp/GeoTop_Prefix.thy:87 lemma R2_to_pair_inj :: inj R2_to_pair
+gp/GeoTop_Prefix.thy:90 lemma R2_to_pair_surj :: surj R2_to_pair
+gp/GeoTop_Prefix.thy:93 lemma R2_to_pair_bij :: bij R2_to_pair
+gp/GeoTop_Prefix.thy:96 lemma R2_pair_homeomorphism_UNIV :: homeomorphism (UNIV::(real^2) set) (UNIV::(real * real) set) R2_to_pair pair_to_R2
+gp/GeoTop_Prefix.thy:122 lemma R2_to_C_surj :: surj R2_to_C
+gp/GeoTop_Prefix.thy:125 lemma C_to_R2_surj :: surj C_to_R2
+gp/GeoTop_Prefix.thy:128 lemma R2_to_C_bij :: bij R2_to_C
+gp/GeoTop_Prefix.thy:131 lemma C_to_R2_bij :: bij C_to_R2
+gp/GeoTop_Prefix.thy:134 lemma R2_to_C_inv :: inv R2_to_C = C_to_R2
+gp/GeoTop_Prefix.thy:137 lemma C_to_R2_inv :: inv C_to_R2 = R2_to_C
+gp/GeoTop_Prefix.thy:140 lemma R2_to_C_add :: R2_to_C (u + v) = R2_to_C u + R2_to_C v
+gp/GeoTop_Prefix.thy:143 lemma R2_to_C_scaleR :: R2_to_C (a *\<^sub>R v) = a *\<^sub>R R2_to_C v
+gp/GeoTop_Prefix.thy:146 lemma C_to_R2_add :: C_to_R2 (z + w) = C_to_R2 z + C_to_R2 w
+gp/GeoTop_Prefix.thy:150 lemma C_to_R2_scaleR :: C_to_R2 (a *\<^sub>R z) = a *\<^sub>R C_to_R2 z
+gp/GeoTop_Prefix.thy:154 lemma norm_vec2_sq :: (norm (v::real^2))\<^sup>2 = (v $ 1)\<^sup>2 + (v $ 2)\<^sup>2
+gp/GeoTop_Prefix.thy:163 lemma R2_to_C_norm :: norm (R2_to_C v) = norm v
+gp/GeoTop_Prefix.thy:167 lemma C_to_R2_norm :: norm (C_to_R2 z) = norm z
+gp/GeoTop_Prefix.thy:170 lemma bounded_linear_R2_to_C :: bounded_linear R2_to_C
+gp/GeoTop_Prefix.thy:177 lemma bounded_linear_C_to_R2 :: bounded_linear C_to_R2
+gp/GeoTop_Prefix.thy:184 lemma continuous_on_R2_to_C :: continuous_on UNIV R2_to_C
+gp/GeoTop_Prefix.thy:187 lemma continuous_on_C_to_R2 :: continuous_on UNIV C_to_R2
+gp/GeoTop_Prefix.thy:190 lemma homeomorphism_R2_C :: homeomorphism UNIV UNIV R2_to_C C_to_R2
+gp/GeoTop_Prefix.thy:200 lemma C_to_R2_continuous_at :: continuous (at z) C_to_R2
+gp/GeoTop_Prefix.thy:203 lemma R2_to_C_continuous_at :: continuous (at v) R2_to_C
+gp/GeoTop_Prefix.thy:206 lemma C_to_R2_vimage_eq_R2_to_C_image :: C_to_R2 -` S = R2_to_C ` S
+gp/GeoTop_Prefix.thy:225 lemma R2_to_C_vimage_eq_C_to_R2_image :: R2_to_C -` S = C_to_R2 ` S
+gp/GeoTop_Prefix.thy:244 lemma R2_to_C_image_open :: open S ==> open (R2_to_C ` S)
+gp/GeoTop_Prefix.thy:252 lemma C_to_R2_image_open :: open S ==> open (C_to_R2 ` S)
+gp/GeoTop_Prefix.thy:260 lemma R2_to_C_image_bounded :: bounded (R2_to_C ` S) <-> bounded S
+gp/GeoTop_Prefix.thy:277 lemma R2_to_C_image_connected :: connected (R2_to_C ` S) <-> connected S
+gp/GeoTop_Prefix.thy:291 lemma R2_to_C_image_compl :: R2_to_C ` (- S) = - R2_to_C ` S
+gp/GeoTop_Prefix.thy:294 lemma C_to_R2_image_closure :: C_to_R2 ` closure S = closure (C_to_R2 ` S)
+gp/GeoTop_Prefix.thy:314 lemma C_to_R2_image_frontier :: C_to_R2 ` frontier S = frontier (C_to_R2 ` S)
+gp/GeoTop_Prefix.thy:345 lemma R2_to_C_image_closure :: R2_to_C ` closure S = closure (R2_to_C ` S)
+gp/GeoTop_Prefix.thy:365 lemma R2_to_C_image_frontier :: R2_to_C ` frontier S = frontier (R2_to_C ` S)
+gp/GeoTop_Prefix.thy:396 lemma R2_to_C_path :: path c <-> path (R2_to_C o c)
+gp/GeoTop_Prefix.thy:413 lemma R2_to_C_path_image :: path_image (R2_to_C o c) = R2_to_C ` path_image c
+gp/GeoTop_Prefix.thy:417 lemma R2_to_C_pathstart :: pathstart (R2_to_C o c) = R2_to_C (pathstart c)
+gp/GeoTop_Prefix.thy:421 lemma R2_to_C_pathfinish :: pathfinish (R2_to_C o c) = R2_to_C (pathfinish c)
+gp/GeoTop_Prefix.thy:425 lemma R2_to_C_simple_path :: simple_path c <-> simple_path (R2_to_C o c)
+gp/GeoTop_Prefix.thy:437 theorem Jordan_curve_real2 :: real => real^2 simple_path c pathfinish c = pathstart c inner ~= {} open inner connected inner outer ~= {} open outer connected outer bounded inner ~ bounded outer inner Int outer = {} inner Un outer = - path_image c frontier inner = path_image c frontier outer = path_image c
+gp/GeoTop_Prefix.thy:547 definition circle_path_R2 :: circle_path_R2 t = vector [cos (2 * pi * t), sin (2 * pi * t)]
+gp/GeoTop_Prefix.thy:550 lemma continuous_on_circle_path_R2_components :: continuous_on UNIV (%t::real. cos (2 * pi * t)) continuous_on UNIV (%t::real. sin (2 * pi * t))
+gp/GeoTop_Prefix.thy:555 definition cp_C :: cp_C t = Complex (cos (2 * pi * t)) (sin (2 * pi * t)) circle_path_R2 = C_to_R2 o cp_C
+gp/GeoTop_Prefix.thy:558 lemma circle_path_R2_via_C :: circle_path_R2 = C_to_R2 o cp_C
+gp/GeoTop_Prefix.thy:561 lemma continuous_on_cp_C :: continuous_on UNIV cp_C
+gp/GeoTop_Prefix.thy:574 lemma path_circle_path_R2 :: path circle_path_R2
+gp/GeoTop_Prefix.thy:585 lemma pathstart_circle_path_R2 :: pathstart circle_path_R2 = vector [1, 0]
+gp/GeoTop_Prefix.thy:588 lemma pathfinish_circle_path_R2 :: pathfinish circle_path_R2 = vector [1, 0]
+gp/GeoTop_Prefix.thy:591 lemma loop_circle_path_R2 :: pathfinish circle_path_R2 = pathstart circle_path_R2
+gp/GeoTop_Prefix.thy:597 lemma path_image_cp_C :: path_image cp_C = sphere (0::complex) 1
+gp/GeoTop_Prefix.thy:637 lemma path_image_circle_path_R2 :: path_image circle_path_R2 = sphere (0::real^2) 1
+gp/GeoTop_Prefix.thy:661 lemma cp_C_eq_iff :: x : {0..1} y : {0..1} ==> cp_C x = cp_C y <-> x = y | (x = 0 & y = 1) | (x = 1 & y = 0)
+gp/GeoTop_Prefix.thy:743 lemma simple_path_cp_C :: simple_path cp_C
+gp/GeoTop_Prefix.thy:753 lemma simple_path_circle_path_R2 :: simple_path circle_path_R2
+gp/GeoTop_Prefix.thy:776 lemma simple_path_compose_homeomorphism :: simple_path c continuous_on (path_image c) h inj_on h (path_image c) ==> simple_path (h o c)
+gp/GeoTop_Prefix.thy:810 lemma path_image_compose :: path_image (h o c) = h ` path_image c
+gp/GeoTop_Prefix.thy:813 lemma pathstart_compose :: pathstart (h o c) = h (pathstart c)
+gp/GeoTop_Prefix.thy:816 lemma pathfinish_compose :: pathfinish (h o c) = h (pathfinish c)
+gp/GeoTop_Prefix.thy:822 lemma polygon_simple_closed_path :: (real^2) set geotop_is_polygon J simple_path c pathfinish c = pathstart c path_image c = J
+gp/GeoTop_Prefix.thy:892 lemma geotop_polygon_components_set_eq :: {C. EX P. P : UNIV - J & C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P} = components (UNIV - J)
+gp/GeoTop_Prefix.thy:907 lemma polygon_components_card :: geotop_is_polygon J ==> card (components (UNIV - J)) = 2
+gp/GeoTop_Prefix.thy:1063 theorem Lemma_GT_2_1a :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} <= 2
+gp/GeoTop_Prefix.thy:1070 theorem Lemma_GT_2_1b :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} >= 2
+gp/GeoTop_Prefix.thy:1079 theorem Theorem_GT_2_1 :: geotop_is_polygon J ==> card {C. EX P. P : (UNIV::(real^2) set) - J & C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P} = 2
+gp/GeoTop_Prefix.thy:1094 definition geotop_bounded_R2 :: geotop_bounded_R2 A <-> (EX r>0. ALL P : A. norm P < r) (real^2) set => (real^2) set
+gp/GeoTop_Prefix.thy:1097 definition geotop_polygon_interior :: geotop_polygon_interior J = (SOME I. I ~= {} & I <= UNIV - J & geotop_bounded_R2 I & top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) & (ALL P : I. geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P = I)) (real^2) set => (real^2) set
+gp/GeoTop_Prefix.thy:1104 definition geotop_polygon_exterior :: geotop_polygon_exterior J = (SOME E. E ~= {} & E <= UNIV - J & ~ geotop_bounded_R2 E & top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) & (ALL P : E. geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - J) P = E))
+gp/GeoTop_Prefix.thy:1118 lemma compact_polyhedron_imp_finite_complex :: geotop_is_complex K compact (geotop_polyhedron K) ==> finite K
+gp/GeoTop_Prefix.thy:1241 lemma geotop_polygon_finite_triangulation :: geotop_is_polygon J ==> EX K. geotop_is_complex K & finite K & geotop_polyhedron K = J
+gp/GeoTop_Prefix.thy:1276 lemma polygon_homeomorphic_S1_helper :: geotop_is_polygon J ==> J homeomorphic sphere (0::real^2) 1
+gp/GeoTop_Prefix.thy:1301 lemma polygon_set_interior_empty :: geotop_is_polygon J ==> interior J = {}
+gp/GeoTop_Prefix.thy:1466 lemma polygon_complex_dim_le_1 :: geotop_is_polygon J geotop_is_complex K geotop_polyhedron K = J ==> ALL sigma : K. ALL k. geotop_simplex_dim sigma k --> k <= 1
+gp/GeoTop_Prefix.thy:1532 lemma polygon_islimpt :: geotop_is_polygon J v : J ==> v islimpt J
+gp/GeoTop_Prefix.thy:1612 theorem Theorem_GT_2_3 :: geotop_is_broken_line B ==> top1_connected_on (UNIV - B) (subspace_topology UNIV geotop_euclidean_topology (UNIV - B))
+gp/GeoTop_Prefix.thy:1627 theorem Theorem_GT_2_4 :: is_topology_on X T U : T U <= X ==> geotop_frontier X T U = closure_on X T U - U
+gp/GeoTop_Prefix.thy:1653 lemma is_limit_point_of_UNIV_geotop_iff_islimpt :: is_limit_point_of P A UNIV geotop_euclidean_topology <-> P islimpt A
+gp/GeoTop_Prefix.thy:1692 lemma top1_frontier_component_of_geotop_1sphere :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 EX P : UNIV - J. U = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P 2 <= DIM('a) ==> J = geotop_frontier UNIV geotop_euclidean_topology U
+gp/GeoTop_Prefix.thy:1728 lemma geotop_1sphere_has_bounded_unbounded_components :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 2 <= DIM('a) ==> (EX c. c : components (- J) & bounded c) & (EX c. c : components (- J) & ~ bounded c)
+gp/GeoTop_Prefix.thy:1764 lemma geotop_bounded_R2_iff_bounded :: geotop_bounded_R2 A <-> bounded A
+gp/GeoTop_Prefix.thy:1787 lemma geotop_polygon_interior_is_bounded_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> EX P : UNIV - J. geotop_polygon_interior J = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+gp/GeoTop_Prefix.thy:1852 lemma geotop_polygon_exterior_is_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> EX P : UNIV - J. geotop_polygon_exterior J = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P
+gp/GeoTop_Prefix.thy:1917 theorem Theorem_GT_2_6 :: geotop_is_polygon J ==> J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_interior J) J = geotop_frontier UNIV geotop_euclidean_topology (geotop_polygon_exterior J)
+gp/GeoTop_Prefix.thy:1951 theorem Theorem_GT_2_5 :: geotop_is_polygon J ==> ALL P : J. is_limit_point_of P (geotop_polygon_interior J) UNIV geotop_euclidean_topology & is_limit_point_of P (geotop_polygon_exterior J) UNIV geotop_euclidean_topology
+gp/GeoTop_Prefix.thy:2015 definition geotop_is_theta_graph :: geotop_is_theta_graph M B1 B2 B3 E <-> M = B1 Un B2 Un B3 & geotop_arc_endpoints B1 E & geotop_arc_endpoints B2 E & geotop_arc_endpoints B3 E & geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} & geotop_arc_interior B1 E Int geotop_arc_interior B3 E = {} & geotop_arc_interior B2 E Int geotop_arc_interior B3 E = {}
+gp/GeoTop_Prefix.thy:2025 definition geotop_is_polyhedral_theta_graph :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E <-> geotop_is_theta_graph M B1 B2 B3 E & geotop_is_broken_line B1 & geotop_is_broken_line B2 & geotop_is_broken_line B3
+gp/GeoTop_Prefix.thy:2034 lemma polyhedral_theta_graph_imp_theta :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_theta_graph M B1 B2 B3 E
+gp/GeoTop_Prefix.thy:2039 lemma polyhedral_theta_graph_imp_bl_1 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B1
+gp/GeoTop_Prefix.thy:2043 lemma polyhedral_theta_graph_imp_bl_2 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B2
+gp/GeoTop_Prefix.thy:2047 lemma polyhedral_theta_graph_imp_bl_3 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> geotop_is_broken_line B3
+gp/GeoTop_Prefix.thy:2057 lemma arc_join_image_eq :: pathfinish f = pathstart g ==> path_image (f +++ g) = path_image f Un path_image g
+gp/GeoTop_Prefix.thy:2063 lemma pair_of_arcs_image_homeomorphic_sphere :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} B1 ~= B2 ==> B1 Un B2 homeomorphic sphere (0::real^2) 1
+gp/GeoTop_Prefix.thy:2157 lemma broken_line_make_vertex :: geotop_is_broken_line B P : B ==> EX K. geotop_is_complex K & geotop_complex_is_1dim K & geotop_polyhedron K = B & {P} : K
+gp/GeoTop_Prefix.thy:2209 lemma broken_line_make_two_vertices :: geotop_is_broken_line B P : B Q : B ==> EX K. geotop_is_complex K & geotop_complex_is_1dim K & geotop_polyhedron K = B & {P} : K & {Q} : K
+gp/GeoTop_Prefix.thy:2286 lemma onedim_simplex_with_two_endpoints_eq_hull :: geotop_is_complex K geotop_complex_is_1dim K sigma : K {P} : K {Q} : K P : sigma Q : sigma P ~= Q ==> sigma = geotop_convex_hull {P, Q}
+gp/GeoTop_Prefix.thy:2420 lemma pair_of_arcs_polyhedron :: geotop_is_broken_line B1 geotop_is_broken_line B2 geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> EX K. geotop_is_complex K & geotop_polyhedron K = B1 Un B2
+gp/GeoTop_Prefix.thy:2933 lemma arc_interior_nonempty :: geotop_arc_endpoints B E ==> geotop_arc_interior B E ~= {}
+gp/GeoTop_Prefix.thy:2967 lemma pair_of_arcs_is_polygon :: geotop_is_broken_line B1 geotop_is_broken_line B2 geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> geotop_is_polygon (B1 Un B2)
+gp/GeoTop_Prefix.thy:3018 lemma broken_line_closed :: geotop_arc_endpoints B E ==> closed B
+gp/GeoTop_Prefix.thy:3065 lemma broken_line_local_simplex_isolation :: geotop_is_broken_line B x : B ==> EX K. geotop_is_complex K & finite K & geotop_polyhedron K = B & geotop_complex_is_1dim K & (EX delta>0. ball x delta Int B <= UN{sigma : K. x : sigma})
+gp/GeoTop_Prefix.thy:3103 lemma theta_arc_interior_isolated_ball :: closed B2 closed B3 geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} geotop_arc_interior B1 E Int geotop_arc_interior B3 E = {} x : geotop_arc_interior B1 E ==> EX epsilon>0. ball x epsilon Int (B1 Un B2 Un B3) <= B1
+gp/GeoTop_Prefix.thy:3155 lemma geotop_components_complement_eq :: {C. EX P. P : UNIV - X & C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - X) P} = components (UNIV - X)
+gp/GeoTop_Prefix.thy:3171 lemma arc_endpoints_imp_param :: (real^2) set (real^2) set geotop_arc_endpoints B E real => real^2 continuous_on {0..1::real} f0 bij_betw f0 {0..1::real} B f0 ` {0..1} = B inj_on f0 {0..1::real} E = {f0 0, f0 1}
+gp/GeoTop_Prefix.thy:3211 lemma arc_interior_connected :: geotop_arc_endpoints B E ==> connected (geotop_arc_interior B E)
+gp/GeoTop_Prefix.thy:3266 lemma broken_line_interior_empty :: geotop_arc_endpoints B E ==> interior B = {}
+gp/GeoTop_Prefix.thy:3316 lemma arc_closure_interior_eq_arc :: geotop_arc_endpoints B E ==> closure (geotop_arc_interior B E) = B
+gp/GeoTop_Prefix.thy:3468 lemma broken_line_bounded :: geotop_arc_endpoints B E ==> bounded B
+gp/GeoTop_Prefix.thy:3489 lemma theta_graph_complement_has_two_components :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX D1 D2. D1 : components (UNIV - M) & D2 : components (UNIV - M) & D1 ~= D2
+gp/GeoTop_Prefix.thy:3651 lemma theta_graph_bounded :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> bounded M
+gp/GeoTop_Prefix.thy:3672 lemma polygon_exterior_unbounded :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> ~ bounded (geotop_polygon_exterior J)
+gp/GeoTop_Prefix.thy:3734 lemma polygon_exterior_is_HOL_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> geotop_polygon_exterior J : components (UNIV - J)
+gp/GeoTop_Prefix.thy:3753 lemma polygon_bounded :: geotop_is_polygon J ==> bounded J
+gp/GeoTop_Prefix.thy:3782 lemma polygon_interior_is_HOL_component :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> geotop_polygon_interior J : components (UNIV - J)
+gp/GeoTop_Prefix.thy:3802 lemma polygon_interior_bounded :: geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1 ==> bounded (geotop_polygon_interior J)
+gp/GeoTop_Prefix.thy:3860 lemma polygon_interior_unique :: geotop_is_polygon J C : components (UNIV - J) & bounded C ==> C = geotop_polygon_interior J
+gp/GeoTop_Prefix.thy:3911 lemma polygon_exterior_unique :: geotop_is_polygon J C : components (UNIV - J) & ~ bounded C ==> C = geotop_polygon_exterior J
+gp/GeoTop_Prefix.thy:3935 lemma polygon_interior_closure_eq :: geotop_is_polygon J ==> closure (geotop_polygon_interior J) = geotop_polygon_interior J Un J
+gp/GeoTop_Prefix.thy:3949 lemma polygon_exterior_closure_eq :: geotop_is_polygon J ==> closure (geotop_polygon_exterior J) = geotop_polygon_exterior J Un J
+gp/GeoTop_Prefix.thy:3964 lemma polygon_interior_injective :: geotop_is_polygon J1 geotop_is_polygon J2 geotop_polygon_interior J1 = geotop_polygon_interior J2 ==> J1 = J2
+gp/GeoTop_Prefix.thy:3982 lemma polygon_interior_disjoint_polygon :: geotop_is_polygon J ==> geotop_polygon_interior J Int J = {}
+gp/GeoTop_Prefix.thy:3998 lemma polygon_exterior_disjoint_polygon :: geotop_is_polygon J ==> geotop_polygon_exterior J Int J = {}
+gp/GeoTop_Prefix.thy:4014 lemma polygon_interior_exterior_disjoint :: geotop_is_polygon J ==> geotop_polygon_interior J Int geotop_polygon_exterior J = {}
+gp/GeoTop_Prefix.thy:4042 lemma pair_of_arcs_intersection :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> B1 Int B2 = E
+gp/GeoTop_Prefix.thy:4071 lemma arc_interior_disjoint_other_arc :: geotop_arc_endpoints B1 E geotop_arc_endpoints B2 E geotop_arc_interior B1 E Int geotop_arc_interior B2 E = {} ==> geotop_arc_interior B1 E Int B2 = {}
+gp/GeoTop_Prefix.thy:4096 lemma polygon_components_eq :: geotop_is_polygon J ==> components (UNIV - J) = {geotop_polygon_interior J, geotop_polygon_exterior J}
+gp/GeoTop_Prefix.thy:4137 lemma theta_graph_M_decomposition :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> M = geotop_arc_interior B1 E Un geotop_arc_interior B2 E Un geotop_arc_interior B3 E Un E
+gp/GeoTop_Prefix.thy:4164 lemma theta_graph_pair_is_polygon :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E i : {B1, B2, B3} j : {B1, B2, B3} i ~= j ==> geotop_is_polygon (i Un j)
+gp/GeoTop_Prefix.thy:4201 lemma theta_arc_in_one_side_of_pair_polygon :: geotop_arc_endpoints Bi E geotop_arc_endpoints Bj E geotop_arc_endpoints Bk E geotop_is_broken_line Bj geotop_is_broken_line Bk geotop_arc_interior Bi E Int geotop_arc_interior Bj E = {} geotop_arc_interior Bi E Int geotop_arc_interior Bk E = {} geotop_arc_interior Bj E Int geotop_arc ==> geotop_arc_interior Bi E <= geotop_polygon_interior (Bj Un Bk) | geotop_arc_interior Bi E <= geotop_polygon_exterior (Bj Un Bk)
+gp/GeoTop_Prefix.thy:4292 lemma polygon_interior_union_subset_connected :: geotop_is_polygon J S <= J ==> connected (geotop_polygon_interior J Un S)
+gp/GeoTop_Prefix.thy:4320 lemma theta_graph_unbounded_in_pair_exterior :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E U : components (UNIV - M) ~ bounded U i : {B1, B2, B3} j : {B1, B2, B3} i ~= j ==> U <= geotop_polygon_exterior (i Un j)
+gp/GeoTop_Prefix.thy:4385 lemma theta_graph_has_unbounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX U. U : components (UNIV - M) & ~ bounded U
+gp/GeoTop_Prefix.thy:4397 lemma theta_graph_unique_unbounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX !U. U : components (UNIV - M) & ~ bounded U
+gp/GeoTop_Prefix.thy:4420 lemma theta_graph_has_bounded_component :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> EX F. F : components (UNIV - M) & bounded F
+gp/GeoTop_Prefix.thy:4452 lemma theta_graph_closed :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> closed M
+gp/GeoTop_Prefix.thy:4479 lemma theta_two_middle_arcs_contradict :: geotop_arc_endpoints A E geotop_arc_endpoints B E geotop_arc_endpoints C E geotop_arc_interior A E Int geotop_arc_interior B E = {} geotop_arc_interior A E Int geotop_arc_interior C E = {} geotop_arc_interior B E Int geotop_arc_interior C E = {} geotop_is_polygon (B Un C) geotop ==> False proof -
+gp/GeoTop_Prefix.thy:4608 lemma nondegenerate_segment_meets_ball :: p ~= P delta > 0 ==> EX q. q : (closed_segment P p - {P}) Int ball P delta
+gp/GeoTop_Prefix.thy:4669 lemma segment_face_with_endpoint_and_extra_eq :: geotop_is_face F (closed_segment P p) p ~= P P : F z : F z ~= P ==> F = closed_segment P p
+gp/GeoTop_Prefix.thy:4723 lemma broken_line_endpoint_local_segment :: geotop_is_broken_line B geotop_arc_endpoints B E P : E ==> EX delta>0. EX p. p ~= P & ball P delta Int B = ball P delta Int closed_segment P p & ball P delta Int geotop_arc_interior B E <= closed_segment P p - {P}
 GeoTop.thy:10 theorem Theorem_GT_2_7 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E ==> ALL U. (U : {C. EX P : UNIV - M. C = geotop_component_at UNIV geotop_euclidean_topology ((UNIV::(real^2) set) - M) P}) --> (EX i j. {i,j} <= {B1, B2, B3} & i ~= j & geotop_is_polygon (i Un j) & geotop_frontier UNIV geotop_euclidean_topology U = i Un j) (EX !k. k : {B1, B2, B3} & (EX i j. {i,j} = {B1, B2, B3} - {k} & i ~= j & geotop_is_polygon (i Un j) & geotop_arc_interior k E <= geotop_polygon_interior (i Un j)))
 GeoTop.thy:23 definition of :: definition of polyhedral theta-graph. **) have h_theta: "geotop_is_theta_graph M B1 B2 B3 E" using htheta unfolding geotop_is_polyhedral_theta_graph_def by blast
 GeoTop.thy:5152 lemma theta_middle_arc_unique_excludes_3 :: geotop_is_polyhedral_theta_graph M B1 B2 B3 E geotop_arc_interior B2 E <= geotop_polygon_interior (B1 Un B3) ==> ~ geotop_arc_interior B3 E <= geotop_polygon_interior (B1 Un B2)
