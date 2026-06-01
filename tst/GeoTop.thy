@@ -1103,6 +1103,100 @@ proof -
               show "z \<in> \<sigma>_y \<union> \<tau>_y"
                 using hz_cov hEdgesAtX_eq_pair hx_in_pair by (by100 blast)
             qed
+            have h\<tau>_y_sub_M: "\<tau>_y \<subseteq> M"
+            proof -
+              have h\<tau>_y_K: "\<tau>_y \<in> K_i"
+                using h\<tau>_y_EAX hEAX_sub by (by100 blast)
+              have h\<tau>_y_sub_i: "\<tau>_y \<subseteq> i"
+                using h\<tau>_y_K hK_eq_i by (by100 blast)
+              show ?thesis
+                using h\<tau>_y_sub_i hi_sub_M by (by100 blast)
+            qed
+            have h_ball_x_compl_eq_two_edges:
+              "ball x \<delta>_iso - M = ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+            proof
+              show "ball x \<delta>_iso - M \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+              proof
+                fix z
+                assume hz: "z \<in> ball x \<delta>_iso - M"
+                have hz_ball: "z \<in> ball x \<delta>_iso"
+                  using hz by (by100 blast)
+                have hz_not_M: "z \<notin> M"
+                  using hz by (by100 blast)
+                have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                  using hz_not_M h\<sigma>_y_sub_M h\<tau>_y_sub_M by (by100 blast)
+                show "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                  using hz_ball hz_not_pair by (by100 blast)
+              qed
+              show "ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y) \<subseteq> ball x \<delta>_iso - M"
+              proof
+                fix z
+                assume hz: "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                have hz_ball: "z \<in> ball x \<delta>_iso"
+                  using hz by (by100 blast)
+                have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                  using hz by (by100 blast)
+                have hz_not_M: "z \<notin> M"
+                proof
+                  assume hz_M: "z \<in> M"
+                  have "z \<in> ball x \<delta>_iso \<inter> M"
+                    using hz_ball hz_M by (by100 blast)
+                  hence "z \<in> \<sigma>_y \<union> \<tau>_y"
+                    using h_ball_x_M_sub_two_edges by (by100 blast)
+                  thus False using hz_not_pair by (by100 blast)
+                qed
+                show "z \<in> ball x \<delta>_iso - M"
+                  using hz_ball hz_not_M by (by100 blast)
+              qed
+            qed
+            have h_connected_local_two_edge_subset_stays_U:
+              "\<And>C u. \<lbrakk>connected C; u \<in> C; u \<in> U;
+                       C \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)\<rbrakk> \<Longrightarrow> C \<subseteq> U"
+            proof -
+              fix C u
+              assume hC_conn: "connected C"
+                and huC: "u \<in> C"
+                and huU: "u \<in> U"
+                and hC_sub_local: "C \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+              have hC_sub_global: "C \<subseteq> UNIV - M"
+              proof
+                fix z
+                assume hzC: "z \<in> C"
+                have hz_local_pair: "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                  using hzC hC_sub_local by (by100 blast)
+                have hz_local_M: "z \<in> ball x \<delta>_iso - M"
+                  using hz_local_pair h_ball_x_compl_eq_two_edges by (by100 simp)
+                show "z \<in> UNIV - M"
+                  using hz_local_M by (by100 blast)
+              qed
+              have hU_eq: "U = connected_component_set (UNIV - M) u"
+                by (rule component_eq_connected_component_set[OF hU_in huU])
+              show "C \<subseteq> U"
+                unfolding hU_eq
+                using connected_component_maximal[OF huC hC_conn hC_sub_global] .
+            qed
+            have h_path_in_local_two_edge_complement_stays_U:
+              "\<And>\<gamma> t. \<lbrakk>continuous_on {0..1::real} \<gamma>;
+                        \<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y);
+                        \<gamma> 0 \<in> U; t \<in> {0..1::real}\<rbrakk> \<Longrightarrow> \<gamma> t \<in> U"
+            proof -
+              fix \<gamma> :: "real \<Rightarrow> real^2" and t :: real
+              assume h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                and h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                and h\<gamma>0_U: "\<gamma> 0 \<in> U"
+                and ht: "t \<in> {0..1::real}"
+              have h\<gamma>_conn: "connected (\<gamma> ` {0..1::real})"
+                using connected_continuous_image[OF h\<gamma>_cont] by (by100 simp)
+              have h\<gamma>0_img: "\<gamma> 0 \<in> \<gamma> ` {0..1::real}"
+                by (by100 simp)
+              have h\<gamma>_img_sub_U: "\<gamma> ` {0..1::real} \<subseteq> U"
+                by (rule h_connected_local_two_edge_subset_stays_U
+                    [OF h\<gamma>_conn h\<gamma>0_img h\<gamma>0_U h\<gamma>_sub])
+              have "\<gamma> t \<in> \<gamma> ` {0..1::real}"
+                using ht by (by100 blast)
+              thus "\<gamma> t \<in> U"
+                using h\<gamma>_img_sub_U by (by100 blast)
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
@@ -1595,6 +1689,144 @@ proof -
                 have hy_L\<tau>_y_side_cases:
                   "inner (y - x) m\<tau>_y > 0 \<or> inner (y - x) m\<tau>_y < 0"
                   using hy_off_L\<tau>_y by (by100 linarith)
+                have hp_y_L\<tau>_same_side_pos:
+                  "inner (y - x) m\<tau>_y > 0 \<Longrightarrow> inner (p_y - x) m\<tau>_y > 0"
+                proof -
+                  assume hy_pos: "inner (y - x) m\<tau>_y > 0"
+                  have hy_seg: "y \<in> closed_segment x p_y"
+                    using hy\<sigma>_y h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hy_eq: "y = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hy_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "y = x" using hy_eq by (by100 simp)
+                      thus False using hy_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hy_minus: "y - x = s *\<^sub>R (p_y - x)"
+                    using hy_eq by (simp add: algebra_simps)
+                  have hinner: "inner (y - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hy_minus by (by100 simp)
+                  show ?thesis
+                  proof (rule ccontr)
+                    assume hnot: "\<not> 0 < inner (p_y - x) m\<tau>_y"
+                    have hp_nonpos: "inner (p_y - x) m\<tau>_y \<le> 0"
+                      using hnot by (by100 linarith)
+                    have "s * inner (p_y - x) m\<tau>_y \<le> 0"
+                      by (rule mult_nonneg_nonpos[OF hs_ge0 hp_nonpos])
+                    thus False using hinner hy_pos by (by100 linarith)
+                  qed
+                qed
+                have hp_y_L\<tau>_same_side_neg:
+                  "inner (y - x) m\<tau>_y < 0 \<Longrightarrow> inner (p_y - x) m\<tau>_y < 0"
+                proof -
+                  assume hy_neg: "inner (y - x) m\<tau>_y < 0"
+                  have hy_seg: "y \<in> closed_segment x p_y"
+                    using hy\<sigma>_y h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hy_eq: "y = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hy_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "y = x" using hy_eq by (by100 simp)
+                      thus False using hy_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hy_minus: "y - x = s *\<^sub>R (p_y - x)"
+                    using hy_eq by (simp add: algebra_simps)
+                  have hinner: "inner (y - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hy_minus by (by100 simp)
+                  show ?thesis
+                  proof (rule ccontr)
+                    assume hnot: "\<not> inner (p_y - x) m\<tau>_y < 0"
+                    have hp_nonneg: "0 \<le> inner (p_y - x) m\<tau>_y"
+                      using hnot by (by100 linarith)
+                    have "0 \<le> s * inner (p_y - x) m\<tau>_y"
+                      by (rule mult_nonneg_nonneg[OF hs_ge0 hp_nonneg])
+                    thus False using hinner hy_neg by (by100 linarith)
+                  qed
+                qed
+                have h\<sigma>_y_pos_L\<tau>_side:
+                  "inner (y - x) m\<tau>_y > 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<sigma>_y - {x}. inner (z - x) m\<tau>_y > 0)"
+                proof
+                  assume hy_pos: "inner (y - x) m\<tau>_y > 0"
+                  fix z
+                  assume hz_in: "z \<in> \<sigma>_y - {x}"
+                  have hz: "z \<in> \<sigma>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p_y"
+                    using hz h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hz_minus by (by100 simp)
+                  have hp_pos: "inner (p_y - x) m\<tau>_y > 0"
+                    by (rule hp_y_L\<tau>_same_side_pos[OF hy_pos])
+                  show "inner (z - x) m\<tau>_y > 0"
+                    using hinner hs_pos hp_pos by (by100 simp)
+                qed
+                have h\<sigma>_y_neg_L\<tau>_side:
+                  "inner (y - x) m\<tau>_y < 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<sigma>_y - {x}. inner (z - x) m\<tau>_y < 0)"
+                proof
+                  assume hy_neg: "inner (y - x) m\<tau>_y < 0"
+                  fix z
+                  assume hz_in: "z \<in> \<sigma>_y - {x}"
+                  have hz: "z \<in> \<sigma>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p_y"
+                    using hz h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hz_minus by (by100 simp)
+                  have hp_neg: "inner (p_y - x) m\<tau>_y < 0"
+                    by (rule hp_y_L\<tau>_same_side_neg[OF hy_neg])
+                  have hprod: "s * inner (p_y - x) m\<tau>_y < 0"
+                    by (rule mult_pos_neg[OF hs_pos hp_neg])
+                  show "inner (z - x) m\<tau>_y < 0"
+                    using hinner hprod by (by100 simp)
+                qed
                 have h\<tau>_y_pos_side:
                   "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
                     (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
@@ -1660,6 +1892,97 @@ proof -
                     by (rule mult_pos_neg[OF hs_pos hp_neg])
                   show "inner (z - x) n_y < 0"
                     using hinner hprod by (by100 simp)
+                qed
+                have h_opposite_L\<tau>_side_avoids_\<sigma>_y:
+                  "\<And>z. ((inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0))
+                    \<Longrightarrow> z \<notin> \<sigma>_y"
+                proof
+                  fix z
+                  assume hsign:
+                    "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                     (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                  assume hz\<sigma>: "z \<in> \<sigma>_y"
+                  have hz_ne_x: "z \<noteq> x"
+                  proof
+                    assume hz_eq: "z = x"
+                    have "inner (z - x) m\<tau>_y = 0"
+                      using hz_eq by (by100 simp)
+                    thus False using hsign by (by100 linarith)
+                  qed
+                  have hz_nonvertex: "z \<in> \<sigma>_y - {x}"
+                    using hz\<sigma> hz_ne_x by (by100 blast)
+                  show False
+                  proof (cases "inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0")
+                    case True
+                    have hz_pos: "inner (z - x) m\<tau>_y > 0"
+                      using h\<sigma>_y_pos_L\<tau>_side[OF conjunct1[OF True]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_pos conjunct2[OF True] by (by100 linarith)
+                  next
+                    case False
+                    have hneg: "inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0"
+                      using hsign False by (by100 blast)
+                    have hz_neg: "inner (z - x) m\<tau>_y < 0"
+                      using h\<sigma>_y_neg_L\<tau>_side[OF conjunct1[OF hneg]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_neg conjunct2[OF hneg] by (by100 linarith)
+                  qed
+                qed
+                have h_opposite_L_y_side_avoids_\<tau>_y:
+                  "\<And>z. ((inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                         (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0))
+                    \<Longrightarrow> z \<notin> \<tau>_y"
+                proof
+                  fix z
+                  assume hsign:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)"
+                  assume hz\<tau>: "z \<in> \<tau>_y"
+                  have hz_ne_x: "z \<noteq> x"
+                  proof
+                    assume hz_eq: "z = x"
+                    have "inner (z - x) n_y = 0"
+                      using hz_eq by (by100 simp)
+                    thus False using hsign by (by100 linarith)
+                  qed
+                  have hz_nonvertex: "z \<in> \<tau>_y - {x}"
+                    using hz\<tau> hz_ne_x by (by100 blast)
+                  show False
+                  proof (cases "inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0")
+                    case True
+                    have hz_pos: "inner (z - x) n_y > 0"
+                      using h\<tau>_y_pos_side[OF conjunct1[OF True]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_pos conjunct2[OF True] by (by100 linarith)
+                  next
+                    case False
+                    have hneg: "inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0"
+                      using hsign False by (by100 blast)
+                    have hz_neg: "inner (z - x) n_y < 0"
+                      using h\<tau>_y_neg_side[OF conjunct1[OF hneg]] hz_nonvertex by (by100 blast)
+                    show ?thesis using hz_neg conjunct2[OF hneg] by (by100 linarith)
+                  qed
+                qed
+                have h_opposite_sector_point_in_local_complement:
+                  "\<And>z. \<lbrakk>z \<in> ball x \<delta>_iso;
+                         (inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0);
+                         (inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                         (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)\<rbrakk>
+                    \<Longrightarrow> z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                proof -
+                  fix z
+                  assume hz_ball: "z \<in> ball x \<delta>_iso"
+                    and hz_opposite_L\<tau>:
+                      "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                    and hz_opposite_L:
+                      "(inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                       (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)"
+                  have hz_not_\<sigma>: "z \<notin> \<sigma>_y"
+                    by (rule h_opposite_L\<tau>_side_avoids_\<sigma>_y[OF hz_opposite_L\<tau>])
+                  have hz_not_\<tau>: "z \<notin> \<tau>_y"
+                    by (rule h_opposite_L_y_side_avoids_\<tau>_y[OF hz_opposite_L])
+                  show "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                    using hz_ball hz_not_\<sigma> hz_not_\<tau> by (by100 blast)
                 qed
                 have h_opposite_side_choice:
                   "\<lbrakk>(inner (p\<tau>_y - x) n_y > 0 \<and>
