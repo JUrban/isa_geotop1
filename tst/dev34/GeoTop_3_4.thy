@@ -3092,6 +3092,22 @@ lemma geotop_2_manifold_no_open_edge_rel_interior:
   shows False
   sorry
 
+lemma geotop_punctured_plane_connected:
+  fixes p :: "real^2"
+  shows "top1_connected_on (UNIV - {p})
+    (subspace_topology UNIV geotop_euclidean_topology (UNIV - {p}))"
+proof -
+  have hconn_compl: "connected (- {p})"
+    by (rule connected_punctured_universe) (by100 simp)
+  have hpunct_eq: "UNIV - {p} = - {p}"
+    by (by100 blast)
+  have hconn: "connected (UNIV - {p})"
+    using hconn_compl hpunct_eq by (by100 simp)
+  show ?thesis
+    using hconn top1_connected_on_geotop_iff_connected[of "UNIV - {p}"]
+    by (by100 simp)
+qed
+
 lemma geotop_2_manifold_with_boundary_no_open_edge_rel_interior:
   fixes M e :: "(real^2) set"
   assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
