@@ -5941,5 +5941,24 @@ proof -
     using h\<delta>0_pos hp_ne hlocal_eq hlocal_int by (by100 blast)
 qed
 
+text \<open>Components of open Euclidean sets are path-connected. This packages the
+standard \<open>connected_open_path_connected\<close> bridge for local sector arguments,
+where components of small disk complements are first obtained as HOL
+components.\<close>
+
+lemma component_of_open_path_connected:
+  fixes C W :: "'a::real_normed_vector set"
+  assumes hW_open: "open W"
+      and hC_comp: "C \<in> components W"
+  shows "path_connected C"
+proof -
+  have hC_conn: "connected C"
+    using hC_comp in_components_connected by (by100 blast)
+  have hC_open: "open C"
+    using hC_comp hW_open open_components by (by100 blast)
+  show ?thesis
+    by (rule connected_open_path_connected[OF hC_open hC_conn])
+qed
+
 
 end
