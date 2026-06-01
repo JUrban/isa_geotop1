@@ -1088,11 +1088,43 @@ proof -
                 thus False using hrn_no by (by100 blast)
               qed
             qed
+            have h_parallel_sector_from_side:
+              "\<And>s r. \<lbrakk>s \<in> {-1::real, 1};
+                  \<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> s * inner (u - x) n_y > 0;
+                  r > 0\<rbrakk> \<Longrightarrow>
+                \<exists>u. u \<in> U \<and> dist u x < r \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
+              sorry
             have h_selected_edge_parallel_sector:
               "\<And>r. r > 0 \<Longrightarrow>
                 \<exists>u. u \<in> U \<and> dist u x < r \<and>
                     ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
-              sorry
+            proof -
+              fix r :: real
+              assume hr_pos: "r > 0"
+              consider (pos)
+                "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> inner (u - x) n_y > 0" |
+                (neg)
+                "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> inner (u - x) n_y < 0"
+                using hU_meets_one_side_L_y by (by100 blast)
+              thus "\<exists>u. u \<in> U \<and> dist u x < r \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
+              proof cases
+                case pos
+                have hside:
+                  "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> (1::real) * inner (u - x) n_y > 0"
+                  using pos by (by100 simp)
+                show ?thesis
+                  by (rule h_parallel_sector_from_side[OF _ hside hr_pos], by100 simp)
+              next
+                case neg
+                have hside:
+                  "\<forall>e>0. \<exists>u\<in>U. dist u x < e \<and> (-1::real) * inner (u - x) n_y > 0"
+                  using neg by (by100 simp)
+                show ?thesis
+                  by (rule h_parallel_sector_from_side[OF _ hside hr_pos], by100 simp)
+              qed
+            qed
             have h_sector_small_to_y:
               "\<And>r. \<lbrakk>r > 0; r \<le> dist y x\<rbrakk> \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
             proof -
