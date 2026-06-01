@@ -8802,7 +8802,192 @@ proof -
           by (by100 blast)
         have h_no_bounded_frontier_13:
           "\<not> (\<exists>U\<in>components (UNIV - M). bounded U \<and> frontier U = B1 \<union> B3)"
-          sorry
+        proof
+          assume "\<exists>V\<in>components (UNIV - M). bounded V \<and> frontier V = B1 \<union> B3"
+          then obtain V where hV_comp: "V \<in> components (UNIV - M)"
+            and hV_bounded: "bounded V"
+            and hV_frontier: "frontier V = B1 \<union> B3"
+            by (by100 blast)
+          have hV_sub_I13: "V \<subseteq> I13"
+          proof -
+            let ?E13 = "geotop_polygon_exterior (B1 \<union> B3)"
+            have h_sph13: "geotop_is_n_sphere (B1 \<union> B3)
+                (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B3)) 1"
+              using h_poly_13_t28 unfolding geotop_is_polygon_def by (by100 blast)
+            have hV_ne: "V \<noteq> {}"
+              using hV_comp in_components_nonempty by (by100 blast)
+            obtain p where hpV: "p \<in> V"
+              using hV_ne by (by100 blast)
+            have hM_eq: "M = B1 \<union> B2 \<union> B3"
+              using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+            have hV_subM: "V \<subseteq> UNIV - M"
+              using hV_comp in_components_subset by (by100 blast)
+            have hV_sub_compl13: "V \<subseteq> UNIV - (B1 \<union> B3)"
+              using hV_subM hM_eq by (by100 blast)
+            have hp_compl13: "p \<in> UNIV - (B1 \<union> B3)"
+              using hpV hV_sub_compl13 by (by100 blast)
+            define C where "C = connected_component_set (UNIV - (B1 \<union> B3)) p"
+            have hV_conn: "connected V"
+              using hV_comp in_components_connected by (by100 blast)
+            have hV_sub_C: "V \<subseteq> C"
+              unfolding C_def
+              using hpV hV_conn hV_sub_compl13 connected_component_maximal
+              by (by100 blast)
+            have hC_comp: "C \<in> components (UNIV - (B1 \<union> B3))"
+              unfolding C_def using hp_compl13 componentsI by metis
+            have hC_cases: "C = I13 \<or> C = ?E13"
+            proof -
+              have hcomps:
+                "components (UNIV - (B1 \<union> B3)) = {I13, ?E13}"
+                using polygon_components_eq[OF h_poly_13_t28] I13_def by (by100 simp)
+              show ?thesis using hC_comp hcomps by (by100 simp)
+            qed
+            have hV_not_sub_ext13: "\<not> V \<subseteq> ?E13"
+            proof
+              assume hV_sub_ext13: "V \<subseteq> ?E13"
+              have hE13_conn: "connected ?E13"
+              proof -
+                have hE13_comp: "?E13 \<in> components (UNIV - (B1 \<union> B3))"
+                  by (rule polygon_exterior_is_HOL_component[OF h_sph13])
+                show ?thesis using hE13_comp in_components_connected by (by100 blast)
+              qed
+              have hE13_open: "open ?E13"
+              proof -
+                have hE13_comp: "?E13 \<in> components (UNIV - (B1 \<union> B3))"
+                  by (rule polygon_exterior_is_HOL_component[OF h_sph13])
+                have hJ_compact: "compact (B1 \<union> B3)"
+                  using polygon_homeomorphic_S1_helper[OF h_poly_13_t28]
+                        compact_sphere homeomorphic_compactness by (by100 blast)
+                have hJ_closed: "closed (B1 \<union> B3)"
+                  using hJ_compact compact_imp_closed by (by100 simp)
+                have h_compl_open: "open (UNIV - (B1 \<union> B3))"
+                  using hJ_closed open_Diff by (by100 blast)
+                show ?thesis using hE13_comp h_compl_open open_components by (by100 blast)
+              qed
+              have hV_open: "open V"
+              proof -
+                have hM_closed: "closed M"
+                  by (rule theta_graph_closed[OF h\<theta>])
+                have h_compl_open: "open (UNIV - M)"
+                  using hM_closed open_Diff by (by100 blast)
+                show ?thesis using hV_comp h_compl_open open_components by (by100 blast)
+              qed
+              have hV_openin_E13: "openin (top_of_set ?E13) V"
+              proof -
+                have h_openin: "openin (top_of_set ?E13) (?E13 \<inter> V)"
+                  using hV_open by (rule openin_open_Int)
+                have "?E13 \<inter> V = V" using hV_sub_ext13 by (by100 blast)
+                thus ?thesis using h_openin by (by100 simp)
+              qed
+              have hV_closedin_E13: "closedin (top_of_set ?E13) V"
+              proof -
+                have h_closure: "closure V = V \<union> frontier V"
+                  by (rule closure_Un_frontier)
+                have hE13_disj_J: "?E13 \<inter> (B1 \<union> B3) = {}"
+                  by (rule polygon_exterior_disjoint_polygon[OF h_poly_13_t28])
+                have h_eq: "?E13 \<inter> closure V = V"
+                  using h_closure hV_frontier hV_sub_ext13 hE13_disj_J by (by100 blast)
+                have h_closed: "closed (closure V)"
+                  by (by100 simp)
+                have h_closedin: "closedin (top_of_set ?E13) (?E13 \<inter> closure V)"
+                  by (rule closedin_closed_Int[OF h_closed])
+                show ?thesis using h_closedin h_eq by (by100 simp)
+              qed
+              have hV_eq_E13: "V = ?E13"
+                using connected_clopen[of ?E13] hE13_conn hV_closedin_E13 hV_openin_E13
+                      hV_sub_ext13 hV_ne
+                by (by100 blast)
+              have hE13_unbounded: "\<not> bounded ?E13"
+                by (rule polygon_exterior_unbounded[OF h_sph13])
+              show False using hV_eq_E13 hV_bounded hE13_unbounded by (by100 simp)
+            qed
+            show ?thesis
+            proof (cases "C = I13")
+              case True
+              show ?thesis using hV_sub_C True by (by100 simp)
+            next
+              case False
+              have "C = ?E13" using hC_cases False by (by100 blast)
+              hence "V \<subseteq> ?E13" using hV_sub_C by (by100 simp)
+              thus ?thesis using hV_not_sub_ext13 by (by100 blast)
+            qed
+          qed
+          have hV_eq_I13: "V = I13"
+          proof -
+            have h_sph13: "geotop_is_n_sphere (B1 \<union> B3)
+                (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B3)) 1"
+              using h_poly_13_t28 unfolding geotop_is_polygon_def by (by100 blast)
+            have hI13_conn: "connected I13"
+            proof -
+              have hI13_comp:
+                "geotop_polygon_interior (B1 \<union> B3) \<in> components (UNIV - (B1 \<union> B3))"
+                by (rule polygon_interior_is_HOL_component[OF h_sph13])
+              show ?thesis using hI13_comp I13_def in_components_connected by (by100 blast)
+            qed
+            have hV_open: "open V"
+            proof -
+              have hM_closed: "closed M"
+                by (rule theta_graph_closed[OF h\<theta>])
+              have h_compl_open: "open (UNIV - M)"
+                using hM_closed open_Diff by (by100 blast)
+              show ?thesis using hV_comp h_compl_open open_components by (by100 blast)
+            qed
+            have hV_openin_I13: "openin (top_of_set I13) V"
+            proof -
+              have h_openin: "openin (top_of_set I13) (I13 \<inter> V)"
+                using hV_open by (rule openin_open_Int)
+              have "I13 \<inter> V = V" using hV_sub_I13 by (by100 blast)
+              thus ?thesis using h_openin by (by100 simp)
+            qed
+            have hV_closedin_I13: "closedin (top_of_set I13) V"
+            proof -
+              have h_closure: "closure V = V \<union> frontier V"
+                by (rule closure_Un_frontier)
+              have hI13_disj_J: "I13 \<inter> (B1 \<union> B3) = {}"
+              proof -
+                have h_disj:
+                  "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+                  by (rule polygon_interior_disjoint_polygon[OF h_poly_13_t28])
+                show ?thesis using h_disj I13_def by (by100 simp)
+              qed
+              have h_eq: "I13 \<inter> closure V = V"
+                using h_closure hV_frontier hV_sub_I13 hI13_disj_J by (by100 blast)
+              have h_closed: "closed (closure V)"
+                by (by100 simp)
+              have h_closedin: "closedin (top_of_set I13) (I13 \<inter> closure V)"
+                by (rule closedin_closed_Int[OF h_closed])
+              show ?thesis using h_closedin h_eq by (by100 simp)
+            qed
+            have hV_ne: "V \<noteq> {}"
+              using hV_comp in_components_nonempty by (by100 blast)
+            show ?thesis
+              using connected_clopen[of I13] hI13_conn hV_closedin_I13 hV_openin_I13
+                    hV_sub_I13 hV_ne
+              by (by100 blast)
+          qed
+          have hIntB2_ne: "geotop_arc_interior B2 E \<noteq> {}"
+            by (rule arc_interior_nonempty[OF hE2_t28])
+          have hIntB2_sub_I13: "geotop_arc_interior B2 E \<subseteq> I13"
+            using hB2_inner I13_def by (by100 simp)
+          have hIntB2_sub_M: "geotop_arc_interior B2 E \<subseteq> M"
+          proof -
+            have hM_eq: "M = B1 \<union> B2 \<union> B3"
+              using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+            show ?thesis unfolding geotop_arc_interior_def using hM_eq by (by100 blast)
+          qed
+          have hV_sub_complM: "V \<subseteq> UNIV - M"
+            using hV_comp in_components_subset by (by100 blast)
+          show False
+          proof -
+            obtain x where hxB2: "x \<in> geotop_arc_interior B2 E"
+              using hIntB2_ne by (by100 blast)
+            have hxV: "x \<in> V"
+              using hxB2 hIntB2_sub_I13 hV_eq_I13 by (by100 blast)
+            have hxM: "x \<in> M"
+              using hxB2 hIntB2_sub_M by (by100 blast)
+            show ?thesis using hxV hxM hV_sub_complM by (by100 blast)
+          qed
+        qed
         show False
           using h_no_bounded_frontier_13 hU_comp hU_bounded hU_frontier_13
           by (by100 blast)
