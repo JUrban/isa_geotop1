@@ -4537,6 +4537,63 @@ proof -
     using hQ_sub_cl hSCC_sub_cl hcl_sub by (by100 blast)
 qed
 
+lemma S2_simple_closed_curve_component_frontier_eq:
+  fixes SCC Q R :: "(real * real * real) set"
+  assumes hSCC: "top1_simple_closed_curve_on top1_S2 top1_S2_topology SCC"
+      and hQop: "Q \<in> top1_S2_topology"
+      and hRop: "R \<in> top1_S2_topology"
+      and hQne: "Q \<noteq> {}"
+      and hRne: "R \<noteq> {}"
+      and hQR: "Q \<inter> R = {}"
+      and hQR_un: "Q \<union> R = top1_S2 - SCC"
+      and hQc: "top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)"
+      and hRc: "top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)"
+  shows "geotop_frontier top1_S2 top1_S2_topology Q = SCC"
+proof -
+  have hS2: "is_topology_on_strict top1_S2 top1_S2_topology"
+    by (rule top1_S2_is_topology_on_strict)
+  have hTop: "is_topology_on top1_S2 top1_S2_topology"
+    using hS2 unfolding is_topology_on_strict_def by (by100 blast)
+  have hQ_sub: "Q \<subseteq> top1_S2"
+    by (rule is_topology_on_strict_opens_sub[OF hS2 hQop])
+  have hQ_cl: "closure_on top1_S2 top1_S2_topology Q = Q \<union> SCC"
+    by (rule S2_simple_closed_curve_component_closure_eq[
+        OF hSCC hQop hRop hQne hRne hQR hQR_un hQc hRc])
+  have hQ_disj_SCC: "Q \<inter> SCC = {}"
+    using hQR_un by (by100 blast)
+  have hfront: "geotop_frontier top1_S2 top1_S2_topology Q =
+        closure_on top1_S2 top1_S2_topology Q - Q"
+    by (rule Theorem_GT_2_4[OF hTop hQop hQ_sub])
+  show ?thesis
+    using hfront hQ_cl hQ_disj_SCC by (by100 blast)
+qed
+
+lemma S2_simple_closed_curve_component_frontiers_eq:
+  fixes SCC Q R :: "(real * real * real) set"
+  assumes hSCC: "top1_simple_closed_curve_on top1_S2 top1_S2_topology SCC"
+      and hQop: "Q \<in> top1_S2_topology"
+      and hRop: "R \<in> top1_S2_topology"
+      and hQne: "Q \<noteq> {}"
+      and hRne: "R \<noteq> {}"
+      and hQR: "Q \<inter> R = {}"
+      and hQR_un: "Q \<union> R = top1_S2 - SCC"
+      and hQc: "top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)"
+      and hRc: "top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)"
+  shows "geotop_frontier top1_S2 top1_S2_topology Q = SCC"
+    and "geotop_frontier top1_S2 top1_S2_topology R = SCC"
+proof -
+  show "geotop_frontier top1_S2 top1_S2_topology Q = SCC"
+    by (rule S2_simple_closed_curve_component_frontier_eq[
+        OF hSCC hQop hRop hQne hRne hQR hQR_un hQc hRc])
+  have hRQ: "R \<inter> Q = {}"
+    using hQR by (by100 blast)
+  have hRQ_un: "R \<union> Q = top1_S2 - SCC"
+    using hQR_un by (by100 blast)
+  show "geotop_frontier top1_S2 top1_S2_topology R = SCC"
+    by (rule S2_simple_closed_curve_component_frontier_eq[
+        OF hSCC hRop hQop hRne hQne hRQ hRQ_un hRc hQc])
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
