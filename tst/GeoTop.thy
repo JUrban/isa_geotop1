@@ -679,6 +679,76 @@ proof -
             qed
             have hy_L_y_centered: "inner (y - x) n_y = 0"
               using hy_L_y hL_y_eq_centered by (by100 simp)
+            have h_other_edge_meets_sigma_y_only_at_x:
+              "\<And>\<tau>. \<lbrakk>\<tau> \<in> EdgesAtX; \<tau> \<noteq> \<sigma>_y\<rbrakk> \<Longrightarrow> \<sigma>_y \<inter> \<tau> = {x}"
+            proof -
+              fix \<tau>
+              assume h\<tau>_EAX: "\<tau> \<in> EdgesAtX" and h\<tau>_ne: "\<tau> \<noteq> \<sigma>_y"
+              have h\<tau>_K: "\<tau> \<in> K_i" using h\<tau>_EAX hEAX_sub by (by100 blast)
+              have hx\<tau>: "x \<in> \<tau>" using h\<tau>_EAX hEAX_x_in by (by100 blast)
+              have h_inter_ne: "\<sigma>_y \<inter> \<tau> \<noteq> {}"
+                using hx\<sigma>_y hx\<tau> by (by100 blast)
+              have hfaces:
+                "geotop_is_face (\<sigma>_y \<inter> \<tau>) \<sigma>_y \<and>
+                 geotop_is_face (\<sigma>_y \<inter> \<tau>) \<tau>"
+                using geotop_is_complex_intersection[OF hK_i_complex]
+                  h\<sigma>_y_K h\<tau>_K h_inter_ne by (by100 blast)
+              have hface_y: "geotop_is_face (\<sigma>_y \<inter> \<tau>) (closed_segment x p_y)"
+                using hfaces h\<sigma>_y_seg by (by100 simp)
+              obtain p_tau where h\<tau>_seg: "\<tau> = closed_segment x p_tau"
+                and hp_tau_ne: "p_tau \<noteq> x"
+                using hVX_segs h\<tau>_EAX by (by100 blast)
+              have hface_tau: "geotop_is_face (\<sigma>_y \<inter> \<tau>) \<tau>"
+                using hfaces by (by100 blast)
+              have h_subset_singleton: "\<sigma>_y \<inter> \<tau> \<subseteq> {x}"
+              proof
+                fix z
+                assume hz_inter: "z \<in> \<sigma>_y \<inter> \<tau>"
+                show "z \<in> {x}"
+                proof (cases "z = x")
+                  case True
+                  thus ?thesis by (by100 simp)
+                next
+                  case False
+                  have hx_inter_tau: "x \<in> \<sigma>_y \<inter> \<tau>"
+                    using hx\<sigma>_y hx\<tau> by (by100 blast)
+                  have h_inter_eq_seg:
+                    "\<sigma>_y \<inter> \<tau> = closed_segment x p_y"
+                    by (rule segment_face_with_endpoint_and_extra_eq
+                        [OF hface_y hp_y_ne hx_inter_tau hz_inter False])
+                  have h_inter_eq_sigma: "\<sigma>_y \<inter> \<tau> = \<sigma>_y"
+                    using h_inter_eq_seg h\<sigma>_y_seg by (by100 simp)
+                  have hface_tau_sigma: "geotop_is_face \<sigma>_y \<tau>"
+                    using hface_tau h_inter_eq_sigma by (by100 simp)
+                  have hface_tau_seg: "geotop_is_face \<sigma>_y (closed_segment x p_tau)"
+                    using hface_tau_sigma h\<tau>_seg by (by100 simp)
+                  have hp_y_in_sigma: "p_y \<in> \<sigma>_y"
+                    using h\<sigma>_y_seg by (by100 simp)
+                  have h_sigma_eq_tau_seg: "\<sigma>_y = closed_segment x p_tau"
+                    by (rule segment_face_with_endpoint_and_extra_eq
+                        [OF hface_tau_seg hp_tau_ne hx\<sigma>_y hp_y_in_sigma hp_y_ne])
+                  have "\<sigma>_y = \<tau>"
+                    using h_sigma_eq_tau_seg h\<tau>_seg by (by100 simp)
+                  thus ?thesis using h\<tau>_ne by (by100 blast)
+                qed
+              qed
+              have h_x_subset: "{x} \<subseteq> \<sigma>_y \<inter> \<tau>"
+                using hx\<sigma>_y hx\<tau> by (by100 blast)
+              show "\<sigma>_y \<inter> \<tau> = {x}"
+                using h_subset_singleton h_x_subset by (by100 blast)
+            qed
+            have h_y_avoids_other_edges:
+              "\<And>\<tau>. \<lbrakk>\<tau> \<in> EdgesAtX; \<tau> \<noteq> \<sigma>_y\<rbrakk> \<Longrightarrow> y \<notin> \<tau>"
+            proof
+              fix \<tau>
+              assume h\<tau>_EAX: "\<tau> \<in> EdgesAtX" and h\<tau>_ne: "\<tau> \<noteq> \<sigma>_y"
+              assume hy\<tau>: "y \<in> \<tau>"
+              have "y \<in> \<sigma>_y \<inter> \<tau>"
+                using hy\<sigma>_y hy\<tau> by (by100 blast)
+              hence "y \<in> {x}"
+                using h_other_edge_meets_sigma_y_only_at_x[OF h\<tau>_EAX h\<tau>_ne] by (by100 simp)
+              thus False using hy_ne_x by (by100 simp)
+            qed
             have h_sector_path_to_y:
               "y \<in> closure U"
               sorry
