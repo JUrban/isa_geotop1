@@ -531,12 +531,14 @@ theorem Theorem_GT_3_5:
       with f\<^sub>3(\<sigma>\<^sup>2) = \<tau>\<^sup>2 (hence f\<^sub>3(Fr \<sigma>\<^sup>2) = Fr \<tau>\<^sup>2).
       Let h = f\<^sub>2\<^sup>-\<^sup>1 \<circ> f\<^sub>3 \<circ> f\<^sub>1. Then h(J) = J'. **)
 proof -
-  obtain f\<^sub>1 \<sigma> where hf1: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+  obtain f\<^sub>1 :: "real^2 \<Rightarrow> real^2" and \<sigma> :: "(real^2) set"
+    where hf1: "top1_homeomorphism_on UNIV geotop_euclidean_topology
                               UNIV geotop_euclidean_topology f\<^sub>1"
                    and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
                    and hf1J: "f\<^sub>1 ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
     using Theorem_GT_3_4[OF hJ] by blast
-  obtain f\<^sub>2 \<tau> where hf2: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+  obtain f\<^sub>2 :: "real^2 \<Rightarrow> real^2" and \<tau> :: "(real^2) set"
+    where hf2: "top1_homeomorphism_on UNIV geotop_euclidean_topology
                               UNIV geotop_euclidean_topology f\<^sub>2"
                    and h\<tau>: "geotop_simplex_dim \<tau> 2"
                    and hf2J': "f\<^sub>2 ` J' = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
@@ -548,7 +550,87 @@ proof -
                     UNIV geotop_euclidean_topology f\<^sub>3
                   \<and> f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
                     = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
-    sorry
+  proof -
+    obtain V m where hV_fin: "finite V" and hV_card: "card V = 2 + 1"
+      and hV_m: "2 \<le> m" and hV_gp: "geotop_general_position V m"
+      and h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+    have hV: "geotop_simplex_vertices \<sigma> V"
+      unfolding geotop_simplex_vertices_def
+      using hV_fin hV_card hV_m hV_gp h\<sigma>_hull by (by100 blast)
+    obtain W m' where hW_fin: "finite W" and hW_card: "card W = 2 + 1"
+      and hW_m: "2 \<le> m'" and hW_gp: "geotop_general_position W m'"
+      and h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+      using h\<tau> unfolding geotop_simplex_dim_def by (by100 blast)
+    have hW: "geotop_simplex_vertices \<tau> W"
+      unfolding geotop_simplex_vertices_def
+      using hW_fin hW_card hW_m hW_gp h\<tau>_hull by (by100 blast)
+    have hcard_le: "card V \<le> card W"
+      using hV_card hW_card by (by100 simp)
+    obtain \<phi> where h\<phi>_img: "\<phi> ` V \<subseteq> W" and h\<phi>_inj: "inj_on \<phi> V"
+      using card_le_inj[OF hV_fin hW_fin hcard_le] by (by100 blast)
+    have h\<phi>_image: "\<phi> ` V = W"
+    proof -
+      have h_card_img: "card (\<phi> ` V) = card V"
+        by (rule card_image[OF h\<phi>_inj])
+      have h_card_img_W: "card (\<phi> ` V) = card W"
+        using h_card_img hV_card hW_card by (by100 simp)
+      show ?thesis
+        using h\<phi>_img hW_fin h_card_img_W card_subset_eq by (by100 blast)
+    qed
+    define \<psi> where "\<psi> x = (if x \<in> V then \<phi> x else undefined)" for x
+    have h\<psi>_image: "\<psi> ` V = W"
+      unfolding \<psi>_def using h\<phi>_image by (by100 simp)
+    have h\<psi>_inj: "inj_on \<psi> V"
+    proof (rule inj_onI)
+      fix x y
+      assume hx: "x \<in> V" and hy: "y \<in> V" and hxy: "\<psi> x = \<psi> y"
+      have hxy_phi: "\<phi> x = \<phi> y"
+        using hx hy hxy unfolding \<psi>_def by (by100 simp)
+      show "x = y"
+        using h\<phi>_inj hx hy hxy_phi unfolding inj_on_def by (by100 blast)
+    qed
+    have h\<psi>_bij: "bij_betw \<psi> V W"
+      unfolding bij_betw_def using h\<psi>_inj h\<psi>_image by (by100 blast)
+    have h\<psi>_mem: "\<psi> \<in> V \<rightarrow>\<^sub>E W"
+    proof -
+      have h_into: "\<forall>x\<in>V. \<psi> x \<in> W"
+      proof
+        fix x assume hx: "x \<in> V"
+        have "\<psi> x = \<phi> x"
+          unfolding \<psi>_def using hx by (by100 simp)
+        moreover have "\<phi> x \<in> W"
+          using h\<phi>_img hx by (by100 blast)
+        ultimately show "\<psi> x \<in> W" by (by100 simp)
+      qed
+      have h_ext: "\<psi> \<in> extensional V"
+        unfolding \<psi>_def extensional_def by (by100 simp)
+      show ?thesis
+        unfolding PiE_def using h_into h_ext by (by100 blast)
+    qed
+    obtain f\<^sub>3 where hf3_homeo:
+        "top1_homeomorphism_on UNIV geotop_euclidean_topology
+           UNIV geotop_euclidean_topology f\<^sub>3"
+      and hf3_image: "f\<^sub>3 ` \<sigma> = \<tau>"
+      using Theorem_GT_3_2[
+        where \<sigma>=\<sigma> and \<tau>=\<tau> and V=V and W=W and \<phi>=\<psi> and n=2,
+        OF h\<sigma> h\<tau> hV hW h\<psi>_mem h\<psi>_bij]
+      by (by100 blast)
+    obtain k where hHOL: "homeomorphism UNIV UNIV f\<^sub>3 k"
+      by (rule top1_homeomorphism_on_UNIV_R2_obtain_HOL_homeomorphism[OF hf3_homeo])
+    have hfront_HOL: "f\<^sub>3 ` frontier \<sigma> = frontier \<tau>"
+    proof -
+      have "f\<^sub>3 ` frontier \<sigma> = frontier (f\<^sub>3 ` \<sigma>)"
+        by (rule homeomorphism_UNIV_image_frontier[OF hHOL])
+      thus ?thesis using hf3_image by (by100 simp)
+    qed
+    have hfront_geotop:
+      "f\<^sub>3 ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)
+       = geotop_frontier UNIV geotop_euclidean_topology \<tau>"
+      using hfront_HOL geotop_frontier_UNIV_eq_frontier[of \<sigma>]
+            geotop_frontier_UNIV_eq_frontier[of \<tau>] by (by100 simp)
+    show ?thesis using hf3_homeo hfront_geotop by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim 35-B: composing h = f2-inverse \<circ> f3 \<circ> f1 yields h(J) = J'.
     Uses cached top1_homeomorphism_on_comp + top1_homeomorphism_on_sym +
     bij_betw image inversion.\<close>
