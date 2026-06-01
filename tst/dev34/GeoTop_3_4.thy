@@ -3102,6 +3102,22 @@ proof -
     unfolding geotop_comb_equiv_def using hfin hsub hiso by (by100 blast)
 qed
 
+lemma geotop_simplex_face_complex_comb_n_cell_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "geotop_comb_n_cell {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} n"
+proof -
+  let ?L = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hL_complex: "geotop_is_complex ?L"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  have hL_finite: "finite ?L"
+    by (rule geotop_simplex_dim_face_complex_finite_R2[OF h\<sigma>])
+  have hL_comb: "geotop_comb_equiv ?L ?L"
+    by (rule geotop_comb_equiv_refl_finite_dev34[OF hL_complex hL_finite])
+  show ?thesis
+    unfolding geotop_comb_n_cell_def using hL_complex h\<sigma> hL_comb by (by100 blast)
+qed
+
 lemma geotop_star_finite_at_vertex:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
