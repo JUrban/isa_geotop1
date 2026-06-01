@@ -4421,6 +4421,769 @@ proof -
   show ?thesis using hM_eq h_cl_M by simp
 qed
 
+text \<open>Book translation for the uniqueness paragraph in Theorem 2.7:
+  if two different theta-arcs were both on the bounded side of the polygon
+  formed by the other arc and the common third arc, then the second arc would
+  be accessible from infinity through the exterior of the first polygon,
+  contradicting its containment in the bounded interior.\<close>
+
+lemma theta_two_middle_arcs_contradict:
+  fixes A B C E :: "(real^2) set"
+  assumes hA: "geotop_arc_endpoints A E"
+      and hB: "geotop_arc_endpoints B E"
+      and hC: "geotop_arc_endpoints C E"
+      and hAB: "geotop_arc_interior A E \<inter> geotop_arc_interior B E = {}"
+      and hAC: "geotop_arc_interior A E \<inter> geotop_arc_interior C E = {}"
+      and hBC: "geotop_arc_interior B E \<inter> geotop_arc_interior C E = {}"
+      and hBC_poly: "geotop_is_polygon (B \<union> C)"
+      and hAC_poly: "geotop_is_polygon (A \<union> C)"
+      and hA_mid: "geotop_arc_interior A E \<subseteq> geotop_polygon_interior (B \<union> C)"
+      and hB_mid: "geotop_arc_interior B E \<subseteq> geotop_polygon_interior (A \<union> C)"
+  shows False
+proof -
+  let ?EBC = "geotop_polygon_exterior (B \<union> C)"
+  let ?EAC = "geotop_polygon_exterior (A \<union> C)"
+  let ?IAC = "geotop_polygon_interior (A \<union> C)"
+  have hEBC_sub_EAC: "?EBC \<subseteq> ?EAC"
+  proof -
+    have hBC_sph:
+      "geotop_is_n_sphere (B \<union> C)
+        (subspace_topology UNIV geotop_euclidean_topology (B \<union> C)) 1"
+      using hBC_poly unfolding geotop_is_polygon_def by (by100 blast)
+    have hEBC_comp: "?EBC \<in> components (UNIV - (B \<union> C))"
+      by (rule polygon_exterior_is_HOL_component[OF hBC_sph])
+    have hEBC_unbd: "\<not> bounded ?EBC"
+      by (rule polygon_exterior_unbounded[OF hBC_sph])
+    have hEBC_conn: "connected ?EBC"
+      using hEBC_comp in_components_connected by (by100 blast)
+    have hEBC_ne: "?EBC \<noteq> {}"
+      using hEBC_comp in_components_nonempty by (by100 blast)
+    have hEBC_sub_compl_BC: "?EBC \<subseteq> UNIV - (B \<union> C)"
+      using hEBC_comp in_components_subset by (by100 blast)
+    have hE_sub_C: "E \<subseteq> C"
+      using hC unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hA_decomp: "A = geotop_arc_interior A E \<union> E"
+    proof -
+      have hE_sub_A: "E \<subseteq> A"
+        using hA unfolding geotop_arc_endpoints_def by (by100 blast)
+      show ?thesis
+        unfolding geotop_arc_interior_def using hE_sub_A by (by100 blast)
+    qed
+    have hEBC_disj_intA: "?EBC \<inter> geotop_arc_interior A E = {}"
+    proof -
+      have h_disj:
+        "geotop_polygon_interior (B \<union> C) \<inter> ?EBC = {}"
+        by (rule polygon_interior_exterior_disjoint[OF hBC_poly])
+      show ?thesis using hA_mid h_disj by (by100 blast)
+    qed
+    have hEBC_disj_E: "?EBC \<inter> E = {}"
+      using hEBC_sub_compl_BC hE_sub_C by (by100 blast)
+    have hEBC_disj_A: "?EBC \<inter> A = {}"
+      using hA_decomp hEBC_disj_intA hEBC_disj_E by (by100 blast)
+    have hEBC_sub_compl_AC: "?EBC \<subseteq> UNIV - (A \<union> C)"
+      using hEBC_disj_A hEBC_sub_compl_BC by (by100 blast)
+    obtain p where hp_EBC: "p \<in> ?EBC"
+      using hEBC_ne by (by100 blast)
+    define D where "D = connected_component_set (UNIV - (A \<union> C)) p"
+    have hp_compl_AC: "p \<in> UNIV - (A \<union> C)"
+      using hp_EBC hEBC_sub_compl_AC by (by100 blast)
+    have hD_comp: "D \<in> components (UNIV - (A \<union> C))"
+      unfolding D_def using hp_compl_AC componentsI by metis
+    have hEBC_sub_D: "?EBC \<subseteq> D"
+      unfolding D_def
+      using connected_component_maximal[OF hp_EBC hEBC_conn hEBC_sub_compl_AC] .
+    have hD_unbd: "\<not> bounded D"
+      using hEBC_sub_D hEBC_unbd bounded_subset by (by100 blast)
+    have hD_eq_EAC: "D = ?EAC"
+      using polygon_exterior_unique[OF hAC_poly] hD_comp hD_unbd by (by100 blast)
+    show ?thesis
+      using hEBC_sub_D hD_eq_EAC by (by100 simp)
+  qed
+  obtain x where hx_intB: "x \<in> geotop_arc_interior B E"
+    using arc_interior_nonempty[OF hB] by (by100 blast)
+  have hx_BC: "x \<in> B \<union> C"
+    using hx_intB unfolding geotop_arc_interior_def by (by100 blast)
+  have hx_lim_EBC:
+    "is_limit_point_of x ?EBC UNIV geotop_euclidean_topology"
+    using Theorem_GT_2_5[OF hBC_poly] hx_BC by (by100 blast)
+  have hx_cl_EBC: "x \<in> closure ?EBC"
+  proof -
+    have hx_islimpt: "x islimpt ?EBC"
+      using hx_lim_EBC is_limit_point_of_UNIV_geotop_iff_islimpt by (by100 blast)
+    have hx_islimpt_iff: "x islimpt ?EBC = (x \<in> closure (?EBC - {x}))"
+      by (rule islimpt_in_closure)
+    have hx_cl_minus: "x \<in> closure (?EBC - {x})"
+      using hx_islimpt hx_islimpt_iff by (by100 simp)
+    have h_cl_sub: "closure (?EBC - {x}) \<subseteq> closure ?EBC"
+      using closure_mono[of "?EBC - {x}" ?EBC] by (by100 blast)
+    show ?thesis
+      using hx_cl_minus h_cl_sub by (by100 blast)
+  qed
+  have hx_cl_EAC: "x \<in> closure ?EAC"
+    using hx_cl_EBC hEBC_sub_EAC closure_mono by (by100 blast)
+  have hx_not_AC: "x \<notin> A \<union> C"
+  proof
+    assume hx_AC: "x \<in> A \<union> C"
+    have hx_notE: "x \<notin> E"
+      using hx_intB unfolding geotop_arc_interior_def by (by100 blast)
+    have hx_not_C: "x \<notin> C"
+    proof
+      assume hxC: "x \<in> C"
+      have h_disj: "geotop_arc_interior B E \<inter> C = {}"
+        by (rule arc_interior_disjoint_other_arc[OF hB hC hBC])
+      show False using hx_intB hxC h_disj by (by100 blast)
+    qed
+    have hx_not_A: "x \<notin> A"
+    proof
+      assume hxA: "x \<in> A"
+      have hx_intA: "x \<in> geotop_arc_interior A E"
+        using hxA hx_notE unfolding geotop_arc_interior_def by (by100 blast)
+      show False using hx_intA hx_intB hAB by (by100 blast)
+    qed
+    show False using hx_AC hx_not_A hx_not_C by (by100 blast)
+  qed
+  have hx_EAC: "x \<in> ?EAC"
+  proof -
+    have h_cl: "closure ?EAC = ?EAC \<union> (A \<union> C)"
+      by (rule polygon_exterior_closure_eq[OF hAC_poly])
+    show ?thesis using hx_cl_EAC hx_not_AC h_cl by (by100 blast)
+  qed
+  have hx_IAC: "x \<in> ?IAC"
+    using hx_intB hB_mid by (by100 blast)
+  have hIAC_disj_EAC: "?IAC \<inter> ?EAC = {}"
+    by (rule polygon_interior_exterior_disjoint[OF hAC_poly])
+  show False
+    using hx_IAC hx_EAC hIAC_disj_EAC by (by100 blast)
+qed
+
+lemma nondegenerate_segment_meets_ball:
+  fixes P p :: "real^2"
+  assumes hp_ne: "p \<noteq> P"
+      and h\<delta>_pos: "\<delta> > 0"
+  shows "\<exists>q. q \<in> (closed_segment P p - {P}) \<inter> ball P \<delta>"
+proof -
+  have hnorm_pos: "norm (p - P) > 0"
+    using hp_ne by (by100 simp)
+  define t where "t = min (1 / 2) (\<delta> / (2 * norm (p - P)))"
+  have ht_pos: "t > 0"
+    unfolding t_def using h\<delta>_pos hnorm_pos by (by100 simp)
+  have ht_le1: "t \<le> 1"
+  proof -
+    have "t \<le> 1 / 2" unfolding t_def by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
+  have ht_nonneg: "0 \<le> t" using ht_pos by (by100 simp)
+  have ht_norm_lt: "t * norm (p - P) < \<delta>"
+  proof -
+    have ht_le: "t \<le> \<delta> / (2 * norm (p - P))"
+      unfolding t_def by (by100 simp)
+    have hmul_le: "t * norm (p - P) \<le> \<delta> / 2"
+    proof -
+      have h1: "t * norm (p - P)
+              \<le> (\<delta> / (2 * norm (p - P))) * norm (p - P)"
+        by (rule mult_right_mono[OF ht_le norm_ge_zero])
+      have h2: "(\<delta> / (2 * norm (p - P))) * norm (p - P) = \<delta> / 2"
+        using hnorm_pos by (by100 simp)
+      show ?thesis using h1 h2 by (by100 simp)
+    qed
+    have "\<delta> / 2 < \<delta>" using h\<delta>_pos by (by100 simp)
+    show ?thesis using hmul_le \<open>\<delta> / 2 < \<delta>\<close> by (by100 linarith)
+  qed
+  define q where "q = P + t *\<^sub>R (p - P)"
+  have hq_seg_form: "q = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+    unfolding q_def by (simp add: algebra_simps)
+  have hq_seg: "q \<in> closed_segment P p"
+    unfolding closed_segment_def using ht_nonneg ht_le1 hq_seg_form by (by100 blast)
+  have hq_ne: "q \<noteq> P"
+  proof
+    assume "q = P"
+    hence "t *\<^sub>R (p - P) = 0"
+      unfolding q_def by (by100 simp)
+    hence "t = 0 \<or> p - P = 0"
+      by (by100 simp)
+    thus False using ht_pos hp_ne by (by100 simp)
+  qed
+  have hq_ball: "q \<in> ball P \<delta>"
+  proof -
+    have hdist: "dist P q = norm (t *\<^sub>R (p - P))"
+      unfolding q_def by (simp add: dist_norm)
+    have ht_abs: "\<bar>t\<bar> = t" using ht_nonneg by (by100 simp)
+    have hnorm_eq: "norm (t *\<^sub>R (p - P)) = t * norm (p - P)"
+      using ht_abs by (by100 simp)
+    have "dist P q = t * norm (p - P)" using hdist hnorm_eq by (by100 simp)
+    hence "dist P q < \<delta>" using ht_norm_lt by (by100 simp)
+    thus ?thesis by (by100 simp)
+  qed
+  show ?thesis using hq_seg hq_ne hq_ball by (by100 blast)
+qed
+
+lemma segment_face_with_endpoint_and_extra_eq:
+  fixes F :: "(real^2) set" and P p z :: "real^2"
+  assumes hface: "geotop_is_face F (closed_segment P p)"
+      and hp_ne: "p \<noteq> P"
+      and hP_F: "P \<in> F"
+      and hz_F: "z \<in> F"
+      and hz_ne: "z \<noteq> P"
+  shows "F = closed_segment P p"
+proof -
+  have hseg_sv: "geotop_simplex_vertices (closed_segment P p) {P, p}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hp_ne[symmetric]])
+  obtain V W where hV_sv: "geotop_simplex_vertices (closed_segment P p) V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hF_hull: "F = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  have hV_eq: "V = {P, p}"
+    using geotop_simplex_vertices_unique[OF hV_sv hseg_sv] .
+  have hW_sub_Pp: "W \<subseteq> {P, p}" using hW_sub hV_eq by (by100 simp)
+  have hW_cases: "W = {P} \<or> W = {p} \<or> W = {P, p}"
+    using hW_sub_Pp hW_ne by (by100 blast)
+  have hF_HOL: "F = convex hull W"
+    using hF_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hW_eq_Pp: "W = {P, p}"
+  proof (rule disjE[OF hW_cases])
+    assume hW_P: "W = {P}"
+    have hF_P: "F = {P}" using hF_HOL hW_P by (by100 simp)
+    have "z = P" using hz_F hF_P by (by100 blast)
+    hence False using hz_ne by (by100 blast)
+    thus ?thesis by (rule FalseE)
+  next
+    assume hrest: "W = {p} \<or> W = {P, p}"
+    show ?thesis
+    proof (rule disjE[OF hrest])
+      assume hW_p: "W = {p}"
+      have hF_p: "F = {p}" using hF_HOL hW_p by (by100 simp)
+      have "P = p" using hP_F hF_p by (by100 blast)
+      hence False using hp_ne by (by100 blast)
+      thus ?thesis by (rule FalseE)
+    next
+      assume hW_Pp: "W = {P, p}"
+      show ?thesis by (rule hW_Pp)
+    qed
+  qed
+  have hF_seg: "F = convex hull {P, p}" using hF_HOL hW_eq_Pp by (by100 simp)
+  also have "\<dots> = closed_segment P p" by (rule segment_convex_hull[symmetric])
+  finally show ?thesis .
+qed
+
+text \<open>Endpoint version of the book's small circular-neighborhood step for a
+  broken line: near an arc endpoint, only the first straight segment of the
+  broken line is visible. The point determining the segment is not required
+  to lie in the chosen ball; it is a direction point for the local ray.\<close>
+
+lemma broken_line_endpoint_local_segment:
+  fixes B E :: "(real^2) set" and P :: "real^2"
+  assumes hB_bl: "geotop_is_broken_line B"
+      and hB_endp: "geotop_arc_endpoints B E"
+      and hP_E: "P \<in> E"
+  shows "\<exists>\<delta>>0. \<exists>p.
+            p \<noteq> P \<and>
+            ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P p \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B E \<subseteq> closed_segment P p - {P}"
+proof -
+  have hP_B: "P \<in> B"
+    using hB_endp hP_E unfolding geotop_arc_endpoints_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_pim: "path_image \<gamma> = B"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hB_endp] by (by100 blast)
+  have hP_endpoint_param: "\<gamma> 0 = P \<or> \<gamma> 1 = P"
+    using hP_E hE_eq unfolding pathstart_def pathfinish_def by (by100 blast)
+  obtain K where hK_complex: "geotop_is_complex K"
+      and hK_1dim: "geotop_complex_is_1dim K"
+      and hK_poly: "geotop_polyhedron K = B"
+      and hPK: "{P} \<in> K"
+      and hK_fin: "finite K"
+    using geotop_broken_line_vertex_at[OF hB_bl hP_B] by (by100 blast)
+  define EdgesAtP where
+    "EdgesAtP = {\<sigma>\<in>K. P \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}"
+  have hEdges_fin: "finite EdgesAtP"
+    unfolding EdgesAtP_def using hK_fin by (by100 simp)
+  have hK_local_isolation:
+    "\<exists>\<delta>>0. ball P \<delta> \<inter> B \<subseteq> \<Union>{\<tau>\<in>K. P \<in> \<tau>}"
+  proof -
+    have hK_simp_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+      by (rule conjunct1[OF hK_complex[unfolded geotop_is_complex_def]])
+    have hK_closed_all: "\<forall>\<tau>\<in>K. closed \<tau>"
+    proof
+      fix \<tau> assume h\<tau>K: "\<tau> \<in> K"
+      have hsim: "geotop_is_simplex \<tau>"
+        by (rule bspec[OF hK_simp_all h\<tau>K])
+      obtain V m n where hVfin: "finite V" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+        using hsim unfolding geotop_is_simplex_def by (by100 blast)
+      have h\<tau>_HOL: "\<tau> = convex hull V"
+        using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have h_compact: "compact (convex hull V)"
+        using hVfin finite_imp_compact_convex_hull by (by100 blast)
+      have h_closed: "closed (convex hull V)"
+        using h_compact compact_imp_closed by (by100 blast)
+      show "closed \<tau>" using h\<tau>_HOL h_closed by (by100 simp)
+    qed
+    have hB_union: "B = \<Union>K"
+      using hK_poly unfolding geotop_polyhedron_def by (by100 simp)
+    show ?thesis
+      using finite_union_closed_local_isolation[OF hK_fin hK_closed_all hB_union hP_B]
+      by (by100 blast)
+  qed
+  have hEdges_nonempty: "EdgesAtP \<noteq> {}"
+  proof
+    assume hEdges_empty: "EdgesAtP = {}"
+    obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        and h\<delta>_iso: "ball P \<delta> \<inter> B \<subseteq> \<Union>{\<tau>\<in>K. P \<in> \<tau>}"
+      using hK_local_isolation by (by100 blast)
+    have h_ball_only_P: "ball P \<delta> \<inter> B \<subseteq> {P}"
+    proof
+      fix x assume hx: "x \<in> ball P \<delta> \<inter> B"
+      obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hP\<tau>: "P \<in> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+        using h\<delta>_iso hx by (by100 blast)
+      have hdim: "\<exists>n\<le>1. geotop_simplex_dim \<tau> n"
+        using hK_1dim h\<tau>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+      obtain n where hn_le: "n \<le> 1" and h\<tau>dim: "geotop_simplex_dim \<tau> n"
+        using hdim by (by100 blast)
+      have hcases: "n = 0 \<or> n = 1" using hn_le by (by100 linarith)
+      show "x \<in> {P}"
+      proof (rule disjE[OF hcases])
+        assume hn0: "n = 0"
+        have h\<tau>dim0: "geotop_simplex_dim \<tau> 0" using h\<tau>dim hn0 by (by100 simp)
+        obtain V m where hVcard: "card V = 0 + 1" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+          using h\<tau>dim0 unfolding geotop_simplex_dim_def by (by100 blast)
+        have hVcard1: "card V = 1" using hVcard by (by100 simp)
+        obtain v where hV: "V = {v}"
+          by (rule card_1_singletonE[OF hVcard1])
+        have h\<tau>_HOL: "\<tau> = convex hull V"
+          using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have h\<tau>_sing: "\<tau> = {v}" using h\<tau>_HOL hV by (by100 simp)
+        have hP_v: "P = v" using hP\<tau> h\<tau>_sing by (by100 blast)
+        have hxP: "x = P" using hx\<tau> h\<tau>_sing hP_v by (by100 blast)
+        show ?thesis using hxP by (by100 simp)
+      next
+        assume hn1: "n = 1"
+        have h\<tau>dim1: "geotop_simplex_dim \<tau> 1" using h\<tau>dim hn1 by (by100 simp)
+        have "\<tau> \<in> EdgesAtP"
+          unfolding EdgesAtP_def using h\<tau>K hP\<tau> h\<tau>dim1 by (by100 simp)
+        hence False using hEdges_empty by (by100 simp)
+        thus ?thesis by (rule FalseE)
+      qed
+    qed
+    have hP_cl_int: "P \<in> closure (geotop_arc_interior B E)"
+      using arc_closure_interior_eq_arc[OF hB_endp] hP_B by (by100 simp)
+    have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
+    have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
+    have h_int_meets: "geotop_arc_interior B E \<inter> ball P \<delta> \<noteq> {}"
+      using hP_cl_int closure_iff_nhds_not_empty[of P "geotop_arc_interior B E"]
+            h_ball_open hP_ball
+      by (by100 blast)
+    obtain y where hy_int: "y \<in> geotop_arc_interior B E" and hy_ball: "y \<in> ball P \<delta>"
+      using h_int_meets by (by100 blast)
+    have hyB: "y \<in> B" using hy_int unfolding geotop_arc_interior_def by (by100 blast)
+    have hyP: "y = P" using h_ball_only_P hy_ball hyB by (by100 blast)
+    have hy_notP: "y \<noteq> P" using hy_int hP_E unfolding geotop_arc_interior_def by (by100 blast)
+    show False using hyP hy_notP by (by100 blast)
+  qed
+  have hEdges_at_most_one: "\<forall>\<tau>\<in>EdgesAtP. \<forall>\<rho>\<in>EdgesAtP. \<tau> = \<rho>"
+  proof (intro ballI)
+    fix \<tau> \<rho>
+    assume h\<tau>E: "\<tau> \<in> EdgesAtP" and h\<rho>E: "\<rho> \<in> EdgesAtP"
+    have h\<tau>K: "\<tau> \<in> K" and hP\<tau>: "P \<in> \<tau>" and h\<tau>dim: "geotop_simplex_dim \<tau> 1"
+      using h\<tau>E unfolding EdgesAtP_def by (by100 blast)+
+    have h\<rho>K: "\<rho> \<in> K" and hP\<rho>: "P \<in> \<rho>" and h\<rho>dim: "geotop_simplex_dim \<rho> 1"
+      using h\<rho>E unfolding EdgesAtP_def by (by100 blast)+
+    have h_edge_segment_at_P:
+      "\<And>e. \<lbrakk>e \<in> K; P \<in> e; geotop_simplex_dim e 1\<rbrakk>
+        \<Longrightarrow> \<exists>q. q \<noteq> P \<and> e = closed_segment P q"
+    proof -
+      fix e
+      assume heK: "e \<in> K" and hPe: "P \<in> e" and hedim: "geotop_simplex_dim e 1"
+      have hcases: "(\<exists>v. e = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> e = closed_segment a b)"
+        by (rule geotop_1dim_simplex_cases[OF hK_1dim heK])
+      show "\<exists>q. q \<noteq> P \<and> e = closed_segment P q"
+      proof (rule disjE[OF hcases])
+        assume "\<exists>v. e = {v}"
+        then obtain v where hev: "e = {v}" by (by100 blast)
+        have hdim0: "geotop_simplex_dim e 0"
+          using hev geotop_singleton_is_simplex by (by100 simp)
+        have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 hedim])
+        hence False by simp
+        thus ?thesis by (rule FalseE)
+      next
+        assume "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
+        then obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+          by (by100 blast)
+        have hP_endpoint: "P = a \<or> P = b"
+          by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+              [OF hK_complex hPK heK heab hab hPe])
+        show ?thesis
+        proof (rule disjE[OF hP_endpoint])
+          assume hPa: "P = a"
+          have hb_ne: "b \<noteq> P" using hab hPa by (by100 blast)
+          have hseg: "e = closed_segment P b" using heab hPa by (by100 simp)
+          show ?thesis using hb_ne hseg by (by100 blast)
+        next
+          assume hPb: "P = b"
+          have ha_ne: "a \<noteq> P" using hab hPb by (by100 blast)
+          have hcomm: "closed_segment a b = closed_segment b a"
+            by (rule closed_segment_commute)
+          have hseg: "e = closed_segment P a" using heab hPb hcomm by (by100 simp)
+          show ?thesis using ha_ne hseg by (by100 blast)
+        qed
+      qed
+    qed
+    obtain q\<tau> where hq\<tau>_ne: "q\<tau> \<noteq> P" and h\<tau>_seg: "\<tau> = closed_segment P q\<tau>"
+      using h_edge_segment_at_P[OF h\<tau>K hP\<tau> h\<tau>dim] by (by100 blast)
+    obtain q\<rho> where hq\<rho>_ne: "q\<rho> \<noteq> P" and h\<rho>_seg: "\<rho> = closed_segment P q\<rho>"
+      using h_edge_segment_at_P[OF h\<rho>K hP\<rho> h\<rho>dim] by (by100 blast)
+    have h_overlap_nonendpoint: "\<exists>z. z \<in> \<tau> \<inter> \<rho> \<and> z \<noteq> P"
+    proof -
+      have hK_path: "geotop_polyhedron K = path_image \<gamma>"
+        using hK_poly h\<gamma>_pim by (by100 simp)
+      obtain s_tau t_tau where hst_tau_le: "s_tau \<le> t_tau"
+          and hs_tau_01: "s_tau \<in> {0..1}"
+          and ht_tau_01: "t_tau \<in> {0..1}"
+          and hpre_tau: "{s\<in>{0..1}. \<gamma> s \<in> \<tau>} = {s_tau..t_tau}"
+          and hends_tau: "{\<gamma> s_tau, \<gamma> t_tau} = {P, q\<tau>}"
+        using geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hK_1dim hK_path h\<tau>K h\<tau>_seg hq\<tau>_ne[symmetric]]
+        by (by100 blast)
+      obtain s_rho t_rho where hst_rho_le: "s_rho \<le> t_rho"
+          and hs_rho_01: "s_rho \<in> {0..1}"
+          and ht_rho_01: "t_rho \<in> {0..1}"
+          and hpre_rho: "{s\<in>{0..1}. \<gamma> s \<in> \<rho>} = {s_rho..t_rho}"
+          and hends_rho: "{\<gamma> s_rho, \<gamma> t_rho} = {P, q\<rho>}"
+        using geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hK_1dim hK_path h\<rho>K h\<rho>_seg hq\<rho>_ne[symmetric]]
+        by (by100 blast)
+      have h_ordered_endpoint_overlap:
+        "\<exists>r\<in>{0..1}. \<gamma> r \<in> \<tau> \<and> \<gamma> r \<in> \<rho> \<and> \<gamma> r \<noteq> P"
+      proof (rule disjE[OF hP_endpoint_param])
+        assume h0P: "\<gamma> 0 = P"
+        have hinj: "inj_on \<gamma> {0..1}"
+          using h\<gamma>_arc unfolding arc_def by (by100 blast)
+        have h0_pre_tau: "0 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<tau>}"
+          using h0P hP\<tau> by (by100 simp)
+        have h0_tau_iv: "0 \<in> {s_tau..t_tau}"
+          using h0_pre_tau hpre_tau by (by100 simp)
+        have hs_tau_zero: "s_tau = 0"
+          using h0_tau_iv hs_tau_01 by (by100 simp)
+        have hq_tau_img: "\<gamma> t_tau = q\<tau>"
+        proof -
+          have "q\<tau> \<in> {\<gamma> s_tau, \<gamma> t_tau}"
+            using hends_tau by (by100 blast)
+          thus ?thesis using hs_tau_zero h0P hq\<tau>_ne by (by100 blast)
+        qed
+        have ht_tau_pos: "t_tau > 0"
+        proof -
+          have "t_tau \<noteq> 0"
+          proof
+            assume ht0: "t_tau = 0"
+            have "\<gamma> t_tau = P" using ht0 h0P by (by100 simp)
+            thus False using hq_tau_img hq\<tau>_ne by (by100 simp)
+          qed
+          thus ?thesis using ht_tau_01 by (by100 simp)
+        qed
+        have h0_pre_rho: "0 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<rho>}"
+          using h0P hP\<rho> by (by100 simp)
+        have h0_rho_iv: "0 \<in> {s_rho..t_rho}"
+          using h0_pre_rho hpre_rho by (by100 simp)
+        have hs_rho_zero: "s_rho = 0"
+          using h0_rho_iv hs_rho_01 by (by100 simp)
+        have hq_rho_img: "\<gamma> t_rho = q\<rho>"
+        proof -
+          have "q\<rho> \<in> {\<gamma> s_rho, \<gamma> t_rho}"
+            using hends_rho by (by100 blast)
+          thus ?thesis using hs_rho_zero h0P hq\<rho>_ne by (by100 blast)
+        qed
+        have ht_rho_pos: "t_rho > 0"
+        proof -
+          have "t_rho \<noteq> 0"
+          proof
+            assume ht0: "t_rho = 0"
+            have "\<gamma> t_rho = P" using ht0 h0P by (by100 simp)
+            thus False using hq_rho_img hq\<rho>_ne by (by100 simp)
+          qed
+          thus ?thesis using ht_rho_01 by (by100 simp)
+        qed
+        define r where "r = min t_tau t_rho / 2"
+        have hr_pos: "r > 0" unfolding r_def using ht_tau_pos ht_rho_pos by (by100 simp)
+        have hr_le_tau: "r \<le> t_tau" unfolding r_def using ht_tau_pos by (by100 linarith)
+        have hr_le_rho: "r \<le> t_rho" unfolding r_def using ht_rho_pos by (by100 linarith)
+        have hr_01: "r \<in> {0..1}"
+        proof -
+          have ht_tau_le1: "t_tau \<le> 1" using ht_tau_01 by (by100 simp)
+          have "r \<le> 1" unfolding r_def using ht_tau_le1 by (by100 linarith)
+          thus ?thesis using hr_pos by (by100 simp)
+        qed
+        have hr_tau_iv: "r \<in> {s_tau..t_tau}"
+          using hs_tau_zero hr_pos hr_le_tau by (by100 simp)
+        have hr_rho_iv: "r \<in> {s_rho..t_rho}"
+          using hs_rho_zero hr_pos hr_le_rho by (by100 simp)
+        have hr_tau: "\<gamma> r \<in> \<tau>"
+          using hpre_tau hr_01 hr_tau_iv by (by100 blast)
+        have hr_rho: "\<gamma> r \<in> \<rho>"
+          using hpre_rho hr_01 hr_rho_iv by (by100 blast)
+        have hr_neP: "\<gamma> r \<noteq> P"
+        proof
+          assume hrP: "\<gamma> r = P"
+          have h0_01: "(0::real) \<in> {0..1}" by (by100 simp)
+          have "r = 0"
+            using hinj hr_01 h0_01 hrP h0P unfolding inj_on_def by (by100 blast)
+          thus False using hr_pos by (by100 simp)
+        qed
+        show ?thesis using hr_01 hr_tau hr_rho hr_neP by (by100 blast)
+      next
+        assume h1P: "\<gamma> 1 = P"
+        have hinj: "inj_on \<gamma> {0..1}"
+          using h\<gamma>_arc unfolding arc_def by (by100 blast)
+        have h1_pre_tau: "1 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<tau>}"
+          using h1P hP\<tau> by (by100 simp)
+        have h1_tau_iv: "1 \<in> {s_tau..t_tau}"
+          using h1_pre_tau hpre_tau by (by100 simp)
+        have ht_tau_one: "t_tau = 1"
+          using h1_tau_iv ht_tau_01 by (by100 simp)
+        have hq_tau_img: "\<gamma> s_tau = q\<tau>"
+        proof -
+          have "q\<tau> \<in> {\<gamma> s_tau, \<gamma> t_tau}"
+            using hends_tau by (by100 blast)
+          thus ?thesis using ht_tau_one h1P hq\<tau>_ne by (by100 blast)
+        qed
+        have hs_tau_lt1: "s_tau < 1"
+        proof -
+          have "s_tau \<noteq> 1"
+          proof
+            assume hs1: "s_tau = 1"
+            have "\<gamma> s_tau = P" using hs1 h1P by (by100 simp)
+            thus False using hq_tau_img hq\<tau>_ne by (by100 simp)
+          qed
+          thus ?thesis using hs_tau_01 by (by100 simp)
+        qed
+        have h1_pre_rho: "1 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<rho>}"
+          using h1P hP\<rho> by (by100 simp)
+        have h1_rho_iv: "1 \<in> {s_rho..t_rho}"
+          using h1_pre_rho hpre_rho by (by100 simp)
+        have ht_rho_one: "t_rho = 1"
+          using h1_rho_iv ht_rho_01 by (by100 simp)
+        have hq_rho_img: "\<gamma> s_rho = q\<rho>"
+        proof -
+          have "q\<rho> \<in> {\<gamma> s_rho, \<gamma> t_rho}"
+            using hends_rho by (by100 blast)
+          thus ?thesis using ht_rho_one h1P hq\<rho>_ne by (by100 blast)
+        qed
+        have hs_rho_lt1: "s_rho < 1"
+        proof -
+          have "s_rho \<noteq> 1"
+          proof
+            assume hs1: "s_rho = 1"
+            have "\<gamma> s_rho = P" using hs1 h1P by (by100 simp)
+            thus False using hq_rho_img hq\<rho>_ne by (by100 simp)
+          qed
+          thus ?thesis using hs_rho_01 by (by100 simp)
+        qed
+        define eta where "eta = min (1 - s_tau) (1 - s_rho) / 2"
+        define r where "r = 1 - eta"
+        have heta_pos: "eta > 0" unfolding eta_def using hs_tau_lt1 hs_rho_lt1 by (by100 simp)
+        have hmin_pos: "min (1 - s_tau) (1 - s_rho) > 0"
+          using hs_tau_lt1 hs_rho_lt1 by (by100 simp)
+        have heta_le_min: "eta \<le> min (1 - s_tau) (1 - s_rho)"
+        proof -
+          have hdiv: "min (1 - s_tau) (1 - s_rho) / 2
+              \<le> min (1 - s_tau) (1 - s_rho) / 1"
+          proof (rule divide_left_mono)
+            show "(1::real) \<le> 2" by (by100 simp)
+            show "0 \<le> min (1 - s_tau) (1 - s_rho)" using hmin_pos by (by100 simp)
+            show "0 < (2::real) * 1" by (by100 simp)
+          qed
+          show ?thesis unfolding eta_def using hdiv by (by100 simp)
+        qed
+        have hmin_le_tau: "min (1 - s_tau) (1 - s_rho) \<le> 1 - s_tau"
+          by (by100 simp)
+        have hmin_le_rho: "min (1 - s_tau) (1 - s_rho) \<le> 1 - s_rho"
+          by (by100 simp)
+        have heta_le_tau: "eta \<le> 1 - s_tau"
+          using heta_le_min hmin_le_tau by (by100 linarith)
+        have heta_le_rho: "eta \<le> 1 - s_rho"
+          using heta_le_min hmin_le_rho by (by100 linarith)
+        have heta_le1: "eta \<le> 1"
+        proof -
+          have hs_tau_ge0: "0 \<le> s_tau" using hs_tau_01 by (by100 simp)
+          have "1 - s_tau \<le> 1" using hs_tau_ge0 by (by100 simp)
+          thus ?thesis using heta_le_tau by (by100 linarith)
+        qed
+        have hr_lt1: "r < 1" unfolding r_def using heta_pos by (by100 simp)
+        have hr_ge0: "0 \<le> r" unfolding r_def using heta_le1 by (by100 simp)
+        have hr_01: "r \<in> {0..1}" using hr_ge0 hr_lt1 by (by100 simp)
+        have hr_ge_tau: "s_tau \<le> r" unfolding r_def using heta_le_tau by (by100 linarith)
+        have hr_ge_rho: "s_rho \<le> r" unfolding r_def using heta_le_rho by (by100 linarith)
+        have hr_tau_iv: "r \<in> {s_tau..t_tau}"
+          using hr_ge_tau hr_lt1 ht_tau_one by (by100 simp)
+        have hr_rho_iv: "r \<in> {s_rho..t_rho}"
+          using hr_ge_rho hr_lt1 ht_rho_one by (by100 simp)
+        have hr_tau: "\<gamma> r \<in> \<tau>"
+          using hpre_tau hr_01 hr_tau_iv by (by100 blast)
+        have hr_rho: "\<gamma> r \<in> \<rho>"
+          using hpre_rho hr_01 hr_rho_iv by (by100 blast)
+        have hr_neP: "\<gamma> r \<noteq> P"
+        proof
+          assume hrP: "\<gamma> r = P"
+          have h1_01: "(1::real) \<in> {0..1}" by (by100 simp)
+          have "r = 1"
+            using hinj hr_01 h1_01 hrP h1P unfolding inj_on_def by (by100 blast)
+          thus False using hr_lt1 by (by100 simp)
+        qed
+        show ?thesis using hr_01 hr_tau hr_rho hr_neP by (by100 blast)
+      qed
+      obtain r where hr_01: "r \<in> {0..1}"
+          and hr_tau: "\<gamma> r \<in> \<tau>"
+          and hr_rho: "\<gamma> r \<in> \<rho>"
+          and hr_ne: "\<gamma> r \<noteq> P"
+        using h_ordered_endpoint_overlap by (by100 blast)
+      show ?thesis using hr_tau hr_rho hr_ne by (by100 blast)
+    qed
+    obtain z where hz_inter: "z \<in> \<tau> \<inter> \<rho>" and hz_ne: "z \<noteq> P"
+      using h_overlap_nonendpoint by (by100 blast)
+    have h_inter_ne: "\<tau> \<inter> \<rho> \<noteq> {}" using hP\<tau> hP\<rho> by (by100 blast)
+    have hface_\<tau>: "geotop_is_face (\<tau> \<inter> \<rho>) \<tau>"
+      using hK_complex h\<tau>K h\<rho>K h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hface_\<rho>: "geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
+      using hK_complex h\<tau>K h\<rho>K h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hP_inter: "P \<in> \<tau> \<inter> \<rho>" using hP\<tau> hP\<rho> by (by100 blast)
+    have h\<tau>eq: "\<tau> \<inter> \<rho> = \<tau>"
+      using segment_face_with_endpoint_and_extra_eq[of "\<tau> \<inter> \<rho>" P q\<tau> z]
+            hface_\<tau> hq\<tau>_ne hP_inter hz_inter hz_ne h\<tau>_seg
+      by (by100 simp)
+    have h\<rho>eq: "\<tau> \<inter> \<rho> = \<rho>"
+      using segment_face_with_endpoint_and_extra_eq[of "\<tau> \<inter> \<rho>" P q\<rho> z]
+            hface_\<rho> hq\<rho>_ne hP_inter hz_inter hz_ne h\<rho>_seg
+      by (by100 simp)
+    show "\<tau> = \<rho>" using h\<tau>eq h\<rho>eq by (by100 simp)
+  qed
+  have hEdges_unique: "\<exists>!\<sigma>. \<sigma> \<in> EdgesAtP"
+  proof -
+    obtain \<sigma> where h\<sigma>: "\<sigma> \<in> EdgesAtP" using hEdges_nonempty by (by100 blast)
+    show ?thesis
+    proof (rule ex1I[of _ \<sigma>])
+      show "\<sigma> \<in> EdgesAtP" by (rule h\<sigma>)
+      fix \<tau> assume h\<tau>: "\<tau> \<in> EdgesAtP"
+      show "\<tau> = \<sigma>" using hEdges_at_most_one h\<tau> h\<sigma> by (by100 blast)
+    qed
+  qed
+  obtain \<sigma> where h\<sigma>_edge: "\<sigma> \<in> EdgesAtP"
+      and h\<sigma>_unique: "\<forall>\<tau>. \<tau> \<in> EdgesAtP \<longrightarrow> \<tau> = \<sigma>"
+    using hEdges_unique unfolding Ex1_def by (by100 blast)
+  have h\<sigma>_KP: "\<sigma> \<in> K \<and> P \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1"
+    using h\<sigma>_edge unfolding EdgesAtP_def by (by100 blast)
+  obtain a b where hab_ne: "a \<noteq> b" and h\<sigma>_seg_ab: "\<sigma> = closed_segment a b"
+  proof -
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>_KP by (by100 blast)
+    have h\<sigma>dim1: "geotop_simplex_dim \<sigma> 1" using h\<sigma>_KP by (by100 blast)
+    have hcases: "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hK_1dim h\<sigma>K])
+    show ?thesis
+    proof (rule disjE[OF hcases])
+      assume "\<exists>v. \<sigma> = {v}"
+      then obtain v where h\<sigma>v: "\<sigma> = {v}" by (by100 blast)
+      have hdim0: "geotop_simplex_dim \<sigma> 0"
+        using h\<sigma>v geotop_singleton_is_simplex by (by100 simp)
+      have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 h\<sigma>dim1])
+      hence False by simp
+      thus ?thesis by (rule FalseE)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+      thus ?thesis using that by (by100 blast)
+    qed
+  qed
+  have hP_ab: "P = a \<or> P = b"
+  proof -
+    have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>_KP by (by100 blast)
+    have hP\<sigma>: "P \<in> \<sigma>" using h\<sigma>_KP by (by100 blast)
+    show ?thesis
+      by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+          [OF hK_complex hPK h\<sigma>K h\<sigma>_seg_ab hab_ne hP\<sigma>])
+  qed
+  obtain p where hp_ne: "p \<noteq> P" and h\<sigma>_seg: "\<sigma> = closed_segment P p"
+  proof (rule disjE[OF hP_ab])
+    assume hPa: "P = a"
+    have hb_ne: "b \<noteq> P" using hab_ne hPa by (by100 blast)
+    have hseg: "\<sigma> = closed_segment P b" using h\<sigma>_seg_ab hPa by (by100 simp)
+    show ?thesis using that hb_ne hseg by (by100 blast)
+  next
+    assume hPb: "P = b"
+    have ha_ne: "a \<noteq> P" using hab_ne hPb by (by100 blast)
+    have hcomm: "closed_segment a b = closed_segment b a"
+      by (rule closed_segment_commute)
+    have hseg: "\<sigma> = closed_segment P a"
+      using h\<sigma>_seg_ab hPb hcomm by (by100 simp)
+    show ?thesis using that ha_ne hseg by (by100 blast)
+  qed
+  obtain \<delta>\<^sub>0 where h\<delta>0_pos: "\<delta>\<^sub>0 > 0"
+      and h\<delta>0_iso: "ball P \<delta>\<^sub>0 \<inter> B \<subseteq> \<Union>{\<tau>\<in>K. P \<in> \<tau>}"
+    using hK_local_isolation by (by100 blast)
+  have hlocal_unique_edge:
+    "ball P \<delta>\<^sub>0 \<inter> B \<subseteq> \<sigma>"
+  proof
+    fix x assume hx: "x \<in> ball P \<delta>\<^sub>0 \<inter> B"
+    obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hP\<tau>: "P \<in> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+      using h\<delta>0_iso hx by (by100 blast)
+    have hdim: "\<exists>n\<le>1. geotop_simplex_dim \<tau> n"
+      using hK_1dim h\<tau>K unfolding geotop_complex_is_1dim_def by (by100 blast)
+    obtain n where hn_le: "n \<le> 1" and h\<tau>dim: "geotop_simplex_dim \<tau> n"
+      using hdim by (by100 blast)
+    have hcases: "n = 0 \<or> n = 1" using hn_le by (by100 linarith)
+    show "x \<in> \<sigma>"
+    proof (rule disjE[OF hcases])
+      assume hn0: "n = 0"
+      have h\<tau>dim0: "geotop_simplex_dim \<tau> 0" using h\<tau>dim hn0 by (by100 simp)
+      obtain V m where hVcard: "card V = 0 + 1" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+        using h\<tau>dim0 unfolding geotop_simplex_dim_def by (by100 blast)
+      have hVcard1: "card V = 1" using hVcard by (by100 simp)
+      obtain v where hV: "V = {v}"
+        by (rule card_1_singletonE[OF hVcard1])
+      have h\<tau>_HOL: "\<tau> = convex hull V"
+        using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have h\<tau>_sing: "\<tau> = {v}" using h\<tau>_HOL hV by (by100 simp)
+      have hP_v: "P = v" using hP\<tau> h\<tau>_sing by (by100 blast)
+      have hxP: "x = P" using hx\<tau> h\<tau>_sing hP_v by (by100 blast)
+      have hP\<sigma>: "P \<in> \<sigma>" using h\<sigma>_KP by (by100 blast)
+      show ?thesis using hxP hP\<sigma> by (by100 simp)
+    next
+      assume hn1: "n = 1"
+      have h\<tau>dim1: "geotop_simplex_dim \<tau> 1" using h\<tau>dim hn1 by (by100 simp)
+      have h\<tau>_edge: "\<tau> \<in> EdgesAtP"
+        unfolding EdgesAtP_def using h\<tau>K hP\<tau> h\<tau>dim1 by (by100 simp)
+      have h\<tau>eq: "\<tau> = \<sigma>" using h\<sigma>_unique h\<tau>_edge by (by100 blast)
+      show ?thesis using hx\<tau> h\<tau>eq by (by100 simp)
+    qed
+  qed
+  have hlocal_eq:
+    "ball P \<delta>\<^sub>0 \<inter> B = ball P \<delta>\<^sub>0 \<inter> closed_segment P p"
+  proof
+    show "ball P \<delta>\<^sub>0 \<inter> B \<subseteq> ball P \<delta>\<^sub>0 \<inter> closed_segment P p"
+      using hlocal_unique_edge h\<sigma>_seg by (by100 blast)
+    show "ball P \<delta>\<^sub>0 \<inter> closed_segment P p \<subseteq> ball P \<delta>\<^sub>0 \<inter> B"
+    proof
+      fix x assume hx: "x \<in> ball P \<delta>\<^sub>0 \<inter> closed_segment P p"
+      have hx\<sigma>: "x \<in> \<sigma>" using hx h\<sigma>_seg by (by100 simp)
+      have h\<sigma>K: "\<sigma> \<in> K" using h\<sigma>_KP by (by100 blast)
+      have hxB: "x \<in> B"
+        using hx\<sigma> h\<sigma>K hK_poly unfolding geotop_polyhedron_def by (by100 blast)
+      show "x \<in> ball P \<delta>\<^sub>0 \<inter> B" using hx hxB by (by100 blast)
+    qed
+  qed
+  have hlocal_int:
+    "ball P \<delta>\<^sub>0 \<inter> geotop_arc_interior B E \<subseteq> closed_segment P p - {P}"
+  proof
+    fix x assume hx: "x \<in> ball P \<delta>\<^sub>0 \<inter> geotop_arc_interior B E"
+    have hx_ball: "x \<in> ball P \<delta>\<^sub>0" using hx by (by100 blast)
+    have hxB: "x \<in> B" using hx unfolding geotop_arc_interior_def by (by100 blast)
+    have hx_seg: "x \<in> closed_segment P p"
+      using hlocal_eq hx_ball hxB by (by100 blast)
+    have hx_notP: "x \<noteq> P"
+      using hx hP_E unfolding geotop_arc_interior_def by (by100 blast)
+    show "x \<in> closed_segment P p - {P}" using hx_seg hx_notP by (by100 blast)
+  qed
+  show ?thesis
+    using h\<delta>0_pos hp_ne hlocal_eq hlocal_int by (by100 blast)
+qed
+
 (** from \<S>2 Theorem 7 (geotop.tex:621)
     LATEX VERSION: Let M = B_1 \<union> B_2 \<union> B_3 be a polyhedral \<theta>-graph in R^2, with Bd B_i = {P,Q}.
       Then (1) Every component of R^2 - M has a polygon B_i \<union> B_j as its frontier, and
@@ -7079,7 +7842,952 @@ proof -
       "\<exists>\<delta>>0. \<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
                       geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-      sorry
+    proof -
+      \<comment> \<open>Book's "small circular neighborhood of P": choose it so that each
+        incident broken line is represented by its first straight segment at
+        P, and no other simplex of the broken line enters the disk.\<close>
+      have hAM_endpoint_linear_model:
+        "\<exists>\<delta>>0. \<exists>p1 p2 p3.
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+      proof -
+        obtain \<delta>1 p1 where h\<delta>1_pos: "\<delta>1 > 0"
+          and hp1_ne: "p1 \<noteq> P"
+          and hB1_loc: "ball P \<delta>1 \<inter> B1 = ball P \<delta>1 \<inter> closed_segment P p1"
+          and hB1_int_loc:
+            "ball P \<delta>1 \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P}"
+          using broken_line_endpoint_local_segment[OF hB1_bl hE1 hP_E] by (by100 blast)
+        obtain \<delta>2 p2 where h\<delta>2_pos: "\<delta>2 > 0"
+          and hp2_ne: "p2 \<noteq> P"
+          and hB2_loc: "ball P \<delta>2 \<inter> B2 = ball P \<delta>2 \<inter> closed_segment P p2"
+          and hB2_int_loc:
+            "ball P \<delta>2 \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P}"
+          using broken_line_endpoint_local_segment[OF hB2_bl hE2 hP_E] by (by100 blast)
+        obtain \<delta>3 p3 where h\<delta>3_pos: "\<delta>3 > 0"
+          and hp3_ne: "p3 \<noteq> P"
+          and hB3_loc: "ball P \<delta>3 \<inter> B3 = ball P \<delta>3 \<inter> closed_segment P p3"
+          and hB3_int_loc:
+            "ball P \<delta>3 \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+          using broken_line_endpoint_local_segment[OF hB3_bl hE3 hP_E] by (by100 blast)
+        have hE_card: "card E = 2"
+          using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+        obtain A B where hE_AB: "E = {A, B}" and hAB_ne: "A \<noteq> B"
+          using hE_card card_2_iff by (by100 metis)
+        obtain Q where hE_PQ: "E = {P, Q}" and hQ_ne: "Q \<noteq> P"
+        proof -
+          have hP_cases: "P = A \<or> P = B" using hP_E hE_AB by (by100 blast)
+          thus ?thesis
+          proof
+            assume hPA: "P = A"
+            have "E = {P, B}" using hE_AB hPA by (by100 simp)
+            moreover have "B \<noteq> P" using hAB_ne hPA by (by100 blast)
+            ultimately show ?thesis using that by (by100 blast)
+          next
+            assume hPB: "P = B"
+            have "E = {P, A}" using hE_AB hPB by (by100 blast)
+            moreover have "A \<noteq> P" using hAB_ne hPB by (by100 blast)
+            ultimately show ?thesis using that by (by100 blast)
+          qed
+        qed
+        define \<delta>E where "\<delta>E = dist P Q / 2"
+        have hPQ_dist_pos: "dist P Q > 0" using hQ_ne by (by100 simp)
+        have h\<delta>E_pos: "\<delta>E > 0" unfolding \<delta>E_def using hPQ_dist_pos by (by100 simp)
+        have hballE_loc: "ball P \<delta>E \<inter> E = {P}"
+        proof
+          show "ball P \<delta>E \<inter> E \<subseteq> {P}"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta>E \<inter> E"
+            have hxE: "x \<in> E" using hx by (by100 blast)
+            have hx_ball: "x \<in> ball P \<delta>E" using hx by (by100 blast)
+            have hx_cases: "x = P \<or> x = Q" using hxE hE_PQ by (by100 blast)
+            thus "x \<in> {P}"
+            proof
+              assume "x = P"
+              thus ?thesis by (by100 simp)
+            next
+              assume "x = Q"
+              hence "dist P Q < \<delta>E" using hx_ball by (by100 simp)
+              thus ?thesis unfolding \<delta>E_def using hPQ_dist_pos by (by100 simp)
+            qed
+          qed
+          show "{P} \<subseteq> ball P \<delta>E \<inter> E"
+            using hP_E h\<delta>E_pos by (by100 simp)
+        qed
+        define \<delta> where "\<delta> = min \<delta>1
+            (min \<delta>2 (min \<delta>3
+              (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))))"
+        have hp1_dist_pos: "dist P p1 > 0" using hp1_ne by (by100 simp)
+        have hp2_dist_pos: "dist P p2 > 0" using hp2_ne by (by100 simp)
+        have hp3_dist_pos: "dist P p3 > 0" using hp3_ne by (by100 simp)
+        have hp1_half_pos: "0 < dist P p1 / 2" using hp1_dist_pos by (by100 linarith)
+        have hp2_half_pos: "0 < dist P p2 / 2" using hp2_dist_pos by (by100 linarith)
+        have hp3_half_pos: "0 < dist P p3 / 2" using hp3_dist_pos by (by100 linarith)
+        have h\<delta>_pos: "\<delta> > 0"
+          unfolding \<delta>_def
+          using h\<delta>1_pos h\<delta>2_pos h\<delta>3_pos h\<delta>E_pos
+                hp1_half_pos hp2_half_pos hp3_half_pos
+          by (simp only: min_less_iff_conj)
+        have h\<delta>_le1: "\<delta> \<le> \<delta>1"
+          unfolding \<delta>_def by (simp only: min.cobounded1 min.cobounded2)
+        have h\<delta>_le2: "\<delta> \<le> \<delta>2"
+        proof -
+          have h1: "\<delta> \<le> min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))"
+            unfolding \<delta>_def by (rule min.cobounded2)
+          have h2: "min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))
+              \<le> \<delta>2"
+            by (rule min.cobounded1)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        have h\<delta>_le3: "\<delta> \<le> \<delta>3"
+        proof -
+          have h1: "\<delta> \<le> min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))"
+            unfolding \<delta>_def by (rule min.cobounded2)
+          have h2: "min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))
+              \<le> min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))"
+            by (rule min.cobounded2)
+          have h3: "min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))
+              \<le> \<delta>3"
+            by (rule min.cobounded1)
+          show ?thesis using h1 h2 h3 by (by100 linarith)
+        qed
+        have h\<delta>_leE: "\<delta> \<le> \<delta>E"
+        proof -
+          have h1: "\<delta> \<le> min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))"
+            unfolding \<delta>_def by (rule min.cobounded2)
+          have h2: "min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))
+              \<le> min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))"
+            by (rule min.cobounded2)
+          have h3: "min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))
+              \<le> min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))"
+            by (rule min.cobounded2)
+          have h4: "min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))
+              \<le> \<delta>E"
+            by (rule min.cobounded1)
+          show ?thesis using h1 h2 h3 h4 by (by100 linarith)
+        qed
+        have h\<delta>_le_halves:
+          "\<delta> \<le> min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))"
+        proof -
+          have h1: "\<delta> \<le> min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))"
+            unfolding \<delta>_def by (rule min.cobounded2)
+          have h2: "min \<delta>2
+              (min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))))
+              \<le> min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))"
+            by (rule min.cobounded2)
+          have h3: "min \<delta>3
+                (min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))))
+              \<le> min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))"
+            by (rule min.cobounded2)
+          have h4: "min \<delta>E (min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2)))
+              \<le> min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))"
+            by (rule min.cobounded2)
+          show ?thesis using h1 h2 h3 h4 by (by100 linarith)
+        qed
+        have h\<delta>_le_p1: "\<delta> \<le> dist P p1"
+        proof -
+          have h1: "\<delta> \<le> dist P p1 / 2"
+            using h\<delta>_le_halves min.cobounded1 by (by100 linarith)
+          have h2: "dist P p1 / 2 \<le> dist P p1" using hp1_dist_pos by (by100 linarith)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        have h\<delta>_le_p2: "\<delta> \<le> dist P p2"
+        proof -
+          have h1: "\<delta> \<le> dist P p2 / 2"
+          proof -
+            have htail: "min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))
+                \<le> min (dist P p2 / 2) (dist P p3 / 2)"
+              by (rule min.cobounded2)
+            have hhalf: "min (dist P p2 / 2) (dist P p3 / 2) \<le> dist P p2 / 2"
+              by (rule min.cobounded1)
+            show ?thesis using h\<delta>_le_halves htail hhalf by (by100 linarith)
+          qed
+          have h2: "dist P p2 / 2 \<le> dist P p2" using hp2_dist_pos by (by100 linarith)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        have h\<delta>_le_p3: "\<delta> \<le> dist P p3"
+        proof -
+          have h1: "\<delta> \<le> dist P p3 / 2"
+          proof -
+            have htail: "min (dist P p1 / 2) (min (dist P p2 / 2) (dist P p3 / 2))
+                \<le> min (dist P p2 / 2) (dist P p3 / 2)"
+              by (rule min.cobounded2)
+            have hhalf: "min (dist P p2 / 2) (dist P p3 / 2) \<le> dist P p3 / 2"
+              by (rule min.cobounded2)
+            show ?thesis using h\<delta>_le_halves htail hhalf by (by100 linarith)
+          qed
+          have h2: "dist P p3 / 2 \<le> dist P p3" using hp3_dist_pos by (by100 linarith)
+          show ?thesis using h1 h2 by (by100 linarith)
+        qed
+        have hball_sub1: "ball P \<delta> \<subseteq> ball P \<delta>1"
+          using h\<delta>_le1 by (by100 auto)
+        have hball_sub2: "ball P \<delta> \<subseteq> ball P \<delta>2"
+          using h\<delta>_le2 by (by100 auto)
+        have hball_sub3: "ball P \<delta> \<subseteq> ball P \<delta>3"
+          using h\<delta>_le3 by (by100 auto)
+        have hball_subE: "ball P \<delta> \<subseteq> ball P \<delta>E"
+          using h\<delta>_leE by (by100 auto)
+        have hB1_model: "ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1"
+        proof
+          show "ball P \<delta> \<inter> B1 \<subseteq> ball P \<delta> \<inter> closed_segment P p1"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> B1"
+            have hx_big: "x \<in> ball P \<delta>1 \<inter> B1"
+              using hx hball_sub1 by (by100 blast)
+            have hx_seg: "x \<in> closed_segment P p1"
+              using hx_big hB1_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> closed_segment P p1"
+              using hx hx_seg by (by100 blast)
+          qed
+          show "ball P \<delta> \<inter> closed_segment P p1 \<subseteq> ball P \<delta> \<inter> B1"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> closed_segment P p1"
+            have hx_big: "x \<in> ball P \<delta>1 \<inter> closed_segment P p1"
+              using hx hball_sub1 by (by100 blast)
+            have hx_B1: "x \<in> B1"
+              using hx_big hB1_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> B1"
+              using hx hx_B1 by (by100 blast)
+          qed
+        qed
+        have hB2_model: "ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2"
+        proof
+          show "ball P \<delta> \<inter> B2 \<subseteq> ball P \<delta> \<inter> closed_segment P p2"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> B2"
+            have hx_big: "x \<in> ball P \<delta>2 \<inter> B2"
+              using hx hball_sub2 by (by100 blast)
+            have hx_seg: "x \<in> closed_segment P p2"
+              using hx_big hB2_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> closed_segment P p2"
+              using hx hx_seg by (by100 blast)
+          qed
+          show "ball P \<delta> \<inter> closed_segment P p2 \<subseteq> ball P \<delta> \<inter> B2"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> closed_segment P p2"
+            have hx_big: "x \<in> ball P \<delta>2 \<inter> closed_segment P p2"
+              using hx hball_sub2 by (by100 blast)
+            have hx_B2: "x \<in> B2"
+              using hx_big hB2_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> B2"
+              using hx hx_B2 by (by100 blast)
+          qed
+        qed
+        have hB3_model: "ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3"
+        proof
+          show "ball P \<delta> \<inter> B3 \<subseteq> ball P \<delta> \<inter> closed_segment P p3"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> B3"
+            have hx_big: "x \<in> ball P \<delta>3 \<inter> B3"
+              using hx hball_sub3 by (by100 blast)
+            have hx_seg: "x \<in> closed_segment P p3"
+              using hx_big hB3_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> closed_segment P p3"
+              using hx hx_seg by (by100 blast)
+          qed
+          show "ball P \<delta> \<inter> closed_segment P p3 \<subseteq> ball P \<delta> \<inter> B3"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> \<inter> closed_segment P p3"
+            have hx_big: "x \<in> ball P \<delta>3 \<inter> closed_segment P p3"
+              using hx hball_sub3 by (by100 blast)
+            have hx_B3: "x \<in> B3"
+              using hx_big hB3_loc by (by100 blast)
+            show "x \<in> ball P \<delta> \<inter> B3"
+              using hx hx_B3 by (by100 blast)
+          qed
+        qed
+        have hB1_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P}"
+          using hB1_int_loc hball_sub1 by (by100 blast)
+        have hB2_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P}"
+          using hB2_int_loc hball_sub2 by (by100 blast)
+        have hB3_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+          using hB3_int_loc hball_sub3 by (by100 blast)
+        have hballE: "ball P \<delta> \<inter> E = {P}"
+        proof
+          show "ball P \<delta> \<inter> E \<subseteq> {P}"
+            using hballE_loc hball_subE by (by100 blast)
+          show "{P} \<subseteq> ball P \<delta> \<inter> E"
+            using h\<delta>_pos hP_E by (by100 simp)
+        qed
+        have hM_eq_loc: "M = B1 \<union> B2 \<union> B3"
+          using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+        have hM_model:
+          "ball P \<delta> \<inter> M =
+            ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)"
+          using hM_eq_loc hB1_model hB2_model hB3_model by (by100 blast)
+        show ?thesis
+          using h\<delta>_pos hp1_ne hp2_ne hp3_ne h\<delta>_le_p1 h\<delta>_le_p2 h\<delta>_le_p3
+            hballE hM_model
+            hB1_model hB2_model hB3_model
+            hB1_int_model hB2_int_model hB3_int_model
+          by (by100 blast)
+      qed
+      \<comment> \<open>The three radial pieces are pairwise disjoint away from P; otherwise
+        two theta-arc interiors would meet in the chosen disk.\<close>
+      have hAM_endpoint_rays_disjoint:
+        "\<forall>\<delta> p1 p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}
+            \<longrightarrow>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+      proof (intro allI impI)
+        fix \<delta> p1 p2 p3
+        assume hloc:
+          "\<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+        have hballE: "ball P \<delta> \<inter> E = {P}"
+          using hloc by (fast elim: conjE)
+        have hB1_eq: "ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1"
+          using hloc by (fast elim: conjE)
+        have hB2_eq: "ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2"
+          using hloc by (fast elim: conjE)
+        have hB3_eq: "ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3"
+          using hloc by (fast elim: conjE)
+        have h12_empty:
+          "(closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {}"
+        proof (rule equals0I)
+          fix z
+          assume hz: "z \<in> (closed_segment P p1 - {P}) \<inter>
+                         (closed_segment P p2 - {P}) \<inter> ball P \<delta>"
+          have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+          have hz_s1: "z \<in> closed_segment P p1" using hz by (by100 blast)
+          have hz_s2: "z \<in> closed_segment P p2" using hz by (by100 blast)
+          have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+          have hz_B1: "z \<in> B1" using hz_ball hz_s1 hB1_eq by (by100 blast)
+          have hz_B2: "z \<in> B2" using hz_ball hz_s2 hB2_eq by (by100 blast)
+          have hz_notE: "z \<notin> E" using hz_ball hz_neP hballE by (by100 blast)
+          have hz_i1: "z \<in> geotop_arc_interior B1 E"
+            unfolding geotop_arc_interior_def using hz_B1 hz_notE by (by100 blast)
+          have hz_i2: "z \<in> geotop_arc_interior B2 E"
+            unfolding geotop_arc_interior_def using hz_B2 hz_notE by (by100 blast)
+          show False using hz_i1 hz_i2 h_int12 by (by100 blast)
+        qed
+        have h13_empty:
+          "(closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+        proof (rule equals0I)
+          fix z
+          assume hz: "z \<in> (closed_segment P p1 - {P}) \<inter>
+                         (closed_segment P p3 - {P}) \<inter> ball P \<delta>"
+          have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+          have hz_s1: "z \<in> closed_segment P p1" using hz by (by100 blast)
+          have hz_s3: "z \<in> closed_segment P p3" using hz by (by100 blast)
+          have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+          have hz_B1: "z \<in> B1" using hz_ball hz_s1 hB1_eq by (by100 blast)
+          have hz_B3: "z \<in> B3" using hz_ball hz_s3 hB3_eq by (by100 blast)
+          have hz_notE: "z \<notin> E" using hz_ball hz_neP hballE by (by100 blast)
+          have hz_i1: "z \<in> geotop_arc_interior B1 E"
+            unfolding geotop_arc_interior_def using hz_B1 hz_notE by (by100 blast)
+          have hz_i3: "z \<in> geotop_arc_interior B3 E"
+            unfolding geotop_arc_interior_def using hz_B3 hz_notE by (by100 blast)
+          show False using hz_i1 hz_i3 h_int13 by (by100 blast)
+        qed
+        have h23_empty:
+          "(closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+        proof (rule equals0I)
+          fix z
+          assume hz: "z \<in> (closed_segment P p2 - {P}) \<inter>
+                         (closed_segment P p3 - {P}) \<inter> ball P \<delta>"
+          have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+          have hz_s2: "z \<in> closed_segment P p2" using hz by (by100 blast)
+          have hz_s3: "z \<in> closed_segment P p3" using hz by (by100 blast)
+          have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+          have hz_B2: "z \<in> B2" using hz_ball hz_s2 hB2_eq by (by100 blast)
+          have hz_B3: "z \<in> B3" using hz_ball hz_s3 hB3_eq by (by100 blast)
+          have hz_notE: "z \<notin> E" using hz_ball hz_neP hballE by (by100 blast)
+          have hz_i2: "z \<in> geotop_arc_interior B2 E"
+            unfolding geotop_arc_interior_def using hz_B2 hz_notE by (by100 blast)
+          have hz_i3: "z \<in> geotop_arc_interior B3 E"
+            unfolding geotop_arc_interior_def using hz_B3 hz_notE by (by100 blast)
+          show False using hz_i2 hz_i3 h_int23 by (by100 blast)
+        qed
+        show "(closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+              (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+              (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+          using h12_empty h13_empty h23_empty by (by100 blast)
+      qed
+      \<comment> \<open>Planar sector fact for three radial cuts in a small disk: every
+        component of the punctured disk has closure incident with at most two
+        of the three cut rays. This is Figure 2.6 in formal form.\<close>
+      have hAM_three_ray_sector_bound:
+        "\<forall>\<delta> p1 p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}
+            \<longrightarrow>
+            (\<forall>C \<in> components
+                (ball P \<delta> -
+                  (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)).
+                card {S \<in> {closed_segment P p1, closed_segment P p2, closed_segment P p3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+      proof (intro allI impI)
+        fix \<delta> p1 p2 p3
+        assume hpack:
+          "\<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+        let ?S1 = "closed_segment P p1"
+        let ?S2 = "closed_segment P p2"
+        let ?S3 = "closed_segment P p3"
+        let ?R = "?S1 \<union> ?S2 \<union> ?S3"
+        define r where "r = \<delta> / 2"
+        define q1 where "q1 = P + (r / dist P p1) *\<^sub>R (p1 - P)"
+        define q2 where "q2 = P + (r / dist P p2) *\<^sub>R (p2 - P)"
+        define q3 where "q3 = P + (r / dist P p3) *\<^sub>R (p3 - P)"
+        \<comment> \<open>Book Figure 2.6: intersect the three radial cuts with the
+          concentric circle of radius \<open>r\<close>. The disk sectors correspond to
+          the three circle arcs between \<open>q1\<close>, \<open>q2\<close>, and \<open>q3\<close>.\<close>
+        have h_radial_circle_model:
+          "r > 0 \<and>
+           q1 \<in> ?S1 - {P} \<and> q2 \<in> ?S2 - {P} \<and> q3 \<in> ?S3 - {P} \<and>
+           dist P q1 = r \<and> dist P q2 = r \<and> dist P q3 = r \<and>
+           q1 \<noteq> q2 \<and> q1 \<noteq> q3 \<and> q2 \<noteq> q3"
+        proof -
+          have h\<delta>_pos: "\<delta> > 0" using hpack by (by100 blast)
+          have hp1_ne': "p1 \<noteq> P" using hpack by (by100 blast)
+          have hp2_ne': "p2 \<noteq> P" using hpack by (by100 blast)
+          have hp3_ne': "p3 \<noteq> P" using hpack by (by100 blast)
+          have h\<delta>_p1: "\<delta> \<le> dist P p1" using hpack by (by100 blast)
+          have h\<delta>_p2: "\<delta> \<le> dist P p2" using hpack by (by100 blast)
+          have h\<delta>_p3: "\<delta> \<le> dist P p3" using hpack by (by100 blast)
+          have hS12_empty:
+            "(?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {}"
+            using hpack by (fast elim: conjE)
+          have hS13_empty:
+            "(?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+            using hpack by (fast elim: conjE)
+          have hS23_empty:
+            "(?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+            using hpack by (fast elim: conjE)
+          have hr_pos: "r > 0"
+            unfolding r_def using h\<delta>_pos by (by100 simp)
+          have hr_lt_\<delta>: "r < \<delta>"
+            unfolding r_def using h\<delta>_pos by (by100 simp)
+          have hp1_dist_pos: "dist P p1 > 0" using hp1_ne' by (by100 simp)
+          have hp2_dist_pos: "dist P p2 > 0" using hp2_ne' by (by100 simp)
+          have hp3_dist_pos: "dist P p3 > 0" using hp3_ne' by (by100 simp)
+          have hq1:
+            "q1 \<in> ?S1 - {P} \<and> dist P q1 = r \<and> q1 \<in> ball P \<delta>"
+          proof -
+            let ?t = "r / dist P p1"
+            have ht_nonneg: "0 \<le> ?t" using hr_pos hp1_dist_pos by (by100 simp)
+            have hr_le_dist: "r \<le> dist P p1"
+              unfolding r_def using h\<delta>_p1 h\<delta>_pos by (by100 linarith)
+            have ht_le1: "?t \<le> 1"
+              using hr_le_dist hp1_dist_pos by (by100 simp)
+            have hq_conv: "q1 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p1"
+              unfolding q1_def by (simp add: algebra_simps)
+            have hq_seg: "q1 \<in> ?S1"
+              unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+            have hq_ne: "q1 \<noteq> P"
+            proof
+              assume h_eq: "q1 = P"
+              have "?t *\<^sub>R (p1 - P) = 0"
+                using h_eq unfolding q1_def by (by100 simp)
+              hence "?t = 0"
+                using hp1_ne' by (by100 simp)
+              thus False using hr_pos hp1_dist_pos by (by100 simp)
+            qed
+            have hq_dist: "dist P q1 = r"
+              unfolding q1_def
+              using hp1_dist_pos hr_pos
+              by (simp add: dist_norm norm_minus_commute)
+            have hq_ball: "q1 \<in> ball P \<delta>"
+              using hq_dist hr_lt_\<delta> by (by100 simp)
+            show ?thesis using hq_seg hq_ne hq_dist hq_ball by (by100 blast)
+          qed
+          have hq2:
+            "q2 \<in> ?S2 - {P} \<and> dist P q2 = r \<and> q2 \<in> ball P \<delta>"
+          proof -
+            let ?t = "r / dist P p2"
+            have ht_nonneg: "0 \<le> ?t" using hr_pos hp2_dist_pos by (by100 simp)
+            have hr_le_dist: "r \<le> dist P p2"
+              unfolding r_def using h\<delta>_p2 h\<delta>_pos by (by100 linarith)
+            have ht_le1: "?t \<le> 1"
+              using hr_le_dist hp2_dist_pos by (by100 simp)
+            have hq_conv: "q2 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p2"
+              unfolding q2_def by (simp add: algebra_simps)
+            have hq_seg: "q2 \<in> ?S2"
+              unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+            have hq_ne: "q2 \<noteq> P"
+            proof
+              assume h_eq: "q2 = P"
+              have "?t *\<^sub>R (p2 - P) = 0"
+                using h_eq unfolding q2_def by (by100 simp)
+              hence "?t = 0"
+                using hp2_ne' by (by100 simp)
+              thus False using hr_pos hp2_dist_pos by (by100 simp)
+            qed
+            have hq_dist: "dist P q2 = r"
+              unfolding q2_def
+              using hp2_dist_pos hr_pos
+              by (simp add: dist_norm norm_minus_commute)
+            have hq_ball: "q2 \<in> ball P \<delta>"
+              using hq_dist hr_lt_\<delta> by (by100 simp)
+            show ?thesis using hq_seg hq_ne hq_dist hq_ball by (by100 blast)
+          qed
+          have hq3:
+            "q3 \<in> ?S3 - {P} \<and> dist P q3 = r \<and> q3 \<in> ball P \<delta>"
+          proof -
+            let ?t = "r / dist P p3"
+            have ht_nonneg: "0 \<le> ?t" using hr_pos hp3_dist_pos by (by100 simp)
+            have hr_le_dist: "r \<le> dist P p3"
+              unfolding r_def using h\<delta>_p3 h\<delta>_pos by (by100 linarith)
+            have ht_le1: "?t \<le> 1"
+              using hr_le_dist hp3_dist_pos by (by100 simp)
+            have hq_conv: "q3 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p3"
+              unfolding q3_def by (simp add: algebra_simps)
+            have hq_seg: "q3 \<in> ?S3"
+              unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+            have hq_ne: "q3 \<noteq> P"
+            proof
+              assume h_eq: "q3 = P"
+              have "?t *\<^sub>R (p3 - P) = 0"
+                using h_eq unfolding q3_def by (by100 simp)
+              hence "?t = 0"
+                using hp3_ne' by (by100 simp)
+              thus False using hr_pos hp3_dist_pos by (by100 simp)
+            qed
+            have hq_dist: "dist P q3 = r"
+              unfolding q3_def
+              using hp3_dist_pos hr_pos
+              by (simp add: dist_norm norm_minus_commute)
+            have hq_ball: "q3 \<in> ball P \<delta>"
+              using hq_dist hr_lt_\<delta> by (by100 simp)
+            show ?thesis using hq_seg hq_ne hq_dist hq_ball by (by100 blast)
+          qed
+          have hq1_set: "q1 \<in> ?S1 - {P}" using hq1 by (by100 blast)
+          have hq2_set: "q2 \<in> ?S2 - {P}" using hq2 by (by100 blast)
+          have hq3_set: "q3 \<in> ?S3 - {P}" using hq3 by (by100 blast)
+          have hq1_ball: "q1 \<in> ball P \<delta>" using hq1 by (by100 blast)
+          have hq2_ball: "q2 \<in> ball P \<delta>" using hq2 by (by100 blast)
+          have hq3_ball: "q3 \<in> ball P \<delta>" using hq3 by (by100 blast)
+          have hq12: "q1 \<noteq> q2"
+          proof
+            assume h_eq: "q1 = q2"
+            have "q1 \<in> (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta>"
+              using hq1_set hq2_set hq1_ball h_eq by (by100 blast)
+            thus False using hS12_empty by (by100 blast)
+          qed
+          have hq13: "q1 \<noteq> q3"
+          proof
+            assume h_eq: "q1 = q3"
+            have "q1 \<in> (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+              using hq1_set hq3_set hq1_ball h_eq by (by100 blast)
+            thus False using hS13_empty by (by100 blast)
+          qed
+          have hq23: "q2 \<noteq> q3"
+          proof
+            assume h_eq: "q2 = q3"
+            have "q2 \<in> (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+              using hq2_set hq3_set hq2_ball h_eq by (by100 blast)
+            thus False using hS23_empty by (by100 blast)
+          qed
+          show ?thesis
+            using hr_pos hq1 hq2 hq3 hq12 hq13 hq23 by (by100 blast)
+        qed
+        have h_radial_sector_bound:
+          "\<forall>C \<in> components (ball P \<delta> - ?R).
+              card {S \<in> {?S1, ?S2, ?S3}.
+                      (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          sorry
+        show "\<forall>C \<in> components (ball P \<delta> - ?R).
+              card {S \<in> {?S1, ?S2, ?S3}.
+                      (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          using h_radial_sector_bound .
+      qed
+      show ?thesis
+      proof -
+        define Model where
+          "Model = (\<lambda>\<delta> p1 p2 p3.
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P})"
+        have hModel_ex: "\<exists>\<delta>>0. \<exists>p1 p2 p3. Model \<delta> p1 p2 p3"
+          unfolding Model_def using hAM_endpoint_linear_model by (by100 simp)
+        define \<delta> where "\<delta> = (SOME \<delta>. \<delta> > 0 \<and> (\<exists>p1 p2 p3. Model \<delta> p1 p2 p3))"
+        have h\<delta>_pack:
+          "\<delta> > 0 \<and> (\<exists>p1 p2 p3. Model \<delta> p1 p2 p3)"
+          unfolding \<delta>_def by (rule someI_ex[OF hModel_ex])
+        have h\<delta>_pos: "\<delta> > 0" using h\<delta>_pack by (rule conjunct1)
+        have h\<delta>_rest: "\<exists>p1 p2 p3. Model \<delta> p1 p2 p3"
+          using h\<delta>_pack by (rule conjunct2)
+        define p1 where "p1 = (SOME p1. \<exists>p2 p3. Model \<delta> p1 p2 p3)"
+        have hp1_rest: "\<exists>p2 p3. Model \<delta> p1 p2 p3"
+          unfolding p1_def by (rule someI_ex[OF h\<delta>_rest])
+        define p2 where "p2 = (SOME p2. \<exists>p3. Model \<delta> p1 p2 p3)"
+        have hp2_rest: "\<exists>p3. Model \<delta> p1 p2 p3"
+          unfolding p2_def by (rule someI_ex[OF hp1_rest])
+        define p3 where "p3 = (SOME p3. Model \<delta> p1 p2 p3)"
+        have hmodel_Model: "Model \<delta> p1 p2 p3"
+          unfolding p3_def by (rule someI_ex[OF hp2_rest])
+        have hmodel:
+            "p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+          using hmodel_Model unfolding Model_def by (by100 simp)
+        have hp1_ne: "p1 \<noteq> P" using hmodel by (fast elim: conjE)
+        have hp2_ne: "p2 \<noteq> P" using hmodel by (fast elim: conjE)
+        have hp3_ne: "p3 \<noteq> P" using hmodel by (fast elim: conjE)
+        have hp1_len: "\<delta> \<le> dist P p1"
+          using hmodel_Model unfolding Model_def by (by100 blast)
+        have hp2_len: "\<delta> \<le> dist P p2"
+          using hmodel_Model unfolding Model_def by (by100 blast)
+        have hp3_len: "\<delta> \<le> dist P p3"
+          using hmodel_Model unfolding Model_def by (by100 blast)
+        have hballE: "ball P \<delta> \<inter> E = {P}" using hmodel by (fast elim: conjE)
+        have hM_model:
+          "ball P \<delta> \<inter> M =
+            ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)"
+          using hmodel by (fast elim: conjE)
+        have hB1_model: "ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1"
+          using hmodel by (fast elim: conjE)
+        have hB2_model: "ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2"
+          using hmodel by (fast elim: conjE)
+        have hB3_model: "ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3"
+          using hmodel by (fast elim: conjE)
+        have hB1_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P}"
+          using hmodel by (fast elim: conjE)
+        have hB2_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P}"
+          using hmodel by (fast elim: conjE)
+        have hB3_int_model:
+          "ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}"
+          using hmodel by (fast elim: conjE)
+        let ?S1 = "closed_segment P p1"
+        let ?S2 = "closed_segment P p2"
+        let ?S3 = "closed_segment P p3"
+        let ?R = "?S1 \<union> ?S2 \<union> ?S3"
+        have hloc_conj:
+          "\<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M = ball P \<delta> \<inter> ?R \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> ?S1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> ?S2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> ?S3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> ?S1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> ?S2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> ?S3 - {P}"
+          using h\<delta>_pos hp1_ne hp2_ne hp3_ne hballE hM_model
+                hB1_model hB2_model hB3_model hB1_int_model hB2_int_model hB3_int_model
+          by (by100 blast)
+        have h_ray_disj:
+          "(?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+           (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {} \<and>
+           (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+        proof -
+          have h1: "\<forall>p1 p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}
+            \<longrightarrow>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+            by (rule spec[OF hAM_endpoint_rays_disjoint])
+          have h2: "\<forall>p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}
+            \<longrightarrow>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+            by (rule spec[OF h1])
+          have h3: "\<forall>p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M =
+              ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P}
+            \<longrightarrow>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}"
+            by (rule spec[OF h2])
+          have h_imp:
+            "\<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            ball P \<delta> \<inter> E = {P} \<and>
+            ball P \<delta> \<inter> M = ball P \<delta> \<inter> ?R \<and>
+            ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> ?S1 \<and>
+            ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> ?S2 \<and>
+            ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> ?S3 \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> ?S1 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> ?S2 - {P} \<and>
+            ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> ?S3 - {P}
+            \<longrightarrow>
+            (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+            by (rule spec[OF h3])
+          show ?thesis by (rule mp[OF h_imp hloc_conj])
+        qed
+        have hS12_empty: "(?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {}"
+          using h_ray_disj by (by100 blast)
+        have hS13_empty: "(?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+          using h_ray_disj by (by100 blast)
+        have hS23_empty: "(?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+          using h_ray_disj by (by100 blast)
+        have hS1_ne_S2: "?S1 \<noteq> ?S2"
+        proof
+          assume h_eq: "?S1 = ?S2"
+          obtain q where hq: "q \<in> (?S1 - {P}) \<inter> ball P \<delta>"
+            using nondegenerate_segment_meets_ball[OF hp1_ne h\<delta>_pos] by (by100 blast)
+          have hq_S1: "q \<in> ?S1 - {P}" using hq by (by100 blast)
+          have hq_S2: "q \<in> ?S2 - {P}" using hq_S1 h_eq by (by100 simp)
+          have hq_ball: "q \<in> ball P \<delta>" using hq by (by100 blast)
+          have "q \<in> (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta>"
+            using hq_S1 hq_S2 hq_ball by (by100 blast)
+          thus False using hS12_empty by (by100 blast)
+        qed
+        have hS1_ne_S3: "?S1 \<noteq> ?S3"
+        proof
+          assume h_eq: "?S1 = ?S3"
+          obtain q where hq: "q \<in> (?S1 - {P}) \<inter> ball P \<delta>"
+            using nondegenerate_segment_meets_ball[OF hp1_ne h\<delta>_pos] by (by100 blast)
+          have hq_S1: "q \<in> ?S1 - {P}" using hq by (by100 blast)
+          have hq_S3: "q \<in> ?S3 - {P}" using hq_S1 h_eq by (by100 simp)
+          have hq_ball: "q \<in> ball P \<delta>" using hq by (by100 blast)
+          have "q \<in> (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+            using hq_S1 hq_S3 hq_ball by (by100 blast)
+          thus False using hS13_empty by (by100 blast)
+        qed
+        have hS2_ne_S3: "?S2 \<noteq> ?S3"
+        proof
+          assume h_eq: "?S2 = ?S3"
+          obtain q where hq: "q \<in> (?S2 - {P}) \<inter> ball P \<delta>"
+            using nondegenerate_segment_meets_ball[OF hp2_ne h\<delta>_pos] by (by100 blast)
+          have hq_S2: "q \<in> ?S2 - {P}" using hq by (by100 blast)
+          have hq_S3: "q \<in> ?S3 - {P}" using hq_S2 h_eq by (by100 simp)
+          have hq_ball: "q \<in> ball P \<delta>" using hq by (by100 blast)
+          have "q \<in> (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+            using hq_S2 hq_S3 hq_ball by (by100 blast)
+          thus False using hS23_empty by (by100 blast)
+        qed
+        have hsector:
+          "\<forall>C \<in> components (ball P \<delta> - ?R).
+                card {S \<in> {?S1, ?S2, ?S3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          using hAM_three_ray_sector_bound h\<delta>_pos hp1_ne hp2_ne hp3_ne
+                hp1_len hp2_len hp3_len hS12_empty hS13_empty hS23_empty
+          by (by100 blast)
+        have hlocal_compl: "ball P \<delta> - M = ball P \<delta> - ?R"
+        proof
+          show "ball P \<delta> - M \<subseteq> ball P \<delta> - ?R"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> - M"
+            have hx_ball: "x \<in> ball P \<delta>" using hx by (by100 blast)
+            have hx_notM: "x \<notin> M" using hx by (by100 blast)
+            have hx_notR: "x \<notin> ?R"
+            proof
+              assume hxR: "x \<in> ?R"
+              have "x \<in> ball P \<delta> \<inter> ?R" using hx_ball hxR by (by100 blast)
+              hence "x \<in> ball P \<delta> \<inter> M" using hM_model by (by100 simp)
+              thus False using hx_notM by (by100 blast)
+            qed
+            show "x \<in> ball P \<delta> - ?R" using hx_ball hx_notR by (by100 blast)
+          qed
+          show "ball P \<delta> - ?R \<subseteq> ball P \<delta> - M"
+          proof
+            fix x assume hx: "x \<in> ball P \<delta> - ?R"
+            have hx_ball: "x \<in> ball P \<delta>" using hx by (by100 blast)
+            have hx_notR: "x \<notin> ?R" using hx by (by100 blast)
+            have hx_notM: "x \<notin> M"
+            proof
+              assume hxM: "x \<in> M"
+              have "x \<in> ball P \<delta> \<inter> M" using hx_ball hxM by (by100 blast)
+              hence "x \<in> ball P \<delta> \<inter> ?R" using hM_model by (by100 simp)
+              thus False using hx_notR by (by100 blast)
+            qed
+            show "x \<in> ball P \<delta> - M" using hx_ball hx_notM by (by100 blast)
+          qed
+        qed
+        show ?thesis
+        proof (intro exI[where x=\<delta>] conjI ballI)
+          show "\<delta> > 0" using h\<delta>_pos .
+          fix C
+          assume hC: "C \<in> components (ball P \<delta> - M)"
+          let ?TouchB = "{Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+          let ?TouchS = "{S \<in> {?S1, ?S2, ?S3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+          let ?f = "\<lambda>Bi. if Bi = B1 then ?S1 else if Bi = B2 then ?S2 else ?S3"
+          have hC_R: "C \<in> components (ball P \<delta> - ?R)"
+            using hC hlocal_compl by (by100 simp)
+          have hcardS: "card ?TouchS \<le> 2"
+            using hsector hC_R by (by100 blast)
+          have hfinS: "finite ?TouchS" by (by100 simp)
+          have hfinB: "finite ?TouchB" by (by100 simp)
+          have hB1_touch: "B1 \<in> ?TouchB \<Longrightarrow> ?S1 \<in> ?TouchS"
+          proof -
+            assume hB1T: "B1 \<in> ?TouchB"
+            have hne: "geotop_arc_interior B1 E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hB1T by (by100 simp)
+            obtain x where hx_int: "x \<in> geotop_arc_interior B1 E"
+              and hx_ball: "x \<in> ball P \<delta>" and hx_cl: "x \<in> closure C"
+              using hne by (by100 blast)
+            have hx_model: "x \<in> ?S1 - {P}"
+              using hx_int hx_ball hB1_int_model by (by100 blast)
+            have "(?S1 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hx_model hx_ball hx_cl by (by100 blast)
+            thus ?thesis by (by100 simp)
+          qed
+          have hB2_touch: "B2 \<in> ?TouchB \<Longrightarrow> ?S2 \<in> ?TouchS"
+          proof -
+            assume hB2T: "B2 \<in> ?TouchB"
+            have hne: "geotop_arc_interior B2 E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hB2T by (by100 simp)
+            obtain x where hx_int: "x \<in> geotop_arc_interior B2 E"
+              and hx_ball: "x \<in> ball P \<delta>" and hx_cl: "x \<in> closure C"
+              using hne by (by100 blast)
+            have hx_model: "x \<in> ?S2 - {P}"
+              using hx_int hx_ball hB2_int_model by (by100 blast)
+            have "(?S2 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hx_model hx_ball hx_cl by (by100 blast)
+            thus ?thesis by (by100 simp)
+          qed
+          have hB3_touch: "B3 \<in> ?TouchB \<Longrightarrow> ?S3 \<in> ?TouchS"
+          proof -
+            assume hB3T: "B3 \<in> ?TouchB"
+            have hne: "geotop_arc_interior B3 E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hB3T by (by100 simp)
+            obtain x where hx_int: "x \<in> geotop_arc_interior B3 E"
+              and hx_ball: "x \<in> ball P \<delta>" and hx_cl: "x \<in> closure C"
+              using hne by (by100 blast)
+            have hx_model: "x \<in> ?S3 - {P}"
+              using hx_int hx_ball hB3_int_model by (by100 blast)
+            have "(?S3 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hx_model hx_ball hx_cl by (by100 blast)
+            thus ?thesis by (by100 simp)
+          qed
+          have hinj_all: "inj_on ?f {B1, B2, B3}"
+            unfolding inj_on_def
+            using h_B1_ne_B2 h_B1_ne_B3 h_B2_ne_B3 hS1_ne_S2 hS1_ne_S3 hS2_ne_S3
+            by (by100 auto)
+          have hTouchB_sub: "?TouchB \<subseteq> {B1, B2, B3}"
+          proof
+            fix Bi
+            assume "Bi \<in> ?TouchB"
+            thus "Bi \<in> {B1, B2, B3}" by (by100 simp)
+          qed
+          have hinj_touch: "inj_on ?f ?TouchB"
+            by (rule inj_on_subset[OF hinj_all hTouchB_sub])
+          have himg_sub: "?f ` ?TouchB \<subseteq> ?TouchS"
+          proof
+            fix S
+            assume hS: "S \<in> ?f ` ?TouchB"
+            obtain Bi where hBiT: "Bi \<in> ?TouchB" and hS_eq: "S = ?f Bi"
+              using hS by (by100 blast)
+            have hBi_cases: "Bi = B1 \<or> Bi = B2 \<or> Bi = B3"
+              using hBiT by (by100 simp)
+            show "S \<in> ?TouchS"
+              using hBi_cases hS_eq hB1_touch hB2_touch hB3_touch hBiT by (by100 auto)
+          qed
+          have hcard_img: "card (?f ` ?TouchB) = card ?TouchB"
+            by (rule card_image[OF hinj_touch])
+          have hcard_img_le: "card (?f ` ?TouchB) \<le> card ?TouchS"
+            by (rule card_mono[OF hfinS himg_sub])
+          show "card ?TouchB \<le> 2"
+            using hcard_img hcard_img_le hcardS by (by100 linarith)
+        qed
+      qed
+    qed
     \<comment> \<open>Sub-claim AM3: from AM2, U intersects some sector C; the frontier
       of U near P is contained in closure C \<inter> M, which hits at most 2
       of the Bi. The remaining Bi has neighborhood points missing
@@ -7141,7 +8849,207 @@ proof -
     have hAM_U_local_misses_one:
       "\<exists>\<delta>>0. \<exists>Bi \<in> {B1, B2, B3}.
           geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> frontier U = {}"
-      sorry
+    proof -
+      have h_sector_pack:
+        "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M).
+            C \<subseteq> U \<and>
+            (\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C) \<and>
+            card {Bi \<in> {B1, B2, B3}.
+                    geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+      proof -
+        obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+          and h\<delta>_sectors:
+            "\<forall>C \<in> components (ball P \<delta> - M).
+                card {Bi \<in> {B1, B2, B3}.
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          using hAM_local_sectors by (by100 blast)
+        have hE_sub_B1: "E \<subseteq> B1"
+          using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have hP_fr: "P \<in> frontier U"
+          using hP_E hE_sub_B1 hB1_fr by (by100 blast)
+        have hP_cl: "P \<in> closure U"
+          using hP_fr unfolding Elementary_Topology.frontier_def by (by100 blast)
+        have h_ball_meets_U: "ball P \<delta> \<inter> U \<noteq> {}"
+        proof -
+          have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
+          have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
+          have "U \<inter> ball P \<delta> \<noteq> {}"
+            using hP_cl closure_iff_nhds_not_empty[of P U] h_ball_open hP_ball
+            by (by100 blast)
+          thus ?thesis by (by100 blast)
+        qed
+        obtain u where hu_ball: "u \<in> ball P \<delta>" and huU: "u \<in> U"
+          using h_ball_meets_U by (by100 blast)
+        have hU_subM: "U \<subseteq> UNIV - M"
+          using hU in_components_subset by (by100 blast)
+        have hu_not_M: "u \<notin> M" using huU hU_subM by (by100 blast)
+        have hu_local: "u \<in> ball P \<delta> - M" using hu_ball hu_not_M by (by100 blast)
+        define C where "C = connected_component_set (ball P \<delta> - M) u"
+        have hC_comp: "C \<in> components (ball P \<delta> - M)"
+          unfolding C_def using hu_local componentsI by metis
+        have hC_conn: "connected C"
+          unfolding C_def by (by100 simp)
+        have hC_sub_local: "C \<subseteq> ball P \<delta> - M"
+          unfolding C_def using connected_component_subset by (by100 blast)
+        have hC_sub_global: "C \<subseteq> UNIV - M"
+          using hC_sub_local by (by100 blast)
+        have huC: "u \<in> C"
+          unfolding C_def using hu_local by (by100 simp)
+        have hU_eq: "U = connected_component_set (UNIV - M) u"
+          by (rule component_eq_connected_component_set[OF hU huU])
+        have hC_sub_U: "C \<subseteq> U"
+          unfolding hU_eq using hC_conn hC_sub_global huC
+          using connected_component_maximal by (by100 blast)
+        have hC_touch:
+          "card {Bi \<in> {B1, B2, B3}.
+                    geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          using h\<delta>_sectors hC_comp by (by100 blast)
+        \<comment> \<open>Figure 2.6 local-sector uniqueness: after shrinking around the
+          endpoint, the global component \<open>U\<close> occupies the single local
+          sector \<open>C\<close> of \<open>ball P \<delta> - M\<close>.\<close>
+        have hC_local_U:
+          "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
+          sorry
+        show ?thesis using h\<delta>_pos hC_comp hC_sub_U hC_local_U hC_touch by (by100 blast)
+      qed
+      obtain \<delta> C where h\<delta>_pos: "\<delta> > 0"
+        and hC_comp: "C \<in> components (ball P \<delta> - M)"
+        and hC_sub_U: "C \<subseteq> U"
+        and hC_local_U: "\<exists>\<eta>>0. ball P \<eta> \<inter> U \<subseteq> C"
+        and hC_touch_le:
+          "card {Bi \<in> {B1, B2, B3}.
+                    geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+        using h_sector_pack by (by100 blast)
+      let ?Touch = "{Bi \<in> {B1, B2, B3}.
+                    geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+      have h_missing_arc:
+        "\<exists>Bi \<in> {B1, B2, B3}. Bi \<notin> ?Touch"
+      proof (rule ccontr)
+        assume hnot: "\<not> (\<exists>Bi\<in>{B1, B2, B3}. Bi \<notin> ?Touch)"
+        have hsub: "?Touch \<subseteq> {B1, B2, B3}" by (by100 blast)
+        have hsup: "{B1, B2, B3} \<subseteq> ?Touch"
+          using hnot by (by100 blast)
+        have heq: "?Touch = {B1, B2, B3}" using hsub hsup by (by100 blast)
+        have hcard3: "card {B1, B2, B3} = 3"
+          using h_B1_ne_B2 h_B1_ne_B3 h_B2_ne_B3 by (by100 simp)
+        have "card ?Touch = 3" using heq hcard3 by (by100 simp)
+        thus False using hC_touch_le by (by100 simp)
+      qed
+      obtain Bi where hBi_set: "Bi \<in> {B1, B2, B3}" and hBi_not_touch: "Bi \<notin> ?Touch"
+        using h_missing_arc by (by100 blast)
+      have h_frontier_near_sector:
+        "\<exists>\<delta>'>0. ball P \<delta>' \<inter> frontier U \<subseteq> closure C"
+      proof -
+        obtain \<eta> where h\<eta>_pos: "\<eta> > 0"
+          and h\<eta>_U_C: "ball P \<eta> \<inter> U \<subseteq> C"
+          using hC_local_U by (by100 blast)
+        define \<delta>' where "\<delta>' = \<eta> / 2"
+        have h\<delta>'_pos: "\<delta>' > 0"
+          unfolding \<delta>'_def using h\<eta>_pos by (by100 simp)
+        have h\<delta>'_lt_\<eta>: "\<delta>' < \<eta>"
+          unfolding \<delta>'_def using h\<eta>_pos by (by100 simp)
+        have hE_sub_B1: "E \<subseteq> B1"
+          using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have hP_fr: "P \<in> frontier U"
+          using hP_E hE_sub_B1 hB1_fr by (by100 blast)
+        have hP_cl: "P \<in> closure U"
+          using hP_fr unfolding Elementary_Topology.frontier_def by (by100 blast)
+        have hfront_sub: "ball P \<delta>' \<inter> frontier U \<subseteq> closure C"
+        proof
+          fix y
+          assume hy: "y \<in> ball P \<delta>' \<inter> frontier U"
+          have hy_ball: "y \<in> ball P \<delta>'" using hy by (by100 blast)
+          have hy_fr: "y \<in> frontier U" using hy by (by100 blast)
+          have hy_clU: "y \<in> closure U"
+            using hy_fr unfolding Elementary_Topology.frontier_def by (by100 blast)
+          have hy_dist: "dist P y < \<delta>'" using hy_ball by (by100 simp)
+          have hy_dist_eta: "dist P y < \<eta>"
+            using hy_dist h\<delta>'_lt_\<eta> by (by100 linarith)
+          show "y \<in> closure C"
+          proof (subst closure_approachable, intro allI impI)
+            fix e :: real
+            assume he_pos: "e > 0"
+            define r where "r = min e ((\<eta> - dist P y) / 2)"
+            have hr_pos: "r > 0"
+              unfolding r_def using he_pos hy_dist_eta by (by100 simp)
+            have hr_le_e: "r \<le> e" unfolding r_def by (by100 simp)
+            have hr_le_eta: "r \<le> (\<eta> - dist P y) / 2"
+              unfolding r_def by (rule min.cobounded2)
+            have h_meet: "ball y r \<inter> U \<noteq> {}"
+            proof -
+              have h_ball_open: "open (ball y r)" by (by100 simp)
+              have hy_in_ball: "y \<in> ball y r" using hr_pos by (by100 simp)
+              have "U \<inter> ball y r \<noteq> {}"
+                using hy_clU closure_iff_nhds_not_empty[of y U]
+                      h_ball_open hy_in_ball by (by100 blast)
+              thus ?thesis by (by100 blast)
+            qed
+            obtain u where hu_ball_y: "u \<in> ball y r" and huU: "u \<in> U"
+              using h_meet by (by100 blast)
+            have hdyu: "dist y u < r" using hu_ball_y by (by100 simp)
+            have hP_u_lt_eta: "dist P u < \<eta>"
+            proof -
+              have htri: "dist P u \<le> dist P y + dist y u"
+                by (rule dist_triangle)
+              have hlt1: "dist P y + dist y u < dist P y + r"
+                using hdyu by (by100 linarith)
+              have hle2: "dist P y + r \<le> dist P y + (\<eta> - dist P y) / 2"
+                using hr_le_eta by (by100 linarith)
+              have hlt3: "dist P y + (\<eta> - dist P y) / 2 < \<eta>"
+              proof -
+                have hdiff_pos: "0 < (\<eta> - dist P y) / 2"
+                  using hy_dist_eta by (by100 simp)
+                have h_eq: "dist P y + (\<eta> - dist P y) / 2
+                           = \<eta> - (\<eta> - dist P y) / 2"
+                  by argo
+                have "\<eta> - (\<eta> - dist P y) / 2 < \<eta>"
+                  using hdiff_pos by (by100 simp)
+                thus ?thesis
+                  by (subst h_eq)
+              qed
+              show ?thesis using htri hlt1 hle2 hlt3 by (by100 linarith)
+            qed
+            have hu_ball_P: "u \<in> ball P \<eta>" using hP_u_lt_eta by (by100 simp)
+            have huC: "u \<in> C" using hu_ball_P huU h\<eta>_U_C by (by100 blast)
+            have h_uy: "dist u y = dist y u" by (rule dist_commute)
+            have hdist_e: "dist u y < e"
+              using hdyu hr_le_e h_uy by (by100 linarith)
+            show "\<exists>z\<in>C. dist z y < e"
+              using huC hdist_e by (by100 blast)
+          qed
+        qed
+        show ?thesis using h\<delta>'_pos hfront_sub by (by100 blast)
+      qed
+      obtain \<delta>' where h\<delta>'_pos: "\<delta>' > 0"
+        and h\<delta>'_frontier: "ball P \<delta>' \<inter> frontier U \<subseteq> closure C"
+        using h_frontier_near_sector by (by100 blast)
+      define \<delta>0 where "\<delta>0 = min \<delta> \<delta>'"
+      have h\<delta>0_pos: "\<delta>0 > 0"
+        unfolding \<delta>0_def using h\<delta>_pos h\<delta>'_pos by (by100 simp)
+      have hmiss:
+        "geotop_arc_interior Bi E \<inter> ball P \<delta>0 \<inter> frontier U = {}"
+      proof (rule equals0I)
+        fix y
+        assume hy: "y \<in> geotop_arc_interior Bi E \<inter> ball P \<delta>0 \<inter> frontier U"
+        have hy_int: "y \<in> geotop_arc_interior Bi E" using hy by (by100 blast)
+        have hy_ball0: "y \<in> ball P \<delta>0" using hy by (by100 blast)
+        have hy_fr: "y \<in> frontier U" using hy by (by100 blast)
+        have h\<delta>0_le_\<delta>: "\<delta>0 \<le> \<delta>" unfolding \<delta>0_def by (by100 simp)
+        have h\<delta>0_le_\<delta>': "\<delta>0 \<le> \<delta>'" unfolding \<delta>0_def by (by100 simp)
+        have hy_ball: "y \<in> ball P \<delta>"
+          using hy_ball0 h\<delta>0_le_\<delta> by (by100 auto)
+        have hy_ball': "y \<in> ball P \<delta>'"
+          using hy_ball0 h\<delta>0_le_\<delta>' by (by100 auto)
+        have hy_clC: "y \<in> closure C"
+          using hy_ball' hy_fr h\<delta>'_frontier by (by100 blast)
+        have hBi_touch: "Bi \<in> ?Touch"
+          using hBi_set hy_int hy_ball hy_clC by (by100 blast)
+        have hFalse: False using hBi_touch hBi_not_touch by (by100 simp)
+        show False by (rule hFalse)
+      qed
+      show ?thesis
+        using h\<delta>0_pos hBi_set hmiss by (by100 blast)
+    qed
     \<comment> \<open>Sub-claim AM3b: that sector's closure misses at least one Bi locally,
       hence so does the frontier of U near P; so Bi \<not>\<subseteq> frontier U.\<close>
     have hAM_U_misses_one:
@@ -7613,7 +9521,115 @@ proof -
           unbounded component has frontier exactly \<open>i \<union> j\<close>.\<close>
         have h_not_exterior:
           "\<not> geotop_arc_interior k E \<subseteq> geotop_polygon_exterior (i \<union> j)"
-          sorry
+        proof
+          assume hk_ext: "geotop_arc_interior k E \<subseteq> geotop_polygon_exterior (i \<union> j)"
+          \<comment> \<open>Moise, geotop.tex:637--647 / Figure 2.7: near an endpoint,
+            the unbounded component side of the frontier polygon and the
+            third arc are in different local sectors of the complement of
+            \<open>i \<union> j\<close>. Thus the third arc cannot lie in the polygon exterior.\<close>
+          have hU_ext_ij: "U \<subseteq> geotop_polygon_exterior (i \<union> j)"
+            by (rule theta_graph_unbounded_in_pair_exterior
+                [OF h\<theta> hU_comp hU_unbd hi hj hij_ne])
+          have h_endpoint_local_separation:
+            "\<exists>P0 \<delta>0. P0 \<in> E \<and> \<delta>0 > 0 \<and>
+                (ball P0 \<delta>0 \<inter> U) \<noteq> {} \<and>
+                (ball P0 \<delta>0 \<inter> geotop_arc_interior k E) \<noteq> {} \<and>
+                \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                      ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                      ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+          proof -
+            have hE_ne: "E \<noteq> {}"
+            proof -
+              have hE_card: "card E = 2"
+                using hkE unfolding geotop_arc_endpoints_def by (by100 blast)
+              show ?thesis using hE_card by (by100 force)
+            qed
+            obtain P0 where hP0E: "P0 \<in> E" using hE_ne by (by100 blast)
+            have hE_sub_i: "E \<subseteq> i"
+              using hiE unfolding geotop_arc_endpoints_def by (by100 blast)
+            have hP0_i: "P0 \<in> i" using hP0E hE_sub_i by (by100 blast)
+            have hP0_frU: "P0 \<in> frontier U"
+              using hP0_i hfrU by (by100 blast)
+            have hP0_cl_U: "P0 \<in> closure U"
+              using hP0_frU unfolding Elementary_Topology.frontier_def by (by100 blast)
+            have hE_sub_k: "E \<subseteq> k"
+              using hkE unfolding geotop_arc_endpoints_def by (by100 blast)
+            have hP0_k: "P0 \<in> k" using hP0E hE_sub_k by (by100 blast)
+            have h_cl_int_k: "closure (geotop_arc_interior k E) = k"
+              by (rule arc_closure_interior_eq_arc[OF hkE])
+            have hP0_cl_kint: "P0 \<in> closure (geotop_arc_interior k E)"
+              using hP0_k h_cl_int_k by (by100 simp)
+            have h_local_sector_separation:
+              "\<exists>\<delta>0>0.
+                 \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                       ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                       ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+              sorry
+            obtain \<delta>0 where h\<delta>0_pos: "\<delta>0 > 0"
+              and hsep:
+                "\<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                       ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                       ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+              using h_local_sector_separation by (by100 blast)
+            have hU_meet: "ball P0 \<delta>0 \<inter> U \<noteq> {}"
+            proof -
+              have h_ball_open: "open (ball P0 \<delta>0)" by (by100 simp)
+              have hP0_ball: "P0 \<in> ball P0 \<delta>0" using h\<delta>0_pos by (by100 simp)
+              have "U \<inter> ball P0 \<delta>0 \<noteq> {}"
+                using hP0_cl_U closure_iff_nhds_not_empty[of P0 U]
+                      h_ball_open hP0_ball by (by100 blast)
+              thus ?thesis by (by100 blast)
+            qed
+            have hk_meet: "ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<noteq> {}"
+            proof -
+              have h_ball_open: "open (ball P0 \<delta>0)" by (by100 simp)
+              have hP0_ball: "P0 \<in> ball P0 \<delta>0" using h\<delta>0_pos by (by100 simp)
+              have "geotop_arc_interior k E \<inter> ball P0 \<delta>0 \<noteq> {}"
+                using hP0_cl_kint closure_iff_nhds_not_empty
+                      [of P0 "geotop_arc_interior k E"] h_ball_open hP0_ball
+                by (by100 blast)
+              thus ?thesis by (by100 blast)
+            qed
+            show ?thesis using hP0E h\<delta>0_pos hU_meet hk_meet hsep by (by100 blast)
+          qed
+          obtain P0 \<delta>0 where hlocal0:
+            "P0 \<in> E \<and> \<delta>0 > 0 \<and>
+              ball P0 \<delta>0 \<inter> U \<noteq> {} \<and>
+              ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<noteq> {} \<and>
+              \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                    ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                    ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+            using h_endpoint_local_separation by blast
+          have hsep0:
+            "\<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                    ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                    ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+            using hlocal0 by (by100 blast)
+          have h_same_exterior_component:
+            "\<exists>C \<in> components (UNIV - (i \<union> j)).
+                ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C"
+          proof -
+            have h_sph_ij:
+              "geotop_is_n_sphere (i \<union> j)
+                (subspace_topology UNIV geotop_euclidean_topology (i \<union> j)) 1"
+              using h_poly_ij unfolding geotop_is_polygon_def by (by100 blast)
+            have h_ext_comp:
+              "geotop_polygon_exterior (i \<union> j) \<in> components (UNIV - (i \<union> j))"
+              by (rule polygon_exterior_is_HOL_component[OF h_sph_ij])
+            have hU_ball_sub:
+              "ball P0 \<delta>0 \<inter> U \<subseteq> geotop_polygon_exterior (i \<union> j)"
+              using hU_ext_ij by (by100 blast)
+            have hk_ball_sub:
+              "ball P0 \<delta>0 \<inter> geotop_arc_interior k E
+                \<subseteq> geotop_polygon_exterior (i \<union> j)"
+              using hk_ext by (by100 blast)
+            show ?thesis
+              using h_ext_comp hU_ball_sub hk_ball_sub by (by100 blast)
+          qed
+          show False
+            using hsep0 h_same_exterior_component by (by100 blast)
+        qed
         show ?thesis using h_side h_not_exterior by (by100 blast)
       qed
       show ?thesis
@@ -7649,6 +9665,264 @@ proof -
       for k
     have hMU_exists_Middle: "\<exists>k. Middle k"
       using hMU_exists unfolding Middle_def by (by100 blast)
+    have hB1_ne_B2: "B1 \<noteq> B2"
+    proof
+      assume h_eq: "B1 = B2"
+      have "geotop_arc_interior B1 E = {}"
+        using h_int12 h_eq by (by100 blast)
+      thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+    qed
+    have hB1_ne_B3: "B1 \<noteq> B3"
+    proof
+      assume h_eq: "B1 = B3"
+      have "geotop_arc_interior B1 E = {}"
+        using h_int13 h_eq by (by100 blast)
+      thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+    qed
+    have hB2_ne_B3: "B2 \<noteq> B3"
+    proof
+      assume h_eq: "B2 = B3"
+      have "geotop_arc_interior B2 E = {}"
+        using h_int23 h_eq by (by100 blast)
+      thus False using arc_interior_nonempty[OF hE2] by (by100 blast)
+    qed
+    have hB2_ne_B1: "B2 \<noteq> B1"
+      using hB1_ne_B2 by (by100 blast)
+    have hB3_ne_B1: "B3 \<noteq> B1"
+      using hB1_ne_B3 by (by100 blast)
+    have hB3_ne_B2: "B3 \<noteq> B2"
+      using hB2_ne_B3 by (by100 blast)
+    have hMiddle_B1_inside:
+      "Middle B1 \<Longrightarrow> geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B2 \<union> B3)"
+    proof -
+      assume hMid: "Middle B1"
+      have hMid_eq:
+        "Middle B1 = (B1 \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i, j} = {B1, B2, B3} - {B1} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+        unfolding Middle_def by (by100 simp)
+      have hex: "\<exists>i j. {i, j} = {B1, B2, B3} - {B1} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hMid hMid_eq by (by100 simp)
+      from hex obtain i where hex_i:
+        "\<exists>j. {i, j} = {B1, B2, B3} - {B1} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      from hex_i obtain j where hconj:
+        "{i, j} = {B1, B2, B3} - {B1} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      have hp: "{i, j} = {B1, B2, B3} - {B1}"
+        using hconj by (rule conjunct1)
+      have hconj_tail1: "i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj by (rule conjunct2)
+      have hconj_tail2: "geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail1 by (rule conjunct2)
+      have hsub: "geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail2 by (rule conjunct2)
+      have hdiff: "{B1, B2, B3} - {B1} = {B2, B3}"
+      proof
+        show "{B1, B2, B3} - {B1} \<subseteq> {B2, B3}"
+        proof
+          fix X
+          assume hX: "X \<in> {B1, B2, B3} - {B1}"
+          have hXin: "X = B1 \<or> X = B2 \<or> X = B3"
+            using hX by (by100 simp)
+          have hXne: "X \<noteq> B1"
+            using hX by (by100 simp)
+          show "X \<in> {B2, B3}"
+            using hXin hXne by (by100 blast)
+        qed
+        show "{B2, B3} \<subseteq> {B1, B2, B3} - {B1}"
+        proof
+          fix X
+          assume hX: "X \<in> {B2, B3}"
+          show "X \<in> {B1, B2, B3} - {B1}"
+            using hX hB2_ne_B1 hB3_ne_B1 by (by100 blast)
+        qed
+      qed
+      have hpair: "{i, j} = {B2, B3}"
+        using hp hdiff by (by100 simp)
+      have hun: "i \<union> j = B2 \<union> B3"
+      proof -
+        have h1: "i \<union> j = \<Union>{i, j}" by (by100 simp)
+        have h2: "\<Union>{i, j} = \<Union>{B2, B3}" using hpair by (by100 simp)
+        have h3: "\<Union>{B2, B3} = B2 \<union> B3" by (by100 simp)
+        have h12: "i \<union> j = \<Union>{B2, B3}"
+        proof -
+          have "i \<union> j = \<Union>{i, j}" by (rule h1)
+          also have "\<dots> = \<Union>{B2, B3}" by (rule h2)
+          finally show ?thesis .
+        qed
+        show ?thesis
+        proof -
+          have "i \<union> j = \<Union>{B2, B3}" by (rule h12)
+          also have "\<dots> = B2 \<union> B3" by (rule h3)
+          finally show ?thesis .
+        qed
+      qed
+      show ?thesis using hsub hun by (by100 simp)
+    qed
+    have hMiddle_B2_inside:
+      "Middle B2 \<Longrightarrow> geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+    proof -
+      assume hMid: "Middle B2"
+      have hMid_eq:
+        "Middle B2 = (B2 \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i, j} = {B1, B2, B3} - {B2} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+        unfolding Middle_def by (by100 simp)
+      have hex: "\<exists>i j. {i, j} = {B1, B2, B3} - {B2} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hMid hMid_eq by (by100 simp)
+      from hex obtain i where hex_i:
+        "\<exists>j. {i, j} = {B1, B2, B3} - {B2} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      from hex_i obtain j where hconj:
+        "{i, j} = {B1, B2, B3} - {B2} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      have hp: "{i, j} = {B1, B2, B3} - {B2}"
+        using hconj by (rule conjunct1)
+      have hconj_tail1: "i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj by (rule conjunct2)
+      have hconj_tail2: "geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail1 by (rule conjunct2)
+      have hsub: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail2 by (rule conjunct2)
+      have hdiff: "{B1, B2, B3} - {B2} = {B1, B3}"
+      proof
+        show "{B1, B2, B3} - {B2} \<subseteq> {B1, B3}"
+        proof
+          fix X
+          assume hX: "X \<in> {B1, B2, B3} - {B2}"
+          have hXin: "X = B1 \<or> X = B2 \<or> X = B3"
+            using hX by (by100 simp)
+          have hXne: "X \<noteq> B2"
+            using hX by (by100 simp)
+          show "X \<in> {B1, B3}"
+            using hXin hXne by (by100 blast)
+        qed
+        show "{B1, B3} \<subseteq> {B1, B2, B3} - {B2}"
+        proof
+          fix X
+          assume hX: "X \<in> {B1, B3}"
+          show "X \<in> {B1, B2, B3} - {B2}"
+            using hX hB1_ne_B2 hB3_ne_B2 by (by100 blast)
+        qed
+      qed
+      have hpair: "{i, j} = {B1, B3}"
+        using hp hdiff by (by100 simp)
+      have hun: "i \<union> j = B1 \<union> B3"
+      proof -
+        have h1: "i \<union> j = \<Union>{i, j}" by (by100 simp)
+        have h2: "\<Union>{i, j} = \<Union>{B1, B3}" using hpair by (by100 simp)
+        have h3: "\<Union>{B1, B3} = B1 \<union> B3" by (by100 simp)
+        have h12: "i \<union> j = \<Union>{B1, B3}"
+        proof -
+          have "i \<union> j = \<Union>{i, j}" by (rule h1)
+          also have "\<dots> = \<Union>{B1, B3}" by (rule h2)
+          finally show ?thesis .
+        qed
+        show ?thesis
+        proof -
+          have "i \<union> j = \<Union>{B1, B3}" by (rule h12)
+          also have "\<dots> = B1 \<union> B3" by (rule h3)
+          finally show ?thesis .
+        qed
+      qed
+      show ?thesis using hsub hun by (by100 simp)
+    qed
+    have hMiddle_B3_inside:
+      "Middle B3 \<Longrightarrow> geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+    proof -
+      assume hMid: "Middle B3"
+      have hMid_eq:
+        "Middle B3 = (B3 \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i, j} = {B1, B2, B3} - {B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+        unfolding Middle_def by (by100 simp)
+      have hex: "\<exists>i j. {i, j} = {B1, B2, B3} - {B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hMid hMid_eq by (by100 simp)
+      from hex obtain i where hex_i:
+        "\<exists>j. {i, j} = {B1, B2, B3} - {B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      from hex_i obtain j where hconj:
+        "{i, j} = {B1, B2, B3} - {B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        by (rule exE)
+      have hp: "{i, j} = {B1, B2, B3} - {B3}"
+        using hconj by (rule conjunct1)
+      have hconj_tail1: "i \<noteq> j \<and> geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj by (rule conjunct2)
+      have hconj_tail2: "geotop_is_polygon (i \<union> j) \<and>
+             geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail1 by (rule conjunct2)
+      have hsub: "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (i \<union> j)"
+        using hconj_tail2 by (rule conjunct2)
+      have hdiff: "{B1, B2, B3} - {B3} = {B1, B2}"
+      proof
+        show "{B1, B2, B3} - {B3} \<subseteq> {B1, B2}"
+        proof
+          fix X
+          assume hX: "X \<in> {B1, B2, B3} - {B3}"
+          have hXin: "X = B1 \<or> X = B2 \<or> X = B3"
+            using hX by (by100 simp)
+          have hXne: "X \<noteq> B3"
+            using hX by (by100 simp)
+          show "X \<in> {B1, B2}"
+            using hXin hXne by (by100 blast)
+        qed
+        show "{B1, B2} \<subseteq> {B1, B2, B3} - {B3}"
+        proof
+          fix X
+          assume hX: "X \<in> {B1, B2}"
+          show "X \<in> {B1, B2, B3} - {B3}"
+            using hX hB1_ne_B3 hB2_ne_B3 by (by100 blast)
+        qed
+      qed
+      have hpair: "{i, j} = {B1, B2}"
+        using hp hdiff by (by100 simp)
+      have hun: "i \<union> j = B1 \<union> B2"
+      proof -
+        have h1: "i \<union> j = \<Union>{i, j}" by (by100 simp)
+        have h2: "\<Union>{i, j} = \<Union>{B1, B2}" using hpair by (by100 simp)
+        have h3: "\<Union>{B1, B2} = B1 \<union> B2" by (by100 simp)
+        have h12: "i \<union> j = \<Union>{B1, B2}"
+        proof -
+          have "i \<union> j = \<Union>{i, j}" by (rule h1)
+          also have "\<dots> = \<Union>{B1, B2}" by (rule h2)
+          finally show ?thesis .
+        qed
+        show ?thesis
+        proof -
+          have "i \<union> j = \<Union>{B1, B2}" by (rule h12)
+          also have "\<dots> = B1 \<union> B2" by (rule h3)
+          finally show ?thesis .
+        qed
+      qed
+      show ?thesis using hsub hun by (by100 simp)
+    qed
     \<comment> \<open>Sub-claim MU2: uniqueness — only one middle is possible.
       Argument: if two arcs Bk1, Bk2 were both middle (each inside the
       polygon of the other two), then Bk1 ⊆ interior(Bk2 \<union> Bother) and
@@ -7662,11 +9936,80 @@ proof -
       them would be accessible from infinity through the complement of that
       polygon, contradicting that it lies in the bounded polygon interior.\<close>
     have hMiddle_no_B1_B2: "\<not> (Middle B1 \<and> Middle B2)"
-      sorry
+    proof
+      assume hMid: "Middle B1 \<and> Middle B2"
+      have hB1_mid: "geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B2 \<union> B3)"
+        using hMid hMiddle_B1_inside by (by100 blast)
+      have hB2_mid: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+        using hMid hMiddle_B2_inside by (by100 blast)
+      show False
+        by (rule theta_two_middle_arcs_contradict
+            [OF hE1 hE2 hE3 h_int12 h_int13 h_int23 h_poly_23 h_poly_13 hB1_mid hB2_mid])
+    qed
     have hMiddle_no_B1_B3: "\<not> (Middle B1 \<and> Middle B3)"
-      sorry
+    proof
+      assume hMid: "Middle B1 \<and> Middle B3"
+      have h_int32: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B2 E = {}"
+        using h_int23 by (by100 blast)
+      have h_poly_32: "geotop_is_polygon (B3 \<union> B2)"
+      proof -
+        have hun: "B3 \<union> B2 = B2 \<union> B3"
+          by (rule Un_commute)
+        show ?thesis using h_poly_23 hun by (by100 simp)
+      qed
+      have hB1_mid_32: "geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B3 \<union> B2)"
+      proof -
+        have hB1_mid: "geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B2 \<union> B3)"
+          using hMid hMiddle_B1_inside by (by100 blast)
+        have hun: "B3 \<union> B2 = B2 \<union> B3"
+          by (rule Un_commute)
+        show ?thesis using hB1_mid hun by (by100 simp)
+      qed
+      have hB3_mid: "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+        using hMid hMiddle_B3_inside by (by100 blast)
+      show False
+        by (rule theta_two_middle_arcs_contradict
+            [OF hE1 hE3 hE2 h_int13 h_int12 h_int32 h_poly_32 h_poly_12 hB1_mid_32 hB3_mid])
+    qed
     have hMiddle_no_B2_B3: "\<not> (Middle B2 \<and> Middle B3)"
-      sorry
+    proof
+      assume hMid: "Middle B2 \<and> Middle B3"
+      have h_int31: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B1 E = {}"
+        using h_int13 by (by100 blast)
+      have h_int21: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B1 E = {}"
+        using h_int12 by (by100 blast)
+      have h_poly_31: "geotop_is_polygon (B3 \<union> B1)"
+      proof -
+        have hun: "B3 \<union> B1 = B1 \<union> B3"
+          by (rule Un_commute)
+        show ?thesis using h_poly_13 hun by (by100 simp)
+      qed
+      have h_poly_21: "geotop_is_polygon (B2 \<union> B1)"
+      proof -
+        have hun: "B2 \<union> B1 = B1 \<union> B2"
+          by (rule Un_commute)
+        show ?thesis using h_poly_12 hun by (by100 simp)
+      qed
+      have hB2_mid_31: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B3 \<union> B1)"
+      proof -
+        have hB2_mid: "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B1 \<union> B3)"
+          using hMid hMiddle_B2_inside by (by100 blast)
+        have hun: "B3 \<union> B1 = B1 \<union> B3"
+          by (rule Un_commute)
+        show ?thesis using hB2_mid hun by (by100 simp)
+      qed
+      have hB3_mid: "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2)"
+        using hMid hMiddle_B3_inside by (by100 blast)
+      have hB3_mid_21: "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B2 \<union> B1)"
+      proof -
+        have hun: "B2 \<union> B1 = B1 \<union> B2"
+          by (rule Un_commute)
+        show ?thesis using hB3_mid hun by (by100 simp)
+      qed
+      show False
+        by (rule theta_two_middle_arcs_contradict
+            [OF hE2 hE3 hE1 h_int23 h_int21 h_int31 h_poly_31 h_poly_21 hB2_mid_31 hB3_mid_21])
+    qed
     have hMiddle_unique: "\<forall>k1 k2. Middle k1 \<and> Middle k2 \<longrightarrow> k1 = k2"
     proof (intro allI impI)
       fix k1 k2
@@ -13815,7 +16158,9 @@ qed
 
 
 
-(* CHUNK_OUT_3PLUS_START *)
+end
+
+(* CHUNK_OUT_3PLUS_START
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
 
 (** from \<S>3 Theorem 1 (geotop.tex:724)
@@ -27227,3 +29572,4 @@ qed
 (* CHUNK_OUT_END *)
 
 end
+*)
