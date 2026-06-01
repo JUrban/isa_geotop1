@@ -4,6 +4,62 @@ begin
 
 section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<close>
 
+lemma geotop_HOL_homeomorphism_imp_top1_homeomorphism_on:
+  fixes X Y :: "'a::real_normed_vector set"
+  assumes hfg: "homeomorphism X Y f g"
+  shows "top1_homeomorphism_on X
+              (subspace_topology UNIV geotop_euclidean_topology X)
+              Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+proof -
+  have hf_cont_HOL: "continuous_on X f"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hg_cont_HOL: "continuous_on Y g"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hf_img_eq: "f ` X = Y"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hg_img_eq: "g ` Y = X"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hfg_id: "\<forall>x\<in>X. g (f x) = x"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hgf_id: "\<forall>y\<in>Y. f (g y) = y"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hf_img: "f ` X \<subseteq> Y" using hf_img_eq by (by100 simp)
+  have hg_img: "g ` Y \<subseteq> X" using hg_img_eq by (by100 simp)
+  have hf_top1: "top1_continuous_map_on X
+                    (subspace_topology UNIV geotop_euclidean_topology X)
+                    Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hf_cont_HOL hf_img])
+  have hg_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X) g"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont_HOL hg_img])
+  have hf_bij: "bij_betw f X Y"
+    by (rule bij_betw_byWitness[where f' = g, OF hfg_id hgf_id hf_img hg_img])
+  have hf_inj: "inj_on f X" using hf_bij unfolding bij_betw_def by (by100 blast)
+  have hg_eq_inv: "\<forall>y\<in>Y. g y = inv_into X f y"
+  proof
+    fix y assume hy: "y \<in> Y"
+    have hgy_in_X: "g y \<in> X" using hg_img_eq hy by (by100 blast)
+    have hfgy: "f (g y) = y" using hgf_id hy by (by100 blast)
+    have "inv_into X f y = g y" by (rule inv_into_f_eq[OF hf_inj hgy_in_X hfgy])
+    thus "g y = inv_into X f y" by (by100 simp)
+  qed
+  have h_invf_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X)
+                    (inv_into X f)"
+    using hg_top1 top1_continuous_map_on_cong[OF hg_eq_inv] by (by100 blast)
+  have h_Teucl: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hTX: "is_topology_on X (subspace_topology UNIV geotop_euclidean_topology X)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl subset_UNIV])
+  have hTY: "is_topology_on Y (subspace_topology UNIV geotop_euclidean_topology Y)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl subset_UNIV])
+  show ?thesis
+    unfolding top1_homeomorphism_on_def
+    using hTX hTY hf_bij hf_top1 h_invf_top1 by (by100 blast)
+qed
+
 (** from \<S>3 Theorem 1 (geotop.tex:724)
     LATEX VERSION: Let \<sigma>^n = v_0 v_1 ... v_n and \<tau>^n = w_0 w_1 ... w_n be simplexes in R^m.
       Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
