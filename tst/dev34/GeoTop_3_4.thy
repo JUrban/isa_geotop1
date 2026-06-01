@@ -67,9 +67,44 @@ proof -
   have hT3_1_vertex_match:
     "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v)"
     using exI[of _ \<phi>] by (by100 blast)
-  \<comment> \<open>Sub-claim T3_1-B: f is simplicial on \<sigma> with image \<tau>.\<close>
+  \<comment> \<open>Sub-claim T3_1-B: there is a simplicial map \<sigma> into \<tau>.
+    The full vertex-matching simplicial homeomorphism remains the combined
+    barycentric-extension claim below.\<close>
   have hT3_1_simplicial:
-    "\<exists>f. geotop_simplicial_on \<sigma> f \<tau>" sorry
+    "\<exists>f. geotop_simplicial_on \<sigma> f \<tau>"
+  proof -
+    have hW_ne: "W \<noteq> {}"
+    proof -
+      obtain m n where hW_fin: "finite W" and hW_card: "card W = n + 1"
+        using hW unfolding geotop_simplex_vertices_def by (by100 blast)
+      show ?thesis using hW_fin hW_card by (by100 fastforce)
+    qed
+    obtain w where hwW: "w \<in> W"
+      using hW_ne by (by100 blast)
+    have h_const_linear: "geotop_linear_on \<sigma> (\<lambda>_. w)"
+    proof -
+      have h_prop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+            (\<lambda>_. w) (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R ((\<lambda>_. w) v))"
+      proof (intro allI impI)
+        fix \<alpha> :: "'a \<Rightarrow> real"
+        assume h\<alpha>: "(\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1"
+        have hsum: "sum \<alpha> V = 1" using h\<alpha> by (by100 blast)
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R w) = (sum \<alpha> V) *\<^sub>R w"
+          by (rule scaleR_left.sum[symmetric])
+        also have "\<dots> = w"
+          using hsum by (by100 simp)
+        finally show "(\<lambda>_. w) (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) =
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R ((\<lambda>_. w) v))"
+          by (by100 simp)
+      qed
+      show ?thesis
+        unfolding geotop_linear_on_def using hV h_prop by (by100 blast)
+    qed
+    have h_const_simp: "geotop_simplicial_on \<sigma> (\<lambda>_. w) \<tau>"
+      unfolding geotop_simplicial_on_def
+      using hV hW hwW h_const_linear by (by100 blast)
+    show ?thesis using h_const_simp by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim T3_1-C: f is a homeomorphism \<sigma> \<leftrightarrow> \<tau>.\<close>
   have hT3_1_homeo:
     "\<exists>f. top1_homeomorphism_on \<sigma>
