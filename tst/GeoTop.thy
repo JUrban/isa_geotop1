@@ -3481,6 +3481,38 @@ proof -
             using hC_comp h_local_open open_components by (by100 blast)
           have hC_path: "path_connected C"
             by (rule component_of_open_path_connected[OF h_local_open hC_comp])
+          have hP_R: "P \<in> ?R"
+            by (by100 simp)
+          have hP_not_C: "P \<notin> C"
+            using hC_disj_R hP_R by (by100 blast)
+          define \<rho> where "\<rho> = (\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P))"
+          have h\<rho>_cont: "continuous_on C \<rho>"
+          proof -
+            show ?thesis
+              unfolding \<rho>_def
+              apply (intro continuous_intros)
+              using hP_not_C
+              by (by100 auto)
+          qed
+          have h\<rho>_sphere: "\<rho> ` C \<subseteq> sphere P r"
+          proof
+            fix y assume hy: "y \<in> \<rho> ` C"
+            obtain x where hxC: "x \<in> C" and hy_eq: "y = \<rho> x"
+              using hy by (by100 blast)
+            have hx_ne_P: "x \<noteq> P"
+              using hxC hP_not_C by (by100 blast)
+            have hx_dist_pos: "dist P x > 0"
+              using hx_ne_P by (by100 simp)
+            have hr_pos: "r > 0"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hdist: "dist P (\<rho> x) = r"
+              unfolding \<rho>_def using hx_dist_pos hr_pos
+              by (simp add: dist_norm norm_minus_commute)
+            show "y \<in> sphere P r"
+              using hy_eq hdist by (by100 simp)
+          qed
+          have h\<rho>_conn: "connected (\<rho> ` C)"
+            by (rule connected_continuous_image[OF h\<rho>_cont hC_conn])
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
             sorry
