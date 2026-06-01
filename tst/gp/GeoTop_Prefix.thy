@@ -4706,6 +4706,47 @@ proof -
         OF hsub1 hsub2 hA1 hA2 hImg12 himg_ne hEP1 hEP2])
 qed
 
+lemma theta_graph_pair_R2_to_S2_frontier_components:
+  fixes M B1 B2 B3 E i j :: "(real^2) set"
+  assumes htheta: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+      and hi: "i \<in> {B1, B2, B3}"
+      and hj: "j \<in> {B1, B2, B3}"
+      and hij_ne: "i \<noteq> j"
+  shows "\<exists>Q R. Q \<noteq> {} \<and> R \<noteq> {} \<and> Q \<inter> R = {}
+      \<and> Q \<union> R = top1_S2 - (R2_to_S2 ` i \<union> R2_to_S2 ` j)
+      \<and> top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)
+      \<and> top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)
+      \<and> Q \<in> top1_S2_topology \<and> R \<in> top1_S2_topology
+      \<and> geotop_frontier top1_S2 top1_S2_topology Q = R2_to_S2 ` i \<union> R2_to_S2 ` j
+      \<and> geotop_frontier top1_S2 top1_S2_topology R = R2_to_S2 ` i \<union> R2_to_S2 ` j"
+proof -
+  have htheta0: "geotop_is_theta_graph M B1 B2 B3 E"
+    using htheta unfolding geotop_is_polyhedral_theta_graph_def by (by100 blast)
+  have hE1: "geotop_arc_endpoints B1 E"
+    and hE2: "geotop_arc_endpoints B2 E"
+    and hE3: "geotop_arc_endpoints B3 E"
+    using htheta0 unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have hI12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+    and hI13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+    and hI23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using htheta0 unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have hiE: "geotop_arc_endpoints i E"
+    using hi hE1 hE2 hE3 by (by100 blast)
+  have hjE: "geotop_arc_endpoints j E"
+    using hj hE1 hE2 hE3 by (by100 blast)
+  have hij_disj:
+    "geotop_arc_interior i E \<inter> geotop_arc_interior j E = {}"
+  proof -
+    have h_i_cases: "i = B1 \<or> i = B2 \<or> i = B3" using hi by (by100 simp)
+    have h_j_cases: "j = B1 \<or> j = B2 \<or> j = B3" using hj by (by100 simp)
+    show ?thesis
+      using h_i_cases h_j_cases hij_ne hI12 hI13 hI23
+      by (auto simp: Int_commute)
+  qed
+  show ?thesis
+    by (rule geotop_two_arcs_R2_to_S2_frontier_components[OF hiE hjE hij_disj])
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
