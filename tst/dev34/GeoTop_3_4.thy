@@ -981,7 +981,29 @@ proof -
   have hT4_4_component:
     "\<exists>C. \<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
               C = geotop_component_at UNIV geotop_euclidean_topology
-                     (geotop_polygon_interior J - (A1 \<union> A2)) P'" sorry
+                     (geotop_polygon_interior J - (A1 \<union> A2)) P'"
+  proof -
+    obtain U\<^sub>Q U\<^sub>S A' where hdec:
+        "geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+      and hA12_sub: "A1 \<union> A2 \<subseteq> A'"
+      using hD44_apply42 by (by100 blast)
+    have hUQ_ne: "U\<^sub>Q \<noteq> {}"
+    proof
+      assume hUQ_empty: "U\<^sub>Q = {}"
+      have "geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q = {}"
+        using hUQ_empty geotop_frontier_UNIV_eq_frontier[of U\<^sub>Q] by (by100 simp)
+      thus False using hQ_front by (by100 simp)
+    qed
+    obtain P' where hP'UQ: "P' \<in> U\<^sub>Q"
+      using hUQ_ne by (by100 blast)
+    have hP'_IA': "P' \<in> geotop_polygon_interior J - A'"
+      using hP'UQ hdec by (by100 blast)
+    have hP'_IA12: "P' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
+      using hP'_IA' hA12_sub by (by100 blast)
+    show ?thesis
+      using hP'_IA12 by (by100 blast)
+  qed
   have hD44_common:
     "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
