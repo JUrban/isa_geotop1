@@ -749,6 +749,149 @@ proof -
                 using h_other_edge_meets_sigma_y_only_at_x[OF h\<tau>_EAX h\<tau>_ne] by (by100 simp)
               thus False using hy_ne_x by (by100 simp)
             qed
+            define OtherEdges_y where "OtherEdges_y = EdgesAtX - {\<sigma>_y}"
+            have hOther_fin: "finite OtherEdges_y"
+              unfolding OtherEdges_y_def using hEAX_fin by (by100 simp)
+            have hOther_closed: "\<forall>\<tau>\<in>OtherEdges_y. closed \<tau>"
+            proof
+              fix \<tau>
+              assume h\<tau>_Other: "\<tau> \<in> OtherEdges_y"
+              have h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              obtain p where h\<tau>_seg: "\<tau> = closed_segment x p" and "p \<noteq> x"
+                using hVX_segs h\<tau>_EAX by (by100 blast)
+              show "closed \<tau>" using h\<tau>_seg by (by100 simp)
+            qed
+            have hOther_union_closed: "closed (\<Union>OtherEdges_y)"
+              by (rule closed_Union[OF hOther_fin hOther_closed])
+            have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
+            proof
+              assume "y \<in> \<Union>OtherEdges_y"
+              then obtain \<tau> where h\<tau>_Other: "\<tau> \<in> OtherEdges_y" and hy\<tau>: "y \<in> \<tau>"
+                by (by100 blast)
+              have h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              have h\<tau>_ne: "\<tau> \<noteq> \<sigma>_y"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              show False using h_y_avoids_other_edges[OF h\<tau>_EAX h\<tau>_ne] hy\<tau> by (by100 blast)
+            qed
+            have h_other_edges_isolated_at_y:
+              "\<exists>\<rho>>0. ball y \<rho> \<inter> \<Union>OtherEdges_y = {}"
+            proof -
+              have h_open_compl: "open (- \<Union>OtherEdges_y)"
+                using hOther_union_closed unfolding closed_def .
+              have hy_compl: "y \<in> - \<Union>OtherEdges_y"
+                using hy_not_Other by (by100 simp)
+              obtain \<rho> where h\<rho>_pos: "\<rho> > 0" and hball_sub: "ball y \<rho> \<subseteq> - \<Union>OtherEdges_y"
+                using openE[OF h_open_compl hy_compl] by (by100 blast)
+              have hdisj: "ball y \<rho> \<inter> \<Union>OtherEdges_y = {}"
+                using hball_sub by (by100 blast)
+              show ?thesis using h\<rho>_pos hdisj by (by100 blast)
+            qed
+            obtain \<rho>o where h\<rho>o_pos: "\<rho>o > 0"
+              and h\<rho>o_disj: "ball y \<rho>o \<inter> \<Union>OtherEdges_y = {}"
+              using h_other_edges_isolated_at_y by (by100 blast)
+            have hy_dist_x_lt_iso: "dist y x < \<delta>_iso"
+            proof -
+              have "dist x y < \<delta>_iso" using hy_ball_iso by (by100 simp)
+              moreover have "dist y x = dist x y" by (rule dist_commute)
+              ultimately show ?thesis by (by100 simp)
+            qed
+            have hy_dist_x_pos: "dist y x > 0"
+              using hy_ne_x by (by100 simp)
+            define \<rho>y where
+              "\<rho>y = min \<rho>o (min ((\<delta>_iso - dist y x) / 2) (dist y x / 2))"
+            have h\<rho>y_pos: "\<rho>y > 0"
+              unfolding \<rho>y_def using h\<rho>o_pos hy_dist_x_lt_iso hy_dist_x_pos by (by100 simp)
+            have h\<rho>y_le_o: "\<rho>y \<le> \<rho>o"
+              unfolding \<rho>y_def by (by100 simp)
+            have h\<rho>y_le_margin: "\<rho>y \<le> (\<delta>_iso - dist y x) / 2"
+            proof -
+              have "\<rho>y \<le> min ((\<delta>_iso - dist y x) / 2) (dist y x / 2)"
+                unfolding \<rho>y_def by (rule min.cobounded2)
+              moreover have "min ((\<delta>_iso - dist y x) / 2) (dist y x / 2)
+                  \<le> (\<delta>_iso - dist y x) / 2"
+                by (rule min.cobounded1)
+              ultimately show ?thesis by (by100 linarith)
+            qed
+            have h\<rho>y_le_half_yx: "\<rho>y \<le> dist y x / 2"
+            proof -
+              have "\<rho>y \<le> min ((\<delta>_iso - dist y x) / 2) (dist y x / 2)"
+                unfolding \<rho>y_def by (rule min.cobounded2)
+              moreover have "min ((\<delta>_iso - dist y x) / 2) (dist y x / 2)
+                  \<le> dist y x / 2"
+                by (rule min.cobounded2)
+              ultimately show ?thesis by (by100 linarith)
+            qed
+            have h_ball_y_sub_ball_x_iso: "ball y \<rho>y \<subseteq> ball x \<delta>_iso"
+            proof
+              fix z
+              assume hz_ball: "z \<in> ball y \<rho>y"
+              have h_yz: "dist y z < \<rho>y" using hz_ball by (by100 simp)
+              have hxy: "dist x y = dist y x" by (rule dist_commute)
+              have htri: "dist x z \<le> dist x y + dist y z" by (rule dist_triangle)
+              have hlt1: "dist x z < dist y x + \<rho>y"
+                using htri h_yz hxy by (by100 linarith)
+              have hle2: "dist y x + \<rho>y \<le> dist y x + (\<delta>_iso - dist y x) / 2"
+                using h\<rho>y_le_margin by (by100 linarith)
+              have hlt3: "dist y x + (\<delta>_iso - dist y x) / 2 < \<delta>_iso"
+              proof -
+                have h_eq: "dist y x + (\<delta>_iso - dist y x) / 2 =
+                    (\<delta>_iso + dist y x) / 2"
+                  by argo
+                have h_avg_lt: "(\<delta>_iso + dist y x) / 2 < \<delta>_iso"
+                  using hy_dist_x_lt_iso by (by100 argo)
+                show ?thesis by (subst h_eq, rule h_avg_lt)
+              qed
+              have "dist x z < \<delta>_iso" using hlt1 hle2 hlt3 by (by100 linarith)
+              thus "z \<in> ball x \<delta>_iso" by (by100 simp)
+            qed
+            have hx_not_ball_y: "x \<notin> ball y \<rho>y"
+            proof
+              assume hx_ball_y: "x \<in> ball y \<rho>y"
+              have h_yx_lt: "dist y x < \<rho>y"
+                using hx_ball_y by (by100 simp)
+              have "dist y x < dist y x / 2"
+                using h_yx_lt h\<rho>y_le_half_yx by (by100 linarith)
+              thus False using hy_dist_x_pos by (by100 linarith)
+            qed
+            have h_ball_y_avoids_x: "ball y \<rho>y \<inter> {x} = {}"
+              using hx_not_ball_y by (by100 blast)
+            have h_ball_y_M_sub_sigma_y: "ball y \<rho>y \<inter> M \<subseteq> \<sigma>_y"
+            proof
+              fix z
+              assume hz: "z \<in> ball y \<rho>y \<inter> M"
+              have hz_ball_y: "z \<in> ball y \<rho>y" using hz by (by100 blast)
+              have hz_M: "z \<in> M" using hz by (by100 blast)
+              have hz_ball_x: "z \<in> ball x \<delta>_iso"
+                using hz_ball_y h_ball_y_sub_ball_x_iso by (by100 blast)
+              have hz_i: "z \<in> i"
+                using hz_ball_x hz_M h_ball_iso_M by (by100 blast)
+              have hz_cov: "z \<in> \<Union>EdgesAtX \<union> {x}"
+                using hz_ball_x hz_i h_ball_cov by (by100 blast)
+              have hz_ne_x: "z \<noteq> x"
+                using hz_ball_y h_ball_y_avoids_x by (by100 blast)
+              have hz_edges: "z \<in> \<Union>EdgesAtX"
+                using hz_cov hz_ne_x by (by100 blast)
+              obtain \<tau> where h\<tau>_EAX: "\<tau> \<in> EdgesAtX" and hz\<tau>: "z \<in> \<tau>"
+                using hz_edges by (by100 blast)
+              show "z \<in> \<sigma>_y"
+              proof (cases "\<tau> = \<sigma>_y")
+                case True
+                show ?thesis using hz\<tau> True by (by100 simp)
+              next
+                case False
+                have h\<tau>_Other: "\<tau> \<in> OtherEdges_y"
+                  using h\<tau>_EAX False unfolding OtherEdges_y_def by (by100 blast)
+                have hz_other: "z \<in> \<Union>OtherEdges_y"
+                  using h\<tau>_Other hz\<tau> by (by100 blast)
+                have hz_ball_o: "z \<in> ball y \<rho>o"
+                  using hz_ball_y h\<rho>y_le_o by (by100 auto)
+                have "z \<in> ball y \<rho>o \<inter> \<Union>OtherEdges_y"
+                  using hz_ball_o hz_other by (by100 blast)
+                thus ?thesis using h\<rho>o_disj by (by100 blast)
+              qed
+            qed
             have h_sector_path_to_y:
               "y \<in> closure U"
               sorry
