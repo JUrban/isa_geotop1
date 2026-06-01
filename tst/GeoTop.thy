@@ -11427,7 +11427,110 @@ proof -
                                 have h_pair_component_line_interval:
                                   "\<exists>(f::real^2 \<Rightarrow> real) g I.
                                       homeomorphism C I f g \<and> is_interval I"
-                                  sorry
+                                proof -
+                                  let ?S = "sphere P r"
+                                  have hr_pos: "r > 0"
+                                    using h_radial_circle_model by (fast elim: conjE)
+                                  have ha_sphere: "a \<in> ?S"
+                                  proof -
+                                    have "a \<in> {q1, q2, q3}"
+                                      using habq_all by (by100 blast)
+                                    thus ?thesis using h_radial_circle_model by (by100 blast)
+                                  qed
+                                  have hb_sphere: "b \<in> ?S"
+                                  proof -
+                                    have "b \<in> {q1, q2, q3}"
+                                      using habq_all by (by100 blast)
+                                    thus ?thesis using h_radial_circle_model by (by100 blast)
+                                  qed
+                                  have h_qs_card: "card {q1, q2, q3} = 3"
+                                    using h_radial_circle_model by (by100 simp)
+                                  have h_abq_card: "card {a, b, q} = 3"
+                                    using habq_all h_qs_card by (by100 simp)
+                                  have hab_ne: "a \<noteq> b"
+                                  proof
+                                    assume hab: "a = b"
+                                    have "card {a, b, q} \<le> 2"
+                                    proof -
+                                      have hset: "{a, b, q} = {b, q}"
+                                        using hab by (by100 blast)
+                                      have "card {b, q} \<le> 2"
+                                      proof (cases "b = q")
+                                        case True
+                                        thus ?thesis by (by100 simp)
+                                      next
+                                        case False
+                                        thus ?thesis by (by100 simp)
+                                      qed
+                                      thus ?thesis using hset by (by100 simp)
+                                    qed
+                                    thus False using h_abq_card by (by100 linarith)
+                                  qed
+                                  let ?L = "{x::real^2. (b - a) \<bullet> x = 0}"
+                                  have hc_nonzero: "b - a \<noteq> 0"
+                                    using hab_ne by (by100 auto)
+                                  have hpunc_homeo: "(?S - {a}) homeomorphic ?L"
+                                    by (rule homeomorphic_punctured_sphere_hyperplane
+                                        [OF hr_pos ha_sphere hc_nonzero])
+                                  obtain f0 g0 where hfg0:
+                                    "homeomorphism (?S - {a}) ?L f0 g0"
+                                    using hpunc_homeo unfolding homeomorphic_def by (by100 blast)
+                                  have hC_sub_pair: "C \<subseteq> ?S - {a, b}"
+                                    using hC_pair_comp in_components_subset by (by100 blast)
+                                  have hC_sub_punc: "C \<subseteq> ?S - {a}"
+                                    using hC_sub_pair by (by100 blast)
+                                  have hf0C_sub_L: "f0 ` C \<subseteq> ?L"
+                                  proof -
+                                    have hf0_img: "f0 ` (?S - {a}) = ?L"
+                                      using hfg0 by (rule homeomorphism_image1)
+                                    show ?thesis
+                                      using image_mono[OF hC_sub_punc, of f0] hf0_img by (by100 blast)
+                                  qed
+                                  have hC_line_homeo:
+                                    "homeomorphism C (f0 ` C) f0 g0"
+                                  proof (rule homeomorphism_of_subsets[OF hfg0])
+                                    show "C \<subseteq> ?S - {a}" by (rule hC_sub_punc)
+                                    show "f0 ` C \<subseteq> ?L" by (rule hf0C_sub_L)
+                                    show "f0 ` C = f0 ` C" by (by100 simp)
+                                  qed
+                                  have hL_dim: "aff_dim ?L = 1"
+                                    using hc_nonzero aff_dim_hyperplane[of "b - a" 0]
+                                    by (by100 simp)
+                                  have hreal_dim: "aff_dim (UNIV::real set) = 1"
+                                    by (by100 simp)
+                                  have hL_homeo_real: "?L homeomorphic (UNIV::real set)"
+                                  proof (rule homeomorphic_affine_sets)
+                                    show "affine ?L" by (rule affine_hyperplane)
+                                    show "affine (UNIV::real set)" by (rule affine_UNIV)
+                                    show "aff_dim ?L = aff_dim (UNIV::real set)"
+                                      using hL_dim hreal_dim by (by100 simp)
+                                  qed
+                                  obtain h j where hhj:
+                                    "homeomorphism ?L (UNIV::real set) h j"
+                                    using hL_homeo_real unfolding homeomorphic_def by (by100 blast)
+                                  have hline_image_homeo:
+                                    "homeomorphism (f0 ` C) (h ` (f0 ` C)) h j"
+                                  proof (rule homeomorphism_of_subsets[OF hhj])
+                                    show "f0 ` C \<subseteq> ?L" by (rule hf0C_sub_L)
+                                    show "h ` (f0 ` C) \<subseteq> UNIV" by (by100 blast)
+                                    show "h ` (f0 ` C) = h ` (f0 ` C)" by (by100 simp)
+                                  qed
+                                  have h_comp_homeo:
+                                    "homeomorphism C (h ` (f0 ` C)) (h \<circ> f0) (g0 \<circ> j)"
+                                    by (rule Elementary_Topology.homeomorphism_compose
+                                        [OF hC_line_homeo hline_image_homeo])
+                                  have h_image_eq: "(h \<circ> f0) ` C = h ` (f0 ` C)"
+                                    by (simp add: image_image)
+                                  have hcont_comp: "continuous_on C (h \<circ> f0)"
+                                    using h_comp_homeo unfolding homeomorphism_def by (by100 blast)
+                                  have hI_conn: "connected ((h \<circ> f0) ` C)"
+                                    by (rule connected_continuous_image[OF hcont_comp hC_pair_conn])
+                                  have hI_interval: "is_interval (h ` (f0 ` C))"
+                                    using hI_conn h_image_eq unfolding is_interval_connected_1
+                                    by (by100 simp)
+                                  show ?thesis
+                                    using h_comp_homeo hI_interval by (by100 blast)
+                                qed
                                 show ?thesis
                                   using h_pair_component_line_interval hqC by (by100 blast)
                               qed
