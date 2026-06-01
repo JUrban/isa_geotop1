@@ -4195,6 +4195,39 @@ proof -
         rule exI[where x=\<sigma>3], rule hbody)
 qed
 
+lemma geotop_complex_edge_face_count_between_1_2_cases:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hge: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
+  assumes hle: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+  shows "(\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)
+      \<or> (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+          \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+          \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have hcase: "card ?S = 1 \<or> card ?S = 2"
+    using hge hle by (by100 arith)
+  show ?thesis
+  proof (rule disjE[OF hcase])
+    assume hcard1: "card ?S = 1"
+    have "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      by (rule geotop_complex_edge_face_count_eq_1_unique[OF hK heK hedge hcard1])
+    thus ?thesis by (by100 blast)
+  next
+    assume hcard2: "card ?S = 2"
+    have "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+          \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+          \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+      by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcard2])
+    thus ?thesis by (by100 blast)
+  qed
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -6287,31 +6320,18 @@ proof -
       fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
       have hedge: "geotop_is_edge e"
         using he_inc by (by100 blast)
-      have hcase:
-        "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
-         \<or> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-        using hL_count_1_or_2 heK he_inc by (by100 blast)
+      let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      have hge: "card ?S \<ge> 1"
+        using hL2_count heK he_inc by (by100 blast)
+      have hle: "card ?S \<le> 2"
+        using hL3 heK he_inc by (by100 blast)
       show "(\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)
                  \<or> (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
                     \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
                     \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
                     \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
-      proof (rule disjE[OF hcase])
-        assume hcard1:
-          "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
-        have "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
-          by (rule geotop_complex_edge_face_count_eq_1_unique[OF hK heK hedge hcard1])
-        thus ?thesis by (by100 blast)
-      next
-        assume hcard2:
-          "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
-        have "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
-                    \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
-                    \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
-                    \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
-          by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcard2])
-        thus ?thesis by (by100 blast)
-      qed
+        by (rule geotop_complex_edge_face_count_between_1_2_cases
+            [OF hK heK hedge hge hle])
     qed
     \<comment> \<open>L4: link |L(v)| is connected.\<close>
     have hL4: "top1_connected_on (\<Union>(geotop_link K v))
