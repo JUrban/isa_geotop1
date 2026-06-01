@@ -8407,11 +8407,99 @@ proof -
   qed
   \<comment> \<open>Sub-claim T2_8-B (\<subseteq> direction): every component of I_13 - Int B_2 equals
     I_12 or I_23 (deep step requiring Jordan-style separation argument).\<close>
+  have hT2_8_I12_component_at:
+    "\<forall>P\<in>I12.
+       geotop_component_at UNIV geotop_euclidean_topology
+         (I13 - geotop_arc_interior B2 E) P = I12"
+  proof
+    let ?Y = "I13 - geotop_arc_interior B2 E"
+    fix P assume hP_I12: "P \<in> I12"
+    have hI12_conn_HOL: "connected I12"
+      using hT2_8_A2_I12_conn top1_connected_on_geotop_iff_connected by metis
+    have hI12_open_HOL: "open I12"
+      using hT2_8_A3_I12_open
+            geotop_euclidean_topology_eq_open_sets[where 'a="real^2"]
+            top1_open_sets_def by (by100 blast)
+    have hI12_open_in_Y: "openin (top_of_set ?Y) I12"
+    proof -
+      have h_eq: "I12 = ?Y \<inter> I12" using hT2_8_A1_I12 by (by100 blast)
+      show ?thesis using hI12_open_HOL h_eq by (auto simp: openin_open)
+    qed
+    have hI12_eq: "I12 = connected_component_set ?Y P"
+      by (rule clopen_connected_subspace_eq_component
+              [OF hT2_8_A1_I12 hI12_conn_HOL hI12_open_in_Y
+                  hT2_8_A4_I12_closed_rel hP_I12])
+    have h_bridge: "geotop_component_at UNIV geotop_euclidean_topology ?Y P
+                    = connected_component_set ?Y P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    show "geotop_component_at UNIV geotop_euclidean_topology
+            (I13 - geotop_arc_interior B2 E) P = I12"
+      using hI12_eq h_bridge by (by100 simp)
+  qed
+  have hT2_8_I23_component_at:
+    "\<forall>P\<in>I23.
+       geotop_component_at UNIV geotop_euclidean_topology
+         (I13 - geotop_arc_interior B2 E) P = I23"
+  proof
+    let ?Y = "I13 - geotop_arc_interior B2 E"
+    fix P assume hP_I23: "P \<in> I23"
+    have hI23_conn_HOL: "connected I23"
+      using hT2_8_A2_I23_conn top1_connected_on_geotop_iff_connected by metis
+    have hI23_open_HOL: "open I23"
+      using hT2_8_A3_I23_open
+            geotop_euclidean_topology_eq_open_sets[where 'a="real^2"]
+            top1_open_sets_def by (by100 blast)
+    have hI23_open_in_Y: "openin (top_of_set ?Y) I23"
+    proof -
+      have h_eq: "I23 = ?Y \<inter> I23" using hT2_8_A1_I23 by (by100 blast)
+      show ?thesis using hI23_open_HOL h_eq by (auto simp: openin_open)
+    qed
+    have hI23_eq: "I23 = connected_component_set ?Y P"
+      by (rule clopen_connected_subspace_eq_component
+              [OF hT2_8_A1_I23 hI23_conn_HOL hI23_open_in_Y
+                  hT2_8_A4_I23_closed_rel hP_I23])
+    have h_bridge: "geotop_component_at UNIV geotop_euclidean_topology ?Y P
+                    = connected_component_set ?Y P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    show "geotop_component_at UNIV geotop_euclidean_topology
+            (I13 - geotop_arc_interior B2 E) P = I23"
+      using hI23_eq h_bridge by (by100 simp)
+  qed
+  have hT2_8_cover_Y:
+    "I13 - geotop_arc_interior B2 E \<subseteq> I12 \<union> I23"
+    sorry
   have hT2_8_components_out:
     "\<forall>C. (\<exists>P\<in>I13 - geotop_arc_interior B2 E.
             C = geotop_component_at UNIV geotop_euclidean_topology
                   (I13 - geotop_arc_interior B2 E) P)
-         \<longrightarrow> C = I12 \<or> C = I23" sorry
+         \<longrightarrow> C = I12 \<or> C = I23"
+  proof (intro allI impI)
+    fix C
+    assume hC: "\<exists>P\<in>I13 - geotop_arc_interior B2 E.
+            C = geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P"
+    obtain P where hP_Y: "P \<in> I13 - geotop_arc_interior B2 E"
+      and hC_eq: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P"
+      using hC by (by100 blast)
+    have hP_side: "P \<in> I12 \<union> I23"
+      using hP_Y hT2_8_cover_Y by (by100 blast)
+    show "C = I12 \<or> C = I23"
+    proof (cases "P \<in> I12")
+      case True
+      have h_eq: "geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P = I12"
+        using hT2_8_I12_component_at True by (by100 blast)
+      show ?thesis using hC_eq h_eq by (by100 blast)
+    next
+      case False
+      have hP_I23: "P \<in> I23" using hP_side False by (by100 blast)
+      have h_eq: "geotop_component_at UNIV geotop_euclidean_topology
+                  (I13 - geotop_arc_interior B2 E) P = I23"
+        using hT2_8_I23_component_at hP_I23 by (by100 blast)
+      show ?thesis using hC_eq h_eq by (by100 blast)
+    qed
+  qed
   have h_split_I13:
     "{C. \<exists>P\<in>I13 - geotop_arc_interior B2 E.
            C = geotop_component_at UNIV geotop_euclidean_topology (I13 - geotop_arc_interior B2 E) P}
