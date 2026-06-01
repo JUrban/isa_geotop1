@@ -3460,6 +3460,23 @@ proof -
             using hC_comp in_components_connected by (by100 blast)
           have hC_sub_local: "C \<subseteq> ball P \<delta> - ?R"
             using hC_comp in_components_subset by (by100 blast)
+          have hC_sub_ball: "C \<subseteq> ball P \<delta>"
+            using hC_sub_local by (by100 blast)
+          have hC_disj_R: "C \<inter> ?R = {}"
+            using hC_sub_local by (by100 blast)
+          have hC_closure_cball: "closure C \<subseteq> cball P \<delta>"
+          proof -
+            have hC_closure_ball: "closure C \<subseteq> closure (ball P \<delta>)"
+              by (rule closure_mono[OF hC_sub_ball])
+            have hball_closure: "closure (ball P \<delta>) \<subseteq> cball P \<delta>"
+            proof (rule closure_minimal)
+              show "ball P \<delta> \<subseteq> cball P \<delta>"
+                by (by100 simp)
+              show "closed (cball P \<delta>)"
+                by (by100 simp)
+            qed
+            show ?thesis using hC_closure_ball hball_closure by (by100 blast)
+          qed
           have hC_open: "open C"
             using hC_comp h_local_open open_components by (by100 blast)
           have hC_path: "path_connected C"
