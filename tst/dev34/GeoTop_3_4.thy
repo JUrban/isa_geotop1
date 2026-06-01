@@ -2795,6 +2795,87 @@ proof -
     unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
 qed
 
+lemma geotop_link_is_complex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_is_complex (geotop_link K v)"
+proof -
+  let ?S = "geotop_star K v"
+  let ?L = "geotop_link K v"
+  have hS_complex: "geotop_is_complex ?S"
+    by (rule geotop_star_is_complex[OF hK])
+  have hL_sub_S: "?L \<subseteq> ?S"
+    unfolding geotop_link_def by (by100 blast)
+  have hS_simplex: "\<forall>\<sigma>\<in>?S. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hS_complex[unfolded geotop_is_complex_def]])
+  have hS_faces: "\<forall>\<sigma>\<in>?S. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?S"
+    by (rule conjunct1[OF conjunct2[OF hS_complex[unfolded geotop_is_complex_def]]])
+  have hS_inter: "\<forall>\<sigma>\<in>?S. \<forall>\<tau>\<in>?S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    by (rule conjunct1[OF conjunct2[OF conjunct2[OF hS_complex[unfolded geotop_is_complex_def]]]])
+  have hS_local: "\<forall>\<sigma>\<in>?S. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+      finite {\<tau>\<in>?S. \<tau> \<inter> U \<noteq> {}}"
+    by (rule conjunct2[OF conjunct2[OF conjunct2[OF hS_complex[unfolded geotop_is_complex_def]]]])
+  have hsimplex: "\<forall>\<sigma>\<in>?L. geotop_is_simplex \<sigma>"
+    using hL_sub_S hS_simplex by (by100 blast)
+  have hfaces: "\<forall>\<sigma>\<in>?L. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?L"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau> assume h\<sigma>L: "\<sigma> \<in> ?L" and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>S: "\<sigma> \<in> ?S"
+      using hL_sub_S h\<sigma>L by (by100 blast)
+    have hv_not_\<sigma>: "v \<notin> \<sigma>"
+      using h\<sigma>L unfolding geotop_link_def by (by100 blast)
+    have h\<tau>S: "\<tau> \<in> ?S"
+      using hS_faces h\<sigma>S h\<tau>\<sigma> by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
+    have hv_not_\<tau>: "v \<notin> \<tau>"
+      using hv_not_\<sigma> h\<tau>sub\<sigma> by (by100 blast)
+    show "\<tau> \<in> ?L"
+      unfolding geotop_link_def using h\<tau>S hv_not_\<tau> by (by100 blast)
+  qed
+  have hinter: "\<forall>\<sigma>\<in>?L. \<forall>\<tau>\<in>?L. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using hL_sub_S hS_inter by (by100 blast)
+  have hlocal: "\<forall>\<sigma>\<in>?L. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+      finite {\<tau>\<in>?L. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma> assume h\<sigma>L: "\<sigma> \<in> ?L"
+    have h\<sigma>S: "\<sigma> \<in> ?S"
+      using hL_sub_S h\<sigma>L by (by100 blast)
+    have hlocal_\<sigma>: "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and>
+        finite {\<tau>\<in>?S. \<tau> \<inter> U \<noteq> {}}"
+      by (rule bspec[OF hS_local h\<sigma>S])
+    obtain U where hUopen: "open U"
+      and h\<sigma>U: "\<sigma> \<subseteq> U"
+      and hfin_S: "finite {\<tau>\<in>?S. \<tau> \<inter> U \<noteq> {}}"
+      using hlocal_\<sigma> by (elim exE conjE)
+    have hsub_fin: "{\<tau>\<in>?L. \<tau> \<inter> U \<noteq> {}} \<subseteq> {\<tau>\<in>?S. \<tau> \<inter> U \<noteq> {}}"
+      using hL_sub_S by (by100 blast)
+    have hfin_L: "finite {\<tau>\<in>?L. \<tau> \<inter> U \<noteq> {}}"
+      by (rule finite_subset[OF hsub_fin hfin_S])
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>?L. \<tau> \<inter> U \<noteq> {}}"
+      using hUopen h\<sigma>U hfin_L by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
+qed
+
+lemma geotop_link_polyhedron_subset_star_polyhedron:
+  "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
+  unfolding geotop_link_def by (by100 blast)
+
+lemma geotop_link_polyhedron_subset_polyhedron:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "\<Union>(geotop_link K v) \<subseteq> geotop_polyhedron K"
+proof -
+  have hsub: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  show ?thesis
+    unfolding geotop_polyhedron_def using hsub by (by100 blast)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
