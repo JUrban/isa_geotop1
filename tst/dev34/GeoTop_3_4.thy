@@ -3187,6 +3187,30 @@ proof -
     by (rule finite_subset[OF hlink_sub hstar_fin])
 qed
 
+lemma geotop_star_finite_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "finite (geotop_star K v)"
+proof -
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  show ?thesis
+    by (rule geotop_star_finite_at_vertex[OF hK hvK])
+qed
+
+lemma geotop_link_finite_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "finite (geotop_link K v)"
+proof -
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  show ?thesis
+    by (rule geotop_link_finite_at_vertex[OF hK hvK])
+qed
+
 lemma geotop_link_polyhedron_subset_star_polyhedron:
   "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
   unfolding geotop_link_def by (by100 blast)
