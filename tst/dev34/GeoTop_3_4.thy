@@ -3543,6 +3543,45 @@ proof -
     unfolding geotop_polyhedron_def using h\<sigma>K h\<sigma>ne by (by100 blast)
 qed
 
+lemma geotop_nonempty_polyhedron_has_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hpoly: "geotop_polyhedron K \<noteq> {}"
+  shows "\<exists>w. {w} \<in> K"
+proof -
+  obtain x where hx: "x \<in> geotop_polyhedron K"
+    using hpoly by (by100 blast)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hsimplex_all: "\<forall>\<tau>\<in>K. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    using hsimplex_all h\<sigma>K by (by100 blast)
+  obtain V m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>simplex unfolding geotop_is_simplex_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}"
+    using hV_card by (by100 force)
+  obtain w where hwV: "w \<in> V"
+    using hV_ne by (by100 blast)
+  have hsingle_hull: "{w} = geotop_convex_hull {w}"
+    using geotop_convex_hull_eq_HOL[of "{w}"] by (by100 simp)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card hn_le_m hgp h\<sigma>_eq by (by100 blast)
+  have hface: "geotop_is_face {w} \<sigma>"
+    unfolding geotop_is_face_def using h\<sigma>V hwV hsingle_hull by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    by (rule conjunct1[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]])
+  have "{w} \<in> K"
+    using hface_closed h\<sigma>K hface by (by100 blast)
+  show ?thesis
+    using \<open>{w} \<in> K\<close> by (by100 blast)
+qed
+
 lemma geotop_connected_component_at_eq_self:
   assumes hPM: "P \<in> M"
   assumes hconn: "top1_connected_on M (subspace_topology X T M)"
@@ -4348,6 +4387,30 @@ proof -
   show ?thesis
     by (rule geotop_complex_simplex_vertices_incident_edge_between
         [OF hK h\<sigma>K h\<sigma>Vv hvVv hwVv hvw])
+qed
+
+lemma geotop_link_polyhedron_nonempty_incident_edge_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hlink_poly: "\<Union>(geotop_link K v) \<noteq> {}"
+  shows "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+proof -
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hlink_poly_geotop: "geotop_polyhedron (geotop_link K v) \<noteq> {}"
+    using hlink_poly unfolding geotop_polyhedron_def by (by100 simp)
+  obtain w where hwL: "{w} \<in> geotop_link K v"
+    using geotop_nonempty_polyhedron_has_complex_vertex
+      [OF hlink_complex hlink_poly_geotop]
+    by (by100 blast)
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
+    by (by100 blast)
+  show ?thesis
+    using heK hedge hv_e by (by100 blast)
 qed
 
 lemma geotop_edge_face_witness_card_two:
