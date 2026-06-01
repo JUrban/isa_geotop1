@@ -7305,6 +7305,18 @@ proof
                 \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
       by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcard2])
   qed
+  \<comment> \<open>Book consequence of L2-L4: every link vertex is incident to a link edge.\<close>
+  have hlink_vertices_incident_edges:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+  proof (intro allI impI)
+    fix w assume hwL: "{w} \<in> geotop_link K v"
+    have hvK: "{v} \<in> K"
+      using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+    show "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+      by (rule geotop_link_vertex_count_ge_1_incident_link_edge
+          [OF hK hvK hwL hL2_count])
+  qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology
