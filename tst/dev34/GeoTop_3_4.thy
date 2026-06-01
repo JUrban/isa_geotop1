@@ -21,11 +21,46 @@ theorem Theorem_GT_3_1:
           \<and> geotop_simplicial_on \<sigma> f \<tau>
           \<and> (\<forall>v\<in>V. f v = \<phi> v)"
 proof -
-  (** (1) For each P \<in> \<sigma>, express P uniquely in barycentric coordinates P = \<Sigma>_{v \<in> V}
-         \<alpha>_v v with \<alpha>_v \<ge> 0 and \<Sigma> \<alpha>_v = 1. **)
+  (** (1) For each P \<in> \<sigma>, express P in barycentric coordinates P = \<Sigma>_{v \<in> V}
+         \<alpha>_v v with \<alpha>_v \<ge> 0 and \<Sigma> \<alpha>_v = 1, using the zero extension off V. **)
   have h_barycentric:
-    "\<forall>P\<in>\<sigma>. \<exists>!\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
-                          P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)" sorry
+    "\<forall>P\<in>\<sigma>. \<exists>\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+                          (\<forall>v. v \<notin> V \<longrightarrow> \<alpha> v = 0) \<and>
+                          P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+  proof
+    fix P
+    assume hP: "P \<in> \<sigma>"
+    have hV_fin: "finite V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have hP_hull: "P \<in> convex hull V"
+      using hP h\<sigma>_HOL by (by100 simp)
+    have h_hull_char:
+      "convex hull V =
+        {x. \<exists>\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+              (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x}"
+      by (rule convex_hull_finite[OF hV_fin])
+    obtain \<beta> :: "'a \<Rightarrow> real"
+      where h\<beta>_nn: "\<forall>v\<in>V. 0 \<le> \<beta> v"
+        and h\<beta>_sum: "sum \<beta> V = 1"
+        and h\<beta>_P: "(\<Sum>v\<in>V. \<beta> v *\<^sub>R v) = P"
+      using hP_hull h_hull_char by (by100 blast)
+    define \<alpha> :: "'a \<Rightarrow> real" where "\<alpha> v = (if v \<in> V then \<beta> v else 0)" for v
+    have h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+      unfolding \<alpha>_def using h\<beta>_nn by (by100 simp)
+    have h\<alpha>_sum: "sum \<alpha> V = 1"
+      unfolding \<alpha>_def using h\<beta>_sum by (by100 simp)
+    have h\<alpha>_zero: "\<forall>v. v \<notin> V \<longrightarrow> \<alpha> v = 0"
+      unfolding \<alpha>_def by (by100 simp)
+    have h\<alpha>_P: "P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+      unfolding \<alpha>_def using h\<beta>_P by (by100 simp)
+    show "\<exists>\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+          (\<forall>v. v \<notin> V \<longrightarrow> \<alpha> v = 0) \<and> P = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v)"
+      using h\<alpha>_nn h\<alpha>_sum h\<alpha>_zero h\<alpha>_P by (by100 blast)
+  qed
   (** (2) Define f: \<sigma> \<to> \<tau> by f(P) = \<Sigma>_{v \<in> V} \<alpha>_v \<phi>(v). This is affine on each face and
          bijective (barycentric coordinates are unique). **)
   \<comment> \<open>Sub-claim T3_1-A: f restricted to V agrees with \<phi>. Trivial witness f = \<phi>.\<close>
