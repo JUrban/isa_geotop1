@@ -40,6 +40,96 @@ lemma same_component_real_complement_singleton_iff:
     \<longleftrightarrow> (x < a \<and> y < a) \<or> (a < x \<and> a < y)"
   using assms components_real_complement_singleton[of a] by (by100 auto)
 
+lemma same_component_homeomorphism_iff:
+  assumes hfg: "homeomorphism A B f g"
+    and hx: "x \<in> A"
+    and hy: "y \<in> A"
+  shows "(\<exists>K \<in> components A. x \<in> K \<and> y \<in> K)
+    \<longleftrightarrow> (\<exists>L \<in> components B. f x \<in> L \<and> f y \<in> L)"
+proof
+  assume hsame: "\<exists>K \<in> components A. x \<in> K \<and> y \<in> K"
+  obtain K where hK_comp: "K \<in> components A"
+    and hxK: "x \<in> K" and hyK: "y \<in> K"
+    using hsame by (by100 blast)
+  have hK_conn: "connected K"
+    using hK_comp in_components_connected by (by100 blast)
+  have hK_sub: "K \<subseteq> A"
+    by (rule in_components_subset[OF hK_comp])
+  have hf_cont_A: "continuous_on A f"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hf_cont_K: "continuous_on K f"
+    by (rule continuous_on_subset[OF hf_cont_A hK_sub])
+  have hfK_conn: "connected (f ` K)"
+    by (rule connected_continuous_image[OF hf_cont_K hK_conn])
+  have hfK_sub: "f ` K \<subseteq> B"
+  proof -
+    have "f ` A = B"
+      using hfg by (rule homeomorphism_image1)
+    thus ?thesis
+      using image_mono[OF hK_sub, of f] by (by100 blast)
+  qed
+  have hfxB: "f x \<in> B"
+    using hfg hx unfolding homeomorphism_def by (by100 blast)
+  have hfx_fK: "f x \<in> f ` K"
+    using hxK by (by100 blast)
+  define L where "L = connected_component_set B (f x)"
+  have hL_comp: "L \<in> components B"
+    unfolding L_def by (rule componentsI[OF hfxB])
+  have hfK_sub_L: "f ` K \<subseteq> L"
+    unfolding L_def by (rule connected_component_maximal[OF hfx_fK hfK_conn hfK_sub])
+  have hfyL: "f y \<in> L"
+    using hyK hfK_sub_L by (by100 blast)
+  show "\<exists>L \<in> components B. f x \<in> L \<and> f y \<in> L"
+    using hL_comp hfx_fK hfK_sub_L hfyL by (by100 blast)
+next
+  assume hsame: "\<exists>L \<in> components B. f x \<in> L \<and> f y \<in> L"
+  obtain L where hL_comp: "L \<in> components B"
+    and hfxL: "f x \<in> L" and hfyL: "f y \<in> L"
+    using hsame by (by100 blast)
+  have hL_conn: "connected L"
+    using hL_comp in_components_connected by (by100 blast)
+  have hL_sub: "L \<subseteq> B"
+    by (rule in_components_subset[OF hL_comp])
+  have hg_cont_B: "continuous_on B g"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hg_cont_L: "continuous_on L g"
+    by (rule continuous_on_subset[OF hg_cont_B hL_sub])
+  have hgL_conn: "connected (g ` L)"
+    by (rule connected_continuous_image[OF hg_cont_L hL_conn])
+  have hgL_sub: "g ` L \<subseteq> A"
+  proof -
+    have "g ` B = A"
+      using hfg by (rule homeomorphism_image2)
+    thus ?thesis
+      using image_mono[OF hL_sub, of g] by (by100 blast)
+  qed
+  have hgfx: "g (f x) = x"
+    by (rule homeomorphism_apply1[OF hfg hx])
+  have hgfy: "g (f y) = y"
+    by (rule homeomorphism_apply1[OF hfg hy])
+  have hx_gL: "x \<in> g ` L"
+  proof -
+    have "g (f x) \<in> g ` L"
+      using hfxL by (rule imageI)
+    thus ?thesis
+      using hgfx by (by100 simp)
+  qed
+  have hy_gL: "y \<in> g ` L"
+  proof -
+    have "g (f y) \<in> g ` L"
+      using hfyL by (rule imageI)
+    thus ?thesis
+      using hgfy by (by100 simp)
+  qed
+  define K where "K = connected_component_set A x"
+  have hK_comp: "K \<in> components A"
+    unfolding K_def by (rule componentsI[OF hx])
+  have hgL_sub_K: "g ` L \<subseteq> K"
+    unfolding K_def by (rule connected_component_maximal[OF hx_gL hgL_conn hgL_sub])
+  show "\<exists>K \<in> components A. x \<in> K \<and> y \<in> K"
+    using hK_comp hx_gL hgL_sub_K hy_gL by (by100 blast)
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
