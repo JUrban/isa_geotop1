@@ -60,6 +60,54 @@ proof -
     using hTX hTY hf_bij hf_top1 h_invf_top1 by (by100 blast)
 qed
 
+lemma geotop_affine_linear_homeomorphism_UNIV:
+  fixes A :: "'a::euclidean_space \<Rightarrow> 'a"
+  assumes hlin: "linear A" and hinj: "inj A"
+  shows "top1_homeomorphism_on UNIV geotop_euclidean_topology
+            UNIV geotop_euclidean_topology (\<lambda>x. b + A (x - a))"
+proof -
+  obtain Ainv where hA_img_homeo: "homeomorphism (A ` UNIV) UNIV Ainv A"
+    by (rule linear_homeomorphism_image[OF hlin hinj])
+  have hA_surj: "surj A"
+    by (rule linear_inj_imp_surj[OF hlin hinj])
+  have hA_image: "A ` UNIV = UNIV"
+    using hA_surj by (by100 blast)
+  have hA_homeo: "homeomorphism UNIV UNIV A Ainv"
+    using homeomorphism_symD[OF hA_img_homeo] hA_image by (by100 simp)
+  have hminus: "homeomorphism UNIV UNIV ((+) (- a)) ((+) a)"
+  proof -
+    have "homeomorphism ((+) a ` UNIV) UNIV ((+) (- a)) ((+) a)"
+      by (rule homeomorphism_translation[of a UNIV])
+    thus ?thesis by (by100 simp)
+  qed
+  have hplus: "homeomorphism UNIV UNIV ((+) b) ((+) (- b))"
+  proof -
+    have hb: "homeomorphism ((+) b ` UNIV) UNIV ((+) (- b)) ((+) b)"
+      by (rule homeomorphism_translation[of b UNIV])
+    have "homeomorphism UNIV ((+) b ` UNIV) ((+) b) ((+) (- b))"
+      by (rule homeomorphism_symD[OF hb])
+    thus ?thesis by (by100 simp)
+  qed
+  have hA_minus: "homeomorphism UNIV UNIV (A \<circ> ((+) (- a))) (((+) a) \<circ> Ainv)"
+    by (rule Elementary_Topology.homeomorphism_compose[OF hminus hA_homeo])
+  have hcomp:
+    "homeomorphism UNIV UNIV (((+) b) \<circ> (A \<circ> ((+) (- a))))
+       ((((+) a) \<circ> Ainv) \<circ> ((+) (- b)))"
+    by (rule Elementary_Topology.homeomorphism_compose[OF hA_minus hplus])
+  have htarget:
+    "homeomorphism UNIV UNIV (\<lambda>x. b + A (x - a))
+       ((((+) a) \<circ> Ainv) \<circ> ((+) (- b)))"
+    using hcomp by (simp add: o_def algebra_simps)
+  have htop1:
+    "top1_homeomorphism_on UNIV
+       (subspace_topology UNIV geotop_euclidean_topology UNIV)
+       UNIV (subspace_topology UNIV geotop_euclidean_topology UNIV)
+       (\<lambda>x. b + A (x - a))"
+    by (rule geotop_HOL_homeomorphism_imp_top1_homeomorphism_on[OF htarget])
+  show ?thesis
+    using htop1 by (simp add: subspace_topology_UNIV_UNIV)
+qed
+
 (** from \<S>3 Theorem 1 (geotop.tex:724)
     LATEX VERSION: Let \<sigma>^n = v_0 v_1 ... v_n and \<tau>^n = w_0 w_1 ... w_n be simplexes in R^m.
       Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
