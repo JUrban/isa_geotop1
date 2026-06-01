@@ -3477,8 +3477,14 @@ proof -
           show "card ?Touch \<le> 2"
           proof (rule ccontr)
             assume hnle: "\<not> card ?Touch \<le> 2"
-            have hTouch_sub: "?Touch \<subseteq> {?S1, ?S2, ?S3}" by (by100 blast)
-            have hTouch_fin: "finite ?Touch" by (by100 simp)
+            have hTouch_sub: "?Touch \<subseteq> {?S1, ?S2, ?S3}"
+            proof
+              fix S
+              assume "S \<in> ?Touch"
+              thus "S \<in> {?S1, ?S2, ?S3}" by (by100 simp)
+            qed
+            have hTouch_fin: "finite ?Touch"
+              by (rule finite_subset[OF hTouch_sub]) (by100 simp)
             have hTouch_card_ge: "card ?Touch \<ge> 3"
               using hnle by (by100 simp)
             have hCarrier_fin: "finite {?S1, ?S2, ?S3}" by (by100 simp)
@@ -3723,9 +3729,71 @@ proof -
           "\<forall>C \<in> components (ball P \<delta> - ?R).
                 card {S \<in> {?S1, ?S2, ?S3}.
                         (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-          using hAM_three_ray_sector_bound h\<delta>_pos hp1_ne hp2_ne hp3_ne
-                hp1_len hp2_len hp3_len hS12_empty hS13_empty hS23_empty
-          by (by100 blast)
+        proof -
+          have h_imp0: "\<forall>p1 p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}
+            \<longrightarrow>
+            (\<forall>C \<in> components
+                (ball P \<delta> -
+                  (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)).
+                card {S \<in> {closed_segment P p1, closed_segment P p2, closed_segment P p3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+            by (rule spec[OF hAM_three_ray_sector_bound])
+          have h_imp1: "\<forall>p2 p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (?S1 - {P}) \<inter> (closed_segment P p2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (closed_segment P p2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}
+            \<longrightarrow>
+            (\<forall>C \<in> components
+                (ball P \<delta> -
+                  (?S1 \<union> closed_segment P p2 \<union> closed_segment P p3)).
+                card {S \<in> {?S1, closed_segment P p2, closed_segment P p3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+            by (rule spec[OF h_imp0])
+          have h_imp2: "\<forall>p3.
+            \<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S1 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S2 - {P}) \<inter> (closed_segment P p3 - {P}) \<inter> ball P \<delta> = {}
+            \<longrightarrow>
+            (\<forall>C \<in> components
+                (ball P \<delta> -
+                  (?S1 \<union> ?S2 \<union> closed_segment P p3)).
+                card {S \<in> {?S1, ?S2, closed_segment P p3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+            by (rule spec[OF h_imp1])
+          have h_imp:
+            "\<delta> > 0 \<and>
+            p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+            \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+            (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {} \<and>
+            (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}
+            \<longrightarrow>
+            (\<forall>C \<in> components (ball P \<delta> - ?R).
+                card {S \<in> {?S1, ?S2, ?S3}.
+                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+            by (rule spec[OF h_imp2])
+          have h_pre: "\<delta> > 0 \<and>
+                p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+                \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+                (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+                (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {} \<and>
+                (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+            using h\<delta>_pos hp1_ne hp2_ne hp3_ne hp1_len hp2_len hp3_len
+                  hS12_empty hS13_empty hS23_empty by (intro conjI)
+          show ?thesis by (rule mp[OF h_imp h_pre])
+        qed
         have hlocal_compl: "ball P \<delta> - M = ball P \<delta> - ?R"
         proof
           show "ball P \<delta> - M \<subseteq> ball P \<delta> - ?R"
@@ -3836,7 +3904,30 @@ proof -
             have hBi_cases: "Bi = B1 \<or> Bi = B2 \<or> Bi = B3"
               using hBiT by (by100 simp)
             show "S \<in> ?TouchS"
-              using hBi_cases hS_eq hB1_touch hB2_touch hB3_touch hBiT by (by100 auto)
+              using hBi_cases
+            proof (elim disjE)
+              assume hBi: "Bi = B1"
+              have hB1T: "B1 \<in> ?TouchB" using hBi hBiT by (by100 simp)
+              have hT: "?S1 \<in> ?TouchS"
+                by (rule hB1_touch[OF hB1T])
+              have hS_eq1: "S = ?S1" using hS_eq hBi by (by100 simp)
+              show ?thesis using hS_eq1 hT by (by100 simp)
+            next
+              assume hBi: "Bi = B2"
+              have hB2T: "B2 \<in> ?TouchB" using hBi hBiT by (by100 simp)
+              have hT: "?S2 \<in> ?TouchS"
+                by (rule hB2_touch[OF hB2T])
+              have hS_eq2: "S = ?S2" using hS_eq hBi h_B1_ne_B2 by (by100 simp)
+              show ?thesis using hS_eq2 hT by (by100 simp)
+            next
+              assume hBi: "Bi = B3"
+              have hB3T: "B3 \<in> ?TouchB" using hBi hBiT by (by100 simp)
+              have hT: "?S3 \<in> ?TouchS"
+                by (rule hB3_touch[OF hB3T])
+              have hS_eq3: "S = ?S3"
+                using hS_eq hBi h_B1_ne_B3 h_B2_ne_B3 by (by100 simp)
+              show ?thesis using hS_eq3 hT by (by100 simp)
+            qed
           qed
           have hcard_img: "card (?f ` ?TouchB) = card ?TouchB"
             by (rule card_image[OF hinj_touch])
@@ -5689,12 +5780,12 @@ proof -
        geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
       using hU_frontier_ex by (elim exE)
     have hij_sub: "{i, j} \<subseteq> {B1, B2, B3}"
-      using hUij by (by100 blast)
+      using conjunct1[OF hUij] .
     have hij_ne: "i \<noteq> j"
-      using hUij by (by100 blast)
+      using conjunct1[OF conjunct2[OF hUij]] .
     have hfr_geo:
       "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
-      using hUij by (by100 blast)
+      using conjunct2[OF conjunct2[OF conjunct2[OF hUij]]] .
     have h_frontier_bridge:
       "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
       by (rule geotop_frontier_UNIV_eq_frontier)
@@ -5708,7 +5799,14 @@ proof -
       "(i = B1 \<and> j = B2) \<or> (i = B2 \<and> j = B1) \<or>
        (i = B1 \<and> j = B3) \<or> (i = B3 \<and> j = B1) \<or>
        (i = B2 \<and> j = B3) \<or> (i = B3 \<and> j = B2)"
-      using hi_mem hj_mem hij_ne by (by100 auto)
+    proof -
+      have hi_cases: "i = B1 \<or> i = B2 \<or> i = B3"
+        using hi_mem by (by100 simp)
+      have hj_cases: "j = B1 \<or> j = B2 \<or> j = B3"
+        using hj_mem by (by100 simp)
+      show ?thesis
+        using hi_cases hj_cases hij_ne by (elim disjE) (by100 simp_all)
+    qed
     show "frontier U = B1 \<union> B2 \<or>
           frontier U = B1 \<union> B3 \<or>
           frontier U = B2 \<union> B3"
@@ -6604,12 +6702,12 @@ proof -
              geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
             using hU_frontier_ex by (elim exE)
           have hij_sub: "{i, j} \<subseteq> {B1, B2, B3}"
-            using hUij by (by100 blast)
+            using conjunct1[OF hUij] .
           have hij_ne: "i \<noteq> j"
-            using hUij by (by100 blast)
+            using conjunct1[OF conjunct2[OF hUij]] .
           have hfr_geo:
             "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
-            using hUij by (by100 blast)
+            using conjunct2[OF conjunct2[OF conjunct2[OF hUij]]] .
           have h_frontier_bridge:
             "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
             by (rule geotop_frontier_UNIV_eq_frontier)
