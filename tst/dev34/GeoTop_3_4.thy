@@ -4774,6 +4774,104 @@ proof -
         [OF hK hvK heK hedge hv_e h2face])
 qed
 
+lemma geotop_link_vertex_count_ge_1_incident_link_edge:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes hcount:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  shows "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+proof -
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
+    by (by100 blast)
+  have hlink_sub: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  have hwK: "{w} \<in> K"
+    using hlink_sub hwL by (by100 blast)
+  have hv_not_w: "v \<noteq> w"
+    using hwL unfolding geotop_link_def by (by100 blast)
+  have hcount_e:
+    "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    using hcount heK hedge hv_e by (by100 blast)
+  obtain w' l where hw'_ne_v: "w' \<noteq> v"
+    and hw'_e: "w' \<in> e"
+    and hw'L: "{w'} \<in> geotop_link K v"
+    and hlL: "l \<in> geotop_link K v"
+    and hledge: "geotop_is_edge l"
+    and hw'_l: "w' \<in> l"
+    using geotop_incident_edge_face_count_ge_1_link_edge_witness
+      [OF hK hvK heK hedge hv_e hcount_e]
+    by (by100 blast)
+  have hw'K: "{w'} \<in> K"
+    using hlink_sub hw'L by (by100 blast)
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 1 + 1"
+    and h1_le_m: "1 \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and he_eq: "e = geotop_convex_hull V"
+    using hedge unfolding geotop_is_edge_def geotop_simplex_dim_def
+    by (by100 blast)
+  have heV: "geotop_simplex_vertices e V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h1_le_m hgp_V he_eq by (by100 blast)
+  obtain Vv where heVv: "geotop_simplex_vertices e Vv"
+    and hvVv: "v \<in> Vv"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK heK hv_e]
+    by (by100 blast)
+  have hVv_eq: "Vv = V"
+    by (rule geotop_simplex_vertices_unique[OF heVv heV])
+  have hvV: "v \<in> V"
+    using hvVv hVv_eq by (by100 simp)
+  obtain Vw where heVw: "geotop_simplex_vertices e Vw"
+    and hwVw: "w \<in> Vw"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hwK heK hw_e]
+    by (by100 blast)
+  have hVw_eq: "Vw = V"
+    by (rule geotop_simplex_vertices_unique[OF heVw heV])
+  have hwV: "w \<in> V"
+    using hwVw hVw_eq by (by100 simp)
+  obtain Vw' where heVw': "geotop_simplex_vertices e Vw'"
+    and hw'Vw': "w' \<in> Vw'"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hw'K heK hw'_e]
+    by (by100 blast)
+  have hVw'_eq: "Vw' = V"
+    by (rule geotop_simplex_vertices_unique[OF heVw' heV])
+  have hw'V: "w' \<in> V"
+    using hw'Vw' hVw'_eq by (by100 simp)
+  have hV_sub: "V \<subseteq> {v, w}"
+  proof
+    fix x assume hxV: "x \<in> V"
+    show "x \<in> {v, w}"
+    proof (rule ccontr)
+      assume hx_not: "x \<notin> {v, w}"
+      have hthree_sub: "{v, w, x} \<subseteq> V"
+        using hvV hwV hxV by (by100 blast)
+      have hx_ne_v: "x \<noteq> v"
+        using hx_not by (by100 simp)
+      have hx_ne_w: "x \<noteq> w"
+        using hx_not by (by100 simp)
+      have hthree_card: "card {v, w, x} = 3"
+        using hv_not_w hx_ne_v hx_ne_w by (by100 simp)
+      have "card {v, w, x} \<le> card V"
+        by (rule card_mono[OF hV_fin hthree_sub])
+      thus False
+        using hthree_card hV_card by (by100 simp)
+    qed
+  qed
+  have hw'_in_pair: "w' \<in> {v, w}"
+    using hV_sub hw'V by (by100 blast)
+  have hw'_eq_w: "w' = w"
+    using hw'_in_pair hw'_ne_v by (by100 blast)
+  show ?thesis
+    using hlL hledge hw'_l hw'_eq_w by (by100 blast)
+qed
+
 lemma geotop_edge_face_in_ge_2_simplex_has_2_face:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
