@@ -3970,7 +3970,43 @@ proof -
                   qed
                   have h_line_three_sectors:
                     "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
-                    sorry
+                  proof -
+                    obtain Lc where hLc_comp: "Lc \<in> components (?L - {a, b})"
+                      and hK_img_sub_Lc: "f ` K \<subseteq> Lc"
+                      using hK_image_component by (by100 blast)
+                    have hK_sub_gLc: "K \<subseteq> g ` Lc"
+                    proof
+                      fix x assume hx: "x \<in> K"
+                      have hx_dom: "x \<in> ?S - {q1}"
+                        using hx hK_sub_punctured by (by100 blast)
+                      have hfx_Lc: "f x \<in> Lc"
+                        using hx hK_img_sub_Lc by (by100 blast)
+                      have "g (f x) = x"
+                        using hfg hx_dom unfolding homeomorphism_def by (by100 blast)
+                      moreover have "g (f x) \<in> g ` Lc"
+                        using hfx_Lc by (rule imageI)
+                      ultimately show "x \<in> g ` Lc"
+                        by (by100 simp)
+                    qed
+                    have hq2_dom: "q2 \<in> ?S - {q1}"
+                      using hq2_sphere hq12_out by (by100 blast)
+                    have hq3_dom: "q3 \<in> ?S - {q1}"
+                      using hq3_sphere hq13_out by (by100 blast)
+                    have hq2_miss_if_a_miss:
+                      "a \<notin> closure Lc \<Longrightarrow> q2 \<notin> closure K"
+                      sorry
+                    have hq3_miss_if_b_miss:
+                      "b \<notin> closure Lc \<Longrightarrow> q3 \<notin> closure K"
+                      sorry
+                    have hq1_miss_if_bounded:
+                      "bounded Lc \<Longrightarrow> q1 \<notin> closure K"
+                      sorry
+                    have hLc_sector_case:
+                      "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
+                      sorry
+                    show ?thesis
+                      sorry
+                  qed
                   show ?thesis by (rule h_line_three_sectors)
                 qed
                 obtain q where hq_cut: "q \<in> {q1, q2, q3}"
