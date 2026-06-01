@@ -63,6 +63,10 @@ definition R2_to_pair :: "real^2 \<Rightarrow> real \<times> real" where
 definition pair_to_R2 :: "real \<times> real \<Rightarrow> real^2" where
   "pair_to_R2 p = (\<chi> i. if i = 1 then fst p else snd p)"
 
+definition R2_to_S2 :: "real^2 \<Rightarrow> real \<times> real \<times> real" where
+  "R2_to_S2 =
+     (inv_into (top1_S2 - {north_pole}) stereographic_proj) \<circ> R2_to_pair"
+
 lemma C_to_R2_R2_to_C: "C_to_R2 (R2_to_C v) = v"
   unfolding C_to_R2_def R2_to_C_def
   by (simp add: vec_eq_iff forall_2)
@@ -187,6 +191,47 @@ proof -
     using h_src_top h_tgt_top h_bij hf_top hg_top by (by100 blast)
 qed
 
+lemma R2_S2_minus_north_homeomorphism_UNIV:
+  "top1_homeomorphism_on (UNIV::(real^2) set)
+     (geotop_euclidean_topology::(real^2) set set)
+     (top1_S2 - {north_pole})
+     (subspace_topology top1_S2 top1_S2_topology (top1_S2 - {north_pole}))
+     R2_to_S2"
+  unfolding R2_to_S2_def
+  by (rule homeomorphism_comp[
+      OF R2_pair_top1_homeomorphism_UNIV
+         homeomorphism_inverse[OF stereographic_proj_homeomorphism]])
+
+lemma R2_to_S2_image_subset_S2_minus_north:
+  "R2_to_S2 ` A \<subseteq> top1_S2 - {north_pole}"
+proof -
+  have hbij: "bij_betw R2_to_S2 (UNIV::(real^2) set) (top1_S2 - {north_pole})"
+    using R2_S2_minus_north_homeomorphism_UNIV
+    unfolding top1_homeomorphism_on_def by (by100 blast)
+  show ?thesis using hbij unfolding bij_betw_def by (by100 blast)
+qed
+
+lemma subspace_topology_S2_minus_north_trans:
+  assumes "A \<subseteq> top1_S2 - {north_pole}"
+  shows "subspace_topology (top1_S2 - {north_pole})
+           (subspace_topology top1_S2 top1_S2_topology (top1_S2 - {north_pole})) A
+       = subspace_topology top1_S2 top1_S2_topology A"
+  by (rule subspace_topology_trans[OF assms])
+
+lemma R2_to_S2_inj_on_UNIV:
+  "inj_on R2_to_S2 (UNIV::(real^2) set)"
+proof -
+  have hbij: "bij_betw R2_to_S2 (UNIV::(real^2) set) (top1_S2 - {north_pole})"
+    using R2_S2_minus_north_homeomorphism_UNIV
+    unfolding top1_homeomorphism_on_def by (by100 blast)
+  show ?thesis using hbij unfolding bij_betw_def by (by100 blast)
+qed
+
+lemma R2_to_S2_image_Int:
+  "R2_to_S2 ` A \<inter> R2_to_S2 ` B = R2_to_S2 ` (A \<inter> B)"
+  using inj_on_image_Int[OF R2_to_S2_inj_on_UNIV subset_UNIV subset_UNIV, of A B]
+  by (by100 simp)
+
 subsection \<open>GeoTop arcs as top1 arcs\<close>
 
 lemma geotop_euclidean_topology_UNIV_strict:
@@ -305,6 +350,83 @@ proof -
         OF geotop_euclidean_topology_UNIV_strict
            geotop_euclidean_topology_UNIV_hausdorff subset_UNIV harc hf_top])
   thus ?thesis using hE by (by100 simp)
+qed
+
+lemma R2_to_S2_geotop_arc_top1_arc:
+  fixes A E :: "(real^2) set"
+  assumes hA: "geotop_arc_endpoints A E"
+      and hE: "E = {a, b}"
+      and hab: "a \<noteq> b"
+  shows "top1_is_arc_on (R2_to_S2 ` A)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` A))"
+proof -
+  let ?Y = "top1_S2 - {north_pole}"
+  let ?TY = "subspace_topology top1_S2 top1_S2_topology ?Y"
+  have hYsub: "?Y \<subseteq> top1_S2" by (by100 blast)
+  have hY_strict: "is_topology_on_strict ?Y ?TY"
+    by (rule subspace_topology_is_strict[OF top1_S2_is_topology_on_strict hYsub])
+  have hY_haus: "is_hausdorff_on ?Y ?TY"
+    using Theorem_17_11 top1_S2_is_hausdorff hYsub by (by100 blast)
+  have hArc: "top1_is_arc_on A
+      (subspace_topology (UNIV::(real^2) set) geotop_euclidean_topology A)"
+    by (rule geotop_arc_endpoints_imp_top1_arc[OF hA])
+  have hEp: "top1_arc_endpoints_on A
+      (subspace_topology (UNIV::(real^2) set) geotop_euclidean_topology A) = {a, b}"
+    using geotop_arc_endpoints_imp_top1_arc_endpoints[OF hA] hE by (by100 simp)
+  have htransport:
+      "top1_is_arc_on (R2_to_S2 ` A) (subspace_topology ?Y ?TY (R2_to_S2 ` A)) \<and>
+       top1_arc_endpoints_on (R2_to_S2 ` A) (subspace_topology ?Y ?TY (R2_to_S2 ` A))
+          = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule arc_endpoints_under_homeomorphism[
+        OF geotop_euclidean_topology_UNIV_strict hY_strict
+           geotop_euclidean_topology_UNIV_hausdorff hY_haus
+           R2_S2_minus_north_homeomorphism_UNIV subset_UNIV hArc hEp hab])
+  have himg_sub: "R2_to_S2 ` A \<subseteq> ?Y"
+    by (rule R2_to_S2_image_subset_S2_minus_north)
+  have htop_eq:
+      "subspace_topology ?Y ?TY (R2_to_S2 ` A)
+       = subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` A)"
+    by (rule subspace_topology_S2_minus_north_trans[OF himg_sub])
+  show ?thesis using htransport htop_eq by (by100 simp)
+qed
+
+lemma R2_to_S2_geotop_arc_top1_arc_endpoints:
+  fixes A E :: "(real^2) set"
+  assumes hA: "geotop_arc_endpoints A E"
+      and hE: "E = {a, b}"
+      and hab: "a \<noteq> b"
+  shows "top1_arc_endpoints_on (R2_to_S2 ` A)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` A))
+       = {R2_to_S2 a, R2_to_S2 b}"
+proof -
+  let ?Y = "top1_S2 - {north_pole}"
+  let ?TY = "subspace_topology top1_S2 top1_S2_topology ?Y"
+  have hYsub: "?Y \<subseteq> top1_S2" by (by100 blast)
+  have hY_strict: "is_topology_on_strict ?Y ?TY"
+    by (rule subspace_topology_is_strict[OF top1_S2_is_topology_on_strict hYsub])
+  have hY_haus: "is_hausdorff_on ?Y ?TY"
+    using Theorem_17_11 top1_S2_is_hausdorff hYsub by (by100 blast)
+  have hArc: "top1_is_arc_on A
+      (subspace_topology (UNIV::(real^2) set) geotop_euclidean_topology A)"
+    by (rule geotop_arc_endpoints_imp_top1_arc[OF hA])
+  have hEp: "top1_arc_endpoints_on A
+      (subspace_topology (UNIV::(real^2) set) geotop_euclidean_topology A) = {a, b}"
+    using geotop_arc_endpoints_imp_top1_arc_endpoints[OF hA] hE by (by100 simp)
+  have htransport:
+      "top1_is_arc_on (R2_to_S2 ` A) (subspace_topology ?Y ?TY (R2_to_S2 ` A)) \<and>
+       top1_arc_endpoints_on (R2_to_S2 ` A) (subspace_topology ?Y ?TY (R2_to_S2 ` A))
+          = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule arc_endpoints_under_homeomorphism[
+        OF geotop_euclidean_topology_UNIV_strict hY_strict
+           geotop_euclidean_topology_UNIV_hausdorff hY_haus
+           R2_S2_minus_north_homeomorphism_UNIV subset_UNIV hArc hEp hab])
+  have himg_sub: "R2_to_S2 ` A \<subseteq> ?Y"
+    by (rule R2_to_S2_image_subset_S2_minus_north)
+  have htop_eq:
+      "subspace_topology ?Y ?TY (R2_to_S2 ` A)
+       = subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` A)"
+    by (rule subspace_topology_S2_minus_north_trans[OF himg_sub])
+  show ?thesis using htransport htop_eq by (by100 simp)
 qed
 
 lemma R2_to_C_surj: "surj R2_to_C"
