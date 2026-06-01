@@ -8550,7 +8550,60 @@ proof -
             U \<inter> I13 \<noteq> {} \<longrightarrow>
             U \<subseteq> geotop_polygon_exterior (B1 \<union> B2) \<longrightarrow>
             U \<subseteq> geotop_polygon_exterior (B2 \<union> B3) \<longrightarrow> False"
-        sorry
+      proof (intro ballI impI)
+        fix U assume hU_comp: "U \<in> components (UNIV - M)"
+          and hU_meets_I13: "U \<inter> I13 \<noteq> {}"
+          and hU_ext12: "U \<subseteq> geotop_polygon_exterior (B1 \<union> B2)"
+          and hU_ext23: "U \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
+        have hU_sub_I13: "U \<subseteq> I13"
+        proof -
+          obtain p where hpU: "p \<in> U" and hpI13: "p \<in> I13"
+            using hU_meets_I13 by (by100 blast)
+          have hM_eq: "M = B1 \<union> B2 \<union> B3"
+            using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+          have hU_conn: "connected U"
+            using hU_comp in_components_connected by (by100 blast)
+          have hU_subM: "U \<subseteq> UNIV - M"
+            using hU_comp in_components_subset by (by100 blast)
+          have hU_sub_compl13: "U \<subseteq> UNIV - (B1 \<union> B3)"
+            using hU_subM hM_eq by (by100 blast)
+          have h_sph13: "geotop_is_n_sphere (B1 \<union> B3)
+              (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B3)) 1"
+            using h_poly_13_t28 unfolding geotop_is_polygon_def by (by100 blast)
+          have hI13_comp: "I13 \<in> components (UNIV - (B1 \<union> B3))"
+          proof -
+            have "geotop_polygon_interior (B1 \<union> B3)
+                \<in> components (UNIV - (B1 \<union> B3))"
+              by (rule polygon_interior_is_HOL_component[OF h_sph13])
+            thus ?thesis using I13_def by (by100 simp)
+          qed
+          have hI13_eq:
+            "I13 = connected_component_set (UNIV - (B1 \<union> B3)) p"
+            by (rule component_eq_connected_component_set[OF hI13_comp hpI13])
+          have "U \<subseteq> connected_component_set (UNIV - (B1 \<union> B3)) p"
+            using hpU hU_conn hU_sub_compl13 connected_component_maximal
+            by (by100 blast)
+          thus ?thesis using hI13_eq by (by100 simp)
+        qed
+        have hU_bounded: "bounded U"
+        proof -
+          have h_sph13: "geotop_is_n_sphere (B1 \<union> B3)
+              (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B3)) 1"
+            using h_poly_13_t28 unfolding geotop_is_polygon_def by (by100 blast)
+          have hI13_bounded: "bounded I13"
+            using polygon_interior_bounded[OF h_sph13] I13_def by (by100 simp)
+          show ?thesis
+            using bounded_subset[OF hI13_bounded hU_sub_I13] .
+        qed
+        have hU_frontier_13: "frontier U = B1 \<union> B3"
+          sorry
+        have h_no_bounded_frontier_13:
+          "\<not> (\<exists>U\<in>components (UNIV - M). bounded U \<and> frontier U = B1 \<union> B3)"
+          sorry
+        show False
+          using h_no_bounded_frontier_13 hU_comp hU_bounded hU_frontier_13
+          by (by100 blast)
+      qed
       show ?thesis
       proof (rule equals0I)
         fix x assume hx:
