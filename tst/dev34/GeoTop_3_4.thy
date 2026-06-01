@@ -3663,6 +3663,18 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_2_simplex_open_subset_connected_punctured_neighborhood:
+  fixes \<sigma> A :: "(real^2) set" and p :: "real^2"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hAopen: "A \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+  assumes hAsub: "A \<subseteq> \<sigma>"
+  assumes hpA: "p \<in> A"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  sorry
+
 lemma geotop_2_cell_open_subset_connected_punctured_neighborhood:
   fixes C A :: "(real^2) set" and p :: "real^2"
   assumes hcell: "geotop_is_n_cell C
@@ -3674,7 +3686,161 @@ lemma geotop_2_cell_open_subset_connected_punctured_neighborhood:
       \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
       \<and> top1_connected_on (N - {p})
           (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
-  sorry
+proof -
+  obtain \<sigma> and f :: "real^2 \<Rightarrow> real^2"
+    where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      and hhomeo: "top1_homeomorphism_on C
+          (subspace_topology UNIV geotop_euclidean_topology C)
+          \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+    using geotop_is_n_cell_imp_homeo_ex[OF hcell] by (by100 blast)
+  have hpC: "p \<in> C"
+    using hpA hAsub by (by100 blast)
+  have hbij: "bij_betw f C \<sigma>"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinj: "inj_on f C"
+    using hbij by (rule bij_betw_imp_inj_on)
+  define B where "B = f ` A"
+  have hBopen: "B \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+    unfolding B_def
+    by (rule homeomorphism_image_open[OF hhomeo hAopen hAsub])
+  have hBsub\<sigma>: "B \<subseteq> \<sigma>"
+    using hbij hAsub unfolding B_def bij_betw_def by (by100 blast)
+  have hfpB: "f p \<in> B"
+    unfolding B_def using hpA by (by100 blast)
+  obtain W where hfpW: "f p \<in> W" and hWsubB: "W \<subseteq> B"
+      and hWopenB: "W \<in> subspace_topology UNIV geotop_euclidean_topology B"
+      and hWconn: "top1_connected_on (W - {f p})
+          (subspace_topology UNIV geotop_euclidean_topology (W - {f p}))"
+    using geotop_2_simplex_open_subset_connected_punctured_neighborhood
+      [OF h\<sigma> hBopen hBsub\<sigma> hfpB]
+    by (by100 blast)
+  have hWopen\<sigma>: "W \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+    by (rule geotop_subspace_open_trans[OF hBopen hWopenB])
+  have hcont_f: "top1_continuous_map_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)
+      \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  define N where "N = {x \<in> A. f x \<in> W}"
+  have hpreC: "{x \<in> C. f x \<in> W}
+      \<in> subspace_topology UNIV geotop_euclidean_topology C"
+    by (rule continuous_map_preimage_open[OF hcont_f hWopen\<sigma>])
+  have hNopenA: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+  proof -
+    obtain Oset where hOtop: "Oset \<in> geotop_euclidean_topology"
+        and hpre_eq: "{x \<in> C. f x \<in> W} = C \<inter> Oset"
+      using hpreC unfolding subspace_topology_def by (by100 blast)
+    have hNeq: "N = A \<inter> Oset"
+      unfolding N_def using hAsub hpre_eq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hOtop hNeq by (by100 blast)
+  qed
+  have hpN: "p \<in> N"
+    unfolding N_def using hpA hfpW by (by100 blast)
+  have hNsubA: "N \<subseteq> A"
+    unfolding N_def by (by100 blast)
+  have hcont_inv: "top1_continuous_map_on \<sigma>
+      (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+      C (subspace_topology UNIV geotop_euclidean_topology C) (inv_into C f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have himage_eq: "(inv_into C f) ` (W - {f p}) = N - {p}"
+  proof
+    show "(inv_into C f) ` (W - {f p}) \<subseteq> N - {p}"
+    proof
+      fix y assume hy: "y \<in> (inv_into C f) ` (W - {f p})"
+      then obtain z where hzW: "z \<in> W - {f p}" and hyz: "y = inv_into C f z"
+        by (by100 blast)
+      have hzW0: "z \<in> W"
+        using hzW by (by100 simp)
+      have hzneq: "z \<noteq> f p"
+        using hzW by (by100 simp)
+      have hzB: "z \<in> B"
+        using hWsubB hzW0 by (by100 blast)
+      then obtain a where hza: "z = f a" and haA: "a \<in> A"
+        unfolding B_def by (rule imageE)
+      have haC: "a \<in> C"
+        using haA hAsub by (by100 blast)
+      have hy_a: "y = a"
+        using hyz hza bij_betw_inv_into_left[OF hbij haC] by (by100 simp)
+      have hyN: "y \<in> N"
+        unfolding N_def using hy_a haA hza hzW0 by (by100 simp)
+      have "y \<noteq> p"
+        using hy_a hza hzneq by (by100 blast)
+      thus "y \<in> N - {p}"
+        using hyN by (by100 simp)
+    qed
+  next
+    show "N - {p} \<subseteq> (inv_into C f) ` (W - {f p})"
+    proof
+      fix y assume hy: "y \<in> N - {p}"
+      have hyN: "y \<in> N"
+        using hy by (by100 simp)
+      have hyA: "y \<in> A"
+        using hyN unfolding N_def by (by100 simp)
+      have hyC: "y \<in> C"
+        using hyA hAsub by (by100 blast)
+      have hfyW: "f y \<in> W"
+        using hyN unfolding N_def by (by100 simp)
+      have hyneq: "y \<noteq> p"
+        using hy by (by100 simp)
+      have hfyneq: "f y \<noteq> f p"
+      proof
+        assume hEq: "f y = f p"
+        have "y = p"
+          using inj_onD[OF hinj hEq hyC hpC] .
+        thus False
+          using hyneq by (by100 simp)
+      qed
+      have hfyWdiff: "f y \<in> W - {f p}"
+        using hfyW hfyneq by (by100 simp)
+      have hinv_y0: "inv_into C f (f y) = y"
+        using bij_betw_inv_into_left[OF hbij hyC] .
+      have hinv_y: "y = inv_into C f (f y)"
+        using hinv_y0 by (by100 simp)
+      thus "y \<in> (inv_into C f) ` (W - {f p})"
+        using image_eqI[of y "inv_into C f" "f y" "W - {f p}"] hfyWdiff
+        by (by100 blast)
+    qed
+  qed
+  have htop\<sigma>: "is_topology_on \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+  proof -
+    have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      unfolding geotop_euclidean_topology_eq_open_sets
+      by (rule top1_open_sets_is_topology_on_UNIV)
+    show ?thesis
+      by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  qed
+  have htopC: "is_topology_on C (subspace_topology UNIV geotop_euclidean_topology C)"
+  proof -
+    have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      unfolding geotop_euclidean_topology_eq_open_sets
+      by (rule top1_open_sets_is_topology_on_UNIV)
+    show ?thesis
+      by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  qed
+  have hWdiff_sub\<sigma>: "W - {f p} \<subseteq> \<sigma>"
+    using hWsubB hBsub\<sigma> by (by100 blast)
+  have hW_subspace_eq: "subspace_topology \<sigma>
+        (subspace_topology UNIV geotop_euclidean_topology \<sigma>) (W - {f p}) =
+      subspace_topology UNIV geotop_euclidean_topology (W - {f p})"
+    by (rule subspace_topology_trans[OF hWdiff_sub\<sigma>])
+  have hWconn\<sigma>: "top1_connected_on (W - {f p})
+      (subspace_topology \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) (W - {f p}))"
+    using hWconn hW_subspace_eq by (by100 simp)
+  have hconnC: "top1_connected_on (N - {p})
+      (subspace_topology C (subspace_topology UNIV geotop_euclidean_topology C) (N - {p}))"
+    by (rule Theorem_GT_1_8[OF htop\<sigma> htopC hcont_inv hWdiff_sub\<sigma> himage_eq hWconn\<sigma>])
+  have hNminus_subC: "N - {p} \<subseteq> C"
+    using hNsubA hAsub by (by100 blast)
+  have hsub_eq: "subspace_topology C
+        (subspace_topology UNIV geotop_euclidean_topology C) (N - {p}) =
+      subspace_topology UNIV geotop_euclidean_topology (N - {p})"
+    by (rule subspace_topology_trans[OF hNminus_subC])
+  have hconn: "top1_connected_on (N - {p})
+      (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using hconnC hsub_eq by (by100 simp)
+  show ?thesis
+    using hpN hNsubA hNopenA hconn by (by100 blast)
+qed
 
 lemma geotop_2_manifold_with_boundary_open_edge_rel_interior_connected_punctured_neighborhood:
   fixes M e :: "(real^2) set" and p :: "real^2"
