@@ -4748,6 +4748,32 @@ proof -
         [OF hK hvK h\<sigma>K h\<sigma>2 hface hedge hv_e])
 qed
 
+lemma geotop_incident_edge_face_count_ge_1_link_edge_witness:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  assumes hcount:
+    "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  shows "\<exists>w l. w \<noteq> v \<and> w \<in> e \<and> {w} \<in> geotop_link K v
+      \<and> l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have hS_ne: "?S \<noteq> {}"
+    using hcount by (by100 force)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and hface: "geotop_is_face e \<sigma>"
+    using hS_ne by (by100 blast)
+  have h2face: "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+    using h\<sigma>K h\<sigma>2 hface by (by100 blast)
+  show ?thesis
+    by (rule geotop_incident_edge_adjacent_2simplex_link_edge_witness
+        [OF hK hvK heK hedge hv_e h2face])
+qed
+
 lemma geotop_edge_face_in_ge_2_simplex_has_2_face:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
