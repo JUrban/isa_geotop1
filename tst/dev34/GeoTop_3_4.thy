@@ -5179,7 +5179,18 @@ proof
   \<comment> \<open>L6: link is a polygon (single 1-sphere from L2-L4 + L5).\<close>
   have hL6: "geotop_is_polygon (\<Union>(geotop_link K v))" sorry
   \<comment> \<open>L7 (main conclusion): Star is a combinatorial 2-cell.\<close>
-  have hL7: "geotop_comb_n_cell (geotop_star K v) 2" sorry
+  have hL7: "geotop_comb_n_cell (geotop_star K v) 2"
+  proof -
+    have hstar_complex: "geotop_is_complex (geotop_star K v)"
+      by (rule geotop_star_is_complex[OF hK])
+    have hcone_equiv:
+      "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> geotop_comb_equiv (geotop_star K v) L"
+      sorry
+    show ?thesis
+      unfolding geotop_comb_n_cell_def using hstar_complex hcone_equiv by (by100 blast)
+  qed
   have hL_all:
     "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
