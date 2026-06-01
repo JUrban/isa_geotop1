@@ -4375,6 +4375,76 @@ proof
   qed
 qed
 
+lemma geotop_theta_graph_R2_to_S2_three_components:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes htheta: "geotop_is_theta_graph M B1 B2 B3 E"
+  shows "\<exists>U V W. U \<noteq> {} \<and> V \<noteq> {} \<and> W \<noteq> {}
+      \<and> U \<inter> V = {} \<and> V \<inter> W = {} \<and> U \<inter> W = {}
+      \<and> U \<union> V \<union> W = top1_S2 - (R2_to_S2 ` B1 \<union> R2_to_S2 ` B2 \<union> R2_to_S2 ` B3)
+      \<and> top1_connected_on U (subspace_topology top1_S2 top1_S2_topology U)
+      \<and> top1_connected_on V (subspace_topology top1_S2 top1_S2_topology V)
+      \<and> top1_connected_on W (subspace_topology top1_S2 top1_S2_topology W)
+      \<and> U \<in> top1_S2_topology \<and> V \<in> top1_S2_topology \<and> W \<in> top1_S2_topology"
+proof -
+  have hE1: "geotop_arc_endpoints B1 E"
+    and hE2: "geotop_arc_endpoints B2 E"
+    and hE3: "geotop_arc_endpoints B3 E"
+    using htheta unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have hI12: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+    and hI13: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
+    and hI23: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
+    using htheta unfolding geotop_is_theta_graph_def by (by100 blast)+
+  have hE_card: "card E = 2"
+    using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
+  obtain a b where hab: "a \<noteq> b" and hE_eq: "E = {a, b}"
+    using hE_card card_2_iff by (by100 metis)
+  have himg_ne: "R2_to_S2 a \<noteq> R2_to_S2 b"
+    using R2_to_S2_inj_on_UNIV hab unfolding inj_on_def by (by100 blast)
+  have hA1: "top1_is_arc_on (R2_to_S2 ` B1)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B1))"
+    by (rule R2_to_S2_geotop_arc_top1_arc[OF hE1 hE_eq hab])
+  have hA2: "top1_is_arc_on (R2_to_S2 ` B2)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B2))"
+    by (rule R2_to_S2_geotop_arc_top1_arc[OF hE2 hE_eq hab])
+  have hA3: "top1_is_arc_on (R2_to_S2 ` B3)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B3))"
+    by (rule R2_to_S2_geotop_arc_top1_arc[OF hE3 hE_eq hab])
+  have hEP1: "top1_arc_endpoints_on (R2_to_S2 ` B1)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B1))
+       = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule R2_to_S2_geotop_arc_top1_arc_endpoints[OF hE1 hE_eq hab])
+  have hEP2: "top1_arc_endpoints_on (R2_to_S2 ` B2)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B2))
+       = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule R2_to_S2_geotop_arc_top1_arc_endpoints[OF hE2 hE_eq hab])
+  have hEP3: "top1_arc_endpoints_on (R2_to_S2 ` B3)
+      (subspace_topology top1_S2 top1_S2_topology (R2_to_S2 ` B3))
+       = {R2_to_S2 a, R2_to_S2 b}"
+    by (rule R2_to_S2_geotop_arc_top1_arc_endpoints[OF hE3 hE_eq hab])
+  have hsub1: "R2_to_S2 ` B1 \<subseteq> top1_S2"
+    using R2_to_S2_image_subset_S2_minus_north[of B1] by (by100 blast)
+  have hsub2: "R2_to_S2 ` B2 \<subseteq> top1_S2"
+    using R2_to_S2_image_subset_S2_minus_north[of B2] by (by100 blast)
+  have hsub3: "R2_to_S2 ` B3 \<subseteq> top1_S2"
+    using R2_to_S2_image_subset_S2_minus_north[of B3] by (by100 blast)
+  have hB12: "B1 \<inter> B2 = E"
+    by (rule pair_of_arcs_intersection[OF hE1 hE2 hI12])
+  have hB23: "B2 \<inter> B3 = E"
+    by (rule pair_of_arcs_intersection[OF hE2 hE3 hI23])
+  have hB13: "B1 \<inter> B3 = E"
+    by (rule pair_of_arcs_intersection[OF hE1 hE3 hI13])
+  have hImg12: "R2_to_S2 ` B1 \<inter> R2_to_S2 ` B2 = {R2_to_S2 a, R2_to_S2 b}"
+    using R2_to_S2_image_Int[of B1 B2] hB12 hE_eq by (by100 simp)
+  have hImg23: "R2_to_S2 ` B2 \<inter> R2_to_S2 ` B3 = {R2_to_S2 a, R2_to_S2 b}"
+    using R2_to_S2_image_Int[of B2 B3] hB23 hE_eq by (by100 simp)
+  have hImg13: "R2_to_S2 ` B1 \<inter> R2_to_S2 ` B3 = {R2_to_S2 a, R2_to_S2 b}"
+    using R2_to_S2_image_Int[of B1 B3] hB13 hE_eq by (by100 simp)
+  show ?thesis
+    by (rule Lemma_64_1_theta_space_three_components[
+        OF top1_S2_is_topology_on_strict hsub1 hsub2 hsub3
+           hA1 hA2 hA3 himg_ne hImg12 hImg23 hImg13 hEP1 hEP2 hEP3])
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
