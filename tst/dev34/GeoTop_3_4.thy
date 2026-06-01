@@ -3777,6 +3777,100 @@ proof -
     using hconn_U hsub_eq by (by100 simp)
 qed
 
+lemma geotop_plane_chart_1sphere_complement_not_connected:
+  fixes U J :: "(real^2) set"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hJsub: "J \<subseteq> U"
+  assumes hJimg: "geotop_is_n_sphere (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
+  shows "\<not> top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+proof
+  let ?B = "f ` J"
+  assume hconn: "top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  have hnot_img: "\<not> top1_connected_on (UNIV - ?B)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV - ?B))"
+    by (rule Theorem_GT_4_3[OF hJimg])
+  have hbij: "bij_betw f U (UNIV::(real^2) set)"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinj: "inj_on f U"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hcont_f: "top1_continuous_map_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  have himage_eq: "f ` (U - J) = UNIV - ?B"
+  proof
+    show "f ` (U - J) \<subseteq> UNIV - ?B"
+    proof
+      fix y assume hy: "y \<in> f ` (U - J)"
+      then obtain x where hx: "x \<in> U - J" and hyx: "y = f x"
+        by (by100 blast)
+      have hxU: "x \<in> U"
+        using hx by (by100 simp)
+      have hxJ: "x \<notin> J"
+        using hx by (by100 simp)
+      have hy_not_B: "y \<notin> ?B"
+      proof
+        assume "y \<in> ?B"
+        then obtain z where hzJ: "z \<in> J" and hyz: "y = f z"
+          by (by100 blast)
+        have hzU: "z \<in> U"
+          using hzJ hJsub by (by100 blast)
+        have "x = z"
+          using inj_onD[OF hinj] hxU hzU hyx hyz by (by100 blast)
+        thus False
+          using hxJ hzJ by (by100 simp)
+      qed
+      show "y \<in> UNIV - ?B"
+        using hy_not_B by (by100 simp)
+    qed
+  next
+    show "UNIV - ?B \<subseteq> f ` (U - J)"
+    proof
+      fix y assume hy: "y \<in> UNIV - ?B"
+      have hy_not_B: "y \<notin> ?B"
+        using hy by (by100 simp)
+      have hy_img_U: "y \<in> f ` U"
+        using hbij unfolding bij_betw_def by (by100 simp)
+      then obtain x where hxU: "x \<in> U" and hxy: "f x = y"
+        by (by100 blast)
+      have hx_not_J: "x \<notin> J"
+      proof
+        assume "x \<in> J"
+        hence "y \<in> ?B"
+          using hxy by (by100 blast)
+        thus False
+          using hy_not_B by (by100 blast)
+      qed
+      have hxUJ: "x \<in> U - J"
+        using hxU hx_not_J by (by100 simp)
+      show "y \<in> f ` (U - J)"
+        using hxUJ hxy by (by100 blast)
+    qed
+  qed
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htop_U: "is_topology_on U (subspace_topology UNIV geotop_euclidean_topology U)"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  have hsub_eq: "subspace_topology U
+        (subspace_topology UNIV geotop_euclidean_topology U) (U - J) =
+      subspace_topology UNIV geotop_euclidean_topology (U - J)"
+    by (rule subspace_topology_trans[OF Diff_subset])
+  have hconn_U: "top1_connected_on (U - J)
+      (subspace_topology U (subspace_topology UNIV geotop_euclidean_topology U) (U - J))"
+    using hconn hsub_eq by (by100 simp)
+  have hconn_img: "top1_connected_on (UNIV - ?B)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV - ?B))"
+    by (rule Theorem_GT_1_8[OF htop_U htop_UNIV hcont_f Diff_subset himage_eq hconn_U])
+  show False
+    using hconn_img hnot_img by (by100 blast)
+qed
+
 lemma geotop_subspace_open_trans:
   fixes A B N :: "(real^2) set"
   assumes hA: "A \<in> subspace_topology UNIV geotop_euclidean_topology B"
