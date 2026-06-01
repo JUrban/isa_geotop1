@@ -2160,235 +2160,62 @@ theorem Jordan_curve_theorem:
            J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
            J = geotop_frontier UNIV geotop_euclidean_topology E"
 proof -
-  (** (1) Approximate J by a polygonal 1-sphere J' in plane via a plane homeomorphism h.
-         (Tame imbedding / PL approximation; R^2 is 2-dim so every 1-sphere is tame.) **)
-  \<comment> \<open>Sub-claim JCT-1: \<exists>J' polygon and h plane-homeo with h(J) = J'.\<close>
-  have h_approx_polygon:
-    "\<exists>J'. geotop_is_polygon J' \<and>
-          (\<exists>h. top1_homeomorphism_on UNIV geotop_euclidean_topology
-                  UNIV geotop_euclidean_topology h \<and> h ` J = J')" sorry
-  (** (2) For the polygonal J', apply Theorem 2.1: plane minus J' has exactly two connected
-         components with Jordan property (bounded I' and unbounded E', each with frontier
-         J'). **)
-  \<comment> \<open>Sub-claim JCT-2: for any polygon J', plane \ J' splits into 2 connected
-    components (I', E') via Theorem_GT_2_1 / Jordan_Brouwer_separation +
-    geotop_polygon_interior infrastructure.\<close>
-  have h_polygon_JCT:
-    "\<forall>J'::(real^2) set. geotop_is_polygon J' \<longrightarrow>
-          (\<exists>I' E'. UNIV - J' = I' \<union> E' \<and> I' \<inter> E' = {} \<and>
-                   top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
-                   top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
-                   J' = geotop_frontier UNIV geotop_euclidean_topology I' \<and>
-                   J' = geotop_frontier UNIV geotop_euclidean_topology E')"
-  proof (intro allI impI)
-    fix J' :: "(real^2) set"
-    assume hJ': "geotop_is_polygon J'"
-    let ?I = "geotop_polygon_interior J'"
-    let ?E = "geotop_polygon_exterior J'"
-    have hcomps: "components (UNIV - J') = {?I, ?E}"
-      by (rule polygon_components_eq[OF hJ'])
-    have hcover: "UNIV - J' = ?I \<union> ?E"
-    proof -
-      have "\<Union>(components (UNIV - J')) = UNIV - J'"
-        by (rule Union_components)
-      thus ?thesis using hcomps by (by100 simp)
-    qed
-    have hdisj: "?I \<inter> ?E = {}"
-      by (rule polygon_interior_exterior_disjoint[OF hJ'])
-    have hI_comp: "?I \<in> components (UNIV - J')"
-      using hcomps by (by100 simp)
-    have hE_comp: "?E \<in> components (UNIV - J')"
-      using hcomps by (by100 simp)
-    have hI_conn_HOL: "connected ?I"
-      using hI_comp in_components_connected by (by100 blast)
-    have hE_conn_HOL: "connected ?E"
-      using hE_comp in_components_connected by (by100 blast)
-    have hI_conn:
-      "top1_connected_on ?I (subspace_topology UNIV geotop_euclidean_topology ?I)"
-      using hI_conn_HOL top1_connected_on_geotop_iff_connected[of ?I] by (by100 simp)
-    have hE_conn:
-      "top1_connected_on ?E (subspace_topology UNIV geotop_euclidean_topology ?E)"
-      using hE_conn_HOL top1_connected_on_geotop_iff_connected[of ?E] by (by100 simp)
-    have hI_front: "J' = geotop_frontier UNIV geotop_euclidean_topology ?I"
-      by (rule Theorem_GT_2_6(1)[OF hJ'])
-    have hE_front: "J' = geotop_frontier UNIV geotop_euclidean_topology ?E"
-      by (rule Theorem_GT_2_6(2)[OF hJ'])
-    show "(\<exists>I' E'. UNIV - J' = I' \<union> E' \<and> I' \<inter> E' = {} \<and>
-                 top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I') \<and>
-                 top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E') \<and>
-                 J' = geotop_frontier UNIV geotop_euclidean_topology I' \<and>
-                 J' = geotop_frontier UNIV geotop_euclidean_topology E')"
-      using hcover hdisj hI_conn hE_conn hI_front hE_front by (by100 blast)
-  qed
-  (** (3) Pull the Jordan decomposition back through the homeomorphism h: I = h^{-1}(I'),
-         E = h^{-1}(E'). The connectivity, disjointness, and frontier relations transport
-         through the homeomorphism. **)
-  \<comment> \<open>Sub-claim JCT-3: pullback through h. Connectivity preserved by homeo;
-    frontier preserved by plane-homeo via geotop_frontier_UNIV_eq_frontier
-    + frontier-image lemmas.\<close>
-  have h_pullback:
-    "\<exists>I E. UNIV - J = I \<union> E \<and> I \<inter> E = {} \<and>
-           top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I) \<and>
-           top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E) \<and>
-           J = geotop_frontier UNIV geotop_euclidean_topology I \<and>
-           J = geotop_frontier UNIV geotop_euclidean_topology E"
+  obtain I E where hI_comp: "I \<in> components (UNIV - J)"
+    and hE_comp: "E \<in> components (UNIV - J)"
+    and hI_bdd: "bounded I"
+    and hE_unbdd: "\<not> bounded E"
+    and hcomponents: "components (UNIV - J) = {I, E}"
+    by (rule geotop_1sphere_components_from_Jordan_curve[OF hJ])
+  have hcover: "UNIV - J = I \<union> E"
   proof -
-    obtain J' :: "(real^2) set" and h :: "(real^2) \<Rightarrow> (real^2)"
-      where hJ'_poly: "geotop_is_polygon J'"
-      and hh_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
-                  UNIV geotop_euclidean_topology h"
-      and hhJ: "h ` J = J'"
-      using h_approx_polygon by (by100 blast)
-    obtain I' E' where hcover': "UNIV - J' = I' \<union> E'"
-      and hdisj': "I' \<inter> E' = {}"
-      and hI'_conn:
-        "top1_connected_on I' (subspace_topology UNIV geotop_euclidean_topology I')"
-      and hE'_conn:
-        "top1_connected_on E' (subspace_topology UNIV geotop_euclidean_topology E')"
-      and hI'_front: "J' = geotop_frontier UNIV geotop_euclidean_topology I'"
-      and hE'_front: "J' = geotop_frontier UNIV geotop_euclidean_topology E'"
-      using h_polygon_JCT[rule_format, OF hJ'_poly] by (by100 blast)
-    obtain k where hhk: "homeomorphism UNIV UNIV h k"
-      by (rule top1_homeomorphism_on_UNIV_R2_obtain_HOL_homeomorphism[OF hh_homeo])
-    define I where "I = k ` I'"
-    define E where "E = k ` E'"
-    have hkh: "\<And>x. k (h x) = x"
-      using hhk unfolding homeomorphism_def by (by100 simp)
-    have hhk_apply: "\<And>y. h (k y) = y"
-      using hhk unfolding homeomorphism_def by (by100 simp)
-    have hh_inj: "inj h"
-    proof (rule injI)
-      fix x y assume hxy: "h x = h y"
-      have "k (h x) = k (h y)" using hxy by (by100 simp)
-      thus "x = y" using hkh by (by100 simp)
-    qed
-    have hk_inj: "inj k"
-    proof (rule injI)
-      fix x y assume hxy: "k x = k y"
-      have "h (k x) = h (k y)" using hxy by (by100 simp)
-      thus "x = y" using hhk_apply by (by100 simp)
-    qed
-    have hIJ: "k ` J' = J"
-    proof
-      show "k ` J' \<subseteq> J"
-      proof
-        fix x assume hx: "x \<in> k ` J'"
-        then obtain y where hyJ': "y \<in> J'" and hx_eq: "x = k y"
-          by (by100 blast)
-        obtain z where hzJ: "z \<in> J" and hy_eq: "y = h z"
-          using hyJ' hhJ by (by100 blast)
-        show "x \<in> J" using hx_eq hy_eq hzJ hkh by (by100 simp)
-      qed
-      show "J \<subseteq> k ` J'"
-      proof
-        fix x assume hxJ: "x \<in> J"
-        have "h x \<in> J'" using hxJ hhJ by (by100 blast)
-        moreover have "x = k (h x)" using hkh by (by100 simp)
-        ultimately show "x \<in> k ` J'" by (by100 blast)
-      qed
-    qed
-    have hk_compl: "k ` (UNIV - J') = UNIV - J"
-    proof
-      show "k ` (UNIV - J') \<subseteq> UNIV - J"
-      proof
-        fix x assume hx: "x \<in> k ` (UNIV - J')"
-        then obtain y where hy_not: "y \<notin> J'" and hx_eq: "x = k y"
-          by (by100 blast)
-        have hx_not: "x \<notin> J"
-        proof
-          assume hxJ: "x \<in> J"
-          have "x \<in> k ` J'" using hIJ hxJ by (by100 blast)
-          then obtain z where hzJ': "z \<in> J'" and hx_z: "x = k z"
-            by (by100 blast)
-          have "y = z" using hx_eq hx_z hk_inj unfolding inj_def by (by100 blast)
-          thus False using hy_not hzJ' by (by100 simp)
-        qed
-        show "x \<in> UNIV - J" using hx_not by (by100 simp)
-      qed
-      show "UNIV - J \<subseteq> k ` (UNIV - J')"
-      proof
-        fix x assume hx: "x \<in> UNIV - J"
-        have hx_notJ: "x \<notin> J" using hx by (by100 simp)
-        have hhx_notJ': "h x \<notin> J'"
-        proof
-          assume "h x \<in> J'"
-          then obtain z where hzJ: "z \<in> J" and hz: "h x = h z"
-            using hhJ by (by100 blast)
-          have "x = z" using hz hh_inj unfolding inj_def by (by100 blast)
-          thus False using hx_notJ hzJ by (by100 simp)
-        qed
-        have "x = k (h x)" using hkh by (by100 simp)
-        thus "x \<in> k ` (UNIV - J')" using hhx_notJ' by (by100 blast)
-      qed
-    qed
-    have hcover: "UNIV - J = I \<union> E"
-    proof -
-      have "UNIV - J = k ` (UNIV - J')" using hk_compl by (by100 simp)
-      also have "\<dots> = k ` (I' \<union> E')" using hcover' by (by100 simp)
-      also have "\<dots> = I \<union> E" unfolding I_def E_def by (rule image_Un)
-      finally show ?thesis .
-    qed
-    have hdisj: "I \<inter> E = {}"
-    proof
-      show "I \<inter> E \<subseteq> {}"
-      proof
-        fix x assume hx: "x \<in> I \<inter> E"
-        then obtain y z where hy: "y \<in> I'" and hz: "z \<in> E'"
-          and hxy: "x = k y" and hxz: "x = k z"
-          unfolding I_def E_def by (by100 blast)
-        have "y = z" using hxy hxz hk_inj unfolding inj_def by (by100 blast)
-        thus "x \<in> {}" using hy hz hdisj' by (by100 blast)
-      qed
-      show "{} \<subseteq> I \<inter> E" by (by100 simp)
-    qed
-    have hhk_sym: "homeomorphism UNIV UNIV k h"
-      by (rule homeomorphism_symD[OF hhk])
-    have hk_cont: "continuous_on UNIV k"
-      using hhk_sym unfolding homeomorphism_def by (by100 simp)
-    have hI'_conn_HOL: "connected I'"
-      using hI'_conn top1_connected_on_geotop_iff_connected[of I'] by (by100 simp)
-    have hE'_conn_HOL: "connected E'"
-      using hE'_conn top1_connected_on_geotop_iff_connected[of E'] by (by100 simp)
-    have hk_cont_I': "continuous_on I' k"
-      by (rule continuous_on_subset[OF hk_cont subset_UNIV])
-    have hk_cont_E': "continuous_on E' k"
-      by (rule continuous_on_subset[OF hk_cont subset_UNIV])
-    have hI_conn_HOL: "connected I"
-      unfolding I_def by (rule connected_continuous_image[OF hk_cont_I' hI'_conn_HOL])
-    have hE_conn_HOL: "connected E"
-      unfolding E_def by (rule connected_continuous_image[OF hk_cont_E' hE'_conn_HOL])
-    have hI_conn: "top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I)"
-      using hI_conn_HOL top1_connected_on_geotop_iff_connected[of I] by (by100 simp)
-    have hE_conn: "top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E)"
-      using hE_conn_HOL top1_connected_on_geotop_iff_connected[of E] by (by100 simp)
-    have hI'_front_HOL: "frontier I' = J'"
-      using hI'_front geotop_frontier_UNIV_eq_frontier[of I'] by (by100 simp)
-    have hE'_front_HOL: "frontier E' = J'"
-      using hE'_front geotop_frontier_UNIV_eq_frontier[of E'] by (by100 simp)
-    have hI_front_HOL: "frontier I = J"
-    proof -
-      have "frontier I = k ` frontier I'"
-        unfolding I_def using homeomorphism_UNIV_image_frontier[OF hhk_sym, of I'] by (by100 simp)
-      also have "\<dots> = k ` J'" using hI'_front_HOL by (by100 simp)
-      also have "\<dots> = J" using hIJ by (by100 simp)
-      finally show ?thesis .
-    qed
-    have hE_front_HOL: "frontier E = J"
-    proof -
-      have "frontier E = k ` frontier E'"
-        unfolding E_def using homeomorphism_UNIV_image_frontier[OF hhk_sym, of E'] by (by100 simp)
-      also have "\<dots> = k ` J'" using hE'_front_HOL by (by100 simp)
-      also have "\<dots> = J" using hIJ by (by100 simp)
-      finally show ?thesis .
-    qed
-    have hI_front: "J = geotop_frontier UNIV geotop_euclidean_topology I"
-      using hI_front_HOL geotop_frontier_UNIV_eq_frontier[of I] by (by100 simp)
-    have hE_front: "J = geotop_frontier UNIV geotop_euclidean_topology E"
-      using hE_front_HOL geotop_frontier_UNIV_eq_frontier[of E] by (by100 simp)
-    show ?thesis
-      using hcover hdisj hI_conn hE_conn hI_front hE_front by (by100 blast)
+    have "\<Union>(components (UNIV - J)) = I \<union> E"
+      using hcomponents by (by100 simp)
+    thus ?thesis using Union_components[of "UNIV - J"] by (by100 simp)
   qed
-  show ?thesis using h_pullback by (by100 blast)
+  have hIE_ne: "I \<noteq> E"
+    using hI_bdd hE_unbdd by (by100 blast)
+  have hdisj: "I \<inter> E = {}"
+    using components_nonoverlap[OF hI_comp hE_comp] hIE_ne by (by100 blast)
+  have hI_conn_HOL: "connected I"
+    using hI_comp in_components_connected by (by100 blast)
+  have hE_conn_HOL: "connected E"
+    using hE_comp in_components_connected by (by100 blast)
+  have hI_conn: "top1_connected_on I (subspace_topology UNIV geotop_euclidean_topology I)"
+    using hI_conn_HOL top1_connected_on_geotop_iff_connected[of I] by (by100 simp)
+  have hE_conn: "top1_connected_on E (subspace_topology UNIV geotop_euclidean_topology E)"
+    using hE_conn_HOL top1_connected_on_geotop_iff_connected[of E] by (by100 simp)
+  have hI_witness:
+    "\<exists>P\<in>UNIV - J. I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+  proof -
+    obtain P where hP: "P \<in> UNIV - J"
+      and hI_eq: "I = connected_component_set (UNIV - J) P"
+      using hI_comp unfolding components_def by (by100 blast)
+    have hcomp_eq: "geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P =
+        connected_component_set (UNIV - J) P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have "I = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+      using hI_eq hcomp_eq by (by100 simp)
+    thus ?thesis using hP by (by100 blast)
+  qed
+  have hE_witness:
+    "\<exists>P\<in>UNIV - J. E = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+  proof -
+    obtain P where hP: "P \<in> UNIV - J"
+      and hE_eq: "E = connected_component_set (UNIV - J) P"
+      using hE_comp unfolding components_def by (by100 blast)
+    have hcomp_eq: "geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P =
+        connected_component_set (UNIV - J) P"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have "E = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+      using hE_eq hcomp_eq by (by100 simp)
+    thus ?thesis using hP by (by100 blast)
+  qed
+  have hI_front: "J = geotop_frontier UNIV geotop_euclidean_topology I"
+    by (rule Theorem_GT_4_6[OF hJ hI_witness])
+  have hE_front: "J = geotop_frontier UNIV geotop_euclidean_topology E"
+    by (rule Theorem_GT_4_6[OF hJ hE_witness])
+  show ?thesis
+    using hcover hdisj hI_conn hE_conn hI_front hE_front by (by100 blast)
 qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
