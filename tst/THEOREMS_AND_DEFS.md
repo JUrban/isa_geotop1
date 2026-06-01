@@ -4,7 +4,7 @@
 #
 # Files: i/Top1_Ch2.thy,i/Top1_Ch3.thy,i/Top1_Ch4.thy,i/Top1_Ch5_8.thy,i/Top1_Ch9_13.thy,h/AlgTopHelpers.thy,b0/AlgTop_JCT_Base0.thy,b/AlgTop_JCT_Base.thy,a0/AlgTop0.thy,ac/AlgTopCached.thy,fib/AlgIsoFixedBase.thy,fi/AlgIsoFixed.thy,k5/K5_nonplanar.thy,ag/AlgTopGroups.thy,pd/PolygonDisk.thy,svk/AlgTopSvK.thy,wh/AlgTopWedgeHelpers.thy,at/AlgTopChain.thy,ac2/AlgTopCached2.thy,ac3/AlgTopCached3.thy,ac4/AlgTopCached4.thy,ac5/AlgTopCached5.thy,ac6/AlgTopCached6.thy,ac7/AlgTopCached7.thy,ac8/AlgTopCached8.thy,algtop_session/AlgTop.thy,gb0/GeoTopBase0.thy,gb/GeoTopBase.thy,gd/GeoTopDeps.thy,gp/GeoTop_Prefix.thy,GeoTop.thy
 #
-# Total entries: 3143
+# Total entries: 3144
 # Duplicate names: 43
 
 ## definitions (576)
@@ -615,7 +615,7 @@ geotop_D                                       GeoTop.thy                       
 geotop_Sd                                      gb0/GeoTopBase0.thy                  line 1876
 top1_I01                                       i/Top1_Ch5_8.thy                     line 25035
 
-## lemmas (1983)
+## lemmas (1984)
 
 B2_compact                                     ac2/AlgTopCached2.thy                line 7
 Borsuk_R2                                      ac/AlgTopCached.thy                  line 3745
@@ -805,6 +805,7 @@ S2_minus_point_simply_connected                b/AlgTop_JCT_Base.thy            
 S2_minus_two_points_not_simply_connected       b/AlgTop_JCT_Base.thy                line 5893
 S2_nonsep_path_exists                          a0/AlgTop0.thy                       line 4657
 S2_open_path_connected_arc_connected           fi/AlgIsoFixed.thy                   line 1893
+S2_simple_closed_curve_component_closure_eq    gp/GeoTop_Prefix.thy                 line 4468
 S2_two_component_open                          ac/AlgTopCached.thy                  line 52178
 SCC_decompose_at_given_points                  fi/AlgIsoFixed.thy                   line 6389
 SCC_pi1_iso_Z                                  fib/AlgIsoFixedBase.thy              line 14
@@ -891,7 +892,7 @@ arc_endpoints_subset                           k5/K5_nonplanar.thy              
 arc_endpoints_under_homeomorphism              fib/AlgIsoFixedBase.thy              line 5097
 arc_in_S2_closed                               a0/AlgTop0.thy                       line 4888
 arc_interior_connected                         gp/GeoTop_Prefix.thy                 line 3521
-arc_interior_disjoint_other_arc                gp/GeoTop_Prefix.thy                 line 4468
+arc_interior_disjoint_other_arc                gp/GeoTop_Prefix.thy                 line 4543
 arc_interior_nonempty                          gp/GeoTop_Prefix.thy                 line 3243
 arc_interior_relatively_open_in_arc            gb/GeoTopBase.thy                    line 13087
 arc_join_image_eq                              gp/GeoTop_Prefix.thy                 line 2367
@@ -927,7 +928,7 @@ bounded_linear_R2_to_C                         gp/GeoTop_Prefix.thy             
 bounded_metric_lt_imp_d_lt                     i/Top1_Ch5_8.thy                     line 14331
 broken_line_bounded                            gp/GeoTop_Prefix.thy                 line 3778
 broken_line_closed                             gp/GeoTop_Prefix.thy                 line 3328
-broken_line_endpoint_local_segment             gp/GeoTop_Prefix.thy                 line 5120
+broken_line_endpoint_local_segment             gp/GeoTop_Prefix.thy                 line 5195
 broken_line_interior_empty                     gp/GeoTop_Prefix.thy                 line 3576
 broken_line_internal_vertex_card_edges_ge2     gb/GeoTopBase.thy                    line 12819
 broken_line_local_simplex_isolation            gp/GeoTop_Prefix.thy                 line 3375
@@ -1798,7 +1799,7 @@ net_convergence_iff_seq_convergence            i/Top1_Ch5_8.thy                 
 net_converges_eventually_strict                i/Top1_Ch5_8.thy                     line 33457
 net_limit_in_closure                           i/Top1_Ch5_8.thy                     line 33440
 no_matching_pair_word_ne_e                     ag/AlgTopGroups.thy                  line 4637
-nondegenerate_segment_meets_ball               gp/GeoTop_Prefix.thy                 line 5005
+nondegenerate_segment_meets_ball               gp/GeoTop_Prefix.thy                 line 5080
 nonempty_inter_from_subset                     fib/AlgIsoFixedBase.thy              line 1219
 norm_vec2_sq                                   gp/GeoTop_Prefix.thy                 line 464
 normal_closure_least                           ag/AlgTopGroups.thy                  line 2069
@@ -1921,7 +1922,7 @@ polygon_bounded                                gp/GeoTop_Prefix.thy             
 polygon_closed                                 GeoTop.thy                           line 7656
 polygon_complex_dim_le_1                       gp/GeoTop_Prefix.thy                 line 1776
 polygon_components_card                        gp/GeoTop_Prefix.thy                 line 1217
-polygon_components_eq                          gp/GeoTop_Prefix.thy                 line 4493
+polygon_components_eq                          gp/GeoTop_Prefix.thy                 line 4568
 polygon_exterior_closure_eq                    gp/GeoTop_Prefix.thy                 line 4259
 polygon_exterior_disjoint_polygon              gp/GeoTop_Prefix.thy                 line 4308
 polygon_exterior_is_HOL_component              gp/GeoTop_Prefix.thy                 line 4044
@@ -1938,7 +1939,7 @@ polygon_interior_exterior_disjoint             gp/GeoTop_Prefix.thy             
 polygon_interior_injective                     gp/GeoTop_Prefix.thy                 line 4274
 polygon_interior_is_HOL_component              gp/GeoTop_Prefix.thy                 line 4092
 polygon_interior_open                          GeoTop.thy                           line 7671
-polygon_interior_union_subset_connected        gp/GeoTop_Prefix.thy                 line 4689
+polygon_interior_union_subset_connected        gp/GeoTop_Prefix.thy                 line 4764
 polygon_interior_unique                        gp/GeoTop_Prefix.thy                 line 4170
 polygon_islimpt                                gp/GeoTop_Prefix.thy                 line 1842
 polygon_set_interior_empty                     gp/GeoTop_Prefix.thy                 line 1611
@@ -2001,7 +2002,7 @@ scc_minus_point_connected                      fi/AlgIsoFixed.thy               
 scheme_quotient_CW_data                        at/AlgTopChain.thy                   line 3602
 scheme_quotient_hausdorff                      at/AlgTopChain.thy                   line 2902
 second_countable_countable_subcover_of_closed  i/Top1_Ch4.thy                       line 2160
-segment_face_with_endpoint_and_extra_eq        gp/GeoTop_Prefix.thy                 line 5066
+segment_face_with_endpoint_and_extra_eq        gp/GeoTop_Prefix.thy                 line 5141
 seq_conv_comp                                  i/Top1_Ch5_8.thy                     line 32635
 seq_conv_rename                                i/Top1_Ch5_8.thy                     line 32640
 seq_converges_eventually                       i/Top1_Ch2.thy                       line 6128
@@ -2099,20 +2100,20 @@ svk_pieces_in_subgroup                         ac/AlgTopCached.thy              
 tagged_word_reduce_pairs                       ac/AlgTopCached.thy                  line 10700
 telescoping_conjugated_product                 b0/AlgTop_JCT_Base0.thy              line 5943
 telescoping_core                               b0/AlgTop_JCT_Base0.thy              line 5669
-theta_arc_in_one_side_of_pair_polygon          gp/GeoTop_Prefix.thy                 line 4598
+theta_arc_in_one_side_of_pair_polygon          gp/GeoTop_Prefix.thy                 line 4673
 theta_arc_interior_isolated_ball               gp/GeoTop_Prefix.thy                 line 3413
-theta_graph_M_decomposition                    gp/GeoTop_Prefix.thy                 line 4534
+theta_graph_M_decomposition                    gp/GeoTop_Prefix.thy                 line 4609
 theta_graph_bounded                            gp/GeoTop_Prefix.thy                 line 3961
-theta_graph_closed                             gp/GeoTop_Prefix.thy                 line 4849
+theta_graph_closed                             gp/GeoTop_Prefix.thy                 line 4924
 theta_graph_complement_has_two_components      gp/GeoTop_Prefix.thy                 line 3799
-theta_graph_has_bounded_component              gp/GeoTop_Prefix.thy                 line 4817
-theta_graph_has_unbounded_component            gp/GeoTop_Prefix.thy                 line 4782
-theta_graph_pair_is_polygon                    gp/GeoTop_Prefix.thy                 line 4561
-theta_graph_unbounded_in_pair_exterior         gp/GeoTop_Prefix.thy                 line 4717
-theta_graph_unique_unbounded_component         gp/GeoTop_Prefix.thy                 line 4794
+theta_graph_has_bounded_component              gp/GeoTop_Prefix.thy                 line 4892
+theta_graph_has_unbounded_component            gp/GeoTop_Prefix.thy                 line 4857
+theta_graph_pair_is_polygon                    gp/GeoTop_Prefix.thy                 line 4636
+theta_graph_unbounded_in_pair_exterior         gp/GeoTop_Prefix.thy                 line 4792
+theta_graph_unique_unbounded_component         gp/GeoTop_Prefix.thy                 line 4869
 theta_middle_arc_unique_excludes_3             GeoTop.thy                           line 5152
 theta_space_vertex_exclusion                   ag/AlgTopGroups.thy                  line 182
-theta_two_middle_arcs_contradict               gp/GeoTop_Prefix.thy                 line 4876
+theta_two_middle_arcs_contradict               gp/GeoTop_Prefix.thy                 line 4951
 third_element_unique                           fib/AlgIsoFixedBase.thy              line 1244
 three_components_contradiction                 a0/AlgTop0.thy                       line 6637
 tl_take_drop_eq                                ag/AlgTopGroups.thy                  line 33

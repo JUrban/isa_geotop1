@@ -4462,6 +4462,81 @@ proof -
     by (rule geotop_theta_graph_R2_to_S2_three_components)
 qed
 
+text \<open>Book-proof boundary helper on \<open>S\<^sup>2\<close>: for a simple closed curve,
+  each complementary side has the curve in its closure.\<close>
+
+lemma S2_simple_closed_curve_component_closure_eq:
+  fixes SCC Q R :: "(real * real * real) set"
+  assumes hSCC: "top1_simple_closed_curve_on top1_S2 top1_S2_topology SCC"
+      and hQop: "Q \<in> top1_S2_topology"
+      and hRop: "R \<in> top1_S2_topology"
+      and hQne: "Q \<noteq> {}"
+      and hRne: "R \<noteq> {}"
+      and hQR: "Q \<inter> R = {}"
+      and hQR_un: "Q \<union> R = top1_S2 - SCC"
+      and hQc: "top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)"
+      and hRc: "top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)"
+  shows "closure_on top1_S2 top1_S2_topology Q = Q \<union> SCC"
+proof -
+  have hS2: "is_topology_on_strict top1_S2 top1_S2_topology"
+    by (rule top1_S2_is_topology_on_strict)
+  \<comment> \<open>(\<supseteq>): \<open>Q\<close> is contained in its closure, and every point of
+    the simple closed curve is a boundary point of the side \<open>Q\<close>.\<close>
+  have hQ_sub_cl: "Q \<subseteq> closure_on top1_S2 top1_S2_topology Q"
+    by (rule subset_closure_on)
+  have hSCC_sub_cl: "SCC \<subseteq> closure_on top1_S2 top1_S2_topology Q"
+  proof
+    fix x assume hx: "x \<in> SCC"
+    show "x \<in> closure_on top1_S2 top1_S2_topology Q"
+      unfolding closure_on_def
+    proof (rule InterI, clarsimp)
+      fix C assume hCcl: "closedin_on top1_S2 top1_S2_topology C" and hQC: "Q \<subseteq> C"
+      show "x \<in> C"
+      proof (rule ccontr)
+        assume "x \<notin> C"
+        have hV: "top1_S2 - C \<in> top1_S2_topology"
+          using hCcl unfolding closedin_on_def by (by100 blast)
+        have hxV: "x \<in> top1_S2 - C"
+          using \<open>x \<notin> C\<close> hx hSCC
+          unfolding top1_simple_closed_curve_on_def top1_continuous_map_on_def
+          by (by100 blast)
+        from simple_closed_curve_boundary_meets_component[
+            OF hS2 hSCC hQc hRc hQR hQR_un hQne hRne hQop hRop hx hV hxV]
+        have "(top1_S2 - C) \<inter> Q \<noteq> {}" .
+        thus False using hQC by (by100 blast)
+      qed
+    qed
+  qed
+  \<comment> \<open>(\<subseteq>): \<open>Q \<union> SCC\<close> is closed because its complement in \<open>S\<^sup>2\<close> is
+    the other open component \<open>R\<close>.\<close>
+  have hQSCC_closed: "closedin_on top1_S2 top1_S2_topology (Q \<union> SCC)"
+  proof -
+    have "top1_S2 - (Q \<union> SCC) = R"
+    proof -
+      have "Q \<union> SCC \<union> R = top1_S2"
+        using hQR_un hSCC
+        unfolding top1_simple_closed_curve_on_def top1_continuous_map_on_def
+        by (by100 blast)
+      thus ?thesis using hQR hQR_un by (by100 blast)
+    qed
+    moreover have "Q \<union> SCC \<subseteq> top1_S2"
+    proof -
+      have "Q \<subseteq> top1_S2"
+        by (rule is_topology_on_strict_opens_sub[OF hS2 hQop])
+      moreover have "SCC \<subseteq> top1_S2"
+        using hSCC unfolding top1_simple_closed_curve_on_def top1_continuous_map_on_def
+        by (by100 blast)
+      ultimately show ?thesis by (by100 blast)
+    qed
+    ultimately show ?thesis unfolding closedin_on_def using hRop by (by100 blast)
+  qed
+  have hQ_sub_QSCC: "Q \<subseteq> Q \<union> SCC" by (by100 blast)
+  have hcl_sub: "closure_on top1_S2 top1_S2_topology Q \<subseteq> Q \<union> SCC"
+    unfolding closure_on_def using hQSCC_closed hQ_sub_QSCC by (by100 blast)
+  show ?thesis
+    using hQ_sub_cl hSCC_sub_cl hcl_sub by (by100 blast)
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
