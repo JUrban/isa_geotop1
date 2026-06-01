@@ -7077,7 +7077,8 @@ proof -
       pair of consecutive arcs.)\<close>
     have hAM_local_sectors:
       "\<exists>\<delta>>0. \<forall>C \<in> components (ball P \<delta> - M).
-              card {Bi \<in> {B1, B2, B3}. Bi \<inter> closure C \<noteq> {}} \<le> 2"
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
       sorry
     \<comment> \<open>Sub-claim AM3: from AM2, U intersects some sector C; the frontier
       of U near P is contained in closure C \<inter> M, which hits at most 2
@@ -7091,7 +7092,8 @@ proof -
       obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
         and h\<delta>_sectors:
           "\<forall>C \<in> components (ball P \<delta> - M).
-              card {Bi \<in> {B1, B2, B3}. Bi \<inter> closure C \<noteq> {}} \<le> 2"
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
         using hAM_local_sectors by (by100 blast)
       have hE_sub_B1: "E \<subseteq> B1"
         using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
@@ -7132,11 +7134,53 @@ proof -
         using connected_component_maximal by (by100 blast)
       show ?thesis using h\<delta>_pos hC_comp hC_sub_U by (by100 blast)
     qed
+    \<comment> \<open>Sub-claim AM3a': the finite-sector analysis at P gives a small
+      neighbourhood in which the frontier of this global component misses
+      one incident arc away from the endpoint. The intersection is taken
+      with arc interiors, not the whole arcs, since all three arcs contain P.\<close>
+    have hAM_U_local_misses_one:
+      "\<exists>\<delta>>0. \<exists>Bi \<in> {B1, B2, B3}.
+          geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> frontier U = {}"
+      sorry
     \<comment> \<open>Sub-claim AM3b: that sector's closure misses at least one Bi locally,
       hence so does the frontier of U near P; so Bi \<not>\<subseteq> frontier U.\<close>
     have hAM_U_misses_one:
       "\<exists>Bi \<in> {B1, B2, B3}. \<not> (Bi \<subseteq> frontier U)"
-      sorry
+    proof -
+      obtain \<delta> Bi where h\<delta>_pos: "\<delta> > 0"
+        and hBi_set: "Bi \<in> {B1, B2, B3}"
+        and hBi_miss: "geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> frontier U = {}"
+        using hAM_U_local_misses_one by (by100 blast)
+      have hBi_arc: "geotop_arc_endpoints Bi E"
+        using hBi_set hE1 hE2 hE3 by (by100 blast)
+      have hE_sub_Bi: "E \<subseteq> Bi"
+        using hBi_arc unfolding geotop_arc_endpoints_def by (by100 blast)
+      have hP_Bi: "P \<in> Bi" using hP_E hE_sub_Bi by (by100 blast)
+      have h_cl_int_Bi: "closure (geotop_arc_interior Bi E) = Bi"
+        by (rule arc_closure_interior_eq_arc[OF hBi_arc])
+      have hP_cl_int_Bi: "P \<in> closure (geotop_arc_interior Bi E)"
+        using hP_Bi h_cl_int_Bi by (by100 simp)
+      have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
+      have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
+      have h_int_meets_ball: "geotop_arc_interior Bi E \<inter> ball P \<delta> \<noteq> {}"
+      proof -
+        have "geotop_arc_interior Bi E \<inter> ball P \<delta> \<noteq> {}"
+          using hP_cl_int_Bi closure_iff_nhds_not_empty[of P "geotop_arc_interior Bi E"]
+                h_ball_open hP_ball
+          by (by100 blast)
+        thus ?thesis .
+      qed
+      obtain y where hy_int: "y \<in> geotop_arc_interior Bi E"
+        and hy_ball: "y \<in> ball P \<delta>"
+        using h_int_meets_ball by (by100 blast)
+      have hy_not_fr: "y \<notin> frontier U"
+        using hBi_miss hy_int hy_ball by (by100 blast)
+      have hy_Bi: "y \<in> Bi"
+        using hy_int unfolding geotop_arc_interior_def by (by100 blast)
+      have hBi_not_sub: "\<not> (Bi \<subseteq> frontier U)"
+        using hy_Bi hy_not_fr by (by100 blast)
+      show ?thesis using hBi_set hBi_not_sub by (by100 blast)
+    qed
     \<comment> \<open>Sub-claim AM4: contradiction from hAll.\<close>
     show False
       using hAM_U_misses_one hAll by (by100 blast)
