@@ -4594,6 +4594,71 @@ proof -
         OF hSCC hRop hQop hRne hQne hRQ hRQ_un hRc hQc])
 qed
 
+lemma S2_two_arcs_frontier_components:
+  fixes A B :: "(real * real * real) set"
+  assumes hA_sub: "A \<subseteq> top1_S2"
+      and hB_sub: "B \<subseteq> top1_S2"
+      and hA_arc: "top1_is_arc_on A (subspace_topology top1_S2 top1_S2_topology A)"
+      and hB_arc: "top1_is_arc_on B (subspace_topology top1_S2 top1_S2_topology B)"
+      and hAB: "A \<inter> B = {a, b}"
+      and hab: "a \<noteq> b"
+      and hA_ep: "top1_arc_endpoints_on A (subspace_topology top1_S2 top1_S2_topology A) = {a, b}"
+      and hB_ep: "top1_arc_endpoints_on B (subspace_topology top1_S2 top1_S2_topology B) = {a, b}"
+  shows "\<exists>Q R. Q \<noteq> {} \<and> R \<noteq> {} \<and> Q \<inter> R = {}
+      \<and> Q \<union> R = top1_S2 - (A \<union> B)
+      \<and> top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)
+      \<and> top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)
+      \<and> Q \<in> top1_S2_topology \<and> R \<in> top1_S2_topology
+      \<and> geotop_frontier top1_S2 top1_S2_topology Q = A \<union> B
+      \<and> geotop_frontier top1_S2 top1_S2_topology R = A \<union> B"
+proof -
+  have hS2: "is_topology_on_strict top1_S2 top1_S2_topology"
+    by (rule top1_S2_is_topology_on_strict)
+  have hTopS2: "is_topology_on top1_S2 top1_S2_topology"
+    using hS2 unfolding is_topology_on_strict_def by (by100 blast)
+  have hS2_haus: "is_hausdorff_on top1_S2 top1_S2_topology"
+    by (rule top1_S2_is_hausdorff)
+  have hAB_scc: "top1_simple_closed_curve_on top1_S2 top1_S2_topology (A \<union> B)"
+    by (rule arcs_form_simple_closed_curve[
+        OF hS2 hS2_haus hA_arc hA_sub hB_arc hB_sub hAB hab hA_ep hB_ep])
+  have hA_closed: "closedin_on top1_S2 top1_S2_topology A"
+    by (rule arc_in_S2_closed[OF hA_sub hA_arc])
+  have hB_closed: "closedin_on top1_S2 top1_S2_topology B"
+    by (rule arc_in_S2_closed[OF hB_sub hB_arc])
+  have hAB_card: "card (A \<inter> B) = 2"
+    using hAB hab by (by100 simp)
+  obtain Q R where hQR: "Q \<noteq> {}" "R \<noteq> {}" "Q \<inter> R = {}"
+      "Q \<union> R = top1_S2 - (A \<union> B)"
+      "top1_connected_on Q (subspace_topology top1_S2 top1_S2_topology Q)"
+      "top1_connected_on R (subspace_topology top1_S2 top1_S2_topology R)"
+    using Theorem_63_5_two_closed_connected[OF hS2 hA_closed hB_closed
+        arc_connected[OF hA_arc] arc_connected[OF hB_arc] hAB_card
+        Theorem_63_2_arc_no_separation[OF hS2 hA_sub hA_arc]
+        Theorem_63_2_arc_no_separation[OF hS2 hB_sub hB_arc]]
+    by (metis (no_types))
+  have hAB_closed: "closedin_on top1_S2 top1_S2_topology (A \<union> B)"
+    by (rule closedin_on_Un[OF hTopS2 hA_closed hB_closed])
+  have hAB_open: "top1_S2 - (A \<union> B) \<in> top1_S2_topology"
+    using hAB_closed unfolding closedin_on_def by (by100 blast)
+  have hAB_not_conn: "\<not> top1_connected_on (top1_S2 - (A \<union> B))
+      (subspace_topology top1_S2 top1_S2_topology (top1_S2 - (A \<union> B)))"
+    using Theorem_61_3_JordanSeparation_S2[OF hS2 hAB_scc]
+    unfolding top1_separates_on_def by (by100 simp)
+  have hQR_open: "Q \<in> top1_S2_topology \<and> R \<in> top1_S2_topology"
+    using S2_two_component_open[OF hAB_open _ hQR(1,2,3,4,5,6) hAB_not_conn]
+    by (by100 blast)
+  have hQ_open: "Q \<in> top1_S2_topology"
+    using hQR_open by (by100 blast)
+  have hR_open: "R \<in> top1_S2_topology"
+    using hQR_open by (by100 blast)
+  have hfronts: "geotop_frontier top1_S2 top1_S2_topology Q = A \<union> B"
+      "geotop_frontier top1_S2 top1_S2_topology R = A \<union> B"
+    by (rule S2_simple_closed_curve_component_frontiers_eq[
+        OF hAB_scc hQ_open hR_open hQR(1,2,3,4,5,6)])+
+  show ?thesis
+    using hQR hQR_open hfronts by (by100 blast)
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
