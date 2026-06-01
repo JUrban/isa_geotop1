@@ -461,6 +461,76 @@ proof -
     by (rule real_cut_homeomorphic_component_cover_if_split[OF hfg hx hy hsplit])
 qed
 
+lemma component_lies_in_component_of_superset:
+  assumes hK: "K \<in> components S"
+    and hS: "S \<subseteq> T"
+  shows "\<exists>C \<in> components T. K \<subseteq> C"
+proof -
+  have hK_conn: "connected K"
+    using hK in_components_connected by (by100 blast)
+  have hK_sub_S: "K \<subseteq> S"
+    by (rule in_components_subset[OF hK])
+  have hK_sub_T: "K \<subseteq> T"
+    by (rule subset_trans[OF hK_sub_S hS])
+  have hK_ne: "K \<noteq> {}"
+    by (rule in_components_nonempty[OF hK])
+  obtain x where hxK: "x \<in> K"
+    using hK_ne by (by100 blast)
+  have hxT: "x \<in> T"
+    using hxK hK_sub_T by (by100 blast)
+  define C where "C = connected_component_set T x"
+  have hC_comp: "C \<in> components T"
+    unfolding C_def by (rule componentsI[OF hxT])
+  have hK_sub_C: "K \<subseteq> C"
+    unfolding C_def by (rule connected_component_maximal[OF hxK hK_conn hK_sub_T])
+  show ?thesis using hC_comp hK_sub_C by (by100 blast)
+qed
+
+lemma sphere_pair_subset_pair_complement:
+  fixes P pA pB qA qB :: "real^2"
+  assumes hr_pos: "r > 0"
+    and hr_lt_delta: "r < \<delta>"
+    and hA_model: "ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA"
+    and hB_model: "ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB"
+    and hA_sphere: "(closed_segment P pA - {P}) \<inter> sphere P r = {qA}"
+    and hB_sphere: "(closed_segment P pB - {P}) \<inter> sphere P r = {qB}"
+  shows "sphere P r - {qA, qB} \<subseteq> UNIV - (A \<union> B)"
+proof
+  fix z
+  assume hz: "z \<in> sphere P r - {qA, qB}"
+  have hz_sphere: "z \<in> sphere P r" using hz by (by100 blast)
+  have hz_ball_delta: "z \<in> ball P \<delta>"
+    using hz_sphere hr_lt_delta by (by100 simp)
+  have hz_ne_P: "z \<noteq> P"
+  proof
+    assume hzP: "z = P"
+    have "dist P z = r" using hz_sphere by (by100 simp)
+    thus False using hzP hr_pos by (by100 simp)
+  qed
+  have hz_not_A: "z \<notin> A"
+  proof
+    assume hzA: "z \<in> A"
+    have hz_pA: "z \<in> closed_segment P pA"
+      using hA_model hz_ball_delta hzA by (by100 blast)
+    have "z \<in> (closed_segment P pA - {P}) \<inter> sphere P r"
+      using hz_pA hz_ne_P hz_sphere by (by100 blast)
+    hence "z = qA" using hA_sphere by (by100 blast)
+    thus False using hz by (by100 blast)
+  qed
+  have hz_not_B: "z \<notin> B"
+  proof
+    assume hzB: "z \<in> B"
+    have hz_pB: "z \<in> closed_segment P pB"
+      using hB_model hz_ball_delta hzB by (by100 blast)
+    have "z \<in> (closed_segment P pB - {P}) \<inter> sphere P r"
+      using hz_pB hz_ne_P hz_sphere by (by100 blast)
+    hence "z = qB" using hB_sphere by (by100 blast)
+    thus False using hz by (by100 blast)
+  qed
+  show "z \<in> UNIV - (A \<union> B)"
+    using hz_not_A hz_not_B by (by100 blast)
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
