@@ -3586,6 +3586,76 @@ proof -
             show "x \<in> closed_segment P p"
               unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
           qed
+          have h_radial_image_segment:
+            "\<And>z p. \<lbrakk>z \<in> closed_segment P p - {P}; p \<noteq> P; r \<le> dist P p\<rbrakk>
+              \<Longrightarrow> \<rho> z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+          proof -
+            fix z p :: "real^2"
+            assume hz_seg_np: "z \<in> closed_segment P p - {P}"
+              and hp_ne: "p \<noteq> P"
+              and hr_le_p: "r \<le> dist P p"
+            have hz_seg: "z \<in> closed_segment P p" using hz_seg_np by (by100 blast)
+            have hz_ne: "z \<noteq> P" using hz_seg_np by (by100 blast)
+            obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+              and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+              using hz_seg unfolding closed_segment_def by (by100 blast)
+            have hr_pos: "r > 0"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hp_dist_pos: "dist P p > 0"
+              using hp_ne by (by100 simp)
+            have ht_pos: "t > 0"
+            proof -
+              have "t \<noteq> 0"
+              proof
+                assume ht_eq0: "t = 0"
+                have "z = P" using hz_t ht_eq0 by (by100 simp)
+                thus False using hz_ne by (by100 blast)
+              qed
+              thus ?thesis using ht0 by (by100 simp)
+            qed
+            have hz_vec: "z = P + t *\<^sub>R (p - P)"
+              using hz_t by (simp add: algebra_simps)
+            have hz_dist: "dist P z = t * dist P p"
+              using hz_vec ht0 by (simp add: dist_norm norm_minus_commute)
+            have hz_dist_pos: "dist P z > 0"
+              using hz_ne by (by100 simp)
+            have h\<rho>_eq: "\<rho> z = P + (r / dist P p) *\<^sub>R (p - P)"
+            proof -
+              have "\<rho> z = P + (r / dist P z) *\<^sub>R (z - P)"
+                unfolding \<rho>_def by (by100 simp)
+              also have "\<dots> = P + (r / (t * dist P p)) *\<^sub>R (t *\<^sub>R (p - P))"
+                using hz_vec hz_dist by (by100 simp)
+              also have "\<dots> = P + (r / dist P p) *\<^sub>R (p - P)"
+                using ht_pos hp_dist_pos by (simp add: algebra_simps)
+              finally show ?thesis .
+            qed
+            have hs0: "0 \<le> r / dist P p"
+              using hr_pos hp_dist_pos by (by100 simp)
+            have hs1: "r / dist P p \<le> 1"
+              using hr_le_p hp_dist_pos by (by100 simp)
+            have h\<rho>_conv: "\<rho> z = (1 - r / dist P p) *\<^sub>R P + (r / dist P p) *\<^sub>R p"
+              using h\<rho>_eq by (simp add: algebra_simps)
+            have h\<rho>_seg: "\<rho> z \<in> closed_segment P p"
+              unfolding closed_segment_def using hs0 hs1 h\<rho>_conv by (by100 blast)
+            have h\<rho>_ne: "\<rho> z \<noteq> P"
+            proof
+              assume h_eq: "\<rho> z = P"
+              have "(r / dist P p) *\<^sub>R (p - P) = 0"
+                using h_eq h\<rho>_eq by (by100 simp)
+              hence "r / dist P p = 0"
+                using hp_ne by (by100 simp)
+              thus False using hr_pos hp_dist_pos by (by100 simp)
+            qed
+            have h\<rho>_sphere': "\<rho> z \<in> sphere P r"
+            proof -
+              have "dist P (\<rho> z) = r"
+                unfolding h\<rho>_eq using hr_pos hp_dist_pos
+                by (simp add: dist_norm norm_minus_commute)
+              thus ?thesis by (by100 simp)
+            qed
+            show "\<rho> z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+              using h\<rho>_seg h\<rho>_ne h\<rho>_sphere' by (by100 blast)
+          qed
           have h\<rho>_avoid_R: "\<rho> ` C \<inter> ?R = {}"
           proof (rule equals0I)
             fix y assume hy: "y \<in> \<rho> ` C \<inter> ?R"
@@ -3638,6 +3708,34 @@ proof -
             have hq_sub_R: "{q1, q2, q3} \<subseteq> ?R"
               using h_radial_circle_model by (fast elim: conjE)
             show ?thesis using h\<rho>_avoid_R hq_sub_R by (by100 blast)
+          qed
+          have h\<rho>_closure_nonP:
+            "\<And>z. \<lbrakk>z \<in> closure C; z \<noteq> P\<rbrakk> \<Longrightarrow> \<rho> z \<in> closure (\<rho> ` C)"
+          proof -
+            fix z assume hz_cl: "z \<in> closure C" and hz_ne: "z \<noteq> P"
+            have h\<rho>_cont_at_z: "continuous (at z) \<rho>"
+              unfolding \<rho>_def
+              apply (intro continuous_intros)
+              using hz_ne
+              by (by100 auto)
+            show "\<rho> z \<in> closure (\<rho> ` C)"
+              unfolding closure_approachable
+            proof (intro allI impI)
+              fix e :: real
+              assume he_pos: "e > 0"
+              obtain d where hd_pos: "d > 0"
+                and hd: "\<And>x. dist x z < d \<Longrightarrow> dist (\<rho> x) (\<rho> z) < e"
+                using h\<rho>_cont_at_z unfolding continuous_at_eps_delta
+                using he_pos by (by100 blast)
+              obtain x where hxC: "x \<in> C" and hx_dist: "dist x z < d"
+                using hz_cl hd_pos unfolding closure_approachable by (by100 blast)
+              have h\<rho>x: "\<rho> x \<in> \<rho> ` C"
+                using hxC by (by100 blast)
+              have hdist: "dist (\<rho> x) (\<rho> z) < e"
+                using hd[OF hx_dist] .
+              show "\<exists>y\<in>\<rho> ` C. dist y (\<rho> z) < e"
+                using h\<rho>x hdist by (by100 blast)
+            qed
           qed
           have h\<rho>_fixed_qs: "\<And>q. q \<in> {q1, q2, q3} \<Longrightarrow> \<rho> q = q"
           proof -
@@ -3699,17 +3797,74 @@ proof -
             qed
           qed
           have h_circle_trace_bound:
-            "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
+            "card ({q1, q2, q3} \<inter> closure (\<rho> ` C)) \<le> 2"
             sorry
           have h_touch_q1:
-            "?S1 \<in> ?Touch \<Longrightarrow> q1 \<in> closure C"
-            sorry
+            "?S1 \<in> ?Touch \<Longrightarrow> q1 \<in> closure (\<rho> ` C)"
+          proof -
+            assume hS1_touch: "?S1 \<in> ?Touch"
+            have hne: "(?S1 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hS1_touch by (by100 simp)
+            obtain z where hzS: "z \<in> ?S1 - {P}"
+              and hz_cl: "z \<in> closure C"
+              using hne by (by100 blast)
+            have hp1_ne': "p1 \<noteq> P" using hpack by (by100 blast)
+            have h\<delta>_pos: "\<delta> > 0" using hpack by (by100 blast)
+            have h\<delta>_p1: "\<delta> \<le> dist P p1" using hpack by (by100 blast)
+            have hr_le_p1: "r \<le> dist P p1"
+              unfolding r_def using h\<delta>_p1 h\<delta>_pos by (by100 linarith)
+            have h\<rho>z_sphere: "\<rho> z \<in> (?S1 - {P}) \<inter> sphere P r"
+              by (rule h_radial_image_segment[OF hzS hp1_ne' hr_le_p1])
+            have h\<rho>z_q1: "\<rho> z = q1"
+              using h\<rho>z_sphere hS1_sphere_r_out by (by100 blast)
+            have hz_ne: "z \<noteq> P" using hzS by (by100 blast)
+            show ?thesis
+              using h\<rho>_closure_nonP[OF hz_cl hz_ne] h\<rho>z_q1 by (by100 simp)
+          qed
           have h_touch_q2:
-            "?S2 \<in> ?Touch \<Longrightarrow> q2 \<in> closure C"
-            sorry
+            "?S2 \<in> ?Touch \<Longrightarrow> q2 \<in> closure (\<rho> ` C)"
+          proof -
+            assume hS2_touch: "?S2 \<in> ?Touch"
+            have hne: "(?S2 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hS2_touch by (by100 simp)
+            obtain z where hzS: "z \<in> ?S2 - {P}"
+              and hz_cl: "z \<in> closure C"
+              using hne by (by100 blast)
+            have hp2_ne': "p2 \<noteq> P" using hpack by (by100 blast)
+            have h\<delta>_pos: "\<delta> > 0" using hpack by (by100 blast)
+            have h\<delta>_p2: "\<delta> \<le> dist P p2" using hpack by (by100 blast)
+            have hr_le_p2: "r \<le> dist P p2"
+              unfolding r_def using h\<delta>_p2 h\<delta>_pos by (by100 linarith)
+            have h\<rho>z_sphere: "\<rho> z \<in> (?S2 - {P}) \<inter> sphere P r"
+              by (rule h_radial_image_segment[OF hzS hp2_ne' hr_le_p2])
+            have h\<rho>z_q2: "\<rho> z = q2"
+              using h\<rho>z_sphere hS2_sphere_r_out by (by100 blast)
+            have hz_ne: "z \<noteq> P" using hzS by (by100 blast)
+            show ?thesis
+              using h\<rho>_closure_nonP[OF hz_cl hz_ne] h\<rho>z_q2 by (by100 simp)
+          qed
           have h_touch_q3:
-            "?S3 \<in> ?Touch \<Longrightarrow> q3 \<in> closure C"
-            sorry
+            "?S3 \<in> ?Touch \<Longrightarrow> q3 \<in> closure (\<rho> ` C)"
+          proof -
+            assume hS3_touch: "?S3 \<in> ?Touch"
+            have hne: "(?S3 - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}"
+              using hS3_touch by (by100 simp)
+            obtain z where hzS: "z \<in> ?S3 - {P}"
+              and hz_cl: "z \<in> closure C"
+              using hne by (by100 blast)
+            have hp3_ne': "p3 \<noteq> P" using hpack by (by100 blast)
+            have h\<delta>_pos: "\<delta> > 0" using hpack by (by100 blast)
+            have h\<delta>_p3: "\<delta> \<le> dist P p3" using hpack by (by100 blast)
+            have hr_le_p3: "r \<le> dist P p3"
+              unfolding r_def using h\<delta>_p3 h\<delta>_pos by (by100 linarith)
+            have h\<rho>z_sphere: "\<rho> z \<in> (?S3 - {P}) \<inter> sphere P r"
+              by (rule h_radial_image_segment[OF hzS hp3_ne' hr_le_p3])
+            have h\<rho>z_q3: "\<rho> z = q3"
+              using h\<rho>z_sphere hS3_sphere_r_out by (by100 blast)
+            have hz_ne: "z \<noteq> P" using hzS by (by100 blast)
+            show ?thesis
+              using h\<rho>_closure_nonP[OF hz_cl hz_ne] h\<rho>z_q3 by (by100 simp)
+          qed
           show "card ?Touch \<le> 2"
           proof (rule ccontr)
             assume hnle: "\<not> card ?Touch \<le> 2"
@@ -3736,14 +3891,14 @@ proof -
               using hTouch_card_ge hTouch_card_le hS_card by (by100 simp)
             have hTouch_eq: "?Touch = {?S1, ?S2, ?S3}"
               by (rule card_subset_eq[OF hCarrier_fin hTouch_sub hTouch_card])
-            have hq1_cl: "q1 \<in> closure C" using h_touch_q1 hTouch_eq by (by100 simp)
-            have hq2_cl: "q2 \<in> closure C" using h_touch_q2 hTouch_eq by (by100 simp)
-            have hq3_cl: "q3 \<in> closure C" using h_touch_q3 hTouch_eq by (by100 simp)
-            have hq_sub: "{q1, q2, q3} \<subseteq> closure C"
+            have hq1_cl: "q1 \<in> closure (\<rho> ` C)" using h_touch_q1 hTouch_eq by (by100 simp)
+            have hq2_cl: "q2 \<in> closure (\<rho> ` C)" using h_touch_q2 hTouch_eq by (by100 simp)
+            have hq3_cl: "q3 \<in> closure (\<rho> ` C)" using h_touch_q3 hTouch_eq by (by100 simp)
+            have hq_sub: "{q1, q2, q3} \<subseteq> closure (\<rho> ` C)"
               using hq1_cl hq2_cl hq3_cl by (by100 blast)
-            have hq_inter: "{q1, q2, q3} \<inter> closure C = {q1, q2, q3}"
+            have hq_inter: "{q1, q2, q3} \<inter> closure (\<rho> ` C) = {q1, q2, q3}"
               using hq_sub by (by100 blast)
-            have hq_card: "card ({q1, q2, q3} \<inter> closure C) = 3"
+            have hq_card: "card ({q1, q2, q3} \<inter> closure (\<rho> ` C)) = 3"
               using hq_inter hq12_out hq13_out hq23_out by (by100 simp)
             show False using h_circle_trace_bound hq_card by (by100 simp)
           qed
