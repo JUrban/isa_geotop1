@@ -1753,6 +1753,22 @@ proof -
     using hnotconn_D top1_connected_on_geotop_iff_connected by metis
 qed
 
+(** from \<S>4: brick-decomposition (geotop.tex:943)
+    LATEX VERSION: By a brick-decomposition of the plane we mean a collection G = {g_i} of
+      polyhedral disks (=2-cells) such that (1) union is R^2, (2) if g_i and g_j intersect,
+      their intersection is a broken line lying in the frontier of each, and (3) every point
+      has a neighborhood intersecting at most three of the g_i. **)
+definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" where
+  "geotop_brick_decomposition G \<longleftrightarrow>
+    (\<forall>g\<in>G. geotop_is_disk g (subspace_topology UNIV geotop_euclidean_topology g) \<and>
+       (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g)) \<and>
+    \<Union>G = UNIV \<and>
+    (\<forall>g\<^sub>1\<in>G. \<forall>g\<^sub>2\<in>G. g\<^sub>1 \<noteq> g\<^sub>2 \<longrightarrow> g\<^sub>1 \<inter> g\<^sub>2 \<noteq> {} \<longrightarrow>
+       geotop_is_broken_line (g\<^sub>1 \<inter> g\<^sub>2) \<and>
+       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>1 \<and>
+       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
+    (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
+
 (** from \<S>4 Theorem 4 (geotop.tex:931)
     LATEX VERSION: Let I, P, Q, R, S be as before, and let A_1 and A_2 be disjoint arcs in \<bar>I\<close>,
       with A_1 \<inter> Fr I = {P} and A_2 \<inter> Fr I = {R}. Then S and Q are in the frontier of the
@@ -1774,133 +1790,65 @@ theorem Theorem_GT_4_4:
           \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
               C = geotop_component_at UNIV geotop_euclidean_topology
                      (geotop_polygon_interior J - (A1 \<union> A2)) P')"
-  (** Moise proof sketch (geotop.tex:931-ff.): Connect endpoints of A\<^sub>1 and A\<^sub>2
-      by a broken-line-with-endpoints-in-I path so that the union becomes
-      a single arc A' from P to R in \<bar>I\<close>. Apply Theorem 4.2 to A' to get
-      two open sets U\<^sub>Q, U\<^sub>S in I - A'; Q,S sit in Fr U\<^sub>Q, Fr U\<^sub>S. Then U\<^sub>Q, U\<^sub>S
-      refine to components of I - (A\<^sub>1 \<union> A\<^sub>2) after re-extracting the detour.
-      Under the cyclic-order hypothesis, Q and S end up in a common component. **)
+  (** Moise proof sketch (geotop.tex:931-ff.): after reducing to the rectangular
+      picture, choose a sufficiently fine brick-decomposition of the plane so that
+      \<bar>I\<close> is a union of bricks and no brick meets both A\<^sub>1 and A\<^sub>2. Let N be the
+      union of bricks meeting A\<^sub>1 and N' = N \<inter> \<bar>I\<close>. The component J' of Fr N'
+      containing P is a 1-sphere. Its two boundary broken lines determine a
+      sub-broken-line B with B \<inter> Fr I = {V,W}; V,W lie in the frontier of one
+      component of I - (A\<^sub>1 \<union> A\<^sub>2). The cyclic order then transfers this frontier
+      statement from V,W to Q,S. **)
 proof -
-  \<comment> \<open>Sub-claim D44-1: detour construction — combine A1, A2 via a broken-line
-    inside I to produce a single arc A' from P to R in closure I.\<close>
-  have hD44_detour:
-    "\<exists>A'. geotop_is_arc A' (subspace_topology UNIV geotop_euclidean_topology A') \<and>
-          A' \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
-          A' \<inter> J = {P, R} \<and>
-          A1 \<union> A2 \<subseteq> A'"
+  \<comment> \<open>Book step 1: choose a rectangular brick-decomposition, fine enough that
+    \<open>closure I\<close> is a union of bricks and no brick meets both \<open>A1\<close> and \<open>A2\<close>.\<close>
+  have hD44_bricks:
+    "\<exists>G. geotop_brick_decomposition G \<and>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+            = \<Union>{g\<in>G. g \<subseteq>
+                closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)} \<and>
+          (\<forall>g\<in>G. \<not> (g \<inter> A1 \<noteq> {} \<and> g \<inter> A2 \<noteq> {}))"
     sorry
-  \<comment> \<open>Sub-claim D44-2: apply Theorem 4.2 to A' obtaining U_Q, U_S.\<close>
-  have hD44_apply42:
-    "\<exists>U\<^sub>Q U\<^sub>S A'. geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S \<and>
-                  U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
-                  U\<^sub>Q \<in> geotop_euclidean_topology \<and>
-                  U\<^sub>S \<in> geotop_euclidean_topology \<and>
-                  Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
-                  S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
-                  A1 \<union> A2 \<subseteq> A'"
-  proof -
-    obtain A' where hA'_arc:
-        "geotop_is_arc A' (subspace_topology UNIV geotop_euclidean_topology A')"
-      and hA'_sub:
-        "A' \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-      and hA'_J: "A' \<inter> J = {P, R}"
-      and hA12_sub: "A1 \<union> A2 \<subseteq> A'"
-      using hD44_detour by (by100 blast)
-    obtain U\<^sub>Q U\<^sub>S where hdec:
-        "geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S"
-      and hdisj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
-      and hUQ_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
-      and hUS_open: "U\<^sub>S \<in> geotop_euclidean_topology"
-      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
-      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-      using Theorem_GT_4_2[
-        OF assms(1) assms(2) assms(3) assms(4) assms(5) assms(6) assms(7)
-           hA'_arc hA'_sub hA'_J]
-      by (by100 blast)
-    show ?thesis
-      using hdec hdisj hUQ_open hUS_open hQ_front hS_front hA12_sub
-      by (by100 blast)
-  qed
-  \<comment> \<open>Sub-claim D44-3: cyclic-order argument places Q and S in the SAME
-    component of I - (A1 \<union> A2), refining U_Q and U_S into one component.\<close>
-  \<comment> \<open>Sub-claim T4_4-A: \<exists>C with Q in frontier C. Trivial witness C = {Q}:
-    frontier {Q} = closure {Q} - interior {Q} = {Q} - {} = {Q}.\<close>
-  have hT4_4_Q_frontier:
-    "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C"
-  proof -
-    have h_clos: "closure {Q::real^2} = {Q}" by (by100 simp)
-    have h_int: "interior {Q::real^2} = {}"
-      using interior_singleton by (by100 simp)
-    have h_HOL: "Q \<in> frontier {Q::real^2}"
-      using h_clos h_int unfolding Elementary_Topology.frontier_def by (by100 simp)
-    show ?thesis
-      using h_HOL geotop_frontier_UNIV_eq_frontier by metis
-  qed
-  \<comment> \<open>Sub-claim T4_4-B: same C also has S in frontier (cyclic-order forces same component).
-    Trivial existential witness via C = {S}.\<close>
-  have hT4_4_S_frontier:
-    "\<exists>C. S \<in> geotop_frontier UNIV geotop_euclidean_topology C"
-  proof -
-    have h_clos: "closure {S::real^2} = {S}" by (by100 simp)
-    have h_int: "interior {S::real^2} = {}"
-      using interior_singleton by (by100 simp)
-    have h_HOL: "S \<in> frontier {S::real^2}"
-      using h_clos h_int unfolding Elementary_Topology.frontier_def by (by100 simp)
-    show ?thesis
-      using h_HOL geotop_frontier_UNIV_eq_frontier by metis
-  qed
-  \<comment> \<open>Sub-claim T4_4-C: C is a component of I - (A1 \<union> A2).\<close>
-  have hT4_4_component:
-    "\<exists>C. \<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
-              C = geotop_component_at UNIV geotop_euclidean_topology
-                     (geotop_polygon_interior J - (A1 \<union> A2)) P'"
-  proof -
-    obtain U\<^sub>Q U\<^sub>S A' where hdec:
-        "geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S"
-      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
-      and hA12_sub: "A1 \<union> A2 \<subseteq> A'"
-      using hD44_apply42 by (by100 blast)
-    have hUQ_ne: "U\<^sub>Q \<noteq> {}"
-    proof
-      assume hUQ_empty: "U\<^sub>Q = {}"
-      have "geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q = {}"
-        using hUQ_empty geotop_frontier_UNIV_eq_frontier[of U\<^sub>Q] by (by100 simp)
-      thus False using hQ_front by (by100 simp)
-    qed
-    obtain P' where hP'UQ: "P' \<in> U\<^sub>Q"
-      using hUQ_ne by (by100 blast)
-    have hP'_IA': "P' \<in> geotop_polygon_interior J - A'"
-      using hP'UQ hdec by (by100 blast)
-    have hP'_IA12: "P' \<in> geotop_polygon_interior J - (A1 \<union> A2)"
-      using hP'_IA' hA12_sub by (by100 blast)
-    show ?thesis
-      using hP'_IA12 by (by100 blast)
-  qed
-  have hD44_common:
+  \<comment> \<open>Book step 2: \<open>N'\<close>, the union of the bricks meeting \<open>A1\<close> inside
+    \<open>closure I\<close>, is a 2-manifold with boundary.\<close>
+  have hD44_N'_manifold:
+    "\<exists>G N'. geotop_brick_decomposition G \<and>
+       N' = \<Union>{g\<in>G. g \<inter> A1 \<noteq> {}} \<inter>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
+       geotop_n_manifold_with_boundary_on N' (\<lambda>x y. norm (x - y)) 2"
+    sorry
+  \<comment> \<open>Book step 3: take the component of \<open>Fr N'\<close> containing \<open>P\<close>; it is a
+    1-sphere. Its intersection with \<open>Fr I\<close> gives the broken line \<open>B1\<close>,
+    and the complementary broken line \<open>B2\<close> contains a sub-broken-line \<open>B\<close>
+    between points \<open>V,W\<close> of \<open>Fr I\<close> with \<open>B \<inter> Fr I = {V,W}\<close>.\<close>
+  have hD44_frontier_broken_line:
+    "\<exists>J' B V W. geotop_is_n_sphere J'
+          (subspace_topology UNIV geotop_euclidean_topology J') 1 \<and>
+        geotop_is_broken_line B \<and> B \<subseteq> J' \<and>
+        V \<in> J \<and> W \<in> J \<and> B \<inter> J = {V, W}"
+    sorry
+  \<comment> \<open>Book step 4: the broken line \<open>B\<close> lies in the boundary of the same
+    component of \<open>I - (A1 \<union> A2)\<close>; hence its endpoints \<open>V,W\<close> are frontier
+    points of one such component.\<close>
+  have hD44_VW_component:
+    "\<exists>C V W. V \<in> J \<and> W \<in> J \<and>
+       V \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
+       W \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
+       (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                 (geotop_polygon_interior J - (A1 \<union> A2)) P')"
+    sorry
+  \<comment> \<open>Book step 5: by the cyclic order on \<open>Fr I\<close>, the endpoints \<open>V,W\<close>
+    occur on opposite sides of \<open>P,R\<close>, so the same component that has
+    \<open>V,W\<close> in its frontier also has \<open>Q,S\<close> in its frontier.\<close>
+  have hD44_QS_component:
     "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
            C = geotop_component_at UNIV geotop_euclidean_topology
                   (geotop_polygon_interior J - (A1 \<union> A2)) P')"
     sorry
-  show ?thesis using hD44_common by (by100 blast)
+  show ?thesis using hD44_QS_component by (by100 blast)
 qed
-
-(** from \<S>4: brick-decomposition (geotop.tex:943)
-    LATEX VERSION: By a brick-decomposition of the plane we mean a collection G = {g_i} of
-      polyhedral disks (=2-cells) such that (1) union is R^2, (2) if g_i and g_j intersect,
-      their intersection is a broken line lying in the frontier of each, and (3) every point
-      has a neighborhood intersecting at most three of the g_i. **)
-definition geotop_brick_decomposition :: "(real^2) set set \<Rightarrow> bool" where
-  "geotop_brick_decomposition G \<longleftrightarrow>
-    (\<forall>g\<in>G. geotop_is_disk g (subspace_topology UNIV geotop_euclidean_topology g) \<and>
-       (\<exists>K. geotop_is_complex K \<and> geotop_polyhedron K = g)) \<and>
-    \<Union>G = UNIV \<and>
-    (\<forall>g\<^sub>1\<in>G. \<forall>g\<^sub>2\<in>G. g\<^sub>1 \<noteq> g\<^sub>2 \<longrightarrow> g\<^sub>1 \<inter> g\<^sub>2 \<noteq> {} \<longrightarrow>
-       geotop_is_broken_line (g\<^sub>1 \<inter> g\<^sub>2) \<and>
-       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>1 \<and>
-       g\<^sub>1 \<inter> g\<^sub>2 \<subseteq> geotop_frontier UNIV geotop_euclidean_topology g\<^sub>2) \<and>
-    (\<forall>P. \<exists>N. N \<in> geotop_euclidean_topology \<and> P \<in> N \<and> card {g\<in>G. g \<inter> N \<noteq> {}} \<le> 3)"
 
 text \<open>\<open>geotop_diameter\<close> and \<open>geotop_mesh\<close> are defined earlier (before
 Theorem_GT_1), since they are needed to state the mesh-shrinkage lemma for
