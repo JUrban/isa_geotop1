@@ -130,6 +130,150 @@ next
     using hK_comp hx_gL hgL_sub_K hy_gL by (by100 blast)
 qed
 
+lemma real_cut_homeomorphic_component_cover_if_split:
+  assumes hfg: "homeomorphism A ((UNIV::real set) - {c}) f g"
+    and hx: "x \<in> A"
+    and hy: "y \<in> A"
+    and hsplit: "\<not> (\<exists>K \<in> components A. x \<in> K \<and> y \<in> K)"
+  shows "connected_component_set A x \<union> connected_component_set A y = A"
+proof
+  show "connected_component_set A x \<union> connected_component_set A y \<subseteq> A"
+  proof -
+    have "connected_component_set A x \<subseteq> A"
+      by (rule connected_component_subset)
+    moreover have "connected_component_set A y \<subseteq> A"
+      by (rule connected_component_subset)
+    ultimately show ?thesis by (by100 blast)
+  qed
+next
+  show "A \<subseteq> connected_component_set A x \<union> connected_component_set A y"
+  proof
+    fix z assume hz: "z \<in> A"
+    have h_same_mem:
+      "\<And>u v. \<lbrakk>u \<in> A; v \<in> A; \<exists>K \<in> components A. u \<in> K \<and> v \<in> K\<rbrakk>
+       \<Longrightarrow> v \<in> connected_component_set A u"
+    proof -
+      fix u v
+      assume hu: "u \<in> A"
+        and hv: "v \<in> A"
+        and hsame: "\<exists>K \<in> components A. u \<in> K \<and> v \<in> K"
+      obtain K where hK_comp: "K \<in> components A"
+        and huK: "u \<in> K" and hvK: "v \<in> K"
+        using hsame by (by100 blast)
+      have hK_conn: "connected K"
+        using hK_comp in_components_connected by (by100 blast)
+      have hK_sub: "K \<subseteq> A"
+        by (rule in_components_subset[OF hK_comp])
+      have hK_sub_cc: "K \<subseteq> connected_component_set A u"
+        by (rule connected_component_maximal[OF huK hK_conn hK_sub])
+      show "v \<in> connected_component_set A u"
+        using hvK hK_sub_cc by (by100 blast)
+    qed
+    have hfx: "f x \<in> (UNIV::real set) - {c}"
+      using hfg hx unfolding homeomorphism_def by (by100 blast)
+    have hfy: "f y \<in> (UNIV::real set) - {c}"
+      using hfg hy unfolding homeomorphism_def by (by100 blast)
+    have hfz: "f z \<in> (UNIV::real set) - {c}"
+      using hfg hz unfolding homeomorphism_def by (by100 blast)
+    have hfx_ne: "f x \<noteq> c" using hfx by (by100 blast)
+    have hfy_ne: "f y \<noteq> c" using hfy by (by100 blast)
+    have hfz_ne: "f z \<noteq> c" using hfz by (by100 blast)
+    have hnot_real_same:
+      "\<not> (\<exists>L \<in> components ((UNIV::real set) - {c}). f x \<in> L \<and> f y \<in> L)"
+      using hsplit same_component_homeomorphism_iff[OF hfg hx hy] by (by100 blast)
+    have hnot_same_side:
+      "\<not> ((f x < c \<and> f y < c) \<or> (c < f x \<and> c < f y))"
+      using hnot_real_same same_component_real_complement_singleton_iff
+        [OF hfx_ne hfy_ne] by (by100 blast)
+    have hxy_opposite: "(f x < c \<and> c < f y) \<or> (f y < c \<and> c < f x)"
+    proof (cases "f x < c")
+      case True
+      have "\<not> f y < c"
+        using True hnot_same_side by (by100 blast)
+      have "c < f y"
+        using \<open>\<not> f y < c\<close> hfy_ne by (by100 linarith)
+      show ?thesis
+        using True \<open>c < f y\<close> by (by100 blast)
+    next
+      case False
+      have hcx: "c < f x"
+        using False hfx_ne by (by100 linarith)
+      have "\<not> c < f y"
+        using hcx hnot_same_side by (by100 blast)
+      have "f y < c"
+        using \<open>\<not> c < f y\<close> hfy_ne by (by100 linarith)
+      show ?thesis
+        using hcx \<open>f y < c\<close> by (by100 blast)
+    qed
+    have hsame_xz:
+      "((f x < c \<and> f z < c) \<or> (c < f x \<and> c < f z))
+       \<Longrightarrow> z \<in> connected_component_set A x"
+    proof -
+      assume hside: "(f x < c \<and> f z < c) \<or> (c < f x \<and> c < f z)"
+      have hreal_same:
+        "\<exists>L \<in> components ((UNIV::real set) - {c}). f x \<in> L \<and> f z \<in> L"
+        using same_component_real_complement_singleton_iff[OF hfx_ne hfz_ne]
+          hside by (by100 blast)
+      have hA_same: "\<exists>K \<in> components A. x \<in> K \<and> z \<in> K"
+        using same_component_homeomorphism_iff[OF hfg hx hz] hreal_same
+        by (by100 blast)
+      show ?thesis
+        by (rule h_same_mem[OF hx hz hA_same])
+    qed
+    have hsame_yz:
+      "((f y < c \<and> f z < c) \<or> (c < f y \<and> c < f z))
+       \<Longrightarrow> z \<in> connected_component_set A y"
+    proof -
+      assume hside: "(f y < c \<and> f z < c) \<or> (c < f y \<and> c < f z)"
+      have hreal_same:
+        "\<exists>L \<in> components ((UNIV::real set) - {c}). f y \<in> L \<and> f z \<in> L"
+        using same_component_real_complement_singleton_iff[OF hfy_ne hfz_ne]
+          hside by (by100 blast)
+      have hA_same: "\<exists>K \<in> components A. y \<in> K \<and> z \<in> K"
+        using same_component_homeomorphism_iff[OF hfg hy hz] hreal_same
+        by (by100 blast)
+      show ?thesis
+        by (rule h_same_mem[OF hy hz hA_same])
+    qed
+    show "z \<in> connected_component_set A x \<union> connected_component_set A y"
+    proof (cases "f z < c")
+      case True
+      show ?thesis
+      proof (cases "f x < c")
+        case True
+        have "z \<in> connected_component_set A x"
+          by (rule hsame_xz) (use True \<open>f z < c\<close> in \<open>by100 blast\<close>)
+        thus ?thesis by (by100 blast)
+      next
+        case False
+        have "f y < c"
+          using hxy_opposite False by (by100 linarith)
+        have "z \<in> connected_component_set A y"
+          by (rule hsame_yz) (use \<open>f y < c\<close> \<open>f z < c\<close> in \<open>by100 blast\<close>)
+        thus ?thesis by (by100 blast)
+      qed
+    next
+      case False
+      have hcz: "c < f z"
+        using False hfz_ne by (by100 linarith)
+      show ?thesis
+      proof (cases "c < f x")
+        case True
+        have "z \<in> connected_component_set A x"
+          by (rule hsame_xz) (use True hcz in \<open>by100 blast\<close>)
+        thus ?thesis by (by100 blast)
+      next
+        case False
+        have "c < f y"
+          using hxy_opposite False by (by100 linarith)
+        have "z \<in> connected_component_set A y"
+          by (rule hsame_yz) (use \<open>c < f y\<close> hcz in \<open>by100 blast\<close>)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
