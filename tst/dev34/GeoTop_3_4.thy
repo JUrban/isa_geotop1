@@ -3182,6 +3182,33 @@ proof -
   qed
 qed
 
+lemma geotop_complex_edge_face_count_eq_2_obtain:
+  fixes K :: "(real^2) set set"
+  assumes hcard: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+proof -
+  let ?S = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+  have hS2: "\<exists>\<sigma> \<tau>. ?S = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>"
+    using hcard
+    apply (simp add: card_2_iff)
+    done
+  from hS2 obtain \<sigma> where hS2_\<sigma>: "\<exists>\<tau>. ?S = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>" ..
+  from hS2_\<sigma> obtain \<tau> where hS2w: "?S = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>" ..
+  have hSeq: "?S = {\<sigma>, \<tau>}"
+    using hS2w by (by100 simp)
+  have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    using hS2w by (by100 simp)
+  have h\<sigma>S: "\<sigma> \<in> ?S"
+    using hSeq by (by100 blast)
+  have h\<tau>S: "\<tau> \<in> ?S"
+    using hSeq by (by100 blast)
+  show ?thesis
+    using h\<sigma>\<tau> hSeq h\<sigma>S h\<tau>S by (by100 blast)
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -4476,6 +4503,24 @@ proof
     show "card ?S = 2"
       using hge hle by (by100 simp)
   qed
+  \<comment> \<open>Witness form of L3-L4: each incident edge has exactly two named
+    adjacent two-simplexes, matching the book's local picture around the edge.\<close>
+  have hL_two_faces: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+                \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+                \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+                \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  proof (intro ballI impI)
+    fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+    have hcard2:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+      using hL_count_eq2 heK he_inc by (by100 blast)
+    show "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+                \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+                \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+                \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+      by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcard2])
+  qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology
@@ -4496,11 +4541,17 @@ proof
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+               \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+               \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+               \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})) \<and>
      top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
      geotop_is_polygon (\<Union>(geotop_link K v)) \<and>
      geotop_comb_n_cell (geotop_star K v) 2"
-    using hL1 hL2 hL2_count hL3 hL4 hL_count_eq2 hL5 hL6 hL7 by (by100 blast)
+    using hL1 hL2 hL2_count hL3 hL4 hL_count_eq2 hL_two_faces hL5 hL6 hL7
+    by (by100 blast)
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
