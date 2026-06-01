@@ -3831,7 +3831,40 @@ proof -
             have hq3_cl: "q3 \<in> closure (\<rho> ` C)"
               using h_all by (by100 blast)
             have h_circle_sector_contradiction: False
-              sorry
+            proof -
+              obtain z where hz_trace: "z \<in> \<rho> ` C"
+                using htrace_ne by (by100 blast)
+              have hz_punctured: "z \<in> sphere P r - {q1, q2, q3}"
+                using hz_trace htrace_punctured by (by100 blast)
+              define K where
+                "K = connected_component_set (sphere P r - {q1, q2, q3}) z"
+              have hK_comp: "K \<in> components (sphere P r - {q1, q2, q3})"
+                unfolding K_def by (rule componentsI[OF hz_punctured])
+              have htrace_sub_K: "\<rho> ` C \<subseteq> K"
+              proof -
+                show ?thesis
+                  unfolding K_def
+                  by (rule connected_component_maximal
+                      [OF hz_trace h\<rho>_conn htrace_punctured])
+              qed
+              have hcl_trace_sub_K: "closure (\<rho> ` C) \<subseteq> closure K"
+                by (rule closure_mono[OF htrace_sub_K])
+              have hK_sector_bound:
+                "card ({q1, q2, q3} \<inter> closure K) \<le> 2"
+                sorry
+              have hq1_K: "q1 \<in> closure K"
+                using hq1_cl hcl_trace_sub_K by (by100 blast)
+              have hq2_K: "q2 \<in> closure K"
+                using hq2_cl hcl_trace_sub_K by (by100 blast)
+              have hq3_K: "q3 \<in> closure K"
+                using hq3_cl hcl_trace_sub_K by (by100 blast)
+              have hK_meets_all: "{q1, q2, q3} \<inter> closure K = {q1, q2, q3}"
+                using hq1_K hq2_K hq3_K by (by100 blast)
+              have h_qs_card: "card {q1, q2, q3} = 3"
+                using hq12_out hq13_out hq23_out by (by100 simp)
+              show ?thesis
+                using hK_sector_bound hK_meets_all h_qs_card by (by100 simp)
+            qed
             show False by (rule h_circle_sector_contradiction)
           qed
           have h_circle_trace_bound:
