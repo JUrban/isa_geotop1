@@ -8666,9 +8666,137 @@ proof -
             using hfr hij_cases by (by100 auto)
         qed
         have hU_not_frontier_12: "frontier U \<noteq> B1 \<union> B2"
-          sorry
+        proof
+          assume hU_frontier_12: "frontier U = B1 \<union> B2"
+          let ?X = "geotop_polygon_exterior (B1 \<union> B2)"
+          have h_sph12: "geotop_is_n_sphere (B1 \<union> B2)
+              (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+            using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+          have hX_conn: "connected ?X"
+          proof -
+            have hX_comp: "?X \<in> components (UNIV - (B1 \<union> B2))"
+              by (rule polygon_exterior_is_HOL_component[OF h_sph12])
+            show ?thesis using hX_comp in_components_connected by (by100 blast)
+          qed
+          have hX_open: "open ?X"
+          proof -
+            have hX_comp: "?X \<in> components (UNIV - (B1 \<union> B2))"
+              by (rule polygon_exterior_is_HOL_component[OF h_sph12])
+            have hJ_compact: "compact (B1 \<union> B2)"
+              using polygon_homeomorphic_S1_helper[OF h_poly_12_t28]
+                    compact_sphere homeomorphic_compactness by (by100 blast)
+            have hJ_closed: "closed (B1 \<union> B2)"
+              using hJ_compact compact_imp_closed by (by100 simp)
+            have h_compl_open: "open (UNIV - (B1 \<union> B2))"
+              using hJ_closed open_Diff by (by100 blast)
+            show ?thesis using hX_comp h_compl_open open_components by (by100 blast)
+          qed
+          have hU_open: "open U"
+          proof -
+            have hM_closed: "closed M"
+              by (rule theta_graph_closed[OF h\<theta>])
+            have h_compl_open: "open (UNIV - M)"
+              using hM_closed open_Diff by (by100 blast)
+            show ?thesis using hU_comp h_compl_open open_components by (by100 blast)
+          qed
+          have hU_openin_X: "openin (top_of_set ?X) U"
+          proof -
+            have h_openin: "openin (top_of_set ?X) (?X \<inter> U)"
+              using hU_open by (rule openin_open_Int)
+            have "?X \<inter> U = U" using hU_ext12 by (by100 blast)
+            thus ?thesis using h_openin by (by100 simp)
+          qed
+          have hU_closedin_X: "closedin (top_of_set ?X) U"
+          proof -
+            have h_closure: "closure U = U \<union> frontier U"
+              by (rule closure_Un_frontier)
+            have hX_disj_J: "?X \<inter> (B1 \<union> B2) = {}"
+              by (rule polygon_exterior_disjoint_polygon[OF h_poly_12_t28])
+            have h_eq: "?X \<inter> closure U = U"
+              using h_closure hU_frontier_12 hU_ext12 hX_disj_J by (by100 blast)
+            have h_closed: "closed (closure U)"
+              by (by100 simp)
+            have h_closedin: "closedin (top_of_set ?X) (?X \<inter> closure U)"
+              by (rule closedin_closed_Int[OF h_closed])
+            show ?thesis using h_closedin h_eq by (by100 simp)
+          qed
+          have hU_ne: "U \<noteq> {}"
+            using hU_comp in_components_nonempty by (by100 blast)
+          have hU_eq_ext12: "U = ?X"
+            using connected_clopen[of ?X] hX_conn hU_closedin_X hU_openin_X
+                  hU_ext12 hU_ne
+            by (by100 blast)
+          have hX_unbounded: "\<not> bounded ?X"
+            by (rule polygon_exterior_unbounded[OF h_sph12])
+          show False
+            using hU_eq_ext12 hU_bounded hX_unbounded by (by100 simp)
+        qed
         have hU_not_frontier_23: "frontier U \<noteq> B2 \<union> B3"
-          sorry
+        proof
+          assume hU_frontier_23: "frontier U = B2 \<union> B3"
+          let ?X = "geotop_polygon_exterior (B2 \<union> B3)"
+          have h_sph23: "geotop_is_n_sphere (B2 \<union> B3)
+              (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+            using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+          have hX_conn: "connected ?X"
+          proof -
+            have hX_comp: "?X \<in> components (UNIV - (B2 \<union> B3))"
+              by (rule polygon_exterior_is_HOL_component[OF h_sph23])
+            show ?thesis using hX_comp in_components_connected by (by100 blast)
+          qed
+          have hX_open: "open ?X"
+          proof -
+            have hX_comp: "?X \<in> components (UNIV - (B2 \<union> B3))"
+              by (rule polygon_exterior_is_HOL_component[OF h_sph23])
+            have hJ_compact: "compact (B2 \<union> B3)"
+              using polygon_homeomorphic_S1_helper[OF h_poly_23_t28]
+                    compact_sphere homeomorphic_compactness by (by100 blast)
+            have hJ_closed: "closed (B2 \<union> B3)"
+              using hJ_compact compact_imp_closed by (by100 simp)
+            have h_compl_open: "open (UNIV - (B2 \<union> B3))"
+              using hJ_closed open_Diff by (by100 blast)
+            show ?thesis using hX_comp h_compl_open open_components by (by100 blast)
+          qed
+          have hU_open: "open U"
+          proof -
+            have hM_closed: "closed M"
+              by (rule theta_graph_closed[OF h\<theta>])
+            have h_compl_open: "open (UNIV - M)"
+              using hM_closed open_Diff by (by100 blast)
+            show ?thesis using hU_comp h_compl_open open_components by (by100 blast)
+          qed
+          have hU_openin_X: "openin (top_of_set ?X) U"
+          proof -
+            have h_openin: "openin (top_of_set ?X) (?X \<inter> U)"
+              using hU_open by (rule openin_open_Int)
+            have "?X \<inter> U = U" using hU_ext23 by (by100 blast)
+            thus ?thesis using h_openin by (by100 simp)
+          qed
+          have hU_closedin_X: "closedin (top_of_set ?X) U"
+          proof -
+            have h_closure: "closure U = U \<union> frontier U"
+              by (rule closure_Un_frontier)
+            have hX_disj_J: "?X \<inter> (B2 \<union> B3) = {}"
+              by (rule polygon_exterior_disjoint_polygon[OF h_poly_23_t28])
+            have h_eq: "?X \<inter> closure U = U"
+              using h_closure hU_frontier_23 hU_ext23 hX_disj_J by (by100 blast)
+            have h_closed: "closed (closure U)"
+              by (by100 simp)
+            have h_closedin: "closedin (top_of_set ?X) (?X \<inter> closure U)"
+              by (rule closedin_closed_Int[OF h_closed])
+            show ?thesis using h_closedin h_eq by (by100 simp)
+          qed
+          have hU_ne: "U \<noteq> {}"
+            using hU_comp in_components_nonempty by (by100 blast)
+          have hU_eq_ext23: "U = ?X"
+            using connected_clopen[of ?X] hX_conn hU_closedin_X hU_openin_X
+                  hU_ext23 hU_ne
+            by (by100 blast)
+          have hX_unbounded: "\<not> bounded ?X"
+            by (rule polygon_exterior_unbounded[OF h_sph23])
+          show False
+            using hU_eq_ext23 hU_bounded hX_unbounded by (by100 simp)
+        qed
         have hU_frontier_13: "frontier U = B1 \<union> B3"
           using hU_frontier_pair hU_not_frontier_12 hU_not_frontier_23
           by (by100 blast)
