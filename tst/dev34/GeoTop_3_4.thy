@@ -3709,6 +3709,26 @@ proof -
     using h\<tau>_link by (by100 blast)
 qed
 
+lemma geotop_incident_edge_link_polyhedron_nonempty:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  shows "\<Union>(geotop_link K v) \<noteq> {}"
+proof -
+  have hlink_nonempty: "geotop_link K v \<noteq> {}"
+    by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have "geotop_polyhedron (geotop_link K v) \<noteq> {}"
+    by (rule geotop_nonempty_complex_polyhedron_nonempty
+        [OF hlink_complex hlink_nonempty])
+  thus ?thesis
+    unfolding geotop_polyhedron_def by (by100 simp)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -5854,24 +5874,15 @@ proof
   qed
   \<comment> \<open>L1 consequence: the link is nonempty, taking the other endpoint
     of an incident edge.\<close>
-  have hL1_link_nonempty: "geotop_link K v \<noteq> {}"
+  have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
   proof -
     obtain e where heK: "e \<in> K" and hedge: "geotop_is_edge e" and hv_e: "v \<in> e"
       using hL1 by (by100 blast)
     have hvK: "{v} \<in> K"
       using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
     show ?thesis
-      by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
-  qed
-  have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
-  proof -
-    have hlink_complex: "geotop_is_complex (geotop_link K v)"
-      by (rule geotop_link_is_complex[OF hK])
-    have "geotop_polyhedron (geotop_link K v) \<noteq> {}"
-      by (rule geotop_nonempty_complex_polyhedron_nonempty
-          [OF hlink_complex hL1_link_nonempty])
-    thus ?thesis
-      unfolding geotop_polyhedron_def by (by100 simp)
+      by (rule geotop_incident_edge_link_polyhedron_nonempty
+          [OF hK hvK heK hedge hv_e])
   qed
   \<comment> \<open>L2: every incident edge in \<ge>1 two-simplex.\<close>
   have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
@@ -6262,24 +6273,15 @@ proof -
     qed
     \<comment> \<open>L1 consequence: the link is nonempty, taking the other endpoint
       of an incident edge.\<close>
-    have hL1_link_nonempty: "geotop_link K v \<noteq> {}"
+    have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
     proof -
       obtain e where heK: "e \<in> K" and hedge: "geotop_is_edge e" and hv_e: "v \<in> e"
         using hL1 by (by100 blast)
       have hvK: "{v} \<in> K"
         using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
       show ?thesis
-        by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
-    qed
-    have hL1_link_poly_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
-    proof -
-      have hlink_complex: "geotop_is_complex (geotop_link K v)"
-        by (rule geotop_link_is_complex[OF hK])
-      have "geotop_polyhedron (geotop_link K v) \<noteq> {}"
-        by (rule geotop_nonempty_complex_polyhedron_nonempty
-            [OF hlink_complex hL1_link_nonempty])
-      thus ?thesis
-        unfolding geotop_polyhedron_def by (by100 simp)
+        by (rule geotop_incident_edge_link_polyhedron_nonempty
+            [OF hK hvK heK hedge hv_e])
     qed
     \<comment> \<open>L2: every incident edge is contained in some 2-simplex.\<close>
     have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
