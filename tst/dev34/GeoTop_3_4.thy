@@ -4890,6 +4890,22 @@ proof -
         [OF hK hvK hwL heK hedge hv_e hw_e hcount_e])
 qed
 
+lemma geotop_link_vertices_count_ge_1_incident_link_edges:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hcount:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  shows "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+proof (intro allI impI)
+  fix w assume hwL: "{w} \<in> geotop_link K v"
+  show "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+    by (rule geotop_link_vertex_count_ge_1_incident_link_edge
+        [OF hK hvK hwL hcount])
+qed
+
 lemma geotop_edge_face_in_ge_2_simplex_has_2_face:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -7309,13 +7325,12 @@ proof
   have hlink_vertices_incident_edges:
     "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
         (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
-  proof (intro allI impI)
-    fix w assume hwL: "{w} \<in> geotop_link K v"
+  proof -
     have hvK: "{v} \<in> K"
       using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
-    show "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
-      by (rule geotop_link_vertex_count_ge_1_incident_link_edge
-          [OF hK hvK hwL hL2_count])
+    show ?thesis
+      by (rule geotop_link_vertices_count_ge_1_incident_link_edges
+          [OF hK hvK hL2_count])
   qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
@@ -7614,13 +7629,12 @@ proof -
     have hlink_vertices_incident_edges:
       "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
           (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
-    proof (intro allI impI)
-      fix w assume hwL: "{w} \<in> geotop_link K v"
+    proof -
       have hvK: "{v} \<in> K"
         using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
-      show "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
-        by (rule geotop_link_vertex_count_ge_1_incident_link_edge
-            [OF hK hvK hwL hL2_count])
+      show ?thesis
+        by (rule geotop_link_vertices_count_ge_1_incident_link_edges
+            [OF hK hvK hL2_count])
     qed
     \<comment> \<open>L4: link |L(v)| is connected.\<close>
     have hL4: "top1_connected_on (\<Union>(geotop_link K v))
