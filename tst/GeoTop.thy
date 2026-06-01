@@ -667,6 +667,275 @@ proof -
             show "\<sigma> \<inter> \<tau> = {x}"
               using h_subset_singleton h_x_subset by (by100 blast)
           qed
+          \<comment> \<open>Arc-order refinement: an internal vertex of the broken-line arc
+            has at most one incident edge on each side of the parameter value
+            mapping to \<open>x\<close>. Together with \<open>hVX_card_ge_2\<close>, this will give
+            exactly two local branches at \<open>x\<close>.\<close>
+          have hVX_card_le_2: "card EdgesAtX \<le> 2"
+          proof (rule ccontr)
+            assume hnot_le: "\<not> card EdgesAtX \<le> 2"
+            have hcard_gt: "card EdgesAtX > 2"
+              using hnot_le by (by100 simp)
+            obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+              and h\<gamma>_pim: "path_image \<gamma> = i"
+              and hE_eq_\<gamma>: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+              using arc_endpoints_imp_arc_HOL[OF hi_endp_v] by (by100 blast)
+            obtain sx where hsx_01: "sx \<in> {0..1}" and h\<gamma>sx: "\<gamma> sx = x"
+            proof -
+              have hx_pim: "x \<in> path_image \<gamma>"
+                using hxi h\<gamma>_pim by (by100 simp)
+              obtain sx where hsx: "sx \<in> {0..1}" and hsx_eq: "\<gamma> sx = x"
+                using hx_pim unfolding path_image_def by (by100 blast)
+              show ?thesis using that[OF hsx hsx_eq] .
+            qed
+            have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
+              using h\<gamma>_arc unfolding arc_def by (by100 blast)
+            have hK_poly_path: "geotop_polyhedron K_i = path_image \<gamma>"
+              using hK_i_poly h\<gamma>_pim by (by100 simp)
+            let ?Pre = "\<lambda>\<sigma>. {s\<in>{0..1::real}. \<gamma> s \<in> \<sigma>}"
+            define Right where
+              "Right \<sigma> \<longleftrightarrow> (\<exists>q>sx. ?Pre \<sigma> = {sx..q})" for \<sigma>
+            define Left where
+              "Left \<sigma> \<longleftrightarrow> (\<exists>p<sx. ?Pre \<sigma> = {p..sx})" for \<sigma>
+            have h_edge_side:
+              "\<And>\<sigma>. \<sigma> \<in> EdgesAtX \<Longrightarrow> Right \<sigma> \<or> Left \<sigma>"
+            proof -
+              fix \<sigma>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+              obtain pnt where h\<sigma>_seg: "\<sigma> = closed_segment x pnt"
+                and hpnt_ne: "pnt \<noteq> x"
+                using hVX_segs h\<sigma>_EAX by (by100 blast)
+              have hx_ne_pnt: "x \<noteq> pnt"
+                using hpnt_ne by (by100 blast)
+              have h\<sigma>_K: "\<sigma> \<in> K_i"
+                using h\<sigma>_EAX hEAX_sub by (by100 blast)
+              obtain p q where hpq_le: "p \<le> q"
+                and hp_01: "p \<in> {0..1::real}"
+                and hq_01: "q \<in> {0..1::real}"
+                and hPre_eq: "?Pre \<sigma> = {p..q}"
+                and hendpoints: "{\<gamma> p, \<gamma> q} = {x, pnt}"
+                using geotop_arc_1simplex_preimage_structure
+                  [OF h\<gamma>_arc hK_i_1dim hK_poly_path h\<sigma>_K h\<sigma>_seg hx_ne_pnt]
+                by (by100 blast)
+              have hsx_pre: "sx \<in> ?Pre \<sigma>"
+              proof -
+                have hx\<sigma>: "x \<in> \<sigma>"
+                  using h\<sigma>_EAX hEAX_x_in by (by100 blast)
+                show ?thesis using hsx_01 h\<gamma>sx hx\<sigma> by (by100 simp)
+              qed
+              have hsx_pq: "sx \<in> {p..q}"
+                using hsx_pre hPre_eq by (by100 simp)
+              have hpq_ne: "p \<noteq> q"
+              proof
+                assume hpq: "p = q"
+                have hsingle: "{\<gamma> p, \<gamma> q} = {\<gamma> p}"
+                  using hpq by (by100 simp)
+                have hx_eq_pnt: "x = pnt"
+                  using hendpoints hsingle by (by100 auto)
+                show False using hpnt_ne hx_eq_pnt by (by100 blast)
+              qed
+              have hp_lt_q: "p < q" using hpq_le hpq_ne by (by100 simp)
+              have hp_or_hq_x: "\<gamma> p = x \<or> \<gamma> q = x"
+              proof -
+                have "x \<in> {\<gamma> p, \<gamma> q}"
+                  using hendpoints by (by100 simp)
+                thus ?thesis by (by100 auto)
+              qed
+              have hp_sx_or_hq_sx: "p = sx \<or> q = sx"
+              proof (rule disjE[OF hp_or_hq_x])
+                assume hp_x: "\<gamma> p = x"
+                have "\<gamma> p = \<gamma> sx" using hp_x h\<gamma>sx by (by100 simp)
+                hence "p = sx"
+                  using h\<gamma>_inj hp_01 hsx_01 unfolding inj_on_def by (by100 blast)
+                thus ?thesis by (by100 blast)
+              next
+                assume hq_x: "\<gamma> q = x"
+                have "\<gamma> q = \<gamma> sx" using hq_x h\<gamma>sx by (by100 simp)
+                hence "q = sx"
+                  using h\<gamma>_inj hq_01 hsx_01 unfolding inj_on_def by (by100 blast)
+                thus ?thesis by (by100 blast)
+              qed
+              show "Right \<sigma> \<or> Left \<sigma>"
+              proof (rule disjE[OF hp_sx_or_hq_sx])
+                assume hp_sx: "p = sx"
+                have hq_gt: "q > sx" using hp_lt_q hp_sx by (by100 simp)
+                have "?Pre \<sigma> = {sx..q}" using hPre_eq hp_sx by (by100 simp)
+                hence "Right \<sigma>"
+                  unfolding Right_def using hq_gt by (by100 blast)
+                thus ?thesis by (by100 blast)
+              next
+                assume hq_sx: "q = sx"
+                have hp_lt: "p < sx" using hp_lt_q hq_sx by (by100 simp)
+                have "?Pre \<sigma> = {p..sx}" using hPre_eq hq_sx by (by100 simp)
+                hence "Left \<sigma>"
+                  unfolding Left_def using hp_lt by (by100 blast)
+                thus ?thesis by (by100 blast)
+              qed
+            qed
+            have h_no_two_right:
+              "\<And>\<sigma> \<tau> q\<sigma> q\<tau>. \<lbrakk>\<sigma> \<in> EdgesAtX; \<tau> \<in> EdgesAtX; \<sigma> \<noteq> \<tau>;
+                    q\<sigma> > sx; ?Pre \<sigma> = {sx..q\<sigma>};
+                    q\<tau> > sx; ?Pre \<tau> = {sx..q\<tau>}\<rbrakk> \<Longrightarrow> False"
+            proof -
+              fix \<sigma> \<tau> q\<sigma> q\<tau>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+                and h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                and h\<sigma>\<tau>_ne: "\<sigma> \<noteq> \<tau>"
+                and hq\<sigma>_gt: "q\<sigma> > sx"
+                and hPre\<sigma>: "?Pre \<sigma> = {sx..q\<sigma>}"
+                and hq\<tau>_gt: "q\<tau> > sx"
+                and hPre\<tau>: "?Pre \<tau> = {sx..q\<tau>}"
+              define t where "t = (sx + min q\<sigma> q\<tau>) / 2"
+              have hmin_gt: "min q\<sigma> q\<tau> > sx"
+                using hq\<sigma>_gt hq\<tau>_gt by (by100 simp)
+              have ht_gt: "t > sx"
+                unfolding t_def using hmin_gt by (by100 argo)
+              have hmin_le_q\<sigma>: "min q\<sigma> q\<tau> \<le> q\<sigma>" by (rule min.cobounded1)
+              have hmin_le_q\<tau>: "min q\<sigma> q\<tau> \<le> q\<tau>" by (rule min.cobounded2)
+              have ht_le_q\<sigma>: "t \<le> q\<sigma>"
+                unfolding t_def using hq\<sigma>_gt hmin_le_q\<sigma> by (by100 argo)
+              have ht_le_q\<tau>: "t \<le> q\<tau>"
+                unfolding t_def using hq\<tau>_gt hmin_le_q\<tau> by (by100 argo)
+              have ht_pre\<sigma>: "t \<in> ?Pre \<sigma>"
+                using ht_gt ht_le_q\<sigma> hPre\<sigma> by (by100 simp)
+              have ht_pre\<tau>: "t \<in> ?Pre \<tau>"
+                using ht_gt ht_le_q\<tau> hPre\<tau> by (by100 simp)
+              have ht_01: "t \<in> {0..1::real}" using ht_pre\<sigma> by (by100 simp)
+              have hgt_in_inter: "\<gamma> t \<in> \<sigma> \<inter> \<tau>"
+                using ht_pre\<sigma> ht_pre\<tau> by (by100 simp)
+              have h_inter_eq: "\<sigma> \<inter> \<tau> = {x}"
+                by (rule hVX_edges_meet_only_at_x[OF h\<sigma>_EAX h\<tau>_EAX h\<sigma>\<tau>_ne])
+              have hgt_x: "\<gamma> t = x"
+                using hgt_in_inter h_inter_eq by (by100 simp)
+              have "\<gamma> t = \<gamma> sx" using hgt_x h\<gamma>sx by (by100 simp)
+              hence "t = sx"
+                using h\<gamma>_inj ht_01 hsx_01 unfolding inj_on_def by (by100 blast)
+              thus False using ht_gt by (by100 simp)
+            qed
+            have h_no_two_left:
+              "\<And>\<sigma> \<tau> p\<sigma> p\<tau>. \<lbrakk>\<sigma> \<in> EdgesAtX; \<tau> \<in> EdgesAtX; \<sigma> \<noteq> \<tau>;
+                    p\<sigma> < sx; ?Pre \<sigma> = {p\<sigma>..sx};
+                    p\<tau> < sx; ?Pre \<tau> = {p\<tau>..sx}\<rbrakk> \<Longrightarrow> False"
+            proof -
+              fix \<sigma> \<tau> p\<sigma> p\<tau>
+              assume h\<sigma>_EAX: "\<sigma> \<in> EdgesAtX"
+                and h\<tau>_EAX: "\<tau> \<in> EdgesAtX"
+                and h\<sigma>\<tau>_ne: "\<sigma> \<noteq> \<tau>"
+                and hp\<sigma>_lt: "p\<sigma> < sx"
+                and hPre\<sigma>: "?Pre \<sigma> = {p\<sigma>..sx}"
+                and hp\<tau>_lt: "p\<tau> < sx"
+                and hPre\<tau>: "?Pre \<tau> = {p\<tau>..sx}"
+              define t where "t = (sx + max p\<sigma> p\<tau>) / 2"
+              have hmax_lt: "max p\<sigma> p\<tau> < sx"
+                using hp\<sigma>_lt hp\<tau>_lt by (by100 simp)
+              have ht_lt: "t < sx"
+                unfolding t_def using hmax_lt by (by100 argo)
+              have hp\<sigma>_le_max: "p\<sigma> \<le> max p\<sigma> p\<tau>" by (rule max.cobounded1)
+              have hp\<tau>_le_max: "p\<tau> \<le> max p\<sigma> p\<tau>" by (rule max.cobounded2)
+              have hp\<sigma>_le_t: "p\<sigma> \<le> t"
+                unfolding t_def using hp\<sigma>_le_max hp\<sigma>_lt by (by100 argo)
+              have hp\<tau>_le_t: "p\<tau> \<le> t"
+                unfolding t_def using hp\<tau>_le_max hp\<tau>_lt by (by100 argo)
+              have ht_pre\<sigma>: "t \<in> ?Pre \<sigma>"
+                using hp\<sigma>_le_t ht_lt hPre\<sigma> by (by100 simp)
+              have ht_pre\<tau>: "t \<in> ?Pre \<tau>"
+                using hp\<tau>_le_t ht_lt hPre\<tau> by (by100 simp)
+              have ht_01: "t \<in> {0..1::real}" using ht_pre\<sigma> by (by100 simp)
+              have hgt_in_inter: "\<gamma> t \<in> \<sigma> \<inter> \<tau>"
+                using ht_pre\<sigma> ht_pre\<tau> by (by100 simp)
+              have h_inter_eq: "\<sigma> \<inter> \<tau> = {x}"
+                by (rule hVX_edges_meet_only_at_x[OF h\<sigma>_EAX h\<tau>_EAX h\<sigma>\<tau>_ne])
+              have hgt_x: "\<gamma> t = x"
+                using hgt_in_inter h_inter_eq by (by100 simp)
+              have "\<gamma> t = \<gamma> sx" using hgt_x h\<gamma>sx by (by100 simp)
+              hence "t = sx"
+                using h\<gamma>_inj ht_01 hsx_01 unfolding inj_on_def by (by100 blast)
+              thus False using ht_lt by (by100 simp)
+            qed
+            have h3_le_card: "3 \<le> card EdgesAtX"
+              using hcard_gt by (by100 simp)
+            obtain W where hW_sub: "W \<subseteq> EdgesAtX" and hW_card: "card W = 3"
+              and hW_fin: "finite W"
+              using obtain_subset_with_card_n[OF h3_le_card] by (by100 blast)
+            have hW_three:
+              "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. W = {\<sigma>1, \<sigma>2, \<sigma>3} \<and>
+                \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3"
+              using hW_card unfolding card_3_iff by (by100 simp)
+            obtain \<sigma>1 \<sigma>2 \<sigma>3 where hW_eq: "W = {\<sigma>1, \<sigma>2, \<sigma>3}"
+              and h12: "\<sigma>1 \<noteq> \<sigma>2" and h23: "\<sigma>2 \<noteq> \<sigma>3" and h13: "\<sigma>1 \<noteq> \<sigma>3"
+              using hW_three
+            proof (elim exE conjE)
+              fix a b c
+              assume hWabc: "W = {a, b, c}"
+                and hab: "a \<noteq> b"
+                and hbc: "b \<noteq> c"
+                and hac: "a \<noteq> c"
+              show thesis by (rule that[OF hWabc hab hbc hac])
+            qed
+            have h\<sigma>1: "\<sigma>1 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have h\<sigma>2: "\<sigma>2 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have h\<sigma>3: "\<sigma>3 \<in> EdgesAtX" using hW_sub hW_eq by (by100 blast)
+            have hside1: "Right \<sigma>1 \<or> Left \<sigma>1" by (rule h_edge_side[OF h\<sigma>1])
+            have hside2: "Right \<sigma>2 \<or> Left \<sigma>2" by (rule h_edge_side[OF h\<sigma>2])
+            have hside3: "Right \<sigma>3 \<or> Left \<sigma>3" by (rule h_edge_side[OF h\<sigma>3])
+            have hpigeon:
+              "(Right \<sigma>1 \<and> Right \<sigma>2) \<or> (Right \<sigma>1 \<and> Right \<sigma>3) \<or>
+               (Right \<sigma>2 \<and> Right \<sigma>3) \<or> (Left \<sigma>1 \<and> Left \<sigma>2) \<or>
+               (Left \<sigma>1 \<and> Left \<sigma>3) \<or> (Left \<sigma>2 \<and> Left \<sigma>3)"
+              using hside1 hside2 hside3 by (by100 blast)
+            thus False
+            proof (elim disjE conjE)
+              assume hR1: "Right \<sigma>1" and hR2: "Right \<sigma>2"
+              obtain q1 where hq1: "q1 > sx" and hPre1: "?Pre \<sigma>1 = {sx..q1}"
+                using hR1 unfolding Right_def by (by100 blast)
+              obtain q2 where hq2: "q2 > sx" and hPre2: "?Pre \<sigma>2 = {sx..q2}"
+                using hR2 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>1 h\<sigma>2 h12 hq1 hPre1 hq2 hPre2])
+            next
+              assume hR1: "Right \<sigma>1" and hR3: "Right \<sigma>3"
+              obtain q1 where hq1: "q1 > sx" and hPre1: "?Pre \<sigma>1 = {sx..q1}"
+                using hR1 unfolding Right_def by (by100 blast)
+              obtain q3 where hq3: "q3 > sx" and hPre3: "?Pre \<sigma>3 = {sx..q3}"
+                using hR3 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>1 h\<sigma>3 h13 hq1 hPre1 hq3 hPre3])
+            next
+              assume hR2: "Right \<sigma>2" and hR3: "Right \<sigma>3"
+              obtain q2 where hq2: "q2 > sx" and hPre2: "?Pre \<sigma>2 = {sx..q2}"
+                using hR2 unfolding Right_def by (by100 blast)
+              obtain q3 where hq3: "q3 > sx" and hPre3: "?Pre \<sigma>3 = {sx..q3}"
+                using hR3 unfolding Right_def by (by100 blast)
+              show False
+                by (rule h_no_two_right[OF h\<sigma>2 h\<sigma>3 h23 hq2 hPre2 hq3 hPre3])
+            next
+              assume hL1: "Left \<sigma>1" and hL2: "Left \<sigma>2"
+              obtain p1 where hp1: "p1 < sx" and hPre1: "?Pre \<sigma>1 = {p1..sx}"
+                using hL1 unfolding Left_def by (by100 blast)
+              obtain p2 where hp2: "p2 < sx" and hPre2: "?Pre \<sigma>2 = {p2..sx}"
+                using hL2 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>1 h\<sigma>2 h12 hp1 hPre1 hp2 hPre2])
+            next
+              assume hL1: "Left \<sigma>1" and hL3: "Left \<sigma>3"
+              obtain p1 where hp1: "p1 < sx" and hPre1: "?Pre \<sigma>1 = {p1..sx}"
+                using hL1 unfolding Left_def by (by100 blast)
+              obtain p3 where hp3: "p3 < sx" and hPre3: "?Pre \<sigma>3 = {p3..sx}"
+                using hL3 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>1 h\<sigma>3 h13 hp1 hPre1 hp3 hPre3])
+            next
+              assume hL2: "Left \<sigma>2" and hL3: "Left \<sigma>3"
+              obtain p2 where hp2: "p2 < sx" and hPre2: "?Pre \<sigma>2 = {p2..sx}"
+                using hL2 unfolding Left_def by (by100 blast)
+              obtain p3 where hp3: "p3 < sx" and hPre3: "?Pre \<sigma>3 = {p3..sx}"
+                using hL3 unfolding Left_def by (by100 blast)
+              show False
+                by (rule h_no_two_left[OF h\<sigma>2 h\<sigma>3 h23 hp2 hPre2 hp3 hPre3])
+            qed
+          qed
+          have hVX_card_eq_2: "card EdgesAtX = 2"
+            using hVX_card_ge_2 hVX_card_le_2 by (by100 linarith)
           \<comment> \<open>Sub-claim V3: pick the working radius. Use \<delta>_iso unchanged.\<close>
           define \<delta>_v where "\<delta>_v = \<delta>_iso"
           have h\<delta>_v_pos: "\<delta>_v > 0"
@@ -782,6 +1051,58 @@ proof -
             qed
             have hOther_union_closed: "closed (\<Union>OtherEdges_y)"
               by (rule closed_Union[OF hOther_fin hOther_closed])
+            have hOther_card_eq_1: "card OtherEdges_y = 1"
+            proof -
+              have hcard_diff: "card (EdgesAtX - {\<sigma>_y}) = card EdgesAtX - 1"
+                using hEAX_fin h\<sigma>_y_EAX by (by100 simp)
+              show ?thesis
+                unfolding OtherEdges_y_def using hcard_diff hVX_card_eq_2 by (by100 simp)
+            qed
+            have hOther_singleton:
+              "\<exists>\<tau>_y. OtherEdges_y = {\<tau>_y} \<and> \<tau>_y \<in> EdgesAtX \<and> \<tau>_y \<noteq> \<sigma>_y"
+            proof -
+              obtain \<tau>_y where hOther_eq: "OtherEdges_y = {\<tau>_y}"
+                using hOther_card_eq_1 card_1_singletonE by (by100 metis)
+              have h\<tau>_Other: "\<tau>_y \<in> OtherEdges_y"
+                using hOther_eq by (by100 simp)
+              have h\<tau>_EAX: "\<tau>_y \<in> EdgesAtX"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              have h\<tau>_ne: "\<tau>_y \<noteq> \<sigma>_y"
+                using h\<tau>_Other unfolding OtherEdges_y_def by (by100 blast)
+              show ?thesis using hOther_eq h\<tau>_EAX h\<tau>_ne by (by100 blast)
+            qed
+            obtain \<tau>_y where hOther_eq_singleton: "OtherEdges_y = {\<tau>_y}"
+              and h\<tau>_y_EAX: "\<tau>_y \<in> EdgesAtX"
+              and h\<tau>_y_ne: "\<tau>_y \<noteq> \<sigma>_y"
+              using hOther_singleton by (by100 blast)
+            obtain p\<tau>_y where h\<tau>_y_segment: "\<tau>_y = closed_segment x p\<tau>_y"
+              and hp\<tau>_y_ne_x: "p\<tau>_y \<noteq> x"
+              using hVX_segs h\<tau>_y_EAX by (by100 blast)
+            have h\<sigma>_y_inter_\<tau>_y: "\<sigma>_y \<inter> \<tau>_y = {x}"
+              by (rule h_other_edge_meets_sigma_y_only_at_x[OF h\<tau>_y_EAX h\<tau>_y_ne])
+            have hOther_union_eq_\<tau>_y: "\<Union>OtherEdges_y = \<tau>_y"
+              using hOther_eq_singleton by (by100 simp)
+            have hEdgesAtX_eq_pair: "EdgesAtX = {\<sigma>_y, \<tau>_y}"
+              using hOther_eq_singleton h\<sigma>_y_EAX unfolding OtherEdges_y_def
+              by (by100 blast)
+            have h_ball_x_M_sub_two_edges:
+              "ball x \<delta>_iso \<inter> M \<subseteq> \<sigma>_y \<union> \<tau>_y"
+            proof
+              fix z
+              assume hz: "z \<in> ball x \<delta>_iso \<inter> M"
+              have hz_ball: "z \<in> ball x \<delta>_iso"
+                using hz by (by100 blast)
+              have hz_M: "z \<in> M"
+                using hz by (by100 blast)
+              have hz_i: "z \<in> i"
+                using hz_ball hz_M h_ball_iso_M by (by100 blast)
+              have hz_cov: "z \<in> \<Union>EdgesAtX \<union> {x}"
+                using hz_ball hz_i h_ball_cov by (by100 blast)
+              have hx_in_pair: "x \<in> \<sigma>_y \<union> \<tau>_y"
+                using h\<sigma>_y_EAX hEAX_x_in by (by100 blast)
+              show "z \<in> \<sigma>_y \<union> \<tau>_y"
+                using hz_cov hEdgesAtX_eq_pair hx_in_pair by (by100 blast)
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
@@ -1124,7 +1445,484 @@ proof -
               have h_adjacent_sector_choice:
                 "\<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
                   ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
-                sorry
+              proof (cases "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}")
+                case True
+                show ?thesis
+                proof -
+                  obtain u where huU: "u \<in> U"
+                    and hu_dist: "dist u x < \<epsilon>"
+                    and hu_off_L: "inner (u - x) n_y \<noteq> 0"
+                    using hU_meets_off_L_y[OF h\<epsilon>_pos] by (by100 blast)
+                  have h_translate_avoid_\<tau>:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                  proof (rule equals0I)
+                    fix p
+                    assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                    obtain t :: real where ht: "t \<in> {0..1}"
+                      and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                      using hp by (by100 blast)
+                    have hp_\<tau>: "p \<in> \<tau>_y"
+                      using hp by (by100 blast)
+                    have hp_line: "inner (p - x) n_y = 0"
+                      using True hp_\<tau> by (by100 blast)
+                    have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                      using hp_eq by (by100 simp)
+                    have hp_inner_eq:
+                      "inner (p - x) n_y =
+                       inner (u - x) n_y + t * inner (y - x) n_y"
+                      using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                      by (simp add: inner_add_left)
+                    have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                      using hp_inner_eq hy_L_y_centered by (by100 simp)
+                    have hp_not_line: "inner (p - x) n_y \<noteq> 0"
+                      using hp_inner_u hu_off_L by (by100 simp)
+                    show False using hp_line hp_not_line by (by100 blast)
+                  qed
+                  have h_translate_avoid_other:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                    using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                  show ?thesis using huU hu_dist hu_off_L h_translate_avoid_other by (by100 blast)
+                qed
+              next
+                case False
+                have hp\<tau>_y_off_L_y: "inner (p\<tau>_y - x) n_y \<noteq> 0"
+                proof
+                  assume hp\<tau>_line: "inner (p\<tau>_y - x) n_y = 0"
+                  have h\<tau>_sub_L_y: "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}"
+                  proof
+                    fix z
+                    assume hz: "z \<in> \<tau>_y"
+                    have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                      using hz h\<tau>_y_segment by (by100 simp)
+                    obtain s :: real where hs_ge0: "0 \<le> s"
+                      and hs_le1: "s \<le> 1"
+                      and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                      using hz_seg unfolding closed_segment_def by (by100 blast)
+                    have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                      using hz_eq by (simp add: algebra_simps)
+                    have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                      using hz_minus by (by100 simp)
+                    show "z \<in> {z. inner (z - x) n_y = 0}"
+                      using hinner hp\<tau>_line by (by100 simp)
+                  qed
+                  show False using False h\<tau>_sub_L_y by (by100 blast)
+                qed
+                have h\<tau>_y_side_cases:
+                  "inner (p\<tau>_y - x) n_y > 0 \<or> inner (p\<tau>_y - x) n_y < 0"
+                  using hp\<tau>_y_off_L_y by (by100 linarith)
+                define L\<tau>_y where "L\<tau>_y = affine hull \<tau>_y"
+                have hx\<tau>_y: "x \<in> \<tau>_y"
+                  using h\<tau>_y_EAX hEAX_x_in by (by100 blast)
+                have hx_L\<tau>_y: "x \<in> L\<tau>_y"
+                  unfolding L\<tau>_y_def by (rule hull_inc[OF hx\<tau>_y])
+                have h\<tau>_y_dim: "geotop_simplex_dim \<tau>_y 1"
+                  using h\<tau>_y_EAX unfolding EdgesAtX_def by (by100 blast)
+                have hL\<tau>_y_hyperplane: "geotop_hyperplane_dim L\<tau>_y 1"
+                  using geotop_simplex_dim_imp_hyperplane_dim[OF h\<tau>_y_dim] L\<tau>_y_def
+                  by (by100 simp)
+                have hL\<tau>_y_normal_ex: "\<exists>m d. m \<noteq> (0::real^2) \<and> L\<tau>_y = {z. m \<bullet> z = d}"
+                  by (rule geotop_hyperplane_dim_1_R2_normal_form[OF hL\<tau>_y_hyperplane])
+                obtain m\<tau>_y d\<tau>_y where hm\<tau>_y_ne: "m\<tau>_y \<noteq> (0::real^2)"
+                  and hL\<tau>_y_eq: "L\<tau>_y = {z. m\<tau>_y \<bullet> z = d\<tau>_y}"
+                  using hL\<tau>_y_normal_ex by (by100 blast)
+                have hd\<tau>_y_eq: "d\<tau>_y = m\<tau>_y \<bullet> x"
+                  using hx_L\<tau>_y hL\<tau>_y_eq by (by100 blast)
+                have hL\<tau>_y_eq_centered: "L\<tau>_y = {z. inner (z - x) m\<tau>_y = 0}"
+                proof -
+                  have h_eq1: "L\<tau>_y = {z. m\<tau>_y \<bullet> z = inner m\<tau>_y x}"
+                    using hL\<tau>_y_eq hd\<tau>_y_eq by (by100 simp)
+                  have h_eq2:
+                    "{z. m\<tau>_y \<bullet> z = inner m\<tau>_y x} =
+                     {z. inner (z - x) m\<tau>_y = 0}"
+                    by (auto simp: inner_diff_right inner_commute)
+                  show ?thesis using h_eq1 h_eq2 by (by100 simp)
+                qed
+                have h\<tau>_y_sub_L\<tau>_y_centered: "\<tau>_y \<subseteq> {z. inner (z - x) m\<tau>_y = 0}"
+                proof -
+                  have "\<tau>_y \<subseteq> L\<tau>_y"
+                    unfolding L\<tau>_y_def by (rule hull_subset)
+                  thus ?thesis using hL\<tau>_y_eq_centered by (by100 simp)
+                qed
+                have hL\<tau>_y_affine: "affine L\<tau>_y"
+                  unfolding hL\<tau>_y_eq by (rule affine_hyperplane)
+                have hL\<tau>_y_aff_dim: "aff_dim L\<tau>_y = 1"
+                  using hm\<tau>_y_ne aff_dim_hyperplane[of m\<tau>_y d\<tau>_y] hL\<tau>_y_eq
+                  by (by100 simp)
+                have hL_y_affine: "affine L_y"
+                  unfolding hL_y_eq by (rule affine_hyperplane)
+                have hL_y_aff_dim: "aff_dim L_y = 1"
+                  using hn_y_ne aff_dim_hyperplane[of n_y d_y] hL_y_eq
+                  by (by100 simp)
+                have hy_off_L\<tau>_y: "inner (y - x) m\<tau>_y \<noteq> 0"
+                proof
+                  assume hy_on_L\<tau>_centered: "inner (y - x) m\<tau>_y = 0"
+                  have hy_L\<tau>_y: "y \<in> L\<tau>_y"
+                    using hy_on_L\<tau>_centered hL\<tau>_y_eq_centered by (by100 simp)
+                  have hxy_sub_L_y: "{x, y} \<subseteq> L_y"
+                    using hx_L_y hy_L_y by (by100 blast)
+                  have h_aff_xy_sub_L_y: "affine hull {x, y} \<subseteq> L_y"
+                    by (rule hull_minimal) (rule hxy_sub_L_y, rule hL_y_affine)
+                  have h_aff_xy_ne: "affine hull {x, y} \<noteq> {}"
+                    using hull_inc[of x "{x, y}"] by (by100 blast)
+                  have h_aff_xy_dim: "aff_dim (affine hull {x, y}) = 1"
+                    using hy_ne_x by (by100 simp)
+                  have h_aff_xy_eq_L_y: "affine hull {x, y} = L_y"
+                  proof (rule affine_dim_equal
+                      [OF affine_affine_hull hL_y_affine h_aff_xy_ne h_aff_xy_sub_L_y])
+                    show "aff_dim (affine hull {x, y}) = aff_dim L_y"
+                      using h_aff_xy_dim hL_y_aff_dim by (by100 simp)
+                  qed
+                  have hxy_sub_L\<tau>_y: "{x, y} \<subseteq> L\<tau>_y"
+                    using hx_L\<tau>_y hy_L\<tau>_y by (by100 blast)
+                  have h_aff_xy_sub_L\<tau>_y: "affine hull {x, y} \<subseteq> L\<tau>_y"
+                    by (rule hull_minimal) (rule hxy_sub_L\<tau>_y, rule hL\<tau>_y_affine)
+                  have h_aff_xy_eq_L\<tau>_y: "affine hull {x, y} = L\<tau>_y"
+                  proof (rule affine_dim_equal
+                      [OF affine_affine_hull hL\<tau>_y_affine h_aff_xy_ne h_aff_xy_sub_L\<tau>_y])
+                    show "aff_dim (affine hull {x, y}) = aff_dim L\<tau>_y"
+                      using h_aff_xy_dim hL\<tau>_y_aff_dim by (by100 simp)
+                  qed
+                  have hL_y_eq_L\<tau>_y: "L_y = L\<tau>_y"
+                    using h_aff_xy_eq_L_y h_aff_xy_eq_L\<tau>_y by (by100 simp)
+                  have h\<tau>_y_sub_L\<tau>_y: "\<tau>_y \<subseteq> L\<tau>_y"
+                    unfolding L\<tau>_y_def by (rule hull_subset)
+                  have h\<tau>_y_sub_L_y: "\<tau>_y \<subseteq> L_y"
+                    using h\<tau>_y_sub_L\<tau>_y hL_y_eq_L\<tau>_y by (by100 blast)
+                  have h\<tau>_y_sub_L_y_centered: "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}"
+                    using h\<tau>_y_sub_L_y hL_y_eq_centered by (by100 simp)
+                  show False using False h\<tau>_y_sub_L_y_centered by (by100 blast)
+                qed
+                have hy_L\<tau>_y_side_cases:
+                  "inner (y - x) m\<tau>_y > 0 \<or> inner (y - x) m\<tau>_y < 0"
+                  using hy_off_L\<tau>_y by (by100 linarith)
+                have h\<tau>_y_pos_side:
+                  "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
+                proof
+                  assume hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                  fix z
+                  assume hz_in: "z \<in> \<tau>_y - {x}"
+                  have hz: "z \<in> \<tau>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                    using hz h\<tau>_y_segment by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                    using hz_minus by (by100 simp)
+                  show "inner (z - x) n_y > 0"
+                    using hinner hs_pos hp_pos by (by100 simp)
+                qed
+                have h\<tau>_y_neg_side:
+                  "inner (p\<tau>_y - x) n_y < 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y < 0)"
+                proof
+                  assume hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                  fix z
+                  assume hz_in: "z \<in> \<tau>_y - {x}"
+                  have hz: "z \<in> \<tau>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                    using hz h\<tau>_y_segment by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                    using hz_minus by (by100 simp)
+                  have hprod: "s * inner (p\<tau>_y - x) n_y < 0"
+                    by (rule mult_pos_neg[OF hs_pos hp_neg])
+                  show "inner (z - x) n_y < 0"
+                    using hinner hprod by (by100 simp)
+                qed
+                have h_opposite_side_choice:
+                  "\<lbrakk>(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                    (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))\<rbrakk>
+                   \<Longrightarrow> \<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                proof -
+                  assume hopp:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))"
+                  have h_pos_other_neg_U:
+                    "\<lbrakk>inner (p\<tau>_y - x) n_y > 0;
+                      \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0\<rbrakk>
+                     \<Longrightarrow> ?thesis"
+                  proof -
+                    assume hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                      and hU_neg: "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
+                    obtain u where huU: "u \<in> U"
+                      and hu_dist: "dist u x < \<epsilon>"
+                      and hu_neg: "inner (u - x) n_y < 0"
+                      using hU_neg h\<epsilon>_pos by (by100 blast)
+                    have hu_off: "inner (u - x) n_y \<noteq> 0"
+                      using hu_neg by (by100 simp)
+                    have h_translate_avoid_\<tau>:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                    proof (rule equals0I)
+                      fix p
+                      assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                      obtain t :: real where ht: "t \<in> {0..1}"
+                        and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                        using hp by (by100 blast)
+                      have hp_\<tau>: "p \<in> \<tau>_y" using hp by (by100 blast)
+                      have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                        using hp_eq by (by100 simp)
+                      have hp_inner_eq:
+                        "inner (p - x) n_y =
+                         inner (u - x) n_y + t * inner (y - x) n_y"
+                        using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                        by (simp add: inner_add_left)
+                      have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                        using hp_inner_eq hy_L_y_centered by (by100 simp)
+                      have hp_neg: "inner (p - x) n_y < 0"
+                        using hp_inner_u hu_neg by (by100 simp)
+                      have hp_ne_x: "p \<noteq> x"
+                      proof
+                        assume "p = x"
+                        hence "inner (p - x) n_y = 0" by (by100 simp)
+                        thus False using hp_neg by (by100 simp)
+                      qed
+                      have hp_\<tau>_nonvertex: "p \<in> \<tau>_y - {x}"
+                        using hp_\<tau> hp_ne_x by (by100 blast)
+                      have hp_pos_side: "inner (p - x) n_y > 0"
+                        using h\<tau>_y_pos_side[OF hp_pos] hp_\<tau>_nonvertex by (by100 blast)
+                      show False using hp_neg hp_pos_side by (by100 linarith)
+                    qed
+                    have h_translate_avoid_other:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                      using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                    show ?thesis using huU hu_dist hu_off h_translate_avoid_other by (by100 blast)
+                  qed
+                  have h_neg_other_pos_U:
+                    "\<lbrakk>inner (p\<tau>_y - x) n_y < 0;
+                      \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0\<rbrakk>
+                     \<Longrightarrow> ?thesis"
+                  proof -
+                    assume hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                      and hU_pos: "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
+                    obtain u where huU: "u \<in> U"
+                      and hu_dist: "dist u x < \<epsilon>"
+                      and hu_pos: "inner (u - x) n_y > 0"
+                      using hU_pos h\<epsilon>_pos by (by100 blast)
+                    have hu_off: "inner (u - x) n_y \<noteq> 0"
+                      using hu_pos by (by100 simp)
+                    have h_translate_avoid_\<tau>:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                    proof (rule equals0I)
+                      fix p
+                      assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                      obtain t :: real where ht: "t \<in> {0..1}"
+                        and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                        using hp by (by100 blast)
+                      have hp_\<tau>: "p \<in> \<tau>_y" using hp by (by100 blast)
+                      have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                        using hp_eq by (by100 simp)
+                      have hp_inner_eq:
+                        "inner (p - x) n_y =
+                         inner (u - x) n_y + t * inner (y - x) n_y"
+                        using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                        by (simp add: inner_add_left)
+                      have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                        using hp_inner_eq hy_L_y_centered by (by100 simp)
+                      have hp_pos: "inner (p - x) n_y > 0"
+                        using hp_inner_u hu_pos by (by100 simp)
+                      have hp_ne_x: "p \<noteq> x"
+                      proof
+                        assume "p = x"
+                        hence "inner (p - x) n_y = 0" by (by100 simp)
+                        thus False using hp_pos by (by100 simp)
+                      qed
+                      have hp_\<tau>_nonvertex: "p \<in> \<tau>_y - {x}"
+                        using hp_\<tau> hp_ne_x by (by100 blast)
+                      have hp_neg_side: "inner (p - x) n_y < 0"
+                        using h\<tau>_y_neg_side[OF hp_neg] hp_\<tau>_nonvertex by (by100 blast)
+                      show False using hp_pos hp_neg_side by (by100 linarith)
+                    qed
+                    have h_translate_avoid_other:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                      using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                    show ?thesis using huU hu_dist hu_off h_translate_avoid_other by (by100 blast)
+                  qed
+                  show ?thesis
+                    using hopp h_pos_other_neg_U h_neg_other_pos_U by (by100 blast)
+                qed
+                have h_same_L\<tau>_side_choice:
+                  "\<lbrakk>\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                     (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))\<rbrakk>
+                   \<Longrightarrow> \<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                proof -
+                  assume hacc:
+                    "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                      ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                  obtain u where huU: "u \<in> U"
+                    and hu_dist: "dist u x < \<epsilon>"
+                    and hu_off_L_y: "inner (u - x) n_y \<noteq> 0"
+                    and hu_same_L\<tau>:
+                      "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)"
+                    using hacc h\<epsilon>_pos by (by100 blast)
+                  have h_translate_avoid_\<tau>:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                  proof (rule equals0I)
+                    fix p
+                    assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                    obtain t :: real where ht: "t \<in> {0..1}"
+                      and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                      using hp by (by100 blast)
+                    have ht_nonneg: "0 \<le> t"
+                      using ht by (by100 simp)
+                    have hp_\<tau>: "p \<in> \<tau>_y"
+                      using hp by (by100 blast)
+                    have hp_L\<tau>: "inner (p - x) m\<tau>_y = 0"
+                      using hp_\<tau> h\<tau>_y_sub_L\<tau>_y_centered by (by100 blast)
+                    have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                      using hp_eq by (by100 simp)
+                    have hp_inner_eq:
+                      "inner (p - x) m\<tau>_y =
+                       inner (u - x) m\<tau>_y + t * inner (y - x) m\<tau>_y"
+                      using arg_cong[where f="\<lambda>z. inner z m\<tau>_y", OF hp_x_eq]
+                      by (simp add: inner_add_left)
+                    have hp_off_L\<tau>: "inner (p - x) m\<tau>_y \<noteq> 0"
+                    proof (cases "inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0")
+                      case True
+                      then have hy_pos: "inner (y - x) m\<tau>_y > 0"
+                        and hu_pos: "inner (u - x) m\<tau>_y > 0"
+                        by (by100 blast)+
+                      have hprod_nonneg: "0 \<le> t * inner (y - x) m\<tau>_y"
+                      proof (rule mult_nonneg_nonneg)
+                        show "0 \<le> t" by (rule ht_nonneg)
+                        show "0 \<le> inner (y - x) m\<tau>_y"
+                          using hy_pos by (by100 linarith)
+                      qed
+                      have "inner (p - x) m\<tau>_y > 0"
+                        using hp_inner_eq hu_pos hprod_nonneg by (by100 linarith)
+                      thus ?thesis by (by100 simp)
+                    next
+                      case False
+                      have hneg: "inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0"
+                        using hu_same_L\<tau> False by (by100 blast)
+                      then have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                        and hu_neg: "inner (u - x) m\<tau>_y < 0"
+                        by (by100 blast)+
+                      have hprod_nonpos: "t * inner (y - x) m\<tau>_y \<le> 0"
+                      proof (rule mult_nonneg_nonpos)
+                        show "0 \<le> t" by (rule ht_nonneg)
+                        show "inner (y - x) m\<tau>_y \<le> 0"
+                          using hy_neg by (by100 linarith)
+                      qed
+                      have "inner (p - x) m\<tau>_y < 0"
+                        using hp_inner_eq hu_neg hprod_nonpos by (by100 linarith)
+                      thus ?thesis by (by100 simp)
+                    qed
+                    show False using hp_L\<tau> hp_off_L\<tau> by (by100 blast)
+                  qed
+                  have h_translate_avoid_other:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                    using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                  show ?thesis using huU hu_dist hu_off_L_y h_translate_avoid_other by (by100 blast)
+                qed
+                \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
+                  circular-neighborhood step from Figure 2.6.  The component
+                  \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
+                  \<open>u\<close> in that sector so the translate parallel to \<open>y - x\<close>
+                  misses the unique other edge \<open>\<tau>_y\<close>.\<close>
+                show ?thesis
+                proof (cases
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))")
+                  case True
+                  show ?thesis
+                    by (rule h_opposite_side_choice[OF True])
+                next
+                  case False
+                  have h_same_side_remaining:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0))"
+                    using False h\<tau>_y_side_cases hU_meets_one_side_L_y by (by100 blast)
+                  \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
+                    the same side of \<open>L_y\<close> as the other edge. This is the
+                    actual circular-sector step, not a half-plane consequence.\<close>
+                  have h_figure_2_6_exterior_sector_forces_opposite:
+                    "\<not> (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))
+                     \<Longrightarrow>
+                     ((inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                      (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
+                    sorry
+                  have h_two_ray_circular_sector_dichotomy:
+                    "(\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))) \<or>
+                     ((inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                      (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
+                  proof (cases
+                      "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))")
+                    case True
+                    show ?thesis using True by (by100 blast)
+                  next
+                    case False
+                    have h_opposite_accumulation:
+                      "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                       (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))"
+                      by (rule h_figure_2_6_exterior_sector_forces_opposite[OF False])
+                    show ?thesis using h_opposite_accumulation by (by100 blast)
+                  qed
+                  have h_between_rays_accumulation:
+                    "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                      ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
+                    using h_two_ray_circular_sector_dichotomy False by (by100 blast)
+                  show ?thesis
+                    by (rule h_same_L\<tau>_side_choice[OF h_between_rays_accumulation])
+                qed
+              qed
               obtain u where huU: "u \<in> U"
                 and hu_dist_eps: "dist u x < \<epsilon>"
                 and hu_off_L_y: "inner (u - x) n_y \<noteq> 0"
