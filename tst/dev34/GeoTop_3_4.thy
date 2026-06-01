@@ -5336,6 +5336,33 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_link_vertex_incident_2simplex_incident_link_edge:
+  fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  assumes hw_e: "w \<in> e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hface: "geotop_is_face e \<sigma>"
+  shows "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+proof -
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF hface])
+  have hex: "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>"
+    using h\<sigma>K h\<sigma>2 he_sub_\<sigma> by (by100 blast)
+  have hcount:
+    "1 \<le> card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+    by (rule geotop_complex_edge_in_2_simplex_imp_face_count_ge_1
+        [OF hK heK hedge hex])
+  show ?thesis
+    by (rule geotop_link_vertex_incident_edge_count_ge_1_incident_link_edge
+        [OF hK hvK hwL heK hedge hv_e hw_e hcount])
+qed
+
 lemma geotop_complex_edge_face_count_eq_1_unique:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
