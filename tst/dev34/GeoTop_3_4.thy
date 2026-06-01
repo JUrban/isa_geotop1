@@ -2886,6 +2886,192 @@ proof -
     by (rule geotop_simplex_face_complex_finite_R2[OF hsimplex])
 qed
 
+lemma geotop_is_face_imp_HOL_face_of_R2:
+  fixes \<tau> \<sigma> :: "(real^2) set"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<tau> face_of \<sigma>"
+proof -
+  obtain V W where hV: "geotop_simplex_vertices \<sigma> V"
+    and hWsub: "W \<subseteq> V"
+    and h\<tau>eq: "\<tau> = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have h\<sigma>HOL: "\<sigma> = convex hull V"
+  proof -
+    have "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    thus ?thesis
+      using geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  qed
+  have h\<tau>HOL: "\<tau> = convex hull W"
+    using h\<tau>eq geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+  have "\<tau> face_of (convex hull V)"
+    using face_of_convex_hull_affine_independent[OF hV_ai, of \<tau>] hWsub h\<tau>HOL
+    by (by100 blast)
+  thus ?thesis
+    using h\<sigma>HOL by (by100 simp)
+qed
+
+lemma geotop_HOL_face_of_simplex_imp_geotop_is_face_R2:
+  fixes F \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  assumes hface: "F face_of \<sigma>"
+  assumes hFne: "F \<noteq> {}"
+  shows "geotop_is_face F \<sigma>"
+proof -
+  obtain V m n where hVfin: "finite V" and hVcard: "card V = n + 1"
+    and hnm: "n \<le> m" and hVgp: "geotop_general_position V m"
+    and h\<sigma>eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_is_simplex_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hVcard hnm hVgp h\<sigma>eq by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have h\<sigma>HOL: "\<sigma> = convex hull V"
+    using h\<sigma>eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  obtain W where hWsub: "W \<subseteq> V" and hFHOL: "F = convex hull W"
+    using face_of_convex_hull_affine_independent[OF hV_ai, of F] hface h\<sigma>HOL
+    by (by100 metis)
+  have hWne: "W \<noteq> {}"
+  proof
+    assume "W = {}"
+    hence "F = {}"
+      using hFHOL by (by100 simp)
+    thus False
+      using hFne by (by100 blast)
+  qed
+  have hFgeo: "F = geotop_convex_hull W"
+    using hFHOL geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+  show ?thesis
+    unfolding geotop_is_face_def using h\<sigma>V hWne hWsub hFgeo by (by100 blast)
+qed
+
+lemma geotop_simplex_face_complex_is_complex_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  shows "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  let ?L = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hfinite: "finite ?L"
+    by (rule geotop_simplex_face_complex_finite_R2[OF h\<sigma>])
+  have h\<sigma>conv: "convex \<sigma>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>])
+  have hsimplex: "\<forall>\<tau>\<in>?L. geotop_is_simplex \<tau>"
+  proof
+    fix \<tau> assume h\<tau>L: "\<tau> \<in> ?L"
+    have hcase: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+      using h\<tau>L by (by100 blast)
+    show "geotop_is_simplex \<tau>"
+    proof (rule disjE[OF hcase])
+      assume hface: "geotop_is_face \<tau> \<sigma>"
+      obtain V W where h\<tau>W: "geotop_simplex_vertices \<tau> W"
+        by (rule geotop_face_witness_simplex_vertices[OF hface])
+      show ?thesis
+        using h\<tau>W unfolding geotop_is_simplex_def geotop_simplex_vertices_def
+        by (by100 blast)
+    next
+      assume "\<tau> = \<sigma>"
+      thus ?thesis using h\<sigma> by (by100 simp)
+    qed
+  qed
+  have hfaces: "\<forall>\<tau>\<in>?L. \<forall>\<rho>. geotop_is_face \<rho> \<tau> \<longrightarrow> \<rho> \<in> ?L"
+  proof (intro ballI allI impI)
+    fix \<tau> \<rho>
+    assume h\<tau>L: "\<tau> \<in> ?L"
+    assume h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+    have hcase: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+      using h\<tau>L by (by100 blast)
+    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
+    proof (rule disjE[OF hcase])
+      assume h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
+    next
+      assume "\<tau> = \<sigma>"
+      thus ?thesis using h\<rho>\<tau> by (by100 simp)
+    qed
+    show "\<rho> \<in> ?L"
+      using h\<rho>\<sigma> by (by100 blast)
+  qed
+  have hinter: "\<forall>\<tau>\<in>?L. \<forall>\<upsilon>\<in>?L. \<tau> \<inter> \<upsilon> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<tau> \<inter> \<upsilon>) \<tau> \<and> geotop_is_face (\<tau> \<inter> \<upsilon>) \<upsilon>"
+  proof (intro ballI impI)
+    fix \<tau> \<upsilon>
+    assume h\<tau>L: "\<tau> \<in> ?L"
+    assume h\<upsilon>L: "\<upsilon> \<in> ?L"
+    assume hne: "\<tau> \<inter> \<upsilon> \<noteq> {}"
+    have h\<tau>simplex: "geotop_is_simplex \<tau>"
+      using hsimplex h\<tau>L by (by100 blast)
+    have h\<upsilon>simplex: "geotop_is_simplex \<upsilon>"
+      using hsimplex h\<upsilon>L by (by100 blast)
+    have h\<tau>case: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+      using h\<tau>L by (by100 blast)
+    have h\<upsilon>case: "geotop_is_face \<upsilon> \<sigma> \<or> \<upsilon> = \<sigma>"
+      using h\<upsilon>L by (by100 blast)
+    have h\<tau>HOL: "\<tau> face_of \<sigma>"
+    proof (rule disjE[OF h\<tau>case])
+      assume hface: "geotop_is_face \<tau> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_HOL_face_of_R2[OF hface])
+    next
+      assume "\<tau> = \<sigma>"
+      thus ?thesis
+        using face_of_refl[OF h\<sigma>conv] by (by100 simp)
+    qed
+    have h\<upsilon>HOL: "\<upsilon> face_of \<sigma>"
+    proof (rule disjE[OF h\<upsilon>case])
+      assume hface: "geotop_is_face \<upsilon> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_HOL_face_of_R2[OF hface])
+    next
+      assume "\<upsilon> = \<sigma>"
+      thus ?thesis
+        using face_of_refl[OF h\<sigma>conv] by (by100 simp)
+    qed
+    have hinterHOL_\<sigma>: "(\<tau> \<inter> \<upsilon>) face_of \<sigma>"
+      by (rule face_of_Int[OF h\<tau>HOL h\<upsilon>HOL])
+    have hinterHOL_\<tau>: "(\<tau> \<inter> \<upsilon>) face_of \<tau>"
+      using face_of_face[OF h\<tau>HOL, of "\<tau> \<inter> \<upsilon>"] hinterHOL_\<sigma> by (by100 blast)
+    have hinterHOL_\<upsilon>: "(\<tau> \<inter> \<upsilon>) face_of \<upsilon>"
+      using face_of_face[OF h\<upsilon>HOL, of "\<tau> \<inter> \<upsilon>"] hinterHOL_\<sigma> by (by100 blast)
+    have hgeo_\<tau>: "geotop_is_face (\<tau> \<inter> \<upsilon>) \<tau>"
+      by (rule geotop_HOL_face_of_simplex_imp_geotop_is_face_R2
+          [OF h\<tau>simplex hinterHOL_\<tau> hne])
+    have hgeo_\<upsilon>: "geotop_is_face (\<tau> \<inter> \<upsilon>) \<upsilon>"
+      by (rule geotop_HOL_face_of_simplex_imp_geotop_is_face_R2
+          [OF h\<upsilon>simplex hinterHOL_\<upsilon> hne])
+    show "geotop_is_face (\<tau> \<inter> \<upsilon>) \<tau> \<and>
+          geotop_is_face (\<tau> \<inter> \<upsilon>) \<upsilon>"
+      using hgeo_\<tau> hgeo_\<upsilon> by (by100 blast)
+  qed
+  have hlocal: "\<forall>\<tau>\<in>?L. \<exists>U. open U \<and> \<tau> \<subseteq> U \<and>
+      finite {\<rho>\<in>?L. \<rho> \<inter> U \<noteq> {}}"
+  proof
+    fix \<tau> assume h\<tau>L: "\<tau> \<in> ?L"
+    have hopen: "open (UNIV::(real^2) set)"
+      by (by100 simp)
+    have hfin_filter: "finite {\<rho>\<in>?L. \<rho> \<inter> (UNIV::(real^2) set) \<noteq> {}}"
+      using hfinite by (by100 simp)
+    show "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<rho>\<in>?L. \<rho> \<inter> U \<noteq> {}}"
+      using hopen hfin_filter by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
+qed
+
+lemma geotop_simplex_dim_face_complex_is_complex_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  show ?thesis
+    by (rule geotop_simplex_face_complex_is_complex_R2[OF hsimplex])
+qed
+
 lemma geotop_isomorphic_refl_dev34:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
