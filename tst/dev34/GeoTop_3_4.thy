@@ -3493,6 +3493,18 @@ proof -
     using h_eq \<open>P \<in> connected_component_set M P\<close> by (by100 simp)
 qed
 
+lemma geotop_component_at_UNIV_closedin_HOL:
+  fixes M :: "'a::real_normed_vector set"
+  shows "closedin (top_of_set M)
+           (geotop_component_at UNIV geotop_euclidean_topology M P)"
+proof -
+  have h_eq: "geotop_component_at UNIV geotop_euclidean_topology M P =
+      connected_component_set M P"
+    by (rule geotop_component_at_UNIV_eq_connected_component_set)
+  show ?thesis
+    using h_eq closedin_connected_component by (by100 simp)
+qed
+
 lemma geotop_link_component_basic:
   fixes K :: "(real^2) set set"
   assumes hP: "P \<in> \<Union>(geotop_link K v)"
@@ -3513,6 +3525,38 @@ proof -
     by (by100 simp)
   show ?thesis
     using hsub hself hconn by (by100 blast)
+qed
+
+lemma geotop_link_component_compact:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  shows "compact C"
+proof -
+  have hlink_compact: "compact (\<Union>(geotop_link K v))"
+    by (rule geotop_link_polyhedron_compact_at_complex_vertex[OF hK hv])
+  have hC_closedin: "closedin (top_of_set (\<Union>(geotop_link K v))) C"
+    using hC
+      geotop_component_at_UNIV_closedin_HOL[of "\<Union>(geotop_link K v)" P]
+    by (by100 simp)
+  show ?thesis
+    by (rule closedin_compact[OF hlink_compact hC_closedin])
+qed
+
+lemma geotop_link_component_closed:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  shows "closed C"
+proof -
+  have hcompact: "compact C"
+    by (rule geotop_link_component_compact[OF hK hv hC])
+  show ?thesis
+    by (rule compact_imp_closed[OF hcompact])
 qed
 
 lemma geotop_finite_components_real_line_minus_two_dev34:
