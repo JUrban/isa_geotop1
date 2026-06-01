@@ -3123,6 +3123,38 @@ proof -
     by (rule finite_subset[OF hsub hU_fin])
 qed
 
+lemma geotop_complex_edge_in_2_simplex_imp_face_count_ge_1:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hex: "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have hSfin: "finite ?S"
+    by (rule geotop_complex_2_faces_over_edge_finite[OF hK heK hedge])
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and h\<sigma>dim: "geotop_simplex_dim \<sigma> 2"
+      and he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    using hex by (by100 blast)
+  have hface: "geotop_is_face e \<sigma>"
+    by (rule geotop_complex_subset_simplex_face[OF hK heK h\<sigma>K he_sub_\<sigma>])
+  have h\<sigma>S: "\<sigma> \<in> ?S"
+    using h\<sigma>K h\<sigma>dim hface by (by100 simp)
+  have hSne: "?S \<noteq> {}"
+    using h\<sigma>S by (by100 blast)
+  have hcard_ne0: "card ?S \<noteq> 0"
+  proof
+    assume "card ?S = 0"
+    hence "?S = {}"
+      using hSfin by (by100 simp)
+    thus False
+      using hSne by (by100 blast)
+  qed
+  thus ?thesis
+    by (by100 simp)
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
