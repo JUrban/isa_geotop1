@@ -2677,8 +2677,12 @@ proof -
                           by (by100 simp)
                         have hr0_pos: "r0 > 0"
                           unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
+                        have hrsmall_le_r_half: "rsmall \<le> r / 2"
+                          unfolding rsmall_def
+                          by (rule min.cobounded1)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def rsmall_def by (by100 simp)
+                          unfolding r0_def
+                          by (rule order.trans[OF min.cobounded2 hrsmall_le_r_half])
                         have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
@@ -3145,8 +3149,12 @@ proof -
                           by (by100 simp)
                         have hr0_pos: "r0 > 0"
                           unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
+                        have hrsmall_le_r_half: "rsmall \<le> r / 2"
+                          unfolding rsmall_def
+                          by (rule min.cobounded1)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def rsmall_def by (by100 simp)
+                          unfolding r0_def
+                          by (rule order.trans[OF min.cobounded2 hrsmall_le_r_half])
                         have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
@@ -5517,9 +5525,10 @@ proof -
       disk into a finite number of sectors; each sector is bounded by a
       pair of consecutive arcs.)\<close>
     have hAM_local_sectors:
-      "\<exists>\<delta>>0. \<forall>C \<in> components (ball P \<delta> - M).
+      "\<exists>\<delta>>0. finite (components (ball P \<delta> - M)) \<and>
+          (\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
-                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
     proof -
       \<comment> \<open>Book's "small circular neighborhood of P": choose it so that each
         incident broken line is represented by its first straight segment at
@@ -7818,16 +7827,815 @@ proof -
             show "x \<in> ball P \<delta> - M" using hx_ball hx_notM by (by100 blast)
           qed
         qed
+        have hlocal_components_finite:
+          "finite (components (ball P \<delta> - M))"
+        proof -
+          define r where "r = \<delta> / 2"
+          define q1 where "q1 = P + (r / dist P p1) *\<^sub>R (p1 - P)"
+          define q2 where "q2 = P + (r / dist P p2) *\<^sub>R (p2 - P)"
+          define q3 where "q3 = P + (r / dist P p3) *\<^sub>R (p3 - P)"
+          define \<rho> where "\<rho> = (\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P))"
+          have hR_components_finite:
+            "finite (components (ball P \<delta> - ?R))"
+          proof -
+            have h_circle_components_finite:
+              "finite (components (sphere P r - {q1, q2, q3}))"
+            proof -
+              have h_real_line_minus_two_components_finite:
+                "\<And>a b :: real. finite (components (UNIV - {a, b}))"
+              proof -
+                fix a b :: real
+                show "finite (components (UNIV - {a, b}))"
+                proof (cases "a = b")
+                  case True
+                  define A where "A = {{..<a}, {a<..}}"
+                  have hpair: "pairwise disjnt A"
+                    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
+                  have hUnion: "\<Union>A = UNIV - {a, b}"
+                    unfolding A_def using True by (by100 auto)
+                  have hsets:
+                    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
+                  proof -
+                    fix X assume hX: "X \<in> A"
+                    consider (L) "X = {..<a}" | (R) "X = {a<..}"
+                      using hX unfolding A_def by (by100 blast)
+                    thus "open X \<and> connected X \<and> X \<noteq> {}"
+                    proof cases
+                      case L
+                      have "(a - 1) \<in> {..<a}" by (by100 simp)
+                      thus ?thesis using L by (by100 simp)
+                    next
+                      case R
+                      have "(a + 1) \<in> {a<..}" by (by100 simp)
+                      thus ?thesis using R by (by100 simp)
+                    qed
+                  qed
+                  have hcomp: "components (UNIV - {a, b}) = A"
+                    by (rule components_open_unique[OF hpair hUnion hsets])
+                  show ?thesis unfolding hcomp A_def by (by100 simp)
+                next
+                  case False
+                  let ?l = "min a b"
+                  let ?u = "max a b"
+                  define A where "A = {{..< ?l}, {?l <..< ?u}, {?u <..}}"
+                  have hlu: "?l < ?u"
+                    using False by (by100 simp)
+                  have hpair: "pairwise disjnt A"
+                    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
+                  have hUnion: "\<Union>A = UNIV - {a, b}"
+                    unfolding A_def using False by (by100 auto)
+                  have hsets:
+                    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
+                  proof -
+                    fix X assume hX: "X \<in> A"
+                    consider (L) "X = {..< ?l}" | (M) "X = {?l <..< ?u}" | (R) "X = {?u <..}"
+                      using hX unfolding A_def by (by100 blast)
+                    thus "open X \<and> connected X \<and> X \<noteq> {}"
+                    proof cases
+                      case L
+                      have hla: "?l \<le> a" by (rule min.cobounded1)
+                      have hlb: "?l \<le> b" by (rule min.cobounded2)
+                      have hlt_a: "?l - 1 < a" using hla by (by100 linarith)
+                      have hlt_b: "?l - 1 < b" using hlb by (by100 linarith)
+                      have hmem: "(?l - 1) \<in> {..< ?l}"
+                        using hlt_a hlt_b by (by100 simp)
+                      have "open X" using L by (by100 simp)
+                      moreover have "connected X" using L by (by100 simp)
+                      moreover have "X \<noteq> {}" using L hmem by (by100 blast)
+                      ultimately show ?thesis by (by100 blast)
+                    next
+                      case M
+                      have hmem: "((?l + ?u) / 2) \<in> {?l <..< ?u}"
+                        using hlu by (by100 simp)
+                      have "open X" using M by (by100 simp)
+                      moreover have "connected X" using M by (by100 simp)
+                      moreover have "X \<noteq> {}" using M hmem by (by100 blast)
+                      ultimately show ?thesis by (by100 blast)
+                    next
+                      case R
+                      have hau: "a \<le> ?u" by (rule max.cobounded1)
+                      have hbu: "b \<le> ?u" by (rule max.cobounded2)
+                      have hlt_a: "a < ?u + 1" using hau by (by100 linarith)
+                      have hlt_b: "b < ?u + 1" using hbu by (by100 linarith)
+                      have hmem: "(?u + 1) \<in> {?u <..}"
+                        using hlt_a hlt_b by (by100 simp)
+                      have "open X" using R by (by100 simp)
+                      moreover have "connected X" using R by (by100 simp)
+                      moreover have "X \<noteq> {}" using R hmem by (by100 blast)
+                      ultimately show ?thesis by (by100 blast)
+                    qed
+                  qed
+                  have hcomp: "components (UNIV - {a, b}) = A"
+                    by (rule components_open_unique[OF hpair hUnion hsets])
+                  show ?thesis unfolding hcomp A_def by (by100 simp)
+                qed
+              qed
+              have h_finite_components_homeomorphic:
+                "\<And>A B f g. homeomorphism A B f g \<Longrightarrow>
+                  finite (components B) \<Longrightarrow> finite (components A)"
+              proof -
+                fix A B f g
+                assume hhom: "homeomorphism A B f g"
+                  and hfin: "finite (components B)"
+                have hcomp_sub:
+                  "components A \<subseteq> (\<lambda>D. g ` D) ` components B"
+                proof
+                  fix C assume hC: "C \<in> components A"
+                  obtain x where hxA: "x \<in> A"
+                    and hC_eq: "C = connected_component_set A x"
+                    using hC componentsE by (by100 blast)
+                  have hfxB: "f x \<in> B"
+                    using hhom hxA unfolding homeomorphism_def by (by100 blast)
+                  define D where "D = connected_component_set B (f x)"
+                  have hD_comp: "D \<in> components B"
+                    unfolding D_def by (rule componentsI[OF hfxB])
+                  have hBA: "homeomorphism B A g f"
+                    by (rule homeomorphism_symD[OF hhom])
+                  have hcc:
+                    "connected_component_set A (g (f x)) =
+                      g ` connected_component_set B (f x)"
+                    by (rule connected_component_set_homeomorphism[OF hBA hfxB])
+                  have hgf: "g (f x) = x"
+                    using hhom hxA by (rule homeomorphism_apply1)
+                  have "C = g ` D"
+                    using hC_eq hcc hgf unfolding D_def by (by100 simp)
+                  thus "C \<in> (\<lambda>D. g ` D) ` components B"
+                    using hD_comp by (by100 blast)
+                qed
+                have himage_fin: "finite ((\<lambda>D. g ` D) ` components B)"
+                  by (rule finite_imageI[OF hfin])
+                show "finite (components A)"
+                  by (rule finite_subset[OF hcomp_sub himage_fin])
+              qed
+              let ?S = "sphere P r"
+              let ?A = "?S - {q1, q2, q3}"
+              let ?L = "{x::real^2. (q2 - q1) \<bullet> x = 0}"
+              have hr_pos: "r > 0"
+                unfolding r_def using h\<delta>_pos by (by100 simp)
+              have hr_lt_\<delta>: "r < \<delta>"
+                unfolding r_def using h\<delta>_pos by (by100 simp)
+              have hp1_dist_pos: "dist P p1 > 0" using hp1_ne by (by100 simp)
+              have hp2_dist_pos: "dist P p2 > 0" using hp2_ne by (by100 simp)
+              have hp3_dist_pos: "dist P p3 > 0" using hp3_ne by (by100 simp)
+              have hr_le_p1: "r \<le> dist P p1"
+                unfolding r_def using hp1_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p2: "r \<le> dist P p2"
+                unfolding r_def using hp2_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p3: "r \<le> dist P p3"
+                unfolding r_def using hp3_len h\<delta>_pos by (by100 linarith)
+              have hq1:
+                "q1 \<in> ?S1 - {P} \<and> q1 \<in> ?S \<and> q1 \<in> ball P \<delta>"
+              proof -
+                let ?t = "r / dist P p1"
+                have ht0: "0 \<le> ?t" using hr_pos hp1_dist_pos by (by100 simp)
+                have ht1: "?t \<le> 1" using hr_le_p1 hp1_dist_pos by (by100 simp)
+                have hq_conv: "q1 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p1"
+                  unfolding q1_def by (simp add: algebra_simps)
+                have hq_seg: "q1 \<in> ?S1"
+                  unfolding closed_segment_def using ht0 ht1 hq_conv by (by100 blast)
+                have hq_ne: "q1 \<noteq> P"
+                proof
+                  assume h_eq: "q1 = P"
+                  have "?t *\<^sub>R (p1 - P) = 0"
+                    using h_eq unfolding q1_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp1_ne by (by100 simp)
+                  thus False using hr_pos hp1_dist_pos by (by100 simp)
+                qed
+                have hq_dist: "dist P q1 = r"
+                  unfolding q1_def using hp1_dist_pos hr_pos
+                  by (simp add: dist_norm norm_minus_commute)
+                have hq_sphere: "q1 \<in> ?S" using hq_dist by (by100 simp)
+                have hq_ball: "q1 \<in> ball P \<delta>" using hq_dist hr_lt_\<delta> by (by100 simp)
+                show ?thesis using hq_seg hq_ne hq_sphere hq_ball by (by100 blast)
+              qed
+              have hq2:
+                "q2 \<in> ?S2 - {P} \<and> q2 \<in> ?S \<and> q2 \<in> ball P \<delta>"
+              proof -
+                let ?t = "r / dist P p2"
+                have ht0: "0 \<le> ?t" using hr_pos hp2_dist_pos by (by100 simp)
+                have ht1: "?t \<le> 1" using hr_le_p2 hp2_dist_pos by (by100 simp)
+                have hq_conv: "q2 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p2"
+                  unfolding q2_def by (simp add: algebra_simps)
+                have hq_seg: "q2 \<in> ?S2"
+                  unfolding closed_segment_def using ht0 ht1 hq_conv by (by100 blast)
+                have hq_ne: "q2 \<noteq> P"
+                proof
+                  assume h_eq: "q2 = P"
+                  have "?t *\<^sub>R (p2 - P) = 0"
+                    using h_eq unfolding q2_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp2_ne by (by100 simp)
+                  thus False using hr_pos hp2_dist_pos by (by100 simp)
+                qed
+                have hq_dist: "dist P q2 = r"
+                  unfolding q2_def using hp2_dist_pos hr_pos
+                  by (simp add: dist_norm norm_minus_commute)
+                have hq_sphere: "q2 \<in> ?S" using hq_dist by (by100 simp)
+                have hq_ball: "q2 \<in> ball P \<delta>" using hq_dist hr_lt_\<delta> by (by100 simp)
+                show ?thesis using hq_seg hq_ne hq_sphere hq_ball by (by100 blast)
+              qed
+              have hq3:
+                "q3 \<in> ?S3 - {P} \<and> q3 \<in> ?S \<and> q3 \<in> ball P \<delta>"
+              proof -
+                let ?t = "r / dist P p3"
+                have ht0: "0 \<le> ?t" using hr_pos hp3_dist_pos by (by100 simp)
+                have ht1: "?t \<le> 1" using hr_le_p3 hp3_dist_pos by (by100 simp)
+                have hq_conv: "q3 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p3"
+                  unfolding q3_def by (simp add: algebra_simps)
+                have hq_seg: "q3 \<in> ?S3"
+                  unfolding closed_segment_def using ht0 ht1 hq_conv by (by100 blast)
+                have hq_ne: "q3 \<noteq> P"
+                proof
+                  assume h_eq: "q3 = P"
+                  have "?t *\<^sub>R (p3 - P) = 0"
+                    using h_eq unfolding q3_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp3_ne by (by100 simp)
+                  thus False using hr_pos hp3_dist_pos by (by100 simp)
+                qed
+                have hq_dist: "dist P q3 = r"
+                  unfolding q3_def using hp3_dist_pos hr_pos
+                  by (simp add: dist_norm norm_minus_commute)
+                have hq_sphere: "q3 \<in> ?S" using hq_dist by (by100 simp)
+                have hq_ball: "q3 \<in> ball P \<delta>" using hq_dist hr_lt_\<delta> by (by100 simp)
+                show ?thesis using hq_seg hq_ne hq_sphere hq_ball by (by100 blast)
+              qed
+              have hq1_set: "q1 \<in> ?S1 - {P}" using hq1 by (by100 blast)
+              have hq2_set: "q2 \<in> ?S2 - {P}" using hq2 by (by100 blast)
+              have hq3_set: "q3 \<in> ?S3 - {P}" using hq3 by (by100 blast)
+              have hq1_ball: "q1 \<in> ball P \<delta>" using hq1 by (by100 blast)
+              have hq2_ball: "q2 \<in> ball P \<delta>" using hq2 by (by100 blast)
+              have hq3_ball: "q3 \<in> ball P \<delta>" using hq3 by (by100 blast)
+              have hq1_sphere: "q1 \<in> ?S" using hq1 by (by100 blast)
+              have hq2_sphere: "q2 \<in> ?S" using hq2 by (by100 blast)
+              have hq3_sphere: "q3 \<in> ?S" using hq3 by (by100 blast)
+              have hq12: "q1 \<noteq> q2"
+              proof
+                assume h_eq: "q1 = q2"
+                have "q1 \<in> (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta>"
+                  using hq1_set hq2_set hq1_ball h_eq by (by100 blast)
+                thus False using hS12_empty by (by100 blast)
+              qed
+              have hq13: "q1 \<noteq> q3"
+              proof
+                assume h_eq: "q1 = q3"
+                have "q1 \<in> (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+                  using hq1_set hq3_set hq1_ball h_eq by (by100 blast)
+                thus False using hS13_empty by (by100 blast)
+              qed
+              have hq23: "q2 \<noteq> q3"
+              proof
+                assume h_eq: "q2 = q3"
+                have "q2 \<in> (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+                  using hq2_set hq3_set hq2_ball h_eq by (by100 blast)
+                thus False using hS23_empty by (by100 blast)
+              qed
+              have hc_nonzero: "q2 - q1 \<noteq> 0"
+                using hq12 by (by100 auto)
+              have hpunctured_homeo_line: "(?S - {q1}) homeomorphic ?L"
+                by (rule homeomorphic_punctured_sphere_hyperplane
+                    [OF hr_pos hq1_sphere hc_nonzero])
+              obtain f g where hfg: "homeomorphism (?S - {q1}) ?L f g"
+                using hpunctured_homeo_line unfolding homeomorphic_def by (by100 blast)
+              define a where "a = f q2"
+              define b where "b = f q3"
+              have hq2_dom: "q2 \<in> ?S - {q1}"
+                using hq2_sphere hq12 by (by100 blast)
+              have hq3_dom: "q3 \<in> ?S - {q1}"
+                using hq3_sphere hq13 by (by100 blast)
+              have hf_img: "f ` (?S - {q1}) = ?L"
+                using hfg by (rule homeomorphism_image1)
+              have hgf: "\<And>x. x \<in> ?S - {q1} \<Longrightarrow> g (f x) = x"
+                using hfg by (rule homeomorphism_apply1)
+              have hinj: "inj_on f (?S - {q1})"
+              proof (unfold inj_on_def, intro ballI impI)
+                fix x y
+                assume hx: "x \<in> ?S - {q1}"
+                  and hy: "y \<in> ?S - {q1}"
+                  and hxy: "f x = f y"
+                have "g (f x) = g (f y)" using hxy by (by100 simp)
+                thus "x = y" using hgf[OF hx] hgf[OF hy] by (by100 simp)
+              qed
+              have hcircle_line_image:
+                "f ` ?A = ?L - {a, b}"
+              proof
+                show "f ` ?A \<subseteq> ?L - {a, b}"
+                proof
+                  fix y assume hy: "y \<in> f ` ?A"
+                  obtain x where hxA: "x \<in> ?A" and hy_eq: "y = f x"
+                    using hy by (by100 blast)
+                  have hx_dom: "x \<in> ?S - {q1}" using hxA by (by100 blast)
+                  have hx_ne_q2: "x \<noteq> q2" using hxA by (by100 blast)
+                  have hx_ne_q3: "x \<noteq> q3" using hxA by (by100 blast)
+                  have hy_L: "y \<in> ?L" using hy_eq hx_dom hf_img by (by100 blast)
+                  have hy_ne_a: "y \<noteq> a"
+                  proof
+                    assume hya: "y = a"
+                    have "f x = f q2" using hya hy_eq unfolding a_def by (by100 simp)
+                    hence "x = q2"
+                      using hinj hx_dom hq2_dom unfolding inj_on_def by (by100 blast)
+                    thus False using hx_ne_q2 by (by100 blast)
+                  qed
+                  have hy_ne_b: "y \<noteq> b"
+                  proof
+                    assume hyb: "y = b"
+                    have "f x = f q3" using hyb hy_eq unfolding b_def by (by100 simp)
+                    hence "x = q3"
+                      using hinj hx_dom hq3_dom unfolding inj_on_def by (by100 blast)
+                    thus False using hx_ne_q3 by (by100 blast)
+                  qed
+                  show "y \<in> ?L - {a, b}" using hy_L hy_ne_a hy_ne_b by (by100 blast)
+                qed
+                show "?L - {a, b} \<subseteq> f ` ?A"
+                proof
+                  fix y assume hy: "y \<in> ?L - {a, b}"
+                  have hy_L: "y \<in> ?L" using hy by (by100 blast)
+                  have hy_ne_a: "y \<noteq> a" using hy by (by100 blast)
+                  have hy_ne_b: "y \<noteq> b" using hy by (by100 blast)
+                  have hy_img: "y \<in> f ` (?S - {q1})"
+                    using hf_img hy_L by (by100 simp)
+                  obtain x where hx_dom: "x \<in> ?S - {q1}" and hfx: "f x = y"
+                    using hy_img by (by100 blast)
+                  have hx_ne_q2: "x \<noteq> q2"
+                  proof
+                    assume hxq2: "x = q2"
+                    hence "y = a" using hfx unfolding a_def by (by100 simp)
+                    thus False using hy_ne_a by (by100 blast)
+                  qed
+                  have hx_ne_q3: "x \<noteq> q3"
+                  proof
+                    assume hxq3: "x = q3"
+                    hence "y = b" using hfx unfolding b_def by (by100 simp)
+                    thus False using hy_ne_b by (by100 blast)
+                  qed
+                  have "x \<in> ?A" using hx_dom hx_ne_q2 hx_ne_q3 by (by100 blast)
+                  thus "y \<in> f ` ?A" using hfx by (by100 blast)
+                qed
+              qed
+              have hcircle_line_homeomorphism:
+                "homeomorphism ?A (?L - {a, b}) f g"
+              proof (rule homeomorphism_of_subsets[OF hfg])
+                show "?A \<subseteq> ?S - {q1}" by (by100 blast)
+                show "?L - {a, b} \<subseteq> ?L" by (by100 blast)
+                show "f ` ?A = ?L - {a, b}" by (rule hcircle_line_image)
+              qed
+              have hline_components_finite: "finite (components (?L - {a, b}))"
+              proof -
+                have hL_dim: "aff_dim ?L = 1"
+                  using hc_nonzero aff_dim_hyperplane[of "q2 - q1" 0]
+                  by (by100 simp)
+                have hreal_dim: "aff_dim (UNIV::real set) = 1"
+                  by (by100 simp)
+                have hL_homeo_real: "?L homeomorphic (UNIV::real set)"
+                proof (rule homeomorphic_affine_sets)
+                  show "affine ?L" by (rule affine_hyperplane)
+                  show "affine (UNIV::real set)" by (rule affine_UNIV)
+                  show "aff_dim ?L = aff_dim (UNIV::real set)"
+                    using hL_dim hreal_dim by (by100 simp)
+                qed
+                obtain h j where hhj: "homeomorphism ?L (UNIV::real set) h j"
+                  using hL_homeo_real unfolding homeomorphic_def by (by100 blast)
+                have ha_L: "a \<in> ?L" unfolding a_def using hq2_dom hf_img by (by100 blast)
+                have hb_L: "b \<in> ?L" unfolding b_def using hq3_dom hf_img by (by100 blast)
+                have hjh: "\<And>x. x \<in> ?L \<Longrightarrow> j (h x) = x"
+                  using hhj by (rule homeomorphism_apply1)
+                have h_line_real_image:
+                  "h ` (?L - {a, b}) = (UNIV::real set) - {h a, h b}"
+                proof
+                  show "h ` (?L - {a, b}) \<subseteq> (UNIV::real set) - {h a, h b}"
+                  proof
+                    fix y assume hy: "y \<in> h ` (?L - {a, b})"
+                    obtain x where hx: "x \<in> ?L - {a, b}" and hy_eq: "y = h x"
+                      using hy by (by100 blast)
+                    have hxL: "x \<in> ?L" using hx by (by100 blast)
+                    have hx_ne_a: "x \<noteq> a" using hx by (by100 blast)
+                    have hx_ne_b: "x \<noteq> b" using hx by (by100 blast)
+                    have hy_ne_ha: "y \<noteq> h a"
+                    proof
+                      assume hya: "y = h a"
+                      have "j (h x) = j (h a)" using hya hy_eq by (by100 simp)
+                      hence "x = a" using hjh[OF hxL] hjh[OF ha_L] by (by100 simp)
+                      thus False using hx_ne_a by (by100 blast)
+                    qed
+                    have hy_ne_hb: "y \<noteq> h b"
+                    proof
+                      assume hyb: "y = h b"
+                      have "j (h x) = j (h b)" using hyb hy_eq by (by100 simp)
+                      hence "x = b" using hjh[OF hxL] hjh[OF hb_L] by (by100 simp)
+                      thus False using hx_ne_b by (by100 blast)
+                    qed
+                    show "y \<in> (UNIV::real set) - {h a, h b}"
+                      using hy_ne_ha hy_ne_hb by (by100 blast)
+                  qed
+                  show "(UNIV::real set) - {h a, h b} \<subseteq> h ` (?L - {a, b})"
+                  proof
+                    fix y assume hy: "y \<in> (UNIV::real set) - {h a, h b}"
+                    have hjy_L: "j y \<in> ?L"
+                      using hhj unfolding homeomorphism_def by (by100 blast)
+                    have hhy: "h (j y) = y"
+                      using hhj by (rule homeomorphism_apply2[of ?L "UNIV::real set" h j y, simplified])
+                    have hjy_ne_a: "j y \<noteq> a"
+                    proof
+                      assume hja: "j y = a"
+                      hence "y = h a" using hhy by (by100 simp)
+                      thus False using hy by (by100 blast)
+                    qed
+                    have hjy_ne_b: "j y \<noteq> b"
+                    proof
+                      assume hjb: "j y = b"
+                      hence "y = h b" using hhy by (by100 simp)
+                      thus False using hy by (by100 blast)
+                    qed
+                    have "j y \<in> ?L - {a, b}" using hjy_L hjy_ne_a hjy_ne_b by (by100 blast)
+                    hence "h (j y) \<in> h ` (?L - {a, b})" by (rule imageI)
+                    thus "y \<in> h ` (?L - {a, b})" using hhy by (by100 simp)
+                  qed
+                qed
+                have hline_real_homeomorphism:
+                  "homeomorphism (?L - {a, b}) ((UNIV::real set) - {h a, h b}) h j"
+                proof (rule homeomorphism_of_subsets[OF hhj])
+                  show "?L - {a, b} \<subseteq> ?L" by (by100 blast)
+                  show "(UNIV::real set) - {h a, h b} \<subseteq> UNIV" by (by100 blast)
+                  show "h ` (?L - {a, b}) = (UNIV::real set) - {h a, h b}"
+                    by (rule h_line_real_image)
+                qed
+                have hreal_fin: "finite (components ((UNIV::real set) - {h a, h b}))"
+                  by (rule h_real_line_minus_two_components_finite)
+                show ?thesis
+                  by (rule h_finite_components_homeomorphic
+                      [OF hline_real_homeomorphism hreal_fin])
+              qed
+              show ?thesis
+                by (rule h_finite_components_homeomorphic
+                    [OF hcircle_line_homeomorphism hline_components_finite])
+            qed
+            have h_radial_components_reduce_to_circle:
+              "\<exists>F. finite F \<and>
+                (\<forall>C \<in> components (ball P \<delta> - ?R).
+                    \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3}))"
+            proof -
+              have hr_pos: "r > 0"
+                unfolding r_def using h\<delta>_pos by (by100 simp)
+              have hp1_dist_pos: "dist P p1 > 0" using hp1_ne by (by100 simp)
+              have hp2_dist_pos: "dist P p2 > 0" using hp2_ne by (by100 simp)
+              have hp3_dist_pos: "dist P p3 > 0" using hp3_ne by (by100 simp)
+              have hr_le_p1: "r \<le> dist P p1"
+                unfolding r_def using hp1_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p2: "r \<le> dist P p2"
+                unfolding r_def using hp2_len h\<delta>_pos by (by100 linarith)
+              have hr_le_p3: "r \<le> dist P p3"
+                unfolding r_def using hp3_len h\<delta>_pos by (by100 linarith)
+              have hq1_set: "q1 \<in> ?S1 - {P}"
+              proof -
+                let ?t = "r / dist P p1"
+                have ht_nonneg: "0 \<le> ?t" using hr_pos hp1_dist_pos by (by100 simp)
+                have ht_le1: "?t \<le> 1" using hr_le_p1 hp1_dist_pos by (by100 simp)
+                have hq_conv: "q1 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p1"
+                  unfolding q1_def by (simp add: algebra_simps)
+                have hq_seg: "q1 \<in> ?S1"
+                  unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+                have hq_ne: "q1 \<noteq> P"
+                proof
+                  assume h_eq: "q1 = P"
+                  have "?t *\<^sub>R (p1 - P) = 0"
+                    using h_eq unfolding q1_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp1_ne by (by100 simp)
+                  thus False using hr_pos hp1_dist_pos by (by100 simp)
+                qed
+                show ?thesis using hq_seg hq_ne by (by100 blast)
+              qed
+              have hq2_set: "q2 \<in> ?S2 - {P}"
+              proof -
+                let ?t = "r / dist P p2"
+                have ht_nonneg: "0 \<le> ?t" using hr_pos hp2_dist_pos by (by100 simp)
+                have ht_le1: "?t \<le> 1" using hr_le_p2 hp2_dist_pos by (by100 simp)
+                have hq_conv: "q2 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p2"
+                  unfolding q2_def by (simp add: algebra_simps)
+                have hq_seg: "q2 \<in> ?S2"
+                  unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+                have hq_ne: "q2 \<noteq> P"
+                proof
+                  assume h_eq: "q2 = P"
+                  have "?t *\<^sub>R (p2 - P) = 0"
+                    using h_eq unfolding q2_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp2_ne by (by100 simp)
+                  thus False using hr_pos hp2_dist_pos by (by100 simp)
+                qed
+                show ?thesis using hq_seg hq_ne by (by100 blast)
+              qed
+              have hq3_set: "q3 \<in> ?S3 - {P}"
+              proof -
+                let ?t = "r / dist P p3"
+                have ht_nonneg: "0 \<le> ?t" using hr_pos hp3_dist_pos by (by100 simp)
+                have ht_le1: "?t \<le> 1" using hr_le_p3 hp3_dist_pos by (by100 simp)
+                have hq_conv: "q3 = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p3"
+                  unfolding q3_def by (simp add: algebra_simps)
+                have hq_seg: "q3 \<in> ?S3"
+                  unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+                have hq_ne: "q3 \<noteq> P"
+                proof
+                  assume h_eq: "q3 = P"
+                  have "?t *\<^sub>R (p3 - P) = 0"
+                    using h_eq unfolding q3_def by (by100 simp)
+                  hence "?t = 0"
+                    using hp3_ne by (by100 simp)
+                  thus False using hr_pos hp3_dist_pos by (by100 simp)
+                qed
+                show ?thesis using hq_seg hq_ne by (by100 blast)
+              qed
+              have hR_closed: "closed ?R"
+              proof -
+                have hS1_closed: "closed ?S1" by (rule closed_segment)
+                have hS2_closed: "closed ?S2" by (rule closed_segment)
+                have hS3_closed: "closed ?S3" by (rule closed_segment)
+                have hS12_closed: "closed (?S1 \<union> ?S2)"
+                  by (rule closed_Un[OF hS1_closed hS2_closed])
+                show ?thesis
+                  by (rule closed_Un[OF hS12_closed hS3_closed])
+              qed
+              have hlocal_open: "open (ball P \<delta> - ?R)"
+                by (rule open_Diff[OF open_ball hR_closed])
+              have hP_R: "P \<in> ?R" by (by100 simp)
+              have h_radial_preimage_segment:
+                "\<And>x p. \<lbrakk>x \<in> ball P \<delta>; x \<noteq> P; p \<noteq> P; \<delta> \<le> dist P p;
+                           \<rho> x \<in> closed_segment P p\<rbrakk>
+                  \<Longrightarrow> x \<in> closed_segment P p"
+              proof -
+                fix x p :: "real^2"
+                assume hx_ball: "x \<in> ball P \<delta>"
+                  and hx_ne: "x \<noteq> P"
+                  and hp_ne': "p \<noteq> P"
+                  and h\<delta>_p: "\<delta> \<le> dist P p"
+                  and h\<rho>_seg: "\<rho> x \<in> closed_segment P p"
+                obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+                  and h\<rho>_t: "\<rho> x = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+                  using h\<rho>_seg unfolding closed_segment_def by (by100 blast)
+                have hx_dist_pos: "dist P x > 0"
+                  using hx_ne by (by100 simp)
+                have hp_dist_pos: "dist P p > 0"
+                  using hp_ne' by (by100 simp)
+                have h\<rho>_vec: "\<rho> x = P + (r / dist P x) *\<^sub>R (x - P)"
+                  unfolding \<rho>_def by (by100 simp)
+                have h\<rho>_t_vec: "\<rho> x = P + t *\<^sub>R (p - P)"
+                  using h\<rho>_t by (simp add: algebra_simps)
+                have hdist_\<rho>_r: "dist P (\<rho> x) = r"
+                  unfolding \<rho>_def using hx_dist_pos hr_pos
+                  by (simp add: dist_norm norm_minus_commute)
+                have hdist_\<rho>_t: "dist P (\<rho> x) = t * dist P p"
+                  using h\<rho>_t_vec ht0 by (simp add: dist_norm norm_minus_commute)
+                have ht_eq: "t = r / dist P p"
+                proof -
+                  have "t * dist P p = r"
+                    using hdist_\<rho>_r hdist_\<rho>_t by (by100 simp)
+                  thus ?thesis using hp_dist_pos by (simp add: field_simps)
+                qed
+                have hscale_eq:
+                  "(r / dist P x) *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+                  using h\<rho>_vec h\<rho>_t_vec by (by100 simp)
+                have hx_vec: "x - P = (dist P x / dist P p) *\<^sub>R (p - P)"
+                proof -
+                  define a where "a = r / dist P x"
+                  have ha_ne: "a \<noteq> 0"
+                    unfolding a_def using hr_pos hx_dist_pos by (by100 simp)
+                  have ha_eq: "a *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+                    unfolding a_def using hscale_eq .
+                  have h1: "x - P = inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+                  proof -
+                    have "inverse a *\<^sub>R (a *\<^sub>R (x - P)) =
+                          inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+                      using ha_eq by (by100 simp)
+                    thus ?thesis using ha_ne by (by100 simp)
+                  qed
+                  show ?thesis
+                    using h1 ht_eq hr_pos hx_dist_pos a_def
+                    by (simp add: algebra_simps)
+                qed
+                define s where "s = dist P x / dist P p"
+                have hs0: "0 \<le> s"
+                  unfolding s_def using hx_dist_pos hp_dist_pos by (by100 simp)
+                have hs1: "s \<le> 1"
+                proof -
+                  have hx_dist_lt: "dist P x < \<delta>"
+                    using hx_ball by (by100 simp)
+                  have hx_dist_le_p: "dist P x \<le> dist P p"
+                    using hx_dist_lt h\<delta>_p by (by100 linarith)
+                  show ?thesis
+                    unfolding s_def using hx_dist_le_p hp_dist_pos by (by100 simp)
+                qed
+                have hx_conv: "x = (1 - s) *\<^sub>R P + s *\<^sub>R p"
+                  using hx_vec unfolding s_def by (simp add: algebra_simps)
+                show "x \<in> closed_segment P p"
+                  unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
+              qed
+              have h_trace_component:
+                "\<forall>C \<in> components (ball P \<delta> - ?R).
+                    \<exists>K \<in> components (sphere P r - {q1, q2, q3}). \<rho> ` C \<subseteq> K"
+              proof
+                fix C
+                assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
+                have hC_conn: "connected C"
+                  using hC_comp in_components_connected by (by100 blast)
+                have hC_sub_local: "C \<subseteq> ball P \<delta> - ?R"
+                  using hC_comp in_components_subset by (by100 blast)
+                have hC_ne: "C \<noteq> {}"
+                  using hC_comp in_components_nonempty by (by100 blast)
+                have hP_not_C: "P \<notin> C"
+                  using hC_sub_local hP_R by (by100 blast)
+                have h\<rho>_cont: "continuous_on C \<rho>"
+                proof -
+                  show ?thesis
+                    unfolding \<rho>_def
+                    apply (intro continuous_intros)
+                    using hP_not_C
+                    by (by100 auto)
+                qed
+                have h\<rho>_conn: "connected (\<rho> ` C)"
+                  by (rule connected_continuous_image[OF h\<rho>_cont hC_conn])
+                have h\<rho>_punctured:
+                  "\<rho> ` C \<subseteq> sphere P r - {q1, q2, q3}"
+                proof
+                  fix y assume hy: "y \<in> \<rho> ` C"
+                  obtain x where hxC: "x \<in> C" and hy_eq: "y = \<rho> x"
+                    using hy by (by100 blast)
+                  have hx_local: "x \<in> ball P \<delta> - ?R"
+                    using hxC hC_sub_local by (by100 blast)
+                  have hx_ball: "x \<in> ball P \<delta>"
+                    using hx_local by (by100 blast)
+                  have hx_not_R: "x \<notin> ?R"
+                    using hx_local by (by100 blast)
+                  have hx_ne_P: "x \<noteq> P"
+                    using hx_not_R hP_R by (by100 blast)
+                  have hx_dist_pos: "dist P x > 0"
+                    using hx_ne_P by (by100 simp)
+                  have hy_sphere: "y \<in> sphere P r"
+                  proof -
+                    have "dist P (\<rho> x) = r"
+                      unfolding \<rho>_def using hx_dist_pos hr_pos
+                      by (simp add: dist_norm norm_minus_commute)
+                    thus ?thesis using hy_eq by (by100 simp)
+                  qed
+                  have hy_not_qs: "y \<notin> {q1, q2, q3}"
+                  proof
+                    assume hy_qs: "y \<in> {q1, q2, q3}"
+                    have "x \<in> ?R"
+                    proof (cases "y = q1")
+                      case True
+                      have h\<rho>x_S1: "\<rho> x \<in> ?S1"
+                        using True hy_eq hq1_set by (by100 blast)
+                      have "x \<in> ?S1"
+                        by (rule h_radial_preimage_segment
+                            [OF hx_ball hx_ne_P hp1_ne hp1_len h\<rho>x_S1])
+                      thus ?thesis by (by100 blast)
+                    next
+                      case hnot1: False
+                      show ?thesis
+                      proof (cases "y = q2")
+                        case True
+                        have h\<rho>x_S2: "\<rho> x \<in> ?S2"
+                          using True hy_eq hq2_set by (by100 blast)
+                        have "x \<in> ?S2"
+                          by (rule h_radial_preimage_segment
+                              [OF hx_ball hx_ne_P hp2_ne hp2_len h\<rho>x_S2])
+                        thus ?thesis by (by100 blast)
+                      next
+                        case hnot2: False
+                        have hy_eq3: "y = q3"
+                          using hy_qs hnot1 hnot2 by (by100 blast)
+                        have h\<rho>x_S3: "\<rho> x \<in> ?S3"
+                          using hy_eq3 hy_eq hq3_set by (by100 blast)
+                        have "x \<in> ?S3"
+                          by (rule h_radial_preimage_segment
+                              [OF hx_ball hx_ne_P hp3_ne hp3_len h\<rho>x_S3])
+                        thus ?thesis by (by100 blast)
+                      qed
+                    qed
+                    thus False using hx_not_R by (by100 blast)
+                  qed
+                  show "y \<in> sphere P r - {q1, q2, q3}"
+                    using hy_sphere hy_not_qs by (by100 blast)
+                qed
+                obtain z where hzC: "z \<in> C"
+                  using hC_ne by (by100 blast)
+                have h\<rho>z_img: "\<rho> z \<in> \<rho> ` C"
+                  using hzC by (by100 blast)
+                have h\<rho>z_punctured: "\<rho> z \<in> sphere P r - {q1, q2, q3}"
+                  using h\<rho>z_img h\<rho>_punctured by (by100 blast)
+                define K where
+                  "K = connected_component_set (sphere P r - {q1, q2, q3}) (\<rho> z)"
+                have hK_comp: "K \<in> components (sphere P r - {q1, q2, q3})"
+                  unfolding K_def by (rule componentsI[OF h\<rho>z_punctured])
+                have h\<rho>_sub_K: "\<rho> ` C \<subseteq> K"
+                  unfolding K_def
+                  by (rule connected_component_maximal
+                      [OF h\<rho>z_img h\<rho>_conn h\<rho>_punctured])
+                show "\<exists>K\<in>components (sphere P r - {q1, q2, q3}). \<rho> ` C \<subseteq> K"
+                  using hK_comp h\<rho>_sub_K by (by100 blast)
+              qed
+              show ?thesis
+              proof (intro exI[where x="components (sphere P r - {q1, q2, q3})"] conjI)
+                show "finite (components (sphere P r - {q1, q2, q3}))"
+                  by (rule h_circle_components_finite)
+                show "\<forall>C\<in>components (ball P \<delta> - ?R).
+                    \<exists>K\<in>components (sphere P r - {q1, q2, q3}).
+                      \<rho> ` C \<subseteq> K \<and> K \<in> components (sphere P r - {q1, q2, q3})"
+                proof
+                  fix C
+                  assume hC: "C \<in> components (ball P \<delta> - ?R)"
+                  obtain K where hK:
+                    "K \<in> components (sphere P r - {q1, q2, q3})"
+                    "\<rho> ` C \<subseteq> K"
+                    using h_trace_component hC by (by100 blast)
+                  show "\<exists>K\<in>components (sphere P r - {q1, q2, q3}).
+                    \<rho> ` C \<subseteq> K \<and> K \<in> components (sphere P r - {q1, q2, q3})"
+                    by (intro bexI[where x=K] conjI hK)
+                qed
+              qed
+            qed
+            have h_same_circle_component_same_disk_component:
+              "\<forall>C \<in> components (ball P \<delta> - ?R).
+                \<forall>D \<in> components (ball P \<delta> - ?R).
+                  (\<exists>K \<in> components (sphere P r - {q1, q2, q3}).
+                    \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K) \<longrightarrow> C = D"
+              sorry
+            have h_disk_components_inject_circle:
+              "\<exists>f. inj_on f (components (ball P \<delta> - ?R)) \<and>
+                    f ` components (ball P \<delta> - ?R) \<subseteq>
+                      components (sphere P r - {q1, q2, q3})"
+            proof -
+              obtain F where hF_fin: "finite F"
+                and hF:
+                  "\<forall>C \<in> components (ball P \<delta> - ?R).
+                    \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3})"
+                using h_radial_components_reduce_to_circle by (by100 blast)
+              obtain f where hf:
+                "\<forall>C \<in> components (ball P \<delta> - ?R).
+                    f C \<in> F \<and> \<rho> ` C \<subseteq> f C \<and>
+                      f C \<in> components (sphere P r - {q1, q2, q3})"
+                using bchoice[of "components (ball P \<delta> - ?R)"
+                    "\<lambda>C K. K \<in> F \<and> \<rho> ` C \<subseteq> K \<and>
+                      K \<in> components (sphere P r - {q1, q2, q3})"]
+                  hF by (by100 blast)
+              have hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+              proof (unfold inj_on_def, intro ballI impI)
+                fix C D
+                assume hC: "C \<in> components (ball P \<delta> - ?R)"
+                  and hD: "D \<in> components (ball P \<delta> - ?R)"
+                  and hf_eq: "f C = f D"
+                have hfC_comp:
+                  "f C \<in> components (sphere P r - {q1, q2, q3})"
+                  using hf hC by (by100 blast)
+                have hC_sub: "\<rho> ` C \<subseteq> f C"
+                  using hf hC by (by100 blast)
+                have hD_sub: "\<rho> ` D \<subseteq> f C"
+                  using hf hD hf_eq by (by100 blast)
+                show "C = D"
+                  using h_same_circle_component_same_disk_component
+                    hC hD hfC_comp hC_sub hD_sub by (by100 blast)
+              qed
+              have hf_sub:
+                "f ` components (ball P \<delta> - ?R) \<subseteq>
+                  components (sphere P r - {q1, q2, q3})"
+                using hf by (by100 blast)
+              show ?thesis using hf_inj hf_sub by (by100 blast)
+            qed
+            show ?thesis
+            proof -
+              obtain f where hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+                and hf_sub:
+                  "f ` components (ball P \<delta> - ?R) \<subseteq>
+                    components (sphere P r - {q1, q2, q3})"
+                using h_disk_components_inject_circle by (by100 blast)
+              have hf_image_finite:
+                "finite (f ` components (ball P \<delta> - ?R))"
+                by (rule finite_subset[OF hf_sub h_circle_components_finite])
+              show ?thesis
+                by (rule finite_imageD[OF hf_image_finite hf_inj])
+            qed
+          qed
+          show ?thesis
+            using hR_components_finite hlocal_compl by (by100 simp)
+        qed
         show ?thesis
-        proof (intro exI[where x=\<delta>] conjI ballI)
+        proof (intro exI[where x=\<delta>] conjI)
           show "\<delta> > 0" using h\<delta>_pos .
-          fix C
-          assume hC: "C \<in> components (ball P \<delta> - M)"
-          let ?TouchB = "{Bi \<in> {B1, B2, B3}.
-                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
-          let ?TouchS = "{S \<in> {?S1, ?S2, ?S3}.
-                        (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
-          let ?f = "\<lambda>Bi. if Bi = B1 then ?S1 else if Bi = B2 then ?S2 else ?S3"
+          show "finite (components (ball P \<delta> - M))"
+            using hlocal_components_finite .
+          show "\<forall>C \<in> components (ball P \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          proof
+            fix C
+            assume hC: "C \<in> components (ball P \<delta> - M)"
+            let ?TouchB = "{Bi \<in> {B1, B2, B3}.
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+            let ?TouchS = "{S \<in> {?S1, ?S2, ?S3}.
+                          (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+            let ?f = "\<lambda>Bi. if Bi = B1 then ?S1 else if Bi = B2 then ?S2 else ?S3"
           have hC_R: "C \<in> components (ball P \<delta> - ?R)"
             using hC hlocal_compl by (by100 simp)
           have hcardS: "card ?TouchS \<le> 2"
@@ -7928,6 +8736,7 @@ proof -
             by (rule card_mono[OF hfinS himg_sub])
           show "card ?TouchB \<le> 2"
             using hcard_img hcard_img_le hcardS by (by100 linarith)
+          qed
         qed
       qed
     qed
@@ -7941,6 +8750,7 @@ proof -
       "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U"
     proof -
       obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
         and h\<delta>_sectors:
           "\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
@@ -8001,6 +8811,7 @@ proof -
                     geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
       proof -
         obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+          and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
           and h\<delta>_sectors:
             "\<forall>C \<in> components (ball P \<delta> - M).
                 card {Bi \<in> {B1, B2, B3}.
@@ -8090,7 +8901,7 @@ proof -
           qed
           have h_local_components_finite:
             "finite (components (ball P \<delta> - M))"
-            sorry
+            using h\<delta>_finite .
           have h_other_components_meet_near:
             "\<forall>\<eta>>0. \<exists>D \<in> components (ball P \<delta> - M).
                 D \<noteq> C \<and> D \<inter> ball P \<eta> \<inter> U \<noteq> {}"
@@ -8248,7 +9059,72 @@ proof -
           qed
           have h_figure_2_6_pair_separation:
             False
-            sorry
+          proof -
+            obtain D where hD_comp: "D \<in> components (ball P \<delta> - M)"
+              and hD_ne_C: "D \<noteq> C"
+              and hD_sub_U: "D \<subseteq> U"
+              and hP_cl_D: "P \<in> closure D"
+              using h_two_local_U_sectors by (by100 blast)
+            have h_local_sectors_separated_by_pair:
+              "\<exists>i j A B. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                A \<in> components (UNIV - (i \<union> j)) \<and>
+                B \<in> components (UNIV - (i \<union> j)) \<and> A \<noteq> B \<and>
+                C \<inter> A \<noteq> {} \<and> D \<inter> B \<noteq> {}"
+              sorry
+            obtain i j A B where hi_set: "i \<in> {B1, B2, B3}"
+              and hj_set: "j \<in> {B1, B2, B3}"
+              and hij_ne: "i \<noteq> j"
+              and hA_comp: "A \<in> components (UNIV - (i \<union> j))"
+              and hB_comp: "B \<in> components (UNIV - (i \<union> j))"
+              and hA_ne_B: "A \<noteq> B"
+              and hC_A_meet: "C \<inter> A \<noteq> {}"
+              and hD_B_meet: "D \<inter> B \<noteq> {}"
+              using h_local_sectors_separated_by_pair
+            proof (elim exE conjE)
+              fix i j A B
+              assume hi_set': "i \<in> {B1, B2, B3}"
+              assume hj_set': "j \<in> {B1, B2, B3}"
+              assume hij_ne': "i \<noteq> j"
+              assume hA_comp': "A \<in> components (UNIV - (i \<union> j))"
+              assume hB_comp': "B \<in> components (UNIV - (i \<union> j))"
+              assume hA_ne_B': "A \<noteq> B"
+              assume hC_A_meet': "C \<inter> A \<noteq> {}"
+              assume hD_B_meet': "D \<inter> B \<noteq> {}"
+              show thesis
+                by (rule that[OF hi_set' hj_set' hij_ne' hA_comp' hB_comp'
+                    hA_ne_B' hC_A_meet' hD_B_meet'])
+            qed
+            have hM_eq: "M = B1 \<union> B2 \<union> B3"
+              using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+            have hij_sub_M: "i \<union> j \<subseteq> M"
+              using hi_set hj_set hM_eq by (by100 blast)
+            have hU_sub_pair_compl: "U \<subseteq> UNIV - (i \<union> j)"
+            proof -
+              have hU_sub_M_compl: "U \<subseteq> UNIV - M"
+                using hU in_components_subset by (by100 blast)
+              show ?thesis using hU_sub_M_compl hij_sub_M by (by100 blast)
+            qed
+            obtain c where hcC: "c \<in> C" and hcA: "c \<in> A"
+              using hC_A_meet by (by100 blast)
+            have hcU: "c \<in> U" using hcC hC_sub_U by (by100 blast)
+            have hU_conn: "connected U"
+              using hU in_components_connected by (by100 blast)
+            have hA_eq: "A = connected_component_set (UNIV - (i \<union> j)) c"
+              by (rule component_eq_connected_component_set[OF hA_comp hcA])
+            have hU_sub_A: "U \<subseteq> A"
+            proof -
+              have "U \<subseteq> connected_component_set (UNIV - (i \<union> j)) c"
+                by (rule connected_component_maximal[OF hcU hU_conn hU_sub_pair_compl])
+              thus ?thesis using hA_eq by (by100 simp)
+            qed
+            obtain d where hdD: "d \<in> D" and hdB: "d \<in> B"
+              using hD_B_meet by (by100 blast)
+            have hdU: "d \<in> U" using hdD hD_sub_U by (by100 blast)
+            have hdA: "d \<in> A" using hdU hU_sub_A by (by100 blast)
+            have "A \<inter> B = {}"
+              using components_nonoverlap[OF hA_comp hB_comp] hA_ne_B by (by100 simp)
+            thus False using hdA hdB by (by100 blast)
+          qed
           show False
             using h_figure_2_6_pair_separation .
         qed
