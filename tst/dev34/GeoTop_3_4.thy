@@ -2702,6 +2702,34 @@ proof -
     using h\<sigma>V hW\<^sub>\<rho>_ne hW\<^sub>\<rho>_sub_\<sigma> h\<rho>_eq by (by100 blast)
 qed
 
+lemma geotop_simplex_dim_le_2_R2:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "n \<le> 2"
+proof -
+  obtain V m where hVfin: "finite V"
+    and hVcard: "card V = n + 1"
+    and hnm: "n \<le> m"
+    and hVgp: "geotop_general_position V m"
+    and h\<sigma>eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hVfin hVcard hnm hVgp h\<sigma>eq by (by100 blast)
+  have hVai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have h_aff_V: "aff_dim V = int (card V) - 1"
+    using hVai affine_independent_iff_card hVfin by (by100 blast)
+  have h_aff_le: "aff_dim V \<le> int (DIM(real^2))"
+    by (rule aff_dim_le_DIM)
+  have hDIM: "DIM(real^2) = 2"
+    by (by100 simp)
+  have "int n \<le> (2::int)"
+    using h_aff_V h_aff_le hDIM hVcard by (by100 linarith)
+  show ?thesis
+    using \<open>int n \<le> (2::int)\<close> by (by100 linarith)
+qed
+
 lemma geotop_star_subset_complex:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -2859,6 +2887,68 @@ proof -
   qed
   show ?thesis
     unfolding geotop_is_complex_def using hsimplex hfaces hinter hlocal by (by100 blast)
+qed
+
+lemma geotop_link_complex_is_1dim_R2:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_complex_is_1dim (geotop_link K v)"
+proof -
+  have hlink_sub_K: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  have hK_simplex: "\<forall>\<sigma>\<in>K. geotop_is_simplex \<sigma>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  show ?thesis
+    unfolding geotop_complex_is_1dim_def
+  proof
+    fix \<tau> assume h\<tau>L: "\<tau> \<in> geotop_link K v"
+    have h\<tau>K: "\<tau> \<in> K"
+      using hlink_sub_K h\<tau>L by (by100 blast)
+    have h\<tau>simplex: "geotop_is_simplex \<tau>"
+      using hK_simplex h\<tau>K by (by100 blast)
+    obtain n\<^sub>\<tau> where h\<tau>dim: "geotop_simplex_dim \<tau> n\<^sub>\<tau>"
+      using h\<tau>simplex unfolding geotop_is_simplex_def geotop_simplex_dim_def
+      by (by100 blast)
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+      and hv\<sigma>: "v \<in> \<sigma>"
+      and h\<tau>\<sigma>_case: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+      using h\<tau>L unfolding geotop_link_def geotop_star_def by (by100 blast)
+    have hv_not_\<tau>: "v \<notin> \<tau>"
+      using h\<tau>L unfolding geotop_link_def by (by100 blast)
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+    proof (rule disjE[OF h\<tau>\<sigma>_case])
+      assume "geotop_is_face \<tau> \<sigma>"
+      thus ?thesis .
+    next
+      assume h_eq: "\<tau> = \<sigma>"
+      have False
+        using hv\<sigma> hv_not_\<tau> h_eq by (by100 blast)
+      thus ?thesis by (by100 blast)
+    qed
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
+    have hproper: "\<tau> \<subset> \<sigma>"
+    proof -
+      have "\<tau> \<noteq> \<sigma>"
+        using hv\<sigma> hv_not_\<tau> by (by100 blast)
+      show ?thesis
+        using h\<tau>sub\<sigma> \<open>\<tau> \<noteq> \<sigma>\<close> by (by100 blast)
+    qed
+    have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+      using hK_simplex h\<sigma>K by (by100 blast)
+    obtain n\<^sub>\<sigma> where h\<sigma>dim: "geotop_simplex_dim \<sigma> n\<^sub>\<sigma>"
+      using h\<sigma>simplex unfolding geotop_is_simplex_def geotop_simplex_dim_def
+      by (by100 blast)
+    have hdim_lt: "n\<^sub>\<tau> < n\<^sub>\<sigma>"
+      by (rule geotop_complex_proper_subset_dim_less
+          [OF hK h\<tau>K h\<sigma>K hproper h\<tau>dim h\<sigma>dim])
+    have h\<sigma>le2: "n\<^sub>\<sigma> \<le> 2"
+      by (rule geotop_simplex_dim_le_2_R2[OF h\<sigma>dim])
+    have "n\<^sub>\<tau> \<le> 1"
+      using hdim_lt h\<sigma>le2 by (by100 linarith)
+    show "\<exists>n\<le>1. geotop_simplex_dim \<tau> n"
+      using h\<tau>dim \<open>n\<^sub>\<tau> \<le> 1\<close> by (by100 blast)
+  qed
 qed
 
 lemma geotop_simplex_face_complex_finite_R2:
