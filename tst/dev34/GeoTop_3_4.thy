@@ -4914,13 +4914,15 @@ proof
               (UNIV::(real^2) set) geotop_euclidean_topology f"
             using hhomeo_metric hsource_eq by (by100 simp)
           obtain J where hJsubU: "J \<subseteq> U"
-            and hJsphere: "geotop_is_n_sphere J
-                (subspace_topology UNIV geotop_euclidean_topology J) 1"
+            and hJimg_sphere: "geotop_is_n_sphere (f ` J)
+                (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
             and hJ_not_sep: "top1_connected_on (U - J)
                 (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-            and hJ_sep: "\<not> top1_connected_on (U - J)
-                (subspace_topology UNIV geotop_euclidean_topology (U - J))"
             sorry
+          have hJ_sep: "\<not> top1_connected_on (U - J)
+                (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+            by (rule geotop_plane_chart_1sphere_complement_not_connected
+                [OF hhomeo_geo hJsubU hJimg_sphere])
           show False
             using hJ_not_sep hJ_sep by (by100 blast)
         qed
