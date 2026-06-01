@@ -1880,11 +1880,20 @@ proof -
                   \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
                     the same side of \<open>L_y\<close> as the other edge. This is the
                     actual circular-sector step, not a half-plane consequence.\<close>
+                  have h_two_ray_circular_sector_dichotomy:
+                    "(\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))) \<or>
+                     ((inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                      (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
+                    sorry
                   have h_between_rays_accumulation:
                     "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
                       ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
                        (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))"
-                    sorry
+                    using h_two_ray_circular_sector_dichotomy False by (by100 blast)
                   show ?thesis
                     by (rule h_same_L\<tau>_side_choice[OF h_between_rays_accumulation])
                 qed
