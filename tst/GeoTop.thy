@@ -1489,6 +1489,72 @@ proof -
                 have h\<tau>_y_side_cases:
                   "inner (p\<tau>_y - x) n_y > 0 \<or> inner (p\<tau>_y - x) n_y < 0"
                   using hp\<tau>_y_off_L_y by (by100 linarith)
+                have h\<tau>_y_pos_side:
+                  "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
+                proof
+                  assume hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                  fix z
+                  assume hz_in: "z \<in> \<tau>_y - {x}"
+                  have hz: "z \<in> \<tau>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                    using hz h\<tau>_y_segment by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                    using hz_minus by (by100 simp)
+                  show "inner (z - x) n_y > 0"
+                    using hinner hs_pos hp_pos by (by100 simp)
+                qed
+                have h\<tau>_y_neg_side:
+                  "inner (p\<tau>_y - x) n_y < 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y < 0)"
+                proof
+                  assume hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                  fix z
+                  assume hz_in: "z \<in> \<tau>_y - {x}"
+                  have hz: "z \<in> \<tau>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                    using hz h\<tau>_y_segment by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                    using hz_minus by (by100 simp)
+                  have hprod: "s * inner (p\<tau>_y - x) n_y < 0"
+                    by (rule mult_pos_neg[OF hs_pos hp_neg])
+                  show "inner (z - x) n_y < 0"
+                    using hinner hprod by (by100 simp)
+                qed
                 \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
                   circular-neighborhood step from Figure 2.6.  The component
                   \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
