@@ -35,6 +35,7 @@ THEORIES=(
   gb0/GeoTopBase0.thy
   gb/GeoTopBase.thy
   gd/GeoTopDeps.thy
+  gp/GeoTop_Prefix.thy
   GeoTop.thy
 )
 

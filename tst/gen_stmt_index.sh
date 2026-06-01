@@ -14,7 +14,7 @@ THEORIES=(
   ac4/AlgTopCached4.thy ac5/AlgTopCached5.thy ac6/AlgTopCached6.thy
   ac7/AlgTopCached7.thy
   ac8/AlgTopCached8.thy algtop_session/AlgTop.thy
-  gb0/GeoTopBase0.thy gb/GeoTopBase.thy gd/GeoTopDeps.thy GeoTop.thy
+  gb0/GeoTopBase0.thy gb/GeoTopBase.thy gd/GeoTopDeps.thy gp/GeoTop_Prefix.thy GeoTop.thy
 )
 
 OUT=STMT_INDEX.txt
