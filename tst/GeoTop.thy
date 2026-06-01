@@ -909,9 +909,68 @@ proof -
             have h_ball_y_M_sub_L_y:
               "ball y \<rho>y \<inter> M \<subseteq> {z. inner (z - y) n_y = 0}"
               using h_ball_y_M_sub_sigma_y h\<sigma>_y_sub_L_y_centered by (by100 blast)
+            have h_easy_y:
+              "\<And>r. \<lbrakk>r > 0; r > dist y x\<rbrakk> \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
+            proof -
+              fix r :: real
+              assume hr_pos: "r > 0" and hr_gt: "r > dist y x"
+              define \<eta> where "\<eta> = r - dist y x"
+              have h\<eta>_pos: "\<eta> > 0"
+                unfolding \<eta>_def using hr_gt by (by100 simp)
+              have h_meet: "ball x \<eta> \<inter> U \<noteq> {}"
+                using hU_meets_ball h\<eta>_pos by (by100 blast)
+              obtain u where hu: "u \<in> ball x \<eta> \<inter> U"
+                using h_meet by (by100 blast)
+              have hu_dist_xu: "dist x u < \<eta>"
+                using hu by (by100 simp)
+              have h_dist_ux_eq: "dist u x = dist x u"
+                by (rule dist_commute)
+              have hu_dist_ux: "dist u x < \<eta>"
+                using hu_dist_xu h_dist_ux_eq by (by100 simp)
+              have h_tri: "dist u y \<le> dist u x + dist x y"
+                by (rule dist_triangle)
+              have h_dist_xy: "dist x y = dist y x"
+                by (rule dist_commute)
+              have hu_dist_uy: "dist u y < r"
+                using h_tri hu_dist_ux h_dist_xy \<eta>_def by (by100 simp)
+              have h_dist_yu_eq: "dist y u = dist u y"
+                by (rule dist_commute)
+              have hu_dist_yu: "dist y u < r"
+                using hu_dist_uy h_dist_yu_eq by (by100 simp)
+              have hu_ball: "u \<in> ball y r"
+                using hu_dist_yu by (by100 simp)
+              have huU: "u \<in> U" using hu by (by100 blast)
+              show "ball y r \<inter> U \<noteq> {}"
+                using hu_ball huU by (by100 blast)
+            qed
+            have h_sector_small_to_y:
+              "\<And>r. \<lbrakk>r > 0; r \<le> dist y x\<rbrakk> \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
+              sorry
             have h_sector_path_to_y:
               "y \<in> closure U"
-              sorry
+            proof (subst closure_approachable, intro allI impI)
+              fix r :: real
+              assume hr_pos: "r > 0"
+              have h_meet: "ball y r \<inter> U \<noteq> {}"
+              proof (cases "r > dist y x")
+                case True
+                show ?thesis using h_easy_y[OF hr_pos True] .
+              next
+                case False
+                hence hr_le: "r \<le> dist y x" by (by100 simp)
+                show ?thesis using h_sector_small_to_y[OF hr_pos hr_le] .
+              qed
+              obtain u where hu: "u \<in> ball y r \<inter> U"
+                using h_meet by (by100 blast)
+              have huU: "u \<in> U" using hu by (by100 blast)
+              have hu_yu: "dist y u < r" using hu by (by100 simp)
+              have h_dist_uy_eq: "dist u y = dist y u"
+                by (rule dist_commute)
+              have hu_uy: "dist u y < r"
+                using hu_yu h_dist_uy_eq by (by100 simp)
+              show "\<exists>z\<in>U. dist z y < r"
+                using huU hu_uy by (by100 blast)
+            qed
             have hy_clos: "y \<in> closure U"
               using h_sector_path_to_y .
             \<comment> \<open>V5e: combine to frontier U.\<close>
