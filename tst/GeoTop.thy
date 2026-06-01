@@ -8595,8 +8595,83 @@ proof -
           show ?thesis
             using bounded_subset[OF hI13_bounded hU_sub_I13] .
         qed
-        have hU_frontier_13: "frontier U = B1 \<union> B3"
+        have hU_frontier_pair:
+          "frontier U = B1 \<union> B2 \<or>
+           frontier U = B1 \<union> B3 \<or>
+           frontier U = B2 \<union> B3"
+        proof -
+          have hU_ne: "U \<noteq> {}"
+            using hU_comp in_components_nonempty by (by100 blast)
+          obtain p where hpU: "p \<in> U"
+            using hU_ne by (by100 blast)
+          have hp_compl: "p \<in> UNIV - M"
+            using hpU hU_comp in_components_subset by (by100 blast)
+          have hU_eq_cc: "U = connected_component_set (UNIV - M) p"
+            by (rule component_eq_connected_component_set[OF hU_comp hpU])
+          have h_geo_eq_cc:
+            "geotop_component_at UNIV geotop_euclidean_topology
+                ((UNIV::(real^2) set) - M) p =
+             connected_component_set (UNIV - M) p"
+            by (rule geotop_component_at_UNIV_eq_connected_component_set)
+          have hU_eq_geo:
+            "U = geotop_component_at UNIV geotop_euclidean_topology
+                    ((UNIV::(real^2) set) - M) p"
+            using hU_eq_cc h_geo_eq_cc
+            by (by100 simp)
+          have hU_geotop:
+            "U \<in> {C. \<exists>P\<in>UNIV - M.
+                    C = geotop_component_at UNIV geotop_euclidean_topology
+                          ((UNIV::(real^2) set) - M) P}"
+            using hp_compl hU_eq_geo by (by100 blast)
+          have hT27_frontiers:
+            "\<forall>V. V \<in> {C. \<exists>P\<in>UNIV - M.
+                    C = geotop_component_at UNIV geotop_euclidean_topology
+                          ((UNIV::(real^2) set) - M) P} \<longrightarrow>
+                (\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                       geotop_is_polygon (i \<union> j) \<and>
+                       geotop_frontier UNIV geotop_euclidean_topology V = i \<union> j)"
+            using Theorem_GT_2_7(1)[OF h\<theta>] .
+          have hU_frontier_ex:
+            "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                   geotop_is_polygon (i \<union> j) \<and>
+                   geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+            using hT27_frontiers hU_geotop by (by100 blast)
+          obtain i j where hUij:
+            "{i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+            using hU_frontier_ex by (elim exE)
+          have hij_sub: "{i, j} \<subseteq> {B1, B2, B3}"
+            using hUij by (by100 blast)
+          have hij_ne: "i \<noteq> j"
+            using hUij by (by100 blast)
+          have hfr_geo:
+            "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+            using hUij by (by100 blast)
+          have h_frontier_bridge:
+            "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
+            by (rule geotop_frontier_UNIV_eq_frontier)
+          have hfr: "frontier U = i \<union> j"
+            using hfr_geo h_frontier_bridge by (by100 simp)
+          have hi_mem: "i \<in> {B1, B2, B3}"
+            using hij_sub by (by100 blast)
+          have hj_mem: "j \<in> {B1, B2, B3}"
+            using hij_sub by (by100 blast)
+          have hij_cases:
+            "(i = B1 \<and> j = B2) \<or> (i = B2 \<and> j = B1) \<or>
+             (i = B1 \<and> j = B3) \<or> (i = B3 \<and> j = B1) \<or>
+             (i = B2 \<and> j = B3) \<or> (i = B3 \<and> j = B2)"
+            using hi_mem hj_mem hij_ne by (by100 auto)
+          show ?thesis
+            using hfr hij_cases by (by100 auto)
+        qed
+        have hU_not_frontier_12: "frontier U \<noteq> B1 \<union> B2"
           sorry
+        have hU_not_frontier_23: "frontier U \<noteq> B2 \<union> B3"
+          sorry
+        have hU_frontier_13: "frontier U = B1 \<union> B3"
+          using hU_frontier_pair hU_not_frontier_12 hU_not_frontier_23
+          by (by100 blast)
         have h_no_bounded_frontier_13:
           "\<not> (\<exists>U\<in>components (UNIV - M). bounded U \<and> frontier U = B1 \<union> B3)"
           sorry
