@@ -9913,6 +9913,153 @@ proof -
     have h_clos_R: "closure R = R" using hR_closed by (by100 simp)
     show "R = closure (interior R)" using h_clos_eq_clos h_clos_R by (by100 simp)
   qed
+  have hRs_distinct_inter_frontier:
+    "\<forall>R\<in>Rs. \<forall>S\<in>Rs. R \<noteq> S \<longrightarrow> R \<inter> S \<subseteq> frontier R \<inter> frontier S"
+  proof (intro ballI impI)
+    fix R S assume hR: "R \<in> Rs" and hS: "S \<in> Rs" and hRS_ne: "R \<noteq> S"
+    have h_int_R_disj_S: "interior R \<inter> S = {}"
+    proof (rule ccontr)
+      assume h_ne: "interior R \<inter> S \<noteq> {}"
+      then obtain x where hx_int_R: "x \<in> interior R" and hxS: "x \<in> S"
+        by (by100 blast)
+      obtain s where hR_eq: "R = R_of s"
+        using hR unfolding Rs_def by (by100 blast)
+      obtain t where hS_eq: "S = R_of t"
+        using hS unfolding Rs_def by (by100 blast)
+      have h_agree: "\<forall>L\<in>Ls. s L = t L"
+      proof
+        fix L assume hL: "L \<in> Ls"
+        have hxR: "x \<in> R" using hx_int_R interior_subset by (by100 blast)
+        have hx_hp_s: "x \<in> hp L (s L)"
+          using hxR hR_eq hL unfolding R_of_def by (by100 blast)
+        have hx_hp_t: "x \<in> hp L (t L)"
+          using hxS hS_eq hL unfolding R_of_def by (by100 blast)
+        have hx_not_L: "x \<notin> L"
+          using hRs_int_no_Ls hR hx_int_R hL by (by100 blast)
+        have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+          using hL h_line_form by (by100 blast)
+        have hx_ne_line: "line_norm L \<bullet> x \<noteq> line_off L"
+        proof
+          assume hx_eq_line: "line_norm L \<bullet> x = line_off L"
+          have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+            using hx_eq_line by (by100 simp)
+          have "x \<in> L" by (subst hL_eq, rule hx_set)
+          thus False using hx_not_L by (by100 simp)
+        qed
+        show "s L = t L"
+        proof (rule ccontr)
+          assume hst_ne: "s L \<noteq> t L"
+          show False
+          proof (cases "s L")
+            case True
+            hence ht_false: "\<not> t L" using hst_ne by (by100 simp)
+            have hs_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_s True unfolding hp_def by (by100 simp)
+            have ht_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_t ht_false unfolding hp_def by (by100 simp)
+            have "line_norm L \<bullet> x = line_off L" using hs_le ht_ge by (by100 simp)
+            thus False using hx_ne_line by (by100 simp)
+          next
+            case False
+            hence ht_true: "t L" using hst_ne by (by100 simp)
+            have hs_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_s False unfolding hp_def by (by100 simp)
+            have ht_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_t ht_true unfolding hp_def by (by100 simp)
+            have "line_norm L \<bullet> x = line_off L" using hs_ge ht_le by (by100 simp)
+            thus False using hx_ne_line by (by100 simp)
+          qed
+        qed
+      qed
+      have h_R_of_eq: "R_of s = R_of t"
+      proof -
+        have "(\<Inter>L\<in>Ls. hp L (s L)) = (\<Inter>L\<in>Ls. hp L (t L))"
+          using h_agree by (by100 simp)
+        thus ?thesis unfolding R_of_def by (by100 simp)
+      qed
+      have "R = S" using hR_eq hS_eq h_R_of_eq by (by100 simp)
+      thus False using hRS_ne by (by100 simp)
+    qed
+    have h_int_S_disj_R: "interior S \<inter> R = {}"
+    proof (rule ccontr)
+      assume h_ne: "interior S \<inter> R \<noteq> {}"
+      then obtain x where hx_int_S: "x \<in> interior S" and hxR: "x \<in> R"
+        by (by100 blast)
+      obtain s where hS_eq: "S = R_of s"
+        using hS unfolding Rs_def by (by100 blast)
+      obtain t where hR_eq: "R = R_of t"
+        using hR unfolding Rs_def by (by100 blast)
+      have h_agree: "\<forall>L\<in>Ls. s L = t L"
+      proof
+        fix L assume hL: "L \<in> Ls"
+        have hxS: "x \<in> S" using hx_int_S interior_subset by (by100 blast)
+        have hx_hp_s: "x \<in> hp L (s L)"
+          using hxS hS_eq hL unfolding R_of_def by (by100 blast)
+        have hx_hp_t: "x \<in> hp L (t L)"
+          using hxR hR_eq hL unfolding R_of_def by (by100 blast)
+        have hx_not_L: "x \<notin> L"
+          using hRs_int_no_Ls hS hx_int_S hL by (by100 blast)
+        have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+          using hL h_line_form by (by100 blast)
+        have hx_ne_line: "line_norm L \<bullet> x \<noteq> line_off L"
+        proof
+          assume hx_eq_line: "line_norm L \<bullet> x = line_off L"
+          have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+            using hx_eq_line by (by100 simp)
+          have "x \<in> L" by (subst hL_eq, rule hx_set)
+          thus False using hx_not_L by (by100 simp)
+        qed
+        show "s L = t L"
+        proof (rule ccontr)
+          assume hst_ne: "s L \<noteq> t L"
+          show False
+          proof (cases "s L")
+            case True
+            hence ht_false: "\<not> t L" using hst_ne by (by100 simp)
+            have hs_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_s True unfolding hp_def by (by100 simp)
+            have ht_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_t ht_false unfolding hp_def by (by100 simp)
+            have "line_norm L \<bullet> x = line_off L" using hs_le ht_ge by (by100 simp)
+            thus False using hx_ne_line by (by100 simp)
+          next
+            case False
+            hence ht_true: "t L" using hst_ne by (by100 simp)
+            have hs_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_s False unfolding hp_def by (by100 simp)
+            have ht_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_t ht_true unfolding hp_def by (by100 simp)
+            have "line_norm L \<bullet> x = line_off L" using hs_ge ht_le by (by100 simp)
+            thus False using hx_ne_line by (by100 simp)
+          qed
+        qed
+      qed
+      have h_R_of_eq: "R_of s = R_of t"
+      proof -
+        have "(\<Inter>L\<in>Ls. hp L (s L)) = (\<Inter>L\<in>Ls. hp L (t L))"
+          using h_agree by (by100 simp)
+        thus ?thesis unfolding R_of_def by (by100 simp)
+      qed
+      have "S = R" using hS_eq hR_eq h_R_of_eq by (by100 simp)
+      thus False using hRS_ne by (by100 simp)
+    qed
+    show "R \<inter> S \<subseteq> frontier R \<inter> frontier S"
+    proof
+      fix x assume hx: "x \<in> R \<inter> S"
+      have hxR: "x \<in> R" and hxS: "x \<in> S" using hx by (by100 blast)+
+      have hx_not_int_R: "x \<notin> interior R" using hxS h_int_R_disj_S by (by100 blast)
+      have hx_not_int_S: "x \<notin> interior S" using hxR h_int_S_disj_R by (by100 blast)
+      have hR_closed: "closed R" using hR hRs_closed by (by100 blast)
+      have hS_closed: "closed S" using hS hRs_closed by (by100 blast)
+      have h_fr_R: "frontier R = R - interior R"
+        using hR_closed by (simp add: Elementary_Topology.frontier_def closure_closed)
+      have h_fr_S: "frontier S = S - interior S"
+        using hS_closed by (simp add: Elementary_Topology.frontier_def closure_closed)
+      have hx_fr_R: "x \<in> frontier R" using hxR hx_not_int_R h_fr_R by (by100 blast)
+      have hx_fr_S: "x \<in> frontier S" using hxS hx_not_int_S h_fr_S by (by100 blast)
+      show "x \<in> frontier R \<inter> frontier S" using hx_fr_R hx_fr_S by (by100 blast)
+    qed
+  qed
   (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
   define Ibar where
     "Ibar = closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
@@ -11179,8 +11326,34 @@ proof -
     show "\<tau> \<in> K"
       unfolding K_def using hR_in h\<tau>_in_KR by (by100 blast)
   qed
+  have hK_R_subset_region:
+    "\<forall>R\<in>Rs_in. \<forall>\<sigma>\<in>K_R R. \<sigma> \<subseteq> R"
+  proof (intro ballI)
+    fix R \<sigma> assume hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R"
+    have h_union_R: "\<Union>(K_R R) = R"
+      using hR_in h_K_R_polyhedron by (by100 blast)
+    have "\<sigma> \<subseteq> \<Union>(K_R R)" using h\<sigma>_KR by (by100 blast)
+    thus "\<sigma> \<subseteq> R" using h_union_R by (by100 simp)
+  qed
+  have hK_distinct_region_inter_frontier:
+    "\<forall>R\<in>Rs_in. \<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
+       (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S)"
+  proof (intro ballI impI)
+    fix R S \<sigma> \<tau>
+    assume hR_in: "R \<in> Rs_in" and hS_in: "S \<in> Rs_in" and hRS_ne: "R \<noteq> S"
+      and h\<sigma>_KR: "\<sigma> \<in> K_R R" and h\<tau>_KS: "\<tau> \<in> K_R S"
+    have hR_Rs: "R \<in> Rs" using hR_in unfolding Rs_in_def by (by100 simp)
+    have hS_Rs: "S \<in> Rs" using hS_in unfolding Rs_in_def by (by100 simp)
+    have h\<sigma>_sub_R: "\<sigma> \<subseteq> R" using hK_R_subset_region hR_in h\<sigma>_KR by (by100 blast)
+    have h\<tau>_sub_S: "\<tau> \<subseteq> S" using hK_R_subset_region hS_in h\<tau>_KS by (by100 blast)
+    have h_RS_frontier: "R \<inter> S \<subseteq> frontier R \<inter> frontier S"
+      using hRs_distinct_inter_frontier hR_Rs hS_Rs hRS_ne by (by100 blast)
+    show "\<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S"
+      using h\<sigma>_sub_R h\<tau>_sub_S h_RS_frontier by (by100 blast)
+  qed
   have hK_axiom3: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
-                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>" sorry
+                    geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry
   have hK_axiom4: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
   proof
     fix \<sigma> assume "\<sigma> \<in> K"
