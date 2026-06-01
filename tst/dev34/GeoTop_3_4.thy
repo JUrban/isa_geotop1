@@ -2886,6 +2886,36 @@ proof -
     by (rule geotop_simplex_face_complex_finite_R2[OF hsimplex])
 qed
 
+lemma geotop_isomorphic_refl_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_isomorphic K K"
+proof -
+  have hbij: "bij_betw id (geotop_complex_vertices K) (geotop_complex_vertices K)"
+    by (by100 simp)
+  have hcond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+      (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (id ` V) \<in> K)"
+    by (by100 simp)
+  have hiso: "geotop_isomorphism K K id"
+    unfolding geotop_isomorphism_def using hbij hcond by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphic_def using hiso by (by100 blast)
+qed
+
+lemma geotop_comb_equiv_refl_finite_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hfin: "finite K"
+  shows "geotop_comb_equiv K K"
+proof -
+  have hsub: "geotop_is_subdivision K K"
+    by (rule geotop_is_subdivision_refl[OF hK])
+  have hiso: "geotop_isomorphic K K"
+    by (rule geotop_isomorphic_refl_dev34[OF hK])
+  show ?thesis
+    unfolding geotop_comb_equiv_def using hfin hsub hiso by (by100 blast)
+qed
+
 lemma geotop_star_finite_at_vertex:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
