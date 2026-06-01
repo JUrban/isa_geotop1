@@ -943,9 +943,76 @@ proof -
               show "ball y r \<inter> U \<noteq> {}"
                 using hu_ball huU by (by100 blast)
             qed
+            have h_selected_edge_parallel_sector:
+              "\<And>r. r > 0 \<Longrightarrow>
+                \<exists>u. u \<in> U \<and> dist u x < r \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
+              sorry
             have h_sector_small_to_y:
               "\<And>r. \<lbrakk>r > 0; r \<le> dist y x\<rbrakk> \<Longrightarrow> ball y r \<inter> U \<noteq> {}"
-              sorry
+            proof -
+              fix r :: real
+              assume hr_pos: "r > 0" and hr_le: "r \<le> dist y x"
+              obtain u where huU: "u \<in> U"
+                and hu_dist: "dist u x < r"
+                and hpath_avoid: "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> M = {})"
+                using h_selected_edge_parallel_sector[OF hr_pos] by (by100 blast)
+              define u_t where "u_t = u + (y - x)"
+              define \<gamma> where "\<gamma> = (\<lambda>t::real. u + t *\<^sub>R (y - x))"
+              have h\<gamma>_avoid: "\<gamma> ` {0..1::real} \<inter> M = {}"
+                using hpath_avoid unfolding \<gamma>_def .
+              have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+              proof -
+                have h_id: "continuous_on {0..1::real} (\<lambda>t. t)"
+                  by (rule continuous_on_id)
+                have h_scale: "continuous_on {0..1::real} (\<lambda>t. t *\<^sub>R (y - x))"
+                  using h_id by (rule continuous_on_scaleR[OF _ continuous_on_const])
+                show ?thesis unfolding \<gamma>_def
+                  using h_scale continuous_on_const continuous_on_add by (by100 blast)
+              qed
+              have h\<gamma>0: "\<gamma> 0 = u"
+                unfolding \<gamma>_def by (by100 simp)
+              have h\<gamma>1: "\<gamma> 1 = u_t"
+                unfolding \<gamma>_def u_t_def by (by100 simp)
+              have h\<gamma>_image_conn: "connected (\<gamma> ` {0..1::real})"
+              proof -
+                have h_conn_Icc: "connected {0..1::real}" by (by100 simp)
+                show ?thesis
+                  using connected_continuous_image[OF h\<gamma>_cont h_conn_Icc] .
+              qed
+              have h\<gamma>_sub_compl_M: "\<gamma> ` {0..1::real} \<subseteq> UNIV - M"
+                using h\<gamma>_avoid by (by100 blast)
+              have hu_in_image: "u \<in> \<gamma> ` {0..1::real}"
+                using h\<gamma>0 by (by100 force)
+              have h\<gamma>_in_cc:
+                "\<gamma> ` {0..1::real} \<subseteq> connected_component_set (UNIV - M) u"
+                using connected_component_maximal[OF hu_in_image h\<gamma>_image_conn h\<gamma>_sub_compl_M] .
+              have hU_cc_u: "U = connected_component_set (UNIV - M) u"
+                by (rule component_eq_connected_component_set[OF hU_in huU])
+              have h\<gamma>_in_U: "\<gamma> ` {0..1::real} \<subseteq> U"
+                using h\<gamma>_in_cc hU_cc_u by (by100 simp)
+              have hu_t_U: "u_t \<in> U"
+              proof -
+                have h_one: "(1::real) \<in> {0..1::real}" by (by100 simp)
+                have h_image: "\<gamma> 1 \<in> \<gamma> ` {0..1::real}"
+                  using h_one by (by100 force)
+                have h_ut_image: "u_t \<in> \<gamma> ` {0..1::real}"
+                  using h_image h\<gamma>1 by (by100 simp)
+                show ?thesis using h_ut_image h\<gamma>_in_U by (by100 blast)
+              qed
+              have h_ut_y: "u_t - y = u - x"
+                unfolding u_t_def by (by100 simp)
+              have hdist_ut_y: "dist u_t y = dist u x"
+                using h_ut_y by (simp add: dist_norm)
+              have hdist_y_ut_eq: "dist y u_t = dist u_t y"
+                by (rule dist_commute)
+              have hdist_y_ut: "dist y u_t < r"
+                using hdist_ut_y hdist_y_ut_eq hu_dist by (by100 simp)
+              have hut_ball: "u_t \<in> ball y r"
+                using hdist_y_ut by (by100 simp)
+              show "ball y r \<inter> U \<noteq> {}"
+                using hut_ball hu_t_U by (by100 blast)
+            qed
             have h_sector_path_to_y:
               "y \<in> closure U"
             proof (subst closure_approachable, intro allI impI)
