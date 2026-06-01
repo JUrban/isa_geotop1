@@ -3851,7 +3851,33 @@ proof -
                 by (rule closure_mono[OF htrace_sub_K])
               have hK_sector_bound:
                 "card ({q1, q2, q3} \<inter> closure K) \<le> 2"
-                sorry
+              proof -
+                have hK_misses_cut:
+                  "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
+                  sorry
+                obtain q where hq_cut: "q \<in> {q1, q2, q3}"
+                  and hq_not_clK: "q \<notin> closure K"
+                  using hK_misses_cut by (by100 blast)
+                have h_psub:
+                  "{q1, q2, q3} \<inter> closure K \<subset> {q1, q2, q3}"
+                proof -
+                  have h_sub: "{q1, q2, q3} \<inter> closure K \<subseteq> {q1, q2, q3}"
+                    by (by100 blast)
+                  have h_ne: "{q1, q2, q3} \<inter> closure K \<noteq> {q1, q2, q3}"
+                    using hq_cut hq_not_clK by (by100 blast)
+                  show ?thesis using h_sub h_ne by (by100 blast)
+                qed
+                have h_card_lt:
+                  "card ({q1, q2, q3} \<inter> closure K) < card {q1, q2, q3}"
+                proof (rule psubset_card_mono)
+                  show "finite {q1, q2, q3}" by (by100 simp)
+                  show "{q1, q2, q3} \<inter> closure K \<subset> {q1, q2, q3}"
+                    by (rule h_psub)
+                qed
+                have h_qs_card: "card {q1, q2, q3} = 3"
+                  using hq12_out hq13_out hq23_out by (by100 simp)
+                show ?thesis using h_card_lt h_qs_card by (by100 simp)
+              qed
               have hq1_K: "q1 \<in> closure K"
                 using hq1_cl hcl_trace_sub_K by (by100 blast)
               have hq2_K: "q2 \<in> closure K"
