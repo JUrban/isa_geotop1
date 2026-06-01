@@ -2,6 +2,37 @@ theory GeoTop
   imports "GeoTopPrefix.GeoTop_Prefix"
 begin
 
+lemma components_real_complement_singleton:
+  fixes a :: real
+  shows "components (UNIV - {a}) = {{..<a}, {a<..}}"
+proof -
+  define A where "A = {{..<a}, {a<..}}"
+  have hpair: "pairwise disjnt A"
+    unfolding A_def by (auto simp: pairwise_insert disjnt_def)
+  have hUnion: "\<Union>A = UNIV - {a}"
+    unfolding A_def by (by100 auto)
+  have hsets:
+    "\<And>X. X \<in> A \<Longrightarrow> open X \<and> connected X \<and> X \<noteq> {}"
+  proof -
+    fix X assume hX: "X \<in> A"
+    consider (L) "X = {..<a}" | (R) "X = {a<..}"
+      using hX unfolding A_def by (by100 blast)
+    thus "open X \<and> connected X \<and> X \<noteq> {}"
+    proof cases
+      case L
+      have "(a - 1) \<in> {..<a}" by (by100 simp)
+      thus ?thesis using L by (by100 simp)
+    next
+      case R
+      have "(a + 1) \<in> {a<..}" by (by100 simp)
+      thus ?thesis using R by (by100 simp)
+    qed
+  qed
+  have hcomp: "components (UNIV - {a}) = A"
+    by (rule components_open_unique[OF hpair hUnion hsets])
+  show ?thesis unfolding hcomp A_def by (by100 simp)
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
