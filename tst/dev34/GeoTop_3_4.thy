@@ -3083,6 +3083,43 @@ proof -
     using hW_top hpoly_inter_W by (by100 blast)
 qed
 
+lemma geotop_edge_rel_interior_nonempty:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  shows "rel_interior e \<noteq> {}"
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have he_simplex: "geotop_is_simplex e"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+  show ?thesis
+    by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
+qed
+
+lemma geotop_edge_rel_interior_punctured_open_neighborhood_disconnected:
+  fixes e N :: "(real^2) set" and p :: "real^2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hNopen: "N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+  assumes hpN: "p \<in> N"
+  assumes hNsub: "N \<subseteq> rel_interior e"
+  shows "\<not> top1_connected_on (N - {p})
+    (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  sorry
+
+lemma geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood:
+  fixes M e :: "(real^2) set" and p :: "real^2"
+  assumes hM: "geotop_n_manifold_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hopen: "rel_interior e \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  assumes hsub: "rel_interior e \<subseteq> M"
+  assumes hp: "p \<in> rel_interior e"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> rel_interior e
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  sorry
+
 lemma geotop_2_manifold_no_open_edge_rel_interior:
   fixes M e :: "(real^2) set"
   assumes hM: "geotop_n_manifold_on M (\<lambda>x y. norm (x - y)) 2"
@@ -3090,7 +3127,23 @@ lemma geotop_2_manifold_no_open_edge_rel_interior:
   assumes hopen: "rel_interior e \<in> subspace_topology UNIV geotop_euclidean_topology M"
   assumes hsub: "rel_interior e \<subseteq> M"
   shows False
-  sorry
+proof -
+  obtain p where hp: "p \<in> rel_interior e"
+    using geotop_edge_rel_interior_nonempty[OF hedge] by (by100 blast)
+  obtain N where hpN: "p \<in> N" and hNsub: "N \<subseteq> rel_interior e"
+      and hNopen: "N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+      and hNconn: "top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood
+      [OF hM hedge hopen hsub hp]
+    by (by100 blast)
+  have hNnotconn: "\<not> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    by (rule geotop_edge_rel_interior_punctured_open_neighborhood_disconnected
+        [OF hedge hp hNopen hpN hNsub])
+  show False
+    using hNconn hNnotconn by (by100 blast)
+qed
 
 lemma geotop_punctured_plane_connected:
   fixes p :: "real^2"
@@ -3108,6 +3161,19 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_2_manifold_with_boundary_open_edge_rel_interior_connected_punctured_neighborhood:
+  fixes M e :: "(real^2) set" and p :: "real^2"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hopen: "rel_interior e \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  assumes hsub: "rel_interior e \<subseteq> M"
+  assumes hp: "p \<in> rel_interior e"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> rel_interior e
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  sorry
+
 lemma geotop_2_manifold_with_boundary_no_open_edge_rel_interior:
   fixes M e :: "(real^2) set"
   assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
@@ -3115,7 +3181,23 @@ lemma geotop_2_manifold_with_boundary_no_open_edge_rel_interior:
   assumes hopen: "rel_interior e \<in> subspace_topology UNIV geotop_euclidean_topology M"
   assumes hsub: "rel_interior e \<subseteq> M"
   shows False
-  sorry
+proof -
+  obtain p where hp: "p \<in> rel_interior e"
+    using geotop_edge_rel_interior_nonempty[OF hedge] by (by100 blast)
+  obtain N where hpN: "p \<in> N" and hNsub: "N \<subseteq> rel_interior e"
+      and hNopen: "N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+      and hNconn: "top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using geotop_2_manifold_with_boundary_open_edge_rel_interior_connected_punctured_neighborhood
+      [OF hM hedge hopen hsub hp]
+    by (by100 blast)
+  have hNnotconn: "\<not> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    by (rule geotop_edge_rel_interior_punctured_open_neighborhood_disconnected
+        [OF hedge hp hNopen hpN hNsub])
+  show False
+    using hNconn hNnotconn by (by100 blast)
+qed
 
 lemma top1_norm_metric_on_UNIV_early:
   "top1_metric_on (UNIV::'a::real_normed_vector set) (\<lambda>x y. norm (x - y))"

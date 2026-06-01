@@ -37,6 +37,7 @@ THEORIES=(
   gd/GeoTopDeps.thy
   gp/GeoTop_Prefix.thy
   GeoTop.thy
+  dev34/GeoTop_3_4.thy
 )
 
 TXT=THEOREMS_AND_DEFS.txt
