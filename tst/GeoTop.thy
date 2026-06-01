@@ -1555,6 +1555,122 @@ proof -
                   show "inner (z - x) n_y < 0"
                     using hinner hprod by (by100 simp)
                 qed
+                have h_opposite_side_choice:
+                  "\<lbrakk>(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                    (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))\<rbrakk>
+                   \<Longrightarrow> \<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                    ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                proof -
+                  assume hopp:
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                      (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))"
+                  have h_pos_other_neg_U:
+                    "\<lbrakk>inner (p\<tau>_y - x) n_y > 0;
+                      \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0\<rbrakk>
+                     \<Longrightarrow> ?thesis"
+                  proof -
+                    assume hp_pos: "inner (p\<tau>_y - x) n_y > 0"
+                      and hU_neg: "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
+                    obtain u where huU: "u \<in> U"
+                      and hu_dist: "dist u x < \<epsilon>"
+                      and hu_neg: "inner (u - x) n_y < 0"
+                      using hU_neg h\<epsilon>_pos by (by100 blast)
+                    have hu_off: "inner (u - x) n_y \<noteq> 0"
+                      using hu_neg by (by100 simp)
+                    have h_translate_avoid_\<tau>:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                    proof (rule equals0I)
+                      fix p
+                      assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                      obtain t :: real where ht: "t \<in> {0..1}"
+                        and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                        using hp by (by100 blast)
+                      have hp_\<tau>: "p \<in> \<tau>_y" using hp by (by100 blast)
+                      have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                        using hp_eq by (by100 simp)
+                      have hp_inner_eq:
+                        "inner (p - x) n_y =
+                         inner (u - x) n_y + t * inner (y - x) n_y"
+                        using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                        by (simp add: inner_add_left)
+                      have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                        using hp_inner_eq hy_L_y_centered by (by100 simp)
+                      have hp_neg: "inner (p - x) n_y < 0"
+                        using hp_inner_u hu_neg by (by100 simp)
+                      have hp_ne_x: "p \<noteq> x"
+                      proof
+                        assume "p = x"
+                        hence "inner (p - x) n_y = 0" by (by100 simp)
+                        thus False using hp_neg by (by100 simp)
+                      qed
+                      have hp_\<tau>_nonvertex: "p \<in> \<tau>_y - {x}"
+                        using hp_\<tau> hp_ne_x by (by100 blast)
+                      have hp_pos_side: "inner (p - x) n_y > 0"
+                        using h\<tau>_y_pos_side[OF hp_pos] hp_\<tau>_nonvertex by (by100 blast)
+                      show False using hp_neg hp_pos_side by (by100 linarith)
+                    qed
+                    have h_translate_avoid_other:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                      using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                    show ?thesis using huU hu_dist hu_off h_translate_avoid_other by (by100 blast)
+                  qed
+                  have h_neg_other_pos_U:
+                    "\<lbrakk>inner (p\<tau>_y - x) n_y < 0;
+                      \<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0\<rbrakk>
+                     \<Longrightarrow> ?thesis"
+                  proof -
+                    assume hp_neg: "inner (p\<tau>_y - x) n_y < 0"
+                      and hU_pos: "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
+                    obtain u where huU: "u \<in> U"
+                      and hu_dist: "dist u x < \<epsilon>"
+                      and hu_pos: "inner (u - x) n_y > 0"
+                      using hU_pos h\<epsilon>_pos by (by100 blast)
+                    have hu_off: "inner (u - x) n_y \<noteq> 0"
+                      using hu_pos by (by100 simp)
+                    have h_translate_avoid_\<tau>:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                    proof (rule equals0I)
+                      fix p
+                      assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                      obtain t :: real where ht: "t \<in> {0..1}"
+                        and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                        using hp by (by100 blast)
+                      have hp_\<tau>: "p \<in> \<tau>_y" using hp by (by100 blast)
+                      have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                        using hp_eq by (by100 simp)
+                      have hp_inner_eq:
+                        "inner (p - x) n_y =
+                         inner (u - x) n_y + t * inner (y - x) n_y"
+                        using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                        by (simp add: inner_add_left)
+                      have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                        using hp_inner_eq hy_L_y_centered by (by100 simp)
+                      have hp_pos: "inner (p - x) n_y > 0"
+                        using hp_inner_u hu_pos by (by100 simp)
+                      have hp_ne_x: "p \<noteq> x"
+                      proof
+                        assume "p = x"
+                        hence "inner (p - x) n_y = 0" by (by100 simp)
+                        thus False using hp_pos by (by100 simp)
+                      qed
+                      have hp_\<tau>_nonvertex: "p \<in> \<tau>_y - {x}"
+                        using hp_\<tau> hp_ne_x by (by100 blast)
+                      have hp_neg_side: "inner (p - x) n_y < 0"
+                        using h\<tau>_y_neg_side[OF hp_neg] hp_\<tau>_nonvertex by (by100 blast)
+                      show False using hp_pos hp_neg_side by (by100 linarith)
+                    qed
+                    have h_translate_avoid_other:
+                      "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                      using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                    show ?thesis using huU hu_dist hu_off h_translate_avoid_other by (by100 blast)
+                  qed
+                  show ?thesis
+                    using hopp h_pos_other_neg_U h_neg_other_pos_U by (by100 blast)
+                qed
                 \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
                   circular-neighborhood step from Figure 2.6.  The component
                   \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
