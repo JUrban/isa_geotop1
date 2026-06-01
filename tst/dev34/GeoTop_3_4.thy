@@ -4728,6 +4728,26 @@ proof -
     using hw_ne_v hw_e hw_link hopposite by (by100 blast)
 qed
 
+lemma geotop_incident_edge_adjacent_2simplex_link_edge_witness:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  assumes h2face: "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  shows "\<exists>w l. w \<noteq> v \<and> w \<in> e \<and> {w} \<in> geotop_link K v
+      \<and> l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and hface: "geotop_is_face e \<sigma>"
+    using h2face by (by100 blast)
+  show ?thesis
+    by (rule geotop_incident_edge_2simplex_link_edge_witness
+        [OF hK hvK h\<sigma>K h\<sigma>2 hface hedge hv_e])
+qed
+
 lemma geotop_edge_face_in_ge_2_simplex_has_2_face:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
