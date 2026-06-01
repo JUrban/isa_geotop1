@@ -1489,6 +1489,88 @@ proof -
                 have h\<tau>_y_side_cases:
                   "inner (p\<tau>_y - x) n_y > 0 \<or> inner (p\<tau>_y - x) n_y < 0"
                   using hp\<tau>_y_off_L_y by (by100 linarith)
+                define L\<tau>_y where "L\<tau>_y = affine hull \<tau>_y"
+                have hx\<tau>_y: "x \<in> \<tau>_y"
+                  using h\<tau>_y_EAX hEAX_x_in by (by100 blast)
+                have hx_L\<tau>_y: "x \<in> L\<tau>_y"
+                  unfolding L\<tau>_y_def by (rule hull_inc[OF hx\<tau>_y])
+                have h\<tau>_y_dim: "geotop_simplex_dim \<tau>_y 1"
+                  using h\<tau>_y_EAX unfolding EdgesAtX_def by (by100 blast)
+                have hL\<tau>_y_hyperplane: "geotop_hyperplane_dim L\<tau>_y 1"
+                  using geotop_simplex_dim_imp_hyperplane_dim[OF h\<tau>_y_dim] L\<tau>_y_def
+                  by (by100 simp)
+                have hL\<tau>_y_normal_ex: "\<exists>m d. m \<noteq> (0::real^2) \<and> L\<tau>_y = {z. m \<bullet> z = d}"
+                  by (rule geotop_hyperplane_dim_1_R2_normal_form[OF hL\<tau>_y_hyperplane])
+                obtain m\<tau>_y d\<tau>_y where hm\<tau>_y_ne: "m\<tau>_y \<noteq> (0::real^2)"
+                  and hL\<tau>_y_eq: "L\<tau>_y = {z. m\<tau>_y \<bullet> z = d\<tau>_y}"
+                  using hL\<tau>_y_normal_ex by (by100 blast)
+                have hd\<tau>_y_eq: "d\<tau>_y = m\<tau>_y \<bullet> x"
+                  using hx_L\<tau>_y hL\<tau>_y_eq by (by100 blast)
+                have hL\<tau>_y_eq_centered: "L\<tau>_y = {z. inner (z - x) m\<tau>_y = 0}"
+                proof -
+                  have h_eq1: "L\<tau>_y = {z. m\<tau>_y \<bullet> z = inner m\<tau>_y x}"
+                    using hL\<tau>_y_eq hd\<tau>_y_eq by (by100 simp)
+                  have h_eq2:
+                    "{z. m\<tau>_y \<bullet> z = inner m\<tau>_y x} =
+                     {z. inner (z - x) m\<tau>_y = 0}"
+                    by (auto simp: inner_diff_right inner_commute)
+                  show ?thesis using h_eq1 h_eq2 by (by100 simp)
+                qed
+                have h\<tau>_y_sub_L\<tau>_y_centered: "\<tau>_y \<subseteq> {z. inner (z - x) m\<tau>_y = 0}"
+                proof -
+                  have "\<tau>_y \<subseteq> L\<tau>_y"
+                    unfolding L\<tau>_y_def by (rule hull_subset)
+                  thus ?thesis using hL\<tau>_y_eq_centered by (by100 simp)
+                qed
+                have hL\<tau>_y_affine: "affine L\<tau>_y"
+                  unfolding hL\<tau>_y_eq by (rule affine_hyperplane)
+                have hL\<tau>_y_aff_dim: "aff_dim L\<tau>_y = 1"
+                  using hm\<tau>_y_ne aff_dim_hyperplane[of m\<tau>_y d\<tau>_y] hL\<tau>_y_eq
+                  by (by100 simp)
+                have hL_y_affine: "affine L_y"
+                  unfolding hL_y_eq by (rule affine_hyperplane)
+                have hL_y_aff_dim: "aff_dim L_y = 1"
+                  using hn_y_ne aff_dim_hyperplane[of n_y d_y] hL_y_eq
+                  by (by100 simp)
+                have hy_off_L\<tau>_y: "inner (y - x) m\<tau>_y \<noteq> 0"
+                proof
+                  assume hy_on_L\<tau>_centered: "inner (y - x) m\<tau>_y = 0"
+                  have hy_L\<tau>_y: "y \<in> L\<tau>_y"
+                    using hy_on_L\<tau>_centered hL\<tau>_y_eq_centered by (by100 simp)
+                  have hxy_sub_L_y: "{x, y} \<subseteq> L_y"
+                    using hx_L_y hy_L_y by (by100 blast)
+                  have h_aff_xy_sub_L_y: "affine hull {x, y} \<subseteq> L_y"
+                    by (rule hull_minimal) (rule hxy_sub_L_y, rule hL_y_affine)
+                  have h_aff_xy_ne: "affine hull {x, y} \<noteq> {}"
+                    using hull_inc[of x "{x, y}"] by (by100 blast)
+                  have h_aff_xy_dim: "aff_dim (affine hull {x, y}) = 1"
+                    using hy_ne_x by (by100 simp)
+                  have h_aff_xy_eq_L_y: "affine hull {x, y} = L_y"
+                  proof (rule affine_dim_equal
+                      [OF affine_affine_hull hL_y_affine h_aff_xy_ne h_aff_xy_sub_L_y])
+                    show "aff_dim (affine hull {x, y}) = aff_dim L_y"
+                      using h_aff_xy_dim hL_y_aff_dim by (by100 simp)
+                  qed
+                  have hxy_sub_L\<tau>_y: "{x, y} \<subseteq> L\<tau>_y"
+                    using hx_L\<tau>_y hy_L\<tau>_y by (by100 blast)
+                  have h_aff_xy_sub_L\<tau>_y: "affine hull {x, y} \<subseteq> L\<tau>_y"
+                    by (rule hull_minimal) (rule hxy_sub_L\<tau>_y, rule hL\<tau>_y_affine)
+                  have h_aff_xy_eq_L\<tau>_y: "affine hull {x, y} = L\<tau>_y"
+                  proof (rule affine_dim_equal
+                      [OF affine_affine_hull hL\<tau>_y_affine h_aff_xy_ne h_aff_xy_sub_L\<tau>_y])
+                    show "aff_dim (affine hull {x, y}) = aff_dim L\<tau>_y"
+                      using h_aff_xy_dim hL\<tau>_y_aff_dim by (by100 simp)
+                  qed
+                  have hL_y_eq_L\<tau>_y: "L_y = L\<tau>_y"
+                    using h_aff_xy_eq_L_y h_aff_xy_eq_L\<tau>_y by (by100 simp)
+                  have h\<tau>_y_sub_L\<tau>_y: "\<tau>_y \<subseteq> L\<tau>_y"
+                    unfolding L\<tau>_y_def by (rule hull_subset)
+                  have h\<tau>_y_sub_L_y: "\<tau>_y \<subseteq> L_y"
+                    using h\<tau>_y_sub_L\<tau>_y hL_y_eq_L\<tau>_y by (by100 blast)
+                  have h\<tau>_y_sub_L_y_centered: "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}"
+                    using h\<tau>_y_sub_L_y hL_y_eq_centered by (by100 simp)
+                  show False using False h\<tau>_y_sub_L_y_centered by (by100 blast)
+                qed
                 have h\<tau>_y_pos_side:
                   "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
                     (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
