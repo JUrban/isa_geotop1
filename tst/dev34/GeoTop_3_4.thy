@@ -2890,6 +2890,18 @@ proof -
     unfolding geotop_polyhedron_def using h\<sigma>K h\<sigma>ne by (by100 blast)
 qed
 
+lemma geotop_connected_component_at_eq_self:
+  assumes hPM: "P \<in> M"
+  assumes hconn: "top1_connected_on M (subspace_topology X T M)"
+  shows "geotop_component_at X T M P = M"
+proof
+  show "geotop_component_at X T M P \<subseteq> M"
+    unfolding geotop_component_at_def by (by100 blast)
+next
+  show "M \<subseteq> geotop_component_at X T M P"
+    unfolding geotop_component_at_def using hPM hconn by (by100 blast)
+qed
+
 lemma geotop_incident_edge_link_nonempty:
   fixes K :: "(real^2) set set" and e :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -5348,7 +5360,35 @@ proof
                (subspace_topology UNIV geotop_euclidean_topology
                   (\<Union>(geotop_link K v)))" sorry
   \<comment> \<open>L6: link is a polygon (single 1-sphere from L2-L4 + L5).\<close>
-  have hL6: "geotop_is_polygon (\<Union>(geotop_link K v))" sorry
+  have hL6: "geotop_is_polygon (\<Union>(geotop_link K v))"
+  proof -
+    have hlink_complex: "geotop_is_complex (geotop_link K v)"
+      by (rule geotop_link_is_complex[OF hK])
+    have hlink_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
+      using hL1_link_poly_nonempty .
+    have hlocal_polygon_components:
+      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                   (\<Union>(geotop_link K v)) P)
+          \<longrightarrow> geotop_is_polygon C"
+      sorry
+    have hsingle_polygon_from_connected:
+      "geotop_is_polygon (\<Union>(geotop_link K v))"
+    proof -
+      obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+        using hlink_nonempty by (by100 blast)
+      let ?C = "geotop_component_at UNIV geotop_euclidean_topology
+                   (\<Union>(geotop_link K v)) P"
+      have hC_polygon: "geotop_is_polygon ?C"
+        using hlocal_polygon_components hP by (by100 blast)
+      have hC_eq: "?C = \<Union>(geotop_link K v)"
+        by (rule geotop_connected_component_at_eq_self[OF hP hL5])
+      show ?thesis
+        using hC_polygon hC_eq by (by100 simp)
+    qed
+    show ?thesis
+      using hsingle_polygon_from_connected .
+  qed
   \<comment> \<open>L7 (main conclusion): Star is a combinatorial 2-cell.\<close>
   have hL7: "geotop_comb_n_cell (geotop_star K v) 2"
   proof -
@@ -5636,7 +5676,36 @@ proof -
                     (\<Union>(geotop_link K v)))" sorry
     \<comment> \<open>L5: link is a broken line or polygon.\<close>
     have hL5: "geotop_is_broken_line (\<Union>(geotop_link K v)) \<or>
-                geotop_is_polygon (\<Union>(geotop_link K v))" sorry
+                geotop_is_polygon (\<Union>(geotop_link K v))"
+    proof -
+      have hlink_complex: "geotop_is_complex (geotop_link K v)"
+        by (rule geotop_link_is_complex[OF hK])
+      have hlink_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
+        using hL1_link_poly_nonempty .
+      have hlocal_line_or_polygon_components:
+        "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+               C = geotop_component_at UNIV geotop_euclidean_topology
+                     (\<Union>(geotop_link K v)) P)
+            \<longrightarrow> geotop_is_broken_line C \<or> geotop_is_polygon C"
+        sorry
+      have hsingle_shape_from_connected:
+        "geotop_is_broken_line (\<Union>(geotop_link K v)) \<or>
+         geotop_is_polygon (\<Union>(geotop_link K v))"
+      proof -
+        obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+          using hlink_nonempty by (by100 blast)
+        let ?C = "geotop_component_at UNIV geotop_euclidean_topology
+                     (\<Union>(geotop_link K v)) P"
+        have hC_shape: "geotop_is_broken_line ?C \<or> geotop_is_polygon ?C"
+          using hlocal_line_or_polygon_components hP by (by100 blast)
+        have hC_eq: "?C = \<Union>(geotop_link K v)"
+          by (rule geotop_connected_component_at_eq_self[OF hP hL4])
+        show ?thesis
+          using hC_shape hC_eq by (by100 simp)
+      qed
+      show ?thesis
+        using hsingle_shape_from_connected .
+    qed
     \<comment> \<open>L6 (main conclusion): Star is a combinatorial 2-cell.\<close>
     have hL6: "geotop_comb_n_cell (geotop_star K v) 2"
     proof -
