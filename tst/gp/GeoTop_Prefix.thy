@@ -4445,6 +4445,23 @@ proof -
            hA1 hA2 hA3 himg_ne hImg12 hImg23 hImg13 hEP1 hEP2 hEP3])
 qed
 
+lemma geotop_polyhedral_theta_graph_R2_to_S2_three_components:
+  fixes M B1 B2 B3 E :: "(real^2) set"
+  assumes htheta: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+  shows "\<exists>U V W. U \<noteq> {} \<and> V \<noteq> {} \<and> W \<noteq> {}
+      \<and> U \<inter> V = {} \<and> V \<inter> W = {} \<and> U \<inter> W = {}
+      \<and> U \<union> V \<union> W = top1_S2 - (R2_to_S2 ` B1 \<union> R2_to_S2 ` B2 \<union> R2_to_S2 ` B3)
+      \<and> top1_connected_on U (subspace_topology top1_S2 top1_S2_topology U)
+      \<and> top1_connected_on V (subspace_topology top1_S2 top1_S2_topology V)
+      \<and> top1_connected_on W (subspace_topology top1_S2 top1_S2_topology W)
+      \<and> U \<in> top1_S2_topology \<and> V \<in> top1_S2_topology \<and> W \<in> top1_S2_topology"
+proof -
+  have "geotop_is_theta_graph M B1 B2 B3 E"
+    by (rule polyhedral_theta_graph_imp_theta[OF htheta])
+  thus ?thesis
+    by (rule geotop_theta_graph_R2_to_S2_three_components)
+qed
+
 text \<open>For two arcs sharing only endpoints, the interior of one is disjoint
   from the other arc entirely (since the interior excludes E).\<close>
 
