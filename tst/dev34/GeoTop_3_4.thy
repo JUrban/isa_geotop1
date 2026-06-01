@@ -3215,6 +3215,17 @@ lemma geotop_link_polyhedron_subset_star_polyhedron:
   "\<Union>(geotop_link K v) \<subseteq> \<Union>(geotop_star K v)"
   unfolding geotop_link_def by (by100 blast)
 
+lemma geotop_star_polyhedron_subset_polyhedron:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "\<Union>(geotop_star K v) \<subseteq> geotop_polyhedron K"
+proof -
+  have hsub: "geotop_star K v \<subseteq> K"
+    by (rule geotop_star_subset_complex[OF hK])
+  show ?thesis
+    unfolding geotop_polyhedron_def using hsub by (by100 blast)
+qed
+
 lemma geotop_link_polyhedron_subset_polyhedron:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3225,6 +3236,52 @@ proof -
   show ?thesis
     unfolding geotop_polyhedron_def using hsub by (by100 blast)
 qed
+
+lemma geotop_star_polyhedron_compact_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "compact (\<Union>(geotop_star K v))"
+proof -
+  have hstar_complex: "geotop_is_complex (geotop_star K v)"
+    by (rule geotop_star_is_complex[OF hK])
+  have hstar_fin: "finite (geotop_star K v)"
+    by (rule geotop_star_finite_at_complex_vertex[OF hK hv])
+  have "compact (geotop_polyhedron (geotop_star K v))"
+    by (rule geotop_complex_polyhedron_compact[OF hstar_complex hstar_fin])
+  thus ?thesis
+    unfolding geotop_polyhedron_def by (by100 simp)
+qed
+
+lemma geotop_star_polyhedron_closed_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "closed (\<Union>(geotop_star K v))"
+proof -
+  have hcompact: "compact (\<Union>(geotop_star K v))"
+    by (rule geotop_star_polyhedron_compact_at_complex_vertex[OF hK hv])
+  show ?thesis
+    by (rule compact_imp_closed[OF hcompact])
+qed
+
+lemma geotop_star_polyhedron_contains_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "v \<in> \<Union>(geotop_star K v)"
+proof -
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  have "{v} \<in> geotop_star K v"
+    unfolding geotop_star_def using hvK by (by100 blast)
+  show ?thesis
+    using \<open>{v} \<in> geotop_star K v\<close> by (by100 blast)
+qed
+
+lemma geotop_link_polyhedron_avoids_vertex:
+  "v \<notin> \<Union>(geotop_link K v)"
+  unfolding geotop_link_def by (by100 blast)
 
 lemma geotop_link_polyhedron_compact_at_complex_vertex:
   fixes K :: "(real^2) set set"
