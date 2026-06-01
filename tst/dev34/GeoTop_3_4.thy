@@ -108,6 +108,385 @@ proof -
     using htop1 by (simp add: subspace_topology_UNIV_UNIV)
 qed
 
+lemma geotop_UNIV_homeomorphism_restrict:
+  fixes h :: "'a::real_normed_vector \<Rightarrow> 'a"
+  assumes hhomeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology h"
+  assumes hXY: "h ` X = Y"
+  shows "top1_homeomorphism_on X
+          (subspace_topology UNIV geotop_euclidean_topology X)
+          Y (subspace_topology UNIV geotop_euclidean_topology Y) h"
+proof -
+  obtain k where hk: "homeomorphism UNIV UNIV h k"
+    by (rule top1_homeomorphism_on_UNIV_obtain_HOL_homeomorphism[OF hhomeo])
+  have hsub: "homeomorphism X Y h k"
+    by (rule homeomorphism_of_subsets[OF hk subset_UNIV subset_UNIV hXY])
+  show ?thesis
+    by (rule geotop_HOL_homeomorphism_imp_top1_homeomorphism_on[OF hsub])
+qed
+
+lemma geotop_linear_on_eq_vertices:
+  fixes f g :: "'a::euclidean_space \<Rightarrow> 'b::real_vector"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes hf: "geotop_linear_on \<sigma> f"
+  assumes hg: "geotop_linear_on \<sigma> g"
+  assumes hfgV: "\<forall>v\<in>V. f v = g v"
+  shows "\<forall>x\<in>\<sigma>. f x = g x"
+proof
+  fix x assume hx\<sigma>: "x \<in> \<sigma>"
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+  proof -
+    have "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    thus ?thesis using geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  obtain Vf where hVf: "geotop_simplex_vertices \<sigma> Vf"
+      and hf_prop: "\<forall>\<alpha>. (\<forall>v\<in>Vf. 0 \<le> \<alpha> v) \<and> sum \<alpha> Vf = 1 \<longrightarrow>
+          f (\<Sum>v\<in>Vf. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>Vf. \<alpha> v *\<^sub>R f v)"
+    using hf unfolding geotop_linear_on_def by (by100 blast)
+  obtain Vg where hVg: "geotop_simplex_vertices \<sigma> Vg"
+      and hg_prop: "\<forall>\<alpha>. (\<forall>v\<in>Vg. 0 \<le> \<alpha> v) \<and> sum \<alpha> Vg = 1 \<longrightarrow>
+          g (\<Sum>v\<in>Vg. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>Vg. \<alpha> v *\<^sub>R g v)"
+    using hg unfolding geotop_linear_on_def by (by100 blast)
+  have hVf_eq: "Vf = V"
+    using geotop_simplex_vertices_unique[OF hVf hV] .
+  have hVg_eq: "Vg = V"
+    using geotop_simplex_vertices_unique[OF hVg hV] .
+  have hx_hull: "x \<in> convex hull V"
+    using hx\<sigma> h\<sigma>_HOL by (by100 simp)
+  have h_hull_char:
+    "convex hull V =
+      {y. \<exists>\<alpha>::'a \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = y}"
+    by (rule convex_hull_finite[OF hV_fin])
+  obtain \<alpha> :: "'a \<Rightarrow> real"
+    where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+      and h\<alpha>_sum: "sum \<alpha> V = 1"
+      and h\<alpha>_x: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+    using hx_hull h_hull_char by (by100 blast)
+  have hf_x: "f x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+  proof -
+    have "f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      using hf_prop hVf_eq h\<alpha>_nn h\<alpha>_sum by (by100 blast)
+    thus ?thesis using h\<alpha>_x by (by100 simp)
+  qed
+  have hg_x: "g x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+  proof -
+    have "g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+      using hg_prop hVg_eq h\<alpha>_nn h\<alpha>_sum by (by100 blast)
+    thus ?thesis using h\<alpha>_x by (by100 simp)
+  qed
+  have hsum_eq: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+    using hfgV by (by100 simp)
+  show "f x = g x"
+    using hf_x hg_x hsum_eq by (by100 simp)
+qed
+
+lemma geotop_simplex_vertex_bijection_affine_extension:
+  fixes V W :: "'a::euclidean_space set" and \<sigma> \<tau> :: "'a set"
+  assumes hV: "geotop_simplex_vertices \<sigma> V"
+  assumes hW: "geotop_simplex_vertices \<tau> W"
+  assumes h\<phi>_bij: "bij_betw \<phi> V W"
+  shows "\<exists>g. top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology g
+          \<and> g ` \<sigma> = \<tau>
+          \<and> geotop_simplicial_on \<sigma> g \<tau>
+          \<and> (\<forall>v\<in>V. g v = \<phi> v)"
+proof -
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hW_fin: "finite W"
+    using hW unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+  proof -
+    have "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    thus ?thesis using geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  have h\<tau>_HOL: "\<tau> = convex hull W"
+  proof -
+    have "\<tau> = geotop_convex_hull W"
+      using hW unfolding geotop_simplex_vertices_def by (by100 blast)
+    thus ?thesis using geotop_convex_hull_eq_HOL by (by100 simp)
+  qed
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule geotop_general_position_imp_aff_indep[OF hW])
+  have hV_ne: "V \<noteq> {}"
+  proof -
+    obtain n m where hcard: "card V = n + 1"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hcard_pos: "card V > 0" using hcard by (by100 simp)
+    have hiff: "(0 < card V) = (V \<noteq> {} \<and> finite V)"
+      by (rule card_gt_0_iff)
+    show ?thesis using hiff hcard_pos hV_fin by (by100 blast)
+  qed
+  obtain a where haV: "a \<in> V"
+    using hV_ne by (by100 blast)
+  define b where "b = \<phi> a"
+  have hbW: "b \<in> W"
+    using h\<phi>_bij haV unfolding b_def bij_betw_def by (by100 blast)
+  define B where "B = ((+) (- a)) ` (V - {a})"
+  define F where "F x = \<phi> (a + x) - b" for x
+  have h\<phi>_inj: "inj_on \<phi> V"
+    using h\<phi>_bij unfolding bij_betw_def by (by100 blast)
+  have h\<phi>_image: "\<phi> ` V = W"
+    using h\<phi>_bij unfolding bij_betw_def by (by100 blast)
+  have h\<phi>_minus: "\<phi> ` (V - {a}) = W - {b}"
+  proof
+    show "\<phi> ` (V - {a}) \<subseteq> W - {b}"
+    proof
+      fix y assume hy: "y \<in> \<phi> ` (V - {a})"
+      obtain v where hvV: "v \<in> V" and hva: "v \<noteq> a" and hy_eq: "y = \<phi> v"
+        using hy by (by100 blast)
+      have hyW: "y \<in> W" using hvV hy_eq h\<phi>_image by (by100 blast)
+      have hy_ne_b: "y \<noteq> b"
+      proof
+        assume "y = b"
+        hence "\<phi> v = \<phi> a" using hy_eq b_def by (by100 simp)
+        hence "v = a"
+          using h\<phi>_inj hvV haV unfolding inj_on_def by (by100 blast)
+        thus False using hva by (by100 simp)
+      qed
+      show "y \<in> W - {b}" using hyW hy_ne_b by (by100 blast)
+    qed
+    show "W - {b} \<subseteq> \<phi> ` (V - {a})"
+    proof
+      fix y assume hy: "y \<in> W - {b}"
+      have hyW: "y \<in> W" and hyb: "y \<noteq> b" using hy by (by100 blast)+
+      obtain v where hvV: "v \<in> V" and hy_eq: "y = \<phi> v"
+        using hyW h\<phi>_image by (by100 blast)
+      have hva: "v \<noteq> a"
+      proof
+        assume "v = a"
+        hence "y = b" using hy_eq b_def by (by100 simp)
+        thus False using hyb by (by100 simp)
+      qed
+      show "y \<in> \<phi> ` (V - {a})" using hvV hva hy_eq by (by100 blast)
+    qed
+  qed
+  have hB_indep: "independent B"
+  proof -
+    have "affine_dependent V \<longleftrightarrow> dependent B"
+      unfolding B_def by (rule affine_dependent_iff_dependent2[OF haV])
+    thus ?thesis using hV_ai by (by100 simp)
+  qed
+  have hFB_eq: "F ` B = ((+) (- b)) ` (W - {b})"
+  proof
+    show "F ` B \<subseteq> ((+) (- b)) ` (W - {b})"
+    proof
+      fix y assume hy: "y \<in> F ` B"
+      obtain x where hxB: "x \<in> B" and hy_eq: "y = F x"
+        using hy by (by100 blast)
+      obtain v where hv: "v \<in> V - {a}" and hx_eq: "x = - a + v"
+        using hxB unfolding B_def by (by100 blast)
+      have "y = - b + \<phi> v"
+        using hy_eq hx_eq unfolding F_def by (simp add: algebra_simps)
+      thus "y \<in> ((+) (- b)) ` (W - {b})"
+        using hv h\<phi>_minus by (by100 blast)
+    qed
+    show "((+) (- b)) ` (W - {b}) \<subseteq> F ` B"
+    proof
+      fix y assume hy: "y \<in> ((+) (- b)) ` (W - {b})"
+      obtain w where hw: "w \<in> W - {b}" and hy_eq: "y = - b + w"
+        using hy by (by100 blast)
+      have hw_phi: "w \<in> \<phi> ` (V - {a})"
+        using hw h\<phi>_minus by (by100 simp)
+      obtain v where hv: "v \<in> V - {a}" and hw_eq: "w = \<phi> v"
+        using hw_phi by (by100 blast)
+      define x where "x = - a + v"
+      have hxB: "x \<in> B" unfolding x_def B_def using hv by (by100 blast)
+      have "F x = y"
+        using hy_eq hw_eq unfolding F_def x_def by (simp add: algebra_simps)
+      thus "y \<in> F ` B" using hxB by (by100 blast)
+    qed
+  qed
+  have hFB_indep: "independent (F ` B)"
+  proof -
+    have "affine_dependent W \<longleftrightarrow> dependent (((+) (- b)) ` (W - {b}))"
+      by (rule affine_dependent_iff_dependent2[OF hbW])
+    hence "\<not> dependent (((+) (- b)) ` (W - {b}))"
+      using hW_ai by (by100 blast)
+    thus ?thesis using hFB_eq by (by100 simp)
+  qed
+  have hF_inj: "inj_on F B"
+  proof (rule inj_onI)
+    fix x y
+    assume hxB: "x \<in> B" and hyB: "y \<in> B" and hFxy: "F x = F y"
+    obtain vx where hvx: "vx \<in> V - {a}" and hx_eq: "x = - a + vx"
+      using hxB unfolding B_def by (by100 blast)
+    obtain vy where hvy: "vy \<in> V - {a}" and hy_eq: "y = - a + vy"
+      using hyB unfolding B_def by (by100 blast)
+    have hvxV: "vx \<in> V" and hvyV: "vy \<in> V"
+      using hvx hvy by (by100 blast)+
+    have "\<phi> vx = \<phi> vy"
+      using hFxy hx_eq hy_eq unfolding F_def by (simp add: algebra_simps)
+    hence "vx = vy"
+      using h\<phi>_inj hvxV hvyV unfolding inj_on_def by (by100 blast)
+    thus "x = y" using hx_eq hy_eq by (by100 simp)
+  qed
+  obtain A :: "'a \<Rightarrow> 'a" where hA_lin: "linear A"
+      and hA_inj: "inj A"
+      and hA_B: "\<forall>x\<in>B. A x = F x"
+    using linear_independent_extend_inj[OF hB_indep hFB_indep hF_inj] by (by100 blast)
+  define g where "g x = b + A (x - a)" for x
+  have hg_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+                    UNIV geotop_euclidean_topology g"
+    unfolding g_def by (rule geotop_affine_linear_homeomorphism_UNIV[OF hA_lin hA_inj])
+  have hg_vertex: "\<forall>v\<in>V. g v = \<phi> v"
+  proof
+    fix v assume hvV: "v \<in> V"
+    show "g v = \<phi> v"
+    proof (cases "v = a")
+      case True
+      have "A 0 = 0"
+        using hA_lin linear_0 by (by100 blast)
+      thus ?thesis using True unfolding g_def b_def by (by100 simp)
+    next
+      case False
+      have hvB: "- a + v \<in> B"
+        unfolding B_def using hvV False by (by100 blast)
+      have hA: "A (- a + v) = F (- a + v)"
+        using hA_B hvB by (by100 blast)
+      have hF: "F (- a + v) = \<phi> v - b"
+        unfolding F_def by (simp add: algebra_simps)
+      show ?thesis
+        unfolding g_def using hA hF by (simp add: algebra_simps)
+    qed
+  qed
+  have hg_vertices_image: "g ` V = W"
+  proof -
+    have "g ` V = \<phi> ` V"
+      using hg_vertex by (by100 force)
+    thus ?thesis using h\<phi>_image by (by100 simp)
+  qed
+  have hg_hull_image: "g ` (convex hull V) = convex hull W"
+  proof -
+    have "g ` (convex hull V) = convex hull (g ` V)"
+    proof -
+      have hminus_image:
+        "((\<lambda>x. x - a) ` (convex hull V)) = convex hull ((\<lambda>x. x - a) ` V)"
+      proof -
+        have "convex hull (((+) (- a)) ` V) = ((+) (- a)) ` (convex hull V)"
+          by (rule convex_hull_translation)
+        thus ?thesis by (simp add: algebra_simps)
+      qed
+      have hA_image:
+        "A ` ((\<lambda>x. x - a) ` (convex hull V)) =
+          convex hull (A ` ((\<lambda>x. x - a) ` V))"
+        using convex_hull_linear_image[OF hA_lin, of "((\<lambda>x. x - a) ` V)"] hminus_image
+        by (by100 simp)
+      have hplus_image:
+        "((+) b) ` (convex hull (A ` ((\<lambda>x. x - a) ` V))) =
+          convex hull (((+) b) ` (A ` ((\<lambda>x. x - a) ` V)))"
+      proof -
+        have "convex hull (((+) b) ` (A ` ((\<lambda>x. x - a) ` V))) =
+          ((+) b) ` (convex hull (A ` ((\<lambda>x. x - a) ` V)))"
+          by (rule convex_hull_translation)
+        thus ?thesis by (by100 simp)
+      qed
+      have "g ` (convex hull V) =
+          ((+) b) ` (A ` ((\<lambda>x. x - a) ` (convex hull V)))"
+        unfolding g_def by (simp add: image_image)
+      also have "\<dots> = ((+) b) ` (convex hull (A ` ((\<lambda>x. x - a) ` V)))"
+        using hA_image by (by100 simp)
+      also have "\<dots> = convex hull (((+) b) ` (A ` ((\<lambda>x. x - a) ` V)))"
+        using hplus_image by (by100 simp)
+      also have "\<dots> = convex hull (g ` V)"
+        unfolding g_def by (simp add: image_image)
+      finally show ?thesis .
+    qed
+    also have "\<dots> = convex hull W"
+      using hg_vertices_image by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hg_image: "g ` \<sigma> = \<tau>"
+    using h\<sigma>_HOL h\<tau>_HOL hg_hull_image by (by100 simp)
+  have hg_linear: "geotop_linear_on \<sigma> g"
+  proof -
+    have hprop: "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+          g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+    proof (intro allI impI)
+      fix \<alpha> :: "'a \<Rightarrow> real"
+      assume h\<alpha>: "(\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1"
+      have hsum: "sum \<alpha> V = 1"
+        using h\<alpha> by (by100 blast)
+      have hsum_a: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R a) = a"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R a) = (sum \<alpha> V) *\<^sub>R a"
+          by (rule scaleR_left.sum[symmetric])
+        thus ?thesis using hsum by (by100 simp)
+      qed
+      have hsum_b: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R b) = b"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R b) = (sum \<alpha> V) *\<^sub>R b"
+          by (rule scaleR_left.sum[symmetric])
+        thus ?thesis using hsum by (by100 simp)
+      qed
+      have hdiff_sum:
+        "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - a = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a)) =
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R a)"
+          by (simp add: scaleR_diff_right sum_subtractf)
+        also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - a"
+          using hsum_a by (by100 simp)
+        finally show ?thesis by (by100 simp)
+      qed
+      have hA_sum:
+        "A ((\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - a) =
+          (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+      proof -
+        have "A ((\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - a) =
+            A (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+          using hdiff_sum by (by100 simp)
+        also have "\<dots> = (\<Sum>v\<in>V. A (\<alpha> v *\<^sub>R (v - a)))"
+          by (rule linear_sum[OF hA_lin])
+        also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+          using hA_lin by (simp add: linear_scale)
+        finally show ?thesis .
+      qed
+      have hlhs:
+        "g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) =
+          b + (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+        unfolding g_def using hA_sum by (by100 simp)
+      have hrhs:
+        "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v) =
+          b + (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v) =
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (b + A (v - a)))"
+          unfolding g_def by (by100 simp)
+        also have "\<dots> =
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R b) +
+            (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+          by (simp add: scaleR_right_distrib sum.distrib)
+        also have "\<dots> =
+            b + (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+          using hsum_b by (by100 simp)
+        finally show ?thesis .
+      qed
+      show "g (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R g v)"
+        using hlhs hrhs by (by100 simp)
+    qed
+    show ?thesis
+      unfolding geotop_linear_on_def using hV hprop by (by100 blast)
+  qed
+  have hg_simplicial: "geotop_simplicial_on \<sigma> g \<tau>"
+  proof -
+    have hvertex_into: "\<forall>v\<in>V. g v \<in> W"
+      using hg_vertex h\<phi>_image by (by100 blast)
+    show ?thesis
+      unfolding geotop_simplicial_on_def
+      using hV hW hvertex_into hg_linear by (by100 blast)
+  qed
+  show ?thesis
+    using hg_homeo hg_image hg_simplicial hg_vertex by (by100 blast)
+qed
+
 (** from \<S>3 Theorem 1 (geotop.tex:724)
     LATEX VERSION: Let \<sigma>^n = v_0 v_1 ... v_n and \<tau>^n = w_0 w_1 ... w_n be simplexes in R^m.
       Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
@@ -260,7 +639,21 @@ proof -
          geotop_simplicial_on \<sigma> f \<tau> \<and>
          top1_homeomorphism_on \<sigma>
            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
-           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
+           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f"
+  proof -
+    obtain g where hg_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology g"
+        and hg_image: "g ` \<sigma> = \<tau>"
+        and hg_simp: "geotop_simplicial_on \<sigma> g \<tau>"
+        and hg_vertex: "\<forall>v\<in>V. g v = \<phi> v"
+      using geotop_simplex_vertex_bijection_affine_extension[OF hV hW h\<phi>_bij]
+      by (by100 blast)
+    have hg_sub: "top1_homeomorphism_on \<sigma>
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
+            (subspace_topology UNIV geotop_euclidean_topology \<tau>) g"
+      by (rule geotop_UNIV_homeomorphism_restrict[OF hg_homeo hg_image])
+    show ?thesis using hg_vertex hg_simp hg_sub by (by100 blast)
+  qed
   show ?thesis using h_f_def by (by100 blast)
 qed
 
@@ -299,7 +692,33 @@ proof -
     "\<exists>g. (\<forall>x\<in>\<sigma>. g x = f x) \<and> bij g \<and>
          top1_homeomorphism_on UNIV geotop_euclidean_topology
             UNIV geotop_euclidean_topology g"
-    sorry
+  proof -
+    obtain g where hg_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+              UNIV geotop_euclidean_topology g"
+        and hg_image: "g ` \<sigma> = \<tau>"
+        and hg_simp: "geotop_simplicial_on \<sigma> g \<tau>"
+        and hg_vertex: "\<forall>v\<in>V. g v = \<phi> v"
+      using geotop_simplex_vertex_bijection_affine_extension[OF hV hW h\<phi>_bij]
+      by (by100 blast)
+    have hf_simp: "geotop_simplicial_on \<sigma> f \<tau>"
+      using hf_simpl by (by100 blast)
+    have hf_vertex: "\<forall>v\<in>V. f v = \<phi> v"
+      using hf_simpl by (by100 blast)
+    have hf_lin: "geotop_linear_on \<sigma> f"
+      using hf_simp unfolding geotop_simplicial_on_def by (by100 blast)
+    have hg_lin: "geotop_linear_on \<sigma> g"
+      using hg_simp unfolding geotop_simplicial_on_def by (by100 blast)
+    have hfg_vertex: "\<forall>v\<in>V. f v = g v"
+      using hf_vertex hg_vertex by (by100 simp)
+    have hfg_eq: "\<forall>x\<in>\<sigma>. f x = g x"
+      by (rule geotop_linear_on_eq_vertices[OF hV hf_lin hg_lin hfg_vertex])
+    have hg_eq: "\<forall>x\<in>\<sigma>. g x = f x"
+      using hfg_eq by (by100 simp)
+    have hg_bij: "bij g"
+      using top1_homeomorphism_on_imp_bij[OF hg_homeo]
+      by (simp add: bij_betw_def bij_def)
+    show ?thesis using hg_eq hg_bij hg_homeo by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim AE-2: the extension g is also simplicial on \<sigma> with g(\<sigma>) \<subseteq> \<tau>.
     Follows from AE-1 + simplicial property of f preserved through extension
     (via cached helper geotop_simplicial_on_eq_on).\<close>
