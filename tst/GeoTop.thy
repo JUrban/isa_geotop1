@@ -1961,6 +1961,29 @@ proof -
                     show ?thesis using hz_neg conjunct2[OF hneg] by (by100 linarith)
                   qed
                 qed
+                have h_opposite_sector_point_in_local_complement:
+                  "\<And>z. \<lbrakk>z \<in> ball x \<delta>_iso;
+                         (inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0);
+                         (inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                         (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)\<rbrakk>
+                    \<Longrightarrow> z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                proof -
+                  fix z
+                  assume hz_ball: "z \<in> ball x \<delta>_iso"
+                    and hz_opposite_L\<tau>:
+                      "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                       (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                    and hz_opposite_L:
+                      "(inner (p\<tau>_y - x) n_y > 0 \<and> inner (z - x) n_y < 0) \<or>
+                       (inner (p\<tau>_y - x) n_y < 0 \<and> inner (z - x) n_y > 0)"
+                  have hz_not_\<sigma>: "z \<notin> \<sigma>_y"
+                    by (rule h_opposite_L\<tau>_side_avoids_\<sigma>_y[OF hz_opposite_L\<tau>])
+                  have hz_not_\<tau>: "z \<notin> \<tau>_y"
+                    by (rule h_opposite_L_y_side_avoids_\<tau>_y[OF hz_opposite_L])
+                  show "z \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                    using hz_ball hz_not_\<sigma> hz_not_\<tau> by (by100 blast)
+                qed
                 have h_opposite_side_choice:
                   "\<lbrakk>(inner (p\<tau>_y - x) n_y > 0 \<and>
                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
