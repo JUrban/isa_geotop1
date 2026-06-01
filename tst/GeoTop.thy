@@ -10216,6 +10216,93 @@ proof -
     by (intro exI[of _ W] exI[of _ k] exI[of _ k]) (by100 blast)
 qed
 
+lemma geotop_cone_face_of_edge:
+  fixes w :: "'a::euclidean_space"
+    and e F :: "'a set"
+  assumes hedge: "geotop_is_edge e"
+    and hF: "F face_of e"
+    and hw: "w \<notin> affine hull e"
+  shows "convex hull (insert w F) face_of convex hull (insert w e)"
+proof -
+  obtain V m where hV_fin: "finite V" and hV_card: "card V = 1 + 1"
+    and hV_gp: "geotop_general_position V m"
+    and he_geo: "e = geotop_convex_hull V"
+  proof -
+    have hdim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 blast)
+    obtain V m where "finite V" and "card V = 1 + 1"
+      and "1 \<le> m" and "geotop_general_position V m"
+      and "e = geotop_convex_hull V"
+      using hdim unfolding geotop_simplex_dim_def by (by100 blast)
+    thus ?thesis using that by (by100 blast)
+  qed
+  have he_HOL: "e = convex hull V"
+    using he_geo geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_w_not_aff_V: "w \<notin> affine hull V"
+  proof
+    assume "w \<in> affine hull V"
+    hence "w \<in> affine hull e"
+      using he_HOL affine_hull_convex_hull[of V] by (by100 simp)
+    thus False using hw by (by100 simp)
+  qed
+  have hF_face_convV: "F face_of convex hull V"
+    using hF he_HOL by (by100 simp)
+  have h_face_insert:
+    "convex hull (insert w F) face_of convex hull (insert w V)"
+    by (rule face_of_convex_hull_insert2[OF hV_fin h_w_not_aff_V hF_face_convV])
+  have h_insert_eq:
+    "convex hull (insert w V) = convex hull (insert w e)"
+  proof -
+    have "convex hull (insert w V) = convex hull (insert w (convex hull V))"
+      by (rule hull_insert)
+    thus ?thesis using he_HOL by (by100 simp)
+  qed
+  show ?thesis using h_face_insert h_insert_eq by (by100 simp)
+qed
+
+lemma geotop_base_face_of_edge_cone:
+  fixes w :: "'a::euclidean_space"
+    and e F :: "'a set"
+  assumes hedge: "geotop_is_edge e"
+    and hF: "F face_of e"
+    and hw: "w \<notin> affine hull e"
+  shows "F face_of convex hull (insert w e)"
+proof -
+  obtain V m where hV_fin: "finite V" and hV_card: "card V = 1 + 1"
+    and hV_gp: "geotop_general_position V m"
+    and he_geo: "e = geotop_convex_hull V"
+  proof -
+    have hdim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 blast)
+    obtain V m where "finite V" and "card V = 1 + 1"
+      and "1 \<le> m" and "geotop_general_position V m"
+      and "e = geotop_convex_hull V"
+      using hdim unfolding geotop_simplex_dim_def by (by100 blast)
+    thus ?thesis using that by (by100 blast)
+  qed
+  have he_HOL: "e = convex hull V"
+    using he_geo geotop_convex_hull_eq_HOL by (by100 simp)
+  have h_w_not_aff_V: "w \<notin> affine hull V"
+  proof
+    assume "w \<in> affine hull V"
+    hence "w \<in> affine hull e"
+      using he_HOL affine_hull_convex_hull[of V] by (by100 simp)
+    thus False using hw by (by100 simp)
+  qed
+  have hF_face_convV: "F face_of convex hull V"
+    using hF he_HOL by (by100 simp)
+  have h_face_insert: "F face_of convex hull (insert w V)"
+    using face_of_convex_hull_insert_eq[OF hV_fin h_w_not_aff_V] hF_face_convV by (by100 blast)
+  have h_insert_eq:
+    "convex hull (insert w V) = convex hull (insert w e)"
+  proof -
+    have "convex hull (insert w V) = convex hull (insert w (convex hull V))"
+      by (rule hull_insert)
+    thus ?thesis using he_HOL by (by100 simp)
+  qed
+  show ?thesis using h_face_insert h_insert_eq by (by100 simp)
+qed
+
 
 text \<open>A polytope of \<open>aff_dim 1\<close> is exactly a closed segment between 2 distinct
   points (its extreme points by Krein-Milman). Useful for extracting endpoints
@@ -11428,6 +11515,264 @@ proof -
       have hx_fr_S: "x \<in> frontier S" using hxS hx_not_int_S h_fr_S by (by100 blast)
       show "x \<in> frontier R \<inter> frontier S" using hx_fr_R hx_fr_S by (by100 blast)
     qed
+  qed
+  have hRs_distinct_inter_face:
+    "\<forall>R\<in>Rs. \<forall>S\<in>Rs. R \<noteq> S \<longrightarrow> R \<inter> S face_of R \<and> R \<inter> S face_of S"
+  proof (intro ballI impI)
+    fix R S assume hR: "R \<in> Rs" and hS: "S \<in> Rs" and hRS_ne: "R \<noteq> S"
+    obtain s where hR_eq: "R = R_of s"
+      using hR unfolding Rs_def by (by100 blast)
+    obtain t where hS_eq: "S = R_of t"
+      using hS unfolding Rs_def by (by100 blast)
+    define D where "D = {L\<in>Ls. s L \<noteq> t L}"
+    have hD_ne: "D \<noteq> {}"
+    proof
+      assume "D = {}"
+      hence h_agree: "\<forall>L\<in>Ls. s L = t L" unfolding D_def by (by100 blast)
+      have "R_of s = R_of t"
+      proof -
+        have "(\<Inter>L\<in>Ls. hp L (s L)) = (\<Inter>L\<in>Ls. hp L (t L))"
+          using h_agree by (by100 simp)
+        thus ?thesis unfolding R_of_def by (by100 simp)
+      qed
+      hence "R = S" using hR_eq hS_eq by (by100 simp)
+      thus False using hRS_ne by (by100 simp)
+    qed
+    have hD_sub: "D \<subseteq> Ls" unfolding D_def by (by100 blast)
+    have hR_conv: "convex R" using hR hRs_conv by (by100 blast)
+    have hS_conv: "convex S" using hS hRs_conv by (by100 blast)
+    have hR_line_face: "\<forall>L\<in>D. R \<inter> L face_of R"
+    proof
+      fix L assume hL_D: "L \<in> D"
+      have hL: "L \<in> Ls" using hL_D unfolding D_def by (by100 blast)
+      have hL_eq: "L = {x. line_norm L \<bullet> x = line_off L}"
+        using hL h_line_form by (by100 blast)
+      have hR_sub_hp: "R \<subseteq> hp L (s L)"
+        unfolding hR_eq R_of_def using hL by (by100 blast)
+      show "R \<inter> L face_of R"
+      proof (cases "s L")
+        case True
+        have hp_eq: "hp L (s L) = {x. line_norm L \<bullet> x \<le> line_off L}"
+          unfolding hp_def using True by (by100 simp)
+        have hle: "\<And>x. x \<in> R \<Longrightarrow> line_norm L \<bullet> x \<le> line_off L"
+          using hR_sub_hp hp_eq by (by100 blast)
+        have "R \<inter> {x. line_norm L \<bullet> x = line_off L} face_of R"
+          by (rule face_of_Int_supporting_hyperplane_le[OF hR_conv hle])
+        thus ?thesis using hL_eq by (by100 simp)
+      next
+        case False
+        have hp_eq: "hp L (s L) = {x. line_norm L \<bullet> x \<ge> line_off L}"
+          unfolding hp_def using False by (by100 simp)
+        have hge: "\<And>x. x \<in> R \<Longrightarrow> line_norm L \<bullet> x \<ge> line_off L"
+          using hR_sub_hp hp_eq by (by100 blast)
+        have "R \<inter> {x. line_norm L \<bullet> x = line_off L} face_of R"
+          by (rule face_of_Int_supporting_hyperplane_ge[OF hR_conv hge])
+        thus ?thesis using hL_eq by (by100 simp)
+      qed
+    qed
+    have hS_line_face: "\<forall>L\<in>D. S \<inter> L face_of S"
+    proof
+      fix L assume hL_D: "L \<in> D"
+      have hL: "L \<in> Ls" using hL_D unfolding D_def by (by100 blast)
+      have hL_eq: "L = {x. line_norm L \<bullet> x = line_off L}"
+        using hL h_line_form by (by100 blast)
+      have hS_sub_hp: "S \<subseteq> hp L (t L)"
+        unfolding hS_eq R_of_def using hL by (by100 blast)
+      show "S \<inter> L face_of S"
+      proof (cases "t L")
+        case True
+        have hp_eq: "hp L (t L) = {x. line_norm L \<bullet> x \<le> line_off L}"
+          unfolding hp_def using True by (by100 simp)
+        have hle: "\<And>x. x \<in> S \<Longrightarrow> line_norm L \<bullet> x \<le> line_off L"
+          using hS_sub_hp hp_eq by (by100 blast)
+        have "S \<inter> {x. line_norm L \<bullet> x = line_off L} face_of S"
+          by (rule face_of_Int_supporting_hyperplane_le[OF hS_conv hle])
+        thus ?thesis using hL_eq by (by100 simp)
+      next
+        case False
+        have hp_eq: "hp L (t L) = {x. line_norm L \<bullet> x \<ge> line_off L}"
+          unfolding hp_def using False by (by100 simp)
+        have hge: "\<And>x. x \<in> S \<Longrightarrow> line_norm L \<bullet> x \<ge> line_off L"
+          using hS_sub_hp hp_eq by (by100 blast)
+        have "S \<inter> {x. line_norm L \<bullet> x = line_off L} face_of S"
+          by (rule face_of_Int_supporting_hyperplane_ge[OF hS_conv hge])
+        thus ?thesis using hL_eq by (by100 simp)
+      qed
+    qed
+    have h_inter_eq_R: "R \<inter> S = \<Inter>((\<lambda>L. R \<inter> L) ` D)"
+    proof
+      show "R \<inter> S \<subseteq> \<Inter>((\<lambda>L. R \<inter> L) ` D)"
+      proof
+        fix x assume hx: "x \<in> R \<inter> S"
+        show "x \<in> \<Inter>((\<lambda>L. R \<inter> L) ` D)"
+        proof (rule InterI)
+          fix A assume hA: "A \<in> (\<lambda>L. R \<inter> L) ` D"
+          then obtain L where hL_D: "L \<in> D" and hA_eq: "A = R \<inter> L" by (by100 blast)
+          have hL: "L \<in> Ls" using hL_D unfolding D_def by (by100 blast)
+          have hdiff: "s L \<noteq> t L" using hL_D unfolding D_def by (by100 blast)
+          have hxR: "x \<in> R" and hxS: "x \<in> S" using hx by (by100 blast)+
+          have hx_hp_s: "x \<in> hp L (s L)"
+            using hxR hR_eq hL unfolding R_of_def by (by100 blast)
+          have hx_hp_t: "x \<in> hp L (t L)"
+            using hxS hS_eq hL unfolding R_of_def by (by100 blast)
+          have hx_eq: "line_norm L \<bullet> x = line_off L"
+          proof (cases "s L")
+            case True
+            hence ht: "\<not> t L" using hdiff by (by100 simp)
+            have hs_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_s True unfolding hp_def by (by100 simp)
+            have ht_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_t ht unfolding hp_def by (by100 simp)
+            show ?thesis using hs_le ht_ge by (by100 simp)
+          next
+            case False
+            hence ht: "t L" using hdiff by (by100 simp)
+            have hs_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_s False unfolding hp_def by (by100 simp)
+            have ht_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_t ht unfolding hp_def by (by100 simp)
+            show ?thesis using hs_ge ht_le by (by100 simp)
+          qed
+          have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+            using hL h_line_form by (by100 blast)
+          have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+            using hx_eq by (by100 simp)
+          have hxL: "x \<in> L"
+            using hL_eq hx_set by (by100 blast)
+          show "x \<in> A" using hxR hxL hA_eq by (by100 blast)
+        qed
+      qed
+      show "\<Inter>((\<lambda>L. R \<inter> L) ` D) \<subseteq> R \<inter> S"
+      proof
+        fix x assume hx: "x \<in> \<Inter>((\<lambda>L. R \<inter> L) ` D)"
+        obtain L0 where hL0_D: "L0 \<in> D" using hD_ne by (by100 blast)
+        have hxR: "x \<in> R"
+          using hx hL0_D by (by100 blast)
+        have hxS: "x \<in> S"
+          unfolding hS_eq R_of_def
+        proof
+          fix L assume hL: "L \<in> Ls"
+          show "x \<in> hp L (t L)"
+          proof (cases "L \<in> D")
+            case True
+            have hxL: "x \<in> L" using hx True by (by100 blast)
+            have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+              using hL h_line_form by (by100 blast)
+            have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+              using hxL hL_eq by (by100 blast)
+            have hx_eq: "line_norm L \<bullet> x = line_off L"
+              using hx_set by (by100 simp)
+            show ?thesis unfolding hp_def using hx_eq by (cases "t L") (by100 simp_all)
+          next
+            case False
+            hence hst: "s L = t L" using hL unfolding D_def by (by100 blast)
+            have hx_hp_s: "x \<in> hp L (s L)"
+              using hxR hR_eq hL unfolding R_of_def by (by100 blast)
+            show ?thesis using hx_hp_s hst by (by100 simp)
+          qed
+        qed
+        show "x \<in> R \<inter> S" using hxR hxS by (by100 blast)
+      qed
+    qed
+    have h_inter_eq_S: "R \<inter> S = \<Inter>((\<lambda>L. S \<inter> L) ` D)"
+    proof
+      show "R \<inter> S \<subseteq> \<Inter>((\<lambda>L. S \<inter> L) ` D)"
+      proof
+        fix x assume hx: "x \<in> R \<inter> S"
+        show "x \<in> \<Inter>((\<lambda>L. S \<inter> L) ` D)"
+        proof (rule InterI)
+          fix A assume hA: "A \<in> (\<lambda>L. S \<inter> L) ` D"
+          then obtain L where hL_D: "L \<in> D" and hA_eq: "A = S \<inter> L" by (by100 blast)
+          have hL: "L \<in> Ls" using hL_D unfolding D_def by (by100 blast)
+          have hdiff: "s L \<noteq> t L" using hL_D unfolding D_def by (by100 blast)
+          have hxR: "x \<in> R" and hxS: "x \<in> S" using hx by (by100 blast)+
+          have hx_hp_s: "x \<in> hp L (s L)"
+            using hxR hR_eq hL unfolding R_of_def by (by100 blast)
+          have hx_hp_t: "x \<in> hp L (t L)"
+            using hxS hS_eq hL unfolding R_of_def by (by100 blast)
+          have hx_eq: "line_norm L \<bullet> x = line_off L"
+          proof (cases "s L")
+            case True
+            hence ht: "\<not> t L" using hdiff by (by100 simp)
+            have hs_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_s True unfolding hp_def by (by100 simp)
+            have ht_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_t ht unfolding hp_def by (by100 simp)
+            show ?thesis using hs_le ht_ge by (by100 simp)
+          next
+            case False
+            hence ht: "t L" using hdiff by (by100 simp)
+            have hs_ge: "line_norm L \<bullet> x \<ge> line_off L"
+              using hx_hp_s False unfolding hp_def by (by100 simp)
+            have ht_le: "line_norm L \<bullet> x \<le> line_off L"
+              using hx_hp_t ht unfolding hp_def by (by100 simp)
+            show ?thesis using hs_ge ht_le by (by100 simp)
+          qed
+          have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+            using hL h_line_form by (by100 blast)
+          have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+            using hx_eq by (by100 simp)
+          have hxL: "x \<in> L"
+            using hL_eq hx_set by (by100 blast)
+          show "x \<in> A" using hxS hxL hA_eq by (by100 blast)
+        qed
+      qed
+      show "\<Inter>((\<lambda>L. S \<inter> L) ` D) \<subseteq> R \<inter> S"
+      proof
+        fix x assume hx: "x \<in> \<Inter>((\<lambda>L. S \<inter> L) ` D)"
+        obtain L0 where hL0_D: "L0 \<in> D" using hD_ne by (by100 blast)
+        have hxS: "x \<in> S"
+          using hx hL0_D by (by100 blast)
+        have hxR: "x \<in> R"
+          unfolding hR_eq R_of_def
+        proof
+          fix L assume hL: "L \<in> Ls"
+          show "x \<in> hp L (s L)"
+          proof (cases "L \<in> D")
+            case True
+            have hxL: "x \<in> L" using hx True by (by100 blast)
+            have hL_eq: "L = {y. line_norm L \<bullet> y = line_off L}"
+              using hL h_line_form by (by100 blast)
+            have hx_set: "x \<in> {y. line_norm L \<bullet> y = line_off L}"
+              using hxL hL_eq by (by100 blast)
+            have hx_eq: "line_norm L \<bullet> x = line_off L"
+              using hx_set by (by100 simp)
+            show ?thesis unfolding hp_def using hx_eq by (cases "s L") (by100 simp_all)
+          next
+            case False
+            hence hst: "s L = t L" using hL unfolding D_def by (by100 blast)
+            have hx_hp_t: "x \<in> hp L (t L)"
+              using hxS hS_eq hL unfolding R_of_def by (by100 blast)
+            show ?thesis using hx_hp_t hst by (by100 simp)
+          qed
+        qed
+        show "x \<in> R \<inter> S" using hxR hxS by (by100 blast)
+      qed
+    qed
+    have hA_R_ne: "((\<lambda>L. R \<inter> L) ` D) \<noteq> {}" using hD_ne by (by100 blast)
+    have hA_S_ne: "((\<lambda>L. S \<inter> L) ` D) \<noteq> {}" using hD_ne by (by100 blast)
+    have h_face_R: "R \<inter> S face_of R"
+    proof -
+      have "\<Inter>((\<lambda>L. R \<inter> L) ` D) face_of R"
+      proof (rule face_of_Inter[OF hA_R_ne])
+        fix A assume "A \<in> (\<lambda>L. R \<inter> L) ` D"
+        then obtain L where "L \<in> D" and "A = R \<inter> L" by (by100 blast)
+        thus "A face_of R" using hR_line_face by (by100 blast)
+      qed
+      thus ?thesis using h_inter_eq_R by (by100 simp)
+    qed
+    have h_face_S: "R \<inter> S face_of S"
+    proof -
+      have "\<Inter>((\<lambda>L. S \<inter> L) ` D) face_of S"
+      proof (rule face_of_Inter[OF hA_S_ne])
+        fix A assume "A \<in> (\<lambda>L. S \<inter> L) ` D"
+        then obtain L where "L \<in> D" and "A = S \<inter> L" by (by100 blast)
+        thus "A face_of S" using hS_line_face by (by100 blast)
+      qed
+      thus ?thesis using h_inter_eq_S by (by100 simp)
+    qed
+    show "R \<inter> S face_of R \<and> R \<inter> S face_of S"
+      using h_face_R h_face_S by (by100 blast)
   qed
   (** (3) For each R in Rs: R \<inter> J \<subseteq> Fr R, hence R \<subseteq> \<bar>I\<close> or R \<inter> \<bar>I\<close> \<subseteq> J. **)
   define Ibar where
@@ -12943,7 +13288,229 @@ proof -
         \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
         \<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S \<longrightarrow>
         geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
-    sorry
+  proof (intro ballI impI allI)
+    fix R S eR eS \<sigma> \<tau>
+    assume hR_in: "R \<in> Rs_in" and hS_in: "S \<in> Rs_in" and hRS_ne: "R \<noteq> S"
+      and heR_Fr: "eR \<in> FrTri R" and heS_Fr: "eS \<in> FrTri S"
+      and h\<sigma>_face_geo: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> eR))"
+      and h\<tau>_face_geo: "geotop_is_face \<tau> (geotop_convex_hull ({wpt S} \<union> eS))"
+      and h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+      and h_sub_frontier: "\<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S"
+    define TR where "TR = geotop_convex_hull ({wpt R} \<union> eR)"
+    define TS where "TS = geotop_convex_hull ({wpt S} \<union> eS)"
+    define F where "F = eR \<inter> eS"
+    have hR_Rs: "R \<in> Rs" using hR_in unfolding Rs_in_def by (by100 simp)
+    have hS_Rs: "S \<in> Rs" using hS_in unfolding Rs_in_def by (by100 simp)
+    have hR_conv: "convex R" using hR_Rs hRs_conv by (by100 blast)
+    have hS_conv: "convex S" using hS_Rs hRs_conv by (by100 blast)
+    have hR_closed: "closed R" using hR_Rs hRs_closed by (by100 blast)
+    have hS_closed: "closed S" using hS_Rs hRs_closed by (by100 blast)
+    have hR_int_ne: "interior R \<noteq> {}" using hR_Rs hRs_interior_ne by (by100 blast)
+    have hS_int_ne: "interior S \<noteq> {}" using hS_Rs hRs_interior_ne by (by100 blast)
+    have hR_aff_dim: "aff_dim R = int (DIM(real^2))"
+      using hR_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have hS_aff_dim: "aff_dim S = int (DIM(real^2))"
+      using hS_int_ne aff_dim_nonempty_interior by (by100 blast)
+    have hR_rel_int_eq: "rel_interior R = interior R"
+      using hR_aff_dim interior_rel_interior_gen[of R] by (by100 simp)
+    have hS_rel_int_eq: "rel_interior S = interior S"
+      using hS_aff_dim interior_rel_interior_gen[of S] by (by100 simp)
+    have hwptR_int: "wpt R \<in> interior R"
+    proof -
+      have h_ex: "\<exists>w. w \<in> interior R" using hR_int_ne by (by100 blast)
+      have "(SOME w. w \<in> interior R) \<in> interior R"
+        by (rule someI_ex[OF h_ex])
+      thus ?thesis unfolding wpt_def by (by100 simp)
+    qed
+    have hwptS_int: "wpt S \<in> interior S"
+    proof -
+      have h_ex: "\<exists>w. w \<in> interior S" using hS_int_ne by (by100 blast)
+      have "(SOME w. w \<in> interior S) \<in> interior S"
+        by (rule someI_ex[OF h_ex])
+      thus ?thesis unfolding wpt_def by (by100 simp)
+    qed
+    have hwptR_rel: "wpt R \<in> rel_interior R"
+      using hwptR_int hR_rel_int_eq by (by100 simp)
+    have hwptS_rel: "wpt S \<in> rel_interior S"
+      using hwptS_int hS_rel_int_eq by (by100 simp)
+    have hR_rel_fr_eq: "rel_frontier R = frontier R"
+    proof -
+      have h1: "rel_frontier R = closure R - rel_interior R"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "frontier R = closure R - interior R"
+        unfolding Elementary_Topology.frontier_def using hR_closed by (by100 simp)
+      show ?thesis using h1 h2 hR_rel_int_eq by (by100 simp)
+    qed
+    have hS_rel_fr_eq: "rel_frontier S = frontier S"
+    proof -
+      have h1: "rel_frontier S = closure S - rel_interior S"
+        unfolding rel_frontier_def by (by100 simp)
+      have h2: "frontier S = closure S - interior S"
+        unfolding Elementary_Topology.frontier_def using hS_closed by (by100 simp)
+      show ?thesis using h1 h2 hS_rel_int_eq by (by100 simp)
+    qed
+    have heR_facet: "eR facet_of R" using heR_Fr unfolding FrTri_def by (by100 simp)
+    have heS_facet: "eS facet_of S" using heS_Fr unfolding FrTri_def by (by100 simp)
+    have heR_face_R: "eR face_of R" using heR_facet facet_of_imp_face_of by (by100 blast)
+    have heS_face_S: "eS face_of S" using heS_facet facet_of_imp_face_of by (by100 blast)
+    have heR_ne_R: "eR \<noteq> R" using heR_facet by (by100 auto)
+    have heS_ne_S: "eS \<noteq> S" using heS_facet by (by100 auto)
+    have heR_sub_R: "eR \<subseteq> R" using heR_facet facet_of_imp_subset by (by100 blast)
+    have heS_sub_S: "eS \<subseteq> S" using heS_facet facet_of_imp_subset by (by100 blast)
+    have heR_conv: "convex eR" using heR_face_R face_of_imp_convex by (by100 blast)
+    have heS_conv: "convex eS" using heS_face_S face_of_imp_convex by (by100 blast)
+    have heR_edge: "geotop_is_edge eR" using hR_in heR_Fr hFrTri_edges by (by100 blast)
+    have heS_edge: "geotop_is_edge eS" using hS_in heS_Fr hFrTri_edges by (by100 blast)
+    have hTR_HOL: "TR = convex hull (insert (wpt R) eR)"
+    proof -
+      have h_geo: "geotop_convex_hull ({wpt R} \<union> eR) = convex hull ({wpt R} \<union> eR)"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_set: "{wpt R} \<union> eR = insert (wpt R) eR" by (by100 blast)
+      show ?thesis unfolding TR_def using h_geo h_set by (by100 simp)
+    qed
+    have hTS_HOL: "TS = convex hull (insert (wpt S) eS)"
+    proof -
+      have h_geo: "geotop_convex_hull ({wpt S} \<union> eS) = convex hull ({wpt S} \<union> eS)"
+        by (rule geotop_convex_hull_eq_HOL)
+      have h_set: "{wpt S} \<union> eS = insert (wpt S) eS" by (by100 blast)
+      show ?thesis unfolding TS_def using h_geo h_set by (by100 simp)
+    qed
+    have hR_fr_disj: "disjnt (frontier R) (rel_interior R)"
+    proof -
+      have "frontier R \<inter> rel_interior R = {}"
+        using hR_rel_fr_eq unfolding rel_frontier_def by (by100 blast)
+      thus ?thesis unfolding disjnt_def by (by100 blast)
+    qed
+    have hS_fr_disj: "disjnt (frontier S) (rel_interior S)"
+    proof -
+      have "frontier S \<inter> rel_interior S = {}"
+        using hS_rel_fr_eq unfolding rel_frontier_def by (by100 blast)
+      thus ?thesis unfolding disjnt_def by (by100 blast)
+    qed
+    have hTR_frontier_R: "frontier R \<inter> TR = eR"
+    proof -
+      have h_eq: "frontier R \<inter> convex hull (insert (wpt R) eR) =
+                  frontier R \<inter> convex hull eR"
+        by (rule Int_convex_hull_insert_rel_exterior[OF hR_conv heR_sub_R hwptR_rel hR_fr_disj])
+      have h_hull: "convex hull eR = eR"
+        using heR_conv by (simp add: hull_same)
+      have h_fr: "frontier R \<inter> eR = eR"
+        using hR_in heR_Fr hFrTri_edges by (by100 blast)
+      show ?thesis using hTR_HOL h_eq h_hull h_fr by (by100 simp)
+    qed
+    have hTS_frontier_S: "frontier S \<inter> TS = eS"
+    proof -
+      have h_eq: "frontier S \<inter> convex hull (insert (wpt S) eS) =
+                  frontier S \<inter> convex hull eS"
+        by (rule Int_convex_hull_insert_rel_exterior[OF hS_conv heS_sub_S hwptS_rel hS_fr_disj])
+      have h_hull: "convex hull eS = eS"
+        using heS_conv by (simp add: hull_same)
+      have h_fr: "frontier S \<inter> eS = eS"
+        using hS_in heS_Fr hFrTri_edges by (by100 blast)
+      show ?thesis using hTS_HOL h_eq h_hull h_fr by (by100 simp)
+    qed
+    have hRS_face_R: "R \<inter> S face_of R"
+      using hRs_distinct_inter_face hR_Rs hS_Rs hRS_ne by (by100 blast)
+    have hRS_face_S: "R \<inter> S face_of S"
+      using hRs_distinct_inter_face hR_Rs hS_Rs hRS_ne by (by100 blast)
+    have hSR_face_R: "S \<inter> R face_of R" using hRS_face_R by (simp add: Int_commute)
+    have hRS_face_R_comm: "R \<inter> S face_of S" using hRS_face_S by (by100 simp)
+    have heS_R_face_RS: "eS \<inter> R face_of S \<inter> R"
+      by (rule face_of_slice[OF heS_face_S hR_conv])
+    have heS_R_face_R: "eS \<inter> R face_of R"
+      by (rule face_of_trans[OF heS_R_face_RS hSR_face_R])
+    have hF_face_eR: "F face_of eR"
+    proof -
+      have hF_eq: "F = eR \<inter> (eS \<inter> R)" using F_def heR_sub_R by (by100 blast)
+      have "F face_of R"
+        using face_of_Int[OF heR_face_R heS_R_face_R] hF_eq by (by100 simp)
+      thus ?thesis using face_of_face[OF heR_face_R] F_def by (by100 blast)
+    qed
+    have heR_S_face_RS: "eR \<inter> S face_of R \<inter> S"
+      by (rule face_of_slice[OF heR_face_R hS_conv])
+    have heR_S_face_S: "eR \<inter> S face_of S"
+      by (rule face_of_trans[OF heR_S_face_RS hRS_face_S])
+    have hF_face_eS: "F face_of eS"
+    proof -
+      have hF_eq: "F = eS \<inter> (eR \<inter> S)" using F_def heS_sub_S by (by100 blast)
+      have "F face_of S"
+        using face_of_Int[OF heS_face_S heR_S_face_S] hF_eq by (simp add: Int_commute)
+      thus ?thesis using face_of_face[OF heS_face_S] F_def by (by100 blast)
+    qed
+    have hwptR_not_aff_eR: "wpt R \<notin> affine hull eR"
+    proof
+      assume hw_aff: "wpt R \<in> affine hull eR"
+      have h_disj: "affine hull eR \<inter> rel_interior R = {}"
+        by (rule affine_hull_face_of_disjoint_rel_interior[OF hR_conv heR_face_R heR_ne_R])
+      show False using hw_aff hwptR_rel h_disj by (by100 blast)
+    qed
+    have hwptS_not_aff_eS: "wpt S \<notin> affine hull eS"
+    proof
+      assume hw_aff: "wpt S \<in> affine hull eS"
+      have h_disj: "affine hull eS \<inter> rel_interior S = {}"
+        by (rule affine_hull_face_of_disjoint_rel_interior[OF hS_conv heS_face_S heS_ne_S])
+      show False using hw_aff hwptS_rel h_disj by (by100 blast)
+    qed
+    have hF_face_TR: "F face_of TR"
+      using geotop_base_face_of_edge_cone[OF heR_edge hF_face_eR hwptR_not_aff_eR] hTR_HOL
+      by (by100 simp)
+    have hF_face_TS: "F face_of TS"
+      using geotop_base_face_of_edge_cone[OF heS_edge hF_face_eS hwptS_not_aff_eS] hTS_HOL
+      by (by100 simp)
+    have h\<sigma>_HOL: "\<sigma> face_of TR"
+      unfolding TR_def using geotop_is_face_imp_face_of[OF h\<sigma>_face_geo] by (by100 simp)
+    have h\<tau>_HOL: "\<tau> face_of TS"
+      unfolding TS_def using geotop_is_face_imp_face_of[OF h\<tau>_face_geo] by (by100 simp)
+    have h\<sigma>_sub_TR: "\<sigma> \<subseteq> TR" using h\<sigma>_HOL face_of_imp_subset by (by100 blast)
+    have h\<tau>_sub_TS: "\<tau> \<subseteq> TS" using h\<tau>_HOL face_of_imp_subset by (by100 blast)
+    have h_int_sub_F: "\<sigma> \<inter> \<tau> \<subseteq> F"
+    proof
+      fix x assume hx: "x \<in> \<sigma> \<inter> \<tau>"
+      have hx_fr_R: "x \<in> frontier R" and hx_fr_S: "x \<in> frontier S"
+        using hx h_sub_frontier by (by100 blast)+
+      have hx_TR: "x \<in> TR" using hx h\<sigma>_sub_TR by (by100 blast)
+      have hx_TS: "x \<in> TS" using hx h\<tau>_sub_TS by (by100 blast)
+      have hx_eR: "x \<in> eR" using hx_fr_R hx_TR hTR_frontier_R by (by100 blast)
+      have hx_eS: "x \<in> eS" using hx_fr_S hx_TS hTS_frontier_S by (by100 blast)
+      show "x \<in> F" unfolding F_def using hx_eR hx_eS by (by100 blast)
+    qed
+    define \<sigma>F where "\<sigma>F = \<sigma> \<inter> F"
+    define \<tau>F where "\<tau>F = \<tau> \<inter> F"
+    have h_common_eq: "\<sigma> \<inter> \<tau> = \<sigma>F \<inter> \<tau>F"
+      unfolding \<sigma>F_def \<tau>F_def using h_int_sub_F by (by100 blast)
+    have h\<sigma>F_face_TR: "\<sigma>F face_of TR"
+      unfolding \<sigma>F_def using face_of_Int[OF h\<sigma>_HOL hF_face_TR] by (by100 simp)
+    have h\<sigma>F_face_\<sigma>: "\<sigma>F face_of \<sigma>"
+      using face_of_face[OF h\<sigma>_HOL] h\<sigma>F_face_TR \<sigma>F_def by (by100 blast)
+    have h\<sigma>F_face_F: "\<sigma>F face_of F"
+      using face_of_face[OF hF_face_TR] h\<sigma>F_face_TR \<sigma>F_def by (by100 blast)
+    have h\<tau>F_face_TS: "\<tau>F face_of TS"
+      unfolding \<tau>F_def using face_of_Int[OF h\<tau>_HOL hF_face_TS] by (by100 simp)
+    have h\<tau>F_face_\<tau>: "\<tau>F face_of \<tau>"
+      using face_of_face[OF h\<tau>_HOL] h\<tau>F_face_TS \<tau>F_def by (by100 blast)
+    have h\<tau>F_face_F: "\<tau>F face_of F"
+      using face_of_face[OF hF_face_TS] h\<tau>F_face_TS \<tau>F_def by (by100 blast)
+    have h_common_face_F: "\<sigma>F \<inter> \<tau>F face_of F"
+      by (rule face_of_Int[OF h\<sigma>F_face_F h\<tau>F_face_F])
+    have h_common_face_\<sigma>F: "\<sigma>F \<inter> \<tau>F face_of \<sigma>F"
+      using face_of_face[OF h\<sigma>F_face_F] h_common_face_F by (by100 blast)
+    have h_common_face_\<tau>F: "\<sigma>F \<inter> \<tau>F face_of \<tau>F"
+      using face_of_face[OF h\<tau>F_face_F] h_common_face_F by (by100 blast)
+    have h_common_\<sigma>_HOL: "\<sigma> \<inter> \<tau> face_of \<sigma>"
+      using face_of_trans[OF h_common_face_\<sigma>F h\<sigma>F_face_\<sigma>] h_common_eq by (by100 simp)
+    have h_common_\<tau>_HOL: "\<sigma> \<inter> \<tau> face_of \<tau>"
+      using face_of_trans[OF h_common_face_\<tau>F h\<tau>F_face_\<tau>] h_common_eq by (simp add: Int_commute)
+    obtain V\<sigma> where hV\<sigma>: "geotop_simplex_vertices \<sigma> V\<sigma>"
+      using geotop_is_face_has_simplex_vertices[OF h\<sigma>_face_geo] by (by100 blast)
+    obtain V\<tau> where hV\<tau>: "geotop_simplex_vertices \<tau> V\<tau>"
+      using geotop_is_face_has_simplex_vertices[OF h\<tau>_face_geo] by (by100 blast)
+    have h_face_\<sigma>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>"
+      by (rule face_of_nonempty_imp_geotop_is_face[OF hV\<sigma> h_common_\<sigma>_HOL h_int_ne])
+    have h_face_\<tau>: "geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule face_of_nonempty_imp_geotop_is_face[OF hV\<tau> h_common_\<tau>_HOL h_int_ne])
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using h_face_\<sigma> h_face_\<tau> by (by100 blast)
+  qed
   have hK_distinct_region_axiom3:
     "\<forall>R\<in>Rs_in. \<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
        (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
