@@ -7458,6 +7458,18 @@ proof
       by (rule geotop_link_is_complex[OF hK])
     have hlink_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
       using hL1_link_poly_nonempty .
+    have hcomponent_nonisolated_witnesses:
+      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+          C = geotop_component_at UNIV geotop_euclidean_topology
+                (\<Union>(geotop_link K v)) P)
+        \<longrightarrow> (\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
+      by (rule geotop_link_components_nonisolated_subcomplex_witnesses
+          [OF hK hv hlink_vertices_incident_edges])
     have hlocal_polygon_components:
       "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
              C = geotop_component_at UNIV geotop_euclidean_topology
@@ -7763,6 +7775,18 @@ proof -
         by (rule geotop_link_is_complex[OF hK])
       have hlink_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
         using hL1_link_poly_nonempty .
+      have hcomponent_nonisolated_witnesses:
+        "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+            C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P)
+          \<longrightarrow> (\<exists>L. geotop_is_complex L
+            \<and> geotop_complex_is_1dim L
+            \<and> finite L
+            \<and> geotop_polyhedron L = C
+            \<and> geotop_complex_connected L
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
+        by (rule geotop_link_components_nonisolated_subcomplex_witnesses
+            [OF hK hv hlink_vertices_incident_edges])
       have hlocal_line_or_polygon_components:
         "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
                C = geotop_component_at UNIV geotop_euclidean_topology

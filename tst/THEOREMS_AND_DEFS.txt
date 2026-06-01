@@ -1615,14 +1615,14 @@ dev34/GeoTop_3_4.thy|lemma|geotop_link_vertex_incident_2simplex_incident_link_ed
 dev34/GeoTop_3_4.thy|lemma|geotop_link_vertex_incident_edge_count_ge_1_incident_link_edge|4892
 dev34/GeoTop_3_4.thy|lemma|geotop_link_vertex_incident_edge_witness|4457
 dev34/GeoTop_3_4.thy|lemma|geotop_link_vertices_count_ge_1_incident_link_edges|5008
-dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|7885
+dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|7909
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_iterated_Sd_tends_to_zero|9419
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_norm_nonneg|9388
 gb/GeoTopBase.thy|lemma|geotop_nbhd_set_open_in_euclidean|6063
 dev34/GeoTop_3_4.thy|lemma|geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset|5197
 dev34/GeoTop_3_4.thy|lemma|geotop_nonempty_complex_polyhedron_nonempty|3532
 dev34/GeoTop_3_4.thy|lemma|geotop_nonempty_polyhedron_has_complex_vertex|3546
-dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|7864
+dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|7888
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_complement|2940
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_eq_carrier_contains_vertex|10630
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_inter_carrier|10668
@@ -2604,10 +2604,10 @@ i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_contains|3840
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_open|3815
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_sub|3834
 i/Top1_Ch3.thy|lemma|top1_nested_subset_le|9935
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|7844
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|7868
 dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV_R2_dev34|6272
 dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV_early|6890
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|7849
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|7873
 dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34|6277
 dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_early|6895
 i/Top1_Ch3.thy|lemma|top1_not_countable_UNIV_nat_set|9268
@@ -3251,7 +3251,7 @@ dev34/GeoTop_3_4.thy|theorem|Theorem_GT_3_7|1343
 GeoTop.thy|theorem|Theorem_GT_4_1|19063
 dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_1|1431
 GeoTop.thy|theorem|Theorem_GT_4_10|19656
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|7945
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|7969
 GeoTop.thy|theorem|Theorem_GT_4_2|19162
 dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_2|1536
 GeoTop.thy|theorem|Theorem_GT_4_3|19220
@@ -3267,7 +3267,7 @@ dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_7|2113
 GeoTop.thy|theorem|Theorem_GT_4_8|19537
 dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_8|7124
 GeoTop.thy|theorem|Theorem_GT_4_9|19595
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|7534
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|7546
 gb/GeoTopBase.thy|theorem|Theorem_GT_4_invariance_of_domain|6701
 GeoTop.thy|theorem|Theorem_GT_5_1|19685
 GeoTop.thy|theorem|Theorem_GT_5_2|19777
