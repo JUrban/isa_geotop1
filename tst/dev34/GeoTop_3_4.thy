@@ -4774,31 +4774,25 @@ proof -
         [OF hK hvK heK hedge hv_e h2face])
 qed
 
-lemma geotop_link_vertex_count_ge_1_incident_link_edge:
-  fixes K :: "(real^2) set set"
+lemma geotop_link_vertex_incident_edge_count_ge_1_incident_link_edge:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
   assumes hvK: "{v} \<in> K"
   assumes hwL: "{w} \<in> geotop_link K v"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  assumes hw_e: "w \<in> e"
   assumes hcount:
-    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-      1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
   shows "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
 proof -
-  obtain e where heK: "e \<in> K"
-    and hedge: "geotop_is_edge e"
-    and hv_e: "v \<in> e"
-    and hw_e: "w \<in> e"
-    using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
-    by (by100 blast)
   have hlink_sub: "geotop_link K v \<subseteq> K"
     by (rule geotop_link_subset_complex[OF hK])
   have hwK: "{w} \<in> K"
     using hlink_sub hwL by (by100 blast)
   have hv_not_w: "v \<noteq> w"
     using hwL unfolding geotop_link_def by (by100 blast)
-  have hcount_e:
-    "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
-    using hcount heK hedge hv_e by (by100 blast)
   obtain w' l where hw'_ne_v: "w' \<noteq> v"
     and hw'_e: "w' \<in> e"
     and hw'L: "{w'} \<in> geotop_link K v"
@@ -4806,7 +4800,7 @@ proof -
     and hledge: "geotop_is_edge l"
     and hw'_l: "w' \<in> l"
     using geotop_incident_edge_face_count_ge_1_link_edge_witness
-      [OF hK hvK heK hedge hv_e hcount_e]
+      [OF hK hvK heK hedge hv_e hcount]
     by (by100 blast)
   have hw'K: "{w'} \<in> K"
     using hlink_sub hw'L by (by100 blast)
@@ -4870,6 +4864,30 @@ proof -
     using hw'_in_pair hw'_ne_v by (by100 blast)
   show ?thesis
     using hlL hledge hw'_l hw'_eq_w by (by100 blast)
+qed
+
+lemma geotop_link_vertex_count_ge_1_incident_link_edge:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes hcount:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  shows "\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+proof -
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    using geotop_link_vertex_incident_edge_witness[OF hK hvK hwL]
+    by (by100 blast)
+  have hcount_e:
+    "1 \<le> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    using hcount heK hedge hv_e by (by100 blast)
+  show ?thesis
+    by (rule geotop_link_vertex_incident_edge_count_ge_1_incident_link_edge
+        [OF hK hvK hwL heK hedge hv_e hw_e hcount_e])
 qed
 
 lemma geotop_edge_face_in_ge_2_simplex_has_2_face:
