@@ -2264,7 +2264,11 @@ proof -
                         in \<open>U\<close> by
                         \<open>h_path_in_local_two_edge_complement_stays_U\<close>.\<close>
                       have h_positive_exterior_path_wrap:
-                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < min (r / 2) (\<delta>_iso / 2);
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U;
+                          dist u x <
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)));
                           inner (p\<tau>_y - x) n_y > 0;
                           inner (u - x) n_y > 0;
                           ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
@@ -2274,13 +2278,21 @@ proof -
                         fix r u
                         assume hr_pos: "r > 0"
                           and huU: "u \<in> U"
-                          and hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          and hu_dist_small:
+                            "dist u x <
+                              min (r / 2)
+                                (min (\<delta>_iso / 2)
+                                  (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
                           and hp_pos: "inner (p\<tau>_y - x) n_y > 0"
                           and hu_pos: "inner (u - x) n_y > 0"
                           and hu_exterior_m:
                             "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                              (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
                         have hu_dist_delta_half: "dist u x < \<delta>_iso / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_dist_py_half: "dist u x < dist x p_y / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_dist_p\<tau>_half: "dist u x < dist x p\<tau>_y / 2"
                           using hu_dist_small by (by100 simp)
                         have hu_ball_iso: "u \<in> ball x \<delta>_iso"
                         proof -
@@ -2381,12 +2393,25 @@ proof -
                       proof (intro allI impI)
                         fix r :: real
                         assume hr_pos: "r > 0"
-                        define r0 where "r0 = min r_between (min (r / 2) (\<delta>_iso / 2))"
+                        define rsmall where
+                          "rsmall =
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
+                        define r0 where "r0 = min r_between rsmall"
+                        have hdist_x_py_pos: "dist x p_y > 0"
+                          using hp_y_ne by (by100 simp)
+                        have hdist_x_p\<tau>_pos: "dist x p\<tau>_y > 0"
+                          using hp\<tau>_y_ne_x by (by100 simp)
+                        have hrsmall_pos: "rsmall > 0"
+                          unfolding rsmall_def
+                          using hr_pos h\<delta>_iso_pos hdist_x_py_pos hdist_x_p\<tau>_pos
+                          by (by100 simp)
                         have hr0_pos: "r0 > 0"
-                          unfolding r0_def using hr_pos hr_between_pos h\<delta>_iso_pos by (by100 simp)
+                          unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def by (by100 simp)
-                        have hr0_le_small: "r0 \<le> min (r / 2) (\<delta>_iso / 2)"
+                          unfolding r0_def rsmall_def by (by100 simp)
+                        have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
                           unfolding r0_def by (by100 simp)
@@ -2396,7 +2421,7 @@ proof -
                           using hU_pos_acc hr0_pos by (by100 blast)
                         have hu_dist_r: "dist u x < r"
                           using hu_dist0 hr0_le_r_half hr_pos by (by100 linarith)
-                        have hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                        have hu_dist_small: "dist u x < rsmall"
                           using hu_dist0 hr0_le_small by (by100 linarith)
                         have hu_dist_between: "dist u x < r_between"
                           using hu_dist0 hr0_le_between by (by100 linarith)
@@ -2419,9 +2444,15 @@ proof -
                           "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                            (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
                           using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
+                        have hu_dist_required:
+                          "dist u x <
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
+                          using hu_dist_small unfolding rsmall_def .
                         show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0"
                           by (rule h_positive_exterior_path_wrap
-                              [OF hr_pos huU hu_dist_small hp_pos hu_pos hu_exterior_m])
+                              [OF hr_pos huU hu_dist_required hp_pos hu_pos hu_exterior_m])
                       qed
                     qed
                     \<comment> \<open>Symmetric Figure 2.6 exterior-sector wrap, negative
@@ -2441,7 +2472,11 @@ proof -
                              (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))"
                         using hnot_between by (by100 blast)
                       have h_negative_exterior_path_wrap:
-                        "\<And>r u. \<lbrakk>r > 0; u \<in> U; dist u x < min (r / 2) (\<delta>_iso / 2);
+                        "\<And>r u. \<lbrakk>r > 0; u \<in> U;
+                          dist u x <
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)));
                           inner (p\<tau>_y - x) n_y < 0;
                           inner (u - x) n_y < 0;
                           ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
@@ -2451,13 +2486,21 @@ proof -
                         fix r u
                         assume hr_pos: "r > 0"
                           and huU: "u \<in> U"
-                          and hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                          and hu_dist_small:
+                            "dist u x <
+                              min (r / 2)
+                                (min (\<delta>_iso / 2)
+                                  (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
                           and hp_neg: "inner (p\<tau>_y - x) n_y < 0"
                           and hu_neg: "inner (u - x) n_y < 0"
                           and hu_exterior_m:
                             "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                              (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
                         have hu_dist_delta_half: "dist u x < \<delta>_iso / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_dist_py_half: "dist u x < dist x p_y / 2"
+                          using hu_dist_small by (by100 simp)
+                        have hu_dist_p\<tau>_half: "dist u x < dist x p\<tau>_y / 2"
                           using hu_dist_small by (by100 simp)
                         have hu_ball_iso: "u \<in> ball x \<delta>_iso"
                         proof -
@@ -2550,12 +2593,25 @@ proof -
                       proof (intro allI impI)
                         fix r :: real
                         assume hr_pos: "r > 0"
-                        define r0 where "r0 = min r_between (min (r / 2) (\<delta>_iso / 2))"
+                        define rsmall where
+                          "rsmall =
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
+                        define r0 where "r0 = min r_between rsmall"
+                        have hdist_x_py_pos: "dist x p_y > 0"
+                          using hp_y_ne by (by100 simp)
+                        have hdist_x_p\<tau>_pos: "dist x p\<tau>_y > 0"
+                          using hp\<tau>_y_ne_x by (by100 simp)
+                        have hrsmall_pos: "rsmall > 0"
+                          unfolding rsmall_def
+                          using hr_pos h\<delta>_iso_pos hdist_x_py_pos hdist_x_p\<tau>_pos
+                          by (by100 simp)
                         have hr0_pos: "r0 > 0"
-                          unfolding r0_def using hr_pos hr_between_pos h\<delta>_iso_pos by (by100 simp)
+                          unfolding r0_def using hr_between_pos hrsmall_pos by (by100 simp)
                         have hr0_le_r_half: "r0 \<le> r / 2"
-                          unfolding r0_def by (by100 simp)
-                        have hr0_le_small: "r0 \<le> min (r / 2) (\<delta>_iso / 2)"
+                          unfolding r0_def rsmall_def by (by100 simp)
+                        have hr0_le_small: "r0 \<le> rsmall"
                           unfolding r0_def by (rule min.cobounded2)
                         have hr0_le_between: "r0 \<le> r_between"
                           unfolding r0_def by (by100 simp)
@@ -2565,7 +2621,7 @@ proof -
                           using hU_neg_acc hr0_pos by (by100 blast)
                         have hu_dist_r: "dist u x < r"
                           using hu_dist0 hr0_le_r_half hr_pos by (by100 linarith)
-                        have hu_dist_small: "dist u x < min (r / 2) (\<delta>_iso / 2)"
+                        have hu_dist_small: "dist u x < rsmall"
                           using hu_dist0 hr0_le_small by (by100 linarith)
                         have hu_dist_between: "dist u x < r_between"
                           using hu_dist0 hr0_le_between by (by100 linarith)
@@ -2588,9 +2644,15 @@ proof -
                           "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                            (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
                           using hy_L\<tau>_y_side_cases hnot_same_m by (by100 linarith)
+                        have hu_dist_required:
+                          "dist u x <
+                            min (r / 2)
+                              (min (\<delta>_iso / 2)
+                                (min (dist x p_y / 2) (dist x p\<tau>_y / 2)))"
+                          using hu_dist_small unfolding rsmall_def .
                         show "\<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0"
                           by (rule h_negative_exterior_path_wrap
-                              [OF hr_pos huU hu_dist_small hp_neg hu_neg hu_exterior_m])
+                              [OF hr_pos huU hu_dist_required hp_neg hu_neg hu_exterior_m])
                       qed
                     qed
                     show ?thesis
