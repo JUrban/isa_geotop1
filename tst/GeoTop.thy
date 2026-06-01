@@ -7526,7 +7526,121 @@ proof -
             (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
                    geotop_is_polygon (i \<union> j) \<and>
                    geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))"
-      sorry
+    proof -
+      obtain U where hU_comp: "U \<in> components (UNIV - M)"
+        and hU_unbd: "\<not> bounded U"
+        using theta_graph_has_unbounded_component[OF h\<theta>] by (by100 blast)
+      have hU_front:
+        "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and> frontier U = i \<union> j"
+        by (rule bspec[OF h_component_frontiers_HOL hU_comp])
+      obtain i j where hij_sub: "{i, j} \<subseteq> {B1, B2, B3}"
+        and hij_ne: "i \<noteq> j"
+        and hfrU: "frontier U = i \<union> j"
+        using hU_front by blast
+      have hi: "i \<in> {B1, B2, B3}" using hij_sub by (by100 blast)
+      have hj: "j \<in> {B1, B2, B3}" using hij_sub by (by100 blast)
+      have hB1_ne_B2: "B1 \<noteq> B2"
+      proof
+        assume h_eq: "B1 = B2"
+        have "geotop_arc_interior B1 E = {}"
+          using h_int12 h_eq by (by100 blast)
+        thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+      qed
+      have hB1_ne_B3: "B1 \<noteq> B3"
+      proof
+        assume h_eq: "B1 = B3"
+        have "geotop_arc_interior B1 E = {}"
+          using h_int13 h_eq by (by100 blast)
+        thus False using arc_interior_nonempty[OF hE1] by (by100 blast)
+      qed
+      have hB2_ne_B3: "B2 \<noteq> B3"
+      proof
+        assume h_eq: "B2 = B3"
+        have "geotop_arc_interior B2 E = {}"
+          using h_int23 h_eq by (by100 blast)
+        thus False using arc_interior_nonempty[OF hE2] by (by100 blast)
+      qed
+      obtain k where hk: "k \<in> {B1, B2, B3}" and hk_ne_i: "k \<noteq> i" and hk_ne_j: "k \<noteq> j"
+        using hi hj hij_ne hB1_ne_B2 hB1_ne_B3 hB2_ne_B3 by blast
+      have h_pair_diff: "{i, j} = {B1, B2, B3} - {k}"
+        using hi hj hij_ne hk hk_ne_i hk_ne_j hB1_ne_B2 hB1_ne_B3 hB2_ne_B3 by blast
+      have h_poly_ij: "geotop_is_polygon (i \<union> j)"
+      proof -
+        have h_i_all:
+          "\<forall>j. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j
+                \<longrightarrow> geotop_is_polygon (i \<union> j)"
+          by (rule spec[OF h_pairs_polygons])
+        have h_imp:
+          "i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j
+                \<longrightarrow> geotop_is_polygon (i \<union> j)"
+          by (rule spec[OF h_i_all])
+        show ?thesis using h_imp hi hj hij_ne by (by100 simp)
+      qed
+      \<comment> \<open>Book step: the unbounded component has frontier \<open>i \<union> j\<close>;
+        a small circular neighbourhood of an endpoint shows the remaining
+        arc cannot lie on the unbounded side, so its interior lies in the
+        bounded component of the polygon \<open>i \<union> j\<close>.\<close>
+      have h_k_inside:
+        "geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)"
+      proof -
+        have hkE: "geotop_arc_endpoints k E"
+          using hk hE1 hE2 hE3 by blast
+        have hiE: "geotop_arc_endpoints i E"
+          using hi hE1 hE2 hE3 by blast
+        have hjE: "geotop_arc_endpoints j E"
+          using hj hE1 hE2 hE3 by blast
+        have hi_bl: "geotop_is_broken_line i"
+          using hi hB1_bl hB2_bl hB3_bl by blast
+        have hj_bl: "geotop_is_broken_line j"
+          using hj hB1_bl hB2_bl hB3_bl by blast
+        have hki_disj:
+          "geotop_arc_interior k E \<inter> geotop_arc_interior i E = {}"
+          using hk hi hk_ne_i h_int12 h_int13 h_int23 by blast
+        have hkj_disj:
+          "geotop_arc_interior k E \<inter> geotop_arc_interior j E = {}"
+          using hk hj hk_ne_j h_int12 h_int13 h_int23 by blast
+        have hij_disj:
+          "geotop_arc_interior i E \<inter> geotop_arc_interior j E = {}"
+          using hi hj hij_ne h_int12 h_int13 h_int23 by blast
+        have h_side:
+          "geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j) \<or>
+           geotop_arc_interior k E \<subseteq> geotop_polygon_exterior (i \<union> j)"
+          by (rule theta_arc_in_one_side_of_pair_polygon
+              [OF hkE hiE hjE hi_bl hj_bl hki_disj hkj_disj hij_disj])
+        \<comment> \<open>Book step: if the remaining arc were on the exterior side of
+          the unbounded-component frontier polygon, then near an endpoint it
+          would be accessible from infinity, contradicting that this
+          unbounded component has frontier exactly \<open>i \<union> j\<close>.\<close>
+        have h_not_exterior:
+          "\<not> geotop_arc_interior k E \<subseteq> geotop_polygon_exterior (i \<union> j)"
+          sorry
+        show ?thesis using h_side h_not_exterior by (by100 blast)
+      qed
+      show ?thesis
+      proof (rule exI[of _ k])
+        show "k \<in> {B1, B2, B3} \<and>
+          (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+            geotop_is_polygon (i \<union> j) \<and>
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j))"
+        proof (intro conjI)
+          show "k \<in> {B1, B2, B3}" by (rule hk)
+          show "\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+            geotop_is_polygon (i \<union> j) \<and>
+            geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)"
+          proof (rule exI[of _ i])
+            show "\<exists>j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+              geotop_is_polygon (i \<union> j) \<and>
+              geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)"
+            proof (rule exI[of _ j])
+              show "{i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+                geotop_is_polygon (i \<union> j) \<and>
+                geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)"
+                using h_pair_diff hij_ne h_poly_ij h_k_inside by (by100 simp)
+            qed
+          qed
+        qed
+      qed
+    qed
     \<comment> \<open>Sub-claim MU2: uniqueness — only one middle is possible.
       Argument: if two arcs Bk1, Bk2 were both middle (each inside the
       polygon of the other two), then Bk1 ⊆ interior(Bk2 \<union> Bother) and
