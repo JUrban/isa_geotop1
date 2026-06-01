@@ -14608,6 +14608,17 @@ proof -
                 using h\<delta>s_pos h\<eta>U_pos hC_comp hC_sub_U hU_local_C hmiss
                 by (by100 blast)
             qed
+            have h_figure_2_7_pair_component_forces_third_touch:
+              "\<And>\<delta>s \<eta>U C u v D. \<lbrakk>\<delta>s > 0; \<eta>U > 0;
+                  C \<in> components (ball P0 \<delta>s - M);
+                  C \<subseteq> U;
+                  ball P0 \<eta>U \<inter> U \<subseteq> C;
+                  geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {};
+                  u \<in> C; u \<in> ball P0 \<delta>p;
+                  v \<in> ball P0 \<delta>p \<inter> geotop_arc_interior k E;
+                  D \<in> components (UNIV - (i \<union> j)); u \<in> D; v \<in> D\<rbrakk>
+                \<Longrightarrow> v \<in> closure C"
+              sorry
             have h_figure_2_7_stable_sector_pair_separation:
               "\<And>\<delta>s \<eta>U C. \<lbrakk>\<delta>s > 0; \<eta>U > 0;
                   C \<in> components (ball P0 \<delta>s - M);
@@ -14619,7 +14630,66 @@ proof -
                       u \<in> ball P0 \<delta>q \<inter> U \<longrightarrow>
                       v \<in> ball P0 \<delta>q \<inter> geotop_arc_interior k E \<longrightarrow>
                       \<not> (\<exists>D \<in> components (UNIV - (i \<union> j)). u \<in> D \<and> v \<in> D))"
-              sorry
+            proof -
+              fix \<delta>s \<eta>U C
+              assume h\<delta>s_pos: "\<delta>s > 0"
+                and h\<eta>U_pos: "\<eta>U > 0"
+                and hC_comp: "C \<in> components (ball P0 \<delta>s - M)"
+                and hC_sub_U: "C \<subseteq> U"
+                and hU_local_C: "ball P0 \<eta>U \<inter> U \<subseteq> C"
+                and hk_miss_C:
+                  "geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}"
+              define \<delta>q where "\<delta>q = min \<eta>U (min \<delta>s \<delta>p) / 2"
+              have h\<delta>q_pos: "\<delta>q > 0"
+                unfolding \<delta>q_def using h\<eta>U_pos h\<delta>s_pos h\<delta>p_pos by (by100 simp)
+              have h\<delta>q_le_\<eta>U: "\<delta>q \<le> \<eta>U"
+                unfolding \<delta>q_def using h\<eta>U_pos h\<delta>s_pos h\<delta>p_pos by (by100 simp)
+              have h\<delta>q_le_\<delta>s: "\<delta>q \<le> \<delta>s"
+                unfolding \<delta>q_def using h\<eta>U_pos h\<delta>s_pos h\<delta>p_pos by (by100 simp)
+              have h\<delta>q_le_\<delta>p: "\<delta>q \<le> \<delta>p"
+                unfolding \<delta>q_def using h\<eta>U_pos h\<delta>s_pos h\<delta>p_pos by (by100 simp)
+              show "\<exists>\<delta>q>0.
+                   (\<forall>u v.
+                      u \<in> ball P0 \<delta>q \<inter> U \<longrightarrow>
+                      v \<in> ball P0 \<delta>q \<inter> geotop_arc_interior k E \<longrightarrow>
+                      \<not> (\<exists>D \<in> components (UNIV - (i \<union> j)). u \<in> D \<and> v \<in> D))"
+              proof (rule exI[of _ \<delta>q], intro conjI allI impI)
+                show "\<delta>q > 0" by (rule h\<delta>q_pos)
+                fix u v
+                assume hu: "u \<in> ball P0 \<delta>q \<inter> U"
+                assume hv: "v \<in> ball P0 \<delta>q \<inter> geotop_arc_interior k E"
+                show "\<not> (\<exists>D\<in>components (UNIV - (i \<union> j)). u \<in> D \<and> v \<in> D)"
+                proof
+                  assume hsame:
+                    "\<exists>D\<in>components (UNIV - (i \<union> j)). u \<in> D \<and> v \<in> D"
+                  obtain D where hD_comp: "D \<in> components (UNIV - (i \<union> j))"
+                    and huD: "u \<in> D" and hvD: "v \<in> D"
+                    using hsame by (by100 blast)
+                  have hu_ball_\<eta>U: "u \<in> ball P0 \<eta>U"
+                    using hu h\<delta>q_le_\<eta>U by (by100 auto)
+                  have huU: "u \<in> U"
+                    using hu by (by100 blast)
+                  have huC: "u \<in> C"
+                    using hu_ball_\<eta>U huU hU_local_C by (by100 blast)
+                  have hu_ball_\<delta>p: "u \<in> ball P0 \<delta>p"
+                    using hu h\<delta>q_le_\<delta>p by (by100 auto)
+                  have hv_ball_\<delta>p: "v \<in> ball P0 \<delta>p"
+                    using hv h\<delta>q_le_\<delta>p by (by100 auto)
+                  have hv_kint: "v \<in> geotop_arc_interior k E"
+                    using hv by (by100 blast)
+                  have hv_clC: "v \<in> closure C"
+                    by (rule h_figure_2_7_pair_component_forces_third_touch
+                        [OF h\<delta>s_pos h\<eta>U_pos hC_comp hC_sub_U hU_local_C
+                            hk_miss_C huC hu_ball_\<delta>p _ hD_comp huD hvD])
+                       (use hv_ball_\<delta>p hv_kint in \<open>by100 blast\<close>)
+                  have hv_ball_\<delta>s: "v \<in> ball P0 \<delta>s"
+                    using hv h\<delta>q_le_\<delta>s by (by100 auto)
+                  have "v \<in> geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C"
+                    using hv_kint hv_ball_\<delta>s hv_clC by (by100 blast)
+                  thus False using hk_miss_C by (by100 blast)
+                qed
+              qed
+            qed
             have h_figure_2_7_pair_sector_points:
               "\<exists>\<delta>s>0.
                  (\<forall>u v.
