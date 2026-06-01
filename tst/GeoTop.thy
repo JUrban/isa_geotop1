@@ -1464,6 +1464,31 @@ proof -
                 qed
               next
                 case False
+                have hp\<tau>_y_off_L_y: "inner (p\<tau>_y - x) n_y \<noteq> 0"
+                proof
+                  assume hp\<tau>_line: "inner (p\<tau>_y - x) n_y = 0"
+                  have h\<tau>_sub_L_y: "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}"
+                  proof
+                    fix z
+                    assume hz: "z \<in> \<tau>_y"
+                    have hz_seg: "z \<in> closed_segment x p\<tau>_y"
+                      using hz h\<tau>_y_segment by (by100 simp)
+                    obtain s :: real where hs_ge0: "0 \<le> s"
+                      and hs_le1: "s \<le> 1"
+                      and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                      using hz_seg unfolding closed_segment_def by (by100 blast)
+                    have hz_minus: "z - x = s *\<^sub>R (p\<tau>_y - x)"
+                      using hz_eq by (simp add: algebra_simps)
+                    have hinner: "inner (z - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                      using hz_minus by (by100 simp)
+                    show "z \<in> {z. inner (z - x) n_y = 0}"
+                      using hinner hp\<tau>_line by (by100 simp)
+                  qed
+                  show False using False h\<tau>_sub_L_y by (by100 blast)
+                qed
+                have h\<tau>_y_side_cases:
+                  "inner (p\<tau>_y - x) n_y > 0 \<or> inner (p\<tau>_y - x) n_y < 0"
+                  using hp\<tau>_y_off_L_y by (by100 linarith)
                 \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
                   circular-neighborhood step from Figure 2.6.  The component
                   \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
