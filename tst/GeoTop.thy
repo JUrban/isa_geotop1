@@ -9509,7 +9509,60 @@ proof -
                 A \<in> components (UNIV - (i \<union> j)) \<and>
                 B \<in> components (UNIV - (i \<union> j)) \<and> A \<noteq> B \<and>
                 C \<inter> A \<noteq> {} \<and> D \<inter> B \<noteq> {}"
-              sorry
+            proof -
+              have h_local_sector_pair_points:
+                "\<exists>i j c d A B. i \<in> {B1, B2, B3} \<and> j \<in> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                  c \<in> C \<and> d \<in> D \<and>
+                  A \<in> components (UNIV - (i \<union> j)) \<and>
+                  B \<in> components (UNIV - (i \<union> j)) \<and>
+                  c \<in> A \<and> d \<in> B \<and> A \<noteq> B"
+                sorry
+              obtain i j c d A B where hi: "i \<in> {B1, B2, B3}"
+                and hj: "j \<in> {B1, B2, B3}"
+                and hij: "i \<noteq> j"
+                and hcC: "c \<in> C"
+                and hdD: "d \<in> D"
+                and hA: "A \<in> components (UNIV - (i \<union> j))"
+                and hB: "B \<in> components (UNIV - (i \<union> j))"
+                and hcA: "c \<in> A"
+                and hdB: "d \<in> B"
+                and hAB: "A \<noteq> B"
+                using h_local_sector_pair_points
+              proof (elim exE conjE)
+                fix i j c d A B
+                assume hi': "i \<in> {B1, B2, B3}"
+                assume hj': "j \<in> {B1, B2, B3}"
+                assume hij': "i \<noteq> j"
+                assume hcC': "c \<in> C"
+                assume hdD': "d \<in> D"
+                assume hA': "A \<in> components (UNIV - (i \<union> j))"
+                assume hB': "B \<in> components (UNIV - (i \<union> j))"
+                assume hcA': "c \<in> A"
+                assume hdB': "d \<in> B"
+                assume hAB': "A \<noteq> B"
+                show thesis
+                  by (rule that[OF hi' hj' hij' hcC' hdD' hA' hB' hcA' hdB' hAB'])
+              qed
+              have hCA: "C \<inter> A \<noteq> {}"
+                using hcC hcA by (by100 blast)
+              have hDB: "D \<inter> B \<noteq> {}"
+                using hdD hdB by (by100 blast)
+              show ?thesis
+                apply (rule exI[where x=i])
+                apply (rule exI[where x=j])
+                apply (rule exI[where x=A])
+                apply (rule exI[where x=B])
+                apply (intro conjI)
+                using hi apply assumption
+                using hj apply assumption
+                using hij apply assumption
+                using hA apply assumption
+                using hB apply assumption
+                using hAB apply assumption
+                using hCA apply assumption
+                using hDB apply assumption
+                done
+            qed
             obtain i j A B where hi_set: "i \<in> {B1, B2, B3}"
               and hj_set: "j \<in> {B1, B2, B3}"
               and hij_ne: "i \<noteq> j"
