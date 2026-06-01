@@ -12119,12 +12119,241 @@ proof -
                             ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
                             (closed_segment P pA - {P}) \<inter> sphere P r = {qA};
                             (closed_segment P pB - {P}) \<inter> sphere P r = {qB};
+                            pA \<noteq> P; pB \<noteq> P; \<delta> \<le> dist P pA; \<delta> \<le> dist P pB;
                             qA \<noteq> qB;
                             x \<in> sphere P r - {qA, qB};
                             y \<in> sphere P r - {qA, qB};
                             \<exists>G \<in> components (UNIV - (A \<union> B)). x \<in> G \<and> y \<in> G\<rbrakk>
                            \<Longrightarrow> \<exists>K \<in> components (sphere P r - {qA, qB}). x \<in> K \<and> y \<in> K"
-                          sorry
+                        proof -
+                          fix A B pA pB qA qB x y
+                          assume hpoly: "geotop_is_polygon (A \<union> B)"
+                            and hA_model:
+                              "ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA"
+                            and hB_model:
+                              "ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB"
+                            and hA_sphere:
+                              "(closed_segment P pA - {P}) \<inter> sphere P r = {qA}"
+                            and hB_sphere:
+                              "(closed_segment P pB - {P}) \<inter> sphere P r = {qB}"
+                            and hpA_ne: "pA \<noteq> P"
+                            and hpB_ne: "pB \<noteq> P"
+                            and h\<delta>_pA: "\<delta> \<le> dist P pA"
+                            and h\<delta>_pB: "\<delta> \<le> dist P pB"
+                            and hq_ne: "qA \<noteq> qB"
+                            and hx: "x \<in> sphere P r - {qA, qB}"
+                            and hy: "y \<in> sphere P r - {qA, qB}"
+                            and hsame:
+                              "\<exists>G \<in> components (UNIV - (A \<union> B)). x \<in> G \<and> y \<in> G"
+                          let ?J = "A \<union> B"
+                          let ?S = "sphere P r - {qA, qB}"
+                          obtain G where hG_comp: "G \<in> components (UNIV - ?J)"
+                            and hxG: "x \<in> G" and hyG: "y \<in> G"
+                            using hsame by (by100 blast)
+                          have hr_pos: "r > 0"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          have hr_lt_\<delta>: "r < \<delta>"
+                            unfolding r_def using h\<delta>_pos by (by100 simp)
+                          have hqA_sphere: "qA \<in> sphere P r"
+                            using hA_sphere by (by100 blast)
+                          have hqB_sphere: "qB \<in> sphere P r"
+                            using hB_sphere by (by100 blast)
+                          show "\<exists>K \<in> components ?S. x \<in> K \<and> y \<in> K"
+                          proof (rule ccontr)
+                            assume hnot: "\<not> (\<exists>K \<in> components ?S. x \<in> K \<and> y \<in> K)"
+                            define Kx where "Kx = connected_component_set ?S x"
+                            define Ky where "Ky = connected_component_set ?S y"
+                            have hKx_comp: "Kx \<in> components ?S"
+                              unfolding Kx_def by (rule componentsI[OF hx])
+                            have hKy_comp: "Ky \<in> components ?S"
+                              unfolding Ky_def by (rule componentsI[OF hy])
+                            have hxKx: "x \<in> Kx"
+                              unfolding Kx_def using hx by (by100 simp)
+                            have hyKy: "y \<in> Ky"
+                              unfolding Ky_def using hy by (by100 simp)
+                            have hcircle_cover: "Kx \<union> Ky = ?S"
+                              unfolding Kx_def Ky_def
+                              by (rule punctured_circle_component_cover_if_split
+                                  [OF hr_pos hqA_sphere hqB_sphere hq_ne hx hy hnot])
+                            have hS_sub_pair: "?S \<subseteq> UNIV - ?J"
+                              by (rule h_sphere_pair_subset
+                                  [OF hA_model hB_model hA_sphere hB_sphere])
+                            have h_component_sub_G:
+                              "\<And>K z. \<lbrakk>K \<in> components ?S; z \<in> K; z \<in> G\<rbrakk> \<Longrightarrow> K \<subseteq> G"
+                            proof -
+                              fix K z
+                              assume hK_comp: "K \<in> components ?S"
+                                and hzK: "z \<in> K" and hzG: "z \<in> G"
+                              obtain C where hC_comp: "C \<in> components (UNIV - ?J)"
+                                and hK_sub_C: "K \<subseteq> C"
+                                using h_circle_component_lies_in_pair_component
+                                  [OF hK_comp hS_sub_pair] by (by100 blast)
+                              have hzC: "z \<in> C"
+                                using hzK hK_sub_C by (by100 blast)
+                              have hCG_nonempty: "C \<inter> G \<noteq> {}"
+                                using hzC hzG by (by100 blast)
+                              have hC_eq_G: "C = G"
+                              proof (rule ccontr)
+                                assume "C \<noteq> G"
+                                have "C \<inter> G = {}"
+                                  using components_nonoverlap[OF hC_comp hG_comp] \<open>C \<noteq> G\<close>
+                                  by (by100 simp)
+                                thus False using hCG_nonempty by (by100 blast)
+                              qed
+                              show "K \<subseteq> G"
+                                using hK_sub_C hC_eq_G by (by100 blast)
+                            qed
+                            have hKx_sub_G: "Kx \<subseteq> G"
+                              by (rule h_component_sub_G[OF hKx_comp hxKx hxG])
+                            have hKy_sub_G: "Ky \<subseteq> G"
+                              by (rule h_component_sub_G[OF hKy_comp hyKy hyG])
+                            have hS_sub_G: "?S \<subseteq> G"
+                              using hcircle_cover hKx_sub_G hKy_sub_G by (by100 blast)
+                            have hP_ball_\<delta>: "P \<in> ball P \<delta>"
+                              using h\<delta>_pos by (by100 simp)
+                            have hP_seg_A: "P \<in> closed_segment P pA"
+                              by (by100 simp)
+                            have hP_A: "P \<in> A"
+                              using hA_model hP_ball_\<delta> hP_seg_A by (by100 blast)
+                            have hP_J: "P \<in> ?J"
+                              using hP_A by (by100 blast)
+                            have hqA_ball_\<delta>: "qA \<in> ball P \<delta>"
+                              using hqA_sphere hr_lt_\<delta> by (by100 simp)
+                            have hqB_ball_\<delta>: "qB \<in> ball P \<delta>"
+                              using hqB_sphere hr_lt_\<delta> by (by100 simp)
+                            have hqA_in_A: "qA \<in> A"
+                            proof -
+                              have "qA \<in> closed_segment P pA"
+                                using hA_sphere by (by100 blast)
+                              thus ?thesis
+                                using hA_model hqA_ball_\<delta> by (by100 blast)
+                            qed
+                            have hqB_in_B: "qB \<in> B"
+                            proof -
+                              have "qB \<in> closed_segment P pB"
+                                using hB_sphere by (by100 blast)
+                              thus ?thesis
+                                using hB_model hqB_ball_\<delta> by (by100 blast)
+                            qed
+                            have h_other_component_contradiction:
+                              "\<And>H. \<lbrakk>H \<in> components (UNIV - ?J); H \<noteq> G; P \<in> closure H\<rbrakk>
+                               \<Longrightarrow> False"
+                            proof -
+                              fix H
+                              assume hH_comp: "H \<in> components (UNIV - ?J)"
+                                and hH_ne_G: "H \<noteq> G"
+                                and hP_cl_H: "P \<in> closure H"
+                              have hH_sub: "H \<subseteq> UNIV - ?J"
+                                by (rule in_components_subset[OF hH_comp])
+                              have hball_open: "open (ball P r)"
+                                by (by100 simp)
+                              have hP_ball_r: "P \<in> ball P r"
+                                using hr_pos by (by100 simp)
+                              have hH_meets_ball: "H \<inter> ball P r \<noteq> {}"
+                                using hP_cl_H closure_iff_nhds_not_empty[of P H]
+                                  hball_open hP_ball_r by (by100 blast)
+                              obtain u where huH: "u \<in> H" and hu_ball_r: "u \<in> ball P r"
+                                using hH_meets_ball by (by100 blast)
+                              have hu_ball_\<delta>: "u \<in> ball P \<delta>"
+                                using hu_ball_r hr_lt_\<delta> by (by100 auto)
+                              have hu_not_J: "u \<notin> ?J"
+                                using huH hH_sub by (by100 blast)
+                              have hu_ne_P: "u \<noteq> P"
+                                using hu_not_J hP_J by (by100 blast)
+                              have hu_not_seg_A: "u \<notin> closed_segment P pA"
+                              proof
+                                assume hu_seg: "u \<in> closed_segment P pA"
+                                have "u \<in> A"
+                                  using hA_model hu_ball_\<delta> hu_seg by (by100 blast)
+                                thus False using hu_not_J by (by100 blast)
+                              qed
+                              have hu_not_seg_B: "u \<notin> closed_segment P pB"
+                              proof
+                                assume hu_seg: "u \<in> closed_segment P pB"
+                                have "u \<in> B"
+                                  using hB_model hu_ball_\<delta> hu_seg by (by100 blast)
+                                thus False using hu_not_J by (by100 blast)
+                              qed
+                              have h\<rho>uH: "\<rho> u \<in> H"
+                                by (rule h_radial_trace_same_local_pair
+                                    [OF hu_ball_r hu_not_seg_A hu_not_seg_B
+                                        hA_model hB_model hpA_ne hpB_ne
+                                        h\<delta>_pA h\<delta>_pB hH_comp huH])
+                              have h\<rho>u_sphere: "\<rho> u \<in> sphere P r"
+                              proof -
+                                have "dist P (\<rho> u) = r"
+                                  unfolding \<rho>_def using hu_ne_P hr_pos
+                                  by (simp add: dist_norm norm_minus_commute)
+                                thus ?thesis by (by100 simp)
+                              qed
+                              have h\<rho>u_not_qA: "\<rho> u \<noteq> qA"
+                              proof
+                                assume h_eq: "\<rho> u = qA"
+                                have "\<rho> u \<in> ?J"
+                                  using h_eq hqA_in_A by (by100 blast)
+                                moreover have "\<rho> u \<notin> ?J"
+                                  using h\<rho>uH hH_sub by (by100 blast)
+                                ultimately show False by (by100 blast)
+                              qed
+                              have h\<rho>u_not_qB: "\<rho> u \<noteq> qB"
+                              proof
+                                assume h_eq: "\<rho> u = qB"
+                                have "\<rho> u \<in> ?J"
+                                  using h_eq hqB_in_B by (by100 blast)
+                                moreover have "\<rho> u \<notin> ?J"
+                                  using h\<rho>uH hH_sub by (by100 blast)
+                                ultimately show False by (by100 blast)
+                              qed
+                              have h\<rho>u_S: "\<rho> u \<in> ?S"
+                                using h\<rho>u_sphere h\<rho>u_not_qA h\<rho>u_not_qB by (by100 blast)
+                              have h\<rho>uG: "\<rho> u \<in> G"
+                                using hS_sub_G h\<rho>u_S by (by100 blast)
+                              have "H \<inter> G = {}"
+                                using components_nonoverlap[OF hH_comp hG_comp] hH_ne_G
+                                by (by100 simp)
+                              thus False using h\<rho>uH h\<rho>uG by (by100 blast)
+                            qed
+                            let ?I = "geotop_polygon_interior ?J"
+                            let ?E = "geotop_polygon_exterior ?J"
+                            have hcomponents_eq: "components (UNIV - ?J) = {?I, ?E}"
+                              by (rule polygon_components_eq[OF hpoly])
+                            have hI_comp: "?I \<in> components (UNIV - ?J)"
+                              using hcomponents_eq by (by100 simp)
+                            have hE_comp: "?E \<in> components (UNIV - ?J)"
+                              using hcomponents_eq by (by100 simp)
+                            have hI_ne_E: "?I \<noteq> ?E"
+                            proof
+                              assume hIE: "?I = ?E"
+                              have hI_ne: "?I \<noteq> {}"
+                                by (rule in_components_nonempty[OF hI_comp])
+                              have "?I \<inter> ?E = {}"
+                                by (rule polygon_interior_exterior_disjoint[OF hpoly])
+                              thus False using hIE hI_ne by (by100 blast)
+                            qed
+                            have hG_cases: "G = ?I \<or> G = ?E"
+                              using hG_comp hcomponents_eq by (by100 simp)
+                            show False
+                            proof (cases "G = ?I")
+                              case True
+                              have hP_cl_E: "P \<in> closure ?E"
+                                using polygon_exterior_closure_eq[OF hpoly] hP_J by (by100 blast)
+                              show False
+                                by (rule h_other_component_contradiction
+                                    [OF hE_comp _ hP_cl_E])
+                                   (use True hI_ne_E in \<open>by100 blast\<close>)
+                            next
+                              case False
+                              have hG_E: "G = ?E"
+                                using hG_cases False by (by100 blast)
+                              have hP_cl_I: "P \<in> closure ?I"
+                                using polygon_interior_closure_eq[OF hpoly] hP_J by (by100 blast)
+                              show False
+                                by (rule h_other_component_contradiction
+                                    [OF hI_comp _ hP_cl_I])
+                                   (use hG_E hI_ne_E in \<open>by100 blast\<close>)
+                            qed
+                          qed
+                        qed
                         have h_pair12_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K\<rbrakk>
@@ -12151,7 +12380,8 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_12 hB1_model_loc hB2_model_loc _ _ _
+                              [OF h_poly_12 hB1_model_loc hB2_model_loc _ _
+                                  hp1_ne_loc hp2_ne_loc hp1_len_loc hp2_len_loc _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
                               using h_radial_circle_model by (fast elim: conjE)
@@ -12187,7 +12417,8 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_13 hB1_model_loc hB3_model_loc _ _ _
+                              [OF h_poly_13 hB1_model_loc hB3_model_loc _ _
+                                  hp1_ne_loc hp3_ne_loc hp1_len_loc hp3_len_loc _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
                               using h_radial_circle_model by (fast elim: conjE)
@@ -12223,7 +12454,8 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_23 hB2_model_loc hB3_model_loc _ _ _
+                              [OF h_poly_23 hB2_model_loc hB3_model_loc _ _
+                                  hp2_ne_loc hp3_ne_loc hp2_len_loc hp3_len_loc _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
                               using h_radial_circle_model by (fast elim: conjE)
