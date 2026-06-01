@@ -2834,12 +2834,20 @@ proof -
                           and hu_exterior_m:
                             "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y \<le> 0) \<or>
                              (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y \<ge> 0)"
+                        have hu_dist_tail:
+                          "dist u x <
+                            min (\<delta>_iso / 2)
+                              (min (dist x p_y / 2) (dist x p\<tau>_y / 2))"
+                          using hu_dist_small by (simp only: min_less_iff_conj)
                         have hu_dist_delta_half: "dist u x < \<delta>_iso / 2"
-                          using hu_dist_small by (by100 simp)
+                          using hu_dist_tail by (simp only: min_less_iff_conj)
+                        have hu_dist_tail2:
+                          "dist u x < min (dist x p_y / 2) (dist x p\<tau>_y / 2)"
+                          using hu_dist_tail by (simp only: min_less_iff_conj)
                         have hu_dist_py_half: "dist u x < dist x p_y / 2"
-                          using hu_dist_small by (by100 simp)
+                          using hu_dist_tail2 by (simp only: min_less_iff_conj)
                         have hu_dist_p\<tau>_half: "dist u x < dist x p\<tau>_y / 2"
-                          using hu_dist_small by (by100 simp)
+                          using hu_dist_tail2 by (simp only: min_less_iff_conj)
                         have hu_ball_iso: "u \<in> ball x \<delta>_iso"
                         proof -
                           have "dist u x < \<delta>_iso"
@@ -14515,12 +14523,183 @@ proof -
               "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq>
                 closed_segment P0 pk - {P0}"
               using hk_int_loc_seg .
+            have h_figure_2_7_endpoint_component_stability:
+              "\<exists>\<delta>s>0. \<exists>\<eta>U>0. \<exists>C \<in> components (ball P0 \<delta>s - M).
+                  C \<subseteq> U \<and> ball P0 \<eta>U \<inter> U \<subseteq> C"
+              sorry
+            have h_figure_2_7_U_sector:
+              "\<exists>\<delta>s>0. \<exists>\<eta>U>0. \<exists>C \<in> components (ball P0 \<delta>s - M).
+                  C \<subseteq> U \<and> ball P0 \<eta>U \<inter> U \<subseteq> C \<and>
+                  geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}"
+            proof -
+              obtain \<delta>s \<eta>U C where h\<delta>s_pos: "\<delta>s > 0"
+                and h\<eta>U_pos: "\<eta>U > 0"
+                and hC_comp: "C \<in> components (ball P0 \<delta>s - M)"
+                and hC_sub_U: "C \<subseteq> U"
+                and hU_local_C: "ball P0 \<eta>U \<inter> U \<subseteq> C"
+                using h_figure_2_7_endpoint_component_stability by (by100 blast)
+              have hk_sub_M: "k \<subseteq> M"
+              proof -
+                have hM_eq_Bs: "M = B1 \<union> B2 \<union> B3"
+                  using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+                have hk_cases: "k = B1 \<or> k = B2 \<or> k = B3"
+                  using hk by (by100 simp)
+                show ?thesis
+                  using hk_cases hM_eq_Bs by (by100 blast)
+              qed
+              have hU_sub_M_compl: "U \<subseteq> UNIV - M"
+                using hU_comp in_components_subset by (by100 blast)
+              have hC_cl_sub_U_cl: "closure C \<subseteq> closure U"
+                by (rule closure_mono[OF hC_sub_U])
+              have hU_open: "open U"
+              proof -
+                have h_open_compl: "open (UNIV - M)"
+                  using h_M_closed by (simp add: open_Diff)
+                show ?thesis
+                  using hU_comp h_open_compl open_components by (by100 blast)
+              qed
+              have hmiss:
+                "geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}"
+              proof (rule equals0I)
+                fix z
+                assume hz:
+                  "z \<in> geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C"
+                have hz_kint: "z \<in> geotop_arc_interior k E"
+                  using hz by (by100 blast)
+                have hz_clC: "z \<in> closure C"
+                  using hz by (by100 blast)
+                have hz_clU: "z \<in> closure U"
+                  using hz_clC hC_cl_sub_U_cl by (by100 blast)
+                have hz_k: "z \<in> k"
+                  using hz_kint unfolding geotop_arc_interior_def by (by100 blast)
+                have hz_M: "z \<in> M"
+                  using hz_k hk_sub_M by (by100 blast)
+                have hz_not_U: "z \<notin> U"
+                  using hz_M hU_sub_M_compl by (by100 blast)
+                have h_intU_eq: "interior U = U"
+                  using hU_open by (rule interior_open)
+                have hz_not_intU: "z \<notin> interior U"
+                  using hz_not_U h_intU_eq by (by100 simp)
+                have hz_frU: "z \<in> frontier U"
+                  using hz_clU hz_not_intU
+                  unfolding Elementary_Topology.frontier_def by (by100 blast)
+                have hz_pair: "z \<in> i \<union> j"
+                  using hz_frU hfrU by (by100 blast)
+                have hz_not_E: "z \<notin> E"
+                  using hz_kint unfolding geotop_arc_interior_def by (by100 blast)
+                have hz_not_i: "z \<notin> i"
+                proof
+                  assume hzi: "z \<in> i"
+                  have "z \<in> geotop_arc_interior i E"
+                    using hzi hz_not_E unfolding geotop_arc_interior_def by (by100 blast)
+                  thus False using hz_kint hki_disj by (by100 blast)
+                qed
+                have hz_not_j: "z \<notin> j"
+                proof
+                  assume hzj: "z \<in> j"
+                  have "z \<in> geotop_arc_interior j E"
+                    using hzj hz_not_E unfolding geotop_arc_interior_def by (by100 blast)
+                  thus False using hz_kint hkj_disj by (by100 blast)
+                qed
+                show False
+                  using hz_pair hz_not_i hz_not_j by (by100 blast)
+              qed
+              show ?thesis
+                using h\<delta>s_pos h\<eta>U_pos hC_comp hC_sub_U hU_local_C hmiss
+                by (by100 blast)
+            qed
+            have h_figure_2_7_stable_sector_pair_separation:
+              "\<And>\<delta>s \<eta>U C. \<lbrakk>\<delta>s > 0; \<eta>U > 0;
+                  C \<in> components (ball P0 \<delta>s - M);
+                  C \<subseteq> U;
+                  ball P0 \<eta>U \<inter> U \<subseteq> C;
+                  geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}\<rbrakk>
+                \<Longrightarrow> \<exists>\<delta>q>0.
+                   (\<forall>u v.
+                      u \<in> ball P0 \<delta>q \<inter> U \<longrightarrow>
+                      v \<in> ball P0 \<delta>q \<inter> geotop_arc_interior k E \<longrightarrow>
+                      \<not> (\<exists>D \<in> components (UNIV - (i \<union> j)). u \<in> D \<and> v \<in> D))"
+              sorry
+            have h_figure_2_7_pair_sector_points:
+              "\<exists>\<delta>s>0.
+                 (\<forall>u v.
+                    u \<in> ball P0 \<delta>s \<inter> U \<longrightarrow>
+                    v \<in> ball P0 \<delta>s \<inter> geotop_arc_interior k E \<longrightarrow>
+                    \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)). u \<in> C \<and> v \<in> C))"
+            proof -
+              obtain \<delta>s \<eta>U C where h\<delta>s_pos: "\<delta>s > 0"
+                and h\<eta>U_pos: "\<eta>U > 0"
+                and hC_comp: "C \<in> components (ball P0 \<delta>s - M)"
+                and hC_sub_U: "C \<subseteq> U"
+                and hU_local_C: "ball P0 \<eta>U \<inter> U \<subseteq> C"
+                and hk_miss_C:
+                  "geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}"
+                using h_figure_2_7_U_sector by (by100 blast)
+              show ?thesis
+                by (rule h_figure_2_7_stable_sector_pair_separation
+                    [OF h\<delta>s_pos h\<eta>U_pos hC_comp hC_sub_U hU_local_C hk_miss_C])
+            qed
             have h_figure_2_7_sector_step:
               "\<exists>\<delta>0>0.
                  \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
                        ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
                        ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
-              sorry
+            proof -
+              obtain \<delta>s where h\<delta>s_pos: "\<delta>s > 0"
+                and hpoint_sep:
+                  "\<forall>u v.
+                    u \<in> ball P0 \<delta>s \<inter> U \<longrightarrow>
+                    v \<in> ball P0 \<delta>s \<inter> geotop_arc_interior k E \<longrightarrow>
+                    \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)). u \<in> C \<and> v \<in> C)"
+                using h_figure_2_7_pair_sector_points by (by100 blast)
+              show ?thesis
+              proof (rule exI[of _ \<delta>s], intro conjI)
+                show "\<delta>s > 0" by (rule h\<delta>s_pos)
+                show "\<not> (\<exists>C\<in>components (UNIV - (i \<union> j)).
+                    ball P0 \<delta>s \<inter> U \<subseteq> C \<and>
+                    ball P0 \<delta>s \<inter> geotop_arc_interior k E \<subseteq> C)"
+                proof
+                  assume hsame:
+                    "\<exists>C\<in>components (UNIV - (i \<union> j)).
+                      ball P0 \<delta>s \<inter> U \<subseteq> C \<and>
+                      ball P0 \<delta>s \<inter> geotop_arc_interior k E \<subseteq> C"
+                  obtain C where hC_comp: "C \<in> components (UNIV - (i \<union> j))"
+                    and hU_sub_C: "ball P0 \<delta>s \<inter> U \<subseteq> C"
+                    and hk_sub_C: "ball P0 \<delta>s \<inter> geotop_arc_interior k E \<subseteq> C"
+                    using hsame by (by100 blast)
+                  have hU_meet_s: "ball P0 \<delta>s \<inter> U \<noteq> {}"
+                  proof -
+                    have h_ball_open: "open (ball P0 \<delta>s)" by (by100 simp)
+                    have hP0_ball: "P0 \<in> ball P0 \<delta>s" using h\<delta>s_pos by (by100 simp)
+                    have "U \<inter> ball P0 \<delta>s \<noteq> {}"
+                      using hP0_cl_U closure_iff_nhds_not_empty[of P0 U]
+                            h_ball_open hP0_ball by (by100 blast)
+                    thus ?thesis by (by100 blast)
+                  qed
+                  obtain u where hu: "u \<in> ball P0 \<delta>s \<inter> U"
+                    using hU_meet_s by (by100 blast)
+                  have hk_meet_s: "ball P0 \<delta>s \<inter> geotop_arc_interior k E \<noteq> {}"
+                  proof -
+                    have h_ball_open: "open (ball P0 \<delta>s)" by (by100 simp)
+                    have hP0_ball: "P0 \<in> ball P0 \<delta>s" using h\<delta>s_pos by (by100 simp)
+                    have "geotop_arc_interior k E \<inter> ball P0 \<delta>s \<noteq> {}"
+                      using hP0_cl_kint closure_iff_nhds_not_empty
+                            [of P0 "geotop_arc_interior k E"] h_ball_open hP0_ball
+                      by (by100 blast)
+                    thus ?thesis by (by100 blast)
+                  qed
+                  obtain v where hv: "v \<in> ball P0 \<delta>s \<inter> geotop_arc_interior k E"
+                    using hk_meet_s by (by100 blast)
+                  have hsame_uv:
+                    "\<exists>C \<in> components (UNIV - (i \<union> j)). u \<in> C \<and> v \<in> C"
+                    using hC_comp hU_sub_C hk_sub_C hu hv by (by100 blast)
+                  have hnot_same_uv:
+                    "\<not> (\<exists>C \<in> components (UNIV - (i \<union> j)). u \<in> C \<and> v \<in> C)"
+                    using hpoint_sep hu hv by (by100 blast)
+                  show False using hnot_same_uv hsame_uv by (by100 blast)
+                qed
+              qed
+            qed
             have h_local_sector_separation:
               "\<exists>\<delta>0>0.
                  \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
