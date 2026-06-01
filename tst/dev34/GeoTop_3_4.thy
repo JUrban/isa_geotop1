@@ -1817,6 +1817,209 @@ proof -
     using hfrontier geotop_frontier_UNIV_eq_frontier by metis
 qed
 
+lemma geotop_1sphere_simple_closed_path_R2:
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  obtains c :: "real \<Rightarrow> real^2"
+    where "simple_path c" "pathfinish c = pathstart c" "path_image c = J"
+proof -
+  obtain f where hf: "top1_homeomorphism_on J
+        (subspace_topology UNIV geotop_euclidean_topology J)
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_std_sphere::(real^2) set)) f"
+    using hJ unfolding geotop_is_n_sphere_def by (by100 blast)
+  have hstd_sphere: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def by (auto simp: norm_eq_sqrt_inner)
+  have h_homeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hf top1_homeomorphism_on_geotop_imp_HOL_homeomorphic by (by100 blast)
+  hence h_homeo_HOL_sph: "J homeomorphic (sphere (0::real^2) 1)"
+    using hstd_sphere by (by100 simp)
+  from h_homeo_HOL_sph have h_sym: "(sphere (0::real^2) 1) homeomorphic J"
+    using homeomorphic_sym by (by100 blast)
+  then obtain g g' where hg_homeo: "homeomorphism (sphere (0::real^2) 1) J g g'"
+    unfolding homeomorphic_def by (by100 blast)
+  have hg_cont_sphere: "continuous_on (sphere (0::real^2) 1) g"
+    using hg_homeo by (simp add: homeomorphism_def)
+  have hg_image: "g ` (sphere (0::real^2) 1) = J"
+    using hg_homeo by (simp add: homeomorphism_def)
+  have hg_inv: "\<And>x. x \<in> sphere (0::real^2) 1 \<Longrightarrow> g' (g x) = x"
+    using hg_homeo unfolding homeomorphism_def by (by100 blast)
+  have hg_inj: "inj_on g (sphere (0::real^2) 1)"
+  proof (rule inj_onI)
+    fix x y assume hx: "x \<in> sphere 0 1" and hy: "y \<in> sphere 0 1" and heq: "g x = g y"
+    from heq have "g' (g x) = g' (g y)" by (by100 simp)
+    thus "x = y" using hg_inv hx hy by (by100 simp)
+  qed
+  define c where "c = g \<circ> circle_path_R2"
+  have h_path_image_c: "path_image c = J"
+  proof -
+    have "path_image c = path_image (g \<circ> circle_path_R2)" by (simp add: c_def)
+    also have "\<dots> = g ` path_image circle_path_R2" by (rule path_image_compose)
+    also have "\<dots> = g ` sphere 0 1" by (simp add: path_image_circle_path_R2)
+    finally show ?thesis using hg_image by (by100 simp)
+  qed
+  have h_pathstart_c: "pathstart c = g (vector [1, 0])"
+    by (simp add: c_def pathstart_compose pathstart_circle_path_R2)
+  have h_pathfinish_c: "pathfinish c = g (vector [1, 0])"
+    by (simp add: c_def pathfinish_compose pathfinish_circle_path_R2)
+  have h_loop_c: "pathfinish c = pathstart c"
+    using h_pathstart_c h_pathfinish_c by (by100 simp)
+  have h_simple_c: "simple_path c"
+  proof -
+    have h_g_cont_image: "continuous_on (path_image circle_path_R2) g"
+      using hg_cont_sphere path_image_circle_path_R2 by (by100 simp)
+    have h_g_inj_image: "inj_on g (path_image circle_path_R2)"
+      using hg_inj path_image_circle_path_R2 by (by100 simp)
+    show ?thesis unfolding c_def
+      by (rule simple_path_compose_homeomorphism[OF simple_path_circle_path_R2
+                                                    h_g_cont_image h_g_inj_image])
+  qed
+  show ?thesis by (rule that[OF h_simple_c h_loop_c h_path_image_c])
+qed
+
+lemma geotop_1sphere_components_from_Jordan_curve:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  obtains inner outer where
+    "inner \<in> components (UNIV - J)"
+    "outer \<in> components (UNIV - J)"
+    "bounded inner"
+    "\<not> bounded outer"
+    "components (UNIV - J) = {inner, outer}"
+proof -
+  obtain c :: "real \<Rightarrow> real^2" where hc_simple: "simple_path c"
+      and hc_loop: "pathfinish c = pathstart c"
+      and hc_image: "path_image c = J"
+    by (rule geotop_1sphere_simple_closed_path_R2[OF hJ])
+  obtain inner outer where hinner_ne: "inner \<noteq> {}"
+      and hinner_open: "open inner"
+      and hinner_conn: "connected inner"
+      and houter_ne: "outer \<noteq> {}"
+      and houter_open: "open outer"
+      and houter_conn: "connected outer"
+      and hinner_bdd: "bounded inner"
+      and houter_unbdd: "\<not> bounded outer"
+      and hdisj: "inner \<inter> outer = {}"
+      and hcover: "inner \<union> outer = - path_image c"
+      and hfront_inner: "frontier inner = path_image c"
+      and hfront_outer: "frontier outer = path_image c"
+    by (rule Jordan_curve_real2[OF hc_simple hc_loop])
+  have hcover_J: "inner \<union> outer = UNIV - J"
+    using hcover hc_image by (simp add: Compl_eq_Diff_UNIV)
+  have hinner_sub: "inner \<subseteq> UNIV - J"
+    using hcover_J by (by100 blast)
+  have houter_sub: "outer \<subseteq> UNIV - J"
+    using hcover_J by (by100 blast)
+  have hinner_comp: "inner \<in> components (UNIV - J)"
+  proof -
+    have hmax: "\<forall>D. D \<noteq> {} \<and> inner \<subseteq> D \<and> D \<subseteq> UNIV - J \<and> connected D \<longrightarrow> D = inner"
+    proof (intro allI impI)
+      fix D :: "(real^2) set"
+      assume hD: "D \<noteq> {} \<and> inner \<subseteq> D \<and> D \<subseteq> UNIV - J \<and> connected D"
+      have hinnerD_ne: "inner \<inter> D \<noteq> {}"
+        using hD hinner_ne by (by100 blast)
+      have hD_sub_union: "D \<subseteq> inner \<union> outer"
+        using hD hcover_J by (by100 blast)
+      have houterD_empty: "outer \<inter> D = {}"
+      proof -
+        have hsep: "inner \<inter> D = {} \<or> outer \<inter> D = {}"
+        proof -
+          have hdisjD: "inner \<inter> outer \<inter> D = {}"
+            using hdisj by (by100 blast)
+          show ?thesis
+            using connectedD[OF _ hinner_open houter_open hdisjD hD_sub_union] hD
+            by (by100 blast)
+        qed
+        thus ?thesis using hinnerD_ne by (by100 blast)
+      qed
+      have hD_sub_inner: "D \<subseteq> inner"
+        using hD_sub_union houterD_empty by (by100 blast)
+      show "D = inner"
+        using hD hD_sub_inner by (by100 blast)
+    qed
+    show ?thesis
+      unfolding in_components_maximal
+      using hinner_ne hinner_sub hinner_conn hmax by (by100 blast)
+  qed
+  have houter_comp: "outer \<in> components (UNIV - J)"
+  proof -
+    have hmax: "\<forall>D. D \<noteq> {} \<and> outer \<subseteq> D \<and> D \<subseteq> UNIV - J \<and> connected D \<longrightarrow> D = outer"
+    proof (intro allI impI)
+      fix D :: "(real^2) set"
+      assume hD: "D \<noteq> {} \<and> outer \<subseteq> D \<and> D \<subseteq> UNIV - J \<and> connected D"
+      have houterD_ne: "outer \<inter> D \<noteq> {}"
+        using hD houter_ne by (by100 blast)
+      have hD_sub_union: "D \<subseteq> inner \<union> outer"
+        using hD hcover_J by (by100 blast)
+      have hinnerD_empty: "inner \<inter> D = {}"
+      proof -
+        have hsep: "inner \<inter> D = {} \<or> outer \<inter> D = {}"
+        proof -
+          have hdisjD: "inner \<inter> outer \<inter> D = {}"
+            using hdisj by (by100 blast)
+          show ?thesis
+            using connectedD[OF _ hinner_open houter_open hdisjD hD_sub_union] hD
+            by (by100 blast)
+        qed
+        thus ?thesis using houterD_ne by (by100 blast)
+      qed
+      have hD_sub_outer: "D \<subseteq> outer"
+        using hD_sub_union hinnerD_empty by (by100 blast)
+      show "D = outer"
+        using hD hD_sub_outer by (by100 blast)
+    qed
+    show ?thesis
+      unfolding in_components_maximal
+      using houter_ne houter_sub houter_conn hmax by (by100 blast)
+  qed
+  have hcomponents_subset: "components (UNIV - J) \<subseteq> {inner, outer}"
+  proof
+    fix C assume hCcomp: "C \<in> components (UNIV - J)"
+    have hC_ne: "C \<noteq> {}"
+      using hCcomp in_components_nonempty by (by100 blast)
+    have hC_sub: "C \<subseteq> UNIV - J"
+      using hCcomp in_components_subset by (by100 blast)
+    have hC_conn: "connected C"
+      using hCcomp in_components_connected by (by100 blast)
+    have hC_sub_union: "C \<subseteq> inner \<union> outer"
+      using hC_sub hcover_J by (by100 blast)
+    show "C \<in> {inner, outer}"
+    proof (cases "inner \<inter> C = {}")
+      case True
+      have hC_sub_outer: "C \<subseteq> outer"
+        using True hC_sub_union by (by100 blast)
+      have "C = outer"
+        using hCcomp hC_ne hC_sub_outer houter_sub houter_conn
+        unfolding in_components_maximal by (by100 blast)
+      thus ?thesis by (by100 simp)
+    next
+      case False
+      have houterC_empty: "outer \<inter> C = {}"
+      proof -
+        have hsep: "inner \<inter> C = {} \<or> outer \<inter> C = {}"
+        proof -
+          have hdisjC: "inner \<inter> outer \<inter> C = {}"
+            using hdisj by (by100 blast)
+          show ?thesis
+            using connectedD[OF hC_conn hinner_open houter_open hdisjC hC_sub_union]
+            by (by100 blast)
+        qed
+        thus ?thesis using False by (by100 blast)
+      qed
+      have hC_sub_inner: "C \<subseteq> inner"
+        using houterC_empty hC_sub_union by (by100 blast)
+      have "C = inner"
+        using hCcomp hC_ne hC_sub_inner hinner_sub hinner_conn
+        unfolding in_components_maximal by (by100 blast)
+      thus ?thesis by (by100 simp)
+    qed
+  qed
+  have hcomponents_eq: "components (UNIV - J) = {inner, outer}"
+    using hcomponents_subset hinner_comp houter_comp by (by100 blast)
+  show ?thesis
+    by (rule that[OF hinner_comp houter_comp hinner_bdd houter_unbdd hcomponents_eq])
+qed
+
 (** from \<S>4 Theorem 7 (geotop.tex:1002)
     LATEX VERSION: Let J be a 1-sphere in R^2. Then R^2 - J has only one bounded component. **)
 theorem Theorem_GT_4_7:
@@ -1855,7 +2058,57 @@ proof -
   have hT4_7_eq_polygon_interior:
     "\<forall>C. geotop_bounded_R2 C \<and>
          (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)
-         \<longrightarrow> C = geotop_polygon_interior J" sorry
+         \<longrightarrow> C = geotop_polygon_interior J"
+  proof
+    fix C
+    show "geotop_bounded_R2 C \<and>
+         (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)
+         \<longrightarrow> C = geotop_polygon_interior J"
+    proof
+      assume hC: "geotop_bounded_R2 C \<and>
+         (\<exists>P\<in>UNIV - J. C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P)"
+      obtain inner outer where hinner_comp: "inner \<in> components (UNIV - J)"
+        and houter_comp: "outer \<in> components (UNIV - J)"
+        and hinner_bdd: "bounded inner"
+        and houter_unbdd: "\<not> bounded outer"
+        and hcomponents: "components (UNIV - J) = {inner, outer}"
+        by (rule geotop_1sphere_components_from_Jordan_curve[OF hJ])
+      have hC_bdd: "bounded C"
+        using hC geotop_bounded_R2_iff_bounded by (by100 blast)
+      obtain P where hP: "P \<in> UNIV - J"
+        and hC_eq: "C = geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) P"
+        using hC by (by100 blast)
+      have hC_conn_eq: "C = connected_component_set (UNIV - J) P"
+        using hC_eq geotop_component_at_UNIV_eq_connected_component_set by (by100 simp)
+      have hC_comp: "C \<in> components (UNIV - J)"
+        unfolding components_def using hP hC_conn_eq by (by100 blast)
+      have hC_inner: "C = inner"
+      proof -
+        have "C = inner \<or> C = outer"
+          using hC_comp hcomponents by (by100 simp)
+        thus ?thesis using hC_bdd houter_unbdd by (by100 blast)
+      qed
+      obtain PI where hPI: "PI \<in> UNIV - J"
+        and hI_eq: "geotop_polygon_interior J =
+              geotop_component_at UNIV geotop_euclidean_topology (UNIV - J) PI"
+        using geotop_polygon_interior_is_bounded_component[OF hJ] by (by100 blast)
+      have hI_conn_eq: "geotop_polygon_interior J =
+              connected_component_set (UNIV - J) PI"
+        using hI_eq geotop_component_at_UNIV_eq_connected_component_set by (by100 simp)
+      have hI_comp: "geotop_polygon_interior J \<in> components (UNIV - J)"
+        unfolding components_def using hPI hI_conn_eq by (by100 blast)
+      have hI_bdd: "bounded (geotop_polygon_interior J)"
+        by (rule polygon_interior_bounded[OF hJ])
+      have hI_inner: "geotop_polygon_interior J = inner"
+      proof -
+        have "geotop_polygon_interior J = inner \<or> geotop_polygon_interior J = outer"
+          using hI_comp hcomponents by (by100 simp)
+        thus ?thesis using hI_bdd houter_unbdd by (by100 blast)
+      qed
+      show "C = geotop_polygon_interior J"
+        using hC_inner hI_inner by (by100 simp)
+    qed
+  qed
   \<comment> \<open>Sub-claim T4_7-B: from T4_7-A, any two such components coincide.\<close>
   have hT4_7_unique:
     "\<forall>C1 C2.
