@@ -9281,13 +9281,127 @@ proof -
             card {Bi \<in> {B1, B2, B3}.
                     geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
       proof -
-        obtain \<delta> p1 p2 p3 where h\<delta>_pos: "\<delta> > 0"
-          and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
-          and h\<delta>_sectors:
-            "\<forall>C \<in> components (ball P \<delta> - M).
+        obtain \<delta> where h\<delta>_all:
+          "\<delta> > 0 \<and>
+            (\<exists>p1 p2 p3.
+              p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+              \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+              ball P \<delta> \<inter> E = {P} \<and>
+              ball P \<delta> \<inter> M =
+                ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+              ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+              ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+              ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+              finite (components (ball P \<delta> - M)) \<and>
+              (\<forall>C \<in> components (ball P \<delta> - M).
                 card {Bi \<in> {B1, B2, B3}.
-                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-          using hAM_local_sectors by (by100 fast)
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2))"
+          using hAM_local_sectors
+        proof (elim exE)
+          fix \<delta>
+          assume h:
+            "\<delta> > 0 \<and>
+              (\<exists>p1 p2 p3.
+                p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+                \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+                ball P \<delta> \<inter> E = {P} \<and>
+                ball P \<delta> \<inter> M =
+                  ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+                ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+                ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+                ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+                ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+                ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+                ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+                finite (components (ball P \<delta> - M)) \<and>
+                (\<forall>C \<in> components (ball P \<delta> - M).
+                  card {Bi \<in> {B1, B2, B3}.
+                          geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2))"
+          show thesis by (rule that[OF h])
+        qed
+        have h\<delta>_pos: "\<delta> > 0"
+          using h\<delta>_all by (rule conjunct1)
+        have h\<delta>_models_ex:
+          "\<exists>p1 p2 p3.
+              p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+              \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+              ball P \<delta> \<inter> E = {P} \<and>
+              ball P \<delta> \<inter> M =
+                ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+              ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+              ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+              ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+              ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+              finite (components (ball P \<delta> - M)) \<and>
+              (\<forall>C \<in> components (ball P \<delta> - M).
+                card {Bi \<in> {B1, B2, B3}.
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+          using h\<delta>_all by (rule conjunct2)
+        obtain p1 p2 p3 where h\<delta>_model_pack:
+          "p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+           \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+           ball P \<delta> \<inter> E = {P} \<and>
+           ball P \<delta> \<inter> M =
+             ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+           ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+           ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+           ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+           ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+           ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+           ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+           finite (components (ball P \<delta> - M)) \<and>
+           (\<forall>C \<in> components (ball P \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+          using h\<delta>_models_ex
+        proof (elim exE)
+          fix p1 p2 p3
+          assume hpack:
+            "p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+             \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+             ball P \<delta> \<inter> E = {P} \<and>
+             ball P \<delta> \<inter> M =
+               ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+             ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+             ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+             ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+             ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+             ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+             ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+             finite (components (ball P \<delta> - M)) \<and>
+             (\<forall>C \<in> components (ball P \<delta> - M).
+                card {Bi \<in> {B1, B2, B3}.
+                        geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
+          show thesis by (rule that[OF hpack])
+        qed
+        have hp1_ne_loc: "p1 \<noteq> P"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hp2_ne_loc: "p2 \<noteq> P"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hp3_ne_loc: "p3 \<noteq> P"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hp1_len_loc: "\<delta> \<le> dist P p1"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hp2_len_loc: "\<delta> \<le> dist P p2"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hp3_len_loc: "\<delta> \<le> dist P p3"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hM_model_loc:
+          "ball P \<delta> \<inter> M =
+            ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have h\<delta>_finite: "finite (components (ball P \<delta> - M))"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have h\<delta>_sectors:
+          "\<forall>C \<in> components (ball P \<delta> - M).
+              card {Bi \<in> {B1, B2, B3}.
+                      geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
         have hE_sub_B1: "E \<subseteq> B1"
           using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
         have hP_fr: "P \<in> frontier U"
@@ -9711,7 +9825,79 @@ proof -
                       "\<lbrakk>A12 = D12; A13 = D13; A23 = D23\<rbrakk>
                         \<Longrightarrow> c \<in> ball P \<delta>u \<Longrightarrow> d \<in> ball P \<delta>u
                         \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - M \<and> c \<in> T \<and> d \<in> T"
-                      sorry
+                    proof -
+                      assume hA12D12: "A12 = D12"
+                        and hA13D13: "A13 = D13"
+                        and hA23D23: "A23 = D23"
+                        and hc_ball_small': "c \<in> ball P \<delta>u"
+                        and hd_ball_small': "d \<in> ball P \<delta>u"
+                      let ?S1 = "closed_segment P p1"
+                      let ?S2 = "closed_segment P p2"
+                      let ?S3 = "closed_segment P p3"
+                      let ?R = "?S1 \<union> ?S2 \<union> ?S3"
+                      have hc_ball_\<delta>: "c \<in> ball P \<delta>"
+                        using hc_ball_small' h\<delta>u_le by (by100 auto)
+                      have hd_ball_\<delta>: "d \<in> ball P \<delta>"
+                        using hd_ball_small' h\<delta>u_le by (by100 auto)
+                      have hC_sub_local': "C \<subseteq> ball P \<delta> - M"
+                        using hC_comp in_components_subset by (by100 blast)
+                      have hD_sub_local': "D \<subseteq> ball P \<delta> - M"
+                        using hD_comp in_components_subset by (by100 blast)
+                      have hc_not_M: "c \<notin> M"
+                        using hcC hC_sub_local' by (by100 blast)
+                      have hd_not_M: "d \<notin> M"
+                        using hdD hD_sub_local' by (by100 blast)
+                      have hc_not_R: "c \<notin> ?R"
+                      proof
+                        assume hcR: "c \<in> ?R"
+                        have "c \<in> ball P \<delta> \<inter> M"
+                          using hM_model_loc hc_ball_\<delta> hcR by (by100 blast)
+                        thus False using hc_not_M by (by100 blast)
+                      qed
+                      have hd_not_R: "d \<notin> ?R"
+                      proof
+                        assume hdR: "d \<in> ?R"
+                        have "d \<in> ball P \<delta> \<inter> M"
+                          using hM_model_loc hd_ball_\<delta> hdR by (by100 blast)
+                        thus False using hd_not_M by (by100 blast)
+                      qed
+                      have hc_local_R: "c \<in> ball P \<delta> - ?R"
+                        using hc_ball_\<delta> hc_not_R by (by100 blast)
+                      have hd_local_R: "d \<in> ball P \<delta> - ?R"
+                        using hd_ball_\<delta> hd_not_R by (by100 blast)
+                      have h_three_ray_same_pair_connector:
+                        "\<lbrakk>A12 = D12; A13 = D13; A23 = D23;
+                          c \<in> ball P \<delta> - ?R; d \<in> ball P \<delta> - ?R\<rbrakk>
+                        \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - ?R \<and> c \<in> T \<and> d \<in> T"
+                        sorry
+                      obtain T where hT_conn: "connected T"
+                        and hT_sub_R: "T \<subseteq> ball P \<delta> - ?R"
+                        and hcT: "c \<in> T"
+                        and hdT: "d \<in> T"
+                        using h_three_ray_same_pair_connector
+                          [OF hA12D12 hA13D13 hA23D23 hc_local_R hd_local_R]
+                        by (by100 blast)
+                      have hT_sub_M: "T \<subseteq> ball P \<delta> - M"
+                      proof
+                        fix x
+                        assume hxT: "x \<in> T"
+                        have hx_ball: "x \<in> ball P \<delta>"
+                          using hxT hT_sub_R by (by100 blast)
+                        have hx_not_R: "x \<notin> ?R"
+                          using hxT hT_sub_R by (by100 blast)
+                        have hx_not_M: "x \<notin> M"
+                        proof
+                          assume hxM: "x \<in> M"
+                          have "x \<in> ball P \<delta> \<inter> ?R"
+                            using hM_model_loc hx_ball hxM by (by100 blast)
+                          thus False using hx_not_R by (by100 blast)
+                        qed
+                        show "x \<in> ball P \<delta> - M"
+                          using hx_ball hx_not_M by (by100 blast)
+                      qed
+                      show "\<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - M \<and> c \<in> T \<and> d \<in> T"
+                        using hT_conn hT_sub_M hcT hdT by (by100 blast)
+                    qed
                     have h_same_local_sector: "C = D"
                     proof -
                       have hA12D12: "A12 = D12"
