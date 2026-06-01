@@ -505,7 +505,8 @@ theorem Theorem_GT_3_6:
       A 2-simplex is itself a 2-cell; the homeomorphic preimage of a 2-cell is a 2-cell;
       frontier commutes with homeomorphisms of R\<^sup>2. **)
 proof -
-  obtain h \<sigma> where hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+  obtain h :: "(real^2) \<Rightarrow> (real^2)" and \<sigma> :: "(real^2) set"
+    where hh: "top1_homeomorphism_on UNIV geotop_euclidean_topology
                           UNIV geotop_euclidean_topology h"
              and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
              and hhJ: "h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
@@ -515,16 +516,85 @@ proof -
     by (rule geotop_simplex_is_n_cell[OF h\<sigma>])
   (** Preimage of a 2-cell under a homeomorphism is a 2-cell. **)
   define D :: "(real^2) set" where "D = {P. h P \<in> \<sigma>}"
+  obtain k where hhk: "homeomorphism UNIV UNIV h k"
+    by (rule top1_homeomorphism_on_UNIV_R2_obtain_HOL_homeomorphism[OF hh])
+  have hkh: "\<And>x. k (h x) = x"
+    using hhk unfolding homeomorphism_def by (by100 simp)
+  have hhk_apply: "\<And>y. h (k y) = y"
+    using hhk unfolding homeomorphism_def by (by100 simp)
+  have hD_image: "h ` D = \<sigma>"
+  proof
+    show "h ` D \<subseteq> \<sigma>" unfolding D_def by (by100 blast)
+    show "\<sigma> \<subseteq> h ` D"
+    proof
+      fix y assume hy: "y \<in> \<sigma>"
+      have "k y \<in> D" unfolding D_def using hy hhk_apply by (by100 simp)
+      moreover have "y = h (k y)" using hhk_apply by (by100 simp)
+      ultimately show "y \<in> h ` D" by (by100 blast)
+    qed
+  qed
+  have hJ_pullback: "k ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>) = J"
+  proof
+    show "k ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>) \<subseteq> J"
+    proof
+      fix x assume hx: "x \<in> k ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)"
+      then obtain y where hy: "y \<in> geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+        and hx_eq: "x = k y" by (by100 blast)
+      obtain z where hzJ: "z \<in> J" and hy_eq: "y = h z"
+        using hy hhJ by (by100 blast)
+      show "x \<in> J" using hx_eq hy_eq hzJ hkh by (by100 simp)
+    qed
+    show "J \<subseteq> k ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)"
+    proof
+      fix x assume hxJ: "x \<in> J"
+      have "h x \<in> geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+        using hxJ hhJ by (by100 blast)
+      moreover have "x = k (h x)" using hkh by (by100 simp)
+      ultimately show "x \<in> k ` (geotop_frontier UNIV geotop_euclidean_topology \<sigma>)"
+        by (by100 blast)
+    qed
+  qed
+  have hD_homeo: "homeomorphism D \<sigma> h k"
+    by (rule homeomorphism_of_subsets[OF hhk subset_UNIV subset_UNIV hD_image])
+  have hk_sigma: "k ` \<sigma> = D"
+    by (rule homeomorphism_image2[OF hD_homeo])
   \<comment> \<open>Sub-claim D1: D is a 2-cell (preimage of 2-cell under plane homeo).\<close>
   have hD_2cell: "geotop_is_n_cell D
                     (subspace_topology UNIV geotop_euclidean_topology D) 2"
-    sorry
+  proof -
+    have hD_homeomorphic: "D homeomorphic \<sigma>"
+      unfolding homeomorphic_def using hD_homeo by (by100 blast)
+    obtain f where hf:
+      "top1_homeomorphism_on D (subspace_topology UNIV geotop_euclidean_topology D)
+         \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+      using geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[OF hD_homeomorphic]
+      by (by100 blast)
+    have hD_top: "is_topology_on D (subspace_topology UNIV geotop_euclidean_topology D)"
+      using hf unfolding top1_homeomorphism_on_def by (by100 blast)
+    show ?thesis
+      unfolding geotop_is_n_cell_def using hD_top h\<sigma> hf by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim D2: J = frontier D. Since frontier commutes with plane
     homeomorphism, h(D) = \<sigma>, so frontier D = h-inverse(frontier \<sigma>) =
     h-inverse(h(J)) = J.\<close>
   have hD_frontier:
     "J = geotop_frontier UNIV geotop_euclidean_topology D"
-    sorry
+  proof -
+    have hhk_sym: "homeomorphism UNIV UNIV k h"
+      by (rule homeomorphism_symD[OF hhk])
+    have hfront_pre: "frontier D = k ` frontier \<sigma>"
+    proof -
+      have "k ` frontier \<sigma> = frontier (k ` \<sigma>)"
+        by (rule homeomorphism_UNIV_image_frontier[OF hhk_sym])
+      thus ?thesis using hk_sigma by (by100 simp)
+    qed
+    have hfront_geotop: "frontier \<sigma> = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      using geotop_frontier_UNIV_eq_frontier[of \<sigma>] by (by100 simp)
+    have hfront_D_HOL: "frontier D = J"
+      using hfront_pre hfront_geotop hJ_pullback by (by100 simp)
+    show ?thesis
+      using hfront_D_HOL geotop_frontier_UNIV_eq_frontier[of D] by (by100 simp)
+  qed
   have hD_ncell: "geotop_is_n_cell D (subspace_topology UNIV geotop_euclidean_topology D) 2 \<and>
                    J = geotop_frontier UNIV geotop_euclidean_topology D"
     using hD_2cell hD_frontier by (by100 blast)
