@@ -4846,6 +4846,115 @@ proof -
     by (rule that[OF h\<sigma>V hW_ne hW_sub he_eq heW hW_card])
 qed
 
+lemma geotop_pair_convex_hull_simplex_vertices_dev34:
+  fixes w u :: "real^2"
+  assumes hwu: "w \<noteq> u"
+  shows "geotop_simplex_vertices (geotop_convex_hull {w, u}) {w, u}"
+proof -
+  have hfin: "finite {w, u}"
+    by (by100 simp)
+  have hne: "{w, u} \<noteq> {}"
+    by (by100 simp)
+  have hai: "\<not> affine_dependent {w, u}"
+    by (rule affine_independent_2)
+  show ?thesis
+    by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hfin hne hai])
+qed
+
+lemma geotop_2simplex_vertices_three_eq_dev34:
+  fixes \<sigma> V :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hu: "u \<in> V"
+  assumes hvw: "v \<noteq> w"
+  assumes hvu: "v \<noteq> u"
+  assumes hwu: "w \<noteq> u"
+  shows "V = {v, w, u}"
+proof -
+  obtain V2 m where hV2_fin: "finite V2"
+    and hV2_card: "card V2 = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V2: "geotop_general_position V2 m"
+    and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+    unfolding geotop_simplex_vertices_def
+    using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+  have hV_eq: "V = V2"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+  have hV_card: "card V = 3"
+    using hV_eq hV2_card by (by100 simp)
+  have hV_fin: "finite V"
+    using hV_eq hV2_fin by (by100 simp)
+  have hthree_sub: "{v, w, u} \<subseteq> V"
+    using hv hw hu by (by100 blast)
+  have hthree_card: "card {v, w, u} = 3"
+    using hvw hvu hwu by (by100 simp)
+  have hthree_eq: "{v, w, u} = V"
+    using hV_fin hthree_sub hthree_card hV_card by (by100 (metis card_seteq))
+  show ?thesis
+    using hthree_eq by (by100 simp)
+qed
+
+lemma geotop_two_2simplex_opposite_edges_distinct_dev34:
+  fixes \<sigma> \<tau> V\<^sub>\<sigma> V\<^sub>\<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes hvw: "v \<noteq> w"
+  assumes hvV\<sigma>: "v \<in> V\<^sub>\<sigma>"
+  assumes hwV\<sigma>: "w \<in> V\<^sub>\<sigma>"
+  assumes huV\<sigma>: "u\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
+  assumes hvV\<tau>: "v \<in> V\<^sub>\<tau>"
+  assumes hwV\<tau>: "w \<in> V\<^sub>\<tau>"
+  assumes huV\<tau>: "u\<^sub>\<tau> \<in> V\<^sub>\<tau>"
+  assumes hu\<sigma>_ne_v: "u\<^sub>\<sigma> \<noteq> v"
+  assumes hu\<sigma>_ne_w: "u\<^sub>\<sigma> \<noteq> w"
+  assumes hu\<tau>_ne_v: "u\<^sub>\<tau> \<noteq> v"
+  assumes hu\<tau>_ne_w: "u\<^sub>\<tau> \<noteq> w"
+  shows "geotop_convex_hull {w, u\<^sub>\<sigma>} \<noteq> geotop_convex_hull {w, u\<^sub>\<tau>}"
+proof
+  assume heq: "geotop_convex_hull {w, u\<^sub>\<sigma>} = geotop_convex_hull {w, u\<^sub>\<tau>}"
+  have hw_ne_u\<sigma>: "w \<noteq> u\<^sub>\<sigma>"
+    using hu\<sigma>_ne_w by (by100 blast)
+  have hw_ne_u\<tau>: "w \<noteq> u\<^sub>\<tau>"
+    using hu\<tau>_ne_w by (by100 blast)
+  have hv_ne_u\<sigma>: "v \<noteq> u\<^sub>\<sigma>"
+    using hu\<sigma>_ne_v by (by100 blast)
+  have hv_ne_u\<tau>: "v \<noteq> u\<^sub>\<tau>"
+    using hu\<tau>_ne_v by (by100 blast)
+  have hL\<sigma>V: "geotop_simplex_vertices (geotop_convex_hull {w, u\<^sub>\<sigma>}) {w, u\<^sub>\<sigma>}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_dev34[OF hw_ne_u\<sigma>])
+  have hL\<tau>V_raw: "geotop_simplex_vertices (geotop_convex_hull {w, u\<^sub>\<tau>}) {w, u\<^sub>\<tau>}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_dev34[OF hw_ne_u\<tau>])
+  have hL\<tau>V: "geotop_simplex_vertices (geotop_convex_hull {w, u\<^sub>\<sigma>}) {w, u\<^sub>\<tau>}"
+    using hL\<tau>V_raw heq by (by100 simp)
+  have hpair_eq: "{w, u\<^sub>\<sigma>} = {w, u\<^sub>\<tau>}"
+    by (rule geotop_simplex_vertices_unique[OF hL\<sigma>V hL\<tau>V])
+  have hu_eq: "u\<^sub>\<sigma> = u\<^sub>\<tau>"
+    using hpair_eq hu\<sigma>_ne_w hu\<tau>_ne_w by (by100 blast)
+  have hV\<sigma>_eq: "V\<^sub>\<sigma> = {v, w, u\<^sub>\<sigma>}"
+    by (rule geotop_2simplex_vertices_three_eq_dev34
+        [OF h\<sigma>2 h\<sigma>V hvV\<sigma> hwV\<sigma> huV\<sigma> hvw hv_ne_u\<sigma> hw_ne_u\<sigma>])
+  have hV\<tau>_eq: "V\<^sub>\<tau> = {v, w, u\<^sub>\<tau>}"
+    by (rule geotop_2simplex_vertices_three_eq_dev34
+        [OF h\<tau>2 h\<tau>V hvV\<tau> hwV\<tau> huV\<tau> hvw hv_ne_u\<tau> hw_ne_u\<tau>])
+  have hV_eq: "V\<^sub>\<sigma> = V\<^sub>\<tau>"
+    using hV\<sigma>_eq hV\<tau>_eq hu_eq by (by100 simp)
+  have h\<sigma>_eq: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<tau>_eq: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
+    using h\<tau>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have "\<sigma> = \<tau>"
+    using h\<sigma>_eq h\<tau>_eq hV_eq by (by100 simp)
+  thus False
+    using h\<sigma>\<tau> by (by100 blast)
+qed
+
 lemma geotop_incident_edge_2simplex_link_edge_witness:
   fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
