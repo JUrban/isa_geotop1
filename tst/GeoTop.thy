@@ -5525,7 +5525,19 @@ proof -
       disk into a finite number of sectors; each sector is bounded by a
       pair of consecutive arcs.)\<close>
     have hAM_local_sectors:
-      "\<exists>\<delta>>0. finite (components (ball P \<delta> - M)) \<and>
+      "\<exists>\<delta>>0. \<exists>p1 p2 p3.
+          p1 \<noteq> P \<and> p2 \<noteq> P \<and> p3 \<noteq> P \<and>
+          \<delta> \<le> dist P p1 \<and> \<delta> \<le> dist P p2 \<and> \<delta> \<le> dist P p3 \<and>
+          ball P \<delta> \<inter> E = {P} \<and>
+          ball P \<delta> \<inter> M =
+            ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3) \<and>
+          ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1 \<and>
+          ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2 \<and>
+          ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3 \<and>
+          ball P \<delta> \<inter> geotop_arc_interior B1 E \<subseteq> closed_segment P p1 - {P} \<and>
+          ball P \<delta> \<inter> geotop_arc_interior B2 E \<subseteq> closed_segment P p2 - {P} \<and>
+          ball P \<delta> \<inter> geotop_arc_interior B3 E \<subseteq> closed_segment P p3 - {P} \<and>
+          finite (components (ball P \<delta> - M)) \<and>
           (\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
                       geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2)"
@@ -9059,15 +9071,11 @@ proof -
           show ?thesis
             using hR_components_finite hlocal_compl by (by100 simp)
         qed
-        show ?thesis
-        proof (intro exI[where x=\<delta>] conjI)
-          show "\<delta> > 0" using h\<delta>_pos .
-          show "finite (components (ball P \<delta> - M))"
-            using hlocal_components_finite .
-          show "\<forall>C \<in> components (ball P \<delta> - M).
+        have hfinal_sectors:
+          "\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
                       geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-          proof
+        proof
             fix C
             assume hC: "C \<in> components (ball P \<delta> - M)"
             let ?TouchB = "{Bi \<in> {B1, B2, B3}.
@@ -9175,8 +9183,32 @@ proof -
             by (rule card_mono[OF hfinS himg_sub])
           show "card ?TouchB \<le> 2"
             using hcard_img hcard_img_le hcardS by (by100 linarith)
-          qed
         qed
+        show ?thesis
+          apply (rule exI[where x=\<delta>])
+          apply (intro conjI)
+          using h\<delta>_pos apply assumption
+          apply (rule exI[where x=p1])
+          apply (rule exI[where x=p2])
+          apply (rule exI[where x=p3])
+          apply (intro conjI)
+          using hp1_ne apply assumption
+          using hp2_ne apply assumption
+          using hp3_ne apply assumption
+          using hp1_len apply assumption
+          using hp2_len apply assumption
+          using hp3_len apply assumption
+          using hballE apply assumption
+          using hM_model apply assumption
+          using hB1_model apply assumption
+          using hB2_model apply assumption
+          using hB3_model apply assumption
+          using hB1_int_model apply assumption
+          using hB2_int_model apply assumption
+          using hB3_int_model apply assumption
+          using hlocal_components_finite apply assumption
+          using hfinal_sectors apply assumption
+          done
       qed
     qed
     \<comment> \<open>Sub-claim AM3: from AM2, U intersects some sector C; the frontier
@@ -9188,13 +9220,13 @@ proof -
     have hAM_sector_in_U:
       "\<exists>\<delta>>0. \<exists>C \<in> components (ball P \<delta> - M). C \<subseteq> U"
     proof -
-      obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+      obtain \<delta> p1s p2s p3s where h\<delta>_pos: "\<delta> > 0"
         and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
         and h\<delta>_sectors:
           "\<forall>C \<in> components (ball P \<delta> - M).
               card {Bi \<in> {B1, B2, B3}.
                       geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-        using hAM_local_sectors by (by100 blast)
+        using hAM_local_sectors by (by100 fast)
       have hE_sub_B1: "E \<subseteq> B1"
         using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
       have hP_fr: "P \<in> frontier U"
@@ -9249,13 +9281,13 @@ proof -
             card {Bi \<in> {B1, B2, B3}.
                     geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
       proof -
-        obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        obtain \<delta> p1 p2 p3 where h\<delta>_pos: "\<delta> > 0"
           and h\<delta>_finite: "finite (components (ball P \<delta> - M))"
           and h\<delta>_sectors:
             "\<forall>C \<in> components (ball P \<delta> - M).
                 card {Bi \<in> {B1, B2, B3}.
                         geotop_arc_interior Bi E \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-          using hAM_local_sectors by (by100 blast)
+          using hAM_local_sectors by (by100 fast)
         have hE_sub_B1: "E \<subseteq> B1"
           using hE1 unfolding geotop_arc_endpoints_def by (by100 blast)
         have hP_fr: "P \<in> frontier U"
