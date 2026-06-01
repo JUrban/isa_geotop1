@@ -4124,6 +4124,79 @@ proof -
     unfolding geotop_polyhedron_def by (by100 simp)
 qed
 
+lemma geotop_incident_edge_link_vertex_witness:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  shows "\<exists>w. w \<noteq> v \<and> w \<in> e \<and> {w} \<in> geotop_link K v"
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 1 + 1"
+    and h1_le_m: "1 \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and he_eq: "e = geotop_convex_hull V"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have heV: "geotop_simplex_vertices e V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h1_le_m hgp_V he_eq by (by100 blast)
+  obtain V' where heV': "geotop_simplex_vertices e V'"
+    and hvV': "v \<in> V'"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK heK hv_e]
+    by (by100 blast)
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF heV' heV])
+  have hvV: "v \<in> V"
+    using hvV' hV'_eq by (by100 simp)
+  have hV_not_sub_singleton: "\<not> V \<subseteq> {v}"
+  proof
+    assume hsub: "V \<subseteq> {v}"
+    have "card V \<le> card {v}"
+      by (rule card_mono[OF finite.emptyI[THEN finite.insertI] hsub])
+    hence "card V \<le> 1"
+      by (by100 simp)
+    thus False
+      using hV_card by (by100 simp)
+  qed
+  obtain w where hwV: "w \<in> V" and hw_ne_v: "w \<noteq> v"
+    using hV_not_sub_singleton by (by100 blast)
+  have hw_e: "w \<in> e"
+  proof -
+    have "w \<in> convex hull V"
+      using hwV hull_inc[of w V] by (by100 simp)
+    moreover have "geotop_convex_hull V = convex hull V"
+      by (rule geotop_convex_hull_eq_HOL)
+    ultimately show ?thesis
+      using he_eq by (by100 simp)
+  qed
+  let ?\<tau> = "geotop_convex_hull {w}"
+  have hface: "geotop_is_face ?\<tau> e"
+    unfolding geotop_is_face_def using heV hwV by (by100 blast)
+  have h\<tau>_singleton: "?\<tau> = {w}"
+    using geotop_convex_hull_eq_HOL[of "{w}"] by (by100 simp)
+  have hv_not_\<tau>: "v \<notin> ?\<tau>"
+    using h\<tau>_singleton hw_ne_v by (by100 simp)
+  have h\<tau>_star: "?\<tau> \<in> geotop_star K v"
+    unfolding geotop_star_def using heK hv_e hface by (by100 blast)
+  have h\<tau>_link: "?\<tau> \<in> geotop_link K v"
+    unfolding geotop_link_def using h\<tau>_star hv_not_\<tau> by (by100 blast)
+  have hw_link: "{w} \<in> geotop_link K v"
+    using h\<tau>_singleton h\<tau>_link by (by100 simp)
+  show ?thesis
+  proof (intro exI conjI)
+    show "w \<noteq> v"
+      by (rule hw_ne_v)
+    show "w \<in> e"
+      by (rule hw_e)
+    show "{w} \<in> geotop_link K v"
+      by (rule hw_link)
+  qed
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
