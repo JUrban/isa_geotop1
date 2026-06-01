@@ -2707,6 +2707,124 @@ proof
     using not_open_singleton[of "f v"] hsingleton_open by (by100 blast)
 qed
 
+lemma geotop_2_simplex_no_open_singleton:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp: "p \<in> \<sigma>"
+  shows "{p} \<notin> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+proof
+  assume hsopen_top: "{p} \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+  obtain U where hUtop: "U \<in> geotop_euclidean_topology"
+    and hpUeq: "{p} = \<sigma> \<inter> U"
+    using hsopen_top unfolding subspace_topology_def by (by100 blast)
+  have hUopen: "open U"
+    using hUtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hopenin: "openin (top_of_set \<sigma>) {p}"
+    unfolding openin_open using hUopen hpUeq by (by100 blast)
+  have hclosedin: "closedin (top_of_set \<sigma>) {p}"
+  proof -
+    have hclosed: "closed ({p}::(real^2) set)"
+      by (by100 simp)
+    have "{p} = \<sigma> \<inter> {p}"
+      using hp by (by100 blast)
+    thus ?thesis
+      unfolding closedin_closed using hclosed by (by100 blast)
+  qed
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2m: "2 \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have hconv: "convex \<sigma>"
+    unfolding h\<sigma>_eq geotop_convex_hull_eq_HOL by (rule convex_convex_hull)
+  have hconn: "connected \<sigma>"
+    by (rule convex_connected[OF hconv])
+  have hcases: "{p} = {} \<or> {p} = \<sigma>"
+    using connected_clopen[THEN iffD1, OF hconn] hopenin hclosedin by (by100 blast)
+  have h\<sigma>_singleton: "\<sigma> = {p}"
+    using hcases by (by100 simp)
+  have hdim2: "geotop_simplex_dim {p} 2"
+    using h\<sigma> h\<sigma>_singleton by (by100 simp)
+  have hdim0: "geotop_simplex_dim {p} 0"
+    by (rule geotop_singleton_is_simplex)
+  have "2 = (0::nat)"
+    by (rule geotop_simplex_dim_unique[OF hdim2 hdim0])
+  thus False
+    by (by100 simp)
+qed
+
+lemma geotop_2_cell_no_open_singleton:
+  fixes C :: "(real^2) set"
+  assumes hcell: "geotop_is_n_cell C TC 2"
+  assumes hp: "p \<in> C"
+  shows "{p} \<notin> TC"
+proof
+  assume hpopen: "{p} \<in> TC"
+  have hcell_ex: "\<exists>(\<sigma>::(real^2) set) f. geotop_simplex_dim \<sigma> 2 \<and>
+            top1_homeomorphism_on C TC \<sigma>
+              (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+    by (rule geotop_is_n_cell_imp_homeo_ex[OF hcell])
+  obtain \<sigma> and f :: "real^2 \<Rightarrow> real^2" where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    and hhomeo: "top1_homeomorphism_on C TC \<sigma>
+              (subspace_topology UNIV geotop_euclidean_topology \<sigma>) f"
+    using hcell_ex by (by100 blast)
+  have himage_open: "f ` {p} \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+    by (rule top1_homeomorphism_on_open_image[OF hhomeo hpopen]) (use hp in \<open>by100 blast\<close>)
+  have hbij: "bij_betw f C \<sigma>"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hfp\<sigma>: "f p \<in> \<sigma>"
+    using hbij hp unfolding bij_betw_def by (by100 blast)
+  have himage_eq: "f ` {p} = {f p}"
+    by (by100 simp)
+  have hfp_open: "{f p} \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+    using himage_open himage_eq by (by100 simp)
+  show False
+    using geotop_2_simplex_no_open_singleton[OF h\<sigma> hfp\<sigma>] hfp_open
+    by (by100 blast)
+qed
+
+lemma geotop_2_manifold_with_boundary_no_open_singleton:
+  fixes M :: "(real^2) set"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hvM: "v \<in> M"
+  shows "{v} \<notin> subspace_topology UNIV geotop_euclidean_topology M"
+proof
+  let ?d = "(\<lambda>x y. norm (x - y))"
+  let ?T = "top1_metric_topology_on M ?d"
+  assume hs_geo: "{v} \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  have hT_eq: "?T = subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_early)
+  have hs_metric: "{v} \<in> ?T"
+    using hs_geo hT_eq by (by100 simp)
+  have hcharts:
+    "\<forall>P\<in>M. \<exists>U. openin_on M ?T U \<and> P \<in> U \<and>
+       geotop_is_n_cell (closure_on M ?T U)
+         (subspace_topology M ?T (closure_on M ?T U)) 2"
+    using hM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+  obtain U where hU_openin: "openin_on M ?T U"
+    and hvU: "v \<in> U"
+    and hcell: "geotop_is_n_cell (closure_on M ?T U)
+         (subspace_topology M ?T (closure_on M ?T U)) 2"
+    using hcharts hvM by (by100 blast)
+  let ?C = "closure_on M ?T U"
+  have hU_sub_M: "U \<subseteq> M"
+    using hU_openin unfolding openin_on_def by (by100 blast)
+  have hvC: "v \<in> ?C"
+    by (rule subsetD[OF subset_closure_on hvU])
+  have hsingle_open_C: "{v} \<in> subspace_topology M ?T ?C"
+  proof -
+    have "?C \<inter> {v} = {v}"
+      using hvC by (by100 blast)
+    thus ?thesis
+      unfolding subspace_topology_def using hs_metric by (by100 blast)
+  qed
+  show False
+    using geotop_2_cell_no_open_singleton[OF hcell hvC] hsingle_open_C
+    by (by100 blast)
+qed
+
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
@@ -2803,7 +2921,22 @@ proof -
     fix v assume hv: "v \<in> geotop_complex_vertices K"
     (** Same five lemmas as in 4.8 but weakened L3: each edge in \<ge> 1 triangle. **)
     \<comment> \<open>L1: \<exists> incident edge at v.\<close>
-    have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e" sorry
+    have hL1: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+    proof (rule ccontr)
+      assume hno: "\<not> (\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e)"
+      have hvK: "{v} \<in> K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+      have hvM: "v \<in> geotop_polyhedron K"
+        using hvK unfolding geotop_polyhedron_def by (by100 blast)
+      have hsingle_open:
+        "{v} \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+        by (rule geotop_complex_no_incident_edge_vertex_open_singleton[OF hK hv hno])
+      have hnot_open:
+        "{v} \<notin> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+        by (rule geotop_2_manifold_with_boundary_no_open_singleton[OF hKM hvM])
+      show False
+        using hsingle_open hnot_open by (by100 blast)
+    qed
     \<comment> \<open>L2: every incident edge is contained in some 2-simplex.\<close>
     have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
                 (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)" sorry
