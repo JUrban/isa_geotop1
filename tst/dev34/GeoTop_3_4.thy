@@ -3954,6 +3954,41 @@ proof -
     using hL_complex hL_1dim hL_fin hL_poly hL_conn hinc_L by (by100 blast)
 qed
 
+lemma geotop_link_components_nonisolated_subcomplex_witnesses:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+  shows "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+          C = geotop_component_at UNIV geotop_euclidean_topology
+                (\<Union>(geotop_link K v)) P)
+        \<longrightarrow> (\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
+proof (intro allI impI)
+  fix C
+  assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
+          C = geotop_component_at UNIV geotop_euclidean_topology
+                (\<Union>(geotop_link K v)) P"
+  obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+    and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                (\<Union>(geotop_link K v)) P"
+    using hC_ex by (by100 blast)
+  show "\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l))"
+    by (rule geotop_link_component_nonisolated_subcomplex_witness
+        [OF hK hv hP hC hvertices])
+qed
+
 lemma geotop_finite_components_real_line_minus_two_dev34:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
