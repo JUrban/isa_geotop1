@@ -3994,16 +3994,82 @@ proof -
                       using hq3_sphere hq13_out by (by100 blast)
                     have hq2_miss_if_a_miss:
                       "a \<notin> closure Lc \<Longrightarrow> q2 \<notin> closure K"
-                      sorry
+                    proof
+                      assume ha_miss: "a \<notin> closure Lc"
+                      assume hq2_clK: "q2 \<in> closure K"
+                      have hq2_cl_gLc: "q2 \<in> closure (g ` Lc)"
+                        sorry
+                      have hLc_sub_line: "Lc \<subseteq> ?L"
+                        sorry
+                      have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
+                        sorry
+                      have hfg_Lc: "f ` (g ` Lc) = Lc"
+                        sorry
+                      have "a \<in> closure Lc"
+                        sorry
+                      thus False
+                        using ha_miss by (by100 blast)
+                    qed
                     have hq3_miss_if_b_miss:
                       "b \<notin> closure Lc \<Longrightarrow> q3 \<notin> closure K"
-                      sorry
+                    proof
+                      assume hb_miss: "b \<notin> closure Lc"
+                      assume hq3_clK: "q3 \<in> closure K"
+                      have hq3_cl_gLc: "q3 \<in> closure (g ` Lc)"
+                        sorry
+                      have hLc_sub_line: "Lc \<subseteq> ?L"
+                        sorry
+                      have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
+                        sorry
+                      have hfg_Lc: "f ` (g ` Lc) = Lc"
+                        sorry
+                      have "b \<in> closure Lc"
+                        sorry
+                      thus False
+                        using hb_miss by (by100 blast)
+                    qed
                     have hq1_miss_if_bounded:
                       "bounded Lc \<Longrightarrow> q1 \<notin> closure K"
-                      sorry
+                    proof
+                      assume hLc_bounded: "bounded Lc"
+                      assume hq1_clK: "q1 \<in> closure K"
+                      have hq1_cl_gLc: "q1 \<in> closure (g ` Lc)"
+                        sorry
+                      have hLc_sub_line: "Lc \<subseteq> ?L"
+                        sorry
+                      have hclLc_sub_line: "closure Lc \<subseteq> ?L"
+                        sorry
+                      have hclLc_compact: "compact (closure Lc)"
+                        sorry
+                      have hg_cont_clLc: "continuous_on (closure Lc) g"
+                        sorry
+                      have hcl_gLc_sub_g_clLc: "closure (g ` Lc) \<subseteq> g ` closure Lc"
+                        sorry
+                      have hq1_in_g_clLc: "q1 \<in> g ` closure Lc"
+                        sorry
+                      have "q1 \<notin> g ` closure Lc"
+                        sorry
+                      thus False
+                        using hq1_in_g_clLc by (by100 blast)
+                    qed
                     have hLc_sector_case:
                       "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
-                      sorry
+                    proof -
+                      have hLc_conn: "connected Lc"
+                        sorry
+                      have hLc_sub_line: "Lc \<subseteq> ?L - {a, b}"
+                        sorry
+                      have ha_line: "a \<in> ?L"
+                        sorry
+                      have hb_line: "b \<in> ?L"
+                        sorry
+                      have hab_ne: "a \<noteq> b"
+                        sorry
+                      have h_line_component_trichotomy:
+                        "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
+                        sorry
+                      show ?thesis by (rule h_line_component_trichotomy)
+                    qed
                     show ?thesis
                       sorry
                   qed
