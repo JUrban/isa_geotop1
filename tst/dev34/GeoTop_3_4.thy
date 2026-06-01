@@ -3054,6 +3054,17 @@ proof -
   qed
 qed
 
+lemma geotop_complex_1dim_imp_linear_graph_dev34:
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_complex_is_1dim K"
+  shows "geotop_is_linear_graph K"
+proof -
+  have hdim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+    using hK1 unfolding geotop_complex_is_1dim_def by (by100 simp)
+  show ?thesis
+    unfolding geotop_is_linear_graph_def using hK hdim by (by100 simp)
+qed
+
 lemma geotop_simplex_face_complex_finite_R2:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_is_simplex \<sigma>"
@@ -3952,6 +3963,37 @@ proof -
     using hinc_raw hL_eq by (by100 simp)
   show ?thesis
     using hL_complex hL_1dim hL_fin hL_poly hL_conn hinc_L by (by100 blast)
+qed
+
+lemma geotop_link_component_nonisolated_linear_graph_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l)"
+  shows "\<exists>L. geotop_is_linear_graph L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l))"
+proof -
+  obtain L where hL_complex: "geotop_is_complex L"
+    and hL_1dim: "geotop_complex_is_1dim L"
+    and hL_fin: "finite L"
+    and hL_poly: "geotop_polyhedron L = C"
+    and hL_conn: "geotop_complex_connected L"
+    and hL_noiso: "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)"
+    using geotop_link_component_nonisolated_subcomplex_witness
+      [OF hK hv hP hC hvertices]
+    by (by100 blast)
+  have hL_linear: "geotop_is_linear_graph L"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34[OF hL_complex hL_1dim])
+  show ?thesis
+    using hL_linear hL_fin hL_poly hL_conn hL_noiso by (by100 blast)
 qed
 
 lemma geotop_link_components_nonisolated_subcomplex_witnesses:
