@@ -11440,9 +11440,64 @@ proof -
     show "\<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S"
       using h\<sigma>_sub_R h\<tau>_sub_S h_RS_frontier by (by100 blast)
   qed
+  \<comment> \<open>K.3 within a single line-arrangement region: both simplices belong to
+    the same fan triangulation of R, so their intersection is a common face.
+    This is the same-region part of the fan construction.\<close>
+  have hK_same_region_axiom3:
+    "\<forall>R\<in>Rs_in. \<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R R.
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry
+  \<comment> \<open>K.3 across distinct line-arrangement regions: intersections lie in
+    the common frontier of the two regions, hence in common frontier
+    simplices/faces of the two fan triangulations.\<close>
+  have hK_distinct_region_axiom3:
+    "\<forall>R\<in>Rs_in. \<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
+       (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+    sorry
   have hK_axiom3: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
                     geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K" and h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    obtain R where hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R"
+      using h\<sigma>K unfolding K_def by (by100 blast)
+    obtain S where hS_in: "S \<in> Rs_in" and h\<tau>_KS: "\<tau> \<in> K_R S"
+      using h\<tau>K unfolding K_def by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (cases "R = S")
+      case True
+      have h\<tau>_KR: "\<tau> \<in> K_R R" using h\<tau>_KS True by (by100 simp)
+      show ?thesis
+        using hK_same_region_axiom3 hR_in h\<sigma>_KR h\<tau>_KR h_int_ne by (by100 blast)
+    next
+      case False
+      have hR_all:
+        "\<forall>S\<in>Rs_in. R \<noteq> S \<longrightarrow>
+          (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+            geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+        by (rule bspec[OF hK_distinct_region_axiom3 hR_in])
+      have hS_imp:
+        "R \<noteq> S \<longrightarrow>
+          (\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+            geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>)"
+        by (rule bspec[OF hR_all hS_in])
+      have hRS:
+        "\<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        using hS_imp False by (by100 simp)
+      have hS:
+        "\<forall>\<tau>\<in>K_R S. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        by (rule bspec[OF hRS h\<sigma>_KR])
+      have h_imp:
+        "\<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+          geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+        by (rule bspec[OF hS h\<tau>_KS])
+      show ?thesis using h_imp h_int_ne by (by100 simp)
+    qed
+  qed
   have hK_axiom4: "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
   proof
     fix \<sigma> assume "\<sigma> \<in> K"
