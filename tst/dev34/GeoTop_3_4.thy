@@ -2310,9 +2310,9 @@ qed
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
 theorem Theorem_GT_4_8:
-  fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
-  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) d 2"
+  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
   shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
   (** Moise proof (geotop.tex:1022). Via five lemmas:
       L1: Every vertex lies in an edge (R\<^sup>2 has no isolated points).
@@ -2368,11 +2368,11 @@ qed
       K is a combinatorial 2-manifold with boundary, and Bd M is the union of the edges of K
       that lie in only one 2-simplex of K. **)
 theorem Theorem_GT_4_9:
-  fixes K :: "(real^2) set set" and d :: "real^2 \<Rightarrow> real^2 \<Rightarrow> real"
+  fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
-  assumes hKM: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) d 2"
+  assumes hKM: "geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
   shows "\<forall>v\<in>geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2"
-    and "geotop_manifold_boundary (geotop_polyhedron K) d =
+    and "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) =
          \<Union>{e\<in>K. geotop_is_edge e \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
   (** Moise proof (geotop.tex:1054): As in Theorem 8, #(2-simplexes containing
       an edge e) is 1 or 2 (L2-L4 reused). Hence each component of |L(v)| is
@@ -2420,7 +2420,7 @@ proof -
   qed
 next
   (** Bd |K| = union of edges lying in only one 2-simplex. **)
-  show "geotop_manifold_boundary (geotop_polyhedron K) d =
+  show "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) =
          \<Union>{e\<in>K. geotop_is_edge e \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
     sorry
 qed
