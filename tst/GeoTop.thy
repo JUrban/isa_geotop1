@@ -1197,6 +1197,19 @@ proof -
               thus "\<gamma> t \<in> U"
                 using h\<gamma>_img_sub_U by (by100 blast)
             qed
+            have h_U_ball_point_in_local_two_edge_complement:
+              "\<And>u. \<lbrakk>u \<in> U; u \<in> ball x \<delta>_iso\<rbrakk>
+                \<Longrightarrow> u \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+            proof -
+              fix u
+              assume huU: "u \<in> U" and hu_ball: "u \<in> ball x \<delta>_iso"
+              have hu_not_M: "u \<notin> M"
+                using huU hU_sub_compl_M by (by100 blast)
+              have "u \<in> ball x \<delta>_iso - M"
+                using hu_ball hu_not_M by (by100 blast)
+              thus "u \<in> ball x \<delta>_iso - (\<sigma>_y \<union> \<tau>_y)"
+                using h_ball_x_compl_eq_two_edges by (by100 simp)
+            qed
             have hy_not_Other: "y \<notin> \<Union>OtherEdges_y"
             proof
               assume "y \<in> \<Union>OtherEdges_y"
