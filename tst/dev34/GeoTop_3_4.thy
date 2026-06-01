@@ -934,21 +934,104 @@ proof
           \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
       by (rule geotop_link_components_nonisolated_subcomplex_witnesses
           [OF hK hv hlink_vertices_incident_edges])
-    have hcomponent_linear_graph_witnesses:
-      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
-          C = geotop_component_at UNIV geotop_euclidean_topology
-                (\<Union>(geotop_link K v)) P)
-        \<longrightarrow> (\<exists>L. geotop_is_linear_graph L
-          \<and> finite L
-          \<and> geotop_polyhedron L = C
-          \<and> geotop_complex_connected L
-          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
-      by (rule geotop_link_components_nonisolated_linear_graph_witnesses
-          [OF hK hv hlink_vertices_incident_edges])
-    have hlocal_polygon_components:
-      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
-             C = geotop_component_at UNIV geotop_euclidean_topology
-                   (\<Union>(geotop_link K v)) P)
+	    have hcomponent_linear_graph_witnesses:
+	      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+	          C = geotop_component_at UNIV geotop_euclidean_topology
+	                (\<Union>(geotop_link K v)) P)
+	        \<longrightarrow> (\<exists>L. geotop_is_linear_graph L
+	          \<and> finite L
+	          \<and> geotop_polyhedron L = C
+	          \<and> geotop_complex_connected L
+	          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
+	      by (rule geotop_link_components_nonisolated_linear_graph_witnesses
+	          [OF hK hv hlink_vertices_incident_edges])
+	    have hlink_vertices_two_distinct_incident_edges:
+	      "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+	        (\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+	          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+	          \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+	    proof (intro allI impI)
+	      fix w
+	      assume hwL: "{w} \<in> geotop_link K v"
+	      have hex_distinct:
+	        "\<exists>e \<sigma> \<tau> V\<^sub>\<sigma> V\<^sub>\<tau> u\<^sub>\<sigma> u\<^sub>\<tau>.
+	          e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+	          \<and> \<sigma> \<noteq> \<tau>
+	          \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+	          \<and> geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>
+	          \<and> v \<in> V\<^sub>\<sigma> \<and> w \<in> V\<^sub>\<sigma> \<and> u\<^sub>\<sigma> \<in> V\<^sub>\<sigma>
+	          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+	          \<and> geotop_simplex_vertices \<tau> V\<^sub>\<tau>
+	          \<and> v \<in> V\<^sub>\<tau> \<and> w \<in> V\<^sub>\<tau> \<and> u\<^sub>\<tau> \<in> V\<^sub>\<tau>
+	          \<and> u\<^sub>\<sigma> \<noteq> v \<and> u\<^sub>\<sigma> \<noteq> w
+	          \<and> u\<^sub>\<tau> \<noteq> v \<and> u\<^sub>\<tau> \<noteq> w
+	          \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>
+	          \<and> geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v
+	          \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})
+	          \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+	          \<and> u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}
+	          \<and> geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>
+	          \<and> geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v
+	          \<and> geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})
+	          \<and> w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}
+	          \<and> u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>}
+	          \<and> geotop_convex_hull {w, u\<^sub>\<sigma>} \<noteq> geotop_convex_hull {w, u\<^sub>\<tau>}"
+	        by (rule mp[OF spec[OF hlink_vertices_two_distinct_opposite_link_edges] hwL])
+	      obtain e \<sigma> \<tau> V\<^sub>\<sigma> V\<^sub>\<tau> u\<^sub>\<sigma> u\<^sub>\<tau> where
+	        hl\<sigma>L: "geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v"
+	        and hl\<sigma>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})"
+	        and hw_l\<sigma>: "w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}"
+	        and hl\<tau>L: "geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v"
+	        and hl\<tau>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})"
+	        and hw_l\<tau>: "w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+	        and hl_distinct: "geotop_convex_hull {w, u\<^sub>\<sigma>} \<noteq> geotop_convex_hull {w, u\<^sub>\<tau>}"
+	        using hex_distinct by (elim exE conjE)
+	      show "\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+	          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+	          \<and> l\<^sub>1 \<noteq> l\<^sub>2"
+	        using hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau> hl_distinct
+	        by (by100 blast)
+	    qed
+	    have hcomponent_two_distinct_edge_witnesses:
+	      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+	          C = geotop_component_at UNIV geotop_euclidean_topology
+	                (\<Union>(geotop_link K v)) P)
+	        \<longrightarrow> (\<exists>L. geotop_is_complex L
+	          \<and> geotop_complex_is_1dim L
+	          \<and> finite L
+	          \<and> geotop_polyhedron L = C
+	          \<and> geotop_complex_connected L
+	          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+	            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+	              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+	              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+	              \<and> l\<^sub>1 \<noteq> l\<^sub>2)))"
+	    proof (intro allI impI)
+	      fix C
+	      assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
+	          C = geotop_component_at UNIV geotop_euclidean_topology
+	                (\<Union>(geotop_link K v)) P"
+	      obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+	        and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+	                (\<Union>(geotop_link K v)) P"
+	        using hC_ex by (by100 blast)
+	      show "\<exists>L. geotop_is_complex L
+	          \<and> geotop_complex_is_1dim L
+	          \<and> finite L
+	          \<and> geotop_polyhedron L = C
+	          \<and> geotop_complex_connected L
+	          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+	            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+	              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+	              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+	              \<and> l\<^sub>1 \<noteq> l\<^sub>2))"
+	        by (rule geotop_link_component_two_distinct_subcomplex_witness
+	            [OF hK hv hP hC hlink_vertices_two_distinct_incident_edges])
+	    qed
+	    have hlocal_polygon_components:
+	      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+	             C = geotop_component_at UNIV geotop_euclidean_topology
+	                   (\<Union>(geotop_link K v)) P)
           \<longrightarrow> geotop_is_polygon C"
       sorry
     have hsingle_polygon_from_connected:

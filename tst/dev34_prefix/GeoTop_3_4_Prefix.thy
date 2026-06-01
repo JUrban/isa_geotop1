@@ -3818,6 +3818,60 @@ proof (intro allI impI)
     using hl_L hledge hwl by (by100 blast)
 qed
 
+lemma geotop_link_component_inherits_two_distinct_link_edges:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+          \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+  shows "\<forall>w. {w} \<in> {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C} \<longrightarrow>
+        (\<exists>l\<^sub>1\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}.
+          \<exists>l\<^sub>2\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}.
+            geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+            \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+            \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+proof (intro allI impI)
+  fix w
+  let ?L = "{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+  assume hwL: "{w} \<in> ?L"
+  have hw_link: "{w} \<in> geotop_link K v"
+    using hwL by (by100 simp)
+  have hwC: "w \<in> C"
+    using hwL by (by100 simp)
+  obtain l\<^sub>1 l\<^sub>2 where hl1_link: "l\<^sub>1 \<in> geotop_link K v"
+    and hl1_edge: "geotop_is_edge l\<^sub>1"
+    and hw_l1: "w \<in> l\<^sub>1"
+    and hl2_link: "l\<^sub>2 \<in> geotop_link K v"
+    and hl2_edge: "geotop_is_edge l\<^sub>2"
+    and hw_l2: "w \<in> l\<^sub>2"
+    and hl12: "l\<^sub>1 \<noteq> l\<^sub>2"
+    using hvertices hw_link by (by100 blast)
+  have hl1_meet: "l\<^sub>1 \<inter> C \<noteq> {}"
+    using hw_l1 hwC by (by100 blast)
+  have hl1_sub_C: "l\<^sub>1 \<subseteq> C"
+    by (rule geotop_link_component_contains_meeting_simplex
+        [OF hK hP hC hl1_link hl1_meet])
+  have hl1_L: "l\<^sub>1 \<in> ?L"
+    using hl1_link hl1_sub_C by (by100 simp)
+  have hl2_meet: "l\<^sub>2 \<inter> C \<noteq> {}"
+    using hw_l2 hwC by (by100 blast)
+  have hl2_sub_C: "l\<^sub>2 \<subseteq> C"
+    by (rule geotop_link_component_contains_meeting_simplex
+        [OF hK hP hC hl2_link hl2_meet])
+  have hl2_L: "l\<^sub>2 \<in> ?L"
+    using hl2_link hl2_sub_C by (by100 simp)
+  show "\<exists>l\<^sub>1\<in>?L. \<exists>l\<^sub>2\<in>?L.
+      geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+      \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+      \<and> l\<^sub>1 \<noteq> l\<^sub>2"
+    using hl1_L hl1_edge hw_l1 hl2_L hl2_edge hw_l2 hl12 by (by100 blast)
+qed
+
 lemma geotop_link_component_subcomplex_witness:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3963,6 +4017,66 @@ proof -
     using hinc_raw hL_eq by (by100 simp)
   show ?thesis
     using hL_complex hL_1dim hL_fin hL_poly hL_conn hinc_L by (by100 blast)
+qed
+
+lemma geotop_link_component_two_distinct_subcomplex_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+          \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+  shows "\<exists>L. geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+              (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+                geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+                \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+                \<and> l\<^sub>1 \<noteq> l\<^sub>2))"
+proof -
+  obtain L where hL_eq: "L = {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+    and hL_complex: "geotop_is_complex L"
+    and hL_1dim: "geotop_complex_is_1dim L"
+    and hL_fin: "finite L"
+    and hL_poly: "geotop_polyhedron L = C"
+    using geotop_link_component_subcomplex_witness[OF hK hv hP hC]
+    by (by100 blast)
+  have hC_conn: "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+    using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
+  have hpoly_conn: "top1_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hC_conn hL_poly by (by100 simp)
+  have hpath: "top1_path_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  have hL_conn: "geotop_complex_connected L"
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+  have htwo_raw:
+    "\<forall>w. {w} \<in> {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C} \<longrightarrow>
+        (\<exists>l\<^sub>1\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}.
+          \<exists>l\<^sub>2\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}.
+            geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+            \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+            \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+    by (rule geotop_link_component_inherits_two_distinct_link_edges
+        [OF hK hP hC hvertices])
+  have htwo_L: "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+        geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+        \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+        \<and> l\<^sub>1 \<noteq> l\<^sub>2)"
+    using htwo_raw hL_eq by (by100 simp)
+  show ?thesis
+    using hL_complex hL_1dim hL_fin hL_poly hL_conn htwo_L by (by100 blast)
 qed
 
 lemma geotop_link_component_nonisolated_linear_graph_witness:
