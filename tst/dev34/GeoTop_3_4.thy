@@ -3585,6 +3585,118 @@ proof -
     using hbasic hcompact hclosed by (by100 blast)
 qed
 
+lemma geotop_simplex_connected_HOL_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_is_simplex \<sigma>"
+  shows "connected \<sigma>"
+proof -
+  have hpc: "top1_path_connected_on \<sigma>
+      (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+    by (rule Theorem_GT_1_3[OF h\<sigma>])
+  have hconn_top: "top1_connected_on \<sigma>
+      (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+    by (rule top1_path_connected_on_geotop_imp_connected[OF hpc])
+  show ?thesis
+    using hconn_top top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
+lemma geotop_link_component_contains_meeting_simplex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes h\<sigma>: "\<sigma> \<in> geotop_link K v"
+  assumes hmeet: "\<sigma> \<inter> C \<noteq> {}"
+  shows "\<sigma> \<subseteq> C"
+proof -
+  let ?M = "\<Union>(geotop_link K v)"
+  obtain x where hx\<sigma>: "x \<in> \<sigma>" and hxC: "x \<in> C"
+    using hmeet by (by100 blast)
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have h\<sigma>_simplex: "geotop_is_simplex \<sigma>"
+    using geotop_is_complex_simplex[OF hlink_complex] h\<sigma> by (by100 blast)
+  have h\<sigma>_conn: "connected \<sigma>"
+    by (rule geotop_simplex_connected_HOL_dev34[OF h\<sigma>_simplex])
+  have h\<sigma>_sub_M: "\<sigma> \<subseteq> ?M"
+    using h\<sigma> unfolding geotop_polyhedron_def by (by100 blast)
+  have hC_eq_P: "C = connected_component_set ?M P"
+    using hC geotop_component_at_UNIV_eq_connected_component_set by (by100 simp)
+  have hC_eq_x: "C = connected_component_set ?M x"
+    using connected_component_eq hC_eq_P hxC by (by100 blast)
+  have "\<sigma> \<subseteq> connected_component_set ?M x"
+    by (rule connected_component_maximal[OF hx\<sigma> h\<sigma>_conn h\<sigma>_sub_M])
+  show ?thesis
+    using \<open>\<sigma> \<subseteq> connected_component_set ?M x\<close> hC_eq_x by (by100 simp)
+qed
+
+lemma geotop_link_component_subcomplex_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  shows "\<exists>L. L = {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}
+          \<and> geotop_is_complex L
+          \<and> geotop_complex_is_1dim L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C"
+proof -
+  let ?L = "{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+  let ?M = "\<Union>(geotop_link K v)"
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hL_complex: "geotop_is_complex ?L"
+    by (rule geotop_complex_restrict_subset_is_complex[OF hlink_complex])
+  have hlink_1dim: "geotop_complex_is_1dim (geotop_link K v)"
+    by (rule geotop_link_complex_is_1dim_R2[OF hK])
+  have hL_1dim: "geotop_complex_is_1dim ?L"
+    by (rule geotop_complex_restrict_preserves_1dim[OF hlink_1dim])
+  have hlink_fin: "finite (geotop_link K v)"
+    by (rule geotop_link_finite_at_complex_vertex[OF hK hv])
+  have hL_sub_link: "?L \<subseteq> geotop_link K v"
+    by (by100 blast)
+  have hL_fin: "finite ?L"
+    by (rule finite_subset[OF hL_sub_link hlink_fin])
+  have hC_sub_M: "C \<subseteq> ?M"
+    using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
+  have hpoly_eq: "geotop_polyhedron ?L = C"
+  proof
+    show "geotop_polyhedron ?L \<subseteq> C"
+    proof
+      fix x assume hx: "x \<in> geotop_polyhedron ?L"
+      obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> ?L" and hx\<sigma>: "x \<in> \<sigma>"
+        using hx unfolding geotop_polyhedron_def by (by100 blast)
+      have h\<sigma>subC: "\<sigma> \<subseteq> C"
+        using h\<sigma>L by (by100 simp)
+      show "x \<in> C"
+        using h\<sigma>subC hx\<sigma> by (by100 blast)
+    qed
+  next
+    show "C \<subseteq> geotop_polyhedron ?L"
+    proof
+      fix x assume hxC: "x \<in> C"
+      have hxM: "x \<in> ?M"
+        using hC_sub_M hxC by (by100 blast)
+      obtain \<sigma> where h\<sigma>link: "\<sigma> \<in> geotop_link K v" and hx\<sigma>: "x \<in> \<sigma>"
+        using hxM unfolding geotop_polyhedron_def by (by100 blast)
+      have hmeet: "\<sigma> \<inter> C \<noteq> {}"
+        using hxC hx\<sigma> by (by100 blast)
+      have h\<sigma>subC: "\<sigma> \<subseteq> C"
+        by (rule geotop_link_component_contains_meeting_simplex
+            [OF hK hP hC h\<sigma>link hmeet])
+      have h\<sigma>L: "\<sigma> \<in> ?L"
+        using h\<sigma>link h\<sigma>subC by (by100 simp)
+      show "x \<in> geotop_polyhedron ?L"
+        unfolding geotop_polyhedron_def using h\<sigma>L hx\<sigma> by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hL_complex hL_1dim hL_fin hpoly_eq by (by100 blast)
+qed
+
 lemma geotop_finite_components_real_line_minus_two_dev34:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
