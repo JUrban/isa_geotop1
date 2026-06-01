@@ -639,7 +639,34 @@ proof -
             \<comment> \<open>V5d: y \<in> closure U (sector path argument — the deep step).
               Plan: use straight_line_path_in_face for \<sigma>_y's line L_y
               restricted to the half-sector adjacent to \<sigma>_y. Multi-day work.\<close>
-            have hy_clos: "y \<in> closure U" sorry
+            obtain p_y where h\<sigma>_y_seg: "\<sigma>_y = closed_segment x p_y"
+              and hp_y_ne: "p_y \<noteq> x"
+              using hVX_segs h\<sigma>_y_EAX by (by100 blast)
+            have h\<sigma>_y_K: "\<sigma>_y \<in> K_i"
+              using h\<sigma>_y_EAX hEAX_sub by (by100 blast)
+            have hK_eq_i: "\<Union>K_i = i"
+              using hK_i_poly unfolding geotop_polyhedron_def by (by100 simp)
+            have h\<sigma>_y_sub_i: "\<sigma>_y \<subseteq> i"
+              using h\<sigma>_y_K hK_eq_i by (by100 blast)
+            have h\<sigma>_y_sub_M: "\<sigma>_y \<subseteq> M"
+              using h\<sigma>_y_sub_i hi_sub_M by (by100 blast)
+            define L_y where "L_y = affine hull \<sigma>_y"
+            have hx\<sigma>_y: "x \<in> \<sigma>_y"
+              using h\<sigma>_y_EAX hEAX_x_in by (by100 blast)
+            have hx_L_y: "x \<in> L_y"
+              unfolding L_y_def by (rule hull_inc[OF hx\<sigma>_y])
+            have hy_L_y: "y \<in> L_y"
+              unfolding L_y_def by (rule hull_inc[OF hy\<sigma>_y])
+            have h\<sigma>_y_dim: "geotop_simplex_dim \<sigma>_y 1"
+              using h\<sigma>_y_EAX unfolding EdgesAtX_def by (by100 blast)
+            have hL_y_hyperplane: "geotop_hyperplane_dim L_y 1"
+              using geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>_y_dim] L_y_def
+              by (by100 simp)
+            have h_sector_path_to_y:
+              "y \<in> closure U"
+              sorry
+            have hy_clos: "y \<in> closure U"
+              using h_sector_path_to_y .
             \<comment> \<open>V5e: combine to frontier U.\<close>
             have h_int_U: "interior U = U" using hU_open interior_open
               by (by100 blast)
