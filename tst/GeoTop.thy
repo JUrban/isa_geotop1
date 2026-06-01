@@ -11421,24 +11421,120 @@ proof -
                           show "\<exists>C \<in> components (UNIV - (A \<union> B)). K \<subseteq> C"
                             using hC_comp hK_sub_C by (by100 blast)
                         qed
+                        have h_pair_polygon_circle_side_classification:
+                          "\<And>A B pA pB qA qB x y.
+                           \<lbrakk>geotop_is_polygon (A \<union> B);
+                            ball P \<delta> \<inter> A = ball P \<delta> \<inter> closed_segment P pA;
+                            ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
+                            (closed_segment P pA - {P}) \<inter> sphere P r = {qA};
+                            (closed_segment P pB - {P}) \<inter> sphere P r = {qB};
+                            x \<in> sphere P r - {qA, qB};
+                            y \<in> sphere P r - {qA, qB};
+                            \<exists>G \<in> components (UNIV - (A \<union> B)). x \<in> G \<and> y \<in> G\<rbrakk>
+                           \<Longrightarrow> \<exists>K \<in> components (sphere P r - {qA, qB}). x \<in> K \<and> y \<in> K"
+                          sorry
                         have h_pair12_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K\<rbrakk>
                            \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q2}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
                           for x y
-                          sorry
+                        proof -
+                          assume hx: "x \<in> ball P r - ?R"
+                            and hy: "y \<in> ball P r - ?R"
+                            and hsame:
+                              "\<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K"
+                          obtain G where hG_comp: "G \<in> components (UNIV - (B1 \<union> B2))"
+                            and hxG: "x \<in> G" and hyG: "y \<in> G"
+                            using hsame by (by100 blast)
+                          have h\<rho>xG: "\<rho> x \<in> G"
+                            by (rule h_radial_trace_same_pair12[OF hx hG_comp hxG])
+                          have h\<rho>yG: "\<rho> y \<in> G"
+                            by (rule h_radial_trace_same_pair12[OF hy hG_comp hyG])
+                          have h\<rho>x_circle: "\<rho> x \<in> sphere P r - {q1, q2}"
+                            using h_radial_trace_punctured[OF hx] by (by100 blast)
+                          have h\<rho>y_circle: "\<rho> y \<in> sphere P r - {q1, q2}"
+                            using h_radial_trace_punctured[OF hy] by (by100 blast)
+                          have hglobal_traces:
+                            "\<exists>G \<in> components (UNIV - (B1 \<union> B2)). \<rho> x \<in> G \<and> \<rho> y \<in> G"
+                            using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
+                          show ?thesis
+                          proof (rule h_pair_polygon_circle_side_classification
+                              [OF h_poly_12 hB1_model_loc hB2_model_loc _ _
+                                  h\<rho>x_circle h\<rho>y_circle hglobal_traces])
+                            show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                            show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                          qed
+                        qed
                         have h_pair13_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B1 \<union> B3)). x \<in> K \<and> y \<in> K\<rbrakk>
                            \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q3}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
                           for x y
-                          sorry
+                        proof -
+                          assume hx: "x \<in> ball P r - ?R"
+                            and hy: "y \<in> ball P r - ?R"
+                            and hsame:
+                              "\<exists>K \<in> components (UNIV - (B1 \<union> B3)). x \<in> K \<and> y \<in> K"
+                          obtain G where hG_comp: "G \<in> components (UNIV - (B1 \<union> B3))"
+                            and hxG: "x \<in> G" and hyG: "y \<in> G"
+                            using hsame by (by100 blast)
+                          have h\<rho>xG: "\<rho> x \<in> G"
+                            by (rule h_radial_trace_same_pair13[OF hx hG_comp hxG])
+                          have h\<rho>yG: "\<rho> y \<in> G"
+                            by (rule h_radial_trace_same_pair13[OF hy hG_comp hyG])
+                          have h\<rho>x_circle: "\<rho> x \<in> sphere P r - {q1, q3}"
+                            using h_radial_trace_punctured[OF hx] by (by100 blast)
+                          have h\<rho>y_circle: "\<rho> y \<in> sphere P r - {q1, q3}"
+                            using h_radial_trace_punctured[OF hy] by (by100 blast)
+                          have hglobal_traces:
+                            "\<exists>G \<in> components (UNIV - (B1 \<union> B3)). \<rho> x \<in> G \<and> \<rho> y \<in> G"
+                            using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
+                          show ?thesis
+                          proof (rule h_pair_polygon_circle_side_classification
+                              [OF h_poly_13 hB1_model_loc hB3_model_loc _ _
+                                  h\<rho>x_circle h\<rho>y_circle hglobal_traces])
+                            show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                            show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                          qed
+                        qed
                         have h_pair23_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B2 \<union> B3)). x \<in> K \<and> y \<in> K\<rbrakk>
                            \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q2, q3}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
                           for x y
-                          sorry
+                        proof -
+                          assume hx: "x \<in> ball P r - ?R"
+                            and hy: "y \<in> ball P r - ?R"
+                            and hsame:
+                              "\<exists>K \<in> components (UNIV - (B2 \<union> B3)). x \<in> K \<and> y \<in> K"
+                          obtain G where hG_comp: "G \<in> components (UNIV - (B2 \<union> B3))"
+                            and hxG: "x \<in> G" and hyG: "y \<in> G"
+                            using hsame by (by100 blast)
+                          have h\<rho>xG: "\<rho> x \<in> G"
+                            by (rule h_radial_trace_same_pair23[OF hx hG_comp hxG])
+                          have h\<rho>yG: "\<rho> y \<in> G"
+                            by (rule h_radial_trace_same_pair23[OF hy hG_comp hyG])
+                          have h\<rho>x_circle: "\<rho> x \<in> sphere P r - {q2, q3}"
+                            using h_radial_trace_punctured[OF hx] by (by100 blast)
+                          have h\<rho>y_circle: "\<rho> y \<in> sphere P r - {q2, q3}"
+                            using h_radial_trace_punctured[OF hy] by (by100 blast)
+                          have hglobal_traces:
+                            "\<exists>G \<in> components (UNIV - (B2 \<union> B3)). \<rho> x \<in> G \<and> \<rho> y \<in> G"
+                            using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
+                          show ?thesis
+                          proof (rule h_pair_polygon_circle_side_classification
+                              [OF h_poly_23 hB2_model_loc hB3_model_loc _ _
+                                  h\<rho>x_circle h\<rho>y_circle hglobal_traces])
+                            show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                            show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                              using h_radial_circle_model by (fast elim: conjE)
+                          qed
+                        qed
                         have h_circle_three_sector_dichotomy:
                           "\<lbrakk>\<rho> c \<in> sphere P r - {q1, q2, q3};
                             \<rho> d \<in> sphere P r - {q1, q2, q3};
