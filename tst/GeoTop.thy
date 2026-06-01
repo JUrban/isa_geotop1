@@ -9568,7 +9568,140 @@ proof -
                     A \<in> components (UNIV - (i \<union> j)) \<and>
                     B \<in> components (UNIV - (i \<union> j)) \<and>
                     c \<in> A \<and> d \<in> B \<and> A \<noteq> B"
-                  sorry
+                proof -
+                  have h12_ex:
+                    "\<exists>A B. A \<in> components (UNIV - (B1 \<union> B2)) \<and>
+                        B \<in> components (UNIV - (B1 \<union> B2)) \<and> c \<in> A \<and> d \<in> B"
+                  proof (rule h_pair_components_for_points)
+                    show "B1 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B2 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B1 \<noteq> B2" by (rule h_B1_ne_B2)
+                  qed
+                  obtain A12 D12 where hA12_comp:
+                      "A12 \<in> components (UNIV - (B1 \<union> B2))"
+                    and hD12_comp:
+                      "D12 \<in> components (UNIV - (B1 \<union> B2))"
+                    and hcA12: "c \<in> A12"
+                    and hdD12: "d \<in> D12"
+                    using h12_ex
+                  proof (elim exE conjE)
+                    fix A B
+                    assume hA: "A \<in> components (UNIV - (B1 \<union> B2))"
+                    assume hB: "B \<in> components (UNIV - (B1 \<union> B2))"
+                    assume hcA: "c \<in> A"
+                    assume hdB: "d \<in> B"
+                    show thesis by (rule that[OF hA hB hcA hdB])
+                  qed
+                  have h13_ex:
+                    "\<exists>A B. A \<in> components (UNIV - (B1 \<union> B3)) \<and>
+                        B \<in> components (UNIV - (B1 \<union> B3)) \<and> c \<in> A \<and> d \<in> B"
+                  proof (rule h_pair_components_for_points)
+                    show "B1 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B3 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B1 \<noteq> B3" by (rule h_B1_ne_B3)
+                  qed
+                  obtain A13 D13 where hA13_comp:
+                      "A13 \<in> components (UNIV - (B1 \<union> B3))"
+                    and hD13_comp:
+                      "D13 \<in> components (UNIV - (B1 \<union> B3))"
+                    and hcA13: "c \<in> A13"
+                    and hdD13: "d \<in> D13"
+                    using h13_ex
+                  proof (elim exE conjE)
+                    fix A B
+                    assume hA: "A \<in> components (UNIV - (B1 \<union> B3))"
+                    assume hB: "B \<in> components (UNIV - (B1 \<union> B3))"
+                    assume hcA: "c \<in> A"
+                    assume hdB: "d \<in> B"
+                    show thesis by (rule that[OF hA hB hcA hdB])
+                  qed
+                  have h23_ex:
+                    "\<exists>A B. A \<in> components (UNIV - (B2 \<union> B3)) \<and>
+                        B \<in> components (UNIV - (B2 \<union> B3)) \<and> c \<in> A \<and> d \<in> B"
+                  proof (rule h_pair_components_for_points)
+                    show "B2 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B3 \<in> {B1, B2, B3}" by (by100 simp)
+                    show "B2 \<noteq> B3" by (rule h_B2_ne_B3)
+                  qed
+                  obtain A23 D23 where hA23_comp:
+                      "A23 \<in> components (UNIV - (B2 \<union> B3))"
+                    and hD23_comp:
+                      "D23 \<in> components (UNIV - (B2 \<union> B3))"
+                    and hcA23: "c \<in> A23"
+                    and hdD23: "d \<in> D23"
+                    using h23_ex
+                  proof (elim exE conjE)
+                    fix A B
+                    assume hA: "A \<in> components (UNIV - (B2 \<union> B3))"
+                    assume hB: "B \<in> components (UNIV - (B2 \<union> B3))"
+                    assume hcA: "c \<in> A"
+                    assume hdB: "d \<in> B"
+                    show thesis by (rule that[OF hA hB hcA hdB])
+                  qed
+                  have h_one_pair_distinguishes:
+                    "A12 \<noteq> D12 \<or> A13 \<noteq> D13 \<or> A23 \<noteq> D23"
+                    sorry
+                  show ?thesis
+                  proof -
+                    consider (pair12) "A12 \<noteq> D12"
+                      | (pair13) "A13 \<noteq> D13"
+                      | (pair23) "A23 \<noteq> D23"
+                      using h_one_pair_distinguishes by (by100 blast)
+                    thus ?thesis
+                    proof cases
+                      case pair12
+                      show ?thesis
+                        apply (rule exI[where x=B1])
+                        apply (rule exI[where x=B2])
+                        apply (rule exI[where x=A12])
+                        apply (rule exI[where x=D12])
+                        apply (intro conjI)
+                        apply (by100 simp)
+                        apply (by100 simp)
+                        using h_B1_ne_B2 apply assumption
+                        using hA12_comp apply assumption
+                        using hD12_comp apply assumption
+                        using hcA12 apply assumption
+                        using hdD12 apply assumption
+                        using pair12 apply assumption
+                        done
+                    next
+                      case pair13
+                      show ?thesis
+                        apply (rule exI[where x=B1])
+                        apply (rule exI[where x=B3])
+                        apply (rule exI[where x=A13])
+                        apply (rule exI[where x=D13])
+                        apply (intro conjI)
+                        apply (by100 simp)
+                        apply (by100 simp)
+                        using h_B1_ne_B3 apply assumption
+                        using hA13_comp apply assumption
+                        using hD13_comp apply assumption
+                        using hcA13 apply assumption
+                        using hdD13 apply assumption
+                        using pair13 apply assumption
+                        done
+                    next
+                      case pair23
+                      show ?thesis
+                        apply (rule exI[where x=B2])
+                        apply (rule exI[where x=B3])
+                        apply (rule exI[where x=A23])
+                        apply (rule exI[where x=D23])
+                        apply (intro conjI)
+                        apply (by100 simp)
+                        apply (by100 simp)
+                        using h_B2_ne_B3 apply assumption
+                        using hA23_comp apply assumption
+                        using hD23_comp apply assumption
+                        using hcA23 apply assumption
+                        using hdD23 apply assumption
+                        using pair23 apply assumption
+                        done
+                    qed
+                  qed
+                qed
                 obtain i j A B where hi': "i \<in> {B1, B2, B3}"
                   and hj': "j \<in> {B1, B2, B3}"
                   and hij': "i \<noteq> j"
