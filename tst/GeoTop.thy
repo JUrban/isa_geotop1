@@ -8009,6 +8009,8 @@ proof -
     using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)+
   have h_poly_12_t28: "geotop_is_polygon (B1 \<union> B2)"
     by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB2_bl_t28 hE1_t28 hE2_t28 h_int12_t28])
+  have h_poly_13_t28: "geotop_is_polygon (B1 \<union> B3)"
+    by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB3_bl_t28 hE1_t28 hE3_t28 h_int13_t28])
   have h_poly_23_t28: "geotop_is_polygon (B2 \<union> B3)"
     by (rule pair_of_arcs_is_polygon[OF hB2_bl_t28 hB3_bl_t28 hE2_t28 hE3_t28 h_int23_t28])
   \<comment> \<open>Side classification forced by the middle-arc hypothesis:
@@ -8467,7 +8469,114 @@ proof -
   qed
   have hT2_8_cover_Y:
     "I13 - geotop_arc_interior B2 E \<subseteq> I12 \<union> I23"
-    sorry
+  proof -
+    have hT2_8_Y_side_12:
+      "I13 - geotop_arc_interior B2 E \<subseteq>
+        I12 \<union> geotop_polygon_exterior (B1 \<union> B2)"
+    proof
+      fix x assume hxY: "x \<in> I13 - geotop_arc_interior B2 E"
+      have hx_I13: "x \<in> I13" using hxY by (by100 blast)
+      have hx_notIntB2: "x \<notin> geotop_arc_interior B2 E" using hxY by (by100 blast)
+      have h_disj_13:
+        "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+        by (rule polygon_interior_disjoint_polygon[OF h_poly_13_t28])
+      have hx_not_B1: "x \<notin> B1"
+        using hx_I13 h_disj_13 I13_def by (by100 blast)
+      have hx_not_B2: "x \<notin> B2"
+      proof
+        assume hx_B2: "x \<in> B2"
+        have hx_E: "x \<in> E"
+          using hx_B2 hx_notIntB2 unfolding geotop_arc_interior_def by (by100 blast)
+        have hE_sub_B1: "E \<subseteq> B1"
+          using hE1_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have "x \<in> B1" using hx_E hE_sub_B1 by (by100 blast)
+        thus False using hx_not_B1 by (by100 blast)
+      qed
+      have hx_compl12: "x \<in> UNIV - (B1 \<union> B2)"
+        using hx_not_B1 hx_not_B2 by (by100 blast)
+      have h_comp12:
+        "components (UNIV - (B1 \<union> B2)) =
+          {I12, geotop_polygon_exterior (B1 \<union> B2)}"
+        using polygon_components_eq[OF h_poly_12_t28] I12_def by (by100 simp)
+      have h_union12: "\<Union>(components (UNIV - (B1 \<union> B2))) = UNIV - (B1 \<union> B2)"
+        by (rule Union_components)
+      have hx_un: "x \<in> \<Union>(components (UNIV - (B1 \<union> B2)))"
+        using hx_compl12 h_union12 by (by100 simp)
+      show "x \<in> I12 \<union> geotop_polygon_exterior (B1 \<union> B2)"
+        using hx_un h_comp12 by (by100 simp)
+    qed
+    have hT2_8_Y_side_23:
+      "I13 - geotop_arc_interior B2 E \<subseteq>
+        I23 \<union> geotop_polygon_exterior (B2 \<union> B3)"
+    proof
+      fix x assume hxY: "x \<in> I13 - geotop_arc_interior B2 E"
+      have hx_I13: "x \<in> I13" using hxY by (by100 blast)
+      have hx_notIntB2: "x \<notin> geotop_arc_interior B2 E" using hxY by (by100 blast)
+      have h_disj_13:
+        "geotop_polygon_interior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+        by (rule polygon_interior_disjoint_polygon[OF h_poly_13_t28])
+      have hx_not_B3: "x \<notin> B3"
+        using hx_I13 h_disj_13 I13_def by (by100 blast)
+      have hx_not_B2: "x \<notin> B2"
+      proof
+        assume hx_B2: "x \<in> B2"
+        have hx_E: "x \<in> E"
+          using hx_B2 hx_notIntB2 unfolding geotop_arc_interior_def by (by100 blast)
+        have hE_sub_B3: "E \<subseteq> B3"
+          using hE3_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have "x \<in> B3" using hx_E hE_sub_B3 by (by100 blast)
+        thus False using hx_not_B3 by (by100 blast)
+      qed
+      have hx_compl23: "x \<in> UNIV - (B2 \<union> B3)"
+        using hx_not_B2 hx_not_B3 by (by100 blast)
+      have h_comp23:
+        "components (UNIV - (B2 \<union> B3)) =
+          {I23, geotop_polygon_exterior (B2 \<union> B3)}"
+        using polygon_components_eq[OF h_poly_23_t28] I23_def by (by100 simp)
+      have h_union23: "\<Union>(components (UNIV - (B2 \<union> B3))) = UNIV - (B2 \<union> B3)"
+        by (rule Union_components)
+      have hx_un: "x \<in> \<Union>(components (UNIV - (B2 \<union> B3)))"
+        using hx_compl23 h_union23 by (by100 simp)
+      show "x \<in> I23 \<union> geotop_polygon_exterior (B2 \<union> B3)"
+        using hx_un h_comp23 by (by100 simp)
+    qed
+    have hT2_8_no_double_exterior:
+      "(I13 - geotop_arc_interior B2 E)
+        \<inter> geotop_polygon_exterior (B1 \<union> B2)
+        \<inter> geotop_polygon_exterior (B2 \<union> B3) = {}"
+      sorry
+    show ?thesis
+    proof
+      fix x assume hxY: "x \<in> I13 - geotop_arc_interior B2 E"
+      have hx_side12: "x \<in> I12 \<union> geotop_polygon_exterior (B1 \<union> B2)"
+        using hT2_8_Y_side_12 hxY by (by100 blast)
+      have hx_side23: "x \<in> I23 \<union> geotop_polygon_exterior (B2 \<union> B3)"
+        using hT2_8_Y_side_23 hxY by (by100 blast)
+      show "x \<in> I12 \<union> I23"
+      proof (cases "x \<in> I12")
+        case True
+        show ?thesis using True by (by100 blast)
+      next
+        case False
+        have hx_ext12: "x \<in> geotop_polygon_exterior (B1 \<union> B2)"
+          using hx_side12 False by (by100 blast)
+        show ?thesis
+        proof (cases "x \<in> I23")
+          case True
+          show ?thesis using True by (by100 blast)
+        next
+          case False
+          have hx_ext23: "x \<in> geotop_polygon_exterior (B2 \<union> B3)"
+            using hx_side23 False by (by100 blast)
+          have "x \<in> (I13 - geotop_arc_interior B2 E)
+              \<inter> geotop_polygon_exterior (B1 \<union> B2)
+              \<inter> geotop_polygon_exterior (B2 \<union> B3)"
+            using hxY hx_ext12 hx_ext23 by (by100 blast)
+          thus ?thesis using hT2_8_no_double_exterior by (by100 blast)
+        qed
+      qed
+    qed
+  qed
   have hT2_8_components_out:
     "\<forall>C. (\<exists>P\<in>I13 - geotop_arc_interior B2 E.
             C = geotop_component_at UNIV geotop_euclidean_topology
