@@ -3663,6 +3663,29 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_2_simplex_ball_inter_aff_dim:
+  fixes \<sigma> :: "(real^2) set" and p :: "real^2"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp: "p \<in> \<sigma>"
+  assumes hr: "0 < r"
+  shows "aff_dim (\<sigma> \<inter> ball p r) = 2"
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hconv: "convex \<sigma>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF hsimplex])
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hmeet: "\<sigma> \<inter> ball p r \<noteq> {}"
+    using hp hr by (by100 force)
+  have "aff_dim (\<sigma> \<inter> ball p r) = aff_dim \<sigma>"
+    by (rule aff_dim_convex_Int_open[OF hconv open_ball hmeet])
+  thus ?thesis
+    using hdim\<sigma> by (by100 simp)
+qed
+
 lemma geotop_2_simplex_open_subset_connected_punctured_neighborhood:
   fixes \<sigma> A :: "(real^2) set" and p :: "real^2"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
@@ -3673,7 +3696,52 @@ lemma geotop_2_simplex_open_subset_connected_punctured_neighborhood:
       \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
       \<and> top1_connected_on (N - {p})
           (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
-  sorry
+proof -
+  obtain W where hWtop: "W \<in> geotop_euclidean_topology"
+      and hAeq: "A = \<sigma> \<inter> W"
+    using hAopen unfolding subspace_topology_def by (by100 blast)
+  have hWopen: "open W"
+    using hWtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hp\<sigma>: "p \<in> \<sigma>"
+    using hpA hAsub by (by100 blast)
+  have hpW: "p \<in> W"
+    using hpA hAeq by (by100 blast)
+  have hWopenin: "openin (top_of_set UNIV) W"
+    using hWopen by (by100 simp)
+  obtain r where hr: "0 < r" and hball_sub_W: "ball p r \<subseteq> W"
+    using hWopenin hpW unfolding openin_contains_ball by (by100 force)
+  define N where "N = \<sigma> \<inter> ball p r"
+  have hpN: "p \<in> N"
+    unfolding N_def using hp\<sigma> hr by (by100 simp)
+  have hNsubA: "N \<subseteq> A"
+    unfolding N_def using hAeq hball_sub_W by (by100 blast)
+  have hN_eq_A_ball: "N = A \<inter> ball p r"
+    unfolding N_def using hAeq hball_sub_W by (by100 blast)
+  have hballtop: "ball p r \<in> geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hNopenA: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+    unfolding subspace_topology_def using hballtop hN_eq_A_ball by (by100 blast)
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hconv\<sigma>: "convex \<sigma>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF hsimplex])
+  have hconvN: "convex N"
+    unfolding N_def by (rule convex_Int[OF hconv\<sigma> convex_ball])
+  have hdimN: "aff_dim N = 2"
+    unfolding N_def by (rule geotop_2_simplex_ball_inter_aff_dim[OF h\<sigma> hp\<sigma> hr])
+  have hnot1: "aff_dim N \<noteq> 1"
+    using hdimN by (by100 simp)
+  have hconnHOL: "connected (N - {p})"
+    by (rule connected_punctured_convex[OF hconvN hnot1])
+  have hconn: "top1_connected_on (N - {p})
+      (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using hconnHOL top1_connected_on_geotop_iff_connected[of "N - {p}"]
+    by (by100 simp)
+  show ?thesis
+    using hpN hNsubA hNopenA hconn by (by100 blast)
+qed
 
 lemma geotop_2_cell_open_subset_connected_punctured_neighborhood:
   fixes C A :: "(real^2) set" and p :: "real^2"
