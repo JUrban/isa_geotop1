@@ -8297,7 +8297,11 @@ proof -
           "r > 0 \<and>
            q1 \<in> ?S1 - {P} \<and> q2 \<in> ?S2 - {P} \<and> q3 \<in> ?S3 - {P} \<and>
            dist P q1 = r \<and> dist P q2 = r \<and> dist P q3 = r \<and>
-           q1 \<noteq> q2 \<and> q1 \<noteq> q3 \<and> q2 \<noteq> q3"
+           q1 \<noteq> q2 \<and> q1 \<noteq> q3 \<and> q2 \<noteq> q3 \<and>
+           (?S1 - {P}) \<inter> sphere P r = {q1} \<and>
+           (?S2 - {P}) \<inter> sphere P r = {q2} \<and>
+           (?S3 - {P}) \<inter> sphere P r = {q3} \<and>
+           ?R \<inter> sphere P r = {q1, q2, q3}"
         proof -
           have h\<delta>_pos: "\<delta> > 0" using hpack by (by100 blast)
           have hp1_ne': "p1 \<noteq> P" using hpack by (by100 blast)
@@ -8591,7 +8595,9 @@ proof -
             "?R \<inter> sphere P r = {q1, q2, q3}"
             using hS1_sphere_full hS2_sphere_full hS3_sphere_full by (by100 blast)
           show ?thesis
-            using hr_pos hq1 hq2 hq3 hq12 hq13 hq23 by (by100 blast)
+            using hr_pos hq1 hq2 hq3 hq12 hq13 hq23
+                  hS1_sphere_r hS2_sphere_r hS3_sphere_r hR_sphere_r
+            by (by100 blast)
         qed
         have hq12_out: "q1 \<noteq> q2"
           using h_radial_circle_model by (by100 blast)
@@ -8599,6 +8605,18 @@ proof -
           using h_radial_circle_model by (by100 blast)
         have hq23_out: "q2 \<noteq> q3"
           using h_radial_circle_model by (by100 blast)
+        have hS1_sphere_r_out:
+          "(?S1 - {P}) \<inter> sphere P r = {q1}"
+          using h_radial_circle_model by (fast elim: conjE)
+        have hS2_sphere_r_out:
+          "(?S2 - {P}) \<inter> sphere P r = {q2}"
+          using h_radial_circle_model by (fast elim: conjE)
+        have hS3_sphere_r_out:
+          "(?S3 - {P}) \<inter> sphere P r = {q3}"
+          using h_radial_circle_model by (fast elim: conjE)
+        have hR_sphere_r_out:
+          "?R \<inter> sphere P r = {q1, q2, q3}"
+          using h_radial_circle_model by (fast elim: conjE)
         have h_radial_sector_bound:
           "\<forall>C \<in> components (ball P \<delta> - ?R).
               card {S \<in> {?S1, ?S2, ?S3}.
