@@ -3639,6 +3639,65 @@ proof -
               using h_radial_circle_model by (fast elim: conjE)
             show ?thesis using h\<rho>_avoid_R hq_sub_R by (by100 blast)
           qed
+          have h\<rho>_fixed_qs: "\<And>q. q \<in> {q1, q2, q3} \<Longrightarrow> \<rho> q = q"
+          proof -
+            fix q assume hq: "q \<in> {q1, q2, q3}"
+            have hr_pos: "r > 0"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq1_dist: "dist P q1 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq2_dist: "dist P q2 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq3_dist: "dist P q3 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq_dist: "dist P q = r"
+              using hq hq1_dist hq2_dist hq3_dist by (by100 blast)
+            show "\<rho> q = q"
+              unfolding \<rho>_def using hq_dist hr_pos by (by100 simp)
+          qed
+          have h\<rho>_closure_qs:
+            "\<And>q. \<lbrakk>q \<in> {q1, q2, q3}; q \<in> closure C\<rbrakk>
+              \<Longrightarrow> q \<in> closure (\<rho> ` C)"
+          proof -
+            fix q assume hq_set: "q \<in> {q1, q2, q3}" and hq_cl: "q \<in> closure C"
+            have hr_pos: "r > 0"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq1_dist: "dist P q1 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq2_dist: "dist P q2 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq3_dist: "dist P q3 = r"
+              using h_radial_circle_model by (fast elim: conjE)
+            have hq_dist: "dist P q = r"
+              using hq_set hq1_dist hq2_dist hq3_dist by (by100 blast)
+            have hq_ne_P: "q \<noteq> P"
+              using hq_dist hr_pos by (by100 auto)
+            have h\<rho>q: "\<rho> q = q"
+              by (rule h\<rho>_fixed_qs[OF hq_set])
+            have h\<rho>_cont_at_q: "continuous (at q) \<rho>"
+              unfolding \<rho>_def
+              apply (intro continuous_intros)
+              using hq_ne_P
+              by (by100 auto)
+            show "q \<in> closure (\<rho> ` C)"
+              unfolding closure_approachable
+            proof (intro allI impI)
+              fix e :: real
+              assume he_pos: "e > 0"
+              obtain d where hd_pos: "d > 0"
+                and hd: "\<And>x. dist x q < d \<Longrightarrow> dist (\<rho> x) (\<rho> q) < e"
+                using h\<rho>_cont_at_q unfolding continuous_at_eps_delta
+                using he_pos by (by100 blast)
+              obtain x where hxC: "x \<in> C" and hx_dist: "dist x q < d"
+                using hq_cl hd_pos unfolding closure_approachable by (by100 blast)
+              have h\<rho>x: "\<rho> x \<in> \<rho> ` C"
+                using hxC by (by100 blast)
+              have hdist: "dist (\<rho> x) q < e"
+                using hd[OF hx_dist] h\<rho>q by (by100 simp)
+              show "\<exists>y\<in>\<rho> ` C. dist y q < e"
+                using h\<rho>x hdist by (by100 blast)
+            qed
+          qed
           have h_circle_trace_bound:
             "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
             sorry
