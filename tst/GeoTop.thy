@@ -11691,6 +11691,7 @@ proof -
                             ball P \<delta> \<inter> B = ball P \<delta> \<inter> closed_segment P pB;
                             (closed_segment P pA - {P}) \<inter> sphere P r = {qA};
                             (closed_segment P pB - {P}) \<inter> sphere P r = {qB};
+                            qA \<noteq> qB;
                             x \<in> sphere P r - {qA, qB};
                             y \<in> sphere P r - {qA, qB};
                             \<exists>G \<in> components (UNIV - (A \<union> B)). x \<in> G \<and> y \<in> G\<rbrakk>
@@ -11722,13 +11723,15 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_12 hB1_model_loc hB2_model_loc _ _
+                              [OF h_poly_12 hB1_model_loc hB2_model_loc _ _ _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
                               using h_radial_circle_model by (fast elim: conjE)
-                            show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
-                              using h_radial_circle_model by (fast elim: conjE)
-                          qed
+                          show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "q1 \<noteq> q2"
+                            using h_radial_circle_model by (by100 simp)
+                        qed
                         qed
                         have h_pair13_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
@@ -11756,13 +11759,15 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_13 hB1_model_loc hB3_model_loc _ _
+                              [OF h_poly_13 hB1_model_loc hB3_model_loc _ _ _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p1 - {P}) \<inter> sphere P r = {q1}"
                               using h_radial_circle_model by (fast elim: conjE)
-                            show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
-                              using h_radial_circle_model by (fast elim: conjE)
-                          qed
+                          show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "q1 \<noteq> q3"
+                            using h_radial_circle_model by (by100 simp)
+                        qed
                         qed
                         have h_pair23_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
@@ -11790,13 +11795,15 @@ proof -
                             using hG_comp h\<rho>xG h\<rho>yG by (by100 blast)
                           show ?thesis
                           proof (rule h_pair_polygon_circle_side_classification
-                              [OF h_poly_23 hB2_model_loc hB3_model_loc _ _
+                              [OF h_poly_23 hB2_model_loc hB3_model_loc _ _ _
                                   h\<rho>x_circle h\<rho>y_circle hglobal_traces])
                             show "(closed_segment P p2 - {P}) \<inter> sphere P r = {q2}"
                               using h_radial_circle_model by (fast elim: conjE)
-                            show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
-                              using h_radial_circle_model by (fast elim: conjE)
-                          qed
+                          show "(closed_segment P p3 - {P}) \<inter> sphere P r = {q3}"
+                            using h_radial_circle_model by (fast elim: conjE)
+                          show "q2 \<noteq> q3"
+                            using h_radial_circle_model by (by100 simp)
+                        qed
                         qed
                         have h_circle_three_sector_dichotomy:
                           "\<lbrakk>\<rho> c \<in> sphere P r - {q1, q2, q3};
