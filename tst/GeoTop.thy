@@ -10404,6 +10404,670 @@ proof -
                               h_radial_trace_punctured[OF hd_ball_r]
                             by (by100 blast)
                         qed
+                        have h_circle_component_closure_bound:
+                          "\<And>K. K \<in> components (sphere P r - {q1, q2, q3})
+                            \<Longrightarrow> card ({q1, q2, q3} \<inter> closure K) \<le> 2"
+                        proof -
+                          fix K
+                          assume hK_comp: "K \<in> components (sphere P r - {q1, q2, q3})"
+                          have hq12_out: "q1 \<noteq> q2"
+                            using h_radial_circle_model by (by100 blast)
+                          have hq13_out: "q1 \<noteq> q3"
+                            using h_radial_circle_model by (by100 blast)
+                          have hq23_out: "q2 \<noteq> q3"
+                            using h_radial_circle_model by (by100 blast)
+                          have hK_misses_cut:
+                            "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
+                            proof -
+                              let ?S = "sphere P r"
+                              let ?L = "{x::real^2. (q2 - q1) \<bullet> x = 0}"
+                              have hr_pos: "r > 0"
+                                using h_radial_circle_model by (fast elim: conjE)
+                              have hq1_sphere: "q1 \<in> ?S"
+                                using h_radial_circle_model by (by100 simp)
+                              have hq2_sphere: "q2 \<in> ?S"
+                                using h_radial_circle_model by (by100 simp)
+                              have hq3_sphere: "q3 \<in> ?S"
+                                using h_radial_circle_model by (by100 simp)
+                              have hc_nonzero: "q2 - q1 \<noteq> 0"
+                                using hq12_out by (by100 auto)
+                              have hpunctured_homeo_line:
+                                "(?S - {q1}) homeomorphic ?L"
+                                by (rule homeomorphic_punctured_sphere_hyperplane
+                                    [OF hr_pos hq1_sphere hc_nonzero])
+                              obtain f g where hfg:
+                                "homeomorphism (?S - {q1}) ?L f g"
+                                using hpunctured_homeo_line unfolding homeomorphic_def by (by100 blast)
+                              define a where "a = f q2"
+                              define b where "b = f q3"
+                              have hK_sub_punctured:
+                                "K \<subseteq> ?S - {q1}"
+                              proof -
+                                have hK_sub_full: "K \<subseteq> ?S - {q1, q2, q3}"
+                                  using hK_comp in_components_subset by (by100 blast)
+                                show ?thesis using hK_sub_full by (by100 blast)
+                              qed
+                              have hK_image_line:
+                                "f ` K \<subseteq> ?L - {a, b}"
+                              proof
+                                fix y assume hy: "y \<in> f ` K"
+                                obtain x where hxK: "x \<in> K" and hy_eq: "y = f x"
+                                  using hy by (by100 blast)
+                                have hK_sub_full: "K \<subseteq> ?S - {q1, q2, q3}"
+                                  using hK_comp in_components_subset by (by100 blast)
+                                have hx_dom: "x \<in> ?S - {q1}"
+                                  using hxK hK_sub_punctured by (by100 blast)
+                                have hx_not_q2: "x \<noteq> q2"
+                                  using hxK hK_sub_full by (by100 blast)
+                                have hx_not_q3: "x \<noteq> q3"
+                                  using hxK hK_sub_full by (by100 blast)
+                                have hq2_dom: "q2 \<in> ?S - {q1}"
+                                  using hq2_sphere hq12_out by (by100 blast)
+                                have hq3_dom: "q3 \<in> ?S - {q1}"
+                                  using hq3_sphere hq13_out by (by100 blast)
+                                have hf_img: "f ` (?S - {q1}) = ?L"
+                                  using hfg unfolding homeomorphism_def by (by100 blast)
+                                have hgf:
+                                  "\<And>x. x \<in> ?S - {q1} \<Longrightarrow> g (f x) = x"
+                                  using hfg unfolding homeomorphism_def by (by100 blast)
+                                have hinj: "inj_on f (?S - {q1})"
+                                proof (unfold inj_on_def, intro ballI impI)
+                                  fix x y
+                                  assume hx: "x \<in> ?S - {q1}"
+                                    and hy: "y \<in> ?S - {q1}"
+                                    and hxy: "f x = f y"
+                                  have "g (f x) = g (f y)"
+                                    using hxy by (by100 simp)
+                                  thus "x = y"
+                                    using hgf[OF hx] hgf[OF hy] by (by100 simp)
+                                qed
+                                have hy_L: "y \<in> ?L"
+                                  using hy_eq hx_dom hf_img by (by100 blast)
+                                have hy_ne_a: "y \<noteq> a"
+                                proof
+                                  assume hya: "y = a"
+                                  have "f x = f q2"
+                                    using hya hy_eq unfolding a_def by (by100 simp)
+                                  hence "x = q2"
+                                    using hinj hx_dom hq2_dom unfolding inj_on_def by (by100 blast)
+                                  thus False using hx_not_q2 by (by100 blast)
+                                qed
+                                have hy_ne_b: "y \<noteq> b"
+                                proof
+                                  assume hyb: "y = b"
+                                  have "f x = f q3"
+                                    using hyb hy_eq unfolding b_def by (by100 simp)
+                                  hence "x = q3"
+                                    using hinj hx_dom hq3_dom unfolding inj_on_def by (by100 blast)
+                                  thus False using hx_not_q3 by (by100 blast)
+                                qed
+                                show "y \<in> ?L - {a, b}"
+                                  using hy_L hy_ne_a hy_ne_b by (by100 blast)
+                              qed
+                              have hK_image_component:
+                                "\<exists>Lc \<in> components (?L - {a, b}). f ` K \<subseteq> Lc"
+                              proof -
+                                have hK_ne: "K \<noteq> {}"
+                                  using hK_comp in_components_nonempty by (by100 blast)
+                                obtain y where hyK: "y \<in> K"
+                                  using hK_ne by (by100 blast)
+                                have hfy_img: "f y \<in> f ` K"
+                                  using hyK by (by100 blast)
+                                have hfy_cut: "f y \<in> ?L - {a, b}"
+                                  using hfy_img hK_image_line by (by100 blast)
+                                define Lc where "Lc = connected_component_set (?L - {a, b}) (f y)"
+                                have hLc_comp: "Lc \<in> components (?L - {a, b})"
+                                  unfolding Lc_def by (rule componentsI[OF hfy_cut])
+                                have hK_conn: "connected K"
+                                  using hK_comp in_components_connected by (by100 blast)
+                                have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                                  using hfg unfolding homeomorphism_def by (by100 blast)
+                                have hf_cont_K: "continuous_on K f"
+                                  by (rule continuous_on_subset[OF hf_cont_dom hK_sub_punctured])
+                                have h_img_conn: "connected (f ` K)"
+                                  by (rule connected_continuous_image[OF hf_cont_K hK_conn])
+                                have h_img_sub_Lc: "f ` K \<subseteq> Lc"
+                                  unfolding Lc_def
+                                  by (rule connected_component_maximal
+                                      [OF hfy_img h_img_conn hK_image_line])
+                                show ?thesis using hLc_comp h_img_sub_Lc by (by100 blast)
+                              qed
+                              have h_line_three_sectors:
+                                "\<exists>q\<in>{q1, q2, q3}. q \<notin> closure K"
+                              proof -
+                                obtain Lc where hLc_comp: "Lc \<in> components (?L - {a, b})"
+                                  and hK_img_sub_Lc: "f ` K \<subseteq> Lc"
+                                  using hK_image_component by (by100 blast)
+                                have hK_sub_gLc: "K \<subseteq> g ` Lc"
+                                proof
+                                  fix x assume hx: "x \<in> K"
+                                  have hx_dom: "x \<in> ?S - {q1}"
+                                    using hx hK_sub_punctured by (by100 blast)
+                                  have hfx_Lc: "f x \<in> Lc"
+                                    using hx hK_img_sub_Lc by (by100 blast)
+                                  have "g (f x) = x"
+                                    using hfg hx_dom unfolding homeomorphism_def by (by100 blast)
+                                  moreover have "g (f x) \<in> g ` Lc"
+                                    using hfx_Lc by (rule imageI)
+                                  ultimately show "x \<in> g ` Lc"
+                                    by (by100 simp)
+                                qed
+                                have hq2_dom: "q2 \<in> ?S - {q1}"
+                                  using hq2_sphere hq12_out by (by100 blast)
+                                have hq3_dom: "q3 \<in> ?S - {q1}"
+                                  using hq3_sphere hq13_out by (by100 blast)
+                                have hq2_miss_if_a_miss:
+                                  "a \<notin> closure Lc \<Longrightarrow> q2 \<notin> closure K"
+                                proof
+                                  assume ha_miss: "a \<notin> closure Lc"
+                                  assume hq2_clK: "q2 \<in> closure K"
+                                  have hq2_cl_gLc: "q2 \<in> closure (g ` Lc)"
+                                    using hq2_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
+                                  have hLc_sub_line: "Lc \<subseteq> ?L"
+                                    using hLc_comp in_components_subset by (by100 blast)
+                                  have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
+                                  proof -
+                                    have hg_img: "g ` ?L = ?S - {q1}"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    show ?thesis
+                                      using image_mono[OF hLc_sub_line, of g] hg_img by (by100 blast)
+                                  qed
+                                  have hfg_Lc: "f ` (g ` Lc) = Lc"
+                                  proof
+                                    show "f ` (g ` Lc) \<subseteq> Lc"
+                                    proof
+                                      fix y assume hy: "y \<in> f ` (g ` Lc)"
+                                      obtain x where hx: "x \<in> Lc" and hy_eq: "y = f (g x)"
+                                        using hy by (by100 blast)
+                                      have hx_line: "x \<in> ?L"
+                                        using hx hLc_sub_line by (by100 blast)
+                                      have "f (g x) = x"
+                                        using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                                      thus "y \<in> Lc"
+                                        using hx hy_eq by (by100 simp)
+                                    qed
+                                    show "Lc \<subseteq> f ` (g ` Lc)"
+                                    proof
+                                      fix x assume hx: "x \<in> Lc"
+                                      have hx_line: "x \<in> ?L"
+                                        using hx hLc_sub_line by (by100 blast)
+                                      have hfgx: "f (g x) = x"
+                                        using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                                      have "g x \<in> g ` Lc"
+                                        using hx by (rule imageI)
+                                      hence "f (g x) \<in> f ` (g ` Lc)"
+                                        by (rule imageI)
+                                      thus "x \<in> f ` (g ` Lc)"
+                                      using hfgx by (by100 simp)
+                                    qed
+                                  qed
+                                  have "a \<in> closure Lc"
+                                  proof -
+                                    obtain s where hs_in: "\<And>n. s n \<in> g ` Lc"
+                                      and hs_lim: "(s \<longlongrightarrow> q2) sequentially"
+                                      using hq2_cl_gLc unfolding closure_sequential by (by100 blast)
+                                    have hs_dom: "\<And>n. s n \<in> ?S - {q1}"
+                                      using hs_in hg_Lc_dom by (by100 blast)
+                                    have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    have hfs_lim: "((f \<circ> s) \<longlongrightarrow> f q2) sequentially"
+                                      using hf_cont_dom unfolding continuous_on_sequentially
+                                      using hq2_dom hs_dom hs_lim by (by100 blast)
+                                    have hfs_in: "\<And>n. (f \<circ> s) n \<in> Lc"
+                                    proof -
+                                      fix n
+                                      have "f (s n) \<in> f ` (g ` Lc)"
+                                        using hs_in[of n] by (rule imageI)
+                                      thus "(f \<circ> s) n \<in> Lc"
+                                        using hfg_Lc by (by100 simp)
+                                    qed
+                                    have "f q2 \<in> closure Lc"
+                                      unfolding closure_sequential
+                                      using hfs_in hfs_lim by (by100 blast)
+                                    thus ?thesis
+                                      unfolding a_def .
+                                  qed
+                                  thus False
+                                    using ha_miss by (by100 blast)
+                                qed
+                                have hq3_miss_if_b_miss:
+                                  "b \<notin> closure Lc \<Longrightarrow> q3 \<notin> closure K"
+                                proof
+                                  assume hb_miss: "b \<notin> closure Lc"
+                                  assume hq3_clK: "q3 \<in> closure K"
+                                  have hq3_cl_gLc: "q3 \<in> closure (g ` Lc)"
+                                    using hq3_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
+                                  have hLc_sub_line: "Lc \<subseteq> ?L"
+                                    using hLc_comp in_components_subset by (by100 blast)
+                                  have hg_Lc_dom: "g ` Lc \<subseteq> ?S - {q1}"
+                                  proof -
+                                    have hg_img: "g ` ?L = ?S - {q1}"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    show ?thesis
+                                      using image_mono[OF hLc_sub_line, of g] hg_img by (by100 blast)
+                                  qed
+                                  have hfg_Lc: "f ` (g ` Lc) = Lc"
+                                  proof
+                                    show "f ` (g ` Lc) \<subseteq> Lc"
+                                    proof
+                                      fix y assume hy: "y \<in> f ` (g ` Lc)"
+                                      obtain x where hx: "x \<in> Lc" and hy_eq: "y = f (g x)"
+                                        using hy by (by100 blast)
+                                      have hx_line: "x \<in> ?L"
+                                        using hx hLc_sub_line by (by100 blast)
+                                      have "f (g x) = x"
+                                        using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                                      thus "y \<in> Lc"
+                                        using hx hy_eq by (by100 simp)
+                                    qed
+                                    show "Lc \<subseteq> f ` (g ` Lc)"
+                                    proof
+                                      fix x assume hx: "x \<in> Lc"
+                                      have hx_line: "x \<in> ?L"
+                                        using hx hLc_sub_line by (by100 blast)
+                                      have hfgx: "f (g x) = x"
+                                        using hfg hx_line unfolding homeomorphism_def by (by100 blast)
+                                      have "g x \<in> g ` Lc"
+                                        using hx by (rule imageI)
+                                      hence "f (g x) \<in> f ` (g ` Lc)"
+                                        by (rule imageI)
+                                      thus "x \<in> f ` (g ` Lc)"
+                                      using hfgx by (by100 simp)
+                                    qed
+                                  qed
+                                  have "b \<in> closure Lc"
+                                  proof -
+                                    obtain s where hs_in: "\<And>n. s n \<in> g ` Lc"
+                                      and hs_lim: "(s \<longlongrightarrow> q3) sequentially"
+                                      using hq3_cl_gLc unfolding closure_sequential by (by100 blast)
+                                    have hs_dom: "\<And>n. s n \<in> ?S - {q1}"
+                                      using hs_in hg_Lc_dom by (by100 blast)
+                                    have hf_cont_dom: "continuous_on (?S - {q1}) f"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    have hfs_lim: "((f \<circ> s) \<longlongrightarrow> f q3) sequentially"
+                                      using hf_cont_dom unfolding continuous_on_sequentially
+                                      using hq3_dom hs_dom hs_lim by (by100 blast)
+                                    have hfs_in: "\<And>n. (f \<circ> s) n \<in> Lc"
+                                    proof -
+                                      fix n
+                                      have "f (s n) \<in> f ` (g ` Lc)"
+                                        using hs_in[of n] by (rule imageI)
+                                      thus "(f \<circ> s) n \<in> Lc"
+                                        using hfg_Lc by (by100 simp)
+                                    qed
+                                    have "f q3 \<in> closure Lc"
+                                      unfolding closure_sequential
+                                      using hfs_in hfs_lim by (by100 blast)
+                                    thus ?thesis
+                                      unfolding b_def .
+                                  qed
+                                  thus False
+                                    using hb_miss by (by100 blast)
+                                qed
+                                have hq1_miss_if_bounded:
+                                  "bounded Lc \<Longrightarrow> q1 \<notin> closure K"
+                                proof
+                                  assume hLc_bounded: "bounded Lc"
+                                  assume hq1_clK: "q1 \<in> closure K"
+                                  have hq1_cl_gLc: "q1 \<in> closure (g ` Lc)"
+                                    using hq1_clK closure_mono[OF hK_sub_gLc] by (by100 blast)
+                                  have hLc_sub_line: "Lc \<subseteq> ?L"
+                                    using hLc_comp in_components_subset by (by100 blast)
+                                  have hclLc_sub_line: "closure Lc \<subseteq> ?L"
+                                    by (rule closure_minimal[OF hLc_sub_line closed_hyperplane])
+                                  have hclLc_compact: "compact (closure Lc)"
+                                    using hLc_bounded by (by100 simp)
+                                  have hg_cont_clLc: "continuous_on (closure Lc) g"
+                                  proof -
+                                    have hg_cont_line: "continuous_on ?L g"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    show ?thesis
+                                      by (rule continuous_on_subset[OF hg_cont_line hclLc_sub_line])
+                                  qed
+                                  have hcl_gLc_sub_g_clLc: "closure (g ` Lc) \<subseteq> g ` closure Lc"
+                                  proof (rule closure_minimal)
+                                    show "g ` Lc \<subseteq> g ` closure Lc"
+                                      by (rule image_mono[OF closure_subset])
+                                    have "compact (g ` closure Lc)"
+                                      by (rule compact_continuous_image[OF hg_cont_clLc hclLc_compact])
+                                    thus "closed (g ` closure Lc)"
+                                      by (rule compact_imp_closed)
+                                  qed
+                                  have hq1_in_g_clLc: "q1 \<in> g ` closure Lc"
+                                    using hq1_cl_gLc hcl_gLc_sub_g_clLc by (by100 blast)
+                                  have "q1 \<notin> g ` closure Lc"
+                                  proof -
+                                    have hg_img: "g ` ?L = ?S - {q1}"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    have "g ` closure Lc \<subseteq> ?S - {q1}"
+                                      using image_mono[OF hclLc_sub_line, of g] hg_img by (by100 blast)
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  qed
+                                  thus False
+                                    using hq1_in_g_clLc by (by100 blast)
+                                qed
+                                have hLc_sector_case:
+                                  "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
+                                proof -
+                                  have hLc_conn: "connected Lc"
+                                    using hLc_comp in_components_connected by (by100 blast)
+                                  have hLc_sub_line: "Lc \<subseteq> ?L - {a, b}"
+                                    using hLc_comp in_components_subset by (by100 blast)
+                                  have ha_line: "a \<in> ?L"
+                                  proof -
+                                    have hf_img: "f ` (?S - {q1}) = ?L"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    show ?thesis
+                                      unfolding a_def using hq2_dom hf_img by (by100 blast)
+                                  qed
+                                  have hb_line: "b \<in> ?L"
+                                  proof -
+                                    have hf_img: "f ` (?S - {q1}) = ?L"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    show ?thesis
+                                      unfolding b_def using hq3_dom hf_img by (by100 blast)
+                                  qed
+                                  have hab_ne: "a \<noteq> b"
+                                  proof
+                                    assume hab: "a = b"
+                                    have hgf:
+                                      "\<And>x. x \<in> ?S - {q1} \<Longrightarrow> g (f x) = x"
+                                      using hfg unfolding homeomorphism_def by (by100 blast)
+                                    have "f q2 = f q3"
+                                      using hab unfolding a_def b_def by (by100 simp)
+                                    hence "g (f q2) = g (f q3)"
+                                      by (by100 simp)
+                                    hence "q2 = q3"
+                                      using hgf[OF hq2_dom] hgf[OF hq3_dom] by (by100 simp)
+                                    thus False
+                                      using hq23_out by (by100 blast)
+                                  qed
+                                  have h_line_component_trichotomy:
+                                    "a \<notin> closure Lc \<or> b \<notin> closure Lc \<or> bounded Lc"
+                                  proof (cases "a \<in> closure Lc \<and> b \<in> closure Lc")
+                                    case False
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  next
+                                    case True
+                                    have ha_cl_Lc: "a \<in> closure Lc"
+                                      using True by (by100 blast)
+                                    have hb_cl_Lc: "b \<in> closure Lc"
+                                      using True by (by100 blast)
+                                    have hLc_sub_L: "Lc \<subseteq> ?L"
+                                      using hLc_sub_line by (by100 blast)
+                                    have hclLc_sub_L: "closure Lc \<subseteq> ?L"
+                                      by (rule closure_minimal[OF hLc_sub_L closed_hyperplane])
+                                    define d where "d = b - a"
+                                    define D where "D = d \<bullet> d"
+                                    define \<phi> where "\<phi> = (\<lambda>x::real^2. (x - a) \<bullet> d)"
+                                    have hd_ne: "d \<noteq> 0"
+                                      using hab_ne unfolding d_def by (by100 simp)
+                                    have hD_pos: "D > 0"
+                                      unfolding D_def using hd_ne by (by100 simp)
+                                    have hL_eq_aff: "?L = affine hull {a, b}"
+                                    proof -
+                                      have hL_affine: "affine ?L"
+                                        by (rule affine_hyperplane)
+                                      have hL_dim: "aff_dim ?L = 1"
+                                        using hc_nonzero aff_dim_hyperplane[of "q2 - q1" 0]
+                                        by (by100 simp)
+                                      have hab_sub_L: "{a, b} \<subseteq> ?L"
+                                        using ha_line hb_line by (by100 blast)
+                                      have h_aff_sub_L: "affine hull {a, b} \<subseteq> ?L"
+                                        by (rule hull_minimal) (rule hab_sub_L, rule hL_affine)
+                                      have h_aff_ne: "affine hull {a, b} \<noteq> {}"
+                                        using hull_inc[of a "{a, b}"] by (by100 blast)
+                                      have h_aff_dim: "aff_dim (affine hull {a, b}) = 1"
+                                        using hab_ne by (by100 simp)
+                                      have "affine hull {a, b} = ?L"
+                                      proof (rule affine_dim_equal
+                                          [OF affine_affine_hull hL_affine h_aff_ne
+                                              h_aff_sub_L])
+                                        show "aff_dim (affine hull {a, b}) = aff_dim ?L"
+                                          using h_aff_dim hL_dim by (by100 simp)
+                                      qed
+                                      thus ?thesis by (by100 simp)
+                                    qed
+                                    have h\<phi>_a: "\<phi> a = 0"
+                                      unfolding \<phi>_def by (by100 simp)
+                                    have h\<phi>_b: "\<phi> b = D"
+                                      unfolding \<phi>_def D_def d_def by (by100 simp)
+                                    have h\<phi>_coord:
+                                      "\<And>x. x \<in> ?L \<Longrightarrow> x = a + (\<phi> x / D) *\<^sub>R d"
+                                    proof -
+                                      fix x assume hxL: "x \<in> ?L"
+                                      have hx_aff: "x \<in> affine hull {a, b}"
+                                        using hxL hL_eq_aff by (by100 simp)
+                                      obtain u where hx_u: "x = a + u *\<^sub>R d"
+                                        using hx_aff unfolding affine_hull_2_alt d_def by (by100 blast)
+                                      have h\<phi>x: "\<phi> x = u * D"
+                                        unfolding \<phi>_def D_def using hx_u by (simp add: algebra_simps)
+                                      have "\<phi> x / D = u"
+                                        using hD_pos h\<phi>x by (by100 simp)
+                                      thus "x = a + (\<phi> x / D) *\<^sub>R d"
+                                        using hx_u by (by100 simp)
+                                    qed
+                                    have h\<phi>_cont_L: "continuous_on ?L \<phi>"
+                                      unfolding \<phi>_def by (intro continuous_intros)
+                                    have h\<phi>_cut_avoid:
+                                      "\<phi> ` Lc \<inter> {0, D} = {}"
+                                    proof (rule equals0I)
+                                      fix y assume hy: "y \<in> \<phi> ` Lc \<inter> {0, D}"
+                                      obtain x where hxLc: "x \<in> Lc" and hy_eq: "y = \<phi> x"
+                                        using hy by (by100 blast)
+                                      have hxL: "x \<in> ?L"
+                                        using hxLc hLc_sub_L by (by100 blast)
+                                      have hx_not_a: "x \<noteq> a"
+                                        using hxLc hLc_sub_line by (by100 blast)
+                                      have hx_not_b: "x \<noteq> b"
+                                        using hxLc hLc_sub_line by (by100 blast)
+                                      consider (zero) "y = 0" | (D) "y = D"
+                                        using hy by (by100 blast)
+                                      thus False
+                                      proof cases
+                                        case zero
+                                        have "\<phi> x / D = 0"
+                                          using zero hy_eq hD_pos by (by100 simp)
+                                        hence "x = a"
+                                          using h\<phi>_coord[OF hxL] by (by100 simp)
+                                        thus False
+                                          using hx_not_a by (by100 blast)
+                                      next
+                                        case D
+                                        have "\<phi> x / D = 1"
+                                          using D hy_eq hD_pos by (by100 simp)
+                                        hence "x = b"
+                                          using h\<phi>_coord[OF hxL] unfolding d_def by (by100 simp)
+                                        thus False
+                                          using hx_not_b by (by100 blast)
+                                      qed
+                                    qed
+                                    have h\<phi>_conn: "connected (\<phi> ` Lc)"
+                                    proof -
+                                      have h\<phi>_cont_Lc: "continuous_on Lc \<phi>"
+                                        by (rule continuous_on_subset[OF h\<phi>_cont_L hLc_sub_L])
+                                      show ?thesis
+                                        by (rule connected_continuous_image[OF h\<phi>_cont_Lc hLc_conn])
+                                    qed
+                                    have h\<phi>_cl_subset:
+                                      "\<phi> ` closure Lc \<subseteq> closure (\<phi> ` Lc)"
+                                      by (rule continuous_image_closure_subset
+                                          [OF h\<phi>_cont_L hclLc_sub_L])
+                                    have h0_cl: "0 \<in> closure (\<phi> ` Lc)"
+                                    proof -
+                                      have h\<phi>a_img: "\<phi> a \<in> \<phi> ` closure Lc"
+                                        using ha_cl_Lc by (rule imageI)
+                                      have h\<phi>a_cl: "\<phi> a \<in> closure (\<phi> ` Lc)"
+                                        using h\<phi>_cl_subset h\<phi>a_img by (rule subsetD)
+                                      thus ?thesis
+                                        using h\<phi>_a by (by100 simp)
+                                    qed
+                                    have hD_cl: "D \<in> closure (\<phi> ` Lc)"
+                                    proof -
+                                      have h\<phi>b_img: "\<phi> b \<in> \<phi> ` closure Lc"
+                                        using hb_cl_Lc by (rule imageI)
+                                      have h\<phi>b_cl: "\<phi> b \<in> closure (\<phi> ` Lc)"
+                                        using h\<phi>_cl_subset h\<phi>b_img by (rule subsetD)
+                                      thus ?thesis
+                                        using h\<phi>_b by (by100 simp)
+                                    qed
+                                    have h\<phi>_between:
+                                      "\<phi> ` Lc \<subseteq> {0<..<D}"
+                                    proof
+                                      fix t assume htT: "t \<in> \<phi> ` Lc"
+                                      have ht_ne0: "t \<noteq> 0"
+                                      proof
+                                        assume ht0: "t = 0"
+                                        have "t \<in> \<phi> ` Lc \<inter> {0, D}"
+                                          using htT ht0 by (by100 blast)
+                                        thus False using h\<phi>_cut_avoid by (by100 simp)
+                                      qed
+                                      have ht_neD: "t \<noteq> D"
+                                      proof
+                                        assume htD: "t = D"
+                                        have "t \<in> \<phi> ` Lc \<inter> {0, D}"
+                                          using htT htD by (by100 blast)
+                                        thus False using h\<phi>_cut_avoid by (by100 simp)
+                                      qed
+                                      have ht_pos: "0 < t"
+                                      proof (rule ccontr)
+                                        assume "\<not> 0 < t"
+                                        hence ht_le0: "t \<le> 0" by (by100 simp)
+                                        obtain y where hyT: "y \<in> \<phi> ` Lc"
+                                          and hy_dist: "dist D y < D / 2"
+                                          using closure_approachableD[OF hD_cl, of "D / 2"] hD_pos
+                                          by (by100 auto)
+                                        have hD_minus_y: "D - y < D / 2"
+                                        proof -
+                                          have h_abs: "\<bar>D - y\<bar> < D / 2"
+                                            using hy_dist by (simp add: dist_real_def)
+                                          have "D - y \<le> \<bar>D - y\<bar>"
+                                            by (by100 simp)
+                                          thus ?thesis
+                                            using h_abs by (by100 linarith)
+                                        qed
+                                        have hy_ge0: "0 \<le> y"
+                                          using hD_minus_y hD_pos by (by100 linarith)
+                                        have h0_in_T: "0 \<in> \<phi> ` Lc"
+                                          by (rule connectedD_interval
+                                              [OF h\<phi>_conn htT hyT ht_le0 hy_ge0])
+                                        have "0 \<in> \<phi> ` Lc \<inter> {0, D}"
+                                          using h0_in_T by (by100 blast)
+                                        thus False using h\<phi>_cut_avoid by (by100 simp)
+                                      qed
+                                      have ht_ltD: "t < D"
+                                      proof (rule ccontr)
+                                        assume "\<not> t < D"
+                                        hence hD_le_t: "D \<le> t" by (by100 simp)
+                                        obtain y where hyT: "y \<in> \<phi> ` Lc"
+                                          and hy_dist: "dist 0 y < D / 2"
+                                          using closure_approachableD[OF h0_cl, of "D / 2"] hD_pos
+                                          by (by100 auto)
+                                        have hy_lt_half: "y < D / 2"
+                                        proof -
+                                          have h_abs: "\<bar>y\<bar> < D / 2"
+                                            using hy_dist by (simp add: dist_real_def)
+                                          have "y \<le> \<bar>y\<bar>"
+                                            by (by100 simp)
+                                          thus ?thesis
+                                            using h_abs by (by100 linarith)
+                                        qed
+                                        have hy_leD: "y \<le> D"
+                                          using hy_lt_half hD_pos by (by100 linarith)
+                                        have hD_in_T: "D \<in> \<phi> ` Lc"
+                                          by (rule connectedD_interval
+                                              [OF h\<phi>_conn hyT htT hy_leD hD_le_t])
+                                        have "D \<in> \<phi> ` Lc \<inter> {0, D}"
+                                          using hD_in_T by (by100 blast)
+                                        thus False using h\<phi>_cut_avoid by (by100 simp)
+                                      qed
+                                      show "t \<in> {0<..<D}"
+                                        using ht_pos ht_ltD by (by100 simp)
+                                    qed
+                                    have hLc_sub_segment:
+                                      "Lc \<subseteq> closed_segment a b"
+                                    proof
+                                      fix x assume hxLc: "x \<in> Lc"
+                                      have hxL: "x \<in> ?L"
+                                        using hxLc hLc_sub_L by (by100 blast)
+                                      have h\<phi>x_between: "\<phi> x \<in> {0<..<D}"
+                                        using hxLc h\<phi>_between by (by100 blast)
+                                      define u where "u = \<phi> x / D"
+                                      have hu0: "0 \<le> u"
+                                        unfolding u_def using h\<phi>x_between hD_pos by (by100 simp)
+                                      have hu1: "u \<le> 1"
+                                        unfolding u_def using h\<phi>x_between hD_pos by (by100 simp)
+                                      have hx_u: "x = a + u *\<^sub>R d"
+                                        using h\<phi>_coord[OF hxL] unfolding u_def .
+                                      have hx_conv: "x = (1 - u) *\<^sub>R a + u *\<^sub>R b"
+                                        using hx_u unfolding d_def by (simp add: algebra_simps)
+                                      show "x \<in> closed_segment a b"
+                                        unfolding closed_segment_def
+                                        using hu0 hu1 hx_conv by (by100 blast)
+                                    qed
+                                    have "bounded Lc"
+                                      by (rule bounded_subset[OF bounded_closed_segment hLc_sub_segment])
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  qed
+                                  show ?thesis by (rule h_line_component_trichotomy)
+                                qed
+                                show ?thesis
+                                proof -
+                                  consider (miss_a) "a \<notin> closure Lc"
+                                    | (miss_b) "b \<notin> closure Lc"
+                                    | (bounded) "bounded Lc"
+                                    using hLc_sector_case by (by100 blast)
+                                  thus ?thesis
+                                  proof cases
+                                    case miss_a
+                                    have "q2 \<notin> closure K"
+                                      by (rule hq2_miss_if_a_miss[OF miss_a])
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  next
+                                    case miss_b
+                                    have "q3 \<notin> closure K"
+                                      by (rule hq3_miss_if_b_miss[OF miss_b])
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  next
+                                    case bounded
+                                    have "q1 \<notin> closure K"
+                                      by (rule hq1_miss_if_bounded[OF bounded])
+                                    thus ?thesis
+                                      by (by100 blast)
+                                  qed
+                                qed
+                              qed
+                              show ?thesis by (rule h_line_three_sectors)
+                            qed
+                          obtain q where hq_cut: "q \<in> {q1, q2, q3}"
+                            and hq_not_clK: "q \<notin> closure K"
+                            using hK_misses_cut by (by100 blast)
+                          have h_psub:
+                            "{q1, q2, q3} \<inter> closure K \<subset> {q1, q2, q3}"
+                          proof -
+                            have h_sub: "{q1, q2, q3} \<inter> closure K \<subseteq> {q1, q2, q3}"
+                              by (by100 blast)
+                            have h_ne: "{q1, q2, q3} \<inter> closure K \<noteq> {q1, q2, q3}"
+                              using hq_cut hq_not_clK by (by100 blast)
+                            show ?thesis using h_sub h_ne by (by100 blast)
+                          qed
+                          have h_card_lt:
+                            "card ({q1, q2, q3} \<inter> closure K) < card {q1, q2, q3}"
+                          proof (rule psubset_card_mono)
+                            show "finite {q1, q2, q3}" by (by100 simp)
+                            show "{q1, q2, q3} \<inter> closure K \<subset> {q1, q2, q3}"
+                              by (rule h_psub)
+                          qed
+                          have h_qs_card: "card {q1, q2, q3} = 3"
+                            using hq12_out hq13_out hq23_out by (by100 simp)
+                          show "card ({q1, q2, q3} \<inter> closure K) \<le> 2"
+                            using h_card_lt h_qs_card by (by100 simp)
+                        qed
                         have h_pair12_side_to_circle_side:
                           "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
                             \<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K\<rbrakk>
@@ -10430,7 +11094,178 @@ proof -
                             \<exists>K \<in> components (sphere P r - {q2, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K\<rbrakk>
                            \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q2, q3}).
                                   \<rho> c \<in> K \<and> \<rho> d \<in> K"
-                          sorry
+                        proof -
+                          let ?S = "sphere P r"
+                          let ?x = "\<rho> c"
+                          let ?y = "\<rho> d"
+                          assume hx: "?x \<in> ?S - {q1, q2, q3}"
+                            and hy: "?y \<in> ?S - {q1, q2, q3}"
+                            and h12: "\<exists>K \<in> components (?S - {q1, q2}). ?x \<in> K \<and> ?y \<in> K"
+                            and h13: "\<exists>K \<in> components (?S - {q1, q3}). ?x \<in> K \<and> ?y \<in> K"
+                            and h23: "\<exists>K \<in> components (?S - {q2, q3}). ?x \<in> K \<and> ?y \<in> K"
+                          define K where "K = connected_component_set (?S - {q1, q2, q3}) ?x"
+                          have hK_comp: "K \<in> components (?S - {q1, q2, q3})"
+                            unfolding K_def by (rule componentsI[OF hx])
+                          have hxK: "?x \<in> K"
+                            unfolding K_def using hx connected_component_refl by (by100 simp)
+                          have h_pair_component_forces_omitted_closure:
+                            "\<And>a b q. \<lbrakk>{a, b, q} = {q1, q2, q3};
+                              \<exists>C \<in> components (?S - {a, b}). ?x \<in> C \<and> ?y \<in> C;
+                              ?y \<notin> K\<rbrakk>
+                             \<Longrightarrow> q \<in> closure K"
+                          proof -
+                            fix a b q
+                            assume habq_set: "{a, b, q} = {q1, q2, q3}"
+                              and hpair: "\<exists>C \<in> components (?S - {a, b}). ?x \<in> C \<and> ?y \<in> C"
+                              and hy_not_K: "?y \<notin> K"
+                            obtain C where hC_comp: "C \<in> components (?S - {a, b})"
+                              and hxC: "?x \<in> C" and hyC: "?y \<in> C"
+                              using hpair by (by100 blast)
+                            have h_triple_eq_pair_delete:
+                              "?S - {q1, q2, q3} = (?S - {a, b}) - {q}"
+                              using habq_set by (by100 blast)
+                            have hK_sub_C:
+                              "K \<subseteq> C"
+                            proof -
+                              have hC_eq:
+                                "C = connected_component_set (?S - {a, b}) ?x"
+                              proof -
+                                obtain z where hz: "z \<in> ?S - {a, b}"
+                                  and hC_z: "C = connected_component_set (?S - {a, b}) z"
+                                  using hC_comp unfolding components_iff by (by100 blast)
+                                have "?x \<in> connected_component_set (?S - {a, b}) z"
+                                  using hxC hC_z by (by100 simp)
+                                hence "connected_component_set (?S - {a, b}) ?x =
+                                    connected_component_set (?S - {a, b}) z"
+                                  using connected_component_eq by (by100 blast)
+                                thus ?thesis
+                                  using hC_z by (by100 simp)
+                              qed
+                              have hK_conn: "connected K"
+                                using hK_comp in_components_connected by (by100 blast)
+                              have hK_sub_pair: "K \<subseteq> ?S - {a, b}"
+                              proof -
+                                have hK_sub_triple: "K \<subseteq> ?S - {q1, q2, q3}"
+                                  by (rule in_components_subset[OF hK_comp])
+                                have hK_sub_pair_delete: "K \<subseteq> (?S - {a, b}) - {q}"
+                                  using hK_sub_triple h_triple_eq_pair_delete by (by100 simp)
+                                show ?thesis
+                                  by (rule subset_trans[OF hK_sub_pair_delete Diff_subset])
+                              qed
+                              have "K \<subseteq> connected_component_set (?S - {a, b}) ?x"
+                                by (rule connected_component_maximal[OF hxK hK_conn hK_sub_pair])
+                              thus ?thesis
+                                using hC_eq by (by100 simp)
+                            qed
+                            have hK_comp_rel:
+                              "K \<in> components (C - {q})"
+                            proof -
+                              have hK_sub_triple: "K \<subseteq> ?S - {q1, q2, q3}"
+                                by (rule in_components_subset[OF hK_comp])
+                              have hK_sub_pair_delete0: "K \<subseteq> (?S - {a, b}) - {q}"
+                                using hK_sub_triple h_triple_eq_pair_delete by (by100 simp)
+                              have hK_sub_pair_delete: "K \<subseteq> C - {q}"
+                                using hK_sub_C hK_sub_pair_delete0 by (by100 blast)
+                              have hx_pair_delete: "?x \<in> C - {q}"
+                                using hxK hK_sub_pair_delete by (by100 blast)
+                              have hK_conn: "connected K"
+                                using hK_comp in_components_connected by (by100 blast)
+                              have hK_sub_rel_cc:
+                                "K \<subseteq> connected_component_set (C - {q}) ?x"
+                                by (rule connected_component_maximal
+                                    [OF hxK hK_conn hK_sub_pair_delete])
+                              have hC_sub_pair: "C \<subseteq> ?S - {a, b}"
+                                by (rule in_components_subset[OF hC_comp])
+                              have h_rel_sub_triple:
+                                "C - {q} \<subseteq> ?S - {q1, q2, q3}"
+                              proof -
+                                have "C - {q} \<subseteq> (?S - {a, b}) - {q}"
+                                  using hC_sub_pair by (by100 blast)
+                                thus ?thesis
+                                  using h_triple_eq_pair_delete by (by100 simp)
+                              qed
+                              have h_rel_cc_sub_K:
+                                "connected_component_set (C - {q}) ?x \<subseteq> K"
+                              proof -
+                                have "connected_component_set (C - {q}) ?x
+                                    \<subseteq> connected_component_set (?S - {q1, q2, q3}) ?x"
+                                  by (rule connected_component_mono[OF h_rel_sub_triple])
+                                thus ?thesis
+                                  unfolding K_def .
+                              qed
+                              have h_rel_cc_eq:
+                                "connected_component_set (C - {q}) ?x = K"
+                                using hK_sub_rel_cc h_rel_cc_sub_K by (by100 blast)
+                              have "connected_component_set (C - {q}) ?x \<in> components (C - {q})"
+                                by (rule componentsI[OF hx_pair_delete])
+                              thus ?thesis
+                                using h_rel_cc_eq by (by100 simp)
+                            qed
+                            have hC_conn: "connected C"
+                              using hC_comp in_components_connected by (by100 blast)
+                            have hy_pair_delete: "?y \<in> C - {q}"
+                              using hy hyC h_triple_eq_pair_delete by (by100 blast)
+                            have hK_proper_rel: "K \<noteq> C - {q}"
+                              using hy_not_K hy_pair_delete by (by100 blast)
+                            have h_pair_circle_delete_component_closure:
+                              "\<lbrakk>C \<in> components (?S - {a, b}); K \<in> components (C - {q});
+                                K \<noteq> C - {q}; connected C; {a, b, q} = {q1, q2, q3}\<rbrakk>
+                               \<Longrightarrow> q \<in> closure K"
+                              sorry
+                            show "q \<in> closure K"
+                              by (rule h_pair_circle_delete_component_closure
+                                  [OF hC_comp hK_comp_rel hK_proper_rel hC_conn habq_set])
+                          qed
+                          have h_all_cuts_in_closure_if_split:
+                            "?y \<notin> K \<Longrightarrow> {q1, q2, q3} \<subseteq> closure K"
+                          proof -
+                            assume hy_not_K: "?y \<notin> K"
+                            have hq1_cl: "q1 \<in> closure K"
+                            proof -
+                              have "{q2, q3, q1} = {q1, q2, q3}"
+                                by (by100 blast)
+                              thus ?thesis
+                                by (rule h_pair_component_forces_omitted_closure
+                                    [OF _ h23 hy_not_K])
+                            qed
+                            have hq2_cl: "q2 \<in> closure K"
+                            proof -
+                              have "{q1, q3, q2} = {q1, q2, q3}"
+                                by (by100 blast)
+                              thus ?thesis
+                                by (rule h_pair_component_forces_omitted_closure
+                                    [OF _ h13 hy_not_K])
+                            qed
+                            have hq3_cl: "q3 \<in> closure K"
+                            proof -
+                              have "{q1, q2, q3} = {q1, q2, q3}"
+                                by (by100 blast)
+                              thus ?thesis
+                                by (rule h_pair_component_forces_omitted_closure
+                                    [OF _ h12 hy_not_K])
+                            qed
+                            show ?thesis
+                              using hq1_cl hq2_cl hq3_cl by (by100 blast)
+                          qed
+                          have hyK: "?y \<in> K"
+                          proof (rule ccontr)
+                            assume hy_not_K: "?y \<notin> K"
+                            have h_all_cl: "{q1, q2, q3} \<subseteq> closure K"
+                              by (rule h_all_cuts_in_closure_if_split[OF hy_not_K])
+                            have h_inter_eq:
+                              "{q1, q2, q3} \<inter> closure K = {q1, q2, q3}"
+                              using h_all_cl by (by100 blast)
+                            have h_card_le:
+                              "card ({q1, q2, q3} \<inter> closure K) \<le> 2"
+                              by (rule h_circle_component_closure_bound[OF hK_comp])
+                            have h_qs_card: "card {q1, q2, q3} = 3"
+                              using h_radial_circle_model by (by100 simp)
+                            show False
+                              using h_card_le h_inter_eq h_qs_card by (by100 simp)
+                          qed
+                          show ?thesis
+                            using hK_comp hxK hyK by (by100 blast)
+                        qed
                         have h_radial_connector_from_circle:
                           "\<lbrakk>c \<in> ball P r - ?R; d \<in> ball P r - ?R;
                             \<exists>K \<in> components (sphere P r - {q1, q2, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K\<rbrakk>
