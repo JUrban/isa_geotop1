@@ -9395,6 +9395,14 @@ proof -
           "ball P \<delta> \<inter> M =
             ball P \<delta> \<inter> (closed_segment P p1 \<union> closed_segment P p2 \<union> closed_segment P p3)"
           using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hballE_loc: "ball P \<delta> \<inter> E = {P}"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hB1_model_loc: "ball P \<delta> \<inter> B1 = ball P \<delta> \<inter> closed_segment P p1"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hB2_model_loc: "ball P \<delta> \<inter> B2 = ball P \<delta> \<inter> closed_segment P p2"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
+        have hB3_model_loc: "ball P \<delta> \<inter> B3 = ball P \<delta> \<inter> closed_segment P p3"
+          using h\<delta>_model_pack apply (elim conjE) apply assumption done
         have h\<delta>_finite: "finite (components (ball P \<delta> - M))"
           using h\<delta>_model_pack apply (elim conjE) apply assumption done
         have h\<delta>_sectors:
@@ -9869,7 +9877,174 @@ proof -
                         "\<lbrakk>A12 = D12; A13 = D13; A23 = D23;
                           c \<in> ball P \<delta> - ?R; d \<in> ball P \<delta> - ?R\<rbrakk>
                         \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - ?R \<and> c \<in> T \<and> d \<in> T"
-                        sorry
+                      proof -
+                        assume hA12D12': "A12 = D12"
+                          and hA13D13': "A13 = D13"
+                          and hA23D23': "A23 = D23"
+                          and hcR': "c \<in> ball P \<delta> - ?R"
+                          and hdR': "d \<in> ball P \<delta> - ?R"
+                        define r where "r = \<delta> / 2"
+                        define \<rho> where "\<rho> = (\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P))"
+                        define q1 where "q1 = P + (r / dist P p1) *\<^sub>R (p1 - P)"
+                        define q2 where "q2 = P + (r / dist P p2) *\<^sub>R (p2 - P)"
+                        define q3 where "q3 = P + (r / dist P p3) *\<^sub>R (p3 - P)"
+                        have h_endpoint_rays_disjoint:
+                          "(?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {} \<and>
+                           (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {} \<and>
+                           (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+                        proof -
+                          have h12_empty:
+                            "(?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta> = {}"
+                          proof (rule equals0I)
+                            fix z
+                            assume hz: "z \<in> (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta>"
+                            have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+                            have hz_s1: "z \<in> ?S1" using hz by (by100 blast)
+                            have hz_s2: "z \<in> ?S2" using hz by (by100 blast)
+                            have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+                            have hz_B1: "z \<in> B1"
+                              using hz_ball hz_s1 hB1_model_loc by (by100 blast)
+                            have hz_B2: "z \<in> B2"
+                              using hz_ball hz_s2 hB2_model_loc by (by100 blast)
+                            have hz_notE: "z \<notin> E"
+                              using hz_ball hz_neP hballE_loc by (by100 blast)
+                            have hz_i1: "z \<in> geotop_arc_interior B1 E"
+                              unfolding geotop_arc_interior_def using hz_B1 hz_notE by (by100 blast)
+                            have hz_i2: "z \<in> geotop_arc_interior B2 E"
+                              unfolding geotop_arc_interior_def using hz_B2 hz_notE by (by100 blast)
+                            show False using hz_i1 hz_i2 h_int12 by (by100 blast)
+                          qed
+                          have h13_empty:
+                            "(?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+                          proof (rule equals0I)
+                            fix z
+                            assume hz: "z \<in> (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+                            have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+                            have hz_s1: "z \<in> ?S1" using hz by (by100 blast)
+                            have hz_s3: "z \<in> ?S3" using hz by (by100 blast)
+                            have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+                            have hz_B1: "z \<in> B1"
+                              using hz_ball hz_s1 hB1_model_loc by (by100 blast)
+                            have hz_B3: "z \<in> B3"
+                              using hz_ball hz_s3 hB3_model_loc by (by100 blast)
+                            have hz_notE: "z \<notin> E"
+                              using hz_ball hz_neP hballE_loc by (by100 blast)
+                            have hz_i1: "z \<in> geotop_arc_interior B1 E"
+                              unfolding geotop_arc_interior_def using hz_B1 hz_notE by (by100 blast)
+                            have hz_i3: "z \<in> geotop_arc_interior B3 E"
+                              unfolding geotop_arc_interior_def using hz_B3 hz_notE by (by100 blast)
+                            show False using hz_i1 hz_i3 h_int13 by (by100 blast)
+                          qed
+                          have h23_empty:
+                            "(?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta> = {}"
+                          proof (rule equals0I)
+                            fix z
+                            assume hz: "z \<in> (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+                            have hz_ball: "z \<in> ball P \<delta>" using hz by (by100 blast)
+                            have hz_s2: "z \<in> ?S2" using hz by (by100 blast)
+                            have hz_s3: "z \<in> ?S3" using hz by (by100 blast)
+                            have hz_neP: "z \<noteq> P" using hz by (by100 blast)
+                            have hz_B2: "z \<in> B2"
+                              using hz_ball hz_s2 hB2_model_loc by (by100 blast)
+                            have hz_B3: "z \<in> B3"
+                              using hz_ball hz_s3 hB3_model_loc by (by100 blast)
+                            have hz_notE: "z \<notin> E"
+                              using hz_ball hz_neP hballE_loc by (by100 blast)
+                            have hz_i2: "z \<in> geotop_arc_interior B2 E"
+                              unfolding geotop_arc_interior_def using hz_B2 hz_notE by (by100 blast)
+                            have hz_i3: "z \<in> geotop_arc_interior B3 E"
+                              unfolding geotop_arc_interior_def using hz_B3 hz_notE by (by100 blast)
+                            show False using hz_i2 hz_i3 h_int23 by (by100 blast)
+                          qed
+                          show ?thesis using h12_empty h13_empty h23_empty by (by100 blast)
+                        qed
+                        have h_radial_circle_model:
+                          "r > 0 \<and>
+                           q1 \<in> ?S1 - {P} \<and> q2 \<in> ?S2 - {P} \<and> q3 \<in> ?S3 - {P} \<and>
+                           dist P q1 = r \<and> dist P q2 = r \<and> dist P q3 = r \<and>
+                           q1 \<noteq> q2 \<and> q1 \<noteq> q3 \<and> q2 \<noteq> q3 \<and>
+                           (?S1 - {P}) \<inter> sphere P r = {q1} \<and>
+                           (?S2 - {P}) \<inter> sphere P r = {q2} \<and>
+                           (?S3 - {P}) \<inter> sphere P r = {q3} \<and>
+                           ?R \<inter> sphere P r = {q1, q2, q3}"
+                          sorry
+                        have h_radial_traces_local:
+                          "\<rho> c \<in> sphere P r - {q1, q2, q3} \<and>
+                           \<rho> d \<in> sphere P r - {q1, q2, q3}"
+                          sorry
+                        have h_pair12_side_to_circle_side:
+                          "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
+                            \<exists>K \<in> components (UNIV - (B1 \<union> B2)). x \<in> K \<and> y \<in> K\<rbrakk>
+                           \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q2}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
+                          for x y
+                          sorry
+                        have h_pair13_side_to_circle_side:
+                          "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
+                            \<exists>K \<in> components (UNIV - (B1 \<union> B3)). x \<in> K \<and> y \<in> K\<rbrakk>
+                           \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q3}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
+                          for x y
+                          sorry
+                        have h_pair23_side_to_circle_side:
+                          "\<lbrakk>x \<in> ball P r - ?R; y \<in> ball P r - ?R;
+                            \<exists>K \<in> components (UNIV - (B2 \<union> B3)). x \<in> K \<and> y \<in> K\<rbrakk>
+                           \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q2, q3}). \<rho> x \<in> K \<and> \<rho> y \<in> K"
+                          for x y
+                          sorry
+                        have h_circle_three_sector_dichotomy:
+                          "\<lbrakk>\<rho> c \<in> sphere P r - {q1, q2, q3};
+                            \<rho> d \<in> sphere P r - {q1, q2, q3};
+                            \<exists>K \<in> components (sphere P r - {q1, q2}). \<rho> c \<in> K \<and> \<rho> d \<in> K;
+                            \<exists>K \<in> components (sphere P r - {q1, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K;
+                            \<exists>K \<in> components (sphere P r - {q2, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K\<rbrakk>
+                           \<Longrightarrow> \<exists>K \<in> components (sphere P r - {q1, q2, q3}).
+                                  \<rho> c \<in> K \<and> \<rho> d \<in> K"
+                          sorry
+                        have h_radial_connector_from_circle:
+                          "\<lbrakk>c \<in> ball P r - ?R; d \<in> ball P r - ?R;
+                            \<exists>K \<in> components (sphere P r - {q1, q2, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K\<rbrakk>
+                           \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - ?R \<and> c \<in> T \<and> d \<in> T"
+                          sorry
+                        show "\<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - ?R \<and> c \<in> T \<and> d \<in> T"
+                        proof -
+                          have hc_ball_r: "c \<in> ball P r - ?R"
+                            using hc_ball_small' hcR' unfolding r_def \<delta>u_def by (by100 simp)
+                          have hd_ball_r: "d \<in> ball P r - ?R"
+                            using hd_ball_small' hdR' unfolding r_def \<delta>u_def by (by100 simp)
+                          have h12_global_same:
+                            "\<exists>K \<in> components (UNIV - (B1 \<union> B2)). c \<in> K \<and> d \<in> K"
+                            using hA12_comp hA12D12' hcA12 hdD12 by (by100 blast)
+                          have h13_global_same:
+                            "\<exists>K \<in> components (UNIV - (B1 \<union> B3)). c \<in> K \<and> d \<in> K"
+                            using hA13_comp hA13D13' hcA13 hdD13 by (by100 blast)
+                          have h23_global_same:
+                            "\<exists>K \<in> components (UNIV - (B2 \<union> B3)). c \<in> K \<and> d \<in> K"
+                            using hA23_comp hA23D23' hcA23 hdD23 by (by100 blast)
+                          have h12_circle_same:
+                            "\<exists>K \<in> components (sphere P r - {q1, q2}). \<rho> c \<in> K \<and> \<rho> d \<in> K"
+                            by (rule h_pair12_side_to_circle_side
+                                [OF hc_ball_r hd_ball_r h12_global_same])
+                          have h13_circle_same:
+                            "\<exists>K \<in> components (sphere P r - {q1, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K"
+                            by (rule h_pair13_side_to_circle_side
+                                [OF hc_ball_r hd_ball_r h13_global_same])
+                          have h23_circle_same:
+                            "\<exists>K \<in> components (sphere P r - {q2, q3}). \<rho> c \<in> K \<and> \<rho> d \<in> K"
+                            by (rule h_pair23_side_to_circle_side
+                                [OF hc_ball_r hd_ball_r h23_global_same])
+                          have h\<rho>c: "\<rho> c \<in> sphere P r - {q1, q2, q3}"
+                            using h_radial_traces_local by (by100 blast)
+                          have h\<rho>d: "\<rho> d \<in> sphere P r - {q1, q2, q3}"
+                            using h_radial_traces_local by (by100 blast)
+                          have hcircle_same:
+                            "\<exists>K \<in> components (sphere P r - {q1, q2, q3}).
+                                \<rho> c \<in> K \<and> \<rho> d \<in> K"
+                            by (rule h_circle_three_sector_dichotomy
+                                [OF h\<rho>c h\<rho>d h12_circle_same h13_circle_same h23_circle_same])
+                          show ?thesis
+                            by (rule h_radial_connector_from_circle
+                                [OF hc_ball_r hd_ball_r hcircle_same])
+                        qed
+                      qed
                       obtain T where hT_conn: "connected T"
                         and hT_sub_R: "T \<subseteq> ball P \<delta> - ?R"
                         and hcT: "c \<in> T"
