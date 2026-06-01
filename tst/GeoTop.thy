@@ -1880,6 +1880,16 @@ proof -
                   \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
                     the same side of \<open>L_y\<close> as the other edge. This is the
                     actual circular-sector step, not a half-plane consequence.\<close>
+                  have h_figure_2_6_exterior_sector_forces_opposite:
+                    "\<not> (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0)))
+                     \<Longrightarrow>
+                     ((inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                      (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
+                    sorry
                   have h_two_ray_circular_sector_dichotomy:
                     "(\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
                         ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
@@ -1888,7 +1898,22 @@ proof -
                         (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
                       (inner (p\<tau>_y - x) n_y < 0 \<and>
                         (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0)))"
-                    sorry
+                  proof (cases
+                      "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
+                        ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
+                         (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y < 0))")
+                    case True
+                    show ?thesis using True by (by100 blast)
+                  next
+                    case False
+                    have h_opposite_accumulation:
+                      "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                       (inner (p\<tau>_y - x) n_y < 0 \<and>
+                        (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))"
+                      by (rule h_figure_2_6_exterior_sector_forces_opposite[OF False])
+                    show ?thesis using h_opposite_accumulation by (by100 blast)
+                  qed
                   have h_between_rays_accumulation:
                     "\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y \<noteq> 0 \<and>
                       ((inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y > 0) \<or>
