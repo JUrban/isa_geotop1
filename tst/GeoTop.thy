@@ -5842,12 +5842,127 @@ proof -
               by (rule arc_closure_interior_eq_arc[OF hkE])
             have hP0_cl_kint: "P0 \<in> closure (geotop_arc_interior k E)"
               using hP0_k h_cl_int_k by (by100 simp)
-            have h_local_sector_separation:
+            \<comment> \<open>Figure 2.7 local model: in a sufficiently small disk about the
+              endpoint \<open>P0\<close>, the three theta arcs are represented by their
+              first straight segments from \<open>P0\<close>. The hard planar step is then
+              that the unbounded-component side of the pair polygon \<open>i \<union> j\<close>
+              and the third arc \<open>k\<close> occupy different local sectors of
+              \<open>UNIV - (i \<union> j)\<close>.\<close>
+            have hk_bl: "geotop_is_broken_line k"
+              using hk hB1_bl hB2_bl hB3_bl by (by100 blast)
+            have h_endpoint_linear_model_ij_k:
+              "\<exists>\<delta>p>0. \<exists>pi pj pk.
+                  pi \<noteq> P0 \<and> pj \<noteq> P0 \<and> pk \<noteq> P0 \<and>
+                  ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi \<and>
+                  ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj \<and>
+                  ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk \<and>
+                  ball P0 \<delta>p \<inter> geotop_arc_interior i E \<subseteq> closed_segment P0 pi - {P0} \<and>
+                  ball P0 \<delta>p \<inter> geotop_arc_interior j E \<subseteq> closed_segment P0 pj - {P0} \<and>
+                  ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
+            proof -
+              obtain \<delta>i pi where h\<delta>i_pos: "\<delta>i > 0" and hpi_ne0: "pi \<noteq> P0"
+                and hi_loc0: "ball P0 \<delta>i \<inter> i = ball P0 \<delta>i \<inter> closed_segment P0 pi"
+                and hi_int_loc0:
+                  "ball P0 \<delta>i \<inter> geotop_arc_interior i E \<subseteq> closed_segment P0 pi - {P0}"
+                using broken_line_endpoint_local_segment[OF hi_bl hiE hP0E] by (by100 blast)
+              obtain \<delta>j pj where h\<delta>j_pos: "\<delta>j > 0" and hpj_ne0: "pj \<noteq> P0"
+                and hj_loc0: "ball P0 \<delta>j \<inter> j = ball P0 \<delta>j \<inter> closed_segment P0 pj"
+                and hj_int_loc0:
+                  "ball P0 \<delta>j \<inter> geotop_arc_interior j E \<subseteq> closed_segment P0 pj - {P0}"
+                using broken_line_endpoint_local_segment[OF hj_bl hjE hP0E] by (by100 blast)
+              obtain \<delta>k pk where h\<delta>k_pos: "\<delta>k > 0" and hpk_ne0: "pk \<noteq> P0"
+                and hk_loc0: "ball P0 \<delta>k \<inter> k = ball P0 \<delta>k \<inter> closed_segment P0 pk"
+                and hk_int_loc0:
+                  "ball P0 \<delta>k \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
+                using broken_line_endpoint_local_segment[OF hk_bl hkE hP0E] by (by100 blast)
+              define \<delta>p where "\<delta>p = min \<delta>i (min \<delta>j \<delta>k)"
+              have h\<delta>p_pos: "\<delta>p > 0"
+                unfolding \<delta>p_def using h\<delta>i_pos h\<delta>j_pos h\<delta>k_pos by (by100 simp)
+              have h\<delta>p_le_i: "\<delta>p \<le> \<delta>i" unfolding \<delta>p_def by (by100 simp)
+              have h\<delta>p_le_j: "\<delta>p \<le> \<delta>j" unfolding \<delta>p_def by (by100 simp)
+              have h\<delta>p_le_k: "\<delta>p \<le> \<delta>k" unfolding \<delta>p_def by (by100 simp)
+              have hball_i: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>i"
+                using h\<delta>p_le_i by (by100 auto)
+              have hball_j: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>j"
+                using h\<delta>p_le_j by (by100 auto)
+              have hball_k: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>k"
+                using h\<delta>p_le_k by (by100 auto)
+              have hi_loc:
+                "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
+                using hball_i hi_loc0 by (by100 blast)
+              have hj_loc:
+                "ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj"
+                using hball_j hj_loc0 by (by100 blast)
+              have hk_loc:
+                "ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk"
+                using hball_k hk_loc0 by (by100 blast)
+              have hi_int_loc:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior i E \<subseteq> closed_segment P0 pi - {P0}"
+                using hball_i hi_int_loc0 by (by100 blast)
+              have hj_int_loc:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior j E \<subseteq> closed_segment P0 pj - {P0}"
+                using hball_j hj_int_loc0 by (by100 blast)
+              have hk_int_loc:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
+                using hball_k hk_int_loc0 by (by100 blast)
+              show ?thesis
+                using h\<delta>p_pos hpi_ne0 hpj_ne0 hpk_ne0 hi_loc hj_loc hk_loc
+                  hi_int_loc hj_int_loc hk_int_loc by (by100 blast)
+            qed
+            obtain \<delta>p pi pj pk where h\<delta>p_pos: "\<delta>p > 0"
+              and hpi_ne: "pi \<noteq> P0" and hpj_ne: "pj \<noteq> P0" and hpk_ne: "pk \<noteq> P0"
+              and hi_loc_seg: "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
+              and hj_loc_seg: "ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj"
+              and hk_loc_seg: "ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk"
+              and hi_int_loc_seg:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior i E \<subseteq> closed_segment P0 pi - {P0}"
+              and hj_int_loc_seg:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior j E \<subseteq> closed_segment P0 pj - {P0}"
+              and hk_int_loc_seg:
+                "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
+              using h_endpoint_linear_model_ij_k
+            proof (elim exE conjE)
+              fix \<delta>p :: real and pi pj pk :: "real^2"
+              assume h\<delta>p_pos': "0 < \<delta>p"
+              assume hpi_ne': "pi \<noteq> P0"
+              assume hpj_ne': "pj \<noteq> P0"
+              assume hpk_ne': "pk \<noteq> P0"
+              assume hi_loc':
+                "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
+              assume hj_loc':
+                "ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj"
+              assume hk_loc':
+                "ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk"
+              assume hi_int_loc':
+                "ball P0 \<delta>p \<inter> geotop_arc_interior i E \<subseteq> closed_segment P0 pi - {P0}"
+              assume hj_int_loc':
+                "ball P0 \<delta>p \<inter> geotop_arc_interior j E \<subseteq> closed_segment P0 pj - {P0}"
+              assume hk_int_loc':
+                "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
+              show thesis
+                by (rule that[OF h\<delta>p_pos' hpi_ne' hpj_ne' hpk_ne'
+                    hi_loc' hj_loc' hk_loc' hi_int_loc' hj_int_loc' hk_int_loc'])
+            qed
+            have h_pair_local_model:
+              "ball P0 \<delta>p \<inter> (i \<union> j) =
+                ball P0 \<delta>p \<inter> (closed_segment P0 pi \<union> closed_segment P0 pj)"
+              using hi_loc_seg hj_loc_seg by (by100 blast)
+            have h_third_local_model:
+              "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq>
+                closed_segment P0 pk - {P0}"
+              using hk_int_loc_seg .
+            have h_figure_2_7_sector_step:
               "\<exists>\<delta>0>0.
                  \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
                        ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
                        ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
               sorry
+            have h_local_sector_separation:
+              "\<exists>\<delta>0>0.
+                 \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
+                       ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
+                       ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C)"
+              using h_figure_2_7_sector_step .
             obtain \<delta>0 where h\<delta>0_pos: "\<delta>0 > 0"
               and hsep:
                 "\<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
