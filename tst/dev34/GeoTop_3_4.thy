@@ -856,7 +856,29 @@ proof -
                   Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
                   S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
                   A1 \<union> A2 \<subseteq> A'"
-    sorry
+  proof -
+    obtain A' where hA'_arc:
+        "geotop_is_arc A' (subspace_topology UNIV geotop_euclidean_topology A')"
+      and hA'_sub:
+        "A' \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      and hA'_J: "A' \<inter> J = {P, R}"
+      and hA12_sub: "A1 \<union> A2 \<subseteq> A'"
+      using hD44_detour by (by100 blast)
+    obtain U\<^sub>Q U\<^sub>S where hdec:
+        "geotop_polygon_interior J - A' = U\<^sub>Q \<union> U\<^sub>S"
+      and hdisj: "U\<^sub>Q \<inter> U\<^sub>S = {}"
+      and hUQ_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+      and hUS_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+      using Theorem_GT_4_2[
+        OF assms(1) assms(2) assms(3) assms(4) assms(5) assms(6)
+           hA'_arc hA'_sub hA'_J]
+      by (by100 blast)
+    show ?thesis
+      using hdec hdisj hUQ_open hUS_open hQ_front hS_front hA12_sub
+      by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim D44-3: cyclic-order argument places Q and S in the SAME
     component of I - (A1 \<union> A2), refining U_Q and U_S into one component.\<close>
   \<comment> \<open>Sub-claim T4_4-A: \<exists>C with Q in frontier C. Trivial witness C = {Q}:
