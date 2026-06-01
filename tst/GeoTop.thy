@@ -1202,8 +1202,20 @@ proof -
                   using h\<gamma>_off_selected_line ht hp_eq by (by100 simp)
                 show False using hp_inner0 hp_inner_ne by (by100 blast)
               qed
-              have h\<gamma>_avoid_other_edges: "\<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y = {}"
+              have h\<gamma>_avoid_each_other_edge:
+                "\<And>\<tau>. \<tau> \<in> OtherEdges_y \<Longrightarrow> \<gamma> ` {0..1::real} \<inter> \<tau> = {}"
                 sorry
+              have h\<gamma>_avoid_other_edges: "\<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y = {}"
+              proof (rule equals0I)
+                fix p
+                assume hp: "p \<in> \<gamma> ` {0..1::real} \<inter> \<Union>OtherEdges_y"
+                have hp_img: "p \<in> \<gamma> ` {0..1::real}" using hp by (by100 blast)
+                obtain \<tau> where h\<tau>_Other: "\<tau> \<in> OtherEdges_y" and hp\<tau>: "p \<in> \<tau>"
+                  using hp by (by100 blast)
+                have "p \<in> \<gamma> ` {0..1::real} \<inter> \<tau>"
+                  using hp_img hp\<tau> by (by100 blast)
+                thus False using h\<gamma>_avoid_each_other_edge[OF h\<tau>_Other] by (by100 blast)
+              qed
               have h\<gamma>_avoid_M: "\<gamma> ` {0..1::real} \<inter> M = {}"
               proof (rule equals0I)
                 fix p
