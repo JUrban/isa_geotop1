@@ -11211,7 +11211,408 @@ proof -
                               "\<lbrakk>C \<in> components (?S - {a, b}); K \<in> components (C - {q});
                                 K \<noteq> C - {q}; connected C; {a, b, q} = {q1, q2, q3}\<rbrakk>
                                \<Longrightarrow> q \<in> closure K"
-                              sorry
+                            proof -
+                              assume hC_pair_comp: "C \<in> components (?S - {a, b})"
+                                and hK_delete_comp: "K \<in> components (C - {q})"
+                                and hK_delete_proper: "K \<noteq> C - {q}"
+                                and hC_pair_conn: "connected C"
+                                and habq_all: "{a, b, q} = {q1, q2, q3}"
+                              have h_interval_delete_component_closure:
+                                "\<And>(I::real set) t L. \<lbrakk>is_interval I; t \<in> I;
+                                  L \<in> components (I - {t}); L \<noteq> I - {t}\<rbrakk>
+                                 \<Longrightarrow> t \<in> closure L"
+                              proof -
+                                fix I :: "real set" and t L
+                                assume hI_int: "is_interval I"
+                                  and htI: "t \<in> I"
+                                  and hL_comp: "L \<in> components (I - {t})"
+                                  and hL_proper: "L \<noteq> I - {t}"
+                                have hL_ne: "L \<noteq> {}"
+                                  by (rule in_components_nonempty[OF hL_comp])
+                                obtain x where hxL: "x \<in> L"
+                                  using hL_ne by (by100 blast)
+                                have hL_sub: "L \<subseteq> I - {t}"
+                                  by (rule in_components_subset[OF hL_comp])
+                                have hxI: "x \<in> I"
+                                  using hxL hL_sub by (by100 blast)
+                                have hx_ne_t: "x \<noteq> t"
+                                  using hxL hL_sub by (by100 blast)
+                                have hL_eq_x:
+                                  "L = connected_component_set (I - {t}) x"
+                                proof -
+                                  obtain z where hz: "z \<in> I - {t}"
+                                    and hL_z: "L = connected_component_set (I - {t}) z"
+                                    using hL_comp unfolding components_iff by (by100 blast)
+                                  have "x \<in> connected_component_set (I - {t}) z"
+                                    using hxL hL_z by (by100 simp)
+                                  hence "connected_component_set (I - {t}) x =
+                                      connected_component_set (I - {t}) z"
+                                    using connected_component_eq by (by100 blast)
+                                  thus ?thesis
+                                    using hL_z by (by100 simp)
+                                qed
+                                have h_component_between:
+                                  "\<And>y. \<lbrakk>x < t; x < y; y < t\<rbrakk> \<Longrightarrow> y \<in> L"
+                                proof -
+                                  fix y
+                                  assume hxt: "x < t" and hxy: "x < y" and hyt: "y < t"
+                                  have hyI: "y \<in> I"
+                                    by (rule mem_is_interval_1_I[OF hI_int hxI htI])
+                                      (use hxy hyt in \<open>by100 linarith\<close>)+
+                                  have hseg_sub: "closed_segment x y \<subseteq> I - {t}"
+                                  proof
+                                    fix z0 assume hz0: "z0 \<in> closed_segment x y"
+                                    have hz0_bounds: "x \<le> z0 \<and> z0 \<le> y"
+                                      using hz0 hxy unfolding closed_segment_eq_real_ivl
+                                      by (by100 auto)
+                                    have hz0I: "z0 \<in> I"
+                                      by (rule mem_is_interval_1_I[OF hI_int hxI hyI])
+                                        (use hz0_bounds in \<open>by100 linarith\<close>)+
+                                    have "z0 \<noteq> t"
+                                      using hz0_bounds hyt by (by100 linarith)
+                                    thus "z0 \<in> I - {t}"
+                                      using hz0I by (by100 blast)
+                                  qed
+                                  have hseg_conn: "connected (closed_segment x y)"
+                                    by (rule convex_connected[OF convex_closed_segment])
+                                  have hseg_sub_cc:
+                                    "closed_segment x y \<subseteq> connected_component_set (I - {t}) x"
+                                    by (rule connected_component_maximal
+                                        [OF ends_in_segment(1) hseg_conn hseg_sub])
+                                  have "y \<in> closed_segment x y"
+                                    by (rule ends_in_segment(2))
+                                  thus "y \<in> L"
+                                    using hseg_sub_cc hL_eq_x by (by100 blast)
+                                qed
+                                have h_component_between_right:
+                                  "\<And>y. \<lbrakk>t < x; t < y; y < x\<rbrakk> \<Longrightarrow> y \<in> L"
+                                proof -
+                                  fix y
+                                  assume htx: "t < x" and hty: "t < y" and hyx: "y < x"
+                                  have hyI: "y \<in> I"
+                                    by (rule mem_is_interval_1_I[OF hI_int htI hxI])
+                                      (use hty hyx in \<open>by100 linarith\<close>)+
+                                  have hseg_sub: "closed_segment y x \<subseteq> I - {t}"
+                                  proof
+                                    fix z0 assume hz0: "z0 \<in> closed_segment y x"
+                                    have hz0_bounds: "y \<le> z0 \<and> z0 \<le> x"
+                                      using hz0 hyx unfolding closed_segment_eq_real_ivl
+                                      by (by100 auto)
+                                    have hz0I: "z0 \<in> I"
+                                      by (rule mem_is_interval_1_I[OF hI_int hyI hxI])
+                                        (use hz0_bounds in \<open>by100 linarith\<close>)+
+                                    have "z0 \<noteq> t"
+                                      using hz0_bounds hty by (by100 linarith)
+                                    thus "z0 \<in> I - {t}"
+                                      using hz0I by (by100 blast)
+                                  qed
+                                  have hseg_conn: "connected (closed_segment y x)"
+                                    by (rule convex_connected[OF convex_closed_segment])
+                                  have hseg_sub_cc:
+                                    "closed_segment y x \<subseteq> connected_component_set (I - {t}) x"
+                                  proof -
+                                    have hx_in_seg: "x \<in> closed_segment y x"
+                                      by (rule ends_in_segment(2))
+                                    show ?thesis
+                                      by (rule connected_component_maximal
+                                          [OF hx_in_seg hseg_conn hseg_sub])
+                                  qed
+                                  have "y \<in> closed_segment y x"
+                                    by (rule ends_in_segment(1))
+                                  thus "y \<in> L"
+                                    using hseg_sub_cc hL_eq_x by (by100 blast)
+                                qed
+                                show "t \<in> closure L"
+                                  unfolding closure_approachable
+                                proof (intro allI impI)
+                                  fix e :: real
+                                  assume he: "0 < e"
+                                  show "\<exists>y\<in>L. dist y t < e"
+                                  proof (cases "x < t")
+                                    case True
+                                    define d where "d = min (e / 2) ((t - x) / 2)"
+                                    have hd_pos: "0 < d"
+                                      unfolding d_def using he True by (by100 simp)
+                                    have hd_lt_e: "d < e"
+                                    proof -
+                                      have "e / 2 < e"
+                                        using he by (by100 linarith)
+                                      moreover have "d \<le> e / 2"
+                                        unfolding d_def by (rule min.cobounded1)
+                                      ultimately show ?thesis by (by100 linarith)
+                                    qed
+                                    have hd_lt_xt: "d < t - x"
+                                    proof -
+                                      have hdiff_pos: "0 < t - x"
+                                        using True by (by100 linarith)
+                                      have "(t - x) / 2 < t - x"
+                                        using hdiff_pos by (by100 simp)
+                                      moreover have "d \<le> (t - x) / 2"
+                                        unfolding d_def by (rule min.cobounded2)
+                                      ultimately show ?thesis by (by100 linarith)
+                                    qed
+                                    define y where "y = t - d"
+                                    have hxy: "x < y"
+                                      unfolding y_def using hd_lt_xt by (by100 linarith)
+                                    have hyt: "y < t"
+                                      unfolding y_def using hd_pos by (by100 linarith)
+                                    have hyL: "y \<in> L"
+                                      by (rule h_component_between[OF True hxy hyt])
+                                    have "dist y t < e"
+                                      unfolding y_def using hd_pos hd_lt_e
+                                      by (simp add: dist_real_def)
+                                    thus ?thesis
+                                      using hyL by (by100 blast)
+                                  next
+                                    case False
+                                    have htx: "t < x"
+                                      using False hx_ne_t by (by100 linarith)
+                                    define d where "d = min (e / 2) ((x - t) / 2)"
+                                    have hd_pos: "0 < d"
+                                      unfolding d_def using he htx by (by100 simp)
+                                    have hd_lt_e: "d < e"
+                                    proof -
+                                      have "e / 2 < e"
+                                        using he by (by100 linarith)
+                                      moreover have "d \<le> e / 2"
+                                        unfolding d_def by (rule min.cobounded1)
+                                      ultimately show ?thesis by (by100 linarith)
+                                    qed
+                                    have hd_lt_tx: "d < x - t"
+                                    proof -
+                                      have hdiff_pos: "0 < x - t"
+                                        using htx by (by100 linarith)
+                                      have "(x - t) / 2 < x - t"
+                                        using hdiff_pos by (by100 simp)
+                                      moreover have "d \<le> (x - t) / 2"
+                                        unfolding d_def by (rule min.cobounded2)
+                                      ultimately show ?thesis by (by100 linarith)
+                                    qed
+                                    define y where "y = t + d"
+                                    have hty: "t < y"
+                                      unfolding y_def using hd_pos by (by100 linarith)
+                                    have hyx: "y < x"
+                                      unfolding y_def using hd_lt_tx by (by100 linarith)
+                                    have hyL: "y \<in> L"
+                                      by (rule h_component_between_right[OF htx hty hyx])
+                                    have "dist y t < e"
+                                      unfolding y_def using hd_pos hd_lt_e
+                                      by (simp add: dist_real_def)
+                                    thus ?thesis
+                                      using hyL by (by100 blast)
+                                  qed
+                                qed
+                              qed
+                              have h_pair_component_homeomorphic_interval:
+                                "\<exists>(f::real^2 \<Rightarrow> real) g I.
+                                    homeomorphism C I f g \<and> is_interval I \<and> q \<in> C"
+                                sorry
+                              obtain f :: "real^2 \<Rightarrow> real" and g :: "real \<Rightarrow> real^2"
+                                and I :: "real set"
+                                where hCI_homeo: "homeomorphism C I f g"
+                                  and hI_interval: "is_interval I"
+                                  and hqC: "q \<in> C"
+                                using h_pair_component_homeomorphic_interval by (by100 blast)
+                              have hfqI: "f q \<in> I"
+                                using hCI_homeo hqC unfolding homeomorphism_def by (by100 blast)
+                              have hK_image_component:
+                                "f ` K \<in> components (I - {f q})"
+                              proof -
+                                have h_delete_image:
+                                  "f ` (C - {q}) = I - {f q}"
+                                proof
+                                  show "f ` (C - {q}) \<subseteq> I - {f q}"
+                                  proof
+                                    fix y assume hy: "y \<in> f ` (C - {q})"
+                                    obtain x where hx: "x \<in> C - {q}" and hy_eq: "y = f x"
+                                      using hy by (by100 blast)
+                                    have hxC: "x \<in> C" using hx by (by100 blast)
+                                    have hx_ne_q: "x \<noteq> q" using hx by (by100 blast)
+                                    have hyI: "y \<in> I"
+                                      using hCI_homeo hxC hy_eq unfolding homeomorphism_def
+                                      by (by100 blast)
+                                    have hy_ne_fq: "y \<noteq> f q"
+                                    proof
+                                      assume hyfq: "y = f q"
+                                      have "g (f x) = g (f q)"
+                                        using hyfq hy_eq by (by100 simp)
+                                      hence "x = q"
+                                        using homeomorphism_apply1[OF hCI_homeo hxC]
+                                          homeomorphism_apply1[OF hCI_homeo hqC]
+                                        by (by100 simp)
+                                      thus False using hx_ne_q by (by100 blast)
+                                    qed
+                                    show "y \<in> I - {f q}"
+                                      using hyI hy_ne_fq by (by100 blast)
+                                  qed
+                                  show "I - {f q} \<subseteq> f ` (C - {q})"
+                                  proof
+                                    fix y assume hy: "y \<in> I - {f q}"
+                                    have hyI: "y \<in> I" using hy by (by100 blast)
+                                    have hy_ne_fq: "y \<noteq> f q" using hy by (by100 blast)
+                                    have hgyC: "g y \<in> C"
+                                      using hCI_homeo hyI unfolding homeomorphism_def by (by100 blast)
+                                    have hfgy: "f (g y) = y"
+                                      by (rule homeomorphism_apply2[OF hCI_homeo hyI])
+                                    have hgy_ne_q: "g y \<noteq> q"
+                                    proof
+                                      assume hgyq: "g y = q"
+                                      hence "y = f q"
+                                        using hfgy by (by100 simp)
+                                      thus False using hy_ne_fq by (by100 blast)
+                                    qed
+                                    have "g y \<in> C - {q}"
+                                      using hgyC hgy_ne_q by (by100 blast)
+                                    thus "y \<in> f ` (C - {q})"
+                                    proof -
+                                      have "f (g y) \<in> f ` (C - {q})"
+                                        using \<open>g y \<in> C - {q}\<close> by (rule imageI)
+                                      thus ?thesis using hfgy by (by100 simp)
+                                    qed
+                                  qed
+                                qed
+                                have hdelete_homeo:
+                                  "homeomorphism (C - {q}) (I - {f q}) f g"
+                                proof (rule homeomorphism_of_subsets[OF hCI_homeo])
+                                  show "C - {q} \<subseteq> C" by (by100 blast)
+                                  show "I - {f q} \<subseteq> I" by (by100 blast)
+                                  show "f ` (C - {q}) = I - {f q}"
+                                    by (rule h_delete_image)
+                                qed
+                                obtain z where hz: "z \<in> C - {q}"
+                                  and hK_z: "K = connected_component_set (C - {q}) z"
+                                  using hK_delete_comp unfolding components_iff by (by100 blast)
+                                have hfz: "f z \<in> I - {f q}"
+                                  using h_delete_image hz by (by100 blast)
+                                have hcc_image:
+                                  "connected_component_set (I - {f q}) (f z) = f ` K"
+                                  using connected_component_set_homeomorphism[OF hdelete_homeo hz]
+                                  unfolding hK_z .
+                                have "connected_component_set (I - {f q}) (f z)
+                                    \<in> components (I - {f q})"
+                                  by (rule componentsI[OF hfz])
+                                thus ?thesis
+                                  using hcc_image by (by100 simp)
+                              qed
+                              have hK_image_proper:
+                                "f ` K \<noteq> I - {f q}"
+                              proof
+                                assume h_eq: "f ` K = I - {f q}"
+                                have hK_sub: "K \<subseteq> C - {q}"
+                                  by (rule in_components_subset[OF hK_delete_comp])
+                                have hK_eq: "K = C - {q}"
+                                proof
+                                  show "K \<subseteq> C - {q}"
+                                    by (rule hK_sub)
+                                  show "C - {q} \<subseteq> K"
+                                  proof
+                                    fix x assume hx: "x \<in> C - {q}"
+                                    have hfx: "f x \<in> f ` K"
+                                      using h_eq hx
+                                      proof -
+                                        have "f x \<in> I - {f q}"
+                                        proof -
+                                          have hxC: "x \<in> C" using hx by (by100 blast)
+                                          have hx_ne_q: "x \<noteq> q" using hx by (by100 blast)
+                                          have hfxI: "f x \<in> I"
+                                            using hCI_homeo hxC unfolding homeomorphism_def
+                                            by (by100 blast)
+                                          have hfx_ne: "f x \<noteq> f q"
+                                          proof
+                                            assume "f x = f q"
+                                            hence "g (f x) = g (f q)" by (by100 simp)
+                                            hence "x = q"
+                                              using homeomorphism_apply1[OF hCI_homeo hxC]
+                                                homeomorphism_apply1[OF hCI_homeo hqC]
+                                              by (by100 simp)
+                                            thus False using hx_ne_q by (by100 blast)
+                                          qed
+                                          show ?thesis using hfxI hfx_ne by (by100 blast)
+                                        qed
+                                        thus ?thesis using h_eq by (by100 simp)
+                                      qed
+                                    have hfx_ex: "\<exists>y\<in>K. f x = f y"
+                                      using hfx by (simp only: image_iff)
+                                    obtain y where hyK: "y \<in> K" and hfx_y: "f x = f y"
+                                      using hfx_ex by (by100 blast)
+                                    have hfy: "f y = f x"
+                                      using hfx_y by (by100 simp)
+                                    have hyC: "y \<in> C"
+                                      using hyK hK_sub by (by100 blast)
+                                    have hxC: "x \<in> C"
+                                      using hx by (by100 blast)
+                                    have "g (f y) = g (f x)"
+                                      using hfy by (by100 simp)
+                                    hence "y = x"
+                                      using homeomorphism_apply1[OF hCI_homeo hyC]
+                                        homeomorphism_apply1[OF hCI_homeo hxC]
+                                      by (by100 simp)
+                                    thus "x \<in> K"
+                                      using hyK by (by100 simp)
+                                  qed
+                                qed
+                                show False using hK_delete_proper hK_eq by (by100 blast)
+                              qed
+                              have hfq_cl_image:
+                                "f q \<in> closure (f ` K)"
+                                by (rule h_interval_delete_component_closure
+                                    [OF hI_interval hfqI hK_image_component hK_image_proper])
+                              have hq_clK:
+                                "q \<in> closure K"
+                              proof -
+                                have hK_sub_C: "K \<subseteq> C"
+                                proof -
+                                  have "K \<subseteq> C - {q}"
+                                    by (rule in_components_subset[OF hK_delete_comp])
+                                  thus ?thesis
+                                    by (rule subset_trans[OF _ Diff_subset])
+                                qed
+                                have h_image_sub: "f ` K \<subseteq> I - {f q}"
+                                  by (rule in_components_subset[OF hK_image_component])
+                                obtain s where hs_in: "\<And>n. s n \<in> f ` K"
+                                  and hs_lim: "(s \<longlongrightarrow> f q) sequentially"
+                                  using hfq_cl_image unfolding closure_sequential by (by100 blast)
+                                have hsI: "\<And>n. s n \<in> I"
+                                  using hs_in h_image_sub by (by100 blast)
+                                have hgs_in: "\<And>n. (g \<circ> s) n \<in> K"
+                                proof -
+                                  fix n
+                                  have hs_ex: "\<exists>z\<in>K. s n = f z"
+                                    using hs_in[of n] by (simp only: image_iff)
+                                  obtain z where hzK: "z \<in> K" and hsn: "s n = f z"
+                                    using hs_ex by (by100 blast)
+                                  have hzC: "z \<in> C"
+                                    using hzK hK_sub_C by (by100 blast)
+                                  have "g (s n) = z"
+                                    using hsn homeomorphism_apply1[OF hCI_homeo hzC]
+                                    by (by100 simp)
+                                  thus "(g \<circ> s) n \<in> K"
+                                    using hzK by (by100 simp)
+                                qed
+                                have hgs_lim: "((g \<circ> s) \<longlongrightarrow> g (f q)) sequentially"
+                                proof -
+                                  have hg_cont: "continuous_on I g"
+                                    using hCI_homeo unfolding homeomorphism_def by (by100 blast)
+                                  show ?thesis
+                                    using hg_cont unfolding continuous_on_sequentially
+                                    using hfqI hsI hs_lim by (by100 blast)
+                                qed
+                                have hgfq: "g (f q) = q"
+                                  by (rule homeomorphism_apply1[OF hCI_homeo hqC])
+                                show ?thesis
+                                  unfolding closure_sequential
+                                proof (intro exI[where x="g \<circ> s"] conjI allI)
+                                  fix n
+                                  show "(g \<circ> s) n \<in> K"
+                                    by (rule hgs_in)
+                                next
+                                  show "((g \<circ> s) \<longlongrightarrow> q) sequentially"
+                                    using hgs_lim hgfq by (by100 simp)
+                                qed
+                              qed
+                              show "q \<in> closure K"
+                                by (rule hq_clK)
+                            qed
                             show "q \<in> closure K"
                               by (rule h_pair_circle_delete_component_closure
                                   [OF hC_comp hK_comp_rel hK_proper_rel hC_conn habq_set])
