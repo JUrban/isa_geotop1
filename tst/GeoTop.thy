@@ -8593,11 +8593,65 @@ proof -
           show ?thesis
             using hr_pos hq1 hq2 hq3 hq12 hq13 hq23 by (by100 blast)
         qed
+        have hq12_out: "q1 \<noteq> q2"
+          using h_radial_circle_model by (by100 blast)
+        have hq13_out: "q1 \<noteq> q3"
+          using h_radial_circle_model by (by100 blast)
+        have hq23_out: "q2 \<noteq> q3"
+          using h_radial_circle_model by (by100 blast)
         have h_radial_sector_bound:
           "\<forall>C \<in> components (ball P \<delta> - ?R).
               card {S \<in> {?S1, ?S2, ?S3}.
                       (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
-          sorry
+        proof
+          fix C
+          assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
+          let ?Touch = "{S \<in> {?S1, ?S2, ?S3}.
+                      (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}}"
+          have h_circle_trace_bound:
+            "card ({q1, q2, q3} \<inter> closure C) \<le> 2"
+            sorry
+          have h_touch_q1:
+            "?S1 \<in> ?Touch \<Longrightarrow> q1 \<in> closure C"
+            sorry
+          have h_touch_q2:
+            "?S2 \<in> ?Touch \<Longrightarrow> q2 \<in> closure C"
+            sorry
+          have h_touch_q3:
+            "?S3 \<in> ?Touch \<Longrightarrow> q3 \<in> closure C"
+            sorry
+          show "card ?Touch \<le> 2"
+          proof (rule ccontr)
+            assume hnle: "\<not> card ?Touch \<le> 2"
+            have hTouch_sub: "?Touch \<subseteq> {?S1, ?S2, ?S3}" by (by100 blast)
+            have hTouch_fin: "finite ?Touch" by (by100 simp)
+            have hTouch_card_ge: "card ?Touch \<ge> 3"
+              using hnle by (by100 simp)
+            have hCarrier_fin: "finite {?S1, ?S2, ?S3}" by (by100 simp)
+            have hTouch_card_le_S: "card ?Touch \<le> card {?S1, ?S2, ?S3}"
+              by (rule card_mono[OF hCarrier_fin hTouch_sub])
+            have hS_card_le: "card {?S1, ?S2, ?S3} \<le> 3"
+              by (rule card_three_le)
+            have hS_card: "card {?S1, ?S2, ?S3} = 3"
+              using hTouch_card_ge hTouch_card_le_S hS_card_le by (by100 linarith)
+            have hTouch_card_le: "card ?Touch \<le> 3"
+              using hTouch_card_le_S hS_card by (by100 simp)
+            have hTouch_card: "card ?Touch = card {?S1, ?S2, ?S3}"
+              using hTouch_card_ge hTouch_card_le hS_card by (by100 simp)
+            have hTouch_eq: "?Touch = {?S1, ?S2, ?S3}"
+              by (rule card_subset_eq[OF hCarrier_fin hTouch_sub hTouch_card])
+            have hq1_cl: "q1 \<in> closure C" using h_touch_q1 hTouch_eq by (by100 simp)
+            have hq2_cl: "q2 \<in> closure C" using h_touch_q2 hTouch_eq by (by100 simp)
+            have hq3_cl: "q3 \<in> closure C" using h_touch_q3 hTouch_eq by (by100 simp)
+            have hq_sub: "{q1, q2, q3} \<subseteq> closure C"
+              using hq1_cl hq2_cl hq3_cl by (by100 blast)
+            have hq_inter: "{q1, q2, q3} \<inter> closure C = {q1, q2, q3}"
+              using hq_sub by (by100 blast)
+            have hq_card: "card ({q1, q2, q3} \<inter> closure C) = 3"
+              using hq_inter hq12_out hq13_out hq23_out by (by100 simp)
+            show False using h_circle_trace_bound hq_card by (by100 simp)
+          qed
+        qed
         show "\<forall>C \<in> components (ball P \<delta> - ?R).
               card {S \<in> {?S1, ?S2, ?S3}.
                       (S - {P}) \<inter> ball P \<delta> \<inter> closure C \<noteq> {}} \<le> 2"
