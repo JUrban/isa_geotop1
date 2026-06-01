@@ -11440,6 +11440,42 @@ proof -
     show "\<sigma> \<inter> \<tau> \<subseteq> frontier R \<inter> frontier S"
       using h\<sigma>_sub_R h\<tau>_sub_S h_RS_frontier by (by100 blast)
   qed
+  have hK_R_face_of_fan_triangle:
+    "\<forall>R\<in>Rs_in. \<forall>\<sigma>\<in>K_R R.
+       \<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))"
+  proof (intro ballI)
+    fix R \<sigma> assume hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R"
+    obtain e where he_FrTri: "e \<in> FrTri R"
+      and h\<sigma>_disj: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))
+                    \<or> \<sigma> = geotop_convex_hull ({wpt R} \<union> e)"
+      using h\<sigma>_KR unfolding K_R_def by (by100 blast)
+    have htop_simp: "geotop_is_simplex (geotop_convex_hull ({wpt R} \<union> e))"
+      using hR_in he_FrTri hFrTri_2cell_simp by (by100 blast)
+    have h\<sigma>_face: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))"
+    proof (cases "\<sigma> = geotop_convex_hull ({wpt R} \<union> e)")
+      case True
+      have hrefl: "geotop_is_face (geotop_convex_hull ({wpt R} \<union> e))
+                                  (geotop_convex_hull ({wpt R} \<union> e))"
+        by (rule geotop_is_face_refl_of_simplex[OF htop_simp])
+      show ?thesis using True hrefl by (by100 simp)
+    next
+      case False
+      show ?thesis using h\<sigma>_disj False by (by100 blast)
+    qed
+    show "\<exists>e\<in>FrTri R. geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e))"
+      using he_FrTri h\<sigma>_face by (by100 blast)
+  qed
+  \<comment> \<open>The real same-region geometric core: two fan triangles over boundary
+    facets of the same convex region meet in a common face, and the same
+    remains true after passing to faces of those fan triangles.\<close>
+  have hK_same_region_fan_faces:
+    "\<forall>R\<in>Rs_in. \<forall>e1\<in>FrTri R. \<forall>e2\<in>FrTri R.
+       \<forall>\<sigma> \<tau>.
+        geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e1)) \<longrightarrow>
+        geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e2)) \<longrightarrow>
+        \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    sorry
   \<comment> \<open>K.3 within a single line-arrangement region: both simplices belong to
     the same fan triangulation of R, so their intersection is a common face.
     This is the same-region part of the fan construction.\<close>
@@ -11447,7 +11483,20 @@ proof -
     "\<forall>R\<in>Rs_in. \<forall>\<sigma>\<in>K_R R. \<forall>\<tau>\<in>K_R R.
         \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
         geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-    sorry
+  proof (intro ballI impI)
+    fix R \<sigma> \<tau>
+    assume hR_in: "R \<in> Rs_in" and h\<sigma>_KR: "\<sigma> \<in> K_R R" and h\<tau>_KR: "\<tau> \<in> K_R R"
+      and h_int_ne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    obtain e1 where he1: "e1 \<in> FrTri R"
+      and h\<sigma>_face: "geotop_is_face \<sigma> (geotop_convex_hull ({wpt R} \<union> e1))"
+      using hK_R_face_of_fan_triangle hR_in h\<sigma>_KR by (by100 blast)
+    obtain e2 where he2: "e2 \<in> FrTri R"
+      and h\<tau>_face: "geotop_is_face \<tau> (geotop_convex_hull ({wpt R} \<union> e2))"
+      using hK_R_face_of_fan_triangle hR_in h\<tau>_KR by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hK_same_region_fan_faces hR_in he1 he2 h\<sigma>_face h\<tau>_face h_int_ne
+      by (by100 blast)
+  qed
   \<comment> \<open>K.3 across distinct line-arrangement regions: intersections lie in
     the common frontier of the two regions, hence in common frontier
     simplices/faces of the two fan triangulations.\<close>
