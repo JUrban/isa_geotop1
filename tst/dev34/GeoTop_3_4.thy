@@ -1520,17 +1520,24 @@ proof -
     using hUnion hDisj hV_open hW_open hP_V hQ_W by blast
 qed
 
+definition geotop_polygon_cyclic_order ::
+  "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
+  "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
+    (\<exists>c tP tQ tR tS.
+        simple_path c \<and> pathfinish c = pathstart c \<and> path_image c = J \<and>
+        0 \<le> tP \<and> tP < tQ \<and> tQ < tR \<and> tR < tS \<and> tS < 1 \<and>
+        c tP = P \<and> c tQ = Q \<and> c tR = R \<and> c tS = S)"
+
 (** from \<S>4 Theorem 2 (geotop.tex:869)
     LATEX VERSION: Let I be the interior of a polygon in R^2, and let P, Q, R, S be points of
       Fr I, in cyclic order. Let A be an arc from P to R, lying in \<bar>I\<close>, with A \<inter> Fr I = {P,R}.
       Then I - A is the union of two disjoint open sets U_Q, U_S containing Q and S in
       their frontiers. **)
-text \<open>We parametrize "cyclic order" abstractly via the existence of the four distinct
-  points on the polygon.\<close>
 theorem Theorem_GT_4_2:
   fixes J :: "(real^2) set" and A :: "(real^2) set" and P Q R S :: "real^2"
   assumes hJ: "geotop_is_polygon J"
   assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
   assumes hcard: "card {P, Q, R, S} = 4"
   assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
   assumes hAsub: "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
@@ -1754,6 +1761,7 @@ theorem Theorem_GT_4_4:
   fixes J A1 A2 :: "(real^2) set" and P Q R S :: "real^2"
   assumes "geotop_is_polygon J"
   assumes "P \<in> J" "Q \<in> J" "R \<in> J" "S \<in> J"
+  assumes "geotop_polygon_cyclic_order J P Q R S"
   assumes "card {P, Q, R, S} = 4"
   assumes "geotop_is_arc A1 (subspace_topology UNIV geotop_euclidean_topology A1)"
   assumes "geotop_is_arc A2 (subspace_topology UNIV geotop_euclidean_topology A2)"
@@ -1806,7 +1814,7 @@ proof -
       and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
       and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
       using Theorem_GT_4_2[
-        OF assms(1) assms(2) assms(3) assms(4) assms(5) assms(6)
+        OF assms(1) assms(2) assms(3) assms(4) assms(5) assms(6) assms(7)
            hA'_arc hA'_sub hA'_J]
       by (by100 blast)
     show ?thesis
