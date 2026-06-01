@@ -3319,6 +3319,46 @@ proof -
     using hAopen hBopen hAne hBne hABdisj hABcover by (by100 blast)
 qed
 
+lemma geotop_plane_chart_open_subset_connected_punctured_neighborhood:
+  fixes U A :: "(real^2) set" and p :: "real^2"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hAopen: "A \<in> subspace_topology UNIV geotop_euclidean_topology U"
+  assumes hAsub: "A \<subseteq> U"
+  assumes hpA: "p \<in> A"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  sorry
+
+lemma geotop_subspace_open_trans:
+  fixes A B N :: "(real^2) set"
+  assumes hA: "A \<in> subspace_topology UNIV geotop_euclidean_topology B"
+  assumes hN: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+  shows "N \<in> subspace_topology UNIV geotop_euclidean_topology B"
+proof -
+  obtain U where hU: "U \<in> geotop_euclidean_topology" and hAeq: "A = B \<inter> U"
+    using hA unfolding subspace_topology_def by (by100 blast)
+  obtain V where hV: "V \<in> geotop_euclidean_topology" and hNeq: "N = A \<inter> V"
+    using hN unfolding subspace_topology_def by (by100 blast)
+  have hUopen: "open U"
+    using hU unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hVopen: "open V"
+    using hV unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hUV: "U \<inter> V \<in> geotop_euclidean_topology"
+    using open_Int[OF hUopen hVopen]
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have "N = B \<inter> (U \<inter> V)"
+    using hAeq hNeq by (by100 blast)
+  thus ?thesis
+    using hUV unfolding subspace_topology_def by (by100 blast)
+qed
+
 lemma geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood:
   fixes M e :: "(real^2) set" and p :: "real^2"
   assumes hM: "geotop_n_manifold_on M (\<lambda>x y. norm (x - y)) 2"
