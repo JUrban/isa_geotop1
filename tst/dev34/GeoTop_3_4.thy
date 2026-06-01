@@ -5003,11 +5003,73 @@ proof -
                   \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
                   \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
         by (rule geotop_complex_edge_face_count_ge_3_obtain[OF hge3])
+	    qed
+	    have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+	                card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+    proof
+      fix e assume heK: "e \<in> K"
+      show "geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+      proof
+        assume he_inc: "geotop_is_edge e \<and> v \<in> e"
+        show "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+        proof -
+          have hnot_counterexample:
+            "\<not> \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+          proof
+            assume hnot_le2:
+              "\<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+            have hfaces_ex:
+                "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+                  \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+                  \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+                  \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+            proof -
+              have hL3_at: "geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+                \<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2 \<longrightarrow>
+                (\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+                  \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+                  \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+                  \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3)"
+                using hL3_counterexample_faces heK by (by100 simp)
+              have hL3_imp: "\<not> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2 \<longrightarrow>
+                (\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+                  \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+                  \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+                  \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3)"
+                by (rule mp[OF hL3_at he_inc])
+              show ?thesis
+                by (rule mp[OF hL3_imp hnot_le2])
+            qed
+            have hedge: "geotop_is_edge e"
+              using he_inc by (by100 blast)
+            obtain p where hp: "p \<in> rel_interior e"
+              using geotop_edge_rel_interior_nonempty[OF hedge] by (by100 blast)
+            have hpM: "p \<in> geotop_polyhedron K"
+              using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
+            let ?M = "geotop_polyhedron K"
+            let ?d = "\<lambda>x y. norm (x - y)"
+            let ?TM = "top1_metric_topology_on ?M ?d"
+            obtain U where hUopen: "openin_on ?M ?TM U"
+              and hpU: "p \<in> U"
+              and hcell: "geotop_is_n_cell (closure_on ?M ?TM U)
+                  (subspace_topology ?M ?TM (closure_on ?M ?TM U)) 2"
+              using hKM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+            obtain J where hJlocal: "J \<subseteq> closure_on ?M ?TM U"
+              and hJsphere: "geotop_is_n_sphere J
+                  (subspace_topology UNIV geotop_euclidean_topology J) 1"
+              and hJ_contradiction: "False"
+              sorry
+            show False
+              using hJ_contradiction .
+          qed
+          show "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
+            using hnot_counterexample by (by100 blast)
+        qed
+      qed
     qed
-    have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
-                card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
-    \<comment> \<open>Combining counted L2 with L3: each incident edge has one or two
-      adjacent two-simplexes.\<close>
+	    \<comment> \<open>Combining counted L2 with L3: each incident edge has one or two
+	      adjacent two-simplexes.\<close>
     have hL_count_1_or_2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
                 (card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
                  \<or> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)"
