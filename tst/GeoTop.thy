@@ -2343,7 +2343,275 @@ proof -
                             ray, arbitrarily close to the vertex.\<close>
                           have h_positive_sector_component_hits_opposite:
                             "\<exists>w\<in>C. dist w x < r \<and> inner (w - x) n_y < 0"
-                            sorry
+                          proof -
+                            have hu_strict_exterior_m:
+                              "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y < 0) \<or>
+                               (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y > 0)"
+                            proof -
+                              have hu_m_ne: "inner (u - x) m\<tau>_y \<noteq> 0"
+                              proof
+                                assume hu_m0: "inner (u - x) m\<tau>_y = 0"
+                                have hu_L\<tau>: "u \<in> L\<tau>_y"
+                                  using hu_m0 hL\<tau>_y_eq_centered by (by100 simp)
+                                have hL\<tau>_pair: "L\<tau>_y = affine hull {x, p\<tau>_y}"
+                                  unfolding L\<tau>_y_def h\<tau>_y_segment by (by100 simp)
+                                obtain s :: real where hu_eq:
+                                  "u = x + s *\<^sub>R (p\<tau>_y - x)"
+                                  using hu_L\<tau> unfolding hL\<tau>_pair affine_hull_2_alt
+                                  by (by100 blast)
+                                have hu_inner_n:
+                                  "inner (u - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                                  using hu_eq by (by100 simp)
+                                have hs_pos: "s > 0"
+                                proof (rule ccontr)
+                                  assume hnot: "\<not> 0 < s"
+                                  have hs_nonpos: "s \<le> 0"
+                                    using hnot by (by100 linarith)
+                                  have "s * inner (p\<tau>_y - x) n_y \<le> 0"
+                                  proof (rule mult_nonpos_nonneg)
+                                    show "s \<le> 0"
+                                      by (rule hs_nonpos)
+                                    show "0 \<le> inner (p\<tau>_y - x) n_y"
+                                      using hp_pos by (by100 linarith)
+                                  qed
+                                  thus False using hu_inner_n hu_pos by (by100 linarith)
+                                qed
+                                have hp\<tau>_dist_pos: "dist x p\<tau>_y > 0"
+                                  using hp\<tau>_y_ne_x by (by100 simp)
+                                have hdist_u: "dist u x = s * dist x p\<tau>_y"
+                                  using hu_eq hs_pos
+                                  by (simp add: dist_norm norm_minus_commute)
+                                have hs_lt_half: "s < 1 / 2"
+                                  using hdist_u hu_dist_p\<tau>_half hp\<tau>_dist_pos
+                                  by (simp add: field_simps)
+                                have hs_le1: "s \<le> 1"
+                                  using hs_lt_half by (by100 linarith)
+                                have hu_in_\<tau>: "u \<in> \<tau>_y"
+                                  unfolding h\<tau>_y_segment
+                                proof -
+                                  have hconv:
+                                    "u = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                                    using hu_eq by (simp add: algebra_simps)
+                                  show "u \<in> closed_segment x p\<tau>_y"
+                                  proof (subst in_segment)
+                                    show "\<exists>t. 0 \<le> t \<and> t \<le> 1 \<and>
+                                        u = (1 - t) *\<^sub>R x + t *\<^sub>R p\<tau>_y"
+                                      using hs_pos hs_le1 hconv by (rule_tac x=s in exI, by100 simp)
+                                  qed
+                                qed
+                                have "u \<notin> \<tau>_y"
+                                  using hu_local by (by100 blast)
+                                thus False using hu_in_\<tau> by (by100 blast)
+                              qed
+                              show ?thesis
+                                using hu_exterior_m hu_m_ne by (by100 linarith)
+                            qed
+                            define rad where "rad = min (r / 2) (\<delta>_iso / 2)"
+                            have hrad_pos: "rad > 0"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hrad_lt_r: "rad < r"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hrad_lt_\<delta>: "rad < \<delta>_iso"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hp\<tau>_dist_pos: "dist x p\<tau>_y > 0"
+                              using hp\<tau>_y_ne_x by (by100 simp)
+                            define a where "a = rad / dist x p\<tau>_y"
+                            define w where "w = x - a *\<^sub>R (p\<tau>_y - x)"
+                            have ha_pos: "a > 0"
+                              unfolding a_def using hrad_pos hp\<tau>_dist_pos by (by100 simp)
+                            have hw_dist_x: "dist x w = rad"
+                              unfolding w_def a_def
+                              using hrad_pos hp\<tau>_dist_pos
+                              by (simp add: dist_norm norm_minus_commute)
+                            have hw_dist: "dist w x < r"
+                            proof -
+                              have "dist w x = rad"
+                                using hw_dist_x by (simp add: dist_commute)
+                              thus ?thesis using hrad_lt_r by (by100 simp)
+                            qed
+                            have hw_ball: "w \<in> ball x \<delta>_iso"
+                              using hw_dist_x hrad_lt_\<delta> by (by100 simp)
+                            have hw_neg: "inner (w - x) n_y < 0"
+                            proof -
+                              have hw_inner:
+                                "inner (w - x) n_y = - a * inner (p\<tau>_y - x) n_y"
+                                unfolding w_def by (by100 simp)
+                              have hprod_pos: "a * inner (p\<tau>_y - x) n_y > 0"
+                                by (rule mult_pos_pos[OF ha_pos hp_pos])
+                              show ?thesis using hw_inner hprod_pos by (by100 simp)
+                            qed
+                            have hp\<tau>_on_\<tau>: "p\<tau>_y \<in> \<tau>_y"
+                              using h\<tau>_y_segment by (by100 simp)
+                            have hp\<tau>_m: "inner (p\<tau>_y - x) m\<tau>_y = 0"
+                              using h\<tau>_y_sub_L\<tau>_y_centered hp\<tau>_on_\<tau> by (by100 blast)
+                            have hw_m: "inner (w - x) m\<tau>_y = 0"
+                              unfolding w_def using hp\<tau>_m by (by100 simp)
+                            have hw_not_\<tau>: "w \<notin> \<tau>_y"
+                            proof
+                              assume hw\<tau>: "w \<in> \<tau>_y"
+                              have hw_ne_x: "w \<noteq> x"
+                                using hw_dist_x hrad_pos by (by100 auto)
+                              have hw_nonvertex: "w \<in> \<tau>_y - {x}"
+                                using hw\<tau> hw_ne_x by (by100 blast)
+                              have "inner (w - x) n_y > 0"
+                                using h\<tau>_y_pos_side[OF hp_pos] hw_nonvertex by (by100 blast)
+                              thus False using hw_neg by (by100 linarith)
+                            qed
+                            have hw_not_\<sigma>: "w \<notin> \<sigma>_y"
+                            proof
+                              assume hw\<sigma>: "w \<in> \<sigma>_y"
+                              have hw_ne_x: "w \<noteq> x"
+                                using hw_dist_x hrad_pos by (by100 auto)
+                              have hw_nonvertex: "w \<in> \<sigma>_y - {x}"
+                                using hw\<sigma> hw_ne_x by (by100 blast)
+                              show False
+                              proof (cases "inner (y - x) m\<tau>_y > 0")
+                                case True
+                                have "inner (w - x) m\<tau>_y > 0"
+                                  using h\<sigma>_y_pos_L\<tau>_side[OF True] hw_nonvertex by (by100 blast)
+                                thus ?thesis using hw_m by (by100 linarith)
+                              next
+                                case False
+                                have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                                  using hy_L\<tau>_y_side_cases False by (by100 blast)
+                                have "inner (w - x) m\<tau>_y < 0"
+                                  using h\<sigma>_y_neg_L\<tau>_side[OF hy_neg] hw_nonvertex by (by100 blast)
+                                thus ?thesis using hw_m by (by100 linarith)
+                              qed
+                            qed
+                            have hw_local: "w \<in> ?Lcomp"
+                              using hw_ball hw_not_\<sigma> hw_not_\<tau> by (by100 blast)
+                            define \<gamma> where "\<gamma> = linepath u w"
+                            have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                              unfolding \<gamma>_def by (rule continuous_on_linepath)
+                            have h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ?Lcomp"
+                            proof
+                              fix z
+                              assume hz_img: "z \<in> \<gamma> ` {0..1::real}"
+                              obtain t :: real where ht: "t \<in> {0..1}"
+                                and hz_eq: "z = \<gamma> t"
+                                using hz_img by (by100 blast)
+                              have ht_ge0: "0 \<le> t" using ht by (by100 simp)
+                              have ht_le1: "t \<le> 1" using ht by (by100 simp)
+                              have hz_line: "z = linepath u w t"
+                                using hz_eq unfolding \<gamma>_def by (by100 simp)
+                              have hz_seg: "z \<in> closed_segment u w"
+                              proof -
+                                have "z = (1 - t) *\<^sub>R u + t *\<^sub>R w"
+                                  using hz_line unfolding linepath_def by (by100 simp)
+                                thus ?thesis
+                                  unfolding closed_segment_def
+                                  using ht_ge0 ht_le1 by (by100 blast)
+                              qed
+                              have hseg_ball: "closed_segment u w \<subseteq> ball x \<delta>_iso"
+                              proof (rule closed_segment_subset)
+                                show "u \<in> ball x \<delta>_iso"
+                                  using hu_local by (by100 blast)
+                                show "w \<in> ball x \<delta>_iso"
+                                  by (rule hw_ball)
+                                show "convex (ball x \<delta>_iso)"
+                                  by (rule convex_ball)
+                              qed
+                              have hz_ball: "z \<in> ball x \<delta>_iso"
+                                using hz_seg hseg_ball by (by100 blast)
+                              have hz_m:
+                                "inner (z - x) m\<tau>_y =
+                                  (1 - t) * inner (u - x) m\<tau>_y
+                                    + t * inner (w - x) m\<tau>_y"
+                              proof -
+                                have hz_minus:
+                                  "z - x = (1 - t) *\<^sub>R (u - x) + t *\<^sub>R (w - x)"
+                                  using hz_line unfolding linepath_def
+                                  by (simp add: algebra_simps)
+                                show ?thesis
+                                  using arg_cong[where f="\<lambda>v. inner v m\<tau>_y", OF hz_minus]
+                                  by (simp add: inner_add_left)
+                              qed
+                              have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                              proof (cases "t = 1")
+                                case True
+                                have "z = w"
+                                  using hz_line True unfolding linepath_def by (by100 simp)
+                                thus ?thesis using hw_not_\<sigma> hw_not_\<tau> by (by100 blast)
+                              next
+                                case False
+                                have ht_lt1: "t < 1"
+                                  using ht_le1 False by (by100 linarith)
+                                have hone_minus_pos: "1 - t > 0"
+                                  using ht_lt1 by (by100 linarith)
+                                have hz_opposite_m:
+                                  "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                                   (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                                proof (cases "inner (y - x) m\<tau>_y > 0 \<and>
+                                    inner (u - x) m\<tau>_y < 0")
+                                  case True
+                                  have hy_pos: "inner (y - x) m\<tau>_y > 0"
+                                    using True by (by100 blast)
+                                  have hu_m_neg: "inner (u - x) m\<tau>_y < 0"
+                                    using True by (by100 blast)
+                                  have hprod_neg:
+                                    "(1 - t) * inner (u - x) m\<tau>_y < 0"
+                                    by (rule mult_pos_neg[OF hone_minus_pos hu_m_neg])
+                                  have "inner (z - x) m\<tau>_y < 0"
+                                    using hz_m hw_m hprod_neg by (by100 simp)
+                                  thus ?thesis using hy_pos by (by100 blast)
+                                next
+                                  case False
+                                  have hneg:
+                                    "inner (y - x) m\<tau>_y < 0 \<and>
+                                     inner (u - x) m\<tau>_y > 0"
+                                    using hu_strict_exterior_m False by (by100 blast)
+                                  have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                                    using hneg by (by100 blast)
+                                  have hu_m_pos: "inner (u - x) m\<tau>_y > 0"
+                                    using hneg by (by100 blast)
+                                  have hprod_pos:
+                                    "(1 - t) * inner (u - x) m\<tau>_y > 0"
+                                    by (rule mult_pos_pos[OF hone_minus_pos hu_m_pos])
+                                  have "inner (z - x) m\<tau>_y > 0"
+                                    using hz_m hw_m hprod_pos by (by100 simp)
+                                  thus ?thesis using hy_neg by (by100 blast)
+                                qed
+                                have hz_not_\<sigma>: "z \<notin> \<sigma>_y"
+                                  by (rule h_opposite_L\<tau>_side_avoids_\<sigma>_y
+                                      [OF hz_opposite_m])
+                                have hz_not_\<tau>: "z \<notin> \<tau>_y"
+                                proof
+                                  assume hz\<tau>: "z \<in> \<tau>_y"
+                                  have hz_m0: "inner (z - x) m\<tau>_y = 0"
+                                    using h\<tau>_y_sub_L\<tau>_y_centered hz\<tau> by (by100 blast)
+                                  show False using hz_opposite_m hz_m0 by (by100 linarith)
+                                qed
+                                show ?thesis using hz_not_\<sigma> hz_not_\<tau> by (by100 blast)
+                              qed
+                              show "z \<in> ?Lcomp"
+                                using hz_ball hz_not_pair by (by100 blast)
+                            qed
+                            have h\<gamma>_conn: "connected (\<gamma> ` {0..1::real})"
+                              using connected_continuous_image[OF h\<gamma>_cont] by (by100 simp)
+                            have hu_in_image: "u \<in> \<gamma> ` {0..1::real}"
+                            proof -
+                              have "(0::real) \<in> {0..1}" by (by100 simp)
+                              moreover have "\<gamma> 0 = u"
+                                unfolding \<gamma>_def linepath_def by (by100 simp)
+                              ultimately show ?thesis by (by100 blast)
+                            qed
+                            have h\<gamma>_sub_C: "\<gamma> ` {0..1::real} \<subseteq> C"
+                              unfolding C_def
+                              by (rule connected_component_maximal
+                                  [OF hu_in_image h\<gamma>_conn h\<gamma>_sub])
+                            have h1_img: "w \<in> \<gamma> ` {0..1::real}"
+                            proof -
+                              have "(1::real) \<in> {0..1}" by (by100 simp)
+                              moreover have "\<gamma> 1 = w"
+                                unfolding \<gamma>_def linepath_def by (by100 simp)
+                              ultimately show ?thesis by (by100 blast)
+                            qed
+                            have hwC: "w \<in> C"
+                              using h1_img h\<gamma>_sub_C by (by100 blast)
+                            show ?thesis
+                              using hwC hw_dist hw_neg by (by100 blast)
+                          qed
                           obtain w where hwC: "w \<in> C"
                             and hw_dist: "dist w x < r"
                             and hw_neg: "inner (w - x) n_y < 0"
@@ -2543,7 +2811,275 @@ proof -
                             by (rule component_of_open_path_connected[OF hLcomp_open hC_comp])
                           have h_negative_sector_component_hits_opposite:
                             "\<exists>w\<in>C. dist w x < r \<and> inner (w - x) n_y > 0"
-                            sorry
+                          proof -
+                            have hu_strict_exterior_m:
+                              "(inner (y - x) m\<tau>_y > 0 \<and> inner (u - x) m\<tau>_y < 0) \<or>
+                               (inner (y - x) m\<tau>_y < 0 \<and> inner (u - x) m\<tau>_y > 0)"
+                            proof -
+                              have hu_m_ne: "inner (u - x) m\<tau>_y \<noteq> 0"
+                              proof
+                                assume hu_m0: "inner (u - x) m\<tau>_y = 0"
+                                have hu_L\<tau>: "u \<in> L\<tau>_y"
+                                  using hu_m0 hL\<tau>_y_eq_centered by (by100 simp)
+                                have hL\<tau>_pair: "L\<tau>_y = affine hull {x, p\<tau>_y}"
+                                  unfolding L\<tau>_y_def h\<tau>_y_segment by (by100 simp)
+                                obtain s :: real where hu_eq:
+                                  "u = x + s *\<^sub>R (p\<tau>_y - x)"
+                                  using hu_L\<tau> unfolding hL\<tau>_pair affine_hull_2_alt
+                                  by (by100 blast)
+                                have hu_inner_n:
+                                  "inner (u - x) n_y = s * inner (p\<tau>_y - x) n_y"
+                                  using hu_eq by (by100 simp)
+                                have hs_pos: "s > 0"
+                                proof (rule ccontr)
+                                  assume hnot: "\<not> 0 < s"
+                                  have hs_nonpos: "s \<le> 0"
+                                    using hnot by (by100 linarith)
+                                  have "s * inner (p\<tau>_y - x) n_y \<ge> 0"
+                                  proof (rule mult_nonpos_nonpos)
+                                    show "s \<le> 0"
+                                      by (rule hs_nonpos)
+                                    show "inner (p\<tau>_y - x) n_y \<le> 0"
+                                      using hp_neg by (by100 linarith)
+                                  qed
+                                  thus False using hu_inner_n hu_neg by (by100 linarith)
+                                qed
+                                have hp\<tau>_dist_pos: "dist x p\<tau>_y > 0"
+                                  using hp\<tau>_y_ne_x by (by100 simp)
+                                have hdist_u: "dist u x = s * dist x p\<tau>_y"
+                                  using hu_eq hs_pos
+                                  by (simp add: dist_norm norm_minus_commute)
+                                have hs_lt_half: "s < 1 / 2"
+                                  using hdist_u hu_dist_p\<tau>_half hp\<tau>_dist_pos
+                                  by (simp add: field_simps)
+                                have hs_le1: "s \<le> 1"
+                                  using hs_lt_half by (by100 linarith)
+                                have hu_in_\<tau>: "u \<in> \<tau>_y"
+                                  unfolding h\<tau>_y_segment
+                                proof -
+                                  have hconv:
+                                    "u = (1 - s) *\<^sub>R x + s *\<^sub>R p\<tau>_y"
+                                    using hu_eq by (simp add: algebra_simps)
+                                  show "u \<in> closed_segment x p\<tau>_y"
+                                  proof (subst in_segment)
+                                    show "\<exists>t. 0 \<le> t \<and> t \<le> 1 \<and>
+                                        u = (1 - t) *\<^sub>R x + t *\<^sub>R p\<tau>_y"
+                                      using hs_pos hs_le1 hconv by (rule_tac x=s in exI, by100 simp)
+                                  qed
+                                qed
+                                have "u \<notin> \<tau>_y"
+                                  using hu_local by (by100 blast)
+                                thus False using hu_in_\<tau> by (by100 blast)
+                              qed
+                              show ?thesis
+                                using hu_exterior_m hu_m_ne by (by100 linarith)
+                            qed
+                            define rad where "rad = min (r / 2) (\<delta>_iso / 2)"
+                            have hrad_pos: "rad > 0"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hrad_lt_r: "rad < r"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hrad_lt_\<delta>: "rad < \<delta>_iso"
+                              unfolding rad_def using hr_pos h\<delta>_iso_pos by (by100 simp)
+                            have hp\<tau>_dist_pos: "dist x p\<tau>_y > 0"
+                              using hp\<tau>_y_ne_x by (by100 simp)
+                            define a where "a = rad / dist x p\<tau>_y"
+                            define w where "w = x - a *\<^sub>R (p\<tau>_y - x)"
+                            have ha_pos: "a > 0"
+                              unfolding a_def using hrad_pos hp\<tau>_dist_pos by (by100 simp)
+                            have hw_dist_x: "dist x w = rad"
+                              unfolding w_def a_def
+                              using hrad_pos hp\<tau>_dist_pos
+                              by (simp add: dist_norm norm_minus_commute)
+                            have hw_dist: "dist w x < r"
+                            proof -
+                              have "dist w x = rad"
+                                using hw_dist_x by (simp add: dist_commute)
+                              thus ?thesis using hrad_lt_r by (by100 simp)
+                            qed
+                            have hw_ball: "w \<in> ball x \<delta>_iso"
+                              using hw_dist_x hrad_lt_\<delta> by (by100 simp)
+                            have hw_pos: "inner (w - x) n_y > 0"
+                            proof -
+                              have hw_inner:
+                                "inner (w - x) n_y = - a * inner (p\<tau>_y - x) n_y"
+                                unfolding w_def by (by100 simp)
+                              have hprod_neg: "a * inner (p\<tau>_y - x) n_y < 0"
+                                by (rule mult_pos_neg[OF ha_pos hp_neg])
+                              show ?thesis using hw_inner hprod_neg by (by100 simp)
+                            qed
+                            have hp\<tau>_on_\<tau>: "p\<tau>_y \<in> \<tau>_y"
+                              using h\<tau>_y_segment by (by100 simp)
+                            have hp\<tau>_m: "inner (p\<tau>_y - x) m\<tau>_y = 0"
+                              using h\<tau>_y_sub_L\<tau>_y_centered hp\<tau>_on_\<tau> by (by100 blast)
+                            have hw_m: "inner (w - x) m\<tau>_y = 0"
+                              unfolding w_def using hp\<tau>_m by (by100 simp)
+                            have hw_not_\<tau>: "w \<notin> \<tau>_y"
+                            proof
+                              assume hw\<tau>: "w \<in> \<tau>_y"
+                              have hw_ne_x: "w \<noteq> x"
+                                using hw_dist_x hrad_pos by (by100 auto)
+                              have hw_nonvertex: "w \<in> \<tau>_y - {x}"
+                                using hw\<tau> hw_ne_x by (by100 blast)
+                              have "inner (w - x) n_y < 0"
+                                using h\<tau>_y_neg_side[OF hp_neg] hw_nonvertex by (by100 blast)
+                              thus False using hw_pos by (by100 linarith)
+                            qed
+                            have hw_not_\<sigma>: "w \<notin> \<sigma>_y"
+                            proof
+                              assume hw\<sigma>: "w \<in> \<sigma>_y"
+                              have hw_ne_x: "w \<noteq> x"
+                                using hw_dist_x hrad_pos by (by100 auto)
+                              have hw_nonvertex: "w \<in> \<sigma>_y - {x}"
+                                using hw\<sigma> hw_ne_x by (by100 blast)
+                              show False
+                              proof (cases "inner (y - x) m\<tau>_y > 0")
+                                case True
+                                have "inner (w - x) m\<tau>_y > 0"
+                                  using h\<sigma>_y_pos_L\<tau>_side[OF True] hw_nonvertex by (by100 blast)
+                                thus ?thesis using hw_m by (by100 linarith)
+                              next
+                                case False
+                                have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                                  using hy_L\<tau>_y_side_cases False by (by100 blast)
+                                have "inner (w - x) m\<tau>_y < 0"
+                                  using h\<sigma>_y_neg_L\<tau>_side[OF hy_neg] hw_nonvertex by (by100 blast)
+                                thus ?thesis using hw_m by (by100 linarith)
+                              qed
+                            qed
+                            have hw_local: "w \<in> ?Lcomp"
+                              using hw_ball hw_not_\<sigma> hw_not_\<tau> by (by100 blast)
+                            define \<gamma> where "\<gamma> = linepath u w"
+                            have h\<gamma>_cont: "continuous_on {0..1::real} \<gamma>"
+                              unfolding \<gamma>_def by (rule continuous_on_linepath)
+                            have h\<gamma>_sub: "\<gamma> ` {0..1::real} \<subseteq> ?Lcomp"
+                            proof
+                              fix z
+                              assume hz_img: "z \<in> \<gamma> ` {0..1::real}"
+                              obtain t :: real where ht: "t \<in> {0..1}"
+                                and hz_eq: "z = \<gamma> t"
+                                using hz_img by (by100 blast)
+                              have ht_ge0: "0 \<le> t" using ht by (by100 simp)
+                              have ht_le1: "t \<le> 1" using ht by (by100 simp)
+                              have hz_line: "z = linepath u w t"
+                                using hz_eq unfolding \<gamma>_def by (by100 simp)
+                              have hz_seg: "z \<in> closed_segment u w"
+                              proof -
+                                have "z = (1 - t) *\<^sub>R u + t *\<^sub>R w"
+                                  using hz_line unfolding linepath_def by (by100 simp)
+                                thus ?thesis
+                                  unfolding closed_segment_def
+                                  using ht_ge0 ht_le1 by (by100 blast)
+                              qed
+                              have hseg_ball: "closed_segment u w \<subseteq> ball x \<delta>_iso"
+                              proof (rule closed_segment_subset)
+                                show "u \<in> ball x \<delta>_iso"
+                                  using hu_local by (by100 blast)
+                                show "w \<in> ball x \<delta>_iso"
+                                  by (rule hw_ball)
+                                show "convex (ball x \<delta>_iso)"
+                                  by (rule convex_ball)
+                              qed
+                              have hz_ball: "z \<in> ball x \<delta>_iso"
+                                using hz_seg hseg_ball by (by100 blast)
+                              have hz_m:
+                                "inner (z - x) m\<tau>_y =
+                                  (1 - t) * inner (u - x) m\<tau>_y
+                                    + t * inner (w - x) m\<tau>_y"
+                              proof -
+                                have hz_minus:
+                                  "z - x = (1 - t) *\<^sub>R (u - x) + t *\<^sub>R (w - x)"
+                                  using hz_line unfolding linepath_def
+                                  by (simp add: algebra_simps)
+                                show ?thesis
+                                  using arg_cong[where f="\<lambda>v. inner v m\<tau>_y", OF hz_minus]
+                                  by (simp add: inner_add_left)
+                              qed
+                              have hz_not_pair: "z \<notin> \<sigma>_y \<union> \<tau>_y"
+                              proof (cases "t = 1")
+                                case True
+                                have "z = w"
+                                  using hz_line True unfolding linepath_def by (by100 simp)
+                                thus ?thesis using hw_not_\<sigma> hw_not_\<tau> by (by100 blast)
+                              next
+                                case False
+                                have ht_lt1: "t < 1"
+                                  using ht_le1 False by (by100 linarith)
+                                have hone_minus_pos: "1 - t > 0"
+                                  using ht_lt1 by (by100 linarith)
+                                have hz_opposite_m:
+                                  "(inner (y - x) m\<tau>_y > 0 \<and> inner (z - x) m\<tau>_y < 0) \<or>
+                                   (inner (y - x) m\<tau>_y < 0 \<and> inner (z - x) m\<tau>_y > 0)"
+                                proof (cases "inner (y - x) m\<tau>_y > 0 \<and>
+                                    inner (u - x) m\<tau>_y < 0")
+                                  case True
+                                  have hy_pos: "inner (y - x) m\<tau>_y > 0"
+                                    using True by (by100 blast)
+                                  have hu_m_neg: "inner (u - x) m\<tau>_y < 0"
+                                    using True by (by100 blast)
+                                  have hprod_neg:
+                                    "(1 - t) * inner (u - x) m\<tau>_y < 0"
+                                    by (rule mult_pos_neg[OF hone_minus_pos hu_m_neg])
+                                  have "inner (z - x) m\<tau>_y < 0"
+                                    using hz_m hw_m hprod_neg by (by100 simp)
+                                  thus ?thesis using hy_pos by (by100 blast)
+                                next
+                                  case False
+                                  have hneg:
+                                    "inner (y - x) m\<tau>_y < 0 \<and>
+                                     inner (u - x) m\<tau>_y > 0"
+                                    using hu_strict_exterior_m False by (by100 blast)
+                                  have hy_neg: "inner (y - x) m\<tau>_y < 0"
+                                    using hneg by (by100 blast)
+                                  have hu_m_pos: "inner (u - x) m\<tau>_y > 0"
+                                    using hneg by (by100 blast)
+                                  have hprod_pos:
+                                    "(1 - t) * inner (u - x) m\<tau>_y > 0"
+                                    by (rule mult_pos_pos[OF hone_minus_pos hu_m_pos])
+                                  have "inner (z - x) m\<tau>_y > 0"
+                                    using hz_m hw_m hprod_pos by (by100 simp)
+                                  thus ?thesis using hy_neg by (by100 blast)
+                                qed
+                                have hz_not_\<sigma>: "z \<notin> \<sigma>_y"
+                                  by (rule h_opposite_L\<tau>_side_avoids_\<sigma>_y
+                                      [OF hz_opposite_m])
+                                have hz_not_\<tau>: "z \<notin> \<tau>_y"
+                                proof
+                                  assume hz\<tau>: "z \<in> \<tau>_y"
+                                  have hz_m0: "inner (z - x) m\<tau>_y = 0"
+                                    using h\<tau>_y_sub_L\<tau>_y_centered hz\<tau> by (by100 blast)
+                                  show False using hz_opposite_m hz_m0 by (by100 linarith)
+                                qed
+                                show ?thesis using hz_not_\<sigma> hz_not_\<tau> by (by100 blast)
+                              qed
+                              show "z \<in> ?Lcomp"
+                                using hz_ball hz_not_pair by (by100 blast)
+                            qed
+                            have h\<gamma>_conn: "connected (\<gamma> ` {0..1::real})"
+                              using connected_continuous_image[OF h\<gamma>_cont] by (by100 simp)
+                            have hu_in_image: "u \<in> \<gamma> ` {0..1::real}"
+                            proof -
+                              have "(0::real) \<in> {0..1}" by (by100 simp)
+                              moreover have "\<gamma> 0 = u"
+                                unfolding \<gamma>_def linepath_def by (by100 simp)
+                              ultimately show ?thesis by (by100 blast)
+                            qed
+                            have h\<gamma>_sub_C: "\<gamma> ` {0..1::real} \<subseteq> C"
+                              unfolding C_def
+                              by (rule connected_component_maximal
+                                  [OF hu_in_image h\<gamma>_conn h\<gamma>_sub])
+                            have h1_img: "w \<in> \<gamma> ` {0..1::real}"
+                            proof -
+                              have "(1::real) \<in> {0..1}" by (by100 simp)
+                              moreover have "\<gamma> 1 = w"
+                                unfolding \<gamma>_def linepath_def by (by100 simp)
+                              ultimately show ?thesis by (by100 blast)
+                            qed
+                            have hwC: "w \<in> C"
+                              using h1_img h\<gamma>_sub_C by (by100 blast)
+                            show ?thesis
+                              using hwC hw_dist hw_pos by (by100 blast)
+                          qed
                           obtain w where hwC: "w \<in> C"
                             and hw_dist: "dist w x < r"
                             and hw_pos: "inner (w - x) n_y > 0"
