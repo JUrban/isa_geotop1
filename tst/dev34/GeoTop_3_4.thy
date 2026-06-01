@@ -3155,6 +3155,33 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_complex_edge_face_count_eq_1_unique:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  shows "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  obtain \<sigma> where hSeq: "?S = {\<sigma>}"
+    using hcard by (rule card_1_singletonE)
+  show ?thesis
+  proof (rule ex1I[where a=\<sigma>])
+    have h\<sigma>S: "\<sigma> \<in> ?S"
+      using hSeq by (by100 blast)
+    show "\<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      using h\<sigma>S by (by100 simp)
+  next
+    fix \<tau>
+    assume h\<tau>: "\<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>"
+    have "\<tau> \<in> ?S"
+      using h\<tau> by (by100 simp)
+    thus "\<tau> = \<sigma>"
+      using hSeq by (by100 simp)
+  qed
+qed
+
 lemma geotop_edge_rel_interior_nonempty:
   fixes e :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
