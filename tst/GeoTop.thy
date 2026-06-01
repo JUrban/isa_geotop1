@@ -1424,7 +1424,54 @@ proof -
               have h_adjacent_sector_choice:
                 "\<exists>u\<in>U. dist u x < \<epsilon> \<and> inner (u - x) n_y \<noteq> 0 \<and>
                   ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
-                sorry
+              proof (cases "\<tau>_y \<subseteq> {z. inner (z - x) n_y = 0}")
+                case True
+                show ?thesis
+                proof -
+                  obtain u where huU: "u \<in> U"
+                    and hu_dist: "dist u x < \<epsilon>"
+                    and hu_off_L: "inner (u - x) n_y \<noteq> 0"
+                    using hU_meets_off_L_y[OF h\<epsilon>_pos] by (by100 blast)
+                  have h_translate_avoid_\<tau>:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y = {})"
+                  proof (rule equals0I)
+                    fix p
+                    assume hp: "p \<in> ((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<tau>_y)"
+                    obtain t :: real where ht: "t \<in> {0..1}"
+                      and hp_eq: "p = u + t *\<^sub>R (y - x)"
+                      using hp by (by100 blast)
+                    have hp_\<tau>: "p \<in> \<tau>_y"
+                      using hp by (by100 blast)
+                    have hp_line: "inner (p - x) n_y = 0"
+                      using True hp_\<tau> by (by100 blast)
+                    have hp_x_eq: "p - x = (u - x) + t *\<^sub>R (y - x)"
+                      using hp_eq by (by100 simp)
+                    have hp_inner_eq:
+                      "inner (p - x) n_y =
+                       inner (u - x) n_y + t * inner (y - x) n_y"
+                      using arg_cong[where f="\<lambda>z. inner z n_y", OF hp_x_eq]
+                      by (simp add: inner_add_left)
+                    have hp_inner_u: "inner (p - x) n_y = inner (u - x) n_y"
+                      using hp_inner_eq hy_L_y_centered by (by100 simp)
+                    have hp_not_line: "inner (p - x) n_y \<noteq> 0"
+                      using hp_inner_u hu_off_L by (by100 simp)
+                    show False using hp_line hp_not_line by (by100 blast)
+                  qed
+                  have h_translate_avoid_other:
+                    "((\<lambda>t::real. u + t *\<^sub>R (y - x)) ` {0..1} \<inter> \<Union>OtherEdges_y = {})"
+                    using h_translate_avoid_\<tau> hOther_union_eq_\<tau>_y by (by100 simp)
+                  show ?thesis using huU hu_dist hu_off_L h_translate_avoid_other by (by100 blast)
+                qed
+              next
+                case False
+                \<comment> \<open>Non-collinear two-ray sector case: this is the genuine
+                  circular-neighborhood step from Figure 2.6.  The component
+                  \<open>U\<close> occupies a local sector adjacent to \<open>\<sigma>_y\<close>; choose
+                  \<open>u\<close> in that sector so the translate parallel to \<open>y - x\<close>
+                  misses the unique other edge \<open>\<tau>_y\<close>.\<close>
+                show ?thesis
+                  sorry
+              qed
               obtain u where huU: "u \<in> U"
                 and hu_dist_eps: "dist u x < \<epsilon>"
                 and hu_off_L_y: "inner (u - x) n_y \<noteq> 0"
