@@ -8004,12 +8004,74 @@ proof -
     and hE3_t28: "geotop_arc_endpoints B3 E"
     using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)+
   have h_int12_t28: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B2 E = {}"
+    and h_int13_t28: "geotop_arc_interior B1 E \<inter> geotop_arc_interior B3 E = {}"
     and h_int23_t28: "geotop_arc_interior B2 E \<inter> geotop_arc_interior B3 E = {}"
     using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)+
   have h_poly_12_t28: "geotop_is_polygon (B1 \<union> B2)"
     by (rule pair_of_arcs_is_polygon[OF hB1_bl_t28 hB2_bl_t28 hE1_t28 hE2_t28 h_int12_t28])
   have h_poly_23_t28: "geotop_is_polygon (B2 \<union> B3)"
     by (rule pair_of_arcs_is_polygon[OF hB2_bl_t28 hB3_bl_t28 hE2_t28 hE3_t28 h_int23_t28])
+  \<comment> \<open>Side classification forced by the middle-arc hypothesis:
+    since \<open>Int B2\<close> lies in the interior of \<open>B1 \<union> B3\<close>, the other two arc
+    interiors lie on the exterior sides of the adjacent pair-polygons. These
+    are the formal version of the Figure 2.8 component-side observation.\<close>
+  have hT2_8_B3_not_in_I12:
+    "\<not> geotop_arc_interior B3 E \<subseteq> I12"
+    using theta_middle_arc_unique_excludes_3[OF h\<theta> hB2_inner] I12_def
+    by (by100 simp)
+  have hT2_8_B3_side_12:
+    "geotop_arc_interior B3 E \<subseteq> I12 \<or>
+     geotop_arc_interior B3 E \<subseteq> geotop_polygon_exterior (B1 \<union> B2)"
+  proof -
+    have h_int31: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B1 E = {}"
+      using h_int13_t28 by (by100 blast)
+    have h_int32: "geotop_arc_interior B3 E \<inter> geotop_arc_interior B2 E = {}"
+      using h_int23_t28 by (by100 blast)
+    have h_side:
+      "geotop_arc_interior B3 E \<subseteq> geotop_polygon_interior (B1 \<union> B2) \<or>
+       geotop_arc_interior B3 E \<subseteq> geotop_polygon_exterior (B1 \<union> B2)"
+      by (rule theta_arc_in_one_side_of_pair_polygon
+          [OF hE3_t28 hE1_t28 hE2_t28 hB1_bl_t28 hB2_bl_t28
+              h_int31 h_int32 h_int12_t28])
+    show ?thesis using h_side I12_def by (by100 simp)
+  qed
+  have hT2_8_B3_exterior_12:
+    "geotop_arc_interior B3 E \<subseteq> geotop_polygon_exterior (B1 \<union> B2)"
+    using hT2_8_B3_side_12 hT2_8_B3_not_in_I12 by (by100 blast)
+  have hT2_8_B1_not_in_I23:
+    "\<not> geotop_arc_interior B1 E \<subseteq> I23"
+  proof -
+    have h\<theta>_perm: "geotop_is_polyhedral_theta_graph M B3 B2 B1 E"
+      using h_theta_t28 hB1_bl_t28 hB2_bl_t28 hB3_bl_t28
+      unfolding geotop_is_polyhedral_theta_graph_def geotop_is_theta_graph_def
+      by (by100 blast)
+    have hB2_inner_perm:
+      "geotop_arc_interior B2 E \<subseteq> geotop_polygon_interior (B3 \<union> B1)"
+    proof -
+      have h_un: "B3 \<union> B1 = B1 \<union> B3" by (by100 blast)
+      show ?thesis using hB2_inner h_un by (by100 simp)
+    qed
+    have h_not:
+      "\<not> geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B3 \<union> B2)"
+      by (rule theta_middle_arc_unique_excludes_3[OF h\<theta>_perm hB2_inner_perm])
+    have h_un: "B3 \<union> B2 = B2 \<union> B3" by (by100 blast)
+    show ?thesis using h_not h_un I23_def by (by100 simp)
+  qed
+  have hT2_8_B1_side_23:
+    "geotop_arc_interior B1 E \<subseteq> I23 \<or>
+     geotop_arc_interior B1 E \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
+  proof -
+    have h_side:
+      "geotop_arc_interior B1 E \<subseteq> geotop_polygon_interior (B2 \<union> B3) \<or>
+       geotop_arc_interior B1 E \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
+      by (rule theta_arc_in_one_side_of_pair_polygon
+          [OF hE1_t28 hE2_t28 hE3_t28 hB2_bl_t28 hB3_bl_t28
+              h_int12_t28 h_int13_t28 h_int23_t28])
+    show ?thesis using h_side I23_def by (by100 simp)
+  qed
+  have hT2_8_B1_exterior_23:
+    "geotop_arc_interior B1 E \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
+    using hT2_8_B1_side_23 hT2_8_B1_not_in_I23 by (by100 blast)
   \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
     its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
     polygon-int axiom).
