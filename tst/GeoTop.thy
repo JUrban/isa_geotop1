@@ -4424,11 +4424,29 @@ proof -
                         qed
                         have hLc_sub_segment:
                           "Lc \<subseteq> closed_segment a b"
-                          sorry
+                        proof
+                          fix x assume hxLc: "x \<in> Lc"
+                          have hxL: "x \<in> ?L"
+                            using hxLc hLc_sub_L by (by100 blast)
+                          have h\<phi>x_between: "\<phi> x \<in> {0<..<D}"
+                            using hxLc h\<phi>_between by (by100 blast)
+                          define u where "u = \<phi> x / D"
+                          have hu0: "0 \<le> u"
+                            unfolding u_def using h\<phi>x_between hD_pos by (by100 simp)
+                          have hu1: "u \<le> 1"
+                            unfolding u_def using h\<phi>x_between hD_pos by (by100 simp)
+                          have hx_u: "x = a + u *\<^sub>R d"
+                            using h\<phi>_coord[OF hxL] unfolding u_def .
+                          have hx_conv: "x = (1 - u) *\<^sub>R a + u *\<^sub>R b"
+                            using hx_u unfolding d_def by (simp add: algebra_simps)
+                          show "x \<in> closed_segment a b"
+                            unfolding closed_segment_def
+                            using hu0 hu1 hx_conv by (by100 blast)
+                        qed
                         have "bounded Lc"
-                          sorry
+                          by (rule bounded_subset[OF bounded_closed_segment hLc_sub_segment])
                         thus ?thesis
-                          sorry
+                          by (by100 blast)
                       qed
                       show ?thesis by (rule h_line_component_trichotomy)
                     qed
