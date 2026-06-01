@@ -187,6 +187,126 @@ proof -
     using h_src_top h_tgt_top h_bij hf_top hg_top by (by100 blast)
 qed
 
+subsection \<open>GeoTop arcs as top1 arcs\<close>
+
+lemma geotop_euclidean_topology_UNIV_strict:
+  "is_topology_on_strict (UNIV::'a::real_normed_vector set)
+     (geotop_euclidean_topology::'a set set)"
+proof (rule is_topology_on_strictI)
+  show "is_topology_on (UNIV::'a set) (geotop_euclidean_topology::'a set set)"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  show "(geotop_euclidean_topology::'a set set) \<subseteq> Pow (UNIV::'a set)"
+    by (by100 simp)
+qed
+
+lemma geotop_subspace_topology_strict:
+  "is_topology_on_strict A
+     (subspace_topology (UNIV::'a::real_normed_vector set)
+        (geotop_euclidean_topology::'a set set) A)"
+  by (rule subspace_topology_is_strict[OF geotop_euclidean_topology_UNIV_strict subset_UNIV])
+
+lemma geotop_euclidean_topology_UNIV_hausdorff:
+  "is_hausdorff_on (UNIV::'a::real_normed_vector set)
+     (geotop_euclidean_topology::'a set set)"
+proof -
+  have hT: "is_topology_on (UNIV::'a set) (geotop_euclidean_topology::'a set set)"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  show ?thesis
+    unfolding is_hausdorff_on_def
+  proof (intro conjI ballI impI)
+    show "is_topology_on (UNIV::'a set) (geotop_euclidean_topology::'a set set)"
+      by (rule hT)
+  next
+    fix x y :: 'a
+    assume hne: "x \<noteq> y"
+    define r where "r = dist x y / 2"
+    have hr_pos: "r > 0" using hne unfolding r_def by (by100 simp)
+    have hUx: "ball x r \<in> (geotop_euclidean_topology::'a set set)"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def by (by100 simp)
+    have hUy: "ball y r \<in> (geotop_euclidean_topology::'a set set)"
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def by (by100 simp)
+    have hdisj: "ball x r \<inter> ball y r = {}"
+    proof (rule ccontr)
+      assume "ball x r \<inter> ball y r \<noteq> {}"
+      then obtain z where hz: "z \<in> ball x r" "z \<in> ball y r" by (by100 blast)
+      have hlt: "dist x z + dist z y < dist x y"
+        using hz unfolding r_def by (simp add: dist_commute)
+      have "dist x y \<le> dist x z + dist z y"
+        by (rule dist_triangle)
+      thus False using hlt by (by100 linarith)
+    qed
+    show "\<exists>U V. neighborhood_of x (UNIV::'a set) geotop_euclidean_topology U \<and>
+        neighborhood_of y (UNIV::'a set) geotop_euclidean_topology V \<and> U \<inter> V = {}"
+      apply (rule exI[of _ "ball x r"])
+      apply (rule exI[of _ "ball y r"])
+      unfolding neighborhood_of_def
+      using hUx hUy hr_pos hdisj by simp
+  qed
+qed
+
+lemma geotop_arc_endpoints_imp_top1_arc:
+  assumes "geotop_arc_endpoints A E"
+  shows "top1_is_arc_on A
+     (subspace_topology (UNIV::'a::real_normed_vector set) geotop_euclidean_topology A)"
+proof -
+  obtain f :: "real \<Rightarrow> 'a" where hf:
+      "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) A
+        (subspace_topology UNIV geotop_euclidean_topology A) f"
+    using assms unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hI_set: "{t::real. 0 \<le> t \<and> t \<le> 1} = I_set"
+    unfolding top1_unit_interval_def by (by100 auto)
+  have hI_top:
+      "subspace_topology (UNIV::real set) geotop_euclidean_topology
+        {t::real. 0 \<le> t \<and> t \<le> 1} = I_top"
+    unfolding top1_unit_interval_topology_def
+    using hI_set by (simp add: geotop_euclidean_topology_eq_open_sets)
+  have hf_top:
+      "top1_homeomorphism_on I_set I_top A
+        (subspace_topology UNIV geotop_euclidean_topology A) f"
+    using hf hI_set hI_top by (by100 simp)
+  have hstrict:
+      "is_topology_on_strict A
+        (subspace_topology (UNIV::'a set) geotop_euclidean_topology A)"
+    by (rule geotop_subspace_topology_strict)
+  show ?thesis
+    unfolding top1_is_arc_on_def using hstrict hf_top by (by100 blast)
+qed
+
+lemma geotop_arc_endpoints_imp_top1_arc_endpoints:
+  assumes "geotop_arc_endpoints A E"
+  shows "top1_arc_endpoints_on A
+     (subspace_topology (UNIV::'a::real_normed_vector set) geotop_euclidean_topology A) = E"
+proof -
+  obtain f :: "real \<Rightarrow> 'a" where hf:
+      "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1}) A
+        (subspace_topology UNIV geotop_euclidean_topology A) f"
+      and hE: "E = {f 0, f 1}"
+    using assms unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hI_set: "{t::real. 0 \<le> t \<and> t \<le> 1} = I_set"
+    unfolding top1_unit_interval_def by (by100 auto)
+  have hI_top:
+      "subspace_topology (UNIV::real set) geotop_euclidean_topology
+        {t::real. 0 \<le> t \<and> t \<le> 1} = I_top"
+    unfolding top1_unit_interval_topology_def
+    using hI_set by (simp add: geotop_euclidean_topology_eq_open_sets)
+  have hf_top:
+      "top1_homeomorphism_on I_set I_top A
+        (subspace_topology UNIV geotop_euclidean_topology A) f"
+    using hf hI_set hI_top by (by100 simp)
+  have harc:
+      "top1_is_arc_on A
+        (subspace_topology (UNIV::'a set) geotop_euclidean_topology A)"
+    by (rule geotop_arc_endpoints_imp_top1_arc[OF assms])
+  have "top1_arc_endpoints_on A
+      (subspace_topology (UNIV::'a set) geotop_euclidean_topology A) = {f 0, f 1}"
+    by (rule arc_endpoints_are_boundary[
+        OF geotop_euclidean_topology_UNIV_strict
+           geotop_euclidean_topology_UNIV_hausdorff subset_UNIV harc hf_top])
+  thus ?thesis using hE by (by100 simp)
+qed
+
 lemma R2_to_C_surj: "surj R2_to_C"
   using R2_to_C_C_to_R2 by (metis surjI)
 
