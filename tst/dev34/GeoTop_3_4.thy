@@ -3226,6 +3226,34 @@ proof -
     unfolding geotop_polyhedron_def using hsub by (by100 blast)
 qed
 
+lemma geotop_link_polyhedron_compact_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "compact (\<Union>(geotop_link K v))"
+proof -
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hlink_fin: "finite (geotop_link K v)"
+    by (rule geotop_link_finite_at_complex_vertex[OF hK hv])
+  have "compact (geotop_polyhedron (geotop_link K v))"
+    by (rule geotop_complex_polyhedron_compact[OF hlink_complex hlink_fin])
+  thus ?thesis
+    unfolding geotop_polyhedron_def by (by100 simp)
+qed
+
+lemma geotop_link_polyhedron_closed_at_complex_vertex:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "closed (\<Union>(geotop_link K v))"
+proof -
+  have hcompact: "compact (\<Union>(geotop_link K v))"
+    by (rule geotop_link_polyhedron_compact_at_complex_vertex[OF hK hv])
+  show ?thesis
+    by (rule compact_imp_closed[OF hcompact])
+qed
+
 lemma geotop_nonempty_complex_polyhedron_nonempty:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
