@@ -4972,6 +4972,32 @@ proof -
   show ?thesis using hU_sub_Cx hCx_eq by simp
 qed
 
+lemma theta_graph_unbounded_and_exterior_arc_same_pair_component:
+  fixes M B1 B2 B3 E :: "(real^2) set" and U k i j :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B1 B2 B3 E"
+      and hU_comp: "U \<in> components (UNIV - M)"
+      and hU_unbd: "\<not> bounded U"
+      and hi: "i \<in> {B1, B2, B3}" and hj: "j \<in> {B1, B2, B3}" and hij_ne: "i \<noteq> j"
+      and hk_ext: "geotop_arc_interior k E \<subseteq> geotop_polygon_exterior (i \<union> j)"
+  shows "\<exists>C \<in> components (UNIV - (i \<union> j)).
+            U \<subseteq> C \<and> geotop_arc_interior k E \<subseteq> C"
+proof -
+  have hU_ext: "U \<subseteq> geotop_polygon_exterior (i \<union> j)"
+    by (rule theta_graph_unbounded_in_pair_exterior
+        [OF h\<theta> hU_comp hU_unbd hi hj hij_ne])
+  have h_poly_ij: "geotop_is_polygon (i \<union> j)"
+    by (rule theta_graph_pair_is_polygon[OF h\<theta> hi hj hij_ne])
+  have h_sph_ij:
+    "geotop_is_n_sphere (i \<union> j)
+      (subspace_topology UNIV geotop_euclidean_topology (i \<union> j)) 1"
+    using h_poly_ij unfolding geotop_is_polygon_def by blast
+  have h_ext_comp:
+    "geotop_polygon_exterior (i \<union> j) \<in> components (UNIV - (i \<union> j))"
+    by (rule polygon_exterior_is_HOL_component[OF h_sph_ij])
+  show ?thesis
+    using h_ext_comp hU_ext hk_ext by blast
+qed
+
 text \<open>The complement of a polyhedral \<theta>-graph has both an unbounded
   component (since M is bounded) and at least one bounded component
   (since the complement is not connected, by ≥ 2 components).\<close>

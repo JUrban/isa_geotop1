@@ -4669,22 +4669,14 @@ proof -
                 ball P0 \<delta>0 \<inter> U \<subseteq> C \<and>
                 ball P0 \<delta>0 \<inter> geotop_arc_interior k E \<subseteq> C"
           proof -
-            have h_sph_ij:
-              "geotop_is_n_sphere (i \<union> j)
-                (subspace_topology UNIV geotop_euclidean_topology (i \<union> j)) 1"
-              using h_poly_ij unfolding geotop_is_polygon_def by (by100 blast)
-            have h_ext_comp:
-              "geotop_polygon_exterior (i \<union> j) \<in> components (UNIV - (i \<union> j))"
-              by (rule polygon_exterior_is_HOL_component[OF h_sph_ij])
-            have hU_ball_sub:
-              "ball P0 \<delta>0 \<inter> U \<subseteq> geotop_polygon_exterior (i \<union> j)"
-              using hU_ext_ij by (by100 blast)
-            have hk_ball_sub:
-              "ball P0 \<delta>0 \<inter> geotop_arc_interior k E
-                \<subseteq> geotop_polygon_exterior (i \<union> j)"
-              using hk_ext by (by100 blast)
+            obtain C where hC_comp: "C \<in> components (UNIV - (i \<union> j))"
+              and hU_sub_C: "U \<subseteq> C"
+              and hk_sub_C: "geotop_arc_interior k E \<subseteq> C"
+              using theta_graph_unbounded_and_exterior_arc_same_pair_component
+                    [OF h\<theta> hU_comp hU_unbd hi hj hij_ne hk_ext]
+              by (by100 blast)
             show ?thesis
-              using h_ext_comp hU_ball_sub hk_ball_sub by (by100 blast)
+              using hC_comp hU_sub_C hk_sub_C by (by100 blast)
           qed
           show False
             using hsep0 h_same_exterior_component by (by100 blast)
