@@ -1677,7 +1677,22 @@ proof -
                   \<open>u\<close> in that sector so the translate parallel to \<open>y - x\<close>
                   misses the unique other edge \<open>\<tau>_y\<close>.\<close>
                 show ?thesis
-                  sorry
+                proof (cases
+                    "(inner (p\<tau>_y - x) n_y > 0 \<and>
+                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y < 0)) \<or>
+                     (inner (p\<tau>_y - x) n_y < 0 \<and>
+                       (\<forall>r>0. \<exists>u\<in>U. dist u x < r \<and> inner (u - x) n_y > 0))")
+                  case True
+                  show ?thesis
+                    by (rule h_opposite_side_choice[OF True])
+                next
+                  case False
+                  \<comment> \<open>Remaining same-side sector case: \<open>U\<close> accumulates on
+                    the same side of \<open>L_y\<close> as the other edge. This is the
+                    actual circular-sector step, not a half-plane consequence.\<close>
+                  show ?thesis
+                    sorry
+                qed
               qed
               obtain u where huU: "u \<in> U"
                 and hu_dist_eps: "dist u x < \<epsilon>"
