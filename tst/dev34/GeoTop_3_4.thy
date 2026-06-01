@@ -8,7 +8,7 @@ section \<open>\<S>3 The Schönflies theorem for polygons in $\mathbf{R}^2$\<clo
     LATEX VERSION: Let \<sigma>^n = v_0 v_1 ... v_n and \<tau>^n = w_0 w_1 ... w_n be simplexes in R^m.
       Then there is a simplicial homeomorphism f: \<sigma>^n \<leftrightarrow> \<tau>^n, f: v_i \<mapsto> w_i. **)
 theorem Theorem_GT_3_1:
-  fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
+  fixes V W :: "'a::euclidean_space set" and \<sigma> \<tau> :: "'a set"
   assumes hV: "geotop_simplex_vertices \<sigma> V"
   assumes hW: "geotop_simplex_vertices \<tau> W"
   assumes hcard: "card V = card W"
@@ -74,7 +74,48 @@ proof -
   have hT3_1_homeo:
     "\<exists>f. top1_homeomorphism_on \<sigma>
            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<tau>
-           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f" sorry
+           (subspace_topology UNIV geotop_euclidean_topology \<tau>) f"
+  proof -
+    have hV_fin: "finite V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hW_fin: "finite W"
+      using hW unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V"
+      using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+      using hW unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+      using h\<sigma>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have h\<tau>_HOL: "\<tau> = convex hull W"
+      using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+    have h\<sigma>_conv: "convex \<sigma>"
+      using h\<sigma>_HOL by (by100 simp)
+    have h\<tau>_conv: "convex \<tau>"
+      using h\<tau>_HOL by (by100 simp)
+    have h\<sigma>_compact: "compact \<sigma>"
+      using h\<sigma>_HOL hV_fin finite_imp_compact_convex_hull by (by100 blast)
+    have h\<tau>_compact: "compact \<tau>"
+      using h\<tau>_HOL hW_fin finite_imp_compact_convex_hull by (by100 blast)
+    have hV_ai: "\<not> affine_dependent V"
+      by (rule geotop_general_position_imp_aff_indep[OF hV])
+    have hW_ai: "\<not> affine_dependent W"
+      by (rule geotop_general_position_imp_aff_indep[OF hW])
+    have hV_aff: "aff_dim V = int (card V) - 1"
+      using hV_ai affine_independent_iff_card hV_fin by (by100 blast)
+    have hW_aff: "aff_dim W = int (card W) - 1"
+      using hW_ai affine_independent_iff_card hW_fin by (by100 blast)
+    have h\<sigma>_aff: "aff_dim \<sigma> = int (card V) - 1"
+      using h\<sigma>_HOL hV_aff aff_dim_convex_hull[of V] by (by100 simp)
+    have h\<tau>_aff: "aff_dim \<tau> = int (card W) - 1"
+      using h\<tau>_HOL hW_aff aff_dim_convex_hull[of W] by (by100 simp)
+    have h_aff_eq: "aff_dim \<sigma> = aff_dim \<tau>"
+      using h\<sigma>_aff h\<tau>_aff hcard by (by100 simp)
+    have h_HOL_homeo: "\<sigma> homeomorphic \<tau>"
+      by (rule homeomorphic_convex_compact_sets
+            [OF h\<sigma>_conv h\<sigma>_compact h\<tau>_conv h\<tau>_compact h_aff_eq])
+    show ?thesis
+      by (rule geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[OF h_HOL_homeo])
+  qed
   have h_f_def:
     "\<exists>f. (\<forall>v\<in>V. f v = \<phi> v) \<and>
          geotop_simplicial_on \<sigma> f \<tau> \<and>
@@ -88,7 +129,7 @@ qed
     LATEX VERSION: In Theorem 1, if m = n, then there is a homeomorphism g: R^n \<leftrightarrow> R^n such
       that g|\<sigma>^n is a simplicial homeomorphism \<sigma>^n \<leftrightarrow> \<tau>^n. **)
 theorem Theorem_GT_3_2:
-  fixes V W :: "'a::real_normed_vector set" and \<sigma> \<tau> :: "'a set"
+  fixes V W :: "'a::euclidean_space set" and \<sigma> \<tau> :: "'a set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> n" and h\<tau>: "geotop_simplex_dim \<tau> n"
   assumes hV: "geotop_simplex_vertices \<sigma> V" and hW: "geotop_simplex_vertices \<tau> W"
   assumes h\<phi>_mem: "\<phi> \<in> V \<rightarrow>\<^sub>E W" and h\<phi>_bij: "bij_betw \<phi> V W"
