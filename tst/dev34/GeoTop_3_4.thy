@@ -4413,6 +4413,31 @@ proof -
     using heK hedge hv_e by (by100 blast)
 qed
 
+lemma geotop_link_polyhedron_nonempty_iff_incident_edge:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  shows "\<Union>(geotop_link K v) \<noteq> {}
+    \<longleftrightarrow> (\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e)"
+proof -
+  show ?thesis
+  proof
+    assume hlink_poly: "\<Union>(geotop_link K v) \<noteq> {}"
+    show "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+      by (rule geotop_link_polyhedron_nonempty_incident_edge_witness
+          [OF hK hvK hlink_poly])
+  next
+    assume "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+    then obtain e where heK: "e \<in> K"
+      and hedge: "geotop_is_edge e"
+      and hv_e: "v \<in> e"
+      by (by100 blast)
+    show "\<Union>(geotop_link K v) \<noteq> {}"
+      by (rule geotop_incident_edge_link_polyhedron_nonempty
+          [OF hK hvK heK hedge hv_e])
+  qed
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
