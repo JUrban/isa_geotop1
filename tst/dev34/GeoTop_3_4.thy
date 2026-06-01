@@ -2876,6 +2876,61 @@ proof -
     unfolding geotop_polyhedron_def using hsub by (by100 blast)
 qed
 
+lemma geotop_incident_edge_link_nonempty:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  shows "geotop_link K v \<noteq> {}"
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 1 + 1"
+    and h1_le_m: "1 \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and he_eq: "e = geotop_convex_hull V"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have heV: "geotop_simplex_vertices e V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h1_le_m hgp_V he_eq by (by100 blast)
+  obtain V' where heV': "geotop_simplex_vertices e V'"
+    and hvV': "v \<in> V'"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK heK hv_e]
+    by (by100 blast)
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF heV' heV])
+  have hvV: "v \<in> V"
+    using hvV' hV'_eq by (by100 simp)
+  have hV_not_sub_singleton: "\<not> V \<subseteq> {v}"
+  proof
+    assume hsub: "V \<subseteq> {v}"
+    have "card V \<le> card {v}"
+      by (rule card_mono[OF finite.emptyI[THEN finite.insertI] hsub])
+    hence "card V \<le> 1"
+      by (by100 simp)
+    thus False
+      using hV_card by (by100 simp)
+  qed
+  obtain w where hwV: "w \<in> V" and hw_ne_v: "w \<noteq> v"
+    using hV_not_sub_singleton by (by100 blast)
+  let ?\<tau> = "geotop_convex_hull {w}"
+  have hface: "geotop_is_face ?\<tau> e"
+    unfolding geotop_is_face_def using heV hwV by (by100 blast)
+  have h\<tau>_singleton: "?\<tau> = {w}"
+    using geotop_convex_hull_eq_HOL[of "{w}"] by (by100 simp)
+  have hv_not_\<tau>: "v \<notin> ?\<tau>"
+    using h\<tau>_singleton hw_ne_v by (by100 simp)
+  have h\<tau>_star: "?\<tau> \<in> geotop_star K v"
+    unfolding geotop_star_def using heK hv_e hface by (by100 blast)
+  have h\<tau>_link: "?\<tau> \<in> geotop_link K v"
+    unfolding geotop_link_def using h\<tau>_star hv_not_\<tau> by (by100 blast)
+  show ?thesis
+    using h\<tau>_link by (by100 blast)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -4986,6 +5041,17 @@ proof
     show False
       using hsingle_open hnot_open by (by100 blast)
   qed
+  \<comment> \<open>L1 consequence: the link is nonempty, taking the other endpoint
+    of an incident edge.\<close>
+  have hL1_link_nonempty: "geotop_link K v \<noteq> {}"
+  proof -
+    obtain e where heK: "e \<in> K" and hedge: "geotop_is_edge e" and hv_e: "v \<in> e"
+      using hL1 by (by100 blast)
+    have hvK: "{v} \<in> K"
+      using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+    show ?thesis
+      by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
+  qed
   \<comment> \<open>L2: every incident edge in \<ge>1 two-simplex.\<close>
   have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
@@ -5344,6 +5410,17 @@ proof -
         by (rule geotop_2_manifold_with_boundary_no_open_singleton[OF hKM hvM])
       show False
         using hsingle_open hnot_open by (by100 blast)
+    qed
+    \<comment> \<open>L1 consequence: the link is nonempty, taking the other endpoint
+      of an incident edge.\<close>
+    have hL1_link_nonempty: "geotop_link K v \<noteq> {}"
+    proof -
+      obtain e where heK: "e \<in> K" and hedge: "geotop_is_edge e" and hv_e: "v \<in> e"
+        using hL1 by (by100 blast)
+      have hvK: "{v} \<in> K"
+        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+      show ?thesis
+        by (rule geotop_incident_edge_link_nonempty[OF hK hvK heK hedge hv_e])
     qed
     \<comment> \<open>L2: every incident edge is contained in some 2-simplex.\<close>
     have hL2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
