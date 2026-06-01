@@ -9668,8 +9668,36 @@ proof -
                         thus False using hnone by (by100 blast)
                       qed
                     qed
-                    have h_same_local_sector: "C = D"
+                    have h_all_pair_same_gives_local_connector:
+                      "\<lbrakk>A12 = D12; A13 = D13; A23 = D23\<rbrakk>
+                        \<Longrightarrow> \<exists>T. connected T \<and> T \<subseteq> ball P \<delta> - M \<and> c \<in> T \<and> d \<in> T"
                       sorry
+                    have h_same_local_sector: "C = D"
+                    proof -
+                      have hA12D12: "A12 = D12"
+                        using h_same_all_pair_sides by (by100 blast)
+                      have hA13D13: "A13 = D13"
+                        using h_same_all_pair_sides by (by100 blast)
+                      have hA23D23: "A23 = D23"
+                        using h_same_all_pair_sides by (by100 blast)
+                      obtain T where hT_conn: "connected T"
+                        and hT_sub: "T \<subseteq> ball P \<delta> - M"
+                        and hcT: "c \<in> T"
+                        and hdT: "d \<in> T"
+                        using h_all_pair_same_gives_local_connector
+                          [OF hA12D12 hA13D13 hA23D23] by (by100 blast)
+                      have hC_meet_T: "C \<inter> T \<noteq> {}"
+                        using hcC hcT by (by100 blast)
+                      have hD_meet_T: "D \<inter> T \<noteq> {}"
+                        using hdD hdT by (by100 blast)
+                      have hjoin: "connected T \<and> T \<subseteq> ball P \<delta> - M \<and>
+                        C \<in> components (ball P \<delta> - M) \<and>
+                        D \<in> components (ball P \<delta> - M) \<and>
+                        C \<inter> T \<noteq> {} \<and> D \<inter> T \<noteq> {}"
+                        using hT_conn hT_sub hC_comp hD_comp hC_meet_T hD_meet_T
+                        by (by100 blast)
+                      show ?thesis by (rule joinable_components_eq[OF hjoin])
+                    qed
                     show False
                       using h_same_local_sector hD_ne_C by (by100 blast)
                   qed
