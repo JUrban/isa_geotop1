@@ -531,6 +531,65 @@ proof
     using hz_not_A hz_not_B by (by100 blast)
 qed
 
+lemma closed_segment_sphere_unique_from_center:
+  fixes P p :: "real^2"
+  assumes hp_ne: "p \<noteq> P"
+    and hr_pos: "r > 0"
+    and hr_le_dist: "r \<le> dist P p"
+    and hq_def: "q = P + (r / dist P p) *\<^sub>R (p - P)"
+  shows "(closed_segment P p - {P}) \<inter> sphere P r = {q}"
+proof
+  have hp_dist_pos: "dist P p > 0"
+    using hp_ne by (by100 simp)
+  show "(closed_segment P p - {P}) \<inter> sphere P r \<subseteq> {q}"
+  proof
+    fix z
+    assume hz: "z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+    have hz_seg: "z \<in> closed_segment P p" using hz by (by100 blast)
+    have hz_sphere: "z \<in> sphere P r" using hz by (by100 blast)
+    obtain t where ht_nonneg: "0 \<le> t" and ht_le1: "t \<le> 1"
+      and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+      using hz_seg unfolding closed_segment_def by (by100 blast)
+    have hz_vec: "z = P + t *\<^sub>R (p - P)"
+      using hz_t by (simp add: algebra_simps)
+    have hdist_z: "dist P z = t * dist P p"
+      using hz_vec ht_nonneg by (simp add: dist_norm norm_minus_commute)
+    have hdist_eq: "dist P z = r" using hz_sphere by (by100 simp)
+    have ht_eq: "t = r / dist P p"
+      using hdist_z hdist_eq hp_dist_pos by (by100 simp)
+    have "z = q" using hz_vec ht_eq hq_def by (by100 simp)
+    thus "z \<in> {q}" by (by100 simp)
+  qed
+  show "{q} \<subseteq> (closed_segment P p - {P}) \<inter> sphere P r"
+  proof
+    fix z
+    assume hz: "z \<in> {q}"
+    let ?t = "r / dist P p"
+    have ht_nonneg: "0 \<le> ?t"
+      using hr_pos hp_dist_pos by (by100 simp)
+    have ht_le1: "?t \<le> 1"
+      using hr_le_dist hp_dist_pos by (by100 simp)
+    have hq_conv: "q = (1 - ?t) *\<^sub>R P + ?t *\<^sub>R p"
+      using hq_def by (simp add: algebra_simps)
+    have hq_seg: "q \<in> closed_segment P p"
+      unfolding closed_segment_def using ht_nonneg ht_le1 hq_conv by (by100 blast)
+    have hq_ne: "q \<noteq> P"
+    proof
+      assume hqP: "q = P"
+      have "(r / dist P p) *\<^sub>R (p - P) = 0"
+        using hqP hq_def by (by100 simp)
+      hence "r / dist P p = 0"
+        using hp_ne by (by100 simp)
+      thus False using hr_pos hp_dist_pos by (by100 simp)
+    qed
+    have hq_sphere: "q \<in> sphere P r"
+      unfolding hq_def using hp_dist_pos hr_pos
+      by (simp add: dist_norm norm_minus_commute)
+    show "z \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+      using hz hq_seg hq_ne hq_sphere by (by100 blast)
+  qed
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
