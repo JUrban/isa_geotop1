@@ -4,7 +4,7 @@
 #
 # Files: i/Top1_Ch2.thy,i/Top1_Ch3.thy,i/Top1_Ch4.thy,i/Top1_Ch5_8.thy,i/Top1_Ch9_13.thy,h/AlgTopHelpers.thy,b0/AlgTop_JCT_Base0.thy,b/AlgTop_JCT_Base.thy,a0/AlgTop0.thy,ac/AlgTopCached.thy,fib/AlgIsoFixedBase.thy,fi/AlgIsoFixed.thy,k5/K5_nonplanar.thy,ag/AlgTopGroups.thy,pd/PolygonDisk.thy,svk/AlgTopSvK.thy,wh/AlgTopWedgeHelpers.thy,at/AlgTopChain.thy,ac2/AlgTopCached2.thy,ac3/AlgTopCached3.thy,ac4/AlgTopCached4.thy,ac5/AlgTopCached5.thy,ac6/AlgTopCached6.thy,ac7/AlgTopCached7.thy,ac8/AlgTopCached8.thy,algtop_session/AlgTop.thy,gb0/GeoTopBase0.thy,gb/GeoTopBase.thy,gd/GeoTopDeps.thy,gp/GeoTop_Prefix.thy,GeoTop.thy,dev34/GeoTop_3_4.thy
 #
-# Total entries: 3214
+# Total entries: 3215
 # Duplicate names: 64
 
 ## definitions (579)
@@ -618,7 +618,7 @@ geotop_D                                       GeoTop.thy                       
 geotop_Sd                                      gb0/GeoTopBase0.thy                  line 1876
 top1_I01                                       i/Top1_Ch5_8.thy                     line 25035
 
-## lemmas (2033)
+## lemmas (2034)
 
 B2_compact                                     ac2/AlgTopCached2.thy                line 7
 Borsuk_R2                                      ac/AlgTopCached.thy                  line 3745
@@ -1248,14 +1248,14 @@ geotop_1dim_vertex_in_simplex_is_face          gb/GeoTopBase.thy                
 geotop_1sphere_components_from_Jordan_curve    dev34/GeoTop_3_4.thy                 line 1968
 geotop_1sphere_has_bounded_unbounded_components  gp/GeoTop_Prefix.thy                 line 2038
 geotop_1sphere_simple_closed_path_R2           dev34/GeoTop_3_4.thy                 line 1908
-geotop_2_cell_no_open_singleton                dev34/GeoTop_3_4.thy                 line 3363
-geotop_2_manifold_no_open_edge_rel_interior    dev34/GeoTop_3_4.thy                 line 3123
-geotop_2_manifold_no_open_singleton            dev34/GeoTop_3_4.thy                 line 3269
-geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood  dev34/GeoTop_3_4.thy                 line 3110
-geotop_2_manifold_with_boundary_no_open_edge_rel_interior  dev34/GeoTop_3_4.thy                 line 3177
-geotop_2_manifold_with_boundary_no_open_singleton  dev34/GeoTop_3_4.thy                 line 3393
-geotop_2_manifold_with_boundary_open_edge_rel_interior_connected_punctured_neighborhood  dev34/GeoTop_3_4.thy                 line 3164
-geotop_2_simplex_no_open_singleton             dev34/GeoTop_3_4.thy                 line 3315
+geotop_2_cell_no_open_singleton                dev34/GeoTop_3_4.thy                 line 3443
+geotop_2_manifold_no_open_edge_rel_interior    dev34/GeoTop_3_4.thy                 line 3203
+geotop_2_manifold_no_open_singleton            dev34/GeoTop_3_4.thy                 line 3349
+geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood  dev34/GeoTop_3_4.thy                 line 3190
+geotop_2_manifold_with_boundary_no_open_edge_rel_interior  dev34/GeoTop_3_4.thy                 line 3257
+geotop_2_manifold_with_boundary_no_open_singleton  dev34/GeoTop_3_4.thy                 line 3473
+geotop_2_manifold_with_boundary_open_edge_rel_interior_connected_punctured_neighborhood  dev34/GeoTop_3_4.thy                 line 3244
+geotop_2_simplex_no_open_singleton             dev34/GeoTop_3_4.thy                 line 3395
 geotop_AI_bary_unique                          gb0/GeoTopBase0.thy                  line 12955
 geotop_AI_finite_ne_is_simplex_vertices        gb/GeoTopBase.thy                    line 188
 geotop_HOL_arc_imp_geotop_is_arc               gb/GeoTopBase.thy                    line 6536
@@ -1447,7 +1447,8 @@ geotop_edge_face_in_ge_2_simplex_has_2_face    dev34/GeoTop_3_4.thy             
 geotop_edge_face_of_edge_eq                    dev34/GeoTop_3_4.thy                 line 2844
 geotop_edge_face_witness_card_two              dev34/GeoTop_3_4.thy                 line 2678
 geotop_edge_rel_interior_nonempty              dev34/GeoTop_3_4.thy                 line 3086
-geotop_edge_rel_interior_punctured_open_neighborhood_disconnected  dev34/GeoTop_3_4.thy                 line 3099
+geotop_edge_rel_interior_open_neighborhood_two_sides  dev34/GeoTop_3_4.thy                 line 3099
+geotop_edge_rel_interior_punctured_open_neighborhood_disconnected  dev34/GeoTop_3_4.thy                 line 3114
 geotop_euclidean_topology_UNIV_hausdorff       gp/GeoTop_Prefix.thy                 line 253
 geotop_euclidean_topology_UNIV_strict          gp/GeoTop_Prefix.thy                 line 237
 geotop_euclidean_topology_eq_open_sets         gb0/GeoTopBase0.thy                  line 2792
@@ -1509,12 +1510,12 @@ geotop_linear_on_eq_on                         gb/GeoTopBase.thy                
 geotop_linear_on_eq_vertices                   dev34/GeoTop_3_4.thy                 line 128
 geotop_linear_on_face                          gb0/GeoTopBase0.thy                  line 737
 geotop_linear_on_sub_simplex                   gb0/GeoTopBase0.thy                  line 839
-geotop_manifold_interior_if_HOL_interior       dev34/GeoTop_3_4.thy                 line 3663
+geotop_manifold_interior_if_HOL_interior       dev34/GeoTop_3_4.thy                 line 3743
 geotop_mesh_iterated_Sd_tends_to_zero          gb0/GeoTopBase0.thy                  line 9419
 geotop_mesh_norm_nonneg                        gb0/GeoTopBase0.thy                  line 9388
 geotop_nbhd_set_open_in_euclidean              gb/GeoTopBase.thy                    line 6063
 geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset  dev34/GeoTop_3_4.thy                 line 2885
-geotop_open_ball_homeomorphic_UNIV             dev34/GeoTop_3_4.thy                 line 3642
+geotop_open_ball_homeomorphic_UNIV             dev34/GeoTop_3_4.thy                 line 3722
 geotop_open_star_complement                    gb0/GeoTopBase0.thy                  line 2940
 geotop_open_star_eq_carrier_contains_vertex    gb0/GeoTopBase0.thy                  line 10630
 geotop_open_star_inter_carrier                 gb0/GeoTopBase0.thy                  line 10668
@@ -1557,7 +1558,7 @@ geotop_polygon_finite_triangulation            gp/GeoTop_Prefix.thy             
 geotop_polygon_interior_is_bounded_component   gp/GeoTop_Prefix.thy                 line 2097
 geotop_polyhedral_theta_graph_R2_to_S2_three_components  gp/GeoTop_Prefix.thy                 line 4448
 geotop_polyhedron_image                        gb0/GeoTopBase0.thy                  line 411
-geotop_punctured_plane_connected               dev34/GeoTop_3_4.thy                 line 3148
+geotop_punctured_plane_connected               dev34/GeoTop_3_4.thy                 line 3228
 geotop_radial_decomp_unique                    gb0/GeoTopBase0.thy                  line 13480
 geotop_rel_frontier_ray_unique                 gb0/GeoTopBase0.thy                  line 13390
 geotop_segment_eq_closed_segment               gb/GeoTopBase.thy                    line 5740
@@ -2412,7 +2413,7 @@ top1_homeomorphism_on_imp_completely_regular_on  i/Top1_Ch4.thy                 
 top1_homeomorphism_on_imp_cont1                gb/GeoTopBase.thy                    line 13974
 top1_homeomorphism_on_imp_cont2                gb/GeoTopBase.thy                    line 13978
 top1_homeomorphism_on_imp_quotient_map_on      i/Top1_Ch2.thy                       line 20391
-top1_homeomorphism_on_open_image               dev34/GeoTop_3_4.thy                 line 3222
+top1_homeomorphism_on_open_image               dev34/GeoTop_3_4.thy                 line 3302
 top1_homeomorphism_on_sym                      gb/GeoTopBase.thy                    line 6025
 top1_homotopy_equivalence_on_sym               b0/AlgTop_JCT_Base0.thy              line 4053
 top1_image_on_cong                             i/Top1_Ch2.thy                       line 19501
@@ -2472,10 +2473,10 @@ top1_nbhd_of_set_contains                      i/Top1_Ch5_8.thy                 
 top1_nbhd_of_set_open                          i/Top1_Ch5_8.thy                     line 3815
 top1_nbhd_of_set_sub                           i/Top1_Ch5_8.thy                     line 3834
 top1_nested_subset_le                          i/Top1_Ch3.thy                       line 9935
-top1_norm_metric_on_UNIV                       dev34/GeoTop_3_4.thy                 line 3622
-top1_norm_metric_on_UNIV_early                 dev34/GeoTop_3_4.thy                 line 3202
-top1_norm_metric_topology_on_eq_geotop_subspace  dev34/GeoTop_3_4.thy                 line 3627
-top1_norm_metric_topology_on_eq_geotop_subspace_early  dev34/GeoTop_3_4.thy                 line 3207
+top1_norm_metric_on_UNIV                       dev34/GeoTop_3_4.thy                 line 3702
+top1_norm_metric_on_UNIV_early                 dev34/GeoTop_3_4.thy                 line 3282
+top1_norm_metric_topology_on_eq_geotop_subspace  dev34/GeoTop_3_4.thy                 line 3707
+top1_norm_metric_topology_on_eq_geotop_subspace_early  dev34/GeoTop_3_4.thy                 line 3287
 top1_not_countable_UNIV_nat_set                i/Top1_Ch3.thy                       line 9268
 top1_open_of_local_subsets                     i/Top1_Ch2.thy                       line 89
 top1_open_set_from_local_opens                 i/Top1_Ch2.thy                       line 2575
@@ -3120,7 +3121,7 @@ Theorem_GT_3_7                                 dev34/GeoTop_3_4.thy             
 Theorem_GT_4_1                                 GeoTop.thy                           line 14014
 Theorem_GT_4_1                                 dev34/GeoTop_3_4.thy                 line 1431
 Theorem_GT_4_10                                GeoTop.thy                           line 14607
-Theorem_GT_4_10                                dev34/GeoTop_3_4.thy                 line 3723
+Theorem_GT_4_10                                dev34/GeoTop_3_4.thy                 line 3803
 Theorem_GT_4_2                                 GeoTop.thy                           line 14113
 Theorem_GT_4_2                                 dev34/GeoTop_3_4.thy                 line 1536
 Theorem_GT_4_3                                 GeoTop.thy                           line 14171
@@ -3134,9 +3135,9 @@ Theorem_GT_4_6                                 dev34/GeoTop_3_4.thy             
 Theorem_GT_4_7                                 GeoTop.thy                           line 14361
 Theorem_GT_4_7                                 dev34/GeoTop_3_4.thy                 line 2113
 Theorem_GT_4_8                                 GeoTop.thy                           line 14488
-Theorem_GT_4_8                                 dev34/GeoTop_3_4.thy                 line 3436
+Theorem_GT_4_8                                 dev34/GeoTop_3_4.thy                 line 3516
 Theorem_GT_4_9                                 GeoTop.thy                           line 14546
-Theorem_GT_4_9                                 dev34/GeoTop_3_4.thy                 line 3529
+Theorem_GT_4_9                                 dev34/GeoTop_3_4.thy                 line 3609
 Theorem_GT_4_invariance_of_domain              gb/GeoTopBase.thy                    line 6701
 Theorem_GT_5_1                                 GeoTop.thy                           line 14636
 Theorem_GT_5_2                                 GeoTop.thy                           line 14728
@@ -3279,7 +3280,7 @@ top1_same_homotopy_type_strict                 b0/AlgTop_JCT_Base0.thy          
     dev34/GeoTop_3_4.thy                 theorem  line 1431
   Theorem_GT_4_10:
     GeoTop.thy                           theorem  line 14607
-    dev34/GeoTop_3_4.thy                 theorem  line 3723
+    dev34/GeoTop_3_4.thy                 theorem  line 3803
   Theorem_GT_4_2:
     GeoTop.thy                           theorem  line 14113
     dev34/GeoTop_3_4.thy                 theorem  line 1536
@@ -3300,10 +3301,10 @@ top1_same_homotopy_type_strict                 b0/AlgTop_JCT_Base0.thy          
     dev34/GeoTop_3_4.thy                 theorem  line 2113
   Theorem_GT_4_8:
     GeoTop.thy                           theorem  line 14488
-    dev34/GeoTop_3_4.thy                 theorem  line 3436
+    dev34/GeoTop_3_4.thy                 theorem  line 3516
   Theorem_GT_4_9:
     GeoTop.thy                           theorem  line 14546
-    dev34/GeoTop_3_4.thy                 theorem  line 3529
+    dev34/GeoTop_3_4.thy                 theorem  line 3609
   ccw_polygon_half_plane:
     at/AlgTopChain.thy                   lemma  line 2203
     pd/PolygonDisk.thy                   lemma  line 173

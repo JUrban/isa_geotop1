@@ -3096,6 +3096,21 @@ proof -
     by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
 qed
 
+lemma geotop_edge_rel_interior_open_neighborhood_two_sides:
+  fixes e N :: "(real^2) set" and p :: "real^2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hNopen: "N \<in> subspace_topology UNIV geotop_euclidean_topology (rel_interior e)"
+  assumes hpN: "p \<in> N"
+  obtains a b x y where "a \<noteq> b" and "e = closed_segment a b"
+    and "x \<in> N - {p}" and "y \<in> N - {p}"
+    and "inner (b - a) x < inner (b - a) p"
+    and "inner (b - a) p < inner (b - a) y"
+    and "\<forall>z\<in>rel_interior e. z \<noteq> p \<longrightarrow>
+          inner (b - a) z < inner (b - a) p \<or>
+          inner (b - a) p < inner (b - a) z"
+  sorry
+
 lemma geotop_edge_rel_interior_punctured_open_neighborhood_disconnected:
   fixes e N :: "(real^2) set" and p :: "real^2"
   assumes hedge: "geotop_is_edge e"
@@ -3105,7 +3120,72 @@ lemma geotop_edge_rel_interior_punctured_open_neighborhood_disconnected:
   assumes hNsub: "N \<subseteq> rel_interior e"
   shows "\<not> top1_connected_on (N - {p})
     (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
-  sorry
+proof -
+  obtain a b x y where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    and hx: "x \<in> N - {p}" and hy: "y \<in> N - {p}"
+    and hxlt: "inner (b - a) x < inner (b - a) p"
+    and hygt: "inner (b - a) p < inner (b - a) y"
+    and hsplit: "\<forall>z\<in>rel_interior e. z \<noteq> p \<longrightarrow>
+          inner (b - a) z < inner (b - a) p \<or>
+          inner (b - a) p < inner (b - a) z"
+    by (rule geotop_edge_rel_interior_open_neighborhood_two_sides
+        [OF hedge hp hNopen hpN])
+  let ?d = "b - a"
+  let ?c = "inner ?d p"
+  define A where "A = {z \<in> N - {p}. inner ?d z < ?c}"
+  define B where "B = {z \<in> N - {p}. ?c < inner ?d z}"
+  have hlt_top: "{z::real^2. inner ?d z < ?c} \<in> geotop_euclidean_topology"
+    using open_halfspace_lt[of ?d ?c]
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hgt_top: "{z::real^2. ?c < inner ?d z} \<in> geotop_euclidean_topology"
+    using open_halfspace_gt[of ?c ?d]
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hAopen: "A \<in> subspace_topology UNIV geotop_euclidean_topology (N - {p})"
+  proof -
+    have hAeq: "A = (N - {p}) \<inter> {z::real^2. inner ?d z < ?c}"
+      unfolding A_def by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hlt_top hAeq by (by100 blast)
+  qed
+  have hBopen: "B \<in> subspace_topology UNIV geotop_euclidean_topology (N - {p})"
+  proof -
+    have hBeq: "B = (N - {p}) \<inter> {z::real^2. ?c < inner ?d z}"
+      unfolding B_def by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hgt_top hBeq by (by100 blast)
+  qed
+  have hAne: "A \<noteq> {}"
+    using hx hxlt unfolding A_def by (by100 blast)
+  have hBne: "B \<noteq> {}"
+    using hy hygt unfolding B_def by (by100 blast)
+  have hABdisj: "A \<inter> B = {}"
+    unfolding A_def B_def by (by100 auto)
+  have hABcover: "A \<union> B = N - {p}"
+  proof
+    show "A \<union> B \<subseteq> N - {p}"
+      unfolding A_def B_def by (by100 blast)
+  next
+    show "N - {p} \<subseteq> A \<union> B"
+    proof
+      fix z assume hz: "z \<in> N - {p}"
+      have hzN: "z \<in> N"
+        using hz by (by100 simp)
+      have hzrel: "z \<in> rel_interior e"
+        using hNsub hzN by (by100 blast)
+      have hzneq: "z \<noteq> p"
+        using hz by (by100 simp)
+      have "inner ?d z < ?c \<or> ?c < inner ?d z"
+        using hsplit hzrel hzneq by (by100 blast)
+      thus "z \<in> A \<union> B"
+        using hz unfolding A_def B_def by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    unfolding top1_connected_on_def
+    using hAopen hBopen hAne hBne hABdisj hABcover by (by100 blast)
+qed
 
 lemma geotop_2_manifold_open_edge_rel_interior_connected_punctured_neighborhood:
   fixes M e :: "(real^2) set" and p :: "real^2"
