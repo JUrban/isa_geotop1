@@ -8074,6 +8074,227 @@ proof -
   have hT2_8_B1_exterior_23:
     "geotop_arc_interior B1 E \<subseteq> geotop_polygon_exterior (B2 \<union> B3)"
     using hT2_8_B1_side_23 hT2_8_B1_not_in_I23 by (by100 blast)
+  \<comment> \<open>Book sentence for Theorem 2.8: every bounded component of
+    \<open>UNIV - M\<close> lies in the interior \<open>I13\<close> of \<open>B1 \<union> B3\<close>.\<close>
+  have hT2_8_component_frontier_pair:
+    "\<forall>U\<in>components (UNIV - M).
+       frontier U = B1 \<union> B2 \<or>
+       frontier U = B1 \<union> B3 \<or>
+       frontier U = B2 \<union> B3"
+  proof
+    fix U assume hU_comp: "U \<in> components (UNIV - M)"
+    have hU_ne: "U \<noteq> {}"
+      using hU_comp in_components_nonempty by (by100 blast)
+    obtain p where hpU: "p \<in> U"
+      using hU_ne by (by100 blast)
+    have hp_compl: "p \<in> UNIV - M"
+      using hpU hU_comp in_components_subset by (by100 blast)
+    have hU_eq_cc: "U = connected_component_set (UNIV - M) p"
+      by (rule component_eq_connected_component_set[OF hU_comp hpU])
+    have h_geo_eq_cc:
+      "geotop_component_at UNIV geotop_euclidean_topology
+          ((UNIV::(real^2) set) - M) p =
+       connected_component_set (UNIV - M) p"
+      by (rule geotop_component_at_UNIV_eq_connected_component_set)
+    have hU_eq_geo:
+      "U = geotop_component_at UNIV geotop_euclidean_topology
+              ((UNIV::(real^2) set) - M) p"
+      using hU_eq_cc h_geo_eq_cc by (by100 simp)
+    have hU_geotop:
+      "U \<in> {C. \<exists>P\<in>UNIV - M.
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                    ((UNIV::(real^2) set) - M) P}"
+      using hp_compl hU_eq_geo by (by100 blast)
+    have hT27_frontiers:
+      "\<forall>V. V \<in> {C. \<exists>P\<in>UNIV - M.
+              C = geotop_component_at UNIV geotop_euclidean_topology
+                    ((UNIV::(real^2) set) - M) P} \<longrightarrow>
+          (\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+                 geotop_is_polygon (i \<union> j) \<and>
+                 geotop_frontier UNIV geotop_euclidean_topology V = i \<union> j)"
+      using Theorem_GT_2_7(1)[OF h\<theta>] .
+    have hU_frontier_ex:
+      "\<exists>i j. {i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+             geotop_is_polygon (i \<union> j) \<and>
+             geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hT27_frontiers hU_geotop by (by100 blast)
+    obtain i j where hUij:
+      "{i, j} \<subseteq> {B1, B2, B3} \<and> i \<noteq> j \<and>
+       geotop_is_polygon (i \<union> j) \<and>
+       geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hU_frontier_ex by (elim exE)
+    have hij_sub: "{i, j} \<subseteq> {B1, B2, B3}"
+      using hUij by (by100 blast)
+    have hij_ne: "i \<noteq> j"
+      using hUij by (by100 blast)
+    have hfr_geo:
+      "geotop_frontier UNIV geotop_euclidean_topology U = i \<union> j"
+      using hUij by (by100 blast)
+    have h_frontier_bridge:
+      "geotop_frontier UNIV geotop_euclidean_topology U = frontier U"
+      by (rule geotop_frontier_UNIV_eq_frontier)
+    have hfr: "frontier U = i \<union> j"
+      using hfr_geo h_frontier_bridge by (by100 simp)
+    have hi_mem: "i \<in> {B1, B2, B3}"
+      using hij_sub by (by100 blast)
+    have hj_mem: "j \<in> {B1, B2, B3}"
+      using hij_sub by (by100 blast)
+    have hij_cases:
+      "(i = B1 \<and> j = B2) \<or> (i = B2 \<and> j = B1) \<or>
+       (i = B1 \<and> j = B3) \<or> (i = B3 \<and> j = B1) \<or>
+       (i = B2 \<and> j = B3) \<or> (i = B3 \<and> j = B2)"
+      using hi_mem hj_mem hij_ne by (by100 auto)
+    show "frontier U = B1 \<union> B2 \<or>
+          frontier U = B1 \<union> B3 \<or>
+          frontier U = B2 \<union> B3"
+      using hfr hij_cases by (by100 auto)
+  qed
+  have hT2_8_B2_disj_E13:
+    "B2 \<inter> geotop_polygon_exterior (B1 \<union> B3) = {}"
+  proof -
+    have hE_sub_B1: "E \<subseteq> B1"
+      using hE1_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+    have h_ext13_disj:
+      "geotop_polygon_exterior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+      by (rule polygon_exterior_disjoint_polygon[OF h_poly_13_t28])
+    have h_int_ext_disj:
+      "geotop_polygon_interior (B1 \<union> B3) \<inter>
+       geotop_polygon_exterior (B1 \<union> B3) = {}"
+      by (rule polygon_interior_exterior_disjoint[OF h_poly_13_t28])
+    show ?thesis
+    proof (rule equals0I)
+      fix x assume hx: "x \<in> B2 \<inter> geotop_polygon_exterior (B1 \<union> B3)"
+      have hxB2: "x \<in> B2" using hx by (by100 blast)
+      have hxExt: "x \<in> geotop_polygon_exterior (B1 \<union> B3)" using hx by (by100 blast)
+      show False
+      proof (cases "x \<in> E")
+        case True
+        have "x \<in> B1 \<union> B3" using True hE_sub_B1 by (by100 blast)
+        thus ?thesis using hxExt h_ext13_disj by (by100 blast)
+      next
+        case False
+        have hxIntB2: "x \<in> geotop_arc_interior B2 E"
+          using hxB2 False unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in> geotop_polygon_interior (B1 \<union> B3)"
+          using hxIntB2 hB2_inner by (by100 blast)
+        thus ?thesis using hxExt h_int_ext_disj by (by100 blast)
+      qed
+    qed
+  qed
+  have hT2_8_frontier_disj_E13:
+    "\<forall>U\<in>components (UNIV - M).
+       frontier U \<inter> geotop_polygon_exterior (B1 \<union> B3) = {}"
+  proof
+    fix U assume hU: "U \<in> components (UNIV - M)"
+    have h_pair:
+      "frontier U = B1 \<union> B2 \<or>
+       frontier U = B1 \<union> B3 \<or>
+       frontier U = B2 \<union> B3"
+      using hT2_8_component_frontier_pair hU by (by100 blast)
+    have hB1B3_disj:
+      "(B1 \<union> B3) \<inter> geotop_polygon_exterior (B1 \<union> B3) = {}"
+    proof -
+      have "geotop_polygon_exterior (B1 \<union> B3) \<inter> (B1 \<union> B3) = {}"
+        by (rule polygon_exterior_disjoint_polygon[OF h_poly_13_t28])
+      thus ?thesis by (by100 blast)
+    qed
+    show "frontier U \<inter> geotop_polygon_exterior (B1 \<union> B3) = {}"
+      using h_pair hB1B3_disj hT2_8_B2_disj_E13 by (by100 blast)
+  qed
+  have hT2_8_bounded_component_sub_I13:
+    "\<forall>U\<in>components (UNIV - M). bounded U \<longrightarrow> U \<subseteq> I13"
+  proof (intro ballI impI)
+    fix U assume hU_comp: "U \<in> components (UNIV - M)"
+      and hU_bounded: "bounded U"
+    let ?E13 = "geotop_polygon_exterior (B1 \<union> B3)"
+    have h_sph13: "geotop_is_n_sphere (B1 \<union> B3)
+        (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B3)) 1"
+      using h_poly_13_t28 unfolding geotop_is_polygon_def by (by100 blast)
+    have hU_ne: "U \<noteq> {}"
+      using hU_comp in_components_nonempty by (by100 blast)
+    obtain p where hpU: "p \<in> U"
+      using hU_ne by (by100 blast)
+    have hM_eq: "M = B1 \<union> B2 \<union> B3"
+      using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+    have hU_subM: "U \<subseteq> UNIV - M"
+      using hU_comp in_components_subset by (by100 blast)
+    have hU_sub_compl13: "U \<subseteq> UNIV - (B1 \<union> B3)"
+      using hU_subM hM_eq by (by100 blast)
+    have hp_compl13: "p \<in> UNIV - (B1 \<union> B3)"
+      using hpU hU_sub_compl13 by (by100 blast)
+    define C where "C = connected_component_set (UNIV - (B1 \<union> B3)) p"
+    have hU_conn: "connected U"
+      using hU_comp in_components_connected by (by100 blast)
+    have hU_sub_C: "U \<subseteq> C"
+      unfolding C_def
+      using hpU hU_conn hU_sub_compl13 connected_component_maximal
+      by (by100 blast)
+    have hC_comp: "C \<in> components (UNIV - (B1 \<union> B3))"
+      unfolding C_def using hp_compl13 componentsI by metis
+    have hC_cases: "C = I13 \<or> C = ?E13"
+    proof -
+      have hcomps: "components (UNIV - (B1 \<union> B3)) = {I13, ?E13}"
+        using polygon_components_eq[OF h_poly_13_t28] I13_def by (by100 simp)
+      show ?thesis using hC_comp hcomps by (by100 simp)
+    qed
+    have hU_not_sub_ext13: "\<not> U \<subseteq> ?E13"
+    proof
+      assume hU_sub_ext13: "U \<subseteq> ?E13"
+      have hE13_conn: "connected ?E13"
+      proof -
+        have hE13_comp: "?E13 \<in> components (UNIV - (B1 \<union> B3))"
+          by (rule polygon_exterior_is_HOL_component[OF h_sph13])
+        show ?thesis using hE13_comp in_components_connected by (by100 blast)
+      qed
+      have hU_open: "open U"
+      proof -
+        have hM_closed: "closed M"
+          by (rule theta_graph_closed[OF h\<theta>])
+        have h_compl_open: "open (UNIV - M)"
+          using hM_closed open_Diff by (by100 blast)
+        show ?thesis using hU_comp h_compl_open open_components by (by100 blast)
+      qed
+      have hU_openin_E13: "openin (top_of_set ?E13) U"
+      proof -
+        have h_openin: "openin (top_of_set ?E13) (?E13 \<inter> U)"
+          using hU_open by (rule openin_open_Int)
+        have "?E13 \<inter> U = U" using hU_sub_ext13 by (by100 blast)
+        thus ?thesis using h_openin by (by100 simp)
+      qed
+      have hU_closedin_E13: "closedin (top_of_set ?E13) U"
+      proof -
+        have h_closure: "closure U = U \<union> frontier U"
+          by (rule closure_Un_frontier)
+        have h_frontier_disj:
+          "frontier U \<inter> ?E13 = {}"
+          using hT2_8_frontier_disj_E13 hU_comp by (by100 blast)
+        have h_eq: "?E13 \<inter> closure U = U"
+          using h_closure hU_sub_ext13 h_frontier_disj by (by100 blast)
+        have h_closed: "closed (closure U)"
+          by (by100 simp)
+        have h_closedin: "closedin (top_of_set ?E13) (?E13 \<inter> closure U)"
+          by (rule closedin_closed_Int[OF h_closed])
+        show ?thesis using h_closedin h_eq by (by100 simp)
+      qed
+      have hU_eq_E13: "U = ?E13"
+        using connected_clopen[of ?E13] hE13_conn hU_closedin_E13 hU_openin_E13
+              hU_sub_ext13 hU_ne
+        by (by100 blast)
+      have hE13_unbounded: "\<not> bounded ?E13"
+        by (rule polygon_exterior_unbounded[OF h_sph13])
+      show False using hU_eq_E13 hU_bounded hE13_unbounded by (by100 simp)
+    qed
+    show "U \<subseteq> I13"
+    proof (cases "C = I13")
+      case True
+      show ?thesis using hU_sub_C True by (by100 simp)
+    next
+      case False
+      have "C = ?E13" using hC_cases False by (by100 blast)
+      hence "U \<subseteq> ?E13" using hU_sub_C by (by100 simp)
+      thus ?thesis using hU_not_sub_ext13 by (by100 blast)
+    qed
+  qed
   \<comment> \<open>T2_8-A1: I_12 \<subseteq> I_13 - Int B_2 (chord B_2 inside polygon B_1 \<union> B_3,
     its B_1-side I_12 lies inside I_13; disjointness from Int B_2 by
     polygon-int axiom).
@@ -8091,7 +8312,95 @@ proof -
     show ?thesis using h_disj_B2 h_intB2_sub by (by100 blast)
   qed
   \<comment> \<open>A1a: I_12 \<subseteq> I_13 (deep — chord-inside-polygon Jordan-style).\<close>
-  have hT2_8_A1a_I12_in_I13: "I12 \<subseteq> I13" sorry
+  have hT2_8_A1a_I12_in_I13: "I12 \<subseteq> I13"
+  proof -
+    have hI12_global_component: "I12 \<in> components (UNIV - M)"
+    proof -
+      have h_sph12: "geotop_is_n_sphere (B1 \<union> B2)
+          (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+        using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+      have hI12_comp12: "I12 \<in> components (UNIV - (B1 \<union> B2))"
+      proof -
+        have "geotop_polygon_interior (B1 \<union> B2)
+            \<in> components (UNIV - (B1 \<union> B2))"
+          by (rule polygon_interior_is_HOL_component[OF h_sph12])
+        thus ?thesis using I12_def by (by100 simp)
+      qed
+      have hI12_conn: "connected I12"
+        using hI12_comp12 in_components_connected by (by100 blast)
+      have hI12_ne: "I12 \<noteq> {}"
+        using hI12_comp12 in_components_nonempty by (by100 blast)
+      have hI12_disj_B12: "I12 \<inter> (B1 \<union> B2) = {}"
+      proof -
+        have h_disj: "geotop_polygon_interior (B1 \<union> B2) \<inter> (B1 \<union> B2) = {}"
+          by (rule polygon_interior_disjoint_polygon[OF h_poly_12_t28])
+        show ?thesis using h_disj I12_def by (by100 simp)
+      qed
+      have hI12_disj_B3: "I12 \<inter> B3 = {}"
+      proof (rule equals0I)
+        fix x assume hx: "x \<in> I12 \<inter> B3"
+        have hxI12: "x \<in> I12" using hx by (by100 blast)
+        have hxB3: "x \<in> B3" using hx by (by100 blast)
+        have hE_sub_B1: "E \<subseteq> B1"
+          using hE1_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have hI12_ext12_disj:
+          "I12 \<inter> geotop_polygon_exterior (B1 \<union> B2) = {}"
+          using polygon_interior_exterior_disjoint[OF h_poly_12_t28] I12_def
+          by (by100 simp)
+        show False
+        proof (cases "x \<in> E")
+          case True
+          have "x \<in> B1 \<union> B2" using True hE_sub_B1 by (by100 blast)
+          thus ?thesis using hxI12 hI12_disj_B12 by (by100 blast)
+        next
+          case False
+          have hxIntB3: "x \<in> geotop_arc_interior B3 E"
+            using hxB3 False unfolding geotop_arc_interior_def by (by100 blast)
+          have "x \<in> geotop_polygon_exterior (B1 \<union> B2)"
+            using hxIntB3 hT2_8_B3_exterior_12 by (by100 blast)
+          thus ?thesis using hxI12 hI12_ext12_disj by (by100 blast)
+        qed
+      qed
+      have hM_eq: "M = B1 \<union> B2 \<union> B3"
+        using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+      have hI12_sub_complM: "I12 \<subseteq> UNIV - M"
+        using hI12_disj_B12 hI12_disj_B3 hM_eq by (by100 blast)
+      obtain p where hpI12: "p \<in> I12"
+        using hI12_ne by (by100 blast)
+      define U where "U = connected_component_set (UNIV - M) p"
+      have hU_comp: "U \<in> components (UNIV - M)"
+        unfolding U_def using hpI12 hI12_sub_complM componentsI by (by100 blast)
+      have hI12_sub_U: "I12 \<subseteq> U"
+        unfolding U_def
+        using hpI12 hI12_conn hI12_sub_complM connected_component_maximal
+        by (by100 blast)
+      have hU_sub_I12: "U \<subseteq> I12"
+      proof -
+        have h_compl_sub: "UNIV - M \<subseteq> UNIV - (B1 \<union> B2)"
+          using hM_eq by (by100 blast)
+        have hU_sub_C12:
+          "U \<subseteq> connected_component_set (UNIV - (B1 \<union> B2)) p"
+          unfolding U_def
+          by (rule connected_component_mono) (fact h_compl_sub)
+        have hI12_eq:
+          "I12 = connected_component_set (UNIV - (B1 \<union> B2)) p"
+          by (rule component_eq_connected_component_set[OF hI12_comp12 hpI12])
+        show ?thesis using hU_sub_C12 hI12_eq by (by100 simp)
+      qed
+      have "U = I12" using hI12_sub_U hU_sub_I12 by (by100 blast)
+      thus ?thesis using hU_comp by (by100 simp)
+    qed
+    have hI12_bounded: "bounded I12"
+    proof -
+      have h_sph12: "geotop_is_n_sphere (B1 \<union> B2)
+          (subspace_topology UNIV geotop_euclidean_topology (B1 \<union> B2)) 1"
+        using h_poly_12_t28 unfolding geotop_is_polygon_def by (by100 blast)
+      show ?thesis using polygon_interior_bounded[OF h_sph12] I12_def by (by100 simp)
+    qed
+    show ?thesis
+      using hT2_8_bounded_component_sub_I13 hI12_global_component hI12_bounded
+      by (by100 blast)
+  qed
   have hT2_8_A1_I12: "I12 \<subseteq> I13 - geotop_arc_interior B2 E"
     using hT2_8_A1a_I12_in_I13 hT2_8_A1b_I12_disj by (by100 blast)
   \<comment> \<open>T2_8-A2: I_12 is connected (polygon-interior connected).\<close>
@@ -8221,7 +8530,95 @@ proof -
     show ?thesis using h_disj_B2 h_intB2_sub by (by100 blast)
   qed
   \<comment> \<open>A1a' for I_23: I_23 \<subseteq> I_13.\<close>
-  have hT2_8_A1a_I23_in_I13: "I23 \<subseteq> I13" sorry
+  have hT2_8_A1a_I23_in_I13: "I23 \<subseteq> I13"
+  proof -
+    have hI23_global_component: "I23 \<in> components (UNIV - M)"
+    proof -
+      have h_sph23: "geotop_is_n_sphere (B2 \<union> B3)
+          (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+        using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+      have hI23_comp23: "I23 \<in> components (UNIV - (B2 \<union> B3))"
+      proof -
+        have "geotop_polygon_interior (B2 \<union> B3)
+            \<in> components (UNIV - (B2 \<union> B3))"
+          by (rule polygon_interior_is_HOL_component[OF h_sph23])
+        thus ?thesis using I23_def by (by100 simp)
+      qed
+      have hI23_conn: "connected I23"
+        using hI23_comp23 in_components_connected by (by100 blast)
+      have hI23_ne: "I23 \<noteq> {}"
+        using hI23_comp23 in_components_nonempty by (by100 blast)
+      have hI23_disj_B23: "I23 \<inter> (B2 \<union> B3) = {}"
+      proof -
+        have h_disj: "geotop_polygon_interior (B2 \<union> B3) \<inter> (B2 \<union> B3) = {}"
+          by (rule polygon_interior_disjoint_polygon[OF h_poly_23_t28])
+        show ?thesis using h_disj I23_def by (by100 simp)
+      qed
+      have hI23_disj_B1: "I23 \<inter> B1 = {}"
+      proof (rule equals0I)
+        fix x assume hx: "x \<in> I23 \<inter> B1"
+        have hxI23: "x \<in> I23" using hx by (by100 blast)
+        have hxB1: "x \<in> B1" using hx by (by100 blast)
+        have hE_sub_B3: "E \<subseteq> B3"
+          using hE3_t28 unfolding geotop_arc_endpoints_def by (by100 blast)
+        have hI23_ext23_disj:
+          "I23 \<inter> geotop_polygon_exterior (B2 \<union> B3) = {}"
+          using polygon_interior_exterior_disjoint[OF h_poly_23_t28] I23_def
+          by (by100 simp)
+        show False
+        proof (cases "x \<in> E")
+          case True
+          have "x \<in> B2 \<union> B3" using True hE_sub_B3 by (by100 blast)
+          thus ?thesis using hxI23 hI23_disj_B23 by (by100 blast)
+        next
+          case False
+          have hxIntB1: "x \<in> geotop_arc_interior B1 E"
+            using hxB1 False unfolding geotop_arc_interior_def by (by100 blast)
+          have "x \<in> geotop_polygon_exterior (B2 \<union> B3)"
+            using hxIntB1 hT2_8_B1_exterior_23 by (by100 blast)
+          thus ?thesis using hxI23 hI23_ext23_disj by (by100 blast)
+        qed
+      qed
+      have hM_eq: "M = B1 \<union> B2 \<union> B3"
+        using h_theta_t28 unfolding geotop_is_theta_graph_def by (by100 blast)
+      have hI23_sub_complM: "I23 \<subseteq> UNIV - M"
+        using hI23_disj_B23 hI23_disj_B1 hM_eq by (by100 blast)
+      obtain p where hpI23: "p \<in> I23"
+        using hI23_ne by (by100 blast)
+      define U where "U = connected_component_set (UNIV - M) p"
+      have hU_comp: "U \<in> components (UNIV - M)"
+        unfolding U_def using hpI23 hI23_sub_complM componentsI by (by100 blast)
+      have hI23_sub_U: "I23 \<subseteq> U"
+        unfolding U_def
+        using hpI23 hI23_conn hI23_sub_complM connected_component_maximal
+        by (by100 blast)
+      have hU_sub_I23: "U \<subseteq> I23"
+      proof -
+        have h_compl_sub: "UNIV - M \<subseteq> UNIV - (B2 \<union> B3)"
+          using hM_eq by (by100 blast)
+        have hU_sub_C23:
+          "U \<subseteq> connected_component_set (UNIV - (B2 \<union> B3)) p"
+          unfolding U_def
+          by (rule connected_component_mono) (fact h_compl_sub)
+        have hI23_eq:
+          "I23 = connected_component_set (UNIV - (B2 \<union> B3)) p"
+          by (rule component_eq_connected_component_set[OF hI23_comp23 hpI23])
+        show ?thesis using hU_sub_C23 hI23_eq by (by100 simp)
+      qed
+      have "U = I23" using hI23_sub_U hU_sub_I23 by (by100 blast)
+      thus ?thesis using hU_comp by (by100 simp)
+    qed
+    have hI23_bounded: "bounded I23"
+    proof -
+      have h_sph23: "geotop_is_n_sphere (B2 \<union> B3)
+          (subspace_topology UNIV geotop_euclidean_topology (B2 \<union> B3)) 1"
+        using h_poly_23_t28 unfolding geotop_is_polygon_def by (by100 blast)
+      show ?thesis using polygon_interior_bounded[OF h_sph23] I23_def by (by100 simp)
+    qed
+    show ?thesis
+      using hT2_8_bounded_component_sub_I13 hI23_global_component hI23_bounded
+      by (by100 blast)
+  qed
   have hT2_8_A1_I23: "I23 \<subseteq> I13 - geotop_arc_interior B2 E"
     using hT2_8_A1a_I23_in_I13 hT2_8_A1b_I23_disj by (by100 blast)
   have hT2_8_A2_I23_conn:
