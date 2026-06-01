@@ -4243,14 +4243,48 @@ proof -
                         have hD_pos: "D > 0"
                           unfolding D_def using hd_ne by (by100 simp)
                         have hL_eq_aff: "?L = affine hull {a, b}"
-                          sorry
+                        proof -
+                          have hL_affine: "affine ?L"
+                            by (rule affine_hyperplane)
+                          have hL_dim: "aff_dim ?L = 1"
+                            using hc_nonzero aff_dim_hyperplane[of "q2 - q1" 0]
+                            by (by100 simp)
+                          have hab_sub_L: "{a, b} \<subseteq> ?L"
+                            using ha_line hb_line by (by100 blast)
+                          have h_aff_sub_L: "affine hull {a, b} \<subseteq> ?L"
+                            by (rule hull_minimal) (rule hab_sub_L, rule hL_affine)
+                          have h_aff_ne: "affine hull {a, b} \<noteq> {}"
+                            using hull_inc[of a "{a, b}"] by (by100 blast)
+                          have h_aff_dim: "aff_dim (affine hull {a, b}) = 1"
+                            using hab_ne by (by100 simp)
+                          have "affine hull {a, b} = ?L"
+                          proof (rule affine_dim_equal
+                              [OF affine_affine_hull hL_affine h_aff_ne
+                                  h_aff_sub_L])
+                            show "aff_dim (affine hull {a, b}) = aff_dim ?L"
+                              using h_aff_dim hL_dim by (by100 simp)
+                          qed
+                          thus ?thesis by (by100 simp)
+                        qed
                         have h\<phi>_a: "\<phi> a = 0"
-                          sorry
+                          unfolding \<phi>_def by (by100 simp)
                         have h\<phi>_b: "\<phi> b = D"
-                          sorry
+                          unfolding \<phi>_def D_def d_def by (by100 simp)
                         have h\<phi>_coord:
                           "\<And>x. x \<in> ?L \<Longrightarrow> x = a + (\<phi> x / D) *\<^sub>R d"
-                          sorry
+                        proof -
+                          fix x assume hxL: "x \<in> ?L"
+                          have hx_aff: "x \<in> affine hull {a, b}"
+                            using hxL hL_eq_aff by (by100 simp)
+                          obtain u where hx_u: "x = a + u *\<^sub>R d"
+                            using hx_aff unfolding affine_hull_2_alt d_def by (by100 blast)
+                          have h\<phi>x: "\<phi> x = u * D"
+                            unfolding \<phi>_def D_def using hx_u by (simp add: algebra_simps)
+                          have "\<phi> x / D = u"
+                            using hD_pos h\<phi>x by (by100 simp)
+                          thus "x = a + (\<phi> x / D) *\<^sub>R d"
+                            using hx_u by (by100 simp)
+                        qed
                         have h\<phi>_cut_avoid:
                           "\<phi> ` Lc \<inter> {0, D} = {}"
                           sorry
