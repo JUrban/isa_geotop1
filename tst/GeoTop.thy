@@ -1757,6 +1757,76 @@ proof -
                     thus False using hinner hy_neg by (by100 linarith)
                   qed
                 qed
+                have h\<sigma>_y_pos_L\<tau>_side:
+                  "inner (y - x) m\<tau>_y > 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<sigma>_y - {x}. inner (z - x) m\<tau>_y > 0)"
+                proof
+                  assume hy_pos: "inner (y - x) m\<tau>_y > 0"
+                  fix z
+                  assume hz_in: "z \<in> \<sigma>_y - {x}"
+                  have hz: "z \<in> \<sigma>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p_y"
+                    using hz h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hz_minus by (by100 simp)
+                  have hp_pos: "inner (p_y - x) m\<tau>_y > 0"
+                    by (rule hp_y_L\<tau>_same_side_pos[OF hy_pos])
+                  show "inner (z - x) m\<tau>_y > 0"
+                    using hinner hs_pos hp_pos by (by100 simp)
+                qed
+                have h\<sigma>_y_neg_L\<tau>_side:
+                  "inner (y - x) m\<tau>_y < 0 \<Longrightarrow>
+                    (\<forall>z\<in>\<sigma>_y - {x}. inner (z - x) m\<tau>_y < 0)"
+                proof
+                  assume hy_neg: "inner (y - x) m\<tau>_y < 0"
+                  fix z
+                  assume hz_in: "z \<in> \<sigma>_y - {x}"
+                  have hz: "z \<in> \<sigma>_y" using hz_in by (by100 blast)
+                  have hz_ne_x: "z \<noteq> x" using hz_in by (by100 blast)
+                  have hz_seg: "z \<in> closed_segment x p_y"
+                    using hz h\<sigma>_y_seg by (by100 simp)
+                  obtain s :: real where hs_ge0: "0 \<le> s"
+                    and hs_le1: "s \<le> 1"
+                    and hz_eq: "z = (1 - s) *\<^sub>R x + s *\<^sub>R p_y"
+                    using hz_seg unfolding closed_segment_def by (by100 blast)
+                  have hs_pos: "s > 0"
+                  proof -
+                    have hs_ne0: "s \<noteq> 0"
+                    proof
+                      assume "s = 0"
+                      hence "z = x" using hz_eq by (by100 simp)
+                      thus False using hz_ne_x by (by100 blast)
+                    qed
+                    show ?thesis using hs_ge0 hs_ne0 by (by100 linarith)
+                  qed
+                  have hz_minus: "z - x = s *\<^sub>R (p_y - x)"
+                    using hz_eq by (simp add: algebra_simps)
+                  have hinner: "inner (z - x) m\<tau>_y = s * inner (p_y - x) m\<tau>_y"
+                    using hz_minus by (by100 simp)
+                  have hp_neg: "inner (p_y - x) m\<tau>_y < 0"
+                    by (rule hp_y_L\<tau>_same_side_neg[OF hy_neg])
+                  have hprod: "s * inner (p_y - x) m\<tau>_y < 0"
+                    by (rule mult_pos_neg[OF hs_pos hp_neg])
+                  show "inner (z - x) m\<tau>_y < 0"
+                    using hinner hprod by (by100 simp)
+                qed
                 have h\<tau>_y_pos_side:
                   "inner (p\<tau>_y - x) n_y > 0 \<Longrightarrow>
                     (\<forall>z\<in>\<tau>_y - {x}. inner (z - x) n_y > 0)"
