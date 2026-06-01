@@ -7641,6 +7641,14 @@ proof -
         qed
       qed
     qed
+    define Middle :: "(real^2) set \<Rightarrow> bool" where
+      "Middle k = (k \<in> {B1, B2, B3} \<and>
+              (\<exists>i j. {i, j} = {B1, B2, B3} - {k} \<and> i \<noteq> j \<and>
+                     geotop_is_polygon (i \<union> j) \<and>
+                     geotop_arc_interior k E \<subseteq> geotop_polygon_interior (i \<union> j)))"
+      for k
+    have hMU_exists_Middle: "\<exists>k. Middle k"
+      using hMU_exists unfolding Middle_def by (by100 blast)
     \<comment> \<open>Sub-claim MU2: uniqueness — only one middle is possible.
       Argument: if two arcs Bk1, Bk2 were both middle (each inside the
       polygon of the other two), then Bk1 ⊆ interior(Bk2 \<union> Bother) and
@@ -7648,6 +7656,44 @@ proof -
       regions; the third arc Bother is on the frontier of both. The
       mutual containment plus connectedness yields contradiction via
       Jordan-curve separation (a point can't be on both sides).\<close>
+    \<comment> \<open>Book step split into finite pairwise exclusions. Each exclusion is
+      the last paragraph of Moise's proof: if two different arcs were both
+      on the bounded side of the polygon formed by the other two, one of
+      them would be accessible from infinity through the complement of that
+      polygon, contradicting that it lies in the bounded polygon interior.\<close>
+    have hMiddle_no_B1_B2: "\<not> (Middle B1 \<and> Middle B2)"
+      sorry
+    have hMiddle_no_B1_B3: "\<not> (Middle B1 \<and> Middle B3)"
+      sorry
+    have hMiddle_no_B2_B3: "\<not> (Middle B2 \<and> Middle B3)"
+      sorry
+    have hMiddle_unique: "\<forall>k1 k2. Middle k1 \<and> Middle k2 \<longrightarrow> k1 = k2"
+    proof (intro allI impI)
+      fix k1 k2
+      assume hmid: "Middle k1 \<and> Middle k2"
+      have hk1: "k1 \<in> {B1, B2, B3}"
+      proof -
+        have "Middle k1"
+          using hmid by simp
+        then show ?thesis
+          unfolding Middle_def by simp
+      qed
+      have hk2: "k2 \<in> {B1, B2, B3}"
+      proof -
+        have "Middle k2"
+          using hmid by simp
+        then show ?thesis
+          unfolding Middle_def by simp
+      qed
+      have h_cases:
+        "k1 = k2 \<or>
+         (Middle B1 \<and> Middle B2) \<or>
+         (Middle B1 \<and> Middle B3) \<or>
+         (Middle B2 \<and> Middle B3)"
+        using hmid hk1 hk2 by (by100 auto)
+      show "k1 = k2"
+        using h_cases hMiddle_no_B1_B2 hMiddle_no_B1_B3 hMiddle_no_B2_B3 by (by100 blast)
+    qed
     have hMU_unique:
       "\<forall>k1 k2. (k1 \<in> {B1, B2, B3} \<and>
                  (\<exists>i j. {i, j} = {B1, B2, B3} - {k1} \<and> i \<noteq> j \<and>
@@ -7658,7 +7704,7 @@ proof -
                         geotop_is_polygon (i \<union> j) \<and>
                         geotop_arc_interior k2 E \<subseteq> geotop_polygon_interior (i \<union> j)))
                 \<longrightarrow> k1 = k2"
-      sorry
+      using hMiddle_unique unfolding Middle_def by (by100 blast)
     \<comment> \<open>Combine MU1 + MU2 via Ex1 — explicit unpacking.\<close>
     define P :: "(real^2) set \<Rightarrow> bool" where
       "P k = (k \<in> {B1, B2, B3} \<and>
