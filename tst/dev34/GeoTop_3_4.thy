@@ -2675,6 +2675,33 @@ proof -
     by (rule that[OF h\<sigma>V hW_ne hW_sub h\<tau>_eq h\<tau>W])
 qed
 
+lemma geotop_is_face_trans:
+  fixes \<rho> \<tau> \<sigma> :: "(real^2) set"
+  assumes h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+  assumes h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+  shows "geotop_is_face \<rho> \<sigma>"
+proof -
+  obtain V\<^sub>\<tau> W\<^sub>\<rho> where h\<tau>V: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    and hW\<^sub>\<rho>_ne: "W\<^sub>\<rho> \<noteq> {}"
+    and hW\<^sub>\<rho>_sub: "W\<^sub>\<rho> \<subseteq> V\<^sub>\<tau>"
+    and h\<rho>_eq: "\<rho> = geotop_convex_hull W\<^sub>\<rho>"
+    and h\<rho>W: "geotop_simplex_vertices \<rho> W\<^sub>\<rho>"
+    by (rule geotop_face_witness_simplex_vertices[OF h\<rho>\<tau>])
+  obtain V\<^sub>\<sigma> W\<^sub>\<tau> where h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    and hW\<^sub>\<tau>_ne: "W\<^sub>\<tau> \<noteq> {}"
+    and hW\<^sub>\<tau>_sub: "W\<^sub>\<tau> \<subseteq> V\<^sub>\<sigma>"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W\<^sub>\<tau>"
+    and h\<tau>W: "geotop_simplex_vertices \<tau> W\<^sub>\<tau>"
+    by (rule geotop_face_witness_simplex_vertices[OF h\<tau>\<sigma>])
+  have hV_eq: "V\<^sub>\<tau> = W\<^sub>\<tau>"
+    by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<tau>W])
+  have hW\<^sub>\<rho>_sub_\<sigma>: "W\<^sub>\<rho> \<subseteq> V\<^sub>\<sigma>"
+    using hW\<^sub>\<rho>_sub hV_eq hW\<^sub>\<tau>_sub by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_face_def
+    using h\<sigma>V hW\<^sub>\<rho>_ne hW\<^sub>\<rho>_sub_\<sigma> h\<rho>_eq by (by100 blast)
+qed
+
 lemma geotop_edge_face_witness_card_two:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
