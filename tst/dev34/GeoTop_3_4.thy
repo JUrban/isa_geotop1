@@ -4435,6 +4435,20 @@ proof
   \<comment> \<open>L4: every incident edge in \<le>2 two-simplexes.\<close>
   have hL4: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
               card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
+  \<comment> \<open>Combining L3 and L4: every incident edge has exactly two adjacent
+    two-simplexes.\<close>
+  have hL_count_eq2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  proof (intro ballI impI)
+    fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+    let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+    have hge: "card ?S \<ge> 2"
+      using hL3 heK he_inc by (by100 blast)
+    have hle: "card ?S \<le> 2"
+      using hL4 heK he_inc by (by100 blast)
+    show "card ?S = 2"
+      using hge hle by (by100 simp)
+  qed
   \<comment> \<open>L5: link |L(v)| is connected.\<close>
   have hL5: "top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology
@@ -4453,11 +4467,13 @@ proof
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 2) \<and>
      (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
              card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
+     (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2) \<and>
      top1_connected_on (\<Union>(geotop_link K v))
                (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
      geotop_is_polygon (\<Union>(geotop_link K v)) \<and>
      geotop_comb_n_cell (geotop_star K v) 2"
-    using hL1 hL2 hL2_count hL3 hL4 hL5 hL6 hL7 by (by100 blast)
+    using hL1 hL2 hL2_count hL3 hL4 hL_count_eq2 hL5 hL6 hL7 by (by100 blast)
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
@@ -4542,6 +4558,21 @@ proof -
       (\<le> 2, not = 2 — this is the manifold-with-boundary case).\<close>
     have hL3: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
                 card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2" sorry
+    \<comment> \<open>Combining counted L2 with L3: each incident edge has one or two
+      adjacent two-simplexes.\<close>
+    have hL_count_1_or_2: "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+                (card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+                 \<or> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)"
+    proof (intro ballI impI)
+      fix e assume heK: "e \<in> K" and he_inc: "geotop_is_edge e \<and> v \<in> e"
+      let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+      have hge: "card ?S \<ge> 1"
+        using hL2_count heK he_inc by (by100 blast)
+      have hle: "card ?S \<le> 2"
+        using hL3 heK he_inc by (by100 blast)
+      show "card ?S = 1 \<or> card ?S = 2"
+        using hge hle by (by100 arith)
+    qed
     \<comment> \<open>L4: link |L(v)| is connected.\<close>
     have hL4: "top1_connected_on (\<Union>(geotop_link K v))
                  (subspace_topology UNIV geotop_euclidean_topology
@@ -4559,12 +4590,15 @@ proof -
                card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<ge> 1) \<and>
        (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
                card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2) \<and>
+       (\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+               (card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+                \<or> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)) \<and>
        top1_connected_on (\<Union>(geotop_link K v))
                  (subspace_topology UNIV geotop_euclidean_topology (\<Union>(geotop_link K v))) \<and>
        (geotop_is_broken_line (\<Union>(geotop_link K v))
                      \<or> geotop_is_polygon (\<Union>(geotop_link K v))) \<and>
        geotop_comb_n_cell (geotop_star K v) 2"
-      using hL1 hL2 hL2_count hL3 hL4 hL5 hL6 by (by100 blast)
+      using hL1 hL2 hL2_count hL3 hL_count_1_or_2 hL4 hL5 hL6 by (by100 blast)
     show "geotop_comb_n_cell (geotop_star K v) 2" using hL6 .
   qed
 next
