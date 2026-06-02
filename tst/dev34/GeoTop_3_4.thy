@@ -5886,6 +5886,47 @@ proof -
     using hge hle by (by100 arith)
 qed
 
+lemma geotop_edge_carrier_not_one_incident_count_two_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp_e: "p \<in> e"
+  assumes hnot_one:
+    "p \<notin> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  (**
+    Edge-carrier branch of Theorem 9's converse: the global one-or-two edge
+    count leaves only the two-sided edge case if the point is not already in
+    the union of one-incident edges. **)
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have hcount: "card ?S = 1 \<or> card ?S = 2"
+    by (rule geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34
+        [OF hK hKM heK hedge])
+  show ?thesis
+  proof (cases "card ?S = 1")
+    case True
+    have he_in_one: "e \<in> {e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+      using heK hedge True by (by100 blast)
+    have "p \<in> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+      using he_in_one hp_e by (by100 blast)
+    show ?thesis
+      using hnot_one \<open>p \<in> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}\<close>
+      by (by100 blast)
+  next
+    case False
+    show ?thesis
+      using hcount False by (by100 blast)
+  qed
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
