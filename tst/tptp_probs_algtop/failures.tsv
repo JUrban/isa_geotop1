@@ -1,0 +1,6 @@
+theorem	error
+AlgTopCached.fundamental_group_induced_agree	THM: infer_instantiate_types
+AlgTopCached8.loop_equiv_class_pointwise_I	THM: infer_instantiate_types
+AlgIsoFixedBase.path_homotopic_same_class	THM: infer_instantiate_types
+AlgIsoFixedBase.induced_id_eq_lam	THM: infer_instantiate_types
+AlgTopGroups.filter_pred_eq	THM: infer_instantiate_types
