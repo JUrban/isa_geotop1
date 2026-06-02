@@ -6499,6 +6499,32 @@ proof -
     by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V hc_aff hd_aff])
 qed
 
+lemma geotop_edge_vertices_affine_hull_normal_form_dev34:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  shows "\<exists>n d. n \<noteq> 0 \<and> affine hull {a, b} = {x. n \<bullet> x = d}"
+  (**
+    The affine hull of the shared edge is a genuine line in the plane, written
+    in normal form for the subsequent half-plane argument. **)
+proof -
+  have he1: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have hhyper: "geotop_hyperplane_dim (affine hull e) 1"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF he1])
+  obtain n d where hn: "n \<noteq> 0"
+    and hline_e: "affine hull e = {x. n \<bullet> x = d}"
+    using geotop_hyperplane_dim_1_R2_normal_form[OF hhyper] by (by100 blast)
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  have haff_eq: "affine hull e = affine hull {a, b}"
+    using he_HOL affine_hull_convex_hull[of "{a, b}"] by (by100 simp)
+  have hline_ab: "affine hull {a, b} = {x. n \<bullet> x = d}"
+    using haff_eq hline_e by (by100 simp)
+  show ?thesis
+    using hn hline_ab by (by100 blast)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"

@@ -22,9 +22,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:36 elapsed time`.
-- The current committed branch tip before this report refresh is `21ee8987`
-  (`Prove GeoTop opposite vertex affine exclusion`).
+  `0:00:34 elapsed time`.
+- The current committed branch tip before this report refresh is `e68bebfe`
+  (`Prove GeoTop shared edge affine witnesses`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 6520; this is the same-complex two-triangle shared-edge local disk
+  at line 6546; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6834;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6860;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -139,6 +139,7 @@ infrastructure used in Moise's Lemma 5 route. Recent proved helpers include:
 - `geotop_link_open_radial_cone_open_in_punctured_star_dev34`
 - `geotop_openin_norm_polyhedron_contains_relative_ball_dev34`
 - `geotop_two_2simplex_shared_edge_vertices_affine_obtain_dev34`
+- `geotop_edge_vertices_affine_hull_normal_form_dev34`
 
 Since the previous report, the radial cone openness problem has been reduced
 substantially. The current branch proves the subspace-open bridge, a finite
