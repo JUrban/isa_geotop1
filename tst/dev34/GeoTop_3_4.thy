@@ -1622,6 +1622,24 @@ proof -
             \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
         by (rule geotop_link_components_nonisolated_linear_graph_witnesses
             [OF hK hv hlink_vertices_incident_edges])
+      have hlink_vertices_degree_one_or_two_incident_edges:
+        "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+            card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
+            card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
+        sorry
+      have hcomponent_degree_one_or_two_linear_graph_witnesses:
+        "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+            C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P)
+          \<longrightarrow> (\<exists>L. geotop_is_linear_graph L
+            \<and> finite L
+            \<and> geotop_polyhedron L = C
+            \<and> geotop_complex_connected L
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+                card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
+                card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2))"
+        by (rule geotop_link_components_degree_one_or_two_linear_graph_witnesses_dev34
+            [OF hK hv hlink_vertices_degree_one_or_two_incident_edges])
       have hlocal_line_or_polygon_components:
         "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
                C = geotop_component_at UNIV geotop_euclidean_topology
@@ -1639,24 +1657,30 @@ proof -
               \<and> finite L
               \<and> geotop_polyhedron L = C
               \<and> geotop_complex_connected L
-              \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)))"
-          by (rule spec[OF hcomponent_linear_graph_witnesses])
+              \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2))"
+          by (rule spec[OF hcomponent_degree_one_or_two_linear_graph_witnesses])
         have hL_ex: "\<exists>L. geotop_is_linear_graph L
               \<and> finite L
               \<and> geotop_polyhedron L = C
               \<and> geotop_complex_connected L
-              \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l))"
+              \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2)"
           by (rule mp[OF hC_imp hC_ex])
         obtain L where hL_linear: "geotop_is_linear_graph L"
           and hL_fin: "finite L"
           and hL_poly: "geotop_polyhedron L = C"
           and hL_conn: "geotop_complex_connected L"
-          and hL_nonisolated: "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>l\<in>L. geotop_is_edge l \<and> w \<in> l)"
+          and hL_degree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
+                  card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
           using hL_ex by (elim exE conjE)
         have hshape_L: "geotop_is_broken_line (geotop_polyhedron L) \<or>
             geotop_is_polygon (geotop_polyhedron L)"
-          by (rule geotop_finite_connected_nonisolated_linear_graph_line_or_polygon_dev34
-              [OF hL_linear hL_fin hL_conn hL_nonisolated])
+          by (rule geotop_finite_connected_degree_one_or_two_linear_graph_line_or_polygon_dev34
+              [OF hL_linear hL_fin hL_conn hL_degree12])
         show "geotop_is_broken_line C \<or> geotop_is_polygon C"
           using hshape_L hL_poly by (by100 simp)
       qed
