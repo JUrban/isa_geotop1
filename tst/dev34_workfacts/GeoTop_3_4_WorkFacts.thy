@@ -29,6 +29,40 @@ lemma geotop_finite_incident_edges_finite_dev34:
   shows "finite {e\<in>L. geotop_is_edge e \<and> w \<in> e}"
   using hfin by (by100 simp)
 
+lemma geotop_complex_connected_top1_connected_polyhedron_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hconn: "geotop_complex_connected K"
+  shows "top1_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+proof -
+  have hcomplex: "geotop_is_complex K"
+    using hconn unfolding geotop_complex_connected_def by (by100 blast)
+  have hpath: "top1_path_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using Theorem_GT_1_12(1)[OF hcomplex] hconn by (by100 blast)
+  show ?thesis
+    using Theorem_GT_1_12(2)[OF hcomplex] hpath by (by100 blast)
+qed
+
+lemma geotop_degree_two_vertices_nonisolated_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+proof (intro allI impI)
+  fix w
+  assume hw: "{w} \<in> L"
+  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hcard: "card ?E = 2"
+    using hdegree hw by (by100 blast)
+  have "?E \<noteq> {}"
+    using hcard by (by100 force)
+  then obtain e where "e \<in> ?E"
+    by (by100 blast)
+  show "\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e"
+    using \<open>e \<in> ?E\<close> by (by100 blast)
+qed
+
 text \<open>Moise \<S>4, Theorem 8: the graph-classification step used after
 Lemmas 2--4.  A finite connected linear graph whose every vertex has
 exactly two incident edges is a polygon.\<close>
