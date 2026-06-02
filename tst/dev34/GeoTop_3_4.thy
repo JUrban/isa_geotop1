@@ -102,6 +102,18 @@ proof -
   qed
 qed
 
+lemma geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  shows "{x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+      \<in> subspace_topology UNIV geotop_euclidean_topology
+          (\<Union>(geotop_star K v) - {v})"
+  sorry
+
 lemma geotop_link_open_radial_cone_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -114,7 +126,27 @@ lemma geotop_link_open_radial_cone_open_in_punctured_star_dev34:
           \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
       \<in> subspace_topology UNIV geotop_euclidean_topology
           (\<Union>(geotop_star K v) - {v})"
-  sorry
+proof -
+  let ?L = "\<Union>(geotop_link K v)"
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  obtain W where hW_open: "W \<in> geotop_euclidean_topology"
+      and hC_eq: "C = ?L \<inter> W"
+    using hC_open unfolding subspace_topology_def by (by100 blast)
+  have hcone_eq:
+    "{x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+     = {x \<in> ?S. \<exists>y t. y \<in> ?L \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+    using hC_eq by (by100 simp)
+  have hopen:
+    "{x \<in> ?S. \<exists>y t. y \<in> ?L \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+      \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
+    by (rule geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34
+        [OF hK hv hW_open])
+  show ?thesis
+    using hcone_eq hopen by (by100 simp)
+qed
 
 lemma geotop_punctured_star_radial_endpoint_projection_dev34:
   fixes K :: "(real^2) set set"
