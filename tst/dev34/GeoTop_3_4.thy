@@ -291,6 +291,80 @@ proof -
     using hr_pos \<open>ball x r \<inter> C = {}\<close> by (by100 blast)
 qed
 
+lemma geotop_radial_cone_over_compact_closed_dev34:
+  fixes C :: "(real^2) set"
+  assumes hC_compact: "compact C"
+  shows "closed {z. \<exists>y s.
+      y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+        \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y}"
+proof -
+  let ?D = "{0..1::real} \<times> C"
+  let ?f = "(\<lambda>p::real \<times> (real^2).
+      (1 - fst p) *\<^sub>R v + fst p *\<^sub>R snd p)"
+  have hcone_eq:
+    "{z. \<exists>y s.
+        y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+          \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y} = ?f ` ?D"
+  proof
+    show "{z. \<exists>y s.
+        y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+          \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y} \<subseteq> ?f ` ?D"
+    proof
+      fix z
+      assume "z \<in> {z. \<exists>y s.
+        y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+          \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y}"
+      then obtain y s where hyC: "y \<in> C"
+        and hs0: "0 \<le> s" and hs1: "s \<le> 1"
+        and hz: "z = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+        by (by100 blast)
+      have hsI: "s \<in> {0..1::real}"
+        using hs0 hs1 by (by100 simp)
+      have hpD: "(s, y) \<in> ?D"
+        using hsI hyC by (by100 simp)
+      have "z = ?f (s, y)"
+        using hz by (by100 simp)
+      show "z \<in> ?f ` ?D"
+        using hpD \<open>z = ?f (s, y)\<close> by (by100 blast)
+    qed
+  next
+    show "?f ` ?D \<subseteq> {z. \<exists>y s.
+        y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+          \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y}"
+    proof
+      fix z
+      assume "z \<in> ?f ` ?D"
+      then obtain p where hpD: "p \<in> ?D" and hz: "z = ?f p"
+        by (by100 blast)
+      obtain s y where hp: "p = (s, y)"
+        by (cases p) (by100 blast)
+      have hsI: "s \<in> {0..1::real}" and hyC: "y \<in> C"
+        using hpD hp by (by100 simp_all)
+      have hs0: "0 \<le> s" and hs1: "s \<le> 1"
+        using hsI by (by100 simp_all)
+      have "z = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+        using hz hp by (by100 simp)
+      show "z \<in> {z. \<exists>y s.
+        y \<in> C \<and> 0 \<le> s \<and> s \<le> 1
+          \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y}"
+        using hyC hs0 hs1 \<open>z = (1 - s) *\<^sub>R v + s *\<^sub>R y\<close>
+        by (by100 blast)
+    qed
+  qed
+  have hI_compact: "compact ({0..1::real})"
+    by (rule compact_Icc)
+  have hD_compact: "compact ?D"
+    by (rule compact_Times[OF hI_compact hC_compact])
+  have hf_cont: "continuous_on ?D ?f"
+    by (intro continuous_intros)
+  have himg_compact: "compact (?f ` ?D)"
+    by (rule compact_continuous_image[OF hf_cont hD_compact])
+  have "closed (?f ` ?D)"
+    by (rule compact_imp_closed[OF himg_compact])
+  show ?thesis
+    using hcone_eq \<open>closed (?f ` ?D)\<close> by (by100 simp)
+qed
+
 lemma geotop_radial_bad_endpoint_cone_closed_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -300,7 +374,27 @@ lemma geotop_radial_bad_endpoint_cone_closed_dev34:
       y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>
         \<and> 0 \<le> s \<and> s \<le> 1
         \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y'}"
-  sorry
+proof -
+  let ?L = "\<Union>(geotop_link K v)"
+  let ?C = "?L - ball y \<epsilon>"
+  have hL_compact: "compact ?L"
+    by (rule geotop_link_polyhedron_compact_at_complex_vertex[OF hK hv])
+  have hball_open: "open (ball y \<epsilon>)"
+    by (rule open_ball)
+  have hball_compl_closed: "closed (- ball y \<epsilon>)"
+    by (rule closed_Compl[OF hball_open])
+  have hC_eq: "?C = ?L \<inter> (- ball y \<epsilon>)"
+    by (by100 blast)
+  have hC_compact: "compact ?C"
+  proof -
+    have "compact (?L \<inter> (- ball y \<epsilon>))"
+      by (rule compact_Int_closed[OF hL_compact hball_compl_closed])
+    thus ?thesis
+      using hC_eq by (by100 simp)
+  qed
+  show ?thesis
+    by (rule geotop_radial_cone_over_compact_closed_dev34[OF hC_compact])
+qed
 
 lemma geotop_radial_bad_endpoint_cone_avoids_point_dev34:
   fixes K :: "(real^2) set set"
