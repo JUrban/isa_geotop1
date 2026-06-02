@@ -1100,6 +1100,60 @@ next
   qed
 qed
 
+lemma geotop_delete_leaf_rest_vertex_not_in_deleted_edge_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes heL: "e \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  assumes hxrest: "{x} \<in> L - {{w}, e}"
+  assumes hxq: "x \<noteq> q"
+  shows "x \<notin> e"
+proof
+  assume hxe: "x \<in> e"
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have hxL: "{x} \<in> L"
+    using hxrest by (by100 simp)
+  have hxw: "x \<noteq> w"
+  proof
+    assume "x = w"
+    hence "{x} = {w}" by (by100 simp)
+    thus False using hxrest by (by100 simp)
+  qed
+  have hwq: "w \<noteq> q"
+    using hqw by (by100 blast)
+  have hendpoint: "x = w \<or> x = q"
+    by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+        [OF hcomplex hxL heL heq hwq hxe])
+  show False using hendpoint hxw hxq by (by100 blast)
+qed
+
+lemma geotop_delete_leaf_rest_vertex_degree_preserved_away_neighbor_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes heL: "e \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  assumes hxrest: "{x} \<in> L - {{w}, e}"
+  assumes hxq: "x \<noteq> q"
+  shows "card {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = card {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+proof -
+  have hx_not_e: "x \<notin> e"
+    by (rule geotop_delete_leaf_rest_vertex_not_in_deleted_edge_dev34
+        [OF hL heL hqw heq hxrest hxq])
+  have hwe: "w \<in> e"
+    using heq by (by100 simp)
+  have "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+    by (rule geotop_delete_leaf_incident_edges_away_eq_dev34[OF hwe hx_not_e])
+  show ?thesis
+    using \<open>{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}\<close>
+    by (by100 simp)
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
