@@ -5164,6 +5164,74 @@ proof
     using h\<sigma>\<tau> by (by100 blast)
 qed
 
+lemma geotop_2simplex_edge_face_through_vertex_not_other_eq_opposite_dev34:
+  fixes \<sigma> V l :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hwV: "w \<in> V"
+  assumes huV: "u \<in> V"
+  assumes hvw: "v \<noteq> w"
+  assumes hvu: "v \<noteq> u"
+  assumes hwu: "w \<noteq> u"
+  assumes hface: "geotop_is_face l \<sigma>"
+  assumes hledge: "geotop_is_edge l"
+  assumes hw_l: "w \<in> l"
+  assumes hv_not_l: "v \<notin> l"
+  shows "l = geotop_convex_hull {w, u}"
+proof -
+  obtain V' W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V'"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V'"
+    and hl_eq: "l = geotop_convex_hull W"
+    and hlW: "geotop_simplex_vertices l W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two[OF hledge hface])
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub hV'_eq by (by100 simp)
+  have hV_eq_three: "V = {v, w, u}"
+    by (rule geotop_2simplex_vertices_three_eq_dev34
+        [OF h\<sigma>2 h\<sigma>V hvV hwV huV hvw hvu hwu])
+  have hW_fin: "finite W"
+    using hlW unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hwW: "w \<in> W"
+  proof (rule ccontr)
+    assume hw_not_W: "\<not> w \<in> W"
+    have hW_sub_no_w: "W \<subseteq> V - {w}"
+      using hW_sub_V hw_not_W by (by100 blast)
+    have hw_not_hull: "w \<notin> geotop_convex_hull W"
+      by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+          [OF h\<sigma>V hwV hW_sub_no_w])
+    have "w \<in> geotop_convex_hull W"
+      using hw_l hl_eq by (by100 simp)
+    thus False
+      using hw_not_hull by (by100 blast)
+  qed
+  have hv_not_W: "v \<notin> W"
+  proof
+    assume hvW: "v \<in> W"
+    have "v \<in> convex hull W"
+      using hvW hull_inc[of v W] by (by100 simp)
+    hence "v \<in> geotop_convex_hull W"
+      using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    hence "v \<in> l"
+      using hl_eq by (by100 simp)
+    thus False
+      using hv_not_l by (by100 blast)
+  qed
+  have hW_sub_wu: "W \<subseteq> {w, u}"
+    using hW_sub_V hV_eq_three hv_not_W by (by100 blast)
+  have hpair_card: "card {w, u} = 2"
+    using hwu by (by100 simp)
+  have hW_eq: "W = {w, u}"
+    by (rule card_seteq[OF finite_insert hW_sub_wu])
+       (use hW_card hpair_card in \<open>by (by100 simp)\<close>)
+  show ?thesis
+    using hl_eq hW_eq by (by100 simp)
+qed
+
 lemma geotop_incident_edge_2simplex_link_edge_witness:
   fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
