@@ -5762,6 +5762,44 @@ proof
     using hp_int hp_not_int by (by100 blast)
 qed
 
+lemma geotop_manifold_boundary_carrier_dim_le_1_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes hp\<tau>: "p \<in> rel_interior \<tau>"
+  shows "\<exists>n. n \<le> 1 \<and> geotop_simplex_dim \<tau> n"
+  (**
+    Carrier case split for the converse inclusion in Theorem 9.  The carrier
+    of a boundary point is not a 2-simplex, because 2-simplex relative
+    interiors are manifold-interior points. **)
+proof -
+  have h_simp_all: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule conjunct1[OF hK[unfolded geotop_is_complex_def]])
+  have h\<tau>simp: "geotop_is_simplex \<tau>"
+    by (rule bspec[OF h_simp_all h\<tau>K])
+  obtain n where h\<tau>dim: "geotop_simplex_dim \<tau> n"
+    using h\<tau>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+    by (by100 blast)
+  have hnle2: "n \<le> 2"
+    by (rule geotop_simplex_dim_le_2_R2[OF h\<tau>dim])
+  have hnnot2: "n \<noteq> 2"
+  proof
+    assume hn2: "n = 2"
+    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      using h\<tau>dim hn2 by (by100 simp)
+    have hp_not: "p \<notin> rel_interior \<tau>"
+      by (rule geotop_manifold_boundary_disjoint_2simplex_rel_interior_dev34
+          [OF hK hbd h\<tau>K h\<tau>2])
+    show False
+      using hp\<tau> hp_not by (by100 blast)
+  qed
+  have hnle1: "n \<le> 1"
+    using hnle2 hnnot2 by (by100 arith)
+  show ?thesis
+    using hnle1 h\<tau>dim by (by100 blast)
+qed
+
 lemma geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
