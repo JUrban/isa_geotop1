@@ -205,6 +205,73 @@ proof -
     using hr_pos hU_finite hF_sub hlocal_cover by (by100 blast)
 qed
 
+lemma geotop_finite_carrier_local_ball_glue_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hr0: "0 < r0"
+  assumes hF_fin: "finite F"
+  assumes hcover: "ball x r0 \<inter> S \<subseteq> \<Union>F"
+  assumes hlocal:
+    "\<And>C. C \<in> F \<Longrightarrow> \<exists>r. 0 < r \<and> ball x r \<inter> S \<inter> C \<subseteq> A"
+  shows "\<exists>r. 0 < r \<and> ball x r \<inter> S \<subseteq> A"
+proof -
+  obtain rad where hrad:
+    "\<forall>C\<in>F. 0 < rad C \<and> ball x (rad C) \<inter> S \<inter> C \<subseteq> A"
+    using hlocal by (by100 metis)
+  let ?R = "insert r0 (rad ` F)"
+  have hR_fin: "finite ?R"
+    using hF_fin by (by100 simp)
+  have hR_nonempty: "?R \<noteq> {}"
+    by (by100 simp)
+  have hR_pos: "\<forall>a\<in>?R. 0 < a"
+    using hr0 hrad by (by100 blast)
+  define r where "r = Min ?R"
+  have hr_in: "r \<in> ?R"
+    unfolding r_def by (rule Min_in[OF hR_fin hR_nonempty])
+  have hr_pos: "0 < r"
+    using hR_pos hr_in by (by100 blast)
+  have hr_le_r0: "r \<le> r0"
+    unfolding r_def by (rule Min_le[OF hR_fin]) (by100 simp)
+  have hr_le_rad: "\<And>C. C \<in> F \<Longrightarrow> r \<le> rad C"
+    unfolding r_def by (rule Min_le[OF hR_fin]) (by100 blast)
+  have hball_sub: "ball x r \<inter> S \<subseteq> A"
+  proof
+    fix z
+    assume hz: "z \<in> ball x r \<inter> S"
+    have hz_r0: "z \<in> ball x r0"
+      using hz hr_le_r0 by (by100 simp)
+    have hz_cover: "z \<in> \<Union>F"
+      using hcover hz hz_r0 by (by100 blast)
+    obtain C where hC: "C \<in> F" and hzC: "z \<in> C"
+      using hz_cover by (by100 blast)
+    have hz_rad: "z \<in> ball x (rad C)"
+      using hz hr_le_rad[OF hC] by (by100 simp)
+    have "z \<in> ball x (rad C) \<inter> S \<inter> C"
+      using hz hzC hz_rad by (by100 blast)
+    show "z \<in> A"
+      using hrad hC \<open>z \<in> ball x (rad C) \<inter> S \<inter> C\<close>
+      by (by100 blast)
+  qed
+  show ?thesis
+    using hr_pos hball_sub by (by100 blast)
+qed
+
+lemma geotop_radial_cone_simplex_point_neighborhood_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx:
+    "x \<in> {x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  shows "\<exists>r. 0 < r \<and>
+      ball x r \<inter> (\<Union>(geotop_star K v) - {v}) \<inter> \<sigma>
+        \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+                \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  sorry
+
 lemma geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34:
   fixes K F :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -223,7 +290,41 @@ lemma geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34:
         \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
              \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
                 \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?A = "{x \<in> ?S.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  have hS_poly: "?S \<subseteq> geotop_polyhedron K"
+  proof
+    fix z
+    assume hzS: "z \<in> ?S"
+    obtain \<sigma> where h\<sigma>star: "\<sigma> \<in> geotop_star K v" and hz\<sigma>: "z \<in> \<sigma>"
+      using hzS by (by100 blast)
+    have hstar_sub: "geotop_star K v \<subseteq> K"
+      by (rule geotop_star_subset_complex[OF hK])
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hstar_sub h\<sigma>star by (by100 blast)
+    show "z \<in> geotop_polyhedron K"
+      unfolding geotop_polyhedron_def using h\<sigma>K hz\<sigma> by (by100 blast)
+  qed
+  have hcoverS: "ball x r0 \<inter> ?S \<subseteq> \<Union>F"
+    using hF_cover hS_poly by (by100 blast)
+  have hlocal:
+    "\<And>C. C \<in> F \<Longrightarrow> \<exists>r. 0 < r \<and> ball x r \<inter> ?S \<inter> C \<subseteq> ?A"
+  proof -
+    fix C
+    assume hC: "C \<in> F"
+    have hCK: "C \<in> K"
+      using hF_sub hC by (by100 blast)
+    show "\<exists>r. 0 < r \<and> ball x r \<inter> ?S \<inter> C \<subseteq> ?A"
+      by (rule geotop_radial_cone_simplex_point_neighborhood_dev34
+          [OF hK hv hW_open hCK hx])
+  qed
+  show ?thesis
+    by (rule geotop_finite_carrier_local_ball_glue_dev34
+        [OF hr0 hF_fin hcoverS hlocal])
+qed
 
 lemma geotop_euclidean_open_radial_cone_point_neighborhood_dev34:
   fixes K :: "(real^2) set set"
