@@ -20,13 +20,13 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.40`, while `gen_stmt_index.sh` ran in `0:02.23`.
+  ran in `0:00.46`, while `gen_stmt_index.sh` ran in `0:02.26`.
 - A warm-cache section build passed after the latest Figure 4.10 polygon versus
   broken-line split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:43.86` elapsed time; the session itself reported `0:00:18 elapsed time`.
+  `0:38.29` elapsed time; the session itself reported `0:00:15 elapsed time`.
 - The current branch contains the colleague index speedup plus the local
   Section 3-4 theory list, and the latest Figure 4.10 edit proves the
   link-specific boundary and isomorphism-transport cone wrappers from graph-only
@@ -51,7 +51,7 @@ narrowed to explicit domain-level small semicircle/small circle construction
 lemmas plus a 2-cell/Jordan helper. The polygon-link vertex branch now reaches
 the polygon-only Figure 4.10 fan model and leaves only the standard-fan
 local-neighborhood transfer. The major open clusters are the polygonal ordered
-Figure 4.10 boundary model, the pure cone-over-boundary-subdivision
+Figure 4.10 boundary model, the explicit cone-over-boundary-subdivision
 construction, the broken-line boundary-vertex fan construction, the
 standard-fan vertex-neighborhood transfer, the small semicircle/small circle domain constructions, the
 2-cell/Jordan contradiction, the remaining Theorem 4.9 converse
@@ -121,16 +121,16 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
 - `geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34`
   at line 3188.
-- `geotop_fig410_cone_over_boundary_subdivision_dev34` at line 3235.
+- `geotop_fig410_explicit_cone_over_boundary_subdivision_dev34` at line 3236.
 - `geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34` at
-  line 3703.
+  line 3961.
 - `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
-  at line 4188.
+  at line 4446.
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
-  at line 4248.
-- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4376.
+  at line 4506.
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4642.
 - `geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34` at line
-  9065; this is the Figure 4.10 full-disk vertex-star local
+  9323; this is the Figure 4.10 full-disk vertex-star local
   Euclidean-neighborhood transfer after the star has been matched to the
   explicit standard cone fan target.
 
@@ -232,14 +232,16 @@ the remaining book Figure 4.10 construction through focused helpers:
 - `geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34`
 - `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
 
-The standard boundary-cone fan wrapper, the isomorphism-transport cone wrapper,
-and the polygonal link-specific construction wrappers are now proved. The
-full-boundary Figure 4.10 route has been corrected to the polygon case only.
-The remaining Figure 4.10 content is split into three named book obligations:
-enumerate the finite polygonal link as an ordered edge-cycle and realize it on
-the whole subdivided boundary of a 2-simplex; prove the pure geometric
-cone-over-boundary-subdivision construction; and prove the broken-line
-boundary-vertex analogue by placing the ordered edge-chain as a boundary arc.
+The standard boundary-cone fan wrapper, the pure cone wrapper, the
+isomorphism-transport cone wrapper, and the polygonal link-specific
+construction wrappers are now proved. The full-boundary Figure 4.10 route has
+been corrected to the polygon case only. The remaining Figure 4.10 content is
+split into three named book obligations: enumerate the finite polygonal link as
+an ordered edge-cycle and realize it on the whole subdivided boundary of a
+2-simplex; prove the explicit cone-over-boundary-subdivision construction with
+the cone complex named as `F` plus all cones over nonempty simplexes of `F`; and
+prove the broken-line boundary-vertex analogue by placing the ordered
+edge-chain as a boundary arc.
 
 The polygon-link branch of the Theorem 4.9 boundary converse now also follows
 the same route: `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34`
@@ -389,7 +391,7 @@ Important cached helpers include:
 - The next book-aligned bottleneck for Theorems 4.8 and 4.9 is the Figure 4.10
   construction package:
   `geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34`,
-  `geotop_fig410_cone_over_boundary_subdivision_dev34`, and
+  `geotop_fig410_explicit_cone_over_boundary_subdivision_dev34`, and
   `geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34`.
   This is the formal split between the polygonal interior-vertex model and the
   broken-line boundary-vertex model.

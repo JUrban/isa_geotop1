@@ -22,13 +22,13 @@ theorem-index generator commit, \texttt{0284ba9c}
 branch.
 \item The fast \texttt{gen\_index.sh} implementation is the Python single-pass
 version and still includes the local Section 3--4 theory stack. The refreshed
-theorem index ran in \texttt{0:00.44}, while \texttt{gen\_stmt\_index.sh}
-ran in \texttt{0:02.23}.
+theorem index ran in \texttt{0:00.46}, while \texttt{gen\_stmt\_index.sh}
+ran in \texttt{0:02.26}.
 \item A warm-cache section build passed after the latest Figure 4.10 polygon
 versus broken-line split:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:43.86} elapsed time; the session
-itself reported \texttt{0:00:18 elapsed time}.
+with the outer command reporting \texttt{0:38.29} elapsed time; the session
+itself reported \texttt{0:00:15 elapsed time}.
 \item The current branch contains the colleague index speedup plus the local
 Section 3--4 theory list, and the latest Figure 4.10 edit proves the
 link-specific boundary and isomorphism-transport cone wrappers from graph-only
@@ -52,7 +52,7 @@ edge-chain, place it as a subdivided boundary arc of a 2-simplex, and cone from
 the corresponding target boundary vertex. The polygon-link vertex branch now
 reaches the polygon-only Figure 4.10 fan model and leaves only the standard-fan
 local-neighborhood transfer. The major open clusters are the polygonal ordered
-Figure 4.10 boundary model, the pure cone-over-boundary-subdivision
+Figure 4.10 boundary model, the explicit cone-over-boundary-subdivision
 construction, the broken-line boundary-vertex fan construction, the
 standard-fan vertex-neighborhood
 transfer, the small semicircle/small circle domain constructions, the isolated
@@ -123,12 +123,12 @@ The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are:
 The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \begin{itemize}
 \item \texttt{geotop\_fig410\_boundary\_subdivision\_model\_from\_finite\_linear\_graph\_polygon\_dev34} at line 3188.
-\item \texttt{geotop\_fig410\_cone\_over\_boundary\_subdivision\_dev34} at line 3235.
-\item \texttt{geotop\_vertex\_star\_fan\_model\_from\_finite\_linear\_link\_broken\_line\_dev34} at line 3703.
-\item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4188.
-\item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4248.
-\item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4384.
-\item \texttt{geotop\_standard\_fan\_target\_vertex\_HOL\_interior\_polyhedron\_dev34} at line 9065; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood transfer after the star has been matched to the explicit standard cone fan target.
+\item \texttt{geotop\_fig410\_explicit\_cone\_over\_boundary\_subdivision\_dev34} at line 3236.
+\item \texttt{geotop\_vertex\_star\_fan\_model\_from\_finite\_linear\_link\_broken\_line\_dev34} at line 3961.
+\item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4446.
+\item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4506.
+\item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4642.
+\item \texttt{geotop\_standard\_fan\_target\_vertex\_HOL\_interior\_polyhedron\_dev34} at line 9323; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood transfer after the star has been matched to the explicit standard cone fan target.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -175,13 +175,14 @@ image-side wrappers have been proved from these narrower obligations using
 \texttt{geotop\_homeomorphism\_image\_arc\_dev34}, and
 \texttt{geotop\_homeomorphism\_image\_1sphere\_dev34}. The cone-over-link
 bridge for Theorem 4.8 has likewise been narrowed. The standard
-boundary-cone fan wrapper and the isomorphism-transport cone wrapper are now
-proved for the polygonal full-boundary case.
+boundary-cone fan wrapper, the pure cone wrapper, and the
+isomorphism-transport cone wrapper are now proved for the polygonal
+full-boundary case.
 The remaining Figure 4.10 construction package consists of the polygonal
 boundary model
 \texttt{geotop\_fig410\_boundary\_subdivision\_model\_from\_finite\_linear\_graph\_polygon\_dev34},
-the pure cone-over-boundary-subdivision construction
-\texttt{geotop\_fig410\_cone\_over\_boundary\_subdivision\_dev34},
+the explicit cone-over-boundary-subdivision construction
+\texttt{geotop\_fig410\_explicit\_cone\_over\_boundary\_subdivision\_dev34},
 and the broken-line boundary-vertex fan model
 \texttt{geotop\_vertex\_star\_fan\_model\_from\_finite\_linear\_link\_broken\_line\_dev34}.
 The polygon-link branch of the Theorem 4.9 boundary converse now follows this
