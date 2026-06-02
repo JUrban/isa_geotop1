@@ -6026,6 +6026,74 @@ proof -
   qed
 qed
 
+lemma geotop_boundary_not_one_incident_carrier_cases_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  assumes hnot_one:
+    "p \<notin> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  shows "(\<exists>e. e \<in> K \<and> geotop_is_edge e \<and> p \<in> rel_interior e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)
+      \<or> (p \<in> geotop_complex_vertices K
+        \<and> (\<forall>e\<in>K. geotop_is_edge e \<and> p \<in> e \<longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2))"
+  (**
+    Converse-inclusion case split from Moise Theorem 9: after excluding
+    one-incident edges, the low-dimensional carrier is either a two-sided edge
+    or a vertex all of whose incident edges are two-sided. **)
+proof -
+  obtain \<tau> n where h\<tau>K: "\<tau> \<in> K"
+    and hp\<tau>: "p \<in> rel_interior \<tau>"
+    and hnle1: "n \<le> 1"
+    and h\<tau>dim: "geotop_simplex_dim \<tau> n"
+    using geotop_manifold_boundary_has_low_dim_carrier_dev34[OF hK hbd]
+    by (by100 blast)
+  show ?thesis
+  proof (cases "n = 0")
+    case True
+    have h\<tau>0: "geotop_simplex_dim \<tau> 0"
+      using h\<tau>dim True by (by100 simp)
+    have hp_vertex: "p \<in> geotop_complex_vertices K"
+      by (rule geotop_boundary_0carrier_is_complex_vertex_dev34
+          [OF hK h\<tau>K h\<tau>0 hp\<tau>])
+    have hall_edges: "\<forall>e\<in>K. geotop_is_edge e \<and> p \<in> e \<longrightarrow>
+        card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+    proof (intro ballI impI)
+      fix e
+      assume heK: "e \<in> K"
+      assume he_inc: "geotop_is_edge e \<and> p \<in> e"
+      have hedge: "geotop_is_edge e"
+        using he_inc by (by100 blast)
+      have hp_e: "p \<in> e"
+        using he_inc by (by100 blast)
+      show "card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+        by (rule geotop_vertex_not_one_incident_union_incident_edge_count_two_dev34
+            [OF hK hKM hnot_one heK hedge hp_e])
+    qed
+    show ?thesis
+      using hp_vertex hall_edges by (by100 blast)
+  next
+    case False
+    have hn1: "n = 1"
+      using hnle1 False by (by100 arith)
+    have h\<tau>1: "geotop_simplex_dim \<tau> 1"
+      using h\<tau>dim hn1 by (by100 simp)
+    have h\<tau>edge: "geotop_is_edge \<tau>"
+      unfolding geotop_is_edge_def using h\<tau>1 by (by100 simp)
+    have hp_in_\<tau>: "p \<in> \<tau>"
+      using hp\<tau> rel_interior_subset by (by100 blast)
+    have hcount2:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face \<tau> \<sigma>} = 2"
+      by (rule geotop_edge_carrier_not_one_incident_count_two_dev34
+          [OF hK hKM h\<tau>K h\<tau>edge hp_in_\<tau> hnot_one])
+    show ?thesis
+      using h\<tau>K h\<tau>edge hp\<tau> hcount2 by (by100 blast)
+  qed
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
