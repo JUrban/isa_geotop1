@@ -6975,6 +6975,54 @@ proof -
     using h\<sigma>_int h\<tau>_int hrel_disj by (by100 simp)
 qed
 
+lemma geotop_2simplex_vertices_affine_hull_UNIV_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "affine hull {a, b, c} = UNIV"
+  (**
+    Noncollinear vertices of a GeoTop 2-simplex affinely span the whole
+    ambient plane. **)
+proof -
+  have h_ai: "\<not> affine_dependent {a, b, c}"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hac: "a \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hbc: "b \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hcard: "card {a, b, c} = 3"
+    using hab hac hbc by (by100 simp)
+  have hdim: "aff_dim {a, b, c} = 2"
+    using h_ai hcard affine_independent_iff_card[of "{a, b, c}"] by (by100 simp)
+  have hdim_UNIV: "aff_dim {a, b, c} = DIM(real^2)"
+    using hdim by (by100 simp)
+  show ?thesis
+    using aff_dim_eq_full[of "{a, b, c}"] hdim_UNIV by (by100 simp)
+qed
+
+lemma geotop_2simplex_vertices_affine_coordinates_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  (**
+    Affine-coordinate existence for the same-side overlap construction. **)
+proof -
+  have hUNIV: "affine hull {a, b, c} = UNIV"
+    by (rule geotop_2simplex_vertices_affine_hull_UNIV_dev34
+        [OF hab hc_not_ab h\<sigma>V])
+  have hd_aff: "d \<in> affine hull {a, b, c}"
+    using hUNIV by (by100 simp)
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hd_aff affine_hull_3[of a b c] by (by100 blast)
+  show ?thesis
+    using hsum hd by (by100 blast)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"

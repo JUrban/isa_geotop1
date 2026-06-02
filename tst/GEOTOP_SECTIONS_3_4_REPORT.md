@@ -22,9 +22,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:31 elapsed time`.
-- The current committed branch tip before this report refresh is `7ecfa220`
-  (`Prove GeoTop shared edge line containments`).
+  `0:00:32 elapsed time`.
+- The current committed branch tip before this report refresh is `f08f604b`
+  (`Prove GeoTop distinct triangle interior disjointness`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 6996; this is the same-complex two-triangle shared-edge local disk
+  at line 7044; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7310;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7358;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -152,6 +152,8 @@ infrastructure used in Moise's Lemma 5 route. Recent proved helpers include:
 - `geotop_edge_vertices_subset_normal_line_dev34`
 - `geotop_2simplex_HOL_interior_eq_rel_interior_dev34`
 - `geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34`
+- `geotop_2simplex_vertices_affine_hull_UNIV_dev34`
+- `geotop_2simplex_vertices_affine_coordinates_dev34`
 
 Since the previous report, the radial cone openness problem has been reduced
 substantially. The current branch proves the subspace-open bridge, a finite
@@ -247,7 +249,11 @@ ordinary-interior wrappers
 `geotop_2simplex_HOL_interior_eq_rel_interior_dev34` and
 `geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34` convert the
 standard complex relative-interior disjointness fact into the HOL-interior form
-needed for the same-side contradiction.
+needed for the same-side contradiction. The coordinate helpers
+`geotop_2simplex_vertices_affine_hull_UNIV_dev34` and
+`geotop_2simplex_vertices_affine_coordinates_dev34` show that the first
+triangle's vertices span the plane and give affine coordinates for arbitrary
+points, setting up the same-side overlap construction.
 
 ## Important Supporting Material
 
