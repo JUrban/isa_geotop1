@@ -6570,7 +6570,118 @@ lemma geotop_link_vertex_two_incident_link_edges_exhaust:
       \<and> l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>
       \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
             \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>)"
-  sorry
+proof -
+  obtain e \<sigma> \<tau> where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<tau>face: "geotop_is_face e \<tau>"
+    and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    using geotop_link_vertex_two_adjacent_faces_witness[OF hK hvK hwL htwo]
+    by (by100 blast)
+  obtain V\<^sub>\<sigma> u\<^sub>\<sigma> where hV\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    and hvV\<sigma>: "v \<in> V\<^sub>\<sigma>"
+    and hwV\<sigma>: "w \<in> V\<^sub>\<sigma>"
+    and huV\<sigma>: "u\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
+    and hu\<sigma>_ne_v: "u\<^sub>\<sigma> \<noteq> v"
+    and hu\<sigma>_ne_w: "u\<^sub>\<sigma> \<noteq> w"
+    and hface_l\<sigma>: "geotop_is_face (geotop_convex_hull {w, u\<^sub>\<sigma>}) \<sigma>"
+    and hl\<sigma>L: "geotop_convex_hull {w, u\<^sub>\<sigma>} \<in> geotop_link K v"
+    and hl\<sigma>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<sigma>})"
+    and hw_l\<sigma>: "w \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}"
+    and hu\<sigma>_l\<sigma>: "u\<^sub>\<sigma> \<in> geotop_convex_hull {w, u\<^sub>\<sigma>}"
+    using geotop_link_vertex_incident_2simplex_opposite_vertex_face_link_edge
+      [OF hK hvK hwL heK hedge hv_e hw_e h\<sigma>K h\<sigma>2 h\<sigma>face]
+    by (by100 blast)
+  obtain V\<^sub>\<tau> u\<^sub>\<tau> where hV\<tau>: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    and hvV\<tau>: "v \<in> V\<^sub>\<tau>"
+    and hwV\<tau>: "w \<in> V\<^sub>\<tau>"
+    and huV\<tau>: "u\<^sub>\<tau> \<in> V\<^sub>\<tau>"
+    and hu\<tau>_ne_v: "u\<^sub>\<tau> \<noteq> v"
+    and hu\<tau>_ne_w: "u\<^sub>\<tau> \<noteq> w"
+    and hface_l\<tau>: "geotop_is_face (geotop_convex_hull {w, u\<^sub>\<tau>}) \<tau>"
+    and hl\<tau>L: "geotop_convex_hull {w, u\<^sub>\<tau>} \<in> geotop_link K v"
+    and hl\<tau>edge: "geotop_is_edge (geotop_convex_hull {w, u\<^sub>\<tau>})"
+    and hw_l\<tau>: "w \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+    and hu\<tau>_l\<tau>: "u\<^sub>\<tau> \<in> geotop_convex_hull {w, u\<^sub>\<tau>}"
+    using geotop_link_vertex_incident_2simplex_opposite_vertex_face_link_edge
+      [OF hK hvK hwL heK hedge hv_e hw_e h\<tau>K h\<tau>2 h\<tau>face]
+    by (by100 blast)
+  let ?l\<^sub>\<sigma> = "geotop_convex_hull {w, u\<^sub>\<sigma>}"
+  let ?l\<^sub>\<tau> = "geotop_convex_hull {w, u\<^sub>\<tau>}"
+  have hv_ne_w: "v \<noteq> w"
+    using hwL unfolding geotop_link_def by (by100 blast)
+  have hv_ne_u\<sigma>: "v \<noteq> u\<^sub>\<sigma>"
+    using hu\<sigma>_ne_v by (by100 blast)
+  have hw_ne_u\<sigma>: "w \<noteq> u\<^sub>\<sigma>"
+    using hu\<sigma>_ne_w by (by100 blast)
+  have hv_ne_u\<tau>: "v \<noteq> u\<^sub>\<tau>"
+    using hu\<tau>_ne_v by (by100 blast)
+  have hw_ne_u\<tau>: "w \<noteq> u\<^sub>\<tau>"
+    using hu\<tau>_ne_w by (by100 blast)
+  have hl_distinct: "?l\<^sub>\<sigma> \<noteq> ?l\<^sub>\<tau>"
+    by (rule geotop_two_2simplex_opposite_edges_distinct_dev34
+        [OF h\<sigma>2 h\<tau>2 hV\<sigma> hV\<tau> h\<sigma>\<tau> hv_ne_w hvV\<sigma> hwV\<sigma> huV\<sigma>
+            hvV\<tau> hwV\<tau> huV\<tau> hu\<sigma>_ne_v hu\<sigma>_ne_w hu\<tau>_ne_v hu\<tau>_ne_w])
+  have hexhaust:
+    "\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+      \<longrightarrow> l = ?l\<^sub>\<sigma> \<or> l = ?l\<^sub>\<tau>"
+  proof (intro allI impI)
+    fix l
+    assume hl_inc: "l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l"
+    have hlL: "l \<in> geotop_link K v"
+      using hl_inc by (by100 blast)
+    have hledge: "geotop_is_edge l"
+      using hl_inc by (by100 blast)
+    have hw_l: "w \<in> l"
+      using hl_inc by (by100 blast)
+    obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+      and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+      and he\<rho>: "geotop_is_face e \<rho>"
+      and hl\<rho>: "geotop_is_face l \<rho>"
+      using geotop_link_edge_through_vertex_adjacent_2simplex_witness
+        [OF hK hvK hwL heK hedge hv_e hw_e hlL hledge hw_l]
+      by (by100 blast)
+    have h\<rho>in_faces: "\<rho> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      using h\<rho>K h\<rho>2 he\<rho> by (by100 simp)
+    have h\<rho>case: "\<rho> = \<sigma> \<or> \<rho> = \<tau>"
+      using h\<rho>in_faces hfaces by (by100 blast)
+    have hv_not_l: "v \<notin> l"
+      using hlL unfolding geotop_link_def by (by100 blast)
+    show "l = ?l\<^sub>\<sigma> \<or> l = ?l\<^sub>\<tau>"
+    proof (rule disjE[OF h\<rho>case])
+      assume h\<rho>\<sigma>: "\<rho> = \<sigma>"
+      have hl\<sigma>: "geotop_is_face l \<sigma>"
+        using hl\<rho> h\<rho>\<sigma> by (by100 simp)
+      have "l = ?l\<^sub>\<sigma>"
+        by (rule geotop_2simplex_edge_face_through_vertex_not_other_eq_opposite_dev34
+            [OF h\<sigma>2 hV\<sigma> hvV\<sigma> hwV\<sigma> huV\<sigma> hv_ne_w hv_ne_u\<sigma> hw_ne_u\<sigma>
+                hl\<sigma> hledge hw_l hv_not_l])
+      thus ?thesis
+        by (by100 blast)
+    next
+      assume h\<rho>\<tau>: "\<rho> = \<tau>"
+      have hl\<tau>: "geotop_is_face l \<tau>"
+        using hl\<rho> h\<rho>\<tau> by (by100 simp)
+      have "l = ?l\<^sub>\<tau>"
+        by (rule geotop_2simplex_edge_face_through_vertex_not_other_eq_opposite_dev34
+            [OF h\<tau>2 hV\<tau> hvV\<tau> hwV\<tau> huV\<tau> hv_ne_w hv_ne_u\<tau> hw_ne_u\<tau>
+                hl\<tau> hledge hw_l hv_not_l])
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using heK hedge hv_e hw_e h\<sigma>\<tau> h\<sigma>K h\<sigma>2 h\<sigma>face h\<tau>K h\<tau>2 h\<tau>face hfaces
+      hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau> hl_distinct hexhaust
+    by (by100 blast)
+qed
 
 lemma geotop_complex_edge_face_count_eq_1_unique:
   fixes K :: "(real^2) set set"
