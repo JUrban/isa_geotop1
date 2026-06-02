@@ -5345,6 +5345,95 @@ proof
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
+lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard1:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  shows "rel_interior e
+      \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Moise Theorem 9 boundary-edge direction, edge-interior case.  At an
+    interior point of a one-incident edge, the small semicircle in the unique
+    incident 2-simplex separates the local half-neighborhood; a plane chart
+    would make its image an arc separating an open subset of the plane. **)
+proof
+  fix p assume hp: "p \<in> rel_interior e"
+  let ?M = "geotop_polyhedron K"
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on ?M ?d"
+  have hpM: "p \<in> ?M"
+    using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
+  have hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+    by (rule geotop_complex_edge_face_count_eq_1_unique[OF hK heK hedge hcard1])
+  have hnot_int: "p \<notin> geotop_manifold_interior ?M ?d"
+  proof
+    assume hpint: "p \<in> geotop_manifold_interior ?M ?d"
+    obtain U f where hUopen: "openin_on ?M ?TM U"
+      and hpU: "p \<in> U"
+      and hhomeo_metric: "top1_homeomorphism_on U
+          (subspace_topology ?M ?TM U)
+          (UNIV::(real^2) set) geotop_euclidean_topology f"
+      using hpint unfolding geotop_manifold_interior_def by (by100 blast)
+    have hUsubM: "U \<subseteq> ?M"
+      using hUopen unfolding openin_on_def by (by100 blast)
+    have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
+      by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+    have hsource_eq: "subspace_topology ?M ?TM U =
+        subspace_topology UNIV geotop_euclidean_topology U"
+    proof -
+      have htrans: "subspace_topology ?M
+          (subspace_topology UNIV geotop_euclidean_topology ?M) U =
+        subspace_topology UNIV geotop_euclidean_topology U"
+        by (rule subspace_topology_trans[OF hUsubM])
+      show ?thesis
+        using hTM_eq htrans by (by100 simp)
+    qed
+    have hhomeo_geo: "top1_homeomorphism_on U
+        (subspace_topology UNIV geotop_euclidean_topology U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+      using hhomeo_metric hsource_eq by (by100 simp)
+    obtain A where hAsubU: "A \<subseteq> U"
+      and hAimg: "geotop_is_arc (f ` A)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
+      and hAsep: "\<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+      using geotop_unique_incident_2simplex_semicircle_separates_chart_dev34
+          [OF hK heK hedge hp hunique hUopen hpU hhomeo_geo]
+      by (by100 blast)
+    have hconn: "top1_connected_on (U - A)
+        (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+      by (rule geotop_plane_chart_arc_complement_connected[OF hhomeo_geo hAsubU hAimg])
+    show False
+      using hconn hAsep by (by100 blast)
+  qed
+  show "p \<in> geotop_manifold_boundary ?M ?d"
+    unfolding geotop_manifold_boundary_def using hpM hnot_int by (by100 blast)
+qed
+
+lemma geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard1:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  shows "e - rel_interior e
+      \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Remaining endpoint/vertex case of Moise Theorem 9's boundary-edge
+    direction.  At an endpoint of a one-incident edge, the vertex star is the
+    boundary fan of Fig. 4.10 rather than a full disk fan, so there is no
+    Euclidean plane chart at that endpoint. **)
+  sorry
+
 lemma geotop_one_incident_edges_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -5357,7 +5446,40 @@ lemma geotop_one_incident_edges_subset_manifold_boundary_dev34:
     Moise Theorem 9, boundary-edge direction: at an interior point of an edge
     incident with exactly one 2-simplex, the local star is a half-plane
     neighborhood, so the point has no plane chart in \<open>|K|\<close>. **)
-  sorry
+proof
+  fix x
+  assume hx: "x \<in> \<Union>{e \<in> K. geotop_is_edge e \<and>
+        card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  show "x \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  proof -
+    obtain e where heK: "e \<in> K"
+      and hedge: "geotop_is_edge e"
+      and hcard1:
+        "card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+      and hx_e: "x \<in> e"
+      using hx by (by100 blast)
+    show ?thesis
+    proof (cases "x \<in> rel_interior e")
+      case True
+      have hrel_sub: "rel_interior e
+          \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+        by (rule geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34
+            [OF hK hKM heK hedge hcard1])
+      show ?thesis
+        using True hrel_sub by (by100 blast)
+    next
+      case False
+      have hx_nonrel: "x \<in> e - rel_interior e"
+        using hx_e False by (by100 blast)
+      have hnonrel_sub: "e - rel_interior e
+          \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+        by (rule geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34
+            [OF hK hKM heK hedge hcard1])
+      show ?thesis
+        using hx_nonrel hnonrel_sub by (by100 blast)
+    qed
+  qed
+qed
 
 lemma geotop_manifold_boundary_subset_one_incident_edges_dev34:
   fixes K :: "(real^2) set set"
