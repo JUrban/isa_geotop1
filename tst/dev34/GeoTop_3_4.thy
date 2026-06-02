@@ -121,7 +121,19 @@ lemma geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34:
     "geotop_is_broken_line (\<Union>(geotop_link K v))
       \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
   shows "geotop_comb_n_cell (geotop_star K v) 2"
-  sorry
+proof -
+  have hstar_complex: "geotop_is_complex (geotop_star K v)"
+    by (rule geotop_star_is_complex[OF hK])
+  have hstar_finite: "finite (geotop_star K v)"
+    by (rule geotop_star_finite_at_complex_vertex[OF hK hv])
+  have hcone_equiv:
+    "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> geotop_comb_equiv (geotop_star K v) L"
+    sorry
+  show ?thesis
+    unfolding geotop_comb_n_cell_def using hstar_complex hcone_equiv by (by100 blast)
+qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
