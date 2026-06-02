@@ -2,6 +2,20 @@ theory GeoTop_3_4
   imports "GeoTop34OpenStarDirty.GeoTop_3_4_OpenStar"
 begin
 
+lemma geotop_radial_cone_over_link_open_in_punctured_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hC_open:
+    "C \<in> subspace_topology UNIV geotop_euclidean_topology
+       (\<Union>(geotop_link K v))"
+  shows "{x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+      \<in> subspace_topology UNIV geotop_euclidean_topology
+          (\<Union>(geotop_star K v) - {v})"
+  sorry
+
 lemma geotop_disconnected_link_separates_punctured_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -104,10 +118,12 @@ proof -
       these radial segments to a separation of the punctured star.\<close>
   have hSA_open_geom:
     "?SA \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
-    sorry
+    by (rule geotop_radial_cone_over_link_open_in_punctured_star_dev34
+        [OF hK hv hA_open])
   have hSB_open_geom:
     "?SB \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
-    sorry
+    by (rule geotop_radial_cone_over_link_open_in_punctured_star_dev34
+        [OF hK hv hB_open])
   have hSA_SB_disjoint_geom: "?SA \<inter> ?SB = {}"
   proof
     show "?SA \<inter> ?SB \<subseteq> {}"
