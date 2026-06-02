@@ -6458,6 +6458,47 @@ proof -
     by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq_ab h\<sigma>V_ab h\<tau>V_ab])
 qed
 
+lemma geotop_two_2simplex_shared_edge_vertices_affine_obtain_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "c \<notin> affine hull {a, b}"
+    "d \<notin> affine hull {a, b}"
+  (**
+    The same shared-edge vertex form, with the two opposite vertices certified
+    off the affine line of the common edge. **)
+proof -
+  obtain a b c d where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    by (rule geotop_two_2simplex_shared_edge_vertices_obtain_dev34
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  have hc_aff: "c \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_dev34
+        [OF h\<sigma>V hc_not_ab])
+  have hd_aff: "d \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_dev34
+        [OF h\<tau>V hd_not_ab])
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V hc_aff hd_aff])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
