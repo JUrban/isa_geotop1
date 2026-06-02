@@ -23,6 +23,30 @@ proof -
           \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
     by (intro ballI)
       (rule geotop_star_punctured_point_radial_to_link_dev34[OF hK hv])
+  \<comment> \<open>Book Lemma 5 separation input: if the link is disconnected, split it
+      into two nonempty disjoint open parts.\<close>
+  obtain A B where hlink_sep:
+    "top1_is_separation_on (\<Union>(geotop_link K v))
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_link K v))) A B"
+    using top1_not_connected_geotop_subspace_obtain_separation_dev34[OF hnot_connected]
+    by (by100 blast)
+  have hA_open:
+    "A \<in> subspace_topology UNIV geotop_euclidean_topology
+       (\<Union>(geotop_link K v))"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hB_open:
+    "B \<in> subspace_topology UNIV geotop_euclidean_topology
+       (\<Union>(geotop_link K v))"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hA_nonempty: "A \<noteq> {}"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hB_nonempty: "B \<noteq> {}"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hAB_disjoint: "A \<inter> B = {}"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hAB_cover: "A \<union> B = \<Union>(geotop_link K v)"
+    using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
   \<comment> \<open>The remaining book step is to transport a separation of the link along
       these radial segments to a separation of the punctured star.\<close>
   show ?thesis

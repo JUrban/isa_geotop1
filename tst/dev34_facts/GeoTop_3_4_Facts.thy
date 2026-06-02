@@ -1679,6 +1679,44 @@ proof -
     unfolding geotop_polyhedron_def using hsub by (by100 blast)
 qed
 
+lemma top1_not_connected_obtain_separation_dev34:
+  assumes htop: "is_topology_on X T"
+  assumes hnot: "\<not> top1_connected_on X T"
+  shows "\<exists>U V. top1_is_separation_on X T U V"
+  using htop hnot
+  unfolding top1_connected_on_def top1_is_separation_on_def
+  by (by100 blast)
+
+lemma top1_open_cover_separation_imp_not_connected_dev34:
+  assumes hU: "U \<in> T"
+  assumes hV: "V \<in> T"
+  assumes hUne: "U \<noteq> {}"
+  assumes hVne: "V \<noteq> {}"
+  assumes hdisj: "U \<inter> V = {}"
+  assumes hcover: "U \<union> V = X"
+  shows "\<not> top1_connected_on X T"
+  using hU hV hUne hVne hdisj hcover
+  unfolding top1_connected_on_def
+  by (by100 blast)
+
+lemma top1_not_connected_geotop_subspace_obtain_separation_dev34:
+  fixes M :: "(real^2) set"
+  assumes hnot:
+    "\<not> top1_connected_on M
+       (subspace_topology UNIV geotop_euclidean_topology M)"
+  shows "\<exists>U V. top1_is_separation_on M
+       (subspace_topology UNIV geotop_euclidean_topology M) U V"
+proof -
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htop: "is_topology_on M
+      (subspace_topology UNIV geotop_euclidean_topology M)"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  show ?thesis
+    by (rule top1_not_connected_obtain_separation_dev34[OF htop hnot])
+qed
+
 lemma geotop_star_polyhedron_compact_at_complex_vertex:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
