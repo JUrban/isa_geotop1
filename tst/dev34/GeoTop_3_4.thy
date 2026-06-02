@@ -6901,6 +6901,37 @@ proof -
           hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg])
 qed
 
+lemma geotop_edge_vertices_subset_affine_hull_dev34:
+  fixes e :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  shows "e \<subseteq> affine hull {a, b}"
+  (**
+    Edge-line containment used in the shared-edge local model: the common edge
+    itself lies in the affine line through its two vertices. **)
+proof -
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  have "convex hull {a, b} \<subseteq> affine hull {a, b}"
+    by (rule convex_hull_subset_affine_hull)
+  thus ?thesis
+    using he_HOL by (by100 simp)
+qed
+
+lemma geotop_edge_vertices_subset_normal_line_dev34:
+  fixes e :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  shows "e \<subseteq> {x. n \<bullet> x = r}"
+  (**
+    Normal-form version of edge-line containment for the half-plane
+    contradiction in the two-triangle edge model. **)
+proof -
+  have he_aff: "e \<subseteq> affine hull {a, b}"
+    by (rule geotop_edge_vertices_subset_affine_hull_dev34[OF he_eq])
+  show ?thesis
+    using he_aff hline by (by100 simp)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
