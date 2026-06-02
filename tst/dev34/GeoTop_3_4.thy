@@ -2353,6 +2353,28 @@ proof -
     using hfg_img by (by100 simp)
 qed
 
+lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  shows "\<exists>A. A \<subseteq> U
+      \<and> geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  (**
+    Moise Lemma 3 local picture: with only one 2-simplex incident to the edge,
+    choose a sufficiently small semicircle in that simplex, centered at the
+    edge-interior point.  The local-ball assumption keeps the semicircle inside
+    the chart domain \<open>U\<close>, and the semicircle separates the half-neighborhood
+    in \<open>U\<close>. **)
+  sorry
+
 lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -2370,7 +2392,21 @@ lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
           (subspace_topology UNIV geotop_euclidean_topology (f ` A))
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-  sorry
+proof -
+  obtain A where hAsub: "A \<subseteq> U"
+    and hAarc: "geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)"
+    and hAsep: "\<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+    using geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34
+      [OF hK heK hedge hp hunique hlocal_ball]
+    by (by100 blast)
+  have hAimg: "geotop_is_arc (f ` A)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
+    by (rule geotop_homeomorphism_image_arc_dev34[OF hhomeo hAsub hAarc])
+  show ?thesis
+    using hAsub hAimg hAsep by (by100 blast)
+qed
 
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
