@@ -7,29 +7,35 @@ of `geotop.tex` in the active section-specific development branch.
 
 ## Status
 
-Sections 3 and 4 are not yet sorry-free.  They are, however, isolated in a
-fast cached development stack and the current active session builds after the
-latest merge from `main`.
+Sections 3 and 4 are not yet sorry-free. They are isolated in a fast cached
+development stack, and the current active session has a recent successful
+warm-cache build.
 
 Evidence checked locally:
 
-- Pulled/merged colleague `main` at commit `3e463c3b` into
-  `codex-dev34-cache`; the merge commit is `2b0745a0`.
-- `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
+- A fetch of colleague `main` over HTTPS left `https/main` at commit
+  `3e463c3b` (`Document GeoTop sections 1 and 2 status`).
+- Our branch `codex-dev34-cache` already contains all of `https/main`;
+  `git rev-list --left-right --count HEAD...https/main` reports `217 0`, so
+  no merge was needed for this report update.
+- The latest successful section build on this branch was:
+  `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
-  -d dev34_openstar -d dev34 GeoTop34Dev` passed.
-- Because the merge touched base files, that post-merge rebuild took
-  `0:11:32` elapsed overall; the final `GeoTop34Dev` theory itself ran in
-  `0:00:07` elapsed once the caches were rebuilt.
+  -d dev34_openstar -d dev34 GeoTop34Dev`.
+- That build passed after commit `194b918a`
+  (`Prove vertex star punctured connectedness`); the final `GeoTop34Dev`
+  theory took about `0:00:10` elapsed, with about `0:00:30` elapsed overall.
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 18 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 8 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
+  9 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
-development session, but completion still requires eliminating the listed
-proof holes.  The main open cluster is the book Lemma 5/Theorem 4.8-4.9
-vertex-star argument and the boundary equality part of Theorem 4.9.
+development session, but completion still requires eliminating the listed proof
+holes. The main open cluster is now the radial endpoint projection, the
+cone-over-link bridge, the edge-incidence chart contradictions, the boundary
+equality part of Theorem 4.9, and several larger Section 3/early Section 4
+prefix arguments.
 
 ## Layout
 
@@ -46,7 +52,7 @@ The section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 8 executable
+  layer of the section-specific stack; it currently contains 6 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -72,8 +78,8 @@ The section 3-4 development is split across cached sessions:
 | Theorem 4.5 | No arc separates `R^2`. | `Theorem_GT_4_5` | `dev34_facts/GeoTop_3_4_Facts.thy` |
 | Theorem 4.6 | For a 1-sphere `J` and a component `U` of `R^2 - J`, the frontier of `U` is `J`. | `Theorem_GT_4_6` | `dev34_facts/GeoTop_3_4_Facts.thy` |
 | Theorem 4.7 | A 1-sphere in `R^2` has exactly one bounded complement component. | `Theorem_GT_4_7` | `dev34_facts/GeoTop_3_4_Facts.thy` |
-| Theorem 4.8 | If `|K|` is a 2-manifold, then every vertex star of `K` is a combinatorial 2-cell. | `Theorem_GT_4_8` | `dev34/GeoTop_3_4.thy` |
-| Theorem 4.9 | If `|K|` is a 2-manifold with boundary, then every vertex star is a combinatorial 2-cell and the manifold boundary is the union of edges incident to exactly one 2-simplex. | `Theorem_GT_4_9` | `dev34/GeoTop_3_4.thy` |
+| Theorem 4.8 | If the underlying polyhedron of `K` is a 2-manifold, then every vertex star of `K` is a combinatorial 2-cell. | `Theorem_GT_4_8` | `dev34/GeoTop_3_4.thy` |
+| Theorem 4.9 | If the underlying polyhedron of `K` is a 2-manifold with boundary, then every vertex star is a combinatorial 2-cell and the manifold boundary is the union of edges incident to exactly one 2-simplex. | `Theorem_GT_4_9` | `dev34/GeoTop_3_4.thy` |
 | Theorem 4.10 | For a closed 2-manifold with boundary in `R^2`, the manifold boundary equals the topological frontier. | `Theorem_GT_4_10` | `dev34/GeoTop_3_4.thy` |
 
 ## Current Open Proof Holes
@@ -83,8 +89,6 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 - `Theorem_GT_3_3`: induction/strong free-simplex claim at line 844.
 - `Theorem_GT_3_4`: base case and induction step for reducing a polygonal disk
   to one 2-simplex at lines 892 and 905.
-- `Theorem_GT_3_7`: support-in-`U` version of the Section 3.4 induction at
-  line 1362.
 - `Theorem_GT_4_2`: final arc-separation disjointness/decomposition step at
   line 1715.
 - `Theorem_GT_4_4`: brick-decomposition and frontier-component construction
@@ -93,17 +97,15 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
 - `geotop_punctured_star_radial_endpoint_projection_dev34` at line 20.
-- `geotop_2_manifold_vertex_star_punctured_connected_dev34` at line 620.
-- `geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34` at
-  line 631.
-- `geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34` at line 749.
+- `geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34` at line
+  1066.
 - `geotop_unique_incident_2simplex_semicircle_separates_chart_dev34` at line
-  791.
+  1108.
 - `geotop_three_incident_2simplex_sphere_not_separates_chart_dev34` at line
-  813.
+  1130.
 - `geotop_boundary_chart_three_incident_2simplex_contradiction_dev34` at line
-  834.
-- The boundary equality half of `Theorem_GT_4_9` at line 2588.
+  1151.
+- The boundary equality half of `Theorem_GT_4_9` at line 2905.
 
 ## Recent Progress
 
@@ -115,12 +117,15 @@ The active file now contains proved bridge lemmas for the book Lemma 5 route:
 - `geotop_radial_point_ne_vertex_dev34`
 - `geotop_link_radial_tail_in_punctured_star_dev34`
 - `geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34`
+- `geotop_2_manifold_open_subset_connected_punctured_neighborhood_dev34`
+- `geotop_2_manifold_with_boundary_open_subset_connected_punctured_neighborhood_dev34`
+- `geotop_2_manifold_vertex_star_punctured_connected_dev34`
+- `geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34`
 
-These formalize the radial part of Moise's argument: a separation side of the
-punctured vertex star accumulates at the vertex along radial segments from the
-link.  This is intended to feed into the remaining proof that a plane or
-half-plane chart provides a connected punctured neighborhood, contradicting a
-separation of the punctured star.
+These formalize the radial and local connected-neighborhood parts of Moise's
+Lemma 5 argument: a separation side of the punctured vertex star accumulates at
+the vertex, while a manifold chart supplies a connected punctured neighborhood
+inside the open star, contradicting such a separation.
 
 ## Important Supporting Material
 
@@ -142,14 +147,22 @@ Important cached helpers include:
 
 ## Notes For Future Work
 
-- The next book-aligned step is to finish the two punctured-star connectedness
-  lemmas at lines 620 and 631 using the new side-accumulation bridge plus the
-  plane/2-cell punctured-neighborhood lemmas.
-- After that, Lemma 5 gives connected links, and the cone-over-link bridge at
-  line 749 should be the next bottleneck for turning link shape into
+- The next book-aligned bottleneck for Theorems 4.8 and 4.9 is likely
+  `geotop_punctured_star_radial_endpoint_projection_dev34`, because it is used
+  to transfer disconnectedness of the link to disconnectedness of the punctured
+  star.
+- After link connectedness is fully established, the cone-over-link bridge at
+  line 1066 should be the next bottleneck for turning link shape into
   `geotop_comb_n_cell (geotop_star K v) 2`.
-- Keep using the cached `GeoTop34Dev` build command from `CLAUDE.md`/the
-  development notes; warm-cache final theory time is currently about 7 seconds,
-  while base changes can force a much longer cold rebuild.
+- The local chart contradiction lemmas at lines 1108, 1130, and 1151 deserve
+  a careful statement audit before proof work. In particular, they encode the
+  geometric impossibility of bad edge-incidence counts in plane or half-plane
+  charts.
+- The prefix holes in Theorems 3.3, 3.4, 4.2, and 4.4 remain larger book-level
+  arguments and should be attacked with the `sorry`-first skeleton workflow
+  from `CLAUDE.md`.
+- Keep using the cached `GeoTop34Dev` build command from `CLAUDE.md` and the
+  development notes; warm-cache final theory time is currently about 10
+  seconds.
 - If more named helpers are added, regenerate `THEOREMS_AND_DEFS.txt` and
   `STMT_INDEX.txt`.

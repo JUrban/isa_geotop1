@@ -9,25 +9,35 @@
 
 Date: 2026-06-02.
 
-Sections 3 and 4 of \texttt{geotop.tex} are not yet sorry-free.  They are
-isolated in a cached development stack and the current active session builds
-after the latest merge from \texttt{main}.  The merge brought in colleague
-\texttt{main} at \texttt{3e463c3b}; the local merge commit is
-\texttt{2b0745a0}.
+Sections 3 and 4 of \texttt{geotop.tex} are not yet sorry-free. They are
+isolated in a cached development stack, and the current active session has a
+recent successful warm-cache build.
 
-The post-merge check passed:
+Evidence checked locally:
 \begin{itemize}
-\item \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev}
+\item A fetch of colleague \texttt{main} over HTTPS left \texttt{https/main} at
+\texttt{3e463c3b} (\texttt{Document GeoTop sections 1 and 2 status}).
+\item The local branch \texttt{codex-dev34-cache} already contains all of
+\texttt{https/main}; \texttt{git rev-list --left-right --count HEAD...https/main}
+reports \texttt{217 0}, so no merge was needed for this report update.
+\item The latest successful section build on this branch was:
+\texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev}.
+\item That build passed after commit \texttt{194b918a}
+(\texttt{Prove vertex star punctured connectedness}); the final
+\texttt{GeoTop34Dev} theory took about \texttt{0:00:10} elapsed, with about
+\texttt{0:00:30} elapsed overall.
+\item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
+the target section-specific theories currently contain 15 executable
+\texttt{sorry}s: 9 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
+\texttt{dev34/GeoTop\_3\_4.thy}.
 \end{itemize}
 
-Because the merge touched base files, the full post-merge rebuild took
-\texttt{0:11:32} elapsed.  The final \texttt{GeoTop34Dev} theory itself ran in
-\texttt{0:00:07} once the caches had rebuilt.
-
-Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror, the
-target section-specific theories currently contain 18 executable
-\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 8 in
-\texttt{dev34/GeoTop\_3\_4.thy}.
+The practical consequence is that Sections 3 and 4 have a working, green
+development session, but completion still requires eliminating the listed proof
+holes. The main open cluster is now the radial endpoint projection, the
+cone-over-link bridge, the edge-incidence chart contradictions, the boundary
+equality part of Theorem 4.9, and several larger Section 3/early Section 4
+prefix arguments.
 
 \section*{Layout}
 
@@ -37,7 +47,7 @@ The section 3--4 development is split as follows:
 \item \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}: Section 3 and early Section 4.
 \item \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}: Jordan-curve facts and local manifold helpers.
 \item \texttt{dev34\_workfacts}, \texttt{dev34\_linkfacts}, \texttt{dev34\_graphfacts}, \texttt{dev34\_graphwork}, and \texttt{dev34\_openstar}: cached support layers.
-\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work.
+\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work and the final layer of the section-specific stack.
 \end{itemize}
 
 \section*{Section 3 Counterparts}
@@ -79,36 +89,52 @@ Theorem 4.10 & For a closed 2-manifold with boundary in \(R^2\), manifold bounda
 
 \section*{Open Proof Holes}
 
-The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are the
-strong free-simplex induction for \texttt{Theorem\_GT\_3\_3}, the base and step
-of the polygon-reduction induction for \texttt{Theorem\_GT\_3\_4}, the
-support-in-\(U\) version \texttt{Theorem\_GT\_3\_7}, the final decomposition
-step of \texttt{Theorem\_GT\_4\_2}, and five brick-decomposition/frontier steps
-inside \texttt{Theorem\_GT\_4\_4}.
+The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are:
+\begin{itemize}
+\item \texttt{Theorem\_GT\_3\_3}: induction/strong free-simplex claim at line 844.
+\item \texttt{Theorem\_GT\_3\_4}: base case and induction step for reducing a polygonal disk to one 2-simplex at lines 892 and 905.
+\item \texttt{Theorem\_GT\_4\_2}: final arc-separation disjointness/decomposition step at line 1715.
+\item \texttt{Theorem\_GT\_4\_4}: brick-decomposition and frontier-component construction steps at lines 1810, 1818, 1828, 1839, and 1849.
+\end{itemize}
 
-The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are
-\texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34}, the two
-punctured-star connectedness lemmas, the cone-over-link equivalence lemma,
-three local chart contradiction lemmas for edge-incidence counts, and the
-boundary equality half of \texttt{Theorem\_GT\_4\_9}.
+The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
+\begin{itemize}
+\item \texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34} at line 20.
+\item \texttt{geotop\_vertex\_star\_cone\_equiv\_from\_link\_line\_or\_polygon\_dev34} at line 1066.
+\item \texttt{geotop\_unique\_incident\_2simplex\_semicircle\_separates\_chart\_dev34} at line 1108.
+\item \texttt{geotop\_three\_incident\_2simplex\_sphere\_not\_separates\_chart\_dev34} at line 1130.
+\item \texttt{geotop\_boundary\_chart\_three\_incident\_2simplex\_contradiction\_dev34} at line 1151.
+\item The boundary equality half of \texttt{Theorem\_GT\_4\_9} at line 2905.
+\end{itemize}
 
 \section*{Recent Progress and Supporting Material}
 
-The active file now proves the radial part of Moise's Lemma 5 argument through
-\texttt{geotop\_punctured\_star\_separation\_side\_meets\_vertex\_neighborhood\_dev34}.
-Important supporting helpers include
+The active file now proves the radial and local connected-neighborhood parts of
+Moise's Lemma 5 argument. Important recent helpers include
+\texttt{geotop\_punctured\_star\_separation\_side\_meets\_vertex\_neighborhood\_dev34},
+\texttt{geotop\_2\_manifold\_open\_subset\_connected\_punctured\_neighborhood\_dev34},
+\texttt{geotop\_2\_manifold\_with\_boundary\_open\_subset\_connected\_punctured\_neighborhood\_dev34},
+\texttt{geotop\_2\_manifold\_vertex\_star\_punctured\_connected\_dev34}, and
+\texttt{geotop\_2\_manifold\_with\_boundary\_vertex\_star\_punctured\_connected\_dev34}.
+
+Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
 \texttt{geotop\_star\_punctured\_point\_radial\_to\_link\_dev34},
 \texttt{geotop\_link\_radial\_endpoint\_unique\_dev34},
 \texttt{geotop\_plane\_chart\_open\_subset\_connected\_punctured\_neighborhood},
-and \texttt{geotop\_2\_cell\_open\_subset\_connected\_punctured\_neighborhood}.
+\texttt{geotop\_plane\_chart\_point\_complement\_connected}, and
+\texttt{geotop\_2\_cell\_open\_subset\_connected\_punctured\_neighborhood}.
 
 \section*{Notes For Future Work}
 
-The next book-aligned step is to finish the two punctured-star connectedness
-lemmas using the new side-accumulation bridge and the plane/2-cell punctured
-neighborhood facts.  After that, finish connected links, then the cone-over-link
-bridge, then the remaining edge-incidence chart contradictions and the boundary
-equality in Theorem 4.9.
+The next book-aligned bottleneck for Theorems 4.8 and 4.9 is likely
+\texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34}, because
+it is used to transfer disconnectedness of the link to disconnectedness of the
+punctured star. After link connectedness is fully established, the
+cone-over-link bridge at line 1066 should be the next bottleneck. The local
+chart contradiction lemmas at lines 1108, 1130, and 1151 deserve a careful
+statement audit before proof work. The prefix holes in Theorems 3.3, 3.4, 4.2,
+and 4.4 remain larger book-level arguments and should be attacked with the
+\texttt{sorry}-first skeleton workflow from \texttt{CLAUDE.md}.
 
 \end{document}
