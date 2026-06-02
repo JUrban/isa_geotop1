@@ -8970,23 +8970,35 @@ proof -
     using hC_polygon hC_eq by (by100 simp)
 qed
 
-lemma geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34:
-  fixes K L K' L' :: "(real^2) set set"
+lemma geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34:
+  fixes K L' :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
-  assumes hL: "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  assumes hK': "geotop_is_subdivision K' (geotop_star K v)"
-  assumes hL': "geotop_is_subdivision L' L"
-  assumes hiso: "geotop_isomorphic K' L'"
+  assumes hsubdiv:
+    "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  assumes h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+  assumes hcB: "c \<notin> B"
+  assumes hvertices: "geotop_complex_vertices L' = insert c B"
+  assumes hc_simplex: "geotop_convex_hull {c} \<in> L'"
+  assumes hlink_target:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+      (geotop_convex_hull W \<in> geotop_link K v
+        \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+  assumes hcone_target:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+      W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+      (geotop_convex_hull W \<in> geotop_link K v
+        \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
   assumes hpolygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
   shows "v \<in> interior (geotop_polyhedron K)"
   (**
-    Moise Figure 4.10 local Euclidean step.  The polygonal link gives a
-    full fan subdivision of a 2-simplex, simplicially equivalent to a
-    subdivision of \<open>St v\<close>.  Transport the ordinary interior of the fan's
-    cone vertex back through the PL equivalence and use that the open star is
-    contained in \<open>|K|\<close> to obtain an ordinary Euclidean disk about \<open>v\<close>. **)
+    Moise Figure 4.10 local Euclidean step with the cone data explicit.  The
+    target fan has one new vertex \<open>c\<close>, old boundary simplexes exactly matching
+    the link through \<open>\<psi>\<close>, and cone simplexes exactly over nonempty link
+    simplexes.  The extended vertex map sends \<open>v\<close> to \<open>c\<close>; transport the
+    ordinary interior of the fan's cone vertex back to obtain a Euclidean disk
+    about \<open>v\<close> inside \<open>|K|\<close>. **)
   sorry
 
 lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
@@ -9011,29 +9023,68 @@ proof -
       \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
           \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
     by (rule geotop_link_finite_1dim_line_or_polygon_dev34[OF hK hv hshape])
-  obtain L :: "(real^2) set set" and \<sigma> :: "(real^2) set" and K' L'
+  have hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  proof -
+    have hlink_complex: "geotop_is_complex (geotop_link K v)"
+      using hlink_data by (by100 blast)
+    have hlink_1dim: "geotop_complex_is_1dim (geotop_link K v)"
+      using hlink_data by (by100 blast)
+    show ?thesis
+      by (rule geotop_complex_1dim_imp_linear_graph_dev34
+          [OF hlink_complex hlink_1dim])
+  qed
+  have hlink_finite: "finite (geotop_link K v)"
+    using hlink_data by (by100 blast)
+  have hshape_poly:
+      "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+        \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+    using hlink_data by (by100 blast)
+  obtain \<sigma> :: "(real^2) set" and L' B c \<psi>
     where hfan:
-      "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
-      \<and> geotop_simplex_dim \<sigma> 2
-      \<and> geotop_is_subdivision K' (geotop_star K v)
-      \<and> geotop_is_subdivision L' L
-      \<and> geotop_isomorphic K' L'"
-    using geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34
-      [OF hK hv hlink_data]
-    by (by100 blast)
-  have hL: "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-    using hfan by (by100 blast)
+      "geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    using geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hshape_poly]
+    by (elim exE) assumption
   have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
     using hfan by (by100 blast)
-  have hK': "geotop_is_subdivision K' (geotop_star K v)"
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
     using hfan by (by100 blast)
-  have hL': "geotop_is_subdivision L' L"
+  have h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
     using hfan by (by100 blast)
-  have hiso: "geotop_isomorphic K' L'"
+  have hcB: "c \<notin> B"
+    using hfan by (by100 blast)
+  have hvertices: "geotop_complex_vertices L' = insert c B"
+    using hfan by (by100 blast)
+  have hc_simplex: "geotop_convex_hull {c} \<in> L'"
+    using hfan by (by100 blast)
+  have hlink_target:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+      (geotop_convex_hull W \<in> geotop_link K v
+        \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+    using hfan by (by100 blast)
+  have hcone_target:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+      W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+      (geotop_convex_hull W \<in> geotop_link K v
+        \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
     using hfan by (by100 blast)
   show ?thesis
-    by (rule geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34
-        [OF hK hv hL h\<sigma> hK' hL' hiso hpolygon])
+    by (rule geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34
+        [OF hK hv h\<sigma> hsubdiv h\<psi> hcB hvertices hc_simplex hlink_target
+          hcone_target hpolygon])
 qed
 
 lemma geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34:

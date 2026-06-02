@@ -20,15 +20,15 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.44`, while `gen_stmt_index.sh` ran in `0:02.36`.
+  ran in `0:00.51`, while `gen_stmt_index.sh` ran in `0:02.39`.
 - A warm-cache section build passed after the latest Figure 4.10 split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:38.71` elapsed time; the session itself reported `0:00:16 elapsed time`.
-- The current committed branch tip before this report refresh is `410612c2`
-  (`Refresh GeoTop report after index merge`), following merge commit
-  `43f39e12` and `a4b38415` (`Split GeoTop Figure 4.10 fan construction`).
+  `0:38.44` elapsed time; the session itself reported `0:00:15 elapsed time`.
+- The current committed branch tip before this report refresh is `3b19dc38`
+  (`Refine GeoTop polygon link fan interior step`), following `410612c2`
+  (`Refresh GeoTop report after index merge`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -121,10 +121,10 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
   at line 4185.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4321.
-- `geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34` at line
-  8990; this is the Figure 4.10 full-disk vertex-star local
+- `geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34` at line
+  9002; this is the Figure 4.10 full-disk vertex-star local
   Euclidean-neighborhood transfer after the star has been matched to the
-  standard fan model.
+  explicit standard cone fan target.
 
 ## Recent Progress
 
@@ -237,7 +237,10 @@ the same route: `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34`
 derives the cached finite 1-dimensional link data, invokes
 `geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`, and
 delegates only the final local-neighborhood transfer to
-`geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34`.
+`geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34`. This
+remaining statement now carries the explicit cone vertex, boundary-vertex
+bijection, old-boundary membership equivalence, and cone-simplex membership
+equivalence from Figure 4.10.
 
 Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument

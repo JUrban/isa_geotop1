@@ -22,16 +22,15 @@ theorem-index generator commit, \texttt{0284ba9c}
 branch.
 \item The fast \texttt{gen\_index.sh} implementation is the Python single-pass
 version and still includes the local Section 3--4 theory stack. The refreshed
-theorem index ran in \texttt{0:00.44}, while \texttt{gen\_stmt\_index.sh}
-ran in \texttt{0:02.36}.
+theorem index ran in \texttt{0:00.51}, while \texttt{gen\_stmt\_index.sh}
+ran in \texttt{0:02.39}.
 \item A warm-cache section build passed after the latest Figure 4.10 split:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:38.71} elapsed time; the session
-itself reported \texttt{0:00:16 elapsed time}.
+with the outer command reporting \texttt{0:38.44} elapsed time; the session
+itself reported \texttt{0:00:15 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{410612c2} (\texttt{Refresh GeoTop report after index merge}), following
-merge commit \texttt{43f39e12} and \texttt{a4b38415}
-(\texttt{Split GeoTop Figure 4.10 fan construction}).
+\texttt{3b19dc38} (\texttt{Refine GeoTop polygon link fan interior step}),
+following \texttt{410612c2} (\texttt{Refresh GeoTop report after index merge}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -123,7 +122,7 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4125.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4185.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4321.
-\item \texttt{geotop\_standard\_fan\_model\_vertex\_HOL\_interior\_polyhedron\_dev34} at line 8990; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood transfer after the star has been matched to the standard fan model.
+\item \texttt{geotop\_standard\_fan\_target\_vertex\_HOL\_interior\_polyhedron\_dev34} at line 9002; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood transfer after the star has been matched to the explicit standard cone fan target.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -180,7 +179,10 @@ route as well: \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhed
 derives the cached finite 1-dimensional link data, invokes
 \texttt{geotop\_vertex\_star\_fan\_model\_from\_link\_complex\_line\_or\_polygon\_dev34},
 and delegates only the final local-neighborhood transfer to
-\texttt{geotop\_standard\_fan\_model\_vertex\_HOL\_interior\_polyhedron\_dev34}.
+\texttt{geotop\_standard\_fan\_target\_vertex\_HOL\_interior\_polyhedron\_dev34}.
+This remaining statement now carries the explicit cone vertex, boundary-vertex
+bijection, old-boundary membership equivalence, and cone-simplex membership
+equivalence from Figure 4.10.
 
 Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
