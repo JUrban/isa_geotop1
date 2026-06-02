@@ -336,6 +336,59 @@ proof -
     using hz\<sigma> h\<sigma>star by (by100 blast)
 qed
 
+lemma geotop_link_point_ne_vertex_dev34:
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  shows "y \<noteq> v"
+proof -
+  have "y \<in> \<Union>(geotop_star K v) - {v}"
+    using hy geotop_link_polyhedron_subset_punctured_star_polyhedron
+    by (by100 blast)
+  show ?thesis
+    using \<open>y \<in> \<Union>(geotop_star K v) - {v}\<close> by (by100 blast)
+qed
+
+lemma geotop_radial_point_ne_vertex_dev34:
+  fixes v y :: "real^2"
+  assumes hy: "y \<noteq> v"
+  assumes ht: "0 < t"
+  shows "(1 - t) *\<^sub>R v + t *\<^sub>R y \<noteq> v"
+proof
+  assume h: "(1 - t) *\<^sub>R v + t *\<^sub>R y = v"
+  have heq:
+    "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+     (1 - 1) *\<^sub>R v + 1 *\<^sub>R v"
+    using h by (by100 simp)
+  have "v - v = (t / 1) *\<^sub>R (y - v)"
+    by (rule geotop_radial_equal_imp_same_ray_dev34[OF ht _ heq])
+      (by100 simp)
+  then have "t *\<^sub>R (y - v) = 0"
+    by (by100 simp)
+  then have "y - v = 0"
+    using ht by (by100 simp)
+  then show False
+    using hy by (by100 simp)
+qed
+
+lemma geotop_link_radial_tail_in_punctured_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  assumes ht0: "0 < t"
+  assumes ht1: "t \<le> 1"
+  shows "(1 - t) *\<^sub>R v + t *\<^sub>R y \<in> \<Union>(geotop_star K v) - {v}"
+proof -
+  have ht_nonneg: "0 \<le> t"
+    using ht0 by (by100 simp)
+  have hstar: "(1 - t) *\<^sub>R v + t *\<^sub>R y \<in> \<Union>(geotop_star K v)"
+    by (rule geotop_link_radial_segment_in_star_dev34[OF hK hy ht_nonneg ht1])
+  have hy_ne: "y \<noteq> v"
+    by (rule geotop_link_point_ne_vertex_dev34[OF hy])
+  have hne: "(1 - t) *\<^sub>R v + t *\<^sub>R y \<noteq> v"
+    by (rule geotop_radial_point_ne_vertex_dev34[OF hy_ne ht0])
+  show ?thesis
+    using hstar hne by (by100 blast)
+qed
+
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
