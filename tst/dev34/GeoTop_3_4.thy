@@ -5345,6 +5345,35 @@ proof
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
+lemma geotop_one_incident_edges_subset_manifold_boundary_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  shows "\<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}
+      \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Moise Theorem 9, boundary-edge direction: at an interior point of an edge
+    incident with exactly one 2-simplex, the local star is a half-plane
+    neighborhood, so the point has no plane chart in \<open>|K|\<close>. **)
+  sorry
+
+lemma geotop_manifold_boundary_subset_one_incident_edges_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  shows "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))
+      \<subseteq> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  (**
+    Moise Theorem 9, converse direction: if a point is not in a one-incident
+    edge, then the one-or-two edge count and the connected link/star
+    classification give a plane neighborhood, so it lies in the manifold
+    interior. **)
+  sorry
+
 lemma geotop_manifold_boundary_eq_one_incident_edges_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -5360,7 +5389,16 @@ lemma geotop_manifold_boundary_eq_one_incident_edges_dev34:
     one-incident edge interiors have half-plane neighborhoods, while points
     not on such edges have plane neighborhoods from the one-or-two edge count
     and connected link/star classification. **)
-  sorry
+proof (rule subset_antisym)
+  show "geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))
+      \<subseteq> \<Union>{e \<in> K. geotop_is_edge e \<and>
+            card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+    by (rule geotop_manifold_boundary_subset_one_incident_edges_dev34[OF hK hKM])
+  show "\<Union>{e \<in> K. geotop_is_edge e \<and>
+            card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}
+      \<subseteq> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+    by (rule geotop_one_incident_edges_subset_manifold_boundary_dev34[OF hK hKM])
+qed
 
 (** from \<S>4 Theorem 9 (geotop.tex:1052)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold with boundary. Then
