@@ -18,14 +18,14 @@ Evidence checked locally:
 - The latest pulled `main` head is commit `3e463c3b` (`Document GeoTop sections
   1 and 2 status`), which adds the companion report through Section 2.
 - The local branch `codex-dev34-cache` already contains all of that `main`;
-  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `242 0`, so no
+  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `245 0`, so no
   merge was needed for this report update.
 - A fresh warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
-  -d dev34_openstar -d dev34 GeoTop34Dev`, reporting `0:00:18 elapsed time`.
-- The current committed branch tip is `c7476ff3` (`Narrow GeoTop vertex star
-  fan model`).
+  -d dev34_openstar -d dev34 GeoTop34Dev`, reporting `0:00:15 elapsed time`.
+- The current committed branch tip is `1aa2ea46` (`Expose GeoTop fan model
+  isomorphism`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 5 in
@@ -35,9 +35,11 @@ The practical consequence is that Sections 3 and 4 have a working, green
 development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
 holes. The compact cone-over-compact closedness lemma is now proved, closing the
-radial bad-endpoint closedness bottleneck. The major open clusters are now the
-book's Figure 4.10 fan model turning a polygonal or broken-line link into a
-cone-over-link subdivision, the small semicircle/small circle chart
+radial bad-endpoint closedness bottleneck. The broad vertex-star fan wrapper is
+now proved from a more explicit Figure 4.10 isomorphism helper. The major open
+clusters are now the actual ordered Figure 4.10 construction turning a
+polygonal or broken-line link into a cone-over-link subdivision, the small
+semicircle/small circle chart
 contradictions, the boundary equality part of Theorem 4.9, and several larger
 Section 3/early Section 4 prefix arguments.
 
@@ -102,15 +104,15 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
-  at line 1913.
+- `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`
+  at line 1909.
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34` at
-  line 2105.
+  line 2175.
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34` at
-  line 2127.
+  line 2197.
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34` at
-  line 2223.
-- The boundary equality half of `Theorem_GT_4_9` at line 4008.
+  line 2293.
+- The boundary equality half of `Theorem_GT_4_9` at line 4078.
 
 ## Recent Progress
 
@@ -173,8 +175,16 @@ explicit small semicircle/small circle construction lemmas:
 
 The cone-over-link bridge for Theorem 4.8 has likewise been narrowed. The
 link-complex wrapper now proves the finite linear-graph hypotheses and delegates
-the remaining book Figure 4.10 construction to
-`geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`.
+the remaining book Figure 4.10 construction through focused helpers:
+
+- `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`
+- `geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34`
+- `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
+
+The last two wrappers are proved. The open content is the first helper: enumerate
+the finite linear link as an ordered edge-chain or edge-cycle, subdivide the
+frontier of a standard 2-simplex with the same ordered edge data, add the cone
+vertex, and define the resulting simplicial isomorphism.
 
 ## Important Supporting Material
 
@@ -205,12 +215,12 @@ Important cached helpers include:
 ## Notes For Future Work
 
 - The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
-  `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`.
+  `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`.
   This is the formal Figure 4.10 step: subdivide the boundary of a 2-simplex to
   match the finite polygonal or broken-line link, add one interior vertex, cone
   the boundary subdivision, and obtain a simplicial isomorphism with a
   subdivision of the vertex star.
-- The local chart contradiction lemmas at lines 2105, 2127, and 2223 now have
+- The local chart contradiction lemmas at lines 2175, 2197, and 2293 now have
   the needed local-open-neighborhood reductions. The next step there is to
   formalize the book's small semicircle/small circle constructions in the
   chart.
