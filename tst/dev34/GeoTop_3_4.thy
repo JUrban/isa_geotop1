@@ -271,6 +271,94 @@ proof -
         [OF h\<sigma>_closed h\<sigma>_ne hx_not])
 qed
 
+lemma geotop_ball_avoids_closed_not_containing_allow_empty_dev34:
+  fixes C :: "'a::metric_space set" and x :: 'a
+  assumes hC_closed: "closed C"
+  assumes hx_not: "x \<notin> C"
+  shows "\<exists>r. 0 < r \<and> ball x r \<inter> C = {}"
+proof -
+  have hopen: "open (- C)"
+    using hC_closed unfolding closed_def by (by100 simp)
+  have hx: "x \<in> - C"
+    using hx_not by (by100 simp)
+  have hball_all: "\<forall>z\<in>- C. \<exists>r>0. ball z r \<subseteq> - C"
+    using hopen open_contains_ball[of "- C"] by (by100 simp)
+  obtain r where hr_pos: "0 < r" and hball: "ball x r \<subseteq> - C"
+    using hball_all hx by (by100 blast)
+  have "ball x r \<inter> C = {}"
+    using hball by (by100 blast)
+  show ?thesis
+    using hr_pos \<open>ball x r \<inter> C = {}\<close> by (by100 blast)
+qed
+
+lemma geotop_radial_bad_endpoint_cone_closed_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<epsilon>_pos: "0 < \<epsilon>"
+  shows "closed {z. \<exists>y' s.
+      y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>
+        \<and> 0 \<le> s \<and> s \<le> 1
+        \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y'}"
+  sorry
+
+lemma geotop_radial_bad_endpoint_cone_avoids_point_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hyL: "y \<in> \<Union>(geotop_link K v)"
+  assumes ht_pos: "0 < t"
+  assumes ht_le: "t \<le> 1"
+  assumes hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+  assumes h\<epsilon>_pos: "0 < \<epsilon>"
+  shows "x \<notin> {z. \<exists>y' s.
+      y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>
+        \<and> 0 \<le> s \<and> s \<le> 1
+        \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y'}"
+proof
+  assume hx_bad:
+    "x \<in> {z. \<exists>y' s.
+      y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>
+        \<and> 0 \<le> s \<and> s \<le> 1
+        \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y'}"
+  obtain y' s where hy'_bad: "y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>"
+    and hs_nonneg: "0 \<le> s"
+    and hs_le: "s \<le> 1"
+    and hx_bad_rad: "x = (1 - s) *\<^sub>R v + s *\<^sub>R y'"
+    using hx_bad by (by100 blast)
+  have hy'_L: "y' \<in> \<Union>(geotop_link K v)"
+    using hy'_bad by (by100 blast)
+  have hy'_not_ball: "y' \<notin> ball y \<epsilon>"
+    using hy'_bad by (by100 blast)
+  have hy_ball: "y \<in> ball y \<epsilon>"
+    using h\<epsilon>_pos by (by100 simp)
+  show False
+  proof (cases "s = 0")
+    case True
+    have hxv: "x = v"
+      using hx_bad_rad True by (by100 simp)
+    have "y = v"
+      using hx_rad hxv ht_pos by (simp add: algebra_simps)
+    have "v \<in> \<Union>(geotop_link K v)"
+      using hyL \<open>y = v\<close> by (by100 simp)
+    thus False
+      using geotop_link_polyhedron_avoids_vertex[of v K] by (by100 blast)
+  next
+    case False
+    have hs_pos: "0 < s"
+      using hs_nonneg False by (by100 simp)
+    have hrad_eq:
+      "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+       (1 - s) *\<^sub>R v + s *\<^sub>R y'"
+      using hx_rad hx_bad_rad by (by100 simp)
+    have "y = y'"
+      by (rule geotop_link_radial_endpoint_unique_dev34
+          [OF hK hv hyL hy'_L ht_pos ht_le hs_pos hs_le hrad_eq])
+    show False
+      using hy'_not_ball hy_ball \<open>y = y'\<close> by (by100 simp)
+  qed
+qed
+
 lemma geotop_radial_endpoint_simplex_local_ball_control_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -288,7 +376,62 @@ lemma geotop_radial_endpoint_simplex_local_ball_control_dev34:
              \<exists>y' t'. y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>
                \<and> 0 < t' \<and> t' \<le> 1
                \<and> z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'}"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?BadCone = "{z. \<exists>y' s.
+      y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>
+        \<and> 0 \<le> s \<and> s \<le> 1
+        \<and> z = (1 - s) *\<^sub>R v + s *\<^sub>R y'}"
+  let ?GoodCone = "{z \<in> ?S.
+             \<exists>y' t'. y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>
+               \<and> 0 < t' \<and> t' \<le> 1
+               \<and> z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'}"
+  have hBad_closed: "closed ?BadCone"
+    by (rule geotop_radial_bad_endpoint_cone_closed_dev34
+        [OF hK hv h\<epsilon>_pos])
+  have hx_not_Bad: "x \<notin> ?BadCone"
+    by (rule geotop_radial_bad_endpoint_cone_avoids_point_dev34
+        [OF hK hv hyL ht_pos ht_le hx_rad h\<epsilon>_pos])
+  obtain r where hr_pos: "0 < r" and hball_bad: "ball x r \<inter> ?BadCone = {}"
+    using geotop_ball_avoids_closed_not_containing_allow_empty_dev34
+      [OF hBad_closed hx_not_Bad]
+    by (by100 blast)
+  have hsub: "ball x r \<inter> ?S \<inter> \<sigma> \<subseteq> ?GoodCone"
+  proof
+    fix z
+    assume hz: "z \<in> ball x r \<inter> ?S \<inter> \<sigma>"
+    have hz_ball: "z \<in> ball x r"
+      using hz by (by100 blast)
+    have hzS: "z \<in> ?S"
+      using hz by (by100 blast)
+    obtain y' t' where hy'L: "y' \<in> \<Union>(geotop_link K v)"
+      and ht'_pos: "0 < t'"
+      and ht'_le: "t' \<le> 1"
+      and hz_rad: "z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'"
+      using geotop_star_punctured_point_radial_to_link_dev34[OF hK hv hzS]
+      by (by100 blast)
+    have hy'_ball: "y' \<in> ball y \<epsilon>"
+    proof (rule ccontr)
+      assume hy'_not_ball: "y' \<notin> ball y \<epsilon>"
+      have hy'_bad: "y' \<in> \<Union>(geotop_link K v) - ball y \<epsilon>"
+        using hy'L hy'_not_ball by (by100 blast)
+      have ht'_nonneg: "0 \<le> t'"
+        using ht'_pos by (by100 simp)
+      have "z \<in> ?BadCone"
+        using hy'_bad ht'_nonneg ht'_le hz_rad by (by100 blast)
+      have "z \<in> ball x r \<inter> ?BadCone"
+        using hz_ball \<open>z \<in> ?BadCone\<close> by (by100 blast)
+      show False
+        using hball_bad \<open>z \<in> ball x r \<inter> ?BadCone\<close> by (by100 blast)
+    qed
+    have hy'_good: "y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>"
+      using hy'L hy'_ball by (by100 blast)
+    show "z \<in> ?GoodCone"
+      using hzS hy'_good ht'_pos ht'_le hz_rad by (by100 blast)
+  qed
+  show ?thesis
+    using hr_pos hsub by (by100 blast)
+qed
 
 lemma geotop_radial_cone_simplex_point_neighborhood_at_member_dev34:
   fixes K :: "(real^2) set set"
