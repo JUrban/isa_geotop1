@@ -6094,6 +6094,21 @@ proof -
   qed
 qed
 
+lemma geotop_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  shows "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+  (**
+    Moise local model for the two-sided edge case: two distinct 2-simplexes
+    sharing the edge \<open>e\<close> fill the two local half-disks along \<open>rel_interior e\<close>,
+    so the union has ordinary Euclidean interior there. **)
+  sorry
+
 lemma geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -6106,7 +6121,32 @@ lemma geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34
     Euclidean local form of the two-sided edge branch: the two incident
     2-simplexes occupy the two local half-neighborhoods along an interior
     point of \<open>e\<close>, so such points are ordinary interior points of \<open>|K|\<close>. **)
-  sorry
+proof -
+  have hex:
+    "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcard2])
+  obtain \<sigma> \<tau> where h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and he\<sigma>: "geotop_is_face e \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and he\<tau>: "geotop_is_face e \<tau>"
+    and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    using hex by (elim exE conjE)
+  have hlocal: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+    by (rule geotop_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  have hunion_sub: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K"
+    using h\<sigma>K h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hinterior_sub: "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K)"
+    by (rule interior_mono[OF hunion_sub])
+  show ?thesis
+    using hlocal hinterior_sub by (by100 blast)
+qed
 
 lemma geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34:
   fixes K :: "(real^2) set set"
