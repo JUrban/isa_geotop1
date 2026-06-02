@@ -7429,6 +7429,30 @@ proof (rule geotop_two_2simplex_shared_edge_vertices_side_obtain_dev34
           hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg hopp])
 qed
 
+lemma geotop_edge_rel_interior_parameter_dev34:
+  fixes e :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains t where "0 < t" "t < 1" "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+  (**
+    Edge-relative-interior points are exactly open-segment points, recorded in
+    the affine parameter form needed for the local diamond construction. **)
+proof -
+  have he_HOL: "e = closed_segment a b"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] segment_convex_hull[of a b]
+    by (by100 simp)
+  have hrel: "rel_interior e = open_segment a b"
+    using he_HOL hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have hp_open: "p \<in> open_segment a b"
+    using hp hrel by (by100 simp)
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    using hp_open unfolding in_segment by (by100 auto)
+  show ?thesis
+    by (rule that[OF ht0 ht1 hp_eq])
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"
