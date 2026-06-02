@@ -16,15 +16,15 @@ Evidence checked locally:
 - A fetch of colleague `main` over HTTPS left `https/main` at commit
   `3e463c3b` (`Document GeoTop sections 1 and 2 status`).
 - Our branch `codex-dev34-cache` already contains all of `https/main`;
-  `git rev-list --left-right --count HEAD...https/main` reports `217 0`, so
+  `git rev-list --left-right --count HEAD...https/main` reports `219 0`, so
   no merge was needed for this report update.
 - The latest successful section build on this branch was:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`.
-- That build passed after commit `194b918a`
-  (`Prove vertex star punctured connectedness`); the final `GeoTop34Dev`
-  theory took about `0:00:10` elapsed, with about `0:00:30` elapsed overall.
+- That build passed for the state committed as `75e90de1`
+  (`Refine radial endpoint projection proof`); the final `GeoTop34Dev`
+  theory took about `0:00:09` elapsed, with about `0:00:28` elapsed overall.
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
   9 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
