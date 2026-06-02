@@ -7861,6 +7861,37 @@ proof
     using hp_e he_sub_\<sigma> he_sub_\<tau> by (by100 blast)
 qed
 
+lemma geotop_shared_edge_small_subsegment_in_two_2simplexes_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains u where
+    "0 < u"
+    "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+  (**
+    Horizontal base of the local diamond in the two incident triangles: a
+    sufficiently small edge-direction subsegment around \<open>p\<close> remains in both
+    closed triangles. **)
+proof -
+  obtain u where hu0: "0 < u"
+    and hminus_rel: "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    and hplus_rel: "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+    by (rule geotop_edge_rel_interior_small_subsegment_dev34[OF hab he_eq hp])
+  have hrel_sub: "rel_interior e \<subseteq> \<sigma> \<inter> \<tau>"
+    by (rule geotop_shared_edge_rel_interior_subset_two_2simplexes_dev34
+        [OF he_eq h\<sigma>V h\<tau>V])
+  have hminus: "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    using hminus_rel hrel_sub by (by100 blast)
+  have hplus: "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    using hplus_rel hrel_sub by (by100 blast)
+  show ?thesis
+    by (rule that[OF hu0 hminus hplus])
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"
