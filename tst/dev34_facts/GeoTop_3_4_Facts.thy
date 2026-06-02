@@ -2426,6 +2426,44 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_exact_two_incident_edges_card_eq_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hfin: "finite L"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+        geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+        \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+        \<and> l\<^sub>1 \<noteq> l\<^sub>2
+        \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  obtain l\<^sub>1 l\<^sub>2 where hl1L: "l\<^sub>1 \<in> L"
+    and hl2L: "l\<^sub>2 \<in> L"
+    and hl1edge: "geotop_is_edge l\<^sub>1"
+    and hw_l1: "w \<in> l\<^sub>1"
+    and hl2edge: "geotop_is_edge l\<^sub>2"
+    and hw_l2: "w \<in> l\<^sub>2"
+    and hl12: "l\<^sub>1 \<noteq> l\<^sub>2"
+    and hexact: "\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+        \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2"
+    using htwo hwL by (by100 blast)
+  let ?S = "{l\<in>L. geotop_is_edge l \<and> w \<in> l}"
+  have hS_eq: "?S = {l\<^sub>1, l\<^sub>2}"
+  proof
+    show "?S \<subseteq> {l\<^sub>1, l\<^sub>2}"
+      using hexact by (by100 blast)
+    show "{l\<^sub>1, l\<^sub>2} \<subseteq> ?S"
+      using hl1L hl2L hl1edge hl2edge hw_l1 hw_l2 by (by100 blast)
+  qed
+  show "card ?S = 2"
+    using hS_eq hl12 by (by100 simp)
+qed
+
 lemma geotop_link_component_two_exact_no_endpoint_linear_graph_witness:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
