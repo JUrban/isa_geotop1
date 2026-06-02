@@ -1,4 +1,4 @@
-session GeoTop34Dev in "." = GeoTop34GraphFactsDirty +
+session GeoTop34Dev in "." = GeoTop34GraphWorkDirty +
   options [system_heaps, quick_and_dirty, timeout = 240]
   theories
     GeoTop_3_4
