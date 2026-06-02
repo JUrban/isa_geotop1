@@ -1210,6 +1210,21 @@ proof -
     using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
 qed
 
+lemma geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink:
+    "geotop_is_complex (geotop_link K v)
+      \<and> geotop_complex_is_1dim (geotop_link K v)
+      \<and> finite (geotop_link K v)
+      \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+          \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
+  shows "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> geotop_comb_equiv (geotop_star K v) L"
+  sorry
+
 lemma geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1220,7 +1235,18 @@ lemma geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34:
   shows "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> geotop_comb_equiv (geotop_star K v) L"
-  sorry
+proof -
+  have hlink:
+    "geotop_is_complex (geotop_link K v)
+      \<and> geotop_complex_is_1dim (geotop_link K v)
+      \<and> finite (geotop_link K v)
+      \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+          \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
+    by (rule geotop_link_finite_1dim_line_or_polygon_dev34[OF hK hv hshape])
+  show ?thesis
+    by (rule geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34
+        [OF hK hv hlink])
+qed
 
 lemma geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
