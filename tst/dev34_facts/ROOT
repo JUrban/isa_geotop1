@@ -1,0 +1,4 @@
+session GeoTop34FactsDirty in "." = GeoTop34PrefixDirty +
+  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
+  theories
+    GeoTop_3_4_Facts
