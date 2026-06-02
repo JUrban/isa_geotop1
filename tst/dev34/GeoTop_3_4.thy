@@ -2051,6 +2051,25 @@ proof -
     using hV_insert by (by100 blast)
 qed
 
+lemma geotop_link_simplex_in_star_dev34:
+  fixes K :: "(real^2) set set" and \<tau> :: "(real^2) set"
+  assumes h\<tau>L: "\<tau> \<in> geotop_link K v"
+  shows "\<tau> \<in> geotop_star K v"
+  (**
+    Direct half of the simplex split underlying Fig. 4.10: the old link
+    simplexes are simplexes of the star. **)
+  using h\<tau>L unfolding geotop_link_def by (by100 blast)
+
+lemma geotop_star_simplex_not_containing_vertex_in_link_dev34:
+  fixes K :: "(real^2) set set" and \<tau> :: "(real^2) set"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hv_not: "v \<notin> \<tau>"
+  shows "\<tau> \<in> geotop_link K v"
+  (**
+    Converse half used when the fan map checks a simplex not containing the
+    cone vertex: it is exactly a simplex of the link. **)
+  unfolding geotop_link_def using h\<tau>S hv_not by (by100 blast)
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
