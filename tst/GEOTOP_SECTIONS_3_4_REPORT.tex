@@ -24,7 +24,7 @@ contains it.
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
 with the outer command reporting \texttt{0:00:34 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{e68bebfe} (\texttt{Prove GeoTop shared edge affine witnesses}).
+\texttt{15a6c2cb} (\texttt{Prove GeoTop shared edge line normal form}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -109,8 +109,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6546; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 6860; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6606; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 6920; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -193,7 +193,10 @@ now packages both opposite vertices with their affine-line exclusions for the
 next two-sided local-model step. The edge-line normal-form helper
 \texttt{geotop\_edge\_vertices\_affine\_hull\_normal\_form\_dev34}
 expresses the affine hull of the shared edge as
-\(\{x.\ n\bullet x=d\}\) with \(n\neq 0\).
+\(\{x.\ n\bullet x=d\}\) with \(n\neq 0\). The normal-coordinate wrapper
+\texttt{geotop\_two\_2simplex\_shared\_edge\_vertices\_normal\_obtain\_dev34}
+packages this line equation with the facts \(n\bullet c\neq r\) and
+\(n\bullet d\neq r\) for the two opposite vertices.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},

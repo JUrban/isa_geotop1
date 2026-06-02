@@ -6525,6 +6525,66 @@ proof -
     using hn hline_ab by (by100 blast)
 qed
 
+lemma geotop_two_2simplex_shared_edge_vertices_normal_obtain_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+  (**
+    Normal-coordinate version of the shared-edge picture: the two opposite
+    vertices are strictly off the line through the common edge. **)
+proof -
+  obtain a b c d where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hc_aff: "c \<notin> affine hull {a, b}"
+    and hd_aff: "d \<notin> affine hull {a, b}"
+    by (rule geotop_two_2simplex_shared_edge_vertices_affine_obtain_dev34
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  obtain n r where hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    using geotop_edge_vertices_affine_hull_normal_form_dev34[OF hedge he_eq]
+    by (by100 blast)
+  have hc_ne: "n \<bullet> c \<noteq> r"
+  proof
+    assume hc_eq: "n \<bullet> c = r"
+    have "c \<in> affine hull {a, b}"
+      using hline hc_eq by (by100 simp)
+    thus False
+      using hc_aff by (by100 blast)
+  qed
+  have hd_ne: "n \<bullet> d \<noteq> r"
+  proof
+    assume hd_eq: "n \<bullet> d = r"
+    have "d \<in> affine hull {a, b}"
+      using hline hd_eq by (by100 simp)
+    thus False
+      using hd_aff by (by100 blast)
+  qed
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
