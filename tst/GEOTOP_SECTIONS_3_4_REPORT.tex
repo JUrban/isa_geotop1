@@ -22,9 +22,9 @@ commits ahead of the local branch.
 contains it.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:32 elapsed time}.
+with the outer command reporting \texttt{0:00:34 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{73300f10} (\texttt{Prove GeoTop triangle affine coordinates}).
+\texttt{47a445c9} (\texttt{Prove GeoTop same-side affine coordinate sign}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -109,8 +109,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7135; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 7449; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7247; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 7561; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -232,7 +232,10 @@ sign-coordinate helpers
 and
 \texttt{geotop\_2simplex\_negative\_side\_affine\_coordinate\_positive\_dev34}
 prove that a same-side opposite vertex has positive affine coordinate at the
-first triangle's opposite vertex.
+first triangle's opposite vertex. The real helper
+\texttt{geotop\_real\_positive\_overlap\_parameter\_dev34} chooses the small
+positive parameter needed to keep both triangle-interior barycentric coordinate
+systems strictly positive in the overlap construction.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},

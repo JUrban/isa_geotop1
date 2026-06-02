@@ -7114,6 +7114,118 @@ proof -
         [OF hab hc_not_ab h\<sigma>V hline_neg hc_pos hd_pos])
 qed
 
+lemma geotop_real_positive_overlap_parameter_dev34:
+  fixes x y z :: real
+  assumes hz: "0 < z"
+  obtains s where
+    "0 < s"
+    "s < 1"
+    "0 < (1 - s) / 2 + s * x"
+    "0 < (1 - s) / 2 + s * y"
+    "0 < s * z"
+  (**
+    Real parameter choice for the same-side overlap construction: move a small
+    positive distance from the edge midpoint toward the second opposite vertex,
+    while keeping positive barycentric coordinates in the first triangle. **)
+proof -
+  define bx where "bx = (if x < 1 / 2 then (1 / 2) / (1 / 2 - x) else 1)"
+  define byy where "byy = (if y < 1 / 2 then (1 / 2) / (1 / 2 - y) else 1)"
+  have hbx_pos: "0 < bx"
+  proof (cases "x < 1 / 2")
+    case True
+    have "0 < 1 / 2 - x"
+      using True by (by100 linarith)
+    hence "0 < (1 / 2) / (1 / 2 - x)"
+      by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True bx_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False bx_def by (by100 simp)
+  qed
+  have hby_pos: "0 < byy"
+  proof (cases "y < 1 / 2")
+    case True
+    have "0 < 1 / 2 - y"
+      using True by (by100 linarith)
+    hence "0 < (1 / 2) / (1 / 2 - y)"
+      by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True byy_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False byy_def by (by100 simp)
+  qed
+  obtain t where ht0: "0 < t" and htbx: "t < bx" and ht1: "t < 1"
+    using field_lbound_gt_zero[OF hbx_pos zero_less_one] by (by100 blast)
+  obtain s where hs0: "0 < s" and hst: "s < t" and hsby: "s < byy"
+    using field_lbound_gt_zero[OF ht0 hby_pos] by (by100 blast)
+  have hs1: "s < 1"
+    using hst ht1 by (by100 linarith)
+  have hsbx: "s < bx"
+    using hst htbx by (by100 linarith)
+  have hxpos: "0 < (1 - s) / 2 + s * x"
+  proof (cases "x < 1 / 2")
+    case True
+    have hden: "0 < 1 / 2 - x"
+      using True by (by100 linarith)
+    have hsbound: "s < (1 / 2) / (1 / 2 - x)"
+      using hsbx True bx_def by (by100 simp)
+    have "s * (1 / 2 - x) < 1 / 2"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < 1 / 2 - s * (1 / 2 - x)"
+      by (by100 linarith)
+    also have "1 / 2 - s * (1 / 2 - x) = (1 - s) / 2 + s * x"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> x - 1 / 2"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (x - 1 / 2)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) / 2 + s * x = 1 / 2 + s * (x - 1 / 2)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      by (by100 linarith)
+  qed
+  have hypos: "0 < (1 - s) / 2 + s * y"
+  proof (cases "y < 1 / 2")
+    case True
+    have hden: "0 < 1 / 2 - y"
+      using True by (by100 linarith)
+    have hsbound: "s < (1 / 2) / (1 / 2 - y)"
+      using hsby True byy_def by (by100 simp)
+    have "s * (1 / 2 - y) < 1 / 2"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < 1 / 2 - s * (1 / 2 - y)"
+      by (by100 linarith)
+    also have "1 / 2 - s * (1 / 2 - y) = (1 - s) / 2 + s * y"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> y - 1 / 2"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (y - 1 / 2)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) / 2 + s * y = 1 / 2 + s * (y - 1 / 2)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      by (by100 linarith)
+  qed
+  have hsz: "0 < s * z"
+    by (rule mult_pos_pos[OF hs0 hz])
+  show ?thesis
+    by (rule that[OF hs0 hs1 hxpos hypos hsz])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
