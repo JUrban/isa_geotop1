@@ -1723,7 +1723,7 @@ proof -
           by (rule sum.reindex[OF h\<phi>inj_Vc])
         have h2: "sum (\<gamma>\<^sub>x \<circ> \<phi>) V\<^sub>c = sum a_c V\<^sub>c"
           unfolding a_c_def o_def by (by100 simp)
-        show ?thesis using h\<gamma>x_sum h1 h2 by (by100 simp)
+        show ?thesis using h\<gamma>x_sum h1 h2 by simp
       qed
       have hb_c_sum: "sum b_c V\<^sub>c = 1"
       proof -
@@ -1731,7 +1731,7 @@ proof -
           by (rule sum.reindex[OF h\<phi>inj_Vc])
         have h2: "sum (\<gamma>\<^sub>y \<circ> \<phi>) V\<^sub>c = sum b_c V\<^sub>c"
           unfolding b_c_def o_def by (by100 simp)
-        show ?thesis using h\<gamma>y_sum h1 h2 by (by100 simp)
+        show ?thesis using h\<gamma>y_sum h1 h2 by simp
       qed
       have ha_c_nn: "\<forall>v\<in>V\<^sub>c. 0 \<le> a_c v"
         unfolding a_c_def using h\<gamma>x_nn by (by100 blast)
@@ -1871,10 +1871,14 @@ proof -
           by (rule HOL.trans[OF h_subst h_ud])
         have h_val: "\<And>w. w \<in> \<phi> ` V\<^sub>c \<Longrightarrow> \<gamma>\<^sub>x_ext w = \<gamma>\<^sub>x w"
           unfolding \<gamma>\<^sub>x_ext_def by (by100 simp)
-        have h_on_Vc: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w)"
-          using sum.cong[of "\<phi> ` V\<^sub>c" "\<phi> ` V\<^sub>c"
-                             "\<lambda>w. \<gamma>\<^sub>x_ext w *\<^sub>R w" "\<lambda>w. \<gamma>\<^sub>x w *\<^sub>R w"] h_val
-          by (by100 force)
+	        have h_on_Vc: "(\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w) = (\<Sum>w\<in>\<phi> ` V\<^sub>c. \<gamma>\<^sub>x w *\<^sub>R w)"
+	        proof (rule sum.cong)
+	          show "\<phi> ` V\<^sub>c = \<phi> ` V\<^sub>c" by (rule refl)
+	        next
+	          fix w assume hw: "w \<in> \<phi> ` V\<^sub>c"
+	          show "\<gamma>\<^sub>x_ext w *\<^sub>R w = \<gamma>\<^sub>x w *\<^sub>R w"
+	            using h_val[OF hw] by simp
+	        qed
         have h_on_rest: "(\<Sum>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w) = 0"
         proof -
           have h_zero_all: "\<forall>w\<in>\<phi> ` V\<^sub>x - \<phi> ` V\<^sub>c. \<gamma>\<^sub>x_ext w *\<^sub>R w = 0"
@@ -2501,10 +2505,19 @@ proof -
               using h2s by (by100 simp)
             show ?thesis using h1 h3 by (by100 simp)
           qed
-          have h_V\<tau>: "(\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<alpha> w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<tau>. \<alpha> w *\<^sub>R w)"
-            using h\<phi>_V\<sigma>_eq_V\<tau> by (by100 simp)
-          show ?thesis using hg_y_\<phi> h_reindex h_V\<tau> unfolding x_def by (by100 simp)
-        qed
+	          have h_V\<tau>: "(\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<alpha> w *\<^sub>R w) = (\<Sum>w\<in>V\<^sub>\<tau>. \<alpha> w *\<^sub>R w)"
+	            using h\<phi>_V\<sigma>_eq_V\<tau> by (by100 simp)
+	          have h_gy_phi: "g y = (\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<alpha> w *\<^sub>R w)"
+	          proof -
+	            have "(\<Sum>w\<in>\<phi> ` V\<^sub>\<sigma>. \<alpha> w *\<^sub>R w) =
+	                  (\<Sum>v\<in>V\<^sub>\<sigma>. \<beta> v *\<^sub>R \<phi> v)"
+	              using h_reindex by simp
+	            thus ?thesis using hg_y_\<phi> by simp
+	          qed
+	          have h_gy_V\<tau>: "g y = (\<Sum>w\<in>V\<^sub>\<tau>. \<alpha> w *\<^sub>R w)"
+	            using h_gy_phi h_V\<tau> by simp
+	          show ?thesis unfolding x_def using h_gy_V\<tau> by simp
+	        qed
         (** g_inv x = y. **)
         have hg_inv_x_y: "g_inv x = y"
           unfolding g_inv_def
@@ -2993,7 +3006,7 @@ proof -
                       and hlin: "geotop_linear_on \<sigma> f"
       by (by100 blast)
     obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and h\<tau>'\<tau>: "\<tau>' \<subseteq> \<tau>"
-      using hL'_ref h\<tau>'L' unfolding geotop_refines_def by (by100 blast)
+      using hL'_ref h\<tau>'L' unfolding geotop_refines_def by blast
     have hrange\<tau>: "\<forall>x\<in>\<sigma>. f x \<in> \<tau>" using hrange\<tau>' h\<tau>'\<tau> by (by100 blast)
     show "\<exists>\<tau>\<in>L. (\<forall>x\<in>\<sigma>. f x \<in> \<tau>) \<and> geotop_linear_on \<sigma> f"
       using h\<tau>L hrange\<tau> hlin by (by100 blast)
@@ -3131,7 +3144,7 @@ proof -
     also have "\<dots> \<longleftrightarrow> geotop_convex_hull (\<psi> ` (\<phi> ` V)) \<in> M"
       using h\<psi>cond h\<phi>V by (by100 blast)
     finally show "geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (?\<chi> ` V) \<in> M"
-      using h\<chi>img by (by100 simp)
+      using h\<chi>img by simp
   qed
   have h\<chi>iso: "geotop_isomorphism K M ?\<chi>"
     unfolding geotop_isomorphism_def using h\<chi>bij h\<chi>cond by (by100 blast)
@@ -3876,11 +3889,19 @@ proof -
       by (rule geotop_isomorphic_sym[OF hiso])
     have hL'comp: "geotop_is_complex L'"
       using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
-    have hK'comp: "geotop_is_complex K'"
-      using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
-    obtain f where hf_PLH: "geotop_PLH L' K' f"
-               and hf_img: "f ` (geotop_polyhedron L') = geotop_polyhedron K'"
-      using geotop_isomorphic_induces_PLH[OF hL'comp hK'comp hL'K'] by (by100 blast)
+	    have hK'comp: "geotop_is_complex K'"
+	      using hK'K unfolding geotop_is_subdivision_def by (by100 blast)
+	    have h_PLH_ex_full:
+	      "\<exists>f. geotop_PLH L' K' f
+	            \<and> f ` (geotop_polyhedron L') = geotop_polyhedron K'
+	            \<and> (\<forall>\<tau>\<in>K'. geotop_linear_on \<tau> (inv_into (geotop_polyhedron L') f))"
+	      by (rule geotop_isomorphic_induces_PLH[OF hL'comp hK'comp hL'K'])
+	    have h_PLH_ex:
+	      "\<exists>f. geotop_PLH L' K' f \<and> f ` (geotop_polyhedron L') = geotop_polyhedron K'"
+	      using h_PLH_ex_full by blast
+	    obtain f where hf_PLH: "geotop_PLH L' K' f"
+	               and hf_img: "f ` (geotop_polyhedron L') = geotop_polyhedron K'"
+	      using h_PLH_ex by blast
     have hpolyL: "geotop_polyhedron L' = geotop_polyhedron L"
       using hL'L unfolding geotop_is_subdivision_def by (by100 blast)
     have hpolyK: "geotop_polyhedron K' = geotop_polyhedron K"
@@ -4308,7 +4329,7 @@ proof -
       have h_int_eq: "\<sigma> \<inter> \<tau> = inv_into (geotop_polyhedron L) f ` (\<sigma>_K \<inter> \<tau>_K)"
         using h\<sigma>_eq h\<tau>_eq h_image_int_raw by (by100 simp)
       show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-        using h_int_eq h\<sigma>_eq h\<tau>_eq h_face_\<sigma> h_face_\<tau> by (by100 simp)
+        using h_int_eq h\<sigma>_eq h\<tau>_eq h_face_\<sigma> h_face_\<tau> by simp
     qed
     (** (iv) K.3: local finiteness. For finite L_3, U = UNIV suffices. **)
     have hK\<^sub>1fin: "finite K\<^sub>1"
@@ -7776,10 +7797,16 @@ proof -
                         \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
       unfolding K1_def using hex_split someI_ex[of "\<lambda>K1'. \<exists>K2'. K1' \<noteq> {} \<and> K2' \<noteq> {} \<and> K1' \<inter> K2' = {} \<and> K = K1' \<union> K2' \<and> geotop_is_complex K1' \<and> geotop_is_complex K2'"]
       by (by100 blast)
-    have hK2_all: "K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
-                      \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
-      unfolding K2_def using hK1_all someI_ex[of "\<lambda>K2'. K1 \<noteq> {} \<and> K2' \<noteq> {} \<and> K1 \<inter> K2' = {} \<and> K = K1 \<union> K2' \<and> geotop_is_complex K1 \<and> geotop_is_complex K2'"]
-      by (by100 blast)
+	    have hK2_all: "K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and> K = K1 \<union> K2
+	                      \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+	    proof -
+	      have hK2_ex:
+	        "\<exists>K2'. K1 \<noteq> {} \<and> K2' \<noteq> {} \<and> K1 \<inter> K2' = {} \<and>
+	            K = K1 \<union> K2' \<and> geotop_is_complex K1 \<and> geotop_is_complex K2'"
+	        using hK1_all by blast
+	      show ?thesis
+	        unfolding K2_def by (rule someI_ex[OF hK2_ex])
+	    qed
     have hK1ne: "K1 \<noteq> {}" using hK2_all by (by100 blast)
     have hK2ne: "K2 \<noteq> {}" using hK2_all by (by100 blast)
     have hdisj: "K1 \<inter> K2 = {}" using hK2_all by (by100 blast)
@@ -7983,7 +8010,7 @@ proof -
       using hK1_subsp hK2_subsp hK1ne_poly hK2ne_poly hpoly_disj hpoly_K
       by (by100 blast)
     then show False
-      using hconn unfolding top1_connected_on_def by (by100 blast)
+      using hconn unfolding top1_connected_on_def by blast
   qed
   show "geotop_complex_connected K \<longleftrightarrow>
         top1_path_connected_on (geotop_polyhedron K)
@@ -9814,7 +9841,7 @@ proof
       have h\<tau>'_ne: "\<tau>' \<inter> U \<noteq> {}" using h\<tau>'_in by (by100 simp)
       consider (a) "\<tau>' \<in> K" |
                (b) "\<tau>' \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
-        using h\<tau>'K' by (by100 blast)
+        using h\<tau>'K' by blast
       thus "\<tau>' \<in> {\<tau>'\<in>K. \<tau>' \<inter> U \<noteq> {}} \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
       proof cases
         case a thus ?thesis using h\<tau>'_ne by (by100 blast)
@@ -11071,7 +11098,7 @@ proof -
   qed
   have h_I_eq: "?I = {p..q}" using h_I_sub_pq h_pq_sub_I by (by100 blast)
   (** γ on {p..q} is cts inj with image σ. **)
-  have h_pq_sub_01: "{p..q} \<subseteq> {0..1}" using h_I_eq h_I_sub_01 by (by100 simp)
+  have h_pq_sub_01: "{p..q} \<subseteq> {0..1}" using h_I_eq h_I_sub_01 by simp
   have h_cont_pq: "continuous_on {p..q} \<gamma>"
     using h_cont_\<gamma> h_pq_sub_01 continuous_on_subset by (by100 blast)
   have h_inj_pq: "inj_on \<gamma> {p..q}"
@@ -11133,13 +11160,13 @@ proof -
     have hd_all: "\<forall>s\<in>{0..1}. dist s s\<^sub>x < d \<longrightarrow> dist (\<gamma> s) x < \<delta>"
     proof (intro ballI impI)
       fix s assume hs: "s \<in> {0..1}" and hsd: "dist s s\<^sub>x < d"
-      show "dist (\<gamma> s) x < \<delta>" using hd hs hsd hx_eq by (by100 simp)
+      show "dist (\<gamma> s) x < \<delta>" using hd hs hsd hx_eq by simp
     qed
     show ?thesis using hd_pos hd_all that by (by100 blast)
   qed
   define \<eta> where "\<eta> = min (\<eta>\<^sub>0 / 2) (min (s\<^sub>x / 2) ((1 - s\<^sub>x) / 2))"
   have h\<eta>_pos: "\<eta> > 0"
-    unfolding \<eta>_def using h\<eta>0_pos hsx_gt0 hsx_lt1 by (by100 simp)
+    unfolding \<eta>_def using h\<eta>0_pos hsx_gt0 hsx_lt1 by simp
   have h\<eta>_le_\<eta>0: "\<eta> < \<eta>\<^sub>0"
   proof -
     have "\<eta> \<le> \<eta>\<^sub>0 / 2" unfolding \<eta>_def by (by100 linarith)
@@ -11433,19 +11460,19 @@ proof -
         next
           assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
           then obtain a b where hab_ne: "a \<noteq> b" and h\<sigma>_ab: "\<sigma> = closed_segment a b"
-            by (by100 blast)
+            by blast
           (** Apply preimage_structure. **)
           obtain p q where hpq_le: "p \<le> q" and hp_01: "p \<in> {0..1}" and hq_01: "q \<in> {0..1}"
                         and hI_eq: "{s\<in>{0..1}. \<gamma> s \<in> \<sigma>} = {p..q}"
                         and h_\<gamma>_ends: "{\<gamma> p, \<gamma> q} = {a, b}"
             using geotop_arc_1simplex_preimage_structure
                   [OF harc hK''_1dim hK''_poly_pim h\<sigma>_K'' h\<sigma>_ab hab_ne]
-            by (by100 blast)
+            by blast
           have ht_in_I: "t \<in> {p..q}"
           proof -
             have ht_I: "t \<in> {s\<in>{0..1}. \<gamma> s \<in> \<sigma>}"
               using ht_01 hxt hx\<sigma> by (by100 blast)
-            show ?thesis using ht_I hI_eq by (by100 simp)
+            show ?thesis using ht_I hI_eq by blast
           qed
           have hp_le_t: "p \<le> t" using ht_in_I by (by100 simp)
           have ht_le_q: "t \<le> q" using ht_in_I by (by100 simp)
@@ -11722,7 +11749,7 @@ next
         using hs_lt unfolding closed_segment_eq_real_ivl by (by100 simp)
       have heq_ivl: "{min s\<^sub>X s\<^sub>Y..max s\<^sub>X s\<^sub>Y} = {s_lo..s_hi}"
         unfolding s_lo_def s_hi_def by (by100 simp)
-      show ?thesis using heq_lh heq_rh heq_ivl by (by100 simp)
+      show ?thesis using heq_lh heq_rh heq_ivl by simp
     qed
     show ?thesis using h1 h2 h_seg_xy by (by100 simp)
   qed
@@ -14420,14 +14447,14 @@ lemma geotop_hyperplane_dim_1_R2_normal_form:
   assumes h: "geotop_hyperplane_dim L 1"
   shows "\<exists>n d. n \<noteq> 0 \<and> L = {x. n \<bullet> x = d}"
 proof -
-  have h_unfold: "\<exists>V v0. subspace V \<and>
-                  (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
-                  \<and> L = (\<lambda>v. v + v0) ` V"
-    using h unfolding geotop_hyperplane_dim_def by (by100 blast)
-  obtain V v0 where hV_sub: "subspace V"
-              and hB_ex: "\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V"
-              and hL_form: "L = (\<lambda>v. v + v0) ` V"
-    using h_unfold by (by100 blast)
+	  have h_unfold: "\<exists>V v0. subspace V \<and>
+	                  (\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V)
+	                  \<and> L = (\<lambda>v. v + v0) ` V"
+	    using h unfolding geotop_hyperplane_dim_def by (by100 blast)
+	  obtain V v0 where hV_sub: "subspace V"
+	              and hB_ex: "\<exists>B. independent B \<and> finite B \<and> card B = 1 \<and> span B = V"
+	              and hL_form: "L = (\<lambda>v. v + v0) ` V"
+	    using h_unfold by blast
   obtain B where hB_indep: "independent B" and hB_fin: "finite B"
               and hB_card: "card B = 1" and hB_span: "span B = V"
     using hB_ex by (by100 blast)
@@ -14438,9 +14465,9 @@ proof -
     have h3: "dim B = card B" using hB_indep by (rule dim_eq_card_independent)
     show ?thesis using h1 h2 h3 hB_card by (by100 simp)
   qed
-  obtain n where hn_ne: "n \<noteq> 0"
-              and hL_eq: "(\<lambda>v. v + v0) ` V = {x. n \<bullet> x = n \<bullet> v0}"
-    using geotop_line_normal_form[OF hV_sub h_dim_V] by (by100 blast)
+	  obtain n where hn_ne: "n \<noteq> 0"
+	              and hL_eq: "(\<lambda>v. v + v0) ` V = {x. n \<bullet> x = n \<bullet> v0}"
+	    using geotop_line_normal_form[OF hV_sub h_dim_V] by blast
   define d where "d = n \<bullet> v0"
   have hL_eq2: "L = {x. n \<bullet> x = d}" unfolding d_def using hL_form hL_eq by (by100 simp)
   show ?thesis using hn_ne hL_eq2 by (by100 blast)

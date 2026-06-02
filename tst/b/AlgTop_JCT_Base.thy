@@ -139,16 +139,16 @@ next
       proof (cases "y \<in> U")
         case True
         obtain g where "top1_is_path_on U (subspace_topology X TX U) z y g"
-          using hU_pc hzU True unfolding top1_path_connected_on_def by (by100 auto)
-        thus ?thesis using path_in_subspace_is_path_in_ambient[OF hTX hUsub] by (by100 blast)
+          using hU_pc hzU True unfolding top1_path_connected_on_def by auto
+        thus ?thesis using path_in_subspace_is_path_in_ambient[OF hTX hUsub] by blast
       next
         case FalseU: False
-        hence "y \<in> V" using hy_mem by (by100 blast)
+        hence "y \<in> V" using hy_mem by blast
         obtain g where "top1_is_path_on V (subspace_topology X TX V) z y g"
-          using hV_pc hzV \<open>y \<in> V\<close> unfolding top1_path_connected_on_def by (by100 auto)
-        thus ?thesis using path_in_subspace_is_path_in_ambient[OF hTX hVsub] by (by100 blast)
+          using hV_pc hzV \<open>y \<in> V\<close> unfolding top1_path_connected_on_def by auto
+        thus ?thesis using path_in_subspace_is_path_in_ambient[OF hTX hVsub] by blast
       qed
-      thus ?thesis using that by (by100 blast)
+      thus ?thesis using that by blast
     qed
     \<comment> \<open>Concatenate: x \<rightarrow> z \<rightarrow> y.\<close>
     have "top1_is_path_on X TX x y (top1_path_product g1 g2)"
@@ -1079,7 +1079,7 @@ proof (intro allI notI)
         also have "\<dots> = (x 0)^2 + (\<Sum>j\<in>{1..n}. (x j)^2)"
         proof -
           have "0 \<le> n" using assms by (by100 linarith)
-          thus ?thesis using sum.atLeast_Suc_atMost[of 0 n "\<lambda>j. (x j)^2"] by (by100 simp)
+          thus ?thesis using sum.atLeast_Suc_atMost[of 0 n "\<lambda>j. (x j)^2"] by simp
         qed
         finally have "(\<Sum>j\<le>n. (x j)^2) = (x 0)^2 + (\<Sum>j\<in>{1..n}. (x j)^2)" .
         thus ?thesis using hzero by (by100 simp)
@@ -1783,7 +1783,7 @@ proof -
                     hence "st \<in> ?L" "(?\<alpha> \<circ> (\<lambda>(s,t). t*(2*s))) st \<in> V" by (by100 blast)+
                     have "G st = (?\<alpha> \<circ> (\<lambda>(s,t). t*(2*s))) st" using hG_eq_L \<open>st \<in> ?L\<close> by (by100 blast)
                     thus "st \<in> {st \<in> ?L. G st \<in> V}"
-                      using \<open>(?\<alpha> \<circ> (\<lambda>(s,t). t*(2*s))) st \<in> V\<close> \<open>st \<in> ?L\<close> by (by100 simp)
+                      using \<open>(?\<alpha> \<circ> (\<lambda>(s,t). t*(2*s))) st \<in> V\<close> \<open>st \<in> ?L\<close> by simp
                   qed
                   ultimately show "{st \<in> ?L. G st \<in> V}
                       \<in> subspace_topology (I_set \<times> I_set) II_topology ?L" by simp
@@ -2280,7 +2280,7 @@ proof -
                       also have "... = ?\<alpha> (t * 1)" using h44s by (by100 simp)
                       also have "... = ?\<alpha> t" by (by100 simp)
                       finally have "(?\<alpha> \<circ> (\<lambda>(s,t). t*(4-4*s))) st = ?\<alpha> t" .
-                      show ?thesis using hG34 \<open>(?\<alpha> \<circ> (\<lambda>(s,t). t*(4-4*s))) st = ?\<alpha> t\<close> by (by100 simp)
+                      show ?thesis using hG34 \<open>(?\<alpha> \<circ> (\<lambda>(s,t). t*(4-4*s))) st = ?\<alpha> t\<close> by simp
                     qed
                   qed
                   show ?thesis unfolding hFR_trans top1_continuous_map_on_def
@@ -2461,8 +2461,8 @@ proof -
                     = top1_path_reverse ?\<alpha> (2*(2*s-1)-1)"
                   using hs_gt unfolding top1_path_product_def top1_constant_path_def by (by100 simp)
                 also have "\<dots> = ?\<alpha> (1 - (4*s - 3))" unfolding top1_path_reverse_def by (by100 simp)
-                also have "1 - (4*s - 3) = 4 - 4*s" by (by100 algebra)
-                finally show ?thesis using hG by (by100 simp)
+                also have "1 - (4*s - 3) = 4 - 4*s" by algebra
+                finally show ?thesis using hG by simp
               qed
             qed
           qed
@@ -2565,7 +2565,7 @@ proof -
       moreover have "?\<phi> x \<noteq> ?p"
       proof assume h: "?\<phi> x = ?p"
         from arg_cong[OF h, of ?\<phi>] have "?\<phi> (?\<phi> x) = ?\<phi> ?p" .
-        hence "x = ?q" using h\<phi>_inv h\<phi>_p by (by100 metis)
+        hence "x = ?q" using h\<phi>_inv h\<phi>_p by metis
         thus False using \<open>x \<noteq> ?q\<close> by (by100 simp)
       qed
       ultimately show "?\<phi> x \<in> ?U" by (by100 blast)
@@ -5322,7 +5322,7 @@ proof -
     proof (rule ccontr)
       assume "\<not> ?thesis"
       then obtain U V where hUV: "U \<in> TX" "V \<in> TX" "U \<noteq> {}" "V \<noteq> {}" "U \<inter> V = {}" "U \<union> V = X"
-        by (by100 blast)
+        by blast
       obtain u where hu: "u \<in> U" using hUV(3) by (by100 blast)
       obtain v where hv: "v \<in> V" using hUV(4) by (by100 blast)
       have huX: "u \<in> X" using hu hUV(6) by (by100 blast)
@@ -6789,7 +6789,7 @@ proof -
                 ultimately show False using hfst by (by100 linarith)
               qed
             qed
-            thus ?thesis by (by100 linarith)
+            thus ?thesis by linarith
           qed
           have hsnd_abs: "snd x - \<epsilon> < snd p \<and> snd p < snd x + \<epsilon>"
           proof -
@@ -6816,10 +6816,10 @@ proof -
             qed
             thus ?thesis by (by100 linarith)
           qed
-          have "a1 < fst p" using hfst_abs unfolding \<epsilon>_def by (by100 linarith)
-          moreover have "fst p < b1" using hfst_abs unfolding \<epsilon>_def by (by100 linarith)
-          moreover have "a2 < snd p" using hsnd_abs unfolding \<epsilon>_def by (by100 linarith)
-          moreover have "snd p < b2" using hsnd_abs unfolding \<epsilon>_def by (by100 linarith)
+          have "a1 < fst p" using hfst_abs unfolding \<epsilon>_def by linarith
+          moreover have "fst p < b1" using hfst_abs unfolding \<epsilon>_def by linarith
+          moreover have "a2 < snd p" using hsnd_abs unfolding \<epsilon>_def by linarith
+          moreover have "snd p < b2" using hsnd_abs unfolding \<epsilon>_def by linarith
           ultimately show "p \<in> {p. a1 < fst p \<and> fst p < b1 \<and> a2 < snd p \<and> snd p < b2}"
             by (by100 blast)
         qed
@@ -7333,7 +7333,7 @@ proof -
         \<comment> \<open>This is in the subspace topology on C within S^2.\<close>
         obtain W where hW: "W \<in> top1_S2_topology"
             and hpre_eq: "{x \<in> top1_S2 - {b}. h x \<in> V} = (top1_S2 - {b}) \<inter> W"
-          using hpre_S2b unfolding subspace_topology_def by (by100 blast)
+          using hpre_S2b unfolding subspace_topology_def by blast
         have "C \<inter> {x \<in> top1_S2 - {b}. h x \<in> V} = C \<inter> ((top1_S2 - {b}) \<inter> W)"
           using hpre_eq by simp
         hence "C \<inter> {x \<in> top1_S2 - {b}. h x \<in> V} = C \<inter> W"
@@ -9077,7 +9077,7 @@ proof -
               using hh_R3 unfolding top1_continuous_map_on_def by (by100 blast)
             then obtain W where "W \<in> (top1_open_sets :: (real \<times> real \<times> real) set set)"
                 and "{x \<in> top1_S2 - {b}. h x \<in> V} = (top1_S2 - {b}) \<inter> W"
-              unfolding subspace_topology_def by (by100 blast)
+              unfolding subspace_topology_def by blast
             have "open W" using \<open>W \<in> top1_open_sets\<close> unfolding top1_open_sets_def by simp
             moreover have "W \<inter> (top1_S2 - {b}) = h -` V \<inter> (top1_S2 - {b})"
               using \<open>{x \<in> top1_S2 - {b}. h x \<in> V} = (top1_S2 - {b}) \<inter> W\<close> by (by100 blast)
@@ -9207,7 +9207,7 @@ proof -
             using hT unfolding is_topology_on_strict_def by (by100 blast)
           have hself: "\<forall>U \<in> top1_S2_topology. U \<subseteq> top1_S2"
             using top1_S2_is_topology_on_strict
-            unfolding is_topology_on_strict_def is_topology_on_def by (by100 blast)
+            unfolding is_topology_on_strict_def is_topology_on_def by blast
           have "subspace_topology top1_S2 top1_S2_topology top1_S2 = top1_S2_topology"
             by (rule subspace_topology_self_carrier[OF hself])
           have hC0_comp: "C0 \<in> top1_components_on top1_S2 top1_S2_topology"
@@ -11561,7 +11561,7 @@ proof (rule ccontr)
       \<comment> \<open>A1 is connected, contains a and b, and is disjoint from g(I).
          So A1 \<subseteq> S^2 - g(I), and a, b are in the same component of S^2 - g(I).\<close>
       have hA1_sub_comp: "A1 \<subseteq> top1_S2 - g ` I_set" using hgI_disj_A1
-        using hC_sub hC_decomp by (by100 blast)
+        using hC_sub hC_decomp by blast
       have ha_in_A1: "a \<in> A1" using hab by (by100 blast)
       have hb_in_A1: "b \<in> A1" using hab by (by100 blast)
       \<comment> \<open>Since A1 is connected and contained in S^2 - g(I), a and b are in the same

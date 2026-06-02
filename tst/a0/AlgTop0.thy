@@ -1754,19 +1754,19 @@ proof -
     case (Suc m)
     obtain ftm where hftm: "top1_is_path_on E TE (a, 0) (a, 2 * int m) ftm"
         and hftm_proj: "\<forall>s\<in>I_set. p0 (ftm s) = top1_path_power (top1_path_product alpha beta) a m s"
-      using Suc by (by100 blast)
+      using Suc by blast
     define Tftm where "Tftm = T \<circ> ftm"
     have hTftm_path: "top1_is_path_on E TE (a, 2) (a, 2 * int m + 2) Tftm"
       unfolding top1_is_path_on_def top1_continuous_map_on_def
     proof (intro conjI ballI)
       fix s assume hs: "s \<in> I_set"
       have "ftm s \<in> E" using hftm hs unfolding top1_is_path_on_def top1_continuous_map_on_def
-        by (by100 blast)
-      thus "Tftm s \<in> E" unfolding Tftm_def comp_def using hT_E by (by100 blast)
+        by blast
+      thus "Tftm s \<in> E" unfolding Tftm_def comp_def using hT_E by blast
     next
       fix W assume hW: "W \<in> TE"
       have hTinvW: "{e \<in> E. T e \<in> W} \<in> TE"
-        using hT_cont hW unfolding top1_continuous_map_on_def by (by100 blast)
+        using hT_cont hW unfolding top1_continuous_map_on_def by blast
       have "{s \<in> I_set. Tftm s \<in> W} = {s \<in> I_set. ftm s \<in> {e \<in> E. T e \<in> W}}"
       proof (rule set_eqI, rule iffI)
         fix s assume "s \<in> {s \<in> I_set. Tftm s \<in> W}"
@@ -7990,7 +7990,8 @@ proof -
       have "p = (cos (\<theta>-\<epsilon>+2*\<epsilon>*t), sin (\<theta>-\<epsilon>+2*\<epsilon>*t))" using ht(2) unfolding g_def by simp
       moreover have "\<theta>-\<epsilon>+2*\<epsilon>*t \<in> {\<theta>-\<epsilon>..\<theta>+\<epsilon>}" using ht(1) h\<epsilon>(1)
         unfolding top1_unit_interval_def by auto
-      ultimately show "p \<in> ?short_arc" by (by100 force)
+	      ultimately show "p \<in> ?short_arc"
+	        unfolding mem_Collect_eq by (intro exI[of _ "\<theta>-\<epsilon>+2*\<epsilon>*t"]) auto
     next
       fix p assume "p \<in> ?short_arc"
       then obtain s where hs: "s \<in> {\<theta>-\<epsilon>..\<theta>+\<epsilon>}" "p = (cos s, sin s)" by (by100 blast)

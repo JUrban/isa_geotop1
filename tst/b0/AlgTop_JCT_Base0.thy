@@ -5786,7 +5786,7 @@ proof -
           unfolding \<alpha>'_def a'_def
           by (rule Suc.IH[of gs' fs' "\<lambda>i. a (Suc i)" "\<lambda>i. \<alpha> (Suc i)",
               OF hgs'_len hfs'_len hk' _ _ _])
-             (use hfi' hgi' h\<alpha>' in \<open>unfold \<alpha>'_def a'_def, by100 simp\<close>)+
+             (use hfi' hgi' h\<alpha>' in \<open>unfold \<alpha>'_def a'_def, simp\<close>)+
         \<comment> \<open>Now combine g0 * IH to get the result.
            g0 = (\<alpha>(0)*f0)*rev(\<alpha>(1)).
            foldr gs const = g0 * foldr gs' const
@@ -7088,7 +7088,7 @@ proof (intro allI impI)
                 qed
                 show ?thesis
                 proof (cases "S = U")
-                  case True thus ?thesis using h_same hprev_not_other by (by100 blast)
+                  case True thus ?thesis using h_same hprev_not_other by blast
                 next
                   case False hence hSV: "S = V" using hS by (by100 blast)
                   hence "\<not> f ` {s\<in>I_set. sub0 (j'-1) \<le> s \<and> s \<le> sub0 j'} \<subseteq> U"
