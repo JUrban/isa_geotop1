@@ -14,8 +14,8 @@ warm-cache build.
 
 Evidence checked locally:
 
-- A fetch of colleague `main` over HTTPS reached commit `2045ef76` (`Export TFF
-  problems for all GeoTop sessions`). The relevant faster theorem-index
+- A fetch of colleague `main` over HTTPS reached commit `eaaa9065` (`Export TFF
+  problems for AlgTop sessions`). The relevant faster theorem-index
   generator commit, `0284ba9c` (`Speed up theorem index generation`), is already
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
@@ -26,9 +26,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:37 elapsed time`.
-- The current committed branch tip before this report refresh is `540732af`
-  (`Prove GeoTop edge containment in triangle`).
+  `0:00:38 elapsed time`.
+- The current committed branch tip before this report refresh is `1c71785d`
+  (`Prove GeoTop shared edge containment`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -116,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7827; this is the remaining analytic local-neighborhood step for
+  at line 7879; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8183;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8235;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -307,6 +307,9 @@ edge spanned by two triangle vertices is contained in the triangle. Its
 immediate shared-edge consequence
 `geotop_shared_edge_rel_interior_subset_two_2simplexes_dev34` is also proved,
 placing the common edge relative interior inside both incident triangles.
+The new helper `geotop_edge_rel_interior_small_subsegment_dev34` proves the
+book's horizontal base step for the local diamond: every relative-interior edge
+point has a small edge-direction subsegment remaining in the relative interior.
 
 ## Important Supporting Material
 

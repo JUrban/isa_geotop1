@@ -7453,6 +7453,58 @@ proof -
     by (rule that[OF ht0 ht1 hp_eq])
 qed
 
+lemma geotop_edge_rel_interior_small_subsegment_dev34:
+  fixes e :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains u where
+    "0 < u"
+    "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+  (**
+    Edge-relative-interior points contain a small open subsegment in the edge
+    direction.  This is the horizontal base of the local diamond around a
+    shared-edge point. **)
+proof -
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    by (rule geotop_edge_rel_interior_parameter_dev34[OF hab he_eq hp])
+  have h1mt: "0 < 1 - t"
+    using ht1 by (by100 linarith)
+  obtain u where hu0: "0 < u" and hut: "u < t" and hu1mt: "u < 1 - t"
+    using field_lbound_gt_zero[OF ht0 h1mt] by (by100 blast)
+  have he_HOL: "e = closed_segment a b"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] segment_convex_hull[of a b]
+    by (by100 simp)
+  have hrel: "rel_interior e = open_segment a b"
+    using he_HOL hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have htm0: "0 < t - u"
+    using hut by (by100 linarith)
+  have htm1: "t - u < 1"
+    using ht1 hu0 by (by100 linarith)
+  have htp0: "0 < t + u"
+    using ht0 hu0 by (by100 linarith)
+  have htp1: "t + u < 1"
+    using hu1mt by (by100 linarith)
+  have hminus_eq:
+    "p - u *\<^sub>R (b - a) = (1 - (t - u)) *\<^sub>R a + (t - u) *\<^sub>R b"
+    using hp_eq by (simp add: algebra_simps scaleR_diff_right)
+  have hplus_eq:
+    "p + u *\<^sub>R (b - a) = (1 - (t + u)) *\<^sub>R a + (t + u) *\<^sub>R b"
+    using hp_eq by (simp add: algebra_simps scaleR_diff_right)
+  have hminus_open: "p - u *\<^sub>R (b - a) \<in> open_segment a b"
+    unfolding in_segment using hab htm0 htm1 hminus_eq by (by100 blast)
+  have hplus_open: "p + u *\<^sub>R (b - a) \<in> open_segment a b"
+    unfolding in_segment using hab htp0 htp1 hplus_eq by (by100 blast)
+  have hminus_rel: "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    using hminus_open hrel by (by100 simp)
+  have hplus_rel: "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+    using hplus_open hrel by (by100 simp)
+  show ?thesis
+    by (rule that[OF hu0 hminus_rel hplus_rel])
+qed
+
 lemma geotop_real_positive_edge_probe_parameter_dev34:
   fixes u v x y z :: real
   assumes hu: "0 < u"
