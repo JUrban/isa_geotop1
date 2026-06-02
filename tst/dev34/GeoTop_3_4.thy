@@ -2184,6 +2184,99 @@ proof -
   qed
 qed
 
+lemma geotop_star_cone_vertex_map_bij_dev34:
+  fixes K :: "(real^2) set set" and B :: "(real^2) set"
+    and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+  assumes hcB: "c \<notin> B"
+  shows "bij_betw \<phi> (geotop_complex_vertices (geotop_star K v)) (insert c B)"
+  (**
+    Fig. 4.10 vertex bookkeeping: after ordering the link vertices against the
+    subdivided frontier vertices, extend the correspondence by sending the old
+    vertex \<open>v\<close> to the new cone vertex \<open>c\<close>. **)
+proof -
+  let ?LV = "geotop_complex_vertices (geotop_link K v)"
+  let ?SV = "geotop_complex_vertices (geotop_star K v)"
+  have hstar: "?SV = insert v ?LV"
+    by (rule geotop_star_vertices_eq_insert_link_vertices_dev34[OF hK hv])
+  have hv_not_LV: "v \<notin> ?LV"
+    by (rule geotop_link_vertices_avoid_star_vertex_dev34[OF hK])
+  have h\<psi>inj: "inj_on \<psi> ?LV"
+    using h\<psi> unfolding bij_betw_def by (by100 blast)
+  have h\<psi>img: "\<psi> ` ?LV = B"
+    using h\<psi> unfolding bij_betw_def by (by100 blast)
+  have h\<phi>v: "\<phi> v = c"
+    unfolding \<phi>_def by (by100 simp)
+  have h\<phi>link: "\<forall>x\<in>?LV. \<phi> x = \<psi> x"
+    unfolding \<phi>_def using hv_not_LV by (by100 simp)
+  have h\<phi>link_img: "\<phi> ` ?LV = B"
+  proof -
+    have "\<phi> ` ?LV = \<psi> ` ?LV"
+      using h\<phi>link by (by100 force)
+    thus ?thesis
+      using h\<psi>img by (by100 simp)
+  qed
+  have h\<phi>img: "\<phi> ` ?SV = insert c B"
+    using hstar h\<phi>v h\<phi>link_img by (by100 simp)
+  have h\<phi>inj_insert: "inj_on \<phi> (insert v ?LV)"
+  proof (rule inj_onI)
+    fix x y
+    assume hx: "x \<in> insert v ?LV"
+    assume hy: "y \<in> insert v ?LV"
+    assume hxy: "\<phi> x = \<phi> y"
+    show "x = y"
+    proof (cases "x = v")
+      case True
+      show ?thesis
+      proof (cases "y = v")
+        case True
+        show ?thesis
+          using \<open>x = v\<close> True by (by100 simp)
+      next
+        case False
+        have hyLV: "y \<in> ?LV"
+          using hy False by (by100 blast)
+        have h\<phi>yB: "\<phi> y \<in> B"
+          using h\<phi>link_img hyLV by (by100 blast)
+        have "c \<in> B"
+          using hxy \<open>x = v\<close> h\<phi>v h\<phi>yB by (by100 simp)
+        thus ?thesis
+          using hcB by (by100 blast)
+      qed
+    next
+      case False
+      have hxLV: "x \<in> ?LV"
+        using hx False by (by100 blast)
+      show ?thesis
+      proof (cases "y = v")
+        case True
+        have h\<phi>xB: "\<phi> x \<in> B"
+          using h\<phi>link_img hxLV by (by100 blast)
+        have "c \<in> B"
+          using hxy True h\<phi>v h\<phi>xB by (by100 simp)
+        thus ?thesis
+          using hcB by (by100 blast)
+      next
+        case False
+        have hyLV: "y \<in> ?LV"
+          using hy False by (by100 blast)
+        have h\<psi>xy: "\<psi> x = \<psi> y"
+          using hxy h\<phi>link hxLV hyLV by (by100 simp)
+        show ?thesis
+          by (rule inj_onD[OF h\<psi>inj h\<psi>xy hxLV hyLV])
+      qed
+    qed
+  qed
+  have h\<phi>inj: "inj_on \<phi> ?SV"
+    using hstar h\<phi>inj_insert by (by100 simp)
+  show ?thesis
+    unfolding bij_betw_def using h\<phi>inj h\<phi>img by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
