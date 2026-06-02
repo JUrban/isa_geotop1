@@ -2839,6 +2839,50 @@ proof -
     unfolding geotop_isomorphism_def using hbij hsimplex by (by100 blast)
 qed
 
+lemma geotop_star_fan_isomorphism_from_link_and_cone_target_cases_dev34:
+  fixes K L' :: "(real^2) set set" and B :: "(real^2) set"
+    and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+  assumes hcB: "c \<notin> B"
+  assumes hL_vertices: "geotop_complex_vertices L' = insert c B"
+  assumes hstar_vertices_finite:
+    "finite (geotop_complex_vertices (geotop_star K v))"
+  assumes hlink_target:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+  assumes hcone_vertex_target:
+    "geotop_convex_hull {c} \<in> L'"
+  assumes hcone_target:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+  shows "geotop_isomorphism (geotop_star K v) L' \<phi>"
+  (**
+    Fig. 4.10 isomorphism step from target fan cases: the link-boundary
+    bijection plus the target's old-link/cone membership facts give a
+    simplicial isomorphism of the whole star. **)
+proof -
+  have hsimplex_raw:
+    "\<forall>V. V \<subseteq> geotop_complex_vertices (geotop_star K v) \<longrightarrow>
+        (geotop_convex_hull V \<in> geotop_star K v
+          \<longleftrightarrow> geotop_convex_hull ((\<lambda>x. if x = v then c else \<psi> x) ` V) \<in> L')"
+    by (rule geotop_star_fan_simplex_iff_from_link_and_cone_target_cases_dev34
+        [OF hK hv hstar_vertices_finite hlink_target hcone_vertex_target
+          hcone_target])
+  have hiso_raw:
+    "geotop_isomorphism (geotop_star K v) L' (\<lambda>x. if x = v then c else \<psi> x)"
+    by (rule geotop_star_fan_isomorphism_from_link_bij_and_simplex_iff_dev34
+        [OF hK hv h\<psi> hcB hL_vertices hsimplex_raw])
+  show ?thesis
+    using hiso_raw \<phi>_def by (by100 simp)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
