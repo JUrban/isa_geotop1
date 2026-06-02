@@ -15327,6 +15327,7 @@ proof -
             have h_endpoint_linear_model_ij_k:
               "\<exists>\<delta>p>0. \<exists>pi pj pk.
                   pi \<noteq> P0 \<and> pj \<noteq> P0 \<and> pk \<noteq> P0 \<and>
+                  ball P0 \<delta>p \<inter> E = {P0} \<and>
                   ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi \<and>
                   ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj \<and>
                   ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk \<and>
@@ -15349,18 +15350,74 @@ proof -
                 and hk_int_loc0:
                   "ball P0 \<delta>k \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
                 using broken_line_endpoint_local_segment[OF hk_bl hkE hP0E] by (by100 blast)
-              define \<delta>p where "\<delta>p = min \<delta>i (min \<delta>j \<delta>k)"
+              have hE_card: "card E = 2"
+                using hkE unfolding geotop_arc_endpoints_def by (by100 blast)
+              obtain Q where hE_PQ: "E = {P0, Q}" and hQ_ne: "Q \<noteq> P0"
+              proof -
+                obtain A B where hE_AB: "E = {A, B}" and hAB_ne: "A \<noteq> B"
+                  using hE_card card_2_iff by (by100 metis)
+                have hP_cases: "P0 = A \<or> P0 = B"
+                  using hP0E hE_AB by (by100 blast)
+                thus ?thesis
+                proof
+                  assume hPA: "P0 = A"
+                  have "E = {P0, B}"
+                    using hE_AB hPA by (by100 simp)
+                  moreover have "B \<noteq> P0"
+                    using hAB_ne hPA by (by100 blast)
+                  ultimately show ?thesis using that by (by100 blast)
+                next
+                  assume hPB: "P0 = B"
+                  have "E = {P0, A}"
+                    using hE_AB hPB by (by100 blast)
+                  moreover have "A \<noteq> P0"
+                    using hAB_ne hPB by (by100 blast)
+                  ultimately show ?thesis using that by (by100 blast)
+                qed
+              qed
+              define \<delta>E where "\<delta>E = dist P0 Q / 2"
+              have h\<delta>E_pos: "\<delta>E > 0"
+                unfolding \<delta>E_def using hQ_ne by (by100 simp)
+              have hballE0: "ball P0 \<delta>E \<inter> E = {P0}"
+              proof
+                show "ball P0 \<delta>E \<inter> E \<subseteq> {P0}"
+                proof
+                  fix x
+                  assume hx: "x \<in> ball P0 \<delta>E \<inter> E"
+                  have hxE: "x \<in> E" using hx by (by100 blast)
+                  have hx_ball: "x \<in> ball P0 \<delta>E" using hx by (by100 blast)
+                  have hx_cases: "x = P0 \<or> x = Q"
+                    using hxE hE_PQ by (by100 blast)
+                  thus "x \<in> {P0}"
+                  proof
+                    assume "x = P0"
+                    thus ?thesis by (by100 simp)
+                  next
+                    assume "x = Q"
+                    hence "dist P0 Q < \<delta>E"
+                      using hx_ball by (by100 simp)
+                    thus ?thesis
+                      unfolding \<delta>E_def using hQ_ne by (by100 simp)
+                  qed
+                qed
+                show "{P0} \<subseteq> ball P0 \<delta>E \<inter> E"
+                  using hP0E h\<delta>E_pos by (by100 simp)
+              qed
+              define \<delta>p where "\<delta>p = min \<delta>i (min \<delta>j (min \<delta>k \<delta>E))"
               have h\<delta>p_pos: "\<delta>p > 0"
-                unfolding \<delta>p_def using h\<delta>i_pos h\<delta>j_pos h\<delta>k_pos by (by100 simp)
+                unfolding \<delta>p_def using h\<delta>i_pos h\<delta>j_pos h\<delta>k_pos h\<delta>E_pos by (by100 simp)
               have h\<delta>p_le_i: "\<delta>p \<le> \<delta>i" unfolding \<delta>p_def by (by100 simp)
               have h\<delta>p_le_j: "\<delta>p \<le> \<delta>j" unfolding \<delta>p_def by (by100 simp)
               have h\<delta>p_le_k: "\<delta>p \<le> \<delta>k" unfolding \<delta>p_def by (by100 simp)
+              have h\<delta>p_le_E: "\<delta>p \<le> \<delta>E" unfolding \<delta>p_def by (by100 simp)
               have hball_i: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>i"
                 using h\<delta>p_le_i by (by100 auto)
               have hball_j: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>j"
                 using h\<delta>p_le_j by (by100 auto)
               have hball_k: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>k"
                 using h\<delta>p_le_k by (by100 auto)
+              have hball_E: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>E"
+                using h\<delta>p_le_E by (by100 auto)
               have hi_loc:
                 "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
                 using hball_i hi_loc0 by (by100 blast)
@@ -15379,12 +15436,20 @@ proof -
               have hk_int_loc:
                 "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
                 using hball_k hk_int_loc0 by (by100 blast)
+              have hballE: "ball P0 \<delta>p \<inter> E = {P0}"
+              proof
+                show "ball P0 \<delta>p \<inter> E \<subseteq> {P0}"
+                  using hball_E hballE0 by (by100 blast)
+                show "{P0} \<subseteq> ball P0 \<delta>p \<inter> E"
+                  using h\<delta>p_pos hP0E by (by100 simp)
+              qed
               show ?thesis
-                using h\<delta>p_pos hpi_ne0 hpj_ne0 hpk_ne0 hi_loc hj_loc hk_loc
+                using h\<delta>p_pos hpi_ne0 hpj_ne0 hpk_ne0 hballE hi_loc hj_loc hk_loc
                   hi_int_loc hj_int_loc hk_int_loc by (by100 blast)
             qed
             obtain \<delta>p pi pj pk where h\<delta>p_pos: "\<delta>p > 0"
               and hpi_ne: "pi \<noteq> P0" and hpj_ne: "pj \<noteq> P0" and hpk_ne: "pk \<noteq> P0"
+              and hballE: "ball P0 \<delta>p \<inter> E = {P0}"
               and hi_loc_seg: "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
               and hj_loc_seg: "ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj"
               and hk_loc_seg: "ball P0 \<delta>p \<inter> k = ball P0 \<delta>p \<inter> closed_segment P0 pk"
@@ -15401,6 +15466,7 @@ proof -
               assume hpi_ne': "pi \<noteq> P0"
               assume hpj_ne': "pj \<noteq> P0"
               assume hpk_ne': "pk \<noteq> P0"
+              assume hballE': "ball P0 \<delta>p \<inter> E = {P0}"
               assume hi_loc':
                 "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
               assume hj_loc':
@@ -15415,7 +15481,7 @@ proof -
                 "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
               show thesis
                 by (rule that[OF h\<delta>p_pos' hpi_ne' hpj_ne' hpk_ne'
-                    hi_loc' hj_loc' hk_loc' hi_int_loc' hj_int_loc' hk_int_loc'])
+                    hballE' hi_loc' hj_loc' hk_loc' hi_int_loc' hj_int_loc' hk_int_loc'])
             qed
             have h_pair_local_model:
               "ball P0 \<delta>p \<inter> (i \<union> j) =
