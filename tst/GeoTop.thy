@@ -15795,6 +15795,7 @@ proof -
             have h_endpoint_linear_model_ij_k:
               "\<exists>\<delta>p>0. \<exists>pi pj pk.
                   pi \<noteq> P0 \<and> pj \<noteq> P0 \<and> pk \<noteq> P0 \<and>
+                  \<delta>p \<le> dist P0 pi \<and> \<delta>p \<le> dist P0 pj \<and> \<delta>p \<le> dist P0 pk \<and>
                   ball P0 \<delta>p \<inter> E = {P0} \<and>
                   ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi \<and>
                   ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj \<and>
@@ -15871,13 +15872,173 @@ proof -
                 show "{P0} \<subseteq> ball P0 \<delta>E \<inter> E"
                   using hP0E h\<delta>E_pos by (by100 simp)
               qed
-              define \<delta>p where "\<delta>p = min \<delta>i (min \<delta>j (min \<delta>k \<delta>E))"
+              define \<delta>p where
+                "\<delta>p = min \<delta>i
+                  (min \<delta>j
+                    (min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2))))))"
+              have hdist_pi_pos: "0 < dist P0 pi"
+                using hpi_ne0 by (by100 simp)
+              have hdist_pj_pos: "0 < dist P0 pj"
+                using hpj_ne0 by (by100 simp)
+              have hdist_pk_pos: "0 < dist P0 pk"
+                using hpk_ne0 by (by100 simp)
               have h\<delta>p_pos: "\<delta>p > 0"
-                unfolding \<delta>p_def using h\<delta>i_pos h\<delta>j_pos h\<delta>k_pos h\<delta>E_pos by (by100 simp)
-              have h\<delta>p_le_i: "\<delta>p \<le> \<delta>i" unfolding \<delta>p_def by (by100 simp)
-              have h\<delta>p_le_j: "\<delta>p \<le> \<delta>j" unfolding \<delta>p_def by (by100 simp)
-              have h\<delta>p_le_k: "\<delta>p \<le> \<delta>k" unfolding \<delta>p_def by (by100 simp)
-              have h\<delta>p_le_E: "\<delta>p \<le> \<delta>E" unfolding \<delta>p_def by (by100 simp)
+              proof -
+                have hpi_half: "0 < dist P0 pi / 2"
+                  using hdist_pi_pos by (by100 linarith)
+                have hpj_half: "0 < dist P0 pj / 2"
+                  using hdist_pj_pos by (by100 linarith)
+                have hpk_half: "0 < dist P0 pk / 2"
+                  using hdist_pk_pos by (by100 linarith)
+                show ?thesis
+                  unfolding \<delta>p_def
+                  using h\<delta>i_pos h\<delta>j_pos h\<delta>k_pos h\<delta>E_pos
+                    hpi_half hpj_half hpk_half
+                  by (simp only: min_less_iff_conj)
+              qed
+              have h\<delta>p_le_i: "\<delta>p \<le> \<delta>i"
+                unfolding \<delta>p_def by (rule min.cobounded1)
+              have h\<delta>p_le_j: "\<delta>p \<le> \<delta>j"
+              proof -
+                have "\<delta>p \<le> min \<delta>j
+                    (min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                  unfolding \<delta>p_def by (rule min.cobounded2)
+                also have "\<dots> \<le> \<delta>j"
+                  by (rule min.cobounded1)
+                finally show ?thesis .
+              qed
+              have h\<delta>p_le_k: "\<delta>p \<le> \<delta>k"
+              proof -
+                have "\<delta>p \<le> min \<delta>j
+                    (min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                  unfolding \<delta>p_def by (rule min.cobounded2)
+                also have "\<dots> \<le> min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2))))"
+                  by (rule min.cobounded2)
+                also have "\<dots> \<le> \<delta>k"
+                  by (rule min.cobounded1)
+                finally show ?thesis .
+              qed
+              have h\<delta>p_le_E: "\<delta>p \<le> \<delta>E"
+              proof -
+                have "\<delta>p \<le> min \<delta>j
+                    (min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                  unfolding \<delta>p_def by (rule min.cobounded2)
+                also have "\<dots> \<le> min \<delta>k
+                      (min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2))))"
+                  by (rule min.cobounded2)
+                also have "\<dots> \<le> min \<delta>E
+                        (min (dist P0 pi / 2)
+                          (min (dist P0 pj / 2) (dist P0 pk / 2)))"
+                  by (rule min.cobounded2)
+                also have "\<dots> \<le> \<delta>E"
+                  by (rule min.cobounded1)
+                finally show ?thesis .
+              qed
+              have h\<delta>p_le_pi: "\<delta>p \<le> dist P0 pi"
+              proof -
+                have "\<delta>p \<le> dist P0 pi / 2"
+                proof -
+                  have "\<delta>p \<le> min \<delta>j
+                      (min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                    unfolding \<delta>p_def by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> dist P0 pi / 2"
+                    by (rule min.cobounded1)
+                  finally show ?thesis .
+                qed
+                thus ?thesis using hdist_pi_pos by (by100 linarith)
+              qed
+              have h\<delta>p_le_pj: "\<delta>p \<le> dist P0 pj"
+              proof -
+                have "\<delta>p \<le> dist P0 pj / 2"
+                proof -
+                  have "\<delta>p \<le> min \<delta>j
+                      (min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                    unfolding \<delta>p_def by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min (dist P0 pj / 2) (dist P0 pk / 2)"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> dist P0 pj / 2"
+                    by (rule min.cobounded1)
+                  finally show ?thesis .
+                qed
+                thus ?thesis using hdist_pj_pos by (by100 linarith)
+              qed
+              have h\<delta>p_le_pk: "\<delta>p \<le> dist P0 pk"
+              proof -
+                have "\<delta>p \<le> dist P0 pk / 2"
+                proof -
+                  have "\<delta>p \<le> min \<delta>j
+                      (min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))))"
+                    unfolding \<delta>p_def by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>k
+                        (min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min \<delta>E
+                          (min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2)))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min (dist P0 pi / 2)
+                            (min (dist P0 pj / 2) (dist P0 pk / 2))"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> min (dist P0 pj / 2) (dist P0 pk / 2)"
+                    by (rule min.cobounded2)
+                  also have "\<dots> \<le> dist P0 pk / 2"
+                    by (rule min.cobounded2)
+                  finally show ?thesis .
+                qed
+                thus ?thesis using hdist_pk_pos by (by100 linarith)
+              qed
               have hball_i: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>i"
                 using h\<delta>p_le_i by (by100 auto)
               have hball_j: "ball P0 \<delta>p \<subseteq> ball P0 \<delta>j"
@@ -15912,11 +16073,15 @@ proof -
                   using h\<delta>p_pos hP0E by (by100 simp)
               qed
               show ?thesis
-                using h\<delta>p_pos hpi_ne0 hpj_ne0 hpk_ne0 hballE hi_loc hj_loc hk_loc
+                using h\<delta>p_pos hpi_ne0 hpj_ne0 hpk_ne0 h\<delta>p_le_pi h\<delta>p_le_pj h\<delta>p_le_pk
+                  hballE hi_loc hj_loc hk_loc
                   hi_int_loc hj_int_loc hk_int_loc by (by100 blast)
             qed
             obtain \<delta>p pi pj pk where h\<delta>p_pos: "\<delta>p > 0"
               and hpi_ne: "pi \<noteq> P0" and hpj_ne: "pj \<noteq> P0" and hpk_ne: "pk \<noteq> P0"
+              and h\<delta>p_le_pi: "\<delta>p \<le> dist P0 pi"
+              and h\<delta>p_le_pj: "\<delta>p \<le> dist P0 pj"
+              and h\<delta>p_le_pk: "\<delta>p \<le> dist P0 pk"
               and hballE: "ball P0 \<delta>p \<inter> E = {P0}"
               and hi_loc_seg: "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
               and hj_loc_seg: "ball P0 \<delta>p \<inter> j = ball P0 \<delta>p \<inter> closed_segment P0 pj"
@@ -15934,6 +16099,9 @@ proof -
               assume hpi_ne': "pi \<noteq> P0"
               assume hpj_ne': "pj \<noteq> P0"
               assume hpk_ne': "pk \<noteq> P0"
+              assume h\<delta>p_le_pi': "\<delta>p \<le> dist P0 pi"
+              assume h\<delta>p_le_pj': "\<delta>p \<le> dist P0 pj"
+              assume h\<delta>p_le_pk': "\<delta>p \<le> dist P0 pk"
               assume hballE': "ball P0 \<delta>p \<inter> E = {P0}"
               assume hi_loc':
                 "ball P0 \<delta>p \<inter> i = ball P0 \<delta>p \<inter> closed_segment P0 pi"
@@ -15949,6 +16117,7 @@ proof -
                 "ball P0 \<delta>p \<inter> geotop_arc_interior k E \<subseteq> closed_segment P0 pk - {P0}"
               show thesis
                 by (rule that[OF h\<delta>p_pos' hpi_ne' hpj_ne' hpk_ne'
+                    h\<delta>p_le_pi' h\<delta>p_le_pj' h\<delta>p_le_pk'
                     hballE' hi_loc' hj_loc' hk_loc' hi_int_loc' hj_int_loc' hk_int_loc'])
             qed
             have h_pair_local_model:
@@ -16287,7 +16456,399 @@ proof -
                   v \<in> ball P0 \<delta>p \<inter> geotop_arc_interior k E;
                   D \<in> components (UNIV - (i \<union> j)); u \<in> D; v \<in> D\<rbrakk>
                 \<Longrightarrow> v \<in> closure C"
-              sorry
+            proof -
+              fix \<delta>s C u v D
+              assume h\<delta>s_pos: "\<delta>s > 0"
+                and hC_comp: "C \<in> components (ball P0 \<delta>s - M)"
+                and hC_sub_U: "C \<subseteq> U"
+                and hP0_cl_C: "P0 \<in> closure C"
+                and hk_miss_C:
+                  "geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {}"
+                and huC: "u \<in> C"
+                and hu_ball_p: "u \<in> ball P0 \<delta>p"
+                and hv_ball_s: "v \<in> ball P0 \<delta>s"
+                and hv_ball_p_k: "v \<in> ball P0 \<delta>p \<inter> geotop_arc_interior k E"
+                and hD_comp: "D \<in> components (UNIV - (i \<union> j))"
+                and huD: "u \<in> D"
+                and hvD: "v \<in> D"
+              have hv_ball_p: "v \<in> ball P0 \<delta>p"
+                using hv_ball_p_k by (by100 blast)
+              have hv_kint: "v \<in> geotop_arc_interior k E"
+                using hv_ball_p_k by (by100 blast)
+              have hM_eq_Bs: "M = B1 \<union> B2 \<union> B3"
+                using h_theta unfolding geotop_is_theta_graph_def by (by100 blast)
+              have hM_eq_ijk: "M = i \<union> j \<union> k"
+                using hM_eq_Bs hi hj hk hij_ne hk_ne_i hk_ne_j
+                  hB1_ne_B2 hB1_ne_B3 hB2_ne_B3 by auto
+              have hP0_M: "P0 \<in> M"
+              proof -
+                have hE_sub_i: "E \<subseteq> i"
+                  using hiE unfolding geotop_arc_endpoints_def by (by100 blast)
+                have "P0 \<in> i"
+                  using hP0E hE_sub_i by (by100 blast)
+                thus ?thesis using hM_eq_ijk by (by100 blast)
+              qed
+              have hC_sub_local: "C \<subseteq> ball P0 \<delta>s - M"
+                by (rule in_components_subset[OF hC_comp])
+              have hu_ball_s: "u \<in> ball P0 \<delta>s"
+                using huC hC_sub_local by (by100 blast)
+              have hu_not_M: "u \<notin> M"
+                using huC hC_sub_local by (by100 blast)
+              have hu_ne_P0: "u \<noteq> P0"
+                using hu_not_M hP0_M by (by100 blast)
+              have hv_not_E: "v \<notin> E"
+                using hv_kint unfolding geotop_arc_interior_def by (by100 blast)
+              have hv_ne_P0: "v \<noteq> P0"
+                using hv_not_E hP0E by (by100 blast)
+              define r where "r = dist P0 v"
+              have hr_pos: "r > 0"
+                unfolding r_def using hv_ne_P0 by (by100 simp)
+              have hr_lt_\<delta>s: "r < \<delta>s"
+                unfolding r_def using hv_ball_s by (by100 simp)
+              have hr_lt_\<delta>p: "r < \<delta>p"
+                unfolding r_def using hv_ball_p by (by100 simp)
+              have hr_le_pi: "r \<le> dist P0 pi"
+                using hr_lt_\<delta>p h\<delta>p_le_pi by (by100 linarith)
+              have hr_le_pj: "r \<le> dist P0 pj"
+                using hr_lt_\<delta>p h\<delta>p_le_pj by (by100 linarith)
+              have hr_le_pk: "r \<le> dist P0 pk"
+                using hr_lt_\<delta>p h\<delta>p_le_pk by (by100 linarith)
+              define qi where "qi = P0 + (r / dist P0 pi) *\<^sub>R (pi - P0)"
+              define qj where "qj = P0 + (r / dist P0 pj) *\<^sub>R (pj - P0)"
+              define qk where "qk = P0 + (r / dist P0 pk) *\<^sub>R (pk - P0)"
+              have hi_sphere:
+                "(closed_segment P0 pi - {P0}) \<inter> sphere P0 r = {qi}"
+                by (rule closed_segment_sphere_unique_from_center
+                    [OF hpi_ne hr_pos hr_le_pi qi_def])
+              have hj_sphere:
+                "(closed_segment P0 pj - {P0}) \<inter> sphere P0 r = {qj}"
+                by (rule closed_segment_sphere_unique_from_center
+                    [OF hpj_ne hr_pos hr_le_pj qj_def])
+              have hk_sphere_qk:
+                "(closed_segment P0 pk - {P0}) \<inter> sphere P0 r = {qk}"
+                by (rule closed_segment_sphere_unique_from_center
+                    [OF hpk_ne hr_pos hr_le_pk qk_def])
+              have hv_pk: "v \<in> closed_segment P0 pk - {P0}"
+                using h_third_local_model hv_ball_p hv_kint by (by100 blast)
+              have hv_sphere: "v \<in> sphere P0 r"
+                unfolding r_def by (by100 simp)
+              have hv_eq_qk: "v = qk"
+              proof -
+                have "v \<in> (closed_segment P0 pk - {P0}) \<inter> sphere P0 r"
+                  using hv_pk hv_sphere by (by100 blast)
+                thus ?thesis using hk_sphere_qk by (by100 blast)
+              qed
+              have hk_sphere:
+                "(closed_segment P0 pk - {P0}) \<inter> sphere P0 r = {v}"
+                using hk_sphere_qk hv_eq_qk by (by100 simp)
+              have hqi_sphere: "qi \<in> sphere P0 r"
+                using hi_sphere by (by100 blast)
+              have hqj_sphere: "qj \<in> sphere P0 r"
+                using hj_sphere by (by100 blast)
+              have hqi_ball_p: "qi \<in> ball P0 \<delta>p"
+                using hqi_sphere hr_lt_\<delta>p by (by100 simp)
+              have hqj_ball_p: "qj \<in> ball P0 \<delta>p"
+                using hqj_sphere hr_lt_\<delta>p by (by100 simp)
+              have hqi_seg: "qi \<in> closed_segment P0 pi - {P0}"
+                using hi_sphere by (by100 blast)
+              have hqj_seg: "qj \<in> closed_segment P0 pj - {P0}"
+                using hj_sphere by (by100 blast)
+              have hqi_i: "qi \<in> i"
+                using hi_loc_seg hqi_ball_p hqi_seg by (by100 blast)
+              have hqj_j: "qj \<in> j"
+                using hj_loc_seg hqj_ball_p hqj_seg by (by100 blast)
+              have hqi_not_E: "qi \<notin> E"
+                using hballE hqi_ball_p hqi_seg by (by100 blast)
+              have hqj_not_E: "qj \<notin> E"
+                using hballE hqj_ball_p hqj_seg by (by100 blast)
+              have hqi_iint: "qi \<in> geotop_arc_interior i E"
+                unfolding geotop_arc_interior_def using hqi_i hqi_not_E by (by100 blast)
+              have hqj_jint: "qj \<in> geotop_arc_interior j E"
+                unfolding geotop_arc_interior_def using hqj_j hqj_not_E by (by100 blast)
+              have hqi_ne_qj: "qi \<noteq> qj"
+              proof
+                assume heq: "qi = qj"
+                have "qi \<in> geotop_arc_interior i E \<inter> geotop_arc_interior j E"
+                  using hqi_iint hqj_jint heq by (by100 blast)
+                thus False using hij_disj by (by100 blast)
+              qed
+              have hqi_ne_v: "qi \<noteq> v"
+              proof
+                assume heq: "qi = v"
+                have "v \<in> geotop_arc_interior k E \<inter> geotop_arc_interior i E"
+                  using hv_kint hqi_iint heq by (by100 blast)
+                thus False using hki_disj by (by100 blast)
+              qed
+              have hqj_ne_v: "qj \<noteq> v"
+              proof
+                assume heq: "qj = v"
+                have "v \<in> geotop_arc_interior k E \<inter> geotop_arc_interior j E"
+                  using hv_kint hqj_jint heq by (by100 blast)
+                thus False using hkj_disj by (by100 blast)
+              qed
+              define x where "x = P0 + (r / dist P0 u) *\<^sub>R (u - P0)"
+              have hx_sphere: "x \<in> sphere P0 r"
+              proof -
+                have "dist P0 x = r"
+                  unfolding x_def using hu_ne_P0 hr_pos
+                  by (simp add: dist_norm norm_minus_commute)
+                thus ?thesis by (by100 simp)
+              qed
+              have hx_ball_s: "x \<in> ball P0 \<delta>s"
+                using hx_sphere hr_lt_\<delta>s by (by100 simp)
+              have hx_ball_p: "x \<in> ball P0 \<delta>p"
+                using hx_sphere hr_lt_\<delta>p by (by100 simp)
+              have hseg_ux_sub_local: "closed_segment u x \<subseteq> ball P0 \<delta>s - M"
+              proof
+                fix z
+                assume hz_seg: "z \<in> closed_segment u x"
+                have hz_ball_s: "z \<in> ball P0 \<delta>s"
+                  using closed_segment_subset[OF hu_ball_s hx_ball_s convex_ball] hz_seg
+                  by (by100 blast)
+                have hz_ball_p: "z \<in> ball P0 \<delta>p"
+                  using closed_segment_subset[OF hu_ball_p hx_ball_p convex_ball] hz_seg
+                  by (by100 blast)
+                have hz_not_M: "z \<notin> M"
+                proof
+                  assume hzM: "z \<in> M"
+                  have hz_cases: "z \<in> i \<or> z \<in> j \<or> z \<in> k"
+                    using hzM hM_eq_ijk by (by100 blast)
+                  thus False
+                  proof
+                    assume hzi: "z \<in> i"
+                    have hz_pi: "z \<in> closed_segment P0 pi"
+                      using hi_loc_seg hz_ball_p hzi by (by100 blast)
+                    have "u \<in> closed_segment P0 pi"
+                      by (rule closed_segment_radial_projection_preimage
+                          [OF hu_ball_p hu_ne_P0 hpi_ne h\<delta>p_le_pi hr_pos _ hz_seg hz_pi])
+                        (simp add: x_def)
+                    have "u \<in> i"
+                      using hi_loc_seg hu_ball_p \<open>u \<in> closed_segment P0 pi\<close> by (by100 blast)
+                    thus False using hu_not_M hM_eq_ijk by (by100 blast)
+                  next
+                    assume hz_jk: "z \<in> j \<or> z \<in> k"
+                    thus False
+                    proof
+                      assume hzj: "z \<in> j"
+                      have hz_pj: "z \<in> closed_segment P0 pj"
+                        using hj_loc_seg hz_ball_p hzj by (by100 blast)
+                      have "u \<in> closed_segment P0 pj"
+                        by (rule closed_segment_radial_projection_preimage
+                            [OF hu_ball_p hu_ne_P0 hpj_ne h\<delta>p_le_pj hr_pos _ hz_seg hz_pj])
+                          (simp add: x_def)
+                      have "u \<in> j"
+                        using hj_loc_seg hu_ball_p \<open>u \<in> closed_segment P0 pj\<close> by (by100 blast)
+                      thus False using hu_not_M hM_eq_ijk by (by100 blast)
+                    next
+                      assume hzk: "z \<in> k"
+                      have hz_pk: "z \<in> closed_segment P0 pk"
+                        using hk_loc_seg hz_ball_p hzk by (by100 blast)
+                      have "u \<in> closed_segment P0 pk"
+                        by (rule closed_segment_radial_projection_preimage
+                            [OF hu_ball_p hu_ne_P0 hpk_ne h\<delta>p_le_pk hr_pos _ hz_seg hz_pk])
+                          (simp add: x_def)
+                      have "u \<in> k"
+                        using hk_loc_seg hu_ball_p \<open>u \<in> closed_segment P0 pk\<close> by (by100 blast)
+                      thus False using hu_not_M hM_eq_ijk by (by100 blast)
+                    qed
+                  qed
+                qed
+                show "z \<in> ball P0 \<delta>s - M"
+                  using hz_ball_s hz_not_M by (by100 blast)
+              qed
+              have hseg_ux_conn: "connected (closed_segment u x)"
+                by (rule convex_connected[OF convex_closed_segment])
+              have hC_eq: "C = connected_component_set (ball P0 \<delta>s - M) u"
+              proof -
+                obtain z where hz_local: "z \<in> ball P0 \<delta>s - M"
+                  and hC_z: "C = connected_component_set (ball P0 \<delta>s - M) z"
+                  using hC_comp unfolding components_iff by (by100 blast)
+                have "u \<in> connected_component_set (ball P0 \<delta>s - M) z"
+                  using huC hC_z by (by100 simp)
+                hence "connected_component_set (ball P0 \<delta>s - M) u =
+                    connected_component_set (ball P0 \<delta>s - M) z"
+                  using connected_component_eq by (by100 blast)
+                thus ?thesis using hC_z by (by100 simp)
+              qed
+              have hxC: "x \<in> C"
+              proof -
+                have "closed_segment u x \<subseteq> connected_component_set (ball P0 \<delta>s - M) u"
+                  by (rule connected_component_maximal
+                      [OF _ hseg_ux_conn hseg_ux_sub_local])
+                    (by100 simp)
+                moreover have "x \<in> closed_segment u x"
+                  by (by100 simp)
+                ultimately show ?thesis using hC_eq by (by100 blast)
+              qed
+              have hU_sub_pair: "U \<subseteq> UNIV - (i \<union> j)"
+              proof -
+                have hU_sub_M: "U \<subseteq> UNIV - M"
+                  using hU_comp in_components_subset by (by100 blast)
+                show ?thesis using hU_sub_M hM_eq_ijk by (by100 blast)
+              qed
+              have hU_conn: "connected U"
+                using hU_comp in_components_connected by (by100 blast)
+              have hD_eq: "D = connected_component_set (UNIV - (i \<union> j)) u"
+              proof -
+                obtain z where hz_pair: "z \<in> UNIV - (i \<union> j)"
+                  and hD_z: "D = connected_component_set (UNIV - (i \<union> j)) z"
+                  using hD_comp unfolding components_iff by (by100 blast)
+                have "u \<in> connected_component_set (UNIV - (i \<union> j)) z"
+                  using huD hD_z by (by100 simp)
+                hence "connected_component_set (UNIV - (i \<union> j)) u =
+                    connected_component_set (UNIV - (i \<union> j)) z"
+                  using connected_component_eq by (by100 blast)
+                thus ?thesis using hD_z by (by100 simp)
+              qed
+              have hU_sub_D: "U \<subseteq> D"
+              proof -
+                have huU: "u \<in> U"
+                  using huC hC_sub_U by (by100 blast)
+                have "U \<subseteq> connected_component_set (UNIV - (i \<union> j)) u"
+                  by (rule connected_component_maximal[OF huU hU_conn hU_sub_pair])
+                thus ?thesis using hD_eq by (by100 simp)
+              qed
+              have hxD: "x \<in> D"
+                using hxC hC_sub_U hU_sub_D by (by100 blast)
+              have hx_not_qi: "x \<noteq> qi"
+              proof
+                assume "x = qi"
+                have "x \<in> M"
+                  using hqi_i \<open>x = qi\<close> hM_eq_ijk by (by100 blast)
+                have "x \<notin> M"
+                  using hxC hC_sub_local by (by100 blast)
+                thus False using \<open>x \<in> M\<close> by (by100 blast)
+              qed
+              have hx_not_qj: "x \<noteq> qj"
+              proof
+                assume "x = qj"
+                have "x \<in> M"
+                  using hqj_j \<open>x = qj\<close> hM_eq_ijk by (by100 blast)
+                have "x \<notin> M"
+                  using hxC hC_sub_local by (by100 blast)
+                thus False using \<open>x \<in> M\<close> by (by100 blast)
+              qed
+              have hx_not_v: "x \<noteq> v"
+              proof
+                assume "x = v"
+                have "x \<in> M"
+                  using hv_kint \<open>x = v\<close> hM_eq_ijk
+                  unfolding geotop_arc_interior_def by (by100 blast)
+                have "x \<notin> M"
+                  using hxC hC_sub_local by (by100 blast)
+                thus False using \<open>x \<in> M\<close> by (by100 blast)
+              qed
+              have hx_pair_circle: "x \<in> sphere P0 r - {qi, qj}"
+                using hx_sphere hx_not_qi hx_not_qj by (by100 blast)
+              have hv_pair_circle: "v \<in> sphere P0 r - {qi, qj}"
+                using hv_sphere hqi_ne_v hqj_ne_v by (by100 blast)
+              have hsame_circle_pair:
+                "\<exists>K \<in> components (sphere P0 r - {qi, qj}). x \<in> K \<and> v \<in> K"
+                by (rule pair_polygon_circle_side_classification
+                    [OF h_poly_ij h\<delta>p_pos hr_pos hr_lt_\<delta>p
+                        hi_loc_seg hj_loc_seg hi_sphere hj_sphere
+                        hpi_ne hpj_ne h\<delta>p_le_pi h\<delta>p_le_pj
+                        hqi_ne_qj hx_pair_circle hv_pair_circle])
+                  (use hD_comp hxD hvD in \<open>by100 blast\<close>)
+              define K where "K = connected_component_set (sphere P0 r - {qi, qj, v}) x"
+              have hx_triple: "x \<in> sphere P0 r - {qi, qj, v}"
+                using hx_sphere hx_not_qi hx_not_qj hx_not_v by (by100 blast)
+              have hK_comp: "K \<in> components (sphere P0 r - {qi, qj, v})"
+                unfolding K_def by (rule componentsI[OF hx_triple])
+              have hxK: "x \<in> K"
+                unfolding K_def using hx_triple by (by100 simp)
+              have hv_cl_K: "v \<in> closure K"
+                by (rule punctured_circle_component_closure_of_deleted_point
+                    [OF hr_pos hqi_sphere hqj_sphere hv_sphere hqi_ne_qj hqi_ne_v hqj_ne_v
+                        hK_comp hxK hsame_circle_pair])
+              have htriple_sub_local:
+                "sphere P0 r - {qi, qj, v} \<subseteq> ball P0 \<delta>s - M"
+              proof
+                fix z
+                assume hz: "z \<in> sphere P0 r - {qi, qj, v}"
+                have hz_sphere: "z \<in> sphere P0 r" using hz by (by100 blast)
+                have hz_not_qi: "z \<noteq> qi" using hz by (by100 blast)
+                have hz_not_qj: "z \<noteq> qj" using hz by (by100 blast)
+                have hz_not_v: "z \<noteq> v" using hz by (by100 blast)
+                have hz_ball_s: "z \<in> ball P0 \<delta>s"
+                  using hz_sphere hr_lt_\<delta>s by (by100 simp)
+                have hz_ball_p: "z \<in> ball P0 \<delta>p"
+                  using hz_sphere hr_lt_\<delta>p by (by100 simp)
+                have hz_not_i: "z \<notin> i"
+                proof
+                  assume hzi: "z \<in> i"
+                  have hz_pi: "z \<in> closed_segment P0 pi"
+                    using hi_loc_seg hz_ball_p hzi by (by100 blast)
+                  have "z \<in> (closed_segment P0 pi - {P0}) \<inter> sphere P0 r"
+                  proof -
+                    have "z \<noteq> P0"
+                      using hz_sphere hr_pos by (by100 auto)
+                    thus ?thesis using hz_pi hz_sphere by (by100 blast)
+                  qed
+                  hence "z = qi" using hi_sphere by (by100 blast)
+                  thus False using hz_not_qi by (by100 blast)
+                qed
+                have hz_not_j: "z \<notin> j"
+                proof
+                  assume hzj: "z \<in> j"
+                  have hz_pj: "z \<in> closed_segment P0 pj"
+                    using hj_loc_seg hz_ball_p hzj by (by100 blast)
+                  have "z \<in> (closed_segment P0 pj - {P0}) \<inter> sphere P0 r"
+                  proof -
+                    have "z \<noteq> P0"
+                      using hz_sphere hr_pos by (by100 auto)
+                    thus ?thesis using hz_pj hz_sphere by (by100 blast)
+                  qed
+                  hence "z = qj" using hj_sphere by (by100 blast)
+                  thus False using hz_not_qj by (by100 blast)
+                qed
+                have hz_not_k: "z \<notin> k"
+                proof
+                  assume hzk: "z \<in> k"
+                  have hz_pk: "z \<in> closed_segment P0 pk"
+                    using hk_loc_seg hz_ball_p hzk by (by100 blast)
+                  have "z \<in> (closed_segment P0 pk - {P0}) \<inter> sphere P0 r"
+                  proof -
+                    have "z \<noteq> P0"
+                      using hz_sphere hr_pos by (by100 auto)
+                    thus ?thesis using hz_pk hz_sphere by (by100 blast)
+                  qed
+                  hence "z = v" using hk_sphere by (by100 blast)
+                  thus False using hz_not_v by (by100 blast)
+                qed
+                have hz_not_M: "z \<notin> M"
+                  using hM_eq_ijk hz_not_i hz_not_j hz_not_k by (by100 blast)
+                show "z \<in> ball P0 \<delta>s - M"
+                  using hz_ball_s hz_not_M by (by100 blast)
+              qed
+              have hK_conn: "connected K"
+                using hK_comp in_components_connected by (by100 blast)
+              have hK_sub_local: "K \<subseteq> ball P0 \<delta>s - M"
+              proof -
+                have "K \<subseteq> sphere P0 r - {qi, qj, v}"
+                  by (rule in_components_subset[OF hK_comp])
+                thus ?thesis using htriple_sub_local by (by100 blast)
+              qed
+              have hK_sub_C: "K \<subseteq> C"
+              proof -
+                have hK_sub_ccx:
+                  "K \<subseteq> connected_component_set (ball P0 \<delta>s - M) x"
+                  by (rule connected_component_maximal[OF hxK hK_conn hK_sub_local])
+                have hx_ccu: "x \<in> connected_component_set (ball P0 \<delta>s - M) u"
+                  using hxC hC_eq by (by100 simp)
+                have hcc_eq:
+                  "connected_component_set (ball P0 \<delta>s - M) x =
+                    connected_component_set (ball P0 \<delta>s - M) u"
+                  using hx_ccu connected_component_eq by (by100 blast)
+                have "K \<subseteq> connected_component_set (ball P0 \<delta>s - M) u"
+                  using hK_sub_ccx hcc_eq by (by100 simp)
+                thus ?thesis using hC_eq by (by100 simp)
+              qed
+              have "closure K \<subseteq> closure C"
+                by (rule closure_mono[OF hK_sub_C])
+              thus "v \<in> closure C"
+                using hv_cl_K by (by100 blast)
+            qed
             have h_figure_2_7_sector_step:
               "\<exists>\<delta>0>0.
                  \<not> (\<exists>C \<in> components (UNIV - (i \<union> j)).
