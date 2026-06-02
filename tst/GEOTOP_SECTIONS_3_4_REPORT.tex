@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{array}
+
+\begin{document}
+
+\section*{GeoTop Formalization Report for Sections 3 and 4}
+
+Date: 2026-06-02.
+
+Sections 3 and 4 of \texttt{geotop.tex} are not yet sorry-free.  They are
+isolated in a cached development stack and the current active session builds
+after the latest merge from \texttt{main}.  The merge brought in colleague
+\texttt{main} at \texttt{3e463c3b}; the local merge commit is
+\texttt{2b0745a0}.
+
+The post-merge check passed:
+\begin{itemize}
+\item \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev}
+\end{itemize}
+
+Because the merge touched base files, the full post-merge rebuild took
+\texttt{0:11:32} elapsed.  The final \texttt{GeoTop34Dev} theory itself ran in
+\texttt{0:00:07} once the caches had rebuilt.
+
+Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror, the
+target section-specific theories currently contain 18 executable
+\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 8 in
+\texttt{dev34/GeoTop\_3\_4.thy}.
+
+\section*{Layout}
+
+The section 3--4 development is split as follows:
+\begin{itemize}
+\item \texttt{dev34\_pre/GeoTop.thy}: dirty cached import of the original script; it still contains original later-section sketches and is excluded from the Section 3--4 target count.
+\item \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}: Section 3 and early Section 4.
+\item \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}: Jordan-curve facts and local manifold helpers.
+\item \texttt{dev34\_workfacts}, \texttt{dev34\_linkfacts}, \texttt{dev34\_graphfacts}, \texttt{dev34\_graphwork}, and \texttt{dev34\_openstar}: cached support layers.
+\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work.
+\end{itemize}
+
+\section*{Section 3 Counterparts}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\linewidth}
+                  >{\raggedright\arraybackslash}p{0.45\linewidth}
+                  >{\raggedright\arraybackslash}p{0.18\linewidth}
+                  >{\raggedright\arraybackslash}p{0.16\linewidth}}
+\textbf{Book item} & \textbf{Book statement, abbreviated} & \textbf{Isabelle} & \textbf{File}\\
+\hline
+Theorem 3.1 & Matched simplexes admit a simplicial homeomorphism carrying vertices to assigned images. & \texttt{Theorem\_GT\_3\_1} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.2 & In the equal-dimensional case, the simplex homeomorphism extends to the whole Euclidean space. & \texttt{Theorem\_GT\_3\_2} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.3 & A triangulated polygonal disk with more than one 2-simplex has a free 2-simplex. & \texttt{Theorem\_GT\_3\_3} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.4 & Every polygon is carried by a plane homeomorphism to the frontier of a 2-simplex. & \texttt{Theorem\_GT\_3\_4} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.5 & Any two polygons in \(R^2\) are equivalent by a plane homeomorphism. & \texttt{Theorem\_GT\_3\_5} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.6 & A polygon bounds a topological 2-cell. & \texttt{Theorem\_GT\_3\_6} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 3.7 & The polygon-to-simplex homeomorphism can be chosen fixed outside a prescribed open neighborhood. & \texttt{Theorem\_GT\_3\_7} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+\end{longtable}
+
+\section*{Section 4 Counterparts}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\linewidth}
+                  >{\raggedright\arraybackslash}p{0.45\linewidth}
+                  >{\raggedright\arraybackslash}p{0.18\linewidth}
+                  >{\raggedright\arraybackslash}p{0.16\linewidth}}
+\textbf{Book item} & \textbf{Book statement, abbreviated} & \textbf{Isabelle} & \textbf{File}\\
+\hline
+Theorem 4.1 & Distinct components of an open Euclidean set are separated by disjoint open subsets. & \texttt{Theorem\_GT\_4\_1} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 4.2 & An arc across a polygonal disk separates the polygon interior into two expected open sides. & \texttt{Theorem\_GT\_4\_2} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 4.3 & A topological 1-sphere in \(R^2\) separates the plane. & \texttt{Theorem\_GT\_4\_3} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 4.4 & Two disjoint arcs from opposite boundary points leave \(Q\) and \(S\) in the frontier of the same component. & \texttt{Theorem\_GT\_4\_4} & \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}\\
+Theorem 4.5 & No arc separates \(R^2\). & \texttt{Theorem\_GT\_4\_5} & \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}\\
+Theorem 4.6 & For a 1-sphere \(J\) and component \(U\) of \(R^2-J\), \(\operatorname{Fr} U=J\). & \texttt{Theorem\_GT\_4\_6} & \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}\\
+Theorem 4.7 & A 1-sphere in \(R^2\) has exactly one bounded complement component. & \texttt{Theorem\_GT\_4\_7} & \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}\\
+Theorem 4.8 & If \(|K|\) is a 2-manifold, every vertex star of \(K\) is a combinatorial 2-cell. & \texttt{Theorem\_GT\_4\_8} & \texttt{dev34/GeoTop\_3\_4.thy}\\
+Theorem 4.9 & If \(|K|\) is a 2-manifold with boundary, vertex stars are combinatorial 2-cells and the boundary is the union of one-triangle edges. & \texttt{Theorem\_GT\_4\_9} & \texttt{dev34/GeoTop\_3\_4.thy}\\
+Theorem 4.10 & For a closed 2-manifold with boundary in \(R^2\), manifold boundary equals topological frontier. & \texttt{Theorem\_GT\_4\_10} & \texttt{dev34/GeoTop\_3\_4.thy}\\
+\end{longtable}
+
+\section*{Open Proof Holes}
+
+The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are the
+strong free-simplex induction for \texttt{Theorem\_GT\_3\_3}, the base and step
+of the polygon-reduction induction for \texttt{Theorem\_GT\_3\_4}, the
+support-in-\(U\) version \texttt{Theorem\_GT\_3\_7}, the final decomposition
+step of \texttt{Theorem\_GT\_4\_2}, and five brick-decomposition/frontier steps
+inside \texttt{Theorem\_GT\_4\_4}.
+
+The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are
+\texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34}, the two
+punctured-star connectedness lemmas, the cone-over-link equivalence lemma,
+three local chart contradiction lemmas for edge-incidence counts, and the
+boundary equality half of \texttt{Theorem\_GT\_4\_9}.
+
+\section*{Recent Progress and Supporting Material}
+
+The active file now proves the radial part of Moise's Lemma 5 argument through
+\texttt{geotop\_punctured\_star\_separation\_side\_meets\_vertex\_neighborhood\_dev34}.
+Important supporting helpers include
+\texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
+\texttt{geotop\_star\_punctured\_point\_radial\_to\_link\_dev34},
+\texttt{geotop\_link\_radial\_endpoint\_unique\_dev34},
+\texttt{geotop\_plane\_chart\_open\_subset\_connected\_punctured\_neighborhood},
+and \texttt{geotop\_2\_cell\_open\_subset\_connected\_punctured\_neighborhood}.
+
+\section*{Notes For Future Work}
+
+The next book-aligned step is to finish the two punctured-star connectedness
+lemmas using the new side-accumulation bridge and the plane/2-cell punctured
+neighborhood facts.  After that, finish connected links, then the cone-over-link
+bridge, then the remaining edge-incidence chart contradictions and the boundary
+equality in Theorem 4.9.
+
+\end{document}
