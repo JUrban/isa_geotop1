@@ -1245,6 +1245,34 @@ proof -
     unfolding geotop_comb_n_cell_def using hstar_complex hcone_equiv by (by100 blast)
 qed
 
+lemma geotop_openin_norm_polyhedron_contains_relative_ball_dev34:
+  fixes M U :: "(real^2) set" and p :: "real^2"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+  assumes hpU: "p \<in> U"
+  shows "\<exists>r>0. M \<inter> ball p r \<subseteq> U"
+proof -
+  let ?TM = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+  have hUmem: "U \<in> ?TM"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hUsubspace: "U \<in> subspace_topology UNIV geotop_euclidean_topology M"
+    using hUmem hTM_eq by (by100 simp)
+  obtain W where hWtop: "W \<in> geotop_euclidean_topology"
+      and hUeq: "U = M \<inter> W"
+    using hUsubspace unfolding subspace_topology_def by (by100 blast)
+  have hpW: "p \<in> W"
+    using hpU hUeq by (by100 blast)
+  have hWopen: "open W"
+    using hWtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  obtain r where hr_pos: "0 < r" and hball: "ball p r \<subseteq> W"
+    using hWopen hpW openE by (by100 blast)
+  show ?thesis
+    using hr_pos hball hUeq by (intro exI[of _ r]) (by100 blast)
+qed
+
 lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
