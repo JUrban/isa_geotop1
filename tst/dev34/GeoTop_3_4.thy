@@ -1273,6 +1273,47 @@ proof -
     using hr_pos hball hUeq by (intro exI[of _ r]) (by100 blast)
 qed
 
+lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  shows "\<exists>A. A \<subseteq> U
+      \<and> geotop_is_arc (f ` A)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` A))
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  sorry
+
+lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  shows "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere (f ` J)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1
+      \<and> top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  sorry
+
 lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -1303,7 +1344,8 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology (f ` A))
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-    sorry
+    by (rule geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34
+        [OF hK heK hedge hp hunique hlocal_ball hhomeo])
   show ?thesis
     using hsemicircle by (by100 blast)
 qed
@@ -1330,7 +1372,22 @@ lemma geotop_three_incident_2simplex_sphere_not_separates_chart_dev34:
           (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1
       \<and> top1_connected_on (U - J)
           (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-  sorry
+proof -
+  let ?M = "geotop_polyhedron K"
+  have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
+    by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
+        [OF hUopen hpU])
+  have hcircle:
+    "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere (f ` J)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1
+      \<and> top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    by (rule geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34
+        [OF hK heK hedge hp hfaces hlocal_ball hhomeo])
+  show ?thesis
+    using hcircle by (by100 blast)
+qed
 
 lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
