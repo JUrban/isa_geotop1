@@ -22,9 +22,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:34 elapsed time`.
-- The current committed branch tip before this report refresh is `455a4935`
-  (`Prove GeoTop 2-simplex face containment`).
+  `0:00:35 elapsed time`.
+- The current committed branch tip before this report refresh is `2554c687`
+  (`Prove GeoTop shared edge intersection`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 6302; this is the same-complex two-triangle shared-edge local disk
+  at line 6461; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6616;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6775;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -219,6 +219,9 @@ two-triangle local model has also gained the proved face-lattice helper
 Using it with `geotop_is_complex_intersection` now proves
 `geotop_complex_two_2simplex_shared_edge_inter_eq_edge_dev34`, the exact
 intersection statement for distinct same-complex 2-simplexes sharing an edge.
+The next vertex-form step is also proved:
+`geotop_two_2simplex_shared_edge_vertices_obtain_dev34` extracts common edge
+vertices `a,b` and distinct opposite vertices `c,d` for the two 2-simplexes.
 
 ## Important Supporting Material
 
