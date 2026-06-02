@@ -5800,6 +5800,29 @@ proof -
     using hnle1 h\<tau>dim by (by100 blast)
 qed
 
+lemma geotop_manifold_boundary_has_low_dim_carrier_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  shows "\<exists>\<tau> n. \<tau> \<in> K \<and> p \<in> rel_interior \<tau>
+      \<and> n \<le> 1 \<and> geotop_simplex_dim \<tau> n"
+  (**
+    Beginning of the converse boundary inclusion case split: a boundary point
+    has a carrier, and that carrier is either a vertex or an edge. **)
+proof -
+  have hpM: "p \<in> geotop_polyhedron K"
+    using hbd unfolding geotop_manifold_boundary_def by (by100 blast)
+  obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hp\<tau>: "p \<in> rel_interior \<tau>"
+    using geotop_complex_polyhedron_point_carrier_local_dev34[OF hK hpM]
+    by (by100 blast)
+  obtain n where hnle1: "n \<le> 1" and h\<tau>dim: "geotop_simplex_dim \<tau> n"
+    using geotop_manifold_boundary_carrier_dim_le_1_dev34
+      [OF hK hbd h\<tau>K hp\<tau>]
+    by (by100 blast)
+  show ?thesis
+    using h\<tau>K hp\<tau> hnle1 h\<tau>dim by (by100 blast)
+qed
+
 lemma geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
