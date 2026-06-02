@@ -905,6 +905,34 @@ proof -
   qed
 qed
 
+lemma geotop_graph_endpoint_not_in_delete_leaf_polyhedron_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "w \<notin> geotop_polyhedron (L - {{w}, e})"
+proof
+  assume hwrest: "w \<in> geotop_polyhedron (L - {{w}, e})"
+  obtain \<sigma> where h\<sigma>rest: "\<sigma> \<in> L - {{w}, e}" and hw\<sigma>: "w \<in> \<sigma>"
+    using hwrest unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>L: "\<sigma> \<in> L"
+    using h\<sigma>rest by (by100 simp)
+  have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+    by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_dev34
+        [OF hL hfin hend heL hedge hwe h\<sigma>L hw\<sigma>])
+  show False
+  proof (rule disjE[OF hcase])
+    assume "\<sigma> = {w}"
+    show False using h\<sigma>rest \<open>\<sigma> = {w}\<close> by (by100 simp)
+  next
+    assume "\<sigma> = e"
+    show False using h\<sigma>rest \<open>\<sigma> = e\<close> by (by100 simp)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
