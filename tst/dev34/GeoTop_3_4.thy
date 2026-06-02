@@ -5927,6 +5927,47 @@ proof -
   qed
 qed
 
+lemma geotop_vertex_not_one_incident_union_incident_edge_count_two_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hnot_one:
+    "v \<notin> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hv_e: "v \<in> e"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  (**
+    Vertex-carrier branch of Theorem 9's converse: if the boundary point
+    is not on any one-incident edge, then every edge through that vertex is
+    two-sided. **)
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have hcount: "card ?S = 1 \<or> card ?S = 2"
+    by (rule geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34
+        [OF hK hKM heK hedge])
+  show ?thesis
+  proof (cases "card ?S = 1")
+    case True
+    have he_in_one: "e \<in> {e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+      using heK hedge True by (by100 blast)
+    have "v \<in> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+      using he_in_one hv_e by (by100 blast)
+    show ?thesis
+      using hnot_one \<open>v \<in> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}\<close>
+      by (by100 blast)
+  next
+    case False
+    show ?thesis
+      using hcount False by (by100 blast)
+  qed
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
