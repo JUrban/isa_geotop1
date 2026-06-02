@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Export active top-level GeoTop.thy theorem/lemma facts as TF0/TFF ATP problems.
+# Export active top-level GeoTop-chain theorem/lemma facts as TF0/TFF ATP problems.
 #
 # Usage:
 #   cd /project/tst
@@ -8,6 +8,7 @@
 # Environment:
 #   GEOTOP_TPTP_MAX_FACTS  premise limit per problem, default 64
 #   GEOTOP_TPTP_LIMIT      optional target limit for quick probes, default 0 = all
+#   GEOTOP_TPTP_SCOPE      geotop or all_geotop, default all_geotop
 
 set -euo pipefail
 
@@ -16,6 +17,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUT_DIR="${1:-$PROJECT_DIR/tptp_probs}"
 MAX_FACTS="${GEOTOP_TPTP_MAX_FACTS:-64}"
 LIMIT="${GEOTOP_TPTP_LIMIT:-0}"
+SCOPE="${GEOTOP_TPTP_SCOPE:-all_geotop}"
 
 mkdir -p "$OUT_DIR"
 OUT_DIR="$(cd "$OUT_DIR" && pwd)"
@@ -23,22 +25,38 @@ OUT_DIR="$(cd "$OUT_DIR" && pwd)"
 TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/geotop_tff_export.XXXXXX")"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
-SOURCE_NAMES="$(
-python3 - "$PROJECT_DIR/GeoTop.thy" <<'PY'
+SOURCE_DECLS="$(
+python3 - "$PROJECT_DIR" "$SCOPE" <<'PY'
 import re
 import sys
 from pathlib import Path
 
-names = []
-for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
-    if "(* CHUNK_OUT_3PLUS_START" in line:
-        break
-    match = re.match(r"\s*(lemma|theorem|corollary)\s+([A-Za-z0-9_]+)", line)
-    if match:
-        names.append(match.group(2))
+project = Path(sys.argv[1])
+scope = sys.argv[2]
 
-for name in names:
-    print(f'  "{name}",')
+theories = {
+    "geotop": [
+        ("GeoTop", "GeoTop.thy", "CHUNK_OUT_3PLUS_START"),
+    ],
+    "all_geotop": [
+        ("GeoTopBase0", "gb0/GeoTopBase0.thy", None),
+        ("GeoTopBase", "gb/GeoTopBase.thy", None),
+        ("GeoTopDeps", "gd/GeoTopDeps.thy", None),
+        ("GeoTop_Prefix", "gp/GeoTop_Prefix.thy", None),
+        ("GeoTop", "GeoTop.thy", "CHUNK_OUT_3PLUS_START"),
+    ],
+}
+
+if scope not in theories:
+    raise SystemExit(f"Unknown GEOTOP_TPTP_SCOPE={scope!r}; expected geotop or all_geotop")
+
+for theory, rel, stop_marker in theories[scope]:
+    for line in (project / rel).read_text(encoding="utf-8").splitlines():
+        if stop_marker and stop_marker in line:
+            break
+        match = re.match(r"\s*(lemma|theorem|corollary)\s+([A-Za-z0-9_]+)", line)
+        if match:
+            print(f'    ("{theory}", "{match.group(2)}"),')
 PY
 )"
 
@@ -53,11 +71,11 @@ let
   val manifest = export_dir + Path.basic "manifest.tsv"
   val max_facts = $MAX_FACTS
   val limit = $LIMIT
-  val source_names = [
-$SOURCE_NAMES
-    "__end_marker__"
+  val source_decls = [
+$SOURCE_DECLS
+    ("__end_marker__", "__end_marker__")
   ]
-  val source_names = filter_out (fn s => s = "__end_marker__") source_names
+  val source_decls = filter_out (fn decl => decl = ("__end_marker__", "__end_marker__")) source_decls
 
   val _ = Isabelle_System.make_directory export_dir
   val _ = File.write manifest "file\\ttheorem\\tfacts\\n"
@@ -83,22 +101,23 @@ $SOURCE_NAMES
           s
     | [] => s)
 
-  fun geo_base short_name =
-    short_name
-    |> perhaps (try (unprefix "GeoTop."))
+  fun split_theory_name short_name =
+    (case first_field "." short_name of
+      SOME pair => pair
+    | NONE => ("", short_name))
 
   fun is_source_fact name =
     let
-      val base = geo_base (Thm_Name.short name)
+      val (theory_name, base) = split_theory_name (Thm_Name.short name)
       val stripped = strip_numeric_suffix base
     in
-      member (op =) source_names base orelse member (op =) source_names stripped
+      member (op =) source_decls (theory_name, base) orelse
+      member (op =) source_decls (theory_name, stripped)
     end
 
   val raw_targets =
     Global_Theory.all_thms_of thy true
-    |> filter (fn (name, _) =>
-      String.isPrefix "GeoTop." (Thm_Name.short name) andalso is_source_fact name)
+    |> filter (is_source_fact o fst)
 
   val targets =
     if limit > 0 then take limit raw_targets else raw_targets
@@ -146,8 +165,8 @@ $SOURCE_NAMES
   val _ = app export_one targets
   val _ =
     writeln ("TFF export completed: " ^ string_of_int (length targets) ^
-      " problems from " ^ string_of_int (length source_names) ^
-      " active GeoTop source declarations")
+      " problems from " ^ string_of_int (length source_decls) ^
+      " active source declarations in scope $SCOPE")
 in
   ()
 end
