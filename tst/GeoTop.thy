@@ -669,6 +669,72 @@ proof -
     unfolding closed_segment_def using ha0 ha1 hx_conv by (by100 blast)
 qed
 
+lemma closed_segment_radial_tail_subset:
+  fixes P x w :: "real^2"
+  assumes hx_ne: "x \<noteq> P"
+    and ha_pos: "0 < a"
+    and ha_le: "a \<le> 1"
+    and hw_def: "w = P + a *\<^sub>R (x - P)"
+  shows "closed_segment w x \<subseteq> closed_segment P x - {P}"
+proof
+  fix z
+  assume hz: "z \<in> closed_segment w x"
+  obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+    and hz_t: "z = (1 - t) *\<^sub>R w + t *\<^sub>R x"
+    using hz unfolding closed_segment_def by (by100 blast)
+  define b where "b = (1 - t) * a + t"
+  have hb_pos: "0 < b"
+  proof (cases "t = 0")
+    case True
+    show ?thesis
+      unfolding b_def using True ha_pos by (by100 simp)
+  next
+    case False
+    have ht_pos: "0 < t"
+      using ht0 False by (by100 simp)
+    have hterm_nonneg: "0 \<le> (1 - t) * a"
+      using ht1 ha_pos by (by100 simp)
+    show ?thesis
+      unfolding b_def using hterm_nonneg ht_pos by (by100 linarith)
+  qed
+  have hb_le: "b \<le> 1"
+  proof -
+    have hnonneg: "0 \<le> 1 - a"
+      using ha_le by (by100 simp)
+    have hmult: "t * (1 - a) \<le> 1 * (1 - a)"
+      by (rule mult_right_mono[OF ht1 hnonneg])
+    have hsum: "a + t * (1 - a) \<le> 1"
+    proof -
+      have "a + t * (1 - a) \<le> a + 1 * (1 - a)"
+        using hmult by (by100 simp)
+      also have "... = 1"
+        by (by100 simp)
+      finally show ?thesis .
+    qed
+    have "b = a + t * (1 - a)"
+      unfolding b_def by (simp add: algebra_simps)
+    thus ?thesis using hsum by (by100 simp)
+  qed
+  have hz_vec: "z = P + b *\<^sub>R (x - P)"
+    using hz_t hw_def unfolding b_def by (simp add: algebra_simps)
+  have hz_conv: "z = (1 - b) *\<^sub>R P + b *\<^sub>R x"
+    using hz_vec by (simp add: algebra_simps)
+  have hz_seg: "z \<in> closed_segment P x"
+    using hb_pos hb_le hz_conv
+    by (auto simp: closed_segment_def intro!: exI[where x=b])
+  have hz_ne: "z \<noteq> P"
+  proof
+    assume hzP: "z = P"
+    have "b *\<^sub>R (x - P) = 0"
+      using hz_vec hzP by (by100 simp)
+    hence "b = 0"
+      using hx_ne by (by100 simp)
+    thus False using hb_pos by (by100 simp)
+  qed
+  show "z \<in> closed_segment P x - {P}"
+    using hz_seg hz_ne by (by100 blast)
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
