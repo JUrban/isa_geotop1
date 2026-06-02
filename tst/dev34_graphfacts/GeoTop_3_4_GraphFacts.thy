@@ -1368,6 +1368,26 @@ proof -
   show ?thesis using hjoin_arc hjoin_pim by (by100 blast)
 qed
 
+lemma geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hqe: "q \<in> e"
+  assumes h\<sigma>L: "\<sigma> \<in> L"
+  assumes hq\<sigma>: "q \<in> \<sigma>"
+  shows "\<sigma> = {q} \<or> \<sigma> = e"
+proof -
+  have hq_endpoint: "geotop_graph_endpoint L q"
+    by (rule geotop_degree_one_vertex_graph_endpoint_dev34[OF hL hqL hqcard])
+  show ?thesis
+    by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_dev34
+        [OF hL hfin hq_endpoint heL hedge hqe h\<sigma>L hq\<sigma>])
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
