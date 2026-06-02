@@ -6801,6 +6801,48 @@ proof -
     by (by100 linarith)
 qed
 
+lemma geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  shows "interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+  (**
+    Set-form positive half-plane containment for the shared-edge triangle
+    interior. **)
+proof
+  fix p
+  assume hp: "p \<in> interior \<sigma>"
+  have "n \<bullet> p > r"
+    by (rule geotop_2simplex_HOL_interior_positive_side_of_edge_line_dev34
+        [OF hab hc_not_ab h\<sigma>V hline hc_side hp])
+  thus "p \<in> {p. n \<bullet> p > r}"
+    by (by100 simp)
+qed
+
+lemma geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  shows "interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+  (**
+    Set-form negative half-plane containment for the shared-edge triangle
+    interior. **)
+proof
+  fix p
+  assume hp: "p \<in> interior \<sigma>"
+  have "n \<bullet> p < r"
+    by (rule geotop_2simplex_HOL_interior_negative_side_of_edge_line_dev34
+        [OF hab hc_not_ab h\<sigma>V hline hc_side hp])
+  thus "p \<in> {p. n \<bullet> p < r}"
+    by (by100 simp)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
