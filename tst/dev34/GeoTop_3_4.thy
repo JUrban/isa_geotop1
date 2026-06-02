@@ -2111,6 +2111,32 @@ proof -
     using h\<tau>_hull hV_eq hsingleton_hull by (by100 simp)
 qed
 
+lemma geotop_star_simplex_cone_case_dev34:
+  fixes K :: "(real^2) set set" and \<tau> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  assumes hvV: "v \<in> V"
+  shows "\<tau> = {v} \<or> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+  (**
+    Fig. 4.10 cone case for a simplex of the star: either it is the cone
+    vertex, or its face opposite the cone vertex is an old link simplex. **)
+proof (cases "V - {v} = {}")
+  case True
+  have hsingleton: "\<tau> = {v}"
+    by (rule geotop_simplex_vertices_minus_vertex_empty_singleton_dev34
+        [OF hV hvV True])
+  show ?thesis
+    using hsingleton by (by100 blast)
+next
+  case False
+  have hopposite: "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+    by (rule geotop_star_simplex_opposite_face_in_link_dev34
+        [OF hK h\<tau>S hV hvV False])
+  show ?thesis
+    using hopposite by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
