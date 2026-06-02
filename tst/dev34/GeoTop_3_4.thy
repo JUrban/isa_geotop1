@@ -6180,6 +6180,34 @@ proof
     by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hp_HOL])
 qed
 
+lemma geotop_two_sided_vertex_link_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hall_edges:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "geotop_is_polygon (\<Union>(geotop_link K v))"
+  (**
+    Moise Theorem 9 vertex-link branch: if every edge incident with \<open>v\<close> is
+    two-sided, then every link vertex has degree two.  Lemma 5 gives
+    connectedness of \<open>|L(v)|\<close>, hence the link is a single polygon. **)
+  sorry
+
+lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hpolygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
+  shows "v \<in> interior (geotop_polyhedron K)"
+  (**
+    Moise Figure 4.10 local model: if the link of \<open>v\<close> is a polygon, then
+    the open star is a full disk fan and contains a Euclidean disk around
+    \<open>v\<close> in \<open>|K|\<close>. **)
+  sorry
+
 lemma geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -6194,7 +6222,14 @@ lemma geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34:
     Euclidean local form of the full-disk vertex branch: when every edge at
     \<open>v\<close> is two-sided, the connected link is a polygon and the open star
     contains a small Euclidean disk around \<open>v\<close>. **)
-  sorry
+proof -
+  have hpolygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
+    by (rule geotop_two_sided_vertex_link_polygon_dev34
+        [OF hK hKM hv hall_edges])
+  show ?thesis
+    by (rule geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34
+        [OF hK hv hpolygon])
+qed
 
 lemma geotop_two_sided_vertex_is_manifold_interior_dev34:
   fixes K :: "(real^2) set set"

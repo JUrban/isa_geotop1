@@ -22,12 +22,12 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:17 elapsed time`.
+  `0:00:16 elapsed time`.
 - The current committed branch tip before this report refresh is `3ca3f38a`
   (`Reduce GeoTop boundary local models to HOL interior`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 17 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 7 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
@@ -58,7 +58,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 6 executable
+  layer of the section-specific stack; it currently contains 7 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -114,9 +114,11 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
   at line 6113; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34` at line 6192;
-  this is the full-disk vertex-star local Euclidean-neighborhood branch of
-  Theorem 4.9's boundary converse.
+- `geotop_two_sided_vertex_link_polygon_dev34` at line 6197; this is the
+  vertex-link degree-two-to-polygon branch of Theorem 4.9's boundary converse.
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6209;
+  this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
+  branch of Theorem 4.9's boundary converse.
 
 ## Recent Progress
 
@@ -204,8 +206,9 @@ Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
 from a carrier split, and the remaining content is named as two local chart
 obligations: two distinct 2-simplexes of the same complex sharing an edge form
-an ordinary Euclidean neighborhood along the edge interior, and the vertex
-whose incident edges are all two-sided is ordinary Euclidean interior of `|K|`.
+an ordinary Euclidean neighborhood along the edge interior, all two-sided
+incident edges make the vertex link a polygon, and a polygonal link gives a
+full disk-star Euclidean neighborhood at the vertex.
 
 ## Important Supporting Material
 
