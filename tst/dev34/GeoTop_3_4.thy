@@ -8970,6 +8970,25 @@ proof -
     using hC_polygon hC_eq by (by100 simp)
 qed
 
+lemma geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34:
+  fixes K L K' L' :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hL: "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hK': "geotop_is_subdivision K' (geotop_star K v)"
+  assumes hL': "geotop_is_subdivision L' L"
+  assumes hiso: "geotop_isomorphic K' L'"
+  assumes hpolygon: "geotop_is_polygon (\<Union>(geotop_link K v))"
+  shows "v \<in> interior (geotop_polyhedron K)"
+  (**
+    Moise Figure 4.10 local Euclidean step.  The polygonal link gives a
+    full fan subdivision of a 2-simplex, simplicially equivalent to a
+    subdivision of \<open>St v\<close>.  Transport the ordinary interior of the fan's
+    cone vertex back through the PL equivalence and use that the open star is
+    contained in \<open>|K|\<close> to obtain an ordinary Euclidean disk about \<open>v\<close>. **)
+  sorry
+
 lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -8980,7 +8999,42 @@ lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
     Moise Figure 4.10 local model: if the link of \<open>v\<close> is a polygon, then
     the open star is a full disk fan and contains a Euclidean disk around
     \<open>v\<close> in \<open>|K|\<close>. **)
-  sorry
+proof -
+  have hshape:
+      "geotop_is_broken_line (\<Union>(geotop_link K v))
+        \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
+    using hpolygon by (by100 blast)
+  have hlink_data:
+      "geotop_is_complex (geotop_link K v)
+      \<and> geotop_complex_is_1dim (geotop_link K v)
+      \<and> finite (geotop_link K v)
+      \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+          \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
+    by (rule geotop_link_finite_1dim_line_or_polygon_dev34[OF hK hv hshape])
+  obtain L :: "(real^2) set set" and \<sigma> :: "(real^2) set" and K' L'
+    where hfan:
+      "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision K' (geotop_star K v)
+      \<and> geotop_is_subdivision L' L
+      \<and> geotop_isomorphic K' L'"
+    using geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34
+      [OF hK hv hlink_data]
+    by (by100 blast)
+  have hL: "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hfan by (by100 blast)
+  have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    using hfan by (by100 blast)
+  have hK': "geotop_is_subdivision K' (geotop_star K v)"
+    using hfan by (by100 blast)
+  have hL': "geotop_is_subdivision L' L"
+    using hfan by (by100 blast)
+  have hiso: "geotop_isomorphic K' L'"
+    using hfan by (by100 blast)
+  show ?thesis
+    by (rule geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34
+        [OF hK hv hL h\<sigma> hK' hL' hiso hpolygon])
+qed
 
 lemma geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"

@@ -20,16 +20,15 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.34`, while `gen_stmt_index.sh` ran in `0:02.33`.
+  ran in `0:00.44`, while `gen_stmt_index.sh` ran in `0:02.36`.
 - A warm-cache section build passed after the latest Figure 4.10 split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:21.12` elapsed time; the session itself reported `0:00:17 elapsed time`.
-- The current committed branch tip before this report refresh is `43f39e12`
-  (`Merge branch 'main' of https://github.com/JUrban/isa_geotop1 into
-  codex-dev34-cache`), following `a4b38415` (`Split GeoTop Figure 4.10
-  fan construction`) and the colleague's latest TFF/export-generator commits.
+  `0:38.71` elapsed time; the session itself reported `0:00:16 elapsed time`.
+- The current committed branch tip before this report refresh is `410612c2`
+  (`Refresh GeoTop report after index merge`), following merge commit
+  `43f39e12` and `a4b38415` (`Split GeoTop Figure 4.10 fan construction`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -45,9 +44,11 @@ subclaims: first, matching the finite link to a subdivision of the combinatorial
 boundary of a 2-simplex; second, coning that boundary subdivision to a fan
 subdivision. The one-sided and three-sided chart contradictions are now
 narrowed to explicit domain-level small semicircle/small circle construction
-lemmas plus a 2-cell/Jordan helper. The major open clusters are the two
-ordered Figure 4.10 construction subclaims, the small semicircle/small circle
-domain constructions, the 2-cell/Jordan
+lemmas plus a 2-cell/Jordan helper. The polygon-link vertex branch now reaches
+the existing Figure 4.10 fan model and leaves only the standard-fan
+local-neighborhood transfer. The major open clusters are the two ordered
+Figure 4.10 construction subclaims, the standard-fan vertex-neighborhood
+transfer, the small semicircle/small circle domain constructions, the 2-cell/Jordan
 contradiction, the remaining Theorem 4.9 converse plane-neighborhood
 obligations, and several larger Section 3/early Section 4 prefix arguments.
 
@@ -120,9 +121,10 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
   at line 4185.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4321.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8983;
-  this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
-  branch of Theorem 4.9's boundary converse.
+- `geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34` at line
+  8990; this is the Figure 4.10 full-disk vertex-star local
+  Euclidean-neighborhood transfer after the star has been matched to the
+  standard fan model.
 
 ## Recent Progress
 
@@ -229,6 +231,13 @@ after those wrappers is still to enumerate
 the finite linear link as an ordered edge-chain or edge-cycle, subdivide the
 frontier of a standard 2-simplex with the same ordered edge data, add the cone
 vertex, and define the resulting simplicial isomorphism.
+
+The polygon-link branch of the Theorem 4.9 boundary converse now also follows
+the same route: `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34`
+derives the cached finite 1-dimensional link data, invokes
+`geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`, and
+delegates only the final local-neighborhood transfer to
+`geotop_standard_fan_model_vertex_HOL_interior_polyhedron_dev34`.
 
 Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
