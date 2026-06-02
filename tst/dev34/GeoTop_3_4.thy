@@ -102,8 +102,22 @@ proof -
   qed
   \<comment> \<open>The remaining book step is to transport a separation of the link along
       these radial segments to a separation of the punctured star.\<close>
-  show ?thesis
+  have hcone_sep:
+    "top1_is_separation_on ?S
+       (subspace_topology UNIV geotop_euclidean_topology ?S) ?SA ?SB"
     sorry
+  have hSA_open_top:
+    "?SA \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
+    using hcone_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hSB_open_top:
+    "?SB \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
+    using hcone_sep unfolding top1_is_separation_on_def by (by100 simp)
+  have hSA_SB_disjoint: "?SA \<inter> ?SB = {}"
+    using hcone_sep unfolding top1_is_separation_on_def by (by100 simp)
+  show ?thesis
+    by (rule top1_open_cover_separation_imp_not_connected_dev34
+        [OF hSA_open_top hSB_open_top hSA_nonempty hSB_nonempty
+            hSA_SB_disjoint hS_cover])
 qed
 
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
