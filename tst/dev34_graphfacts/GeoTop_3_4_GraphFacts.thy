@@ -1206,6 +1206,51 @@ proof -
   finally show ?thesis .
 qed
 
+lemma geotop_segment_face_cases_dev34:
+  fixes F :: "(real^2) set" and a b :: "real^2"
+  assumes hface: "geotop_is_face F (closed_segment a b)"
+  assumes hab: "a \<noteq> b"
+  shows "F = {a} \<or> F = {b} \<or> F = closed_segment a b"
+proof -
+  have hseg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  obtain V W where hV_sv: "geotop_simplex_vertices (closed_segment a b) V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hF_hull: "F = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  have hV_eq: "V = {a, b}"
+    using geotop_simplex_vertices_unique[OF hV_sv hseg_sv] .
+  have hW_sub_ab: "W \<subseteq> {a, b}"
+    using hW_sub hV_eq by (by100 simp)
+  have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+    using hW_sub_ab hW_ne by (by100 blast)
+  have hF_HOL: "F = convex hull W"
+    using hF_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  show ?thesis
+  proof (rule disjE[OF hW_cases])
+    assume hW_a: "W = {a}"
+    have "F = {a}" using hF_HOL hW_a by (by100 simp)
+    thus ?thesis by (by100 blast)
+  next
+    assume hW_rest: "W = {b} \<or> W = {a, b}"
+    show ?thesis
+    proof (rule disjE[OF hW_rest])
+      assume hW_b: "W = {b}"
+      have "F = {b}" using hF_HOL hW_b by (by100 simp)
+      thus ?thesis by (by100 blast)
+    next
+      assume hW_ab: "W = {a, b}"
+      have "F = convex hull {a, b}"
+        using hF_HOL hW_ab by (by100 simp)
+      also have "\<dots> = closed_segment a b"
+        by (rule segment_convex_hull)
+      finally have "F = closed_segment a b" .
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_delete_leaf_edge_inter_rest_polyhedron_subset_neighbor_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
