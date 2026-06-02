@@ -20,15 +20,16 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.51`, while `gen_stmt_index.sh` ran in `0:02.39`.
-- A warm-cache section build passed after the latest Figure 4.10 split:
+  ran in `0:00.40`, while `gen_stmt_index.sh` ran in `0:02.09`.
+- A warm-cache section build passed after the latest Figure 4.10 graph-only
+  split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:38.44` elapsed time; the session itself reported `0:00:15 elapsed time`.
-- The current committed branch tip before this report refresh is `3b19dc38`
-  (`Refine GeoTop polygon link fan interior step`), following `410612c2`
-  (`Refresh GeoTop report after index merge`).
+  `0:42.75` elapsed time; the session itself reported `0:00:18 elapsed time`.
+- The current branch contains the colleague index speedup plus the local
+  Section 3-4 theory list, and the latest Figure 4.10 edit proves the
+  link-specific boundary and cone wrappers from graph-only book subclaims.
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -39,10 +40,11 @@ development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
 holes. The compact cone-over-compact closedness lemma is proved, closing the
 radial bad-endpoint closedness bottleneck. The broad Figure 4.10
-boundary-cone fan wrapper is now proved from two book-level construction
-subclaims: first, matching the finite link to a subdivision of the combinatorial
-boundary of a 2-simplex; second, coning that boundary subdivision to a fan
-subdivision. The one-sided and three-sided chart contradictions are now
+boundary-cone fan wrapper and the link-specific construction wrappers are now
+proved from two graph-only book subclaims: first, matching a finite linear graph
+whose carrier is a broken line or polygon to a subdivision of the
+combinatorial boundary of a 2-simplex; second, coning that boundary subdivision
+to a fan subdivision. The one-sided and three-sided chart contradictions are now
 narrowed to explicit domain-level small semicircle/small circle construction
 lemmas plus a 2-cell/Jordan helper. The polygon-link vertex branch now reaches
 the existing Figure 4.10 fan model and leaves only the standard-fan
@@ -113,16 +115,17 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_polygon_dev34`
+- `geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34`
   at line 3191.
-- `geotop_fig410_cone_fan_from_boundary_subdivision_model_dev34` at line 3219.
+- `geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34` at
+  line 3242.
 - `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
-  at line 4125.
+  at line 4180.
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
-  at line 4185.
-- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4321.
+  at line 4240.
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4376.
 - `geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34` at line
-  9002; this is the Figure 4.10 full-disk vertex-star local
+  9057; this is the Figure 4.10 full-disk vertex-star local
   Euclidean-neighborhood transfer after the star has been matched to the
   explicit standard cone fan target.
 
@@ -223,14 +226,12 @@ the remaining book Figure 4.10 construction through focused helpers:
 - `geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34`
 - `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
 
-The standard boundary-cone fan wrapper is now proved. The remaining Figure 4.10
-content is split into the two construction subclaims named above: enumerate
-the finite link as a subdivided 2-simplex boundary, then cone that boundary
-subdivision to the full fan. The last two wrappers are proved. The open content
-after those wrappers is still to enumerate
-the finite linear link as an ordered edge-chain or edge-cycle, subdivide the
-frontier of a standard 2-simplex with the same ordered edge data, add the cone
-vertex, and define the resulting simplicial isomorphism.
+The standard boundary-cone fan wrapper and the two link-specific construction
+wrappers are now proved. The remaining Figure 4.10 content is split into the
+two graph-only construction subclaims named above: enumerate the finite linear
+graph as an ordered edge-chain or edge-cycle and realize it on a subdivided
+2-simplex boundary; then add the cone vertex, cone the boundary subdivision,
+and prove the resulting simplex-membership equivalences.
 
 The polygon-link branch of the Theorem 4.9 boundary converse now also follows
 the same route: `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34`
@@ -378,12 +379,13 @@ Important cached helpers include:
 
 ## Notes For Future Work
 
-- The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
-  `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`.
+- The next book-aligned bottleneck for Theorems 4.8 and 4.9 is the pair of
+  graph-only Figure 4.10 construction lemmas:
+  `geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34`
+  and `geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34`.
   This is the formal Figure 4.10 step: subdivide the boundary of a 2-simplex to
-  match the finite polygonal or broken-line link, add one interior vertex, cone
-  the boundary subdivision, and obtain a simplicial isomorphism with a
-  subdivision of the vertex star.
+  match the finite polygonal or broken-line graph, add one interior vertex, cone
+  the boundary subdivision, and obtain the target fan simplex equivalences.
 - The local chart contradiction wrappers are proved. The next step there is to
   formalize the book's small semicircle/small circle constructions in the chart
   domain and the isolated 2-cell/Jordan contradiction.

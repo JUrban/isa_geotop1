@@ -3170,6 +3170,26 @@ proof -
     using hiso_raw \<phi>_def by (by100 simp)
 qed
 
+lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hshape:
+    "geotop_is_broken_line (geotop_polyhedron L)
+      \<or> geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Fig. 4.10, book step 1 in graph-only form.  Enumerate the finite linear
+    graph as the ordered edge-chain of a broken line or the ordered edge-cycle
+    of a polygon; subdivide the frontier of a 2-simplex with the same ordered
+    vertex/edge data; map each link vertex to the corresponding boundary
+    subdivision vertex. **)
+  sorry
+
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3188,6 +3208,37 @@ lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_p
     Fig. 4.10, book step 1.  A finite linear link whose carrier is a broken
     line or polygon is enumerated as an edge-chain or edge-cycle and matched
     to a subdivision of the frontier of a 2-simplex. **)
+proof -
+  show ?thesis
+    by (rule geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34
+        [OF hlink_linear hlink_finite hshape])
+qed
+
+lemma geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34:
+  fixes L F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hboundary:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hiso: "geotop_isomorphism L F \<psi>"
+  shows "\<exists>L' c.
+      geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Fig. 4.10, book step 2 in graph-only form.  Choose a new point inside the
+    2-simplex and cone every nonempty boundary subdivision simplex to it,
+    leaving the old boundary subdivision as the frontier.  The simplicial
+    isomorphism from \<open>L\<close> to \<open>F\<close> translates the cone-simplex condition back
+    to the original edge-chain or edge-cycle. **)
   sorry
 
 lemma geotop_fig410_cone_fan_from_boundary_subdivision_model_dev34:
@@ -3216,7 +3267,11 @@ lemma geotop_fig410_cone_fan_from_boundary_subdivision_model_dev34:
     2-simplex and cone the subdivided frontier to it; the old boundary
     simplexes remain boundary simplexes and each nonempty link simplex gives
     exactly one cone simplex. **)
-  sorry
+proof -
+  show ?thesis
+    by (rule geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34
+        [OF h\<sigma> hboundary hiso])
+qed
 
 lemma geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
