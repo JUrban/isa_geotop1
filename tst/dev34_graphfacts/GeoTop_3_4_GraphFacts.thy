@@ -31,6 +31,62 @@ proof
     using hnoend hwL hend by (by100 blast)
 qed
 
+lemma geotop_singleton_in_linear_graph_vertex_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  shows "w \<in> geotop_complex_vertices L"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  show ?thesis
+    using geotop_complex_vertices_eq_0_simplexes[OF hcomplex] hwL by (by100 blast)
+qed
+
+lemma geotop_degree_one_vertex_graph_endpoint_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  assumes hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+  shows "geotop_graph_endpoint L w"
+proof -
+  have hw_vertex: "w \<in> geotop_complex_vertices L"
+    by (rule geotop_singleton_in_linear_graph_vertex_dev34[OF hL hwL])
+  show ?thesis
+    using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
+qed
+
+lemma geotop_degree_one_or_two_no_endpoint_degree_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hnoend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  have hcase: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    using hdegree12 hwL by (by100 blast)
+  show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (rule disjE[OF hcase])
+    assume hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    have hend: "geotop_graph_endpoint L w"
+      by (rule geotop_degree_one_vertex_graph_endpoint_dev34[OF hL hwL hcard1])
+    have hnot: "\<not> geotop_graph_endpoint L w"
+      using hnoend hwL by (by100 blast)
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hend hnot by (by100 blast)
+  next
+    assume hcard2: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hcard2)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
