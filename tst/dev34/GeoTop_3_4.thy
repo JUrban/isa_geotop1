@@ -3699,6 +3699,7 @@ lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_de
   assumes hunique:
     "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   shows "\<exists>A. A \<subseteq> U
       \<and> geotop_is_arc A
           (subspace_topology UNIV geotop_euclidean_topology A)
@@ -3708,8 +3709,8 @@ lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_de
     Moise Lemma 3 local picture: with only one 2-simplex incident to the edge,
     choose a sufficiently small semicircle in that simplex, centered at the
     edge-interior point.  The local-ball assumption keeps the semicircle inside
-    the chart domain \<open>U\<close>, and the semicircle separates the half-neighborhood
-    in \<open>U\<close>. **)
+    the chart domain \<open>U\<close>; since \<open>U\<close> is a subspace neighborhood in \<open>|K|\<close>,
+    the semicircle separates the half-neighborhood in \<open>U\<close>. **)
   sorry
 
 lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
@@ -3721,6 +3722,7 @@ lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
   assumes hunique:
     "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   assumes hhomeo: "top1_homeomorphism_on U
       (subspace_topology UNIV geotop_euclidean_topology U)
       (UNIV::(real^2) set) geotop_euclidean_topology f"
@@ -3736,7 +3738,7 @@ proof -
     and hAsep: "\<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
     using geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34
-      [OF hK heK hedge hp hunique hlocal_ball]
+      [OF hK heK hedge hp hunique hlocal_ball hUsubM]
     by (by100 blast)
   have hAimg: "geotop_is_arc (f ` A)
       (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
@@ -3757,6 +3759,7 @@ lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   shows "\<exists>J. J \<subseteq> U
       \<and> geotop_is_n_sphere J
           (subspace_topology UNIV geotop_euclidean_topology J) 1
@@ -3766,8 +3769,8 @@ lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev
     Moise Lemma 4 local picture: from three incident 2-simplexes, choose two
     same-radius small semicircles in two of the incident simplexes, centered at
     the edge-interior point.  Their union is the small 1-sphere \<open>J\<close> inside the
-    chart domain \<open>U\<close>; because the third incident simplex gives a passage
-    around it, \<open>U - J\<close> remains connected. **)
+    subspace chart domain \<open>U \<subseteq> |K|\<close>; because the third incident simplex gives
+    a passage around it, \<open>U - J\<close> remains connected. **)
   sorry
 
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
@@ -3782,6 +3785,7 @@ lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   assumes hhomeo: "top1_homeomorphism_on U
       (subspace_topology UNIV geotop_euclidean_topology U)
       (UNIV::(real^2) set) geotop_euclidean_topology f"
@@ -3797,7 +3801,7 @@ proof -
     and hJconn: "top1_connected_on (U - J)
           (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     using geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34
-      [OF hK heK hedge hp hfaces hlocal_ball]
+      [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
     by (by100 blast)
   have hJimg: "geotop_is_n_sphere (f ` J)
       (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
@@ -3830,6 +3834,8 @@ proof -
   have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
     by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
         [OF hUopen hpU])
+  have hUsubM: "U \<subseteq> ?M"
+    using hUopen unfolding openin_on_def by (by100 blast)
   have hsemicircle:
     "\<exists>A. A \<subseteq> U
       \<and> geotop_is_arc (f ` A)
@@ -3837,7 +3843,7 @@ proof -
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
     by (rule geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34
-        [OF hK heK hedge hp hunique hlocal_ball hhomeo])
+        [OF hK heK hedge hp hunique hlocal_ball hUsubM hhomeo])
   show ?thesis
     using hsemicircle by (by100 blast)
 qed
@@ -3869,6 +3875,8 @@ proof -
   have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
     by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
         [OF hUopen hpU])
+  have hUsubM: "U \<subseteq> ?M"
+    using hUopen unfolding openin_on_def by (by100 blast)
   have hcircle:
     "\<exists>J. J \<subseteq> U
       \<and> geotop_is_n_sphere (f ` J)
@@ -3876,7 +3884,7 @@ proof -
       \<and> top1_connected_on (U - J)
           (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     by (rule geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34
-        [OF hK heK hedge hp hfaces hlocal_ball hhomeo])
+        [OF hK heK hedge hp hfaces hlocal_ball hUsubM hhomeo])
   show ?thesis
     using hcircle by (by100 blast)
 qed
@@ -3913,6 +3921,7 @@ lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   assumes hcell: "geotop_is_n_cell (closure_on (geotop_polyhedron K)
         (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)
       (subspace_topology (geotop_polyhedron K)
@@ -3927,7 +3936,7 @@ proof -
     and hJconn: "top1_connected_on (U - J)
         (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     using geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34
-      [OF hK heK hedge hp hfaces hlocal_ball]
+      [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
     by (by100 blast)
   let ?M = "geotop_polyhedron K"
   have hJnotconn: "\<not> top1_connected_on (U - J)
@@ -3964,9 +3973,11 @@ proof -
   have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
     by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
         [OF hUopen hpU])
+  have hUsubM: "U \<subseteq> ?M"
+    using hUopen unfolding openin_on_def by (by100 blast)
   show False
     by (rule geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34
-        [OF hK heK hedge hp hfaces hlocal_ball hcell])
+        [OF hK heK hedge hp hfaces hlocal_ball hUsubM hcell])
 qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
