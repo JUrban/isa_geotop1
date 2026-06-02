@@ -26,9 +26,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:39 elapsed time`.
-- The current committed branch tip before this report refresh is `b8edaea1`
-  (`Prove GeoTop edge interior subsegment`).
+  `0:00:34 elapsed time`.
+- The current committed branch tip before this report refresh is `906b5498`
+  (`Prove GeoTop shared edge subsegment`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -116,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7910; this is the remaining analytic local-neighborhood step for
+  at line 7935; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8266;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8291;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -313,6 +313,10 @@ point has a small edge-direction subsegment remaining in the relative interior.
 The follow-up helper
 `geotop_shared_edge_small_subsegment_in_two_2simplexes_dev34` records that this
 small subsegment lies in both incident triangles.
+The convexity wrapper
+`geotop_convex_hull_three_points_subset_2simplex_dev34` is also proved; it
+packages the fact that a small triangle with vertices in a simplex is contained
+in that simplex.
 
 ## Important Supporting Material
 

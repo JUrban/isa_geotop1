@@ -7892,6 +7892,31 @@ proof -
     by (rule that[OF hu0 hminus hplus])
 qed
 
+lemma geotop_convex_hull_three_points_subset_2simplex_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hx: "x \<in> \<sigma>"
+  assumes hy: "y \<in> \<sigma>"
+  assumes hz: "z \<in> \<sigma>"
+  shows "convex hull {x, y, z} \<subseteq> \<sigma>"
+  (**
+    Convexity wrapper for the local diamond construction: any small triangle
+    whose vertices lie in a simplex is contained in that simplex. **)
+proof -
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  have hconv: "convex \<sigma>"
+    using h\<sigma>_HOL by (by100 simp)
+  have hpts: "{x, y, z} \<subseteq> \<sigma>"
+    using hx hy hz by (by100 blast)
+  have "convex hull {x, y, z} \<subseteq> \<sigma>"
+    by (rule hull_minimal[where S=convex, OF hpts hconv])
+  thus ?thesis
+    by (by100 simp)
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"
