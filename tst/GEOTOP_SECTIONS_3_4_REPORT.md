@@ -14,17 +14,21 @@ warm-cache build.
 
 Evidence checked locally:
 
-- A fetch of colleague `main` over HTTPS completed with no new commits ahead of
-  the local branch.
-- The latest pulled `main` head is commit `9209221d` (`Add GeoTop TFF problem
-  exporter`), and the local branch already contains it.
+- A fetch of colleague `main` over HTTPS reached commit `2045ef76` (`Export TFF
+  problems for all GeoTop sessions`). The relevant faster theorem-index
+  generator commit, `0284ba9c` (`Speed up theorem index generation`), is already
+  contained in the local branch.
+- The fast `gen_index.sh` implementation is the Python single-pass version and
+  still includes the local Section 3-4 theory stack. The refreshed theorem index
+  ran in about half a second, while `gen_stmt_index.sh` ran in about two
+  seconds.
 - A warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:34 elapsed time`.
-- The current committed branch tip before this report refresh is `20c8ce2e`
-  (`Split GeoTop shared edge local neighborhood`).
+  `0:00:33 elapsed time`.
+- The current committed branch tip before this report refresh is `1e5ee134`
+  (`Prove GeoTop edge relative interior parameter`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7471; this is the remaining analytic local-neighborhood step for
+  at line 7585; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7827;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7941;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -285,6 +289,11 @@ the remaining content is exactly the book's local Euclidean ball construction
 for two opposite-side triangles along their common edge. The edge-coordinate
 helper `geotop_edge_rel_interior_parameter_dev34` is now proved, giving the
 open-segment parameter `0<t<1` for points of the shared edge relative interior.
+The real positivity helper `geotop_real_positive_edge_probe_parameter_dev34` is
+also proved; it chooses a small positive probe parameter that preserves the two
+positive edge barycentric coordinates while creating a positive normal-side
+coordinate, which is the next ingredient for the analytic local-neighborhood
+step.
 
 ## Important Supporting Material
 

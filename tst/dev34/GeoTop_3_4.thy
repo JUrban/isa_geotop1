@@ -7453,6 +7453,120 @@ proof -
     by (rule that[OF ht0 ht1 hp_eq])
 qed
 
+lemma geotop_real_positive_edge_probe_parameter_dev34:
+  fixes u v x y z :: real
+  assumes hu: "0 < u"
+  assumes hv: "0 < v"
+  assumes hz: "0 < z"
+  obtains s where
+    "0 < s"
+    "s < 1"
+    "0 < (1 - s) * u + s * x"
+    "0 < (1 - s) * v + s * y"
+    "0 < s * z"
+  (**
+    Real parameter choice for a small probe from an edge-interior point into a
+    triangle: preserve the two positive edge barycentric coordinates while
+    turning on a positive opposite-vertex coordinate. **)
+proof -
+  define bx where "bx = (if x < u then u / (u - x) else 1)"
+  define byy where "byy = (if y < v then v / (v - y) else 1)"
+  have hbx_pos: "0 < bx"
+  proof (cases "x < u")
+    case True
+    have "0 < u - x"
+      using True by (by100 linarith)
+    hence "0 < u / (u - x)"
+      using hu by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True bx_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False bx_def by (by100 simp)
+  qed
+  have hby_pos: "0 < byy"
+  proof (cases "y < v")
+    case True
+    have "0 < v - y"
+      using True by (by100 linarith)
+    hence "0 < v / (v - y)"
+      using hv by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True byy_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False byy_def by (by100 simp)
+  qed
+  obtain t where ht0: "0 < t" and htbx: "t < bx" and ht1: "t < 1"
+    using field_lbound_gt_zero[OF hbx_pos zero_less_one] by (by100 blast)
+  obtain s where hs0: "0 < s" and hst: "s < t" and hsby: "s < byy"
+    using field_lbound_gt_zero[OF ht0 hby_pos] by (by100 blast)
+  have hs1: "s < 1"
+    using hst ht1 by (by100 linarith)
+  have hsbx: "s < bx"
+    using hst htbx by (by100 linarith)
+  have hxpos: "0 < (1 - s) * u + s * x"
+  proof (cases "x < u")
+    case True
+    have hden: "0 < u - x"
+      using True by (by100 linarith)
+    have hsbound: "s < u / (u - x)"
+      using hsbx True bx_def by (by100 simp)
+    have "s * (u - x) < u"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < u - s * (u - x)"
+      by (by100 linarith)
+    also have "u - s * (u - x) = (1 - s) * u + s * x"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> x - u"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (x - u)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) * u + s * x = u + s * (x - u)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      using hu by (by100 linarith)
+  qed
+  have hypos: "0 < (1 - s) * v + s * y"
+  proof (cases "y < v")
+    case True
+    have hden: "0 < v - y"
+      using True by (by100 linarith)
+    have hsbound: "s < v / (v - y)"
+      using hsby True byy_def by (by100 simp)
+    have "s * (v - y) < v"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < v - s * (v - y)"
+      by (by100 linarith)
+    also have "v - s * (v - y) = (1 - s) * v + s * y"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> y - v"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (y - v)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) * v + s * y = v + s * (y - v)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      using hv by (by100 linarith)
+  qed
+  have hsz: "0 < s * z"
+    by (rule mult_pos_pos[OF hs0 hz])
+  show ?thesis
+    by (rule that[OF hs0 hs1 hxpos hypos hsz])
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

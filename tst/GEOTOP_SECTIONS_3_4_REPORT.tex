@@ -15,16 +15,20 @@ has a successful warm-cache build.
 
 Evidence checked locally:
 \begin{itemize}
-\item A fetch of colleague \texttt{main} over HTTPS completed with no new
-commits ahead of the local branch.
-\item The latest pulled \texttt{main} head is \texttt{9209221d}
-(\texttt{Add GeoTop TFF problem exporter}), and the local branch already
-contains it.
+\item A fetch of colleague \texttt{main} over HTTPS reached \texttt{2045ef76}
+(\texttt{Export TFF problems for all GeoTop sessions}). The relevant faster
+theorem-index generator commit, \texttt{0284ba9c}
+(\texttt{Speed up theorem index generation}), is already contained in the local
+branch.
+\item The fast \texttt{gen\_index.sh} implementation is the Python single-pass
+version and still includes the local Section 3--4 theory stack. The refreshed
+theorem index ran in about half a second, while \texttt{gen\_stmt\_index.sh}
+ran in about two seconds.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:34 elapsed time}.
+with the outer command reporting \texttt{0:00:33 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{20c8ce2e} (\texttt{Split GeoTop shared edge local neighborhood}).
+\texttt{1e5ee134} (\texttt{Prove GeoTop edge relative interior parameter}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -109,8 +113,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7471; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 7827; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7585; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 7941; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -257,7 +261,11 @@ the remaining content is exactly the book's local Euclidean ball construction
 for two opposite-side triangles along their common edge. The edge-coordinate
 helper \texttt{geotop\_edge\_rel\_interior\_parameter\_dev34} is now proved,
 giving the open-segment parameter \texttt{0<t<1} for points of the shared edge
-relative interior.
+relative interior. The real positivity helper
+\texttt{geotop\_real\_positive\_edge\_probe\_parameter\_dev34} is also proved;
+it chooses a small positive probe parameter that preserves the two positive
+edge barycentric coordinates while creating a positive normal-side coordinate,
+which is the next ingredient for the analytic local-neighborhood step.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
