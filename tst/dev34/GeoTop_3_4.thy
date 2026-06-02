@@ -6094,6 +6094,20 @@ proof -
   qed
 qed
 
+lemma geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard2:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "rel_interior e \<subseteq> interior (geotop_polyhedron K)"
+  (**
+    Euclidean local form of the two-sided edge branch: the two incident
+    2-simplexes occupy the two local half-neighborhoods along an interior
+    point of \<open>e\<close>, so such points are ordinary interior points of \<open>|K|\<close>. **)
+  sorry
+
 lemma geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -6109,6 +6123,32 @@ lemma geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34:
     Moise Theorem 9 converse, edge-carrier case: an interior point of an edge
     incident with exactly two 2-simplexes has the ordinary plane local model,
     made from the two half-neighborhoods on the two sides of the edge. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  have hrel_HOL: "rel_interior e \<subseteq> interior (geotop_polyhedron K)"
+    by (rule geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34
+        [OF hK heK hedge hcard2])
+  have hp_HOL: "p \<in> interior (geotop_polyhedron K)"
+    using hp hrel_HOL by (by100 blast)
+  show "p \<in> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+    by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hp_HOL])
+qed
+
+lemma geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hall_edges:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "v \<in> interior (geotop_polyhedron K)"
+  (**
+    Euclidean local form of the full-disk vertex branch: when every edge at
+    \<open>v\<close> is two-sided, the connected link is a polygon and the open star
+    contains a small Euclidean disk around \<open>v\<close>. **)
   sorry
 
 lemma geotop_two_sided_vertex_is_manifold_interior_dev34:
@@ -6125,7 +6165,13 @@ lemma geotop_two_sided_vertex_is_manifold_interior_dev34:
     Moise Theorem 9 converse, vertex-carrier case: if every edge at the
     boundary-candidate vertex is two-sided, the connected link is a polygon,
     so the vertex star is a full disk fan and gives a plane neighborhood. **)
-  sorry
+proof -
+  have hv_HOL: "v \<in> interior (geotop_polyhedron K)"
+    by (rule geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34
+        [OF hK hKM hv hall_edges])
+  show ?thesis
+    by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hv_HOL])
+qed
 
 lemma geotop_boundary_not_one_incident_point_is_manifold_interior_dev34:
   fixes K :: "(real^2) set set"

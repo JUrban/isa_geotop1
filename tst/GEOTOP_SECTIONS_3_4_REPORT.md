@@ -22,7 +22,7 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:18 elapsed time`.
+  `0:00:16 elapsed time`.
 - The current committed branch tip before this report refresh is `0f596557`
   (`Package GeoTop boundary converse carrier cases`).
 - A scan of the target section-specific theories, excluding the intentionally
@@ -111,12 +111,12 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
-- `geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34` at
-  line 6112; this is the two-sided edge local plane-neighborhood branch of
+- `geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34`
+  at line 6109; this is the two-sided edge local Euclidean-neighborhood branch
+  of Theorem 4.9's boundary converse.
+- `geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34` at line 6152;
+  this is the full-disk vertex-star local Euclidean-neighborhood branch of
   Theorem 4.9's boundary converse.
-- `geotop_two_sided_vertex_is_manifold_interior_dev34` at line 6128; this is
-  the full-disk vertex-star local plane-neighborhood branch of Theorem 4.9's
-  boundary converse.
 
 ## Recent Progress
 
@@ -203,8 +203,9 @@ vertex, and define the resulting simplicial isomorphism.
 Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
 from a carrier split, and the remaining content is named as two local chart
-obligations: the two-sided edge interior has a plane model, and the vertex
-whose incident edges are all two-sided has a full disk-star plane model.
+obligations: the two-sided edge interior is ordinary Euclidean interior of
+`|K|`, and the vertex whose incident edges are all two-sided is ordinary
+Euclidean interior of `|K|`.
 
 ## Important Supporting Material
 
