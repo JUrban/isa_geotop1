@@ -677,6 +677,60 @@ text \<open>Moise \<S>4, Theorem 9: the corresponding graph-classification step
 for manifolds with boundary.  After Lemmas 2--4, every link vertex has
 degree one or two; a finite connected linear graph with that local
 degree bound is either a broken line or a polygon.\<close>
+lemma geotop_graph_endpoint_singleton_and_card_one_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "{w} \<in> L \<and> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have hw_vertex: "w \<in> geotop_complex_vertices L"
+    using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+  have hwL: "{w} \<in> L"
+    using geotop_complex_vertices_eq_0_simplexes[OF hcomplex] hw_vertex by (by100 blast)
+  have hcard: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+  show ?thesis using hwL hcard by (by100 blast)
+qed
+
+lemma geotop_graph_endpoint_unique_incident_edge_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "\<exists>!e. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e"
+proof -
+  let ?S = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hcard: "card ?S = 1"
+    using geotop_graph_endpoint_singleton_and_card_one_dev34[OF hL hend]
+    by (by100 blast)
+  obtain e where hS: "?S = {e}"
+    by (rule card_1_singletonE[OF hcard])
+  show ?thesis
+  proof (rule ex1I[of _ e])
+    show "e \<in> L \<and> geotop_is_edge e \<and> w \<in> e"
+      using hS by (by100 simp)
+  next
+    fix e'
+    assume he': "e' \<in> L \<and> geotop_is_edge e' \<and> w \<in> e'"
+    have "e' \<in> ?S" using he' by (by100 simp)
+    thus "e' = e" using hS by (by100 simp)
+  qed
+qed
+
+lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = geotop_polyhedron L"
+  sorry
+
 lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_arc_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -688,7 +742,18 @@ lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_arc_dev34:
   assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
   shows "geotop_is_arc (geotop_polyhedron L)
       (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
-  sorry
+proof -
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>" and h\<gamma>_pim: "path_image \<gamma> = geotop_polyhedron L"
+    using geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_dev34
+      [OF hL hfin hconn hdegree12 hend]
+    by (by100 blast)
+  have hgeo_arc: "geotop_is_arc (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_arc])
+  show ?thesis
+    using hgeo_arc h\<gamma>_pim by (by100 simp)
+qed
 
 lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_dev34:
   fixes L :: "(real^2) set set"
