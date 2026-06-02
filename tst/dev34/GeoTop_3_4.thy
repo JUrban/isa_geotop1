@@ -2277,6 +2277,34 @@ proof -
     unfolding bij_betw_def using h\<phi>inj h\<phi>img by (by100 blast)
 qed
 
+lemma geotop_fig410_link_and_star_vertices_finite_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  shows "finite (geotop_complex_vertices (geotop_link K v))
+      \<and> finite (geotop_complex_vertices (geotop_star K v))"
+  (**
+    Fig. 4.10 finiteness bookkeeping: before matching the link with a
+    subdivision of the frontier of a 2-simplex, both the old boundary vertices
+    and the whole cone-star vertex set are finite. **)
+proof -
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hlink_vertices_finite: "finite (geotop_complex_vertices (geotop_link K v))"
+    by (rule geotop_finite_complex_vertices_finite_dev34
+        [OF hlink_complex hlink_finite])
+  have hstar_vertices:
+      "geotop_complex_vertices (geotop_star K v)
+        = insert v (geotop_complex_vertices (geotop_link K v))"
+    by (rule geotop_star_vertices_eq_insert_link_vertices_dev34[OF hK hv])
+  have hstar_vertices_finite:
+      "finite (geotop_complex_vertices (geotop_star K v))"
+    using hstar_vertices hlink_vertices_finite by (by100 simp)
+  show ?thesis
+    using hlink_vertices_finite hstar_vertices_finite by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
