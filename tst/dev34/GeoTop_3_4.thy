@@ -1887,6 +1887,32 @@ proof -
     using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
 qed
 
+lemma geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink:
+    "geotop_is_complex (geotop_link K v)
+      \<and> geotop_complex_is_1dim (geotop_link K v)
+      \<and> finite (geotop_link K v)
+      \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+          \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
+  shows "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set) K' L'.
+      L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision K' (geotop_star K v)
+      \<and> geotop_is_subdivision L' L
+      \<and> geotop_isomorphic K' L'"
+  (**
+    Moise Fig. 4.10 step. Take a 2-simplex \<open>\<sigma>\<close>; subdivide
+    \<open>Fr \<sigma>\<close> so its edge-cycle or edge-chain matches the finite
+    polygonal/broken-line link; add one interior vertex and cone the boundary
+    subdivision to that vertex. The resulting fan subdivision of
+    \<open>{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}\<close> is simplicially isomorphic to a
+    subdivision of \<open>St v\<close>, with the link corresponding to the subdivided
+    boundary. **)
+  sorry
+
 lemma geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1897,10 +1923,55 @@ lemma geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34:
       \<and> finite (geotop_link K v)
       \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
           \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
-  shows "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+  shows "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set).
+        L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> geotop_comb_equiv (geotop_star K v) L"
-  sorry
+proof -
+  have hmodel_ex:
+    "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set) K' L'.
+      L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision K' (geotop_star K v)
+      \<and> geotop_is_subdivision L' L
+      \<and> geotop_isomorphic K' L'"
+    by (rule geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34
+        [OF hK hv hlink])
+  obtain L :: "(real^2) set set" and \<sigma> :: "(real^2) set" and K' L'
+    where hmodel:
+      "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision K' (geotop_star K v)
+      \<and> geotop_is_subdivision L' L
+      \<and> geotop_isomorphic K' L'"
+    using hmodel_ex by (elim exE)
+  have hL_eq: "L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hmodel by (by100 simp)
+  have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    using hmodel by (by100 simp)
+  have hK'_sub: "geotop_is_subdivision K' (geotop_star K v)"
+    using hmodel by (by100 simp)
+  have hL'_sub: "geotop_is_subdivision L' L"
+    using hmodel by (by100 simp)
+  have h_iso: "geotop_isomorphic K' L'"
+    using hmodel by (by100 simp)
+  have hstar_finite: "finite (geotop_star K v)"
+    by (rule geotop_star_finite_at_complex_vertex[OF hK hv])
+  have hL_finite: "finite L"
+  proof -
+    have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>2])
+    have "finite {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      by (rule geotop_simplex_face_complex_finite_R2[OF h\<sigma>simplex])
+    thus ?thesis
+      using hL_eq by (by100 simp)
+  qed
+  have hcomb: "geotop_comb_equiv (geotop_star K v) L"
+    unfolding geotop_comb_equiv_def
+    using hstar_finite hL_finite hK'_sub hL'_sub h_iso by (by100 blast)
+  show ?thesis
+    using hL_eq h\<sigma>2 hcomb by (by100 blast)
+qed
 
 lemma geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
@@ -1909,7 +1980,8 @@ lemma geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34:
   assumes hshape:
     "geotop_is_broken_line (\<Union>(geotop_link K v))
       \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
-  shows "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+  shows "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set).
+        L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> geotop_comb_equiv (geotop_star K v) L"
 proof -
@@ -1939,7 +2011,8 @@ proof -
   have hstar_finite: "finite (geotop_star K v)"
     by (rule geotop_star_finite_at_complex_vertex[OF hK hv])
   have hcone_equiv:
-    "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+    "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set).
+        L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
         \<and> geotop_simplex_dim \<sigma> 2
         \<and> geotop_comb_equiv (geotop_star K v) L"
     by (rule geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34
