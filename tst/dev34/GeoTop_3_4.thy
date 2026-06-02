@@ -7567,6 +7567,142 @@ proof -
     by (rule that[OF hs0 hs1 hxpos hypos hsz])
 qed
 
+lemma geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s where "0 < s" "p + s *\<^sub>R n \<in> interior \<sigma>"
+  (**
+    Normal-probe half of the book's two-triangle edge-neighborhood
+    construction: from an edge-interior point, a small move into the strict side
+    of the opposite vertex lands in the triangle interior. **)
+proof -
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    by (rule geotop_edge_rel_interior_parameter_dev34[OF hab he_eq hp])
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hp_line: "n \<bullet> p = r"
+  proof -
+    have "n \<bullet> p = n \<bullet> ((1 - t) *\<^sub>R a + t *\<^sub>R b)"
+      using hp_eq by (by100 simp)
+    also have "\<dots> = (1 - t) * (n \<bullet> a) + t * (n \<bullet> b)"
+      by (simp add: inner_add_right inner_scaleR_right)
+    also have "\<dots> = (1 - t) * r + t * r"
+      using ha_line hb_line by (by100 simp)
+    also have "\<dots> = r"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hnn_pos: "0 < n \<bullet> n"
+    using hn by (simp add: inner_gt_zero_iff)
+  define q where "q = p + n"
+  have hq_side: "n \<bullet> q > r"
+  proof -
+    have "n \<bullet> q = n \<bullet> (p + n)"
+      using q_def by (by100 simp)
+    also have "\<dots> = n \<bullet> p + n \<bullet> n"
+      by (simp add: inner_add_right)
+    also have "\<dots> = r + n \<bullet> n"
+      using hp_line by (by100 simp)
+    finally show ?thesis
+      using hnn_pos by (by100 linarith)
+  qed
+  obtain x y z where hsum: "x + y + z = 1"
+    and hq_eq: "q = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_positive_side_affine_coordinate_positive_dev34
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hq_side]
+    by (by100 blast)
+  have hu: "0 < 1 - t"
+    using ht1 by (by100 linarith)
+  have hv: "0 < t"
+    using ht0 .
+  obtain s where hs0: "0 < s" and hs1: "s < 1"
+    and hxpos: "0 < (1 - s) * (1 - t) + s * x"
+    and hypos: "0 < (1 - s) * t + s * y"
+    and hzpos: "0 < s * z"
+    using geotop_real_positive_edge_probe_parameter_dev34[OF hu hv hz]
+    by (by100 blast)
+  have hsum_probe:
+    "((1 - s) * (1 - t) + s * x) + ((1 - s) * t + s * y) + s * z = 1"
+  proof -
+    have "((1 - s) * (1 - t) + s * x) + ((1 - s) * t + s * y) + s * z =
+        (1 - s) + s * (x + y + z)"
+      by (simp add: algebra_simps)
+    also have "\<dots> = 1"
+      using hsum by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hprobe_eq:
+    "p + s *\<^sub>R n =
+      ((1 - s) * (1 - t) + s * x) *\<^sub>R a
+        + ((1 - s) * t + s * y) *\<^sub>R b
+        + (s * z) *\<^sub>R c"
+  proof -
+    have "p + s *\<^sub>R n = (1 - s) *\<^sub>R p + s *\<^sub>R q"
+      using q_def by (simp add: algebra_simps)
+    also have "\<dots> =
+      (1 - s) *\<^sub>R ((1 - t) *\<^sub>R a + t *\<^sub>R b)
+        + s *\<^sub>R (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq hq_eq by (by100 simp)
+    also have "\<dots> =
+      ((1 - s) * (1 - t) + s * x) *\<^sub>R a
+        + ((1 - s) * t + s * y) *\<^sub>R b
+        + (s * z) *\<^sub>R c"
+      by (simp add: algebra_simps scaleR_add_left scaleR_add_right)
+    finally show ?thesis .
+  qed
+  have hprobe_in: "p + s *\<^sub>R n \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_dev34
+        [OF hab hc_not_ab h\<sigma>V hxpos hypos hzpos hsum_probe hprobe_eq])
+  show ?thesis
+    by (rule that[OF hs0 hprobe_in])
+qed
+
+lemma geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s where "0 < s" "p - s *\<^sub>R n \<in> interior \<sigma>"
+  (**
+    Negative-side version of the normal probe, phrased with the original normal
+    direction for use in the opposite-side shared-edge local model. **)
+proof -
+  have hn_neg: "-n \<noteq> 0"
+    using hn by (by100 simp)
+  have hline_neg: "affine hull {a, b} = {x. (-n) \<bullet> x = -r}"
+    using hline by (simp add: set_eq_iff)
+  have hc_pos: "(-n) \<bullet> c > -r"
+    using hc_side by (by100 simp)
+  obtain s where hs0: "0 < s"
+    and hs_in: "p + s *\<^sub>R (-n) \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_dev34
+        [OF hab hc_not_ab hn_neg he_eq h\<sigma>V hline_neg hc_pos hp])
+  have hprobe: "p - s *\<^sub>R n \<in> interior \<sigma>"
+    using hs_in by (by100 simp)
+  show ?thesis
+    by (rule that[OF hs0 hprobe])
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

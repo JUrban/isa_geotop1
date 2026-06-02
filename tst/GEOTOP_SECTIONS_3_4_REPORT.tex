@@ -26,9 +26,9 @@ theorem index ran in about half a second, while \texttt{gen\_stmt\_index.sh}
 ran in about two seconds.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:33 elapsed time}.
+with the outer command reporting \texttt{0:00:36 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{1e5ee134} (\texttt{Prove GeoTop edge relative interior parameter}).
+\texttt{f5eb9f6d} (\texttt{Prove GeoTop edge probe parameter}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -113,8 +113,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7585; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 7941; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7721; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 8077; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -265,7 +265,14 @@ relative interior. The real positivity helper
 \texttt{geotop\_real\_positive\_edge\_probe\_parameter\_dev34} is also proved;
 it chooses a small positive probe parameter that preserves the two positive
 edge barycentric coordinates while creating a positive normal-side coordinate,
-which is the next ingredient for the analytic local-neighborhood step.
+which is the next ingredient for the analytic local-neighborhood step. The
+normal-probe helpers
+\texttt{geotop\_2simplex\_positive\_side\_edge\_normal\_probe\_in\_HOL\_interior\_dev34}
+and
+\texttt{geotop\_2simplex\_negative\_side\_edge\_normal\_probe\_in\_HOL\_interior\_dev34}
+are now proved: from a point in the relative interior of the shared edge, a
+sufficiently small move along the chosen normal direction into either strict
+side lands in the HOL interior of the corresponding incident triangle.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},

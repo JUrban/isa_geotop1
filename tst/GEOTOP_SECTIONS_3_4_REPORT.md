@@ -26,9 +26,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:33 elapsed time`.
-- The current committed branch tip before this report refresh is `1e5ee134`
-  (`Prove GeoTop edge relative interior parameter`).
+  `0:00:36 elapsed time`.
+- The current committed branch tip before this report refresh is `f5eb9f6d`
+  (`Prove GeoTop edge probe parameter`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -116,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7585; this is the remaining analytic local-neighborhood step for
+  at line 7721; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7941;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8077;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -293,7 +293,12 @@ The real positivity helper `geotop_real_positive_edge_probe_parameter_dev34` is
 also proved; it chooses a small positive probe parameter that preserves the two
 positive edge barycentric coordinates while creating a positive normal-side
 coordinate, which is the next ingredient for the analytic local-neighborhood
-step.
+step. The normal-probe helpers
+`geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_dev34` and
+`geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_dev34` are now
+proved: from a point in the relative interior of the shared edge, a sufficiently
+small move along the chosen normal direction into either strict side lands in
+the HOL interior of the corresponding incident triangle.
 
 ## Important Supporting Material
 
