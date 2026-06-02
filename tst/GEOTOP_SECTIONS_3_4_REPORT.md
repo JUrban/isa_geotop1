@@ -18,13 +18,13 @@ Evidence checked locally:
 - The latest pulled `main` head is commit `3e463c3b` (`Document GeoTop sections
   1 and 2 status`), which adds the companion report through Section 2.
 - The local branch `codex-dev34-cache` already contains all of that `main`;
-  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `240 0`, so no
+  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `242 0`, so no
   merge was needed for this report update.
 - A fresh warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, reporting `0:00:18 elapsed time`.
-- The current committed branch tip is `45cb8e20` (`Isolate GeoTop vertex star
+- The current committed branch tip is `c7476ff3` (`Narrow GeoTop vertex star
   fan model`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
@@ -102,15 +102,15 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34` at
-  line 1914.
+- `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
+  at line 1913.
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34` at
-  line 2069.
+  line 2105.
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34` at
-  line 2091.
+  line 2127.
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34` at
-  line 2187.
-- The boundary equality half of `Theorem_GT_4_9` at line 3972.
+  line 2223.
+- The boundary equality half of `Theorem_GT_4_9` at line 4008.
 
 ## Recent Progress
 
@@ -171,11 +171,10 @@ explicit small semicircle/small circle construction lemmas:
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34`
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34`
 
-The cone-over-link bridge for Theorem 4.8 has likewise been split so that the
-outer lemma derives the finite 1-dimensional link classification, proves the
-combinatorial-equivalence wrapper, and delegates the remaining book Figure 4.10
-construction to
-`geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`.
+The cone-over-link bridge for Theorem 4.8 has likewise been narrowed. The
+link-complex wrapper now proves the finite linear-graph hypotheses and delegates
+the remaining book Figure 4.10 construction to
+`geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`.
 
 ## Important Supporting Material
 
@@ -206,12 +205,12 @@ Important cached helpers include:
 ## Notes For Future Work
 
 - The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
-  `geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`.
+  `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`.
   This is the formal Figure 4.10 step: subdivide the boundary of a 2-simplex to
   match the finite polygonal or broken-line link, add one interior vertex, cone
   the boundary subdivision, and obtain a simplicial isomorphism with a
   subdivision of the vertex star.
-- The local chart contradiction lemmas at lines 2069, 2091, and 2187 now have
+- The local chart contradiction lemmas at lines 2105, 2127, and 2223 now have
   the needed local-open-neighborhood reductions. The next step there is to
   formalize the book's small semicircle/small circle constructions in the
   chart.
