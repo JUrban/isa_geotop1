@@ -6239,6 +6239,30 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_link_vertex_two_incident_link_edges_exhaust:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hwL: "{w} \<in> geotop_link K v"
+  assumes htwo:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  shows "\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>.
+      e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+      \<and> \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}
+      \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+      \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>
+      \<and> l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>
+      \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>)"
+  sorry
+
 lemma geotop_complex_edge_face_count_eq_1_unique:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
