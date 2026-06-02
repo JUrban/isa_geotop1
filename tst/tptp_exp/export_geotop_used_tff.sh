@@ -122,6 +122,17 @@ $SOURCE_DECLS
     else
       "THM: " ^ compact_message msg
 
+  fun is_generated_timestamp_line s =
+    let
+      fun is_digit_at i = i < size s andalso Char.isDigit (String.sub (s, i))
+      fun char_at i c = i < size s andalso String.sub (s, i) = c
+    in
+      size s >= 23 andalso
+      List.all is_digit_at [0, 1, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15, 17, 18] andalso
+      char_at 4 #"-" andalso char_at 7 #"-" andalso char_at 10 #" " andalso
+      char_at 13 #":" andalso char_at 16 #":" andalso char_at 19 #"."
+    end
+
   fun strip_numeric_suffix s =
     (case rev (space_explode "_" s) of
       last :: rev_prefix =>
@@ -176,7 +187,8 @@ $SOURCE_DECLS
   fun export_one (name, th) =
     let
       val target_name = Thm_Name.short name
-      val (hyp_ts, concl_t) = Logic.strip_horn (Thm.prop_of th)
+      val hyp_ts = []
+      val concl_t = Thm.prop_of th
       val dep_names =
         Thm_Deps.thm_deps thy [th]
         |> map #2
@@ -199,6 +211,7 @@ $SOURCE_DECLS
       val lines =
         ATP_Problem.lines_of_atp_problem format
           (fn () => ATP_Problem_Generate.atp_problem_term_order_info problem) problem
+        |> filter_out is_generated_timestamp_line
       val file_name = clean_name target_name ^ ".p"
       val file = export_dir + Path.basic file_name
       val _ = File.write_list file (map (fn s => s ^ "\\n") lines)
