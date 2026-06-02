@@ -6180,6 +6180,159 @@ proof
     by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hp_HOL])
 qed
 
+lemma geotop_link_vertices_face_count_two_incident_link_edge_card_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes htwo:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  shows "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
+proof (intro allI impI)
+  fix w
+  let ?S = "{l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l}"
+  assume hwL: "{w} \<in> geotop_link K v"
+  have hex:
+    "\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>.
+      e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+      \<and> \<sigma> \<noteq> \<tau>
+      \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+      \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+      \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}
+      \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+      \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>
+      \<and> l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>
+      \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>)"
+    by (rule geotop_link_vertex_two_incident_link_edges_exhaust[OF hK hvK hwL htwo])
+  obtain e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau> where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and hv_e: "v \<in> e"
+    and hw_e: "w \<in> e"
+    and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<tau>face: "geotop_is_face e \<tau>"
+    and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+    and hl\<sigma>L: "l\<^sub>\<sigma> \<in> geotop_link K v"
+    and hl\<sigma>edge: "geotop_is_edge l\<^sub>\<sigma>"
+    and hw_l\<sigma>: "w \<in> l\<^sub>\<sigma>"
+    and hl\<tau>L: "l\<^sub>\<tau> \<in> geotop_link K v"
+    and hl\<tau>edge: "geotop_is_edge l\<^sub>\<tau>"
+    and hw_l\<tau>: "w \<in> l\<^sub>\<tau>"
+    and hl_distinct: "l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>"
+    and hexhaust: "\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>"
+    using hex by (elim exE conjE)
+  have hS_eq: "?S = {l\<^sub>\<sigma>, l\<^sub>\<tau>}"
+  proof
+    show "?S \<subseteq> {l\<^sub>\<sigma>, l\<^sub>\<tau>}"
+      using hexhaust by (by100 blast)
+  next
+    show "{l\<^sub>\<sigma>, l\<^sub>\<tau>} \<subseteq> ?S"
+      using hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau> by (by100 blast)
+  qed
+  show "card ?S = 2"
+    using hS_eq hl_distinct by (by100 simp)
+qed
+
+lemma geotop_link_component_preserves_incident_edge_card_two_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hdegree_link: "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
+  shows "\<forall>w. {w} \<in> {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C} \<longrightarrow>
+      card {l\<in>{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}. geotop_is_edge l \<and> w \<in> l} = 2"
+proof (intro allI impI)
+  fix w
+  let ?L = "{\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+  let ?S\<^sub>C = "{l\<in>?L. geotop_is_edge l \<and> w \<in> l}"
+  let ?S = "{l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l}"
+  assume hwL: "{w} \<in> ?L"
+  have hw_link: "{w} \<in> geotop_link K v"
+    using hwL by (by100 simp)
+  have hwC: "w \<in> C"
+    using hwL by (by100 blast)
+  have hsets: "?S\<^sub>C = ?S"
+  proof
+    show "?S\<^sub>C \<subseteq> ?S"
+      by (by100 blast)
+  next
+    show "?S \<subseteq> ?S\<^sub>C"
+    proof
+      fix l
+      assume hlS: "l \<in> ?S"
+      have hl_link: "l \<in> geotop_link K v"
+        using hlS by (by100 simp)
+      have hw_l: "w \<in> l"
+        using hlS by (by100 simp)
+      have hmeet: "l \<inter> C \<noteq> {}"
+        using hw_l hwC by (by100 blast)
+      have hl_subC: "l \<subseteq> C"
+        by (rule geotop_link_component_contains_meeting_simplex
+            [OF hK hP hC hl_link hmeet])
+      show "l \<in> ?S\<^sub>C"
+        using hlS hl_subC by (by100 simp)
+    qed
+  qed
+  have hdegree: "card ?S = 2"
+    using hdegree_link hw_link by (by100 blast)
+  show "card ?S\<^sub>C = 2"
+    using hsets hdegree by (by100 simp)
+qed
+
+lemma geotop_link_component_degree_two_polygon_witness_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hdegree_link: "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
+  shows "geotop_is_polygon C"
+proof -
+  obtain L where hL_eq: "L = {\<sigma>\<in>geotop_link K v. \<sigma> \<subseteq> C}"
+    and hL_complex: "geotop_is_complex L"
+    and hL_1dim: "geotop_complex_is_1dim L"
+    and hL_fin: "finite L"
+    and hL_poly: "geotop_polyhedron L = C"
+    using geotop_link_component_subcomplex_witness[OF hK hv hP hC]
+    by (by100 blast)
+  have hL_linear: "geotop_is_linear_graph L"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34[OF hL_complex hL_1dim])
+  have hC_conn: "top1_connected_on C
+      (subspace_topology UNIV geotop_euclidean_topology C)"
+    using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
+  have hpoly_conn: "top1_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hC_conn hL_poly by (by100 simp)
+  have hpath: "top1_path_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  have hL_conn: "geotop_complex_connected L"
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+  have hdegree_L: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
+    using geotop_link_component_preserves_incident_edge_card_two_dev34
+      [OF hK hP hC hdegree_link] hL_eq by (by100 simp)
+  have hpoly_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
+        [OF hL_linear hL_fin hL_conn hdegree_L])
+  show ?thesis
+    using hpoly_polygon hL_poly by (by100 simp)
+qed
+
 lemma geotop_two_sided_vertex_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -6194,7 +6347,74 @@ lemma geotop_two_sided_vertex_link_polygon_dev34:
     Moise Theorem 9 vertex-link branch: if every edge incident with \<open>v\<close> is
     two-sided, then every link vertex has degree two.  Lemma 5 gives
     connectedness of \<open>|L(v)|\<close>, hence the link is a single polygon. **)
-  sorry
+proof -
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  have hvM: "v \<in> geotop_polyhedron K"
+    using hvK unfolding geotop_polyhedron_def by (by100 blast)
+  have hincident: "\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e"
+  proof (rule ccontr)
+    assume hno: "\<not> (\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e)"
+    have hsingle_open: "{v} \<in>
+        subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+      by (rule geotop_complex_no_incident_edge_vertex_open_singleton[OF hK hv hno])
+    have hnot_open: "{v} \<notin>
+        subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+      by (rule geotop_2_manifold_with_boundary_no_open_singleton[OF hKM hvM])
+    show False
+      using hsingle_open hnot_open by (by100 blast)
+  qed
+  have hlink_nonempty: "\<Union>(geotop_link K v) \<noteq> {}"
+  proof -
+    obtain e where heK: "e \<in> K" and hedge: "geotop_is_edge e" and hv_e: "v \<in> e"
+      using hincident by (by100 blast)
+    show ?thesis
+      by (rule geotop_incident_edge_link_polyhedron_nonempty
+          [OF hK hvK heK hedge hv_e])
+  qed
+  have htwo_faces:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      (\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>})"
+  proof (intro ballI impI)
+    fix e
+    assume heK: "e \<in> K"
+    assume he_inc: "geotop_is_edge e \<and> v \<in> e"
+    have hcount2:
+      "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+      using hall_edges heK he_inc by (by100 blast)
+    show "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau>
+        \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+        \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+        \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
+      by (rule geotop_complex_edge_face_count_eq_2_obtain[OF hcount2])
+  qed
+  have hdegree_link: "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+      card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
+    by (rule geotop_link_vertices_face_count_two_incident_link_edge_card_dev34
+        [OF hK hvK htwo_faces])
+  have hconn: "top1_connected_on (\<Union>(geotop_link K v))
+      (subspace_topology UNIV geotop_euclidean_topology
+        (\<Union>(geotop_link K v)))"
+    by (rule geotop_2_manifold_with_boundary_link_polyhedron_connected_from_vertex_star_dev34
+        [OF hK hKM hv])
+  obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+    using hlink_nonempty by (by100 blast)
+  let ?C = "geotop_component_at UNIV geotop_euclidean_topology
+      (\<Union>(geotop_link K v)) P"
+  have hC_def: "?C = geotop_component_at UNIV geotop_euclidean_topology
+      (\<Union>(geotop_link K v)) P"
+    by (by100 simp)
+  have hC_polygon: "geotop_is_polygon ?C"
+    by (rule geotop_link_component_degree_two_polygon_witness_dev34
+        [OF hK hv hP hC_def hdegree_link])
+  have hC_eq: "?C = \<Union>(geotop_link K v)"
+    by (rule geotop_connected_component_at_eq_self[OF hP hconn])
+  show ?thesis
+    using hC_polygon hC_eq by (by100 simp)
+qed
 
 lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"

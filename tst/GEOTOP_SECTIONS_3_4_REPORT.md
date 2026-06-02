@@ -22,12 +22,12 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:16 elapsed time`.
-- The current committed branch tip before this report refresh is `3ca3f38a`
-  (`Reduce GeoTop boundary local models to HOL interior`).
+  `0:00:31 elapsed time`.
+- The current committed branch tip before this report refresh is `f41aa0a3`
+  (`Split GeoTop two-sided vertex local model`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 17 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 7 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
@@ -40,7 +40,7 @@ three-sided chart contradictions are now narrowed to explicit domain-level
 small semicircle/small circle construction lemmas plus a 2-cell/Jordan helper.
 The major open clusters are the actual ordered Figure 4.10 construction, the
 small semicircle/small circle domain constructions, the 2-cell/Jordan
-contradiction, the two local Theorem 4.9 converse plane-neighborhood
+contradiction, the remaining Theorem 4.9 converse plane-neighborhood
 obligations, and several larger Section 3/early Section 4 prefix arguments.
 
 ## Layout
@@ -58,7 +58,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 7 executable
+  layer of the section-specific stack; it currently contains 6 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -114,8 +114,6 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
   at line 6113; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_two_sided_vertex_link_polygon_dev34` at line 6197; this is the
-  vertex-link degree-two-to-polygon branch of Theorem 4.9's boundary converse.
 - `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6209;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
@@ -206,9 +204,15 @@ Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
 from a carrier split, and the remaining content is named as two local chart
 obligations: two distinct 2-simplexes of the same complex sharing an edge form
-an ordinary Euclidean neighborhood along the edge interior, all two-sided
-incident edges make the vertex link a polygon, and a polygonal link gives a
-full disk-star Euclidean neighborhood at the vertex.
+an ordinary Euclidean neighborhood along the edge interior, and a polygonal
+link gives a full disk-star Euclidean neighborhood at the vertex. The
+two-sided vertex-link branch is now proved: exact two-face incidence gives
+degree two at every link vertex, connectedness from Lemma 5 makes the link a
+single component, and the finite connected degree-two linear graph classifier
+turns that component into a polygon. New proved helpers include
+`geotop_link_vertices_face_count_two_incident_link_edge_card_dev34`,
+`geotop_link_component_preserves_incident_edge_card_two_dev34`, and
+`geotop_link_component_degree_two_polygon_witness_dev34`.
 
 ## Important Supporting Material
 
