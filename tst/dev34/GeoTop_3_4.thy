@@ -7429,6 +7429,23 @@ proof (rule geotop_two_2simplex_shared_edge_vertices_side_obtain_dev34
           hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg hopp])
 qed
 
+lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  shows "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+  (**
+    Analytic local-neighborhood step for the shared-edge model: along the
+    relative interior of the common edge, the two opposite-side 2-simplexes
+    fill a full Euclidean disk neighborhood. **)
+  sorry
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
@@ -7447,7 +7464,29 @@ lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_u
     of the same complex that share the edge \<open>e\<close> lie on opposite sides of
     \<open>e\<close>.  Their union fills the two local half-disks along
     \<open>rel_interior e\<close>, so it has ordinary Euclidean interior there. **)
-  sorry
+proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_dev34
+    [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    and h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    and hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  show ?thesis
+    by (rule geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34
+        [OF hab hc_not_ab hd_not_ab he_eq h\<sigma>V h\<tau>V hline hopp])
+qed
 
 lemma geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"

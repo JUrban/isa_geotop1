@@ -22,9 +22,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:34 elapsed time`.
-- The current committed branch tip before this report refresh is `53124922`
-  (`Prove GeoTop same-side triangle interior overlap`).
+  `0:00:36 elapsed time`.
+- The current committed branch tip before this report refresh is `a920608b`
+  (`Prove GeoTop shared edge opposite sides`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -111,10 +111,10 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
-- `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7450; this is the same-complex two-triangle shared-edge local disk
-  model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7764;
+- `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
+  at line 7447; this is the remaining analytic local-neighborhood step for
+  the same-complex two-triangle shared-edge local disk model.
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7803;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -277,7 +277,12 @@ model. The same-complex package
 `geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_dev34` is now
 proved: after extracting the shared-edge normal-coordinate data, complex
 relative-interior disjointness rules out both same-side cases and leaves the
-two opposite-side alternatives.
+two opposite-side alternatives. The same-complex wrapper
+`geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
+is also proved from the newly isolated analytic helper
+`geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`;
+the remaining content is exactly the book's local Euclidean ball construction
+for two opposite-side triangles along their common edge.
 
 ## Important Supporting Material
 
