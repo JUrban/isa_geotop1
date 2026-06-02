@@ -1887,6 +1887,28 @@ proof -
     using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
 qed
 
+lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hshape:
+    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(\<sigma> :: (real^2) set) L'.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_isomorphic (geotop_star K v) L'"
+  (**
+    Moise Fig. 4.10, isolated in the exact form used below.  Subdivide the
+    frontier of a 2-simplex so its edge-chain/cycle has the same combinatorial
+    order as the finite linear link, add one interior vertex, and cone that
+    subdivided frontier to the new vertex.  The simplicial bijection sends
+    \<open>v\<close> to the new cone vertex and sends the link vertices, in linear/cyclic
+    order, to the subdivided frontier vertices. **)
+  sorry
+
 lemma geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1910,7 +1932,23 @@ lemma geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34
     \<open>{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}\<close> is simplicially isomorphic to a
     subdivision of \<open>St v\<close>, with the link corresponding to the subdivided
     boundary. **)
-  sorry
+proof -
+  obtain \<sigma> :: "(real^2) set" and L'
+    where hfan:
+      "geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_isomorphic (geotop_star K v) L'"
+    using geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hshape]
+    by (by100 blast)
+  have hstar_complex: "geotop_is_complex (geotop_star K v)"
+    by (rule geotop_star_is_complex[OF hK])
+  have hstar_sub: "geotop_is_subdivision (geotop_star K v) (geotop_star K v)"
+    by (rule geotop_is_subdivision_refl[OF hstar_complex])
+  show ?thesis
+    using hfan hstar_sub by (intro exI[of _ "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"])
+      (by100 blast)
+qed
 
 lemma geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
