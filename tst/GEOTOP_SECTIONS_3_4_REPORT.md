@@ -18,30 +18,28 @@ Evidence checked locally:
 - The latest pulled `main` head is commit `3e463c3b` (`Document GeoTop sections
   1 and 2 status`), which adds the companion report through Section 2.
 - The local branch `codex-dev34-cache` already contains all of that `main`;
-  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `237 0`, so no
+  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `240 0`, so no
   merge was needed for this report update.
-- The latest successful section build on this branch was:
+- A fresh warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
-  -d dev34_openstar -d dev34 GeoTop34Dev`.
-- The current committed branch tip is `fb418eba` (`Reduce GeoTop endpoint
-  control to closed bad cone`). The current working tree also contains an
-  uncommitted, already-built reduction of the bad-endpoint closedness proof to
-  a compact cone-over-compact closedness helper.
+  -d dev34_openstar -d dev34 GeoTop34Dev`, reporting `0:00:18 elapsed time`.
+- The current committed branch tip is `45cb8e20` (`Isolate GeoTop vertex star
+  fan model`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 5 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
 development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
-holes. The most active current bottleneck is now the compactness/closedness
-lemma for a cone over a compact endpoint set, used to finish the radial
-bad-endpoint exclusion and hence radial cone openness. The other major open
-clusters are the cone-over-link construction, the small semicircle/small circle
-chart contradictions, the boundary equality part of Theorem 4.9, and several
-larger Section 3/early Section 4 prefix arguments.
+holes. The compact cone-over-compact closedness lemma is now proved, closing the
+radial bad-endpoint closedness bottleneck. The major open clusters are now the
+book's Figure 4.10 fan model turning a polygonal or broken-line link into a
+cone-over-link subdivision, the small semicircle/small circle chart
+contradictions, the boundary equality part of Theorem 4.9, and several larger
+Section 3/early Section 4 prefix arguments.
 
 ## Layout
 
@@ -58,7 +56,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 6 executable
+  layer of the section-specific stack; it currently contains 5 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -104,16 +102,15 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_radial_cone_over_compact_closed_dev34` at line 300.
-- `geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34` at
-  line 1837.
+- `geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34` at
+  line 1914.
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34` at
-  line 1930.
+  line 2069.
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34` at
-  line 1952.
+  line 2091.
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34` at
-  line 2048.
-- The boundary equality half of `Theorem_GT_4_9` at line 3833.
+  line 2187.
+- The boundary equality half of `Theorem_GT_4_9` at line 3972.
 
 ## Recent Progress
 
@@ -148,7 +145,7 @@ finite-carrier radial neighborhood reduction:
 - `geotop_euclidean_open_radial_cone_point_neighborhood_dev34`
 - `geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34`
 
-The single-simplex radial obligation has since been split into the easy
+The single-simplex radial obligation was split into the easy
 off-simplex case and the harder on-simplex endpoint-control case. Current
 helpers in that reduction include:
 
@@ -157,12 +154,13 @@ helpers in that reduction include:
 - `geotop_radial_endpoint_simplex_local_ball_control_dev34`
 - `geotop_ball_avoids_closed_not_containing_allow_empty_dev34`
 - `geotop_radial_bad_endpoint_cone_avoids_point_dev34`
+- `geotop_radial_cone_over_compact_closed_dev34`
 - `geotop_radial_bad_endpoint_cone_closed_dev34`
 
-The remaining radial obligation is now
-`geotop_radial_cone_over_compact_closed_dev34`: a general closedness lemma for
-the image of `{0..1} x C` under the affine cone map
-`(s,y) |-> (1-s) *\<^sub>R v + s *\<^sub>R y`, assuming `compact C`.
+The compact cone-over-compact helper proves the general closedness of the image
+of `{0..1} x C` under the affine cone map
+`(s,y) |-> (1-s) *\<^sub>R v + s *\<^sub>R y`, assuming `compact C`, by reducing
+to compactness of a continuous image.
 
 The chart-local Section 4 statements have also been audited against the book
 argument. The one-sided and three-sided chart contradictions first extract a
@@ -174,9 +172,10 @@ explicit small semicircle/small circle construction lemmas:
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34`
 
 The cone-over-link bridge for Theorem 4.8 has likewise been split so that the
-outer lemma derives the finite 1-dimensional link classification and delegates
-the remaining Figure 4.10 construction to
-`geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34`.
+outer lemma derives the finite 1-dimensional link classification, proves the
+combinatorial-equivalence wrapper, and delegates the remaining book Figure 4.10
+construction to
+`geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`.
 
 ## Important Supporting Material
 
@@ -201,21 +200,18 @@ Important cached helpers include:
 - `geotop_complex_simplex_nonempty`
 - `geotop_ball_avoids_closed_not_containing`
 - `geotop_radial_endpoint_simplex_local_ball_control_dev34`
+- `geotop_radial_cone_over_compact_closed_dev34`
 - `geotop_radial_bad_endpoint_cone_avoids_point_dev34`
 
 ## Notes For Future Work
 
 - The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
-  `geotop_radial_cone_over_compact_closed_dev34`. The intended proof is to
-  view the cone as the continuous image of the compact product
-  `{0..1::real} x C`, then use compactness to obtain closedness in `real^2`.
-- After the compact cone-closed lemma is closed, rerun the cached
-  `GeoTop34Dev` build and check whether radial cone openness is fully
-  discharged by the current reductions.
-- After the radial simplex-local/radial cone obligation is closed, the cone-over-link
-  bridge at line 1837 should be the next bottleneck for turning link shape into
-  `geotop_comb_n_cell (geotop_star K v) 2`.
-- The local chart contradiction lemmas at lines 1930, 1952, and 2048 now have
+  `geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34`.
+  This is the formal Figure 4.10 step: subdivide the boundary of a 2-simplex to
+  match the finite polygonal or broken-line link, add one interior vertex, cone
+  the boundary subdivision, and obtain a simplicial isomorphism with a
+  subdivision of the vertex star.
+- The local chart contradiction lemmas at lines 2069, 2091, and 2187 now have
   the needed local-open-neighborhood reductions. The next step there is to
   formalize the book's small semicircle/small circle constructions in the
   chart.
