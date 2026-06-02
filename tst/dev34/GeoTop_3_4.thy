@@ -5448,6 +5448,33 @@ proof
     by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hp_int_M])
 qed
 
+lemma geotop_manifold_boundary_disjoint_2simplex_rel_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "p \<notin> rel_interior \<sigma>"
+  (**
+    Converse-boundary bookkeeping for Theorem 9: a carrier 2-simplex would
+    put \<open>p\<close> in the manifold interior, contradicting \<open>p \<in> Bd |K|\<close>. **)
+proof
+  assume hp_rel: "p \<in> rel_interior \<sigma>"
+  have hp_int: "p \<in> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  proof -
+    have hsub: "rel_interior \<sigma>
+        \<subseteq> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+      by (rule geotop_2simplex_rel_interior_subset_manifold_interior_dev34
+          [OF hK h\<sigma>K h\<sigma>2])
+    show ?thesis
+      using hsub hp_rel by (by100 blast)
+  qed
+  have hp_not_int: "p \<notin> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+    using hbd unfolding geotop_manifold_boundary_def by (by100 blast)
+  show False
+    using hp_int hp_not_int by (by100 blast)
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
