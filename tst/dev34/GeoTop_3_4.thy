@@ -130,6 +130,22 @@ proof -
   qed
 qed
 
+lemma geotop_complex_vertex_star_neighborhood_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "\<exists>U. U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
+       \<and> v \<in> U \<and> U \<subseteq> \<Union>(geotop_star K v)"
+proof (intro exI[where x = "geotop_open_star K v"] conjI)
+  show "geotop_open_star K v
+      \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+    by (rule geotop_open_star_open_in_subspace_locally_finite_dev34[OF hK])
+  show "v \<in> geotop_open_star K v"
+    by (rule geotop_complex_vertex_in_open_star_dev34[OF hK hv])
+  show "geotop_open_star K v \<subseteq> \<Union>(geotop_star K v)"
+    by (rule geotop_open_star_subset_star_polyhedron_dev34)
+qed
+
 lemma geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -155,15 +171,7 @@ proof (rule ccontr)
   have hstar_neighborhood:
     "\<exists>U. U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
        \<and> v \<in> U \<and> U \<subseteq> \<Union>(geotop_star K v)"
-  proof (intro exI[where x = "geotop_open_star K v"] conjI)
-    show "geotop_open_star K v
-        \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
-      by (rule geotop_open_star_open_in_subspace_locally_finite_dev34[OF hK])
-    show "v \<in> geotop_open_star K v"
-      by (rule geotop_complex_vertex_in_open_star_dev34[OF hK hv])
-    show "geotop_open_star K v \<subseteq> \<Union>(geotop_star K v)"
-      by (rule geotop_open_star_subset_star_polyhedron_dev34)
-  qed
+    by (rule geotop_complex_vertex_star_neighborhood_dev34[OF hK hv])
   \<comment> \<open>A point does not separate a plane chart neighborhood; transported back to
       the star neighborhood this contradicts the separation above.\<close>
   have hstar_not_separated:
@@ -196,6 +204,11 @@ proof (rule ccontr)
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
     sorry
+  \<comment> \<open>The same open-star neighborhood is available in the boundary case.\<close>
+  have hstar_neighborhood:
+    "\<exists>U. U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
+       \<and> v \<in> U \<and> U \<subseteq> \<Union>(geotop_star K v)"
+    by (rule geotop_complex_vertex_star_neighborhood_dev34[OF hK hv])
   \<comment> \<open>In a half-plane chart, as in a plane chart, deleting one point does not
       disconnect a sufficiently small open neighborhood.\<close>
   have hstar_not_separated:
