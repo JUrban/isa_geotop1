@@ -1217,6 +1217,21 @@ proof -
     unfolding geotop_is_linear_graph_def using hK hdim by (by100 simp)
 qed
 
+lemma geotop_linear_graph_imp_complex_1dim_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_linear_graph K"
+  shows "geotop_is_complex K \<and> geotop_complex_is_1dim K"
+proof -
+  have hK_complex: "geotop_is_complex K"
+    using hK unfolding geotop_is_linear_graph_def by (by100 blast)
+  have hdim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+    using hK unfolding geotop_is_linear_graph_def by (by100 blast)
+  have hK_1dim: "geotop_complex_is_1dim K"
+    unfolding geotop_complex_is_1dim_def using hdim by (by100 simp)
+  show ?thesis
+    using hK_complex hK_1dim by (by100 blast)
+qed
+
 lemma geotop_simplex_face_complex_finite_R2:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_is_simplex \<sigma>"
