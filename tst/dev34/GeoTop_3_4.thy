@@ -6654,6 +6654,153 @@ proof -
     using hinter by (by100 simp)
 qed
 
+lemma geotop_2simplex_HOL_interior_positive_side_of_edge_line_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hp: "p \<in> interior \<sigma>"
+  shows "n \<bullet> p > r"
+  (**
+    Positive-side half-plane form of the triangle interior: interior points of
+    the triangle lie on the same strict side of the edge line as the opposite
+    vertex. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_dev34
+        [OF hab hc_not_ab h\<sigma>V])
+  obtain x y z where hx: "0 < x"
+    and hy: "0 < y"
+    and hz: "0 < z"
+    and hsum: "x + y + z = 1"
+    and hp_eq: "x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = p"
+    using hp hinter by (by100 blast)
+  have hp_eq': "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hp_eq by (by100 simp)
+  have hp_dot: "n \<bullet> p = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> p = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq' by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have "n \<bullet> p - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> p - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hp_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  moreover have "0 < n \<bullet> c - r"
+    using hc_side by (by100 linarith)
+  hence "0 < z * (n \<bullet> c - r)"
+    by (rule mult_pos_pos[OF hz])
+  ultimately have "0 < n \<bullet> p - r"
+    by (by100 linarith)
+  thus ?thesis
+    by (by100 linarith)
+qed
+
+lemma geotop_2simplex_HOL_interior_negative_side_of_edge_line_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hp: "p \<in> interior \<sigma>"
+  shows "n \<bullet> p < r"
+  (**
+    Negative-side half-plane form of the triangle interior, symmetric to the
+    positive-side version. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_dev34
+        [OF hab hc_not_ab h\<sigma>V])
+  obtain x y z where hx: "0 < x"
+    and hy: "0 < y"
+    and hz: "0 < z"
+    and hsum: "x + y + z = 1"
+    and hp_eq: "x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = p"
+    using hp hinter by (by100 blast)
+  have hp_eq': "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hp_eq by (by100 simp)
+  have hp_dot: "n \<bullet> p = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> p = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq' by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have "n \<bullet> p - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> p - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hp_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  moreover have "n \<bullet> c - r < 0"
+    using hc_side by (by100 linarith)
+  hence "z * (n \<bullet> c - r) < 0"
+    by (rule mult_pos_neg[OF hz])
+  ultimately have "n \<bullet> p - r < 0"
+    by (by100 linarith)
+  thus ?thesis
+    by (by100 linarith)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
