@@ -22,9 +22,9 @@ commits ahead of the local branch.
 contains it.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:35 elapsed time}.
+with the outer command reporting \texttt{0:00:31 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{2554c687} (\texttt{Prove GeoTop shared edge intersection}).
+\texttt{0f9a3846} (\texttt{Prove GeoTop shared edge vertex witnesses}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -109,8 +109,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6461; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 6775; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6479; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 6793; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -184,7 +184,10 @@ the exact intersection statement for distinct same-complex 2-simplexes sharing
 an edge. The next vertex-form step is also proved:
 \texttt{geotop\_two\_2simplex\_shared\_edge\_vertices\_obtain\_dev34}
 extracts common edge vertices \texttt{a,b} and distinct opposite vertices
-\texttt{c,d} for the two 2-simplexes.
+\texttt{c,d} for the two 2-simplexes. The affine prerequisite
+\texttt{geotop\_2simplex\_opposite\_vertex\_notin\_edge\_affine\_hull\_dev34}
+is now proved: the vertex opposite an edge in a 2-simplex is not on the affine
+line of that edge.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},

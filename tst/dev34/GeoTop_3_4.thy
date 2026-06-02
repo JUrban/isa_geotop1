@@ -6281,6 +6281,24 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_opposite_vertex_notin_edge_affine_hull_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hc: "c \<notin> {a, b}"
+  shows "c \<notin> affine hull {a, b}"
+  (**
+    In the shared-edge picture, the vertex opposite the edge is not on the
+    affine line of that edge. **)
+proof -
+  have hcV: "c \<in> {a, b, c}"
+    by (by100 simp)
+  have hsub: "{a, b} \<subseteq> {a, b, c} - {c}"
+    using hc by (by100 blast)
+  show ?thesis
+    by (rule geotop_simplex_vertex_notin_affine_hull_of_other_vertices_dev34
+        [OF h\<sigma>V hcV hsub])
+qed
+
 lemma geotop_two_2simplex_shared_edge_vertices_obtain_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
