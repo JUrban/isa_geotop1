@@ -6843,6 +6843,64 @@ proof
     by (by100 simp)
 qed
 
+lemma geotop_two_2simplex_shared_edge_vertices_side_obtain_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+    "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+  (**
+    Shared-edge normal-coordinate package with the half-plane containments for
+    the two triangle interiors. **)
+proof -
+  obtain a b c d n r where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    by (rule geotop_two_2simplex_shared_edge_vertices_normal_obtain_dev34
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  have h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    by (rule geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_dev34
+        [OF hab hc_not_ab h\<sigma>V hline])
+  have h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    by (rule geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_dev34
+        [OF hab hc_not_ab h\<sigma>V hline])
+  have h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    by (rule geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_dev34
+        [OF hab hd_not_ab h\<tau>V hline])
+  have h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    by (rule geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_dev34
+        [OF hab hd_not_ab h\<tau>V hline])
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
