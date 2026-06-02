@@ -7970,10 +7970,46 @@ lemma geotop_shared_edge_probe_diamond_contains_ball_dev34:
     normal rays contain a genuine Euclidean ball around the edge point. **)
 proof -
   have hspan: "span {v, n} = UNIV"
-    sorry
+  proof -
+    have hvn_distinct: "v \<noteq> n"
+    proof
+      assume hvn: "v = n"
+      have "v \<bullet> v = 0"
+        using horth hvn by (by100 simp)
+      thus False
+        using hv by (simp add: inner_eq_zero_iff)
+    qed
+    have hpair: "pairwise orthogonal {v, n}"
+      using horth by (simp add: pairwise_def orthogonal_def inner_commute)
+    have hzero: "0 \<notin> {v, n}"
+      using hv hn by (by100 simp)
+    have hind: "independent {v, n}"
+      by (rule pairwise_orthogonal_independent[OF hpair hzero])
+    have hcard: "card {v, n} = DIM(real^2)"
+      using hvn_distinct by (by100 simp)
+    have hdim: "dim {v, n} = DIM(real^2)"
+      using indep_card_eq_dim_span[OF hind] hcard by (by100 simp)
+    show ?thesis
+      using hdim dim_eq_full[of "{v, n}"] by (by100 simp)
+  qed
   have hcoords:
     "\<forall>x. \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
-    sorry
+  proof
+    fix x
+    have hxspan: "x - p \<in> span (insert v {n})"
+      using hspan by (by100 simp)
+    obtain \<alpha> where h\<alpha>: "x - p - \<alpha> *\<^sub>R v \<in> span {n}"
+      using hxspan unfolding span_breakdown_eq by (by100 blast)
+    obtain \<beta> where h\<beta>: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n \<in> span ({} :: (real^2) set)"
+      using h\<alpha> unfolding span_breakdown_eq by (by100 blast)
+    have hzero: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n = 0"
+      using h\<beta> by (by100 simp)
+    show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+    proof (intro exI)
+      show "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hzero by (simp add: algebra_simps)
+    qed
+  qed
   have hsmall_coords:
     "\<exists>eps>0. \<forall>x\<in>ball p eps.
       \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
