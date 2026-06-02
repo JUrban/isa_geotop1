@@ -292,6 +292,50 @@ proof -
     using hside hNA hNB by (by100 blast)
 qed
 
+lemma geotop_link_radial_segment_in_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  assumes ht0: "0 \<le> t"
+  assumes ht1: "t \<le> 1"
+  shows "(1 - t) *\<^sub>R v + t *\<^sub>R y \<in> \<Union>(geotop_star K v)"
+proof -
+  obtain \<tau> where h\<tau>L: "\<tau> \<in> geotop_link K v" and hy\<tau>: "y \<in> \<tau>"
+    using hy by (by100 blast)
+  have h\<tau>star: "\<tau> \<in> geotop_star K v"
+    using h\<tau>L unfolding geotop_link_def by (by100 blast)
+  have hv_not_\<tau>: "v \<notin> \<tau>"
+    using h\<tau>L unfolding geotop_link_def by (by100 blast)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hv\<sigma>: "v \<in> \<sigma>"
+      and h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+    using h\<tau>star unfolding geotop_star_def by (by100 blast)
+  have h\<tau>_ne_\<sigma>: "\<tau> \<noteq> \<sigma>"
+    using hv\<sigma> hv_not_\<tau> by (by100 blast)
+  have hface: "geotop_is_face \<tau> \<sigma>"
+    using h\<tau>\<sigma> h\<tau>_ne_\<sigma> by (by100 blast)
+  have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF hface])
+  have hy\<sigma>: "y \<in> \<sigma>"
+    using hy\<tau> h\<tau>sub\<sigma> by (by100 blast)
+  have hKsimplex: "\<forall>\<rho>\<in>K. geotop_is_simplex \<rho>"
+    by (rule geotop_is_complex_simplex[OF hK])
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    using hKsimplex h\<sigma>K by (by100 blast)
+  have h\<sigma>conv: "convex \<sigma>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex])
+  have ht0': "0 \<le> 1 - t"
+    using ht1 by (by100 simp)
+  have hsum: "(1 - t) + t = 1"
+    by (by100 simp)
+  have hz\<sigma>: "(1 - t) *\<^sub>R v + t *\<^sub>R y \<in> \<sigma>"
+    using h\<sigma>conv hv\<sigma> hy\<sigma> ht0 ht0' hsum unfolding convex_def
+    by (by100 blast)
+  have h\<sigma>star: "\<sigma> \<in> geotop_star K v"
+    unfolding geotop_star_def using h\<sigma>K hv\<sigma> by (by100 blast)
+  show ?thesis
+    using hz\<sigma> h\<sigma>star by (by100 blast)
+qed
+
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
