@@ -1200,6 +1200,57 @@ proof -
         [OF hrest_linear hqrest hcard_T])
 qed
 
+lemma geotop_graph_endpoint_delete_leaf_degree_one_or_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqL: "{q} \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  assumes hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+      card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+      card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 2"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 2"
+  shows "\<forall>x. {x} \<in> L - {{w}, e} \<longrightarrow>
+      card {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+      card {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l} = 2"
+proof (intro allI impI)
+  fix x
+  assume hxrest: "{x} \<in> L - {{w}, e}"
+  let ?Srest = "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+  let ?Sold = "{l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+  have hq_in_e: "q \<in> e"
+    using heq by (by100 simp)
+  show "card ?Srest = 1 \<or> card ?Srest = 2"
+  proof (cases "x = q")
+    case True
+    have hrest_linear: "geotop_is_linear_graph (L - {{w}, e})"
+      by (rule geotop_graph_endpoint_delete_leaf_linear_graph_dev34
+          [OF hL hfin hend heL hedge hwe])
+    have hq_endpoint: "geotop_graph_endpoint (L - {{w}, e}) q"
+      by (rule geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34
+          [OF hL hfin hend heL hedge hwe hqL hqw hq_in_e hqcard])
+    have hq_card: "card {l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l} = 1"
+      using geotop_graph_endpoint_singleton_and_card_one_dev34[OF hrest_linear hq_endpoint]
+      by (by100 blast)
+    show ?thesis using True hq_card by (by100 simp)
+  next
+    case False
+    have hcard_eq: "card ?Srest = card ?Sold"
+      by (rule geotop_delete_leaf_rest_vertex_degree_preserved_away_neighbor_dev34
+          [OF hL heL hqw heq hxrest False])
+    have hxL: "{x} \<in> L"
+      using hxrest by (by100 simp)
+    have hdegree_x: "card ?Sold = 1 \<or> card ?Sold = 2"
+      using hdegree12 hxL by (by100 blast)
+    show ?thesis using hcard_eq hdegree_x by (by100 simp)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
