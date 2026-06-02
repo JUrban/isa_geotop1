@@ -23,8 +23,8 @@ Evidence checked locally:
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
   `0:00:34 elapsed time`.
-- The current committed branch tip before this report refresh is `47a445c9`
-  (`Prove GeoTop same-side affine coordinate sign`).
+- The current committed branch tip before this report refresh is `93cf448f`
+  (`Prove GeoTop overlap parameter choice`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7247; this is the same-complex two-triangle shared-edge local disk
+  at line 7304; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7561;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7618;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -157,6 +157,7 @@ infrastructure used in Moise's Lemma 5 route. Recent proved helpers include:
 - `geotop_2simplex_positive_side_affine_coordinate_positive_dev34`
 - `geotop_2simplex_negative_side_affine_coordinate_positive_dev34`
 - `geotop_real_positive_overlap_parameter_dev34`
+- `geotop_2simplex_affine_coordinate_HOL_interiors_meet_dev34`
 
 Since the previous report, the radial cone openness problem has been reduced
 substantially. The current branch proves the subspace-open bridge, a finite
@@ -264,7 +265,10 @@ same-side opposite vertex has positive affine coordinate at the first
 triangle's opposite vertex. The real helper
 `geotop_real_positive_overlap_parameter_dev34` chooses the small positive
 parameter needed to keep both triangle-interior barycentric coordinate systems
-strictly positive in the overlap construction.
+strictly positive in the overlap construction. The construction itself is now
+proved in `geotop_2simplex_affine_coordinate_HOL_interiors_meet_dev34`: the
+small segment point lies in both HOL interiors after substituting the affine
+coordinates of the second opposite vertex.
 
 ## Important Supporting Material
 

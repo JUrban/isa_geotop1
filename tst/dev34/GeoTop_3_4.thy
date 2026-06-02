@@ -7226,6 +7226,63 @@ proof -
     by (rule that[OF hs0 hs1 hxpos hypos hsz])
 qed
 
+lemma geotop_2simplex_affine_coordinate_HOL_interiors_meet_dev34:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hsum: "x + y + z = 1"
+  assumes hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  assumes hz: "0 < z"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    Same-side overlap construction in barycentric coordinates: a small segment
+    from the edge midpoint toward \<open>d\<close> lies in \<open>\<tau>\<close>'s interior and, after
+    substituting the affine coordinates of \<open>d\<close>, also in \<open>\<sigma>\<close>'s interior. **)
+proof -
+  obtain s where hs0: "0 < s"
+    and hs1: "s < 1"
+    and hxpos: "0 < (1 - s) / 2 + s * x"
+    and hypos: "0 < (1 - s) / 2 + s * y"
+    and hsz: "0 < s * z"
+    by (rule geotop_real_positive_overlap_parameter_dev34[OF hz])
+  define u where "u = (1 - s) / 2"
+  define p where "p = u *\<^sub>R a + u *\<^sub>R b + s *\<^sub>R d"
+  have hu: "0 < u"
+    using hs1 unfolding u_def by (simp add: field_simps)
+  have hsum\<tau>: "u + u + s = 1"
+    unfolding u_def by (simp add: field_simps)
+  have hp\<tau>: "p \<in> interior \<tau>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_dev34
+        [OF hab hd_not_ab h\<tau>V hu hu hs0 hsum\<tau> p_def])
+  have hxpos': "0 < u + s * x"
+    using hxpos unfolding u_def by (by100 simp)
+  have hypos': "0 < u + s * y"
+    using hypos unfolding u_def by (by100 simp)
+  have hsum\<sigma>: "(u + s * x) + (u + s * y) + s * z = 1"
+  proof -
+    have "(u + s * x) + (u + s * y) + s * z = u + u + s * (x + y + z)"
+      by (simp add: algebra_simps)
+    also have "\<dots> = u + u + s"
+      using hsum by (by100 simp)
+    also have "\<dots> = 1"
+      using hsum\<tau> by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hp_eq\<sigma>:
+      "p = (u + s * x) *\<^sub>R a + (u + s * y) *\<^sub>R b + (s * z) *\<^sub>R c"
+    unfolding p_def hd by (simp add: algebra_simps scaleR_add_left scaleR_add_right)
+  have hp\<sigma>: "p \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_dev34
+        [OF hab hc_not_ab h\<sigma>V hxpos' hypos' hsz hsum\<sigma> hp_eq\<sigma>])
+  have "p \<in> interior \<sigma> \<inter> interior \<tau>"
+    using hp\<sigma> hp\<tau> by (by100 blast)
+  thus ?thesis
+    by (by100 blast)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
