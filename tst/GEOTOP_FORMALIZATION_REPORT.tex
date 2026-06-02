@@ -1,0 +1,88 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{array}
+
+\begin{document}
+
+\section*{GeoTop Formalization Report Through Section 2}
+
+Date: 2026-06-02.
+
+The initial GeoTop material through the end of Section 2 is recursively
+sorry-free in the active formalization.  The start of Section 3+ is marked in
+\texttt{GeoTop.thy} by \texttt{CHUNK\_OUT\_3PLUS\_START} at line 23590.  A scan
+before that boundary finds no executable \texttt{sorry}; the only pre-boundary
+matches are comments.  The first executable \texttt{sorry}s in
+\texttt{GeoTop.thy} occur after the Section 3+ boundary.
+
+The clean-session checks passed:
+\begin{itemize}
+\item \texttt{/project/bin/isabelle build -d . AlgTop}
+\item \texttt{/project/bin/isabelle build -d . GeoTopPrefix}
+\end{itemize}
+
+\texttt{quick\_and\_dirty} remains only on the full \texttt{GeoTop} session,
+because later sections still contain intentional proof sketches.
+
+\section*{Layout}
+
+Section 1 connectivity results are in \texttt{gb/GeoTopBase.thy}.  Section 2 is
+split between \texttt{gp/GeoTop\_Prefix.thy} and \texttt{GeoTop.thy}.  The
+\texttt{GeoTopPrefix} session is the clean cached prefix before Section 3.
+
+\section*{Section 1 Counterparts}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\linewidth}
+                  >{\raggedright\arraybackslash}p{0.45\linewidth}
+                  >{\raggedright\arraybackslash}p{0.18\linewidth}
+                  >{\raggedright\arraybackslash}p{0.16\linewidth}}
+\textbf{Book item} & \textbf{Book statement, abbreviated} & \textbf{Isabelle} & \textbf{File}\\
+\hline
+Theorem 1.1 & Union of pathwise connected sets with a common point is pathwise connected. & \texttt{Theorem\_GT\_1\_1} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.2 & Pathwise connectivity is preserved by surjective mappings. & \texttt{Theorem\_GT\_1\_2} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.3 & Every simplex is pathwise connected. & \texttt{Theorem\_GT\_1\_3} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.4 & If a complex is connected, then its polyhedron is pathwise connected. & \texttt{Theorem\_GT\_1\_4} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.5 & Separatedness for a decomposition is equivalent to both sides being open in the subspace and disjoint. & \texttt{Theorem\_GT\_1\_5} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.6 & Connected iff not a union of two nonempty separated sets. & \texttt{Theorem\_GT\_1\_6} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.7 & Connectivity of spaces is preserved by surjective mappings. & \texttt{Theorem\_GT\_1\_7} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.8 & Connectivity of subsets is preserved by surjective mappings. & \texttt{Theorem\_GT\_1\_8} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.9 & Every closed interval in the real line is connected. & \texttt{Theorem\_GT\_1\_9} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.10 & A connected subset of a separated union lies in one side. & \texttt{Theorem\_GT\_1\_10} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.11 & Pathwise connected implies connected. & \texttt{Theorem\_GT\_1\_11} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.12 & For a complex, combinatorial connectedness, pathwise connectedness of the polyhedron, and connectedness of the polyhedron are equivalent. & \texttt{Theorem\_GT\_1\_12} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.13 & Connected open Euclidean sets are broken-line-wise connected. & \texttt{Theorem\_GT\_1\_13} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.14 & Union of connected sets with a common point is connected. & \texttt{Theorem\_GT\_1\_14} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.15 & If \(M\) is connected and \(M \subset L \subset \overline{M}\), then \(L\) is connected. & \texttt{Theorem\_GT\_1\_15} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.16 & Distinct components of the same set are disjoint. & \texttt{Theorem\_GT\_1\_16} & \texttt{gb/GeoTopBase.thy}\\
+Theorem 1.17 & Components of a subset lie in components of a superset. & \texttt{Theorem\_GT\_1\_17} & \texttt{gb/GeoTopBase.thy}\\
+\end{longtable}
+
+\section*{Section 2 Counterparts}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.13\linewidth}
+                  >{\raggedright\arraybackslash}p{0.45\linewidth}
+                  >{\raggedright\arraybackslash}p{0.18\linewidth}
+                  >{\raggedright\arraybackslash}p{0.16\linewidth}}
+\textbf{Book item} & \textbf{Book statement, abbreviated} & \textbf{Isabelle} & \textbf{File}\\
+\hline
+Theorem 2.1 & A polygon in \(R^2\) has complement with exactly two components. & \texttt{Theorem\_GT\_2\_1}; \texttt{Lemma\_GT\_2\_1a}; \texttt{Lemma\_GT\_2\_1b} & \texttt{gp/GeoTop\_Prefix.thy}\\
+Theorem 2.2 & The closure of a polygon interior is a finite polyhedron. & \texttt{Theorem\_GT\_2\_2} & \texttt{GeoTop.thy}\\
+Theorem 2.3 & No broken line separates \(R^2\). & \texttt{Theorem\_GT\_2\_3} & \texttt{gp/GeoTop\_Prefix.thy}\\
+Theorem 2.4 & For open \(U\), \(\operatorname{Fr} U = \overline{U} - U\). & \texttt{Theorem\_GT\_2\_4} & \texttt{gp/GeoTop\_Prefix.thy}\\
+Theorem 2.5 & Every polygon point is a limit point of both interior and exterior. & \texttt{Theorem\_GT\_2\_5} & \texttt{gp/GeoTop\_Prefix.thy}\\
+Theorem 2.6 & \(J = \operatorname{Fr} I = \operatorname{Fr} E\). & \texttt{Theorem\_GT\_2\_6} & \texttt{gp/GeoTop\_Prefix.thy}\\
+Theorem 2.7 & Complement components of a polyhedral theta graph have pair-polygons as frontier; exactly one arc is the middle arc. & \texttt{Theorem\_GT\_2\_7} & \texttt{GeoTop.thy}\\
+Theorem 2.8 & The middle arc cuts the pair-polygon interior into the two adjacent interiors, with closure and separation conclusions. & \texttt{Theorem\_GT\_2\_8} & \texttt{GeoTop.thy}\\
+\end{longtable}
+
+\section*{Supporting Material}
+
+Important clean helpers include \texttt{polygon\_components\_eq},
+\texttt{geotop\_polygon\_finite\_triangulation},
+\texttt{theta\_graph\_pair\_is\_polygon},
+\texttt{theta\_arc\_in\_one\_side\_of\_pair\_polygon},
+\texttt{theta\_middle\_arc\_unique\_excludes\_3},
+\texttt{gt28\_closures\_helper}, and \texttt{gt28\_separated\_helper}.
+
+\end{document}

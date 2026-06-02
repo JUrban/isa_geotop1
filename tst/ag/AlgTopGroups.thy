@@ -5488,17 +5488,20 @@ proof -
               done
             have "tl (take j1 ?mw1) @ drop (Suc j1) ?mw1 = map (\<lambda>(s,b). (\<iota> s, b)) ?w'"
             proof -
-              have "tl (take j1 (map (\<lambda>(s,b). (\<iota> s, b)) ?w1)) @ drop (Suc j1) (map (\<lambda>(s,b). (\<iota> s, b)) ?w1)
+              have h_cancel_map: "tl (take j1 (map (\<lambda>(s,b). (\<iota> s, b)) ?w1)) @ drop (Suc j1) (map (\<lambda>(s,b). (\<iota> s, b)) ?w1)
                   = map (\<lambda>(s,b). (\<iota> s, b)) (take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1))"
                 by (rule tl_take_drop_map_pair[OF hj1_0])
-              moreover have "take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1) = ?w'"
+              have h_w': "take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1) = ?w'"
                 using tl_take_drop_eq[OF hj1_0, symmetric] .
-              ultimately show ?thesis by (by5000 simp)
+              have h_map_w': "map (\<lambda>(s,b). (\<iota> s, b)) (take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1))
+                  = map (\<lambda>(s,b). (\<iota> s, b)) ?w'"
+                using h_w' by simp
+              show ?thesis using h_cancel_map h_map_w' by simp
             qed
             hence "top1_group_word_product mul e invg ?mw1
                 = top1_group_word_product mul e invg (map (\<lambda>(s,b). (\<iota> s, b)) ?w')"
               using \<open>top1_group_word_product mul e invg ?mw1 = top1_group_word_product mul e invg (tl (take j1 ?mw1) @ drop (Suc j1) ?mw1)\<close>
-              by (by5000 simp)
+              by simp
             thus ?thesis using heval_w1_G less(3) by (by100 simp)
           qed
           have hlen': "length ?w' < length w"
@@ -5565,16 +5568,19 @@ proof -
               done
             have "tl (take j1 ?mw1H) @ drop (Suc j1) ?mw1H = map (\<lambda>(s,b). (\<phi> s, b)) ?w'"
             proof -
-              have "tl (take j1 (map (\<lambda>(s,b). (\<phi> s, b)) ?w1)) @ drop (Suc j1) (map (\<lambda>(s,b). (\<phi> s, b)) ?w1)
+              have h_cancel_map: "tl (take j1 (map (\<lambda>(s,b). (\<phi> s, b)) ?w1)) @ drop (Suc j1) (map (\<lambda>(s,b). (\<phi> s, b)) ?w1)
                   = map (\<lambda>(s,b). (\<phi> s, b)) (take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1))"
                 by (rule tl_take_drop_map_pair[OF hj1_0])
-              moreover have "take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1) = ?w'"
+              have h_w': "take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1) = ?w'"
                 using tl_take_drop_eq[OF hj1_0, symmetric] .
-              ultimately show ?thesis by (by5000 simp)
+              have h_map_w': "map (\<lambda>(s,b). (\<phi> s, b)) (take (j1 - 1) (tl ?w1) @ drop j1 (tl ?w1))
+                  = map (\<lambda>(s,b). (\<phi> s, b)) ?w'"
+                using h_w' by simp
+              show ?thesis using h_cancel_map h_map_w' by simp
             qed
             thus ?thesis
               using \<open>top1_group_word_product mulH eH invgH ?mw1H = top1_group_word_product mulH eH invgH (tl (take j1 ?mw1H) @ drop (Suc j1) ?mw1H)\<close>
-              by (by5000 simp)
+              by simp
           qed
           hence "top1_group_word_product mulH eH invgH (map (\<lambda>(s,b). (\<phi> s, b)) ?w1) = eH"
             using hIH by (by100 simp)

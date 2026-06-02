@@ -8486,7 +8486,7 @@ proof -
   obtain arc_g where harc_g: "top1_is_arc_on arc_g (subspace_topology top1_S2 top1_S2_topology arc_g)"
       "arc_g \<subseteq> top1_S2 - C2"
       "top1_arc_endpoints_on arc_g (subspace_topology top1_S2 top1_S2_topology arc_g) = {p, q}"
-    by (by100 blast)
+    by blast
   \<comment> \<open>arc\_f avoids C1 \<Rightarrow> arc\_f \<inter> C \<subseteq> C2 - {a1,a3}. arc\_f must cross C2 (otherwise
      arc\_f gives a path from p to q avoiding all of C, contradicting separation).
      Similarly arc\_g \<inter> C \<subseteq> C1 - {a1,a3} and arc\_g must cross C1.\<close>

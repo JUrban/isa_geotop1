@@ -20951,7 +20951,7 @@ proof -
                   using distrib_right[of "1-t" t "fst x0"] by (by100 simp)
                 moreover have "(1 - t) * snd x0 + t * snd x0 = snd x0"
                   using distrib_right[of "1-t" t "snd x0"] by (by100 simp)
-                ultimately show "?H (0, t) = x0" by (by100 simp)
+                ultimately show "?H (0, t) = x0" by simp
               qed
               have hH_1t: "\<forall>t\<in>I_set. ?H (1, t) = x0"
               proof (intro ballI)
@@ -20962,7 +20962,7 @@ proof -
                   using distrib_right[of "1-t" t "fst x0"] by (by100 simp)
                 moreover have "(1 - t) * snd x0 + t * snd x0 = snd x0"
                   using distrib_right[of "1-t" t "snd x0"] by (by100 simp)
-                ultimately show "?H (1, t) = x0" by (by100 simp)
+                ultimately show "?H (1, t) = x0" by simp
               qed
               \<comment> \<open>f is a path in I×I (from loop).\<close>
               have hf_path: "top1_is_path_on (I_set \<times> I_set) II_topology x0 x0 f"
@@ -32120,7 +32120,7 @@ using assms proof (induction n arbitrary: X TX p rule: less_induct)
       qed
       \<comment> \<open>Condition 7: coherent/weak topology\<close>
       have hTX': "is_topology_on ?X' ?TX'"
-        using hX'_strict unfolding is_topology_on_strict_def by (by100 blast)
+        using hX'_strict unfolding is_topology_on_strict_def by blast
       have hC_coh': "\<forall>D. D \<subseteq> ?X' \<longrightarrow>
              (closedin_on ?X' ?TX' D \<longleftrightarrow>
               (\<forall>\<alpha>\<in>{..<(n-1)}. closedin_on (C \<alpha>) (subspace_topology ?X' ?TX' (C \<alpha>)) (C \<alpha> \<inter> D)))"

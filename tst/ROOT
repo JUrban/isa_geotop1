@@ -114,7 +114,7 @@ session AlgTopCached8 in ac8 = AlgTopCached7 +
     AlgTopCached8
 
 session AlgTop in algtop_session = AlgTopCached8 +
-  options [system_heaps, quick_and_dirty, timeout = 600]
+  options [system_heaps, timeout = 600]
   theories
     AlgTop
 
@@ -126,12 +126,12 @@ session GeoTopBase0 in gb0 = Top0 +
     GeoTopBase0
 
 session GeoTopBase in gb = GeoTopBase0 +
-  options [system_heaps, quick_and_dirty, timeout = 240]
+  options [system_heaps, timeout = 240]
   theories
     GeoTopBase
 
 session GeoTopDeps in gd = GeoTopBase +
-  options [system_heaps, quick_and_dirty, timeout = 1800]
+  options [system_heaps, timeout = 1800]
   sessions
     AlgTop
   theories
