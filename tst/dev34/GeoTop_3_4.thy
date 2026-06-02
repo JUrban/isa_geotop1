@@ -991,11 +991,73 @@ proof
 	          \<and> l\<^sub>1 \<noteq> l\<^sub>2"
 	        using hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau> hl_distinct
 	        by (by100 blast)
-	    qed
-	    have hcomponent_two_distinct_edge_witnesses:
-	      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
-	          C = geotop_component_at UNIV geotop_euclidean_topology
-	                (\<Union>(geotop_link K v)) P)
+		    qed
+		    have hlink_vertices_two_exact_incident_edges:
+		      "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+		        (\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		          \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		          \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+		              \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+		    proof (intro allI impI)
+		      fix w
+		      assume hwL: "{w} \<in> geotop_link K v"
+		      have hvK: "{v} \<in> K"
+		        using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+		      have hexact_ex:
+		        "\<exists>e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau>. e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+		          \<and> \<sigma> \<noteq> \<tau>
+		          \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+		          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+		          \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}
+		          \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+		          \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>
+		          \<and> l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>
+		          \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+		              \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>)"
+		        by (rule geotop_link_vertex_two_incident_link_edges_exhaust
+		            [OF hK hvK hwL hL_two_faces])
+		      obtain e \<sigma> \<tau> l\<^sub>\<sigma> l\<^sub>\<tau> where hexact_w:
+		        "e \<in> K \<and> geotop_is_edge e \<and> v \<in> e \<and> w \<in> e
+		          \<and> \<sigma> \<noteq> \<tau>
+		          \<and> \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>
+		          \<and> \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>
+		          \<and> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}
+		          \<and> l\<^sub>\<sigma> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<sigma> \<and> w \<in> l\<^sub>\<sigma>
+		          \<and> l\<^sub>\<tau> \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>\<tau> \<and> w \<in> l\<^sub>\<tau>
+		          \<and> l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>
+		          \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+		              \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>)"
+		        using hexact_ex by (elim exE)
+		      have hl\<sigma>L: "l\<^sub>\<sigma> \<in> geotop_link K v"
+		        using hexact_w by (by100 blast)
+		      have hl\<sigma>edge: "geotop_is_edge l\<^sub>\<sigma>"
+		        using hexact_w by (by100 blast)
+		      have hw_l\<sigma>: "w \<in> l\<^sub>\<sigma>"
+		        using hexact_w by (by100 blast)
+		      have hl\<tau>L: "l\<^sub>\<tau> \<in> geotop_link K v"
+		        using hexact_w by (by100 blast)
+		      have hl\<tau>edge: "geotop_is_edge l\<^sub>\<tau>"
+		        using hexact_w by (by100 blast)
+		      have hw_l\<tau>: "w \<in> l\<^sub>\<tau>"
+		        using hexact_w by (by100 blast)
+		      have hl_distinct: "l\<^sub>\<sigma> \<noteq> l\<^sub>\<tau>"
+		        using hexact_w by (by100 blast)
+		      have hexact: "\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+		          \<longrightarrow> l = l\<^sub>\<sigma> \<or> l = l\<^sub>\<tau>"
+		        using hexact_w by (by100 simp)
+		      show "\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		          \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		          \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+		              \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)"
+		        using hl\<sigma>L hl\<sigma>edge hw_l\<sigma> hl\<tau>L hl\<tau>edge hw_l\<tau> hl_distinct hexact
+		        by (by100 blast)
+		    qed
+		    have hcomponent_two_distinct_edge_witnesses:
+		      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+		          C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P)
 	        \<longrightarrow> (\<exists>L. geotop_is_complex L
 	          \<and> geotop_complex_is_1dim L
 	          \<and> finite L
@@ -1025,12 +1087,52 @@ proof
 	              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
 	              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
 	              \<and> l\<^sub>1 \<noteq> l\<^sub>2))"
-	        by (rule geotop_link_component_two_distinct_subcomplex_witness
-	            [OF hK hv hP hC hlink_vertices_two_distinct_incident_edges])
-	    qed
-	    have hlocal_polygon_components:
-	      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
-	             C = geotop_component_at UNIV geotop_euclidean_topology
+		        by (rule geotop_link_component_two_distinct_subcomplex_witness
+		            [OF hK hv hP hC hlink_vertices_two_distinct_incident_edges])
+		    qed
+		    have hcomponent_two_exact_edge_witnesses:
+		      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+		          C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P)
+		        \<longrightarrow> (\<exists>L. geotop_is_complex L
+		          \<and> geotop_complex_is_1dim L
+		          \<and> finite L
+		          \<and> geotop_polyhedron L = C
+		          \<and> geotop_complex_connected L
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+		                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))))"
+		    proof (intro allI impI)
+		      fix C
+		      assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
+		          C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P"
+		      obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+		        and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P"
+		        using hC_ex by (by100 blast)
+		      show "\<exists>L. geotop_is_complex L
+		          \<and> geotop_complex_is_1dim L
+		          \<and> finite L
+		          \<and> geotop_polyhedron L = C
+		          \<and> geotop_complex_connected L
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+		                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))"
+		        by (rule geotop_link_component_two_exact_subcomplex_witness
+		            [OF hK hv hP hC hlink_vertices_two_exact_incident_edges])
+		    qed
+		    have hlocal_polygon_components:
+		      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+		             C = geotop_component_at UNIV geotop_euclidean_topology
 	                   (\<Union>(geotop_link K v)) P)
           \<longrightarrow> geotop_is_polygon C"
       sorry
