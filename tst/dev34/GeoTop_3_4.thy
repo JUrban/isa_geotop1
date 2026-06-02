@@ -421,6 +421,68 @@ proof -
     unfolding geotop_comb_n_cell_def using hstar_complex hcone_equiv by (by100 blast)
 qed
 
+lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  assumes hpU: "p \<in> U"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  shows "\<exists>A. A \<subseteq> U
+      \<and> geotop_is_arc (f ` A)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` A))
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  sorry
+
+lemma geotop_three_incident_2simplex_sphere_not_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hpU: "p \<in> U"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  shows "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere (f ` J)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1
+      \<and> top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  sorry
+
+lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
+  fixes K :: "(real^2) set set" and e U :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hpU: "p \<in> U"
+  assumes hcell: "geotop_is_n_cell (closure_on (geotop_polyhedron K)
+        (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology (geotop_polyhedron K)
+        (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)))
+        (closure_on (geotop_polyhedron K)
+          (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
+  shows False
+  sorry
+
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
@@ -594,7 +656,9 @@ proof
             (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
         and hAsep: "\<not> top1_connected_on (U - A)
             (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-        sorry
+        using geotop_unique_incident_2simplex_semicircle_separates_chart_dev34
+            [OF hK heK hedge hp hunique_ex hpU hhomeo_geo]
+        by (by100 blast)
       have hconn: "top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
         by (rule geotop_plane_chart_arc_complement_connected[OF hhomeo_geo hAsubU hAimg])
@@ -694,7 +758,9 @@ proof
                 (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
             and hJ_not_sep: "top1_connected_on (U - J)
                 (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-            sorry
+            using geotop_three_incident_2simplex_sphere_not_separates_chart_dev34
+                [OF hK heK hedge hp hfaces_ex hpU hhomeo_geo]
+            by (by100 blast)
           have hJ_sep: "\<not> top1_connected_on (U - J)
                 (subspace_topology UNIV geotop_euclidean_topology (U - J))"
             by (rule geotop_plane_chart_1sphere_complement_not_connected
@@ -1938,16 +2004,12 @@ proof -
             let ?TM = "top1_metric_topology_on ?M ?d"
             obtain U where hUopen: "openin_on ?M ?TM U"
               and hpU: "p \<in> U"
-              and hcell: "geotop_is_n_cell (closure_on ?M ?TM U)
-                  (subspace_topology ?M ?TM (closure_on ?M ?TM U)) 2"
-              using hKM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
-            obtain J where hJlocal: "J \<subseteq> closure_on ?M ?TM U"
-              and hJsphere: "geotop_is_n_sphere J
-                  (subspace_topology UNIV geotop_euclidean_topology J) 1"
-              and hJ_contradiction: "False"
-              sorry
-            show False
-              using hJ_contradiction .
+            and hcell: "geotop_is_n_cell (closure_on ?M ?TM U)
+                (subspace_topology ?M ?TM (closure_on ?M ?TM U)) 2"
+            using hKM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+          show False
+            by (rule geotop_boundary_chart_three_incident_2simplex_contradiction_dev34
+                [OF hK heK hedge hp hfaces_ex hpU hcell])
           qed
           show "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
             using hnot_counterexample by (by100 blast)
