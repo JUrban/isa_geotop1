@@ -1297,6 +1297,7 @@ i/Top1_Ch5_8.thy|lemma|geom_cauchy_bound|11839
 i/Top1_Ch5_8.thy|lemma|geom_cauchy_bound_aux|11817
 i/Top1_Ch5_8.thy|lemma|geom_cauchy_converges|11886
 i/Top1_Ch5_8.thy|lemma|geom_cauchy_lim_bound|11892
+dev34/GeoTop_3_4.thy|lemma|geotop_0simplex_contains_point_eq_singleton_dev34|5826
 gb/GeoTopBase.thy|lemma|geotop_1dim_complex_simp_dim_le_1|8496
 gb/GeoTopBase.thy|lemma|geotop_1dim_simplex_cases|8505
 dev34_graphfacts/GeoTop_3_4_GraphFacts.thy|lemma|geotop_1dim_simplex_subset_edge_cases_dev34|1254
@@ -1394,6 +1395,7 @@ gb0/GeoTopBase0.thy|lemma|geotop_barycenter_singleton|4001
 gb0/GeoTopBase0.thy|lemma|geotop_barycenter_to_point_bound|2178
 gb0/GeoTopBase0.thy|lemma|geotop_barycenter_to_vertex_bound|1985
 GeoTop.thy|lemma|geotop_base_face_of_edge_cone|20155
+dev34/GeoTop_3_4.thy|lemma|geotop_boundary_0carrier_is_complex_vertex_dev34|5863
 dev34/GeoTop_3_4.thy|lemma|geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34|4199
 dev34/GeoTop_3_4.thy|lemma|geotop_boundary_chart_three_incident_2simplex_contradiction_dev34|4237
 gp/GeoTop_Prefix.thy|lemma|geotop_bounded_R2_iff_bounded|2074
@@ -1561,9 +1563,9 @@ gb0/GeoTopBase0.thy|lemma|geotop_diameter_le_mesh|9591
 gb0/GeoTopBase0.thy|lemma|geotop_diameter_norm_nonneg_bdd|9317
 dev34/GeoTop_3_4.thy|lemma|geotop_disconnected_link_separates_punctured_star_dev34|1224
 gb/GeoTopBase.thy|lemma|geotop_disjoint_subcomplex_polyhedra_disjoint|5470
-dev34/GeoTop_3_4.thy|lemma|geotop_edge_carrier_not_one_incident_count_two_dev34|5889
+dev34/GeoTop_3_4.thy|lemma|geotop_edge_carrier_not_one_incident_count_two_dev34|5947
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_edge_closed_segment_obtain|5155
-dev34/GeoTop_3_4.thy|lemma|geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34|5826
+dev34/GeoTop_3_4.thy|lemma|geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34|5884
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_edge_face_in_ge_2_simplex_has_2_face|5050
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_edge_face_of_edge_eq|5182
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_edge_face_witness_card_two|4134
@@ -1742,10 +1744,10 @@ dev34_linkfacts/GeoTop_3_4_LinkFacts.thy|lemma|geotop_link_vertices_face_count_o
 dev34/GeoTop_3_4.thy|lemma|geotop_link_vertices_subset_star_vertices_dev34|2177
 dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_carrier_dim_le_1_dev34|5765
 dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_disjoint_2simplex_rel_interior_dev34|5738
-dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_eq_one_incident_edges_dev34|6176
+dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_eq_one_incident_edges_dev34|6234
 dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_has_low_dim_carrier_dev34|5803
-dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_subset_one_incident_edges_dev34|6161
-dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|6633
+dev34/GeoTop_3_4.thy|lemma|geotop_manifold_boundary_subset_one_incident_edges_dev34|6219
+dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|6691
 dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior_early_dev34|5635
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_iterated_Sd_tends_to_zero|9419
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_norm_nonneg|9388
@@ -1753,10 +1755,10 @@ gb/GeoTopBase.thy|lemma|geotop_nbhd_set_open_in_euclidean|6084
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset|5223
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_nonempty_complex_polyhedron_nonempty|1794
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_nonempty_polyhedron_has_complex_vertex|1808
-dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34|6042
-dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34|5971
-dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edges_subset_manifold_boundary_dev34|6114
-dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|6612
+dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34|6100
+dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34|6029
+dev34/GeoTop_3_4.thy|lemma|geotop_one_incident_edges_subset_manifold_boundary_dev34|6172
+dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|6670
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_complement|2940
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_eq_carrier_contains_vertex|10630
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_inter_carrier|10668
@@ -1947,7 +1949,7 @@ dev34_graphwork/GeoTop_3_4_GraphWork.thy|lemma|geotop_two_degree_one_endpoint_ed
 dev34/GeoTop_3_4.thy|lemma|geotop_unique_incident_2simplex_semicircle_separates_chart_dev34|4100
 dev34/GeoTop_3_4.thy|lemma|geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34|3980
 dev34/GeoTop_3_4.thy|lemma|geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34|4003
-dev34/GeoTop_3_4.thy|lemma|geotop_vertex_not_one_incident_union_incident_edge_count_two_dev34|5930
+dev34/GeoTop_3_4.thy|lemma|geotop_vertex_not_one_incident_union_incident_edge_count_two_dev34|5988
 dev34/GeoTop_3_4.thy|lemma|geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34|3683
 dev34/GeoTop_3_4.thy|lemma|geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34|3599
 dev34/GeoTop_3_4.thy|lemma|geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34|3659
@@ -2816,10 +2818,10 @@ i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_contains|3840
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_open|3815
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_sub|3834
 i/Top1_Ch3.thy|lemma|top1_nested_subset_le|9935
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|6592
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|6650
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_on_UNIV_R2_dev34|6666
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_on_UNIV_early|7284
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|6597
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|6655
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34|6671
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_early|7289
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_not_connected_geotop_subspace_obtain_separation_dev34|1702
@@ -3466,7 +3468,7 @@ dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_3_7|1343
 GeoTop.thy|theorem|Theorem_GT_4_1|24215
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_1|1431
 GeoTop.thy|theorem|Theorem_GT_4_10|24808
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|6693
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|6751
 GeoTop.thy|theorem|Theorem_GT_4_2|24314
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_2|1536
 GeoTop.thy|theorem|Theorem_GT_4_3|24372
@@ -3482,7 +3484,7 @@ dev34_facts/GeoTop_3_4_Facts.thy|theorem|Theorem_GT_4_7|265
 GeoTop.thy|theorem|Theorem_GT_4_8|24689
 dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_8|4273
 GeoTop.thy|theorem|Theorem_GT_4_9|24747
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|6206
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|6264
 gb/GeoTopBase.thy|theorem|Theorem_GT_4_invariance_of_domain|6722
 GeoTop.thy|theorem|Theorem_GT_5_1|24837
 GeoTop.thy|theorem|Theorem_GT_5_2|24929

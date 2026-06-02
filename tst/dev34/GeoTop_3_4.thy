@@ -5823,6 +5823,64 @@ proof -
     using h\<tau>K hp\<tau> hnle1 h\<tau>dim by (by100 blast)
 qed
 
+lemma geotop_0simplex_contains_point_eq_singleton_dev34:
+  fixes \<tau> :: "(real^2) set"
+  assumes h\<tau>0: "geotop_simplex_dim \<tau> 0"
+  assumes hp\<tau>: "p \<in> \<tau>"
+  shows "\<tau> = {p}"
+  (**
+    Elementary 0-simplex carrier fact: a 0-simplex is the convex hull of one
+    vertex, so any point it contains is that vertex. **)
+proof -
+  have hex: "\<exists>V m. finite V \<and> card V = 0 + 1 \<and> 0 \<le> m
+      \<and> geotop_general_position V m \<and> \<tau> = geotop_convex_hull V"
+    using h\<tau>0 unfolding geotop_simplex_dim_def by (by100 simp)
+  obtain V m where hVm:
+    "finite V \<and> card V = 0 + 1 \<and> 0 \<le> m
+      \<and> geotop_general_position V m \<and> \<tau> = geotop_convex_hull V"
+    using hex by (elim exE)
+  have hVfin: "finite V" using hVm by (by100 simp)
+  have hVcard: "card V = 1" using hVm by (by100 simp)
+  have h\<tau>V: "\<tau> = geotop_convex_hull V" using hVm by (by100 simp)
+  obtain v where hVeq: "V = {v}"
+    by (rule card_1_singletonE[OF hVcard])
+  have hconv_single: "geotop_convex_hull {v} = {v}"
+  proof -
+    have "geotop_convex_hull {v} = convex hull {v}"
+      by (rule geotop_convex_hull_eq_HOL)
+    also have "... = {v}"
+      by (by100 simp)
+    finally show ?thesis .
+  qed
+  have h\<tau>eq: "\<tau> = {v}"
+    using h\<tau>V hVeq hconv_single by (by100 simp)
+  have hpv: "p = v"
+    using hp\<tau> h\<tau>eq by (by100 blast)
+  show ?thesis
+    using h\<tau>eq hpv by (by100 simp)
+qed
+
+lemma geotop_boundary_0carrier_is_complex_vertex_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<tau>0: "geotop_simplex_dim \<tau> 0"
+  assumes hp\<tau>: "p \<in> rel_interior \<tau>"
+  shows "p \<in> geotop_complex_vertices K"
+  (**
+    Vertex-carrier branch bookkeeping: if the carrier of \<open>p\<close> is
+    0-dimensional, then \<open>{p}\<close> is a simplex of \<open>K\<close>. **)
+proof -
+  have hp\<tau>_set: "p \<in> \<tau>"
+    using hp\<tau> rel_interior_subset by (by100 blast)
+  have h\<tau>eq: "\<tau> = {p}"
+    by (rule geotop_0simplex_contains_point_eq_singleton_dev34[OF h\<tau>0 hp\<tau>_set])
+  have hpK: "{p} \<in> K"
+    using h\<tau>K h\<tau>eq by (by100 simp)
+  show ?thesis
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hpK by (by100 blast)
+qed
+
 lemma geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
