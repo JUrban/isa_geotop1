@@ -205,6 +205,26 @@ proof -
     using hr_pos hU_finite hF_sub hlocal_cover by (by100 blast)
 qed
 
+lemma geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34:
+  fixes K F :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes hx:
+    "x \<in> {x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  assumes hr0: "0 < r0"
+  assumes hF_fin: "finite F"
+  assumes hF_sub: "F \<subseteq> K"
+  assumes hF_cover: "ball x r0 \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  shows "\<exists>r. 0 < r \<and>
+      ball x r \<inter> (\<Union>(geotop_star K v) - {v})
+        \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+                \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  sorry
+
 lemma geotop_euclidean_open_radial_cone_point_neighborhood_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -219,7 +239,33 @@ lemma geotop_euclidean_open_radial_cone_point_neighborhood_dev34:
         \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
              \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
                 \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?A = "{x \<in> ?S.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  have hxS: "x \<in> ?S"
+    using hx by (by100 blast)
+  have hx_poly: "x \<in> geotop_polyhedron K"
+  proof -
+    obtain \<sigma> where h\<sigma>star: "\<sigma> \<in> geotop_star K v" and hx\<sigma>: "x \<in> \<sigma>"
+      using hxS by (by100 blast)
+    have hstar_sub: "geotop_star K v \<subseteq> K"
+      by (rule geotop_star_subset_complex[OF hK])
+    have h\<sigma>K: "\<sigma> \<in> K"
+      using hstar_sub h\<sigma>star by (by100 blast)
+    show ?thesis
+      unfolding geotop_polyhedron_def using h\<sigma>K hx\<sigma> by (by100 blast)
+  qed
+  obtain r0 F where hr0: "0 < r0" and hF_fin: "finite F"
+    and hF_sub: "F \<subseteq> K"
+    and hF_cover: "ball x r0 \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    using geotop_complex_point_finite_local_carrier_dev34[OF hK hx_poly]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34
+        [OF hK hv hW_open hx hr0 hF_fin hF_sub hF_cover])
+qed
 
 lemma geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"
