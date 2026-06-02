@@ -63,6 +63,26 @@ proof (intro allI impI)
     using \<open>e \<in> ?E\<close> by (by100 blast)
 qed
 
+lemma geotop_degree_two_vertices_no_graph_endpoint_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+proof (intro allI impI)
+  fix w
+  assume hw: "{w} \<in> L"
+  show "\<not> geotop_graph_endpoint L w"
+  proof
+    assume hend: "geotop_graph_endpoint L w"
+    have hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+      using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+    have hcard2: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hdegree hw by (by100 blast)
+    show False
+      using hcard1 hcard2 by (by100 simp)
+  qed
+qed
+
 text \<open>Moise \<S>4, Theorem 8: the graph-classification step used after
 Lemmas 2--4.  A finite connected linear graph whose every vertex has
 exactly two incident edges is a polygon.\<close>
