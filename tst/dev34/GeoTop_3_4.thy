@@ -113,6 +113,35 @@ proof (rule ccontr)
     using hstar_separated hstar_not_separated by (by100 blast)
 qed
 
+lemma geotop_link_finite_1dim_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hshape:
+    "geotop_is_broken_line (\<Union>(geotop_link K v))
+      \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
+  shows "geotop_is_complex (geotop_link K v)
+      \<and> geotop_complex_is_1dim (geotop_link K v)
+      \<and> finite (geotop_link K v)
+      \<and> (geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+          \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v)))"
+proof -
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hlink_1dim: "geotop_complex_is_1dim (geotop_link K v)"
+    by (rule geotop_link_complex_is_1dim_R2[OF hK])
+  have hlink_finite: "finite (geotop_link K v)"
+    by (rule geotop_link_finite_at_complex_vertex[OF hK hv])
+  have hpoly_eq: "geotop_polyhedron (geotop_link K v) = \<Union>(geotop_link K v)"
+    unfolding geotop_polyhedron_def by (by100 simp)
+  have hshape_poly:
+    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+    using hshape hpoly_eq by (by100 simp)
+  show ?thesis
+    using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
+qed
+
 lemma geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
