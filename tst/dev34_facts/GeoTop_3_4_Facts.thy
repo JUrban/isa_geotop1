@@ -3518,6 +3518,26 @@ proof -
   qed
 qed
 
+lemma geotop_radial_equal_imp_same_ray_dev34:
+  fixes v y y' :: "real^2"
+  assumes ht: "0 < t"
+  assumes ht': "0 < t'"
+  assumes heq:
+    "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+     (1 - t') *\<^sub>R v + t' *\<^sub>R y'"
+  shows "y' - v = (t / t') *\<^sub>R (y - v)"
+proof -
+  have ht'_nz: "t' \<noteq> 0"
+    using ht' by (by100 simp)
+  have hscaled: "t' *\<^sub>R (y' - v) = t *\<^sub>R (y - v)"
+    using heq by (by100 simp add: algebra_simps)
+  have "(1 / t') *\<^sub>R (t' *\<^sub>R (y' - v)) =
+      (1 / t') *\<^sub>R (t *\<^sub>R (y - v))"
+    using hscaled by (by100 simp)
+  thus ?thesis
+    using ht'_nz by (by100 simp add: scaleR_scaleR)
+qed
+
 lemma geotop_link_radial_endpoint_unique_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3530,7 +3550,12 @@ lemma geotop_link_radial_endpoint_unique_dev34:
     "(1 - t) *\<^sub>R v + t *\<^sub>R y =
      (1 - t') *\<^sub>R v + t' *\<^sub>R y'"
   shows "y = y'"
-  sorry
+proof -
+  have h_ray: "y' - v = (t / t') *\<^sub>R (y - v)"
+    by (rule geotop_radial_equal_imp_same_ray_dev34[OF ht(1) ht'(1) heq])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_simplex_opposite_edge_in_link:
   fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
