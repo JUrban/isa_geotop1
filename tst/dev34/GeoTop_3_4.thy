@@ -1389,6 +1389,27 @@ proof -
     using hcircle by (by100 blast)
 qed
 
+lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
+  fixes K :: "(real^2) set set" and e U :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hcell: "geotop_is_n_cell (closure_on (geotop_polyhedron K)
+        (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology (geotop_polyhedron K)
+        (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)))
+        (closure_on (geotop_polyhedron K)
+          (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
+  shows False
+  sorry
+
 lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -1410,7 +1431,15 @@ lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
         (closure_on (geotop_polyhedron K)
           (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
   shows False
-  sorry
+proof -
+  let ?M = "geotop_polyhedron K"
+  have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
+    by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
+        [OF hUopen hpU])
+  show False
+    by (rule geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34
+        [OF hK heK hedge hp hfaces hlocal_ball hcell])
+qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
