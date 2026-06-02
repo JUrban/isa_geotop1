@@ -3298,6 +3298,10 @@ dev34_facts/GeoTop_3_4_Facts.thy:6642 lemma geotop_2_manifold_no_open_singleton 
 dev34_facts/GeoTop_3_4_Facts.thy:6688 lemma geotop_2_simplex_no_open_singleton :: geotop_simplex_dim sigma 2 p : sigma ==> {p} ~: subspace_topology UNIV geotop_euclidean_topology sigma
 dev34_facts/GeoTop_3_4_Facts.thy:6736 lemma geotop_2_cell_no_open_singleton :: geotop_is_n_cell C TC 2 p : C ==> {p} ~: TC
 dev34_facts/GeoTop_3_4_Facts.thy:6766 lemma geotop_2_manifold_with_boundary_no_open_singleton :: geotop_n_manifold_with_boundary_on M (%x y. norm (x - y)) 2 v : M ==> {v} ~: subspace_topology UNIV geotop_euclidean_topology M
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy:5 lemma geotop_linear_graph_complex_dev34 :: geotop_is_linear_graph L ==> geotop_is_complex L
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy:10 lemma geotop_linear_graph_1dim_dev34 :: geotop_is_linear_graph L ==> geotop_complex_is_1dim L
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy:15 lemma geotop_finite_linear_graph_vertices_finite_dev34 :: geotop_is_linear_graph L finite L ==> finite (geotop_complex_vertices L)
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy:27 lemma geotop_finite_incident_edges_finite_dev34 :: finite L ==> finite {e : L. geotop_is_edge e & w : e}
 dev34/GeoTop_3_4.thy:8 theorem Theorem_GT_4_8 :: geotop_is_complex K geotop_n_manifold_on (geotop_polyhedron K) (%x y. norm (x - y)) 2 ==> ALL v : geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2 no point separates plane\ no arc separates R\<^sup>2\
 dev34/GeoTop_3_4.thy:1320 theorem Theorem_GT_4_9 :: geotop_is_complex K geotop_n_manifold_with_boundary_on (geotop_polyhedron K) (%x y. norm (x - y)) 2 ==> ALL v : geotop_complex_vertices K. geotop_comb_n_cell (geotop_star K v) 2 geotop_manifold_boundary (geotop_polyhedron K) (%x y. norm (x - y)) = UN{e : K. geotop_is_edge e & card {sigma : K. geotop_simplex_dim sigma 2 & geotop_is_face e sigma} = 1}
 dev34/GeoTop_3_4.thy:1653 lemma top1_norm_metric_on_UNIV :: top1_metric_on (UNIV::'a::real_normed_vector set) (%x y. norm (x - y))

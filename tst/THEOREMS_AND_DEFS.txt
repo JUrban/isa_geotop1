@@ -1530,6 +1530,8 @@ dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_homeomorphism_de
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_punctured_circle_three_points_R2|2798
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_real_line_minus_two_dev34|2675
 gb0/GeoTopBase0.thy|lemma|geotop_finite_distinct_lists_over_finite|3462
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_incident_edges_finite_dev34|27
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_linear_graph_vertices_finite_dev34|15
 gb0/GeoTopBase0.thy|lemma|geotop_finite_subset_simplex_hull_subset|4317
 gb0/GeoTopBase0.thy|lemma|geotop_flag_intersect_hull_sub|5605
 gb0/GeoTopBase0.thy|lemma|geotop_flags_chain_strict|4096
@@ -1588,6 +1590,8 @@ gb0/GeoTopBase0.thy|lemma|geotop_iterated_Sd_simplex_V_in_K_simplex|10841
 gb0/GeoTopBase0.thy|lemma|geotop_iterated_Sd_simplex_in_K_simplex|9991
 gb0/GeoTopBase0.thy|lemma|geotop_iterated_Sd_zero|9958
 gb/GeoTopBase.thy|lemma|geotop_line_normal_form|14353
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_linear_graph_1dim_dev34|10
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_linear_graph_complex_dev34|5
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_linear_graph_imp_complex_1dim_dev34|1220
 gb0/GeoTopBase0.thy|lemma|geotop_linear_inj_image_face_preimage|1669
 gb0/GeoTopBase0.thy|lemma|geotop_linear_inj_image_is_simplex|1362
