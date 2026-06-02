@@ -2353,6 +2353,53 @@ proof -
     using hfg_img by (by100 simp)
 qed
 
+lemma geotop_homeomorphism_image_1sphere_dev34:
+  fixes J U :: "(real^2) set"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hJsub: "J \<subseteq> U"
+  assumes hJsphere: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "geotop_is_n_sphere (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
+proof -
+  obtain g where hg: "top1_homeomorphism_on J
+      (subspace_topology UNIV geotop_euclidean_topology J)
+      (geotop_std_sphere::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology geotop_std_sphere) g"
+    using hJsphere unfolding geotop_is_n_sphere_def by (by100 blast)
+  have hsource_eq:
+    "subspace_topology U
+        (subspace_topology UNIV geotop_euclidean_topology U) J =
+     subspace_topology UNIV geotop_euclidean_topology J"
+    by (rule subspace_topology_trans[OF hJsub])
+  have hres: "top1_homeomorphism_on J
+      (subspace_topology U (subspace_topology UNIV geotop_euclidean_topology U) J)
+      (f ` J) (subspace_topology UNIV geotop_euclidean_topology (f ` J)) f"
+    by (rule top1_homeomorphism_on_subspace_image_dev34[OF hhomeo hJsub])
+  have hres_geo: "top1_homeomorphism_on J
+      (subspace_topology UNIV geotop_euclidean_topology J)
+      (f ` J) (subspace_topology UNIV geotop_euclidean_topology (f ` J)) f"
+    using hres hsource_eq by (by100 simp)
+  have hres_sym: "top1_homeomorphism_on (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J))
+      J (subspace_topology UNIV geotop_euclidean_topology J) (inv_into J f)"
+    by (rule top1_homeomorphism_on_sym[OF hres_geo])
+  have hcomp: "top1_homeomorphism_on (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J))
+      (geotop_std_sphere::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology geotop_std_sphere)
+      (g \<circ> inv_into J f)"
+    by (rule top1_homeomorphism_on_comp[OF hres_sym hg])
+  have htop_img: "is_topology_on (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J))"
+    using hcomp unfolding top1_homeomorphism_on_def by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_n_sphere_def
+    using htop_img hcomp by (by100 blast)
+qed
+
 lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -2408,6 +2455,31 @@ proof -
     using hAsub hAimg hAsep by (by100 blast)
 qed
 
+lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  shows "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere J
+          (subspace_topology UNIV geotop_euclidean_topology J) 1
+      \<and> top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  (**
+    Moise Lemma 4 local picture: from three incident 2-simplexes, choose two
+    same-radius small semicircles in two of the incident simplexes, centered at
+    the edge-interior point.  Their union is the small 1-sphere \<open>J\<close> inside the
+    chart domain \<open>U\<close>; because the third incident simplex gives a passage
+    around it, \<open>U - J\<close> remains connected. **)
+  sorry
+
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -2428,7 +2500,21 @@ lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
           (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1
       \<and> top1_connected_on (U - J)
           (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-  sorry
+proof -
+  obtain J where hJsub: "J \<subseteq> U"
+    and hJsphere: "geotop_is_n_sphere J
+          (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    and hJconn: "top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    using geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34
+      [OF hK heK hedge hp hfaces hlocal_ball]
+    by (by100 blast)
+  have hJimg: "geotop_is_n_sphere (f ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
+    by (rule geotop_homeomorphism_image_1sphere_dev34[OF hhomeo hJsub hJsphere])
+  show ?thesis
+    using hJsub hJimg hJconn by (by100 blast)
+qed
 
 lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
