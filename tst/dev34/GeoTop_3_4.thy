@@ -7787,6 +7787,28 @@ proof -
     using he_HOL h\<sigma>_HOL by (by100 simp)
 qed
 
+lemma geotop_shared_edge_rel_interior_subset_two_2simplexes_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  shows "rel_interior e \<subseteq> \<sigma> \<inter> \<tau>"
+  (**
+    The common edge's relative interior is contained in both incident triangles,
+    a direct set-level input for the local diamond neighborhood argument. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_edge_subset_2simplex_vertices_dev34[OF he_eq h\<sigma>V])
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_edge_subset_2simplex_vertices_dev34[OF he_eq h\<tau>V])
+  show "p \<in> \<sigma> \<inter> \<tau>"
+    using hp_e he_sub_\<sigma> he_sub_\<tau> by (by100 blast)
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

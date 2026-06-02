@@ -27,8 +27,8 @@ Evidence checked locally:
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
   `0:00:37 elapsed time`.
-- The current committed branch tip before this report refresh is `78f8f376`
-  (`Package GeoTop opposite-side edge probes`).
+- The current committed branch tip before this report refresh is `540732af`
+  (`Prove GeoTop edge containment in triangle`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -116,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7805; this is the remaining analytic local-neighborhood step for
+  at line 7827; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8161;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8183;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -303,7 +303,10 @@ the HOL interior of the corresponding incident triangle. The package helper
 now combines these two one-sided probes for the opposite-side shared-edge
 configuration. The containment helper
 `geotop_edge_subset_2simplex_vertices_dev34` is now proved, recording that the
-edge spanned by two triangle vertices is contained in the triangle.
+edge spanned by two triangle vertices is contained in the triangle. Its
+immediate shared-edge consequence
+`geotop_shared_edge_rel_interior_subset_two_2simplexes_dev34` is also proved,
+placing the common edge relative interior inside both incident triangles.
 
 ## Important Supporting Material
 
