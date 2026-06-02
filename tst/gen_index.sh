@@ -42,52 +42,77 @@ THEORIES=(
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
 
-# --- Generate machine-readable index ---
-> "$TXT"
-for f in "${THEORIES[@]}"; do
-  [ -f "$f" ] || continue
-  session=$(basename "$f" .thy)
-  grep -nE '^\s*(lemma|theorem|corollary|definition|fun|abbreviation) ' "$f" | while IFS=: read -r line content; do
-    content=$(echo "$content" | sed 's/^[[:space:]]*//')
-    name=$(echo "$content" | sed 's/^\(lemma\|theorem\|corollary\|definition\|fun\|abbreviation\) \+\([a-zA-Z0-9_]*\).*/\2/')
-    kind=$(echo "$content" | sed 's/^\([a-z]*\) .*/\1/')
-    [ -n "$name" ] && echo "$f|$kind|$name|$line"
-  done
-done | sort -t'|' -k2,2 -k3,3 >> "$TXT"
+python3 - "$TXT" "$MD" "${THEORIES[@]}" <<'PYEND'
+import datetime
+import re
+import sys
+from collections import Counter
+from pathlib import Path
 
-total=$(wc -l < "$TXT")
-ndups=$(awk -F'|' '{print $3}' "$TXT" | sort | uniq -d | wc -l)
+txt = Path(sys.argv[1])
+md = Path(sys.argv[2])
+theories = sys.argv[3:]
 
-# --- Generate human-readable index ---
-{
-  echo "# Theorem and Definition Index"
-  echo "# Generated: $(date -u +%Y-%m-%d)"
-  echo "# Format: file | kind | name | line"
-  echo "#"
-  echo "# Files: $(printf '%s\n' "${THEORIES[@]}" | tr '\n' ', ' | sed 's/,$//')"
-  echo "#"
-  echo "# Total entries: $total"
-  echo "# Duplicate names: $ndups"
-  echo ""
+decl_re = re.compile(
+    r"^\s*(lemma|theorem|corollary|definition|fun|abbreviation)\s+([A-Za-z0-9_]*)"
+)
 
-  for kind in definition fun abbreviation lemma theorem corollary; do
-    count=$(grep "|${kind}|" "$TXT" | wc -l)
-    [ "$count" -eq 0 ] && continue
-    echo "## ${kind}s ($count)"
-    echo ""
-    grep "|${kind}|" "$TXT" | awk -F'|' '{printf "%-45s  %-35s  line %s\n", $3, $1, $4}'
-    echo ""
-  done
+entries = []
+for theory in theories:
+    path = Path(theory)
+    if not path.is_file():
+        continue
+    with path.open(encoding="utf-8", errors="replace") as f:
+        for line_no, line in enumerate(f, 1):
+            match = decl_re.match(line)
+            if not match:
+                continue
+            kind, name = match.groups()
+            if name:
+                entries.append((theory, kind, name, line_no))
 
-  if [ "$ndups" -gt 0 ]; then
-    echo "## DUPLICATES ($ndups names appear in multiple locations)"
-    echo ""
-    awk -F'|' '{print $3}' "$TXT" | sort | uniq -d | while read -r dup; do
-      echo "  $dup:"
-      grep "|$dup|" "$TXT" | awk -F'|' '{printf "    %-35s  %s  line %s\n", $1, $2, $4}'
-    done
-    echo ""
-  fi
-} > "$MD"
+# Match the old `sort -t'|' -k2,2 -k3,3` behavior, including the full-line
+# final comparison for entries with the same kind and name.
+entries.sort(key=lambda e: (e[1], e[2], f"{e[0]}|{e[1]}|{e[2]}|{e[3]}"))
 
-echo "Index: $total entries, $ndups duplicates -> $TXT / $MD"
+with txt.open("w", encoding="utf-8") as out:
+    for theory, kind, name, line_no in entries:
+        out.write(f"{theory}|{kind}|{name}|{line_no}\n")
+
+name_counts = Counter(name for _, _, name, _ in entries)
+duplicates = sorted(name for name, count in name_counts.items() if count > 1)
+
+with md.open("w", encoding="utf-8") as out:
+    out.write("# Theorem and Definition Index\n")
+    today = datetime.datetime.now(datetime.UTC)
+    out.write(f"# Generated: {today:%Y-%m-%d}\n")
+    out.write("# Format: file | kind | name | line\n")
+    out.write("#\n")
+    out.write(f"# Files: {','.join(theories)}\n")
+    out.write("#\n")
+    out.write(f"# Total entries: {len(entries)}\n")
+    out.write(f"# Duplicate names: {len(duplicates)}\n")
+    out.write("\n")
+
+    for kind in ["definition", "fun", "abbreviation", "lemma", "theorem", "corollary"]:
+        rows = [entry for entry in entries if entry[1] == kind]
+        if not rows:
+            continue
+        out.write(f"## {kind}s ({len(rows)})\n")
+        out.write("\n")
+        for theory, _, name, line_no in rows:
+            out.write(f"{name:<45}  {theory:<35}  line {line_no}\n")
+        out.write("\n")
+
+    if duplicates:
+        out.write(f"## DUPLICATES ({len(duplicates)} names appear in multiple locations)\n")
+        out.write("\n")
+        for duplicate in duplicates:
+            out.write(f"  {duplicate}:\n")
+            for theory, kind, name, line_no in entries:
+                if name == duplicate:
+                    out.write(f"    {theory:<35}  {kind}  line {line_no}\n")
+        out.write("\n")
+
+print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates -> {txt} / {md}")
+PYEND
