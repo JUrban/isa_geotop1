@@ -20,31 +20,34 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.43`, while `gen_stmt_index.sh` ran in `0:02.41`.
-- A warm-cache section build passed:
+  ran in `0:00.40`, while `gen_stmt_index.sh` ran in `0:02.13`.
+- A warm-cache section build passed after the latest Figure 4.10 split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:41 elapsed time`; the session itself reported `0:00:17 elapsed time`.
-- The current committed branch tip before this report refresh is `91657523`
-  (`Prove GeoTop diamond triangle membership`), followed by `a17520e0`
-  (`Prove GeoTop diamond ball containment`) and merge commit `1da07ff5`
+  `0:00:34 elapsed time`; the session itself reported `0:00:15 elapsed time`.
+- The current committed branch tip before this report refresh is `e2108ee0`
+  (`Refresh GeoTop theorem indexes`), followed by `996909b1`
+  (`Prove GeoTop shared edge local neighborhood`) and merge commit `1da07ff5`
   (`Merge remote-tracking branch 'origin/main' into codex-dev34-cache`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 5 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
 development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
 holes. The compact cone-over-compact closedness lemma is proved, closing the
-radial bad-endpoint closedness bottleneck. The broad vertex-star fan wrapper is
-proved from a more explicit Figure 4.10 isomorphism helper. The one-sided and
-three-sided chart contradictions are now narrowed to explicit domain-level
-small semicircle/small circle construction lemmas plus a 2-cell/Jordan helper.
-The major open clusters are the actual ordered Figure 4.10 construction, the
-small semicircle/small circle domain constructions, the 2-cell/Jordan
+radial bad-endpoint closedness bottleneck. The broad Figure 4.10
+boundary-cone fan wrapper is now proved from two book-level construction
+subclaims: first, matching the finite link to a subdivision of the combinatorial
+boundary of a 2-simplex; second, coning that boundary subdivision to a fan
+subdivision. The one-sided and three-sided chart contradictions are now
+narrowed to explicit domain-level small semicircle/small circle construction
+lemmas plus a 2-cell/Jordan helper. The major open clusters are the two
+ordered Figure 4.10 construction subclaims, the small semicircle/small circle
+domain constructions, the 2-cell/Jordan
 contradiction, the remaining Theorem 4.9 converse plane-neighborhood
 obligations, and several larger Section 3/early Section 4 prefix arguments.
 
@@ -63,7 +66,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 5 executable
+  layer of the section-specific stack; it currently contains 6 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -109,14 +112,15 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`
-  at line 3201.
+- `geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_polygon_dev34`
+  at line 3191.
+- `geotop_fig410_cone_fan_from_boundary_subdivision_model_dev34` at line 3219.
 - `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
-  at line 4001.
+  at line 4125.
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
-  at line 4061.
-- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8859;
+  at line 4185.
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4321.
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8983;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -217,7 +221,11 @@ the remaining book Figure 4.10 construction through focused helpers:
 - `geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34`
 - `geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34`
 
-The last two wrappers are proved. The open content is the first helper: enumerate
+The standard boundary-cone fan wrapper is now proved. The remaining Figure 4.10
+content is split into the two construction subclaims named above: enumerate
+the finite link as a subdivided 2-simplex boundary, then cone that boundary
+subdivision to the full fan. The last two wrappers are proved. The open content
+after those wrappers is still to enumerate
 the finite linear link as an ordered edge-chain or edge-cycle, subdivide the
 frontier of a standard 2-simplex with the same ordered edge data, add the cone
 vertex, and define the resulting simplicial isomorphism.
