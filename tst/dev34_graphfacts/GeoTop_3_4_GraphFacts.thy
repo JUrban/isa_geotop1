@@ -719,6 +719,72 @@ proof -
   qed
 qed
 
+lemma geotop_graph_endpoint_unique_segment_neighbor_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "\<exists>e q. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+      \<and> q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have h1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL])
+  have hwL: "{w} \<in> L"
+    using geotop_graph_endpoint_singleton_and_card_one_dev34[OF hL hend]
+    by (by100 blast)
+  obtain e where heL: "e \<in> L" and hedge: "geotop_is_edge e" and hw_e: "w \<in> e"
+    using geotop_graph_endpoint_unique_incident_edge_dev34[OF hL hfin hend]
+    by (by100 blast)
+  have hedim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have hcases: "(\<exists>v. e = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> e = closed_segment a b)"
+    by (rule geotop_1dim_simplex_cases[OF h1dim heL])
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume "\<exists>v. e = {v}"
+    then obtain v where hev: "e = {v}" by (by100 blast)
+    have hdim0: "geotop_simplex_dim e 0"
+      using hev geotop_singleton_is_simplex by (by100 simp)
+    have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 hedim])
+    hence False by (by100 simp)
+    thus ?thesis by (rule FalseE)
+  next
+    assume "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
+    then obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+      by (by100 blast)
+    have hw_endpoint: "w = a \<or> w = b"
+      by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+          [OF hcomplex hwL heL heab hab hw_e])
+    have hface_closed: "\<forall>\<rho>\<in>L. \<forall>\<tau>. geotop_is_face \<tau> \<rho> \<longrightarrow> \<tau> \<in> L"
+      by (rule geotop_is_complex_face_closed[OF hcomplex])
+    show ?thesis
+    proof (rule disjE[OF hw_endpoint])
+      assume hwa: "w = a"
+      have hba: "b \<noteq> a" using hab by (by100 blast)
+      have hface_b: "geotop_is_face {b} e"
+        using geotop_closed_segment_is_face_endpoint[OF hba, of b]
+          heab closed_segment_commute[of a b]
+        by (by100 simp)
+      have hbL: "{b} \<in> L"
+        using hface_closed heL hface_b by (by100 blast)
+      show ?thesis
+        using heL hedge hw_e hwa hab heab hbL by (by100 blast)
+    next
+      assume hwb: "w = b"
+      have hface_a: "geotop_is_face {a} e"
+        using geotop_closed_segment_is_face_endpoint[OF hab, of a] heab
+        by (by100 simp)
+      have haL: "{a} \<in> L"
+        using hface_closed heL hface_a by (by100 blast)
+      show ?thesis
+        using heL hedge hw_e hwb hab heab haL closed_segment_commute[of a b]
+        by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
