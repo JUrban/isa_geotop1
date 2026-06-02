@@ -102,6 +102,76 @@ proof -
   qed
 qed
 
+lemma geotop_subspace_open_from_euclidean_ball_witness_dev34:
+  fixes A S :: "(real^2) set"
+  assumes hA_sub: "A \<subseteq> S"
+  assumes hlocal:
+    "\<And>x. x \<in> A \<Longrightarrow> \<exists>r. 0 < r \<and> ball x r \<inter> S \<subseteq> A"
+  shows "A \<in> subspace_topology UNIV geotop_euclidean_topology S"
+proof -
+  let ?B = "{B. \<exists>x\<in>A. \<exists>r. 0 < r \<and> B = ball x r \<and> ball x r \<inter> S \<subseteq> A}"
+  let ?U = "\<Union>?B"
+  have hB_open: "\<forall>B\<in>?B. open B"
+    by (by100 auto)
+  have hU_open_HOL: "open ?U"
+    by (rule open_Union) (use hB_open in \<open>by100 blast\<close>)
+  have hA_eq: "A = S \<inter> ?U"
+  proof
+    show "A \<subseteq> S \<inter> ?U"
+    proof
+      fix x
+      assume hxA: "x \<in> A"
+      obtain r where hr_pos: "0 < r" and hr_sub: "ball x r \<inter> S \<subseteq> A"
+        using hlocal[OF hxA] by (by100 blast)
+      have hball_mem: "ball x r \<in> ?B"
+        using hxA hr_pos hr_sub by (by100 blast)
+      have hx_ball: "x \<in> ball x r"
+        using hr_pos by (by100 simp)
+      show "x \<in> S \<inter> ?U"
+        using hA_sub hxA hball_mem hx_ball by (by100 blast)
+    qed
+  next
+    show "S \<inter> ?U \<subseteq> A"
+    proof
+      fix z
+      assume hz: "z \<in> S \<inter> ?U"
+      obtain B where hB: "B \<in> ?B" and hzB: "z \<in> B"
+        using hz by (by100 blast)
+      obtain x r where hxA: "x \<in> A" and hr_pos: "0 < r"
+        and hB_eq: "B = ball x r"
+        and hr_sub: "ball x r \<inter> S \<subseteq> A"
+        using hB by (by100 blast)
+      have "z \<in> ball x r \<inter> S"
+        using hz hzB hB_eq by (by100 blast)
+      show "z \<in> A"
+        using hr_sub \<open>z \<in> ball x r \<inter> S\<close> by (by100 blast)
+    qed
+  qed
+  have hU_open_top: "?U \<in> geotop_euclidean_topology"
+    using hU_open_HOL
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  show ?thesis
+    unfolding subspace_topology_def
+    using hA_eq hU_open_top by (by100 blast)
+qed
+
+lemma geotop_euclidean_open_radial_cone_point_neighborhood_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes hx:
+    "x \<in> {x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  shows "\<exists>r. 0 < r \<and>
+      ball x r \<inter> (\<Union>(geotop_star K v) - {v})
+        \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+                \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  sorry
+
 lemma geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -112,7 +182,21 @@ lemma geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34:
           \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
       \<in> subspace_topology UNIV geotop_euclidean_topology
           (\<Union>(geotop_star K v) - {v})"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?A = "{x \<in> ?S.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  have hA_sub: "?A \<subseteq> ?S"
+    by (by100 blast)
+  have hlocal:
+    "\<And>x. x \<in> ?A \<Longrightarrow> \<exists>r. 0 < r \<and> ball x r \<inter> ?S \<subseteq> ?A"
+    by (rule geotop_euclidean_open_radial_cone_point_neighborhood_dev34
+        [OF hK hv hW_open])
+  show ?thesis
+    by (rule geotop_subspace_open_from_euclidean_ball_witness_dev34
+        [OF hA_sub hlocal])
+qed
 
 lemma geotop_link_open_radial_cone_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"
