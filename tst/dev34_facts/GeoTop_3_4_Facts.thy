@@ -3278,6 +3278,208 @@ proof -
   qed
 qed
 
+lemma geotop_simplex_point_radial_to_opposite_face_dev34:
+  fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hx: "x \<in> \<sigma>"
+  assumes hx_ne_v: "x \<noteq> v"
+  shows "\<exists>y t. y \<in> geotop_convex_hull (V - {v})
+      \<and> 0 < t \<and> t \<le> 1
+      \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+proof -
+  obtain m n where hV_fin: "finite V"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  obtain a where ha_nonneg: "\<forall>w\<in>V. 0 \<le> a w"
+    and ha_sum: "(\<Sum>w\<in>V. a w) = 1"
+    and hx_sum: "(\<Sum>w\<in>V. a w *\<^sub>R w) = x"
+    using hx h\<sigma>_HOL convex_hull_finite[OF hV_fin] by (by100 blast)
+  let ?W = "V - {v}"
+  define t where "t = (\<Sum>w\<in>?W. a w)"
+  have hW_fin: "finite ?W"
+    using hV_fin by (by100 simp)
+  have hsum_split: "(\<Sum>w\<in>V. a w) = a v + (\<Sum>w\<in>?W. a w)"
+    using hV_fin hvV by (subst sum.remove) (by100 simp_all)
+  have ht_eq: "t = 1 - a v"
+    using ha_sum hsum_split unfolding t_def by (by100 simp)
+  have ht_nonneg: "0 \<le> t"
+    unfolding t_def using ha_nonneg by (by100 simp)
+  have hav_nonneg: "0 \<le> a v"
+    using ha_nonneg hvV by (by100 blast)
+  have ht_le_1: "t \<le> 1"
+    using ht_eq hav_nonneg by (by100 simp)
+  have ht_pos: "0 < t"
+  proof (rule ccontr)
+    assume hnot: "\<not> 0 < t"
+    have ht_zero: "t = 0"
+      using ht_nonneg hnot by (by100 simp)
+    have hzero_W: "\<forall>w\<in>?W. a w = 0"
+    proof
+      fix w assume hw: "w \<in> ?W"
+      have hsum_zero: "(\<Sum>w\<in>?W. a w) = 0"
+        using ht_zero unfolding t_def by (by100 simp)
+      show "a w = 0"
+        using sum_nonneg_eq_0_iff[OF hW_fin, of a] ha_nonneg hw hsum_zero
+        by (by100 simp)
+    qed
+    have hav_one: "a v = 1"
+      using ha_sum hsum_split ht_zero unfolding t_def by (by100 simp)
+    have hvec_split: "(\<Sum>w\<in>V. a w *\<^sub>R w) =
+        a v *\<^sub>R v + (\<Sum>w\<in>?W. a w *\<^sub>R w)"
+      using hV_fin hvV by (subst sum.remove) (by100 simp_all)
+    have hsum_zero_vec: "(\<Sum>w\<in>?W. a w *\<^sub>R w) = 0"
+      by (rule sum.neutral) (use hzero_W in \<open>by100 simp\<close>)
+    have "x = v"
+      using hx_sum hvec_split hsum_zero_vec hav_one by (by100 simp)
+    show False
+      using hx_ne_v \<open>x = v\<close> by (by100 blast)
+  qed
+  define y where "y = (\<Sum>w\<in>?W. (a w / t) *\<^sub>R w)"
+  have hy_hull_HOL: "y \<in> convex hull ?W"
+  proof -
+    have hcoeff_nonneg: "\<forall>w\<in>?W. 0 \<le> a w / t"
+      using ha_nonneg ht_pos by (by100 simp)
+    have hcoeff_sum: "(\<Sum>w\<in>?W. a w / t) = 1"
+      using ht_pos unfolding t_def by (by100 simp)
+    show ?thesis
+      unfolding y_def convex_hull_finite[OF hW_fin]
+      using hcoeff_nonneg hcoeff_sum by (by100 blast)
+  qed
+  have hy_hull: "y \<in> geotop_convex_hull ?W"
+    using hy_hull_HOL geotop_convex_hull_eq_HOL[of ?W] by (by100 simp)
+  have hvec_split: "(\<Sum>w\<in>V. a w *\<^sub>R w) =
+      a v *\<^sub>R v + (\<Sum>w\<in>?W. a w *\<^sub>R w)"
+    using hV_fin hvV by (subst sum.remove) (by100 simp_all)
+  have ht_y: "t *\<^sub>R y = (\<Sum>w\<in>?W. a w *\<^sub>R w)"
+    unfolding y_def
+    using ht_pos
+    by (by100 simp add: scaleR_right.sum scaleR_scaleR)
+  have hx_decomp: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+    using hx_sum hvec_split ht_y ht_eq by (by100 simp)
+  show ?thesis
+    using hy_hull ht_pos ht_le_1 hx_decomp by (by100 blast)
+qed
+
+lemma geotop_simplex_opposite_face_in_link_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_ne: "V - {v} \<noteq> {}"
+  shows "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+proof -
+  let ?W = "V - {v}"
+  let ?\<tau> = "geotop_convex_hull ?W"
+  have hW_sub: "?W \<subseteq> V"
+    by (by100 blast)
+  have hface: "geotop_is_face ?\<tau> \<sigma>"
+    unfolding geotop_is_face_def
+    using h\<sigma>V hW_ne hW_sub by (by100 blast)
+  have hv\<sigma>: "v \<in> \<sigma>"
+  proof -
+    have "v \<in> convex hull V"
+      using hvV hull_inc[of v V] by (by100 simp)
+    moreover have "\<sigma> = convex hull V"
+    proof -
+      obtain m n where "\<sigma> = geotop_convex_hull V"
+        using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+      thus ?thesis using geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+    qed
+    ultimately show ?thesis by (by100 simp)
+  qed
+  have hv_not_\<tau>: "v \<notin> ?\<tau>"
+    by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+        [OF h\<sigma>V hvV]) (by100 blast)
+  have h\<tau>star: "?\<tau> \<in> geotop_star K v"
+    unfolding geotop_star_def using h\<sigma>K hv\<sigma> hface by (by100 blast)
+  show ?thesis
+    unfolding geotop_link_def using h\<tau>star hv_not_\<tau> by (by100 blast)
+qed
+
+lemma geotop_complex_simplex_point_radial_to_link_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hv\<sigma>: "v \<in> \<sigma>"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  assumes hx_ne_v: "x \<noteq> v"
+  shows "\<exists>y t. y \<in> \<Union>(geotop_link K v)
+      \<and> 0 < t \<and> t \<le> 1
+      \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+proof -
+  obtain V where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hvV: "v \<in> V"
+    by (rule geotop_complex_singleton_point_is_simplex_vertex
+        [OF hK hvK h\<sigma>K hv\<sigma>])
+  obtain y t where hy: "y \<in> geotop_convex_hull (V - {v})"
+    and ht_pos: "0 < t"
+    and ht_le: "t \<le> 1"
+    and hx_decomp: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+    using geotop_simplex_point_radial_to_opposite_face_dev34
+      [OF h\<sigma>V hvV hx\<sigma> hx_ne_v]
+    by (by100 blast)
+  have hW_ne: "V - {v} \<noteq> {}"
+  proof
+    assume hW_empty: "V - {v} = {}"
+    have "geotop_convex_hull (V - {v}) = {}"
+      using hW_empty geotop_convex_hull_eq_HOL[of "V - {v}"] by (by100 simp)
+    thus False using hy by (by100 blast)
+  qed
+  have hface_link: "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+    by (rule geotop_simplex_opposite_face_in_link_dev34
+        [OF hK h\<sigma>K h\<sigma>V hvV hW_ne])
+  have hy_link: "y \<in> \<Union>(geotop_link K v)"
+    using hy hface_link by (by100 blast)
+  show ?thesis
+    using hy_link ht_pos ht_le hx_decomp by (by100 blast)
+qed
+
+lemma geotop_star_punctured_point_radial_to_link_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hx: "x \<in> \<Union>(geotop_star K v) - {v}"
+  shows "\<exists>y t. y \<in> \<Union>(geotop_link K v)
+      \<and> 0 < t \<and> t \<le> 1
+      \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+proof -
+  obtain \<tau> where h\<tau>star: "\<tau> \<in> geotop_star K v"
+    and hx\<tau>: "x \<in> \<tau>"
+    using hx by (by100 blast)
+  have hx_ne_v: "x \<noteq> v"
+    using hx by (by100 blast)
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  show ?thesis
+  proof (cases "v \<in> \<tau>")
+    case True
+    have h\<tau>K: "\<tau> \<in> K"
+    proof -
+      have hstar_sub: "geotop_star K v \<subseteq> K"
+        by (rule geotop_star_subset_complex[OF hK])
+      show ?thesis using hstar_sub h\<tau>star by (by100 blast)
+    qed
+    show ?thesis
+      by (rule geotop_complex_simplex_point_radial_to_link_dev34
+          [OF hK hvK h\<tau>K True hx\<tau> hx_ne_v])
+  next
+    case False
+    have h\<tau>link: "\<tau> \<in> geotop_link K v"
+      unfolding geotop_link_def using h\<tau>star False by (by100 blast)
+    have hx_link: "x \<in> \<Union>(geotop_link K v)"
+      using h\<tau>link hx\<tau> by (by100 blast)
+    have hx_decomp: "x = (1 - 1) *\<^sub>R v + 1 *\<^sub>R x"
+      by (by100 simp)
+    show ?thesis
+      using hx_link hx_decomp by (intro exI[of _ x] exI[of _ 1]) (by100 simp)
+  qed
+qed
+
 lemma geotop_simplex_opposite_edge_in_link:
   fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
   assumes hK: "geotop_is_complex K"

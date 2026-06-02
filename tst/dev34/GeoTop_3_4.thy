@@ -13,7 +13,21 @@ lemma geotop_disconnected_link_separates_punctured_star_dev34:
   shows "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-  sorry
+proof -
+  \<comment> \<open>Book Lemma 5 geometry: every point of the punctured star lies on
+      a radial segment from the vertex to a point of the link.\<close>
+  have hradial:
+    "\<forall>x\<in>\<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v)
+          \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+    by (intro ballI)
+      (rule geotop_star_punctured_point_radial_to_link_dev34[OF hK hv])
+  \<comment> \<open>The remaining book step is to transport a separation of the link along
+      these radial segments to a separation of the punctured star.\<close>
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
