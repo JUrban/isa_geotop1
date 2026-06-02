@@ -2426,6 +2426,56 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_link_component_two_exact_no_endpoint_linear_graph_witness:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hP: "P \<in> \<Union>(geotop_link K v)"
+  assumes hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                  (\<Union>(geotop_link K v)) P"
+  assumes hvertices:
+    "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
+        (\<exists>l\<^sub>1 l\<^sub>2. l\<^sub>1 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+          \<and> l\<^sub>2 \<in> geotop_link K v \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+          \<and> l\<^sub>1 \<noteq> l\<^sub>2
+          \<and> (\<forall>l. l \<in> geotop_link K v \<and> geotop_is_edge l \<and> w \<in> l
+              \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+  shows "\<exists>L. geotop_is_linear_graph L
+          \<and> finite L
+          \<and> geotop_polyhedron L = C
+          \<and> geotop_complex_connected L
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+              (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+                geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+                \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+                \<and> l\<^sub>1 \<noteq> l\<^sub>2
+                \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+                    \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)"
+proof -
+  obtain L where hL_complex: "geotop_is_complex L"
+    and hL_1dim: "geotop_complex_is_1dim L"
+    and hL_fin: "finite L"
+    and hL_poly: "geotop_polyhedron L = C"
+    and hL_conn: "geotop_complex_connected L"
+    and hL_two: "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+        geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+        \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+        \<and> l\<^sub>1 \<noteq> l\<^sub>2
+        \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+    using geotop_link_component_two_exact_subcomplex_witness
+      [OF hK hv hP hC hvertices]
+    by (by100 blast)
+  have hL_linear: "geotop_is_linear_graph L"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34[OF hL_complex hL_1dim])
+  have hL_noend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    by (rule geotop_exact_two_incident_edges_no_graph_endpoint_dev34[OF hL_fin hL_two])
+  show ?thesis
+    using hL_linear hL_fin hL_poly hL_conn hL_two hL_noend by (by100 blast)
+qed
+
 lemma geotop_link_component_nonisolated_linear_graph_witness:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
