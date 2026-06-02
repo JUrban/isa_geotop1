@@ -3,7 +3,8 @@
 Date: 2026-06-02
 
 This report summarizes the current formalization status for Sections 3 and 4
-of `geotop.tex`, and records the Isabelle counterparts of the book theorems.
+of `geotop.tex`, following the same format as the current report through
+Section 2.
 
 ## Status
 
@@ -16,27 +17,27 @@ Evidence checked locally:
 - A fetch/pull of colleague `main` over HTTPS left `https/main` at commit
   `3e463c3b` (`Document GeoTop sections 1 and 2 status`).
 - The local branch `codex-dev34-cache` already contains all of `https/main`;
-  `git rev-list --left-right --count HEAD...https/main` reports `228 0`, so
+  `git rev-list --left-right --count HEAD...https/main` reports `233 0`, so
   no merge was needed for this report update.
 - The latest successful section build on this branch was:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`.
-- That build passed for the state now committed as `a5773194`
-  (`Isolate GeoTop radial cone openness`); the final `GeoTop34Dev` theory took
-  about `0:00:09` elapsed, with about `0:00:26` elapsed overall.
+- That build passed for the current branch tip `a0778fc3` (`Reduce GeoTop
+  finite radial stability to simplexes`) in `0:00:17` elapsed time.
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
-  9 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
 development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
-holes. The main open cluster is radial cone openness, the cone-over-link
-construction, the small semicircle/small circle chart contradictions, the
-boundary equality part of Theorem 4.9, and several larger Section 3/early
-Section 4 prefix arguments.
+holes. The most active current bottleneck is the simplex-local radial
+neighborhood lemma used to prove radial cone openness; the other major open
+clusters are the cone-over-link construction, the small semicircle/small circle
+chart contradictions, the boundary equality part of Theorem 4.9, and several
+larger Section 3/early Section 4 prefix arguments.
 
 ## Layout
 
@@ -90,6 +91,8 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 - `Theorem_GT_3_3`: induction/strong free-simplex claim at line 844.
 - `Theorem_GT_3_4`: base case and induction step for reducing a polygonal disk
   to one 2-simplex at lines 892 and 905.
+- `Theorem_GT_3_7`: supported polygon-to-simplex homeomorphism, fixed outside
+  the prescribed open neighborhood, at line 1362.
 - `Theorem_GT_4_2`: final arc-separation disjointness/decomposition step at
   line 1715.
 - `Theorem_GT_4_4`: brick-decomposition and frontier-component construction
@@ -97,20 +100,21 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34` at line 115.
+- `geotop_radial_cone_simplex_point_neighborhood_dev34` at line 273.
 - `geotop_vertex_star_cone_equiv_from_link_complex_line_or_polygon_dev34` at
-  line 1258.
+  line 1538.
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34` at
-  line 1351.
+  line 1631.
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34` at
-  line 1373.
+  line 1653.
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34` at
-  line 1469.
-- The boundary equality half of `Theorem_GT_4_9` at line 3254.
+  line 1749.
+- The boundary equality half of `Theorem_GT_4_9` at line 3534.
 
 ## Recent Progress
 
-The active file now contains proved bridge lemmas for the book Lemma 5 route:
+The active file now proves most of the radial and local connected-neighborhood
+infrastructure used in Moise's Lemma 5 route. Recent proved helpers include:
 
 - `geotop_connected_punctured_neighborhood_cannot_cross_separation_dev34`
 - `geotop_link_radial_segment_in_star_dev34`
@@ -128,15 +132,25 @@ The active file now contains proved bridge lemmas for the book Lemma 5 route:
 - `geotop_link_open_radial_cone_open_in_punctured_star_dev34`
 - `geotop_openin_norm_polyhedron_contains_relative_ball_dev34`
 
-These formalize the radial and local connected-neighborhood parts of Moise's
-Lemma 5 argument: a separation side of the punctured vertex star accumulates at
-the vertex, while a manifold chart supplies a connected punctured neighborhood
-inside the open star, contradicting such a separation. The radial endpoint
-projection now reduces to the isolated Euclidean-open radial cone subclaim.
+Since the previous report, the radial cone openness problem has been reduced
+substantially. The current branch proves the subspace-open bridge, a finite
+local carrier lemma for locally finite complexes, finite local-ball gluing, and
+finite-carrier radial neighborhood reduction:
+
+- `geotop_subspace_open_from_euclidean_ball_witness_dev34`
+- `geotop_complex_point_finite_local_carrier_dev34`
+- `geotop_finite_carrier_local_ball_glue_dev34`
+- `geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34`
+- `geotop_euclidean_open_radial_cone_point_neighborhood_dev34`
+- `geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34`
+
+The remaining radial obligation is now localized to a single simplex meeting a
+finite carrier:
+`geotop_radial_cone_simplex_point_neighborhood_dev34`.
 
 The chart-local Section 4 statements have also been audited against the book
-argument. The one-sided and three-sided chart contradictions now first extract
-a relative metric ball from the local chart neighborhood and then delegate to
+argument. The one-sided and three-sided chart contradictions first extract a
+relative metric ball from the local chart neighborhood and then delegate to
 explicit small semicircle/small circle construction lemmas:
 
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34`
@@ -167,25 +181,28 @@ Important cached helpers include:
 - `geotop_2_manifold_with_boundary_no_open_edge_rel_interior`
 - `geotop_2_manifold_no_open_singleton`
 - `geotop_2_manifold_with_boundary_no_open_singleton`
+- `geotop_complex_simplex_closed`
+- `geotop_complex_simplex_nonempty`
+- `geotop_ball_avoids_closed_not_containing`
 
 ## Notes For Future Work
 
 - The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
-  `geotop_euclidean_open_radial_cone_open_in_punctured_star_dev34`, because it
-  is the remaining geometric openness subclaim needed by the radial endpoint
-  projection.
-- After link connectedness is fully established, the cone-over-link bridge at
-  line 1258 should be the next bottleneck for turning link shape into
+  `geotop_radial_cone_simplex_point_neighborhood_dev34`. A useful next split
+  is the easy case `x \<notin> \<sigma>`, using closedness/nonemptiness of a complex
+  simplex and `geotop_ball_avoids_closed_not_containing`, followed by the hard
+  case `x \<in> \<sigma>`.
+- After the radial simplex-local obligation is closed, the cone-over-link
+  bridge at line 1538 should be the next bottleneck for turning link shape into
   `geotop_comb_n_cell (geotop_star K v) 2`.
-- The local chart contradiction lemmas at lines 1351, 1373, and 1469 now have
+- The local chart contradiction lemmas at lines 1631, 1653, and 1749 now have
   the needed local-open-neighborhood reductions. The next step there is to
   formalize the book's small semicircle/small circle constructions in the
   chart.
-- The prefix holes in Theorems 3.3, 3.4, 4.2, and 4.4 remain larger book-level
-  arguments and should be attacked with the `sorry`-first skeleton workflow
-  from `CLAUDE.md`.
+- The prefix holes in Theorems 3.3, 3.4, 3.7, 4.2, and 4.4 remain larger
+  book-level arguments and should be attacked with the `sorry`-first skeleton
+  workflow from `CLAUDE.md`.
 - Keep using the cached `GeoTop34Dev` build command from `CLAUDE.md` and the
-  development notes; warm-cache final theory time is currently about 10
-  seconds.
+  development notes; the latest warm-cache full command passed in `0:00:17`.
 - If more named helpers are added, regenerate `THEOREMS_AND_DEFS.txt` and
   `STMT_INDEX.txt`.
