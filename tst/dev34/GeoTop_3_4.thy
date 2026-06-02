@@ -8015,7 +8015,135 @@ proof -
       \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
         \<and> \<bar>\<alpha>\<bar> < u / 2
         \<and> \<bar>\<beta>\<bar> < min s t / 2"
-    sorry
+  proof -
+    have hvn: "0 < norm v"
+      using hv by (by100 simp)
+    have hnn: "0 < norm n"
+      using hn by (by100 simp)
+    have hm: "0 < min s t"
+      using hs ht by (by100 simp)
+    define eps where "eps = min (u * norm v / 4) (min s t * norm n / 4)"
+    have heps: "0 < eps"
+      using hu hvn hm hnn unfolding eps_def by (by100 simp)
+    have heps_v: "eps \<le> u * norm v / 4"
+      unfolding eps_def by (by100 simp)
+    have heps_n: "eps \<le> min s t * norm n / 4"
+      unfolding eps_def by (by100 simp)
+    have hvn_nonneg: "0 \<le> norm v"
+      using hvn by (by100 linarith)
+    have hnn_nonneg: "0 \<le> norm n"
+      using hnn by (by100 linarith)
+    have hbound:
+      "\<forall>x\<in>ball p eps.
+        \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+          \<and> \<bar>\<alpha>\<bar> < u / 2
+          \<and> \<bar>\<beta>\<bar> < min s t / 2"
+    proof
+      fix x
+      assume hx: "x \<in> ball p eps"
+      obtain \<alpha> \<beta> where hxrep: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hcoords by (by100 blast)
+      let ?y = "x - p"
+      have hyrep: "?y = \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hxrep by (simp add: algebra_simps)
+      have hy_norm: "norm ?y < eps"
+        using hx by (simp add: dist_norm norm_minus_commute)
+      have hv_inner_pos: "0 < v \<bullet> v"
+        using hv by (simp add: inner_gt_zero_iff)
+      have hn_inner_pos: "0 < n \<bullet> n"
+        using hn by (simp add: inner_gt_zero_iff)
+      have hv_inner_nonneg: "0 \<le> v \<bullet> v"
+        using hv_inner_pos by (by100 linarith)
+      have hn_inner_nonneg: "0 \<le> n \<bullet> n"
+        using hn_inner_pos by (by100 linarith)
+      have hv_inner_norm: "v \<bullet> v = norm v * norm v"
+        by (simp add: dot_square_norm power2_eq_square)
+      have hn_inner_norm: "n \<bullet> n = norm n * norm n"
+        by (simp add: dot_square_norm power2_eq_square)
+      have hnv: "n \<bullet> v = 0"
+        by (subst inner_commute) (rule horth)
+      have hdot_v: "?y \<bullet> v = \<alpha> * (v \<bullet> v)"
+      proof -
+        have "?y \<bullet> v = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> v"
+          using hyrep by (by100 simp)
+        also have "\<dots> = \<alpha> * (v \<bullet> v) + \<beta> * (n \<bullet> v)"
+          by (simp add: inner_add_left inner_scaleR_left)
+        also have "\<dots> = \<alpha> * (v \<bullet> v)"
+          using hnv by (by100 simp)
+        finally show ?thesis .
+      qed
+      have halpha_eq: "\<alpha> = (?y \<bullet> v) / (v \<bullet> v)"
+        using hdot_v hv_inner_pos by (simp add: field_simps)
+      have hdot_n: "?y \<bullet> n = \<beta> * (n \<bullet> n)"
+      proof -
+        have "?y \<bullet> n = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> n"
+          using hyrep by (by100 simp)
+        also have "\<dots> = \<alpha> * (v \<bullet> n) + \<beta> * (n \<bullet> n)"
+          by (simp add: inner_add_left inner_scaleR_left)
+        also have "\<dots> = \<beta> * (n \<bullet> n)"
+          using horth by (by100 simp)
+        finally show ?thesis .
+      qed
+      have hbeta_eq: "\<beta> = (?y \<bullet> n) / (n \<bullet> n)"
+        using hdot_n hn_inner_pos by (simp add: field_simps)
+      have halpha_abs_le: "\<bar>\<alpha>\<bar> \<le> norm ?y / norm v"
+      proof -
+        have hcs: "\<bar>?y \<bullet> v\<bar> \<le> norm ?y * norm v"
+          by (rule Cauchy_Schwarz_ineq2)
+        have "\<bar>\<alpha>\<bar> = \<bar>?y \<bullet> v\<bar> / (v \<bullet> v)"
+          using halpha_eq hv_inner_pos by (by100 simp)
+        also have "\<dots> \<le> (norm ?y * norm v) / (v \<bullet> v)"
+          by (rule divide_right_mono[OF hcs hv_inner_nonneg])
+        also have "\<dots> = norm ?y / norm v"
+          using hvn hv_inner_norm by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have hbeta_abs_le: "\<bar>\<beta>\<bar> \<le> norm ?y / norm n"
+      proof -
+        have hcs: "\<bar>?y \<bullet> n\<bar> \<le> norm ?y * norm n"
+          by (rule Cauchy_Schwarz_ineq2)
+        have "\<bar>\<beta>\<bar> = \<bar>?y \<bullet> n\<bar> / (n \<bullet> n)"
+          using hbeta_eq hn_inner_pos by (by100 simp)
+        also have "\<dots> \<le> (norm ?y * norm n) / (n \<bullet> n)"
+          by (rule divide_right_mono[OF hcs hn_inner_nonneg])
+        also have "\<dots> = norm ?y / norm n"
+          using hnn hn_inner_norm by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have halpha_lt: "\<bar>\<alpha>\<bar> < u / 2"
+      proof -
+        have "norm ?y / norm v < eps / norm v"
+          by (rule divide_strict_right_mono[OF hy_norm hvn])
+        also have "\<dots> \<le> (u * norm v / 4) / norm v"
+          by (rule divide_right_mono[OF heps_v hvn_nonneg])
+        also have "\<dots> = u / 4"
+          using hvn by (simp add: field_simps)
+        also have "\<dots> < u / 2"
+          using hu by (by100 linarith)
+        finally show ?thesis
+          using halpha_abs_le by (by100 linarith)
+      qed
+      have hbeta_lt: "\<bar>\<beta>\<bar> < min s t / 2"
+      proof -
+        have "norm ?y / norm n < eps / norm n"
+          by (rule divide_strict_right_mono[OF hy_norm hnn])
+        also have "\<dots> \<le> (min s t * norm n / 4) / norm n"
+          by (rule divide_right_mono[OF heps_n hnn_nonneg])
+        also have "\<dots> = min s t / 4"
+          using hnn by (simp add: field_simps)
+        also have "\<dots> < min s t / 2"
+          using hm by (by100 linarith)
+        finally show ?thesis
+          using hbeta_abs_le by (by100 linarith)
+      qed
+      show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+          \<and> \<bar>\<alpha>\<bar> < u / 2
+          \<and> \<bar>\<beta>\<bar> < min s t / 2"
+        using hxrep halpha_lt hbeta_lt by (by100 blast)
+    qed
+    show ?thesis
+      using heps hbound by (by100 blast)
+  qed
   have hupper_membership:
     "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2 \<longrightarrow>
       p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
