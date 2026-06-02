@@ -2070,6 +2070,27 @@ lemma geotop_star_simplex_not_containing_vertex_in_link_dev34:
     cone vertex: it is exactly a simplex of the link. **)
   unfolding geotop_link_def using h\<tau>S hv_not by (by100 blast)
 
+lemma geotop_star_simplex_opposite_face_in_link_dev34:
+  fixes K :: "(real^2) set set" and \<tau> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_ne: "V - {v} \<noteq> {}"
+  shows "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+  (**
+    Cone-simplex form of Fig. 4.10: a star simplex that contains the cone
+    vertex has its opposite face in the old link. **)
+proof -
+  have hstar_sub: "geotop_star K v \<subseteq> K"
+    by (rule geotop_star_subset_complex[OF hK])
+  have h\<tau>K: "\<tau> \<in> K"
+    using hstar_sub h\<tau>S by (by100 blast)
+  show ?thesis
+    by (rule geotop_simplex_opposite_face_in_link_dev34
+        [OF hK h\<tau>K hV hvV hW_ne])
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
