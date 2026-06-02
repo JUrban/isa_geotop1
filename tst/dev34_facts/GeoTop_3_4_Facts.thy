@@ -3485,6 +3485,228 @@ proof -
     using h\<sigma>K h\<sigma>V hvV hy_opp by (by100 blast)
 qed
 
+lemma geotop_strict_ray_opposite_notin_hull_subset_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  fixes verts faceverts :: "(real^2) set"
+  fixes v y z :: "real^2"
+  fixes s :: real
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> verts"
+  assumes hvV: "v \<in> verts"
+  assumes hW_sub: "faceverts \<subseteq> verts - {v}"
+  assumes hy: "y \<in> geotop_convex_hull (verts - {v})"
+  assumes hs_pos: "0 < s"
+  assumes hs_lt: "s < 1"
+  assumes hz: "z = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+  shows "z \<notin> geotop_convex_hull faceverts"
+proof
+  assume hz_hull: "z \<in> geotop_convex_hull faceverts"
+  let ?opp = "verts - {v}"
+  have hv_not_aff: "v \<notin> affine hull ?opp"
+    by (rule geotop_simplex_vertex_notin_affine_hull_of_other_vertices_dev34
+        [OF h\<sigma>V hvV]) (by100 blast)
+  have hface_aff_sub: "affine hull faceverts \<subseteq> affine hull ?opp"
+    by (rule hull_mono[OF hW_sub])
+  have hz_aff_face: "z \<in> affine hull faceverts"
+  proof -
+    have "z \<in> convex hull faceverts"
+      using hz_hull geotop_convex_hull_eq_HOL[of faceverts] by (by100 simp)
+    moreover have "convex hull faceverts \<subseteq> affine hull faceverts"
+      by (rule convex_hull_subset_affine_hull)
+    ultimately show ?thesis by (by100 blast)
+  qed
+  have hz_aff: "z \<in> affine hull ?opp"
+    using hz_aff_face hface_aff_sub by (by100 blast)
+  have hy_aff: "y \<in> affine hull ?opp"
+  proof -
+    have "y \<in> convex hull ?opp"
+      using hy geotop_convex_hull_eq_HOL[of ?opp] by (by100 simp)
+    moreover have "convex hull ?opp \<subseteq> affine hull ?opp"
+      by (rule convex_hull_subset_affine_hull)
+    ultimately show ?thesis by (by100 blast)
+  qed
+  have h1s_ne: "1 - s \<noteq> 0"
+    using hs_lt by (by100 simp)
+  have hv_eq: "v = (1 / (1 - s)) *\<^sub>R z + (- s / (1 - s)) *\<^sub>R y"
+    using hz h1s_ne by (by100 simp add: algebra_simps)
+  have hcoeff: "1 / (1 - s) + (- s / (1 - s)) = 1"
+    using h1s_ne by (by100 simp)
+  have hv_aff: "v \<in> affine hull ?opp"
+  proof -
+    have "(1 / (1 - s)) *\<^sub>R z + (- s / (1 - s)) *\<^sub>R y
+        \<in> affine hull ?opp"
+      by (rule mem_affine[OF affine_affine_hull hz_aff hy_aff hcoeff])
+    thus ?thesis
+      using hv_eq by (by100 simp)
+  qed
+  show False
+    using hv_not_aff hv_aff by (by100 blast)
+qed
+
+lemma geotop_strict_ray_link_excl_dev34:
+  "geotop_is_complex K \<Longrightarrow>
+   \<sigma> \<in> K \<Longrightarrow>
+   geotop_simplex_vertices \<sigma> V \<Longrightarrow>
+   v \<in> V \<Longrightarrow>
+   y \<in> geotop_convex_hull (V - {v}) \<Longrightarrow>
+   link_simplex \<in> geotop_link K v \<Longrightarrow>
+   z \<in> link_simplex \<Longrightarrow>
+   0 < s \<Longrightarrow>
+   s < 1 \<Longrightarrow>
+   z = (1 - s) *\<^sub>R v + s *\<^sub>R y \<Longrightarrow>
+   False"
+proof -
+  assume hK: "geotop_is_complex K"
+  assume h\<sigma>K: "\<sigma> \<in> K"
+  assume h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assume hvV: "v \<in> V"
+  assume hy: "y \<in> geotop_convex_hull (V - {v})"
+  assume hlinkL: "link_simplex \<in> geotop_link K v"
+  assume hzlink: "z \<in> link_simplex"
+  assume hs_pos: "0 < s"
+  assume hs_lt: "s < 1"
+  assume hz: "z = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+  let ?opp = "V - {v}"
+  let ?F = "\<sigma> \<inter> link_simplex"
+  obtain m n where hV_fin: "finite V"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  have hv_conv: "v \<in> convex hull V"
+    using hvV hull_inc[of v V] by (by100 simp)
+  have hy_conv_opp: "y \<in> convex hull ?opp"
+    using hy geotop_convex_hull_eq_HOL[of ?opp] by (by100 simp)
+  have hy_conv: "y \<in> convex hull V"
+  proof -
+    have hmono: "convex hull ?opp \<subseteq> convex hull V"
+      by (rule hull_mono) (by100 blast)
+    show ?thesis
+      using hy_conv_opp hmono by (by100 blast)
+  qed
+  have hz_conv: "z \<in> convex hull V"
+  proof -
+    have hconv: "convex (convex hull V)"
+      by (rule convex_convex_hull)
+    have h1s_nonneg: "0 \<le> 1 - s"
+      using hs_lt by (by100 simp)
+    have hs_nonneg: "0 \<le> s"
+      using hs_pos by (by100 simp)
+    have hcoeff: "(1 - s) + s = 1"
+      by (by100 simp)
+    have "(1 - s) *\<^sub>R v + s *\<^sub>R y \<in> convex hull V"
+      by (rule convexD[OF hconv hv_conv hy_conv h1s_nonneg hs_nonneg hcoeff])
+    thus ?thesis
+      using hz by (by100 simp)
+  qed
+  have hz\<sigma>: "z \<in> \<sigma>"
+    using hz_conv h\<sigma>_HOL by (by100 simp)
+  have hlinkK: "link_simplex \<in> K"
+    using geotop_link_subset_complex[OF hK] hlinkL by (by100 blast)
+  have hv_not_link: "v \<notin> link_simplex"
+    using hlinkL unfolding geotop_link_def by (by100 blast)
+  have hF_ne: "?F \<noteq> {}"
+    using hz\<sigma> hzlink by (by100 blast)
+  have hK_inter: "\<forall>\<sigma>\<in>K. \<forall>\<tau>\<in>K. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    by (rule geotop_is_complex_intersection[OF hK])
+  have hF_face\<sigma>: "geotop_is_face ?F \<sigma>"
+    using hK_inter h\<sigma>K hlinkK hF_ne by (by100 blast)
+  obtain V' W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V'"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub_V': "W \<subseteq> V'"
+    and hF_eq: "?F = geotop_convex_hull W"
+    and hFW: "geotop_simplex_vertices ?F W"
+    by (rule geotop_face_witness_simplex_vertices[OF hF_face\<sigma>])
+  have hV'_eq: "V' = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub_V' hV'_eq by (by100 simp)
+  have hW_opp: "W \<subseteq> ?opp"
+  proof
+    fix w
+    assume hwW: "w \<in> W"
+    have hwV: "w \<in> V"
+      using hW_sub_V hwW by (by100 blast)
+    have hwF: "w \<in> ?F"
+    proof -
+      have "w \<in> convex hull W"
+        using hull_inc[OF hwW] by (by100 blast)
+      hence "w \<in> geotop_convex_hull W"
+        using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+      thus ?thesis
+        using hF_eq by (by100 simp)
+    qed
+    have "w \<noteq> v"
+      using hwF hv_not_link by (by100 blast)
+    show "w \<in> ?opp"
+      using hwV \<open>w \<noteq> v\<close> by (by100 blast)
+  qed
+  have hz_hull: "z \<in> geotop_convex_hull W"
+    using hz\<sigma> hzlink hF_eq by (by100 blast)
+  have "z \<notin> geotop_convex_hull W"
+    by (rule geotop_strict_ray_opposite_notin_hull_subset_dev34
+        [OF h\<sigma>V hvV hW_opp hy hs_pos hs_lt hz])
+  thus False
+    using hz_hull by (by100 blast)
+qed
+
+lemma geotop_link_same_ray_endpoint_equal_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  assumes hy': "y' \<in> \<Union>(geotop_link K v)"
+  assumes hs: "0 < s"
+  assumes h_ray: "y' - v = s *\<^sub>R (y - v)"
+  shows "y = y'"
+proof -
+  obtain \<sigma> V where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hvV: "v \<in> V"
+    and hy_opp: "y \<in> geotop_convex_hull (V - {v})"
+    using geotop_link_point_opposite_face_witness_dev34[OF hK hv hy]
+    by (by100 blast)
+  have hnot_lt: "\<not> s < 1"
+  proof
+    assume hs_lt: "s < 1"
+    obtain link_simplex where hlinkL: "link_simplex \<in> geotop_link K v"
+      and hy'link: "y' \<in> link_simplex"
+      using hy' by (by100 blast)
+    have hy'_eq: "y' = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+      using h_ray by (by100 simp add: algebra_simps)
+    show False
+      by (rule geotop_strict_ray_link_excl_dev34
+          [OF hK h\<sigma>K h\<sigma>V hvV hy_opp hlinkL hy'link hs hs_lt hy'_eq])
+  qed
+  have hnot_gt: "\<not> 1 < s"
+  proof
+    assume hs_gt: "1 < s"
+    obtain \<sigma>' V' where h\<sigma>'K: "\<sigma>' \<in> K"
+      and h\<sigma>'V: "geotop_simplex_vertices \<sigma>' V'"
+      and hvV': "v \<in> V'"
+      and hy'_opp: "y' \<in> geotop_convex_hull (V' - {v})"
+      using geotop_link_point_opposite_face_witness_dev34[OF hK hv hy']
+      by (by100 blast)
+    obtain link_simplex where hlinkL: "link_simplex \<in> geotop_link K v"
+      and hylink: "y \<in> link_simplex"
+      using hy by (by100 blast)
+    have hinv_pos: "0 < 1 / s"
+      using hs by (by100 simp)
+    have hinv_lt: "1 / s < 1"
+      using hs_gt by (by100 simp)
+    have hy_eq: "y = (1 - 1 / s) *\<^sub>R v + (1 / s) *\<^sub>R y'"
+      using h_ray hs by (by100 simp add: field_simps algebra_simps)
+    show False
+      by (rule geotop_strict_ray_link_excl_dev34
+          [OF hK h\<sigma>'K h\<sigma>'V hvV' hy'_opp hlinkL hylink
+            hinv_pos hinv_lt hy_eq])
+  qed
+  have hs_eq: "s = 1"
+    using hnot_lt hnot_gt by (by100 linarith)
+  show ?thesis
+    using h_ray hs_eq by (by100 simp)
+qed
+
 lemma geotop_link_same_ray_common_opposite_face_witness_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -3498,7 +3720,20 @@ lemma geotop_link_same_ray_common_opposite_face_witness_dev34:
       \<and> v \<in> V
       \<and> y \<in> geotop_convex_hull (V - {v})
       \<and> y' \<in> geotop_convex_hull (V - {v})"
-  sorry
+proof -
+  have hy_eq: "y = y'"
+    by (rule geotop_link_same_ray_endpoint_equal_dev34[OF hK hv hy hy' hs h_ray])
+  obtain \<sigma> V where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hvV: "v \<in> V"
+    and hy_opp: "y \<in> geotop_convex_hull (V - {v})"
+    using geotop_link_point_opposite_face_witness_dev34[OF hK hv hy]
+    by (by100 blast)
+  have hy'_opp: "y' \<in> geotop_convex_hull (V - {v})"
+    using hy_eq hy_opp by (by100 simp)
+  show ?thesis
+    using h\<sigma>K h\<sigma>V hvV hy_opp hy'_opp by (by100 blast)
+qed
 
 lemma geotop_simplex_point_radial_to_opposite_face_dev34:
   fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
