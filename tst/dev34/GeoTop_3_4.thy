@@ -271,6 +271,25 @@ proof -
         [OF h\<sigma>_closed h\<sigma>_ne hx_not])
 qed
 
+lemma geotop_radial_endpoint_simplex_local_ball_control_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  assumes hyL: "y \<in> \<Union>(geotop_link K v)"
+  assumes ht_pos: "0 < t"
+  assumes ht_le: "t \<le> 1"
+  assumes hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+  assumes h\<epsilon>_pos: "0 < \<epsilon>"
+  shows "\<exists>r. 0 < r \<and>
+      ball x r \<inter> (\<Union>(geotop_star K v) - {v}) \<inter> \<sigma>
+        \<subseteq> {z \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y' t'. y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>
+               \<and> 0 < t' \<and> t' \<le> 1
+               \<and> z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'}"
+  sorry
+
 lemma geotop_radial_cone_simplex_point_neighborhood_at_member_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -287,7 +306,64 @@ lemma geotop_radial_cone_simplex_point_neighborhood_at_member_dev34:
         \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
              \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
                 \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?A = "{z \<in> ?S.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> z = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  obtain y t where hyLW: "y \<in> \<Union>(geotop_link K v) \<inter> W"
+    and ht_pos: "0 < t"
+    and ht_le: "t \<le> 1"
+    and hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+    using hx by (by100 blast)
+  have hyL: "y \<in> \<Union>(geotop_link K v)"
+    using hyLW by (by100 blast)
+  have hyW: "y \<in> W"
+    using hyLW by (by100 blast)
+  have hW_open_HOL: "open W"
+    using hW_open
+    unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hW_ball_all: "\<forall>z\<in>W. \<exists>\<epsilon>>0. ball z \<epsilon> \<subseteq> W"
+    using hW_open_HOL open_contains_ball[of W] by (by100 simp)
+  obtain \<epsilon> where h\<epsilon>_pos: "0 < \<epsilon>" and hballW: "ball y \<epsilon> \<subseteq> W"
+    using hW_ball_all hyW by (by100 blast)
+  obtain r where hr_pos: "0 < r"
+    and hlocal:
+      "ball x r \<inter> ?S \<inter> \<sigma>
+        \<subseteq> {z \<in> ?S.
+             \<exists>y' t'. y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>
+               \<and> 0 < t' \<and> t' \<le> 1
+               \<and> z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'}"
+    using geotop_radial_endpoint_simplex_local_ball_control_dev34
+      [OF hK hv h\<sigma>K hx\<sigma> hyL ht_pos ht_le hx_rad h\<epsilon>_pos]
+    by (by100 blast)
+  have hsub: "ball x r \<inter> ?S \<inter> \<sigma> \<subseteq> ?A"
+  proof
+    fix z
+    assume hz: "z \<in> ball x r \<inter> ?S \<inter> \<sigma>"
+    have hz_local:
+      "z \<in> {z \<in> ?S.
+             \<exists>y' t'. y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>
+               \<and> 0 < t' \<and> t' \<le> 1
+               \<and> z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'}"
+      using hlocal hz by (by100 blast)
+    obtain y' t' where hzS: "z \<in> ?S"
+      and hy'_ball: "y' \<in> \<Union>(geotop_link K v) \<inter> ball y \<epsilon>"
+      and ht'_pos: "0 < t'"
+      and ht'_le: "t' \<le> 1"
+      and hz_rad: "z = (1 - t') *\<^sub>R v + t' *\<^sub>R y'"
+      using hz_local by (by100 blast)
+    have hy'_W: "y' \<in> W"
+      using hy'_ball hballW by (by100 blast)
+    have hy'_LW: "y' \<in> \<Union>(geotop_link K v) \<inter> W"
+      using hy'_ball hy'_W by (by100 blast)
+    show "z \<in> ?A"
+      using hzS hy'_LW ht'_pos ht'_le hz_rad by (by100 blast)
+  qed
+  show ?thesis
+    using hr_pos hsub by (by100 blast)
+qed
 
 lemma geotop_radial_cone_simplex_point_neighborhood_dev34:
   fixes K :: "(real^2) set set"
