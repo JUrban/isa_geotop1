@@ -7703,6 +7703,67 @@ proof -
     by (rule that[OF hs0 hprobe])
 qed
 
+lemma geotop_2simplex_opposite_side_shared_edge_normal_probes_in_HOL_interiors_dev34:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s t where
+    "0 < s"
+    "0 < t"
+    "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+      \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+  (**
+    Opposite-side normal probes at an edge-interior point: according to the
+    orientation of the two opposite vertices, the two incident triangle
+    interiors meet the two normal rays from the edge point. **)
+proof -
+  consider (posneg) "n \<bullet> c > r" "n \<bullet> d < r"
+    | (negpos) "n \<bullet> c < r" "n \<bullet> d > r"
+    using hopp by (by100 blast)
+  thus ?thesis
+  proof cases
+    case posneg
+    obtain s where hs0: "0 < s"
+      and hs_in: "p + s *\<^sub>R n \<in> interior \<sigma>"
+      by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_dev34
+          [OF hab hc_not_ab hn he_eq h\<sigma>V hline posneg(1) hp])
+    obtain t where ht0: "0 < t"
+      and ht_in: "p - t *\<^sub>R n \<in> interior \<tau>"
+      by (rule geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_dev34
+          [OF hab hd_not_ab hn he_eq h\<tau>V hline posneg(2) hp])
+    show ?thesis
+    proof (rule that[OF hs0 ht0])
+      show "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+          \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+        using hs_in ht_in by (by100 blast)
+    qed
+  next
+    case negpos
+    obtain s where hs0: "0 < s"
+      and hs_in: "p - s *\<^sub>R n \<in> interior \<sigma>"
+      by (rule geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_dev34
+          [OF hab hc_not_ab hn he_eq h\<sigma>V hline negpos(1) hp])
+    obtain t where ht0: "0 < t"
+      and ht_in: "p + t *\<^sub>R n \<in> interior \<tau>"
+      by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_dev34
+          [OF hab hd_not_ab hn he_eq h\<tau>V hline negpos(2) hp])
+    show ?thesis
+    proof (rule that[OF hs0 ht0])
+      show "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+          \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+        using hs_in ht_in by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"
