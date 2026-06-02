@@ -609,6 +609,199 @@ proof -
     using hqU hqA by (by100 blast)
 qed
 
+lemma geotop_2_manifold_open_subset_connected_punctured_neighborhood_dev34:
+  fixes M A :: "(real^2) set" and p :: "real^2"
+  assumes hM: "geotop_n_manifold_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hAopen: "A \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  assumes hAsub: "A \<subseteq> M"
+  assumes hpA: "p \<in> A"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology M
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+proof -
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on M ?d"
+  let ?GM = "subspace_topology UNIV geotop_euclidean_topology M"
+  have hpM: "p \<in> M"
+    using hpA hAsub by (by100 blast)
+  obtain U f where hUopen: "openin_on M ?TM U" and hpU: "p \<in> U"
+      and hhomeo_metric: "top1_homeomorphism_on U (subspace_topology M ?TM U)
+          (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUmemTM: "U \<in> ?TM"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hTM_eq: "?TM = ?GM"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hUmemG: "U \<in> ?GM"
+    using hUmemTM hTM_eq by (by100 simp)
+  have hsource_eq: "subspace_topology M ?TM U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    have htrans: "subspace_topology M ?GM U =
+        subspace_topology UNIV geotop_euclidean_topology U"
+      by (rule subspace_topology_trans[OF hUsubM])
+    show ?thesis
+      using hTM_eq htrans by (by100 simp)
+  qed
+  have hhomeo_geo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hhomeo_metric hsource_eq by (by100 simp)
+  define B where "B = U \<inter> A"
+  have hpB: "p \<in> B"
+    unfolding B_def using hpU hpA by (by100 blast)
+  have hBsubU: "B \<subseteq> U"
+    unfolding B_def by (by100 blast)
+  have hBopenU: "B \<in> subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    obtain W where hWtop: "W \<in> geotop_euclidean_topology" and hAeq: "A = M \<inter> W"
+      using hAopen unfolding subspace_topology_def by (by100 blast)
+    have hBeq: "B = U \<inter> W"
+      unfolding B_def using hUsubM hAeq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hWtop hBeq by (by100 blast)
+  qed
+  have hBopenA: "B \<in> subspace_topology UNIV geotop_euclidean_topology A"
+  proof -
+    obtain V where hVtop: "V \<in> geotop_euclidean_topology" and hUeq: "U = M \<inter> V"
+      using hUmemG unfolding subspace_topology_def by (by100 blast)
+    have hBeq: "B = A \<inter> V"
+      unfolding B_def using hAsub hUeq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hVtop hBeq by (by100 blast)
+  qed
+  obtain N where hpN: "p \<in> N" and hNsubB: "N \<subseteq> B"
+      and hNopenB: "N \<in> subspace_topology UNIV geotop_euclidean_topology B"
+      and hNconn: "top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using geotop_plane_chart_open_subset_connected_punctured_neighborhood
+      [OF hhomeo_geo hBopenU hBsubU hpB]
+    by (by100 blast)
+  have hNsubA: "N \<subseteq> A"
+    using hNsubB unfolding B_def by (by100 blast)
+  have hNopenA: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+    by (rule geotop_subspace_open_trans[OF hBopenA hNopenB])
+  have hNopenM: "N \<in> subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule geotop_subspace_open_trans[OF hAopen hNopenA])
+  show ?thesis
+    using hpN hNsubA hNopenA hNopenM hNconn by (by100 blast)
+qed
+
+lemma geotop_2_manifold_with_boundary_open_subset_connected_punctured_neighborhood_dev34:
+  fixes M A :: "(real^2) set" and p :: "real^2"
+  assumes hM: "geotop_n_manifold_with_boundary_on M (\<lambda>x y. norm (x - y)) 2"
+  assumes hAopen: "A \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  assumes hAsub: "A \<subseteq> M"
+  assumes hpA: "p \<in> A"
+  shows "\<exists>N. p \<in> N \<and> N \<subseteq> A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology A
+      \<and> N \<in> subspace_topology UNIV geotop_euclidean_topology M
+      \<and> top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+proof -
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?T = "top1_metric_topology_on M ?d"
+  let ?GM = "subspace_topology UNIV geotop_euclidean_topology M"
+  have hpM: "p \<in> M"
+    using hpA hAsub by (by100 blast)
+  have hmetric: "top1_metric_on M ?d"
+    using hM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+  have htopT: "is_topology_on M ?T"
+    by (rule top1_metric_topology_on_is_topology_on[OF hmetric])
+  obtain U where hUopen: "openin_on M ?T U" and hpU: "p \<in> U"
+      and hcell: "geotop_is_n_cell (closure_on M ?T U)
+          (subspace_topology M ?T (closure_on M ?T U)) 2"
+    using hM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+  let ?C = "closure_on M ?T U"
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUmemT: "U \<in> ?T"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hCsubM: "?C \<subseteq> M"
+    by (rule closure_on_subset_carrier[OF htopT hUsubM])
+  have hUsubC: "U \<subseteq> ?C"
+    by (rule subset_closure_on)
+  have hT_eq: "?T = ?GM"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hTC_eq: "subspace_topology M ?T ?C =
+      subspace_topology UNIV geotop_euclidean_topology ?C"
+  proof -
+    have htrans: "subspace_topology M ?GM ?C =
+        subspace_topology UNIV geotop_euclidean_topology ?C"
+      by (rule subspace_topology_trans[OF hCsubM])
+    show ?thesis
+      using hT_eq htrans by (by100 simp)
+  qed
+  have hcell_geo: "geotop_is_n_cell ?C
+      (subspace_topology UNIV geotop_euclidean_topology ?C) 2"
+    using hcell hTC_eq by (by100 simp)
+  have hUmemG: "U \<in> ?GM"
+    using hUmemT hT_eq by (by100 simp)
+  define B where "B = U \<inter> A"
+  have hpB: "p \<in> B"
+    unfolding B_def using hpU hpA by (by100 blast)
+  have hBsubC: "B \<subseteq> ?C"
+    unfolding B_def using hUsubC by (by100 blast)
+  have hBopenM: "B \<in> ?GM"
+  proof -
+    obtain V where hVtop: "V \<in> geotop_euclidean_topology" and hUeq: "U = M \<inter> V"
+      using hUmemG unfolding subspace_topology_def by (by100 blast)
+    obtain W where hWtop: "W \<in> geotop_euclidean_topology" and hAeq: "A = M \<inter> W"
+      using hAopen unfolding subspace_topology_def by (by100 blast)
+    have hVopen: "open V"
+      using hVtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hWopen: "open W"
+      using hWtop unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hVWtop: "V \<inter> W \<in> geotop_euclidean_topology"
+      using open_Int[OF hVopen hWopen]
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hBeq: "B = M \<inter> (V \<inter> W)"
+      unfolding B_def using hUeq hAeq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hVWtop hBeq by (by100 blast)
+  qed
+  have hBopenC: "B \<in> subspace_topology UNIV geotop_euclidean_topology ?C"
+  proof -
+    obtain V where hVtop: "V \<in> geotop_euclidean_topology" and hBeqM: "B = M \<inter> V"
+      using hBopenM unfolding subspace_topology_def by (by100 blast)
+    have hBeqC: "B = ?C \<inter> V"
+      using hBeqM hBsubC hCsubM by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hVtop hBeqC by (by100 blast)
+  qed
+  have hBopenA: "B \<in> subspace_topology UNIV geotop_euclidean_topology A"
+  proof -
+    obtain V where hVtop: "V \<in> geotop_euclidean_topology" and hUeq: "U = M \<inter> V"
+      using hUmemG unfolding subspace_topology_def by (by100 blast)
+    have hBeq: "B = A \<inter> V"
+      unfolding B_def using hAsub hUeq by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hVtop hBeq by (by100 blast)
+  qed
+  obtain N where hpN: "p \<in> N" and hNsubB: "N \<subseteq> B"
+      and hNopenB: "N \<in> subspace_topology UNIV geotop_euclidean_topology B"
+      and hNconn: "top1_connected_on (N - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+    using geotop_2_cell_open_subset_connected_punctured_neighborhood
+      [OF hcell_geo hBopenC hBsubC hpB]
+    by (by100 blast)
+  have hNsubA: "N \<subseteq> A"
+    using hNsubB unfolding B_def by (by100 blast)
+  have hNopenA: "N \<in> subspace_topology UNIV geotop_euclidean_topology A"
+    by (rule geotop_subspace_open_trans[OF hBopenA hNopenB])
+  have hNopenM: "N \<in> subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule geotop_subspace_open_trans[OF hAopen hNopenA])
+  show ?thesis
+    using hpN hNsubA hNopenA hNopenM hNconn by (by100 blast)
+qed
+
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -617,7 +810,69 @@ lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   shows "top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-  sorry
+proof -
+  let ?M = "geotop_polyhedron K"
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+  have hnot_not:
+    "\<not> \<not> top1_connected_on ?S ?TS"
+  proof
+    assume hnot_connected: "\<not> top1_connected_on ?S ?TS"
+    obtain A B where hsep: "top1_is_separation_on ?S ?TS A B"
+      using top1_not_connected_geotop_subspace_obtain_separation_dev34[OF hnot_connected]
+      by (by100 blast)
+    have hAopen: "A \<in> ?TS"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hBopen: "B \<in> ?TS"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hAne: "A \<noteq> {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hBne: "B \<noteq> {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hABdisj: "A \<inter> B = {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hABcover: "A \<union> B = ?S"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    obtain a where ha: "a \<in> A"
+      using hAne by (by100 blast)
+    obtain b where hb: "b \<in> B"
+      using hBne by (by100 blast)
+    have hBAdisj: "B \<inter> A = {}"
+      using hABdisj by (by100 blast)
+    have hBAcover: "B \<union> A = ?S"
+      using hABcover by (by100 blast)
+    have hsep_sym: "top1_is_separation_on ?S ?TS B A"
+      unfolding top1_is_separation_on_def
+      using hBopen hAopen hBne hAne hBAdisj hBAcover by (by100 simp)
+    obtain V where hVopen: "V \<in> subspace_topology UNIV geotop_euclidean_topology ?M"
+        and hvV: "v \<in> V"
+        and hVsub: "V \<subseteq> \<Union>(geotop_star K v)"
+      using geotop_complex_vertex_star_neighborhood_dev34[OF hK hv] by (by100 blast)
+    have hVsubM: "V \<subseteq> ?M"
+      using hVopen unfolding subspace_topology_def by (by100 blast)
+    obtain N where hvN: "v \<in> N" and hNsubV: "N \<subseteq> V"
+        and hNopenV: "N \<in> subspace_topology UNIV geotop_euclidean_topology V"
+        and hNopenM: "N \<in> subspace_topology UNIV geotop_euclidean_topology ?M"
+        and hNconn: "top1_connected_on (N - {v})
+            (subspace_topology UNIV geotop_euclidean_topology (N - {v}))"
+      using geotop_2_manifold_open_subset_connected_punctured_neighborhood_dev34
+        [OF hM hVopen hVsubM hvV]
+      by (by100 blast)
+    have hNminus_subS: "N - {v} \<subseteq> ?S"
+      using hNsubV hVsub by (by100 blast)
+    have hNA: "(N - {v}) \<inter> A \<noteq> {}"
+      by (rule geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34
+          [OF hK hv hsep ha hNopenM hvN])
+    have hNB: "(N - {v}) \<inter> B \<noteq> {}"
+      by (rule geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34
+          [OF hK hv hsep_sym hb hNopenM hvN])
+    show False
+      by (rule geotop_connected_punctured_neighborhood_cannot_cross_separation_dev34
+          [OF hsep hNminus_subS hNconn hNA hNB])
+  qed
+  show ?thesis
+    using hnot_not by (by100 blast)
+qed
 
 lemma geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
@@ -628,7 +883,69 @@ lemma geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34:
   shows "top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-  sorry
+proof -
+  let ?M = "geotop_polyhedron K"
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+  have hnot_not:
+    "\<not> \<not> top1_connected_on ?S ?TS"
+  proof
+    assume hnot_connected: "\<not> top1_connected_on ?S ?TS"
+    obtain A B where hsep: "top1_is_separation_on ?S ?TS A B"
+      using top1_not_connected_geotop_subspace_obtain_separation_dev34[OF hnot_connected]
+      by (by100 blast)
+    have hAopen: "A \<in> ?TS"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hBopen: "B \<in> ?TS"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hAne: "A \<noteq> {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hBne: "B \<noteq> {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hABdisj: "A \<inter> B = {}"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hABcover: "A \<union> B = ?S"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    obtain a where ha: "a \<in> A"
+      using hAne by (by100 blast)
+    obtain b where hb: "b \<in> B"
+      using hBne by (by100 blast)
+    have hBAdisj: "B \<inter> A = {}"
+      using hABdisj by (by100 blast)
+    have hBAcover: "B \<union> A = ?S"
+      using hABcover by (by100 blast)
+    have hsep_sym: "top1_is_separation_on ?S ?TS B A"
+      unfolding top1_is_separation_on_def
+      using hBopen hAopen hBne hAne hBAdisj hBAcover by (by100 simp)
+    obtain V where hVopen: "V \<in> subspace_topology UNIV geotop_euclidean_topology ?M"
+        and hvV: "v \<in> V"
+        and hVsub: "V \<subseteq> \<Union>(geotop_star K v)"
+      using geotop_complex_vertex_star_neighborhood_dev34[OF hK hv] by (by100 blast)
+    have hVsubM: "V \<subseteq> ?M"
+      using hVopen unfolding subspace_topology_def by (by100 blast)
+    obtain N where hvN: "v \<in> N" and hNsubV: "N \<subseteq> V"
+        and hNopenV: "N \<in> subspace_topology UNIV geotop_euclidean_topology V"
+        and hNopenM: "N \<in> subspace_topology UNIV geotop_euclidean_topology ?M"
+        and hNconn: "top1_connected_on (N - {v})
+            (subspace_topology UNIV geotop_euclidean_topology (N - {v}))"
+      using geotop_2_manifold_with_boundary_open_subset_connected_punctured_neighborhood_dev34
+        [OF hM hVopen hVsubM hvV]
+      by (by100 blast)
+    have hNminus_subS: "N - {v} \<subseteq> ?S"
+      using hNsubV hVsub by (by100 blast)
+    have hNA: "(N - {v}) \<inter> A \<noteq> {}"
+      by (rule geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34
+          [OF hK hv hsep ha hNopenM hvN])
+    have hNB: "(N - {v}) \<inter> B \<noteq> {}"
+      by (rule geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34
+          [OF hK hv hsep_sym hb hNopenM hvN])
+    show False
+      by (rule geotop_connected_punctured_neighborhood_cannot_cross_separation_dev34
+          [OF hsep hNminus_subS hNconn hNA hNB])
+  qed
+  show ?thesis
+    using hnot_not by (by100 blast)
+qed
 
 lemma geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34:
   fixes K :: "(real^2) set set"
