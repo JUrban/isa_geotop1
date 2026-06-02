@@ -6334,6 +6334,17 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_link_edge_lies_in_2simplex_with_vertex:
+  fixes K :: "(real^2) set set" and l :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hvK: "{v} \<in> K"
+  assumes hlL: "l \<in> geotop_link K v"
+  assumes hledge: "geotop_is_edge l"
+  shows "\<exists>\<rho>\<in>K. geotop_simplex_dim \<rho> 2
+      \<and> geotop_is_face l \<rho>
+      \<and> v \<in> \<rho>"
+  sorry
+
 lemma geotop_link_edge_through_vertex_adjacent_2simplex_witness:
   fixes K :: "(real^2) set set" and e l :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
