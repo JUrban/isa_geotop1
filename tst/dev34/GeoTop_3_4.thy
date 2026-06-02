@@ -2,6 +2,75 @@ theory GeoTop_3_4
   imports "GeoTop34GraphWorkDirty.GeoTop_3_4_GraphWork"
 begin
 
+lemma geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "top1_connected_on (\<Union>(geotop_link K v))
+           (subspace_topology UNIV geotop_euclidean_topology
+             (\<Union>(geotop_link K v)))"
+proof (rule ccontr)
+  assume hnot_connected:
+    "\<not> top1_connected_on (\<Union>(geotop_link K v))
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_link K v)))"
+  \<comment> \<open>Moise Lemma 5: if the link is disconnected, then the vertex separates
+      the polyhedron of its star.\<close>
+  have hstar_separated:
+    "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+    sorry
+  \<comment> \<open>The star of a vertex is a sufficiently small polyhedral neighborhood of
+      the vertex in the triangulated surface.\<close>
+  have hstar_neighborhood:
+    "\<exists>U. U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
+       \<and> v \<in> U \<and> U \<subseteq> \<Union>(geotop_star K v)"
+    sorry
+  \<comment> \<open>A point does not separate a plane chart neighborhood; transported back to
+      the star neighborhood this contradicts the separation above.\<close>
+  have hstar_not_separated:
+    "top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+    sorry
+  show False
+    sorry
+qed
+
+lemma geotop_2_manifold_with_boundary_link_polyhedron_connected_from_vertex_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "top1_connected_on (\<Union>(geotop_link K v))
+           (subspace_topology UNIV geotop_euclidean_topology
+             (\<Union>(geotop_link K v)))"
+proof (rule ccontr)
+  assume hnot_connected:
+    "\<not> top1_connected_on (\<Union>(geotop_link K v))
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_link K v)))"
+  \<comment> \<open>The manifold-with-boundary proof uses the same Lemma 5 argument from
+      Moise: disconnected link means the vertex separates its star.\<close>
+  have hstar_separated:
+    "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+    sorry
+  \<comment> \<open>In a half-plane chart, as in a plane chart, deleting one point does not
+      disconnect a sufficiently small open neighborhood.\<close>
+  have hstar_not_separated:
+    "top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+    sorry
+  show False
+    sorry
+qed
+
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
@@ -914,7 +983,9 @@ proof
 	  \<comment> \<open>L5: link |L(v)| is connected.\<close>
 	  have hL5: "top1_connected_on (\<Union>(geotop_link K v))
 	               (subspace_topology UNIV geotop_euclidean_topology
-	                  (\<Union>(geotop_link K v)))" sorry
+	                  (\<Union>(geotop_link K v)))"
+	    by (rule geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34
+	        [OF hK hM hv])
   \<comment> \<open>L6: link is a polygon (single 1-sphere from L2-L4 + L5).\<close>
   have hL6: "geotop_is_polygon (\<Union>(geotop_link K v))"
   proof -
@@ -1590,7 +1661,9 @@ proof -
     \<comment> \<open>L4: link |L(v)| is connected.\<close>
     have hL4: "top1_connected_on (\<Union>(geotop_link K v))
                  (subspace_topology UNIV geotop_euclidean_topology
-                    (\<Union>(geotop_link K v)))" sorry
+                    (\<Union>(geotop_link K v)))"
+      by (rule geotop_2_manifold_with_boundary_link_polyhedron_connected_from_vertex_star_dev34
+          [OF hK hKM hv])
     \<comment> \<open>L5: link is a broken line or polygon.\<close>
     have hL5: "geotop_is_broken_line (\<Union>(geotop_link K v)) \<or>
                 geotop_is_polygon (\<Union>(geotop_link K v))"
