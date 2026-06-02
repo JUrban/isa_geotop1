@@ -1170,6 +1170,80 @@ proof
 		        by (rule geotop_link_component_two_exact_no_endpoint_linear_graph_witness
 		            [OF hK hv hP hC hlink_vertices_two_exact_incident_edges])
 		    qed
+		    have hcomponent_degree_two_linear_graph_witnesses:
+		      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
+		          C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P)
+		        \<longrightarrow> (\<exists>L. geotop_is_linear_graph L
+		          \<and> finite L
+		          \<and> geotop_polyhedron L = C
+		          \<and> geotop_complex_connected L
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+		                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		              card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2))"
+		    proof (intro allI impI)
+		      fix C
+		      assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
+		          C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P"
+		      obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+		        and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+		                (\<Union>(geotop_link K v)) P"
+		        using hC_ex by (by100 blast)
+		      have hL_ex: "\<exists>L. geotop_is_linear_graph L
+		          \<and> finite L
+		          \<and> geotop_polyhedron L = C
+		          \<and> geotop_complex_connected L
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+		                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)"
+		        by (rule geotop_link_component_two_exact_no_endpoint_linear_graph_witness
+		            [OF hK hv hP hC hlink_vertices_two_exact_incident_edges])
+		      obtain L where hL_linear: "geotop_is_linear_graph L"
+		        and hL_fin: "finite L"
+		        and hL_poly: "geotop_polyhedron L = C"
+		        and hL_conn: "geotop_complex_connected L"
+		        and hL_two: "\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+			              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+			                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+		        and hL_noend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+		        using hL_ex by (elim exE conjE)
+		      have hL_degree: "\<forall>w. {w} \<in> L \<longrightarrow>
+		          card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
+		        by (rule geotop_exact_two_incident_edges_card_eq_two_dev34[OF hL_fin hL_two])
+		      show "\<exists>L. geotop_is_linear_graph L
+		          \<and> finite L
+		          \<and> geotop_polyhedron L = C
+		          \<and> geotop_complex_connected L
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		            (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+		              geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+		              \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+		              \<and> l\<^sub>1 \<noteq> l\<^sub>2
+		              \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+		                  \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+		          \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+		              card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2)"
+		        using hL_linear hL_fin hL_poly hL_conn hL_two hL_noend hL_degree
+		        by (by100 blast)
+		    qed
 		    have hlocal_polygon_components:
 		      "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
 		             C = geotop_component_at UNIV geotop_euclidean_topology
