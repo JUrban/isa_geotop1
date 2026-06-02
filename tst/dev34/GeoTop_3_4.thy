@@ -47,6 +47,59 @@ proof -
     using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
   have hAB_cover: "A \<union> B = \<Union>(geotop_link K v)"
     using hlink_sep unfolding top1_is_separation_on_def by (by100 simp)
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?SA =
+    "{x \<in> ?S. \<exists>y t. y \<in> A \<and> 0 < t \<and> t \<le> 1
+       \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  let ?SB =
+    "{x \<in> ?S. \<exists>y t. y \<in> B \<and> 0 < t \<and> t \<le> 1
+       \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  have hA_sub_link: "A \<subseteq> \<Union>(geotop_link K v)"
+    using hA_open unfolding subspace_topology_def by (by100 blast)
+  have hB_sub_link: "B \<subseteq> \<Union>(geotop_link K v)"
+    using hB_open unfolding subspace_topology_def by (by100 blast)
+  have hSA_nonempty: "?SA \<noteq> {}"
+  proof -
+    obtain y where hyA: "y \<in> A"
+      using hA_nonempty by (by100 blast)
+    have hyS: "y \<in> ?S"
+      using hyA hA_sub_link geotop_link_polyhedron_subset_punctured_star_polyhedron
+      by (by100 blast)
+    have "y \<in> ?SA"
+      using hyA hyS by (by100 force)
+    show ?thesis
+      using \<open>y \<in> ?SA\<close> by (by100 blast)
+  qed
+  have hSB_nonempty: "?SB \<noteq> {}"
+  proof -
+    obtain y where hyB: "y \<in> B"
+      using hB_nonempty by (by100 blast)
+    have hyS: "y \<in> ?S"
+      using hyB hB_sub_link geotop_link_polyhedron_subset_punctured_star_polyhedron
+      by (by100 blast)
+    have "y \<in> ?SB"
+      using hyB hyS by (by100 force)
+    show ?thesis
+      using \<open>y \<in> ?SB\<close> by (by100 blast)
+  qed
+  have hS_cover: "?SA \<union> ?SB = ?S"
+  proof
+    show "?SA \<union> ?SB \<subseteq> ?S"
+      by (by100 blast)
+  next
+    show "?S \<subseteq> ?SA \<union> ?SB"
+    proof
+      fix x assume hxS: "x \<in> ?S"
+      obtain y t where hy_link: "y \<in> \<Union>(geotop_link K v)"
+        and ht_pos: "0 < t" and ht_le: "t \<le> 1"
+        and hx_radial: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+        using hradial hxS by (by100 blast)
+      have "y \<in> A \<or> y \<in> B"
+        using hAB_cover hy_link by (by100 blast)
+      thus "x \<in> ?SA \<union> ?SB"
+        using hxS ht_pos ht_le hx_radial by (by100 blast)
+    qed
+  qed
   \<comment> \<open>The remaining book step is to transport a separation of the link along
       these radial segments to a separation of the punctured star.\<close>
   show ?thesis
