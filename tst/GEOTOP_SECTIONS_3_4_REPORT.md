@@ -14,23 +14,20 @@ warm-cache build.
 
 Evidence checked locally:
 
-- A pull of colleague `main` over HTTPS completed with `Already up to date`.
-- The latest pulled `main` head is commit `3e463c3b` (`Document GeoTop sections
-  1 and 2 status`), which adds the companion report through Section 2.
-- The local branch `codex-dev34-cache` already contains all of that `main`;
-  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `252 0`, so no
-  merge was needed for this report update.
+- A fetch of colleague `main` over HTTPS completed with no new commits ahead of
+  the local branch.
+- The latest pulled `main` head is commit `9209221d` (`Add GeoTop TFF problem
+  exporter`), and the local branch already contains it.
 - A warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:15 elapsed time`. The command used existing heaps and did not emit a
-  per-session rebuild line.
-- The current committed branch tip is `63156722` (`Isolate GeoTop manifold
-  boundary equality`).
+  `0:00:18 elapsed time`.
+- The current committed branch tip before this report refresh is `0f596557`
+  (`Package GeoTop boundary converse carrier cases`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 5 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
@@ -43,8 +40,8 @@ three-sided chart contradictions are now narrowed to explicit domain-level
 small semicircle/small circle construction lemmas plus a 2-cell/Jordan helper.
 The major open clusters are the actual ordered Figure 4.10 construction, the
 small semicircle/small circle domain constructions, the 2-cell/Jordan
-contradiction, the isolated Theorem 4.9 boundary-equality helper, and several
-larger Section 3/early Section 4 prefix arguments.
+contradiction, the two local Theorem 4.9 converse plane-neighborhood
+obligations, and several larger Section 3/early Section 4 prefix arguments.
 
 ## Layout
 
@@ -61,7 +58,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 5 executable
+  layer of the section-specific stack; it currently contains 6 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -108,14 +105,18 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
 - `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`
-  at line 1909.
+  at line 3201.
 - `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
-  at line 2423.
+  at line 4001.
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
-  at line 2481.
-- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 2612.
-- `geotop_manifold_boundary_eq_one_incident_edges_dev34` at line 4062; this is
-  the isolated boundary equality half used by `Theorem_GT_4_9`.
+  at line 4061.
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
+- `geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34` at
+  line 6112; this is the two-sided edge local plane-neighborhood branch of
+  Theorem 4.9's boundary converse.
+- `geotop_two_sided_vertex_is_manifold_interior_dev34` at line 6128; this is
+  the full-disk vertex-star local plane-neighborhood branch of Theorem 4.9's
+  boundary converse.
 
 ## Recent Progress
 
@@ -199,11 +200,11 @@ the finite linear link as an ordered edge-chain or edge-cycle, subdivide the
 frontier of a standard 2-simplex with the same ordered edge data, add the cone
 vertex, and define the resulting simplicial isomorphism.
 
-Since the previous report, the boundary-equality half of Theorem 4.9 has also
-been moved out of the theorem body into the named helper
-`geotop_manifold_boundary_eq_one_incident_edges_dev34`. The theorem statement
-now delegates to that helper, so the remaining gap is easier to search for and
-attack independently without changing the public theorem surface.
+Since the previous report, the boundary-equality half of Theorem 4.9 has been
+split further. The broad subset helper now proves its contradiction argument
+from a carrier split, and the remaining content is named as two local chart
+obligations: the two-sided edge interior has a plane model, and the vertex
+whose incident edges are all two-sided has a full disk-star plane model.
 
 ## Important Supporting Material
 

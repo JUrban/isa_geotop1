@@ -6094,6 +6094,95 @@ proof -
   qed
 qed
 
+lemma geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hcard2:
+    "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "rel_interior e
+      \<subseteq> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Moise Theorem 9 converse, edge-carrier case: an interior point of an edge
+    incident with exactly two 2-simplexes has the ordinary plane local model,
+    made from the two half-neighborhoods on the two sides of the edge. **)
+  sorry
+
+lemma geotop_two_sided_vertex_is_manifold_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hall_edges:
+    "\<forall>e\<in>K. geotop_is_edge e \<and> v \<in> e \<longrightarrow>
+      card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  shows "v \<in> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Moise Theorem 9 converse, vertex-carrier case: if every edge at the
+    boundary-candidate vertex is two-sided, the connected link is a polygon,
+    so the vertex star is a full disk fan and gives a plane neighborhood. **)
+  sorry
+
+lemma geotop_boundary_not_one_incident_point_is_manifold_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  assumes hnot_one:
+    "p \<notin> \<Union>{e\<in>K. geotop_is_edge e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  shows "p \<in> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    Wrapper for the converse inclusion in Theorem 9: the carrier split leaves
+    only the two-sided edge model or the full-disk vertex-star model, both of
+    which are manifold-interior local pictures. **)
+proof -
+  have hcases:
+    "(\<exists>e. e \<in> K \<and> geotop_is_edge e \<and> p \<in> rel_interior e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)
+      \<or> (p \<in> geotop_complex_vertices K
+        \<and> (\<forall>e\<in>K. geotop_is_edge e \<and> p \<in> e \<longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2))"
+    by (rule geotop_boundary_not_one_incident_carrier_cases_dev34
+        [OF hK hKM hbd hnot_one])
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume h_edge:
+      "\<exists>e. e \<in> K \<and> geotop_is_edge e \<and> p \<in> rel_interior e
+        \<and> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+    obtain e where heK: "e \<in> K"
+      and hedge: "geotop_is_edge e"
+      and hp_rel: "p \<in> rel_interior e"
+      and hcard2:
+        "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+      using h_edge by (by100 blast)
+    have hrel_int: "rel_interior e
+        \<subseteq> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+      by (rule geotop_two_incident_edge_rel_interior_subset_manifold_interior_dev34
+          [OF hK hKM heK hedge hcard2])
+    show ?thesis
+      using hp_rel hrel_int by (by100 blast)
+  next
+    assume h_vertex:
+      "p \<in> geotop_complex_vertices K
+        \<and> (\<forall>e\<in>K. geotop_is_edge e \<and> p \<in> e \<longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2)"
+    have hp_vertex: "p \<in> geotop_complex_vertices K"
+      using h_vertex by (by100 blast)
+    have hall_edges: "\<forall>e\<in>K. geotop_is_edge e \<and> p \<in> e \<longrightarrow>
+          card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+      using h_vertex by (by100 blast)
+    show ?thesis
+      by (rule geotop_two_sided_vertex_is_manifold_interior_dev34
+          [OF hK hKM hp_vertex hall_edges])
+  qed
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -6297,7 +6386,26 @@ lemma geotop_manifold_boundary_subset_one_incident_edges_dev34:
     edge, then the one-or-two edge count and the connected link/star
     classification give a plane neighborhood, so it lies in the manifold
     interior. **)
-  sorry
+proof
+  fix p
+  assume hpbd: "p \<in> geotop_manifold_boundary (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  show "p \<in> \<Union>{e \<in> K. geotop_is_edge e \<and>
+        card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+  proof (rule ccontr)
+    assume hnot:
+      "p \<notin> \<Union>{e \<in> K. geotop_is_edge e \<and>
+        card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1}"
+    have hpint: "p \<in> geotop_manifold_interior
+        (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+      by (rule geotop_boundary_not_one_incident_point_is_manifold_interior_dev34
+          [OF hK hKM hpbd hnot])
+    have hpnotint: "p \<notin> geotop_manifold_interior
+        (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+      using hpbd unfolding geotop_manifold_boundary_def by (by100 blast)
+    show False
+      using hpint hpnotint by (by100 blast)
+  qed
+qed
 
 lemma geotop_manifold_boundary_eq_one_incident_edges_dev34:
   fixes K :: "(real^2) set set"

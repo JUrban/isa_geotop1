@@ -15,23 +15,19 @@ has a successful warm-cache build.
 
 Evidence checked locally:
 \begin{itemize}
-\item A pull of colleague \texttt{main} over HTTPS completed with
-\texttt{Already up to date}.
-\item The latest pulled \texttt{main} head is \texttt{3e463c3b}
-(\texttt{Document GeoTop sections 1 and 2 status}), which adds the companion
-report through Section 2.
-\item The local branch \texttt{codex-dev34-cache} already contains all of that
-\texttt{main}; \texttt{git rev-list --left-right --count HEAD...FETCH\_HEAD}
-reports \texttt{252 0}, so no merge was needed for this report update.
+\item A fetch of colleague \texttt{main} over HTTPS completed with no new
+commits ahead of the local branch.
+\item The latest pulled \texttt{main} head is \texttt{9209221d}
+(\texttt{Add GeoTop TFF problem exporter}), and the local branch already
+contains it.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:15 elapsed time}. The command used
-existing heaps and did not emit a per-session rebuild line.
-\item The current committed branch tip is \texttt{63156722}
-(\texttt{Isolate GeoTop manifold boundary equality}).
+with the outer command reporting \texttt{0:00:18 elapsed time}.
+\item The current committed branch tip before this report refresh is
+\texttt{0f596557} (\texttt{Package GeoTop boundary converse carrier cases}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
-the target section-specific theories currently contain 15 executable
-\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 5 in
+the target section-specific theories currently contain 16 executable
+\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
 \texttt{dev34/GeoTop\_3\_4.thy}.
 \end{itemize}
 
@@ -42,9 +38,9 @@ holes. The compact cone-over-compact closedness lemma is now proved, closing the
 radial bad-endpoint closedness bottleneck. The major open clusters are now the
 book's Figure 4.10 fan model turning a polygonal or broken-line link into a
 cone-over-link subdivision, the small semicircle/small circle domain
-constructions, the isolated 2-cell/Jordan contradiction, the isolated
-Theorem 4.9 boundary-equality helper, and several larger Section 3/early
-Section 4 prefix arguments. The one-sided and three-sided chart contradictions
+constructions, the isolated 2-cell/Jordan contradiction, the two local
+Theorem 4.9 converse plane-neighborhood obligations, and several larger
+Section 3/early Section 4 prefix arguments. The one-sided and three-sided chart contradictions
 are now narrowed to explicit domain-level obligations plus a topological image
 step.
 
@@ -56,7 +52,7 @@ The Section 3--4 development is split as follows:
 \item \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}: Section 3 and early Section 4.
 \item \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}: Jordan-curve facts and local manifold helpers.
 \item \texttt{dev34\_workfacts}, \texttt{dev34\_linkfacts}, \texttt{dev34\_graphfacts}, \texttt{dev34\_graphwork}, and \texttt{dev34\_openstar}: cached support layers.
-\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work and the final layer of the section-specific stack; it currently contains 5 executable \texttt{sorry}s.
+\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work and the final layer of the section-specific stack; it currently contains 6 executable \texttt{sorry}s.
 \end{itemize}
 
 \section*{Section 3 Counterparts}
@@ -109,11 +105,12 @@ The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are:
 
 The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \begin{itemize}
-\item \texttt{geotop\_vertex\_star\_standard\_fan\_isomorphism\_from\_finite\_linear\_link\_line\_or\_polygon\_dev34} at line 1909.
-\item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 2423.
-\item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 2481.
-\item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 2612.
-\item \texttt{geotop\_manifold\_boundary\_eq\_one\_incident\_edges\_dev34} at line 4062; this is the isolated boundary equality half used by \texttt{Theorem\_GT\_4\_9}.
+\item \texttt{geotop\_vertex\_star\_standard\_fan\_isomorphism\_from\_finite\_linear\_link\_line\_or\_polygon\_dev34} at line 3201.
+\item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
+\item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
+\item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
+\item \texttt{geotop\_two\_incident\_edge\_rel\_interior\_subset\_manifold\_interior\_dev34} at line 6112; this is the two-sided edge local plane-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_two\_sided\_vertex\_is\_manifold\_interior\_dev34} at line 6128; this is the full-disk vertex-star local plane-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -164,12 +161,11 @@ proves the finite linear-graph hypotheses and delegates the remaining
 Figure 4.10 construction to
 \texttt{geotop\_vertex\_star\_standard\_fan\_isomorphism\_from\_finite\_linear\_link\_line\_or\_polygon\_dev34}.
 
-Since the previous report, the boundary-equality half of Theorem 4.9 has also
-been moved out of the theorem body into the named helper
-\texttt{geotop\_manifold\_boundary\_eq\_one\_incident\_edges\_dev34}. The theorem
-statement now delegates to that helper, so the remaining gap is easier to
-search for and attack independently without changing the public theorem
-surface.
+Since the previous report, the boundary-equality half of Theorem 4.9 has been
+split further. The broad subset helper now proves its contradiction argument
+from a carrier split, and the remaining content is named as two local chart
+obligations: the two-sided edge interior has a plane model, and the vertex
+whose incident edges are all two-sided has a full disk-star plane model.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
