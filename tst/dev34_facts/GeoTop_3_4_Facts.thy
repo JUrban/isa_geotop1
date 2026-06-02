@@ -3485,6 +3485,21 @@ proof -
     using h\<sigma>K h\<sigma>V hvV hy_opp by (by100 blast)
 qed
 
+lemma geotop_link_same_ray_common_opposite_face_witness_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  assumes hy': "y' \<in> \<Union>(geotop_link K v)"
+  assumes hs: "0 < s"
+  assumes h_ray: "y' - v = s *\<^sub>R (y - v)"
+  shows "\<exists>\<sigma> V. \<sigma> \<in> K
+      \<and> geotop_simplex_vertices \<sigma> V
+      \<and> v \<in> V
+      \<and> y \<in> geotop_convex_hull (V - {v})
+      \<and> y' \<in> geotop_convex_hull (V - {v})"
+  sorry
+
 lemma geotop_simplex_point_radial_to_opposite_face_dev34:
   fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
   assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
@@ -3722,8 +3737,19 @@ lemma geotop_link_radial_endpoint_unique_dev34:
 proof -
   have h_ray: "y' - v = (t / t') *\<^sub>R (y - v)"
     by (rule geotop_radial_equal_imp_same_ray_dev34[OF ht(1) ht'(1) heq])
+  have hs: "0 < t / t'"
+    using ht(1) ht'(1) by (by100 simp)
+  obtain \<sigma> V where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hvV: "v \<in> V"
+    and hy_opp: "y \<in> geotop_convex_hull (V - {v})"
+    and hy'_opp: "y' \<in> geotop_convex_hull (V - {v})"
+    using geotop_link_same_ray_common_opposite_face_witness_dev34
+        [OF hK hv hy hy' hs h_ray]
+    by (by100 blast)
   show ?thesis
-    sorry
+    by (rule geotop_simplex_opposite_face_ray_endpoint_unique_dev34
+        [OF h\<sigma>V hvV hy_opp hy'_opp hs h_ray])
 qed
 
 lemma geotop_simplex_opposite_edge_in_link:
