@@ -113,6 +113,16 @@ proof (rule ccontr)
     using hstar_separated hstar_not_separated by (by100 blast)
 qed
 
+lemma geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hshape:
+    "geotop_is_broken_line (\<Union>(geotop_link K v))
+      \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
+  shows "geotop_comb_n_cell (geotop_star K v) 2"
+  sorry
+
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
     LATEX VERSION: Let K be a complex such that M = |K| is a 2-manifold. Then K is a
       combinatorial 2-manifold; i.e., every subcomplex St v is a combinatorial 2-cell. **)
@@ -1433,15 +1443,13 @@ proof
   \<comment> \<open>L7 (main conclusion): Star is a combinatorial 2-cell.\<close>
   have hL7: "geotop_comb_n_cell (geotop_star K v) 2"
   proof -
-    have hstar_complex: "geotop_is_complex (geotop_star K v)"
-      by (rule geotop_star_is_complex[OF hK])
-    have hcone_equiv:
-      "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
-          \<and> geotop_simplex_dim \<sigma> 2
-          \<and> geotop_comb_equiv (geotop_star K v) L"
-      sorry
+    have hshape:
+      "geotop_is_broken_line (\<Union>(geotop_link K v))
+        \<or> geotop_is_polygon (\<Union>(geotop_link K v))"
+      using hL6 by (by100 blast)
     show ?thesis
-      unfolding geotop_comb_n_cell_def using hstar_complex hcone_equiv by (by100 blast)
+      by (rule geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34
+          [OF hK hv hshape])
   qed
   have hL_all:
     "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
@@ -1826,16 +1834,9 @@ proof -
     \<comment> \<open>L6 (main conclusion): Star is a combinatorial 2-cell.\<close>
     have hL6: "geotop_comb_n_cell (geotop_star K v) 2"
     proof -
-      have hstar_complex: "geotop_is_complex (geotop_star K v)"
-        by (rule geotop_star_is_complex[OF hK])
-      have hboundary_cone_equiv:
-        "\<exists>L \<sigma>. L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
-            \<and> geotop_simplex_dim \<sigma> 2
-            \<and> geotop_comb_equiv (geotop_star K v) L"
-        sorry
       show ?thesis
-        unfolding geotop_comb_n_cell_def using hstar_complex hboundary_cone_equiv
-        by (by100 blast)
+        by (rule geotop_vertex_star_comb_2cell_from_link_line_or_polygon_dev34
+            [OF hK hv hL5])
     qed
     have hL_all:
       "(\<exists>e\<in>K. geotop_is_edge e \<and> v \<in> e) \<and>
