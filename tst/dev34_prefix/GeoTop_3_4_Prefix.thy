@@ -6343,7 +6343,78 @@ lemma geotop_link_edge_lies_in_2simplex_with_vertex:
   shows "\<exists>\<rho>\<in>K. geotop_simplex_dim \<rho> 2
       \<and> geotop_is_face l \<rho>
       \<and> v \<in> \<rho>"
-  sorry
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and hv\<sigma>: "v \<in> \<sigma>"
+    and hl\<sigma>_case: "geotop_is_face l \<sigma> \<or> l = \<sigma>"
+    using hlL unfolding geotop_link_def geotop_star_def by (by100 blast)
+  have hv_not_l: "v \<notin> l"
+    using hlL unfolding geotop_link_def by (by100 blast)
+  have hl\<sigma>: "geotop_is_face l \<sigma>"
+  proof (rule disjE[OF hl\<sigma>_case])
+    assume "geotop_is_face l \<sigma>"
+    thus ?thesis .
+  next
+    assume hl_eq: "l = \<sigma>"
+    have False
+      using hv\<sigma> hv_not_l hl_eq by (by100 blast)
+    thus ?thesis by (by100 blast)
+  qed
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and hl_eq: "l = geotop_convex_hull W"
+    and hlW: "geotop_simplex_vertices l W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two[OF hledge hl\<sigma>])
+  obtain Vv where h\<sigma>Vv: "geotop_simplex_vertices \<sigma> Vv"
+    and hvVv: "v \<in> Vv"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<sigma>K hv\<sigma>]
+    by (by100 blast)
+  have hVv_eq: "Vv = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>Vv h\<sigma>V])
+  have hvV: "v \<in> V"
+    using hvVv hVv_eq by (by100 simp)
+  have hW_fin: "finite W"
+    using hlW unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hv_not_W: "v \<notin> W"
+  proof
+    assume hvW: "v \<in> W"
+    have "v \<in> convex hull W"
+      using hvW hull_inc[of v W] by (by100 simp)
+    hence "v \<in> geotop_convex_hull W"
+      using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    hence "v \<in> l"
+      using hl_eq by (by100 simp)
+    thus False
+      using hv_not_l by (by100 blast)
+  qed
+  have hWV_sub: "W \<union> {v} \<subseteq> V"
+    using hW_sub hvV by (by100 blast)
+  have hWV_card: "card (W \<union> {v}) = 3"
+    using hW_fin hW_card hv_not_W by (by100 simp)
+  obtain n m where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hcard_le: "card (W \<union> {v}) \<le> card V"
+    by (rule card_mono[OF hV_fin hWV_sub])
+  have hn_ge2: "2 \<le> n"
+    using hV_card hWV_card hcard_le by (by100 linarith)
+  have h\<sigma>dim_n: "geotop_simplex_dim \<sigma> n"
+    unfolding geotop_simplex_dim_def
+    using hV_fin hV_card hn_le_m hgp_V h\<sigma>_eq by (by100 blast)
+  have hn_le2: "n \<le> 2"
+    by (rule geotop_simplex_dim_le_2_R2[OF h\<sigma>dim_n])
+  have hn_eq2: "n = 2"
+    using hn_ge2 hn_le2 by (by100 linarith)
+  have h\<sigma>dim2: "geotop_simplex_dim \<sigma> 2"
+    using h\<sigma>dim_n hn_eq2 by (by100 simp)
+  show ?thesis
+    using h\<sigma>K h\<sigma>dim2 hl\<sigma> hv\<sigma> by (by100 blast)
+qed
 
 lemma geotop_link_edge_through_vertex_adjacent_2simplex_witness:
   fixes K :: "(real^2) set set" and e l :: "(real^2) set"
@@ -6360,7 +6431,54 @@ lemma geotop_link_edge_through_vertex_adjacent_2simplex_witness:
   shows "\<exists>\<rho>\<in>K. geotop_simplex_dim \<rho> 2
       \<and> geotop_is_face e \<rho>
       \<and> geotop_is_face l \<rho>"
-  sorry
+proof -
+  obtain \<rho> where h\<rho>K: "\<rho> \<in> K"
+    and h\<rho>2: "geotop_simplex_dim \<rho> 2"
+    and hl\<rho>: "geotop_is_face l \<rho>"
+    and hv\<rho>: "v \<in> \<rho>"
+    using geotop_link_edge_lies_in_2simplex_with_vertex[OF hK hvK hlL hledge]
+    by (by100 blast)
+  have hlink_sub: "geotop_link K v \<subseteq> K"
+    by (rule geotop_link_subset_complex[OF hK])
+  have hwK: "{w} \<in> K"
+    using hlink_sub hwL by (by100 blast)
+  have hv_not_w: "v \<noteq> w"
+    using hwL unfolding geotop_link_def by (by100 blast)
+  have hl_sub_\<rho>: "l \<subseteq> \<rho>"
+    by (rule geotop_is_face_imp_subset[OF hl\<rho>])
+  have hw\<rho>: "w \<in> \<rho>"
+    using hw_l hl_sub_\<rho> by (by100 blast)
+  obtain V\<^sub>v where h\<rho>Vv: "geotop_simplex_vertices \<rho> V\<^sub>v"
+    and hvVv: "v \<in> V\<^sub>v"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<rho>K hv\<rho>]
+    by (by100 blast)
+  obtain V\<^sub>w where h\<rho>Vw: "geotop_simplex_vertices \<rho> V\<^sub>w"
+    and hwVw: "w \<in> V\<^sub>w"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hwK h\<rho>K hw\<rho>]
+    by (by100 blast)
+  have hVw_eq: "V\<^sub>w = V\<^sub>v"
+    by (rule geotop_simplex_vertices_unique[OF h\<rho>Vw h\<rho>Vv])
+  have hwVv: "w \<in> V\<^sub>v"
+    using hwVw hVw_eq by (by100 simp)
+  obtain e' where he'\<rho>: "geotop_is_face e' \<rho>"
+    and he'edge: "geotop_is_edge e'"
+    and hv_e': "v \<in> e'"
+    and hw_e': "w \<in> e'"
+    using geotop_simplex_vertices_pair_edge_face_between
+      [OF h\<rho>Vv hvVv hwVv hv_not_w]
+    by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have he'K: "e' \<in> K"
+    using hface_closed h\<rho>K he'\<rho> by (by100 blast)
+  have he_eq: "e = e'"
+    by (rule geotop_complex_edges_same_two_vertices_eq_dev34
+        [OF hK hvK hwK heK he'K hedge he'edge hv_e hw_e hv_e' hw_e' hv_not_w])
+  have he\<rho>: "geotop_is_face e \<rho>"
+    using he'\<rho> he_eq by (by100 simp)
+  show ?thesis
+    using h\<rho>K h\<rho>2 he\<rho> hl\<rho> by (by100 blast)
+qed
 
 lemma geotop_link_vertex_two_incident_link_edges_exhaust:
   fixes K :: "(real^2) set set"
