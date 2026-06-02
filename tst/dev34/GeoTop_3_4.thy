@@ -7764,6 +7764,29 @@ proof -
   qed
 qed
 
+lemma geotop_edge_subset_2simplex_vertices_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "e \<subseteq> \<sigma>"
+  (**
+    Vertex-form containment used in the local diamond argument: the edge
+    spanned by two triangle vertices is contained in the triangle. **)
+proof -
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of "{a, b, c}"] by (by100 simp)
+  have hsub: "{a, b} \<subseteq> {a, b, c}"
+    by (by100 blast)
+  have "convex hull {a, b} \<subseteq> convex hull {a, b, c}"
+    by (rule hull_mono[OF hsub])
+  thus ?thesis
+    using he_HOL h\<sigma>_HOL by (by100 simp)
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

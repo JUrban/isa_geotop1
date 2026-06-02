@@ -28,7 +28,7 @@ ran in about two seconds.
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
 with the outer command reporting \texttt{0:00:37 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{165536d5} (\texttt{Prove GeoTop edge normal probes}).
+\texttt{78f8f376} (\texttt{Package GeoTop opposite-side edge probes}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -113,8 +113,8 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7782; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 8138; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7805; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 8161; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -276,7 +276,10 @@ side lands in the HOL interior of the corresponding incident triangle. The
 package helper
 \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_normal\_probes\_in\_HOL\_interiors\_dev34}
 now combines these two one-sided probes for the opposite-side shared-edge
-configuration.
+configuration. The containment helper
+\texttt{geotop\_edge\_subset\_2simplex\_vertices\_dev34} is now proved,
+recording that the edge spanned by two triangle vertices is contained in the
+triangle.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
