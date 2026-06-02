@@ -1887,6 +1887,27 @@ proof -
     using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
 qed
 
+lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hshape:
+    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(\<sigma> :: (real^2) set) L' \<phi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_isomorphism (geotop_star K v) L' \<phi>"
+  (**
+    Moise Fig. 4.10 with the simplicial bijection made explicit.  The missing
+    combinatorial content is to enumerate the finite linear link as either an
+    edge-chain or an edge-cycle, subdivide \<open>Fr \<sigma>\<close> with the same ordered
+    edge data, and define \<open>\<phi>\<close> on vertices by the corresponding order-preserving
+    match, with \<open>v\<close> sent to the new cone vertex. **)
+  sorry
+
 lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -1907,7 +1928,18 @@ lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_poly
     subdivided frontier to the new vertex.  The simplicial bijection sends
     \<open>v\<close> to the new cone vertex and sends the link vertices, in linear/cyclic
     order, to the subdivided frontier vertices. **)
-  sorry
+proof -
+  obtain \<sigma> :: "(real^2) set" and L' \<phi>
+    where hfan:
+      "geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_isomorphism (geotop_star K v) L' \<phi>"
+    using geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hshape]
+    by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphic_def using hfan by (by100 blast)
+qed
 
 lemma geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
