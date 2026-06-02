@@ -1494,6 +1494,79 @@ next
   qed
 qed
 
+lemma geotop_two_degree_one_edge_delete_complement_complex_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqe: "q \<in> e"
+  shows "geotop_is_complex (L - {{w}, {q}, e})"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have hsub: "L - {{w}, {q}, e} \<subseteq> L"
+    by (by100 simp)
+  have hfaces:
+      "\<forall>\<sigma>\<in>L - {{w}, {q}, e}. \<forall>\<tau>. geotop_is_face \<tau> \<sigma>
+        \<longrightarrow> \<tau> \<in> L - {{w}, {q}, e}"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>rest: "\<sigma> \<in> L - {{w}, {q}, e}"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>L: "\<sigma> \<in> L"
+      using h\<sigma>rest by (by100 simp)
+    have h\<tau>L: "\<tau> \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] h\<sigma>L hface by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF hface])
+    have h\<sigma>ne_w: "\<sigma> \<noteq> {w}"
+      using h\<sigma>rest by (by100 simp)
+    have h\<sigma>ne_q: "\<sigma> \<noteq> {q}"
+      using h\<sigma>rest by (by100 simp)
+    have h\<sigma>ne_e: "\<sigma> \<noteq> e"
+      using h\<sigma>rest by (by100 simp)
+    have h\<tau>ne_w: "\<tau> \<noteq> {w}"
+    proof
+      assume h\<tau>w: "\<tau> = {w}"
+      have hw\<sigma>: "w \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>w by (by100 blast)
+      have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+        by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_dev34
+            [OF hL hfin hend heL hedge hwe h\<sigma>L hw\<sigma>])
+      show False using hcase h\<sigma>ne_w h\<sigma>ne_e by (by100 blast)
+    qed
+    have h\<tau>ne_q: "\<tau> \<noteq> {q}"
+    proof
+      assume h\<tau>q: "\<tau> = {q}"
+      have hq\<sigma>: "q \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>q by (by100 blast)
+      have hcase: "\<sigma> = {q} \<or> \<sigma> = e"
+        by (rule geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_dev34
+            [OF hL hfin hqL hqcard heL hedge hqe h\<sigma>L hq\<sigma>])
+      show False using hcase h\<sigma>ne_q h\<sigma>ne_e by (by100 blast)
+    qed
+    have h\<tau>ne_e: "\<tau> \<noteq> e"
+    proof
+      assume h\<tau>e: "\<tau> = e"
+      have hq\<sigma>: "q \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>e hqe by (by100 blast)
+      have hcase: "\<sigma> = {q} \<or> \<sigma> = e"
+        by (rule geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_dev34
+            [OF hL hfin hqL hqcard heL hedge hqe h\<sigma>L hq\<sigma>])
+      show False using hcase h\<sigma>ne_q h\<sigma>ne_e by (by100 blast)
+    qed
+    show "\<tau> \<in> L - {{w}, {q}, e}"
+      using h\<tau>L h\<tau>ne_w h\<tau>ne_q h\<tau>ne_e by (by100 simp)
+  qed
+  show ?thesis
+    by (rule geotop_complex_subset_is_complex[OF hcomplex hsub hfaces])
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
