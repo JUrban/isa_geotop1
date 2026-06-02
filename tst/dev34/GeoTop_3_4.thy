@@ -1991,6 +1991,27 @@ proof
     using hv_single_L unfolding geotop_link_def by (by100 blast)
 qed
 
+lemma geotop_star_vertices_minus_vertex_eq_link_vertices_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "geotop_complex_vertices (geotop_star K v) - {v}
+      = geotop_complex_vertices (geotop_link K v)"
+  (**
+    The old vertices of the star, after deleting the cone vertex, are exactly
+    the link vertices.  This is the vertex-domain part of the Fig. 4.10
+    simplicial bijection. **)
+proof -
+  have hstar_vertices:
+    "geotop_complex_vertices (geotop_star K v)
+      = insert v (geotop_complex_vertices (geotop_link K v))"
+    by (rule geotop_star_vertices_eq_insert_link_vertices_dev34[OF hK hv])
+  have hv_not_link: "v \<notin> geotop_complex_vertices (geotop_link K v)"
+    by (rule geotop_link_vertices_avoid_star_vertex_dev34[OF hK])
+  show ?thesis
+    using hstar_vertices hv_not_link by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
