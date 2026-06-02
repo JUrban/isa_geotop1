@@ -15121,6 +15121,7 @@ proof -
                   P0 \<in> closure C;
                   geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C = {};
                   u \<in> C; u \<in> ball P0 \<delta>p;
+                  v \<in> ball P0 \<delta>s;
                   v \<in> ball P0 \<delta>p \<inter> geotop_arc_interior k E;
                   D \<in> components (UNIV - (i \<union> j)); u \<in> D; v \<in> D\<rbrakk>
                 \<Longrightarrow> v \<in> closure C"
@@ -15194,13 +15195,13 @@ proof -
                     using hv_ball_q hv_kint hk_sub_G by (by100 blast)
                   have hv_ball_p: "v \<in> ball P0 \<delta>p"
                     using hv_ball_q h\<delta>q_le_\<delta>p by (by100 auto)
+                  have hv_ball_s: "v \<in> ball P0 \<delta>s"
+                    using hv_ball_q h\<delta>q_le_\<delta>s by (by100 auto)
                   have hv_clC: "v \<in> closure C"
                     by (rule h_figure_2_7_pair_component_forces_third_touch
                         [OF h\<delta>s_pos hC_comp hC_sub_U hP0_cl_C hk_miss_C
-                            huC hu_ball_p _ hG_comp huG hvG])
+                            huC hu_ball_p hv_ball_s _ hG_comp huG hvG])
                        (use hv_ball_p hv_kint in \<open>by100 blast\<close>)
-                  have hv_ball_s: "v \<in> ball P0 \<delta>s"
-                    using hv_ball_q h\<delta>q_le_\<delta>s by (by100 auto)
                   have "v \<in> geotop_arc_interior k E \<inter> ball P0 \<delta>s \<inter> closure C"
                     using hv_kint hv_ball_s hv_clC by (by100 blast)
                   thus False using hk_miss_C by (by100 blast)
