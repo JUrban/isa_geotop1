@@ -3,28 +3,28 @@
 Date: 2026-06-02
 
 This report summarizes the current formalization status for Sections 3 and 4
-of `geotop.tex` in the active section-specific development branch.
+of `geotop.tex`, and records the Isabelle counterparts of the book theorems.
 
 ## Status
 
 Sections 3 and 4 are not yet sorry-free. They are isolated in a fast cached
-development stack, and the current active session has a recent successful
-warm-cache build.
+development stack, and the current active session has a successful warm-cache
+build.
 
 Evidence checked locally:
 
-- A fetch of colleague `main` over HTTPS left `https/main` at commit
+- A pull/fetch of colleague `main` over HTTPS left `https/main` at commit
   `3e463c3b` (`Document GeoTop sections 1 and 2 status`).
 - Our branch `codex-dev34-cache` already contains all of `https/main`;
-  `git rev-list --left-right --count HEAD...https/main` reports `219 0`, so
+  `git rev-list --left-right --count HEAD...https/main` reports `224 0`, so
   no merge was needed for this report update.
 - The latest successful section build on this branch was:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`.
-- That build passed for the state committed as `75e90de1`
-  (`Refine radial endpoint projection proof`); the final `GeoTop34Dev`
-  theory took about `0:00:09` elapsed, with about `0:00:28` elapsed overall.
+- That build passed for the state committed as `ce1df618`
+  (`Decompose GeoTop one-sided chart lemma`); the final `GeoTop34Dev`
+  theory took about `0:00:09` elapsed, with about `0:00:29` elapsed overall.
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
   9 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -99,13 +99,14 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_link_open_radial_cone_open_in_punctured_star_dev34` at line 117.
 - `geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34` at line
   1223.
-- `geotop_unique_incident_2simplex_semicircle_separates_chart_dev34` at line
-  1265.
+- The semicircle-separation subclaim inside
+  `geotop_unique_incident_2simplex_semicircle_separates_chart_dev34` at line
+  1306.
 - `geotop_three_incident_2simplex_sphere_not_separates_chart_dev34` at line
-  1287.
+  1333.
 - `geotop_boundary_chart_three_incident_2simplex_contradiction_dev34` at line
-  1308.
-- The boundary equality half of `Theorem_GT_4_9` at line 3062.
+  1356.
+- The boundary equality half of `Theorem_GT_4_9` at line 3110.
 
 ## Recent Progress
 
@@ -124,12 +125,19 @@ The active file now contains proved bridge lemmas for the book Lemma 5 route:
 - `geotop_punctured_star_radial_endpoint_choice_property_dev34`
 - `geotop_radial_endpoint_choice_preimage_eq_cone_dev34`
 - `geotop_punctured_star_radial_endpoint_projection_dev34`
+- `geotop_openin_norm_polyhedron_contains_relative_ball_dev34`
 
 These formalize the radial and local connected-neighborhood parts of Moise's
 Lemma 5 argument: a separation side of the punctured vertex star accumulates at
 the vertex, while a manifold chart supplies a connected punctured neighborhood
 inside the open star, contradicting such a separation. The radial endpoint
 projection is now proved from an explicit cone-openness subclaim.
+
+The chart-local Section 4 statements have also been audited against the book
+argument. The edge-incidence contradiction helpers now carry the local
+`openin_on` chart-neighborhood hypothesis, and the one-sided chart lemma has
+been decomposed so that its remaining hole is the explicit semicircle
+separation construction inside that local neighborhood.
 
 ## Important Supporting Material
 
@@ -158,10 +166,10 @@ Important cached helpers include:
 - After link connectedness is fully established, the cone-over-link bridge at
   line 1223 should be the next bottleneck for turning link shape into
   `geotop_comb_n_cell (geotop_star K v) 2`.
-- The local chart contradiction lemmas at lines 1265, 1287, and 1308 deserve
-  a careful statement audit before proof work. In particular, they encode the
-  geometric impossibility of bad edge-incidence counts in plane or half-plane
-  charts.
+- The local chart contradiction lemmas at lines 1306, 1333, and 1356 now have
+  the needed local-open-neighborhood hypothesis. The next step there is to
+  formalize the book's small semicircle/small circle constructions in the
+  chart.
 - The prefix holes in Theorems 3.3, 3.4, 4.2, and 4.4 remain larger book-level
   arguments and should be attacked with the `sorry`-first skeleton workflow
   from `CLAUDE.md`.

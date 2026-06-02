@@ -11,21 +11,21 @@ Date: 2026-06-02.
 
 Sections 3 and 4 of \texttt{geotop.tex} are not yet sorry-free. They are
 isolated in a cached development stack, and the current active session has a
-recent successful warm-cache build.
+successful warm-cache build.
 
 Evidence checked locally:
 \begin{itemize}
-\item A fetch of colleague \texttt{main} over HTTPS left \texttt{https/main} at
+\item A pull/fetch of colleague \texttt{main} over HTTPS left \texttt{https/main} at
 \texttt{3e463c3b} (\texttt{Document GeoTop sections 1 and 2 status}).
 \item The local branch \texttt{codex-dev34-cache} already contains all of
 \texttt{https/main}; \texttt{git rev-list --left-right --count HEAD...https/main}
-reports \texttt{219 0}, so no merge was needed for this report update.
+reports \texttt{224 0}, so no merge was needed for this report update.
 \item The latest successful section build on this branch was:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev}.
-\item That build passed for the state committed as \texttt{75e90de1}
-(\texttt{Refine radial endpoint projection proof}); the final
+\item That build passed for the state committed as \texttt{ce1df618}
+(\texttt{Decompose GeoTop one-sided chart lemma}); the final
 \texttt{GeoTop34Dev} theory took about \texttt{0:00:09} elapsed, with about
-\texttt{0:00:28} elapsed overall.
+\texttt{0:00:29} elapsed overall.
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 15 executable
 \texttt{sorry}s: 9 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
@@ -101,10 +101,10 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \begin{itemize}
 \item \texttt{geotop\_link\_open\_radial\_cone\_open\_in\_punctured\_star\_dev34} at line 117.
 \item \texttt{geotop\_vertex\_star\_cone\_equiv\_from\_link\_line\_or\_polygon\_dev34} at line 1223.
-\item \texttt{geotop\_unique\_incident\_2simplex\_semicircle\_separates\_chart\_dev34} at line 1265.
-\item \texttt{geotop\_three\_incident\_2simplex\_sphere\_not\_separates\_chart\_dev34} at line 1287.
-\item \texttt{geotop\_boundary\_chart\_three\_incident\_2simplex\_contradiction\_dev34} at line 1308.
-\item The boundary equality half of \texttt{Theorem\_GT\_4\_9} at line 3062.
+\item The semicircle-separation subclaim inside \texttt{geotop\_unique\_incident\_2simplex\_semicircle\_separates\_chart\_dev34} at line 1306.
+\item \texttt{geotop\_three\_incident\_2simplex\_sphere\_not\_separates\_chart\_dev34} at line 1333.
+\item \texttt{geotop\_boundary\_chart\_three\_incident\_2simplex\_contradiction\_dev34} at line 1356.
+\item The boundary equality half of \texttt{Theorem\_GT\_4\_9} at line 3110.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -121,6 +121,14 @@ The radial endpoint projection is now proved from
 \texttt{geotop\_radial\_endpoint\_choice\_preimage\_eq\_cone\_dev34}, and an
 explicit cone-openness subclaim.
 
+The chart-local Section 4 statements have also been audited against the book
+argument. The edge-incidence contradiction helpers now carry the local
+\texttt{openin\_on} chart-neighborhood hypothesis, the helper
+\texttt{geotop\_openin\_norm\_polyhedron\_contains\_relative\_ball\_dev34}
+extracts a relative metric ball from that hypothesis, and the one-sided chart
+lemma has been decomposed so that its remaining hole is the explicit
+semicircle separation construction inside the local neighborhood.
+
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
 \texttt{geotop\_star\_punctured\_point\_radial\_to\_link\_dev34},
@@ -136,9 +144,11 @@ The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
 the remaining geometric openness subclaim needed by the radial endpoint
 projection. After link connectedness is fully established, the cone-over-link
 bridge at line 1223 should be the next bottleneck. The local chart
-contradiction lemmas at lines 1265, 1287, and 1308 deserve a careful statement
-audit before proof work. The prefix holes in Theorems 3.3, 3.4, 4.2, and 4.4
-remain larger book-level arguments and should be attacked with the
+contradiction lemmas at lines 1306, 1333, and 1356 now have the needed
+local-open-neighborhood hypothesis; the next step there is to formalize the
+book's small semicircle/small circle constructions in the chart. The prefix
+holes in Theorems 3.3, 3.4, 4.2, and 4.4 remain larger book-level arguments and
+should be attacked with the
 \texttt{sorry}-first skeleton workflow from \texttt{CLAUDE.md}.
 
 \end{document}
