@@ -34,10 +34,10 @@ the target section-specific theories currently contain 15 executable
 
 The practical consequence is that Sections 3 and 4 have a working, green
 development session, but completion still requires eliminating the listed proof
-holes. The main open cluster is now the radial endpoint projection, the
-cone-over-link bridge, the edge-incidence chart contradictions, the boundary
-equality part of Theorem 4.9, and several larger Section 3/early Section 4
-prefix arguments.
+holes. The main open cluster is now radial cone openness for the link endpoint
+projection, the cone-over-link bridge, the edge-incidence chart contradictions,
+the boundary equality part of Theorem 4.9, and several larger Section 3/early
+Section 4 prefix arguments.
 
 \section*{Layout}
 
@@ -99,12 +99,12 @@ The current holes in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} are:
 
 The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \begin{itemize}
-\item \texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34} at line 20.
-\item \texttt{geotop\_vertex\_star\_cone\_equiv\_from\_link\_line\_or\_polygon\_dev34} at line 1066.
-\item \texttt{geotop\_unique\_incident\_2simplex\_semicircle\_separates\_chart\_dev34} at line 1108.
-\item \texttt{geotop\_three\_incident\_2simplex\_sphere\_not\_separates\_chart\_dev34} at line 1130.
-\item \texttt{geotop\_boundary\_chart\_three\_incident\_2simplex\_contradiction\_dev34} at line 1151.
-\item The boundary equality half of \texttt{Theorem\_GT\_4\_9} at line 2905.
+\item \texttt{geotop\_link\_open\_radial\_cone\_open\_in\_punctured\_star\_dev34} at line 117.
+\item \texttt{geotop\_vertex\_star\_cone\_equiv\_from\_link\_line\_or\_polygon\_dev34} at line 1223.
+\item \texttt{geotop\_unique\_incident\_2simplex\_semicircle\_separates\_chart\_dev34} at line 1265.
+\item \texttt{geotop\_three\_incident\_2simplex\_sphere\_not\_separates\_chart\_dev34} at line 1287.
+\item \texttt{geotop\_boundary\_chart\_three\_incident\_2simplex\_contradiction\_dev34} at line 1308.
+\item The boundary equality half of \texttt{Theorem\_GT\_4\_9} at line 3062.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -116,6 +116,10 @@ Moise's Lemma 5 argument. Important recent helpers include
 \texttt{geotop\_2\_manifold\_with\_boundary\_open\_subset\_connected\_punctured\_neighborhood\_dev34},
 \texttt{geotop\_2\_manifold\_vertex\_star\_punctured\_connected\_dev34}, and
 \texttt{geotop\_2\_manifold\_with\_boundary\_vertex\_star\_punctured\_connected\_dev34}.
+The radial endpoint projection is now proved from
+\texttt{geotop\_punctured\_star\_radial\_endpoint\_choice\_property\_dev34},
+\texttt{geotop\_radial\_endpoint\_choice\_preimage\_eq\_cone\_dev34}, and an
+explicit cone-openness subclaim.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
@@ -127,14 +131,14 @@ Other important cached helpers include
 
 \section*{Notes For Future Work}
 
-The next book-aligned bottleneck for Theorems 4.8 and 4.9 is likely
-\texttt{geotop\_punctured\_star\_radial\_endpoint\_projection\_dev34}, because
-it is used to transfer disconnectedness of the link to disconnectedness of the
-punctured star. After link connectedness is fully established, the
-cone-over-link bridge at line 1066 should be the next bottleneck. The local
-chart contradiction lemmas at lines 1108, 1130, and 1151 deserve a careful
-statement audit before proof work. The prefix holes in Theorems 3.3, 3.4, 4.2,
-and 4.4 remain larger book-level arguments and should be attacked with the
+The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
+\texttt{geotop\_link\_open\_radial\_cone\_open\_in\_punctured\_star\_dev34},
+the remaining geometric openness subclaim needed by the radial endpoint
+projection. After link connectedness is fully established, the cone-over-link
+bridge at line 1223 should be the next bottleneck. The local chart
+contradiction lemmas at lines 1265, 1287, and 1308 deserve a careful statement
+audit before proof work. The prefix holes in Theorems 3.3, 3.4, 4.2, and 4.4
+remain larger book-level arguments and should be attacked with the
 \texttt{sorry}-first skeleton workflow from \texttt{CLAUDE.md}.
 
 \end{document}

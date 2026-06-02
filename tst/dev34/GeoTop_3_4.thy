@@ -2,6 +2,120 @@ theory GeoTop_3_4
   imports "GeoTop34OpenStarDirty.GeoTop_3_4_OpenStar"
 begin
 
+lemma geotop_punctured_star_radial_endpoint_choice_property_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  defines "\<rho> \<equiv> (\<lambda>x. SOME y. y \<in> \<Union>(geotop_link K v)
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y))"
+  shows "\<forall>x\<in>\<Union>(geotop_star K v) - {v}.
+      \<rho> x \<in> \<Union>(geotop_link K v)
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x)"
+proof
+  fix x
+  assume hx: "x \<in> \<Union>(geotop_star K v) - {v}"
+  have hex: "\<exists>y. y \<in> \<Union>(geotop_link K v)
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y)"
+    using geotop_star_punctured_point_radial_to_link_dev34[OF hK hv hx]
+    by (by100 blast)
+  show "\<rho> x \<in> \<Union>(geotop_link K v)
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x)"
+    unfolding \<rho>_def by (rule someI_ex[OF hex])
+qed
+
+lemma geotop_radial_endpoint_choice_preimage_eq_cone_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hC_sub: "C \<subseteq> \<Union>(geotop_link K v)"
+  defines "\<rho> \<equiv> (\<lambda>x. SOME y. y \<in> \<Union>(geotop_link K v)
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y))"
+  shows "{x \<in> \<Union>(geotop_star K v) - {v}. \<rho> x \<in> C}
+      = {x \<in> \<Union>(geotop_star K v) - {v}.
+          \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+            \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?L = "\<Union>(geotop_link K v)"
+  have hradial:
+      "\<forall>x\<in>?S. \<rho> x \<in> ?L
+        \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+            \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x)"
+    using geotop_punctured_star_radial_endpoint_choice_property_dev34[OF hK hv]
+    unfolding \<rho>_def by (by100 simp)
+  show ?thesis
+  proof
+    show "{x \<in> ?S. \<rho> x \<in> C}
+        \<subseteq> {x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+    proof
+      fix x
+      assume hx: "x \<in> {x \<in> ?S. \<rho> x \<in> C}"
+      have hxS: "x \<in> ?S"
+        using hx by (by100 blast)
+      have h\<rho>C: "\<rho> x \<in> C"
+        using hx by (by100 blast)
+      obtain t where ht_pos: "0 < t"
+        and ht_le: "t \<le> 1"
+        and hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x"
+        using hradial hxS by (by100 blast)
+      show "x \<in> {x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+        using hxS h\<rho>C ht_pos ht_le hx_rad by (by100 blast)
+    qed
+  next
+    show "{x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+        \<subseteq> {x \<in> ?S. \<rho> x \<in> C}"
+    proof
+      fix x
+      assume hx: "x \<in> {x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+      obtain y t where hxS: "x \<in> ?S"
+        and hyC: "y \<in> C"
+        and ht_pos: "0 < t"
+        and ht_le: "t \<le> 1"
+        and hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+        using hx by (by100 blast)
+      have hyL: "y \<in> ?L"
+        using hyC hC_sub by (by100 blast)
+      obtain t' where h\<rho>L: "\<rho> x \<in> ?L"
+        and ht'_pos: "0 < t'"
+        and ht'_le: "t' \<le> 1"
+        and hx\<rho>_rad: "x = (1 - t') *\<^sub>R v + t' *\<^sub>R \<rho> x"
+        using hradial hxS by (by100 blast)
+      have hrad_eq:
+        "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+         (1 - t') *\<^sub>R v + t' *\<^sub>R \<rho> x"
+        using hx_rad hx\<rho>_rad by (by100 simp)
+      have "y = \<rho> x"
+        by (rule geotop_link_radial_endpoint_unique_dev34
+            [OF hK hv hyL h\<rho>L ht_pos ht_le ht'_pos ht'_le hrad_eq])
+      show "x \<in> {x \<in> ?S. \<rho> x \<in> C}"
+        using hxS hyC \<open>y = \<rho> x\<close> by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_link_open_radial_cone_open_in_punctured_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hC_open:
+    "C \<in> subspace_topology UNIV geotop_euclidean_topology
+       (\<Union>(geotop_link K v))"
+  shows "{x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
+      \<in> subspace_topology UNIV geotop_euclidean_topology
+          (\<Union>(geotop_star K v) - {v})"
+  sorry
+
 lemma geotop_punctured_star_radial_endpoint_projection_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -17,7 +131,50 @@ lemma geotop_punctured_star_radial_endpoint_projection_dev34:
           \<rho> x \<in> \<Union>(geotop_link K v)
           \<and> (\<exists>t. 0 < t \<and> t \<le> 1
               \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x))"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?L = "\<Union>(geotop_link K v)"
+  let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+  let ?TL = "subspace_topology UNIV geotop_euclidean_topology ?L"
+  define \<rho> where "\<rho> = (\<lambda>x. SOME y. y \<in> ?L
+      \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y))"
+  have hradial:
+      "\<forall>x\<in>?S. \<rho> x \<in> ?L
+        \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+            \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x)"
+    using geotop_punctured_star_radial_endpoint_choice_property_dev34[OF hK hv]
+    unfolding \<rho>_def by (by100 simp)
+  have hcont: "top1_continuous_map_on ?S ?TS ?L ?TL \<rho>"
+  proof (rule continuous_map_onI)
+    show "\<forall>x\<in>?S. \<rho> x \<in> ?L"
+      using hradial by (by100 blast)
+  next
+    show "\<forall>C\<in>?TL. {x \<in> ?S. \<rho> x \<in> C} \<in> ?TS"
+    proof
+      fix C
+      assume hC_open: "C \<in> ?TL"
+      have hC_sub: "C \<subseteq> ?L"
+        using hC_open unfolding subspace_topology_def by (by100 blast)
+      have hpre_eq:
+        "{x \<in> ?S. \<rho> x \<in> C}
+          = {x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+        using geotop_radial_endpoint_choice_preimage_eq_cone_dev34
+          [OF hK hv hC_sub]
+        unfolding \<rho>_def by (by100 simp)
+      have hcone_open:
+        "{x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y} \<in> ?TS"
+        by (rule geotop_link_open_radial_cone_open_in_punctured_star_dev34
+            [OF hK hv hC_open])
+      show "{x \<in> ?S. \<rho> x \<in> C} \<in> ?TS"
+        using hpre_eq hcone_open by (by100 simp)
+    qed
+  qed
+  show ?thesis
+    using hcont hradial by (intro exI[of _ \<rho>]) (by100 blast)
+qed
 
 lemma geotop_radial_cone_over_link_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"

@@ -32,10 +32,10 @@ Evidence checked locally:
 
 The practical consequence is that Sections 3 and 4 have a working, green
 development session, but completion still requires eliminating the listed proof
-holes. The main open cluster is now the radial endpoint projection, the
-cone-over-link bridge, the edge-incidence chart contradictions, the boundary
-equality part of Theorem 4.9, and several larger Section 3/early Section 4
-prefix arguments.
+holes. The main open cluster is now radial cone openness for the link endpoint
+projection, the cone-over-link bridge, the edge-incidence chart contradictions,
+the boundary equality part of Theorem 4.9, and several larger Section 3/early
+Section 4 prefix arguments.
 
 ## Layout
 
@@ -96,16 +96,16 @@ The remaining target holes in `dev34_prefix/GeoTop_3_4_Prefix.thy` are:
 
 The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
-- `geotop_punctured_star_radial_endpoint_projection_dev34` at line 20.
+- `geotop_link_open_radial_cone_open_in_punctured_star_dev34` at line 117.
 - `geotop_vertex_star_cone_equiv_from_link_line_or_polygon_dev34` at line
-  1066.
+  1223.
 - `geotop_unique_incident_2simplex_semicircle_separates_chart_dev34` at line
-  1108.
+  1265.
 - `geotop_three_incident_2simplex_sphere_not_separates_chart_dev34` at line
-  1130.
+  1287.
 - `geotop_boundary_chart_three_incident_2simplex_contradiction_dev34` at line
-  1151.
-- The boundary equality half of `Theorem_GT_4_9` at line 2905.
+  1308.
+- The boundary equality half of `Theorem_GT_4_9` at line 3062.
 
 ## Recent Progress
 
@@ -121,11 +121,15 @@ The active file now contains proved bridge lemmas for the book Lemma 5 route:
 - `geotop_2_manifold_with_boundary_open_subset_connected_punctured_neighborhood_dev34`
 - `geotop_2_manifold_vertex_star_punctured_connected_dev34`
 - `geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34`
+- `geotop_punctured_star_radial_endpoint_choice_property_dev34`
+- `geotop_radial_endpoint_choice_preimage_eq_cone_dev34`
+- `geotop_punctured_star_radial_endpoint_projection_dev34`
 
 These formalize the radial and local connected-neighborhood parts of Moise's
 Lemma 5 argument: a separation side of the punctured vertex star accumulates at
 the vertex, while a manifold chart supplies a connected punctured neighborhood
-inside the open star, contradicting such a separation.
+inside the open star, contradicting such a separation. The radial endpoint
+projection is now proved from an explicit cone-openness subclaim.
 
 ## Important Supporting Material
 
@@ -147,14 +151,14 @@ Important cached helpers include:
 
 ## Notes For Future Work
 
-- The next book-aligned bottleneck for Theorems 4.8 and 4.9 is likely
-  `geotop_punctured_star_radial_endpoint_projection_dev34`, because it is used
-  to transfer disconnectedness of the link to disconnectedness of the punctured
-  star.
+- The next book-aligned bottleneck for Theorems 4.8 and 4.9 is
+  `geotop_link_open_radial_cone_open_in_punctured_star_dev34`, because it is
+  the remaining geometric openness subclaim needed by the radial endpoint
+  projection.
 - After link connectedness is fully established, the cone-over-link bridge at
-  line 1066 should be the next bottleneck for turning link shape into
+  line 1223 should be the next bottleneck for turning link shape into
   `geotop_comb_n_cell (geotop_star K v) 2`.
-- The local chart contradiction lemmas at lines 1108, 1130, and 1151 deserve
+- The local chart contradiction lemmas at lines 1265, 1287, and 1308 deserve
   a careful statement audit before proof work. In particular, they encode the
   geometric impossibility of bad edge-incidence counts in plane or half-plane
   charts.
