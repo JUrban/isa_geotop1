@@ -2883,6 +2883,38 @@ proof -
     using hiso_raw \<phi>_def by (by100 simp)
 qed
 
+lemma geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hshape:
+    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
+      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(\<sigma> :: (real^2) set) L' B c \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Moise Fig. 4.10 construction obligation.  From the finite linear link,
+    use the broken-line or polygon order to subdivide the frontier of a
+    2-simplex with matching edge data; then add one non-frontier vertex and
+    cone the subdivided frontier to it.  The map \<open>\<psi>\<close> is the induced
+    order-preserving vertex bijection from the old link to the subdivided
+    frontier. **)
+  sorry
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -2902,7 +2934,69 @@ lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_o
     edge-chain or an edge-cycle, subdivide \<open>Fr \<sigma>\<close> with the same ordered
     edge data, and define \<open>\<phi>\<close> on vertices by the corresponding order-preserving
     match, with \<open>v\<close> sent to the new cone vertex. **)
-  sorry
+proof -
+  obtain \<sigma> :: "(real^2) set" and L' B c \<psi>
+    where htarget:
+      "geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    using geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hshape]
+    by (elim exE) assumption
+  have hstar_vertices_finite:
+      "finite (geotop_complex_vertices (geotop_star K v))"
+    using geotop_fig410_link_and_star_vertices_finite_dev34
+      [OF hK hv hlink_finite]
+    by (by100 blast)
+  define \<phi> where "\<phi> x = (if x = v then c else \<psi> x)" for x
+  have hdim: "geotop_simplex_dim \<sigma> 2"
+    using htarget by (by100 simp)
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using htarget by (by100 simp)
+  have h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+    using htarget by (by100 simp)
+  have hcB: "c \<notin> B"
+    using htarget by (by100 simp)
+  have hL_vertices: "geotop_complex_vertices L' = insert c B"
+    using htarget by (by100 simp)
+  have hcone_vertex_target: "geotop_convex_hull {c} \<in> L'"
+    using htarget by (by100 simp)
+  have hlink_target:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+    using htarget by (by100 simp)
+  have hcone_target:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+    using htarget by (by100 simp)
+  have hiso_raw:
+      "geotop_isomorphism (geotop_star K v) L'
+        (\<lambda>x. if x = v then c else \<psi> x)"
+    by (rule_tac geotop_star_fan_isomorphism_from_link_and_cone_target_cases_dev34
+        [OF hK hv h\<psi> hcB hL_vertices hstar_vertices_finite
+          hlink_target hcone_vertex_target hcone_target])
+  have h\<phi>_eq: "\<phi> = (\<lambda>x. if x = v then c else \<psi> x)"
+    using \<phi>_def by (by100 blast)
+  have hiso: "geotop_isomorphism (geotop_star K v) L' \<phi>"
+    using hiso_raw h\<phi>_eq by (by100 simp)
+  show ?thesis
+    using hdim hsubdiv hiso by (by100 blast)
+qed
+
 
 lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
