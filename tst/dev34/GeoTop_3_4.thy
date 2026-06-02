@@ -7283,6 +7283,57 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_2simplex_positive_same_side_HOL_interiors_meet_dev34:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hd_side: "n \<bullet> d > r"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    If both opposite vertices lie on the positive side of the shared-edge line,
+    the barycentric overlap construction gives a common interior point. **)
+proof -
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_positive_side_affine_coordinate_positive_dev34
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hd_side]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_2simplex_affine_coordinate_HOL_interiors_meet_dev34
+        [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hsum hd hz])
+qed
+
+lemma geotop_2simplex_negative_same_side_HOL_interiors_meet_dev34:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hd_side: "n \<bullet> d < r"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    Negative-side same-side version, symmetric to the positive-side wrapper. **)
+proof -
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_negative_side_affine_coordinate_positive_dev34
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hd_side]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_2simplex_affine_coordinate_HOL_interiors_meet_dev34
+        [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hsum hd hz])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
