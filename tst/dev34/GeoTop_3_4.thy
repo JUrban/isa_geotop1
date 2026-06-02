@@ -7023,6 +7023,97 @@ proof -
     using hsum hd by (by100 blast)
 qed
 
+lemma geotop_2simplex_positive_side_affine_coordinate_positive_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hd_side: "n \<bullet> d > r"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c
+      \<and> 0 < z"
+  (**
+    Same positive side of the edge line means the affine coordinate at the
+    opposite vertex \<open>c\<close> is positive. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using geotop_2simplex_vertices_affine_coordinates_dev34
+      [OF hab hc_not_ab h\<sigma>V, of d]
+    by (by100 blast)
+  have hd_dot: "n \<bullet> d = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> d = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hd by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have hdiff: "n \<bullet> d - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> d - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hd_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hprod_pos: "0 < z * (n \<bullet> c - r)"
+    using hdiff hd_side by (by100 linarith)
+  have hden_pos: "0 < n \<bullet> c - r"
+    using hc_side by (by100 linarith)
+  have hz: "0 < z"
+    using hprod_pos hden_pos by (simp add: zero_less_mult_iff)
+  show ?thesis
+    using hsum hd hz by (by100 blast)
+qed
+
+lemma geotop_2simplex_negative_side_affine_coordinate_positive_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hd_side: "n \<bullet> d < r"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c
+      \<and> 0 < z"
+  (**
+    Negative-side version, obtained by reversing the normal vector. **)
+proof -
+  have hline_neg: "affine hull {a, b} = {x. (-n) \<bullet> x = -r}"
+    using hline by (simp add: set_eq_iff)
+  have hc_pos: "(-n) \<bullet> c > -r"
+    using hc_side by (by100 simp)
+  have hd_pos: "(-n) \<bullet> d > -r"
+    using hd_side by (by100 simp)
+  show ?thesis
+    by (rule geotop_2simplex_positive_side_affine_coordinate_positive_dev34
+        [OF hab hc_not_ab h\<sigma>V hline_neg hc_pos hd_pos])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"

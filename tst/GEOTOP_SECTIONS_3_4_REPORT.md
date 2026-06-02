@@ -23,8 +23,8 @@ Evidence checked locally:
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
   `0:00:32 elapsed time`.
-- The current committed branch tip before this report refresh is `f08f604b`
-  (`Prove GeoTop distinct triangle interior disjointness`).
+- The current committed branch tip before this report refresh is `73300f10`
+  (`Prove GeoTop triangle affine coordinates`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7044; this is the same-complex two-triangle shared-edge local disk
+  at line 7135; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7358;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 7449;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -154,6 +154,8 @@ infrastructure used in Moise's Lemma 5 route. Recent proved helpers include:
 - `geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34`
 - `geotop_2simplex_vertices_affine_hull_UNIV_dev34`
 - `geotop_2simplex_vertices_affine_coordinates_dev34`
+- `geotop_2simplex_positive_side_affine_coordinate_positive_dev34`
+- `geotop_2simplex_negative_side_affine_coordinate_positive_dev34`
 
 Since the previous report, the radial cone openness problem has been reduced
 substantially. The current branch proves the subspace-open bridge, a finite
@@ -253,7 +255,12 @@ needed for the same-side contradiction. The coordinate helpers
 `geotop_2simplex_vertices_affine_hull_UNIV_dev34` and
 `geotop_2simplex_vertices_affine_coordinates_dev34` show that the first
 triangle's vertices span the plane and give affine coordinates for arbitrary
-points, setting up the same-side overlap construction.
+points, setting up the same-side overlap construction. The sign-coordinate
+helpers
+`geotop_2simplex_positive_side_affine_coordinate_positive_dev34` and
+`geotop_2simplex_negative_side_affine_coordinate_positive_dev34` prove that a
+same-side opposite vertex has positive affine coordinate at the first
+triangle's opposite vertex.
 
 ## Important Supporting Material
 
