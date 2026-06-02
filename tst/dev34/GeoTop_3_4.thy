@@ -159,6 +159,27 @@ lemma geotop_disconnected_link_separates_punctured_star_dev34:
          (\<Union>(geotop_star K v) - {v}))"
   sorry
 
+lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+  sorry
+
+lemma geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+  sorry
+
 lemma geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -192,7 +213,7 @@ proof (rule ccontr)
     "top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-    sorry
+    by (rule geotop_2_manifold_vertex_star_punctured_connected_dev34[OF hK hM hv])
   show False
     using hstar_separated hstar_not_separated by (by100 blast)
 qed
@@ -230,7 +251,8 @@ proof (rule ccontr)
     "top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-    sorry
+    by (rule geotop_2_manifold_with_boundary_vertex_star_punctured_connected_dev34
+        [OF hK hM hv])
   show False
     using hstar_separated hstar_not_separated by (by100 blast)
 qed
