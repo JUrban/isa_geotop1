@@ -1314,6 +1314,60 @@ next
   qed
 qed
 
+lemma geotop_closed_segment_HOL_arc_between_dev34:
+  fixes w q :: "real^2"
+  assumes hwq: "w \<noteq> q"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = closed_segment w q
+      \<and> pathstart \<gamma> = w \<and> pathfinish \<gamma> = q"
+proof -
+  let ?\<gamma> = "linepath w q"
+  have harc: "arc ?\<gamma>"
+    by (rule arc_linepath[OF hwq])
+  have hpim: "path_image ?\<gamma> = closed_segment w q"
+  proof -
+    have "path_image ?\<gamma> = ?\<gamma> ` {0..1}"
+      unfolding path_image_def by (by100 simp)
+    also have "\<dots> = closed_segment w q"
+      by (rule linepath_image_01)
+    finally show ?thesis .
+  qed
+  have hstart: "pathstart ?\<gamma> = w"
+    unfolding pathstart_def linepath_def by (by100 simp)
+  have hfinish: "pathfinish ?\<gamma> = q"
+    unfolding pathfinish_def linepath_def by (by100 simp)
+  show ?thesis using harc hpim hstart hfinish by (by100 blast)
+qed
+
+lemma geotop_HOL_arcs_glue_disjoint_endpoints_dev34:
+  fixes B\<^sub>1 B\<^sub>2 :: "(real^2) set"
+  assumes hR_end_1: "\<exists>\<gamma>\<^sub>1::real \<Rightarrow> real^2.
+      arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = B\<^sub>1 \<and> pathfinish \<gamma>\<^sub>1 = R"
+  assumes hR_end_2: "\<exists>\<gamma>\<^sub>2::real \<Rightarrow> real^2.
+      arc \<gamma>\<^sub>2 \<and> path_image \<gamma>\<^sub>2 = B\<^sub>2 \<and> pathstart \<gamma>\<^sub>2 = R"
+  assumes hdisj: "B\<^sub>1 \<inter> B\<^sub>2 = {R}"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>1 \<union> B\<^sub>2"
+proof -
+  obtain \<gamma>\<^sub>1 :: "real \<Rightarrow> real^2"
+    where harc\<^sub>1: "arc \<gamma>\<^sub>1" and hpim\<^sub>1: "path_image \<gamma>\<^sub>1 = B\<^sub>1"
+      and hfin\<^sub>1: "pathfinish \<gamma>\<^sub>1 = R"
+    using hR_end_1 by (by100 blast)
+  obtain \<gamma>\<^sub>2 :: "real \<Rightarrow> real^2"
+    where harc\<^sub>2: "arc \<gamma>\<^sub>2" and hpim\<^sub>2: "path_image \<gamma>\<^sub>2 = B\<^sub>2"
+      and hstart\<^sub>2: "pathstart \<gamma>\<^sub>2 = R"
+    using hR_end_2 by (by100 blast)
+  have h_fin_start: "pathfinish \<gamma>\<^sub>1 = pathstart \<gamma>\<^sub>2"
+    using hfin\<^sub>1 hstart\<^sub>2 by (by100 simp)
+  have h_int_sub: "path_image \<gamma>\<^sub>1 \<inter> path_image \<gamma>\<^sub>2 \<subseteq> {pathstart \<gamma>\<^sub>2}"
+    using hpim\<^sub>1 hpim\<^sub>2 hdisj hstart\<^sub>2 by (by100 blast)
+  have hjoin_arc: "arc (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2)"
+    by (rule arc_join[OF harc\<^sub>1 harc\<^sub>2 h_fin_start h_int_sub])
+  have hjoin_pim_raw: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = path_image \<gamma>\<^sub>1 \<union> path_image \<gamma>\<^sub>2"
+    by (rule path_image_join[OF h_fin_start])
+  have hjoin_pim: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = B\<^sub>1 \<union> B\<^sub>2"
+    using hjoin_pim_raw hpim\<^sub>1 hpim\<^sub>2 by (by100 simp)
+  show ?thesis using hjoin_arc hjoin_pim by (by100 blast)
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
