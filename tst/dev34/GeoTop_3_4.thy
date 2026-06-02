@@ -5345,6 +5345,109 @@ proof
   show "geotop_comb_n_cell (geotop_star K v) 2" using hL7 .
 qed
 
+lemma geotop_manifold_interior_if_HOL_interior_early_dev34:
+  fixes M :: "(real^2) set"
+  assumes hP: "P \<in> interior M"
+  shows "P \<in> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+  (**
+    Ordinary Euclidean interior points have a ball neighborhood in \<open>M\<close>;
+    that ball is homeomorphic to the plane, so it is a manifold-interior
+    chart. **)
+proof -
+  obtain r where hr: "0 < r" and hball_sub_int: "ball P r \<subseteq> interior M"
+  proof -
+    have "\<forall>x\<in>interior M. \<exists>e>0. ball x e \<subseteq> interior M"
+      using open_interior open_contains_ball by (by100 blast)
+    thus ?thesis using hP that by (by100 blast)
+  qed
+  let ?U = "ball P r"
+  have hU_sub_M: "?U \<subseteq> M"
+    using hball_sub_int interior_subset by (by100 blast)
+  have hP_U: "P \<in> ?U"
+    using hr by (by100 simp)
+  have hP_M: "P \<in> M"
+    using hP_U hU_sub_M by (by100 blast)
+  have hU_geotop_open: "?U \<in> geotop_euclidean_topology"
+    using open_ball unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+    by (by100 simp)
+  have hU_subspace: "?U \<in> subspace_topology UNIV geotop_euclidean_topology M"
+  proof -
+    have "?U = M \<inter> ?U"
+      using hU_sub_M by (by100 blast)
+    thus ?thesis
+      unfolding subspace_topology_def using hU_geotop_open by (by100 blast)
+  qed
+  have htopM: "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
+               subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_early)
+  have hU_openin: "openin_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U"
+    unfolding openin_on_def using htopM hU_sub_M hU_subspace by (by100 simp)
+  obtain f where hf:
+    "top1_homeomorphism_on ?U
+        (subspace_topology UNIV geotop_euclidean_topology ?U)
+        (UNIV::(real^2) set) (subspace_topology UNIV geotop_euclidean_topology UNIV) f"
+    using geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[
+        OF homeomorphic_ball_UNIV[OF hr]]
+    by (by100 blast)
+  have hUNIV: "subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set) =
+               geotop_euclidean_topology"
+    by (rule subspace_topology_self_carrier) (by100 simp)
+  have hf_geo:
+    "top1_homeomorphism_on ?U
+        (subspace_topology UNIV geotop_euclidean_topology ?U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hf hUNIV by (by100 simp)
+  have hsubU:
+    "subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U =
+     subspace_topology UNIV geotop_euclidean_topology ?U"
+  proof -
+    have "subspace_topology M (subspace_topology UNIV geotop_euclidean_topology M) ?U =
+          subspace_topology UNIV geotop_euclidean_topology ?U"
+      by (rule subspace_topology_trans[OF hU_sub_M])
+    thus ?thesis using htopM by (by100 simp)
+  qed
+  have hf_metric:
+    "top1_homeomorphism_on ?U
+        (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) ?U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hf_geo hsubU by (by100 simp)
+  show ?thesis
+    unfolding geotop_manifold_interior_def
+    using hP_M hU_openin hP_U hf_metric by (by100 blast)
+qed
+
+lemma geotop_2simplex_rel_interior_subset_manifold_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "rel_interior \<sigma>
+      \<subseteq> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+  (**
+    First local case for the converse boundary inclusion in Moise Theorem 9:
+    a point in the interior of a 2-simplex is an ordinary interior point of
+    the polyhedron, hence not a manifold-boundary point. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior \<sigma>"
+  have h\<sigma>_subM: "\<sigma> \<subseteq> geotop_polyhedron K"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>2])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  have hp_int_\<sigma>: "p \<in> interior \<sigma>"
+    using hp hrel_eq_int by (by100 simp)
+  have hp_int_M: "p \<in> interior (geotop_polyhedron K)"
+    using interior_mono[OF h\<sigma>_subM] hp_int_\<sigma> by (by100 blast)
+  show "p \<in> geotop_manifold_interior (geotop_polyhedron K) (\<lambda>x y. norm (x - y))"
+    by (rule geotop_manifold_interior_if_HOL_interior_early_dev34[OF hp_int_M])
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
