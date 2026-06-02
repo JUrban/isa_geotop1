@@ -5475,6 +5475,69 @@ proof
     using hp_int hp_not_int by (by100 blast)
 qed
 
+lemma geotop_edge_face_count_one_or_two_in_manifold_with_boundary_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hKM: "geotop_n_manifold_with_boundary_on
+      (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1
+      \<or> card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 2"
+  (**
+    Moise Theorem 9 edge count, extracted from the vertex-local proof:
+    no edge can be incident to zero 2-simplexes, and no edge can be incident
+    to three or more 2-simplexes. **)
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  have h2_exists: "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>"
+  proof (rule ccontr)
+    assume hno2: "\<not> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
+    have hrel_open:
+      "rel_interior e \<in>
+        subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+      by (rule geotop_complex_no_2_simplex_over_edge_rel_interior_open
+          [OF hK heK hedge hno2])
+    have hrel_sub: "rel_interior e \<subseteq> geotop_polyhedron K"
+      using heK rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
+    show False
+      by (rule geotop_2_manifold_with_boundary_no_open_edge_rel_interior
+          [OF hKM hedge hrel_open hrel_sub])
+  qed
+  have hge: "card ?S \<ge> 1"
+    by (rule geotop_complex_edge_in_2_simplex_imp_face_count_ge_1
+        [OF hK heK hedge h2_exists])
+  have hle: "card ?S \<le> 2"
+  proof (rule ccontr)
+    assume hnot_le2: "\<not> card ?S \<le> 2"
+    have hge3: "3 \<le> card ?S"
+      using hnot_le2 by (by100 simp)
+    have hfaces_ex:
+        "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+          \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+          \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+          \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+      by (rule geotop_complex_edge_face_count_ge_3_obtain[OF hge3])
+    obtain p where hp: "p \<in> rel_interior e"
+      using geotop_edge_rel_interior_nonempty[OF hedge] by (by100 blast)
+    have hpM: "p \<in> geotop_polyhedron K"
+      using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
+    let ?M = "geotop_polyhedron K"
+    let ?d = "\<lambda>x y. norm (x - y)"
+    let ?TM = "top1_metric_topology_on ?M ?d"
+    obtain U where hUopen: "openin_on ?M ?TM U"
+      and hpU: "p \<in> U"
+      and hcell: "geotop_is_n_cell (closure_on ?M ?TM U)
+          (subspace_topology ?M ?TM (closure_on ?M ?TM U)) 2"
+      using hKM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
+    show False
+      by (rule geotop_boundary_chart_three_incident_2simplex_contradiction_dev34
+          [OF hK heK hedge hp hfaces_ex hUopen hpU hcell])
+  qed
+  show ?thesis
+    using hge hle by (by100 arith)
+qed
+
 lemma geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
