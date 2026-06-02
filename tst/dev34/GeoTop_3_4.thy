@@ -36,7 +36,7 @@ proof (rule ccontr)
          (\<Union>(geotop_star K v) - {v}))"
     sorry
   show False
-    sorry
+    using hstar_separated hstar_not_separated by (by100 blast)
 qed
 
 lemma geotop_2_manifold_with_boundary_link_polyhedron_connected_from_vertex_star_dev34:
@@ -68,7 +68,7 @@ proof (rule ccontr)
          (\<Union>(geotop_star K v) - {v}))"
     sorry
   show False
-    sorry
+    using hstar_separated hstar_not_separated by (by100 blast)
 qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
