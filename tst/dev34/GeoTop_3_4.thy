@@ -8020,12 +8020,198 @@ proof -
     "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2 \<longrightarrow>
       p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
         \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
-    sorry
+  proof (intro allI impI)
+    fix \<alpha> \<beta>
+    assume h: "\<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2"
+    define \<mu> where "\<mu> = \<beta> / s"
+    define ell where "ell = ((\<alpha> / u) + 1 - \<mu>) / 2"
+    have h\<mu>0: "0 \<le> \<mu>"
+      using h hs unfolding \<mu>_def by (by100 simp)
+    have h\<mu>half: "\<mu> < 1 / 2"
+      using h hs unfolding \<mu>_def by (simp add: field_simps)
+    have h\<alpha>abs: "\<bar>\<alpha>\<bar> < u / 2"
+      using h by (by100 blast)
+    have h\<alpha>gt: "- (u / 2) < \<alpha>"
+    proof -
+      have "- \<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>lt: "\<alpha> < u / 2"
+    proof -
+      have "\<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>u_gt: "- (1 / 2) < \<alpha> / u"
+      using h\<alpha>gt hu by (simp add: field_simps)
+    have h\<alpha>u_lt: "\<alpha> / u < 1 / 2"
+      using h\<alpha>lt hu by (simp add: field_simps)
+    have hell_num_pos: "0 < \<alpha> / u + 1 - \<mu>"
+    proof -
+      have "- (1 / 2) + 1 - (1 / 2) < \<alpha> / u + 1 - \<mu>"
+        using h\<alpha>u_gt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell0_strict: "0 < ell"
+      using hell_num_pos unfolding ell_def by (by100 simp)
+    have hell0: "0 \<le> ell"
+      using hell0_strict by (by100 linarith)
+    have hell\<mu>_num_lt: "\<alpha> / u + 1 + \<mu> < 2"
+    proof -
+      have "\<alpha> / u + 1 + \<mu> < (1 / 2) + 1 + (1 / 2)"
+        using h\<alpha>u_lt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell\<mu>_expr: "ell + \<mu> = (\<alpha> / u + 1 + \<mu>) / 2"
+      unfolding ell_def by (simp add: field_simps)
+    have hell\<mu>_strict: "ell + \<mu> < 1"
+      using hell\<mu>_expr hell\<mu>_num_lt by (by100 simp)
+    have hell\<mu>: "ell + \<mu> \<le> 1"
+      using hell\<mu>_strict by (by100 linarith)
+    have h\<mu>s: "\<mu> * s = \<beta>"
+      using hs unfolding \<mu>_def by (by100 simp)
+    have hv_coeff: "- u + 2 * u * ell + u * \<mu> = \<alpha>"
+      using hu hs unfolding ell_def \<mu>_def by (simp add: field_simps)
+    have heq:
+      "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n =
+        (p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))"
+    proof -
+      have hbase_diff:
+        "(p + u *\<^sub>R v) - (p - u *\<^sub>R v) = (2 * u) *\<^sub>R v"
+        by (simp add: vec_eq_iff algebra_simps)
+      have hapex_diff:
+        "(p + s *\<^sub>R n) - (p - u *\<^sub>R v) = u *\<^sub>R v + s *\<^sub>R n"
+        by (simp add: vec_eq_iff algebra_simps)
+      have "(p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        = p + (- u + 2 * u * ell + u * \<mu>) *\<^sub>R v + (\<mu> * s) *\<^sub>R n"
+        using hbase_diff hapex_diff
+        by (simp add: algebra_simps scaleR_add_right)
+      also have "\<dots> = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using h\<mu>s hv_coeff by (by100 simp)
+      finally show ?thesis
+        by (by100 simp)
+    qed
+    have "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n \<in>
+      {p - u *\<^sub>R v
+        + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+        + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        | ell \<mu>. 0 \<le> ell \<and> 0 \<le> \<mu> \<and> ell + \<mu> \<le> 1}"
+      using heq hell0 h\<mu>0 hell\<mu> by (by100 blast)
+    thus "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+      using convex_hull_3_alt
+        [of "p - u *\<^sub>R v" "p + u *\<^sub>R v" "p + s *\<^sub>R n"]
+      by (by100 simp)
+  qed
   have hlower_membership:
     "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> - (t / 2) < \<beta> \<and> \<beta> < 0 \<longrightarrow>
       p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
         \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
-    sorry
+  proof (intro allI impI)
+    fix \<alpha> \<beta>
+    assume h: "\<bar>\<alpha>\<bar> < u / 2 \<and> - (t / 2) < \<beta> \<and> \<beta> < 0"
+    define \<mu> where "\<mu> = - \<beta> / t"
+    define ell where "ell = ((\<alpha> / u) + 1 - \<mu>) / 2"
+    have h\<beta>neg: "\<beta> < 0"
+      using h by (by100 blast)
+    have hneg\<beta>_lt: "- \<beta> < t / 2"
+      using h by (by100 linarith)
+    have h\<mu>0: "0 \<le> \<mu>"
+      using h\<beta>neg ht unfolding \<mu>_def by (simp add: field_simps)
+    have h\<mu>half: "\<mu> < 1 / 2"
+      using hneg\<beta>_lt ht unfolding \<mu>_def by (simp add: field_simps)
+    have h\<alpha>abs: "\<bar>\<alpha>\<bar> < u / 2"
+      using h by (by100 blast)
+    have h\<alpha>gt: "- (u / 2) < \<alpha>"
+    proof -
+      have "- \<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>lt: "\<alpha> < u / 2"
+    proof -
+      have "\<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>u_gt: "- (1 / 2) < \<alpha> / u"
+      using h\<alpha>gt hu by (simp add: field_simps)
+    have h\<alpha>u_lt: "\<alpha> / u < 1 / 2"
+      using h\<alpha>lt hu by (simp add: field_simps)
+    have hell_num_pos: "0 < \<alpha> / u + 1 - \<mu>"
+    proof -
+      have "- (1 / 2) + 1 - (1 / 2) < \<alpha> / u + 1 - \<mu>"
+        using h\<alpha>u_gt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell0_strict: "0 < ell"
+      using hell_num_pos unfolding ell_def by (by100 simp)
+    have hell0: "0 \<le> ell"
+      using hell0_strict by (by100 linarith)
+    have hell\<mu>_num_lt: "\<alpha> / u + 1 + \<mu> < 2"
+    proof -
+      have "\<alpha> / u + 1 + \<mu> < (1 / 2) + 1 + (1 / 2)"
+        using h\<alpha>u_lt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell\<mu>_expr: "ell + \<mu> = (\<alpha> / u + 1 + \<mu>) / 2"
+      unfolding ell_def by (simp add: field_simps)
+    have hell\<mu>_strict: "ell + \<mu> < 1"
+      using hell\<mu>_expr hell\<mu>_num_lt by (by100 simp)
+    have hell\<mu>: "ell + \<mu> \<le> 1"
+      using hell\<mu>_strict by (by100 linarith)
+    have h\<mu>t: "- (\<mu> * t) = \<beta>"
+      using ht unfolding \<mu>_def by (by100 simp)
+    have hv_coeff: "- u + 2 * u * ell + u * \<mu> = \<alpha>"
+      using hu ht unfolding ell_def \<mu>_def by (simp add: field_simps)
+    have heq:
+      "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n =
+        (p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))"
+    proof -
+      have hbase_diff:
+        "(p + u *\<^sub>R v) - (p - u *\<^sub>R v) = (2 * u) *\<^sub>R v"
+        by (simp add: vec_eq_iff algebra_simps)
+      have hapex_diff:
+        "(p - t *\<^sub>R n) - (p - u *\<^sub>R v) = u *\<^sub>R v - t *\<^sub>R n"
+        by (simp add: vec_eq_iff algebra_simps)
+      have "(p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))
+        = p + (- u + 2 * u * ell + u * \<mu>) *\<^sub>R v + (- (\<mu> * t)) *\<^sub>R n"
+        using hbase_diff hapex_diff
+        by (simp add: algebra_simps scaleR_add_right)
+      also have "\<dots> = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using h\<mu>t hv_coeff by (by100 simp)
+      finally show ?thesis
+        by (by100 simp)
+    qed
+    have "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n \<in>
+      {p - u *\<^sub>R v
+        + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+        + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))
+        | ell \<mu>. 0 \<le> ell \<and> 0 \<le> \<mu> \<and> ell + \<mu> \<le> 1}"
+      using heq hell0 h\<mu>0 hell\<mu> by (by100 blast)
+    thus "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+      using convex_hull_3_alt
+        [of "p - u *\<^sub>R v" "p + u *\<^sub>R v" "p - t *\<^sub>R n"]
+      by (by100 simp)
+  qed
   have hdiamond_ball:
     "\<exists>eps>0. ball p eps \<subseteq>
       convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
