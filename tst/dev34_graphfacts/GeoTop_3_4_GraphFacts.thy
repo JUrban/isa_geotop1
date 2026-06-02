@@ -1388,6 +1388,48 @@ proof -
         [OF hL hfin hq_endpoint heL hedge hqe h\<sigma>L hq\<sigma>])
 qed
 
+lemma geotop_polyhedron_two_vertices_edge_eq_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hsub: "L \<subseteq> {{w}, {q}, e}"
+  assumes heL: "e \<in> L"
+  assumes hwe: "w \<in> e"
+  assumes hqe: "q \<in> e"
+  shows "geotop_polyhedron L = e"
+proof
+  show "geotop_polyhedron L \<subseteq> e"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron L"
+    obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> L" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hcases: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+      using hsub h\<sigma>L by (by100 blast)
+    show "x \<in> e"
+    proof (rule disjE[OF hcases])
+      assume "\<sigma> = {w}"
+      show ?thesis using hx\<sigma> \<open>\<sigma> = {w}\<close> hwe by (by100 blast)
+    next
+      assume hrest: "\<sigma> = {q} \<or> \<sigma> = e"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume "\<sigma> = {q}"
+        show ?thesis using hx\<sigma> \<open>\<sigma> = {q}\<close> hqe by (by100 blast)
+      next
+        assume "\<sigma> = e"
+        show ?thesis using hx\<sigma> \<open>\<sigma> = e\<close> by (by100 simp)
+      qed
+    qed
+  qed
+next
+  show "e \<subseteq> geotop_polyhedron L"
+  proof
+    fix x
+    assume "x \<in> e"
+    show "x \<in> geotop_polyhedron L"
+      unfolding geotop_polyhedron_def using heL \<open>x \<in> e\<close> by (by100 blast)
+  qed
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
