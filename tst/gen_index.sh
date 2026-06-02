@@ -42,6 +42,7 @@ THEORIES=(
   dev34_workfacts/GeoTop_3_4_WorkFacts.thy
   dev34_linkfacts/GeoTop_3_4_LinkFacts.thy
   dev34_graphfacts/GeoTop_3_4_GraphFacts.thy
+  dev34/GeoTop_3_4_GraphWork.thy
   dev34/GeoTop_3_4.thy
 )
 

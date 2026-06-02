@@ -1,5 +1,5 @@
 theory GeoTop_3_4
-  imports "GeoTop34GraphFactsDirty.GeoTop_3_4_GraphFacts"
+  imports GeoTop_3_4_GraphWork
 begin
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
