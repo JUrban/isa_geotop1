@@ -3316,6 +3316,94 @@ proof -
   qed
 qed
 
+lemma geotop_simplex_vertex_notin_affine_hull_of_other_vertices_dev34:
+  fixes \<sigma> :: "(real^2) set" and V W :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_sub: "W \<subseteq> V - {v}"
+  shows "v \<notin> affine hull W"
+proof -
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule affine_independent_subset[OF hV_ai hW_sub_V])
+  have hinsert_sub: "insert v W \<subseteq> V"
+    using hvV hW_sub by (by100 blast)
+  have hinsert_ai: "\<not> affine_dependent (insert v W)"
+    by (rule affine_independent_subset[OF hV_ai hinsert_sub])
+  have hv_not_W: "v \<notin> W"
+    using hW_sub by (by100 blast)
+  show ?thesis
+  proof
+    assume hv_aff: "v \<in> affine hull W"
+    have "affine_dependent (insert v W)"
+      using affine_dependent_choose[OF hW_ai, of v] hv_not_W hv_aff
+      by (by100 simp)
+    thus False
+      using hinsert_ai by (by100 blast)
+  qed
+qed
+
+lemma geotop_simplex_opposite_face_ray_endpoint_unique_dev34:
+  fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hy: "y \<in> geotop_convex_hull (V - {v})"
+  assumes hy': "y' \<in> geotop_convex_hull (V - {v})"
+  assumes hs: "0 < s"
+  assumes h_ray: "y' - v = s *\<^sub>R (y - v)"
+  shows "y = y'"
+proof -
+  let ?W = "V - {v}"
+  have hv_not_aff: "v \<notin> affine hull ?W"
+    by (rule geotop_simplex_vertex_notin_affine_hull_of_other_vertices_dev34
+        [OF h\<sigma>V hvV]) (by100 blast)
+  have hy_aff: "y \<in> affine hull ?W"
+  proof -
+    have "y \<in> convex hull ?W"
+      using hy geotop_convex_hull_eq_HOL[of ?W] by (by100 simp)
+    moreover have "convex hull ?W \<subseteq> affine hull ?W"
+      by (rule convex_hull_subset_affine_hull)
+    ultimately show ?thesis by (by100 blast)
+  qed
+  have hy'_aff: "y' \<in> affine hull ?W"
+  proof -
+    have "y' \<in> convex hull ?W"
+      using hy' geotop_convex_hull_eq_HOL[of ?W] by (by100 simp)
+    moreover have "convex hull ?W \<subseteq> affine hull ?W"
+      by (rule convex_hull_subset_affine_hull)
+    ultimately show ?thesis by (by100 blast)
+  qed
+  show ?thesis
+  proof (cases "s = 1")
+    case True
+    show ?thesis
+      using h_ray True by (by100 simp)
+  next
+    case False
+    have h1s_ne: "1 - s \<noteq> 0"
+      using False by (by100 simp)
+    have hy'_eq: "y' = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+      using h_ray by (by100 simp add: algebra_simps)
+    have hv_eq: "v = (1 / (1 - s)) *\<^sub>R y' + (- s / (1 - s)) *\<^sub>R y"
+      using hy'_eq h1s_ne by (by100 simp add: algebra_simps)
+    have hcoeff: "1 / (1 - s) + (- s / (1 - s)) = 1"
+      using h1s_ne by (by100 simp)
+    have hv_aff: "v \<in> affine hull ?W"
+    proof -
+      have "(1 / (1 - s)) *\<^sub>R y' + (- s / (1 - s)) *\<^sub>R y
+          \<in> affine hull ?W"
+        by (rule mem_affine[OF affine_affine_hull hy'_aff hy_aff hcoeff])
+      thus ?thesis
+        using hv_eq by (by100 simp)
+    qed
+    show ?thesis
+      using hv_not_aff hv_aff by (by100 blast)
+  qed
+qed
+
 lemma geotop_simplex_point_radial_to_opposite_face_dev34:
   fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
   assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
