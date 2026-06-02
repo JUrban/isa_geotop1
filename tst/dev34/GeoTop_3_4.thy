@@ -146,6 +146,19 @@ proof (intro exI[where x = "geotop_open_star K v"] conjI)
     by (rule geotop_open_star_subset_star_polyhedron_dev34)
 qed
 
+lemma geotop_disconnected_link_separates_punctured_star_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hnot_connected:
+    "\<not> top1_connected_on (\<Union>(geotop_link K v))
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_link K v)))"
+  shows "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v}))"
+  sorry
+
 lemma geotop_2_manifold_link_polyhedron_connected_from_vertex_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -165,7 +178,8 @@ proof (rule ccontr)
     "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-    sorry
+    by (rule geotop_disconnected_link_separates_punctured_star_dev34
+        [OF hK hv hnot_connected])
   \<comment> \<open>The star of a vertex is a sufficiently small polyhedral neighborhood of
       the vertex in the triangulated surface.\<close>
   have hstar_neighborhood:
@@ -203,7 +217,8 @@ proof (rule ccontr)
     "\<not> top1_connected_on (\<Union>(geotop_star K v) - {v})
        (subspace_topology UNIV geotop_euclidean_topology
          (\<Union>(geotop_star K v) - {v}))"
-    sorry
+    by (rule geotop_disconnected_link_separates_punctured_star_dev34
+        [OF hK hv hnot_connected])
   \<comment> \<open>The same open-star neighborhood is available in the boundary case.\<close>
   have hstar_neighborhood:
     "\<exists>U. U \<in> subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)
