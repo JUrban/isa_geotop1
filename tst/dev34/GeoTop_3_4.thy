@@ -2,6 +2,23 @@ theory GeoTop_3_4
   imports "GeoTop34OpenStarDirty.GeoTop_3_4_OpenStar"
 begin
 
+lemma geotop_punctured_star_radial_endpoint_projection_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "\<exists>\<rho>. top1_continuous_map_on
+        (\<Union>(geotop_star K v) - {v})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (\<Union>(geotop_star K v) - {v}))
+        (\<Union>(geotop_link K v))
+        (subspace_topology UNIV geotop_euclidean_topology
+          (\<Union>(geotop_link K v))) \<rho>
+      \<and> (\<forall>x\<in>\<Union>(geotop_star K v) - {v}.
+          \<rho> x \<in> \<Union>(geotop_link K v)
+          \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+              \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x))"
+  sorry
+
 lemma geotop_radial_cone_over_link_open_in_punctured_star_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -14,7 +31,74 @@ lemma geotop_radial_cone_over_link_open_in_punctured_star_dev34:
           \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}
       \<in> subspace_topology UNIV geotop_euclidean_topology
           (\<Union>(geotop_star K v) - {v})"
-  sorry
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  let ?L = "\<Union>(geotop_link K v)"
+  let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+  let ?TL = "subspace_topology UNIV geotop_euclidean_topology ?L"
+  let ?Cone =
+    "{x \<in> ?S. \<exists>y t. y \<in> C \<and> 0 < t \<and> t \<le> 1
+       \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  obtain \<rho> where h\<rho>_cont:
+      "top1_continuous_map_on ?S ?TS ?L ?TL \<rho>"
+    and h\<rho>_radial:
+      "\<forall>x\<in>?S. \<rho> x \<in> ?L \<and> (\<exists>t. 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x)"
+    using geotop_punctured_star_radial_endpoint_projection_dev34[OF hK hv]
+    by (by100 blast)
+  have hpre_open: "{x \<in> ?S. \<rho> x \<in> C} \<in> ?TS"
+    by (rule continuous_map_preimage_open[OF h\<rho>_cont hC_open])
+  have hC_sub_link: "C \<subseteq> ?L"
+    using hC_open unfolding subspace_topology_def by (by100 blast)
+  have hCone_eq: "?Cone = {x \<in> ?S. \<rho> x \<in> C}"
+  proof
+    show "?Cone \<subseteq> {x \<in> ?S. \<rho> x \<in> C}"
+    proof
+      fix x
+      assume hx: "x \<in> ?Cone"
+      obtain y t where hxS: "x \<in> ?S"
+        and hyC: "y \<in> C"
+        and ht_pos: "0 < t"
+        and ht_le: "t \<le> 1"
+        and hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R y"
+        using hx by (by100 blast)
+      have hyL: "y \<in> ?L"
+        using hyC hC_sub_link by (by100 blast)
+      obtain t' where h\<rho>L: "\<rho> x \<in> ?L"
+        and ht'_pos: "0 < t'"
+        and ht'_le: "t' \<le> 1"
+        and hx\<rho>_rad: "x = (1 - t') *\<^sub>R v + t' *\<^sub>R \<rho> x"
+        using h\<rho>_radial hxS by (by100 blast)
+      have hrad_eq:
+        "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+         (1 - t') *\<^sub>R v + t' *\<^sub>R \<rho> x"
+        using hx_rad hx\<rho>_rad by (by100 simp)
+      have "y = \<rho> x"
+        by (rule geotop_link_radial_endpoint_unique_dev34
+            [OF hK hv hyL h\<rho>L ht_pos ht_le ht'_pos ht'_le hrad_eq])
+      show "x \<in> {x \<in> ?S. \<rho> x \<in> C}"
+        using hxS hyC \<open>y = \<rho> x\<close> by (by100 blast)
+    qed
+  next
+    show "{x \<in> ?S. \<rho> x \<in> C} \<subseteq> ?Cone"
+    proof
+      fix x
+      assume hx: "x \<in> {x \<in> ?S. \<rho> x \<in> C}"
+      have hxS: "x \<in> ?S"
+        using hx by (by100 blast)
+      have h\<rho>C: "\<rho> x \<in> C"
+        using hx by (by100 blast)
+      obtain t where ht_pos: "0 < t"
+        and ht_le: "t \<le> 1"
+        and hx_rad: "x = (1 - t) *\<^sub>R v + t *\<^sub>R \<rho> x"
+        using h\<rho>_radial hxS by (by100 blast)
+      show "x \<in> ?Cone"
+        using hxS h\<rho>C ht_pos ht_le hx_rad by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hpre_open hCone_eq by (by100 simp)
+qed
 
 lemma geotop_disconnected_link_separates_punctured_star_dev34:
   fixes K :: "(real^2) set set"
