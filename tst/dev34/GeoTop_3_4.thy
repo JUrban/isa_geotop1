@@ -2137,6 +2137,53 @@ next
     using hopposite by (by100 blast)
 qed
 
+lemma geotop_star_simplex_link_or_cone_case_dev34:
+  fixes K :: "(real^2) set set" and \<tau> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  shows "\<tau> \<in> geotop_link K v
+      \<or> \<tau> = {v}
+      \<or> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+  (**
+    Complete simplex dichotomy for the Fig. 4.10 fan map: every star simplex is
+    either an old link simplex, the cone vertex, or a cone simplex over an old
+    link face. **)
+proof -
+  have hstar_sub: "geotop_star K v \<subseteq> K"
+    by (rule geotop_star_subset_complex[OF hK])
+  have h\<tau>K: "\<tau> \<in> K"
+    using hstar_sub h\<tau>S by (by100 blast)
+  have hvK: "{v} \<in> K"
+    using hv geotop_complex_vertices_eq_0_simplexes[OF hK] by (by100 simp)
+  show ?thesis
+  proof (cases "v \<in> \<tau>")
+    case False
+    have hlink: "\<tau> \<in> geotop_link K v"
+      by (rule geotop_star_simplex_not_containing_vertex_in_link_dev34
+          [OF h\<tau>S False])
+    show ?thesis
+      using hlink by (by100 blast)
+  next
+    case True
+    obtain V' where hV': "geotop_simplex_vertices \<tau> V'"
+      and hvV': "v \<in> V'"
+      using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<tau>K True]
+      by (by100 blast)
+    have hVeq: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF hV' hV])
+    have hvV: "v \<in> V"
+      using hvV' hVeq by (by100 simp)
+    have hcone:
+        "\<tau> = {v}
+          \<or> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+      by (rule geotop_star_simplex_cone_case_dev34[OF hK h\<tau>S hV hvV])
+    show ?thesis
+      using hcone by (by100 blast)
+  qed
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
