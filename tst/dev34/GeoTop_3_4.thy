@@ -2184,6 +2184,267 @@ proof -
   qed
 qed
 
+lemma geotop_link_vertex_set_cone_simplex_in_star_dev34:
+  fixes K :: "(real^2) set set" and W :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_fin: "finite W"
+  assumes hW_ne: "W \<noteq> {}"
+  assumes hW_sub: "W \<subseteq> geotop_complex_vertices (geotop_link K v)"
+  assumes hW_link: "geotop_convex_hull W \<in> geotop_link K v"
+  shows "geotop_convex_hull (insert v W) \<in> geotop_star K v"
+  (**
+    Fig. 4.10 cone direction: an old link simplex with vertex set \<open>W\<close>
+    becomes a star simplex after adjoining the cone vertex \<open>v\<close>. **)
+proof -
+  let ?\<tau> = "geotop_convex_hull W"
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hW_vertices: "geotop_simplex_vertices ?\<tau> W"
+    by (rule geotop_V_subK_convhullK_is_simplex_vertices
+        [OF hlink_complex hW_fin hW_ne hW_sub hW_link])
+  have h\<tau>star: "?\<tau> \<in> geotop_star K v"
+    using hW_link unfolding geotop_link_def by (by100 blast)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and hv\<sigma>: "v \<in> \<sigma>"
+    and h\<tau>\<sigma>_case: "geotop_is_face ?\<tau> \<sigma> \<or> ?\<tau> = \<sigma>"
+    using h\<tau>star unfolding geotop_star_def by (by100 blast)
+  have hv_not_\<tau>: "v \<notin> ?\<tau>"
+    using hW_link unfolding geotop_link_def by (by100 blast)
+  have h\<tau>\<sigma>: "geotop_is_face ?\<tau> \<sigma>"
+  proof (cases "geotop_is_face ?\<tau> \<sigma>")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have "?\<tau> = \<sigma>"
+      using h\<tau>\<sigma>_case False by (by100 blast)
+    thus ?thesis
+      using hv\<sigma> hv_not_\<tau> by (by100 blast)
+  qed
+  obtain V\<^sub>\<sigma> W\<^sub>\<tau> where hV\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    and hW\<tau>_ne: "W\<^sub>\<tau> \<noteq> {}"
+    and hW\<tau>_sub: "W\<^sub>\<tau> \<subseteq> V\<^sub>\<sigma>"
+    and h\<tau>eq: "?\<tau> = geotop_convex_hull W\<^sub>\<tau>"
+    and hW\<tau>_vertices: "geotop_simplex_vertices ?\<tau> W\<^sub>\<tau>"
+    by (rule geotop_face_witness_simplex_vertices[OF h\<tau>\<sigma>])
+  have hW\<tau>_eq: "W\<^sub>\<tau> = W"
+    by (rule geotop_simplex_vertices_unique[OF hW\<tau>_vertices hW_vertices])
+  have hW_sub_V\<sigma>: "W \<subseteq> V\<^sub>\<sigma>"
+    using hW\<tau>_sub hW\<tau>_eq by (by100 simp)
+  have hvK: "{v} \<in> K"
+    using hv geotop_complex_vertices_eq_0_simplexes[OF hK] by (by100 simp)
+  obtain V\<^sub>v where hVv: "geotop_simplex_vertices \<sigma> V\<^sub>v"
+    and hvVv: "v \<in> V\<^sub>v"
+    using geotop_complex_singleton_point_is_simplex_vertex[OF hK hvK h\<sigma>K hv\<sigma>]
+    by (by100 blast)
+  have hVv_eq: "V\<^sub>v = V\<^sub>\<sigma>"
+    by (rule geotop_simplex_vertices_unique[OF hVv hV\<sigma>])
+  have hvV\<sigma>: "v \<in> V\<^sub>\<sigma>"
+    using hvVv hVv_eq by (by100 simp)
+  have hinsert_sub: "insert v W \<subseteq> V\<^sub>\<sigma>"
+    using hvV\<sigma> hW_sub_V\<sigma> by (by100 blast)
+  have hinsert_ne: "insert v W \<noteq> {}"
+    by (by100 simp)
+  have hcone_face: "geotop_is_face (geotop_convex_hull (insert v W)) \<sigma>"
+    by (rule geotop_is_face_of_subset[OF hV\<sigma> hinsert_ne hinsert_sub])
+  show ?thesis
+    unfolding geotop_star_def using h\<sigma>K hv\<sigma> hcone_face by (by100 blast)
+qed
+
+lemma geotop_star_convex_hull_vertex_set_cases_dev34:
+  fixes K :: "(real^2) set set" and V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hV_fin: "finite V"
+  assumes hV_sub: "V \<subseteq> geotop_complex_vertices (geotop_star K v)"
+  shows "geotop_convex_hull V \<in> geotop_star K v
+      \<longleftrightarrow> V = {v}
+        \<or> (v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+        \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+            \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)"
+  (**
+    Vertex-set form of Moise Fig. 4.10: every star simplex is either the cone
+    vertex, an old link simplex, or the cone over an old link simplex; and
+    each of those three cases gives a simplex of the star. **)
+proof
+  show "geotop_convex_hull V \<in> geotop_star K v \<Longrightarrow>
+      V = {v}
+        \<or> (v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+        \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+            \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)"
+  proof -
+    assume hVstar: "geotop_convex_hull V \<in> geotop_star K v"
+    let ?\<tau> = "geotop_convex_hull V"
+    have hstar_complex: "geotop_is_complex (geotop_star K v)"
+      by (rule geotop_star_is_complex[OF hK])
+    have hV_ne: "V \<noteq> {}"
+    proof
+      assume hV_empty: "V = {}"
+      have "?\<tau> = {}"
+        using hV_empty geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+      moreover have "?\<tau> \<noteq> {}"
+        by (rule geotop_complex_simplex_nonempty[OF hstar_complex hVstar])
+      ultimately show False
+        by (by100 blast)
+    qed
+    have hV_vertices: "geotop_simplex_vertices ?\<tau> V"
+      by (rule geotop_V_subK_convhullK_is_simplex_vertices
+          [OF hstar_complex hV_fin hV_ne hV_sub hVstar])
+    show ?thesis
+    proof (cases "v \<in> V")
+      case False
+      have hvK: "{v} \<in> K"
+        using hv geotop_complex_vertices_eq_0_simplexes[OF hK] by (by100 simp)
+      have hvStar: "{v} \<in> geotop_star K v"
+        unfolding geotop_star_def using hvK by (by100 blast)
+      have hv_not_\<tau>: "v \<notin> ?\<tau>"
+      proof
+        assume hv\<tau>: "v \<in> ?\<tau>"
+        obtain V' where hV': "geotop_simplex_vertices ?\<tau> V'"
+          and hvV': "v \<in> V'"
+          using geotop_complex_singleton_point_is_simplex_vertex
+            [OF hstar_complex hvStar hVstar hv\<tau>]
+          by (by100 blast)
+        have "V' = V"
+          by (rule geotop_simplex_vertices_unique[OF hV' hV_vertices])
+        thus False
+          using hvV' False by (by100 blast)
+      qed
+      have hlink: "?\<tau> \<in> geotop_link K v"
+        by (rule geotop_star_simplex_not_containing_vertex_in_link_dev34
+            [OF hVstar hv_not_\<tau>])
+      show ?thesis
+        using False hlink by (by100 blast)
+    next
+      case True
+      have hcone:
+          "?\<tau> = {v}
+            \<or> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+        by (rule geotop_star_simplex_cone_case_dev34
+            [OF hK hVstar hV_vertices True])
+      show ?thesis
+      proof (cases "?\<tau> = {v}")
+        case True
+        have hV_single: "geotop_simplex_vertices {v} V"
+          using hV_vertices True by (by100 simp)
+        have "V = {v}"
+          by (rule geotop_singleton_simplex_vertices[OF hV_single])
+        show ?thesis
+          using \<open>V = {v}\<close> by (by100 blast)
+      next
+        case False
+        have hW_link: "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+          using hcone False by (by100 blast)
+        have hlink_complex: "geotop_is_complex (geotop_link K v)"
+          by (rule geotop_link_is_complex[OF hK])
+        have hW_ne: "V - {v} \<noteq> {}"
+        proof
+          assume hW_empty: "V - {v} = {}"
+          have "geotop_convex_hull (V - {v}) = {}"
+            using hW_empty geotop_convex_hull_eq_HOL[of "V - {v}"]
+            by (by100 simp)
+          moreover have "geotop_convex_hull (V - {v}) \<noteq> {}"
+            by (rule geotop_complex_simplex_nonempty[OF hlink_complex hW_link])
+          ultimately show False
+            by (by100 blast)
+        qed
+        show ?thesis
+          using True hW_ne hW_link by (by100 blast)
+      qed
+    qed
+  qed
+  show "V = {v}
+        \<or> (v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+        \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+            \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)
+      \<Longrightarrow> geotop_convex_hull V \<in> geotop_star K v"
+  proof -
+    assume hcases:
+      "V = {v}
+        \<or> (v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+        \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+            \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)"
+    show ?thesis
+    proof (cases "V = {v}")
+      case True
+      have hvK: "{v} \<in> K"
+        using hv geotop_complex_vertices_eq_0_simplexes[OF hK] by (by100 simp)
+      have hvStar: "{v} \<in> geotop_star K v"
+        unfolding geotop_star_def using hvK by (by100 blast)
+      have "geotop_convex_hull V = {v}"
+        using True geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+      show ?thesis
+        using hvStar \<open>geotop_convex_hull V = {v}\<close> by (by100 simp)
+    next
+      case False
+      note hV_not_single = False
+      show ?thesis
+      proof (cases "v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v")
+        case True
+        show ?thesis
+          using True unfolding geotop_link_def by (by100 blast)
+      next
+        case False
+        note hnot_link_case = False
+        have hthird:
+          "v \<in> V \<and> V - {v} \<noteq> {}
+            \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+        proof -
+          from hcases show ?thesis
+          proof
+            assume hfirst: "V = {v}"
+            show ?thesis
+              using hV_not_single hfirst by (by100 blast)
+          next
+            assume hrest:
+              "(v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+              \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+                  \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)"
+            from hrest show ?thesis
+            proof
+              assume hlink_case:
+                "v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v"
+              show ?thesis
+                using hnot_link_case hlink_case by (by100 blast)
+            next
+              assume hcone_case:
+                "v \<in> V \<and> V - {v} \<noteq> {}
+                  \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+              show ?thesis
+                using hcone_case by (by100 blast)
+            qed
+          qed
+        qed
+        have hvin: "v \<in> V"
+          using hthird by (by100 blast)
+        have hW_ne: "V - {v} \<noteq> {}"
+          using hthird by (by100 blast)
+        have hW_link: "geotop_convex_hull (V - {v}) \<in> geotop_link K v"
+          using hthird by (by100 blast)
+        have hW_fin: "finite (V - {v})"
+          using hV_fin by (by100 simp)
+        have hstar_minus:
+          "geotop_complex_vertices (geotop_star K v) - {v}
+            = geotop_complex_vertices (geotop_link K v)"
+          by (rule geotop_star_vertices_minus_vertex_eq_link_vertices_dev34
+              [OF hK hv])
+        have hW_sub: "V - {v} \<subseteq> geotop_complex_vertices (geotop_link K v)"
+          using hV_sub hstar_minus by (by100 blast)
+        have hcone: "geotop_convex_hull (insert v (V - {v}))
+            \<in> geotop_star K v"
+          by (rule geotop_link_vertex_set_cone_simplex_in_star_dev34
+              [OF hK hv hW_fin hW_ne hW_sub hW_link])
+        have "V = insert v (V - {v})"
+          using hvin by (by100 blast)
+        show ?thesis
+          using hcone \<open>V = insert v (V - {v})\<close> by (by100 simp)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_star_cone_vertex_map_bij_dev34:
   fixes K :: "(real^2) set set" and B :: "(real^2) set"
     and v c :: "real^2"
