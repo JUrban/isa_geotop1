@@ -6932,6 +6932,49 @@ proof -
     using he_aff hline by (by100 simp)
 qed
 
+lemma geotop_2simplex_HOL_interior_eq_rel_interior_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "interior \<sigma> = rel_interior \<sigma>"
+  (**
+    A 2-simplex in the plane has full affine dimension, so its ordinary
+    Euclidean interior is its relative interior. **)
+proof -
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>2])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  show ?thesis
+    using hrel_eq_int by (by100 simp)
+qed
+
+lemma geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "interior \<sigma> \<inter> interior \<tau> = {}"
+  (**
+    Complex disjointness in the ordinary plane-interior form needed by the
+    shared-edge half-plane contradiction. **)
+proof -
+  have h\<sigma>_int: "interior \<sigma> = rel_interior \<sigma>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_dev34[OF h\<sigma>2])
+  have h\<tau>_int: "interior \<tau> = rel_interior \<tau>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_dev34[OF h\<tau>2])
+  have hrel_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h\<sigma>\<tau>])
+  show ?thesis
+    using h\<sigma>_int h\<tau>_int hrel_disj by (by100 simp)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
