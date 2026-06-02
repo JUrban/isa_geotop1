@@ -3170,13 +3170,11 @@ proof -
     using hiso_raw \<phi>_def by (by100 simp)
 qed
 
-lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34:
+lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron L)
-      \<or> geotop_is_polygon (geotop_polyhedron L)"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
   shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision F
@@ -3184,34 +3182,30 @@ lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_
       \<and> geotop_isomorphism L F \<psi>"
   (**
     Fig. 4.10, book step 1 in graph-only form.  Enumerate the finite linear
-    graph as the ordered edge-chain of a broken line or the ordered edge-cycle
-    of a polygon; subdivide the frontier of a 2-simplex with the same ordered
-    vertex/edge data; map each link vertex to the corresponding boundary
-    subdivision vertex. **)
+    graph as the ordered edge-cycle of a polygon; subdivide the whole frontier
+    of a 2-simplex with the same ordered vertex/edge data; map each link vertex
+    to the corresponding boundary subdivision vertex. **)
   sorry
 
-lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision F
         (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> geotop_isomorphism (geotop_link K v) F \<psi>"
   (**
-    Fig. 4.10, book step 1.  A finite linear link whose carrier is a broken
-    line or polygon is enumerated as an edge-chain or edge-cycle and matched
-    to a subdivision of the frontier of a 2-simplex. **)
+    Fig. 4.10, book step 1.  A finite linear polygonal link is enumerated as an
+    edge-cycle and matched to a subdivision of the frontier of a 2-simplex. **)
 proof -
   show ?thesis
-    by (rule geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_line_or_polygon_dev34
-        [OF hlink_linear hlink_finite hshape])
+    by (rule geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34
+        [OF hlink_linear hlink_finite hpolygon])
 qed
 
 lemma geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34:
@@ -3273,15 +3267,13 @@ proof -
         [OF h\<sigma> hboundary hiso])
 qed
 
-lemma geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) F L' c \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
@@ -3298,9 +3290,9 @@ lemma geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
   (**
     Moise Fig. 4.10 boundary model in intrinsic simplicial language.  The
-    finite link is matched by a simplicial isomorphism to a subdivision \<open>F\<close>
-    of the frontier of a 2-simplex; coning \<open>F\<close> from the new vertex \<open>c\<close>
-    gives the full fan subdivision \<open>L'\<close>. **)
+    finite polygonal link is matched by a simplicial isomorphism to a
+    subdivision \<open>F\<close> of the frontier of a 2-simplex; coning \<open>F\<close> from the new
+    vertex \<open>c\<close> gives the full fan subdivision \<open>L'\<close>. **)
 proof -
   obtain \<sigma> :: "(real^2) set" and F \<psi>
     where hboundary:
@@ -3308,8 +3300,8 @@ proof -
       \<and> geotop_is_subdivision F
         (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> geotop_isomorphism (geotop_link K v) F \<psi>"
-    using geotop_fig410_boundary_subdivision_model_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (by100 blast)
   have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
     using hboundary by (by100 blast)
@@ -3379,15 +3371,13 @@ proof -
     by (by100 blast)
 qed
 
-lemma geotop_standard_boundary_cone_model_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) F L' B c \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
@@ -3427,8 +3417,8 @@ proof -
         W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-    using geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (elim exE) assumption
   have hdim: "geotop_simplex_dim \<sigma> 2"
     using hmodel by (by100 simp)
@@ -3476,15 +3466,13 @@ proof -
 qed
 
 
-lemma geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_standard_fan_target_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) L' B c \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
@@ -3500,9 +3488,9 @@ lemma geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34:
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
   (**
-    Moise Fig. 4.10 construction obligation.  From the finite linear link,
-    use the broken-line or polygon order to subdivide the frontier of a
-    2-simplex with matching edge data; then add one non-frontier vertex and
+    Moise Fig. 4.10 construction obligation.  From the finite polygonal link,
+    use the cyclic order to subdivide the frontier of a 2-simplex with matching
+    edge data; then add one non-frontier vertex and
     cone the subdivided frontier to it.  The map \<open>\<psi>\<close> is the induced
     order-preserving vertex bijection from the old link to the subdivided
     frontier. **)
@@ -3525,8 +3513,8 @@ proof -
         W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-    using geotop_standard_boundary_cone_model_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (elim exE) assumption
   have hdim: "geotop_simplex_dim \<sigma> 2"
     using hmodel by (by100 simp)
@@ -3581,23 +3569,21 @@ proof -
       hlink_target hcone_target by (by100 blast)
 qed
 
-lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) L' \<phi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_isomorphism (geotop_star K v) L' \<phi>"
   (**
     Moise Fig. 4.10 with the simplicial bijection made explicit.  The missing
-    combinatorial content is to enumerate the finite linear link as either an
-    edge-chain or an edge-cycle, subdivide \<open>Fr \<sigma>\<close> with the same ordered
+    combinatorial content is to enumerate the finite polygonal link as an
+    edge-cycle, subdivide \<open>Fr \<sigma>\<close> with the same ordered
     edge data, and define \<open>\<phi>\<close> on vertices by the corresponding order-preserving
     match, with \<open>v\<close> sent to the new cone vertex. **)
 proof -
@@ -3616,8 +3602,8 @@ proof -
         W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-    using geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_standard_fan_target_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (elim exE) assumption
   have hstar_vertices_finite:
       "finite (geotop_complex_vertices (geotop_star K v))"
@@ -3664,25 +3650,23 @@ proof -
 qed
 
 
-lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34:
+lemma geotop_vertex_star_standard_fan_model_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
   assumes hlink_finite: "finite (geotop_link K v)"
-  assumes hshape:
-    "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-      \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
   shows "\<exists>(\<sigma> :: (real^2) set) L'.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_isomorphic (geotop_star K v) L'"
   (**
     Moise Fig. 4.10, isolated in the exact form used below.  Subdivide the
-    frontier of a 2-simplex so its edge-chain/cycle has the same combinatorial
-    order as the finite linear link, add one interior vertex, and cone that
+    frontier of a 2-simplex so its edge-cycle has the same combinatorial
+    order as the finite polygonal link, add one interior vertex, and cone that
     subdivided frontier to the new vertex.  The simplicial bijection sends
-    \<open>v\<close> to the new cone vertex and sends the link vertices, in linear/cyclic
+    \<open>v\<close> to the new cone vertex and sends the link vertices, in cyclic
     order, to the subdivided frontier vertices. **)
 proof -
   obtain \<sigma> :: "(real^2) set" and L' \<phi>
@@ -3690,12 +3674,33 @@ proof -
       "geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_isomorphism (geotop_star K v) L' \<phi>"
-    using geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (by100 blast)
   show ?thesis
     unfolding geotop_isomorphic_def using hfan by (by100 blast)
 qed
+
+lemma geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(L :: (real^2) set set) (\<sigma> :: (real^2) set) K' L'.
+      L = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision K' (geotop_star K v)
+      \<and> geotop_is_subdivision L' L
+      \<and> geotop_isomorphic K' L'"
+  (**
+    Boundary-vertex analogue of Moise Fig. 4.10.  Enumerate the finite
+    broken-line link as an ordered edge-chain, place that chain as a subdivided
+    boundary arc of a 2-simplex, and cone it from the corresponding boundary
+    vertex of the target triangle.  The resulting fan is a subdivision of a
+    2-simplex and is simplicially isomorphic to the vertex star. **)
+  sorry
 
 lemma geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
@@ -3713,29 +3718,32 @@ lemma geotop_vertex_star_fan_model_from_finite_linear_link_line_or_polygon_dev34
       \<and> geotop_is_subdivision L' L
       \<and> geotop_isomorphic K' L'"
   (**
-    Moise Fig. 4.10 step. Take a 2-simplex \<open>\<sigma>\<close>; subdivide
-    \<open>Fr \<sigma>\<close> so its edge-cycle or edge-chain matches the finite
-    polygonal/broken-line link; add one interior vertex and cone the boundary
-    subdivision to that vertex. The resulting fan subdivision of
-    \<open>{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}\<close> is simplicially isomorphic to a
-    subdivision of \<open>St v\<close>, with the link corresponding to the subdivided
-    boundary. **)
-proof -
+    Case split matching the book: polygonal links use the full-boundary
+    Figure 4.10 fan; broken-line links use the boundary-vertex fan obtained by
+    coning a subdivided boundary arc of a 2-simplex. **)
+proof (cases "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))")
+  case True
+  show ?thesis
+    by (rule geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34
+        [OF hK hv hlink_linear hlink_finite True])
+next
+  case False
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+    using hshape False by (by100 blast)
   obtain \<sigma> :: "(real^2) set" and L'
     where hfan:
       "geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_isomorphic (geotop_star K v) L'"
-    using geotop_vertex_star_standard_fan_model_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape]
+    using geotop_vertex_star_standard_fan_model_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
     by (by100 blast)
   have hstar_complex: "geotop_is_complex (geotop_star K v)"
     by (rule geotop_star_is_complex[OF hK])
   have hstar_sub: "geotop_is_subdivision (geotop_star K v) (geotop_star K v)"
     by (rule geotop_is_subdivision_refl[OF hstar_complex])
   show ?thesis
-    using hfan hstar_sub by (intro exI[of _ "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"])
-      (by100 blast)
+    using hfan hstar_sub by (intro exI[of _ "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"]) (by100 blast)
 qed
 
 lemma geotop_vertex_star_fan_model_from_link_complex_line_or_polygon_dev34:
@@ -9090,10 +9098,9 @@ proof -
   qed
   have hlink_finite: "finite (geotop_link K v)"
     using hlink_data by (by100 blast)
-  have hshape_poly:
-      "geotop_is_broken_line (geotop_polyhedron (geotop_link K v))
-        \<or> geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
-    using hlink_data by (by100 blast)
+  have hpolygon_poly:
+      "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+    using hpolygon unfolding geotop_polyhedron_def by (by100 simp)
   obtain \<sigma> :: "(real^2) set" and L' B c \<psi>
     where hfan:
       "geotop_simplex_dim \<sigma> 2
@@ -9109,8 +9116,8 @@ proof -
         W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-    using geotop_standard_fan_target_from_finite_linear_link_line_or_polygon_dev34
-      [OF hK hv hlink_linear hlink_finite hshape_poly]
+    using geotop_standard_fan_target_from_finite_linear_link_polygon_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon_poly]
     by (elim exE) assumption
   have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
     using hfan by (by100 blast)
