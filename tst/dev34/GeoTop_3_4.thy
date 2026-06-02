@@ -2591,6 +2591,26 @@ proof -
     using hcircle by (by100 blast)
 qed
 
+lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
+  fixes M U J :: "(real^2) set"
+  assumes hcell: "geotop_is_n_cell (closure_on M
+        (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology M
+        (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+        (closure_on M
+          (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)) 2"
+  assumes hJsub: "J \<subseteq> U"
+  assumes hJsphere: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<not> top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  (**
+    Moise Lemma 4, boundary-chart version: in a chart whose closure is a
+    2-cell, a small 1-sphere lying in the open chart part separates that chart
+    part.  Transport the 2-cell to a 2-simplex/disk and apply the Jordan curve
+    theorem to the image of \<open>J\<close>. **)
+  sorry
+
 lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -2610,7 +2630,23 @@ lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
         (closure_on (geotop_polyhedron K)
           (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
   shows False
-  sorry
+proof -
+  obtain J where hJsub: "J \<subseteq> U"
+    and hJsphere: "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    and hJconn: "top1_connected_on (U - J)
+        (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    using geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34
+      [OF hK heK hedge hp hfaces hlocal_ball]
+    by (by100 blast)
+  let ?M = "geotop_polyhedron K"
+  have hJnotconn: "\<not> top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    by (rule geotop_2cell_chart_1sphere_complement_not_connected_dev34
+        [OF hcell hJsub hJsphere])
+  show False
+    using hJconn hJnotconn by (by100 blast)
+qed
 
 lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
