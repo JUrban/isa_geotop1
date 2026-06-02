@@ -6094,8 +6094,12 @@ proof -
   qed
 qed
 
-lemma geotop_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
+lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
+  fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
   assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
   assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
@@ -6105,8 +6109,9 @@ lemma geotop_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev
   shows "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
   (**
     Moise local model for the two-sided edge case: two distinct 2-simplexes
-    sharing the edge \<open>e\<close> fill the two local half-disks along \<open>rel_interior e\<close>,
-    so the union has ordinary Euclidean interior there. **)
+    of the same complex that share the edge \<open>e\<close> lie on opposite sides of
+    \<open>e\<close>.  Their union fills the two local half-disks along
+    \<open>rel_interior e\<close>, so it has ordinary Euclidean interior there. **)
   sorry
 
 lemma geotop_two_incident_edge_rel_interior_subset_HOL_interior_polyhedron_dev34:
@@ -6138,8 +6143,8 @@ proof -
     and hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>, \<tau>}"
     using hex by (elim exE conjE)
   have hlocal: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
-    by (rule geotop_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34
-        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+    by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34
+        [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
   have hunion_sub: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K"
     using h\<sigma>K h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
   have hinterior_sub: "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K)"

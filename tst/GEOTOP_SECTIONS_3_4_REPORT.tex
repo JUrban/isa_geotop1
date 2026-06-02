@@ -22,7 +22,7 @@ commits ahead of the local branch.
 contains it.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:15 elapsed time}.
+with the outer command reporting \texttt{0:00:17 elapsed time}.
 \item The current committed branch tip before this report refresh is
 \texttt{3ca3f38a} (\texttt{Reduce GeoTop boundary local models to HOL interior}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
@@ -109,7 +109,7 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6110; this is the pure two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
+\item \texttt{geotop\_complex\_two\_2simplex\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 6113; this is the same-complex two-triangle shared-edge local disk model for Theorem 4.9's boundary converse.
 \item \texttt{geotop\_two\_sided\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 6192; this is the full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
@@ -164,9 +164,10 @@ Figure 4.10 construction to
 Since the previous report, the boundary-equality half of Theorem 4.9 has been
 split further. The broad subset helper now proves its contradiction argument
 from a carrier split, and the remaining content is named as two local chart
-obligations: two distinct 2-simplexes sharing an edge form an ordinary
-Euclidean neighborhood along the edge interior, and the vertex whose incident
-edges are all two-sided is ordinary Euclidean interior of \texttt{|K|}.
+obligations: two distinct 2-simplexes of the same complex sharing an edge form
+an ordinary Euclidean neighborhood along the edge interior, and the vertex
+whose incident edges are all two-sided is ordinary Euclidean interior of
+\texttt{|K|}.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
