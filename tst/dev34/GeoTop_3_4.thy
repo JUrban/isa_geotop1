@@ -1973,6 +1973,24 @@ proof -
     using hstar_subset hinsert_subset by (by100 blast)
 qed
 
+lemma geotop_link_vertices_avoid_star_vertex_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "v \<notin> geotop_complex_vertices (geotop_link K v)"
+  (**
+    Completes the vertex partition used in the Fig. 4.10 fan bijection:
+    the cone vertex is not one of the old link vertices. **)
+proof
+  assume hvL: "v \<in> geotop_complex_vertices (geotop_link K v)"
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hv_single_L: "{v} \<in> geotop_link K v"
+    using hvL geotop_complex_vertices_eq_0_simplexes[OF hlink_complex]
+    by (by100 simp)
+  show False
+    using hv_single_L unfolding geotop_link_def by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
