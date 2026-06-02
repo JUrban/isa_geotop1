@@ -7951,6 +7951,100 @@ proof -
     using htop_sub hbot_sub by (by100 blast)
 qed
 
+lemma geotop_shared_edge_probe_diamond_contains_ball_dev34:
+  fixes p v n :: "real^2"
+  assumes hv: "v \<noteq> 0"
+  assumes hn: "n \<noteq> 0"
+  assumes horth: "v \<bullet> n = 0"
+  assumes hu: "0 < u"
+  assumes hs: "0 < s"
+  assumes ht: "0 < t"
+  obtains eps where
+    "0 < eps"
+    "ball p eps \<subseteq>
+      convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+  (**
+    Analytic diamond step in Moise's shared-edge local model: the two small
+    triangles with common base in the edge direction and apices on opposite
+    normal rays contain a genuine Euclidean ball around the edge point. **)
+proof -
+  have hspan: "span {v, n} = UNIV"
+    sorry
+  have hcoords:
+    "\<forall>x. \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+    sorry
+  have hsmall_coords:
+    "\<exists>eps>0. \<forall>x\<in>ball p eps.
+      \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<and> \<bar>\<alpha>\<bar> < u / 2
+        \<and> \<bar>\<beta>\<bar> < min s t / 2"
+    sorry
+  have hupper_membership:
+    "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2 \<longrightarrow>
+      p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+    sorry
+  have hlower_membership:
+    "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> - (t / 2) < \<beta> \<and> \<beta> < 0 \<longrightarrow>
+      p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+    sorry
+  have hdiamond_ball:
+    "\<exists>eps>0. ball p eps \<subseteq>
+      convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+    using hsmall_coords hupper_membership hlower_membership
+  proof -
+    obtain eps where heps: "0 < eps"
+      and hball:
+        "\<forall>x\<in>ball p eps.
+          \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+            \<and> \<bar>\<alpha>\<bar> < u / 2
+            \<and> \<bar>\<beta>\<bar> < min s t / 2"
+      using hsmall_coords by (by100 blast)
+    have hsub:
+      "ball p eps \<subseteq>
+        convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+    proof
+      fix x
+      assume hx: "x \<in> ball p eps"
+      obtain \<alpha> \<beta> where hx_eq: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        and h\<alpha>: "\<bar>\<alpha>\<bar> < u / 2"
+        and h\<beta>: "\<bar>\<beta>\<bar> < min s t / 2"
+        using hball hx by (by100 blast)
+      show "x \<in>
+        convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+      proof (cases "0 \<le> \<beta>")
+        case True
+        have h\<beta>s: "\<beta> < s / 2"
+          using h\<beta> True min.cobounded1[of s t] by (by100 linarith)
+        have "x \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+          using hupper_membership h\<alpha> True h\<beta>s hx_eq by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      next
+        case False
+        have h\<beta>neg: "\<beta> < 0"
+          using False by (by100 linarith)
+        have h\<beta>t: "- (t / 2) < \<beta>"
+          using h\<beta> False min.cobounded2[of s t] by (by100 linarith)
+        have "x \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+          using hlower_membership h\<alpha> h\<beta>neg h\<beta>t hx_eq by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      using heps hsub by (by100 blast)
+  qed
+  show ?thesis
+    using hdiamond_ball that
+    by (by100 blast)
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

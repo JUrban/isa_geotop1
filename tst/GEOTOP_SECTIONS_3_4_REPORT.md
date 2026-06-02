@@ -26,12 +26,12 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:38 elapsed time`.
-- The current committed branch tip before this report refresh is `3d85cad1`
-  (`Prove GeoTop simplex point hull containment`).
+  `0:00:33 elapsed time`.
+- The current committed branch tip before this report refresh is `6e6a0f25`
+  (`Prove GeoTop probe triangle containment`).
 - A scan of the target section-specific theories, excluding the intentionally
-  dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
-  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
+  dirty `dev34_pre/GeoTop.thy` mirror, finds 21 remaining executable `sorry`s:
+  10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 11 in
   `dev34/GeoTop_3_4.thy`.
 
 The practical consequence is that Sections 3 and 4 have a working, green
@@ -62,7 +62,7 @@ The Section 3-4 development is split across cached sessions:
   `dev34_graphwork`, and `dev34_openstar`: supporting cached work for links,
   graph/edge facts, and open-star neighborhoods.
 - `dev34/GeoTop_3_4.thy`: active Section 4 manifold/star work and the final
-  layer of the section-specific stack; it currently contains 6 executable
+  layer of the section-specific stack; it currently contains 11 executable
   `sorry`s.
 
 ## Section 3 Table
@@ -115,10 +115,13 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 - `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
+- `geotop_shared_edge_probe_diamond_contains_ball_dev34`, the newly isolated
+  local-diamond ball-containment proof sketch, at lines 7973, 7976, 7982,
+  7987, and 7992.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7969; this is the remaining analytic local-neighborhood step for
+  at line 8063; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8325;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8419;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -320,6 +323,12 @@ in that simplex. The containment package
 `geotop_shared_edge_probe_triangles_subset_union_dev34` now applies this
 convexity wrapper to the two small probe triangles used in the book's local
 diamond argument, placing their union inside the two incident 2-simplexes.
+The next book step has been added as a compiling `sorry`-first proof sketch:
+`geotop_shared_edge_probe_diamond_contains_ball_dev34` reduces the local
+diamond ball-containment lemma to five analytic subclaims, namely orthogonal
+coordinate spanning, coordinate representation, small coordinate control near
+the center point, and upper/lower triangle membership. The final ball-subset
+bookkeeping inside that helper is already proved from those subclaims.
 
 ## Important Supporting Material
 

@@ -26,12 +26,12 @@ theorem index ran in about half a second, while \texttt{gen\_stmt\_index.sh}
 ran in about two seconds.
 \item A warm-cache section build passed:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:38 elapsed time}.
+with the outer command reporting \texttt{0:00:33 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{3d85cad1} (\texttt{Prove GeoTop simplex point hull containment}).
+\texttt{6e6a0f25} (\texttt{Prove GeoTop probe triangle containment}).
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
-the target section-specific theories currently contain 16 executable
-\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
+the target section-specific theories currently contain 21 executable
+\texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 11 in
 \texttt{dev34/GeoTop\_3\_4.thy}.
 \end{itemize}
 
@@ -56,7 +56,7 @@ The Section 3--4 development is split as follows:
 \item \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy}: Section 3 and early Section 4.
 \item \texttt{dev34\_facts/GeoTop\_3\_4\_Facts.thy}: Jordan-curve facts and local manifold helpers.
 \item \texttt{dev34\_workfacts}, \texttt{dev34\_linkfacts}, \texttt{dev34\_graphfacts}, \texttt{dev34\_graphwork}, and \texttt{dev34\_openstar}: cached support layers.
-\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work and the final layer of the section-specific stack; it currently contains 6 executable \texttt{sorry}s.
+\item \texttt{dev34/GeoTop\_3\_4.thy}: active Section 4 manifold/star work and the final layer of the section-specific stack; it currently contains 11 executable \texttt{sorry}s.
 \end{itemize}
 
 \section*{Section 3 Counterparts}
@@ -113,8 +113,9 @@ The current holes in \texttt{dev34/GeoTop\_3\_4.thy} are:
 \item \texttt{geotop\_unique\_incident\_2simplex\_small\_semicircle\_domain\_separates\_chart\_dev34} at line 4001.
 \item \texttt{geotop\_three\_incident\_2simplex\_small\_circle\_domain\_not\_separates\_chart\_dev34} at line 4061.
 \item \texttt{geotop\_2cell\_chart\_1sphere\_complement\_not\_connected\_dev34} at line 4197.
-\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 7969; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
-\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 8325; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
+\item \texttt{geotop\_shared\_edge\_probe\_diamond\_contains\_ball\_dev34}, the newly isolated local-diamond ball-containment proof sketch, at lines 7973, 7976, 7982, 7987, and 7992.
+\item \texttt{geotop\_2simplex\_opposite\_side\_shared\_edge\_rel\_interior\_subset\_HOL\_interior\_union\_dev34} at line 8063; this is the remaining analytic local-neighborhood step for the same-complex two-triangle shared-edge local disk model.
+\item \texttt{geotop\_polygon\_link\_vertex\_is\_HOL\_interior\_polyhedron\_dev34} at line 8419; this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood branch of Theorem 4.9's boundary converse.
 \end{itemize}
 
 \section*{Recent Progress and Supporting Material}
@@ -296,7 +297,14 @@ is contained in that simplex. The containment package
 \texttt{geotop\_shared\_edge\_probe\_triangles\_subset\_union\_dev34} now
 applies this convexity wrapper to the two small probe triangles used in the
 book's local diamond argument, placing their union inside the two incident
-2-simplexes.
+2-simplexes. The next book step has been added as a compiling
+\texttt{sorry}-first proof sketch:
+\texttt{geotop\_shared\_edge\_probe\_diamond\_contains\_ball\_dev34} reduces
+the local diamond ball-containment lemma to five analytic subclaims, namely
+orthogonal coordinate spanning, coordinate representation, small coordinate
+control near the center point, and upper/lower triangle membership. The final
+ball-subset bookkeeping inside that helper is already proved from those
+subclaims.
 
 Other important cached helpers include
 \texttt{geotop\_complex\_vertex\_star\_neighborhood\_dev34},
