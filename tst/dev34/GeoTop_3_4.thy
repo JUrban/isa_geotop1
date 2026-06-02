@@ -389,6 +389,226 @@ proof -
     using hstar hne by (by100 blast)
 qed
 
+lemma geotop_punctured_star_separation_side_meets_vertex_neighborhood_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hsep:
+    "top1_is_separation_on (\<Union>(geotop_star K v) - {v})
+       (subspace_topology UNIV geotop_euclidean_topology
+         (\<Union>(geotop_star K v) - {v})) A B"
+  assumes ha: "a \<in> A"
+  assumes hU:
+    "U \<in> subspace_topology UNIV geotop_euclidean_topology
+       (geotop_polyhedron K)"
+  assumes hvU: "v \<in> U"
+  shows "(U - {v}) \<inter> A \<noteq> {}"
+proof -
+  let ?S = "\<Union>(geotop_star K v) - {v}"
+  have hAopen:
+    "A \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
+    using hsep unfolding top1_is_separation_on_def by (by100 simp)
+  have hA_subS: "A \<subseteq> ?S"
+    using hAopen unfolding subspace_topology_def by (by100 blast)
+  have haS: "a \<in> ?S"
+    using ha hA_subS by (by100 blast)
+  obtain y s where hy: "y \<in> \<Union>(geotop_link K v)"
+    and hs0: "0 < s"
+    and hs1: "s \<le> 1"
+    and ha_rad: "a = (1 - s) *\<^sub>R v + s *\<^sub>R y"
+    using geotop_star_punctured_point_radial_to_link_dev34[OF hK hv haS]
+    by (by100 blast)
+  obtain W where hWopen: "W \<in> geotop_euclidean_topology"
+    and hUeq: "U = geotop_polyhedron K \<inter> W"
+    using hU unfolding subspace_topology_def by (by100 blast)
+  have hvW: "v \<in> W"
+    using hvU hUeq by (by100 blast)
+  obtain \<delta> where h\<delta>pos: "\<delta> > 0"
+    and hballW: "ball v \<delta> \<subseteq> W"
+  proof -
+    have "open W"
+      using hWopen
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    then have hballs: "\<forall>x\<in>W. \<exists>\<epsilon>>0. ball x \<epsilon> \<subseteq> W"
+      unfolding open_contains_ball by (by100 simp)
+    obtain \<delta> where "\<delta> > 0" and "ball v \<delta> \<subseteq> W"
+      using hballs hvW by (by100 blast)
+    then show ?thesis
+      by (rule that)
+  qed
+  have hy_ne: "y \<noteq> v"
+    by (rule geotop_link_point_ne_vertex_dev34[OF hy])
+  obtain q where hq_seg: "q \<in> closed_segment v y"
+    and hq_ne: "q \<noteq> v"
+    and hq_ball: "q \<in> ball v \<delta>"
+  proof -
+    obtain q where hq: "q \<in> (closed_segment v y - {v}) \<inter> ball v \<delta>"
+      using nondegenerate_segment_meets_ball[OF hy_ne h\<delta>pos] by (by100 blast)
+    have "q \<in> closed_segment v y"
+      using hq by (by100 blast)
+    have "q \<noteq> v"
+      using hq by (by100 blast)
+    have "q \<in> ball v \<delta>"
+      using hq by (by100 blast)
+    show ?thesis
+      by (rule that[OF \<open>q \<in> closed_segment v y\<close> \<open>q \<noteq> v\<close> \<open>q \<in> ball v \<delta>\<close>])
+  qed
+  obtain r where hr0: "0 \<le> r"
+    and hr1: "r \<le> 1"
+    and hq_rad: "q = (1 - r) *\<^sub>R v + r *\<^sub>R y"
+    using hq_seg unfolding closed_segment_def by (by100 blast)
+  have hrpos: "0 < r"
+  proof (rule ccontr)
+    assume "\<not> 0 < r"
+    then have "r = 0"
+      using hr0 by (by100 linarith)
+    then have "q = v"
+      using hq_rad by (by100 simp)
+    show False
+      using hq_ne \<open>q = v\<close> by (by100 blast)
+  qed
+  have hqS: "q \<in> ?S"
+  proof -
+    have "(1 - r) *\<^sub>R v + r *\<^sub>R y \<in> ?S"
+      by (rule geotop_link_radial_tail_in_punctured_star_dev34[OF hK hy hrpos hr1])
+    show ?thesis
+      using hq_rad \<open>(1 - r) *\<^sub>R v + r *\<^sub>R y \<in> ?S\<close> by (by100 simp)
+  qed
+  have hqU: "q \<in> U - {v}"
+  proof -
+    have hq_star: "q \<in> \<Union>(geotop_star K v)"
+      using hqS by (by100 blast)
+    have hqM: "q \<in> geotop_polyhedron K"
+      using hq_star geotop_star_polyhedron_subset_polyhedron[OF hK] by (by100 blast)
+    have hqW: "q \<in> W"
+      using hq_ball hballW by (by100 blast)
+    show ?thesis
+      using hUeq hqM hqW hq_ne by (by100 blast)
+  qed
+  have hseg_subS: "closed_segment q a \<subseteq> ?S"
+  proof
+    fix z
+    assume hzseg: "z \<in> closed_segment q a"
+    obtain l where hl0: "0 \<le> l" and hl1: "l \<le> 1"
+      and hz: "z = (1 - l) *\<^sub>R q + l *\<^sub>R a"
+      using hzseg unfolding closed_segment_def by (by100 blast)
+    define u where "u = (1 - l) * r + l * s"
+    have hu0: "0 < u"
+    proof (cases "l = 1")
+      case True
+      show ?thesis
+        unfolding u_def using True hs0 by (by100 simp)
+    next
+      case False
+      have h1l_pos: "0 < 1 - l"
+        using hl1 False by (by100 linarith)
+      have hleft_pos: "0 < (1 - l) * r"
+        by (rule mult_pos_pos[OF h1l_pos hrpos])
+      have hright_nonneg: "0 \<le> l * s"
+        using hl0 hs0 by (by100 simp)
+      show ?thesis
+        unfolding u_def using hleft_pos hright_nonneg by (by100 linarith)
+    qed
+    have hu1: "u \<le> 1"
+    proof -
+      have h1l_nonneg: "0 \<le> 1 - l"
+        using hl1 by (by100 linarith)
+      have hleft_le: "(1 - l) * r \<le> (1 - l) * 1"
+        by (rule mult_left_mono[OF hr1 h1l_nonneg])
+      have hright_le: "l * s \<le> l * 1"
+        by (rule mult_left_mono[OF hs1 hl0])
+      have hsum: "(1 - l) * 1 + l * 1 = 1"
+        by (by100 simp)
+      show ?thesis
+        unfolding u_def using hleft_le hright_le hsum by (by100 linarith)
+    qed
+    have hz_rad: "z = (1 - u) *\<^sub>R v + u *\<^sub>R y"
+      unfolding u_def using hz hq_rad ha_rad by (simp add: algebra_simps)
+    have "(1 - u) *\<^sub>R v + u *\<^sub>R y \<in> ?S"
+      by (rule geotop_link_radial_tail_in_punctured_star_dev34[OF hK hy hu0 hu1])
+    show "z \<in> ?S"
+      using hz_rad \<open>(1 - u) *\<^sub>R v + u *\<^sub>R y \<in> ?S\<close> by (by100 simp)
+  qed
+  have hseg_conn:
+    "top1_connected_on (closed_segment q a)
+       (subspace_topology UNIV geotop_euclidean_topology (closed_segment q a))"
+  proof -
+    have "connected (closed_segment q a)"
+      by (rule convex_connected[OF convex_closed_segment])
+    show ?thesis
+      using \<open>connected (closed_segment q a)\<close>
+        top1_connected_on_geotop_iff_connected[of "closed_segment q a"]
+      by (by100 simp)
+  qed
+  have hseg_meets_A: "closed_segment q a \<inter> A \<noteq> {}"
+  proof -
+    have "a \<in> closed_segment q a"
+    proof -
+      have "0 \<le> (1::real) \<and> (1::real) \<le> 1
+          \<and> a = (1 - 1) *\<^sub>R q + 1 *\<^sub>R a"
+        by (by100 simp)
+      show ?thesis
+        unfolding closed_segment_def using \<open>0 \<le> (1::real) \<and> (1::real) \<le> 1
+          \<and> a = (1 - 1) *\<^sub>R q + 1 *\<^sub>R a\<close>
+        by (by100 blast)
+    qed
+    show ?thesis
+      using \<open>a \<in> closed_segment q a\<close> ha by (by100 blast)
+  qed
+  have hq_in_seg: "q \<in> closed_segment q a"
+  proof -
+    have "0 \<le> (0::real) \<and> (0::real) \<le> 1
+        \<and> q = (1 - 0) *\<^sub>R q + 0 *\<^sub>R a"
+      by (by100 simp)
+    show ?thesis
+      unfolding closed_segment_def using \<open>0 \<le> (0::real) \<and> (0::real) \<le> 1
+        \<and> q = (1 - 0) *\<^sub>R q + 0 *\<^sub>R a\<close>
+      by (by100 blast)
+  qed
+  have hqA: "q \<in> A"
+  proof -
+    have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      unfolding geotop_euclidean_topology_eq_open_sets
+      by (rule top1_open_sets_is_topology_on_UNIV)
+    have htopS:
+      "is_topology_on ?S
+        (subspace_topology UNIV geotop_euclidean_topology ?S)"
+      by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+    have hsub_eq:
+      "subspace_topology ?S
+        (subspace_topology UNIV geotop_euclidean_topology ?S)
+        (closed_segment q a)
+       = subspace_topology UNIV geotop_euclidean_topology (closed_segment q a)"
+      by (rule subspace_topology_trans[OF hseg_subS])
+    have hseg_connS:
+      "top1_connected_on (closed_segment q a)
+        (subspace_topology ?S
+          (subspace_topology UNIV geotop_euclidean_topology ?S)
+          (closed_segment q a))"
+      using hseg_conn hsub_eq by (by100 simp)
+    have hside:
+      "closed_segment q a \<inter> B = {} \<or> closed_segment q a \<inter> A = {}"
+      by (rule Lemma_23_2_disjoint[OF htopS hsep hseg_subS hseg_connS])
+    have hcover: "A \<union> B = ?S"
+      using hsep unfolding top1_is_separation_on_def by (by100 simp)
+    have hqAB: "q \<in> A \<or> q \<in> B"
+      using hcover hqS by (by100 blast)
+    have hq_notB: "q \<notin> B"
+    proof
+      assume hqB: "q \<in> B"
+      have hseg_meets_B: "closed_segment q a \<inter> B \<noteq> {}"
+        using hq_in_seg hqB by (by100 blast)
+      show False
+        using hside hseg_meets_A hseg_meets_B by (by100 blast)
+    qed
+    show ?thesis
+      using hqAB hq_notB by (by100 blast)
+  qed
+  show ?thesis
+    using hqU hqA by (by100 blast)
+qed
+
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
