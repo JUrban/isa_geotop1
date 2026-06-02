@@ -2155,6 +2155,204 @@ proof -
     using hr_pos hball hUeq by (intro exI[of _ r]) (by100 blast)
 qed
 
+lemma top1_homeomorphism_on_subspace_image_dev34:
+  assumes hhomeo: "top1_homeomorphism_on X TX Y TY f"
+  assumes hA: "A \<subseteq> X"
+  shows "top1_homeomorphism_on A (subspace_topology X TX A)
+      (f ` A) (subspace_topology Y TY (f ` A)) f"
+proof -
+  have hTX: "is_topology_on X TX"
+    using hhomeo unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hTY: "is_topology_on Y TY"
+    using hhomeo unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hbij: "bij_betw f X Y"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hmapX: "f ` X = Y"
+    using hbij unfolding bij_betw_def by (by100 blast)
+  have hImg_subY: "f ` A \<subseteq> Y"
+    using hA hmapX by (by100 blast)
+  have hinjX: "inj_on f X"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hinjA: "inj_on f A"
+    by (rule inj_on_subset[OF hinjX hA])
+  have htopA: "is_topology_on A (subspace_topology X TX A)"
+    by (rule subspace_topology_is_topology_on[OF hTX hA])
+  have htopImg: "is_topology_on (f ` A) (subspace_topology Y TY (f ` A))"
+    by (rule subspace_topology_is_topology_on[OF hTY hImg_subY])
+  have hbijA: "bij_betw f A (f ` A)"
+    unfolding bij_betw_def using hinjA by (by100 blast)
+  have hcont_f: "top1_continuous_map_on X TX Y TY f"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  have hcont_A: "top1_continuous_map_on A (subspace_topology X TX A)
+      (f ` A) (subspace_topology Y TY (f ` A)) f"
+    unfolding top1_continuous_map_on_def
+  proof (intro conjI)
+    show "\<forall>x\<in>A. f x \<in> f ` A"
+      by (by100 blast)
+    show "\<forall>V\<in>subspace_topology Y TY (f ` A).
+        {x \<in> A. f x \<in> V} \<in> subspace_topology X TX A"
+    proof
+      fix V
+      assume hV: "V \<in> subspace_topology Y TY (f ` A)"
+      obtain W where hW: "W \<in> TY" and hVeq: "V = f ` A \<inter> W"
+        using hV unfolding subspace_topology_def by (by100 blast)
+      have hpreX: "{x \<in> X. f x \<in> W} \<in> TX"
+        using hcont_f hW unfolding top1_continuous_map_on_def by (by100 blast)
+      have hpre_eq: "{x \<in> A. f x \<in> V} = A \<inter> {x \<in> X. f x \<in> W}"
+        using hA hVeq by (by100 blast)
+      show "{x \<in> A. f x \<in> V} \<in> subspace_topology X TX A"
+        unfolding hpre_eq subspace_topology_def using hpreX by (by100 blast)
+    qed
+  qed
+  have hcont_inv: "top1_continuous_map_on Y TY X TX (inv_into X f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have hcont_inv_A: "top1_continuous_map_on (f ` A)
+      (subspace_topology Y TY (f ` A)) A (subspace_topology X TX A)
+      (inv_into A f)"
+    unfolding top1_continuous_map_on_def
+  proof (intro conjI)
+    show "\<forall>y\<in>f ` A. inv_into A f y \<in> A"
+      using hinjA by (by100 simp)
+    show "\<forall>V\<in>subspace_topology X TX A.
+        {y \<in> f ` A. inv_into A f y \<in> V} \<in>
+        subspace_topology Y TY (f ` A)"
+    proof
+      fix V
+      assume hV: "V \<in> subspace_topology X TX A"
+      obtain W where hW: "W \<in> TX" and hVeq: "V = A \<inter> W"
+        using hV unfolding subspace_topology_def by (by100 blast)
+      have hpreY: "{y \<in> Y. inv_into X f y \<in> W} \<in> TY"
+        using hcont_inv hW unfolding top1_continuous_map_on_def by (by100 blast)
+      have hpre_eq:
+        "{y \<in> f ` A. inv_into A f y \<in> V} =
+         (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+      proof
+        show "{y \<in> f ` A. inv_into A f y \<in> V} \<subseteq>
+            (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+        proof
+          fix y
+          assume hy: "y \<in> {y \<in> f ` A. inv_into A f y \<in> V}"
+          obtain a where haA: "a \<in> A" and hyfa: "y = f a"
+            using hy by (by100 blast)
+          have haX: "a \<in> X"
+            using hA haA by (by100 blast)
+          have hinvA: "inv_into A f y = a"
+            using hinjA haA hyfa by (by100 simp)
+          have hinvX: "inv_into X f y = a"
+            using hinjX haX hyfa by (by100 simp)
+          have haW: "a \<in> W"
+            using hy hVeq hinvA by (by100 blast)
+          have hyY: "y \<in> Y"
+            using hImg_subY hy by (by100 blast)
+          show "y \<in> (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+            using hy hyY hinvX haW by (by100 blast)
+        qed
+      next
+        show "(f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W} \<subseteq>
+            {y \<in> f ` A. inv_into A f y \<in> V}"
+        proof
+          fix y
+          assume hy: "y \<in> (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+          obtain a where haA: "a \<in> A" and hyfa: "y = f a"
+            using hy by (by100 blast)
+          have haX: "a \<in> X"
+            using hA haA by (by100 blast)
+          have hinvA: "inv_into A f y = a"
+            using hinjA haA hyfa by (by100 simp)
+          have hinvX: "inv_into X f y = a"
+            using hinjX haX hyfa by (by100 simp)
+          have haW: "a \<in> W"
+            using hy hinvX by (by100 blast)
+          have hinvA_V: "inv_into A f y \<in> V"
+            using hVeq hinvA haA haW by (by100 blast)
+          show "y \<in> {y \<in> f ` A. inv_into A f y \<in> V}"
+            using hy hinvA_V by (by100 blast)
+        qed
+      qed
+      show "{y \<in> f ` A. inv_into A f y \<in> V} \<in>
+          subspace_topology Y TY (f ` A)"
+        unfolding hpre_eq subspace_topology_def using hpreY by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    unfolding top1_homeomorphism_on_def
+    using htopA htopImg hbijA hcont_A hcont_inv_A by (by100 blast)
+qed
+
+lemma geotop_homeomorphism_image_arc_dev34:
+  fixes A U :: "(real^2) set"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  assumes hAsub: "A \<subseteq> U"
+  assumes hAarc: "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "geotop_is_arc (f ` A)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
+proof -
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>arc: "arc \<gamma>"
+    and h\<gamma>img: "path_image \<gamma> = A"
+    using geotop_is_arc_imp_HOL_arc[OF hAarc] by (by100 blast)
+  have hcont_top1: "top1_continuous_map_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  have hUNIV_eq: "subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set)
+      = geotop_euclidean_topology"
+    by (rule subspace_topology_self_carrier) (by100 simp)
+  have hcont_sub: "top1_continuous_map_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set)) f"
+    using hcont_top1 hUNIV_eq by (by100 simp)
+  have hcontU: "continuous_on U f"
+    by (rule top1_continuous_map_on_geotop_imp_continuous_on[OF hcont_sub])
+  have hcontA: "continuous_on A f"
+    by (rule continuous_on_subset[OF hcontU hAsub])
+  have hcont_img: "continuous_on (path_image \<gamma>) f"
+    using hcontA h\<gamma>img by (by100 simp)
+  have hbij: "bij_betw f U (UNIV::(real^2) set)"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinjU: "inj_on f U"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hinjA: "inj_on f A"
+    by (rule inj_on_subset[OF hinjU hAsub])
+  have hinj_img: "inj_on f (path_image \<gamma>)"
+    using hinjA h\<gamma>img by (by100 simp)
+  have hsimple: "simple_path (f \<circ> \<gamma>)"
+    by (rule simple_path_continuous_image
+        [OF arc_imp_simple_path[OF h\<gamma>arc] hcont_img hinj_img])
+  have hends: "pathfinish (f \<circ> \<gamma>) \<noteq> pathstart (f \<circ> \<gamma>)"
+  proof
+    assume heq: "pathfinish (f \<circ> \<gamma>) = pathstart (f \<circ> \<gamma>)"
+    have h\<gamma>0: "\<gamma> 0 \<in> path_image \<gamma>"
+      unfolding path_image_def by (by100 simp)
+    have h\<gamma>1: "\<gamma> 1 \<in> path_image \<gamma>"
+      unfolding path_image_def by (by100 simp)
+    have h\<gamma>0A: "\<gamma> 0 \<in> A"
+      using h\<gamma>0 h\<gamma>img by (by100 simp)
+    have h\<gamma>1A: "\<gamma> 1 \<in> A"
+      using h\<gamma>1 h\<gamma>img by (by100 simp)
+    have hf_eq: "f (\<gamma> 1) = f (\<gamma> 0)"
+      using heq unfolding pathfinish_def pathstart_def by (by100 simp)
+    have "\<gamma> 1 = \<gamma> 0"
+      by (rule inj_onD[OF hinjA hf_eq h\<gamma>1A h\<gamma>0A])
+    have "pathfinish \<gamma> = pathstart \<gamma>"
+      using \<open>\<gamma> 1 = \<gamma> 0\<close> unfolding pathfinish_def pathstart_def by (by100 simp)
+    thus False
+      using arc_distinct_ends[OF h\<gamma>arc] by (by100 blast)
+  qed
+  have hfg_arc: "arc (f \<circ> \<gamma>)"
+    using hsimple hends unfolding arc_simple_path by (by100 blast)
+  have hfg_img: "path_image (f \<circ> \<gamma>) = f ` A"
+    using h\<gamma>img path_image_compose[of f \<gamma>] by (by100 simp)
+  have "geotop_is_arc (path_image (f \<circ> \<gamma>))
+      (subspace_topology UNIV geotop_euclidean_topology (path_image (f \<circ> \<gamma>)))"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF hfg_arc])
+  thus ?thesis
+    using hfg_img by (by100 simp)
+qed
+
 lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
