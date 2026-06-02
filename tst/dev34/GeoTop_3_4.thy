@@ -2012,6 +2012,27 @@ proof -
     using hstar_vertices hv_not_link by (by100 blast)
 qed
 
+lemma geotop_star_simplex_vertices_subset_insert_link_vertices_dev34:
+  fixes K :: "(real^2) set set" and \<tau> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  shows "V \<subseteq> insert v (geotop_complex_vertices (geotop_link K v))"
+  (**
+    Simplex-level form of the Fig. 4.10 vertex split.  Every simplex in the
+    star is supported on the cone vertex together with old link vertices. **)
+proof -
+  have hV_star: "V \<subseteq> geotop_complex_vertices (geotop_star K v)"
+    unfolding geotop_complex_vertices_def using h\<tau>S hV by (by100 blast)
+  have hstar_vertices:
+    "geotop_complex_vertices (geotop_star K v)
+      = insert v (geotop_complex_vertices (geotop_link K v))"
+    by (rule geotop_star_vertices_eq_insert_link_vertices_dev34[OF hK hv])
+  show ?thesis
+    using hV_star hstar_vertices by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
