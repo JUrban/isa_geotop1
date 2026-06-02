@@ -259,6 +259,39 @@ proof -
             hSA_SB_disjoint hS_cover])
 qed
 
+lemma geotop_connected_punctured_neighborhood_cannot_cross_separation_dev34:
+  fixes S N A B :: "(real^2) set"
+  assumes hsep:
+    "top1_is_separation_on S
+       (subspace_topology UNIV geotop_euclidean_topology S) A B"
+  assumes hNsub: "N - {p} \<subseteq> S"
+  assumes hNconn:
+    "top1_connected_on (N - {p})
+       (subspace_topology UNIV geotop_euclidean_topology (N - {p}))"
+  assumes hNA: "(N - {p}) \<inter> A \<noteq> {}"
+  assumes hNB: "(N - {p}) \<inter> B \<noteq> {}"
+  shows False
+proof -
+  let ?T = "subspace_topology UNIV geotop_euclidean_topology S"
+  let ?Y = "N - {p}"
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htopS: "is_topology_on S ?T"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  have hsub_eq:
+    "subspace_topology S ?T ?Y =
+     subspace_topology UNIV geotop_euclidean_topology ?Y"
+    by (rule subspace_topology_trans[OF hNsub])
+  have hconnS:
+    "top1_connected_on ?Y (subspace_topology S ?T ?Y)"
+    using hNconn hsub_eq by (by100 simp)
+  have hside: "?Y \<inter> B = {} \<or> ?Y \<inter> A = {}"
+    by (rule Lemma_23_2_disjoint[OF htopS hsep hNsub hconnS])
+  show False
+    using hside hNA hNB by (by100 blast)
+qed
+
 lemma geotop_2_manifold_vertex_star_punctured_connected_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
