@@ -1232,6 +1232,52 @@ proof -
     using hK_complex hK_1dim by (by100 blast)
 qed
 
+lemma geotop_finite_complex_vertices_finite_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hfin: "finite K"
+  shows "finite (geotop_complex_vertices K)"
+proof -
+  have hverts_eq: "geotop_complex_vertices K = {v. {v} \<in> K}"
+    by (rule geotop_complex_vertices_eq_0_simplexes[OF hK])
+  define S where "S = {\<sigma>\<in>K. \<exists>v. \<sigma> = {v}}"
+  have hS_fin: "finite S"
+    unfolding S_def using hfin by (by100 simp)
+  have hS_each_fin: "\<forall>\<sigma>\<in>S. finite \<sigma>"
+    unfolding S_def by (by100 blast)
+  have hUnion_fin: "finite (\<Union>S)"
+    by (rule finite_Union[OF hS_fin hS_each_fin])
+  have hUnion_eq: "\<Union>S = {v. {v} \<in> K}"
+  proof
+    show "\<Union>S \<subseteq> {v. {v} \<in> K}"
+    proof
+      fix x
+      assume hx: "x \<in> \<Union>S"
+      obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> S" and hx\<sigma>: "x \<in> \<sigma>"
+        using hx by (by100 blast)
+      obtain v where h\<sigma>eq: "\<sigma> = {v}"
+        using h\<sigma>S unfolding S_def by (by100 blast)
+      have "{x} \<in> K"
+        using h\<sigma>S hx\<sigma> h\<sigma>eq unfolding S_def by (by100 blast)
+      show "x \<in> {v. {v} \<in> K}"
+        using \<open>{x} \<in> K\<close> by (by100 simp)
+    qed
+    show "{v. {v} \<in> K} \<subseteq> \<Union>S"
+    proof
+      fix x
+      assume hx: "x \<in> {v. {v} \<in> K}"
+      have hxK: "{x} \<in> K"
+        using hx by (by100 simp)
+      have "{x} \<in> S"
+        unfolding S_def using hxK by (by100 blast)
+      show "x \<in> \<Union>S"
+        using \<open>{x} \<in> S\<close> by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hverts_eq hUnion_eq hUnion_fin by (by100 simp)
+qed
+
 lemma geotop_simplex_face_complex_finite_R2:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_is_simplex \<sigma>"
