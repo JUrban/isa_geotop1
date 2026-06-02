@@ -1251,6 +1251,25 @@ proof -
   qed
 qed
 
+lemma geotop_1dim_simplex_subset_edge_cases_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hcomplex: "geotop_is_complex L"
+  assumes h\<sigma>L: "\<sigma> \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hweq: "e = closed_segment w q"
+  assumes hwq: "w \<noteq> q"
+  assumes h\<sigma>sub: "\<sigma> \<subseteq> e"
+  shows "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+proof -
+  have hface: "geotop_is_face \<sigma> e"
+    by (rule geotop_complex_subset_simplex_face[OF hcomplex h\<sigma>L heL h\<sigma>sub])
+  have hface_seg: "geotop_is_face \<sigma> (closed_segment w q)"
+    using hface hweq by (by100 simp)
+  have hcases: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = closed_segment w q"
+    by (rule geotop_segment_face_cases_dev34[OF hface_seg hwq])
+  show ?thesis using hcases hweq by (by100 blast)
+qed
+
 lemma geotop_delete_leaf_edge_inter_rest_polyhedron_subset_neighbor_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
