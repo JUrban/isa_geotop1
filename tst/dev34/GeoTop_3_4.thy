@@ -2305,6 +2305,43 @@ proof -
     using hlink_vertices_finite hstar_vertices_finite by (by100 blast)
 qed
 
+lemma geotop_star_fan_isomorphism_from_link_bij_and_simplex_iff_dev34:
+  fixes K L' :: "(real^2) set set" and B :: "(real^2) set"
+    and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+  assumes hcB: "c \<notin> B"
+  assumes hL_vertices: "geotop_complex_vertices L' = insert c B"
+  assumes hsimplex:
+    "\<forall>V. V \<subseteq> geotop_complex_vertices (geotop_star K v) \<longrightarrow>
+        (geotop_convex_hull V \<in> geotop_star K v
+          \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L')"
+  shows "geotop_isomorphism (geotop_star K v) L' \<phi>"
+  (**
+    Fig. 4.10 isomorphism packaging: once the link-boundary vertex
+    correspondence is fixed and the old-link/cone simplex cases match the
+    target fan, the extended vertex map is a simplicial isomorphism. **)
+proof -
+  have hbij_insert:
+      "bij_betw \<phi> (geotop_complex_vertices (geotop_star K v)) (insert c B)"
+  proof -
+    have "bij_betw (\<lambda>x. if x = v then c else \<psi> x)
+        (geotop_complex_vertices (geotop_star K v)) (insert c B)"
+      by (rule geotop_star_cone_vertex_map_bij_dev34[OF hK hv h\<psi> hcB])
+    thus ?thesis
+      using \<phi>_def by (by100 simp)
+  qed
+  have hbij:
+      "bij_betw \<phi> (geotop_complex_vertices (geotop_star K v))
+        (geotop_complex_vertices L')"
+    using hbij_insert hL_vertices by (by100 simp)
+  show ?thesis
+    unfolding geotop_isomorphism_def using hbij hsimplex by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
