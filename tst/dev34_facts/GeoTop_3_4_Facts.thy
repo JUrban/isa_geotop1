@@ -3404,6 +3404,87 @@ proof -
   qed
 qed
 
+lemma geotop_link_point_opposite_face_witness_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  shows "\<exists>\<sigma> V. \<sigma> \<in> K
+      \<and> geotop_simplex_vertices \<sigma> V
+      \<and> v \<in> V
+      \<and> y \<in> geotop_convex_hull (V - {v})"
+proof -
+  obtain \<tau> where h\<tau>L: "\<tau> \<in> geotop_link K v" and hy\<tau>: "y \<in> \<tau>"
+    using hy by (by100 blast)
+  have h\<tau>star: "\<tau> \<in> geotop_star K v"
+    using h\<tau>L unfolding geotop_link_def by (by100 blast)
+  have hv_not_\<tau>: "v \<notin> \<tau>"
+    using h\<tau>L unfolding geotop_link_def by (by100 blast)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and hv\<sigma>: "v \<in> \<sigma>"
+    and h\<tau>\<sigma>_case: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+    using h\<tau>star unfolding geotop_star_def by (by100 blast)
+  have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+  proof (rule disjE[OF h\<tau>\<sigma>_case])
+    assume "geotop_is_face \<tau> \<sigma>"
+    thus ?thesis .
+  next
+    assume h_eq: "\<tau> = \<sigma>"
+    have False
+      using hv\<sigma> hv_not_\<tau> h_eq by (by100 blast)
+    thus ?thesis by (by100 blast)
+  qed
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    and h\<tau>W: "geotop_simplex_vertices \<tau> W"
+    by (rule geotop_face_witness_simplex_vertices[OF h\<tau>\<sigma>])
+  have hvK: "{v} \<in> K"
+    using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+  obtain V\<^sub>v where h\<sigma>Vv: "geotop_simplex_vertices \<sigma> V\<^sub>v"
+    and hvVv: "v \<in> V\<^sub>v"
+    by (rule geotop_complex_singleton_point_is_simplex_vertex
+        [OF hK hvK h\<sigma>K hv\<sigma>])
+  have hVv_eq: "V\<^sub>v = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>Vv h\<sigma>V])
+  have hvV: "v \<in> V"
+    using hvVv hVv_eq by (by100 simp)
+  have hW_sub_opp: "W \<subseteq> V - {v}"
+  proof
+    fix w
+    assume hwW: "w \<in> W"
+    have hwV: "w \<in> V"
+      using hW_sub hwW by (by100 blast)
+    have hw\<tau>: "w \<in> \<tau>"
+    proof -
+      have "w \<in> convex hull W"
+        using hull_inc[OF hwW] by (by100 blast)
+      hence "w \<in> geotop_convex_hull W"
+        using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+      thus ?thesis
+        using h\<tau>_eq by (by100 simp)
+    qed
+    have "w \<noteq> v"
+      using hw\<tau> hv_not_\<tau> by (by100 blast)
+    show "w \<in> V - {v}"
+      using hwV \<open>w \<noteq> v\<close> by (by100 blast)
+  qed
+  have hy_opp: "y \<in> geotop_convex_hull (V - {v})"
+  proof -
+    have hyW: "y \<in> convex hull W"
+      using hy\<tau> h\<tau>_eq geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    have hmono: "convex hull W \<subseteq> convex hull (V - {v})"
+      by (rule hull_mono[OF hW_sub_opp])
+    have "y \<in> convex hull (V - {v})"
+      using hyW hmono by (by100 blast)
+    thus ?thesis
+      using geotop_convex_hull_eq_HOL[of "V - {v}"] by (by100 simp)
+  qed
+  show ?thesis
+    using h\<sigma>K h\<sigma>V hvV hy_opp by (by100 blast)
+qed
+
 lemma geotop_simplex_point_radial_to_opposite_face_dev34:
   fixes \<sigma> :: "(real^2) set" and V :: "(real^2) set"
   assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
