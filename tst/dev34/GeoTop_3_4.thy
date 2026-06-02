@@ -3208,6 +3208,28 @@ proof -
         [OF hlink_linear hlink_finite hpolygon])
 qed
 
+lemma geotop_complex_vertices_subset_polyhedron_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  shows "geotop_complex_vertices K \<subseteq> geotop_polyhedron K"
+proof
+  fix v
+  assume hv: "v \<in> geotop_complex_vertices K"
+  obtain \<tau> V where h\<tau>K: "\<tau> \<in> K"
+    and hV: "geotop_simplex_vertices \<tau> V"
+    and hvV: "v \<in> V"
+    using hv unfolding geotop_complex_vertices_def by (by100 blast)
+  have h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_hull: "V \<subseteq> geotop_convex_hull V"
+    by (rule geotop_convex_hull_contains_V)
+  have hV\<tau>: "V \<subseteq> \<tau>"
+    using h\<tau>_hull hV_hull by (by100 simp)
+  have "v \<in> \<tau>"
+    using hV\<tau> hvV by (by100 blast)
+  show "v \<in> geotop_polyhedron K"
+    unfolding geotop_polyhedron_def using h\<tau>K \<open>v \<in> \<tau>\<close> by (by100 blast)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
