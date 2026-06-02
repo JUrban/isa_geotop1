@@ -2091,6 +2091,26 @@ proof -
         [OF hK h\<tau>K hV hvV hW_ne])
 qed
 
+lemma geotop_simplex_vertices_minus_vertex_empty_singleton_dev34:
+  fixes \<tau> V :: "(real^2) set"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_empty: "V - {v} = {}"
+  shows "\<tau> = {v}"
+  (**
+    Degenerate cone case for Fig. 4.10: if a simplex containing the cone vertex
+    has no old vertices, it is the cone vertex itself. **)
+proof -
+  have hV_eq: "V = {v}"
+    using hvV hW_empty by (by100 blast)
+  have h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsingleton_hull: "geotop_convex_hull {v} = {v}"
+    using geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+  show ?thesis
+    using h\<tau>_hull hV_eq hsingleton_hull by (by100 simp)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
