@@ -18,14 +18,16 @@ Evidence checked locally:
 - The latest pulled `main` head is commit `3e463c3b` (`Document GeoTop sections
   1 and 2 status`), which adds the companion report through Section 2.
 - The local branch `codex-dev34-cache` already contains all of that `main`;
-  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `245 0`, so no
+  `git rev-list --left-right --count HEAD...FETCH_HEAD` reports `250 0`, so no
   merge was needed for this report update.
 - A fresh warm-cache section build passed:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
-  -d dev34_openstar -d dev34 GeoTop34Dev`, reporting `0:00:15 elapsed time`.
-- The current committed branch tip is `1aa2ea46` (`Expose GeoTop fan model
-  isomorphism`).
+  -d dev34_openstar -d dev34 GeoTop34Dev`, with `GeoTop34Dev` reporting
+  `0:00:11 elapsed time` and the outer command reporting `0:00:31 elapsed
+  time`.
+- The current committed branch tip is `f12191d9` (`Isolate GeoTop boundary
+  chart Jordan contradiction`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 15 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 5 in
@@ -34,13 +36,14 @@ Evidence checked locally:
 The practical consequence is that Sections 3 and 4 have a working, green
 development session with a much smaller local target surface than the original
 monolithic script. Completion still requires eliminating the listed proof
-holes. The compact cone-over-compact closedness lemma is now proved, closing the
+holes. The compact cone-over-compact closedness lemma is proved, closing the
 radial bad-endpoint closedness bottleneck. The broad vertex-star fan wrapper is
-now proved from a more explicit Figure 4.10 isomorphism helper. The major open
-clusters are now the actual ordered Figure 4.10 construction turning a
-polygonal or broken-line link into a cone-over-link subdivision, the small
-semicircle/small circle chart
-contradictions, the boundary equality part of Theorem 4.9, and several larger
+proved from a more explicit Figure 4.10 isomorphism helper. The one-sided and
+three-sided chart contradictions are now narrowed to explicit domain-level
+small semicircle/small circle construction lemmas plus a 2-cell/Jordan helper.
+The major open clusters are the actual ordered Figure 4.10 construction, the
+small semicircle/small circle domain constructions, the 2-cell/Jordan
+contradiction, the boundary equality part of Theorem 4.9, and several larger
 Section 3/early Section 4 prefix arguments.
 
 ## Layout
@@ -106,13 +109,12 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
 
 - `geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34`
   at line 1909.
-- `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34` at
-  line 2175.
-- `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34` at
-  line 2197.
-- `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34` at
-  line 2293.
-- The boundary equality half of `Theorem_GT_4_9` at line 4078.
+- `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
+  at line 2423.
+- `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
+  at line 2481.
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 2612.
+- The boundary equality half of `Theorem_GT_4_9` at line 4434.
 
 ## Recent Progress
 
@@ -169,6 +171,16 @@ argument. The one-sided and three-sided chart contradictions first extract a
 relative metric ball from the local chart neighborhood and then delegate to
 explicit small semicircle/small circle construction lemmas:
 
+- `geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34`
+- `geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34`
+- `geotop_2cell_chart_1sphere_complement_not_connected_dev34`
+
+Since the previous report, the image-side chart wrappers have been proved from
+these narrower domain-level obligations. New proved helpers include:
+
+- `top1_homeomorphism_on_subspace_image_dev34`
+- `geotop_homeomorphism_image_arc_dev34`
+- `geotop_homeomorphism_image_1sphere_dev34`
 - `geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34`
 - `geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34`
 - `geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34`
@@ -220,10 +232,9 @@ Important cached helpers include:
   match the finite polygonal or broken-line link, add one interior vertex, cone
   the boundary subdivision, and obtain a simplicial isomorphism with a
   subdivision of the vertex star.
-- The local chart contradiction lemmas at lines 2175, 2197, and 2293 now have
-  the needed local-open-neighborhood reductions. The next step there is to
-  formalize the book's small semicircle/small circle constructions in the
-  chart.
+- The local chart contradiction wrappers are proved. The next step there is to
+  formalize the book's small semicircle/small circle constructions in the chart
+  domain and the isolated 2-cell/Jordan contradiction.
 - The prefix holes in Theorems 3.3, 3.4, 3.7, 4.2, and 4.4 remain larger
   book-level arguments and should be attacked with the `sorry`-first skeleton
   workflow from `CLAUDE.md`.
