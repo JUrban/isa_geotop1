@@ -1114,6 +1114,49 @@ proof -
   show ?thesis using hC_comp hK_sub_C by (by100 blast)
 qed
 
+lemma connected_closure_point_meets_sphere_between:
+  fixes C :: "(real^2) set"
+  assumes hC_conn: "connected C"
+    and hP_cl: "P \<in> closure C"
+    and huC: "u \<in> C"
+    and hr_pos: "0 < r"
+    and hr_lt_u: "r < dist P u"
+  shows "\<exists>x\<in>C. x \<in> sphere P r"
+proof -
+  define A where "A = (\<lambda>x. dist P x) ` C"
+  have hcont: "continuous_on C (\<lambda>x. dist P x)"
+    by (intro continuous_intros)
+  have hA_conn: "connected A"
+    unfolding A_def by (rule connected_continuous_image[OF hcont hC_conn])
+  have hA_int: "is_interval A"
+    using hA_conn unfolding is_interval_connected_1 by (by100 simp)
+  have hduA: "dist P u \<in> A"
+    unfolding A_def using huC by (by100 blast)
+  have hsmall: "\<exists>z\<in>C. dist P z < r"
+  proof -
+    have hball_open: "open (ball P r)"
+      by (by100 simp)
+    have hP_ball: "P \<in> ball P r"
+      using hr_pos by (by100 simp)
+    have "C \<inter> ball P r \<noteq> {}"
+      using hP_cl closure_iff_nhds_not_empty[of P C] hball_open hP_ball
+      by (by100 blast)
+    thus ?thesis by (by100 auto)
+  qed
+  obtain z where hzC: "z \<in> C" and hz_lt: "dist P z < r"
+    using hsmall by (by100 blast)
+  have hdzA: "dist P z \<in> A"
+    unfolding A_def using hzC by (by100 blast)
+  have "r \<in> A"
+    by (rule mem_is_interval_1_I[OF hA_int hdzA hduA])
+      (use hz_lt hr_lt_u in \<open>by100 linarith\<close>)+
+  then obtain x where hxC: "x \<in> C" and hx_dist: "dist P x = r"
+    unfolding A_def by (by100 blast)
+  have hx_sphere: "x \<in> sphere P r"
+    using hx_dist by (by100 simp)
+  show ?thesis using hxC hx_sphere by (by100 blast)
+qed
+
 lemma sphere_pair_subset_pair_complement:
   fixes P pA pB qA qB :: "real^2"
   assumes hr_pos: "r > 0"
