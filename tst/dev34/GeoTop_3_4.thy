@@ -2033,6 +2033,24 @@ proof -
     using hV_star hstar_vertices by (by100 blast)
 qed
 
+lemma geotop_star_simplex_vertices_minus_vertex_subset_link_vertices_dev34:
+  fixes K :: "(real^2) set set" and \<tau> V :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes h\<tau>S: "\<tau> \<in> geotop_star K v"
+  assumes hV: "geotop_simplex_vertices \<tau> V"
+  shows "V - {v} \<subseteq> geotop_complex_vertices (geotop_link K v)"
+  (**
+    Removing the cone vertex from any star simplex leaves only link vertices;
+    this is the vertex-support statement used by the fan subdivision map. **)
+proof -
+  have hV_insert: "V \<subseteq> insert v (geotop_complex_vertices (geotop_link K v))"
+    by (rule geotop_star_simplex_vertices_subset_insert_link_vertices_dev34
+        [OF hK hv h\<tau>S hV])
+  show ?thesis
+    using hV_insert by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
