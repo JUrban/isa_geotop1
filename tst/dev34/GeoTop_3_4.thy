@@ -8410,7 +8410,97 @@ lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior
     Analytic local-neighborhood step for the shared-edge model: along the
     relative interior of the common edge, the two opposite-side 2-simplexes
     fill a full Euclidean disk neighborhood. **)
-  sorry
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  have hv: "b - a \<noteq> 0"
+    using hab by (by100 simp)
+  have hn: "n \<noteq> 0"
+  proof
+    assume hn0: "n = 0"
+    show False
+      using hopp hn0 by (by100 auto)
+  qed
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have horth_n: "n \<bullet> (b - a) = 0"
+    using ha_line hb_line by (simp add: inner_diff_right)
+  have horth: "(b - a) \<bullet> n = 0"
+    using horth_n by (simp add: inner_commute)
+  obtain u where hu: "0 < u"
+    and hqminus: "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    and hqplus: "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    by (rule geotop_shared_edge_small_subsegment_in_two_2simplexes_dev34
+        [OF hab he_eq h\<sigma>V h\<tau>V hp])
+  obtain s t where hs: "0 < s"
+    and ht: "0 < t"
+    and hprobes:
+      "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+        \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+    by (rule geotop_2simplex_opposite_side_shared_edge_normal_probes_in_HOL_interiors_dev34
+        [OF hab hc_not_ab hd_not_ab hn he_eq h\<sigma>V h\<tau>V hline hopp hp])
+  from hprobes show "p \<in> interior (\<sigma> \<union> \<tau>)"
+  proof
+    assume hside:
+      "p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>"
+    obtain eps where heps: "0 < eps"
+      and hball:
+        "ball p eps \<subseteq>
+          convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R n}
+            \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R n}"
+      by (rule geotop_shared_edge_probe_diamond_contains_ball_dev34
+          [OF hv hn horth hu hs ht])
+    have hdiamond_sub:
+      "convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R n}
+        \<subseteq> \<sigma> \<union> \<tau>"
+      by (rule geotop_shared_edge_probe_triangles_subset_union_dev34
+          [OF h\<sigma>V h\<tau>V hqminus hqplus hside[THEN conjunct1] hside[THEN conjunct2]])
+    have hball_sub: "ball p eps \<subseteq> \<sigma> \<union> \<tau>"
+      using hball hdiamond_sub by (by100 blast)
+    have hp_ball: "p \<in> ball p eps"
+      using heps by (by100 simp)
+    show ?thesis
+      by (rule interiorI[OF open_ball hp_ball hball_sub])
+  next
+    assume hside:
+      "p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>"
+    have hn_neg: "- n \<noteq> 0"
+      using hn by (by100 simp)
+    have horth_neg: "(b - a) \<bullet> (- n) = 0"
+      using horth by (by100 simp)
+    obtain eps where heps: "0 < eps"
+      and hball_raw:
+        "ball p eps \<subseteq>
+          convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R (- n)}
+            \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R (- n)}"
+      by (rule geotop_shared_edge_probe_diamond_contains_ball_dev34
+          [OF hv hn_neg horth_neg hu hs ht])
+    have hball:
+      "ball p eps \<subseteq>
+        convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + t *\<^sub>R n}"
+      using hball_raw by (by100 simp)
+    have hdiamond_sub:
+      "convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + t *\<^sub>R n}
+        \<subseteq> \<sigma> \<union> \<tau>"
+      by (rule geotop_shared_edge_probe_triangles_subset_union_dev34
+          [OF h\<sigma>V h\<tau>V hqminus hqplus hside[THEN conjunct1] hside[THEN conjunct2]])
+    have hball_sub: "ball p eps \<subseteq> \<sigma> \<union> \<tau>"
+      using hball hdiamond_sub by (by100 blast)
+    have hp_ball: "p \<in> ball p eps"
+      using heps by (by100 simp)
+    show ?thesis
+      by (rule interiorI[OF open_ball hp_ball hball_sub])
+  qed
+qed
 
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
