@@ -5432,7 +5432,61 @@ lemma geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34:
     direction.  At an endpoint of a one-incident edge, the vertex star is the
     boundary fan of Fig. 4.10 rather than a full disk fan, so there is no
     Euclidean plane chart at that endpoint. **)
-  sorry
+proof
+  fix x
+  assume hx_nonrel: "x \<in> e - rel_interior e"
+  let ?M = "geotop_polyhedron K"
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on ?M ?d"
+  have hx_e: "x \<in> e"
+    using hx_nonrel by (by100 blast)
+  have hxM: "x \<in> ?M"
+    using heK hx_e unfolding geotop_polyhedron_def by (by100 blast)
+  have hrel_bd: "rel_interior e
+      \<subseteq> geotop_manifold_boundary ?M ?d"
+    by (rule geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34
+        [OF hK hKM heK hedge hcard1])
+  have hnot_int: "x \<notin> geotop_manifold_interior ?M ?d"
+  proof
+    assume hxint: "x \<in> geotop_manifold_interior ?M ?d"
+    obtain U f where hUopen: "openin_on ?M ?TM U"
+      and hxU: "x \<in> U"
+      and hhomeo: "top1_homeomorphism_on U
+          (subspace_topology ?M ?TM U)
+          (UNIV::(real^2) set) geotop_euclidean_topology f"
+      using hxint unfolding geotop_manifold_interior_def by (by100 blast)
+    obtain r where hr: "r > 0"
+      and hball_sub: "?M \<inter> ball x r \<subseteq> U"
+      using geotop_openin_norm_polyhedron_contains_relative_ball_dev34
+        [OF hUopen hxU]
+      by (by100 blast)
+    have hclosure_e: "closure (rel_interior e) = e"
+      by (rule geotop_complex_simplex_closure_rel_interior[OF hK heK])
+    have hx_closure: "x \<in> closure (rel_interior e)"
+      using hclosure_e hx_e by (by100 simp)
+    obtain p where hp_rel: "p \<in> rel_interior e"
+      and hdist: "dist x p < r"
+      using closure_approachableD[OF hx_closure hr] by (by100 blast)
+    have hp_ball: "p \<in> ball x r"
+      using hdist by (by100 simp)
+    have hpM: "p \<in> ?M"
+      using heK hp_rel rel_interior_subset unfolding geotop_polyhedron_def
+      by (by100 blast)
+    have hpU: "p \<in> U"
+      using hball_sub hpM hp_ball by (by100 blast)
+    have hpint: "p \<in> geotop_manifold_interior ?M ?d"
+      unfolding geotop_manifold_interior_def
+      using hpM hUopen hpU hhomeo by (by100 blast)
+    have hpbd: "p \<in> geotop_manifold_boundary ?M ?d"
+      using hrel_bd hp_rel by (by100 blast)
+    have hp_not_int: "p \<notin> geotop_manifold_interior ?M ?d"
+      using hpbd unfolding geotop_manifold_boundary_def by (by100 blast)
+    show False
+      using hpint hp_not_int by (by100 blast)
+  qed
+  show "x \<in> geotop_manifold_boundary ?M ?d"
+    unfolding geotop_manifold_boundary_def using hxM hnot_int by (by100 blast)
+qed
 
 lemma geotop_one_incident_edges_subset_manifold_boundary_dev34:
   fixes K :: "(real^2) set set"
