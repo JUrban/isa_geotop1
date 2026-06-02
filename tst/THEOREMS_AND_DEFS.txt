@@ -1529,6 +1529,8 @@ dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_complex_vertices_finite_dev
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_homeomorphism_dev34|2762
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_punctured_circle_three_points_R2|2798
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_finite_components_real_line_minus_two_dev34|2675
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_connected_degree_two_linear_graph_polygon_dev34|35
+dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_connected_nonisolated_linear_graph_line_or_polygon_dev34|48
 gb0/GeoTopBase0.thy|lemma|geotop_finite_distinct_lists_over_finite|3462
 dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_incident_edges_finite_dev34|27
 dev34_workfacts/GeoTop_3_4_WorkFacts.thy|lemma|geotop_finite_linear_graph_vertices_finite_dev34|15
@@ -1644,14 +1646,14 @@ dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_link_vertex_two_adjacent_faces_wit
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_link_vertex_two_adjacent_link_edge_witnesses|4851
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_link_vertex_two_incident_link_edges_exhaust|5047
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_link_vertices_count_ge_1_incident_link_edges|4325
-dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|1694
+dev34/GeoTop_3_4.thy|lemma|geotop_manifold_interior_if_HOL_interior|1744
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_iterated_Sd_tends_to_zero|9419
 gb0/GeoTopBase0.thy|lemma|geotop_mesh_norm_nonneg|9388
 gb/GeoTopBase.thy|lemma|geotop_nbhd_set_open_in_euclidean|6063
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset|4514
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_nonempty_complex_polyhedron_nonempty|1756
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|geotop_nonempty_polyhedron_has_complex_vertex|1770
-dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|1673
+dev34/GeoTop_3_4.thy|lemma|geotop_open_ball_homeomorphic_UNIV|1723
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_complement|2940
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_eq_carrier_contains_vertex|10630
 gb0/GeoTopBase0.thy|lemma|geotop_open_star_inter_carrier|10668
@@ -2636,10 +2638,10 @@ i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_contains|3840
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_open|3815
 i/Top1_Ch5_8.thy|lemma|top1_nbhd_of_set_sub|3834
 i/Top1_Ch3.thy|lemma|top1_nested_subset_le|9935
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|1653
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_on_UNIV|1703
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_on_UNIV_R2_dev34|5957
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_on_UNIV_early|6575
-dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|1658
+dev34/GeoTop_3_4.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace|1708
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34|5962
 dev34_facts/GeoTop_3_4_Facts.thy|lemma|top1_norm_metric_topology_on_eq_geotop_subspace_early|6580
 i/Top1_Ch3.thy|lemma|top1_not_countable_UNIV_nat_set|9268
@@ -3283,7 +3285,7 @@ dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_3_7|1343
 GeoTop.thy|theorem|Theorem_GT_4_1|20875
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_1|1431
 GeoTop.thy|theorem|Theorem_GT_4_10|21468
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|1754
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|1804
 GeoTop.thy|theorem|Theorem_GT_4_2|20974
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_2|1536
 GeoTop.thy|theorem|Theorem_GT_4_3|21032
@@ -3299,7 +3301,7 @@ dev34_facts/GeoTop_3_4_Facts.thy|theorem|Theorem_GT_4_7|265
 GeoTop.thy|theorem|Theorem_GT_4_8|21349
 dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_8|8
 GeoTop.thy|theorem|Theorem_GT_4_9|21407
-dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|1320
+dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_9|1370
 gb/GeoTopBase.thy|theorem|Theorem_GT_4_invariance_of_domain|6701
 GeoTop.thy|theorem|Theorem_GT_5_1|21497
 GeoTop.thy|theorem|Theorem_GT_5_2|21589

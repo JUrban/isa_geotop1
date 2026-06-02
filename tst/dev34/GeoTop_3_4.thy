@@ -1249,7 +1249,57 @@ proof
 		             C = geotop_component_at UNIV geotop_euclidean_topology
 	                   (\<Union>(geotop_link K v)) P)
           \<longrightarrow> geotop_is_polygon C"
-      sorry
+    proof (intro allI impI)
+      fix C
+      assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                   (\<Union>(geotop_link K v)) P"
+      have hC_imp: "(\<exists>P\<in>\<Union>(geotop_link K v).
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                   (\<Union>(geotop_link K v)) P) \<longrightarrow>
+          (\<exists>L. geotop_is_linear_graph L
+            \<and> finite L
+            \<and> geotop_polyhedron L = C
+            \<and> geotop_complex_connected L
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+              (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+                geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+                \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+                \<and> l\<^sub>1 \<noteq> l\<^sub>2
+                \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+                    \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+                card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2))"
+        by (rule spec[OF hcomponent_degree_two_linear_graph_witnesses])
+      have hL_ex: "\<exists>L. geotop_is_linear_graph L
+            \<and> finite L
+            \<and> geotop_polyhedron L = C
+            \<and> geotop_complex_connected L
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+              (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+                geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+                \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+                \<and> l\<^sub>1 \<noteq> l\<^sub>2
+                \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+                    \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2)))
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)
+            \<and> (\<forall>w. {w} \<in> L \<longrightarrow>
+                card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2)"
+        by (rule mp[OF hC_imp hC_ex])
+      obtain L where hL_linear: "geotop_is_linear_graph L"
+        and hL_fin: "finite L"
+        and hL_poly: "geotop_polyhedron L = C"
+        and hL_conn: "geotop_complex_connected L"
+        and hL_degree: "\<forall>w. {w} \<in> L \<longrightarrow>
+                card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
+        using hL_ex by (elim exE conjE)
+      have hpoly_L: "geotop_is_polygon (geotop_polyhedron L)"
+        by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
+            [OF hL_linear hL_fin hL_conn hL_degree])
+      show "geotop_is_polygon C"
+        using hpoly_L hL_poly by (by100 simp)
+    qed
     have hsingle_polygon_from_connected:
       "geotop_is_polygon (\<Union>(geotop_link K v))"
     proof -
