@@ -1061,6 +1061,45 @@ next
   qed
 qed
 
+lemma geotop_delete_leaf_incident_edges_away_eq_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hwe: "w \<in> e"
+  assumes hxe: "x \<notin> e"
+  shows "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+proof
+  show "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      \<subseteq> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+    show "l \<in> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+      using hl by (by100 simp)
+  qed
+next
+  show "{l\<in>L. geotop_is_edge l \<and> x \<in> l}
+      \<subseteq> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+    have hlL: "l \<in> L" and hledge: "geotop_is_edge l" and hxl: "x \<in> l"
+      using hl by (by100 simp_all)
+    have hlne: "l \<noteq> e"
+      using hxl hxe by (by100 blast)
+    have "l \<noteq> {w}"
+    proof
+      assume "l = {w}"
+      hence "x = w" using hxl by (by100 simp)
+      hence "x \<in> e" using hwe by (by100 simp)
+      thus False using hxe by (by100 blast)
+    qed
+    have "l \<in> L - {{w}, e}"
+      using hlL hlne \<open>l \<noteq> {w}\<close> by (by100 simp)
+    show "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+      using \<open>l \<in> L - {{w}, e}\<close> hledge hxl by (by100 simp)
+  qed
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
