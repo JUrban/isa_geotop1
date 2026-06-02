@@ -1887,6 +1887,92 @@ proof -
     using hlink_complex hlink_1dim hlink_finite hshape_poly by (by100 blast)
 qed
 
+lemma geotop_link_vertices_subset_star_vertices_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_complex_vertices (geotop_link K v)
+      \<subseteq> geotop_complex_vertices (geotop_star K v)"
+  (**
+    Fig. 4.10 sends the old link vertices to the subdivided boundary vertices
+    and sends the original star vertex to the new cone vertex.  This records
+    the elementary inclusion needed before the eventual vertex-bijection split:
+    every vertex of the link complex is already a vertex of the star complex. **)
+proof
+  fix w
+  assume hw: "w \<in> geotop_complex_vertices (geotop_link K v)"
+  obtain \<tau> V where h\<tau>L: "\<tau> \<in> geotop_link K v"
+    and hV: "geotop_simplex_vertices \<tau> V"
+    and hwV: "w \<in> V"
+    using hw unfolding geotop_complex_vertices_def by (by100 blast)
+  have h\<tau>S: "\<tau> \<in> geotop_star K v"
+    using h\<tau>L unfolding geotop_link_def by (by100 blast)
+  show "w \<in> geotop_complex_vertices (geotop_star K v)"
+    unfolding geotop_complex_vertices_def using h\<tau>S hV hwV by (by100 blast)
+qed
+
+lemma geotop_star_vertices_eq_insert_link_vertices_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  shows "geotop_complex_vertices (geotop_star K v)
+      = insert v (geotop_complex_vertices (geotop_link K v))"
+  (**
+    Vertex part of Moise Fig. 4.10: the star is the cone vertex \<open>v\<close>
+    together with the vertices already lying in the link.  The later fan
+    isomorphism should map exactly these two pieces to the new interior vertex
+    and to the subdivided frontier vertices of the standard triangle. **)
+proof -
+  have hstar_complex: "geotop_is_complex (geotop_star K v)"
+    by (rule geotop_star_is_complex[OF hK])
+  have hlink_complex: "geotop_is_complex (geotop_link K v)"
+    by (rule geotop_link_is_complex[OF hK])
+  have hstar_subset:
+    "geotop_complex_vertices (geotop_star K v)
+      \<subseteq> insert v (geotop_complex_vertices (geotop_link K v))"
+  proof
+    fix w
+    assume hwS: "w \<in> geotop_complex_vertices (geotop_star K v)"
+    have hw_single_S: "{w} \<in> geotop_star K v"
+      using hwS geotop_complex_vertices_eq_0_simplexes[OF hstar_complex]
+      by (by100 simp)
+    show "w \<in> insert v (geotop_complex_vertices (geotop_link K v))"
+    proof (cases "w = v")
+      case True
+      show ?thesis using True by (by100 simp)
+    next
+      case False
+      have hw_single_L: "{w} \<in> geotop_link K v"
+        using hw_single_S False unfolding geotop_link_def by (by100 blast)
+      have hwL: "w \<in> geotop_complex_vertices (geotop_link K v)"
+        using hw_single_L geotop_complex_vertices_eq_0_simplexes[OF hlink_complex]
+        by (by100 simp)
+      show ?thesis using hwL by (by100 simp)
+    qed
+  qed
+  have hinsert_subset:
+    "insert v (geotop_complex_vertices (geotop_link K v))
+      \<subseteq> geotop_complex_vertices (geotop_star K v)"
+  proof
+    fix w
+    assume hw: "w \<in> insert v (geotop_complex_vertices (geotop_link K v))"
+    have hvK_single: "{v} \<in> K"
+      using hv geotop_complex_vertices_eq_0_simplexes[OF hK] by (by100 simp)
+    have hvS_single: "{v} \<in> geotop_star K v"
+      unfolding geotop_star_def using hvK_single by (by100 blast)
+    have hvS: "v \<in> geotop_complex_vertices (geotop_star K v)"
+      using hvS_single geotop_complex_vertices_eq_0_simplexes[OF hstar_complex]
+      by (by100 simp)
+    have hlink_subset:
+      "geotop_complex_vertices (geotop_link K v)
+        \<subseteq> geotop_complex_vertices (geotop_star K v)"
+      by (rule geotop_link_vertices_subset_star_vertices_dev34[OF hK])
+    show "w \<in> geotop_complex_vertices (geotop_star K v)"
+      using hw hvS hlink_subset by (by100 blast)
+  qed
+  show ?thesis
+    using hstar_subset hinsert_subset by (by100 blast)
+qed
+
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_line_or_polygon_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
