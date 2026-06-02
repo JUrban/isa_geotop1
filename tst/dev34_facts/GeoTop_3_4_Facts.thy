@@ -3518,6 +3518,20 @@ proof -
   qed
 qed
 
+lemma geotop_link_radial_endpoint_unique_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hy: "y \<in> \<Union>(geotop_link K v)"
+  assumes hy': "y' \<in> \<Union>(geotop_link K v)"
+  assumes ht: "0 < t" "t \<le> 1"
+  assumes ht': "0 < t'" "t' \<le> 1"
+  assumes heq:
+    "(1 - t) *\<^sub>R v + t *\<^sub>R y =
+     (1 - t') *\<^sub>R v + t' *\<^sub>R y'"
+  shows "y = y'"
+  sorry
+
 lemma geotop_simplex_opposite_edge_in_link:
   fixes K :: "(real^2) set set" and \<sigma> V :: "(real^2) set"
   assumes hK: "geotop_is_complex K"

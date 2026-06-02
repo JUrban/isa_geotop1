@@ -109,7 +109,35 @@ proof -
     "?SB \<in> subspace_topology UNIV geotop_euclidean_topology ?S"
     sorry
   have hSA_SB_disjoint_geom: "?SA \<inter> ?SB = {}"
-    sorry
+  proof
+    show "?SA \<inter> ?SB \<subseteq> {}"
+    proof
+      fix x assume hx: "x \<in> ?SA \<inter> ?SB"
+      obtain yA tA where hyA: "yA \<in> A"
+        and htA_pos: "0 < tA" and htA_le: "tA \<le> 1"
+        and hxA: "x = (1 - tA) *\<^sub>R v + tA *\<^sub>R yA"
+        using hx by (by100 blast)
+      obtain yB tB where hyB: "yB \<in> B"
+        and htB_pos: "0 < tB" and htB_le: "tB \<le> 1"
+        and hxB: "x = (1 - tB) *\<^sub>R v + tB *\<^sub>R yB"
+        using hx by (by100 blast)
+      have hyA_link: "yA \<in> \<Union>(geotop_link K v)"
+        using hyA hA_sub_link by (by100 blast)
+      have hyB_link: "yB \<in> \<Union>(geotop_link K v)"
+        using hyB hB_sub_link by (by100 blast)
+      have hrad_eq:
+        "(1 - tA) *\<^sub>R v + tA *\<^sub>R yA =
+         (1 - tB) *\<^sub>R v + tB *\<^sub>R yB"
+        using hxA hxB by (by100 simp)
+      have hy_eq: "yA = yB"
+        by (rule geotop_link_radial_endpoint_unique_dev34
+            [OF hK hv hyA_link hyB_link htA_pos htA_le htB_pos htB_le hrad_eq])
+      have "yA \<in> A \<inter> B"
+        using hyA hyB hy_eq by (by100 blast)
+      thus "x \<in> {}"
+        using hAB_disjoint by (by100 blast)
+    qed
+  qed (by100 blast)
   have hcone_sep:
     "top1_is_separation_on ?S
        (subspace_topology UNIV geotop_euclidean_topology ?S) ?SA ?SB"
