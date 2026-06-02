@@ -20,16 +20,16 @@ Evidence checked locally:
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
   still includes the local Section 3-4 theory stack. The refreshed theorem index
-  ran in `0:00.40`, while `gen_stmt_index.sh` ran in `0:02.13`.
+  ran in `0:00.34`, while `gen_stmt_index.sh` ran in `0:02.33`.
 - A warm-cache section build passed after the latest Figure 4.10 split:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:34 elapsed time`; the session itself reported `0:00:15 elapsed time`.
-- The current committed branch tip before this report refresh is `e2108ee0`
-  (`Refresh GeoTop theorem indexes`), followed by `996909b1`
-  (`Prove GeoTop shared edge local neighborhood`) and merge commit `1da07ff5`
-  (`Merge remote-tracking branch 'origin/main' into codex-dev34-cache`).
+  `0:21.12` elapsed time; the session itself reported `0:00:17 elapsed time`.
+- The current committed branch tip before this report refresh is `43f39e12`
+  (`Merge branch 'main' of https://github.com/JUrban/isa_geotop1 into
+  codex-dev34-cache`), following `a4b38415` (`Split GeoTop Figure 4.10
+  fan construction`) and the colleague's latest TFF/export-generator commits.
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in

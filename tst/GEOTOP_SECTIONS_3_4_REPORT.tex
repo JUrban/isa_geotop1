@@ -22,17 +22,16 @@ theorem-index generator commit, \texttt{0284ba9c}
 branch.
 \item The fast \texttt{gen\_index.sh} implementation is the Python single-pass
 version and still includes the local Section 3--4 theory stack. The refreshed
-theorem index ran in \texttt{0:00.40}, while \texttt{gen\_stmt\_index.sh}
-ran in \texttt{0:02.13}.
+theorem index ran in \texttt{0:00.34}, while \texttt{gen\_stmt\_index.sh}
+ran in \texttt{0:02.33}.
 \item A warm-cache section build passed after the latest Figure 4.10 split:
 \texttt{/project/bin/isabelle build -d . -d dev34\_pre -d dev34\_prefix -d dev34\_facts -d dev34\_workfacts -d dev34\_linkfacts -d dev34\_graphfacts -d dev34\_graphwork -d dev34\_openstar -d dev34 GeoTop34Dev},
-with the outer command reporting \texttt{0:00:34 elapsed time}; the session
-itself reported \texttt{0:00:15 elapsed time}.
+with the outer command reporting \texttt{0:21.12} elapsed time; the session
+itself reported \texttt{0:00:17 elapsed time}.
 \item The current committed branch tip before this report refresh is
-\texttt{e2108ee0} (\texttt{Refresh GeoTop theorem indexes}), followed by
-\texttt{996909b1} (\texttt{Prove GeoTop shared edge local neighborhood}) and
-merge commit \texttt{1da07ff5}
-(\texttt{Merge remote-tracking branch 'origin/main' into codex-dev34-cache}).
+\texttt{43f39e12} (\texttt{Merge branch 'main' of https://github.com/JUrban/isa\_geotop1 into codex-dev34-cache}), following
+\texttt{a4b38415} (\texttt{Split GeoTop Figure 4.10 fan construction}) and the
+colleague's latest TFF/export-generator commits.
 \item Excluding the intentionally dirty \texttt{dev34\_pre/GeoTop.thy} mirror,
 the target section-specific theories currently contain 16 executable
 \texttt{sorry}s: 10 in \texttt{dev34\_prefix/GeoTop\_3\_4\_Prefix.thy} and 6 in
