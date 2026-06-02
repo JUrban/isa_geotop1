@@ -22,9 +22,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:31 elapsed time`.
-- The current committed branch tip before this report refresh is `f41aa0a3`
-  (`Split GeoTop two-sided vertex local model`).
+  `0:00:35 elapsed time`.
+- The current committed branch tip before this report refresh is `70a2e287`
+  (`Prove GeoTop two-sided vertex link polygon`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -112,9 +112,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 6113; this is the same-complex two-triangle shared-edge local disk
+  at line 6240; this is the same-complex two-triangle shared-edge local disk
   model for Theorem 4.9's boundary converse.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6209;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 6554;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -212,7 +212,10 @@ single component, and the finite connected degree-two linear graph classifier
 turns that component into a polygon. New proved helpers include
 `geotop_link_vertices_face_count_two_incident_link_edge_card_dev34`,
 `geotop_link_component_preserves_incident_edge_card_two_dev34`, and
-`geotop_link_component_degree_two_polygon_witness_dev34`.
+`geotop_link_component_degree_two_polygon_witness_dev34`. The same-complex
+two-triangle local model has also gained the proved face-lattice helper
+`geotop_2simplex_face_containing_edge_eq_edge_or_simplex_dev34`: in a
+2-simplex, a face containing an edge is either that edge or the full simplex.
 
 ## Important Supporting Material
 

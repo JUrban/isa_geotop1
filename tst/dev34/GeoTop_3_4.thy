@@ -6094,6 +6094,131 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_face_containing_edge_eq_edge_or_simplex_dev34:
+  fixes F e \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes hF\<sigma>: "geotop_is_face F \<sigma>"
+  assumes hedge: "geotop_is_edge e"
+  assumes heF: "e \<subseteq> F"
+  shows "F = e \<or> F = \<sigma>"
+  (**
+    In a 2-simplex the face lattice has no proper face strictly between an
+    edge and the full simplex.  This is the combinatorial part of the
+    two-triangle local edge model. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two[OF hedge he\<sigma>])
+  obtain V\<^sub>F W\<^sub>F where h\<sigma>VF: "geotop_simplex_vertices \<sigma> V\<^sub>F"
+    and hWF_ne: "W\<^sub>F \<noteq> {}"
+    and hWF_sub: "W\<^sub>F \<subseteq> V\<^sub>F"
+    and hF_eq: "F = geotop_convex_hull W\<^sub>F"
+    and hFWF: "geotop_simplex_vertices F W\<^sub>F"
+    by (rule geotop_face_witness_simplex_vertices[OF hF\<sigma>])
+  have hVF_eq: "V\<^sub>F = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>VF h\<sigma>V])
+  have hWF_sub_V: "W\<^sub>F \<subseteq> V"
+    using hWF_sub hVF_eq by (by100 simp)
+  have hW_sub_WF: "W \<subseteq> W\<^sub>F"
+  proof
+    fix x
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> V"
+      using hxW hW_sub by (by100 blast)
+    have hx_e: "x \<in> e"
+    proof -
+      have "x \<in> convex hull W"
+        using hxW hull_inc[of x W] by (by100 simp)
+      hence "x \<in> geotop_convex_hull W"
+        using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+      thus ?thesis
+        using he_eq by (by100 simp)
+    qed
+    have hxF: "x \<in> F"
+      using hx_e heF by (by100 blast)
+    show "x \<in> W\<^sub>F"
+    proof (rule ccontr)
+      assume hx_not_WF: "\<not> x \<in> W\<^sub>F"
+      have hWF_sub_no_x: "W\<^sub>F \<subseteq> V - {x}"
+        using hWF_sub_V hx_not_WF by (by100 blast)
+      have hx_not_hull: "x \<notin> geotop_convex_hull W\<^sub>F"
+        by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+            [OF h\<sigma>V hxV hWF_sub_no_x])
+      have "x \<in> geotop_convex_hull W\<^sub>F"
+        using hxF hF_eq by (by100 simp)
+      thus False
+        using hx_not_hull by (by100 blast)
+    qed
+  qed
+  have hV_card: "card V = 3"
+  proof -
+    obtain V2 m where hV2_fin: "finite V2"
+      and hV2_card: "card V2 = 2 + 1"
+      and h2_le_m: "2 \<le> m"
+      and hgp_V2: "geotop_general_position V2 m"
+      and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+      using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+    have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+      unfolding geotop_simplex_vertices_def
+      using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+    have hV_eq: "V = V2"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+    show ?thesis
+      using hV_eq hV2_card by (by100 simp)
+  qed
+  have hV_fin: "finite V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hWF_cases: "W\<^sub>F = W \<or> W\<^sub>F = V"
+  proof (cases "W\<^sub>F = W")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have hWF_fin: "finite W\<^sub>F"
+      using hFWF unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hW_psub_WF: "W \<subset> W\<^sub>F"
+      using hW_sub_WF False by (by100 blast)
+    have hW_card_lt: "card W < card W\<^sub>F"
+      by (rule psubset_card_mono[OF hWF_fin hW_psub_WF])
+    have hWF_le_V: "card W\<^sub>F \<le> card V"
+      by (rule card_mono[OF hV_fin hWF_sub_V])
+    have hWF_card: "card W\<^sub>F = card V"
+      using hW_card hW_card_lt hWF_le_V hV_card by (by100 arith)
+    have hWF_eq_V: "W\<^sub>F = V"
+    proof (rule card_seteq[OF hV_fin hWF_sub_V])
+      show "card V \<le> card W\<^sub>F"
+        using hWF_card by (by100 simp)
+    qed
+    show ?thesis
+      using hWF_eq_V by (by100 blast)
+  qed
+  show ?thesis
+  proof -
+    have h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+    from hWF_cases show ?thesis
+    proof
+      assume hWF_eq_W: "W\<^sub>F = W"
+      have "F = e"
+        using hWF_eq_W hF_eq he_eq by (by100 simp)
+      show ?thesis
+        using \<open>F = e\<close> by (by100 blast)
+    next
+      assume hWF_eq_V: "W\<^sub>F = V"
+      have "F = \<sigma>"
+        using hWF_eq_V hF_eq h\<sigma>_eq by (by100 simp)
+      show ?thesis
+        using \<open>F = \<sigma>\<close> by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
