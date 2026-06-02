@@ -255,6 +255,40 @@ proof -
     using hr_pos hball_sub by (by100 blast)
 qed
 
+lemma geotop_simplex_point_neighborhood_empty_if_notin_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx_not: "x \<notin> \<sigma>"
+  shows "\<exists>r. 0 < r \<and> ball x r \<inter> \<sigma> = {}"
+proof -
+  have h\<sigma>_closed: "closed \<sigma>"
+    by (rule geotop_complex_simplex_closed[OF hK h\<sigma>K])
+  have h\<sigma>_ne: "\<sigma> \<noteq> {}"
+    by (rule geotop_complex_simplex_nonempty[OF hK h\<sigma>K])
+  show ?thesis
+    by (rule geotop_ball_avoids_closed_not_containing
+        [OF h\<sigma>_closed h\<sigma>_ne hx_not])
+qed
+
+lemma geotop_radial_cone_simplex_point_neighborhood_at_member_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hW_open: "W \<in> geotop_euclidean_topology"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  assumes hx:
+    "x \<in> {x \<in> \<Union>(geotop_star K v) - {v}.
+       \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+          \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  shows "\<exists>r. 0 < r \<and>
+      ball x r \<inter> (\<Union>(geotop_star K v) - {v}) \<inter> \<sigma>
+        \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+                \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+  sorry
+
 lemma geotop_radial_cone_simplex_point_neighborhood_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -270,7 +304,25 @@ lemma geotop_radial_cone_simplex_point_neighborhood_dev34:
         \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
              \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
                 \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
-  sorry
+proof (cases "x \<in> \<sigma>")
+  case True
+  show ?thesis
+    by (rule geotop_radial_cone_simplex_point_neighborhood_at_member_dev34
+        [OF hK hv hW_open h\<sigma>K True hx])
+next
+  case False
+  obtain r where hr_pos: "0 < r" and hdisj: "ball x r \<inter> \<sigma> = {}"
+    using geotop_simplex_point_neighborhood_empty_if_notin_dev34[OF hK h\<sigma>K False]
+    by (by100 blast)
+  have hsub:
+      "ball x r \<inter> (\<Union>(geotop_star K v) - {v}) \<inter> \<sigma>
+        \<subseteq> {x \<in> \<Union>(geotop_star K v) - {v}.
+             \<exists>y t. y \<in> \<Union>(geotop_link K v) \<inter> W \<and> 0 < t \<and> t \<le> 1
+                \<and> x = (1 - t) *\<^sub>R v + t *\<^sub>R y}"
+    using hdisj by (by100 blast)
+  show ?thesis
+    using hr_pos hsub by (by100 blast)
+qed
 
 lemma geotop_finite_local_carrier_radial_cone_point_neighborhood_dev34:
   fixes K F :: "(real^2) set set"
