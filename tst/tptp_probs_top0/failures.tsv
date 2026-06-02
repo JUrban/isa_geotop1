@@ -1,0 +1,9 @@
+theorem	error
+Top1_Ch2.top1_saturated_restrict_preimage_eq	THM: infer_instantiate_types
+Top1_Ch4.top1_support_on_mul_nonzero_factor	THM: infer_instantiate_types
+Top1_Ch9_13.top1_R_to_S1_translate_lift	THM: infer_instantiate_types
+Top1_Ch2.top1_ball_on_bounded_metric_eq	THM: infer_instantiate_types
+Top1_Ch5_8.sup_uniform_ball_eq	THM: infer_instantiate_types
+Top1_Ch2.top1_preimage_on_cong	THM: infer_instantiate_types
+Top1_Ch2.top1_image_on_cong	THM: infer_instantiate_types
+Top1_Ch2.top1_PiE_cong_on	THM: infer_instantiate_types
