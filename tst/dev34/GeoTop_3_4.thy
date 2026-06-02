@@ -1626,7 +1626,13 @@ proof -
         "\<forall>w. {w} \<in> geotop_link K v \<longrightarrow>
             card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
             card {l\<in>geotop_link K v. geotop_is_edge l \<and> w \<in> l} = 2"
-        sorry
+      proof -
+        have hvK: "{v} \<in> K"
+          using geotop_complex_vertices_eq_0_simplexes[OF hK] hv by (by100 blast)
+        show ?thesis
+          by (rule geotop_link_vertices_face_count_one_or_two_incident_link_edge_card_dev34
+              [OF hK hvK hL_one_or_two_faces])
+      qed
       have hcomponent_degree_one_or_two_linear_graph_witnesses:
         "\<forall>C. (\<exists>P\<in>\<Union>(geotop_link K v).
             C = geotop_component_at UNIV geotop_euclidean_topology
