@@ -2378,6 +2378,54 @@ proof -
     using hL_complex hL_1dim hL_fin hL_poly hL_conn htwo_L by (by100 blast)
 qed
 
+lemma geotop_exact_two_incident_edges_no_graph_endpoint_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hfin: "finite L"
+  assumes htwo:
+    "\<forall>w. {w} \<in> L \<longrightarrow>
+      (\<exists>l\<^sub>1\<in>L. \<exists>l\<^sub>2\<in>L.
+        geotop_is_edge l\<^sub>1 \<and> w \<in> l\<^sub>1
+        \<and> geotop_is_edge l\<^sub>2 \<and> w \<in> l\<^sub>2
+        \<and> l\<^sub>1 \<noteq> l\<^sub>2
+        \<and> (\<forall>l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l
+            \<longrightarrow> l = l\<^sub>1 \<or> l = l\<^sub>2))"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  show "\<not> geotop_graph_endpoint L w"
+  proof
+    assume hend: "geotop_graph_endpoint L w"
+    obtain l\<^sub>1 l\<^sub>2 where hl1L: "l\<^sub>1 \<in> L"
+      and hl2L: "l\<^sub>2 \<in> L"
+      and hl1edge: "geotop_is_edge l\<^sub>1"
+      and hw_l1: "w \<in> l\<^sub>1"
+      and hl2edge: "geotop_is_edge l\<^sub>2"
+      and hw_l2: "w \<in> l\<^sub>2"
+      and hl12: "l\<^sub>1 \<noteq> l\<^sub>2"
+      using htwo hwL by (by100 blast)
+    let ?S = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+    have hS_fin: "finite ?S"
+      by (rule finite_subset[OF _ hfin]) (by100 blast)
+    have hl1S: "l\<^sub>1 \<in> ?S"
+      using hl1L hl1edge hw_l1 by (by100 simp)
+    have hl2S: "l\<^sub>2 \<in> ?S"
+      using hl2L hl2edge hw_l2 by (by100 simp)
+    have hpair_sub: "{l\<^sub>1, l\<^sub>2} \<subseteq> ?S"
+      using hl1S hl2S by (by100 blast)
+    have hpair_card: "card {l\<^sub>1, l\<^sub>2} = 2"
+      using hl12 by (by100 simp)
+    have hcard_le: "card {l\<^sub>1, l\<^sub>2} \<le> card ?S"
+      by (rule card_mono[OF hS_fin hpair_sub])
+    have hcard_ge2: "2 \<le> card ?S"
+      using hpair_card hcard_le by (by100 linarith)
+    have hcard1: "card ?S = 1"
+      using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+    show False
+      using hcard_ge2 hcard1 by (by100 simp)
+  qed
+qed
+
 lemma geotop_link_component_nonisolated_linear_graph_witness:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
