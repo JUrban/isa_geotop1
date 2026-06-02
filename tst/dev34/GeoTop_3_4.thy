@@ -7334,6 +7334,101 @@ proof -
         [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hsum hd hz])
 qed
 
+lemma geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_dev34:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+    "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  (**
+    Same-complex strengthening of the shared-edge side package: if the two
+    2-simplexes put their opposite vertices on the same strict side of the
+    shared edge line, the previous overlap lemma gives a common HOL-interior
+    point, contradicting complex relative-interior disjointness. **)
+proof (rule geotop_two_2simplex_shared_edge_vertices_side_obtain_dev34
+    [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    and h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+  have hdisj: "interior \<sigma> \<inter> interior \<tau> = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34
+        [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau>])
+  have hpos_not: "\<not> (n \<bullet> c > r \<and> n \<bullet> d > r)"
+  proof
+    assume hsame: "n \<bullet> c > r \<and> n \<bullet> d > r"
+    have hc_side: "n \<bullet> c > r"
+      using hsame by (by100 blast)
+    have hd_side: "n \<bullet> d > r"
+      using hsame by (by100 blast)
+    have hmeet: "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+      by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_dev34
+          [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hline hc_side hd_side])
+    show False
+      using hdisj hmeet by (by100 blast)
+  qed
+  have hneg_not: "\<not> (n \<bullet> c < r \<and> n \<bullet> d < r)"
+  proof
+    assume hsame: "n \<bullet> c < r \<and> n \<bullet> d < r"
+    have hc_side: "n \<bullet> c < r"
+      using hsame by (by100 blast)
+    have hd_side: "n \<bullet> d < r"
+      using hsame by (by100 blast)
+    have hmeet: "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+      by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_dev34
+          [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hline hc_side hd_side])
+    show False
+      using hdisj hmeet by (by100 blast)
+  qed
+  have hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  proof -
+    have hc_cases: "n \<bullet> c > r \<or> n \<bullet> c < r"
+      using hc_ne by (by100 linarith)
+    have hd_cases: "n \<bullet> d > r \<or> n \<bullet> d < r"
+      using hd_ne by (by100 linarith)
+    show ?thesis
+      using hc_cases hd_cases hpos_not hneg_not by (by100 blast)
+  qed
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg hopp])
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
