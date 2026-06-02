@@ -7917,6 +7917,40 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_shared_edge_probe_triangles_subset_union_dev34:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  fixes q1 q2 qtop qbot :: "real^2"
+  fixes V\<sigma> V\<tau> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<sigma>"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> V\<tau>"
+  assumes hq1: "q1 \<in> \<sigma> \<inter> \<tau>"
+  assumes hq2: "q2 \<in> \<sigma> \<inter> \<tau>"
+  assumes htop: "qtop \<in> interior \<sigma>"
+  assumes hbot: "qbot \<in> interior \<tau>"
+  shows "convex hull {q1, q2, qtop} \<union> convex hull {q1, q2, qbot} \<subseteq> \<sigma> \<union> \<tau>"
+  (**
+    Set-containment package for the local diamond: the upper small triangle
+    lies in the first incident 2-simplex and the lower small triangle lies in
+    the second. **)
+proof -
+  have hqtop_\<sigma>: "qtop \<in> \<sigma>"
+    using htop interior_subset by (by100 blast)
+  have hqbot_\<tau>: "qbot \<in> \<tau>"
+    using hbot interior_subset by (by100 blast)
+  have hq1_\<sigma>: "q1 \<in> \<sigma>" and hq2_\<sigma>: "q2 \<in> \<sigma>"
+    using hq1 hq2 by (by100 blast)+
+  have hq1_\<tau>: "q1 \<in> \<tau>" and hq2_\<tau>: "q2 \<in> \<tau>"
+    using hq1 hq2 by (by100 blast)+
+  have htop_sub: "convex hull {q1, q2, qtop} \<subseteq> \<sigma>"
+    by (rule geotop_convex_hull_three_points_subset_2simplex_dev34
+        [OF h\<sigma>V hq1_\<sigma> hq2_\<sigma> hqtop_\<sigma>])
+  have hbot_sub: "convex hull {q1, q2, qbot} \<subseteq> \<tau>"
+    by (rule geotop_convex_hull_three_points_subset_2simplex_dev34
+        [OF h\<tau>V hq1_\<tau> hq2_\<tau> hqbot_\<tau>])
+  show ?thesis
+    using htop_sub hbot_sub by (by100 blast)
+qed
+
 lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes e \<sigma> \<tau> :: "(real^2) set"
   assumes hab: "a \<noteq> b"

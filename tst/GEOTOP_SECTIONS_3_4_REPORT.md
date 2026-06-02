@@ -14,8 +14,8 @@ warm-cache build.
 
 Evidence checked locally:
 
-- A fetch of colleague `main` over HTTPS reached commit `eaaa9065` (`Export TFF
-  problems for AlgTop sessions`). The relevant faster theorem-index
+- A fetch of colleague `main` over HTTPS reached commit `81d9ff22` (`Export TFF
+  problems for Top0 topology sessions`). The relevant faster theorem-index
   generator commit, `0284ba9c` (`Speed up theorem index generation`), is already
   contained in the local branch.
 - The fast `gen_index.sh` implementation is the Python single-pass version and
@@ -26,9 +26,9 @@ Evidence checked locally:
   `/project/bin/isabelle build -d . -d dev34_pre -d dev34_prefix -d dev34_facts
   -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork
   -d dev34_openstar -d dev34 GeoTop34Dev`, with the outer command reporting
-  `0:00:34 elapsed time`.
-- The current committed branch tip before this report refresh is `906b5498`
-  (`Prove GeoTop shared edge subsegment`).
+  `0:00:38 elapsed time`.
+- The current committed branch tip before this report refresh is `3d85cad1`
+  (`Prove GeoTop simplex point hull containment`).
 - A scan of the target section-specific theories, excluding the intentionally
   dirty `dev34_pre/GeoTop.thy` mirror, finds 16 remaining executable `sorry`s:
   10 in `dev34_prefix/GeoTop_3_4_Prefix.thy` and 6 in
@@ -116,9 +116,9 @@ The remaining target holes in `dev34/GeoTop_3_4.thy` are:
   at line 4061.
 - `geotop_2cell_chart_1sphere_complement_not_connected_dev34` at line 4197.
 - `geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_dev34`
-  at line 7935; this is the remaining analytic local-neighborhood step for
+  at line 7969; this is the remaining analytic local-neighborhood step for
   the same-complex two-triangle shared-edge local disk model.
-- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8291;
+- `geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34` at line 8325;
   this is the Figure 4.10 full-disk vertex-star local Euclidean-neighborhood
   branch of Theorem 4.9's boundary converse.
 
@@ -316,7 +316,10 @@ small subsegment lies in both incident triangles.
 The convexity wrapper
 `geotop_convex_hull_three_points_subset_2simplex_dev34` is also proved; it
 packages the fact that a small triangle with vertices in a simplex is contained
-in that simplex.
+in that simplex. The containment package
+`geotop_shared_edge_probe_triangles_subset_union_dev34` now applies this
+convexity wrapper to the two small probe triangles used in the book's local
+diamond argument, placing their union inside the two incident 2-simplexes.
 
 ## Important Supporting Material
 
