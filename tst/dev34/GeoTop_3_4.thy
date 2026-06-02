@@ -1253,6 +1253,8 @@ lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
   assumes hp: "p \<in> rel_interior e"
   assumes hunique:
     "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  assumes hUopen: "openin_on (geotop_polyhedron K)
+      (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U"
   assumes hpU: "p \<in> U"
   assumes hhomeo: "top1_homeomorphism_on U
       (subspace_topology UNIV geotop_euclidean_topology U)
@@ -1275,6 +1277,8 @@ lemma geotop_three_incident_2simplex_sphere_not_separates_chart_dev34:
       \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hUopen: "openin_on (geotop_polyhedron K)
+      (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U"
   assumes hpU: "p \<in> U"
   assumes hhomeo: "top1_homeomorphism_on U
       (subspace_topology UNIV geotop_euclidean_topology U)
@@ -1297,6 +1301,8 @@ lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
       \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hUopen: "openin_on (geotop_polyhedron K)
+      (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U"
   assumes hpU: "p \<in> U"
   assumes hcell: "geotop_is_n_cell (closure_on (geotop_polyhedron K)
         (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)
@@ -1481,7 +1487,7 @@ proof
         and hAsep: "\<not> top1_connected_on (U - A)
             (subspace_topology UNIV geotop_euclidean_topology (U - A))"
         using geotop_unique_incident_2simplex_semicircle_separates_chart_dev34
-            [OF hK heK hedge hp hunique_ex hpU hhomeo_geo]
+            [OF hK heK hedge hp hunique_ex hUopen hpU hhomeo_geo]
         by (by100 blast)
       have hconn: "top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
@@ -1583,7 +1589,7 @@ proof
             and hJ_not_sep: "top1_connected_on (U - J)
                 (subspace_topology UNIV geotop_euclidean_topology (U - J))"
             using geotop_three_incident_2simplex_sphere_not_separates_chart_dev34
-                [OF hK heK hedge hp hfaces_ex hpU hhomeo_geo]
+                [OF hK heK hedge hp hfaces_ex hUopen hpU hhomeo_geo]
             by (by100 blast)
           have hJ_sep: "\<not> top1_connected_on (U - J)
                 (subspace_topology UNIV geotop_euclidean_topology (U - J))"
@@ -2833,7 +2839,7 @@ proof -
             using hKM hpM unfolding geotop_n_manifold_with_boundary_on_def by (by100 blast)
           show False
             by (rule geotop_boundary_chart_three_incident_2simplex_contradiction_dev34
-                [OF hK heK hedge hp hfaces_ex hpU hcell])
+                [OF hK heK hedge hp hfaces_ex hUopen hpU hcell])
           qed
           show "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} \<le> 2"
             using hnot_counterexample by (by100 blast)
