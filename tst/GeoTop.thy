@@ -1406,6 +1406,125 @@ proof
     using hz_seg hz_ne by (by100 blast)
 qed
 
+lemma closed_segment_radial_projection_preimage:
+  fixes P x p z :: "real^2"
+  assumes hx_ball: "x \<in> ball P \<delta>"
+    and hx_ne: "x \<noteq> P"
+    and hp_ne: "p \<noteq> P"
+    and h\<delta>_p: "\<delta> \<le> dist P p"
+    and hr_pos: "0 < r"
+    and hproj: "\<rho> = P + (r / dist P x) *\<^sub>R (x - P)"
+    and hz_x: "z \<in> closed_segment x \<rho>"
+    and hz_p: "z \<in> closed_segment P p"
+  shows "x \<in> closed_segment P p"
+proof -
+  have hx_dist_pos: "dist P x > 0"
+    using hx_ne by (by100 simp)
+  obtain u where hu0: "0 \<le> u" and hu1: "u \<le> 1"
+    and hz_u: "z = (1 - u) *\<^sub>R x + u *\<^sub>R \<rho>"
+    using hz_x unfolding closed_segment_def by (by100 blast)
+  define a where "a = 1 + u * (r / dist P x - 1)"
+  have ha_alt: "a = (1 - u) + u * (r / dist P x)"
+    unfolding a_def by (simp add: algebra_simps)
+  have ha_pos: "0 < a"
+  proof -
+    have hratio_pos: "0 < r / dist P x"
+      using hr_pos hx_dist_pos by (by100 simp)
+    have hterm_nonneg: "0 \<le> u * (r / dist P x)"
+    proof -
+      have "0 \<le> u * r"
+        using hu0 hr_pos by (by100 simp)
+      thus ?thesis using hx_dist_pos by (by100 simp)
+    qed
+    show ?thesis
+    proof (cases "u = 1")
+      case True
+      show ?thesis
+        using True hratio_pos ha_alt by (by100 simp)
+    next
+      case False
+      have "0 < 1 - u"
+        using hu1 False by (by100 linarith)
+      thus ?thesis
+        using ha_alt hterm_nonneg by (by100 linarith)
+    qed
+  qed
+  have hz_vec: "z = P + a *\<^sub>R (x - P)"
+  proof -
+    have hz1: "z = x + u *\<^sub>R (\<rho> - x)"
+      using hz_u
+      by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+          scaleR_diff_left scaleR_diff_right)
+    have hdiff: "\<rho> - x = (r / dist P x - 1) *\<^sub>R (x - P)"
+      unfolding hproj
+      by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+          scaleR_diff_left scaleR_diff_right)
+    have "z = x + (u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+      using hz1 hdiff by (by100 simp)
+    also have "\<dots> = P + (1 + u * (r / dist P x - 1)) *\<^sub>R (x - P)"
+      by (simp add: algebra_simps scaleR_add_left scaleR_add_right
+          scaleR_diff_left scaleR_diff_right)
+    also have "\<dots> = P + a *\<^sub>R (x - P)"
+      unfolding a_def by (by100 simp)
+    finally show ?thesis .
+  qed
+  obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+    and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+    using hz_p unfolding closed_segment_def by (by100 blast)
+  have hz_t_vec: "z = P + t *\<^sub>R (p - P)"
+    using hz_t by (simp add: algebra_simps)
+  have hp_dist_pos: "dist P p > 0"
+    using hp_ne by (by100 simp)
+  have hscale_eq: "a *\<^sub>R (x - P) = t *\<^sub>R (p - P)"
+    using hz_vec hz_t_vec by (by100 simp)
+  have hx_vec: "x - P = (t / a) *\<^sub>R (p - P)"
+  proof -
+    have hscaled:
+      "(inverse a * a) *\<^sub>R (x - P) = (inverse a * t) *\<^sub>R (p - P)"
+    proof -
+      have "inverse a *\<^sub>R (a *\<^sub>R (x - P)) =
+          inverse a *\<^sub>R (t *\<^sub>R (p - P))"
+        using hscale_eq by (by100 simp)
+      thus ?thesis by (simp only: scaleR_scaleR)
+    qed
+    have hx_vec_inv: "x - P = (inverse a * t) *\<^sub>R (p - P)"
+      using hscaled ha_pos by (by100 simp)
+    have "inverse a * t = t / a"
+      using ha_pos by (simp add: field_simps)
+    thus ?thesis using hx_vec_inv by (by100 simp)
+  qed
+  define s where "s = t / a"
+  have hs0: "0 \<le> s"
+    unfolding s_def using ht0 ha_pos by (by100 simp)
+  have hx_dist_eq: "dist P x = s * dist P p"
+  proof -
+    have "dist P x = norm (x - P)"
+      by (simp add: dist_norm norm_minus_commute)
+    also have "\<dots> = norm (s *\<^sub>R (p - P))"
+      using hx_vec unfolding s_def by (by100 simp)
+    also have "\<dots> = s * norm (p - P)"
+      using hs0 by (by100 simp)
+    also have "\<dots> = s * dist P p"
+      by (simp add: dist_norm norm_minus_commute)
+    finally show ?thesis .
+  qed
+  have hs1: "s \<le> 1"
+  proof -
+    have hx_dist_lt: "dist P x < \<delta>"
+      using hx_ball by (by100 simp)
+    have hx_dist_le_p: "dist P x \<le> dist P p"
+      using hx_dist_lt h\<delta>_p by (by100 linarith)
+    have "s * dist P p \<le> 1 * dist P p"
+      using hx_dist_eq hx_dist_le_p by (by100 simp)
+    thus ?thesis
+      using hp_dist_pos by (simp add: mult_le_cancel_right_pos)
+  qed
+  have hx_conv: "x = (1 - s) *\<^sub>R P + s *\<^sub>R p"
+    using hx_vec unfolding s_def by (simp add: algebra_simps)
+  show ?thesis
+    unfolding closed_segment_def using hs0 hs1 hx_conv by (by100 blast)
+qed
+
 lemma finite_components_real_complement_two_points:
   fixes a b :: real
   shows "finite (components (UNIV - {a, b}))"
