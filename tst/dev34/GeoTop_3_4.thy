@@ -156,6 +156,55 @@ proof -
     using hA_eq hU_open_top by (by100 blast)
 qed
 
+lemma geotop_complex_point_finite_local_carrier_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "\<exists>r F. 0 < r \<and> finite F \<and> F \<subseteq> K
+      \<and> ball x r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hK_local:
+    "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule geotop_is_complex_locally_finite[OF hK])
+  have hlocal_\<sigma>: "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule bspec[OF hK_local h\<sigma>K])
+  obtain U where hU_open: "open U" and h\<sigma>U: "\<sigma> \<subseteq> U"
+    and hU_finite: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hlocal_\<sigma> by (by100 blast)
+  have hxU: "x \<in> U"
+    using hx\<sigma> h\<sigma>U by (by100 blast)
+  have hU_ball: "\<forall>x\<in>U. \<exists>r>0. ball x r \<subseteq> U"
+    using hU_open open_contains_ball[of U] by (by100 simp)
+  have hex_r: "\<exists>r>0. ball x r \<subseteq> U"
+    using hU_ball hxU by (by100 blast)
+  obtain r where hr_pos: "0 < r" and hballU: "ball x r \<subseteq> U"
+    using hex_r by (by100 blast)
+  let ?F = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  have hF_sub: "?F \<subseteq> K"
+    by (by100 blast)
+  have hlocal_cover: "ball x r \<inter> geotop_polyhedron K \<subseteq> \<Union>?F"
+  proof
+    fix z
+    assume hz: "z \<in> ball x r \<inter> geotop_polyhedron K"
+    obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hz\<tau>: "z \<in> \<tau>"
+      using hz unfolding geotop_polyhedron_def by (by100 blast)
+    have hzU: "z \<in> U"
+      using hz hballU by (by100 blast)
+    have "\<tau> \<inter> U \<noteq> {}"
+      using hz\<tau> hzU by (by100 blast)
+    have "\<tau> \<in> ?F"
+      using h\<tau>K \<open>\<tau> \<inter> U \<noteq> {}\<close> by (by100 blast)
+    show "z \<in> \<Union>?F"
+      using \<open>\<tau> \<in> ?F\<close> hz\<tau> by (by100 blast)
+  qed
+  show ?thesis
+    using hr_pos hU_finite hF_sub hlocal_cover by (by100 blast)
+qed
+
 lemma geotop_euclidean_open_radial_cone_point_neighborhood_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
