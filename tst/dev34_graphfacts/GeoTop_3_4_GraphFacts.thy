@@ -1018,6 +1018,12 @@ proof -
     by (rule geotop_complex_1dim_imp_linear_graph_dev34[OF hcomplex hrest1])
 qed
 
+lemma geotop_graph_endpoint_delete_leaf_finite_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hfin: "finite L"
+  shows "finite (L - {{w}, e})"
+  using hfin by (by100 simp)
+
 lemma geotop_delete_leaf_incident_edges_neighbor_eq_dev34:
   fixes L :: "(real^2) set set"
   assumes hqw: "q \<noteq> w"
