@@ -1292,7 +1292,21 @@ lemma geotop_unique_incident_2simplex_semicircle_separates_chart_dev34:
           (subspace_topology UNIV geotop_euclidean_topology (f ` A))
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-  sorry
+proof -
+  let ?M = "geotop_polyhedron K"
+  have hlocal_ball: "\<exists>r>0. ?M \<inter> ball p r \<subseteq> U"
+    by (rule geotop_openin_norm_polyhedron_contains_relative_ball_dev34
+        [OF hUopen hpU])
+  have hsemicircle:
+    "\<exists>A. A \<subseteq> U
+      \<and> geotop_is_arc (f ` A)
+          (subspace_topology UNIV geotop_euclidean_topology (f ` A))
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+    sorry
+  show ?thesis
+    using hsemicircle by (by100 blast)
+qed
 
 lemma geotop_three_incident_2simplex_sphere_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
