@@ -6585,6 +6585,46 @@ proof -
           hn hline hc_ne hd_ne])
 qed
 
+lemma geotop_2simplex_vertices_HOL_interior_explicit_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "interior \<sigma> =
+    {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+      \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+  (**
+    HOL positive-barycentric description of the interior of a nondegenerate
+    2-simplex, specialized to the vertex triples used in the shared-edge
+    local model. **)
+proof -
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of "{a, b, c}"] by (by100 simp)
+  have h_ai: "\<not> affine_dependent {a, b, c}"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hac: "a \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hbc: "b \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hcol_eq:
+    "collinear {a, b, c} =
+      (a = b \<or> a = c \<or> b = c \<or> affine_dependent {a, b, c})"
+    by (rule collinear_3_eq_affine_dependent)
+  have hnoncol: "\<not> collinear {a, b, c}"
+    using h_ai hab hac hbc hcol_eq by (by100 simp)
+  have hdim: "DIM(real^2) = 2"
+    by (by100 simp)
+  have hinter:
+    "interior (convex hull {a, b, c}) =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule interior_convex_hull_3_minimal[OF hnoncol hdim])
+  show ?thesis
+    using h\<sigma>_HOL hinter by (by100 simp)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
