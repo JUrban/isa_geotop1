@@ -1,4 +1,4 @@
-session GeoTop34GraphFactsDirty in "." = GeoTop34WorkFactsDirty +
+session GeoTop34GraphFactsDirty in "." = GeoTop34LinkFactsDirty +
   options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
   theories
     GeoTop_3_4_GraphFacts
