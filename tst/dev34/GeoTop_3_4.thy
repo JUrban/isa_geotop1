@@ -6625,6 +6625,35 @@ proof -
     using h\<sigma>_HOL hinter by (by100 simp)
 qed
 
+lemma geotop_2simplex_positive_bary_in_HOL_interior_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hx: "0 < x"
+  assumes hy: "0 < y"
+  assumes hz: "0 < z"
+  assumes hsum: "x + y + z = 1"
+  assumes hp: "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  shows "p \<in> interior \<sigma>"
+  (**
+    Direct membership form of the positive-barycentric interior
+    characterization. **)
+proof -
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_dev34
+        [OF hab hc_not_ab h\<sigma>V])
+  have "p \<in>
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    using hx hy hz hsum hp by (by100 blast)
+  thus ?thesis
+    using hinter by (by100 simp)
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
