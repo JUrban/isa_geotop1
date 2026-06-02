@@ -6219,6 +6219,68 @@ proof -
   qed
 qed
 
+lemma geotop_complex_two_2simplex_shared_edge_inter_eq_edge_dev34:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  shows "\<sigma> \<inter> \<tau> = e"
+  (**
+    In a complex, two distinct 2-simplexes sharing the edge \<open>e\<close> intersect
+    exactly in \<open>e\<close>.  The complex intersection is a face of each simplex, and
+    the previous face-containment lemma rules out a larger common face. **)
+proof -
+  let ?I = "\<sigma> \<inter> \<tau>"
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF he\<sigma>])
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_is_face_imp_subset[OF he\<tau>])
+  have he_nonempty: "e \<noteq> {}"
+  proof -
+    have he_dim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+    show ?thesis
+      by (rule geotop_simplex_nonempty[OF he_simplex])
+  qed
+  have he_sub_I: "e \<subseteq> ?I"
+    using he_sub_\<sigma> he_sub_\<tau> by (by100 blast)
+  have hI_nonempty: "?I \<noteq> {}"
+    using he_nonempty he_sub_I by (by100 blast)
+  have hI_face_\<sigma>: "geotop_is_face ?I \<sigma>"
+    using geotop_is_complex_intersection[OF hK] h\<sigma>K h\<tau>K hI_nonempty
+    by (by100 blast)
+  have hI_face_\<tau>: "geotop_is_face ?I \<tau>"
+    using geotop_is_complex_intersection[OF hK] h\<sigma>K h\<tau>K hI_nonempty
+    by (by100 blast)
+  have hcase_\<sigma>: "?I = e \<or> ?I = \<sigma>"
+    by (rule geotop_2simplex_face_containing_edge_eq_edge_or_simplex_dev34
+        [OF h\<sigma>2 he\<sigma> hI_face_\<sigma> hedge he_sub_I])
+  have hcase_\<tau>: "?I = e \<or> ?I = \<tau>"
+    by (rule geotop_2simplex_face_containing_edge_eq_edge_or_simplex_dev34
+        [OF h\<tau>2 he\<tau> hI_face_\<tau> hedge he_sub_I])
+  show ?thesis
+  proof (rule ccontr)
+    assume hnot: "\<not> ?thesis"
+    have hI_eq_\<sigma>: "?I = \<sigma>"
+      using hcase_\<sigma> hnot by (by100 blast)
+    have hI_eq_\<tau>: "?I = \<tau>"
+      using hcase_\<tau> hnot by (by100 blast)
+    have "\<sigma> = \<tau>"
+      using hI_eq_\<sigma> hI_eq_\<tau> by (by100 simp)
+    thus False
+      using h\<sigma>\<tau> by (by100 blast)
+  qed
+qed
+
 lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34:
   fixes K :: "(real^2) set set"
   fixes e \<sigma> \<tau> :: "(real^2) set"
