@@ -2445,6 +2445,242 @@ proof
   qed
 qed
 
+lemma geotop_star_cone_map_image_without_vertex_dev34:
+  fixes V :: "(real^2) set" and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hv_not: "v \<notin> V"
+  shows "\<phi> ` V = \<psi> ` V"
+  (**
+    Fig. 4.10 map bookkeeping: away from the cone vertex, the extended star
+    vertex map is just the old link-boundary map. **)
+proof -
+  show ?thesis
+  proof
+    show "\<phi> ` V \<subseteq> \<psi> ` V"
+    proof
+      fix y assume hy: "y \<in> \<phi> ` V"
+      obtain x where hxV: "x \<in> V" and hy_eq: "y = \<phi> x"
+        using hy by (by100 blast)
+      have hx_ne: "x \<noteq> v"
+        using hxV hv_not by (by100 blast)
+      have "y = \<psi> x"
+        using hy_eq hx_ne unfolding \<phi>_def by (by100 simp)
+      show "y \<in> \<psi> ` V"
+        using hxV \<open>y = \<psi> x\<close> by (by100 blast)
+    qed
+    show "\<psi> ` V \<subseteq> \<phi> ` V"
+    proof
+      fix y assume hy: "y \<in> \<psi> ` V"
+      obtain x where hxV: "x \<in> V" and hy_eq: "y = \<psi> x"
+        using hy by (by100 blast)
+      have hx_ne: "x \<noteq> v"
+        using hxV hv_not by (by100 blast)
+      have "y = \<phi> x"
+        using hy_eq hx_ne unfolding \<phi>_def by (by100 simp)
+      show "y \<in> \<phi> ` V"
+        using hxV \<open>y = \<phi> x\<close> by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_star_cone_map_image_with_vertex_dev34:
+  fixes V :: "(real^2) set" and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hv_in: "v \<in> V"
+  shows "\<phi> ` V = insert c (\<psi> ` (V - {v}))"
+  (**
+    Fig. 4.10 map bookkeeping: a star vertex set containing \<open>v\<close> maps to
+    the new cone vertex together with the image of the old opposite face. **)
+proof -
+  show ?thesis
+  proof
+    show "\<phi> ` V \<subseteq> insert c (\<psi> ` (V - {v}))"
+    proof
+      fix y assume hy: "y \<in> \<phi> ` V"
+      obtain x where hxV: "x \<in> V" and hy_eq: "y = \<phi> x"
+        using hy by (by100 blast)
+      show "y \<in> insert c (\<psi> ` (V - {v}))"
+      proof (cases "x = v")
+        case True
+        have "y = c"
+          using hy_eq True unfolding \<phi>_def by (by100 simp)
+        show ?thesis
+          using \<open>y = c\<close> by (by100 simp)
+      next
+        case False
+        have hxW: "x \<in> V - {v}"
+          using hxV False by (by100 blast)
+        have "y = \<psi> x"
+          using hy_eq False unfolding \<phi>_def by (by100 simp)
+        show ?thesis
+          using hxW \<open>y = \<psi> x\<close> by (by100 blast)
+      qed
+    qed
+    show "insert c (\<psi> ` (V - {v})) \<subseteq> \<phi> ` V"
+    proof
+      fix y assume hy: "y \<in> insert c (\<psi> ` (V - {v}))"
+      show "y \<in> \<phi> ` V"
+      proof (cases "y = c")
+        case True
+        have "\<phi> v = c"
+          unfolding \<phi>_def by (by100 simp)
+        show ?thesis
+          using hv_in True \<open>\<phi> v = c\<close> by (by100 blast)
+      next
+        case False
+        have "y \<in> \<psi> ` (V - {v})"
+          using hy False by (by100 blast)
+        obtain x where hxW: "x \<in> V - {v}" and hy_eq: "y = \<psi> x"
+          using \<open>y \<in> \<psi> ` (V - {v})\<close> by (by100 blast)
+        have hxV: "x \<in> V"
+          using hxW by (by100 blast)
+        have hx_ne: "x \<noteq> v"
+          using hxW by (by100 blast)
+        have "y = \<phi> x"
+          using hy_eq hx_ne unfolding \<phi>_def by (by100 simp)
+        show ?thesis
+          using hxV \<open>y = \<phi> x\<close> by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
+lemma geotop_star_fan_simplex_iff_from_link_and_cone_target_cases_dev34:
+  fixes K L' :: "(real^2) set set" and v c :: "real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  defines "\<phi> \<equiv> (\<lambda>x. if x = v then c else \<psi> x)"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hstar_vertices_finite:
+    "finite (geotop_complex_vertices (geotop_star K v))"
+  assumes hlink_target:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+  assumes hcone_vertex_target:
+    "geotop_convex_hull {c} \<in> L'"
+  assumes hcone_target:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+  shows "\<forall>V. V \<subseteq> geotop_complex_vertices (geotop_star K v) \<longrightarrow>
+        (geotop_convex_hull V \<in> geotop_star K v
+          \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L')"
+  (**
+    Fig. 4.10 simplex-membership packaging: once the target fan has exactly
+    the old boundary simplexes and exactly the cones on those boundary
+    simplexes, the extended vertex map preserves and reflects membership in
+    the star complex. **)
+proof
+  fix V
+  show "V \<subseteq> geotop_complex_vertices (geotop_star K v) \<longrightarrow>
+        (geotop_convex_hull V \<in> geotop_star K v
+          \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L')"
+  proof
+    assume hV_sub: "V \<subseteq> geotop_complex_vertices (geotop_star K v)"
+    let ?LV = "geotop_complex_vertices (geotop_link K v)"
+    have hV_fin: "finite V"
+      by (rule finite_subset[OF hV_sub hstar_vertices_finite])
+    have hstar_cases:
+      "geotop_convex_hull V \<in> geotop_star K v
+        \<longleftrightarrow> V = {v}
+          \<or> (v \<notin> V \<and> geotop_convex_hull V \<in> geotop_link K v)
+          \<or> (v \<in> V \<and> V - {v} \<noteq> {}
+              \<and> geotop_convex_hull (V - {v}) \<in> geotop_link K v)"
+      by (rule geotop_star_convex_hull_vertex_set_cases_dev34
+          [OF hK hv hV_fin hV_sub])
+    show "geotop_convex_hull V \<in> geotop_star K v
+          \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L'"
+    proof (cases "V = {v}")
+      case True
+      have hsource: "geotop_convex_hull V \<in> geotop_star K v"
+        using hstar_cases True by (by100 blast)
+      have h\<phi>V: "\<phi> ` V = {c}"
+      proof -
+        have hvin: "v \<in> V"
+          using True by (by100 simp)
+        have h\<phi>V_insert_raw:
+          "(\<lambda>x. if x = v then c else \<psi> x) ` V
+            = insert c (\<psi> ` (V - {v}))"
+          by (rule geotop_star_cone_map_image_with_vertex_dev34[OF hvin])
+        have h\<phi>V_insert: "\<phi> ` V = insert c (\<psi> ` (V - {v}))"
+          using h\<phi>V_insert_raw \<phi>_def by (by100 simp)
+        show ?thesis
+          using h\<phi>V_insert True by (by100 simp)
+      qed
+      have htarget: "geotop_convex_hull (\<phi> ` V) \<in> L'"
+        using hcone_vertex_target h\<phi>V by (by100 simp)
+      show ?thesis
+        using hsource htarget by (by100 blast)
+    next
+      case False
+      show ?thesis
+      proof (cases "v \<in> V")
+        case False
+        have hV_LV: "V \<subseteq> ?LV"
+        proof -
+          have "V \<subseteq> geotop_complex_vertices (geotop_star K v) - {v}"
+            using hV_sub False by (by100 blast)
+          also have "\<dots> = ?LV"
+            by (rule geotop_star_vertices_minus_vertex_eq_link_vertices_dev34
+                [OF hK hv])
+          finally show ?thesis .
+        qed
+        have hsource_link:
+          "geotop_convex_hull V \<in> geotop_star K v
+            \<longleftrightarrow> geotop_convex_hull V \<in> geotop_link K v"
+          using hstar_cases False by (by100 blast)
+        have h\<phi>V_raw:
+          "(\<lambda>x. if x = v then c else \<psi> x) ` V = \<psi> ` V"
+          by (rule geotop_star_cone_map_image_without_vertex_dev34[OF False])
+        have h\<phi>V: "\<phi> ` V = \<psi> ` V"
+          using h\<phi>V_raw \<phi>_def by (by100 simp)
+        have htarget_link:
+          "geotop_convex_hull V \<in> geotop_link K v
+            \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L'"
+          using hlink_target hV_LV h\<phi>V by (by100 simp)
+        show ?thesis
+          using hsource_link htarget_link by (by100 blast)
+      next
+        case True
+        let ?W = "V - {v}"
+        have hW_ne: "?W \<noteq> {}"
+          using True False by (by100 blast)
+        have hW_fin: "finite ?W"
+          using hV_fin by (by100 simp)
+        have hW_LV: "?W \<subseteq> ?LV"
+        proof -
+          have "?W \<subseteq> geotop_complex_vertices (geotop_star K v) - {v}"
+            using hV_sub by (by100 blast)
+          also have "\<dots> = ?LV"
+            by (rule geotop_star_vertices_minus_vertex_eq_link_vertices_dev34
+                [OF hK hv])
+          finally show ?thesis .
+        qed
+        have hsource_cone:
+          "geotop_convex_hull V \<in> geotop_star K v
+            \<longleftrightarrow> geotop_convex_hull ?W \<in> geotop_link K v"
+          using hstar_cases True False hW_ne by (by100 blast)
+        have h\<phi>V_raw:
+          "(\<lambda>x. if x = v then c else \<psi> x) ` V
+            = insert c (\<psi> ` ?W)"
+          by (rule geotop_star_cone_map_image_with_vertex_dev34[OF True])
+        have h\<phi>V: "\<phi> ` V = insert c (\<psi> ` ?W)"
+          using h\<phi>V_raw \<phi>_def by (by100 simp)
+        have htarget_cone:
+          "geotop_convex_hull ?W \<in> geotop_link K v
+            \<longleftrightarrow> geotop_convex_hull (\<phi> ` V) \<in> L'"
+          using hcone_target hW_fin hW_ne hW_LV h\<phi>V by (by100 simp)
+        show ?thesis
+          using hsource_cone htarget_cone by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_star_cone_vertex_map_bij_dev34:
   fixes K :: "(real^2) set set" and B :: "(real^2) set"
     and v c :: "real^2"
