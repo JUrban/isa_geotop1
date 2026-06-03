@@ -8805,6 +8805,35 @@ proof -
     using hconn hend by (by100 blast)
 qed
 
+lemma geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hwL: "{w} \<in> L"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Endpoint-specific Moise Fig. 4.10 boundary-vertex graph step.  Enumerate
+    the finite connected linear graph as an edge-chain starting at \<open>w\<close>,
+    place that ordered chain on a subdivided boundary arc of a 2-simplex, and
+    cone the arc from the adjacent boundary vertex. **)
+  sorry
+
 lemma geotop_connected_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -8831,7 +8860,20 @@ lemma geotop_connected_endpoint_finite_linear_graph_boundary_vertex_fan_target_d
     finite linear edge-chain and a graph endpoint, enumerate the chain from
     that endpoint, place it on a subdivided boundary arc of a 2-simplex, and
     take the corresponding boundary endpoint as the fan vertex. **)
-  sorry
+proof -
+  obtain w where hwL: "{w} \<in> L"
+    and hw_endpoint: "geotop_graph_endpoint L w"
+    using hend by (by100 blast)
+  show ?thesis
+  proof (rule geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34
+      [where L = L and w = w])
+    show "geotop_is_linear_graph L" by (rule hL_linear)
+    show "finite L" by (rule hL_finite)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "{w} \<in> L" by (rule hwL)
+    show "geotop_graph_endpoint L w" by (rule hw_endpoint)
+  qed
+qed
 
 lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_graph_broken_line_dev34:
   fixes L :: "(real^2) set set"
