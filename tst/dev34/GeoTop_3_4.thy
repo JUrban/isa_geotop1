@@ -15076,30 +15076,14 @@ proof -
       obtain U f where hU_openin:
           "openin_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
         and hP_U: "P \<in> U"
-        and hf:
+        and hf_geotop:
           "top1_homeomorphism_on U
-             (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+             (subspace_topology UNIV geotop_euclidean_topology U)
              (UNIV::(real^2) set) geotop_euclidean_topology f"
-        using hP_mint unfolding geotop_manifold_interior_def by (by100 blast)
+        using geotop_manifold_interior_geo_chart_at_dev34[OF hP_mint]
+        by (by100 blast)
       have hU_sub_M: "U \<subseteq> M"
         using hU_openin unfolding openin_on_def by (by100 blast)
-      have htopM: "top1_metric_topology_on M (\<lambda>x y. norm (x - y)) =
-                   subspace_topology UNIV geotop_euclidean_topology M"
-        by (rule top1_norm_metric_topology_on_eq_geotop_subspace)
-      have hsubU:
-        "subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U =
-         subspace_topology UNIV geotop_euclidean_topology U"
-      proof -
-        have "subspace_topology M (subspace_topology UNIV geotop_euclidean_topology M) U =
-              subspace_topology UNIV geotop_euclidean_topology U"
-          by (rule subspace_topology_trans[OF hU_sub_M])
-        thus ?thesis using htopM by (by100 simp)
-      qed
-      have hf_geotop:
-        "top1_homeomorphism_on U
-           (subspace_topology UNIV geotop_euclidean_topology U)
-           (UNIV::(real^2) set) geotop_euclidean_topology f"
-        using hf hsubU by (by100 simp)
       have hU_geotop_open: "U \<in> geotop_euclidean_topology"
         by (rule Theorem_GT_4_invariance_of_domain[OF hf_geotop])
       have hU_open: "open U"
