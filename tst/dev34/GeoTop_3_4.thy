@@ -6671,7 +6671,74 @@ lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
     interior of the 2-simplex, hence in no boundary edge, and take the complex
     consisting of the subdivided frontier \<open>F\<close>, the new vertex \<open>{c}\<close>, and the
     cones from \<open>c\<close> over every nonempty simplex of \<open>F\<close>. **)
-  sorry
+proof -
+  obtain L' c where hdata:
+      "c \<in> interior \<sigma>
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> insert c (geotop_complex_vertices F) \<subseteq> geotop_complex_vertices L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        geotop_convex_hull A \<in> F \<longrightarrow> geotop_convex_hull A \<in> L')
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        geotop_convex_hull A \<in> F \<longrightarrow>
+        geotop_convex_hull (insert c A) \<in> L')"
+    using geotop_fig410_explicit_cone_forward_memberships_dev34
+      [OF h\<sigma> hboundary]
+    by (elim exE) assumption
+  have hc: "c \<in> interior \<sigma>"
+    using hdata by (by100 blast)
+  have hc_new: "c \<notin> geotop_complex_vertices F"
+    using hdata by (by100 blast)
+  have hL:
+      "L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+    using hdata by (by100 blast)
+  have hc_simplex: "geotop_convex_hull {c} \<in> L'"
+    using hdata by (by100 blast)
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_is_subdivision_dev34
+        [OF h\<sigma> hboundary hc hL])
+  have hvertices:
+      "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
+    by (rule geotop_boundary_cone_definition_vertices_eq_dev34
+        [OF h\<sigma> hboundary hc hL])
+  have hold:
+      "\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L')"
+  proof (intro allI impI)
+    fix A :: "(real^2) set"
+    assume hAsub: "A \<subseteq> geotop_complex_vertices F"
+    show "geotop_convex_hull A \<in> F
+        \<longleftrightarrow> geotop_convex_hull A \<in> L'"
+      by (rule geotop_boundary_cone_definition_old_hull_iff_dev34
+          [OF h\<sigma> hboundary hc hc_new hL hAsub])
+  qed
+  have hcone:
+      "\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L')"
+  proof (intro allI impI)
+    fix A :: "(real^2) set"
+    assume hA_fin: "finite A"
+    assume hA_ne: "A \<noteq> {}"
+    assume hAsub: "A \<subseteq> geotop_complex_vertices F"
+    show "geotop_convex_hull A \<in> F
+        \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'"
+      by (rule geotop_boundary_cone_definition_cone_hull_iff_dev34
+          [OF h\<sigma> hboundary hc hc_new hL hA_fin hA_ne hAsub])
+  qed
+  show ?thesis
+    using hc hc_new hL hsubdiv hvertices hc_simplex hold hcone
+    by (intro exI[of _ L'] exI[of _ c]) (intro conjI; assumption)
+qed
 
 lemma geotop_fig410_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
