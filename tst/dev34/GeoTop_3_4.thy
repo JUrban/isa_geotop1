@@ -11990,6 +11990,39 @@ proof -
     show ?thesis
       by (rule that[OF he12 hball12_union])
   qed
+  define eps where "eps = min s eps12 / 2"
+  have heps: "0 < eps"
+    using hs heps12 unfolding eps_def by (by100 simp)
+  have heps_lt_s: "eps < s"
+    using hs heps12 unfolding eps_def by (by100 simp)
+  have heps_lt_eps12: "eps < eps12"
+    using hs heps12 unfolding eps_def by (by100 simp)
+  have hsphere_ball_s: "sphere p eps \<subseteq> ball p s"
+  proof
+    fix x
+    assume hx: "x \<in> sphere p eps"
+    have "dist p x = eps"
+      using hx by (by100 simp)
+    hence "dist p x < s"
+      using heps_lt_s by (by100 simp)
+    thus "x \<in> ball p s"
+      by (by100 simp)
+  qed
+  have hsphere_ball12: "sphere p eps \<subseteq> ball p eps12"
+  proof
+    fix x
+    assume hx: "x \<in> sphere p eps"
+    have "dist p x = eps"
+      using hx by (by100 simp)
+    hence "dist p x < eps12"
+      using heps_lt_eps12 by (by100 simp)
+    thus "x \<in> ball p eps12"
+      by (by100 simp)
+  qed
+  have hsphere_union12: "sphere p eps \<subseteq> \<sigma>1 \<union> \<sigma>2"
+    using hsphere_ball12 hball12 by (by100 blast)
+  have hsphere_U: "sphere p eps \<subseteq> U"
+    using hsphere_ball_s hsphere_union12 h\<sigma>12_local_U by (by100 blast)
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
