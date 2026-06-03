@@ -367,6 +367,29 @@ proof -
     by (rule that[OF hr hFfin' hFsub' heF' h\<sigma>F' h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hcover'])
 qed
 
+lemma geotop_complex_finite_subcomplex_local_point_carriers_dev34:
+  fixes K F :: "(real^2) set set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes hFfin: "finite F"
+  assumes hFsub: "F \<subseteq> K"
+  assumes hpF: "p \<in> \<Union>F"
+  shows "\<exists>\<delta>>0. ball p \<delta> \<inter> \<Union>F \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+proof -
+  have hclosed: "\<forall>\<tau>\<in>F. closed \<tau>"
+  proof
+    fix \<tau>
+    assume h\<tau>F: "\<tau> \<in> F"
+    have h\<tau>K: "\<tau> \<in> K"
+      using hFsub h\<tau>F by (by100 blast)
+    show "closed \<tau>"
+      by (rule geotop_complex_simplex_closed[OF hK h\<tau>K])
+  qed
+  have hB: "\<Union>F = \<Union>F"
+    by (by100 simp)
+  show ?thesis
+    by (rule finite_union_closed_local_isolation[OF hFfin hclosed hB hpF])
+qed
+
 lemma geotop_complex_polyhedron_point_carrier_local_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -9026,10 +9049,56 @@ proof -
     thus ?thesis
       using hcover by (by100 blast)
   qed
+  have hp_unionF: "p \<in> \<Union>F"
+    using heF hp_e by (by100 blast)
+  obtain \<delta> where h\<delta>: "0 < \<delta>"
+    and hisolate: "ball p \<delta> \<inter> \<Union>F \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+    using geotop_complex_finite_subcomplex_local_point_carriers_dev34
+      [OF hK hFfin hFsub hp_unionF]
+    by (by100 blast)
+  define s where "s = min r \<delta>"
+  have hs: "0 < s"
+    using hr h\<delta> unfolding s_def by (by100 simp)
+  have hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "geotop_polyhedron K \<inter> ball p s
+        \<subseteq> geotop_polyhedron K \<inter> ball p r"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hballU_r by (by100 blast)
+  qed
+  have hcover_s: "ball p s \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "ball p s \<inter> geotop_polyhedron K
+        \<subseteq> ball p r \<inter> geotop_polyhedron K"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover_r by (by100 blast)
+  qed
+  have hpoint_carriers_s:
+    "ball p s \<inter> geotop_polyhedron K \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  proof
+    fix x
+    assume hx: "x \<in> ball p s \<inter> geotop_polyhedron K"
+    have hxF: "x \<in> \<Union>F"
+      using hcover_s hx by (by100 blast)
+    have hball_sub: "ball p s \<subseteq> ball p \<delta>"
+      unfolding s_def by (by100 auto)
+    have hx\<delta>: "x \<in> ball p \<delta>"
+      using hx hball_sub by (by100 blast)
+    have "x \<in> ball p \<delta> \<inter> \<Union>F"
+      using hxF hx\<delta> by (by100 blast)
+    thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+      using hisolate by (by100 blast)
+  qed
   (**
     Remaining Moise Lemma 3 geometry: choose the small semicircle in the unique
     incident 2-simplex \<open>\<sigma>\<close>, use the finite carrier cover \<open>F\<close> and the shrunken
-    radius \<open>r\<close> to keep it inside \<open>U\<close>, and prove that its complement in
+    radius \<open>s\<close> to keep it inside \<open>U\<close>, and prove that its complement in
     \<open>U\<close> separates. **)
   show ?thesis
     sorry
