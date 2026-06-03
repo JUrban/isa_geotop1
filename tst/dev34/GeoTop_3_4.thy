@@ -12929,7 +12929,56 @@ proof -
     using hJsub hUsubC by (by100 blast)
   have hJ_image_sphere: "geotop_is_n_sphere (\<phi> ` J)
       (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1"
-    sorry
+  proof -
+    have hmetricM: "top1_metric_on M (\<lambda>x y. norm (x - y))"
+      by (rule metric_on_subset[OF top1_norm_metric_on_UNIV_R2_dev34 subset_UNIV])
+    have htopM: "is_topology_on M ?T"
+      by (rule top1_metric_topology_on_is_topology_on[OF hmetricM])
+    have hCsubM: "?C \<subseteq> M"
+      by (rule closure_on_subset_carrier[OF htopM hUsubM])
+    have hTM_eq: "?T = subspace_topology UNIV geotop_euclidean_topology M"
+      by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+    have hsource_C_eq:
+        "subspace_topology M ?T ?C =
+         subspace_topology UNIV geotop_euclidean_topology ?C"
+      sorry
+    have hsource_J_eq:
+        "subspace_topology ?C (subspace_topology M ?T ?C) J =
+         subspace_topology UNIV geotop_euclidean_topology J"
+      sorry
+    have hres: "top1_homeomorphism_on J
+        (subspace_topology ?C (subspace_topology M ?T ?C) J)
+        (\<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) \<phi>"
+      sorry
+    have hres_geo: "top1_homeomorphism_on J
+        (subspace_topology UNIV geotop_euclidean_topology J)
+        (\<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) \<phi>"
+      sorry
+    obtain g where hg: "top1_homeomorphism_on J
+        (subspace_topology UNIV geotop_euclidean_topology J)
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_std_sphere::(real^2) set)) g"
+      sorry
+    have hres_sym: "top1_homeomorphism_on (\<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))
+        J (subspace_topology UNIV geotop_euclidean_topology J) (inv_into J \<phi>)"
+      sorry
+    have hcomp: "top1_homeomorphism_on (\<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_std_sphere::(real^2) set))
+        (g \<circ> inv_into J \<phi>)"
+      sorry
+    have htop_img: "is_topology_on (\<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))"
+      sorry
+    show ?thesis
+      sorry
+  qed
   have hsimplex_chart_sep:
       "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
