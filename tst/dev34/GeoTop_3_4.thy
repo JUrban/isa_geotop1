@@ -3230,6 +3230,31 @@ proof
     unfolding geotop_polyhedron_def using h\<tau>K \<open>v \<in> \<tau>\<close> by (by100 blast)
 qed
 
+lemma geotop_2simplex_HOL_interior_nonempty_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "interior \<sigma> \<noteq> {}"
+  (**
+    Fig. 4.10 interior-vertex step: a 2-simplex in the plane has a nonempty
+    ordinary interior, so the construction may choose its new cone vertex
+    there. **)
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hrel_nonempty: "rel_interior \<sigma> \<noteq> {}"
+    by (rule geotop_simplex_rel_interior_nonempty[OF hsimplex])
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  show ?thesis
+    using hrel_nonempty hrel_eq_int by (by100 simp)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
