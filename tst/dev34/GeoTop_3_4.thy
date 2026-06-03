@@ -3978,6 +3978,43 @@ proof
     by (by100 simp)
 qed
 
+lemma geotop_boundary_cone_definition_polyhedron_contains_radial_cover_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hcover:
+    "\<forall>x\<in>\<sigma>. x = c \<or>
+      (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+  shows "\<sigma> \<subseteq> geotop_polyhedron L'"
+proof
+  fix x
+  assume hx: "x \<in> \<sigma>"
+  have hcase:
+      "x = c \<or> (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+    using hcover hx by (by100 blast)
+  show "x \<in> geotop_polyhedron L'"
+  proof (rule disjE[OF hcase])
+    assume "x = c"
+    have "c \<in> geotop_polyhedron L'"
+      by (rule geotop_boundary_cone_definition_cone_point_in_polyhedron_dev34
+          [OF hL])
+    thus ?thesis
+      using \<open>x = c\<close> by (by100 simp)
+  next
+    assume "\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y"
+    then obtain y where hy: "y \<in> geotop_polyhedron F"
+      and hxseg: "x \<in> closed_segment c y"
+      by (by100 blast)
+    have hseg_sub: "closed_segment c y \<subseteq> geotop_polyhedron L'"
+      by (rule geotop_boundary_cone_definition_closed_segment_to_old_polyhedron_dev34
+          [OF hL hy])
+    show ?thesis
+      using hseg_sub hxseg by (by100 blast)
+  qed
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
