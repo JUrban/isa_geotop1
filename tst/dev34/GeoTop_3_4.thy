@@ -13602,6 +13602,15 @@ proof -
         using hy_eq hinv_U by (by100 blast)
     qed
   qed
+  have hbij_U_ball: "bij_betw f U (ball c r)"
+  proof -
+    have hinj_star: "inj_on f (geotop_polyhedron (geotop_star K v))"
+      using hbij_star by (rule bij_betw_imp_inj_on)
+    have hinj_U: "inj_on f U"
+      using hinj_star hU_subset_star inj_on_subset by (by100 blast)
+    show ?thesis
+      using hinj_U hf_U unfolding bij_betw_def by (by100 blast)
+  qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
   show ?thesis
