@@ -3255,6 +3255,44 @@ proof -
     using hrel_nonempty hrel_eq_int by (by100 simp)
 qed
 
+lemma geotop_2simplex_face_complex_polyhedron_eq_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} = \<sigma>"
+proof
+  show "geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} \<subseteq> \<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    obtain \<tau> where h\<tau>: "\<tau> \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      and hx\<tau>: "x \<in> \<tau>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hcase: "geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>"
+      using h\<tau> by (by100 simp)
+    show "x \<in> \<sigma>"
+    proof (rule disjE[OF hcase])
+      assume hface: "geotop_is_face \<tau> \<sigma>"
+      have "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_is_face_imp_subset[OF hface])
+      show ?thesis
+        using \<open>\<tau> \<subseteq> \<sigma>\<close> hx\<tau> by (by100 blast)
+    next
+      assume "\<tau> = \<sigma>"
+      show ?thesis
+        using \<open>\<tau> = \<sigma>\<close> hx\<tau> by (by100 simp)
+    qed
+  qed
+  show "\<sigma> \<subseteq> geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  proof
+    fix x
+    assume hx: "x \<in> \<sigma>"
+    have h\<sigma>K: "\<sigma> \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      by (by100 simp)
+    show "x \<in> geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      unfolding geotop_polyhedron_def using h\<sigma>K hx by (by100 blast)
+  qed
+qed
+
 lemma geotop_subdivision_vertices_subset_original_polyhedron_dev34:
   fixes K K' :: "'a::real_normed_vector set set"
   assumes hsub: "geotop_is_subdivision K' K"
