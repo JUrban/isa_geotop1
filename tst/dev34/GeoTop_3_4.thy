@@ -13528,6 +13528,38 @@ proof -
     then show ?thesis
       using hf_v by (by100 simp)
   qed
+  define U where
+    "U = (inv_into (geotop_polyhedron (geotop_star K v)) f) ` ball c r"
+  have hU_subset_star: "U \<subseteq> geotop_polyhedron (geotop_star K v)"
+  proof
+    fix x assume hxU: "x \<in> U"
+    obtain y where hy_ball: "y \<in> ball c r"
+      and hx_eq: "x = inv_into (geotop_polyhedron (geotop_star K v)) f y"
+      using hxU unfolding U_def by (by100 blast)
+    have hy_target: "y \<in> geotop_polyhedron L'"
+      using hball_c_target hy_ball by (by100 blast)
+    have himage_eq:
+        "f ` geotop_polyhedron (geotop_star K v) = geotop_polyhedron L'"
+      using hbij_star unfolding bij_betw_def by (by100 blast)
+    have hy_image: "y \<in> f ` geotop_polyhedron (geotop_star K v)"
+      using hy_target himage_eq by (by100 simp)
+    have hinv_y:
+        "inv_into (geotop_polyhedron (geotop_star K v)) f y
+          \<in> geotop_polyhedron (geotop_star K v)"
+      by (rule inv_into_into[OF hy_image])
+    show "x \<in> geotop_polyhedron (geotop_star K v)"
+      using hx_eq hinv_y by (by100 simp)
+  qed
+  have hv_U: "v \<in> U"
+  proof -
+    have hc_ball: "c \<in> ball c r"
+      using hr_pos by (by100 simp)
+    have hinv_image:
+        "inv_into (geotop_polyhedron (geotop_star K v)) f c \<in> U"
+      unfolding U_def by (rule imageI[OF hc_ball])
+    show ?thesis
+      using hinv_image hinv_c by (by100 simp)
+  qed
   have hstar_poly_subset_K:
       "geotop_polyhedron (geotop_star K v) \<subseteq> geotop_polyhedron K"
     using geotop_star_polyhedron_subset_polyhedron[OF hK, of v]
