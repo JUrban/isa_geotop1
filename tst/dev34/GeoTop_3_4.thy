@@ -9300,6 +9300,30 @@ proof -
     using htop_img hcomp by (by100 blast)
 qed
 
+lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  shows "\<exists>A. A \<subseteq> U
+      \<and> geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  (**
+    Moise Lemma 3 local geometry isolated after the carrier analysis:
+    a sufficiently small neighborhood of the edge-interior point in the
+    polyhedron is exactly the one-sided half-neighborhood supplied by the
+    unique incident 2-simplex.  Choose a small semicircle in that simplex,
+    centered at \<open>p\<close>; it lies in \<open>U\<close>, is an arc, and separates \<open>U\<close>. **)
+  sorry
+
 lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -9430,7 +9454,8 @@ proof -
     radius \<open>s\<close> to keep it inside \<open>U\<close>, and prove that its complement in
     \<open>U\<close> separates. **)
   show ?thesis
-    sorry
+    by (rule geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34
+        [OF hedge hp h\<sigma>2 h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU_s hUsubM])
 qed
 
 lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
