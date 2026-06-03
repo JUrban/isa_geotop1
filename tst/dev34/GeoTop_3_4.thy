@@ -13623,8 +13623,10 @@ proof -
   qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
-  show ?thesis
+  have hU_open: "open U"
     sorry
+  show ?thesis
+    by (rule interiorI[OF hU_open hv_U hU_subset_K])
 qed
 
 lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
