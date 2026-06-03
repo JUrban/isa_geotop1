@@ -367,6 +367,90 @@ proof -
     by (rule that[OF hr hFfin' hFsub' heF' h\<sigma>F' h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hcover'])
 qed
 
+lemma geotop_complex_three_edge_faces_point_finite_local_cover_dev34:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hp: "p \<in> e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  obtains r F \<sigma>1 \<sigma>2 \<sigma>3
+    where "0 < r"
+      and "finite F"
+      and "F \<subseteq> K"
+      and "e \<in> F"
+      and "\<sigma>1 \<in> F"
+      and "\<sigma>2 \<in> F"
+      and "\<sigma>3 \<in> F"
+      and "\<sigma>1 \<noteq> \<sigma>2"
+      and "\<sigma>2 \<noteq> \<sigma>3"
+      and "\<sigma>1 \<noteq> \<sigma>3"
+      and "\<sigma>1 \<in> K" and "geotop_simplex_dim \<sigma>1 2" and "geotop_is_face e \<sigma>1"
+      and "\<sigma>2 \<in> K" and "geotop_simplex_dim \<sigma>2 2" and "geotop_is_face e \<sigma>2"
+      and "\<sigma>3 \<in> K" and "geotop_simplex_dim \<sigma>3 2" and "geotop_is_face e \<sigma>3"
+      and "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+proof -
+  obtain r F where hr: "0 < r"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and heF: "e \<in> F"
+    and hcover: "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    using geotop_complex_edge_point_finite_local_cover_dev34[OF hK heK hp]
+    by (by100 blast)
+  obtain \<sigma>1 \<sigma>2 \<sigma>3 where hfaces_w:
+    "\<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+    using hfaces by (elim exE)
+  have h12: "\<sigma>1 \<noteq> \<sigma>2"
+    using hfaces_w by (by100 simp)
+  have h23: "\<sigma>2 \<noteq> \<sigma>3"
+    using hfaces_w by (by100 simp)
+  have h13: "\<sigma>1 \<noteq> \<sigma>3"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>1K: "\<sigma>1 \<in> K"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>1face: "geotop_is_face e \<sigma>1"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>2K: "\<sigma>2 \<in> K"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>2face: "geotop_is_face e \<sigma>2"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>3K: "\<sigma>3 \<in> K"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+    using hfaces_w by (by100 simp)
+  have h\<sigma>3face: "geotop_is_face e \<sigma>3"
+    using hfaces_w by (by100 simp)
+  let ?F = "insert \<sigma>1 (insert \<sigma>2 (insert \<sigma>3 F))"
+  have hFfin': "finite ?F"
+    using hFfin by (by100 simp)
+  have hFsub': "?F \<subseteq> K"
+    using hFsub h\<sigma>1K h\<sigma>2K h\<sigma>3K by (by100 blast)
+  have heF': "e \<in> ?F"
+    using heF by (by100 simp)
+  have h\<sigma>1F': "\<sigma>1 \<in> ?F"
+    by (by100 simp)
+  have h\<sigma>2F': "\<sigma>2 \<in> ?F"
+    by (by100 simp)
+  have h\<sigma>3F': "\<sigma>3 \<in> ?F"
+    by (by100 simp)
+  have hcover': "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>?F"
+    using hcover by (by100 blast)
+  show ?thesis
+    by (rule that[OF hr hFfin' hFsub' heF' h\<sigma>1F' h\<sigma>2F' h\<sigma>3F'
+          h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face h\<sigma>2K h\<sigma>2dim h\<sigma>2face
+          h\<sigma>3K h\<sigma>3dim h\<sigma>3face hcover'])
+qed
+
 lemma geotop_complex_finite_subcomplex_local_point_carriers_dev34:
   fixes K F :: "(real^2) set set" and p :: "real^2"
   assumes hK: "geotop_is_complex K"
@@ -9295,7 +9379,64 @@ lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev
     the edge-interior point.  Their union is the small 1-sphere \<open>J\<close> inside the
     subspace chart domain \<open>U \<subseteq> |K|\<close>; because the third incident simplex gives
     a passage around it, \<open>U - J\<close> remains connected. **)
-  sorry
+proof -
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  obtain rU where hrU: "0 < rU"
+    and hballU: "geotop_polyhedron K \<inter> ball p rU \<subseteq> U"
+    using hlocal_ball by (by100 blast)
+  obtain rK F \<sigma>1 \<sigma>2 \<sigma>3 where hrK: "0 < rK"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and heF: "e \<in> F"
+    and h\<sigma>1F: "\<sigma>1 \<in> F"
+    and h\<sigma>2F: "\<sigma>2 \<in> F"
+    and h\<sigma>3F: "\<sigma>3 \<in> F"
+    and h12: "\<sigma>1 \<noteq> \<sigma>2"
+    and h23: "\<sigma>2 \<noteq> \<sigma>3"
+    and h13: "\<sigma>1 \<noteq> \<sigma>3"
+    and h\<sigma>1K: "\<sigma>1 \<in> K"
+    and h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+    and h\<sigma>1face: "geotop_is_face e \<sigma>1"
+    and h\<sigma>2K: "\<sigma>2 \<in> K"
+    and h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+    and h\<sigma>2face: "geotop_is_face e \<sigma>2"
+    and h\<sigma>3K: "\<sigma>3 \<in> K"
+    and h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+    and h\<sigma>3face: "geotop_is_face e \<sigma>3"
+    and hcover: "ball p rK \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    by (rule geotop_complex_three_edge_faces_point_finite_local_cover_dev34
+        [OF hK heK hp_e hfaces])
+  define r where "r = min rU rK"
+  have hr: "0 < r"
+    using hrU hrK unfolding r_def by (by100 simp)
+  have hballU_r: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  proof -
+    have hball_sub: "ball p r \<subseteq> ball p rU"
+      unfolding r_def by (by100 auto)
+    have "geotop_polyhedron K \<inter> ball p r
+        \<subseteq> geotop_polyhedron K \<inter> ball p rU"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hballU by (by100 blast)
+  qed
+  have hcover_r: "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p r \<subseteq> ball p rK"
+      unfolding r_def by (by100 auto)
+    have "ball p r \<inter> geotop_polyhedron K
+        \<subseteq> ball p rK \<inter> geotop_polyhedron K"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover by (by100 blast)
+  qed
+  (**
+    Remaining Moise Lemma 4 geometry: choose a small circle from two incident
+    half-neighborhoods and use the third incident 2-simplex to connect the
+    complement in \<open>U\<close>. **)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
