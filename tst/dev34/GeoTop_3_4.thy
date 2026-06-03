@@ -390,6 +390,123 @@ proof -
     by (rule finite_union_closed_local_isolation[OF hFfin hclosed hB hpF])
 qed
 
+lemma geotop_complex_unique_edge_face_point_carrier_subset_unique_face_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> \<tau> :: "(real^2) set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes hp\<tau>: "p \<in> \<tau>"
+  shows "\<tau> \<subseteq> \<sigma>"
+proof -
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_complex_rel_interior_imp_subset[OF hK heK h\<tau>K hp hp\<tau>])
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+  have h\<tau>simp: "geotop_is_simplex \<tau>"
+    using geotop_is_complex_simplex[OF hK] h\<tau>K by (by100 blast)
+  obtain n where h\<tau>dim: "geotop_simplex_dim \<tau> n"
+    using h\<tau>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+    by (by100 blast)
+  have hn_le2: "n \<le> 2"
+    by (rule geotop_simplex_dim_le_2_R2[OF h\<tau>dim])
+  show ?thesis
+  proof (cases "n = 2")
+    case True
+    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      using h\<tau>dim True by (by100 simp)
+    have hface: "geotop_is_face e \<tau>"
+      by (rule geotop_complex_subset_simplex_face[OF hK heK h\<tau>K he_sub_\<tau>])
+    have h\<tau>in: "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      using h\<tau>K h\<tau>2 hface by (by100 simp)
+    have "\<tau> = \<sigma>"
+      using h\<tau>in hfaces by (by100 simp)
+    thus ?thesis
+      by (by100 simp)
+  next
+    case False
+    have hn_le1: "n \<le> 1"
+      using hn_le2 False by (by100 arith)
+    have hn_cases: "n = 0 \<or> n = 1"
+      using hn_le1 by (by100 arith)
+    show ?thesis
+    proof (rule disjE[OF hn_cases])
+      assume hn0: "n = 0"
+      obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+        by (rule geotop_edge_closed_segment_obtain[OF hedge])
+      obtain V m where hV_fin: "finite V"
+        and hV_card: "card V = 0 + 1"
+        and h\<tau>_eq: "\<tau> = geotop_convex_hull V"
+        using h\<tau>dim hn0 unfolding geotop_simplex_dim_def by (by100 blast)
+      have hV_card1: "card V = 1"
+        using hV_card by (by100 simp)
+      obtain c where hV_eq: "V = {c}"
+        using hV_card1 by (rule card_1_singletonE)
+      have h\<tau>_sing: "\<tau> = {c}"
+        using h\<tau>_eq hV_eq geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+      have ha\<tau>: "a \<in> \<tau>"
+      proof -
+        have "a \<in> e"
+          using he_seg by (by100 simp)
+        thus ?thesis
+          using he_sub_\<tau> by (by100 blast)
+      qed
+      have hb\<tau>: "b \<in> \<tau>"
+      proof -
+        have "b \<in> e"
+          using he_seg by (by100 simp)
+        thus ?thesis
+          using he_sub_\<tau> by (by100 blast)
+      qed
+      have "a = b"
+        using ha\<tau> hb\<tau> h\<tau>_sing by (by100 simp)
+      thus ?thesis
+        using hab by (by100 blast)
+    next
+      assume hn1: "n = 1"
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+        using h\<tau>dim hn1 unfolding geotop_is_edge_def by (by100 simp)
+      have hface: "geotop_is_face e \<tau>"
+        by (rule geotop_complex_subset_simplex_face[OF hK heK h\<tau>K he_sub_\<tau>])
+      have heq: "e = \<tau>"
+        by (rule geotop_edge_face_of_edge_eq[OF hedge h\<tau>edge hface])
+      show ?thesis
+        using heq he_sub_\<sigma> by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_complex_unique_edge_face_point_carrier_union_subset_unique_face_dev34:
+  fixes K F :: "(real^2) set set" and e \<sigma> :: "(real^2) set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  assumes hFsub: "F \<subseteq> K"
+  shows "\<Union>{\<tau>\<in>F. p \<in> \<tau>} \<subseteq> \<sigma>"
+proof
+  fix x
+  assume hx: "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  obtain \<tau> where h\<tau>F: "\<tau> \<in> F" and hp\<tau>: "p \<in> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+    using hx by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K"
+    using hFsub h\<tau>F by (by100 blast)
+  have h\<tau>sub: "\<tau> \<subseteq> \<sigma>"
+    by (rule geotop_complex_unique_edge_face_point_carrier_subset_unique_face_dev34
+        [OF hK heK hedge hp h\<sigma>K h\<sigma>2 h\<sigma>face hfaces h\<tau>K hp\<tau>])
+  show "x \<in> \<sigma>"
+    using h\<tau>sub hx\<tau> by (by100 blast)
+qed
+
 lemma geotop_complex_polyhedron_point_carrier_local_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -9095,6 +9212,11 @@ proof -
     thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
       using hisolate by (by100 blast)
   qed
+  have hpoint_carriers_subset_\<sigma>: "\<Union>{\<tau>\<in>F. p \<in> \<tau>} \<subseteq> \<sigma>"
+    by (rule geotop_complex_unique_edge_face_point_carrier_union_subset_unique_face_dev34
+        [OF hK heK hedge hp h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hFsub])
+  have hlocal_poly_\<sigma>: "ball p s \<inter> geotop_polyhedron K \<subseteq> \<sigma>"
+    using hpoint_carriers_s hpoint_carriers_subset_\<sigma> by (by100 blast)
   (**
     Remaining Moise Lemma 3 geometry: choose the small semicircle in the unique
     incident 2-simplex \<open>\<sigma>\<close>, use the finite carrier cover \<open>F\<close> and the shrunken
