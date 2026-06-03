@@ -13023,7 +13023,137 @@ proof -
   have hpullback_sep:
       "\<not> top1_connected_on (U - J)
         (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-    sorry
+  proof
+    assume hconn: "top1_connected_on (U - J)
+        (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    have hmetricM: "top1_metric_on M (\<lambda>x y. norm (x - y))"
+      by (rule metric_on_subset[OF top1_norm_metric_on_UNIV_R2_dev34 subset_UNIV])
+    have htopM: "is_topology_on M ?T"
+      by (rule top1_metric_topology_on_is_topology_on[OF hmetricM])
+    have hCsubM: "?C \<subseteq> M"
+      by (rule closure_on_subset_carrier[OF htopM hUsubM])
+    have hTM_eq: "?T = subspace_topology UNIV geotop_euclidean_topology M"
+      by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+    have hsource_C_eq:
+        "subspace_topology M ?T ?C =
+         subspace_topology UNIV geotop_euclidean_topology ?C"
+    proof -
+      have htrans:
+          "subspace_topology M
+             (subspace_topology UNIV geotop_euclidean_topology M) ?C =
+           subspace_topology UNIV geotop_euclidean_topology ?C"
+        by (rule subspace_topology_trans[OF hCsubM])
+      show ?thesis
+        using hTM_eq htrans by (by100 simp)
+    qed
+    have hsource_UJ_eq:
+        "subspace_topology ?C (subspace_topology M ?T ?C) (U - J) =
+         subspace_topology UNIV geotop_euclidean_topology (U - J)"
+    proof -
+      have hUJsubC': "U - J \<subseteq> ?C"
+        using hUsubC by (by100 blast)
+      have htrans:
+          "subspace_topology ?C
+             (subspace_topology UNIV geotop_euclidean_topology ?C) (U - J) =
+           subspace_topology UNIV geotop_euclidean_topology (U - J)"
+        by (rule subspace_topology_trans[OF hUJsubC'])
+      show ?thesis
+        using hsource_C_eq htrans by (by100 simp)
+    qed
+    have hconn_C: "top1_connected_on (U - J)
+        (subspace_topology ?C (subspace_topology M ?T ?C) (U - J))"
+      using hconn hsource_UJ_eq by (by100 simp)
+    have htopC: "is_topology_on ?C (subspace_topology M ?T ?C)"
+      using h\<phi> unfolding top1_homeomorphism_on_def by (by100 blast)
+    have htop\<sigma>: "is_topology_on \<sigma>
+        (subspace_topology UNIV geotop_euclidean_topology \<sigma>)"
+      using h\<phi> unfolding top1_homeomorphism_on_def by (by100 blast)
+    have hcont\<phi>: "top1_continuous_map_on ?C
+        (subspace_topology M ?T ?C) \<sigma>
+        (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+      by (rule top1_homeomorphism_on_imp_cont1[OF h\<phi>])
+    have hUJsubC: "U - J \<subseteq> ?C"
+      using hUsubC by (by100 blast)
+    have himage_eq: "\<phi> ` (U - J) = \<phi> ` U - \<phi> ` J"
+    proof
+      show "\<phi> ` (U - J) \<subseteq> \<phi> ` U - \<phi> ` J"
+      proof
+        fix y assume hy: "y \<in> \<phi> ` (U - J)"
+        then obtain x where hx: "x \<in> U - J" and hyx: "y = \<phi> x"
+          by (by100 blast)
+        have hxU: "x \<in> U"
+          using hx by (by100 simp)
+        have hxC: "x \<in> ?C"
+          using hxU hUsubC by (by100 blast)
+        have hxnotJ: "x \<notin> J"
+          using hx by (by100 simp)
+        have h\<phi>bij: "bij_betw \<phi> ?C \<sigma>"
+          by (rule top1_homeomorphism_on_imp_bij[OF h\<phi>])
+        have hinj: "inj_on \<phi> ?C"
+          using h\<phi>bij by (rule bij_betw_imp_inj_on)
+        have hy_not_imgJ: "y \<notin> \<phi> ` J"
+        proof
+          assume "y \<in> \<phi> ` J"
+          then obtain z where hzJ: "z \<in> J" and hyz: "y = \<phi> z"
+            by (by100 blast)
+          have hzC: "z \<in> ?C"
+            using hzJ hJsubC by (by100 blast)
+          have h\<phi>xz: "\<phi> x = \<phi> z"
+            using hyx hyz by (by100 simp)
+          have "x = z"
+            by (rule inj_onD[OF hinj h\<phi>xz hxC hzC])
+          thus False
+            using hxnotJ hzJ by (by100 simp)
+        qed
+        show "y \<in> \<phi> ` U - \<phi> ` J"
+          using hxU hyx hy_not_imgJ by (by100 blast)
+      qed
+    next
+      show "\<phi> ` U - \<phi> ` J \<subseteq> \<phi> ` (U - J)"
+      proof
+        fix y assume hy: "y \<in> \<phi> ` U - \<phi> ` J"
+        then obtain x where hxU: "x \<in> U" and hyx: "y = \<phi> x"
+          by (by100 blast)
+        have hxnotJ: "x \<notin> J"
+        proof
+          assume "x \<in> J"
+          hence "y \<in> \<phi> ` J"
+            using hyx by (by100 blast)
+          thus False
+            using hy by (by100 blast)
+        qed
+        show "y \<in> \<phi> ` (U - J)"
+          using hxU hxnotJ hyx by (by100 blast)
+      qed
+    qed
+    have hconn_img_\<sigma>: "top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology \<sigma>
+          (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+          (\<phi> ` U - \<phi> ` J))"
+      by (rule Theorem_GT_1_8[OF htopC htop\<sigma> hcont\<phi> hUJsubC himage_eq hconn_C])
+    have htarget_eq:
+        "subspace_topology \<sigma>
+          (subspace_topology UNIV geotop_euclidean_topology \<sigma>)
+          (\<phi> ` U - \<phi> ` J) =
+         subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J)"
+    proof -
+      have h\<phi>bij: "bij_betw \<phi> ?C \<sigma>"
+        by (rule top1_homeomorphism_on_imp_bij[OF h\<phi>])
+      have h\<phi>C: "\<phi> ` ?C = \<sigma>"
+        using h\<phi>bij unfolding bij_betw_def by (by100 blast)
+      have h\<phi>Usub\<sigma>: "\<phi> ` U \<subseteq> \<sigma>"
+        using hUsubC h\<phi>C by (by100 blast)
+      have hdiffsub: "\<phi> ` U - \<phi> ` J \<subseteq> \<sigma>"
+        using h\<phi>Usub\<sigma> by (by100 blast)
+      show ?thesis
+        by (rule subspace_topology_trans[OF hdiffsub])
+    qed
+    have hconn_img: "top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+      using hconn_img_\<sigma> htarget_eq by (by100 simp)
+    show False
+      using hconn_img hsimplex_chart_sep by (by100 blast)
+  qed
   show ?thesis
     using hpullback_sep .
 qed
