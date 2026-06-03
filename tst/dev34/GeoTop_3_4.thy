@@ -13441,7 +13441,13 @@ lemma geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34:
     simplexes.  The extended vertex map sends \<open>v\<close> to \<open>c\<close>; transport the
     ordinary interior of the fan's cone vertex back to obtain a Euclidean disk
     about \<open>v\<close> inside \<open>|K|\<close>. **)
-  sorry
+proof -
+  have hc_target: "c \<in> interior (geotop_polyhedron L')"
+    by (rule geotop_2simplex_face_complex_subdivision_HOL_interior_point_dev34
+        [OF h\<sigma> hc_int hsubdiv])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34:
   fixes K :: "(real^2) set set"
