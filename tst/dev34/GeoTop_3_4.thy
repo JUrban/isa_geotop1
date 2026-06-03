@@ -8805,6 +8805,36 @@ proof -
     using hconn hend by (by100 blast)
 qed
 
+lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hvertices_finite: "finite (geotop_complex_vertices L)"
+  assumes hwL: "{w} \<in> L"
+  assumes hcard_one: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Core boundary-arc fan target.  With the finite vertex set and the chosen
+    degree-one endpoint made explicit, the remaining book step is to enumerate
+    the edge-chain from \<open>w\<close> and realize it as a subdivided boundary arc of a
+    standard 2-simplex before coning from the adjacent boundary vertex. **)
+  sorry
+
 lemma geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -8832,7 +8862,29 @@ lemma geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
     the finite connected linear graph as an edge-chain starting at \<open>w\<close>,
     place that ordered chain on a subdivided boundary arc of a 2-simplex, and
     cone the arc from the adjacent boundary vertex. **)
-  sorry
+proof -
+  have hvertices_finite: "finite (geotop_complex_vertices L)"
+    by (rule geotop_finite_linear_graph_vertices_finite_dev34[OF hL_linear hL_finite])
+  have hendpoint_data:
+      "{w} \<in> L \<and> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+  proof (rule geotop_graph_endpoint_singleton_and_card_one_dev34
+      [where L = L and w = w])
+    show "geotop_is_linear_graph L" by (rule hL_linear)
+    show "geotop_graph_endpoint L w" by (rule hend)
+  qed
+  have hcard_one: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    using hendpoint_data by (by100 blast)
+  show ?thesis
+  proof (rule geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
+      [where L = L and w = w])
+    show "geotop_is_linear_graph L" by (rule hL_linear)
+    show "finite L" by (rule hL_finite)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "finite (geotop_complex_vertices L)" by (rule hvertices_finite)
+    show "{w} \<in> L" by (rule hwL)
+    show "card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1" by (rule hcard_one)
+  qed
+qed
 
 lemma geotop_connected_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
   fixes L :: "(real^2) set set"
