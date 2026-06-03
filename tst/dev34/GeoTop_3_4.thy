@@ -9395,6 +9395,89 @@ proof -
     using htopA htopImg hbijA hcont_A hcont_inv_A by (by100 blast)
 qed
 
+lemma geotop_plane_chart_domain_connected_dev34:
+  fixes U :: "(real^2) set"
+  assumes hhomeo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+  shows "top1_connected_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)"
+proof -
+  let ?TU = "subspace_topology UNIV geotop_euclidean_topology U"
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    unfolding geotop_euclidean_topology_eq_open_sets
+    by (rule top1_open_sets_is_topology_on_UNIV)
+  have htop_U: "is_topology_on U ?TU"
+    by (rule subspace_topology_is_topology_on[OF htop_UNIV subset_UNIV])
+  have hcont_inv: "top1_continuous_map_on (UNIV::(real^2) set)
+      geotop_euclidean_topology U ?TU (inv_into U f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have hUNIV_sub_eq:
+      "subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set)
+       = geotop_euclidean_topology"
+    by (rule subspace_topology_self_carrier) (by100 simp)
+  have hconn_UNIV: "top1_connected_on (UNIV::(real^2) set)
+      geotop_euclidean_topology"
+  proof -
+    have "connected (UNIV::(real^2) set)"
+      by (rule connected_UNIV)
+    hence "top1_connected_on (UNIV::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))"
+      using top1_connected_on_geotop_iff_connected[of "UNIV::(real^2) set"]
+      by (by100 simp)
+    thus ?thesis
+      using hUNIV_sub_eq by (by100 simp)
+  qed
+  have hconn_UNIV_sub: "top1_connected_on (UNIV::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))"
+    using hconn_UNIV hUNIV_sub_eq by (by100 simp)
+  have hbij: "bij_betw f U (UNIV::(real^2) set)"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hinj: "inj_on f U"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hsurj: "f ` U = (UNIV::(real^2) set)"
+    using hbij unfolding bij_betw_def by (by100 blast)
+  have himage_eq: "(inv_into U f) ` (UNIV::(real^2) set) = U"
+  proof
+    show "(inv_into U f) ` (UNIV::(real^2) set) \<subseteq> U"
+    proof
+      fix y
+      assume hy: "y \<in> (inv_into U f) ` (UNIV::(real^2) set)"
+      obtain z where hz: "z \<in> (UNIV::(real^2) set)"
+        and hyz: "y = inv_into U f z"
+        using hy by (by100 blast)
+      have hz_img: "z \<in> f ` U"
+        using hsurj hz by (by100 simp)
+      obtain u where huU: "u \<in> U" and hfuz: "f u = z"
+        using hz_img by (by100 blast)
+      have "y = u"
+        using hyz inv_into_f_eq[OF hinj huU hfuz] by (by100 simp)
+      thus "y \<in> U"
+        using huU by (by100 simp)
+    qed
+  next
+    show "U \<subseteq> (inv_into U f) ` (UNIV::(real^2) set)"
+    proof
+      fix y
+      assume hyU: "y \<in> U"
+      have hy_inv: "y = inv_into U f (f y)"
+        using bij_betw_inv_into_left[OF hbij hyU] by (by100 simp)
+      show "y \<in> (inv_into U f) ` (UNIV::(real^2) set)"
+        using image_eqI[of y "inv_into U f" "f y" "UNIV::(real^2) set"] hy_inv
+        by (by100 blast)
+    qed
+  qed
+  have hconn_U_self: "top1_connected_on U (subspace_topology U ?TU U)"
+    by (rule Theorem_GT_1_8
+        [OF htop_UNIV htop_U hcont_inv subset_UNIV himage_eq hconn_UNIV_sub])
+  have hTU_sub: "\<forall>V\<in>?TU. V \<subseteq> U"
+    unfolding subspace_topology_def by (by100 blast)
+  have hU_self_eq: "subspace_topology U ?TU U = ?TU"
+    by (rule subspace_topology_self_carrier[OF hTU_sub])
+  show ?thesis
+    using hconn_U_self hU_self_eq by (by100 simp)
+qed
+
 lemma geotop_homeomorphism_image_arc_dev34:
   fixes A U :: "(real^2) set"
   assumes hhomeo: "top1_homeomorphism_on U
