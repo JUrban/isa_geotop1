@@ -3907,6 +3907,77 @@ proof -
     unfolding geotop_polyhedron_def using hcL hsing by (by100 blast)
 qed
 
+lemma geotop_boundary_cone_definition_segment_to_old_polyhedron_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hy: "y \<in> geotop_polyhedron F"
+  assumes ht0: "0 \<le> t"
+  assumes ht1: "t \<le> 1"
+  shows "(1 - t) *\<^sub>R c + t *\<^sub>R y \<in> geotop_polyhedron L'"
+proof -
+  obtain A where hAF: "A \<in> F" and hyA: "y \<in> A"
+    using hy unfolding geotop_polyhedron_def by (by100 blast)
+  have hAne: "A \<noteq> {}"
+    using hyA by (by100 blast)
+  have hconeL: "geotop_convex_hull (insert c A) \<in> L'"
+    using hL hAF hAne by (by100 blast)
+  have hc_hull: "c \<in> geotop_convex_hull (insert c A)"
+  proof -
+    have "c \<in> insert c A"
+      by (by100 simp)
+    moreover have "insert c A \<subseteq> geotop_convex_hull (insert c A)"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+    ultimately show ?thesis
+      by (by100 blast)
+  qed
+  have hy_hull: "y \<in> geotop_convex_hull (insert c A)"
+  proof -
+    have "y \<in> insert c A"
+      using hyA by (by100 blast)
+    moreover have "insert c A \<subseteq> geotop_convex_hull (insert c A)"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+    ultimately show ?thesis
+      by (by100 blast)
+  qed
+  have hconv: "convex (geotop_convex_hull (insert c A))"
+    unfolding geotop_convex_hull_eq_HOL by (rule convex_convex_hull)
+  have h1mt: "0 \<le> 1 - t"
+    using ht1 by (by100 simp)
+  have hsum: "(1 - t) + t = 1"
+    by (by100 simp)
+  have hpoint:
+      "(1 - t) *\<^sub>R c + t *\<^sub>R y
+        \<in> geotop_convex_hull (insert c A)"
+    by (rule convexD[OF hconv hc_hull hy_hull h1mt ht0 hsum])
+  show ?thesis
+    unfolding geotop_polyhedron_def using hconeL hpoint by (by100 blast)
+qed
+
+lemma geotop_boundary_cone_definition_closed_segment_to_old_polyhedron_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hy: "y \<in> geotop_polyhedron F"
+  shows "closed_segment c y \<subseteq> geotop_polyhedron L'"
+proof
+  fix x
+  assume hx: "x \<in> closed_segment c y"
+  obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+    and hx_eq: "x = (1 - t) *\<^sub>R c + t *\<^sub>R y"
+    using hx unfolding closed_segment_def by (by100 blast)
+  have "(1 - t) *\<^sub>R c + t *\<^sub>R y \<in> geotop_polyhedron L'"
+    by (rule geotop_boundary_cone_definition_segment_to_old_polyhedron_dev34
+        [OF hL hy ht0 ht1])
+  show "x \<in> geotop_polyhedron L'"
+    using hx_eq \<open>(1 - t) *\<^sub>R c + t *\<^sub>R y \<in> geotop_polyhedron L'\<close>
+    by (by100 simp)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
