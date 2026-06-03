@@ -9430,6 +9430,52 @@ proof -
     thus ?thesis
       using hcover by (by100 blast)
   qed
+  have hp_unionF: "p \<in> \<Union>F"
+    using heF hp_e by (by100 blast)
+  obtain \<delta> where h\<delta>: "0 < \<delta>"
+    and hisolate: "ball p \<delta> \<inter> \<Union>F \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+    using geotop_complex_finite_subcomplex_local_point_carriers_dev34
+      [OF hK hFfin hFsub hp_unionF]
+    by (by100 blast)
+  define s where "s = min r \<delta>"
+  have hs: "0 < s"
+    using hr h\<delta> unfolding s_def by (by100 simp)
+  have hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "geotop_polyhedron K \<inter> ball p s
+        \<subseteq> geotop_polyhedron K \<inter> ball p r"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hballU_r by (by100 blast)
+  qed
+  have hcover_s: "ball p s \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "ball p s \<inter> geotop_polyhedron K
+        \<subseteq> ball p r \<inter> geotop_polyhedron K"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover_r by (by100 blast)
+  qed
+  have hpoint_carriers_s:
+    "ball p s \<inter> geotop_polyhedron K \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  proof
+    fix x
+    assume hx: "x \<in> ball p s \<inter> geotop_polyhedron K"
+    have hxF: "x \<in> \<Union>F"
+      using hcover_s hx by (by100 blast)
+    have hball_sub: "ball p s \<subseteq> ball p \<delta>"
+      unfolding s_def by (by100 auto)
+    have hx\<delta>: "x \<in> ball p \<delta>"
+      using hx hball_sub by (by100 blast)
+    have "x \<in> ball p \<delta> \<inter> \<Union>F"
+      using hxF hx\<delta> by (by100 blast)
+    thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+      using hisolate by (by100 blast)
+  qed
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
