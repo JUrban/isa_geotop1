@@ -12052,12 +12052,16 @@ proof -
   have hsphere_1sphere: "geotop_is_n_sphere (sphere p eps)
       (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
     by (rule geotop_positive_radius_circle_is_1sphere_dev34[OF heps])
+  have hsphere_complement_connected:
+    "top1_connected_on (U - sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
+    sorry
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
     complement in \<open>U\<close>. **)
   show ?thesis
-    sorry
+    using hsphere_U hsphere_1sphere hsphere_complement_connected by (by100 blast)
 qed
 
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
