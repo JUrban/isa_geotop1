@@ -3725,6 +3725,28 @@ proof -
     using hnot_conn hconn by (by100 blast)
 qed
 
+lemma geotop_finite_linear_graph_polygon_connected_nonisolated_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "geotop_complex_connected L
+      \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e))"
+  (**
+    First Fig. 4.10 graph prerequisite: the polygonal carrier gives one
+    connected component and no isolated complex vertices. **)
+proof -
+  have hconn: "geotop_complex_connected L"
+    by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_dev34
+        [OF hL_linear hpolygon])
+  have hnonisolated:
+      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_dev34
+        [OF hL_linear hL_finite hpolygon])
+  show ?thesis
+    using hconn hnonisolated by (by100 blast)
+qed
+
 lemma geotop_finite_connected_degree_one_or_two_polygon_degree_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -3819,8 +3841,8 @@ lemma geotop_finite_linear_graph_polygon_degree_one_or_two_degree_two_dev34:
     the polygon alternative forces the degree-two cycle case. **)
 proof -
   have hconn: "geotop_complex_connected L"
-    by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_dev34
-        [OF hL hpolygon])
+    using geotop_finite_linear_graph_polygon_connected_nonisolated_dev34
+      [OF hL hfin hpolygon] by (by100 blast)
   show ?thesis
     by (rule geotop_finite_connected_degree_one_or_two_polygon_degree_two_dev34
         [OF hL hfin hconn hdegree12 hpolygon])
@@ -3862,7 +3884,18 @@ lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_
     graph as the ordered edge-cycle of a polygon; subdivide the whole frontier
     of a 2-simplex with the same ordered vertex/edge data; map each link vertex
     to the corresponding boundary subdivision vertex. **)
-  sorry
+proof -
+  have hcycle0:
+      "geotop_complex_connected L
+      \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e))"
+    by (rule geotop_finite_linear_graph_polygon_connected_nonisolated_dev34
+        [OF hL_linear hL_finite hpolygon])
+  (**
+    Remaining Fig. 4.10 graph step: recover the cyclic edge order and realize
+    that abstract cycle as a subdivision of the frontier of a 2-simplex. **)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
