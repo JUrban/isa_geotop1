@@ -4769,6 +4769,79 @@ proof -
     using hHOL unfolding geotop_convex_hull_eq_HOL by (by100 simp)
 qed
 
+lemma geotop_boundary_subdivision_cone_over_simplex_is_simplex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "A \<in> F"
+  shows "geotop_is_simplex (geotop_convex_hull (insert c A))"
+proof -
+  have hF_complex: "geotop_is_complex F"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hsub])
+  have hF_simplexes: "\<forall>\<tau>\<in>F. geotop_is_simplex \<tau>"
+    by (rule conjunct1[OF hF_complex[unfolded geotop_is_complex_def]])
+  have hA_simplex: "geotop_is_simplex A"
+    using hF_simplexes hA by (by100 blast)
+  obtain V m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hV_gp: "geotop_general_position V m"
+    and hA_eq: "A = geotop_convex_hull V"
+    using hA_simplex unfolding geotop_is_simplex_def by (by100 blast)
+  have hAV: "geotop_simplex_vertices A V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card hn_le_m hV_gp hA_eq by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hAV])
+  have hc_not_aff_A: "c \<notin> affine hull A"
+    by (rule geotop_boundary_subdivision_simplex_affine_hull_misses_interior_point_dev34
+        [OF h\<sigma> hsub hc hA])
+  have hAff_A: "affine hull A = affine hull V"
+    using hA_eq geotop_convex_hull_eq_HOL[of V] affine_hull_convex_hull[of V]
+    by (by100 simp)
+  have hc_not_aff_V: "c \<notin> affine hull V"
+    using hc_not_aff_A hAff_A by (by100 simp)
+  have hinsert_ai: "\<not> affine_dependent (insert c V)"
+    by (rule affine_independent_insert[OF hV_ai hc_not_aff_V])
+  have hinsert_fin: "finite (insert c V)"
+    using hV_fin by (by100 simp)
+  have hinsert_ne: "insert c V \<noteq> {}"
+    by (by100 simp)
+  have hconeV:
+      "geotop_simplex_vertices (geotop_convex_hull (insert c V)) (insert c V)"
+    by (rule geotop_AI_finite_ne_is_simplex_vertices
+        [OF hinsert_fin hinsert_ne hinsert_ai])
+  have hcone_eq:
+      "geotop_convex_hull (insert c A) =
+        geotop_convex_hull (insert c V)"
+  proof -
+    have "geotop_convex_hull (insert c A) =
+        geotop_convex_hull (insert c (geotop_convex_hull V))"
+      using hA_eq by (by100 simp)
+    also have "... = geotop_convex_hull (insert c V)"
+      by (rule geotop_convex_hull_insert_geotop_convex_hull_eq_dev34)
+    finally show ?thesis .
+  qed
+  show ?thesis
+  proof -
+    obtain m' n' where hcone_fin: "finite (insert c V)"
+      and hcone_card: "card (insert c V) = n' + 1"
+      and hcone_le: "n' \<le> m'"
+      and hcone_gp: "geotop_general_position (insert c V) m'"
+      and hcone_hull:
+        "geotop_convex_hull (insert c V) = geotop_convex_hull (insert c V)"
+      using hconeV unfolding geotop_simplex_vertices_def by (by100 blast)
+    show ?thesis
+      unfolding geotop_is_simplex_def
+      using hcone_fin hcone_card hcone_le hcone_gp hcone_eq
+      by (intro exI[of _ "insert c V"] exI[of _ m'] exI[of _ n'])
+        (by100 simp)
+  qed
+qed
+
 lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
