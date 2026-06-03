@@ -9621,7 +9621,29 @@ lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
     polyhedron is exactly the one-sided half-neighborhood supplied by the
     unique incident 2-simplex.  Choose a small semicircle in that simplex,
     centered at \<open>p\<close>; it lies in \<open>U\<close>, is an arc, and separates \<open>U\<close>. **)
-  sorry
+proof -
+  obtain A where hA_small: "A \<subseteq> ball p s \<inter> \<sigma>"
+    and hAarc: "geotop_is_arc A
+        (subspace_topology UNIV geotop_euclidean_topology A)"
+    and hAsep: "\<not> top1_connected_on (U - A)
+        (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+    sorry
+  have hAsubU: "A \<subseteq> U"
+  proof
+    fix x
+    assume hxA: "x \<in> A"
+    have hx_ball_sigma: "x \<in> ball p s \<inter> \<sigma>"
+      using hA_small hxA by (by100 blast)
+    have hx_ball_poly: "x \<in> ball p s \<inter> geotop_polyhedron K"
+      using hx_ball_sigma hlocal_poly_eq_\<sigma>[symmetric] by (by100 simp)
+    have hx_poly_ball: "x \<in> geotop_polyhedron K \<inter> ball p s"
+      using hx_ball_poly by (by100 blast)
+    show "x \<in> U"
+      using hballU_s hx_poly_ball by (by100 blast)
+  qed
+  show ?thesis
+    using hAsubU hAarc hAsep by (by100 blast)
+qed
 
 lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
