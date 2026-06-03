@@ -3482,6 +3482,36 @@ proof -
     using hc_int hc_new by (by100 blast)
 qed
 
+lemma geotop_boundary_cone_definition_contains_new_vertex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_convex_hull {c} \<in> L'"
+  using hL by (by100 simp)
+
+lemma geotop_boundary_cone_definition_contains_old_simplex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA: "A \<in> F"
+  shows "A \<in> L'"
+  using hL hA by (by100 simp)
+
+lemma geotop_boundary_cone_definition_contains_cone_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA: "A \<in> F"
+  assumes hAne: "A \<noteq> {}"
+  shows "geotop_convex_hull (insert c A) \<in> L'"
+  using hL hA hAne by (by100 blast)
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
