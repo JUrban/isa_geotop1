@@ -3255,6 +3255,23 @@ proof -
     using hrel_nonempty hrel_eq_int by (by100 simp)
 qed
 
+lemma geotop_subdivision_vertices_subset_original_polyhedron_dev34:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "geotop_complex_vertices K' \<subseteq> geotop_polyhedron K"
+  (**
+    A vertex of a subdivision lies in the same carrier as the original
+    complex.  This is the carrier half of the Fig. 4.10 claim that the new
+    interior cone point is not an old boundary-subdivision vertex. **)
+proof -
+  have hvertices: "geotop_complex_vertices K' \<subseteq> geotop_polyhedron K'"
+    by (rule geotop_complex_vertices_subset_polyhedron_dev34)
+  have hpoly: "geotop_polyhedron K' = geotop_polyhedron K"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  show ?thesis
+    using hvertices hpoly by (by100 simp)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
