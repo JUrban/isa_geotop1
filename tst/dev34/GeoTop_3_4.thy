@@ -3525,6 +3525,46 @@ proof (rule equals0I)
     using hdisj hx_boundary hx_int by (by100 blast)
 qed
 
+lemma geotop_boundary_subdivision_polyhedron_disjoint_HOL_interior_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "geotop_polyhedron F \<inter> interior \<sigma> = {}"
+proof -
+  have hpoly:
+    "geotop_polyhedron F =
+      geotop_polyhedron
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    by (rule geotop_boundary_subdivision_polyhedron_eq_dev34[OF hsub])
+  have hbd_disj:
+    "geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<inter> interior \<sigma> = {}"
+    by (rule geotop_2simplex_comb_boundary_polyhedron_disjoint_HOL_interior_dev34
+        [OF h\<sigma>])
+  show ?thesis
+    using hpoly hbd_disj by (by100 simp)
+qed
+
+lemma geotop_boundary_subdivision_interior_point_notin_polyhedron_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  shows "c \<notin> geotop_polyhedron F"
+proof
+  assume hcF: "c \<in> geotop_polyhedron F"
+  have hdisj: "geotop_polyhedron F \<inter> interior \<sigma> = {}"
+    by (rule geotop_boundary_subdivision_polyhedron_disjoint_HOL_interior_dev34
+        [OF h\<sigma> hsub])
+  show False
+    using hdisj hcF hc by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
