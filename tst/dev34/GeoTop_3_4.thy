@@ -8767,6 +8767,44 @@ proof -
     unfolding geotop_isomorphic_def using hfan by (by100 blast)
 qed
 
+lemma geotop_finite_linear_graph_broken_line_connected_endpoint_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+  shows "geotop_complex_connected L
+      \<and> (\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w)"
+  (**
+    Broken-line chain prerequisite for the boundary-vertex Fig. 4.10 case:
+    the carrier is an arc, hence connected, and one of the arc endpoints is a
+    graph endpoint of the finite linear complex. **)
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have harc_geo: "geotop_is_arc (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hbroken unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = geotop_polyhedron L"
+    using geotop_is_arc_imp_HOL_arc[OF harc_geo] by (by100 blast)
+  have hpoly_conn_HOL: "connected (geotop_polyhedron L)"
+    using connected_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+  have hpoly_conn: "top1_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hpoly_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hpath: "top1_path_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  have hconn: "geotop_complex_connected L"
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+  have hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+    by (rule geotop_broken_line_polyhedron_finite_linear_graph_has_endpoint_dev34
+        [OF hL_linear hL_finite hbroken])
+  show ?thesis
+    using hconn hend by (by100 blast)
+qed
+
 lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_graph_broken_line_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -8792,7 +8830,20 @@ lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_graph_broken
     graph whose carrier is a broken line is enumerated as an edge-chain and
     placed on a subdivided boundary arc of a 2-simplex; the matching boundary
     endpoint is then used as the fan vertex. **)
-  sorry
+proof -
+  have hchain0:
+      "geotop_complex_connected L
+      \<and> (\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w)"
+    by (rule geotop_finite_linear_graph_broken_line_connected_endpoint_dev34
+        [OF hL_linear hL_finite hbroken])
+  (**
+    Remaining boundary-vertex Fig. 4.10 graph step: recover the ordered
+    edge-chain from the connected finite linear graph with a graph endpoint,
+    realize that abstract chain as a subdivided boundary arc of a 2-simplex,
+    and choose the matching boundary endpoint as the fan vertex. **)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_link_broken_line_dev34:
   fixes K :: "(real^2) set set"
