@@ -3873,6 +3873,40 @@ proof
     using h\<tau>sub hx\<tau> by (by100 blast)
 qed
 
+lemma geotop_boundary_cone_definition_old_polyhedron_subset_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_polyhedron F \<subseteq> geotop_polyhedron L'"
+proof
+  fix x
+  assume hx: "x \<in> geotop_polyhedron F"
+  obtain A where hAF: "A \<in> F" and hxA: "x \<in> A"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hAL: "A \<in> L'"
+    using hL hAF by (by100 simp)
+  show "x \<in> geotop_polyhedron L'"
+    unfolding geotop_polyhedron_def using hAL hxA by (by100 blast)
+qed
+
+lemma geotop_boundary_cone_definition_cone_point_in_polyhedron_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "c \<in> geotop_polyhedron L'"
+proof -
+  have hcL: "geotop_convex_hull {c} \<in> L'"
+    using hL by (by100 simp)
+  have hsing: "geotop_convex_hull {c} = {c}"
+    using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+  show ?thesis
+    unfolding geotop_polyhedron_def using hcL hsing by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
