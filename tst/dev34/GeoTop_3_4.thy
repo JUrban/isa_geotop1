@@ -3227,6 +3227,63 @@ proof -
     using hnot_conn hconn by (by100 blast)
 qed
 
+lemma geotop_finite_connected_degree_one_or_two_polygon_degree_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  (**
+    Finite graph-cycle prerequisite for Fig. 4.10: in the classified
+    degree-one-or-two case, the polygon alternative excludes endpoints, hence
+    every vertex has exactly two incident edges. **)
+proof -
+  have hendpoint_or_noendpoint:
+      "(\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w) \<or>
+       (\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w)"
+    by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hendpoint_or_noendpoint])
+    assume hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+    have hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+    proof (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_dev34
+        [where L = L])
+      show "geotop_is_linear_graph L" by (rule hL)
+      show "finite L" by (rule hfin)
+      show "geotop_complex_connected L" by (rule hconn)
+      show "\<forall>w. {w} \<in> L \<longrightarrow>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hdegree12)
+      show "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+        by (rule hend)
+    qed
+    have False
+      by (rule geotop_polygon_not_broken_line_dev34[OF hpolygon hbroken])
+    then show ?thesis
+      by (by100 blast)
+  next
+    assume hnoend:
+        "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    show ?thesis
+    proof (rule geotop_degree_one_or_two_no_endpoint_degree_two_dev34
+        [where L = L])
+      show "geotop_is_linear_graph L" by (rule hL)
+      show "\<forall>w. {w} \<in> L \<longrightarrow>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hdegree12)
+      show "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+        by (rule hnoend)
+    qed
+  qed
+qed
+
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
