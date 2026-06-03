@@ -3580,6 +3580,60 @@ lemma geotop_boundary_cone_definition_contains_cone_dev34:
   shows "geotop_convex_hull (insert c A) \<in> L'"
   using hL hA hAne by (by100 blast)
 
+lemma geotop_boundary_cone_definition_new_vertex_in_vertices_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "c \<in> geotop_complex_vertices L'"
+proof -
+  have hmem: "geotop_convex_hull {c} \<in> L'"
+    by (rule geotop_boundary_cone_definition_contains_new_vertex_dev34[OF hL])
+  have hch: "geotop_convex_hull {c} = {c}"
+    using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+  have hsv: "geotop_simplex_vertices (geotop_convex_hull {c}) {c}"
+    using geotop_simplex_vertices_singleton[of c] hch by (by100 simp)
+  show ?thesis
+    unfolding geotop_complex_vertices_def using hmem hsv by (by100 blast)
+qed
+
+lemma geotop_boundary_cone_definition_old_vertices_subset_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_complex_vertices F \<subseteq> geotop_complex_vertices L'"
+proof
+  fix v
+  assume hv: "v \<in> geotop_complex_vertices F"
+  obtain \<sigma> V where h\<sigma>F: "\<sigma> \<in> F"
+    and hV: "geotop_simplex_vertices \<sigma> V"
+    and hvV: "v \<in> V"
+    using hv unfolding geotop_complex_vertices_def by (by100 blast)
+  have h\<sigma>L: "\<sigma> \<in> L'"
+    by (rule geotop_boundary_cone_definition_contains_old_simplex_dev34[OF hL h\<sigma>F])
+  show "v \<in> geotop_complex_vertices L'"
+    unfolding geotop_complex_vertices_def using h\<sigma>L hV hvV by (by100 blast)
+qed
+
+lemma geotop_boundary_cone_definition_vertices_contains_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "insert c (geotop_complex_vertices F) \<subseteq> geotop_complex_vertices L'"
+proof -
+  have hc: "c \<in> geotop_complex_vertices L'"
+    by (rule geotop_boundary_cone_definition_new_vertex_in_vertices_dev34[OF hL])
+  have hFsub: "geotop_complex_vertices F \<subseteq> geotop_complex_vertices L'"
+    by (rule geotop_boundary_cone_definition_old_vertices_subset_dev34[OF hL])
+  show ?thesis
+    using hc hFsub by (by100 blast)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
