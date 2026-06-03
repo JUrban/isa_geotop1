@@ -3440,6 +3440,56 @@ proof (rule equals0I)
     using hdisj hx\<rho> hx_rel by (by100 blast)
 qed
 
+lemma geotop_2simplex_comb_boundary_finite_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "finite (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  have hbd_sub: "geotop_comb_boundary ?K 2 \<subseteq> ?K"
+    by (rule geotop_comb_boundary_subset_complex_dev34[OF hK_complex])
+  have hK_finite: "finite ?K"
+    by (rule geotop_simplex_dim_face_complex_finite_R2[OF h\<sigma>])
+  show ?thesis
+    by (rule finite_subset[OF hbd_sub hK_finite])
+qed
+
+lemma geotop_boundary_subdivision_is_complex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "geotop_is_complex F"
+  by (rule geotop_subdivision_source_is_complex_dev34[OF hsub])
+
+lemma geotop_boundary_subdivision_polyhedron_eq_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows
+    "geotop_polyhedron F =
+      geotop_polyhedron
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  by (rule geotop_subdivision_polyhedron_eq_dev34[OF hsub])
+
+lemma geotop_boundary_subdivision_finite_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "finite F"
+proof -
+  have hbd_fin:
+    "finite (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  show ?thesis
+    by (rule geotop_subdivision_of_finite_is_finite[OF hbd_fin hsub])
+qed
+
 lemma geotop_boundary_subdivision_vertices_disjoint_HOL_interior_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
