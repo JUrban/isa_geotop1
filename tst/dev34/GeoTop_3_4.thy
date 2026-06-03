@@ -9217,6 +9217,17 @@ proof -
         [OF hK heK hedge hp h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hFsub])
   have hlocal_poly_\<sigma>: "ball p s \<inter> geotop_polyhedron K \<subseteq> \<sigma>"
     using hpoint_carriers_s hpoint_carriers_subset_\<sigma> by (by100 blast)
+  have h\<sigma>subM: "\<sigma> \<subseteq> geotop_polyhedron K"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  proof
+    show "ball p s \<inter> geotop_polyhedron K \<subseteq> ball p s \<inter> \<sigma>"
+      using hlocal_poly_\<sigma> by (by100 blast)
+  next
+    show "ball p s \<inter> \<sigma> \<subseteq> ball p s \<inter> geotop_polyhedron K"
+      using h\<sigma>subM by (by100 blast)
+  qed
   (**
     Remaining Moise Lemma 3 geometry: choose the small semicircle in the unique
     incident 2-simplex \<open>\<sigma>\<close>, use the finite carrier cover \<open>F\<close> and the shrunken
