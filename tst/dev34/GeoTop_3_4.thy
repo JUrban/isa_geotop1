@@ -3328,6 +3328,31 @@ lemma geotop_subdivision_polyhedron_eq_dev34:
   shows "geotop_polyhedron K' = geotop_polyhedron K"
   using hsub unfolding geotop_is_subdivision_def by (by100 blast)
 
+lemma geotop_2simplex_face_complex_subdivision_HOL_interior_point_dev34:
+  fixes L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hsubdiv:
+    "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  shows "c \<in> interior (geotop_polyhedron L')"
+  (**
+    Target-side part of Fig. 4.10: a subdivision of the full face complex has
+    the same polyhedron as the 2-simplex, so an interior cone point remains an
+    ordinary interior point of the fan polyhedron. **)
+proof -
+  have hpoly_sub:
+      "geotop_polyhedron L' =
+        geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_subdivision_polyhedron_eq_dev34[OF hsubdiv])
+  have hpoly_face:
+      "geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} = \<sigma>"
+    by (rule geotop_2simplex_face_complex_polyhedron_eq_dev34[OF h\<sigma>])
+  have hpoly: "geotop_polyhedron L' = \<sigma>"
+    using hpoly_sub hpoly_face by (by100 simp)
+  show ?thesis
+    using hc hpoly by (by100 simp)
+qed
+
 lemma geotop_comb_boundary_subset_complex_dev34:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
