@@ -3746,6 +3746,67 @@ proof -
     using hHOL geotop_convex_hull_eq_HOL[of "insert c A"] by (by100 simp)
 qed
 
+lemma geotop_boundary_cone_definition_refines_2simplex_face_complex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_refines L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  unfolding geotop_refines_def
+proof
+  fix \<tau>
+  assume h\<tau>L: "\<tau> \<in> L'"
+  have htarget: "\<sigma> \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (by100 simp)
+  show "\<exists>\<rho>\<in>{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}. \<tau> \<subseteq> \<rho>"
+  proof (cases "\<tau> = geotop_convex_hull {c}")
+    case True
+    have hsing: "geotop_convex_hull {c} = {c}"
+      using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+    have hc\<sigma>: "c \<in> \<sigma>"
+      using hc interior_subset by (by100 blast)
+    have h\<tau>singleton: "\<tau> = {c}"
+      using True hsing by (by100 simp)
+    have "\<tau> \<subseteq> \<sigma>"
+      using h\<tau>singleton hc\<sigma> by (by100 blast)
+    show ?thesis
+      using htarget \<open>\<tau> \<subseteq> \<sigma>\<close> by (by100 blast)
+  next
+    case False
+    have hcases:
+      "\<tau> \<in> F
+        \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+      using hL h\<tau>L False by (by100 blast)
+    from hcases show ?thesis
+    proof
+      assume h\<tau>F: "\<tau> \<in> F"
+      have "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_boundary_subdivision_simplex_subset_2simplex_dev34
+            [OF h\<sigma> hsub h\<tau>F])
+      show ?thesis
+        using htarget \<open>\<tau> \<subseteq> \<sigma>\<close> by (by100 blast)
+    next
+      assume "\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A)"
+      then obtain A where hAF: "A \<in> F"
+        and h\<tau>eq: "\<tau> = geotop_convex_hull (insert c A)"
+        by (by100 blast)
+      have hcone_sub: "geotop_convex_hull (insert c A) \<subseteq> \<sigma>"
+        by (rule geotop_boundary_subdivision_cone_hull_subset_2simplex_dev34
+            [OF h\<sigma> hsub hc hAF])
+      have "\<tau> \<subseteq> \<sigma>"
+        using h\<tau>eq hcone_sub by (by100 simp)
+      show ?thesis
+        using htarget \<open>\<tau> \<subseteq> \<sigma>\<close> by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
