@@ -3375,6 +3375,53 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_comb_boundary_polyhedron_disjoint_HOL_interior_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows
+    "geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<inter> interior \<sigma> = {}"
+  (**
+    The combinatorial boundary of a 2-simplex is made of proper faces, and
+    proper faces are disjoint from the simplex relative interior; in the plane,
+    that relative interior is the ordinary interior. **)
+proof (rule equals0I)
+  fix x
+  assume hx:
+    "x \<in> geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<inter> interior \<sigma>"
+  have hx_int: "x \<in> interior \<sigma>"
+    using hx by (by100 blast)
+  obtain \<rho> where h\<rho>:
+      "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+    and hx\<rho>: "x \<in> \<rho>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hproper: "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
+    by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34[OF h\<sigma> h\<rho>])
+  have hface: "geotop_is_face \<rho> \<sigma>"
+    using hproper by (by100 blast)
+  have hne: "\<rho> \<noteq> \<sigma>"
+    using hproper by (by100 blast)
+  have hface_HOL: "\<rho> face_of \<sigma>"
+    by (rule geotop_is_face_imp_HOL_face_of_R2[OF hface])
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  have hx_rel: "x \<in> rel_interior \<sigma>"
+    using hx_int hrel_eq_int by (by100 simp)
+  have hdisj: "\<rho> \<inter> rel_interior \<sigma> = {}"
+    by (rule face_of_disjoint_rel_interior[OF hface_HOL hne])
+  show False
+    using hdisj hx\<rho> hx_rel by (by100 blast)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
