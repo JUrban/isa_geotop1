@@ -3860,6 +3860,66 @@ proof -
     using hpoly hbd_disj by (by100 simp)
 qed
 
+lemma geotop_boundary_subdivision_radial_cover_2simplex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  shows "\<forall>x\<in>\<sigma>. x = c \<or>
+    (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+proof (intro ballI)
+  fix x
+  assume hx\<sigma>: "x \<in> \<sigma>"
+  show "x = c \<or> (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+  proof (cases "x = c")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case hx_ne_c: False
+    have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+    have h\<sigma>conv: "convex \<sigma>"
+      by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex])
+    have h\<sigma>compact: "compact \<sigma>"
+      by (rule geotop_is_simplex_compact[OF h\<sigma>simplex])
+    have h\<sigma>bdd: "bounded \<sigma>"
+      using h\<sigma>compact compact_imp_bounded by (by100 blast)
+    have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+      by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+    have hdim\<sigma>: "aff_dim \<sigma> = 2"
+      using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+    have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+      using hdim\<sigma> by (by100 simp)
+    have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+      by (rule interior_rel_interior[OF hdim_UNIV])
+    have hc_rel: "c \<in> rel_interior \<sigma>"
+      using hc hrel_eq_int by (by100 simp)
+    have hnot_sing: "\<not> (c = x \<and> \<sigma> = {c})"
+      using hx_ne_c by (by100 blast)
+    obtain y where hy_front: "y \<in> rel_frontier \<sigma>"
+      and hx_seg: "x \<in> closed_segment c y"
+      using segment_to_rel_frontier[OF h\<sigma>conv h\<sigma>bdd hc_rel hx\<sigma> hnot_sing]
+      by (by100 metis)
+    have hy_boundary:
+        "y \<in> geotop_polyhedron
+          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+      using geotop_2simplex_rel_frontier_subset_comb_boundary_polyhedron_dev34
+        [OF h\<sigma>] hy_front by (by100 blast)
+    have hpoly_eq:
+        "geotop_polyhedron F =
+          geotop_polyhedron
+            (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+      by (rule geotop_boundary_subdivision_polyhedron_eq_dev34[OF hsub])
+    have hyF: "y \<in> geotop_polyhedron F"
+      using hy_boundary hpoly_eq by (by100 simp)
+    show ?thesis
+      using hyF hx_seg by (by100 blast)
+  qed
+qed
+
 lemma geotop_boundary_subdivision_interior_point_notin_polyhedron_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
