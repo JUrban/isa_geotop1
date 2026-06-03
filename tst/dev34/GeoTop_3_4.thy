@@ -13391,6 +13391,7 @@ lemma geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34:
   assumes hK: "geotop_is_complex K"
   assumes hv: "v \<in> geotop_complex_vertices K"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hc_int: "c \<in> interior \<sigma>"
   assumes hsubdiv:
     "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
   assumes h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
@@ -13457,6 +13458,7 @@ proof -
   obtain \<sigma> :: "(real^2) set" and L' B c \<psi>
     where hfan:
       "geotop_simplex_dim \<sigma> 2
+      \<and> c \<in> interior \<sigma>
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
       \<and> c \<notin> B
@@ -13469,10 +13471,12 @@ proof -
         W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
         (geotop_convex_hull W \<in> geotop_link K v
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-    using geotop_standard_fan_target_from_finite_linear_link_polygon_dev34
+    using geotop_standard_fan_target_from_finite_linear_link_polygon_with_interior_dev34
       [OF hK hv hlink_linear hlink_finite hpolygon_poly]
     by (elim exE) assumption
   have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    using hfan by (by100 blast)
+  have hc_int: "c \<in> interior \<sigma>"
     using hfan by (by100 blast)
   have hsubdiv:
       "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
@@ -13498,7 +13502,7 @@ proof -
     using hfan by (by100 blast)
   show ?thesis
     by (rule geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34
-        [OF hK hv h\<sigma> hsubdiv h\<psi> hcB hvertices hc_simplex hlink_target
+        [OF hK hv h\<sigma> hc_int hsubdiv h\<psi> hcB hvertices hc_simplex hlink_target
           hcone_target hpolygon])
 qed
 
