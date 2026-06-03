@@ -13419,7 +13419,172 @@ lemma geotop_linear_on_continuous_on_dev34:
   (**
     Standard PL fact used in the Figure 4.10 local model: a map that is
     barycentrically linear on one simplex is continuous on that simplex. **)
-  sorry
+proof -
+  obtain V where hV: "geotop_simplex_vertices \<sigma> V"
+      and hlin_V:
+        "\<forall>\<alpha>. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<longrightarrow>
+          f (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+    using hlin unfolding geotop_linear_on_def by (by100 blast)
+  have hV_fin: "finite V"
+    using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_ne: "V \<noteq> {}"
+    using hV unfolding geotop_simplex_vertices_def by (by100 fastforce)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hV])
+  obtain a where haV: "a \<in> V"
+    using hV_ne by (by100 blast)
+  define B where "B = ((\<lambda>v. v - a) ` (V - {a}))"
+  have hB_indep: "independent B"
+    using affine_dependent_iff_dependent2[OF haV] hV_ai
+    unfolding B_def by (by100 simp)
+  define fb where "fb b = f (SOME v. v \<in> V - {a} \<and> b = v - a) - f a" for b
+  obtain A :: "real^2 \<Rightarrow> real^2" where hA_lin: "linear A"
+      and hA_B: "\<forall>b\<in>B. A b = fb b"
+    using linear_independent_extend[OF hB_indep, of fb] by (by100 blast)
+  interpret A: linear A
+    by (rule hA_lin)
+  define g where "g x = f a + A (x - a)" for x
+  have hA_vertex: "\<forall>v\<in>V. A (v - a) = f v - f a"
+  proof
+    fix v assume hvV: "v \<in> V"
+    show "A (v - a) = f v - f a"
+    proof (cases "v = a")
+      case True
+      then show ?thesis using A.zero by (by100 simp)
+    next
+      case False
+      have hvB: "v - a \<in> B"
+        unfolding B_def using hvV False by (by100 blast)
+      have hsome: "(SOME w. w \<in> V - {a} \<and> v - a = w - a) = v"
+      proof (rule some_equality)
+        show "v \<in> V - {a} \<and> v - a = v - a"
+          using hvV False by (by100 simp)
+      next
+        fix w assume "w \<in> V - {a} \<and> v - a = w - a"
+        then show "w = v" by (by100 simp)
+      qed
+      have "A (v - a) = fb (v - a)"
+        using hA_B hvB by (by100 blast)
+      also have "\<dots> = f v - f a"
+        unfolding fb_def using hsome by (by100 simp)
+      finally show ?thesis .
+    qed
+  qed
+  have hg_cont: "continuous_on \<sigma> g"
+  proof -
+    have hA_bounded: "bounded_linear A"
+      using hA_lin linear_conv_bounded_linear by (by100 blast)
+    have hA_cont: "continuous_on UNIV A"
+      by (rule linear_continuous_on[OF hA_bounded])
+    have hminus_cont: "continuous_on \<sigma> (\<lambda>x. x - a)"
+      by (intro continuous_intros)
+    have hA_minus_cont: "continuous_on \<sigma> (\<lambda>x. A (x - a))"
+    proof -
+      have hA_on_image: "continuous_on ((\<lambda>x. x - a) ` \<sigma>) A"
+        by (rule continuous_on_subset[OF hA_cont]) (by100 blast)
+      have "continuous_on \<sigma> (A \<circ> (\<lambda>x. x - a))"
+        by (rule continuous_on_compose[OF hminus_cont hA_on_image])
+      thus ?thesis
+        unfolding comp_def by (by100 simp)
+    qed
+    show ?thesis
+      unfolding g_def
+      using hA_minus_cont by (intro continuous_intros)
+  qed
+  show ?thesis
+  proof (rule continuous_on_eq[OF hg_cont])
+    fix x assume hx\<sigma>: "x \<in> \<sigma>"
+    have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    proof -
+      have "\<sigma> = geotop_convex_hull V"
+        using hV unfolding geotop_simplex_vertices_def by (by100 blast)
+      thus ?thesis using geotop_convex_hull_eq_HOL by (by100 simp)
+    qed
+    have hx_hull: "x \<in> convex hull V"
+      using hx\<sigma> h\<sigma>_HOL by (by100 simp)
+    have h_hull_char:
+      "convex hull V =
+        {y. \<exists>\<alpha>::real^2 \<Rightarrow> real. (\<forall>v\<in>V. 0 \<le> \<alpha> v) \<and> sum \<alpha> V = 1 \<and>
+              (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = y}"
+      by (rule convex_hull_finite[OF hV_fin])
+    obtain \<alpha> :: "real^2 \<Rightarrow> real"
+      where h\<alpha>_nn: "\<forall>v\<in>V. 0 \<le> \<alpha> v"
+        and h\<alpha>_sum: "sum \<alpha> V = 1"
+        and h\<alpha>_x: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) = x"
+      using hx_hull h_hull_char by (by100 blast)
+    have hf_x: "f x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      using hlin_V h\<alpha>_nn h\<alpha>_sum h\<alpha>_x by (by100 blast)
+    have hshift: "x - a = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a)) =
+          (\<Sum>v\<in>V. (\<alpha> v *\<^sub>R v) - (\<alpha> v *\<^sub>R a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "\<alpha> v *\<^sub>R (v - a) = \<alpha> v *\<^sub>R v - \<alpha> v *\<^sub>R a"
+          by (rule scaleR_right_diff_distrib)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R a)"
+        by (rule sum_subtractf)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R v) - (sum \<alpha> V) *\<^sub>R a"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R a) = (sum \<alpha> V) *\<^sub>R a"
+          by (simp only: scaleR_sum_left)
+        thus ?thesis by (by100 simp)
+      qed
+      also have "\<dots> = x - (sum \<alpha> V) *\<^sub>R a"
+        using h\<alpha>_x by (by100 simp)
+      also have "\<dots> = x - a"
+        using h\<alpha>_sum by (by100 simp)
+      finally show ?thesis by (by100 simp)
+    qed
+    have hA_sum: "A (x - a) = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a))"
+    proof -
+      have "A (x - a) = A (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (v - a))"
+        using hshift by (by100 simp)
+      also have "\<dots> = (\<Sum>v\<in>V. A (\<alpha> v *\<^sub>R (v - a)))"
+        by (rule A.sum)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R A (v - a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "A (\<alpha> v *\<^sub>R (v - a)) = \<alpha> v *\<^sub>R A (v - a)"
+          by (rule A.scale)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a))"
+        using hA_vertex by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hsum_aff:
+      "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a)) =
+        (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - f a"
+    proof -
+      have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R (f v - f a)) =
+          (\<Sum>v\<in>V. (\<alpha> v *\<^sub>R f v) - (\<alpha> v *\<^sub>R f a))"
+      proof (rule sum.cong)
+        show "V = V" by (by100 simp)
+        fix v assume "v \<in> V"
+        show "\<alpha> v *\<^sub>R (f v - f a) = \<alpha> v *\<^sub>R f v - \<alpha> v *\<^sub>R f a"
+          by (rule scaleR_right_diff_distrib)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f a)"
+        by (rule sum_subtractf)
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - (sum \<alpha> V) *\<^sub>R f a"
+      proof -
+        have "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f a) = (sum \<alpha> V) *\<^sub>R f a"
+          by (simp only: scaleR_sum_left)
+        thus ?thesis by (by100 simp)
+      qed
+      also have "\<dots> = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v) - f a"
+        using h\<alpha>_sum by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hg_x: "g x = (\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)"
+      unfolding g_def using hA_sum hsum_aff by (by100 simp)
+    show "g x = f x"
+      using hf_x hg_x by (by100 simp)
+  qed
+qed
 
 lemma geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34:
   fixes K L' :: "(real^2) set set"
