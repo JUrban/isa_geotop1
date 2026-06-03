@@ -6885,6 +6885,151 @@ proof -
     by (intro exI[of _ L'] exI[of _ c]) (intro conjI; assumption)
 qed
 
+lemma geotop_fig410_cone_over_boundary_subdivision_with_interior_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hboundary:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>L' c.
+      c \<in> interior \<sigma>
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+  (**
+    Same Fig. 4.10 cone step as above, but keep the book's chosen cone vertex
+    explicitly in the ordinary interior of the target 2-simplex. **)
+proof -
+  obtain L' c where hcone:
+      "c \<in> interior \<sigma>
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using geotop_fig410_explicit_cone_over_boundary_subdivision_dev34
+      [OF h\<sigma> hboundary]
+    by (elim exE) assumption
+  have hc_int: "c \<in> interior \<sigma>"
+    using hcone by (rule conjunct1)
+  have hcone1:
+      "c \<notin> geotop_complex_vertices F
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone by (rule conjunct2)
+  have hcF: "c \<notin> geotop_complex_vertices F"
+    using hcone1 by (rule conjunct1)
+  have hcone2:
+      "L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone1 by (rule conjunct2)
+  have hcone3:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone2 by (rule conjunct2)
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hcone3 by (rule conjunct1)
+  have hcone4:
+      "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone3 by (rule conjunct2)
+  have hvertices:
+      "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
+    using hcone4 by (rule conjunct1)
+  have hcone5:
+      "geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone4 by (rule conjunct2)
+  have hc_simplex: "geotop_convex_hull {c} \<in> L'"
+    using hcone5 by (rule conjunct1)
+  have hcone6:
+      "(\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using hcone5 by (rule conjunct2)
+  have hboundary_target:
+      "\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L')"
+    using hcone6 by (rule conjunct1)
+  have hcone_target:
+      "\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L')"
+    using hcone6 by (rule conjunct2)
+  show ?thesis
+    apply (rule_tac x=L' in exI)
+    apply (rule_tac x=c in exI)
+    using hc_int hsubdiv hcF hvertices hc_simplex hboundary_target hcone_target
+    by (by100 simp)
+qed
+
 lemma geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34:
   fixes L F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
