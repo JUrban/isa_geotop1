@@ -3491,7 +3491,9 @@ lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   shows "\<exists>L' c.
       c \<in> interior \<sigma>
       \<and> c \<notin> geotop_complex_vertices F
-      \<and> L' = F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
       \<and> geotop_convex_hull {c} \<in> L'
@@ -3505,8 +3507,8 @@ lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   (**
     Book construction underlying Fig. 4.10 step 2.  Pick a point \<open>c\<close> in the
     interior of the 2-simplex, hence in no boundary edge, and take the complex
-    consisting of the subdivided frontier \<open>F\<close> together with the cones from
-    \<open>c\<close> over every nonempty simplex of \<open>F\<close>. **)
+    consisting of the subdivided frontier \<open>F\<close>, the new vertex \<open>{c}\<close>, and the
+    cones from \<open>c\<close> over every nonempty simplex of \<open>F\<close>. **)
   sorry
 
 lemma geotop_fig410_cone_over_boundary_subdivision_dev34:
@@ -3537,7 +3539,9 @@ proof -
   obtain L' c where hcone:
       "c \<in> interior \<sigma>
       \<and> c \<notin> geotop_complex_vertices F
-      \<and> L' = F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
       \<and> geotop_convex_hull {c} \<in> L'
@@ -3555,7 +3559,9 @@ proof -
     using hcone by (rule conjunct1)
   have hcone1:
       "c \<notin> geotop_complex_vertices F
-      \<and> L' = F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
       \<and> geotop_convex_hull {c} \<in> L'
@@ -3570,7 +3576,9 @@ proof -
   have hcF: "c \<notin> geotop_complex_vertices F"
     using hcone1 by (rule conjunct1)
   have hcone2:
-      "L' = F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}
+      "L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
       \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
       \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
       \<and> geotop_convex_hull {c} \<in> L'
