@@ -3170,6 +3170,38 @@ proof -
     using hiso_raw \<phi>_def by (by100 simp)
 qed
 
+lemma geotop_finite_linear_graph_polygon_polyhedron_connected_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "geotop_complex_connected L"
+  (**
+    First graph-theoretic step behind Moise Fig. 4.10: the linear graph
+    triangulating a polygonal link is a single connected cycle, since its
+    polyhedron is a topological 1-sphere. **)
+proof -
+  have hL_complex: "geotop_is_complex L"
+    using hL_linear unfolding geotop_is_linear_graph_def by (by100 blast)
+  have hhomeo: "geotop_polyhedron L homeomorphic sphere (0::real^2) 1"
+    by (rule polygon_homeomorphic_S1_helper[OF hpolygon])
+  have hdim: "(2::nat) \<le> DIM(real^2)"
+    by (by100 simp)
+  have hsphere_conn: "connected (sphere (0::real^2) 1)"
+    by (rule connected_sphere[OF hdim])
+  have hpoly_conn_HOL: "connected (geotop_polyhedron L)"
+    using hhomeo hsphere_conn homeomorphic_connectedness by (by100 blast)
+  have hpoly_conn:
+      "top1_connected_on (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hpoly_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hpath:
+      "top1_path_connected_on (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  show ?thesis
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+qed
+
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
