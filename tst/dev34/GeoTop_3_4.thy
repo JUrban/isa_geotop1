@@ -3457,6 +3457,31 @@ proof (rule equals0I)
     using hdisj hx_boundary hx_int by (by100 blast)
 qed
 
+lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>c. c \<in> interior \<sigma> \<and> c \<notin> geotop_complex_vertices F"
+  (**
+    Figure 4.10's new vertex: choose any point in the nonempty interior of
+    the 2-simplex; by the boundary-subdivision disjointness lemma it is not
+    an old boundary vertex. **)
+proof -
+  have hint_nonempty: "interior \<sigma> \<noteq> {}"
+    by (rule geotop_2simplex_HOL_interior_nonempty_dev34[OF h\<sigma>])
+  obtain c where hc_int: "c \<in> interior \<sigma>"
+    using hint_nonempty by (by100 blast)
+  have hdisj: "geotop_complex_vertices F \<inter> interior \<sigma> = {}"
+    by (rule geotop_boundary_subdivision_vertices_disjoint_HOL_interior_dev34
+        [OF h\<sigma> hsub])
+  have hc_new: "c \<notin> geotop_complex_vertices F"
+    using hdisj hc_int by (by100 blast)
+  show ?thesis
+    using hc_int hc_new by (by100 blast)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
