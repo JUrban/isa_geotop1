@@ -3202,6 +3202,31 @@ proof -
     by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
 qed
 
+lemma geotop_polygon_not_broken_line_dev34:
+  fixes J :: "(real^2) set"
+  assumes hpolygon: "geotop_is_polygon J"
+  assumes hbroken: "geotop_is_broken_line J"
+  shows False
+  (**
+    Separation distinction used in the graph-cycle classification: a polygon
+    separates the plane, while a broken line does not. **)
+proof -
+  have hJsphere:
+      "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+  have hnot_conn:
+      "\<not> top1_connected_on (UNIV - J)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+    by (rule Theorem_GT_4_3[OF hJsphere])
+  have hconn:
+      "top1_connected_on (UNIV - J)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+    by (rule Theorem_GT_2_3[OF hbroken])
+  show False
+    using hnot_conn hconn by (by100 blast)
+qed
+
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
