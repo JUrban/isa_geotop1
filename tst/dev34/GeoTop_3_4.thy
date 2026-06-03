@@ -3597,6 +3597,41 @@ lemma geotop_boundary_subdivision_hull_simplex_misses_interior_point_dev34:
   by (rule geotop_boundary_subdivision_simplex_misses_interior_point_dev34
       [OF h\<sigma> hsub hc hA])
 
+lemma geotop_convex_hull_insert_contains_insert_point_dev34:
+  fixes A :: "(real^2) set"
+  shows "c \<in> geotop_convex_hull (insert c A)"
+proof -
+  have hc_set: "c \<in> insert c A"
+    by (by100 simp)
+  have hsub: "insert c A \<subseteq> geotop_convex_hull (insert c A)"
+    unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+  show ?thesis
+    using hsub hc_set by (by100 blast)
+qed
+
+lemma geotop_boundary_subdivision_old_hull_ne_cone_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "geotop_convex_hull A \<in> F"
+  assumes hB: "B \<in> F"
+  shows "geotop_convex_hull A \<noteq> geotop_convex_hull (insert c B)"
+proof
+  assume heq: "geotop_convex_hull A = geotop_convex_hull (insert c B)"
+  have hc_not_old: "c \<notin> geotop_convex_hull A"
+    by (rule geotop_boundary_subdivision_hull_simplex_misses_interior_point_dev34
+        [OF h\<sigma> hsub hc hA])
+  have hc_cone: "c \<in> geotop_convex_hull (insert c B)"
+    by (rule geotop_convex_hull_insert_contains_insert_point_dev34)
+  have "c \<in> geotop_convex_hull A"
+    using heq hc_cone by (by100 simp)
+  show False
+    using hc_not_old \<open>c \<in> geotop_convex_hull A\<close> by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
