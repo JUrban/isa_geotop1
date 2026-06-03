@@ -13445,6 +13445,27 @@ proof -
   have hc_target: "c \<in> interior (geotop_polyhedron L')"
     by (rule geotop_2simplex_face_complex_subdivision_HOL_interior_point_dev34
         [OF h\<sigma> hc_int hsubdiv])
+  define \<phi> where "\<phi> x = (if x = v then c else \<psi> x)" for x
+  have hlink_finite: "finite (geotop_link K v)"
+    by (rule geotop_link_finite_at_complex_vertex[OF hK hv])
+  have hstar_vertices_finite:
+      "finite (geotop_complex_vertices (geotop_star K v))"
+    using geotop_fig410_link_and_star_vertices_finite_dev34
+      [OF hK hv hlink_finite]
+    by (by100 blast)
+  have hiso_star_target: "geotop_isomorphism (geotop_star K v) L' \<phi>"
+  proof -
+    have hiso_raw:
+        "geotop_isomorphism (geotop_star K v) L'
+          (\<lambda>x. if x = v then c else \<psi> x)"
+      by (rule_tac geotop_star_fan_isomorphism_from_link_and_cone_target_cases_dev34
+          [OF hK hv h\<psi> hcB hvertices hstar_vertices_finite hlink_target
+            hc_simplex hcone_target])
+    have h\<phi>_eq: "\<phi> = (\<lambda>x. if x = v then c else \<psi> x)"
+      using \<phi>_def by (by100 blast)
+    show ?thesis
+      using hiso_raw h\<phi>_eq by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
