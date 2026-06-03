@@ -13497,6 +13497,26 @@ proof -
     using hPLH_star unfolding geotop_PLH_def by (by100 blast)
   have hc_target_poly: "c \<in> geotop_polyhedron L'"
     using hc_target interior_subset by (by100 blast)
+  obtain r where hr_pos: "0 < r"
+    and hball_c_target: "ball c r \<subseteq> geotop_polyhedron L'"
+  proof -
+    have hopen_int: "open (interior (geotop_polyhedron L'))"
+      by (rule open_interior)
+    have hall_ball:
+        "\<forall>x\<in>interior (geotop_polyhedron L').
+          \<exists>e>0. ball x e \<subseteq> interior (geotop_polyhedron L')"
+      using hopen_int unfolding open_contains_ball by (by100 simp)
+    have hex_ball:
+        "\<exists>r>0. ball c r \<subseteq> interior (geotop_polyhedron L')"
+      using hall_ball hc_target by (by100 blast)
+    obtain r where hr: "0 < r"
+      and hball_int: "ball c r \<subseteq> interior (geotop_polyhedron L')"
+      using hex_ball by (by100 blast)
+    have hball_target: "ball c r \<subseteq> geotop_polyhedron L'"
+      using hball_int interior_subset by (by100 blast)
+    show ?thesis
+      by (rule that[OF hr hball_target])
+  qed
   have hv_star_poly: "v \<in> geotop_polyhedron (geotop_star K v)"
     using hv_star_vertex geotop_complex_vertices_subset_polyhedron_dev34
     by (by100 blast)
