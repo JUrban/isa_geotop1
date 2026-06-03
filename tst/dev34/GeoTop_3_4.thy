@@ -4007,6 +4007,56 @@ lemma geotop_boundary_subdivision_hull_simplex_misses_interior_point_dev34:
   by (rule geotop_boundary_subdivision_simplex_misses_interior_point_dev34
       [OF h\<sigma> hsub hc hA])
 
+lemma geotop_boundary_subdivision_simplex_affine_hull_misses_interior_point_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "A \<in> F"
+  shows "c \<notin> affine hull A"
+proof
+  assume hc_aff_A: "c \<in> affine hull A"
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  have href: "geotop_refines F ?B"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  obtain \<rho> where h\<rho>B: "\<rho> \<in> ?B" and hA\<rho>: "A \<subseteq> \<rho>"
+    using href hA unfolding geotop_refines_def by (by100 blast)
+  have hproper: "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
+    by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34
+        [OF h\<sigma> h\<rho>B])
+  have hface: "geotop_is_face \<rho> \<sigma>"
+    using hproper by (by100 blast)
+  have hne: "\<rho> \<noteq> \<sigma>"
+    using hproper by (by100 blast)
+  have hface_HOL: "\<rho> face_of \<sigma>"
+    by (rule geotop_is_face_imp_HOL_face_of_R2[OF hface])
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have h\<sigma>conv: "convex \<sigma>"
+    by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex])
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  have hc_rel: "c \<in> rel_interior \<sigma>"
+    using hc hrel_eq_int by (by100 simp)
+  have hdisj: "affine hull \<rho> \<inter> rel_interior \<sigma> = {}"
+    by (rule affine_hull_face_of_disjoint_rel_interior
+        [OF h\<sigma>conv hface_HOL hne])
+  have hAff_sub: "affine hull A \<subseteq> affine hull \<rho>"
+    by (rule hull_mono[OF hA\<rho>])
+  have "c \<in> affine hull \<rho>"
+    using hAff_sub hc_aff_A by (by100 blast)
+  show False
+    using hdisj \<open>c \<in> affine hull \<rho>\<close> hc_rel by (by100 blast)
+qed
+
 lemma geotop_convex_hull_insert_contains_insert_point_dev34:
   fixes A :: "(real^2) set"
   shows "c \<in> geotop_convex_hull (insert c A)"
