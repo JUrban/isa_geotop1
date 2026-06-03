@@ -3807,6 +3807,72 @@ proof
   qed
 qed
 
+lemma geotop_boundary_cone_definition_members_subset_2simplex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes h\<tau>: "\<tau> \<in> L'"
+  shows "\<tau> \<subseteq> \<sigma>"
+proof -
+  have href: "geotop_refines L' {\<rho>. geotop_is_face \<rho> \<sigma> \<or> \<rho> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_refines_2simplex_face_complex_dev34
+        [OF h\<sigma> hsub hc hL])
+  have href_unfold:
+      "\<forall>g\<in>L'. \<exists>h\<in>{\<rho>. geotop_is_face \<rho> \<sigma> \<or> \<rho> = \<sigma>}. g \<subseteq> h"
+    using href unfolding geotop_refines_def by (by100 simp)
+  obtain \<rho> where h\<rho>: "\<rho> \<in> {\<rho>. geotop_is_face \<rho> \<sigma> \<or> \<rho> = \<sigma>}"
+    and h\<tau>\<rho>: "\<tau> \<subseteq> \<rho>"
+    using href_unfold h\<tau> by (by100 fast)
+  have h\<rho>\<sigma>: "\<rho> \<subseteq> \<sigma>"
+  proof -
+    have "geotop_is_face \<rho> \<sigma> \<or> \<rho> = \<sigma>"
+      using h\<rho> by (by100 simp)
+    thus ?thesis
+    proof
+      assume hface: "geotop_is_face \<rho> \<sigma>"
+      show ?thesis
+        by (rule geotop_is_face_imp_subset[OF hface])
+    next
+      assume "\<rho> = \<sigma>"
+      show ?thesis
+        using \<open>\<rho> = \<sigma>\<close> by (by100 simp)
+    qed
+  qed
+  show ?thesis
+    using h\<tau>\<rho> h\<rho>\<sigma> by (by100 blast)
+qed
+
+lemma geotop_boundary_cone_definition_polyhedron_subset_2simplex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_polyhedron L' \<subseteq> \<sigma>"
+proof
+  fix x
+  assume hx: "x \<in> geotop_polyhedron L'"
+  obtain \<tau> where h\<tau>L: "\<tau> \<in> L'" and hx\<tau>: "x \<in> \<tau>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<tau>sub: "\<tau> \<subseteq> \<sigma>"
+    by (rule geotop_boundary_cone_definition_members_subset_2simplex_dev34
+        [OF h\<sigma> hsub hc hL h\<tau>L])
+  show "x \<in> \<sigma>"
+    using h\<tau>sub hx\<tau> by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
