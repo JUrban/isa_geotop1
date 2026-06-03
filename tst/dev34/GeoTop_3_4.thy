@@ -4476,6 +4476,31 @@ proof -
     using hL hF_fin hcones_fin by (by100 simp)
 qed
 
+lemma geotop_boundary_cone_definition_local_finite_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "\<forall>\<tau>\<in>L'. \<exists>U. open U \<and> \<tau> \<subseteq> U
+      \<and> finite {\<rho> \<in> L'. \<rho> \<inter> U \<noteq> {}}"
+proof
+  fix \<tau>
+  assume h\<tau>L: "\<tau> \<in> L'"
+  have hL_fin: "finite L'"
+    by (rule geotop_boundary_cone_definition_finite_dev34[OF h\<sigma> hsub hL])
+  have hmeet_sub: "{\<rho> \<in> L'. \<rho> \<inter> UNIV \<noteq> {}} \<subseteq> L'"
+    by (by100 blast)
+  have hmeet_fin: "finite {\<rho> \<in> L'. \<rho> \<inter> UNIV \<noteq> {}}"
+    by (rule finite_subset[OF hmeet_sub hL_fin])
+  show "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<rho> \<in> L'. \<rho> \<inter> U \<noteq> {}}"
+    using hmeet_fin by (intro exI[of _ UNIV]) (by100 simp)
+qed
+
 lemma geotop_boundary_cone_definition_target_complex_dev34:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
