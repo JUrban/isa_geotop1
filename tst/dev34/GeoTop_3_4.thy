@@ -13623,10 +13623,14 @@ proof -
   qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
+  have hfinv_cont_poly:
+      "continuous_on (geotop_polyhedron L')
+        (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+    sorry
   have hfinv_cont_ball:
       "continuous_on (ball c r)
         (inv_into (geotop_polyhedron (geotop_star K v)) f)"
-    sorry
+    by (rule continuous_on_subset[OF hfinv_cont_poly hball_c_target])
   have hfinv_inj_ball:
       "inj_on (inv_into (geotop_polyhedron (geotop_star K v)) f) (ball c r)"
   proof -
