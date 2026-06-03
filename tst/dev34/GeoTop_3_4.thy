@@ -3588,6 +3588,118 @@ proof -
     by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
 qed
 
+lemma geotop_connected_geotop_subspace_no_open_singleton_if_two_points_dev34:
+  fixes S :: "(real^2) set"
+  assumes hconn: "top1_connected_on S
+      (subspace_topology UNIV geotop_euclidean_topology S)"
+  assumes hpS: "p \<in> S"
+  assumes hqS: "q \<in> S"
+  assumes hpq: "p \<noteq> q"
+  shows "{p} \<notin> subspace_topology UNIV geotop_euclidean_topology S"
+proof
+  let ?T = "subspace_topology UNIV geotop_euclidean_topology S"
+  assume hp_open: "{p} \<in> ?T"
+  have htop: "is_topology_on S ?T"
+    using hconn unfolding top1_connected_on_def by (by100 blast)
+  have hp_subset: "{p} \<subseteq> S"
+    using hpS by (by100 blast)
+  have hclosed: "closedin_on S ?T {p}"
+    unfolding closedin_on_def
+  proof
+    show "S - {p} \<in> ?T"
+    proof -
+      have hopen_compl_univ: "open (UNIV - {p})"
+      proof -
+        have "closed ({p} :: (real^2) set)"
+          by (rule closed_singleton)
+        hence "open (- {p})"
+          by (rule open_Compl)
+        moreover have "(UNIV - {p} :: (real^2) set) = - {p}"
+          by (by100 blast)
+        thus ?thesis
+          using calculation by (by100 simp)
+      qed
+      have hSdiff: "S - {p} = (UNIV - {p}) \<inter> S"
+        by (by100 blast)
+      show ?thesis
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+          subspace_topology_def
+        using hopen_compl_univ hSdiff by (by100 blast)
+    qed
+  next
+    show "{p} \<subseteq> S"
+      by (rule hp_subset)
+  qed
+  have hp_ne: "{p} \<noteq> {}"
+    by (by100 simp)
+  have hp_eq_S: "{p} = S"
+    using connected_iff_clopen[OF htop] hconn hp_open hclosed hp_ne
+    by (by100 blast)
+  have "q \<in> {p}"
+    using hqS hp_eq_S by (by100 blast)
+  thus False
+    using hpq by (by100 simp)
+qed
+
+lemma geotop_finite_linear_graph_polygon_vertices_nonisolated_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hw_vertex: "w \<in> geotop_complex_vertices L"
+    using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] hwL
+    by (by100 blast)
+  have hw_poly: "w \<in> geotop_polyhedron L"
+    using hwL unfolding geotop_polyhedron_def by (by100 blast)
+  have hn_sphere: "geotop_is_n_sphere (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L)) 1"
+    using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+  have hnot_singleton_poly: "geotop_polyhedron L \<noteq> {w}"
+  proof
+    assume hpoly_eq: "geotop_polyhedron L = {w}"
+    have hnot_conn: "\<not> top1_connected_on (UNIV - geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - geotop_polyhedron L))"
+      by (rule Theorem_GT_4_3[OF hn_sphere])
+    have hconn_point: "top1_connected_on (UNIV - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - {w}))"
+      by (rule geotop_punctured_plane_connected)
+    show False
+      using hnot_conn hconn_point hpoly_eq by (by100 simp)
+  qed
+  obtain q where hq_poly: "q \<in> geotop_polyhedron L" and hqw: "q \<noteq> w"
+    using hnot_singleton_poly hw_poly by (by100 blast)
+  have hwq: "w \<noteq> q"
+    using hqw by (by100 blast)
+  have hconn: "top1_connected_on (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using geotop_finite_linear_graph_polygon_polyhedron_connected_dev34
+      [OF hL_linear hpolygon]
+      geotop_complex_connected_top1_connected_polyhedron_dev34
+    by (by100 blast)
+  show "\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e"
+  proof (rule ccontr)
+    assume hno: "\<not> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    have hno_edge: "\<not> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+      by (rule hno)
+    have hsingle_open: "{w} \<in> subspace_topology UNIV
+        geotop_euclidean_topology (geotop_polyhedron L)"
+      by (rule geotop_complex_no_incident_edge_vertex_open_singleton
+          [OF hL_complex hw_vertex hno_edge])
+    have hsingle_not_open: "{w} \<notin> subspace_topology UNIV
+        geotop_euclidean_topology (geotop_polyhedron L)"
+      by (rule geotop_connected_geotop_subspace_no_open_singleton_if_two_points_dev34
+          [OF hconn hw_poly hq_poly hwq])
+    show False
+      using hsingle_open hsingle_not_open by (by100 blast)
+  qed
+qed
+
 lemma geotop_polygon_not_broken_line_dev34:
   fixes J :: "(real^2) set"
   assumes hpolygon: "geotop_is_polygon J"
