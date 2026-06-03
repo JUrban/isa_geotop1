@@ -12918,7 +12918,29 @@ lemma geotop_2cell_chart_1sphere_jordan_transfer_core_dev34:
     Core boundary-chart Jordan transfer.  Transport the 2-cell closure of
     \<open>U\<close> to a 2-simplex, identify the open chart part with its disk interior,
     and apply the Jordan curve theorem to the image of the 1-sphere \<open>J\<close>. **)
-  sorry
+proof -
+  let ?T = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+  let ?C = "closure_on M ?T U"
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUsubC: "U \<subseteq> ?C"
+    by (rule subset_closure_on)
+  have hJsubC: "J \<subseteq> ?C"
+    using hJsub hUsubC by (by100 blast)
+  have hJ_image_sphere: "geotop_is_n_sphere (\<phi> ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1"
+    sorry
+  have hsimplex_chart_sep:
+      "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+    sorry
+  have hpullback_sep:
+      "\<not> top1_connected_on (U - J)
+        (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    sorry
+  show ?thesis
+    using hpullback_sep .
+qed
 
 lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
   fixes M U J :: "(real^2) set"
