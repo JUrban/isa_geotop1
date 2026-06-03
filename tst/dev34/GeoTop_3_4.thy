@@ -3272,6 +3272,24 @@ proof -
     using hvertices hpoly by (by100 simp)
 qed
 
+lemma geotop_subdivision_source_is_complex_dev34:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "geotop_is_complex K'"
+  using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+
+lemma geotop_subdivision_target_is_complex_dev34:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "geotop_is_complex K"
+  using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+
+lemma geotop_subdivision_polyhedron_eq_dev34:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "geotop_polyhedron K' = geotop_polyhedron K"
+  using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+
 lemma geotop_comb_boundary_subset_complex_dev34:
   fixes K :: "'a::real_normed_vector set set"
   assumes hK: "geotop_is_complex K"
