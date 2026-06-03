@@ -9476,6 +9476,43 @@ proof -
     thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
       using hisolate by (by100 blast)
   qed
+  have hp_\<sigma>1: "p \<in> \<sigma>1"
+    using geotop_is_face_imp_subset[OF h\<sigma>1face] hp_e by (by100 blast)
+  have hp_\<sigma>2: "p \<in> \<sigma>2"
+    using geotop_is_face_imp_subset[OF h\<sigma>2face] hp_e by (by100 blast)
+  have hp_\<sigma>3: "p \<in> \<sigma>3"
+    using geotop_is_face_imp_subset[OF h\<sigma>3face] hp_e by (by100 blast)
+  have h\<sigma>1subM: "\<sigma>1 \<subseteq> geotop_polyhedron K"
+    using h\<sigma>1K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>2subM: "\<sigma>2 \<subseteq> geotop_polyhedron K"
+    using h\<sigma>2K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>3subM: "\<sigma>3 \<subseteq> geotop_polyhedron K"
+    using h\<sigma>3K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>1_local_U: "ball p s \<inter> \<sigma>1 \<subseteq> U"
+  proof -
+    have "ball p s \<inter> \<sigma>1 \<subseteq> geotop_polyhedron K \<inter> ball p s"
+      using h\<sigma>1subM by (by100 blast)
+    thus ?thesis
+      using hballU_s by (by100 blast)
+  qed
+  have h\<sigma>2_local_U: "ball p s \<inter> \<sigma>2 \<subseteq> U"
+  proof -
+    have "ball p s \<inter> \<sigma>2 \<subseteq> geotop_polyhedron K \<inter> ball p s"
+      using h\<sigma>2subM by (by100 blast)
+    thus ?thesis
+      using hballU_s by (by100 blast)
+  qed
+  have h\<sigma>3_local_U: "ball p s \<inter> \<sigma>3 \<subseteq> U"
+  proof -
+    have "ball p s \<inter> \<sigma>3 \<subseteq> geotop_polyhedron K \<inter> ball p s"
+      using h\<sigma>3subM by (by100 blast)
+    thus ?thesis
+      using hballU_s by (by100 blast)
+  qed
+  have h\<sigma>12_local_U: "ball p s \<inter> (\<sigma>1 \<union> \<sigma>2) \<subseteq> U"
+    using h\<sigma>1_local_U h\<sigma>2_local_U by (by100 blast)
+  have h\<sigma>123_local_U: "ball p s \<inter> (\<sigma>1 \<union> \<sigma>2 \<union> \<sigma>3) \<subseteq> U"
+    using h\<sigma>1_local_U h\<sigma>2_local_U h\<sigma>3_local_U by (by100 blast)
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
