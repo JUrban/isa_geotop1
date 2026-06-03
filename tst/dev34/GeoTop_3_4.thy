@@ -3762,6 +3762,19 @@ lemma geotop_boundary_cone_definition_member_cases_dev34:
       \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
   using hL h\<tau> by (by100 blast)
 
+lemma geotop_boundary_cone_definition_member_cases_without_new_singleton_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes h\<tau>: "\<tau> \<in> L'"
+  assumes hnot: "\<tau> \<noteq> geotop_convex_hull {c}"
+  shows "\<tau> \<in> F
+      \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+  using geotop_boundary_cone_definition_member_cases_dev34[OF hL h\<tau>] hnot
+  by (by100 blast)
+
 lemma geotop_boundary_cone_definition_new_vertex_in_vertices_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
