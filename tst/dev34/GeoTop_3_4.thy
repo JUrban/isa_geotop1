@@ -3305,6 +3305,50 @@ proof -
     by (rule geotop_degree_two_vertices_no_graph_endpoint_dev34[OF hdegree2])
 qed
 
+lemma geotop_finite_linear_graph_polygon_degree_one_or_two_degree_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  (**
+    Fig. 4.10 cycle prerequisite with connectedness discharged from the
+    polygonal carrier: once the local Lemmas 2--4 give degree one or two,
+    the polygon alternative forces the degree-two cycle case. **)
+proof -
+  have hconn: "geotop_complex_connected L"
+    by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_dev34
+        [OF hL hpolygon])
+  show ?thesis
+    by (rule geotop_finite_connected_degree_one_or_two_polygon_degree_two_dev34
+        [OF hL hfin hconn hdegree12 hpolygon])
+qed
+
+lemma geotop_finite_linear_graph_polygon_degree_one_or_two_no_endpoint_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  (**
+    No-endpoint form of the same Fig. 4.10 cycle prerequisite, again with
+    connectedness obtained from the polygonal carrier. **)
+proof -
+  have hdegree2: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_finite_linear_graph_polygon_degree_one_or_two_degree_two_dev34
+        [OF hL hfin hdegree12 hpolygon])
+  show ?thesis
+    by (rule geotop_degree_two_vertices_no_graph_endpoint_dev34[OF hdegree2])
+qed
+
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
