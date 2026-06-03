@@ -3646,6 +3646,44 @@ proof -
     using hc hFsub by (by100 blast)
 qed
 
+lemma geotop_fig410_explicit_cone_basic_data_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hboundary:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>L' c.
+      c \<in> interior \<sigma>
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> L' =
+        insert (geotop_convex_hull {c})
+          (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> insert c (geotop_complex_vertices F) \<subseteq> geotop_complex_vertices L'"
+proof -
+  obtain c where hc_int: "c \<in> interior \<sigma>"
+    and hc_new: "c \<notin> geotop_complex_vertices F"
+    using geotop_boundary_subdivision_new_interior_vertex_exists_dev34
+      [OF h\<sigma> hboundary]
+    by (by100 blast)
+  let ?L' =
+    "insert (geotop_convex_hull {c})
+      (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  have hL_def:
+    "?L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+    by (by100 simp)
+  have hc_simplex: "geotop_convex_hull {c} \<in> ?L'"
+    by (rule geotop_boundary_cone_definition_contains_new_vertex_dev34[OF hL_def])
+  have hvertices_contains:
+      "insert c (geotop_complex_vertices F) \<subseteq> geotop_complex_vertices ?L'"
+    by (rule geotop_boundary_cone_definition_vertices_contains_dev34[OF hL_def])
+  show ?thesis
+    using hc_int hc_new hL_def hc_simplex hvertices_contains
+    by (intro exI[of _ ?L'] exI[of _ c]) (intro conjI; assumption)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
