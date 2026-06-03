@@ -3695,6 +3695,57 @@ proof
     using hc_not_A ha \<open>a = c\<close> by (by100 blast)
 qed
 
+lemma geotop_boundary_subdivision_simplex_subset_2simplex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hA: "A \<in> F"
+  shows "A \<subseteq> \<sigma>"
+proof -
+  have href:
+      "geotop_refines F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+  obtain \<rho> where h\<rho>:
+      "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+    and hA\<rho>: "A \<subseteq> \<rho>"
+    using href hA unfolding geotop_refines_def by (by100 blast)
+  have hproper: "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
+    by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34[OF h\<sigma> h\<rho>])
+  have h\<rho>sub: "\<rho> \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF conjunct1[OF hproper]])
+  show ?thesis
+    using hA\<rho> h\<rho>sub by (by100 blast)
+qed
+
+lemma geotop_boundary_subdivision_cone_hull_subset_2simplex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "A \<in> F"
+  shows "geotop_convex_hull (insert c A) \<subseteq> \<sigma>"
+proof -
+  have hA\<sigma>: "A \<subseteq> \<sigma>"
+    by (rule geotop_boundary_subdivision_simplex_subset_2simplex_dev34
+        [OF h\<sigma> hsub hA])
+  have hc\<sigma>: "c \<in> \<sigma>"
+    using hc interior_subset by (by100 blast)
+  have hinsert: "insert c A \<subseteq> \<sigma>"
+    using hA\<sigma> hc\<sigma> by (by100 blast)
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hHOL: "convex hull (insert c A) \<subseteq> \<sigma>"
+    by (rule GeoTopBase0.geotop_finite_subset_simplex_hull_subset
+        [OF h\<sigma>simplex hinsert])
+  show ?thesis
+    using hHOL geotop_convex_hull_eq_HOL[of "insert c A"] by (by100 simp)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
