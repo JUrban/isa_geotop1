@@ -3662,6 +3662,49 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_rel_frontier_subset_comb_boundary_polyhedron_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "rel_frontier \<sigma> \<subseteq>
+    geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+proof
+  fix x
+  assume hx: "x \<in> rel_frontier \<sigma>"
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  have h\<sigma>polytope: "polytope \<sigma>"
+    unfolding polytope_def using hV_fin h\<sigma>_HOL by (by100 blast)
+  have h\<sigma>polyhedron: "polyhedron \<sigma>"
+    by (rule polytope_imp_polyhedron[OF h\<sigma>polytope])
+  obtain F where hF_face: "F face_of \<sigma>"
+    and hF_ne: "F \<noteq> \<sigma>"
+    and hxF: "x \<in> F"
+    using hx rel_frontier_of_polyhedron_alt[OF h\<sigma>polyhedron]
+    by (by100 blast)
+  have hF_nonempty: "F \<noteq> {}"
+    using hxF by (by100 blast)
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hF_geotop: "geotop_is_face F \<sigma>"
+    by (rule geotop_HOL_face_of_simplex_imp_geotop_is_face_R2
+        [OF h\<sigma>simplex hF_face hF_nonempty])
+  have hF_boundary:
+      "F \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+    by (rule geotop_2simplex_proper_face_in_comb_boundary_dev34
+        [OF h\<sigma> hF_geotop hF_ne])
+  show "x \<in>
+    geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    unfolding geotop_polyhedron_def using hF_boundary hxF by (by100 blast)
+qed
+
 lemma geotop_2simplex_comb_boundary_polyhedron_disjoint_HOL_interior_dev34:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
