@@ -8517,6 +8517,46 @@ proof -
     using hUopen hpU hhomeo_geo by (by100 blast)
 qed
 
+lemma geotop_manifold_interior_geo_chart_at_dev34:
+  fixes M :: "(real^2) set" and p :: "real^2"
+  assumes hpint: "p \<in> geotop_manifold_interior M (\<lambda>x y. norm (x - y))"
+  shows "\<exists>U f. openin_on M
+        (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U
+      \<and> p \<in> U
+      \<and> top1_homeomorphism_on U
+        (subspace_topology UNIV geotop_euclidean_topology U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+proof -
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on M ?d"
+  obtain U f where hUopen: "openin_on M ?TM U"
+    and hpU: "p \<in> U"
+    and hhomeo_metric: "top1_homeomorphism_on U
+        (subspace_topology M ?TM U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hpint unfolding geotop_manifold_interior_def by (by100 blast)
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hsource_eq: "subspace_topology M ?TM U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    have htrans: "subspace_topology M
+        (subspace_topology UNIV geotop_euclidean_topology M) U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+      by (rule subspace_topology_trans[OF hUsubM])
+    show ?thesis
+      using hTM_eq htrans by (by100 simp)
+  qed
+  have hhomeo_geo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hhomeo_metric hsource_eq by (by100 simp)
+  show ?thesis
+    using hUopen hpU hhomeo_geo by (by100 blast)
+qed
+
 lemma top1_homeomorphism_on_subspace_image_dev34:
   assumes hhomeo: "top1_homeomorphism_on X TX Y TY f"
   assumes hA: "A \<subseteq> X"
@@ -14281,28 +14321,11 @@ proof
     assume hpint: "p \<in> geotop_manifold_interior ?M ?d"
     obtain U f where hUopen: "openin_on ?M ?TM U"
       and hpU: "p \<in> U"
-      and hhomeo_metric: "top1_homeomorphism_on U
-          (subspace_topology ?M ?TM U)
+      and hhomeo_geo: "top1_homeomorphism_on U
+          (subspace_topology UNIV geotop_euclidean_topology U)
           (UNIV::(real^2) set) geotop_euclidean_topology f"
-      using hpint unfolding geotop_manifold_interior_def by (by100 blast)
-    have hUsubM: "U \<subseteq> ?M"
-      using hUopen unfolding openin_on_def by (by100 blast)
-    have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
-      by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
-    have hsource_eq: "subspace_topology ?M ?TM U =
-        subspace_topology UNIV geotop_euclidean_topology U"
-    proof -
-      have htrans: "subspace_topology ?M
-          (subspace_topology UNIV geotop_euclidean_topology ?M) U =
-        subspace_topology UNIV geotop_euclidean_topology U"
-        by (rule subspace_topology_trans[OF hUsubM])
-      show ?thesis
-        using hTM_eq htrans by (by100 simp)
-    qed
-    have hhomeo_geo: "top1_homeomorphism_on U
-        (subspace_topology UNIV geotop_euclidean_topology U)
-        (UNIV::(real^2) set) geotop_euclidean_topology f"
-      using hhomeo_metric hsource_eq by (by100 simp)
+      using geotop_manifold_interior_geo_chart_at_dev34[OF hpint]
+      by (by100 blast)
     obtain A where hAsubU: "A \<subseteq> U"
       and hAimg: "geotop_is_arc (f ` A)
           (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
