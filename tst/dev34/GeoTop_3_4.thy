@@ -5903,6 +5903,34 @@ proof -
     using hsimplexes hfaces hintersections hlocal by (by100 blast)
 qed
 
+lemma geotop_boundary_cone_definition_is_subdivision_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have hsource: "geotop_is_complex L'"
+    by (rule geotop_boundary_cone_definition_source_complex_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hrest:
+      "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_refines L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_polyhedron L'
+        = geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_subdivision_obligations_except_source_complex_dev34
+        [OF h\<sigma> hsub hc hL])
+  show ?thesis
+    unfolding geotop_is_subdivision_def
+    using hsource hrest by (by100 blast)
+qed
+
 lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
