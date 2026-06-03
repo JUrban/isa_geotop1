@@ -3305,6 +3305,76 @@ proof
   qed
 qed
 
+lemma geotop_2simplex_comb_boundary_member_proper_face_dev34:
+  fixes \<sigma> \<rho> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<rho>:
+    "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  shows "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
+  (**
+    In the face complex of a 2-simplex, every simplex of the combinatorial
+    boundary is a proper face of the top 2-simplex. **)
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
+      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
+  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
+  have hS_proper: "\<forall>\<tau>\<in>?S. geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
+  proof
+    fix \<tau>
+    assume h\<tau>S: "\<tau> \<in> ?S"
+    have h\<tau>K: "\<tau> \<in> ?K"
+      using h\<tau>S by (by100 blast)
+    have h\<tau>dim1: "geotop_simplex_dim \<tau> 1"
+      using h\<tau>S by (by100 simp)
+    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
+    proof
+      assume h\<tau>eq: "\<tau> = \<sigma>"
+      have h\<tau>dim2: "geotop_simplex_dim \<tau> 2"
+        using h\<sigma> h\<tau>eq by (by100 simp)
+      have h12: "(1::nat) = 2"
+        by (rule geotop_simplex_dim_unique[OF h\<tau>dim1 h\<tau>dim2])
+      show False
+        using h12 by (by100 simp)
+    qed
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      using h\<tau>K h\<tau>ne\<sigma> by (by100 blast)
+    show "geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
+      using h\<tau>\<sigma> h\<tau>ne\<sigma> by (by100 blast)
+  qed
+  show ?thesis
+  proof (rule UnE[OF h\<rho>_cases])
+    assume h\<rho>S: "\<rho> \<in> ?S"
+    show ?thesis
+      using hS_proper h\<rho>S by (by100 blast)
+  next
+    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+      by (by100 blast)
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      using hS_proper h\<tau>S by (by100 blast)
+    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
+      using hS_proper h\<tau>S by (by100 blast)
+    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
+      by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
+    have h\<rho>ne\<sigma>: "\<rho> \<noteq> \<sigma>"
+    proof
+      assume h\<rho>eq: "\<rho> = \<sigma>"
+      have h\<sigma>sub\<tau>: "\<sigma> \<subseteq> \<tau>"
+        using geotop_is_face_imp_subset[OF h\<rho>\<tau>] h\<rho>eq by (by100 simp)
+      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
+      have "\<tau> = \<sigma>"
+        using h\<sigma>sub\<tau> h\<tau>sub\<sigma> by (by100 blast)
+      show False
+        using h\<tau>ne\<sigma> \<open>\<tau> = \<sigma>\<close> by (by100 blast)
+    qed
+    show ?thesis
+      using h\<rho>\<sigma> h\<rho>ne\<sigma> by (by100 blast)
+  qed
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
