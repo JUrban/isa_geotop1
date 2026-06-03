@@ -7614,6 +7614,101 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_with_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(\<sigma> :: (real^2) set) F L' B c \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> c \<in> interior \<sigma>
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F))
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Boundary-cone model with the new fan vertex explicitly retained in the
+    interior of the target 2-simplex. **)
+proof -
+  obtain \<sigma> :: "(real^2) set" and F L' c \<psi>
+    where hmodel:
+      "geotop_simplex_dim \<sigma> 2
+      \<and> c \<in> interior \<sigma>
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_isomorphism (geotop_link K v) F \<psi>
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    using geotop_standard_boundary_cone_fan_with_link_isomorphism_from_finite_linear_link_polygon_with_interior_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
+    by (elim exE) assumption
+  have hdim: "geotop_simplex_dim \<sigma> 2"
+    using hmodel by (by100 simp)
+  have hc_int: "c \<in> interior \<sigma>"
+    using hmodel by (by100 simp)
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hmodel by (by100 simp)
+  have hiso: "geotop_isomorphism (geotop_link K v) F \<psi>"
+    using hmodel by (by100 simp)
+  have h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v))
+      (geotop_complex_vertices F)"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  have hcB: "c \<notin> geotop_complex_vertices F"
+    using hmodel by (by100 simp)
+  have hL_vertices:
+      "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
+    using hmodel by (by100 simp)
+  have hcone_vertex_target: "geotop_convex_hull {c} \<in> L'"
+    using hmodel by (by100 simp)
+  have hboundary_target:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F)"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  have hboundary_in_fan:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+    using hmodel by (by100 simp)
+  have hcone_target:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+    using hmodel by (by100 simp)
+  show ?thesis
+    apply (rule_tac x=\<sigma> in exI)
+    apply (rule_tac x=F in exI)
+    apply (rule_tac x=L' in exI)
+    apply (rule_tac x="geotop_complex_vertices F" in exI)
+    apply (rule_tac x=c in exI)
+    apply (rule_tac x=\<psi> in exI)
+    using hdim hc_int hsubdiv h\<psi> hcB hL_vertices hcone_vertex_target
+      hboundary_target hboundary_in_fan hcone_target
+    by (by100 simp)
+qed
+
 
 lemma geotop_standard_fan_target_from_finite_linear_link_polygon_dev34:
   fixes K :: "(real^2) set set"
@@ -7716,6 +7811,115 @@ proof -
   show ?thesis
     using hdim hsubdiv h\<psi> hcB hL_vertices hcone_vertex_target
       hlink_target hcone_target by (by100 blast)
+qed
+
+lemma geotop_standard_fan_target_from_finite_linear_link_polygon_with_interior_dev34:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hv: "v \<in> geotop_complex_vertices K"
+  assumes hlink_linear: "geotop_is_linear_graph (geotop_link K v)"
+  assumes hlink_finite: "finite (geotop_link K v)"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron (geotop_link K v))"
+  shows "\<exists>(\<sigma> :: (real^2) set) L' B c \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> c \<in> interior \<sigma>
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Fig. 4.10 fan target data with the intermediate boundary complex removed,
+    retaining that the cone vertex is an ordinary interior point of the target
+    2-simplex. **)
+proof -
+  obtain \<sigma> :: "(real^2) set" and F L' B c \<psi>
+    where hmodel:
+      "geotop_simplex_dim \<sigma> 2
+      \<and> c \<in> interior \<sigma>
+      \<and> geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F))
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    using geotop_standard_boundary_cone_model_from_finite_linear_link_polygon_with_interior_dev34
+      [OF hK hv hlink_linear hlink_finite hpolygon]
+    by (elim exE) assumption
+  have hdim: "geotop_simplex_dim \<sigma> 2"
+    using hmodel by (by100 simp)
+  have hc_int: "c \<in> interior \<sigma>"
+    using hmodel by (by100 simp)
+  have hsubdiv:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hmodel by (by100 simp)
+  have h\<psi>: "bij_betw \<psi> (geotop_complex_vertices (geotop_link K v)) B"
+    using hmodel by (by100 simp)
+  have hcB: "c \<notin> B"
+    using hmodel by (by100 simp)
+  have hL_vertices: "geotop_complex_vertices L' = insert c B"
+    using hmodel by (by100 simp)
+  have hcone_vertex_target: "geotop_convex_hull {c} \<in> L'"
+    using hmodel by (by100 simp)
+  have hboundary_target:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F)"
+    using hmodel by (by100 simp)
+  have hboundary_in_fan:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+    using hmodel by (by100 simp)
+  have hcone_target:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+    using hmodel by (by100 simp)
+  have hlink_target:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices (geotop_link K v) \<longrightarrow>
+        (geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+  proof (intro allI impI)
+    fix W
+    assume hW: "W \<subseteq> geotop_complex_vertices (geotop_link K v)"
+    have hWF:
+        "geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F"
+      using hboundary_target hW by (by100 blast)
+    have hFL:
+        "geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'"
+      using hboundary_in_fan hW by (by100 blast)
+    show "geotop_convex_hull W \<in> geotop_link K v
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'"
+      using hWF hFL by (by100 blast)
+  qed
+  show ?thesis
+    apply (rule_tac x=\<sigma> in exI)
+    apply (rule_tac x=L' in exI)
+    apply (rule_tac x=B in exI)
+    apply (rule_tac x=c in exI)
+    apply (rule_tac x=\<psi> in exI)
+    using hdim hc_int hsubdiv h\<psi> hcB hL_vertices hcone_vertex_target
+      hlink_target hcone_target by (by100 simp)
 qed
 
 lemma geotop_vertex_star_standard_fan_isomorphism_from_finite_linear_link_polygon_dev34:
