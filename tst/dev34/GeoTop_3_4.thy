@@ -8476,6 +8476,47 @@ proof -
     using hr_pos hball hUeq by (intro exI[of _ r]) (by100 blast)
 qed
 
+lemma geotop_polyhedron_2_manifold_geo_chart_at_dev34:
+  fixes K :: "(real^2) set set" and p :: "real^2"
+  assumes hM: "geotop_n_manifold_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y)) 2"
+  assumes hpM: "p \<in> geotop_polyhedron K"
+  shows "\<exists>U f. openin_on (geotop_polyhedron K)
+        (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U
+      \<and> p \<in> U
+      \<and> top1_homeomorphism_on U
+        (subspace_topology UNIV geotop_euclidean_topology U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+proof -
+  let ?M = "geotop_polyhedron K"
+  let ?d = "\<lambda>x y. norm (x - y)"
+  let ?TM = "top1_metric_topology_on ?M ?d"
+  obtain U f where hUopen: "openin_on ?M ?TM U"
+    and hpU: "p \<in> U"
+    and hhomeo_metric: "top1_homeomorphism_on U (subspace_topology ?M ?TM U)
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
+  have hUsubM: "U \<subseteq> ?M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
+    by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
+  have hsource_eq: "subspace_topology ?M ?TM U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+  proof -
+    have htrans: "subspace_topology ?M
+        (subspace_topology UNIV geotop_euclidean_topology ?M) U =
+      subspace_topology UNIV geotop_euclidean_topology U"
+      by (rule subspace_topology_trans[OF hUsubM])
+    show ?thesis
+      using hTM_eq htrans by (by100 simp)
+  qed
+  have hhomeo_geo: "top1_homeomorphism_on U
+      (subspace_topology UNIV geotop_euclidean_topology U)
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hhomeo_metric hsource_eq by (by100 simp)
+  show ?thesis
+    using hUopen hpU hhomeo_geo by (by100 blast)
+qed
+
 lemma top1_homeomorphism_on_subspace_image_dev34:
   assumes hhomeo: "top1_homeomorphism_on X TX Y TY f"
   assumes hA: "A \<subseteq> X"
@@ -9158,31 +9199,14 @@ proof
       have hpM: "p \<in> geotop_polyhedron K"
         using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
       let ?M = "geotop_polyhedron K"
-      let ?d = "\<lambda>x y. norm (x - y)"
-      let ?TM = "top1_metric_topology_on ?M ?d"
+      let ?TM = "top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))"
       obtain U f where hUopen: "openin_on ?M ?TM U"
         and hpU: "p \<in> U"
-        and hhomeo_metric: "top1_homeomorphism_on U (subspace_topology ?M ?TM U)
+        and hhomeo_geo: "top1_homeomorphism_on U
+            (subspace_topology UNIV geotop_euclidean_topology U)
             (UNIV::(real^2) set) geotop_euclidean_topology f"
-        using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
-      have hUsubM: "U \<subseteq> ?M"
-        using hUopen unfolding openin_on_def by (by100 blast)
-      have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
-        by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
-      have hsource_eq: "subspace_topology ?M ?TM U =
-          subspace_topology UNIV geotop_euclidean_topology U"
-      proof -
-        have htrans: "subspace_topology ?M
-            (subspace_topology UNIV geotop_euclidean_topology ?M) U =
-          subspace_topology UNIV geotop_euclidean_topology U"
-          by (rule subspace_topology_trans[OF hUsubM])
-        show ?thesis
-          using hTM_eq htrans by (by100 simp)
-      qed
-      have hhomeo_geo: "top1_homeomorphism_on U
-          (subspace_topology UNIV geotop_euclidean_topology U)
-          (UNIV::(real^2) set) geotop_euclidean_topology f"
-        using hhomeo_metric hsource_eq by (by100 simp)
+        using geotop_polyhedron_2_manifold_geo_chart_at_dev34[OF hM hpM]
+        by (by100 blast)
       obtain A where hAsubU: "A \<subseteq> U"
         and hAimg: "geotop_is_arc (f ` A)
             (subspace_topology UNIV geotop_euclidean_topology (f ` A))"
@@ -9260,31 +9284,14 @@ proof
           have hpM: "p \<in> geotop_polyhedron K"
             using heK hp rel_interior_subset unfolding geotop_polyhedron_def by (by100 blast)
           let ?M = "geotop_polyhedron K"
-          let ?d = "\<lambda>x y. norm (x - y)"
-          let ?TM = "top1_metric_topology_on ?M ?d"
+          let ?TM = "top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))"
           obtain U f where hUopen: "openin_on ?M ?TM U"
             and hpU: "p \<in> U"
-            and hhomeo_metric: "top1_homeomorphism_on U (subspace_topology ?M ?TM U)
+            and hhomeo_geo: "top1_homeomorphism_on U
+                (subspace_topology UNIV geotop_euclidean_topology U)
                 (UNIV::(real^2) set) geotop_euclidean_topology f"
-            using hM hpM unfolding geotop_n_manifold_on_def by (by100 blast)
-          have hUsubM: "U \<subseteq> ?M"
-            using hUopen unfolding openin_on_def by (by100 blast)
-          have hTM_eq: "?TM = subspace_topology UNIV geotop_euclidean_topology ?M"
-            by (rule top1_norm_metric_topology_on_eq_geotop_subspace_R2_dev34)
-          have hsource_eq: "subspace_topology ?M ?TM U =
-              subspace_topology UNIV geotop_euclidean_topology U"
-          proof -
-            have htrans: "subspace_topology ?M
-                (subspace_topology UNIV geotop_euclidean_topology ?M) U =
-              subspace_topology UNIV geotop_euclidean_topology U"
-              by (rule subspace_topology_trans[OF hUsubM])
-            show ?thesis
-              using hTM_eq htrans by (by100 simp)
-          qed
-          have hhomeo_geo: "top1_homeomorphism_on U
-              (subspace_topology UNIV geotop_euclidean_topology U)
-              (UNIV::(real^2) set) geotop_euclidean_topology f"
-            using hhomeo_metric hsource_eq by (by100 simp)
+            using geotop_polyhedron_2_manifold_geo_chart_at_dev34[OF hM hpM]
+            by (by100 blast)
           obtain J where hJsubU: "J \<subseteq> U"
             and hJimg_sphere: "geotop_is_n_sphere (f ` J)
                 (subspace_topology UNIV geotop_euclidean_topology (f ` J)) 1"
