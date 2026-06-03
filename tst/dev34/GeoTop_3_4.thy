@@ -8922,6 +8922,8 @@ qed
 
 lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
   fixes M U J :: "(real^2) set"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
   assumes hcell: "geotop_is_n_cell (closure_on M
         (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
       (subspace_topology M
@@ -8951,6 +8953,8 @@ lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
       \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
       \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hUopen: "openin_on (geotop_polyhedron K)
+      (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
   assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   assumes hcell: "geotop_is_n_cell (closure_on (geotop_polyhedron K)
@@ -8973,7 +8977,7 @@ proof -
   have hJnotconn: "\<not> top1_connected_on (U - J)
       (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     by (rule geotop_2cell_chart_1sphere_complement_not_connected_dev34
-        [OF hcell hJsub hJsphere])
+        [OF hUopen hcell hJsub hJsphere])
   show False
     using hJconn hJnotconn by (by100 blast)
 qed
@@ -9008,7 +9012,7 @@ proof -
     using hUopen unfolding openin_on_def by (by100 blast)
   show False
     by (rule geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34
-        [OF hK heK hedge hp hfaces hlocal_ball hUsubM hcell])
+        [OF hK heK hedge hp hfaces hUopen hlocal_ball hUsubM hcell])
 qed
 
 (** from \<S>4 Theorem 8 (geotop.tex:1020)
