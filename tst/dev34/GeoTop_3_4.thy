@@ -4732,6 +4732,78 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_boundary_subdivision_old_face_is_face_of_cone_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hB: "B \<in> F"
+  assumes hface: "geotop_is_face D B"
+  shows "geotop_is_face D (geotop_convex_hull (insert c B))"
+proof -
+  obtain V W where hBV: "geotop_simplex_vertices B V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and hD_eq: "D = geotop_convex_hull W"
+    and hDW: "geotop_simplex_vertices D W"
+    by (rule geotop_face_witness_simplex_vertices[OF hface])
+  have hB_eq: "B = geotop_convex_hull V"
+    using hBV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF hBV])
+  have hc_not_aff_B: "c \<notin> affine hull B"
+    by (rule geotop_boundary_subdivision_simplex_affine_hull_misses_interior_point_dev34
+        [OF h\<sigma> hsub hc hB])
+  have hAff_B: "affine hull B = affine hull V"
+    using hB_eq geotop_convex_hull_eq_HOL[of V] affine_hull_convex_hull[of V]
+    by (by100 simp)
+  have hc_not_aff_V: "c \<notin> affine hull V"
+    using hc_not_aff_B hAff_B by (by100 simp)
+  have hV_fin: "finite V"
+    using hBV unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hinsert_ai: "\<not> affine_dependent (insert c V)"
+    by (rule affine_independent_insert[OF hV_ai hc_not_aff_V])
+  have hinsert_fin: "finite (insert c V)"
+    using hV_fin by (by100 simp)
+  have hinsert_ne: "insert c V \<noteq> {}"
+    by (by100 simp)
+  have hconeV:
+      "geotop_simplex_vertices (geotop_convex_hull (insert c V)) (insert c V)"
+    by (rule geotop_AI_finite_ne_is_simplex_vertices
+        [OF hinsert_fin hinsert_ne hinsert_ai])
+  have hcone_eq:
+      "geotop_convex_hull (insert c B) =
+        geotop_convex_hull (insert c V)"
+  proof -
+    have "geotop_convex_hull (insert c B) =
+        geotop_convex_hull (insert c (geotop_convex_hull V))"
+      using hB_eq by (by100 simp)
+    also have "... = geotop_convex_hull (insert c V)"
+    proof -
+      have hHOL:
+          "convex hull (insert c V) =
+            convex hull (insert c (convex hull V))"
+        by (rule hull_insert)
+      show ?thesis
+        using hHOL geotop_convex_hull_eq_HOL[of "insert c V"]
+          geotop_convex_hull_eq_HOL[of "insert c (geotop_convex_hull V)"]
+          geotop_convex_hull_eq_HOL[of V]
+        by (by100 simp)
+    qed
+    finally show ?thesis .
+  qed
+  have hconeV_B:
+      "geotop_simplex_vertices (geotop_convex_hull (insert c B)) (insert c V)"
+    using hconeV hcone_eq by (by100 simp)
+  have hW_sub_cone: "W \<subseteq> insert c V"
+    using hW_sub by (by100 blast)
+  show ?thesis
+    unfolding geotop_is_face_def
+    using hconeV_B hW_ne hW_sub_cone hD_eq by (by100 blast)
+qed
+
 lemma geotop_boundary_cone_definition_subdivision_obligations_except_source_complex_dev34:
   fixes F L' :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
