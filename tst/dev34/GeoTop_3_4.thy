@@ -13623,10 +13623,34 @@ proof -
   qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
+  have hfinv_cont_each:
+      "\<forall>\<tau>\<in>L'. continuous_on \<tau>
+        (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+    sorry
   have hfinv_cont_poly:
       "continuous_on (geotop_polyhedron L')
         (inv_into (geotop_polyhedron (geotop_star K v)) f)"
-    sorry
+  proof -
+    have hL'_simp: "\<forall>\<tau>\<in>L'. geotop_is_simplex \<tau>"
+      by (rule conjunct1[OF hL'_complex[unfolded geotop_is_complex_def]])
+    have hcont_union:
+        "continuous_on (\<Union>\<tau>\<in>L'. \<tau>)
+          (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+    proof (rule continuous_on_closed_Union[OF hL'_finite])
+      fix \<tau> assume h\<tau>: "\<tau> \<in> L'"
+      have h\<tau>_simp: "geotop_is_simplex \<tau>"
+        using hL'_simp h\<tau> by (by100 blast)
+      show "closed \<tau>"
+        by (rule geotop_is_simplex_closed[OF h\<tau>_simp])
+    next
+      fix \<tau> assume h\<tau>: "\<tau> \<in> L'"
+      show "continuous_on \<tau>
+          (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+        using hfinv_cont_each h\<tau> by (by100 blast)
+    qed
+    show ?thesis
+      using hcont_union unfolding geotop_polyhedron_def by (by100 simp)
+  qed
   have hfinv_cont_ball:
       "continuous_on (ball c r)
         (inv_into (geotop_polyhedron (geotop_star K v)) f)"
