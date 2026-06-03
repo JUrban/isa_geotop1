@@ -4044,7 +4044,7 @@ proof
   let ?S = "{\<tau> \<in> K. geotop_simplex_dim \<tau> (n - 1) \<and>
       card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> n \<and> geotop_is_face \<tau> \<sigma>} = 1}"
   have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
-    using hK unfolding geotop_is_complex_def by (by100 blast)
+    using hK unfolding geotop_is_complex_def by (elim conjE) assumption
   have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
     using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
   show "\<rho> \<in> K"
@@ -7726,10 +7726,8 @@ proof -
           \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L')"
     using hcone6 by (rule conjunct2)
   show ?thesis
-    apply (rule_tac x=L' in exI)
-    apply (rule_tac x=c in exI)
     using hc_int hsubdiv hcF hvertices hc_simplex hboundary_target hcone_target
-    by (by100 simp)
+    by (intro exI[of _ L'] exI[of _ c]) (intro conjI; assumption)
 qed
 
 lemma geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_dev34:
@@ -8736,6 +8734,33 @@ proof -
     unfolding geotop_isomorphic_def using hfan by (by100 blast)
 qed
 
+lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_graph_broken_line_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Graph-only boundary-vertex version of Moise Fig. 4.10.  A finite linear
+    graph whose carrier is a broken line is enumerated as an edge-chain and
+    placed on a subdivided boundary arc of a 2-simplex; the matching boundary
+    endpoint is then used as the fan vertex. **)
+  sorry
+
 lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_link_broken_line_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -8763,7 +8788,11 @@ lemma geotop_standard_boundary_vertex_fan_target_from_finite_linear_link_broken_
     the finite broken-line link as an edge-chain, place it on a subdivided
     boundary arc of a 2-simplex, choose the cone vertex as the corresponding
     boundary endpoint, and cone that arc inside the target triangle. **)
-  sorry
+proof -
+  show ?thesis
+    by (rule geotop_standard_boundary_vertex_fan_target_from_finite_linear_graph_broken_line_dev34
+        [OF hlink_linear hlink_finite hbroken])
+qed
 
 lemma geotop_vertex_star_fan_model_from_finite_linear_link_broken_line_dev34:
   fixes K :: "(real^2) set set"
