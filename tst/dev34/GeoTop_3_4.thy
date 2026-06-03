@@ -13564,6 +13564,44 @@ proof -
       "geotop_polyhedron (geotop_star K v) \<subseteq> geotop_polyhedron K"
     using geotop_star_polyhedron_subset_polyhedron[OF hK, of v]
     unfolding geotop_polyhedron_def by (by100 blast)
+  have hU_subset_K: "U \<subseteq> geotop_polyhedron K"
+    using hU_subset_star hstar_poly_subset_K by (by100 blast)
+  have hf_U: "f ` U = ball c r"
+  proof
+    show "f ` U \<subseteq> ball c r"
+    proof
+      fix z assume hz: "z \<in> f ` U"
+      obtain x where hxU: "x \<in> U" and hz_eq: "z = f x"
+        using hz by (by100 blast)
+      obtain y where hy_ball: "y \<in> ball c r"
+        and hx_eq: "x = inv_into (geotop_polyhedron (geotop_star K v)) f y"
+        using hxU unfolding U_def by (by100 blast)
+      have hy_target: "y \<in> geotop_polyhedron L'"
+        using hball_c_target hy_ball by (by100 blast)
+      have hcancel:
+          "f (inv_into (geotop_polyhedron (geotop_star K v)) f y) = y"
+        by (rule bij_betw_inv_into_right[OF hbij_star hy_target])
+      show "z \<in> ball c r"
+        using hz_eq hx_eq hcancel hy_ball by (by100 simp)
+    qed
+    show "ball c r \<subseteq> f ` U"
+    proof
+      fix y assume hy_ball: "y \<in> ball c r"
+      have hy_target: "y \<in> geotop_polyhedron L'"
+        using hball_c_target hy_ball by (by100 blast)
+      have hinv_U:
+          "inv_into (geotop_polyhedron (geotop_star K v)) f y \<in> U"
+        unfolding U_def by (rule imageI[OF hy_ball])
+      have hcancel:
+          "f (inv_into (geotop_polyhedron (geotop_star K v)) f y) = y"
+        by (rule bij_betw_inv_into_right[OF hbij_star hy_target])
+      have hy_eq:
+          "y = f (inv_into (geotop_polyhedron (geotop_star K v)) f y)"
+        using hcancel by (by100 simp)
+      show "y \<in> f ` U"
+        using hy_eq hinv_U by (by100 blast)
+    qed
+  qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
   show ?thesis
