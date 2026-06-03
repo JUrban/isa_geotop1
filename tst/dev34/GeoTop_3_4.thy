@@ -5868,6 +5868,41 @@ proof
   qed
 qed
 
+lemma geotop_boundary_cone_definition_source_complex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_is_complex L'"
+proof -
+  have hsimplexes: "\<forall>\<tau>\<in>L'. geotop_is_simplex \<tau>"
+    by (rule geotop_boundary_cone_definition_members_are_simplexes_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hfaces: "\<forall>\<tau>\<in>L'. \<forall>\<eta>. geotop_is_face \<eta> \<tau> \<longrightarrow> \<eta> \<in> L'"
+    by (rule geotop_boundary_cone_definition_face_closed_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hintersections:
+      "\<forall>\<tau>\<in>L'. \<forall>\<eta>\<in>L'. \<tau> \<inter> \<eta> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<tau> \<inter> \<eta>) \<tau>
+          \<and> geotop_is_face (\<tau> \<inter> \<eta>) \<eta>"
+    by (rule geotop_boundary_cone_definition_intersections_are_faces_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hlocal:
+      "\<forall>\<tau>\<in>L'. \<exists>U. open U \<and> \<tau> \<subseteq> U
+        \<and> finite {\<rho> \<in> L'. \<rho> \<inter> U \<noteq> {}}"
+    by (rule geotop_boundary_cone_definition_local_finite_dev34
+        [OF h\<sigma> hsub hL])
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using hsimplexes hfaces hintersections hlocal by (by100 blast)
+qed
+
 lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
