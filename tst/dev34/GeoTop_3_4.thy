@@ -3646,6 +3646,61 @@ proof -
     using hc hFsub by (by100 blast)
 qed
 
+lemma geotop_boundary_cone_definition_old_hull_imp_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA: "geotop_convex_hull A \<in> F"
+  shows "geotop_convex_hull A \<in> L'"
+  by (rule geotop_boundary_cone_definition_contains_old_simplex_dev34[OF hL hA])
+
+lemma geotop_convex_hull_insert_geotop_convex_hull_eq_dev34:
+  fixes A :: "(real^2) set"
+  shows "geotop_convex_hull (insert c (geotop_convex_hull A))
+      = geotop_convex_hull (insert c A)"
+proof -
+  have hHOL:
+      "convex hull (insert c A) = convex hull (insert c (convex hull A))"
+    by (rule hull_insert)
+  show ?thesis
+    using hHOL unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+qed
+
+lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  assumes hA: "geotop_convex_hull A \<in> F"
+  assumes hAne: "A \<noteq> {}"
+  shows "geotop_convex_hull (insert c A) \<in> L'"
+proof -
+  have hbase_ne: "geotop_convex_hull A \<noteq> {}"
+  proof -
+    obtain a where ha: "a \<in> A"
+      using hAne by (by100 blast)
+    have hsub: "A \<subseteq> geotop_convex_hull A"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+    have "a \<in> geotop_convex_hull A"
+      using hsub ha by (by100 blast)
+    show ?thesis
+      using \<open>a \<in> geotop_convex_hull A\<close> by (by100 blast)
+  qed
+  have hcone:
+      "geotop_convex_hull (insert c (geotop_convex_hull A)) \<in> L'"
+    by (rule geotop_boundary_cone_definition_contains_cone_dev34
+        [OF hL hA hbase_ne])
+  have heq:
+      "geotop_convex_hull (insert c (geotop_convex_hull A))
+        = geotop_convex_hull (insert c A)"
+    by (rule geotop_convex_hull_insert_geotop_convex_hull_eq_dev34)
+  show ?thesis
+    using hcone heq by (by100 simp)
+qed
+
 lemma geotop_fig410_explicit_cone_basic_data_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
