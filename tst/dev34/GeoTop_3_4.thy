@@ -3632,6 +3632,40 @@ proof
     using hc_not_old \<open>c \<in> geotop_convex_hull A\<close> by (by100 blast)
 qed
 
+lemma geotop_old_vertices_hull_ne_new_singleton_dev34:
+  fixes F :: "(real^2) set set"
+  fixes A :: "(real^2) set"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hA: "A \<subseteq> geotop_complex_vertices F"
+  shows "geotop_convex_hull A \<noteq> geotop_convex_hull {c}"
+proof
+  assume heq: "geotop_convex_hull A = geotop_convex_hull {c}"
+  have hsing: "geotop_convex_hull {c} = {c}"
+    using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+  show False
+  proof (cases "A = {}")
+    case True
+    have "geotop_convex_hull A = {}"
+      using True geotop_convex_hull_eq_HOL[of A] by (by100 simp)
+    then show False
+      using heq hsing by (by100 simp)
+  next
+    case False
+    obtain a where ha: "a \<in> A"
+      using False by (by100 blast)
+    have hsub: "A \<subseteq> geotop_convex_hull A"
+      unfolding geotop_convex_hull_eq_HOL by (rule hull_subset)
+    have ha_hull: "a \<in> geotop_convex_hull A"
+      using hsub ha by (by100 blast)
+    have hac: "a = c"
+      using heq hsing ha_hull by (by100 blast)
+    have "a \<in> geotop_complex_vertices F"
+      using hA ha by (by100 blast)
+    then show False
+      using hcF hac by (by100 blast)
+  qed
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
