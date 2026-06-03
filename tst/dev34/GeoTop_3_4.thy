@@ -11805,6 +11805,32 @@ proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_dev3
         [OF hab hc_not_ab hd_not_ab he_eq h\<sigma>V h\<tau>V hline hopp])
 qed
 
+lemma geotop_positive_radius_circle_is_1sphere_dev34:
+  fixes p :: "real^2"
+  assumes hr: "0 < r"
+  shows "geotop_is_n_sphere (sphere p r)
+      (subspace_topology UNIV geotop_euclidean_topology (sphere p r)) 1"
+proof -
+  have hhomeo_sphere: "sphere p r homeomorphic sphere (0::real^2) 1"
+    using homeomorphic_spheres_gen[of r 1 p "0::real^2"] hr by (by100 simp)
+  have hstd_eq: "(geotop_std_sphere::(real^2) set) = sphere (0::real^2) 1"
+    unfolding geotop_std_sphere_def sphere_def by (by100 simp)
+  have hhomeo_std: "sphere p r homeomorphic (geotop_std_sphere::(real^2) set)"
+    using hhomeo_sphere hstd_eq by (by100 simp)
+  obtain f where hf: "top1_homeomorphism_on (sphere p r)
+        (subspace_topology UNIV geotop_euclidean_topology (sphere p r))
+        (geotop_std_sphere::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_std_sphere::(real^2) set)) f"
+    using geotop_HOL_homeomorphic_imp_top1_homeomorphism_on[OF hhomeo_std]
+    by (by100 blast)
+  have htop: "is_topology_on (sphere p r)
+        (subspace_topology UNIV geotop_euclidean_topology (sphere p r))"
+    using hf unfolding top1_homeomorphism_on_def by (by100 blast)
+  show ?thesis
+    using htop hf unfolding geotop_is_n_sphere_def by (by100 blast)
+qed
+
 lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -12023,6 +12049,9 @@ proof -
     using hsphere_ball12 hball12 by (by100 blast)
   have hsphere_U: "sphere p eps \<subseteq> U"
     using hsphere_ball_s hsphere_union12 h\<sigma>12_local_U by (by100 blast)
+  have hsphere_1sphere: "geotop_is_n_sphere (sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
+    by (rule geotop_positive_radius_circle_is_1sphere_dev34[OF heps])
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
