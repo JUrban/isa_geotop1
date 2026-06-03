@@ -232,6 +232,95 @@ proof -
     using hr hFfin' hFsub' hcover' by (by100 blast)
 qed
 
+lemma geotop_complex_edge_unique_face_count_eq_1_dev34:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  let ?P = "\<lambda>\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  have hunique_def: "\<exists>\<sigma>. ?P \<sigma> \<and> (\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>)"
+    using hunique unfolding Ex1_def by (by100 simp)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and huniq_all: "\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>"
+    using hunique_def by (elim exE conjE)
+  have huniqP: "\<And>\<tau>. ?P \<tau> \<Longrightarrow> \<tau> = \<sigma>"
+    using huniq_all by (by100 simp)
+  have hSeq: "?S = {\<sigma>}"
+  proof
+    show "?S \<subseteq> {\<sigma>}"
+    proof
+      fix \<tau>
+      assume h\<tau>S: "\<tau> \<in> ?S"
+      have h\<tau>K: "\<tau> \<in> K"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>face: "geotop_is_face e \<tau>"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>P: "?P \<tau>"
+        using h\<tau>K h\<tau>2 h\<tau>face by (by100 simp)
+      have "\<tau> = \<sigma>"
+        by (rule huniqP[OF h\<tau>P])
+      thus "\<tau> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+  next
+    show "{\<sigma>} \<subseteq> ?S"
+      using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  qed
+  show ?thesis
+    using hSeq by (by100 simp)
+qed
+
+lemma geotop_complex_edge_unique_face_obtain_dev34:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  obtains \<sigma> where "\<sigma> \<in> K" and "geotop_simplex_dim \<sigma> 2" and "geotop_is_face e \<sigma>"
+    and "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>} = {\<sigma>}"
+proof -
+  let ?S = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>}"
+  let ?P = "\<lambda>\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  have hunique_def: "\<exists>\<sigma>. ?P \<sigma> \<and> (\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>)"
+    using hunique unfolding Ex1_def by (by100 simp)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and huniq_all: "\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>"
+    using hunique_def by (elim exE conjE)
+  have huniqP: "\<And>\<tau>. ?P \<tau> \<Longrightarrow> \<tau> = \<sigma>"
+    using huniq_all by (by100 simp)
+  have hSeq: "?S = {\<sigma>}"
+  proof
+    show "?S \<subseteq> {\<sigma>}"
+    proof
+      fix \<tau>
+      assume h\<tau>S: "\<tau> \<in> ?S"
+      have h\<tau>K: "\<tau> \<in> K"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>face: "geotop_is_face e \<tau>"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>P: "?P \<tau>"
+        using h\<tau>K h\<tau>2 h\<tau>face by (by100 simp)
+      have "\<tau> = \<sigma>"
+        by (rule huniqP[OF h\<tau>P])
+      thus "\<tau> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+  next
+    show "{\<sigma>} \<subseteq> ?S"
+      using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  qed
+  show ?thesis
+    by (rule that[OF h\<sigma>K h\<sigma>2 h\<sigma>face hSeq])
+qed
+
 lemma geotop_complex_polyhedron_point_carrier_local_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
