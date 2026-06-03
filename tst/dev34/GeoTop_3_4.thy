@@ -4451,6 +4451,93 @@ proof
         [OF hL hcover])
 qed
 
+lemma geotop_boundary_cone_definition_finite_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "finite L'"
+proof -
+  have hF_fin: "finite F"
+    by (rule geotop_boundary_subdivision_finite_dev34[OF h\<sigma> hsub])
+  have hcones_sub:
+      "{geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}
+        \<subseteq> (\<lambda>A. geotop_convex_hull (insert c A)) ` F"
+    by (by100 blast)
+  have hcones_fin:
+      "finite {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}}"
+    by (rule finite_subset[OF hcones_sub]) (use hF_fin in \<open>by100 simp\<close>)
+  show ?thesis
+    using hL hF_fin hcones_fin by (by100 simp)
+qed
+
+lemma geotop_boundary_cone_definition_target_complex_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+
+lemma geotop_boundary_cone_definition_polyhedron_eq_target_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_polyhedron L' =
+      geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have hL_poly: "geotop_polyhedron L' = \<sigma>"
+    by (rule geotop_boundary_cone_definition_polyhedron_eq_2simplex_dev34
+        [OF h\<sigma> hsub hc hL])
+  have htarget_poly:
+      "geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} = \<sigma>"
+    by (rule geotop_2simplex_face_complex_polyhedron_eq_dev34[OF h\<sigma>])
+  show ?thesis
+    using hL_poly htarget_poly by (by100 simp)
+qed
+
+lemma geotop_boundary_cone_definition_subdivision_obligations_except_source_complex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_refines L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_polyhedron L' =
+        geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+proof -
+  have htarget_complex:
+      "geotop_is_complex {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_target_complex_dev34[OF h\<sigma>])
+  have href:
+      "geotop_refines L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_refines_2simplex_face_complex_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hpoly:
+      "geotop_polyhedron L' =
+        geotop_polyhedron {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    by (rule geotop_boundary_cone_definition_polyhedron_eq_target_dev34
+        [OF h\<sigma> hsub hc hL])
+  show ?thesis
+    using htarget_complex href hpoly by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
