@@ -3422,6 +3422,41 @@ proof (rule equals0I)
     using hdisj hx\<rho> hx_rel by (by100 blast)
 qed
 
+lemma geotop_boundary_subdivision_vertices_disjoint_HOL_interior_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "geotop_complex_vertices F \<inter> interior \<sigma> = {}"
+  (**
+    A subdivision of the boundary has the same carrier as the boundary; since
+    the boundary carrier misses the 2-simplex interior, its vertices do too. **)
+proof (rule equals0I)
+  fix x
+  assume hx: "x \<in> geotop_complex_vertices F \<inter> interior \<sigma>"
+  have hxV: "x \<in> geotop_complex_vertices F"
+    using hx by (by100 blast)
+  have hx_int: "x \<in> interior \<sigma>"
+    using hx by (by100 blast)
+  have hV_sub:
+    "geotop_complex_vertices F \<subseteq>
+      geotop_polyhedron
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    by (rule geotop_subdivision_vertices_subset_original_polyhedron_dev34[OF hsub])
+  have hx_boundary:
+    "x \<in> geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    using hV_sub hxV by (by100 blast)
+  have hdisj:
+    "geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<inter> interior \<sigma> = {}"
+    by (rule geotop_2simplex_comb_boundary_polyhedron_disjoint_HOL_interior_dev34[OF h\<sigma>])
+  show False
+    using hdisj hx_boundary hx_int by (by100 blast)
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
