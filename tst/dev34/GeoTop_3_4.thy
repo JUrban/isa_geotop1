@@ -4842,6 +4842,65 @@ proof -
   qed
 qed
 
+lemma geotop_boundary_cone_definition_members_are_simplexes_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "\<forall>\<tau>\<in>L'. geotop_is_simplex \<tau>"
+proof
+  fix \<tau>
+  assume h\<tau>: "\<tau> \<in> L'"
+  have hcases:
+      "\<tau> = geotop_convex_hull {c}
+      \<or> \<tau> \<in> F
+      \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+    by (rule geotop_boundary_cone_definition_member_cases_dev34[OF hL h\<tau>])
+  have hF_complex: "geotop_is_complex F"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hsub])
+  have hF_simplexes: "\<forall>\<rho>\<in>F. geotop_is_simplex \<rho>"
+    by (rule geotop_is_complex_simplex[OF hF_complex])
+  show "geotop_is_simplex \<tau>"
+  proof (cases "\<tau> = geotop_convex_hull {c}")
+    case True
+    have hch: "geotop_convex_hull {c} = {c}"
+      using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+    have "geotop_is_simplex {c}"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF geotop_singleton_is_simplex])
+    then show ?thesis
+      using True hch by (by100 simp)
+  next
+    case hnot_singleton: False
+    have htail:
+        "\<tau> \<in> F
+        \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+      using hcases hnot_singleton by (by100 blast)
+    show ?thesis
+    proof (cases "\<tau> \<in> F")
+      case True
+      show ?thesis
+        using hF_simplexes True by (by100 blast)
+    next
+      case False
+      obtain A where hA: "A \<in> F"
+        and hAne: "A \<noteq> {}"
+        and h\<tau>_eq: "\<tau> = geotop_convex_hull (insert c A)"
+        using htail False by (by100 blast)
+      have "geotop_is_simplex (geotop_convex_hull (insert c A))"
+        by (rule geotop_boundary_subdivision_cone_over_simplex_is_simplex_dev34
+            [OF h\<sigma> hsub hc hA])
+      then show ?thesis
+        using h\<tau>_eq by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
