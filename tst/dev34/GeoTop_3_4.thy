@@ -3565,6 +3565,38 @@ proof
     using hdisj hcF hc by (by100 blast)
 qed
 
+lemma geotop_boundary_subdivision_simplex_misses_interior_point_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "A \<in> F"
+  shows "c \<notin> A"
+proof
+  assume hcA: "c \<in> A"
+  have hc_not_poly: "c \<notin> geotop_polyhedron F"
+    by (rule geotop_boundary_subdivision_interior_point_notin_polyhedron_dev34
+        [OF h\<sigma> hsub hc])
+  have hc_poly: "c \<in> geotop_polyhedron F"
+    using hA hcA unfolding geotop_polyhedron_def by (by100 blast)
+  show False
+    using hc_not_poly hc_poly by (by100 blast)
+qed
+
+lemma geotop_boundary_subdivision_hull_simplex_misses_interior_point_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "geotop_convex_hull A \<in> F"
+  shows "c \<notin> geotop_convex_hull A"
+  by (rule geotop_boundary_subdivision_simplex_misses_interior_point_dev34
+      [OF h\<sigma> hsub hc hA])
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
