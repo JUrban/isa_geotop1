@@ -3272,6 +3272,39 @@ proof -
     using hvertices hpoly by (by100 simp)
 qed
 
+lemma geotop_comb_boundary_subset_complex_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_comb_boundary K n \<subseteq> K"
+  (**
+    The combinatorial boundary consists of selected \((n-1)\)-simplexes of
+    \<open>K\<close> and their faces; face closure of a complex keeps all of them inside
+    \<open>K\<close>. **)
+proof
+  fix \<rho>
+  assume h\<rho>: "\<rho> \<in> geotop_comb_boundary K n"
+  let ?S = "{\<tau> \<in> K. geotop_simplex_dim \<tau> (n - 1) \<and>
+      card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> n \<and> geotop_is_face \<tau> \<sigma>} = 1}"
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
+  show "\<rho> \<in> K"
+  proof (rule UnE[OF h\<rho>_cases])
+    assume "\<rho> \<in> ?S"
+    show "\<rho> \<in> K"
+      using \<open>\<rho> \<in> ?S\<close> by (by100 blast)
+  next
+    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+      by (by100 blast)
+    have h\<tau>K: "\<tau> \<in> K"
+      using h\<tau>S by (by100 blast)
+    show "\<rho> \<in> K"
+      using hface_closed h\<tau>K h\<rho>\<tau> by (by100 blast)
+  qed
+qed
+
 lemma geotop_fig410_explicit_cone_over_boundary_subdivision_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
