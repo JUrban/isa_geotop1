@@ -5076,6 +5076,82 @@ proof -
   qed
 qed
 
+lemma geotop_boundary_cone_definition_face_closed_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "\<forall>\<tau>\<in>L'. \<forall>\<eta>. geotop_is_face \<eta> \<tau> \<longrightarrow> \<eta> \<in> L'"
+proof
+  fix \<tau>
+  assume h\<tau>L: "\<tau> \<in> L'"
+  show "\<forall>\<eta>. geotop_is_face \<eta> \<tau> \<longrightarrow> \<eta> \<in> L'"
+  proof (intro allI impI)
+    fix \<eta>
+    assume hface: "geotop_is_face \<eta> \<tau>"
+    have hcases:
+        "\<tau> = geotop_convex_hull {c}
+        \<or> \<tau> \<in> F
+        \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+      by (rule geotop_boundary_cone_definition_member_cases_dev34[OF hL h\<tau>L])
+    show "\<eta> \<in> L'"
+    proof (cases "\<tau> = geotop_convex_hull {c}")
+      case True
+      have hch: "geotop_convex_hull {c} = {c}"
+        using geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+      have h\<tau>singleton: "\<tau> = {c}"
+        using True hch by (by100 simp)
+      obtain V W where hV: "geotop_simplex_vertices \<tau> V"
+        and hW_ne: "W \<noteq> {}"
+        and hW_sub: "W \<subseteq> V"
+        and h\<eta>_eq: "\<eta> = geotop_convex_hull W"
+        using hface unfolding geotop_is_face_def by (by100 blast)
+      have h\<tau>V_singleton: "geotop_simplex_vertices \<tau> {c}"
+        using geotop_simplex_vertices_singleton[of c] h\<tau>singleton by (by100 simp)
+      have hV_eq: "V = {c}"
+        by (rule geotop_simplex_vertices_unique[OF hV h\<tau>V_singleton])
+      have hW_eq: "W = {c}"
+        using hW_ne hW_sub hV_eq by (by100 blast)
+      have h\<eta>_singleton: "\<eta> = geotop_convex_hull {c}"
+        using h\<eta>_eq hW_eq by (by100 simp)
+      have "geotop_convex_hull {c} \<in> L'"
+        by (rule geotop_boundary_cone_definition_contains_new_vertex_dev34[OF hL])
+      show ?thesis
+        using h\<eta>_singleton \<open>geotop_convex_hull {c} \<in> L'\<close> by (by100 simp)
+    next
+      case hnot_singleton: False
+      have htail:
+          "\<tau> \<in> F
+          \<or> (\<exists>A. A \<in> F \<and> A \<noteq> {} \<and> \<tau> = geotop_convex_hull (insert c A))"
+        using hcases hnot_singleton by (by100 blast)
+      show ?thesis
+      proof (cases "\<tau> \<in> F")
+        case True
+        show ?thesis
+          by (rule geotop_boundary_cone_definition_old_face_in_L_dev34
+              [OF hsub hL True hface])
+      next
+        case False
+        obtain A where hA: "A \<in> F"
+          and hAne: "A \<noteq> {}"
+          and h\<tau>_eq: "\<tau> = geotop_convex_hull (insert c A)"
+          using htail False by (by100 blast)
+        have hface_cone: "geotop_is_face \<eta> (geotop_convex_hull (insert c A))"
+          using hface h\<tau>_eq by (by100 simp)
+        show ?thesis
+          by (rule geotop_boundary_cone_definition_cone_face_in_L_dev34
+              [OF h\<sigma> hsub hc hL hA hface_cone])
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_boundary_cone_definition_cone_hull_imp_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hL:
