@@ -12636,7 +12636,36 @@ lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
     2-cell, a small 1-sphere lying in the open chart part separates that chart
     part.  Transport the 2-cell to a 2-simplex/disk and apply the Jordan curve
     theorem to the image of \<open>J\<close>. **)
-  sorry
+proof -
+  let ?T = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+  let ?C = "closure_on M ?T U"
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hmetricM: "top1_metric_on M (\<lambda>x y. norm (x - y))"
+    by (rule metric_on_subset[OF top1_norm_metric_on_UNIV_R2_dev34 subset_UNIV])
+  have htopM: "is_topology_on M ?T"
+    by (rule top1_metric_topology_on_is_topology_on[OF hmetricM])
+  have hUsubC: "U \<subseteq> ?C"
+    by (rule subset_closure_on)
+  have hJsubC: "J \<subseteq> ?C"
+    using hJsub hUsubC by (by100 blast)
+  have hcell_ex: "\<exists>(\<sigma>::(real^2) set) \<phi>. geotop_simplex_dim \<sigma> 2
+      \<and> top1_homeomorphism_on ?C
+        (subspace_topology M ?T ?C) \<sigma>
+        (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+    by (rule geotop_is_n_cell_imp_homeo_ex[OF hcell])
+  obtain \<sigma> and \<phi> :: "real^2 \<Rightarrow> real^2" where h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<phi>: "top1_homeomorphism_on ?C
+      (subspace_topology M ?T ?C) \<sigma>
+      (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+    using hcell_ex by (by100 blast)
+  have hJ_separates_U:
+      "\<not> top1_connected_on (U - J)
+        (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    sorry
+  show ?thesis
+    using hJ_separates_U .
+qed
 
 lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
