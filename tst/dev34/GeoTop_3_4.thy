@@ -9762,6 +9762,29 @@ proof -
     using htop_img hcomp by (by100 blast)
 qed
 
+lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  shows "\<exists>r A. 0 < r \<and> r < s
+      \<and> A \<subseteq> sphere p r \<inter> \<sigma>
+      \<and> geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  (**
+    Radius-explicit form of Moise Lemma 3.  Choose the semicircle in the
+    unique incident 2-simplex with center \<open>p\<close> and radius strictly smaller
+    than the local chart radius \<open>s\<close>; that semicircle is the separating arc. **)
+  sorry
+
 lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -9785,12 +9808,30 @@ lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
     unique incident 2-simplex.  Choose a small semicircle in that simplex,
     centered at \<open>p\<close>; it lies in \<open>U\<close>, is an arc, and separates \<open>U\<close>. **)
 proof -
-  obtain A where hA_small: "A \<subseteq> ball p s \<inter> \<sigma>"
+  obtain r A where hr_pos: "0 < r" and hrs: "r < s"
+    and hA_sphere: "A \<subseteq> sphere p r \<inter> \<sigma>"
     and hAarc: "geotop_is_arc A
         (subspace_topology UNIV geotop_euclidean_topology A)"
     and hAsep: "\<not> top1_connected_on (U - A)
         (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-    sorry
+    using geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34
+      [OF hedge hp h\<sigma>2 h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU_s hUsubM]
+    by (by100 blast)
+  have hA_small: "A \<subseteq> ball p s \<inter> \<sigma>"
+  proof
+    fix x
+    assume hxA: "x \<in> A"
+    have hx_sphere_sigma: "x \<in> sphere p r \<inter> \<sigma>"
+      using hA_sphere hxA by (by100 blast)
+    have hx_sphere: "x \<in> sphere p r"
+      using hx_sphere_sigma by (by100 blast)
+    have hx_sigma: "x \<in> \<sigma>"
+      using hx_sphere_sigma by (by100 blast)
+    have hx_ball: "x \<in> ball p s"
+      using hx_sphere hrs by (by100 simp)
+    show "x \<in> ball p s \<inter> \<sigma>"
+      using hx_ball hx_sigma by (by100 blast)
+  qed
   have hAsubU: "A \<subseteq> U"
   proof
     fix x
