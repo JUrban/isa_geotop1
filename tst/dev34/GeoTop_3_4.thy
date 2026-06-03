@@ -4387,6 +4387,32 @@ proof
   qed
 qed
 
+lemma geotop_boundary_cone_definition_polyhedron_eq_2simplex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_polyhedron L' = \<sigma>"
+proof
+  show "geotop_polyhedron L' \<subseteq> \<sigma>"
+    by (rule geotop_boundary_cone_definition_polyhedron_subset_2simplex_dev34
+        [OF h\<sigma> hsub hc hL])
+  have hcover:
+      "\<forall>x\<in>\<sigma>. x = c \<or>
+        (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+    by (rule geotop_boundary_subdivision_radial_cover_2simplex_dev34
+        [OF h\<sigma> hsub hc])
+  show "\<sigma> \<subseteq> geotop_polyhedron L'"
+    by (rule geotop_boundary_cone_definition_polyhedron_contains_radial_cover_dev34
+        [OF hL hcover])
+qed
+
 lemma geotop_boundary_subdivision_new_interior_vertex_exists_dev34:
   fixes F :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
