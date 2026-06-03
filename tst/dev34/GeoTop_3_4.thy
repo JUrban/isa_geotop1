@@ -8985,7 +8985,55 @@ lemma geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_de
     edge-interior point.  The local-ball assumption keeps the semicircle inside
     the chart domain \<open>U\<close>; since \<open>U\<close> is a subspace neighborhood in \<open>|K|\<close>,
     the semicircle separates the half-neighborhood in \<open>U\<close>. **)
-  sorry
+proof -
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  obtain rU where hrU: "0 < rU"
+    and hballU: "geotop_polyhedron K \<inter> ball p rU \<subseteq> U"
+    using hlocal_ball by (by100 blast)
+  obtain rK F \<sigma> where hrK: "0 < rK"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and heF: "e \<in> F"
+    and h\<sigma>F: "\<sigma> \<in> F"
+    and h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and hfaces: "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>} = {\<sigma>}"
+    and hcover: "ball p rK \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    by (rule geotop_complex_unique_edge_face_point_finite_local_cover_dev34
+        [OF hK heK hp_e hunique])
+  define r where "r = min rU rK"
+  have hr: "0 < r"
+    using hrU hrK unfolding r_def by (by100 simp)
+  have hballU_r: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  proof -
+    have hball_sub: "ball p r \<subseteq> ball p rU"
+      unfolding r_def by (by100 auto)
+    have "geotop_polyhedron K \<inter> ball p r
+        \<subseteq> geotop_polyhedron K \<inter> ball p rU"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hballU by (by100 blast)
+  qed
+  have hcover_r: "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p r \<subseteq> ball p rK"
+      unfolding r_def by (by100 auto)
+    have "ball p r \<inter> geotop_polyhedron K
+        \<subseteq> ball p rK \<inter> geotop_polyhedron K"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover by (by100 blast)
+  qed
+  (**
+    Remaining Moise Lemma 3 geometry: choose the small semicircle in the unique
+    incident 2-simplex \<open>\<sigma>\<close>, use the finite carrier cover \<open>F\<close> and the shrunken
+    radius \<open>r\<close> to keep it inside \<open>U\<close>, and prove that its complement in
+    \<open>U\<close> separates. **)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U A :: "(real^2) set"
