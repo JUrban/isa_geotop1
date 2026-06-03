@@ -4678,6 +4678,60 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_boundary_subdivision_old_inter_cone_eq_old_inter_dev34:
+  fixes F :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  assumes hc: "c \<in> interior \<sigma>"
+  assumes hA: "A \<in> F"
+  assumes hB: "B \<in> F"
+  shows "A \<inter> geotop_convex_hull (insert c B) = A \<inter> B"
+proof -
+  have hF_complex: "geotop_is_complex F"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hsub])
+  have hF_simplexes: "\<forall>\<rho>\<in>F. geotop_is_simplex \<rho>"
+    by (rule geotop_is_complex_simplex[OF hF_complex])
+  have hB_simplex: "geotop_is_simplex B"
+    using hF_simplexes hB by (by100 blast)
+  have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have h\<sigma>conv: "convex \<sigma>"
+    using GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex]
+    unfolding geotop_convex_iff_HOL_convex .
+  have hB_conv: "convex B"
+    using GeoTopBase0.geotop_simplex_is_convex[OF hB_simplex]
+    unfolding geotop_convex_iff_HOL_convex .
+  have hB_sub: "B \<subseteq> \<sigma>"
+    by (rule geotop_boundary_subdivision_simplex_subset_2simplex_dev34
+        [OF h\<sigma> hsub hB])
+  have hA_rel: "A \<subseteq> rel_frontier \<sigma>"
+    by (rule geotop_boundary_subdivision_simplex_subset_rel_frontier_dev34
+        [OF h\<sigma> hsub hA])
+  have hA_disj: "disjnt A (rel_interior \<sigma>)"
+    using hA_rel unfolding rel_frontier_def disjnt_def by (by100 blast)
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  have hc_rel: "c \<in> rel_interior \<sigma>"
+    using hc hrel_eq_int by (by100 simp)
+  have hHOL:
+      "A \<inter> convex hull (insert c B) = A \<inter> convex hull B"
+    by (rule Int_convex_hull_insert_rel_exterior
+        [OF h\<sigma>conv hB_sub hc_rel hA_disj])
+  have hB_hull: "convex hull B = B"
+    using hB_conv convex_hull_eq[of B] by (by100 simp)
+  show ?thesis
+    using hHOL hB_hull geotop_convex_hull_eq_HOL[of "insert c B"]
+    by (by100 simp)
+qed
+
 lemma geotop_boundary_cone_definition_subdivision_obligations_except_source_complex_dev34:
   fixes F L' :: "(real^2) set set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
