@@ -13492,6 +13492,28 @@ proof -
   qed
   have hf_v: "f v = c"
     using hf_vertices hv_star_vertex \<phi>_def by (by100 simp)
+  have hbij_star:
+      "bij_betw f (geotop_polyhedron (geotop_star K v)) (geotop_polyhedron L')"
+    using hPLH_star unfolding geotop_PLH_def by (by100 blast)
+  have hc_target_poly: "c \<in> geotop_polyhedron L'"
+    using hc_target interior_subset by (by100 blast)
+  have hv_star_poly: "v \<in> geotop_polyhedron (geotop_star K v)"
+    using hv_star_vertex geotop_complex_vertices_subset_polyhedron_dev34
+    by (by100 blast)
+  have hinv_c:
+      "inv_into (geotop_polyhedron (geotop_star K v)) f c = v"
+  proof -
+    have "inv_into (geotop_polyhedron (geotop_star K v)) f (f v) = v"
+      by (rule bij_betw_inv_into_left[OF hbij_star hv_star_poly])
+    then show ?thesis
+      using hf_v by (by100 simp)
+  qed
+  have hstar_poly_subset_K:
+      "geotop_polyhedron (geotop_star K v) \<subseteq> geotop_polyhedron K"
+    using geotop_star_polyhedron_subset_polyhedron[OF hK, of v]
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hv_poly: "v \<in> geotop_polyhedron K"
+    using hv_star_poly hstar_poly_subset_K by (by100 blast)
   show ?thesis
     sorry
 qed
