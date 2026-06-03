@@ -13411,6 +13411,16 @@ proof -
     using hC_polygon hC_eq by (by100 simp)
 qed
 
+lemma geotop_linear_on_continuous_on_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  fixes f :: "real^2 \<Rightarrow> real^2"
+  assumes hlin: "geotop_linear_on \<sigma> f"
+  shows "continuous_on \<sigma> f"
+  (**
+    Standard PL fact used in the Figure 4.10 local model: a map that is
+    barycentrically linear on one simplex is continuous on that simplex. **)
+  sorry
+
 lemma geotop_standard_fan_target_vertex_HOL_interior_polyhedron_dev34:
   fixes K L' :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -13626,7 +13636,16 @@ proof -
   have hfinv_cont_each:
       "\<forall>\<tau>\<in>L'. continuous_on \<tau>
         (inv_into (geotop_polyhedron (geotop_star K v)) f)"
-    sorry
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> L'"
+    have hlin\<tau>:
+        "geotop_linear_on \<tau>
+          (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+      using hfinv_linear h\<tau> by (by100 blast)
+    show "continuous_on \<tau>
+        (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+      by (rule geotop_linear_on_continuous_on_dev34[OF hlin\<tau>])
+  qed
   have hfinv_cont_poly:
       "continuous_on (geotop_polyhedron L')
         (inv_into (geotop_polyhedron (geotop_star K v)) f)"
