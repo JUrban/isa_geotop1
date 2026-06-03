@@ -13466,6 +13466,32 @@ proof -
     show ?thesis
       using hiso_raw h\<phi>_eq by (by100 simp)
   qed
+  have hstar_complex: "geotop_is_complex (geotop_star K v)"
+    by (rule geotop_star_is_complex[OF hK])
+  have hL'_complex: "geotop_is_complex L'"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hsubdiv])
+  obtain f where hPLH_star: "geotop_PLH (geotop_star K v) L' f"
+    and hf_image: "f ` geotop_polyhedron (geotop_star K v) = geotop_polyhedron L'"
+    and hf_vertices:
+      "\<forall>w\<in>geotop_complex_vertices (geotop_star K v). f w = \<phi> w"
+    and hf_linear: "\<forall>\<rho>\<in>geotop_star K v. geotop_linear_on \<rho> f"
+    and hfinv_linear:
+      "\<forall>\<tau>\<in>L'. geotop_linear_on \<tau>
+        (inv_into (geotop_polyhedron (geotop_star K v)) f)"
+    using geotop_isomorphism_induces_PLH
+      [OF hstar_complex hL'_complex hiso_star_target]
+    by (by100 blast)
+  have hv_star_vertex: "v \<in> geotop_complex_vertices (geotop_star K v)"
+  proof -
+    have hvertices_star:
+        "geotop_complex_vertices (geotop_star K v) =
+          insert v (geotop_complex_vertices (geotop_link K v))"
+      by (rule geotop_star_vertices_eq_insert_link_vertices_dev34[OF hK hv])
+    show ?thesis
+      using hvertices_star by (by100 simp)
+  qed
+  have hf_v: "f v = c"
+    using hf_vertices hv_star_vertex \<phi>_def by (by100 simp)
   show ?thesis
     sorry
 qed
