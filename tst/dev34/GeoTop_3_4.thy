@@ -12941,43 +12941,80 @@ proof -
     have hsource_C_eq:
         "subspace_topology M ?T ?C =
          subspace_topology UNIV geotop_euclidean_topology ?C"
-      sorry
+    proof -
+      have htrans:
+          "subspace_topology M
+             (subspace_topology UNIV geotop_euclidean_topology M) ?C =
+           subspace_topology UNIV geotop_euclidean_topology ?C"
+        by (rule subspace_topology_trans[OF hCsubM])
+      show ?thesis
+        using hTM_eq htrans by (by100 simp)
+    qed
     have hsource_J_eq:
         "subspace_topology ?C (subspace_topology M ?T ?C) J =
          subspace_topology UNIV geotop_euclidean_topology J"
-      sorry
+    proof -
+      have htrans:
+          "subspace_topology ?C
+             (subspace_topology UNIV geotop_euclidean_topology ?C) J =
+           subspace_topology UNIV geotop_euclidean_topology J"
+        by (rule subspace_topology_trans[OF hJsubC])
+      show ?thesis
+        using hsource_C_eq htrans by (by100 simp)
+    qed
     have hres: "top1_homeomorphism_on J
         (subspace_topology ?C (subspace_topology M ?T ?C) J)
         (\<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) \<phi>"
-      sorry
+    proof -
+      have h\<phi>bij: "bij_betw \<phi> ?C \<sigma>"
+        by (rule top1_homeomorphism_on_imp_bij[OF h\<phi>])
+      have h\<phi>C: "\<phi> ` ?C = \<sigma>"
+        using h\<phi>bij unfolding bij_betw_def by (by100 blast)
+      have h\<phi>Jsub\<sigma>: "\<phi> ` J \<subseteq> \<sigma>"
+        using hJsubC h\<phi>C by (by100 blast)
+      have htarget_eq:
+          "subspace_topology \<sigma>
+             (subspace_topology UNIV geotop_euclidean_topology \<sigma>) (\<phi> ` J) =
+           subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)"
+        by (rule subspace_topology_trans[OF h\<phi>Jsub\<sigma>])
+      have hres_raw: "top1_homeomorphism_on J
+          (subspace_topology ?C (subspace_topology M ?T ?C) J)
+          (\<phi> ` J)
+          (subspace_topology \<sigma>
+            (subspace_topology UNIV geotop_euclidean_topology \<sigma>) (\<phi> ` J)) \<phi>"
+        by (rule top1_homeomorphism_on_subspace_image_dev34[OF h\<phi> hJsubC])
+      show ?thesis
+        using hres_raw htarget_eq by (by100 simp)
+    qed
     have hres_geo: "top1_homeomorphism_on J
         (subspace_topology UNIV geotop_euclidean_topology J)
         (\<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) \<phi>"
-      sorry
+      using hres hsource_J_eq by (by100 simp)
     obtain g where hg: "top1_homeomorphism_on J
         (subspace_topology UNIV geotop_euclidean_topology J)
         (geotop_std_sphere::(real^2) set)
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_std_sphere::(real^2) set)) g"
-      sorry
+      using hJsphere unfolding geotop_is_n_sphere_def by (by100 blast)
     have hres_sym: "top1_homeomorphism_on (\<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))
         J (subspace_topology UNIV geotop_euclidean_topology J) (inv_into J \<phi>)"
-      sorry
+      by (rule top1_homeomorphism_on_sym[OF hres_geo])
     have hcomp: "top1_homeomorphism_on (\<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))
         (geotop_std_sphere::(real^2) set)
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_std_sphere::(real^2) set))
         (g \<circ> inv_into J \<phi>)"
-      sorry
+      by (rule top1_homeomorphism_on_comp[OF hres_sym hg])
     have htop_img: "is_topology_on (\<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J))"
-      sorry
+      using hcomp unfolding top1_homeomorphism_on_def by (by100 blast)
     show ?thesis
-      sorry
+      unfolding geotop_is_n_sphere_def
+      using htop_img hcomp by (by100 blast)
   qed
   have hsimplex_chart_sep:
       "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
