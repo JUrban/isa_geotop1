@@ -12899,6 +12899,27 @@ proof -
     using hcircle by (by100 blast)
 qed
 
+lemma geotop_2cell_chart_1sphere_jordan_transfer_core_dev34:
+  fixes M U J \<sigma> :: "(real^2) set"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<phi>: "top1_homeomorphism_on
+      (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+      \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+  assumes hJsub: "J \<subseteq> U"
+  assumes hJsphere: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  shows "\<not> top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  (**
+    Core boundary-chart Jordan transfer.  Transport the 2-cell closure of
+    \<open>U\<close> to a 2-simplex, identify the open chart part with its disk interior,
+    and apply the Jordan curve theorem to the image of the 1-sphere \<open>J\<close>. **)
+  sorry
+
 lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
   fixes M U J :: "(real^2) set"
   assumes hUopen: "openin_on M
@@ -12945,7 +12966,22 @@ proof -
   have hJ_separates_U:
       "\<not> top1_connected_on (U - J)
         (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-    sorry
+  proof (rule geotop_2cell_chart_1sphere_jordan_transfer_core_dev34
+      [where M = M and U = U and J = J and \<sigma> = \<sigma> and \<phi> = \<phi>])
+    show "openin_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+      by (rule hUopen)
+    show "geotop_simplex_dim \<sigma> 2" by (rule h\<sigma>2)
+    show "top1_homeomorphism_on
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+        (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+          (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+      by (rule h\<phi>)
+    show "J \<subseteq> U" by (rule hJsub)
+    show "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+      by (rule hJsphere)
+  qed
   show ?thesis
     using hJ_separates_U .
 qed
