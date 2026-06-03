@@ -13623,8 +13623,38 @@ proof -
   qed
   have hv_poly: "v \<in> geotop_polyhedron K"
     using hv_star_poly hstar_poly_subset_K by (by100 blast)
-  have hU_open: "open U"
+  have hfinv_cont_ball:
+      "continuous_on (ball c r)
+        (inv_into (geotop_polyhedron (geotop_star K v)) f)"
     sorry
+  have hfinv_inj_ball:
+      "inj_on (inv_into (geotop_polyhedron (geotop_star K v)) f) (ball c r)"
+  proof -
+    have hbij_inv:
+        "bij_betw (inv_into (geotop_polyhedron (geotop_star K v)) f)
+          (geotop_polyhedron L') (geotop_polyhedron (geotop_star K v))"
+      by (rule bij_betw_inv_into[OF hbij_star])
+    have hinj_target:
+        "inj_on (inv_into (geotop_polyhedron (geotop_star K v)) f)
+          (geotop_polyhedron L')"
+      using hbij_inv by (rule bij_betw_imp_inj_on)
+    show ?thesis
+      using hinj_target hball_c_target inj_on_subset by (by100 blast)
+  qed
+  have hU_open: "open U"
+  proof -
+    have himg_U:
+        "(inv_into (geotop_polyhedron (geotop_star K v)) f) ` ball c r = U"
+      unfolding U_def by (by100 simp)
+    have hdim: "DIM(real^2) \<le> DIM(real^2)"
+      by (by100 simp)
+    have hopen_img:
+        "open ((inv_into (geotop_polyhedron (geotop_star K v)) f) ` ball c r)"
+      by (rule invariance_of_domain_gen
+          [OF open_ball hfinv_cont_ball hfinv_inj_ball hdim])
+    show ?thesis
+      using hopen_img himg_U by (by100 simp)
+  qed
   show ?thesis
     by (rule interiorI[OF hU_open hv_U hU_subset_K])
 qed
