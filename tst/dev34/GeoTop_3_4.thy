@@ -13453,6 +13453,8 @@ proof -
     using geotop_fig410_link_and_star_vertices_finite_dev34
       [OF hK hv hlink_finite]
     by (by100 blast)
+  have hstar_finite: "finite (geotop_star K v)"
+    by (rule geotop_star_finite_at_complex_vertex[OF hK hv])
   have hiso_star_target: "geotop_isomorphism (geotop_star K v) L' \<phi>"
   proof -
     have hiso_raw:
@@ -13470,6 +13472,14 @@ proof -
     by (rule geotop_star_is_complex[OF hK])
   have hL'_complex: "geotop_is_complex L'"
     by (rule geotop_subdivision_source_is_complex_dev34[OF hsubdiv])
+  have hL'_finite: "finite L'"
+  proof -
+    have hface_fin:
+        "finite {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+      by (rule geotop_simplex_dim_face_complex_finite_R2[OF h\<sigma>])
+    show ?thesis
+      by (rule geotop_subdivision_of_finite_is_finite[OF hface_fin hsubdiv])
+  qed
   obtain f where hPLH_star: "geotop_PLH (geotop_star K v) L' f"
     and hf_image: "f ` geotop_polyhedron (geotop_star K v) = geotop_polyhedron L'"
     and hf_vertices:
