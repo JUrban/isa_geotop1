@@ -205,6 +205,33 @@ proof -
     using hr_pos hU_finite hF_sub hlocal_cover by (by100 blast)
 qed
 
+lemma geotop_complex_edge_point_finite_local_cover_dev34:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hp: "p \<in> e"
+  shows "\<exists>r F. 0 < r \<and> finite F \<and> F \<subseteq> K \<and> e \<in> F
+      \<and> ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+proof -
+  have hpM: "p \<in> geotop_polyhedron K"
+    using heK hp unfolding geotop_polyhedron_def by (by100 blast)
+  obtain r F where hr: "0 < r"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and hcover: "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    using geotop_complex_point_finite_local_carrier_dev34[OF hK hpM]
+    by (by100 blast)
+  let ?F = "insert e F"
+  have hFfin': "finite ?F"
+    using hFfin by (by100 simp)
+  have hFsub': "?F \<subseteq> K"
+    using heK hFsub by (by100 blast)
+  have hcover': "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>?F"
+    using hcover by (by100 blast)
+  show ?thesis
+    using hr hFfin' hFsub' hcover' by (by100 blast)
+qed
+
 lemma geotop_complex_polyhedron_point_carrier_local_dev34:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
