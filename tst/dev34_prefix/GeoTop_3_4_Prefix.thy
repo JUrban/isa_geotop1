@@ -1545,6 +1545,57 @@ proof -
     using hconn top1_connected_on_geotop_iff_connected by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_polyhedron_frontier_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "frontier (geotop_polyhedron K) = J"
+  (**
+    Book identity for Theorem 3.3: the frontier of the triangulated disk
+    carrier is the original polygon. **)
+proof -
+  let ?I = "geotop_polygon_interior J"
+  have hclos_on: "closure_on UNIV geotop_euclidean_topology ?I = closure ?I"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  have hpoly_HOL: "geotop_polyhedron K = closure ?I"
+    using hK_poly hclos_on by (by100 simp)
+  have hclosure: "closure ?I = ?I \<union> J"
+    by (rule polygon_interior_closure_eq[OF hJ])
+  have hregular: "interior (closure ?I) = ?I"
+    by (rule geotop_polygon_interior_regular_closed_prefix[OF hJ])
+  have hdisj: "?I \<inter> J = {}"
+    by (rule polygon_interior_disjoint_polygon[OF hJ])
+  have hfront: "frontier (closure ?I) = J"
+  proof -
+    have "frontier (closure ?I) = closure (closure ?I) - interior (closure ?I)"
+      unfolding Elementary_Topology.frontier_def by (by100 simp)
+    also have "... = closure ?I - ?I"
+      using hregular by (by100 simp)
+    also have "... = J"
+      using hclosure hdisj by (by100 blast)
+    finally show ?thesis .
+  qed
+  show ?thesis
+    using hpoly_HOL hfront by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_polyhedron_geotop_frontier_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "geotop_frontier UNIV geotop_euclidean_topology (geotop_polyhedron K) = J"
+  (**
+    Geotop-frontier form of the same disk-carrier boundary identity. **)
+proof -
+  have hfront: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  show ?thesis
+    using hfront geotop_frontier_UNIV_eq_frontier[of "geotop_polyhedron K"]
+    by (by100 simp)
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
