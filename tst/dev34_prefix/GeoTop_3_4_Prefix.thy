@@ -1132,6 +1132,176 @@ proof -
     using hE_eq_A by (by100 simp)
 qed
 
+lemma geotop_2simplex_frontier_eq_edge_faces_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "frontier \<sigma> = \<Union>{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  (**
+    Book base-case geometry: the boundary of a planar 2-simplex is exactly
+    the union of its three edge faces. **)
+proof -
+  let ?E = "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h2_le_m hgp h\<sigma>_eq by (by100 blast)
+  have hV_three:
+    "\<exists>a b c. V = {a, b, c} \<and> a \<noteq> b \<and> b \<noteq> c \<and> a \<noteq> c"
+  proof -
+    have hV_card3: "card V = 3"
+      using hV_card by (by100 simp)
+    show ?thesis
+      by (rule iffD1[OF card_3_iff hV_card3])
+  qed
+  obtain a b c where hV_eq: "V = {a, b, c}"
+    and hab: "a \<noteq> b" and hbc: "b \<noteq> c" and hac: "a \<noteq> c"
+    using hV_three by (by100 blast)
+  let ?ab = "geotop_convex_hull {a, b}"
+  let ?ac = "geotop_convex_hull {a, c}"
+  let ?bc = "geotop_convex_hull {b, c}"
+  let ?Pairs = "{?ab, ?ac, ?bc}"
+  have hE_sub: "?E \<subseteq> ?Pairs"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    have hedge: "geotop_is_edge e"
+      using heE by (by100 simp)
+    have hface: "geotop_is_face e \<sigma>"
+      using heE by (by100 simp)
+    obtain V' W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V'"
+      and hW_sub: "W \<subseteq> V'"
+      and he_eq: "e = geotop_convex_hull W"
+      and hW_card: "card W = 2"
+      by (metis geotop_edge_face_witness_card_two_prefix[OF hedge hface])
+    have hV'_eq: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+    have hW_subV: "W \<subseteq> V"
+      using hW_sub hV'_eq by (by100 simp)
+    have hW_pair: "\<exists>x y. W = {x, y} \<and> x \<noteq> y"
+      using hW_card card_2_iff[of W] by (by100 simp)
+    obtain x y where hW_eq: "W = {x, y}" and hxy: "x \<noteq> y"
+      using hW_pair by (by100 blast)
+    have hx_cases: "x = a \<or> x = b \<or> x = c"
+      using hW_eq hW_subV hV_eq by (by100 blast)
+    have hy_cases: "y = a \<or> y = b \<or> y = c"
+      using hW_eq hW_subV hV_eq by (by100 blast)
+    have hW_cases: "W = {a, b} \<or> W = {a, c} \<or> W = {b, c}"
+      using hx_cases hy_cases hW_eq hxy by (by100 auto)
+    show "e \<in> ?Pairs"
+      using he_eq hW_cases by (by100 auto)
+  qed
+  have h1_le_m: "1 \<le> m"
+    using h2_le_m by (by100 linarith)
+  have h_ab_sub: "{a, b} \<subseteq> V"
+    using hV_eq by (by100 simp)
+  have h_ac_sub: "{a, c} \<subseteq> V"
+    using hV_eq by (by100 simp)
+  have h_bc_sub: "{b, c} \<subseteq> V"
+    using hV_eq by (by100 simp)
+  have hgp_ab: "geotop_general_position {a, b} m"
+    by (rule geotop_general_position_subset[OF hgp h_ab_sub])
+  have hgp_ac: "geotop_general_position {a, c} m"
+    by (rule geotop_general_position_subset[OF hgp h_ac_sub])
+  have hgp_bc: "geotop_general_position {b, c} m"
+    by (rule geotop_general_position_subset[OF hgp h_bc_sub])
+  have h_ab_dim: "geotop_simplex_dim ?ab 1"
+    unfolding geotop_simplex_dim_def
+  proof (rule exI[where x = "{a, b}"], rule exI[where x = m], intro conjI)
+    show "finite {a, b}" by (by100 simp)
+    show "card {a, b} = 1 + 1" using hab by (by100 simp)
+    show "1 \<le> m" by (rule h1_le_m)
+    show "geotop_general_position {a, b} m" by (rule hgp_ab)
+    show "?ab = geotop_convex_hull {a, b}" by (by100 simp)
+  qed
+  have h_ac_dim: "geotop_simplex_dim ?ac 1"
+    unfolding geotop_simplex_dim_def
+  proof (rule exI[where x = "{a, c}"], rule exI[where x = m], intro conjI)
+    show "finite {a, c}" by (by100 simp)
+    show "card {a, c} = 1 + 1" using hac by (by100 simp)
+    show "1 \<le> m" by (rule h1_le_m)
+    show "geotop_general_position {a, c} m" by (rule hgp_ac)
+    show "?ac = geotop_convex_hull {a, c}" by (by100 simp)
+  qed
+  have h_bc_dim: "geotop_simplex_dim ?bc 1"
+    unfolding geotop_simplex_dim_def
+  proof (rule exI[where x = "{b, c}"], rule exI[where x = m], intro conjI)
+    show "finite {b, c}" by (by100 simp)
+    show "card {b, c} = 1 + 1" using hbc by (by100 simp)
+    show "1 \<le> m" by (rule h1_le_m)
+    show "geotop_general_position {b, c} m" by (rule hgp_bc)
+    show "?bc = geotop_convex_hull {b, c}" by (by100 simp)
+  qed
+  have h_ab_edge: "geotop_is_edge ?ab"
+    unfolding geotop_is_edge_def
+    using h_ab_dim by (by100 simp)
+  have h_ac_edge: "geotop_is_edge ?ac"
+    unfolding geotop_is_edge_def
+    using h_ac_dim by (by100 simp)
+  have h_bc_edge: "geotop_is_edge ?bc"
+    unfolding geotop_is_edge_def
+    using h_bc_dim by (by100 simp)
+  have h_ab_face: "geotop_is_face ?ab \<sigma>"
+    unfolding geotop_is_face_def
+  proof (rule exI[where x = V], rule exI[where x = "{a, b}"], intro conjI)
+    show "geotop_simplex_vertices \<sigma> V" by (rule h\<sigma>V)
+    show "{a, b} \<noteq> {}" by (by100 simp)
+    show "{a, b} \<subseteq> V" by (rule h_ab_sub)
+    show "?ab = geotop_convex_hull {a, b}" by (by100 simp)
+  qed
+  have h_ac_face: "geotop_is_face ?ac \<sigma>"
+    unfolding geotop_is_face_def
+  proof (rule exI[where x = V], rule exI[where x = "{a, c}"], intro conjI)
+    show "geotop_simplex_vertices \<sigma> V" by (rule h\<sigma>V)
+    show "{a, c} \<noteq> {}" by (by100 simp)
+    show "{a, c} \<subseteq> V" by (rule h_ac_sub)
+    show "?ac = geotop_convex_hull {a, c}" by (by100 simp)
+  qed
+  have h_bc_face: "geotop_is_face ?bc \<sigma>"
+    unfolding geotop_is_face_def
+  proof (rule exI[where x = V], rule exI[where x = "{b, c}"], intro conjI)
+    show "geotop_simplex_vertices \<sigma> V" by (rule h\<sigma>V)
+    show "{b, c} \<noteq> {}" by (by100 simp)
+    show "{b, c} \<subseteq> V" by (rule h_bc_sub)
+    show "?bc = geotop_convex_hull {b, c}" by (by100 simp)
+  qed
+  have hPairs_sub_E: "?Pairs \<subseteq> ?E"
+    using h_ab_edge h_ac_edge h_bc_edge h_ab_face h_ac_face h_bc_face by (by100 blast)
+  have hE_eq: "?E = ?Pairs"
+    using hE_sub hPairs_sub_E by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_eq hV_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  have hfront:
+    "frontier \<sigma> = closed_segment a b \<union> closed_segment b c \<union> closed_segment c a"
+    using frontier_of_triangle[where a = a and b = b and c = c]
+      h\<sigma>_HOL by (by100 simp)
+  have h_ab_HOL: "?ab = convex hull {a, b}"
+    using geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+  have h_bc_HOL: "?bc = convex hull {b, c}"
+    using geotop_convex_hull_eq_HOL[of "{b, c}"] by (by100 simp)
+  have h_ca_set: "{c, a} = {a, c}"
+    by (rule insert_commute)
+  have h_ca_HOL: "?ac = convex hull {c, a}"
+    using geotop_convex_hull_eq_HOL[of "{c, a}"] h_ca_set by (by100 simp)
+  have h_ab_segment: "closed_segment a b = ?ab"
+    using h_ab_HOL segment_convex_hull[of a b] by (by100 simp)
+  have h_bc_segment: "closed_segment b c = ?bc"
+    using h_bc_HOL segment_convex_hull[of b c] by (by100 simp)
+  have h_ca_segment: "closed_segment c a = ?ac"
+    using h_ca_HOL segment_convex_hull[of c a] by (by100 simp)
+  have "frontier \<sigma> = ?ab \<union> ?bc \<union> ?ac"
+    using hfront h_ab_segment h_bc_segment h_ca_segment by (by100 simp)
+  also have "... = \<Union>?Pairs"
+    by (by100 auto)
+  also have "... = \<Union>?E"
+    using hE_eq by (by100 simp)
+  finally show ?thesis .
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
