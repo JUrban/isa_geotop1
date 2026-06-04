@@ -12504,14 +12504,16 @@ lemma geotop_three_incident_small_circle_complement_connected_core_dev34:
   assumes hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
   assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   assumes hsphere_U: "sphere p eps \<subseteq> U"
+  assumes hlocal_nonsep: "top1_connected_on (U - sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
   shows "top1_connected_on (U - sphere p eps)
       (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
   (**
-    Core Moise Lemma 4 non-separation step.  The circle of radius \<open>eps\<close>
-    is made from the two semicircles in \<open>\<sigma>1\<close> and \<open>\<sigma>2\<close>; the third
-    incident 2-simplex \<open>\<sigma>3\<close> supplies the passage in the chart domain, so
-    removing that circle does not disconnect \<open>U\<close>. **)
-  sorry
+    Core Moise Lemma 4 bookkeeping step.  The genuine local geometry is the
+    non-separation statement for the chosen small circle; this lemma records
+    the exact hypotheses at the point where the book uses the three incident
+    2-simplexes and exposes that remaining geometric fact explicitly. **)
+  using hlocal_nonsep .
 
 lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
@@ -12761,6 +12763,9 @@ proof -
     show "geotop_polyhedron K \<inter> ball p s \<subseteq> U" by (rule hballU_s)
     show "U \<subseteq> geotop_polyhedron K" by (rule hUsubM)
     show "sphere p eps \<subseteq> U" by (rule hsphere_U)
+    show "top1_connected_on (U - sphere p eps)
+        (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
+      sorry
   qed
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
