@@ -1118,7 +1118,76 @@ proof -
           "geotop_frontier UNIV geotop_euclidean_topology \<sigma> = J"
       proof -
         have h\<sigma>_interior_book_gap: "interior \<sigma> = ?I"
-          sorry
+        proof -
+          let ?E = "geotop_polygon_exterior J"
+          have hI_sub_int_\<sigma>: "?I \<subseteq> interior \<sigma>"
+          proof -
+            have hI_sub_\<sigma>: "?I \<subseteq> \<sigma>"
+              using h\<sigma>_union by (by100 blast)
+            have hI_open_local: "open ?I"
+              by (rule polygon_interior_open[OF hJ])
+            show ?thesis
+              by (rule interior_maximal[OF hI_sub_\<sigma> hI_open_local])
+          qed
+          have hE_front_HOL: "frontier ?E = J"
+          proof -
+            have hE_front_geo:
+              "J = geotop_frontier UNIV geotop_euclidean_topology ?E"
+              using Theorem_GT_2_6(2)[OF hJ] by (by100 simp)
+            have hfront_eq:
+              "geotop_frontier UNIV geotop_euclidean_topology ?E = frontier ?E"
+              by (rule geotop_frontier_UNIV_eq_frontier)
+            show ?thesis
+              using hE_front_geo hfront_eq by (by100 simp)
+          qed
+          have hE_disj_\<sigma>: "?E \<inter> \<sigma> = {}"
+          proof -
+            have hI_E: "?I \<inter> ?E = {}"
+              by (rule polygon_interior_exterior_disjoint[OF hJ])
+            have hE_J: "?E \<inter> J = {}"
+              by (rule polygon_exterior_disjoint_polygon[OF hJ])
+            show ?thesis
+              using h\<sigma>_union hI_E hE_J by (by100 blast)
+          qed
+          have hint_\<sigma>_sub_I: "interior \<sigma> \<subseteq> ?I"
+          proof
+            fix x
+            assume hx: "x \<in> interior \<sigma>"
+            have hx\<sigma>: "x \<in> \<sigma>"
+              using hx interior_subset by (by100 blast)
+            have hx_I_or_J: "x \<in> ?I \<or> x \<in> J"
+              using h\<sigma>_union hx\<sigma> by (by100 blast)
+            show "x \<in> ?I"
+            proof (cases "x \<in> ?I")
+              case True
+              then show ?thesis .
+            next
+              case False
+              have hxJ: "x \<in> J"
+                using hx_I_or_J False by (by100 blast)
+              have hxFrontE: "x \<in> frontier ?E"
+                using hE_front_HOL hxJ by (by100 simp)
+              have hxClosureE: "x \<in> closure ?E"
+                using hxFrontE unfolding Elementary_Topology.frontier_def by (by100 simp)
+              have hx_not_E: "x \<notin> ?E"
+                using hE_disj_\<sigma> hx\<sigma> by (by100 blast)
+              have hxLimE: "x islimpt ?E"
+                using hxClosureE hx_not_E unfolding closure_def by (by100 blast)
+              obtain U where hUopen: "open U" and hxU: "x \<in> U" and hUsub: "U \<subseteq> \<sigma>"
+                using hx unfolding interior_def by (by100 blast)
+              obtain y where hyE: "y \<in> ?E" and hyU: "y \<in> U" and "y \<noteq> x"
+                by (rule islimptE[OF hxLimE hxU hUopen])
+              have hy\<sigma>: "y \<in> \<sigma>"
+                using hUsub hyU by (by100 blast)
+              have False
+                using hE_disj_\<sigma> hyE hy\<sigma> by (by100 blast)
+              then show ?thesis
+                by (by100 blast)
+            qed
+          qed
+          show ?thesis
+            using hI_sub_int_\<sigma> hint_\<sigma>_sub_I by (by100 blast)
+        qed
         have h\<sigma>_closed: "closed \<sigma>"
           by (rule geotop_simplex_dim_closed[OF h\<sigma>2])
         have hfront_HOL: "frontier \<sigma> = J"
