@@ -960,10 +960,36 @@ proof -
                   geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
                   e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
               \<sigma> \<inter> J' = \<Union>E"
-            sorry
+          proof -
+            let ?E\<sigma> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
+            have hE\<sigma>_subset: "?E\<sigma> \<subseteq> K"
+              by (by100 simp)
+            have hE\<sigma>_allowed:
+              "?E\<sigma> = {} \<or>
+               (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
+               (\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                  geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                  geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                  e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+              sorry
+            have h\<sigma>J_eq: "\<sigma> \<inter> J' = \<Union>?E\<sigma>"
+              sorry
+            show ?thesis
+            proof (rule exI[where x = ?E\<sigma>])
+              show "?E\<sigma> \<subseteq> K \<and>
+                (?E\<sigma> = {} \<or>
+                 (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
+                 (\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                    geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                    geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                    e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
+                \<sigma> \<inter> J' = \<Union>?E\<sigma>"
+                by (intro conjI hE\<sigma>_subset hE\<sigma>_allowed h\<sigma>J_eq)
+            qed
+          qed
           show ?thesis
             unfolding geotop_free_2_simplex_def
-            using h\<sigma>K h\<sigma>2 h\<sigma>contact by (by100 blast)
+            by (intro conjI h\<sigma>K h\<sigma>2 h\<sigma>contact)
         qed
         have h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
         proof -
@@ -980,10 +1006,36 @@ proof -
                   geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
                   e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
               \<tau> \<inter> J' = \<Union>E"
-            sorry
+          proof -
+            let ?E\<tau> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
+            have hE\<tau>_subset: "?E\<tau> \<subseteq> K"
+              by (by100 simp)
+            have hE\<tau>_allowed:
+              "?E\<tau> = {} \<or>
+               (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
+               (\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                  geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                  geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                  e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+              sorry
+            have h\<tau>J_eq: "\<tau> \<inter> J' = \<Union>?E\<tau>"
+              sorry
+            show ?thesis
+            proof (rule exI[where x = ?E\<tau>])
+              show "?E\<tau> \<subseteq> K \<and>
+                (?E\<tau> = {} \<or>
+                 (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
+                 (\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                    geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                    geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                    e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
+                \<tau> \<inter> J' = \<Union>?E\<tau>"
+                by (intro conjI hE\<tau>_subset hE\<tau>_allowed h\<tau>J_eq)
+            qed
+          qed
           show ?thesis
             unfolding geotop_free_2_simplex_def
-            using h\<tau>K h\<tau>2 h\<tau>contact by (by100 blast)
+            by (intro conjI h\<tau>K h\<tau>2 h\<tau>contact)
         qed
         have hF_fin: "finite ?F"
           using hK_fin' by (by100 simp)
