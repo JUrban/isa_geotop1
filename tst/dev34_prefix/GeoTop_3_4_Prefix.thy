@@ -1502,6 +1502,41 @@ proof
     using hfront_sub hx_frontier by (by100 blast)
 qed
 
+lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "\<sigma> \<inter> J \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  (**
+    Book base case, exactly two 2-simplexes: the part of a triangle on the
+    polygon boundary is a union of whole edge faces of that triangle.  This is
+    the strengthened form of the preceding frontier-cover lemma needed to make
+    the definition of free 2-simplex literal. **)
+  sorry
+
+lemma geotop_two_triangle_not_all_boundary_edges_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<noteq> 3"
+  (**
+    Book base case, exactly two 2-simplexes: one triangle cannot have all
+    three edge faces lying on the polygon boundary, since the second
+    2-simplex must attach across some edge in the disk triangulation. **)
+  sorry
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
@@ -1608,10 +1643,16 @@ proof -
           using hpair by (by100 simp)
         have hT_eq: "?T = {\<sigma>, \<tau>}"
           using hpair by (by100 simp)
+        have hpair_swap_eq: "{\<sigma>, \<tau>} = {\<tau>, \<sigma>}"
+          by (rule insert_commute)
+        have hT_eq_swap: "?T = {\<tau>, \<sigma>}"
+          using hT_eq hpair_swap_eq by (by100 simp)
         have h\<sigma>T: "\<sigma> \<in> ?T"
           using hT_eq by (by100 simp)
         have h\<tau>T: "\<tau> \<in> ?T"
           using hT_eq by (by100 simp)
+        have h\<tau>\<sigma>: "\<tau> \<noteq> \<sigma>"
+          using h\<sigma>\<tau> by (by100 simp)
         \<comment> \<open>Book base case: with exactly two 2-simplexes, each has all of its
           boundary contact with \<open>J'\<close> in one or two edge faces, so both are free.\<close>
         have h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
@@ -1660,8 +1701,11 @@ proof -
                     "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} = ?E\<sigma>"
                   by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
                       [OF h\<sigma>2 hE\<sigma>_card3])
+                have hE\<sigma>_not3: "card ?E\<sigma> \<noteq> 3"
+                  by (rule geotop_two_triangle_not_all_boundary_edges_prefix
+                      [OF hJ' hK' hK_poly' hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
                 show False
-                  sorry
+                  using hE\<sigma>_not3 hE\<sigma>_card3 by (by100 blast)
               qed
               show ?thesis
                 using hE\<sigma>_card_le3 hE\<sigma>_card_ne3 by (by100 linarith)
@@ -1765,7 +1809,8 @@ proof -
             have h\<sigma>J_eq: "\<sigma> \<inter> J' = \<Union>?E\<sigma>"
             proof
               show "\<sigma> \<inter> J' \<subseteq> \<Union>?E\<sigma>"
-                sorry
+                by (rule geotop_two_triangle_boundary_contact_edges_cover_prefix
+                    [OF hJ' hK' hK_poly' hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
               show "\<Union>?E\<sigma> \<subseteq> \<sigma> \<inter> J'"
               proof
                 fix x
@@ -1845,8 +1890,11 @@ proof -
                     "{e. geotop_is_edge e \<and> geotop_is_face e \<tau>} = ?E\<tau>"
                   by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
                       [OF h\<tau>2 hE\<tau>_card3])
+                have hE\<tau>_not3: "card ?E\<tau> \<noteq> 3"
+                  by (rule geotop_two_triangle_not_all_boundary_edges_prefix
+                      [OF hJ' hK' hK_poly' hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
                 show False
-                  sorry
+                  using hE\<tau>_not3 hE\<tau>_card3 by (by100 blast)
               qed
               show ?thesis
                 using hE\<tau>_card_le3 hE\<tau>_card_ne3 by (by100 linarith)
@@ -1950,7 +1998,8 @@ proof -
             have h\<tau>J_eq: "\<tau> \<inter> J' = \<Union>?E\<tau>"
             proof
               show "\<tau> \<inter> J' \<subseteq> \<Union>?E\<tau>"
-                sorry
+                by (rule geotop_two_triangle_boundary_contact_edges_cover_prefix
+                    [OF hJ' hK' hK_poly' hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
               show "\<Union>?E\<tau> \<subseteq> \<tau> \<inter> J'"
               proof
                 fix x
