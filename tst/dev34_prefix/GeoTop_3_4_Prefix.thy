@@ -1097,7 +1097,29 @@ proof -
     qed
     have hJ_frontier:
         "(\<lambda>x::real^2. x) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-      sorry
+    proof -
+      let ?I = "geotop_polygon_interior J"
+      have hI_front_HOL: "frontier ?I = J"
+      proof -
+        have hI_front_geo:
+          "geotop_frontier UNIV geotop_euclidean_topology ?I = J"
+          using Theorem_GT_2_6(1)[OF hJ] by (by100 simp)
+        have hfront_eq:
+          "geotop_frontier UNIV geotop_euclidean_topology ?I = frontier ?I"
+          by (rule geotop_frontier_UNIV_eq_frontier)
+        show ?thesis
+          using hI_front_geo hfront_eq by (by100 simp)
+      qed
+      have h\<sigma>_union: "\<sigma> = ?I \<union> J"
+        using hclosure_sigma polygon_interior_closure_eq[OF hJ] by (by100 simp)
+      have hI_disj_J: "?I \<inter> J = {}"
+        by (rule polygon_interior_disjoint_polygon[OF hJ])
+      have h\<sigma>_front_book_gap:
+          "geotop_frontier UNIV geotop_euclidean_topology \<sigma> = J"
+        sorry
+      show ?thesis
+        using h\<sigma>_front_book_gap by (by100 simp)
+    qed
     have hsig_ex: "\<exists>\<sigma>::(real^2) set.
         top1_homeomorphism_on UNIV geotop_euclidean_topology
           UNIV geotop_euclidean_topology (\<lambda>x::real^2. x)
