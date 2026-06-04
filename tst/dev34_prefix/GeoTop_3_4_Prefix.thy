@@ -1653,6 +1653,28 @@ lemma geotop_two_triangle_not_all_boundary_edges_prefix:
     2-simplex must attach across some edge in the disk triangulation. **)
   sorry
 
+lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  shows "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma>
+     \<and> e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)
+     \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau>
+     \<and> e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)"
+  (**
+    Book induction step in Theorem 3.3: when the disk triangulation has more
+    than two 2-simplexes, at least two 2-simplexes each have an edge in
+    \<open>Fr |K|\<close>.  The book does not require these two simplexes to share that
+    boundary edge. **)
+  sorry
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
@@ -2166,12 +2188,16 @@ proof -
         assume hT_gt2: "card ?T > 2"
         \<comment> \<open>Book step: choose two 2-simplexes with an edge in \<open>Fr |K|\<close>.\<close>
         have hboundary_pair:
-          "\<exists>\<sigma> \<tau> e. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+          "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
              \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
-             \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> geotop_is_face e \<tau>
-             \<and> e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+             \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma>
+             \<and> e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+                    (geotop_polyhedron K)
+             \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau>
+             \<and> e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
                     (geotop_polyhedron K)"
-          sorry
+          by (rule geotop_polygon_disk_two_boundary_2simplexes_prefix
+              [OF hJ' hK' hK_poly' hT_gt2])
         \<comment> \<open>If both boundary simplexes are free, the two free simplexes are already found.\<close>
         have hboth_free_case:
           "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
