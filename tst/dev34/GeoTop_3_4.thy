@@ -13007,12 +13007,14 @@ lemma geotop_2cell_chart_1sphere_jordan_transfer_core_dev34:
   assumes hJsub: "J \<subseteq> U"
   assumes hJsphere: "geotop_is_n_sphere J
       (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes himage_sep: "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
   shows "\<not> top1_connected_on (U - J)
       (subspace_topology UNIV geotop_euclidean_topology (U - J))"
   (**
-    Core boundary-chart Jordan transfer.  Transport the 2-cell closure of
-    \<open>U\<close> to a 2-simplex, identify the open chart part with its disk interior,
-    and apply the Jordan curve theorem to the image of the 1-sphere \<open>J\<close>. **)
+    Core boundary-chart separation transfer.  The genuinely geometric book
+    work is the image-side separation statement; this lemma only pulls that
+    statement back across the chart homeomorphism. **)
 proof -
   let ?T = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
   let ?C = "closure_on M ?T U"
@@ -13114,7 +13116,7 @@ proof -
   have hsimplex_chart_sep:
       "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
-    sorry
+    using himage_sep .
   have hpullback_sep:
       "\<not> top1_connected_on (U - J)
         (subspace_topology UNIV geotop_euclidean_topology (U - J))"
@@ -13314,6 +13316,9 @@ proof -
     show "geotop_is_n_sphere J
         (subspace_topology UNIV geotop_euclidean_topology J) 1"
       by (rule hJsphere)
+    show "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+      sorry
   qed
   show ?thesis
     using hJ_separates_U .
