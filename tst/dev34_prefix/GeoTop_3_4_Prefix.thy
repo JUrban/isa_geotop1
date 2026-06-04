@@ -904,6 +904,25 @@ proof -
     by (rule that[OF h\<sigma>V hW_ne hW_sub he_eq heW hW_card])
 qed
 
+lemma geotop_is_face_imp_subset_prefix:
+  fixes \<tau> \<sigma> :: "(real^2) set"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<tau> \<subseteq> \<sigma>"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_sub: "W \<subseteq> V"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  obtain m n where h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hmono: "convex hull W \<subseteq> convex hull V"
+    by (rule hull_mono[OF hW_sub])
+  show ?thesis
+    using hmono h\<tau>_eq h\<sigma>_eq geotop_convex_hull_eq_HOL[of W]
+      geotop_convex_hull_eq_HOL[of V]
+    by (by100 simp)
+qed
+
 lemma geotop_2simplex_edge_faces_card_le3_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
@@ -1374,7 +1393,25 @@ proof -
               qed
             qed
             have h\<sigma>J_eq: "\<sigma> \<inter> J' = \<Union>?E\<sigma>"
-              sorry
+            proof
+              show "\<sigma> \<inter> J' \<subseteq> \<Union>?E\<sigma>"
+                sorry
+              show "\<Union>?E\<sigma> \<subseteq> \<sigma> \<inter> J'"
+              proof
+                fix x
+                assume hx: "x \<in> \<Union>?E\<sigma>"
+                then obtain e where heE: "e \<in> ?E\<sigma>" and hxe: "x \<in> e"
+                  by (by100 blast)
+                have hface: "geotop_is_face e \<sigma>"
+                  using heE by (by100 simp)
+                have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+                  by (rule geotop_is_face_imp_subset_prefix[OF hface])
+                have he_sub_J: "e \<subseteq> J'"
+                  using heE by (by100 simp)
+                show "x \<in> \<sigma> \<inter> J'"
+                  using hxe he_sub_\<sigma> he_sub_J by (by100 blast)
+              qed
+            qed
             show ?thesis
             proof (rule exI[where x = ?E\<sigma>])
               show "?E\<sigma> \<subseteq> K \<and>
@@ -1541,7 +1578,25 @@ proof -
               qed
             qed
             have h\<tau>J_eq: "\<tau> \<inter> J' = \<Union>?E\<tau>"
-              sorry
+            proof
+              show "\<tau> \<inter> J' \<subseteq> \<Union>?E\<tau>"
+                sorry
+              show "\<Union>?E\<tau> \<subseteq> \<tau> \<inter> J'"
+              proof
+                fix x
+                assume hx: "x \<in> \<Union>?E\<tau>"
+                then obtain e where heE: "e \<in> ?E\<tau>" and hxe: "x \<in> e"
+                  by (by100 blast)
+                have hface: "geotop_is_face e \<tau>"
+                  using heE by (by100 simp)
+                have he_sub_\<tau>: "e \<subseteq> \<tau>"
+                  by (rule geotop_is_face_imp_subset_prefix[OF hface])
+                have he_sub_J: "e \<subseteq> J'"
+                  using heE by (by100 simp)
+                show "x \<in> \<tau> \<inter> J'"
+                  using hxe he_sub_\<tau> he_sub_J by (by100 blast)
+              qed
+            qed
             show ?thesis
             proof (rule exI[where x = ?E\<tau>])
               show "?E\<tau> \<subseteq> K \<and>
