@@ -921,7 +921,45 @@ proof -
         using hK_fin' by (by100 simp)
       have hbase_two:
         "card ?T = 2 \<Longrightarrow> card ?F \<ge> 2"
-        sorry
+      proof -
+        assume hT_card2: "card ?T = 2"
+        have hT_obtain:
+          "\<exists>\<sigma> \<tau>. \<sigma> \<noteq> \<tau> \<and> ?T = {\<sigma>, \<tau>}"
+        proof -
+          have "\<exists>\<sigma> \<tau>. ?T = {\<sigma>, \<tau>} \<and> \<sigma> \<noteq> \<tau>"
+            using hT_card2 card_2_iff[of ?T] by (by100 simp)
+          then obtain \<sigma> \<tau> where hT: "?T = {\<sigma>, \<tau>}" and hneq: "\<sigma> \<noteq> \<tau>"
+            by (elim exE conjE)
+          show ?thesis
+            using hT hneq by (by100 blast)
+        qed
+        obtain \<sigma> \<tau> where hpair: "\<sigma> \<noteq> \<tau> \<and> ?T = {\<sigma>, \<tau>}"
+          using hT_obtain by (elim exE)
+        have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+          using hpair by (by100 simp)
+        have hT_eq: "?T = {\<sigma>, \<tau>}"
+          using hpair by (by100 simp)
+        have h\<sigma>T: "\<sigma> \<in> ?T"
+          using hT_eq by (by100 simp)
+        have h\<tau>T: "\<tau> \<in> ?T"
+          using hT_eq by (by100 simp)
+        \<comment> \<open>Book base case: with exactly two 2-simplexes, each has all of its
+          boundary contact with \<open>J'\<close> in one or two edge faces, so both are free.\<close>
+        have h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
+          sorry
+        have h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
+          sorry
+        have hF_fin: "finite ?F"
+          using hK_fin' by (by100 simp)
+        have hpair_sub: "{\<sigma>, \<tau>} \<subseteq> ?F"
+          using h\<sigma>T h\<tau>T h\<sigma>free h\<tau>free by (by100 blast)
+        have hpair_card: "card {\<sigma>, \<tau>} = 2"
+          using h\<sigma>\<tau> by (by100 simp)
+        have "card {\<sigma>, \<tau>} \<le> card ?F"
+          by (rule card_mono[OF hF_fin hpair_sub])
+        thus "card ?F \<ge> 2"
+          using hpair_card by (by100 simp)
+      qed
       have hstep_more_than_two:
         "card ?T > 2 \<Longrightarrow> card ?F \<ge> 2"
       proof -
