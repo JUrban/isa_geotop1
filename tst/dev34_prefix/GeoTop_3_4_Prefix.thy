@@ -964,6 +964,10 @@ proof -
             let ?E\<sigma> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'}"
             have hE\<sigma>_subset: "?E\<sigma> \<subseteq> K"
               by (by100 simp)
+            have hE\<sigma>_fin: "finite ?E\<sigma>"
+              using hK_fin' by (by100 simp)
+            have hE\<sigma>_card_le2: "card ?E\<sigma> \<le> 2"
+              sorry
             have hE\<sigma>_allowed:
               "?E\<sigma> = {} \<or>
                (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
@@ -971,7 +975,95 @@ proof -
                   geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
                   geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
                   e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
-              sorry
+            proof -
+              have hcases: "card ?E\<sigma> = 0 \<or> card ?E\<sigma> = 1 \<or> card ?E\<sigma> = 2"
+                using hE\<sigma>_card_le2 by (by100 linarith)
+              show ?thesis
+              proof (cases "card ?E\<sigma> = 0")
+                case True
+                have "?E\<sigma> = {}"
+                  using hE\<sigma>_fin True by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                case False
+                show ?thesis
+                proof (cases "card ?E\<sigma> = 1")
+                  case True
+                  have hsingle: "\<exists>e. ?E\<sigma> = {e}"
+                    using True card_1_singleton_iff[of ?E\<sigma>] by (by100 simp)
+                  obtain e where hE: "?E\<sigma> = {e}"
+                    using hsingle by (elim exE)
+                  have he: "e \<in> ?E\<sigma>"
+                    using hE by (by100 simp)
+                  have hedge: "geotop_is_edge e"
+                    using he by (by100 simp)
+                  have hface: "geotop_is_face e \<sigma>"
+                    using he by (by100 simp)
+                  have hsub: "e \<subseteq> J'"
+                    using he by (by100 simp)
+                  show ?thesis
+                  proof (rule disjI2)
+                    show "(\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
+                      (\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                         geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                         geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                         e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                    proof (rule disjI1)
+                      show "\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'"
+                      proof (rule exI[where x = e])
+                        show "?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J'"
+                          by (intro conjI hE hedge hface hsub)
+                      qed
+                    qed
+                  qed
+                next
+                  case False
+                  have hcard2: "card ?E\<sigma> = 2"
+                    using hcases \<open>card ?E\<sigma> \<noteq> 0\<close> False by (by100 simp)
+                  have hdouble: "\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2"
+                    using hcard2 card_2_iff[of ?E\<sigma>] by (by100 simp)
+                  obtain e1 e2 where hE: "?E\<sigma> = {e1, e2}" and hneq: "e1 \<noteq> e2"
+                    using hdouble by (elim exE conjE)
+                  have he1: "e1 \<in> ?E\<sigma>"
+                    using hE by (by100 simp)
+                  have he2: "e2 \<in> ?E\<sigma>"
+                    using hE by (by100 simp)
+                  have he1_edge: "geotop_is_edge e1"
+                    using he1 by (by100 simp)
+                  have he2_edge: "geotop_is_edge e2"
+                    using he2 by (by100 simp)
+                  have he1_face: "geotop_is_face e1 \<sigma>"
+                    using he1 by (by100 simp)
+                  have he2_face: "geotop_is_face e2 \<sigma>"
+                    using he2 by (by100 simp)
+                  have he1_sub: "e1 \<subseteq> J'"
+                    using he1 by (by100 simp)
+                  have he2_sub: "e2 \<subseteq> J'"
+                    using he2 by (by100 simp)
+                  show ?thesis
+                  proof (rule disjI2)
+                    show "(\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
+                      (\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                         geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                         geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                         e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                    proof (rule disjI2)
+                      show "\<exists>e1 e2. ?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                        geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                        e1 \<subseteq> J' \<and> e2 \<subseteq> J'"
+                      proof (rule exI[where x = e1], rule exI[where x = e2])
+                        show "?E\<sigma> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                          geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                          e1 \<subseteq> J' \<and> e2 \<subseteq> J'"
+                          by (intro conjI hE hneq he1_edge he2_edge he1_face he2_face he1_sub he2_sub)
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
             have h\<sigma>J_eq: "\<sigma> \<inter> J' = \<Union>?E\<sigma>"
               sorry
             show ?thesis
@@ -1010,6 +1102,10 @@ proof -
             let ?E\<tau> = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'}"
             have hE\<tau>_subset: "?E\<tau> \<subseteq> K"
               by (by100 simp)
+            have hE\<tau>_fin: "finite ?E\<tau>"
+              using hK_fin' by (by100 simp)
+            have hE\<tau>_card_le2: "card ?E\<tau> \<le> 2"
+              sorry
             have hE\<tau>_allowed:
               "?E\<tau> = {} \<or>
                (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
@@ -1017,7 +1113,95 @@ proof -
                   geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
                   geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
                   e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
-              sorry
+            proof -
+              have hcases: "card ?E\<tau> = 0 \<or> card ?E\<tau> = 1 \<or> card ?E\<tau> = 2"
+                using hE\<tau>_card_le2 by (by100 linarith)
+              show ?thesis
+              proof (cases "card ?E\<tau> = 0")
+                case True
+                have "?E\<tau> = {}"
+                  using hE\<tau>_fin True by (by100 simp)
+                thus ?thesis by (by100 simp)
+              next
+                case False
+                show ?thesis
+                proof (cases "card ?E\<tau> = 1")
+                  case True
+                  have hsingle: "\<exists>e. ?E\<tau> = {e}"
+                    using True card_1_singleton_iff[of ?E\<tau>] by (by100 simp)
+                  obtain e where hE: "?E\<tau> = {e}"
+                    using hsingle by (elim exE)
+                  have he: "e \<in> ?E\<tau>"
+                    using hE by (by100 simp)
+                  have hedge: "geotop_is_edge e"
+                    using he by (by100 simp)
+                  have hface: "geotop_is_face e \<tau>"
+                    using he by (by100 simp)
+                  have hsub: "e \<subseteq> J'"
+                    using he by (by100 simp)
+                  show ?thesis
+                  proof (rule disjI2)
+                    show "(\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
+                      (\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                         geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                         geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                         e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                    proof (rule disjI1)
+                      show "\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'"
+                      proof (rule exI[where x = e])
+                        show "?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J'"
+                          by (intro conjI hE hedge hface hsub)
+                      qed
+                    qed
+                  qed
+                next
+                  case False
+                  have hcard2: "card ?E\<tau> = 2"
+                    using hcases \<open>card ?E\<tau> \<noteq> 0\<close> False by (by100 simp)
+                  have hdouble: "\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2"
+                    using hcard2 card_2_iff[of ?E\<tau>] by (by100 simp)
+                  obtain e1 e2 where hE: "?E\<tau> = {e1, e2}" and hneq: "e1 \<noteq> e2"
+                    using hdouble by (elim exE conjE)
+                  have he1: "e1 \<in> ?E\<tau>"
+                    using hE by (by100 simp)
+                  have he2: "e2 \<in> ?E\<tau>"
+                    using hE by (by100 simp)
+                  have he1_edge: "geotop_is_edge e1"
+                    using he1 by (by100 simp)
+                  have he2_edge: "geotop_is_edge e2"
+                    using he2 by (by100 simp)
+                  have he1_face: "geotop_is_face e1 \<tau>"
+                    using he1 by (by100 simp)
+                  have he2_face: "geotop_is_face e2 \<tau>"
+                    using he2 by (by100 simp)
+                  have he1_sub: "e1 \<subseteq> J'"
+                    using he1 by (by100 simp)
+                  have he2_sub: "e2 \<subseteq> J'"
+                    using he2 by (by100 simp)
+                  show ?thesis
+                  proof (rule disjI2)
+                    show "(\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
+                      (\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                         geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                         geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                         e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+                    proof (rule disjI2)
+                      show "\<exists>e1 e2. ?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                        geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                        e1 \<subseteq> J' \<and> e2 \<subseteq> J'"
+                      proof (rule exI[where x = e1], rule exI[where x = e2])
+                        show "?E\<tau> = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                          geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                          e1 \<subseteq> J' \<and> e2 \<subseteq> J'"
+                          by (intro conjI hE hneq he1_edge he2_edge he1_face he2_face he1_sub he2_sub)
+                      qed
+                    qed
+                  qed
+                qed
+              qed
+            qed
             have h\<tau>J_eq: "\<tau> \<inter> J' = \<Union>?E\<tau>"
               sorry
             show ?thesis
