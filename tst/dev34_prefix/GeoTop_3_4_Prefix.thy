@@ -1653,6 +1653,46 @@ lemma geotop_two_triangle_not_all_boundary_edges_prefix:
     2-simplex must attach across some edge in the disk triangulation. **)
   sorry
 
+lemma geotop_two_triangle_boundary_edge_faces_card_le2_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+  (**
+    Cardinal bookkeeping for the two-triangle base case: among the three edge
+    faces of a 2-simplex, at most two can be selected as polygon-boundary
+    edges. **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  have hE_card_le3: "card ?E \<le> 3"
+  proof -
+    let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    have hA: "finite ?A \<and> card ?A \<le> 3"
+      by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<sigma>2])
+    have hA_fin: "finite ?A"
+      using hA by (by100 blast)
+    have hA_card: "card ?A \<le> 3"
+      using hA by (by100 blast)
+    have hE_sub_A: "?E \<subseteq> ?A"
+      by (by100 blast)
+    have "card ?E \<le> card ?A"
+      by (rule card_mono[OF hA_fin hE_sub_A])
+    thus ?thesis
+      using hA_card by (by100 linarith)
+  qed
+  have hE_card_ne3: "card ?E \<noteq> 3"
+    by (rule geotop_two_triangle_not_all_boundary_edges_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
+  show ?thesis
+    using hE_card_le3 hE_card_ne3 by (by100 linarith)
+qed
+
 lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -1984,39 +2024,8 @@ proof -
             have hE\<sigma>_fin: "finite ?E\<sigma>"
               using hK_fin' by (by100 simp)
             have hE\<sigma>_card_le2: "card ?E\<sigma> \<le> 2"
-            proof -
-              have hE\<sigma>_card_le3: "card ?E\<sigma> \<le> 3"
-              proof -
-                let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
-                have hA: "finite ?A \<and> card ?A \<le> 3"
-                  by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<sigma>2])
-                have hA_fin: "finite ?A"
-                  using hA by (by100 blast)
-                have hA_card: "card ?A \<le> 3"
-                  using hA by (by100 blast)
-                have hE_sub_A: "?E\<sigma> \<subseteq> ?A"
-                  by (by100 blast)
-                have "card ?E\<sigma> \<le> card ?A"
-                  by (rule card_mono[OF hA_fin hE_sub_A])
-                thus ?thesis
-                  using hA_card by (by100 linarith)
-              qed
-              have hE\<sigma>_card_ne3: "card ?E\<sigma> \<noteq> 3"
-              proof
-                assume hE\<sigma>_card3: "card ?E\<sigma> = 3"
-                have hE\<sigma>_all_boundary:
-                    "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} = ?E\<sigma>"
-                  by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
-                      [OF h\<sigma>2 hE\<sigma>_card3])
-                have hE\<sigma>_not3: "card ?E\<sigma> \<noteq> 3"
-                  by (rule geotop_two_triangle_not_all_boundary_edges_prefix
-                      [OF hJ' hK' hK_poly' hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
-                show False
-                  using hE\<sigma>_not3 hE\<sigma>_card3 by (by100 blast)
-              qed
-              show ?thesis
-                using hE\<sigma>_card_le3 hE\<sigma>_card_ne3 by (by100 linarith)
-            qed
+              by (rule geotop_two_triangle_boundary_edge_faces_card_le2_prefix
+                  [OF hJ' hK' hK_poly' hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
             have hE\<sigma>_allowed:
               "?E\<sigma> = {} \<or>
                (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
@@ -2173,39 +2182,8 @@ proof -
             have hE\<tau>_fin: "finite ?E\<tau>"
               using hK_fin' by (by100 simp)
             have hE\<tau>_card_le2: "card ?E\<tau> \<le> 2"
-            proof -
-              have hE\<tau>_card_le3: "card ?E\<tau> \<le> 3"
-              proof -
-                let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau>}"
-                have hA: "finite ?A \<and> card ?A \<le> 3"
-                  by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<tau>2])
-                have hA_fin: "finite ?A"
-                  using hA by (by100 blast)
-                have hA_card: "card ?A \<le> 3"
-                  using hA by (by100 blast)
-                have hE_sub_A: "?E\<tau> \<subseteq> ?A"
-                  by (by100 blast)
-                have "card ?E\<tau> \<le> card ?A"
-                  by (rule card_mono[OF hA_fin hE_sub_A])
-                thus ?thesis
-                  using hA_card by (by100 linarith)
-              qed
-              have hE\<tau>_card_ne3: "card ?E\<tau> \<noteq> 3"
-              proof
-                assume hE\<tau>_card3: "card ?E\<tau> = 3"
-                have hE\<tau>_all_boundary:
-                    "{e. geotop_is_edge e \<and> geotop_is_face e \<tau>} = ?E\<tau>"
-                  by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
-                      [OF h\<tau>2 hE\<tau>_card3])
-                have hE\<tau>_not3: "card ?E\<tau> \<noteq> 3"
-                  by (rule geotop_two_triangle_not_all_boundary_edges_prefix
-                      [OF hJ' hK' hK_poly' hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
-                show False
-                  using hE\<tau>_not3 hE\<tau>_card3 by (by100 blast)
-              qed
-              show ?thesis
-                using hE\<tau>_card_le3 hE\<tau>_card_ne3 by (by100 linarith)
-            qed
+              by (rule geotop_two_triangle_boundary_edge_faces_card_le2_prefix
+                  [OF hJ' hK' hK_poly' hT_eq_swap h\<tau>K h\<tau>2 h\<tau>\<sigma>])
             have hE\<tau>_allowed:
               "?E\<tau> = {} \<or>
                (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
