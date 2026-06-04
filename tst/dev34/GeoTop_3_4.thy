@@ -13273,13 +13273,22 @@ lemma geotop_2cell_chart_1sphere_complement_not_connected_dev34:
   assumes hJsub: "J \<subseteq> U"
   assumes hJsphere: "geotop_is_n_sphere J
       (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes himage_sep:
+    "\<And>(\<sigma> :: (real^2) set) (\<phi> :: real^2 \<Rightarrow> real^2).
+      geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      top1_homeomorphism_on
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+        (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+          (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi> \<Longrightarrow>
+      \<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
   shows "\<not> top1_connected_on (U - J)
       (subspace_topology UNIV geotop_euclidean_topology (U - J))"
   (**
-    Moise Lemma 4, boundary-chart version: in a chart whose closure is a
-    2-cell, a small 1-sphere lying in the open chart part separates that chart
-    part.  Transport the 2-cell to a 2-simplex/disk and apply the Jordan curve
-    theorem to the image of \<open>J\<close>. **)
+    Boundary-chart separation wrapper.  Transport the 2-cell closure of
+    \<open>U\<close> to a 2-simplex and pull back the image-side separation supplied by
+    the book's local Jordan argument for the chosen chart. **)
 proof -
   let ?T = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
   let ?C = "closure_on M ?T U"
@@ -13323,7 +13332,15 @@ proof -
       by (rule hJsphere)
     show "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
-      sorry
+    proof (rule himage_sep)
+      show "geotop_simplex_dim \<sigma> 2" by (rule h\<sigma>2)
+      show "top1_homeomorphism_on
+          (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+          (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+            (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+          \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+        by (rule h\<phi>)
+    qed
   qed
   show ?thesis
     using hJ_separates_U .
@@ -13361,10 +13378,21 @@ proof -
       [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
     by (by100 blast)
   let ?M = "geotop_polyhedron K"
+  have hchart_image_sep:
+    "\<And>(\<sigma> :: (real^2) set) (\<phi> :: real^2 \<Rightarrow> real^2).
+      geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      top1_homeomorphism_on
+        (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
+        (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
+          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
+        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi> \<Longrightarrow>
+      \<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+    sorry
   have hJnotconn: "\<not> top1_connected_on (U - J)
       (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     by (rule geotop_2cell_chart_1sphere_complement_not_connected_dev34
-        [OF hUopen hcell hJsub hJsphere])
+        [OF hUopen hcell hJsub hJsphere hchart_image_sep])
   show False
     using hJconn hJnotconn by (by100 blast)
 qed
