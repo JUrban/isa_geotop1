@@ -1502,6 +1502,49 @@ proof
     using hfront_sub hx_frontier by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_polyhedron_connected_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "connected (geotop_polyhedron K)"
+  (**
+    The disk carrier used in Theorem 3.3 is connected: the polygon interior is
+    a connected component of the complement of the polygon, and taking closure
+    preserves connectedness. **)
+proof -
+  have hJ_sph: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  have hI_comp: "geotop_polygon_interior J \<in> components (UNIV - J)"
+    by (rule polygon_interior_is_HOL_component[OF hJ_sph])
+  have hI_conn: "connected (geotop_polygon_interior J)"
+    using hI_comp in_components_connected by (by100 blast)
+  have hclosure_conn: "connected (closure (geotop_polygon_interior J))"
+    by (rule connected_imp_connected_closure[OF hI_conn])
+  have hclos_on: "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      = closure (geotop_polygon_interior J)"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  show ?thesis
+    using hK_poly hclos_on hclosure_conn by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_polyhedron_top1_connected_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "top1_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+  (**
+    Topological-form wrapper for the connected disk carrier. **)
+proof -
+  have hconn: "connected (geotop_polyhedron K)"
+    by (rule geotop_polygon_disk_polyhedron_connected_prefix[OF hJ hK_poly])
+  show ?thesis
+    using hconn top1_connected_on_geotop_iff_connected by (by100 blast)
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
