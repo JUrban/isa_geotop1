@@ -858,7 +858,8 @@ qed
 theorem Theorem_GT_3_4:
   fixes J :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
-  shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+  shows "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+                 top1_homeomorphism_on UNIV geotop_euclidean_topology
                  UNIV geotop_euclidean_topology h
           \<and> geotop_simplex_dim \<sigma> 2
           \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
@@ -885,11 +886,88 @@ proof -
           geotop_polyhedron K =
             closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
           card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 1 \<Longrightarrow>
-          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+          \<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-    sorry
+  proof -
+    fix K :: "(real^2) set set"
+    assume hK: "geotop_is_complex K"
+      and hK_fin: "finite K"
+      and hK_poly:
+        "geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      and hcard_one: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} = 1"
+    obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and hunique2: "\<And>\<tau>. \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow> \<tau> = \<sigma>"
+    proof -
+      let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+      have hS_fin: "finite ?S"
+        using hK_fin by (by100 simp)
+      have hS_ne: "?S \<noteq> {}"
+        using hcard_one by (by100 force)
+      obtain \<sigma> where h\<sigma>S: "\<sigma> \<in> ?S"
+        using hS_ne by (by100 blast)
+      have hS_eq: "?S = {\<sigma>}"
+      proof -
+        obtain \<sigma>' where hS_singleton: "?S = {\<sigma>'}"
+          using hcard_one by (rule card_1_singletonE)
+        have "\<sigma> = \<sigma>'"
+          using hS_singleton h\<sigma>S by (by100 simp)
+        thus ?thesis
+          using hS_singleton by (by100 simp)
+      qed
+      have h\<sigma>K: "\<sigma> \<in> K"
+        using h\<sigma>S by (by100 simp)
+      have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+        using h\<sigma>S by (by100 simp)
+      have hunique2: "\<And>\<tau>. \<tau> \<in> K \<Longrightarrow> geotop_simplex_dim \<tau> 2 \<Longrightarrow> \<tau> = \<sigma>"
+      proof -
+        fix \<tau>
+        assume h\<tau>K: "\<tau> \<in> K" and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        have "\<tau> \<in> ?S"
+          using h\<tau>K h\<tau>2 by (by100 simp)
+        thus "\<tau> = \<sigma>"
+          using hS_eq by (by100 simp)
+      qed
+      show ?thesis
+        by (rule that[OF h\<sigma>K h\<sigma>2 hunique2])
+    qed
+    have hid_homeo: "top1_homeomorphism_on UNIV geotop_euclidean_topology
+        UNIV geotop_euclidean_topology (\<lambda>x::real^2. x)"
+    proof -
+      have htop: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets
+        by (rule top1_open_sets_is_topology_on_UNIV)
+      show ?thesis
+        using top1_homeomorphism_on_id[OF htop] unfolding id_def by (by100 simp)
+    qed
+    have hJ_frontier:
+        "(\<lambda>x::real^2. x) ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      sorry
+    have hsig_ex: "\<exists>\<sigma>::(real^2) set.
+        top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology (\<lambda>x::real^2. x)
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> (\<lambda>x::real^2. x) ` J =
+          geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+    proof (rule exI[where x = \<sigma>])
+      show "top1_homeomorphism_on UNIV geotop_euclidean_topology
+          UNIV geotop_euclidean_topology (\<lambda>x::real^2. x)
+        \<and> geotop_simplex_dim \<sigma> 2
+        \<and> (\<lambda>x::real^2. x) ` J =
+          geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+        using hid_homeo h\<sigma>2 hJ_frontier by (by100 blast)
+    qed
+    show "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+             top1_homeomorphism_on UNIV geotop_euclidean_topology
+             UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      using hsig_ex by (by100 blast)
+  qed
   \<comment> \<open>Sub-claim 34-Step: if K has > 1 two-simplex, find a free 2-simplex (via
     GT_3_3); fold it to reduce #2-simplexes; apply IH on the reduced complex.
     Each fold gives a homeomorphism plane → plane; compose at the end.\<close>
@@ -898,7 +976,8 @@ proof -
           geotop_polyhedron K =
             closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
           card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
-          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+          \<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
@@ -1010,7 +1089,8 @@ proof -
     "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
           geotop_polyhedron K =
             closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<Longrightarrow>
-          \<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+          \<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+              top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
@@ -1022,7 +1102,8 @@ proof -
                   closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
     have h_card_pos: "card {\<sigma>\<in>K'. geotop_simplex_dim \<sigma> 2} \<ge> 1"
       using ind_nonempty[OF h1 h2 h3] .
-    show "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+    show "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+                   top1_homeomorphism_on UNIV geotop_euclidean_topology
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
