@@ -1785,6 +1785,65 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  shows "\<exists>\<sigma> \<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<noteq> {}
+     \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J} \<noteq> {}"
+  (**
+    Nonempty-edge-set form of the same book step: the two boundary 2-simplexes
+    each contribute at least one selected boundary edge. **)
+proof -
+  have hselected:
+    "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}
+     \<and> e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+    by (rule geotop_polygon_disk_two_selected_boundary_2simplexes_prefix
+        [OF hJ hK hK_poly hT_gt2])
+  obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
+    where h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      and he\<sigma>sel:
+        "e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+      and he\<tau>sel:
+        "e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+    using hselected by (elim exE conjE)
+  have hE\<sigma>ne: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<noteq> {}"
+  proof
+    assume hempty: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} = {}"
+    show False
+      using he\<sigma>sel hempty by (by100 simp)
+  qed
+  have hE\<tau>ne: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J} \<noteq> {}"
+  proof
+    assume hempty: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J} = {}"
+    show False
+      using he\<tau>sel hempty by (by100 simp)
+  qed
+  show ?thesis
+  proof (rule exI[where x = \<sigma>])
+    show "\<exists>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
+        geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<noteq> {} \<and>
+        {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J} \<noteq> {}"
+    proof (rule exI[where x = \<tau>])
+      show "\<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
+          geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+          {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<noteq> {} \<and>
+          {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J} \<noteq> {}"
+        by (intro conjI h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>2 h\<tau>2 hE\<sigma>ne hE\<tau>ne)
+    qed
+  qed
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
