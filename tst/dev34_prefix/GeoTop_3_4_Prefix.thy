@@ -1056,6 +1056,63 @@ proof -
     using hE_fin hE_card by (by100 blast)
 qed
 
+lemma geotop_2simplex_complex_edge_faces_card_le3_prefix:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>} \<le> 3"
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  let ?A = "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  have hA: "finite ?A \<and> card ?A \<le> 3"
+    by (rule geotop_2simplex_edge_faces_card_le3_prefix[OF h\<sigma>])
+  have hA_fin: "finite ?A"
+    using hA by (by100 blast)
+  have hA_card: "card ?A \<le> 3"
+    using hA by (by100 blast)
+  have hE_sub_A: "?E \<subseteq> ?A"
+    by (by100 blast)
+  have hE_fin: "finite ?E"
+    by (rule finite_subset[OF hE_sub_A hA_fin])
+  have hE_card_le_A: "card ?E \<le> card ?A"
+    by (rule card_mono[OF hA_fin hE_sub_A])
+  have hE_card: "card ?E \<le> 3"
+    using hE_card_le_A hA_card by (by100 linarith)
+  show ?thesis
+    using hE_fin hE_card by (by100 blast)
+qed
+
+lemma geotop_2simplex_three_selected_edge_faces_all_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hcard: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  shows "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}
+      = {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+proof -
+  let ?A = "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  have hA: "finite ?A \<and> card ?A \<le> 3"
+    by (rule geotop_2simplex_edge_faces_card_le3_prefix[OF h\<sigma>])
+  have hA_fin: "finite ?A"
+    using hA by (by100 blast)
+  have hA_card_le3: "card ?A \<le> 3"
+    using hA by (by100 blast)
+  have hE_sub_A: "?E \<subseteq> ?A"
+    by (by100 blast)
+  have hE_card_le_A: "card ?E \<le> card ?A"
+    by (rule card_mono[OF hA_fin hE_sub_A])
+  have hA_card_ge3: "3 \<le> card ?A"
+    using hcard hE_card_le_A by (by100 linarith)
+  have hA_card_eq: "card ?A = 3"
+    using hA_card_ge3 hA_card_le3 by (by100 linarith)
+  have hcard_eq: "card ?E = card ?A"
+    using hcard hA_card_eq by (by100 simp)
+  have hE_eq_A: "?E = ?A"
+    by (rule card_subset_eq[OF hA_fin hE_sub_A hcard_eq])
+  show ?thesis
+    using hE_eq_A by (by100 simp)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
@@ -1190,7 +1247,36 @@ proof -
             have hE\<sigma>_fin: "finite ?E\<sigma>"
               using hK_fin' by (by100 simp)
             have hE\<sigma>_card_le2: "card ?E\<sigma> \<le> 2"
-              sorry
+            proof -
+              have hE\<sigma>_card_le3: "card ?E\<sigma> \<le> 3"
+              proof -
+                let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+                have hA: "finite ?A \<and> card ?A \<le> 3"
+                  by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<sigma>2])
+                have hA_fin: "finite ?A"
+                  using hA by (by100 blast)
+                have hA_card: "card ?A \<le> 3"
+                  using hA by (by100 blast)
+                have hE_sub_A: "?E\<sigma> \<subseteq> ?A"
+                  by (by100 blast)
+                have "card ?E\<sigma> \<le> card ?A"
+                  by (rule card_mono[OF hA_fin hE_sub_A])
+                thus ?thesis
+                  using hA_card by (by100 linarith)
+              qed
+              have hE\<sigma>_card_ne3: "card ?E\<sigma> \<noteq> 3"
+              proof
+                assume hE\<sigma>_card3: "card ?E\<sigma> = 3"
+                have hE\<sigma>_all_boundary:
+                    "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} = ?E\<sigma>"
+                  by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
+                      [OF h\<sigma>2 hE\<sigma>_card3])
+                show False
+                  sorry
+              qed
+              show ?thesis
+                using hE\<sigma>_card_le3 hE\<sigma>_card_ne3 by (by100 linarith)
+            qed
             have hE\<sigma>_allowed:
               "?E\<sigma> = {} \<or>
                (\<exists>e. ?E\<sigma> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
@@ -1328,7 +1414,36 @@ proof -
             have hE\<tau>_fin: "finite ?E\<tau>"
               using hK_fin' by (by100 simp)
             have hE\<tau>_card_le2: "card ?E\<tau> \<le> 2"
-              sorry
+            proof -
+              have hE\<tau>_card_le3: "card ?E\<tau> \<le> 3"
+              proof -
+                let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<tau>}"
+                have hA: "finite ?A \<and> card ?A \<le> 3"
+                  by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<tau>2])
+                have hA_fin: "finite ?A"
+                  using hA by (by100 blast)
+                have hA_card: "card ?A \<le> 3"
+                  using hA by (by100 blast)
+                have hE_sub_A: "?E\<tau> \<subseteq> ?A"
+                  by (by100 blast)
+                have "card ?E\<tau> \<le> card ?A"
+                  by (rule card_mono[OF hA_fin hE_sub_A])
+                thus ?thesis
+                  using hA_card by (by100 linarith)
+              qed
+              have hE\<tau>_card_ne3: "card ?E\<tau> \<noteq> 3"
+              proof
+                assume hE\<tau>_card3: "card ?E\<tau> = 3"
+                have hE\<tau>_all_boundary:
+                    "{e. geotop_is_edge e \<and> geotop_is_face e \<tau>} = ?E\<tau>"
+                  by (rule geotop_2simplex_three_selected_edge_faces_all_prefix
+                      [OF h\<tau>2 hE\<tau>_card3])
+                show False
+                  sorry
+              qed
+              show ?thesis
+                using hE\<tau>_card_le3 hE\<tau>_card_ne3 by (by100 linarith)
+            qed
             have hE\<tau>_allowed:
               "?E\<tau> = {} \<or>
                (\<exists>e. ?E\<tau> = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
