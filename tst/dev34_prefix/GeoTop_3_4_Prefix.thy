@@ -900,13 +900,102 @@ proof -
       Base case n = 2 ⟹ both 2-simplexes are free. Step n ≥ 3: \<exists>
       adjacent pair (\<sigma>, \<tau>) with shared edge in Fr|K|; case-split on
       whether both free (done) vs decomposition.\<close>
+    have hSC_induction_general:
+      "\<And>J' K. geotop_is_polygon J' \<Longrightarrow>
+            geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
+            geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J') \<Longrightarrow>
+            card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
+            card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2} \<ge> 2"
+    proof -
+      fix J' :: "(real^2) set" and K :: "(real^2) set set"
+      assume hJ': "geotop_is_polygon J'"
+      assume hK': "geotop_is_complex K"
+      assume hK_fin': "finite K"
+      assume hK_poly': "geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J')"
+      assume hcard': "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+      let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+      let ?F = "{\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J' \<sigma>\<^sub>2}"
+      have hT_fin: "finite ?T"
+        using hK_fin' by (by100 simp)
+      have hbase_two:
+        "card ?T = 2 \<Longrightarrow> card ?F \<ge> 2"
+        sorry
+      have hstep_more_than_two:
+        "card ?T > 2 \<Longrightarrow> card ?F \<ge> 2"
+      proof -
+        assume hT_gt2: "card ?T > 2"
+        \<comment> \<open>Book step: choose two 2-simplexes with an edge in \<open>Fr |K|\<close>.\<close>
+        have hboundary_pair:
+          "\<exists>\<sigma> \<tau> e. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+             \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+             \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> geotop_is_face e \<tau>
+             \<and> e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+                    (geotop_polyhedron K)"
+          sorry
+        \<comment> \<open>If both boundary simplexes are free, the two free simplexes are already found.\<close>
+        have hboth_free_case:
+          "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
+             geotop_free_2_simplex K J' \<sigma> \<Longrightarrow>
+             geotop_free_2_simplex K J' \<tau> \<Longrightarrow>
+             card ?F \<ge> 2"
+        proof -
+          fix \<sigma> \<tau>
+          assume h\<sigma>K: "\<sigma> \<in> K"
+          assume h\<tau>K: "\<tau> \<in> K"
+          assume h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+          assume h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
+          assume h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
+          have hF_fin: "finite ?F"
+            using hK_fin' by (by100 simp)
+          have hpair_sub: "{\<sigma>, \<tau>} \<subseteq> ?F"
+            using h\<sigma>K h\<tau>K h\<sigma>free h\<tau>free by (by100 blast)
+          have hpair_card: "card {\<sigma>, \<tau>} = 2"
+            using h\<sigma>\<tau> by (by100 simp)
+          have "card {\<sigma>, \<tau>} \<le> card ?F"
+            by (rule card_mono[OF hF_fin hpair_sub])
+          thus "card ?F \<ge> 2"
+            using hpair_card by (by100 simp)
+        qed
+        \<comment> \<open>Otherwise decompose \<open>J'\<close> at the opposite vertices into two polygonal
+          regions, apply the induction hypothesis to the two subcomplexes
+          \<open>L\<^sub>1\<close> and \<open>L\<^sub>2\<close>, and transfer the resulting free simplexes back to \<open>K\<close>.\<close>
+        have hdecomposition_case:
+          "card ?F \<ge> 2"
+          sorry
+        show ?thesis
+          using hdecomposition_case .
+      qed
+      show "card ?F \<ge> 2"
+      proof (cases "card ?T = 2")
+        case True
+        show ?thesis
+          by (rule hbase_two[OF True])
+      next
+        case False
+        have "card ?T > 2"
+          using hcard' False by (by100 simp)
+        show ?thesis
+          by (rule hstep_more_than_two[OF \<open>card ?T > 2\<close>])
+      qed
+    qed
     have hSC_induction:
       "\<And>K. geotop_is_complex K \<Longrightarrow> finite K \<Longrightarrow>
             geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
                                     (geotop_polygon_interior J) \<Longrightarrow>
             card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1 \<Longrightarrow>
             card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
-      sorry
+    proof -
+      fix K :: "(real^2) set set"
+      assume hK': "geotop_is_complex K"
+      assume hK_fin': "finite K"
+      assume hK_poly': "geotop_polyhedron K = closure_on UNIV geotop_euclidean_topology
+                                    (geotop_polygon_interior J)"
+      assume hcard': "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+      show "card {\<sigma>\<^sub>2 \<in> K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+        by (rule hSC_induction_general[OF hJ hK' hK_fin' hK_poly' hcard'])
+    qed
     show ?thesis
       using hSC_induction[OF hK hSC_K_fin hKI hcard] by (by100 simp)
   qed
