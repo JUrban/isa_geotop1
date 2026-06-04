@@ -1302,6 +1302,33 @@ proof -
   finally show ?thesis .
 qed
 
+lemma geotop_2simplex_frontier_subset_complex_edge_faces_prefix:
+  fixes K :: "(real^2) set set" and \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "frontier \<sigma> \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  (**
+    Complex form of the triangle-frontier fact: every boundary point of a
+    2-simplex in a complex lies on one of the edge faces of that same complex. **)
+proof
+  fix x
+  assume hx: "x \<in> frontier \<sigma>"
+  have hx_edges: "x \<in> \<Union>{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    using geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>] hx
+    by (by100 simp)
+  obtain e where he_edge: "geotop_is_edge e"
+    and he_face: "geotop_is_face e \<sigma>"
+    and hxe: "x \<in> e"
+    using hx_edges by (by100 blast)
+  have hface_closed: "\<forall>\<rho>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<rho> \<longrightarrow> \<tau> \<in> K"
+    by (rule geotop_is_complex_face_closed[OF hK])
+  have heK: "e \<in> K"
+    using hface_closed h\<sigma>K he_face by (by100 blast)
+  show "x \<in> \<Union>{e \<in> K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    using heK he_edge he_face hxe by (by100 blast)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
