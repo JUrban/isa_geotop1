@@ -8821,6 +8821,7 @@ lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
   assumes hconn: "geotop_complex_connected L"
   assumes hvertices_finite: "finite (geotop_complex_vertices L)"
   assumes hwL: "{w} \<in> L"
@@ -8842,15 +8843,16 @@ lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
           \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
   (**
     Core boundary-arc fan target.  With the finite vertex set and the chosen
-    degree-one endpoint made explicit, the remaining book step is to enumerate
-    the edge-chain from \<open>w\<close> and realize it as a subdivided boundary arc of a
-    standard 2-simplex before coning from the adjacent boundary vertex. **)
+    degree-one endpoint made explicit, the broken-line carrier gives the
+    ordered edge-chain from \<open>w\<close>.  Realize it as a subdivided boundary arc of
+    a standard 2-simplex before coning from the adjacent boundary vertex. **)
   sorry
 
 lemma geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
   assumes hconn: "geotop_complex_connected L"
   assumes hwL: "{w} \<in> L"
   assumes hend: "geotop_graph_endpoint L w"
@@ -8891,6 +8893,7 @@ proof -
       [where L = L and w = w])
     show "geotop_is_linear_graph L" by (rule hL_linear)
     show "finite L" by (rule hL_finite)
+    show "geotop_is_broken_line (geotop_polyhedron L)" by (rule hbroken)
     show "geotop_complex_connected L" by (rule hconn)
     show "finite (geotop_complex_vertices L)" by (rule hvertices_finite)
     show "{w} \<in> L" by (rule hwL)
@@ -8902,6 +8905,7 @@ lemma geotop_connected_endpoint_finite_linear_graph_boundary_vertex_fan_target_d
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
   assumes hconn: "geotop_complex_connected L"
   assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
   shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
@@ -8933,6 +8937,7 @@ proof -
       [where L = L and w = w])
     show "geotop_is_linear_graph L" by (rule hL_linear)
     show "finite L" by (rule hL_finite)
+    show "geotop_is_broken_line (geotop_polyhedron L)" by (rule hbroken)
     show "geotop_complex_connected L" by (rule hconn)
     show "{w} \<in> L" by (rule hwL)
     show "geotop_graph_endpoint L w" by (rule hw_endpoint)
@@ -8984,6 +8989,7 @@ proof -
       [where L = L])
     show "geotop_is_linear_graph L" by (rule hL_linear)
     show "finite L" by (rule hL_finite)
+    show "geotop_is_broken_line (geotop_polyhedron L)" by (rule hbroken)
     show "geotop_complex_connected L" by (rule hconn)
     show "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w" by (rule hend)
   qed
