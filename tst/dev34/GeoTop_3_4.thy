@@ -12899,6 +12899,50 @@ proof -
     using hcircle by (by100 blast)
 qed
 
+lemma geotop_1sphere_Jordan_open_components_dev34:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  obtains inner outer where
+    "inner \<noteq> {}"
+    "open inner"
+    "connected inner"
+    "bounded inner"
+    "outer \<noteq> {}"
+    "open outer"
+    "connected outer"
+    "\<not> bounded outer"
+    "inner \<inter> outer = {}"
+    "inner \<union> outer = UNIV - J"
+  (**
+    Export the open Jordan-side data used by the local chart transfer.  The
+    cached Jordan component theorem already proves this internally; the active
+    layer needs the open, disjoint, and cover facts explicitly. **)
+proof -
+  obtain c :: "real \<Rightarrow> real^2" where hc_simple: "simple_path c"
+      and hc_loop: "pathfinish c = pathstart c"
+      and hc_image: "path_image c = J"
+    by (rule geotop_1sphere_simple_closed_path_R2[OF hJ])
+  obtain inner outer where hinner_ne: "inner \<noteq> {}"
+      and hinner_open: "open inner"
+      and hinner_conn: "connected inner"
+      and houter_ne: "outer \<noteq> {}"
+      and houter_open: "open outer"
+      and houter_conn: "connected outer"
+      and hinner_bdd: "bounded inner"
+      and houter_unbdd: "\<not> bounded outer"
+      and hdisj: "inner \<inter> outer = {}"
+      and hcover: "inner \<union> outer = - path_image c"
+      and hfront_inner: "frontier inner = path_image c"
+      and hfront_outer: "frontier outer = path_image c"
+    by (rule Jordan_curve_real2[OF hc_simple hc_loop])
+  have hcover_J: "inner \<union> outer = UNIV - J"
+    using hcover hc_image by (by100 auto)
+  show ?thesis
+    by (rule that[OF hinner_ne hinner_open hinner_conn hinner_bdd
+          houter_ne houter_open houter_conn houter_unbdd hdisj hcover_J])
+qed
+
 lemma geotop_open_set_jordan_components_separate_subset_dev34:
   fixes V J inner outer :: "(real^2) set"
   assumes hVopen: "V \<in> geotop_euclidean_topology"
