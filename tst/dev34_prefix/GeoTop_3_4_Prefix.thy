@@ -1545,6 +1545,28 @@ proof -
     using hconn top1_connected_on_geotop_iff_connected by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_complex_connected_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "geotop_complex_connected K"
+  (**
+    The disk triangulation is connected as a complex, not only as its carrier.
+    This is the combinatorial connectedness form used when the two-triangle
+    base case says the second triangle must attach to the first. **)
+proof -
+  have hconn: "top1_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    by (rule geotop_polygon_disk_polyhedron_top1_connected_prefix[OF hJ hK_poly])
+  have hpath: "top1_path_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using Theorem_GT_1_12(2)[OF hK] hconn by (by100 blast)
+  show ?thesis
+    using Theorem_GT_1_12(1)[OF hK] hpath by (by100 blast)
+qed
+
 lemma geotop_polygon_disk_polyhedron_frontier_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
