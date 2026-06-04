@@ -1694,6 +1694,31 @@ proof -
     using he_front hfront by (by100 simp)
 qed
 
+lemma geotop_polygon_disk_boundary_edge_in_selected_edges_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hface: "geotop_is_face e \<sigma>"
+  assumes he_front: "e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+  shows "e \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+  (**
+    If the book's chosen boundary edge is a face of \<open>\<sigma>\<close>, then it is one
+    of the selected boundary edges used in the formal free-simplex predicate. **)
+proof -
+  have heK: "e \<in> K"
+    using geotop_is_complex_face_closed[OF hK] h\<sigma>K hface by (by100 blast)
+  have heJ: "e \<subseteq> J"
+    by (rule geotop_polygon_disk_frontier_edge_subset_polygon_prefix
+        [OF hJ hK_poly he_front])
+  show ?thesis
+    using heK hedge hface heJ by (by100 simp)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
