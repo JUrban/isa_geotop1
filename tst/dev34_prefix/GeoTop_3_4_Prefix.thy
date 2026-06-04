@@ -833,6 +833,229 @@ proof -
     using \<open>int n \<le> (2::int)\<close> by (by100 linarith)
 qed
 
+lemma geotop_face_witness_simplex_vertices_prefix:
+  fixes \<tau> \<sigma> :: "(real^2) set"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  obtains V W where "geotop_simplex_vertices \<sigma> V"
+    and "W \<noteq> {}" and "W \<subseteq> V"
+    and "\<tau> = geotop_convex_hull W"
+    and "geotop_simplex_vertices \<tau> W"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  obtain m n where hV_fin: "finite V"
+    and hV_card: "card V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hW_fin: "finite W"
+    using hW_sub hV_fin by (rule finite_subset)
+  have hW_card_pos: "0 < card W"
+    using hW_fin hW_ne by (by100 force)
+  have hW_card_eq: "card W = (card W - 1) + 1"
+    using hW_card_pos by (by100 simp)
+  have hW_card_le: "card W \<le> card V"
+    by (rule card_mono[OF hV_fin hW_sub])
+  have hW_dim_le_m: "card W - 1 \<le> m"
+    using hW_card_le hV_card hn_le_m by (by100 linarith)
+  have hgp_W: "geotop_general_position W m"
+    by (rule geotop_general_position_subset[OF hgp hW_sub])
+  have h\<tau>W: "geotop_simplex_vertices \<tau> W"
+    unfolding geotop_simplex_vertices_def
+    using hW_fin hW_card_eq hW_dim_le_m hgp_W h\<tau>_eq by (by100 blast)
+  show ?thesis
+    by (rule that[OF h\<sigma>V hW_ne hW_sub h\<tau>_eq h\<tau>W])
+qed
+
+lemma geotop_edge_face_witness_card_two_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hface: "geotop_is_face e \<sigma>"
+  obtains V W where "geotop_simplex_vertices \<sigma> V"
+    and "W \<noteq> {}" and "W \<subseteq> V"
+    and "e = geotop_convex_hull W"
+    and "geotop_simplex_vertices e W"
+    and "card W = 2"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}" and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  obtain V\<^sub>e m where hVe_fin: "finite V\<^sub>e"
+    and hVe_card: "card V\<^sub>e = 1 + 1"
+    and h1_le_m: "1 \<le> m"
+    and hgp_Ve: "geotop_general_position V\<^sub>e m"
+    and he_Ve: "e = geotop_convex_hull V\<^sub>e"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have heVe: "geotop_simplex_vertices e V\<^sub>e"
+    unfolding geotop_simplex_vertices_def
+    using hVe_fin hVe_card h1_le_m hgp_Ve he_Ve by (by100 blast)
+  have hW_eq: "W = V\<^sub>e"
+    by (rule geotop_simplex_vertices_unique[OF heW heVe])
+  have hW_card: "card W = 2"
+    using hW_eq hVe_card by (by100 simp)
+  show ?thesis
+    by (rule that[OF h\<sigma>V hW_ne hW_sub he_eq heW hW_card])
+qed
+
+lemma geotop_2simplex_edge_faces_card_le3_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "finite {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}
+      \<and> card {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} \<le> 3"
+proof -
+  let ?E = "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h2_le_m hgp h\<sigma>_eq by (by100 blast)
+  have hV_card3: "card V = 3"
+    using hV_card by (by100 simp)
+  have hV_three:
+    "\<exists>a b c. V = {a, b, c} \<and> a \<noteq> b \<and> b \<noteq> c \<and> a \<noteq> c"
+    using hV_card3 card_3_iff by (by100 metis)
+  obtain a b c where hV_eq: "V = {a, b, c}"
+    and hab: "a \<noteq> b" and hbc: "b \<noteq> c" and hac: "a \<noteq> c"
+    using hV_three by (by100 blast)
+  let ?Pairs =
+    "{geotop_convex_hull {a, b}, geotop_convex_hull {a, c},
+      geotop_convex_hull {b, c}}"
+  have hE_sub: "?E \<subseteq> ?Pairs"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    have hedge: "geotop_is_edge e"
+      using heE by (by100 simp)
+    have hface: "geotop_is_face e \<sigma>"
+      using heE by (by100 simp)
+    obtain V' W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V'"
+      and hW_sub: "W \<subseteq> V'"
+      and he_eq: "e = geotop_convex_hull W"
+      and hW_card: "card W = 2"
+      by (metis geotop_edge_face_witness_card_two_prefix[OF hedge hface])
+    have hV'_eq: "V' = V"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V])
+    have hW_subV: "W \<subseteq> V"
+      using hW_sub hV'_eq by (by100 simp)
+    have hW_cases: "W = {a, b} \<or> W = {a, c} \<or> W = {b, c}"
+    proof -
+      have hW_pair: "\<exists>x y. W = {x, y} \<and> x \<noteq> y"
+        using hW_card card_2_iff[of W] by (by100 simp)
+      obtain x y where hW_eq: "W = {x, y}" and hxy: "x \<noteq> y"
+        using hW_pair by (by100 blast)
+      have hx_cases: "x = a \<or> x = b \<or> x = c"
+        using hW_eq hW_subV hV_eq by (by100 blast)
+      have hy_cases: "y = a \<or> y = b \<or> y = c"
+        using hW_eq hW_subV hV_eq by (by100 blast)
+      show ?thesis
+      proof (cases "x = a")
+        assume hx_a: "x = a"
+        show ?thesis
+        proof (cases "y = a")
+          assume hy_a: "y = a"
+          thus ?thesis using hx_a hxy by (by100 simp)
+        next
+          assume hy_not_a: "y \<noteq> a"
+          show ?thesis
+          proof (cases "y = b")
+            assume hy_b: "y = b"
+            thus ?thesis using hx_a hW_eq by (by100 simp)
+          next
+            assume hy_not_b: "y \<noteq> b"
+            have "y = c"
+              using hy_cases hy_not_a hy_not_b by (by100 blast)
+            thus ?thesis using hx_a hW_eq by (by100 simp)
+          qed
+        qed
+      next
+        assume hx_not_a: "x \<noteq> a"
+        show ?thesis
+        proof (cases "x = b")
+          assume hx_b: "x = b"
+          show ?thesis
+          proof (cases "y = a")
+            assume hy_a: "y = a"
+            have hW_ba: "W = {b, a}"
+              using hx_b hy_a hW_eq by (by100 simp)
+            have hba_ab: "{b, a} = {a, b}"
+              by (rule insert_commute)
+            show ?thesis
+              using hW_ba hba_ab by (by100 simp)
+          next
+            assume hy_not_a: "y \<noteq> a"
+            show ?thesis
+            proof (cases "y = b")
+              assume hy_b: "y = b"
+              thus ?thesis using hx_b hxy by (by100 simp)
+            next
+              assume hy_not_b: "y \<noteq> b"
+              have "y = c"
+                using hy_cases hy_not_a hy_not_b by (by100 blast)
+              thus ?thesis using hx_b hW_eq by (by100 simp)
+            qed
+          qed
+        next
+          assume hx_not_b: "x \<noteq> b"
+          have hx_c: "x = c"
+            using hx_cases hx_not_a hx_not_b by (by100 blast)
+          show ?thesis
+          proof (cases "y = a")
+            assume hy_a: "y = a"
+            have hW_ca: "W = {c, a}"
+              using hx_c hy_a hW_eq by (by100 simp)
+            have hca_ac: "{c, a} = {a, c}"
+              by (rule insert_commute)
+            show ?thesis
+              using hW_ca hca_ac by (by100 simp)
+          next
+            assume hy_not_a: "y \<noteq> a"
+            show ?thesis
+            proof (cases "y = b")
+              assume hy_b: "y = b"
+              have hW_cb: "W = {c, b}"
+                using hx_c hy_b hW_eq by (by100 simp)
+              have hcb_bc: "{c, b} = {b, c}"
+                by (rule insert_commute)
+              show ?thesis
+                using hW_cb hcb_bc by (by100 simp)
+            next
+              assume hy_not_b: "y \<noteq> b"
+              have "y = c"
+                using hy_cases hy_not_a hy_not_b by (by100 blast)
+              thus ?thesis using hx_c hxy by (by100 simp)
+            qed
+          qed
+        qed
+      qed
+    qed
+    show "e \<in> ?Pairs"
+      using he_eq hW_cases by (by100 auto)
+  qed
+  have hPairs_fin: "finite ?Pairs"
+    by (by100 simp)
+  have hE_fin: "finite ?E"
+    by (rule finite_subset[OF hE_sub hPairs_fin])
+  have hcard_le_pairs: "card ?E \<le> card ?Pairs"
+    by (rule card_mono[OF hPairs_fin hE_sub])
+  have hPairs_card: "card ?Pairs \<le> 3"
+    by (rule card_three_le)
+  have hE_card: "card ?E \<le> 3"
+    using hcard_le_pairs hPairs_card by (by100 linarith)
+  show ?thesis
+    using hE_fin hE_card by (by100 blast)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
