@@ -2367,6 +2367,13 @@ proof -
                     (geotop_polyhedron K)"
           by (rule geotop_polygon_disk_two_boundary_2simplexes_prefix
               [OF hJ' hK' hK_poly' hT_gt2])
+        have hboundary_edge_sets:
+          "\<exists>\<sigma> \<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+             \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+             \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J'} \<noteq> {}
+             \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J'} \<noteq> {}"
+          by (rule geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix
+              [OF hJ' hK' hK_poly' hT_gt2])
         \<comment> \<open>If both boundary simplexes are free, the two free simplexes are already found.\<close>
         have hboth_free_case:
           "\<And>\<sigma> \<tau>. \<sigma> \<in> K \<Longrightarrow> \<tau> \<in> K \<Longrightarrow> \<sigma> \<noteq> \<tau> \<Longrightarrow>
