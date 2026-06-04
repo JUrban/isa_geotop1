@@ -1675,6 +1675,25 @@ lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
     boundary edge. **)
   sorry
 
+lemma geotop_polygon_disk_frontier_edge_subset_polygon_prefix:
+  fixes J e :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes he_front: "e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+  shows "e \<subseteq> J"
+  (**
+    Rewriting form of the disk-carrier identity \<open>Fr |K| = J\<close>, used when
+    the book says a simplex has an edge in \<open>Fr |K|\<close>. **)
+proof -
+  have hfront: "geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
+  show ?thesis
+    using he_front hfront by (by100 simp)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
