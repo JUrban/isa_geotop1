@@ -1116,7 +1116,51 @@ proof -
         by (rule polygon_interior_disjoint_polygon[OF hJ])
       have h\<sigma>_front_book_gap:
           "geotop_frontier UNIV geotop_euclidean_topology \<sigma> = J"
-        sorry
+      proof -
+        have h\<sigma>_interior_book_gap: "interior \<sigma> = ?I"
+          sorry
+        have h\<sigma>_closed: "closed \<sigma>"
+          by (rule geotop_simplex_dim_closed[OF h\<sigma>2])
+        have hfront_HOL: "frontier \<sigma> = J"
+        proof -
+          have hfront_def: "frontier \<sigma> = closure \<sigma> - interior \<sigma>"
+            unfolding Elementary_Topology.frontier_def by (by100 simp)
+          have hclosure_\<sigma>: "closure \<sigma> = \<sigma>"
+            using h\<sigma>_closed by (by100 simp)
+          have hfront_diff: "frontier \<sigma> = \<sigma> - ?I"
+            using hfront_def hclosure_\<sigma> h\<sigma>_interior_book_gap by (by100 simp)
+          have hdiff_sub_J: "\<sigma> - ?I \<subseteq> J"
+          proof
+            fix x
+            assume hx: "x \<in> \<sigma> - ?I"
+            have hx\<sigma>: "x \<in> \<sigma>"
+              using hx by (by100 simp)
+            have hx_not_I: "x \<notin> ?I"
+              using hx by (by100 simp)
+            have "x \<in> ?I \<union> J"
+              using h\<sigma>_union hx\<sigma> by (by100 simp)
+            thus "x \<in> J"
+              using hx_not_I by (by100 blast)
+          qed
+          have hJ_sub_diff: "J \<subseteq> \<sigma> - ?I"
+          proof
+            fix x
+            assume hxJ: "x \<in> J"
+            have hx\<sigma>: "x \<in> \<sigma>"
+              using h\<sigma>_union hxJ by (by100 simp)
+            have hx_not_I: "x \<notin> ?I"
+              using hI_disj_J hxJ by (by100 blast)
+            show "x \<in> \<sigma> - ?I"
+              using hx\<sigma> hx_not_I by (by100 simp)
+          qed
+          have hdiff_eq_J: "\<sigma> - ?I = J"
+            using hdiff_sub_J hJ_sub_diff by (by100 blast)
+          show ?thesis
+            using hfront_diff hdiff_eq_J by (by100 simp)
+        qed
+        show ?thesis
+          using hfront_HOL geotop_frontier_UNIV_eq_frontier[of \<sigma>] by (by100 simp)
+      qed
       show ?thesis
         using h\<sigma>_front_book_gap by (by100 simp)
     qed
