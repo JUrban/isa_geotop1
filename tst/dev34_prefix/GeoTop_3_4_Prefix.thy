@@ -946,9 +946,45 @@ proof -
         \<comment> \<open>Book base case: with exactly two 2-simplexes, each has all of its
           boundary contact with \<open>J'\<close> in one or two edge faces, so both are free.\<close>
         have h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
-          sorry
+        proof -
+          have h\<sigma>K: "\<sigma> \<in> K"
+            using h\<sigma>T by (by100 simp)
+          have h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+            using h\<sigma>T by (by100 simp)
+          have h\<sigma>contact:
+            "\<exists>E. E \<subseteq> K \<and>
+              (E = {} \<or>
+               (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J') \<or>
+               (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                  geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                  geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and>
+                  e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
+              \<sigma> \<inter> J' = \<Union>E"
+            sorry
+          show ?thesis
+            unfolding geotop_free_2_simplex_def
+            using h\<sigma>K h\<sigma>2 h\<sigma>contact by (by100 blast)
+        qed
         have h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
-          sorry
+        proof -
+          have h\<tau>K: "\<tau> \<in> K"
+            using h\<tau>T by (by100 simp)
+          have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+            using h\<tau>T by (by100 simp)
+          have h\<tau>contact:
+            "\<exists>E. E \<subseteq> K \<and>
+              (E = {} \<or>
+               (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<tau> \<and> e \<subseteq> J') \<or>
+               (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+                  geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+                  geotop_is_face e1 \<tau> \<and> geotop_is_face e2 \<tau> \<and>
+                  e1 \<subseteq> J' \<and> e2 \<subseteq> J')) \<and>
+              \<tau> \<inter> J' = \<Union>E"
+            sorry
+          show ?thesis
+            unfolding geotop_free_2_simplex_def
+            using h\<tau>K h\<tau>2 h\<tau>contact by (by100 blast)
+        qed
         have hF_fin: "finite ?F"
           using hK_fin' by (by100 simp)
         have hpair_sub: "{\<sigma>, \<tau>} \<subseteq> ?F"
