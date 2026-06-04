@@ -3873,19 +3873,16 @@ lemma geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev3
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
-  assumes hconn: "geotop_complex_connected L"
-  assumes hnonisolated:
-    "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
   shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision F
         (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> geotop_isomorphism L F \<psi>"
   (**
-    Core Fig. 4.10 cycle realization.  The finite connected linear graph has
-    no isolated vertices; the remaining book step is to recover its cyclic
-    edge order and place that ordered cycle as a subdivision of the frontier
-    of a 2-simplex. **)
+    Core Fig. 4.10 cycle realization.  The finite linear graph whose carrier
+    is a polygon has a cyclic edge order; place that ordered cycle as a
+    subdivision of the frontier of a 2-simplex. **)
   sorry
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
@@ -3904,28 +3901,12 @@ lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_
     of a 2-simplex with the same ordered vertex/edge data; map each link vertex
     to the corresponding boundary subdivision vertex. **)
 proof -
-  have hcycle0:
-      "geotop_complex_connected L
-      \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e))"
-    by (rule geotop_finite_linear_graph_polygon_connected_nonisolated_dev34
-        [OF hL_linear hL_finite hpolygon])
   (**
     Remaining Fig. 4.10 graph step: recover the cyclic edge order and realize
     that abstract cycle as a subdivision of the frontier of a 2-simplex. **)
-  have hconn: "geotop_complex_connected L"
-    using hcycle0 by (by100 blast)
-  have hnonisolated:
-      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
-    using hcycle0 by (by100 blast)
   show ?thesis
-  proof (rule geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
-      [where L = L])
-    show "geotop_is_linear_graph L" by (rule hL_linear)
-    show "finite L" by (rule hL_finite)
-    show "geotop_complex_connected L" by (rule hconn)
-    show "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
-      by (rule hnonisolated)
-  qed
+    by (rule geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
+        [OF hL_linear hL_finite hpolygon])
 qed
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_link_polygon_dev34:
