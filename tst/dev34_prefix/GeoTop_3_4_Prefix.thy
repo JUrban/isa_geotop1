@@ -1329,6 +1329,179 @@ proof
     using heK he_edge he_face hxe by (by100 blast)
 qed
 
+lemma geotop_polygon_interior_regular_closed_prefix:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "interior (closure (geotop_polygon_interior J)) =
+      geotop_polygon_interior J"
+  (**
+    Named form of the book fact used in the Schoenflies base case: the
+    polygonal disk closure has ordinary interior equal to the polygon interior. **)
+proof
+  let ?I = "geotop_polygon_interior J"
+  let ?E = "geotop_polygon_exterior J"
+  show "?I \<subseteq> interior (closure ?I)"
+  proof -
+    have hI_open: "open ?I"
+      by (rule polygon_interior_open[OF hJ])
+    show ?thesis
+      by (rule interior_maximal[OF closure_subset hI_open])
+  qed
+  show "interior (closure ?I) \<subseteq> ?I"
+  proof
+    fix x
+    assume hx_int: "x \<in> interior (closure ?I)"
+    have hx_closure: "x \<in> closure ?I"
+      using hx_int interior_subset by (by100 blast)
+    have hclosure: "closure ?I = ?I \<union> J"
+      by (rule polygon_interior_closure_eq[OF hJ])
+    have hx_I_or_J: "x \<in> ?I \<or> x \<in> J"
+      using hx_closure hclosure by (by100 blast)
+    show "x \<in> ?I"
+    proof (cases "x \<in> ?I")
+      case True
+      show ?thesis by (rule True)
+    next
+      case False
+      have hxJ: "x \<in> J"
+        using hx_I_or_J False by (by100 blast)
+      have hE_front_HOL: "frontier ?E = J"
+      proof -
+        have hE_front_geo:
+          "J = geotop_frontier UNIV geotop_euclidean_topology ?E"
+          using Theorem_GT_2_6(2)[OF hJ] by (by100 simp)
+        have hfront_eq:
+          "geotop_frontier UNIV geotop_euclidean_topology ?E = frontier ?E"
+          by (rule geotop_frontier_UNIV_eq_frontier)
+        show ?thesis
+          using hE_front_geo hfront_eq by (by100 simp)
+      qed
+      have hI_E: "?I \<inter> ?E = {}"
+        by (rule polygon_interior_exterior_disjoint[OF hJ])
+      have hE_J: "?E \<inter> J = {}"
+        by (rule polygon_exterior_disjoint_polygon[OF hJ])
+      have hE_disj_closure: "?E \<inter> closure ?I = {}"
+        using hclosure hI_E hE_J by (by100 blast)
+      have hxFrontE: "x \<in> frontier ?E"
+        using hE_front_HOL hxJ by (by100 simp)
+      have hxClosureE: "x \<in> closure ?E"
+        using hxFrontE unfolding Elementary_Topology.frontier_def by (by100 simp)
+      have hx_not_E: "x \<notin> ?E"
+        using hE_disj_closure hx_closure by (by100 blast)
+      have hxLimE: "x islimpt ?E"
+        using hxClosureE hx_not_E unfolding closure_def by (by100 blast)
+      obtain U where hUopen: "open U" and hxU: "x \<in> U" and hUsub: "U \<subseteq> closure ?I"
+        using hx_int unfolding interior_def by (by100 blast)
+      obtain y where hyE: "y \<in> ?E" and hyU: "y \<in> U" and "y \<noteq> x"
+        by (rule islimptE[OF hxLimE hxU hUopen])
+      have hy_closure: "y \<in> closure ?I"
+        using hUsub hyU by (by100 blast)
+      have False
+        using hE_disj_closure hyE hy_closure by (by100 blast)
+      then show ?thesis
+        by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_polygon_boundary_point_in_simplex_not_in_interior_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  assumes hxJ: "x \<in> J"
+  shows "x \<notin> interior \<sigma>"
+  (**
+    Boundary points of the polygonal disk cannot be ordinary interior points
+    of a simplex lying in the triangulation of the disk closure. **)
+proof
+  assume hxint: "x \<in> interior \<sigma>"
+  have h\<sigma>_sub_poly: "\<sigma> \<subseteq> geotop_polyhedron K"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hclos_on: "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      = closure (geotop_polygon_interior J)"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  have h\<sigma>_sub_closure: "\<sigma> \<subseteq> closure (geotop_polygon_interior J)"
+    using h\<sigma>_sub_poly hK_poly hclos_on by (by100 simp)
+  have hint_sub_closure: "interior \<sigma> \<subseteq> closure (geotop_polygon_interior J)"
+    using h\<sigma>_sub_closure interior_subset by (by100 blast)
+  have hregular: "interior (closure (geotop_polygon_interior J)) =
+      geotop_polygon_interior J"
+    by (rule geotop_polygon_interior_regular_closed_prefix[OF hJ])
+  have h_x_in_I: "x \<in> geotop_polygon_interior J"
+  proof -
+    have h_int_open: "open (interior \<sigma>)"
+      by (rule open_interior)
+    have "interior \<sigma> \<subseteq> interior (closure (geotop_polygon_interior J))"
+      by (rule interior_maximal[OF hint_sub_closure h_int_open])
+    thus ?thesis
+      using hxint hregular by (by100 blast)
+  qed
+  have hI_disj_J: "geotop_polygon_interior J \<inter> J = {}"
+    by (rule polygon_interior_disjoint_polygon[OF hJ])
+  show False
+    using hI_disj_J h_x_in_I hxJ by (by100 blast)
+qed
+
+lemma geotop_polygon_boundary_point_in_2simplex_frontier_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hx\<sigma>: "x \<in> \<sigma>"
+  assumes hxJ: "x \<in> J"
+  shows "x \<in> frontier \<sigma>"
+  (**
+    Same bridge in frontier form, for the 2-simplex case used in the
+    Theorem 3.3 base case. **)
+proof -
+  have hx_not_int: "x \<notin> interior \<sigma>"
+    by (rule geotop_polygon_boundary_point_in_simplex_not_in_interior_prefix
+        [OF hJ h\<sigma>K hK_poly hx\<sigma> hxJ])
+  have h\<sigma>closed: "closed \<sigma>"
+    by (rule geotop_simplex_dim_closed[OF h\<sigma>2])
+  have hx_closure: "x \<in> closure \<sigma>"
+    using h\<sigma>closed hx\<sigma> by (by100 simp)
+  show ?thesis
+    unfolding Elementary_Topology.frontier_def
+    using hx_closure hx_not_int by (by100 simp)
+qed
+
+lemma geotop_2simplex_polygon_boundary_inter_subset_complex_edge_faces_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "\<sigma> \<inter> J \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  (**
+    First formal half of the base-case boundary-contact argument: a polygon
+    boundary point lying in a 2-simplex lies on one of that simplex's complex
+    edge faces. **)
+proof
+  fix x
+  assume hx: "x \<in> \<sigma> \<inter> J"
+  have hx\<sigma>: "x \<in> \<sigma>"
+    using hx by (by100 simp)
+  have hxJ: "x \<in> J"
+    using hx by (by100 simp)
+  have hx_frontier: "x \<in> frontier \<sigma>"
+    by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+        [OF hJ h\<sigma>K h\<sigma>2 hK_poly hx\<sigma> hxJ])
+  have hfront_sub:
+      "frontier \<sigma> \<subseteq> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    by (rule geotop_2simplex_frontier_subset_complex_edge_faces_prefix
+        [OF hK h\<sigma>K h\<sigma>2])
+  show "x \<in> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    using hfront_sub hx_frontier by (by100 blast)
+qed
+
 (** from \<S>3: free 2-simplex (geotop.tex:752)
     LATEX VERSION: Let I be the interior of the polygon J in R^2. By Theorem 2.2, \<bar>I\<close> is a
       finite polyhedron |K|. If \<sigma>^2 \<in> K, and \<sigma>^2 \<inter> J consists of one or two edges of \<sigma>^2,
