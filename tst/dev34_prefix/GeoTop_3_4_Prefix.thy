@@ -7735,7 +7735,19 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
     induction hypothesis to each smaller subdisk gives free 2-simplexes
     different from \<open>\<theta>\<close>; the usual carrier and boundary-contact comparisons then
     transfer those free simplexes back to the original complex \<open>K\<close>. **)
-  sorry
+proof -
+  have h\<theta>_not_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (rule geotop_2simplex_vertices_not_collinear_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  obtain x where hx\<theta>J: "x \<in> \<theta> \<inter> J"
+    and hx_not_base: "x \<notin> closed_segment v\<^sub>0 v\<^sub>1"
+    and hx_nonbase:
+      "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+        \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hcontact_other_segment_off_base by (elim exE conjE)
+  show ?thesis
+    sorry
+qed
 
 (** from \<S>3 Theorem 3 (geotop.tex:762)
     LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
