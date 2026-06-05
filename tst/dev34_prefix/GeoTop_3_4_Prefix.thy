@@ -7097,6 +7097,36 @@ proof -
     using hC hUnion by (by100 simp)
 qed
 
+lemma geotop_contact_outside_selected_union_on_other_two_sets_prefix:
+  fixes C e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "'a set" and E :: "'a set set"
+  assumes houtside: "\<exists>x. x \<in> C \<and> x \<notin> \<Union>E"
+  assumes hC: "C \<subseteq> e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+  assumes he\<^sub>0E: "e\<^sub>0 \<in> E"
+  shows "\<exists>x. x \<in> C \<and> x \<notin> \<Union>E \<and> x \<in> e\<^sub>1 \<union> e\<^sub>2"
+  (**
+    Pure set form of the nonfree boundary-triangle reduction: if the contact
+    is covered by three named edge carriers and one of them is already selected,
+    any contact point outside the selected carrier union lies on one of the
+    other two named edge carriers. **)
+proof -
+  obtain x where hxC: "x \<in> C" and hxnot: "x \<notin> \<Union>E"
+    using houtside by (elim exE conjE)
+  have hx_three: "x \<in> e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+    using hC hxC by (by100 blast)
+  have hx_not_e\<^sub>0: "x \<notin> e\<^sub>0"
+  proof
+    assume "x \<in> e\<^sub>0"
+    hence "x \<in> \<Union>E"
+      using he\<^sub>0E by (by100 blast)
+    thus False
+      using hxnot by (by100 blast)
+  qed
+  have hx_other: "x \<in> e\<^sub>1 \<union> e\<^sub>2"
+    using hx_three hx_not_e\<^sub>0 by (by100 blast)
+  show ?thesis
+    using hxC hxnot hx_other by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
@@ -8078,6 +8108,13 @@ proof -
                 \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
               by (rule geotop_nonfree_selected_edges_contact_outside_prefix
                   [OF h\<theta>K h\<theta>2 hE\<theta>_subset_K hE\<theta>_allowed h\<theta>_not_free hE\<theta>_union_sub_\<theta>J])
+            have h\<theta>_contact_on_other_named_edges:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}
+                \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+                    \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              by (rule geotop_contact_outside_selected_union_on_other_two_sets_prefix
+                  [OF h\<theta>_contact_outside_selected h\<theta>J_sub_named_edges hv\<^sub>0v\<^sub>1_selected])
             show ?thesis
               sorry
           qed
