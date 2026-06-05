@@ -1726,6 +1726,103 @@ proof -
     using hclosure_rel hint_rel by (by100 simp)
 qed
 
+lemma geotop_simplex_dim_bounded_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "bounded \<sigma>"
+  (**
+    Simplexes are finite convex hulls, hence bounded. **)
+proof -
+  obtain V m where hVfin: "finite V"
+      and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  show ?thesis
+    using h\<sigma>_HOL hVfin finite_imp_bounded_convex_hull by (by100 simp)
+qed
+
+lemma geotop_simplex_dim_convex_HOL_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  shows "convex \<sigma>"
+  (**
+    HOL-convex form of the geotop simplex convexity fact. **)
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+  have hconv_geotop: "geotop_convex \<sigma>"
+    by (rule geotop_simplex_is_convex[OF hsimplex])
+  show ?thesis
+    using hconv_geotop geotop_convex_iff_HOL_convex by (by100 blast)
+qed
+
+lemma geotop_2simplex_frontier_is_polygon_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_is_polygon (frontier \<sigma>)"
+  (**
+    The frontier of a 2-simplex is a polygonal 1-sphere: choose the three
+    vertices and read the frontier as the closed three-edge path. **)
+  sorry
+
+lemma geotop_2simplex_inside_frontier_eq_HOL_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "inside (frontier \<sigma>) = interior \<sigma>"
+  (**
+    HOL convex-geometry form of the triangle interior: the inside of the
+    frontier of a bounded convex triangle is its ordinary interior. **)
+proof -
+  have hbd: "bounded \<sigma>"
+    by (rule geotop_simplex_dim_bounded_prefix[OF h\<sigma>2])
+  have hconv: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  show ?thesis
+    by (rule inside_frontier_eq_interior[OF hbd hconv])
+qed
+
+lemma geotop_2simplex_inside_frontier_HOL_component_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "inside (frontier \<sigma>) \<in> components (UNIV - frontier \<sigma>) \<and>
+      bounded (inside (frontier \<sigma>))"
+  (**
+    Component form needed to identify the polygon-interior convention with
+    HOL's bounded inside component. **)
+proof -
+  have hinside_eq: "inside (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_inside_frontier_eq_HOL_interior_prefix[OF h\<sigma>2])
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>2])
+  have hrel_ne: "rel_interior \<sigma> \<noteq> {}"
+    by (rule geotop_simplex_rel_interior_nonempty[OF hsimplex])
+  have hint_rel: "interior \<sigma> = rel_interior \<sigma>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<sigma>2])
+  have hinside_ne: "inside (frontier \<sigma>) \<noteq> {}"
+    using hinside_eq hint_rel hrel_ne by (by100 simp)
+  have hconv: "convex \<sigma>"
+    by (rule geotop_simplex_dim_convex_HOL_prefix[OF h\<sigma>2])
+  have hconv_int: "convex (interior \<sigma>)"
+    by (rule convex_interior[OF hconv])
+  have hinside_conn: "connected (inside (frontier \<sigma>))"
+    using hinside_eq hconv_int convex_connected by (by100 simp)
+  have hinside_comp: "inside (frontier \<sigma>) \<in> components (- frontier \<sigma>)"
+    using inside_in_components[of "frontier \<sigma>"] hinside_conn hinside_ne by (by100 simp)
+  have hcomponents_eq: "components (- frontier \<sigma>) = components (UNIV - frontier \<sigma>)"
+    by (simp only: Compl_eq_Diff_UNIV)
+  have hinside_comp_UNIV: "inside (frontier \<sigma>) \<in> components (UNIV - frontier \<sigma>)"
+    using hinside_comp hcomponents_eq by (by100 simp)
+  have hbd\<sigma>: "bounded \<sigma>"
+    by (rule geotop_simplex_dim_bounded_prefix[OF h\<sigma>2])
+  have hbd_int: "bounded (interior \<sigma>)"
+    using hbd\<sigma> interior_subset bounded_subset by (by100 blast)
+  have hbd_inside: "bounded (inside (frontier \<sigma>))"
+    using hinside_eq hbd_int by (by100 simp)
+  show ?thesis
+    using hinside_comp_UNIV hbd_inside by (by100 blast)
+qed
+
 lemma geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
@@ -1735,7 +1832,21 @@ lemma geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix:
     the complement of the frontier of a 2-simplex is the ordinary open triangle.
     This is the explicit local form of the fact used when Moise says the
     exactly-two-triangle case is clear. **)
-  sorry
+proof -
+  have hpoly: "geotop_is_polygon (frontier \<sigma>)"
+    by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<sigma>2])
+  have hinside_component:
+      "inside (frontier \<sigma>) \<in> components (UNIV - frontier \<sigma>) \<and>
+        bounded (inside (frontier \<sigma>))"
+    by (rule geotop_2simplex_inside_frontier_HOL_component_prefix[OF h\<sigma>2])
+  have hinside_poly:
+      "inside (frontier \<sigma>) = geotop_polygon_interior (frontier \<sigma>)"
+    by (rule polygon_interior_unique[OF hpoly hinside_component])
+  have hinside_int: "inside (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_inside_frontier_eq_HOL_interior_prefix[OF h\<sigma>2])
+  show ?thesis
+    using hinside_poly hinside_int by (by100 simp)
+qed
 
 lemma geotop_polygon_boundary_contact_triangle_frontier_eq_prefix:
   fixes J \<sigma> :: "(real^2) set"
