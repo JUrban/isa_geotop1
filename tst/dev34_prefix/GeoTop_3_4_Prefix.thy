@@ -7436,6 +7436,68 @@ proof -
   qed
 qed
 
+lemma geotop_nonfree_selected_edges_contact_neq_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hEsub: "E \<subseteq> K"
+  assumes hEallowed:
+    "E = {} \<or>
+     (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  assumes hnot_free: "\<not> geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  shows "\<sigma>\<^sub>2 \<inter> J \<noteq> \<Union>E"
+  (**
+    Contrapositive form of the free-simplex introduction rule: if the selected
+    boundary-edge family has an allowed free-simplex shape, then a nonfree
+    triangle must have additional boundary contact beyond that selected union. **)
+proof
+  assume hcontact: "\<sigma>\<^sub>2 \<inter> J = \<Union>E"
+  have hfree: "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+    by (rule geotop_free_2_simplex_selected_edges_intro_prefix
+        [OF h\<sigma>K h\<sigma>2 hEsub hEallowed hcontact])
+  show False
+    using hnot_free hfree by (by100 blast)
+qed
+
+lemma geotop_nonfree_selected_edges_contact_outside_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hEsub: "E \<subseteq> K"
+  assumes hEallowed:
+    "E = {} \<or>
+     (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  assumes hnot_free: "\<not> geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  assumes hUnion_sub: "\<Union>E \<subseteq> \<sigma>\<^sub>2 \<inter> J"
+  shows "\<exists>x. x \<in> \<sigma>\<^sub>2 \<inter> J \<and> x \<notin> \<Union>E"
+  (**
+    Witness form for the nonfree boundary-triangle case: because selected edge
+    carriers already lie inside the triangle-boundary contact, nonfreeness
+    produces a contact point not carried by the selected edges. **)
+proof -
+  have hneq: "\<sigma>\<^sub>2 \<inter> J \<noteq> \<Union>E"
+    by (rule geotop_nonfree_selected_edges_contact_neq_prefix
+        [OF h\<sigma>K h\<sigma>2 hEsub hEallowed hnot_free])
+  have "\<not> \<sigma>\<^sub>2 \<inter> J \<subseteq> \<Union>E"
+  proof
+    assume hsub: "\<sigma>\<^sub>2 \<inter> J \<subseteq> \<Union>E"
+    have "\<sigma>\<^sub>2 \<inter> J = \<Union>E"
+      using hUnion_sub hsub by (by100 blast)
+    thus False
+      using hneq by (by100 blast)
+  qed
+  thus ?thesis
+    by (by100 blast)
+qed
+
 (** from \<S>3 Theorem 3 (geotop.tex:762)
     LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
       triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
@@ -7996,6 +8058,26 @@ proof -
                     hv\<^sub>0v\<^sub>2_selected_if_boundary hv\<^sub>1v\<^sub>2_selected_if_boundary
                     hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
                     hE\<theta>_card_le3 hE\<theta>_card_ne3])
+            have hE\<theta>_card_le2:
+              "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<le> 2"
+              using hE\<theta>_card_le3 hE\<theta>_card_ne3 by (by100 linarith)
+            have hE\<theta>_allowed:
+              "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {} \<or>
+               (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {e}
+                  \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J') \<or>
+               (\<exists>e1 e2. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {e1, e2}
+                  \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+                  \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and> e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
+              by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+                  [OF hE\<theta>_fin hE\<theta>_card_le2])
+            have hE\<theta>_subset_K:
+              "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<subseteq> K"
+              by (by100 simp)
+            have h\<theta>_contact_outside_selected:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              by (rule geotop_nonfree_selected_edges_contact_outside_prefix
+                  [OF h\<theta>K h\<theta>2 hE\<theta>_subset_K hE\<theta>_allowed h\<theta>_not_free hE\<theta>_union_sub_\<theta>J])
             show ?thesis
               sorry
           qed
