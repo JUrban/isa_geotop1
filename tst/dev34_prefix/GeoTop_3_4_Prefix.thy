@@ -1688,6 +1688,83 @@ proof
   qed
 qed
 
+lemma geotop_2simplex_HOL_interior_eq_rel_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "interior \<sigma> = rel_interior \<sigma>"
+  (**
+    A 2-simplex in the plane has full affine dimension, so its ordinary
+    Euclidean interior is its relative interior. **)
+proof -
+  have hhyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>2])
+  have hdim\<sigma>: "aff_dim \<sigma> = 2"
+    using geotop_hyperplane_dim_imp_affine_aff_dim[OF hhyper] by (by100 simp)
+  have hdim_UNIV: "aff_dim \<sigma> = int (DIM(real^2))"
+    using hdim\<sigma> by (by100 simp)
+  have hrel_eq_int: "rel_interior \<sigma> = interior \<sigma>"
+    by (rule interior_rel_interior[OF hdim_UNIV])
+  show ?thesis
+    using hrel_eq_int by (by100 simp)
+qed
+
+lemma geotop_2simplex_closure_HOL_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "closure (interior \<sigma>) = \<sigma>"
+  (**
+    Full-dimensional simplex form of the standard simplex fact that the closed
+    triangle is the closure of its open triangle interior. **)
+proof -
+  have hsimplex: "geotop_is_simplex \<sigma>"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>2])
+  have hclosure_rel: "closure (rel_interior \<sigma>) = \<sigma>"
+    by (rule geotop_simplex_closure_rel_interior[OF hsimplex])
+  have hint_rel: "interior \<sigma> = rel_interior \<sigma>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<sigma>2])
+  show ?thesis
+    using hclosure_rel hint_rel by (by100 simp)
+qed
+
+lemma geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix:
+  fixes J \<sigma> :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hfront_sub: "frontier \<sigma> \<subseteq> J"
+  assumes hcontact: "\<sigma> \<inter> J = frontier \<sigma>"
+  shows "geotop_polygon_interior J = interior \<sigma>"
+  (**
+    Topological content of Moise's \"clear\" two-triangle base case: if a
+    polygonal simple closed curve contains the whole frontier of a 2-simplex
+    and its contact with the closed triangle is exactly that frontier, then the
+    bounded polygon interior is the ordinary interior of the triangle. **)
+  sorry
+
+lemma geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix:
+  fixes J \<sigma> :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hfront_sub: "frontier \<sigma> \<subseteq> J"
+  assumes hcontact: "\<sigma> \<inter> J = frontier \<sigma>"
+  shows "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      \<subseteq> \<sigma>"
+  (**
+    Disk-carrier consequence used in the two-triangle base case: once all
+    three edges of \<open>\<sigma>\<close> form the polygon boundary contact, the closed polygonal
+    disk lies in \<open>\<sigma>\<close>. **)
+proof -
+  have hI_eq: "geotop_polygon_interior J = interior \<sigma>"
+    by (rule geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix
+        [OF hJ h\<sigma>2 hfront_sub hcontact])
+  have hclos_on: "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+      = closure (geotop_polygon_interior J)"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  have hclosure_int: "closure (interior \<sigma>) = \<sigma>"
+    by (rule geotop_2simplex_closure_HOL_interior_prefix[OF h\<sigma>2])
+  show ?thesis
+    using hI_eq hclos_on hclosure_int by (by100 simp)
+qed
+
 lemma geotop_polygon_boundary_point_in_simplex_not_in_interior_prefix:
   fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -2058,8 +2135,13 @@ proof -
   have h\<tau>_sub_disk:
       "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
     using h\<tau>_sub_poly hK_poly by (by100 simp)
+  have hclosed_disk_sub_\<sigma>:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+        \<subseteq> \<sigma>"
+    by (rule geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix
+        [OF hJ h\<sigma>2 hfront_sub_J h\<sigma>J_eq_frontier])
   show ?thesis
-    sorry
+    using h\<tau>_sub_disk hclosed_disk_sub_\<sigma> by (by100 blast)
 qed
 
 lemma geotop_two_triangle_not_all_boundary_edges_prefix:
@@ -2330,7 +2412,7 @@ proof -
           (geotop_polyhedron K)"
     using geotop_polygon_disk_two_boundary_2simplexes_prefix
         [OF hJ hK hK_poly hT_gt2]
-    by (by100 blast)
+    by (by100 metis)
   have he\<sigma>sel:
       "e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
     by (rule geotop_polygon_disk_boundary_edge_in_selected_edges_prefix
