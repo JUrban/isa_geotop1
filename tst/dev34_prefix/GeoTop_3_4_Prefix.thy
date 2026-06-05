@@ -6931,6 +6931,26 @@ proof -
     using he_front hfront by (by100 simp)
 qed
 
+lemma geotop_polygon_disk_polygon_edge_subset_frontier_prefix:
+  fixes J e :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heJ: "e \<subseteq> J"
+  shows "e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+  (**
+    Reverse rewriting form of the disk-carrier frontier identity.  This is the
+    direction needed after the ear argument produces selected polygon-boundary
+    edge faces and the book statement asks for edges in \<open>Fr |K|\<close>. **)
+proof -
+  have hfront: "geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
+  show ?thesis
+    using heJ hfront by (by100 simp)
+qed
+
 lemma geotop_polygon_disk_boundary_edge_in_selected_edges_prefix:
   fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
