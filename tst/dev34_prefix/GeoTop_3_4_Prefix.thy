@@ -2868,6 +2868,101 @@ proof -
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
               by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
                   [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+            have h\<theta>J_sub_frontier:
+              "\<theta> \<inter> J' \<subseteq> frontier \<theta>"
+            proof
+              fix x
+              assume hx: "x \<in> \<theta> \<inter> J'"
+              have hx\<theta>: "x \<in> \<theta>"
+                using hx by (by100 simp)
+              have hxJ: "x \<in> J'"
+                using hx by (by100 simp)
+              show "x \<in> frontier \<theta>"
+                by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+                    [OF hJ' h\<theta>K h\<theta>2 hK_poly' hx\<theta> hxJ])
+            qed
+            have h\<theta>J_sub_named_edges:
+              "\<theta> \<inter> J' \<subseteq>
+                geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              using h\<theta>J_sub_frontier h\<theta>_frontier_named_edges by (by100 simp)
+            have hE\<theta>_union_sub_\<theta>J:
+              "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}
+                \<subseteq> \<theta> \<inter> J'"
+            proof
+              fix x
+              assume hx: "x \<in> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              then obtain d where hdE: "d \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+                and hxd: "x \<in> d"
+                by (by100 blast)
+              have hd_face: "geotop_is_face d \<theta>"
+                using hdE by (by100 simp)
+              have hd_sub_\<theta>: "d \<subseteq> \<theta>"
+                by (rule geotop_is_face_imp_subset_prefix[OF hd_face])
+              have hd_sub_J: "d \<subseteq> J'"
+                using hdE by (by100 simp)
+              show "x \<in> \<theta> \<inter> J'"
+                using hxd hd_sub_\<theta> hd_sub_J by (by100 blast)
+            qed
+            have h\<theta>J_sub_selected_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                \<theta> \<inter> J' \<subseteq>
+                  \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              have hE_eq:
+                "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
+                  {geotop_convex_hull {v\<^sub>0, v\<^sub>1},
+                   geotop_convex_hull {v\<^sub>0, v\<^sub>2},
+                   geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
+                by (rule hE\<theta>_eq_three_named_if_both_other_boundary
+                    [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+              have hUnion_raw:
+                "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
+                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                   geotop_convex_hull {v\<^sub>1, v\<^sub>2})"
+                using hE_eq by (by100 simp)
+              have hUnion_assoc:
+                "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                  (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                   geotop_convex_hull {v\<^sub>1, v\<^sub>2})
+                =
+                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                  geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                  geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                by (by100 blast)
+              have hUnion_eq:
+                "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
+                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                  geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                  geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+                using hUnion_raw hUnion_assoc by (by100 simp)
+              show ?thesis
+                using h\<theta>J_sub_named_edges hUnion_eq by (by100 simp)
+            qed
+            have h\<theta>J_eq_selected_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                \<theta> \<inter> J' =
+                  \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              show ?thesis
+              proof
+                show "\<theta> \<inter> J' \<subseteq>
+                    \<Union>{d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+                  by (rule h\<theta>J_sub_selected_if_both_other_boundary
+                      [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+                show "\<Union>{d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}
+                    \<subseteq> \<theta> \<inter> J'"
+                  by (rule hE\<theta>_union_sub_\<theta>J)
+              qed
+            qed
             show ?thesis
               sorry
           qed
