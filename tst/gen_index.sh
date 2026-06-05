@@ -44,6 +44,7 @@ THEORIES=(
   dev34_graphfacts/GeoTop_3_4_GraphFacts.thy
   dev34_graphwork/GeoTop_3_4_GraphWork.thy
   dev34_openstar/GeoTop_3_4_OpenStar.thy
+  dev34_core/GeoTop_3_4_Core.thy
   dev34/GeoTop_3_4.thy
 )
 
