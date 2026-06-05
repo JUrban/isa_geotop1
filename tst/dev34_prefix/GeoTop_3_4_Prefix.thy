@@ -2694,6 +2694,69 @@ proof -
             have hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
               using htriangle_edge_hulls_distinct by (by100 simp)
+            have hE\<theta>_fin:
+              "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              using hK_fin' by (by100 simp)
+            have hE\<theta>_card_ge2_if_v\<^sub>0v\<^sub>2_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 2"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1}, geotop_convex_hull {v\<^sub>0, v\<^sub>2}}"
+              have hP_sub: "?P \<subseteq> ?E"
+                using hv\<^sub>0v\<^sub>1_selected
+                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
+                by (by100 blast)
+              have hP_card: "card ?P = 2"
+                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 by (by100 simp)
+              have "card ?P \<le> card ?E"
+                by (rule card_mono[OF hE\<theta>_fin hP_sub])
+              thus ?thesis
+                using hP_card by (by100 simp)
+            qed
+            have hE\<theta>_card_ge2_if_v\<^sub>1v\<^sub>2_boundary:
+              "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 2"
+            proof -
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1}, geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
+              have hP_sub: "?P \<subseteq> ?E"
+                using hv\<^sub>0v\<^sub>1_selected
+                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
+                by (by100 blast)
+              have hP_card: "card ?P = 2"
+                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 by (by100 simp)
+              have "card ?P \<le> card ?E"
+                by (rule card_mono[OF hE\<theta>_fin hP_sub])
+              thus ?thesis
+                using hP_card by (by100 simp)
+            qed
+            have hE\<theta>_card_ge3_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 3"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1},
+                         geotop_convex_hull {v\<^sub>0, v\<^sub>2},
+                         geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
+              have hP_sub: "?P \<subseteq> ?E"
+                using hv\<^sub>0v\<^sub>1_selected
+                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
+                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
+                by (by100 blast)
+              have hP_card: "card ?P = 3"
+                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
+                by (by100 simp)
+              have "card ?P \<le> card ?E"
+                by (rule card_mono[OF hE\<theta>_fin hP_sub])
+              thus ?thesis
+                using hP_card by (by100 simp)
+            qed
             show ?thesis
               sorry
           qed
