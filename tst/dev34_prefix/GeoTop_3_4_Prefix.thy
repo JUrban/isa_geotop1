@@ -2039,7 +2039,28 @@ lemma geotop_two_triangle_all_boundary_edges_force_other_subset_prefix:
     \<open>\<sigma>\<close> lie on the polygon boundary, then the disk bounded by that frontier
     leaves no boundary edge through which the second 2-simplex can attach
     outside \<open>\<sigma>\<close>; hence the other 2-simplex is forced into \<open>\<sigma>\<close>. **)
-  sorry
+proof -
+  have h\<tau>_data: "\<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2"
+  proof -
+    have "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+      using hT_eq by (by100 simp)
+    thus ?thesis
+      by (by100 simp)
+  qed
+  have hfront_sub_J: "frontier \<sigma> \<subseteq> J"
+    by (rule geotop_2simplex_three_selected_edge_faces_frontier_subset_prefix
+        [OF h\<sigma>2 hcard])
+  have h\<sigma>J_eq_frontier: "\<sigma> \<inter> J = frontier \<sigma>"
+    by (rule geotop_2simplex_three_selected_edge_faces_boundary_contact_eq_frontier_prefix
+        [OF hJ h\<sigma>K h\<sigma>2 hK_poly hcard])
+  have h\<tau>_sub_poly: "\<tau> \<subseteq> geotop_polyhedron K"
+    using h\<tau>_data unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<tau>_sub_disk:
+      "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using h\<tau>_sub_poly hK_poly by (by100 simp)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_two_triangle_not_all_boundary_edges_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
