@@ -7054,6 +7054,29 @@ proof -
     using hC hUnion by (by100 simp)
 qed
 
+lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+  shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<subseteq> \<theta> \<inter> J"
+  (**
+    Selected-edge carrier bookkeeping: every selected edge face lies in both
+    the ambient 2-simplex and the polygon-boundary set used for selection. **)
+proof
+  fix x
+  assume hx: "x \<in> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  then obtain d where hdE: "d \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+      and hxd: "x \<in> d"
+    by (by100 blast)
+  have hd_face: "geotop_is_face d \<theta>"
+    using hdE by (by100 simp)
+  have hd_sub_\<theta>: "d \<subseteq> \<theta>"
+    by (rule geotop_is_face_imp_subset_prefix[OF hd_face])
+  have hd_sub_J: "d \<subseteq> J"
+    using hdE by (by100 simp)
+  show "x \<in> \<theta> \<inter> J"
+    using hxd hd_sub_\<theta> hd_sub_J by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_not_both_other_edges_prefix:
   fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
   assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
@@ -7893,21 +7916,7 @@ proof -
             have hE\<theta>_union_sub_\<theta>J:
               "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}
                 \<subseteq> \<theta> \<inter> J'"
-            proof
-              fix x
-              assume hx: "x \<in> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              then obtain d where hdE: "d \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-                and hxd: "x \<in> d"
-                by (by100 blast)
-              have hd_face: "geotop_is_face d \<theta>"
-                using hdE by (by100 simp)
-              have hd_sub_\<theta>: "d \<subseteq> \<theta>"
-                by (rule geotop_is_face_imp_subset_prefix[OF hd_face])
-              have hd_sub_J: "d \<subseteq> J'"
-                using hdE by (by100 simp)
-              show "x \<in> \<theta> \<inter> J'"
-                using hxd hd_sub_\<theta> hd_sub_J by (by100 blast)
-            qed
+              by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
             have h\<theta>J_sub_selected_if_both_other_boundary:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
