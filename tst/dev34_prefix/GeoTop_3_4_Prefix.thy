@@ -1726,6 +1726,182 @@ proof -
   qed
 qed
 
+lemma geotop_complex_point_finite_local_carrier_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hx: "x \<in> geotop_polyhedron K"
+  shows "\<exists>r F. 0 < r \<and> finite F \<and> F \<subseteq> K
+      \<and> ball x r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  (**
+    Local finiteness of a complex, packaged as a finite carrier cover around a
+    point of the polyhedron. **)
+proof -
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have hK_local:
+    "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule geotop_is_complex_locally_finite[OF hK])
+  have hlocal_\<sigma>: "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule bspec[OF hK_local h\<sigma>K])
+  obtain U where hU_open: "open U" and h\<sigma>U: "\<sigma> \<subseteq> U"
+    and hU_finite: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hlocal_\<sigma> by (by100 blast)
+  have hxU: "x \<in> U"
+    using hx\<sigma> h\<sigma>U by (by100 blast)
+  have hU_ball: "\<forall>x\<in>U. \<exists>r>0. ball x r \<subseteq> U"
+    using hU_open open_contains_ball[of U] by (by100 simp)
+  have hex_r: "\<exists>r>0. ball x r \<subseteq> U"
+    using hU_ball hxU by (by100 blast)
+  obtain r where hr_pos: "0 < r" and hballU: "ball x r \<subseteq> U"
+    using hex_r by (by100 blast)
+  let ?F = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  have hF_sub: "?F \<subseteq> K"
+    by (by100 blast)
+  have hlocal_cover: "ball x r \<inter> geotop_polyhedron K \<subseteq> \<Union>?F"
+  proof
+    fix z
+    assume hz: "z \<in> ball x r \<inter> geotop_polyhedron K"
+    obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hz\<tau>: "z \<in> \<tau>"
+      using hz unfolding geotop_polyhedron_def by (by100 blast)
+    have hzU: "z \<in> U"
+      using hz hballU by (by100 blast)
+    have "\<tau> \<inter> U \<noteq> {}"
+      using hz\<tau> hzU by (by100 blast)
+    have "\<tau> \<in> ?F"
+      using h\<tau>K \<open>\<tau> \<inter> U \<noteq> {}\<close> by (by100 blast)
+    show "z \<in> \<Union>?F"
+      using \<open>\<tau> \<in> ?F\<close> hz\<tau> by (by100 blast)
+  qed
+  show ?thesis
+    using hr_pos hU_finite hF_sub hlocal_cover by (by100 blast)
+qed
+
+lemma geotop_complex_edge_point_finite_local_cover_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set" and p :: "real^2"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hp: "p \<in> e"
+  shows "\<exists>r F. 0 < r \<and> finite F \<and> F \<subseteq> K \<and> e \<in> F
+      \<and> ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+  (**
+    Edge-point form of the same local finite cover, retaining the edge itself
+    in the finite family. **)
+proof -
+  have hpM: "p \<in> geotop_polyhedron K"
+    using heK hp unfolding geotop_polyhedron_def by (by100 blast)
+  obtain r F where hr: "0 < r"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and hcover: "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>F"
+    using geotop_complex_point_finite_local_carrier_prefix[OF hK hpM]
+    by (by100 blast)
+  let ?F = "insert e F"
+  have hFfin': "finite ?F"
+    using hFfin by (by100 simp)
+  have hFsub': "?F \<subseteq> K"
+    using heK hFsub by (by100 blast)
+  have hcover': "ball p r \<inter> geotop_polyhedron K \<subseteq> \<Union>?F"
+    using hcover by (by100 blast)
+  show ?thesis
+    using hr hFfin' hFsub' hcover' by (by100 blast)
+qed
+
+lemma geotop_complex_edge_unique_face_count_eq_1_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  shows "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>} = 1"
+  (**
+    Unique incident 2-simplex, converted to the cardinality form used by
+    edge-star case splits. **)
+proof -
+  let ?S = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>}"
+  let ?P = "\<lambda>\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  have hunique_def: "\<exists>\<sigma>. ?P \<sigma> \<and> (\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>)"
+    using hunique unfolding Ex1_def by (by100 simp)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and huniq_all: "\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>"
+    using hunique_def by (elim exE conjE)
+  have huniqP: "\<And>\<tau>. ?P \<tau> \<Longrightarrow> \<tau> = \<sigma>"
+    using huniq_all by (by100 simp)
+  have hSeq: "?S = {\<sigma>}"
+  proof
+    show "?S \<subseteq> {\<sigma>}"
+    proof
+      fix \<tau>
+      assume h\<tau>S: "\<tau> \<in> ?S"
+      have h\<tau>K: "\<tau> \<in> K"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>face: "geotop_is_face e \<tau>"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>P: "?P \<tau>"
+        using h\<tau>K h\<tau>2 h\<tau>face by (by100 simp)
+      have "\<tau> = \<sigma>"
+        by (rule huniqP[OF h\<tau>P])
+      thus "\<tau> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+  next
+    show "{\<sigma>} \<subseteq> ?S"
+      using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  qed
+  show ?thesis
+    using hSeq by (by100 simp)
+qed
+
+lemma geotop_complex_edge_unique_face_obtain_prefix:
+  fixes K :: "(real^2) set set" and e :: "(real^2) set"
+  assumes hunique:
+    "\<exists>!\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  obtains \<sigma> where "\<sigma> \<in> K" and "geotop_simplex_dim \<sigma> 2" and "geotop_is_face e \<sigma>"
+    and "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>} = {\<sigma>}"
+  (**
+    Obtain form of the unique incident 2-simplex fact. **)
+proof -
+  let ?S = "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>}"
+  let ?P = "\<lambda>\<sigma>. \<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  have hunique_def: "\<exists>\<sigma>. ?P \<sigma> \<and> (\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>)"
+    using hunique unfolding Ex1_def by (by100 simp)
+  obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+    and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    and h\<sigma>face: "geotop_is_face e \<sigma>"
+    and huniq_all: "\<forall>\<tau>. ?P \<tau> \<longrightarrow> \<tau> = \<sigma>"
+    using hunique_def by (elim exE conjE)
+  have huniqP: "\<And>\<tau>. ?P \<tau> \<Longrightarrow> \<tau> = \<sigma>"
+    using huniq_all by (by100 simp)
+  have hSeq: "?S = {\<sigma>}"
+  proof
+    show "?S \<subseteq> {\<sigma>}"
+    proof
+      fix \<tau>
+      assume h\<tau>S: "\<tau> \<in> ?S"
+      have h\<tau>K: "\<tau> \<in> K"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>face: "geotop_is_face e \<tau>"
+        using h\<tau>S by (by100 simp)
+      have h\<tau>P: "?P \<tau>"
+        using h\<tau>K h\<tau>2 h\<tau>face by (by100 simp)
+      have "\<tau> = \<sigma>"
+        by (rule huniqP[OF h\<tau>P])
+      thus "\<tau> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+  next
+    show "{\<sigma>} \<subseteq> ?S"
+      using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  qed
+  show ?thesis
+    by (rule that[OF h\<sigma>K h\<sigma>2 h\<sigma>face hSeq])
+qed
+
 lemma geotop_2simplex_edge_faces_card_le3_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
