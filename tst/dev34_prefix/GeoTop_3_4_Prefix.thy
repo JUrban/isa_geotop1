@@ -2580,6 +2580,13 @@ proof -
               using hother_edge_faces by (by100 simp)
             have hv\<^sub>1v\<^sub>2_face: "geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
               using hother_edge_faces by (by100 simp)
+            have hface_closed_K:
+              "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+              using hK' unfolding geotop_is_complex_def by (by100 blast)
+            have hv\<^sub>0v\<^sub>2K: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
+              using hface_closed_K h\<theta>K hv\<^sub>0v\<^sub>2_face by (by100 blast)
+            have hv\<^sub>1v\<^sub>2K: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
+              using hface_closed_K h\<theta>K hv\<^sub>1v\<^sub>2_face by (by100 blast)
             show ?thesis
               sorry
           qed
