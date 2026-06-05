@@ -1532,6 +1532,200 @@ proof -
     using he_eq h\<tau>_eq hW_eq by (by100 simp)
 qed
 
+lemma geotop_edge_face_in_ge_2_simplex_has_2_face_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hface: "geotop_is_face e \<sigma>"
+  assumes h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+  assumes hn: "2 \<le> n"
+  shows "\<exists>\<tau>. geotop_is_face \<tau> \<sigma> \<and> geotop_simplex_dim \<tau> 2 \<and> e \<subseteq> \<tau>"
+  (**
+    If an edge is a face of a simplex of dimension at least two, it is contained
+    in some 2-face of that simplex. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge hface])
+  obtain V\<^sub>\<sigma> m where hV\<^sub>\<sigma>_fin: "finite V\<^sub>\<sigma>"
+    and hV\<^sub>\<sigma>_card: "card V\<^sub>\<sigma> = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp_V\<^sub>\<sigma>: "geotop_general_position V\<^sub>\<sigma> m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using h\<sigma>dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    unfolding geotop_simplex_vertices_def
+    using hV\<^sub>\<sigma>_fin hV\<^sub>\<sigma>_card hn_le_m hgp_V\<^sub>\<sigma> h\<sigma>_eq by (by100 blast)
+  have hV_eq: "V = V\<^sub>\<sigma>"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V\<^sub>\<sigma>])
+  have hW_sub_V\<^sub>\<sigma>: "W \<subseteq> V\<^sub>\<sigma>"
+    using hW_sub hV_eq by (by100 simp)
+  have hV\<^sub>\<sigma>_ge3: "3 \<le> card V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_card hn by (by100 linarith)
+  have hW_fin: "finite W"
+    using hW_sub_V\<^sub>\<sigma> hV\<^sub>\<sigma>_fin by (rule finite_subset)
+  have "\<not> V\<^sub>\<sigma> \<subseteq> W"
+  proof
+    assume hV_sub_W: "V\<^sub>\<sigma> \<subseteq> W"
+    have "card V\<^sub>\<sigma> \<le> card W"
+      by (rule card_mono[OF hW_fin hV_sub_W])
+    thus False
+      using hV\<^sub>\<sigma>_ge3 hW_card by (by100 linarith)
+  qed
+  then obtain u where huV: "u \<in> V\<^sub>\<sigma>" and huW: "u \<notin> W"
+    by (by100 blast)
+  let ?X = "W \<union> {u}"
+  have hX_sub: "?X \<subseteq> V\<^sub>\<sigma>"
+    using hW_sub_V\<^sub>\<sigma> huV by (by100 blast)
+  have hX_ne: "?X \<noteq> {}"
+    using huV by (by100 blast)
+  have hX_fin: "finite ?X"
+    using hW_fin by (by100 simp)
+  have hX_card: "card ?X = 3"
+    using hW_fin hW_card huW by (by100 simp)
+  have hm_ge2: "2 \<le> m"
+    using hn hn_le_m by (by100 linarith)
+  have hgp_X: "geotop_general_position ?X m"
+    by (rule geotop_general_position_subset[OF hgp_V\<^sub>\<sigma> hX_sub])
+  define \<tau> where "\<tau> = geotop_convex_hull ?X"
+  have h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+    unfolding \<tau>_def
+    by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma> hX_ne hX_sub])
+  have h\<tau>dim: "geotop_simplex_dim \<tau> 2"
+  proof -
+    have hX_card_dim: "card ?X = 2 + 1"
+      using hX_card by (by100 simp)
+    show ?thesis
+      unfolding geotop_simplex_dim_def \<tau>_def
+      using hX_fin hX_card_dim hm_ge2 hgp_X by (by100 blast)
+  qed
+  have hesub: "e \<subseteq> \<tau>"
+  proof -
+    have hmono: "convex hull W \<subseteq> convex hull ?X"
+      by (rule hull_mono) (by100 blast)
+    show ?thesis
+      using hmono he_eq \<tau>_def geotop_convex_hull_eq_HOL[of W]
+        geotop_convex_hull_eq_HOL[of ?X]
+      by (by100 simp)
+  qed
+  show ?thesis
+    using h\<tau>face h\<tau>dim hesub by (by100 blast)
+qed
+
+lemma geotop_complex_edge_in_higher_simplex_has_2_simplex_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hsub: "e \<subseteq> \<sigma>"
+  assumes h\<sigma>dim: "geotop_simplex_dim \<sigma> n"
+  assumes hn: "2 \<le> n"
+  shows "\<exists>\<tau>\<in>K. geotop_simplex_dim \<tau> 2 \<and> e \<subseteq> \<tau>"
+  (**
+    Complex form of the preceding face-extension lemma, closing the produced
+    2-face back into the complex. **)
+proof -
+  have hface: "geotop_is_face e \<sigma>"
+    by (rule geotop_complex_subset_simplex_face_prefix[OF hK heK h\<sigma>K hsub])
+  obtain \<tau> where h\<tau>face: "geotop_is_face \<tau> \<sigma>"
+    and h\<tau>dim: "geotop_simplex_dim \<tau> 2"
+    and he\<tau>: "e \<subseteq> \<tau>"
+    using geotop_edge_face_in_ge_2_simplex_has_2_face_prefix
+      [OF hedge hface h\<sigma>dim hn]
+    by (by100 blast)
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have h\<tau>K: "\<tau> \<in> K"
+    using hface_closed h\<sigma>K h\<tau>face by (by100 blast)
+  show ?thesis
+    using h\<tau>K h\<tau>dim he\<tau> by (by100 blast)
+qed
+
+lemma geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hmeet: "\<tau> \<inter> rel_interior e \<noteq> {}"
+  assumes hno2: "\<not> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
+  shows "\<tau> \<subseteq> e"
+  (**
+    If no 2-simplex of a complex lies over an edge, then every simplex meeting
+    the edge interior is contained in the edge. **)
+proof -
+  obtain x where hx\<tau>: "x \<in> \<tau>" and hxe_rel: "x \<in> rel_interior e"
+    using hmeet by (by100 blast)
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_complex_rel_interior_imp_subset[OF hK heK h\<tau>K hxe_rel hx\<tau>])
+  have h\<tau>simp: "geotop_is_simplex \<tau>"
+    using geotop_is_complex_simplex[OF hK] h\<tau>K by (by100 blast)
+  obtain n where h\<tau>dim: "geotop_simplex_dim \<tau> n"
+    using h\<tau>simp unfolding geotop_is_simplex_def geotop_simplex_dim_def
+    by (by100 blast)
+  have hn_le1: "n \<le> 1"
+  proof (rule ccontr)
+    assume "\<not> n \<le> 1"
+    hence hn_ge2: "2 \<le> n"
+      by (by100 simp)
+    have "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>"
+      by (rule geotop_complex_edge_in_higher_simplex_has_2_simplex_prefix
+          [OF hK heK h\<tau>K hedge he_sub_\<tau> h\<tau>dim hn_ge2])
+    thus False
+      using hno2 by (by100 blast)
+  qed
+  have hn_cases: "n = 0 \<or> n = 1"
+    using hn_le1 by (by100 linarith)
+  show ?thesis
+  proof (rule disjE[OF hn_cases])
+    assume hn0: "n = 0"
+    obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+      by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+    obtain V m where hV_fin: "finite V"
+      and hV_card: "card V = 0 + 1"
+      and h\<tau>_eq: "\<tau> = geotop_convex_hull V"
+      using h\<tau>dim hn0 unfolding geotop_simplex_dim_def by (by100 blast)
+    have hV_card1: "card V = 1"
+      using hV_card by (by100 simp)
+    obtain c where hV_eq: "V = {c}"
+      using hV_card1 by (rule card_1_singletonE)
+    have h\<tau>_sing: "\<tau> = {c}"
+      using h\<tau>_eq hV_eq geotop_convex_hull_eq_HOL[of "{c}"] by (by100 simp)
+    have ha\<tau>: "a \<in> \<tau>"
+    proof -
+      have "a \<in> e"
+        using he_seg by (by100 simp)
+      thus ?thesis
+        using he_sub_\<tau> by (by100 blast)
+    qed
+    have hb\<tau>: "b \<in> \<tau>"
+    proof -
+      have "b \<in> e"
+        using he_seg by (by100 simp)
+      thus ?thesis
+        using he_sub_\<tau> by (by100 blast)
+    qed
+    have "a = b"
+      using ha\<tau> hb\<tau> h\<tau>_sing by (by100 simp)
+    thus ?thesis
+      using hab by (by100 blast)
+  next
+    assume hn1: "n = 1"
+    have h\<tau>edge: "geotop_is_edge \<tau>"
+      using h\<tau>dim hn1 unfolding geotop_is_edge_def by (by100 simp)
+    have hface: "geotop_is_face e \<tau>"
+      by (rule geotop_complex_subset_simplex_face_prefix[OF hK heK h\<tau>K he_sub_\<tau>])
+    have heq: "e = \<tau>"
+      by (rule geotop_edge_face_of_edge_eq_prefix[OF hedge h\<tau>edge hface])
+    show ?thesis
+      using heq by (by100 simp)
+  qed
+qed
+
 lemma geotop_2simplex_edge_faces_card_le3_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
