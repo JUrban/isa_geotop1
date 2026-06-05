@@ -2587,6 +2587,21 @@ proof -
               using hface_closed_K h\<theta>K hv\<^sub>0v\<^sub>2_face by (by100 blast)
             have hv\<^sub>1v\<^sub>2K: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
               using hface_closed_K h\<theta>K hv\<^sub>1v\<^sub>2_face by (by100 blast)
+            have hv\<^sub>0v\<^sub>1_selected:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+                \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              using he\<^sub>\<theta>K he\<^sub>\<theta>_edge he\<^sub>\<theta>_face he\<^sub>\<theta>_sub_J he\<^sub>\<theta>_vertices
+              by (by100 simp)
+            have hv\<^sub>0v\<^sub>2_selected_if_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+                  \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              using hv\<^sub>0v\<^sub>2K hv\<^sub>0v\<^sub>2_edge hv\<^sub>0v\<^sub>2_face by (by100 simp)
+            have hv\<^sub>1v\<^sub>2_selected_if_boundary:
+              "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2}
+                  \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              using hv\<^sub>1v\<^sub>2K hv\<^sub>1v\<^sub>2_edge hv\<^sub>1v\<^sub>2_face by (by100 simp)
             show ?thesis
               sorry
           qed
