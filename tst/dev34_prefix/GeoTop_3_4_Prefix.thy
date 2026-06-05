@@ -1786,6 +1786,79 @@ proof
     using hfront_sub hx_frontier by (by100 blast)
 qed
 
+lemma geotop_2simplex_three_selected_edge_faces_frontier_subset_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hcard: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  shows "frontier \<sigma> \<subseteq> J"
+  (**
+    If all three edge faces of a triangle have been selected as polygon-boundary
+    edges, then the whole triangle frontier lies on the polygon boundary. **)
+proof
+  fix x
+  assume hx: "x \<in> frontier \<sigma>"
+  let ?A = "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  have hfront: "frontier \<sigma> = \<Union>?A"
+    by (rule geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>])
+  have hA_eq_E: "?A = ?E"
+    by (rule geotop_2simplex_three_selected_edge_faces_all_prefix[OF h\<sigma> hcard])
+  have hxU: "x \<in> \<Union>?E"
+    using hx hfront hA_eq_E by (by100 simp)
+  obtain e where heE: "e \<in> ?E" and hxe: "x \<in> e"
+    using hxU by (by100 blast)
+  have heJ: "e \<subseteq> J"
+    using heE by (by100 simp)
+  show "x \<in> J"
+    using hxe heJ by (by100 blast)
+qed
+
+lemma geotop_2simplex_three_selected_edge_faces_boundary_contact_eq_frontier_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hcard: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  shows "\<sigma> \<inter> J = frontier \<sigma>"
+  (**
+    Disk-carrier form of the preceding bridge: if all three edge faces are
+    selected, the triangle's contact with the polygon boundary is exactly its
+    frontier. **)
+proof
+  show "\<sigma> \<inter> J \<subseteq> frontier \<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> \<sigma> \<inter> J"
+    have hx\<sigma>: "x \<in> \<sigma>"
+      using hx by (by100 simp)
+    have hxJ: "x \<in> J"
+      using hx by (by100 simp)
+    show "x \<in> frontier \<sigma>"
+      by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+          [OF hJ h\<sigma>K h\<sigma> hK_poly hx\<sigma> hxJ])
+  qed
+  show "frontier \<sigma> \<subseteq> \<sigma> \<inter> J"
+  proof
+    fix x
+    assume hx: "x \<in> frontier \<sigma>"
+    have hfrontJ: "frontier \<sigma> \<subseteq> J"
+      by (rule geotop_2simplex_three_selected_edge_faces_frontier_subset_prefix
+          [OF h\<sigma> hcard])
+    have hxJ: "x \<in> J"
+      using hfrontJ hx by (by100 blast)
+    have h\<sigma>closed: "closed \<sigma>"
+      by (rule geotop_simplex_dim_closed[OF h\<sigma>])
+    have hx_closure: "x \<in> closure \<sigma>"
+      using hx unfolding Elementary_Topology.frontier_def by (by100 simp)
+    have hx\<sigma>: "x \<in> \<sigma>"
+      using h\<sigma>closed hx_closure by (by100 simp)
+    show "x \<in> \<sigma> \<inter> J"
+      using hx\<sigma> hxJ by (by100 simp)
+  qed
+qed
+
 lemma geotop_polygon_disk_polyhedron_connected_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -2829,6 +2902,21 @@ proof -
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = 3"
               using hE\<theta>_card_ge3_if_both_other_boundary hE\<theta>_card_le3 by (by100 simp)
+            have h\<theta>J_eq_frontier_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                \<theta> \<inter> J' = frontier \<theta>"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              have hcard3:
+                "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = 3"
+                by (rule hE\<theta>_card_eq3_if_both_other_boundary
+                    [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+              show ?thesis
+                by (rule geotop_2simplex_three_selected_edge_faces_boundary_contact_eq_frontier_prefix
+                    [OF hJ' h\<theta>K h\<theta>2 hK_poly' hcard3])
+            qed
             have hE\<theta>_eq_three_named_if_both_other_boundary:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
