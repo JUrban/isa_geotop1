@@ -1434,6 +1434,104 @@ proof -
   qed
 qed
 
+lemma geotop_complex_subset_simplex_face_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes hsub: "\<tau> \<subseteq> \<sigma>"
+  shows "geotop_is_face \<tau> \<sigma>"
+  (**
+    Complex intersection axiom in subset form: if one simplex of a complex is
+    contained in another, then it is a face of the larger simplex. **)
+proof -
+  have h\<tau>_ne: "\<tau> \<noteq> {}"
+    by (rule geotop_complex_simplex_nonempty[OF hK h\<tau>K])
+  have hcap: "\<tau> \<inter> \<sigma> = \<tau>"
+    using hsub by (by100 blast)
+  have hcap_ne: "\<tau> \<inter> \<sigma> \<noteq> {}"
+    using hcap h\<tau>_ne by (by100 simp)
+  have hK_inter: "\<forall>\<sigma>'\<in>K. \<forall>\<tau>'\<in>K. \<sigma>' \<inter> \<tau>' \<noteq> {} \<longrightarrow>
+      geotop_is_face (\<sigma>' \<inter> \<tau>') \<sigma>' \<and> geotop_is_face (\<sigma>' \<inter> \<tau>') \<tau>'"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hface_cap: "geotop_is_face (\<tau> \<inter> \<sigma>) \<sigma>"
+    using hK_inter h\<tau>K h\<sigma>K hcap_ne by (by100 blast)
+  show ?thesis
+    using hface_cap hcap by (by100 simp)
+qed
+
+lemma geotop_edge_closed_segment_obtain_prefix:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b where "a \<noteq> b" and "e = closed_segment a b"
+  (**
+    Coordinate-free edge normalization used in edge-incidence bookkeeping. **)
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 1 + 1"
+    and hgp: "geotop_general_position V m"
+    and he_eq: "e = geotop_convex_hull V"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have hV_card2: "card V = 2"
+    using hV_card by (by100 simp)
+  obtain a b where hab: "a \<noteq> b" and hV_eq: "V = {a, b}"
+    using hV_card2 hV_fin by (auto simp: card_2_iff)
+  have "e = geotop_convex_hull {a, b}"
+    using he_eq hV_eq by (by100 simp)
+  also have "\<dots> = convex hull {a, b}"
+    by (rule geotop_convex_hull_eq_HOL)
+  also have "\<dots> = closed_segment a b"
+    by (rule segment_convex_hull[symmetric])
+  finally have he_seg: "e = closed_segment a b" .
+  show ?thesis
+    by (rule that[OF hab he_seg])
+qed
+
+lemma geotop_edge_face_of_edge_eq_prefix:
+  fixes e \<tau> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<tau>edge: "geotop_is_edge \<tau>"
+  assumes hface: "geotop_is_face e \<tau>"
+  shows "e = \<tau>"
+  (**
+    A 1-face of a 1-simplex is the whole 1-simplex. **)
+proof -
+  obtain V W where h\<tau>V: "geotop_simplex_vertices \<tau> V"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge hface])
+  have h\<tau>dim: "geotop_simplex_dim \<tau> 1"
+    using h\<tau>edge unfolding geotop_is_edge_def by (by100 simp)
+  obtain V\<^sub>\<tau> m where hV\<^sub>\<tau>_fin: "finite V\<^sub>\<tau>"
+    and hV\<^sub>\<tau>_card: "card V\<^sub>\<tau> = 1 + 1"
+    and h1_le_m: "1 \<le> m"
+    and hgp_V\<^sub>\<tau>: "geotop_general_position V\<^sub>\<tau> m"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull V\<^sub>\<tau>"
+    using h\<tau>dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<tau>V\<^sub>\<tau>: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    unfolding geotop_simplex_vertices_def
+    using hV\<^sub>\<tau>_fin hV\<^sub>\<tau>_card h1_le_m hgp_V\<^sub>\<tau> h\<tau>_eq by (by100 blast)
+  have hV_eq: "V = V\<^sub>\<tau>"
+    by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<tau>V\<^sub>\<tau>])
+  have hW_fin: "finite W"
+    by (rule finite_subset[OF _ hV\<^sub>\<tau>_fin]) (use hW_sub hV_eq in \<open>by100 simp\<close>)
+  have hW_eq: "W = V\<^sub>\<tau>"
+  proof (rule card_subset_eq)
+    show "finite V\<^sub>\<tau>"
+      by (rule hV\<^sub>\<tau>_fin)
+    show "W \<subseteq> V\<^sub>\<tau>"
+      using hW_sub hV_eq by (by100 simp)
+    show "card W = card V\<^sub>\<tau>"
+      using hW_card hV\<^sub>\<tau>_card by (by100 simp)
+  qed
+  show ?thesis
+    using he_eq h\<tau>_eq hW_eq by (by100 simp)
+qed
+
 lemma geotop_2simplex_edge_faces_card_le3_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
