@@ -12480,6 +12480,134 @@ proof -
     using htop hf unfolding geotop_is_n_sphere_def by (by100 blast)
 qed
 
+lemma geotop_three_incident_2simplex_small_circle_domain_sphere_exists_dev34:
+  fixes K :: "(real^2) set set" and e U :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  shows "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere J
+          (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  (**
+    Moise Lemma 4, radius-choice part.  Two of the incident 2-simplexes fill a
+    small two-sided disk around the edge-interior point; choose a small circle
+    inside the given chart domain. **)
+proof -
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  obtain rU where hrU: "0 < rU"
+    and hballU: "geotop_polyhedron K \<inter> ball p rU \<subseteq> U"
+    using hlocal_ball by (by100 blast)
+  obtain \<sigma>1 \<sigma>2 \<sigma>3 where hfaces_data:
+      "\<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+    using hfaces by (elim exE)
+  have h12: "\<sigma>1 \<noteq> \<sigma>2"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>1K: "\<sigma>1 \<in> K"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>1face: "geotop_is_face e \<sigma>1"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>2K: "\<sigma>2 \<in> K"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>2face: "geotop_is_face e \<sigma>2"
+    using hfaces_data by (by100 simp)
+  have h\<sigma>1subM: "\<sigma>1 \<subseteq> geotop_polyhedron K"
+    using h\<sigma>1K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>2subM: "\<sigma>2 \<subseteq> geotop_polyhedron K"
+    using h\<sigma>2K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>12_local_U: "ball p rU \<inter> (\<sigma>1 \<union> \<sigma>2) \<subseteq> U"
+  proof
+    fix x
+    assume hx: "x \<in> ball p rU \<inter> (\<sigma>1 \<union> \<sigma>2)"
+    have hxM: "x \<in> geotop_polyhedron K"
+      using hx h\<sigma>1subM h\<sigma>2subM by (by100 blast)
+    have hxball: "x \<in> ball p rU"
+      using hx by (by100 blast)
+    have "x \<in> geotop_polyhedron K \<inter> ball p rU"
+      using hxM hxball by (by100 blast)
+    thus "x \<in> U"
+      using hballU by (by100 blast)
+  qed
+  have hedge12_interior: "rel_interior e \<subseteq> interior (\<sigma>1 \<union> \<sigma>2)"
+    by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_dev34
+        [OF hK h\<sigma>1K h\<sigma>2K h\<sigma>1dim h\<sigma>2dim h12 h\<sigma>1face h\<sigma>2face hedge])
+  have hp_interior12: "p \<in> interior (\<sigma>1 \<union> \<sigma>2)"
+    using hedge12_interior hp by (by100 blast)
+  obtain eps12 where heps12: "0 < eps12"
+    and hball12: "ball p eps12 \<subseteq> \<sigma>1 \<union> \<sigma>2"
+  proof -
+    have hballs_int:
+      "\<forall>x\<in>interior (\<sigma>1 \<union> \<sigma>2).
+        \<exists>e>0. ball x e \<subseteq> interior (\<sigma>1 \<union> \<sigma>2)"
+      using open_interior open_contains_ball[of "interior (\<sigma>1 \<union> \<sigma>2)"]
+      by (by100 simp)
+    obtain e12 where he12: "0 < e12"
+      and hball12_int: "ball p e12 \<subseteq> interior (\<sigma>1 \<union> \<sigma>2)"
+      using hballs_int hp_interior12 by (by100 blast)
+    have hball12_union: "ball p e12 \<subseteq> \<sigma>1 \<union> \<sigma>2"
+      using hball12_int interior_subset by (by100 blast)
+    show ?thesis
+      by (rule that[OF he12 hball12_union])
+  qed
+  define eps where "eps = min rU eps12 / 2"
+  have heps: "0 < eps"
+    using hrU heps12 unfolding eps_def by (by100 simp)
+  have heps_lt_rU: "eps < rU"
+    using hrU heps12 unfolding eps_def by (by100 simp)
+  have heps_lt_eps12: "eps < eps12"
+    using hrU heps12 unfolding eps_def by (by100 simp)
+  have hsphere_ball_rU: "sphere p eps \<subseteq> ball p rU"
+  proof
+    fix x
+    assume hx: "x \<in> sphere p eps"
+    have "dist p x = eps"
+      using hx by (by100 simp)
+    hence "dist p x < rU"
+      using heps_lt_rU by (by100 simp)
+    thus "x \<in> ball p rU"
+      by (by100 simp)
+  qed
+  have hsphere_ball12: "sphere p eps \<subseteq> ball p eps12"
+  proof
+    fix x
+    assume hx: "x \<in> sphere p eps"
+    have "dist p x = eps"
+      using hx by (by100 simp)
+    hence "dist p x < eps12"
+      using heps_lt_eps12 by (by100 simp)
+    thus "x \<in> ball p eps12"
+      by (by100 simp)
+  qed
+  have hsphere_union12: "sphere p eps \<subseteq> \<sigma>1 \<union> \<sigma>2"
+    using hsphere_ball12 hball12 by (by100 blast)
+  have hsphere_U: "sphere p eps \<subseteq> U"
+  proof -
+    have "sphere p eps \<subseteq> ball p rU \<inter> (\<sigma>1 \<union> \<sigma>2)"
+      using hsphere_ball_rU hsphere_union12 by (by100 blast)
+    thus ?thesis
+      using h\<sigma>12_local_U by (by100 blast)
+  qed
+  have hsphere_1sphere: "geotop_is_n_sphere (sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
+    by (rule geotop_positive_radius_circle_is_1sphere_dev34[OF heps])
+  show ?thesis
+    using hsphere_U hsphere_1sphere by (by100 blast)
+qed
+
 lemma geotop_three_incident_small_circle_complement_connected_core_dev34:
   fixes K :: "(real^2) set set" and e \<sigma>1 \<sigma>2 \<sigma>3 U :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
