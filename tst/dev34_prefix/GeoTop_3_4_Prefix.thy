@@ -7207,6 +7207,38 @@ proof -
     using hxC hx_target by (by100 blast)
 qed
 
+lemma geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix:
+  fixes C :: "(real^2) set" and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hcontact:
+    "\<exists>x. x \<in> C
+      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+  shows "\<exists>x. x \<in> C
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+  (**
+    Notational bridge for the Figure 3.2 witness: after the selected-edge
+    bookkeeping is done in GeoTop convex-hull notation, the triangle-edge
+    geometry below uses HOL closed segments. **)
+proof -
+  obtain x where hxC: "x \<in> C"
+    and hx_geo: "x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+    using hcontact by (elim exE conjE)
+  have h02: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have h12: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  have hx_seg:
+      "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hx_geo h02 h12 by (by100 simp)
+  show ?thesis
+    using hxC hx_seg by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
@@ -7624,10 +7656,10 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hcontact_other_nonbase_edge:
+  assumes hcontact_other_nonbase_segment:
     "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
-          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (**
     Moise Figure 3.2 step for Theorem 3.3.  A nonfree boundary triangle
@@ -8239,11 +8271,17 @@ proof -
                     \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
               by (rule geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix
                   [OF h\<theta>_contact_on_other_not_base])
+            have h\<theta>_contact_on_other_nonbase_segment:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+                    \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+              by (rule geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix
+                  [OF h\<theta>_contact_on_other_nonbase_edge])
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
                     hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
-                    h\<theta>_contact_on_other_nonbase_edge])
+                    h\<theta>_contact_on_other_nonbase_segment])
           qed
         qed
         show ?thesis
