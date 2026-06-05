@@ -7528,6 +7528,38 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
+  assumes hcontact_other:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+  (**
+    Moise Figure 3.2 step for Theorem 3.3.  A nonfree boundary triangle
+    \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close> with boundary edge \<open>v\<^sub>0v\<^sub>1\<close> forces the opposite vertex/cut data:
+    the polygon frontier is decomposed at \<open>v\<^sub>0\<close> and \<open>v\<^sub>2\<close> into two broken
+    lines, yielding the two polygonal subdisks \<open>L\<^sub>1\<close> and \<open>L\<^sub>2\<close>.  Applying the
+    induction hypothesis to each smaller subdisk gives free 2-simplexes
+    different from \<open>\<theta>\<close>; the usual carrier and boundary-contact comparisons then
+    transfer those free simplexes back to the original complex \<open>K\<close>. **)
+  sorry
+
 (** from \<S>3 Theorem 3 (geotop.tex:762)
     LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
       triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
@@ -8116,7 +8148,10 @@ proof -
               by (rule geotop_contact_outside_selected_union_on_other_two_sets_prefix
                   [OF h\<theta>_contact_outside_selected h\<theta>J_sub_named_edges hv\<^sub>0v\<^sub>1_selected])
             show ?thesis
-              sorry
+              by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
+                  [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
+                    hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
+                    h\<theta>_contact_on_other_named_edges])
           qed
         qed
         show ?thesis
