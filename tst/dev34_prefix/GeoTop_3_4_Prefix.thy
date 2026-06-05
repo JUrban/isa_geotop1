@@ -3886,6 +3886,2322 @@ proof -
         [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 he\<sigma> hface_set])
 qed
 
+
+lemma geotop_simplex_vertex_notin_affine_hull_of_other_vertices_prefix:
+  fixes \<sigma> :: "(real^2) set" and V W :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_sub: "W \<subseteq> V - {v}"
+  shows "v \<notin> affine hull W"
+proof -
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule affine_independent_subset[OF hV_ai hW_sub_V])
+  have hinsert_sub: "insert v W \<subseteq> V"
+    using hvV hW_sub by (by100 blast)
+  have hinsert_ai: "\<not> affine_dependent (insert v W)"
+    by (rule affine_independent_subset[OF hV_ai hinsert_sub])
+  have hv_not_W: "v \<notin> W"
+    using hW_sub by (by100 blast)
+  show ?thesis
+  proof
+    assume hv_aff: "v \<in> affine hull W"
+    have "affine_dependent (insert v W)"
+      using affine_dependent_choose[OF hW_ai, of v] hv_not_W hv_aff
+      by (by100 simp)
+    thus False
+      using hinsert_ai by (by100 blast)
+  qed
+qed
+
+
+lemma geotop_2simplex_vertices_three_eq_prefix:
+  fixes \<sigma> V :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hv: "v \<in> V"
+  assumes hw: "w \<in> V"
+  assumes hu: "u \<in> V"
+  assumes hvw: "v \<noteq> w"
+  assumes hvu: "v \<noteq> u"
+  assumes hwu: "w \<noteq> u"
+  shows "V = {v, w, u}"
+proof -
+  obtain V2 m where hV2_fin: "finite V2"
+    and hV2_card: "card V2 = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V2: "geotop_general_position V2 m"
+    and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+    unfolding geotop_simplex_vertices_def
+    using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+  have hV_eq: "V = V2"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+  have hV_card: "card V = 3"
+    using hV_eq hV2_card by (by100 simp)
+  have hV_fin: "finite V"
+    using hV_eq hV2_fin by (by100 simp)
+  have hthree_sub: "{v, w, u} \<subseteq> V"
+    using hv hw hu by (by100 blast)
+  have hthree_card: "card {v, w, u} = 3"
+    using hvw hvu hwu by (by100 simp)
+  have hthree_eq: "{v, w, u} = V"
+  proof (rule card_seteq[OF hV_fin hthree_sub])
+    show "card V \<le> card {v, w, u}"
+      using hthree_card hV_card by (by100 simp)
+  qed
+  show ?thesis
+    using hthree_eq by (by100 simp)
+qed
+
+
+lemma geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hc: "c \<notin> {a, b}"
+  shows "c \<notin> affine hull {a, b}"
+  (**
+    In the shared-edge picture, the vertex opposite the edge is not on the
+    affine line of that edge. **)
+proof -
+  have hcV: "c \<in> {a, b, c}"
+    by (by100 simp)
+  have hsub: "{a, b} \<subseteq> {a, b, c} - {c}"
+    using hc by (by100 blast)
+  show ?thesis
+    by (rule geotop_simplex_vertex_notin_affine_hull_of_other_vertices_prefix
+        [OF h\<sigma>V hcV hsub])
+qed
+
+lemma geotop_two_2simplex_shared_edge_vertices_obtain_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+  (**
+    Shared-edge vertex form for the two-triangle local model: the common edge
+    has two vertices \<open>a,b\<close>, and the two distinct 2-simplexes have distinct
+    third vertices \<open>c\<close> and \<open>d\<close>. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq_W: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge he\<sigma>])
+  have hW_fin: "finite W"
+    using heW unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain a b where hW_eq: "W = {a, b}" and hab: "a \<noteq> b"
+    using hW_card card_2_iff by (by100 metis)
+  have he_eq_ab: "e = geotop_convex_hull {a, b}"
+    using he_eq_W hW_eq by (by100 simp)
+  have hV_card: "card V = 3"
+  proof -
+    obtain V2 m where hV2_fin: "finite V2"
+      and hV2_card: "card V2 = 2 + 1"
+      and h2_le_m: "2 \<le> m"
+      and hgp_V2: "geotop_general_position V2 m"
+      and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+      using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+    have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+      unfolding geotop_simplex_vertices_def
+      using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+    have hV_eq: "V = V2"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+    show ?thesis
+      using hV_eq hV2_card by (by100 simp)
+  qed
+  have hV_fin: "finite V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain c where hcV: "c \<in> V" and hc_not_W: "c \<notin> W"
+  proof -
+    have "W \<noteq> V"
+    proof
+      assume hWV: "W = V"
+      show False
+        using hW_card hV_card hWV by (by100 arith)
+    qed
+    then obtain c where "c \<in> V" and "c \<notin> W"
+      using hW_sub by (by100 blast)
+    thus ?thesis
+      by (rule that)
+  qed
+  have hc_not_ab: "c \<notin> {a, b}"
+    using hc_not_W hW_eq by (by100 simp)
+  have h\<sigma>V_ab: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  proof -
+    have haV: "a \<in> V"
+      using hW_eq hW_sub by (by100 blast)
+    have hbV: "b \<in> V"
+      using hW_eq hW_sub by (by100 blast)
+    have hac: "a \<noteq> c"
+      using hc_not_ab by (by100 blast)
+    have hbc: "b \<noteq> c"
+      using hc_not_ab by (by100 blast)
+    have hV_eq: "V = {a, b, c}"
+      by (rule geotop_2simplex_vertices_three_eq_prefix
+          [OF h\<sigma>2 h\<sigma>V haV hbV hcV hab hac hbc])
+    show ?thesis
+      using h\<sigma>V hV_eq by (by100 simp)
+  qed
+  obtain V\<^sub>\<tau> W\<^sub>\<tau> where h\<tau>V: "geotop_simplex_vertices \<tau> V\<^sub>\<tau>"
+    and hW\<tau>_ne: "W\<^sub>\<tau> \<noteq> {}"
+    and hW\<tau>_sub: "W\<^sub>\<tau> \<subseteq> V\<^sub>\<tau>"
+    and he_eq_W\<tau>: "e = geotop_convex_hull W\<^sub>\<tau>"
+    and heW\<tau>: "geotop_simplex_vertices e W\<^sub>\<tau>"
+    and hW\<tau>_card: "card W\<^sub>\<tau> = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge he\<tau>])
+  have hW\<tau>_eq: "W\<^sub>\<tau> = W"
+    by (rule geotop_simplex_vertices_unique[OF heW\<tau> heW])
+  have hW_sub_V\<tau>: "W \<subseteq> V\<^sub>\<tau>"
+    using hW\<tau>_sub hW\<tau>_eq by (by100 simp)
+  have hV\<tau>_card: "card V\<^sub>\<tau> = 3"
+  proof -
+    obtain V2 m where hV2_fin: "finite V2"
+      and hV2_card: "card V2 = 2 + 1"
+      and h2_le_m: "2 \<le> m"
+      and hgp_V2: "geotop_general_position V2 m"
+      and h\<tau>_eq_V2: "\<tau> = geotop_convex_hull V2"
+      using h\<tau>2 unfolding geotop_simplex_dim_def by (by100 blast)
+    have h\<tau>V2: "geotop_simplex_vertices \<tau> V2"
+      unfolding geotop_simplex_vertices_def
+      using hV2_fin hV2_card h2_le_m hgp_V2 h\<tau>_eq_V2 by (by100 blast)
+    have hV_eq: "V\<^sub>\<tau> = V2"
+      by (rule geotop_simplex_vertices_unique[OF h\<tau>V h\<tau>V2])
+    show ?thesis
+      using hV_eq hV2_card by (by100 simp)
+  qed
+  have hV\<tau>_fin: "finite V\<^sub>\<tau>"
+    using h\<tau>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  obtain d where hdV: "d \<in> V\<^sub>\<tau>" and hd_not_W: "d \<notin> W"
+  proof -
+    have "W \<noteq> V\<^sub>\<tau>"
+    proof
+      assume hWV: "W = V\<^sub>\<tau>"
+      show False
+        using hW_card hV\<tau>_card hWV by (by100 arith)
+    qed
+    then obtain d where "d \<in> V\<^sub>\<tau>" and "d \<notin> W"
+      using hW_sub_V\<tau> by (by100 blast)
+    thus ?thesis
+      by (rule that)
+  qed
+  have hd_not_ab: "d \<notin> {a, b}"
+    using hd_not_W hW_eq by (by100 simp)
+  have h\<tau>V_ab: "geotop_simplex_vertices \<tau> {a, b, d}"
+  proof -
+    have haV: "a \<in> V\<^sub>\<tau>"
+      using hW_eq hW_sub_V\<tau> by (by100 blast)
+    have hbV: "b \<in> V\<^sub>\<tau>"
+      using hW_eq hW_sub_V\<tau> by (by100 blast)
+    have had: "a \<noteq> d"
+      using hd_not_ab by (by100 blast)
+    have hbd: "b \<noteq> d"
+      using hd_not_ab by (by100 blast)
+    have hV_eq: "V\<^sub>\<tau> = {a, b, d}"
+      by (rule geotop_2simplex_vertices_three_eq_prefix
+          [OF h\<tau>2 h\<tau>V haV hbV hdV hab had hbd])
+    show ?thesis
+      using h\<tau>V hV_eq by (by100 simp)
+  qed
+  have hcd: "c \<noteq> d"
+  proof
+    assume hcd_eq: "c = d"
+    have h\<sigma>_eq: "\<sigma> = geotop_convex_hull {a, b, c}"
+      using h\<sigma>V_ab unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h\<tau>_eq: "\<tau> = geotop_convex_hull {a, b, d}"
+      using h\<tau>V_ab unfolding geotop_simplex_vertices_def by (by100 blast)
+    have "\<sigma> = \<tau>"
+      using h\<sigma>_eq h\<tau>_eq hcd_eq by (by100 simp)
+    thus False
+      using h\<sigma>\<tau> by (by100 blast)
+  qed
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq_ab h\<sigma>V_ab h\<tau>V_ab])
+qed
+
+lemma geotop_two_2simplex_shared_edge_vertices_affine_obtain_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "c \<notin> affine hull {a, b}"
+    "d \<notin> affine hull {a, b}"
+  (**
+    The same shared-edge vertex form, with the two opposite vertices certified
+    off the affine line of the common edge. **)
+proof -
+  obtain a b c d where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    by (rule geotop_two_2simplex_shared_edge_vertices_obtain_prefix
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  have hc_aff: "c \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+        [OF h\<sigma>V hc_not_ab])
+  have hd_aff: "d \<notin> affine hull {a, b}"
+    by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+        [OF h\<tau>V hd_not_ab])
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V hc_aff hd_aff])
+qed
+
+lemma geotop_edge_vertices_affine_hull_normal_form_prefix:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  shows "\<exists>n d. n \<noteq> 0 \<and> affine hull {a, b} = {x. n \<bullet> x = d}"
+  (**
+    The affine hull of the shared edge is a genuine line in the plane, written
+    in normal form for the subsequent half-plane argument. **)
+proof -
+  have he1: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have hhyper: "geotop_hyperplane_dim (affine hull e) 1"
+    by (rule geotop_simplex_dim_imp_hyperplane_dim[OF he1])
+  obtain n d where hn: "n \<noteq> 0"
+    and hline_e: "affine hull e = {x. n \<bullet> x = d}"
+    using geotop_hyperplane_dim_1_R2_normal_form[OF hhyper] by (by100 blast)
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  have haff_eq: "affine hull e = affine hull {a, b}"
+    using he_HOL affine_hull_convex_hull[of "{a, b}"] by (by100 simp)
+  have hline_ab: "affine hull {a, b} = {x. n \<bullet> x = d}"
+    using haff_eq hline_e by (by100 simp)
+  show ?thesis
+    using hn hline_ab by (by100 blast)
+qed
+
+lemma geotop_two_2simplex_shared_edge_vertices_normal_obtain_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+  (**
+    Normal-coordinate version of the shared-edge picture: the two opposite
+    vertices are strictly off the line through the common edge. **)
+proof -
+  obtain a b c d where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hc_aff: "c \<notin> affine hull {a, b}"
+    and hd_aff: "d \<notin> affine hull {a, b}"
+    by (rule geotop_two_2simplex_shared_edge_vertices_affine_obtain_prefix
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  obtain n r where hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    using geotop_edge_vertices_affine_hull_normal_form_prefix[OF hedge he_eq]
+    by (by100 blast)
+  have hc_ne: "n \<bullet> c \<noteq> r"
+  proof
+    assume hc_eq: "n \<bullet> c = r"
+    have "c \<in> affine hull {a, b}"
+      using hline hc_eq by (by100 simp)
+    thus False
+      using hc_aff by (by100 blast)
+  qed
+  have hd_ne: "n \<bullet> d \<noteq> r"
+  proof
+    assume hd_eq: "n \<bullet> d = r"
+    have "d \<in> affine hull {a, b}"
+      using hline hd_eq by (by100 simp)
+    thus False
+      using hd_aff by (by100 blast)
+  qed
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne])
+qed
+
+lemma geotop_2simplex_vertices_HOL_interior_explicit_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "interior \<sigma> =
+    {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+      \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+  (**
+    HOL positive-barycentric description of the interior of a nondegenerate
+    2-simplex, specialized to the vertex triples used in the shared-edge
+    local model. **)
+proof -
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of "{a, b, c}"] by (by100 simp)
+  have h_ai: "\<not> affine_dependent {a, b, c}"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hac: "a \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hbc: "b \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hcol_eq:
+    "collinear {a, b, c} =
+      (a = b \<or> a = c \<or> b = c \<or> affine_dependent {a, b, c})"
+    by (rule collinear_3_eq_affine_dependent)
+  have hnoncol: "\<not> collinear {a, b, c}"
+    using h_ai hab hac hbc hcol_eq by (by100 simp)
+  have hdim: "DIM(real^2) = 2"
+    by (by100 simp)
+  have hinter:
+    "interior (convex hull {a, b, c}) =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule interior_convex_hull_3_minimal[OF hnoncol hdim])
+  show ?thesis
+    using h\<sigma>_HOL hinter by (by100 simp)
+qed
+
+lemma geotop_2simplex_positive_bary_in_HOL_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hx: "0 < x"
+  assumes hy: "0 < y"
+  assumes hz: "0 < z"
+  assumes hsum: "x + y + z = 1"
+  assumes hp: "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  shows "p \<in> interior \<sigma>"
+  (**
+    Direct membership form of the positive-barycentric interior
+    characterization. **)
+proof -
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_prefix
+        [OF hab hc_not_ab h\<sigma>V])
+  have "p \<in>
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    using hx hy hz hsum hp by (by100 blast)
+  thus ?thesis
+    using hinter by (by100 simp)
+qed
+
+lemma geotop_2simplex_HOL_interior_positive_side_of_edge_line_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hp: "p \<in> interior \<sigma>"
+  shows "n \<bullet> p > r"
+  (**
+    Positive-side half-plane form of the triangle interior: interior points of
+    the triangle lie on the same strict side of the edge line as the opposite
+    vertex. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_prefix
+        [OF hab hc_not_ab h\<sigma>V])
+  obtain x y z where hx: "0 < x"
+    and hy: "0 < y"
+    and hz: "0 < z"
+    and hsum: "x + y + z = 1"
+    and hp_eq: "x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = p"
+    using hp hinter by (by100 blast)
+  have hp_eq': "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hp_eq by (by100 simp)
+  have hp_dot: "n \<bullet> p = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> p = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq' by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have "n \<bullet> p - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> p - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hp_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  moreover have "0 < n \<bullet> c - r"
+    using hc_side by (by100 linarith)
+  hence "0 < z * (n \<bullet> c - r)"
+    by (rule mult_pos_pos[OF hz])
+  ultimately have "0 < n \<bullet> p - r"
+    by (by100 linarith)
+  thus ?thesis
+    by (by100 linarith)
+qed
+
+lemma geotop_2simplex_HOL_interior_negative_side_of_edge_line_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hp: "p \<in> interior \<sigma>"
+  shows "n \<bullet> p < r"
+  (**
+    Negative-side half-plane form of the triangle interior, symmetric to the
+    positive-side version. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hinter:
+    "interior \<sigma> =
+      {v. \<exists>x y z. 0 < x \<and> 0 < y \<and> 0 < z \<and> x + y + z = 1
+        \<and> x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = v}"
+    by (rule geotop_2simplex_vertices_HOL_interior_explicit_prefix
+        [OF hab hc_not_ab h\<sigma>V])
+  obtain x y z where hx: "0 < x"
+    and hy: "0 < y"
+    and hz: "0 < z"
+    and hsum: "x + y + z = 1"
+    and hp_eq: "x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c = p"
+    using hp hinter by (by100 blast)
+  have hp_eq': "p = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hp_eq by (by100 simp)
+  have hp_dot: "n \<bullet> p = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> p = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq' by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have "n \<bullet> p - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> p - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hp_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  moreover have "n \<bullet> c - r < 0"
+    using hc_side by (by100 linarith)
+  hence "z * (n \<bullet> c - r) < 0"
+    by (rule mult_pos_neg[OF hz])
+  ultimately have "n \<bullet> p - r < 0"
+    by (by100 linarith)
+  thus ?thesis
+    by (by100 linarith)
+qed
+
+lemma geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  shows "interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+  (**
+    Set-form positive half-plane containment for the shared-edge triangle
+    interior. **)
+proof
+  fix p
+  assume hp: "p \<in> interior \<sigma>"
+  have "n \<bullet> p > r"
+    by (rule geotop_2simplex_HOL_interior_positive_side_of_edge_line_prefix
+        [OF hab hc_not_ab h\<sigma>V hline hc_side hp])
+  thus "p \<in> {p. n \<bullet> p > r}"
+    by (by100 simp)
+qed
+
+lemma geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  shows "interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+  (**
+    Set-form negative half-plane containment for the shared-edge triangle
+    interior. **)
+proof
+  fix p
+  assume hp: "p \<in> interior \<sigma>"
+  have "n \<bullet> p < r"
+    by (rule geotop_2simplex_HOL_interior_negative_side_of_edge_line_prefix
+        [OF hab hc_not_ab h\<sigma>V hline hc_side hp])
+  thus "p \<in> {p. n \<bullet> p < r}"
+    by (by100 simp)
+qed
+
+lemma geotop_two_2simplex_shared_edge_vertices_side_obtain_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+    "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+  (**
+    Shared-edge normal-coordinate package with the half-plane containments for
+    the two triangle interiors. **)
+proof -
+  obtain a b c d n r where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    by (rule geotop_two_2simplex_shared_edge_vertices_normal_obtain_prefix
+        [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  have h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    by (rule geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_prefix
+        [OF hab hc_not_ab h\<sigma>V hline])
+  have h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    by (rule geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_prefix
+        [OF hab hc_not_ab h\<sigma>V hline])
+  have h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    by (rule geotop_2simplex_HOL_interior_subset_positive_side_of_edge_line_prefix
+        [OF hab hd_not_ab h\<tau>V hline])
+  have h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    by (rule geotop_2simplex_HOL_interior_subset_negative_side_of_edge_line_prefix
+        [OF hab hd_not_ab h\<tau>V hline])
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg])
+qed
+
+lemma geotop_edge_vertices_subset_affine_hull_prefix:
+  fixes e :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  shows "e \<subseteq> affine hull {a, b}"
+  (**
+    Edge-line containment used in the shared-edge local model: the common edge
+    itself lies in the affine line through its two vertices. **)
+proof -
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL by (by100 simp)
+  have "convex hull {a, b} \<subseteq> affine hull {a, b}"
+    by (rule convex_hull_subset_affine_hull)
+  thus ?thesis
+    using he_HOL by (by100 simp)
+qed
+
+lemma geotop_edge_vertices_subset_normal_line_prefix:
+  fixes e :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  shows "e \<subseteq> {x. n \<bullet> x = r}"
+  (**
+    Normal-form version of edge-line containment for the half-plane
+    contradiction in the two-triangle edge model. **)
+proof -
+  have he_aff: "e \<subseteq> affine hull {a, b}"
+    by (rule geotop_edge_vertices_subset_affine_hull_prefix[OF he_eq])
+  show ?thesis
+    using he_aff hline by (by100 simp)
+qed
+
+lemma geotop_complex_distinct_2simplex_HOL_interiors_disjoint_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "interior \<sigma> \<inter> interior \<tau> = {}"
+  (**
+    Complex disjointness in the ordinary plane-interior form needed by the
+    shared-edge half-plane contradiction. **)
+proof -
+  have h\<sigma>_int: "interior \<sigma> = rel_interior \<sigma>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<sigma>2])
+  have h\<tau>_int: "interior \<tau> = rel_interior \<tau>"
+    by (rule geotop_2simplex_HOL_interior_eq_rel_interior_prefix[OF h\<tau>2])
+  have hrel_disj: "rel_interior \<sigma> \<inter> rel_interior \<tau> = {}"
+    by (rule geotop_complex_rel_interior_disjoint_distinct[OF hK h\<sigma>K h\<tau>K h\<sigma>\<tau>])
+  show ?thesis
+    using h\<sigma>_int h\<tau>_int hrel_disj by (by100 simp)
+qed
+
+lemma geotop_2simplex_vertices_affine_hull_UNIV_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "affine hull {a, b, c} = UNIV"
+  (**
+    Noncollinear vertices of a GeoTop 2-simplex affinely span the whole
+    ambient plane. **)
+proof -
+  have h_ai: "\<not> affine_dependent {a, b, c}"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hac: "a \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hbc: "b \<noteq> c"
+    using hc_not_ab by (by100 blast)
+  have hcard: "card {a, b, c} = 3"
+    using hab hac hbc by (by100 simp)
+  have hdim: "aff_dim {a, b, c} = 2"
+    using h_ai hcard affine_independent_iff_card[of "{a, b, c}"] by (by100 simp)
+  have hdim_UNIV: "aff_dim {a, b, c} = DIM(real^2)"
+    using hdim by (by100 simp)
+  show ?thesis
+    using aff_dim_eq_full[of "{a, b, c}"] hdim_UNIV by (by100 simp)
+qed
+
+lemma geotop_2simplex_vertices_affine_coordinates_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  (**
+    Affine-coordinate existence for the same-side overlap construction. **)
+proof -
+  have hUNIV: "affine hull {a, b, c} = UNIV"
+    by (rule geotop_2simplex_vertices_affine_hull_UNIV_prefix
+        [OF hab hc_not_ab h\<sigma>V])
+  have hd_aff: "d \<in> affine hull {a, b, c}"
+    using hUNIV by (by100 simp)
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using hd_aff affine_hull_3[of a b c] by (by100 blast)
+  show ?thesis
+    using hsum hd by (by100 blast)
+qed
+
+lemma geotop_2simplex_positive_side_affine_coordinate_positive_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hd_side: "n \<bullet> d > r"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c
+      \<and> 0 < z"
+  (**
+    Same positive side of the edge line means the affine coordinate at the
+    opposite vertex \<open>c\<close> is positive. **)
+proof -
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    using geotop_2simplex_vertices_affine_coordinates_prefix
+      [OF hab hc_not_ab h\<sigma>V, of d]
+    by (by100 blast)
+  have hd_dot: "n \<bullet> d = x * r + y * r + z * (n \<bullet> c)"
+  proof -
+    have "n \<bullet> d = n \<bullet> (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hd by (by100 simp)
+    also have "\<dots> = n \<bullet> (x *\<^sub>R a) + n \<bullet> (y *\<^sub>R b) + n \<bullet> (z *\<^sub>R c)"
+      by (simp add: inner_add_right)
+    also have "\<dots> = x * (n \<bullet> a) + y * (n \<bullet> b) + z * (n \<bullet> c)"
+      by (simp add: inner_scaleR_right)
+    also have "\<dots> = x * r + y * r + z * (n \<bullet> c)"
+      using ha_line hb_line by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hsum_r: "x * r + y * r + z * r = r"
+  proof -
+    have "r * (x + y + z) = r"
+      using hsum by (by100 simp)
+    thus ?thesis
+      by (simp add: algebra_simps)
+  qed
+  have hdiff: "n \<bullet> d - r = z * (n \<bullet> c - r)"
+  proof -
+    have "n \<bullet> d - r =
+        (x * r + y * r + z * (n \<bullet> c)) - (x * r + y * r + z * r)"
+      using hd_dot hsum_r by (by100 linarith)
+    also have "\<dots> = z * (n \<bullet> c - r)"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hprod_pos: "0 < z * (n \<bullet> c - r)"
+    using hdiff hd_side by (by100 linarith)
+  have hden_pos: "0 < n \<bullet> c - r"
+    using hc_side by (by100 linarith)
+  have hz: "0 < z"
+    using hprod_pos hden_pos by (simp add: zero_less_mult_iff)
+  show ?thesis
+    using hsum hd hz by (by100 blast)
+qed
+
+lemma geotop_2simplex_negative_side_affine_coordinate_positive_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hd_side: "n \<bullet> d < r"
+  shows "\<exists>x y z. x + y + z = 1
+      \<and> d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c
+      \<and> 0 < z"
+  (**
+    Negative-side version, obtained by reversing the normal vector. **)
+proof -
+  have hline_neg: "affine hull {a, b} = {x. (-n) \<bullet> x = -r}"
+    using hline by (simp add: set_eq_iff)
+  have hc_pos: "(-n) \<bullet> c > -r"
+    using hc_side by (by100 simp)
+  have hd_pos: "(-n) \<bullet> d > -r"
+    using hd_side by (by100 simp)
+  show ?thesis
+    by (rule geotop_2simplex_positive_side_affine_coordinate_positive_prefix
+        [OF hab hc_not_ab h\<sigma>V hline_neg hc_pos hd_pos])
+qed
+
+lemma geotop_real_positive_overlap_parameter_prefix:
+  fixes x y z :: real
+  assumes hz: "0 < z"
+  obtains s where
+    "0 < s"
+    "s < 1"
+    "0 < (1 - s) / 2 + s * x"
+    "0 < (1 - s) / 2 + s * y"
+    "0 < s * z"
+  (**
+    Real parameter choice for the same-side overlap construction: move a small
+    positive distance from the edge midpoint toward the second opposite vertex,
+    while keeping positive barycentric coordinates in the first triangle. **)
+proof -
+  define bx where "bx = (if x < 1 / 2 then (1 / 2) / (1 / 2 - x) else 1)"
+  define byy where "byy = (if y < 1 / 2 then (1 / 2) / (1 / 2 - y) else 1)"
+  have hbx_pos: "0 < bx"
+  proof (cases "x < 1 / 2")
+    case True
+    have "0 < 1 / 2 - x"
+      using True by (by100 linarith)
+    hence "0 < (1 / 2) / (1 / 2 - x)"
+      by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True bx_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False bx_def by (by100 simp)
+  qed
+  have hby_pos: "0 < byy"
+  proof (cases "y < 1 / 2")
+    case True
+    have "0 < 1 / 2 - y"
+      using True by (by100 linarith)
+    hence "0 < (1 / 2) / (1 / 2 - y)"
+      by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True byy_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False byy_def by (by100 simp)
+  qed
+  obtain t where ht0: "0 < t" and htbx: "t < bx" and ht1: "t < 1"
+    using field_lbound_gt_zero[OF hbx_pos zero_less_one] by (by100 blast)
+  obtain s where hs0: "0 < s" and hst: "s < t" and hsby: "s < byy"
+    using field_lbound_gt_zero[OF ht0 hby_pos] by (by100 blast)
+  have hs1: "s < 1"
+    using hst ht1 by (by100 linarith)
+  have hsbx: "s < bx"
+    using hst htbx by (by100 linarith)
+  have hxpos: "0 < (1 - s) / 2 + s * x"
+  proof (cases "x < 1 / 2")
+    case True
+    have hden: "0 < 1 / 2 - x"
+      using True by (by100 linarith)
+    have hsbound: "s < (1 / 2) / (1 / 2 - x)"
+      using hsbx True bx_def by (by100 simp)
+    have "s * (1 / 2 - x) < 1 / 2"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < 1 / 2 - s * (1 / 2 - x)"
+      by (by100 linarith)
+    also have "1 / 2 - s * (1 / 2 - x) = (1 - s) / 2 + s * x"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> x - 1 / 2"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (x - 1 / 2)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) / 2 + s * x = 1 / 2 + s * (x - 1 / 2)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      by (by100 linarith)
+  qed
+  have hypos: "0 < (1 - s) / 2 + s * y"
+  proof (cases "y < 1 / 2")
+    case True
+    have hden: "0 < 1 / 2 - y"
+      using True by (by100 linarith)
+    have hsbound: "s < (1 / 2) / (1 / 2 - y)"
+      using hsby True byy_def by (by100 simp)
+    have "s * (1 / 2 - y) < 1 / 2"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < 1 / 2 - s * (1 / 2 - y)"
+      by (by100 linarith)
+    also have "1 / 2 - s * (1 / 2 - y) = (1 - s) / 2 + s * y"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> y - 1 / 2"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (y - 1 / 2)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) / 2 + s * y = 1 / 2 + s * (y - 1 / 2)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      by (by100 linarith)
+  qed
+  have hsz: "0 < s * z"
+    by (rule mult_pos_pos[OF hs0 hz])
+  show ?thesis
+    by (rule that[OF hs0 hs1 hxpos hypos hsz])
+qed
+
+lemma geotop_2simplex_affine_coordinate_HOL_interiors_meet_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hsum: "x + y + z = 1"
+  assumes hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+  assumes hz: "0 < z"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    Same-side overlap construction in barycentric coordinates: a small segment
+    from the edge midpoint toward \<open>d\<close> lies in \<open>\<tau>\<close>'s interior and, after
+    substituting the affine coordinates of \<open>d\<close>, also in \<open>\<sigma>\<close>'s interior. **)
+proof -
+  obtain s where hs0: "0 < s"
+    and hs1: "s < 1"
+    and hxpos: "0 < (1 - s) / 2 + s * x"
+    and hypos: "0 < (1 - s) / 2 + s * y"
+    and hsz: "0 < s * z"
+    by (rule geotop_real_positive_overlap_parameter_prefix[OF hz])
+  define u where "u = (1 - s) / 2"
+  define p where "p = u *\<^sub>R a + u *\<^sub>R b + s *\<^sub>R d"
+  have hu: "0 < u"
+    using hs1 unfolding u_def by (simp add: field_simps)
+  have hsum\<tau>: "u + u + s = 1"
+    unfolding u_def by (simp add: field_simps)
+  have hp\<tau>: "p \<in> interior \<tau>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_prefix
+        [OF hab hd_not_ab h\<tau>V hu hu hs0 hsum\<tau> p_def])
+  have hxpos': "0 < u + s * x"
+    using hxpos unfolding u_def by (by100 simp)
+  have hypos': "0 < u + s * y"
+    using hypos unfolding u_def by (by100 simp)
+  have hsum\<sigma>: "(u + s * x) + (u + s * y) + s * z = 1"
+  proof -
+    have "(u + s * x) + (u + s * y) + s * z = u + u + s * (x + y + z)"
+      by (simp add: algebra_simps)
+    also have "\<dots> = u + u + s"
+      using hsum by (by100 simp)
+    also have "\<dots> = 1"
+      using hsum\<tau> by (by100 simp)
+    finally show ?thesis .
+  qed
+  have hp_eq\<sigma>:
+      "p = (u + s * x) *\<^sub>R a + (u + s * y) *\<^sub>R b + (s * z) *\<^sub>R c"
+    unfolding p_def hd by (simp add: algebra_simps scaleR_add_left scaleR_add_right)
+  have hp\<sigma>: "p \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_prefix
+        [OF hab hc_not_ab h\<sigma>V hxpos' hypos' hsz hsum\<sigma> hp_eq\<sigma>])
+  have "p \<in> interior \<sigma> \<inter> interior \<tau>"
+    using hp\<sigma> hp\<tau> by (by100 blast)
+  thus ?thesis
+    by (by100 blast)
+qed
+
+lemma geotop_2simplex_positive_same_side_HOL_interiors_meet_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hd_side: "n \<bullet> d > r"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    If both opposite vertices lie on the positive side of the shared-edge line,
+    the barycentric overlap construction gives a common interior point. **)
+proof -
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_positive_side_affine_coordinate_positive_prefix
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hd_side]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_2simplex_affine_coordinate_HOL_interiors_meet_prefix
+        [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hsum hd hz])
+qed
+
+lemma geotop_2simplex_negative_same_side_HOL_interiors_meet_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hd_side: "n \<bullet> d < r"
+  shows "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+  (**
+    Negative-side same-side version, symmetric to the positive-side wrapper. **)
+proof -
+  obtain x y z where hsum: "x + y + z = 1"
+    and hd: "d = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_negative_side_affine_coordinate_positive_prefix
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hd_side]
+    by (by100 blast)
+  show ?thesis
+    by (rule geotop_2simplex_affine_coordinate_HOL_interiors_meet_prefix
+        [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hsum hd hz])
+qed
+
+lemma geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_prefix:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  obtains a b c d n r where
+    "a \<noteq> b"
+    "c \<notin> {a, b}"
+    "d \<notin> {a, b}"
+    "c \<noteq> d"
+    "e = geotop_convex_hull {a, b}"
+    "geotop_simplex_vertices \<sigma> {a, b, c}"
+    "geotop_simplex_vertices \<tau> {a, b, d}"
+    "n \<noteq> 0"
+    "affine hull {a, b} = {x. n \<bullet> x = r}"
+    "n \<bullet> c \<noteq> r"
+    "n \<bullet> d \<noteq> r"
+    "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  (**
+    Same-complex strengthening of the shared-edge side package: if the two
+    2-simplexes put their opposite vertices on the same strict side of the
+    shared edge line, the previous overlap lemma gives a common HOL-interior
+    point, contradicting complex relative-interior disjointness. **)
+proof (rule geotop_two_2simplex_shared_edge_vertices_side_obtain_prefix
+    [OF h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    and h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+  have hdisj: "interior \<sigma> \<inter> interior \<tau> = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_prefix
+        [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau>])
+  have hpos_not: "\<not> (n \<bullet> c > r \<and> n \<bullet> d > r)"
+  proof
+    assume hsame: "n \<bullet> c > r \<and> n \<bullet> d > r"
+    have hc_side: "n \<bullet> c > r"
+      using hsame by (by100 blast)
+    have hd_side: "n \<bullet> d > r"
+      using hsame by (by100 blast)
+    have hmeet: "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+      by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_prefix
+          [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hline hc_side hd_side])
+    show False
+      using hdisj hmeet by (by100 blast)
+  qed
+  have hneg_not: "\<not> (n \<bullet> c < r \<and> n \<bullet> d < r)"
+  proof
+    assume hsame: "n \<bullet> c < r \<and> n \<bullet> d < r"
+    have hc_side: "n \<bullet> c < r"
+      using hsame by (by100 blast)
+    have hd_side: "n \<bullet> d < r"
+      using hsame by (by100 blast)
+    have hmeet: "interior \<sigma> \<inter> interior \<tau> \<noteq> {}"
+      by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_prefix
+          [OF hab hc_not_ab hd_not_ab h\<sigma>V h\<tau>V hline hc_side hd_side])
+    show False
+      using hdisj hmeet by (by100 blast)
+  qed
+  have hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  proof -
+    have hc_cases: "n \<bullet> c > r \<or> n \<bullet> c < r"
+      using hc_ne by (by100 linarith)
+    have hd_cases: "n \<bullet> d > r \<or> n \<bullet> d < r"
+      using hd_ne by (by100 linarith)
+    show ?thesis
+      using hc_cases hd_cases hpos_not hneg_not by (by100 blast)
+  qed
+  show ?thesis
+    by (rule that[OF hab hc_not_ab hd_not_ab hcd he_eq h\<sigma>V h\<tau>V
+          hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg hopp])
+qed
+
+lemma geotop_edge_rel_interior_parameter_prefix:
+  fixes e :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains t where "0 < t" "t < 1" "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+  (**
+    Edge-relative-interior points are exactly open-segment points, recorded in
+    the affine parameter form needed for the local diamond construction. **)
+proof -
+  have he_HOL: "e = closed_segment a b"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] segment_convex_hull[of a b]
+    by (by100 simp)
+  have hrel: "rel_interior e = open_segment a b"
+    using he_HOL hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have hp_open: "p \<in> open_segment a b"
+    using hp hrel by (by100 simp)
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    using hp_open unfolding in_segment by (by100 auto)
+  show ?thesis
+    by (rule that[OF ht0 ht1 hp_eq])
+qed
+
+lemma geotop_edge_rel_interior_small_subsegment_prefix:
+  fixes e :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains u where
+    "0 < u"
+    "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+  (**
+    Edge-relative-interior points contain a small open subsegment in the edge
+    direction.  This is the horizontal base of the local diamond around a
+    shared-edge point. **)
+proof -
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    by (rule geotop_edge_rel_interior_parameter_prefix[OF hab he_eq hp])
+  have h1mt: "0 < 1 - t"
+    using ht1 by (by100 linarith)
+  obtain u where hu0: "0 < u" and hut: "u < t" and hu1mt: "u < 1 - t"
+    using field_lbound_gt_zero[OF ht0 h1mt] by (by100 blast)
+  have he_HOL: "e = closed_segment a b"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] segment_convex_hull[of a b]
+    by (by100 simp)
+  have hrel: "rel_interior e = open_segment a b"
+    using he_HOL hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have htm0: "0 < t - u"
+    using hut by (by100 linarith)
+  have htm1: "t - u < 1"
+    using ht1 hu0 by (by100 linarith)
+  have htp0: "0 < t + u"
+    using ht0 hu0 by (by100 linarith)
+  have htp1: "t + u < 1"
+    using hu1mt by (by100 linarith)
+  have hminus_eq:
+    "p - u *\<^sub>R (b - a) = (1 - (t - u)) *\<^sub>R a + (t - u) *\<^sub>R b"
+    using hp_eq by (simp add: algebra_simps scaleR_diff_right)
+  have hplus_eq:
+    "p + u *\<^sub>R (b - a) = (1 - (t + u)) *\<^sub>R a + (t + u) *\<^sub>R b"
+    using hp_eq by (simp add: algebra_simps scaleR_diff_right)
+  have hminus_open: "p - u *\<^sub>R (b - a) \<in> open_segment a b"
+    unfolding in_segment using hab htm0 htm1 hminus_eq by (by100 blast)
+  have hplus_open: "p + u *\<^sub>R (b - a) \<in> open_segment a b"
+    unfolding in_segment using hab htp0 htp1 hplus_eq by (by100 blast)
+  have hminus_rel: "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    using hminus_open hrel by (by100 simp)
+  have hplus_rel: "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+    using hplus_open hrel by (by100 simp)
+  show ?thesis
+    by (rule that[OF hu0 hminus_rel hplus_rel])
+qed
+
+lemma geotop_real_positive_edge_probe_parameter_prefix:
+  fixes u v x y z :: real
+  assumes hu: "0 < u"
+  assumes hv: "0 < v"
+  assumes hz: "0 < z"
+  obtains s where
+    "0 < s"
+    "s < 1"
+    "0 < (1 - s) * u + s * x"
+    "0 < (1 - s) * v + s * y"
+    "0 < s * z"
+  (**
+    Real parameter choice for a small probe from an edge-interior point into a
+    triangle: preserve the two positive edge barycentric coordinates while
+    turning on a positive opposite-vertex coordinate. **)
+proof -
+  define bx where "bx = (if x < u then u / (u - x) else 1)"
+  define byy where "byy = (if y < v then v / (v - y) else 1)"
+  have hbx_pos: "0 < bx"
+  proof (cases "x < u")
+    case True
+    have "0 < u - x"
+      using True by (by100 linarith)
+    hence "0 < u / (u - x)"
+      using hu by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True bx_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False bx_def by (by100 simp)
+  qed
+  have hby_pos: "0 < byy"
+  proof (cases "y < v")
+    case True
+    have "0 < v - y"
+      using True by (by100 linarith)
+    hence "0 < v / (v - y)"
+      using hv by (simp add: divide_pos_pos)
+    thus ?thesis
+      using True byy_def by (by100 simp)
+  next
+    case False
+    show ?thesis
+      using False byy_def by (by100 simp)
+  qed
+  obtain t where ht0: "0 < t" and htbx: "t < bx" and ht1: "t < 1"
+    using field_lbound_gt_zero[OF hbx_pos zero_less_one] by (by100 blast)
+  obtain s where hs0: "0 < s" and hst: "s < t" and hsby: "s < byy"
+    using field_lbound_gt_zero[OF ht0 hby_pos] by (by100 blast)
+  have hs1: "s < 1"
+    using hst ht1 by (by100 linarith)
+  have hsbx: "s < bx"
+    using hst htbx by (by100 linarith)
+  have hxpos: "0 < (1 - s) * u + s * x"
+  proof (cases "x < u")
+    case True
+    have hden: "0 < u - x"
+      using True by (by100 linarith)
+    have hsbound: "s < u / (u - x)"
+      using hsbx True bx_def by (by100 simp)
+    have "s * (u - x) < u"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < u - s * (u - x)"
+      by (by100 linarith)
+    also have "u - s * (u - x) = (1 - s) * u + s * x"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> x - u"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (x - u)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) * u + s * x = u + s * (x - u)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      using hu by (by100 linarith)
+  qed
+  have hypos: "0 < (1 - s) * v + s * y"
+  proof (cases "y < v")
+    case True
+    have hden: "0 < v - y"
+      using True by (by100 linarith)
+    have hsbound: "s < v / (v - y)"
+      using hsby True byy_def by (by100 simp)
+    have "s * (v - y) < v"
+      using hsbound hden by (simp add: field_simps)
+    hence "0 < v - s * (v - y)"
+      by (by100 linarith)
+    also have "v - s * (v - y) = (1 - s) * v + s * y"
+      by (simp add: field_simps algebra_simps)
+    finally show ?thesis .
+  next
+    case False
+    have hnonneg: "0 \<le> y - v"
+      using False by (by100 linarith)
+    have hs_nonneg: "0 \<le> s"
+      using hs0 by (by100 linarith)
+    have "0 \<le> s * (y - v)"
+      by (rule mult_nonneg_nonneg[OF hs_nonneg hnonneg])
+    moreover have "(1 - s) * v + s * y = v + s * (y - v)"
+      by (simp add: field_simps algebra_simps)
+    ultimately show ?thesis
+      using hv by (by100 linarith)
+  qed
+  have hsz: "0 < s * z"
+    by (rule mult_pos_pos[OF hs0 hz])
+  show ?thesis
+    by (rule that[OF hs0 hs1 hxpos hypos hsz])
+qed
+
+lemma geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c > r"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s where "0 < s" "p + s *\<^sub>R n \<in> interior \<sigma>"
+  (**
+    Normal-probe half of the book's two-triangle edge-neighborhood
+    construction: from an edge-interior point, a small move into the strict side
+    of the opposite vertex lands in the triangle interior. **)
+proof -
+  obtain t where ht0: "0 < t" and ht1: "t < 1"
+    and hp_eq: "p = (1 - t) *\<^sub>R a + t *\<^sub>R b"
+    by (rule geotop_edge_rel_interior_parameter_prefix[OF hab he_eq hp])
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have hp_line: "n \<bullet> p = r"
+  proof -
+    have "n \<bullet> p = n \<bullet> ((1 - t) *\<^sub>R a + t *\<^sub>R b)"
+      using hp_eq by (by100 simp)
+    also have "\<dots> = (1 - t) * (n \<bullet> a) + t * (n \<bullet> b)"
+      by (simp add: inner_add_right inner_scaleR_right)
+    also have "\<dots> = (1 - t) * r + t * r"
+      using ha_line hb_line by (by100 simp)
+    also have "\<dots> = r"
+      by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hnn_pos: "0 < n \<bullet> n"
+    using hn by (simp add: inner_gt_zero_iff)
+  define q where "q = p + n"
+  have hq_side: "n \<bullet> q > r"
+  proof -
+    have "n \<bullet> q = n \<bullet> (p + n)"
+      using q_def by (by100 simp)
+    also have "\<dots> = n \<bullet> p + n \<bullet> n"
+      by (simp add: inner_add_right)
+    also have "\<dots> = r + n \<bullet> n"
+      using hp_line by (by100 simp)
+    finally show ?thesis
+      using hnn_pos by (by100 linarith)
+  qed
+  obtain x y z where hsum: "x + y + z = 1"
+    and hq_eq: "q = x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c"
+    and hz: "0 < z"
+    using geotop_2simplex_positive_side_affine_coordinate_positive_prefix
+      [OF hab hc_not_ab h\<sigma>V hline hc_side hq_side]
+    by (by100 blast)
+  have hu: "0 < 1 - t"
+    using ht1 by (by100 linarith)
+  have hv: "0 < t"
+    using ht0 .
+  obtain s where hs0: "0 < s" and hs1: "s < 1"
+    and hxpos: "0 < (1 - s) * (1 - t) + s * x"
+    and hypos: "0 < (1 - s) * t + s * y"
+    and hzpos: "0 < s * z"
+    using geotop_real_positive_edge_probe_parameter_prefix[OF hu hv hz]
+    by (by100 blast)
+  have hsum_probe:
+    "((1 - s) * (1 - t) + s * x) + ((1 - s) * t + s * y) + s * z = 1"
+  proof -
+    have "((1 - s) * (1 - t) + s * x) + ((1 - s) * t + s * y) + s * z =
+        (1 - s) + s * (x + y + z)"
+      by (simp add: algebra_simps)
+    also have "\<dots> = 1"
+      using hsum by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hprobe_eq:
+    "p + s *\<^sub>R n =
+      ((1 - s) * (1 - t) + s * x) *\<^sub>R a
+        + ((1 - s) * t + s * y) *\<^sub>R b
+        + (s * z) *\<^sub>R c"
+  proof -
+    have "p + s *\<^sub>R n = (1 - s) *\<^sub>R p + s *\<^sub>R q"
+      using q_def by (simp add: algebra_simps)
+    also have "\<dots> =
+      (1 - s) *\<^sub>R ((1 - t) *\<^sub>R a + t *\<^sub>R b)
+        + s *\<^sub>R (x *\<^sub>R a + y *\<^sub>R b + z *\<^sub>R c)"
+      using hp_eq hq_eq by (by100 simp)
+    also have "\<dots> =
+      ((1 - s) * (1 - t) + s * x) *\<^sub>R a
+        + ((1 - s) * t + s * y) *\<^sub>R b
+        + (s * z) *\<^sub>R c"
+      by (simp add: algebra_simps scaleR_add_left scaleR_add_right)
+    finally show ?thesis .
+  qed
+  have hprobe_in: "p + s *\<^sub>R n \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_bary_in_HOL_interior_prefix
+        [OF hab hc_not_ab h\<sigma>V hxpos hypos hzpos hsum_probe hprobe_eq])
+  show ?thesis
+    by (rule that[OF hs0 hprobe_in])
+qed
+
+lemma geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hc_side: "n \<bullet> c < r"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s where "0 < s" "p - s *\<^sub>R n \<in> interior \<sigma>"
+  (**
+    Negative-side version of the normal probe, phrased with the original normal
+    direction for use in the opposite-side shared-edge local model. **)
+proof -
+  have hn_neg: "-n \<noteq> 0"
+    using hn by (by100 simp)
+  have hline_neg: "affine hull {a, b} = {x. (-n) \<bullet> x = -r}"
+    using hline by (simp add: set_eq_iff)
+  have hc_pos: "(-n) \<bullet> c > -r"
+    using hc_side by (by100 simp)
+  obtain s where hs0: "0 < s"
+    and hs_in: "p + s *\<^sub>R (-n) \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_prefix
+        [OF hab hc_not_ab hn_neg he_eq h\<sigma>V hline_neg hc_pos hp])
+  have hprobe: "p - s *\<^sub>R n \<in> interior \<sigma>"
+    using hs_in by (by100 simp)
+  show ?thesis
+    by (rule that[OF hs0 hprobe])
+qed
+
+lemma geotop_2simplex_opposite_side_shared_edge_normal_probes_in_HOL_interiors_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes hn: "n \<noteq> 0"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  assumes hp: "p \<in> rel_interior e"
+  obtains s t where
+    "0 < s"
+    "0 < t"
+    "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+      \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+  (**
+    Opposite-side normal probes at an edge-interior point: according to the
+    orientation of the two opposite vertices, the two incident triangle
+    interiors meet the two normal rays from the edge point. **)
+proof -
+  consider (posneg) "n \<bullet> c > r" "n \<bullet> d < r"
+    | (negpos) "n \<bullet> c < r" "n \<bullet> d > r"
+    using hopp by (by100 blast)
+  thus ?thesis
+  proof cases
+    case posneg
+    obtain s where hs0: "0 < s"
+      and hs_in: "p + s *\<^sub>R n \<in> interior \<sigma>"
+      by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_prefix
+          [OF hab hc_not_ab hn he_eq h\<sigma>V hline posneg(1) hp])
+    obtain t where ht0: "0 < t"
+      and ht_in: "p - t *\<^sub>R n \<in> interior \<tau>"
+      by (rule geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_prefix
+          [OF hab hd_not_ab hn he_eq h\<tau>V hline posneg(2) hp])
+    show ?thesis
+    proof (rule that[OF hs0 ht0])
+      show "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+          \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+        using hs_in ht_in by (by100 blast)
+    qed
+  next
+    case negpos
+    obtain s where hs0: "0 < s"
+      and hs_in: "p - s *\<^sub>R n \<in> interior \<sigma>"
+      by (rule geotop_2simplex_negative_side_edge_normal_probe_in_HOL_interior_prefix
+          [OF hab hc_not_ab hn he_eq h\<sigma>V hline negpos(1) hp])
+    obtain t where ht0: "0 < t"
+      and ht_in: "p + t *\<^sub>R n \<in> interior \<tau>"
+      by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_prefix
+          [OF hab hd_not_ab hn he_eq h\<tau>V hline negpos(2) hp])
+    show ?thesis
+    proof (rule that[OF hs0 ht0])
+      show "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+          \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+        using hs_in ht_in by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_edge_subset_2simplex_vertices_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "e \<subseteq> \<sigma>"
+  (**
+    Vertex-form containment used in the local diamond argument: the edge
+    spanned by two triangle vertices is contained in the triangle. **)
+proof -
+  have he_HOL: "e = convex hull {a, b}"
+    using he_eq geotop_convex_hull_eq_HOL[of "{a, b}"] by (by100 simp)
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of "{a, b, c}"] by (by100 simp)
+  have hsub: "{a, b} \<subseteq> {a, b, c}"
+    by (by100 blast)
+  have "convex hull {a, b} \<subseteq> convex hull {a, b, c}"
+    by (rule hull_mono[OF hsub])
+  thus ?thesis
+    using he_HOL h\<sigma>_HOL by (by100 simp)
+qed
+
+lemma geotop_shared_edge_rel_interior_subset_two_2simplexes_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  shows "rel_interior e \<subseteq> \<sigma> \<inter> \<tau>"
+  (**
+    The common edge's relative interior is contained in both incident triangles,
+    a direct set-level input for the local diamond neighborhood argument. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_edge_subset_2simplex_vertices_prefix[OF he_eq h\<sigma>V])
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_edge_subset_2simplex_vertices_prefix[OF he_eq h\<tau>V])
+  show "p \<in> \<sigma> \<inter> \<tau>"
+    using hp_e he_sub_\<sigma> he_sub_\<tau> by (by100 blast)
+qed
+
+lemma geotop_shared_edge_small_subsegment_in_two_2simplexes_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hp: "p \<in> rel_interior e"
+  obtains u where
+    "0 < u"
+    "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+  (**
+    Horizontal base of the local diamond in the two incident triangles: a
+    sufficiently small edge-direction subsegment around \<open>p\<close> remains in both
+    closed triangles. **)
+proof -
+  obtain u where hu0: "0 < u"
+    and hminus_rel: "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    and hplus_rel: "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+    by (rule geotop_edge_rel_interior_small_subsegment_prefix[OF hab he_eq hp])
+  have hrel_sub: "rel_interior e \<subseteq> \<sigma> \<inter> \<tau>"
+    by (rule geotop_shared_edge_rel_interior_subset_two_2simplexes_prefix
+        [OF he_eq h\<sigma>V h\<tau>V])
+  have hminus: "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    using hminus_rel hrel_sub by (by100 blast)
+  have hplus: "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    using hplus_rel hrel_sub by (by100 blast)
+  show ?thesis
+    by (rule that[OF hu0 hminus hplus])
+qed
+
+lemma geotop_convex_hull_three_points_subset_2simplex_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hx: "x \<in> \<sigma>"
+  assumes hy: "y \<in> \<sigma>"
+  assumes hz: "z \<in> \<sigma>"
+  shows "convex hull {x, y, z} \<subseteq> \<sigma>"
+  (**
+    Convexity wrapper for the local diamond construction: any small triangle
+    whose vertices lie in a simplex is contained in that simplex. **)
+proof -
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull V"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of V] by (by100 simp)
+  have hconv: "convex \<sigma>"
+    using h\<sigma>_HOL by (by100 simp)
+  have hpts: "{x, y, z} \<subseteq> \<sigma>"
+    using hx hy hz by (by100 blast)
+  have "convex hull {x, y, z} \<subseteq> \<sigma>"
+    by (rule hull_minimal[where S=convex, OF hpts hconv])
+  thus ?thesis
+    by (by100 simp)
+qed
+
+lemma geotop_shared_edge_probe_triangles_subset_union_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set"
+  fixes q1 q2 qtop qbot :: "real^2"
+  fixes V\<sigma> V\<tau> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V\<sigma>"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> V\<tau>"
+  assumes hq1: "q1 \<in> \<sigma> \<inter> \<tau>"
+  assumes hq2: "q2 \<in> \<sigma> \<inter> \<tau>"
+  assumes htop: "qtop \<in> interior \<sigma>"
+  assumes hbot: "qbot \<in> interior \<tau>"
+  shows "convex hull {q1, q2, qtop} \<union> convex hull {q1, q2, qbot} \<subseteq> \<sigma> \<union> \<tau>"
+  (**
+    Set-containment package for the local diamond: the upper small triangle
+    lies in the first incident 2-simplex and the lower small triangle lies in
+    the second. **)
+proof -
+  have hqtop_\<sigma>: "qtop \<in> \<sigma>"
+    using htop interior_subset by (by100 blast)
+  have hqbot_\<tau>: "qbot \<in> \<tau>"
+    using hbot interior_subset by (by100 blast)
+  have hq1_\<sigma>: "q1 \<in> \<sigma>" and hq2_\<sigma>: "q2 \<in> \<sigma>"
+    using hq1 hq2 by (by100 blast)+
+  have hq1_\<tau>: "q1 \<in> \<tau>" and hq2_\<tau>: "q2 \<in> \<tau>"
+    using hq1 hq2 by (by100 blast)+
+  have htop_sub: "convex hull {q1, q2, qtop} \<subseteq> \<sigma>"
+    by (rule geotop_convex_hull_three_points_subset_2simplex_prefix
+        [OF h\<sigma>V hq1_\<sigma> hq2_\<sigma> hqtop_\<sigma>])
+  have hbot_sub: "convex hull {q1, q2, qbot} \<subseteq> \<tau>"
+    by (rule geotop_convex_hull_three_points_subset_2simplex_prefix
+        [OF h\<tau>V hq1_\<tau> hq2_\<tau> hqbot_\<tau>])
+  show ?thesis
+    using htop_sub hbot_sub by (by100 blast)
+qed
+
+lemma geotop_shared_edge_probe_diamond_contains_ball_prefix:
+  fixes p v n :: "real^2"
+  assumes hv: "v \<noteq> 0"
+  assumes hn: "n \<noteq> 0"
+  assumes horth: "v \<bullet> n = 0"
+  assumes hu: "0 < u"
+  assumes hs: "0 < s"
+  assumes ht: "0 < t"
+  obtains eps where
+    "0 < eps"
+    "ball p eps \<subseteq>
+      convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+  (**
+    Analytic diamond step in Moise's shared-edge local model: the two small
+    triangles with common base in the edge direction and apices on opposite
+    normal rays contain a genuine Euclidean ball around the edge point. **)
+proof -
+  have hspan: "span {v, n} = UNIV"
+  proof -
+    have hvn_distinct: "v \<noteq> n"
+    proof
+      assume hvn: "v = n"
+      have "v \<bullet> v = 0"
+        using horth hvn by (by100 simp)
+      thus False
+        using hv by (simp add: inner_eq_zero_iff)
+    qed
+    have hpair: "pairwise orthogonal {v, n}"
+      using horth by (simp add: pairwise_def orthogonal_def inner_commute)
+    have hzero: "0 \<notin> {v, n}"
+      using hv hn by (by100 simp)
+    have hind: "independent {v, n}"
+      by (rule pairwise_orthogonal_independent[OF hpair hzero])
+    have hcard: "card {v, n} = DIM(real^2)"
+      using hvn_distinct by (by100 simp)
+    have hdim: "dim {v, n} = DIM(real^2)"
+      using indep_card_eq_dim_span[OF hind] hcard by (by100 simp)
+    show ?thesis
+      using hdim dim_eq_full[of "{v, n}"] by (by100 simp)
+  qed
+  have hcoords:
+    "\<forall>x. \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+  proof
+    fix x
+    have hxspan: "x - p \<in> span (insert v {n})"
+      using hspan by (by100 simp)
+    obtain \<alpha> where h\<alpha>: "x - p - \<alpha> *\<^sub>R v \<in> span {n}"
+      using hxspan unfolding span_breakdown_eq by (by100 blast)
+    obtain \<beta> where h\<beta>: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n \<in> span ({} :: (real^2) set)"
+      using h\<alpha> unfolding span_breakdown_eq by (by100 blast)
+    have hzero: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n = 0"
+      using h\<beta> by (by100 simp)
+    show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+    proof (intro exI)
+      show "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hzero by (simp add: algebra_simps)
+    qed
+  qed
+  have hsmall_coords:
+    "\<exists>eps>0. \<forall>x\<in>ball p eps.
+      \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<and> \<bar>\<alpha>\<bar> < u / 2
+        \<and> \<bar>\<beta>\<bar> < min s t / 2"
+  proof -
+    have hvn: "0 < norm v"
+      using hv by (by100 simp)
+    have hnn: "0 < norm n"
+      using hn by (by100 simp)
+    have hm: "0 < min s t"
+      using hs ht by (by100 simp)
+    define eps where "eps = min (u * norm v / 4) (min s t * norm n / 4)"
+    have heps: "0 < eps"
+      using hu hvn hm hnn unfolding eps_def by (by100 simp)
+    have heps_v: "eps \<le> u * norm v / 4"
+      unfolding eps_def by (by100 simp)
+    have heps_n: "eps \<le> min s t * norm n / 4"
+      unfolding eps_def by (by100 simp)
+    have hvn_nonneg: "0 \<le> norm v"
+      using hvn by (by100 linarith)
+    have hnn_nonneg: "0 \<le> norm n"
+      using hnn by (by100 linarith)
+    have hbound:
+      "\<forall>x\<in>ball p eps.
+        \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+          \<and> \<bar>\<alpha>\<bar> < u / 2
+          \<and> \<bar>\<beta>\<bar> < min s t / 2"
+    proof
+      fix x
+      assume hx: "x \<in> ball p eps"
+      obtain \<alpha> \<beta> where hxrep: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hcoords by (by100 blast)
+      let ?y = "x - p"
+      have hyrep: "?y = \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hxrep by (simp add: algebra_simps)
+      have hy_norm: "norm ?y < eps"
+        using hx by (simp add: dist_norm norm_minus_commute)
+      have hv_inner_pos: "0 < v \<bullet> v"
+        using hv by (simp add: inner_gt_zero_iff)
+      have hn_inner_pos: "0 < n \<bullet> n"
+        using hn by (simp add: inner_gt_zero_iff)
+      have hv_inner_nonneg: "0 \<le> v \<bullet> v"
+        using hv_inner_pos by (by100 linarith)
+      have hn_inner_nonneg: "0 \<le> n \<bullet> n"
+        using hn_inner_pos by (by100 linarith)
+      have hv_inner_norm: "v \<bullet> v = norm v * norm v"
+        by (simp add: dot_square_norm power2_eq_square)
+      have hn_inner_norm: "n \<bullet> n = norm n * norm n"
+        by (simp add: dot_square_norm power2_eq_square)
+      have hnv: "n \<bullet> v = 0"
+        by (subst inner_commute) (rule horth)
+      have hdot_v: "?y \<bullet> v = \<alpha> * (v \<bullet> v)"
+      proof -
+        have "?y \<bullet> v = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> v"
+          using hyrep by (by100 simp)
+        also have "\<dots> = \<alpha> * (v \<bullet> v) + \<beta> * (n \<bullet> v)"
+          by (simp add: inner_add_left inner_scaleR_left)
+        also have "\<dots> = \<alpha> * (v \<bullet> v)"
+          using hnv by (by100 simp)
+        finally show ?thesis .
+      qed
+      have halpha_eq: "\<alpha> = (?y \<bullet> v) / (v \<bullet> v)"
+        using hdot_v hv_inner_pos by (simp add: field_simps)
+      have hdot_n: "?y \<bullet> n = \<beta> * (n \<bullet> n)"
+      proof -
+        have "?y \<bullet> n = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> n"
+          using hyrep by (by100 simp)
+        also have "\<dots> = \<alpha> * (v \<bullet> n) + \<beta> * (n \<bullet> n)"
+          by (simp add: inner_add_left inner_scaleR_left)
+        also have "\<dots> = \<beta> * (n \<bullet> n)"
+          using horth by (by100 simp)
+        finally show ?thesis .
+      qed
+      have hbeta_eq: "\<beta> = (?y \<bullet> n) / (n \<bullet> n)"
+        using hdot_n hn_inner_pos by (simp add: field_simps)
+      have halpha_abs_le: "\<bar>\<alpha>\<bar> \<le> norm ?y / norm v"
+      proof -
+        have hcs: "\<bar>?y \<bullet> v\<bar> \<le> norm ?y * norm v"
+          by (rule Cauchy_Schwarz_ineq2)
+        have "\<bar>\<alpha>\<bar> = \<bar>?y \<bullet> v\<bar> / (v \<bullet> v)"
+          using halpha_eq hv_inner_pos by (by100 simp)
+        also have "\<dots> \<le> (norm ?y * norm v) / (v \<bullet> v)"
+          by (rule divide_right_mono[OF hcs hv_inner_nonneg])
+        also have "\<dots> = norm ?y / norm v"
+          using hvn hv_inner_norm by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have hbeta_abs_le: "\<bar>\<beta>\<bar> \<le> norm ?y / norm n"
+      proof -
+        have hcs: "\<bar>?y \<bullet> n\<bar> \<le> norm ?y * norm n"
+          by (rule Cauchy_Schwarz_ineq2)
+        have "\<bar>\<beta>\<bar> = \<bar>?y \<bullet> n\<bar> / (n \<bullet> n)"
+          using hbeta_eq hn_inner_pos by (by100 simp)
+        also have "\<dots> \<le> (norm ?y * norm n) / (n \<bullet> n)"
+          by (rule divide_right_mono[OF hcs hn_inner_nonneg])
+        also have "\<dots> = norm ?y / norm n"
+          using hnn hn_inner_norm by (simp add: field_simps)
+        finally show ?thesis .
+      qed
+      have halpha_lt: "\<bar>\<alpha>\<bar> < u / 2"
+      proof -
+        have "norm ?y / norm v < eps / norm v"
+          by (rule divide_strict_right_mono[OF hy_norm hvn])
+        also have "\<dots> \<le> (u * norm v / 4) / norm v"
+          by (rule divide_right_mono[OF heps_v hvn_nonneg])
+        also have "\<dots> = u / 4"
+          using hvn by (simp add: field_simps)
+        also have "\<dots> < u / 2"
+          using hu by (by100 linarith)
+        finally show ?thesis
+          using halpha_abs_le by (by100 linarith)
+      qed
+      have hbeta_lt: "\<bar>\<beta>\<bar> < min s t / 2"
+      proof -
+        have "norm ?y / norm n < eps / norm n"
+          by (rule divide_strict_right_mono[OF hy_norm hnn])
+        also have "\<dots> \<le> (min s t * norm n / 4) / norm n"
+          by (rule divide_right_mono[OF heps_n hnn_nonneg])
+        also have "\<dots> = min s t / 4"
+          using hnn by (simp add: field_simps)
+        also have "\<dots> < min s t / 2"
+          using hm by (by100 linarith)
+        finally show ?thesis
+          using hbeta_abs_le by (by100 linarith)
+      qed
+      show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+          \<and> \<bar>\<alpha>\<bar> < u / 2
+          \<and> \<bar>\<beta>\<bar> < min s t / 2"
+        using hxrep halpha_lt hbeta_lt by (by100 blast)
+    qed
+    show ?thesis
+      using heps hbound by (by100 blast)
+  qed
+  have hupper_membership:
+    "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2 \<longrightarrow>
+      p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+  proof (intro allI impI)
+    fix \<alpha> \<beta>
+    assume h: "\<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2"
+    define \<mu> where "\<mu> = \<beta> / s"
+    define ell where "ell = ((\<alpha> / u) + 1 - \<mu>) / 2"
+    have h\<mu>0: "0 \<le> \<mu>"
+      using h hs unfolding \<mu>_def by (by100 simp)
+    have h\<mu>half: "\<mu> < 1 / 2"
+      using h hs unfolding \<mu>_def by (simp add: field_simps)
+    have h\<alpha>abs: "\<bar>\<alpha>\<bar> < u / 2"
+      using h by (by100 blast)
+    have h\<alpha>gt: "- (u / 2) < \<alpha>"
+    proof -
+      have "- \<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>lt: "\<alpha> < u / 2"
+    proof -
+      have "\<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>u_gt: "- (1 / 2) < \<alpha> / u"
+      using h\<alpha>gt hu by (simp add: field_simps)
+    have h\<alpha>u_lt: "\<alpha> / u < 1 / 2"
+      using h\<alpha>lt hu by (simp add: field_simps)
+    have hell_num_pos: "0 < \<alpha> / u + 1 - \<mu>"
+    proof -
+      have "- (1 / 2) + 1 - (1 / 2) < \<alpha> / u + 1 - \<mu>"
+        using h\<alpha>u_gt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell0_strict: "0 < ell"
+      using hell_num_pos unfolding ell_def by (by100 simp)
+    have hell0: "0 \<le> ell"
+      using hell0_strict by (by100 linarith)
+    have hell\<mu>_num_lt: "\<alpha> / u + 1 + \<mu> < 2"
+    proof -
+      have "\<alpha> / u + 1 + \<mu> < (1 / 2) + 1 + (1 / 2)"
+        using h\<alpha>u_lt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell\<mu>_expr: "ell + \<mu> = (\<alpha> / u + 1 + \<mu>) / 2"
+      unfolding ell_def by (simp add: field_simps)
+    have hell\<mu>_strict: "ell + \<mu> < 1"
+      using hell\<mu>_expr hell\<mu>_num_lt by (by100 simp)
+    have hell\<mu>: "ell + \<mu> \<le> 1"
+      using hell\<mu>_strict by (by100 linarith)
+    have h\<mu>s: "\<mu> * s = \<beta>"
+      using hs unfolding \<mu>_def by (by100 simp)
+    have hv_coeff: "- u + 2 * u * ell + u * \<mu> = \<alpha>"
+      using hu hs unfolding ell_def \<mu>_def by (simp add: field_simps)
+    have heq:
+      "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n =
+        (p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))"
+    proof -
+      have hbase_diff:
+        "(p + u *\<^sub>R v) - (p - u *\<^sub>R v) = (2 * u) *\<^sub>R v"
+        by (simp add: vec_eq_iff algebra_simps)
+      have hapex_diff:
+        "(p + s *\<^sub>R n) - (p - u *\<^sub>R v) = u *\<^sub>R v + s *\<^sub>R n"
+        by (simp add: vec_eq_iff algebra_simps)
+      have "(p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        = p + (- u + 2 * u * ell + u * \<mu>) *\<^sub>R v + (\<mu> * s) *\<^sub>R n"
+        using hbase_diff hapex_diff
+        by (simp add: algebra_simps scaleR_add_right)
+      also have "\<dots> = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using h\<mu>s hv_coeff by (by100 simp)
+      finally show ?thesis
+        by (by100 simp)
+    qed
+    have "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n \<in>
+      {p - u *\<^sub>R v
+        + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+        + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        | ell \<mu>. 0 \<le> ell \<and> 0 \<le> \<mu> \<and> ell + \<mu> \<le> 1}"
+      using heq hell0 h\<mu>0 hell\<mu> by (by100 blast)
+    thus "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+      using convex_hull_3_alt
+        [of "p - u *\<^sub>R v" "p + u *\<^sub>R v" "p + s *\<^sub>R n"]
+      by (by100 simp)
+  qed
+  have hlower_membership:
+    "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> - (t / 2) < \<beta> \<and> \<beta> < 0 \<longrightarrow>
+      p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+  proof (intro allI impI)
+    fix \<alpha> \<beta>
+    assume h: "\<bar>\<alpha>\<bar> < u / 2 \<and> - (t / 2) < \<beta> \<and> \<beta> < 0"
+    define \<mu> where "\<mu> = - \<beta> / t"
+    define ell where "ell = ((\<alpha> / u) + 1 - \<mu>) / 2"
+    have h\<beta>neg: "\<beta> < 0"
+      using h by (by100 blast)
+    have hneg\<beta>_lt: "- \<beta> < t / 2"
+      using h by (by100 linarith)
+    have h\<mu>0: "0 \<le> \<mu>"
+      using h\<beta>neg ht unfolding \<mu>_def by (simp add: field_simps)
+    have h\<mu>half: "\<mu> < 1 / 2"
+      using hneg\<beta>_lt ht unfolding \<mu>_def by (simp add: field_simps)
+    have h\<alpha>abs: "\<bar>\<alpha>\<bar> < u / 2"
+      using h by (by100 blast)
+    have h\<alpha>gt: "- (u / 2) < \<alpha>"
+    proof -
+      have "- \<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>lt: "\<alpha> < u / 2"
+    proof -
+      have "\<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>u_gt: "- (1 / 2) < \<alpha> / u"
+      using h\<alpha>gt hu by (simp add: field_simps)
+    have h\<alpha>u_lt: "\<alpha> / u < 1 / 2"
+      using h\<alpha>lt hu by (simp add: field_simps)
+    have hell_num_pos: "0 < \<alpha> / u + 1 - \<mu>"
+    proof -
+      have "- (1 / 2) + 1 - (1 / 2) < \<alpha> / u + 1 - \<mu>"
+        using h\<alpha>u_gt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell0_strict: "0 < ell"
+      using hell_num_pos unfolding ell_def by (by100 simp)
+    have hell0: "0 \<le> ell"
+      using hell0_strict by (by100 linarith)
+    have hell\<mu>_num_lt: "\<alpha> / u + 1 + \<mu> < 2"
+    proof -
+      have "\<alpha> / u + 1 + \<mu> < (1 / 2) + 1 + (1 / 2)"
+        using h\<alpha>u_lt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell\<mu>_expr: "ell + \<mu> = (\<alpha> / u + 1 + \<mu>) / 2"
+      unfolding ell_def by (simp add: field_simps)
+    have hell\<mu>_strict: "ell + \<mu> < 1"
+      using hell\<mu>_expr hell\<mu>_num_lt by (by100 simp)
+    have hell\<mu>: "ell + \<mu> \<le> 1"
+      using hell\<mu>_strict by (by100 linarith)
+    have h\<mu>t: "- (\<mu> * t) = \<beta>"
+      using ht unfolding \<mu>_def by (by100 simp)
+    have hv_coeff: "- u + 2 * u * ell + u * \<mu> = \<alpha>"
+      using hu ht unfolding ell_def \<mu>_def by (simp add: field_simps)
+    have heq:
+      "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n =
+        (p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))"
+    proof -
+      have hbase_diff:
+        "(p + u *\<^sub>R v) - (p - u *\<^sub>R v) = (2 * u) *\<^sub>R v"
+        by (simp add: vec_eq_iff algebra_simps)
+      have hapex_diff:
+        "(p - t *\<^sub>R n) - (p - u *\<^sub>R v) = u *\<^sub>R v - t *\<^sub>R n"
+        by (simp add: vec_eq_iff algebra_simps)
+      have "(p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))
+        = p + (- u + 2 * u * ell + u * \<mu>) *\<^sub>R v + (- (\<mu> * t)) *\<^sub>R n"
+        using hbase_diff hapex_diff
+        by (simp add: algebra_simps scaleR_add_right)
+      also have "\<dots> = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using h\<mu>t hv_coeff by (by100 simp)
+      finally show ?thesis
+        by (by100 simp)
+    qed
+    have "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n \<in>
+      {p - u *\<^sub>R v
+        + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+        + \<mu> *\<^sub>R ((p - t *\<^sub>R n) - (p - u *\<^sub>R v))
+        | ell \<mu>. 0 \<le> ell \<and> 0 \<le> \<mu> \<and> ell + \<mu> \<le> 1}"
+      using heq hell0 h\<mu>0 hell\<mu> by (by100 blast)
+    thus "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+      using convex_hull_3_alt
+        [of "p - u *\<^sub>R v" "p + u *\<^sub>R v" "p - t *\<^sub>R n"]
+      by (by100 simp)
+  qed
+  have hdiamond_ball:
+    "\<exists>eps>0. ball p eps \<subseteq>
+      convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+    using hsmall_coords hupper_membership hlower_membership
+  proof -
+    obtain eps where heps: "0 < eps"
+      and hball:
+        "\<forall>x\<in>ball p eps.
+          \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+            \<and> \<bar>\<alpha>\<bar> < u / 2
+            \<and> \<bar>\<beta>\<bar> < min s t / 2"
+      using hsmall_coords by (by100 blast)
+    have hsub:
+      "ball p eps \<subseteq>
+        convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+    proof
+      fix x
+      assume hx: "x \<in> ball p eps"
+      obtain \<alpha> \<beta> where hx_eq: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        and h\<alpha>: "\<bar>\<alpha>\<bar> < u / 2"
+        and h\<beta>: "\<bar>\<beta>\<bar> < min s t / 2"
+        using hball hx by (by100 blast)
+      show "x \<in>
+        convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+      proof (cases "0 \<le> \<beta>")
+        case True
+        have h\<beta>s: "\<beta> < s / 2"
+          using h\<beta> True min.cobounded1[of s t] by (by100 linarith)
+        have "x \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+          using hupper_membership h\<alpha> True h\<beta>s hx_eq by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      next
+        case False
+        have h\<beta>neg: "\<beta> < 0"
+          using False by (by100 linarith)
+        have h\<beta>t: "- (t / 2) < \<beta>"
+          using h\<beta> False min.cobounded2[of s t] by (by100 linarith)
+        have "x \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p - t *\<^sub>R n}"
+          using hlower_membership h\<alpha> h\<beta>neg h\<beta>t hx_eq by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+    show ?thesis
+      using heps hsub by (by100 blast)
+  qed
+  show ?thesis
+    using hdiamond_ball that
+    by (by100 blast)
+qed
+
+lemma geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hab: "a \<noteq> b"
+  assumes hc_not_ab: "c \<notin> {a, b}"
+  assumes hd_not_ab: "d \<notin> {a, b}"
+  assumes he_eq: "e = geotop_convex_hull {a, b}"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+  assumes hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+  assumes hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  shows "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+  (**
+    Analytic local-neighborhood step for the shared-edge model: along the
+    relative interior of the common edge, the two opposite-side 2-simplexes
+    fill a full Euclidean disk neighborhood. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  have hv: "b - a \<noteq> 0"
+    using hab by (by100 simp)
+  have hn: "n \<noteq> 0"
+  proof
+    assume hn0: "n = 0"
+    show False
+      using hopp hn0 by (by100 auto)
+  qed
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "n \<bullet> a = r"
+    using hline ha_aff by (by100 simp)
+  have hb_line: "n \<bullet> b = r"
+    using hline hb_aff by (by100 simp)
+  have horth_n: "n \<bullet> (b - a) = 0"
+    using ha_line hb_line by (simp add: inner_diff_right)
+  have horth: "(b - a) \<bullet> n = 0"
+    using horth_n by (simp add: inner_commute)
+  obtain u where hu: "0 < u"
+    and hqminus: "p - u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    and hqplus: "p + u *\<^sub>R (b - a) \<in> \<sigma> \<inter> \<tau>"
+    by (rule geotop_shared_edge_small_subsegment_in_two_2simplexes_prefix
+        [OF hab he_eq h\<sigma>V h\<tau>V hp])
+  obtain s t where hs: "0 < s"
+    and ht: "0 < t"
+    and hprobes:
+      "(p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>)
+        \<or> (p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>)"
+    by (rule geotop_2simplex_opposite_side_shared_edge_normal_probes_in_HOL_interiors_prefix
+        [OF hab hc_not_ab hd_not_ab hn he_eq h\<sigma>V h\<tau>V hline hopp hp])
+  from hprobes show "p \<in> interior (\<sigma> \<union> \<tau>)"
+  proof
+    assume hside:
+      "p + s *\<^sub>R n \<in> interior \<sigma> \<and> p - t *\<^sub>R n \<in> interior \<tau>"
+    obtain eps where heps: "0 < eps"
+      and hball:
+        "ball p eps \<subseteq>
+          convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R n}
+            \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R n}"
+      by (rule geotop_shared_edge_probe_diamond_contains_ball_prefix
+          [OF hv hn horth hu hs ht])
+    have hdiamond_sub:
+      "convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R n}
+        \<subseteq> \<sigma> \<union> \<tau>"
+      by (rule geotop_shared_edge_probe_triangles_subset_union_prefix
+          [OF h\<sigma>V h\<tau>V hqminus hqplus hside[THEN conjunct1] hside[THEN conjunct2]])
+    have hball_sub: "ball p eps \<subseteq> \<sigma> \<union> \<tau>"
+      using hball hdiamond_sub by (by100 blast)
+    have hp_ball: "p \<in> ball p eps"
+      using heps by (by100 simp)
+    show ?thesis
+      by (rule interiorI[OF open_ball hp_ball hball_sub])
+  next
+    assume hside:
+      "p - s *\<^sub>R n \<in> interior \<sigma> \<and> p + t *\<^sub>R n \<in> interior \<tau>"
+    have hn_neg: "- n \<noteq> 0"
+      using hn by (by100 simp)
+    have horth_neg: "(b - a) \<bullet> (- n) = 0"
+      using horth by (by100 simp)
+    obtain eps where heps: "0 < eps"
+      and hball_raw:
+        "ball p eps \<subseteq>
+          convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R (- n)}
+            \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - t *\<^sub>R (- n)}"
+      by (rule geotop_shared_edge_probe_diamond_contains_ball_prefix
+          [OF hv hn_neg horth_neg hu hs ht])
+    have hball:
+      "ball p eps \<subseteq>
+        convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - s *\<^sub>R n}
+          \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + t *\<^sub>R n}"
+      using hball_raw by (by100 simp)
+    have hdiamond_sub:
+      "convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p - s *\<^sub>R n}
+        \<union> convex hull {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + t *\<^sub>R n}
+        \<subseteq> \<sigma> \<union> \<tau>"
+      by (rule geotop_shared_edge_probe_triangles_subset_union_prefix
+          [OF h\<sigma>V h\<tau>V hqminus hqplus hside[THEN conjunct1] hside[THEN conjunct2]])
+    have hball_sub: "ball p eps \<subseteq> \<sigma> \<union> \<tau>"
+      using hball hdiamond_sub by (by100 blast)
+    have hp_ball: "p \<in> ball p eps"
+      using heps by (by100 simp)
+    show ?thesis
+      by (rule interiorI[OF open_ball hp_ball hball_sub])
+  qed
+qed
+
+lemma geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  shows "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+  (**
+    Moise local model for the two-sided edge case: two distinct 2-simplexes
+    of the same complex that share the edge \<open>e\<close> lie on opposite sides of
+    \<open>e\<close>.  Their union fills the two local half-disks along
+    \<open>rel_interior e\<close>, so it has ordinary Euclidean interior there. **)
+proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_prefix
+    [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    and h\<tau>V: "geotop_simplex_vertices \<tau> {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma> \<subseteq> {p. n \<bullet> p < r}"
+    and h\<tau>_pos: "n \<bullet> d > r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p > r}"
+    and h\<tau>_neg: "n \<bullet> d < r \<Longrightarrow> interior \<tau> \<subseteq> {p. n \<bullet> p < r}"
+    and hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  show ?thesis
+    by (rule geotop_2simplex_opposite_side_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+        [OF hab hc_not_ab hd_not_ab he_eq h\<sigma>V h\<tau>V hline hopp])
+qed
+
 lemma geotop_two_triangle_nonboundary_edge_shared_prefix:
   fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -4129,7 +6445,71 @@ lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
     polygon boundary is a union of whole edge faces of that triangle.  This is
     the strengthened form of the preceding frontier-cover lemma needed to make
     the definition of free 2-simplex literal. **)
-  sorry
+proof
+  fix x
+  assume hx: "x \<in> \<sigma> \<inter> J"
+  have hxJ: "x \<in> J"
+    using hx by (by100 simp)
+  have h\<tau>_in: "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+    using hT_eq by (by100 simp)
+  have h\<tau>K: "\<tau> \<in> K"
+    using h\<tau>_in by (by100 simp)
+  have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    using h\<tau>_in by (by100 simp)
+  have hx_all_edges:
+      "x \<in> \<Union>{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    using geotop_2simplex_polygon_boundary_inter_subset_complex_edge_faces_prefix
+      [OF hJ hK h\<sigma>K h\<sigma>2 hK_poly] hx
+    by (by100 blast)
+  obtain e where heK: "e \<in> K"
+    and hedge: "geotop_is_edge e"
+    and he\<sigma>: "geotop_is_face e \<sigma>"
+    and hxe: "x \<in> e"
+    using hx_all_edges by (by100 blast)
+  have hcase: "e \<subseteq> J \<or> geotop_is_face e \<tau>"
+    by (rule geotop_two_triangle_edge_boundary_or_shared_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 heK hedge he\<sigma>])
+  show "x \<in> \<Union>{e \<in> K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  proof (rule disjE[OF hcase])
+    assume heJ: "e \<subseteq> J"
+    have "e \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+      using heK hedge he\<sigma> heJ by (by100 simp)
+    thus ?thesis
+      using hxe by (by100 blast)
+  next
+    assume he\<tau>: "geotop_is_face e \<tau>"
+    show ?thesis
+    proof (cases "x \<in> rel_interior e")
+      case True
+      have hlocal: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+        by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+            [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+      have hx_int_union: "x \<in> interior (\<sigma> \<union> \<tau>)"
+        using hlocal True by (by100 blast)
+      have hunion_sub: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K"
+        using h\<sigma>K h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
+      have hinterior_sub:
+          "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K)"
+        by (rule interior_mono[OF hunion_sub])
+      have hx_int_poly: "x \<in> interior (geotop_polyhedron K)"
+        using hx_int_union hinterior_sub by (by100 blast)
+      have hfront_eq: "frontier (geotop_polyhedron K) = J"
+        by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+      have hx_front: "x \<in> frontier (geotop_polyhedron K)"
+        using hxJ hfront_eq by (by100 simp)
+      have False
+        using hx_int_poly hx_front unfolding Elementary_Topology.frontier_def
+        by (by100 simp)
+      thus ?thesis
+        by (by100 simp)
+    next
+      case False
+      show ?thesis
+        by (rule geotop_two_triangle_shared_edge_endpoint_boundary_cover_prefix
+            [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau> heK hedge he\<sigma> he\<tau> hxe False])
+    qed
+  qed
+qed
 
 lemma geotop_two_triangle_other_2simplex_not_subset_prefix:
   fixes \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
