@@ -3448,6 +3448,49 @@ proof
     using hfront_sub hx_frontier by (by100 blast)
 qed
 
+lemma geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "\<sigma> \<inter> J \<subseteq>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  (**
+    Named-edge form of the boundary-contact frontier fact: once a 2-simplex is
+    written with vertices \<open>v\<^sub>0,v\<^sub>1,v\<^sub>2\<close>, every point where it meets the polygon
+    boundary lies on one of the three displayed edge hulls. **)
+proof -
+  have hfrontier_named:
+    "frontier \<sigma> =
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hcontact_frontier: "\<sigma> \<inter> J \<subseteq> frontier \<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> \<sigma> \<inter> J"
+    have hx\<sigma>: "x \<in> \<sigma>"
+      using hx by (by100 simp)
+    have hxJ: "x \<in> J"
+      using hx by (by100 simp)
+    show "x \<in> frontier \<sigma>"
+      by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+          [OF hJ h\<sigma>K h\<sigma>2 hK_poly hx\<sigma> hxJ])
+  qed
+  show ?thesis
+    using hcontact_frontier hfrontier_named by (by100 simp)
+qed
+
 lemma geotop_2simplex_three_selected_edge_faces_frontier_subset_prefix:
   fixes K :: "(real^2) set set" and J \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
@@ -7887,32 +7930,13 @@ proof -
                       hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
                       hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J hE_card])
             qed
-            have h\<theta>_frontier_named_edges:
-              "frontier \<theta> =
-                geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-              by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
-                  [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
-            have h\<theta>J_sub_frontier:
-              "\<theta> \<inter> J' \<subseteq> frontier \<theta>"
-            proof
-              fix x
-              assume hx: "x \<in> \<theta> \<inter> J'"
-              have hx\<theta>: "x \<in> \<theta>"
-                using hx by (by100 simp)
-              have hxJ: "x \<in> J'"
-                using hx by (by100 simp)
-              show "x \<in> frontier \<theta>"
-                by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
-                    [OF hJ' h\<theta>K h\<theta>2 hK_poly' hx\<theta> hxJ])
-            qed
             have h\<theta>J_sub_named_edges:
               "\<theta> \<inter> J' \<subseteq>
                 geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
                 geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-              using h\<theta>J_sub_frontier h\<theta>_frontier_named_edges by (by100 simp)
+              by (rule geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix
+                  [OF hJ' h\<theta>K h\<theta>2 hK_poly' h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
             have hE\<theta>_union_sub_\<theta>J:
               "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}
                 \<subseteq> \<theta> \<inter> J'"
