@@ -2303,6 +2303,80 @@ proof -
     using hinside_poly hinside_int by (by100 simp)
 qed
 
+lemma geotop_polygon_boundary_contact_triangle_interior_component_prefix:
+  fixes J \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hfront_sub: "frontier \<sigma> \<subseteq> J"
+  assumes hcontact: "\<sigma> \<inter> J = frontier \<sigma>"
+  shows "interior \<sigma> \<in> components (UNIV - J) \<and> bounded (interior \<sigma>)"
+  (**
+    If a polygon boundary contains the whole triangle frontier and does not
+    enter the open triangle, then the ordinary open triangle remains a full
+    bounded complementary component of that boundary. **)
+proof -
+  have hinside_data:
+      "inside (frontier \<sigma>) \<in> components (UNIV - frontier \<sigma>) \<and>
+        bounded (inside (frontier \<sigma>))"
+    by (rule geotop_2simplex_inside_frontier_HOL_component_prefix[OF h\<sigma>2])
+  have hinside_eq: "inside (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_inside_frontier_eq_HOL_interior_prefix[OF h\<sigma>2])
+  have hI_comp_front: "interior \<sigma> \<in> components (UNIV - frontier \<sigma>)"
+    using hinside_data hinside_eq by (by100 simp)
+  have hI_bounded: "bounded (interior \<sigma>)"
+    using hinside_data hinside_eq by (by100 simp)
+  have hI_ne: "interior \<sigma> \<noteq> {}"
+    using hI_comp_front in_components_nonempty by (by100 blast)
+  have hI_conn: "connected (interior \<sigma>)"
+    using hI_comp_front in_components_connected by (by100 blast)
+  have hI_sub_front_compl: "interior \<sigma> \<subseteq> UNIV - frontier \<sigma>"
+    using hI_comp_front in_components_subset by (by100 blast)
+  have hI_sub_\<sigma>: "interior \<sigma> \<subseteq> \<sigma>"
+    by (rule interior_subset)
+  have hI_Int_J_empty: "interior \<sigma> \<inter> J = {}"
+  proof -
+    have "interior \<sigma> \<inter> J \<subseteq> (UNIV - frontier \<sigma>) \<inter> frontier \<sigma>"
+      using hI_sub_front_compl hI_sub_\<sigma> hcontact by (by100 blast)
+    moreover have "(UNIV - frontier \<sigma>) \<inter> frontier \<sigma> = {}"
+      by (by100 blast)
+    ultimately show ?thesis by (by100 blast)
+  qed
+  have hI_sub_J_compl: "interior \<sigma> \<subseteq> UNIV - J"
+    using hI_Int_J_empty by (by100 blast)
+  have hI_comp_J: "interior \<sigma> \<in> components (UNIV - J)"
+    unfolding in_components_maximal
+  proof (intro conjI)
+    show "interior \<sigma> \<noteq> {}"
+      by (rule hI_ne)
+    show "interior \<sigma> \<subseteq> UNIV - J"
+      by (rule hI_sub_J_compl)
+    show "connected (interior \<sigma>)"
+      by (rule hI_conn)
+    show "\<forall>D. D \<noteq> {} \<and> interior \<sigma> \<subseteq> D \<and> D \<subseteq> UNIV - J \<and>
+        connected D \<longrightarrow> D = interior \<sigma>"
+    proof (intro allI impI)
+      fix D
+      assume hD:
+        "D \<noteq> {} \<and> interior \<sigma> \<subseteq> D \<and> D \<subseteq> UNIV - J \<and> connected D"
+      have hI_sub_D: "interior \<sigma> \<subseteq> D"
+        using hD by (by100 blast)
+      have hD_sub_J: "D \<subseteq> UNIV - J"
+        using hD by (by100 blast)
+      have hD_conn: "connected D"
+        using hD by (by100 blast)
+      have hD_sub_front: "D \<subseteq> UNIV - frontier \<sigma>"
+        using hD_sub_J hfront_sub by (by100 blast)
+      have hmeet: "interior \<sigma> \<inter> D \<noteq> {}"
+        using hI_ne hI_sub_D by (by100 blast)
+      have hD_sub_I: "D \<subseteq> interior \<sigma>"
+        by (rule components_maximal[OF hI_comp_front hD_conn hD_sub_front hmeet])
+      show "D = interior \<sigma>"
+        using hI_sub_D hD_sub_I by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hI_comp_J hI_bounded by (by100 blast)
+qed
+
 lemma geotop_polygon_boundary_contact_triangle_frontier_eq_prefix:
   fixes J \<sigma> :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
@@ -2315,7 +2389,24 @@ lemma geotop_polygon_boundary_contact_triangle_frontier_eq_prefix:
     1-sphere that contains the whole frontier of a triangle and has no further
     contact with the closed triangle cannot have extra boundary outside the
     triangle. **)
-  sorry
+proof -
+  have hfront_poly: "geotop_is_polygon (frontier \<sigma>)"
+    by (rule geotop_2simplex_frontier_is_polygon_prefix[OF h\<sigma>2])
+  have hI_comp:
+      "interior \<sigma> \<in> components (UNIV - J) \<and> bounded (interior \<sigma>)"
+    by (rule geotop_polygon_boundary_contact_triangle_interior_component_prefix
+        [OF h\<sigma>2 hfront_sub hcontact])
+  have hI_eq_J: "interior \<sigma> = geotop_polygon_interior J"
+    by (rule polygon_interior_unique[OF hJ hI_comp])
+  have hfront_I: "geotop_polygon_interior (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix
+        [OF h\<sigma>2])
+  have hI_same: "geotop_polygon_interior J =
+      geotop_polygon_interior (frontier \<sigma>)"
+    using hI_eq_J hfront_I by (by100 simp)
+  show ?thesis
+    by (rule polygon_interior_injective[OF hJ hfront_poly hI_same])
+qed
 
 lemma geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix:
   fixes J \<sigma> :: "(real^2) set"
