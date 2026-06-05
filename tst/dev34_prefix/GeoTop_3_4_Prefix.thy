@@ -7239,6 +7239,71 @@ proof -
     using hxC hx_seg by (by100 blast)
 qed
 
+lemma geotop_nonbase_segment_contact_avoids_base_segment_prefix:
+  fixes C :: "(real^2) set" and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  assumes hcontact:
+    "\<exists>x. x \<in> C
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+  shows "\<exists>x. x \<in> C
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+  (**
+    Closed-segment endpoint hygiene for the Figure 3.2 witness: in a
+    nondegenerate triangle, a point on either non-base edge away from the
+    base endpoint is not on the base edge. **)
+proof -
+  obtain x where hxC: "x \<in> C"
+    and hx_nonbase: "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hcontact by (elim exE conjE)
+  have hset_left: "{v\<^sub>1, v\<^sub>0, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (by100 blast)
+  have hnot_col_left: "\<not> collinear {v\<^sub>1, v\<^sub>0, v\<^sub>2}"
+    using hnot_col hset_left by (by100 simp)
+  have hleft_raw:
+      "closed_segment v\<^sub>1 v\<^sub>0 \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}"
+    by (rule Int_closed_segment[OF disjI2[OF hnot_col_left]])
+  have hleft:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}"
+    using hleft_raw closed_segment_commute[of v\<^sub>1 v\<^sub>0] by (by100 simp)
+  have hset_right: "{v\<^sub>0, v\<^sub>1, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (by100 blast)
+  have hnot_col_right: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using hnot_col hset_right by (by100 simp)
+  have hright:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>1 v\<^sub>2 = {v\<^sub>1}"
+    by (rule Int_closed_segment[OF disjI2[OF hnot_col_right]])
+  have hx_not_base: "x \<notin> closed_segment v\<^sub>0 v\<^sub>1"
+  proof
+    assume hxbase: "x \<in> closed_segment v\<^sub>0 v\<^sub>1"
+    show False
+    proof (cases "x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0}")
+      case True
+      hence "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>0 v\<^sub>2"
+        using hxbase by (by100 blast)
+      hence "x = v\<^sub>0"
+        using hleft by (by100 simp)
+      thus False
+        using True by (by100 simp)
+    next
+      case False
+      have hx12: "x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1}"
+        using hx_nonbase False by (by100 blast)
+      hence "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>1 v\<^sub>2"
+        using hxbase by (by100 blast)
+      hence "x = v\<^sub>1"
+        using hright by (by100 simp)
+      thus False
+        using hx12 by (by100 simp)
+    qed
+  qed
+  show ?thesis
+    using hxC hx_not_base hx_nonbase by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
@@ -7656,8 +7721,9 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hcontact_other_nonbase_segment:
+  assumes hcontact_other_segment_off_base:
     "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
       \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
           \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
@@ -8277,11 +8343,21 @@ proof -
                     \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
               by (rule geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix
                   [OF h\<theta>_contact_on_other_nonbase_edge])
+            have h\<theta>_not_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+              by (rule geotop_2simplex_vertices_not_collinear_prefix
+                  [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+            have h\<theta>_contact_on_other_segment_off_base:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+                \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+                    \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+              by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
+                  [OF h\<theta>_not_col h\<theta>_contact_on_other_nonbase_segment])
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
                     hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
-                    h\<theta>_contact_on_other_nonbase_segment])
+                    h\<theta>_contact_on_other_segment_off_base])
           qed
         qed
         show ?thesis
