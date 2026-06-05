@@ -13063,6 +13063,60 @@ proof -
           houter_ne houter_open houter_conn houter_unbdd hdisj hcover_J])
 qed
 
+lemma geotop_jordan_components_separate_subset_dev34:
+  fixes V J inner outer :: "(real^2) set"
+  assumes hinner_open: "open inner"
+  assumes houter_open: "open outer"
+  assumes hinner_ne: "inner \<noteq> {}"
+  assumes hVouter_ne: "V \<inter> outer \<noteq> {}"
+  assumes hdisj: "inner \<inter> outer = {}"
+  assumes hcover: "inner \<union> outer = UNIV - J"
+  assumes hinner_subV: "inner \<subseteq> V"
+  shows "\<not> top1_connected_on (V - J)
+      (subspace_topology UNIV geotop_euclidean_topology (V - J))"
+  (**
+    Relative form of the local Jordan bookkeeping: if the chosen chart domain
+    contains one Jordan side and meets the other, then the curve separates the
+    domain.  No plane-openness of \<open>V\<close> is needed; the two pieces are open in
+    the subspace \<open>V - J\<close>. **)
+proof -
+  have hinner_sub: "inner \<subseteq> V - J"
+    using hcover hinner_subV by (by100 blast)
+  have houter_piece_sub: "V \<inter> outer \<subseteq> V - J"
+    using hcover by (by100 blast)
+  have hcoverV: "inner \<union> (V \<inter> outer) = V - J"
+    using hcover hinner_subV by (by100 blast)
+  have hinner_open_sub: "inner \<in>
+      subspace_topology UNIV geotop_euclidean_topology (V - J)"
+  proof -
+    have hinner_geo: "inner \<in> geotop_euclidean_topology"
+      using hinner_open
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hrepr: "inner = (V - J) \<inter> inner"
+      using hinner_sub by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hinner_geo hrepr by (by100 blast)
+  qed
+  have houter_open_sub: "V \<inter> outer \<in>
+      subspace_topology UNIV geotop_euclidean_topology (V - J)"
+  proof -
+    have houter_geo: "outer \<in> geotop_euclidean_topology"
+      using houter_open
+      unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+      by (by100 simp)
+    have hrepr: "V \<inter> outer = (V - J) \<inter> outer"
+      using houter_piece_sub by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using houter_geo hrepr by (by100 blast)
+  qed
+  have hdisjV: "inner \<inter> (V \<inter> outer) = {}"
+    using hdisj by (by100 blast)
+  show ?thesis
+    by (rule top1_open_cover_separation_imp_not_connected_dev34
+        [OF hinner_open_sub houter_open_sub hinner_ne hVouter_ne hdisjV hcoverV])
+qed
+
 lemma geotop_open_set_jordan_components_separate_subset_dev34:
   fixes V J inner outer :: "(real^2) set"
   assumes hVopen: "V \<in> geotop_euclidean_topology"
