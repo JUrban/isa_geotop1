@@ -1866,6 +1866,311 @@ proof -
     using harc hcard hsub htop1_unit hendpoints by (by100 blast)
 qed
 
+lemma geotop_HOL_arc_imp_geotop_arc_endpoints_prefix:
+  fixes \<gamma> :: "real \<Rightarrow> real^2"
+  assumes h\<gamma>: "arc \<gamma>"
+  shows "geotop_arc_endpoints (path_image \<gamma>) {pathstart \<gamma>, pathfinish \<gamma>}"
+  (**
+    Endpoint bridge for a HOL arc parametrised on the unit interval.  This
+    lets the two-edge boundary path of a triangle supply the endpoint data
+    required by \<open>pair_of_arcs_is_polygon\<close>. **)
+proof -
+  have hgeotop_arc: "geotop_is_arc (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>])
+  have hpath: "path \<gamma>"
+    using h\<gamma> unfolding arc_def by (by100 blast)
+  have hcont: "continuous_on ({0..1}::real set) \<gamma>"
+    using hpath unfolding path_def by (by100 simp)
+  have hinj: "inj_on \<gamma> ({0..1}::real set)"
+    using h\<gamma> unfolding arc_def by (by100 blast)
+  have h0in: "(0::real) \<in> {0..1}"
+    by (by100 simp)
+  have h1in: "(1::real) \<in> {0..1}"
+    by (by100 simp)
+  have h01: "(0::real) \<noteq> 1"
+    by (by100 simp)
+  have hend_ne: "pathstart \<gamma> \<noteq> pathfinish \<gamma>"
+  proof
+    assume heq: "pathstart \<gamma> = pathfinish \<gamma>"
+    have h\<gamma>01: "\<gamma> 0 = \<gamma> 1"
+      using heq unfolding pathstart_def pathfinish_def by (by100 simp)
+    have "0 = (1::real)"
+      using hinj h0in h1in h\<gamma>01 unfolding inj_on_def by (by100 blast)
+    thus False using h01 by (by100 simp)
+  qed
+  have hcard: "card {pathstart \<gamma>, pathfinish \<gamma>} = 2"
+    using hend_ne by (by100 simp)
+  have hsub: "{pathstart \<gamma>, pathfinish \<gamma>} \<subseteq> path_image \<gamma>"
+    unfolding pathstart_def pathfinish_def path_image_def by (by100 simp)
+  have hunit_eq: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}"
+    by (by100 auto)
+  have hpath_image: "\<gamma> ` ({0..1}::real set) = path_image \<gamma>"
+    unfolding path_image_def by (by100 simp)
+  have h_compact: "compact ({0..1}::real set)"
+    by (by100 simp)
+  have h_image_refl: "\<gamma> ` ({0..1}::real set) = \<gamma> ` ({0..1}::real set)"
+    by (by100 simp)
+  obtain g where hhomeo_img:
+      "homeomorphism ({0..1}::real set) (\<gamma> ` ({0..1}::real set)) \<gamma> g"
+    using homeomorphism_compact[OF h_compact hcont h_image_refl hinj] by (by100 blast)
+  have hhomeo_path_image:
+      "homeomorphism ({0..1}::real set) (path_image \<gamma>) \<gamma> g"
+    using hhomeo_img hpath_image by (by100 simp)
+  have htop1_01: "top1_homeomorphism_on ({0..1}::real set)
+      (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))
+      (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>)) \<gamma>"
+  proof -
+    have h_Teucl_real: "is_topology_on (UNIV::real set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have h_Teucl_R2: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have htop_01: "is_topology_on ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))"
+      by (rule subspace_topology_is_topology_on[OF h_Teucl_real subset_UNIV])
+    have htop_img: "is_topology_on (path_image \<gamma>)
+        (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+      by (rule subspace_topology_is_topology_on[OF h_Teucl_R2 subset_UNIV])
+    have hbij: "bij_betw \<gamma> ({0..1}::real set) (path_image \<gamma>)"
+      unfolding bij_betw_def using hinj hpath_image by (by100 simp)
+    have h\<gamma>_img: "\<gamma> ` ({0..1}::real set) \<subseteq> path_image \<gamma>"
+      using hpath_image by (by100 simp)
+    have h\<gamma>_top1: "top1_continuous_map_on ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))
+        (path_image \<gamma>)
+        (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>)) \<gamma>"
+      by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hcont h\<gamma>_img])
+    have hg_cont: "continuous_on (path_image \<gamma>) g"
+      using hhomeo_path_image unfolding homeomorphism_def by (by100 blast)
+    have hg_img: "g ` (path_image \<gamma>) \<subseteq> ({0..1}::real set)"
+      using hhomeo_path_image unfolding homeomorphism_def by (by100 blast)
+    have hg_top1: "top1_continuous_map_on (path_image \<gamma>)
+        (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))
+        ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set)) g"
+      by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont hg_img])
+    have hgf_id: "\<forall>y\<in>path_image \<gamma>. \<gamma> (g y) = y"
+      using hhomeo_path_image unfolding homeomorphism_def by (by100 blast)
+    have hg_eq_inv:
+        "\<forall>y\<in>path_image \<gamma>.
+          g y = inv_into ({0..1}::real set) \<gamma> y"
+    proof
+      fix y
+      assume hy: "y \<in> path_image \<gamma>"
+      have hgy_in: "g y \<in> ({0..1}::real set)"
+        using hg_img hy by (by100 blast)
+      have hfgy: "\<gamma> (g y) = y"
+        using hgf_id hy by (by100 blast)
+      have "inv_into ({0..1}::real set) \<gamma> y = g y"
+        by (rule inv_into_f_eq[OF hinj hgy_in hfgy])
+      thus "g y = inv_into ({0..1}::real set) \<gamma> y"
+        by (by100 simp)
+    qed
+    have hinv_top1: "top1_continuous_map_on (path_image \<gamma>)
+        (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))
+        ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))
+        (inv_into ({0..1}::real set) \<gamma>)"
+      using hg_top1 top1_continuous_map_on_cong[OF hg_eq_inv] by (by100 blast)
+    show ?thesis
+      unfolding top1_homeomorphism_on_def
+      using htop_01 htop_img hbij h\<gamma>_top1 hinv_top1 by (by100 blast)
+  qed
+  have htop1_unit: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+      (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1})
+      (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>)) \<gamma>"
+    using htop1_01 hunit_eq by (by100 simp)
+  have hendpoints:
+      "{pathstart \<gamma>, pathfinish \<gamma>} = {\<gamma> 0, \<gamma> 1}"
+    unfolding pathstart_def pathfinish_def by (by100 simp)
+  show ?thesis
+    unfolding geotop_arc_endpoints_def
+    using hgeotop_arc hcard hsub htop1_unit hendpoints by (by100 blast)
+qed
+
+lemma geotop_two_segment_join_arc_endpoints_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+  assumes hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+  assumes hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  shows "geotop_arc_endpoints
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
+  (**
+    The two non-boundary edges of a nondegenerate triangle form the other
+    broken arc from \<open>v\<^sub>0\<close> to \<open>v\<^sub>1\<close>. **)
+proof -
+  let ?\<gamma>\<^sub>0\<^sub>2 = "linepath v\<^sub>0 v\<^sub>2"
+  let ?\<gamma>\<^sub>2\<^sub>1 = "linepath v\<^sub>2 v\<^sub>1"
+  let ?\<gamma> = "?\<gamma>\<^sub>0\<^sub>2 +++ ?\<gamma>\<^sub>2\<^sub>1"
+  have harc\<^sub>0\<^sub>2: "arc ?\<gamma>\<^sub>0\<^sub>2"
+    by (rule arc_linepath[OF hv\<^sub>0v\<^sub>2])
+  have hv\<^sub>2v\<^sub>1: "v\<^sub>2 \<noteq> v\<^sub>1"
+    using hv\<^sub>1v\<^sub>2 by (by100 blast)
+  have harc\<^sub>2\<^sub>1: "arc ?\<gamma>\<^sub>2\<^sub>1"
+    by (rule arc_linepath[OF hv\<^sub>2v\<^sub>1])
+  have hfinish_start: "pathfinish ?\<gamma>\<^sub>0\<^sub>2 = pathstart ?\<gamma>\<^sub>2\<^sub>1"
+    by (by100 simp)
+  have hinter: "path_image ?\<gamma>\<^sub>0\<^sub>2 \<inter> path_image ?\<gamma>\<^sub>2\<^sub>1 = {pathstart ?\<gamma>\<^sub>2\<^sub>1}"
+  proof -
+    have hseg_inter: "closed_segment v\<^sub>0 v\<^sub>2 \<inter> closed_segment v\<^sub>2 v\<^sub>1 = {v\<^sub>2}"
+      by (rule Int_closed_segment[OF disjI2[OF hnot_col]])
+    show ?thesis
+      using hseg_inter by (by100 simp)
+  qed
+  have hinter_sub: "path_image ?\<gamma>\<^sub>0\<^sub>2 \<inter> path_image ?\<gamma>\<^sub>2\<^sub>1 \<subseteq> {pathstart ?\<gamma>\<^sub>2\<^sub>1}"
+    using hinter by (by100 simp)
+  have harc_join: "arc ?\<gamma>"
+    by (rule arc_join[OF harc\<^sub>0\<^sub>2 harc\<^sub>2\<^sub>1 hfinish_start hinter_sub])
+  have hpath_image_raw: "path_image ?\<gamma> = path_image ?\<gamma>\<^sub>0\<^sub>2 \<union> path_image ?\<gamma>\<^sub>2\<^sub>1"
+    by (rule path_image_join[OF hfinish_start])
+  have hpath_image:
+      "path_image ?\<gamma> = closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1"
+    using hpath_image_raw by (by100 simp)
+  have hendpoints_raw:
+      "geotop_arc_endpoints (path_image ?\<gamma>) {pathstart ?\<gamma>, pathfinish ?\<gamma>}"
+    by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF harc_join])
+  have hendpoints_eq: "{pathstart ?\<gamma>, pathfinish ?\<gamma>} = {v\<^sub>0, v\<^sub>1}"
+    by (by100 simp)
+  show ?thesis
+    using hendpoints_raw hpath_image hendpoints_eq by (by100 simp)
+qed
+
+lemma geotop_two_segment_join_broken_line_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+  assumes hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+  assumes hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  shows "geotop_is_broken_line
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
+  (**
+    Polyhedral side of the same two-edge triangle boundary arc. **)
+proof -
+  have hv\<^sub>2v\<^sub>1: "v\<^sub>2 \<noteq> v\<^sub>1"
+    using hv\<^sub>1v\<^sub>2 by (by100 blast)
+  have hB\<^sub>1: "geotop_is_broken_line (closed_segment v\<^sub>0 v\<^sub>2)"
+    by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>0v\<^sub>2])
+  have hB\<^sub>2: "geotop_is_broken_line (closed_segment v\<^sub>2 v\<^sub>1)"
+    by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>2v\<^sub>1])
+  have hR_end_1:
+      "\<exists>\<gamma>\<^sub>1. arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = closed_segment v\<^sub>0 v\<^sub>2
+        \<and> pathfinish \<gamma>\<^sub>1 = v\<^sub>2"
+  proof (rule exI[where x = "linepath v\<^sub>0 v\<^sub>2"])
+    show "arc (linepath v\<^sub>0 v\<^sub>2) \<and> path_image (linepath v\<^sub>0 v\<^sub>2) =
+        closed_segment v\<^sub>0 v\<^sub>2 \<and> pathfinish (linepath v\<^sub>0 v\<^sub>2) = v\<^sub>2"
+      using arc_linepath[OF hv\<^sub>0v\<^sub>2] by (by100 simp)
+  qed
+  have hR_end_2:
+      "\<exists>\<gamma>\<^sub>2. arc \<gamma>\<^sub>2 \<and> path_image \<gamma>\<^sub>2 = closed_segment v\<^sub>2 v\<^sub>1
+        \<and> pathstart \<gamma>\<^sub>2 = v\<^sub>2"
+  proof (rule exI[where x = "linepath v\<^sub>2 v\<^sub>1"])
+    show "arc (linepath v\<^sub>2 v\<^sub>1) \<and> path_image (linepath v\<^sub>2 v\<^sub>1) =
+        closed_segment v\<^sub>2 v\<^sub>1 \<and> pathstart (linepath v\<^sub>2 v\<^sub>1) = v\<^sub>2"
+      using arc_linepath[OF hv\<^sub>2v\<^sub>1] by (by100 simp)
+  qed
+  have hdisj: "closed_segment v\<^sub>0 v\<^sub>2 \<inter> closed_segment v\<^sub>2 v\<^sub>1 = {v\<^sub>2}"
+    by (rule Int_closed_segment[OF disjI2[OF hnot_col]])
+  show ?thesis
+    by (rule geotop_broken_lines_glue_disjoint_endpoints
+        [OF hB\<^sub>1 hB\<^sub>2 hR_end_1 hR_end_2 hdisj])
+qed
+
+lemma geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix:
+  fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  shows "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<inter>
+      geotop_arc_interior
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} =
+      {}"
+  (**
+    The open base edge is disjoint from the two open remaining edges of a
+    nondegenerate triangle. **)
+proof -
+  have hset_left: "{v\<^sub>1, v\<^sub>0, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (by100 blast)
+  have hnot_col_left: "\<not> collinear {v\<^sub>1, v\<^sub>0, v\<^sub>2}"
+    using hnot_col hset_left by (by100 simp)
+  have hleft_raw:
+      "closed_segment v\<^sub>1 v\<^sub>0 \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}"
+    by (rule Int_closed_segment[OF disjI2[OF hnot_col_left]])
+  have hleft:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>0 v\<^sub>2 = {v\<^sub>0}"
+    using hleft_raw closed_segment_commute[of v\<^sub>1 v\<^sub>0] by (by100 simp)
+  have hset_right: "{v\<^sub>0, v\<^sub>1, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    by (by100 blast)
+  have hnot_col_right: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using hnot_col hset_right by (by100 simp)
+  have hright_raw:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>1 v\<^sub>2 = {v\<^sub>1}"
+    by (rule Int_closed_segment[OF disjI2[OF hnot_col_right]])
+  have hright:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter> closed_segment v\<^sub>2 v\<^sub>1 = {v\<^sub>1}"
+    using hright_raw closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 simp)
+  have hmeet_subset:
+      "closed_segment v\<^sub>0 v\<^sub>1 \<inter>
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) \<subseteq> {v\<^sub>0, v\<^sub>1}"
+    using hleft hright by (by100 blast)
+  show ?thesis
+    unfolding geotop_arc_interior_def
+    using hmeet_subset by (by100 blast)
+qed
+
+lemma geotop_triangle_frontier_is_polygon_from_vertices_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  shows "geotop_is_polygon (frontier \<sigma>)"
+  (**
+    The three edges of a named triangle are a pair of disjoint-interior arcs
+    with common endpoints, hence form a GeoTop polygon. **)
+proof -
+  let ?B\<^sub>1 = "closed_segment v\<^sub>0 v\<^sub>1"
+  let ?B\<^sub>2 = "closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1"
+  let ?E = "{v\<^sub>0, v\<^sub>1}"
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hB\<^sub>1: "geotop_is_broken_line ?B\<^sub>1"
+    by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>0v\<^sub>1])
+  have hB\<^sub>2: "geotop_is_broken_line ?B\<^sub>2"
+    by (rule geotop_two_segment_join_broken_line_prefix
+        [OF hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 hnot_col])
+  have hE\<^sub>1: "geotop_arc_endpoints ?B\<^sub>1 ?E"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hv\<^sub>0v\<^sub>1])
+  have hE\<^sub>2: "geotop_arc_endpoints ?B\<^sub>2 ?E"
+    by (rule geotop_two_segment_join_arc_endpoints_prefix
+        [OF hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 hnot_col])
+  have hdisj: "geotop_arc_interior ?B\<^sub>1 ?E \<inter> geotop_arc_interior ?B\<^sub>2 ?E = {}"
+    by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix[OF hnot_col])
+  have hpoly: "geotop_is_polygon (?B\<^sub>1 \<union> ?B\<^sub>2)"
+    by (rule pair_of_arcs_is_polygon[OF hB\<^sub>1 hB\<^sub>2 hE\<^sub>1 hE\<^sub>2 hdisj])
+  have hfront_hulls:
+      "frontier \<sigma> =
+        geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+        geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+        geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have h01: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>1] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"]
+    by (by100 simp)
+  have h02: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have h12: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>2 v\<^sub>1"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+      closed_segment_commute[of v\<^sub>1 v\<^sub>2]
+    by (by100 simp)
+  have hfront: "frontier \<sigma> = ?B\<^sub>1 \<union> ?B\<^sub>2"
+    using hfront_hulls h01 h02 h12 by (by100 blast)
+  show ?thesis
+    using hpoly hfront by (by100 simp)
+qed
+
 lemma geotop_2simplex_frontier_is_polygon_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
@@ -1873,7 +2178,48 @@ lemma geotop_2simplex_frontier_is_polygon_prefix:
   (**
     The frontier of a 2-simplex is a polygonal 1-sphere: choose the three
     vertices and read the frontier as the closed three-edge path. **)
-  sorry
+proof -
+  obtain V m where hV_fin: "finite V"
+    and hV_card: "card V = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp: "geotop_general_position V m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card h2_le_m hgp h\<sigma>_eq by (by100 blast)
+  have hV_card3: "card V = 3"
+    using hV_card by (by100 simp)
+  obtain v\<^sub>0 v\<^sub>1 v\<^sub>2 where hV_eq: "V = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    and hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    and hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    and hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using iffD1[OF card_3_iff hV_card3] by (by100 blast)
+  have hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using h\<sigma>V hV_eq by (by100 simp)
+  have hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    using hv\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2 by (by100 blast)
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hABC_ai: "\<not> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using hV_ai hV_eq by (by100 simp)
+  have hnot_col_abc: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  proof
+    assume hcol: "collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    have "v\<^sub>0 = v\<^sub>1 \<or> v\<^sub>0 = v\<^sub>2 \<or> v\<^sub>1 = v\<^sub>2
+        \<or> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      using hcol collinear_3_eq_affine_dependent[of v\<^sub>0 v\<^sub>1 v\<^sub>2] by (by100 simp)
+    thus False
+      using hv\<^sub>0v\<^sub>1 hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 hABC_ai by (by100 blast)
+  qed
+  have hset_col_order: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (by100 blast)
+  have hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+    using hnot_col_abc hset_col_order by (by100 simp)
+  show ?thesis
+    by (rule geotop_triangle_frontier_is_polygon_from_vertices_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hnot_col])
+qed
 
 lemma geotop_2simplex_inside_frontier_eq_HOL_interior_prefix:
   fixes \<sigma> :: "(real^2) set"
