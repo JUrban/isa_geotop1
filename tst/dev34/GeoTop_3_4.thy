@@ -8870,41 +8870,6 @@ proof -
     using heps hsphere_U hsphere_1sphere by (by100 blast)
 qed
 
-lemma geotop_three_incident_small_circle_complement_connected_core_dev34:
-  fixes K :: "(real^2) set set" and e \<sigma>1 \<sigma>2 \<sigma>3 U :: "(real^2) set"
-  assumes hK: "geotop_is_complex K"
-  assumes heK: "e \<in> K"
-  assumes hedge: "geotop_is_edge e"
-  assumes hp: "p \<in> rel_interior e"
-  assumes h12: "\<sigma>1 \<noteq> \<sigma>2"
-  assumes h23: "\<sigma>2 \<noteq> \<sigma>3"
-  assumes h13: "\<sigma>1 \<noteq> \<sigma>3"
-  assumes h\<sigma>1K: "\<sigma>1 \<in> K"
-  assumes h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
-  assumes h\<sigma>1face: "geotop_is_face e \<sigma>1"
-  assumes h\<sigma>2K: "\<sigma>2 \<in> K"
-  assumes h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
-  assumes h\<sigma>2face: "geotop_is_face e \<sigma>2"
-  assumes h\<sigma>3K: "\<sigma>3 \<in> K"
-  assumes h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
-  assumes h\<sigma>3face: "geotop_is_face e \<sigma>3"
-  assumes hs: "0 < s"
-  assumes heps: "0 < eps"
-  assumes heps_lt_s: "eps < s"
-  assumes hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
-  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
-  assumes hsphere_U: "sphere p eps \<subseteq> U"
-  assumes hlocal_nonsep: "top1_connected_on (U - sphere p eps)
-      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-  shows "top1_connected_on (U - sphere p eps)
-      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-  (**
-    Core Moise Lemma 4 bookkeeping step.  The genuine local geometry is the
-    non-separation statement for the chosen small circle; this lemma records
-    the exact hypotheses at the point where the book uses the three incident
-    2-simplexes and exposes that remaining geometric fact explicitly. **)
-  using hlocal_nonsep .
-
 lemma geotop_three_incident_small_circle_complement_connected_explicit_dev34:
   fixes K F :: "(real^2) set set"
   fixes e \<sigma>1 \<sigma>2 \<sigma>3 U :: "(real^2) set"
@@ -9169,38 +9134,11 @@ proof -
   have hsphere_complement_connected:
     "top1_connected_on (U - sphere p eps)
       (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-  proof (rule geotop_three_incident_small_circle_complement_connected_core_dev34
-      [where K = K and e = e and p = p and s = s and eps = eps and U = U])
-    show "geotop_is_complex K" by (rule hK)
-    show "e \<in> K" by (rule heK)
-    show "geotop_is_edge e" by (rule hedge)
-    show "p \<in> rel_interior e" by (rule hp)
-    show "\<sigma>1 \<noteq> \<sigma>2" by (rule h12)
-    show "\<sigma>2 \<noteq> \<sigma>3" by (rule h23)
-    show "\<sigma>1 \<noteq> \<sigma>3" by (rule h13)
-    show "\<sigma>1 \<in> K" by (rule h\<sigma>1K)
-    show "geotop_simplex_dim \<sigma>1 2" by (rule h\<sigma>1dim)
-    show "geotop_is_face e \<sigma>1" by (rule h\<sigma>1face)
-    show "\<sigma>2 \<in> K" by (rule h\<sigma>2K)
-    show "geotop_simplex_dim \<sigma>2 2" by (rule h\<sigma>2dim)
-    show "geotop_is_face e \<sigma>2" by (rule h\<sigma>2face)
-    show "\<sigma>3 \<in> K" by (rule h\<sigma>3K)
-    show "geotop_simplex_dim \<sigma>3 2" by (rule h\<sigma>3dim)
-    show "geotop_is_face e \<sigma>3" by (rule h\<sigma>3face)
-    show "0 < s" by (rule hs)
-    show "0 < eps" by (rule heps)
-    show "eps < s" by (rule heps_lt_s)
-    show "geotop_polyhedron K \<inter> ball p s \<subseteq> U" by (rule hballU_s)
-    show "U \<subseteq> geotop_polyhedron K" by (rule hUsubM)
-    show "sphere p eps \<subseteq> U" by (rule hsphere_U)
-    show "top1_connected_on (U - sphere p eps)
-        (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-      by (rule geotop_three_incident_small_circle_complement_connected_explicit_dev34
-          [OF hK heK hedge hp hFfin hFsub h12 h23 h13
-            h\<sigma>1K h\<sigma>1dim h\<sigma>1face h\<sigma>2K h\<sigma>2dim h\<sigma>2face
-            h\<sigma>3K h\<sigma>3dim h\<sigma>3face hs heps heps_lt_s hballU_s
-            hpoint_carriers_s h\<sigma>123_local_U hUsubM hsphere_union12 hsphere_U])
-  qed
+    by (rule geotop_three_incident_small_circle_complement_connected_explicit_dev34
+        [OF hK heK hedge hp hFfin hFsub h12 h23 h13
+          h\<sigma>1K h\<sigma>1dim h\<sigma>1face h\<sigma>2K h\<sigma>2dim h\<sigma>2face
+          h\<sigma>3K h\<sigma>3dim h\<sigma>3face hs heps heps_lt_s hballU_s
+          hpoint_carriers_s h\<sigma>123_local_U hUsubM hsphere_union12 hsphere_U])
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
     half-neighborhoods and use the third incident 2-simplex to connect the
