@@ -7023,6 +7023,37 @@ proof -
     using hP_eq_E by (by100 simp)
 qed
 
+lemma geotop_union_eq_three_named_sets_prefix:
+  fixes E :: "'a set set" and e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "'a set"
+  assumes hE: "E = {e\<^sub>0, e\<^sub>1, e\<^sub>2}"
+  shows "\<Union>E = e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+  (**
+    Pure set bookkeeping for the selected-edge decomposition: once the selected
+    family is exactly three named edge carriers, its carrier union is their
+    ordinary union. **)
+proof -
+  have "\<Union>{e\<^sub>0, e\<^sub>1, e\<^sub>2} = e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+    by (by100 blast)
+  thus ?thesis
+    using hE by (by100 simp)
+qed
+
+lemma geotop_subset_union_from_three_named_family_prefix:
+  fixes C :: "'a set" and E :: "'a set set" and e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "'a set"
+  assumes hC: "C \<subseteq> e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+  assumes hE: "E = {e\<^sub>0, e\<^sub>1, e\<^sub>2}"
+  shows "C \<subseteq> \<Union>E"
+  (**
+    Inclusion form used in the nonfree boundary-triangle case of Theorem 3.3:
+    containment in the three named edge carriers transfers to containment in
+    the selected-edge carrier union. **)
+proof -
+  have hUnion: "\<Union>E = e\<^sub>0 \<union> e\<^sub>1 \<union> e\<^sub>2"
+    by (rule geotop_union_eq_three_named_sets_prefix[OF hE])
+  show ?thesis
+    using hC hUnion by (by100 simp)
+qed
+
 lemma geotop_selected_boundary_edge_set_not_both_other_edges_prefix:
   fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
   assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
@@ -7892,29 +7923,9 @@ proof -
                    geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
                 by (rule hE\<theta>_eq_three_named_if_both_other_boundary
                     [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
-              have hUnion_raw:
-                "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
-                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                   geotop_convex_hull {v\<^sub>1, v\<^sub>2})"
-                using hE_eq by (by100 simp)
-              have hUnion_assoc:
-                "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                  (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                   geotop_convex_hull {v\<^sub>1, v\<^sub>2})
-                =
-                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                  geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                  geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-                by (by100 blast)
-              have hUnion_eq:
-                "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
-                  geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
-                  geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
-                  geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
-                using hUnion_raw hUnion_assoc by (by100 simp)
               show ?thesis
-                using h\<theta>J_sub_named_edges hUnion_eq by (by100 simp)
+                by (rule geotop_subset_union_from_three_named_family_prefix
+                    [OF h\<theta>J_sub_named_edges hE_eq])
             qed
             have h\<theta>J_eq_selected_if_both_other_boundary:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
