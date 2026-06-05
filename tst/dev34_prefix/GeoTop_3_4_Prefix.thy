@@ -6890,6 +6890,76 @@ proof -
   qed
 qed
 
+lemma geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix:
+  fixes J \<theta> e\<^sub>0 e\<^sub>1 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0_sel:
+    "e\<^sub>0 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>1_sel_if:
+    "e\<^sub>1 \<subseteq> J \<Longrightarrow>
+      e\<^sub>1 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0e\<^sub>1: "e\<^sub>0 \<noteq> e\<^sub>1"
+  assumes he\<^sub>1_sub: "e\<^sub>1 \<subseteq> J"
+  shows "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<ge> 2"
+  (**
+    Finite selected-edge bookkeeping: an already selected boundary edge and a
+    distinct second boundary edge force at least two selected edge faces. **)
+proof -
+  let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  let ?P = "{e\<^sub>0, e\<^sub>1}"
+  have he\<^sub>1_sel: "e\<^sub>1 \<in> ?E"
+    by (rule he\<^sub>1_sel_if[OF he\<^sub>1_sub])
+  have hP_sub: "?P \<subseteq> ?E"
+    using he\<^sub>0_sel he\<^sub>1_sel by (by100 blast)
+  have hP_card: "card ?P = 2"
+    using he\<^sub>0e\<^sub>1 by (by100 simp)
+  have hcard_mono: "card ?P \<le> card ?E"
+    by (rule card_mono[OF hE_fin hP_sub])
+  show ?thesis
+    using hP_card hcard_mono by (by100 simp)
+qed
+
+lemma geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix:
+  fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0_sel:
+    "e\<^sub>0 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>1_sel_if:
+    "e\<^sub>1 \<subseteq> J \<Longrightarrow>
+      e\<^sub>1 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>2_sel_if:
+    "e\<^sub>2 \<subseteq> J \<Longrightarrow>
+      e\<^sub>2 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0e\<^sub>1: "e\<^sub>0 \<noteq> e\<^sub>1"
+  assumes he\<^sub>0e\<^sub>2: "e\<^sub>0 \<noteq> e\<^sub>2"
+  assumes he\<^sub>1e\<^sub>2: "e\<^sub>1 \<noteq> e\<^sub>2"
+  assumes hE_card_le3:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 3"
+  assumes he\<^sub>1_sub: "e\<^sub>1 \<subseteq> J"
+  assumes he\<^sub>2_sub: "e\<^sub>2 \<subseteq> J"
+  shows "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = 3"
+  (**
+    Finite selected-edge bookkeeping: an already selected edge plus both
+    distinct remaining boundary edges force exactly the three edge faces. **)
+proof -
+  let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  let ?P = "{e\<^sub>0, e\<^sub>1, e\<^sub>2}"
+  have he\<^sub>1_sel: "e\<^sub>1 \<in> ?E"
+    by (rule he\<^sub>1_sel_if[OF he\<^sub>1_sub])
+  have he\<^sub>2_sel: "e\<^sub>2 \<in> ?E"
+    by (rule he\<^sub>2_sel_if[OF he\<^sub>2_sub])
+  have hP_sub: "?P \<subseteq> ?E"
+    using he\<^sub>0_sel he\<^sub>1_sel he\<^sub>2_sel by (by100 blast)
+  have hP_card: "card ?P = 3"
+    using he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 by (by100 simp)
+  have hcard_mono: "card ?P \<le> card ?E"
+    by (rule card_mono[OF hE_fin hP_sub])
+  have hE_card_ge3: "card ?E \<ge> 3"
+    using hP_card hcard_mono by (by100 simp)
+  show ?thesis
+    using hE_card_ge3 hE_card_le3 by (by100 simp)
+qed
+
 lemma geotop_selected_boundary_edge_set_not_both_other_edges_prefix:
   fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
   assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
@@ -6916,31 +6986,14 @@ lemma geotop_selected_boundary_edge_set_not_both_other_edges_prefix:
 proof
   assume hboth: "e\<^sub>1 \<subseteq> J \<and> e\<^sub>2 \<subseteq> J"
   let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-  let ?P = "{e\<^sub>0, e\<^sub>1, e\<^sub>2}"
-  have he\<^sub>1_sel: "e\<^sub>1 \<in> ?E"
-  proof -
-    have "e\<^sub>1 \<subseteq> J"
-      using hboth by (by100 simp)
-    thus ?thesis
-      by (rule he\<^sub>1_sel_if)
-  qed
-  have he\<^sub>2_sel: "e\<^sub>2 \<in> ?E"
-  proof -
-    have "e\<^sub>2 \<subseteq> J"
-      using hboth by (by100 simp)
-    thus ?thesis
-      by (rule he\<^sub>2_sel_if)
-  qed
-  have hP_sub: "?P \<subseteq> ?E"
-    using he\<^sub>0_sel he\<^sub>1_sel he\<^sub>2_sel by (by100 blast)
-  have hP_card: "card ?P = 3"
-    using he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 by (by100 simp)
-  have hcard_mono: "card ?P \<le> card ?E"
-    by (rule card_mono[OF hE_fin hP_sub])
-  have hE_card_ge3: "card ?E \<ge> 3"
-    using hP_card hcard_mono by (by100 simp)
+  have he\<^sub>1_sub: "e\<^sub>1 \<subseteq> J"
+    using hboth by (by100 simp)
+  have he\<^sub>2_sub: "e\<^sub>2 \<subseteq> J"
+    using hboth by (by100 simp)
   have hE_card_eq3: "card ?E = 3"
-    using hE_card_ge3 hE_card_le3 by (by100 simp)
+    by (rule geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix
+        [OF hE_fin he\<^sub>0_sel he\<^sub>1_sel_if he\<^sub>2_sel_if
+          he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 hE_card_le3 he\<^sub>1_sub he\<^sub>2_sub])
   show False
     using hE_card_ne3 hE_card_eq3 by (by100 blast)
 qed
@@ -7641,60 +7694,22 @@ proof -
                 card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 2"
             proof -
               assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
-              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1}, geotop_convex_hull {v\<^sub>0, v\<^sub>2}}"
-              have hP_sub: "?P \<subseteq> ?E"
-                using hv\<^sub>0v\<^sub>1_selected
-                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
-                by (by100 blast)
-              have hP_card: "card ?P = 2"
-                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 by (by100 simp)
-              have "card ?P \<le> card ?E"
-                by (rule card_mono[OF hE\<theta>_fin hP_sub])
-              thus ?thesis
-                using hP_card by (by100 simp)
+              show ?thesis
+                by (rule geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix
+                    [OF hE\<theta>_fin hv\<^sub>0v\<^sub>1_selected
+                      hv\<^sub>0v\<^sub>2_selected_if_boundary hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2
+                      hv\<^sub>0v\<^sub>2_sub_J])
             qed
             have hE\<theta>_card_ge2_if_v\<^sub>1v\<^sub>2_boundary:
               "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 2"
             proof -
               assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
-              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1}, geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
-              have hP_sub: "?P \<subseteq> ?E"
-                using hv\<^sub>0v\<^sub>1_selected
-                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
-                by (by100 blast)
-              have hP_card: "card ?P = 2"
-                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 by (by100 simp)
-              have "card ?P \<le> card ?E"
-                by (rule card_mono[OF hE\<theta>_fin hP_sub])
-              thus ?thesis
-                using hP_card by (by100 simp)
-            qed
-            have hE\<theta>_card_ge3_if_both_other_boundary:
-              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
-                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
-                card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<ge> 3"
-            proof -
-              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
-              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
-              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1},
-                         geotop_convex_hull {v\<^sub>0, v\<^sub>2},
-                         geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
-              have hP_sub: "?P \<subseteq> ?E"
-                using hv\<^sub>0v\<^sub>1_selected
-                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
-                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
-                by (by100 blast)
-              have hP_card: "card ?P = 3"
-                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
-                by (by100 simp)
-              have "card ?P \<le> card ?E"
-                by (rule card_mono[OF hE\<theta>_fin hP_sub])
-              thus ?thesis
-                using hP_card by (by100 simp)
+              show ?thesis
+                by (rule geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix
+                    [OF hE\<theta>_fin hv\<^sub>0v\<^sub>1_selected
+                      hv\<^sub>1v\<^sub>2_selected_if_boundary hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2
+                      hv\<^sub>1v\<^sub>2_sub_J])
             qed
             have hE\<theta>_card_le3:
               "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<le> 3"
@@ -7718,7 +7733,16 @@ proof -
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = 3"
-              using hE\<theta>_card_ge3_if_both_other_boundary hE\<theta>_card_le3 by (by100 simp)
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              show ?thesis
+                by (rule geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix
+                    [OF hE\<theta>_fin hv\<^sub>0v\<^sub>1_selected
+                      hv\<^sub>0v\<^sub>2_selected_if_boundary hv\<^sub>1v\<^sub>2_selected_if_boundary
+                      hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
+                      hE\<theta>_card_le3 hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+            qed
             have h\<theta>J_eq_frontier_if_both_other_boundary:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
