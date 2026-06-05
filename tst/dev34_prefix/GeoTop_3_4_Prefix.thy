@@ -989,6 +989,79 @@ proof -
     by (rule that[OF hv\<^sub>0v\<^sub>1 hv\<^sub>2_not he_vertices h\<sigma>vertices])
 qed
 
+lemma geotop_2simplex_vertices_other_edge_faces_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2})
+      \<and> geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<sigma>
+      \<and> geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2})
+      \<and> geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<sigma>"
+  (**
+    Book-notation companion: after naming a 2-simplex as \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close>,
+    the remaining two sides \<open>v\<^sub>0v\<^sub>2\<close> and \<open>v\<^sub>1v\<^sub>2\<close> are edge faces. **)
+proof -
+  let ?e\<^sub>02 = "geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+  let ?e\<^sub>12 = "geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  obtain m n where hfin: "finite {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    and hcard: "card {v\<^sub>0, v\<^sub>1, v\<^sub>2} = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position {v\<^sub>0, v\<^sub>1, v\<^sub>2} m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using hvertices unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hcard3: "card {v\<^sub>0, v\<^sub>1, v\<^sub>2} = 3"
+    using hv\<^sub>0v\<^sub>1 hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 by (by100 simp)
+  have hn2: "n = 2"
+    using hcard hcard3 by (by100 linarith)
+  have h1_le_m: "1 \<le> m"
+    using hn2 hn_le_m by (by100 linarith)
+  have h02_sub: "{v\<^sub>0, v\<^sub>2} \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (by100 simp)
+  have h12_sub: "{v\<^sub>1, v\<^sub>2} \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (by100 simp)
+  have h02_gp: "geotop_general_position {v\<^sub>0, v\<^sub>2} m"
+    by (rule geotop_general_position_subset[OF hgp h02_sub])
+  have h12_gp: "geotop_general_position {v\<^sub>1, v\<^sub>2} m"
+    by (rule geotop_general_position_subset[OF hgp h12_sub])
+  have h02_dim: "geotop_simplex_dim ?e\<^sub>02 1"
+    unfolding geotop_simplex_dim_def
+  proof (rule exI[where x = "{v\<^sub>0, v\<^sub>2}"], rule exI[where x = m])
+    show "finite {v\<^sub>0, v\<^sub>2} \<and> card {v\<^sub>0, v\<^sub>2} = 1 + 1 \<and> 1 \<le> m \<and>
+        geotop_general_position {v\<^sub>0, v\<^sub>2} m \<and>
+        ?e\<^sub>02 = geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+      using h1_le_m h02_gp hv\<^sub>0v\<^sub>2 by (by100 simp)
+  qed
+  have h12_dim: "geotop_simplex_dim ?e\<^sub>12 1"
+    unfolding geotop_simplex_dim_def
+  proof (rule exI[where x = "{v\<^sub>1, v\<^sub>2}"], rule exI[where x = m])
+    show "finite {v\<^sub>1, v\<^sub>2} \<and> card {v\<^sub>1, v\<^sub>2} = 1 + 1 \<and> 1 \<le> m \<and>
+        geotop_general_position {v\<^sub>1, v\<^sub>2} m \<and>
+        ?e\<^sub>12 = geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+      using h1_le_m h12_gp hv\<^sub>1v\<^sub>2 by (by100 simp)
+  qed
+  have h02_edge: "geotop_is_edge ?e\<^sub>02"
+    unfolding geotop_is_edge_def using h02_dim by (by100 simp)
+  have h12_edge: "geotop_is_edge ?e\<^sub>12"
+    unfolding geotop_is_edge_def using h12_dim by (by100 simp)
+  have h02_face: "geotop_is_face ?e\<^sub>02 \<sigma>"
+  proof (rule geotop_is_face_of_subset[OF hvertices])
+    show "{v\<^sub>0, v\<^sub>2} \<noteq> {}" by (by100 simp)
+    show "{v\<^sub>0, v\<^sub>2} \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}" by (rule h02_sub)
+  qed
+  have h12_face: "geotop_is_face ?e\<^sub>12 \<sigma>"
+  proof (rule geotop_is_face_of_subset[OF hvertices])
+    show "{v\<^sub>1, v\<^sub>2} \<noteq> {}" by (by100 simp)
+    show "{v\<^sub>1, v\<^sub>2} \<subseteq> {v\<^sub>0, v\<^sub>1, v\<^sub>2}" by (rule h12_sub)
+  qed
+  show ?thesis
+    by (intro conjI h02_edge h02_face h12_edge h12_face)
+qed
+
 lemma geotop_is_face_imp_subset_prefix:
   fixes \<tau> \<sigma> :: "(real^2) set"
   assumes hface: "geotop_is_face \<tau> \<sigma>"
@@ -2492,6 +2565,21 @@ proof -
             have hv\<^sub>0v\<^sub>1_sub_J:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J'"
               using he\<^sub>\<theta>_vertices he\<^sub>\<theta>_sub_J by (by100 simp)
+            have hother_edge_faces:
+              "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2})
+                \<and> geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta>
+                \<and> geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2})
+                \<and> geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+              by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+                  [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+            have hv\<^sub>0v\<^sub>2_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2})"
+              using hother_edge_faces by (by100 simp)
+            have hv\<^sub>0v\<^sub>2_face: "geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta>"
+              using hother_edge_faces by (by100 simp)
+            have hv\<^sub>1v\<^sub>2_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2})"
+              using hother_edge_faces by (by100 simp)
+            have hv\<^sub>1v\<^sub>2_face: "geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+              using hother_edge_faces by (by100 simp)
             show ?thesis
               sorry
           qed
