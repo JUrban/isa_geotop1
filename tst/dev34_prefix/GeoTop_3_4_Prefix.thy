@@ -3828,6 +3828,90 @@ proof -
     using hclosure_sub_front hclosure_e hfront_eq by (by100 simp)
 qed
 
+lemma geotop_two_triangle_nonshared_edge_subset_boundary_prefix:
+  fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes hnot_tau: "\<not> geotop_is_face e \<tau>"
+  shows "e \<subseteq> J"
+  (**
+    In the exactly two-triangle base case, an edge of one triangle not shared
+    by the other triangle has a unique incident 2-simplex, hence is a polygon
+    boundary edge. **)
+proof -
+  have hface_set: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  proof
+    show "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} \<subseteq> {\<sigma>}"
+    proof
+      fix \<rho>
+      assume h\<rho>: "\<rho> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      have h\<rho>2set: "\<rho> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+        using h\<rho> by (by100 simp)
+      have h\<rho>case: "\<rho> = \<sigma> \<or> \<rho> = \<tau>"
+        using hT_eq h\<rho>2set by (by100 simp)
+      have h\<rho>face: "geotop_is_face e \<rho>"
+        using h\<rho> by (by100 simp)
+      have "\<rho> = \<sigma>"
+        using h\<rho>case h\<rho>face hnot_tau by (by100 blast)
+      thus "\<rho> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+  next
+    show "{\<sigma>} \<subseteq> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      using h\<sigma>K h\<sigma>2 he\<sigma> by (by100 simp)
+  qed
+  have hunique:
+    "\<exists>!\<rho>. \<rho> \<in> K \<and> geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>"
+  proof (rule ex1I[where a=\<sigma>])
+    show "\<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+      using h\<sigma>K h\<sigma>2 he\<sigma> by (by100 blast)
+  next
+    fix \<rho>
+    assume h\<rho>: "\<rho> \<in> K \<and> geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>"
+    have "\<rho> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+      using h\<rho> by (by100 simp)
+    thus "\<rho> = \<sigma>"
+      using hface_set by (by100 simp)
+  qed
+  show ?thesis
+    by (rule geotop_unique_incident_edge_subset_polygon_boundary_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 he\<sigma> hface_set])
+qed
+
+lemma geotop_two_triangle_nonboundary_edge_shared_prefix:
+  fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes hnot_boundary: "\<not> e \<subseteq> J"
+  shows "geotop_is_face e \<tau>"
+  (**
+    Contrapositive form used in pointwise boundary-contact bookkeeping: a
+    non-boundary edge of \<open>\<sigma>\<close> must be the shared edge with \<open>\<tau>\<close>. **)
+proof (rule ccontr)
+  assume hnot: "\<not> geotop_is_face e \<tau>"
+  have "e \<subseteq> J"
+    by (rule geotop_two_triangle_nonshared_edge_subset_boundary_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 heK hedge he\<sigma> hnot])
+  thus False
+    using hnot_boundary by (by100 blast)
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
