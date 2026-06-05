@@ -13127,6 +13127,50 @@ proof -
   qed
 qed
 
+lemma geotop_2cell_chart_open_domain_image_dev34:
+  fixes M U \<sigma> :: "(real^2) set"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+  assumes h\<phi>: "top1_homeomorphism_on
+      (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+      \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+  shows "\<phi> ` U \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>
+      \<and> \<phi> ` U \<subseteq> \<sigma>"
+  (**
+    2-cell chart bookkeeping for the image-side Jordan step.  The chart is a
+    homeomorphism on \<open>closure U\<close>; since \<open>U\<close> is open in the ambient
+    polyhedron and lies in its closure, its image is open in the target
+    2-simplex. **)
+proof -
+  let ?T = "top1_metric_topology_on M (\<lambda>x y. norm (x - y))"
+  let ?C = "closure_on M ?T U"
+  have hUsubM: "U \<subseteq> M"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUmemT: "U \<in> ?T"
+    using hUopen unfolding openin_on_def by (by100 blast)
+  have hUsubC: "U \<subseteq> ?C"
+    by (rule subset_closure_on)
+  have hUmemC: "U \<in> subspace_topology M ?T ?C"
+  proof -
+    have hrepr: "U = ?C \<inter> U"
+      using hUsubC by (by100 blast)
+    show ?thesis
+      unfolding subspace_topology_def using hUmemT hrepr by (by100 blast)
+  qed
+  have himage_open: "\<phi> ` U \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>"
+    by (rule top1_homeomorphism_on_open_image[OF h\<phi> hUmemC hUsubC])
+  have h\<phi>bij: "bij_betw \<phi> ?C \<sigma>"
+    by (rule top1_homeomorphism_on_imp_bij[OF h\<phi>])
+  have h\<phi>C: "\<phi> ` ?C = \<sigma>"
+    using h\<phi>bij unfolding bij_betw_def by (by100 blast)
+  have himage_sub: "\<phi> ` U \<subseteq> \<sigma>"
+    using hUsubC h\<phi>C by (by100 blast)
+  show ?thesis
+    using himage_open himage_sub by (by100 blast)
+qed
+
 lemma geotop_2cell_chart_image_1sphere_dev34:
   fixes M U J \<sigma> :: "(real^2) set"
   assumes hUopen: "openin_on M
