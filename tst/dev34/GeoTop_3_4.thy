@@ -8910,8 +8910,8 @@ lemma geotop_three_incident_small_circle_complement_connected_explicit_dev34:
     chart domain. **)
   sorry
 
-lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
-  fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
+lemma geotop_three_incident_2simplex_small_circle_radius_not_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
   assumes heK: "e \<in> K"
   assumes hedge: "geotop_is_edge e"
@@ -8923,11 +8923,12 @@ lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev
       \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
   assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
   assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
-  shows "\<exists>J. J \<subseteq> U
-      \<and> geotop_is_n_sphere J
-          (subspace_topology UNIV geotop_euclidean_topology J) 1
-      \<and> top1_connected_on (U - J)
-          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  shows "\<exists>eps. 0 < eps
+      \<and> sphere p eps \<subseteq> U
+      \<and> geotop_is_n_sphere (sphere p eps)
+          (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1
+      \<and> top1_connected_on (U - sphere p eps)
+          (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
   (**
     Moise Lemma 4 local picture: from three incident 2-simplexes, choose two
     same-radius small semicircles in two of the incident simplexes, centered at
@@ -9144,7 +9145,41 @@ proof -
     half-neighborhoods and use the third incident 2-simplex to connect the
     complement in \<open>U\<close>. **)
   show ?thesis
-    using hsphere_U hsphere_1sphere hsphere_complement_connected by (by100 blast)
+    using heps hsphere_U hsphere_1sphere hsphere_complement_connected by (by100 blast)
+qed
+
+lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
+  fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hfaces:
+    "\<exists>\<sigma>1 \<sigma>2 \<sigma>3. \<sigma>1 \<noteq> \<sigma>2 \<and> \<sigma>2 \<noteq> \<sigma>3 \<and> \<sigma>1 \<noteq> \<sigma>3
+      \<and> \<sigma>1 \<in> K \<and> geotop_simplex_dim \<sigma>1 2 \<and> geotop_is_face e \<sigma>1
+      \<and> \<sigma>2 \<in> K \<and> geotop_simplex_dim \<sigma>2 2 \<and> geotop_is_face e \<sigma>2
+      \<and> \<sigma>3 \<in> K \<and> geotop_simplex_dim \<sigma>3 2 \<and> geotop_is_face e \<sigma>3"
+  assumes hlocal_ball: "\<exists>r>0. geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  shows "\<exists>J. J \<subseteq> U
+      \<and> geotop_is_n_sphere J
+          (subspace_topology UNIV geotop_euclidean_topology J) 1
+      \<and> top1_connected_on (U - J)
+          (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+  (**
+    Existential-set form of the radius-explicit Moise Lemma 4 local circle. **)
+proof -
+  obtain eps where heps: "0 < eps"
+    and hsphereU: "sphere p eps \<subseteq> U"
+    and hsphere: "geotop_is_n_sphere (sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
+    and hconn: "top1_connected_on (U - sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
+    using geotop_three_incident_2simplex_small_circle_radius_not_separates_chart_dev34
+      [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
+    by (by100 blast)
+  show ?thesis
+    using hsphereU hsphere hconn by (by100 blast)
 qed
 
 lemma geotop_three_incident_2simplex_small_circle_not_separates_chart_dev34:
