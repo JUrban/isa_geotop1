@@ -6890,6 +6890,45 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_disk_polygon_edge_subset_frontier_prefix:
+  fixes J e :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heJ: "e \<subseteq> J"
+  shows "e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+  (**
+    Reverse rewriting form of the disk-carrier frontier identity.  This is the
+    direction needed after the ear argument produces selected polygon-boundary
+    edge faces and the book statement asks for edges in \<open>Fr |K|\<close>. **)
+proof -
+  have hfront: "geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
+  show ?thesis
+    using heJ hfront by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_two_selected_boundary_2simplexes_ear_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  shows "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}
+     \<and> e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+  (**
+    Selected-edge form of Moise's ear step for Theorem 3.3.  The hard planar
+    content is exactly that a triangulated polygonal disk with more than two
+    triangles has two distinct 2-simplexes meeting the polygon boundary in
+    edge faces.  The surrounding wrappers translate these selected edges to
+    and from the book's \<open>Fr |K|\<close> phrasing. **)
+  sorry
+
 lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -6910,7 +6949,45 @@ lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
     than two 2-simplexes, at least two 2-simplexes each have an edge in
     \<open>Fr |K|\<close>.  The book does not require these two simplexes to share that
     boundary edge. **)
-  sorry
+proof -
+  obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
+    where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<tau>K: "\<tau> \<in> K"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      and he\<^sub>\<sigma>_sel:
+        "e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+      and he\<^sub>\<tau>_sel:
+        "e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+    using geotop_polygon_disk_two_selected_boundary_2simplexes_ear_prefix
+      [OF hJ hK hK_poly hT_gt2]
+    by (elim exE conjE)
+  have he\<^sub>\<sigma>_edge: "geotop_is_edge e\<^sub>\<sigma>"
+    using he\<^sub>\<sigma>_sel by (by100 simp)
+  have he\<^sub>\<sigma>_face: "geotop_is_face e\<^sub>\<sigma> \<sigma>"
+    using he\<^sub>\<sigma>_sel by (by100 simp)
+  have he\<^sub>\<sigma>J: "e\<^sub>\<sigma> \<subseteq> J"
+    using he\<^sub>\<sigma>_sel by (by100 simp)
+  have he\<^sub>\<sigma>front: "e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+    by (rule geotop_polygon_disk_polygon_edge_subset_frontier_prefix
+        [OF hJ hK_poly he\<^sub>\<sigma>J])
+  have he\<^sub>\<tau>_edge: "geotop_is_edge e\<^sub>\<tau>"
+    using he\<^sub>\<tau>_sel by (by100 simp)
+  have he\<^sub>\<tau>_face: "geotop_is_face e\<^sub>\<tau> \<tau>"
+    using he\<^sub>\<tau>_sel by (by100 simp)
+  have he\<^sub>\<tau>J: "e\<^sub>\<tau> \<subseteq> J"
+    using he\<^sub>\<tau>_sel by (by100 simp)
+  have he\<^sub>\<tau>front: "e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+    by (rule geotop_polygon_disk_polygon_edge_subset_frontier_prefix
+        [OF hJ hK_poly he\<^sub>\<tau>J])
+  show ?thesis
+    using h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>2 h\<tau>2 he\<^sub>\<sigma>_edge he\<^sub>\<sigma>_face he\<^sub>\<sigma>front
+      he\<^sub>\<tau>_edge he\<^sub>\<tau>_face he\<^sub>\<tau>front
+    by (by100 blast)
+qed
 
 lemma geotop_polygon_disk_frontier_edge_subset_polygon_prefix:
   fixes J e :: "(real^2) set" and K :: "(real^2) set set"
@@ -6929,26 +7006,6 @@ proof -
     by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
   show ?thesis
     using he_front hfront by (by100 simp)
-qed
-
-lemma geotop_polygon_disk_polygon_edge_subset_frontier_prefix:
-  fixes J e :: "(real^2) set" and K :: "(real^2) set set"
-  assumes hJ: "geotop_is_polygon J"
-  assumes hK_poly: "geotop_polyhedron K =
-      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
-  assumes heJ: "e \<subseteq> J"
-  shows "e \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
-      (geotop_polyhedron K)"
-  (**
-    Reverse rewriting form of the disk-carrier frontier identity.  This is the
-    direction needed after the ear argument produces selected polygon-boundary
-    edge faces and the book statement asks for edges in \<open>Fr |K|\<close>. **)
-proof -
-  have hfront: "geotop_frontier UNIV geotop_euclidean_topology
-      (geotop_polyhedron K) = J"
-    by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
-  show ?thesis
-    using heJ hfront by (by100 simp)
 qed
 
 lemma geotop_polygon_disk_boundary_edge_in_selected_edges_prefix:
