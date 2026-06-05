@@ -7167,6 +7167,46 @@ proof -
     using hxC hx_not_e hxD by (by100 blast)
 qed
 
+lemma geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix:
+  fixes C :: "(real^2) set" and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hcontact:
+    "\<exists>x. x \<in> C
+      \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  shows "\<exists>x. x \<in> C
+      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+  (**
+    Endpoint hygiene for the Figure 3.2 contact point: if it lies on one of
+    the two non-base edges but not on the base edge, then it is not the base
+    endpoint of whichever non-base edge contains it. **)
+proof -
+  obtain x where hxC: "x \<in> C"
+    and hxnot: "x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    and hx_other: "x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    using hcontact by (elim exE conjE)
+  have hv\<^sub>0_HOL: "v\<^sub>0 \<in> convex hull {v\<^sub>0, v\<^sub>1}"
+    using hull_inc[of v\<^sub>0 "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hv\<^sub>0_base: "v\<^sub>0 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    using hv\<^sub>0_HOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hv\<^sub>1_HOL: "v\<^sub>1 \<in> convex hull {v\<^sub>0, v\<^sub>1}"
+    using hull_inc[of v\<^sub>1 "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hv\<^sub>1_base: "v\<^sub>1 \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    using hv\<^sub>1_HOL geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+    using hxnot hv\<^sub>0_base by (by100 blast)
+  have hx_ne_v\<^sub>1: "x \<noteq> v\<^sub>1"
+    using hxnot hv\<^sub>1_base by (by100 blast)
+  have hx_target:
+      "x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+    using hx_other hx_ne_v\<^sub>0 hx_ne_v\<^sub>1 by (by100 blast)
+  show ?thesis
+    using hxC hx_target by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
@@ -7584,11 +7624,10 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hcontact_other_not_base:
+  assumes hcontact_other_nonbase_edge:
     "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
-      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
-          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
   (**
     Moise Figure 3.2 step for Theorem 3.3.  A nonfree boundary triangle
@@ -8194,11 +8233,17 @@ proof -
                     \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
               by (rule geotop_contact_outside_selected_union_avoids_selected_set_prefix
                   [OF h\<theta>_contact_on_other_named_edges hv\<^sub>0v\<^sub>1_selected])
+            have h\<theta>_contact_on_other_nonbase_edge:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+                    \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+              by (rule geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix
+                  [OF h\<theta>_contact_on_other_not_base])
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
                     hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
-                    h\<theta>_contact_on_other_not_base])
+                    h\<theta>_contact_on_other_nonbase_edge])
           qed
         qed
         show ?thesis
