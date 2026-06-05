@@ -9954,14 +9954,24 @@ lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
           (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
   shows False
 proof -
-  obtain J where hJsub: "J \<subseteq> U"
-    and hJsphere: "geotop_is_n_sphere J
-        (subspace_topology UNIV geotop_euclidean_topology J) 1"
-    and hJconn: "top1_connected_on (U - J)
-        (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-    using geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34
+  obtain eps where heps: "0 < eps"
+    and hsphereU: "sphere p eps \<subseteq> U"
+    and hsphere1: "geotop_is_n_sphere (sphere p eps)
+        (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
+    and hsphere_conn: "top1_connected_on (U - sphere p eps)
+        (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
+    using geotop_three_incident_2simplex_small_circle_radius_not_separates_chart_dev34
       [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
     by (by100 blast)
+  define J where "J = sphere p eps"
+  have hJsub: "J \<subseteq> U"
+    using hsphereU unfolding J_def by (by100 simp)
+  have hJsphere: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hsphere1 unfolding J_def by (by100 simp)
+  have hJconn: "top1_connected_on (U - J)
+      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
+    using hsphere_conn unfolding J_def by (by100 simp)
   let ?M = "geotop_polyhedron K"
   have hchart_image_sep:
     "\<And>(\<sigma> :: (real^2) set) (\<phi> :: real^2 \<Rightarrow> real^2).
