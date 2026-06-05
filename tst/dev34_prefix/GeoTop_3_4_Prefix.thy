@@ -2371,6 +2371,17 @@ proof -
               show ?thesis
                 using hnonfree_exists that by (elim exE conjE)
             qed
+            obtain e\<^sub>\<theta> where
+              he\<^sub>\<theta>K: "e\<^sub>\<theta> \<in> K" and
+              he\<^sub>\<theta>_edge: "geotop_is_edge e\<^sub>\<theta>" and
+              he\<^sub>\<theta>_face: "geotop_is_face e\<^sub>\<theta> \<theta>" and
+              he\<^sub>\<theta>_sub_J: "e\<^sub>\<theta> \<subseteq> J'"
+            proof -
+              have "\<exists>e. e \<in> K \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J'"
+                using hE\<theta>_ne by (by100 blast)
+              thus ?thesis
+                using that by (elim exE conjE)
+            qed
             show ?thesis
               sorry
           qed
