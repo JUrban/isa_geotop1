@@ -3010,6 +3010,37 @@ proof -
     using hmeet_subset by (by100 blast)
 qed
 
+lemma geotop_2simplex_vertices_not_collinear_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  (**
+    Named-vertices form of the affine independence hidden in a 2-simplex:
+    the three vertices are not collinear, in the edge-arc order used below. **)
+proof -
+  have hABC_ai: "\<not> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_general_position_imp_aff_indep[OF hvertices])
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hnot_col_abc: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  proof
+    assume hcol: "collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    have "v\<^sub>0 = v\<^sub>1 \<or> v\<^sub>0 = v\<^sub>2 \<or> v\<^sub>1 = v\<^sub>2
+        \<or> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      using hcol collinear_3_eq_affine_dependent[of v\<^sub>0 v\<^sub>1 v\<^sub>2] by (by100 simp)
+    thus False
+      using hv\<^sub>0v\<^sub>1 hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 hABC_ai by (by100 blast)
+  qed
+  have hset_col_order: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (by100 blast)
+  show ?thesis
+    using hnot_col_abc hset_col_order by (by100 simp)
+qed
+
 lemma geotop_triangle_frontier_is_polygon_from_vertices_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
@@ -3093,23 +3124,9 @@ proof -
     using h\<sigma>V hV_eq by (by100 simp)
   have hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
     using hv\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2 by (by100 blast)
-  have hV_ai: "\<not> affine_dependent V"
-    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
-  have hABC_ai: "\<not> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-    using hV_ai hV_eq by (by100 simp)
-  have hnot_col_abc: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-  proof
-    assume hcol: "collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-    have "v\<^sub>0 = v\<^sub>1 \<or> v\<^sub>0 = v\<^sub>2 \<or> v\<^sub>1 = v\<^sub>2
-        \<or> affine_dependent {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-      using hcol collinear_3_eq_affine_dependent[of v\<^sub>0 v\<^sub>1 v\<^sub>2] by (by100 simp)
-    thus False
-      using hv\<^sub>0v\<^sub>1 hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 hABC_ai by (by100 blast)
-  qed
-  have hset_col_order: "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
-    by (by100 blast)
   have hnot_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
-    using hnot_col_abc hset_col_order by (by100 simp)
+    by (rule geotop_2simplex_vertices_not_collinear_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
   show ?thesis
     by (rule geotop_triangle_frontier_is_polygon_from_vertices_prefix
         [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hnot_col])
@@ -7567,9 +7584,9 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_pre
   assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
   assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
   assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
-  assumes hcontact_other:
+  assumes hcontact_other_not_base:
     "\<exists>x. x \<in> \<theta> \<inter> J
-      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
       \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
           \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
   shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
@@ -8181,7 +8198,7 @@ proof -
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
                     hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
-                    h\<theta>_contact_on_other_named_edges])
+                    h\<theta>_contact_on_other_not_base])
           qed
         qed
         show ?thesis
