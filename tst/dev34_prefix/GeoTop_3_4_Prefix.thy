@@ -1139,6 +1139,55 @@ proof -
     by (intro conjI h01_ne_02 h01_ne_12 h02_ne_12)
 qed
 
+lemma geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "frontier \<sigma> =
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+proof -
+  obtain m n where h\<sigma>_eq: "\<sigma> = geotop_convex_hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using hvertices unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using h\<sigma>_eq geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1, v\<^sub>2}"] by (by100 simp)
+  have hfront:
+    "frontier \<sigma> =
+      closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>0"
+    using frontier_of_triangle[where a = v\<^sub>0 and b = v\<^sub>1 and c = v\<^sub>2] h\<sigma>_HOL
+    by (by100 simp)
+  have h01: "closed_segment v\<^sub>0 v\<^sub>1 = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>1] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"]
+    by (by100 simp)
+  have h12: "closed_segment v\<^sub>1 v\<^sub>2 = geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  have h20_set: "{v\<^sub>2, v\<^sub>0} = {v\<^sub>0, v\<^sub>2}"
+    by (rule insert_commute)
+  have h20: "closed_segment v\<^sub>2 v\<^sub>0 = geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    using segment_convex_hull[of v\<^sub>2 v\<^sub>0] geotop_convex_hull_eq_HOL[of "{v\<^sub>2, v\<^sub>0}"]
+      h20_set by (by100 simp)
+  have hfront_order:
+    "frontier \<sigma> =
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    using hfront h01 h12 h20 by (by100 simp)
+  have hunion_order:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+    =
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (by100 blast)
+  show ?thesis
+    using hfront_order hunion_order by (by100 simp)
+qed
+
 lemma geotop_is_face_imp_subset_prefix:
   fixes \<tau> \<sigma> :: "(real^2) set"
   assumes hface: "geotop_is_face \<tau> \<sigma>"
@@ -2812,6 +2861,13 @@ proof -
               show ?thesis
                 using hP_eq_E by (by100 simp)
             qed
+            have h\<theta>_frontier_named_edges:
+              "frontier \<theta> =
+                geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+                geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+                  [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
             show ?thesis
               sorry
           qed
