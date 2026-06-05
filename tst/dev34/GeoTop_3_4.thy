@@ -8905,6 +8905,46 @@ lemma geotop_three_incident_small_circle_complement_connected_core_dev34:
     2-simplexes and exposes that remaining geometric fact explicitly. **)
   using hlocal_nonsep .
 
+lemma geotop_three_incident_small_circle_complement_connected_explicit_dev34:
+  fixes K F :: "(real^2) set set"
+  fixes e \<sigma>1 \<sigma>2 \<sigma>3 U :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes hFfin: "finite F"
+  assumes hFsub: "F \<subseteq> K"
+  assumes h12: "\<sigma>1 \<noteq> \<sigma>2"
+  assumes h23: "\<sigma>2 \<noteq> \<sigma>3"
+  assumes h13: "\<sigma>1 \<noteq> \<sigma>3"
+  assumes h\<sigma>1K: "\<sigma>1 \<in> K"
+  assumes h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+  assumes h\<sigma>1face: "geotop_is_face e \<sigma>1"
+  assumes h\<sigma>2K: "\<sigma>2 \<in> K"
+  assumes h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+  assumes h\<sigma>2face: "geotop_is_face e \<sigma>2"
+  assumes h\<sigma>3K: "\<sigma>3 \<in> K"
+  assumes h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+  assumes h\<sigma>3face: "geotop_is_face e \<sigma>3"
+  assumes hs: "0 < s"
+  assumes heps: "0 < eps"
+  assumes heps_lt_s: "eps < s"
+  assumes hballU_s: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hpoint_carriers_s:
+    "ball p s \<inter> geotop_polyhedron K \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  assumes h\<sigma>123_local_U: "ball p s \<inter> (\<sigma>1 \<union> \<sigma>2 \<union> \<sigma>3) \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hsphere_union12: "sphere p eps \<subseteq> \<sigma>1 \<union> \<sigma>2"
+  assumes hsphere_U: "sphere p eps \<subseteq> U"
+  shows "top1_connected_on (U - sphere p eps)
+      (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
+  (**
+    Explicit Moise Lemma 4 local geometry.  The small circle is chosen in the
+    union of two incident half-neighborhoods, and the third incident
+    2-simplex supplies the passage joining the two sides in the punctured
+    chart domain. **)
+  sorry
+
 lemma geotop_three_incident_2simplex_small_circle_domain_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U J :: "(real^2) set"
   assumes hK: "geotop_is_complex K"
@@ -9155,7 +9195,11 @@ proof -
     show "sphere p eps \<subseteq> U" by (rule hsphere_U)
     show "top1_connected_on (U - sphere p eps)
         (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-      sorry
+      by (rule geotop_three_incident_small_circle_complement_connected_explicit_dev34
+          [OF hK heK hedge hp hFfin hFsub h12 h23 h13
+            h\<sigma>1K h\<sigma>1dim h\<sigma>1face h\<sigma>2K h\<sigma>2dim h\<sigma>2face
+            h\<sigma>3K h\<sigma>3dim h\<sigma>3face hs heps heps_lt_s hballU_s
+            hpoint_carriers_s h\<sigma>123_local_U hUsubM hsphere_union12 hsphere_U])
   qed
   (**
     Remaining Moise Lemma 4 geometry: choose a small circle from two incident
