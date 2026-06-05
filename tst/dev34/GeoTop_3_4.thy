@@ -13694,7 +13694,39 @@ proof -
         \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi> \<Longrightarrow>
       \<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
         (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
-    sorry
+  proof -
+    fix \<sigma> :: "(real^2) set"
+    fix \<phi> :: "real^2 \<Rightarrow> real^2"
+    assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    assume h\<phi>: "top1_homeomorphism_on
+        (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
+        (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
+          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
+        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+    show "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+    proof (rule geotop_2cell_chart_image_jordan_side_separation_dev34)
+      show "openin_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U"
+        by (rule hUopen)
+      show "top1_homeomorphism_on
+          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
+          (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
+            (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
+          \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+        by (rule h\<phi>)
+      show "J \<subseteq> U"
+        by (rule hJsub)
+      show "geotop_is_n_sphere J
+          (subspace_topology UNIV geotop_euclidean_topology J) 1"
+        by (rule hJsphere)
+      show "\<And>inner outer.
+        inner \<noteq> {} \<Longrightarrow> open inner \<Longrightarrow> connected inner \<Longrightarrow> bounded inner \<Longrightarrow>
+        outer \<noteq> {} \<Longrightarrow> open outer \<Longrightarrow> connected outer \<Longrightarrow> \<not> bounded outer \<Longrightarrow>
+        inner \<inter> outer = {} \<Longrightarrow> inner \<union> outer = UNIV - (\<phi> ` J) \<Longrightarrow>
+        inner \<subseteq> \<phi> ` U \<and> \<phi> ` U \<inter> outer \<noteq> {}"
+        sorry
+    qed
+  qed
   have hJnotconn: "\<not> top1_connected_on (U - J)
       (subspace_topology UNIV geotop_euclidean_topology (U - J))"
     by (rule geotop_2cell_chart_1sphere_complement_not_connected_dev34
