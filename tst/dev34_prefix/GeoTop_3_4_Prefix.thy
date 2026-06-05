@@ -2757,6 +2757,61 @@ proof -
               thus ?thesis
                 using hP_card by (by100 simp)
             qed
+            have hE\<theta>_card_le3:
+              "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<le> 3"
+            proof -
+              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              let ?A = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta>}"
+              have hA: "finite ?A \<and> card ?A \<le> 3"
+                by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<theta>2])
+              have hA_fin: "finite ?A"
+                using hA by (by100 simp)
+              have hA_card: "card ?A \<le> 3"
+                using hA by (by100 simp)
+              have hE_sub_A: "?E \<subseteq> ?A"
+                by (by100 blast)
+              have "card ?E \<le> card ?A"
+                by (rule card_mono[OF hA_fin hE_sub_A])
+              thus ?thesis
+                using hA_card by (by100 simp)
+            qed
+            have hE\<theta>_card_eq3_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = 3"
+              using hE\<theta>_card_ge3_if_both_other_boundary hE\<theta>_card_le3 by (by100 simp)
+            have hE\<theta>_eq_three_named_if_both_other_boundary:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
+                {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} =
+                  {geotop_convex_hull {v\<^sub>0, v\<^sub>1},
+                   geotop_convex_hull {v\<^sub>0, v\<^sub>2},
+                   geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
+            proof -
+              assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+              assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
+              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1},
+                         geotop_convex_hull {v\<^sub>0, v\<^sub>2},
+                         geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
+              have hP_sub_E: "?P \<subseteq> ?E"
+                using hv\<^sub>0v\<^sub>1_selected
+                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
+                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
+                by (by100 blast)
+              have hP_card: "card ?P = 3"
+                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
+                by (by100 simp)
+              have hE_card: "card ?E = 3"
+                by (rule hE\<theta>_card_eq3_if_both_other_boundary
+                    [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+              have hcard_eq: "card ?P = card ?E"
+                using hP_card hE_card by (by100 simp)
+              have hP_eq_E: "?P = ?E"
+                by (rule card_subset_eq[OF hE\<theta>_fin hP_sub_E hcard_eq])
+              show ?thesis
+                using hP_eq_E by (by100 simp)
+            qed
             show ?thesis
               sorry
           qed
