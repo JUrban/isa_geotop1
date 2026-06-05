@@ -3637,6 +3637,197 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_edge_closure_rel_interior_prefix:
+  fixes e :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  shows "closure (rel_interior e) = e"
+  (**
+    An edge is the closure of its relative interior. **)
+proof -
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have he_simplex: "geotop_is_simplex e"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+  show ?thesis
+    by (rule geotop_simplex_closure_rel_interior[OF he_simplex])
+qed
+
+lemma geotop_local_frontier_transfer_prefix:
+  fixes M S :: "(real^2) set"
+  assumes hs: "0 < s"
+  assumes hlocal: "ball p s \<inter> M = ball p s \<inter> S"
+  assumes hpfront: "p \<in> frontier S"
+  assumes hpM: "p \<in> M"
+  shows "p \<in> frontier M"
+  (**
+    If two sets agree in a positive ball around a point, frontier membership
+    transfers locally from one set to the other. **)
+proof -
+  have hp_closure_M: "p \<in> closure M"
+    using hpM closure_subset by (by100 blast)
+  have hp_not_int_M: "p \<notin> interior M"
+  proof
+    assume hp_int_M: "p \<in> interior M"
+    obtain r where hr: "0 < r" and hballM: "ball p r \<subseteq> M"
+      using hp_int_M unfolding mem_interior by (by100 blast)
+    define t where "t = min r s"
+    have ht: "0 < t"
+      using hr hs unfolding t_def by (by100 simp)
+    have ht_le_r: "t \<le> r"
+      unfolding t_def by (by100 simp)
+    have ht_le_s: "t \<le> s"
+      unfolding t_def by (by100 simp)
+    have hballS: "ball p t \<subseteq> S"
+    proof
+      fix x
+      assume hx: "x \<in> ball p t"
+      have hxM: "x \<in> M"
+        using hballM ht_le_r hx by (by100 auto)
+      have hxs: "x \<in> ball p s"
+        using ht_le_s hx by (by100 auto)
+      have "x \<in> ball p s \<inter> M"
+        using hxs hxM by (by100 blast)
+      hence "x \<in> ball p s \<inter> S"
+        using hlocal by (by100 simp)
+      thus "x \<in> S"
+        by (by100 blast)
+    qed
+    have hp_int_S: "p \<in> interior S"
+      unfolding mem_interior using ht hballS by (by100 blast)
+    have hp_not_int_S: "p \<notin> interior S"
+      using hpfront unfolding Elementary_Topology.frontier_def by (by100 simp)
+    show False
+      using hp_int_S hp_not_int_S by (by100 blast)
+  qed
+  show ?thesis
+    unfolding Elementary_Topology.frontier_def
+    using hp_closure_M hp_not_int_M by (by100 simp)
+qed
+
+lemma geotop_unique_incident_edge_rel_interior_subset_polyhedron_frontier_prefix:
+  fixes K :: "(real^2) set set" and e \<sigma> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  shows "rel_interior e \<subseteq> frontier (geotop_polyhedron K)"
+  (**
+    One-sided edge-star fact: if an edge has a unique incident 2-simplex, then
+    every interior point of the edge lies on the frontier of the complex
+    carrier. **)
+proof
+  fix p
+  assume hp: "p \<in> rel_interior e"
+  let ?M = "geotop_polyhedron K"
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  obtain r F where hr: "0 < r"
+    and hFfin: "finite F"
+    and hFsub: "F \<subseteq> K"
+    and heF: "e \<in> F"
+    and hcover: "ball p r \<inter> ?M \<subseteq> \<Union>F"
+    using geotop_complex_edge_point_finite_local_cover_prefix[OF hK heK hp_e]
+    by (by100 blast)
+  have hp_unionF: "p \<in> \<Union>F"
+    using heF hp_e by (by100 blast)
+  obtain \<delta> where h\<delta>: "0 < \<delta>"
+    and hisolate: "ball p \<delta> \<inter> \<Union>F \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+    using geotop_complex_finite_subcomplex_local_point_carriers_prefix
+      [OF hK hFfin hFsub hp_unionF]
+    by (by100 blast)
+  define s where "s = min r \<delta>"
+  have hs: "0 < s"
+    using hr h\<delta> unfolding s_def by (by100 simp)
+  have hcover_s: "ball p s \<inter> ?M \<subseteq> \<Union>F"
+  proof -
+    have hball_sub: "ball p s \<subseteq> ball p r"
+      unfolding s_def by (by100 auto)
+    have "ball p s \<inter> ?M \<subseteq> ball p r \<inter> ?M"
+      using hball_sub by (by100 blast)
+    thus ?thesis
+      using hcover by (by100 blast)
+  qed
+  have hpoint_carriers_s: "ball p s \<inter> ?M \<subseteq> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+  proof
+    fix x
+    assume hx: "x \<in> ball p s \<inter> ?M"
+    have hxF: "x \<in> \<Union>F"
+      using hcover_s hx by (by100 blast)
+    have hball_sub: "ball p s \<subseteq> ball p \<delta>"
+      unfolding s_def by (by100 auto)
+    have hx\<delta>: "x \<in> ball p \<delta>"
+      using hx hball_sub by (by100 blast)
+    have "x \<in> ball p \<delta> \<inter> \<Union>F"
+      using hxF hx\<delta> by (by100 blast)
+    thus "x \<in> \<Union>{\<tau>\<in>F. p \<in> \<tau>}"
+      using hisolate by (by100 blast)
+  qed
+  have hpoint_carriers_subset_\<sigma>: "\<Union>{\<tau>\<in>F. p \<in> \<tau>} \<subseteq> \<sigma>"
+    by (rule geotop_complex_unique_edge_face_point_carrier_union_subset_unique_face_prefix
+        [OF hK heK hedge hp h\<sigma>K h\<sigma>2 h\<sigma>face hfaces hFsub])
+  have hlocal_poly_\<sigma>: "ball p s \<inter> ?M \<subseteq> \<sigma>"
+    using hpoint_carriers_s hpoint_carriers_subset_\<sigma> by (by100 blast)
+  have h\<sigma>subM: "\<sigma> \<subseteq> ?M"
+    using h\<sigma>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hlocal_eq: "ball p s \<inter> ?M = ball p s \<inter> \<sigma>"
+  proof
+    show "ball p s \<inter> ?M \<subseteq> ball p s \<inter> \<sigma>"
+      using hlocal_poly_\<sigma> by (by100 blast)
+  next
+    show "ball p s \<inter> \<sigma> \<subseteq> ball p s \<inter> ?M"
+      using h\<sigma>subM by (by100 blast)
+  qed
+  have hpfront_\<sigma>: "p \<in> frontier \<sigma>"
+  proof -
+    have hfront: "frontier \<sigma> = \<Union>{d. geotop_is_edge d \<and> geotop_is_face d \<sigma>}"
+      by (rule geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>2])
+    have he_in: "e \<in> {d. geotop_is_edge d \<and> geotop_is_face d \<sigma>}"
+      using hedge h\<sigma>face by (by100 simp)
+    show ?thesis
+      using hfront he_in hp_e by (by100 blast)
+  qed
+  have hpM: "p \<in> ?M"
+    using heK hp_e unfolding geotop_polyhedron_def by (by100 blast)
+  show "p \<in> frontier ?M"
+    by (rule geotop_local_frontier_transfer_prefix[OF hs hlocal_eq hpfront_\<sigma> hpM])
+qed
+
+lemma geotop_unique_incident_edge_subset_polygon_boundary_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hfaces: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>} = {\<sigma>}"
+  shows "e \<subseteq> J"
+  (**
+    Polygon-disk form of the one-sided edge-star fact: a unique incident
+    triangle edge is a boundary edge of the disk. **)
+proof -
+  have hrel_front: "rel_interior e \<subseteq> frontier (geotop_polyhedron K)"
+    by (rule geotop_unique_incident_edge_rel_interior_subset_polyhedron_frontier_prefix
+        [OF hK heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
+  have hfront_eq: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  have hclosed_front: "closed (frontier (geotop_polyhedron K))"
+    by (rule frontier_closed)
+  have hclosure_sub_front:
+      "closure (rel_interior e) \<subseteq> frontier (geotop_polyhedron K)"
+    by (rule closure_minimal[OF hrel_front hclosed_front])
+  have hclosure_e: "closure (rel_interior e) = e"
+    by (rule geotop_edge_closure_rel_interior_prefix[OF hedge])
+  show ?thesis
+    using hclosure_sub_front hclosure_e hfront_eq by (by100 simp)
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
