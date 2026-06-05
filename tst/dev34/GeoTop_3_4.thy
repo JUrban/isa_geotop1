@@ -13339,6 +13339,58 @@ proof -
     using htop_img hcomp by (by100 blast)
 qed
 
+lemma geotop_2cell_chart_image_jordan_side_separation_dev34:
+  fixes M U J \<sigma> :: "(real^2) set"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+  assumes h\<phi>: "top1_homeomorphism_on
+      (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+      \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+  assumes hJsub: "J \<subseteq> U"
+  assumes hJsphere: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+  assumes hside:
+    "\<And>inner outer.
+      inner \<noteq> {} \<Longrightarrow> open inner \<Longrightarrow> connected inner \<Longrightarrow> bounded inner \<Longrightarrow>
+      outer \<noteq> {} \<Longrightarrow> open outer \<Longrightarrow> connected outer \<Longrightarrow> \<not> bounded outer \<Longrightarrow>
+      inner \<inter> outer = {} \<Longrightarrow> inner \<union> outer = UNIV - (\<phi> ` J) \<Longrightarrow>
+      inner \<subseteq> \<phi> ` U \<and> \<phi> ` U \<inter> outer \<noteq> {}"
+  shows "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
+  (**
+    Image-side Jordan criterion for a 2-cell chart.  After transporting the
+    chosen 1-sphere to the target simplex, it remains only to show the chart
+    image contains one Jordan side and meets the other; the relative
+    separation split then gives non-connectedness. **)
+proof -
+  have hJimg: "geotop_is_n_sphere (\<phi> ` J)
+      (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` J)) 1"
+    by (rule geotop_2cell_chart_image_1sphere_dev34[OF hUopen h\<phi> hJsub hJsphere])
+  obtain inner outer where hinner_ne: "inner \<noteq> {}"
+      and hinner_open: "open inner"
+      and hinner_conn: "connected inner"
+      and hinner_bdd: "bounded inner"
+      and houter_ne: "outer \<noteq> {}"
+      and houter_open: "open outer"
+      and houter_conn: "connected outer"
+      and houter_unbdd: "\<not> bounded outer"
+      and hdisj: "inner \<inter> outer = {}"
+      and hcover: "inner \<union> outer = UNIV - (\<phi> ` J)"
+    by (rule geotop_1sphere_Jordan_open_components_dev34[OF hJimg])
+  have hside_data: "inner \<subseteq> \<phi> ` U \<and> \<phi> ` U \<inter> outer \<noteq> {}"
+    by (rule hside[OF hinner_ne hinner_open hinner_conn hinner_bdd
+        houter_ne houter_open houter_conn houter_unbdd hdisj hcover])
+  have hinner_sub: "inner \<subseteq> \<phi> ` U"
+    using hside_data by (by100 blast)
+  have hVouter_ne: "\<phi> ` U \<inter> outer \<noteq> {}"
+    using hside_data by (by100 blast)
+  show ?thesis
+    by (rule geotop_jordan_components_separate_subset_dev34
+        [OF hinner_open houter_open hinner_ne hVouter_ne hdisj hcover hinner_sub])
+qed
+
 lemma geotop_2cell_chart_1sphere_jordan_transfer_core_dev34:
   fixes M U J \<sigma> :: "(real^2) set"
   assumes hUopen: "openin_on M
