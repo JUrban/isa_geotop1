@@ -2940,6 +2940,33 @@ proof
     using h\<sigma>K h\<sigma>2 by (by100 simp)
 qed
 
+lemma geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  shows "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<noteq> 3"
+  (**
+    Multi-triangle disk form of the all-boundary obstruction: if the disk has
+    more than one 2-simplex, no single triangle can put all three edge faces
+    on the polygon boundary. **)
+proof
+  assume hcard3:
+    "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  have hT_single:
+    "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2} = {\<sigma>}"
+    by (rule geotop_polygon_disk_three_boundary_edges_2simplexes_singleton_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hcard3])
+  have "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} = 1"
+    using hT_single by (by100 simp)
+  thus False
+    using hT_gt1 by (by100 simp)
+qed
+
 lemma geotop_two_triangle_not_all_boundary_edges_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -4004,6 +4031,32 @@ proof -
                     \<subseteq> \<theta> \<inter> J'"
                   by (rule hE\<theta>_union_sub_\<theta>J)
               qed
+            qed
+            have hE\<theta>_card_ne3:
+              "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<noteq> 3"
+            proof -
+              have hT_gt1: "card ?T > 1"
+                using hT_gt2 by (by100 simp)
+              show ?thesis
+                by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
+                    [OF hJ' hK' hK_poly' h\<theta>K h\<theta>2 hT_gt1])
+            qed
+            have hnot_both_other_boundary:
+              "\<not> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'
+                \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J')"
+            proof
+              assume hboth: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'
+                \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+              have hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
+                using hboth by (by100 simp)
+              have hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
+                using hboth by (by100 simp)
+              have hcard3:
+                "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = 3"
+                by (rule hE\<theta>_card_eq3_if_both_other_boundary
+                    [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
+              show False
+                using hE\<theta>_card_ne3 hcard3 by (by100 blast)
             qed
             show ?thesis
               sorry
