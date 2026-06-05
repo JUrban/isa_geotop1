@@ -3966,6 +3966,153 @@ proof -
         [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
 qed
 
+lemma geotop_two_triangle_shared_edge_endpoint_boundary_cover_prefix:
+  fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hxe: "x \<in> e"
+  assumes hx_not_rel: "x \<notin> rel_interior e"
+  shows "x \<in> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+  (**
+    Endpoint part of the exactly-two-triangle base case: a point of the shared
+    edge outside its relative interior is one of its endpoints, and each such
+    endpoint lies on one of the two nonshared boundary edges of \<open>\<sigma>\<close>. **)
+proof -
+  obtain v\<^sub>0 v\<^sub>1 v\<^sub>2 where hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    and hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    and he_eq: "e = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    and hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix[OF h\<sigma>2 hedge he\<sigma>])
+  let ?e\<^sub>02 = "geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+  let ?e\<^sub>12 = "geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  have hother:
+    "geotop_is_edge ?e\<^sub>02 \<and> geotop_is_face ?e\<^sub>02 \<sigma>
+      \<and> geotop_is_edge ?e\<^sub>12 \<and> geotop_is_face ?e\<^sub>12 \<sigma>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have he\<^sub>02_edge: "geotop_is_edge ?e\<^sub>02"
+    using hother by (by100 simp)
+  have he\<^sub>02_face: "geotop_is_face ?e\<^sub>02 \<sigma>"
+    using hother by (by100 simp)
+  have he\<^sub>12_edge: "geotop_is_edge ?e\<^sub>12"
+    using hother by (by100 simp)
+  have he\<^sub>12_face: "geotop_is_face ?e\<^sub>12 \<sigma>"
+    using hother by (by100 simp)
+  have hface_closed: "\<forall>\<rho>\<in>K. \<forall>F. geotop_is_face F \<rho> \<longrightarrow> F \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have he\<^sub>02K: "?e\<^sub>02 \<in> K"
+    using hface_closed h\<sigma>K he\<^sub>02_face by (by100 blast)
+  have he\<^sub>12K: "?e\<^sub>12 \<in> K"
+    using hface_closed h\<sigma>K he\<^sub>12_face by (by100 blast)
+  have hdistinct:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> ?e\<^sub>02
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> ?e\<^sub>12
+      \<and> ?e\<^sub>02 \<noteq> ?e\<^sub>12"
+    by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have he_ne_02: "e \<noteq> ?e\<^sub>02"
+    using he_eq hdistinct by (by100 simp)
+  have he_ne_12: "e \<noteq> ?e\<^sub>12"
+    using he_eq hdistinct by (by100 simp)
+  have h\<tau>_in: "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+    using hT_eq by (by100 simp)
+  have h\<tau>K: "\<tau> \<in> K"
+    using h\<tau>_in by (by100 simp)
+  have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    using h\<tau>_in by (by100 simp)
+  have hinter: "\<sigma> \<inter> \<tau> = e"
+    by (rule geotop_two_triangle_shared_edge_inter_eq_prefix
+        [OF hK hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau> hedge he\<sigma> he\<tau>])
+  have he\<^sub>02_not_tau: "\<not> geotop_is_face ?e\<^sub>02 \<tau>"
+  proof
+    assume he\<^sub>02_tau: "geotop_is_face ?e\<^sub>02 \<tau>"
+    have he\<^sub>02_sub_\<sigma>: "?e\<^sub>02 \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF he\<^sub>02_face])
+    have he\<^sub>02_sub_\<tau>: "?e\<^sub>02 \<subseteq> \<tau>"
+      by (rule geotop_is_face_imp_subset_prefix[OF he\<^sub>02_tau])
+    have he\<^sub>02_sub_e: "?e\<^sub>02 \<subseteq> e"
+      using he\<^sub>02_sub_\<sigma> he\<^sub>02_sub_\<tau> hinter by (by100 blast)
+    have hface_e: "geotop_is_face ?e\<^sub>02 e"
+      by (rule geotop_complex_subset_simplex_face_prefix[OF hK he\<^sub>02K heK he\<^sub>02_sub_e])
+    have "?e\<^sub>02 = e"
+      by (rule geotop_edge_face_of_edge_eq_prefix[OF he\<^sub>02_edge hedge hface_e])
+    thus False
+      using he_ne_02 by (by100 blast)
+  qed
+  have he\<^sub>12_not_tau: "\<not> geotop_is_face ?e\<^sub>12 \<tau>"
+  proof
+    assume he\<^sub>12_tau: "geotop_is_face ?e\<^sub>12 \<tau>"
+    have he\<^sub>12_sub_\<sigma>: "?e\<^sub>12 \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF he\<^sub>12_face])
+    have he\<^sub>12_sub_\<tau>: "?e\<^sub>12 \<subseteq> \<tau>"
+      by (rule geotop_is_face_imp_subset_prefix[OF he\<^sub>12_tau])
+    have he\<^sub>12_sub_e: "?e\<^sub>12 \<subseteq> e"
+      using he\<^sub>12_sub_\<sigma> he\<^sub>12_sub_\<tau> hinter by (by100 blast)
+    have hface_e: "geotop_is_face ?e\<^sub>12 e"
+      by (rule geotop_complex_subset_simplex_face_prefix[OF hK he\<^sub>12K heK he\<^sub>12_sub_e])
+    have "?e\<^sub>12 = e"
+      by (rule geotop_edge_face_of_edge_eq_prefix[OF he\<^sub>12_edge hedge hface_e])
+    thus False
+      using he_ne_12 by (by100 blast)
+  qed
+  have he\<^sub>02J: "?e\<^sub>02 \<subseteq> J"
+    by (rule geotop_two_triangle_nonshared_edge_subset_boundary_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 he\<^sub>02K he\<^sub>02_edge he\<^sub>02_face he\<^sub>02_not_tau])
+  have he\<^sub>12J: "?e\<^sub>12 \<subseteq> J"
+    by (rule geotop_two_triangle_nonshared_edge_subset_boundary_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 he\<^sub>12K he\<^sub>12_edge he\<^sub>12_face he\<^sub>12_not_tau])
+  have he_seg: "e = closed_segment v\<^sub>0 v\<^sub>1"
+  proof -
+    have "e = convex hull {v\<^sub>0, v\<^sub>1}"
+      using he_eq geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+    also have "\<dots> = closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule segment_convex_hull[symmetric])
+    finally show ?thesis .
+  qed
+  have hrel_eq: "rel_interior e = open_segment v\<^sub>0 v\<^sub>1"
+    using he_seg hv\<^sub>0v\<^sub>1 rel_interior_closed_segment[of v\<^sub>0 v\<^sub>1] by (by100 simp)
+  have hx_endpoint: "x = v\<^sub>0 \<or> x = v\<^sub>1"
+    using hxe hx_not_rel he_seg hrel_eq unfolding open_segment_def by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hx_endpoint])
+    assume hx0: "x = v\<^sub>0"
+    have hx_e02: "x \<in> ?e\<^sub>02"
+    proof -
+      have "v\<^sub>0 \<in> convex hull {v\<^sub>0, v\<^sub>2}"
+        by (rule hull_inc) (by100 simp)
+      thus ?thesis
+        using hx0 geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"] by (by100 simp)
+    qed
+    have "?e\<^sub>02 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+      using he\<^sub>02K he\<^sub>02_edge he\<^sub>02_face he\<^sub>02J by (by100 simp)
+    thus ?thesis
+      using hx_e02 by (by100 blast)
+  next
+    assume hx1: "x = v\<^sub>1"
+    have hx_e12: "x \<in> ?e\<^sub>12"
+    proof -
+      have "v\<^sub>1 \<in> convex hull {v\<^sub>1, v\<^sub>2}"
+        by (rule hull_inc) (by100 simp)
+      thus ?thesis
+        using hx1 geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"] by (by100 simp)
+    qed
+    have "?e\<^sub>12 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+      using he\<^sub>12K he\<^sub>12_edge he\<^sub>12_face he\<^sub>12J by (by100 simp)
+    thus ?thesis
+      using hx_e12 by (by100 blast)
+  qed
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
