@@ -7048,55 +7048,9 @@ lemma geotop_polygon_disk_two_selected_boundary_2simplexes_prefix:
     Formal set-membership version of the book's two boundary-simplex step,
     ready for the free-simplex edge-set bookkeeping. **)
 proof -
-  obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
-    where h\<sigma>K: "\<sigma> \<in> K" and h\<tau>K: "\<tau> \<in> K" and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
-      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
-      and he\<sigma>edge: "geotop_is_edge e\<^sub>\<sigma>"
-      and he\<sigma>face: "geotop_is_face e\<^sub>\<sigma> \<sigma>"
-      and he\<sigma>front: "e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
-          (geotop_polyhedron K)"
-      and he\<tau>edge: "geotop_is_edge e\<^sub>\<tau>"
-      and he\<tau>face: "geotop_is_face e\<^sub>\<tau> \<tau>"
-      and he\<tau>front: "e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
-          (geotop_polyhedron K)"
-    using geotop_polygon_disk_two_boundary_2simplexes_prefix
-        [OF hJ hK hK_poly hT_gt2]
-    by (by100 metis)
-  have he\<sigma>sel:
-      "e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
-    by (rule geotop_polygon_disk_boundary_edge_in_selected_edges_prefix
-        [OF hJ hK hK_poly h\<sigma>K he\<sigma>edge he\<sigma>face he\<sigma>front])
-  have he\<tau>sel:
-      "e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
-    by (rule geotop_polygon_disk_boundary_edge_in_selected_edges_prefix
-        [OF hJ hK hK_poly h\<tau>K he\<tau>edge he\<tau>face he\<tau>front])
   show ?thesis
-  proof (rule exI[where x = \<sigma>])
-    show "\<exists>\<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
-        geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-        e\<^sub>\<sigma> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<and>
-        e\<^sub>\<tau> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
-    proof (rule exI[where x = \<tau>])
-      show "\<exists>e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
-          geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-          e\<^sub>\<sigma> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<and>
-          e\<^sub>\<tau> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
-      proof (rule exI[where x = e\<^sub>\<sigma>])
-        show "\<exists>e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
-            geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-            e\<^sub>\<sigma> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<and>
-            e\<^sub>\<tau> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
-        proof (rule exI[where x = e\<^sub>\<tau>])
-          show "\<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
-              geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
-              e\<^sub>\<sigma> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<and>
-              e\<^sub>\<tau> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
-            by (intro conjI h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>2 h\<tau>2 he\<sigma>sel he\<tau>sel)
-        qed
-      qed
-    qed
-  qed
+    by (rule geotop_polygon_disk_two_selected_boundary_2simplexes_ear_prefix
+        [OF hJ hK hK_poly hT_gt2])
 qed
 
 lemma geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix:
