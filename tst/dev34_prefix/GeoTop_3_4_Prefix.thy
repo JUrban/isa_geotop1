@@ -904,6 +904,91 @@ proof -
     by (rule that[OF h\<sigma>V hW_ne hW_sub he_eq heW hW_card])
 qed
 
+lemma geotop_2simplex_edge_face_vertices_prefix:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hedge: "geotop_is_edge e"
+  assumes hface: "geotop_is_face e \<sigma>"
+  obtains v\<^sub>0 v\<^sub>1 v\<^sub>2 where "v\<^sub>0 \<noteq> v\<^sub>1"
+    and "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    and "e = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    and "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  (**
+    Book-notation extraction for Theorem 3.3: a boundary edge face of a
+    2-simplex can be named as \<open>v\<^sub>0v\<^sub>1\<close>, and the 2-simplex as
+    \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close>. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge hface])
+  obtain V\<^sub>\<sigma> m where hV\<^sub>\<sigma>_fin: "finite V\<^sub>\<sigma>"
+    and hV\<^sub>\<sigma>_card: "card V\<^sub>\<sigma> = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hV\<^sub>\<sigma>_gp: "geotop_general_position V\<^sub>\<sigma> m"
+    and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    unfolding geotop_simplex_vertices_def
+    using hV\<^sub>\<sigma>_fin hV\<^sub>\<sigma>_card h2_le_m hV\<^sub>\<sigma>_gp h\<sigma>_eq by (by100 blast)
+  have hV_eq: "V = V\<^sub>\<sigma>"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V\<^sub>\<sigma>])
+  have hV_fin: "finite V"
+    using hV_eq hV\<^sub>\<sigma>_fin by (by100 simp)
+  have hW_fin: "finite W"
+    using hW_sub hV_fin by (rule finite_subset)
+  have hV_card: "card V = 3"
+    using hV_eq hV\<^sub>\<sigma>_card by (by100 simp)
+  have hW_pair: "\<exists>v\<^sub>0 v\<^sub>1. W = {v\<^sub>0, v\<^sub>1} \<and> v\<^sub>0 \<noteq> v\<^sub>1"
+    using hW_card card_2_iff[of W] by (by100 simp)
+  obtain v\<^sub>0 v\<^sub>1 where hW_eq: "W = {v\<^sub>0, v\<^sub>1}"
+    and hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    using hW_pair by (elim exE conjE)
+  have hV_minus_ne: "V - W \<noteq> {}"
+  proof
+    assume hVW_empty: "V - W = {}"
+    have "V \<subseteq> W"
+      using hVW_empty by (by100 blast)
+    hence "V = W"
+      using hW_sub by (by100 blast)
+    thus False
+      using hV_card hW_card by (by100 simp)
+  qed
+  obtain v\<^sub>2 where hv\<^sub>2: "v\<^sub>2 \<in> V - W"
+    using hV_minus_ne by (by100 blast)
+  have hV_minus_card_eq: "card (V - W) = card V - card W"
+    by (rule card_Diff_subset[OF hW_fin hW_sub])
+  have hV_minus_card: "card (V - W) = 1"
+    using hV_minus_card_eq hV_card hW_card by (by100 simp)
+  obtain x where hx: "V - W = {x}"
+  proof -
+    have "\<exists>x. V - W = {x}"
+      using hV_minus_card card_1_singleton_iff[of "V - W"] by (by100 simp)
+    thus ?thesis
+      using that by (elim exE)
+  qed
+  have hV_minus_eq: "V - W = {v\<^sub>2}"
+    using hv\<^sub>2 hx by (by100 simp)
+  have hV_vertices: "V = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  proof -
+    have "V = W \<union> (V - W)"
+      using hW_sub by (by100 blast)
+    thus ?thesis
+      using hW_eq hV_minus_eq by (by100 blast)
+  qed
+  have hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+    using hv\<^sub>2 hW_eq by (by100 simp)
+  have he_vertices: "e = geotop_convex_hull {v\<^sub>0, v\<^sub>1}"
+    using he_eq hW_eq by (by100 simp)
+  have h\<sigma>vertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+    using h\<sigma>V hV_vertices by (by100 simp)
+  show ?thesis
+    by (rule that[OF hv\<^sub>0v\<^sub>1 hv\<^sub>2_not he_vertices h\<sigma>vertices])
+qed
+
 lemma geotop_is_face_imp_subset_prefix:
   fixes \<tau> \<sigma> :: "(real^2) set"
   assumes hface: "geotop_is_face \<tau> \<sigma>"
@@ -2392,6 +2477,21 @@ proof -
               show ?thesis
                 using he\<^sub>\<theta>_sub_J hfront_eq by (by100 simp)
             qed
+            obtain v\<^sub>0 v\<^sub>1 v\<^sub>2 where
+              hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1" and
+              hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}" and
+              he\<^sub>\<theta>_vertices: "e\<^sub>\<theta> = geotop_convex_hull {v\<^sub>0, v\<^sub>1}" and
+              h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+              by (rule geotop_2simplex_edge_face_vertices_prefix
+                  [OF h\<theta>2 he\<^sub>\<theta>_edge he\<^sub>\<theta>_face])
+            have hv\<^sub>0v\<^sub>1_sub_frontier:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq>
+                 geotop_frontier UNIV geotop_euclidean_topology
+                   (geotop_polyhedron K)"
+              using he\<^sub>\<theta>_vertices he\<^sub>\<theta>_sub_frontier by (by100 simp)
+            have hv\<^sub>0v\<^sub>1_sub_J:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J'"
+              using he\<^sub>\<theta>_vertices he\<^sub>\<theta>_sub_J by (by100 simp)
             show ?thesis
               sorry
           qed
