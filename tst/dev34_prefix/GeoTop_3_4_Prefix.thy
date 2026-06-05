@@ -2360,6 +2360,49 @@ definition geotop_free_2_simplex ::
                 \<and> geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J))
          \<and> \<sigma>\<^sub>2 \<inter> J = \<Union>E)"
 
+lemma geotop_free_2_simplex_selected_edges_intro_prefix:
+  fixes K :: "(real^2) set set" and J \<sigma>\<^sub>2 :: "(real^2) set" and E :: "(real^2) set set"
+  assumes h\<sigma>K: "\<sigma>\<^sub>2 \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+  assumes hEsub: "E \<subseteq> K"
+  assumes hEallowed:
+    "E = {} \<or>
+     (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  assumes hcontact: "\<sigma>\<^sub>2 \<inter> J = \<Union>E"
+  shows "geotop_free_2_simplex K J \<sigma>\<^sub>2"
+  (**
+    Introduction form for the book sentence: if the boundary contact is empty,
+    one selected edge, or two selected edges, then the 2-simplex is free. **)
+proof -
+  have hE:
+    "E \<subseteq> K \<and>
+     (E = {} \<or>
+      (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+      (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+        geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+        geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+        e1 \<subseteq> J \<and> e2 \<subseteq> J)) \<and>
+     \<sigma>\<^sub>2 \<inter> J = \<Union>E"
+    by (intro conjI hEsub hEallowed hcontact)
+  show ?thesis
+    unfolding geotop_free_2_simplex_def
+  proof (intro conjI h\<sigma>K h\<sigma>2)
+    show "\<exists>E. E \<subseteq> K \<and>
+      (E = {} \<or>
+       (\<exists>e. E = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>2 \<and> e \<subseteq> J) \<or>
+       (\<exists>e1 e2. E = {e1, e2} \<and> e1 \<noteq> e2 \<and>
+          geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
+          geotop_is_face e1 \<sigma>\<^sub>2 \<and> geotop_is_face e2 \<sigma>\<^sub>2 \<and>
+          e1 \<subseteq> J \<and> e2 \<subseteq> J)) \<and>
+      \<sigma>\<^sub>2 \<inter> J = \<Union>E"
+      by (rule exI[where x = E]) (rule hE)
+  qed
+qed
+
 (** from \<S>3 Theorem 3 (geotop.tex:762)
     LATEX VERSION: Let J be a polygon in R^2, let I be the interior of J, and let K be a
       triangulation of \<bar>I\<close>. If K has more than one 2-simplex, then K has a free 2-simplex. **)
