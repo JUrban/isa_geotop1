@@ -2313,7 +2313,31 @@ proof -
           \<open>L\<^sub>1\<close> and \<open>L\<^sub>2\<close>, and transfer the resulting free simplexes back to \<open>K\<close>.\<close>
         have hdecomposition_case:
           "card ?F \<ge> 2"
-          sorry
+        proof -
+          obtain \<sigma> \<tau> where
+            h\<sigma>K: "\<sigma> \<in> K" and
+            h\<tau>K: "\<tau> \<in> K" and
+            h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>" and
+            h\<sigma>2: "geotop_simplex_dim \<sigma> 2" and
+            h\<tau>2: "geotop_simplex_dim \<tau> 2" and
+            hE\<sigma>_ne: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J'} \<noteq> {}" and
+            hE\<tau>_ne: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J'} \<noteq> {}"
+            using hboundary_edge_sets by (elim exE conjE)
+          show ?thesis
+          proof (cases "geotop_free_2_simplex K J' \<sigma> \<and> geotop_free_2_simplex K J' \<tau>")
+            case True
+            have h\<sigma>free: "geotop_free_2_simplex K J' \<sigma>"
+              using True by (by100 simp)
+            have h\<tau>free: "geotop_free_2_simplex K J' \<tau>"
+              using True by (by100 simp)
+            show ?thesis
+              by (rule hboth_free_case[OF h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>free h\<tau>free])
+          next
+            case False
+            show ?thesis
+              sorry
+          qed
+        qed
         show ?thesis
           using hdecomposition_case .
       qed
