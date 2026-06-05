@@ -7127,6 +7127,29 @@ proof -
     using hxC hxnot hx_other by (by100 blast)
 qed
 
+lemma geotop_contact_outside_selected_union_avoids_selected_set_prefix:
+  fixes C D e :: "'a set" and E :: "'a set set"
+  assumes houtside: "\<exists>x. x \<in> C \<and> x \<notin> \<Union>E \<and> x \<in> D"
+  assumes heE: "e \<in> E"
+  shows "\<exists>x. x \<in> C \<and> x \<notin> e \<and> x \<in> D"
+  (**
+    Pure set bookkeeping: a contact point outside the selected carrier union is
+    not on any particular selected carrier. **)
+proof -
+  obtain x where hxC: "x \<in> C" and hxnot: "x \<notin> \<Union>E" and hxD: "x \<in> D"
+    using houtside by (elim exE conjE)
+  have hx_not_e: "x \<notin> e"
+  proof
+    assume "x \<in> e"
+    hence "x \<in> \<Union>E"
+      using heE by (by100 blast)
+    thus False
+      using hxnot by (by100 blast)
+  qed
+  show ?thesis
+    using hxC hx_not_e hxD by (by100 blast)
+qed
+
 lemma geotop_selected_boundary_edge_set_union_subset_contact_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
   shows "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
@@ -8147,6 +8170,13 @@ proof -
                     \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
               by (rule geotop_contact_outside_selected_union_on_other_two_sets_prefix
                   [OF h\<theta>_contact_outside_selected h\<theta>J_sub_named_edges hv\<^sub>0v\<^sub>1_selected])
+            have h\<theta>_contact_on_other_not_base:
+              "\<exists>x. x \<in> \<theta> \<inter> J'
+                \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+                \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+                    \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              by (rule geotop_contact_outside_selected_union_avoids_selected_set_prefix
+                  [OF h\<theta>_contact_on_other_named_edges hv\<^sub>0v\<^sub>1_selected])
             show ?thesis
               by (rule geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix
                   [OF hJ' hK' hK_fin' hK_poly' hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
