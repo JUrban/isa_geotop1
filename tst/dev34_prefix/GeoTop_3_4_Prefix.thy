@@ -6744,6 +6744,35 @@ proof
     using hnsub hsub by (by100 blast)
 qed
 
+lemma geotop_selected_boundary_edge_set_card_le3_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 3"
+  (**
+    Selected-edge form of the three-edge bound for a 2-simplex: imposing
+    membership in the polygon boundary only takes a subset of the edge faces. **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+  have hA: "finite ?A \<and> card ?A \<le> 3"
+    by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<sigma>2])
+  have hA_fin: "finite ?A"
+    using hA by (by100 blast)
+  have hA_card: "card ?A \<le> 3"
+    using hA by (by100 blast)
+  have hE_sub_A: "?E \<subseteq> ?A"
+    by (by100 blast)
+  have hE_fin: "finite ?E"
+    by (rule finite_subset[OF hE_sub_A hA_fin])
+  have hE_card_le_A: "card ?E \<le> card ?A"
+    by (rule card_mono[OF hA_fin hE_sub_A])
+  have hE_card: "card ?E \<le> 3"
+    using hE_card_le_A hA_card by (by100 linarith)
+  show ?thesis
+    using hE_fin hE_card by (by100 blast)
+qed
+
 lemma geotop_two_triangle_boundary_edge_faces_card_le2_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -6763,19 +6792,10 @@ proof -
   let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
   have hE_card_le3: "card ?E \<le> 3"
   proof -
-    let ?A = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
-    have hA: "finite ?A \<and> card ?A \<le> 3"
-      by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<sigma>2])
-    have hA_fin: "finite ?A"
-      using hA by (by100 blast)
-    have hA_card: "card ?A \<le> 3"
-      using hA by (by100 blast)
-    have hE_sub_A: "?E \<subseteq> ?A"
-      by (by100 blast)
-    have "card ?E \<le> card ?A"
-      by (rule card_mono[OF hA_fin hE_sub_A])
-    thus ?thesis
-      using hA_card by (by100 linarith)
+    have hE: "finite ?E \<and> card ?E \<le> 3"
+      by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<sigma>2])
+    show ?thesis
+      using hE by (by100 simp)
   qed
   have hE_card_ne3: "card ?E \<noteq> 3"
     by (rule geotop_two_triangle_not_all_boundary_edges_prefix
@@ -7715,19 +7735,10 @@ proof -
               "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<le> 3"
             proof -
               let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              let ?A = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta>}"
-              have hA: "finite ?A \<and> card ?A \<le> 3"
-                by (rule geotop_2simplex_complex_edge_faces_card_le3_prefix[OF h\<theta>2])
-              have hA_fin: "finite ?A"
-                using hA by (by100 simp)
-              have hA_card: "card ?A \<le> 3"
-                using hA by (by100 simp)
-              have hE_sub_A: "?E \<subseteq> ?A"
-                by (by100 blast)
-              have "card ?E \<le> card ?A"
-                by (rule card_mono[OF hA_fin hE_sub_A])
-              thus ?thesis
-                using hA_card by (by100 simp)
+              have hE: "finite ?E \<and> card ?E \<le> 3"
+                by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<theta>2])
+              show ?thesis
+                using hE by (by100 simp)
             qed
             have hE\<theta>_card_eq3_if_both_other_boundary:
               "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J' \<Longrightarrow>
