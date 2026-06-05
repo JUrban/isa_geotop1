@@ -1993,6 +1993,54 @@ lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
     the definition of free 2-simplex literal. **)
   sorry
 
+lemma geotop_two_triangle_other_2simplex_not_subset_prefix:
+  fixes \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  shows "\<not> \<tau> \<subseteq> \<sigma>"
+  (**
+    Two-triangle base case bookkeeping: the second 2-simplex cannot be
+    contained in the first one, since a proper containment between two
+    simplexes of the same complex forces a strict dimension drop. **)
+proof
+  assume hsub: "\<tau> \<subseteq> \<sigma>"
+  have h\<tau>_in: "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+    using hT_eq by (by100 simp)
+  have h\<tau>K: "\<tau> \<in> K"
+    using h\<tau>_in by (by100 simp)
+  have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    using h\<tau>_in by (by100 simp)
+  have hproper: "\<tau> \<subset> \<sigma>"
+    using hsub h\<sigma>\<tau> by (by100 blast)
+  have "(2::nat) < 2"
+    by (rule geotop_complex_proper_subset_dim_less
+        [OF hK h\<tau>K h\<sigma>K hproper h\<tau>2 h\<sigma>2])
+  thus False
+    by (by100 simp)
+qed
+
+lemma geotop_two_triangle_all_boundary_edges_force_other_subset_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes hcard: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  shows "\<tau> \<subseteq> \<sigma>"
+  (**
+    Book base case, exactly two 2-simplexes: if all three edge faces of
+    \<open>\<sigma>\<close> lie on the polygon boundary, then the disk bounded by that frontier
+    leaves no boundary edge through which the second 2-simplex can attach
+    outside \<open>\<sigma>\<close>; hence the other 2-simplex is forced into \<open>\<sigma>\<close>. **)
+  sorry
+
 lemma geotop_two_triangle_not_all_boundary_edges_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -2008,7 +2056,17 @@ lemma geotop_two_triangle_not_all_boundary_edges_prefix:
     Book base case, exactly two 2-simplexes: one triangle cannot have all
     three edge faces lying on the polygon boundary, since the second
     2-simplex must attach across some edge in the disk triangulation. **)
-  sorry
+proof
+  assume hcard: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  have hsub: "\<tau> \<subseteq> \<sigma>"
+    by (rule geotop_two_triangle_all_boundary_edges_force_other_subset_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau> hcard])
+  have hnsub: "\<not> \<tau> \<subseteq> \<sigma>"
+    by (rule geotop_two_triangle_other_2simplex_not_subset_prefix
+        [OF hK hT_eq h\<sigma>K h\<sigma>2 h\<sigma>\<tau>])
+  show False
+    using hnsub hsub by (by100 blast)
+qed
 
 lemma geotop_two_triangle_boundary_edge_faces_card_le2_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
