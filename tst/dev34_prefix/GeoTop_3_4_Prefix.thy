@@ -1062,6 +1062,83 @@ proof -
     by (intro conjI h02_edge h02_face h12_edge h12_face)
 qed
 
+lemma geotop_pair_convex_hull_simplex_vertices_prefix:
+  fixes v w :: "real^2"
+  assumes hvw: "v \<noteq> w"
+  shows "geotop_simplex_vertices (geotop_convex_hull {v, w}) {v, w}"
+proof -
+  have hfin: "finite {v, w}"
+    by (by100 simp)
+  have hne: "{v, w} \<noteq> {}"
+    by (by100 simp)
+  have hai: "\<not> affine_dependent {v, w}"
+    by (rule affine_independent_2)
+  show ?thesis
+    by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hfin hne hai])
+qed
+
+lemma geotop_2simplex_vertices_edge_hulls_distinct_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}
+      \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+proof -
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have h01_vertices:
+    "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) {v\<^sub>0, v\<^sub>1}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hv\<^sub>0v\<^sub>1])
+  have h02_vertices:
+    "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) {v\<^sub>0, v\<^sub>2}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hv\<^sub>0v\<^sub>2])
+  have h12_vertices:
+    "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hv\<^sub>1v\<^sub>2])
+  have h01_ne_02:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+  proof
+    assume heq: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+    have h01_on_02:
+      "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) {v\<^sub>0, v\<^sub>1}"
+      using h01_vertices heq by (by100 simp)
+    have hverts_eq: "{v\<^sub>0, v\<^sub>1} = {v\<^sub>0, v\<^sub>2}"
+      by (rule geotop_simplex_vertices_unique[OF h01_on_02 h02_vertices])
+    show False
+      using hverts_eq hv\<^sub>0v\<^sub>1 hv\<^sub>2_not by (by100 blast)
+  qed
+  have h01_ne_12:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  proof
+    assume heq: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    have h01_on_12:
+      "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) {v\<^sub>0, v\<^sub>1}"
+      using h01_vertices heq by (by100 simp)
+    have hverts_eq: "{v\<^sub>0, v\<^sub>1} = {v\<^sub>1, v\<^sub>2}"
+      by (rule geotop_simplex_vertices_unique[OF h01_on_12 h12_vertices])
+    show False
+      using hverts_eq hv\<^sub>0v\<^sub>1 hv\<^sub>2_not by (by100 blast)
+  qed
+  have h02_ne_12:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+  proof
+    assume heq: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    have h02_on_12:
+      "geotop_simplex_vertices (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) {v\<^sub>0, v\<^sub>2}"
+      using h02_vertices heq by (by100 simp)
+    have hverts_eq: "{v\<^sub>0, v\<^sub>2} = {v\<^sub>1, v\<^sub>2}"
+      by (rule geotop_simplex_vertices_unique[OF h02_on_12 h12_vertices])
+    show False
+      using hverts_eq hv\<^sub>0v\<^sub>1 hv\<^sub>2_not by (by100 blast)
+  qed
+  show ?thesis
+    by (intro conjI h01_ne_02 h01_ne_12 h02_ne_12)
+qed
+
 lemma geotop_is_face_imp_subset_prefix:
   fixes \<tau> \<sigma> :: "(real^2) set"
   assumes hface: "geotop_is_face \<tau> \<sigma>"
@@ -2602,6 +2679,21 @@ proof -
                 geotop_convex_hull {v\<^sub>1, v\<^sub>2}
                   \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
               using hv\<^sub>1v\<^sub>2K hv\<^sub>1v\<^sub>2_edge hv\<^sub>1v\<^sub>2_face by (by100 simp)
+            have htriangle_edge_hulls_distinct:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}
+                \<and> geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              by (rule geotop_2simplex_vertices_edge_hulls_distinct_prefix
+                  [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+            have hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>0, v\<^sub>2}"
+              using htriangle_edge_hulls_distinct by (by100 simp)
+            have hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              using htriangle_edge_hulls_distinct by (by100 simp)
+            have hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2:
+              "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+              using htriangle_edge_hulls_distinct by (by100 simp)
             show ?thesis
               sorry
           qed
