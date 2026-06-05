@@ -6980,6 +6980,49 @@ proof -
     using hE_card_ge3 hE_card_le3 by (by100 simp)
 qed
 
+lemma geotop_selected_boundary_edge_set_eq_three_named_prefix:
+  fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0_sel:
+    "e\<^sub>0 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>1_sel_if:
+    "e\<^sub>1 \<subseteq> J \<Longrightarrow>
+      e\<^sub>1 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>2_sel_if:
+    "e\<^sub>2 \<subseteq> J \<Longrightarrow>
+      e\<^sub>2 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0e\<^sub>1: "e\<^sub>0 \<noteq> e\<^sub>1"
+  assumes he\<^sub>0e\<^sub>2: "e\<^sub>0 \<noteq> e\<^sub>2"
+  assumes he\<^sub>1e\<^sub>2: "e\<^sub>1 \<noteq> e\<^sub>2"
+  assumes he\<^sub>1_sub: "e\<^sub>1 \<subseteq> J"
+  assumes he\<^sub>2_sub: "e\<^sub>2 \<subseteq> J"
+  assumes hE_card:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = 3"
+  shows "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} =
+      {e\<^sub>0, e\<^sub>1, e\<^sub>2}"
+  (**
+    Finite selected-edge bookkeeping: once the selected-edge set has cardinal
+    three and contains the three distinct named edge faces, it is exactly that
+    named set. **)
+proof -
+  let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  let ?P = "{e\<^sub>0, e\<^sub>1, e\<^sub>2}"
+  have he\<^sub>1_sel: "e\<^sub>1 \<in> ?E"
+    by (rule he\<^sub>1_sel_if[OF he\<^sub>1_sub])
+  have he\<^sub>2_sel: "e\<^sub>2 \<in> ?E"
+    by (rule he\<^sub>2_sel_if[OF he\<^sub>2_sub])
+  have hP_sub_E: "?P \<subseteq> ?E"
+    using he\<^sub>0_sel he\<^sub>1_sel he\<^sub>2_sel by (by100 blast)
+  have hP_card: "card ?P = 3"
+    using he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 by (by100 simp)
+  have hcard_eq: "card ?P = card ?E"
+    using hP_card hE_card by (by100 simp)
+  have hP_eq_E: "?P = ?E"
+    by (rule card_subset_eq[OF hE_fin hP_sub_E hcard_eq])
+  show ?thesis
+    using hP_eq_E by (by100 simp)
+qed
+
 lemma geotop_selected_boundary_edge_set_not_both_other_edges_prefix:
   fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
   assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
@@ -7780,26 +7823,15 @@ proof -
               assume hv\<^sub>0v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'"
               assume hv\<^sub>1v\<^sub>2_sub_J: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J'"
               let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'}"
-              let ?P = "{geotop_convex_hull {v\<^sub>0, v\<^sub>1},
-                         geotop_convex_hull {v\<^sub>0, v\<^sub>2},
-                         geotop_convex_hull {v\<^sub>1, v\<^sub>2}}"
-              have hP_sub_E: "?P \<subseteq> ?E"
-                using hv\<^sub>0v\<^sub>1_selected
-                  hv\<^sub>0v\<^sub>2_selected_if_boundary[OF hv\<^sub>0v\<^sub>2_sub_J]
-                  hv\<^sub>1v\<^sub>2_selected_if_boundary[OF hv\<^sub>1v\<^sub>2_sub_J]
-                by (by100 blast)
-              have hP_card: "card ?P = 3"
-                using hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
-                by (by100 simp)
               have hE_card: "card ?E = 3"
                 by (rule hE\<theta>_card_eq3_if_both_other_boundary
                     [OF hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J])
-              have hcard_eq: "card ?P = card ?E"
-                using hP_card hE_card by (by100 simp)
-              have hP_eq_E: "?P = ?E"
-                by (rule card_subset_eq[OF hE\<theta>_fin hP_sub_E hcard_eq])
               show ?thesis
-                using hP_eq_E by (by100 simp)
+                by (rule geotop_selected_boundary_edge_set_eq_three_named_prefix
+                    [OF hE\<theta>_fin hv\<^sub>0v\<^sub>1_selected
+                      hv\<^sub>0v\<^sub>2_selected_if_boundary hv\<^sub>1v\<^sub>2_selected_if_boundary
+                      hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
+                      hv\<^sub>0v\<^sub>2_sub_J hv\<^sub>1v\<^sub>2_sub_J hE_card])
             qed
             have h\<theta>_frontier_named_edges:
               "frontier \<theta> =
