@@ -1726,6 +1726,31 @@ proof -
     using hclosure_rel hint_rel by (by100 simp)
 qed
 
+lemma geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_polygon_interior (frontier \<sigma>) = interior \<sigma>"
+  (**
+    Triangle case of the polygon-interior convention: the bounded component of
+    the complement of the frontier of a 2-simplex is the ordinary open triangle.
+    This is the explicit local form of the fact used when Moise says the
+    exactly-two-triangle case is clear. **)
+  sorry
+
+lemma geotop_polygon_boundary_contact_triangle_frontier_eq_prefix:
+  fixes J \<sigma> :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hfront_sub: "frontier \<sigma> \<subseteq> J"
+  assumes hcontact: "\<sigma> \<inter> J = frontier \<sigma>"
+  shows "J = frontier \<sigma>"
+  (**
+    Simple-closed-boundary part of the two-triangle base case: a polygonal
+    1-sphere that contains the whole frontier of a triangle and has no further
+    contact with the closed triangle cannot have extra boundary outside the
+    triangle. **)
+  sorry
+
 lemma geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix:
   fixes J \<sigma> :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
@@ -1738,7 +1763,16 @@ lemma geotop_polygon_boundary_2simplex_frontier_forces_same_interior_prefix:
     polygonal simple closed curve contains the whole frontier of a 2-simplex
     and its contact with the closed triangle is exactly that frontier, then the
     bounded polygon interior is the ordinary interior of the triangle. **)
-  sorry
+proof -
+  have hJ_eq: "J = frontier \<sigma>"
+    by (rule geotop_polygon_boundary_contact_triangle_frontier_eq_prefix
+        [OF hJ h\<sigma>2 hfront_sub hcontact])
+  have hfront_int: "geotop_polygon_interior (frontier \<sigma>) = interior \<sigma>"
+    by (rule geotop_2simplex_frontier_polygon_interior_eq_HOL_interior_prefix
+        [OF h\<sigma>2])
+  show ?thesis
+    using hJ_eq hfront_int by (by100 simp)
+qed
 
 lemma geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix:
   fixes J \<sigma> :: "(real^2) set"
