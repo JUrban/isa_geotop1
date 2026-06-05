@@ -1757,6 +1757,115 @@ proof -
     using hconv_geotop geotop_convex_iff_HOL_convex by (by100 blast)
 qed
 
+lemma geotop_closed_segment_arc_endpoints_prefix:
+  fixes P Q :: "real^2"
+  assumes hPQ: "P \<noteq> Q"
+  shows "geotop_arc_endpoints (closed_segment P Q) {P, Q}"
+  (**
+    Segment-edge endpoint form used to split a triangle frontier into two
+    broken arcs. **)
+proof -
+  have harc: "geotop_is_arc (closed_segment P Q)
+      (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
+    by (rule geotop_closed_segment_is_arc[OF hPQ])
+  have hcard: "card {P, Q} = 2"
+    using hPQ by (by100 simp)
+  have hsub: "{P, Q} \<subseteq> closed_segment P Q"
+    by (by100 simp)
+  have hunit_eq: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}"
+    by (by100 auto)
+  have h_image: "linepath P Q ` {0..1} = closed_segment P Q"
+    by (rule linepath_image_01)
+  have h_inj: "inj_on (linepath P Q) {0..1}"
+    by (rule inj_on_linepath[OF hPQ])
+  have h_cont: "continuous_on {0..1::real} (linepath P Q)"
+    by (rule continuous_on_linepath)
+  have h_compact: "compact {0..1::real}"
+    by (by100 simp)
+  have h_image_refl:
+      "linepath P Q ` ({0..1}::real set) = linepath P Q ` ({0..1}::real set)"
+    by (by100 simp)
+  obtain g where hhomeo_img:
+      "homeomorphism {0..1} (linepath P Q ` {0..1}) (linepath P Q) g"
+    using homeomorphism_compact[OF h_compact h_cont h_image_refl h_inj] by (by100 blast)
+  have hhomeo_seg:
+      "homeomorphism {0..1} (closed_segment P Q) (linepath P Q) g"
+    using hhomeo_img h_image by (by100 simp)
+  have htop1_01: "top1_homeomorphism_on {0..1}
+      (subspace_topology UNIV geotop_euclidean_topology {0..1})
+      (closed_segment P Q)
+      (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+      (linepath P Q)"
+  proof -
+    have h_Teucl_real: "is_topology_on (UNIV::real set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have h_Teucl_R2: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+      by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+    have htop_01: "is_topology_on ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))"
+      by (rule subspace_topology_is_topology_on[OF h_Teucl_real subset_UNIV])
+    have htop_seg: "is_topology_on (closed_segment P Q)
+        (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))"
+      by (rule subspace_topology_is_topology_on[OF h_Teucl_R2 subset_UNIV])
+    have hbij: "bij_betw (linepath P Q) ({0..1}::real set) (closed_segment P Q)"
+      unfolding bij_betw_def using h_inj h_image by (by100 simp)
+    have hline_img: "linepath P Q ` ({0..1}::real set) \<subseteq> closed_segment P Q"
+      using h_image by (by100 simp)
+    have hline_top1: "top1_continuous_map_on ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))
+        (closed_segment P Q)
+        (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+        (linepath P Q)"
+      by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF h_cont hline_img])
+    have hg_cont: "continuous_on (closed_segment P Q) g"
+      using hhomeo_seg unfolding homeomorphism_def by (by100 blast)
+    have hg_img: "g ` (closed_segment P Q) \<subseteq> ({0..1}::real set)"
+      using hhomeo_seg unfolding homeomorphism_def by (by100 blast)
+    have hg_top1: "top1_continuous_map_on (closed_segment P Q)
+        (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+        ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set)) g"
+      by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont hg_img])
+    have hgf_id: "\<forall>y\<in>closed_segment P Q. linepath P Q (g y) = y"
+      using hhomeo_seg unfolding homeomorphism_def by (by100 blast)
+    have hg_eq_inv:
+        "\<forall>y\<in>closed_segment P Q.
+          g y = inv_into ({0..1}::real set) (linepath P Q) y"
+    proof
+      fix y
+      assume hy: "y \<in> closed_segment P Q"
+      have hgy_in: "g y \<in> ({0..1}::real set)"
+        using hg_img hy by (by100 blast)
+      have hfgy: "linepath P Q (g y) = y"
+        using hgf_id hy by (by100 blast)
+      have "inv_into ({0..1}::real set) (linepath P Q) y = g y"
+        by (rule inv_into_f_eq[OF h_inj hgy_in hfgy])
+      thus "g y = inv_into ({0..1}::real set) (linepath P Q) y"
+        by (by100 simp)
+    qed
+    have hinv_top1: "top1_continuous_map_on (closed_segment P Q)
+        (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+        ({0..1}::real set)
+        (subspace_topology UNIV geotop_euclidean_topology ({0..1}::real set))
+        (inv_into ({0..1}::real set) (linepath P Q))"
+      using hg_top1 top1_continuous_map_on_cong[OF hg_eq_inv] by (by100 blast)
+    show ?thesis
+      unfolding top1_homeomorphism_on_def
+      using htop_01 htop_seg hbij hline_top1 hinv_top1 by (by100 blast)
+  qed
+  have htop1_unit: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+      (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1})
+      (closed_segment P Q)
+      (subspace_topology UNIV geotop_euclidean_topology (closed_segment P Q))
+      (linepath P Q)"
+    using htop1_01 hunit_eq by (by100 simp)
+  have hendpoints: "{P, Q} = {linepath P Q 0, linepath P Q 1}"
+    unfolding linepath_def by (by100 simp)
+  show ?thesis
+    unfolding geotop_arc_endpoints_def
+    using harc hcard hsub htop1_unit hendpoints by (by100 blast)
+qed
+
 lemma geotop_2simplex_frontier_is_polygon_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
