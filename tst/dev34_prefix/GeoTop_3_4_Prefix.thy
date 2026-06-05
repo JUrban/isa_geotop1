@@ -2382,6 +2382,16 @@ proof -
               thus ?thesis
                 using that by (elim exE conjE)
             qed
+            have he\<^sub>\<theta>_sub_frontier:
+              "e\<^sub>\<theta> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+                 (geotop_polyhedron K)"
+            proof -
+              have hfront_eq:
+                "geotop_frontier UNIV geotop_euclidean_topology (geotop_polyhedron K) = J'"
+                by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ' hK_poly'])
+              show ?thesis
+                using he\<^sub>\<theta>_sub_J hfront_eq by (by100 simp)
+            qed
             show ?thesis
               sorry
           qed
