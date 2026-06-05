@@ -3912,6 +3912,60 @@ proof (rule ccontr)
     using hnot_boundary by (by100 blast)
 qed
 
+lemma geotop_two_triangle_edge_boundary_or_shared_prefix:
+  fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  shows "e \<subseteq> J \<or> geotop_is_face e \<tau>"
+  (**
+    Exactly two triangles: every edge of one triangle is either a polygon
+    boundary edge or the shared edge with the other triangle. **)
+proof (cases "e \<subseteq> J")
+  case True
+  then show ?thesis
+    by (by100 blast)
+next
+  case False
+  have "geotop_is_face e \<tau>"
+    by (rule geotop_two_triangle_nonboundary_edge_shared_prefix
+        [OF hJ hK hK_poly hT_eq h\<sigma>K h\<sigma>2 heK hedge he\<sigma> False])
+  then show ?thesis
+    by (by100 blast)
+qed
+
+lemma geotop_two_triangle_shared_edge_inter_eq_prefix:
+  fixes e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hT_eq: "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2} = {\<sigma>, \<tau>}"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  shows "\<sigma> \<inter> \<tau> = e"
+  (**
+    Shared-edge form specialized to the exactly two-triangle base case. **)
+proof -
+  have h\<tau>_in: "\<tau> \<in> {\<rho>\<in>K. geotop_simplex_dim \<rho> 2}"
+    using hT_eq by (by100 simp)
+  have h\<tau>K: "\<tau> \<in> K"
+    using h\<tau>_in by (by100 simp)
+  have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    using h\<tau>_in by (by100 simp)
+  show ?thesis
+    by (rule geotop_complex_two_2simplex_shared_edge_inter_eq_edge_prefix
+        [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> he\<sigma> he\<tau> hedge])
+qed
+
 lemma geotop_two_triangle_boundary_contact_edges_cover_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
