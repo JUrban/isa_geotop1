@@ -2334,6 +2334,43 @@ proof -
               by (rule hboth_free_case[OF h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>free h\<tau>free])
           next
             case False
+            obtain \<theta> where
+              h\<theta>K: "\<theta> \<in> K" and
+              h\<theta>2: "geotop_simplex_dim \<theta> 2" and
+              hE\<theta>_ne: "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<noteq> {}" and
+              h\<theta>_not_free: "\<not> geotop_free_2_simplex K J' \<theta>"
+            proof -
+              have hnot_both:
+                "\<not> (geotop_free_2_simplex K J' \<sigma> \<and> geotop_free_2_simplex K J' \<tau>)"
+                using False .
+              have hnonfree_exists:
+                "\<exists>\<theta>. \<theta> \<in> K \<and> geotop_simplex_dim \<theta> 2
+                  \<and> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<noteq> {}
+                  \<and> \<not> geotop_free_2_simplex K J' \<theta>"
+              proof (cases "geotop_free_2_simplex K J' \<sigma>")
+                case True
+                have h\<tau>_not_free: "\<not> geotop_free_2_simplex K J' \<tau>"
+                  using hnot_both True by (by100 simp)
+                show ?thesis
+                proof (rule exI[where x = \<tau>])
+                  show "\<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2
+                    \<and> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J'} \<noteq> {}
+                    \<and> \<not> geotop_free_2_simplex K J' \<tau>"
+                    by (intro conjI h\<tau>K h\<tau>2 hE\<tau>_ne h\<tau>_not_free)
+                qed
+              next
+                case False
+                show ?thesis
+                proof (rule exI[where x = \<sigma>])
+                  show "\<sigma> \<in> K \<and> geotop_simplex_dim \<sigma> 2
+                    \<and> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J'} \<noteq> {}
+                    \<and> \<not> geotop_free_2_simplex K J' \<sigma>"
+                    by (intro conjI h\<sigma>K h\<sigma>2 hE\<sigma>_ne False)
+                qed
+              qed
+              show ?thesis
+                using hnonfree_exists that by (elim exE conjE)
+            qed
             show ?thesis
               sorry
           qed
