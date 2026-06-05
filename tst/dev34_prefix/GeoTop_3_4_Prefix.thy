@@ -2835,6 +2835,111 @@ proof -
     using h\<tau>_sub_disk hclosed_disk_sub_\<sigma> by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_three_boundary_edges_force_2simplex_subset_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>card: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  shows "\<tau> \<subseteq> \<sigma>"
+  (**
+    Disk-wide form of the all-boundary triangle obstruction: if all three
+    edge faces of a triangle are selected as polygon-boundary edges, the
+    closed polygonal disk is already contained in that triangle. **)
+proof -
+  have hfront_sub_J: "frontier \<sigma> \<subseteq> J"
+    by (rule geotop_2simplex_three_selected_edge_faces_frontier_subset_prefix
+        [OF h\<sigma>2 h\<sigma>card])
+  have h\<sigma>J_eq_frontier: "\<sigma> \<inter> J = frontier \<sigma>"
+    by (rule geotop_2simplex_three_selected_edge_faces_boundary_contact_eq_frontier_prefix
+        [OF hJ h\<sigma>K h\<sigma>2 hK_poly h\<sigma>card])
+  have h\<tau>_sub_poly: "\<tau> \<subseteq> geotop_polyhedron K"
+    using h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<tau>_sub_disk:
+      "\<tau> \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using h\<tau>_sub_poly hK_poly by (by100 simp)
+  have hclosed_disk_sub_\<sigma>:
+      "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+        \<subseteq> \<sigma>"
+    by (rule geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix
+        [OF hJ h\<sigma>2 hfront_sub_J h\<sigma>J_eq_frontier])
+  show ?thesis
+    using h\<tau>_sub_disk hclosed_disk_sub_\<sigma> by (by100 blast)
+qed
+
+lemma geotop_polygon_disk_three_boundary_edges_no_other_2simplex_prefix:
+  fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>card: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<tau>\<sigma>: "\<tau> \<noteq> \<sigma>"
+  shows False
+  (**
+    Consequence for the ear/decomposition package: an all-boundary triangle
+    cannot coexist with a distinct 2-simplex in the same disk triangulation. **)
+proof -
+  have hsub: "\<tau> \<subseteq> \<sigma>"
+    by (rule geotop_polygon_disk_three_boundary_edges_force_2simplex_subset_prefix
+        [OF hJ hK_poly h\<sigma>K h\<sigma>2 h\<sigma>card h\<tau>K h\<tau>2])
+  have hproper: "\<tau> \<subset> \<sigma>"
+    using hsub h\<tau>\<sigma> by (by100 blast)
+  have "(2::nat) < 2"
+    by (rule geotop_complex_proper_subset_dim_less
+        [OF hK h\<tau>K h\<sigma>K hproper h\<tau>2 h\<sigma>2])
+  thus False
+    by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_three_boundary_edges_2simplexes_singleton_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>card: "card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = 3"
+  shows "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2} = {\<sigma>}"
+  (**
+    Cardinal form of the same obstruction: a disk triangulation with an
+    all-boundary triangle has no other 2-simplexes. **)
+proof
+  show "{\<tau>\<in>K. geotop_simplex_dim \<tau> 2} \<subseteq> {\<sigma>}"
+  proof
+    fix \<tau>
+    assume h\<tau>T: "\<tau> \<in> {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+    have h\<tau>K: "\<tau> \<in> K"
+      using h\<tau>T by (by100 simp)
+    have h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      using h\<tau>T by (by100 simp)
+    show "\<tau> \<in> {\<sigma>}"
+    proof (cases "\<tau> = \<sigma>")
+      case True
+      show ?thesis
+        using True by (by100 simp)
+    next
+      case False
+      have False
+        by (rule geotop_polygon_disk_three_boundary_edges_no_other_2simplex_prefix
+            [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 h\<sigma>card h\<tau>K h\<tau>2 False])
+      thus ?thesis
+        by (by100 simp)
+    qed
+  qed
+  show "{\<sigma>} \<subseteq> {\<tau>\<in>K. geotop_simplex_dim \<tau> 2}"
+    using h\<sigma>K h\<sigma>2 by (by100 simp)
+qed
+
 lemma geotop_two_triangle_not_all_boundary_edges_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
