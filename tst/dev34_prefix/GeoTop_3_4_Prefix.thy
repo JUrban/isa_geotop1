@@ -1207,6 +1207,233 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_simplex_vertex_notin_hull_of_other_vertices_prefix:
+  fixes \<sigma> :: "(real^2) set" and V W :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+  assumes hvV: "v \<in> V"
+  assumes hW_sub: "W \<subseteq> V - {v}"
+  shows "v \<notin> geotop_convex_hull W"
+proof -
+  have hV_ai: "\<not> affine_dependent V"
+    by (rule geotop_general_position_imp_aff_indep[OF h\<sigma>V])
+  have hW_sub_V: "W \<subseteq> V"
+    using hW_sub by (by100 blast)
+  have hW_ai: "\<not> affine_dependent W"
+    by (rule affine_independent_subset[OF hV_ai hW_sub_V])
+  have hinsert_sub: "insert v W \<subseteq> V"
+    using hvV hW_sub by (by100 blast)
+  have hinsert_ai: "\<not> affine_dependent (insert v W)"
+    by (rule affine_independent_subset[OF hV_ai hinsert_sub])
+  have hv_not_W: "v \<notin> W"
+    using hW_sub by (by100 blast)
+  have hv_not_aff: "v \<notin> affine hull W"
+  proof
+    assume hv_aff: "v \<in> affine hull W"
+    have "affine_dependent (insert v W)"
+      using affine_dependent_choose[OF hW_ai, of v] hv_not_W hv_aff
+      by (by100 simp)
+    thus False
+      using hinsert_ai by (by100 blast)
+  qed
+  have hconv_sub_aff: "convex hull W \<subseteq> affine hull W"
+    by (rule convex_hull_subset_affine_hull)
+  show ?thesis
+  proof
+    assume hv_hull: "v \<in> geotop_convex_hull W"
+    have "v \<in> convex hull W"
+      using hv_hull geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+    hence "v \<in> affine hull W"
+      using hconv_sub_aff by (by100 blast)
+    thus False
+      using hv_not_aff by (by100 blast)
+  qed
+qed
+
+lemma geotop_2simplex_face_containing_edge_eq_edge_or_simplex_prefix:
+  fixes F e \<sigma> :: "(real^2) set"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes hF\<sigma>: "geotop_is_face F \<sigma>"
+  assumes hedge: "geotop_is_edge e"
+  assumes heF: "e \<subseteq> F"
+  shows "F = e \<or> F = \<sigma>"
+  (**
+    Face-lattice form used by the two-triangle disk base case: inside a
+    2-simplex there is no face strictly between an edge and the full simplex. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and he_eq: "e = geotop_convex_hull W"
+    and heW: "geotop_simplex_vertices e W"
+    and hW_card: "card W = 2"
+    by (rule geotop_edge_face_witness_card_two_prefix[OF hedge he\<sigma>])
+  obtain V\<^sub>F W\<^sub>F where h\<sigma>VF: "geotop_simplex_vertices \<sigma> V\<^sub>F"
+    and hWF_ne: "W\<^sub>F \<noteq> {}"
+    and hWF_sub: "W\<^sub>F \<subseteq> V\<^sub>F"
+    and hF_eq: "F = geotop_convex_hull W\<^sub>F"
+    and hFWF: "geotop_simplex_vertices F W\<^sub>F"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF hF\<sigma>])
+  have hVF_eq: "V\<^sub>F = V"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>VF h\<sigma>V])
+  have hWF_sub_V: "W\<^sub>F \<subseteq> V"
+    using hWF_sub hVF_eq by (by100 simp)
+  have hW_sub_WF: "W \<subseteq> W\<^sub>F"
+  proof
+    fix x
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> V"
+      using hxW hW_sub by (by100 blast)
+    have hx_e: "x \<in> e"
+    proof -
+      have "x \<in> convex hull W"
+        using hxW hull_inc[of x W] by (by100 simp)
+      hence "x \<in> geotop_convex_hull W"
+        using geotop_convex_hull_eq_HOL[of W] by (by100 simp)
+      thus ?thesis
+        using he_eq by (by100 simp)
+    qed
+    have hxF: "x \<in> F"
+      using hx_e heF by (by100 blast)
+    show "x \<in> W\<^sub>F"
+    proof (rule ccontr)
+      assume hx_not_WF: "\<not> x \<in> W\<^sub>F"
+      have hWF_sub_no_x: "W\<^sub>F \<subseteq> V - {x}"
+        using hWF_sub_V hx_not_WF by (by100 blast)
+      have hx_not_hull: "x \<notin> geotop_convex_hull W\<^sub>F"
+        by (rule geotop_simplex_vertex_notin_hull_of_other_vertices_prefix
+            [OF h\<sigma>V hxV hWF_sub_no_x])
+      have "x \<in> geotop_convex_hull W\<^sub>F"
+        using hxF hF_eq by (by100 simp)
+      thus False
+        using hx_not_hull by (by100 blast)
+    qed
+  qed
+  have hV_card: "card V = 3"
+  proof -
+    obtain V2 m where hV2_fin: "finite V2"
+      and hV2_card: "card V2 = 2 + 1"
+      and h2_le_m: "2 \<le> m"
+      and hgp_V2: "geotop_general_position V2 m"
+      and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+      using h\<sigma>2 unfolding geotop_simplex_dim_def by (by100 blast)
+    have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+      unfolding geotop_simplex_vertices_def
+      using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+    have hV_eq: "V = V2"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+    show ?thesis
+      using hV_eq hV2_card by (by100 simp)
+  qed
+  have hV_fin: "finite V"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hWF_cases: "W\<^sub>F = W \<or> W\<^sub>F = V"
+  proof (cases "W\<^sub>F = W")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have hWF_fin: "finite W\<^sub>F"
+      using hFWF unfolding geotop_simplex_vertices_def by (by100 blast)
+    have hW_psub_WF: "W \<subset> W\<^sub>F"
+      using hW_sub_WF False by (by100 blast)
+    have hW_card_lt: "card W < card W\<^sub>F"
+      by (rule psubset_card_mono[OF hWF_fin hW_psub_WF])
+    have hWF_le_V: "card W\<^sub>F \<le> card V"
+      by (rule card_mono[OF hV_fin hWF_sub_V])
+    have hWF_card: "card W\<^sub>F = card V"
+      using hW_card hW_card_lt hWF_le_V hV_card by (by100 arith)
+    have hWF_eq_V: "W\<^sub>F = V"
+    proof (rule card_seteq[OF hV_fin hWF_sub_V])
+      show "card V \<le> card W\<^sub>F"
+        using hWF_card by (by100 simp)
+    qed
+    show ?thesis
+      using hWF_eq_V by (by100 blast)
+  qed
+  show ?thesis
+  proof -
+    have h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+    from hWF_cases show ?thesis
+    proof
+      assume hWF_eq_W: "W\<^sub>F = W"
+      have "F = e"
+        using hWF_eq_W hF_eq he_eq by (by100 simp)
+      show ?thesis
+        using \<open>F = e\<close> by (by100 blast)
+    next
+      assume hWF_eq_V: "W\<^sub>F = V"
+      have "F = \<sigma>"
+        using hWF_eq_V hF_eq h\<sigma>_eq by (by100 simp)
+      show ?thesis
+        using \<open>F = \<sigma>\<close> by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_complex_two_2simplex_shared_edge_inter_eq_edge_prefix:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma> \<tau> :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<tau>K: "\<tau> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<tau>2: "geotop_simplex_dim \<tau> 2"
+  assumes h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+  assumes he\<sigma>: "geotop_is_face e \<sigma>"
+  assumes he\<tau>: "geotop_is_face e \<tau>"
+  assumes hedge: "geotop_is_edge e"
+  shows "\<sigma> \<inter> \<tau> = e"
+  (**
+    In a complex, two distinct 2-simplexes sharing an edge intersect exactly in
+    that edge. **)
+proof -
+  let ?I = "\<sigma> \<inter> \<tau>"
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset_prefix[OF he\<sigma>])
+  have he_sub_\<tau>: "e \<subseteq> \<tau>"
+    by (rule geotop_is_face_imp_subset_prefix[OF he\<tau>])
+  have he_nonempty: "e \<noteq> {}"
+  proof -
+    have he_dim: "geotop_simplex_dim e 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+    show ?thesis
+      by (rule geotop_simplex_nonempty[OF he_simplex])
+  qed
+  have he_sub_I: "e \<subseteq> ?I"
+    using he_sub_\<sigma> he_sub_\<tau> by (by100 blast)
+  have hI_nonempty: "?I \<noteq> {}"
+    using he_nonempty he_sub_I by (by100 blast)
+  have hI_face_\<sigma>: "geotop_is_face ?I \<sigma>"
+    using geotop_is_complex_intersection[OF hK] h\<sigma>K h\<tau>K hI_nonempty
+    by (by100 blast)
+  have hI_face_\<tau>: "geotop_is_face ?I \<tau>"
+    using geotop_is_complex_intersection[OF hK] h\<sigma>K h\<tau>K hI_nonempty
+    by (by100 blast)
+  have hcase_\<sigma>: "?I = e \<or> ?I = \<sigma>"
+    by (rule geotop_2simplex_face_containing_edge_eq_edge_or_simplex_prefix
+        [OF h\<sigma>2 he\<sigma> hI_face_\<sigma> hedge he_sub_I])
+  have hcase_\<tau>: "?I = e \<or> ?I = \<tau>"
+    by (rule geotop_2simplex_face_containing_edge_eq_edge_or_simplex_prefix
+        [OF h\<tau>2 he\<tau> hI_face_\<tau> hedge he_sub_I])
+  show ?thesis
+  proof (rule ccontr)
+    assume hnot: "\<not> ?thesis"
+    have hI_eq_\<sigma>: "?I = \<sigma>"
+      using hcase_\<sigma> hnot by (by100 blast)
+    have hI_eq_\<tau>: "?I = \<tau>"
+      using hcase_\<tau> hnot by (by100 blast)
+    have "\<sigma> = \<tau>"
+      using hI_eq_\<sigma> hI_eq_\<tau> by (by100 simp)
+    thus False
+      using h\<sigma>\<tau> by (by100 blast)
+  qed
+qed
+
 lemma geotop_2simplex_edge_faces_card_le3_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
