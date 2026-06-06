@@ -10109,77 +10109,23 @@ lemma geotop_boundary_2cell_chart_three_incident_2simplex_contradiction_dev34:
           (top1_metric_topology_on (geotop_polyhedron K) (\<lambda>x y. norm (x - y))) U)) 2"
   shows False
 proof -
-  obtain eps where heps: "0 < eps"
-    and hsphereU: "sphere p eps \<subseteq> U"
-    and hsphere1: "geotop_is_n_sphere (sphere p eps)
-        (subspace_topology UNIV geotop_euclidean_topology (sphere p eps)) 1"
-    and hsphere_conn: "top1_connected_on (U - sphere p eps)
-        (subspace_topology UNIV geotop_euclidean_topology (U - sphere p eps))"
-    using geotop_three_incident_2simplex_small_circle_radius_not_separates_chart_dev34
-      [OF hK heK hedge hp hfaces hlocal_ball hUsubM]
-    by (by100 blast)
-  define J where "J = sphere p eps"
-  have hJsub: "J \<subseteq> U"
-    using hsphereU unfolding J_def by (by100 simp)
-  have hJsphere: "geotop_is_n_sphere J
-      (subspace_topology UNIV geotop_euclidean_topology J) 1"
-    using hsphere1 unfolding J_def by (by100 simp)
-  have hJconn: "top1_connected_on (U - J)
-      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-    using hsphere_conn unfolding J_def by (by100 simp)
-  let ?M = "geotop_polyhedron K"
-  have hchart_image_sep:
-    "\<And>(\<sigma> :: (real^2) set) (\<phi> :: real^2 \<Rightarrow> real^2).
-      geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
-      top1_homeomorphism_on
-        (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
-        (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
-          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
-        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi> \<Longrightarrow>
-      \<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
-        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
-  proof -
-    fix \<sigma> :: "(real^2) set"
-    fix \<phi> :: "real^2 \<Rightarrow> real^2"
-    assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
-    assume h\<phi>: "top1_homeomorphism_on
-        (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
-        (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
-          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
-        \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
-    show "\<not> top1_connected_on (\<phi> ` U - \<phi> ` J)
-        (subspace_topology UNIV geotop_euclidean_topology (\<phi> ` U - \<phi> ` J))"
-    proof (rule geotop_2cell_chart_image_jordan_side_separation_dev34)
-      show "openin_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U"
-        by (rule hUopen)
-      show "top1_homeomorphism_on
-          (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U)
-          (subspace_topology ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y)))
-            (closure_on ?M (top1_metric_topology_on ?M (\<lambda>x y. norm (x - y))) U))
-          \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
-        by (rule h\<phi>)
-      show "J \<subseteq> U"
-        by (rule hJsub)
-      show "geotop_is_n_sphere J
-          (subspace_topology UNIV geotop_euclidean_topology J) 1"
-        by (rule hJsphere)
-      have h\<phi>U_bounded: "bounded (\<phi> ` U)"
-        by (rule geotop_2cell_chart_open_domain_image_bounded_dev34
-            [OF hUopen h\<sigma>2 h\<phi>])
-      show "\<And>inner outer.
-        inner \<noteq> {} \<Longrightarrow> open inner \<Longrightarrow> connected inner \<Longrightarrow> bounded inner \<Longrightarrow>
-        outer \<noteq> {} \<Longrightarrow> open outer \<Longrightarrow> connected outer \<Longrightarrow> \<not> bounded outer \<Longrightarrow>
-        inner \<inter> outer = {} \<Longrightarrow> inner \<union> outer = UNIV - (\<phi> ` J) \<Longrightarrow>
-        inner \<subseteq> \<phi> ` U \<and> \<phi> ` U \<inter> outer \<noteq> {}"
-        sorry
-    qed
-  qed
-  have hJnotconn: "\<not> top1_connected_on (U - J)
-      (subspace_topology UNIV geotop_euclidean_topology (U - J))"
-    by (rule geotop_2cell_chart_1sphere_complement_not_connected_dev34
-        [OF hUopen hcell hJsub hJsphere hchart_image_sep])
+  obtain \<sigma>1 \<sigma>2 \<sigma>3 where h12: "\<sigma>1 \<noteq> \<sigma>2"
+    and h23: "\<sigma>2 \<noteq> \<sigma>3"
+    and h13: "\<sigma>1 \<noteq> \<sigma>3"
+    and h\<sigma>1K: "\<sigma>1 \<in> K"
+    and h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+    and h\<sigma>1face: "geotop_is_face e \<sigma>1"
+    and h\<sigma>2K: "\<sigma>2 \<in> K"
+    and h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+    and h\<sigma>2face: "geotop_is_face e \<sigma>2"
+    and h\<sigma>3K: "\<sigma>3 \<in> K"
+    and h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+    and h\<sigma>3face: "geotop_is_face e \<sigma>3"
+    using hfaces by (elim exE conjE)
   show False
-    using hJconn hJnotconn by (by100 blast)
+    by (rule geotop_complex_no_three_2simplexes_share_edge_dev34
+        [OF hK hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
+          h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
 qed
 
 lemma geotop_boundary_chart_three_incident_2simplex_contradiction_dev34:
