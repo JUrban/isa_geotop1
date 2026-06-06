@@ -8725,6 +8725,15 @@ proof -
           \<subseteq> geotop_polygon_interior J"
     by (intro conjI hv\<^sub>0J hv\<^sub>2J hchord_edge_broken_line hchord_edge_arc
         hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior)
+  have hchord_segment_sub_polyhedron:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> geotop_polyhedron K"
+    using hchord_edge_K hchord_hull_segment_eq
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hchord_arc_interior_sub_polyhedron:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+      \<subseteq> geotop_polyhedron K"
+    using hchord_segment_sub_polyhedron
+    unfolding geotop_arc_interior_def by (by100 blast)
   show ?thesis
     sorry
 qed
