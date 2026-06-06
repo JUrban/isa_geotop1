@@ -8079,6 +8079,46 @@ proof -
     by (rule geotop_nonfree_selected_edges_contact_outside_prefix
         [OF h\<theta>K h\<theta>2 hE\<theta>_subset_K hE\<theta>_allowed h\<theta>_not_free
           hE\<theta>_union_sub_\<theta>J])
+  have h\<theta>J_sub_named_edges:
+    "\<theta> \<inter> J \<subseteq>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_polygon_boundary_inter_subset_three_edge_hulls_prefix
+        [OF hJ h\<theta>K h\<theta>2 hK_poly h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hselected_contact_on_other_named_edges:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_contact_outside_selected_union_on_other_two_sets_prefix
+        [OF h\<theta>_contact_outside_selected h\<theta>J_sub_named_edges hbase_edge_selected])
+  have hselected_contact_on_other_not_base:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> geotop_convex_hull {v\<^sub>0, v\<^sub>1}
+      \<and> x \<in> geotop_convex_hull {v\<^sub>0, v\<^sub>2}
+          \<union> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_contact_outside_selected_union_avoids_selected_set_prefix
+        [OF hselected_contact_on_other_named_edges hbase_edge_selected])
+  have hselected_contact_on_other_nonbase_edge:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<in> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} - {v\<^sub>0})
+          \<union> (geotop_convex_hull {v\<^sub>1, v\<^sub>2} - {v\<^sub>1})"
+    by (rule geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix
+        [OF hselected_contact_on_other_not_base])
+  have hselected_contact_on_other_nonbase_segment:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    by (rule geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix
+        [OF hselected_contact_on_other_nonbase_edge])
+  have hderived_contact_other_segment_off_base:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+      \<and> x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+          \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
+        [OF h\<theta>_not_col hselected_contact_on_other_nonbase_segment])
   show ?thesis
     sorry
 qed
