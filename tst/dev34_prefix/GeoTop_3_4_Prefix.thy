@@ -7995,6 +7995,20 @@ proof -
   have hside_edge_K:
     "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
     using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hbase_edge_selected:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in>
+      {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hbase_edge_K hbase_edge_face_data hv\<^sub>0v\<^sub>1_sub_J by (by100 blast)
+  have hchord_edge_selected_if:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J \<Longrightarrow>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in>
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hchord_edge_K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_selected_if:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J \<Longrightarrow>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in>
+        {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    using hside_edge_K hnonbase_edge_face_data by (by100 blast)
   show ?thesis
     sorry
 qed
