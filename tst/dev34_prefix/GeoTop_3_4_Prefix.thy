@@ -8025,6 +8025,27 @@ proof -
           hown\<^sub>1 hown\<^sub>2 hown\<^sub>3 howner_data])
 qed
 
+lemma geotop_polygon_disk_three_owned_boundary_edges_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  shows "\<exists>e\<^sub>1 e\<^sub>2 e\<^sub>3.
+      e\<^sub>1 \<in> K \<and> e\<^sub>2 \<in> K \<and> e\<^sub>3 \<in> K
+      \<and> geotop_is_edge e\<^sub>1 \<and> geotop_is_edge e\<^sub>2 \<and> geotop_is_edge e\<^sub>3
+      \<and> e\<^sub>1 \<subseteq> J \<and> e\<^sub>2 \<subseteq> J \<and> e\<^sub>3 \<subseteq> J
+      \<and> e\<^sub>1 \<noteq> e\<^sub>2 \<and> e\<^sub>1 \<noteq> e\<^sub>3 \<and> e\<^sub>2 \<noteq> e\<^sub>3
+      \<and> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>1 \<sigma>)
+      \<and> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>2 \<sigma>)
+      \<and> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>3 \<sigma>)"
+  (**
+    Remaining geometric boundary-input for Moise's ear step: the triangulated
+    polygonal disk has at least three distinct polygon-boundary edge faces,
+    each incident with a 2-simplex. **)
+  sorry
+
 lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -8048,6 +8069,28 @@ lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
 proof -
   have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
     using hT_gt2 by (by100 linarith)
+  obtain e\<^sub>1 e\<^sub>2 e\<^sub>3
+    where he\<^sub>1K: "e\<^sub>1 \<in> K"
+      and he\<^sub>2K: "e\<^sub>2 \<in> K"
+      and he\<^sub>3K: "e\<^sub>3 \<in> K"
+      and he\<^sub>1_edge: "geotop_is_edge e\<^sub>1"
+      and he\<^sub>2_edge: "geotop_is_edge e\<^sub>2"
+      and he\<^sub>3_edge: "geotop_is_edge e\<^sub>3"
+      and he\<^sub>1J: "e\<^sub>1 \<subseteq> J"
+      and he\<^sub>2J: "e\<^sub>2 \<subseteq> J"
+      and he\<^sub>3J: "e\<^sub>3 \<subseteq> J"
+      and he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2"
+      and he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
+      and he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3"
+      and hown\<^sub>1:
+        "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>1 \<sigma>"
+      and hown\<^sub>2:
+        "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>2 \<sigma>"
+      and hown\<^sub>3:
+        "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>3 \<sigma>"
+    using geotop_polygon_disk_three_owned_boundary_edges_prefix
+      [OF hJ hK hK_poly hT_gt2]
+    by (elim exE conjE)
   have hselected_boundary:
     "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
      \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
@@ -8055,11 +8098,11 @@ proof -
      \<and> e\<^sub>\<sigma> \<subseteq> J
      \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau>
      \<and> e\<^sub>\<tau> \<subseteq> J"
-    (**
-      Remaining book ear/counting step: use the selected polygon-boundary edges
-      and the all-boundary obstruction to find two distinct 2-simplexes owning
-      polygon-boundary edge faces. **)
-    sorry
+    by (rule geotop_polygon_disk_three_boundary_edges_two_owner_2simplexes_prefix
+        [OF hJ hK hK_poly hT_gt1
+          he\<^sub>1K he\<^sub>2K he\<^sub>3K he\<^sub>1_edge he\<^sub>2_edge he\<^sub>3_edge
+          he\<^sub>1J he\<^sub>2J he\<^sub>3J he\<^sub>12 he\<^sub>13 he\<^sub>23
+          hown\<^sub>1 hown\<^sub>2 hown\<^sub>3])
   obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
     where h\<sigma>K: "\<sigma> \<in> K"
       and h\<tau>K: "\<tau> \<in> K"
