@@ -2915,6 +2915,68 @@ proof -
     using hB' hB'_sub hXB' hYB' hE by (by100 blast)
 qed
 
+lemma geotop_arc_endpoints_pair_data_prefix:
+  fixes A :: "(real^2) set"
+  assumes hE: "geotop_arc_endpoints A {P, Q}"
+  shows "P \<noteq> Q \<and> P \<in> A \<and> Q \<in> A"
+proof -
+  have hcard: "card {P, Q} = 2"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hsub: "{P, Q} \<subseteq> A"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hPQ: "P \<noteq> Q"
+  proof
+    assume heq: "P = Q"
+    have "card {P, Q} = 1"
+      using heq by (by100 simp)
+    thus False
+      using hcard by (by100 simp)
+  qed
+  have hPA: "P \<in> A"
+    using hsub by (by100 blast)
+  have hQA: "Q \<in> A"
+    using hsub by (by100 blast)
+  show ?thesis
+    using hPQ hPA hQA by (by100 blast)
+qed
+
+lemma geotop_same_endpoint_arcs_inter_eq_prefix:
+  fixes B\<^sub>1 B\<^sub>2 E :: "(real^2) set"
+  assumes hE\<^sub>1: "geotop_arc_endpoints B\<^sub>1 E"
+  assumes hE\<^sub>2: "geotop_arc_endpoints B\<^sub>2 E"
+  assumes hdisj:
+    "geotop_arc_interior B\<^sub>1 E \<inter> geotop_arc_interior B\<^sub>2 E = {}"
+  shows "B\<^sub>1 \<inter> B\<^sub>2 = E"
+proof
+  show "B\<^sub>1 \<inter> B\<^sub>2 \<subseteq> E"
+  proof
+    fix x
+    assume hx: "x \<in> B\<^sub>1 \<inter> B\<^sub>2"
+    show "x \<in> E"
+    proof (rule ccontr)
+      assume hx_not_E: "x \<notin> E"
+      have hx_int_1: "x \<in> geotop_arc_interior B\<^sub>1 E"
+        using hx hx_not_E unfolding geotop_arc_interior_def by (by100 blast)
+      have hx_int_2: "x \<in> geotop_arc_interior B\<^sub>2 E"
+        using hx hx_not_E unfolding geotop_arc_interior_def by (by100 blast)
+      have "x \<in> geotop_arc_interior B\<^sub>1 E \<inter> geotop_arc_interior B\<^sub>2 E"
+        using hx_int_1 hx_int_2 by (by100 blast)
+      thus False
+        using hdisj by (by100 blast)
+    qed
+  qed
+next
+  show "E \<subseteq> B\<^sub>1 \<inter> B\<^sub>2"
+  proof -
+    have hE_sub_1: "E \<subseteq> B\<^sub>1"
+      using hE\<^sub>1 unfolding geotop_arc_endpoints_def by (by100 blast)
+    have hE_sub_2: "E \<subseteq> B\<^sub>2"
+      using hE\<^sub>2 unfolding geotop_arc_endpoints_def by (by100 blast)
+    show ?thesis
+      using hE_sub_1 hE_sub_2 by (by100 blast)
+  qed
+qed
+
 lemma geotop_two_segment_join_arc_endpoints_prefix:
   fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
   assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
