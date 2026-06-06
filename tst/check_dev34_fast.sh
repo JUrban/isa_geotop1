@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 
 isabelle=${ISABELLE:-/project/bin/isabelle}
 limit=${TIMEOUT:-90s}
+isabelle_options=(-o system_heaps=true)
 proof_options=()
 if [ "${FORCE_PROOFS:-0}" = 1 ]; then
   proof_options=(-o skip_proofs=false)
@@ -47,6 +48,7 @@ EOF
 
 build_pre() {
   exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     -d . -d dev34_pre \
     GeoTopPre3Dirty
@@ -54,6 +56,7 @@ build_pre() {
 
 build_prefix() {
   exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     -d . -d dev34_pre -d dev34_prefix \
     GeoTop34PrefixDirty
@@ -61,6 +64,7 @@ build_prefix() {
 
 build_dev34() {
   exec timeout "${TIMEOUT:-240s}" "$isabelle" build \
+    "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
     -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -189,6 +193,7 @@ proc_one() {
 
   printf 'process_theories: %s with parent %s\n' "$file" "$logic"
   timeout "$limit" "$isabelle" process_theories \
+    "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     "${dirs[@]}" -l "$logic" -o quick_and_dirty -f "$file"
 }
@@ -289,6 +294,7 @@ EOF2
       build_dev34
     elif [ "$target" = core ]; then
       exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -296,6 +302,7 @@ EOF2
         GeoTop34CoreDirty
     elif [ "$target" = openstar ]; then
       exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -303,6 +310,7 @@ EOF2
         GeoTop34OpenStarDirty
     elif [ "$target" = graphwork ]; then
       exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -310,24 +318,28 @@ EOF2
         GeoTop34GraphWorkDirty
     elif [ "$target" = graphfacts ]; then
       exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
         GeoTop34GraphFactsDirty
     elif [ "$target" = linkfacts ]; then
       exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts \
         GeoTop34LinkFactsDirty
     elif [ "$target" = workfacts ]; then
       exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts \
         GeoTop34WorkFactsDirty
     elif [ "$target" = facts ]; then
       exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
+        "${isabelle_options[@]}" \
         "${proof_options[@]}" \
         -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
         GeoTop34FactsDirty
@@ -352,18 +364,21 @@ EOF2
     ;;
   prefix-heap)
     exec timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix \
       -b GeoTop34PrefixDirty
     ;;
   facts)
     exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       GeoTop34FactsDirty
     ;;
   workfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts \
@@ -371,6 +386,7 @@ EOF2
     ;;
   linkfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts \
@@ -378,6 +394,7 @@ EOF2
     ;;
   graphfacts)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -385,6 +402,7 @@ EOF2
     ;;
   graphwork)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -393,6 +411,7 @@ EOF2
     ;;
   openstar)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
@@ -401,6 +420,7 @@ EOF2
     ;;
   core)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
