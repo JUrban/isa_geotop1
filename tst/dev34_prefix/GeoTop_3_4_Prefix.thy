@@ -6295,6 +6295,133 @@ proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_pref
         [OF hab hc_not_ab hd_not_ab he_eq h\<sigma>V h\<tau>V hline hopp])
 qed
 
+lemma geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hnot_boundary: "\<not> e \<subseteq> J"
+  shows "J \<inter> rel_interior e = {}"
+  (**
+    Contrapositive of the one-sided edge-star fact, in the form needed for
+    Figure 3.2: once an edge is not a disk-boundary edge, any relative-interior
+    point of it has a two-triangle local neighborhood inside the carrier, so it
+    cannot lie on the polygon frontier. **)
+proof (rule ccontr)
+  assume hne: "J \<inter> rel_interior e \<noteq> {}"
+  obtain x where hxJ: "x \<in> J" and hxrel: "x \<in> rel_interior e"
+    using hne by (by100 blast)
+  let ?F = "{\<rho>\<in>K. geotop_simplex_dim \<rho> 2 \<and> geotop_is_face e \<rho>}"
+  have hfaces_ne: "?F \<noteq> {\<sigma>}"
+  proof
+    assume hfaces: "?F = {\<sigma>}"
+    have "e \<subseteq> J"
+      by (rule geotop_unique_incident_edge_subset_polygon_boundary_prefix
+          [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hfaces])
+    thus False
+      using hnot_boundary by (by100 blast)
+  qed
+  have h\<sigma>F: "\<sigma> \<in> ?F"
+    using h\<sigma>K h\<sigma>2 h\<sigma>face by (by100 simp)
+  have hex_\<tau>:
+    "\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau> \<and> \<tau> \<noteq> \<sigma>"
+  proof (rule ccontr)
+    assume hno: "\<not> (\<exists>\<tau>. \<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and>
+        geotop_is_face e \<tau> \<and> \<tau> \<noteq> \<sigma>)"
+    have hF_sub_single: "?F \<subseteq> {\<sigma>}"
+    proof
+      fix \<tau>
+      assume h\<tau>F: "\<tau> \<in> ?F"
+      have "\<tau> \<in> K \<and> geotop_simplex_dim \<tau> 2 \<and> geotop_is_face e \<tau>"
+        using h\<tau>F by (by100 simp)
+      hence "\<tau> = \<sigma>"
+        using hno by (by100 blast)
+      thus "\<tau> \<in> {\<sigma>}"
+        by (by100 simp)
+    qed
+    have hsingle_sub_F: "{\<sigma>} \<subseteq> ?F"
+      using h\<sigma>F by (by100 simp)
+    have "?F = {\<sigma>}"
+      using hF_sub_single hsingle_sub_F by (by100 blast)
+    thus False
+      using hfaces_ne by (by100 blast)
+  qed
+  obtain \<tau> where h\<tau>K: "\<tau> \<in> K"
+    and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+    and h\<tau>face: "geotop_is_face e \<tau>"
+    and h\<tau>\<sigma>: "\<tau> \<noteq> \<sigma>"
+    using hex_\<tau> by (elim exE conjE)
+  have h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+    using h\<tau>\<sigma> by (by100 blast)
+  have hrel_int_union: "rel_interior e \<subseteq> interior (\<sigma> \<union> \<tau>)"
+    by (rule geotop_complex_two_2simplex_shared_edge_rel_interior_subset_HOL_interior_union_prefix
+        [OF hK h\<sigma>K h\<tau>K h\<sigma>2 h\<tau>2 h\<sigma>\<tau> h\<sigma>face h\<tau>face hedge])
+  have hx_int_union: "x \<in> interior (\<sigma> \<union> \<tau>)"
+    using hrel_int_union hxrel by (by100 blast)
+  have hunion_sub_poly: "\<sigma> \<union> \<tau> \<subseteq> geotop_polyhedron K"
+    using h\<sigma>K h\<tau>K unfolding geotop_polyhedron_def by (by100 blast)
+  have hinterior_sub_poly:
+    "interior (\<sigma> \<union> \<tau>) \<subseteq> interior (geotop_polyhedron K)"
+    by (rule interior_mono[OF hunion_sub_poly])
+  have hx_int_poly: "x \<in> interior (geotop_polyhedron K)"
+    using hx_int_union hinterior_sub_poly by (by100 blast)
+  have hfront_eq: "frontier (geotop_polyhedron K) = J"
+    by (rule geotop_polygon_disk_polyhedron_frontier_prefix[OF hJ hK_poly])
+  have hx_front: "x \<in> frontier (geotop_polyhedron K)"
+    using hxJ hfront_eq by (by100 simp)
+  show False
+    using hx_int_poly hx_front unfolding Elementary_Topology.frontier_def
+    by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix:
+  fixes J e \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+    and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hPQ: "P \<noteq> Q"
+  assumes he_eq: "e = closed_segment P Q"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hnot_boundary: "\<not> closed_segment P Q \<subseteq> J"
+  shows "J \<inter> geotop_arc_interior (closed_segment P Q) {P, Q} = {}"
+  (**
+    Segment-notation bridge for Figure 3.2: the edge-star argument rules out
+    polygon-boundary contact in \<open>rel_interior e\<close>; for a nondegenerate closed
+    segment this is the same as the GeoTop arc interior of that segment. **)
+proof (rule ccontr)
+  assume hne: "J \<inter> geotop_arc_interior (closed_segment P Q) {P, Q} \<noteq> {}"
+  obtain x where hxJ: "x \<in> J"
+    and hxarc: "x \<in> geotop_arc_interior (closed_segment P Q) {P, Q}"
+    using hne by (by100 blast)
+  have hnot_e_boundary: "\<not> e \<subseteq> J"
+    using he_eq hnot_boundary by (by100 simp)
+  have hrel_disj: "J \<inter> rel_interior e = {}"
+    by (rule geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix
+        [OF hJ hK hK_poly heK hedge h\<sigma>K h\<sigma>2 h\<sigma>face hnot_e_boundary])
+  have hrel_eq: "rel_interior e = open_segment P Q"
+    using he_eq hPQ rel_interior_closed_segment[of P Q] by (by100 simp)
+  have hx_open: "x \<in> open_segment P Q"
+    using hxarc unfolding geotop_arc_interior_def open_segment_def by (by100 blast)
+  have hxrel: "x \<in> rel_interior e"
+    using hrel_eq hx_open by (by100 simp)
+  have "x \<in> J \<inter> rel_interior e"
+    using hxJ hxrel by (by100 blast)
+  thus False
+    using hrel_disj by (by100 blast)
+qed
+
 lemma geotop_two_triangle_nonboundary_edge_shared_prefix:
   fixes J e \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -7783,7 +7910,106 @@ lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
     being boundary edges.  The remaining planar step constructs the two subdisk
     complexes along the chord \<open>v\<^sub>0v\<^sub>2\<close>, applies the strong induction hypothesis
     to both, and transfers the resulting free triangles back to \<open>K\<close>. **)
-  sorry
+proof -
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hnonbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta> \<and>
+      geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hface_closed_K:
+    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hchord_edge_K: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_K: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hchord_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have hside_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  have hchord_contact_forces_boundary:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {}
+      \<Longrightarrow> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J"
+  proof (rule ccontr)
+    assume hcontact:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {}"
+    assume hnot_boundary: "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J"
+    have hchord_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2})"
+      using hnonbase_edge_face_data by (by100 blast)
+    have hchord_face: "geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta>"
+      using hnonbase_edge_face_data by (by100 blast)
+    have hchord_disj:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} = {}"
+      by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix
+          [OF hJ hK hK_poly hv\<^sub>0v\<^sub>2 hchord_hull_segment_eq hchord_edge_K
+            hchord_edge h\<theta>K h\<theta>2 hchord_face hnot_boundary])
+    show False
+      using hcontact hchord_disj by (by100 blast)
+  qed
+  have hside_contact_forces_boundary:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}
+      \<Longrightarrow> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+  proof (rule ccontr)
+    assume hcontact:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+    assume hnot_boundary: "\<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+    have hside_edge: "geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2})"
+      using hnonbase_edge_face_data by (by100 blast)
+    have hside_face: "geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+      using hnonbase_edge_face_data by (by100 blast)
+    have hside_disj:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} = {}"
+      by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix
+          [OF hJ hK hK_poly hv\<^sub>1v\<^sub>2 hside_hull_segment_eq hside_edge_K
+            hside_edge h\<theta>K h\<theta>2 hside_face hnot_boundary])
+    show False
+      using hcontact hside_disj by (by100 blast)
+  qed
+  have hv\<^sub>2J: "v\<^sub>2 \<in> J"
+  proof -
+    have hv\<^sub>2_chord: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>2"
+      by (by100 simp)
+    have hv\<^sub>2_side: "v\<^sub>2 \<in> closed_segment v\<^sub>1 v\<^sub>2"
+      by (by100 simp)
+    show ?thesis
+    proof (rule disjE[OF hJ_meets_nonbase_side_or_v\<^sub>2])
+      assume "v\<^sub>2 \<in> J"
+      thus ?thesis .
+    next
+      assume hrest:
+        "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {} \<or>
+         J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume hcontact:
+          "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {}"
+        have hsub: "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J"
+          by (rule hchord_contact_forces_boundary[OF hcontact])
+        show ?thesis
+          using hsub hv\<^sub>2_chord by (by100 blast)
+      next
+        assume hcontact:
+          "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+        have hsub: "closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+          by (rule hside_contact_forces_boundary[OF hcontact])
+        show ?thesis
+          using hsub hv\<^sub>2_side by (by100 blast)
+      qed
+    qed
+  qed
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"

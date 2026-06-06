@@ -4,7 +4,7 @@
 #
 # Files: i/Top1_Ch2.thy,i/Top1_Ch3.thy,i/Top1_Ch4.thy,i/Top1_Ch5_8.thy,i/Top1_Ch9_13.thy,h/AlgTopHelpers.thy,b0/AlgTop_JCT_Base0.thy,b/AlgTop_JCT_Base.thy,a0/AlgTop0.thy,ac/AlgTopCached.thy,fib/AlgIsoFixedBase.thy,fi/AlgIsoFixed.thy,k5/K5_nonplanar.thy,ag/AlgTopGroups.thy,pd/PolygonDisk.thy,svk/AlgTopSvK.thy,wh/AlgTopWedgeHelpers.thy,at/AlgTopChain.thy,ac2/AlgTopCached2.thy,ac3/AlgTopCached3.thy,ac4/AlgTopCached4.thy,ac5/AlgTopCached5.thy,ac6/AlgTopCached6.thy,ac7/AlgTopCached7.thy,ac8/AlgTopCached8.thy,algtop_session/AlgTop.thy,gb0/GeoTopBase0.thy,gb/GeoTopBase.thy,gd/GeoTopDeps.thy,gp/GeoTop_Prefix.thy,GeoTop.thy,dev34_prefix/GeoTop_3_4_Prefix.thy,dev34_facts/GeoTop_3_4_Facts.thy,dev34_workfacts/GeoTop_3_4_WorkFacts.thy,dev34_linkfacts/GeoTop_3_4_LinkFacts.thy,dev34_graphfacts/GeoTop_3_4_GraphFacts.thy,dev34_graphwork/GeoTop_3_4_GraphWork.thy,dev34_openstar/GeoTop_3_4_OpenStar.thy,dev34_core/GeoTop_3_4_Core.thy,dev34/GeoTop_3_4.thy
 #
-# Total entries: 3857
+# Total entries: 3859
 # Duplicate names: 64
 
 ## definitions (579)
@@ -71,7 +71,7 @@ geotop_barycenter                              gb0/GeoTopBase0.thy              
 geotop_barycentric_subdivision                 gb0/GeoTopBase0.thy                  line 1872
 geotop_bounded_R2                              gp/GeoTop_Prefix.thy                 line 1404
 geotop_brick_decomposition                     GeoTop.thy                           line 24494
-geotop_brick_decomposition                     dev34_prefix/GeoTop_3_4_Prefix.thy   line 10203
+geotop_brick_decomposition                     dev34_prefix/GeoTop_3_4_Prefix.thy   line 10429
 geotop_broken_line_connected                   gb/GeoTopBase.thy                    line 10361
 geotop_cell                                    gb0/GeoTopBase0.thy                  line 11023
 geotop_cell_barycenter                         gb0/GeoTopBase0.thy                  line 11845
@@ -109,7 +109,7 @@ geotop_face_closure                            gb0/GeoTopBase0.thy              
 geotop_first_betti_number                      GeoTop.thy                           line 32515
 geotop_flags                                   gb0/GeoTopBase0.thy                  line 3488
 geotop_free_2_simplex                          GeoTop.thy                           line 23711
-geotop_free_2_simplex                          dev34_prefix/GeoTop_3_4_Prefix.thy   line 7627
+geotop_free_2_simplex                          dev34_prefix/GeoTop_3_4_Prefix.thy   line 7754
 geotop_free_group                              GeoTop.thy                           line 29422
 geotop_frontier                                gb0/GeoTopBase0.thy                  line 76
 geotop_general_position                        gb0/GeoTopBase0.thy                  line 104
@@ -249,7 +249,7 @@ geotop_pi                                      GeoTop.thy                       
 geotop_pi_class                                GeoTop.thy                           line 28805
 geotop_pi_locally_commutative_at               GeoTop.thy                           line 31148
 geotop_pi_mult                                 GeoTop.thy                           line 28814
-geotop_polygon_cyclic_order                    dev34_prefix/GeoTop_3_4_Prefix.thy   line 9987
+geotop_polygon_cyclic_order                    dev34_prefix/GeoTop_3_4_Prefix.thy   line 10213
 geotop_polygon_exterior                        gp/GeoTop_Prefix.thy                 line 1414
 geotop_polygon_interior                        gp/GeoTop_Prefix.thy                 line 1407
 geotop_polyhedron                              gb0/GeoTopBase0.thy                  line 364
@@ -618,7 +618,7 @@ geotop_D                                       GeoTop.thy                       
 geotop_Sd                                      gb0/GeoTopBase0.thy                  line 1876
 top1_I01                                       i/Top1_Ch5_8.thy                     line 25035
 
-## lemmas (2676)
+## lemmas (2678)
 
 B2_compact                                     ac2/AlgTopCached2.thy                line 7
 Borsuk_R2                                      ac/AlgTopCached.thy                  line 3745
@@ -1652,7 +1652,7 @@ geotop_component_at_UNIV_eq_connected_component_set  gb/GeoTopBase.thy          
 geotop_component_at_UNIV_self                  dev34_facts/GeoTop_3_4_Facts.thy     line 1886
 geotop_component_at_UNIV_subset                dev34_facts/GeoTop_3_4_Facts.thy     line 1859
 geotop_component_at_open_in_euclidean          GeoTop.thy                           line 24164
-geotop_component_at_open_in_euclidean          dev34_prefix/GeoTop_3_4_Prefix.thy   line 9844
+geotop_component_at_open_in_euclidean          dev34_prefix/GeoTop_3_4_Prefix.thy   line 10070
 geotop_components_complement_eq                gp/GeoTop_Prefix.thy                 line 3465
 geotop_cone_face_of_edge                       GeoTop.thy                           line 20111
 geotop_connected_component_at_eq_self          dev34_facts/GeoTop_3_4_Facts.thy     line 1847
@@ -1660,8 +1660,8 @@ geotop_connected_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34  
 geotop_connected_geotop_subspace_no_open_singleton_if_two_points_dev34  dev34_core/GeoTop_3_4_Core.thy       line 3591
 geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34  dev34/GeoTop_3_4.thy                 line 5
 geotop_connected_punctured_neighborhood_cannot_cross_separation_dev34  dev34_core/GeoTop_3_4_Core.thy       line 1769
-geotop_contact_outside_selected_union_avoids_selected_set_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7180
-geotop_contact_outside_selected_union_on_other_two_sets_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7150
+geotop_contact_outside_selected_union_avoids_selected_set_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7307
+geotop_contact_outside_selected_union_on_other_two_sets_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7277
 geotop_continuous_on_imp_top1_continuous_map_on  gb/GeoTopBase.thy                    line 6440
 geotop_conv_hull_pair_bound                    gb0/GeoTopBase0.thy                  line 2634
 geotop_conv_hull_pt_bound                      gb0/GeoTopBase0.thy                  line 2533
@@ -1776,7 +1776,7 @@ geotop_flags_empty                             gb0/GeoTopBase0.thy              
 geotop_flags_finite                            gb0/GeoTopBase0.thy                  line 4083
 geotop_flags_hd_in_K                           gb0/GeoTopBase0.thy                  line 4145
 geotop_flags_last_in_K                         gb0/GeoTopBase0.thy                  line 4134
-geotop_free_2_simplex_selected_edges_intro_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7636
+geotop_free_2_simplex_selected_edges_intro_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7763
 geotop_frontier_UNIV_eq_frontier               gb/GeoTopBase.thy                    line 6780
 geotop_general_position_imp_aff_indep          gb0/GeoTopBase0.thy                  line 496
 geotop_general_position_mono                   gb0/GeoTopBase0.thy                  line 468
@@ -1935,12 +1935,12 @@ geotop_mesh_norm_nonneg                        gb0/GeoTopBase0.thy              
 geotop_nbhd_set_open_in_euclidean              gb/GeoTopBase.thy                    line 6084
 geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset  dev34_facts/GeoTop_3_4_Facts.thy     line 5223
 geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 1648
-geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7243
-geotop_nonbase_segment_contact_avoids_base_segment_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7275
+geotop_nonbase_edge_contact_geotop_to_closed_segment_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7370
+geotop_nonbase_segment_contact_avoids_base_segment_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7402
 geotop_nonempty_complex_polyhedron_nonempty    dev34_facts/GeoTop_3_4_Facts.thy     line 1794
 geotop_nonempty_polyhedron_has_complex_vertex  dev34_facts/GeoTop_3_4_Facts.thy     line 1808
-geotop_nonfree_selected_edges_contact_neq_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7679
-geotop_nonfree_selected_edges_contact_outside_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7706
+geotop_nonfree_selected_edges_contact_neq_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7806
+geotop_nonfree_selected_edges_contact_outside_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7833
 geotop_old_vertices_hull_ne_new_singleton_dev34  dev34/GeoTop_3_4.thy                 line 975
 geotop_one_incident_edge_non_rel_interior_subset_manifold_boundary_dev34  dev34/GeoTop_3_4.thy                 line 12858
 geotop_one_incident_edge_rel_interior_subset_manifold_boundary_dev34  dev34/GeoTop_3_4.thy                 line 12804
@@ -1967,7 +1967,7 @@ geotop_order_complex_polyhedron                gb0/GeoTopBase0.thy              
 geotop_order_complex_polyhedron_subset         gb0/GeoTopBase0.thy                  line 12831
 geotop_order_complex_polyhedron_supset         gb0/GeoTopBase0.thy                  line 12808
 geotop_order_complex_refines                   gb0/GeoTopBase0.thy                  line 12398
-geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7203
+geotop_other_edge_contact_not_base_avoids_base_endpoints_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7330
 geotop_overlay_cells_are_cells                 gb0/GeoTopBase0.thy                  line 11392
 geotop_overlay_cells_finite                    gb0/GeoTopBase0.thy                  line 11415
 geotop_overlay_cells_refines_left              gb0/GeoTopBase0.thy                  line 11466
@@ -2001,28 +2001,30 @@ geotop_polygon_boundary_point_in_2simplex_frontier_prefix  dev34_prefix/GeoTop_3
 geotop_polygon_boundary_point_in_simplex_not_in_interior_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3403
 geotop_polygon_components_set_eq               gp/GeoTop_Prefix.thy                 line 1202
 geotop_polygon_disk_all_triangle_boundary_closure_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3378
-geotop_polygon_disk_boundary_edge_in_selected_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7519
+geotop_polygon_disk_boundary_edge_in_selected_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7646
 geotop_polygon_disk_complex_connected_prefix   dev34_prefix/GeoTop_3_4_Prefix.thy   line 3660
-geotop_polygon_disk_frontier_edge_subset_polygon_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7500
-geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6786
-geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7788
-geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7741
-geotop_polygon_disk_polygon_edge_subset_frontier_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7401
+geotop_polygon_disk_frontier_edge_subset_polygon_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7627
+geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6913
+geotop_polygon_disk_nonboundary_edge_rel_interior_disjoint_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6298
+geotop_polygon_disk_nonboundary_segment_arc_interior_disjoint_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6383
+geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 8014
+geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7868
+geotop_polygon_disk_polygon_edge_subset_frontier_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7528
 geotop_polygon_disk_polyhedron_connected_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3617
 geotop_polygon_disk_polyhedron_frontier_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3682
 geotop_polygon_disk_polyhedron_geotop_frontier_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3717
 geotop_polygon_disk_polyhedron_top1_connected_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3644
-geotop_polygon_disk_three_boundary_edges_2simplexes_singleton_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6746
-geotop_polygon_disk_three_boundary_edges_force_2simplex_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6681
-geotop_polygon_disk_three_boundary_edges_no_other_2simplex_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6717
-geotop_polygon_disk_two_boundary_2simplexes_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7440
-geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7564
-geotop_polygon_disk_two_selected_boundary_2simplexes_ear_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7421
-geotop_polygon_disk_two_selected_boundary_2simplexes_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7544
+geotop_polygon_disk_three_boundary_edges_2simplexes_singleton_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6873
+geotop_polygon_disk_three_boundary_edges_force_2simplex_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6808
+geotop_polygon_disk_three_boundary_edges_no_other_2simplex_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6844
+geotop_polygon_disk_two_boundary_2simplexes_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7567
+geotop_polygon_disk_two_nonempty_boundary_edge_sets_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7691
+geotop_polygon_disk_two_selected_boundary_2simplexes_ear_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7548
+geotop_polygon_disk_two_selected_boundary_2simplexes_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7671
 geotop_polygon_exterior_is_component           gp/GeoTop_Prefix.thy                 line 2162
 geotop_polygon_finite_triangulation            gp/GeoTop_Prefix.thy                 line 1551
 geotop_polygon_interior_is_bounded_component   gp/GeoTop_Prefix.thy                 line 2097
-geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34  dev34_prefix/GeoTop_3_4_Prefix.thy   line 9995
+geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34  dev34_prefix/GeoTop_3_4_Prefix.thy   line 10221
 geotop_polygon_interior_regular_closed_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 2510
 geotop_polygon_link_vertex_is_HOL_interior_polyhedron_dev34  dev34/GeoTop_3_4.thy                 line 12615
 geotop_polygon_not_broken_line_dev34           dev34_core/GeoTop_3_4_Core.thy       line 3703
@@ -2056,13 +2058,13 @@ geotop_segment_eq_closed_segment               gb/GeoTopBase.thy                
 geotop_segment_face_cases_dev34                dev34_graphfacts/GeoTop_3_4_GraphFacts.thy  line 1209
 geotop_segment_face_with_nonendpoint_eq_dev34  dev34_graphfacts/GeoTop_3_4_GraphFacts.thy  line 1157
 geotop_segment_simplex_vertices                gb/GeoTopBase.thy                    line 5820
-geotop_selected_boundary_edge_set_allowed_card_le2_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6900
-geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7035
-geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7006
-geotop_selected_boundary_edge_set_card_le3_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6840
-geotop_selected_boundary_edge_set_eq_three_named_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7076
-geotop_selected_boundary_edge_set_not_both_other_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7363
-geotop_selected_boundary_edge_set_union_subset_contact_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7340
+geotop_selected_boundary_edge_set_allowed_card_le2_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7027
+geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7162
+geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7133
+geotop_selected_boundary_edge_set_card_le3_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6967
+geotop_selected_boundary_edge_set_eq_three_named_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7203
+geotop_selected_boundary_edge_set_not_both_other_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7490
+geotop_selected_boundary_edge_set_union_subset_contact_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7467
 geotop_self_in_component_at                    gb/GeoTopBase.thy                    line 12631
 geotop_shared_edge_probe_diamond_contains_ball_dev34  dev34/GeoTop_3_4.thy                 line 7997
 geotop_shared_edge_probe_diamond_contains_ball_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 5705
@@ -2188,7 +2190,7 @@ geotop_subdivision_simplex_in_parent           gb0/GeoTopBase0.thy              
 geotop_subdivision_source_is_complex_dev34     dev34/GeoTop_3_4.thy                 line 168
 geotop_subdivision_target_is_complex_dev34     dev34/GeoTop_3_4.thy                 line 174
 geotop_subdivision_vertices_subset_original_polyhedron_dev34  dev34/GeoTop_3_4.thy                 line 151
-geotop_subset_union_from_three_named_family_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7134
+geotop_subset_union_from_three_named_family_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 7261
 geotop_subspace_open_from_euclidean_ball_witness_dev34  dev34_core/GeoTop_3_4_Core.thy       line 105
 geotop_subspace_open_trans                     dev34_facts/GeoTop_3_4_Facts.thy     line 6640
 geotop_subspace_topology_strict                gp/GeoTop_Prefix.thy                 line 247
@@ -2223,17 +2225,17 @@ geotop_two_segment_join_broken_line_prefix     dev34_prefix/GeoTop_3_4_Prefix.th
 geotop_two_sided_vertex_is_HOL_interior_polyhedron_dev34  dev34/GeoTop_3_4.thy                 line 12703
 geotop_two_sided_vertex_is_manifold_interior_dev34  dev34/GeoTop_3_4.thy                 line 12726
 geotop_two_sided_vertex_link_polygon_dev34     dev34/GeoTop_3_4.thy                 line 12072
-geotop_two_triangle_all_boundary_edges_force_other_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6636
-geotop_two_triangle_boundary_contact_edges_cover_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6525
-geotop_two_triangle_boundary_edge_faces_card_le2_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6869
-geotop_two_triangle_edge_boundary_or_shared_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6324
-geotop_two_triangle_nonboundary_edge_shared_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6298
+geotop_two_triangle_all_boundary_edges_force_other_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6763
+geotop_two_triangle_boundary_contact_edges_cover_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6652
+geotop_two_triangle_boundary_edge_faces_card_le2_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6996
+geotop_two_triangle_edge_boundary_or_shared_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6451
+geotop_two_triangle_nonboundary_edge_shared_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6425
 geotop_two_triangle_nonshared_edge_subset_boundary_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 3924
-geotop_two_triangle_not_all_boundary_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6813
-geotop_two_triangle_other_2simplex_not_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6607
-geotop_two_triangle_shared_edge_endpoint_boundary_cover_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6378
-geotop_two_triangle_shared_edge_inter_eq_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6353
-geotop_union_eq_three_named_sets_prefix        dev34_prefix/GeoTop_3_4_Prefix.thy   line 7119
+geotop_two_triangle_not_all_boundary_edges_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6940
+geotop_two_triangle_other_2simplex_not_subset_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6734
+geotop_two_triangle_shared_edge_endpoint_boundary_cover_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6505
+geotop_two_triangle_shared_edge_inter_eq_prefix  dev34_prefix/GeoTop_3_4_Prefix.thy   line 6480
+geotop_union_eq_three_named_sets_prefix        dev34_prefix/GeoTop_3_4_Prefix.thy   line 7246
 geotop_unique_incident_2simplex_semicircle_separates_chart_dev34  dev34/GeoTop_3_4.thy                 line 9222
 geotop_unique_incident_2simplex_small_semicircle_domain_separates_chart_dev34  dev34/GeoTop_3_4.thy                 line 5972
 geotop_unique_incident_2simplex_small_semicircle_separates_chart_dev34  dev34/GeoTop_3_4.thy                 line 6106
@@ -3751,25 +3753,25 @@ Theorem_GT_3_1                                 dev34_prefix/GeoTop_3_4_Prefix.th
 Theorem_GT_3_2                                 GeoTop.thy                           line 23641
 Theorem_GT_3_2                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 663
 Theorem_GT_3_3                                 GeoTop.thy                           line 23723
-Theorem_GT_3_3                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 8356
+Theorem_GT_3_3                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 8582
 Theorem_GT_3_4                                 GeoTop.thy                           line 23794
-Theorem_GT_3_4                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9020
+Theorem_GT_3_4                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9246
 Theorem_GT_3_5                                 GeoTop.thy                           line 23981
-Theorem_GT_3_5                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9509
+Theorem_GT_3_5                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9735
 Theorem_GT_3_6                                 GeoTop.thy                           line 24083
-Theorem_GT_3_6                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9693
+Theorem_GT_3_6                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9919
 Theorem_GT_3_7                                 GeoTop.thy                           line 24127
-Theorem_GT_3_7                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9807
+Theorem_GT_3_7                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10033
 Theorem_GT_4_1                                 GeoTop.thy                           line 24215
-Theorem_GT_4_1                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 9895
+Theorem_GT_4_1                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10121
 Theorem_GT_4_10                                GeoTop.thy                           line 24808
 Theorem_GT_4_10                                dev34/GeoTop_3_4.thy                 line 13528
 Theorem_GT_4_2                                 GeoTop.thy                           line 24314
-Theorem_GT_4_2                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10072
+Theorem_GT_4_2                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10298
 Theorem_GT_4_3                                 GeoTop.thy                           line 24372
-Theorem_GT_4_3                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10169
+Theorem_GT_4_3                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10395
 Theorem_GT_4_4                                 GeoTop.thy                           line 24405
-Theorem_GT_4_4                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10218
+Theorem_GT_4_4                                 dev34_prefix/GeoTop_3_4_Prefix.thy   line 10444
 Theorem_GT_4_5                                 GeoTop.thy                           line 24511
 Theorem_GT_4_5                                 dev34_facts/GeoTop_3_4_Facts.thy     line 11
 Theorem_GT_4_6                                 GeoTop.thy                           line 24522
@@ -3904,34 +3906,34 @@ top1_same_homotopy_type_strict                 b0/AlgTop_JCT_Base0.thy          
     dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 663
   Theorem_GT_3_3:
     GeoTop.thy                           theorem  line 23723
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 8356
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 8582
   Theorem_GT_3_4:
     GeoTop.thy                           theorem  line 23794
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9020
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9246
   Theorem_GT_3_5:
     GeoTop.thy                           theorem  line 23981
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9509
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9735
   Theorem_GT_3_6:
     GeoTop.thy                           theorem  line 24083
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9693
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9919
   Theorem_GT_3_7:
     GeoTop.thy                           theorem  line 24127
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9807
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10033
   Theorem_GT_4_1:
     GeoTop.thy                           theorem  line 24215
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 9895
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10121
   Theorem_GT_4_10:
     GeoTop.thy                           theorem  line 24808
     dev34/GeoTop_3_4.thy                 theorem  line 13528
   Theorem_GT_4_2:
     GeoTop.thy                           theorem  line 24314
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10072
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10298
   Theorem_GT_4_3:
     GeoTop.thy                           theorem  line 24372
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10169
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10395
   Theorem_GT_4_4:
     GeoTop.thy                           theorem  line 24405
-    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10218
+    dev34_prefix/GeoTop_3_4_Prefix.thy   theorem  line 10444
   Theorem_GT_4_5:
     GeoTop.thy                           theorem  line 24511
     dev34_facts/GeoTop_3_4_Facts.thy     theorem  line 11
@@ -3994,13 +3996,13 @@ top1_same_homotopy_type_strict                 b0/AlgTop_JCT_Base0.thy          
     gb0/GeoTopBase0.thy                  lemma  line 10454
   geotop_brick_decomposition:
     GeoTop.thy                           definition  line 24494
-    dev34_prefix/GeoTop_3_4_Prefix.thy   definition  line 10203
+    dev34_prefix/GeoTop_3_4_Prefix.thy   definition  line 10429
   geotop_component_at_open_in_euclidean:
     GeoTop.thy                           lemma  line 24164
-    dev34_prefix/GeoTop_3_4_Prefix.thy   lemma  line 9844
+    dev34_prefix/GeoTop_3_4_Prefix.thy   lemma  line 10070
   geotop_free_2_simplex:
     GeoTop.thy                           definition  line 23711
-    dev34_prefix/GeoTop_3_4_Prefix.thy   definition  line 7627
+    dev34_prefix/GeoTop_3_4_Prefix.thy   definition  line 7754
   geotop_simplex_is_convex:
     gb/GeoTopBase.thy                    lemma  line 5709
     gb0/GeoTopBase0.thy                  lemma  line 4305
