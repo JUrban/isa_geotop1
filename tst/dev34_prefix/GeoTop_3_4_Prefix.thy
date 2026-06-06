@@ -4305,6 +4305,33 @@ proof -
     using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  (**
+    Moise Figure 3.2 boundary-cycle step, endpoint exclusion.  An endpoint in
+    the finite polygonal graph would make the carrier locally a broken line,
+    not a polygonal 1-sphere. **)
+  sorry
+
+lemma geotop_polygon_finite_linear_graph_vertices_no_branch_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+  (**
+    Moise Figure 3.2 boundary-cycle step, branch exclusion.  More than two
+    incident boundary edges at a vertex gives a local branch point, contrary
+    to the polygonal 1-sphere carrier. **)
+  sorry
+
 lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -4317,7 +4344,50 @@ lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
     Moise Figure 3.2 boundary-cycle step.  A finite linear graph whose carrier
     is a polygon has no endpoints and no branches; every boundary vertex has
     exactly two incident edges. **)
-  sorry
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hE_fin: "finite ?E"
+    using hL_fin by (by100 simp)
+  have hnonisolated:
+      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
+        [OF hL_linear hL_fin hL_polygon])
+  have hnoend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    by (rule geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hnobranch:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hE_nonempty: "?E \<noteq> {}"
+    using hnonisolated hwL by (by100 blast)
+  have hcard_pos: "0 < card ?E"
+    using hE_fin hE_nonempty by (by100 simp)
+  have hcard_le: "card ?E \<le> 2"
+    using hnobranch hwL by (by100 blast)
+  have hcard_ne1: "card ?E \<noteq> 1"
+  proof
+    assume hcard1: "card ?E = 1"
+    have hL_complex: "geotop_is_complex L"
+      using hL_linear unfolding geotop_is_linear_graph_def by (by100 blast)
+    have hw_vertex: "w \<in> geotop_complex_vertices L"
+      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] hwL
+      by (by100 blast)
+    have hend: "geotop_graph_endpoint L w"
+      using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
+    have hnot: "\<not> geotop_graph_endpoint L w"
+      using hnoend hwL by (by100 blast)
+    show False
+      using hend hnot by (by100 blast)
+  qed
+  have hcard_cases: "card ?E = 1 \<or> card ?E = 2"
+    using hcard_pos hcard_le by (by100 linarith)
+  show "card ?E = 2"
+    using hcard_cases hcard_ne1 by (by100 blast)
+qed
 
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
