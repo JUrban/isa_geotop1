@@ -7947,6 +7947,13 @@ proof -
         [OF hchord_edge_broken_line hbase_side_edge_broken_line
           hchord_edge_arc hbase_side_edge_arc
           hchord_base_side_arc_interiors_disjoint])
+  have h\<theta>_frontier_chord_segments:
+    "frontier \<theta> =
+      closed_segment v\<^sub>0 v\<^sub>2 \<union>
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+    using h\<theta>_frontier_segments closed_segment_commute[of v\<^sub>2 v\<^sub>1] by (by100 blast)
+  have h\<theta>_frontier_chord_polygon: "geotop_is_polygon (frontier \<theta>)"
+    using h\<theta>_frontier_chord_segments htriangle_boundary_chord_polygon by (by100 simp)
   show ?thesis
     sorry
 qed
