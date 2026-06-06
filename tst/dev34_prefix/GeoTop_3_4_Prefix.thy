@@ -4775,6 +4775,58 @@ proof -
     using hsplit hinter hC\<^sub>1_geotop hC\<^sub>2_geotop by (by100 blast)
 qed
 
+lemma geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+proof -
+  obtain C\<^sub>1 C\<^sub>2 where hsplit: "J = C\<^sub>1 \<union> C\<^sub>2"
+      and hinter: "C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}"
+      and hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {P, Q}"
+      and hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {P, Q}"
+    using geotop_polygon_two_point_geotop_arc_split_endpoints_prefix
+      [OF hJ hP hQ hPQ]
+    by (by100 blast)
+  have hinters_empty:
+      "geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+        geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    using hinter unfolding geotop_arc_interior_def by (by100 blast)
+  show ?thesis
+    using hsplit hinter hC\<^sub>1E hC\<^sub>2E hinters_empty by (by100 blast)
+qed
+
+lemma geotop_polygon_finite_linear_graph_two_vertex_geotop_arc_split_interior_disjoint_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+proof -
+  have hP_poly: "P \<in> geotop_polyhedron L"
+    using hPL unfolding geotop_polyhedron_def by (by100 blast)
+  have hQ_poly: "Q \<in> geotop_polyhedron L"
+    using hQL unfolding geotop_polyhedron_def by (by100 blast)
+  show ?thesis
+    by (rule geotop_polygon_two_point_geotop_arc_split_interior_disjoint_prefix
+        [OF hL_polygon hP_poly hQ_poly hPQ])
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
