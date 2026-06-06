@@ -3096,6 +3096,39 @@ proof -
     using hpoly hfront by (by100 simp)
 qed
 
+lemma geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix:
+  fixes \<sigma> :: "(real^2) set"
+  assumes hvertices: "geotop_simplex_vertices \<sigma> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  shows "frontier \<sigma> =
+      closed_segment v\<^sub>0 v\<^sub>1 \<union>
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
+  (**
+    Segment notation for the Figure 3.2 triangle boundary: the frontier of
+    \<open>v\<^sub>0v\<^sub>1v\<^sub>2\<close> is the base edge together with the two remaining sides. **)
+proof -
+  have hfront_hulls:
+    "frontier \<sigma> =
+      geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<union>
+      geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<union>
+      geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
+    by (rule geotop_2simplex_vertices_frontier_eq_three_edge_hulls_prefix
+        [OF hvertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have h01: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>1] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"]
+    by (by100 simp)
+  have h02: "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have h12: "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>2 v\<^sub>1"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+      closed_segment_commute[of v\<^sub>1 v\<^sub>2]
+    by (by100 simp)
+  show ?thesis
+    using hfront_hulls h01 h02 h12 by (by100 blast)
+qed
+
 lemma geotop_2simplex_frontier_is_polygon_prefix:
   fixes \<sigma> :: "(real^2) set"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
@@ -7794,6 +7827,12 @@ proof -
       (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
     by (rule geotop_two_segment_join_broken_line_prefix
         [OF hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 h\<theta>_not_col])
+  have h\<theta>_frontier_segments:
+    "frontier \<theta> =
+      closed_segment v\<^sub>0 v\<^sub>1 \<union>
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
+    by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
   show ?thesis
     sorry
 qed
