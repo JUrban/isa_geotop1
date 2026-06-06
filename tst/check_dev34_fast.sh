@@ -28,8 +28,11 @@ Fast modes:
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; intended hot-loop verifier
-  loop PAT [FILES]
-               no-build proof loop: full-index grep PAT, dirty plan, then hot [FILES]
+  loop [--hot] PAT [FILES]
+               cheap proof loop: full-index grep PAT, holes, dirty plan
+               with --hot, also run hot [FILES]
+  loop-hot PAT [FILES]
+               compatibility alias for loop --hot PAT [FILES]
 
 Milestone modes:
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
@@ -293,8 +296,17 @@ case "${1:-quick}" in
     fi
     exec rg -n -i -- "$*" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}"
     ;;
-  loop)
+  loop|look)
     shift
+    if [ "$#" -eq 0 ]; then
+      usage
+      exit 2
+    fi
+    run_hot=0
+    if [ "${1:-}" = "--hot" ]; then
+      run_hot=1
+      shift
+    fi
     if [ "$#" -eq 0 ]; then
       usage
       exit 2
@@ -314,11 +326,19 @@ case "${1:-quick}" in
       done <<EOF2
 $(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
-      printf '\nhot check:\n'
-      "$0" hot "$@"
+      if [ "$run_hot" = 1 ]; then
+        printf '\nhot check:\n'
+        "$0" hot "$@"
+      else
+        printf '\n(skipping hot check; use loop --hot or loop-hot when proof validation is needed)\n'
+      fi
     else
       printf '(no dirty/explicit dev34 layer files)\n'
     fi
+    ;;
+  loop-hot)
+    shift
+    exec "$0" loop --hot "$@"
     ;;
   dirty)
     shift
