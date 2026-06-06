@@ -4305,6 +4305,130 @@ proof -
     using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma top1_homeomorphism_on_subspace_image_prefix:
+  assumes hhomeo: "top1_homeomorphism_on X TX Y TY f"
+  assumes hA: "A \<subseteq> X"
+  shows "top1_homeomorphism_on A (subspace_topology X TX A)
+      (f ` A) (subspace_topology Y TY (f ` A)) f"
+proof -
+  have hTX: "is_topology_on X TX"
+    using hhomeo unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hTY: "is_topology_on Y TY"
+    using hhomeo unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hbij: "bij_betw f X Y"
+    by (rule top1_homeomorphism_on_imp_bij[OF hhomeo])
+  have hmapX: "f ` X = Y"
+    using hbij unfolding bij_betw_def by (by100 blast)
+  have hImg_subY: "f ` A \<subseteq> Y"
+    using hA hmapX by (by100 blast)
+  have hinjX: "inj_on f X"
+    using hbij by (rule bij_betw_imp_inj_on)
+  have hinjA: "inj_on f A"
+    by (rule inj_on_subset[OF hinjX hA])
+  have htopA: "is_topology_on A (subspace_topology X TX A)"
+    by (rule subspace_topology_is_topology_on[OF hTX hA])
+  have htopImg: "is_topology_on (f ` A) (subspace_topology Y TY (f ` A))"
+    by (rule subspace_topology_is_topology_on[OF hTY hImg_subY])
+  have hbijA: "bij_betw f A (f ` A)"
+    unfolding bij_betw_def using hinjA by (by100 blast)
+  have hcont_f: "top1_continuous_map_on X TX Y TY f"
+    by (rule top1_homeomorphism_on_imp_cont1[OF hhomeo])
+  have hcont_A: "top1_continuous_map_on A (subspace_topology X TX A)
+      (f ` A) (subspace_topology Y TY (f ` A)) f"
+    unfolding top1_continuous_map_on_def
+  proof (intro conjI)
+    show "\<forall>x\<in>A. f x \<in> f ` A"
+      by (by100 blast)
+    show "\<forall>V\<in>subspace_topology Y TY (f ` A).
+        {x \<in> A. f x \<in> V} \<in> subspace_topology X TX A"
+    proof
+      fix V
+      assume hV: "V \<in> subspace_topology Y TY (f ` A)"
+      obtain W where hW: "W \<in> TY" and hVeq: "V = f ` A \<inter> W"
+        using hV unfolding subspace_topology_def by (by100 blast)
+      have hpreX: "{x \<in> X. f x \<in> W} \<in> TX"
+        using hcont_f hW unfolding top1_continuous_map_on_def by (by100 blast)
+      have hpre_eq: "{x \<in> A. f x \<in> V} = A \<inter> {x \<in> X. f x \<in> W}"
+        using hA hVeq by (by100 blast)
+      show "{x \<in> A. f x \<in> V} \<in> subspace_topology X TX A"
+        unfolding hpre_eq subspace_topology_def using hpreX by (by100 blast)
+    qed
+  qed
+  have hcont_inv: "top1_continuous_map_on Y TY X TX (inv_into X f)"
+    by (rule top1_homeomorphism_on_imp_cont2[OF hhomeo])
+  have hcont_inv_A: "top1_continuous_map_on (f ` A)
+      (subspace_topology Y TY (f ` A)) A (subspace_topology X TX A)
+      (inv_into A f)"
+    unfolding top1_continuous_map_on_def
+  proof (intro conjI)
+    show "\<forall>y\<in>f ` A. inv_into A f y \<in> A"
+      using hinjA by (by100 simp)
+    show "\<forall>V\<in>subspace_topology X TX A.
+        {y \<in> f ` A. inv_into A f y \<in> V} \<in>
+        subspace_topology Y TY (f ` A)"
+    proof
+      fix V
+      assume hV: "V \<in> subspace_topology X TX A"
+      obtain W where hW: "W \<in> TX" and hVeq: "V = A \<inter> W"
+        using hV unfolding subspace_topology_def by (by100 blast)
+      have hpreY: "{y \<in> Y. inv_into X f y \<in> W} \<in> TY"
+        using hcont_inv hW unfolding top1_continuous_map_on_def by (by100 blast)
+      have hpre_eq:
+        "{y \<in> f ` A. inv_into A f y \<in> V} =
+         (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+      proof
+        show "{y \<in> f ` A. inv_into A f y \<in> V} \<subseteq>
+            (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+        proof
+          fix y
+          assume hy: "y \<in> {y \<in> f ` A. inv_into A f y \<in> V}"
+          obtain a where haA: "a \<in> A" and hyfa: "y = f a"
+            using hy by (by100 blast)
+          have haX: "a \<in> X"
+            using hA haA by (by100 blast)
+          have hinvA: "inv_into A f y = a"
+            using hinjA haA hyfa by (by100 simp)
+          have hinvX: "inv_into X f y = a"
+            using hinjX haX hyfa by (by100 simp)
+          have haW: "a \<in> W"
+            using hy hVeq hinvA by (by100 blast)
+          have hyY: "y \<in> Y"
+            using hImg_subY hy by (by100 blast)
+          show "y \<in> (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+            using hy hyY hinvX haW by (by100 blast)
+        qed
+      next
+        show "(f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W} \<subseteq>
+            {y \<in> f ` A. inv_into A f y \<in> V}"
+        proof
+          fix y
+          assume hy: "y \<in> (f ` A) \<inter> {y \<in> Y. inv_into X f y \<in> W}"
+          obtain a where haA: "a \<in> A" and hyfa: "y = f a"
+            using hy by (by100 blast)
+          have haX: "a \<in> X"
+            using hA haA by (by100 blast)
+          have hinvA: "inv_into A f y = a"
+            using hinjA haA hyfa by (by100 simp)
+          have hinvX: "inv_into X f y = a"
+            using hinjX haX hyfa by (by100 simp)
+          have haW: "a \<in> W"
+            using hy hinvX by (by100 blast)
+          have hinvA_V: "inv_into A f y \<in> V"
+            using hVeq hinvA haA haW by (by100 blast)
+          show "y \<in> {y \<in> f ` A. inv_into A f y \<in> V}"
+            using hy hinvA_V by (by100 blast)
+        qed
+      qed
+      show "{y \<in> f ` A. inv_into A f y \<in> V} \<in>
+          subspace_topology Y TY (f ` A)"
+        unfolding hpre_eq subspace_topology_def using hpreY by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    unfolding top1_homeomorphism_on_def
+    using htopA htopImg hbijA hcont_A hcont_inv_A by (by100 blast)
+qed
+
 lemma geotop_polygon_top1_simple_closed_curve_prefix:
   fixes J :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
