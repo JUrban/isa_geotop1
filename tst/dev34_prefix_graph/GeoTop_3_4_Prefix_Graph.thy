@@ -1636,6 +1636,54 @@ proof -
   qed
 qed
 
+lemma geotop_incident_edge_other_endpoint_unique_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>!q. q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+proof -
+  have hex: "\<exists>q. q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+    by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+        [OF hL hwL heL hedge hwe])
+  show ?thesis
+    using hex
+  proof (elim exE)
+    fix q
+    assume hq: "q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+    have hqw: "q \<noteq> w"
+      using hq by (by100 blast)
+    have heq: "e = closed_segment w q"
+      using hq by (by100 blast)
+    have hqL: "{q} \<in> L"
+      using hq by (by100 blast)
+    show ?thesis
+    proof (rule ex1I[of _ q])
+      show "q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+        by (intro conjI hqw heq hqL)
+    next
+      fix y
+      assume hy: "y \<noteq> w \<and> e = closed_segment w y \<and> {y} \<in> L"
+      have hyw: "y \<noteq> w"
+        using hy by (by100 blast)
+      have hey: "e = closed_segment w y"
+        using hy by (by100 blast)
+      have hseg_eq: "closed_segment w q = closed_segment w y"
+        using heq hey by (by100 simp)
+      have hpair_eq: "{w, q} = {w, y}"
+        using hseg_eq closed_segment_eq[of w q w y] by (by100 simp)
+      have hq_mem: "q \<in> {w, y}"
+        using hpair_eq by (by100 blast)
+      have hq_cases: "q = w \<or> q = y"
+        using hq_mem by (by100 simp)
+      show "y = q"
+        using hq_cases hqw by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_prefix:
   fixes L :: "(real^2) set set" and w :: "real^2"
   assumes hL: "geotop_is_linear_graph L"
