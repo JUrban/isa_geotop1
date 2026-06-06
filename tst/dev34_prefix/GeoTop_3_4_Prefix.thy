@@ -7986,6 +7986,66 @@ proof -
     using heK hedge hface heJ by (by100 simp)
 qed
 
+lemma geotop_polygon_disk_two_frontier_boundary_2simplexes_selected_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hboundary:
+    "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma>
+     \<and> e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)
+     \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau>
+     \<and> e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)"
+  shows "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}
+     \<and> e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+  (**
+    Translation bridge for the ear lemma: once the book-style statement gives
+    two distinct 2-simplexes with edge faces in \<open>Fr |K|\<close>, those edge faces are
+    exactly selected polygon-boundary edges for the formal predicate. **)
+proof -
+  obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
+    where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<tau>K: "\<tau> \<in> K"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      and he\<^sub>\<sigma>_edge: "geotop_is_edge e\<^sub>\<sigma>"
+      and he\<^sub>\<sigma>_face: "geotop_is_face e\<^sub>\<sigma> \<sigma>"
+      and he\<^sub>\<sigma>_front:
+        "e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)"
+      and he\<^sub>\<tau>_edge: "geotop_is_edge e\<^sub>\<tau>"
+      and he\<^sub>\<tau>_face: "geotop_is_face e\<^sub>\<tau> \<tau>"
+      and he\<^sub>\<tau>_front:
+        "e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)"
+    using hboundary by (elim exE conjE)
+  have he\<^sub>\<sigma>_sel:
+    "e\<^sub>\<sigma> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J}"
+    by (rule geotop_polygon_disk_boundary_edge_in_selected_edges_prefix
+        [OF hJ hK hK_poly h\<sigma>K he\<^sub>\<sigma>_edge he\<^sub>\<sigma>_face he\<^sub>\<sigma>_front])
+  have he\<^sub>\<tau>_sel:
+    "e\<^sub>\<tau> \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+    by (rule geotop_polygon_disk_boundary_edge_in_selected_edges_prefix
+        [OF hJ hK hK_poly h\<tau>K he\<^sub>\<tau>_edge he\<^sub>\<tau>_face he\<^sub>\<tau>_front])
+  show ?thesis
+  proof (rule exI[where x = \<sigma>], rule exI[where x = \<tau>],
+      rule exI[where x = e\<^sub>\<sigma>], rule exI[where x = e\<^sub>\<tau>])
+    show "\<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
+        geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        e\<^sub>\<sigma> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} \<and>
+        e\<^sub>\<tau> \<in> {d \<in> K. geotop_is_edge d \<and> geotop_is_face d \<tau> \<and> d \<subseteq> J}"
+      by (intro conjI h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>2 h\<tau>2 he\<^sub>\<sigma>_sel he\<^sub>\<tau>_sel)
+  qed
+qed
+
 lemma geotop_polygon_disk_two_selected_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
