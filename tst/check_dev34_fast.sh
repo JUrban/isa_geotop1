@@ -35,6 +35,10 @@ Fast modes:
                compatibility alias for loop --hot PAT [FILES]
   layer [FILES] build the smallest dirty/explicit dev34 layer only
   cache [FILES] build and store the smallest dirty/explicit dev34 layer heap
+  cache-status [FILES]
+               show whether the smallest dirty/explicit dev34 layer heap is fresh
+  cache-all    build missing/stale heaps for every dev34 layer, skipping fresh ones
+  cache-clean  remove local dev34 heap freshness stamps
 
 Milestone modes:
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
@@ -209,6 +213,158 @@ layer_rank() {
   esac
 }
 
+target_rank() {
+  case "$1" in
+    pre) printf '%s\n' 1 ;;
+    prefix-base) printf '%s\n' 2 ;;
+    prefix-graph) printf '%s\n' 3 ;;
+    prefix-mid) printf '%s\n' 4 ;;
+    prefix) printf '%s\n' 5 ;;
+    facts) printf '%s\n' 6 ;;
+    workfacts) printf '%s\n' 7 ;;
+    linkfacts) printf '%s\n' 8 ;;
+    graphfacts) printf '%s\n' 9 ;;
+    graphwork) printf '%s\n' 10 ;;
+    openstar) printf '%s\n' 11 ;;
+    core) printf '%s\n' 12 ;;
+    dev34) printf '%s\n' 13 ;;
+    *) printf '%s\n' 99 ;;
+  esac
+}
+
+target_layer_dir() {
+  case "$1" in
+    pre) printf '%s\n' dev34_pre ;;
+    prefix-base) printf '%s\n' dev34_prefix_base ;;
+    prefix-graph) printf '%s\n' dev34_prefix_graph ;;
+    prefix-mid) printf '%s\n' dev34_prefix_mid ;;
+    prefix) printf '%s\n' dev34_prefix ;;
+    facts) printf '%s\n' dev34_facts ;;
+    workfacts) printf '%s\n' dev34_workfacts ;;
+    linkfacts) printf '%s\n' dev34_linkfacts ;;
+    graphfacts) printf '%s\n' dev34_graphfacts ;;
+    graphwork) printf '%s\n' dev34_graphwork ;;
+    openstar) printf '%s\n' dev34_openstar ;;
+    core) printf '%s\n' dev34_core ;;
+    dev34) printf '%s\n' dev34 ;;
+    *) return 2 ;;
+  esac
+}
+
+target_session() {
+  case "$1" in
+    pre) printf '%s\n' GeoTopPre3Dirty ;;
+    prefix-base) printf '%s\n' GeoTop34PrefixBaseDirty ;;
+    prefix-graph) printf '%s\n' GeoTop34PrefixGraphDirty ;;
+    prefix-mid) printf '%s\n' GeoTop34PrefixMidDirty ;;
+    prefix) printf '%s\n' GeoTop34PrefixDirty ;;
+    facts) printf '%s\n' GeoTop34FactsDirty ;;
+    workfacts) printf '%s\n' GeoTop34WorkFactsDirty ;;
+    linkfacts) printf '%s\n' GeoTop34LinkFactsDirty ;;
+    graphfacts) printf '%s\n' GeoTop34GraphFactsDirty ;;
+    graphwork) printf '%s\n' GeoTop34GraphWorkDirty ;;
+    openstar) printf '%s\n' GeoTop34OpenStarDirty ;;
+    core) printf '%s\n' GeoTop34CoreDirty ;;
+    dev34) printf '%s\n' GeoTop34Dev ;;
+    *) return 2 ;;
+  esac
+}
+
+target_timeout() {
+  case "$1" in
+    pre|prefix-base|prefix-graph|prefix-mid|prefix) printf '%s\n' "$limit" ;;
+    facts) printf '%s\n' "${TIMEOUT:-120s}" ;;
+    workfacts|linkfacts) printf '%s\n' "${TIMEOUT:-150s}" ;;
+    graphfacts|graphwork) printf '%s\n' "${TIMEOUT:-180s}" ;;
+    openstar|core) printf '%s\n' "${TIMEOUT:-210s}" ;;
+    dev34) printf '%s\n' "${TIMEOUT:-240s}" ;;
+    *) return 2 ;;
+  esac
+}
+
+target_dirs_args() {
+  rank=$(target_rank "$1")
+  printf '%s\n' -d .
+  for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+    if [ "$(target_rank "$target")" -le "$rank" ]; then
+      printf '%s\n' -d
+      target_layer_dir "$target"
+    fi
+  done
+}
+
+target_source_files() {
+  rank=$(target_rank "$1")
+  if [ "$rank" -ge 1 ]; then
+    printf '%s\n' GeoTop.thy
+  fi
+  for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+    if [ "$(target_rank "$target")" -le "$rank" ]; then
+      dir=$(target_layer_dir "$target")
+      find "$dir" -maxdepth 1 -type f \( -name ROOT -o -name '*.thy' \) -print
+    fi
+  done | LC_ALL=C sort
+}
+
+cache_dir=.dev34_fast_cache
+
+cache_digest() {
+  target=$1
+  {
+    printf 'target=%s\n' "$target"
+    printf 'session=%s\n' "$(target_session "$target")"
+    printf 'force_proofs=%s\n' "${FORCE_PROOFS:-0}"
+    target_source_files "$target" | while IFS= read -r file; do
+      sha256sum "$file"
+    done
+  } | sha256sum | awk '{print $1}'
+}
+
+cache_stamp() {
+  printf '%s/%s.sha256\n' "$cache_dir" "$1"
+}
+
+cache_is_fresh() {
+  target=$1
+  stamp=$(cache_stamp "$target")
+  [ -s "$stamp" ] && [ "$(cat "$stamp")" = "$(cache_digest "$target")" ]
+}
+
+cache_status_line() {
+  target=$1
+  if [ "$target" = none ]; then
+    printf 'cache: none (no dev34 layer target)\n'
+  elif cache_is_fresh "$target"; then
+    printf 'cache: fresh %s (%s)\n' "$target" "$(target_session "$target")"
+  else
+    printf 'cache: stale/missing %s (%s)\n' "$target" "$(target_session "$target")"
+  fi
+}
+
+cache_build_target() {
+  target=$1
+  if [ "$target" = none ]; then
+    "$0" holes
+    return $?
+  fi
+  mkdir -p "$cache_dir"
+  if [ "${FORCE_CACHE:-0}" != 1 ] && cache_is_fresh "$target"; then
+    cache_status_line "$target"
+    return 0
+  fi
+  mapfile -t dirs < <(target_dirs_args "$target")
+  session=$(target_session "$target")
+  build_timeout=$(target_timeout "$target")
+  printf 'cache build: %s (%s)\n' "$target" "$session"
+  timeout "$build_timeout" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    "${dirs[@]}" \
+    -b "$session"
+  cache_digest "$target" >"$(cache_stamp "$target")"
+  cache_status_line "$target"
+}
+
 parent_context() {
   file=$1
   case "$file" in
@@ -271,6 +427,25 @@ parent_context() {
   esac
 }
 
+parent_target_for_file() {
+  case "$1" in
+    dev34_pre/*) printf '%s\n' none ;;
+    dev34_prefix_base/*) printf '%s\n' pre ;;
+    dev34_prefix_graph/*) printf '%s\n' prefix-base ;;
+    dev34_prefix_mid/*) printf '%s\n' prefix-graph ;;
+    dev34_prefix/*) printf '%s\n' prefix-mid ;;
+    dev34_facts/*) printf '%s\n' prefix ;;
+    dev34_workfacts/*) printf '%s\n' facts ;;
+    dev34_linkfacts/*) printf '%s\n' workfacts ;;
+    dev34_graphfacts/*) printf '%s\n' linkfacts ;;
+    dev34_graphwork/*) printf '%s\n' graphfacts ;;
+    dev34_openstar/*) printf '%s\n' graphwork ;;
+    dev34_core/*) printf '%s\n' openstar ;;
+    dev34/*) printf '%s\n' core ;;
+    *) return 2 ;;
+  esac
+}
+
 proc_one() {
   file=$1
   parent_context "$file" proc || return $?
@@ -285,12 +460,24 @@ proc_one() {
 plan_one() {
   file=$1
   parent_context "$file" plan || return $?
-  printf '%s\tparent=%s\n' "$file" "$logic"
+  parent_target=$(parent_target_for_file "$file")
+  if [ "$parent_target" = none ]; then
+    printf '%s\tparent=%s\tcache=external\n' "$file" "$logic"
+  elif cache_is_fresh "$parent_target"; then
+    printf '%s\tparent=%s\tcache=fresh:%s\n' "$file" "$logic" "$parent_target"
+  else
+    printf '%s\tparent=%s\tcache=stale:%s\n' "$file" "$logic" "$parent_target"
+  fi
 }
 
 warm_one() {
   file=$1
   parent_context "$file" warm || return $?
+  parent_target=$(parent_target_for_file "$file")
+  if [ "$parent_target" != none ]; then
+    cache_build_target "$parent_target"
+    return $?
+  fi
   printf 'build parent heap: %s for %s\n' "$logic" "$file"
   timeout "$limit" "$isabelle" build \
     "${isabelle_options[@]}" \
@@ -315,7 +502,9 @@ case "${1:-quick}" in
     printf '\ndirty dev34 layer files:\n'
     if [ -n "$files" ]; then
       printf '%s\n' "$files"
-      printf '\nauto would run: %s\n' "$(auto_target "$files")"
+      target=$(auto_target "$files")
+      printf '\nauto would run: %s\n' "$target"
+      cache_status_line "$target"
     else
       printf '(none)\n'
       printf '\nauto would run: holes\n'
@@ -547,10 +736,31 @@ EOF2
     shift
     files=$(layer_files "$@")
     target=$(auto_target "$files")
-    if [ "$target" = none ]; then
-      exec "$0" holes
-    fi
-    exec "$0" "$target-heap"
+    cache_build_target "$target"
+    ;;
+  cache-status)
+    shift
+    files=$(layer_files "$@")
+    target=$(auto_target "$files")
+    cache_status_line "$target"
+    ;;
+  cache-all)
+    shift
+    status=0
+    for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+      if cache_build_target "$target"; then
+        :
+      else
+        status=$?
+        break
+      fi
+    done
+    exit "$status"
+    ;;
+  cache-clean)
+    shift
+    rm -rf "$cache_dir"
+    printf 'removed %s\n' "$cache_dir"
     ;;
   prove|proof)
     shift
@@ -573,39 +783,19 @@ EOF2
     build_prefix
     ;;
   pre-heap)
-    exec timeout "$limit" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre \
-      -b GeoTopPre3Dirty
+    cache_build_target pre
     ;;
   prefix-heap)
-    exec timeout "$limit" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix \
-      -b GeoTop34PrefixDirty
+    cache_build_target prefix
     ;;
   prefix-base-heap)
-    exec timeout "$limit" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base \
-      -b GeoTop34PrefixBaseDirty
+    cache_build_target prefix-base
     ;;
   prefix-graph-heap)
-    exec timeout "$limit" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph \
-      -b GeoTop34PrefixGraphDirty
+    cache_build_target prefix-graph
     ;;
   prefix-mid-heap)
-    exec timeout "$limit" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid \
-      -b GeoTop34PrefixMidDirty
+    cache_build_target prefix-mid
     ;;
   facts)
     exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
@@ -615,11 +805,7 @@ EOF2
       GeoTop34FactsDirty
     ;;
   facts-heap)
-    exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -b GeoTop34FactsDirty
+    cache_build_target facts
     ;;
   workfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
@@ -630,12 +816,7 @@ EOF2
       GeoTop34WorkFactsDirty
     ;;
   workfacts-heap)
-    exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts \
-      -b GeoTop34WorkFactsDirty
+    cache_build_target workfacts
     ;;
   linkfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
@@ -646,12 +827,7 @@ EOF2
       GeoTop34LinkFactsDirty
     ;;
   linkfacts-heap)
-    exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts \
-      -b GeoTop34LinkFactsDirty
+    cache_build_target linkfacts
     ;;
   graphfacts)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
@@ -662,12 +838,7 @@ EOF2
       GeoTop34GraphFactsDirty
     ;;
   graphfacts-heap)
-    exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
-      -b GeoTop34GraphFactsDirty
+    cache_build_target graphfacts
     ;;
   graphwork)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
@@ -679,13 +850,7 @@ EOF2
       GeoTop34GraphWorkDirty
     ;;
   graphwork-heap)
-    exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
-      -d dev34_graphwork \
-      -b GeoTop34GraphWorkDirty
+    cache_build_target graphwork
     ;;
   openstar)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
@@ -697,13 +862,7 @@ EOF2
       GeoTop34OpenStarDirty
     ;;
   openstar-heap)
-    exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
-      -d dev34_graphwork -d dev34_openstar \
-      -b GeoTop34OpenStarDirty
+    cache_build_target openstar
     ;;
   core)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
@@ -715,25 +874,13 @@ EOF2
       GeoTop34CoreDirty
     ;;
   core-heap)
-    exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
-      -d dev34_graphwork -d dev34_openstar -d dev34_core \
-      -b GeoTop34CoreDirty
+    cache_build_target core
     ;;
   dev34)
     build_dev34
     ;;
   dev34-heap)
-    exec timeout "${TIMEOUT:-240s}" "$isabelle" build \
-      "${isabelle_options[@]}" \
-      "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
-      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
-      -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34 \
-      -b GeoTop34Dev
+    cache_build_target dev34
     ;;
   *)
     usage
