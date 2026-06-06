@@ -7871,6 +7871,19 @@ proof -
     "J \<inter> geotop_arc_interior
       (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
     using hxJ hx_other_arc_interior by (by100 blast)
+  have hbase_other_arc_interiors_disjoint:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<inter>
+      geotop_arc_interior
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} =
+      {}"
+    by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix[OF h\<theta>_not_col])
+  have htriangle_boundary_polygon:
+    "geotop_is_polygon
+      (closed_segment v\<^sub>0 v\<^sub>1 \<union>
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1))"
+    by (rule pair_of_arcs_is_polygon
+        [OF hbase_edge_broken_line hother_two_edge_broken_line
+          hbase_edge_arc hother_two_edge_arc hbase_other_arc_interiors_disjoint])
   show ?thesis
     sorry
 qed
