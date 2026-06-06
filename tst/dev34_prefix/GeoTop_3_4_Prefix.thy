@@ -5644,6 +5644,52 @@ proof -
   qed
 qed
 
+lemma geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes h\<sigma>L: "\<sigma> \<in> L"
+  assumes hw\<sigma>: "w \<in> \<sigma>"
+  shows "\<sigma> = {w} \<or> \<sigma> = e"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have h1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have hwL: "{w} \<in> L"
+    using geotop_graph_endpoint_singleton_and_card_one_prefix[OF hL hend]
+    by (by100 blast)
+  have hunique: "\<exists>!l. l \<in> L \<and> geotop_is_edge l \<and> w \<in> l"
+    by (rule geotop_graph_endpoint_unique_incident_edge_prefix[OF hL hfin hend])
+  have hcases: "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+    by (rule geotop_1dim_simplex_cases[OF h1dim h\<sigma>L])
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume "\<exists>v. \<sigma> = {v}"
+    then obtain v where h\<sigma>v: "\<sigma> = {v}" by (by100 blast)
+    have "v = w" using h\<sigma>v hw\<sigma> by (by100 blast)
+    show ?thesis using h\<sigma>v \<open>v = w\<close> by (by100 simp)
+  next
+    assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+    then obtain a b where hab: "a \<noteq> b" and h\<sigma>ab: "\<sigma> = closed_segment a b"
+      by (by100 blast)
+    have h\<sigma>edge: "geotop_is_edge \<sigma>"
+      using geotop_closed_segment_is_simplex[OF hab] h\<sigma>ab
+      unfolding geotop_is_edge_def by (by100 simp)
+    have h\<sigma>prop: "\<sigma> \<in> L \<and> geotop_is_edge \<sigma> \<and> w \<in> \<sigma>"
+      using h\<sigma>L h\<sigma>edge hw\<sigma> by (by100 blast)
+    have heprop: "e \<in> L \<and> geotop_is_edge e \<and> w \<in> e"
+      using heL hedge hwe by (by100 blast)
+    have "\<sigma> = e"
+      using hunique h\<sigma>prop heprop by (by100 blast)
+    show ?thesis using \<open>\<sigma> = e\<close> by (by100 blast)
+  qed
+qed
+
 lemma geotop_broken_line_polyhedron_finite_linear_graph_has_endpoint_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
