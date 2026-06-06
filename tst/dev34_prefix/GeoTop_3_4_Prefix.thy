@@ -5515,6 +5515,57 @@ proof -
     using htarget_eq he by (by100 simp)
 qed
 
+lemma geotop_degree_one_vertex_graph_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  assumes hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+  shows "geotop_graph_endpoint L w"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hw_vertex: "w \<in> geotop_complex_vertices L"
+    using geotop_complex_vertices_eq_0_simplexes[OF hcomplex] hwL
+    by (by100 blast)
+  show ?thesis
+    using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
+qed
+
+lemma geotop_broken_line_polyhedron_finite_linear_graph_has_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hB: "geotop_is_broken_line (geotop_polyhedron L)"
+  shows "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+proof -
+  obtain K where hB_arc:
+      "geotop_is_arc (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron L) E"
+    using geotop_is_arc_has_arc_endpoints_prefix[OF hB_arc] by (by100 blast)
+  have hcardE: "card E = 2"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hE_nonempty: "E \<noteq> {}"
+  proof
+    assume hE_empty: "E = {}"
+    have "card E = 0" using hE_empty by (by100 simp)
+    thus False using hcardE by (by100 simp)
+  qed
+  obtain P where hP: "P \<in> E" using hE_nonempty by (by100 blast)
+  have hpoly_refl: "geotop_polyhedron L = geotop_polyhedron L"
+    by (by100 simp)
+  have hPL: "{P} \<in> L"
+    by (rule geotop_broken_line_endpoint_in_finite_linear_graph_vertex_prefix
+        [OF hL hfin hpoly_refl hB hE hP])
+  have hcard_edges: "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} = 1"
+    by (rule geotop_broken_line_endpoint_vertex_incident_edge_card_one_prefix
+        [OF hL hfin hpoly_refl hB hE hP hPL])
+  have h_endpoint: "geotop_graph_endpoint L P"
+    by (rule geotop_degree_one_vertex_graph_endpoint_prefix[OF hL hPL hcard_edges])
+  show ?thesis using hPL h_endpoint by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
