@@ -7884,6 +7884,13 @@ proof -
     by (rule pair_of_arcs_is_polygon
         [OF hbase_edge_broken_line hother_two_edge_broken_line
           hbase_edge_arc hother_two_edge_arc hbase_other_arc_interiors_disjoint])
+  have h\<theta>_frontier_polygon: "geotop_is_polygon (frontier \<theta>)"
+    using h\<theta>_frontier_segments htriangle_boundary_polygon by (by100 simp)
+  have hJ_meets_\<theta>_frontier_other_arc_interior:
+    "J \<inter> frontier \<theta> \<inter>
+      geotop_arc_interior
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
+    using hxJ hx_frontier hx_other_arc_interior by (by100 blast)
   show ?thesis
     sorry
 qed
