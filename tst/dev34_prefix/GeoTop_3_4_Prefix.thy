@@ -8759,6 +8759,17 @@ proof -
     "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
       \<subseteq> interior (geotop_polyhedron K)"
     using hchord_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
+  have hside_segment_sub_polyhedron:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> geotop_polyhedron K"
+    using hside_edge_K hside_hull_segment_eq
+    unfolding geotop_polyhedron_def by (by100 blast)
+  have hside_segment_inter_poly_frontier:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<inter> frontier (geotop_polyhedron K) = {v\<^sub>1, v\<^sub>2}"
+    using hside_segment_inter_J hpoly_frontier_eq_J by (by100 simp)
+  have hside_arc_interior_sub_poly_interior:
+    "geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}
+      \<subseteq> interior (geotop_polyhedron K)"
+    using hside_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
   show ?thesis
     sorry
 qed
