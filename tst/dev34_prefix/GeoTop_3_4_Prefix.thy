@@ -4743,6 +4743,84 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_degree_two_vertices_nonisolated_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+proof (intro allI impI)
+  fix w
+  assume hw: "{w} \<in> L"
+  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hcard: "card ?E = 2"
+    using hdegree hw by (by100 blast)
+  have "?E \<noteq> {}"
+    using hcard by (by100 force)
+  then obtain e where "e \<in> ?E"
+    by (by100 blast)
+  show "\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e"
+    using \<open>e \<in> ?E\<close> by (by100 blast)
+qed
+
+lemma geotop_degree_two_vertices_no_graph_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+proof (intro allI impI)
+  fix w
+  assume hw: "{w} \<in> L"
+  show "\<not> geotop_graph_endpoint L w"
+  proof
+    assume hend: "geotop_graph_endpoint L w"
+    have hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+      using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+    have hcard2: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hdegree hw by (by100 blast)
+    show False
+      using hcard1 hcard2 by (by100 simp)
+  qed
+qed
+
+lemma geotop_degree_one_or_two_no_endpoint_degree_two_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hnoend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  have hcase: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    using hdegree12 hwL by (by100 blast)
+  show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (rule disjE[OF hcase])
+    assume hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    have hw_vertex: "w \<in> geotop_complex_vertices L"
+    proof -
+      have hcomplex: "geotop_is_complex L"
+        using hL unfolding geotop_is_linear_graph_def by (by100 blast)
+      show ?thesis
+        using geotop_complex_vertices_eq_0_simplexes[OF hcomplex] hwL
+        by (by100 blast)
+    qed
+    have hend: "geotop_graph_endpoint L w"
+      using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
+    have hnot: "\<not> geotop_graph_endpoint L w"
+      using hnoend hwL by (by100 blast)
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      using hend hnot by (by100 blast)
+  next
+    assume hcard2: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    show "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hcard2)
+  qed
+qed
+
 lemma geotop_finite_complex_vertices_finite_prefix:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
