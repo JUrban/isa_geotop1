@@ -4534,14 +4534,17 @@ lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_fin: "finite L"
   assumes hwL: "{w} \<in> L"
+  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+      (geotop_polyhedron L)"
   assumes hbranch: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} > 2"
   shows "\<not> top1_connected_on (geotop_polyhedron L - {w})
       (subspace_topology UNIV geotop_euclidean_topology
         (geotop_polyhedron L - {w}))"
   (**
-    Finite graph cutpoint fact for Moise Figure 3.2.  With at least three
-    incident edge germs at \<open>w\<close>, deleting \<open>w\<close> leaves at least three separated
-    local branches, so the remaining carrier is disconnected. **)
+    Finite graph cutpoint fact for Moise Figure 3.2 in the polygon-carrier
+    case.  With at least three incident edge germs at \<open>w\<close> on a simple closed
+    curve carrier, deleting \<open>w\<close> leaves at least three separated local
+    branches, so the remaining carrier is disconnected. **)
   sorry
 
 lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
@@ -4589,7 +4592,7 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w}))"
         by (rule geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix
-            [OF hL_linear hL_fin hwL hbranch])
+            [OF hL_linear hL_fin hwL hSCC hbranch])
       have hconn: "top1_connected_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
             (geotop_polyhedron L - {w}))"
