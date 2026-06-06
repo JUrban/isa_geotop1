@@ -1726,6 +1726,134 @@ proof -
   qed
 qed
 
+lemma geotop_complex_no_2_simplex_over_edge_rel_interior_open_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes hno2: "\<not> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
+  shows "rel_interior e \<in>
+    subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+  (**
+    Prefix-local version of the edge-with-no-2-simplex neighborhood fact:
+    if no 2-simplex lies over an edge, the edge interior is open in the
+    carrier subspace. **)
+proof -
+  obtain a b where hab: "a \<noteq> b" and he_seg: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hrel_eq: "rel_interior e = open_segment a b"
+    using he_seg hab rel_interior_closed_segment[of a b] by (by100 simp)
+  have hrel_as_diff: "rel_interior e = e - {a, b}"
+    using hrel_eq he_seg unfolding open_segment_def by (by100 simp)
+  have hlocal_fin:
+    "\<forall>\<sigma>\<in>K. \<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule conjunct2[OF conjunct2[OF conjunct2[OF hK[unfolded geotop_is_complex_def]]]])
+  have hlocal_e: "\<exists>U. open U \<and> e \<subseteq> U \<and> finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    by (rule bspec[OF hlocal_fin heK])
+  obtain U where hU_open: "open U"
+    and heU: "e \<subseteq> U"
+    and hU_fin: "finite {\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+    using hlocal_e by (elim exE conjE)
+  let ?F = "{\<tau>\<in>K. \<tau> \<inter> U \<noteq> {}}"
+  let ?Bad = "{\<tau>\<in>?F. \<tau> \<inter> rel_interior e = {}}"
+  have hBad_fin: "finite ?Bad"
+  proof -
+    have "?Bad \<subseteq> ?F"
+      by (by100 blast)
+    show ?thesis
+      by (rule finite_subset[OF \<open>?Bad \<subseteq> ?F\<close> hU_fin])
+  qed
+  have hBad_closed: "\<forall>\<tau>\<in>?Bad. closed \<tau>"
+  proof
+    fix \<tau> assume h\<tau>: "\<tau> \<in> ?Bad"
+    have h\<tau>K: "\<tau> \<in> K"
+      using h\<tau> by (by100 simp)
+    show "closed \<tau>"
+      by (rule geotop_complex_simplex_closed[OF hK h\<tau>K])
+  qed
+  have hB_closed: "closed (\<Union>?Bad)"
+    by (rule closed_Union[OF hBad_fin hBad_closed])
+  have hend_closed: "closed ({a, b}::(real^2) set)"
+    by (by100 simp)
+  define W where "W = U - \<Union>?Bad - {a, b}"
+  have hW_open_HOL: "open W"
+  proof -
+    have hU_B_open: "open (U - \<Union>?Bad)"
+      by (rule open_Diff[OF hU_open hB_closed])
+    show ?thesis
+      unfolding W_def by (rule open_Diff[OF hU_B_open hend_closed])
+  qed
+  have hpoly_inter_W: "geotop_polyhedron K \<inter> W = rel_interior e"
+  proof
+    show "geotop_polyhedron K \<inter> W \<subseteq> rel_interior e"
+    proof
+      fix x assume hx: "x \<in> geotop_polyhedron K \<inter> W"
+      have hx_poly: "x \<in> geotop_polyhedron K"
+        using hx by (by100 simp)
+      have hxW: "x \<in> W"
+        using hx by (by100 simp)
+      have hxU: "x \<in> U"
+        using hxW unfolding W_def by (by100 simp)
+      have hx_not_end: "x \<notin> {a, b}"
+        using hxW unfolding W_def by (by100 simp)
+      obtain \<tau> where h\<tau>K: "\<tau> \<in> K" and hx\<tau>: "x \<in> \<tau>"
+        using hx_poly unfolding geotop_polyhedron_def by (by100 blast)
+      have h\<tau>F: "\<tau> \<in> ?F"
+        using h\<tau>K hx\<tau> hxU by (by100 blast)
+      have h\<tau>meet: "\<tau> \<inter> rel_interior e \<noteq> {}"
+      proof (rule ccontr)
+        assume "\<not> \<tau> \<inter> rel_interior e \<noteq> {}"
+        hence h\<tau>bad: "\<tau> \<in> ?Bad"
+          using h\<tau>F by (by100 simp)
+        have "x \<in> \<Union>?Bad"
+          using h\<tau>bad hx\<tau> by (by100 blast)
+        thus False
+          using hxW unfolding W_def by (by100 simp)
+      qed
+      have h\<tau>sube: "\<tau> \<subseteq> e"
+        by (rule geotop_no_2_simplex_containing_edge_simplex_meeting_rel_interior_subset_prefix
+            [OF hK heK h\<tau>K hedge h\<tau>meet hno2])
+      have hxe: "x \<in> e"
+        using h\<tau>sube hx\<tau> by (by100 blast)
+      show "x \<in> rel_interior e"
+        using hxe hx_not_end hrel_as_diff by (by100 blast)
+    qed
+  next
+    show "rel_interior e \<subseteq> geotop_polyhedron K \<inter> W"
+    proof
+      fix x assume hxrel: "x \<in> rel_interior e"
+      have hxe: "x \<in> e"
+        using hxrel rel_interior_subset by (by100 blast)
+      have hx_poly: "x \<in> geotop_polyhedron K"
+        using heK hxe unfolding geotop_polyhedron_def by (by100 blast)
+      have hxU: "x \<in> U"
+        using heU hxe by (by100 blast)
+      have hx_not_B: "x \<notin> \<Union>?Bad"
+      proof
+        assume "x \<in> \<Union>?Bad"
+        then obtain \<tau> where h\<tau>bad: "\<tau> \<in> ?Bad" and hx\<tau>: "x \<in> \<tau>"
+          by (by100 blast)
+        have "\<tau> \<inter> rel_interior e \<noteq> {}"
+          using hx\<tau> hxrel by (by100 blast)
+        thus False
+          using h\<tau>bad by (by100 simp)
+      qed
+      have hx_not_end: "x \<notin> {a, b}"
+        using hxrel hrel_as_diff by (by100 blast)
+      have hxW: "x \<in> W"
+        unfolding W_def using hxU hx_not_B hx_not_end by (by100 simp)
+      show "x \<in> geotop_polyhedron K \<inter> W"
+        using hx_poly hxW by (by100 simp)
+    qed
+  qed
+  have hW_top: "W \<in> geotop_euclidean_topology"
+    by (metis hW_open_HOL geotop_euclidean_topology_eq_open_sets
+        mem_Collect_eq top1_open_sets_def)
+  show ?thesis
+    unfolding subspace_topology_def
+    using hW_top hpoly_inter_W by (by100 blast)
+qed
+
 lemma geotop_complex_point_finite_local_carrier_prefix:
   fixes K :: "(real^2) set set"
   assumes hK: "geotop_is_complex K"
@@ -7861,6 +7989,94 @@ proof -
     by (rule geotop_polygon_disk_polyhedron_geotop_frontier_prefix[OF hJ hK_poly])
   show ?thesis
     using heJ hfront by (by100 simp)
+qed
+
+lemma geotop_polygon_disk_boundary_edge_owned_by_2simplex_prefix:
+  fixes J e :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes heK: "e \<in> K"
+  assumes hedge: "geotop_is_edge e"
+  assumes heJ: "e \<subseteq> J"
+  shows "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>"
+  (**
+    A complex edge lying on the polygon boundary of the triangulated disk must
+    be incident with a 2-simplex.  Otherwise its relative interior would be
+    open in the disk carrier, and any neighborhood of a boundary point in
+    \<open>closure (Int J)\<close> would meet \<open>Int J\<close>, forcing an interior point onto
+    the polygon boundary. **)
+proof (rule ccontr)
+  assume hno_owner:
+    "\<not> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e \<sigma>)"
+  have hno2: "\<not> (\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>)"
+  proof
+    assume "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> e \<subseteq> \<sigma>"
+    then obtain \<sigma> where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and he\<sigma>: "e \<subseteq> \<sigma>"
+      by (elim bexE conjE)
+    have hface: "geotop_is_face e \<sigma>"
+      by (rule geotop_complex_subset_simplex_face_prefix[OF hK heK h\<sigma>K he\<sigma>])
+    show False
+      using hno_owner h\<sigma>K h\<sigma>2 hface by (by100 blast)
+  qed
+  have hrel_open:
+    "rel_interior e \<in>
+      subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K)"
+    by (rule geotop_complex_no_2_simplex_over_edge_rel_interior_open_prefix
+        [OF hK heK hedge hno2])
+  obtain W where hW_top: "W \<in> geotop_euclidean_topology"
+    and hrel_eq: "rel_interior e = geotop_polyhedron K \<inter> W"
+    using hrel_open unfolding subspace_topology_def by (by100 blast)
+  have he_dim: "geotop_simplex_dim e 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have he_simplex: "geotop_is_simplex e"
+    by (rule geotop_simplex_dim_imp_is_simplex[OF he_dim])
+  obtain p where hp_rel: "p \<in> rel_interior e"
+  proof -
+    have "rel_interior e \<noteq> {}"
+      by (rule geotop_simplex_rel_interior_nonempty[OF he_simplex])
+    thus ?thesis
+      using that by (by100 blast)
+  qed
+  have hp_e: "p \<in> e"
+    using hp_rel rel_interior_subset by (by100 blast)
+  have hp_poly: "p \<in> geotop_polyhedron K"
+    using heK hp_e unfolding geotop_polyhedron_def by (by100 blast)
+  have hp_cl:
+    "p \<in> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using hp_poly hK_poly by (by100 simp)
+  have hp_W: "p \<in> W"
+    using hp_rel hrel_eq by (by100 blast)
+  have htop_UNIV: "is_topology_on (UNIV::(real^2) set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets
+        top1_open_sets_is_topology_on_UNIV)
+  have hI_sub_UNIV: "geotop_polygon_interior J \<subseteq> (UNIV::(real^2) set)"
+    by (by100 simp)
+  have hW_meets_I: "W \<inter> geotop_polygon_interior J \<noteq> {}"
+    by (rule closure_meets_open[OF htop_UNIV hI_sub_UNIV hp_cl hW_top hp_W])
+  obtain x where hxW: "x \<in> W"
+    and hxI: "x \<in> geotop_polygon_interior J"
+    using hW_meets_I by (by100 blast)
+  have hx_cl:
+    "x \<in> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+    using hxI subset_closure_on[of "geotop_polygon_interior J" UNIV
+        "geotop_euclidean_topology::(real^2) set set"]
+    by (by100 blast)
+  have hx_poly: "x \<in> geotop_polyhedron K"
+    using hx_cl hK_poly by (by100 simp)
+  have hx_rel: "x \<in> rel_interior e"
+    using hrel_eq hx_poly hxW by (by100 blast)
+  have hxe: "x \<in> e"
+    using hx_rel rel_interior_subset by (by100 blast)
+  have hxJ: "x \<in> J"
+    using heJ hxe by (by100 blast)
+  have "x \<in> geotop_polygon_interior J \<inter> J"
+    using hxI hxJ by (by100 blast)
+  thus False
+    using polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
 qed
 
 lemma geotop_three_selected_boundary_edges_two_owner_2simplexes_prefix:
