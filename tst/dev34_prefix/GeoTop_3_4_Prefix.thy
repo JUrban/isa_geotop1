@@ -1574,7 +1574,7 @@ proof -
       have "F = convex hull {a, b}"
         using hF_HOL hW_ab by (by100 simp)
       also have "\<dots> = closed_segment a b"
-        by (rule segment_convex_hull)
+        using segment_convex_hull[of a b] by (by100 simp)
       finally have "F = closed_segment a b" .
       thus ?thesis by (by100 blast)
     qed
@@ -1699,27 +1699,45 @@ proof -
   obtain q where hq_ne_p: "q \<noteq> p" and he\<^sub>1_qp: "e\<^sub>1 = closed_segment q p"
   proof (rule disjE[OF hp_ab])
     assume hpa: "p = a"
+    have hb_ne_p: "b \<noteq> p"
+      using hab hpa by (by100 blast)
+    have he\<^sub>1_bp: "e\<^sub>1 = closed_segment b p"
+      using he\<^sub>1_ab hpa closed_segment_commute[of a b] by (by100 simp)
     show ?thesis
-      by (rule that[where q = b]) (use hab he\<^sub>1_ab hpa closed_segment_commute in \<open>by100 simp_all\<close>)
+      by (rule that[OF hb_ne_p he\<^sub>1_bp])
   next
     assume hpb: "p = b"
+    have ha_ne_p: "a \<noteq> p"
+      using hab hpb by (by100 blast)
+    have he\<^sub>1_ap: "e\<^sub>1 = closed_segment a p"
+      using he\<^sub>1_ab hpb by (by100 simp)
     show ?thesis
-      by (rule that[where q = a]) (use hab he\<^sub>1_ab hpb in \<open>by100 simp_all\<close>)
+      by (rule that[OF ha_ne_p he\<^sub>1_ap])
   qed
   obtain r where hr_ne_p: "r \<noteq> p" and he\<^sub>2_pr: "e\<^sub>2 = closed_segment p r"
   proof (rule disjE[OF hp_cd])
     assume hpc: "p = c"
+    have hd_ne_p: "d \<noteq> p"
+      using hcd hpc by (by100 blast)
+    have he\<^sub>2_pd: "e\<^sub>2 = closed_segment p d"
+      using he\<^sub>2_cd hpc by (by100 simp)
     show ?thesis
-      by (rule that[where r = d]) (use hcd he\<^sub>2_cd hpc in \<open>by100 simp_all\<close>)
+      by (rule that[OF hd_ne_p he\<^sub>2_pd])
   next
     assume hpd: "p = d"
+    have hc_ne_p: "c \<noteq> p"
+      using hcd hpd by (by100 blast)
+    have he\<^sub>2_pc: "e\<^sub>2 = closed_segment p c"
+      using he\<^sub>2_cd hpd closed_segment_commute[of c d] by (by100 simp)
     show ?thesis
-      by (rule that[where r = c]) (use hcd he\<^sub>2_cd hpd closed_segment_commute in \<open>by100 simp_all\<close>)
+      by (rule that[OF hc_ne_p he\<^sub>2_pc])
   qed
   have hB\<^sub>1: "geotop_is_broken_line e\<^sub>1"
     using geotop_closed_segment_is_broken_line[OF hq_ne_p] he\<^sub>1_qp by (by100 simp)
   have hB\<^sub>2: "geotop_is_broken_line e\<^sub>2"
-    using geotop_closed_segment_is_broken_line[OF hr_ne_p] he\<^sub>2_pr by (by100 simp)
+    using geotop_closed_segment_is_broken_line[OF hr_ne_p] he\<^sub>2_pr
+      closed_segment_commute[of p r]
+    by (by100 simp)
   have hR_end_1:
       "\<exists>\<gamma>\<^sub>1. arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = e\<^sub>1 \<and> pathfinish \<gamma>\<^sub>1 = p"
   proof (rule exI[where x = "linepath q p"])
@@ -4139,6 +4157,152 @@ proof -
     using hK_poly h_clos_eq h_clos_compact by (by100 simp)
   show ?thesis
     by (rule compact_polyhedron_imp_finite_complex[OF hK hK_poly_compact])
+qed
+
+lemma geotop_polygon_finite_1dim_complex_with_two_vertices_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  shows "\<exists>L. geotop_is_complex L \<and> finite L \<and> geotop_complex_is_1dim L
+      \<and> geotop_polyhedron L = J \<and> {P} \<in> L \<and> {Q} \<in> L"
+  (**
+    Polygon-boundary graph witness with chosen vertices.  This packages the
+    definition of polygon as a finite polyhedral 1-sphere and then subdivides
+    its 1-dimensional witness complex at the two requested boundary points. **)
+proof -
+  obtain K where hK: "geotop_is_complex K"
+      and hK_fin: "finite K"
+      and hK_poly: "geotop_polyhedron K = J"
+    using geotop_polygon_finite_triangulation[OF hJ] by (by100 blast)
+  have hdim_le:
+    "\<forall>\<sigma>\<in>K. \<forall>k. geotop_simplex_dim \<sigma> k \<longrightarrow> k \<le> 1"
+    by (rule polygon_complex_dim_le_1[OF hJ hK hK_poly])
+  have hK_1dim: "geotop_complex_is_1dim K"
+  proof (unfold geotop_complex_is_1dim_def, intro ballI)
+    fix \<sigma>
+    assume h\<sigma>K: "\<sigma> \<in> K"
+    have h\<sigma>_simp: "geotop_is_simplex \<sigma>"
+      using geotop_is_complex_simplex[OF hK] h\<sigma>K by (by100 blast)
+    obtain V m n where hV_fin: "finite V"
+      and hV_card: "card V = n + 1"
+      and hn_m: "n \<le> m"
+      and hV_gp: "geotop_general_position V m"
+      and h\<sigma>_eq: "\<sigma> = geotop_convex_hull V"
+      using h\<sigma>_simp unfolding geotop_is_simplex_def by (by100 blast)
+    have h\<sigma>_dim: "geotop_simplex_dim \<sigma> n"
+      unfolding geotop_simplex_dim_def
+      using hV_fin hV_card hn_m hV_gp h\<sigma>_eq by (by100 blast)
+    have hn_le: "n \<le> 1"
+      using hdim_le h\<sigma>K h\<sigma>_dim by (by100 blast)
+    show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+      using hn_le h\<sigma>_dim by (by100 blast)
+  qed
+  have hP_poly: "P \<in> geotop_polyhedron K"
+    using hP hK_poly by (by100 simp)
+  have hQ_poly: "Q \<in> geotop_polyhedron K"
+    using hQ hK_poly by (by100 simp)
+  obtain L where hL: "geotop_is_complex L"
+      and hL_1dim: "geotop_complex_is_1dim L"
+      and hL_poly: "geotop_polyhedron L = geotop_polyhedron K"
+      and hPL: "{P} \<in> L"
+      and hQL: "{Q} \<in> L"
+      and hL_fin_imp: "finite K \<longrightarrow> finite L"
+    using geotop_complex_subdivide_at_two[OF hK hK_1dim hP_poly hQ_poly]
+    by (by100 blast)
+  have hL_fin: "finite L"
+    using hL_fin_imp hK_fin by (by100 blast)
+  have hL_poly_J: "geotop_polyhedron L = J"
+    using hL_poly hK_poly by (by100 simp)
+  show ?thesis
+    using hL hL_fin hL_1dim hL_poly_J hPL hQL by (by100 blast)
+qed
+
+lemma geotop_complex_1dim_imp_linear_graph_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_complex_is_1dim K"
+  shows "geotop_is_linear_graph K"
+proof -
+  have hdim: "\<forall>\<sigma>\<in>K. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+    using hK1 unfolding geotop_complex_is_1dim_def by (by100 simp)
+  show ?thesis
+    unfolding geotop_is_linear_graph_def using hK hdim by (by100 simp)
+qed
+
+lemma geotop_polygon_finite_linear_graph_with_two_vertices_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  shows "\<exists>L. geotop_is_linear_graph L \<and> finite L
+      \<and> geotop_polyhedron L = J \<and> {P} \<in> L \<and> {Q} \<in> L"
+proof -
+  obtain L where hL: "geotop_is_complex L"
+      and hL_fin: "finite L"
+      and hL_1dim: "geotop_complex_is_1dim L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hPL: "{P} \<in> L"
+      and hQL: "{Q} \<in> L"
+    using geotop_polygon_finite_1dim_complex_with_two_vertices_prefix
+      [OF hJ hP hQ] by (by100 blast)
+  have hL_linear: "geotop_is_linear_graph L"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hL hL_1dim])
+  show ?thesis
+    using hL_linear hL_fin hL_poly hPL hQL by (by100 blast)
+qed
+
+lemma geotop_finite_linear_graph_polygon_polyhedron_connected_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "geotop_complex_connected L"
+proof -
+  have hL_complex: "geotop_is_complex L"
+    using hL_linear unfolding geotop_is_linear_graph_def by (by100 blast)
+  have hhomeo: "geotop_polyhedron L homeomorphic sphere (0::real^2) 1"
+    by (rule polygon_homeomorphic_S1_helper[OF hpolygon])
+  have hdim: "(2::nat) \<le> DIM(real^2)"
+    by (by100 simp)
+  have hsphere_conn: "connected (sphere (0::real^2) 1)"
+    by (rule connected_sphere[OF hdim])
+  have hpoly_conn_HOL: "connected (geotop_polyhedron L)"
+    using hhomeo hsphere_conn homeomorphic_connectedness by (by100 blast)
+  have hpoly_conn:
+      "top1_connected_on (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hpoly_conn_HOL top1_connected_on_geotop_iff_connected by (by100 blast)
+  have hpath:
+      "top1_path_connected_on (geotop_polyhedron L)
+        (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    by (rule iffD2[OF Theorem_GT_1_12(2)[OF hL_complex] hpoly_conn])
+  show ?thesis
+    by (rule iffD2[OF Theorem_GT_1_12(1)[OF hL_complex] hpath])
+qed
+
+lemma geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  shows "\<exists>L. geotop_is_linear_graph L \<and> finite L
+      \<and> geotop_complex_connected L
+      \<and> geotop_polyhedron L = J \<and> {P} \<in> L \<and> {Q} \<in> L"
+proof -
+  obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hPL: "{P} \<in> L"
+      and hQL: "{Q} \<in> L"
+    using geotop_polygon_finite_linear_graph_with_two_vertices_prefix
+      [OF hJ hP hQ] by (by100 blast)
+  have hpolygon_L: "geotop_is_polygon (geotop_polyhedron L)"
+    using hJ hL_poly by (by100 simp)
+  have hL_conn: "geotop_complex_connected L"
+    by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_prefix
+        [OF hL_linear hpolygon_L])
+  show ?thesis
+    using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
 lemma geotop_finite_complex_vertices_finite_prefix:
@@ -8841,15 +9005,21 @@ proof -
     by (rule finite_subset[OF _ hK_fin]) (by100 blast)
   have hverts_fin: "finite (geotop_complex_vertices K)"
     by (rule geotop_finite_complex_vertices_finite_prefix[OF hK hK_fin])
-  have hE_closed: "closed (\<Union>?E)"
-  proof (rule closed_Union[OF hE_fin])
+  have hE_closed_each: "\<And>e. e \<in> ?E \<Longrightarrow> closed e"
+  proof -
     fix e
     assume heE: "e \<in> ?E"
     have heK: "e \<in> K"
       using heE by (by100 simp)
+    have he_simplex: "geotop_is_simplex e"
+      using geotop_is_complex_simplex[OF hK] heK by (by100 blast)
     show "closed e"
-      by (rule geotop_complex_simplex_closed[OF hK heK])
+      by (rule geotop_is_simplex_closed[OF he_simplex])
   qed
+  have hE_closed_all: "\<forall>e\<in>?E. closed e"
+    using hE_closed_each by (by100 blast)
+  have hE_closed: "closed (\<Union>?E)"
+    by (rule closed_Union[OF hE_fin hE_closed_all])
   have hnonvertex_cover:
       "J - geotop_complex_vertices K \<subseteq> \<Union>?E"
     by (rule geotop_polygon_disk_boundary_nonvertex_subset_selected_edges_prefix
@@ -8862,7 +9032,7 @@ proof -
     proof (rule ccontr)
       assume hx_not: "x \<notin> \<Union>?E"
       have hopen: "open (- \<Union>?E)"
-        using hE_closed by (by100 simp)
+        by (rule open_Compl[OF hE_closed])
       have hx_open: "x \<in> - \<Union>?E"
         using hx_not by (by100 simp)
       obtain r where hr: "0 < r" and hball: "ball x r \<subseteq> - \<Union>?E"
@@ -8946,7 +9116,7 @@ proof -
     next
       case one
       obtain e where hE_eq: "?E = {e}"
-        using hE_fin one by (by100 metis card_1_singletonE)
+        using one by (rule card_1_singletonE)
       have heE: "e \<in> ?E"
         using hE_eq by (by100 simp)
       have he_edge: "geotop_is_edge e"
@@ -8963,9 +9133,11 @@ proof -
         by (rule geotop_polygon_not_broken_line_prefix[OF hJ])
     next
       case two
+      have hdouble: "\<exists>e\<^sub>1 e\<^sub>2. ?E = {e\<^sub>1, e\<^sub>2} \<and> e\<^sub>1 \<noteq> e\<^sub>2"
+        using two card_2_iff[of ?E] by (by100 simp)
       obtain e\<^sub>1 e\<^sub>2 where hE_eq: "?E = {e\<^sub>1, e\<^sub>2}"
         and he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2"
-        using hE_fin two unfolding card_2_iff by (by100 blast)
+        using hdouble by (elim exE conjE)
       have he\<^sub>1E: "e\<^sub>1 \<in> ?E"
         using hE_eq by (by100 simp)
       have he\<^sub>2E: "e\<^sub>2 \<in> ?E"
@@ -9001,10 +9173,14 @@ proof -
   have hcard3: "3 \<le> card ?E"
     using hE_card_gt2 by (by100 linarith)
   obtain W where hW_sub: "W \<subseteq> ?E" and hW_card: "card W = 3"
-    using obtain_subset_with_card_n[OF hcard3] by auto
+    using obtain_subset_with_card_n[OF hcard3] by metis
+  have hW_three:
+      "\<exists>e\<^sub>1 e\<^sub>2 e\<^sub>3. W = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e\<^sub>3 \<and> e\<^sub>1 \<noteq> e\<^sub>3"
+    by (rule iffD1[OF card_3_iff hW_card])
   obtain e\<^sub>1 e\<^sub>2 e\<^sub>3 where hW_eq: "W = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
     and he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2" and he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3" and he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
-    using hW_card unfolding card_3_iff by (by100 blast)
+    using hW_three by (elim exE conjE)
   have he\<^sub>1E: "e\<^sub>1 \<in> ?E" and he\<^sub>2E: "e\<^sub>2 \<in> ?E" and he\<^sub>3E: "e\<^sub>3 \<in> ?E"
     using hW_sub hW_eq by (by100 blast)+
   have he\<^sub>1K: "e\<^sub>1 \<in> K" and he\<^sub>2K: "e\<^sub>2 \<in> K" and he\<^sub>3K: "e\<^sub>3 \<in> K"
@@ -11505,6 +11681,14 @@ proof -
           [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
             hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
   qed
+  obtain L where hL_linear: "geotop_is_linear_graph L"
+      and hL_fin: "finite L"
+      and hL_conn: "geotop_complex_connected L"
+      and hL_poly: "geotop_polyhedron L = J"
+      and hv\<^sub>0L: "{v\<^sub>0} \<in> L"
+      and hv\<^sub>2L: "{v\<^sub>2} \<in> L"
+    using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
+      [OF hJ hv\<^sub>0J hv\<^sub>2J] by (by100 blast)
   show ?thesis
     sorry
 qed
