@@ -7987,6 +7987,94 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_theta_middle_arc_inline_decomposition_prefix:
+  fixes M B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
+  assumes h\<theta>: "geotop_is_polyhedral_theta_graph M B\<^sub>1 B\<^sub>2 B\<^sub>3 E"
+  assumes hB\<^sub>2_inner:
+    "geotop_arc_interior B\<^sub>2 E \<subseteq> geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3)"
+  shows "{C. \<exists>P\<in>geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3) -
+            geotop_arc_interior B\<^sub>2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3) -
+                 geotop_arc_interior B\<^sub>2 E) P}
+         =
+         {geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2),
+          geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3)}"
+    and "closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3)) =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2))
+         \<union> closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3))"
+    and "closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3)) - B\<^sub>2 =
+         (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+          geotop_arc_interior B\<^sub>1 E) \<union>
+         (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+          geotop_arc_interior B\<^sub>3 E)"
+    and "top1_connected_on
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+            geotop_arc_interior B\<^sub>1 E)
+           (subspace_topology UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+              geotop_arc_interior B\<^sub>1 E))"
+    and "top1_connected_on
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+            geotop_arc_interior B\<^sub>3 E)
+           (subspace_topology UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+              geotop_arc_interior B\<^sub>3 E))"
+    and "geotop_separated UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+            geotop_arc_interior B\<^sub>1 E)
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+            geotop_arc_interior B\<^sub>3 E)"
+proof -
+  show "{C. \<exists>P\<in>geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3) -
+            geotop_arc_interior B\<^sub>2 E.
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3) -
+                 geotop_arc_interior B\<^sub>2 E) P}
+         =
+         {geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2),
+          geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3)}"
+    by (rule Theorem_GT_2_8(1)[OF h\<theta> hB\<^sub>2_inner])
+  show "closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3)) =
+         closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2))
+         \<union> closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3))"
+    by (rule Theorem_GT_2_8(2)[OF h\<theta> hB\<^sub>2_inner])
+  show "closure_on UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>3)) - B\<^sub>2 =
+         (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+          geotop_arc_interior B\<^sub>1 E) \<union>
+         (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+          geotop_arc_interior B\<^sub>3 E)"
+    by (rule Theorem_GT_2_8(3)[OF h\<theta> hB\<^sub>2_inner])
+  show "top1_connected_on
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+            geotop_arc_interior B\<^sub>1 E)
+           (subspace_topology UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+              geotop_arc_interior B\<^sub>1 E))"
+    by (rule Theorem_GT_2_8(4)[OF h\<theta> hB\<^sub>2_inner])
+  show "top1_connected_on
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+            geotop_arc_interior B\<^sub>3 E)
+           (subspace_topology UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+              geotop_arc_interior B\<^sub>3 E))"
+    by (rule Theorem_GT_2_8(5)[OF h\<theta> hB\<^sub>2_inner])
+  show "geotop_separated UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (B\<^sub>1 \<union> B\<^sub>2) \<union>
+            geotop_arc_interior B\<^sub>1 E)
+           (geotop_polygon_interior (B\<^sub>2 \<union> B\<^sub>3) \<union>
+            geotop_arc_interior B\<^sub>3 E)"
+    by (rule Theorem_GT_2_8(6)[OF h\<theta> hB\<^sub>2_inner])
+qed
+
 lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
