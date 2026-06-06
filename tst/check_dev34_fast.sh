@@ -33,6 +33,8 @@ Fast modes:
                with --hot, also run hot [FILES]
   loop-hot PAT [FILES]
                compatibility alias for loop --hot PAT [FILES]
+  layer [FILES] build the smallest dirty/explicit dev34 layer only
+  cache [FILES] build and store the smallest dirty/explicit dev34 layer heap
 
 Milestone modes:
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
@@ -40,8 +42,15 @@ Milestone modes:
 
 Build modes:
   pre          build GeoTopPre3Dirty
+  prefix-base  build GeoTop34PrefixBaseDirty only
+  prefix-graph build GeoTop34PrefixGraphDirty only
+  prefix-mid   build GeoTop34PrefixMidDirty only
   prefix       build GeoTop34PrefixDirty
-  prefix-heap  build and store GeoTop34PrefixDirty heap
+  pre-heap, prefix-base-heap, prefix-graph-heap, prefix-mid-heap, prefix-heap
+               build and store the named layer heap for later hot loops
+  facts-heap, workfacts-heap, linkfacts-heap, graphfacts-heap, graphwork-heap,
+  openstar-heap, core-heap, dev34-heap
+               build and store later dev34 layer heaps
   facts        build GeoTop34FactsDirty
   workfacts    build GeoTop34WorkFactsDirty
   linkfacts    build GeoTop34LinkFactsDirty
@@ -67,6 +76,30 @@ build_prefix() {
     "${proof_options[@]}" \
     -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix \
     GeoTop34PrefixDirty
+}
+
+build_prefix_base() {
+  exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    -d . -d dev34_pre -d dev34_prefix_base \
+    GeoTop34PrefixBaseDirty
+}
+
+build_prefix_graph() {
+  exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph \
+    GeoTop34PrefixGraphDirty
+}
+
+build_prefix_mid() {
+  exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid \
+    GeoTop34PrefixMidDirty
 }
 
 build_dev34() {
@@ -111,14 +144,14 @@ auto_target() {
     printf '%s\n' workfacts
   elif printf '%s\n' "$files" | rg -q '^dev34_facts/'; then
     printf '%s\n' facts
-  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_base/'; then
-    printf '%s\n' prefix
-  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/'; then
-    printf '%s\n' prefix
-  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_mid/'; then
-    printf '%s\n' prefix
   elif printf '%s\n' "$files" | rg -q '^dev34_prefix/'; then
     printf '%s\n' prefix
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_mid/'; then
+    printf '%s\n' prefix-mid
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/'; then
+    printf '%s\n' prefix-graph
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_base/'; then
+    printf '%s\n' prefix-base
   elif printf '%s\n' "$files" | rg -q '^dev34_pre/'; then
     printf '%s\n' pre
   else
@@ -439,7 +472,7 @@ $(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
     exit "$status"
     ;;
-  auto)
+  layer|exact|auto)
     shift
     files=$(layer_files "$@")
     target=$(auto_target "$files")
@@ -498,11 +531,26 @@ EOF2
         GeoTop34FactsDirty
     elif [ "$target" = prefix ]; then
       build_prefix
+    elif [ "$target" = prefix-mid ]; then
+      build_prefix_mid
+    elif [ "$target" = prefix-graph ]; then
+      build_prefix_graph
+    elif [ "$target" = prefix-base ]; then
+      build_prefix_base
     elif [ "$target" = pre ]; then
       build_pre
     else
       exec "$0" holes
     fi
+    ;;
+  cache)
+    shift
+    files=$(layer_files "$@")
+    target=$(auto_target "$files")
+    if [ "$target" = none ]; then
+      exec "$0" holes
+    fi
+    exec "$0" "$target-heap"
     ;;
   prove|proof)
     shift
@@ -512,8 +560,24 @@ EOF2
   pre)
     build_pre
     ;;
+  prefix-base)
+    build_prefix_base
+    ;;
+  prefix-graph)
+    build_prefix_graph
+    ;;
+  prefix-mid)
+    build_prefix_mid
+    ;;
   prefix)
     build_prefix
+    ;;
+  pre-heap)
+    exec timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre \
+      -b GeoTopPre3Dirty
     ;;
   prefix-heap)
     exec timeout "$limit" "$isabelle" build \
@@ -526,8 +590,22 @@ EOF2
     exec timeout "$limit" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix \
+      -d . -d dev34_pre -d dev34_prefix_base \
       -b GeoTop34PrefixBaseDirty
+    ;;
+  prefix-graph-heap)
+    exec timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph \
+      -b GeoTop34PrefixGraphDirty
+    ;;
+  prefix-mid-heap)
+    exec timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid \
+      -b GeoTop34PrefixMidDirty
     ;;
   facts)
     exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
@@ -535,6 +613,13 @@ EOF2
       "${proof_options[@]}" \
       -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
       GeoTop34FactsDirty
+    ;;
+  facts-heap)
+    exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -b GeoTop34FactsDirty
     ;;
   workfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
@@ -544,6 +629,14 @@ EOF2
       -d dev34_workfacts \
       GeoTop34WorkFactsDirty
     ;;
+  workfacts-heap)
+    exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts \
+      -b GeoTop34WorkFactsDirty
+    ;;
   linkfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
       "${isabelle_options[@]}" \
@@ -552,6 +645,14 @@ EOF2
       -d dev34_workfacts -d dev34_linkfacts \
       GeoTop34LinkFactsDirty
     ;;
+  linkfacts-heap)
+    exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts \
+      -b GeoTop34LinkFactsDirty
+    ;;
   graphfacts)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
       "${isabelle_options[@]}" \
@@ -559,6 +660,14 @@ EOF2
       -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       GeoTop34GraphFactsDirty
+    ;;
+  graphfacts-heap)
+    exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
+      -b GeoTop34GraphFactsDirty
     ;;
   graphwork)
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
@@ -569,6 +678,15 @@ EOF2
       -d dev34_graphwork \
       GeoTop34GraphWorkDirty
     ;;
+  graphwork-heap)
+    exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
+      -d dev34_graphwork \
+      -b GeoTop34GraphWorkDirty
+    ;;
   openstar)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
       "${isabelle_options[@]}" \
@@ -577,6 +695,15 @@ EOF2
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       -d dev34_graphwork -d dev34_openstar \
       GeoTop34OpenStarDirty
+    ;;
+  openstar-heap)
+    exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
+      -d dev34_graphwork -d dev34_openstar \
+      -b GeoTop34OpenStarDirty
     ;;
   core)
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
@@ -587,8 +714,26 @@ EOF2
       -d dev34_graphwork -d dev34_openstar -d dev34_core \
       GeoTop34CoreDirty
     ;;
+  core-heap)
+    exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
+      -d dev34_graphwork -d dev34_openstar -d dev34_core \
+      -b GeoTop34CoreDirty
+    ;;
   dev34)
     build_dev34
+    ;;
+  dev34-heap)
+    exec timeout "${TIMEOUT:-240s}" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix_mid -d dev34_prefix -d dev34_facts \
+      -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
+      -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34 \
+      -b GeoTop34Dev
     ;;
   *)
     usage
