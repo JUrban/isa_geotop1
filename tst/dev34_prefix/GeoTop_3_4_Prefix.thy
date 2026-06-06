@@ -4827,6 +4827,34 @@ proof -
         [OF hL_polygon hP_poly hQ_poly hPQ])
 qed
 
+lemma geotop_1dim_complex_carrier_top1_arc_imp_broken_line_prefix:
+  fixes K :: "(real^2) set set" and A :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_complex_is_1dim K"
+  assumes hpoly: "geotop_polyhedron K = A"
+  assumes hA: "top1_is_arc_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "geotop_is_broken_line A"
+proof -
+  have hA_geo: "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+    by (rule geotop_top1_arc_on_imp_geotop_is_arc_prefix[OF hA])
+  show ?thesis
+    unfolding geotop_is_broken_line_def
+    using hK hK1 hpoly hA_geo by (by100 blast)
+qed
+
+lemma geotop_1dim_complex_carrier_geotop_arc_imp_broken_line_prefix:
+  fixes K :: "(real^2) set set" and A :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hK1: "geotop_complex_is_1dim K"
+  assumes hpoly: "geotop_polyhedron K = A"
+  assumes hA: "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "geotop_is_broken_line A"
+  unfolding geotop_is_broken_line_def
+  using hK hK1 hpoly hA by (by100 blast)
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"

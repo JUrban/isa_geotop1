@@ -17,8 +17,8 @@ Fast modes:
   names PAT    rg PAT in THEOREMS_AND_DEFS.txt only
   stmts PAT    rg PAT in STMT_INDEX.txt only
   grep PAT     rg PAT in target dev34 theories and indexes
-  dirty        show dirty dev34 layer files and the auto build that would run
-  auto         build the smallest dirty dev34 layer detected by git diff
+  dirty [FILES] show dirty/explicit dev34 layer files and the auto build target
+  auto [FILES]  build the smallest dirty/explicit dev34 layer detected
 
 Build modes:
   pre          build GeoTopPre3Dirty
@@ -59,6 +59,14 @@ dirty_layers() {
   git diff --relative --name-only HEAD -- \
     dev34_pre dev34_prefix dev34_facts dev34_workfacts dev34_linkfacts \
     dev34_graphfacts dev34_graphwork dev34_openstar dev34_core dev34
+}
+
+layer_files() {
+  if [ "$#" -gt 0 ]; then
+    printf '%s\n' "$@" | sed 's#^\./##'
+  else
+    dirty_layers
+  fi
 }
 
 auto_target() {
@@ -151,7 +159,8 @@ case "${1:-quick}" in
     exec rg -n -i -- "$*" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}"
     ;;
   dirty)
-    files=$(dirty_layers)
+    shift
+    files=$(layer_files "$@")
     if [ -n "$files" ]; then
       printf '%s\n' "$files"
       printf '\nauto would run: %s\n' "$(auto_target "$files")"
@@ -161,7 +170,8 @@ case "${1:-quick}" in
     fi
     ;;
   auto)
-    files=$(dirty_layers)
+    shift
+    files=$(layer_files "$@")
     target=$(auto_target "$files")
     if [ "$target" = dev34 ]; then
       build_dev34
