@@ -8455,6 +8455,120 @@ proof -
         (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
     by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
         [OF h\<theta>_vertices_chord_order hv\<^sub>0v\<^sub>2 hv\<^sub>1_not_chord])
+  have hchord_base_side_inter:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<inter>
+      (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) = {v\<^sub>0, v\<^sub>2}"
+  proof
+    show "closed_segment v\<^sub>0 v\<^sub>2 \<inter>
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) \<subseteq> {v\<^sub>0, v\<^sub>2}"
+    proof
+      fix x
+      assume hx:
+        "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter>
+          (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+      have hx_chord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx by (by100 blast)
+      have hx_base_side: "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2"
+        using hx by (by100 blast)
+      show "x \<in> {v\<^sub>0, v\<^sub>2}"
+      proof (rule ccontr)
+        assume hx_not: "x \<notin> {v\<^sub>0, v\<^sub>2}"
+        have hx_chord_int:
+          "x \<in> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+          using hx_chord hx_not unfolding geotop_arc_interior_def by (by100 blast)
+        have hx_base_side_int:
+          "x \<in> geotop_arc_interior
+            (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+          using hx_base_side hx_not unfolding geotop_arc_interior_def by (by100 blast)
+        have "x \<in>
+          geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior
+            (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+          using hx_chord_int hx_base_side_int by (by100 blast)
+        thus False
+          using hchord_base_side_arc_interiors_disjoint by (by100 blast)
+      qed
+    qed
+    show "{v\<^sub>0, v\<^sub>2} \<subseteq> closed_segment v\<^sub>0 v\<^sub>2 \<inter>
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+      by (by100 simp)
+  qed
+  have h\<theta>_frontier_inter_J:
+    "frontier \<theta> \<inter> J = closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+  proof
+    have hv\<^sub>0_base: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    have hv\<^sub>1_base: "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    show "frontier \<theta> \<inter> J \<subseteq> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> frontier \<theta> \<inter> J"
+      have hxfront: "x \<in> frontier \<theta>"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hxsplit:
+        "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<or>
+         x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2"
+        using hxfront h\<theta>_frontier_chord_segments by (by100 blast)
+      show "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+      proof (rule disjE[OF hxsplit])
+        assume hxchord: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        have "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J"
+          using hxchord hxJ by (by100 blast)
+        hence hxend: "x \<in> {v\<^sub>0, v\<^sub>2}"
+          using hchord_segment_inter_J by (by100 simp)
+        show ?thesis
+          using hxend hv\<^sub>0_base by (by100 blast)
+      next
+        assume hxbase_side:
+          "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2"
+        have hxbase_side_cases:
+          "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<or> x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+          using hxbase_side by (by100 blast)
+        show ?thesis
+        proof (rule disjE[OF hxbase_side_cases])
+          assume hxbase: "x \<in> closed_segment v\<^sub>0 v\<^sub>1"
+          show ?thesis
+            using hxbase by (by100 blast)
+        next
+          assume hxside: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+          have "x \<in> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
+            using hxside hxJ by (by100 blast)
+          hence hxend: "x \<in> {v\<^sub>1, v\<^sub>2}"
+            using hside_segment_inter_J by (by100 simp)
+          show ?thesis
+            using hxend hv\<^sub>1_base by (by100 blast)
+        qed
+      qed
+    qed
+    show "closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2} \<subseteq> frontier \<theta> \<inter> J"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+      have hxcases: "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<or> x \<in> {v\<^sub>2}"
+        using hx by (by100 blast)
+      show "x \<in> frontier \<theta> \<inter> J"
+      proof (rule disjE[OF hxcases])
+        assume hxbase: "x \<in> closed_segment v\<^sub>0 v\<^sub>1"
+        have hxfront: "x \<in> frontier \<theta>"
+          using hxbase h\<theta>_frontier_chord_segments by (by100 blast)
+        have hxJ: "x \<in> J"
+          using hxbase hbase_segment_sub_J by (by100 blast)
+        show ?thesis
+          using hxfront hxJ by (by100 blast)
+      next
+        assume hxv\<^sub>2: "x \<in> {v\<^sub>2}"
+        have hxfront: "x \<in> frontier \<theta>"
+          using hxv\<^sub>2 h\<theta>_frontier_chord_segments by (by100 simp)
+        have hxJ: "x \<in> J"
+          using hxv\<^sub>2 hv\<^sub>2J by (by100 blast)
+        show ?thesis
+          using hxfront hxJ by (by100 blast)
+      qed
+    qed
+  qed
   show ?thesis
     sorry
 qed
