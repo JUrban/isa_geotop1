@@ -4584,6 +4584,63 @@ proof -
         [OF hL_polygon hP_poly hQ_poly hPQ])
 qed
 
+lemma geotop_polygon_two_point_topological_arc_split_endpoints_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> top1_is_arc_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1)
+      \<and> top1_is_arc_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2)
+      \<and> top1_arc_endpoints_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1) = {P, Q}
+      \<and> top1_arc_endpoints_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2) = {P, Q}"
+  (**
+    Endpoint-refined form of the Figure 3.2 topological boundary cut.  The
+    SCC decomposition gives two arcs; the SCC endpoint lemma identifies their
+    endpoint sets as exactly the two cut vertices. **)
+proof -
+  obtain C\<^sub>1 C\<^sub>2 where hsplit:
+      "J = C\<^sub>1 \<union> C\<^sub>2"
+      and hinter: "C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}"
+      and hC\<^sub>1_arc: "top1_is_arc_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1)"
+      and hC\<^sub>2_arc: "top1_is_arc_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2)"
+    using geotop_polygon_two_point_topological_arc_split_prefix
+      [OF hJ hP hQ hPQ]
+    by (by100 blast)
+  have hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology J"
+    by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hJ])
+  have hC\<^sub>1_sub: "C\<^sub>1 \<subseteq> UNIV"
+    by (by100 blast)
+  have hC\<^sub>2_sub: "C\<^sub>2 \<subseteq> UNIV"
+    by (by100 blast)
+  have hC\<^sub>1_end:
+      "top1_arc_endpoints_on C\<^sub>1
+        (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1) = {P, Q}"
+    by (rule scc_decomp_arc_endpoints(1)
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff hSCC
+            hC\<^sub>1_arc hC\<^sub>2_arc hC\<^sub>1_sub hC\<^sub>2_sub hsplit hinter hPQ])
+  have hC\<^sub>2_end:
+      "top1_arc_endpoints_on C\<^sub>2
+        (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2) = {P, Q}"
+    by (rule scc_decomp_arc_endpoints(2)
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff hSCC
+            hC\<^sub>1_arc hC\<^sub>2_arc hC\<^sub>1_sub hC\<^sub>2_sub hsplit hinter hPQ])
+  show ?thesis
+    using hsplit hinter hC\<^sub>1_arc hC\<^sub>2_arc hC\<^sub>1_end hC\<^sub>2_end by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
