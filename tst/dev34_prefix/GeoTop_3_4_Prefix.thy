@@ -4305,6 +4305,30 @@ proof -
     using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma geotop_polygon_top1_simple_closed_curve_prefix:
+  fixes J :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  shows "top1_simple_closed_curve_on UNIV geotop_euclidean_topology J"
+  (**
+    A GeoTop polygon is a topological 1-sphere in the Euclidean plane, hence a
+    simple closed curve in the sense used by the Jordan-curve infrastructure. **)
+  sorry
+
+lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hwL: "{w} \<in> L"
+  assumes hbranch: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} > 2"
+  shows "\<not> top1_connected_on (geotop_polyhedron L - {w})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_polyhedron L - {w}))"
+  (**
+    Finite graph cutpoint fact for Moise Figure 3.2.  With at least three
+    incident edge germs at \<open>w\<close>, deleting \<open>w\<close> leaves at least three separated
+    local branches, so the remaining carrier is disconnected. **)
+  sorry
+
 lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -4330,7 +4354,38 @@ lemma geotop_polygon_finite_linear_graph_vertices_no_branch_prefix:
     Moise Figure 3.2 boundary-cycle step, branch exclusion.  More than two
     incident boundary edges at a vertex gives a local branch point, contrary
     to the polygonal 1-sphere carrier. **)
-  sorry
+proof -
+  have hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+        (geotop_polyhedron L)"
+    by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hL_polygon])
+  show ?thesis
+  proof (intro allI impI)
+    fix w
+    assume hwL: "{w} \<in> L"
+    show "card {e \<in> L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    proof (rule ccontr)
+      assume hnot_le: "\<not> card {e \<in> L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+      have hbranch: "card {e \<in> L. geotop_is_edge e \<and> w \<in> e} > 2"
+        using hnot_le by (by100 simp)
+      have hw_poly: "w \<in> geotop_polyhedron L"
+        using hwL unfolding geotop_polyhedron_def by (by100 blast)
+      have hdisc: "\<not> top1_connected_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w}))"
+        by (rule geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix
+            [OF hL_linear hL_fin hwL hbranch])
+      have hconn: "top1_connected_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w}))"
+        by (rule scc_minus_point_connected
+            [OF geotop_euclidean_topology_UNIV_strict
+                geotop_euclidean_topology_UNIV_hausdorff hSCC hw_poly])
+      show False
+        using hdisc hconn by (by100 blast)
+    qed
+  qed
+qed
 
 lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
   fixes L :: "(real^2) set set"
