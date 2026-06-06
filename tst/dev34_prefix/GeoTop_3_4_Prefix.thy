@@ -7738,6 +7738,53 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
+  fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
+  assumes h\<theta>_not_col: "\<not> collinear {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  assumes hbase_segment_sub_J: "closed_segment v\<^sub>0 v\<^sub>1 \<subseteq> J"
+  assumes hJ_meets_other_arc_interior:
+    "J \<inter> geotop_arc_interior
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
+  assumes hJ_meets_\<theta>_frontier_other_arc_interior:
+    "J \<inter> frontier \<theta> \<inter>
+      geotop_arc_interior
+        (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
+  assumes hJ_meets_nonbase_side_or_v\<^sub>2:
+    "v\<^sub>2 \<in> J \<or>
+      J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {} \<or>
+      J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+  assumes h\<theta>_frontier_polygon: "geotop_is_polygon (frontier \<theta>)"
+  assumes h\<theta>_frontier_chord_polygon: "geotop_is_polygon (frontier \<theta>)"
+  assumes hnot_both_nonbase_boundary_segments:
+    "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
+  assumes hnonbase_boundary_segment_cases:
+    "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
+      \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+  shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+  (**
+    Moise Figure 3.2 split lemma.  The preceding bookkeeping has isolated the
+    nonfree boundary triangle, shown that the polygon frontier meets the
+    opposite arc away from the base edge, and ruled out both opposite sides
+    being boundary edges.  The remaining planar step constructs the two subdisk
+    complexes along the chord \<open>v\<^sub>0v\<^sub>2\<close>, applies the strong induction hypothesis
+    to both, and transfers the resulting free triangles back to \<open>K\<close>. **)
+  sorry
+
 lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
@@ -8294,7 +8341,13 @@ proof -
       \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
     using hnot_both_nonbase_boundary_segments by (by100 blast)
   show ?thesis
-    sorry
+    by (rule geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
+          h\<theta>_not_col hbase_segment_sub_J hJ_meets_other_arc_interior
+          hJ_meets_\<theta>_frontier_other_arc_interior hJ_meets_nonbase_side_or_v\<^sub>2
+          h\<theta>_frontier_polygon h\<theta>_frontier_chord_polygon
+          hnot_both_nonbase_boundary_segments hnonbase_boundary_segment_cases])
 qed
 
 (** from \<S>3 Theorem 3 (geotop.tex:762)
