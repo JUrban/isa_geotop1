@@ -7833,6 +7833,20 @@ proof -
       (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
     by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
         [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have h\<theta>J_sub_frontier: "\<theta> \<inter> J \<subseteq> frontier \<theta>"
+  proof
+    fix y
+    assume hy: "y \<in> \<theta> \<inter> J"
+    have hy\<theta>: "y \<in> \<theta>"
+      using hy by (by100 simp)
+    have hyJ: "y \<in> J"
+      using hy by (by100 simp)
+    show "y \<in> frontier \<theta>"
+      by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+          [OF hJ h\<theta>K h\<theta>2 hK_poly hy\<theta> hyJ])
+  qed
+  have hx_frontier: "x \<in> frontier \<theta>"
+    using h\<theta>J_sub_frontier hx\<theta>J by (by100 blast)
   show ?thesis
     sorry
 qed
