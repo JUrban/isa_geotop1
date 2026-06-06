@@ -1636,6 +1636,56 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>q e'. q \<noteq> w
+      \<and> e = closed_segment w q
+      \<and> {q} \<in> L
+      \<and> e' \<in> L
+      \<and> geotop_is_edge e'
+      \<and> q \<in> e'
+      \<and> e' \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+proof -
+  obtain q where hqw: "q \<noteq> w" and heq: "e = closed_segment w q" and hqL: "{q} \<in> L"
+    using geotop_incident_edge_other_endpoint_vertex_prefix
+      [OF hL hwL heL hedge hwe] by (by100 blast)
+  have hqe: "q \<in> e"
+    using heq by (by100 simp)
+  have huniq_ex: "\<exists>!e'. e' \<in> L \<and> geotop_is_edge e' \<and> q \<in> e' \<and> e' \<noteq> e"
+    by (rule geotop_degree_two_vertex_unique_other_incident_edge_prefix
+        [OF hdegree hqL heL hedge hqe])
+  obtain e' where he'_prop:
+      "e' \<in> L \<and> geotop_is_edge e' \<and> q \<in> e' \<and> e' \<noteq> e"
+      and he'_uniq_all:
+      "\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e'"
+    using huniq_ex unfolding Ex1_def by (by100 blast)
+  have he'_uniq:
+      "\<And>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<Longrightarrow> d = e'"
+    using he'_uniq_all by (by100 blast)
+  show ?thesis
+  proof (intro exI conjI allI impI)
+    show "q \<noteq> w" by (rule hqw)
+    show "e = closed_segment w q" by (rule heq)
+    show "{q} \<in> L" by (rule hqL)
+    show "e' \<in> L" using he'_prop by (by100 blast)
+    show "geotop_is_edge e'" using he'_prop by (by100 blast)
+    show "q \<in> e'" using he'_prop by (by100 blast)
+    show "e' \<noteq> e" using he'_prop by (by100 blast)
+    fix d
+    assume hd: "d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e"
+    show "d = e'"
+      by (rule he'_uniq[OF hd])
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
