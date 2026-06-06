@@ -8410,6 +8410,51 @@ proof -
     show "{v\<^sub>1, v\<^sub>2} \<subseteq> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
       using hv\<^sub>1J hv\<^sub>2J by (by100 simp)
   qed
+  have hchord_edge_broken_line:
+    "geotop_is_broken_line (closed_segment v\<^sub>0 v\<^sub>2)"
+    by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>0v\<^sub>2])
+  have hchord_edge_arc:
+    "geotop_arc_endpoints (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hv\<^sub>0v\<^sub>2])
+  have h\<theta>_not_col_chord: "\<not> collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  proof -
+    have "{v\<^sub>0, v\<^sub>1, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+      by (by100 blast)
+    thus ?thesis
+      using h\<theta>_not_col by (by100 simp)
+  qed
+  have hv\<^sub>2v\<^sub>1: "v\<^sub>2 \<noteq> v\<^sub>1"
+    using hv\<^sub>1v\<^sub>2 by (by100 blast)
+  have hbase_side_edge_broken_line:
+    "geotop_is_broken_line
+      (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+    by (rule geotop_two_segment_join_broken_line_prefix
+        [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 h\<theta>_not_col_chord])
+  have hbase_side_edge_arc:
+    "geotop_arc_endpoints
+      (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+    by (rule geotop_two_segment_join_arc_endpoints_prefix
+        [OF hv\<^sub>0v\<^sub>1 hv\<^sub>2v\<^sub>1 h\<theta>_not_col_chord])
+  have hchord_base_side_arc_interiors_disjoint:
+    "geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<inter>
+      geotop_arc_interior
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>0, v\<^sub>2} =
+      {}"
+    by (rule geotop_triangle_edge_two_edge_arc_interiors_disjoint_prefix
+        [OF h\<theta>_not_col_chord])
+  have htriangle_boundary_chord_polygon:
+    "geotop_is_polygon
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union>
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2))"
+    by (rule pair_of_arcs_is_polygon
+        [OF hchord_edge_broken_line hbase_side_edge_broken_line
+          hchord_edge_arc hbase_side_edge_arc hchord_base_side_arc_interiors_disjoint])
+  have h\<theta>_frontier_chord_segments:
+    "frontier \<theta> =
+      closed_segment v\<^sub>0 v\<^sub>2 \<union>
+        (closed_segment v\<^sub>0 v\<^sub>1 \<union> closed_segment v\<^sub>1 v\<^sub>2)"
+    by (rule geotop_2simplex_vertices_frontier_eq_base_union_two_segments_prefix
+        [OF h\<theta>_vertices_chord_order hv\<^sub>0v\<^sub>2 hv\<^sub>1_not_chord])
   show ?thesis
     sorry
 qed
