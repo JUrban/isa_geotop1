@@ -22,6 +22,7 @@ Fast modes:
   stmts PAT    rg PAT in STMT_INDEX.txt only
   grep PAT     rg PAT in target dev34 theories and indexes
   dirty [FILES] show dirty/explicit dev34 layer files and the auto build target
+  proc [FILES] process changed/explicit theories against their parent heap
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
   prove [FILES] build the smallest dirty/explicit dev34 layer with proofs forced
 
@@ -117,6 +118,77 @@ target_theories=(
   dev34/GeoTop_3_4.thy
 )
 
+layer_rank() {
+  case "$1" in
+    dev34_pre/*) printf '%s\n' 1 ;;
+    dev34_prefix/*) printf '%s\n' 2 ;;
+    dev34_facts/*) printf '%s\n' 3 ;;
+    dev34_workfacts/*) printf '%s\n' 4 ;;
+    dev34_linkfacts/*) printf '%s\n' 5 ;;
+    dev34_graphfacts/*) printf '%s\n' 6 ;;
+    dev34_graphwork/*) printf '%s\n' 7 ;;
+    dev34_openstar/*) printf '%s\n' 8 ;;
+    dev34_core/*) printf '%s\n' 9 ;;
+    dev34/*) printf '%s\n' 10 ;;
+    *) printf '%s\n' 99 ;;
+  esac
+}
+
+proc_one() {
+  file=$1
+  case "$file" in
+    dev34_pre/*)
+      logic=GeoTopPrefix
+      dirs=(-d . -d dev34_pre)
+      ;;
+    dev34_prefix/*)
+      logic=GeoTopPre3Dirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix)
+      ;;
+    dev34_facts/*)
+      logic=GeoTop34PrefixDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts)
+      ;;
+    dev34_workfacts/*)
+      logic=GeoTop34FactsDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts)
+      ;;
+    dev34_linkfacts/*)
+      logic=GeoTop34WorkFactsDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts)
+      ;;
+    dev34_graphfacts/*)
+      logic=GeoTop34LinkFactsDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts)
+      ;;
+    dev34_graphwork/*)
+      logic=GeoTop34GraphFactsDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork)
+      ;;
+    dev34_openstar/*)
+      logic=GeoTop34GraphWorkDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar)
+      ;;
+    dev34_core/*)
+      logic=GeoTop34OpenStarDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core)
+      ;;
+    dev34/*)
+      logic=GeoTop34CoreDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34)
+      ;;
+    *)
+      printf 'proc: %s is not in a dev34 layer\n' "$file" >&2
+      return 2
+      ;;
+  esac
+
+  printf 'process_theories: %s with parent %s\n' "$file" "$logic"
+  timeout "$limit" "$isabelle" process_theories \
+    "${proof_options[@]}" \
+    "${dirs[@]}" -l "$logic" -o quick_and_dirty -f "$file"
+}
+
 case "${1:-quick}" in
   quick)
     files=$(dirty_layers)
@@ -176,6 +248,34 @@ case "${1:-quick}" in
       printf '(no dirty dev34 layer files)\n'
       printf 'auto would run: holes\n'
     fi
+    ;;
+  proc|process)
+    shift
+    files=$(layer_files "$@")
+    if [ -z "$files" ]; then
+      exec "$0" holes
+    fi
+    ordered_files=$(
+      while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        printf '%s\t%s\n' "$(layer_rank "$file")" "$file"
+      done <<EOF2
+$files
+EOF2
+    )
+    status=0
+    while IFS="$(printf '\t')" read -r _ file; do
+      [ -z "$file" ] && continue
+      if proc_one "$file"; then
+        :
+      else
+        status=$?
+        break
+      fi
+    done <<EOF2
+$(printf '%s\n' "$ordered_files" | sort -n -k1,1)
+EOF2
+    exit "$status"
     ;;
   auto)
     shift
