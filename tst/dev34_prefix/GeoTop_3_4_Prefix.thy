@@ -7954,6 +7954,47 @@ proof -
     using h\<theta>_frontier_segments closed_segment_commute[of v\<^sub>2 v\<^sub>1] by (by100 blast)
   have h\<theta>_frontier_chord_polygon: "geotop_is_polygon (frontier \<theta>)"
     using h\<theta>_frontier_chord_segments htriangle_boundary_chord_polygon by (by100 simp)
+  have h\<theta>_vertices_chord_order:
+    "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+  proof -
+    have "{v\<^sub>0, v\<^sub>2, v\<^sub>1} = {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      by (by100 blast)
+    thus ?thesis using h\<theta>_vertices by (by100 simp)
+  qed
+  have hv\<^sub>1_not_chord: "v\<^sub>1 \<notin> {v\<^sub>0, v\<^sub>2}"
+    using hv\<^sub>0v\<^sub>1 hv\<^sub>1v\<^sub>2 by (by100 blast)
+  have hbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta>"
+  proof -
+    have hdata:
+      "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<and>
+        geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>1}) \<theta> \<and>
+        geotop_is_edge (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<and>
+        geotop_is_face (geotop_convex_hull {v\<^sub>2, v\<^sub>1}) \<theta>"
+      by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+          [OF h\<theta>_vertices_chord_order hv\<^sub>0v\<^sub>2 hv\<^sub>1_not_chord])
+    show ?thesis using hdata by (by100 blast)
+  qed
+  have hnonbase_edge_face_data:
+    "geotop_is_edge (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>0, v\<^sub>2}) \<theta> \<and>
+      geotop_is_edge (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<and>
+      geotop_is_face (geotop_convex_hull {v\<^sub>1, v\<^sub>2}) \<theta>"
+    by (rule geotop_2simplex_vertices_other_edge_faces_prefix
+        [OF h\<theta>_vertices hv\<^sub>0v\<^sub>1 hv\<^sub>2_not])
+  have hface_closed_K:
+    "\<forall>\<rho>\<in>K. \<forall>\<eta>. geotop_is_face \<eta> \<rho> \<longrightarrow> \<eta> \<in> K"
+    using hK unfolding geotop_is_complex_def by (by100 blast)
+  have hbase_edge_K:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<in> K"
+    using hface_closed_K h\<theta>K hbase_edge_face_data by (by100 blast)
+  have hchord_edge_K:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
+  have hside_edge_K:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> K"
+    using hface_closed_K h\<theta>K hnonbase_edge_face_data by (by100 blast)
   show ?thesis
     sorry
 qed
