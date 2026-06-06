@@ -65,7 +65,7 @@ build_prefix() {
   exec timeout "$limit" "$isabelle" build \
     "${isabelle_options[@]}" \
     "${proof_options[@]}" \
-    -d . -d dev34_pre -d dev34_prefix \
+    -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix \
     GeoTop34PrefixDirty
 }
 
@@ -73,7 +73,7 @@ build_dev34() {
   exec timeout "${TIMEOUT:-240s}" "$isabelle" build \
     "${isabelle_options[@]}" \
     "${proof_options[@]}" \
-    -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+    -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
     -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
     -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34 \
     GeoTop34Dev
@@ -81,7 +81,7 @@ build_dev34() {
 
 dirty_layers() {
   git diff --relative --name-only HEAD -- \
-    dev34_pre dev34_prefix dev34_facts dev34_workfacts dev34_linkfacts \
+    dev34_pre dev34_prefix_base dev34_prefix_graph dev34_prefix dev34_facts dev34_workfacts dev34_linkfacts \
     dev34_graphfacts dev34_graphwork dev34_openstar dev34_core dev34
 }
 
@@ -111,6 +111,10 @@ auto_target() {
     printf '%s\n' workfacts
   elif printf '%s\n' "$files" | rg -q '^dev34_facts/'; then
     printf '%s\n' facts
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_base/'; then
+    printf '%s\n' prefix
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/'; then
+    printf '%s\n' prefix
   elif printf '%s\n' "$files" | rg -q '^dev34_prefix/'; then
     printf '%s\n' prefix
   elif printf '%s\n' "$files" | rg -q '^dev34_pre/'; then
@@ -122,6 +126,8 @@ auto_target() {
 
 target_theories=(
   dev34_pre/GeoTop.thy
+  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy
+  dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
   dev34_prefix/GeoTop_3_4_Prefix.thy
   dev34_facts/GeoTop_3_4_Facts.thy
   dev34_workfacts/GeoTop_3_4_WorkFacts.thy
@@ -134,6 +140,8 @@ target_theories=(
 )
 
 hole_theories=(
+  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy
+  dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
   dev34_prefix/GeoTop_3_4_Prefix.thy
   dev34_facts/GeoTop_3_4_Facts.thy
   dev34_workfacts/GeoTop_3_4_WorkFacts.thy
@@ -148,15 +156,17 @@ hole_theories=(
 layer_rank() {
   case "$1" in
     dev34_pre/*) printf '%s\n' 1 ;;
-    dev34_prefix/*) printf '%s\n' 2 ;;
-    dev34_facts/*) printf '%s\n' 3 ;;
-    dev34_workfacts/*) printf '%s\n' 4 ;;
-    dev34_linkfacts/*) printf '%s\n' 5 ;;
-    dev34_graphfacts/*) printf '%s\n' 6 ;;
-    dev34_graphwork/*) printf '%s\n' 7 ;;
-    dev34_openstar/*) printf '%s\n' 8 ;;
-    dev34_core/*) printf '%s\n' 9 ;;
-    dev34/*) printf '%s\n' 10 ;;
+    dev34_prefix_base/*) printf '%s\n' 2 ;;
+    dev34_prefix_graph/*) printf '%s\n' 3 ;;
+    dev34_prefix/*) printf '%s\n' 4 ;;
+    dev34_facts/*) printf '%s\n' 5 ;;
+    dev34_workfacts/*) printf '%s\n' 6 ;;
+    dev34_linkfacts/*) printf '%s\n' 7 ;;
+    dev34_graphfacts/*) printf '%s\n' 8 ;;
+    dev34_graphwork/*) printf '%s\n' 9 ;;
+    dev34_openstar/*) printf '%s\n' 10 ;;
+    dev34_core/*) printf '%s\n' 11 ;;
+    dev34/*) printf '%s\n' 12 ;;
     *) printf '%s\n' 99 ;;
   esac
 }
@@ -168,41 +178,49 @@ parent_context() {
       logic=GeoTopPrefix
       dirs=(-d . -d dev34_pre)
       ;;
-    dev34_prefix/*)
+    dev34_prefix_base/*)
       logic=GeoTopPre3Dirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base)
+      ;;
+    dev34_prefix_graph/*)
+      logic=GeoTop34PrefixBaseDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph)
+      ;;
+    dev34_prefix/*)
+      logic=GeoTop34PrefixGraphDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix)
       ;;
     dev34_facts/*)
       logic=GeoTop34PrefixDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts)
       ;;
     dev34_workfacts/*)
       logic=GeoTop34FactsDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts)
       ;;
     dev34_linkfacts/*)
       logic=GeoTop34WorkFactsDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts)
       ;;
     dev34_graphfacts/*)
       logic=GeoTop34LinkFactsDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts)
       ;;
     dev34_graphwork/*)
       logic=GeoTop34GraphFactsDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork)
       ;;
     dev34_openstar/*)
       logic=GeoTop34GraphWorkDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar)
       ;;
     dev34_core/*)
       logic=GeoTop34OpenStarDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core)
       ;;
     dev34/*)
       logic=GeoTop34CoreDirty
-      dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34)
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34)
       ;;
     *)
       printf '%s: %s is not in a dev34 layer\n' "${2:-hot}" "$file" >&2
@@ -422,7 +440,7 @@ EOF2
       exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
         -d dev34_graphwork -d dev34_openstar -d dev34_core \
         GeoTop34CoreDirty
@@ -430,7 +448,7 @@ EOF2
       exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
         -d dev34_graphwork -d dev34_openstar \
         GeoTop34OpenStarDirty
@@ -438,7 +456,7 @@ EOF2
       exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
         -d dev34_graphwork \
         GeoTop34GraphWorkDirty
@@ -446,28 +464,28 @@ EOF2
       exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
         GeoTop34GraphFactsDirty
     elif [ "$target" = linkfacts ]; then
       exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts -d dev34_linkfacts \
         GeoTop34LinkFactsDirty
     elif [ "$target" = workfacts ]; then
       exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         -d dev34_workfacts \
         GeoTop34WorkFactsDirty
     elif [ "$target" = facts ]; then
       exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
         "${isabelle_options[@]}" \
         "${proof_options[@]}" \
-        -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+        -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
         GeoTop34FactsDirty
     elif [ "$target" = prefix ]; then
       build_prefix
@@ -492,21 +510,28 @@ EOF2
     exec timeout "$limit" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix \
       -b GeoTop34PrefixDirty
+    ;;
+  prefix-base-heap)
+    exec timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix \
+      -b GeoTop34PrefixBaseDirty
     ;;
   facts)
     exec timeout "${TIMEOUT:-120s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       GeoTop34FactsDirty
     ;;
   workfacts)
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts \
       GeoTop34WorkFactsDirty
     ;;
@@ -514,7 +539,7 @@ EOF2
     exec timeout "${TIMEOUT:-150s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts \
       GeoTop34LinkFactsDirty
     ;;
@@ -522,7 +547,7 @@ EOF2
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       GeoTop34GraphFactsDirty
     ;;
@@ -530,7 +555,7 @@ EOF2
     exec timeout "${TIMEOUT:-180s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       -d dev34_graphwork \
       GeoTop34GraphWorkDirty
@@ -539,7 +564,7 @@ EOF2
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       -d dev34_graphwork -d dev34_openstar \
       GeoTop34OpenStarDirty
@@ -548,7 +573,7 @@ EOF2
     exec timeout "${TIMEOUT:-210s}" "$isabelle" build \
       "${isabelle_options[@]}" \
       "${proof_options[@]}" \
-      -d . -d dev34_pre -d dev34_prefix -d dev34_facts \
+      -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph -d dev34_prefix -d dev34_facts \
       -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts \
       -d dev34_graphwork -d dev34_openstar -d dev34_core \
       GeoTop34CoreDirty
