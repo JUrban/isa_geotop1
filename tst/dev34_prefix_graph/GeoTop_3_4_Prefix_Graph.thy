@@ -1507,6 +1507,135 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_vertex_two_distinct_incident_edges_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  shows "\<exists>e\<^sub>1 e\<^sub>2.
+      e\<^sub>1 \<in> L \<and> e\<^sub>2 \<in> L
+      \<and> geotop_is_edge e\<^sub>1 \<and> geotop_is_edge e\<^sub>2
+      \<and> w \<in> e\<^sub>1 \<and> w \<in> e\<^sub>2
+      \<and> e\<^sub>1 \<noteq> e\<^sub>2
+      \<and> {e\<in>L. geotop_is_edge e \<and> w \<in> e} = {e\<^sub>1, e\<^sub>2}"
+proof -
+  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hcard: "card ?E = 2"
+    using hdegree hwL by (by100 blast)
+  have hex: "\<exists>e\<^sub>1 e\<^sub>2. ?E = {e\<^sub>1, e\<^sub>2} \<and> e\<^sub>1 \<noteq> e\<^sub>2"
+    using hcard by (simp only: card_2_iff)
+  obtain e\<^sub>1 e\<^sub>2 where hE: "?E = {e\<^sub>1, e\<^sub>2}" and hne: "e\<^sub>1 \<noteq> e\<^sub>2"
+    using hex by (by100 blast)
+  have he\<^sub>1: "e\<^sub>1 \<in> L \<and> geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1"
+    using hE hne by (by100 blast)
+  have he\<^sub>2: "e\<^sub>2 \<in> L \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2"
+    using hE hne by (by100 blast)
+  show ?thesis
+    using hE hne he\<^sub>1 he\<^sub>2 by (by100 blast)
+qed
+
+lemma geotop_degree_two_vertex_unique_other_incident_edge_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>!e'. e' \<in> L \<and> geotop_is_edge e' \<and> w \<in> e' \<and> e' \<noteq> e"
+proof -
+  let ?E = "{d\<in>L. geotop_is_edge d \<and> w \<in> d}"
+  obtain e\<^sub>1 e\<^sub>2 where hE: "?E = {e\<^sub>1, e\<^sub>2}" and hne: "e\<^sub>1 \<noteq> e\<^sub>2"
+    using geotop_degree_two_vertex_two_distinct_incident_edges_prefix
+      [OF hdegree hwL] by (by100 blast)
+  have heE: "e \<in> ?E"
+    using heL hedge hwe by (by100 simp)
+  have he_cases: "e = e\<^sub>1 \<or> e = e\<^sub>2"
+    using hE heE by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF he_cases])
+    assume he_eq: "e = e\<^sub>1"
+    have he\<^sub>2_prop: "e\<^sub>2 \<in> L \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e"
+      using hE hne he_eq by (by100 blast)
+    show ?thesis
+    proof (rule ex1I[of _ e\<^sub>2])
+      show "e\<^sub>2 \<in> L \<and> geotop_is_edge e\<^sub>2 \<and> w \<in> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e"
+        by (rule he\<^sub>2_prop)
+    next
+      fix x
+      assume hx: "x \<in> L \<and> geotop_is_edge x \<and> w \<in> x \<and> x \<noteq> e"
+      have hxE: "x \<in> ?E"
+        using hx by (by100 simp)
+      have hx_cases: "x = e\<^sub>1 \<or> x = e\<^sub>2"
+        using hE hxE by (by100 blast)
+      show "x = e\<^sub>2"
+        using hx hx_cases he_eq by (by100 blast)
+    qed
+  next
+    assume he_eq: "e = e\<^sub>2"
+    have he\<^sub>1_prop: "e\<^sub>1 \<in> L \<and> geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1 \<and> e\<^sub>1 \<noteq> e"
+      using hE hne he_eq by (by100 blast)
+    show ?thesis
+    proof (rule ex1I[of _ e\<^sub>1])
+      show "e\<^sub>1 \<in> L \<and> geotop_is_edge e\<^sub>1 \<and> w \<in> e\<^sub>1 \<and> e\<^sub>1 \<noteq> e"
+        by (rule he\<^sub>1_prop)
+    next
+      fix x
+      assume hx: "x \<in> L \<and> geotop_is_edge x \<and> w \<in> x \<and> x \<noteq> e"
+      have hxE: "x \<in> ?E"
+        using hx by (by100 simp)
+      have hx_cases: "x = e\<^sub>1 \<or> x = e\<^sub>2"
+        using hE hxE by (by100 blast)
+      show "x = e\<^sub>1"
+        using hx hx_cases he_eq by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_incident_edge_other_endpoint_vertex_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>q. q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hw_endpoint: "w = a \<or> w = b"
+    by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+        [OF hcomplex hwL heL heab hab hwe])
+  show ?thesis
+  proof (rule disjE[OF hw_endpoint])
+    assume hwa: "w = a"
+    have hb_face: "geotop_is_face {b} e"
+      using geotop_closed_segment_is_face_endpoint[OF hab, of b] heab by (by100 simp)
+    have hbL: "{b} \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] heL hb_face by (by100 blast)
+    show ?thesis
+    proof (rule exI[where x = b])
+      show "b \<noteq> w \<and> e = closed_segment w b \<and> {b} \<in> L"
+        using hab heab hwa hbL by (by100 simp)
+    qed
+  next
+    assume hwb: "w = b"
+    have ha_face: "geotop_is_face {a} e"
+      using geotop_closed_segment_is_face_endpoint[OF hab, of a] heab by (by100 simp)
+    have haL: "{a} \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] heL ha_face by (by100 blast)
+    have heba: "e = closed_segment b a"
+      using heab closed_segment_commute[of a b] by (by100 simp)
+    show ?thesis
+    proof (rule exI[where x = a])
+      show "a \<noteq> w \<and> e = closed_segment w a \<and> {a} \<in> L"
+        using hab heba hwb haL by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
