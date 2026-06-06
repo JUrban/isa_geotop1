@@ -6360,7 +6360,13 @@ proof -
         unfolding t_def using pi_gt_zero ht0(4) by simp
       have "\<psi> (s, t) = p" unfolding \<psi>_def hp_eq
         using hcos_s hcos_t hsin_t hsin_pos by simp
-      thus ?thesis using hs_I ht_I by (by100 blast)
+      moreover have "\<psi> (s, t) \<in> \<psi> ` (I_set \<times> I_set)"
+      proof (rule imageI)
+        show "(s, t) \<in> I_set \<times> I_set"
+          using hs_I ht_I by simp
+      qed
+      ultimately show ?thesis
+        by simp
     qed
   qed
   have "compact (I_set \<times> I_set)"
