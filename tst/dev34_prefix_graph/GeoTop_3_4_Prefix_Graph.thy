@@ -480,6 +480,232 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_complex_add_endpoint_edge_at_vertex_prefix:
+  fixes K L :: "(real^2) set set"
+  assumes hL_complex: "geotop_is_complex L"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_sub: "K \<subseteq> L"
+  assumes hqK: "{q} \<in> K"
+  assumes heL: "e \<in> L"
+  assumes heq: "e = closed_segment w q"
+  assumes hqw: "q \<noteq> w"
+  assumes hwL: "{w} \<in> L"
+  shows "geotop_is_complex (K \<union> {{w}, e})"
+proof -
+  have hwq: "w \<noteq> q"
+    using hqw by (by100 blast)
+  have hsub: "K \<union> {{w}, e} \<subseteq> L"
+    using hK_sub hwL heL by (by100 blast)
+  have hfaces: "\<forall>\<sigma>\<in>K \<union> {{w}, e}. \<forall>\<tau>. geotop_is_face \<tau> \<sigma>
+      \<longrightarrow> \<tau> \<in> K \<union> {{w}, e}"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>: "\<sigma> \<in> K \<union> {{w}, e}"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have hcase: "\<sigma> \<in> K \<or> \<sigma> = {w} \<or> \<sigma> = e"
+      using h\<sigma> by (by100 blast)
+    show "\<tau> \<in> K \<union> {{w}, e}"
+    proof (rule disjE[OF hcase])
+      assume h\<sigma>K: "\<sigma> \<in> K"
+      have "\<tau> \<in> K"
+        using geotop_is_complex_face_closed[OF hK_complex] h\<sigma>K hface by (by100 blast)
+      thus ?thesis by (by100 blast)
+    next
+      assume hrest: "\<sigma> = {w} \<or> \<sigma> = e"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume h\<sigma>w: "\<sigma> = {w}"
+        have h\<tau>sub: "\<tau> \<subseteq> {w}"
+          using geotop_is_face_imp_subset_prefix[OF hface] h\<sigma>w by (by100 simp)
+        have h\<tau>ne: "\<tau> \<noteq> {}"
+        proof -
+          obtain V W where hW_ne: "W \<noteq> {}"
+              and h\<tau>_hull: "\<tau> = geotop_convex_hull W"
+            using hface unfolding geotop_is_face_def by (by100 blast)
+          have h\<tau>_HOL: "\<tau> = convex hull W"
+            using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+          show ?thesis
+            using h\<tau>_HOL hW_ne convex_hull_eq_empty by (by100 simp)
+        qed
+        have "\<tau> = {w}"
+          using h\<tau>sub h\<tau>ne by (by100 blast)
+        thus ?thesis by (by100 blast)
+      next
+        assume h\<sigma>e: "\<sigma> = e"
+        have hface_seg: "geotop_is_face \<tau> (closed_segment w q)"
+          using hface h\<sigma>e heq by (by100 simp)
+        have htcases: "\<tau> = {w} \<or> \<tau> = {q} \<or> \<tau> = closed_segment w q"
+          by (rule geotop_segment_face_cases_prefix[OF hface_seg hwq])
+        show ?thesis
+        proof (rule disjE[OF htcases])
+          assume "\<tau> = {w}"
+          show ?thesis using \<open>\<tau> = {w}\<close> by (by100 blast)
+        next
+          assume hrest2: "\<tau> = {q} \<or> \<tau> = closed_segment w q"
+          show ?thesis
+          proof (rule disjE[OF hrest2])
+            assume "\<tau> = {q}"
+            show ?thesis using \<open>\<tau> = {q}\<close> hqK by (by100 blast)
+          next
+            assume "\<tau> = closed_segment w q"
+            show ?thesis using \<open>\<tau> = closed_segment w q\<close> heq by (by100 blast)
+          qed
+        qed
+      qed
+    qed
+  qed
+  show ?thesis
+    by (rule geotop_complex_subset_is_complex[OF hL_complex hsub hfaces])
+qed
+
+lemma geotop_graph_endpoint_delete_leaf_connected_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqL: "{q} \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  shows "geotop_complex_connected (L - {{w}, e})"
+proof -
+  let ?R = "L - {{w}, e}"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hR_complex: "geotop_is_complex ?R"
+  proof (rule geotop_graph_endpoint_delete_leaf_complex_prefix
+      [where L = L and w = w and e = e])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_graph_endpoint L w" by (rule hend)
+    show "e \<in> L" by (rule heL)
+    show "geotop_is_edge e" by (rule hedge)
+    show "w \<in> e" by (rule hwe)
+  qed
+  have hwL: "{w} \<in> L"
+  proof -
+    have "{w} \<in> L \<and> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    proof (rule geotop_graph_endpoint_singleton_and_card_one_prefix[where L = L and w = w])
+      show "geotop_is_linear_graph L" by (rule hL)
+      show "geotop_graph_endpoint L w" by (rule hend)
+    qed
+    thus ?thesis by (by100 blast)
+  qed
+  have hq_ne_w: "{q} \<noteq> {w}"
+    using hqw by (by100 blast)
+  have hq_ne_e: "{q} \<noteq> e"
+  proof
+    assume hqe_single: "{q} = e"
+    have "w \<in> {q}"
+      using hwe hqe_single by (by100 simp)
+    hence "w = q" by (by100 simp)
+    thus False using hqw by (by100 blast)
+  qed
+  have hqR: "{q} \<in> ?R"
+    using hqL hq_ne_w hq_ne_e by (by100 simp)
+  have hno_bad_L: "\<not> (\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+      \<and> L = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
+    using hconn unfolding geotop_complex_connected_def by (by100 blast)
+  show ?thesis
+    unfolding geotop_complex_connected_def
+  proof (intro conjI notI)
+    show "geotop_is_complex ?R"
+      by (rule hR_complex)
+  next
+    assume hbad_R: "\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+        \<and> ?R = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+    from hbad_R show False
+    proof (elim exE)
+      fix K1 K2
+      assume hsep: "K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+          \<and> ?R = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+      have hK1_ne: "K1 \<noteq> {}" using hsep by (by100 simp)
+      have hK2_ne: "K2 \<noteq> {}" using hsep by (by100 simp)
+      have hdisj: "K1 \<inter> K2 = {}" using hsep by (by100 simp)
+      have hR_split: "?R = K1 \<union> K2" using hsep by (by100 simp)
+      have hK1_complex: "geotop_is_complex K1" using hsep by (by100 simp)
+      have hK2_complex: "geotop_is_complex K2" using hsep by (by100 simp)
+      have hq_in_split: "{q} \<in> K1 \<or> {q} \<in> K2"
+        using hqR hR_split by (by100 blast)
+      have hL_from_R: "L = ?R \<union> {{w}, e}"
+      proof
+        show "L \<subseteq> ?R \<union> {{w}, e}"
+          by (by100 blast)
+      next
+        show "?R \<union> {{w}, e} \<subseteq> L"
+          using hwL heL by (by100 blast)
+      qed
+      show False
+      proof (rule disjE[OF hq_in_split])
+        assume hqK1: "{q} \<in> K1"
+        have hK1_sub_L: "K1 \<subseteq> L"
+          using hR_split by (by100 blast)
+        have hA_complex: "geotop_is_complex (K1 \<union> {{w}, e})"
+        proof (rule geotop_complex_add_endpoint_edge_at_vertex_prefix
+            [where K = K1 and L = L and q = q and w = w and e = e])
+          show "geotop_is_complex L" by (rule hL_complex)
+          show "geotop_is_complex K1" by (rule hK1_complex)
+          show "K1 \<subseteq> L" by (rule hK1_sub_L)
+          show "{q} \<in> K1" by (rule hqK1)
+          show "e \<in> L" by (rule heL)
+          show "e = closed_segment w q" by (rule heq)
+          show "q \<noteq> w" by (rule hqw)
+          show "{w} \<in> L" by (rule hwL)
+        qed
+        have hA_ne: "K1 \<union> {{w}, e} \<noteq> {}"
+          using hwL by (by100 blast)
+        have hA_disj: "(K1 \<union> {{w}, e}) \<inter> K2 = {}"
+          using hdisj hR_split by (by100 blast)
+        have hL_split: "L = (K1 \<union> {{w}, e}) \<union> K2"
+          using hL_from_R hR_split by (by100 blast)
+        have hbad_L: "\<exists>A B. A \<noteq> {} \<and> B \<noteq> {} \<and> A \<inter> B = {}
+            \<and> L = A \<union> B \<and> geotop_is_complex A \<and> geotop_is_complex B"
+        proof (intro exI)
+          show "K1 \<union> {{w}, e} \<noteq> {} \<and> K2 \<noteq> {} \<and> (K1 \<union> {{w}, e}) \<inter> K2 = {}
+              \<and> L = (K1 \<union> {{w}, e}) \<union> K2
+              \<and> geotop_is_complex (K1 \<union> {{w}, e}) \<and> geotop_is_complex K2"
+            using hA_ne hK2_ne hA_disj hL_split hA_complex hK2_complex by (by100 blast)
+        qed
+        show False using hbad_L hno_bad_L by (by100 blast)
+      next
+        assume hqK2: "{q} \<in> K2"
+        have hK2_sub_L: "K2 \<subseteq> L"
+          using hR_split by (by100 blast)
+        have hA_complex: "geotop_is_complex (K2 \<union> {{w}, e})"
+        proof (rule geotop_complex_add_endpoint_edge_at_vertex_prefix
+            [where K = K2 and L = L and q = q and w = w and e = e])
+          show "geotop_is_complex L" by (rule hL_complex)
+          show "geotop_is_complex K2" by (rule hK2_complex)
+          show "K2 \<subseteq> L" by (rule hK2_sub_L)
+          show "{q} \<in> K2" by (rule hqK2)
+          show "e \<in> L" by (rule heL)
+          show "e = closed_segment w q" by (rule heq)
+          show "q \<noteq> w" by (rule hqw)
+          show "{w} \<in> L" by (rule hwL)
+        qed
+        have hA_ne: "K2 \<union> {{w}, e} \<noteq> {}"
+          using hwL by (by100 blast)
+        have hA_disj: "(K2 \<union> {{w}, e}) \<inter> K1 = {}"
+          using hdisj hR_split by (by100 blast)
+        have hL_split: "L = (K2 \<union> {{w}, e}) \<union> K1"
+          using hL_from_R hR_split by (by100 blast)
+        have hbad_L: "\<exists>A B. A \<noteq> {} \<and> B \<noteq> {} \<and> A \<inter> B = {}
+            \<and> L = A \<union> B \<and> geotop_is_complex A \<and> geotop_is_complex B"
+        proof (intro exI)
+          show "K2 \<union> {{w}, e} \<noteq> {} \<and> K1 \<noteq> {} \<and> (K2 \<union> {{w}, e}) \<inter> K1 = {}
+              \<and> L = (K2 \<union> {{w}, e}) \<union> K1
+              \<and> geotop_is_complex (K2 \<union> {{w}, e}) \<and> geotop_is_complex K1"
+            using hA_ne hK1_ne hA_disj hL_split hA_complex hK1_complex by (by100 blast)
+        qed
+        show False using hbad_L hno_bad_L by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
