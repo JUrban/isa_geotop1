@@ -4545,7 +4545,23 @@ lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
     case.  With at least three incident edge germs at \<open>w\<close> on a simple closed
     curve carrier, deleting \<open>w\<close> leaves at least three separated local
     branches, so the remaining carrier is disconnected. **)
-  sorry
+proof -
+  have hw_poly: "w \<in> geotop_polyhedron L"
+    using hwL unfolding geotop_polyhedron_def by (by100 blast)
+  have hSCC_punctured_connected: "top1_connected_on (geotop_polyhedron L - {w})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_polyhedron L - {w}))"
+    by (rule scc_minus_point_connected
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff hSCC hw_poly])
+  have hbranch_local_disconnect:
+      "\<not> top1_connected_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w}))"
+    sorry
+  show ?thesis
+    by (rule hbranch_local_disconnect)
+qed
 
 lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
   fixes L :: "(real^2) set set"
