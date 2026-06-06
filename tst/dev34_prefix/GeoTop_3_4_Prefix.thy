@@ -4500,7 +4500,8 @@ proof
     show "p \<in> top1_S1"
       using hv hpv
       unfolding geotop_std_sphere_def R2_to_pair_def top1_S1_def
-      by (by100 auto simp: norm_eq_sqrt_inner inner_vec_def sum_2)
+      unfolding norm_eq_sqrt_inner inner_vec_def sum_2 power2_eq_square
+      by (by100 auto)
   qed
   show "top1_S1 \<subseteq> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
   proof
@@ -4509,11 +4510,16 @@ proof
     have hpair: "pair_to_R2 p \<in> (geotop_std_sphere::(real^2) set)"
       using hp
       unfolding geotop_std_sphere_def pair_to_R2_def top1_S1_def
-      by (by100 auto simp: norm_eq_sqrt_inner inner_vec_def sum_2)
+      unfolding norm_eq_sqrt_inner inner_vec_def sum_2 power2_eq_square
+      by (by100 auto)
     have hp_eq: "R2_to_pair (pair_to_R2 p) = p"
       by (rule R2_to_pair_pair_to_R2)
     show "p \<in> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
-      using hpair hp_eq by (by100 blast)
+    proof -
+      have "R2_to_pair (pair_to_R2 p) \<in> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
+        by (rule imageI[OF hpair])
+      thus ?thesis using hp_eq by (by100 simp)
+    qed
   qed
 qed
 
@@ -4577,7 +4583,7 @@ proof -
   have hcont_UNIV: "top1_continuous_map_on top1_S1 top1_S1_topology
       (UNIV::(real^2) set) geotop_euclidean_topology
       (inv_into J f \<circ> inv_into ?S R2_to_pair)"
-    using hcont_UNIV_sub by (by100 simp add: subspace_topology_UNIV_UNIV)
+    using hcont_UNIV_sub unfolding subspace_topology_UNIV_UNIV .
   have hinj: "inj_on (inv_into J f \<circ> inv_into ?S R2_to_pair) top1_S1"
     using hs1_J unfolding top1_homeomorphism_on_def bij_betw_def by (by100 blast)
   have himg: "(inv_into J f \<circ> inv_into ?S R2_to_pair) ` top1_S1 = J"
@@ -4975,6 +4981,12 @@ proof -
     unfolding geotop_complex_is_1dim_def using hdim by (by100 blast)
 qed
 
+definition geotop_graph_endpoint ::
+  "'a::real_normed_vector set set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "geotop_graph_endpoint K v \<longleftrightarrow>
+    v \<in> geotop_complex_vertices K \<and>
+    card {e\<in>K. geotop_is_edge e \<and> v \<in> e} = 1"
+
 lemma geotop_graph_endpoint_singleton_and_card_one_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -5094,6 +5106,415 @@ proof -
   qed
 qed
 
+lemma geotop_broken_line_endpoint_vertex_incident_edge_card_one_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hP: "P \<in> E"
+  assumes hPL: "{P} \<in> L"
+  shows "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} = 1"
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have hP_B: "P \<in> B"
+    using hE hP unfolding geotop_arc_endpoints_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_pim: "path_image \<gamma> = B"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hE] by (by100 blast)
+  have hP_endpoint_param: "\<gamma> 0 = P \<or> \<gamma> 1 = P"
+    using hP hE_eq unfolding pathstart_def pathfinish_def by (by100 blast)
+  define EdgesAtP where
+    "EdgesAtP = {\<sigma>\<in>L. P \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}"
+  have hEdges_fin: "finite EdgesAtP"
+    unfolding EdgesAtP_def using hfin by (by100 simp)
+  have hL_local_isolation:
+    "\<exists>\<delta>>0. ball P \<delta> \<inter> B \<subseteq> \<Union>{\<tau>\<in>L. P \<in> \<tau>}"
+  proof -
+    have hL_simp_all: "\<forall>\<tau>\<in>L. geotop_is_simplex \<tau>"
+      by (rule geotop_is_complex_simplex[OF hL_complex])
+    have hL_closed_all: "\<forall>\<tau>\<in>L. closed \<tau>"
+    proof
+      fix \<tau> assume h\<tau>L: "\<tau> \<in> L"
+      have hsim: "geotop_is_simplex \<tau>"
+        by (rule bspec[OF hL_simp_all h\<tau>L])
+      obtain V m n where hVfin: "finite V" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+        using hsim unfolding geotop_is_simplex_def by (by100 blast)
+      have h\<tau>_HOL: "\<tau> = convex hull V"
+        using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+      have h_compact: "compact (convex hull V)"
+        using hVfin finite_imp_compact_convex_hull by (by100 blast)
+      show "closed \<tau>"
+        using h\<tau>_HOL compact_imp_closed[OF h_compact] by (by100 simp)
+    qed
+    have hB_union: "B = \<Union>L"
+      using hpoly unfolding geotop_polyhedron_def by (by100 simp)
+    show ?thesis
+      using finite_union_closed_local_isolation[OF hfin hL_closed_all hB_union hP_B]
+      by (by100 blast)
+  qed
+  have hEdges_nonempty: "EdgesAtP \<noteq> {}"
+  proof
+    assume hEdges_empty: "EdgesAtP = {}"
+    obtain \<delta> where h\<delta>_pos: "\<delta> > 0"
+        and h\<delta>_iso: "ball P \<delta> \<inter> B \<subseteq> \<Union>{\<tau>\<in>L. P \<in> \<tau>}"
+      using hL_local_isolation by (by100 blast)
+    have h_ball_only_P: "ball P \<delta> \<inter> B \<subseteq> {P}"
+    proof
+      fix x assume hx: "x \<in> ball P \<delta> \<inter> B"
+      obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and hP\<tau>: "P \<in> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+        using h\<delta>_iso hx by (by100 blast)
+      have hdim: "\<exists>n\<le>1. geotop_simplex_dim \<tau> n"
+        using hL_1dim h\<tau>L unfolding geotop_complex_is_1dim_def by (by100 blast)
+      obtain n where hn_le: "n \<le> 1" and h\<tau>dim: "geotop_simplex_dim \<tau> n"
+        using hdim by (by100 blast)
+      have hcases: "n = 0 \<or> n = 1" using hn_le by (by100 linarith)
+      show "x \<in> {P}"
+      proof (rule disjE[OF hcases])
+        assume hn0: "n = 0"
+        have h\<tau>dim0: "geotop_simplex_dim \<tau> 0" using h\<tau>dim hn0 by (by100 simp)
+        obtain V m where hVcard: "card V = 0 + 1" and h\<tau>_hull: "\<tau> = geotop_convex_hull V"
+          using h\<tau>dim0 unfolding geotop_simplex_dim_def by (by100 blast)
+        have hVcard1: "card V = 1" using hVcard by (by100 simp)
+        obtain v where hV: "V = {v}"
+          by (rule card_1_singletonE[OF hVcard1])
+        have h\<tau>_HOL: "\<tau> = convex hull V"
+          using h\<tau>_hull geotop_convex_hull_eq_HOL by (by100 simp)
+        have h\<tau>_sing: "\<tau> = {v}" using h\<tau>_HOL hV by (by100 simp)
+        have hP_v: "P = v" using hP\<tau> h\<tau>_sing by (by100 blast)
+        have hxP: "x = P" using hx\<tau> h\<tau>_sing hP_v by (by100 blast)
+        show ?thesis using hxP by (by100 simp)
+      next
+        assume hn1: "n = 1"
+        have h\<tau>dim1: "geotop_simplex_dim \<tau> 1" using h\<tau>dim hn1 by (by100 simp)
+        have "\<tau> \<in> EdgesAtP"
+          unfolding EdgesAtP_def using h\<tau>L hP\<tau> h\<tau>dim1 by (by100 simp)
+        hence False using hEdges_empty by (by100 simp)
+        thus ?thesis by (rule FalseE)
+      qed
+    qed
+    have hP_cl_int: "P \<in> closure (geotop_arc_interior B E)"
+      using arc_closure_interior_eq_arc[OF hE] hP_B by (by100 simp)
+    have h_ball_open: "open (ball P \<delta>)" by (by100 simp)
+    have hP_ball: "P \<in> ball P \<delta>" using h\<delta>_pos by (by100 simp)
+    have h_int_meets: "geotop_arc_interior B E \<inter> ball P \<delta> \<noteq> {}"
+      using hP_cl_int closure_iff_nhds_not_empty[of P "geotop_arc_interior B E"]
+            h_ball_open hP_ball
+      by (by100 blast)
+    obtain y where hy_int: "y \<in> geotop_arc_interior B E" and hy_ball: "y \<in> ball P \<delta>"
+      using h_int_meets by (by100 blast)
+    have hyB: "y \<in> B" using hy_int unfolding geotop_arc_interior_def by (by100 blast)
+    have hyP: "y = P" using h_ball_only_P hy_ball hyB by (by100 blast)
+    have hy_notP: "y \<noteq> P" using hy_int hP unfolding geotop_arc_interior_def by (by100 blast)
+    show False using hyP hy_notP by (by100 blast)
+  qed
+  have hEdges_at_most_one: "\<forall>\<tau>\<in>EdgesAtP. \<forall>\<rho>\<in>EdgesAtP. \<tau> = \<rho>"
+  proof (intro ballI)
+    fix \<tau> \<rho>
+    assume h\<tau>E: "\<tau> \<in> EdgesAtP" and h\<rho>E: "\<rho> \<in> EdgesAtP"
+    have h\<tau>L: "\<tau> \<in> L" and hP\<tau>: "P \<in> \<tau>" and h\<tau>dim: "geotop_simplex_dim \<tau> 1"
+      using h\<tau>E unfolding EdgesAtP_def by (by100 blast)+
+    have h\<rho>L: "\<rho> \<in> L" and hP\<rho>: "P \<in> \<rho>" and h\<rho>dim: "geotop_simplex_dim \<rho> 1"
+      using h\<rho>E unfolding EdgesAtP_def by (by100 blast)+
+    have h_edge_segment_at_P:
+      "\<And>e. \<lbrakk>e \<in> L; P \<in> e; geotop_simplex_dim e 1\<rbrakk>
+        \<Longrightarrow> \<exists>q. q \<noteq> P \<and> e = closed_segment P q"
+    proof -
+      fix e
+      assume heL: "e \<in> L" and hPe: "P \<in> e" and hedim: "geotop_simplex_dim e 1"
+      have hcases: "(\<exists>v. e = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> e = closed_segment a b)"
+        by (rule geotop_1dim_simplex_cases[OF hL_1dim heL])
+      show "\<exists>q. q \<noteq> P \<and> e = closed_segment P q"
+      proof (rule disjE[OF hcases])
+        assume "\<exists>v. e = {v}"
+        then obtain v where hev: "e = {v}" by (by100 blast)
+        have hdim0: "geotop_simplex_dim e 0"
+          using hev geotop_singleton_is_simplex by (by100 simp)
+        have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 hedim])
+        hence False by simp
+        thus ?thesis by (rule FalseE)
+      next
+        assume "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
+        then obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+          by (by100 blast)
+        have hP_endpoint: "P = a \<or> P = b"
+          by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+              [OF hL_complex hPL heL heab hab hPe])
+        show ?thesis
+        proof (rule disjE[OF hP_endpoint])
+          assume hPa: "P = a"
+          have hb_ne: "b \<noteq> P" using hab hPa by (by100 blast)
+          have hseg: "e = closed_segment P b" using heab hPa by (by100 simp)
+          show ?thesis using hb_ne hseg by (by100 blast)
+        next
+          assume hPb: "P = b"
+          have ha_ne: "a \<noteq> P" using hab hPb by (by100 blast)
+          have hcomm: "closed_segment a b = closed_segment b a"
+            by (rule closed_segment_commute)
+          have hseg: "e = closed_segment P a" using heab hPb hcomm by (by100 simp)
+          show ?thesis using ha_ne hseg by (by100 blast)
+        qed
+      qed
+    qed
+    obtain q\<tau> where hq\<tau>_ne: "q\<tau> \<noteq> P" and h\<tau>_seg: "\<tau> = closed_segment P q\<tau>"
+      using h_edge_segment_at_P[OF h\<tau>L hP\<tau> h\<tau>dim] by (by100 blast)
+    obtain q\<rho> where hq\<rho>_ne: "q\<rho> \<noteq> P" and h\<rho>_seg: "\<rho> = closed_segment P q\<rho>"
+      using h_edge_segment_at_P[OF h\<rho>L hP\<rho> h\<rho>dim] by (by100 blast)
+    have h_overlap_nonendpoint: "\<exists>z. z \<in> \<tau> \<inter> \<rho> \<and> z \<noteq> P"
+    proof -
+      have hL_path: "geotop_polyhedron L = path_image \<gamma>"
+        using hpoly h\<gamma>_pim by (by100 simp)
+      obtain s_tau t_tau where hst_tau_le: "s_tau \<le> t_tau"
+          and hs_tau_01: "s_tau \<in> {0..1}"
+          and ht_tau_01: "t_tau \<in> {0..1}"
+          and hpre_tau: "{s\<in>{0..1}. \<gamma> s \<in> \<tau>} = {s_tau..t_tau}"
+          and hends_tau: "{\<gamma> s_tau, \<gamma> t_tau} = {P, q\<tau>}"
+        using geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hL_1dim hL_path h\<tau>L h\<tau>_seg hq\<tau>_ne[symmetric]]
+        by (by100 blast)
+      obtain s_rho t_rho where hst_rho_le: "s_rho \<le> t_rho"
+          and hs_rho_01: "s_rho \<in> {0..1}"
+          and ht_rho_01: "t_rho \<in> {0..1}"
+          and hpre_rho: "{s\<in>{0..1}. \<gamma> s \<in> \<rho>} = {s_rho..t_rho}"
+          and hends_rho: "{\<gamma> s_rho, \<gamma> t_rho} = {P, q\<rho>}"
+        using geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hL_1dim hL_path h\<rho>L h\<rho>_seg hq\<rho>_ne[symmetric]]
+        by (by100 blast)
+      have h_ordered_endpoint_overlap:
+        "\<exists>r\<in>{0..1}. \<gamma> r \<in> \<tau> \<and> \<gamma> r \<in> \<rho> \<and> \<gamma> r \<noteq> P"
+      proof (rule disjE[OF hP_endpoint_param])
+        assume h0P: "\<gamma> 0 = P"
+        have hinj: "inj_on \<gamma> {0..1}"
+          using h\<gamma>_arc unfolding arc_def by (by100 blast)
+        have h0_pre_tau: "0 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<tau>}"
+          using h0P hP\<tau> by (by100 simp)
+        have h0_tau_iv: "0 \<in> {s_tau..t_tau}"
+          using h0_pre_tau hpre_tau by (by100 simp)
+        have hs_tau_zero: "s_tau = 0"
+          using h0_tau_iv hs_tau_01 by (by100 simp)
+        have hq_tau_img: "\<gamma> t_tau = q\<tau>"
+        proof -
+          have "q\<tau> \<in> {\<gamma> s_tau, \<gamma> t_tau}"
+            using hends_tau by (by100 blast)
+          thus ?thesis using hs_tau_zero h0P hq\<tau>_ne by (by100 blast)
+        qed
+        have ht_tau_pos: "t_tau > 0"
+        proof -
+          have "t_tau \<noteq> 0"
+          proof
+            assume ht0: "t_tau = 0"
+            have "\<gamma> t_tau = P" using ht0 h0P by (by100 simp)
+            thus False using hq_tau_img hq\<tau>_ne by (by100 simp)
+          qed
+          thus ?thesis using ht_tau_01 by (by100 simp)
+        qed
+        have h0_pre_rho: "0 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<rho>}"
+          using h0P hP\<rho> by (by100 simp)
+        have h0_rho_iv: "0 \<in> {s_rho..t_rho}"
+          using h0_pre_rho hpre_rho by (by100 simp)
+        have hs_rho_zero: "s_rho = 0"
+          using h0_rho_iv hs_rho_01 by (by100 simp)
+        have hq_rho_img: "\<gamma> t_rho = q\<rho>"
+        proof -
+          have "q\<rho> \<in> {\<gamma> s_rho, \<gamma> t_rho}"
+            using hends_rho by (by100 blast)
+          thus ?thesis using hs_rho_zero h0P hq\<rho>_ne by (by100 blast)
+        qed
+        have ht_rho_pos: "t_rho > 0"
+        proof -
+          have "t_rho \<noteq> 0"
+          proof
+            assume ht0: "t_rho = 0"
+            have "\<gamma> t_rho = P" using ht0 h0P by (by100 simp)
+            thus False using hq_rho_img hq\<rho>_ne by (by100 simp)
+          qed
+          thus ?thesis using ht_rho_01 by (by100 simp)
+        qed
+        define r where "r = min t_tau t_rho / 2"
+        have hr_pos: "r > 0" unfolding r_def using ht_tau_pos ht_rho_pos by (by100 simp)
+        have hr_le_tau: "r \<le> t_tau" unfolding r_def using ht_tau_pos by (by100 linarith)
+        have hr_le_rho: "r \<le> t_rho" unfolding r_def using ht_rho_pos by (by100 linarith)
+        have hr_01: "r \<in> {0..1}"
+        proof -
+          have ht_tau_le1: "t_tau \<le> 1" using ht_tau_01 by (by100 simp)
+          have "r \<le> 1" unfolding r_def using ht_tau_le1 by (by100 linarith)
+          thus ?thesis using hr_pos by (by100 simp)
+        qed
+        have hr_tau_iv: "r \<in> {s_tau..t_tau}"
+          using hs_tau_zero hr_pos hr_le_tau by (by100 simp)
+        have hr_rho_iv: "r \<in> {s_rho..t_rho}"
+          using hs_rho_zero hr_pos hr_le_rho by (by100 simp)
+        have hr_tau: "\<gamma> r \<in> \<tau>"
+          using hpre_tau hr_01 hr_tau_iv by (by100 blast)
+        have hr_rho: "\<gamma> r \<in> \<rho>"
+          using hpre_rho hr_01 hr_rho_iv by (by100 blast)
+        have hr_neP: "\<gamma> r \<noteq> P"
+        proof
+          assume hrP: "\<gamma> r = P"
+          have h0_01: "(0::real) \<in> {0..1}" by (by100 simp)
+          have "r = 0"
+            using hinj hr_01 h0_01 hrP h0P unfolding inj_on_def by (by100 blast)
+          thus False using hr_pos by (by100 simp)
+        qed
+        show ?thesis using hr_01 hr_tau hr_rho hr_neP by (by100 blast)
+      next
+        assume h1P: "\<gamma> 1 = P"
+        have hinj: "inj_on \<gamma> {0..1}"
+          using h\<gamma>_arc unfolding arc_def by (by100 blast)
+        have h1_pre_tau: "1 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<tau>}"
+          using h1P hP\<tau> by (by100 simp)
+        have h1_tau_iv: "1 \<in> {s_tau..t_tau}"
+          using h1_pre_tau hpre_tau by (by100 simp)
+        have ht_tau_one: "t_tau = 1"
+          using h1_tau_iv ht_tau_01 by (by100 simp)
+        have hq_tau_img: "\<gamma> s_tau = q\<tau>"
+        proof -
+          have "q\<tau> \<in> {\<gamma> s_tau, \<gamma> t_tau}"
+            using hends_tau by (by100 blast)
+          thus ?thesis using ht_tau_one h1P hq\<tau>_ne by (by100 blast)
+        qed
+        have hs_tau_lt1: "s_tau < 1"
+        proof -
+          have "s_tau \<noteq> 1"
+          proof
+            assume hs1: "s_tau = 1"
+            have "\<gamma> s_tau = P" using hs1 h1P by (by100 simp)
+            thus False using hq_tau_img hq\<tau>_ne by (by100 simp)
+          qed
+          thus ?thesis using hs_tau_01 by (by100 simp)
+        qed
+        have h1_pre_rho: "1 \<in> {s\<in>{0..1}. \<gamma> s \<in> \<rho>}"
+          using h1P hP\<rho> by (by100 simp)
+        have h1_rho_iv: "1 \<in> {s_rho..t_rho}"
+          using h1_pre_rho hpre_rho by (by100 simp)
+        have ht_rho_one: "t_rho = 1"
+          using h1_rho_iv ht_rho_01 by (by100 simp)
+        have hq_rho_img: "\<gamma> s_rho = q\<rho>"
+        proof -
+          have "q\<rho> \<in> {\<gamma> s_rho, \<gamma> t_rho}"
+            using hends_rho by (by100 blast)
+          thus ?thesis using ht_rho_one h1P hq\<rho>_ne by (by100 blast)
+        qed
+        have hs_rho_lt1: "s_rho < 1"
+        proof -
+          have "s_rho \<noteq> 1"
+          proof
+            assume hs1: "s_rho = 1"
+            have "\<gamma> s_rho = P" using hs1 h1P by (by100 simp)
+            thus False using hq_rho_img hq\<rho>_ne by (by100 simp)
+          qed
+          thus ?thesis using hs_rho_01 by (by100 simp)
+        qed
+        define eta where "eta = min (1 - s_tau) (1 - s_rho) / 2"
+        define r where "r = 1 - eta"
+        have heta_pos: "eta > 0" unfolding eta_def using hs_tau_lt1 hs_rho_lt1 by (by100 simp)
+        have hmin_pos: "min (1 - s_tau) (1 - s_rho) > 0"
+          using hs_tau_lt1 hs_rho_lt1 by (by100 simp)
+        have heta_le_min: "eta \<le> min (1 - s_tau) (1 - s_rho)"
+        proof -
+          have hdiv: "min (1 - s_tau) (1 - s_rho) / 2
+              \<le> min (1 - s_tau) (1 - s_rho) / 1"
+          proof (rule divide_left_mono)
+            show "(1::real) \<le> 2" by (by100 simp)
+            show "0 \<le> min (1 - s_tau) (1 - s_rho)" using hmin_pos by (by100 simp)
+            show "0 < (2::real) * 1" by (by100 simp)
+          qed
+          show ?thesis unfolding eta_def using hdiv by (by100 simp)
+        qed
+        have hmin_le_tau: "min (1 - s_tau) (1 - s_rho) \<le> 1 - s_tau"
+          by (by100 simp)
+        have hmin_le_rho: "min (1 - s_tau) (1 - s_rho) \<le> 1 - s_rho"
+          by (by100 simp)
+        have heta_le_tau: "eta \<le> 1 - s_tau"
+          using heta_le_min hmin_le_tau by (by100 linarith)
+        have heta_le_rho: "eta \<le> 1 - s_rho"
+          using heta_le_min hmin_le_rho by (by100 linarith)
+        have heta_le1: "eta \<le> 1"
+        proof -
+          have hs_tau_ge0: "0 \<le> s_tau" using hs_tau_01 by (by100 simp)
+          have "1 - s_tau \<le> 1" using hs_tau_ge0 by (by100 simp)
+          thus ?thesis using heta_le_tau by (by100 linarith)
+        qed
+        have hr_lt1: "r < 1" unfolding r_def using heta_pos by (by100 simp)
+        have hr_ge0: "0 \<le> r" unfolding r_def using heta_le1 by (by100 simp)
+        have hr_01: "r \<in> {0..1}" using hr_ge0 hr_lt1 by (by100 simp)
+        have hr_ge_tau: "s_tau \<le> r" unfolding r_def using heta_le_tau by (by100 linarith)
+        have hr_ge_rho: "s_rho \<le> r" unfolding r_def using heta_le_rho by (by100 linarith)
+        have hr_tau_iv: "r \<in> {s_tau..t_tau}"
+          using hr_ge_tau hr_lt1 ht_tau_one by (by100 simp)
+        have hr_rho_iv: "r \<in> {s_rho..t_rho}"
+          using hr_ge_rho hr_lt1 ht_rho_one by (by100 simp)
+        have hr_tau: "\<gamma> r \<in> \<tau>"
+          using hpre_tau hr_01 hr_tau_iv by (by100 blast)
+        have hr_rho: "\<gamma> r \<in> \<rho>"
+          using hpre_rho hr_01 hr_rho_iv by (by100 blast)
+        have hr_neP: "\<gamma> r \<noteq> P"
+        proof
+          assume hrP: "\<gamma> r = P"
+          have h1_01: "(1::real) \<in> {0..1}" by (by100 simp)
+          have "r = 1"
+            using hinj hr_01 h1_01 hrP h1P unfolding inj_on_def by (by100 blast)
+          thus False using hr_lt1 by (by100 simp)
+        qed
+        show ?thesis using hr_01 hr_tau hr_rho hr_neP by (by100 blast)
+      qed
+      obtain r where hr_01: "r \<in> {0..1}"
+          and hr_tau: "\<gamma> r \<in> \<tau>"
+          and hr_rho: "\<gamma> r \<in> \<rho>"
+          and hr_ne: "\<gamma> r \<noteq> P"
+        using h_ordered_endpoint_overlap by (by100 blast)
+      show ?thesis using hr_tau hr_rho hr_ne by (by100 blast)
+    qed
+    obtain z where hz_inter: "z \<in> \<tau> \<inter> \<rho>" and hz_ne: "z \<noteq> P"
+      using h_overlap_nonendpoint by (by100 blast)
+    have h_inter_ne: "\<tau> \<inter> \<rho> \<noteq> {}" using hP\<tau> hP\<rho> by (by100 blast)
+    have hface_\<tau>: "geotop_is_face (\<tau> \<inter> \<rho>) \<tau>"
+      using hL_complex h\<tau>L h\<rho>L h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hface_\<rho>: "geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
+      using hL_complex h\<tau>L h\<rho>L h_inter_ne unfolding geotop_is_complex_def by (by100 blast)
+    have hP_inter: "P \<in> \<tau> \<inter> \<rho>" using hP\<tau> hP\<rho> by (by100 blast)
+    have h\<tau>eq: "\<tau> \<inter> \<rho> = \<tau>"
+      using segment_face_with_endpoint_and_extra_eq[of "\<tau> \<inter> \<rho>" P q\<tau> z]
+            hface_\<tau> hq\<tau>_ne hP_inter hz_inter hz_ne h\<tau>_seg
+      by (by100 simp)
+    have h\<rho>eq: "\<tau> \<inter> \<rho> = \<rho>"
+      using segment_face_with_endpoint_and_extra_eq[of "\<tau> \<inter> \<rho>" P q\<rho> z]
+            hface_\<rho> hq\<rho>_ne hP_inter hz_inter hz_ne h\<rho>_seg
+      by (by100 simp)
+    show "\<tau> = \<rho>" using h\<tau>eq h\<rho>eq by (by100 simp)
+  qed
+  have htarget_eq: "{e\<in>L. geotop_is_edge e \<and> P \<in> e} = EdgesAtP"
+    unfolding EdgesAtP_def geotop_is_edge_def by (by100 blast)
+  obtain e where he_in: "e \<in> EdgesAtP"
+      and he_unique: "\<And>y. y \<in> EdgesAtP \<Longrightarrow> y = e"
+  proof -
+    obtain e where he: "e \<in> EdgesAtP"
+      using hEdges_nonempty by (by100 blast)
+    have huniq: "\<And>y. y \<in> EdgesAtP \<Longrightarrow> y = e"
+    proof -
+      fix y assume hy: "y \<in> EdgesAtP"
+      show "y = e"
+        using hEdges_at_most_one hy he by (by100 blast)
+    qed
+    show ?thesis by (rule that[OF he huniq])
+  qed
+  have he: "EdgesAtP = {e}"
+  proof
+    show "EdgesAtP \<subseteq> {e}"
+      using he_unique by (by100 blast)
+    show "{e} \<subseteq> EdgesAtP"
+      using he_in by (by100 blast)
+  qed
+  show ?thesis
+    using htarget_eq he by (by100 simp)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -5186,63 +5607,6 @@ proof -
   qed
 qed
 
-lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
-  fixes L :: "(real^2) set set"
-  assumes hL_linear: "geotop_is_linear_graph L"
-  assumes hL_fin: "finite L"
-  assumes hL_conn: "geotop_complex_connected L"
-  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
-  shows "\<forall>w. {w} \<in> L \<longrightarrow>
-      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
-  (**
-    Moise Figure 3.2 boundary-cycle step.  A finite linear graph whose carrier
-    is a polygon has no endpoints and no branches; every boundary vertex has
-    exactly two incident edges. **)
-proof (intro allI impI)
-  fix w
-  assume hwL: "{w} \<in> L"
-  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
-  have hE_fin: "finite ?E"
-    using hL_fin by (by100 simp)
-  have hnonisolated:
-      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
-    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
-        [OF hL_linear hL_fin hL_polygon])
-  have hnoend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
-    by (rule geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon])
-  have hnobranch:
-      "\<forall>w. {w} \<in> L \<longrightarrow>
-        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
-    by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon])
-  have hE_nonempty: "?E \<noteq> {}"
-    using hnonisolated hwL by (by100 blast)
-  have hcard_pos: "0 < card ?E"
-    using hE_fin hE_nonempty by (by100 simp)
-  have hcard_le: "card ?E \<le> 2"
-    using hnobranch hwL by (by100 blast)
-  have hcard_ne1: "card ?E \<noteq> 1"
-  proof
-    assume hcard1: "card ?E = 1"
-    have hL_complex: "geotop_is_complex L"
-      using hL_linear unfolding geotop_is_linear_graph_def by (by100 blast)
-    have hw_vertex: "w \<in> geotop_complex_vertices L"
-      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] hwL
-      by (by100 blast)
-    have hend: "geotop_graph_endpoint L w"
-      using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
-    have hnot: "\<not> geotop_graph_endpoint L w"
-      using hnoend hwL by (by100 blast)
-    show False
-      using hend hnot by (by100 blast)
-  qed
-  have hcard_cases: "card ?E = 1 \<or> card ?E = 2"
-    using hcard_pos hcard_le by (by100 linarith)
-  show "card ?E = 2"
-    using hcard_cases hcard_ne1 by (by100 blast)
-qed
-
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -5266,47 +5630,6 @@ lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_
     linear graph as a cyclic edge chain and split that cyclic order at the two
     named vertices. **)
   sorry
-
-lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix:
-  fixes L :: "(real^2) set set" and P Q :: "real^2"
-  assumes hL_linear: "geotop_is_linear_graph L"
-  assumes hL_fin: "finite L"
-  assumes hL_conn: "geotop_complex_connected L"
-  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
-  assumes hPL: "{P} \<in> L"
-  assumes hQL: "{Q} \<in> L"
-  assumes hPQ: "P \<noteq> Q"
-  shows "\<exists>C\<^sub>1 C\<^sub>2.
-      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
-      \<and> geotop_is_broken_line C\<^sub>1
-      \<and> geotop_is_broken_line C\<^sub>2
-      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
-      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
-      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
-          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
-  (**
-    Moise Figure 3.2 boundary step.  A finite polygonal linear graph is a
-    cyclic graph; cutting that cycle at two distinct vertices gives the two
-    polygonal boundary arcs used for the chord split. **)
-proof -
-  have hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
-      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
-    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
-        [OF hL_linear hL_fin hL_conn hL_polygon])
-  have hcycle_cut:
-      "\<exists>C\<^sub>1 C\<^sub>2.
-        geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
-        \<and> geotop_is_broken_line C\<^sub>1
-        \<and> geotop_is_broken_line C\<^sub>2
-        \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
-        \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
-        \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
-            geotop_arc_interior C\<^sub>2 {P, Q} = {}"
-    by (rule geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
-        [OF hL_linear hL_fin hL_conn hdegree hPL hQL hPQ])
-  show ?thesis
-    by (rule hcycle_cut)
-qed
 
 (** Local combinatorial helper for Moise 4.8/4.9, L1. If a simplex has
     two distinct vertices, the segment on those vertices is a 1-face. **)
@@ -5744,6 +6067,112 @@ proof (intro allI impI)
     show False
       using hsingle_open hsingle_not_open by (by100 blast)
   qed
+qed
+
+lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  (**
+    Moise Figure 3.2 boundary-cycle step.  A finite linear graph whose carrier
+    is a polygon has no endpoints and no branches; every boundary vertex has
+    exactly two incident edges. **)
+proof (intro allI impI)
+  fix w
+  assume hwL: "{w} \<in> L"
+  let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hE_fin: "finite ?E"
+    using hL_fin by (by100 simp)
+  have hnonisolated:
+      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
+        [OF hL_linear hL_fin hL_polygon])
+  have hnoend: "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+    by (rule geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hnobranch:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  obtain e where heL: "e \<in> L" and hedge: "geotop_is_edge e" and hwe: "w \<in> e"
+    using hnonisolated hwL by (by100 blast)
+  have heE: "e \<in> ?E"
+    using heL hedge hwe by (by100 blast)
+  have hE_nonempty: "?E \<noteq> {}"
+    using heE by (by100 blast)
+  have hcard_pos: "0 < card ?E"
+  proof -
+    have hiff: "(0 < card ?E) = (?E \<noteq> {} \<and> finite ?E)"
+      by (rule card_gt_0_iff)
+    show ?thesis using hiff hE_nonempty hE_fin by (by100 blast)
+  qed
+  have hcard_le: "card ?E \<le> 2"
+    using hnobranch hwL by (by100 blast)
+  have hcard_ne1: "card ?E \<noteq> 1"
+  proof
+    assume hcard1: "card ?E = 1"
+    have hL_complex: "geotop_is_complex L"
+      using hL_linear unfolding geotop_is_linear_graph_def by (by100 blast)
+    have hw_vertex: "w \<in> geotop_complex_vertices L"
+      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] hwL
+      by (by100 blast)
+    have hend: "geotop_graph_endpoint L w"
+      using hw_vertex hcard1 unfolding geotop_graph_endpoint_def by (by100 blast)
+    have hnot: "\<not> geotop_graph_endpoint L w"
+      using hnoend hwL by (by100 blast)
+    show False
+      using hend hnot by (by100 blast)
+  qed
+  have hcard_cases: "card ?E = 1 \<or> card ?E = 2"
+    using hcard_pos hcard_le by (by100 linarith)
+  show "card ?E = 2"
+    using hcard_cases hcard_ne1 by (by100 blast)
+qed
+
+lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  (**
+    Moise Figure 3.2 boundary step.  A finite polygonal linear graph is a
+    cyclic graph; cutting that cycle at two distinct vertices gives the two
+    polygonal boundary arcs used for the chord split. **)
+proof -
+  have hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hcycle_cut:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+        \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+        \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+            geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    by (rule geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hdegree hPL hQL hPQ])
+  show ?thesis
+    by (rule hcycle_cut)
 qed
 
 lemma geotop_degree_two_vertices_nonisolated_prefix:
