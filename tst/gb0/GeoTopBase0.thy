@@ -9061,7 +9061,13 @@ proof -
     obtain \<tau> where h\<tau>K': "\<tau> \<in> K'" and hx\<tau>: "x \<in> \<tau>"
       using hx unfolding geotop_polyhedron_def by (by100 blast)
     have hx_Uf: "x \<in> Uf \<tau>" using hx\<tau> h\<tau>K' hUf_spec by (by100 blast)
-    show "x \<in> (\<Union>\<tau>\<in>K'. Uf \<tau>)" using h\<tau>K' hx_Uf by (by100 blast)
+    show "x \<in> (\<Union>\<tau>\<in>K'. Uf \<tau>)"
+    proof (rule UnionI)
+      show "Uf \<tau> \<in> Uf ` K'"
+        by (rule imageI[OF h\<tau>K'])
+      show "x \<in> Uf \<tau>"
+        by (rule hx_Uf)
+    qed
   qed
   (** By compactness, finite subcover. **)
   have hUf_open_img: "\<forall>B\<in>Uf ` K'. open B"
