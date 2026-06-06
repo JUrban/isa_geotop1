@@ -490,8 +490,26 @@ proof -
   qed
   have htarget_eq: "{e\<in>L. geotop_is_edge e \<and> P \<in> e} = EdgesAtP"
     unfolding EdgesAtP_def geotop_is_edge_def by (by100 blast)
-  obtain e where he: "EdgesAtP = {e}"
-    using hEdges_unique by (by100 blast)
+  obtain e where he_in: "e \<in> EdgesAtP"
+      and he_unique: "\<And>y. y \<in> EdgesAtP \<Longrightarrow> y = e"
+  proof -
+    obtain e where he: "e \<in> EdgesAtP"
+      using hEdges_nonempty by (by100 blast)
+    have huniq: "\<And>y. y \<in> EdgesAtP \<Longrightarrow> y = e"
+    proof -
+      fix y assume hy: "y \<in> EdgesAtP"
+      show "y = e"
+        using hEdges_at_most_one hy he by (by100 blast)
+    qed
+    show ?thesis by (rule that[OF he huniq])
+  qed
+  have he: "EdgesAtP = {e}"
+  proof
+    show "EdgesAtP \<subseteq> {e}"
+      using he_unique by (by100 blast)
+    show "{e} \<subseteq> EdgesAtP"
+      using he_in by (by100 blast)
+  qed
   show ?thesis
     using htarget_eq he by (by100 simp)
 qed
@@ -618,12 +636,14 @@ proof -
     thus False using hcardE by (by100 simp)
   qed
   obtain P where hP: "P \<in> E" using hE_nonempty by (by100 blast)
+  have hpoly_refl: "geotop_polyhedron L = geotop_polyhedron L"
+    by (by100 simp)
   have hPL: "{P} \<in> L"
     by (rule geotop_broken_line_endpoint_in_finite_linear_graph_vertex_dev34
-        [OF hL hfin refl hB hE hP])
+        [OF hL hfin hpoly_refl hB hE hP])
   have hcard_edges: "card {e\<in>L. geotop_is_edge e \<and> P \<in> e} = 1"
     by (rule geotop_broken_line_endpoint_vertex_incident_edge_card_one_dev34
-        [OF hL hfin refl hB hE hP hPL])
+        [OF hL hfin hpoly_refl hB hE hP hPL])
   have h_endpoint: "geotop_graph_endpoint L P"
     by (rule geotop_degree_one_vertex_graph_endpoint_dev34[OF hL hPL hcard_edges])
   show ?thesis using hPL h_endpoint by (by100 blast)
@@ -710,7 +730,7 @@ proof -
   show ?thesis
   proof (rule ex1I[of _ e])
     show "e \<in> L \<and> geotop_is_edge e \<and> w \<in> e"
-      using hS by (by100 simp)
+      using hS by (by100 auto)
   next
     fix e'
     assume he': "e' \<in> L \<and> geotop_is_edge e' \<and> w \<in> e'"
@@ -748,7 +768,7 @@ proof -
     have hdim0: "geotop_simplex_dim e 0"
       using hev geotop_singleton_is_simplex by (by100 simp)
     have "0 = (1::nat)" by (rule geotop_simplex_dim_unique[OF hdim0 hedim])
-    hence False by (by100 simp)
+    hence False by simp
     thus ?thesis by (rule FalseE)
   next
     assume "\<exists>a b. a \<noteq> b \<and> e = closed_segment a b"
@@ -769,8 +789,12 @@ proof -
         by (by100 simp)
       have hbL: "{b} \<in> L"
         using hface_closed heL hface_b by (by100 blast)
+      have hbw: "b \<noteq> w"
+        using hba hwa by (by100 blast)
+      have hewb: "e = closed_segment w b"
+        using heab hwa by (by100 simp)
       show ?thesis
-        using heL hedge hw_e hwa hab heab hbL by (by100 blast)
+        using heL hedge hw_e hbw hewb hbL by (by100 blast)
     next
       assume hwb: "w = b"
       have hface_a: "geotop_is_face {a} e"
@@ -778,9 +802,12 @@ proof -
         by (by100 simp)
       have haL: "{a} \<in> L"
         using hface_closed heL hface_a by (by100 blast)
+      have haw: "a \<noteq> w"
+        using hab hwb by (by100 blast)
+      have hewa: "e = closed_segment w a"
+        using heab hwb closed_segment_commute[of a b] by (by100 simp)
       show ?thesis
-        using heL hedge hw_e hwb hab heab haL closed_segment_commute[of a b]
-        by (by100 blast)
+        using heL hedge hw_e haw hewa haL by (by100 blast)
     qed
   qed
 qed
@@ -1202,7 +1229,7 @@ proof -
   have "F = convex hull {a, b}"
     using hF_HOL hW_eq_ab by (by100 simp)
   also have "\<dots> = closed_segment a b"
-    by (rule segment_convex_hull)
+    by (simp add: segment_convex_hull)
   finally show ?thesis .
 qed
 
@@ -1244,7 +1271,7 @@ proof -
       have "F = convex hull {a, b}"
         using hF_HOL hW_ab by (by100 simp)
       also have "\<dots> = closed_segment a b"
-        by (rule segment_convex_hull)
+        by (simp add: segment_convex_hull)
       finally have "F = closed_segment a b" .
       thus ?thesis by (by100 blast)
     qed
