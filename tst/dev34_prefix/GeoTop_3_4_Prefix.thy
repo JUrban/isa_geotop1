@@ -8119,6 +8119,23 @@ proof -
           \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
     by (rule geotop_nonbase_segment_contact_avoids_base_segment_prefix
         [OF h\<theta>_not_col hselected_contact_on_other_nonbase_segment])
+  have hchord_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>0, v\<^sub>2} = closed_segment v\<^sub>0 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>0 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>2}"]
+    by (by100 simp)
+  have hside_hull_segment_eq:
+    "geotop_convex_hull {v\<^sub>1, v\<^sub>2} = closed_segment v\<^sub>1 v\<^sub>2"
+    using segment_convex_hull[of v\<^sub>1 v\<^sub>2] geotop_convex_hull_eq_HOL[of "{v\<^sub>1, v\<^sub>2}"]
+    by (by100 simp)
+  have hnot_both_nonbase_boundary_segments:
+    "\<not> (closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J
+      \<and> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J)"
+    using hnot_both_nonbase_boundary_edges hchord_hull_segment_eq hside_hull_segment_eq
+    by (by100 simp)
+  have hnonbase_boundary_segment_cases:
+    "\<not> closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J \<or>
+      \<not> closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+    using hnot_both_nonbase_boundary_segments by (by100 blast)
   show ?thesis
     sorry
 qed
