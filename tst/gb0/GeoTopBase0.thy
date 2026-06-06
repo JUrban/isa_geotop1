@@ -163,9 +163,24 @@ proof
   proof -
     have h_eq_set: "\<And>w. V \<inter> f -` {w} = {v\<in>V. f v = w}" by (by100 blast)
     (** Step 4a: image_gen regroups by f-value. **)
+    have h4a_raw: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)
+             = (\<Sum>w\<in>f`V. \<Sum>v | v \<in> V \<and> f v = w. \<alpha> v *\<^sub>R f v)"
+      by (rule sum.image_gen[OF hVfin])
+    have h4a_rewrite: "(\<Sum>w\<in>f`V. \<Sum>v | v \<in> V \<and> f v = w. \<alpha> v *\<^sub>R f v)
+             = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)"
+    proof (rule sum.cong)
+      show "f ` V = f ` V" by (by100 simp)
+    next
+      fix w assume "w \<in> f ` V"
+      have h_set: "{v. v \<in> V \<and> f v = w} = V \<inter> f -` {w}"
+        using h_eq_set[of w, symmetric] .
+      show "(\<Sum>v | v \<in> V \<and> f v = w. \<alpha> v *\<^sub>R f v)
+            = (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)"
+        unfolding h_set ..
+    qed
     have h4a: "(\<Sum>v\<in>V. \<alpha> v *\<^sub>R f v)
              = (\<Sum>w\<in>f`V. \<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)"
-      using sum.image_gen[OF hVfin, of "\<lambda>v. \<alpha> v *\<^sub>R f v" f] h_eq_set by (by100 simp)
+      by (rule HOL.trans[OF h4a_raw h4a_rewrite])
     (** Step 4b: on the preimage, f v = w so α v *R f v = α v *R w. **)
     have h4b: "\<And>w. (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R f v)
                  = (\<Sum>v\<in>V \<inter> f -` {w}. \<alpha> v *\<^sub>R w)"
@@ -252,7 +267,13 @@ proof
   proof -
     have h1: "sum t V = sum (u \<circ> f) V" unfolding t_def by (by100 simp)
     have h_re: "sum u (f ` V) = sum (u \<circ> f) V" by (rule sum.reindex[OF h_inj])
-    show ?thesis using h1 h_re hu_sum by (by100 simp)
+    have "sum t V = sum (u \<circ> f) V"
+      by (rule h1)
+    also have "... = sum u (f ` V)"
+      by (rule h_re[symmetric])
+    also have "... = 1"
+      by (rule hu_sum)
+    finally show ?thesis .
   qed
   (** (3) x = Σ t v *R v is in conv V. **)
   define x where "x = (\<Sum>v\<in>V. t v *\<^sub>R v)"
@@ -1435,7 +1456,15 @@ proof -
         show "((t \<circ> inv_into V f) \<circ> f) v = t v" by (rule h_comp_id[OF hvV])
       qed
       have h_step2: "(\<Sum>w\<in>f`V. t (inv_into V f w)) = sum t V"
-        using h_reindex h_sum_eq by (by100 simp)
+      proof -
+        have "(\<Sum>w\<in>f`V. t (inv_into V f w)) = sum (t \<circ> inv_into V f) (f ` V)"
+          by (by100 simp)
+        also have "... = sum ((t \<circ> inv_into V f) \<circ> f) V"
+          by (rule h_reindex)
+        also have "... = sum t V"
+          by (rule h_sum_eq)
+        finally show ?thesis .
+      qed
       show ?thesis using h_step1 h_step2 ht_sum by (by100 simp)
     qed
     have h_vec_eq: "(\<Sum>w\<in>f`V. t' w *\<^sub>R w) = (\<Sum>v\<in>V. t v *\<^sub>R f v)"
@@ -1624,7 +1653,20 @@ proof -
   have hWVt: "W = Vt" by (rule geotop_simplex_vertices_unique[OF hWsv hVt_sv])
   have h_bary_W: "\<And>\<alpha>. (\<forall>v\<in>W. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> W = 1 \<Longrightarrow>
                         f (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
-    using h_bary_Vt hWVt by (by100 simp)
+  proof -
+    fix \<alpha> :: "'a \<Rightarrow> real"
+    assume h\<alpha>_nn: "\<forall>v\<in>W. 0 \<le> \<alpha> v"
+    assume h\<alpha>_sum: "sum \<alpha> W = 1"
+    have h\<alpha>_nn_Vt: "\<forall>v\<in>Vt. 0 \<le> \<alpha> v"
+      using h\<alpha>_nn hWVt by (by100 simp)
+    have h\<alpha>_sum_Vt: "sum \<alpha> Vt = 1"
+      using h\<alpha>_sum hWVt by (by100 simp)
+    have h_bary_step:
+      "f (\<Sum>v\<in>Vt. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>Vt. \<alpha> v *\<^sub>R f v)"
+      using h_bary_Vt h\<alpha>_nn_Vt h\<alpha>_sum_Vt by (by100 blast)
+    show "f (\<Sum>v\<in>W. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W. \<alpha> v *\<^sub>R f v)"
+      using h_bary_step hWVt by (by100 simp)
+  qed
   have h_fW_hull_eq: "f ` (convex hull W) = convex hull (f ` W)"
     by (rule geotop_bary_lin_inj_image_hull_eq[OF hWfin h_inj_W h_bary_W])
   have h_f\<tau>_HOL: "f ` \<tau> = convex hull (f ` W)"
@@ -1792,7 +1834,19 @@ proof -
     by (rule geotop_simplex_vertices_unique[OF hW_pre_sv hVtp_sv])
   have h_bary_W_pre: "\<And>\<alpha>. (\<forall>v\<in>W_pre. 0 \<le> \<alpha> v) \<Longrightarrow> sum \<alpha> W_pre = 1 \<Longrightarrow>
                            f (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R f v)"
-    using h_bary_Vtp hW_pre_Vtp by (by100 simp)
+  proof -
+    fix \<alpha> :: "'a \<Rightarrow> real"
+    assume hnn: "\<forall>v\<in>W_pre. 0 \<le> \<alpha> v"
+    assume hsum: "sum \<alpha> W_pre = 1"
+    have hnn_vtp: "\<forall>v\<in>Vt_pre. 0 \<le> \<alpha> v"
+      using hnn hW_pre_Vtp by (by100 simp)
+    have hsum_vtp: "sum \<alpha> Vt_pre = 1"
+      using hsum hW_pre_Vtp by (by100 simp)
+    have h_vtp: "f (\<Sum>v\<in>Vt_pre. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>Vt_pre. \<alpha> v *\<^sub>R f v)"
+      using h_bary_Vtp hnn_vtp hsum_vtp by (by100 blast)
+    show "f (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R v) = (\<Sum>v\<in>W_pre. \<alpha> v *\<^sub>R f v)"
+      using h_vtp hW_pre_Vtp by (by100 simp)
+  qed
   have h_fW_pre_hull_eq: "f ` (convex hull W_pre) = convex hull (f ` W_pre)"
     by (rule geotop_bary_lin_inj_image_hull_eq[OF hW_pre_fin h_inj_W_pre h_bary_W_pre])
   have h_\<tau>_HOL: "\<tau> = convex hull W0"
@@ -5080,7 +5134,14 @@ proof -
         have h4: "(\<Sum>w\<in>Vof \<tau>. \<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w))
                     = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
           using h3 by (by100 simp)
-        show ?thesis using h1 h2 h4 by (by100 simp)
+        have "\<beta> \<tau> *\<^sub>R geotop_barycenter \<tau>
+            = \<beta> \<tau> *\<^sub>R (\<Sum>w\<in>Vof \<tau>. (1 / real (card (Vof \<tau>))) *\<^sub>R w)"
+          by (rule h1)
+        also have "\<dots> = (\<Sum>w\<in>Vof \<tau>. \<beta> \<tau> *\<^sub>R ((1 / real (card (Vof \<tau>))) *\<^sub>R w))"
+          by (rule h2)
+        also have "\<dots> = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
+          by (rule h4)
+        finally show ?thesis .
       qed
       have h_RHS: "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. (if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) *\<^sub>R v)
                      = (\<Sum>w\<in>Vof \<tau>. (\<beta> \<tau> / real (card (Vof \<tau>))) *\<^sub>R w)"
@@ -5300,7 +5361,19 @@ proof -
       show "(\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0) = \<beta> \<tau>"
         by (rule h_inner_eval[OF h\<tau>])
     qed
-    show ?thesis using h_alpha_unfold h_swap h_eval h\<beta>_sum by (by100 simp)
+    have "sum \<alpha> V\<^sub>m\<^sub>a\<^sub>x =
+          (\<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x. \<Sum>\<tau>\<in>set c.
+              if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      by (rule h_alpha_unfold)
+    also have "... =
+          (\<Sum>\<tau>\<in>set c. \<Sum>v\<in>V\<^sub>m\<^sub>a\<^sub>x.
+              if v \<in> Vof \<tau> then \<beta> \<tau> / real (card (Vof \<tau>)) else 0)"
+      by (rule h_swap)
+    also have "... = (\<Sum>\<tau>\<in>set c. \<beta> \<tau>)"
+      by (rule h_eval)
+    also have "... = 1"
+      by (rule h\<beta>_sum)
+    finally show ?thesis .
   qed
   (** Step 9: \<alpha> v > 0 for all v \<in> V_max (\<sigma>_max contributes positively
       since Vof \<sigma>_max = V_max contains v, and \<beta> \<sigma>_max > 0; other terms nonneg). **)
@@ -6065,7 +6138,16 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             using sum.mono_neutral_right[OF h_c1_fin_diff hd\<^sub>1_sub_c\<^sub>1' h_rest_zero_outside]
             by (by100 simp)
           have h_big_eq: "\<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set d\<^sub>1) = 1"
-            using h_\<alpha>_split h_rest_as_d\<^sub>1 h\<alpha>_sum by (by100 simp)
+          proof -
+            have "\<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set d\<^sub>1)
+                = \<alpha> \<sigma>\<^sub>1 + sum \<alpha> (set c\<^sub>1 - {\<sigma>\<^sub>1})"
+              using h_rest_as_d\<^sub>1 by (by100 simp)
+            also have "... = sum \<alpha> (set c\<^sub>1)"
+              using h_\<alpha>_split by (by100 simp)
+            also have "... = 1"
+              using h\<alpha>_sum by (by100 simp)
+            finally show ?thesis .
+          qed
           have h_step1: "sum u\<^sub>1 (insert z (geotop_barycenter ` set d\<^sub>1))
                            = \<alpha> \<sigma>\<^sub>1 + sum u\<^sub>1 (geotop_barycenter ` set d\<^sub>1)"
             using h_insert_sum h_u\<^sub>1_z by (by100 simp)
@@ -6146,7 +6228,16 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             using h_insert_combo h_step_a by (by100 metis)
           have h_step2: "u\<^sub>1 z *\<^sub>R z = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
             using h_u\<^sub>1_z unfolding z_def by (by100 simp)
-          show ?thesis using h_step1 h_step2 h_full by (by100 simp)
+          have "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>1). u\<^sub>1 w *\<^sub>R w)
+              = u\<^sub>1 z *\<^sub>R z
+                + (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            by (rule h_step1)
+          also have "\<dots> = \<alpha> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                + (\<Sum>\<sigma> \<in> set d\<^sub>1. \<alpha> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_step2 by (by100 simp)
+          also have "\<dots> = x"
+            using h_full by (by100 simp)
+          finally show ?thesis .
         qed
         (** x in conv hull (insert z (bary ` set d_1)). **)
         have hx_small\<^sub>1: "x \<in> convex hull (insert z (geotop_barycenter ` set d\<^sub>1))"
@@ -6233,9 +6324,11 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             qed
             show ?thesis using h_step h_cong by (by100 simp)
           qed
+          have hd\<^sub>2_img_fin: "finite (geotop_barycenter ` set d\<^sub>2)"
+            by (by100 simp)
           have h_insert_sum: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
                                 = u\<^sub>2 z + sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2)"
-            using sum.insert[OF _ hz_notin_d\<^sub>2, of u\<^sub>2] by (by100 simp)
+            by (rule sum.insert[OF hd\<^sub>2_img_fin hz_notin_d\<^sub>2])
           have hc\<^sub>2_fin: "finite (set c\<^sub>2)" by (by100 simp)
           have h_\<beta>_split: "sum \<beta> (set c\<^sub>2)
                              = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set c\<^sub>2 - {\<sigma>\<^sub>1})"
@@ -6271,16 +6364,25 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             by (rule h_reindex_d\<^sub>2)
           have h_step3: "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
                            = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set d\<^sub>2)"
-            using h_step1 h_step2 by (by100 simp)
+          proof -
+            have "sum u\<^sub>2 (insert z (geotop_barycenter ` set d\<^sub>2))
+                    = \<beta> \<sigma>\<^sub>1 + sum u\<^sub>2 (geotop_barycenter ` set d\<^sub>2)"
+              by (rule h_step1)
+            also have "... = \<beta> \<sigma>\<^sub>1 + sum \<beta> (set d\<^sub>2)"
+              using h_step2 by (by100 simp)
+            finally show ?thesis .
+          qed
           show ?thesis using h_step3 h_big_eq by (by100 simp)
         qed
         have h_u\<^sub>2_combo: "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w) = x"
         proof -
+          have hd\<^sub>2_img_fin: "finite (geotop_barycenter ` set d\<^sub>2)"
+            by (by100 simp)
           have h_insert_combo:
             "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
                = u\<^sub>2 z *\<^sub>R z
                  + (\<Sum>w \<in> geotop_barycenter ` set d\<^sub>2. u\<^sub>2 w *\<^sub>R w)"
-            using sum.insert[OF _ hz_notin_d\<^sub>2, of "\<lambda>w. u\<^sub>2 w *\<^sub>R w"] by (by100 simp)
+            by (rule sum.insert[OF hd\<^sub>2_img_fin hz_notin_d\<^sub>2])
           have h_reindex_d\<^sub>2: "(\<Sum>w \<in> geotop_barycenter ` set d\<^sub>2. u\<^sub>2 w *\<^sub>R w)
                                = (\<Sum>\<sigma> \<in> set d\<^sub>2.
                                     u\<^sub>2 (geotop_barycenter \<sigma>) *\<^sub>R geotop_barycenter \<sigma>)"
@@ -6341,7 +6443,16 @@ proof (induct "card (set c\<^sub>1 \<union> set c\<^sub>2)" arbitrary: c\<^sub>1
             using h_insert_combo h_step_a by (by100 metis)
           have h_step2: "u\<^sub>2 z *\<^sub>R z = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1"
             using h_u\<^sub>2_z unfolding z_def by (by100 simp)
-          show ?thesis using h_step1 h_step2 h_full by (by100 simp)
+          have "(\<Sum>w \<in> insert z (geotop_barycenter ` set d\<^sub>2). u\<^sub>2 w *\<^sub>R w)
+              = u\<^sub>2 z *\<^sub>R z
+                + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            by (rule h_step1)
+          also have "\<dots> = \<beta> \<sigma>\<^sub>1 *\<^sub>R geotop_barycenter \<sigma>\<^sub>1
+                + (\<Sum>\<sigma> \<in> set d\<^sub>2. \<beta> \<sigma> *\<^sub>R geotop_barycenter \<sigma>)"
+            using h_step2 by (by100 simp)
+          also have "\<dots> = x"
+            using h_full by (by100 simp)
+          finally show ?thesis .
         qed
         have hx_small\<^sub>2: "x \<in> convex hull (insert z (geotop_barycenter ` set d\<^sub>2))"
         proof -
@@ -7296,10 +7407,14 @@ proof -
             assume h_in: "xs ! (Suc k) \<in> Vs k"
             have h_in_take: "xs ! (Suc k) \<in> set (take (Suc k) xs)"
               using h_in unfolding Vs_def .
-            then obtain i where hi: "i < Suc k" and h_nth: "xs ! i = xs ! (Suc k)"
+            then obtain i where hi_take: "i < length (take (Suc k) xs)"
+                and h_nth_take: "take (Suc k) xs ! i = xs ! (Suc k)"
               using in_set_conv_nth[of "xs ! (Suc k)" "take (Suc k) xs"]
-                    nth_take[of _ "Suc k" xs]
-              by (by100 fastforce)
+              by (by100 blast)
+            have hi: "i < Suc k"
+              using hi_take hk1 by (by100 simp)
+            have h_nth: "xs ! i = xs ! (Suc k)"
+              using h_nth_take hi by (by100 simp)
             have h_i_len: "i < length xs" using hi hk1 by (by100 linarith)
             have h_i_Suck: "i \<noteq> Suc k" using hi by (by100 linarith)
             have h_iff: "(xs ! i = xs ! (Suc k)) = (i = Suc k)"
@@ -7397,9 +7512,12 @@ proof -
           have h_sum_set: "(\<Sum>v\<in>set (take (Suc k) xs). v)
                            = sum_list (take (Suc k) xs)"
             using h_sum_set0 by (by100 simp)
+          have h_sum_list_raw: "sum_list (take (Suc k) xs)
+                             = (\<Sum>i\<in>{0..<length (take (Suc k) xs)}. (take (Suc k) xs) ! i)"
+            by (rule sum_list_sum_nth)
           have h_sum_list: "sum_list (take (Suc k) xs)
                              = (\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)"
-            using sum_list_sum_nth[of "take (Suc k) xs"] atLeast0LessThan by (by100 simp)
+            using h_sum_list_raw unfolding atLeast0LessThan by (by100 simp)
           have h_len: "(\<Sum>i<length (take (Suc k) xs). (take (Suc k) xs) ! i)
                        = (\<Sum>i<Suc k. (take (Suc k) xs) ! i)"
             using h_len_take by (by100 simp)
@@ -7590,7 +7708,12 @@ proof -
             by (rule h_split2)
           have hD': "(\<Sum>j\<in>{1..n}. real j * \<alpha>' j)
                       = (\<Sum>j\<in>{1..<n}. real j * \<alpha>' j)"
-            using hD h\<alpha>'_n by (by100 simp)
+          proof -
+            have "real n * \<alpha>' n = 0"
+              using h\<alpha>'_n by (by100 simp)
+            thus ?thesis
+              using hD by (by100 simp)
+          qed
           have hE: "(\<Sum>k<n. real (Suc k) * \<alpha>' k) = (\<Sum>j<n. real (Suc j) * \<alpha>' j)"
             by (rule h_first_sum)
           have hE': "(\<Sum>j<n. real (Suc j) * \<alpha>' j)
@@ -7757,7 +7880,17 @@ proof -
                    = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
               using h_set by (by100 simp)
           qed
-          show ?thesis using h_eq by (by100 simp)
+          show ?thesis
+          proof (rule sum.cong)
+            show "{..<n} = {..<n}" by (by100 simp)
+          next
+            fix i assume hi_set: "i \<in> {..<n}"
+            have hi: "i < n" using hi_set by (by100 simp)
+            show "(\<Sum>k | k \<in> {..<n} \<and> i \<le> k.
+                    (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)
+                  = (\<Sum>k\<in>{i..<n}. (\<alpha>' k - \<alpha>' (Suc k)) *\<^sub>R xs ! i)"
+              by (rule h_eq[OF hi])
+          qed
         qed
         (** Factor out xs ! i from the inner scaleR sum. **)
         have h_factor_out: "\<And>i.
@@ -9698,10 +9831,18 @@ proof -
                                   \<and> sum u V = 1
                                   \<and> (\<Sum>w\<in>V. u w *\<^sub>R w) = y}"
       by (rule convex_hull_finite[OF hV_fin])
+    have hx_chull: "x \<in> convex hull V"
+      using hx_\<tau> h\<tau>_hull by (by100 simp)
     have hx_in_set: "x \<in> {y. \<exists>u. (\<forall>w\<in>V. 0 \<le> u w)
                                   \<and> sum u V = 1
                                   \<and> (\<Sum>w\<in>V. u w *\<^sub>R w) = y}"
-      using hx_\<tau> h\<tau>_hull h_chull_finite by (by100 metis)
+    proof -
+      have h_set_eq: "{y. \<exists>u. (\<forall>w\<in>V. 0 \<le> u w)
+                              \<and> sum u V = 1
+                              \<and> (\<Sum>w\<in>V. u w *\<^sub>R w) = y} = convex hull V"
+        by (rule h_chull_finite[symmetric])
+      show ?thesis using hx_chull unfolding h_set_eq .
+    qed
     obtain u where hu_nn: "\<forall>w\<in>V. 0 \<le> u w"
                and hu_sum: "sum u V = 1"
                and hu_combo: "(\<Sum>w\<in>V. u w *\<^sub>R w) = x"
@@ -9778,7 +9919,11 @@ proof -
         by (rule sum.union_disjoint[OF hW_fin h_VmW_fin h_disj])
       have h2: "(\<Sum>w\<in>V. u w *\<^sub>R w) = (\<Sum>w\<in>W \<union> (V - W). u w *\<^sub>R w)"
         using h_V_split by (by100 simp)
-      show ?thesis using h1 h2 by (by100 simp)
+      have "(\<Sum>w\<in>V. u w *\<^sub>R w) = (\<Sum>w\<in>W \<union> (V - W). u w *\<^sub>R w)"
+        by (rule h2)
+      also have "... = (\<Sum>w\<in>W. u w *\<^sub>R w) + (\<Sum>w\<in>V-W. u w *\<^sub>R w)"
+        by (rule h1)
+      finally show ?thesis .
     qed
     have hx_W_combo: "x = (\<Sum>w\<in>W. u w *\<^sub>R w)"
       using hu_combo h_split_combo h_VmW_combo_zero by (by100 simp)
@@ -10186,9 +10331,12 @@ proof -
                   \<and> (\<Sum>w\<in>V\<^sub>\<theta>. (SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
                                           \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v) w *\<^sub>R w) = v"
       using h_ex by (rule someI_ex)
+    have h\<alpha>_eq: "\<alpha> v = (SOME u. (\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> u w) \<and> sum u V\<^sub>\<theta> = 1
+                                      \<and> (\<Sum>w\<in>V\<^sub>\<theta>. u w *\<^sub>R w) = v)"
+      unfolding \<alpha>_def by (by100 simp)
     show "(\<forall>w\<in>V\<^sub>\<theta>. 0 \<le> \<alpha> v w) \<and> sum (\<alpha> v) V\<^sub>\<theta> = 1
           \<and> (\<Sum>w\<in>V\<^sub>\<theta>. \<alpha> v w *\<^sub>R w) = v"
-      unfolding \<alpha>_def using h_some by (by100 simp)
+      using h_some unfolding h\<alpha>_eq .
   qed
   (** Combine: ux = sum_v \<gamma>_v \<alpha>_v on V_\<theta> by bary uniqueness on AI V_\<theta>. **)
   define u_combined where "u_combined = (\<lambda>w. \<Sum>v\<in>V\<^sub>\<sigma>\<^sub>'. \<gamma> v * \<alpha> v w)"
@@ -13078,10 +13226,16 @@ proof (intro allI impI)
       have h_decomp: "x \<in> {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
                             u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
                             \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
-        using h_x_in_insert
-              convex_hull_insert[OF h_V_c0_ne,
-                of "geotop_cell_barycenter A"]
-        by (by100 simp)
+      proof -
+        have h_insert_eq: "convex hull (insert (geotop_cell_barycenter A)
+              (geotop_cell_barycenter ` set c0))
+            = {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
+                u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
+                \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
+          by (rule convex_hull_insert[OF h_V_c0_ne])
+        show ?thesis
+          using h_x_in_insert unfolding h_insert_eq .
+      qed
       obtain u v y where hu: "u \<ge> 0" and hv: "v \<ge> 0" and huv: "u + v = 1"
                      and hy_hull: "y \<in> convex hull (geotop_cell_barycenter ` set c0)"
                      and hx_eq: "x = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
@@ -13295,9 +13449,16 @@ proof -
   have h_decomp: "x \<in> {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
                         u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
                         \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
-    using h_x_in_insert
-          convex_hull_insert[OF h_V_c0_ne, of "geotop_cell_barycenter A"]
-    by (by100 simp)
+  proof -
+    have h_insert_eq: "convex hull (insert (geotop_cell_barycenter A)
+          (geotop_cell_barycenter ` set c0))
+        = {z. \<exists>u\<ge>0. \<exists>v\<ge>0. \<exists>b.
+            u + v = 1 \<and> b \<in> convex hull (geotop_cell_barycenter ` set c0)
+            \<and> z = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R b}"
+      by (rule convex_hull_insert[OF h_V_c0_ne])
+    show ?thesis
+      using h_x_in_insert unfolding h_insert_eq .
+  qed
   obtain u v y where hu: "u \<ge> 0" and hv: "v \<ge> 0" and huv: "u + v = 1"
                  and hy_hull: "y \<in> convex hull (geotop_cell_barycenter ` set c0)"
                  and hx_eq: "x = u *\<^sub>R geotop_cell_barycenter A + v *\<^sub>R y"
@@ -14086,9 +14247,14 @@ proof (induct "length c1 + length c2" arbitrary: c1 c2 x rule: less_induct)
               using hX_neq_A by (by100 blast)
             finally show "(X \<in> set (butlast c2)) = (X \<in> set c2)" by (by100 simp)
           qed
-          show ?thesis using h_iff filter_cong[of "butlast c1" "butlast c1"
-              "\<lambda>X. X \<in> set (butlast c2)" "\<lambda>X. X \<in> set c2"]
-            by (by100 simp)
+          show ?thesis
+          proof (rule filter_cong)
+            show "butlast c1 = butlast c1" by (by100 simp)
+          next
+            fix X assume hX: "X \<in> set (butlast c1)"
+            show "(X \<in> set (butlast c2)) = (X \<in> set c2)"
+              using h_iff hX by (by100 blast)
+          qed
         qed
         have h_IH': "y \<in> geotop_cell_chain_simplex
                           (filter (\<lambda>X. X \<in> set c2) (butlast c1))"
@@ -14149,11 +14315,15 @@ proof (induct "length c1 + length c2" arbitrary: c1 c2 x rule: less_induct)
         proof -
           have h_seg: "x \<in> closed_segment (geotop_cell_barycenter A) y"
           proof -
-            have "x = (1 - (1 - u)) *\<^sub>R geotop_cell_barycenter A + (1 - u) *\<^sub>R y"
+            have h_x_alt: "x = (1 - (1 - u)) *\<^sub>R geotop_cell_barycenter A + (1 - u) *\<^sub>R y"
               using hx_eq by (by100 simp)
-            thus ?thesis
+            have h_coef_nonneg: "0 \<le> 1 - u"
+              using hu_lt1 by (by100 linarith)
+            have h_coef_le1: "1 - u \<le> 1"
+              using hu by (by100 linarith)
+            show ?thesis
               unfolding closed_segment_def
-              using hu_lt1 hu by (by100 fastforce)
+              using h_x_alt h_coef_nonneg h_coef_le1 by (by100 blast)
           qed
           have h_seg_sub: "closed_segment (geotop_cell_barycenter A) y
                             \<subseteq> convex hull (geotop_cell_barycenter ` set

@@ -4284,7 +4284,16 @@ proof -
         have "of_int n - 1/4 < x" "x < of_int n + 1/4"
               "of_int m - 1/4 < x" "x < of_int m + 1/4"
           using hxn hxm by simp_all
-        thus False using hgap by (by100 linarith)
+        show False
+        proof (rule disjE[OF hgap])
+          assume "of_int m + 1/4 \<le> of_int n - (1/4::real)"
+          thus False
+            using \<open>x < of_int m + 1/4\<close> \<open>of_int n - 1/4 < x\<close> by (by100 linarith)
+        next
+          assume "of_int n + 1/4 \<le> of_int m - (1/4::real)"
+          thus False
+            using \<open>x < of_int n + 1/4\<close> \<open>of_int m - 1/4 < x\<close> by (by100 linarith)
+        qed
       qed
     qed
     \<comment> \<open>Union = preimage.\<close>
@@ -4366,7 +4375,17 @@ proof -
                "of_int n - 1/4 < y" "y < of_int n + 1/4"
             by fact+
         qed
-        hence "\<bar>x - y\<bar> < 1/2" by (by100 linarith)
+        hence "\<bar>x - y\<bar> < 1/2"
+        proof -
+          have hxy: "x - y < 1/2"
+            using \<open>x < of_int n + 1/4\<close> \<open>of_int n - 1/4 < y\<close> by (by100 linarith)
+          have hyx: "y - x < 1/2"
+            using \<open>y < of_int n + 1/4\<close> \<open>of_int n - 1/4 < x\<close> by (by100 linarith)
+          have "- (1/2::real) < x - y"
+            using hyx by (by100 linarith)
+          thus ?thesis
+            using hxy unfolding abs_less_iff by (by100 simp)
+        qed
         hence "k = 0" using \<open>x - y = of_int k\<close> by (by100 linarith)
         ultimately show "x = y" by (by100 linarith)
       qed
@@ -8452,10 +8471,19 @@ proof -
       proof (intro allI impI)
         fix t0 :: real assume ht0: "0 \<le> t0 \<and> t0 \<le> 1"
         have ht0_I: "t0 \<in> I_set" using ht0 unfolding top1_unit_interval_def by simp
-        obtain \<epsilon> Uc where h\<epsilon>: "\<epsilon> > 0" and hUo: "openin_on B TB Uc"
+        have h_point_ex: "\<exists>\<epsilon>. \<epsilon> > 0 \<and> (\<exists>Uc. openin_on B TB Uc
+            \<and> top1_evenly_covered_on E TE B TB p Uc
+            \<and> F ` ({s\<in>I_set. \<bar>s - s0\<bar> < \<epsilon>} \<times> {t\<in>I_set. \<bar>t - t0\<bar> < \<epsilon>}) \<subseteq> Uc)"
+          using hpointball[rule_format, OF hs0 ht0_I] by (by100 simp)
+        obtain \<epsilon> Uc where h\<epsilon>: "\<epsilon> > 0"
+            and hUo: "openin_on B TB Uc"
             and hUec: "top1_evenly_covered_on E TE B TB p Uc"
             and hFsub: "F ` ({s\<in>I_set. \<bar>s - s0\<bar> < \<epsilon>} \<times> {t\<in>I_set. \<bar>t - t0\<bar> < \<epsilon>}) \<subseteq> Uc"
-          using hpointball[rule_format, OF hs0 ht0_I] by (by100 blast)
+          using h_point_ex
+          apply (elim exE conjE)
+          apply (rule that)
+             apply assumption+
+          done
         define V where "V = {t\<in>I_set. \<bar>t - t0\<bar> < \<epsilon>}"
         have "V \<in> \<A>"
           unfolding \<A>_def V_def using ht0_I h\<epsilon> hUo hUec hFsub by (by100 blast)
@@ -8530,11 +8558,21 @@ proof -
                 \<times> {t\<in>I_set. sub_t j \<le> t \<and> t \<le> sub_t (Suc j)}) \<subseteq> snd (eU_j j)"
       proof (intro allI impI)
         fix j assume "j < nt"
-        from ht_eps[rule_format, OF this] obtain \<epsilon> U where h\<epsilon>: "\<epsilon> > 0"
-            and hUo: "openin_on B TB U" and hUec: "top1_evenly_covered_on E TE B TB p U"
+        have h_eps_ex: "\<exists>\<epsilon>. \<epsilon> > 0 \<and> (\<exists>U. openin_on B TB U
+            \<and> top1_evenly_covered_on E TE B TB p U
+            \<and> F ` ({s\<in>I_set. \<bar>s - s0\<bar> < \<epsilon>}
+                  \<times> {t\<in>I_set. sub_t j \<le> t \<and> t \<le> sub_t (Suc j)}) \<subseteq> U)"
+          using ht_eps[rule_format, OF \<open>j < nt\<close>] by (by100 simp)
+        obtain \<epsilon> U where h\<epsilon>: "\<epsilon> > 0"
+            and hUo: "openin_on B TB U"
+            and hUec: "top1_evenly_covered_on E TE B TB p U"
             and hFsub: "F ` ({s\<in>I_set. \<bar>s - s0\<bar> < \<epsilon>}
                   \<times> {t\<in>I_set. sub_t j \<le> t \<and> t \<le> sub_t (Suc j)}) \<subseteq> U"
-          by (by100 blast)
+          using h_eps_ex
+          apply (elim exE conjE)
+          apply (rule that)
+             apply assumption+
+          done
         have "\<exists>q :: real \<times> 'b set. fst q > 0 \<and> openin_on B TB (snd q)
             \<and> top1_evenly_covered_on E TE B TB p (snd q)
             \<and> F ` ({s\<in>I_set. \<bar>s - s0\<bar> < fst q}
@@ -9418,7 +9456,7 @@ proof -
                   have "s \<le> sub_s (Suc ?i')" using hx_R' hst by (by100 auto)
                   have "t \<le> sub_t (Suc ?j')" using hx_R' hst by (by100 auto)
                   have "sub_s ?i' \<le> s" using hx_R' hst by (by100 auto)
-                  have "sub_t ?j' \<le> t" using hx_R' hst by (by100 auto)
+                  have "sub_t ?j' \<le> t" using hx_R' hst by (by100 simp)
                   \<comment> \<open>k' < k = j*m + i. Either j' < j, or j' = j and i' < i.\<close>
                   have "?j' < ?j \<or> (?j' = ?j \<and> ?i' < ?i)"
                   proof -
@@ -9759,7 +9797,7 @@ proof -
       fix x assume "x \<in> ?A (m*n)"
       hence "x \<in> ?edges \<or> x \<in> (\<Union>k'<m*n. {s\<in>I_set. sub_s (k' mod m) \<le> s \<and> s \<le> sub_s (Suc (k' mod m))}
                 \<times> {t\<in>I_set. sub_t (k' div m) \<le> t \<and> t \<le> sub_t (Suc (k' div m))})"
-        by (by100 auto)
+        by (by100 simp)
       thus "x \<in> I_set \<times> I_set"
       proof (elim disjE)
         assume "x \<in> ?edges"
@@ -13374,8 +13412,14 @@ proof -
       by (by100 simp)
     have hcont': "\<forall>B. open B \<longrightarrow> (\<exists>A. open A \<and> A \<inter> (S \<times> I_set) = f -` B \<inter> (S \<times> I_set))"
       using hcont unfolding continuous_on_open_invariant .
-    obtain W where hWo: "open W" and hWeq: "W \<inter> (S \<times> I_set) = f -` V \<inter> (S \<times> I_set)"
-      using hcont'[rule_format, OF hVo] by (by100 blast)
+    have hW_ex: "\<exists>W. open W \<and> W \<inter> (S \<times> I_set) = f -` V \<inter> (S \<times> I_set)"
+      using hcont'[rule_format, OF hVo] by (by100 simp)
+    obtain W where hW_props: "open W \<and> W \<inter> (S \<times> I_set) = f -` V \<inter> (S \<times> I_set)"
+      using hW_ex by (by100 blast)
+    have hWo: "open W"
+      using hW_props by (by100 blast)
+    have hWeq: "W \<inter> (S \<times> I_set) = f -` V \<inter> (S \<times> I_set)"
+      using hW_props by (by100 blast)
     have hW_R3: "W \<in> product_topology_on
         (product_topology_on (top1_open_sets::real set set) top1_open_sets)
         (top1_open_sets::real set set)"
