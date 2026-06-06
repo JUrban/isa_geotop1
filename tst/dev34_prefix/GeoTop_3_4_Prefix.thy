@@ -7971,6 +7971,60 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_disk_three_boundary_edges_two_owner_2simplexes_prefix:
+  fixes J e\<^sub>1 e\<^sub>2 e\<^sub>3 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+  assumes he\<^sub>1K: "e\<^sub>1 \<in> K"
+  assumes he\<^sub>2K: "e\<^sub>2 \<in> K"
+  assumes he\<^sub>3K: "e\<^sub>3 \<in> K"
+  assumes he\<^sub>1_edge: "geotop_is_edge e\<^sub>1"
+  assumes he\<^sub>2_edge: "geotop_is_edge e\<^sub>2"
+  assumes he\<^sub>3_edge: "geotop_is_edge e\<^sub>3"
+  assumes he\<^sub>1J: "e\<^sub>1 \<subseteq> J"
+  assumes he\<^sub>2J: "e\<^sub>2 \<subseteq> J"
+  assumes he\<^sub>3J: "e\<^sub>3 \<subseteq> J"
+  assumes he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2"
+  assumes he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
+  assumes he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3"
+  assumes hown\<^sub>1:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>1 \<sigma>"
+  assumes hown\<^sub>2:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>2 \<sigma>"
+  assumes hown\<^sub>3:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>3 \<sigma>"
+  shows "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma> \<and> e\<^sub>\<sigma> \<subseteq> J
+     \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau> \<and> e\<^sub>\<tau> \<subseteq> J"
+  (**
+    Polygon-disk specialization of the finite owner-counting step: the
+    all-boundary obstruction supplies the required at-most-two selected-edge
+    bound for every 2-simplex in the disk. **)
+proof -
+  have howner_data:
+    "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+  proof -
+    fix \<sigma>
+    assume h\<sigma>K: "\<sigma> \<in> K"
+    assume h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+    show "finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+      by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+          [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1])
+  qed
+  show ?thesis
+    by (rule geotop_three_selected_boundary_edges_two_owner_2simplexes_prefix
+        [OF he\<^sub>1K he\<^sub>2K he\<^sub>3K he\<^sub>1_edge he\<^sub>2_edge he\<^sub>3_edge
+          he\<^sub>1J he\<^sub>2J he\<^sub>3J he\<^sub>12 he\<^sub>13 he\<^sub>23
+          hown\<^sub>1 hown\<^sub>2 hown\<^sub>3 howner_data])
+qed
+
 lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
