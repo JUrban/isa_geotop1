@@ -1746,55 +1746,163 @@ proof -
       \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
     by (rule geotop_degree_two_oriented_edge_successor_prefix
         [OF hL hdegree hwL heL hedge hwe])
-  obtain q e' where hsucc: "q \<noteq> w
+  show ?thesis
+    using hex_succ
+  proof (elim exE)
+    fix q e'
+    assume hsucc: "q \<noteq> w
+        \<and> e = closed_segment w q
+        \<and> {q} \<in> L
+        \<and> e' \<in> L
+        \<and> geotop_is_edge e'
+        \<and> q \<in> e'
+        \<and> e' \<noteq> e
+        \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+    have hqw: "q \<noteq> w"
+      using hsucc by (by100 blast)
+    have heq: "e = closed_segment w q"
+      using hsucc by (by100 blast)
+    have hqL: "{q} \<in> L"
+      using hsucc by (by100 blast)
+    have he'L: "e' \<in> L"
+      using hsucc by (by100 blast)
+    have he'edge: "geotop_is_edge e'"
+      using hsucc by (by100 blast)
+    have hqe': "q \<in> e'"
+      using hsucc by (by100 blast)
+    have he'ne: "e' \<noteq> e"
+      using hsucc by (by100 blast)
+    have he'uniq:
+        "\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e'"
+      using hsucc by (by100 blast)
+    have hex_r: "\<exists>r. r \<noteq> q \<and> e' = closed_segment q r \<and> {r} \<in> L"
+      by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+          [OF hL hqL he'L he'edge hqe'])
+    obtain r where hrq: "r \<noteq> q"
+        and he'r: "e' = closed_segment q r"
+        and hrL: "{r} \<in> L"
+      using hex_r by (by100 blast)
+    show ?thesis
+    proof (intro exI conjI allI impI)
+      show "q \<noteq> w" by (rule hqw)
+      show "e = closed_segment w q" by (rule heq)
+      show "{q} \<in> L" by (rule hqL)
+      show "e' \<in> L" by (rule he'L)
+      show "geotop_is_edge e'" by (rule he'edge)
+      show "q \<in> e'" by (rule hqe')
+      show "e' \<noteq> e" by (rule he'ne)
+      show "r \<noteq> q" by (rule hrq)
+      show "e' = closed_segment q r" by (rule he'r)
+      show "{r} \<in> L" by (rule hrL)
+      fix d
+      assume hd: "d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e"
+      show "d = e'"
+        using he'uniq hd by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_nonbacktracking_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>q e' r. q \<noteq> w
       \<and> e = closed_segment w q
       \<and> {q} \<in> L
       \<and> e' \<in> L
       \<and> geotop_is_edge e'
       \<and> q \<in> e'
       \<and> e' \<noteq> e
+      \<and> r \<noteq> q
+      \<and> r \<noteq> w
+      \<and> e' = closed_segment q r
+      \<and> {r} \<in> L
       \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
-    using hex_succ by (by100 blast)
-  have hqw: "q \<noteq> w"
-    using hsucc by (by100 blast)
-  have heq: "e = closed_segment w q"
-    using hsucc by (by100 blast)
-  have hqL: "{q} \<in> L"
-    using hsucc by (by100 blast)
-  have he'L: "e' \<in> L"
-    using hsucc by (by100 blast)
-  have he'edge: "geotop_is_edge e'"
-    using hsucc by (by100 blast)
-  have hqe': "q \<in> e'"
-    using hsucc by (by100 blast)
-  have he'ne: "e' \<noteq> e"
-    using hsucc by (by100 blast)
-  have he'uniq:
-      "\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e'"
-    using hsucc by (by100 blast)
-  have hex_r: "\<exists>r. r \<noteq> q \<and> e' = closed_segment q r \<and> {r} \<in> L"
-    by (rule geotop_incident_edge_other_endpoint_vertex_prefix
-        [OF hL hqL he'L he'edge hqe'])
-  obtain r where hrq: "r \<noteq> q"
-      and he'r: "e' = closed_segment q r"
-      and hrL: "{r} \<in> L"
-    using hex_r by (by100 blast)
+proof -
+  have hex_succ: "\<exists>q e' r. q \<noteq> w
+      \<and> e = closed_segment w q
+      \<and> {q} \<in> L
+      \<and> e' \<in> L
+      \<and> geotop_is_edge e'
+      \<and> q \<in> e'
+      \<and> e' \<noteq> e
+      \<and> r \<noteq> q
+      \<and> e' = closed_segment q r
+      \<and> {r} \<in> L
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+    by (rule geotop_degree_two_oriented_edge_successor_endpoint_prefix
+        [OF hL hdegree hwL heL hedge hwe])
   show ?thesis
-  proof (intro exI conjI allI impI)
-    show "q \<noteq> w" by (rule hqw)
-    show "e = closed_segment w q" by (rule heq)
-    show "{q} \<in> L" by (rule hqL)
-    show "e' \<in> L" by (rule he'L)
-    show "geotop_is_edge e'" by (rule he'edge)
-    show "q \<in> e'" by (rule hqe')
-    show "e' \<noteq> e" by (rule he'ne)
-    show "r \<noteq> q" by (rule hrq)
-    show "e' = closed_segment q r" by (rule he'r)
-    show "{r} \<in> L" by (rule hrL)
-    fix d
-    assume hd: "d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e"
-    show "d = e'"
-      using he'uniq hd by (by100 blast)
+    using hex_succ
+  proof (elim exE)
+    fix q e' r
+    assume hsucc: "q \<noteq> w
+        \<and> e = closed_segment w q
+        \<and> {q} \<in> L
+        \<and> e' \<in> L
+        \<and> geotop_is_edge e'
+        \<and> q \<in> e'
+        \<and> e' \<noteq> e
+        \<and> r \<noteq> q
+        \<and> e' = closed_segment q r
+        \<and> {r} \<in> L
+        \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+    have hqw: "q \<noteq> w"
+      using hsucc by (by100 blast)
+    have heq: "e = closed_segment w q"
+      using hsucc by (by100 blast)
+    have hqL: "{q} \<in> L"
+      using hsucc by (by100 blast)
+    have he'L: "e' \<in> L"
+      using hsucc by (by100 blast)
+    have he'edge: "geotop_is_edge e'"
+      using hsucc by (by100 blast)
+    have hqe': "q \<in> e'"
+      using hsucc by (by100 blast)
+    have he'ne: "e' \<noteq> e"
+      using hsucc by (by100 blast)
+    have hrq: "r \<noteq> q"
+      using hsucc by (by100 blast)
+    have he'r: "e' = closed_segment q r"
+      using hsucc by (by100 blast)
+    have hrL: "{r} \<in> L"
+      using hsucc by (by100 blast)
+    have he'uniq:
+        "\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e'"
+      using hsucc by (by100 blast)
+    have hrw: "r \<noteq> w"
+    proof
+      assume hrw_eq: "r = w"
+      have hseg_eq: "closed_segment q r = closed_segment w q"
+        using hrw_eq closed_segment_commute[of q w] by (by100 simp)
+      have "e' = e"
+        using he'r heq hseg_eq by (by100 simp)
+      show False
+        using he'ne \<open>e' = e\<close> by (by100 blast)
+    qed
+    show ?thesis
+    proof (intro exI conjI allI impI)
+      show "q \<noteq> w" by (rule hqw)
+      show "e = closed_segment w q" by (rule heq)
+      show "{q} \<in> L" by (rule hqL)
+      show "e' \<in> L" by (rule he'L)
+      show "geotop_is_edge e'" by (rule he'edge)
+      show "q \<in> e'" by (rule hqe')
+      show "e' \<noteq> e" by (rule he'ne)
+      show "r \<noteq> q" by (rule hrq)
+      show "r \<noteq> w" by (rule hrw)
+      show "e' = closed_segment q r" by (rule he'r)
+      show "{r} \<in> L" by (rule hrL)
+      fix d
+      assume hd: "d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e"
+      show "d = e'"
+        using he'uniq hd by (by100 blast)
+    qed
   qed
 qed
 
