@@ -7472,6 +7472,128 @@ proof (rule geotop_two_2simplex_shared_edge_vertices_side_obtain_dev34
           hn hline hc_ne hd_ne h\<sigma>_pos h\<sigma>_neg h\<tau>_pos h\<tau>_neg hopp])
 qed
 
+lemma geotop_complex_no_three_2simplexes_share_edge_dev34:
+  fixes K :: "(real^2) set set"
+  fixes e \<sigma>1 \<sigma>2 \<sigma>3 :: "(real^2) set"
+  assumes hK: "geotop_is_complex K"
+  assumes hedge: "geotop_is_edge e"
+  assumes h12: "\<sigma>1 \<noteq> \<sigma>2"
+  assumes h23: "\<sigma>2 \<noteq> \<sigma>3"
+  assumes h13: "\<sigma>1 \<noteq> \<sigma>3"
+  assumes h\<sigma>1K: "\<sigma>1 \<in> K"
+  assumes h\<sigma>1dim: "geotop_simplex_dim \<sigma>1 2"
+  assumes h\<sigma>1face: "geotop_is_face e \<sigma>1"
+  assumes h\<sigma>2K: "\<sigma>2 \<in> K"
+  assumes h\<sigma>2dim: "geotop_simplex_dim \<sigma>2 2"
+  assumes h\<sigma>2face: "geotop_is_face e \<sigma>2"
+  assumes h\<sigma>3K: "\<sigma>3 \<in> K"
+  assumes h\<sigma>3dim: "geotop_simplex_dim \<sigma>3 2"
+  assumes h\<sigma>3face: "geotop_is_face e \<sigma>3"
+  shows False
+  (**
+    In a planar complex, an edge has at most two incident 2-simplexes.  The
+    first two incident triangles occupy opposite sides of the edge line; a
+    third opposite vertex must lie on one of those two sides and would then
+    force overlapping triangle interiors. **)
+proof (rule geotop_complex_two_2simplex_shared_edge_vertices_opposite_sides_dev34
+    [OF hK h\<sigma>1K h\<sigma>2K h\<sigma>1dim h\<sigma>2dim h12 h\<sigma>1face h\<sigma>2face hedge])
+  fix a b c d n r
+  assume hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and hd_not_ab: "d \<notin> {a, b}"
+    and hcd: "c \<noteq> d"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>1V: "geotop_simplex_vertices \<sigma>1 {a, b, c}"
+    and h\<sigma>2V: "geotop_simplex_vertices \<sigma>2 {a, b, d}"
+    and hn: "n \<noteq> 0"
+    and hline: "affine hull {a, b} = {x. n \<bullet> x = r}"
+    and hc_ne: "n \<bullet> c \<noteq> r"
+    and hd_ne: "n \<bullet> d \<noteq> r"
+    and h\<sigma>1_pos: "n \<bullet> c > r \<Longrightarrow> interior \<sigma>1 \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>1_neg: "n \<bullet> c < r \<Longrightarrow> interior \<sigma>1 \<subseteq> {p. n \<bullet> p < r}"
+    and h\<sigma>2_pos: "n \<bullet> d > r \<Longrightarrow> interior \<sigma>2 \<subseteq> {p. n \<bullet> p > r}"
+    and h\<sigma>2_neg: "n \<bullet> d < r \<Longrightarrow> interior \<sigma>2 \<subseteq> {p. n \<bullet> p < r}"
+    and hopp: "(n \<bullet> c > r \<and> n \<bullet> d < r) \<or> (n \<bullet> c < r \<and> n \<bullet> d > r)"
+  obtain a3 b3 g where ha3b3: "a3 \<noteq> b3"
+    and hg_not_a3b3: "g \<notin> {a3, b3}"
+    and he_eq3: "e = geotop_convex_hull {a3, b3}"
+    and h\<sigma>3V_raw: "geotop_simplex_vertices \<sigma>3 {a3, b3, g}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix[OF h\<sigma>3dim hedge h\<sigma>3face])
+  have heV_ab: "geotop_simplex_vertices e {a, b}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF hab, folded he_eq])
+  have heV_a3b3: "geotop_simplex_vertices e {a3, b3}"
+    by (rule geotop_pair_convex_hull_simplex_vertices_prefix[OF ha3b3, folded he_eq3])
+  have hab_set: "{a3, b3} = {a, b}"
+    by (rule geotop_simplex_vertices_unique[OF heV_a3b3 heV_ab])
+  have h\<sigma>3V: "geotop_simplex_vertices \<sigma>3 {a, b, g}"
+  proof -
+    have "{a3, b3, g} = {a, b, g}"
+      using hab_set by (by100 blast)
+    thus ?thesis
+      using h\<sigma>3V_raw by (by100 simp)
+  qed
+  have hg_not_ab: "g \<notin> {a, b}"
+    using hg_not_a3b3 hab_set by (by100 simp)
+  have hg_ne: "n \<bullet> g \<noteq> r"
+  proof
+    assume hg_line: "n \<bullet> g = r"
+    have "g \<in> affine hull {a, b}"
+      using hg_line hline by (by100 simp)
+    moreover have "g \<notin> affine hull {a, b}"
+      by (rule geotop_2simplex_opposite_vertex_notin_edge_affine_hull_dev34
+          [OF h\<sigma>3V hg_not_ab])
+    ultimately show False
+      by (by100 blast)
+  qed
+  have hdisj13: "interior \<sigma>1 \<inter> interior \<sigma>3 = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34
+        [OF hK h\<sigma>1K h\<sigma>3K h\<sigma>1dim h\<sigma>3dim h13])
+  have hdisj23: "interior \<sigma>2 \<inter> interior \<sigma>3 = {}"
+    by (rule geotop_complex_distinct_2simplex_HOL_interiors_disjoint_dev34
+        [OF hK h\<sigma>2K h\<sigma>3K h\<sigma>2dim h\<sigma>3dim h23])
+  consider (cpos_dneg) "n \<bullet> c > r" "n \<bullet> d < r"
+    | (cneg_dpos) "n \<bullet> c < r" "n \<bullet> d > r"
+    using hopp by (by100 blast)
+  then show False
+  proof cases
+    case cpos_dneg
+    have hg_cases: "n \<bullet> g > r \<or> n \<bullet> g < r"
+      using hg_ne by (by100 linarith)
+    then show False
+    proof
+      assume hgpos: "n \<bullet> g > r"
+      have hmeet: "interior \<sigma>1 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_dev34
+            [OF hab hc_not_ab hg_not_ab h\<sigma>1V h\<sigma>3V hline cpos_dneg(1) hgpos])
+      show False using hdisj13 hmeet by (by100 blast)
+    next
+      assume hgneg: "n \<bullet> g < r"
+      have hmeet: "interior \<sigma>2 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_dev34
+            [OF hab hd_not_ab hg_not_ab h\<sigma>2V h\<sigma>3V hline cpos_dneg(2) hgneg])
+      show False using hdisj23 hmeet by (by100 blast)
+    qed
+  next
+    case cneg_dpos
+    have hg_cases: "n \<bullet> g > r \<or> n \<bullet> g < r"
+      using hg_ne by (by100 linarith)
+    then show False
+    proof
+      assume hgpos: "n \<bullet> g > r"
+      have hmeet: "interior \<sigma>2 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_positive_same_side_HOL_interiors_meet_dev34
+            [OF hab hd_not_ab hg_not_ab h\<sigma>2V h\<sigma>3V hline cneg_dpos(2) hgpos])
+      show False using hdisj23 hmeet by (by100 blast)
+    next
+      assume hgneg: "n \<bullet> g < r"
+      have hmeet: "interior \<sigma>1 \<inter> interior \<sigma>3 \<noteq> {}"
+        by (rule geotop_2simplex_negative_same_side_HOL_interiors_meet_dev34
+            [OF hab hc_not_ab hg_not_ab h\<sigma>1V h\<sigma>3V hline cneg_dpos(1) hgneg])
+      show False using hdisj13 hmeet by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_edge_rel_interior_parameter_dev34:
   fixes e :: "(real^2) set"
   assumes hab: "a \<noteq> b"
@@ -8908,7 +9030,14 @@ lemma geotop_three_incident_small_circle_complement_connected_explicit_dev34:
     union of two incident half-neighborhoods, and the third incident
     2-simplex supplies the passage joining the two sides in the punctured
     chart domain. **)
-  sorry
+proof -
+  have False
+    by (rule geotop_complex_no_three_2simplexes_share_edge_dev34
+        [OF hK hedge h12 h23 h13 h\<sigma>1K h\<sigma>1dim h\<sigma>1face
+          h\<sigma>2K h\<sigma>2dim h\<sigma>2face h\<sigma>3K h\<sigma>3dim h\<sigma>3face])
+  thus ?thesis
+    by (by100 blast)
+qed
 
 lemma geotop_three_incident_2simplex_small_circle_radius_not_separates_chart_dev34:
   fixes K :: "(real^2) set set" and e U :: "(real^2) set"
