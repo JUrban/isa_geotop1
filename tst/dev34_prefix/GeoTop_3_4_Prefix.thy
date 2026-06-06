@@ -4310,6 +4310,21 @@ proof -
     using hL_linear hL_fin hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma geotop_complex_connected_top1_connected_polyhedron_prefix:
+  fixes K :: "(real^2) set set"
+  assumes hconn: "geotop_complex_connected K"
+  shows "top1_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+proof -
+  have hcomplex: "geotop_is_complex K"
+    using hconn unfolding geotop_complex_connected_def by (by100 blast)
+  have hpath: "top1_path_connected_on (geotop_polyhedron K)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron K))"
+    using Theorem_GT_1_12(1)[OF hcomplex] hconn by (by100 blast)
+  show ?thesis
+    using Theorem_GT_1_12(2)[OF hcomplex] hpath by (by100 blast)
+qed
+
 lemma geotop_finite_linear_graph_polygon_polyhedron_connected_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
