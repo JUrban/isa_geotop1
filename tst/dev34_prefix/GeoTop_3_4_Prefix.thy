@@ -7847,6 +7847,9 @@ proof -
   qed
   have hx_frontier: "x \<in> frontier \<theta>"
     using h\<theta>J_sub_frontier hx\<theta>J by (by100 blast)
+  have hx_two_edge_arc:
+    "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1"
+    using hx_nonbase closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 blast)
   show ?thesis
     sorry
 qed
