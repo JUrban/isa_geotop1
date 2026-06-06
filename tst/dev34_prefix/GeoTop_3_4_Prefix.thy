@@ -8549,6 +8549,169 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_boundary_segment_chord_theta_decomposition_exists_prefix:
+  fixes J :: "(real^2) set" and p q :: "real^2"
+  assumes hpq: "p \<noteq> q"
+  assumes hsplit:
+    "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {p, q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {p, q}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior (closed_segment p q) {p, q} = {}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q}
+          \<subseteq> geotop_polygon_interior J"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_is_polygon (C\<^sub>1 \<union> closed_segment p q)
+      \<and> geotop_is_polygon J
+      \<and> geotop_is_polygon (closed_segment p q \<union> C\<^sub>2)
+      \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+              geotop_arc_interior (closed_segment p q) {p, q}.
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J -
+                   geotop_arc_interior (closed_segment p q) {p, q}) P}
+           =
+           {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q),
+            geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2)}
+      \<and> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) =
+          closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q))
+          \<union> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2))
+      \<and> closure_on UNIV geotop_euclidean_topology
+            (geotop_polygon_interior J) - closed_segment p q =
+          (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q) \<union>
+           geotop_arc_interior C\<^sub>1 {p, q}) \<union>
+          (geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2) \<union>
+           geotop_arc_interior C\<^sub>2 {p, q})
+      \<and> top1_connected_on
+            (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q) \<union>
+             geotop_arc_interior C\<^sub>1 {p, q})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q) \<union>
+               geotop_arc_interior C\<^sub>1 {p, q}))
+      \<and> top1_connected_on
+            (geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2) \<union>
+             geotop_arc_interior C\<^sub>2 {p, q})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2) \<union>
+               geotop_arc_interior C\<^sub>2 {p, q}))
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+            (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment p q) \<union>
+             geotop_arc_interior C\<^sub>1 {p, q})
+            (geotop_polygon_interior (closed_segment p q \<union> C\<^sub>2) \<union>
+             geotop_arc_interior C\<^sub>2 {p, q})"
+proof -
+  have hseg_bl: "geotop_is_broken_line (closed_segment p q)"
+    by (rule geotop_closed_segment_is_broken_line[OF hpq])
+  have hseg_endpoints:
+    "geotop_arc_endpoints (closed_segment p q) {p, q}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hpq])
+  obtain C\<^sub>1 C\<^sub>2 where hsplit_C\<^sub>1C\<^sub>2:
+    "J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {p, q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {p, q}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior (closed_segment p q) {p, q} = {}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q}
+          \<subseteq> geotop_polygon_interior J"
+    using hsplit by (elim exE)
+  have hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {p, q}"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {p, q}"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>1_seg:
+    "geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+      geotop_arc_interior (closed_segment p q) {p, q} = {}"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hC\<^sub>1C\<^sub>2:
+    "geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+      geotop_arc_interior C\<^sub>2 {p, q} = {}"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hseg_C\<^sub>2:
+    "geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+      geotop_arc_interior C\<^sub>2 {p, q} = {}"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hseg_inner:
+    "geotop_arc_interior (closed_segment p q) {p, q}
+      \<subseteq> geotop_polygon_interior J"
+    using hsplit_C\<^sub>1C\<^sub>2 by (by100 simp)
+  have hsplit_arc:
+    "\<exists>C\<^sub>1 C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line (closed_segment p q)
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {p, q}
+      \<and> geotop_arc_endpoints (closed_segment p q) {p, q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {p, q}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior (closed_segment p q) {p, q} = {}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q}
+          \<subseteq> geotop_polygon_interior J"
+  proof (rule exI[where x = C\<^sub>1])
+    show "\<exists>C\<^sub>2. J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line (closed_segment p q)
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {p, q}
+      \<and> geotop_arc_endpoints (closed_segment p q) {p, q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {p, q}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior (closed_segment p q) {p, q} = {}
+      \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+          geotop_arc_interior C\<^sub>2 {p, q} = {}
+      \<and> geotop_arc_interior (closed_segment p q) {p, q}
+          \<subseteq> geotop_polygon_interior J"
+    proof (rule exI[where x = C\<^sub>2])
+      show "J = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line (closed_segment p q)
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {p, q}
+        \<and> geotop_arc_endpoints (closed_segment p q) {p, q}
+        \<and> geotop_arc_endpoints C\<^sub>2 {p, q}
+        \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+            geotop_arc_interior (closed_segment p q) {p, q} = {}
+        \<and> geotop_arc_interior C\<^sub>1 {p, q} \<inter>
+            geotop_arc_interior C\<^sub>2 {p, q} = {}
+        \<and> geotop_arc_interior (closed_segment p q) {p, q} \<inter>
+            geotop_arc_interior C\<^sub>2 {p, q} = {}
+        \<and> geotop_arc_interior (closed_segment p q) {p, q}
+            \<subseteq> geotop_polygon_interior J"
+        using hJ_eq hC\<^sub>1_bl hseg_bl hC\<^sub>2_bl hC\<^sub>1E hseg_endpoints
+          hC\<^sub>2E hC\<^sub>1_seg hC\<^sub>1C\<^sub>2 hseg_C\<^sub>2 hseg_inner
+        by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    by (rule geotop_boundary_arc_chord_theta_decomposition_exists_prefix
+        [OF hsplit_arc])
+qed
+
 lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
