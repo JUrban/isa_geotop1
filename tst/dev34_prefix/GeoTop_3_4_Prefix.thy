@@ -8053,6 +8053,32 @@ proof -
           hchord_edge_selected_if hside_edge_selected_if
           hbase_ne_chord_edge hbase_ne_side_edge hchord_ne_side_edge
           hE\<theta>_card_le3 hE\<theta>_card_ne3])
+  have hE\<theta>_card_le2:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+    using hE\<theta>_card_le3 hE\<theta>_card_ne3 by (by100 linarith)
+  have hE\<theta>_allowed:
+    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {} \<or>
+     (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta>
+        \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+        [OF hE\<theta>_fin hE\<theta>_card_le2])
+  have hE\<theta>_subset_K:
+    "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<subseteq> K"
+    by (by100 simp)
+  have hE\<theta>_union_sub_\<theta>J:
+    "\<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<subseteq> \<theta> \<inter> J"
+    by (rule geotop_selected_boundary_edge_set_union_subset_contact_prefix)
+  have h\<theta>_contact_outside_selected:
+    "\<exists>x. x \<in> \<theta> \<inter> J
+      \<and> x \<notin> \<Union>{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+    by (rule geotop_nonfree_selected_edges_contact_outside_prefix
+        [OF h\<theta>K h\<theta>2 hE\<theta>_subset_K hE\<theta>_allowed h\<theta>_not_free
+          hE\<theta>_union_sub_\<theta>J])
   show ?thesis
     sorry
 qed
