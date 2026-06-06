@@ -17,7 +17,7 @@ usage: ./check_dev34_fast.sh MODE [ARGS...]
 
 Fast modes:
   quick        no-build snapshot: target holes plus dirty dev34 layers (default)
-  holes        rg for target sorry/sledgehammer markers
+  holes        rg for target sorry/sledgehammer markers in all dev34 layers
   index PAT    rg PAT in THEOREMS_AND_DEFS.txt and STMT_INDEX.txt
   names PAT    rg PAT in THEOREMS_AND_DEFS.txt only
   stmts PAT    rg PAT in STMT_INDEX.txt only
@@ -28,6 +28,8 @@ Fast modes:
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; intended hot-loop verifier
+  loop PAT [FILES]
+               no-build proof loop: full-index grep PAT, dirty plan, then hot [FILES]
 
 Milestone modes:
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
@@ -117,6 +119,18 @@ auto_target() {
 
 target_theories=(
   dev34_pre/GeoTop.thy
+  dev34_prefix/GeoTop_3_4_Prefix.thy
+  dev34_facts/GeoTop_3_4_Facts.thy
+  dev34_workfacts/GeoTop_3_4_WorkFacts.thy
+  dev34_linkfacts/GeoTop_3_4_LinkFacts.thy
+  dev34_graphfacts/GeoTop_3_4_GraphFacts.thy
+  dev34_graphwork/GeoTop_3_4_GraphWork.thy
+  dev34_openstar/GeoTop_3_4_OpenStar.thy
+  dev34_core/GeoTop_3_4_Core.thy
+  dev34/GeoTop_3_4.thy
+)
+
+hole_theories=(
   dev34_prefix/GeoTop_3_4_Prefix.thy
   dev34_facts/GeoTop_3_4_Facts.thy
   dev34_workfacts/GeoTop_3_4_WorkFacts.thy
@@ -234,7 +248,7 @@ case "${1:-quick}" in
   quick)
     files=$(dirty_layers)
     printf 'target holes:\n'
-    rg -n '\bsorry\b|sledgehammer' dev34_prefix dev34_core dev34 || true
+    rg -n '\bsorry\b|sledgehammer' "${hole_theories[@]}" || true
     printf '\ndirty dev34 layer files:\n'
     if [ -n "$files" ]; then
       printf '%s\n' "$files"
@@ -245,7 +259,7 @@ case "${1:-quick}" in
     fi
     ;;
   holes|sorries)
-    exec rg -n '\bsorry\b|sledgehammer' dev34_prefix dev34_core dev34
+    exec rg -n '\bsorry\b|sledgehammer' "${hole_theories[@]}"
     ;;
   index|idx)
     shift
@@ -278,6 +292,33 @@ case "${1:-quick}" in
       exit 2
     fi
     exec rg -n -i -- "$*" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}"
+    ;;
+  loop)
+    shift
+    if [ "$#" -eq 0 ]; then
+      usage
+      exit 2
+    fi
+    pat=$1
+    shift
+    files=$(layer_files "$@")
+    printf 'full-index/source scan: %s\n' "$pat"
+    rg -n -i -- "$pat" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}" || true
+    printf '\ntarget holes:\n'
+    rg -n '\bsorry\b|sledgehammer' "${hole_theories[@]}" || true
+    printf '\ndirty/hot plan:\n'
+    if [ -n "$files" ]; then
+      while IFS="$(printf '\t')" read -r _ file; do
+        [ -z "$file" ] && continue
+        plan_one "$file"
+      done <<EOF2
+$(ordered_layer_files "$files" | sort -n -k1,1)
+EOF2
+      printf '\nhot check:\n'
+      "$0" hot "$@"
+    else
+      printf '(no dirty/explicit dev34 layer files)\n'
+    fi
     ;;
   dirty)
     shift
