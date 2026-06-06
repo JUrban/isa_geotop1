@@ -1391,6 +1391,43 @@ proof -
     using hcomplex h1dim harc by (by100 blast)
 qed
 
+lemma geotop_polygon_not_broken_line_graph_prefix:
+  fixes J :: "(real^2) set"
+  assumes hpolygon: "geotop_is_polygon J"
+  assumes hbroken: "geotop_is_broken_line J"
+  shows False
+proof -
+  have hJsphere:
+      "geotop_is_n_sphere J
+        (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hpolygon unfolding geotop_is_polygon_def by (by100 blast)
+  obtain f where hhomeo: "top1_homeomorphism_on J
+                           (subspace_topology UNIV geotop_euclidean_topology J)
+                           (geotop_std_sphere::(real^2) set)
+                           (subspace_topology UNIV geotop_euclidean_topology
+                              (geotop_std_sphere::(real^2) set)) f"
+    using hJsphere unfolding geotop_is_n_sphere_def by (by100 blast)
+  have hhomeo_HOL: "J homeomorphic (geotop_std_sphere::(real^2) set)"
+    by (rule top1_homeomorphism_on_geotop_imp_HOL_homeomorphic[OF hhomeo])
+  have hstd_eq: "(geotop_std_sphere::(real^2) set) = sphere 0 1"
+    unfolding geotop_std_sphere_def sphere_def by (by100 simp)
+  have hJ_sphere: "J homeomorphic sphere (0::real^2) 1"
+    using hhomeo_HOL hstd_eq by (by100 simp)
+  have hnotconn_HOL: "\<not> connected (- J)"
+    using Jordan_Brouwer_separation[OF hJ_sphere] zero_less_one by (by100 blast)
+  have hnot_conn:
+      "\<not> top1_connected_on (UNIV - J)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+    using hnotconn_HOL top1_connected_on_geotop_iff_connected
+    by (metis Compl_eq_Diff_UNIV)
+  have hconn:
+      "top1_connected_on (UNIV - J)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV - J))"
+    by (rule Theorem_GT_2_3[OF hbroken])
+  show False
+    using hnot_conn hconn by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -1424,19 +1461,6 @@ proof -
   show ?thesis
     by (rule hbranch_local_disconnect)
 qed
-
-lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
-  fixes L :: "(real^2) set set"
-  assumes hL_linear: "geotop_is_linear_graph L"
-  assumes hL_fin: "finite L"
-  assumes hL_conn: "geotop_complex_connected L"
-  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
-  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
-  (**
-    Moise Figure 3.2 boundary-cycle step, endpoint exclusion.  An endpoint in
-    the finite polygonal graph would make the carrier locally a broken line,
-    not a polygonal 1-sphere. **)
-  sorry
 
 lemma geotop_polygon_finite_linear_graph_vertices_no_branch_prefix:
   fixes L :: "(real^2) set set"
@@ -1942,6 +1966,74 @@ proof (intro allI impI)
           [OF hpolygon hw_poly])
     show False
       using hsingle_open hsingle_not_open by (by100 blast)
+  qed
+qed
+
+lemma geotop_polygon_finite_linear_graph_vertices_no_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow> \<not> geotop_graph_endpoint L w"
+  (**
+    Moise Figure 3.2 boundary-cycle step, endpoint exclusion.  An endpoint in
+    the finite polygonal graph would make the carrier a broken line, contrary
+    to the polygonal 1-sphere carrier. **)
+proof -
+  have hnonisolated:
+      "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
+        [OF hL_linear hL_fin hL_polygon])
+  have hnobranch:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<le> 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_no_branch_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  proof (intro allI impI)
+    fix w
+    assume hwL: "{w} \<in> L"
+    let ?E = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+    have hE_fin: "finite ?E"
+      using hL_fin by (by100 simp)
+    obtain e where heE: "e \<in> ?E"
+      using hnonisolated hwL by (by100 blast)
+    have hE_nonempty: "?E \<noteq> {}"
+      using heE by (by100 blast)
+    have hcard_pos: "0 < card ?E"
+    proof -
+      have hiff: "(0 < card ?E) = (?E \<noteq> {} \<and> finite ?E)"
+        by (rule card_gt_0_iff)
+      show ?thesis using hiff hE_nonempty hE_fin by (by100 blast)
+    qed
+    have hcard_le: "card ?E \<le> 2"
+      using hnobranch hwL by (by100 blast)
+    show "card ?E = 1 \<or> card ?E = 2"
+      using hcard_pos hcard_le by (by100 linarith)
+  qed
+  show ?thesis
+  proof (intro allI impI notI)
+    fix w
+    assume hwL: "{w} \<in> L"
+    assume hend: "geotop_graph_endpoint L w"
+    have hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+    proof (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix
+        [where L = L])
+      show "geotop_is_linear_graph L" by (rule hL_linear)
+      show "finite L" by (rule hL_fin)
+      show "geotop_complex_connected L" by (rule hL_conn)
+      show "\<forall>w. {w} \<in> L \<longrightarrow>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+          card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+        by (rule hdegree12)
+      show "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+        using hwL hend by (by100 blast)
+    qed
+    show False
+      by (rule geotop_polygon_not_broken_line_graph_prefix[OF hL_polygon hbroken])
   qed
 qed
 
