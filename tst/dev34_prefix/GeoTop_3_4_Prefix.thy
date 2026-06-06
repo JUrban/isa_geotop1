@@ -7850,6 +7850,21 @@ proof -
   have hx_two_edge_arc:
     "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1"
     using hx_nonbase closed_segment_commute[of v\<^sub>1 v\<^sub>2] by (by100 blast)
+  have hv\<^sub>0_base_segment: "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+    by (by100 simp)
+  have hv\<^sub>1_base_segment: "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+    by (by100 simp)
+  have hx_ne_v\<^sub>0: "x \<noteq> v\<^sub>0"
+    using hx_not_base hv\<^sub>0_base_segment by (by100 blast)
+  have hx_ne_v\<^sub>1: "x \<noteq> v\<^sub>1"
+    using hx_not_base hv\<^sub>1_base_segment by (by100 blast)
+  have hx_not_endpoints: "x \<notin> {v\<^sub>0, v\<^sub>1}"
+    using hx_ne_v\<^sub>0 hx_ne_v\<^sub>1 by (by100 blast)
+  have hx_other_arc_interior:
+    "x \<in> geotop_arc_interior
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
+    using hx_two_edge_arc hx_not_endpoints
+    unfolding geotop_arc_interior_def by (by100 blast)
   show ?thesis
     sorry
 qed
