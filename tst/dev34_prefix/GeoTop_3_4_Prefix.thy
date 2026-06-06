@@ -7883,7 +7883,59 @@ lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
     than two 2-simplexes, at least two 2-simplexes each have an edge in
     \<open>Fr |K|\<close>.  The book does not require these two simplexes to share that
     boundary edge. **)
-  sorry
+proof -
+  have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+    using hT_gt2 by (by100 linarith)
+  have hselected_boundary:
+    "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma>
+     \<and> e\<^sub>\<sigma> \<subseteq> J
+     \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau>
+     \<and> e\<^sub>\<tau> \<subseteq> J"
+    (**
+      Remaining book ear/counting step: use the selected polygon-boundary edges
+      and the all-boundary obstruction to find two distinct 2-simplexes owning
+      polygon-boundary edge faces. **)
+    sorry
+  obtain \<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>
+    where h\<sigma>K: "\<sigma> \<in> K"
+      and h\<tau>K: "\<tau> \<in> K"
+      and h\<sigma>\<tau>: "\<sigma> \<noteq> \<tau>"
+      and h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+      and h\<tau>2: "geotop_simplex_dim \<tau> 2"
+      and he\<^sub>\<sigma>_edge: "geotop_is_edge e\<^sub>\<sigma>"
+      and he\<^sub>\<sigma>_face: "geotop_is_face e\<^sub>\<sigma> \<sigma>"
+      and he\<^sub>\<sigma>J: "e\<^sub>\<sigma> \<subseteq> J"
+      and he\<^sub>\<tau>_edge: "geotop_is_edge e\<^sub>\<tau>"
+      and he\<^sub>\<tau>_face: "geotop_is_face e\<^sub>\<tau> \<tau>"
+      and he\<^sub>\<tau>J: "e\<^sub>\<tau> \<subseteq> J"
+    using hselected_boundary by (elim exE conjE)
+  have he\<^sub>\<sigma>_front:
+    "e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+    by (rule geotop_polygon_disk_polygon_edge_subset_frontier_prefix
+        [OF hJ hK_poly he\<^sub>\<sigma>J])
+  have he\<^sub>\<tau>_front:
+    "e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+      (geotop_polyhedron K)"
+    by (rule geotop_polygon_disk_polygon_edge_subset_frontier_prefix
+        [OF hJ hK_poly he\<^sub>\<tau>J])
+  show ?thesis
+  proof (rule exI[where x = \<sigma>], rule exI[where x = \<tau>],
+      rule exI[where x = e\<^sub>\<sigma>], rule exI[where x = e\<^sub>\<tau>])
+    show "\<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau> \<and>
+        geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2 \<and>
+        geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma> \<and>
+        e\<^sub>\<sigma> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K) \<and>
+        geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau> \<and>
+        e\<^sub>\<tau> \<subseteq> geotop_frontier UNIV geotop_euclidean_topology
+          (geotop_polyhedron K)"
+      by (intro conjI h\<sigma>K h\<tau>K h\<sigma>\<tau> h\<sigma>2 h\<tau>2
+          he\<^sub>\<sigma>_edge he\<^sub>\<sigma>_face he\<^sub>\<sigma>_front he\<^sub>\<tau>_edge he\<^sub>\<tau>_face he\<^sub>\<tau>_front)
+  qed
+qed
 
 lemma geotop_polygon_disk_frontier_edge_subset_polygon_prefix:
   fixes J e :: "(real^2) set" and K :: "(real^2) set set"
