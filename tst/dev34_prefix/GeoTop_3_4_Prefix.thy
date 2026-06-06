@@ -8716,6 +8716,15 @@ proof -
   have h\<theta>_inter_J_minus_base:
     "(\<theta> \<inter> J) - closed_segment v\<^sub>0 v\<^sub>1 = {v\<^sub>2}"
     using h\<theta>_inter_J hv\<^sub>2_not_base_segment by (by100 blast)
+  have hchord_polygon_cut_data:
+    "v\<^sub>0 \<in> J \<and> v\<^sub>2 \<in> J
+      \<and> geotop_is_broken_line (closed_segment v\<^sub>0 v\<^sub>2)
+      \<and> geotop_arc_endpoints (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+      \<and> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J = {v\<^sub>0, v\<^sub>2}
+      \<and> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}
+          \<subseteq> geotop_polygon_interior J"
+    by (intro conjI hv\<^sub>0J hv\<^sub>2J hchord_edge_broken_line hchord_edge_arc
+        hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior)
   show ?thesis
     sorry
 qed
