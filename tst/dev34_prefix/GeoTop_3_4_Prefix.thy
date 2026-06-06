@@ -7891,6 +7891,23 @@ proof -
       geotop_arc_interior
         (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
     using hxJ hx_frontier hx_other_arc_interior by (by100 blast)
+  have hJ_meets_nonbase_side_or_v\<^sub>2:
+    "v\<^sub>2 \<in> J \<or>
+      J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {} \<or>
+      J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+  proof (cases "x = v\<^sub>2")
+    case True
+    show ?thesis
+      using True hxJ by (by100 blast)
+  next
+    case False
+    have hside_int:
+      "x \<in> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<or>
+       x \<in> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}"
+      using hx_nonbase False unfolding geotop_arc_interior_def by (by100 blast)
+    show ?thesis
+      using hxJ hside_int by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
