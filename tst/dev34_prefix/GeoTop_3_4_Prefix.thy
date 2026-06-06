@@ -8129,6 +8129,20 @@ proof -
       qed
     qed
   qed
+  have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+  proof -
+    have "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hv\<^sub>1J: "v\<^sub>1 \<in> J"
+  proof -
+    have "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
   let ?Etheta = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
   have h\<theta>_vertices_chord_order:
     "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
@@ -8336,6 +8350,66 @@ proof -
     by (rule geotop_polygon_disk_nonboundary_segment_arc_interior_subset_polygon_interior_prefix
         [OF hJ hK hK_poly hv\<^sub>1v\<^sub>2 hside_hull_segment_eq hside_edge_K
           hside_edge h\<theta>K h\<theta>2 hside_face hnot_side_boundary])
+  have hchord_arc_interior_disjoint_J:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} = {}"
+  proof (rule ccontr)
+    assume hne:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2} \<noteq> {}"
+    have "closed_segment v\<^sub>0 v\<^sub>2 \<subseteq> J"
+      by (rule hchord_contact_forces_boundary[OF hne])
+    thus False
+      using hnot_chord_boundary by (by100 blast)
+  qed
+  have hside_arc_interior_disjoint_J:
+    "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} = {}"
+  proof (rule ccontr)
+    assume hne:
+      "J \<inter> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2} \<noteq> {}"
+    have "closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J"
+      by (rule hside_contact_forces_boundary[OF hne])
+    thus False
+      using hnot_side_boundary by (by100 blast)
+  qed
+  have hchord_segment_inter_J:
+    "closed_segment v\<^sub>0 v\<^sub>2 \<inter> J = {v\<^sub>0, v\<^sub>2}"
+  proof
+    show "closed_segment v\<^sub>0 v\<^sub>2 \<inter> J \<subseteq> {v\<^sub>0, v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J"
+      have hxseg: "x \<in> closed_segment v\<^sub>0 v\<^sub>2"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hx_not_arc:
+        "x \<notin> geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}"
+        using hchord_arc_interior_disjoint_J hxJ by (by100 blast)
+      show "x \<in> {v\<^sub>0, v\<^sub>2}"
+        using hxseg hx_not_arc unfolding geotop_arc_interior_def by (by100 blast)
+    qed
+    show "{v\<^sub>0, v\<^sub>2} \<subseteq> closed_segment v\<^sub>0 v\<^sub>2 \<inter> J"
+      using hv\<^sub>0J hv\<^sub>2J by (by100 simp)
+  qed
+  have hside_segment_inter_J:
+    "closed_segment v\<^sub>1 v\<^sub>2 \<inter> J = {v\<^sub>1, v\<^sub>2}"
+  proof
+    show "closed_segment v\<^sub>1 v\<^sub>2 \<inter> J \<subseteq> {v\<^sub>1, v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
+      have hxseg: "x \<in> closed_segment v\<^sub>1 v\<^sub>2"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hx_not_arc:
+        "x \<notin> geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}"
+        using hside_arc_interior_disjoint_J hxJ by (by100 blast)
+      show "x \<in> {v\<^sub>1, v\<^sub>2}"
+        using hxseg hx_not_arc unfolding geotop_arc_interior_def by (by100 blast)
+    qed
+    show "{v\<^sub>1, v\<^sub>2} \<subseteq> closed_segment v\<^sub>1 v\<^sub>2 \<inter> J"
+      using hv\<^sub>1J hv\<^sub>2J by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
