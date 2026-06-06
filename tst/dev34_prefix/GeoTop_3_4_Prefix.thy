@@ -3900,6 +3900,38 @@ proof -
     using Theorem_GT_1_12(1)[OF hK] hpath by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_complex_finite_prefix:
+  fixes J :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  shows "finite K"
+  (**
+    Compactness form of Moise's finite-polyhedron assertion: any locally
+    finite complex whose carrier is the closed polygonal disk
+    \<open>closure (Int J)\<close> is finite. **)
+proof -
+  have hJ_n_sph: "geotop_is_n_sphere J
+      (subspace_topology UNIV geotop_euclidean_topology J) 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  have h_int_bd: "bounded (geotop_polygon_interior J)"
+    by (rule polygon_interior_bounded[OF hJ_n_sph])
+  have h_clos_eq: "closure_on UNIV geotop_euclidean_topology
+        (geotop_polygon_interior J) = closure (geotop_polygon_interior J)"
+    by (rule closure_on_geotop_UNIV_eq_closure)
+  have h_clos_bd: "bounded (closure (geotop_polygon_interior J))"
+    using h_int_bd bounded_closure by (by100 blast)
+  have h_clos_closed: "closed (closure (geotop_polygon_interior J))"
+    by (by100 simp)
+  have h_clos_compact: "compact (closure (geotop_polygon_interior J))"
+    using h_clos_bd h_clos_closed compact_eq_bounded_closed by (by100 blast)
+  have hK_poly_compact: "compact (geotop_polyhedron K)"
+    using hK_poly h_clos_eq h_clos_compact by (by100 simp)
+  show ?thesis
+    by (rule compact_polyhedron_imp_finite_complex[OF hK hK_poly_compact])
+qed
+
 lemma geotop_polygon_disk_polyhedron_frontier_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
