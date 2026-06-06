@@ -4641,6 +4641,60 @@ proof -
     using hsplit hinter hC\<^sub>1_arc hC\<^sub>2_arc hC\<^sub>1_end hC\<^sub>2_end by (by100 blast)
 qed
 
+lemma geotop_top1_arc_on_imp_geotop_is_arc_prefix:
+  fixes A :: "(real^2) set"
+  assumes hA: "top1_is_arc_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  (**
+    Bridge for the Figure 3.2 boundary cut: the SCC decomposition produces
+    \<open>top1_is_arc_on\<close> pieces, while the Moise/geotop broken-line interface is
+    phrased with \<open>geotop_is_arc\<close>.  Compose the inverse interval
+    parametrisation of \<open>A\<close> with a standard nondegenerate segment simplex. **)
+proof -
+  obtain h where hIA: "top1_homeomorphism_on I_set I_top A
+      (subspace_topology UNIV geotop_euclidean_topology A) h"
+    using hA unfolding top1_is_arc_on_def by (by100 blast)
+  have hAI: "top1_homeomorphism_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)
+      I_set I_top (inv_into I_set h)"
+    by (rule top1_homeomorphism_on_sym[OF hIA])
+  obtain b :: "real^2" where hb_basis: "b \<in> Basis"
+    using nonempty_Basis by (by100 blast)
+  have hb_ne: "(0::real^2) \<noteq> b"
+    using hb_basis nonzero_Basis by (by100 blast)
+  let ?S = "closed_segment (0::real^2) b"
+  have hS_simplex: "geotop_simplex_dim ?S 1"
+    by (rule geotop_closed_segment_is_simplex[OF hb_ne])
+  have hS_end: "geotop_arc_endpoints ?S {0, b}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hb_ne])
+  obtain g where hIS_raw:
+      "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology
+          {t::real. 0 \<le> t \<and> t \<le> 1})
+        ?S (subspace_topology UNIV geotop_euclidean_topology ?S) g"
+    using hS_end unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hI_set: "{t::real. 0 \<le> t \<and> t \<le> 1} = I_set"
+    unfolding top1_unit_interval_def by (by100 auto)
+  have hI_top:
+      "subspace_topology (UNIV::real set) geotop_euclidean_topology
+        {t::real. 0 \<le> t \<and> t \<le> 1} = I_top"
+    unfolding top1_unit_interval_topology_def
+    using hI_set by (simp add: geotop_euclidean_topology_eq_open_sets)
+  have hIS: "top1_homeomorphism_on I_set I_top ?S
+      (subspace_topology UNIV geotop_euclidean_topology ?S) g"
+    using hIS_raw hI_set hI_top by (by100 simp)
+  have hAS: "top1_homeomorphism_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)
+      ?S (subspace_topology UNIV geotop_euclidean_topology ?S)
+      (g \<circ> inv_into I_set h)"
+    by (rule top1_homeomorphism_on_comp[OF hAI hIS])
+  show ?thesis
+    unfolding geotop_is_arc_def geotop_is_n_cell_def
+    using hS_simplex hAS unfolding top1_homeomorphism_on_def by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
