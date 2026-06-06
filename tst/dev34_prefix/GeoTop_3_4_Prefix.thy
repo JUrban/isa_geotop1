@@ -9782,6 +9782,182 @@ proof -
     "geotop_arc_interior (closed_segment v\<^sub>1 v\<^sub>2) {v\<^sub>1, v\<^sub>2}
       \<subseteq> interior (geotop_polyhedron K)"
     using hside_arc_interior_sub_polygon_interior hpoly_interior_eq_polygon by (by100 simp)
+  have hchord_decomposition_from_boundary_split:
+    "\<And>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2 \<Longrightarrow>
+      geotop_is_broken_line C\<^sub>1 \<Longrightarrow>
+      geotop_is_broken_line C\<^sub>2 \<Longrightarrow>
+      geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<Longrightarrow>
+      geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2} \<Longrightarrow>
+      geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {} \<Longrightarrow>
+      geotop_is_polygon (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2)
+      \<and> geotop_is_polygon J
+      \<and> geotop_is_polygon (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)
+      \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+              geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}.
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J -
+                   geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}) P}
+           =
+           {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2),
+            geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)}
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2))
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2))
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+           (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+      \<and> top1_connected_on
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}))
+      \<and> top1_connected_on
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}))
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+  proof -
+    fix C\<^sub>1 C\<^sub>2
+    assume hJ_eq: "J = C\<^sub>1 \<union> C\<^sub>2"
+    assume hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+    assume hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+    assume hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+    assume hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+    assume hC\<^sub>1C\<^sub>2:
+      "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+    have hpoly_left: "geotop_is_polygon (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2)"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(1)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hpoly_J: "geotop_is_polygon J"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(2)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hpoly_right: "geotop_is_polygon (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(3)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hcomponents:
+      "{C. \<exists>P\<in>geotop_polygon_interior J -
+              geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}.
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J -
+                   geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}) P}
+       =
+       {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2),
+        geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)}"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(4)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hclosure_union:
+      "closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J) =
+       closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2))
+       \<union> closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2))"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(5)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hclosure_minus:
+      "closure_on UNIV geotop_euclidean_topology
+         (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+       (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+        geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+       (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+        geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(6)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hconnected_left:
+      "top1_connected_on
+         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+         (subspace_topology UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}))"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(7)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hconnected_right:
+      "top1_connected_on
+         (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+         (subspace_topology UNIV geotop_euclidean_topology
+           (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}))"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(8)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    have hseparated:
+      "geotop_separated UNIV geotop_euclidean_topology
+         (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+         (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+      by (rule geotop_boundary_split_segment_chord_theta_decomposition_prefix(9)
+          [OF hv\<^sub>0v\<^sub>2 hJ_eq hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2
+            hchord_segment_inter_J hchord_arc_interior_sub_polygon_interior])
+    show "geotop_is_polygon (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2)
+      \<and> geotop_is_polygon J
+      \<and> geotop_is_polygon (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)
+      \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+              geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}.
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J -
+                   geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}) P}
+           =
+           {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2),
+            geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)}
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2))
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2))
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+           (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+      \<and> top1_connected_on
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}))
+      \<and> top1_connected_on
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}))
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+      using hpoly_left hpoly_J hpoly_right hcomponents hclosure_union
+        hclosure_minus hconnected_left hconnected_right hseparated
+      by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
