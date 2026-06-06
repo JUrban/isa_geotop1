@@ -4305,6 +4305,44 @@ proof -
     using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma geotop_polygon_finite_linear_graph_vertices_degree_two_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  shows "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  (**
+    Moise Figure 3.2 boundary-cycle step.  A finite linear graph whose carrier
+    is a polygon has no endpoints and no branches; every boundary vertex has
+    exactly two incident edges. **)
+  sorry
+
+lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  (**
+    Moise Figure 3.2 cycle-cut step.  Enumerate the finite degree-two connected
+    linear graph as a cyclic edge chain and split that cyclic order at the two
+    named vertices. **)
+  sorry
+
 lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -4326,7 +4364,25 @@ lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix:
     Moise Figure 3.2 boundary step.  A finite polygonal linear graph is a
     cyclic graph; cutting that cycle at two distinct vertices gives the two
     polygonal boundary arcs used for the chord split. **)
-  sorry
+proof -
+  have hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon])
+  have hcycle_cut:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+        \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+        \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+            geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    by (rule geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hdegree hPL hQL hPQ])
+  show ?thesis
+    by (rule hcycle_cut)
+qed
 
 (** Local combinatorial helper for Moise 4.8/4.9, L1. If a simplex has
     two distinct vertices, the segment on those vertices is a 1-face. **)
