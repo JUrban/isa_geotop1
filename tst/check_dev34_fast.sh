@@ -21,8 +21,12 @@ Fast modes:
   names PAT    rg PAT in THEOREMS_AND_DEFS.txt only
   stmts PAT    rg PAT in STMT_INDEX.txt only
   grep PAT     rg PAT in target dev34 theories and indexes
+  scan PAT     alias for grep; use this before proof attempts
   dirty [FILES] show dirty/explicit dev34 layer files and the auto build target
   proc [FILES] process changed/explicit theories against their parent heap
+  hot [FILES]  alias for proc; intended hot-loop verifier
+
+Milestone modes:
   auto [FILES]  build the smallest dirty/explicit dev34 layer detected
   prove [FILES] build the smallest dirty/explicit dev34 layer with proofs forced
 
@@ -230,7 +234,7 @@ case "${1:-quick}" in
     fi
     exec rg -n -i -- "$*" STMT_INDEX.txt
     ;;
-  grep)
+  grep|scan|search)
     shift
     if [ "$#" -eq 0 ]; then
       usage
@@ -249,7 +253,7 @@ case "${1:-quick}" in
       printf 'auto would run: holes\n'
     fi
     ;;
-  proc|process)
+  proc|process|hot)
     shift
     files=$(layer_files "$@")
     if [ -z "$files" ]; then
