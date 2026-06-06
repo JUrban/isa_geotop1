@@ -275,6 +275,25 @@ proof -
   finally show ?thesis .
 qed
 
+lemma geotop_1dim_simplex_subset_edge_cases_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hcomplex: "geotop_is_complex L"
+  assumes h\<sigma>L: "\<sigma> \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hweq: "e = closed_segment w q"
+  assumes hwq: "w \<noteq> q"
+  assumes h\<sigma>sub: "\<sigma> \<subseteq> e"
+  shows "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+proof -
+  have hface: "geotop_is_face \<sigma> e"
+    by (rule geotop_complex_subset_simplex_face_prefix[OF hcomplex h\<sigma>L heL h\<sigma>sub])
+  have hface_seg: "geotop_is_face \<sigma> (closed_segment w q)"
+    using hface hweq by (by100 simp)
+  have hcases: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = closed_segment w q"
+    by (rule geotop_segment_face_cases_prefix[OF hface_seg hwq])
+  show ?thesis using hcases hweq by (by100 blast)
+qed
+
 lemma geotop_delete_leaf_edge_inter_rest_polyhedron_subset_neighbor_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -381,6 +400,165 @@ next
     show "x \<in> e \<inter> geotop_polyhedron (L - {{w}, e})"
       using hxq hqe \<open>q \<in> geotop_polyhedron (L - {{w}, e})\<close> by (by100 simp)
   qed
+qed
+
+lemma geotop_closed_segment_HOL_arc_between_prefix:
+  fixes w q :: "real^2"
+  assumes hwq: "w \<noteq> q"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = closed_segment w q
+      \<and> pathstart \<gamma> = w \<and> pathfinish \<gamma> = q"
+proof -
+  let ?\<gamma> = "linepath w q"
+  have harc: "arc ?\<gamma>"
+    by (rule arc_linepath[OF hwq])
+  have hpim: "path_image ?\<gamma> = closed_segment w q"
+  proof -
+    have "path_image ?\<gamma> = ?\<gamma> ` {0..1}"
+      unfolding path_image_def by (by100 simp)
+    also have "\<dots> = closed_segment w q"
+      by (rule linepath_image_01)
+    finally show ?thesis .
+  qed
+  have hstart: "pathstart ?\<gamma> = w"
+    unfolding pathstart_def linepath_def by (by100 simp)
+  have hfinish: "pathfinish ?\<gamma> = q"
+    unfolding pathfinish_def linepath_def by (by100 simp)
+  show ?thesis using harc hpim hstart hfinish by (by100 blast)
+qed
+
+lemma geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hqe: "q \<in> e"
+  assumes h\<sigma>L: "\<sigma> \<in> L"
+  assumes hq\<sigma>: "q \<in> \<sigma>"
+  shows "\<sigma> = {q} \<or> \<sigma> = e"
+proof -
+  have hq_endpoint: "geotop_graph_endpoint L q"
+    by (rule geotop_degree_one_vertex_graph_endpoint_prefix[OF hL hqL hqcard])
+  show ?thesis
+    by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix
+        [OF hL hfin hq_endpoint heL hedge hqe h\<sigma>L hq\<sigma>])
+qed
+
+lemma geotop_polyhedron_two_vertices_edge_eq_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hsub: "L \<subseteq> {{w}, {q}, e}"
+  assumes heL: "e \<in> L"
+  assumes hwe: "w \<in> e"
+  assumes hqe: "q \<in> e"
+  shows "geotop_polyhedron L = e"
+proof
+  show "geotop_polyhedron L \<subseteq> e"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron L"
+    obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> L" and hx\<sigma>: "x \<in> \<sigma>"
+      using hx unfolding geotop_polyhedron_def by (by100 blast)
+    have hcases: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+      using hsub h\<sigma>L by (by100 blast)
+    show "x \<in> e"
+    proof (rule disjE[OF hcases])
+      assume "\<sigma> = {w}"
+      show ?thesis using hx\<sigma> \<open>\<sigma> = {w}\<close> hwe by (by100 blast)
+    next
+      assume hrest: "\<sigma> = {q} \<or> \<sigma> = e"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume "\<sigma> = {q}"
+        show ?thesis using hx\<sigma> \<open>\<sigma> = {q}\<close> hqe by (by100 blast)
+      next
+        assume "\<sigma> = e"
+        show ?thesis using hx\<sigma> \<open>\<sigma> = e\<close> by (by100 simp)
+      qed
+    qed
+  qed
+next
+  show "e \<subseteq> geotop_polyhedron L"
+  proof
+    fix x
+    assume "x \<in> e"
+    show "x \<in> geotop_polyhedron L"
+      unfolding geotop_polyhedron_def using heL \<open>x \<in> e\<close> by (by100 blast)
+  qed
+qed
+
+lemma geotop_two_degree_one_edge_delete_complement_complex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqe: "q \<in> e"
+  shows "geotop_is_complex (L - {{w}, {q}, e})"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hsub: "L - {{w}, {q}, e} \<subseteq> L"
+    by (by100 simp)
+  have hfaces:
+      "\<forall>\<sigma>\<in>L - {{w}, {q}, e}. \<forall>\<tau>. geotop_is_face \<tau> \<sigma>
+        \<longrightarrow> \<tau> \<in> L - {{w}, {q}, e}"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>rest: "\<sigma> \<in> L - {{w}, {q}, e}"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>L: "\<sigma> \<in> L"
+      using h\<sigma>rest by (by100 simp)
+    have h\<tau>L: "\<tau> \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] h\<sigma>L hface by (by100 blast)
+    have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset_prefix[OF hface])
+    have h\<sigma>ne_w: "\<sigma> \<noteq> {w}"
+      using h\<sigma>rest by (by100 simp)
+    have h\<sigma>ne_q: "\<sigma> \<noteq> {q}"
+      using h\<sigma>rest by (by100 simp)
+    have h\<sigma>ne_e: "\<sigma> \<noteq> e"
+      using h\<sigma>rest by (by100 simp)
+    have h\<tau>ne_w: "\<tau> \<noteq> {w}"
+    proof
+      assume h\<tau>w: "\<tau> = {w}"
+      have hw\<sigma>: "w \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>w by (by100 blast)
+      have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+        by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix
+            [OF hL hfin hend heL hedge hwe h\<sigma>L hw\<sigma>])
+      show False using hcase h\<sigma>ne_w h\<sigma>ne_e by (by100 blast)
+    qed
+    have h\<tau>ne_q: "\<tau> \<noteq> {q}"
+    proof
+      assume h\<tau>q: "\<tau> = {q}"
+      have hq\<sigma>: "q \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>q by (by100 blast)
+      have hcase: "\<sigma> = {q} \<or> \<sigma> = e"
+        by (rule geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_prefix
+            [OF hL hfin hqL hqcard heL hedge hqe h\<sigma>L hq\<sigma>])
+      show False using hcase h\<sigma>ne_q h\<sigma>ne_e by (by100 blast)
+    qed
+    have h\<tau>ne_e: "\<tau> \<noteq> e"
+    proof
+      assume h\<tau>e: "\<tau> = e"
+      have hq\<sigma>: "q \<in> \<sigma>"
+        using h\<tau>sub\<sigma> h\<tau>e hqe by (by100 blast)
+      have hcase: "\<sigma> = {q} \<or> \<sigma> = e"
+        by (rule geotop_degree_one_vertex_simplex_containing_eq_vertex_or_edge_prefix
+            [OF hL hfin hqL hqcard heL hedge hqe h\<sigma>L hq\<sigma>])
+      show False using hcase h\<sigma>ne_q h\<sigma>ne_e by (by100 blast)
+    qed
+    show "\<tau> \<in> L - {{w}, {q}, e}"
+      using h\<tau>L h\<tau>ne_w h\<tau>ne_q h\<tau>ne_e by (by100 simp)
+  qed
+  show ?thesis
+    by (rule geotop_complex_subset_is_complex[OF hcomplex hsub hfaces])
 qed
 
 lemma geotop_graph_endpoint_delete_leaf_neighbor_endpoint_prefix:
@@ -704,6 +882,513 @@ proof -
       qed
     qed
   qed
+qed
+
+lemma geotop_two_degree_one_endpoint_edge_connected_exhausts_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  shows "L - {{w}, {q}, e} = {}"
+proof -
+  let ?K1 = "{\<sigma>\<in>L. \<sigma> \<subseteq> e}"
+  let ?K2 = "L - {{w}, {q}, e}"
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hqe: "q \<in> e"
+    using heq by (by100 simp)
+  have hwq: "w \<noteq> q"
+    using hqw by (by100 blast)
+  have hK1_complex: "geotop_is_complex ?K1"
+    by (rule geotop_complex_restrict_subset_is_complex[OF hcomplex])
+  have hK2_complex: "geotop_is_complex ?K2"
+  proof (rule geotop_two_degree_one_edge_delete_complement_complex_prefix
+      [where L = L and w = w and q = q and e = e])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_graph_endpoint L w" by (rule hend)
+    show "{q} \<in> L" by (rule hqL)
+    show "card {l \<in> L. geotop_is_edge l \<and> q \<in> l} = 1" by (rule hqcard)
+    show "e \<in> L" by (rule heL)
+    show "geotop_is_edge e" by (rule hedge)
+    show "w \<in> e" by (rule hwe)
+    show "q \<in> e" by (rule hqe)
+  qed
+  have hK1_nonempty: "?K1 \<noteq> {}"
+    using heL by (by100 blast)
+  have hsplit: "L = ?K1 \<union> ?K2"
+  proof
+    show "L \<subseteq> ?K1 \<union> ?K2"
+    proof
+      fix \<sigma>
+      assume h\<sigma>L: "\<sigma> \<in> L"
+      show "\<sigma> \<in> ?K1 \<union> ?K2"
+      proof (cases "\<sigma> \<in> ?K2")
+        case True
+        show ?thesis using True by (by100 blast)
+      next
+        case False
+        have hcase: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+          using h\<sigma>L False by (by100 simp)
+        have hsub: "\<sigma> \<subseteq> e"
+        proof (rule disjE[OF hcase])
+          assume "\<sigma> = {w}"
+          show ?thesis using \<open>\<sigma> = {w}\<close> hwe by (by100 blast)
+        next
+          assume hrest: "\<sigma> = {q} \<or> \<sigma> = e"
+          show ?thesis
+          proof (rule disjE[OF hrest])
+            assume "\<sigma> = {q}"
+            show ?thesis using \<open>\<sigma> = {q}\<close> hqe by (by100 blast)
+          next
+            assume "\<sigma> = e"
+            show ?thesis using \<open>\<sigma> = e\<close> by (by100 simp)
+          qed
+        qed
+        show ?thesis using h\<sigma>L hsub by (by100 blast)
+      qed
+    qed
+  next
+    show "?K1 \<union> ?K2 \<subseteq> L"
+      by (by100 blast)
+  qed
+  have hdisj: "?K1 \<inter> ?K2 = {}"
+  proof
+    show "?K1 \<inter> ?K2 \<subseteq> {}"
+    proof
+      fix \<sigma>
+      assume h\<sigma>int: "\<sigma> \<in> ?K1 \<inter> ?K2"
+      have h\<sigma>L: "\<sigma> \<in> L"
+        using h\<sigma>int by (by100 blast)
+      have h\<sigma>sub: "\<sigma> \<subseteq> e"
+        using h\<sigma>int by (by100 blast)
+      have hcase: "\<sigma> = {w} \<or> \<sigma> = {q} \<or> \<sigma> = e"
+        by (rule geotop_1dim_simplex_subset_edge_cases_prefix
+            [OF hcomplex h\<sigma>L heL heq hwq h\<sigma>sub])
+      have hnot: "\<sigma> \<notin> {{w}, {q}, e}"
+        using h\<sigma>int by (by100 simp)
+      show "\<sigma> \<in> {}"
+        using hcase hnot by (by100 blast)
+    qed
+  next
+    show "{} \<subseteq> ?K1 \<inter> ?K2"
+      by (by100 simp)
+  qed
+  show ?thesis
+  proof (rule ccontr)
+    assume hnot_empty: "\<not> ?K2 = {}"
+    have hK2_nonempty: "?K2 \<noteq> {}"
+      using hnot_empty by (by100 blast)
+    have hbad: "\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+        \<and> L = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+    proof (intro exI)
+      show "?K1 \<noteq> {} \<and> ?K2 \<noteq> {} \<and> ?K1 \<inter> ?K2 = {}
+          \<and> L = ?K1 \<union> ?K2 \<and> geotop_is_complex ?K1 \<and> geotop_is_complex ?K2"
+        using hK1_nonempty hK2_nonempty hdisj hsplit hK1_complex hK2_complex
+        by (by100 blast)
+    qed
+    have hno_bad: "\<not> (\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+        \<and> L = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
+      using hconn unfolding geotop_complex_connected_def by (by100 blast)
+    show False
+      using hbad hno_bad by (by100 blast)
+  qed
+qed
+
+lemma geotop_two_degree_one_endpoint_edge_connected_polyhedron_eq_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes hqL: "{q} \<in> L"
+  assumes hqcard: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  shows "geotop_polyhedron L = e"
+proof -
+  have hqe: "q \<in> e"
+    using heq by (by100 simp)
+  have hexhaust: "L - {{w}, {q}, e} = {}"
+  proof (rule geotop_two_degree_one_endpoint_edge_connected_exhausts_prefix
+      [where L = L and w = w and q = q and e = e])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "geotop_graph_endpoint L w" by (rule hend)
+    show "{q} \<in> L" by (rule hqL)
+    show "card {l \<in> L. geotop_is_edge l \<and> q \<in> l} = 1" by (rule hqcard)
+    show "e \<in> L" by (rule heL)
+    show "geotop_is_edge e" by (rule hedge)
+    show "w \<in> e" by (rule hwe)
+    show "q \<noteq> w" by (rule hqw)
+    show "e = closed_segment w q" by (rule heq)
+  qed
+  have hsub: "L \<subseteq> {{w}, {q}, e}"
+    using hexhaust by (by100 blast)
+  show ?thesis
+    by (rule geotop_polyhedron_two_vertices_edge_eq_prefix[OF hsub heL hwe hqe])
+qed
+
+lemma geotop_HOL_arcs_glue_disjoint_endpoints_start_prefix:
+  fixes B\<^sub>1 B\<^sub>2 :: "(real^2) set"
+  assumes hR_end_1: "\<exists>\<gamma>\<^sub>1::real \<Rightarrow> real^2.
+      arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = B\<^sub>1 \<and> pathstart \<gamma>\<^sub>1 = S
+      \<and> pathfinish \<gamma>\<^sub>1 = R"
+  assumes hR_end_2: "\<exists>\<gamma>\<^sub>2::real \<Rightarrow> real^2.
+      arc \<gamma>\<^sub>2 \<and> path_image \<gamma>\<^sub>2 = B\<^sub>2 \<and> pathstart \<gamma>\<^sub>2 = R"
+  assumes hdisj: "B\<^sub>1 \<inter> B\<^sub>2 = {R}"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = B\<^sub>1 \<union> B\<^sub>2
+      \<and> pathstart \<gamma> = S"
+proof -
+  obtain \<gamma>\<^sub>1 :: "real \<Rightarrow> real^2"
+    where harc\<^sub>1: "arc \<gamma>\<^sub>1" and hpim\<^sub>1: "path_image \<gamma>\<^sub>1 = B\<^sub>1"
+      and hstart\<^sub>1: "pathstart \<gamma>\<^sub>1 = S"
+      and hfin\<^sub>1: "pathfinish \<gamma>\<^sub>1 = R"
+    using hR_end_1 by (by100 blast)
+  obtain \<gamma>\<^sub>2 :: "real \<Rightarrow> real^2"
+    where harc\<^sub>2: "arc \<gamma>\<^sub>2" and hpim\<^sub>2: "path_image \<gamma>\<^sub>2 = B\<^sub>2"
+      and hstart\<^sub>2: "pathstart \<gamma>\<^sub>2 = R"
+    using hR_end_2 by (by100 blast)
+  have h_fin_start: "pathfinish \<gamma>\<^sub>1 = pathstart \<gamma>\<^sub>2"
+    using hfin\<^sub>1 hstart\<^sub>2 by (by100 simp)
+  have h_int_sub: "path_image \<gamma>\<^sub>1 \<inter> path_image \<gamma>\<^sub>2 \<subseteq> {pathstart \<gamma>\<^sub>2}"
+    using hpim\<^sub>1 hpim\<^sub>2 hdisj hstart\<^sub>2 by (by100 blast)
+  have hjoin_arc: "arc (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2)"
+    by (rule arc_join[OF harc\<^sub>1 harc\<^sub>2 h_fin_start h_int_sub])
+  have hjoin_pim_raw: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = path_image \<gamma>\<^sub>1 \<union> path_image \<gamma>\<^sub>2"
+    by (rule path_image_join[OF h_fin_start])
+  have hjoin_pim: "path_image (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = B\<^sub>1 \<union> B\<^sub>2"
+    using hjoin_pim_raw hpim\<^sub>1 hpim\<^sub>2 by (by100 simp)
+  have hjoin_start: "pathstart (\<gamma>\<^sub>1 +++ \<gamma>\<^sub>2) = S"
+    using hstart\<^sub>1 unfolding pathstart_def joinpaths_def by (by100 simp)
+  show ?thesis using hjoin_arc hjoin_pim hjoin_start by (by100 blast)
+qed
+
+lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_from_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = geotop_polyhedron L
+      \<and> pathstart \<gamma> = w"
+  using hfin hL hconn hdegree12 hend
+proof (induction L arbitrary: w rule: finite_psubset_induct)
+  case (psubset L)
+  show ?case
+  proof -
+    have hfinL: "finite L" by (rule psubset.hyps)
+    have hL: "geotop_is_linear_graph L" by (rule psubset.prems(1))
+    have hconn: "geotop_complex_connected L" by (rule psubset.prems(2))
+    have hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+        card {e \<in> L. geotop_is_edge e \<and> x \<in> e} = 1 \<or>
+        card {e \<in> L. geotop_is_edge e \<and> x \<in> e} = 2"
+      by (rule psubset.prems(3))
+    have hend: "geotop_graph_endpoint L w" by (rule psubset.prems(4))
+    have hneighbor: "\<exists>e q. e \<in> L \<and> geotop_is_edge e \<and> w \<in> e
+        \<and> q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+    proof (rule geotop_graph_endpoint_unique_segment_neighbor_prefix[where L = L and w = w])
+      show "geotop_is_linear_graph L" by (rule hL)
+      show "finite L" by (rule hfinL)
+      show "geotop_graph_endpoint L w" by (rule hend)
+    qed
+    obtain e q where heL: "e \<in> L" and hedge: "geotop_is_edge e"
+        and hwe: "w \<in> e" and hqw: "q \<noteq> w"
+        and heq: "e = closed_segment w q" and hqL: "{q} \<in> L"
+      using hneighbor by (by100 blast)
+    have hqcard_cases:
+        "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1 \<or>
+         card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 2"
+      using hdegree12 hqL by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hqcard_cases])
+      assume hqcard1: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+      show ?thesis
+      proof -
+        have hpoly_eq: "geotop_polyhedron L = e"
+        proof (rule geotop_two_degree_one_endpoint_edge_connected_polyhedron_eq_prefix
+            [where L = L and w = w and q = q and e = e])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_complex_connected L" by (rule hconn)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "{q} \<in> L" by (rule hqL)
+          show "card {l \<in> L. geotop_is_edge l \<and> q \<in> l} = 1" by (rule hqcard1)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+          show "q \<noteq> w" by (rule hqw)
+          show "e = closed_segment w q" by (rule heq)
+        qed
+        have hwq: "w \<noteq> q"
+          using hqw by (by100 blast)
+        obtain \<gamma> :: "real \<Rightarrow> real^2"
+          where h\<gamma>_arc: "arc \<gamma>"
+            and h\<gamma>_pim: "path_image \<gamma> = closed_segment w q"
+            and h\<gamma>_start: "pathstart \<gamma> = w"
+          using geotop_closed_segment_HOL_arc_between_prefix[OF hwq] by (by100 blast)
+        have h\<gamma>_pim_L: "path_image \<gamma> = geotop_polyhedron L"
+          using h\<gamma>_pim hpoly_eq heq by (by100 simp)
+        show ?thesis
+          using h\<gamma>_arc h\<gamma>_pim_L h\<gamma>_start by (by100 blast)
+      qed
+    next
+      assume hqcard2: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 2"
+      show ?thesis
+      proof -
+        let ?R = "L - {{w}, e}"
+        have hqe: "q \<in> e"
+          using heq by (by100 simp)
+        have hq_ne_w: "{q} \<noteq> {w}"
+          using hqw by (by100 blast)
+        have hq_ne_e: "{q} \<noteq> e"
+        proof
+          assume hqe_single: "{q} = e"
+          have "w \<in> {q}"
+            using hwe hqe_single by (by100 simp)
+          hence "w = q" by (by100 simp)
+          thus False using hqw by (by100 blast)
+        qed
+        have hqR: "{q} \<in> ?R"
+          using hqL hq_ne_w hq_ne_e by (by100 simp)
+        have hR_psubset: "?R \<subset> L"
+          using heL by (by100 blast)
+        have hR_linear: "geotop_is_linear_graph ?R"
+        proof (rule geotop_graph_endpoint_delete_leaf_linear_graph_prefix
+            [where L = L and w = w and e = e])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+        qed
+        have hR_conn: "geotop_complex_connected ?R"
+        proof (rule geotop_graph_endpoint_delete_leaf_connected_prefix
+            [where L = L and w = w and e = e and q = q])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_complex_connected L" by (rule hconn)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+          show "{q} \<in> L" by (rule hqL)
+          show "q \<noteq> w" by (rule hqw)
+          show "e = closed_segment w q" by (rule heq)
+        qed
+        have hR_degree12: "\<forall>x. {x} \<in> ?R \<longrightarrow>
+            card {l\<in>?R. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+            card {l\<in>?R. geotop_is_edge l \<and> x \<in> l} = 2"
+        proof (rule geotop_graph_endpoint_delete_leaf_degree_one_or_two_prefix
+            [where L = L and w = w and e = e and q = q])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+          show "{q} \<in> L" by (rule hqL)
+          show "q \<noteq> w" by (rule hqw)
+          show "e = closed_segment w q" by (rule heq)
+          show "\<forall>x. {x} \<in> L \<longrightarrow>
+              card {l \<in> L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+              card {l \<in> L. geotop_is_edge l \<and> x \<in> l} = 2"
+            by (rule hdegree12)
+          show "card {l \<in> L. geotop_is_edge l \<and> q \<in> l} = 2" by (rule hqcard2)
+        qed
+        have hR_endpoint: "geotop_graph_endpoint ?R q"
+        proof (rule geotop_graph_endpoint_delete_leaf_neighbor_endpoint_prefix
+            [where L = L and w = w and e = e and q = q])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+          show "{q} \<in> L" by (rule hqL)
+          show "q \<noteq> w" by (rule hqw)
+          show "q \<in> e" by (rule hqe)
+          show "card {l \<in> L. geotop_is_edge l \<and> q \<in> l} = 2" by (rule hqcard2)
+        qed
+        have hrest_arc: "\<exists>\<gamma>\<^sub>2::real \<Rightarrow> real^2. arc \<gamma>\<^sub>2
+            \<and> path_image \<gamma>\<^sub>2 = geotop_polyhedron ?R \<and> pathstart \<gamma>\<^sub>2 = q"
+        proof (rule psubset.IH[where B = ?R and w = q])
+          show "?R \<subset> L" by (rule hR_psubset)
+          show "geotop_is_linear_graph ?R" by (rule hR_linear)
+          show "geotop_complex_connected ?R" by (rule hR_conn)
+          show "\<forall>x. {x} \<in> ?R \<longrightarrow>
+              card {l \<in> ?R. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+              card {l \<in> ?R. geotop_is_edge l \<and> x \<in> l} = 2"
+            by (rule hR_degree12)
+          show "geotop_graph_endpoint ?R q" by (rule hR_endpoint)
+        qed
+        have hwq: "w \<noteq> q"
+          using hqw by (by100 blast)
+        have hseg_arc: "\<exists>\<gamma>\<^sub>1::real \<Rightarrow> real^2. arc \<gamma>\<^sub>1 \<and> path_image \<gamma>\<^sub>1 = e
+            \<and> pathstart \<gamma>\<^sub>1 = w \<and> pathfinish \<gamma>\<^sub>1 = q"
+        proof -
+          obtain \<gamma>\<^sub>1 :: "real \<Rightarrow> real^2"
+            where h\<gamma>1_arc: "arc \<gamma>\<^sub>1"
+              and h\<gamma>1_pim: "path_image \<gamma>\<^sub>1 = closed_segment w q"
+              and h\<gamma>1_start: "pathstart \<gamma>\<^sub>1 = w"
+              and h\<gamma>1_finish: "pathfinish \<gamma>\<^sub>1 = q"
+            using geotop_closed_segment_HOL_arc_between_prefix[OF hwq] by (by100 blast)
+          show ?thesis
+            using h\<gamma>1_arc h\<gamma>1_pim h\<gamma>1_start h\<gamma>1_finish heq by (by100 blast)
+        qed
+        have hdisj: "e \<inter> geotop_polyhedron ?R = {q}"
+        proof (rule geotop_delete_leaf_edge_inter_rest_polyhedron_eq_neighbor_prefix
+            [where L = L and w = w and e = e and q = q])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+          show "{q} \<in> L" by (rule hqL)
+          show "q \<noteq> w" by (rule hqw)
+          show "e = closed_segment w q" by (rule heq)
+        qed
+        have hglue: "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma>
+            \<and> path_image \<gamma> = e \<union> geotop_polyhedron ?R \<and> pathstart \<gamma> = w"
+          by (rule geotop_HOL_arcs_glue_disjoint_endpoints_start_prefix
+              [OF hseg_arc hrest_arc hdisj])
+        have hpoly_union: "geotop_polyhedron L = e \<union> geotop_polyhedron ?R"
+        proof (rule geotop_graph_endpoint_delete_leaf_polyhedron_union_prefix
+            [where L = L and w = w and e = e])
+          show "geotop_is_linear_graph L" by (rule hL)
+          show "finite L" by (rule hfinL)
+          show "geotop_graph_endpoint L w" by (rule hend)
+          show "e \<in> L" by (rule heL)
+          show "geotop_is_edge e" by (rule hedge)
+          show "w \<in> e" by (rule hwe)
+        qed
+        obtain \<gamma> :: "real \<Rightarrow> real^2"
+          where h\<gamma>_arc: "arc \<gamma>"
+            and h\<gamma>_pim: "path_image \<gamma> = e \<union> geotop_polyhedron ?R"
+            and h\<gamma>_start: "pathstart \<gamma> = w"
+          using hglue by (by100 blast)
+        have h\<gamma>_pim_L: "path_image \<gamma> = geotop_polyhedron L"
+          using h\<gamma>_pim hpoly_union by (by100 simp)
+        show ?thesis
+          using h\<gamma>_arc h\<gamma>_pim_L h\<gamma>_start by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
+lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+  shows "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = geotop_polyhedron L"
+proof -
+  obtain w where hend_w: "geotop_graph_endpoint L w"
+    using hend by (by100 blast)
+  have "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = geotop_polyhedron L
+      \<and> pathstart \<gamma> = w"
+  proof (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_from_endpoint_prefix
+      [where L = L and w = w])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hdegree12)
+    show "geotop_graph_endpoint L w" by (rule hend_w)
+  qed
+  thus ?thesis by (by100 blast)
+qed
+
+lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_arc_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+  shows "geotop_is_arc (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+proof -
+  have hex: "\<exists>\<gamma>::real \<Rightarrow> real^2. arc \<gamma> \<and> path_image \<gamma> = geotop_polyhedron L"
+  proof (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_HOL_arc_prefix
+      [where L = L])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hdegree12)
+    show "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+      by (rule hend)
+  qed
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>" and h\<gamma>_pim: "path_image \<gamma> = geotop_polyhedron L"
+    using hex by (by100 blast)
+  have hgeo_arc: "geotop_is_arc (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_arc])
+  show ?thesis
+    using hgeo_arc h\<gamma>_pim by (by100 simp)
+qed
+
+lemma geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hend: "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+  shows "geotop_is_broken_line (geotop_polyhedron L)"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have h1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have harc: "geotop_is_arc (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+  proof (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_arc_prefix
+      [where L = L])
+    show "geotop_is_linear_graph L" by (rule hL)
+    show "finite L" by (rule hfin)
+    show "geotop_complex_connected L" by (rule hconn)
+    show "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
+        card {e \<in> L. geotop_is_edge e \<and> w \<in> e} = 2"
+      by (rule hdegree12)
+    show "\<exists>w. {w} \<in> L \<and> geotop_graph_endpoint L w"
+      by (rule hend)
+  qed
+  show ?thesis
+    unfolding geotop_is_broken_line_def
+    using hcomplex h1dim harc by (by100 blast)
 qed
 
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
