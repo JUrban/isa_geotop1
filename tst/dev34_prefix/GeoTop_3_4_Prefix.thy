@@ -7865,6 +7865,12 @@ proof -
       (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
     using hx_two_edge_arc hx_not_endpoints
     unfolding geotop_arc_interior_def by (by100 blast)
+  have hxJ: "x \<in> J"
+    using hx\<theta>J by (by100 blast)
+  have hJ_meets_other_arc_interior:
+    "J \<inter> geotop_arc_interior
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1} \<noteq> {}"
+    using hxJ hx_other_arc_interior by (by100 blast)
   show ?thesis
     sorry
 qed
