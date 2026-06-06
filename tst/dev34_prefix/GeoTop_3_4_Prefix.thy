@@ -7778,6 +7778,12 @@ proof -
     thus ?thesis
       using hbase_segment_sub_J by (by100 blast)
   qed
+  have hbase_edge_broken_line:
+    "geotop_is_broken_line (closed_segment v\<^sub>0 v\<^sub>1)"
+    by (rule geotop_closed_segment_is_broken_line[OF hv\<^sub>0v\<^sub>1])
+  have hbase_edge_arc:
+    "geotop_arc_endpoints (closed_segment v\<^sub>0 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
+    by (rule geotop_closed_segment_arc_endpoints_prefix[OF hv\<^sub>0v\<^sub>1])
   have hother_two_edge_arc:
     "geotop_arc_endpoints
       (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
