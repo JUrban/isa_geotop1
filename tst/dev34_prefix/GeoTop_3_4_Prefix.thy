@@ -4429,6 +4429,62 @@ proof -
     using htopA htopImg hbijA hcont_A hcont_inv_A by (by100 blast)
 qed
 
+lemma R2_to_pair_image_geotop_std_sphere_prefix:
+  "R2_to_pair ` (geotop_std_sphere::(real^2) set) = top1_S1"
+proof
+  show "R2_to_pair ` (geotop_std_sphere::(real^2) set) \<subseteq> top1_S1"
+  proof
+    fix p
+    assume hp: "p \<in> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
+    then obtain v :: "real^2" where hv: "v \<in> geotop_std_sphere"
+      and hpv: "p = R2_to_pair v"
+      by (by100 blast)
+    show "p \<in> top1_S1"
+      using hv hpv
+      unfolding geotop_std_sphere_def R2_to_pair_def top1_S1_def
+      by (by100 auto simp: norm_eq_sqrt_inner inner_vec_def sum_2)
+  qed
+  show "top1_S1 \<subseteq> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
+  proof
+    fix p :: "real \<times> real"
+    assume hp: "p \<in> top1_S1"
+    have hpair: "pair_to_R2 p \<in> (geotop_std_sphere::(real^2) set)"
+      using hp
+      unfolding geotop_std_sphere_def pair_to_R2_def top1_S1_def
+      by (by100 auto simp: norm_eq_sqrt_inner inner_vec_def sum_2)
+    have hp_eq: "R2_to_pair (pair_to_R2 p) = p"
+      by (rule R2_to_pair_pair_to_R2)
+    show "p \<in> R2_to_pair ` (geotop_std_sphere::(real^2) set)"
+      using hpair hp_eq by (by100 blast)
+  qed
+qed
+
+lemma R2_pair_top1_homeomorphism_std_sphere_prefix:
+  "top1_homeomorphism_on (geotop_std_sphere::(real^2) set)
+     (subspace_topology UNIV geotop_euclidean_topology
+       (geotop_std_sphere::(real^2) set))
+     top1_S1 top1_S1_topology R2_to_pair"
+proof -
+  have hraw: "top1_homeomorphism_on (geotop_std_sphere::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_std_sphere::(real^2) set))
+      (R2_to_pair ` (geotop_std_sphere::(real^2) set))
+      (subspace_topology (UNIV::(real \<times> real) set)
+        (product_topology_on top1_open_sets top1_open_sets)
+        (R2_to_pair ` (geotop_std_sphere::(real^2) set)))
+      R2_to_pair"
+    by (rule top1_homeomorphism_on_subspace_image_prefix
+        [OF R2_pair_top1_homeomorphism_UNIV subset_UNIV])
+  have himg: "R2_to_pair ` (geotop_std_sphere::(real^2) set) = top1_S1"
+    by (rule R2_to_pair_image_geotop_std_sphere_prefix)
+  have htop: "subspace_topology (UNIV::(real \<times> real) set)
+        (product_topology_on top1_open_sets top1_open_sets) top1_S1 =
+      top1_S1_topology"
+    unfolding top1_S1_topology_def by (by100 simp)
+  show ?thesis
+    using hraw unfolding himg htop .
+qed
+
 lemma geotop_polygon_top1_simple_closed_curve_prefix:
   fixes J :: "(real^2) set"
   assumes hJ: "geotop_is_polygon J"
@@ -4436,7 +4492,42 @@ lemma geotop_polygon_top1_simple_closed_curve_prefix:
   (**
     A GeoTop polygon is a topological 1-sphere in the Euclidean plane, hence a
     simple closed curve in the sense used by the Jordan-curve infrastructure. **)
-  sorry
+proof -
+  let ?S = "(geotop_std_sphere::(real^2) set)"
+  let ?TS = "subspace_topology UNIV geotop_euclidean_topology ?S"
+  let ?TJ = "subspace_topology UNIV geotop_euclidean_topology J"
+  have hJsphere: "geotop_is_n_sphere J ?TJ 1"
+    using hJ unfolding geotop_is_polygon_def by (by100 blast)
+  obtain f where hJ_std: "top1_homeomorphism_on J ?TJ ?S ?TS f"
+    using hJsphere unfolding geotop_is_n_sphere_def by (by100 blast)
+  have hstd_J: "top1_homeomorphism_on ?S ?TS J ?TJ (inv_into J f)"
+    by (rule top1_homeomorphism_on_sym[OF hJ_std])
+  have hs1_std: "top1_homeomorphism_on top1_S1 top1_S1_topology ?S ?TS
+      (inv_into ?S R2_to_pair)"
+    by (rule top1_homeomorphism_on_sym[OF R2_pair_top1_homeomorphism_std_sphere_prefix])
+  have hs1_J: "top1_homeomorphism_on top1_S1 top1_S1_topology J ?TJ
+      (inv_into J f \<circ> inv_into ?S R2_to_pair)"
+    by (rule top1_homeomorphism_on_comp[OF hs1_std hstd_J])
+  have hcont_J: "top1_continuous_map_on top1_S1 top1_S1_topology J ?TJ
+      (inv_into J f \<circ> inv_into ?S R2_to_pair)"
+    using hs1_J unfolding top1_homeomorphism_on_def by (by100 blast)
+  have hcont_UNIV_sub: "top1_continuous_map_on top1_S1 top1_S1_topology
+      (UNIV::(real^2) set)
+      (subspace_topology (UNIV::(real^2) set) geotop_euclidean_topology UNIV)
+      (inv_into J f \<circ> inv_into ?S R2_to_pair)"
+    by (rule top1_continuous_map_on_codomain_enlarge[OF hcont_J subset_UNIV subset_UNIV])
+  have hcont_UNIV: "top1_continuous_map_on top1_S1 top1_S1_topology
+      (UNIV::(real^2) set) geotop_euclidean_topology
+      (inv_into J f \<circ> inv_into ?S R2_to_pair)"
+    using hcont_UNIV_sub by (by100 simp add: subspace_topology_UNIV_UNIV)
+  have hinj: "inj_on (inv_into J f \<circ> inv_into ?S R2_to_pair) top1_S1"
+    using hs1_J unfolding top1_homeomorphism_on_def bij_betw_def by (by100 blast)
+  have himg: "(inv_into J f \<circ> inv_into ?S R2_to_pair) ` top1_S1 = J"
+    using hs1_J unfolding top1_homeomorphism_on_def bij_betw_def by (by100 blast)
+  show ?thesis
+    unfolding top1_simple_closed_curve_on_def
+    using hcont_UNIV hinj himg by (by100 blast)
+qed
 
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
