@@ -5566,6 +5566,26 @@ proof -
   show ?thesis using hPL h_endpoint by (by100 blast)
 qed
 
+lemma geotop_degree_two_linear_graph_polyhedron_not_broken_line_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<not> geotop_is_broken_line (geotop_polyhedron L)"
+proof
+  assume hB: "geotop_is_broken_line (geotop_polyhedron L)"
+  obtain w where hwL: "{w} \<in> L" and hend: "geotop_graph_endpoint L w"
+    using geotop_broken_line_polyhedron_finite_linear_graph_has_endpoint_prefix
+      [OF hL hfin hB] by (by100 blast)
+  have hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+  have hcard2: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    using hdegree hwL by (by100 blast)
+  show False
+    using hcard1 hcard2 by (by100 simp)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"

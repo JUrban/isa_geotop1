@@ -34663,7 +34663,7 @@ using assms proof (induction n arbitrary: X TX p rule: less_induct)
                                 using bij_betw_inv_into_right[OF hbij\<alpha> hxC]
                                   bij_betw_inv_into_right[OF hbij\<alpha> hq_in\<alpha>]
                                 by (by100 simp)
-                              thus False using hx_ne_q by (by100 blast)
+                              thus False using hx_ne_q by simp
                             qed
                             have hspec_x: "\<theta>q_fam \<alpha> < angle_fam \<alpha> x \<and> angle_fam \<alpha> x < \<theta>q_fam \<alpha> + 1 \<and>
                                 top1_R_to_S1 (angle_fam \<alpha> x) = ?hinv\<alpha> x"
