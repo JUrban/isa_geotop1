@@ -93,6 +93,136 @@ lemma geotop_graph_endpoint_delete_leaf_finite_prefix:
   shows "finite (L - {{w}, e})"
   using hfin by (by100 simp)
 
+lemma geotop_delete_leaf_incident_edges_neighbor_eq_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hqw: "q \<noteq> w"
+  shows "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> q \<in> l} - {e}"
+proof
+  show "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l}
+      \<subseteq> {l\<in>L. geotop_is_edge l \<and> q \<in> l} - {e}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l}"
+    have "l \<in> L \<and> geotop_is_edge l \<and> q \<in> l \<and> l \<noteq> e"
+      using hl by (by100 simp)
+    show "l \<in> {l\<in>L. geotop_is_edge l \<and> q \<in> l} - {e}"
+      using \<open>l \<in> L \<and> geotop_is_edge l \<and> q \<in> l \<and> l \<noteq> e\<close> by (by100 simp)
+  qed
+next
+  show "{l\<in>L. geotop_is_edge l \<and> q \<in> l} - {e}
+      \<subseteq> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L. geotop_is_edge l \<and> q \<in> l} - {e}"
+    have hlL: "l \<in> L" and hledge: "geotop_is_edge l" and hql: "q \<in> l" and hlne: "l \<noteq> e"
+      using hl by (by100 simp_all)
+    have "l \<noteq> {w}"
+    proof
+      assume "l = {w}"
+      hence "q = w" using hql by (by100 simp)
+      thus False using hqw by (by100 blast)
+    qed
+    have "l \<in> L - {{w}, e}"
+      using hlL hlne \<open>l \<noteq> {w}\<close> by (by100 simp)
+    show "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> q \<in> l}"
+      using \<open>l \<in> L - {{w}, e}\<close> hledge hql by (by100 simp)
+  qed
+qed
+
+lemma geotop_delete_leaf_incident_edges_away_eq_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hwe: "w \<in> e"
+  assumes hxe: "x \<notin> e"
+  shows "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+proof
+  show "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      \<subseteq> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+    show "l \<in> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+      using hl by (by100 simp)
+  qed
+next
+  show "{l\<in>L. geotop_is_edge l \<and> x \<in> l}
+      \<subseteq> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+  proof
+    fix l
+    assume hl: "l \<in> {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+    have hlL: "l \<in> L" and hledge: "geotop_is_edge l" and hxl: "x \<in> l"
+      using hl by (by100 simp_all)
+    have hlne: "l \<noteq> e"
+      using hxl hxe by (by100 blast)
+    have "l \<noteq> {w}"
+    proof
+      assume "l = {w}"
+      hence "x = w" using hxl by (by100 simp)
+      hence "x \<in> e" using hwe by (by100 simp)
+      thus False using hxe by (by100 blast)
+    qed
+    have "l \<in> L - {{w}, e}"
+      using hlL hlne \<open>l \<noteq> {w}\<close> by (by100 simp)
+    show "l \<in> {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}"
+      using \<open>l \<in> L - {{w}, e}\<close> hledge hxl by (by100 simp)
+  qed
+qed
+
+lemma geotop_delete_leaf_rest_vertex_not_in_deleted_edge_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes heL: "e \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  assumes hxrest: "{x} \<in> L - {{w}, e}"
+  assumes hxq: "x \<noteq> q"
+  shows "x \<notin> e"
+proof
+  assume hxe: "x \<in> e"
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hxL: "{x} \<in> L"
+    using hxrest by (by100 simp)
+  have hxw: "x \<noteq> w"
+  proof
+    assume "x = w"
+    hence "{x} = {w}" by (by100 simp)
+    thus False using hxrest by (by100 simp)
+  qed
+  have hwq: "w \<noteq> q"
+    using hqw by (by100 blast)
+  have hendpoint: "x = w \<or> x = q"
+    by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+        [OF hcomplex hxL heL heq hwq hxe])
+  show False using hendpoint hxw hxq by (by100 blast)
+qed
+
+lemma geotop_delete_leaf_rest_vertex_degree_preserved_away_neighbor_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes heL: "e \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  assumes hxrest: "{x} \<in> L - {{w}, e}"
+  assumes hxq: "x \<noteq> q"
+  shows "card {l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = card {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+proof -
+  have hx_not_e: "x \<notin> e"
+    by (rule geotop_delete_leaf_rest_vertex_not_in_deleted_edge_prefix
+        [OF hL heL hqw heq hxrest hxq])
+  have hwe: "w \<in> e"
+    using heq by (by100 simp)
+  have "{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}"
+    by (rule geotop_delete_leaf_incident_edges_away_eq_prefix[OF hwe hx_not_e])
+  show ?thesis
+    using \<open>{l\<in>L - {{w}, e}. geotop_is_edge l \<and> x \<in> l}
+      = {l\<in>L. geotop_is_edge l \<and> x \<in> l}\<close>
+    by (by100 simp)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
