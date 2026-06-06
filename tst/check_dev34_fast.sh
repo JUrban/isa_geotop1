@@ -56,7 +56,7 @@ build_dev34() {
 }
 
 dirty_layers() {
-  git diff --name-only -- \
+  git diff --relative --name-only HEAD -- \
     dev34_pre dev34_prefix dev34_facts dev34_workfacts dev34_linkfacts \
     dev34_graphfacts dev34_graphwork dev34_openstar dev34_core dev34
 }

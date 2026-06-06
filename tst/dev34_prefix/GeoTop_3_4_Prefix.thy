@@ -4529,6 +4529,61 @@ proof -
     using hcont_UNIV hinj himg by (by100 blast)
 qed
 
+lemma geotop_polygon_two_point_topological_arc_split_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> top1_is_arc_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1)
+      \<and> top1_is_arc_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2)"
+  (**
+    Moise Figure 3.2 boundary cut, topological part.  A polygon is a simple
+    closed curve; two distinct boundary points divide it into two arcs.  The
+    remaining finite-PL step in the graph version is to recognize these arcs
+    as broken lines in the finite 1-complex carrier. **)
+proof -
+  have hSCC:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology J"
+    by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hJ])
+  show ?thesis
+    by (rule SCC_decompose_at_given_points
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff hSCC hP hQ hPQ])
+qed
+
+lemma geotop_polygon_finite_linear_graph_two_vertex_topological_split_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> top1_is_arc_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1)
+      \<and> top1_is_arc_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2)"
+  (**
+    Figure 3.2 boundary cut specialized to a finite graph carrier.  This
+    separates the SCC/topological content from the later finite linear graph
+    refinement that upgrades the two arcs to broken lines. **)
+proof -
+  have hP_poly: "P \<in> geotop_polyhedron L"
+    using hPL unfolding geotop_polyhedron_def by (by100 blast)
+  have hQ_poly: "Q \<in> geotop_polyhedron L"
+    using hQL unfolding geotop_polyhedron_def by (by100 blast)
+  show ?thesis
+    by (rule geotop_polygon_two_point_topological_arc_split_prefix
+        [OF hL_polygon hP_poly hQ_poly hPQ])
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
