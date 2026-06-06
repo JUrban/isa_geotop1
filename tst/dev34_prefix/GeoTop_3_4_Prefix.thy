@@ -4855,6 +4855,42 @@ lemma geotop_1dim_complex_carrier_geotop_arc_imp_broken_line_prefix:
   unfolding geotop_is_broken_line_def
   using hK hK1 hpoly hA by (by100 blast)
 
+lemma geotop_linear_graph_complex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  shows "geotop_is_complex L"
+  using hL unfolding geotop_is_linear_graph_def by (by100 blast)
+
+lemma geotop_linear_graph_1dim_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  shows "geotop_complex_is_1dim L"
+proof -
+  have hdim: "\<forall>\<sigma>\<in>L. \<exists>i\<le>1. geotop_simplex_dim \<sigma> i"
+    using hL unfolding geotop_is_linear_graph_def by (by100 blast)
+  show ?thesis
+    unfolding geotop_complex_is_1dim_def using hdim by (by100 blast)
+qed
+
+lemma geotop_graph_endpoint_singleton_and_card_one_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "{w} \<in> L \<and> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hw_vertex: "w \<in> geotop_complex_vertices L"
+    using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+  have hwL: "{w} \<in> L"
+    using geotop_complex_vertices_eq_0_simplexes[OF hcomplex] hw_vertex
+    by (by100 blast)
+  have hcard: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    using hend unfolding geotop_graph_endpoint_def by (by100 blast)
+  show ?thesis
+    using hwL hcard by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
