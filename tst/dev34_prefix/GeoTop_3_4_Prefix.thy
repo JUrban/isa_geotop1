@@ -4994,6 +4994,106 @@ proof -
     using hwL hcard by (by100 blast)
 qed
 
+lemma geotop_broken_line_endpoint_in_finite_linear_graph_vertex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hP: "P \<in> E"
+  shows "{P} \<in> L"
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have hP_B: "P \<in> B"
+    using hE hP unfolding geotop_arc_endpoints_def by (by100 blast)
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_pim: "path_image \<gamma> = B"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hE] by (by100 blast)
+  have hP_endpoint_param: "\<gamma> 0 = P \<or> \<gamma> 1 = P"
+    using hP hE_eq unfolding pathstart_def pathfinish_def by (by100 blast)
+  have hpoly_path: "geotop_polyhedron L = path_image \<gamma>"
+    using hpoly h\<gamma>_pim by (by100 simp)
+  have hP_poly: "P \<in> geotop_polyhedron L"
+    using hP_B hpoly by (by100 simp)
+  obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> L" and hP\<sigma>: "P \<in> \<sigma>"
+    using hP_poly unfolding geotop_polyhedron_def by (by100 blast)
+  have hcases: "(\<exists>v. \<sigma> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+    by (rule geotop_1dim_simplex_cases[OF hL_1dim h\<sigma>L])
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume "\<exists>v. \<sigma> = {v}"
+    then obtain v where h\<sigma>v: "\<sigma> = {v}" by (by100 blast)
+    have hPv: "P = v" using hP\<sigma> h\<sigma>v by (by100 blast)
+    show "{P} \<in> L" using h\<sigma>L h\<sigma>v hPv by (by100 simp)
+  next
+    assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+    then obtain a b where hab: "a \<noteq> b" and h\<sigma>ab: "\<sigma> = closed_segment a b"
+      by (by100 blast)
+    have hP_ab: "P = a \<or> P = b"
+    proof (rule ccontr)
+      assume hnot: "\<not> (P = a \<or> P = b)"
+      have hP_ne_a: "P \<noteq> a" and hP_ne_b: "P \<noteq> b"
+        using hnot by (by100 blast)+
+      obtain s t where hst_le: "s \<le> t"
+          and hs_01: "s \<in> {0..1}"
+          and ht_01: "t \<in> {0..1}"
+          and hpre: "{r\<in>{0..1}. \<gamma> r \<in> \<sigma>} = {s..t}"
+          and hends: "{\<gamma> s, \<gamma> t} = {a, b}"
+        using geotop_arc_1simplex_preimage_structure
+          [OF h\<gamma>_arc hL_1dim hpoly_path h\<sigma>L h\<sigma>ab hab]
+        by (by100 blast)
+      show False
+      proof (rule disjE[OF hP_endpoint_param])
+        assume h0P: "\<gamma> 0 = P"
+        have h0_pre: "0 \<in> {r\<in>{0..1}. \<gamma> r \<in> \<sigma>}"
+          using h0P hP\<sigma> by (by100 simp)
+        have h0_iv: "0 \<in> {s..t}"
+          using h0_pre hpre by (by100 simp)
+        have hs0: "s = 0"
+          using h0_iv hs_01 by (by100 simp)
+        have "P \<in> {a, b}"
+          using hends hs0 h0P by (by100 blast)
+        thus False using hP_ne_a hP_ne_b by (by100 blast)
+      next
+        assume h1P: "\<gamma> 1 = P"
+        have h1_pre: "1 \<in> {r\<in>{0..1}. \<gamma> r \<in> \<sigma>}"
+          using h1P hP\<sigma> by (by100 simp)
+        have h1_iv: "1 \<in> {s..t}"
+          using h1_pre hpre by (by100 simp)
+        have ht1: "t = 1"
+          using h1_iv ht_01 by (by100 simp)
+        have "P \<in> {a, b}"
+          using hends ht1 h1P by (by100 blast)
+        thus False using hP_ne_a hP_ne_b by (by100 blast)
+      qed
+    qed
+    have hface_closed: "\<forall>\<rho>\<in>L. \<forall>\<tau>. geotop_is_face \<tau> \<rho> \<longrightarrow> \<tau> \<in> L"
+      by (rule geotop_is_complex_face_closed[OF hL_complex])
+    show "{P} \<in> L"
+    proof (rule disjE[OF hP_ab])
+      assume hPa: "P = a"
+      have hface: "geotop_is_face {P} \<sigma>"
+        using geotop_closed_segment_is_face_endpoint[OF hab, of P] hPa h\<sigma>ab by (by100 simp)
+      show ?thesis using hface_closed h\<sigma>L hface by (by100 blast)
+    next
+      assume hPb: "P = b"
+      have hba: "b \<noteq> a"
+        using hab by (by100 blast)
+      have hface: "geotop_is_face {P} \<sigma>"
+        using geotop_closed_segment_is_face_endpoint[OF hba, of P] hPb h\<sigma>ab
+          closed_segment_commute[of a b]
+        by (by100 simp)
+      show ?thesis using hface_closed h\<sigma>L hface by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
