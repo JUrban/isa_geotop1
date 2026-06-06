@@ -2884,6 +2884,37 @@ proof -
     using hgeotop_arc hcard hsub htop1_unit hendpoints by (by100 blast)
 qed
 
+lemma geotop_broken_line_subarc_with_endpoints_prefix:
+  fixes B :: "(real^2) set"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hX: "X \<in> B"
+  assumes hY: "Y \<in> B"
+  assumes hXY: "X \<noteq> Y"
+  shows "\<exists>B'. geotop_is_broken_line B' \<and> B' \<subseteq> B
+      \<and> X \<in> B' \<and> Y \<in> B' \<and> geotop_arc_endpoints B' {X, Y}"
+proof -
+  obtain B' where hB': "geotop_is_broken_line B'"
+      and hB'_sub: "B' \<subseteq> B"
+      and hXB': "X \<in> B'"
+      and hYB': "Y \<in> B'"
+      and harc_data:
+        "X = Y \<or> (\<exists>\<gamma>'. arc \<gamma>' \<and> path_image \<gamma>' = B'
+          \<and> pathstart \<gamma>' = X \<and> pathfinish \<gamma>' = Y)"
+    using geotop_broken_line_subarc[OF hB hX hY] by (by100 blast)
+  obtain \<gamma>' where h\<gamma>_arc: "arc \<gamma>'"
+      and h\<gamma>_img: "path_image \<gamma>' = B'"
+      and h\<gamma>_start: "pathstart \<gamma>' = X"
+      and h\<gamma>_finish: "pathfinish \<gamma>' = Y"
+    using harc_data hXY by (by100 blast)
+  have hE_raw: "geotop_arc_endpoints (path_image \<gamma>')
+      {pathstart \<gamma>', pathfinish \<gamma>'}"
+    by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF h\<gamma>_arc])
+  have hE: "geotop_arc_endpoints B' {X, Y}"
+    using hE_raw h\<gamma>_img h\<gamma>_start h\<gamma>_finish by (by100 simp)
+  show ?thesis
+    using hB' hB'_sub hXB' hYB' hE by (by100 blast)
+qed
+
 lemma geotop_two_segment_join_arc_endpoints_prefix:
   fixes v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
   assumes hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
