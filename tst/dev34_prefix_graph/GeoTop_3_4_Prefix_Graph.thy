@@ -223,6 +223,166 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_segment_face_with_nonendpoint_eq_prefix:
+  fixes F :: "(real^2) set" and a b x :: "real^2"
+  assumes hface: "geotop_is_face F (closed_segment a b)"
+  assumes hab: "a \<noteq> b"
+  assumes hxF: "x \<in> F"
+  assumes hxa: "x \<noteq> a"
+  assumes hxb: "x \<noteq> b"
+  shows "F = closed_segment a b"
+proof -
+  have hseg_sv: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  obtain V W where hV_sv: "geotop_simplex_vertices (closed_segment a b) V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hF_hull: "F = geotop_convex_hull W"
+    using hface unfolding geotop_is_face_def by (by100 blast)
+  have hV_eq: "V = {a, b}"
+    using geotop_simplex_vertices_unique[OF hV_sv hseg_sv] .
+  have hW_sub_ab: "W \<subseteq> {a, b}"
+    using hW_sub hV_eq by (by100 simp)
+  have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+    using hW_sub_ab hW_ne by (by100 blast)
+  have hF_HOL: "F = convex hull W"
+    using hF_hull geotop_convex_hull_eq_HOL by (by100 simp)
+  have hW_eq_ab: "W = {a, b}"
+  proof (rule disjE[OF hW_cases])
+    assume hW_a: "W = {a}"
+    have hF_a: "F = {a}"
+      using hF_HOL hW_a by (by100 simp)
+    have "x = a" using hxF hF_a by (by100 blast)
+    thus ?thesis using hxa by (by100 blast)
+  next
+    assume hW_rest: "W = {b} \<or> W = {a, b}"
+    show ?thesis
+    proof (rule disjE[OF hW_rest])
+      assume hW_b: "W = {b}"
+      have hF_b: "F = {b}"
+        using hF_HOL hW_b by (by100 simp)
+      have "x = b" using hxF hF_b by (by100 blast)
+      thus ?thesis using hxb by (by100 blast)
+    next
+      assume hW_ab: "W = {a, b}"
+      show ?thesis using hW_ab .
+    qed
+  qed
+  have "F = convex hull {a, b}"
+    using hF_HOL hW_eq_ab by (by100 simp)
+  also have "\<dots> = closed_segment a b"
+    by (simp add: segment_convex_hull)
+  finally show ?thesis .
+qed
+
+lemma geotop_delete_leaf_edge_inter_rest_polyhedron_subset_neighbor_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  shows "e \<inter> geotop_polyhedron (L - {{w}, e}) \<subseteq> {q}"
+proof
+  fix x
+  assume hx: "x \<in> e \<inter> geotop_polyhedron (L - {{w}, e})"
+  have hxe: "x \<in> e"
+    using hx by (by100 simp)
+  obtain \<sigma> where h\<sigma>rest: "\<sigma> \<in> L - {{w}, e}" and hx\<sigma>: "x \<in> \<sigma>"
+    using hx unfolding geotop_polyhedron_def by (by100 blast)
+  have h\<sigma>L: "\<sigma> \<in> L"
+    using h\<sigma>rest by (by100 simp)
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hnonempty: "e \<inter> \<sigma> \<noteq> {}"
+    using hxe hx\<sigma> by (by100 blast)
+  have hface_e: "geotop_is_face (e \<inter> \<sigma>) e"
+    using geotop_is_complex_intersection[OF hcomplex] heL h\<sigma>L hnonempty by (by100 blast)
+  show "x \<in> {q}"
+  proof (cases "x = q")
+    case True
+    show ?thesis using True by (by100 simp)
+  next
+    case False
+    have hwq: "w \<noteq> q"
+      using hqw by (by100 blast)
+    show ?thesis
+    proof (cases "x = w")
+      case True
+      have hw\<sigma>: "w \<in> \<sigma>"
+        using True hx\<sigma> by (by100 simp)
+      have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+        by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix
+            [OF hL hfin hend heL hedge hwe h\<sigma>L hw\<sigma>])
+      have False using hcase h\<sigma>rest by (by100 simp)
+      thus ?thesis by (rule FalseE)
+    next
+      case hxnw: False
+      have hx_inter: "x \<in> e \<inter> \<sigma>"
+        using hxe hx\<sigma> by (by100 blast)
+      have hface_seg: "geotop_is_face (e \<inter> \<sigma>) (closed_segment w q)"
+        using hface_e heq by (by100 simp)
+      have hinter_eq: "e \<inter> \<sigma> = closed_segment w q"
+        by (rule geotop_segment_face_with_nonendpoint_eq_prefix
+            [OF hface_seg hwq hx_inter hxnw False])
+      have "w \<in> \<sigma>"
+        using hinter_eq hwe heq by (by100 blast)
+      have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+        by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix
+            [OF hL hfin hend heL hedge hwe h\<sigma>L \<open>w \<in> \<sigma>\<close>])
+      have False using hcase h\<sigma>rest by (by100 simp)
+      thus ?thesis by (rule FalseE)
+    qed
+  qed
+qed
+
+lemma geotop_delete_leaf_edge_inter_rest_polyhedron_eq_neighbor_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hqL: "{q} \<in> L"
+  assumes hqw: "q \<noteq> w"
+  assumes heq: "e = closed_segment w q"
+  shows "e \<inter> geotop_polyhedron (L - {{w}, e}) = {q}"
+proof
+  show "e \<inter> geotop_polyhedron (L - {{w}, e}) \<subseteq> {q}"
+    by (rule geotop_delete_leaf_edge_inter_rest_polyhedron_subset_neighbor_prefix
+        [OF hL hfin hend heL hedge hwe hqw heq])
+next
+  show "{q} \<subseteq> e \<inter> geotop_polyhedron (L - {{w}, e})"
+  proof
+    fix x
+    assume hx: "x \<in> {q}"
+    have hxq: "x = q"
+      using hx by (by100 simp)
+    have hqe: "q \<in> e"
+      using heq by (by100 simp)
+    have hq_ne_w: "{q} \<noteq> {w}"
+      using hqw by (by100 blast)
+    have hq_ne_e: "{q} \<noteq> e"
+    proof
+      assume "{q} = e"
+      have "w \<in> {q}"
+        using hwe \<open>{q} = e\<close> by (by100 simp)
+      hence "w = q" by (by100 simp)
+      thus False using hqw by (by100 blast)
+    qed
+    have hqrest: "{q} \<in> L - {{w}, e}"
+      using hqL hq_ne_w hq_ne_e by (by100 simp)
+    have "q \<in> geotop_polyhedron (L - {{w}, e})"
+      unfolding geotop_polyhedron_def using hqrest by (by100 blast)
+    show "x \<in> e \<inter> geotop_polyhedron (L - {{w}, e})"
+      using hxq hqe \<open>q \<in> geotop_polyhedron (L - {{w}, e})\<close> by (by100 simp)
+  qed
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
