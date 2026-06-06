@@ -7208,6 +7208,38 @@ proof -
     using hE_fin hE_card by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  shows "finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+  (**
+    Multi-triangle selected-edge bound for the ear package: the raw
+    2-simplex edge-face bound gives at most three selected boundary edges,
+    while the disk all-boundary obstruction rules out exactly three. **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  have hE_data: "finite ?E \<and> card ?E \<le> 3"
+    by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<sigma>2])
+  have hE_fin: "finite ?E"
+    using hE_data by (by100 blast)
+  have hE_card_le3: "card ?E \<le> 3"
+    using hE_data by (by100 blast)
+  have hE_card_ne3: "card ?E \<noteq> 3"
+    by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1])
+  have hE_card_le2: "card ?E \<le> 2"
+    using hE_card_le3 hE_card_ne3 by (by100 linarith)
+  show ?thesis
+    using hE_fin hE_card_le2 by (by100 blast)
+qed
+
 lemma geotop_two_triangle_boundary_edge_faces_card_le2_prefix:
   fixes J \<sigma> \<tau> :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
@@ -7738,6 +7770,44 @@ proof
           he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 hE_card_le3 he\<^sub>1_sub he\<^sub>2_sub])
   show False
     using hE_card_ne3 hE_card_eq3 by (by100 blast)
+qed
+
+lemma geotop_selected_boundary_edge_set_not_both_other_edges_card_le2_prefix:
+  fixes J \<theta> e\<^sub>0 e\<^sub>1 e\<^sub>2 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0_sel:
+    "e\<^sub>0 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>1_sel_if:
+    "e\<^sub>1 \<subseteq> J \<Longrightarrow>
+      e\<^sub>1 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>2_sel_if:
+    "e\<^sub>2 \<subseteq> J \<Longrightarrow>
+      e\<^sub>2 \<in> {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  assumes he\<^sub>0e\<^sub>1: "e\<^sub>0 \<noteq> e\<^sub>1"
+  assumes he\<^sub>0e\<^sub>2: "e\<^sub>0 \<noteq> e\<^sub>2"
+  assumes he\<^sub>1e\<^sub>2: "e\<^sub>1 \<noteq> e\<^sub>2"
+  assumes hE_card_le2:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+  shows "\<not> (e\<^sub>1 \<subseteq> J \<and> e\<^sub>2 \<subseteq> J)"
+  (**
+    Card-\<open>\<le>2\<close> form of the nonfree boundary-triangle bookkeeping: once a
+    selected base edge is present, the two remaining edge faces cannot both
+    lie on the polygon boundary without forcing three selected edges. **)
+proof
+  assume hboth: "e\<^sub>1 \<subseteq> J \<and> e\<^sub>2 \<subseteq> J"
+  let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
+  have hE_card_le3: "card ?E \<le> 3"
+    using hE_card_le2 by (by100 linarith)
+  have he\<^sub>1_sub: "e\<^sub>1 \<subseteq> J"
+    using hboth by (by100 simp)
+  have he\<^sub>2_sub: "e\<^sub>2 \<subseteq> J"
+    using hboth by (by100 simp)
+  have hE_card_eq3: "card ?E = 3"
+    by (rule geotop_selected_boundary_edge_set_card_eq3_if_two_other_edges_prefix
+        [OF hE_fin he\<^sub>0_sel he\<^sub>1_sel_if he\<^sub>2_sel_if
+          he\<^sub>0e\<^sub>1 he\<^sub>0e\<^sub>2 he\<^sub>1e\<^sub>2 hE_card_le3 he\<^sub>1_sub he\<^sub>2_sub])
+  show False
+    using hE_card_le2 hE_card_eq3 by (by100 linarith)
 qed
 
 lemma geotop_polygon_disk_polygon_edge_subset_frontier_prefix:
@@ -9512,25 +9582,16 @@ proof -
     "closed_segment v\<^sub>1 v\<^sub>2 \<subseteq> J \<Longrightarrow>
       geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<in> ?Etheta"
     using hside_edge_K hnonbase_edge_face_data hside_hull_segment_eq by (by100 blast)
+  have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+    using hT_gt2 by (by100 simp)
+  have hEtheta_card_data:
+    "finite ?Etheta \<and> card ?Etheta \<le> 2"
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
   have hEtheta_fin: "finite ?Etheta"
-    using hK_fin by (by100 simp)
-  have hEtheta_card_le3: "card ?Etheta \<le> 3"
-  proof -
-    have hE: "finite ?Etheta \<and> card ?Etheta \<le> 3"
-      by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<theta>2])
-    show ?thesis
-      using hE by (by100 simp)
-  qed
-  have hEtheta_card_ne3: "card ?Etheta \<noteq> 3"
-  proof -
-    have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
-      using hT_gt2 by (by100 simp)
-    show ?thesis
-      by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
-          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-  qed
+    using hEtheta_card_data by (by100 blast)
   have hEtheta_card_le2: "card ?Etheta \<le> 2"
-    using hEtheta_card_le3 hEtheta_card_ne3 by (by100 linarith)
+    using hEtheta_card_data by (by100 blast)
   have hEtheta_allowed:
     "?Etheta = {} \<or>
      (\<exists>e. ?Etheta = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J) \<or>
@@ -10230,27 +10291,16 @@ proof -
     have hE\<theta>_fin_pre:
       "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
       using hK_fin by (by100 simp)
-    have hE\<theta>_card_le3_pre:
-      "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 3"
-    proof -
-      let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-      have hE: "finite ?E \<and> card ?E \<le> 3"
-        by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<theta>2])
-      show ?thesis
-        using hE by (by100 simp)
-    qed
-    have hE\<theta>_card_ne3_pre:
-      "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<noteq> 3"
-    proof -
-      have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
-        using hT_gt2 by (by100 simp)
-      show ?thesis
-        by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
-            [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-    qed
+    have hT_gt1_pre: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+      using hT_gt2 by (by100 simp)
+    have hE\<theta>_card_data_pre:
+      "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+        \<and> card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+      by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1_pre])
     have hE\<theta>_card_le2_pre:
       "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-      using hE\<theta>_card_le3_pre hE\<theta>_card_ne3_pre by (by100 linarith)
+      using hE\<theta>_card_data_pre by (by100 blast)
     have hE\<theta>_allowed_pre:
       "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {} \<or>
        (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
@@ -10567,35 +10617,24 @@ proof -
   have hE\<theta>_fin:
     "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
     using hK_fin by (by100 simp)
-  have hE\<theta>_card_le3:
-    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 3"
-  proof -
-    let ?E = "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-    have hE: "finite ?E \<and> card ?E \<le> 3"
-      by (rule geotop_selected_boundary_edge_set_card_le3_prefix[OF h\<theta>2])
-    show ?thesis
-      using hE by (by100 simp)
-  qed
-  have hE\<theta>_card_ne3:
-    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<noteq> 3"
-  proof -
-    have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
-      using hT_gt2 by (by100 simp)
-    show ?thesis
-      by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
-          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-  qed
+  have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
+    using hT_gt2 by (by100 simp)
+  have hE\<theta>_card_data:
+    "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
+      \<and> card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
+  have hE\<theta>_card_le2:
+    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
+    using hE\<theta>_card_data by (by100 blast)
   have hnot_both_nonbase_boundary_edges:
     "\<not> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J
       \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J)"
-    by (rule geotop_selected_boundary_edge_set_not_both_other_edges_prefix
+    by (rule geotop_selected_boundary_edge_set_not_both_other_edges_card_le2_prefix
         [OF hE\<theta>_fin hbase_edge_selected
           hchord_edge_selected_if hside_edge_selected_if
           hbase_ne_chord_edge hbase_ne_side_edge hchord_ne_side_edge
-          hE\<theta>_card_le3 hE\<theta>_card_ne3])
-  have hE\<theta>_card_le2:
-    "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-    using hE\<theta>_card_le3 hE\<theta>_card_ne3 by (by100 linarith)
+          hE\<theta>_card_le2])
   have hE\<theta>_allowed:
     "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {} \<or>
      (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
