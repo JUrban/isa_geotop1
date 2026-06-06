@@ -60,6 +60,64 @@ proof -
     using hTX hTY hf_bij hf_top1 h_invf_top1 by (by100 blast)
 qed
 
+lemma geotop_HOL_homeomorphism_imp_top1_homeomorphism_on_cross_prefix:
+  fixes X :: "'a::real_normed_vector set" and Y :: "'b::real_normed_vector set"
+  assumes hfg: "homeomorphism X Y f g"
+  shows "top1_homeomorphism_on X
+              (subspace_topology UNIV geotop_euclidean_topology X)
+              Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+proof -
+  have hf_cont_HOL: "continuous_on X f"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hg_cont_HOL: "continuous_on Y g"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hf_img_eq: "f ` X = Y"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hg_img_eq: "g ` Y = X"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hfg_id: "\<forall>x\<in>X. g (f x) = x"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hgf_id: "\<forall>y\<in>Y. f (g y) = y"
+    using hfg unfolding homeomorphism_def by (by100 blast)
+  have hf_img: "f ` X \<subseteq> Y" using hf_img_eq by (by100 simp)
+  have hg_img: "g ` Y \<subseteq> X" using hg_img_eq by (by100 simp)
+  have hf_top1: "top1_continuous_map_on X
+                    (subspace_topology UNIV geotop_euclidean_topology X)
+                    Y (subspace_topology UNIV geotop_euclidean_topology Y) f"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hf_cont_HOL hf_img])
+  have hg_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X) g"
+    by (rule geotop_continuous_on_imp_top1_continuous_map_on[OF hg_cont_HOL hg_img])
+  have hf_bij: "bij_betw f X Y"
+    by (rule bij_betw_byWitness[where f' = g, OF hfg_id hgf_id hf_img hg_img])
+  have hf_inj: "inj_on f X" using hf_bij unfolding bij_betw_def by (by100 blast)
+  have hg_eq_inv: "\<forall>y\<in>Y. g y = inv_into X f y"
+  proof
+    fix y assume hy: "y \<in> Y"
+    have hgy_in_X: "g y \<in> X" using hg_img_eq hy by (by100 blast)
+    have hfgy: "f (g y) = y" using hgf_id hy by (by100 blast)
+    have "inv_into X f y = g y" by (rule inv_into_f_eq[OF hf_inj hgy_in_X hfgy])
+    thus "g y = inv_into X f y" by (by100 simp)
+  qed
+  have h_invf_top1: "top1_continuous_map_on Y
+                    (subspace_topology UNIV geotop_euclidean_topology Y)
+                    X (subspace_topology UNIV geotop_euclidean_topology X)
+                    (inv_into X f)"
+    using hg_top1 top1_continuous_map_on_cong[OF hg_eq_inv] by (by100 blast)
+  have h_Teucl_X: "is_topology_on (UNIV::'a set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have h_Teucl_Y: "is_topology_on (UNIV::'b set) geotop_euclidean_topology"
+    by (metis geotop_euclidean_topology_eq_open_sets top1_open_sets_is_topology_on_UNIV)
+  have hTX: "is_topology_on X (subspace_topology UNIV geotop_euclidean_topology X)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl_X subset_UNIV])
+  have hTY: "is_topology_on Y (subspace_topology UNIV geotop_euclidean_topology Y)"
+    by (rule subspace_topology_is_topology_on[OF h_Teucl_Y subset_UNIV])
+  show ?thesis
+    unfolding top1_homeomorphism_on_def
+    using hTX hTY hf_bij hf_top1 h_invf_top1 by (by100 blast)
+qed
+
 lemma geotop_affine_linear_homeomorphism_UNIV:
   fixes A :: "'a::euclidean_space \<Rightarrow> 'a"
   assumes hlin: "linear A" and hinj: "inj A"
@@ -4693,6 +4751,51 @@ proof -
   show ?thesis
     unfolding geotop_is_arc_def geotop_is_n_cell_def
     using hS_simplex hAS unfolding top1_homeomorphism_on_def by (by100 blast)
+qed
+
+lemma geotop_is_arc_has_arc_endpoints_prefix:
+  fixes A :: "(real^2) set"
+  assumes hA: "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "\<exists>E. geotop_arc_endpoints A E"
+proof -
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>" and h\<gamma>_pim: "path_image \<gamma> = A"
+    using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+  obtain h where hhomeo_HOL: "homeomorphism {0..1} (path_image \<gamma>) \<gamma> h"
+    using geotop_arc_homeomorphism_image[OF h\<gamma>_arc] by (by100 blast)
+  have hhomeo_top1_iv: "top1_homeomorphism_on {0..1}
+              (subspace_topology UNIV geotop_euclidean_topology {0..1})
+              (path_image \<gamma>) (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>)) \<gamma>"
+    by (rule geotop_HOL_homeomorphism_imp_top1_homeomorphism_on_cross_prefix[OF hhomeo_HOL])
+  have hunit: "{t::real. 0 \<le> t \<and> t \<le> 1} = {0..1}"
+    by (by100 auto)
+  have hhomeo_top1_A: "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+              (subspace_topology UNIV geotop_euclidean_topology {t::real. 0 \<le> t \<and> t \<le> 1})
+              A (subspace_topology UNIV geotop_euclidean_topology A) \<gamma>"
+    using hhomeo_top1_iv hunit h\<gamma>_pim by (by100 simp)
+  have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
+    using h\<gamma>_arc unfolding arc_def by (by100 blast)
+  have h\<gamma>0_ne_\<gamma>1: "\<gamma> 0 \<noteq> \<gamma> 1"
+    using h\<gamma>_inj unfolding inj_on_def by (by100 force)
+  have hcard: "card {\<gamma> 0, \<gamma> 1} = 2"
+    using h\<gamma>0_ne_\<gamma>1 by (by100 simp)
+  have hsub: "{\<gamma> 0, \<gamma> 1} \<subseteq> A"
+    using h\<gamma>_pim unfolding path_image_def by (by100 force)
+  show ?thesis
+    unfolding geotop_arc_endpoints_def
+    using hA hcard hsub hhomeo_top1_A by (by100 blast)
+qed
+
+lemma geotop_broken_line_has_arc_endpoints_prefix:
+  fixes B :: "(real^2) set"
+  assumes hB: "geotop_is_broken_line B"
+  shows "\<exists>E. geotop_arc_endpoints B E"
+proof -
+  have hB_arc: "geotop_is_arc B
+      (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hB unfolding geotop_is_broken_line_def by (by100 blast)
+  show ?thesis
+    by (rule geotop_is_arc_has_arc_endpoints_prefix[OF hB_arc])
 qed
 
 lemma geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix:
