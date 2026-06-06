@@ -7753,6 +7753,41 @@ proof -
         \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
         \<and> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
     using hx\<theta>J hx_not_base hx_nonbase by (by100 blast)
+  have hv\<^sub>0v\<^sub>2: "v\<^sub>0 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hv\<^sub>1v\<^sub>2: "v\<^sub>1 \<noteq> v\<^sub>2"
+    using hv\<^sub>2_not by (by100 blast)
+  have hbase_segment_sub_J: "closed_segment v\<^sub>0 v\<^sub>1 \<subseteq> J"
+    using hv\<^sub>0v\<^sub>1_sub_J segment_convex_hull[of v\<^sub>0 v\<^sub>1]
+      geotop_convex_hull_eq_HOL[of "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+  have hv\<^sub>0J: "v\<^sub>0 \<in> J"
+  proof -
+    have hv\<^sub>0_HOL: "v\<^sub>0 \<in> convex hull {v\<^sub>0, v\<^sub>1}"
+      using hull_inc[of v\<^sub>0 "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+    have "v\<^sub>0 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      using hv\<^sub>0_HOL segment_convex_hull[of v\<^sub>0 v\<^sub>1] by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hv\<^sub>1J: "v\<^sub>1 \<in> J"
+  proof -
+    have hv\<^sub>1_HOL: "v\<^sub>1 \<in> convex hull {v\<^sub>0, v\<^sub>1}"
+      using hull_inc[of v\<^sub>1 "{v\<^sub>0, v\<^sub>1}"] by (by100 simp)
+    have "v\<^sub>1 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      using hv\<^sub>1_HOL segment_convex_hull[of v\<^sub>0 v\<^sub>1] by (by100 simp)
+    thus ?thesis
+      using hbase_segment_sub_J by (by100 blast)
+  qed
+  have hother_two_edge_arc:
+    "geotop_arc_endpoints
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1) {v\<^sub>0, v\<^sub>1}"
+    by (rule geotop_two_segment_join_arc_endpoints_prefix
+        [OF hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 h\<theta>_not_col])
+  have hother_two_edge_broken_line:
+    "geotop_is_broken_line
+      (closed_segment v\<^sub>0 v\<^sub>2 \<union> closed_segment v\<^sub>2 v\<^sub>1)"
+    by (rule geotop_two_segment_join_broken_line_prefix
+        [OF hv\<^sub>0v\<^sub>2 hv\<^sub>1v\<^sub>2 h\<theta>_not_col])
   show ?thesis
     sorry
 qed
