@@ -5690,6 +5690,80 @@ proof -
   qed
 qed
 
+lemma geotop_graph_endpoint_delete_leaf_polyhedron_union_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hend: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "geotop_polyhedron L = e \<union> geotop_polyhedron (L - {{w}, e})"
+proof -
+  have honly: "\<And>\<sigma>. \<lbrakk>\<sigma> \<in> L; w \<in> \<sigma>\<rbrakk> \<Longrightarrow> \<sigma> = {w} \<or> \<sigma> = e"
+    by (rule geotop_graph_endpoint_simplex_containing_endpoint_eq_vertex_or_edge_prefix
+        [OF hL hfin hend heL hedge hwe])
+  have hsubset_w_e: "{w} \<subseteq> e"
+    using hwe by (by100 blast)
+  show ?thesis
+  proof
+    show "geotop_polyhedron L \<subseteq> e \<union> geotop_polyhedron (L - {{w}, e})"
+    proof
+      fix x
+      assume hx: "x \<in> geotop_polyhedron L"
+      obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> L" and hx\<sigma>: "x \<in> \<sigma>"
+        using hx unfolding geotop_polyhedron_def by (by100 blast)
+      show "x \<in> e \<union> geotop_polyhedron (L - {{w}, e})"
+      proof (cases "w \<in> \<sigma>")
+        case True
+        have hcase: "\<sigma> = {w} \<or> \<sigma> = e"
+          by (rule honly[OF h\<sigma>L True])
+        show ?thesis
+        proof (rule disjE[OF hcase])
+          assume "\<sigma> = {w}"
+          have "x \<in> e" using hx\<sigma> \<open>\<sigma> = {w}\<close> hsubset_w_e by (by100 blast)
+          thus ?thesis by (by100 blast)
+        next
+          assume "\<sigma> = e"
+          have "x \<in> e" using hx\<sigma> \<open>\<sigma> = e\<close> by (by100 simp)
+          thus ?thesis by (by100 blast)
+        qed
+      next
+        case False
+        have h\<sigma>rest: "\<sigma> \<in> L - {{w}, e}"
+        proof -
+          have "\<sigma> \<noteq> {w}" using False by (by100 blast)
+          have "\<sigma> \<noteq> e" using False hwe by (by100 blast)
+          show ?thesis using h\<sigma>L \<open>\<sigma> \<noteq> {w}\<close> \<open>\<sigma> \<noteq> e\<close> by (by100 simp)
+        qed
+        have "x \<in> geotop_polyhedron (L - {{w}, e})"
+          unfolding geotop_polyhedron_def using h\<sigma>rest hx\<sigma> by (by100 blast)
+        thus ?thesis by (by100 blast)
+      qed
+    qed
+  next
+    show "e \<union> geotop_polyhedron (L - {{w}, e}) \<subseteq> geotop_polyhedron L"
+    proof
+      fix x
+      assume hx: "x \<in> e \<union> geotop_polyhedron (L - {{w}, e})"
+      show "x \<in> geotop_polyhedron L"
+      proof (rule UnE[OF hx])
+        assume "x \<in> e"
+        show ?thesis
+          unfolding geotop_polyhedron_def using heL \<open>x \<in> e\<close> by (by100 blast)
+      next
+        assume "x \<in> geotop_polyhedron (L - {{w}, e})"
+        obtain \<sigma> where h\<sigma>rest: "\<sigma> \<in> L - {{w}, e}" and hx\<sigma>: "x \<in> \<sigma>"
+          using \<open>x \<in> geotop_polyhedron (L - {{w}, e})\<close>
+          unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>L: "\<sigma> \<in> L" using h\<sigma>rest by (by100 simp)
+        show ?thesis
+          unfolding geotop_polyhedron_def using h\<sigma>L hx\<sigma> by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_broken_line_polyhedron_finite_linear_graph_has_endpoint_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
