@@ -8180,6 +8180,35 @@ proof -
     by (rule geotop_theta_middle_arc_inline_decomposition_prefix(6)[OF h\<theta> hB\<^sub>2_inner])
 qed
 
+lemma geotop_explicit_three_arc_pair_polygons_prefix:
+  fixes B\<^sub>1 B\<^sub>2 B\<^sub>3 E :: "(real^2) set"
+  assumes hB\<^sub>1_bl: "geotop_is_broken_line B\<^sub>1"
+  assumes hB\<^sub>2_bl: "geotop_is_broken_line B\<^sub>2"
+  assumes hB\<^sub>3_bl: "geotop_is_broken_line B\<^sub>3"
+  assumes hB\<^sub>1E: "geotop_arc_endpoints B\<^sub>1 E"
+  assumes hB\<^sub>2E: "geotop_arc_endpoints B\<^sub>2 E"
+  assumes hB\<^sub>3E: "geotop_arc_endpoints B\<^sub>3 E"
+  assumes hB\<^sub>1B\<^sub>2:
+    "geotop_arc_interior B\<^sub>1 E \<inter> geotop_arc_interior B\<^sub>2 E = {}"
+  assumes hB\<^sub>1B\<^sub>3:
+    "geotop_arc_interior B\<^sub>1 E \<inter> geotop_arc_interior B\<^sub>3 E = {}"
+  assumes hB\<^sub>2B\<^sub>3:
+    "geotop_arc_interior B\<^sub>2 E \<inter> geotop_arc_interior B\<^sub>3 E = {}"
+  shows "geotop_is_polygon (B\<^sub>1 \<union> B\<^sub>2)"
+    and "geotop_is_polygon (B\<^sub>1 \<union> B\<^sub>3)"
+    and "geotop_is_polygon (B\<^sub>2 \<union> B\<^sub>3)"
+proof -
+  show "geotop_is_polygon (B\<^sub>1 \<union> B\<^sub>2)"
+    by (rule pair_of_arcs_is_polygon
+        [OF hB\<^sub>1_bl hB\<^sub>2_bl hB\<^sub>1E hB\<^sub>2E hB\<^sub>1B\<^sub>2])
+  show "geotop_is_polygon (B\<^sub>1 \<union> B\<^sub>3)"
+    by (rule pair_of_arcs_is_polygon
+        [OF hB\<^sub>1_bl hB\<^sub>3_bl hB\<^sub>1E hB\<^sub>3E hB\<^sub>1B\<^sub>3])
+  show "geotop_is_polygon (B\<^sub>2 \<union> B\<^sub>3)"
+    by (rule pair_of_arcs_is_polygon
+        [OF hB\<^sub>2_bl hB\<^sub>3_bl hB\<^sub>2E hB\<^sub>3E hB\<^sub>2B\<^sub>3])
+qed
+
 lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
