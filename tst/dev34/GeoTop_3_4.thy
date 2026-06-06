@@ -9504,6 +9504,32 @@ proof -
     using himage_open himage_sub by (by100 blast)
 qed
 
+lemma geotop_2cell_chart_open_domain_image_bounded_dev34:
+  fixes M U \<sigma> :: "(real^2) set"
+  assumes hUopen: "openin_on M
+      (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<phi>: "top1_homeomorphism_on
+      (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U)
+      (subspace_topology M (top1_metric_topology_on M (\<lambda>x y. norm (x - y)))
+        (closure_on M (top1_metric_topology_on M (\<lambda>x y. norm (x - y))) U))
+      \<sigma> (subspace_topology UNIV geotop_euclidean_topology \<sigma>) \<phi>"
+  shows "bounded (\<phi> ` U)"
+  (**
+    Image-side bookkeeping for the local Jordan argument: the open chart image
+    lies in the target 2-simplex, hence is bounded. **)
+proof -
+  have himage_data: "\<phi> ` U \<in> subspace_topology UNIV geotop_euclidean_topology \<sigma>
+      \<and> \<phi> ` U \<subseteq> \<sigma>"
+    by (rule geotop_2cell_chart_open_domain_image_dev34[OF hUopen h\<phi>])
+  have himage_sub: "\<phi> ` U \<subseteq> \<sigma>"
+    using himage_data by (by100 blast)
+  have h\<sigma>_bounded: "bounded \<sigma>"
+    by (rule geotop_simplex_dim_bounded_prefix[OF h\<sigma>2])
+  show ?thesis
+    using h\<sigma>_bounded himage_sub bounded_subset by (by100 blast)
+qed
+
 lemma geotop_2cell_chart_image_1sphere_dev34:
   fixes M U J \<sigma> :: "(real^2) set"
   assumes hUopen: "openin_on M
@@ -10008,6 +10034,9 @@ proof -
       show "geotop_is_n_sphere J
           (subspace_topology UNIV geotop_euclidean_topology J) 1"
         by (rule hJsphere)
+      have h\<phi>U_bounded: "bounded (\<phi> ` U)"
+        by (rule geotop_2cell_chart_open_domain_image_bounded_dev34
+            [OF hUopen h\<sigma>2 h\<phi>])
       show "\<And>inner outer.
         inner \<noteq> {} \<Longrightarrow> open inner \<Longrightarrow> connected inner \<Longrightarrow> bounded inner \<Longrightarrow>
         outer \<noteq> {} \<Longrightarrow> open outer \<Longrightarrow> connected outer \<Longrightarrow> \<not> bounded outer \<Longrightarrow>
