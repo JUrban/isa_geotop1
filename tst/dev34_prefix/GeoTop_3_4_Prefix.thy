@@ -4695,6 +4695,86 @@ proof -
     using hS_simplex hAS unfolding top1_homeomorphism_on_def by (by100 blast)
 qed
 
+lemma geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix:
+  fixes A :: "(real^2) set" and P Q :: "real^2"
+  assumes hA: "top1_is_arc_on A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hEnd: "top1_arc_endpoints_on A
+      (subspace_topology UNIV geotop_euclidean_topology A) = {P, Q}"
+  assumes hPQ: "P \<noteq> Q"
+  shows "geotop_arc_endpoints A {P, Q}"
+proof -
+  obtain h where hIA: "top1_homeomorphism_on I_set I_top A
+      (subspace_topology UNIV geotop_euclidean_topology A) h"
+    using hA unfolding top1_is_arc_on_def by (by100 blast)
+  have hboundary: "top1_arc_endpoints_on A
+      (subspace_topology UNIV geotop_euclidean_topology A) = {h 0, h 1}"
+    by (rule arc_endpoints_are_boundary[
+        OF geotop_euclidean_topology_UNIV_strict
+           geotop_euclidean_topology_UNIV_hausdorff subset_UNIV hA hIA])
+  have hEPQ: "{P, Q} = {h 0, h 1}"
+    using hEnd hboundary by (by100 simp)
+  have hgeotop: "geotop_is_arc A
+      (subspace_topology UNIV geotop_euclidean_topology A)"
+    by (rule geotop_top1_arc_on_imp_geotop_is_arc_prefix[OF hA])
+  have hcard: "card {P, Q} = 2"
+    using hPQ by (by100 simp)
+  have hsub: "{P, Q} \<subseteq> A"
+    using hEnd unfolding top1_arc_endpoints_on_def by (by100 blast)
+  have hI_set: "{t::real. 0 \<le> t \<and> t \<le> 1} = I_set"
+    unfolding top1_unit_interval_def by (by100 auto)
+  have hI_top:
+      "subspace_topology (UNIV::real set) geotop_euclidean_topology
+        {t::real. 0 \<le> t \<and> t \<le> 1} = I_top"
+    unfolding top1_unit_interval_topology_def
+    using hI_set by (simp add: geotop_euclidean_topology_eq_open_sets)
+  have hIA_raw:
+      "top1_homeomorphism_on {t::real. 0 \<le> t \<and> t \<le> 1}
+        (subspace_topology UNIV geotop_euclidean_topology
+          {t::real. 0 \<le> t \<and> t \<le> 1})
+        A (subspace_topology UNIV geotop_euclidean_topology A) h"
+    using hIA hI_set hI_top by (by100 simp)
+  show ?thesis
+    unfolding geotop_arc_endpoints_def
+    using hgeotop hcard hsub hIA_raw hEPQ by (by100 blast)
+qed
+
+lemma geotop_polygon_two_point_geotop_arc_split_endpoints_prefix:
+  fixes J :: "(real^2) set" and P Q :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J"
+  assumes hQ: "Q \<in> J"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      J = C\<^sub>1 \<union> C\<^sub>2
+      \<and> C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}"
+proof -
+  obtain C\<^sub>1 C\<^sub>2 where hsplit:
+      "J = C\<^sub>1 \<union> C\<^sub>2"
+      and hinter: "C\<^sub>1 \<inter> C\<^sub>2 = {P, Q}"
+      and hC\<^sub>1_arc: "top1_is_arc_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1)"
+      and hC\<^sub>2_arc: "top1_is_arc_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2)"
+      and hC\<^sub>1_end: "top1_arc_endpoints_on C\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>1) = {P, Q}"
+      and hC\<^sub>2_end: "top1_arc_endpoints_on C\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology C\<^sub>2) = {P, Q}"
+    using geotop_polygon_two_point_topological_arc_split_endpoints_prefix
+      [OF hJ hP hQ hPQ]
+    by (by100 blast)
+  have hC\<^sub>1_geotop: "geotop_arc_endpoints C\<^sub>1 {P, Q}"
+    by (rule geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix
+        [OF hC\<^sub>1_arc hC\<^sub>1_end hPQ])
+  have hC\<^sub>2_geotop: "geotop_arc_endpoints C\<^sub>2 {P, Q}"
+    by (rule geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix
+        [OF hC\<^sub>2_arc hC\<^sub>2_end hPQ])
+  show ?thesis
+    using hsplit hinter hC\<^sub>1_geotop hC\<^sub>2_geotop by (by100 blast)
+qed
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
