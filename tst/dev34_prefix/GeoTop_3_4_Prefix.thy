@@ -7745,6 +7745,14 @@ proof -
       "x \<in> (closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
         \<union> (closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
     using hcontact_other_segment_off_base by (elim exE conjE)
+  have hcontact_side_cases:
+    "(\<exists>x. x \<in> \<theta> \<inter> J
+        \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+        \<and> x \<in> closed_segment v\<^sub>0 v\<^sub>2 - {v\<^sub>0})
+     \<or> (\<exists>x. x \<in> \<theta> \<inter> J
+        \<and> x \<notin> closed_segment v\<^sub>0 v\<^sub>1
+        \<and> x \<in> closed_segment v\<^sub>1 v\<^sub>2 - {v\<^sub>1})"
+    using hx\<theta>J hx_not_base hx_nonbase by (by100 blast)
   show ?thesis
     sorry
 qed
