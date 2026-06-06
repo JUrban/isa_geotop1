@@ -7863,6 +7863,114 @@ proof -
     using heJ hfront by (by100 simp)
 qed
 
+lemma geotop_three_selected_boundary_edges_two_owner_2simplexes_prefix:
+  fixes J e\<^sub>1 e\<^sub>2 e\<^sub>3 :: "(real^2) set" and K :: "(real^2) set set"
+  assumes he\<^sub>1K: "e\<^sub>1 \<in> K"
+  assumes he\<^sub>2K: "e\<^sub>2 \<in> K"
+  assumes he\<^sub>3K: "e\<^sub>3 \<in> K"
+  assumes he\<^sub>1_edge: "geotop_is_edge e\<^sub>1"
+  assumes he\<^sub>2_edge: "geotop_is_edge e\<^sub>2"
+  assumes he\<^sub>3_edge: "geotop_is_edge e\<^sub>3"
+  assumes he\<^sub>1J: "e\<^sub>1 \<subseteq> J"
+  assumes he\<^sub>2J: "e\<^sub>2 \<subseteq> J"
+  assumes he\<^sub>3J: "e\<^sub>3 \<subseteq> J"
+  assumes he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2"
+  assumes he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
+  assumes he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3"
+  assumes hown\<^sub>1:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>1 \<sigma>"
+  assumes hown\<^sub>2:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>2 \<sigma>"
+  assumes hown\<^sub>3:
+    "\<exists>\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2 \<and> geotop_is_face e\<^sub>3 \<sigma>"
+  assumes howner_data:
+    "\<And>\<sigma>. \<sigma> \<in> K \<Longrightarrow> geotop_simplex_dim \<sigma> 2 \<Longrightarrow>
+      finite {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}
+      \<and> card {e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} \<le> 2"
+  shows "\<exists>\<sigma> \<tau> e\<^sub>\<sigma> e\<^sub>\<tau>. \<sigma> \<in> K \<and> \<tau> \<in> K \<and> \<sigma> \<noteq> \<tau>
+     \<and> geotop_simplex_dim \<sigma> 2 \<and> geotop_simplex_dim \<tau> 2
+     \<and> geotop_is_edge e\<^sub>\<sigma> \<and> geotop_is_face e\<^sub>\<sigma> \<sigma> \<and> e\<^sub>\<sigma> \<subseteq> J
+     \<and> geotop_is_edge e\<^sub>\<tau> \<and> geotop_is_face e\<^sub>\<tau> \<tau> \<and> e\<^sub>\<tau> \<subseteq> J"
+  (**
+    Finite selected-edge counting step for Moise's ear assertion: three
+    distinct polygon-boundary edges cannot all be owned by a single 2-simplex
+    once every 2-simplex owns at most two selected boundary edge faces. **)
+proof -
+  obtain \<sigma>\<^sub>1 where h\<sigma>\<^sub>1K: "\<sigma>\<^sub>1 \<in> K"
+    and h\<sigma>\<^sub>1dim: "geotop_simplex_dim \<sigma>\<^sub>1 2"
+    and he\<^sub>1_face: "geotop_is_face e\<^sub>1 \<sigma>\<^sub>1"
+    using hown\<^sub>1 by (elim bexE conjE)
+  obtain \<sigma>\<^sub>2 where h\<sigma>\<^sub>2K: "\<sigma>\<^sub>2 \<in> K"
+    and h\<sigma>\<^sub>2dim: "geotop_simplex_dim \<sigma>\<^sub>2 2"
+    and he\<^sub>2_face: "geotop_is_face e\<^sub>2 \<sigma>\<^sub>2"
+    using hown\<^sub>2 by (elim bexE conjE)
+  obtain \<sigma>\<^sub>3 where h\<sigma>\<^sub>3K: "\<sigma>\<^sub>3 \<in> K"
+    and h\<sigma>\<^sub>3dim: "geotop_simplex_dim \<sigma>\<^sub>3 2"
+    and he\<^sub>3_face: "geotop_is_face e\<^sub>3 \<sigma>\<^sub>3"
+    using hown\<^sub>3 by (elim bexE conjE)
+  show ?thesis
+  proof (cases "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2")
+    case True
+    show ?thesis
+    proof (rule exI[where x = \<sigma>\<^sub>1], rule exI[where x = \<sigma>\<^sub>2],
+        rule exI[where x = e\<^sub>1], rule exI[where x = e\<^sub>2])
+      show "\<sigma>\<^sub>1 \<in> K \<and> \<sigma>\<^sub>2 \<in> K \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2 \<and>
+          geotop_simplex_dim \<sigma>\<^sub>1 2 \<and> geotop_simplex_dim \<sigma>\<^sub>2 2 \<and>
+          geotop_is_edge e\<^sub>1 \<and> geotop_is_face e\<^sub>1 \<sigma>\<^sub>1 \<and> e\<^sub>1 \<subseteq> J \<and>
+          geotop_is_edge e\<^sub>2 \<and> geotop_is_face e\<^sub>2 \<sigma>\<^sub>2 \<and> e\<^sub>2 \<subseteq> J"
+        by (intro conjI h\<sigma>\<^sub>1K h\<sigma>\<^sub>2K True h\<sigma>\<^sub>1dim h\<sigma>\<^sub>2dim
+            he\<^sub>1_edge he\<^sub>1_face he\<^sub>1J he\<^sub>2_edge he\<^sub>2_face he\<^sub>2J)
+    qed
+  next
+    case False
+    show ?thesis
+    proof (cases "\<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>3")
+      case True
+      show ?thesis
+      proof (rule exI[where x = \<sigma>\<^sub>1], rule exI[where x = \<sigma>\<^sub>3],
+          rule exI[where x = e\<^sub>1], rule exI[where x = e\<^sub>3])
+        show "\<sigma>\<^sub>1 \<in> K \<and> \<sigma>\<^sub>3 \<in> K \<and> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>3 \<and>
+            geotop_simplex_dim \<sigma>\<^sub>1 2 \<and> geotop_simplex_dim \<sigma>\<^sub>3 2 \<and>
+            geotop_is_edge e\<^sub>1 \<and> geotop_is_face e\<^sub>1 \<sigma>\<^sub>1 \<and> e\<^sub>1 \<subseteq> J \<and>
+            geotop_is_edge e\<^sub>3 \<and> geotop_is_face e\<^sub>3 \<sigma>\<^sub>3 \<and> e\<^sub>3 \<subseteq> J"
+          by (intro conjI h\<sigma>\<^sub>1K h\<sigma>\<^sub>3K True h\<sigma>\<^sub>1dim h\<sigma>\<^sub>3dim
+              he\<^sub>1_edge he\<^sub>1_face he\<^sub>1J he\<^sub>3_edge he\<^sub>3_face he\<^sub>3J)
+      qed
+    next
+      case False: False
+      have h\<sigma>\<^sub>2_eq: "\<sigma>\<^sub>2 = \<sigma>\<^sub>1"
+        using \<open>\<not> \<sigma>\<^sub>1 \<noteq> \<sigma>\<^sub>2\<close> by (by100 blast)
+      have h\<sigma>\<^sub>3_eq: "\<sigma>\<^sub>3 = \<sigma>\<^sub>1"
+        using False by (by100 blast)
+      let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma>\<^sub>1 \<and> e \<subseteq> J}"
+      have he\<^sub>1E: "e\<^sub>1 \<in> ?E"
+        using he\<^sub>1K he\<^sub>1_edge he\<^sub>1_face he\<^sub>1J by (by100 simp)
+      have he\<^sub>2E: "e\<^sub>2 \<in> ?E"
+        using he\<^sub>2K he\<^sub>2_edge he\<^sub>2_face he\<^sub>2J h\<sigma>\<^sub>2_eq by (by100 simp)
+      have he\<^sub>3E: "e\<^sub>3 \<in> ?E"
+        using he\<^sub>3K he\<^sub>3_edge he\<^sub>3_face he\<^sub>3J h\<sigma>\<^sub>3_eq by (by100 simp)
+      have hE_data: "finite ?E \<and> card ?E \<le> 2"
+        by (rule howner_data[OF h\<sigma>\<^sub>1K h\<sigma>\<^sub>1dim])
+      have hE_fin: "finite ?E"
+        using hE_data by (by100 blast)
+      have hE_card_le2: "card ?E \<le> 2"
+        using hE_data by (by100 blast)
+      have hthree_sub: "{e\<^sub>1, e\<^sub>2, e\<^sub>3} \<subseteq> ?E"
+        using he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+      have hthree_card: "card {e\<^sub>1, e\<^sub>2, e\<^sub>3} = 3"
+        using he\<^sub>12 he\<^sub>13 he\<^sub>23 by (by100 simp)
+      have "card {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<le> card ?E"
+        by (rule card_mono[OF hE_fin hthree_sub])
+      hence "3 \<le> card ?E"
+        using hthree_card by (by100 simp)
+      hence False
+        using hE_card_le2 by (by100 linarith)
+      thus ?thesis
+        by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_polygon_disk_two_boundary_2simplexes_prefix:
   fixes J :: "(real^2) set" and K :: "(real^2) set set"
   assumes hJ: "geotop_is_polygon J"
