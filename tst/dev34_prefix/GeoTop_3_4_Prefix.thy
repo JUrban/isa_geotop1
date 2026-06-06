@@ -8608,6 +8608,26 @@ proof -
         using hx\<theta> hxJ by (by100 blast)
     qed
   qed
+  have hv\<^sub>2_not_base_segment: "v\<^sub>2 \<notin> closed_segment v\<^sub>0 v\<^sub>1"
+  proof
+    assume hv\<^sub>2_base: "v\<^sub>2 \<in> closed_segment v\<^sub>0 v\<^sub>1"
+    have hbase_col: "collinear (closed_segment v\<^sub>0 v\<^sub>1)"
+      by (rule collinear_closed_segment)
+    have hverts_sub: "{v\<^sub>0, v\<^sub>1, v\<^sub>2} \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+      using hv\<^sub>2_base by (by100 simp)
+    have hcol: "collinear {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+      by (rule collinear_subset[OF hbase_col hverts_sub])
+    have "{v\<^sub>0, v\<^sub>1, v\<^sub>2} = {v\<^sub>0, v\<^sub>2, v\<^sub>1}"
+      by (by100 blast)
+    thus False
+      using h\<theta>_not_col hcol by (by100 simp)
+  qed
+  have hbase_segment_inter_v\<^sub>2_empty:
+    "closed_segment v\<^sub>0 v\<^sub>1 \<inter> {v\<^sub>2} = {}"
+    using hv\<^sub>2_not_base_segment by (by100 blast)
+  have h\<theta>_inter_J_minus_base:
+    "(\<theta> \<inter> J) - closed_segment v\<^sub>0 v\<^sub>1 = {v\<^sub>2}"
+    using h\<theta>_inter_J hv\<^sub>2_not_base_segment by (by100 blast)
   show ?thesis
     sorry
 qed
