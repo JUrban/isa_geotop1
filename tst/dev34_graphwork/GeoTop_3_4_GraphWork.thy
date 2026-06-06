@@ -739,6 +739,7 @@ lemma geotop_finite_connected_degree_one_or_two_linear_graph_line_or_polygon_dev
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
   assumes hfin: "finite L"
+  assumes hnonempty: "L \<noteq> {}"
   assumes hconn: "geotop_complex_connected L"
   assumes hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
       card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
@@ -783,7 +784,7 @@ proof -
     qed
     have hpoly: "geotop_is_polygon (geotop_polyhedron L)"
       by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
-          [OF hL hfin hconn hdegree2])
+          [OF hL hfin hnonempty hconn hdegree2])
     show ?thesis
       using hpoly by (by100 blast)
   qed

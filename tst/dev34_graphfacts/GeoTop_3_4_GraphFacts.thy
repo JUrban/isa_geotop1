@@ -671,26 +671,46 @@ lemma geotop_finite_connected_degree_two_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
   assumes hfin: "finite L"
+  assumes hnonempty: "L \<noteq> {}"
   assumes hconn: "geotop_complex_connected L"
   assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
       card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
   shows "geotop_is_polygon (geotop_polyhedron L)"
 proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL])
+  have hpoly_nonempty: "geotop_polyhedron L \<noteq> {}"
+    by (rule geotop_nonempty_complex_polyhedron_nonempty[OF hcomplex hnonempty])
+  obtain w where hwL: "{w} \<in> L"
+    using geotop_nonempty_polyhedron_has_complex_vertex[OF hcomplex hpoly_nonempty]
+    by (by100 blast)
   have hnonisolated: "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
     by (rule geotop_degree_two_vertices_nonisolated_dev34[OF hdegree])
-  have hdegree12: "\<forall>w. {w} \<in> L \<longrightarrow>
-      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1 \<or>
-      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
-    using hdegree by (by100 blast)
-  have hshape: "geotop_is_broken_line (geotop_polyhedron L) \<or>
-      geotop_is_polygon (geotop_polyhedron L)"
-    by (rule geotop_finite_connected_degree_one_or_two_linear_graph_line_or_polygon_dev34
-        [OF hL hfin hconn hdegree12])
-  have hnot_line: "\<not> geotop_is_broken_line (geotop_polyhedron L)"
-    by (rule geotop_degree_two_linear_graph_polyhedron_not_broken_line_dev34
-        [OF hL hfin hdegree])
+  obtain e where heL: "e \<in> L" and hedge: "geotop_is_edge e" and hwe: "w \<in> e"
+    using hnonisolated hwL by (by100 blast)
+  obtain P Q where hPQ: "P \<noteq> Q" and hePQ: "e = closed_segment P Q"
+    by (rule geotop_edge_closed_segment_obtain[OF hedge])
+  have hfaceP: "geotop_is_face {P} e"
+    using geotop_closed_segment_is_face_endpoint[OF hPQ, of P] hePQ by (by100 simp)
+  have hfaceQ: "geotop_is_face {Q} e"
+    using geotop_closed_segment_is_face_endpoint[OF hPQ, of Q] hePQ by (by100 simp)
+  have hPL: "{P} \<in> L"
+    using hcomplex heL hfaceP unfolding geotop_is_complex_def by (by100 blast)
+  have hQL: "{Q} \<in> L"
+    using hcomplex heL hfaceQ unfolding geotop_is_complex_def by (by100 blast)
+  obtain C\<^sub>1 C\<^sub>2 where hpoly_eq: "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2"
+      and hC\<^sub>1: "geotop_is_broken_line C\<^sub>1"
+      and hC\<^sub>2: "geotop_is_broken_line C\<^sub>2"
+      and hE\<^sub>1: "geotop_arc_endpoints C\<^sub>1 {P, Q}"
+      and hE\<^sub>2: "geotop_arc_endpoints C\<^sub>2 {P, Q}"
+      and hdisj: "geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    using geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+      [OF hL hfin hconn hdegree hPL hQL hPQ] by (by100 blast)
+  have hpolygon: "geotop_is_polygon (C\<^sub>1 \<union> C\<^sub>2)"
+    by (rule pair_of_arcs_is_polygon[OF hC\<^sub>1 hC\<^sub>2 hE\<^sub>1 hE\<^sub>2 hdisj])
   show ?thesis
-    using hshape hnot_line by (by100 blast)
+    using hpolygon hpoly_eq by (by100 simp)
 qed
 
 text \<open>Moise \<S>4, Theorem 9: the corresponding graph-classification step

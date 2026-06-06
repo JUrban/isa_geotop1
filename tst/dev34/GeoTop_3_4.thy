@@ -11385,6 +11385,12 @@ proof
       assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
              C = geotop_component_at UNIV geotop_euclidean_topology
                    (\<Union>(geotop_link K v)) P"
+      obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+        and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                   (\<Union>(geotop_link K v)) P"
+        using hC_ex by (by100 blast)
+      have hP_C: "P \<in> C"
+        using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
       have hC_imp: "(\<exists>P\<in>\<Union>(geotop_link K v).
              C = geotop_component_at UNIV geotop_euclidean_topology
                    (\<Union>(geotop_link K v)) P) \<longrightarrow>
@@ -11425,9 +11431,11 @@ proof
         and hL_degree: "\<forall>w. {w} \<in> L \<longrightarrow>
                 card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
         using hL_ex by (elim exE conjE)
+      have hL_nonempty: "L \<noteq> {}"
+        using hP_C hL_poly unfolding geotop_polyhedron_def by (by100 blast)
       have hpoly_L: "geotop_is_polygon (geotop_polyhedron L)"
         by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
-            [OF hL_linear hL_fin hL_conn hL_degree])
+            [OF hL_linear hL_fin hL_nonempty hL_conn hL_degree])
       show "geotop_is_polygon C"
         using hpoly_L hL_poly by (by100 simp)
     qed
@@ -12166,9 +12174,13 @@ proof -
       card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
     using geotop_link_component_preserves_incident_edge_card_two_dev34
       [OF hK hP hC hdegree_link] hL_eq by (by100 simp)
+  have hP_C: "P \<in> C"
+    using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
+  have hL_nonempty: "L \<noteq> {}"
+    using hP_C hL_poly unfolding geotop_polyhedron_def by (by100 blast)
   have hpoly_polygon: "geotop_is_polygon (geotop_polyhedron L)"
     by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
-        [OF hL_linear hL_fin hL_conn hdegree_L])
+        [OF hL_linear hL_fin hL_nonempty hL_conn hdegree_L])
   show ?thesis
     using hpoly_polygon hL_poly by (by100 simp)
 qed
@@ -13429,6 +13441,12 @@ proof -
         assume hC_ex: "\<exists>P\<in>\<Union>(geotop_link K v).
                C = geotop_component_at UNIV geotop_euclidean_topology
                      (\<Union>(geotop_link K v)) P"
+        obtain P where hP: "P \<in> \<Union>(geotop_link K v)"
+          and hC: "C = geotop_component_at UNIV geotop_euclidean_topology
+                     (\<Union>(geotop_link K v)) P"
+          using hC_ex by (by100 blast)
+        have hP_C: "P \<in> C"
+          using geotop_link_component_summary[OF hK hv hP hC] by (by100 blast)
         have hC_imp: "(\<exists>P\<in>\<Union>(geotop_link K v).
                C = geotop_component_at UNIV geotop_euclidean_topology
                      (\<Union>(geotop_link K v)) P) \<longrightarrow>
@@ -13456,10 +13474,12 @@ proof -
                   card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 1 \<or>
                   card {l\<in>L. geotop_is_edge l \<and> w \<in> l} = 2"
           using hL_ex by (elim exE conjE)
+        have hL_nonempty: "L \<noteq> {}"
+          using hP_C hL_poly unfolding geotop_polyhedron_def by (by100 blast)
         have hshape_L: "geotop_is_broken_line (geotop_polyhedron L) \<or>
             geotop_is_polygon (geotop_polyhedron L)"
           by (rule geotop_finite_connected_degree_one_or_two_linear_graph_line_or_polygon_dev34
-              [OF hL_linear hL_fin hL_conn hL_degree12])
+              [OF hL_linear hL_fin hL_nonempty hL_conn hL_degree12])
         show "geotop_is_broken_line C \<or> geotop_is_polygon C"
           using hshape_L hL_poly by (by100 simp)
       qed
