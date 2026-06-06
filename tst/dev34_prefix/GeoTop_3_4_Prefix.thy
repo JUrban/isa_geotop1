@@ -4305,6 +4305,29 @@ proof -
     using hL_linear hL_fin hL_conn hL_poly hPL hQL by (by100 blast)
 qed
 
+lemma geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hL_conn: "geotop_complex_connected L"
+  assumes hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>C\<^sub>1 C\<^sub>2.
+      geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+      \<and> geotop_is_broken_line C\<^sub>1
+      \<and> geotop_is_broken_line C\<^sub>2
+      \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+      \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+      \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+          geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  (**
+    Moise Figure 3.2 boundary step.  A finite polygonal linear graph is a
+    cyclic graph; cutting that cycle at two distinct vertices gives the two
+    polygonal boundary arcs used for the chord split. **)
+  sorry
+
 (** Local combinatorial helper for Moise 4.8/4.9, L1. If a simplex has
     two distinct vertices, the segment on those vertices is a 1-face. **)
 lemma geotop_simplex_vertices_pair_edge_face_prefix:
@@ -12211,8 +12234,82 @@ proof -
     "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
     by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
         [OF hL_linear hL_fin hL_polygon])
-  show ?thesis
+  obtain C\<^sub>1 C\<^sub>2 where hJ_boundary_split: "J = C\<^sub>1 \<union> C\<^sub>2"
+      and hC\<^sub>1_bl: "geotop_is_broken_line C\<^sub>1"
+      and hC\<^sub>2_bl: "geotop_is_broken_line C\<^sub>2"
+      and hC\<^sub>1E: "geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}"
+      and hC\<^sub>2E: "geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}"
+      and hC\<^sub>1C\<^sub>2:
+        "geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+          geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+  proof -
+    obtain C\<^sub>1 C\<^sub>2 where hsplit:
+        "geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_endpoints C\<^sub>2 {v\<^sub>0, v\<^sub>2}
+        \<and> geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2} \<inter>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2} = {}"
+      using geotop_polygon_finite_linear_graph_two_vertex_boundary_split_prefix
+        [OF hL_linear hL_fin hL_conn hL_polygon hv\<^sub>0L hv\<^sub>2L hv\<^sub>0v\<^sub>2]
+      by (by100 blast)
+    show ?thesis
+      using hsplit hL_poly that by (by100 blast)
+  qed
+  have hchord_decomposition:
+      "geotop_is_polygon (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2)
+      \<and> geotop_is_polygon J
+      \<and> geotop_is_polygon (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)
+      \<and> {C. \<exists>P\<in>geotop_polygon_interior J -
+              geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}.
+             C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J -
+                   geotop_arc_interior (closed_segment v\<^sub>0 v\<^sub>2) {v\<^sub>0, v\<^sub>2}) P}
+           =
+           {geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2),
+            geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2)}
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2))
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2))
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) - closed_segment v\<^sub>0 v\<^sub>2 =
+           (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}) \<union>
+           (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+            geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+      \<and> top1_connected_on
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2}))
+      \<and> top1_connected_on
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})
+             (subspace_topology UNIV geotop_euclidean_topology
+               (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+                geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2}))
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior (C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior (closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2) \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    by (rule hchord_decomposition_from_boundary_split
+        [OF hJ_boundary_split hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2])
+  have hsubdisk_induction_transfer:
+    "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+    (**
+      Remaining Moise Figure 3.2 step: define the two subdisk complexes from
+      the chord decomposition, apply the strong induction hypothesis on both
+      smaller polygonal disks, and transfer one free 2-simplex from each side
+      back to the original triangulation. **)
     sorry
+  show ?thesis
+    by (rule hsubdisk_induction_transfer)
 qed
 
 lemma geotop_polygon_disk_nonfree_boundary_triangle_decomposition_free_count_prefix:
