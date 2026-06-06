@@ -12127,6 +12127,12 @@ proof -
       and hv\<^sub>2L: "{v\<^sub>2} \<in> L"
     using geotop_polygon_finite_connected_linear_graph_with_two_vertices_prefix
       [OF hJ hv\<^sub>0J hv\<^sub>2J] by (by100 blast)
+  have hL_polygon: "geotop_is_polygon (geotop_polyhedron L)"
+    using hJ hL_poly by (by100 simp)
+  have hL_nonisolated:
+    "\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e)"
+    by (rule geotop_finite_linear_graph_polygon_vertices_nonisolated_prefix
+        [OF hL_linear hL_fin hL_polygon])
   show ?thesis
     sorry
 qed
