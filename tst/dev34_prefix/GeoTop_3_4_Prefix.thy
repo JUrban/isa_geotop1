@@ -8569,6 +8569,45 @@ proof -
       qed
     qed
   qed
+  have h\<theta>_inter_J:
+    "\<theta> \<inter> J = closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+  proof
+    show "\<theta> \<inter> J \<subseteq> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+    proof
+      fix x
+      assume hx: "x \<in> \<theta> \<inter> J"
+      have hx\<theta>: "x \<in> \<theta>"
+        using hx by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hx by (by100 blast)
+      have hxfront: "x \<in> frontier \<theta>"
+        by (rule geotop_polygon_boundary_point_in_2simplex_frontier_prefix
+            [OF hJ h\<theta>K h\<theta>2 hK_poly hx\<theta> hxJ])
+      have "x \<in> frontier \<theta> \<inter> J"
+        using hxfront hxJ by (by100 blast)
+      thus "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+        using h\<theta>_frontier_inter_J by (by100 simp)
+    qed
+    show "closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2} \<subseteq> \<theta> \<inter> J"
+    proof
+      fix x
+      assume hx: "x \<in> closed_segment v\<^sub>0 v\<^sub>1 \<union> {v\<^sub>2}"
+      have hxfrontJ: "x \<in> frontier \<theta> \<inter> J"
+        using hx h\<theta>_frontier_inter_J by (by100 simp)
+      have hxfront: "x \<in> frontier \<theta>"
+        using hxfrontJ by (by100 blast)
+      have hxJ: "x \<in> J"
+        using hxfrontJ by (by100 blast)
+      have h\<theta>closed: "closed \<theta>"
+        by (rule geotop_simplex_dim_closed[OF h\<theta>2])
+      have hxclosure: "x \<in> closure \<theta>"
+        using hxfront unfolding Elementary_Topology.frontier_def by (by100 blast)
+      have hx\<theta>: "x \<in> \<theta>"
+        using h\<theta>closed hxclosure by (by100 simp)
+      show "x \<in> \<theta> \<inter> J"
+        using hx\<theta> hxJ by (by100 blast)
+    qed
+  qed
   show ?thesis
     sorry
 qed
