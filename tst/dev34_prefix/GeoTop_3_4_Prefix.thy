@@ -7377,6 +7377,39 @@ proof -
   qed
 qed
 
+lemma geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix:
+  fixes J \<sigma> :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes h\<sigma>K: "\<sigma> \<in> K"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes hT_gt1: "card {\<tau>\<in>K. geotop_simplex_dim \<tau> 2} > 1"
+  shows "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J} = {} \<or>
+     (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} = {e}
+        \<and> geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J) \<or>
+     (\<exists>e1 e2. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<sigma> \<and> d \<subseteq> J} = {e1, e2}
+        \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
+        \<and> geotop_is_face e1 \<sigma> \<and> geotop_is_face e2 \<sigma> \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
+  (**
+    Allowed-shape form of the multi-triangle selected-edge bound: the
+    selected boundary-edge family of any 2-simplex in a disk with another
+    2-simplex has the exact shapes accepted by the free-simplex predicate. **)
+proof -
+  let ?E = "{e\<in>K. geotop_is_edge e \<and> geotop_is_face e \<sigma> \<and> e \<subseteq> J}"
+  have hE_data: "finite ?E \<and> card ?E \<le> 2"
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
+        [OF hJ hK hK_poly h\<sigma>K h\<sigma>2 hT_gt1])
+  have hE_fin: "finite ?E"
+    using hE_data by (by100 blast)
+  have hE_card_le2: "card ?E \<le> 2"
+    using hE_data by (by100 blast)
+  show ?thesis
+    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
+        [OF hE_fin hE_card_le2])
+qed
+
 lemma geotop_selected_boundary_edge_set_card_ge2_if_other_edge_prefix:
   fixes J \<theta> e\<^sub>0 e\<^sub>1 :: "(real^2) set" and K :: "(real^2) set set"
   assumes hE_fin: "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
@@ -9584,14 +9617,6 @@ proof -
     using hside_edge_K hnonbase_edge_face_data hside_hull_segment_eq by (by100 blast)
   have hT_gt1: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
     using hT_gt2 by (by100 simp)
-  have hEtheta_card_data:
-    "finite ?Etheta \<and> card ?Etheta \<le> 2"
-    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
-        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
-  have hEtheta_fin: "finite ?Etheta"
-    using hEtheta_card_data by (by100 blast)
-  have hEtheta_card_le2: "card ?Etheta \<le> 2"
-    using hEtheta_card_data by (by100 blast)
   have hEtheta_allowed:
     "?Etheta = {} \<or>
      (\<exists>e. ?Etheta = {e} \<and> geotop_is_edge e \<and> geotop_is_face e \<theta> \<and> e \<subseteq> J) \<or>
@@ -9599,8 +9624,8 @@ proof -
         geotop_is_edge e1 \<and> geotop_is_edge e2 \<and>
         geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and>
         e1 \<subseteq> J \<and> e2 \<subseteq> J)"
-    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
-        [OF hEtheta_fin hEtheta_card_le2])
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
   have hEtheta_subset_K: "?Etheta \<subseteq> K"
     by (by100 simp)
   have hEtheta_union_sub_\<theta>J: "\<Union>?Etheta \<subseteq> \<theta> \<inter> J"
@@ -10288,19 +10313,8 @@ proof -
     have hchord_ne_side_edge_pre:
       "geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<noteq> geotop_convex_hull {v\<^sub>1, v\<^sub>2}"
       using htriangle_edge_hulls_distinct_pre by (by100 simp)
-    have hE\<theta>_fin_pre:
-      "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}"
-      using hK_fin by (by100 simp)
     have hT_gt1_pre: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 1"
       using hT_gt2 by (by100 simp)
-    have hE\<theta>_card_data_pre:
-      "finite {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J}
-        \<and> card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-      by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_card_le2_prefix
-          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1_pre])
-    have hE\<theta>_card_le2_pre:
-      "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<le> 2"
-      using hE\<theta>_card_data_pre by (by100 blast)
     have hE\<theta>_allowed_pre:
       "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {} \<or>
        (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} = {e}
@@ -10309,8 +10323,8 @@ proof -
           \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
           \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta>
           \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
-      by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
-          [OF hE\<theta>_fin_pre hE\<theta>_card_le2_pre])
+      by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix
+          [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1_pre])
     have hE\<theta>_subset_K_pre:
       "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<subseteq> K"
       by (by100 simp)
@@ -10643,8 +10657,8 @@ proof -
         \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
         \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta>
         \<and> e1 \<subseteq> J \<and> e2 \<subseteq> J)"
-    by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
-        [OF hE\<theta>_fin hE\<theta>_card_le2])
+    by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix
+        [OF hJ hK hK_poly h\<theta>K h\<theta>2 hT_gt1])
   have hE\<theta>_subset_K:
     "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J} \<subseteq> K"
     by (by100 simp)
@@ -11268,15 +11282,12 @@ proof -
                   by (rule hE\<theta>_union_sub_\<theta>J)
               qed
             qed
+            have hT_gt1: "card ?T > 1"
+              using hT_gt2 by (by100 simp)
             have hE\<theta>_card_ne3:
               "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<noteq> 3"
-            proof -
-              have hT_gt1: "card ?T > 1"
-                using hT_gt2 by (by100 simp)
-              show ?thesis
-                by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
-                    [OF hJ' hK' hK_poly' h\<theta>K h\<theta>2 hT_gt1])
-            qed
+              by (rule geotop_polygon_disk_multi_2simplex_not_three_boundary_edges_prefix
+                  [OF hJ' hK' hK_poly' h\<theta>K h\<theta>2 hT_gt1])
             have hnot_both_other_boundary:
               "\<not> (geotop_convex_hull {v\<^sub>0, v\<^sub>2} \<subseteq> J'
                 \<and> geotop_convex_hull {v\<^sub>1, v\<^sub>2} \<subseteq> J')"
@@ -11285,9 +11296,6 @@ proof -
                     hv\<^sub>0v\<^sub>2_selected_if_boundary hv\<^sub>1v\<^sub>2_selected_if_boundary
                     hv\<^sub>0v\<^sub>1_ne_v\<^sub>0v\<^sub>2 hv\<^sub>0v\<^sub>1_ne_v\<^sub>1v\<^sub>2 hv\<^sub>0v\<^sub>2_ne_v\<^sub>1v\<^sub>2
                     hE\<theta>_card_le3 hE\<theta>_card_ne3])
-            have hE\<theta>_card_le2:
-              "card {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<le> 2"
-              using hE\<theta>_card_le3 hE\<theta>_card_ne3 by (by100 linarith)
             have hE\<theta>_allowed:
               "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {} \<or>
                (\<exists>e. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {e}
@@ -11295,8 +11303,8 @@ proof -
                (\<exists>e1 e2. {d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} = {e1, e2}
                   \<and> e1 \<noteq> e2 \<and> geotop_is_edge e1 \<and> geotop_is_edge e2
                   \<and> geotop_is_face e1 \<theta> \<and> geotop_is_face e2 \<theta> \<and> e1 \<subseteq> J' \<and> e2 \<subseteq> J')"
-              by (rule geotop_selected_boundary_edge_set_allowed_card_le2_prefix
-                  [OF hE\<theta>_fin hE\<theta>_card_le2])
+              by (rule geotop_polygon_disk_multi_2simplex_selected_boundary_edges_allowed_prefix
+                  [OF hJ' hK' hK_poly' h\<theta>K h\<theta>2 hT_gt1])
             have hE\<theta>_subset_K:
               "{d\<in>K. geotop_is_edge d \<and> geotop_is_face d \<theta> \<and> d \<subseteq> J'} \<subseteq> K"
               by (by100 simp)
