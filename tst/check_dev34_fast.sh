@@ -24,6 +24,8 @@ Fast modes:
   grep PAT     rg PAT in target dev34 theories and indexes
   scan PAT     alias for grep; use this before proof attempts
   dirty [FILES] show dirty/explicit dev34 layer files and the auto build target
+  plan [FILES]  show hot-loop parent heaps for changed/explicit files
+  warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; intended hot-loop verifier
 
@@ -142,7 +144,7 @@ layer_rank() {
   esac
 }
 
-proc_one() {
+parent_context() {
   file=$1
   case "$file" in
     dev34_pre/*)
@@ -186,16 +188,46 @@ proc_one() {
       dirs=(-d . -d dev34_pre -d dev34_prefix -d dev34_facts -d dev34_workfacts -d dev34_linkfacts -d dev34_graphfacts -d dev34_graphwork -d dev34_openstar -d dev34_core -d dev34)
       ;;
     *)
-      printf 'proc: %s is not in a dev34 layer\n' "$file" >&2
+      printf '%s: %s is not in a dev34 layer\n' "${2:-hot}" "$file" >&2
       return 2
       ;;
   esac
+}
+
+proc_one() {
+  file=$1
+  parent_context "$file" proc || return $?
 
   printf 'process_theories: %s with parent %s\n' "$file" "$logic"
   timeout "$limit" "$isabelle" process_theories \
     "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     "${dirs[@]}" -l "$logic" -o quick_and_dirty -f "$file"
+}
+
+plan_one() {
+  file=$1
+  parent_context "$file" plan || return $?
+  printf '%s\tparent=%s\n' "$file" "$logic"
+}
+
+warm_one() {
+  file=$1
+  parent_context "$file" warm || return $?
+  printf 'build parent heap: %s for %s\n' "$logic" "$file"
+  timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    "${dirs[@]}" -b "$logic"
+}
+
+ordered_layer_files() {
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    printf '%s\t%s\n' "$(layer_rank "$file")" "$file"
+  done <<EOF2
+$1
+EOF2
 }
 
 case "${1:-quick}" in
@@ -258,20 +290,53 @@ case "${1:-quick}" in
       printf 'auto would run: holes\n'
     fi
     ;;
+  plan)
+    shift
+    files=$(layer_files "$@")
+    if [ -z "$files" ]; then
+      printf '(no dirty dev34 layer files)\n'
+      exit 0
+    fi
+    while IFS="$(printf '\t')" read -r _ file; do
+      [ -z "$file" ] && continue
+      plan_one "$file"
+    done <<EOF2
+$(ordered_layer_files "$files" | sort -n -k1,1)
+EOF2
+    ;;
+  warm)
+    shift
+    files=$(layer_files "$@")
+    if [ -z "$files" ]; then
+      printf '(no dirty dev34 layer files)\n'
+      exit 0
+    fi
+    status=0
+    last_logic=
+    while IFS="$(printf '\t')" read -r _ file; do
+      [ -z "$file" ] && continue
+      parent_context "$file" warm || exit $?
+      if [ "$logic" = "$last_logic" ]; then
+        continue
+      fi
+      last_logic=$logic
+      if warm_one "$file"; then
+        :
+      else
+        status=$?
+        break
+      fi
+    done <<EOF2
+$(ordered_layer_files "$files" | sort -n -k1,1)
+EOF2
+    exit "$status"
+    ;;
   proc|process|hot)
     shift
     files=$(layer_files "$@")
     if [ -z "$files" ]; then
       exec "$0" holes
     fi
-    ordered_files=$(
-      while IFS= read -r file; do
-        [ -z "$file" ] && continue
-        printf '%s\t%s\n' "$(layer_rank "$file")" "$file"
-      done <<EOF2
-$files
-EOF2
-    )
     status=0
     while IFS="$(printf '\t')" read -r _ file; do
       [ -z "$file" ] && continue
@@ -282,7 +347,7 @@ EOF2
         break
       fi
     done <<EOF2
-$(printf '%s\n' "$ordered_files" | sort -n -k1,1)
+$(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
     exit "$status"
     ;;
