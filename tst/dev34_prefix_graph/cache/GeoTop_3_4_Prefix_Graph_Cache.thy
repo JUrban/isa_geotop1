@@ -4698,6 +4698,18 @@ proof -
     then show False
       using hx_cases hx\<^sub>3_ne_q\<^sub>1 by (by100 blast)
   qed
+  have hx\<^sub>1_arc_side_exclusive:
+      "(x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>1 \<notin> A\<^sub>2 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>1 \<notin> A\<^sub>1 - {w})"
+    using hx\<^sub>1_arc_side hx\<^sub>1_arc_side_unique by (by100 blast)
+  have hx\<^sub>2_arc_side_exclusive:
+      "(x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<notin> A\<^sub>2 - {w})
+      \<or> (x\<^sub>2 \<in> A\<^sub>2 - {w} \<and> x\<^sub>2 \<notin> A\<^sub>1 - {w})"
+    using hx\<^sub>2_arc_side hx\<^sub>2_arc_side_unique by (by100 blast)
+  have hx\<^sub>3_arc_side_exclusive:
+      "(x\<^sub>3 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<notin> A\<^sub>2 - {w})
+      \<or> (x\<^sub>3 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<notin> A\<^sub>1 - {w})"
+    using hx\<^sub>3_arc_side hx\<^sub>3_arc_side_unique by (by100 blast)
   have htwo_witnesses_same_arc_side:
       "(x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w})
       \<or> (x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
