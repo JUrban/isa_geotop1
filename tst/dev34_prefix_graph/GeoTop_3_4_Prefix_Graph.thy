@@ -3243,7 +3243,67 @@ proof -
         successor rule would force the later part of the enumeration to trace
         the earlier part backwards, giving an oriented state repetition before
         the least period. **)
-      sorry
+    proof (rule ccontr)
+      assume hnext_ne: "?v (Suc m) \<noteq> ?v (Suc n)"
+      let ?e\<^sub>m = "closed_segment (?v m) (?v (Suc m))"
+      let ?prev_n = "if n = 0 then p - 1 else n - 1"
+      have hm_lt: "m < p"
+        using hm by (by100 simp)
+      have hn_lt: "n < p"
+        using hn by (by100 simp)
+      have he\<^sub>m_L_edge: "?e\<^sub>m \<in> L \<and> geotop_is_edge ?e\<^sub>m"
+        by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+            [OF hL_linear hdegree hs])
+      have he\<^sub>m_L: "?e\<^sub>m \<in> L"
+        using he\<^sub>m_L_edge by (by100 blast)
+      have he\<^sub>m_edge: "geotop_is_edge ?e\<^sub>m"
+        using he\<^sub>m_L_edge by (by100 blast)
+      have hn_inc: "?v n \<in> ?e\<^sub>m"
+        using hcur by (by100 simp)
+      have hcases_n:
+          "?e\<^sub>m = closed_segment (?v ?prev_n) (?v n)
+          \<or> ?e\<^sub>m = closed_segment (?v n) (?v (Suc n))"
+        by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+            [OF hL_linear hdegree hs hp_pos hp_closed hn_lt he\<^sub>m_L he\<^sub>m_edge hn_inc])
+      have hnext_m_ne_cur: "?v (Suc m) \<noteq> ?v m"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+            [OF hL_linear hdegree hs])
+      have hnot_out_n:
+          "?e\<^sub>m \<noteq> closed_segment (?v n) (?v (Suc n))"
+      proof
+        assume hout: "?e\<^sub>m = closed_segment (?v n) (?v (Suc n))"
+        have hpair:
+            "{?v m, ?v (Suc m)} = {?v n, ?v (Suc n)}"
+          using hout closed_segment_eq[of "?v m" "?v (Suc m)" "?v n" "?v (Suc n)"]
+          by (by100 simp)
+        have hnext_mem: "?v (Suc m) \<in> {?v n, ?v (Suc n)}"
+          using hpair by (by100 blast)
+        have hnext_not_n: "?v (Suc m) \<noteq> ?v n"
+        proof
+          assume hbad: "?v (Suc m) = ?v n"
+          have "?v (Suc m) = ?v m"
+            using hbad hcur by (by100 simp)
+          thus False
+            using hnext_m_ne_cur by (by100 blast)
+        qed
+        have "?v (Suc m) = ?v (Suc n)"
+          using hnext_mem hnext_not_n by (by100 blast)
+        thus False
+          using hnext_ne by (by100 blast)
+      qed
+      have hback_n: "?e\<^sub>m = closed_segment (?v ?prev_n) (?v n)"
+        using hcases_n hnot_out_n by (by100 blast)
+      have hreverse_trace_repetition_book: False
+        (**
+          Remaining reverse-trace contradiction: the equality above starts the
+          backwards tracing induction; iterating the same degree-two argument
+          along the finite interval between \<open>m\<close> and \<open>n\<close> produces either an
+          adjacent repeated vertex or an oriented state repetition before the
+          least period. **)
+        sorry
+      show False
+        by (rule hreverse_trace_repetition_book)
+    qed
     show "m = n"
       using hsame_current_next_index_unique hm hn hcur hno_opposite_traversal_book
       by (by100 blast)
