@@ -3822,6 +3822,69 @@ proof -
         [OF hL hdegree hs hp_pos hp_closed hk_lt heL hedge hinc_k])
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_edge_endpoints_in_vertex_orbit_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hj_lt: "j < p"
+  shows "fst ((geotop_oriented_edge_successor L ^^ j) s)
+        \<in> (\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}
+      \<and> fst ((geotop_oriented_edge_successor L ^^ Suc j) s)
+        \<in> (\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}"
+proof -
+  let ?V = "(\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}"
+  have hleft: "fst ((geotop_oriented_edge_successor L ^^ j) s) \<in> ?V"
+  proof -
+    have hj_mem: "j \<in> {0..<p}"
+      using hj_lt by (by100 simp)
+    show ?thesis
+    proof (rule image_eqI[where x=j])
+      show "fst ((geotop_oriented_edge_successor L ^^ j) s) =
+          fst ((geotop_oriented_edge_successor L ^^ j) s)"
+        by (by100 simp)
+      show "j \<in> {0..<p}"
+        by (rule hj_mem)
+    qed
+  qed
+  have hright: "fst ((geotop_oriented_edge_successor L ^^ Suc j) s) \<in> ?V"
+  proof (cases "Suc j < p")
+    case True
+    have hSuc_mem: "Suc j \<in> {0..<p}"
+      using True by (by100 simp)
+    show ?thesis
+    proof (rule image_eqI[where x="Suc j"])
+      show "fst ((geotop_oriented_edge_successor L ^^ Suc j) s) =
+          fst ((geotop_oriented_edge_successor L ^^ Suc j) s)"
+        by (by100 simp)
+      show "Suc j \<in> {0..<p}"
+        by (rule hSuc_mem)
+    qed
+  next
+    case False
+    have hSuc_eq: "Suc j = p"
+      using hj_lt False by (by100 linarith)
+    have hclose: "fst ((geotop_oriented_edge_successor L ^^ Suc j) s) = fst s"
+      using hSuc_eq hp_closed by (by100 simp)
+    have hzero: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    show ?thesis
+    proof (rule image_eqI[where x=0])
+      show "fst ((geotop_oriented_edge_successor L ^^ Suc j) s) =
+          fst ((geotop_oriented_edge_successor L ^^ 0) s)"
+        using hclose by (by100 simp)
+      show "0 \<in> {0..<p}"
+        by (rule hzero)
+    qed
+  qed
+  show ?thesis
+    using hleft hright by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
