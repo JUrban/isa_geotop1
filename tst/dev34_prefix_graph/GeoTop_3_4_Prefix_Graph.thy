@@ -469,6 +469,53 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_two_vertices_indices_prefix:
+  fixes L :: "(real^2) set set" and P Q :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hPL: "{P} \<in> L"
+  assumes hQL: "{Q} \<in> L"
+  assumes hPQ: "P \<noteq> Q"
+  shows "\<exists>i j. i \<in> {0..<p} \<and> j \<in> {0..<p} \<and> i \<noteq> j
+      \<and> P = fst ((geotop_oriented_edge_successor L ^^ i) s)
+      \<and> Q = fst ((geotop_oriented_edge_successor L ^^ j) s)"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  have hP_orbit: "P \<in> ?v ` {0..<p}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_in_exhausted_cycle_prefix
+        [OF hL hfin hconn hdegree hs hp_pos hp_closed hPL])
+  have hQ_orbit: "Q \<in> ?v ` {0..<p}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_in_exhausted_cycle_prefix
+        [OF hL hfin hconn hdegree hs hp_pos hp_closed hQL])
+  obtain i where hi: "i \<in> {0..<p}" and hPi: "P = ?v i"
+    using hP_orbit by (by100 blast)
+  obtain j where hj: "j \<in> {0..<p}" and hQj: "Q = ?v j"
+    using hQ_orbit by (by100 blast)
+  have hij: "i \<noteq> j"
+  proof
+    assume hij_eq: "i = j"
+    have "P = Q"
+      using hPi hQj hij_eq by (by100 simp)
+    thus False
+      using hPQ by (by100 blast)
+  qed
+  show ?thesis
+  proof (intro exI conjI)
+    show "i \<in> {0..<p}" by (rule hi)
+    show "j \<in> {0..<p}" by (rule hj)
+    show "i \<noteq> j" by (rule hij)
+    show "P = ?v i" by (rule hPi)
+    show "Q = ?v j" by (rule hQj)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
