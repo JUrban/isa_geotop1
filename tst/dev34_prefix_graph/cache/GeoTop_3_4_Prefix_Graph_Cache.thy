@@ -4641,6 +4641,63 @@ proof -
     using hx\<^sub>2_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
   have hx\<^sub>3_arc_side: "x\<^sub>3 \<in> A\<^sub>1 - {w} \<or> x\<^sub>3 \<in> A\<^sub>2 - {w}"
     using hx\<^sub>3_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
+  have hq\<^sub>1_in_e\<^sub>1: "q\<^sub>1 \<in> e\<^sub>1"
+    using he\<^sub>1_seg by (by100 simp)
+  have hq\<^sub>1_not_e\<^sub>2: "q\<^sub>1 \<notin> e\<^sub>2"
+    using hq\<^sub>1_in_e\<^sub>1 he\<^sub>12_inter hq\<^sub>1w by (by100 blast)
+  have hq\<^sub>1_not_e\<^sub>3: "q\<^sub>1 \<notin> e\<^sub>3"
+    using hq\<^sub>1_in_e\<^sub>1 he\<^sub>13_inter hq\<^sub>1w by (by100 blast)
+  have hx\<^sub>1_ne_q\<^sub>1: "x\<^sub>1 \<noteq> q\<^sub>1"
+  proof
+    assume hx_eq: "x\<^sub>1 = q\<^sub>1"
+    have "dist w q\<^sub>1 = r"
+      using hx\<^sub>1_edge_sphere hx_eq by (by100 simp)
+    then show False
+      using hr_lt_q\<^sub>1 by (by100 linarith)
+  qed
+  have hx\<^sub>2_ne_q\<^sub>1: "x\<^sub>2 \<noteq> q\<^sub>1"
+    using hx\<^sub>2_edge_sphere hq\<^sub>1_not_e\<^sub>2 by (by100 blast)
+  have hx\<^sub>3_ne_q\<^sub>1: "x\<^sub>3 \<noteq> q\<^sub>1"
+    using hx\<^sub>3_edge_sphere hq\<^sub>1_not_e\<^sub>3 by (by100 blast)
+  have hx\<^sub>1_arc_side_unique:
+      "\<not> (x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>1 \<in> A\<^sub>2 - {w})"
+  proof
+    assume hboth: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>1 \<in> A\<^sub>2 - {w}"
+    have hx_inter: "x\<^sub>1 \<in> A\<^sub>1 \<inter> A\<^sub>2"
+      using hboth by (by100 blast)
+    have hx_cases: "x\<^sub>1 = w \<or> x\<^sub>1 = q\<^sub>1"
+      using hx_inter hA_inter by (by100 blast)
+    have "x\<^sub>1 \<noteq> w"
+      using hx\<^sub>1_edge_sphere by (by100 blast)
+    then show False
+      using hx_cases hx\<^sub>1_ne_q\<^sub>1 by (by100 blast)
+  qed
+  have hx\<^sub>2_arc_side_unique:
+      "\<not> (x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w})"
+  proof
+    assume hboth: "x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w}"
+    have hx_inter: "x\<^sub>2 \<in> A\<^sub>1 \<inter> A\<^sub>2"
+      using hboth by (by100 blast)
+    have hx_cases: "x\<^sub>2 = w \<or> x\<^sub>2 = q\<^sub>1"
+      using hx_inter hA_inter by (by100 blast)
+    have "x\<^sub>2 \<noteq> w"
+      using hx\<^sub>2_edge_sphere by (by100 blast)
+    then show False
+      using hx_cases hx\<^sub>2_ne_q\<^sub>1 by (by100 blast)
+  qed
+  have hx\<^sub>3_arc_side_unique:
+      "\<not> (x\<^sub>3 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w})"
+  proof
+    assume hboth: "x\<^sub>3 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+    have hx_inter: "x\<^sub>3 \<in> A\<^sub>1 \<inter> A\<^sub>2"
+      using hboth by (by100 blast)
+    have hx_cases: "x\<^sub>3 = w \<or> x\<^sub>3 = q\<^sub>1"
+      using hx_inter hA_inter by (by100 blast)
+    have "x\<^sub>3 \<noteq> w"
+      using hx\<^sub>3_edge_sphere by (by100 blast)
+    then show False
+      using hx_cases hx\<^sub>3_ne_q\<^sub>1 by (by100 blast)
+  qed
   have htwo_witnesses_same_arc_side:
       "(x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w})
       \<or> (x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
