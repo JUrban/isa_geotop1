@@ -6,6 +6,9 @@ lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
   assumes hs:
     "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
   assumes hp_gt1: "1 < p"
@@ -173,7 +176,7 @@ proof -
           (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
         \<and> geotop_isomorphism L F \<psi>"
     by (rule geotop_successor_cycle_realizes_boundary_subdivision_model_dev34
-        [OF hL_linear hL_finite hs hp_gt1 hp_closed hinj hcard hL_cycle])
+        [OF hL_linear hL_finite hdegree_two hs hp_gt1 hp_closed hinj hcard hL_cycle])
   show ?thesis
     by (rule hordered_cycle_model)
 qed
