@@ -7458,6 +7458,34 @@ proof -
               geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
     by (rule hchord_decomposition_from_boundary_split
         [OF hJ_boundary_split hC\<^sub>1_bl hC\<^sub>2_bl hC\<^sub>1E hC\<^sub>2E hC\<^sub>1C\<^sub>2])
+  define J\<^sub>1 where "J\<^sub>1 = C\<^sub>1 \<union> closed_segment v\<^sub>0 v\<^sub>2"
+  define J\<^sub>2 where "J\<^sub>2 = closed_segment v\<^sub>0 v\<^sub>2 \<union> C\<^sub>2"
+  have hsubdisk_book_facts:
+    "geotop_is_polygon J\<^sub>1
+      \<and> geotop_is_polygon J\<^sub>2
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1)
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>2)
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+    (**
+      Book Figure 3.2 subdisk package.  The two displayed polygons are the
+      subdisks on either side of the chord, and the closure/separation data is
+      exactly the already-proved chord decomposition rewritten with names. **)
+    using hchord_decomposition unfolding J\<^sub>1_def J\<^sub>2_def by (by100 blast)
+  have hsubdisk_induction_transfer_book:
+    "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+    (**
+      Remaining Moise Figure 3.2 induction-transfer step: apply the strong
+      induction hypothesis on the two named subdisks and transfer one free
+      2-simplex from each side back to the original triangulation. **)
+    sorry
   have hsubdisk_induction_transfer:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
@@ -7465,7 +7493,7 @@ proof -
       the chord decomposition, apply the strong induction hypothesis on both
       smaller polygonal disks, and transfer one free 2-simplex from each side
       back to the original triangulation. **)
-    sorry
+    by (rule hsubdisk_induction_transfer_book)
   show ?thesis
     by (rule hsubdisk_induction_transfer)
 qed
