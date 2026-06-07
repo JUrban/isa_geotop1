@@ -1713,6 +1713,95 @@ proof -
     using hq\<^sub>2L hq\<^sub>2w unfolding geotop_polyhedron_def by (by100 blast)
   have hq\<^sub>3_punctured: "q\<^sub>3 \<in> geotop_polyhedron L - {w}"
     using hq\<^sub>3L hq\<^sub>3w unfolding geotop_polyhedron_def by (by100 blast)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+  have he\<^sub>12_inter: "e\<^sub>1 \<inter> e\<^sub>2 = {w}"
+  proof -
+    have hInt: "e\<^sub>1 \<inter> e\<^sub>2 \<noteq> {}"
+      using hw_e\<^sub>1 hw_e\<^sub>2 by (by100 blast)
+    obtain p where hp: "e\<^sub>1 \<inter> e\<^sub>2 = {p}"
+      using geotop_complex_distinct_intersecting_edges_inter_singleton_prefix
+          [OF hL_complex he\<^sub>1L he\<^sub>2L he\<^sub>1_edge he\<^sub>2_edge he\<^sub>12 hInt]
+      by (by100 blast)
+    have "w \<in> e\<^sub>1 \<inter> e\<^sub>2"
+      using hw_e\<^sub>1 hw_e\<^sub>2 by (by100 blast)
+    hence "p = w"
+      using hp by (by100 simp)
+    show ?thesis
+      using hp \<open>p = w\<close> by (by100 simp)
+  qed
+  have he\<^sub>13_inter: "e\<^sub>1 \<inter> e\<^sub>3 = {w}"
+  proof -
+    have hInt: "e\<^sub>1 \<inter> e\<^sub>3 \<noteq> {}"
+      using hw_e\<^sub>1 hw_e\<^sub>3 by (by100 blast)
+    obtain p where hp: "e\<^sub>1 \<inter> e\<^sub>3 = {p}"
+      using geotop_complex_distinct_intersecting_edges_inter_singleton_prefix
+          [OF hL_complex he\<^sub>1L he\<^sub>3L he\<^sub>1_edge he\<^sub>3_edge he\<^sub>13 hInt]
+      by (by100 blast)
+    have "w \<in> e\<^sub>1 \<inter> e\<^sub>3"
+      using hw_e\<^sub>1 hw_e\<^sub>3 by (by100 blast)
+    hence "p = w"
+      using hp by (by100 simp)
+    show ?thesis
+      using hp \<open>p = w\<close> by (by100 simp)
+  qed
+  have he\<^sub>23_inter: "e\<^sub>2 \<inter> e\<^sub>3 = {w}"
+  proof -
+    have hInt: "e\<^sub>2 \<inter> e\<^sub>3 \<noteq> {}"
+      using hw_e\<^sub>2 hw_e\<^sub>3 by (by100 blast)
+    obtain p where hp: "e\<^sub>2 \<inter> e\<^sub>3 = {p}"
+      using geotop_complex_distinct_intersecting_edges_inter_singleton_prefix
+          [OF hL_complex he\<^sub>2L he\<^sub>3L he\<^sub>2_edge he\<^sub>3_edge he\<^sub>23 hInt]
+      by (by100 blast)
+    have "w \<in> e\<^sub>2 \<inter> e\<^sub>3"
+      using hw_e\<^sub>2 hw_e\<^sub>3 by (by100 blast)
+    hence "p = w"
+      using hp by (by100 simp)
+    show ?thesis
+      using hp \<open>p = w\<close> by (by100 simp)
+  qed
+  have he\<^sub>12_punctured_disj: "(e\<^sub>1 - {w}) \<inter> (e\<^sub>2 - {w}) = {}"
+    using he\<^sub>12_inter by (by100 blast)
+  have he\<^sub>13_punctured_disj: "(e\<^sub>1 - {w}) \<inter> (e\<^sub>3 - {w}) = {}"
+    using he\<^sub>13_inter by (by100 blast)
+  have he\<^sub>23_punctured_disj: "(e\<^sub>2 - {w}) \<inter> (e\<^sub>3 - {w}) = {}"
+    using he\<^sub>23_inter by (by100 blast)
+  have he\<^sub>1_punctured_sub: "e\<^sub>1 - {w} \<subseteq> geotop_polyhedron L - {w}"
+    using he\<^sub>1_sub_poly by (by100 blast)
+  have he\<^sub>2_punctured_sub: "e\<^sub>2 - {w} \<subseteq> geotop_polyhedron L - {w}"
+    using he\<^sub>2_sub_poly by (by100 blast)
+  have he\<^sub>3_punctured_sub: "e\<^sub>3 - {w} \<subseteq> geotop_polyhedron L - {w}"
+    using he\<^sub>3_sub_poly by (by100 blast)
+  have he\<^sub>1_germ_meets_ball:
+      "\<And>\<delta>::real. 0 < \<delta> \<Longrightarrow> \<exists>x. x \<in> (e\<^sub>1 - {w}) \<inter> ball w \<delta>"
+  proof -
+    fix \<delta> :: real
+    assume h\<delta>: "0 < \<delta>"
+    obtain x where hx: "x \<in> (closed_segment w q\<^sub>1 - {w}) \<inter> ball w \<delta>"
+      using nondegenerate_segment_meets_ball[OF hq\<^sub>1w h\<delta>] by (by100 blast)
+    show "\<exists>x. x \<in> (e\<^sub>1 - {w}) \<inter> ball w \<delta>"
+      using hx he\<^sub>1_seg by (by100 blast)
+  qed
+  have he\<^sub>2_germ_meets_ball:
+      "\<And>\<delta>::real. 0 < \<delta> \<Longrightarrow> \<exists>x. x \<in> (e\<^sub>2 - {w}) \<inter> ball w \<delta>"
+  proof -
+    fix \<delta> :: real
+    assume h\<delta>: "0 < \<delta>"
+    obtain x where hx: "x \<in> (closed_segment w q\<^sub>2 - {w}) \<inter> ball w \<delta>"
+      using nondegenerate_segment_meets_ball[OF hq\<^sub>2w h\<delta>] by (by100 blast)
+    show "\<exists>x. x \<in> (e\<^sub>2 - {w}) \<inter> ball w \<delta>"
+      using hx he\<^sub>2_seg by (by100 blast)
+  qed
+  have he\<^sub>3_germ_meets_ball:
+      "\<And>\<delta>::real. 0 < \<delta> \<Longrightarrow> \<exists>x. x \<in> (e\<^sub>3 - {w}) \<inter> ball w \<delta>"
+  proof -
+    fix \<delta> :: real
+    assume h\<delta>: "0 < \<delta>"
+    obtain x where hx: "x \<in> (closed_segment w q\<^sub>3 - {w}) \<inter> ball w \<delta>"
+      using nondegenerate_segment_meets_ball[OF hq\<^sub>3w h\<delta>] by (by100 blast)
+    show "\<exists>x. x \<in> (e\<^sub>3 - {w}) \<inter> ball w \<delta>"
+      using hx he\<^sub>3_seg by (by100 blast)
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
