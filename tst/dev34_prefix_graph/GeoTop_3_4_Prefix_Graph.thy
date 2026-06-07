@@ -3273,6 +3273,51 @@ proof -
     using hneq by (by100 simp)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_funpow_vertex_in_graph_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "{fst ((geotop_oriented_edge_successor L ^^ k) s)} \<in> L"
+proof -
+  have hstate: "(geotop_oriented_edge_successor L ^^ k) s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+        [OF hL hdegree hs])
+  obtain v d where hvd: "(geotop_oriented_edge_successor L ^^ k) s = (v, d)"
+    by (cases "(geotop_oriented_edge_successor L ^^ k) s") (by100 blast)
+  have "{v} \<in> L"
+    using hstate hvd by (by100 simp)
+  show ?thesis
+    using \<open>{v} \<in> L\<close> hvd by (by100 simp)
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_funpow_edge_in_graph_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "snd ((geotop_oriented_edge_successor L ^^ k) s) \<in> L
+      \<and> geotop_is_edge (snd ((geotop_oriented_edge_successor L ^^ k) s))
+      \<and> fst ((geotop_oriented_edge_successor L ^^ k) s)
+          \<in> snd ((geotop_oriented_edge_successor L ^^ k) s)"
+proof -
+  have hstate: "(geotop_oriented_edge_successor L ^^ k) s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+        [OF hL hdegree hs])
+  obtain v d where hvd: "(geotop_oriented_edge_successor L ^^ k) s = (v, d)"
+    by (cases "(geotop_oriented_edge_successor L ^^ k) s") (by100 blast)
+  have "d \<in> L \<and> geotop_is_edge d \<and> v \<in> d"
+    using hstate hvd by (by100 simp)
+  show ?thesis
+    using \<open>d \<in> L \<and> geotop_is_edge d \<and> v \<in> d\<close> hvd by (by100 simp)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
