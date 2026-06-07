@@ -4615,6 +4615,12 @@ proof -
   have hpunctured_carrier_arc_decomp:
       "geotop_polyhedron L - {w} = (A\<^sub>1 - {w}) \<union> (A\<^sub>2 - {w})"
     using hA_decomp by (by100 blast)
+  have hx\<^sub>1_arc_side: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<or> x\<^sub>1 \<in> A\<^sub>2 - {w}"
+    using hx\<^sub>1_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
+  have hx\<^sub>2_arc_side: "x\<^sub>2 \<in> A\<^sub>1 - {w} \<or> x\<^sub>2 \<in> A\<^sub>2 - {w}"
+    using hx\<^sub>2_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
+  have hx\<^sub>3_arc_side: "x\<^sub>3 \<in> A\<^sub>1 - {w} \<or> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+    using hx\<^sub>3_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
