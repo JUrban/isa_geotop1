@@ -2554,6 +2554,44 @@ proof -
     using hs1_eq hs2_eq hw2_eq_w1 he2_eq_e1 by (by100 blast)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_fun_inj_on_states_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "inj_on (geotop_oriented_edge_successor L)
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+proof (rule inj_onI)
+  fix s\<^sub>1 s\<^sub>2
+  assume hs1: "s\<^sub>1 \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assume hs2: "s\<^sub>2 \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assume heq: "geotop_oriented_edge_successor L s\<^sub>1 =
+      geotop_oriented_edge_successor L s\<^sub>2"
+  have hstep1: "geotop_oriented_edge_successor L s\<^sub>1 \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s\<^sub>1
+          (geotop_oriented_edge_successor L s\<^sub>1)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hs1])
+  have hstep2: "geotop_oriented_edge_successor L s\<^sub>2 \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s\<^sub>2
+          (geotop_oriented_edge_successor L s\<^sub>2)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hs2])
+  have hsucc1: "geotop_oriented_edge_successor_state L s\<^sub>1
+      (geotop_oriented_edge_successor L s\<^sub>1)"
+    by (rule conjunct2[OF hstep1])
+  have hsucc2: "geotop_oriented_edge_successor_state L s\<^sub>2
+      (geotop_oriented_edge_successor L s\<^sub>1)"
+    using conjunct2[OF hstep2] heq by (by100 simp)
+  show "s\<^sub>1 = s\<^sub>2"
+    by (rule geotop_degree_two_oriented_edge_successor_state_predecessor_unique_prefix
+        [OF hL hdegree hsucc1 hsucc2])
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_funpow_state_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
