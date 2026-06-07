@@ -4979,7 +4979,43 @@ lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
     degree-one endpoint made explicit, the broken-line carrier gives the
     ordered edge-chain from \<open>w\<close>.  Realize it as a subdivided boundary arc of
     a standard 2-simplex before coning from the adjacent boundary vertex. **)
-  sorry
+proof -
+  have hendpoint: "geotop_graph_endpoint L w"
+    by (rule geotop_degree_one_vertex_graph_endpoint_dev34[OF hL_linear hwL hcard_one])
+  obtain e q where heL: "e \<in> L"
+      and he_edge: "geotop_is_edge e"
+      and hw_e: "w \<in> e"
+      and hq_ne: "q \<noteq> w"
+      and he_seg: "e = closed_segment w q"
+      and hqL: "{q} \<in> L"
+    using geotop_graph_endpoint_unique_segment_neighbor_dev34[OF hL_linear hL_finite hendpoint]
+    by (by100 blast)
+  have hordered_chain_fan_book:
+    "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    (**
+      Remaining Moise Fig. 4.10 endpoint-chain package: enumerate the finite
+      connected broken-line graph from endpoint \<open>w\<close> through its first neighbor
+      \<open>q\<close>, realize the ordered chain as a subdivision of one boundary arc of a
+      standard 2-simplex, choose the adjacent boundary vertex \<open>c\<close>, and cone the
+      arc subdivision from \<open>c\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hordered_chain_fan_book)
+qed
 
 lemma geotop_endpoint_finite_linear_graph_boundary_vertex_fan_target_dev34:
   fixes L :: "(real^2) set set"
