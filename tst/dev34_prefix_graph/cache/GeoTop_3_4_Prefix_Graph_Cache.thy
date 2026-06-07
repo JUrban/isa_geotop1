@@ -5615,6 +5615,127 @@ proof -
       qed
     qed
   qed
+  have hpunctured_carrier_connected_meets_two_sphere_germs:
+      "\<exists>S T N x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> x \<in> N
+        \<and> y \<in> N
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+  proof -
+    obtain S T C x y where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hST: "S \<noteq> T"
+        and hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hxC: "x \<in> C - {w}"
+        and hyC: "y \<in> C - {w}"
+        and hconnC: "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      using htwo_selected_sphere_germs_connected_in_arc_side by (elim exE conjE)
+    have hC_sub_poly: "C \<subseteq> geotop_polyhedron L"
+    proof
+      fix z
+      assume hzC: "z \<in> C"
+      have hcases: "C = A\<^sub>1 \<or> C = A\<^sub>2"
+        using hC by (by100 simp)
+      show "z \<in> geotop_polyhedron L"
+        using hcases hzC hA_decomp by (by100 blast)
+    qed
+    have hN_sub: "C - {w} \<subseteq> geotop_polyhedron L - {w}"
+      using hC_sub_poly by (by100 blast)
+    have hbody:
+        "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> C - {w} \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+    proof (intro conjI)
+      show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+      show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+      show "S \<noteq> T" by (rule hST)
+      show "C - {w} \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
+      show "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        by (rule hconnC)
+      show "x \<in> C - {w}" by (rule hxC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hxS)
+      show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+    qed
+    show ?thesis
+    proof (rule exI[where x=S])
+      show "\<exists>T N x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> x \<in> N
+        \<and> y \<in> N
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      proof (rule exI[where x=T])
+        show "\<exists>N x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> N \<subseteq> geotop_polyhedron L - {w}
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> x \<in> N
+          \<and> y \<in> N
+          \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+        proof (rule exI[where x="C - {w}"])
+          show "\<exists>x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> C - {w} \<subseteq> geotop_polyhedron L - {w}
+            \<and> top1_connected_on (C - {w})
+              (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+            \<and> x \<in> C - {w}
+            \<and> y \<in> C - {w}
+            \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+            \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+          proof (rule exI[where x=x])
+            show "\<exists>y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> S \<noteq> T
+              \<and> C - {w} \<subseteq> geotop_polyhedron L - {w}
+              \<and> top1_connected_on (C - {w})
+                (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+              \<and> x \<in> C - {w}
+              \<and> y \<in> C - {w}
+              \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+              \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+            proof (rule exI[where x=y])
+              show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> S \<noteq> T
+                \<and> C - {w} \<subseteq> geotop_polyhedron L - {w}
+                \<and> top1_connected_on (C - {w})
+                  (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+                \<and> x \<in> C - {w}
+                \<and> y \<in> C - {w}
+                \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+                \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+                by (rule hbody)
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
