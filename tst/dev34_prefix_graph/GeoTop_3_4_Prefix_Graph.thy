@@ -856,6 +856,54 @@ proof -
   define K\<^sub>2 where "K\<^sub>2 =
       ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))
       \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+  have hP_K\<^sub>1: "{P} \<in> K\<^sub>1"
+  proof -
+    have h0mem: "0 \<in> {0..j}"
+      by (by100 simp)
+    have "?v 0 \<in> ?v ` {0..j}"
+      by (rule imageI[OF h0mem])
+    hence "{?v 0} \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+      by (by100 blast)
+    thus ?thesis
+      unfolding K\<^sub>1_def using hP0 by (by100 simp)
+  qed
+  have hQ_K\<^sub>1: "{Q} \<in> K\<^sub>1"
+  proof -
+    have hjmem: "j \<in> {0..j}"
+      by (by100 simp)
+    have "?v j \<in> ?v ` {0..j}"
+      by (rule imageI[OF hjmem])
+    hence "{?v j} \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+      by (by100 blast)
+    thus ?thesis
+      unfolding K\<^sub>1_def using hQj by (by100 simp)
+  qed
+  have hQ_K\<^sub>2: "{Q} \<in> K\<^sub>2"
+  proof -
+    have "j \<in> {j..<p} \<union> {p}"
+      using hj_lt by (by100 simp)
+    hence "?v j \<in> ?v ` ({j..<p} \<union> {p})"
+      by (rule imageI)
+    hence "{?v j} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      by (by100 blast)
+    hence hQ_vertex: "{Q} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      using hQj by (by100 simp)
+    thus ?thesis
+      unfolding K\<^sub>2_def by (by100 blast)
+  qed
+  have hP_K\<^sub>2: "{P} \<in> K\<^sub>2"
+  proof -
+    have "p \<in> {j..<p} \<union> {p}"
+      by (by100 simp)
+    hence "?v p \<in> ?v ` ({j..<p} \<union> {p})"
+      by (rule imageI)
+    hence "{?v p} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      by (by100 blast)
+    hence hP_vertex: "{P} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      using hPp by (by100 simp)
+    thus ?thesis
+      unfolding K\<^sub>2_def by (by100 blast)
+  qed
   have hK\<^sub>1_fin: "finite K\<^sub>1"
     unfolding K\<^sub>1_def using hpath1_vertices_fin by (by100 simp)
   have hK\<^sub>2_fin: "finite K\<^sub>2"
