@@ -2436,6 +2436,124 @@ proof -
     using hex1 by (rule theI')
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_state_predecessor_unique_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hsucc1: "geotop_oriented_edge_successor_state L s\<^sub>1 t"
+  assumes hsucc2: "geotop_oriented_edge_successor_state L s\<^sub>2 t"
+  shows "s\<^sub>1 = s\<^sub>2"
+proof -
+  obtain w\<^sub>1 e\<^sub>1 where hs1_eq: "s\<^sub>1 = (w\<^sub>1, e\<^sub>1)"
+    by (cases s\<^sub>1) (by100 blast)
+  obtain w\<^sub>2 e\<^sub>2 where hs2_eq: "s\<^sub>2 = (w\<^sub>2, e\<^sub>2)"
+    by (cases s\<^sub>2) (by100 blast)
+  obtain q e' where ht_eq: "t = (q, e')"
+    by (cases t) (by100 blast)
+  have hqL: "{q} \<in> L"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he'L: "e' \<in> L"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he'edge: "geotop_is_edge e'"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hqe': "q \<in> e'"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hw1L: "{w\<^sub>1} \<in> L"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he1L: "e\<^sub>1 \<in> L"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he1edge: "geotop_is_edge e\<^sub>1"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hqw1: "q \<noteq> w\<^sub>1"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hw1q: "w\<^sub>1 \<noteq> q"
+    using hqw1 by (by100 simp)
+  have he1_seg: "e\<^sub>1 = closed_segment w\<^sub>1 q"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he'_ne_e1: "e' \<noteq> e\<^sub>1"
+    using hsucc1 hs1_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he1_ne_e': "e\<^sub>1 \<noteq> e'"
+    using he'_ne_e1 by (by100 simp)
+  have hw2L: "{w\<^sub>2} \<in> L"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he2L: "e\<^sub>2 \<in> L"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he2edge: "geotop_is_edge e\<^sub>2"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hqw2: "q \<noteq> w\<^sub>2"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hw2q: "w\<^sub>2 \<noteq> q"
+    using hqw2 by (by100 simp)
+  have he2_seg: "e\<^sub>2 = closed_segment w\<^sub>2 q"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he'_ne_e2: "e' \<noteq> e\<^sub>2"
+    using hsucc2 hs2_eq ht_eq
+    unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have he2_ne_e': "e\<^sub>2 \<noteq> e'"
+    using he'_ne_e2 by (by100 simp)
+  have hqe1: "q \<in> e\<^sub>1"
+    using he1_seg by (by100 simp)
+  have hqe2: "q \<in> e\<^sub>2"
+    using he2_seg by (by100 simp)
+  have hother_edge_unique:
+      "\<exists>!d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e'"
+    by (rule geotop_degree_two_vertex_unique_other_incident_edge_prefix
+        [OF hdegree hqL he'L he'edge hqe'])
+  have he1_prop:
+      "e\<^sub>1 \<in> L \<and> geotop_is_edge e\<^sub>1 \<and> q \<in> e\<^sub>1 \<and> e\<^sub>1 \<noteq> e'"
+    by (intro conjI he1L he1edge hqe1 he1_ne_e')
+  have he2_prop:
+      "e\<^sub>2 \<in> L \<and> geotop_is_edge e\<^sub>2 \<and> q \<in> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e'"
+    by (intro conjI he2L he2edge hqe2 he2_ne_e')
+  obtain e\<^sub>0 where he0_prop:
+      "e\<^sub>0 \<in> L \<and> geotop_is_edge e\<^sub>0 \<and> q \<in> e\<^sub>0 \<and> e\<^sub>0 \<noteq> e'"
+    and he0_uniq: "\<forall>y. y \<in> L \<and> geotop_is_edge y \<and> q \<in> y \<and> y \<noteq> e' \<longrightarrow> y = e\<^sub>0"
+    using hother_edge_unique unfolding Ex1_def by (by100 blast)
+  have he1_eq_e0: "e\<^sub>1 = e\<^sub>0"
+    using he0_uniq he1_prop by (by100 blast)
+  have he2_eq_e0: "e\<^sub>2 = e\<^sub>0"
+    using he0_uniq he2_prop by (by100 blast)
+  have he2_eq_e1: "e\<^sub>2 = e\<^sub>1"
+    using he1_eq_e0 he2_eq_e0 by (by100 simp)
+  have he1_qw1: "e\<^sub>1 = closed_segment q w\<^sub>1"
+    using he1_seg closed_segment_commute[of w\<^sub>1 q] by (by100 simp)
+  have he1_qw2: "e\<^sub>1 = closed_segment q w\<^sub>2"
+    using he2_seg he2_eq_e1 closed_segment_commute[of w\<^sub>2 q] by (by100 simp)
+  have hendpoint_unique:
+      "\<exists>!x. x \<noteq> q \<and> e\<^sub>1 = closed_segment q x \<and> {x} \<in> L"
+    by (rule geotop_incident_edge_other_endpoint_unique_prefix
+        [OF hL hqL he1L he1edge hqe1])
+  obtain w\<^sub>0 where hw0_prop:
+      "w\<^sub>0 \<noteq> q \<and> e\<^sub>1 = closed_segment q w\<^sub>0 \<and> {w\<^sub>0} \<in> L"
+    and hw0_uniq: "\<forall>y. y \<noteq> q \<and> e\<^sub>1 = closed_segment q y \<and> {y} \<in> L
+      \<longrightarrow> y = w\<^sub>0"
+    using hendpoint_unique unfolding Ex1_def by (by100 blast)
+  have hw1_eq_w0: "w\<^sub>1 = w\<^sub>0"
+    using hw0_uniq hw1q he1_qw1 hw1L by (by100 blast)
+  have hw2_eq_w0: "w\<^sub>2 = w\<^sub>0"
+    using hw0_uniq hw2q he1_qw2 hw2L by (by100 blast)
+  have hw2_eq_w1: "w\<^sub>2 = w\<^sub>1"
+    using hw1_eq_w0 hw2_eq_w0 by (by100 simp)
+  show ?thesis
+    using hs1_eq hs2_eq hw2_eq_w1 he2_eq_e1 by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_funpow_state_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
