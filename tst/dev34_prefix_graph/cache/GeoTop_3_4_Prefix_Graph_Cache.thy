@@ -6543,15 +6543,17 @@ proof -
     using hconnected_distinct_incident_germ_witness he\<^sub>1E he\<^sub>2E he\<^sub>3E
       hincident_selected_punctured_disj
     by (by100 blast)
-  have hsame_arc_side_two_germs_impossible: False
+  have hconnected_disjoint_germs_local_star_impossible: False
     (**
-      Book local-1-manifold contradiction: the two arcs of the simple closed
-      curve through \<open>w\<close> are the two local sides at \<open>w\<close>.  The packaged
-      canonical witness above puts two distinct small incident edge germs on
-      one of those two sides, while the finite linear local-star calculation
-      says a connected arc side near \<open>w\<close> can follow only one such punctured
-      germ before leaving the small ball. **)
+      Remaining finite local-star calculation: a connected subset of the
+      punctured carrier meeting two disjoint selected incident germs would,
+      after restricting to the small star ball and using the sector cover,
+      cross from one punctured edge germ to another without passing through
+      \<open>w\<close>.  This contradicts the linear-complex local intersection
+      calculation around \<open>w\<close>. **)
     sorry
+  have hsame_arc_side_two_germs_impossible: False
+    using hconnected_disjoint_germs_local_star_impossible by (by100 blast)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
