@@ -2,6 +2,26 @@ theory GeoTop_3_4
   imports "GeoTop34CoreDirty.GeoTop_3_4_Core"
 begin
 
+lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Remaining Fig. 4.10 ordered-cycle realization: enumerate the oriented
+    successor orbit once around the finite connected degree-two linear graph,
+    build the corresponding subdivision of the frontier of a 2-simplex, and
+    map vertices/edges in cyclic order to obtain a simplicial isomorphism. **)
+  sorry
+
 lemma geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -29,21 +49,9 @@ proof -
         card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
     by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
         [OF hL_linear hL_finite hconn hpolygon])
-  have hboundary_cycle_model_book:
-      "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
-      geotop_simplex_dim \<sigma> 2
-      \<and> geotop_is_subdivision F
-        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
-      \<and> geotop_isomorphism L F \<psi>"
-    (**
-      Remaining Fig. 4.10 ordered-cycle realization: starting from the
-      finite connected degree-two linear graph, enumerate the oriented
-      successor orbit once around the cycle, build the corresponding
-      subdivision of the frontier of a 2-simplex, and map vertices/edges in
-      that cyclic order to obtain a simplicial isomorphism. **)
-    sorry
   show ?thesis
-    by (rule hboundary_cycle_model_book)
+    by (rule geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34
+        [OF hL_linear hL_finite hconn hdegree_two])
 qed
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
