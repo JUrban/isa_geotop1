@@ -4319,6 +4319,39 @@ proof -
     show "x \<in> ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
       using hx_ball hx_not_e\<^sub>1 hx_not_e\<^sub>2 hx_not_e\<^sub>3 by (by100 blast)
   qed
+  have hlocal_punctured_carrier_sector_cover:
+      "ball w r \<inter> (geotop_polyhedron L - {w})
+        \<subseteq> ((e\<^sub>1 - {w}) \<inter> ball w r)
+          \<union> ((e\<^sub>2 - {w}) \<inter> ball w r)
+          \<union> ((e\<^sub>3 - {w}) \<inter> ball w r)
+          \<union> (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+  proof
+    fix x
+    assume hx: "x \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+    have hx_ball: "x \<in> ball w r"
+      using hx by (by100 blast)
+    have hx_incident_cover: "x \<in> \<Union>((\<lambda>e. e - {w}) ` E)"
+      using hball_punctured_carrier_incident_germs hx by (by100 blast)
+    obtain e where heE: "e \<in> E" and hxe_punctured: "x \<in> e - {w}"
+      using hx_incident_cover by (by100 blast)
+    show "x \<in> ((e\<^sub>1 - {w}) \<inter> ball w r)
+          \<union> ((e\<^sub>2 - {w}) \<inter> ball w r)
+          \<union> ((e\<^sub>3 - {w}) \<inter> ball w r)
+          \<union> (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+    proof (cases "e \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}")
+      case True
+      then show ?thesis
+        using hxe_punctured hx_ball by (by100 blast)
+    next
+      case False
+      have "x \<in> (e - {w}) \<inter> ball w r"
+        using hxe_punctured hx_ball by (by100 blast)
+      then have "x \<in> ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
+        using hother_incident_germ_in_radial_complement[OF heE False] by (by100 blast)
+      then show ?thesis
+        by (by100 blast)
+    qed
+  qed
   define x\<^sub>1 where "x\<^sub>1 = w + (r / dist w q\<^sub>1) *\<^sub>R (q\<^sub>1 - w)"
   define x\<^sub>2 where "x\<^sub>2 = w + (r / dist w q\<^sub>2) *\<^sub>R (q\<^sub>2 - w)"
   define x\<^sub>3 where "x\<^sub>3 = w + (r / dist w q\<^sub>3) *\<^sub>R (q\<^sub>3 - w)"
@@ -4460,6 +4493,116 @@ proof -
       by (rule geotop_punctured_circle_component_closure_three_points_bound_prefix
           [OF hr_pos hx\<^sub>1_sphere hx\<^sub>2_sphere hx\<^sub>3_sphere hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 hK])
   qed
+  obtain A\<^sub>1 A\<^sub>2 where hA_decomp: "geotop_polyhedron L = A\<^sub>1 \<union> A\<^sub>2"
+      and hA_inter: "A\<^sub>1 \<inter> A\<^sub>2 = {w, q\<^sub>1}"
+      and hA\<^sub>1_arc: "top1_is_arc_on A\<^sub>1
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)"
+      and hA\<^sub>2_arc: "top1_is_arc_on A\<^sub>2
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)"
+  proof -
+    have hw_poly: "w \<in> geotop_polyhedron L"
+      using hwL unfolding geotop_polyhedron_def by (by100 blast)
+    have hq\<^sub>1_poly: "q\<^sub>1 \<in> geotop_polyhedron L"
+      using hq\<^sub>1_punctured by (by100 blast)
+    have hwq\<^sub>1: "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+    have hSCC_split:
+        "\<exists>A\<^sub>1 A\<^sub>2. geotop_polyhedron L = A\<^sub>1 \<union> A\<^sub>2
+          \<and> A\<^sub>1 \<inter> A\<^sub>2 = {w, q\<^sub>1}
+          \<and> top1_is_arc_on A\<^sub>1
+            (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)
+          \<and> top1_is_arc_on A\<^sub>2
+            (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)"
+      by (rule SCC_decompose_at_given_points
+          [OF geotop_euclidean_topology_UNIV_strict
+              geotop_euclidean_topology_UNIV_hausdorff hSCC
+              hw_poly hq\<^sub>1_poly hwq\<^sub>1])
+    obtain A\<^sub>1 A\<^sub>2 where hdecomp: "geotop_polyhedron L = A\<^sub>1 \<union> A\<^sub>2"
+        and hinter: "A\<^sub>1 \<inter> A\<^sub>2 = {w, q\<^sub>1}"
+        and hA\<^sub>1: "top1_is_arc_on A\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)"
+        and hA\<^sub>2: "top1_is_arc_on A\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)"
+      using hSCC_split
+      by (by100 blast)
+    show ?thesis
+      by (rule that[OF hdecomp hinter hA\<^sub>1 hA\<^sub>2])
+  qed
+  have hA\<^sub>1_ep:
+      "top1_arc_endpoints_on A\<^sub>1
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1) = {w, q\<^sub>1}"
+  proof (rule scc_decomp_arc_endpoints(1)
+      [OF geotop_euclidean_topology_UNIV_strict
+          geotop_euclidean_topology_UNIV_hausdorff hSCC
+          hA\<^sub>1_arc hA\<^sub>2_arc _ _ hA_decomp hA_inter])
+    show "A\<^sub>1 \<subseteq> UNIV"
+      by (by100 simp)
+    show "A\<^sub>2 \<subseteq> UNIV"
+      by (by100 simp)
+    show "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+  qed
+  have hA\<^sub>2_ep:
+      "top1_arc_endpoints_on A\<^sub>2
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2) = {w, q\<^sub>1}"
+  proof (rule scc_decomp_arc_endpoints(2)
+      [OF geotop_euclidean_topology_UNIV_strict
+          geotop_euclidean_topology_UNIV_hausdorff hSCC
+          hA\<^sub>1_arc hA\<^sub>2_arc _ _ hA_decomp hA_inter])
+    show "A\<^sub>1 \<subseteq> UNIV"
+      by (by100 simp)
+    show "A\<^sub>2 \<subseteq> UNIV"
+      by (by100 simp)
+    show "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+  qed
+  have hA\<^sub>1_minus_w_connected:
+      "top1_connected_on (A\<^sub>1 - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w}))"
+  proof -
+    have hw_ep: "w \<in> top1_arc_endpoints_on A\<^sub>1
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)"
+      using hA\<^sub>1_ep by (by100 simp)
+    have hconn_A\<^sub>1:
+        "top1_connected_on (A\<^sub>1 - {w})
+          (subspace_topology A\<^sub>1
+            (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)
+            (A\<^sub>1 - {w}))"
+      using hw_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hsub:
+        "subspace_topology A\<^sub>1
+          (subspace_topology UNIV geotop_euclidean_topology A\<^sub>1)
+          (A\<^sub>1 - {w})
+        = subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w})"
+      by (rule subspace_topology_trans[OF Diff_subset])
+    show ?thesis
+      using hconn_A\<^sub>1 hsub by (by100 simp)
+  qed
+  have hA\<^sub>2_minus_w_connected:
+      "top1_connected_on (A\<^sub>2 - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>2 - {w}))"
+  proof -
+    have hw_ep: "w \<in> top1_arc_endpoints_on A\<^sub>2
+        (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)"
+      using hA\<^sub>2_ep by (by100 simp)
+    have hconn_A\<^sub>2:
+        "top1_connected_on (A\<^sub>2 - {w})
+          (subspace_topology A\<^sub>2
+            (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)
+            (A\<^sub>2 - {w}))"
+      using hw_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hsub:
+        "subspace_topology A\<^sub>2
+          (subspace_topology UNIV geotop_euclidean_topology A\<^sub>2)
+          (A\<^sub>2 - {w})
+        = subspace_topology UNIV geotop_euclidean_topology (A\<^sub>2 - {w})"
+      by (rule subspace_topology_trans[OF Diff_subset])
+    show ?thesis
+      using hconn_A\<^sub>2 hsub by (by100 simp)
+  qed
+  have hpunctured_carrier_arc_decomp:
+      "geotop_polyhedron L - {w} = (A\<^sub>1 - {w}) \<union> (A\<^sub>2 - {w})"
+    using hA_decomp by (by100 blast)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
