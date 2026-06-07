@@ -198,6 +198,38 @@ proof -
   qed
   have hcomplex_vertices_cycle: "geotop_complex_vertices L = ?V"
     using hcomplex_vertices_subset_cycle hV_subset_complex_vertices by (by100 blast)
+  have hcomplex_vertices_finite: "finite (geotop_complex_vertices L)"
+    using hcomplex_vertices_cycle hV_fin by (by100 simp)
+  have hcomplex_vertices_nonempty: "geotop_complex_vertices L \<noteq> {}"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "?v 0 \<in> ?V"
+      by (by100 blast)
+    thus ?thesis
+      using hcomplex_vertices_cycle by (by100 blast)
+  qed
+  have hL_cycle_vertices:
+      "L =
+        (((\<lambda>v. {v}) ` geotop_complex_vertices L) \<union> ?E)"
+    using hL_cycle hcomplex_vertices_cycle by (by100 simp)
+  have hedge_endpoints_in_vertices:
+      "\<And>k. k < p \<Longrightarrow>
+        ?v k \<in> geotop_complex_vertices L
+        \<and> ?v (Suc k) \<in> geotop_complex_vertices L"
+  proof -
+    fix k
+    assume hk: "k < p"
+    have hvk: "?v k \<in> geotop_complex_vertices L"
+      by (rule hvertices_in_complex_vertices[OF hk])
+    have hvsuc: "?v (Suc k) \<in> ?V"
+      by (rule hnext_in_V[OF hk])
+    have "?v (Suc k) \<in> geotop_complex_vertices L"
+      using hvsuc hV_subset_complex_vertices by (by100 blast)
+    thus "?v k \<in> geotop_complex_vertices L
+        \<and> ?v (Suc k) \<in> geotop_complex_vertices L"
+      using hvk by (by100 blast)
+  qed
   show ?thesis
     sorry
 qed
