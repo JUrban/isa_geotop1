@@ -6597,6 +6597,46 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
+  fixes J J\<^sub>1 J\<^sub>2 C\<^sub>1 C\<^sub>2 \<theta> :: "(real^2) set"
+    and K :: "(real^2) set set"
+    and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly: "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hT_gt2: "card {\<rho>\<in>K. geotop_simplex_dim \<rho> 2} > 2"
+  assumes h\<theta>K: "\<theta> \<in> K"
+  assumes h\<theta>2: "geotop_simplex_dim \<theta> 2"
+  assumes h\<theta>_vertices: "geotop_simplex_vertices \<theta> {v\<^sub>0, v\<^sub>1, v\<^sub>2}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hv\<^sub>2_not: "v\<^sub>2 \<notin> {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1_sub_J: "geotop_convex_hull {v\<^sub>0, v\<^sub>1} \<subseteq> J"
+  assumes h\<theta>_not_free: "\<not> geotop_free_2_simplex K J \<theta>"
+  assumes hsubdisk_book_facts:
+    "geotop_is_polygon J\<^sub>1
+      \<and> geotop_is_polygon J\<^sub>2
+      \<and> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J) =
+           closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1)
+           \<union> closure_on UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>2)
+      \<and> geotop_separated UNIV geotop_euclidean_topology
+             (geotop_polygon_interior J\<^sub>1 \<union>
+              geotop_arc_interior C\<^sub>1 {v\<^sub>0, v\<^sub>2})
+             (geotop_polygon_interior J\<^sub>2 \<union>
+              geotop_arc_interior C\<^sub>2 {v\<^sub>0, v\<^sub>2})"
+  shows "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+  (**
+    Moise Figure 3.2 induction-transfer package.  Form the two subdisk
+    complexes from the chord decomposition, apply the strong induction
+    hypothesis to each smaller polygonal disk, choose a free 2-simplex away from
+    the cutting triangle on each side, and transfer the selected-boundary-edge
+    witnesses back to the original triangulation of \<open>J\<close>. **)
+  sorry
+
 lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
     and v\<^sub>0 v\<^sub>1 v\<^sub>2 :: "real^2"
@@ -7485,7 +7525,10 @@ proof -
       Remaining Moise Figure 3.2 induction-transfer step: apply the strong
       induction hypothesis on the two named subdisks and transfer one free
       2-simplex from each side back to the original triangulation. **)
-    sorry
+    by (rule geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix
+        [OF hJ hK hK_fin hK_poly hT_gt2 h\<theta>K h\<theta>2 h\<theta>_vertices
+          hv\<^sub>0v\<^sub>1 hv\<^sub>2_not hv\<^sub>0v\<^sub>1_sub_J h\<theta>_not_free
+          hsubdisk_book_facts])
   have hsubdisk_induction_transfer:
     "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
     (**
