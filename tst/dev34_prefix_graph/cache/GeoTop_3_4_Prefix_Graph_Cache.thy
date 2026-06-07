@@ -6510,6 +6510,23 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology N)
           \<and> x\<^sub>2 \<in> N \<and> x\<^sub>3 \<in> N)"
     using hcanonical_pair_connected_witness by (by100 blast)
+  have hconnected_distinct_incident_germ_witness:
+      "\<exists>S T x y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> (S - {w}) \<inter> sphere w r
+        \<and> y \<in> (T - {w}) \<inter> sphere w r
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> x \<in> N
+        \<and> y \<in> N"
+  proof -
+    show ?thesis
+      using hcanonical_connected_pair_cases hx\<^sub>1_edge_sphere hx\<^sub>2_edge_sphere
+        hx\<^sub>3_edge_sphere he\<^sub>12 he\<^sub>13 he\<^sub>23
+      by (by100 blast)
+  qed
   have hsame_arc_side_two_germs_impossible: False
     (**
       Book local-1-manifold contradiction: the two arcs of the simple closed
