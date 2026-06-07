@@ -39,39 +39,51 @@ BASE_THEORIES=(
   GeoTop.thy
 )
 
-DEV34_SESSION_DIRS=(
-  dev34_pre
-  dev34_prefix_base
-  dev34_prefix_graph
-  dev34_prefix_mid
-  dev34_prefix
-  dev34_facts
-  dev34_workfacts
-  dev34_linkfacts
-  dev34_graphfacts
-  dev34_graphwork
-  dev34_openstar
-  dev34_core
-  dev34
-)
-
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
 
-mapfile -t DEV34_THEORIES < <(python3 - "${DEV34_SESSION_DIRS[@]}" <<'PYEND'
+DEV34_SESSION_ROOT_HINTS=(
+  dev34_pre/ROOT
+  dev34_prefix_base/ROOT
+  dev34_prefix_graph/ROOT
+  dev34_prefix_mid/ROOT
+  dev34_prefix/ROOT
+  dev34_facts/ROOT
+  dev34_workfacts/ROOT
+  dev34_linkfacts/ROOT
+  dev34_graphfacts/ROOT
+  dev34_graphwork/ROOT
+  dev34_openstar/ROOT
+  dev34_core/ROOT
+  dev34/ROOT
+)
+
+mapfile -t DEV34_SESSION_ROOTS < <(
+  printf '%s\n' "${DEV34_SESSION_ROOT_HINTS[@]}"
+  find . -path './dev34*/ROOT' -type f | sed 's#^\./##' | sort
+)
+
+mapfile -t DEV34_THEORIES < <(python3 - "${DEV34_SESSION_ROOTS[@]}" <<'PYEND'
 import re
 import sys
 from pathlib import Path
 
-for session_dir in sys.argv[1:]:
-    root = Path(session_dir) / "ROOT"
+seen = set()
+seen_roots = set()
+
+for root_arg in sys.argv[1:]:
+    root = Path(root_arg)
     if not root.is_file():
         continue
-    session_base = Path(session_dir)
+    root_key = root.as_posix()
+    if root_key in seen_roots:
+        continue
+    seen_roots.add(root_key)
+    session_base = root.parent
     theory_dir = Path(".")
     in_theories = False
     for raw in root.read_text(encoding="utf-8", errors="replace").splitlines():
-        line = raw.strip()
+        line = raw.split("(*", 1)[0].strip()
         if not line or line.startswith("#"):
             continue
         session_match = re.match(r'session\b.*?\bin\s+"([^"]+)"', line)
@@ -83,18 +95,21 @@ for session_dir in sys.argv[1:]:
             theory_dir = Path(".")
             in_theories = False
             continue
-        if line == "theories":
+        if re.match(r"theories\b", line):
             in_theories = True
             continue
         if in_theories:
-            if re.match(r"(session|options|document_files)\b", line):
+            if re.match(r"(session|options|sessions|document_files|directories)\b", line):
                 in_theories = False
                 continue
             theory = line.split()[0].strip('"')
             if not theory:
                 continue
             theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
-            print(theory_path.as_posix())
+            theory_name = theory_path.as_posix()
+            if theory_name not in seen:
+                seen.add(theory_name)
+                print(theory_name)
 PYEND
 )
 
