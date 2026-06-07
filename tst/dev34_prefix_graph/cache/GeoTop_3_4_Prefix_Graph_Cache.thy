@@ -5908,6 +5908,132 @@ proof -
         using hx_eq by (by100 simp)
     qed
   qed
+  have hselected_sphere_germ_edge_point_cases:
+      "\<And>S x. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<Longrightarrow> (S = e\<^sub>1 \<and> x = x\<^sub>1)
+          \<or> (S = e\<^sub>2 \<and> x = x\<^sub>2)
+          \<or> (S = e\<^sub>3 \<and> x = x\<^sub>3)"
+  proof -
+    fix S x
+    assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    assume hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+    have hcases: "S = e\<^sub>1 \<or> S = e\<^sub>2 \<or> S = e\<^sub>3"
+      using hS by (by100 simp)
+    show "(S = e\<^sub>1 \<and> x = x\<^sub>1)
+        \<or> (S = e\<^sub>2 \<and> x = x\<^sub>2)
+        \<or> (S = e\<^sub>3 \<and> x = x\<^sub>3)"
+      using hcases
+    proof (elim disjE)
+      assume hS_eq: "S = e\<^sub>1"
+      have hx_eq: "x = x\<^sub>1"
+        using hxS hS_eq he\<^sub>1_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hS_eq hx_eq by (by100 simp)
+    next
+      assume hS_eq: "S = e\<^sub>2"
+      have hx_eq: "x = x\<^sub>2"
+        using hxS hS_eq he\<^sub>2_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hS_eq hx_eq by (by100 simp)
+    next
+      assume hS_eq: "S = e\<^sub>3"
+      have hx_eq: "x = x\<^sub>3"
+        using hxS hS_eq he\<^sub>3_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hS_eq hx_eq by (by100 simp)
+    qed
+  qed
+  have hcanonical_pair_same_arc_side:
+      "\<exists>C a b. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> a \<noteq> b
+        \<and> a \<in> C - {w}
+        \<and> b \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+  proof -
+    obtain S T C x y where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hST: "S \<noteq> T"
+        and hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hxC: "x \<in> C - {w}"
+        and hyC: "y \<in> C - {w}"
+        and hconnC: "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      using htwo_selected_sphere_germs_connected_in_arc_side by (elim exE conjE)
+    have hx_can: "x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hS hxS])
+    have hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hT hyT])
+    have hx_by_edge:
+        "(S = e\<^sub>1 \<and> x = x\<^sub>1)
+        \<or> (S = e\<^sub>2 \<and> x = x\<^sub>2)
+        \<or> (S = e\<^sub>3 \<and> x = x\<^sub>3)"
+      by (rule hselected_sphere_germ_edge_point_cases[OF hS hxS])
+    have hy_by_edge:
+        "(T = e\<^sub>1 \<and> y = x\<^sub>1)
+        \<or> (T = e\<^sub>2 \<and> y = x\<^sub>2)
+        \<or> (T = e\<^sub>3 \<and> y = x\<^sub>3)"
+      by (rule hselected_sphere_germ_edge_point_cases[OF hT hyT])
+    have hxy_ne: "x \<noteq> y"
+      using hx_by_edge hy_by_edge hST hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 by (by100 blast)
+    have hbody:
+        "C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> x \<noteq> y
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+    proof (intro conjI)
+      show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+      show "x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hx_can)
+      show "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hy_can)
+      show "x \<noteq> y" by (rule hxy_ne)
+      show "x \<in> C - {w}" by (rule hxC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        by (rule hconnC)
+    qed
+    show ?thesis
+    proof (rule exI[where x=C])
+      show "\<exists>a b. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> a \<noteq> b
+        \<and> a \<in> C - {w}
+        \<and> b \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (rule exI[where x=x])
+        show "\<exists>b. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> x \<noteq> b
+          \<and> x \<in> C - {w}
+          \<and> b \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        proof (rule exI[where x=y])
+          show "C \<in> {A\<^sub>1, A\<^sub>2}
+            \<and> x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> x \<noteq> y
+            \<and> x \<in> C - {w}
+            \<and> y \<in> C - {w}
+            \<and> top1_connected_on (C - {w})
+              (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+            by (rule hbody)
+        qed
+      qed
+    qed
+  qed
   have htwo_canonical_sphere_points_same_punctured_component:
       "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
