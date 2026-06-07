@@ -750,6 +750,34 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_finite_nonempty_card_pos_prefix:
+  fixes A :: "'a set"
+  assumes hfin: "finite A"
+  assumes hne: "A \<noteq> {}"
+  shows "0 < card A"
+proof (rule ccontr)
+  assume hnot: "\<not> 0 < card A"
+  have hcard0: "card A = 0"
+    using hnot by (by100 simp)
+  have "A = {}"
+    using hfin hcard0 by (by100 simp)
+  thus False
+    using hne by (by100 blast)
+qed
+
+lemma geotop_subset_two_card_le2_prefix:
+  fixes A :: "'a set"
+  assumes hsub: "A \<subseteq> {x, y}"
+  shows "card A \<le> 2"
+proof -
+  have hcard: "card A \<le> card {x, y}"
+    by (rule card_mono[OF _ hsub]) (by100 simp)
+  have hpair: "card {x, y} \<le> 2"
+    by (by100 simp)
+  show ?thesis
+    using hcard hpair by (by100 linarith)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -1068,6 +1096,133 @@ proof -
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
     unfolding K\<^sub>2_def using hK\<^sub>2_vertex_orbit hK\<^sub>2_edge_orbit by (by100 blast)
+  have hP_L_incident_edge_cases:
+      "\<forall>e\<in>L. geotop_is_edge e \<and> P \<in> e \<longrightarrow>
+        e = closed_segment (?v (p - 1)) P
+        \<or> e = closed_segment P (?v (Suc 0))"
+  proof (intro ballI impI)
+    fix e
+    assume heL: "e \<in> L"
+    assume hedata: "geotop_is_edge e \<and> P \<in> e"
+    have hedge: "geotop_is_edge e"
+      using hedata by (by100 blast)
+    have hinc: "fst s \<in> e"
+      using hedata hfst by (by100 simp)
+    have hcases:
+        "e = closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s)
+        \<or> e = closed_segment (fst s)
+          (fst ((geotop_oriented_edge_successor L ^^ Suc 0) s))"
+      by (rule geotop_degree_two_oriented_edge_successor_period_initial_vertex_incident_edge_cases_prefix
+          [OF hL_linear hdegree hs hp_pos hp_closed heL hedge hinc])
+    thus "e = closed_segment (?v (p - 1)) P
+        \<or> e = closed_segment P (?v (Suc 0))"
+      using hfst by (by100 simp)
+  qed
+  have hQ_L_incident_edge_cases:
+      "\<forall>e\<in>L. geotop_is_edge e \<and> Q \<in> e \<longrightarrow>
+        e = closed_segment (?v (j - 1)) Q
+        \<or> e = closed_segment Q (?v (Suc j))"
+  proof (intro ballI impI)
+    fix e
+    assume heL: "e \<in> L"
+    assume hedata: "geotop_is_edge e \<and> Q \<in> e"
+    have hedge: "geotop_is_edge e"
+      using hedata by (by100 blast)
+    have hinc: "?v j \<in> e"
+      using hedata hQj by (by100 simp)
+    have hcases:
+        "e = closed_segment
+          (?v (if j = 0 then p - 1 else j - 1)) (?v j)
+        \<or> e = closed_segment (?v j) (?v (Suc j))"
+      by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+          [OF hL_linear hdegree hs hp_pos hp_closed hj_lt heL hedge hinc])
+    have hj_ne0: "j \<noteq> 0"
+      using hj_pos by (by100 simp)
+    thus "e = closed_segment (?v (j - 1)) Q
+        \<or> e = closed_segment Q (?v (Suc j))"
+      using hcases hQj by (by100 simp)
+  qed
+  have hP_K\<^sub>1_incident_edge_cases:
+      "{e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}
+        \<subseteq> {closed_segment (?v (p - 1)) P,
+            closed_segment P (?v (Suc 0))}"
+    using hP_L_incident_edge_cases hK\<^sub>1_subset_L by (by100 blast)
+  have hP_K\<^sub>2_incident_edge_cases:
+      "{e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}
+        \<subseteq> {closed_segment (?v (p - 1)) P,
+            closed_segment P (?v (Suc 0))}"
+    using hP_L_incident_edge_cases hK\<^sub>2_subset_L by (by100 blast)
+  have hQ_K\<^sub>1_incident_edge_cases:
+      "{e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}
+        \<subseteq> {closed_segment (?v (j - 1)) Q,
+            closed_segment Q (?v (Suc j))}"
+    using hQ_L_incident_edge_cases hK\<^sub>1_subset_L by (by100 blast)
+  have hQ_K\<^sub>2_incident_edge_cases:
+      "{e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}
+        \<subseteq> {closed_segment (?v (j - 1)) Q,
+            closed_segment Q (?v (Suc j))}"
+    using hQ_L_incident_edge_cases hK\<^sub>2_subset_L by (by100 blast)
+  have hP_K\<^sub>1_incident_nonempty:
+      "{e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} \<noteq> {}"
+    using hP_K\<^sub>1_incident_edge by (by100 blast)
+  have hP_K\<^sub>2_incident_nonempty:
+      "{e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} \<noteq> {}"
+    using hP_K\<^sub>2_incident_edge by (by100 blast)
+  have hQ_K\<^sub>1_incident_nonempty:
+      "{e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} \<noteq> {}"
+    using hQ_K\<^sub>1_incident_edge by (by100 blast)
+  have hQ_K\<^sub>2_incident_nonempty:
+      "{e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} \<noteq> {}"
+    using hQ_K\<^sub>2_incident_edge by (by100 blast)
+  have hP_K\<^sub>1_incident_card_pos:
+      "0 < card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}"
+  proof -
+    have hfin: "finite {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}"
+      using hK\<^sub>1_fin by (by100 simp)
+    show ?thesis
+      by (rule geotop_finite_nonempty_card_pos_prefix
+          [OF hfin hP_K\<^sub>1_incident_nonempty])
+  qed
+  have hP_K\<^sub>2_incident_card_pos:
+      "0 < card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}"
+  proof -
+    have hfin: "finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}"
+      using hK\<^sub>2_fin by (by100 simp)
+    show ?thesis
+      by (rule geotop_finite_nonempty_card_pos_prefix
+          [OF hfin hP_K\<^sub>2_incident_nonempty])
+  qed
+  have hQ_K\<^sub>1_incident_card_pos:
+      "0 < card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}"
+  proof -
+    have hfin: "finite {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}"
+      using hK\<^sub>1_fin by (by100 simp)
+    show ?thesis
+      by (rule geotop_finite_nonempty_card_pos_prefix
+          [OF hfin hQ_K\<^sub>1_incident_nonempty])
+  qed
+  have hQ_K\<^sub>2_incident_card_pos:
+      "0 < card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}"
+  proof -
+    have hfin: "finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}"
+      using hK\<^sub>2_fin by (by100 simp)
+    show ?thesis
+      by (rule geotop_finite_nonempty_card_pos_prefix
+          [OF hfin hQ_K\<^sub>2_incident_nonempty])
+  qed
+  have hP_K\<^sub>1_incident_card_le2:
+      "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} \<le> 2"
+    by (rule geotop_subset_two_card_le2_prefix[OF hP_K\<^sub>1_incident_edge_cases])
+  have hP_K\<^sub>2_incident_card_le2:
+      "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} \<le> 2"
+    by (rule geotop_subset_two_card_le2_prefix[OF hP_K\<^sub>2_incident_edge_cases])
+  have hQ_K\<^sub>1_incident_card_le2:
+      "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} \<le> 2"
+    by (rule geotop_subset_two_card_le2_prefix[OF hQ_K\<^sub>1_incident_edge_cases])
+  have hQ_K\<^sub>2_incident_card_le2:
+      "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} \<le> 2"
+    by (rule geotop_subset_two_card_le2_prefix[OF hQ_K\<^sub>2_incident_edge_cases])
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
   have hL_1dim: "geotop_complex_is_1dim L"
