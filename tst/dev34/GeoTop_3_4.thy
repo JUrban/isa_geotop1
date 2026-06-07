@@ -292,6 +292,38 @@ proof -
         \<and> ?v (Suc k) \<in> geotop_complex_vertices L"
       using hvk by (by100 blast)
   qed
+  have hL_edges_subset_E: "{e\<in>L. geotop_is_edge e} \<subseteq> ?E"
+  proof
+    fix d
+    assume hd: "d \<in> {e\<in>L. geotop_is_edge e}"
+    have hdL: "d \<in> L"
+      using hd by (by100 simp)
+    have hd_edge: "geotop_is_edge d"
+      using hd by (by100 simp)
+    have hd_cases:
+        "d \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices L) \<or> d \<in> ?E"
+      using hL_cycle_vertices hdL by (by100 blast)
+    show "d \<in> ?E"
+    proof (rule disjE[OF hd_cases])
+      assume "d \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices L)"
+      then obtain v where hd_singleton: "d = {v}"
+        by (by100 blast)
+      have "\<not> geotop_is_edge {v}"
+        by (rule geotop_singleton_not_edge_prefix)
+      thus "d \<in> ?E"
+        using hd_edge hd_singleton by (by100 blast)
+    next
+      assume "d \<in> ?E"
+      thus "d \<in> ?E" .
+    qed
+  qed
+  have hE_eq_edges: "?E = {e\<in>L. geotop_is_edge e}"
+  proof
+    show "?E \<subseteq> {e\<in>L. geotop_is_edge e}"
+      using hE_subset_L hE_edges by (by100 blast)
+    show "{e\<in>L. geotop_is_edge e} \<subseteq> ?E"
+      by (rule hL_edges_subset_E)
+  qed
   show ?thesis
     sorry
 qed
