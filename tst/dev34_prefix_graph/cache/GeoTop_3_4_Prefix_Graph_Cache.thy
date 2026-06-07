@@ -1519,6 +1519,25 @@ proof -
     using hnot_conn hconn by (by100 blast)
 qed
 
+lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_fin: "finite L"
+  assumes hwL: "{w} \<in> L"
+  assumes hSCC: "top1_simple_closed_curve_on UNIV geotop_euclidean_topology
+      (geotop_polyhedron L)"
+  assumes hbranch: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} > 2"
+  shows "\<not> top1_connected_on (geotop_polyhedron L - {w})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (geotop_polyhedron L - {w}))"
+  (**
+    Local graph-topology cutpoint package.  A finite linear carrier with more
+    than two incident edge germs at \<open>w\<close> has at least three small punctured
+    edge sectors at \<open>w\<close>; after deleting \<open>w\<close>, these sectors cannot be joined
+    in the carrier without passing through \<open>w\<close>, so the punctured carrier is
+    disconnected. **)
+  sorry
+
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -1548,7 +1567,8 @@ proof -
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
           (geotop_polyhedron L - {w}))"
-    sorry
+    by (rule geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
+        [OF hL_linear hL_fin hwL hSCC hbranch])
   show ?thesis
     by (rule hbranch_local_disconnect)
 qed
