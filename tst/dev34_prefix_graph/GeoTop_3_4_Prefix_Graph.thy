@@ -3885,6 +3885,128 @@ proof -
     using hleft hright by (by100 blast)
 qed
 
+lemma geotop_closed_segment_face_endpoint_or_self_prefix:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hface: "geotop_is_face F (closed_segment a b)"
+  shows "F = {a} \<or> F = {b} \<or> F = closed_segment a b"
+proof -
+  have hsegV: "geotop_simplex_vertices (closed_segment a b) {a, b}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hab])
+  obtain V W where hFV: "geotop_simplex_vertices (closed_segment a b) V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hF_eq: "F = geotop_convex_hull W"
+      and hFW: "geotop_simplex_vertices F W"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+  have hV_eq: "V = {a, b}"
+    by (rule geotop_simplex_vertices_unique[OF hFV hsegV])
+  have hW_sub_ab: "W \<subseteq> {a, b}"
+    using hW_sub hV_eq by (by100 simp)
+  have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+    using hW_ne hW_sub_ab by (by100 blast)
+  show ?thesis
+  proof (rule disjE[OF hW_cases])
+    assume hW: "W = {a}"
+    have "F = {a}"
+      using hF_eq hW geotop_convex_hull_eq_HOL[of "{a}"] by (by100 simp)
+    thus ?thesis by (by100 blast)
+  next
+    assume hW_cases': "W = {b} \<or> W = {a, b}"
+    show ?thesis
+    proof (rule disjE[OF hW_cases'])
+      assume hW: "W = {b}"
+      have "F = {b}"
+        using hF_eq hW geotop_convex_hull_eq_HOL[of "{b}"] by (by100 simp)
+      thus ?thesis by (by100 blast)
+    next
+      assume hW: "W = {a, b}"
+      have "F = closed_segment a b"
+        using hF_eq hW geotop_convex_hull_eq_HOL[of "{a, b}"]
+          segment_convex_hull[of a b]
+        by (by100 simp)
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_period_edge_face_in_cycle_subcomplex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hj_lt: "j < p"
+  assumes hface: "geotop_is_face F
+      (closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s)))"
+  shows "F \<in> ((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?V = "?v ` {0..<p}"
+  let ?e = "\<lambda>j. closed_segment (?v j) (?v (Suc j))"
+  let ?E = "?e ` {0..<p}"
+  have hneq: "?v j \<noteq> ?v (Suc j)"
+  proof -
+    have hneq_sym: "?v (Suc j) \<noteq> ?v j"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+          [OF hL hdegree hs])
+    show ?thesis
+      by (rule not_sym[OF hneq_sym])
+  qed
+  have hface_cases: "F = {?v j} \<or> F = {?v (Suc j)} \<or> F = ?e j"
+    by (rule geotop_closed_segment_face_endpoint_or_self_prefix[OF hneq hface])
+  have hendpoints: "?v j \<in> ?V \<and> ?v (Suc j) \<in> ?V"
+    by (rule geotop_degree_two_oriented_edge_successor_period_edge_endpoints_in_vertex_orbit_prefix
+        [OF hL hdegree hs hp_pos hp_closed hj_lt])
+  have hj_mem: "j \<in> {0..<p}"
+    using hj_lt by (by100 simp)
+  show ?thesis
+  proof (rule disjE[OF hface_cases])
+    assume hF: "F = {?v j}"
+    have "F \<in> ((\<lambda>v. {v}) ` ?V)"
+    proof (rule image_eqI[where x = "?v j"])
+      show "F = {?v j}"
+        by (rule hF)
+      show "?v j \<in> ?V"
+        using hendpoints by (by100 blast)
+    qed
+    thus ?thesis by (by100 blast)
+  next
+    assume hcases: "F = {?v (Suc j)} \<or> F = ?e j"
+    show ?thesis
+    proof (rule disjE[OF hcases])
+      assume hF: "F = {?v (Suc j)}"
+      have "F \<in> ((\<lambda>v. {v}) ` ?V)"
+      proof (rule image_eqI[where x = "?v (Suc j)"])
+        show "F = {?v (Suc j)}"
+          by (rule hF)
+        show "?v (Suc j) \<in> ?V"
+          using hendpoints by (by100 blast)
+      qed
+      thus ?thesis by (by100 blast)
+    next
+      assume hF: "F = ?e j"
+      have "F \<in> ?E"
+      proof (rule image_eqI[where x = j])
+        show "F = ?e j"
+          by (rule hF)
+        show "j \<in> {0..<p}"
+          by (rule hj_mem)
+      qed
+      thus ?thesis by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
