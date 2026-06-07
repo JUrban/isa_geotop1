@@ -1544,8 +1544,8 @@ proof -
     unfolding E_def using hbranch by (by100 simp)
   have hcard3: "3 \<le> card E"
     using hE_card_gt2 by (by100 linarith)
-  obtain W where hW_sub: "W \<subseteq> E" and hW_card: "card W = 3"
-    using obtain_subset_with_card_n[OF hcard3] by (by100 blast)
+  obtain W where hW_sub: "W \<subseteq> E" and hW_card: "card W = 3" and hW_fin: "finite W"
+    by (rule obtain_subset_with_card_n[OF hcard3])
   have hW_three:
       "\<exists>e\<^sub>1 e\<^sub>2 e\<^sub>3. W = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
         \<and> e\<^sub>1 \<noteq> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e\<^sub>3 \<and> e\<^sub>1 \<noteq> e\<^sub>3"
