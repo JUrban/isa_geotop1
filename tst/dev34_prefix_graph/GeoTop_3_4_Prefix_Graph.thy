@@ -3663,6 +3663,56 @@ proof -
     using hcases hincoming houtgoing by (by100 blast)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hk_lt: "k < p"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hinc: "fst ((geotop_oriented_edge_successor L ^^ k) s) \<in> e"
+  shows "e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^
+          (if k = 0 then p - 1 else k - 1)) s))
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+      \<or> e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+proof (cases "k = 0")
+  case True
+  have hinc0: "fst s \<in> e"
+    using hinc True by (by100 simp)
+  have hcases: "e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s))
+        (fst s)
+      \<or> e = closed_segment
+        (fst s)
+        (fst ((geotop_oriented_edge_successor L ^^ Suc 0) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_period_initial_vertex_incident_edge_cases_prefix
+        [OF hL hdegree hs hp_pos hp_closed heL hedge hinc0])
+  show ?thesis
+    using hcases True by (by100 simp)
+next
+  case False
+  have hk_pos: "0 < k"
+    using False by (by100 simp)
+  have hcases: "e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ (k - 1)) s))
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+      \<or> e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_noninitial_vertex_incident_edge_cases_prefix
+        [OF hL hdegree hs hk_pos heL hedge hinc])
+  show ?thesis
+    using hcases False by (by100 simp)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
