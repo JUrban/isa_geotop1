@@ -2392,6 +2392,70 @@ proof -
     show False
       using hno_rev hk hrev by (by100 blast)
   qed
+  have hK\<^sub>1_closing_reversed_not_initial:
+      "\<forall>k\<in>{0..<j}.
+        ?v (p - 1) = ?v (Suc k) \<and> P = ?v k \<longrightarrow> k \<noteq> 0"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume hrev: "?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+    assume hk0: "k = 0"
+    have heq: "closed_segment (?v (p - 1)) P =
+        closed_segment (?v k) (?v (Suc k))"
+      using hrev closed_segment_commute[of "?v (p - 1)" P] by (by100 simp)
+    have "k \<noteq> 0"
+      using hK\<^sub>1_closing_edge_collision_not_initial hk heq by (by100 blast)
+    thus False
+      using hk0 by (by100 blast)
+  qed
+  have hK\<^sub>2_initial_reversed_not_closing:
+      "\<forall>k\<in>{j..<p}.
+        P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k \<longrightarrow> k \<noteq> p - 1"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume hrev: "P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+    assume hkp: "k = p - 1"
+    have heq: "closed_segment P (?v (Suc 0)) =
+        closed_segment (?v k) (?v (Suc k))"
+      using hrev closed_segment_commute[of P "?v (Suc 0)"] by (by100 simp)
+    have "k \<noteq> p - 1"
+      using hK\<^sub>2_initial_edge_collision_not_closing hk heq by (by100 blast)
+    thus False
+      using hkp by (by100 blast)
+  qed
+  have hK\<^sub>1_after_Q_reversed_not_before_Q:
+      "\<forall>k\<in>{0..<j}.
+        Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k \<longrightarrow> k \<noteq> j - 1"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume hrev: "Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+    assume hkj: "k = j - 1"
+    have heq: "closed_segment Q (?v (Suc j)) =
+        closed_segment (?v k) (?v (Suc k))"
+      using hrev closed_segment_commute[of Q "?v (Suc j)"] by (by100 simp)
+    have "k \<noteq> j - 1"
+      using hK\<^sub>1_after_Q_edge_collision_not_before_Q hk heq by (by100 blast)
+    thus False
+      using hkj by (by100 blast)
+  qed
+  have hK\<^sub>2_before_Q_reversed_not_after_Q:
+      "\<forall>k\<in>{j..<p}.
+        ?v (j - 1) = ?v (Suc k) \<and> Q = ?v k \<longrightarrow> k \<noteq> j"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume hrev: "?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+    assume hkj: "k = j"
+    have heq: "closed_segment (?v (j - 1)) Q =
+        closed_segment (?v k) (?v (Suc k))"
+      using hrev closed_segment_commute[of "?v (j - 1)" Q] by (by100 simp)
+    have "k \<noteq> j"
+      using hK\<^sub>2_before_Q_edge_collision_not_after_Q hk heq by (by100 blast)
+    thus False
+      using hkj by (by100 blast)
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
