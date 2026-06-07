@@ -28,6 +28,8 @@ Fast modes:
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; skips fresh target/process caches, auto-warms parents
+  split-hot FILE PAT
+               cache FILE before the first PAT line, then process the remaining tail
   loop [--hot] PAT [FILES]
                cheap proof loop: full-index grep PAT, holes, dirty plan
                with --hot, also run hot [FILES]
@@ -365,6 +367,11 @@ proc_stamp() {
   printf '%s/proc-%s.sha256\n' "$cache_dir" "$key"
 }
 
+split_stamp() {
+  key=$(printf '%s' "$1" | sha256sum | awk '{print $1}')
+  printf '%s/split-%s.sha256\n' "$cache_dir" "$key"
+}
+
 cache_is_fresh() {
   target=$1
   stamp=$(cache_stamp "$target")
@@ -412,6 +419,108 @@ proc_cache_store() {
   cache_is_fresh "$parent_target" || return 0
   mkdir -p "$cache_dir"
   proc_digest "$file" "$parent_target" "$logic" >"$(proc_stamp "$file")"
+}
+
+split_hot_one() {
+  file=$1
+  pattern=$2
+  parent_context "$file" split-hot || return $?
+
+  if [ ! -f "$file" ]; then
+    printf 'split-hot: %s does not exist\n' "$file" >&2
+    return 2
+  fi
+
+  start_line=$(rg -n -- "$pattern" "$file" | head -n 1 | cut -d: -f1 || true)
+  if [ -z "$start_line" ]; then
+    printf 'split-hot: pattern not found in %s: %s\n' "$file" "$pattern" >&2
+    return 2
+  fi
+
+  begin_line=$(awk '/^begin[[:space:]]*$/ { print NR; exit }' "$file")
+  end_line=$(awk '/^end[[:space:]]*$/ { line = NR } END { print line }' "$file")
+  if [ -z "$begin_line" ] || [ -z "$end_line" ] || [ "$start_line" -le "$begin_line" ] || [ "$end_line" -le "$start_line" ]; then
+    printf 'split-hot: cannot split %s at line %s\n' "$file" "$start_line" >&2
+    return 2
+  fi
+
+  mkdir -p "$cache_dir"
+  key=$(printf '%s\n%s\n%s\n' "$file" "$pattern" "$logic" | sha256sum | awk '{print substr($1, 1, 12)}')
+  base=$(basename "$file" .thy)
+  split_dir="$cache_dir/split-$key"
+  prefix_theory="${base}_Split_${key}_Prefix"
+  tail_theory="${base}_Split_${key}_Tail"
+  prefix_session="${base}_Split_${key}_Prefix_Session"
+  prefix_file="$split_dir/$prefix_theory.thy"
+  tail_file="$split_dir/$tail_theory.thy"
+
+  rm -rf "$split_dir"
+  mkdir -p "$split_dir"
+  {
+    printf 'session %s = %s +\n' "$prefix_session" "$logic"
+    printf '  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]\n'
+    printf '  theories\n'
+    printf '    %s\n' "$prefix_theory"
+  } >"$split_dir/ROOT"
+
+  awk -v name="$prefix_theory" -v begin_line="$begin_line" -v start_line="$start_line" '
+    NR == 1 { print "theory " name; next }
+    NR <= begin_line { print; next }
+    NR < start_line { print; next }
+    END { print ""; print "end" }
+  ' "$file" >"$prefix_file"
+
+  {
+    printf 'theory %s\n' "$tail_theory"
+    printf '  imports "%s.%s"\n' "$prefix_session" "$prefix_theory"
+    printf 'begin\n\n'
+    sed -n "${start_line},$((end_line - 1))p" "$file"
+    printf '\nend\n'
+  } >"$tail_file"
+
+  parent_target=$(parent_target_for_file "$file")
+  if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
+    if cache_is_fresh "$parent_target"; then
+      cache_status_line "$parent_target"
+    else
+      cache_build_target "$parent_target"
+    fi
+  fi
+
+  split_key=$(printf 'split-prefix\n%s\n%s\n%s\n' "$file" "$pattern" "$(sha256sum "$prefix_file" "$split_dir/ROOT")")
+  if [ "$parent_target" != none ]; then
+    split_key=$(printf '%s\nparent=%s\n%s\n' "$split_key" "$parent_target" "$(cache_digest "$parent_target")")
+  fi
+  split_digest=$(printf '%s' "$split_key" | sha256sum | awk '{print $1}')
+  split_stamp_file=$(split_stamp "$file:$pattern:prefix")
+
+  mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
+  if [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
+    printf 'split-hot: skipped prefix cache for %s before line %s\n' "$file" "$start_line"
+  else
+    printf 'split-hot: building prefix cache for %s before line %s\n' "$file" "$start_line"
+    timeout "$limit" "$isabelle" build \
+      "${isabelle_options[@]}" \
+      "${proof_options[@]}" \
+      "${dirs[@]}" \
+      -b "$prefix_session"
+    printf '%s' "$split_digest" >"$split_stamp_file"
+  fi
+
+  tail_key=$(printf 'split-tail\n%s\n%s\n%s\n%s\n' "$file" "$pattern" "$split_digest" "$(sha256sum "$tail_file")")
+  tail_digest=$(printf '%s' "$tail_key" | sha256sum | awk '{print $1}')
+  tail_stamp_file=$(split_stamp "$file:$pattern:tail")
+  if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
+    printf 'split-hot: skipped tail process for %s from line %s\n' "$file" "$start_line"
+    return 0
+  fi
+
+  printf 'split-hot: processing tail for %s from line %s\n' "$file" "$start_line"
+  timeout "$limit" "$isabelle" process_theories \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    "${dirs[@]}" -l "$prefix_session" -o quick_and_dirty -f "$tail_file"
+  printf '%s' "$tail_digest" >"$tail_stamp_file"
 }
 
 cache_status_line() {
@@ -771,6 +880,17 @@ EOF2
 $(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
     exit "$status"
+    ;;
+  split-hot)
+    shift
+    if [ "$#" -lt 2 ]; then
+      usage
+      exit 2
+    fi
+    file=$1
+    shift
+    pattern=$*
+    split_hot_one "$file" "$pattern"
     ;;
   layer|exact|auto)
     shift
