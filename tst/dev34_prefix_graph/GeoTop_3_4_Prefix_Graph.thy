@@ -3396,6 +3396,63 @@ proof -
               using hnext_a_ne_cur by (by100 blast)
           next
             case False
+            have hSuc_a_lt_b: "Suc a < b"
+              using hab False by (by100 linarith)
+            have hb_pos: "0 < b"
+              using hab by (by100 linarith)
+            have hpred_b_if: "(if b = 0 then p - 1 else b - 1) = b - 1"
+              using hb_pos by (by100 simp)
+            have hnext_a_ne_cur_long: "?v (Suc a) \<noteq> ?v a"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                  [OF hL_linear hdegree hs])
+            have hSuc_a_eq_pred_b: "?v (Suc a) = ?v (b - 1)"
+            proof -
+              have hpair:
+                  "{?v a, ?v (Suc a)} = {?v (b - 1), ?v b}"
+                using hback_b hpred_b_if
+                  closed_segment_eq[of "?v a" "?v (Suc a)" "?v (b - 1)" "?v b"]
+                by (by100 simp)
+              have hmem: "?v (Suc a) \<in> {?v (b - 1), ?v b}"
+                using hpair by (by100 blast)
+              have hnot_b: "?v (Suc a) \<noteq> ?v b"
+              proof
+                assume hbad: "?v (Suc a) = ?v b"
+                have "?v (Suc a) = ?v a"
+                  using hbad havb by (by100 simp)
+                thus False
+                  using hnext_a_ne_cur_long by (by100 blast)
+              qed
+              show ?thesis
+                using hmem hnot_b by (by100 blast)
+            qed
+            have hprev_a_vertex:
+                "?v (Suc b) = ?v (if a = 0 then p - 1 else a - 1)"
+            proof -
+              have hpair:
+                  "{?v b, ?v (Suc b)} =
+                    {?v (if a = 0 then p - 1 else a - 1), ?v a}"
+                using hback_a
+                  closed_segment_eq[of "?v b" "?v (Suc b)"
+                    "?v (if a = 0 then p - 1 else a - 1)" "?v a"]
+                by (by100 simp)
+              have hmem:
+                  "?v (Suc b) \<in>
+                    {?v (if a = 0 then p - 1 else a - 1), ?v a}"
+                using hpair by (by100 blast)
+              have hnext_b_ne_cur: "?v (Suc b) \<noteq> ?v b"
+                by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                    [OF hL_linear hdegree hs])
+              have hnot_a: "?v (Suc b) \<noteq> ?v a"
+              proof
+                assume hbad: "?v (Suc b) = ?v a"
+                have "?v (Suc b) = ?v b"
+                  using hbad havb by (by100 simp)
+                thus False
+                  using hnext_b_ne_cur by (by100 blast)
+              qed
+              show ?thesis
+                using hmem hnot_a by (by100 blast)
+            qed
             have hlong_reverse_trace_book: False
               (**
                 Remaining induction case \<open>Suc a < b\<close>: the two back-edge
