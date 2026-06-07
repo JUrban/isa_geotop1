@@ -30,6 +30,8 @@ Fast modes:
   hot [FILES]  alias for proc; skips fresh target/process caches, auto-warms parents
   split-hot FILE PAT
                cache FILE before the first PAT line, then process the remaining tail
+  graph-focus [PAT]
+               full-index scan PAT, then split-hot the active graph theorem
   loop [--hot] PAT [FILES]
                cheap proof loop: full-index grep PAT, holes, dirty plan
                with --hot, also run hot [FILES]
@@ -372,6 +374,17 @@ split_stamp() {
   printf '%s/split-%s.sha256\n' "$cache_dir" "$key"
 }
 
+write_if_changed() {
+  out=$1
+  tmp=$out.tmp.$$
+  cat >"$tmp"
+  if [ -f "$out" ] && cmp -s "$tmp" "$out"; then
+    rm -f "$tmp"
+  else
+    mv "$tmp" "$out"
+  fi
+}
+
 cache_is_fresh() {
   target=$1
   stamp=$(cache_stamp "$target")
@@ -454,21 +467,20 @@ split_hot_one() {
   prefix_file="$split_dir/$prefix_theory.thy"
   tail_file="$split_dir/$tail_theory.thy"
 
-  rm -rf "$split_dir"
   mkdir -p "$split_dir"
-  {
-    printf 'session %s = %s +\n' "$prefix_session" "$logic"
-    printf '  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]\n'
-    printf '  theories\n'
-    printf '    %s\n' "$prefix_theory"
-  } >"$split_dir/ROOT"
+  write_if_changed "$split_dir/ROOT" <<EOF2
+session $prefix_session = $logic +
+  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
+  theories
+    $prefix_theory
+EOF2
 
   awk -v name="$prefix_theory" -v begin_line="$begin_line" -v start_line="$start_line" '
     NR == 1 { print "theory " name; next }
     NR <= begin_line { print; next }
     NR < start_line { print; next }
     END { print ""; print "end" }
-  ' "$file" >"$prefix_file"
+  ' "$file" | write_if_changed "$prefix_file"
 
   {
     printf 'theory %s\n' "$tail_theory"
@@ -476,7 +488,14 @@ split_hot_one() {
     printf 'begin\n\n'
     sed -n "${start_line},$((end_line - 1))p" "$file"
     printf '\nend\n'
-  } >"$tail_file"
+  } | write_if_changed "$tail_file"
+
+  if [ "${DEV34_FAST_VERBOSE:-0}" = 1 ]; then
+    printf 'session %s = %s +\n' "$prefix_session" "$logic"
+    printf '  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]\n'
+    printf '  theories\n'
+    printf '    %s\n' "$prefix_theory"
+  fi
 
   parent_target=$(parent_target_for_file "$file")
   if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
@@ -522,6 +541,9 @@ split_hot_one() {
     "${dirs[@]}" -l "$prefix_session" -o quick_and_dirty -f "$tail_file"
   printf '%s' "$tail_digest" >"$tail_stamp_file"
 }
+
+active_graph_file=dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
+active_graph_pattern=geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
 
 cache_status_line() {
   target=$1
@@ -891,6 +913,15 @@ EOF2
     shift
     pattern=$*
     split_hot_one "$file" "$pattern"
+    ;;
+  graph-focus|focus-graph)
+    shift
+    if [ "$#" -gt 0 ]; then
+      printf 'full-index/source scan: %s\n' "$*"
+      rg -n -i -- "$*" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}" || true
+      printf '\n'
+    fi
+    split_hot_one "$active_graph_file" "$active_graph_pattern"
     ;;
   layer|exact|auto)
     shift
