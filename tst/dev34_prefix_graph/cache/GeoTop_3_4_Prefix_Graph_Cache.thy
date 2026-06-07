@@ -4641,6 +4641,64 @@ proof -
     using hx\<^sub>2_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
   have hx\<^sub>3_arc_side: "x\<^sub>3 \<in> A\<^sub>1 - {w} \<or> x\<^sub>3 \<in> A\<^sub>2 - {w}"
     using hx\<^sub>3_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
+  have htwo_witnesses_same_arc_side:
+      "(x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w})
+      \<or> (x\<^sub>2 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w})"
+  proof (cases "x\<^sub>1 \<in> A\<^sub>1 - {w}")
+    case True
+    show ?thesis
+    proof (cases "x\<^sub>2 \<in> A\<^sub>1 - {w}")
+      case True
+      then show ?thesis
+        using \<open>x\<^sub>1 \<in> A\<^sub>1 - {w}\<close> by (by100 blast)
+    next
+      case False
+      have hx\<^sub>2A\<^sub>2: "x\<^sub>2 \<in> A\<^sub>2 - {w}"
+        using hx\<^sub>2_arc_side False by (by100 blast)
+      show ?thesis
+      proof (cases "x\<^sub>3 \<in> A\<^sub>1 - {w}")
+        case True
+        then show ?thesis
+          using \<open>x\<^sub>1 \<in> A\<^sub>1 - {w}\<close> by (by100 blast)
+      next
+        case False
+        have "x\<^sub>3 \<in> A\<^sub>2 - {w}"
+          using hx\<^sub>3_arc_side False by (by100 blast)
+        then show ?thesis
+          using hx\<^sub>2A\<^sub>2 by (by100 blast)
+      qed
+    qed
+  next
+    case False
+    have hx\<^sub>1A\<^sub>2: "x\<^sub>1 \<in> A\<^sub>2 - {w}"
+      using hx\<^sub>1_arc_side False by (by100 blast)
+    show ?thesis
+    proof (cases "x\<^sub>2 \<in> A\<^sub>2 - {w}")
+      case True
+      then show ?thesis
+        using hx\<^sub>1A\<^sub>2 by (by100 blast)
+    next
+      case False
+      have hx\<^sub>2A\<^sub>1: "x\<^sub>2 \<in> A\<^sub>1 - {w}"
+        using hx\<^sub>2_arc_side False by (by100 blast)
+      show ?thesis
+      proof (cases "x\<^sub>3 \<in> A\<^sub>1 - {w}")
+        case True
+        then show ?thesis
+          using hx\<^sub>2A\<^sub>1 by (by100 blast)
+      next
+        case False
+        have "x\<^sub>3 \<in> A\<^sub>2 - {w}"
+          using hx\<^sub>3_arc_side False by (by100 blast)
+        then show ?thesis
+          using hx\<^sub>1A\<^sub>2 by (by100 blast)
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
