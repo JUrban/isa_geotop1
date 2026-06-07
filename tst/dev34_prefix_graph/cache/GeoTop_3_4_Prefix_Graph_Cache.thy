@@ -3547,6 +3547,39 @@ proof -
     using hx\<^sub>3_edge_sphere he\<^sub>3_punctured_sub by (by100 blast)
   have hx_card3: "card {x\<^sub>1, x\<^sub>2, x\<^sub>3} = 3"
     using hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 by (by100 simp)
+  have hradial_sector_bound:
+      "\<forall>C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)).
+        card {S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}.
+                (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}} \<le> 2"
+  proof -
+    have hr_le_q\<^sub>1: "r \<le> dist w q\<^sub>1"
+      using hr_lt_q\<^sub>1 by (by100 linarith)
+    have hr_le_q\<^sub>2: "r \<le> dist w q\<^sub>2"
+      using hr_lt_q\<^sub>2 by (by100 linarith)
+    have hr_le_q\<^sub>3: "r \<le> dist w q\<^sub>3"
+      using hr_lt_q\<^sub>3 by (by100 linarith)
+    have h12_empty:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> (closed_segment w q\<^sub>2 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>12_punctured_disj he\<^sub>1_seg he\<^sub>2_seg by (by100 blast)
+    have h13_empty:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> (closed_segment w q\<^sub>3 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>13_punctured_disj he\<^sub>1_seg he\<^sub>3_seg by (by100 blast)
+    have h23_empty:
+        "(closed_segment w q\<^sub>2 - {w}) \<inter> (closed_segment w q\<^sub>3 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>23_punctured_disj he\<^sub>2_seg he\<^sub>3_seg by (by100 blast)
+    have hbound:
+        "\<forall>C \<in> components
+          (ball w r -
+            (closed_segment w q\<^sub>1 \<union> closed_segment w q\<^sub>2 \<union> closed_segment w q\<^sub>3)).
+          card {S \<in> {closed_segment w q\<^sub>1, closed_segment w q\<^sub>2, closed_segment w q\<^sub>3}.
+                  (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}} \<le> 2"
+      by (rule geotop_three_radial_segments_sector_bound_prefix
+          [OF hr_pos hq\<^sub>1w hq\<^sub>2w hq\<^sub>3w
+              hr_le_q\<^sub>1 hr_le_q\<^sub>2 hr_le_q\<^sub>3
+              h12_empty h13_empty h23_empty])
+    show ?thesis
+      using hbound he\<^sub>1_seg he\<^sub>2_seg he\<^sub>3_seg by (by100 simp)
+  qed
   have hcircle_components_fin:
       "finite (components (sphere w r - {x\<^sub>1, x\<^sub>2, x\<^sub>3}))"
   proof -
