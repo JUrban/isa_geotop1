@@ -31,6 +31,74 @@ proof
     using geotop_singleton_not_edge_prefix by (by100 blast)
 qed
 
+lemma geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix:
+  fixes L :: "(real^2) set set" and B :: "(real^2) set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hend: "geotop_graph_endpoint L w"
+  shows "w \<in> E"
+proof (rule ccontr)
+  assume hw_not_E: "w \<notin> E"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have hw_data: "{w} \<in> L \<and> card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    by (rule geotop_graph_endpoint_singleton_and_card_one_prefix[OF hL hend])
+  have hwL: "{w} \<in> L"
+    using hw_data by (by100 blast)
+  have hcard1: "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 1"
+    using hw_data by (by100 blast)
+  have hB_arc: "geotop_is_arc B
+      (subspace_topology UNIV geotop_euclidean_topology B)"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hwB: "w \<in> B"
+    using hwL hpoly unfolding geotop_polyhedron_def by (by100 blast)
+  have hw_int: "w \<in> geotop_arc_interior B E"
+    unfolding geotop_arc_interior_def using hwB hw_not_E by (by100 blast)
+  have hcard_ge2:
+      "card {\<sigma>\<in>L. w \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+    by (rule broken_line_internal_vertex_card_edges_ge2
+        [OF hL_complex hpoly hL_1dim hB_arc hE hwL hw_int])
+  have hsets:
+      "{\<sigma>\<in>L. w \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}
+      = {e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+    unfolding geotop_is_edge_def by (by100 blast)
+  have "card {e\<in>L. geotop_is_edge e \<and> w \<in> e} \<ge> 2"
+    using hcard_ge2 hsets by (by100 simp)
+  thus False
+    using hcard1 by (by100 linarith)
+qed
+
+lemma geotop_broken_line_two_graph_endpoints_arc_endpoints_prefix:
+  fixes L :: "(real^2) set set" and B :: "(real^2) set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hpoly: "geotop_polyhedron L = B"
+  assumes hB: "geotop_is_broken_line B"
+  assumes hE: "geotop_arc_endpoints B E"
+  assumes hPend: "geotop_graph_endpoint L P"
+  assumes hQend: "geotop_graph_endpoint L Q"
+  assumes hPQ: "P \<noteq> Q"
+  shows "geotop_arc_endpoints B {P, Q}"
+proof -
+  have hP_E: "P \<in> E"
+    by (rule geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix
+        [OF hL hfin hpoly hB hE hPend])
+  have hQ_E: "Q \<in> E"
+    by (rule geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix
+        [OF hL hfin hpoly hB hE hQend])
+  have hcardE: "card E = 2"
+    using hE unfolding geotop_arc_endpoints_def by (by100 blast)
+  have hE_eq: "E = {P, Q}"
+    using hcardE hP_E hQ_E hPQ by (by100 auto)
+  show ?thesis
+    using hE hE_eq by (by100 simp)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_edge_orbit_no_singletons_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -2139,6 +2207,66 @@ proof -
       "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
         geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
     using hQ_K\<^sub>2 hQ_K\<^sub>2_endpoint_if hK\<^sub>2_broken_if_endpoint by (by100 blast)
+  have hK\<^sub>1_arc_endpoints_if_PQ_endpoint:
+      "geotop_graph_endpoint K\<^sub>1 P \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>1 Q \<Longrightarrow>
+        geotop_arc_endpoints (geotop_polyhedron K\<^sub>1) {P, Q}"
+  proof -
+    assume hPend: "geotop_graph_endpoint K\<^sub>1 P"
+    assume hQend: "geotop_graph_endpoint K\<^sub>1 Q"
+    have hbroken: "geotop_is_broken_line (geotop_polyhedron K\<^sub>1)"
+      using hP_K\<^sub>1 hPend hK\<^sub>1_broken_if_endpoint by (by100 blast)
+    obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron K\<^sub>1) E"
+      using geotop_broken_line_has_arc_endpoints_prefix[OF hbroken] by (by100 blast)
+    show ?thesis
+    proof (rule geotop_broken_line_two_graph_endpoints_arc_endpoints_prefix
+        [where L = K\<^sub>1 and B = "geotop_polyhedron K\<^sub>1" and E = E])
+      show "geotop_is_linear_graph K\<^sub>1" by (rule hK\<^sub>1_linear)
+      show "finite K\<^sub>1" by (rule hK\<^sub>1_fin)
+      show "geotop_polyhedron K\<^sub>1 = geotop_polyhedron K\<^sub>1" by (by100 simp)
+      show "geotop_is_broken_line (geotop_polyhedron K\<^sub>1)" by (rule hbroken)
+      show "geotop_arc_endpoints (geotop_polyhedron K\<^sub>1) E" by (rule hE)
+      show "geotop_graph_endpoint K\<^sub>1 P" by (rule hPend)
+      show "geotop_graph_endpoint K\<^sub>1 Q" by (rule hQend)
+      show "P \<noteq> Q" by (rule hPQ)
+    qed
+  qed
+  have hK\<^sub>2_arc_endpoints_if_PQ_endpoint:
+      "geotop_graph_endpoint K\<^sub>2 P \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>2 Q \<Longrightarrow>
+        geotop_arc_endpoints (geotop_polyhedron K\<^sub>2) {P, Q}"
+  proof -
+    assume hPend: "geotop_graph_endpoint K\<^sub>2 P"
+    assume hQend: "geotop_graph_endpoint K\<^sub>2 Q"
+    have hbroken: "geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
+      using hP_K\<^sub>2 hPend hK\<^sub>2_broken_if_endpoint by (by100 blast)
+    obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron K\<^sub>2) E"
+      using geotop_broken_line_has_arc_endpoints_prefix[OF hbroken] by (by100 blast)
+    show ?thesis
+    proof (rule geotop_broken_line_two_graph_endpoints_arc_endpoints_prefix
+        [where L = K\<^sub>2 and B = "geotop_polyhedron K\<^sub>2" and E = E])
+      show "geotop_is_linear_graph K\<^sub>2" by (rule hK\<^sub>2_linear)
+      show "finite K\<^sub>2" by (rule hK\<^sub>2_fin)
+      show "geotop_polyhedron K\<^sub>2 = geotop_polyhedron K\<^sub>2" by (by100 simp)
+      show "geotop_is_broken_line (geotop_polyhedron K\<^sub>2)" by (rule hbroken)
+      show "geotop_arc_endpoints (geotop_polyhedron K\<^sub>2) E" by (rule hE)
+      show "geotop_graph_endpoint K\<^sub>2 P" by (rule hPend)
+      show "geotop_graph_endpoint K\<^sub>2 Q" by (rule hQend)
+      show "P \<noteq> Q" by (rule hPQ)
+    qed
+  qed
+  have hK\<^sub>1_arc_endpoints_if_boundary_edges_absent:
+      "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1 \<Longrightarrow>
+        closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1 \<Longrightarrow>
+        geotop_arc_endpoints (geotop_polyhedron K\<^sub>1) {P, Q}"
+    using hP_K\<^sub>1_endpoint_if hQ_K\<^sub>1_endpoint_if
+      hK\<^sub>1_arc_endpoints_if_PQ_endpoint by (by100 blast)
+  have hK\<^sub>2_arc_endpoints_if_boundary_edges_absent:
+      "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2 \<Longrightarrow>
+        closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_arc_endpoints (geotop_polyhedron K\<^sub>2) {P, Q}"
+    using hP_K\<^sub>2_endpoint_if hQ_K\<^sub>2_endpoint_if
+      hK\<^sub>2_arc_endpoints_if_PQ_endpoint by (by100 blast)
   have hvertex_idx_cover:
       "?v ` {0..<p} =
         ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
