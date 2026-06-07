@@ -9829,6 +9829,29 @@ proof -
     using hU_open hX_front by (by100 blast)
 qed
 
+lemma geotop_polygon_arc_opposite_boundary_decomposition_prefix:
+  fixes J A :: "(real^2) set" and P Q R S :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAsub: "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
+            U\<^sub>S \<in> geotop_euclidean_topology \<and>
+            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
+            U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+            geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+  (**
+    Moise Theorem 4.2 separation step (geotop.tex:872): normalize the disk by
+    Theorem 3.5, suppose the Q-side and S-side points lie in the same component
+    of \<open>I - A\<close>, replace the resulting component path by a broken line from
+    \<open>Q\<close> to \<open>S\<close> in \<open>\<bar>I\<close> missing \<open>A\<close>, and apply Theorem 2.8 to the theta
+    graph made by that broken line and the two boundary arcs. **)
+  sorry
+
 (** from \<S>4 Theorem 2 (geotop.tex:869)
     LATEX VERSION: Let I be the interior of a polygon in R^2, and let P, Q, R, S be points of
       Fr I, in cyclic order. Let A be an arc from P to R, lying in \<bar>I\<close>, with A \<inter> Fr I = {P,R}.
@@ -9919,7 +9942,8 @@ proof -
               S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
               U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
               geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
-    sorry
+    by (rule geotop_polygon_arc_opposite_boundary_decomposition_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA hAsub hAJ])
   have hdecomp:
     "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and> U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
             U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
