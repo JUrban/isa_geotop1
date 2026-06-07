@@ -5736,6 +5736,110 @@ proof -
       qed
     qed
   qed
+  have htwo_selected_sphere_germs_same_punctured_component:
+      "\<exists>S T x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x y"
+  proof -
+    obtain S T N x y where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+      and hN_conn: "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+      and hxN: "x \<in> N"
+      and hyN: "y \<in> N"
+      and hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      using hpunctured_carrier_connected_meets_two_sphere_germs by (elim exE conjE)
+    have hN_subtop:
+        "subspace_topology (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) N
+          = subspace_topology UNIV geotop_euclidean_topology N"
+      by (rule subspace_topology_trans[OF hN_sub])
+    have hsame_component:
+        "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x y"
+      unfolding top1_in_same_component_on_def
+    proof (rule exI[where x=N])
+      show "N \<subseteq> geotop_polyhedron L - {w}
+        \<and> x \<in> N
+        \<and> y \<in> N
+        \<and> top1_connected_on N
+          (subspace_topology (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) N)"
+      proof (intro conjI)
+        show "N \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
+        show "x \<in> N" by (rule hxN)
+        show "y \<in> N" by (rule hyN)
+        show "top1_connected_on N
+          (subspace_topology (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) N)"
+          unfolding hN_subtop by (rule hN_conn)
+      qed
+    qed
+    show ?thesis
+    proof (rule exI[where x=S])
+      show "\<exists>T x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x y"
+      proof (rule exI[where x=T])
+        show "\<exists>x y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) x y"
+        proof (rule exI[where x=x])
+          show "\<exists>y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+            \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+            \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+              (subspace_topology UNIV geotop_euclidean_topology
+                (geotop_polyhedron L - {w})) x y"
+          proof (rule exI[where x=y])
+            show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> S \<noteq> T
+              \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+              \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+              \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) x y"
+            proof (intro conjI)
+              show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+              show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+              show "S \<noteq> T" by (rule hST)
+              show "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hxS)
+              show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+              show "top1_in_same_component_on (geotop_polyhedron L - {w})
+                (subspace_topology UNIV geotop_euclidean_topology
+                  (geotop_polyhedron L - {w})) x y"
+                by (rule hsame_component)
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
