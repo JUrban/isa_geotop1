@@ -5363,6 +5363,258 @@ proof -
       qed
     qed
   qed
+  have htwo_selected_sphere_germs_connected_in_arc_side:
+      "\<exists>S T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+  proof -
+    let ?sphere_germs =
+      "\<exists>S T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+    have hx\<^sub>1e\<^sub>1_sphere_punctured: "x\<^sub>1 \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r"
+      using hx\<^sub>1_edge_sphere hx\<^sub>1_ne_q\<^sub>1 by (by100 blast)
+    have hx\<^sub>2e\<^sub>2_sphere_punctured: "x\<^sub>2 \<in> (e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r"
+      using hx\<^sub>2_edge_sphere hx\<^sub>2_ne_q\<^sub>1 by (by100 blast)
+    have hx\<^sub>3e\<^sub>3_sphere_punctured: "x\<^sub>3 \<in> (e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r"
+      using hx\<^sub>3_edge_sphere hx\<^sub>3_ne_q\<^sub>1 by (by100 blast)
+    have hpair_sphere:
+        "\<And>x y S T C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<Longrightarrow> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> S \<noteq> T
+          \<Longrightarrow> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> x \<in> C - {w}
+          \<Longrightarrow> y \<in> C - {w}
+          \<Longrightarrow> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+          \<Longrightarrow> ?sphere_germs"
+    proof -
+      fix x y S T C
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hST: "S \<noteq> T"
+      assume hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      assume hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      assume hxC: "x \<in> C - {w}"
+      assume hyC: "y \<in> C - {w}"
+      assume hconnC: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      have hbody:
+          "C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> x \<in> C - {w}
+          \<and> y \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (intro conjI)
+        show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+        show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+        show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+        show "S \<noteq> T" by (rule hST)
+        show "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hxS)
+        show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+        show "x \<in> C - {w}" by (rule hxC)
+        show "y \<in> C - {w}" by (rule hyC)
+        show "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule hconnC)
+      qed
+      show ?sphere_germs
+      proof (rule exI[where x=S])
+        show "\<exists>T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> x \<in> C - {w}
+          \<and> y \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        proof (rule exI[where x=T])
+          show "\<exists>C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+            \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+            \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+            \<and> x \<in> C - {w}
+            \<and> y \<in> C - {w}
+            \<and> top1_connected_on (C - {w})
+              (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          proof (rule exI[where x=C])
+            show "\<exists>x y. C \<in> {A\<^sub>1, A\<^sub>2}
+              \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> S \<noteq> T
+              \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+              \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+              \<and> x \<in> C - {w}
+              \<and> y \<in> C - {w}
+              \<and> top1_connected_on (C - {w})
+                (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+            proof (rule exI[where x=x])
+              show "\<exists>y. C \<in> {A\<^sub>1, A\<^sub>2}
+                \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> S \<noteq> T
+                \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+                \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+                \<and> x \<in> C - {w}
+                \<and> y \<in> C - {w}
+                \<and> top1_connected_on (C - {w})
+                  (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+              proof (rule exI[where x=y])
+                show "C \<in> {A\<^sub>1, A\<^sub>2}
+                  \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                  \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                  \<and> S \<noteq> T
+                  \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+                  \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+                  \<and> x \<in> C - {w}
+                  \<and> y \<in> C - {w}
+                  \<and> top1_connected_on (C - {w})
+                    (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+                  by (rule hbody)
+              qed
+            qed
+          qed
+        qed
+      qed
+    qed
+    show ?thesis
+      using htwo_witnesses_same_arc_side
+    proof (elim disjE)
+      assume hside: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>1 and y=x\<^sub>2 and S=e\<^sub>1 and T=e\<^sub>2 and C=A\<^sub>1])
+        show "A\<^sub>1 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>2" by (rule he\<^sub>12)
+        show "x\<^sub>1 \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>1e\<^sub>1_sphere_punctured)
+        show "x\<^sub>2 \<in> (e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>2e\<^sub>2_sphere_punctured)
+        show "x\<^sub>1 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>2 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>1 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w}))"
+          by (rule hA\<^sub>1_minus_w_connected)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>1 and y=x\<^sub>3 and S=e\<^sub>1 and T=e\<^sub>3 and C=A\<^sub>1])
+        show "A\<^sub>1 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>3" by (rule he\<^sub>13)
+        show "x\<^sub>1 \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>1e\<^sub>1_sphere_punctured)
+        show "x\<^sub>3 \<in> (e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>3e\<^sub>3_sphere_punctured)
+        show "x\<^sub>1 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>1 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w}))"
+          by (rule hA\<^sub>1_minus_w_connected)
+      qed
+    next
+      assume hside: "x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>2 and y=x\<^sub>3 and S=e\<^sub>2 and T=e\<^sub>3 and C=A\<^sub>1])
+        show "A\<^sub>1 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<noteq> e\<^sub>3" by (rule he\<^sub>23)
+        show "x\<^sub>2 \<in> (e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>2e\<^sub>2_sphere_punctured)
+        show "x\<^sub>3 \<in> (e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>3e\<^sub>3_sphere_punctured)
+        show "x\<^sub>2 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>1 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w}))"
+          by (rule hA\<^sub>1_minus_w_connected)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>1 and y=x\<^sub>2 and S=e\<^sub>1 and T=e\<^sub>2 and C=A\<^sub>2])
+        show "A\<^sub>2 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>2" by (rule he\<^sub>12)
+        show "x\<^sub>1 \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>1e\<^sub>1_sphere_punctured)
+        show "x\<^sub>2 \<in> (e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>2e\<^sub>2_sphere_punctured)
+        show "x\<^sub>1 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>2 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>2 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>2 - {w}))"
+          by (rule hA\<^sub>2_minus_w_connected)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>1 and y=x\<^sub>3 and S=e\<^sub>1 and T=e\<^sub>3 and C=A\<^sub>2])
+        show "A\<^sub>2 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>3" by (rule he\<^sub>13)
+        show "x\<^sub>1 \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>1e\<^sub>1_sphere_punctured)
+        show "x\<^sub>3 \<in> (e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>3e\<^sub>3_sphere_punctured)
+        show "x\<^sub>1 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>2 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>2 - {w}))"
+          by (rule hA\<^sub>2_minus_w_connected)
+      qed
+    next
+      assume hside: "x\<^sub>2 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_sphere[where x=x\<^sub>2 and y=x\<^sub>3 and S=e\<^sub>2 and T=e\<^sub>3 and C=A\<^sub>2])
+        show "A\<^sub>2 \<in> {A\<^sub>1, A\<^sub>2}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<noteq> e\<^sub>3" by (rule he\<^sub>23)
+        show "x\<^sub>2 \<in> (e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>2e\<^sub>2_sphere_punctured)
+        show "x\<^sub>3 \<in> (e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r"
+          by (rule hx\<^sub>3e\<^sub>3_sphere_punctured)
+        show "x\<^sub>2 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "top1_connected_on (A\<^sub>2 - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>2 - {w}))"
+          by (rule hA\<^sub>2_minus_w_connected)
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
