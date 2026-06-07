@@ -2386,6 +2386,48 @@ proof -
   have hpoly_K_union:
       "geotop_polyhedron L = geotop_polyhedron K\<^sub>1 \<union> geotop_polyhedron K\<^sub>2"
     using hK_union_L unfolding geotop_polyhedron_def by (by100 blast)
+  have hK_arc_interiors_disjoint_if_poly_inter_subset:
+      "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}
+      \<Longrightarrow> geotop_arc_interior (geotop_polyhedron K\<^sub>1) {P, Q}
+          \<inter> geotop_arc_interior (geotop_polyhedron K\<^sub>2) {P, Q} = {}"
+    unfolding geotop_arc_interior_def by (by100 blast)
+  have hcycle_cut_if_boundary_edges_absent_and_poly_inter_subset:
+      "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1 \<Longrightarrow>
+        closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1 \<Longrightarrow>
+        closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2 \<Longrightarrow>
+        closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}
+        \<Longrightarrow> \<exists>C\<^sub>1 C\<^sub>2.
+          geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+          \<and> geotop_is_broken_line C\<^sub>1
+          \<and> geotop_is_broken_line C\<^sub>2
+          \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+          \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+          \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+              geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  proof -
+    assume hK\<^sub>1P_absent: "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+    assume hK\<^sub>1Q_absent: "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+    assume hK\<^sub>2P_absent: "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+    assume hK\<^sub>2Q_absent: "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+    assume hpoly_inter: "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+    have hB\<^sub>1: "geotop_is_broken_line (geotop_polyhedron K\<^sub>1)"
+      by (rule hK\<^sub>1_broken_if_P_endpoint[OF hK\<^sub>1P_absent])
+    have hB\<^sub>2: "geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
+      by (rule hK\<^sub>2_broken_if_P_endpoint[OF hK\<^sub>2P_absent])
+    have hE\<^sub>1: "geotop_arc_endpoints (geotop_polyhedron K\<^sub>1) {P, Q}"
+      by (rule hK\<^sub>1_arc_endpoints_if_boundary_edges_absent
+          [OF hK\<^sub>1P_absent hK\<^sub>1Q_absent])
+    have hE\<^sub>2: "geotop_arc_endpoints (geotop_polyhedron K\<^sub>2) {P, Q}"
+      by (rule hK\<^sub>2_arc_endpoints_if_boundary_edges_absent
+          [OF hK\<^sub>2P_absent hK\<^sub>2Q_absent])
+    have hdisj:
+        "geotop_arc_interior (geotop_polyhedron K\<^sub>1) {P, Q} \<inter>
+          geotop_arc_interior (geotop_polyhedron K\<^sub>2) {P, Q} = {}"
+      by (rule hK_arc_interiors_disjoint_if_poly_inter_subset[OF hpoly_inter])
+    show ?thesis
+      using hpoly_K_union hB\<^sub>1 hB\<^sub>2 hE\<^sub>1 hE\<^sub>2 hdisj by (by100 blast)
+  qed
   have hK\<^sub>1_closing_edge_collision:
       "closed_segment (?v (p - 1)) P \<in>
         ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
