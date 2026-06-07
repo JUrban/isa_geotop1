@@ -2292,6 +2292,54 @@ proof -
         using hk hrev by (by100 blast)
     qed
   qed
+  have hK\<^sub>1_closing_in_K_reversed:
+      "closed_segment (?v (p - 1)) P \<in> K\<^sub>1
+      \<Longrightarrow> \<exists>k\<in>{0..<j}. ?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+  proof -
+    assume hmem: "closed_segment (?v (p - 1)) P \<in> K\<^sub>1"
+    have hedge_mem:
+        "closed_segment (?v (p - 1)) P \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule hK\<^sub>1_closing_edge_part_if[OF hmem])
+    show ?thesis
+      by (rule hK\<^sub>1_closing_edge_collision_reversed[OF hedge_mem])
+  qed
+  have hK\<^sub>2_initial_in_K_reversed:
+      "closed_segment P (?v (Suc 0)) \<in> K\<^sub>2
+      \<Longrightarrow> \<exists>k\<in>{j..<p}. P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+  proof -
+    assume hmem: "closed_segment P (?v (Suc 0)) \<in> K\<^sub>2"
+    have hedge_mem:
+        "closed_segment P (?v (Suc 0)) \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule hK\<^sub>2_initial_edge_part_if[OF hmem])
+    show ?thesis
+      by (rule hK\<^sub>2_initial_edge_collision_reversed[OF hedge_mem])
+  qed
+  have hK\<^sub>1_after_Q_in_K_reversed:
+      "closed_segment Q (?v (Suc j)) \<in> K\<^sub>1
+      \<Longrightarrow> \<exists>k\<in>{0..<j}. Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+  proof -
+    assume hmem: "closed_segment Q (?v (Suc j)) \<in> K\<^sub>1"
+    have hedge_mem:
+        "closed_segment Q (?v (Suc j)) \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule hK\<^sub>1_after_Q_edge_part_if[OF hmem])
+    show ?thesis
+      by (rule hK\<^sub>1_after_Q_edge_collision_reversed[OF hedge_mem])
+  qed
+  have hK\<^sub>2_before_Q_in_K_reversed:
+      "closed_segment (?v (j - 1)) Q \<in> K\<^sub>2
+      \<Longrightarrow> \<exists>k\<in>{j..<p}. ?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+  proof -
+    assume hmem: "closed_segment (?v (j - 1)) Q \<in> K\<^sub>2"
+    have hedge_mem:
+        "closed_segment (?v (j - 1)) Q \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule hK\<^sub>2_before_Q_edge_part_if[OF hmem])
+    show ?thesis
+      by (rule hK\<^sub>2_before_Q_edge_collision_reversed[OF hedge_mem])
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
