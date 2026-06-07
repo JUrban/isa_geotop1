@@ -1536,7 +1536,49 @@ lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
     edge sectors at \<open>w\<close>; after deleting \<open>w\<close>, these sectors cannot be joined
     in the carrier without passing through \<open>w\<close>, so the punctured carrier is
     disconnected. **)
-  sorry
+proof -
+  define E where "E = {e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hE_fin: "finite E"
+    unfolding E_def using hL_fin by (by100 simp)
+  have hE_card_gt2: "card E > 2"
+    unfolding E_def using hbranch by (by100 simp)
+  have hcard3: "3 \<le> card E"
+    using hE_card_gt2 by (by100 linarith)
+  obtain W where hW_sub: "W \<subseteq> E" and hW_card: "card W = 3"
+    using obtain_subset_with_card_n[OF hcard3] by (by100 blast)
+  have hW_three:
+      "\<exists>e\<^sub>1 e\<^sub>2 e\<^sub>3. W = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> e\<^sub>1 \<noteq> e\<^sub>2 \<and> e\<^sub>2 \<noteq> e\<^sub>3 \<and> e\<^sub>1 \<noteq> e\<^sub>3"
+    by (rule iffD1[OF card_3_iff hW_card])
+  obtain e\<^sub>1 e\<^sub>2 e\<^sub>3 where he\<^sub>1E: "e\<^sub>1 \<in> E"
+      and he\<^sub>2E: "e\<^sub>2 \<in> E"
+      and he\<^sub>3E: "e\<^sub>3 \<in> E"
+      and he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2"
+      and he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
+      and he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3"
+  proof -
+    obtain e\<^sub>1 e\<^sub>2 e\<^sub>3 where hW_eq: "W = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and he\<^sub>12: "e\<^sub>1 \<noteq> e\<^sub>2" and he\<^sub>23: "e\<^sub>2 \<noteq> e\<^sub>3" and he\<^sub>13: "e\<^sub>1 \<noteq> e\<^sub>3"
+      using hW_three by (elim exE conjE)
+    have he\<^sub>1E: "e\<^sub>1 \<in> E" and he\<^sub>2E: "e\<^sub>2 \<in> E" and he\<^sub>3E: "e\<^sub>3 \<in> E"
+      using hW_sub hW_eq by (by100 blast)+
+    show ?thesis
+      by (rule that[OF he\<^sub>1E he\<^sub>2E he\<^sub>3E he\<^sub>12 he\<^sub>13 he\<^sub>23])
+  qed
+  have hlocal_sector_cut_book:
+      "\<not> top1_connected_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w}))"
+    (**
+      Remaining local-sector book step: choose three distinct incident
+      1-simplexes \<open>e\<^sub>1,e\<^sub>2,e\<^sub>3\<close>, take sufficiently small punctured subsegments
+      in the three edge germs at \<open>w\<close>, and use the finite linear complex
+      intersection property to show any carrier path joining two selected
+      sectors must pass through \<open>w\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hlocal_sector_cut_book)
+qed
 
 lemma geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
