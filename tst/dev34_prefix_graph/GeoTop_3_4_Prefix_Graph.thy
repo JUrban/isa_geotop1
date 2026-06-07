@@ -3458,12 +3458,101 @@ proof -
             \<inter> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
           by (by100 simp)
       qed
+      have hK_inter_subset_cut_vertices_book:
+          "K\<^sub>1 \<inter> K\<^sub>2 \<subseteq> {{P}, {Q}}"
+      proof
+        fix \<sigma>
+        assume h\<sigma>: "\<sigma> \<in> K\<^sub>1 \<inter> K\<^sub>2"
+        let ?V\<^sub>1 = "((\<lambda>v. {v}) ` (?v ` {0..j}))"
+        let ?E\<^sub>1 = "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+        let ?V\<^sub>2 = "((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+        let ?E\<^sub>2 = "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+        have h\<sigma>1: "\<sigma> \<in> ?V\<^sub>1 \<or> \<sigma> \<in> ?E\<^sub>1"
+          using h\<sigma> unfolding K\<^sub>1_def by (by100 blast)
+        have h\<sigma>2: "\<sigma> \<in> ?V\<^sub>2 \<or> \<sigma> \<in> ?E\<^sub>2"
+          using h\<sigma> unfolding K\<^sub>2_def by (by100 blast)
+        show "\<sigma> \<in> {{P}, {Q}}"
+        proof (rule disjE[OF h\<sigma>1])
+          assume h\<sigma>V1: "\<sigma> \<in> ?V\<^sub>1"
+          obtain x where hxV1: "x \<in> ?v ` {0..j}" and h\<sigma>x: "\<sigma> = {x}"
+            using h\<sigma>V1 by (by100 blast)
+          show ?thesis
+          proof (rule disjE[OF h\<sigma>2])
+            assume h\<sigma>V2: "\<sigma> \<in> ?V\<^sub>2"
+            obtain y where hyV2: "y \<in> ?v ` ({j..<p} \<union> {p})"
+                and h\<sigma>y: "\<sigma> = {y}"
+              using h\<sigma>V2 by (by100 blast)
+            have hxy: "x = y"
+              using h\<sigma>x h\<sigma>y by (by100 simp)
+            have "x \<in> ?v ` {0..j} \<inter> ?v ` ({j..<p} \<union> {p})"
+              using hxV1 hyV2 hxy by (by100 blast)
+            hence "x \<in> {P, Q}"
+              using hvertex_set_inter_subset_book by (by100 blast)
+            thus ?thesis
+              using h\<sigma>x by (by100 blast)
+          next
+            assume h\<sigma>E2: "\<sigma> \<in> ?E\<^sub>2"
+            have h\<sigma>edge: "geotop_is_edge \<sigma>"
+              using hK\<^sub>2_edge_orbit h\<sigma>E2 by (by100 blast)
+            have "\<not> geotop_is_edge {x}"
+              by (rule geotop_singleton_not_edge_prefix)
+            thus ?thesis
+              using h\<sigma>x h\<sigma>edge by (by100 blast)
+          qed
+        next
+          assume h\<sigma>E1: "\<sigma> \<in> ?E\<^sub>1"
+          show ?thesis
+          proof (rule disjE[OF h\<sigma>2])
+            assume h\<sigma>V2: "\<sigma> \<in> ?V\<^sub>2"
+            obtain x where hxV2: "x \<in> ?v ` ({j..<p} \<union> {p})" and h\<sigma>x: "\<sigma> = {x}"
+              using h\<sigma>V2 by (by100 blast)
+            have h\<sigma>edge: "geotop_is_edge \<sigma>"
+              using hK\<^sub>1_edge_orbit h\<sigma>E1 by (by100 blast)
+            have "\<not> geotop_is_edge {x}"
+              by (rule geotop_singleton_not_edge_prefix)
+            thus ?thesis
+              using h\<sigma>x h\<sigma>edge by (by100 blast)
+          next
+            assume h\<sigma>E2: "\<sigma> \<in> ?E\<^sub>2"
+            have "\<sigma> \<in> ?E\<^sub>1 \<inter> ?E\<^sub>2"
+              using h\<sigma>E1 h\<sigma>E2 by (by100 blast)
+            thus ?thesis
+              using hedge_idx_inter_empty_book by (by100 blast)
+          qed
+        qed
+      qed
       have hpoly_inter_subset_book:
           "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
         (**
           Book carrier-intersection fact: the two cut subpath carriers meet
           only at the cut vertices \<open>P,Q\<close>. **)
-        sorry
+      proof
+        fix x
+        assume hx: "x \<in> geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2"
+        obtain \<sigma> where h\<sigma>K\<^sub>1: "\<sigma> \<in> K\<^sub>1" and hx\<sigma>: "x \<in> \<sigma>"
+          using hx unfolding geotop_polyhedron_def by (by100 blast)
+        obtain \<tau> where h\<tau>K\<^sub>2: "\<tau> \<in> K\<^sub>2" and hx\<tau>: "x \<in> \<tau>"
+          using hx unfolding geotop_polyhedron_def by (by100 blast)
+        have h\<sigma>L: "\<sigma> \<in> L"
+          using hK\<^sub>1_subset_L h\<sigma>K\<^sub>1 by (by100 blast)
+        have h\<tau>L: "\<tau> \<in> L"
+          using hK\<^sub>2_subset_L h\<tau>K\<^sub>2 by (by100 blast)
+        have hcap_nonempty: "\<sigma> \<inter> \<tau> \<noteq> {}"
+          using hx\<sigma> hx\<tau> by (by100 blast)
+        have hcap_faces:
+            "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+            \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+          using geotop_is_complex_intersection[OF hL_complex] h\<sigma>L h\<tau>L hcap_nonempty
+          by (by100 blast)
+        have hcap_K\<^sub>1: "\<sigma> \<inter> \<tau> \<in> K\<^sub>1"
+          using hK\<^sub>1_face_closed h\<sigma>K\<^sub>1 hcap_faces by (by100 blast)
+        have hcap_K\<^sub>2: "\<sigma> \<inter> \<tau> \<in> K\<^sub>2"
+          using hK\<^sub>2_face_closed h\<tau>K\<^sub>2 hcap_faces by (by100 blast)
+        have "\<sigma> \<inter> \<tau> \<in> {{P}, {Q}}"
+          using hK_inter_subset_cut_vertices_book hcap_K\<^sub>1 hcap_K\<^sub>2 by (by100 blast)
+        thus "x \<in> {P, Q}"
+          using hx\<sigma> hx\<tau> by (by100 blast)
+      qed
       have horbit_no_nonadjacent_reversed:
           "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
               \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
