@@ -6022,6 +6022,21 @@ proof -
     show "x \<in> U"
       using hballU_s hx_poly_ball_s by (by100 blast)
   qed
+  have hsphere_sigma_subset_U: "sphere p r \<inter> \<sigma> \<subseteq> U"
+  proof
+    fix x
+    assume hx: "x \<in> sphere p r \<inter> \<sigma>"
+    have hx_ball_s: "x \<in> ball p s"
+      using hx hrs by (by100 simp)
+    have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
+      using hx hx_ball_s by (by100 blast)
+    have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
+      using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
+    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
+      using hx_ball_poly_s by (by100 blast)
+    show "x \<in> U"
+      using hballU_s hx_poly_ball_s by (by100 blast)
+  qed
   have hsemicircle_book:
     "\<exists>A. A \<subseteq> sphere p r \<inter> \<sigma>
       \<and> geotop_is_arc A
