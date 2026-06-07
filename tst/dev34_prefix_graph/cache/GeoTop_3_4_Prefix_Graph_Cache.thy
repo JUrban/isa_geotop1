@@ -1519,6 +1519,50 @@ proof -
     using hnot_conn hconn by (by100 blast)
 qed
 
+lemma geotop_incident_edge_other_endpoint_vertex_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>q. q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
+proof -
+  have hcomplex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have hw_endpoint: "w = a \<or> w = b"
+    by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
+        [OF hcomplex hwL heL heab hab hwe])
+  show ?thesis
+  proof (rule disjE[OF hw_endpoint])
+    assume hwa: "w = a"
+    have hb_face: "geotop_is_face {b} e"
+      using geotop_closed_segment_is_face_endpoint[OF hab, of b] heab by (by100 simp)
+    have hbL: "{b} \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] heL hb_face by (by100 blast)
+    show ?thesis
+    proof (rule exI[where x = b])
+      show "b \<noteq> w \<and> e = closed_segment w b \<and> {b} \<in> L"
+        using hab heab hwa hbL by (by100 simp)
+    qed
+  next
+    assume hwb: "w = b"
+    have ha_face: "geotop_is_face {a} e"
+      using geotop_closed_segment_is_face_endpoint[OF hab, of a] heab by (by100 simp)
+    have haL: "{a} \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplex] heL ha_face by (by100 blast)
+    have heba: "e = closed_segment b a"
+      using heab closed_segment_commute[of a b] by (by100 simp)
+    show ?thesis
+    proof (rule exI[where x = a])
+      show "a \<noteq> w \<and> e = closed_segment w a \<and> {a} \<in> L"
+        using hab heba hwb haL by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -1564,6 +1608,78 @@ proof -
       using hW_sub hW_eq by (by100 blast)+
     show ?thesis
       by (rule that[OF he\<^sub>1E he\<^sub>2E he\<^sub>3E he\<^sub>12 he\<^sub>13 he\<^sub>23])
+  qed
+  obtain q\<^sub>1 where hq\<^sub>1w: "q\<^sub>1 \<noteq> w"
+      and he\<^sub>1_seg: "e\<^sub>1 = closed_segment w q\<^sub>1"
+      and hq\<^sub>1L: "{q\<^sub>1} \<in> L"
+  proof -
+    have he\<^sub>1L: "e\<^sub>1 \<in> L"
+      using he\<^sub>1E unfolding E_def by (by100 blast)
+    have he\<^sub>1_edge: "geotop_is_edge e\<^sub>1"
+      using he\<^sub>1E unfolding E_def by (by100 blast)
+    have hw_e\<^sub>1: "w \<in> e\<^sub>1"
+      using he\<^sub>1E unfolding E_def by (by100 blast)
+    have hex: "\<exists>q. q \<noteq> w \<and> e\<^sub>1 = closed_segment w q \<and> {q} \<in> L"
+      by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+          [OF hL_linear hwL he\<^sub>1L he\<^sub>1_edge hw_e\<^sub>1])
+    show ?thesis
+      using hex that by (by100 blast)
+  qed
+  obtain q\<^sub>2 where hq\<^sub>2w: "q\<^sub>2 \<noteq> w"
+      and he\<^sub>2_seg: "e\<^sub>2 = closed_segment w q\<^sub>2"
+      and hq\<^sub>2L: "{q\<^sub>2} \<in> L"
+  proof -
+    have he\<^sub>2L: "e\<^sub>2 \<in> L"
+      using he\<^sub>2E unfolding E_def by (by100 blast)
+    have he\<^sub>2_edge: "geotop_is_edge e\<^sub>2"
+      using he\<^sub>2E unfolding E_def by (by100 blast)
+    have hw_e\<^sub>2: "w \<in> e\<^sub>2"
+      using he\<^sub>2E unfolding E_def by (by100 blast)
+    have hex: "\<exists>q. q \<noteq> w \<and> e\<^sub>2 = closed_segment w q \<and> {q} \<in> L"
+      by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+          [OF hL_linear hwL he\<^sub>2L he\<^sub>2_edge hw_e\<^sub>2])
+    show ?thesis
+      using hex that by (by100 blast)
+  qed
+  obtain q\<^sub>3 where hq\<^sub>3w: "q\<^sub>3 \<noteq> w"
+      and he\<^sub>3_seg: "e\<^sub>3 = closed_segment w q\<^sub>3"
+      and hq\<^sub>3L: "{q\<^sub>3} \<in> L"
+  proof -
+    have he\<^sub>3L: "e\<^sub>3 \<in> L"
+      using he\<^sub>3E unfolding E_def by (by100 blast)
+    have he\<^sub>3_edge: "geotop_is_edge e\<^sub>3"
+      using he\<^sub>3E unfolding E_def by (by100 blast)
+    have hw_e\<^sub>3: "w \<in> e\<^sub>3"
+      using he\<^sub>3E unfolding E_def by (by100 blast)
+    have hex: "\<exists>q. q \<noteq> w \<and> e\<^sub>3 = closed_segment w q \<and> {q} \<in> L"
+      by (rule geotop_incident_edge_other_endpoint_vertex_prefix
+          [OF hL_linear hwL he\<^sub>3L he\<^sub>3_edge hw_e\<^sub>3])
+    show ?thesis
+      using hex that by (by100 blast)
+  qed
+  have hq\<^sub>12: "q\<^sub>1 \<noteq> q\<^sub>2"
+  proof
+    assume hq_eq: "q\<^sub>1 = q\<^sub>2"
+    have "e\<^sub>1 = e\<^sub>2"
+      using he\<^sub>1_seg he\<^sub>2_seg hq_eq by (by100 simp)
+    then show False
+      using he\<^sub>12 by (by100 blast)
+  qed
+  have hq\<^sub>13: "q\<^sub>1 \<noteq> q\<^sub>3"
+  proof
+    assume hq_eq: "q\<^sub>1 = q\<^sub>3"
+    have "e\<^sub>1 = e\<^sub>3"
+      using he\<^sub>1_seg he\<^sub>3_seg hq_eq by (by100 simp)
+    then show False
+      using he\<^sub>13 by (by100 blast)
+  qed
+  have hq\<^sub>23: "q\<^sub>2 \<noteq> q\<^sub>3"
+  proof
+    assume hq_eq: "q\<^sub>2 = q\<^sub>3"
+    have "e\<^sub>2 = e\<^sub>3"
+      using he\<^sub>2_seg he\<^sub>3_seg hq_eq by (by100 simp)
+    then show False
+      using he\<^sub>23 by (by100 blast)
   qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
@@ -1760,50 +1876,6 @@ proof -
         using hE hxE by (by100 blast)
       show "x = e\<^sub>1"
         using hx hx_cases he_eq by (by100 blast)
-    qed
-  qed
-qed
-
-lemma geotop_incident_edge_other_endpoint_vertex_prefix:
-  fixes L :: "(real^2) set set" and w :: "real^2"
-  assumes hL: "geotop_is_linear_graph L"
-  assumes hwL: "{w} \<in> L"
-  assumes heL: "e \<in> L"
-  assumes hedge: "geotop_is_edge e"
-  assumes hwe: "w \<in> e"
-  shows "\<exists>q. q \<noteq> w \<and> e = closed_segment w q \<and> {q} \<in> L"
-proof -
-  have hcomplex: "geotop_is_complex L"
-    by (rule geotop_linear_graph_complex_prefix[OF hL])
-  obtain a b where hab: "a \<noteq> b" and heab: "e = closed_segment a b"
-    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
-  have hw_endpoint: "w = a \<or> w = b"
-    by (rule geotop_1dim_vertex_in_1simplex_is_endpoint
-        [OF hcomplex hwL heL heab hab hwe])
-  show ?thesis
-  proof (rule disjE[OF hw_endpoint])
-    assume hwa: "w = a"
-    have hb_face: "geotop_is_face {b} e"
-      using geotop_closed_segment_is_face_endpoint[OF hab, of b] heab by (by100 simp)
-    have hbL: "{b} \<in> L"
-      using geotop_is_complex_face_closed[OF hcomplex] heL hb_face by (by100 blast)
-    show ?thesis
-    proof (rule exI[where x = b])
-      show "b \<noteq> w \<and> e = closed_segment w b \<and> {b} \<in> L"
-        using hab heab hwa hbL by (by100 simp)
-    qed
-  next
-    assume hwb: "w = b"
-    have ha_face: "geotop_is_face {a} e"
-      using geotop_closed_segment_is_face_endpoint[OF hab, of a] heab by (by100 simp)
-    have haL: "{a} \<in> L"
-      using geotop_is_complex_face_closed[OF hcomplex] heL ha_face by (by100 blast)
-    have heba: "e = closed_segment b a"
-      using heab closed_segment_commute[of a b] by (by100 simp)
-    show ?thesis
-    proof (rule exI[where x = a])
-      show "a \<noteq> w \<and> e = closed_segment w a \<and> {a} \<in> L"
-        using hab heba hwb haL by (by100 simp)
     qed
   qed
 qed
