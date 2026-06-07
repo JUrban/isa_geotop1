@@ -1675,6 +1675,50 @@ proof -
     by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hK\<^sub>1_complex hK\<^sub>1_1dim])
   have hK\<^sub>2_linear: "geotop_is_linear_graph K\<^sub>2"
     by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hK\<^sub>2_complex hK\<^sub>2_1dim])
+  have hP_K\<^sub>1_endpoint_if:
+      "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1 \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>1 P"
+  proof -
+    assume hnot: "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+    have hcard: "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} = 1"
+      by (rule hP_K\<^sub>1_incident_card_one_if[OF hnot])
+    show ?thesis
+      by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+          [OF hK\<^sub>1_linear hP_K\<^sub>1 hcard])
+  qed
+  have hP_K\<^sub>2_endpoint_if:
+      "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>2 P"
+  proof -
+    assume hnot: "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+    have hcard: "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} = 1"
+      by (rule hP_K\<^sub>2_incident_card_one_if[OF hnot])
+    show ?thesis
+      by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+          [OF hK\<^sub>2_linear hP_K\<^sub>2 hcard])
+  qed
+  have hQ_K\<^sub>1_endpoint_if:
+      "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1 \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>1 Q"
+  proof -
+    assume hnot: "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+    have hcard: "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} = 1"
+      by (rule hQ_K\<^sub>1_incident_card_one_if[OF hnot])
+    show ?thesis
+      by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+          [OF hK\<^sub>1_linear hQ_K\<^sub>1 hcard])
+  qed
+  have hQ_K\<^sub>2_endpoint_if:
+      "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_graph_endpoint K\<^sub>2 Q"
+  proof -
+    assume hnot: "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+    have hcard: "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 1"
+      by (rule hQ_K\<^sub>2_incident_card_one_if[OF hnot])
+    show ?thesis
+      by (rule geotop_degree_one_vertex_graph_endpoint_prefix
+          [OF hK\<^sub>2_linear hQ_K\<^sub>2 hcard])
+  qed
   have hvertex_idx_cover:
       "?v ` {0..<p} =
         ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
