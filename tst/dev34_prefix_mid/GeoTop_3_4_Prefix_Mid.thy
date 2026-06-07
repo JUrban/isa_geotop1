@@ -9850,7 +9850,78 @@ lemma geotop_polygon_arc_opposite_boundary_decomposition_prefix:
     of \<open>I - A\<close>, replace the resulting component path by a broken line from
     \<open>Q\<close> to \<open>S\<close> in \<open>\<bar>I\<close> missing \<open>A\<close>, and apply Theorem 2.8 to the theta
     graph made by that broken line and the two boundary arcs. **)
-  sorry
+proof -
+  have hP_ne_R: "P \<noteq> R"
+  proof
+    assume hPR: "P = R"
+    have "card {P, Q, R, S} \<le> 3"
+      by (simp add: hPR card_insert_if)
+    thus False using hcard by (by100 simp)
+  qed
+  have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
+  proof
+    show "Q \<noteq> P"
+    proof
+      assume hQP: "Q = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQP card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+    show "Q \<noteq> R"
+    proof
+      assume hQR: "Q = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hQR card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+  qed
+  have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
+  proof
+    show "S \<noteq> P"
+    proof
+      assume hSP: "S = P"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSP card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+    show "S \<noteq> R"
+    proof
+      assume hSR: "S = R"
+      have "card {P, Q, R, S} \<le> 3"
+        by (simp add: hSR card_insert_if)
+      thus False using hcard by (by100 simp)
+    qed
+  qed
+  have hQ_not_A: "Q \<notin> A"
+  proof
+    assume hQA: "Q \<in> A"
+    hence "Q \<in> A \<inter> J" using hQ by (by100 blast)
+    hence "Q \<in> {P, R}" using hAJ by (by100 simp)
+    thus False using hQ_ne_PR by (by100 blast)
+  qed
+  have hS_not_A: "S \<notin> A"
+  proof
+    assume hSA: "S \<in> A"
+    hence "S \<in> A \<inter> J" using hS by (by100 blast)
+    hence "S \<in> {P, R}" using hAJ by (by100 simp)
+    thus False using hS_ne_PR by (by100 blast)
+  qed
+  have htheta_contradiction_book:
+    "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
+            U\<^sub>S \<in> geotop_euclidean_topology \<and>
+            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
+            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
+            U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
+            geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+    (**
+      Remaining Moise Theorem 4.2 book step: if the Q-side and S-side
+      components of \<open>I - A\<close> met, extract a broken line from \<open>Q\<close> to \<open>S\<close>
+      in \<open>\<bar>I\<close> disjoint from \<open>A\<close>; together with the two boundary arcs this
+      forms the theta graph forbidden by Theorem 2.8. **)
+    sorry
+  show ?thesis
+    using htheta_contradiction_book by (by100 blast)
+qed
 
 (** from \<S>4 Theorem 2 (geotop.tex:869)
     LATEX VERSION: Let I be the interior of a polygon in R^2, and let P, Q, R, S be points of
