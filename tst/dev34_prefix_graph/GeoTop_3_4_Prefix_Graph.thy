@@ -1223,6 +1223,22 @@ proof -
   have hQ_K\<^sub>2_incident_card_le2:
       "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} \<le> 2"
     by (rule geotop_subset_two_card_le2_prefix[OF hQ_K\<^sub>2_incident_edge_cases])
+  have hP_K\<^sub>1_incident_card_one_or_two:
+      "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} = 2"
+    using hP_K\<^sub>1_incident_card_pos hP_K\<^sub>1_incident_card_le2 by (by100 linarith)
+  have hP_K\<^sub>2_incident_card_one_or_two:
+      "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} = 2"
+    using hP_K\<^sub>2_incident_card_pos hP_K\<^sub>2_incident_card_le2 by (by100 linarith)
+  have hQ_K\<^sub>1_incident_card_one_or_two:
+      "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} = 2"
+    using hQ_K\<^sub>1_incident_card_pos hQ_K\<^sub>1_incident_card_le2 by (by100 linarith)
+  have hQ_K\<^sub>2_incident_card_one_or_two:
+      "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 2"
+    using hQ_K\<^sub>2_incident_card_pos hQ_K\<^sub>2_incident_card_le2 by (by100 linarith)
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
   have hL_1dim: "geotop_complex_is_1dim L"
