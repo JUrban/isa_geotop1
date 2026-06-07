@@ -3346,7 +3346,59 @@ proof -
           along the finite interval between \<open>m\<close> and \<open>n\<close> produces either an
           adjacent repeated vertex or an oriented state repetition before the
           least period. **)
-        sorry
+      proof -
+        have hmn_ne: "m \<noteq> n"
+        proof
+          assume hmn: "m = n"
+          have "?v (Suc m) = ?v (Suc n)"
+            using hmn by (by100 simp)
+          thus False
+            using hnext_ne by (by100 blast)
+        qed
+        have hreverse_trace_ordered_book:
+            "\<And>a b. a \<in> {0..<p} \<Longrightarrow> b \<in> {0..<p} \<Longrightarrow> a < b
+              \<Longrightarrow> ?v a = ?v b
+              \<Longrightarrow> ?v (Suc a) \<noteq> ?v (Suc b)
+              \<Longrightarrow> closed_segment (?v a) (?v (Suc a)) =
+                    closed_segment (?v (if b = 0 then p - 1 else b - 1)) (?v b)
+              \<Longrightarrow> closed_segment (?v b) (?v (Suc b)) =
+                    closed_segment (?v (if a = 0 then p - 1 else a - 1)) (?v a)
+              \<Longrightarrow> False"
+          (**
+            Ordered reverse-trace book step: with \<open>a < b\<close>, the first displayed
+            equality gives \<open>?v (Suc a) = ?v (b - 1)\<close>; repeating the degree-two
+            predecessor argument moves the pair inward until the reverse path
+            either has length one, contradicting consecutive-vertex
+            distinctness, or gives the same oriented state twice before the
+            least period. **)
+          sorry
+        show False
+        proof (cases m n rule: linorder_cases)
+          case less
+          show ?thesis
+            by (rule hreverse_trace_ordered_book
+                [OF hm hn less hcur hnext_ne hback_n hback_m])
+        next
+          case equal
+          show ?thesis
+            using hmn_ne equal by (by100 blast)
+        next
+          case greater
+          have hnext_ne_sym: "?v (Suc n) \<noteq> ?v (Suc m)"
+          proof
+            assume hbad: "?v (Suc n) = ?v (Suc m)"
+            have "?v (Suc m) = ?v (Suc n)"
+              using hbad by (by100 simp)
+            thus False
+              using hnext_ne by (by100 blast)
+          qed
+          have hcur_sym: "?v n = ?v m"
+            using hcur by (by100 simp)
+          show ?thesis
+            by (rule hreverse_trace_ordered_book
+                [OF hn hm greater hcur_sym hnext_ne_sym hback_m hback_n])
+        qed
+      qed
       show False
         by (rule hreverse_trace_repetition_book)
     qed
