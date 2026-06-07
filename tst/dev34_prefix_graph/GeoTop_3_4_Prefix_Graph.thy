@@ -1794,6 +1794,78 @@ proof -
   have hpoly_K_union:
       "geotop_polyhedron L = geotop_polyhedron K\<^sub>1 \<union> geotop_polyhedron K\<^sub>2"
     using hK_union_L unfolding geotop_polyhedron_def by (by100 blast)
+  have hK\<^sub>1_closing_edge_collision:
+      "closed_segment (?v (p - 1)) P \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<Longrightarrow> \<exists>k\<in>{0..<j}.
+          {?v (p - 1), P} = {?v k, ?v (Suc k)}"
+  proof -
+    assume hmem: "closed_segment (?v (p - 1)) P \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    obtain k where hk: "k \<in> {0..<j}"
+      and heq: "closed_segment (?v (p - 1)) P =
+        closed_segment (?v k) (?v (Suc k))"
+      using hmem by (by100 blast)
+    have hpair: "{?v (p - 1), P} = {?v k, ?v (Suc k)}"
+      using heq closed_segment_eq[of "?v (p - 1)" P "?v k" "?v (Suc k)"]
+      by (by100 simp)
+    show ?thesis
+      using hk hpair by (by100 blast)
+  qed
+  have hK\<^sub>2_initial_edge_collision:
+      "closed_segment P (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<Longrightarrow> \<exists>k\<in>{j..<p}.
+          {P, ?v (Suc 0)} = {?v k, ?v (Suc k)}"
+  proof -
+    assume hmem: "closed_segment P (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    obtain k where hk: "k \<in> {j..<p}"
+      and heq: "closed_segment P (?v (Suc 0)) =
+        closed_segment (?v k) (?v (Suc k))"
+      using hmem by (by100 blast)
+    have hpair: "{P, ?v (Suc 0)} = {?v k, ?v (Suc k)}"
+      using heq closed_segment_eq[of P "?v (Suc 0)" "?v k" "?v (Suc k)"]
+      by (by100 simp)
+    show ?thesis
+      using hk hpair by (by100 blast)
+  qed
+  have hK\<^sub>1_after_Q_edge_collision:
+      "closed_segment Q (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<Longrightarrow> \<exists>k\<in>{0..<j}.
+          {Q, ?v (Suc j)} = {?v k, ?v (Suc k)}"
+  proof -
+    assume hmem: "closed_segment Q (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    obtain k where hk: "k \<in> {0..<j}"
+      and heq: "closed_segment Q (?v (Suc j)) =
+        closed_segment (?v k) (?v (Suc k))"
+      using hmem by (by100 blast)
+    have hpair: "{Q, ?v (Suc j)} = {?v k, ?v (Suc k)}"
+      using heq closed_segment_eq[of Q "?v (Suc j)" "?v k" "?v (Suc k)"]
+      by (by100 simp)
+    show ?thesis
+      using hk hpair by (by100 blast)
+  qed
+  have hK\<^sub>2_before_Q_edge_collision:
+      "closed_segment (?v (j - 1)) Q \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<Longrightarrow> \<exists>k\<in>{j..<p}.
+          {?v (j - 1), Q} = {?v k, ?v (Suc k)}"
+  proof -
+    assume hmem: "closed_segment (?v (j - 1)) Q \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    obtain k where hk: "k \<in> {j..<p}"
+      and heq: "closed_segment (?v (j - 1)) Q =
+        closed_segment (?v k) (?v (Suc k))"
+      using hmem by (by100 blast)
+    have hpair: "{?v (j - 1), Q} = {?v k, ?v (Suc k)}"
+      using heq closed_segment_eq[of "?v (j - 1)" Q "?v k" "?v (Suc k)"]
+      by (by100 simp)
+    show ?thesis
+      using hk hpair by (by100 blast)
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
