@@ -366,6 +366,14 @@ proof -
         using hk by (by100 blast)
     qed
   qed
+  have hstate_vertex_image_eq_vertices:
+      "((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})
+        = geotop_complex_vertices L"
+    using hcomplex_vertices_cycle by (by100 simp)
+  have hstate_edge_image_eq_edges:
+      "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})
+        = {e\<in>L. geotop_is_edge e}"
+    using hstate_edge_image_eq_E hE_eq_edges by (by100 simp)
   show ?thesis
     sorry
 qed
