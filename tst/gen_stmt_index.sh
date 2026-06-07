@@ -4,6 +4,8 @@
 # Usage: cd /project/tst && bash gen_stmt_index.sh
 # Then search: grep "keyword" STMT_INDEX.txt
 
+set -euo pipefail
+
 BASE_THEORIES=(
   i/Top1_Ch2.thy i/Top1_Ch3.thy i/Top1_Ch4.thy i/Top1_Ch5_8.thy i/Top1_Ch9_13.thy
   h/AlgTopHelpers.thy b0/AlgTop_JCT_Base0.thy b/AlgTop_JCT_Base.thy
@@ -18,6 +20,7 @@ BASE_THEORIES=(
 )
 
 OUT=STMT_INDEX.txt
+THEORY_LIST=INDEX_THEORIES.txt
 
 mapfile -t SESSION_ROOTS < <(
   find . -name ROOT -type f \
@@ -49,9 +52,9 @@ for root_arg in sys.argv[1:]:
         line = raw.split("(*", 1)[0].strip()
         if not line or line.startswith("#"):
             continue
-        session_match = re.match(r'session\b.*?\bin\s+"([^"]+)"', line)
+        session_match = re.match(r'session\b.*?\bin\s+(?:"([^"]+)"|([^\s=]+))', line)
         if session_match:
-            theory_dir = Path(session_match.group(1))
+            theory_dir = Path(session_match.group(1) or session_match.group(2))
             in_theories = False
             continue
         if line.startswith("session "):
@@ -80,13 +83,28 @@ mapfile -t THEORIES < <(
   printf '%s\n' "${BASE_THEORIES[@]}" "${ROOT_THEORIES[@]}" | awk 'NF && !seen[$0]++'
 )
 
+missing=()
+existing=()
+for theory in "${THEORIES[@]}"; do
+  if [ -f "$theory" ]; then
+    existing+=("$theory")
+  else
+    missing+=("$theory")
+  fi
+done
+
+printf '%s\n' "${existing[@]}" > "$THEORY_LIST"
+if [ "${#missing[@]}" -gt 0 ]; then
+  printf 'Warning: %d indexed theories are missing files:\n' "${#missing[@]}" >&2
+  printf '  %s\n' "${missing[@]}" >&2
+fi
+
 > "$OUT"
-for f in "${THEORIES[@]}"; do
-  [ -f "$f" ] || continue
+for f in "${existing[@]}"; do
   python3 - "$f" >> "$OUT" << 'PYEND'
 import re, sys
 f = sys.argv[1]
-lines = open(f).readlines()
+lines = open(f, encoding="utf-8", errors="replace").readlines()
 i = 0
 while i < len(lines):
     m = re.match(r'^(lemma|theorem|corollary|definition)\s+(\S+)', lines[i].strip())
@@ -166,4 +184,6 @@ PYEND
 done
 
 total=$(wc -l < "$OUT")
-echo "Statement index: $total entries -> $OUT"
+theory_total=$(wc -l < "$THEORY_LIST")
+echo "Statement index: $total entries from $theory_total theories -> $OUT"
+echo "Theory list -> $THEORY_LIST"

@@ -3,7 +3,7 @@
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh
 
-set -e
+set -euo pipefail
 
 BASE_THEORIES=(
   i/Top1_Ch2.thy
@@ -41,6 +41,7 @@ BASE_THEORIES=(
 
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
+THEORY_LIST=INDEX_THEORIES.txt
 
 mapfile -t SESSION_ROOTS < <(
   find . -name ROOT -type f \
@@ -72,9 +73,9 @@ for root_arg in sys.argv[1:]:
         line = raw.split("(*", 1)[0].strip()
         if not line or line.startswith("#"):
             continue
-        session_match = re.match(r'session\b.*?\bin\s+"([^"]+)"', line)
+        session_match = re.match(r'session\b.*?\bin\s+(?:"([^"]+)"|([^\s=]+))', line)
         if session_match:
-            theory_dir = Path(session_match.group(1))
+            theory_dir = Path(session_match.group(1) or session_match.group(2))
             in_theories = False
             continue
         if line.startswith("session "):
@@ -103,7 +104,23 @@ mapfile -t THEORIES < <(
   printf '%s\n' "${BASE_THEORIES[@]}" "${ROOT_THEORIES[@]}" | awk 'NF && !seen[$0]++'
 )
 
-python3 - "$TXT" "$MD" "${THEORIES[@]}" <<'PYEND'
+missing=()
+existing=()
+for theory in "${THEORIES[@]}"; do
+  if [ -f "$theory" ]; then
+    existing+=("$theory")
+  else
+    missing+=("$theory")
+  fi
+done
+
+printf '%s\n' "${existing[@]}" > "$THEORY_LIST"
+if [ "${#missing[@]}" -gt 0 ]; then
+  printf 'Warning: %d indexed theories are missing files:\n' "${#missing[@]}" >&2
+  printf '  %s\n' "${missing[@]}" >&2
+fi
+
+python3 - "$TXT" "$MD" "${existing[@]}" <<'PYEND'
 import datetime
 import re
 import sys
@@ -175,5 +192,6 @@ with md.open("w", encoding="utf-8") as out:
                     out.write(f"    {theory:<35}  {kind}  line {line_no}\n")
         out.write("\n")
 
-print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates -> {txt} / {md}")
+print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories -> {txt} / {md}")
+print("Theory list -> INDEX_THEORIES.txt")
 PYEND
