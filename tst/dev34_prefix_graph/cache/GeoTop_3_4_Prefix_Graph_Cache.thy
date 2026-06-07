@@ -93,6 +93,286 @@ proof -
     by (rule finite_subset[OF hsub hprod_fin])
 qed
 
+lemma geotop_finite_components_homeomorphism_prefix:
+  assumes hhom: "homeomorphism A B f g"
+  assumes hfin: "finite (components B)"
+  shows "finite (components A)"
+proof -
+  have hcomp_sub:
+    "components A \<subseteq> (\<lambda>D. g ` D) ` components B"
+  proof
+    fix C
+    assume hC: "C \<in> components A"
+    obtain x where hxA: "x \<in> A"
+      and hC_eq: "C = connected_component_set A x"
+      using hC componentsE by (by100 blast)
+    have hfxB: "f x \<in> B"
+      using hhom hxA unfolding homeomorphism_def by (by100 blast)
+    define D where "D = connected_component_set B (f x)"
+    have hD_comp: "D \<in> components B"
+      unfolding D_def by (rule componentsI[OF hfxB])
+    have hBA: "homeomorphism B A g f"
+      by (rule homeomorphism_symD[OF hhom])
+    have hcc:
+      "connected_component_set A (g (f x)) =
+        g ` connected_component_set B (f x)"
+      by (rule connected_component_set_homeomorphism[OF hBA hfxB])
+    have hgf: "g (f x) = x"
+      using hhom hxA by (rule homeomorphism_apply1)
+    have "C = g ` D"
+      using hC_eq hcc hgf unfolding D_def by (by100 simp)
+    thus "C \<in> (\<lambda>D. g ` D) ` components B"
+      using hD_comp by (by100 blast)
+  qed
+  have himage_fin: "finite ((\<lambda>D. g ` D) ` components B)"
+    by (rule finite_imageI[OF hfin])
+  show "finite (components A)"
+    by (rule finite_subset[OF hcomp_sub himage_fin])
+qed
+
+lemma geotop_finite_components_punctured_circle_three_points_prefix:
+  fixes P q\<^sub>1 q\<^sub>2 q\<^sub>3 :: "real^2"
+  assumes hr: "r > 0"
+  assumes hq\<^sub>1: "q\<^sub>1 \<in> sphere P r"
+  assumes hq\<^sub>2: "q\<^sub>2 \<in> sphere P r"
+  assumes hq\<^sub>3: "q\<^sub>3 \<in> sphere P r"
+  assumes hq\<^sub>12: "q\<^sub>1 \<noteq> q\<^sub>2"
+  assumes hq\<^sub>13: "q\<^sub>1 \<noteq> q\<^sub>3"
+  assumes hq\<^sub>23: "q\<^sub>2 \<noteq> q\<^sub>3"
+  shows "finite (components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}))"
+proof -
+  let ?S = "sphere P r"
+  let ?A = "?S - {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+  let ?L = "{x::real^2. (q\<^sub>2 - q\<^sub>1) \<bullet> x = 0}"
+  have hc_nonzero: "q\<^sub>2 - q\<^sub>1 \<noteq> 0"
+    using hq\<^sub>12 by (by100 auto)
+  have hpunctured_homeo_line: "(?S - {q\<^sub>1}) homeomorphic ?L"
+    by (rule homeomorphic_punctured_sphere_hyperplane
+        [OF hr hq\<^sub>1 hc_nonzero])
+  obtain f g where hfg: "homeomorphism (?S - {q\<^sub>1}) ?L f g"
+    using hpunctured_homeo_line unfolding homeomorphic_def by (by100 blast)
+  define a where "a = f q\<^sub>2"
+  define b where "b = f q\<^sub>3"
+  have hq\<^sub>2_dom: "q\<^sub>2 \<in> ?S - {q\<^sub>1}"
+    using hq\<^sub>2 hq\<^sub>12 by (by100 blast)
+  have hq\<^sub>3_dom: "q\<^sub>3 \<in> ?S - {q\<^sub>1}"
+    using hq\<^sub>3 hq\<^sub>13 by (by100 blast)
+  have hf_img: "f ` (?S - {q\<^sub>1}) = ?L"
+    using hfg by (rule homeomorphism_image1)
+  have hgf: "\<And>x. x \<in> ?S - {q\<^sub>1} \<Longrightarrow> g (f x) = x"
+    using hfg by (rule homeomorphism_apply1)
+  have hinj: "inj_on f (?S - {q\<^sub>1})"
+  proof (unfold inj_on_def, intro ballI impI)
+    fix x y
+    assume hx: "x \<in> ?S - {q\<^sub>1}"
+      and hy: "y \<in> ?S - {q\<^sub>1}"
+      and hxy: "f x = f y"
+    have "g (f x) = g (f y)"
+      using hxy by (by100 simp)
+    thus "x = y"
+      using hgf[OF hx] hgf[OF hy] by (by100 simp)
+  qed
+  have hcircle_line_image:
+    "f ` ?A = ?L - {a, b}"
+  proof
+    show "f ` ?A \<subseteq> ?L - {a, b}"
+    proof
+      fix y
+      assume hy: "y \<in> f ` ?A"
+      obtain x where hxA: "x \<in> ?A" and hy_eq: "y = f x"
+        using hy by (by100 blast)
+      have hx_dom: "x \<in> ?S - {q\<^sub>1}"
+        using hxA by (by100 blast)
+      have hx_ne_q\<^sub>2: "x \<noteq> q\<^sub>2"
+        using hxA by (by100 blast)
+      have hx_ne_q\<^sub>3: "x \<noteq> q\<^sub>3"
+        using hxA by (by100 blast)
+      have hy_L: "y \<in> ?L"
+        using hy_eq hx_dom hf_img by (by100 blast)
+      have hy_ne_a: "y \<noteq> a"
+      proof
+        assume hya: "y = a"
+        have "f x = f q\<^sub>2"
+          using hya hy_eq unfolding a_def by (by100 simp)
+        hence "x = q\<^sub>2"
+          using hinj hx_dom hq\<^sub>2_dom unfolding inj_on_def by (by100 blast)
+        thus False
+          using hx_ne_q\<^sub>2 by (by100 blast)
+      qed
+      have hy_ne_b: "y \<noteq> b"
+      proof
+        assume hyb: "y = b"
+        have "f x = f q\<^sub>3"
+          using hyb hy_eq unfolding b_def by (by100 simp)
+        hence "x = q\<^sub>3"
+          using hinj hx_dom hq\<^sub>3_dom unfolding inj_on_def by (by100 blast)
+        thus False
+          using hx_ne_q\<^sub>3 by (by100 blast)
+      qed
+      show "y \<in> ?L - {a, b}"
+        using hy_L hy_ne_a hy_ne_b by (by100 blast)
+    qed
+    show "?L - {a, b} \<subseteq> f ` ?A"
+    proof
+      fix y
+      assume hy: "y \<in> ?L - {a, b}"
+      have hy_L: "y \<in> ?L"
+        using hy by (by100 blast)
+      have hy_ne_a: "y \<noteq> a"
+        using hy by (by100 blast)
+      have hy_ne_b: "y \<noteq> b"
+        using hy by (by100 blast)
+      have hy_img: "y \<in> f ` (?S - {q\<^sub>1})"
+        using hf_img hy_L by (by100 simp)
+      obtain x where hx_dom: "x \<in> ?S - {q\<^sub>1}" and hfx: "f x = y"
+        using hy_img by (by100 blast)
+      have hx_ne_q\<^sub>2: "x \<noteq> q\<^sub>2"
+      proof
+        assume hxq\<^sub>2: "x = q\<^sub>2"
+        hence "y = a"
+          using hfx unfolding a_def by (by100 simp)
+        thus False
+          using hy_ne_a by (by100 blast)
+      qed
+      have hx_ne_q\<^sub>3: "x \<noteq> q\<^sub>3"
+      proof
+        assume hxq\<^sub>3: "x = q\<^sub>3"
+        hence "y = b"
+          using hfx unfolding b_def by (by100 simp)
+        thus False
+          using hy_ne_b by (by100 blast)
+      qed
+      have "x \<in> ?A"
+        using hx_dom hx_ne_q\<^sub>2 hx_ne_q\<^sub>3 by (by100 blast)
+      thus "y \<in> f ` ?A"
+        using hfx by (by100 blast)
+    qed
+  qed
+  have hcircle_line_homeomorphism:
+    "homeomorphism ?A (?L - {a, b}) f g"
+  proof (rule homeomorphism_of_subsets[OF hfg])
+    show "?A \<subseteq> ?S - {q\<^sub>1}"
+      by (by100 blast)
+    show "?L - {a, b} \<subseteq> ?L"
+      by (by100 blast)
+    show "f ` ?A = ?L - {a, b}"
+      by (rule hcircle_line_image)
+  qed
+  have hline_components_finite: "finite (components (?L - {a, b}))"
+  proof -
+    have hL_dim: "aff_dim ?L = 1"
+      using hc_nonzero aff_dim_hyperplane[of "q\<^sub>2 - q\<^sub>1" 0]
+      by (by100 simp)
+    have hreal_dim: "aff_dim (UNIV::real set) = 1"
+      by (by100 simp)
+    have hL_homeo_real: "?L homeomorphic (UNIV::real set)"
+    proof (rule homeomorphic_affine_sets)
+      show "affine ?L"
+        by (rule affine_hyperplane)
+      show "affine (UNIV::real set)"
+        by (rule affine_UNIV)
+      show "aff_dim ?L = aff_dim (UNIV::real set)"
+        using hL_dim hreal_dim by (by100 simp)
+    qed
+    obtain h j where hhj: "homeomorphism ?L (UNIV::real set) h j"
+      using hL_homeo_real unfolding homeomorphic_def by (by100 blast)
+    have ha_L: "a \<in> ?L"
+      unfolding a_def using hq\<^sub>2_dom hf_img by (by100 blast)
+    have hb_L: "b \<in> ?L"
+      unfolding b_def using hq\<^sub>3_dom hf_img by (by100 blast)
+    have hjh: "\<And>x. x \<in> ?L \<Longrightarrow> j (h x) = x"
+      using hhj by (rule homeomorphism_apply1)
+    have h_line_real_image:
+      "h ` (?L - {a, b}) = (UNIV::real set) - {h a, h b}"
+    proof
+      show "h ` (?L - {a, b}) \<subseteq> (UNIV::real set) - {h a, h b}"
+      proof
+        fix y
+        assume hy: "y \<in> h ` (?L - {a, b})"
+        obtain x where hx: "x \<in> ?L - {a, b}" and hy_eq: "y = h x"
+          using hy by (by100 blast)
+        have hxL: "x \<in> ?L"
+          using hx by (by100 blast)
+        have hx_ne_a: "x \<noteq> a"
+          using hx by (by100 blast)
+        have hx_ne_b: "x \<noteq> b"
+          using hx by (by100 blast)
+        have hy_ne_ha: "y \<noteq> h a"
+        proof
+          assume hya: "y = h a"
+          have "j (h x) = j (h a)"
+            using hya hy_eq by (by100 simp)
+          hence "x = a"
+            using hjh[OF hxL] hjh[OF ha_L] by (by100 simp)
+          thus False
+            using hx_ne_a by (by100 blast)
+        qed
+        have hy_ne_hb: "y \<noteq> h b"
+        proof
+          assume hyb: "y = h b"
+          have "j (h x) = j (h b)"
+            using hyb hy_eq by (by100 simp)
+          hence "x = b"
+            using hjh[OF hxL] hjh[OF hb_L] by (by100 simp)
+          thus False
+            using hx_ne_b by (by100 blast)
+        qed
+        show "y \<in> (UNIV::real set) - {h a, h b}"
+          using hy_ne_ha hy_ne_hb by (by100 blast)
+      qed
+      show "(UNIV::real set) - {h a, h b} \<subseteq> h ` (?L - {a, b})"
+      proof
+        fix y
+        assume hy: "y \<in> (UNIV::real set) - {h a, h b}"
+        have hjy_L: "j y \<in> ?L"
+          using hhj unfolding homeomorphism_def by (by100 blast)
+        have hhy: "h (j y) = y"
+          using hhj by (rule homeomorphism_apply2[of ?L "UNIV::real set" h j y, simplified])
+        have hjy_ne_a: "j y \<noteq> a"
+        proof
+          assume hja: "j y = a"
+          hence "y = h a"
+            using hhy by (by100 simp)
+          thus False
+            using hy by (by100 blast)
+        qed
+        have hjy_ne_b: "j y \<noteq> b"
+        proof
+          assume hjb: "j y = b"
+          hence "y = h b"
+            using hhy by (by100 simp)
+          thus False
+            using hy by (by100 blast)
+        qed
+        have "j y \<in> ?L - {a, b}"
+          using hjy_L hjy_ne_a hjy_ne_b by (by100 blast)
+        hence "h (j y) \<in> h ` (?L - {a, b})"
+          by (rule imageI)
+        thus "y \<in> h ` (?L - {a, b})"
+          using hhy by (by100 simp)
+      qed
+    qed
+    have hline_real_homeomorphism:
+      "homeomorphism (?L - {a, b}) ((UNIV::real set) - {h a, h b}) h j"
+    proof (rule homeomorphism_of_subsets[OF hhj])
+      show "?L - {a, b} \<subseteq> ?L"
+        by (by100 blast)
+      show "(UNIV::real set) - {h a, h b} \<subseteq> UNIV"
+        by (by100 blast)
+      show "h ` (?L - {a, b}) = (UNIV::real set) - {h a, h b}"
+        by (rule h_line_real_image)
+    qed
+    have hreal_fin: "finite (components ((UNIV::real set) - {h a, h b}))"
+      by (rule finite_components_real_complement_two_points)
+    show ?thesis
+      by (rule geotop_finite_components_homeomorphism_prefix
+          [OF hline_real_homeomorphism hreal_fin])
+  qed
+  show ?thesis
+    by (rule geotop_finite_components_homeomorphism_prefix
+        [OF hcircle_line_homeomorphism hline_components_finite])
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_complex_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -1884,6 +2164,19 @@ proof -
     using hx\<^sub>3_edge_sphere he\<^sub>3_punctured_sub by (by100 blast)
   have hx_card3: "card {x\<^sub>1, x\<^sub>2, x\<^sub>3} = 3"
     using hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 by (by100 simp)
+  have hcircle_components_fin:
+      "finite (components (sphere w r - {x\<^sub>1, x\<^sub>2, x\<^sub>3}))"
+  proof -
+    have hx\<^sub>1_sphere: "x\<^sub>1 \<in> sphere w r"
+      using hx\<^sub>1_edge_sphere by (by100 blast)
+    have hx\<^sub>2_sphere: "x\<^sub>2 \<in> sphere w r"
+      using hx\<^sub>2_edge_sphere by (by100 blast)
+    have hx\<^sub>3_sphere: "x\<^sub>3 \<in> sphere w r"
+      using hx\<^sub>3_edge_sphere by (by100 blast)
+    show ?thesis
+      by (rule geotop_finite_components_punctured_circle_three_points_prefix
+          [OF hr_pos hx\<^sub>1_sphere hx\<^sub>2_sphere hx\<^sub>3_sphere hx\<^sub>12 hx\<^sub>13 hx\<^sub>23])
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generate a searchable theorem statement index.
+# Generate a searchable theorem statement index from active session theory files.
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -19,28 +19,14 @@ BASE_THEORIES=(
 
 OUT=STMT_INDEX.txt
 
-DEV34_SESSION_ROOT_HINTS=(
-  dev34_pre/ROOT
-  dev34_prefix_base/ROOT
-  dev34_prefix_graph/ROOT
-  dev34_prefix_mid/ROOT
-  dev34_prefix/ROOT
-  dev34_facts/ROOT
-  dev34_workfacts/ROOT
-  dev34_linkfacts/ROOT
-  dev34_graphfacts/ROOT
-  dev34_graphwork/ROOT
-  dev34_openstar/ROOT
-  dev34_core/ROOT
-  dev34/ROOT
+mapfile -t SESSION_ROOTS < <(
+  find . -name ROOT -type f \
+    ! -path './.dev34_fast_cache/*' \
+    | sed 's#^\./##' \
+    | sort
 )
 
-mapfile -t DEV34_SESSION_ROOTS < <(
-  printf '%s\n' "${DEV34_SESSION_ROOT_HINTS[@]}"
-  find . -path './dev34*/ROOT' -type f | sed 's#^\./##' | sort
-)
-
-mapfile -t DEV34_THEORIES < <(python3 - "${DEV34_SESSION_ROOTS[@]}" <<'PYEND'
+mapfile -t ROOT_THEORIES < <(python3 - "${SESSION_ROOTS[@]}" <<'PYEND'
 import re
 import sys
 from pathlib import Path
@@ -90,7 +76,9 @@ for root_arg in sys.argv[1:]:
 PYEND
 )
 
-THEORIES=("${BASE_THEORIES[@]}" "${DEV34_THEORIES[@]}")
+mapfile -t THEORIES < <(
+  printf '%s\n' "${BASE_THEORIES[@]}" "${ROOT_THEORIES[@]}" | awk 'NF && !seen[$0]++'
+)
 
 > "$OUT"
 for f in "${THEORIES[@]}"; do

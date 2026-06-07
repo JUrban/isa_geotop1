@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generate theorem/definition index from all active theory files.
+# Generate theorem/definition index from all active session theory files.
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh
 
@@ -42,28 +42,14 @@ BASE_THEORIES=(
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
 
-DEV34_SESSION_ROOT_HINTS=(
-  dev34_pre/ROOT
-  dev34_prefix_base/ROOT
-  dev34_prefix_graph/ROOT
-  dev34_prefix_mid/ROOT
-  dev34_prefix/ROOT
-  dev34_facts/ROOT
-  dev34_workfacts/ROOT
-  dev34_linkfacts/ROOT
-  dev34_graphfacts/ROOT
-  dev34_graphwork/ROOT
-  dev34_openstar/ROOT
-  dev34_core/ROOT
-  dev34/ROOT
+mapfile -t SESSION_ROOTS < <(
+  find . -name ROOT -type f \
+    ! -path './.dev34_fast_cache/*' \
+    | sed 's#^\./##' \
+    | sort
 )
 
-mapfile -t DEV34_SESSION_ROOTS < <(
-  printf '%s\n' "${DEV34_SESSION_ROOT_HINTS[@]}"
-  find . -path './dev34*/ROOT' -type f | sed 's#^\./##' | sort
-)
-
-mapfile -t DEV34_THEORIES < <(python3 - "${DEV34_SESSION_ROOTS[@]}" <<'PYEND'
+mapfile -t ROOT_THEORIES < <(python3 - "${SESSION_ROOTS[@]}" <<'PYEND'
 import re
 import sys
 from pathlib import Path
@@ -113,7 +99,9 @@ for root_arg in sys.argv[1:]:
 PYEND
 )
 
-THEORIES=("${BASE_THEORIES[@]}" "${DEV34_THEORIES[@]}")
+mapfile -t THEORIES < <(
+  printf '%s\n' "${BASE_THEORIES[@]}" "${ROOT_THEORIES[@]}" | awk 'NF && !seen[$0]++'
+)
 
 python3 - "$TXT" "$MD" "${THEORIES[@]}" <<'PYEND'
 import datetime
