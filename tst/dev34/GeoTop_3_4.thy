@@ -238,6 +238,43 @@ proof -
       "L =
         (((\<lambda>v. {v}) ` geotop_complex_vertices L) \<union> ?E)"
     using hL_cycle hcomplex_vertices_cycle by (by100 simp)
+  have hE_subset_L: "?E \<subseteq> L"
+  proof
+    fix e
+    assume he: "e \<in> ?E"
+    obtain k where hk: "k \<in> {0..<p}"
+      and heq: "e = closed_segment (?v k) (?v (Suc k))"
+      using he by (by100 blast)
+    have "closed_segment (?v k) (?v (Suc k)) \<in> L"
+      using hconsecutive_edges[of k] by (by100 blast)
+    thus "e \<in> L"
+      using heq by (by100 simp)
+  qed
+  have hE_edges:
+      "\<And>e. e \<in> ?E \<Longrightarrow> geotop_is_edge e"
+  proof -
+    fix e
+    assume he: "e \<in> ?E"
+    obtain k where hk: "k \<in> {0..<p}"
+      and heq: "e = closed_segment (?v k) (?v (Suc k))"
+      using he by (by100 blast)
+    have "geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+      using hconsecutive_edges[of k] by (by100 blast)
+    thus "geotop_is_edge e"
+      using heq by (by100 simp)
+  qed
+  have hvertex_singletons_subset_L:
+      "((\<lambda>v. {v}) ` geotop_complex_vertices L) \<subseteq> L"
+  proof
+    fix A
+    assume hA: "A \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices L)"
+    obtain v where hv: "v \<in> geotop_complex_vertices L" and hAeq: "A = {v}"
+      using hA by (by100 blast)
+    have "{v} \<in> L"
+      using hv geotop_complex_vertices_eq_0_simplexes[OF hL_complex] by (by100 simp)
+    thus "A \<in> L"
+      using hAeq by (by100 simp)
+  qed
   have hedge_endpoints_in_vertices:
       "\<And>k. k < p \<Longrightarrow>
         ?v k \<in> geotop_complex_vertices L
