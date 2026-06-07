@@ -47,10 +47,13 @@ Milestone modes:
 Build modes:
   pre          build GeoTopPre3Dirty
   prefix-base  build GeoTop34PrefixBaseDirty only
+  prefix-graph-cache
+               build GeoTop34PrefixGraphCacheDirty only
   prefix-graph build GeoTop34PrefixGraphDirty only
   prefix-mid   build GeoTop34PrefixMidDirty only
   prefix       build GeoTop34PrefixDirty
-  pre-heap, prefix-base-heap, prefix-graph-heap, prefix-mid-heap, prefix-heap
+  pre-heap, prefix-base-heap, prefix-graph-cache-heap, prefix-graph-heap,
+  prefix-mid-heap, prefix-heap
                build and store the named layer heap for later hot loops
   facts-heap, workfacts-heap, linkfacts-heap, graphfacts-heap, graphwork-heap,
   openstar-heap, core-heap, dev34-heap
@@ -88,6 +91,14 @@ build_prefix_base() {
     "${proof_options[@]}" \
     -d . -d dev34_pre -d dev34_prefix_base \
     GeoTop34PrefixBaseDirty
+}
+
+build_prefix_graph_cache() {
+  exec timeout "$limit" "$isabelle" build \
+    "${isabelle_options[@]}" \
+    "${proof_options[@]}" \
+    -d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph \
+    GeoTop34PrefixGraphCacheDirty
 }
 
 build_prefix_graph() {
@@ -152,6 +163,10 @@ auto_target() {
     printf '%s\n' prefix
   elif printf '%s\n' "$files" | rg -q '^dev34_prefix_mid/'; then
     printf '%s\n' prefix-mid
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/(ROOT|GeoTop_3_4_Prefix_Graph\.thy)$'; then
+    printf '%s\n' prefix-graph
+  elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache\.thy$'; then
+    printf '%s\n' prefix-graph-cache
   elif printf '%s\n' "$files" | rg -q '^dev34_prefix_graph/'; then
     printf '%s\n' prefix-graph
   elif printf '%s\n' "$files" | rg -q '^dev34_prefix_base/'; then
@@ -166,6 +181,7 @@ auto_target() {
 target_theories=(
   dev34_pre/GeoTop.thy
   dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy
+  dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy
   dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
   dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
   dev34_prefix/GeoTop_3_4_Prefix.thy
@@ -181,6 +197,7 @@ target_theories=(
 
 hole_theories=(
   dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy
+  dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy
   dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
   dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
   dev34_prefix/GeoTop_3_4_Prefix.thy
@@ -198,17 +215,18 @@ layer_rank() {
   case "$1" in
     dev34_pre/*) printf '%s\n' 1 ;;
     dev34_prefix_base/*) printf '%s\n' 2 ;;
-    dev34_prefix_graph/*) printf '%s\n' 3 ;;
-    dev34_prefix_mid/*) printf '%s\n' 4 ;;
-    dev34_prefix/*) printf '%s\n' 5 ;;
-    dev34_facts/*) printf '%s\n' 6 ;;
-    dev34_workfacts/*) printf '%s\n' 7 ;;
-    dev34_linkfacts/*) printf '%s\n' 8 ;;
-    dev34_graphfacts/*) printf '%s\n' 9 ;;
-    dev34_graphwork/*) printf '%s\n' 10 ;;
-    dev34_openstar/*) printf '%s\n' 11 ;;
-    dev34_core/*) printf '%s\n' 12 ;;
-    dev34/*) printf '%s\n' 13 ;;
+    dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy) printf '%s\n' 3 ;;
+    dev34_prefix_graph/*) printf '%s\n' 4 ;;
+    dev34_prefix_mid/*) printf '%s\n' 5 ;;
+    dev34_prefix/*) printf '%s\n' 6 ;;
+    dev34_facts/*) printf '%s\n' 7 ;;
+    dev34_workfacts/*) printf '%s\n' 8 ;;
+    dev34_linkfacts/*) printf '%s\n' 9 ;;
+    dev34_graphfacts/*) printf '%s\n' 10 ;;
+    dev34_graphwork/*) printf '%s\n' 11 ;;
+    dev34_openstar/*) printf '%s\n' 12 ;;
+    dev34_core/*) printf '%s\n' 13 ;;
+    dev34/*) printf '%s\n' 14 ;;
     *) printf '%s\n' 99 ;;
   esac
 }
@@ -217,17 +235,18 @@ target_rank() {
   case "$1" in
     pre) printf '%s\n' 1 ;;
     prefix-base) printf '%s\n' 2 ;;
-    prefix-graph) printf '%s\n' 3 ;;
-    prefix-mid) printf '%s\n' 4 ;;
-    prefix) printf '%s\n' 5 ;;
-    facts) printf '%s\n' 6 ;;
-    workfacts) printf '%s\n' 7 ;;
-    linkfacts) printf '%s\n' 8 ;;
-    graphfacts) printf '%s\n' 9 ;;
-    graphwork) printf '%s\n' 10 ;;
-    openstar) printf '%s\n' 11 ;;
-    core) printf '%s\n' 12 ;;
-    dev34) printf '%s\n' 13 ;;
+    prefix-graph-cache) printf '%s\n' 3 ;;
+    prefix-graph) printf '%s\n' 4 ;;
+    prefix-mid) printf '%s\n' 5 ;;
+    prefix) printf '%s\n' 6 ;;
+    facts) printf '%s\n' 7 ;;
+    workfacts) printf '%s\n' 8 ;;
+    linkfacts) printf '%s\n' 9 ;;
+    graphfacts) printf '%s\n' 10 ;;
+    graphwork) printf '%s\n' 11 ;;
+    openstar) printf '%s\n' 12 ;;
+    core) printf '%s\n' 13 ;;
+    dev34) printf '%s\n' 14 ;;
     *) printf '%s\n' 99 ;;
   esac
 }
@@ -236,6 +255,7 @@ target_layer_dir() {
   case "$1" in
     pre) printf '%s\n' dev34_pre ;;
     prefix-base) printf '%s\n' dev34_prefix_base ;;
+    prefix-graph-cache) printf '%s\n' dev34_prefix_graph ;;
     prefix-graph) printf '%s\n' dev34_prefix_graph ;;
     prefix-mid) printf '%s\n' dev34_prefix_mid ;;
     prefix) printf '%s\n' dev34_prefix ;;
@@ -255,6 +275,7 @@ target_session() {
   case "$1" in
     pre) printf '%s\n' GeoTopPre3Dirty ;;
     prefix-base) printf '%s\n' GeoTop34PrefixBaseDirty ;;
+    prefix-graph-cache) printf '%s\n' GeoTop34PrefixGraphCacheDirty ;;
     prefix-graph) printf '%s\n' GeoTop34PrefixGraphDirty ;;
     prefix-mid) printf '%s\n' GeoTop34PrefixMidDirty ;;
     prefix) printf '%s\n' GeoTop34PrefixDirty ;;
@@ -272,7 +293,7 @@ target_session() {
 
 target_timeout() {
   case "$1" in
-    pre|prefix-base|prefix-graph|prefix-mid|prefix) printf '%s\n' "$limit" ;;
+    pre|prefix-base|prefix-graph-cache|prefix-graph|prefix-mid|prefix) printf '%s\n' "$limit" ;;
     facts) printf '%s\n' "${TIMEOUT:-120s}" ;;
     workfacts|linkfacts) printf '%s\n' "${TIMEOUT:-150s}" ;;
     graphfacts|graphwork) printf '%s\n' "${TIMEOUT:-180s}" ;;
@@ -285,10 +306,15 @@ target_timeout() {
 target_dirs_args() {
   rank=$(target_rank "$1")
   printf '%s\n' -d .
-  for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+  last_dir=
+  for target in pre prefix-base prefix-graph-cache prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
     if [ "$(target_rank "$target")" -le "$rank" ]; then
-      printf '%s\n' -d
-      target_layer_dir "$target"
+      dir=$(target_layer_dir "$target")
+      if [ "$dir" != "$last_dir" ]; then
+        printf '%s\n' -d
+        printf '%s\n' "$dir"
+        last_dir=$dir
+      fi
     fi
   done
 }
@@ -298,12 +324,22 @@ target_source_files() {
   if [ "$rank" -ge 1 ]; then
     printf '%s\n' GeoTop.thy
   fi
-  for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+  for target in pre prefix-base prefix-graph-cache prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
     if [ "$(target_rank "$target")" -le "$rank" ]; then
       dir=$(target_layer_dir "$target")
-      find "$dir" -maxdepth 1 -type f \( -name ROOT -o -name '*.thy' \) -print
+      case "$target" in
+        prefix-graph-cache)
+          printf '%s\n' "$dir/ROOT" "$dir/cache/GeoTop_3_4_Prefix_Graph_Cache.thy"
+          ;;
+        prefix-graph)
+          printf '%s\n' "$dir/GeoTop_3_4_Prefix_Graph.thy"
+          ;;
+        *)
+          find "$dir" -maxdepth 1 -type f \( -name ROOT -o -name '*.thy' \) -print
+          ;;
+      esac
     fi
-  done | LC_ALL=C sort
+  done | LC_ALL=C sort -u
 }
 
 cache_dir=.dev34_fast_cache
@@ -424,8 +460,12 @@ parent_context() {
       logic=GeoTopPre3Dirty
       dirs=(-d . -d dev34_pre -d dev34_prefix_base)
       ;;
-    dev34_prefix_graph/*)
+    dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy)
       logic=GeoTop34PrefixBaseDirty
+      dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph)
+      ;;
+    dev34_prefix_graph/*)
+      logic=GeoTop34PrefixGraphCacheDirty
       dirs=(-d . -d dev34_pre -d dev34_prefix_base -d dev34_prefix_graph)
       ;;
     dev34_prefix_mid/*)
@@ -479,7 +519,8 @@ parent_target_for_file() {
   case "$1" in
     dev34_pre/*) printf '%s\n' none ;;
     dev34_prefix_base/*) printf '%s\n' pre ;;
-    dev34_prefix_graph/*) printf '%s\n' prefix-base ;;
+    dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy) printf '%s\n' prefix-base ;;
+    dev34_prefix_graph/*) printf '%s\n' prefix-graph-cache ;;
     dev34_prefix_mid/*) printf '%s\n' prefix-graph ;;
     dev34_prefix/*) printf '%s\n' prefix-mid ;;
     dev34_facts/*) printf '%s\n' prefix ;;
@@ -794,6 +835,8 @@ EOF2
       build_prefix_mid
     elif [ "$target" = prefix-graph ]; then
       build_prefix_graph
+    elif [ "$target" = prefix-graph-cache ]; then
+      build_prefix_graph_cache
     elif [ "$target" = prefix-base ]; then
       build_prefix_base
     elif [ "$target" = pre ]; then
@@ -817,7 +860,7 @@ EOF2
   cache-all)
     shift
     status=0
-    for target in pre prefix-base prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+    for target in pre prefix-base prefix-graph-cache prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
       if cache_build_target "$target"; then
         :
       else
@@ -846,6 +889,9 @@ EOF2
   prefix-graph)
     build_prefix_graph
     ;;
+  prefix-graph-cache)
+    build_prefix_graph_cache
+    ;;
   prefix-mid)
     build_prefix_mid
     ;;
@@ -863,6 +909,9 @@ EOF2
     ;;
   prefix-graph-heap)
     cache_build_target prefix-graph
+    ;;
+  prefix-graph-cache-heap)
+    cache_build_target prefix-graph-cache
     ;;
   prefix-mid-heap)
     cache_build_target prefix-mid

@@ -1,4 +1,9 @@
-session GeoTop34PrefixGraphDirty in "." = GeoTop34PrefixBaseDirty +
+session GeoTop34PrefixGraphCacheDirty in "cache" = GeoTop34PrefixBaseDirty +
+  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
+  theories
+    GeoTop_3_4_Prefix_Graph_Cache
+
+session GeoTop34PrefixGraphDirty in "." = GeoTop34PrefixGraphCacheDirty +
   options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
   theories
     GeoTop_3_4_Prefix_Graph
