@@ -4635,6 +4635,34 @@ proof -
   have hpunctured_carrier_arc_decomp:
       "geotop_polyhedron L - {w} = (A\<^sub>1 - {w}) \<union> (A\<^sub>2 - {w})"
     using hA_decomp by (by100 blast)
+  have hpunctured_arc_overlap:
+      "(A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) = {q\<^sub>1}"
+  proof
+    show "(A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) \<subseteq> {q\<^sub>1}"
+    proof
+      fix y
+      assume hy: "y \<in> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      have hy_inter: "y \<in> A\<^sub>1 \<inter> A\<^sub>2"
+        using hy by (by100 blast)
+      have hy_cases: "y = w \<or> y = q\<^sub>1"
+        using hy_inter hA_inter by (by100 blast)
+      have hy_ne_w: "y \<noteq> w"
+        using hy by (by100 blast)
+      show "y \<in> {q\<^sub>1}"
+        using hy_cases hy_ne_w by (by100 blast)
+    qed
+    show "{q\<^sub>1} \<subseteq> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+    proof
+      fix y
+      assume hy: "y \<in> {q\<^sub>1}"
+      have hyq: "y = q\<^sub>1"
+        using hy by (by100 simp)
+      have hqA: "q\<^sub>1 \<in> A\<^sub>1 \<inter> A\<^sub>2"
+        using hA_inter by (by100 blast)
+      show "y \<in> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+        using hyq hqA hq\<^sub>1w by (by100 blast)
+    qed
+  qed
   have hx\<^sub>1_arc_side: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<or> x\<^sub>1 \<in> A\<^sub>2 - {w}"
     using hx\<^sub>1_punctured_poly hpunctured_carrier_arc_decomp by (by100 blast)
   have hx\<^sub>2_arc_side: "x\<^sub>2 \<in> A\<^sub>1 - {w} \<or> x\<^sub>2 \<in> A\<^sub>2 - {w}"
