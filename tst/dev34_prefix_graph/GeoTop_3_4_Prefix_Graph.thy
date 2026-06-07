@@ -1982,6 +1982,198 @@ proof -
     thus False
       using hQ_endpoint_edges_distinct by (by100 blast)
   qed
+  have hK\<^sub>1_closing_edge_collision_same_orientation_false:
+      "\<forall>k\<in>{0..<j}. ?v (p - 1) = ?v k \<and> P = ?v (Suc k) \<longrightarrow> False"
+  proof (intro ballI impI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume hsame: "?v (p - 1) = ?v k \<and> P = ?v (Suc k)"
+    have hp_pred_mem: "p - 1 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have hk_mem: "k \<in> {0..<p}"
+      using hk hpath1_edges by (by100 blast)
+    have hSuc_pred: "Suc (p - 1) = p"
+      using hp_pos by (by100 simp)
+    have hsnd_pred:
+        "snd ((geotop_oriented_edge_successor L ^^ (p - 1)) s) =
+          closed_segment (?v (p - 1)) P"
+    proof -
+      have hseg: "snd ((geotop_oriented_edge_successor L ^^ (p - 1)) s) =
+          closed_segment (?v (p - 1)) (?v (Suc (p - 1)))"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+            [OF hL_linear hdegree hs])
+      show ?thesis
+        using hseg hSuc_pred hPp by (by100 simp)
+    qed
+    have hsnd_k:
+        "snd ((geotop_oriented_edge_successor L ^^ k) s) =
+          closed_segment (?v k) (?v (Suc k))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hstate_eq:
+        "(geotop_oriented_edge_successor L ^^ (p - 1)) s =
+          (geotop_oriented_edge_successor L ^^ k) s"
+    proof -
+      have hfst_eq: "fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s) =
+          fst ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame by (by100 simp)
+      have hsnd_eq: "snd ((geotop_oriented_edge_successor L ^^ (p - 1)) s) =
+          snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hsnd_pred hsnd_k by (by100 simp)
+      show ?thesis
+        using hfst_eq hsnd_eq by (simp add: prod_eq_iff)
+    qed
+    have "p - 1 = k"
+      by (rule inj_onD[OF hinj hstate_eq hp_pred_mem hk_mem])
+    hence "p \<le> j"
+      using hk hp_pos by (by100 simp)
+    thus False
+      using hj_lt by (by100 linarith)
+  qed
+  have hK\<^sub>2_initial_edge_collision_same_orientation_false:
+      "\<forall>k\<in>{j..<p}. P = ?v k \<and> ?v (Suc 0) = ?v (Suc k) \<longrightarrow> False"
+  proof (intro ballI impI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume hsame: "P = ?v k \<and> ?v (Suc 0) = ?v (Suc k)"
+    have hzero_mem: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have hk_mem: "k \<in> {0..<p}"
+      using hk hpath2_edges by (by100 blast)
+    have hsnd_zero:
+        "snd ((geotop_oriented_edge_successor L ^^ 0) s) =
+          closed_segment P (?v (Suc 0))"
+    proof -
+      have hseg: "snd ((geotop_oriented_edge_successor L ^^ 0) s) =
+          closed_segment (?v 0) (?v (Suc 0))"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+            [where k=0, OF hL_linear hdegree hs])
+      show ?thesis
+        using hseg hP0 by (by100 simp)
+    qed
+    have hsnd_k:
+        "snd ((geotop_oriented_edge_successor L ^^ k) s) =
+          closed_segment (?v k) (?v (Suc k))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hstate_eq:
+        "(geotop_oriented_edge_successor L ^^ 0) s =
+          (geotop_oriented_edge_successor L ^^ k) s"
+    proof -
+      have hfst_eq: "fst ((geotop_oriented_edge_successor L ^^ 0) s) =
+          fst ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hP0 by (by100 simp)
+      have hsnd_eq: "snd ((geotop_oriented_edge_successor L ^^ 0) s) =
+          snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hsnd_zero hsnd_k by (by100 simp)
+      show ?thesis
+        using hfst_eq hsnd_eq by (simp add: prod_eq_iff)
+    qed
+    have "0 = k"
+      by (rule inj_onD[OF hinj hstate_eq hzero_mem hk_mem])
+    hence hk_zero: "k = 0"
+      by (by100 simp)
+    have "j \<le> k"
+      using hk by (by100 simp)
+    hence "0 < k"
+      using hj_pos by (by100 linarith)
+    thus False
+      using hk_zero by (by100 simp)
+  qed
+  have hK\<^sub>1_after_Q_edge_collision_same_orientation_false:
+      "\<forall>k\<in>{0..<j}. Q = ?v k \<and> ?v (Suc j) = ?v (Suc k) \<longrightarrow> False"
+  proof (intro ballI impI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume hsame: "Q = ?v k \<and> ?v (Suc j) = ?v (Suc k)"
+    have hj_mem: "j \<in> {0..<p}"
+      using hj_lt by (by100 simp)
+    have hk_mem: "k \<in> {0..<p}"
+      using hk hpath1_edges by (by100 blast)
+    have hsnd_j:
+        "snd ((geotop_oriented_edge_successor L ^^ j) s) =
+          closed_segment Q (?v (Suc j))"
+    proof -
+      have hseg: "snd ((geotop_oriented_edge_successor L ^^ j) s) =
+          closed_segment (?v j) (?v (Suc j))"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+            [OF hL_linear hdegree hs])
+      show ?thesis
+        using hseg hQj by (by100 simp)
+    qed
+    have hsnd_k:
+        "snd ((geotop_oriented_edge_successor L ^^ k) s) =
+          closed_segment (?v k) (?v (Suc k))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hstate_eq:
+        "(geotop_oriented_edge_successor L ^^ j) s =
+          (geotop_oriented_edge_successor L ^^ k) s"
+    proof -
+      have hfst_eq: "fst ((geotop_oriented_edge_successor L ^^ j) s) =
+          fst ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hQj by (by100 simp)
+      have hsnd_eq: "snd ((geotop_oriented_edge_successor L ^^ j) s) =
+          snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hsnd_j hsnd_k by (by100 simp)
+      show ?thesis
+        using hfst_eq hsnd_eq by (simp add: prod_eq_iff)
+    qed
+    have "j = k"
+      by (rule inj_onD[OF hinj hstate_eq hj_mem hk_mem])
+    thus False
+      using hk by (by100 simp)
+  qed
+  have hK\<^sub>2_before_Q_edge_collision_same_orientation_false:
+      "\<forall>k\<in>{j..<p}. ?v (j - 1) = ?v k \<and> Q = ?v (Suc k) \<longrightarrow> False"
+  proof (intro ballI impI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume hsame: "?v (j - 1) = ?v k \<and> Q = ?v (Suc k)"
+    have hj_pred_mem: "j - 1 \<in> {0..<p}"
+      using hj_pos hj_lt by (by100 simp)
+    have hk_mem: "k \<in> {0..<p}"
+      using hk hpath2_edges by (by100 blast)
+    have hSuc_pred: "Suc (j - 1) = j"
+      using hj_pos by (by100 simp)
+    have hsnd_pred:
+        "snd ((geotop_oriented_edge_successor L ^^ (j - 1)) s) =
+          closed_segment (?v (j - 1)) Q"
+    proof -
+      have hseg: "snd ((geotop_oriented_edge_successor L ^^ (j - 1)) s) =
+          closed_segment (?v (j - 1)) (?v (Suc (j - 1)))"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+            [OF hL_linear hdegree hs])
+      show ?thesis
+        using hseg hSuc_pred hQj by (by100 simp)
+    qed
+    have hsnd_k:
+        "snd ((geotop_oriented_edge_successor L ^^ k) s) =
+          closed_segment (?v k) (?v (Suc k))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hstate_eq:
+        "(geotop_oriented_edge_successor L ^^ (j - 1)) s =
+          (geotop_oriented_edge_successor L ^^ k) s"
+    proof -
+      have hfst_eq: "fst ((geotop_oriented_edge_successor L ^^ (j - 1)) s) =
+          fst ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame by (by100 simp)
+      have hsnd_eq: "snd ((geotop_oriented_edge_successor L ^^ (j - 1)) s) =
+          snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using hsame hsnd_pred hsnd_k by (by100 simp)
+      show ?thesis
+        using hfst_eq hsnd_eq by (simp add: prod_eq_iff)
+    qed
+    have "j - 1 = k"
+      by (rule inj_onD[OF hinj hstate_eq hj_pred_mem hk_mem])
+    hence "k < j"
+      using hj_pos by (by100 simp)
+    moreover have "j \<le> k"
+      using hk by (by100 simp)
+    ultimately show False
+      by (by100 linarith)
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
