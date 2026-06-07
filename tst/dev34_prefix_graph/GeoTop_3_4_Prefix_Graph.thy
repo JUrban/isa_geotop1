@@ -930,6 +930,255 @@ proof -
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
     unfolding K\<^sub>2_def using hK\<^sub>2_vertex_orbit hK\<^sub>2_edge_orbit by (by100 blast)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL_linear])
+  have hK\<^sub>1_simplex: "\<forall>\<sigma>\<in>K\<^sub>1. geotop_is_simplex \<sigma>"
+    using geotop_is_complex_simplex[OF hL_complex] hK\<^sub>1_subset_L by (by100 blast)
+  have hK\<^sub>2_simplex: "\<forall>\<sigma>\<in>K\<^sub>2. geotop_is_simplex \<sigma>"
+    using geotop_is_complex_simplex[OF hL_complex] hK\<^sub>2_subset_L by (by100 blast)
+  have hK\<^sub>1_1dim: "geotop_complex_is_1dim K\<^sub>1"
+    unfolding geotop_complex_is_1dim_def
+    using hL_1dim hK\<^sub>1_subset_L unfolding geotop_complex_is_1dim_def by (by100 blast)
+  have hK\<^sub>2_1dim: "geotop_complex_is_1dim K\<^sub>2"
+    unfolding geotop_complex_is_1dim_def
+    using hL_1dim hK\<^sub>2_subset_L unfolding geotop_complex_is_1dim_def by (by100 blast)
+  have hK\<^sub>1_edge_left_vertex:
+      "\<forall>k\<in>{0..<j}. {?v k} \<in> K\<^sub>1"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    have "k \<in> {0..j}"
+      using hk by (by100 simp)
+    hence "?v k \<in> ?v ` {0..j}"
+      by (rule imageI)
+    hence "{?v k} \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+      by (by100 blast)
+    thus "{?v k} \<in> K\<^sub>1"
+      unfolding K\<^sub>1_def by (by100 blast)
+  qed
+  have hK\<^sub>1_edge_right_vertex:
+      "\<forall>k\<in>{0..<j}. {?v (Suc k)} \<in> K\<^sub>1"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    have "Suc k \<in> {0..j}"
+      using hk by (by100 simp)
+    hence "?v (Suc k) \<in> ?v ` {0..j}"
+      by (rule imageI)
+    hence "{?v (Suc k)} \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+      by (by100 blast)
+    thus "{?v (Suc k)} \<in> K\<^sub>1"
+      unfolding K\<^sub>1_def by (by100 blast)
+  qed
+  have hK\<^sub>2_edge_left_vertex:
+      "\<forall>k\<in>{j..<p}. {?v k} \<in> K\<^sub>2"
+  proof
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    have "k \<in> {j..<p} \<union> {p}"
+      using hk by (by100 blast)
+    hence "?v k \<in> ?v ` ({j..<p} \<union> {p})"
+      by (rule imageI)
+    hence "{?v k} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      by (by100 blast)
+    thus "{?v k} \<in> K\<^sub>2"
+      unfolding K\<^sub>2_def by (by100 blast)
+  qed
+  have hK\<^sub>2_edge_right_vertex:
+      "\<forall>k\<in>{j..<p}. {?v (Suc k)} \<in> K\<^sub>2"
+  proof
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    have "Suc k \<in> {j..<p} \<union> {p}"
+      using hk by (by100 auto)
+    hence "?v (Suc k) \<in> ?v ` ({j..<p} \<union> {p})"
+      by (rule imageI)
+    hence "{?v (Suc k)} \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      by (by100 blast)
+    thus "{?v (Suc k)} \<in> K\<^sub>2"
+      unfolding K\<^sub>2_def by (by100 blast)
+  qed
+  have hsucc_ne: "\<forall>k. ?v (Suc k) \<noteq> ?v k"
+  proof
+    fix k
+    show "?v (Suc k) \<noteq> ?v k"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+          [OF hL_linear hdegree hs])
+  qed
+  have hK\<^sub>1_face_closed:
+      "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>1"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> K\<^sub>1"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>cases: "\<sigma> \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))
+        \<or> \<sigma> \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      using h\<sigma>K unfolding K\<^sub>1_def by (by100 blast)
+    show "\<tau> \<in> K\<^sub>1"
+    proof (rule disjE[OF h\<sigma>cases])
+      assume h\<sigma>vertex: "\<sigma> \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+      obtain v where hv: "v \<in> ?v ` {0..j}" and h\<sigma>eq: "\<sigma> = {v}"
+        using h\<sigma>vertex by (by100 blast)
+      have "\<tau> = {v}"
+        using hface h\<sigma>eq geotop_singleton_face_eq_prefix by (by100 blast)
+      thus "\<tau> \<in> K\<^sub>1"
+        unfolding K\<^sub>1_def using hv by (by100 blast)
+    next
+      assume h\<sigma>edge:
+          "\<sigma> \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      obtain k where hk: "k \<in> {0..<j}"
+        and h\<sigma>eq: "\<sigma> = closed_segment (?v k) (?v (Suc k))"
+        using h\<sigma>edge by (by100 blast)
+      have hne_rev: "?v (Suc k) \<noteq> ?v k"
+        using hsucc_ne by (by100 blast)
+      have hne: "?v k \<noteq> ?v (Suc k)"
+      proof
+        assume heq: "?v k = ?v (Suc k)"
+        have heq_rev: "?v (Suc k) = ?v k"
+          using heq by (by100 simp)
+        show False
+          by (rule notE[OF hne_rev heq_rev])
+      qed
+      have hface_seg: "geotop_is_face \<tau> (closed_segment (?v k) (?v (Suc k)))"
+        using hface h\<sigma>eq by (by100 simp)
+      have hcases: "\<tau> = {?v k} \<or> \<tau> = {?v (Suc k)}
+          \<or> \<tau> = closed_segment (?v k) (?v (Suc k))"
+        by (rule geotop_closed_segment_face_endpoint_or_self_prefix[OF hne hface_seg])
+      show "\<tau> \<in> K\<^sub>1"
+      proof (rule disjE[OF hcases])
+        assume "\<tau> = {?v k}"
+        thus ?thesis
+          using hK\<^sub>1_edge_left_vertex hk by (by100 blast)
+      next
+        assume hright_or_self:
+            "\<tau> = {?v (Suc k)} \<or> \<tau> = closed_segment (?v k) (?v (Suc k))"
+        show ?thesis
+        proof (rule disjE[OF hright_or_self])
+          assume "\<tau> = {?v (Suc k)}"
+          thus ?thesis
+            using hK\<^sub>1_edge_right_vertex hk by (by100 blast)
+        next
+          assume "\<tau> = closed_segment (?v k) (?v (Suc k))"
+          thus ?thesis
+            unfolding K\<^sub>1_def using hk by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  have hK\<^sub>2_face_closed:
+      "\<forall>\<sigma>\<in>K\<^sub>2. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K\<^sub>2"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> K\<^sub>2"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have h\<sigma>cases: "\<sigma> \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))
+        \<or> \<sigma> \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      using h\<sigma>K unfolding K\<^sub>2_def by (by100 blast)
+    show "\<tau> \<in> K\<^sub>2"
+    proof (rule disjE[OF h\<sigma>cases])
+      assume h\<sigma>vertex: "\<sigma> \<in> ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+      obtain v where hv: "v \<in> ?v ` ({j..<p} \<union> {p})" and h\<sigma>eq: "\<sigma> = {v}"
+        using h\<sigma>vertex by (by100 blast)
+      have "\<tau> = {v}"
+        using hface h\<sigma>eq geotop_singleton_face_eq_prefix by (by100 blast)
+      thus "\<tau> \<in> K\<^sub>2"
+        unfolding K\<^sub>2_def using hv by (by100 blast)
+    next
+      assume h\<sigma>edge:
+          "\<sigma> \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      obtain k where hk: "k \<in> {j..<p}"
+        and h\<sigma>eq: "\<sigma> = closed_segment (?v k) (?v (Suc k))"
+        using h\<sigma>edge by (by100 blast)
+      have hne_rev: "?v (Suc k) \<noteq> ?v k"
+        using hsucc_ne by (by100 blast)
+      have hne: "?v k \<noteq> ?v (Suc k)"
+      proof
+        assume heq: "?v k = ?v (Suc k)"
+        have heq_rev: "?v (Suc k) = ?v k"
+          using heq by (by100 simp)
+        show False
+          by (rule notE[OF hne_rev heq_rev])
+      qed
+      have hface_seg: "geotop_is_face \<tau> (closed_segment (?v k) (?v (Suc k)))"
+        using hface h\<sigma>eq by (by100 simp)
+      have hcases: "\<tau> = {?v k} \<or> \<tau> = {?v (Suc k)}
+          \<or> \<tau> = closed_segment (?v k) (?v (Suc k))"
+        by (rule geotop_closed_segment_face_endpoint_or_self_prefix[OF hne hface_seg])
+      show "\<tau> \<in> K\<^sub>2"
+      proof (rule disjE[OF hcases])
+        assume "\<tau> = {?v k}"
+        thus ?thesis
+          using hK\<^sub>2_edge_left_vertex hk by (by100 blast)
+      next
+        assume hright_or_self:
+            "\<tau> = {?v (Suc k)} \<or> \<tau> = closed_segment (?v k) (?v (Suc k))"
+        show ?thesis
+        proof (rule disjE[OF hright_or_self])
+          assume "\<tau> = {?v (Suc k)}"
+          thus ?thesis
+            using hK\<^sub>2_edge_right_vertex hk by (by100 blast)
+        next
+          assume "\<tau> = closed_segment (?v k) (?v (Suc k))"
+          thus ?thesis
+            unfolding K\<^sub>2_def using hk by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  have hK\<^sub>1_intersection:
+      "\<forall>\<sigma>\<in>K\<^sub>1. \<forall>\<tau>\<in>K\<^sub>1. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using geotop_is_complex_intersection[OF hL_complex] hK\<^sub>1_subset_L by (by100 blast)
+  have hK\<^sub>2_intersection:
+      "\<forall>\<sigma>\<in>K\<^sub>2. \<forall>\<tau>\<in>K\<^sub>2. \<sigma> \<inter> \<tau> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma> \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    using geotop_is_complex_intersection[OF hL_complex] hK\<^sub>2_subset_L by (by100 blast)
+  have hK\<^sub>1_locally_finite:
+      "\<forall>\<sigma>\<in>K\<^sub>1. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume "\<sigma> \<in> K\<^sub>1"
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K\<^sub>1. \<tau> \<inter> U \<noteq> {}}"
+    proof (intro exI conjI)
+      show "open UNIV"
+        by (by100 simp)
+      show "\<sigma> \<subseteq> UNIV"
+        by (by100 simp)
+      show "finite {\<tau> \<in> K\<^sub>1. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hK\<^sub>1_fin by (by100 simp)
+    qed
+  qed
+  have hK\<^sub>2_locally_finite:
+      "\<forall>\<sigma>\<in>K\<^sub>2. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>K\<^sub>2. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume "\<sigma> \<in> K\<^sub>2"
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U \<and> finite {\<tau>\<in>K\<^sub>2. \<tau> \<inter> U \<noteq> {}}"
+    proof (intro exI conjI)
+      show "open UNIV"
+        by (by100 simp)
+      show "\<sigma> \<subseteq> UNIV"
+        by (by100 simp)
+      show "finite {\<tau> \<in> K\<^sub>2. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hK\<^sub>2_fin by (by100 simp)
+    qed
+  qed
+  have hK\<^sub>1_complex: "geotop_is_complex K\<^sub>1"
+    unfolding geotop_is_complex_def
+    using hK\<^sub>1_simplex hK\<^sub>1_face_closed hK\<^sub>1_intersection hK\<^sub>1_locally_finite
+    by (by100 blast)
+  have hK\<^sub>2_complex: "geotop_is_complex K\<^sub>2"
+    unfolding geotop_is_complex_def
+    using hK\<^sub>2_simplex hK\<^sub>2_face_closed hK\<^sub>2_intersection hK\<^sub>2_locally_finite
+    by (by100 blast)
+  have hK\<^sub>1_linear: "geotop_is_linear_graph K\<^sub>1"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hK\<^sub>1_complex hK\<^sub>1_1dim])
+  have hK\<^sub>2_linear: "geotop_is_linear_graph K\<^sub>2"
+    by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hK\<^sub>2_complex hK\<^sub>2_1dim])
   have hvertex_idx_cover:
       "?v ` {0..<p} =
         ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
