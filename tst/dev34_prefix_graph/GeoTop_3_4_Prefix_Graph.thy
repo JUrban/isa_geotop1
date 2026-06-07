@@ -426,6 +426,49 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_vertex_in_exhausted_cycle_prefix:
+  fixes L :: "(real^2) set set" and P :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hPL: "{P} \<in> L"
+  shows "P \<in> ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?V = "?v ` {0..<p}"
+  let ?SV = "(\<lambda>v. {v}) ` ?V"
+  let ?E = "((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  have hL_eq: "L = ?SV \<union> ?E"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
+        [OF hL hfin hconn hdegree hs hp_pos hp_closed])
+  have hP_cycle: "{P} \<in> ?SV \<union> ?E"
+    using hPL hL_eq by (by100 simp)
+  show ?thesis
+  proof (rule UnE[OF hP_cycle])
+    assume hPSV: "{P} \<in> ?SV"
+    obtain v where hvV: "v \<in> ?V" and hPv: "{P} = {v}"
+      using hPSV by (by100 blast)
+    show "P \<in> ?V"
+      using hvV hPv by (by100 simp)
+  next
+    assume hPE: "{P} \<in> ?E"
+    show "P \<in> ?V"
+    proof -
+      have False
+        by (rule geotop_degree_two_oriented_edge_successor_period_edge_orbit_no_singletons_prefix
+            [OF hL hdegree hs hPE])
+      thus ?thesis
+        by (rule FalseE)
+    qed
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
