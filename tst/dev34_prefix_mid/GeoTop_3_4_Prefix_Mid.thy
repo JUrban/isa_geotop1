@@ -8784,7 +8784,26 @@ lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
     inverse fold.  The fold is the identity off its local carrier, so the
     finite composition is the identity on UNIV - U.  The last complex has one
     2-simplex, so its boundary is carried to the frontier of a 2-simplex. **)
-  sorry
+proof -
+  let ?T = "{\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2}"
+  have hT_fin: "finite ?T"
+    using hK_fin by (by100 simp)
+  have hfold_induction_book:
+    "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                   UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+            \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+    (**
+      Remaining Moise Theorem 3.4/3.7 induction: induct on \<open>card ?T\<close>.  In
+      the one-triangle case use the identity map.  In the step case apply
+      Theorem 3.3 to choose a free triangle, perform the Figure 3.3 fold or its
+      inverse with support inside \<open>U\<close>, compose with the induction map for the
+      smaller complex, and preserve identity on \<open>UNIV - U\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hfold_induction_book)
+qed
 
 (** from \<S>3 Theorem 4 (geotop.tex:782)
     LATEX VERSION: Let J be a polygon in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
