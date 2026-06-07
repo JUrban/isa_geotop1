@@ -2464,6 +2464,103 @@ next
     using hstep by (by100 simp)
 qed
 
+lemma geotop_finite_funpow_repeat_prefix:
+  fixes A :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hfin: "finite A"
+  assumes hx: "x \<in> A"
+  assumes hclosed: "\<forall>y\<in>A. f y \<in> A"
+  shows "\<exists>m n. m < n \<and> n \<le> Suc (card A) \<and> (f ^^ m) x = (f ^^ n) x"
+proof -
+  have hiter: "\<And>i. (f ^^ i) x \<in> A"
+  proof -
+    fix i
+    show "(f ^^ i) x \<in> A"
+    proof (induct i)
+      case 0
+      show ?case
+        using hx by (by100 simp)
+    next
+      case (Suc i)
+      show ?case
+        using hclosed Suc.hyps by (by100 simp)
+    qed
+  qed
+  have himage_sub: "(\<lambda>i. (f ^^ i) x) ` {0..card A} \<subseteq> A"
+    using hiter by (by100 blast)
+  have hcard_image_le: "card ((\<lambda>i. (f ^^ i) x) ` {0..card A}) \<le> card A"
+    by (rule card_mono[OF hfin himage_sub])
+  have hcard_dom_gt:
+      "card {0..card A} > card ((\<lambda>i. (f ^^ i) x) ` {0..card A})"
+    using hcard_image_le by (by100 simp)
+  have hnot_inj: "\<not> inj_on (\<lambda>i. (f ^^ i) x) {0..card A}"
+    by (rule pigeonhole[OF hcard_dom_gt])
+  obtain i j where hi: "i \<in> {0..card A}"
+    and hj: "j \<in> {0..card A}"
+    and hij_eq: "(f ^^ i) x = (f ^^ j) x"
+    and hij_ne: "i \<noteq> j"
+    using hnot_inj unfolding inj_on_def by (by100 blast)
+  show ?thesis
+  proof (cases "i < j")
+    case True
+    have "j \<le> Suc (card A)"
+      using hj by (by100 simp)
+    show ?thesis
+    proof (intro exI conjI)
+      show "i < j" by (rule True)
+      show "j \<le> Suc (card A)" by (rule \<open>j \<le> Suc (card A)\<close>)
+      show "(f ^^ i) x = (f ^^ j) x" by (rule hij_eq)
+    qed
+  next
+    case False
+    have hji: "j < i"
+      using False hij_ne by (by100 simp)
+    have "i \<le> Suc (card A)"
+      using hi by (by100 simp)
+    show ?thesis
+    proof (intro exI conjI)
+      show "j < i" by (rule hji)
+      show "i \<le> Suc (card A)" by (rule \<open>i \<le> Suc (card A)\<close>)
+      show "(f ^^ j) x = (f ^^ i) x"
+        using hij_eq by (by100 simp)
+    qed
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_funpow_repeat_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "\<exists>m n. m < n
+      \<and> n \<le> Suc (card
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})
+      \<and> (geotop_oriented_edge_successor L ^^ m) s =
+        (geotop_oriented_edge_successor L ^^ n) s"
+proof -
+  let ?A = "{(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  have hA_fin: "finite ?A"
+    by (rule geotop_finite_linear_graph_oriented_edge_states_finite_graph_prefix
+        [OF hL hfin])
+  have hclosed: "\<forall>t\<in>?A. geotop_oriented_edge_successor L t \<in> ?A"
+  proof
+    fix t
+    assume ht: "t \<in> ?A"
+    have hstep: "geotop_oriented_edge_successor L t \<in> ?A
+        \<and> geotop_oriented_edge_successor_state L t
+            (geotop_oriented_edge_successor L t)"
+	      by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+	          [OF hL hdegree ht])
+	    show "geotop_oriented_edge_successor L t \<in> ?A"
+	      by (rule conjunct1[OF hstep])
+	  qed
+  show ?thesis
+    by (rule geotop_finite_funpow_repeat_prefix
+        [OF hA_fin hs hclosed])
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
