@@ -3180,13 +3180,74 @@ proof -
       by (rule hcycle_cut_if_boundary_edges_absent_and_poly_inter_subset
           [OF hK\<^sub>1P_absent hK\<^sub>1Q_absent hK\<^sub>2P_absent hK\<^sub>2Q_absent hpoly_inter])
   qed
+  have hsame_current_next_index_unique:
+      "\<forall>m\<in>{0..<p}. \<forall>n\<in>{0..<p}.
+        ?v m = ?v n \<longrightarrow> ?v (Suc m) = ?v (Suc n) \<longrightarrow> m = n"
+    (**
+      Same oriented edge in the successor enumeration means the same oriented
+      state, hence the same index by the already-proved state-orbit
+      injectivity. **)
+  proof (intro ballI impI)
+    fix m n
+    assume hm: "m \<in> {0..<p}"
+    assume hn: "n \<in> {0..<p}"
+    assume hcur: "?v m = ?v n"
+    assume hnext: "?v (Suc m) = ?v (Suc n)"
+    have hsnd_m:
+        "snd ((geotop_oriented_edge_successor L ^^ m) s) =
+          closed_segment (?v m) (?v (Suc m))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hsnd_n:
+        "snd ((geotop_oriented_edge_successor L ^^ n) s) =
+          closed_segment (?v n) (?v (Suc n))"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+          [OF hL_linear hdegree hs])
+    have hstate_eq:
+        "(geotop_oriented_edge_successor L ^^ m) s =
+          (geotop_oriented_edge_successor L ^^ n) s"
+    proof -
+      have hfst_eq:
+          "fst ((geotop_oriented_edge_successor L ^^ m) s) =
+            fst ((geotop_oriented_edge_successor L ^^ n) s)"
+        using hcur by (by100 simp)
+      have hsnd_eq:
+          "snd ((geotop_oriented_edge_successor L ^^ m) s) =
+            snd ((geotop_oriented_edge_successor L ^^ n) s)"
+        using hcur hnext hsnd_m hsnd_n by (by100 simp)
+      show ?thesis
+        using hfst_eq hsnd_eq
+        by (cases "(geotop_oriented_edge_successor L ^^ m) s";
+            cases "(geotop_oriented_edge_successor L ^^ n) s";
+            by100 simp)
+    qed
+    show "m = n"
+      by (rule inj_onD[OF hinj hstate_eq hm hn])
+  qed
   have hvertex_index_unique_book:
       "\<forall>m\<in>{0..<p}. \<forall>n\<in>{0..<p}. ?v m = ?v n \<longrightarrow> m = n"
     (**
       Book cycle-order fact: before the closing step, the cyclic successor
       enumeration visits each vertex of the finite degree-two cycle exactly
       once. **)
-    sorry
+  proof (intro ballI impI)
+    fix m n
+    assume hm: "m \<in> {0..<p}"
+    assume hn: "n \<in> {0..<p}"
+    assume hcur: "?v m = ?v n"
+    have hno_opposite_traversal_book:
+        "?v (Suc m) = ?v (Suc n)"
+      (**
+        Remaining book step: if the same vertex occurred at two different
+        indices with different outgoing successor vertices, the degree-two
+        successor rule would force the later part of the enumeration to trace
+        the earlier part backwards, giving an oriented state repetition before
+        the least period. **)
+      sorry
+    show "m = n"
+      using hsame_current_next_index_unique hm hn hcur hno_opposite_traversal_book
+      by (by100 blast)
+  qed
   have hvertex_set_inter_subset_book:
       "?v ` {0..j} \<inter> ?v ` ({j..<p} \<union> {p}) \<subseteq> {P, Q}"
   proof
