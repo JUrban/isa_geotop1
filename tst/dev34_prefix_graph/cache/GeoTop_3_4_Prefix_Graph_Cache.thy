@@ -6034,6 +6034,149 @@ proof -
       qed
     qed
   qed
+  have hcanonical_pair_same_arc_side_cases:
+      "(x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w})
+      \<or> (x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w})
+      \<or> (x\<^sub>2 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w})"
+  proof -
+    obtain C a b where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and ha: "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hb: "b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hab: "a \<noteq> b"
+      and haC: "a \<in> C - {w}"
+      and hbC: "b \<in> C - {w}"
+      using hcanonical_pair_same_arc_side by (elim exE conjE)
+    have hC_cases: "C = A\<^sub>1 \<or> C = A\<^sub>2"
+      using hC by (by100 simp)
+    have ha_cases: "a = x\<^sub>1 \<or> a = x\<^sub>2 \<or> a = x\<^sub>3"
+      using ha by (by100 simp)
+    have hb_cases: "b = x\<^sub>1 \<or> b = x\<^sub>2 \<or> b = x\<^sub>3"
+      using hb by (by100 simp)
+    show ?thesis
+      using hC_cases
+    proof (elim disjE)
+      assume hC_eq: "C = A\<^sub>1"
+      show ?thesis
+        using ha_cases
+      proof (elim disjE)
+        assume ha_eq: "a = x\<^sub>1"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        qed
+      next
+        assume ha_eq: "a = x\<^sub>2"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        qed
+      next
+        assume ha_eq: "a = x\<^sub>3"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        qed
+      qed
+    next
+      assume hC_eq: "C = A\<^sub>2"
+      show ?thesis
+        using ha_cases
+      proof (elim disjE)
+        assume ha_eq: "a = x\<^sub>1"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        qed
+      next
+        assume ha_eq: "a = x\<^sub>2"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        qed
+      next
+        assume ha_eq: "a = x\<^sub>3"
+        show ?thesis
+          using hb_cases
+        proof (elim disjE)
+          assume hb_eq: "b = x\<^sub>1"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>2"
+          show ?thesis
+            using haC hbC hC_eq ha_eq hb_eq by (by100 simp)
+        next
+          assume hb_eq: "b = x\<^sub>3"
+          have False
+            using hab ha_eq hb_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        qed
+      qed
+    qed
+  qed
   have htwo_canonical_sphere_points_same_punctured_component:
       "top1_in_same_component_on (geotop_polyhedron L - {w})
           (subspace_topology UNIV geotop_euclidean_topology
