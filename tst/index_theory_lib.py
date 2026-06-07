@@ -141,7 +141,8 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
 
 def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> str:
     h = hashlib.sha256()
-    for name in extra_files + theories:
+    root_files = [path.relative_to(base).as_posix() for path in iter_session_roots(base)]
+    for name in extra_files + root_files + theories:
         path = base / name
         h.update(name.encode("utf-8"))
         if not path.exists():
@@ -166,6 +167,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--list", action="store_true", help="print existing theories")
     parser.add_argument("--missing", action="store_true", help="print missing theories")
+    parser.add_argument("--roots", action="store_true", help="print discovered ROOT files")
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
         "--write-list",
@@ -182,6 +184,7 @@ def main() -> int:
 
     base = Path.cwd()
     theories, missing = discover_theories(base)
+    roots = [path.relative_to(base).as_posix() for path in iter_session_roots(base)]
 
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
@@ -190,6 +193,8 @@ def main() -> int:
         sys.stdout.write("".join(f"{theory}\n" for theory in theories))
     if args.missing:
         sys.stdout.write("".join(f"{theory}\n" for theory in missing))
+    if args.roots:
+        sys.stdout.write("".join(f"{root}\n" for root in roots))
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))

@@ -15,11 +15,12 @@ mkdir -p "$CACHE_DIR"
 
 mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY_LIST")
 mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
+mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Index: fresh cache (${#THEORIES[@]} theories) -> $TXT / $MD"
+  echo "Index: fresh cache (${#THEORIES[@]} theories, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -104,5 +105,7 @@ with md.open("w", encoding="utf-8") as out:
 print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories -> {txt} / {md}")
 print("Theory list -> INDEX_THEORIES.txt")
 PYEND
+
+echo "Discovered ${#ROOTS[@]} ROOT files"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"

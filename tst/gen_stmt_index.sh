@@ -15,11 +15,12 @@ mkdir -p "$CACHE_DIR"
 
 mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY_LIST")
 mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
+mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
 
 if [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Statement index: fresh cache (${#THEORIES[@]} theories) -> $OUT"
+  echo "Statement index: fresh cache (${#THEORIES[@]} theories, ${#ROOTS[@]} ROOT files) -> $OUT"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -114,5 +115,6 @@ total=$(wc -l < "$OUT")
 theory_total=$(wc -l < "$THEORY_LIST")
 echo "Statement index: $total entries from $theory_total theories -> $OUT"
 echo "Theory list -> $THEORY_LIST"
+echo "Discovered ${#ROOTS[@]} ROOT files"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"
