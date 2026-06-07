@@ -3196,20 +3196,24 @@ proof -
       from \<open>P\<close> to \<open>Q\<close>; the second is the endpoint linear graph from \<open>Q\<close>
       back to \<open>P\<close> through the closing edge. **)
     proof -
-      have hcycle_cut_book_facts:
-          "((\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+      have horbit_no_nonadjacent_reversed_book:
+          "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
               \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
           \<and> (\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
               \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
           \<and> (\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
               \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
           \<and> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
-              \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)))
-          \<and> geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+              \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))"
         (**
           Book cycle-order fact: the oriented successor orbit traverses the
-          degree-two cycle without backtracking, and the two cut subpath
-          carriers meet only at the cut vertices \<open>P,Q\<close>. **)
+          degree-two cycle without non-adjacent backtracking. **)
+        sorry
+      have hpoly_inter_subset_book:
+          "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+        (**
+          Book carrier-intersection fact: the two cut subpath carriers meet
+          only at the cut vertices \<open>P,Q\<close>. **)
         sorry
       have horbit_no_nonadjacent_reversed:
           "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
@@ -3220,7 +3224,7 @@ proof -
               \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
           \<and> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
               \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))"
-        using hcycle_cut_book_facts by (by100 blast)
+        by (rule horbit_no_nonadjacent_reversed_book)
       have hK\<^sub>1P_no_nonadjacent_reversed:
           "\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
             \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
@@ -3239,7 +3243,7 @@ proof -
         using horbit_no_nonadjacent_reversed by (by100 blast)
     have hpoly_inter_subset:
         "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
-      using hcycle_cut_book_facts by (by100 blast)
+      by (rule hpoly_inter_subset_book)
     show ?thesis
       by (rule hcycle_cut_if_no_nonadjacent_reversed_and_poly_inter_subset
           [OF hK\<^sub>1P_no_nonadjacent_reversed
