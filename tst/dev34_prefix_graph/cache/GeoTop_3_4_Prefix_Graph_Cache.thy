@@ -4002,6 +4002,8 @@ proof -
     using hq\<^sub>3L hq\<^sub>3w unfolding geotop_polyhedron_def by (by100 blast)
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL_linear])
   have he\<^sub>12_inter: "e\<^sub>1 \<inter> e\<^sub>2 = {w}"
   proof -
     have hInt: "e\<^sub>1 \<inter> e\<^sub>2 \<noteq> {}"
@@ -4095,23 +4097,46 @@ proof -
     using hq\<^sub>2w by (by100 simp)
   have hdist_q\<^sub>3_pos: "0 < dist w q\<^sub>3"
     using hq\<^sub>3w by (by100 simp)
+  obtain \<delta>\<^sub>L where h\<delta>\<^sub>L_pos: "0 < \<delta>\<^sub>L"
+      and h\<delta>\<^sub>L_star:
+        "ball w \<delta>\<^sub>L \<inter> geotop_polyhedron L
+          \<subseteq> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+  proof -
+    have hw_poly: "w \<in> \<Union>L"
+      using hwL unfolding geotop_polyhedron_def by (by100 blast)
+    obtain \<delta> where h\<delta>pos: "\<delta> > 0"
+        and h\<delta>star: "ball w \<delta> \<inter> \<Union>L \<subseteq> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+      using geotop_complex_finite_subcomplex_local_point_carriers_prefix
+          [OF hL_complex hL_fin subset_refl hw_poly]
+      by (by100 blast)
+    have hstar: "ball w \<delta> \<inter> geotop_polyhedron L
+        \<subseteq> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+      using h\<delta>star unfolding geotop_polyhedron_def by (by100 simp)
+    show ?thesis
+      by (rule that[OF h\<delta>pos hstar])
+  qed
   obtain r where hr_pos: "0 < r"
+      and hr_lt_\<delta>\<^sub>L: "r < \<delta>\<^sub>L"
       and hr_lt_q\<^sub>1: "r < dist w q\<^sub>1"
       and hr_lt_q\<^sub>2: "r < dist w q\<^sub>2"
       and hr_lt_q\<^sub>3: "r < dist w q\<^sub>3"
   proof -
-    let ?m = "min (dist w q\<^sub>1) (min (dist w q\<^sub>2) (dist w q\<^sub>3))"
+    let ?m = "min \<delta>\<^sub>L (min (dist w q\<^sub>1) (min (dist w q\<^sub>2) (dist w q\<^sub>3)))"
     let ?r = "?m / 2"
     have hm_pos: "0 < ?m"
-      using hdist_q\<^sub>1_pos hdist_q\<^sub>2_pos hdist_q\<^sub>3_pos by (by100 simp)
+      using h\<delta>\<^sub>L_pos hdist_q\<^sub>1_pos hdist_q\<^sub>2_pos hdist_q\<^sub>3_pos by (by100 simp)
     have hr_pos': "0 < ?r"
       using hm_pos by (by100 simp)
+    have hm_le_\<delta>\<^sub>L: "?m \<le> \<delta>\<^sub>L"
+      by (by100 simp)
     have hm_le_q\<^sub>1: "?m \<le> dist w q\<^sub>1"
       by (by100 simp)
     have hm_le_q\<^sub>2: "?m \<le> dist w q\<^sub>2"
       by (by100 simp)
     have hm_le_q\<^sub>3: "?m \<le> dist w q\<^sub>3"
       by (by100 simp)
+    have hr_lt_\<delta>\<^sub>L': "?r < \<delta>\<^sub>L"
+      using hm_pos hm_le_\<delta>\<^sub>L by (by100 linarith)
     have hr_lt_q\<^sub>1': "?r < dist w q\<^sub>1"
       using hm_pos hm_le_q\<^sub>1 by (by100 linarith)
     have hr_lt_q\<^sub>2': "?r < dist w q\<^sub>2"
@@ -4119,7 +4144,57 @@ proof -
     have hr_lt_q\<^sub>3': "?r < dist w q\<^sub>3"
       using hm_pos hm_le_q\<^sub>3 by (by100 linarith)
     show ?thesis
-      by (rule that[OF hr_pos' hr_lt_q\<^sub>1' hr_lt_q\<^sub>2' hr_lt_q\<^sub>3'])
+      by (rule that[OF hr_pos' hr_lt_\<delta>\<^sub>L' hr_lt_q\<^sub>1' hr_lt_q\<^sub>2' hr_lt_q\<^sub>3'])
+  qed
+  have hball_poly_star:
+      "ball w r \<inter> geotop_polyhedron L \<subseteq> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+  proof
+    fix x
+    assume hx: "x \<in> ball w r \<inter> geotop_polyhedron L"
+    have hx_delta: "x \<in> ball w \<delta>\<^sub>L"
+      using hx hr_lt_\<delta>\<^sub>L by (by100 simp)
+    have hx_delta_poly: "x \<in> ball w \<delta>\<^sub>L \<inter> geotop_polyhedron L"
+      using hx hx_delta by (by100 blast)
+    show "x \<in> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+      using h\<delta>\<^sub>L_star hx_delta_poly by (by100 blast)
+  qed
+  have hstar_carrier_subset:
+      "\<Union>{\<tau>\<in>L. w \<in> \<tau>} \<subseteq> {w} \<union> \<Union>E"
+  proof
+    fix x
+    assume hx: "x \<in> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+    obtain \<tau> where h\<tau>L: "\<tau> \<in> L" and hw\<tau>: "w \<in> \<tau>" and hx\<tau>: "x \<in> \<tau>"
+      using hx by (by100 blast)
+    have hcases:
+        "(\<exists>v. \<tau> = {v}) \<or> (\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b)"
+      by (rule geotop_1dim_simplex_cases[OF hL_1dim h\<tau>L])
+    show "x \<in> {w} \<union> \<Union>E"
+    proof (rule disjE[OF hcases])
+      assume "\<exists>v. \<tau> = {v}"
+      then obtain v where h\<tau>v: "\<tau> = {v}"
+        by (by100 blast)
+      have "x = w"
+        using hw\<tau> hx\<tau> h\<tau>v by (by100 blast)
+      then show ?thesis
+        by (by100 simp)
+    next
+      assume "\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b"
+      then obtain a b where hab: "a \<noteq> b" and h\<tau>ab: "\<tau> = closed_segment a b"
+        by (by100 blast)
+      have h\<tau>edge: "geotop_is_edge \<tau>"
+      proof -
+        have "geotop_simplex_dim (closed_segment a b) 1"
+          by (rule geotop_closed_segment_is_simplex[OF hab])
+        then have "geotop_simplex_dim \<tau> 1"
+          using h\<tau>ab by (by100 simp)
+        then show ?thesis
+          unfolding geotop_is_edge_def by (by100 simp)
+      qed
+      have h\<tau>E: "\<tau> \<in> E"
+        unfolding E_def using h\<tau>L h\<tau>edge hw\<tau> by (by100 simp)
+      show ?thesis
+        using h\<tau>E hx\<tau> by (by100 blast)
+    qed
   qed
   define x\<^sub>1 where "x\<^sub>1 = w + (r / dist w q\<^sub>1) *\<^sub>R (q\<^sub>1 - w)"
   define x\<^sub>2 where "x\<^sub>2 = w + (r / dist w q\<^sub>2) *\<^sub>R (q\<^sub>2 - w)"
