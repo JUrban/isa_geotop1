@@ -324,6 +324,15 @@ proof -
     show "{e\<in>L. geotop_is_edge e} \<subseteq> ?E"
       by (rule hL_edges_subset_E)
   qed
+  have hL_vertex_edge_decomp:
+      "L = ((\<lambda>v. {v}) ` geotop_complex_vertices L) \<union>
+        {e\<in>L. geotop_is_edge e}"
+    using hL_cycle_vertices hE_eq_edges by (by100 simp)
+  have hL_edge_set_finite: "finite {e\<in>L. geotop_is_edge e}"
+    using hE_fin hE_eq_edges by (by100 simp)
+  have hL_singleton_image_finite:
+      "finite ((\<lambda>v. {v}) ` geotop_complex_vertices L)"
+    by (rule finite_imageI[OF hcomplex_vertices_finite])
   show ?thesis
     sorry
 qed
