@@ -55,6 +55,36 @@ proof (rule ccontr)
     using hedges_ne hedges_eq by (by100 blast)
 qed
 
+lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hs:
+    "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_gt2: "2 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+  assumes hcard:
+    "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+  assumes hL_cycle:
+    "L =
+      (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Pure Figure 4.10 boundary realization step after the graph-order package:
+    use the cyclic list of at least three vertices to subdivide the three sides
+    of a 2-simplex, preserving cyclic adjacency, and define the simplicial
+    isomorphism by the ordered vertex correspondence. **)
+  sorry
+
 lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -92,12 +122,8 @@ proof -
     by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
         [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
   show ?thesis
-    (**
-      Remaining Figure 4.10 construction: use the cyclic list of at least
-      three vertices to subdivide the three sides of a 2-simplex, preserving
-      cyclic adjacency, and then define the simplicial isomorphism on vertices
-      by the ordered correspondence. **)
-    sorry
+    by (rule geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34
+        [OF hL_linear hL_finite hs hp_gt2 hp_closed hinj hcard hL_cycle])
 qed
 
 lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
