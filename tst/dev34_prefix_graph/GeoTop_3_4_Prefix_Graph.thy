@@ -832,6 +832,10 @@ proof -
       (((\<lambda>v. {v}) ` (?v ` {0..<p}))
       \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p}))"
     using hpkg by (by100 simp)
+  have hp_pos: "0 < p"
+    using hp_gt1 by (by100 linarith)
+  have hP0: "?v 0 = P"
+    using hfst by (by100 simp)
   have hPp: "?v p = P"
     using hp_closed hfst by (by100 simp)
   have hidx_partition: "{0..<p} = {0..<j} \<union> {j..<p}"
@@ -846,6 +850,157 @@ proof -
     by (rule geotop_nat_cycle_cut_index_sets_prefix(5)[OF hj_pos hj_lt])
   have hpath2_vertices_fin: "finite ({j..<p} \<union> {p})"
     by (rule geotop_nat_cycle_cut_index_sets_prefix(6)[OF hj_pos hj_lt])
+  define K\<^sub>1 where "K\<^sub>1 =
+      ((\<lambda>v. {v}) ` (?v ` {0..j}))
+      \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+  define K\<^sub>2 where "K\<^sub>2 =
+      ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))
+      \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+  have hK\<^sub>1_fin: "finite K\<^sub>1"
+    unfolding K\<^sub>1_def using hpath1_vertices_fin by (by100 simp)
+  have hK\<^sub>2_fin: "finite K\<^sub>2"
+    unfolding K\<^sub>2_def using hpath2_vertices_fin by (by100 simp)
+  have hK\<^sub>1_vertex_orbit:
+      "?v ` {0..j} \<subseteq> {v. {v} \<in> L}"
+    by (rule geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix
+        [OF hL_linear hdegree hs])
+  have hK\<^sub>2_vertex_orbit:
+      "?v ` ({j..<p} \<union> {p}) \<subseteq> {v. {v} \<in> L}"
+    by (rule geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix
+        [OF hL_linear hdegree hs])
+  have hK\<^sub>1_edge_orbit:
+      "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<subseteq> {e\<in>L. geotop_is_edge e}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix
+        [OF hL_linear hdegree hs])
+  have hK\<^sub>2_edge_orbit:
+      "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<subseteq> {e\<in>L. geotop_is_edge e}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix
+        [OF hL_linear hdegree hs])
+  have hK\<^sub>1_subset_L: "K\<^sub>1 \<subseteq> L"
+    unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
+  have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
+    unfolding K\<^sub>2_def using hK\<^sub>2_vertex_orbit hK\<^sub>2_edge_orbit by (by100 blast)
+  have hvertex_idx_cover:
+      "?v ` {0..<p} =
+        ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
+  proof -
+    have hleft: "{0..<p} \<subseteq> {0..j} \<union> ({j..<p} \<union> {p})"
+      using hidx_partition by (by100 auto)
+    have hright_raw:
+        "{0..j} \<union> ({j..<p} \<union> {p}) \<subseteq> {0..<p} \<union> {p}"
+      using hpath1_vertices hpath2_edges by (by100 blast)
+    have hright_image: "?v ` ({0..<p} \<union> {p}) \<subseteq> ?v ` {0..<p}"
+    proof
+      fix x
+      assume hx: "x \<in> ?v ` ({0..<p} \<union> {p})"
+      obtain k where hk: "k \<in> {0..<p} \<union> {p}" and hxk: "x = ?v k"
+        using hx by (by100 blast)
+      show "x \<in> ?v ` {0..<p}"
+      proof (cases "k = p")
+        case True
+        have "x = ?v 0"
+          using hxk True hPp hP0 by (by100 simp)
+        moreover have "0 \<in> {0..<p}"
+          using hp_pos by (by100 simp)
+        ultimately show ?thesis
+          by (by100 blast)
+      next
+        case False
+        have "k \<in> {0..<p}"
+          using hk False by (by100 blast)
+        thus ?thesis
+          using hxk by (by100 blast)
+      qed
+    qed
+    show ?thesis
+    proof
+      show "?v ` {0..<p} \<subseteq> ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
+        using hleft by (by100 blast)
+      show "?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p}) \<subseteq> ?v ` {0..<p}"
+      proof -
+        have "?v ` ({0..j} \<union> ({j..<p} \<union> {p})) \<subseteq> ?v ` ({0..<p} \<union> {p})"
+          using hright_raw by (by100 blast)
+        hence "?v ` ({0..j} \<union> ({j..<p} \<union> {p})) \<subseteq> ?v ` {0..<p}"
+          using hright_image by (by100 blast)
+        thus ?thesis
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hedge_idx_cover:
+      "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p}) =
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    using hidx_partition by (by100 blast)
+  have hK_union_L: "K\<^sub>1 \<union> K\<^sub>2 = L"
+  proof
+    show "K\<^sub>1 \<union> K\<^sub>2 \<subseteq> L"
+      using hK\<^sub>1_subset_L hK\<^sub>2_subset_L by (by100 blast)
+    show "L \<subseteq> K\<^sub>1 \<union> K\<^sub>2"
+    proof
+      fix x
+      assume hxL: "x \<in> L"
+      have hx_cycle: "x \<in>
+          ((\<lambda>v. {v}) ` (?v ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p})"
+        using hxL hL_cycle by (by100 simp)
+      show "x \<in> K\<^sub>1 \<union> K\<^sub>2"
+      proof (cases "x \<in> ((\<lambda>v. {v}) ` (?v ` {0..<p}))")
+        case True
+        obtain y where hy: "y \<in> ?v ` {0..<p}" and hx_eq: "x = {y}"
+          using True by (by100 blast)
+        have hy_cut: "y \<in> ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
+          using hy hvertex_idx_cover by (by100 blast)
+        show ?thesis
+        proof (cases "y \<in> ?v ` {0..j}")
+          case True
+          have "x \<in> K\<^sub>1"
+            unfolding K\<^sub>1_def using True hx_eq by (by100 blast)
+          thus ?thesis
+            by (by100 blast)
+        next
+          case False
+          have "y \<in> ?v ` ({j..<p} \<union> {p})"
+            using hy_cut False by (by100 blast)
+          hence "x \<in> K\<^sub>2"
+            unfolding K\<^sub>2_def using hx_eq by (by100 blast)
+          thus ?thesis
+            by (by100 blast)
+        qed
+      next
+        case False
+        have hx_edge:
+            "x \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p})"
+          using hx_cycle False by (by100 blast)
+        obtain k where hk_edge: "k \<in> {0..<p}"
+          and hx_edge_eq: "x = closed_segment (?v k) (?v (Suc k))"
+          using hx_edge by (by100 blast)
+        have hk_cut: "k \<in> {0..<j} \<union> {j..<p}"
+          using hk_edge hidx_partition by (by100 blast)
+        show ?thesis
+        proof (cases "k \<in> {0..<j}")
+          case True
+          have "x \<in> K\<^sub>1"
+            unfolding K\<^sub>1_def using True hx_edge_eq by (by100 blast)
+          thus ?thesis
+            by (by100 blast)
+        next
+          case False
+          have "k \<in> {j..<p}"
+            using hk_cut False by (by100 blast)
+          hence "x \<in> K\<^sub>2"
+            unfolding K\<^sub>2_def using hx_edge_eq by (by100 blast)
+          thus ?thesis
+            by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  have hpoly_K_union:
+      "geotop_polyhedron L = geotop_polyhedron K\<^sub>1 \<union> geotop_polyhedron K\<^sub>2"
+    using hK_union_L unfolding geotop_polyhedron_def by (by100 blast)
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
