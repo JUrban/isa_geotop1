@@ -321,6 +321,111 @@ proof -
     using hsimplex hfaces hinter hlocfin by (by100 blast)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "L =
+      (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?Kc = "((\<lambda>v. {v}) ` (?v ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  let ?R = "L - ?Kc"
+  have hKc_pkg: "geotop_is_complex ?Kc \<and> ?Kc \<subseteq> L"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_subcomplex_prefix
+        [OF hL hdegree hs hp_pos hp_closed])
+  have hKc_complex: "geotop_is_complex ?Kc"
+    using hKc_pkg by (by100 blast)
+  have hKc_sub: "?Kc \<subseteq> L"
+    using hKc_pkg by (by100 blast)
+  have hR_complex: "geotop_is_complex ?R"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_complement_subcomplex_prefix
+        [OF hL hfin hdegree hs hp_pos hp_closed])
+  have hKc_nonempty: "?Kc \<noteq> {}"
+  proof -
+    have h0: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have "{?v 0} \<in> ((\<lambda>v. {v}) ` (?v ` {0..<p}))"
+    proof (rule image_eqI[where x = "?v 0"])
+      show "{?v 0} = {?v 0}"
+        by (by100 simp)
+      show "?v 0 \<in> ?v ` {0..<p}"
+      proof (rule image_eqI[where x = 0])
+        show "?v 0 = ?v 0"
+          by (by100 simp)
+        show "0 \<in> {0..<p}"
+          by (rule h0)
+      qed
+    qed
+    hence "{?v 0} \<in> ?Kc"
+      by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  show ?thesis
+  proof (rule ccontr)
+    assume hneq: "L \<noteq> ?Kc"
+    have hnot_sub: "\<not> L \<subseteq> ?Kc"
+    proof
+      assume hsub: "L \<subseteq> ?Kc"
+      have "L = ?Kc"
+      proof
+        show "L \<subseteq> ?Kc"
+          by (rule hsub)
+      next
+        show "?Kc \<subseteq> L"
+          by (rule hKc_sub)
+      qed
+      thus False
+        using hneq by (by100 blast)
+    qed
+    have hR_nonempty: "?R \<noteq> {}"
+    proof -
+      obtain \<sigma> where h\<sigma>L: "\<sigma> \<in> L" and h\<sigma>out: "\<sigma> \<notin> ?Kc"
+        using hnot_sub by (by100 blast)
+      have "\<sigma> \<in> ?R"
+        using h\<sigma>L h\<sigma>out by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    qed
+    have hdisj: "?Kc \<inter> ?R = {}"
+      by (by100 blast)
+    have hsplit: "L = ?Kc \<union> ?R"
+    proof
+      show "L \<subseteq> ?Kc \<union> ?R"
+        by (by100 blast)
+    next
+      show "?Kc \<union> ?R \<subseteq> L"
+        using hKc_sub by (by100 blast)
+    qed
+    have hbad: "\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+        \<and> L = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+    proof (intro exI)
+      show "?Kc \<noteq> {} \<and> ?R \<noteq> {} \<and> ?Kc \<inter> ?R = {}
+          \<and> L = ?Kc \<union> ?R \<and> geotop_is_complex ?Kc \<and> geotop_is_complex ?R"
+        using hKc_nonempty hR_nonempty hdisj hsplit hKc_complex hR_complex
+        by (by100 blast)
+    qed
+    have hno_bad: "\<not> (\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {}
+        \<and> L = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2)"
+      using hconn unfolding geotop_complex_connected_def by (by100 blast)
+    show False
+      using hbad hno_bad by (by100 blast)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
