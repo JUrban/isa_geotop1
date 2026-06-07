@@ -3313,6 +3313,44 @@ proof -
     using hneq by (by100 simp)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_first_step_endpoint_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hq_ne: "q \<noteq> fst s"
+  assumes hseg: "snd s = closed_segment (fst s) q"
+  shows "fst (geotop_oriented_edge_successor L s) = q"
+proof -
+  have hstep: "geotop_oriented_edge_successor L s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s
+          (geotop_oriented_edge_successor L s)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hs])
+  have hrel: "geotop_oriented_edge_successor_state L s
+      (geotop_oriented_edge_successor L s)"
+    by (rule conjunct2[OF hstep])
+  have hsucc_seg: "snd s =
+      closed_segment (fst s) (fst (geotop_oriented_edge_successor L s))"
+    using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hsucc_ne: "fst (geotop_oriented_edge_successor L s) \<noteq> fst s"
+    using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hseg_eq: "closed_segment (fst s) (fst (geotop_oriented_edge_successor L s)) =
+      closed_segment (fst s) q"
+    using hsucc_seg hseg by (by100 simp)
+  have hpair_eq: "{fst s, fst (geotop_oriented_edge_successor L s)} = {fst s, q}"
+    using hseg_eq closed_segment_eq
+      [of "fst s" "fst (geotop_oriented_edge_successor L s)" "fst s" q]
+    by (by100 simp)
+  have "fst (geotop_oriented_edge_successor L s) \<in> {fst s, q}"
+    using hpair_eq by (by100 blast)
+  thus ?thesis
+    using hsucc_ne by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_funpow_vertex_in_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -3467,6 +3505,48 @@ proof -
     show "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
       by (rule hcard)
   qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_initial_neighbor_before_period_prefix:
+  fixes L :: "(real^2) set set" and w q :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hfst: "fst s = w"
+  assumes hq_ne: "q \<noteq> w"
+  assumes hsnd: "snd s = closed_segment w q"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q
+      \<and> 1 < p"
+proof -
+  have hq_ne_s: "q \<noteq> fst s"
+    using hq_ne hfst by (by100 simp)
+  have hsnd_s: "snd s = closed_segment (fst s) q"
+    using hsnd hfst by (by100 simp)
+  have hfirst: "fst (geotop_oriented_edge_successor L s) = q"
+    by (rule geotop_degree_two_oriented_edge_successor_first_step_endpoint_prefix
+        [OF hL hdegree hs hq_ne_s hsnd_s])
+  have hfirst_funpow: "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
+    using hfirst by (by100 simp)
+  have hp_gt1: "1 < p"
+  proof (rule ccontr)
+    assume hnot: "\<not> 1 < p"
+    have hp_eq: "p = 1"
+      using hp_pos hnot by (by100 linarith)
+    have "geotop_oriented_edge_successor L s = s"
+      using hp_closed hp_eq by (by100 simp)
+    hence "fst (geotop_oriented_edge_successor L s) = fst s"
+      by (by100 simp)
+    hence "q = w"
+      using hfirst hfst by (by100 simp)
+    thus False
+      using hq_ne by (by100 blast)
+  qed
+  show ?thesis
+    using hfirst_funpow hp_gt1 by (by100 blast)
 qed
 
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
