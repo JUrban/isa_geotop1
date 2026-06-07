@@ -5,145 +5,31 @@
 
 set -euo pipefail
 
-BASE_THEORIES=(
-  i/Top1_Ch2.thy
-  i/Top1_Ch3.thy
-  i/Top1_Ch4.thy
-  i/Top1_Ch5_8.thy
-  i/Top1_Ch9_13.thy
-  h/AlgTopHelpers.thy
-  b0/AlgTop_JCT_Base0.thy
-  b/AlgTop_JCT_Base.thy
-  a0/AlgTop0.thy
-  ac/AlgTopCached.thy
-  fib/AlgIsoFixedBase.thy
-  fi/AlgIsoFixed.thy
-  k5/K5_nonplanar.thy
-  ag/AlgTopGroups.thy
-  pd/PolygonDisk.thy
-  svk/AlgTopSvK.thy
-  wh/AlgTopWedgeHelpers.thy
-  at/AlgTopChain.thy
-  ac2/AlgTopCached2.thy
-  ac3/AlgTopCached3.thy
-  ac4/AlgTopCached4.thy
-  ac5/AlgTopCached5.thy
-  ac6/AlgTopCached6.thy
-  ac7/AlgTopCached7.thy
-  ac8/AlgTopCached8.thy
-  algtop_session/AlgTop.thy
-  gb0/GeoTopBase0.thy
-  gb/GeoTopBase.thy
-  gd/GeoTopDeps.thy
-  gp/GeoTop_Prefix.thy
-  GeoTop.thy
-)
-
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
 THEORY_LIST=INDEX_THEORIES.txt
+CACHE_DIR=.index_cache
+SIG_FILE="$CACHE_DIR/gen_index.sig"
 
-mapfile -t SESSION_ROOTS < <(
-  find . -name ROOT -type f \
-    ! -path './.dev34_fast_cache/*' \
-    | sed 's#^\./##' \
-    | sort
-)
+mkdir -p "$CACHE_DIR"
 
-mapfile -t ROOT_THEORIES < <(python3 - "${SESSION_ROOTS[@]}" <<'PYEND'
-import re
-import sys
-from pathlib import Path
+mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY_LIST")
+mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
+SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
-seen = set()
-seen_roots = set()
-control_re = re.compile(r"(session|options|sessions|document_files|directories)\b")
-
-def theory_tokens(raw_line):
-    tokens = re.findall(r'"[^"]+"|\S+', raw_line)
-    kept = []
-    bracket_depth = 0
-    for token in tokens:
-        if token.startswith("#"):
-            break
-        bracket_depth += token.count("[")
-        if bracket_depth > 0:
-            bracket_depth -= token.count("]")
-            continue
-        if any(part in token for part in "[]=+"):
-            continue
-        token = token.strip('"')
-        if token:
-            kept.append(token)
-    return kept
-
-def emit_theory(root, session_base, theory_dir, theory):
-    theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
-    theory_name = theory_path.as_posix()
-    if theory_name not in seen:
-        seen.add(theory_name)
-        print(theory_name)
-
-for root_arg in sys.argv[1:]:
-    root = Path(root_arg)
-    if not root.is_file():
-        continue
-    root_key = root.as_posix()
-    if root_key in seen_roots:
-        continue
-    seen_roots.add(root_key)
-    session_base = root.parent
-    theory_dir = Path(".")
-    in_theories = False
-    for raw in root.read_text(encoding="utf-8", errors="replace").splitlines():
-        line = raw.split("(*", 1)[0].strip()
-        if not line or line.startswith("#"):
-            continue
-        session_match = re.match(r'session\b.*?\bin\s+(?:"([^"]+)"|([^\s=]+))', line)
-        if session_match:
-            theory_dir = Path(session_match.group(1) or session_match.group(2))
-            in_theories = False
-            continue
-        if line.startswith("session "):
-            theory_dir = Path(".")
-            in_theories = False
-            continue
-        if re.match(r"theories\b", line):
-            in_theories = True
-            rest = re.sub(r"^theories\b", "", line, count=1).strip()
-            for theory in theory_tokens(rest):
-                emit_theory(root, session_base, theory_dir, theory)
-            continue
-        if in_theories:
-            if control_re.match(line):
-                in_theories = False
-                continue
-            for theory in theory_tokens(line):
-                emit_theory(root, session_base, theory_dir, theory)
-PYEND
-)
-
-mapfile -t THEORIES < <(
-  printf '%s\n' "${BASE_THEORIES[@]}" "${ROOT_THEORIES[@]}" | awk 'NF && !seen[$0]++'
-)
-
-missing=()
-existing=()
-for theory in "${THEORIES[@]}"; do
-  if [ -f "$theory" ]; then
-    existing+=("$theory")
-  else
-    missing+=("$theory")
-  fi
-done
-
-printf '%s\n' "${existing[@]}" > "$THEORY_LIST"
-if [ "${#missing[@]}" -gt 0 ]; then
-  printf 'Warning: %d indexed theories are missing files:\n' "${#missing[@]}" >&2
-  printf '  %s\n' "${missing[@]}" >&2
+if [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
+  && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
+  echo "Index: fresh cache (${#THEORIES[@]} theories) -> $TXT / $MD"
+  echo "Theory list -> $THEORY_LIST"
+  exit 0
 fi
 
-python3 - "$TXT" "$MD" "${existing[@]}" <<'PYEND'
+if [ "${#MISSING[@]}" -gt 0 ]; then
+  printf 'Warning: %d indexed theories are missing files:\n' "${#MISSING[@]}" >&2
+  printf '  %s\n' "${MISSING[@]}" >&2
+fi
+
+python3 - "$TXT" "$MD" "${THEORIES[@]}" <<'PYEND'
 import datetime
 import re
 import sys
@@ -218,3 +104,5 @@ with md.open("w", encoding="utf-8") as out:
 print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories -> {txt} / {md}")
 print("Theory list -> INDEX_THEORIES.txt")
 PYEND
+
+printf '%s\n' "$SIG" > "$SIG_FILE"

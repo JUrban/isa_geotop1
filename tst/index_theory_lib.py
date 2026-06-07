@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""Shared helpers for the GeoTop generated search indexes."""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import re
+import sys
+from pathlib import Path
+
+
+BASE_THEORIES = [
+    "i/Top1_Ch2.thy",
+    "i/Top1_Ch3.thy",
+    "i/Top1_Ch4.thy",
+    "i/Top1_Ch5_8.thy",
+    "i/Top1_Ch9_13.thy",
+    "h/AlgTopHelpers.thy",
+    "b0/AlgTop_JCT_Base0.thy",
+    "b/AlgTop_JCT_Base.thy",
+    "a0/AlgTop0.thy",
+    "ac/AlgTopCached.thy",
+    "fib/AlgIsoFixedBase.thy",
+    "fi/AlgIsoFixed.thy",
+    "k5/K5_nonplanar.thy",
+    "ag/AlgTopGroups.thy",
+    "pd/PolygonDisk.thy",
+    "svk/AlgTopSvK.thy",
+    "wh/AlgTopWedgeHelpers.thy",
+    "at/AlgTopChain.thy",
+    "ac2/AlgTopCached2.thy",
+    "ac3/AlgTopCached3.thy",
+    "ac4/AlgTopCached4.thy",
+    "ac5/AlgTopCached5.thy",
+    "ac6/AlgTopCached6.thy",
+    "ac7/AlgTopCached7.thy",
+    "ac8/AlgTopCached8.thy",
+    "algtop_session/AlgTop.thy",
+    "gb0/GeoTopBase0.thy",
+    "gb/GeoTopBase.thy",
+    "gd/GeoTopDeps.thy",
+    "gp/GeoTop_Prefix.thy",
+    "GeoTop.thy",
+]
+
+CONTROL_RE = re.compile(r"(session|options|sessions|document_files|directories)\b")
+
+
+def theory_tokens(raw_line: str) -> list[str]:
+    tokens = re.findall(r'"[^"]+"|\S+', raw_line)
+    kept: list[str] = []
+    bracket_depth = 0
+    for token in tokens:
+        if token.startswith("#"):
+            break
+        bracket_depth += token.count("[")
+        if bracket_depth > 0:
+            bracket_depth -= token.count("]")
+            continue
+        if any(part in token for part in "[]=+"):
+            continue
+        token = token.strip('"')
+        if token:
+            kept.append(token)
+    return kept
+
+
+def iter_session_roots(base: Path) -> list[Path]:
+    roots = [
+        path
+        for path in base.rglob("ROOT")
+        if ".dev34_fast_cache" not in path.relative_to(base).parts
+    ]
+    return sorted(roots, key=lambda p: p.relative_to(base).as_posix())
+
+
+def discover_theories(base: Path) -> tuple[list[str], list[str]]:
+    seen: set[str] = set()
+    root_theories: list[str] = []
+    seen_roots: set[str] = set()
+
+    def emit(session_base: Path, theory_dir: Path, theory: str) -> None:
+        theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
+        theory_name = theory_path.relative_to(base).as_posix()
+        if theory_name not in seen:
+            seen.add(theory_name)
+            root_theories.append(theory_name)
+
+    for root in iter_session_roots(base):
+        root_key = root.relative_to(base).as_posix()
+        if root_key in seen_roots:
+            continue
+        seen_roots.add(root_key)
+        session_base = root.parent
+        theory_dir = Path(".")
+        in_theories = False
+
+        for raw in root.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = raw.split("(*", 1)[0].strip()
+            if not line or line.startswith("#"):
+                continue
+            session_match = re.match(
+                r'session\b.*?\bin\s+(?:"([^"]+)"|([^\s=]+))', line
+            )
+            if session_match:
+                theory_dir = Path(session_match.group(1) or session_match.group(2))
+                in_theories = False
+                continue
+            if line.startswith("session "):
+                theory_dir = Path(".")
+                in_theories = False
+                continue
+            if re.match(r"theories\b", line):
+                in_theories = True
+                rest = re.sub(r"^theories\b", "", line, count=1).strip()
+                for theory in theory_tokens(rest):
+                    emit(session_base, theory_dir, theory)
+                continue
+            if in_theories:
+                if CONTROL_RE.match(line):
+                    in_theories = False
+                    continue
+                for theory in theory_tokens(line):
+                    emit(session_base, theory_dir, theory)
+
+    ordered: list[str] = []
+    for theory in BASE_THEORIES + root_theories:
+        if theory not in ordered:
+            ordered.append(theory)
+
+    existing: list[str] = []
+    missing: list[str] = []
+    for theory in ordered:
+        if (base / theory).is_file():
+            existing.append(theory)
+        else:
+            missing.append(theory)
+    return existing, missing
+
+
+def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> str:
+    h = hashlib.sha256()
+    for name in extra_files + theories:
+        path = base / name
+        h.update(name.encode("utf-8"))
+        if not path.exists():
+            h.update(b"\0missing")
+            continue
+        st = path.stat()
+        h.update(str(st.st_size).encode("ascii"))
+        h.update(b":")
+        h.update(str(st.st_mtime_ns).encode("ascii"))
+        h.update(b"\n")
+    return h.hexdigest()
+
+
+def write_if_changed(path: Path, content: str) -> bool:
+    if path.exists() and path.read_text(encoding="utf-8", errors="replace") == content:
+        return False
+    path.write_text(content, encoding="utf-8")
+    return True
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--list", action="store_true", help="print existing theories")
+    parser.add_argument("--missing", action="store_true", help="print missing theories")
+    parser.add_argument("--signature", action="store_true", help="print input signature")
+    parser.add_argument(
+        "--write-list",
+        metavar="PATH",
+        help="write existing theories to PATH, preserving mtime if unchanged",
+    )
+    parser.add_argument(
+        "--extra",
+        action="append",
+        default=[],
+        help="extra file to include in the signature",
+    )
+    args = parser.parse_args()
+
+    base = Path.cwd()
+    theories, missing = discover_theories(base)
+
+    if args.write_list:
+        content = "".join(f"{theory}\n" for theory in theories)
+        write_if_changed(base / args.write_list, content)
+    if args.list:
+        sys.stdout.write("".join(f"{theory}\n" for theory in theories))
+    if args.missing:
+        sys.stdout.write("".join(f"{theory}\n" for theory in missing))
+    if args.signature:
+        extra = ["index_theory_lib.py"] + args.extra
+        print(file_signature(base, theories, extra))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
