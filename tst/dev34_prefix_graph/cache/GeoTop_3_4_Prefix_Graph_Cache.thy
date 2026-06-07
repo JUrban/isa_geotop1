@@ -4394,6 +4394,18 @@ proof -
     using hx\<^sub>1_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>13_punctured_disj by (by100 blast)
   have hx\<^sub>23: "x\<^sub>2 \<noteq> x\<^sub>3"
     using hx\<^sub>2_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>23_punctured_disj by (by100 blast)
+  have hx\<^sub>1_not_e\<^sub>2: "x\<^sub>1 \<notin> e\<^sub>2"
+    using hx\<^sub>1_edge_sphere he\<^sub>12_punctured_disj by (by100 blast)
+  have hx\<^sub>1_not_e\<^sub>3: "x\<^sub>1 \<notin> e\<^sub>3"
+    using hx\<^sub>1_edge_sphere he\<^sub>13_punctured_disj by (by100 blast)
+  have hx\<^sub>2_not_e\<^sub>1: "x\<^sub>2 \<notin> e\<^sub>1"
+    using hx\<^sub>2_edge_sphere he\<^sub>12_punctured_disj by (by100 blast)
+  have hx\<^sub>2_not_e\<^sub>3: "x\<^sub>2 \<notin> e\<^sub>3"
+    using hx\<^sub>2_edge_sphere he\<^sub>23_punctured_disj by (by100 blast)
+  have hx\<^sub>3_not_e\<^sub>1: "x\<^sub>3 \<notin> e\<^sub>1"
+    using hx\<^sub>3_edge_sphere he\<^sub>13_punctured_disj by (by100 blast)
+  have hx\<^sub>3_not_e\<^sub>2: "x\<^sub>3 \<notin> e\<^sub>2"
+    using hx\<^sub>3_edge_sphere he\<^sub>23_punctured_disj by (by100 blast)
   have hx\<^sub>1_punctured_poly: "x\<^sub>1 \<in> geotop_polyhedron L - {w}"
     using hx\<^sub>1_edge_sphere he\<^sub>1_punctured_sub by (by100 blast)
   have hx\<^sub>2_punctured_poly: "x\<^sub>2 \<in> geotop_polyhedron L - {w}"
@@ -4556,6 +4568,14 @@ proof -
     show "w \<noteq> q\<^sub>1"
       using hq\<^sub>1w by (by100 simp)
   qed
+  have hw_A\<^sub>1: "w \<in> A\<^sub>1"
+    using hA_inter by (by100 blast)
+  have hw_A\<^sub>2: "w \<in> A\<^sub>2"
+    using hA_inter by (by100 blast)
+  have hq\<^sub>1_A\<^sub>1: "q\<^sub>1 \<in> A\<^sub>1"
+    using hA_inter by (by100 blast)
+  have hq\<^sub>1_A\<^sub>2: "q\<^sub>1 \<in> A\<^sub>2"
+    using hA_inter by (by100 blast)
   have hA\<^sub>1_geotop_arc: "geotop_arc_endpoints A\<^sub>1 {w, q\<^sub>1}"
   proof (rule geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix
       [OF hA\<^sub>1_arc hA\<^sub>1_ep])
