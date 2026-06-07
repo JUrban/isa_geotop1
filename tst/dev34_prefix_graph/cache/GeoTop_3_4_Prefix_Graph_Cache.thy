@@ -5246,6 +5246,123 @@ proof -
       qed
     qed
   qed
+  have htwo_selected_germs_connected_in_arc_side:
+      "\<exists>S T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> S - {w, q\<^sub>1}
+        \<and> y \<in> T - {w, q\<^sub>1}
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+  proof -
+    obtain S T C x y where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hST: "S \<noteq> T"
+        and hxS: "x \<in> S - {w, q\<^sub>1}"
+        and hyT: "y \<in> T - {w, q\<^sub>1}"
+        and hxC: "x \<in> C - {w}"
+        and hyC: "y \<in> C - {w}"
+      using htwo_selected_punctured_germs_same_arc_side by (elim exE conjE)
+    have hconnC: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+    proof -
+      have hcases: "C = A\<^sub>1 \<or> C = A\<^sub>2"
+        using hC by (by100 simp)
+      show ?thesis
+        using hcases hA\<^sub>1_minus_w_connected hA\<^sub>2_minus_w_connected
+        by (by100 blast)
+    qed
+    have hbody:
+        "C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> S - {w, q\<^sub>1}
+        \<and> y \<in> T - {w, q\<^sub>1}
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+    proof (intro conjI)
+      show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+      show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+      show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+      show "S \<noteq> T" by (rule hST)
+      show "x \<in> S - {w, q\<^sub>1}" by (rule hxS)
+      show "y \<in> T - {w, q\<^sub>1}" by (rule hyT)
+      show "x \<in> C - {w}" by (rule hxC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        by (rule hconnC)
+    qed
+    show ?thesis
+    proof (rule exI[where x=S])
+      show "\<exists>T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> x \<in> S - {w, q\<^sub>1}
+        \<and> y \<in> T - {w, q\<^sub>1}
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (rule exI[where x=T])
+        show "\<exists>C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> x \<in> S - {w, q\<^sub>1}
+          \<and> y \<in> T - {w, q\<^sub>1}
+          \<and> x \<in> C - {w}
+          \<and> y \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+        proof (rule exI[where x=C])
+          show "\<exists>x y. C \<in> {A\<^sub>1, A\<^sub>2}
+            \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> x \<in> S - {w, q\<^sub>1}
+            \<and> y \<in> T - {w, q\<^sub>1}
+            \<and> x \<in> C - {w}
+            \<and> y \<in> C - {w}
+            \<and> top1_connected_on (C - {w})
+              (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          proof (rule exI[where x=x])
+            show "\<exists>y. C \<in> {A\<^sub>1, A\<^sub>2}
+              \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+              \<and> S \<noteq> T
+              \<and> x \<in> S - {w, q\<^sub>1}
+              \<and> y \<in> T - {w, q\<^sub>1}
+              \<and> x \<in> C - {w}
+              \<and> y \<in> C - {w}
+              \<and> top1_connected_on (C - {w})
+                (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+            proof (rule exI[where x=y])
+              show "C \<in> {A\<^sub>1, A\<^sub>2}
+                \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+                \<and> S \<noteq> T
+                \<and> x \<in> S - {w, q\<^sub>1}
+                \<and> y \<in> T - {w, q\<^sub>1}
+                \<and> x \<in> C - {w}
+                \<and> y \<in> C - {w}
+                \<and> top1_connected_on (C - {w})
+                  (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+                by (rule hbody)
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
