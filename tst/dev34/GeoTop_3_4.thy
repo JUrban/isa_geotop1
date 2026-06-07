@@ -130,6 +130,7 @@ proof -
         \<and> snd s = closed_segment w q
         \<and> {q} \<in> L
         \<and> 1 < p
+        \<and> 2 < p
         \<and> fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q
         \<and> (geotop_oriented_edge_successor L ^^ p) s = s
         \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow>
@@ -189,6 +190,9 @@ proof -
       by (by100 blast)
     have hp_pos: "0 < p"
       using hp_gt1 by (by100 linarith)
+    have hp_gt2: "2 < p"
+      by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
+          [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
     have hL_cycle:
         "L =
           (((\<lambda>v. {v}) `
@@ -199,7 +203,7 @@ proof -
       by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
           [OF hL_linear hL_finite hconn hdegree_two hs hp_pos hp_closed])
     show ?thesis
-      using hwL hs hfst hq_ne hsnd hqL hp_gt1 hfirst_q hp_closed hp_min
+      using hwL hs hfst hq_ne hsnd hqL hp_gt1 hp_gt2 hfirst_q hp_closed hp_min
         hinj hcard hclosing_L hclosing_edge hL_cycle
       by (by100 blast)
   qed
@@ -210,6 +214,7 @@ proof -
     and hsnd: "snd s = closed_segment w q"
     and hqL: "{q} \<in> L"
     and hp_gt1: "1 < p"
+    and hp_gt2: "2 < p"
     and hfirst_q: "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
     and hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
     and hp_min:
