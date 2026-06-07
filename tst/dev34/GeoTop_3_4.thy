@@ -2,6 +2,37 @@ theory GeoTop_3_4
   imports "GeoTop34CoreDirty.GeoTop_3_4_Core"
 begin
 
+lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hs:
+    "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_gt1: "1 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+  assumes hcard:
+    "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+  assumes hL_cycle:
+    "L =
+      (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Moise Figure 4.10, boundary-realization half.  Given a finite cyclic
+    successor listing of the graph, subdivide the three boundary edges of a
+    2-simplex into one cyclic 1-complex with the same ordered vertices and
+    edges, then define the simplicial isomorphism by the corresponding cyclic
+    vertex order. **)
+  sorry
+
 lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -105,18 +136,44 @@ proof -
         hinj hcard hclosing_L hclosing_edge hL_cycle
       by (by100 blast)
   qed
+  obtain w s q p where hwL: "{w} \<in> L"
+    and hs: "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    and hfst: "fst s = w"
+    and hq_ne: "q \<noteq> w"
+    and hsnd: "snd s = closed_segment w q"
+    and hqL: "{q} \<in> L"
+    and hp_gt1: "1 < p"
+    and hfirst_q: "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
+    and hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+    and hp_min:
+      "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+        (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+    and hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+    and hcard:
+      "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+    and hclosing_L:
+      "closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
+    and hclosing_edge:
+      "geotop_is_edge
+        (closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
+    and hL_cycle:
+      "L =
+        (((\<lambda>v. {v}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+        \<union> ((\<lambda>j. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ j) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+    using hcycle_orbit_package by (by100 blast)
   have hordered_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
         \<and> geotop_is_subdivision F
           (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
         \<and> geotop_isomorphism L F \<psi>"
-    (**
-      Remaining Fig. 4.10 ordered-cycle realization: use the polygonal carrier
-      to enumerate the finite degree-two graph as one cyclic edge chain, realize
-      that cyclic order on the frontier of a 2-simplex, and map vertices and
-      edges in order. **)
-    sorry
+    by (rule geotop_successor_cycle_realizes_boundary_subdivision_model_dev34
+        [OF hL_linear hL_finite hs hp_gt1 hp_closed hinj hcard hL_cycle])
   show ?thesis
     by (rule hordered_cycle_model)
 qed
