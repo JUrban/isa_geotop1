@@ -229,6 +229,98 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_cycle_complement_subcomplex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "geotop_is_complex
+      (L - (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})))"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?Kc = "((\<lambda>v. {v}) ` (?v ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  let ?R = "L - ?Kc"
+  have hcomplexL: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hL_simplex: "\<forall>\<sigma>\<in>L. geotop_is_simplex \<sigma>"
+    by (rule geotop_is_complex_simplex[OF hcomplexL])
+  have hR_fin: "finite ?R"
+    using hfin by (by100 simp)
+  have hsimplex: "\<forall>\<sigma>\<in>?R. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume hsigmaR: "\<sigma> \<in> ?R"
+    have hsigmaL: "\<sigma> \<in> L"
+      using hsigmaR by (by100 simp)
+    show "geotop_is_simplex \<sigma>"
+      using hL_simplex hsigmaL by (by100 blast)
+  qed
+  have hfaces: "\<forall>\<sigma>\<in>?R. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?R"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume hsigmaR: "\<sigma> \<in> ?R"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have hsigmaL: "\<sigma> \<in> L"
+      using hsigmaR by (by100 simp)
+    have hsigma_out: "\<sigma> \<notin> ?Kc"
+      using hsigmaR by (by100 simp)
+    have htauL: "\<tau> \<in> L"
+      using geotop_is_complex_face_closed[OF hcomplexL] hsigmaL hface by (by100 blast)
+    have htau_out: "\<tau> \<notin> ?Kc"
+      by (rule geotop_degree_two_oriented_edge_successor_period_cycle_complement_face_closed_prefix
+          [OF hL hdegree hs hp_pos hp_closed hsigmaL hsigma_out hface])
+    show "\<tau> \<in> ?R"
+      using htauL htau_out by (by100 simp)
+  qed
+  have hinter:
+      "\<forall>\<sigma>\<in>?R. \<forall>\<tau>\<in>?R. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume hsigmaR: "\<sigma> \<in> ?R"
+    assume htauR: "\<tau> \<in> ?R"
+    assume hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have hsigmaL: "\<sigma> \<in> L"
+      using hsigmaR by (by100 simp)
+    have htauL: "\<tau> \<in> L"
+      using htauR by (by100 simp)
+    have hL_inter: "\<forall>\<sigma>\<in>L. \<forall>\<tau>\<in>L. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule geotop_is_complex_intersection[OF hcomplexL])
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+        \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hL_inter hsigmaL htauL hne by (by100 blast)
+  qed
+  have hlocfin: "\<forall>\<sigma>\<in>?R. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+      \<and> finite {\<tau>\<in>?R. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume hsigmaR: "\<sigma> \<in> ?R"
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>?R. \<tau> \<inter> U \<noteq> {}}"
+    proof (rule exI[where x = "UNIV"])
+      show "open UNIV \<and> \<sigma> \<subseteq> UNIV
+          \<and> finite {\<tau> \<in> ?R. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hR_fin by (by100 simp)
+    qed
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using hsimplex hfaces hinter hlocfin by (by100 blast)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
