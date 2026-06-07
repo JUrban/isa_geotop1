@@ -9997,6 +9997,18 @@ proof -
     hence "S \<in> {P, R}" using hAJ by (by100 simp)
     thus False using hS_ne_PR by (by100 blast)
   qed
+  have hQ_frontier_witness:
+      "\<exists>U. U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
+        [OF hJ hQ hQ_ne_PR hA hAJ])
+  have hS_frontier_witness:
+      "\<exists>U. U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
+        [OF hJ hS hS_ne_PR hA hAJ])
   have htheta_contradiction_book:
     "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
             U\<^sub>S \<in> geotop_euclidean_topology \<and>
