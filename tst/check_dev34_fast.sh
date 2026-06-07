@@ -52,9 +52,11 @@ Fast modes:
   focus-full NAME [PAT]
                full-index scan PAT, then split-hot the named target through file end
   focus-warm NAME
-               cache the completed prefix before a named target
+               cache parent layers and the completed prefix before a named target
   focus-warm-all
-               cache completed prefixes before all named remaining targets
+               cache parent layers and completed prefixes before all named remaining targets
+  focus-parents NAME
+               cache only reusable parent layers for a named target
   focus-outline NAME [PAT]
                focus with skip_proofs=true for scaffold iteration
   graph-focus [PAT]
@@ -538,11 +540,7 @@ EOF2
 
   parent_target=$(parent_target_for_file "$file")
   if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
-    if cache_is_fresh "$parent_target"; then
-      cache_status_line "$parent_target"
-    else
-      cache_build_target "$parent_target"
-    fi
+    cache_warm_parent_target "$parent_target"
   fi
 
   split_key=$(printf 'split-prefix\n%s\n%s\nforce_proofs=%s\n%s\n' \
@@ -757,6 +755,17 @@ focus_one() {
   esac
 }
 
+focus_parents_one() {
+  name=$1
+  focus_target_parts "$name" || return $?
+  parent_target=$(parent_target_for_file "$focus_file")
+  if [ "$parent_target" = none ]; then
+    printf 'focus-parents: %s has no reusable dev34 parent layer\n' "$name"
+    return 0
+  fi
+  cache_warm_parent_target "$parent_target"
+}
+
 cache_status_line() {
   target=$1
   if [ "$target" = none ]; then
@@ -827,6 +836,23 @@ cache_build_through() {
   return "$status"
 }
 
+cache_warm_parent_target() {
+  target=$1
+  if [ "$target" = none ]; then
+    return 0
+  fi
+  if cache_is_fresh "$target"; then
+    cache_status_line "$target"
+    return 0
+  fi
+  if [ "${DEV34_FAST_DEEP_AUTOWARM:-1}" != 0 ]; then
+    printf 'cache warm-through: parent chain to %s\n' "$target"
+    cache_build_through "$target"
+  else
+    cache_build_target "$target"
+  fi
+}
+
 cache_build_parents() {
   files=$1
   if [ -z "$files" ]; then
@@ -843,7 +869,7 @@ cache_build_parents() {
       *" $parent "*) continue ;;
     esac
     seen="$seen $parent"
-    if cache_build_target "$parent"; then
+    if cache_warm_parent_target "$parent"; then
       :
     else
       status=$?
@@ -954,11 +980,7 @@ proc_one() {
   parent_target=$(parent_target_for_file "$file")
 
   if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
-    if cache_is_fresh "$parent_target"; then
-      cache_status_line "$parent_target"
-    else
-      cache_build_target "$parent_target"
-    fi
+    cache_warm_parent_target "$parent_target"
   fi
 
   if proc_cache_is_fresh "$file" "$parent_target" "$logic"; then
@@ -1272,6 +1294,14 @@ EOF2
       exit 2
     fi
     focus_one warm "$1"
+    ;;
+  focus-parents)
+    shift
+    if [ "$#" -lt 1 ]; then
+      usage
+      exit 2
+    fi
+    focus_parents_one "$1"
     ;;
   focus-warm-all)
     shift
