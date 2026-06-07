@@ -3713,6 +3713,86 @@ next
     using hcases False by (by100 simp)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_incident_edge_in_edge_orbit_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hk_lt: "k < p"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hinc: "fst ((geotop_oriented_edge_successor L ^^ k) s) \<in> e"
+  shows "e \<in> (\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}"
+proof -
+  let ?edge_at = "\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))"
+  have hcases: "e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^
+          (if k = 0 then p - 1 else k - 1)) s))
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+      \<or> e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+        [OF hL hdegree hs hp_pos hp_closed hk_lt heL hedge hinc])
+  show ?thesis
+  proof (cases "e = closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^
+          (if k = 0 then p - 1 else k - 1)) s))
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))")
+    case True
+    let ?j = "if k = 0 then p - 1 else k - 1"
+    have hj_lt: "?j < p"
+    proof (cases "k = 0")
+      case True
+      show ?thesis
+        using True hp_pos by (by100 simp)
+    next
+      case False
+      show ?thesis
+        using False hk_lt by (by100 simp)
+    qed
+    have hnext: "fst ((geotop_oriented_edge_successor L ^^ Suc ?j) s) =
+        fst ((geotop_oriented_edge_successor L ^^ k) s)"
+    proof (cases "k = 0")
+      case True
+      have hSuc: "Suc (p - 1) = p"
+        using hp_pos by (by100 simp)
+      show ?thesis
+        using True hSuc hp_closed by (by100 simp)
+    next
+      case False
+      have hk_pos: "0 < k"
+        using False by (by100 simp)
+      have hSuc: "Suc (k - 1) = k"
+        using hk_pos by (by100 simp)
+      show ?thesis
+        using False hSuc by (by100 simp)
+    qed
+    have heq: "e = ?edge_at ?j"
+      using True hnext by (by100 simp)
+    have hj_mem: "?j \<in> {0..<p}"
+      using hj_lt by (by100 simp)
+    show ?thesis
+      using heq hj_mem by (by100 blast)
+  next
+    case False
+    have heq: "e = ?edge_at k"
+      using hcases False by (by100 blast)
+    have hk_mem: "k \<in> {0..<p}"
+      using hk_lt by (by100 simp)
+    show ?thesis
+      using heq hk_mem by (by100 blast)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
