@@ -5590,6 +5590,24 @@ proof -
     using hq_poly h\<gamma>w_img by (by100 simp)
   have hfirst_edge_path_image: "closed_segment w q \<subseteq> path_image \<gamma>w"
     using he_seg he_subset_poly h\<gamma>w_img by (by100 simp)
+  have h\<gamma>w_finish_ne_w: "pathfinish \<gamma>w \<noteq> w"
+  proof -
+    have "pathfinish \<gamma>w \<noteq> pathstart \<gamma>w"
+      by (rule arc_distinct_ends[OF h\<gamma>w_arc])
+    thus ?thesis
+      using h\<gamma>w_start by (by100 simp)
+  qed
+  have h\<gamma>w_finish_path_image: "pathfinish \<gamma>w \<in> path_image \<gamma>w"
+    unfolding path_image_def pathfinish_def by (by100 simp)
+  have h\<gamma>w_endpoints:
+      "geotop_arc_endpoints (geotop_polyhedron L) {w, pathfinish \<gamma>w}"
+  proof -
+    have "geotop_arc_endpoints (path_image \<gamma>w)
+        {pathstart \<gamma>w, pathfinish \<gamma>w}"
+      by (rule geotop_HOL_arc_imp_geotop_arc_endpoints_prefix[OF h\<gamma>w_arc])
+    thus ?thesis
+      using h\<gamma>w_start h\<gamma>w_img by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
