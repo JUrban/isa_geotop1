@@ -4206,6 +4206,36 @@ proof -
     using hK_complex hK_sub by (by100 blast)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_nonorbit_edge_avoids_vertex_orbit_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hnot: "e \<notin> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+  shows "e \<inter> ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}) = {}"
+proof (rule ccontr)
+  let ?V = "(\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}"
+  let ?E = "(\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}"
+  assume hne: "e \<inter> ?V \<noteq> {}"
+  obtain v where hv_e: "v \<in> e" and hvV: "v \<in> ?V"
+    using hne by (by100 blast)
+  have "e \<in> ?E"
+    by (rule geotop_degree_two_oriented_edge_successor_period_vertex_orbit_incident_edge_in_edge_orbit_prefix
+        [OF hL hdegree hs hp_pos hp_closed hvV heL hedge hv_e])
+  show False
+    using hnot \<open>e \<in> ?E\<close> by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
