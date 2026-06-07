@@ -27,7 +27,7 @@ Fast modes:
   plan [FILES]  show hot-loop parent heaps for changed/explicit files
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
-  hot [FILES]  alias for proc; skips fresh target caches, auto-warms parents
+  hot [FILES]  alias for proc; skips fresh target/process caches, auto-warms parents
   loop [--hot] PAT [FILES]
                cheap proof loop: full-index grep PAT, holes, dirty plan
                with --hot, also run hot [FILES]
@@ -324,10 +324,58 @@ cache_stamp() {
   printf '%s/%s.sha256\n' "$cache_dir" "$1"
 }
 
+proc_stamp() {
+  key=$(printf '%s' "$1" | sha256sum | awk '{print $1}')
+  printf '%s/proc-%s.sha256\n' "$cache_dir" "$key"
+}
+
 cache_is_fresh() {
   target=$1
   stamp=$(cache_stamp "$target")
   [ -s "$stamp" ] && [ "$(cat "$stamp")" = "$(cache_digest "$target")" ]
+}
+
+proc_digest() {
+  file=$1
+  parent_target=$2
+  logic=$3
+  layer_root=$(dirname "$file")/ROOT
+  {
+    printf 'mode=process_theories\n'
+    printf 'file=%s\n' "$file"
+    printf 'logic=%s\n' "$logic"
+    printf 'force_proofs=%s\n' "${FORCE_PROOFS:-0}"
+    sha256sum "$file"
+    if [ -f "$layer_root" ]; then
+      sha256sum "$layer_root"
+    fi
+    printf 'parent_target=%s\n' "$parent_target"
+    if [ "$parent_target" != none ]; then
+      printf 'parent_digest=%s\n' "$(cache_digest "$parent_target")"
+    fi
+  } | sha256sum | awk '{print $1}'
+}
+
+proc_cache_is_fresh() {
+  file=$1
+  parent_target=$2
+  logic=$3
+  [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] || return 1
+  [ "$parent_target" != none ] || return 1
+  cache_is_fresh "$parent_target" || return 1
+  stamp=$(proc_stamp "$file")
+  [ -s "$stamp" ] && [ "$(cat "$stamp")" = "$(proc_digest "$file" "$parent_target" "$logic")" ]
+}
+
+proc_cache_store() {
+  file=$1
+  parent_target=$2
+  logic=$3
+  [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] || return 0
+  [ "$parent_target" != none ] || return 0
+  cache_is_fresh "$parent_target" || return 0
+  mkdir -p "$cache_dir"
+  proc_digest "$file" "$parent_target" "$logic" >"$(proc_stamp "$file")"
 }
 
 cache_status_line() {
@@ -466,11 +514,17 @@ proc_one() {
     fi
   fi
 
+  if proc_cache_is_fresh "$file" "$parent_target" "$logic"; then
+    printf 'process_theories: skipped %s (fresh process cache)\n' "$file"
+    return 0
+  fi
+
   printf 'process_theories: %s with parent %s\n' "$file" "$logic"
   timeout "$limit" "$isabelle" process_theories \
     "${isabelle_options[@]}" \
     "${proof_options[@]}" \
     "${dirs[@]}" -l "$logic" -o quick_and_dirty -f "$file"
+  proc_cache_store "$file" "$parent_target" "$logic"
 }
 
 plan_one() {
