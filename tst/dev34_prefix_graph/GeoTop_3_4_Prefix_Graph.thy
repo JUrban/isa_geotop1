@@ -1537,8 +1537,12 @@ proof -
       show "\<forall>k\<in>{0..<j}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
         using hK\<^sub>1_edge_orbit by (by100 blast)
     qed
+    have hK\<^sub>1_eq: "K\<^sub>1 =
+        ((\<lambda>x. {x}) ` (?v ` {0..j}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      unfolding K\<^sub>1_def by (by100 simp)
     show ?thesis
-      unfolding K\<^sub>1_def using hpath by (by100 simp)
+      unfolding hK\<^sub>1_eq by (rule hpath)
   qed
   have hK\<^sub>2_vertices_incident_edge:
       "\<forall>w. {w} \<in> K\<^sub>2 \<longrightarrow>
@@ -1560,9 +1564,13 @@ proof -
       show "\<forall>k\<in>{j..<p}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
         using hK\<^sub>2_edge_orbit by (by100 blast)
     qed
+    have hK\<^sub>2_eq: "K\<^sub>2 =
+        ((\<lambda>x. {x}) ` (?v ` {j..p}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      unfolding K\<^sub>2_def using hvertices_eq by (by100 simp)
     show ?thesis
-      unfolding K\<^sub>2_def using hpath hvertices_eq by (by100 simp)
-  qed
+      unfolding hK\<^sub>2_eq by (rule hpath)
+    qed
   have hK\<^sub>1_degree12:
       "\<forall>w. {w} \<in> K\<^sub>1 \<longrightarrow>
         card {e\<in>K\<^sub>1. geotop_is_edge e \<and> w \<in> e} = 1
@@ -3187,7 +3195,59 @@ proof -
       with indices \<open>{j..<p}\<close>.  The first is a finite endpoint linear graph
       from \<open>P\<close> to \<open>Q\<close>; the second is the endpoint linear graph from \<open>Q\<close>
       back to \<open>P\<close> through the closing edge. **)
-    sorry
+    proof -
+      have hcycle_cut_book_facts:
+          "((\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+              \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
+          \<and> (\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+              \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
+          \<and> (\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+              \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
+          \<and> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+              \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)))
+          \<and> geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+        (**
+          Book cycle-order fact: the oriented successor orbit traverses the
+          degree-two cycle without backtracking, and the two cut subpath
+          carriers meet only at the cut vertices \<open>P,Q\<close>. **)
+        sorry
+      have horbit_no_nonadjacent_reversed:
+          "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+              \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
+          \<and> (\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+              \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
+          \<and> (\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+              \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
+          \<and> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+              \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))"
+        using hcycle_cut_book_facts by (by100 blast)
+      have hK\<^sub>1P_no_nonadjacent_reversed:
+          "\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+            \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+        using horbit_no_nonadjacent_reversed by (by100 blast)
+      have hK\<^sub>1Q_no_nonadjacent_reversed:
+          "\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+            \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+        using horbit_no_nonadjacent_reversed by (by100 blast)
+      have hK\<^sub>2P_no_nonadjacent_reversed:
+          "\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+            \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+        using horbit_no_nonadjacent_reversed by (by100 blast)
+      have hK\<^sub>2Q_no_nonadjacent_reversed:
+          "\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+            \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+        using horbit_no_nonadjacent_reversed by (by100 blast)
+    have hpoly_inter_subset:
+        "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+      using hcycle_cut_book_facts by (by100 blast)
+    show ?thesis
+      by (rule hcycle_cut_if_no_nonadjacent_reversed_and_poly_inter_subset
+          [OF hK\<^sub>1P_no_nonadjacent_reversed
+              hK\<^sub>1Q_no_nonadjacent_reversed
+              hK\<^sub>2P_no_nonadjacent_reversed
+              hK\<^sub>2Q_no_nonadjacent_reversed
+              hpoly_inter_subset])
+  qed
   show ?thesis
     by (rule hcycle_cut)
 qed
@@ -3280,7 +3340,7 @@ proof -
     using geotop_simplex_vertices_pair_edge_face_prefix[OF h\<sigma>V hv hw hvw]
     by (by100 blast)
   have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
-    using hK unfolding geotop_is_complex_def by (by100 blast)
+    by (rule geotop_is_complex_face_closed[OF hK])
   have heK: "e \<in> K"
     using hface_closed h\<sigma>K hface by (by100 blast)
   show ?thesis
@@ -3383,7 +3443,7 @@ proof -
     using geotop_simplex_vertices_pair_edge_face_between_prefix[OF h\<sigma>V hv hw hvw]
     by (by100 blast)
   have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
-    using hK unfolding geotop_is_complex_def by (by100 blast)
+    by (rule geotop_is_complex_face_closed[OF hK])
   have heK: "e \<in> K"
     using hface_closed h\<sigma>K hface by (by100 blast)
   show ?thesis
@@ -3428,8 +3488,13 @@ lemma geotop_complex_singleton_point_is_simplex_vertex_prefix:
 proof -
   have hnonempty: "{v} \<inter> \<tau> \<noteq> {}"
     using hv\<tau> by (by100 simp)
+  have hface_pair:
+      "geotop_is_face ({v} \<inter> \<tau>) {v}
+      \<and> geotop_is_face ({v} \<inter> \<tau>) \<tau>"
+    using geotop_is_complex_intersection[OF hK] hvK h\<tau>K hnonempty
+    by (by100 blast)
   have hface_int: "geotop_is_face ({v} \<inter> \<tau>) \<tau>"
-    using hK hvK h\<tau>K hnonempty unfolding geotop_is_complex_def by (by100 blast)
+    using hface_pair by (by100 simp)
   have hface: "geotop_is_face {v} \<tau>"
     using hface_int hv\<tau> by (by100 simp)
   obtain V W where h\<tau>V: "geotop_simplex_vertices \<tau> V"
