@@ -1625,6 +1625,25 @@ proof -
     using hE hne he\<^sub>1 he\<^sub>2 by (by100 blast)
 qed
 
+lemma geotop_card_two_member_cases_prefix:
+  fixes A :: "'a set"
+  assumes hcard: "card A = 2"
+  assumes ha: "a \<in> A"
+  assumes hb: "b \<in> A"
+  assumes hab: "a \<noteq> b"
+  assumes hx: "x \<in> A"
+  shows "x = a \<or> x = b"
+proof -
+  have hex: "\<exists>u v. A = {u, v} \<and> u \<noteq> v"
+    using hcard card_2_iff[of A] by (by100 simp)
+  obtain u v where hA: "A = {u, v}" and huv: "u \<noteq> v"
+    using hex by (by100 blast)
+  have hA_ab: "A = {a, b}"
+    using hA ha hb hab by (by100 blast)
+  show ?thesis
+    using hA_ab hx by (by100 blast)
+qed
+
 lemma geotop_degree_two_vertex_unique_other_incident_edge_prefix:
   fixes L :: "(real^2) set set" and w :: "real^2"
   assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
