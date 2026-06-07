@@ -6543,17 +6543,34 @@ proof -
     using hconnected_distinct_incident_germ_witness he\<^sub>1E he\<^sub>2E he\<^sub>3E
       hincident_selected_punctured_disj
     by (by100 blast)
-  have hconnected_disjoint_germs_local_star_impossible: False
+  have harc_side_disjoint_sphere_germ_witness:
+      "\<exists>S T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> x \<noteq> y
+        \<and> x \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+    using htwo_selected_sphere_germs_connected_in_arc_side he\<^sub>1E he\<^sub>2E he\<^sub>3E
+      hincident_selected_punctured_disj
+    by (by100 blast)
+  have harc_side_disjoint_germs_local_star_impossible: False
     (**
-      Remaining finite local-star calculation: a connected subset of the
-      punctured carrier meeting two disjoint selected incident germs would,
-      after restricting to the small star ball and using the sector cover,
-      cross from one punctured edge germ to another without passing through
-      \<open>w\<close>.  This contradicts the linear-complex local intersection
+      Remaining finite local-star calculation, now localized to one of the
+      two punctured arc sides \<open>A\<^sub>1 - {w}\<close> or \<open>A\<^sub>2 - {w}\<close>: the side is
+      connected and contains sphere points in two disjoint selected incident
+      edge germs.  Restricting to the small star ball and using the sector
+      cover forces a crossing between distinct local sectors without passing
+      through \<open>w\<close>, contradicting the linear-complex local intersection
       calculation around \<open>w\<close>. **)
     sorry
   have hsame_arc_side_two_germs_impossible: False
-    using hconnected_disjoint_germs_local_star_impossible by (by100 blast)
+    using harc_side_disjoint_germs_local_star_impossible by (by100 blast)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
