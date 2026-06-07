@@ -2409,6 +2409,40 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "finite {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> (\<forall>s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}.
+        \<exists>!t. t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+          \<and> geotop_oriented_edge_successor_state L s t)"
+proof -
+  have hstate_fin: "finite {(v, d). {v} \<in> L \<and> d \<in> L
+      \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_finite_linear_graph_oriented_edge_states_finite_graph_prefix
+        [OF hL hfin])
+  have htotal: "\<forall>s \<in> {(v, d). {v} \<in> L \<and> d \<in> L
+      \<and> geotop_is_edge d \<and> v \<in> d}.
+      \<exists>!t. t \<in> {(v, d). {v} \<in> L \<and> d \<in> L
+        \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L s t"
+  proof
+    fix s
+    assume hs: "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L
+        \<and> geotop_is_edge d \<and> v \<in> d}"
+    show "\<exists>!t. t \<in> {(v, d). {v} \<in> L \<and> d \<in> L
+        \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L s t"
+      by (rule geotop_degree_two_oriented_edge_successor_relation_total_unique_prefix
+          [OF hL hdegree hs])
+  qed
+  show ?thesis
+    using hstate_fin htotal by (by100 blast)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
