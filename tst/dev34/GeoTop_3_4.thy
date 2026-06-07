@@ -20,7 +20,25 @@ lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model
     successor orbit once around the finite connected degree-two linear graph,
     build the corresponding subdivision of the frontier of a 2-simplex, and
     map vertices/edges in cyclic order to obtain a simplicial isomorphism. **)
-  sorry
+proof -
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
+        [OF hL_linear hL_finite hconn hdegree_two])
+  have hordered_cycle_model:
+      "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+        geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_subdivision F
+          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+        \<and> geotop_isomorphism L F \<psi>"
+    (**
+      Remaining Fig. 4.10 ordered-cycle realization: use the polygonal carrier
+      to enumerate the finite degree-two graph as one cyclic edge chain, realize
+      that cyclic order on the frontier of a 2-simplex, and map vertices and
+      edges in order. **)
+    sorry
+  show ?thesis
+    by (rule hordered_cycle_model)
+qed
 
 lemma geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34:
   fixes L :: "(real^2) set set"
