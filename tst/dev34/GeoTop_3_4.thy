@@ -5903,7 +5903,67 @@ lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev3
     Radius-explicit form of Moise Lemma 3.  Choose the semicircle in the
     unique incident 2-simplex with center \<open>p\<close> and radius strictly smaller
     than the local chart radius \<open>s\<close>; that semicircle is the separating arc. **)
-  sorry
+proof -
+  define r where "r = s / 2"
+  have hr_pos: "0 < r"
+    using hs unfolding r_def by (by100 simp)
+  have hrs: "r < s"
+    using hs unfolding r_def by (by100 simp)
+  have hlocal_eq_r:
+    "ball p r \<inter> geotop_polyhedron K = ball p r \<inter> \<sigma>"
+  proof
+    show "ball p r \<inter> geotop_polyhedron K \<subseteq> ball p r \<inter> \<sigma>"
+    proof
+      fix x
+      assume hx: "x \<in> ball p r \<inter> geotop_polyhedron K"
+      have hx_ball_s: "x \<in> ball p s"
+        using hx hrs by (by100 simp)
+      have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
+        using hx hx_ball_s by (by100 blast)
+      have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
+        using hlocal_poly_eq_\<sigma> hx_ball_poly_s by (by100 blast)
+      show "x \<in> ball p r \<inter> \<sigma>"
+        using hx hx_ball_sigma_s by (by100 blast)
+    qed
+    show "ball p r \<inter> \<sigma> \<subseteq> ball p r \<inter> geotop_polyhedron K"
+    proof
+      fix x
+      assume hx: "x \<in> ball p r \<inter> \<sigma>"
+      have hx_ball_s: "x \<in> ball p s"
+        using hx hrs by (by100 simp)
+      have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
+        using hx hx_ball_s by (by100 blast)
+      have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
+        using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
+      show "x \<in> ball p r \<inter> geotop_polyhedron K"
+        using hx hx_ball_poly_s by (by100 blast)
+    qed
+  qed
+  have hballU_r: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron K \<inter> ball p r"
+    have hx_ball_s: "x \<in> ball p s"
+      using hx hrs by (by100 simp)
+    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
+      using hx hx_ball_s by (by100 blast)
+    show "x \<in> U"
+      using hballU_s hx_poly_ball_s by (by100 blast)
+  qed
+  have hsemicircle_book:
+    "\<exists>A. A \<subseteq> sphere p r \<inter> \<sigma>
+      \<and> geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+    (**
+      Remaining Moise Lemma 3 geometry: in the half-neighborhood supplied by
+      the single incident 2-simplex, the radius-\<open>r\<close> semicircle centered at
+      \<open>p\<close> is an arc with endpoints on the edge and separates the domain. **)
+    sorry
+  show ?thesis
+    using hr_pos hrs hsemicircle_book by (by100 blast)
+qed
 
 lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
