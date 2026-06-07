@@ -6496,6 +6496,20 @@ proof -
         by (rule hpack[OF _ _ hx\<^sub>23 hsame], (by100 simp)+)
     qed
   qed
+  have hcanonical_connected_pair_cases:
+      "(\<exists>N. N \<subseteq> geotop_polyhedron L - {w}
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> x\<^sub>1 \<in> N \<and> x\<^sub>2 \<in> N)
+      \<or> (\<exists>N. N \<subseteq> geotop_polyhedron L - {w}
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> x\<^sub>1 \<in> N \<and> x\<^sub>3 \<in> N)
+      \<or> (\<exists>N. N \<subseteq> geotop_polyhedron L - {w}
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> x\<^sub>2 \<in> N \<and> x\<^sub>3 \<in> N)"
+    using hcanonical_pair_connected_witness by (by100 blast)
   have hsame_arc_side_two_germs_impossible: False
     (**
       Book local-1-manifold contradiction: the two arcs of the simple closed
