@@ -1114,6 +1114,70 @@ proof -
     using h\<rho>_seg h\<rho>_ne h\<rho>_sphere by (by100 blast)
 qed
 
+lemma geotop_radial_projection_fixed_on_sphere_prefix:
+  fixes P q :: "real^2"
+  assumes hr: "r > 0"
+  assumes hq: "q \<in> sphere P r"
+  shows "P + (r / dist P q) *\<^sub>R (q - P) = q"
+proof -
+  have hdist: "dist P q = r"
+    using hq by (by100 simp)
+  show ?thesis
+    using hdist hr by (by100 simp)
+qed
+
+lemma geotop_radial_projection_closure_noncenter_prefix:
+  fixes P z :: "real^2"
+  assumes hz: "z \<in> closure C"
+  assumes hz_ne: "z \<noteq> P"
+  shows "P + (r / dist P z) *\<^sub>R (z - P)
+      \<in> closure ((\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P)) ` C)"
+proof -
+  let ?rho = "\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P)"
+  have h\<rho>_cont_at_z: "continuous (at z) ?rho"
+    apply (intro continuous_intros)
+    using hz_ne
+    by (by100 auto)
+  show ?thesis
+    unfolding closure_approachable
+  proof (intro allI impI)
+    fix e :: real
+    assume he_pos: "e > 0"
+    obtain d where hd_pos: "d > 0"
+      and hd: "\<And>x. dist x z < d \<Longrightarrow> dist (?rho x) (?rho z) < e"
+      using h\<rho>_cont_at_z unfolding continuous_at_eps_delta
+      using he_pos by (by100 blast)
+    obtain x where hxC: "x \<in> C" and hx_dist: "dist x z < d"
+      using hz hd_pos unfolding closure_approachable by (by100 blast)
+    have h\<rho>x: "?rho x \<in> ?rho ` C"
+      using hxC by (by100 blast)
+    have hdist: "dist (?rho x) (?rho z) < e"
+      using hd[OF hx_dist] .
+    show "\<exists>y\<in>?rho ` C. dist y (?rho z) < e"
+      using h\<rho>x hdist by (by100 blast)
+  qed
+qed
+
+lemma geotop_radial_projection_closure_sphere_point_prefix:
+  fixes P q :: "real^2"
+  assumes hr: "r > 0"
+  assumes hq: "q \<in> sphere P r"
+  assumes hq_cl: "q \<in> closure C"
+  shows "q \<in> closure ((\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P)) ` C)"
+proof -
+  let ?rho = "\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P)"
+  have hq_dist: "dist P q = r"
+    using hq by (by100 simp)
+  have hq_ne: "q \<noteq> P"
+    using hq_dist hr by (by100 auto)
+  have h\<rho>q_cl: "?rho q \<in> closure (?rho ` C)"
+    by (rule geotop_radial_projection_closure_noncenter_prefix[OF hq_cl hq_ne])
+  have h\<rho>q: "?rho q = q"
+    by (rule geotop_radial_projection_fixed_on_sphere_prefix[OF hr hq])
+  show ?thesis
+    using h\<rho>q_cl h\<rho>q by (by100 simp)
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_complex_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
