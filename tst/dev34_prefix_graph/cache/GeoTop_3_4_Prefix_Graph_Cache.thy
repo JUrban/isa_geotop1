@@ -1040,6 +1040,80 @@ proof -
   qed
 qed
 
+lemma geotop_radial_projection_image_segment_prefix:
+  fixes P p z :: "real^2"
+  assumes hz: "z \<in> closed_segment P p - {P}"
+  assumes hp: "p \<noteq> P"
+  assumes hr: "r > 0"
+  assumes hr_le: "r \<le> dist P p"
+  shows "P + (r / dist P z) *\<^sub>R (z - P)
+      \<in> (closed_segment P p - {P}) \<inter> sphere P r"
+proof -
+  let ?rho = "P + (r / dist P z) *\<^sub>R (z - P)"
+  have hz_seg: "z \<in> closed_segment P p"
+    using hz by (by100 blast)
+  have hz_ne: "z \<noteq> P"
+    using hz by (by100 blast)
+  obtain t where ht0: "0 \<le> t" and ht1: "t \<le> 1"
+    and hz_t: "z = (1 - t) *\<^sub>R P + t *\<^sub>R p"
+    using hz_seg unfolding closed_segment_def by (by100 blast)
+  have hp_dist_pos: "dist P p > 0"
+    using hp by (by100 simp)
+  have ht_pos: "t > 0"
+  proof -
+    have "t \<noteq> 0"
+    proof
+      assume ht_eq0: "t = 0"
+      have "z = P"
+        using hz_t ht_eq0 by (by100 simp)
+      thus False
+        using hz_ne by (by100 blast)
+    qed
+    thus ?thesis
+      using ht0 by (by100 simp)
+  qed
+  have hz_vec: "z = P + t *\<^sub>R (p - P)"
+    using hz_t by (simp add: algebra_simps)
+  have hz_dist: "dist P z = t * dist P p"
+    using hz_vec ht0 by (simp add: dist_norm norm_minus_commute)
+  have h\<rho>_eq: "?rho = P + (r / dist P p) *\<^sub>R (p - P)"
+  proof -
+    have "?rho = P + (r / (t * dist P p)) *\<^sub>R (t *\<^sub>R (p - P))"
+      using hz_vec hz_dist by (by100 simp)
+    also have "\<dots> = P + (r / dist P p) *\<^sub>R (p - P)"
+      using ht_pos hp_dist_pos by (simp add: algebra_simps)
+    finally show ?thesis .
+  qed
+  have hs0: "0 \<le> r / dist P p"
+    using hr hp_dist_pos by (by100 simp)
+  have hs1: "r / dist P p \<le> 1"
+    using hr_le hp_dist_pos by (by100 simp)
+  have h\<rho>_conv: "?rho = (1 - r / dist P p) *\<^sub>R P + (r / dist P p) *\<^sub>R p"
+    using h\<rho>_eq by (simp add: algebra_simps)
+  have h\<rho>_seg: "?rho \<in> closed_segment P p"
+    unfolding closed_segment_def using hs0 hs1 h\<rho>_conv by (by100 blast)
+  have h\<rho>_ne: "?rho \<noteq> P"
+  proof
+    assume h_eq: "?rho = P"
+    have "(r / dist P p) *\<^sub>R (p - P) = 0"
+      using h_eq h\<rho>_eq by (by100 simp)
+    hence "r / dist P p = 0"
+      using hp by (by100 simp)
+    thus False
+      using hr hp_dist_pos by (by100 simp)
+  qed
+  have h\<rho>_sphere: "?rho \<in> sphere P r"
+  proof -
+    have "dist P ?rho = r"
+      unfolding h\<rho>_eq using hr hp_dist_pos
+      by (simp add: dist_norm norm_minus_commute)
+    thus ?thesis
+      by (by100 simp)
+  qed
+  show ?thesis
+    using h\<rho>_seg h\<rho>_ne h\<rho>_sphere by (by100 blast)
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_complex_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
