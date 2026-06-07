@@ -725,6 +725,31 @@ proof -
   qed
 qed
 
+lemma geotop_nat_cycle_cut_index_sets_prefix:
+  fixes j p :: nat
+  assumes hj_pos: "0 < j"
+  assumes hj_lt: "j < p"
+  shows "{0..<p} = {0..<j} \<union> {j..<p}"
+    and "{0..j} \<subseteq> {0..<p}"
+    and "{0..<j} \<subseteq> {0..<p}"
+    and "{j..<p} \<subseteq> {0..<p}"
+    and "finite {0..j}"
+    and "finite ({j..<p} \<union> {p})"
+proof -
+  show "{0..<p} = {0..<j} \<union> {j..<p}"
+    using hj_pos hj_lt by (by100 auto)
+  show "{0..j} \<subseteq> {0..<p}"
+    using hj_lt by (by100 auto)
+  show "{0..<j} \<subseteq> {0..<p}"
+    using hj_lt by (by100 auto)
+  show "{j..<p} \<subseteq> {0..<p}"
+    by (by100 auto)
+  show "finite {0..j}"
+    by (by100 simp)
+  show "finite ({j..<p} \<union> {p})"
+    by (by100 simp)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -778,6 +803,49 @@ proof -
     using geotop_degree_two_started_cycle_second_vertex_index_prefix
       [OF hL_linear hL_fin hL_conn hdegree hPL hQL hPQ]
     by (elim exE)
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  have hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    using hpkg by (by100 simp)
+  have hfst: "fst s = P"
+    using hpkg by (by100 simp)
+  have hp_gt1: "1 < p"
+    using hpkg by (by100 simp)
+  have hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+    using hpkg by (by100 simp)
+  have hp_min: "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+      (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+    using hpkg by (by100 simp)
+  have hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+    using hpkg by (by100 simp)
+  have hclosingL: "closed_segment (?v (p - 1)) P \<in> L"
+    using hpkg hfst by (by100 simp)
+  have hclosing_edge: "geotop_is_edge (closed_segment (?v (p - 1)) P)"
+    using hpkg hfst by (by100 simp)
+  have hj_pos: "0 < j"
+    using hpkg by (by100 simp)
+  have hj_lt: "j < p"
+    using hpkg by (by100 simp)
+  have hQj: "?v j = Q"
+    using hpkg by (by100 simp)
+  have hL_cycle: "L =
+      (((\<lambda>v. {v}) ` (?v ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p}))"
+    using hpkg by (by100 simp)
+  have hPp: "?v p = P"
+    using hp_closed hfst by (by100 simp)
+  have hidx_partition: "{0..<p} = {0..<j} \<union> {j..<p}"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(1)[OF hj_pos hj_lt])
+  have hpath1_vertices: "{0..j} \<subseteq> {0..<p}"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(2)[OF hj_pos hj_lt])
+  have hpath1_edges: "{0..<j} \<subseteq> {0..<p}"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(3)[OF hj_pos hj_lt])
+  have hpath2_edges: "{j..<p} \<subseteq> {0..<p}"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(4)[OF hj_pos hj_lt])
+  have hpath1_vertices_fin: "finite {0..j}"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(5)[OF hj_pos hj_lt])
+  have hpath2_vertices_fin: "finite ({j..<p} \<union> {p})"
+    by (rule geotop_nat_cycle_cut_index_sets_prefix(6)[OF hj_pos hj_lt])
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
