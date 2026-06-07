@@ -6066,6 +6066,167 @@ proof -
       qed
     qed
   qed
+  have hcanonical_pair_connected_witness:
+      "\<exists>a b N. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> a \<noteq> b
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> a \<in> N
+        \<and> b \<in> N"
+  proof -
+    let ?X = "geotop_polyhedron L - {w}"
+    let ?TX = "subspace_topology UNIV geotop_euclidean_topology ?X"
+    have hcomponent_witness:
+        "\<And>a b. top1_in_same_component_on ?X ?TX a b
+          \<Longrightarrow> \<exists>N. N \<subseteq> ?X
+            \<and> top1_connected_on N
+              (subspace_topology UNIV geotop_euclidean_topology N)
+            \<and> a \<in> N
+            \<and> b \<in> N"
+    proof -
+      fix a b
+      assume hsame: "top1_in_same_component_on ?X ?TX a b"
+      obtain N where hN_sub: "N \<subseteq> ?X"
+        and haN: "a \<in> N"
+        and hbN: "b \<in> N"
+        and hN_conn: "top1_connected_on N
+          (subspace_topology ?X ?TX N)"
+        using hsame unfolding top1_in_same_component_on_def by (elim exE conjE)
+      have hN_subtop:
+          "subspace_topology ?X ?TX N
+            = subspace_topology UNIV geotop_euclidean_topology N"
+        by (rule subspace_topology_trans[OF hN_sub])
+      have hbody:
+          "N \<subseteq> ?X
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> a \<in> N
+          \<and> b \<in> N"
+      proof (intro conjI)
+        show "N \<subseteq> ?X" by (rule hN_sub)
+        show "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+          using hN_conn unfolding hN_subtop .
+        show "a \<in> N" by (rule haN)
+        show "b \<in> N" by (rule hbN)
+      qed
+      show "\<exists>N. N \<subseteq> ?X
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> a \<in> N
+        \<and> b \<in> N"
+      proof (rule exI[where x=N])
+        show "N \<subseteq> ?X
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> a \<in> N
+          \<and> b \<in> N"
+          by (rule hbody)
+      qed
+    qed
+    have hpack:
+        "\<And>a b. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> a \<noteq> b
+          \<Longrightarrow> top1_in_same_component_on ?X ?TX a b
+          \<Longrightarrow> \<exists>a b N. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> a \<noteq> b
+            \<and> N \<subseteq> ?X
+            \<and> top1_connected_on N
+              (subspace_topology UNIV geotop_euclidean_topology N)
+            \<and> a \<in> N
+            \<and> b \<in> N"
+    proof -
+      fix a b
+      assume ha: "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hb: "b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hab: "a \<noteq> b"
+      assume hsame: "top1_in_same_component_on ?X ?TX a b"
+      obtain N where hN_sub: "N \<subseteq> ?X"
+        and hN_conn: "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+        and haN: "a \<in> N"
+        and hbN: "b \<in> N"
+        using hcomponent_witness[OF hsame] by (elim exE conjE)
+      have hbody:
+          "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> a \<noteq> b
+          \<and> N \<subseteq> ?X
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> a \<in> N
+          \<and> b \<in> N"
+      proof (intro conjI)
+        show "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule ha)
+        show "b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hb)
+        show "a \<noteq> b" by (rule hab)
+        show "N \<subseteq> ?X" by (rule hN_sub)
+        show "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+          by (rule hN_conn)
+        show "a \<in> N" by (rule haN)
+        show "b \<in> N" by (rule hbN)
+      qed
+      show "\<exists>a b N. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> a \<noteq> b
+        \<and> N \<subseteq> ?X
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> a \<in> N
+        \<and> b \<in> N"
+      proof (rule exI[where x=a])
+        show "\<exists>b N. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> a \<noteq> b
+          \<and> N \<subseteq> ?X
+          \<and> top1_connected_on N
+            (subspace_topology UNIV geotop_euclidean_topology N)
+          \<and> a \<in> N
+          \<and> b \<in> N"
+        proof (rule exI[where x=b])
+          show "\<exists>N. a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+            \<and> a \<noteq> b
+            \<and> N \<subseteq> ?X
+            \<and> top1_connected_on N
+              (subspace_topology UNIV geotop_euclidean_topology N)
+            \<and> a \<in> N
+            \<and> b \<in> N"
+          proof (rule exI[where x=N])
+            show "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+              \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+              \<and> a \<noteq> b
+              \<and> N \<subseteq> ?X
+              \<and> top1_connected_on N
+                (subspace_topology UNIV geotop_euclidean_topology N)
+              \<and> a \<in> N
+              \<and> b \<in> N"
+              by (rule hbody)
+          qed
+        qed
+      qed
+    qed
+    show ?thesis
+      using htwo_canonical_sphere_points_same_punctured_component
+    proof (elim disjE)
+      assume hsame: "top1_in_same_component_on ?X ?TX x\<^sub>1 x\<^sub>2"
+      show ?thesis
+        by (rule hpack[OF _ _ hx\<^sub>12 hsame], (by100 simp)+)
+    next
+      assume hsame: "top1_in_same_component_on ?X ?TX x\<^sub>1 x\<^sub>3"
+      show ?thesis
+        by (rule hpack[OF _ _ hx\<^sub>13 hsame], (by100 simp)+)
+    next
+      assume hsame: "top1_in_same_component_on ?X ?TX x\<^sub>2 x\<^sub>3"
+      show ?thesis
+        by (rule hpack[OF _ _ hx\<^sub>23 hsame], (by100 simp)+)
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
