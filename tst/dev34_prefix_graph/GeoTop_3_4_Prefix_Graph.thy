@@ -3128,6 +3128,50 @@ proof -
     show ?thesis
       by (rule hK\<^sub>2_before_Q_not_in_K_if_no_reversed[OF hno_rev])
   qed
+  have hcycle_cut_if_no_nonadjacent_reversed_and_poly_inter_subset:
+      "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+          \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
+      \<Longrightarrow> (\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+          \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
+      \<Longrightarrow> (\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+          \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
+      \<Longrightarrow> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+          \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))
+      \<Longrightarrow> geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}
+      \<Longrightarrow> \<exists>C\<^sub>1 C\<^sub>2.
+        geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+        \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+        \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+            geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+  proof -
+    assume hK\<^sub>1P_no:
+        "\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+          \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+    assume hK\<^sub>1Q_no:
+        "\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+          \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+    assume hK\<^sub>2P_no:
+        "\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+          \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+    assume hK\<^sub>2Q_no:
+        "\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+          \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+    assume hpoly_inter: "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
+    have hK\<^sub>1P_absent: "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+      by (rule hK\<^sub>1_closing_not_in_K_if_no_nonadjacent_reversed[OF hK\<^sub>1P_no])
+    have hK\<^sub>1Q_absent: "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+      by (rule hK\<^sub>1_after_Q_not_in_K_if_no_nonadjacent_reversed[OF hK\<^sub>1Q_no])
+    have hK\<^sub>2P_absent: "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+      by (rule hK\<^sub>2_initial_not_in_K_if_no_nonadjacent_reversed[OF hK\<^sub>2P_no])
+    have hK\<^sub>2Q_absent: "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+      by (rule hK\<^sub>2_before_Q_not_in_K_if_no_nonadjacent_reversed[OF hK\<^sub>2Q_no])
+    show ?thesis
+      by (rule hcycle_cut_if_boundary_edges_absent_and_poly_inter_subset
+          [OF hK\<^sub>1P_absent hK\<^sub>1Q_absent hK\<^sub>2P_absent hK\<^sub>2Q_absent hpoly_inter])
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
