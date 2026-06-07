@@ -1609,6 +1609,24 @@ proof -
     show ?thesis
       by (rule that[OF he\<^sub>1E he\<^sub>2E he\<^sub>3E he\<^sub>12 he\<^sub>13 he\<^sub>23])
   qed
+  have he\<^sub>1L: "e\<^sub>1 \<in> L"
+    using he\<^sub>1E unfolding E_def by (by100 blast)
+  have he\<^sub>2L: "e\<^sub>2 \<in> L"
+    using he\<^sub>2E unfolding E_def by (by100 blast)
+  have he\<^sub>3L: "e\<^sub>3 \<in> L"
+    using he\<^sub>3E unfolding E_def by (by100 blast)
+  have he\<^sub>1_edge: "geotop_is_edge e\<^sub>1"
+    using he\<^sub>1E unfolding E_def by (by100 blast)
+  have he\<^sub>2_edge: "geotop_is_edge e\<^sub>2"
+    using he\<^sub>2E unfolding E_def by (by100 blast)
+  have he\<^sub>3_edge: "geotop_is_edge e\<^sub>3"
+    using he\<^sub>3E unfolding E_def by (by100 blast)
+  have hw_e\<^sub>1: "w \<in> e\<^sub>1"
+    using he\<^sub>1E unfolding E_def by (by100 blast)
+  have hw_e\<^sub>2: "w \<in> e\<^sub>2"
+    using he\<^sub>2E unfolding E_def by (by100 blast)
+  have hw_e\<^sub>3: "w \<in> e\<^sub>3"
+    using he\<^sub>3E unfolding E_def by (by100 blast)
   obtain q\<^sub>1 where hq\<^sub>1w: "q\<^sub>1 \<noteq> w"
       and he\<^sub>1_seg: "e\<^sub>1 = closed_segment w q\<^sub>1"
       and hq\<^sub>1L: "{q\<^sub>1} \<in> L"
@@ -1681,6 +1699,20 @@ proof -
     then show False
       using he\<^sub>23 by (by100 blast)
   qed
+  have hq_card3: "card {q\<^sub>1, q\<^sub>2, q\<^sub>3} = 3"
+    using hq\<^sub>12 hq\<^sub>13 hq\<^sub>23 by (by100 simp)
+  have he\<^sub>1_sub_poly: "e\<^sub>1 \<subseteq> geotop_polyhedron L"
+    unfolding geotop_polyhedron_def using he\<^sub>1L by (by100 blast)
+  have he\<^sub>2_sub_poly: "e\<^sub>2 \<subseteq> geotop_polyhedron L"
+    unfolding geotop_polyhedron_def using he\<^sub>2L by (by100 blast)
+  have he\<^sub>3_sub_poly: "e\<^sub>3 \<subseteq> geotop_polyhedron L"
+    unfolding geotop_polyhedron_def using he\<^sub>3L by (by100 blast)
+  have hq\<^sub>1_punctured: "q\<^sub>1 \<in> geotop_polyhedron L - {w}"
+    using hq\<^sub>1L hq\<^sub>1w unfolding geotop_polyhedron_def by (by100 blast)
+  have hq\<^sub>2_punctured: "q\<^sub>2 \<in> geotop_polyhedron L - {w}"
+    using hq\<^sub>2L hq\<^sub>2w unfolding geotop_polyhedron_def by (by100 blast)
+  have hq\<^sub>3_punctured: "q\<^sub>3 \<in> geotop_polyhedron L - {w}"
+    using hq\<^sub>3L hq\<^sub>3w unfolding geotop_polyhedron_def by (by100 blast)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
