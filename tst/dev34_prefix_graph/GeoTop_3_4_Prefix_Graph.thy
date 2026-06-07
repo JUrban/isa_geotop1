@@ -1854,6 +1854,46 @@ proof -
     using he\<^sub>1L he\<^sub>1edge hwe\<^sub>1 hqw he\<^sub>1q hqL by (by100 blast)
 qed
 
+lemma geotop_degree_two_vertex_initial_oriented_edge_state_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  shows "\<exists>s q. s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> fst s = w
+      \<and> q \<noteq> w
+      \<and> snd s = closed_segment w q
+      \<and> {q} \<in> L"
+proof -
+  obtain e q where heL: "e \<in> L"
+      and hedge: "geotop_is_edge e"
+      and hwe: "w \<in> e"
+      and hqw: "q \<noteq> w"
+      and heq: "e = closed_segment w q"
+      and hqL: "{q} \<in> L"
+    using geotop_degree_two_vertex_incident_neighbor_prefix
+      [OF hL hdegree hwL] by (by100 blast)
+  have hstate: "(w, e) \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    using hwL heL hedge hwe by (by100 simp)
+  show ?thesis
+  proof (intro exI conjI)
+    show "(w, e) \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+      by (rule hstate)
+    show "fst (w, e) = w"
+      by (by100 simp)
+    show "q \<noteq> w"
+      by (rule hqw)
+    show "snd (w, e) = closed_segment w q"
+      using heq by (by100 simp)
+    show "{q} \<in> L"
+      by (rule hqL)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_endpoint_prefix:
   fixes L :: "(real^2) set set" and w :: "real^2"
   assumes hL: "geotop_is_linear_graph L"
