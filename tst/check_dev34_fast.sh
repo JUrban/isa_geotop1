@@ -26,6 +26,12 @@ Fast modes:
   dirty [FILES] show dirty/explicit dev34 layer files and the auto build target
   plan [FILES]  show hot-loop parent heaps for changed/explicit files
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
+  cache-plan [FILES]
+               show all cache layers through the dirty/explicit target
+  cache-through [FILES]
+               build/store all layers through the dirty/explicit target, skipping fresh
+  cache-parents [FILES]
+               build/store only reusable parent layers for dirty/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; skips fresh target/process caches, auto-warms parents
   split-hot FILE PAT
@@ -294,6 +300,23 @@ target_session() {
     *) return 2 ;;
   esac
 }
+
+layer_targets=(
+  pre
+  prefix-base
+  prefix-graph-cache
+  prefix-graph
+  prefix-mid
+  prefix
+  facts
+  workfacts
+  linkfacts
+  graphfacts
+  graphwork
+  openstar
+  core
+  dev34
+)
 
 target_timeout() {
   case "$1" in
@@ -578,6 +601,69 @@ cache_build_target() {
     -b "$session"
   cache_digest "$target" >"$(cache_stamp "$target")"
   cache_status_line "$target"
+}
+
+cache_plan_through() {
+  target=$1
+  if [ "$target" = none ]; then
+    printf 'cache: none (no dev34 layer target)\n'
+    return 0
+  fi
+  rank=$(target_rank "$target")
+  for layer in "${layer_targets[@]}"; do
+    if [ "$(target_rank "$layer")" -le "$rank" ]; then
+      cache_status_line "$layer"
+    fi
+  done
+}
+
+cache_build_through() {
+  target=$1
+  if [ "$target" = none ]; then
+    "$0" holes
+    return $?
+  fi
+  status=0
+  rank=$(target_rank "$target")
+  for layer in "${layer_targets[@]}"; do
+    if [ "$(target_rank "$layer")" -le "$rank" ]; then
+      if cache_build_target "$layer"; then
+        :
+      else
+        status=$?
+        break
+      fi
+    fi
+  done
+  return "$status"
+}
+
+cache_build_parents() {
+  files=$1
+  if [ -z "$files" ]; then
+    printf '(no dirty/explicit dev34 layer files)\n'
+    return 0
+  fi
+  status=0
+  seen=
+  while IFS="$(printf '\t')" read -r _ file; do
+    [ -z "$file" ] && continue
+    parent=$(parent_target_for_file "$file" 2>/dev/null || printf '%s\n' none)
+    [ "$parent" != none ] || continue
+    case " $seen " in
+      *" $parent "*) continue ;;
+    esac
+    seen="$seen $parent"
+    if cache_build_target "$parent"; then
+      :
+    else
+      status=$?
+      break
+    fi
+  done <<EOF2
+$(ordered_layer_files "$files" | sort -n -k1,1)
+EOF2
+  return "$status"
 }
 
 parent_context() {
@@ -883,6 +969,32 @@ $(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
     exit "$status"
     ;;
+  cache-plan)
+    shift
+    files=$(layer_files "$@")
+    target=$(auto_target "$files")
+    if [ "$target" = none ] && [ -z "$files" ]; then
+      printf '(no dirty/explicit dev34 layer files)\n'
+      exit 0
+    fi
+    printf 'cache target: %s\n' "$target"
+    cache_plan_through "$target"
+    ;;
+  cache-through)
+    shift
+    files=$(layer_files "$@")
+    target=$(auto_target "$files")
+    if [ "$target" = none ] && [ -z "$files" ]; then
+      printf '(no dirty/explicit dev34 layer files)\n'
+      exit 0
+    fi
+    cache_build_through "$target"
+    ;;
+  cache-parents)
+    shift
+    files=$(layer_files "$@")
+    cache_build_parents "$files"
+    ;;
   proc|process|hot)
     shift
     files=$(layer_files "$@")
@@ -1011,7 +1123,7 @@ EOF2
   cache-all)
     shift
     status=0
-    for target in pre prefix-base prefix-graph-cache prefix-graph prefix-mid prefix facts workfacts linkfacts graphfacts graphwork openstar core dev34; do
+    for target in "${layer_targets[@]}"; do
       if cache_build_target "$target"; then
         :
       else
