@@ -2220,6 +2220,95 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_state_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  shows "\<exists>q e'. (q, e') \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> q \<noteq> w
+      \<and> e = closed_segment w q
+      \<and> e' \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+proof -
+  have hex: "\<exists>q e'. q \<noteq> w
+      \<and> e = closed_segment w q
+      \<and> {q} \<in> L
+      \<and> e' \<in> L
+      \<and> geotop_is_edge e'
+      \<and> q \<in> e'
+      \<and> e' \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+    by (rule geotop_degree_two_oriented_edge_successor_prefix
+        [OF hL hdegree hwL heL hedge hwe])
+  show ?thesis
+    using hex by (by100 blast)
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_state_unique_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hwe: "w \<in> e"
+  assumes hsucc1: "(q\<^sub>1, e\<^sub>1) \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> q\<^sub>1 \<noteq> w
+      \<and> e = closed_segment w q\<^sub>1
+      \<and> e\<^sub>1 \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q\<^sub>1 \<in> d \<and> d \<noteq> e \<longrightarrow> d = e\<^sub>1)"
+  assumes hsucc2: "(q\<^sub>2, e\<^sub>2) \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> q\<^sub>2 \<noteq> w
+      \<and> e = closed_segment w q\<^sub>2
+      \<and> e\<^sub>2 \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q\<^sub>2 \<in> d \<and> d \<noteq> e \<longrightarrow> d = e\<^sub>2)"
+  shows "q\<^sub>1 = q\<^sub>2 \<and> e\<^sub>1 = e\<^sub>2"
+proof -
+  have hq1w: "q\<^sub>1 \<noteq> w"
+    using hsucc1 by (by100 blast)
+  have heq1: "e = closed_segment w q\<^sub>1"
+    using hsucc1 by (by100 blast)
+  have hq1L: "{q\<^sub>1} \<in> L"
+    using hsucc1 by (by100 blast)
+  have hq2w: "q\<^sub>2 \<noteq> w"
+    using hsucc2 by (by100 blast)
+  have heq2: "e = closed_segment w q\<^sub>2"
+    using hsucc2 by (by100 blast)
+  have hq2L: "{q\<^sub>2} \<in> L"
+    using hsucc2 by (by100 blast)
+  have hother_unique: "\<exists>!x. x \<noteq> w \<and> e = closed_segment w x \<and> {x} \<in> L"
+    by (rule geotop_incident_edge_other_endpoint_unique_prefix
+        [OF hL hwL heL hedge hwe])
+  have hq2_eq_q1: "q\<^sub>2 = q\<^sub>1"
+    using hother_unique hq1w heq1 hq1L hq2w heq2 hq2L
+    unfolding Ex1_def by (by100 blast)
+  have he2L: "e\<^sub>2 \<in> L"
+    using hsucc2 by (by100 blast)
+  have he2edge: "geotop_is_edge e\<^sub>2"
+    using hsucc2 by (by100 blast)
+  have hq2e2: "q\<^sub>2 \<in> e\<^sub>2"
+    using hsucc2 by (by100 blast)
+  have he2ne: "e\<^sub>2 \<noteq> e"
+    using hsucc2 by (by100 blast)
+  have hq1e2: "q\<^sub>1 \<in> e\<^sub>2"
+    using hq2e2 hq2_eq_q1 by (by100 simp)
+  have huniq1: "\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q\<^sub>1 \<in> d \<and> d \<noteq> e \<longrightarrow> d = e\<^sub>1"
+    using hsucc1 by (by100 blast)
+  have he2_eq_e1: "e\<^sub>2 = e\<^sub>1"
+    using huniq1 he2L he2edge hq1e2 he2ne by (by100 blast)
+  show ?thesis
+    using hq2_eq_q1 he2_eq_e1 by (by100 blast)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
