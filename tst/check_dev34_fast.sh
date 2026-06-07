@@ -423,6 +423,23 @@ split_stamp() {
   printf '%s/split-%s.sha256\n' "$cache_dir" "$key"
 }
 
+split_cache_key() {
+  printf '%s\n%s\n%s\nchain=%s\n' "$1" "$2" "$3" "$4" | sha256sum | awk '{print substr($1, 1, 12)}'
+}
+
+split_chain_dir_args() {
+  local file=$1
+  local pattern=$2
+  local logic=$3
+  local chain_pattern key
+  chain_pattern=$(split_default_chain_pattern "$file" "$pattern")
+  if [ -n "$chain_pattern" ]; then
+    split_chain_dir_args "$file" "$chain_pattern" "$logic"
+  fi
+  key=$(split_cache_key "$file" "$pattern" "$logic" "$chain_pattern")
+  printf '%s\n%s\n' -d "$cache_dir/split-$key"
+}
+
 write_if_changed() {
   out=$1
   tmp=$out.tmp.$$
@@ -491,7 +508,8 @@ split_hot_one() {
   local chain_pattern=${3:-}
   local logic dirs
   local start_line begin_line end_line next_top_line tail_end_line
-  local chain_dir chain_session chain_theory chain_digest chain_start_line
+  local chain_dir chain_session chain_theory chain_digest chain_start_line chain_chain_pattern
+  local chain_dirs
   local chain_key chain_base chain_stamp_file
   local key base split_dir prefix_theory prefix_session prefix_file prefix_parent_session
   local parent_target split_key split_digest split_stamp_file
@@ -532,26 +550,28 @@ split_hot_one() {
       return 2
     fi
 
+    chain_chain_pattern=$(split_default_chain_pattern "$file" "$chain_pattern")
     printf 'split-hot: warming chained prefix for %s before line %s\n' "$file" "$chain_start_line"
-    DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$chain_pattern"
+    DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$chain_pattern" "$chain_chain_pattern"
     parent_context "$file" split-hot || return $?
 
-    chain_key=$(printf '%s\n%s\n%s\n' "$file" "$chain_pattern" "$logic" | sha256sum | awk '{print substr($1, 1, 12)}')
+    chain_key=$(split_cache_key "$file" "$chain_pattern" "$logic" "$chain_chain_pattern")
     chain_base=$(basename "$file" .thy)
     chain_dir="$cache_dir/split-$chain_key"
     chain_theory="${chain_base}_Split_${chain_key}_Prefix"
     chain_session="${chain_base}_Split_${chain_key}_Prefix_Session"
-    chain_stamp_file=$(split_stamp "$file:$chain_pattern:prefix:force=${FORCE_PROOFS:-0}")
+    chain_stamp_file=$(split_stamp "$file:$chain_pattern:prefix:chain=$chain_chain_pattern:force=${FORCE_PROOFS:-0}")
     if [ -s "$chain_stamp_file" ]; then
       chain_digest=$(cat "$chain_stamp_file")
     else
       printf 'split-hot: missing chained prefix stamp for %s before line %s\n' "$file" "$chain_start_line" >&2
       return 1
     fi
+    mapfile -t chain_dirs < <(split_chain_dir_args "$file" "$chain_pattern" "$logic")
   fi
 
   mkdir -p "$cache_dir"
-  key=$(printf '%s\n%s\n%s\n' "$file" "$pattern" "$logic" | sha256sum | awk '{print substr($1, 1, 12)}')
+  key=$(split_cache_key "$file" "$pattern" "$logic" "$chain_pattern")
   base=$(basename "$file" .thy)
   split_dir="$cache_dir/split-$key"
   prefix_theory="${base}_Split_${key}_Prefix"
@@ -606,10 +626,10 @@ EOF2
     split_key=$(printf '%s\nchain=%s\n%s\n' "$split_key" "$chain_pattern" "$chain_digest")
   fi
   split_digest=$(printf '%s' "$split_key" | sha256sum | awk '{print $1}')
-  split_stamp_file=$(split_stamp "$file:$pattern:prefix:force=${FORCE_PROOFS:-0}")
+  split_stamp_file=$(split_stamp "$file:$pattern:prefix:chain=$chain_pattern:force=${FORCE_PROOFS:-0}")
 
   if [ -n "$chain_pattern" ]; then
-    mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$chain_dir"; printf '%s\n' -d "$split_dir")
+    mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' "${chain_dirs[@]}"; printf '%s\n' -d "$split_dir")
   else
     mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
   fi
@@ -663,7 +683,7 @@ EOF2
     "$file" "$pattern" "${FORCE_PROOFS:-0}" "${SKIP_PROOFS:-0}" \
     "$split_digest" "$(sha256sum "$tail_file")")
   tail_digest=$(printf '%s' "$tail_key" | sha256sum | awk '{print $1}')
-  tail_stamp_file=$(split_stamp "$file:$pattern:$tail_mode:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
+  tail_stamp_file=$(split_stamp "$file:$pattern:$tail_mode:chain=$chain_pattern:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
   if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
     printf 'split-hot: skipped %s process for %s from line %s through %s\n' \
       "$tail_mode" "$file" "$start_line" "$tail_end_line"
@@ -788,6 +808,26 @@ focus_chain_pattern() {
       printf '%s\n' geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
       ;;
     dev34-semicircle)
+      printf '%s\n' geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
+      ;;
+    *)
+      printf '%s\n' ''
+      ;;
+  esac
+}
+
+split_default_chain_pattern() {
+  case "$1:$2" in
+    'dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:theorem Theorem_GT_3_7')
+      printf '%s\n' 'theorem Theorem_GT_3_4'
+      ;;
+    'dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:theorem Theorem_GT_4_2')
+      printf '%s\n' 'theorem Theorem_GT_3_7'
+      ;;
+    'dev34/GeoTop_3_4.thy:geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34')
+      printf '%s\n' geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
+      ;;
+    'dev34/GeoTop_3_4.thy:geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34')
       printf '%s\n' geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
       ;;
     *)
