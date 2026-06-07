@@ -2340,6 +2340,58 @@ proof -
     show ?thesis
       by (rule hK\<^sub>2_before_Q_edge_collision_reversed[OF hedge_mem])
   qed
+  have hK\<^sub>1_closing_not_in_K_if_no_reversed:
+      "(\<forall>k\<in>{0..<j}. \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
+      \<Longrightarrow> closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+  proof
+    assume hno_rev:
+        "\<forall>k\<in>{0..<j}. \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+    assume hmem: "closed_segment (?v (p - 1)) P \<in> K\<^sub>1"
+    obtain k where hk: "k \<in> {0..<j}"
+      and hrev: "?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+      using hK\<^sub>1_closing_in_K_reversed[OF hmem] by (by100 blast)
+    show False
+      using hno_rev hk hrev by (by100 blast)
+  qed
+  have hK\<^sub>2_initial_not_in_K_if_no_reversed:
+      "(\<forall>k\<in>{j..<p}. \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
+      \<Longrightarrow> closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+  proof
+    assume hno_rev:
+        "\<forall>k\<in>{j..<p}. \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+    assume hmem: "closed_segment P (?v (Suc 0)) \<in> K\<^sub>2"
+    obtain k where hk: "k \<in> {j..<p}"
+      and hrev: "P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+      using hK\<^sub>2_initial_in_K_reversed[OF hmem] by (by100 blast)
+    show False
+      using hno_rev hk hrev by (by100 blast)
+  qed
+  have hK\<^sub>1_after_Q_not_in_K_if_no_reversed:
+      "(\<forall>k\<in>{0..<j}. \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
+      \<Longrightarrow> closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+  proof
+    assume hno_rev:
+        "\<forall>k\<in>{0..<j}. \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+    assume hmem: "closed_segment Q (?v (Suc j)) \<in> K\<^sub>1"
+    obtain k where hk: "k \<in> {0..<j}"
+      and hrev: "Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+      using hK\<^sub>1_after_Q_in_K_reversed[OF hmem] by (by100 blast)
+    show False
+      using hno_rev hk hrev by (by100 blast)
+  qed
+  have hK\<^sub>2_before_Q_not_in_K_if_no_reversed:
+      "(\<forall>k\<in>{j..<p}. \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))
+      \<Longrightarrow> closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+  proof
+    assume hno_rev:
+        "\<forall>k\<in>{j..<p}. \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+    assume hmem: "closed_segment (?v (j - 1)) Q \<in> K\<^sub>2"
+    obtain k where hk: "k \<in> {j..<p}"
+      and hrev: "?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+      using hK\<^sub>2_before_Q_in_K_reversed[OF hmem] by (by100 blast)
+    show False
+      using hno_rev hk hrev by (by100 blast)
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
