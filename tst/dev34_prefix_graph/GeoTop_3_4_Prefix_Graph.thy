@@ -2495,6 +2495,46 @@ proof -
     using hex1 by (rule theI')
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_step_incident_edge_cases_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hinc: "fst (geotop_oriented_edge_successor L s) \<in> e"
+  shows "e = snd s \<or> e = snd (geotop_oriented_edge_successor L s)"
+proof -
+  have hstep: "geotop_oriented_edge_successor L s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s
+          (geotop_oriented_edge_successor L s)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hs])
+  have hrel: "geotop_oriented_edge_successor_state L s
+      (geotop_oriented_edge_successor L s)"
+    by (rule conjunct2[OF hstep])
+  show ?thesis
+  proof (cases "e = snd s")
+    case True
+    show ?thesis
+      using True by (by100 blast)
+  next
+    case False
+    have huniq: "\<forall>d. d \<in> L \<and> geotop_is_edge d
+        \<and> fst (geotop_oriented_edge_successor L s) \<in> d
+        \<and> d \<noteq> snd s
+        \<longrightarrow> d = snd (geotop_oriented_edge_successor L s)"
+      using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+    have "e = snd (geotop_oriented_edge_successor L s)"
+      using huniq heL hedge hinc False by (by100 blast)
+    show ?thesis
+      using \<open>e = snd (geotop_oriented_edge_successor L s)\<close> by (by100 blast)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_state_predecessor_unique_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
