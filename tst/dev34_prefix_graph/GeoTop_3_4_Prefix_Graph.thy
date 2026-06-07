@@ -2322,6 +2322,11 @@ definition geotop_oriented_edge_successor_state
     \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> fst t \<in> d \<and> d \<noteq> snd s
       \<longrightarrow> d = snd t)"
 
+definition geotop_oriented_edge_successor
+  where "geotop_oriented_edge_successor (L::(real^2) set set) s =
+    (THE t. t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s t)"
+
 lemma geotop_degree_two_oriented_edge_successor_relation_total_unique_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -2407,6 +2412,56 @@ proof -
     show "t\<^sub>1 = t\<^sub>2"
       using ht1_eq ht2_eq heq by (by100 blast)
   qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_fun_step_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "geotop_oriented_edge_successor L s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s
+          (geotop_oriented_edge_successor L s)"
+proof -
+  have hex1: "\<exists>!t. t \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s t"
+    by (rule geotop_degree_two_oriented_edge_successor_relation_total_unique_prefix
+        [OF hL hdegree hs])
+  show ?thesis
+    unfolding geotop_oriented_edge_successor_def
+    using hex1 by (rule theI')
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_funpow_state_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "(geotop_oriented_edge_successor L ^^ n) s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+proof (induct n)
+  case 0
+  show ?case
+    using hs by (by100 simp)
+next
+  case (Suc n)
+  have hstep: "geotop_oriented_edge_successor L
+      ((geotop_oriented_edge_successor L ^^ n) s) \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L
+          ((geotop_oriented_edge_successor L ^^ n) s)
+          (geotop_oriented_edge_successor L
+            ((geotop_oriented_edge_successor L ^^ n) s))"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree Suc.hyps])
+  show ?case
+    using hstep by (by100 simp)
 qed
 
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
