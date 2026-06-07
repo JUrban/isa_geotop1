@@ -333,6 +333,39 @@ proof -
   have hL_singleton_image_finite:
       "finite ((\<lambda>v. {v}) ` geotop_complex_vertices L)"
     by (rule finite_imageI[OF hcomplex_vertices_finite])
+  have hstate_edge_eq:
+      "\<And>k. snd ((geotop_oriented_edge_successor L ^^ k) s)
+        = closed_segment (?v k) (?v (Suc k))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+        [OF hL_linear hdegree_two hs])
+  have hstate_edge_image_eq_E:
+      "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}) = ?E"
+  proof
+    show "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}) \<subseteq> ?E"
+    proof
+      fix e
+      assume he: "e \<in> ((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})"
+      obtain k where hk: "k \<in> {0..<p}"
+        and heq: "e = snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using he by (by100 blast)
+      have "e = closed_segment (?v k) (?v (Suc k))"
+        using heq hstate_edge_eq[of k] by (by100 simp)
+      thus "e \<in> ?E"
+        using hk by (by100 blast)
+    qed
+    show "?E \<subseteq> ((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})"
+    proof
+      fix e
+      assume he: "e \<in> ?E"
+      obtain k where hk: "k \<in> {0..<p}"
+        and heq: "e = closed_segment (?v k) (?v (Suc k))"
+        using he by (by100 blast)
+      have "e = snd ((geotop_oriented_edge_successor L ^^ k) s)"
+        using heq hstate_edge_eq[of k] by (by100 simp)
+      thus "e \<in> ((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})"
+        using hk by (by100 blast)
+    qed
+  qed
   show ?thesis
     sorry
 qed
