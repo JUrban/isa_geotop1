@@ -10,6 +10,10 @@ proof_options=()
 if [ "${FORCE_PROOFS:-0}" = 1 ]; then
   proof_options=(-o skip_proofs=false)
 fi
+process_options=("${proof_options[@]}")
+if [ "${FORCE_PROOFS:-0}" != 1 ] && [ "${SKIP_PROOFS:-0}" = 1 ]; then
+  process_options=(-o skip_proofs=true)
+fi
 
 usage() {
   cat >&2 <<'EOF'
@@ -34,10 +38,17 @@ Fast modes:
                build/store only reusable parent layers for dirty/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
   hot [FILES]  alias for proc; skips fresh target/process caches, auto-warms parents
+  outline [FILES]
+               fast scaffold check: process with skip_proofs=true
   split-hot FILE PAT
                cache FILE before the first PAT line, then process the remaining tail
+  split-warm FILE PAT
+               cache FILE before the first PAT line, but do not process the tail
   graph-focus [PAT]
                full-index scan PAT, then split-hot the active graph theorem
+  graph-outline [PAT]
+               graph-focus with skip_proofs=true for fast scaffold iteration
+  graph-warm   build/cache the active graph split prefix only
   loop [--hot] PAT [FILES]
                cheap proof loop: full-index grep PAT, holes, dirty plan
                with --hot, also run hot [FILES]
@@ -424,6 +435,7 @@ proc_digest() {
     printf 'file=%s\n' "$file"
     printf 'logic=%s\n' "$logic"
     printf 'force_proofs=%s\n' "${FORCE_PROOFS:-0}"
+    printf 'skip_proofs=%s\n' "${SKIP_PROOFS:-0}"
     sha256sum "$file"
     if [ -f "$layer_root" ]; then
       sha256sum "$layer_root"
@@ -442,7 +454,7 @@ proc_cache_is_fresh() {
   [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] || return 1
   [ "$parent_target" != none ] || return 1
   cache_is_fresh "$parent_target" || return 1
-  stamp=$(proc_stamp "$file")
+  stamp=$(proc_stamp "$file:$parent_target:$logic:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
   [ -s "$stamp" ] && [ "$(cat "$stamp")" = "$(proc_digest "$file" "$parent_target" "$logic")" ]
 }
 
@@ -454,7 +466,8 @@ proc_cache_store() {
   [ "$parent_target" != none ] || return 0
   cache_is_fresh "$parent_target" || return 0
   mkdir -p "$cache_dir"
-  proc_digest "$file" "$parent_target" "$logic" >"$(proc_stamp "$file")"
+  proc_digest "$file" "$parent_target" "$logic" \
+    >"$(proc_stamp "$file:$parent_target:$logic:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")"
 }
 
 split_hot_one() {
@@ -529,12 +542,14 @@ EOF2
     fi
   fi
 
-  split_key=$(printf 'split-prefix\n%s\n%s\n%s\n' "$file" "$pattern" "$(sha256sum "$prefix_file" "$split_dir/ROOT")")
+  split_key=$(printf 'split-prefix\n%s\n%s\nforce_proofs=%s\n%s\n' \
+    "$file" "$pattern" "${FORCE_PROOFS:-0}" \
+    "$(sha256sum "$prefix_file" "$split_dir/ROOT")")
   if [ "$parent_target" != none ]; then
     split_key=$(printf '%s\nparent=%s\n%s\n' "$split_key" "$parent_target" "$(cache_digest "$parent_target")")
   fi
   split_digest=$(printf '%s' "$split_key" | sha256sum | awk '{print $1}')
-  split_stamp_file=$(split_stamp "$file:$pattern:prefix")
+  split_stamp_file=$(split_stamp "$file:$pattern:prefix:force=${FORCE_PROOFS:-0}")
 
   mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
   if [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
@@ -549,9 +564,16 @@ EOF2
     printf '%s' "$split_digest" >"$split_stamp_file"
   fi
 
-  tail_key=$(printf 'split-tail\n%s\n%s\n%s\n%s\n' "$file" "$pattern" "$split_digest" "$(sha256sum "$tail_file")")
+  if [ "${DEV34_FAST_PREFIX_ONLY:-0}" = 1 ]; then
+    printf 'split-hot: prefix cache ready for %s before line %s\n' "$file" "$start_line"
+    return 0
+  fi
+
+  tail_key=$(printf 'split-tail\n%s\n%s\nforce_proofs=%s\nskip_proofs=%s\n%s\n%s\n' \
+    "$file" "$pattern" "${FORCE_PROOFS:-0}" "${SKIP_PROOFS:-0}" \
+    "$split_digest" "$(sha256sum "$tail_file")")
   tail_digest=$(printf '%s' "$tail_key" | sha256sum | awk '{print $1}')
-  tail_stamp_file=$(split_stamp "$file:$pattern:tail")
+  tail_stamp_file=$(split_stamp "$file:$pattern:tail:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
   if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
     printf 'split-hot: skipped tail process for %s from line %s\n' "$file" "$start_line"
     return 0
@@ -560,7 +582,7 @@ EOF2
   printf 'split-hot: processing tail for %s from line %s\n' "$file" "$start_line"
   timeout "$limit" "$isabelle" process_theories \
     "${isabelle_options[@]}" \
-    "${proof_options[@]}" \
+    "${process_options[@]}" \
     "${dirs[@]}" -l "$prefix_session" -o quick_and_dirty -f "$tail_file"
   printf '%s' "$tail_digest" >"$tail_stamp_file"
 }
@@ -780,7 +802,7 @@ proc_one() {
   printf 'process_theories: %s with parent %s\n' "$file" "$logic"
   timeout "$limit" "$isabelle" process_theories \
     "${isabelle_options[@]}" \
-    "${proof_options[@]}" \
+    "${process_options[@]}" \
     "${dirs[@]}" -l "$logic" -o quick_and_dirty -f "$file"
   proc_cache_store "$file" "$parent_target" "$logic"
 }
@@ -1015,6 +1037,10 @@ $(ordered_layer_files "$files" | sort -n -k1,1)
 EOF2
     exit "$status"
     ;;
+  outline)
+    shift
+    exec env SKIP_PROOFS=1 "$0" proc "$@"
+    ;;
   split-hot)
     shift
     if [ "$#" -lt 2 ]; then
@@ -1026,6 +1052,17 @@ EOF2
     pattern=$*
     split_hot_one "$file" "$pattern"
     ;;
+  split-warm)
+    shift
+    if [ "$#" -lt 2 ]; then
+      usage
+      exit 2
+    fi
+    file=$1
+    shift
+    pattern=$*
+    DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$pattern"
+    ;;
   graph-focus|focus-graph)
     shift
     if [ "$#" -gt 0 ]; then
@@ -1034,6 +1071,19 @@ EOF2
       printf '\n'
     fi
     split_hot_one "$active_graph_file" "$active_graph_pattern"
+    ;;
+  graph-outline|focus-graph-outline)
+    shift
+    exec env SKIP_PROOFS=1 "$0" graph-focus "$@"
+    ;;
+  graph-warm|focus-graph-warm)
+    shift
+    if [ "$#" -gt 0 ]; then
+      printf 'full-index/source scan: %s\n' "$*"
+      rg -n -i -- "$*" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}" || true
+      printf '\n'
+    fi
+    DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$active_graph_file" "$active_graph_pattern"
     ;;
   layer|exact|auto)
     shift
