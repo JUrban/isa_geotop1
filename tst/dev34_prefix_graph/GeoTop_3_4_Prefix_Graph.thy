@@ -31,6 +31,52 @@ proof
     using geotop_singleton_not_edge_prefix by (by100 blast)
 qed
 
+lemma geotop_nat_inward_descent_prefix:
+  fixes R :: "nat \<Rightarrow> nat \<Rightarrow> bool"
+  assumes hbase1: "\<And>a. R a (Suc a) \<Longrightarrow> False"
+  assumes hbase2: "\<And>a. R a (Suc (Suc a)) \<Longrightarrow> False"
+  assumes hstep: "\<And>a b. R a b \<Longrightarrow> Suc (Suc a) < b \<Longrightarrow> R (Suc a) (b - 1)"
+  assumes hab: "a < b"
+  assumes hR: "R a b"
+  shows False
+proof -
+  have hmain: "\<And>(d::nat) a b. b - a = d \<Longrightarrow> a < b \<Longrightarrow> R a b \<Longrightarrow> False"
+  proof (induction d arbitrary: a b rule: nat_less_induct)
+    case (1 d)
+    note IH = 1(1)
+    show ?case
+    proof (cases "b = Suc a")
+      case True
+      show ?thesis
+        using hbase1 1(4) True by (by100 blast)
+    next
+      case False
+      have hSuc_a_lt_b: "Suc a < b"
+        using 1(3) False by (by100 linarith)
+      show ?thesis
+      proof (cases "b = Suc (Suc a)")
+        case True
+        show ?thesis
+          using hbase2 1(4) True by (by100 blast)
+      next
+        case False
+        have hgap: "Suc (Suc a) < b"
+          using hSuc_a_lt_b False by (by100 linarith)
+        have hinner_order: "Suc a < b - 1"
+          using hgap by (by100 linarith)
+        have hinner_R: "R (Suc a) (b - 1)"
+          by (rule hstep[OF 1(4) hgap])
+        have hinner_gap_lt: "(b - 1) - Suc a < d"
+          using 1(2) hgap by (by100 linarith)
+        show ?thesis
+          by (rule IH[OF hinner_gap_lt refl hinner_order hinner_R])
+      qed
+    qed
+  qed
+  show ?thesis
+    by (rule hmain[OF refl hab hR])
+qed
+
 lemma geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix:
   fixes L :: "(real^2) set set" and B :: "(real^2) set"
   assumes hL: "geotop_is_linear_graph L"
