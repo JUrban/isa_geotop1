@@ -172,6 +172,63 @@ proof -
   qed
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_cycle_complement_face_closed_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hsigmaL: "\<sigma> \<in> L"
+  assumes hsigma_out: "\<sigma> \<notin> ((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<tau> \<notin> ((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?SV = "(\<lambda>v. {v}) ` (?v ` {0..<p})"
+  let ?E = "((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  have h1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_prefix[OF hL])
+  have hcases: "(\<exists>v. \<sigma> = {v}) \<or>
+      (\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b)"
+    by (rule geotop_1dim_simplex_cases[OF h1dim hsigmaL])
+  show ?thesis
+  proof (rule disjE[OF hcases])
+    assume "\<exists>v. \<sigma> = {v}"
+    then obtain v where hsigma_eq: "\<sigma> = {v}"
+      by (by100 blast)
+    have htau_eq: "\<tau> = {v}"
+      using hface hsigma_eq geotop_singleton_face_eq_prefix by (by100 blast)
+    have "\<tau> = \<sigma>"
+      using htau_eq hsigma_eq by (by100 simp)
+    thus ?thesis
+      using hsigma_out by (by100 simp)
+  next
+    assume "\<exists>a b. a \<noteq> b \<and> \<sigma> = closed_segment a b"
+    then obtain a b where hab: "a \<noteq> b" and hsigma_eq: "\<sigma> = closed_segment a b"
+      by (by100 blast)
+    have hdim: "geotop_simplex_dim (closed_segment a b) 1"
+      by (rule geotop_closed_segment_is_simplex[OF hab])
+    have hedge: "geotop_is_edge \<sigma>"
+      using hdim hsigma_eq unfolding geotop_is_edge_def by (by100 simp)
+    have hnotE: "\<sigma> \<notin> ?E"
+      using hsigma_out by (by100 blast)
+    show ?thesis
+      by (rule geotop_degree_two_oriented_edge_successor_period_nonorbit_edge_face_outside_cycle_prefix
+          [OF hL hdegree hs hp_pos hp_closed hsigmaL hedge hnotE hface])
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
