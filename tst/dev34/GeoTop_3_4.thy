@@ -5635,6 +5635,10 @@ proof -
           [OF hL_linear hL_finite hconn hendpoint hqL hq_card_one
             heL he_edge hw_e hq_ne he_seg])
   qed
+  have hq_arc_interior_if_not_finish:
+      "q \<noteq> pathfinish \<gamma>w \<Longrightarrow>
+        q \<in> geotop_arc_interior (geotop_polyhedron L) {w, pathfinish \<gamma>w}"
+    using hq_poly hq_ne unfolding geotop_arc_interior_def by (by100 blast)
   show ?thesis
     sorry
 qed
