@@ -43,6 +43,135 @@ proof -
     using hedge hnot by (by100 blast)
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_period_nonorbit_edge_face_outside_cycle_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes heL: "e \<in> L"
+  assumes hedge: "geotop_is_edge e"
+  assumes hnot: "e \<notin> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+  assumes hface: "geotop_is_face F e"
+  shows "F \<notin> ((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p})"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?V = "?v ` {0..<p}"
+  let ?SV = "(\<lambda>v. {v}) ` ?V"
+  let ?E = "((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  have havoid: "e \<inter> ?V = {}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_nonorbit_edge_avoids_vertex_orbit_prefix
+        [OF hL hdegree hs hp_pos hp_closed heL hedge hnot])
+  obtain a b where hab: "a \<noteq> b" and heq: "e = closed_segment a b"
+    by (rule geotop_edge_closed_segment_obtain_prefix[OF hedge])
+  have ha_e: "a \<in> e"
+    using heq by (by100 simp)
+  have hb_e: "b \<in> e"
+    using heq by (by100 simp)
+  have hface_cases: "F = {a} \<or> F = {b} \<or> F = e"
+  proof -
+    have hface_seg: "geotop_is_face F (closed_segment a b)"
+      using hface heq by (by100 simp)
+    have "F = {a} \<or> F = {b} \<or> F = closed_segment a b"
+      by (rule geotop_closed_segment_face_endpoint_or_self_prefix[OF hab hface_seg])
+    thus ?thesis
+      using heq by (by100 blast)
+  qed
+  have ha_out: "{a} \<notin> ?SV \<union> ?E"
+  proof
+    assume ha_cycle: "{a} \<in> ?SV \<union> ?E"
+    show False
+    proof (rule UnE[OF ha_cycle])
+      assume haSV: "{a} \<in> ?SV"
+      obtain x where hxV: "x \<in> ?V" and hax: "{a} = {x}"
+        using haSV by (by100 blast)
+      have haV: "a \<in> ?V"
+        using hxV hax by (by100 simp)
+      have "e \<inter> ?V \<noteq> {}"
+        using ha_e haV by (by100 blast)
+      thus False
+        using havoid by (by100 blast)
+    next
+      assume haE: "{a} \<in> ?E"
+      show False
+        by (rule geotop_degree_two_oriented_edge_successor_period_edge_orbit_no_singletons_prefix
+            [OF hL hdegree hs haE])
+    qed
+  qed
+  have hb_out: "{b} \<notin> ?SV \<union> ?E"
+  proof
+    assume hb_cycle: "{b} \<in> ?SV \<union> ?E"
+    show False
+    proof (rule UnE[OF hb_cycle])
+      assume hbSV: "{b} \<in> ?SV"
+      obtain x where hxV: "x \<in> ?V" and hbx: "{b} = {x}"
+        using hbSV by (by100 blast)
+      have hbV: "b \<in> ?V"
+        using hxV hbx by (by100 simp)
+      have "e \<inter> ?V \<noteq> {}"
+        using hb_e hbV by (by100 blast)
+      thus False
+        using havoid by (by100 blast)
+    next
+      assume hbE: "{b} \<in> ?E"
+      show False
+        by (rule geotop_degree_two_oriented_edge_successor_period_edge_orbit_no_singletons_prefix
+            [OF hL hdegree hs hbE])
+    qed
+  qed
+  have he_out: "e \<notin> ?SV \<union> ?E"
+  proof
+    assume he_cycle: "e \<in> ?SV \<union> ?E"
+    show False
+    proof (rule UnE[OF he_cycle])
+      assume heSV: "e \<in> ?SV"
+      obtain x where hxV: "x \<in> ?V" and hex: "e = {x}"
+        using heSV by (by100 blast)
+      have hx_e: "x \<in> e"
+        using hex by (by100 simp)
+      have "e \<inter> ?V \<noteq> {}"
+        using hx_e hxV by (by100 blast)
+      thus False
+        using havoid by (by100 blast)
+    next
+      assume heE: "e \<in> ?E"
+      show False
+        using hnot heE by (by100 blast)
+    qed
+  qed
+  show ?thesis
+  proof
+    assume hF_cycle: "F \<in> ?SV \<union> ?E"
+    show False
+    proof (rule disjE[OF hface_cases])
+      assume hF: "F = {a}"
+      show False
+        using hF hF_cycle ha_out by (by100 blast)
+    next
+      assume hcase: "F = {b} \<or> F = e"
+      show False
+      proof (rule disjE[OF hcase])
+        assume hF: "F = {b}"
+        show False
+          using hF hF_cycle hb_out by (by100 blast)
+      next
+        assume hF: "F = e"
+        show False
+          using hF hF_cycle he_out by (by100 blast)
+      qed
+    qed
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
