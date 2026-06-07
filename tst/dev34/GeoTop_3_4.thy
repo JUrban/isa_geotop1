@@ -5275,7 +5275,40 @@ lemma geotop_endpoint_first_neighbor_chain_boundary_arc_fan_target_dev34:
     its first neighbor \<open>q\<close>, realize the ordered chain as a subdivision of one
     boundary arc of a standard 2-simplex, choose the adjacent boundary vertex
     \<open>c\<close>, and cone the arc subdivision from \<open>c\<close>. **)
-  sorry
+proof -
+  have hB_arc: "geotop_is_arc (geotop_polyhedron L)
+      (subspace_topology UNIV geotop_euclidean_topology (geotop_polyhedron L))"
+    using hbroken unfolding geotop_is_broken_line_def by (by100 blast)
+  obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron L) E"
+    using geotop_is_arc_has_arc_endpoints_dev34[OF hB_arc] by (by100 blast)
+  have hwE: "w \<in> E"
+    by (rule geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix
+        [OF hL_linear hL_finite refl hbroken hE hendpoint])
+  obtain \<gamma> :: "real \<Rightarrow> real^2"
+    where h\<gamma>_arc: "arc \<gamma>"
+      and h\<gamma>_img: "path_image \<gamma> = geotop_polyhedron L"
+      and hE_eq: "E = {pathstart \<gamma>, pathfinish \<gamma>}"
+    using arc_endpoints_imp_arc_HOL[OF hE] by (by100 blast)
+  define \<gamma>w where "\<gamma>w = (if pathstart \<gamma> = w then \<gamma> else reversepath \<gamma>)"
+  have h\<gamma>w_arc: "arc \<gamma>w"
+    unfolding \<gamma>w_def using h\<gamma>_arc arc_reversepath by (by100 simp)
+  have h\<gamma>w_img: "path_image \<gamma>w = geotop_polyhedron L"
+    unfolding \<gamma>w_def using h\<gamma>_img path_image_reversepath by (by100 simp)
+  have h\<gamma>w_start: "pathstart \<gamma>w = w"
+  proof (cases "pathstart \<gamma> = w")
+    case True
+    show ?thesis
+      unfolding \<gamma>w_def using True by (by100 simp)
+  next
+    case False
+    have "w = pathfinish \<gamma>"
+      using hwE hE_eq False by (by100 blast)
+    thus ?thesis
+      unfolding \<gamma>w_def using False by (by100 (simp add: pathstart_reversepath))
+  qed
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
   fixes L :: "(real^2) set set"
