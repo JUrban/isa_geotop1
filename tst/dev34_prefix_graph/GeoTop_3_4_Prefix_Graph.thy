@@ -3455,6 +3455,282 @@ proof -
           assume hback_a:
               "closed_segment (?v b) (?v (Suc b)) =
                 closed_segment (?v (if a = 0 then p - 1 else a - 1)) (?v a)"
+          let ?R = "\<lambda>x y.
+            x \<in> {0..<p}
+            \<and> y \<in> {0..<p}
+            \<and> x < y
+            \<and> ?v x = ?v y
+            \<and> ?v (Suc x) \<noteq> ?v (Suc y)
+            \<and> closed_segment (?v x) (?v (Suc x)) =
+                closed_segment (?v (if y = 0 then p - 1 else y - 1)) (?v y)
+            \<and> closed_segment (?v y) (?v (Suc y)) =
+                closed_segment (?v (if x = 0 then p - 1 else x - 1)) (?v x)"
+          have hR_ab: "?R a b"
+            using ha hb hab havb hnext_ab hback_b hback_a by (by100 blast)
+          have hdescent_base1: "\<And>x. ?R x (Suc x) \<Longrightarrow> False"
+          proof -
+            fix x
+            assume hR: "?R x (Suc x)"
+            have hsame: "?v x = ?v (Suc x)"
+              using hR by (by100 blast)
+            hence hsame_sym: "?v (Suc x) = ?v x"
+              by (by100 simp)
+            have hnext_x_ne_cur: "?v (Suc x) \<noteq> ?v x"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                  [OF hL_linear hdegree hs])
+            show False
+              using hsame_sym hnext_x_ne_cur by (by100 blast)
+          qed
+          have hdescent_base2: "\<And>x. ?R x (Suc (Suc x)) \<Longrightarrow> False"
+          proof -
+            fix x
+            assume hR: "?R x (Suc (Suc x))"
+            have hsame: "?v x = ?v (Suc (Suc x))"
+              using hR by (by100 blast)
+            have hsnd_x:
+                "snd ((geotop_oriented_edge_successor L ^^ x) s) =
+                  closed_segment (?v x) (?v (Suc x))"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                  [OF hL_linear hdegree hs])
+            have hsnd_Suc_x:
+                "snd ((geotop_oriented_edge_successor L ^^ Suc x) s) =
+                  closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                  [OF hL_linear hdegree hs])
+            have hclosed_eq:
+                "closed_segment (?v (Suc x)) (?v (Suc (Suc x))) =
+                  closed_segment (?v x) (?v (Suc x))"
+              using hsame closed_segment_commute[of "?v x" "?v (Suc x)"]
+              by (by100 simp)
+            have hedge_eq:
+                "snd ((geotop_oriented_edge_successor L ^^ Suc x) s) =
+                  snd ((geotop_oriented_edge_successor L ^^ x) s)"
+              using hsnd_x hsnd_Suc_x hclosed_eq by (by100 simp)
+            have hdistinct:
+                "snd ((geotop_oriented_edge_successor L ^^ Suc x) s)
+                  \<noteq> snd ((geotop_oriented_edge_successor L ^^ x) s)"
+              by (rule hconsecutive_successor_edges_distinct)
+            show False
+              using hdistinct hedge_eq by (by100 blast)
+          qed
+          have hdescent_step:
+              "\<And>x y. ?R x y \<Longrightarrow> Suc (Suc x) < y \<Longrightarrow> ?R (Suc x) (y - 1)"
+          proof -
+            fix x y
+            assume hRxy: "?R x y"
+            assume hgapxy: "Suc (Suc x) < y"
+            have hx_mem: "x \<in> {0..<p}"
+              using hRxy by (by100 blast)
+            have hy_mem: "y \<in> {0..<p}"
+              using hRxy by (by100 blast)
+            have hxy: "x < y"
+              using hRxy by (by100 blast)
+            have hcur_xy: "?v x = ?v y"
+              using hRxy by (by100 blast)
+            have hnext_xy: "?v (Suc x) \<noteq> ?v (Suc y)"
+              using hRxy by (by100 blast)
+            have hback_y:
+                "closed_segment (?v x) (?v (Suc x)) =
+                  closed_segment (?v (if y = 0 then p - 1 else y - 1)) (?v y)"
+              using hRxy by (by100 blast)
+            have hback_x:
+                "closed_segment (?v y) (?v (Suc y)) =
+                  closed_segment (?v (if x = 0 then p - 1 else x - 1)) (?v x)"
+              using hRxy by (by100 blast)
+            have hy_pos: "0 < y"
+              using hxy by (by100 linarith)
+            have hpred_y_if: "(if y = 0 then p - 1 else y - 1) = y - 1"
+              using hy_pos by (by100 simp)
+            have hnext_x_ne_cur: "?v (Suc x) \<noteq> ?v x"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                  [OF hL_linear hdegree hs])
+            have hSuc_x_eq_pred_y: "?v (Suc x) = ?v (y - 1)"
+            proof -
+              have hpair:
+                  "{?v x, ?v (Suc x)} = {?v (y - 1), ?v y}"
+                using hback_y hpred_y_if
+                  closed_segment_eq[of "?v x" "?v (Suc x)" "?v (y - 1)" "?v y"]
+                by (by100 simp)
+              have hmem: "?v (Suc x) \<in> {?v (y - 1), ?v y}"
+                using hpair by (by100 blast)
+              have hnot_y: "?v (Suc x) \<noteq> ?v y"
+              proof
+                assume hbad: "?v (Suc x) = ?v y"
+                have "?v (Suc x) = ?v x"
+                  using hbad hcur_xy by (by100 simp)
+                thus False
+                  using hnext_x_ne_cur by (by100 blast)
+              qed
+              show ?thesis
+                using hmem hnot_y by (by100 blast)
+            qed
+            have hinner_left_mem: "Suc x \<in> {0..<p}"
+              using hgapxy hy_mem by (by100 simp)
+            have hinner_right_mem: "y - 1 \<in> {0..<p}"
+              using hy_mem hy_pos by (by100 simp)
+            have hinner_order: "Suc x < y - 1"
+              using hgapxy by (by100 linarith)
+            have hinner_current: "?v (Suc x) = ?v (y - 1)"
+              by (rule hSuc_x_eq_pred_y)
+            have hinner_next_ne: "?v (Suc (Suc x)) \<noteq> ?v (Suc (y - 1))"
+            proof
+              assume hbad: "?v (Suc (Suc x)) = ?v (Suc (y - 1))"
+              have hSuc_pred_y: "Suc (y - 1) = y"
+                using hy_pos by (by100 simp)
+              have hsnd_x:
+                  "snd ((geotop_oriented_edge_successor L ^^ x) s) =
+                    closed_segment (?v x) (?v (Suc x))"
+                by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                    [OF hL_linear hdegree hs])
+              have hsnd_Suc_x:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc x) s) =
+                    closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+                by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                    [OF hL_linear hdegree hs])
+              have hclosed_eq:
+                  "closed_segment (?v (Suc x)) (?v (Suc (Suc x))) =
+                    closed_segment (?v x) (?v (Suc x))"
+                using hbad hSuc_pred_y hcur_xy
+                  closed_segment_commute[of "?v x" "?v (Suc x)"]
+                by (by100 simp)
+              have hedge_eq:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc x) s) =
+                    snd ((geotop_oriented_edge_successor L ^^ x) s)"
+                using hsnd_x hsnd_Suc_x hclosed_eq by (by100 simp)
+              have hdistinct:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc x) s)
+                    \<noteq> snd ((geotop_oriented_edge_successor L ^^ x) s)"
+                by (rule hconsecutive_successor_edges_distinct)
+              show False
+                using hdistinct hedge_eq by (by100 blast)
+            qed
+            have hinner_back_right:
+                "closed_segment (?v (Suc x)) (?v (Suc (Suc x))) =
+                  closed_segment (?v (if y - 1 = 0 then p - 1 else y - 1 - 1))
+                    (?v (y - 1))"
+            proof -
+              let ?e = "closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+              have he_L_edge: "?e \<in> L \<and> geotop_is_edge ?e"
+                by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+                    [OF hL_linear hdegree hs])
+              have he_L: "?e \<in> L"
+                using he_L_edge by (by100 blast)
+              have he_edge: "geotop_is_edge ?e"
+                using he_L_edge by (by100 blast)
+              have hright_lt: "y - 1 < p"
+                using hinner_right_mem by (by100 simp)
+              have hinc_right: "?v (y - 1) \<in> ?e"
+                using hinner_current by (by100 simp)
+              have hcases:
+                  "?e =
+                    closed_segment (?v (if y - 1 = 0 then p - 1 else y - 1 - 1))
+                      (?v (y - 1))
+                  \<or> ?e = closed_segment (?v (y - 1)) (?v (Suc (y - 1)))"
+                by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+                    [OF hL_linear hdegree hs hp_pos hp_closed hright_lt he_L he_edge hinc_right])
+              have hnot_out:
+                  "?e \<noteq> closed_segment (?v (y - 1)) (?v (Suc (y - 1)))"
+              proof
+                assume hout:
+                    "?e = closed_segment (?v (y - 1)) (?v (Suc (y - 1)))"
+                have hpair:
+                    "{?v (Suc x), ?v (Suc (Suc x))} =
+                      {?v (y - 1), ?v (Suc (y - 1))}"
+                  using hout
+                    closed_segment_eq[of "?v (Suc x)" "?v (Suc (Suc x))"
+                      "?v (y - 1)" "?v (Suc (y - 1))"]
+                  by (by100 simp)
+                have hmem:
+                    "?v (Suc (Suc x)) \<in>
+                      {?v (y - 1), ?v (Suc (y - 1))}"
+                  using hpair by (by100 blast)
+                have hnext_left_ne_cur:
+                    "?v (Suc (Suc x)) \<noteq> ?v (Suc x)"
+                  by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                      [OF hL_linear hdegree hs])
+                have hnot_right: "?v (Suc (Suc x)) \<noteq> ?v (y - 1)"
+                proof
+                  assume hbad: "?v (Suc (Suc x)) = ?v (y - 1)"
+                  have "?v (Suc (Suc x)) = ?v (Suc x)"
+                    using hbad hinner_current by (by100 simp)
+                  thus False
+                    using hnext_left_ne_cur by (by100 blast)
+                qed
+                have "?v (Suc (Suc x)) = ?v (Suc (y - 1))"
+                  using hmem hnot_right by (by100 blast)
+                thus False
+                  using hinner_next_ne by (by100 blast)
+              qed
+              show ?thesis
+                using hcases hnot_out by (by100 blast)
+            qed
+            have hinner_back_left:
+                "closed_segment (?v (y - 1)) (?v (Suc (y - 1))) =
+                  closed_segment (?v (if Suc x = 0 then p - 1 else Suc x - 1))
+                    (?v (Suc x))"
+            proof -
+              let ?e = "closed_segment (?v (y - 1)) (?v (Suc (y - 1)))"
+              have he_L_edge: "?e \<in> L \<and> geotop_is_edge ?e"
+                by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+                    [OF hL_linear hdegree hs])
+              have he_L: "?e \<in> L"
+                using he_L_edge by (by100 blast)
+              have he_edge: "geotop_is_edge ?e"
+                using he_L_edge by (by100 blast)
+              have hleft_lt: "Suc x < p"
+                using hinner_left_mem by (by100 simp)
+              have hinc_left: "?v (Suc x) \<in> ?e"
+                using hinner_current by (by100 simp)
+              have hcases:
+                  "?e =
+                    closed_segment (?v (if Suc x = 0 then p - 1 else Suc x - 1))
+                      (?v (Suc x))
+                  \<or> ?e = closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+                by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+                    [OF hL_linear hdegree hs hp_pos hp_closed hleft_lt he_L he_edge hinc_left])
+              have hnot_out:
+                  "?e \<noteq> closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+              proof
+                assume hout:
+                    "?e = closed_segment (?v (Suc x)) (?v (Suc (Suc x)))"
+                have hpair:
+                    "{?v (y - 1), ?v (Suc (y - 1))} =
+                      {?v (Suc x), ?v (Suc (Suc x))}"
+                  using hout
+                    closed_segment_eq[of "?v (y - 1)" "?v (Suc (y - 1))"
+                      "?v (Suc x)" "?v (Suc (Suc x))"]
+                  by (by100 simp)
+                have hmem:
+                    "?v (Suc (y - 1)) \<in>
+                      {?v (Suc x), ?v (Suc (Suc x))}"
+                  using hpair by (by100 blast)
+                have hnext_right_ne_cur:
+                    "?v (Suc (y - 1)) \<noteq> ?v (y - 1)"
+                  by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                      [OF hL_linear hdegree hs])
+                have hnot_left: "?v (Suc (y - 1)) \<noteq> ?v (Suc x)"
+                proof
+                  assume hbad: "?v (Suc (y - 1)) = ?v (Suc x)"
+                  have "?v (Suc (y - 1)) = ?v (y - 1)"
+                    using hbad hinner_current by (by100 simp)
+                  thus False
+                    using hnext_right_ne_cur by (by100 blast)
+                qed
+                have "?v (Suc (y - 1)) = ?v (Suc (Suc x))"
+                  using hmem hnot_left by (by100 blast)
+                hence "?v (Suc (Suc x)) = ?v (Suc (y - 1))"
+                  by (by100 simp)
+                thus False
+                  using hinner_next_ne by (by100 blast)
+              qed
+              show ?thesis
+                using hcases hnot_out by (by100 blast)
+            qed
+            show "?R (Suc x) (y - 1)"
+              using hinner_left_mem hinner_right_mem hinner_order hinner_current
+                hinner_next_ne hinner_back_right hinner_back_left
+              by (by100 blast)
+          qed
           show False
           proof (cases "b = Suc a")
             case True
@@ -3726,7 +4002,8 @@ proof -
                   using hcases hnot_out by (by100 blast)
               qed
               show ?thesis
-                sorry
+                by (rule geotop_nat_inward_descent_prefix
+                    [where R="?R", OF hdescent_base1 hdescent_base2 hdescent_step hab hR_ab])
             qed
             show ?thesis
               by (rule hlong_reverse_trace_book)
