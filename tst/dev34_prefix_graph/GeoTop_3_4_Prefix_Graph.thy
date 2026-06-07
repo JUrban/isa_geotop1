@@ -747,7 +747,56 @@ lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_
     Moise Figure 3.2 cycle-cut step.  Enumerate the finite degree-two connected
     linear graph as a cyclic edge chain and split that cyclic order at the two
     named vertices. **)
-  sorry
+proof -
+  obtain s q p j where hpkg: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> fst s = P
+      \<and> q \<noteq> P
+      \<and> snd s = closed_segment P q
+      \<and> {q} \<in> L
+      \<and> 1 < p
+      \<and> fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q
+      \<and> (geotop_oriented_edge_successor L ^^ p) s = s
+      \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p
+      \<and> closed_segment (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s))
+          (fst s) \<in> L
+      \<and> geotop_is_edge
+          (closed_segment (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s))
+            (fst s))
+      \<and> 0 < j
+      \<and> j < p
+      \<and> fst ((geotop_oriented_edge_successor L ^^ j) s) = Q
+      \<and> L =
+          (((\<lambda>v. {v}) `
+            ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ k) s))
+            (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))) ` {0..<p}))"
+    using geotop_degree_two_started_cycle_second_vertex_index_prefix
+      [OF hL_linear hL_fin hL_conn hdegree hPL hQL hPQ]
+    by (elim exE)
+  have hcycle_cut:
+      "\<exists>C\<^sub>1 C\<^sub>2.
+        geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
+        \<and> geotop_is_broken_line C\<^sub>1
+        \<and> geotop_is_broken_line C\<^sub>2
+        \<and> geotop_arc_endpoints C\<^sub>1 {P, Q}
+        \<and> geotop_arc_endpoints C\<^sub>2 {P, Q}
+        \<and> geotop_arc_interior C\<^sub>1 {P, Q} \<inter>
+            geotop_arc_interior C\<^sub>2 {P, Q} = {}"
+    (**
+      Remaining book step: let \<open>C\<^sub>1\<close> be the carrier of the successor edges
+      with indices \<open>{0..<j}\<close>, and let \<open>C\<^sub>2\<close> be the complementary carrier
+      with indices \<open>{j..<p}\<close>.  The first is a finite endpoint linear graph
+      from \<open>P\<close> to \<open>Q\<close>; the second is the endpoint linear graph from \<open>Q\<close>
+      back to \<open>P\<close> through the closing edge. **)
+    sorry
+  show ?thesis
+    by (rule hcycle_cut)
+qed
 
 (** Local combinatorial helper for Moise 4.8/4.9, L1. If a simplex has
     two distinct vertices, the segment on those vertices is a 1-face. **)
