@@ -3073,6 +3073,92 @@ proof -
         [OF hs hclosed hinj hp_pos hminimal])
 qed
 
+lemma geotop_funpow_period_orbit_successor_image_prefix:
+  fixes f :: "'a \<Rightarrow> 'a"
+  assumes hp_pos: "0 < p"
+  assumes hreturn: "(f ^^ p) x = x"
+  shows "f ` ((\<lambda>k. (f ^^ k) x) ` {0..<p}) =
+      ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+proof
+  show "f ` ((\<lambda>k. (f ^^ k) x) ` {0..<p}) \<subseteq>
+      ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+  proof
+    fix y
+    assume hy: "y \<in> f ` ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+    obtain k where hk: "k \<in> {0..<p}"
+      and hy_eq: "y = f ((f ^^ k) x)"
+      using hy by (by100 blast)
+    have hk_lt: "k < p"
+      using hk by (by100 simp)
+    show "y \<in> ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+    proof (cases "Suc k < p")
+      case True
+      have hSuc_mem: "Suc k \<in> {0..<p}"
+        using True by (by100 simp)
+      have hy_Suc: "y = (f ^^ Suc k) x"
+        using hy_eq by (by100 simp)
+      show ?thesis
+        using hSuc_mem hy_Suc by (by100 blast)
+    next
+      case False
+      have hSuc_eq: "Suc k = p"
+        using False hk_lt by (by100 simp)
+      have hy_Suc: "y = (f ^^ Suc k) x"
+        using hy_eq by (by100 simp)
+      have hy_x: "y = x"
+        using hy_Suc hSuc_eq hreturn by (by100 simp)
+      have hzero_mem: "0 \<in> {0..<p}"
+        using hp_pos by (by100 simp)
+      show ?thesis
+      proof (rule image_eqI[where x = 0])
+        show "y = (f ^^ 0) x"
+          using hy_x by (by100 simp)
+        show "0 \<in> {0..<p}"
+          by (rule hzero_mem)
+      qed
+    qed
+  qed
+  show "((\<lambda>k. (f ^^ k) x) ` {0..<p}) \<subseteq>
+      f ` ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+  proof
+    fix y
+    assume hy: "y \<in> ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+    obtain k where hk: "k \<in> {0..<p}" and hy_eq: "y = (f ^^ k) x"
+      using hy by (by100 blast)
+    show "y \<in> f ` ((\<lambda>k. (f ^^ k) x) ` {0..<p})"
+    proof (cases k)
+      case 0
+      define j where "j = p - 1"
+      have hj_mem: "j \<in> {0..<p}"
+        unfolding j_def using hp_pos by (by100 simp)
+      have hp_eq: "p = Suc j"
+        unfolding j_def using hp_pos by (by100 simp)
+      have hy_img: "y = f ((f ^^ j) x)"
+        using hy_eq 0 hreturn hp_eq by (by100 simp)
+      show ?thesis
+        using hj_mem hy_img by (by100 blast)
+    next
+      case (Suc j)
+      have hj_mem: "j \<in> {0..<p}"
+        using hk Suc by (by100 simp)
+      have hy_img: "y = f ((f ^^ j) x)"
+        using hy_eq Suc by (by100 simp)
+      show ?thesis
+        using hj_mem hy_img by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_period_orbit_image_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hp_pos: "0 < p"
+  assumes hreturn: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "geotop_oriented_edge_successor L `
+      ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) =
+      ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p})"
+  by (rule geotop_funpow_period_orbit_successor_image_prefix
+      [OF hp_pos hreturn])
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
