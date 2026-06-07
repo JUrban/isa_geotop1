@@ -27,7 +27,7 @@ mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY
 mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
 mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
-SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
+SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh --extra index_theory_lib.py)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
