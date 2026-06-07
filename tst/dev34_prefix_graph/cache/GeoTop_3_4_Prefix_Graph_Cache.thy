@@ -4675,6 +4675,61 @@ proof -
     using hq\<^sub>1_in_e\<^sub>1 he\<^sub>12_inter hq\<^sub>1w by (by100 blast)
   have hq\<^sub>1_not_e\<^sub>3: "q\<^sub>1 \<notin> e\<^sub>3"
     using hq\<^sub>1_in_e\<^sub>1 he\<^sub>13_inter hq\<^sub>1w by (by100 blast)
+  have he\<^sub>1_punctured_arc_overlap_only_q\<^sub>1:
+      "(e\<^sub>1 - {w, q\<^sub>1}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) = {}"
+  proof
+    show "(e\<^sub>1 - {w, q\<^sub>1}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) \<subseteq> {}"
+    proof
+      fix y
+      assume hy: "y \<in> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      have hy_overlap: "y \<in> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+        using hy by (by100 blast)
+      hence hyq: "y = q\<^sub>1"
+        using hpunctured_arc_overlap by (by100 blast)
+      show "y \<in> {}"
+        using hy hyq by (by100 blast)
+    qed
+    show "{} \<subseteq> (e\<^sub>1 - {w, q\<^sub>1}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      by (by100 simp)
+  qed
+  have he\<^sub>2_punctured_arc_overlap_empty:
+      "(e\<^sub>2 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) = {}"
+  proof
+    show "(e\<^sub>2 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) \<subseteq> {}"
+    proof
+      fix y
+      assume hy: "y \<in> (e\<^sub>2 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      have hy_overlap: "y \<in> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+        using hy by (by100 blast)
+      hence hyq: "y = q\<^sub>1"
+        using hpunctured_arc_overlap by (by100 blast)
+      have "y \<in> e\<^sub>2"
+        using hy by (by100 blast)
+      thus "y \<in> {}"
+        using hyq hq\<^sub>1_not_e\<^sub>2 by (by100 blast)
+    qed
+    show "{} \<subseteq> (e\<^sub>2 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      by (by100 simp)
+  qed
+  have he\<^sub>3_punctured_arc_overlap_empty:
+      "(e\<^sub>3 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) = {}"
+  proof
+    show "(e\<^sub>3 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w}) \<subseteq> {}"
+    proof
+      fix y
+      assume hy: "y \<in> (e\<^sub>3 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      have hy_overlap: "y \<in> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+        using hy by (by100 blast)
+      hence hyq: "y = q\<^sub>1"
+        using hpunctured_arc_overlap by (by100 blast)
+      have "y \<in> e\<^sub>3"
+        using hy by (by100 blast)
+      thus "y \<in> {}"
+        using hyq hq\<^sub>1_not_e\<^sub>3 by (by100 blast)
+    qed
+    show "{} \<subseteq> (e\<^sub>3 - {w}) \<inter> (A\<^sub>1 - {w}) \<inter> (A\<^sub>2 - {w})"
+      by (by100 simp)
+  qed
   have hx\<^sub>1_ne_q\<^sub>1: "x\<^sub>1 \<noteq> q\<^sub>1"
   proof
     assume hx_eq: "x\<^sub>1 = q\<^sub>1"
