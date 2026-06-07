@@ -6055,6 +6055,15 @@ proof -
     show "x \<in> U"
       using hballU_s hx_poly_ball_s by (by100 blast)
   qed
+  have hp_\<sigma>: "p \<in> \<sigma>"
+  proof -
+    have hp_e: "p \<in> e"
+      using hp rel_interior_subset by (by100 blast)
+    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+    show ?thesis
+      using hp_e he_sub_\<sigma> by (by100 blast)
+  qed
   have hsemicircle_book:
     "\<exists>A. A \<subseteq> sphere p r \<inter> \<sigma>
       \<and> geotop_is_arc A
