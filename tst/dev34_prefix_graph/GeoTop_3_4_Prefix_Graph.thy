@@ -3486,7 +3486,40 @@ proof -
                 degree-two predecessor argument to the shorter pair
                 \<open>Suc a, b - 1\<close>; finite descent reaches the adjacent case above
                 or a repeated oriented state before the least period. **)
-              sorry
+            proof (cases "b = Suc (Suc a)")
+              case True
+              have hsnd_a:
+                  "snd ((geotop_oriented_edge_successor L ^^ a) s) =
+                    closed_segment (?v a) (?v (Suc a))"
+                by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                    [OF hL_linear hdegree hs])
+              have hsnd_Suc_a:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc a) s) =
+                    closed_segment (?v (Suc a)) (?v (Suc (Suc a)))"
+                by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+                    [OF hL_linear hdegree hs])
+              have hclosed_eq:
+                  "closed_segment (?v (Suc a)) (?v (Suc (Suc a))) =
+                    closed_segment (?v a) (?v (Suc a))"
+                using True havb closed_segment_commute[of "?v a" "?v (Suc a)"]
+                by (by100 simp)
+              have hedge_eq:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc a) s) =
+                    snd ((geotop_oriented_edge_successor L ^^ a) s)"
+                using hsnd_a hsnd_Suc_a hclosed_eq by (by100 simp)
+              have hdistinct:
+                  "snd ((geotop_oriented_edge_successor L ^^ Suc a) s)
+                    \<noteq> snd ((geotop_oriented_edge_successor L ^^ a) s)"
+                by (rule hconsecutive_successor_edges_distinct)
+              show ?thesis
+                using hdistinct hedge_eq by (by100 blast)
+            next
+              case False
+              have hgap: "Suc (Suc a) < b"
+                using hSuc_a_lt_b False by (by100 linarith)
+              show ?thesis
+                sorry
+            qed
             show ?thesis
               by (rule hlong_reverse_trace_book)
           qed
