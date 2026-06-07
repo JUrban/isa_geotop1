@@ -904,6 +904,50 @@ proof -
     thus ?thesis
       unfolding K\<^sub>2_def by (by100 blast)
   qed
+  have hK\<^sub>1_first_edge: "closed_segment P (?v (Suc 0)) \<in> K\<^sub>1"
+  proof -
+    have h0: "0 \<in> {0..<j}"
+      using hj_pos by (by100 simp)
+    have "closed_segment (?v 0) (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule imageI[OF h0])
+    thus ?thesis
+      unfolding K\<^sub>1_def using hP0 by (by100 simp)
+  qed
+  have hK\<^sub>1_last_edge: "closed_segment (?v (j - 1)) Q \<in> K\<^sub>1"
+  proof -
+    have hj_pred_mem: "j - 1 \<in> {0..<j}"
+      using hj_pos by (by100 simp)
+    have hSuc_pred: "Suc (j - 1) = j"
+      using hj_pos by (by100 simp)
+    have "closed_segment (?v (j - 1)) (?v (Suc (j - 1))) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule imageI[OF hj_pred_mem])
+    thus ?thesis
+      unfolding K\<^sub>1_def using hSuc_pred hQj by (by100 simp)
+  qed
+  have hK\<^sub>2_first_edge: "closed_segment Q (?v (Suc j)) \<in> K\<^sub>2"
+  proof -
+    have hj_mem: "j \<in> {j..<p}"
+      using hj_lt by (by100 simp)
+    have "closed_segment (?v j) (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule imageI[OF hj_mem])
+    thus ?thesis
+      unfolding K\<^sub>2_def using hQj by (by100 simp)
+  qed
+  have hK\<^sub>2_last_edge: "closed_segment (?v (p - 1)) P \<in> K\<^sub>2"
+  proof -
+    have hp_pred_mem: "p - 1 \<in> {j..<p}"
+      using hj_lt hp_pos by (by100 simp)
+    have hSuc_pred: "Suc (p - 1) = p"
+      using hp_pos by (by100 simp)
+    have "closed_segment (?v (p - 1)) (?v (Suc (p - 1))) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule imageI[OF hp_pred_mem])
+    thus ?thesis
+      unfolding K\<^sub>2_def using hSuc_pred hPp by (by100 simp)
+  qed
   have hK\<^sub>1_fin: "finite K\<^sub>1"
     unfolding K\<^sub>1_def using hpath1_vertices_fin by (by100 simp)
   have hK\<^sub>2_fin: "finite K\<^sub>2"
@@ -926,6 +970,68 @@ proof -
         \<subseteq> {e\<in>L. geotop_is_edge e}"
     by (rule geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix
         [OF hL_linear hdegree hs])
+  have hK\<^sub>1_first_edge_L_edge:
+      "closed_segment P (?v (Suc 0)) \<in> L
+        \<and> geotop_is_edge (closed_segment P (?v (Suc 0)))"
+  proof -
+    have h0: "0 \<in> {0..<j}"
+      using hj_pos by (by100 simp)
+    have "closed_segment (?v 0) (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule imageI[OF h0])
+    hence "closed_segment (?v 0) (?v (Suc 0)) \<in> {e\<in>L. geotop_is_edge e}"
+      using hK\<^sub>1_edge_orbit by (by100 blast)
+    thus ?thesis
+      using hP0 by (by100 simp)
+  qed
+  have hK\<^sub>1_last_edge_L_edge:
+      "closed_segment (?v (j - 1)) Q \<in> L
+        \<and> geotop_is_edge (closed_segment (?v (j - 1)) Q)"
+  proof -
+    have hj_pred_mem: "j - 1 \<in> {0..<j}"
+      using hj_pos by (by100 simp)
+    have hSuc_pred: "Suc (j - 1) = j"
+      using hj_pos by (by100 simp)
+    have "closed_segment (?v (j - 1)) (?v (Suc (j - 1))) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+      by (rule imageI[OF hj_pred_mem])
+    hence "closed_segment (?v (j - 1)) (?v (Suc (j - 1))) \<in>
+        {e\<in>L. geotop_is_edge e}"
+      using hK\<^sub>1_edge_orbit by (by100 blast)
+    thus ?thesis
+      using hSuc_pred hQj by (by100 simp)
+  qed
+  have hK\<^sub>2_first_edge_L_edge:
+      "closed_segment Q (?v (Suc j)) \<in> L
+        \<and> geotop_is_edge (closed_segment Q (?v (Suc j)))"
+  proof -
+    have hj_mem: "j \<in> {j..<p}"
+      using hj_lt by (by100 simp)
+    have "closed_segment (?v j) (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule imageI[OF hj_mem])
+    hence "closed_segment (?v j) (?v (Suc j)) \<in> {e\<in>L. geotop_is_edge e}"
+      using hK\<^sub>2_edge_orbit by (by100 blast)
+    thus ?thesis
+      using hQj by (by100 simp)
+  qed
+  have hK\<^sub>2_last_edge_L_edge:
+      "closed_segment (?v (p - 1)) P \<in> L
+        \<and> geotop_is_edge (closed_segment (?v (p - 1)) P)"
+  proof -
+    have hp_pred_mem: "p - 1 \<in> {j..<p}"
+      using hj_lt hp_pos by (by100 simp)
+    have hSuc_pred: "Suc (p - 1) = p"
+      using hp_pos by (by100 simp)
+    have "closed_segment (?v (p - 1)) (?v (Suc (p - 1))) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+      by (rule imageI[OF hp_pred_mem])
+    hence "closed_segment (?v (p - 1)) (?v (Suc (p - 1))) \<in>
+        {e\<in>L. geotop_is_edge e}"
+      using hK\<^sub>2_edge_orbit by (by100 blast)
+    thus ?thesis
+      using hSuc_pred hPp by (by100 simp)
+  qed
   have hK\<^sub>1_subset_L: "K\<^sub>1 \<subseteq> L"
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
