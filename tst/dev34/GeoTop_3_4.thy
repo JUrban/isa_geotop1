@@ -5608,6 +5608,22 @@ proof -
     thus ?thesis
       using h\<gamma>w_start h\<gamma>w_img by (by100 simp)
   qed
+  have h\<gamma>w_finish_poly: "pathfinish \<gamma>w \<in> geotop_polyhedron L"
+    using h\<gamma>w_finish_path_image h\<gamma>w_img by (by100 simp)
+  have h\<gamma>w_finish_endpoint_mem: "pathfinish \<gamma>w \<in> {w, pathfinish \<gamma>w}"
+    by (by100 simp)
+  have h\<gamma>w_finishL: "{pathfinish \<gamma>w} \<in> L"
+    by (rule geotop_broken_line_endpoint_in_finite_linear_graph_vertex_dev34
+        [OF hL_linear hL_finite hpoly_refl hbroken h\<gamma>w_endpoints
+          h\<gamma>w_finish_endpoint_mem])
+  have h\<gamma>w_finish_card_one:
+      "card {e\<in>L. geotop_is_edge e \<and> pathfinish \<gamma>w \<in> e} = 1"
+    by (rule geotop_broken_line_endpoint_vertex_incident_edge_card_one_dev34
+        [OF hL_linear hL_finite hpoly_refl hbroken h\<gamma>w_endpoints
+          h\<gamma>w_finish_endpoint_mem h\<gamma>w_finishL])
+  have h\<gamma>w_finish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>w)"
+    by (rule geotop_degree_one_vertex_graph_endpoint_dev34
+        [OF hL_linear h\<gamma>w_finishL h\<gamma>w_finish_card_one])
   show ?thesis
     sorry
 qed
