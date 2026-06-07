@@ -1032,6 +1032,38 @@ proof -
     thus ?thesis
       using hSuc_pred hPp by (by100 simp)
   qed
+  have hP_K\<^sub>1_incident_edge:
+      "\<exists>e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e"
+  proof -
+    have hP_inc: "P \<in> closed_segment P (?v (Suc 0))"
+      by (by100 simp)
+    show ?thesis
+      using hK\<^sub>1_first_edge hK\<^sub>1_first_edge_L_edge hP_inc by (by100 blast)
+  qed
+  have hQ_K\<^sub>1_incident_edge:
+      "\<exists>e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e"
+  proof -
+    have hQ_inc: "Q \<in> closed_segment (?v (j - 1)) Q"
+      by (by100 simp)
+    show ?thesis
+      using hK\<^sub>1_last_edge hK\<^sub>1_last_edge_L_edge hQ_inc by (by100 blast)
+  qed
+  have hQ_K\<^sub>2_incident_edge:
+      "\<exists>e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e"
+  proof -
+    have hQ_inc: "Q \<in> closed_segment Q (?v (Suc j))"
+      by (by100 simp)
+    show ?thesis
+      using hK\<^sub>2_first_edge hK\<^sub>2_first_edge_L_edge hQ_inc by (by100 blast)
+  qed
+  have hP_K\<^sub>2_incident_edge:
+      "\<exists>e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e"
+  proof -
+    have hP_inc: "P \<in> closed_segment (?v (p - 1)) P"
+      by (by100 simp)
+    show ?thesis
+      using hK\<^sub>2_last_edge hK\<^sub>2_last_edge_L_edge hP_inc by (by100 blast)
+  qed
   have hK\<^sub>1_subset_L: "K\<^sub>1 \<subseteq> L"
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
