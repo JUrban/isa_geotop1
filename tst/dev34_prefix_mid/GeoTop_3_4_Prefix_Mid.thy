@@ -6635,7 +6635,36 @@ lemma geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix:
     hypothesis to each smaller polygonal disk, choose a free 2-simplex away from
     the cutting triangle on each side, and transfer the selected-boundary-edge
     witnesses back to the original triangulation of \<open>J\<close>. **)
-  sorry
+proof -
+  define K\<^sub>1 where
+    "K\<^sub>1 =
+      {\<rho>\<in>K. \<rho> \<subseteq>
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>1)}"
+  define K\<^sub>2 where
+    "K\<^sub>2 =
+      {\<rho>\<in>K. \<rho> \<subseteq>
+        closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J\<^sub>2)}"
+  have hK\<^sub>1_sub_K: "K\<^sub>1 \<subseteq> K"
+    unfolding K\<^sub>1_def by (by100 blast)
+  have hK\<^sub>2_sub_K: "K\<^sub>2 \<subseteq> K"
+    unfolding K\<^sub>2_def by (by100 blast)
+  have hK\<^sub>1_fin: "finite K\<^sub>1"
+    by (rule finite_subset[OF hK\<^sub>1_sub_K hK_fin])
+  have hK\<^sub>2_fin: "finite K\<^sub>2"
+    by (rule finite_subset[OF hK\<^sub>2_sub_K hK_fin])
+  have hsubdisk_induction_transfer_book:
+    "card {\<sigma>\<^sub>2\<in>K. geotop_free_2_simplex K J \<sigma>\<^sub>2} \<ge> 2"
+    (**
+      Remaining Figure 3.2 book step for the named side complexes \<open>K\<^sub>1\<close> and
+      \<open>K\<^sub>2\<close>: prove that each side is a smaller polygonal-disk triangulation,
+      apply the strong induction hypothesis to obtain a free 2-simplex on each
+      side away from \<open>\<theta>\<close>, and use the separation/closure facts to show their
+      selected boundary-edge witnesses are still witnesses in the original
+      complex \<open>K\<close> and polygon \<open>J\<close>. **)
+    sorry
+  show ?thesis
+    by (rule hsubdisk_induction_transfer_book)
+qed
 
 lemma geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix:
   fixes J \<theta> :: "(real^2) set" and K :: "(real^2) set set"
