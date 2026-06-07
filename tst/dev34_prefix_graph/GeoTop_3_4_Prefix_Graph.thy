@@ -835,6 +835,76 @@ proof (intro allI impI)
     using hpos hle hEL_card by (by100 linarith)
 qed
 
+lemma geotop_indexed_edge_path_vertices_incident_edge_prefix:
+  fixes v :: "nat \<Rightarrow> real^2"
+  fixes a b :: nat
+  defines "K \<equiv> ((\<lambda>x. {x}) ` (v ` {a..b}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {a..<b})"
+  assumes hab: "a < b"
+  assumes hedge: "\<forall>k\<in>{a..<b}.
+      geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  shows "\<forall>w. {w} \<in> K \<longrightarrow>
+      (\<exists>e\<in>K. geotop_is_edge e \<and> w \<in> e)"
+proof (intro allI impI)
+  fix w
+  assume hwK: "{w} \<in> K"
+  have hcases:
+      "{w} \<in> ((\<lambda>x. {x}) ` (v ` {a..b}))
+        \<or> {w} \<in>
+          ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {a..<b})"
+    using hwK unfolding K_def by (by100 blast)
+  show "\<exists>e\<in>K. geotop_is_edge e \<and> w \<in> e"
+  proof (cases hcases)
+    case 1
+    obtain k where hk: "k \<in> {a..b}" and hw: "w = v k"
+      using 1 by (by100 blast)
+    show ?thesis
+    proof (cases "k < b")
+      case True
+      have hk_edge: "k \<in> {a..<b}"
+        using hk True by (by100 auto)
+      have heK: "closed_segment (v k) (v (Suc k)) \<in> K"
+        unfolding K_def using hk_edge by (by100 blast)
+      have hedge_k: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+        using hedge hk_edge by (by100 blast)
+      have hw_e: "w \<in> closed_segment (v k) (v (Suc k))"
+        using hw by (by100 simp)
+      show ?thesis
+        using heK hedge_k hw_e by (by100 blast)
+    next
+      case False
+      have hk_b: "k = b"
+        using hk False by (by100 auto)
+      have hb_pred_edge: "b - 1 \<in> {a..<b}"
+        using hab by (by100 auto)
+      have hSuc_pred: "Suc (b - 1) = b"
+        using hab by (by100 simp)
+      have heK: "closed_segment (v (b - 1)) (v (Suc (b - 1))) \<in> K"
+        unfolding K_def using hb_pred_edge by (by100 blast)
+      have hedge_pred:
+          "geotop_is_edge (closed_segment (v (b - 1)) (v (Suc (b - 1))))"
+        using hedge hb_pred_edge by (by100 blast)
+      have hw_e: "w \<in> closed_segment (v (b - 1)) (v (Suc (b - 1)))"
+        using hw hk_b hSuc_pred by (by100 simp)
+      show ?thesis
+        using heK hedge_pred hw_e by (by100 blast)
+    qed
+  next
+    case 2
+    obtain k where hk: "k \<in> {a..<b}"
+      and hseg: "{w} = closed_segment (v k) (v (Suc k))"
+      using 2 by (by100 blast)
+    have hedge_k: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hedge hk by (by100 blast)
+    have "geotop_is_edge {w}"
+      using hseg hedge_k by (by100 simp)
+    hence False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
