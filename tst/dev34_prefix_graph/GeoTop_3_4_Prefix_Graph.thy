@@ -3371,7 +3371,44 @@ proof -
             either has length one, contradicting consecutive-vertex
             distinctness, or gives the same oriented state twice before the
             least period. **)
-          sorry
+        proof -
+          fix a b
+          assume ha: "a \<in> {0..<p}"
+          assume hb: "b \<in> {0..<p}"
+          assume hab: "a < b"
+          assume havb: "?v a = ?v b"
+          assume hnext_ab: "?v (Suc a) \<noteq> ?v (Suc b)"
+          assume hback_b:
+              "closed_segment (?v a) (?v (Suc a)) =
+                closed_segment (?v (if b = 0 then p - 1 else b - 1)) (?v b)"
+          assume hback_a:
+              "closed_segment (?v b) (?v (Suc b)) =
+                closed_segment (?v (if a = 0 then p - 1 else a - 1)) (?v a)"
+          show False
+          proof (cases "b = Suc a")
+            case True
+            have hnext_a_ne_cur: "?v (Suc a) \<noteq> ?v a"
+              by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+                  [OF hL_linear hdegree hs])
+            have "?v (Suc a) = ?v a"
+              using True havb by (by100 simp)
+            thus ?thesis
+              using hnext_a_ne_cur by (by100 blast)
+          next
+            case False
+            have hlong_reverse_trace_book: False
+              (**
+                Remaining induction case \<open>Suc a < b\<close>: the two back-edge
+                equalities identify \<open>?v (Suc a)\<close> with \<open>?v (b - 1)\<close> and
+                \<open>?v (Suc b)\<close> with \<open>?v (a - 1)\<close>.  Apply the same
+                degree-two predecessor argument to the shorter pair
+                \<open>Suc a, b - 1\<close>; finite descent reaches the adjacent case above
+                or a repeated oriented state before the least period. **)
+              sorry
+            show ?thesis
+              by (rule hlong_reverse_trace_book)
+          qed
+        qed
         show False
         proof (cases m n rule: linorder_cases)
           case less
