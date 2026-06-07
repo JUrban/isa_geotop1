@@ -36,6 +36,32 @@ from pathlib import Path
 
 seen = set()
 seen_roots = set()
+control_re = re.compile(r"(session|options|sessions|document_files|directories)\b")
+
+def theory_tokens(raw_line):
+    tokens = re.findall(r'"[^"]+"|\S+', raw_line)
+    kept = []
+    bracket_depth = 0
+    for token in tokens:
+        if token.startswith("#"):
+            break
+        bracket_depth += token.count("[")
+        if bracket_depth > 0:
+            bracket_depth -= token.count("]")
+            continue
+        if any(part in token for part in "[]=+"):
+            continue
+        token = token.strip('"')
+        if token:
+            kept.append(token)
+    return kept
+
+def emit_theory(root, session_base, theory_dir, theory):
+    theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
+    theory_name = theory_path.as_posix()
+    if theory_name not in seen:
+        seen.add(theory_name)
+        print(theory_name)
 
 for root_arg in sys.argv[1:]:
     root = Path(root_arg)
@@ -63,19 +89,16 @@ for root_arg in sys.argv[1:]:
             continue
         if re.match(r"theories\b", line):
             in_theories = True
+            rest = re.sub(r"^theories\b", "", line, count=1).strip()
+            for theory in theory_tokens(rest):
+                emit_theory(root, session_base, theory_dir, theory)
             continue
         if in_theories:
-            if re.match(r"(session|options|sessions|document_files|directories)\b", line):
+            if control_re.match(line):
                 in_theories = False
                 continue
-            theory = line.split()[0].strip('"')
-            if not theory:
-                continue
-            theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
-            theory_name = theory_path.as_posix()
-            if theory_name not in seen:
-                seen.add(theory_name)
-                print(theory_name)
+            for theory in theory_tokens(line):
+                emit_theory(root, session_base, theory_dir, theory)
 PYEND
 )
 
@@ -107,7 +130,7 @@ f = sys.argv[1]
 lines = open(f, encoding="utf-8", errors="replace").readlines()
 i = 0
 while i < len(lines):
-    m = re.match(r'^(lemma|theorem|corollary|definition)\s+(\S+)', lines[i].strip())
+    m = re.match(r'^(lemma|theorem|corollary|definition|fun|abbreviation)\s+(\S+)', lines[i].strip())
     if m:
         kind, name = m.group(1), m.group(2).rstrip(':')
         # collect statement lines until proof/sorry/oops/by/where/begin
@@ -118,7 +141,8 @@ while i < len(lines):
             stmt.append(l.strip())
             ls = l.strip()
             if any(ls.startswith(k) for k in ['proof','sorry','oops','by ','unfolding','using',
-                    'lemma','theorem','corollary','definition','text','section','subsection','end']) and j > i:
+                    'lemma','theorem','corollary','definition','fun','abbreviation',
+                    'text','section','subsection','end']) and j > i:
                 break
             j += 1
         # flatten to one line
