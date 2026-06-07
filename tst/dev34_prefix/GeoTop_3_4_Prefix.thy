@@ -79,6 +79,37 @@ theorem Theorem_GT_4_4:
       component of I - (A\<^sub>1 \<union> A\<^sub>2). The cyclic order then transfers this frontier
       statement from V,W to Q,S. **)
 proof -
+  have hD44_book_steps:
+    "(\<exists>G. geotop_brick_decomposition G \<and>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+            = \<Union>{g\<in>G. g \<subseteq>
+                closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)} \<and>
+          (\<forall>g\<in>G. \<not> (g \<inter> A1 \<noteq> {} \<and> g \<inter> A2 \<noteq> {})))
+    \<and> (\<exists>G N'. geotop_brick_decomposition G \<and>
+       N' = \<Union>{g\<in>G. g \<inter> A1 \<noteq> {}} \<inter>
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
+       geotop_n_manifold_with_boundary_on N' (\<lambda>x y. norm (x - y)) 2)
+    \<and> (\<exists>J' B V W. geotop_is_n_sphere J'
+          (subspace_topology UNIV geotop_euclidean_topology J') 1 \<and>
+        geotop_is_broken_line B \<and> B \<subseteq> J' \<and>
+        V \<in> J \<and> W \<in> J \<and> B \<inter> J = {V, W})
+    \<and> (\<exists>C V W. V \<in> J \<and> W \<in> J \<and>
+       V \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
+       W \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
+       (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                 (geotop_polygon_interior J - (A1 \<union> A2)) P'))
+    \<and> (\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
+       \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
+       \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
+           C = geotop_component_at UNIV geotop_euclidean_topology
+                  (geotop_polygon_interior J - (A1 \<union> A2)) P'))"
+    (**
+      Combined Moise brick-neighborhood step from geotop.tex:931-943:
+      choose a sufficiently fine brick decomposition, form the regular
+      neighborhood of the bricks meeting \<open>A1\<close>, read off the frontier broken
+      line, and transfer the component-frontier conclusion to \<open>Q,S\<close>. **)
+    sorry
   \<comment> \<open>Book step 1: choose a rectangular brick-decomposition, fine enough that
     \<open>closure I\<close> is a union of bricks and no brick meets both \<open>A1\<close> and \<open>A2\<close>.\<close>
   have hD44_bricks:
@@ -86,16 +117,16 @@ proof -
           closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
             = \<Union>{g\<in>G. g \<subseteq>
                 closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)} \<and>
-          (\<forall>g\<in>G. \<not> (g \<inter> A1 \<noteq> {} \<and> g \<inter> A2 \<noteq> {}))"
-    sorry
+	          (\<forall>g\<in>G. \<not> (g \<inter> A1 \<noteq> {} \<and> g \<inter> A2 \<noteq> {}))"
+    using hD44_book_steps by (by100 blast)
   \<comment> \<open>Book step 2: \<open>N'\<close>, the union of the bricks meeting \<open>A1\<close> inside
     \<open>closure I\<close>, is a 2-manifold with boundary.\<close>
   have hD44_N'_manifold:
     "\<exists>G N'. geotop_brick_decomposition G \<and>
        N' = \<Union>{g\<in>G. g \<inter> A1 \<noteq> {}} \<inter>
           closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<and>
-       geotop_n_manifold_with_boundary_on N' (\<lambda>x y. norm (x - y)) 2"
-    sorry
+	       geotop_n_manifold_with_boundary_on N' (\<lambda>x y. norm (x - y)) 2"
+    using hD44_book_steps by (by100 blast)
   \<comment> \<open>Book step 3: take the component of \<open>Fr N'\<close> containing \<open>P\<close>; it is a
     1-sphere. Its intersection with \<open>Fr I\<close> gives the broken line \<open>B1\<close>,
     and the complementary broken line \<open>B2\<close> contains a sub-broken-line \<open>B\<close>
@@ -104,8 +135,8 @@ proof -
     "\<exists>J' B V W. geotop_is_n_sphere J'
           (subspace_topology UNIV geotop_euclidean_topology J') 1 \<and>
         geotop_is_broken_line B \<and> B \<subseteq> J' \<and>
-        V \<in> J \<and> W \<in> J \<and> B \<inter> J = {V, W}"
-    sorry
+	        V \<in> J \<and> W \<in> J \<and> B \<inter> J = {V, W}"
+    using hD44_book_steps by (by100 blast)
   \<comment> \<open>Book step 4: the broken line \<open>B\<close> lies in the boundary of the same
     component of \<open>I - (A1 \<union> A2)\<close>; hence its endpoints \<open>V,W\<close> are frontier
     points of one such component.\<close>
@@ -114,9 +145,9 @@ proof -
        V \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
        W \<in> geotop_frontier UNIV geotop_euclidean_topology C \<and>
        (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology
-                 (geotop_polygon_interior J - (A1 \<union> A2)) P')"
-    sorry
+	           C = geotop_component_at UNIV geotop_euclidean_topology
+	                 (geotop_polygon_interior J - (A1 \<union> A2)) P')"
+    using hD44_book_steps by (by100 blast)
   \<comment> \<open>Book step 5: by the cyclic order on \<open>Fr I\<close>, the endpoints \<open>V,W\<close>
     occur on opposite sides of \<open>P,R\<close>, so the same component that has
     \<open>V,W\<close> in its frontier also has \<open>Q,S\<close> in its frontier.\<close>
@@ -124,9 +155,9 @@ proof -
     "\<exists>C. Q \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology C
        \<and> (\<exists>P'. P' \<in> geotop_polygon_interior J - (A1 \<union> A2) \<and>
-           C = geotop_component_at UNIV geotop_euclidean_topology
-                  (geotop_polygon_interior J - (A1 \<union> A2)) P')"
-    sorry
+	           C = geotop_component_at UNIV geotop_euclidean_topology
+	                  (geotop_polygon_interior J - (A1 \<union> A2)) P')"
+    using hD44_book_steps by (by100 blast)
   show ?thesis using hD44_QS_component by (by100 blast)
 qed
 
