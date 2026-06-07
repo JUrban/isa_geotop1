@@ -16,7 +16,35 @@ lemma geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev3
     Core Fig. 4.10 cycle realization.  The finite linear graph whose carrier
     is a polygon has a cyclic edge order; place that ordered cycle as a
     subdivision of the frontier of a 2-simplex. **)
-  sorry
+proof -
+  have hconnected_nonisolated:
+      "geotop_complex_connected L
+      \<and> (\<forall>w. {w} \<in> L \<longrightarrow> (\<exists>e\<in>L. geotop_is_edge e \<and> w \<in> e))"
+    by (rule geotop_finite_linear_graph_polygon_connected_nonisolated_dev34
+        [OF hL_linear hL_finite hpolygon])
+  have hconn: "geotop_complex_connected L"
+    using hconnected_nonisolated by (by100 blast)
+  have hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hL_linear hL_finite hconn hpolygon])
+  have hboundary_cycle_model_book:
+      "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+    (**
+      Remaining Fig. 4.10 ordered-cycle realization: starting from the
+      finite connected degree-two linear graph, enumerate the oriented
+      successor orbit once around the cycle, build the corresponding
+      subdivision of the frontier of a 2-simplex, and map vertices/edges in
+      that cyclic order to obtain a simplicial isomorphism. **)
+    sorry
+  show ?thesis
+    by (rule hboundary_cycle_model_book)
+qed
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
   fixes L :: "(real^2) set set"
