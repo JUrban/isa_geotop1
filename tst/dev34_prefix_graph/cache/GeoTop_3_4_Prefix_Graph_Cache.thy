@@ -4851,6 +4851,211 @@ proof -
       qed
     qed
   qed
+  have htwo_selected_edges_same_arc_side:
+      "\<exists>S T. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+  proof -
+    let ?same_edges =
+      "\<exists>S T. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+    have hx\<^sub>1e\<^sub>1: "x\<^sub>1 \<in> e\<^sub>1 - {w}"
+      using hx\<^sub>1_edge_sphere by (by100 blast)
+    have hx\<^sub>2e\<^sub>2: "x\<^sub>2 \<in> e\<^sub>2 - {w}"
+      using hx\<^sub>2_edge_sphere by (by100 blast)
+    have hx\<^sub>3e\<^sub>3: "x\<^sub>3 \<in> e\<^sub>3 - {w}"
+      using hx\<^sub>3_edge_sphere by (by100 blast)
+    have hpair_A\<^sub>1:
+        "\<And>x y S T. x \<in> S - {w} \<Longrightarrow> y \<in> T - {w}
+          \<Longrightarrow> x \<in> A\<^sub>1 - {w} \<Longrightarrow> y \<in> A\<^sub>1 - {w}
+          \<Longrightarrow> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<Longrightarrow> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> S \<noteq> T \<Longrightarrow> ?same_edges"
+    proof -
+      fix x y S T
+      assume hxS: "x \<in> S - {w}"
+      assume hyT: "y \<in> T - {w}"
+      assume hxA: "x \<in> A\<^sub>1 - {w}"
+      assume hyA: "y \<in> A\<^sub>1 - {w}"
+      assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hST: "S \<noteq> T"
+      have hSmeet: "(S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}"
+        using hxS hxA by (by100 blast)
+      have hTmeet: "(T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}"
+        using hyT hyA by (by100 blast)
+      have hside: "((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+          \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+        \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+          \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {})"
+        using hSmeet hTmeet by (by100 blast)
+      have hbody:
+          "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+        using hS hT hST hside by (by100 blast)
+      show ?same_edges
+      proof (rule exI[where x=S])
+        show "\<exists>T. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+        proof (rule exI[where x=T])
+          show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+                \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+              \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+                \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+            by (rule hbody)
+        qed
+      qed
+    qed
+    have hpair_A\<^sub>2:
+        "\<And>x y S T. x \<in> S - {w} \<Longrightarrow> y \<in> T - {w}
+          \<Longrightarrow> x \<in> A\<^sub>2 - {w} \<Longrightarrow> y \<in> A\<^sub>2 - {w}
+          \<Longrightarrow> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<Longrightarrow> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> S \<noteq> T \<Longrightarrow> ?same_edges"
+    proof -
+      fix x y S T
+      assume hxS: "x \<in> S - {w}"
+      assume hyT: "y \<in> T - {w}"
+      assume hxA: "x \<in> A\<^sub>2 - {w}"
+      assume hyA: "y \<in> A\<^sub>2 - {w}"
+      assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hST: "S \<noteq> T"
+      have hSmeet: "(S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}"
+        using hxS hxA by (by100 blast)
+      have hTmeet: "(T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}"
+        using hyT hyA by (by100 blast)
+      have hside: "((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+          \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+        \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+          \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {})"
+        using hSmeet hTmeet by (by100 blast)
+      have hbody:
+          "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+        using hS hT hST hside by (by100 blast)
+      show ?same_edges
+      proof (rule exI[where x=S])
+        show "\<exists>T. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+            \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+              \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+        proof (rule exI[where x=T])
+          show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> T
+            \<and> (((S - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {}
+                \<and> (T - {w}) \<inter> (A\<^sub>1 - {w}) \<noteq> {})
+              \<or> ((S - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}
+                \<and> (T - {w}) \<inter> (A\<^sub>2 - {w}) \<noteq> {}))"
+            by (rule hbody)
+        qed
+      qed
+    qed
+    show ?thesis
+      using htwo_witnesses_same_arc_side
+    proof (elim disjE)
+      assume hside: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>2 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>1[where x=x\<^sub>1 and y=x\<^sub>2 and S=e\<^sub>1 and T=e\<^sub>2])
+        show "x\<^sub>1 \<in> e\<^sub>1 - {w}" by (rule hx\<^sub>1e\<^sub>1)
+        show "x\<^sub>2 \<in> e\<^sub>2 - {w}" by (rule hx\<^sub>2e\<^sub>2)
+        show "x\<^sub>1 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>2 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>2" by (rule he\<^sub>12)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>1[where x=x\<^sub>1 and y=x\<^sub>3 and S=e\<^sub>1 and T=e\<^sub>3])
+        show "x\<^sub>1 \<in> e\<^sub>1 - {w}" by (rule hx\<^sub>1e\<^sub>1)
+        show "x\<^sub>3 \<in> e\<^sub>3 - {w}" by (rule hx\<^sub>3e\<^sub>3)
+        show "x\<^sub>1 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>3" by (rule he\<^sub>13)
+      qed
+    next
+      assume hside: "x\<^sub>2 \<in> A\<^sub>1 - {w} \<and> x\<^sub>3 \<in> A\<^sub>1 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>1[where x=x\<^sub>2 and y=x\<^sub>3 and S=e\<^sub>2 and T=e\<^sub>3])
+        show "x\<^sub>2 \<in> e\<^sub>2 - {w}" by (rule hx\<^sub>2e\<^sub>2)
+        show "x\<^sub>3 \<in> e\<^sub>3 - {w}" by (rule hx\<^sub>3e\<^sub>3)
+        show "x\<^sub>2 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>1 - {w}" using hside by (by100 blast)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<noteq> e\<^sub>3" by (rule he\<^sub>23)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>2 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>2[where x=x\<^sub>1 and y=x\<^sub>2 and S=e\<^sub>1 and T=e\<^sub>2])
+        show "x\<^sub>1 \<in> e\<^sub>1 - {w}" by (rule hx\<^sub>1e\<^sub>1)
+        show "x\<^sub>2 \<in> e\<^sub>2 - {w}" by (rule hx\<^sub>2e\<^sub>2)
+        show "x\<^sub>1 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>2 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>2" by (rule he\<^sub>12)
+      qed
+    next
+      assume hside: "x\<^sub>1 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>2[where x=x\<^sub>1 and y=x\<^sub>3 and S=e\<^sub>1 and T=e\<^sub>3])
+        show "x\<^sub>1 \<in> e\<^sub>1 - {w}" by (rule hx\<^sub>1e\<^sub>1)
+        show "x\<^sub>3 \<in> e\<^sub>3 - {w}" by (rule hx\<^sub>3e\<^sub>3)
+        show "x\<^sub>1 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>1 \<noteq> e\<^sub>3" by (rule he\<^sub>13)
+      qed
+    next
+      assume hside: "x\<^sub>2 \<in> A\<^sub>2 - {w} \<and> x\<^sub>3 \<in> A\<^sub>2 - {w}"
+      show ?thesis
+      proof (rule hpair_A\<^sub>2[where x=x\<^sub>2 and y=x\<^sub>3 and S=e\<^sub>2 and T=e\<^sub>3])
+        show "x\<^sub>2 \<in> e\<^sub>2 - {w}" by (rule hx\<^sub>2e\<^sub>2)
+        show "x\<^sub>3 \<in> e\<^sub>3 - {w}" by (rule hx\<^sub>3e\<^sub>3)
+        show "x\<^sub>2 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "x\<^sub>3 \<in> A\<^sub>2 - {w}" using hside by (by100 blast)
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (by100 simp)
+        show "e\<^sub>2 \<noteq> e\<^sub>3" by (rule he\<^sub>23)
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
