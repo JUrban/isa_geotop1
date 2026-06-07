@@ -792,6 +792,12 @@ proof -
     using hcard hpair by (by100 linarith)
 qed
 
+lemma geotop_pair_set_eq_orientations_prefix:
+  fixes a b c d :: "'a"
+  assumes hpair: "{a, b} = {c, d}"
+  shows "(a = c \<and> b = d) \<or> (a = d \<and> b = c)"
+  using hpair by (by100 blast)
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2173,6 +2179,118 @@ proof -
       using hk by (by100 simp)
     ultimately show False
       by (by100 linarith)
+  qed
+  have hK\<^sub>1_closing_edge_collision_reversed:
+      "closed_segment (?v (p - 1)) P \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<Longrightarrow> \<exists>k\<in>{0..<j}. ?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+  proof -
+    assume hmem: "closed_segment (?v (p - 1)) P \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    obtain k where hk: "k \<in> {0..<j}"
+      and hpair: "{?v (p - 1), P} = {?v k, ?v (Suc k)}"
+      using hK\<^sub>1_closing_edge_collision[OF hmem] by (by100 blast)
+    have horient:
+        "(?v (p - 1) = ?v k \<and> P = ?v (Suc k))
+        \<or> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+      by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
+    show ?thesis
+    proof (rule disjE[OF horient])
+      assume hsame: "?v (p - 1) = ?v k \<and> P = ?v (Suc k)"
+      have False
+        using hK\<^sub>1_closing_edge_collision_same_orientation_false hk hsame
+        by (by100 blast)
+      thus ?thesis
+        by (rule FalseE)
+    next
+      assume hrev: "?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+      show ?thesis
+        using hk hrev by (by100 blast)
+    qed
+  qed
+  have hK\<^sub>2_initial_edge_collision_reversed:
+      "closed_segment P (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<Longrightarrow> \<exists>k\<in>{j..<p}. P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+  proof -
+    assume hmem: "closed_segment P (?v (Suc 0)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    obtain k where hk: "k \<in> {j..<p}"
+      and hpair: "{P, ?v (Suc 0)} = {?v k, ?v (Suc k)}"
+      using hK\<^sub>2_initial_edge_collision[OF hmem] by (by100 blast)
+    have horient:
+        "(P = ?v k \<and> ?v (Suc 0) = ?v (Suc k))
+        \<or> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+      by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
+    show ?thesis
+    proof (rule disjE[OF horient])
+      assume hsame: "P = ?v k \<and> ?v (Suc 0) = ?v (Suc k)"
+      have False
+        using hK\<^sub>2_initial_edge_collision_same_orientation_false hk hsame
+        by (by100 blast)
+      thus ?thesis
+        by (rule FalseE)
+    next
+      assume hrev: "P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+      show ?thesis
+        using hk hrev by (by100 blast)
+    qed
+  qed
+  have hK\<^sub>1_after_Q_edge_collision_reversed:
+      "closed_segment Q (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<Longrightarrow> \<exists>k\<in>{0..<j}. Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+  proof -
+    assume hmem: "closed_segment Q (?v (Suc j)) \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    obtain k where hk: "k \<in> {0..<j}"
+      and hpair: "{Q, ?v (Suc j)} = {?v k, ?v (Suc k)}"
+      using hK\<^sub>1_after_Q_edge_collision[OF hmem] by (by100 blast)
+    have horient:
+        "(Q = ?v k \<and> ?v (Suc j) = ?v (Suc k))
+        \<or> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+      by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
+    show ?thesis
+    proof (rule disjE[OF horient])
+      assume hsame: "Q = ?v k \<and> ?v (Suc j) = ?v (Suc k)"
+      have False
+        using hK\<^sub>1_after_Q_edge_collision_same_orientation_false hk hsame
+        by (by100 blast)
+      thus ?thesis
+        by (rule FalseE)
+    next
+      assume hrev: "Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+      show ?thesis
+        using hk hrev by (by100 blast)
+    qed
+  qed
+  have hK\<^sub>2_before_Q_edge_collision_reversed:
+      "closed_segment (?v (j - 1)) Q \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<Longrightarrow> \<exists>k\<in>{j..<p}. ?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+  proof -
+    assume hmem: "closed_segment (?v (j - 1)) Q \<in>
+        ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    obtain k where hk: "k \<in> {j..<p}"
+      and hpair: "{?v (j - 1), Q} = {?v k, ?v (Suc k)}"
+      using hK\<^sub>2_before_Q_edge_collision[OF hmem] by (by100 blast)
+    have horient:
+        "(?v (j - 1) = ?v k \<and> Q = ?v (Suc k))
+        \<or> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+      by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
+    show ?thesis
+    proof (rule disjE[OF horient])
+      assume hsame: "?v (j - 1) = ?v k \<and> Q = ?v (Suc k)"
+      have False
+        using hK\<^sub>2_before_Q_edge_collision_same_orientation_false hk hsame
+        by (by100 blast)
+      thus ?thesis
+        by (rule FalseE)
+    next
+      assume hrev: "?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+      show ?thesis
+        using hk hrev by (by100 blast)
+    qed
   qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
