@@ -1866,6 +1866,78 @@ proof -
     show ?thesis
       using hk hpair by (by100 blast)
   qed
+  have hK\<^sub>1_closing_edge_collision_not_initial:
+      "\<forall>k\<in>{0..<j}.
+        closed_segment (?v (p - 1)) P =
+          closed_segment (?v k) (?v (Suc k))
+        \<longrightarrow> k \<noteq> 0"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume heq: "closed_segment (?v (p - 1)) P =
+      closed_segment (?v k) (?v (Suc k))"
+    assume hk0: "k = 0"
+    have "closed_segment (?v (p - 1)) P =
+        closed_segment P (?v (Suc 0))"
+      using heq hk0 hP0 by (by100 simp)
+    thus False
+      using hP_endpoint_edges_distinct by (by100 blast)
+  qed
+  have hK\<^sub>2_initial_edge_collision_not_closing:
+      "\<forall>k\<in>{j..<p}.
+        closed_segment P (?v (Suc 0)) =
+          closed_segment (?v k) (?v (Suc k))
+        \<longrightarrow> k \<noteq> p - 1"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume heq: "closed_segment P (?v (Suc 0)) =
+      closed_segment (?v k) (?v (Suc k))"
+    assume hkp: "k = p - 1"
+    have hSuc_pred: "Suc (p - 1) = p"
+      using hp_pos by (by100 simp)
+    have "closed_segment (?v (p - 1)) P =
+        closed_segment P (?v (Suc 0))"
+      using heq hkp hSuc_pred hPp by (by100 simp)
+    thus False
+      using hP_endpoint_edges_distinct by (by100 blast)
+  qed
+  have hK\<^sub>1_after_Q_edge_collision_not_before_Q:
+      "\<forall>k\<in>{0..<j}.
+        closed_segment Q (?v (Suc j)) =
+          closed_segment (?v k) (?v (Suc k))
+        \<longrightarrow> k \<noteq> j - 1"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {0..<j}"
+    assume heq: "closed_segment Q (?v (Suc j)) =
+      closed_segment (?v k) (?v (Suc k))"
+    assume hkj: "k = j - 1"
+    have hSuc_pred: "Suc (j - 1) = j"
+      using hj_pos by (by100 simp)
+    have "closed_segment (?v (j - 1)) Q =
+        closed_segment Q (?v (Suc j))"
+      using heq hkj hSuc_pred hQj by (by100 simp)
+    thus False
+      using hQ_endpoint_edges_distinct by (by100 blast)
+  qed
+  have hK\<^sub>2_before_Q_edge_collision_not_after_Q:
+      "\<forall>k\<in>{j..<p}.
+        closed_segment (?v (j - 1)) Q =
+          closed_segment (?v k) (?v (Suc k))
+        \<longrightarrow> k \<noteq> j"
+  proof (intro ballI impI notI)
+    fix k
+    assume hk: "k \<in> {j..<p}"
+    assume heq: "closed_segment (?v (j - 1)) Q =
+      closed_segment (?v k) (?v (Suc k))"
+    assume hkj: "k = j"
+    have "closed_segment (?v (j - 1)) Q =
+        closed_segment Q (?v (Suc j))"
+      using heq hkj hQj by (by100 simp)
+    thus False
+      using hQ_endpoint_edges_distinct by (by100 blast)
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
