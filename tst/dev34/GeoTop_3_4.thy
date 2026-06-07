@@ -5575,6 +5575,21 @@ proof -
     thus ?thesis
       unfolding \<gamma>w_def using False by (simp add: pathstart_reversepath)
   qed
+  have hq_e: "q \<in> e"
+  proof -
+    have "q \<in> closed_segment w q"
+      by (by100 simp)
+    thus ?thesis
+      using he_seg by (by100 simp)
+  qed
+  have he_subset_poly: "e \<subseteq> geotop_polyhedron L"
+    using heL unfolding geotop_polyhedron_def by (by100 blast)
+  have hq_poly: "q \<in> geotop_polyhedron L"
+    using hq_e he_subset_poly by (by100 blast)
+  have hq_path_image: "q \<in> path_image \<gamma>w"
+    using hq_poly h\<gamma>w_img by (by100 simp)
+  have hfirst_edge_path_image: "closed_segment w q \<subseteq> path_image \<gamma>w"
+    using he_seg he_subset_poly h\<gamma>w_img by (by100 simp)
   show ?thesis
     sorry
 qed
