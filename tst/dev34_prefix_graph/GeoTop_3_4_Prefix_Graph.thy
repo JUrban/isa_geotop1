@@ -798,6 +798,43 @@ lemma geotop_pair_set_eq_orientations_prefix:
   shows "(a = c \<and> b = d) \<or> (a = d \<and> b = c)"
   using hpair by (by100 blast)
 
+lemma geotop_finite_subgraph_degree_one_or_two_from_ambient_degree_two_prefix:
+  fixes K L :: "(real^2) set set"
+  assumes hK_fin: "finite K"
+  assumes hL_fin: "finite L"
+  assumes hsub: "K \<subseteq> L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hinc: "\<forall>w. {w} \<in> K \<longrightarrow>
+      (\<exists>e\<in>K. geotop_is_edge e \<and> w \<in> e)"
+  shows "\<forall>w. {w} \<in> K \<longrightarrow>
+      card {e\<in>K. geotop_is_edge e \<and> w \<in> e} = 1
+      \<or> card {e\<in>K. geotop_is_edge e \<and> w \<in> e} = 2"
+proof (intro allI impI)
+  fix w
+  assume hwK: "{w} \<in> K"
+  let ?EK = "{e\<in>K. geotop_is_edge e \<and> w \<in> e}"
+  let ?EL = "{e\<in>L. geotop_is_edge e \<and> w \<in> e}"
+  have hwL: "{w} \<in> L"
+    using hsub hwK by (by100 blast)
+  have hEK_fin: "finite ?EK"
+    using hK_fin by (by100 simp)
+  have hEK_ne: "?EK \<noteq> {}"
+    using hinc hwK by (by100 blast)
+  have hpos: "0 < card ?EK"
+    by (rule geotop_finite_nonempty_card_pos_prefix[OF hEK_fin hEK_ne])
+  have hEK_sub_EL: "?EK \<subseteq> ?EL"
+    using hsub by (by100 blast)
+  have hEL_fin: "finite ?EL"
+    using hL_fin by (by100 simp)
+  have hle: "card ?EK \<le> card ?EL"
+    by (rule card_mono[OF hEL_fin hEK_sub_EL])
+  have hEL_card: "card ?EL = 2"
+    using hdegree hwL by (by100 blast)
+  show "card ?EK = 1 \<or> card ?EK = 2"
+    using hpos hle hEL_card by (by100 linarith)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
