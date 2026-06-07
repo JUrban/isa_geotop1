@@ -905,6 +905,191 @@ proof (intro allI impI)
   qed
 qed
 
+lemma geotop_indexed_edge_path_complex_connected_prefix:
+  fixes v :: "nat \<Rightarrow> real^2"
+  fixes a b :: nat
+  defines "K \<equiv> ((\<lambda>x. {x}) ` (v ` {a..b}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {a..<b})"
+  assumes hK: "geotop_is_complex K"
+  assumes hab: "a < b"
+  assumes hedge: "\<forall>k\<in>{a..<b}.
+      geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  shows "geotop_complex_connected K"
+  (**
+    Moise chain-connectedness step: the finite edge chain with consecutive
+    endpoint vertices cannot be decomposed into two disjoint nonempty
+    subcomplexes, because any subcomplex containing an edge contains both
+    endpoint vertices, and every chain edge shares a vertex with the next. **)
+proof -
+  have hvertexK: "\<forall>k\<in>{a..b}. {v k} \<in> K"
+    unfolding K_def by (by100 blast)
+  have hedgeK: "\<forall>k\<in>{a..<b}. closed_segment (v k) (v (Suc k)) \<in> K"
+    unfolding K_def by (by100 blast)
+  have hedge_ne:
+      "\<forall>k\<in>{a..<b}. v k \<noteq> v (Suc k)"
+  proof (intro ballI notI)
+    fix k
+    assume hk: "k \<in> {a..<b}"
+    assume heq: "v k = v (Suc k)"
+    have he: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hedge hk by (by100 blast)
+    have "geotop_is_edge {v k}"
+      using he heq by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
+  have hside_empty:
+      "\<And>A B. geotop_is_complex A \<Longrightarrow> geotop_is_complex B \<Longrightarrow>
+        A \<inter> B = {} \<Longrightarrow> K = A \<union> B \<Longrightarrow> {v a} \<in> A \<Longrightarrow> B = {}"
+  proof -
+    fix A B
+    assume hA_complex: "geotop_is_complex A"
+      and hB_complex: "geotop_is_complex B"
+      and hAB_disj: "A \<inter> B = {}"
+      and hK_cover: "K = A \<union> B"
+      and hvaA: "{v a} \<in> A"
+    have hA_face: "\<forall>\<sigma>\<in>A. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> A"
+      by (rule geotop_is_complex_face_closed[OF hA_complex])
+    have hB_face: "\<forall>\<sigma>\<in>B. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> B"
+      by (rule geotop_is_complex_face_closed[OF hB_complex])
+    have hvertices_A: "\<forall>n\<le>b - a. {v (a + n)} \<in> A"
+    proof (intro allI impI)
+      fix n
+      assume hn_le: "n \<le> b - a"
+      show "{v (a + n)} \<in> A"
+      using hn_le
+      proof (induct n)
+        case 0
+        show ?case
+          using hvaA by (by100 simp)
+      next
+        case (Suc n)
+        have hn_le: "n \<le> b - a"
+          using Suc.prems by (by100 linarith)
+        have hprevA: "{v (a + n)} \<in> A"
+          by (rule Suc.hyps[OF hn_le])
+        have hidx: "a + n \<in> {a..<b}"
+          using Suc.prems hab by (by100 auto)
+        let ?e = "closed_segment (v (a + n)) (v (Suc (a + n)))"
+        have heK: "?e \<in> K"
+          using hedgeK hidx by (by100 blast)
+        have he_case: "?e \<in> A \<or> ?e \<in> B"
+          using hK_cover heK by (by100 blast)
+        have hne: "v (a + n) \<noteq> v (Suc (a + n))"
+          using hedge_ne hidx by (by100 blast)
+        have hface_left: "geotop_is_face {v (a + n)} ?e"
+          by (rule geotop_closed_segment_is_face_endpoint[OF hne]) (by100 simp)
+        have hSuc_idx: "Suc (a + n) = a + Suc n"
+          by (by100 simp)
+        have hface_right: "geotop_is_face {v (a + Suc n)} ?e"
+          using hSuc_idx
+          by (rule geotop_closed_segment_is_face_endpoint[OF hne]) (by100 simp)
+        have heA: "?e \<in> A"
+        proof (rule disjE[OF he_case])
+          assume "?e \<in> A"
+          thus ?thesis .
+        next
+          assume heB: "?e \<in> B"
+          have "{v (a + n)} \<in> B"
+            using hB_face heB hface_left by (by100 blast)
+          hence "{v (a + n)} \<in> A \<inter> B"
+            using hprevA by (by100 blast)
+          thus ?thesis
+            using hAB_disj by (by100 blast)
+        qed
+        have "{v (a + Suc n)} \<in> A"
+          using hA_face heA hface_right by (by100 blast)
+        thus ?case
+          by (by100 simp)
+      qed
+    qed
+    have hvertices_all_A: "\<forall>k\<in>{a..b}. {v k} \<in> A"
+    proof (intro ballI)
+      fix k
+      assume hk: "k \<in> {a..b}"
+      have hk_eq: "k = a + (k - a)"
+        using hk by (by100 simp)
+      have hkdiff: "k - a \<le> b - a"
+        using hk by (by100 simp)
+      show "{v k} \<in> A"
+        using hvertices_A hkdiff hk_eq by (by100 simp)
+    qed
+    have hedges_all_A:
+        "\<forall>k\<in>{a..<b}. closed_segment (v k) (v (Suc k)) \<in> A"
+    proof (intro ballI)
+      fix k
+      assume hk: "k \<in> {a..<b}"
+      let ?e = "closed_segment (v k) (v (Suc k))"
+      have heK: "?e \<in> K"
+        using hedgeK hk by (by100 blast)
+      have he_case: "?e \<in> A \<or> ?e \<in> B"
+        using hK_cover heK by (by100 blast)
+      have hleftA: "{v k} \<in> A"
+        using hvertices_all_A hk by (by100 auto)
+      have hne: "v k \<noteq> v (Suc k)"
+        using hedge_ne hk by (by100 blast)
+      have hface_left: "geotop_is_face {v k} ?e"
+        by (rule geotop_closed_segment_is_face_endpoint[OF hne]) (by100 simp)
+      show "?e \<in> A"
+      proof (rule disjE[OF he_case])
+        assume "?e \<in> A"
+        thus ?thesis .
+      next
+        assume heB: "?e \<in> B"
+        have "{v k} \<in> B"
+          using hB_face heB hface_left by (by100 blast)
+        hence "{v k} \<in> A \<inter> B"
+          using hleftA by (by100 blast)
+        thus ?thesis
+          using hAB_disj by (by100 blast)
+      qed
+    qed
+    have hK_sub_A: "K \<subseteq> A"
+      unfolding K_def using hvertices_all_A hedges_all_A by (by100 blast)
+    have hB_sub_K: "B \<subseteq> K"
+      using hK_cover by (by100 blast)
+    have "B \<subseteq> A"
+      using hB_sub_K hK_sub_A by (by100 blast)
+    thus "B = {}"
+      using hAB_disj by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_complex_connected_def
+  proof (intro conjI notI)
+    show "geotop_is_complex K"
+      by (rule hK)
+    assume "\<exists>K1 K2. K1 \<noteq> {} \<and> K2 \<noteq> {} \<and> K1 \<inter> K2 = {} \<and>
+      K = K1 \<union> K2 \<and> geotop_is_complex K1 \<and> geotop_is_complex K2"
+    then obtain A B where hA_ne: "A \<noteq> {}" and hB_ne: "B \<noteq> {}"
+      and hAB_disj: "A \<inter> B = {}"
+      and hK_cover: "K = A \<union> B"
+      and hA_complex: "geotop_is_complex A"
+      and hB_complex: "geotop_is_complex B"
+      by (by100 blast)
+    have hvaK: "{v a} \<in> K"
+      using hvertexK hab by (by100 auto)
+    have hva_case: "{v a} \<in> A \<or> {v a} \<in> B"
+      using hK_cover hvaK by (by100 blast)
+    show False
+    proof (rule disjE[OF hva_case])
+      assume "{v a} \<in> A"
+      have "B = {}"
+        by (rule hside_empty
+            [OF hA_complex hB_complex hAB_disj hK_cover \<open>{v a} \<in> A\<close>])
+      thus False
+        using hB_ne by (by100 blast)
+    next
+      assume "{v a} \<in> B"
+      have "A = {}"
+        by (rule hside_empty
+            [OF hB_complex hA_complex _ _ \<open>{v a} \<in> B\<close>])
+           (use hAB_disj hK_cover in by100 blast)+
+      thus False
+        using hA_ne by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
