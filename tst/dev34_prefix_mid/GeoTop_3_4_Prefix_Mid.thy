@@ -10029,6 +10029,22 @@ proof -
       using hUQ_open hUS_open hUQ_sub hUS_sub hQ_front hS_front
       by (intro exI conjI)
   qed
+  have hD42_theta_component_split_book:
+      "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+        \<and> geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+    (**
+      Remaining D42 theta step, starting from \<open>hQS_frontier_witnesses\<close>:
+      pass to the Q-side and S-side components of \<open>I - A\<close>.  If these
+      sides met, Moise's broken-line extraction gives a Q-S chord in
+      \<open>I - A\<close>; together with the two boundary arcs from P to R this forms
+      the forbidden theta graph from Theorem 2.8. **)
+    sorry
   have htheta_contradiction_book:
     "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
             U\<^sub>S \<in> geotop_euclidean_topology \<and>
@@ -10036,12 +10052,7 @@ proof -
             S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S \<and>
             U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
             geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
-    (**
-      Remaining Moise Theorem 4.2 book step: if the Q-side and S-side
-      components of \<open>I - A\<close> met, extract a broken line from \<open>Q\<close> to \<open>S\<close>
-      in \<open>\<bar>I\<close> disjoint from \<open>A\<close>; together with the two boundary arcs this
-      forms the theta graph forbidden by Theorem 2.8. **)
-    sorry
+    using hD42_theta_component_split_book by (by100 blast)
   show ?thesis
     using htheta_contradiction_book by (by100 blast)
 qed
