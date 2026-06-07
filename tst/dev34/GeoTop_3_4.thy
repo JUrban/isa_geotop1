@@ -2,6 +2,59 @@ theory GeoTop_3_4
   imports "GeoTop34CoreDirty.GeoTop_3_4_Core"
 begin
 
+lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs:
+    "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_gt1: "1 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "2 < p"
+  (**
+    Degree-two successor cycles have at least three oriented edge states.  A
+    two-step return would make the second successor state traverse the same
+    closed segment in the reverse direction, while the successor-state
+    definition requires consecutive edge simplexes to be distinct. **)
+proof (rule ccontr)
+  assume hnot: "\<not> 2 < p"
+  have hp_eq2: "p = 2"
+    using hp_gt1 hnot by (by100 linarith)
+  let ?succ = "geotop_oriented_edge_successor L"
+  let ?t = "?succ s"
+  have hstep0:
+      "?t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s ?t"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL_linear hdegree_two hs])
+  have ht_state:
+      "?t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    using hstep0 by (by100 blast)
+  have hrel0: "geotop_oriented_edge_successor_state L s ?t"
+    using hstep0 by (by100 blast)
+  have hstep1:
+      "?succ ?t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L ?t (?succ ?t)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL_linear hdegree_two ht_state])
+  have hsucc2: "?succ ?t = s"
+    using hp_closed hp_eq2 by (by100 simp)
+  have hrel1: "geotop_oriented_edge_successor_state L ?t s"
+    using hstep1 hsucc2 by (by100 simp)
+  have hs_edge: "snd s = closed_segment (fst s) (fst ?t)"
+    using hrel0 unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have ht_edge: "snd ?t = closed_segment (fst ?t) (fst s)"
+    using hrel1 unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hedges_ne: "snd s \<noteq> snd ?t"
+    using hrel1 unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  have hedges_eq: "snd ?t = snd s"
+    using hs_edge ht_edge closed_segment_commute[of "fst ?t" "fst s"] by (by100 simp)
+  show False
+    using hedges_ne hedges_eq by (by100 blast)
+qed
+
 lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -34,7 +87,18 @@ lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
     2-simplex into one cyclic 1-complex with the same ordered vertices and
     edges, then define the simplicial isomorphism by the corresponding cyclic
     vertex order. **)
-  sorry
+proof -
+  have hp_gt2: "2 < p"
+    by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
+        [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
+  show ?thesis
+    (**
+      Remaining Figure 4.10 construction: use the cyclic list of at least
+      three vertices to subdivide the three sides of a 2-simplex, preserving
+      cyclic adjacency, and then define the simplicial isomorphism on vertices
+      by the ordered correspondence. **)
+    sorry
+qed
 
 lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
