@@ -8688,6 +8688,32 @@ proof -
   then show ?thesis by blast
 qed
 
+lemma geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix:
+  fixes J U :: "(real^2) set" and K :: "(real^2) set set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hK: "geotop_is_complex K"
+  assumes hK_fin: "finite K"
+  assumes hK_poly:
+    "geotop_polyhedron K =
+      closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hU_open: "U \<in> geotop_euclidean_topology"
+  assumes hI_sub_U:
+    "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J) \<subseteq> U"
+  shows "\<exists>h \<sigma>. top1_homeomorphism_on UNIV geotop_euclidean_topology
+                 UNIV geotop_euclidean_topology h
+          \<and> geotop_simplex_dim \<sigma> 2
+          \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+  (**
+    Moise Theorem 3.4/3.7 fold package.  Induct on the number of 2-simplexes
+    of the triangulated disk.  If more than one remains, choose a free
+    2-simplex by Theorem 3.3.  In Case 1, choose the Figure 3.3 quadrilateral
+    inside U and extend the vertex assignment simplicially; in Case 2 use the
+    inverse fold.  The fold is the identity off its local carrier, so the
+    finite composition is the identity on UNIV - U.  The last complex has one
+    2-simplex, so its boundary is carried to the frontier of a 2-simplex. **)
+  sorry
+
 (** from \<S>3 Theorem 4 (geotop.tex:782)
     LATEX VERSION: Let J be a polygon in R^2. Then there is a homeomorphism h: R^2 \<leftrightarrow> R^2,
       such that h(J) is the frontier of a 2-simplex. **)
@@ -9067,7 +9093,25 @@ proof -
                UNIV geotop_euclidean_topology h
             \<and> geotop_simplex_dim \<sigma> 2
             \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-      sorry
+    proof -
+      assume "\<theta> \<in> K"
+      assume "geotop_free_2_simplex K J \<theta>"
+      have hUNIV_open: "(UNIV :: (real^2) set) \<in> geotop_euclidean_topology"
+        unfolding geotop_euclidean_topology_eq_open_sets top1_open_sets_def
+        by (by100 simp)
+      have hI_sub_UNIV:
+        "closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)
+          \<subseteq> (UNIV :: (real^2) set)"
+        by (by100 simp)
+      show "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+        using geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix
+          [OF hJ hK hK_fin hK_poly hUNIV_open hI_sub_UNIV]
+        by (by100 blast)
+    qed
     show "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
           top1_homeomorphism_on UNIV geotop_euclidean_topology
                UNIV geotop_euclidean_topology h
@@ -9533,7 +9577,18 @@ proof -
               UNIV geotop_euclidean_topology h
           \<and> geotop_simplex_dim \<sigma> 2
           \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>
-          \<and> (\<forall>P\<in>UNIV - U. h P = P)" sorry
+          \<and> (\<forall>P\<in>UNIV - U. h P = P)"
+  proof -
+    obtain K where hK: "geotop_is_complex K" and hK_fin: "finite K"
+      and hK_poly:
+        "geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      using Theorem_GT_2_2[OF hJ] by (by100 blast)
+    show ?thesis
+      using geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix
+        [OF hJ hK hK_fin hK_poly hU_open hI_sub_U]
+      by (by100 blast)
+  qed
   (** (2) The composition of U-supported folds is itself U-supported; outside U the
          composition is the identity. **)
   show ?thesis using h_support_in_U by (by100 blast)
