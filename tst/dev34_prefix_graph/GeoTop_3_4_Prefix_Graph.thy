@@ -3406,6 +3406,69 @@ proof
     using hx_eq hedge_data by (by100 simp)
 qed
 
+lemma geotop_degree_two_vertex_successor_least_period_orbit_package_prefix:
+  fixes L :: "(real^2) set set" and w :: "real^2"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hwL: "{w} \<in> L"
+  shows "\<exists>s q p. s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> fst s = w
+      \<and> q \<noteq> w
+      \<and> snd s = closed_segment w q
+      \<and> {q} \<in> L
+      \<and> 0 < p
+      \<and> p \<le> Suc (card
+          {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})
+      \<and> (geotop_oriented_edge_successor L ^^ p) s = s
+      \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+proof -
+  let ?S = "{(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  obtain s q where hs: "s \<in> ?S"
+      and hfst: "fst s = w"
+      and hqw: "q \<noteq> w"
+      and hsnd: "snd s = closed_segment w q"
+      and hqL: "{q} \<in> L"
+    using geotop_degree_two_vertex_initial_oriented_edge_state_prefix
+      [OF hL hdegree hwL] by (by100 blast)
+  obtain p where hp_pos: "0 < p"
+      and hp_le: "p \<le> Suc (card ?S)"
+      and hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+      and hp_min: "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+    using geotop_degree_two_oriented_edge_successor_least_period_prefix
+      [OF hL hfin hdegree hs] by (by100 blast)
+  have hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+    by (rule geotop_degree_two_oriented_edge_successor_least_period_orbit_inj_prefix
+        [OF hL hdegree hs hp_pos hp_min])
+  have hcard: "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+    by (rule geotop_degree_two_oriented_edge_successor_least_period_orbit_card_prefix
+        [OF hL hdegree hs hp_pos hp_min])
+  show ?thesis
+  proof (intro exI conjI)
+    show "s \<in> ?S" by (rule hs)
+    show "fst s = w" by (rule hfst)
+    show "q \<noteq> w" by (rule hqw)
+    show "snd s = closed_segment w q" by (rule hsnd)
+    show "{q} \<in> L" by (rule hqL)
+    show "0 < p" by (rule hp_pos)
+    show "p \<le> Suc (card ?S)" by (rule hp_le)
+    show "(geotop_oriented_edge_successor L ^^ p) s = s" by (rule hp_closed)
+    show "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+        (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+      by (rule hp_min)
+    show "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+      by (rule hinj)
+    show "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+      by (rule hcard)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
