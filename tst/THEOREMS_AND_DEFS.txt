@@ -4430,7 +4430,7 @@ dev34/GeoTop_3_4.thy|theorem|Theorem_GT_4_10|13826
 dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_10|24808
 GeoTop.thy|theorem|Theorem_GT_4_2|24314
 dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_2|24314
-dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy|theorem|Theorem_GT_4_2|10034
+dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy|theorem|Theorem_GT_4_2|10054
 GeoTop.thy|theorem|Theorem_GT_4_3|24372
 dev34_pre/GeoTop.thy|theorem|Theorem_GT_4_3|24372
 dev34_prefix/GeoTop_3_4_Prefix.thy|theorem|Theorem_GT_4_3|7

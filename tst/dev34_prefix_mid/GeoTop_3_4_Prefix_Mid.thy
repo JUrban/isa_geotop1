@@ -10009,6 +10009,26 @@ proof -
         \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U"
     by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
         [OF hJ hS hS_ne_PR hA hAJ])
+  have hQS_frontier_witnesses:
+      "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+  proof -
+    obtain U\<^sub>Q where hUQ_open: "U\<^sub>Q \<in> geotop_euclidean_topology"
+      and hUQ_sub: "U\<^sub>Q \<subseteq> geotop_polygon_interior J - A"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
+      using hQ_frontier_witness by (elim exE conjE)
+    obtain U\<^sub>S where hUS_open: "U\<^sub>S \<in> geotop_euclidean_topology"
+      and hUS_sub: "U\<^sub>S \<subseteq> geotop_polygon_interior J - A"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
+      using hS_frontier_witness by (elim exE conjE)
+    show ?thesis
+      using hUQ_open hUS_open hUQ_sub hUS_sub hQ_front hS_front
+      by (intro exI conjI)
+  qed
   have htheta_contradiction_book:
     "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
             U\<^sub>S \<in> geotop_euclidean_topology \<and>
