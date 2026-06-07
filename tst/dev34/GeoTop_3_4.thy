@@ -65,6 +65,9 @@ lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_d
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
   assumes hs:
     "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
   assumes hp_gt2: "2 < p"
@@ -103,6 +106,20 @@ proof -
     by (rule finite_imageI[OF hidx_fin])
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hsuccessor_states:
+      "\<And>k. (geotop_oriented_edge_successor L ^^ k) s
+        \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+        [OF hL_linear hdegree_two hs])
+  have hconsecutive_edges:
+      "\<And>k. closed_segment (?v k) (?v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+    by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+        [OF hL_linear hdegree_two hs])
+  have hconsecutive_vertices_distinct:
+      "\<And>k. ?v (Suc k) \<noteq> ?v k"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+        [OF hL_linear hdegree_two hs])
   have hvertex_singletons:
       "\<And>k. k < p \<Longrightarrow> {?v k} \<in> L"
   proof -
@@ -280,7 +297,7 @@ proof -
         [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
   show ?thesis
     by (rule geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34
-        [OF hL_linear hL_finite hs hp_gt2 hp_closed hinj hcard hL_cycle])
+        [OF hL_linear hL_finite hdegree_two hs hp_gt2 hp_closed hinj hcard hL_cycle])
 qed
 
 lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
