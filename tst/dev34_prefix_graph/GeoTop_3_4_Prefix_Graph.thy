@@ -2113,6 +2113,32 @@ proof -
       by (rule geotop_degree_one_vertex_graph_endpoint_prefix
           [OF hK\<^sub>2_linear hQ_K\<^sub>2 hcard])
   qed
+  have hK\<^sub>1_broken_if_endpoint:
+      "(\<exists>w. {w} \<in> K\<^sub>1 \<and> geotop_graph_endpoint K\<^sub>1 w) \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>1)"
+    by (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix
+        [OF hK\<^sub>1_linear hK\<^sub>1_fin hK\<^sub>1_conn hK\<^sub>1_degree12])
+  have hK\<^sub>2_broken_if_endpoint:
+      "(\<exists>w. {w} \<in> K\<^sub>2 \<and> geotop_graph_endpoint K\<^sub>2 w) \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
+    by (rule geotop_finite_connected_degree_one_or_two_endpoint_linear_graph_broken_line_prefix
+        [OF hK\<^sub>2_linear hK\<^sub>2_fin hK\<^sub>2_conn hK\<^sub>2_degree12])
+  have hK\<^sub>1_broken_if_P_endpoint:
+      "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1 \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>1)"
+    using hP_K\<^sub>1 hP_K\<^sub>1_endpoint_if hK\<^sub>1_broken_if_endpoint by (by100 blast)
+  have hK\<^sub>2_broken_if_P_endpoint:
+      "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
+    using hP_K\<^sub>2 hP_K\<^sub>2_endpoint_if hK\<^sub>2_broken_if_endpoint by (by100 blast)
+  have hK\<^sub>1_broken_if_Q_endpoint:
+      "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1 \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>1)"
+    using hQ_K\<^sub>1 hQ_K\<^sub>1_endpoint_if hK\<^sub>1_broken_if_endpoint by (by100 blast)
+  have hK\<^sub>2_broken_if_Q_endpoint:
+      "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
+        geotop_is_broken_line (geotop_polyhedron K\<^sub>2)"
+    using hQ_K\<^sub>2 hQ_K\<^sub>2_endpoint_if hK\<^sub>2_broken_if_endpoint by (by100 blast)
   have hvertex_idx_cover:
       "?v ` {0..<p} =
         ?v ` {0..j} \<union> ?v ` ({j..<p} \<union> {p})"
