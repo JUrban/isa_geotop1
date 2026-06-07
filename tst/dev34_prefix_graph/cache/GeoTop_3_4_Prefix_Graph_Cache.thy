@@ -5840,6 +5840,232 @@ proof -
       qed
     qed
   qed
+  have he\<^sub>1_sphere_punctured_eq:
+      "(e\<^sub>1 - {w, q\<^sub>1}) \<inter> sphere w r = {x\<^sub>1}"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>1"
+      using hr_lt_q\<^sub>1 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> sphere w r = {x\<^sub>1}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>1w hr_pos hr_le x\<^sub>1_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>1_seg hx\<^sub>1_ne_q\<^sub>1 by (by100 blast)
+  qed
+  have he\<^sub>2_sphere_punctured_eq:
+      "(e\<^sub>2 - {w, q\<^sub>1}) \<inter> sphere w r = {x\<^sub>2}"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>2"
+      using hr_lt_q\<^sub>2 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>2 - {w}) \<inter> sphere w r = {x\<^sub>2}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>2w hr_pos hr_le x\<^sub>2_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>2_seg hq\<^sub>1_not_e\<^sub>2 by (by100 blast)
+  qed
+  have he\<^sub>3_sphere_punctured_eq:
+      "(e\<^sub>3 - {w, q\<^sub>1}) \<inter> sphere w r = {x\<^sub>3}"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>3"
+      using hr_lt_q\<^sub>3 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>3 - {w}) \<inter> sphere w r = {x\<^sub>3}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>3w hr_pos hr_le x\<^sub>3_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>3_seg hq\<^sub>1_not_e\<^sub>3 by (by100 blast)
+  qed
+  have hselected_sphere_germ_point_canonical:
+      "\<And>S x. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<Longrightarrow> x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+  proof -
+    fix S x
+    assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    assume hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+    have hcases: "S = e\<^sub>1 \<or> S = e\<^sub>2 \<or> S = e\<^sub>3"
+      using hS by (by100 simp)
+    show "x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      using hcases
+    proof (elim disjE)
+      assume hS_eq: "S = e\<^sub>1"
+      have hx_eq: "x = x\<^sub>1"
+        using hxS hS_eq he\<^sub>1_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hx_eq by (by100 simp)
+    next
+      assume hS_eq: "S = e\<^sub>2"
+      have hx_eq: "x = x\<^sub>2"
+        using hxS hS_eq he\<^sub>2_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hx_eq by (by100 simp)
+    next
+      assume hS_eq: "S = e\<^sub>3"
+      have hx_eq: "x = x\<^sub>3"
+        using hxS hS_eq he\<^sub>3_sphere_punctured_eq by (by100 simp)
+      show ?thesis
+        using hx_eq by (by100 simp)
+    qed
+  qed
+  have htwo_canonical_sphere_points_same_punctured_component:
+      "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x\<^sub>1 x\<^sub>2
+      \<or> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x\<^sub>1 x\<^sub>3
+      \<or> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) x\<^sub>2 x\<^sub>3"
+  proof -
+    let ?X = "geotop_polyhedron L - {w}"
+    let ?TX = "subspace_topology UNIV geotop_euclidean_topology ?X"
+    obtain S T x y where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hsame: "top1_in_same_component_on ?X ?TX x y"
+      using htwo_selected_sphere_germs_same_punctured_component by (elim exE conjE)
+    have hx_can: "x \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hS hxS])
+    have hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hT hyT])
+    have hx_by_edge:
+        "(S = e\<^sub>1 \<and> x = x\<^sub>1)
+        \<or> (S = e\<^sub>2 \<and> x = x\<^sub>2)
+        \<or> (S = e\<^sub>3 \<and> x = x\<^sub>3)"
+    proof -
+      have hcases: "S = e\<^sub>1 \<or> S = e\<^sub>2 \<or> S = e\<^sub>3"
+        using hS by (by100 simp)
+      show ?thesis
+        using hcases
+      proof (elim disjE)
+        assume hS_eq: "S = e\<^sub>1"
+        have hx_eq: "x = x\<^sub>1"
+          using hxS hS_eq he\<^sub>1_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hS_eq hx_eq by (by100 simp)
+      next
+        assume hS_eq: "S = e\<^sub>2"
+        have hx_eq: "x = x\<^sub>2"
+          using hxS hS_eq he\<^sub>2_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hS_eq hx_eq by (by100 simp)
+      next
+        assume hS_eq: "S = e\<^sub>3"
+        have hx_eq: "x = x\<^sub>3"
+          using hxS hS_eq he\<^sub>3_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hS_eq hx_eq by (by100 simp)
+      qed
+    qed
+    have hy_by_edge:
+        "(T = e\<^sub>1 \<and> y = x\<^sub>1)
+        \<or> (T = e\<^sub>2 \<and> y = x\<^sub>2)
+        \<or> (T = e\<^sub>3 \<and> y = x\<^sub>3)"
+    proof -
+      have hcases: "T = e\<^sub>1 \<or> T = e\<^sub>2 \<or> T = e\<^sub>3"
+        using hT by (by100 simp)
+      show ?thesis
+        using hcases
+      proof (elim disjE)
+        assume hT_eq: "T = e\<^sub>1"
+        have hy_eq: "y = x\<^sub>1"
+          using hyT hT_eq he\<^sub>1_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hT_eq hy_eq by (by100 simp)
+      next
+        assume hT_eq: "T = e\<^sub>2"
+        have hy_eq: "y = x\<^sub>2"
+          using hyT hT_eq he\<^sub>2_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hT_eq hy_eq by (by100 simp)
+      next
+        assume hT_eq: "T = e\<^sub>3"
+        have hy_eq: "y = x\<^sub>3"
+          using hyT hT_eq he\<^sub>3_sphere_punctured_eq by (by100 simp)
+        show ?thesis
+          using hT_eq hy_eq by (by100 simp)
+      qed
+    qed
+    have hxy_ne: "x \<noteq> y"
+      using hx_by_edge hy_by_edge hST hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 by (by100 blast)
+    have hx_cases: "x = x\<^sub>1 \<or> x = x\<^sub>2 \<or> x = x\<^sub>3"
+      using hx_can by (by100 simp)
+    have hy_cases: "y = x\<^sub>1 \<or> y = x\<^sub>2 \<or> y = x\<^sub>3"
+      using hy_can by (by100 simp)
+    show ?thesis
+      using hx_cases
+    proof (elim disjE)
+      assume hx: "x = x\<^sub>1"
+      show ?thesis
+        using hy_cases
+      proof (elim disjE)
+        assume hy: "y = x\<^sub>1"
+        have False
+          using hxy_ne hx hy by (by100 simp)
+        thus ?thesis by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>2"
+        show ?thesis
+          using hsame hx hy by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>3"
+        show ?thesis
+          using hsame hx hy by (by100 simp)
+      qed
+    next
+      assume hx: "x = x\<^sub>2"
+      show ?thesis
+        using hy_cases
+      proof (elim disjE)
+        assume hy: "y = x\<^sub>1"
+        have hsame_yx: "top1_in_same_component_on ?X ?TX y x"
+          by (rule top1_in_same_component_on_sym[OF hsame])
+        have hsame12: "top1_in_same_component_on ?X ?TX x\<^sub>1 x\<^sub>2"
+          using hsame_yx hx hy by (by100 simp)
+        show ?thesis
+          using hsame12 by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>2"
+        have False
+          using hxy_ne hx hy by (by100 simp)
+        thus ?thesis by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>3"
+        show ?thesis
+          using hsame hx hy by (by100 simp)
+      qed
+    next
+      assume hx: "x = x\<^sub>3"
+      show ?thesis
+        using hy_cases
+      proof (elim disjE)
+        assume hy: "y = x\<^sub>1"
+        have hsame_yx: "top1_in_same_component_on ?X ?TX y x"
+          by (rule top1_in_same_component_on_sym[OF hsame])
+        have hsame13: "top1_in_same_component_on ?X ?TX x\<^sub>1 x\<^sub>3"
+          using hsame_yx hx hy by (by100 simp)
+        show ?thesis
+          using hsame13 by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>2"
+        have hsame_yx: "top1_in_same_component_on ?X ?TX y x"
+          by (rule top1_in_same_component_on_sym[OF hsame])
+        have hsame23: "top1_in_same_component_on ?X ?TX x\<^sub>2 x\<^sub>3"
+          using hsame_yx hx hy by (by100 simp)
+        show ?thesis
+          using hsame23 by (by100 simp)
+      next
+        assume hy: "y = x\<^sub>3"
+        have False
+          using hxy_ne hx hy by (by100 simp)
+        thus ?thesis by (by100 simp)
+      qed
+    qed
+  qed
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
