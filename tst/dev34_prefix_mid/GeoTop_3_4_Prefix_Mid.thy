@@ -10040,64 +10040,7 @@ theorem Theorem_GT_4_2:
       intersecting Fr I only at Q,S. But then P,R lie in the same component of
       \<bar>I\<close> - B (since A is connected and A \<subseteq> \<bar>I\<close> - B), contradicting 2.8. **)
 proof -
-  (** By contradiction: suppose no such decomposition. Then \<exists>Q' \<in> I near Q and S' \<in> I
-      near S in the same component of I - A. **)
-  \<comment> \<open>Sub-claim D42-1: I - A has at least one component touching Q in its
-    frontier (since Q \<in> J = Fr(I), and A doesn't reach Q except via P/R).\<close>
-  have hD42_UQ_ex:
-    "\<exists>U\<^sub>Q. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
-            U\<^sub>Q \<subseteq> geotop_polygon_interior J - A \<and>
-            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q"
-  proof -
-    have hQ_ne_PR: "Q \<noteq> P \<and> Q \<noteq> R"
-    proof
-      show "Q \<noteq> P"
-      proof
-        assume "Q = P"
-        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
-        thus False using hcard by (by100 simp)
-      qed
-      show "Q \<noteq> R"
-      proof
-        assume "Q = R"
-        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
-        thus False using hcard by (by100 simp)
-      qed
-    qed
-    show ?thesis
-      by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
-          [OF hJ hQ hQ_ne_PR hA hAJ])
-  qed
-  \<comment> \<open>Sub-claim D42-2: similarly there's a U_S with S in its frontier.\<close>
-  have hD42_US_ex:
-    "\<exists>U\<^sub>S. U\<^sub>S \<in> geotop_euclidean_topology \<and>
-            U\<^sub>S \<subseteq> geotop_polygon_interior J - A \<and>
-            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-  proof -
-    have hS_ne_PR: "S \<noteq> P \<and> S \<noteq> R"
-    proof
-      show "S \<noteq> P"
-      proof
-        assume "S = P"
-        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
-        thus False using hcard by (by100 simp)
-      qed
-      show "S \<noteq> R"
-      proof
-        assume "S = R"
-        hence "card {P, Q, R, S} \<le> 3" by (simp add: card_insert_if)
-        thus False using hcard by (by100 simp)
-      qed
-    qed
-    show ?thesis
-      by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
-          [OF hJ hS hS_ne_PR hA hAJ])
-  qed
-  \<comment> \<open>Sub-claim D42-3: U_Q and U_S are DIFFERENT components, hence disjoint.
-    Argument: if they coincided (same component), broken-line from Q' to S'
-    in I - A could be detoured into a closed broken line B; B would
-    separate P, R into different components of I - B, contradicting 2.8.\<close>
-  have hD42_disjoint:
+  have hD42_decomposition:
     "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
               U\<^sub>S \<in> geotop_euclidean_topology \<and>
               Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
@@ -10106,13 +10049,8 @@ proof -
               geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
     by (rule geotop_polygon_arc_opposite_boundary_decomposition_prefix
         [OF hJ hP hQ hR hS hcyc hcard hA hAsub hAJ])
-  have hdecomp:
-    "\<exists>U\<^sub>Q U\<^sub>S. geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S \<and> U\<^sub>Q \<inter> U\<^sub>S = {} \<and>
-            U\<^sub>Q \<in> geotop_euclidean_topology \<and> U\<^sub>S \<in> geotop_euclidean_topology \<and>
-            Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q \<and>
-            S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S"
-    using hD42_disjoint by (by100 blast)
-  show ?thesis using hdecomp .
+  show ?thesis
+    using hD42_decomposition by (by100 blast)
 qed
 
 end
