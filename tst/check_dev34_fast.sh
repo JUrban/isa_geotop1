@@ -486,8 +486,16 @@ proc_cache_store() {
 }
 
 split_hot_one() {
-  file=$1
-  pattern=$2
+  local file=$1
+  local pattern=$2
+  local chain_pattern=${3:-}
+  local logic dirs
+  local start_line begin_line end_line next_top_line tail_end_line
+  local chain_dir chain_session chain_theory chain_digest chain_start_line
+  local chain_key chain_base chain_stamp_file
+  local key base split_dir prefix_theory prefix_session prefix_file prefix_parent_session
+  local parent_target split_key split_digest split_stamp_file
+  local tail_mode tail_suffix tail_theory tail_file tail_key tail_digest tail_stamp_file
   parent_context "$file" split-hot || return $?
 
   if [ ! -f "$file" ]; then
@@ -508,6 +516,40 @@ split_hot_one() {
     return 2
   fi
 
+  chain_dir=
+  chain_session=
+  chain_theory=
+  chain_digest=
+  chain_start_line=
+  if [ -n "$chain_pattern" ]; then
+    chain_start_line=$(rg -n -- "$chain_pattern" "$file" | head -n 1 | cut -d: -f1 || true)
+    if [ -z "$chain_start_line" ]; then
+      printf 'split-hot: chain pattern not found in %s: %s\n' "$file" "$chain_pattern" >&2
+      return 2
+    fi
+    if [ "$chain_start_line" -le "$begin_line" ] || [ "$start_line" -le "$chain_start_line" ]; then
+      printf 'split-hot: chain pattern must be before target in %s: %s\n' "$file" "$chain_pattern" >&2
+      return 2
+    fi
+
+    printf 'split-hot: warming chained prefix for %s before line %s\n' "$file" "$chain_start_line"
+    DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$chain_pattern"
+    parent_context "$file" split-hot || return $?
+
+    chain_key=$(printf '%s\n%s\n%s\n' "$file" "$chain_pattern" "$logic" | sha256sum | awk '{print substr($1, 1, 12)}')
+    chain_base=$(basename "$file" .thy)
+    chain_dir="$cache_dir/split-$chain_key"
+    chain_theory="${chain_base}_Split_${chain_key}_Prefix"
+    chain_session="${chain_base}_Split_${chain_key}_Prefix_Session"
+    chain_stamp_file=$(split_stamp "$file:$chain_pattern:prefix:force=${FORCE_PROOFS:-0}")
+    if [ -s "$chain_stamp_file" ]; then
+      chain_digest=$(cat "$chain_stamp_file")
+    else
+      printf 'split-hot: missing chained prefix stamp for %s before line %s\n' "$file" "$chain_start_line" >&2
+      return 1
+    fi
+  fi
+
   mkdir -p "$cache_dir"
   key=$(printf '%s\n%s\n%s\n' "$file" "$pattern" "$logic" | sha256sum | awk '{print substr($1, 1, 12)}')
   base=$(basename "$file" .thy)
@@ -515,24 +557,35 @@ split_hot_one() {
   prefix_theory="${base}_Split_${key}_Prefix"
   prefix_session="${base}_Split_${key}_Prefix_Session"
   prefix_file="$split_dir/$prefix_theory.thy"
+  prefix_parent_session=${chain_session:-$logic}
 
   mkdir -p "$split_dir"
   write_if_changed "$split_dir/ROOT" <<EOF2
-session $prefix_session = $logic +
+session $prefix_session = $prefix_parent_session +
   options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]
   theories
     $prefix_theory
 EOF2
 
-  awk -v name="$prefix_theory" -v begin_line="$begin_line" -v start_line="$start_line" '
-    NR == 1 { print "theory " name; next }
-    NR <= begin_line { print; next }
-    NR < start_line { print; next }
-    END { print ""; print "end" }
-  ' "$file" | write_if_changed "$prefix_file"
+  if [ -n "$chain_pattern" ]; then
+    {
+      printf 'theory %s\n' "$prefix_theory"
+      printf '  imports "%s.%s"\n' "$chain_session" "$chain_theory"
+      printf 'begin\n\n'
+      sed -n "${chain_start_line},$((start_line - 1))p" "$file"
+      printf '\nend\n'
+    } | write_if_changed "$prefix_file"
+  else
+    awk -v name="$prefix_theory" -v begin_line="$begin_line" -v start_line="$start_line" '
+      NR == 1 { print "theory " name; next }
+      NR <= begin_line { print; next }
+      NR < start_line { print; next }
+      END { print ""; print "end" }
+    ' "$file" | write_if_changed "$prefix_file"
+  fi
 
   if [ "${DEV34_FAST_VERBOSE:-0}" = 1 ]; then
-    printf 'session %s = %s +\n' "$prefix_session" "$logic"
+    printf 'session %s = %s +\n' "$prefix_session" "$prefix_parent_session"
     printf '  options [system_heaps, quick_and_dirty, skip_proofs, timeout = 240]\n'
     printf '  theories\n'
     printf '    %s\n' "$prefix_theory"
@@ -549,10 +602,17 @@ EOF2
   if [ "$parent_target" != none ]; then
     split_key=$(printf '%s\nparent=%s\n%s\n' "$split_key" "$parent_target" "$(cache_digest "$parent_target")")
   fi
+  if [ -n "$chain_pattern" ]; then
+    split_key=$(printf '%s\nchain=%s\n%s\n' "$split_key" "$chain_pattern" "$chain_digest")
+  fi
   split_digest=$(printf '%s' "$split_key" | sha256sum | awk '{print $1}')
   split_stamp_file=$(split_stamp "$file:$pattern:prefix:force=${FORCE_PROOFS:-0}")
 
-  mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
+  if [ -n "$chain_pattern" ]; then
+    mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$chain_dir"; printf '%s\n' -d "$split_dir")
+  else
+    mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
+  fi
   if [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
     printf 'split-hot: skipped prefix cache for %s before line %s\n' "$file" "$start_line"
   else
@@ -716,6 +776,26 @@ focus_target_parts() {
   focus_scan=${rest#*$'\t'}
 }
 
+focus_chain_pattern() {
+  case "$1" in
+    mid-support)
+      printf '%s\n' 'theorem Theorem_GT_3_4'
+      ;;
+    mid-d42)
+      printf '%s\n' 'theorem Theorem_GT_3_7'
+      ;;
+    dev34-fan)
+      printf '%s\n' geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
+      ;;
+    dev34-semicircle)
+      printf '%s\n' geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
+      ;;
+    *)
+      printf '%s\n' ''
+      ;;
+  esac
+}
+
 focus_list() {
   while IFS= read -r name; do
     focus_target_parts "$name"
@@ -730,6 +810,7 @@ focus_one() {
   name=$2
   shift 2
   focus_target_parts "$name" || return $?
+  chain_pattern=$(focus_chain_pattern "$name")
   if [ "$mode" != warm ]; then
     scan_pat=${*:-$focus_scan}
     if [ -n "$scan_pat" ]; then
@@ -740,13 +821,13 @@ focus_one() {
   fi
   case "$mode" in
     slice)
-      DEV34_FAST_SLICE_ONLY=1 split_hot_one "$focus_file" "$focus_pattern"
+      DEV34_FAST_SLICE_ONLY=1 split_hot_one "$focus_file" "$focus_pattern" "$chain_pattern"
       ;;
     full)
-      split_hot_one "$focus_file" "$focus_pattern"
+      split_hot_one "$focus_file" "$focus_pattern" "$chain_pattern"
       ;;
     warm)
-      DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$focus_file" "$focus_pattern"
+      DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$focus_file" "$focus_pattern" "$chain_pattern"
       ;;
     *)
       printf 'focus: bad mode %s\n' "$mode" >&2
