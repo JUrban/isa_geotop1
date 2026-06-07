@@ -6527,6 +6527,22 @@ proof -
         hx\<^sub>3_edge_sphere he\<^sub>12 he\<^sub>13 he\<^sub>23
       by (by100 blast)
   qed
+  have hconnected_disjoint_incident_germ_witness:
+      "\<exists>S T x y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> x \<in> (S - {w}) \<inter> sphere w r
+        \<and> y \<in> (T - {w}) \<inter> sphere w r
+        \<and> x \<noteq> y
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> x \<in> N
+        \<and> y \<in> N"
+    using hconnected_distinct_incident_germ_witness he\<^sub>1E he\<^sub>2E he\<^sub>3E
+      hincident_selected_punctured_disj
+    by (by100 blast)
   have hsame_arc_side_two_germs_impossible: False
     (**
       Book local-1-manifold contradiction: the two arcs of the simple closed
