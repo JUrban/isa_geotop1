@@ -2,6 +2,47 @@ theory GeoTop_3_4_Prefix_Graph
   imports "GeoTop34PrefixGraphCacheDirty.GeoTop_3_4_Prefix_Graph_Cache"
 begin
 
+lemma geotop_singleton_not_edge_prefix:
+  fixes v :: "real^2"
+  shows "\<not> geotop_is_edge {v}"
+proof
+  assume hedge: "geotop_is_edge {v}"
+  have hdim0: "geotop_simplex_dim {v} 0"
+    by (rule geotop_singleton_is_simplex)
+  have hdim1: "geotop_simplex_dim {v} 1"
+    using hedge unfolding geotop_is_edge_def by (by100 simp)
+  have "0 = (1::nat)"
+    by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+  thus False
+    by (by100 linarith)
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_period_edge_orbit_no_singletons_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hx: "{v} \<in> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` I)"
+  shows False
+proof -
+  let ?E = "((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` I)"
+  have hE_sub: "?E \<subseteq> {e\<in>L. geotop_is_edge e}"
+    by (rule geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix
+        [OF hL hdegree hs])
+  have hedge: "geotop_is_edge {v}"
+    using hE_sub hx by (by100 blast)
+  have hnot: "\<not> geotop_is_edge {v}"
+    by (rule geotop_singleton_not_edge_prefix)
+  show False
+    using hedge hnot by (by100 blast)
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
