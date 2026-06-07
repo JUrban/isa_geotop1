@@ -9038,7 +9038,43 @@ proof -
                    UNIV geotop_euclidean_topology h
                 \<and> geotop_simplex_dim \<sigma> 2
                 \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
-    sorry
+  proof -
+    fix K :: "(real^2) set set"
+    assume hK: "geotop_is_complex K"
+      and hK_fin: "finite K"
+      and hK_poly:
+        "geotop_polyhedron K =
+          closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+      and hcard_gt1: "card {\<sigma>\<in>K. geotop_simplex_dim \<sigma> 2} > 1"
+    have hfree_triangle_book:
+      "\<exists>\<theta>\<in>K. geotop_free_2_simplex K J \<theta>"
+    proof -
+      obtain \<theta> where h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+        using Theorem_GT_3_3[OF hJ hK hK_poly hcard_gt1] by (by100 blast)
+      have h\<theta>K: "\<theta> \<in> K"
+        using h\<theta>free unfolding geotop_free_2_simplex_def by (by100 blast)
+      show ?thesis
+        using h\<theta>K h\<theta>free by (by100 blast)
+    qed
+    obtain \<theta> where h\<theta>K: "\<theta> \<in> K"
+      and h\<theta>free: "geotop_free_2_simplex K J \<theta>"
+      using hfree_triangle_book by blast
+    have hfold_induction_book:
+      "\<theta> \<in> K \<Longrightarrow>
+       geotop_free_2_simplex K J \<theta> \<Longrightarrow>
+       \<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      sorry
+    show "\<exists>(h :: real^2 \<Rightarrow> real^2) (\<sigma> :: (real^2) set).
+          top1_homeomorphism_on UNIV geotop_euclidean_topology
+               UNIV geotop_euclidean_topology h
+            \<and> geotop_simplex_dim \<sigma> 2
+            \<and> h ` J = geotop_frontier UNIV geotop_euclidean_topology \<sigma>"
+      by (rule hfold_induction_book[OF h\<theta>K h\<theta>free])
+  qed
   \<comment> \<open>Sub-claim 34-NonEmpty: any triangulation K of closure(polygon_interior J)
     has at least one 2-simplex (since the polyhedron has non-empty interior
     and 2-simplexes are the dim-2 simplexes that contribute to the polyhedron).
