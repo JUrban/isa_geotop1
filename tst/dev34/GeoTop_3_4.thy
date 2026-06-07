@@ -83,7 +83,57 @@ lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_d
     use the cyclic list of at least three vertices to subdivide the three sides
     of a 2-simplex, preserving cyclic adjacency, and define the simplicial
     isomorphism by the ordered vertex correspondence. **)
-  sorry
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?E = "((\<lambda>j. closed_segment (?v j) (?v (Suc j))) ` {0..<p})"
+  let ?V = "(?v ` {0..<p})"
+  have hp_pos: "0 < p"
+    using hp_gt2 by (by100 linarith)
+  have hidx_fin: "finite {0..<p}"
+    by (by100 simp)
+  have hV_fin: "finite ?V"
+    by (rule finite_imageI[OF hidx_fin])
+  have hE_fin: "finite ?E"
+    by (rule finite_imageI[OF hidx_fin])
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hvertex_singletons:
+      "\<And>k. k < p \<Longrightarrow> {?v k} \<in> L"
+  proof -
+    fix k
+    assume hk: "k < p"
+    have hk_mem: "k \<in> {0..<p}"
+      using hk by (by100 simp)
+    have "{?v k} \<in> ((\<lambda>v. {v}) ` ?V)"
+      using hk_mem by (by100 blast)
+    thus "{?v k} \<in> L"
+      using hL_cycle by (by100 blast)
+  qed
+  have hvertices_in_complex_vertices:
+      "\<And>k. k < p \<Longrightarrow> ?v k \<in> geotop_complex_vertices L"
+  proof -
+    fix k
+    assume hk: "k < p"
+    have "{?v k} \<in> L"
+      by (rule hvertex_singletons[OF hk])
+    thus "?v k \<in> geotop_complex_vertices L"
+      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] by (by100 simp)
+  qed
+  have hedge_members:
+      "\<And>k. k < p \<Longrightarrow> closed_segment (?v k) (?v (Suc k)) \<in> L"
+  proof -
+    fix k
+    assume hk: "k < p"
+    have hk_mem: "k \<in> {0..<p}"
+      using hk by (by100 simp)
+    have "closed_segment (?v k) (?v (Suc k)) \<in> ?E"
+      using hk_mem by (by100 blast)
+    thus "closed_segment (?v k) (?v (Suc k)) \<in> L"
+      using hL_cycle by (by100 blast)
+  qed
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
