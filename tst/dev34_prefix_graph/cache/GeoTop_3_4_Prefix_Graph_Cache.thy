@@ -1802,6 +1802,88 @@ proof -
     show "\<exists>x. x \<in> (e\<^sub>3 - {w}) \<inter> ball w \<delta>"
       using hx he\<^sub>3_seg by (by100 blast)
   qed
+  have hdist_q\<^sub>1_pos: "0 < dist w q\<^sub>1"
+    using hq\<^sub>1w by (by100 simp)
+  have hdist_q\<^sub>2_pos: "0 < dist w q\<^sub>2"
+    using hq\<^sub>2w by (by100 simp)
+  have hdist_q\<^sub>3_pos: "0 < dist w q\<^sub>3"
+    using hq\<^sub>3w by (by100 simp)
+  obtain r where hr_pos: "0 < r"
+      and hr_lt_q\<^sub>1: "r < dist w q\<^sub>1"
+      and hr_lt_q\<^sub>2: "r < dist w q\<^sub>2"
+      and hr_lt_q\<^sub>3: "r < dist w q\<^sub>3"
+  proof -
+    let ?m = "min (dist w q\<^sub>1) (min (dist w q\<^sub>2) (dist w q\<^sub>3))"
+    let ?r = "?m / 2"
+    have hm_pos: "0 < ?m"
+      using hdist_q\<^sub>1_pos hdist_q\<^sub>2_pos hdist_q\<^sub>3_pos by (by100 simp)
+    have hr_pos': "0 < ?r"
+      using hm_pos by (by100 simp)
+    have hm_le_q\<^sub>1: "?m \<le> dist w q\<^sub>1"
+      by (by100 simp)
+    have hm_le_q\<^sub>2: "?m \<le> dist w q\<^sub>2"
+      by (by100 simp)
+    have hm_le_q\<^sub>3: "?m \<le> dist w q\<^sub>3"
+      by (by100 simp)
+    have hr_lt_q\<^sub>1': "?r < dist w q\<^sub>1"
+      using hm_pos hm_le_q\<^sub>1 by (by100 linarith)
+    have hr_lt_q\<^sub>2': "?r < dist w q\<^sub>2"
+      using hm_pos hm_le_q\<^sub>2 by (by100 linarith)
+    have hr_lt_q\<^sub>3': "?r < dist w q\<^sub>3"
+      using hm_pos hm_le_q\<^sub>3 by (by100 linarith)
+    show ?thesis
+      by (rule that[OF hr_pos' hr_lt_q\<^sub>1' hr_lt_q\<^sub>2' hr_lt_q\<^sub>3'])
+  qed
+  define x\<^sub>1 where "x\<^sub>1 = w + (r / dist w q\<^sub>1) *\<^sub>R (q\<^sub>1 - w)"
+  define x\<^sub>2 where "x\<^sub>2 = w + (r / dist w q\<^sub>2) *\<^sub>R (q\<^sub>2 - w)"
+  define x\<^sub>3 where "x\<^sub>3 = w + (r / dist w q\<^sub>3) *\<^sub>R (q\<^sub>3 - w)"
+  have hx\<^sub>1_edge_sphere: "x\<^sub>1 \<in> (e\<^sub>1 - {w}) \<inter> sphere w r"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>1"
+      using hr_lt_q\<^sub>1 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> sphere w r = {x\<^sub>1}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>1w hr_pos hr_le x\<^sub>1_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>1_seg by (by100 blast)
+  qed
+  have hx\<^sub>2_edge_sphere: "x\<^sub>2 \<in> (e\<^sub>2 - {w}) \<inter> sphere w r"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>2"
+      using hr_lt_q\<^sub>2 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>2 - {w}) \<inter> sphere w r = {x\<^sub>2}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>2w hr_pos hr_le x\<^sub>2_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>2_seg by (by100 blast)
+  qed
+  have hx\<^sub>3_edge_sphere: "x\<^sub>3 \<in> (e\<^sub>3 - {w}) \<inter> sphere w r"
+  proof -
+    have hr_le: "r \<le> dist w q\<^sub>3"
+      using hr_lt_q\<^sub>3 by (by100 linarith)
+    have hseg_sphere:
+        "(closed_segment w q\<^sub>3 - {w}) \<inter> sphere w r = {x\<^sub>3}"
+      by (rule closed_segment_sphere_unique_from_center
+          [OF hq\<^sub>3w hr_pos hr_le x\<^sub>3_def])
+    show ?thesis
+      using hseg_sphere he\<^sub>3_seg by (by100 blast)
+  qed
+  have hx\<^sub>12: "x\<^sub>1 \<noteq> x\<^sub>2"
+    using hx\<^sub>1_edge_sphere hx\<^sub>2_edge_sphere he\<^sub>12_punctured_disj by (by100 blast)
+  have hx\<^sub>13: "x\<^sub>1 \<noteq> x\<^sub>3"
+    using hx\<^sub>1_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>13_punctured_disj by (by100 blast)
+  have hx\<^sub>23: "x\<^sub>2 \<noteq> x\<^sub>3"
+    using hx\<^sub>2_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>23_punctured_disj by (by100 blast)
+  have hx\<^sub>1_punctured_poly: "x\<^sub>1 \<in> geotop_polyhedron L - {w}"
+    using hx\<^sub>1_edge_sphere he\<^sub>1_punctured_sub by (by100 blast)
+  have hx\<^sub>2_punctured_poly: "x\<^sub>2 \<in> geotop_polyhedron L - {w}"
+    using hx\<^sub>2_edge_sphere he\<^sub>2_punctured_sub by (by100 blast)
+  have hx\<^sub>3_punctured_poly: "x\<^sub>3 \<in> geotop_polyhedron L - {w}"
+    using hx\<^sub>3_edge_sphere he\<^sub>3_punctured_sub by (by100 blast)
+  have hx_card3: "card {x\<^sub>1, x\<^sub>2, x\<^sub>3} = 3"
+    using hx\<^sub>12 hx\<^sub>13 hx\<^sub>23 by (by100 simp)
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
