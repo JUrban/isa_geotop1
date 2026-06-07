@@ -396,6 +396,7 @@ target_source_files() {
 }
 
 cache_dir=.dev34_fast_cache
+split_prefix_seen=
 
 cache_digest() {
   target=$1
@@ -425,6 +426,17 @@ split_stamp() {
 
 split_cache_key() {
   printf '%s\n%s\n%s\nchain=%s\n' "$1" "$2" "$3" "$4" | sha256sum | awk '{print substr($1, 1, 12)}'
+}
+
+split_prefix_seen_has() {
+  case "$split_prefix_seen" in
+    *"|$1|"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+split_prefix_seen_add() {
+  split_prefix_seen="${split_prefix_seen}|$1|"
 }
 
 split_chain_dir_args() {
@@ -534,6 +546,13 @@ split_hot_one() {
     return 2
   fi
 
+  key=$(split_cache_key "$file" "$pattern" "$logic" "$chain_pattern")
+  base=$(basename "$file" .thy)
+  if [ "${DEV34_FAST_PREFIX_ONLY:-0}" = 1 ] && split_prefix_seen_has "$key"; then
+    printf 'split-hot: prefix cache already checked for %s before line %s\n' "$file" "$start_line"
+    return 0
+  fi
+
   chain_dir=
   chain_session=
   chain_theory=
@@ -571,8 +590,6 @@ split_hot_one() {
   fi
 
   mkdir -p "$cache_dir"
-  key=$(split_cache_key "$file" "$pattern" "$logic" "$chain_pattern")
-  base=$(basename "$file" .thy)
   split_dir="$cache_dir/split-$key"
   prefix_theory="${base}_Split_${key}_Prefix"
   prefix_session="${base}_Split_${key}_Prefix_Session"
@@ -646,6 +663,7 @@ EOF2
   fi
 
   if [ "${DEV34_FAST_PREFIX_ONLY:-0}" = 1 ]; then
+    split_prefix_seen_add "$key"
     printf 'split-hot: prefix cache ready for %s before line %s\n' "$file" "$start_line"
     return 0
   fi
