@@ -2309,6 +2309,106 @@ proof -
     using hq2_eq_q1 he2_eq_e1 by (by100 blast)
 qed
 
+definition geotop_oriented_edge_successor_state
+  where "geotop_oriented_edge_successor_state (L::(real^2) set set) s t \<longleftrightarrow>
+    {fst s} \<in> L
+    \<and> snd s \<in> L
+    \<and> geotop_is_edge (snd s)
+    \<and> fst s \<in> snd s
+    \<and> t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+    \<and> fst t \<noteq> fst s
+    \<and> snd s = closed_segment (fst s) (fst t)
+    \<and> snd t \<noteq> snd s
+    \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> fst t \<in> d \<and> d \<noteq> snd s
+      \<longrightarrow> d = snd t)"
+
+lemma geotop_degree_two_oriented_edge_successor_relation_total_unique_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "\<exists>!t. t \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L s t"
+proof -
+  obtain w e where hs_eq: "s = (w, e)"
+    by (cases s) (by100 blast)
+  have hwL: "{w} \<in> L"
+    using hs hs_eq by (by100 blast)
+  have heL: "e \<in> L"
+    using hs hs_eq by (by100 blast)
+  have hedge: "geotop_is_edge e"
+    using hs hs_eq by (by100 blast)
+  have hwe: "w \<in> e"
+    using hs hs_eq by (by100 blast)
+  have hex: "\<exists>q e'. (q, e') \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> q \<noteq> w
+      \<and> e = closed_segment w q
+      \<and> e' \<noteq> e
+      \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+    by (rule geotop_degree_two_oriented_edge_successor_state_prefix
+        [OF hL hdegree hwL heL hedge hwe])
+  show ?thesis
+  proof (rule ex_ex1I)
+    show "\<exists>t. t \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L s t"
+    proof -
+      from hex obtain q e' where hsucc: "(q, e') \<in>
+          {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+          \<and> q \<noteq> w
+          \<and> e = closed_segment w q
+          \<and> e' \<noteq> e
+          \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q \<in> d \<and> d \<noteq> e \<longrightarrow> d = e')"
+        by (elim exE)
+      have hstate: "(q, e') \<in>
+          {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+        using hsucc by (by100 blast)
+      have hrel: "geotop_oriented_edge_successor_state L s (q, e')"
+        using hwL heL hedge hwe hsucc hs_eq
+        unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+      show ?thesis
+        using hstate hrel by (by100 blast)
+    qed
+  next
+    fix t\<^sub>1 t\<^sub>2
+    assume ht1: "t\<^sub>1 \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L s t\<^sub>1"
+    assume ht2: "t\<^sub>2 \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L s t\<^sub>2"
+    obtain q\<^sub>1 e\<^sub>1 where ht1_eq: "t\<^sub>1 = (q\<^sub>1, e\<^sub>1)"
+      by (cases t\<^sub>1) (by100 blast)
+    obtain q\<^sub>2 e\<^sub>2 where ht2_eq: "t\<^sub>2 = (q\<^sub>2, e\<^sub>2)"
+      by (cases t\<^sub>2) (by100 blast)
+    have hsucc1: "(q\<^sub>1, e\<^sub>1) \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> q\<^sub>1 \<noteq> w
+        \<and> e = closed_segment w q\<^sub>1
+        \<and> e\<^sub>1 \<noteq> e
+        \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q\<^sub>1 \<in> d \<and> d \<noteq> e \<longrightarrow> d = e\<^sub>1)"
+      using ht1 hs_eq ht1_eq
+      unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+    have hsucc2: "(q\<^sub>2, e\<^sub>2) \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> q\<^sub>2 \<noteq> w
+        \<and> e = closed_segment w q\<^sub>2
+        \<and> e\<^sub>2 \<noteq> e
+        \<and> (\<forall>d. d \<in> L \<and> geotop_is_edge d \<and> q\<^sub>2 \<in> d \<and> d \<noteq> e \<longrightarrow> d = e\<^sub>2)"
+      using ht2 hs_eq ht2_eq
+      unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+    have heq: "q\<^sub>1 = q\<^sub>2 \<and> e\<^sub>1 = e\<^sub>2"
+      by (rule geotop_degree_two_oriented_edge_successor_state_unique_prefix
+          [OF hL hdegree hwL heL hedge hwe hsucc1 hsucc2])
+    show "t\<^sub>1 = t\<^sub>2"
+      using ht1_eq ht2_eq heq by (by100 blast)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix:
   fixes L :: "(real^2) set set" and P Q :: "real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
