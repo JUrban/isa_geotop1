@@ -119,6 +119,42 @@ proof -
     thus "?v k \<in> geotop_complex_vertices L"
       using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] by (by100 simp)
   qed
+  have hclosed_vertex: "?v p = ?v 0"
+    using hp_closed by (by100 simp)
+  have hnext_in_V: "\<And>k. k < p \<Longrightarrow> ?v (Suc k) \<in> ?V"
+  proof -
+    fix k
+    assume hk: "k < p"
+    show "?v (Suc k) \<in> ?V"
+    proof (cases "Suc k < p")
+      case True
+      have "Suc k \<in> {0..<p}"
+        using True by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    next
+      case False
+      have hSuc_eq: "Suc k = p"
+        using hk False by (by100 linarith)
+      have "0 \<in> {0..<p}"
+        using hp_pos by (by100 simp)
+      hence "?v 0 \<in> ?V"
+        by (by100 blast)
+      thus ?thesis
+        using hSuc_eq hclosed_vertex by (by100 simp)
+    qed
+  qed
+  have hV_subset_complex_vertices: "?V \<subseteq> geotop_complex_vertices L"
+  proof
+    fix x
+    assume hx: "x \<in> ?V"
+    obtain k where hk: "k \<in> {0..<p}" and hxk: "x = ?v k"
+      using hx by (by100 blast)
+    have hk_lt: "k < p"
+      using hk by (by100 simp)
+    show "x \<in> geotop_complex_vertices L"
+      using hvertices_in_complex_vertices[OF hk_lt] hxk by (by100 simp)
+  qed
   have hedge_members:
       "\<And>k. k < p \<Longrightarrow> closed_segment (?v k) (?v (Suc k)) \<in> L"
   proof -
@@ -131,6 +167,37 @@ proof -
     thus "closed_segment (?v k) (?v (Suc k)) \<in> L"
       using hL_cycle by (by100 blast)
   qed
+  have hcomplex_vertices_subset_cycle: "geotop_complex_vertices L \<subseteq> ?V"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices L"
+    have hx_singleton: "{x} \<in> L"
+      using hx geotop_complex_vertices_eq_0_simplexes[OF hL_complex] by (by100 simp)
+    have hx_cases:
+        "{x} \<in> ((\<lambda>v. {v}) ` ?V) \<or> {x} \<in> ?E"
+      using hx_singleton hL_cycle by (by100 blast)
+    show "x \<in> ?V"
+    proof (rule disjE[OF hx_cases])
+      assume "{x} \<in> ((\<lambda>v. {v}) ` ?V)"
+      thus ?thesis
+        by (by100 blast)
+    next
+      assume hxE: "{x} \<in> ?E"
+      obtain k where hk: "k \<in> {0..<p}"
+        and hxseg: "{x} = closed_segment (?v k) (?v (Suc k))"
+        using hxE by (by100 blast)
+      have hk_lt: "k < p"
+        using hk by (by100 simp)
+      have hvk_seg: "?v k \<in> closed_segment (?v k) (?v (Suc k))"
+        by (by100 simp)
+      have hx_eq: "x = ?v k"
+        using hxseg hvk_seg by (by100 blast)
+      show ?thesis
+        using hk hx_eq by (by100 blast)
+    qed
+  qed
+  have hcomplex_vertices_cycle: "geotop_complex_vertices L = ?V"
+    using hcomplex_vertices_subset_cycle hV_subset_complex_vertices by (by100 blast)
   show ?thesis
     sorry
 qed
