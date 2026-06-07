@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generate a searchable theorem statement index from active session theory files.
+# Generate a searchable theorem statement index from active session theories and local imports.
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -21,7 +21,7 @@ SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
 
 if [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Statement index: fresh cache (${#THEORIES[@]} theories, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $OUT"
+  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $OUT"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -114,7 +114,7 @@ done
 
 total=$(wc -l < "$OUT")
 theory_total=$(wc -l < "$THEORY_LIST")
-echo "Statement index: $total entries from $theory_total theories -> $OUT"
+echo "Statement index: $total entries from $theory_total theories incl. imports -> $OUT"
 echo "Theory list -> $THEORY_LIST"
 echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"

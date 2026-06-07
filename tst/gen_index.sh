@@ -1,5 +1,5 @@
 #!/bin/bash
-# Generate theorem/definition index from all active session theory files.
+# Generate theorem/definition index from active session theories and local imports.
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh
 
@@ -21,7 +21,7 @@ SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Index: fresh cache (${#THEORIES[@]} theories, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
+  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -103,7 +103,7 @@ with md.open("w", encoding="utf-8") as out:
                     out.write(f"    {theory:<35}  {kind}  line {line_no}\n")
         out.write("\n")
 
-print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories -> {txt} / {md}")
+print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories incl. imports -> {txt} / {md}")
 print("Theory list -> INDEX_THEORIES.txt")
 PYEND
 

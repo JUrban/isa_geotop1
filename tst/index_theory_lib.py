@@ -45,6 +45,9 @@ BASE_THEORIES = [
 ]
 
 CONTROL_RE = re.compile(r"(session|options|sessions|document_files|directories)\b")
+SESSION_RE = re.compile(
+    r'session\s+(?:"([^"]+)"|([^\s=]+))(?:\s+in\s+(?:"([^"]+)"|([^\s=]+)))?'
+)
 SESSION_FILE_NAMES = {"ROOT", "ROOTS"}
 
 
@@ -91,17 +94,26 @@ def iter_session_roots(base: Path) -> list[Path]:
     return [path for path in iter_session_files(base) if path.name == "ROOT"]
 
 
-def discover_theories(base: Path) -> tuple[list[str], list[str]]:
-    seen: set[str] = set()
+def strip_isabelle_comment_prefix(line: str) -> str:
+    return line.split("(*", 1)[0].strip()
+
+
+def parse_root_theories(base: Path) -> tuple[list[str], list[str], dict[str, tuple[Path, Path]]]:
     root_theories: list[str] = []
+    missing_root_theories: list[str] = []
+    seen: set[str] = set()
     seen_roots: set[str] = set()
+    session_dirs: dict[str, tuple[Path, Path]] = {}
 
     def emit(session_base: Path, theory_dir: Path, theory: str) -> None:
         theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
         theory_name = theory_path.relative_to(base).as_posix()
         if theory_name not in seen:
             seen.add(theory_name)
-            root_theories.append(theory_name)
+            if theory_path.is_file():
+                root_theories.append(theory_name)
+            else:
+                missing_root_theories.append(theory_name)
 
     for root in iter_session_roots(base):
         root_key = root.relative_to(base).as_posix()
@@ -113,18 +125,15 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
         in_theories = False
 
         for raw in root.read_text(encoding="utf-8", errors="replace").splitlines():
-            line = raw.split("(*", 1)[0].strip()
+            line = strip_isabelle_comment_prefix(raw)
             if not line or line.startswith("#"):
                 continue
-            session_match = re.match(
-                r'session\b.*?\bin\s+(?:"([^"]+)"|([^\s=]+))', line
-            )
+            session_match = SESSION_RE.match(line)
             if session_match:
-                theory_dir = Path(session_match.group(1) or session_match.group(2))
-                in_theories = False
-                continue
-            if line.startswith("session "):
-                theory_dir = Path(".")
+                session_name = session_match.group(1) or session_match.group(2)
+                session_dir_raw = session_match.group(3) or session_match.group(4)
+                theory_dir = Path(session_dir_raw) if session_dir_raw else Path(".")
+                session_dirs[session_name] = (session_base, theory_dir)
                 in_theories = False
                 continue
             if re.match(r"theories\b", line):
@@ -140,10 +149,96 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
                 for theory in theory_tokens(line):
                     emit(session_base, theory_dir, theory)
 
+    return root_theories, missing_root_theories, session_dirs
+
+
+def parse_theory_imports(path: Path) -> list[str]:
+    imports: list[str] = []
+    in_imports = False
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines()[:200]:
+        line = strip_isabelle_comment_prefix(raw)
+        if not line:
+            continue
+        if re.match(r"begin\b", line):
+            break
+        if re.match(r"imports\b", line):
+            in_imports = True
+            line = re.sub(r"^imports\b", "", line, count=1).strip()
+        elif not in_imports:
+            continue
+        imports.extend(theory_tokens(line))
+    return imports
+
+
+def resolve_import(
+    base: Path,
+    current_theory: Path,
+    session_dirs: dict[str, tuple[Path, Path]],
+    theory: str,
+) -> str | None:
+    theory = theory.strip('"')
+    if not theory:
+        return None
+
+    if theory.startswith("$"):
+        return None
+
+    if "." in theory:
+        session, theory_name = theory.split(".", 1)
+        if session in session_dirs:
+            session_base, theory_dir = session_dirs[session]
+            path = session_base / theory_dir / (theory_name.replace(".", "/") + ".thy")
+            if path.is_file():
+                return path.relative_to(base).as_posix()
+
+    candidates: list[Path] = []
+    if "/" in theory or theory.startswith("."):
+        candidates.append((current_theory.parent / f"{theory}.thy").resolve())
+        candidates.append((base / f"{theory}.thy").resolve())
+    else:
+        candidates.append(current_theory.parent / f"{theory}.thy")
+        candidates.append(base / f"{theory}.thy")
+
+    for path in candidates:
+        try:
+            rel = path.resolve().relative_to(base.resolve()).as_posix()
+        except ValueError:
+            continue
+        if (base / rel).is_file():
+            return rel
+    return None
+
+
+def close_local_imports(
+    base: Path,
+    theories: list[str],
+    session_dirs: dict[str, tuple[Path, Path]],
+) -> list[str]:
+    ordered = list(theories)
+    seen = set(ordered)
+    i = 0
+    while i < len(ordered):
+        theory = ordered[i]
+        i += 1
+        path = base / theory
+        if not path.is_file():
+            continue
+        for imported in parse_theory_imports(path):
+            resolved = resolve_import(base, path, session_dirs, imported)
+            if resolved and resolved not in seen:
+                seen.add(resolved)
+                ordered.append(resolved)
+    return ordered
+
+
+def discover_theories(base: Path) -> tuple[list[str], list[str]]:
+    root_theories, missing_root_theories, session_dirs = parse_root_theories(base)
+
     ordered: list[str] = []
     for theory in BASE_THEORIES + root_theories:
         if theory not in ordered:
             ordered.append(theory)
+    ordered = close_local_imports(base, ordered, session_dirs)
 
     existing: list[str] = []
     missing: list[str] = []
@@ -151,6 +246,9 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
         if (base / theory).is_file():
             existing.append(theory)
         else:
+            missing.append(theory)
+    for theory in missing_root_theories:
+        if theory not in missing:
             missing.append(theory)
     return existing, missing
 
