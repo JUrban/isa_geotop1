@@ -45,6 +45,7 @@ BASE_THEORIES = [
 ]
 
 CONTROL_RE = re.compile(r"(session|options|sessions|document_files|directories)\b")
+SESSION_FILE_NAMES = {"ROOT", "ROOTS"}
 
 
 def theory_tokens(raw_line: str) -> list[str]:
@@ -66,13 +67,28 @@ def theory_tokens(raw_line: str) -> list[str]:
     return kept
 
 
+def is_indexed_session_file(base: Path, path: Path) -> bool:
+    rel_parts = path.relative_to(base).parts
+    return (
+        path.name in SESSION_FILE_NAMES
+        and ".dev34_fast_cache" not in rel_parts
+        and not path.name.endswith("~")
+    )
+
+
+def iter_session_files(base: Path) -> list[Path]:
+    session_files: list[Path] = []
+    for name in sorted(SESSION_FILE_NAMES):
+        session_files.extend(
+            path
+            for path in base.rglob(name)
+            if path.is_file() and is_indexed_session_file(base, path)
+        )
+    return sorted(session_files, key=lambda p: p.relative_to(base).as_posix())
+
+
 def iter_session_roots(base: Path) -> list[Path]:
-    roots = [
-        path
-        for path in base.rglob("ROOT")
-        if ".dev34_fast_cache" not in path.relative_to(base).parts
-    ]
-    return sorted(roots, key=lambda p: p.relative_to(base).as_posix())
+    return [path for path in iter_session_files(base) if path.name == "ROOT"]
 
 
 def discover_theories(base: Path) -> tuple[list[str], list[str]]:
@@ -141,8 +157,10 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
 
 def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> str:
     h = hashlib.sha256()
-    root_files = [path.relative_to(base).as_posix() for path in iter_session_roots(base)]
-    for name in extra_files + root_files + theories:
+    session_files = [
+        path.relative_to(base).as_posix() for path in iter_session_files(base)
+    ]
+    for name in extra_files + session_files + theories:
         path = base / name
         h.update(name.encode("utf-8"))
         if not path.exists():
@@ -168,6 +186,11 @@ def main() -> int:
     parser.add_argument("--list", action="store_true", help="print existing theories")
     parser.add_argument("--missing", action="store_true", help="print missing theories")
     parser.add_argument("--roots", action="store_true", help="print discovered ROOT files")
+    parser.add_argument(
+        "--session-files",
+        action="store_true",
+        help="print discovered ROOT/ROOTS session files",
+    )
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
         "--write-list",
@@ -185,6 +208,9 @@ def main() -> int:
     base = Path.cwd()
     theories, missing = discover_theories(base)
     roots = [path.relative_to(base).as_posix() for path in iter_session_roots(base)]
+    session_files = [
+        path.relative_to(base).as_posix() for path in iter_session_files(base)
+    ]
 
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
@@ -195,6 +221,8 @@ def main() -> int:
         sys.stdout.write("".join(f"{theory}\n" for theory in missing))
     if args.roots:
         sys.stdout.write("".join(f"{root}\n" for root in roots))
+    if args.session_files:
+        sys.stdout.write("".join(f"{path}\n" for path in session_files))
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))
