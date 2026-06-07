@@ -27,7 +27,7 @@ Fast modes:
   plan [FILES]  show hot-loop parent heaps for changed/explicit files
   warm [FILES]  build and store hot-loop parent heaps for changed/explicit files
   proc [FILES] process changed/explicit theories against their parent heap
-  hot [FILES]  alias for proc; intended hot-loop verifier
+  hot [FILES]  alias for proc; skips fresh target caches, auto-warms parents
   loop [--hot] PAT [FILES]
                cheap proof loop: full-index grep PAT, holes, dirty plan
                with --hot, also run hot [FILES]
@@ -449,6 +449,22 @@ parent_target_for_file() {
 proc_one() {
   file=$1
   parent_context "$file" proc || return $?
+  target=$(auto_target "$file")
+  if [ "${DEV34_FAST_SKIP_FRESH_TARGET:-1}" != 0 ] && cache_is_fresh "$target"; then
+    cache_status_line "$target"
+    printf 'process_theories: skipped %s (fresh target cache)\n' "$file"
+    return 0
+  fi
+
+  parent_target=$(parent_target_for_file "$file")
+
+  if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
+    if cache_is_fresh "$parent_target"; then
+      cache_status_line "$parent_target"
+    else
+      cache_build_target "$parent_target"
+    fi
+  fi
 
   printf 'process_theories: %s with parent %s\n' "$file" "$logic"
   timeout "$limit" "$isabelle" process_theories \
