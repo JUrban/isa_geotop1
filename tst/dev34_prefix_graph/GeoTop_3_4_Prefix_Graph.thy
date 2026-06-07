@@ -4007,6 +4007,205 @@ proof -
   qed
 qed
 
+lemma geotop_singleton_face_eq_prefix:
+  fixes v :: "real^2"
+  assumes hface: "geotop_is_face F {v}"
+  shows "F = {v}"
+proof -
+  obtain V W where hFV: "geotop_simplex_vertices {v} V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hF_eq: "F = geotop_convex_hull W"
+      and hFW: "geotop_simplex_vertices F W"
+    by (rule geotop_face_witness_simplex_vertices_prefix[OF hface])
+  have hV_eq: "V = {v}"
+    by (rule geotop_singleton_simplex_vertices[OF hFV])
+  have hW_eq: "W = {v}"
+    using hW_ne hW_sub hV_eq by (by100 blast)
+  show ?thesis
+    using hF_eq hW_eq geotop_convex_hull_eq_HOL[of "{v}"] by (by100 simp)
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_period_cycle_subcomplex_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_pos: "0 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  shows "geotop_is_complex
+      (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))
+    \<and> (((\<lambda>v. {v}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>j. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ j) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))
+      \<subseteq> L"
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  let ?V = "?v ` {0..<p}"
+  let ?SV = "(\<lambda>v. {v}) ` ?V"
+  let ?e = "\<lambda>j. closed_segment (?v j) (?v (Suc j))"
+  let ?E = "?e ` {0..<p}"
+  let ?K = "?SV \<union> ?E"
+  have hcomplexL: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_prefix[OF hL])
+  have hV_fin: "finite ?V"
+    by (by100 simp)
+  have hSV_fin: "finite ?SV"
+    using hV_fin by (by100 simp)
+  have hE_fin: "finite ?E"
+    by (by100 simp)
+  have hK_fin: "finite ?K"
+    using hSV_fin hE_fin by (by100 simp)
+  have hV_sub: "?V \<subseteq> {v. {v} \<in> L}"
+  proof
+    fix x
+    assume hxV: "x \<in> ?V"
+    obtain k where hk_mem: "k \<in> {0..<p}" and hx_eq: "x = ?v k"
+      using hxV by (by100 blast)
+    have "{?v k} \<in> L"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_vertex_in_graph_prefix
+          [OF hL hdegree hs])
+    show "x \<in> {v. {v} \<in> L}"
+      using hx_eq \<open>{?v k} \<in> L\<close> by (by100 simp)
+  qed
+  have hE_sub: "?E \<subseteq> {e\<in>L. geotop_is_edge e}"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    obtain j where hj_mem: "j \<in> {0..<p}" and he_eq: "e = ?e j"
+      using heE by (by100 blast)
+    have hedge_data: "?e j \<in> L \<and> geotop_is_edge (?e j)"
+      by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+          [OF hL hdegree hs])
+    show "e \<in> {e \<in> L. geotop_is_edge e}"
+      using he_eq hedge_data by (by100 simp)
+  qed
+  have hK_sub: "?K \<subseteq> L"
+  proof
+    fix x
+    assume hx: "x \<in> ?K"
+    show "x \<in> L"
+    proof (rule UnE[OF hx])
+      assume hxSV: "x \<in> ?SV"
+      obtain v where hvV: "v \<in> ?V" and hx_eq: "x = {v}"
+        using hxSV by (by100 blast)
+      have "{v} \<in> L"
+        using hV_sub hvV by (by100 blast)
+      show "x \<in> L"
+        using hx_eq \<open>{v} \<in> L\<close> by (by100 simp)
+    next
+      assume hxE: "x \<in> ?E"
+      have "x \<in> {e \<in> L. geotop_is_edge e}"
+        using hE_sub hxE by (by100 blast)
+      thus "x \<in> L"
+        by (by100 simp)
+    qed
+  qed
+  have hsimplex: "\<forall>\<sigma>\<in>?K. geotop_is_simplex \<sigma>"
+  proof
+    fix \<sigma>
+    assume h\<sigma>K: "\<sigma> \<in> ?K"
+    show "geotop_is_simplex \<sigma>"
+    proof (rule UnE[OF h\<sigma>K])
+      assume h\<sigma>SV: "\<sigma> \<in> ?SV"
+      obtain v where h\<sigma>eq: "\<sigma> = {v}"
+        using h\<sigma>SV by (by100 blast)
+      have hdim: "geotop_simplex_dim {v} 0"
+        by (rule geotop_singleton_is_simplex)
+      have "geotop_is_simplex {v}"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+      show "geotop_is_simplex \<sigma>"
+        using h\<sigma>eq \<open>geotop_is_simplex {v}\<close> by (by100 simp)
+    next
+      assume h\<sigma>E: "\<sigma> \<in> ?E"
+      have "\<sigma> \<in> {e \<in> L. geotop_is_edge e}"
+        using hE_sub h\<sigma>E by (by100 blast)
+      hence hedge: "geotop_is_edge \<sigma>"
+        by (by100 simp)
+      have hdim: "geotop_simplex_dim \<sigma> 1"
+        using hedge unfolding geotop_is_edge_def by (by100 simp)
+      show "geotop_is_simplex \<sigma>"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+    qed
+  qed
+  have hfaces: "\<forall>\<sigma>\<in>?K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> ?K"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    show "\<tau> \<in> ?K"
+    proof (rule UnE[OF h\<sigma>K])
+      assume h\<sigma>SV: "\<sigma> \<in> ?SV"
+      obtain v where hvV: "v \<in> ?V" and h\<sigma>eq: "\<sigma> = {v}"
+        using h\<sigma>SV by (by100 blast)
+      have h\<tau>eq: "\<tau> = {v}"
+        using hface h\<sigma>eq geotop_singleton_face_eq_prefix by (by100 blast)
+      have "{v} \<in> ?SV"
+        using hvV by (by100 blast)
+      show "\<tau> \<in> ?K"
+        using h\<tau>eq \<open>{v} \<in> ?SV\<close> by (by100 blast)
+    next
+      assume h\<sigma>E: "\<sigma> \<in> ?E"
+      obtain j where hj_mem: "j \<in> {0..<p}" and h\<sigma>eq: "\<sigma> = ?e j"
+        using h\<sigma>E by (by100 blast)
+      have hj_lt: "j < p"
+        using hj_mem by (by100 simp)
+      have hface_j: "geotop_is_face \<tau> (?e j)"
+        using hface h\<sigma>eq by (by100 simp)
+      show "\<tau> \<in> ?K"
+        by (rule geotop_degree_two_oriented_edge_successor_period_edge_face_in_cycle_subcomplex_prefix
+            [OF hL hdegree hs hp_pos hp_closed hj_lt hface_j])
+    qed
+  qed
+  have hinter:
+      "\<forall>\<sigma>\<in>?K. \<forall>\<tau>\<in>?K. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>K: "\<sigma> \<in> ?K"
+    assume h\<tau>K: "\<tau> \<in> ?K"
+    assume hne: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>L: "\<sigma> \<in> L"
+      using hK_sub h\<sigma>K by (by100 blast)
+    have h\<tau>L: "\<tau> \<in> L"
+      using hK_sub h\<tau>K by (by100 blast)
+    have hL_inter: "\<forall>\<sigma>\<in>L. \<forall>\<tau>\<in>L. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      by (rule geotop_is_complex_intersection[OF hcomplexL])
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+        \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+      using hL_inter h\<sigma>L h\<tau>L hne by (by100 blast)
+  qed
+  have hlocfin: "\<forall>\<sigma>\<in>?K. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+      \<and> finite {\<tau>\<in>?K. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume h\<sigma>K: "\<sigma> \<in> ?K"
+    show "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>?K. \<tau> \<inter> U \<noteq> {}}"
+    proof (rule exI[where x = "UNIV"])
+      show "open UNIV \<and> \<sigma> \<subseteq> UNIV
+          \<and> finite {\<tau> \<in> ?K. \<tau> \<inter> UNIV \<noteq> {}}"
+        using hK_fin by (by100 simp)
+    qed
+  qed
+  have hK_complex: "geotop_is_complex ?K"
+    unfolding geotop_is_complex_def
+    using hsimplex hfaces hinter hlocfin by (by100 blast)
+  show ?thesis
+    using hK_complex hK_sub by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
