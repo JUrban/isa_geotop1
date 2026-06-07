@@ -1266,6 +1266,62 @@ proof -
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
     unfolding K\<^sub>2_def using hK\<^sub>2_vertex_orbit hK\<^sub>2_edge_orbit by (by100 blast)
+  have hK\<^sub>1_vertices_incident_edge:
+      "\<forall>w. {w} \<in> K\<^sub>1 \<longrightarrow>
+        (\<exists>e\<in>K\<^sub>1. geotop_is_edge e \<and> w \<in> e)"
+  proof -
+    have hpath: "\<forall>w. {w} \<in>
+        ((\<lambda>x. {x}) ` (?v ` {0..j}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+        \<longrightarrow> (\<exists>e\<in>
+          ((\<lambda>x. {x}) ` (?v ` {0..j}))
+          \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j}).
+            geotop_is_edge e \<and> w \<in> e)"
+    proof (rule geotop_indexed_edge_path_vertices_incident_edge_prefix
+        [where v = ?v and a = 0 and b = j])
+      show "0 < j"
+        by (rule hj_pos)
+      show "\<forall>k\<in>{0..<j}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+        using hK\<^sub>1_edge_orbit by (by100 blast)
+    qed
+    show ?thesis
+      unfolding K\<^sub>1_def using hpath by (by100 simp)
+  qed
+  have hK\<^sub>2_vertices_incident_edge:
+      "\<forall>w. {w} \<in> K\<^sub>2 \<longrightarrow>
+        (\<exists>e\<in>K\<^sub>2. geotop_is_edge e \<and> w \<in> e)"
+  proof -
+    have hvertices_eq: "{j..<p} \<union> {p} = {j..p}"
+      using hj_lt by (by100 auto)
+    have hpath: "\<forall>w. {w} \<in>
+        ((\<lambda>x. {x}) ` (?v ` {j..p}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+        \<longrightarrow> (\<exists>e\<in>
+          ((\<lambda>x. {x}) ` (?v ` {j..p}))
+          \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p}).
+            geotop_is_edge e \<and> w \<in> e)"
+    proof (rule geotop_indexed_edge_path_vertices_incident_edge_prefix
+        [where v = ?v and a = j and b = p])
+      show "j < p"
+        by (rule hj_lt)
+      show "\<forall>k\<in>{j..<p}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+        using hK\<^sub>2_edge_orbit by (by100 blast)
+    qed
+    show ?thesis
+      unfolding K\<^sub>2_def using hpath hvertices_eq by (by100 simp)
+  qed
+  have hK\<^sub>1_degree12:
+      "\<forall>w. {w} \<in> K\<^sub>1 \<longrightarrow>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>1. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_finite_subgraph_degree_one_or_two_from_ambient_degree_two_prefix
+        [OF hK\<^sub>1_fin hL_fin hK\<^sub>1_subset_L hdegree hK\<^sub>1_vertices_incident_edge])
+  have hK\<^sub>2_degree12:
+      "\<forall>w. {w} \<in> K\<^sub>2 \<longrightarrow>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> w \<in> e} = 1
+        \<or> card {e\<in>K\<^sub>2. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_finite_subgraph_degree_one_or_two_from_ambient_degree_two_prefix
+        [OF hK\<^sub>2_fin hL_fin hK\<^sub>2_subset_L hdegree hK\<^sub>2_vertices_incident_edge])
   have hP_L_incident_edge_cases:
       "\<forall>e\<in>L. geotop_is_edge e \<and> P \<in> e \<longrightarrow>
         e = closed_segment (?v (p - 1)) P
