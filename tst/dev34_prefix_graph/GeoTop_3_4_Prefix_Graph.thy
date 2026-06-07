@@ -2025,6 +2025,46 @@ proof -
     unfolding geotop_is_complex_def
     using hK\<^sub>2_simplex hK\<^sub>2_face_closed hK\<^sub>2_intersection hK\<^sub>2_locally_finite
     by (by100 blast)
+  have hK\<^sub>1_conn: "geotop_complex_connected K\<^sub>1"
+  proof -
+    have hpath: "geotop_complex_connected
+        (((\<lambda>x. {x}) ` (?v ` {0..j}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j}))"
+    proof (rule geotop_indexed_edge_path_complex_connected_prefix
+        [where v = ?v and a = 0 and b = j])
+      show "geotop_is_complex
+        (((\<lambda>x. {x}) ` (?v ` {0..j}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j}))"
+        using hK\<^sub>1_complex unfolding K\<^sub>1_def by (by100 simp)
+      show "0 < j"
+        by (rule hj_pos)
+      show "\<forall>k\<in>{0..<j}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+        using hK\<^sub>1_edge_orbit by (by100 blast)
+    qed
+    show ?thesis
+      using hpath unfolding K\<^sub>1_def by (by100 simp)
+  qed
+  have hK\<^sub>2_conn: "geotop_complex_connected K\<^sub>2"
+  proof -
+    have hvertices_eq: "{j..<p} \<union> {p} = {j..p}"
+      using hj_lt by (by100 auto)
+    have hpath: "geotop_complex_connected
+        (((\<lambda>x. {x}) ` (?v ` {j..p}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p}))"
+    proof (rule geotop_indexed_edge_path_complex_connected_prefix
+        [where v = ?v and a = j and b = p])
+      show "geotop_is_complex
+        (((\<lambda>x. {x}) ` (?v ` {j..p}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p}))"
+        using hK\<^sub>2_complex hvertices_eq unfolding K\<^sub>2_def by (by100 simp)
+      show "j < p"
+        by (rule hj_lt)
+      show "\<forall>k\<in>{j..<p}. geotop_is_edge (closed_segment (?v k) (?v (Suc k)))"
+        using hK\<^sub>2_edge_orbit by (by100 blast)
+    qed
+    show ?thesis
+      using hpath hvertices_eq unfolding K\<^sub>2_def by (by100 simp)
+  qed
   have hK\<^sub>1_linear: "geotop_is_linear_graph K\<^sub>1"
     by (rule geotop_complex_1dim_imp_linear_graph_prefix[OF hK\<^sub>1_complex hK\<^sub>1_1dim])
   have hK\<^sub>2_linear: "geotop_is_linear_graph K\<^sub>2"
