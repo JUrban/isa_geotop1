@@ -3180,6 +3180,59 @@ proof -
       by (rule hcycle_cut_if_boundary_edges_absent_and_poly_inter_subset
           [OF hK\<^sub>1P_absent hK\<^sub>1Q_absent hK\<^sub>2P_absent hK\<^sub>2Q_absent hpoly_inter])
   qed
+  have hvertex_index_unique_book:
+      "\<forall>m\<in>{0..<p}. \<forall>n\<in>{0..<p}. ?v m = ?v n \<longrightarrow> m = n"
+    (**
+      Book cycle-order fact: before the closing step, the cyclic successor
+      enumeration visits each vertex of the finite degree-two cycle exactly
+      once. **)
+    sorry
+  have hvertex_set_inter_subset_book:
+      "?v ` {0..j} \<inter> ?v ` ({j..<p} \<union> {p}) \<subseteq> {P, Q}"
+  proof
+    fix x
+    assume hx: "x \<in> ?v ` {0..j} \<inter> ?v ` ({j..<p} \<union> {p})"
+    obtain m where hm: "m \<in> {0..j}" and hx_m: "x = ?v m"
+      using hx by (by100 blast)
+    obtain n where hn: "n \<in> {j..<p} \<union> {p}" and hx_n: "x = ?v n"
+      using hx by (by100 blast)
+    show "x \<in> {P, Q}"
+    proof (cases "m = j")
+      case True
+      show ?thesis
+        using True hx_m hQj by (by100 simp)
+    next
+      case False
+      have hm_lt_j: "m < j"
+        using hm False by (by100 simp)
+      have hm_p: "m \<in> {0..<p}"
+        using hm_lt_j hj_lt by (by100 simp)
+      show ?thesis
+      proof (cases "n = p")
+        case True
+        show ?thesis
+          using True hx_n hPp by (by100 simp)
+      next
+        case False
+        have hn_range: "n \<in> {j..<p}"
+          using hn False by (by100 blast)
+        have hn_p: "n \<in> {0..<p}"
+          using hn_range hpath2_edges by (by100 blast)
+        have heq: "?v m = ?v n"
+          using hx_m hx_n by (by100 simp)
+        have "m = n"
+          using hvertex_index_unique_book hm_p hn_p heq by (by100 blast)
+        moreover have "m < j"
+          by (rule hm_lt_j)
+        moreover have "j \<le> n"
+          using hn_range by (by100 simp)
+        ultimately have False
+          by (by100 linarith)
+        thus ?thesis
+          by (rule FalseE)
+      qed
+    qed
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
@@ -3205,10 +3258,206 @@ proof -
               \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
           \<and> (\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
               \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))"
-        (**
+      (**
           Book cycle-order fact: the oriented successor orbit traverses the
           degree-two cycle without non-adjacent backtracking. **)
-        sorry
+      proof (intro conjI)
+        show "\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+            \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+        proof (intro ballI impI notI)
+          fix k
+          assume hk: "k \<in> {0..<j}"
+          assume hk_ne0: "k \<noteq> 0"
+          assume hrev: "?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+          have hk_p: "k \<in> {0..<p}"
+            using hk hpath1_edges by (by100 blast)
+          have h0_p: "0 \<in> {0..<p}"
+            using hp_pos by (by100 simp)
+          have h0k: "?v 0 = ?v k"
+            using hP0 hrev by (by100 simp)
+          have "0 = k"
+            using hvertex_index_unique_book h0_p hk_p h0k by (by100 blast)
+          thus False
+            using hk_ne0 by (by100 blast)
+        qed
+        show "\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+            \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+        proof (intro ballI impI notI)
+          fix k
+          assume hk: "k \<in> {0..<j}"
+          assume hk_ne_pred: "k \<noteq> j - 1"
+          assume hrev: "Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+          have hSuc_mem: "Suc k \<in> {0..<p}"
+            using hk hj_lt by (by100 auto)
+          have hj_mem: "j \<in> {0..<p}"
+            using hj_lt by (by100 simp)
+          have hj_eq: "?v j = ?v (Suc k)"
+            using hQj hrev by (by100 simp)
+          have "j = Suc k"
+            using hvertex_index_unique_book hj_mem hSuc_mem hj_eq by (by100 blast)
+          hence "k = j - 1"
+            by (by100 simp)
+          thus False
+            using hk_ne_pred by (by100 blast)
+        qed
+        show "\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+            \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+        proof (intro ballI impI notI)
+          fix k
+          assume hk: "k \<in> {j..<p}"
+          assume hk_ne_pred: "k \<noteq> p - 1"
+          assume hrev: "P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+          have hSuc_mem: "Suc k \<in> {0..<p}"
+            using hk hk_ne_pred by (by100 auto)
+          have h0_mem: "0 \<in> {0..<p}"
+            using hp_pos by (by100 simp)
+          have h0_eq: "?v 0 = ?v (Suc k)"
+            using hP0 hrev by (by100 simp)
+          have "0 = Suc k"
+            using hvertex_index_unique_book h0_mem hSuc_mem h0_eq by (by100 blast)
+          thus False
+            by (by100 simp)
+        qed
+        show "\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+            \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+        proof (intro ballI impI notI)
+          fix k
+          assume hk: "k \<in> {j..<p}"
+          assume hk_ne_j: "k \<noteq> j"
+          assume hrev: "?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+          have hk_mem: "k \<in> {0..<p}"
+            using hk hpath2_edges by (by100 blast)
+          have hj_mem: "j \<in> {0..<p}"
+            using hj_lt by (by100 simp)
+          have hj_eq: "?v j = ?v k"
+            using hQj hrev by (by100 simp)
+          have "j = k"
+            using hvertex_index_unique_book hj_mem hk_mem hj_eq by (by100 blast)
+          thus False
+            using hk_ne_j by (by100 blast)
+        qed
+      qed
+      have hedge_idx_inter_empty_book:
+          "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+            \<inter> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p}) = {}"
+        (**
+          Book edge-order fact: after cutting the cyclic successor chain at
+          \<open>P\<close> and \<open>Q\<close>, no edge of the first indexed subpath is also an edge
+          of the complementary indexed subpath. **)
+      proof
+        show "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+            \<inter> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})
+            \<subseteq> {}"
+        proof
+          fix e
+          assume he: "e \<in> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+              \<inter> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+          obtain a where ha: "a \<in> {0..<j}"
+              and he_a: "e = closed_segment (?v a) (?v (Suc a))"
+            using he by (by100 blast)
+          obtain b where hb: "b \<in> {j..<p}"
+              and he_b: "e = closed_segment (?v b) (?v (Suc b))"
+            using he by (by100 blast)
+          have ha_p: "a \<in> {0..<p}"
+            using ha hpath1_edges by (by100 blast)
+          have hb_p: "b \<in> {0..<p}"
+            using hb hpath2_edges by (by100 blast)
+          have heq: "closed_segment (?v a) (?v (Suc a)) =
+              closed_segment (?v b) (?v (Suc b))"
+            using he_a he_b by (by100 simp)
+          have hpair: "{?v a, ?v (Suc a)} = {?v b, ?v (Suc b)}"
+            using heq closed_segment_eq[of "?v a" "?v (Suc a)" "?v b" "?v (Suc b)"]
+            by (by100 simp)
+          have horient:
+              "(?v a = ?v b \<and> ?v (Suc a) = ?v (Suc b))
+              \<or> (?v a = ?v (Suc b) \<and> ?v (Suc a) = ?v b)"
+            by (rule geotop_pair_set_eq_orientations_prefix[OF hpair])
+          have False
+          proof (rule disjE[OF horient])
+            assume hsame: "?v a = ?v b \<and> ?v (Suc a) = ?v (Suc b)"
+            have "a = b"
+              using hvertex_index_unique_book ha_p hb_p hsame by (by100 blast)
+            moreover have "a < j"
+              using ha by (by100 simp)
+            moreover have "j \<le> b"
+              using hb by (by100 simp)
+            ultimately show False
+              by (by100 linarith)
+          next
+            assume hrev: "?v a = ?v (Suc b) \<and> ?v (Suc a) = ?v b"
+            show False
+            proof (cases "b = p - 1")
+              case True
+              show ?thesis
+              proof (cases "a = 0")
+                case True
+                have hSuc_pred: "Suc (p - 1) = p"
+                  using hp_pos by (by100 simp)
+                have heq0: "closed_segment P (?v (Suc 0)) =
+                    closed_segment (?v (p - 1)) P"
+                  using heq True \<open>b = p - 1\<close> hP0 hPp hSuc_pred by (by100 simp)
+                have "closed_segment (?v (p - 1)) P =
+                    closed_segment P (?v (Suc 0))"
+                  using heq0 by (by100 simp)
+                thus ?thesis
+                  using hP_endpoint_edges_distinct by (by100 blast)
+              next
+                case False
+                have hSuc_pred: "Suc (p - 1) = p"
+                  using hp_pos by (by100 simp)
+                have hbad: "?v (p - 1) = ?v (Suc a) \<and> P = ?v a"
+                  using hrev True hPp hSuc_pred by (by100 simp)
+                have "\<not> (?v (p - 1) = ?v (Suc a) \<and> P = ?v a)"
+                  using horbit_no_nonadjacent_reversed_book ha False hbad by (by100 blast)
+                thus ?thesis
+                  using hbad by (by100 blast)
+              qed
+            next
+              case hb_not_pred: False
+              show ?thesis
+              proof (cases "b = j")
+                case True
+                show ?thesis
+                proof (cases "a = j - 1")
+                  case True
+                  have hSuc_pred: "Suc (j - 1) = j"
+                    using hj_pos by (by100 simp)
+                  have "closed_segment (?v (j - 1)) Q =
+                      closed_segment Q (?v (Suc j))"
+                    using heq True \<open>b = j\<close> hQj hSuc_pred by (by100 simp)
+                  thus ?thesis
+                    using hQ_endpoint_edges_distinct by (by100 blast)
+                next
+                  case False
+                  have hbad: "Q = ?v (Suc a) \<and> ?v (Suc j) = ?v a"
+                    using hrev True hQj by (by100 simp)
+                  have "\<not> (Q = ?v (Suc a) \<and> ?v (Suc j) = ?v a)"
+                    using horbit_no_nonadjacent_reversed_book ha False hbad by (by100 blast)
+                  thus ?thesis
+                    using hbad by (by100 blast)
+                qed
+              next
+                case hb_not_j: False
+                have hSuc_b_p: "Suc b \<in> {0..<p}"
+                  using hb hb_not_pred by (by100 auto)
+                have "a = Suc b"
+                  using hvertex_index_unique_book ha_p hSuc_b_p hrev by (by100 blast)
+                moreover have "a < j"
+                  using ha by (by100 simp)
+                moreover have "j \<le> b"
+                  using hb by (by100 simp)
+                ultimately show ?thesis
+                  by (by100 linarith)
+              qed
+            qed
+          qed
+          thus "e \<in> {}"
+            by (rule FalseE)
+        qed
+        show "{} \<subseteq> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})
+            \<inter> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+          by (by100 simp)
+      qed
       have hpoly_inter_subset_book:
           "geotop_polyhedron K\<^sub>1 \<inter> geotop_polyhedron K\<^sub>2 \<subseteq> {P, Q}"
         (**
