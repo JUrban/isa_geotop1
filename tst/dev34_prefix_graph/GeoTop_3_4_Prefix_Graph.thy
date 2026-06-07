@@ -2873,6 +2873,100 @@ proof -
   qed
 qed
 
+lemma geotop_finite_inj_closed_funpow_least_period_prefix:
+  fixes A :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hfin: "finite A"
+  assumes hx: "x \<in> A"
+  assumes hclosed: "\<forall>y\<in>A. f y \<in> A"
+  assumes hinj: "inj_on f A"
+  shows "\<exists>p. 0 < p \<and> p \<le> Suc (card A) \<and> (f ^^ p) x = x
+      \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow> (f ^^ k) x \<noteq> x)"
+proof -
+  let ?P = "\<lambda>p. 0 < p \<and> p \<le> Suc (card A) \<and> (f ^^ p) x = x"
+  have hex: "\<exists>p. ?P p"
+    by (rule geotop_finite_inj_closed_funpow_period_prefix
+        [OF hfin hx hclosed hinj])
+  define p where "p = (LEAST n. ?P n)"
+  have hpP: "?P p"
+    unfolding p_def by (rule LeastI_ex[OF hex])
+  have hp_pos: "0 < p"
+    using hpP by (by100 blast)
+  have hp_le: "p \<le> Suc (card A)"
+    using hpP by (by100 blast)
+  have hp_return: "(f ^^ p) x = x"
+    using hpP by (by100 blast)
+  have hminimal: "\<forall>k. 0 < k \<and> k < p \<longrightarrow> (f ^^ k) x \<noteq> x"
+  proof (intro allI impI)
+    fix k
+    assume hk: "0 < k \<and> k < p"
+    have hk_pos: "0 < k"
+      using hk by (by100 blast)
+    have hk_less: "k < p"
+      using hk by (by100 blast)
+    show "(f ^^ k) x \<noteq> x"
+    proof
+      assume hk_return: "(f ^^ k) x = x"
+      have hk_le: "k \<le> Suc (card A)"
+        using hk_less hp_le by (by100 linarith)
+      have "?P k"
+        using hk_pos hk_le hk_return by (by100 blast)
+      moreover have hk_less_least: "k < (LEAST n. ?P n)"
+        using hk_less unfolding p_def by (by100 simp)
+      moreover have "\<not> ?P k"
+        by (rule not_less_Least[OF hk_less_least])
+      ultimately show False
+        by (by100 blast)
+    qed
+  qed
+  show ?thesis
+  proof (intro exI conjI)
+    show "0 < p" by (rule hp_pos)
+    show "p \<le> Suc (card A)" by (rule hp_le)
+    show "(f ^^ p) x = x" by (rule hp_return)
+    show "\<forall>k. 0 < k \<and> k < p \<longrightarrow> (f ^^ k) x \<noteq> x"
+      by (rule hminimal)
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_least_period_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "\<exists>p. 0 < p
+      \<and> p \<le> Suc (card
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})
+      \<and> (geotop_oriented_edge_successor L ^^ p) s = s
+      \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+        (geotop_oriented_edge_successor L ^^ k) s \<noteq> s)"
+proof -
+  let ?A = "{(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  have hA_fin: "finite ?A"
+    by (rule geotop_finite_linear_graph_oriented_edge_states_finite_graph_prefix
+        [OF hL hfin])
+  have hclosed: "\<forall>t\<in>?A. geotop_oriented_edge_successor L t \<in> ?A"
+  proof
+    fix t
+    assume ht: "t \<in> ?A"
+    have hstep: "geotop_oriented_edge_successor L t \<in> ?A
+        \<and> geotop_oriented_edge_successor_state L t
+            (geotop_oriented_edge_successor L t)"
+      by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+          [OF hL hdegree ht])
+    show "geotop_oriented_edge_successor L t \<in> ?A"
+      by (rule conjunct1[OF hstep])
+  qed
+  have hinj: "inj_on (geotop_oriented_edge_successor L) ?A"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_inj_on_states_prefix
+        [OF hL hdegree])
+  show ?thesis
+    by (rule geotop_finite_inj_closed_funpow_least_period_prefix
+        [OF hA_fin hs hclosed hinj])
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
