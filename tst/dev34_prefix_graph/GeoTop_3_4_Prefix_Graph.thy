@@ -3211,6 +3211,68 @@ proof -
         [OF hs hclosed hinj hp_pos hminimal])
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "snd ((geotop_oriented_edge_successor L ^^ k) s) =
+      closed_segment (fst ((geotop_oriented_edge_successor L ^^ k) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+proof -
+  let ?s\<^sub>k = "(geotop_oriented_edge_successor L ^^ k) s"
+  have hsk_state: "?s\<^sub>k \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+        [OF hL hdegree hs])
+  have hstep: "geotop_oriented_edge_successor L ?s\<^sub>k \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L ?s\<^sub>k
+          (geotop_oriented_edge_successor L ?s\<^sub>k)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hsk_state])
+  have hrel: "geotop_oriented_edge_successor_state L ?s\<^sub>k
+      (geotop_oriented_edge_successor L ?s\<^sub>k)"
+    by (rule conjunct2[OF hstep])
+  have hseg: "snd ?s\<^sub>k =
+      closed_segment (fst ?s\<^sub>k) (fst (geotop_oriented_edge_successor L ?s\<^sub>k))"
+    using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  show ?thesis
+    using hseg by (by100 simp)
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "fst ((geotop_oriented_edge_successor L ^^ Suc k) s) \<noteq>
+      fst ((geotop_oriented_edge_successor L ^^ k) s)"
+proof -
+  let ?s\<^sub>k = "(geotop_oriented_edge_successor L ^^ k) s"
+  have hsk_state: "?s\<^sub>k \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+        [OF hL hdegree hs])
+  have hstep: "geotop_oriented_edge_successor L ?s\<^sub>k \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> geotop_oriented_edge_successor_state L ?s\<^sub>k
+          (geotop_oriented_edge_successor L ?s\<^sub>k)"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+        [OF hL hdegree hsk_state])
+  have hrel: "geotop_oriented_edge_successor_state L ?s\<^sub>k
+      (geotop_oriented_edge_successor L ?s\<^sub>k)"
+    by (rule conjunct2[OF hstep])
+  have hneq: "fst (geotop_oriented_edge_successor L ?s\<^sub>k) \<noteq> fst ?s\<^sub>k"
+    using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+  show ?thesis
+    using hneq by (by100 simp)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
