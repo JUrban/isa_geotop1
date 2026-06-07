@@ -2834,6 +2834,45 @@ proof -
         [OF hA_fin hs hclosed hinj])
 qed
 
+lemma geotop_degree_two_oriented_edge_successor_closed_orbit_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "\<exists>n. 0 < n
+      \<and> n \<le> Suc (card
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})
+      \<and> (geotop_oriented_edge_successor L ^^ n) s = s
+      \<and> (\<forall>k\<le>n. (geotop_oriented_edge_successor L ^^ k) s \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})"
+proof -
+  let ?A = "{(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  obtain n where hn_pos: "0 < n"
+    and hn_le: "n \<le> Suc (card ?A)"
+    and hn_return: "(geotop_oriented_edge_successor L ^^ n) s = s"
+    using geotop_degree_two_oriented_edge_successor_funpow_period_prefix
+      [OF hL hfin hdegree hs] by (by100 blast)
+  have hstates: "\<forall>k\<le>n. (geotop_oriented_edge_successor L ^^ k) s \<in> ?A"
+  proof (intro allI impI)
+    fix k
+    assume hk: "k \<le> n"
+    show "(geotop_oriented_edge_successor L ^^ k) s \<in> ?A"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+          [OF hL hdegree hs])
+  qed
+  show ?thesis
+  proof (intro exI conjI)
+    show "0 < n" by (rule hn_pos)
+    show "n \<le> Suc (card ?A)" by (rule hn_le)
+    show "(geotop_oriented_edge_successor L ^^ n) s = s" by (rule hn_return)
+    show "\<forall>k\<le>n. (geotop_oriented_edge_successor L ^^ k) s \<in> ?A"
+      by (rule hstates)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
