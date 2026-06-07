@@ -5662,6 +5662,22 @@ proof -
     thus ?thesis
       using hraw by (by100 simp)
   qed
+  have hq_not_endpoint_if_not_finish:
+      "q \<noteq> pathfinish \<gamma>w \<Longrightarrow> \<not> geotop_graph_endpoint L q"
+  proof
+    assume hq_not_finish: "q \<noteq> pathfinish \<gamma>w"
+    assume hq_endpoint: "geotop_graph_endpoint L q"
+    have hq_card_one:
+        "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+      using geotop_graph_endpoint_singleton_and_card_one_dev34
+          [OF hL_linear hq_endpoint]
+      by (by100 blast)
+    have hq_card_ge2:
+        "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} \<ge> 2"
+      by (rule hq_card_ge2_if_not_finish[OF hq_not_finish])
+    show False
+      using hq_card_one hq_card_ge2 by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
