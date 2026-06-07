@@ -3224,6 +3224,31 @@ proof -
     show "m = n"
       by (rule inj_onD[OF hinj hstate_eq hm hn])
   qed
+  have hconsecutive_successor_edges_distinct:
+      "\<And>k. snd ((geotop_oriented_edge_successor L ^^ Suc k) s)
+        \<noteq> snd ((geotop_oriented_edge_successor L ^^ k) s)"
+  proof -
+    fix k
+    let ?s\<^sub>k = "(geotop_oriented_edge_successor L ^^ k) s"
+    have hstate_k: "?s\<^sub>k \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+      by (rule geotop_degree_two_oriented_edge_successor_funpow_state_prefix
+          [OF hL_linear hdegree hs])
+    have hstep: "geotop_oriented_edge_successor L ?s\<^sub>k \<in>
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+        \<and> geotop_oriented_edge_successor_state L ?s\<^sub>k
+          (geotop_oriented_edge_successor L ?s\<^sub>k)"
+      by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+          [OF hL_linear hdegree hstate_k])
+    have hrel: "geotop_oriented_edge_successor_state L ?s\<^sub>k
+        (geotop_oriented_edge_successor L ?s\<^sub>k)"
+      using hstep by (by100 blast)
+    have "snd (geotop_oriented_edge_successor L ?s\<^sub>k) \<noteq> snd ?s\<^sub>k"
+      using hrel unfolding geotop_oriented_edge_successor_state_def by (by100 simp)
+    thus "snd ((geotop_oriented_edge_successor L ^^ Suc k) s)
+        \<noteq> snd ((geotop_oriented_edge_successor L ^^ k) s)"
+      by (by100 simp)
+  qed
   have hvertex_index_unique_book:
       "\<forall>m\<in>{0..<p}. \<forall>n\<in>{0..<p}. ?v m = ?v n \<longrightarrow> m = n"
     (**

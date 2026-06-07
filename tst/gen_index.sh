@@ -5,7 +5,7 @@
 
 set -e
 
-THEORIES=(
+BASE_THEORIES=(
   i/Top1_Ch2.thy
   i/Top1_Ch3.thy
   i/Top1_Ch4.thy
@@ -37,24 +37,68 @@ THEORIES=(
   gd/GeoTopDeps.thy
   gp/GeoTop_Prefix.thy
   GeoTop.thy
-  dev34_pre/GeoTop.thy
-  dev34_prefix_base/GeoTop_3_4_Prefix_Base.thy
-  dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy
-  dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
-  dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy
-  dev34_prefix/GeoTop_3_4_Prefix.thy
-  dev34_facts/GeoTop_3_4_Facts.thy
-  dev34_workfacts/GeoTop_3_4_WorkFacts.thy
-  dev34_linkfacts/GeoTop_3_4_LinkFacts.thy
-  dev34_graphfacts/GeoTop_3_4_GraphFacts.thy
-  dev34_graphwork/GeoTop_3_4_GraphWork.thy
-  dev34_openstar/GeoTop_3_4_OpenStar.thy
-  dev34_core/GeoTop_3_4_Core.thy
-  dev34/GeoTop_3_4.thy
+)
+
+DEV34_SESSION_DIRS=(
+  dev34_pre
+  dev34_prefix_base
+  dev34_prefix_graph
+  dev34_prefix_mid
+  dev34_prefix
+  dev34_facts
+  dev34_workfacts
+  dev34_linkfacts
+  dev34_graphfacts
+  dev34_graphwork
+  dev34_openstar
+  dev34_core
+  dev34
 )
 
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
+
+mapfile -t DEV34_THEORIES < <(python3 - "${DEV34_SESSION_DIRS[@]}" <<'PYEND'
+import re
+import sys
+from pathlib import Path
+
+for session_dir in sys.argv[1:]:
+    root = Path(session_dir) / "ROOT"
+    if not root.is_file():
+        continue
+    session_base = Path(session_dir)
+    theory_dir = Path(".")
+    in_theories = False
+    for raw in root.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        session_match = re.match(r'session\b.*?\bin\s+"([^"]+)"', line)
+        if session_match:
+            theory_dir = Path(session_match.group(1))
+            in_theories = False
+            continue
+        if line.startswith("session "):
+            theory_dir = Path(".")
+            in_theories = False
+            continue
+        if line == "theories":
+            in_theories = True
+            continue
+        if in_theories:
+            if re.match(r"(session|options|document_files)\b", line):
+                in_theories = False
+                continue
+            theory = line.split()[0].strip('"')
+            if not theory:
+                continue
+            theory_path = session_base / theory_dir / (theory.replace(".", "/") + ".thy")
+            print(theory_path.as_posix())
+PYEND
+)
+
+THEORIES=("${BASE_THEORIES[@]}" "${DEV34_THEORIES[@]}")
 
 python3 - "$TXT" "$MD" "${THEORIES[@]}" <<'PYEND'
 import datetime
