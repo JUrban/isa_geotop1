@@ -4556,6 +4556,18 @@ proof -
     show "w \<noteq> q\<^sub>1"
       using hq\<^sub>1w by (by100 simp)
   qed
+  have hA\<^sub>1_geotop_arc: "geotop_arc_endpoints A\<^sub>1 {w, q\<^sub>1}"
+  proof (rule geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix
+      [OF hA\<^sub>1_arc hA\<^sub>1_ep])
+    show "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+  qed
+  have hA\<^sub>2_geotop_arc: "geotop_arc_endpoints A\<^sub>2 {w, q\<^sub>1}"
+  proof (rule geotop_top1_arc_endpoints_imp_geotop_arc_endpoints_prefix
+      [OF hA\<^sub>2_arc hA\<^sub>2_ep])
+    show "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+  qed
   have hA\<^sub>1_minus_w_connected:
       "top1_connected_on (A\<^sub>1 - {w})
         (subspace_topology UNIV geotop_euclidean_topology (A\<^sub>1 - {w}))"
