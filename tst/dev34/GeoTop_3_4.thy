@@ -5639,6 +5639,29 @@ proof -
       "q \<noteq> pathfinish \<gamma>w \<Longrightarrow>
         q \<in> geotop_arc_interior (geotop_polyhedron L) {w, pathfinish \<gamma>w}"
     using hq_poly hq_ne unfolding geotop_arc_interior_def by (by100 blast)
+  have hL_complex_local: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim_local: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
+  have hq_card_ge2_if_not_finish:
+      "q \<noteq> pathfinish \<gamma>w \<Longrightarrow>
+        card {l\<in>L. geotop_is_edge l \<and> q \<in> l} \<ge> 2"
+  proof -
+    assume hq_not_finish: "q \<noteq> pathfinish \<gamma>w"
+    have hq_int: "q \<in> geotop_arc_interior
+        (geotop_polyhedron L) {w, pathfinish \<gamma>w}"
+      by (rule hq_arc_interior_if_not_finish[OF hq_not_finish])
+    have hraw:
+        "card {\<sigma> \<in> L. q \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1} \<ge> 2"
+      by (rule broken_line_internal_vertex_card_edges_ge2
+          [OF hL_complex_local hpoly_refl hL_1dim_local hB_arc
+            h\<gamma>w_endpoints hqL hq_int])
+    have "{\<sigma> \<in> L. q \<in> \<sigma> \<and> geotop_simplex_dim \<sigma> 1}
+        = {l\<in>L. geotop_is_edge l \<and> q \<in> l}"
+      unfolding geotop_is_edge_def by (by100 blast)
+    thus ?thesis
+      using hraw by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
