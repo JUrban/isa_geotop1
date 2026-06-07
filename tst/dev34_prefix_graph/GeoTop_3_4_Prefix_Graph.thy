@@ -2717,6 +2717,123 @@ proof -
         [OF hA_fin hs hclosed])
 qed
 
+lemma geotop_funpow_closed_prefix:
+  fixes A :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hx: "x \<in> A"
+  assumes hclosed: "\<forall>y\<in>A. f y \<in> A"
+  shows "(f ^^ n) x \<in> A"
+proof (induct n)
+  case 0
+  show ?case
+    using hx by (by100 simp)
+next
+  case (Suc n)
+  show ?case
+    using hclosed Suc.hyps by (by100 simp)
+qed
+
+lemma geotop_funpow_inj_on_closed_prefix:
+  fixes A :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hinj: "inj_on f A"
+  assumes hclosed: "\<forall>y\<in>A. f y \<in> A"
+  shows "inj_on (f ^^ n) A"
+proof (induct n)
+  case 0
+  show ?case
+    by (by100 simp)
+next
+  case (Suc n)
+  show ?case
+  proof (rule inj_onI)
+    fix x y
+    assume hx: "x \<in> A"
+    assume hy: "y \<in> A"
+    assume heq: "(f ^^ Suc n) x = (f ^^ Suc n) y"
+    have hx_n: "(f ^^ n) x \<in> A"
+      by (rule geotop_funpow_closed_prefix[OF hx hclosed])
+    have hy_n: "(f ^^ n) y \<in> A"
+      by (rule geotop_funpow_closed_prefix[OF hy hclosed])
+    have hf_eq: "f ((f ^^ n) x) = f ((f ^^ n) y)"
+      using heq by (by100 simp)
+    have hn_eq: "(f ^^ n) x = (f ^^ n) y"
+      using inj_onD[OF hinj hf_eq hx_n hy_n] by (by100 simp)
+    show "x = y"
+      by (rule inj_onD[OF Suc.hyps hn_eq hx hy])
+  qed
+qed
+
+lemma geotop_finite_inj_closed_funpow_period_prefix:
+  fixes A :: "'a set" and f :: "'a \<Rightarrow> 'a"
+  assumes hfin: "finite A"
+  assumes hx: "x \<in> A"
+  assumes hclosed: "\<forall>y\<in>A. f y \<in> A"
+  assumes hinj: "inj_on f A"
+  shows "\<exists>n. 0 < n \<and> n \<le> Suc (card A) \<and> (f ^^ n) x = x"
+proof -
+  obtain m n where hmn: "m < n"
+    and hn_le: "n \<le> Suc (card A)"
+    and hrepeat: "(f ^^ m) x = (f ^^ n) x"
+    using geotop_finite_funpow_repeat_prefix[OF hfin hx hclosed] by (by100 blast)
+  have hn_decomp: "n = m + (n - m)"
+    using hmn by (by100 simp)
+  have hclosed_diff: "(f ^^ (n - m)) x \<in> A"
+    by (rule geotop_funpow_closed_prefix[OF hx hclosed])
+  have hmap_eq: "(f ^^ m) x = (f ^^ m) ((f ^^ (n - m)) x)"
+    using hrepeat hn_decomp funpow_add[of m "n - m" f] by (by100 simp)
+  have hinj_m: "inj_on (f ^^ m) A"
+    by (rule geotop_funpow_inj_on_closed_prefix[OF hinj hclosed])
+  have hreturn: "x = (f ^^ (n - m)) x"
+    by (rule inj_onD[OF hinj_m hmap_eq hx hclosed_diff])
+  have hpos: "0 < n - m"
+    using hmn by (by100 simp)
+  have hle: "n - m \<le> Suc (card A)"
+    using hn_le by (by100 simp)
+  show ?thesis
+  proof (intro exI conjI)
+    show "0 < n - m" by (rule hpos)
+    show "n - m \<le> Suc (card A)" by (rule hle)
+    show "(f ^^ (n - m)) x = x"
+      using hreturn by (by100 simp)
+  qed
+qed
+
+lemma geotop_degree_two_oriented_edge_successor_funpow_period_prefix:
+  fixes L :: "(real^2) set set"
+  assumes hL: "geotop_is_linear_graph L"
+  assumes hfin: "finite L"
+  assumes hdegree: "\<forall>w. {w} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs: "s \<in>
+      {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  shows "\<exists>n. 0 < n
+      \<and> n \<le> Suc (card
+        {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d})
+      \<and> (geotop_oriented_edge_successor L ^^ n) s = s"
+proof -
+  let ?A = "{(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  have hA_fin: "finite ?A"
+    by (rule geotop_finite_linear_graph_oriented_edge_states_finite_graph_prefix
+        [OF hL hfin])
+  have hclosed: "\<forall>t\<in>?A. geotop_oriented_edge_successor L t \<in> ?A"
+  proof
+    fix t
+    assume ht: "t \<in> ?A"
+    have hstep: "geotop_oriented_edge_successor L t \<in> ?A
+        \<and> geotop_oriented_edge_successor_state L t
+            (geotop_oriented_edge_successor L t)"
+      by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
+          [OF hL hdegree ht])
+    show "geotop_oriented_edge_successor L t \<in> ?A"
+      by (rule conjunct1[OF hstep])
+  qed
+  have hinj: "inj_on (geotop_oriented_edge_successor L) ?A"
+    by (rule geotop_degree_two_oriented_edge_successor_fun_inj_on_states_prefix
+        [OF hL hdegree])
+  show ?thesis
+    by (rule geotop_finite_inj_closed_funpow_period_prefix
+        [OF hA_fin hs hclosed hinj])
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_finite_total_function_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
