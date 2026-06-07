@@ -1,9 +1,19 @@
 #!/bin/bash
 # Generate theorem/definition index from active session theories and local imports.
 # Run from /project/tst after each session to keep the index current.
-# Usage: cd /project/tst && bash gen_index.sh
+# Usage: cd /project/tst && bash gen_index.sh [--force]
 
 set -euo pipefail
+
+FORCE=0
+if [ "${1:-}" = "--force" ]; then
+  FORCE=1
+  shift
+fi
+if [ "$#" -ne 0 ]; then
+  echo "Usage: bash gen_index.sh [--force]" >&2
+  exit 2
+fi
 
 TXT=THEOREMS_AND_DEFS.txt
 MD=THEOREMS_AND_DEFS.md
@@ -19,7 +29,7 @@ mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
-if [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
+if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
   echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
