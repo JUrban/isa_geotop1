@@ -1092,6 +1092,76 @@ proof -
     show ?thesis
       using hK\<^sub>2_last_edge hK\<^sub>2_last_edge_L_edge hP_inc by (by100 blast)
   qed
+  have hK\<^sub>1_closing_not_vertex_part:
+      "closed_segment (?v (p - 1)) P \<notin> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+  proof
+    assume hmem: "closed_segment (?v (p - 1)) P \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+    obtain v where hseg_single: "closed_segment (?v (p - 1)) P = {v}"
+      using hmem by (by100 blast)
+    have "geotop_is_edge {v}"
+      using hclosing_edge hseg_single by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
+  have hK\<^sub>2_initial_not_vertex_part:
+      "closed_segment P (?v (Suc 0)) \<notin>
+        ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+  proof
+    assume hmem:
+        "closed_segment P (?v (Suc 0)) \<in>
+          ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+    obtain v where hseg_single: "closed_segment P (?v (Suc 0)) = {v}"
+      using hmem by (by100 blast)
+    have "geotop_is_edge {v}"
+      using hK\<^sub>1_first_edge_L_edge hseg_single by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
+  have hK\<^sub>1_after_Q_not_vertex_part:
+      "closed_segment Q (?v (Suc j)) \<notin> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+  proof
+    assume hmem: "closed_segment Q (?v (Suc j)) \<in> ((\<lambda>v. {v}) ` (?v ` {0..j}))"
+    obtain v where hseg_single: "closed_segment Q (?v (Suc j)) = {v}"
+      using hmem by (by100 blast)
+    have "geotop_is_edge {v}"
+      using hK\<^sub>2_first_edge_L_edge hseg_single by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
+  have hK\<^sub>2_before_Q_not_vertex_part:
+      "closed_segment (?v (j - 1)) Q \<notin>
+        ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+  proof
+    assume hmem:
+        "closed_segment (?v (j - 1)) Q \<in>
+          ((\<lambda>v. {v}) ` (?v ` ({j..<p} \<union> {p})))"
+    obtain v where hseg_single: "closed_segment (?v (j - 1)) Q = {v}"
+      using hmem by (by100 blast)
+    have "geotop_is_edge {v}"
+      using hK\<^sub>1_last_edge_L_edge hseg_single by (by100 simp)
+    thus False
+      using geotop_singleton_not_edge_prefix by (by100 blast)
+  qed
+  have hK\<^sub>1_closing_edge_part_if:
+      "closed_segment (?v (p - 1)) P \<in> K\<^sub>1 \<Longrightarrow>
+        closed_segment (?v (p - 1)) P \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    unfolding K\<^sub>1_def using hK\<^sub>1_closing_not_vertex_part by (by100 blast)
+  have hK\<^sub>2_initial_edge_part_if:
+      "closed_segment P (?v (Suc 0)) \<in> K\<^sub>2 \<Longrightarrow>
+        closed_segment P (?v (Suc 0)) \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    unfolding K\<^sub>2_def using hK\<^sub>2_initial_not_vertex_part by (by100 blast)
+  have hK\<^sub>1_after_Q_edge_part_if:
+      "closed_segment Q (?v (Suc j)) \<in> K\<^sub>1 \<Longrightarrow>
+        closed_segment Q (?v (Suc j)) \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<j})"
+    unfolding K\<^sub>1_def using hK\<^sub>1_after_Q_not_vertex_part by (by100 blast)
+  have hK\<^sub>2_before_Q_edge_part_if:
+      "closed_segment (?v (j - 1)) Q \<in> K\<^sub>2 \<Longrightarrow>
+        closed_segment (?v (j - 1)) Q \<in>
+          ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {j..<p})"
+    unfolding K\<^sub>2_def using hK\<^sub>2_before_Q_not_vertex_part by (by100 blast)
   have hK\<^sub>1_subset_L: "K\<^sub>1 \<subseteq> L"
     unfolding K\<^sub>1_def using hK\<^sub>1_vertex_orbit hK\<^sub>1_edge_orbit by (by100 blast)
   have hK\<^sub>2_subset_L: "K\<^sub>2 \<subseteq> L"
