@@ -3246,7 +3246,9 @@ proof -
     proof (rule ccontr)
       assume hnext_ne: "?v (Suc m) \<noteq> ?v (Suc n)"
       let ?e\<^sub>m = "closed_segment (?v m) (?v (Suc m))"
+      let ?e\<^sub>n = "closed_segment (?v n) (?v (Suc n))"
       let ?prev_n = "if n = 0 then p - 1 else n - 1"
+      let ?prev_m = "if m = 0 then p - 1 else m - 1"
       have hm_lt: "m < p"
         using hm by (by100 simp)
       have hn_lt: "n < p"
@@ -3293,6 +3295,50 @@ proof -
       qed
       have hback_n: "?e\<^sub>m = closed_segment (?v ?prev_n) (?v n)"
         using hcases_n hnot_out_n by (by100 blast)
+      have he\<^sub>n_L_edge: "?e\<^sub>n \<in> L \<and> geotop_is_edge ?e\<^sub>n"
+        by (rule geotop_degree_two_oriented_edge_successor_consecutive_vertices_edge_prefix
+            [OF hL_linear hdegree hs])
+      have he\<^sub>n_L: "?e\<^sub>n \<in> L"
+        using he\<^sub>n_L_edge by (by100 blast)
+      have he\<^sub>n_edge: "geotop_is_edge ?e\<^sub>n"
+        using he\<^sub>n_L_edge by (by100 blast)
+      have hm_inc: "?v m \<in> ?e\<^sub>n"
+        using hcur by (by100 simp)
+      have hcases_m:
+          "?e\<^sub>n = closed_segment (?v ?prev_m) (?v m)
+          \<or> ?e\<^sub>n = closed_segment (?v m) (?v (Suc m))"
+        by (rule geotop_degree_two_oriented_edge_successor_period_vertex_incident_edge_cases_prefix
+            [OF hL_linear hdegree hs hp_pos hp_closed hm_lt he\<^sub>n_L he\<^sub>n_edge hm_inc])
+      have hnext_n_ne_cur: "?v (Suc n) \<noteq> ?v n"
+        by (rule geotop_degree_two_oriented_edge_successor_funpow_next_vertex_distinct_prefix
+            [OF hL_linear hdegree hs])
+      have hnot_out_m:
+          "?e\<^sub>n \<noteq> closed_segment (?v m) (?v (Suc m))"
+      proof
+        assume hout: "?e\<^sub>n = closed_segment (?v m) (?v (Suc m))"
+        have hpair:
+            "{?v n, ?v (Suc n)} = {?v m, ?v (Suc m)}"
+          using hout closed_segment_eq[of "?v n" "?v (Suc n)" "?v m" "?v (Suc m)"]
+          by (by100 simp)
+        have hnext_mem: "?v (Suc n) \<in> {?v m, ?v (Suc m)}"
+          using hpair by (by100 blast)
+        have hnext_not_m: "?v (Suc n) \<noteq> ?v m"
+        proof
+          assume hbad: "?v (Suc n) = ?v m"
+          have "?v (Suc n) = ?v n"
+            using hbad hcur by (by100 simp)
+          thus False
+            using hnext_n_ne_cur by (by100 blast)
+        qed
+        have hrev_eq: "?v (Suc n) = ?v (Suc m)"
+          using hnext_mem hnext_not_m by (by100 blast)
+        have "?v (Suc m) = ?v (Suc n)"
+          using hrev_eq by (by100 simp)
+        thus False
+          using hnext_ne by (by100 blast)
+      qed
+      have hback_m: "?e\<^sub>n = closed_segment (?v ?prev_m) (?v m)"
+        using hcases_m hnot_out_m by (by100 blast)
       have hreverse_trace_repetition_book: False
         (**
           Remaining reverse-trace contradiction: the equality above starts the
