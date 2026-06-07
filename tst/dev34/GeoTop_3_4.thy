@@ -5624,6 +5624,17 @@ proof -
   have h\<gamma>w_finish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>w)"
     by (rule geotop_degree_one_vertex_graph_endpoint_dev34
         [OF hL_linear h\<gamma>w_finishL h\<gamma>w_finish_card_one])
+  have hfirst_edge_exhausts_if_finish:
+      "q = pathfinish \<gamma>w \<Longrightarrow> geotop_polyhedron L = e"
+  proof -
+    assume hq_finish: "q = pathfinish \<gamma>w"
+    have hq_card_one: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+      using h\<gamma>w_finish_card_one hq_finish by (by100 simp)
+    show ?thesis
+      by (rule geotop_two_degree_one_endpoint_edge_connected_polyhedron_eq_dev34
+          [OF hL_linear hL_finite hconn hendpoint hqL hq_card_one
+            heL he_edge hw_e hq_ne he_seg])
+  qed
   show ?thesis
     sorry
 qed
