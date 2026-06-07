@@ -2456,6 +2456,94 @@ proof -
     thus False
       using hkj by (by100 blast)
   qed
+  have hK\<^sub>1_closing_not_in_K_if_no_nonadjacent_reversed:
+      "(\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+        \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k))
+      \<Longrightarrow> closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+  proof -
+    assume hno_nonadj:
+        "\<forall>k\<in>{0..<j}. k \<noteq> 0 \<longrightarrow>
+          \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+    have hno_rev:
+        "\<forall>k\<in>{0..<j}. \<not> (?v (p - 1) = ?v (Suc k) \<and> P = ?v k)"
+    proof (intro ballI notI)
+      fix k
+      assume hk: "k \<in> {0..<j}"
+      assume hrev: "?v (p - 1) = ?v (Suc k) \<and> P = ?v k"
+      have hk_ne0: "k \<noteq> 0"
+        using hK\<^sub>1_closing_reversed_not_initial hk hrev by (by100 blast)
+      show False
+        using hno_nonadj hk hk_ne0 hrev by (by100 blast)
+    qed
+    show ?thesis
+      by (rule hK\<^sub>1_closing_not_in_K_if_no_reversed[OF hno_rev])
+  qed
+  have hK\<^sub>2_initial_not_in_K_if_no_nonadjacent_reversed:
+      "(\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+        \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k))
+      \<Longrightarrow> closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+  proof -
+    assume hno_nonadj:
+        "\<forall>k\<in>{j..<p}. k \<noteq> p - 1 \<longrightarrow>
+          \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+    have hno_rev:
+        "\<forall>k\<in>{j..<p}. \<not> (P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k)"
+    proof (intro ballI notI)
+      fix k
+      assume hk: "k \<in> {j..<p}"
+      assume hrev: "P = ?v (Suc k) \<and> ?v (Suc 0) = ?v k"
+      have hk_ne_pred: "k \<noteq> p - 1"
+        using hK\<^sub>2_initial_reversed_not_closing hk hrev by (by100 blast)
+      show False
+        using hno_nonadj hk hk_ne_pred hrev by (by100 blast)
+    qed
+    show ?thesis
+      by (rule hK\<^sub>2_initial_not_in_K_if_no_reversed[OF hno_rev])
+  qed
+  have hK\<^sub>1_after_Q_not_in_K_if_no_nonadjacent_reversed:
+      "(\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+        \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k))
+      \<Longrightarrow> closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+  proof -
+    assume hno_nonadj:
+        "\<forall>k\<in>{0..<j}. k \<noteq> j - 1 \<longrightarrow>
+          \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+    have hno_rev:
+        "\<forall>k\<in>{0..<j}. \<not> (Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k)"
+    proof (intro ballI notI)
+      fix k
+      assume hk: "k \<in> {0..<j}"
+      assume hrev: "Q = ?v (Suc k) \<and> ?v (Suc j) = ?v k"
+      have hk_ne_pred: "k \<noteq> j - 1"
+        using hK\<^sub>1_after_Q_reversed_not_before_Q hk hrev by (by100 blast)
+      show False
+        using hno_nonadj hk hk_ne_pred hrev by (by100 blast)
+    qed
+    show ?thesis
+      by (rule hK\<^sub>1_after_Q_not_in_K_if_no_reversed[OF hno_rev])
+  qed
+  have hK\<^sub>2_before_Q_not_in_K_if_no_nonadjacent_reversed:
+      "(\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+        \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k))
+      \<Longrightarrow> closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+  proof -
+    assume hno_nonadj:
+        "\<forall>k\<in>{j..<p}. k \<noteq> j \<longrightarrow>
+          \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+    have hno_rev:
+        "\<forall>k\<in>{j..<p}. \<not> (?v (j - 1) = ?v (Suc k) \<and> Q = ?v k)"
+    proof (intro ballI notI)
+      fix k
+      assume hk: "k \<in> {j..<p}"
+      assume hrev: "?v (j - 1) = ?v (Suc k) \<and> Q = ?v k"
+      have hk_ne_j: "k \<noteq> j"
+        using hK\<^sub>2_before_Q_reversed_not_after_Q hk hrev by (by100 blast)
+      show False
+        using hno_nonadj hk hk_ne_j hrev by (by100 blast)
+    qed
+    show ?thesis
+      by (rule hK\<^sub>2_before_Q_not_in_K_if_no_reversed[OF hno_rev])
+  qed
   have hcycle_cut:
       "\<exists>C\<^sub>1 C\<^sub>2.
         geotop_polyhedron L = C\<^sub>1 \<union> C\<^sub>2
