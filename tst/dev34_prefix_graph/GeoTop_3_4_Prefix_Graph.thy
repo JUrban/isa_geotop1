@@ -1342,6 +1342,90 @@ proof -
       "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 1
         \<or> card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 2"
     using hQ_K\<^sub>2_incident_card_pos hQ_K\<^sub>2_incident_card_le2 by (by100 linarith)
+  have hP_K\<^sub>1_incident_card_one_if:
+      "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1 \<Longrightarrow>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} = 1"
+  proof -
+    assume hwrong_not: "closed_segment (?v (p - 1)) P \<notin> K\<^sub>1"
+    have hsub_single:
+        "{e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}
+          \<subseteq> {closed_segment P (?v (Suc 0))}"
+      using hP_K\<^sub>1_incident_edge_cases hwrong_not by (by100 blast)
+    have hcard_le1: "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e} \<le> 1"
+    proof -
+      have hfin: "finite {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}"
+        using hK\<^sub>1_fin by (by100 simp)
+      have "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> P \<in> e}
+          \<le> card {closed_segment P (?v (Suc 0))}"
+        by (rule card_mono[OF _ hsub_single]) (by100 simp)
+      thus ?thesis by (by100 simp)
+    qed
+    show ?thesis
+      using hP_K\<^sub>1_incident_card_pos hcard_le1 by (by100 linarith)
+  qed
+  have hP_K\<^sub>2_incident_card_one_if:
+      "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2 \<Longrightarrow>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} = 1"
+  proof -
+    assume hwrong_not: "closed_segment P (?v (Suc 0)) \<notin> K\<^sub>2"
+    have hsub_single:
+        "{e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}
+          \<subseteq> {closed_segment (?v (p - 1)) P}"
+      using hP_K\<^sub>2_incident_edge_cases hwrong_not by (by100 blast)
+    have hcard_le1: "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e} \<le> 1"
+    proof -
+      have hfin: "finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}"
+        using hK\<^sub>2_fin by (by100 simp)
+      have "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> P \<in> e}
+          \<le> card {closed_segment (?v (p - 1)) P}"
+        by (rule card_mono[OF _ hsub_single]) (by100 simp)
+      thus ?thesis by (by100 simp)
+    qed
+    show ?thesis
+      using hP_K\<^sub>2_incident_card_pos hcard_le1 by (by100 linarith)
+  qed
+  have hQ_K\<^sub>1_incident_card_one_if:
+      "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1 \<Longrightarrow>
+        card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} = 1"
+  proof -
+    assume hwrong_not: "closed_segment Q (?v (Suc j)) \<notin> K\<^sub>1"
+    have hsub_single:
+        "{e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}
+          \<subseteq> {closed_segment (?v (j - 1)) Q}"
+      using hQ_K\<^sub>1_incident_edge_cases hwrong_not by (by100 blast)
+    have hcard_le1: "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e} \<le> 1"
+    proof -
+      have hfin: "finite {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}"
+        using hK\<^sub>1_fin by (by100 simp)
+      have "card {e\<in>K\<^sub>1. geotop_is_edge e \<and> Q \<in> e}
+          \<le> card {closed_segment (?v (j - 1)) Q}"
+        by (rule card_mono[OF _ hsub_single]) (by100 simp)
+      thus ?thesis by (by100 simp)
+    qed
+    show ?thesis
+      using hQ_K\<^sub>1_incident_card_pos hcard_le1 by (by100 linarith)
+  qed
+  have hQ_K\<^sub>2_incident_card_one_if:
+      "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2 \<Longrightarrow>
+        card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} = 1"
+  proof -
+    assume hwrong_not: "closed_segment (?v (j - 1)) Q \<notin> K\<^sub>2"
+    have hsub_single:
+        "{e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}
+          \<subseteq> {closed_segment Q (?v (Suc j))}"
+      using hQ_K\<^sub>2_incident_edge_cases hwrong_not by (by100 blast)
+    have hcard_le1: "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e} \<le> 1"
+    proof -
+      have hfin: "finite {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}"
+        using hK\<^sub>2_fin by (by100 simp)
+      have "card {e\<in>K\<^sub>2. geotop_is_edge e \<and> Q \<in> e}
+          \<le> card {closed_segment Q (?v (Suc j))}"
+        by (rule card_mono[OF _ hsub_single]) (by100 simp)
+      thus ?thesis by (by100 simp)
+    qed
+    show ?thesis
+      using hQ_K\<^sub>2_incident_card_pos hcard_le1 by (by100 linarith)
+  qed
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_prefix[OF hL_linear])
   have hL_1dim: "geotop_complex_is_1dim L"
