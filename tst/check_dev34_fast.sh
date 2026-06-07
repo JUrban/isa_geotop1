@@ -53,10 +53,14 @@ Fast modes:
                full-index scan PAT, then split-hot the named target through file end
   focus-warm NAME
                cache parent layers and the completed prefix before a named target
+  focus-prime [NAME...]
+               cache parent layers and completed prefixes for named targets (all by default)
   focus-warm-all
                cache parent layers and completed prefixes before all named remaining targets
   focus-parents NAME
                cache only reusable parent layers for a named target
+  focus-status [NAME...]
+               no-build cache status for named focus targets (all by default)
   focus-outline NAME [PAT]
                focus with skip_proofs=true for scaffold iteration
   graph-focus [PAT]
@@ -570,7 +574,11 @@ split_hot_one() {
     fi
 
     chain_chain_pattern=$(split_default_chain_pattern "$file" "$chain_pattern")
-    printf 'split-hot: warming chained prefix for %s before line %s\n' "$file" "$chain_start_line"
+    if [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ]; then
+      printf 'split-hot: checking chained prefix status for %s before line %s\n' "$file" "$chain_start_line"
+    else
+      printf 'split-hot: warming chained prefix for %s before line %s\n' "$file" "$chain_start_line"
+    fi
     DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$chain_pattern" "$chain_chain_pattern"
     parent_context "$file" split-hot || return $?
 
@@ -582,6 +590,8 @@ split_hot_one() {
     chain_stamp_file=$(split_stamp "$file:$chain_pattern:prefix:chain=$chain_chain_pattern:force=${FORCE_PROOFS:-0}")
     if [ -s "$chain_stamp_file" ]; then
       chain_digest=$(cat "$chain_stamp_file")
+    elif [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ]; then
+      chain_digest=missing
     else
       printf 'split-hot: missing chained prefix stamp for %s before line %s\n' "$file" "$chain_start_line" >&2
       return 1
@@ -629,7 +639,9 @@ EOF2
   fi
 
   parent_target=$(parent_target_for_file "$file")
-  if [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
+  if [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ] && [ "$parent_target" != none ]; then
+    cache_status_line "$parent_target"
+  elif [ "${DEV34_FAST_AUTOWARM:-1}" != 0 ] && [ "$parent_target" != none ]; then
     cache_warm_parent_target "$parent_target"
   fi
 
@@ -650,7 +662,13 @@ EOF2
   else
     mapfile -t dirs < <(printf '%s\n' "${dirs[@]}"; printf '%s\n' -d "$split_dir")
   fi
-  if [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
+  if [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ]; then
+    if [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
+      printf 'split-hot: fresh prefix cache for %s before line %s\n' "$file" "$start_line"
+    else
+      printf 'split-hot: stale/missing prefix cache for %s before line %s\n' "$file" "$start_line"
+    fi
+  elif [ -s "$split_stamp_file" ] && [ "$(cat "$split_stamp_file")" = "$split_digest" ]; then
     printf 'split-hot: skipped prefix cache for %s before line %s\n' "$file" "$start_line"
   else
     printf 'split-hot: building prefix cache for %s before line %s\n' "$file" "$start_line"
@@ -664,7 +682,11 @@ EOF2
 
   if [ "${DEV34_FAST_PREFIX_ONLY:-0}" = 1 ]; then
     split_prefix_seen_add "$key"
-    printf 'split-hot: prefix cache ready for %s before line %s\n' "$file" "$start_line"
+    if [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ]; then
+      printf 'split-hot: prefix cache status checked for %s before line %s\n' "$file" "$start_line"
+    else
+      printf 'split-hot: prefix cache ready for %s before line %s\n' "$file" "$start_line"
+    fi
     return 0
   fi
 
@@ -702,6 +724,16 @@ EOF2
     "$split_digest" "$(sha256sum "$tail_file")")
   tail_digest=$(printf '%s' "$tail_key" | sha256sum | awk '{print $1}')
   tail_stamp_file=$(split_stamp "$file:$pattern:$tail_mode:chain=$chain_pattern:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
+  if [ "${DEV34_FAST_STATUS_ONLY:-0}" = 1 ]; then
+    if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
+      printf 'split-hot: fresh %s process cache for %s from line %s through %s\n' \
+        "$tail_mode" "$file" "$start_line" "$tail_end_line"
+    else
+      printf 'split-hot: stale/missing %s process cache for %s from line %s through %s\n' \
+        "$tail_mode" "$file" "$start_line" "$tail_end_line"
+    fi
+    return 0
+  fi
   if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
     printf 'split-hot: skipped %s process for %s from line %s through %s\n' \
       "$tail_mode" "$file" "$start_line" "$tail_end_line"
@@ -903,6 +935,55 @@ focus_parents_one() {
     return 0
   fi
   cache_warm_parent_target "$parent_target"
+}
+
+focus_names_or_all() {
+  if [ "$#" -gt 0 ]; then
+    printf '%s\n' "$@"
+  else
+    focus_target_names
+  fi
+}
+
+focus_prime_many() {
+  status=0
+  while IFS= read -r name; do
+    [ -n "$name" ] || continue
+    printf '\n== %s ==\n' "$name"
+    if focus_one warm "$name"; then
+      :
+    else
+      status=$?
+      break
+    fi
+  done <<EOF2
+$(focus_names_or_all "$@")
+EOF2
+  return "$status"
+}
+
+focus_status_one() {
+  name=$1
+  focus_target_parts "$name" || return $?
+  chain_pattern=$(focus_chain_pattern "$name")
+  DEV34_FAST_STATUS_ONLY=1 DEV34_FAST_SLICE_ONLY=1 split_hot_one "$focus_file" "$focus_pattern" "$chain_pattern"
+}
+
+focus_status_many() {
+  status=0
+  while IFS= read -r name; do
+    [ -n "$name" ] || continue
+    printf '\n== %s ==\n' "$name"
+    if focus_status_one "$name"; then
+      :
+    else
+      status=$?
+      break
+    fi
+  done <<EOF2
+$(focus_names_or_all "$@")
+EOF2
+  return "$status"
 }
 
 cache_status_line() {
@@ -1442,22 +1523,17 @@ EOF2
     fi
     focus_parents_one "$1"
     ;;
+  focus-status)
+    shift
+    focus_status_many "$@"
+    ;;
+  focus-prime)
+    shift
+    focus_prime_many "$@"
+    ;;
   focus-warm-all)
     shift
-    status=0
-    while IFS= read -r name; do
-      [ -n "$name" ] || continue
-      printf '\n== %s ==\n' "$name"
-      if focus_one warm "$name"; then
-        :
-      else
-        status=$?
-        break
-      fi
-    done <<EOF2
-$(focus_target_names)
-EOF2
-    exit "$status"
+    focus_prime_many
     ;;
   focus-outline)
     shift
