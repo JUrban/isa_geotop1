@@ -31,7 +31,7 @@ proof (rule ccontr)
         [OF hL_linear hdegree_two hs])
   have ht_state:
       "?t \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
-    using hstep0 by (by100 blast)
+    by (rule conjunct1[OF hstep0])
   have hrel0: "geotop_oriented_edge_successor_state L s ?t"
     using hstep0 by (by100 blast)
   have hstep1:
@@ -39,8 +39,14 @@ proof (rule ccontr)
       \<and> geotop_oriented_edge_successor_state L ?t (?succ ?t)"
     by (rule geotop_degree_two_oriented_edge_successor_fun_step_prefix
         [OF hL_linear hdegree_two ht_state])
-  have hsucc2: "?succ ?t = s"
+  have hclosed2: "(?succ ^^ 2) s = s"
     using hp_closed hp_eq2 by (by100 simp)
+  have htwo: "(2::nat) = Suc (Suc 0)"
+    by (by100 simp)
+  have hfunpow2: "(?succ ^^ 2) s = ?succ (?succ s)"
+    by (subst htwo, simp only: funpow.simps comp_apply id_apply)
+  have hsucc2: "?succ ?t = s"
+    using hclosed2 hfunpow2 by (by100 simp)
   have hrel1: "geotop_oriented_edge_successor_state L ?t s"
     using hstep1 hsucc2 by (by100 simp)
   have hs_edge: "snd s = closed_segment (fst s) (fst ?t)"
@@ -190,8 +196,10 @@ proof -
         using hk by (by100 simp)
       have hvk_seg: "?v k \<in> closed_segment (?v k) (?v (Suc k))"
         by (by100 simp)
+      have hvk_singleton: "?v k \<in> {x}"
+        using hxseg hvk_seg by (by100 simp)
       have hx_eq: "x = ?v k"
-        using hxseg hvk_seg by (by100 blast)
+        using hvk_singleton by (by100 simp)
       show ?thesis
         using hk hx_eq by (by100 blast)
     qed
@@ -279,6 +287,7 @@ lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
   assumes hL_finite: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
   assumes hconn: "geotop_complex_connected L"
   assumes hdegree_two:
       "\<forall>w. {w} \<in> L \<longrightarrow>
@@ -296,7 +305,7 @@ lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model
 proof -
   have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
     by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
-        [OF hL_linear hL_finite hconn hdegree_two])
+        [OF hL_linear hL_finite hL_nonempty hconn hdegree_two])
   have hcycle_orbit_package:
       "\<exists>w s q p. {w} \<in> L
         \<and> s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
@@ -362,7 +371,7 @@ proof -
             (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
       using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
           [OF hL_linear hL_finite hdegree_two hwL]
-      by (by100 blast)
+      by (elim exE conjE)
     have hp_pos: "0 < p"
       using hp_gt1 by (by100 linarith)
     have hp_gt2: "2 < p"
@@ -378,9 +387,42 @@ proof -
       by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
           [OF hL_linear hL_finite hconn hdegree_two hs hp_pos hp_closed])
     show ?thesis
-      using hwL hs hfst hq_ne hsnd hqL hp_gt1 hp_gt2 hfirst_q hp_closed hp_min
-        hinj hcard hclosing_L hclosing_edge hL_cycle
-      by (by100 blast)
+    proof (intro exI conjI)
+      show "{w} \<in> L" by (rule hwL)
+      show "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+        by (rule hs)
+      show "fst s = w" by (rule hfst)
+      show "q \<noteq> w" by (rule hq_ne)
+      show "snd s = closed_segment w q" by (rule hsnd)
+      show "{q} \<in> L" by (rule hqL)
+      show "1 < p" by (rule hp_gt1)
+      show "2 < p" by (rule hp_gt2)
+      show "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
+        by (rule hfirst_q)
+      show "(geotop_oriented_edge_successor L ^^ p) s = s"
+        by (rule hp_closed)
+      show "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+        by (rule hp_min)
+      show "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+        by (rule hinj)
+      show "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+        by (rule hcard)
+      show "closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
+        by (rule hclosing_L)
+      show "geotop_is_edge
+          (closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
+        by (rule hclosing_edge)
+      show "L =
+          (((\<lambda>v. {v}) `
+            ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+          \<union> ((\<lambda>j. closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ j) s))
+            (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+        by (rule hL_cycle)
+    qed
   qed
   obtain w s q p where hwL: "{w} \<in> L"
     and hs: "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
@@ -412,7 +454,7 @@ proof -
         \<union> ((\<lambda>j. closed_segment
           (fst ((geotop_oriented_edge_successor L ^^ j) s))
           (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
-    using hcycle_orbit_package by (by100 blast)
+    using hcycle_orbit_package by (elim exE conjE)
   have hordered_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
@@ -452,9 +494,21 @@ proof -
         card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
     by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
         [OF hL_linear hL_finite hconn hpolygon])
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hpoly_scc:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology (geotop_polyhedron L)"
+    by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hpolygon])
+  have hpoly_ne: "geotop_polyhedron L \<noteq> {}"
+    by (rule simple_closed_curve_nonempty[OF hpoly_scc])
+  obtain w where hwL: "{w} \<in> L"
+    using geotop_nonempty_polyhedron_has_complex_vertex[OF hL_complex hpoly_ne]
+    by (by100 blast)
+  have hL_nonempty: "L \<noteq> {}"
+    using hwL by (by100 blast)
   show ?thesis
     by (rule geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34
-        [OF hL_linear hL_finite hconn hdegree_two])
+        [OF hL_linear hL_finite hL_nonempty hconn hdegree_two])
 qed
 
 lemma geotop_fig410_boundary_subdivision_model_from_finite_linear_graph_polygon_dev34:
@@ -5430,9 +5484,11 @@ proof -
     using hbroken unfolding geotop_is_broken_line_def by (by100 blast)
   obtain E where hE: "geotop_arc_endpoints (geotop_polyhedron L) E"
     using geotop_is_arc_has_arc_endpoints_dev34[OF hB_arc] by (by100 blast)
+  have hpoly_refl: "geotop_polyhedron L = geotop_polyhedron L"
+    by (rule HOL.refl)
   have hwE: "w \<in> E"
     by (rule geotop_broken_line_graph_endpoint_in_arc_endpoints_prefix
-        [OF hL_linear hL_finite refl hbroken hE hendpoint])
+        [OF hL_linear hL_finite hpoly_refl hbroken hE hendpoint])
   obtain \<gamma> :: "real \<Rightarrow> real^2"
     where h\<gamma>_arc: "arc \<gamma>"
       and h\<gamma>_img: "path_image \<gamma> = geotop_polyhedron L"
@@ -5440,7 +5496,17 @@ proof -
     using arc_endpoints_imp_arc_HOL[OF hE] by (by100 blast)
   define \<gamma>w where "\<gamma>w = (if pathstart \<gamma> = w then \<gamma> else reversepath \<gamma>)"
   have h\<gamma>w_arc: "arc \<gamma>w"
-    unfolding \<gamma>w_def using h\<gamma>_arc arc_reversepath by (by100 simp)
+  proof (cases "pathstart \<gamma> = w")
+    case True
+    show ?thesis
+      unfolding \<gamma>w_def using True h\<gamma>_arc by (by100 simp)
+  next
+    case False
+    have "arc (reversepath \<gamma>)"
+      by (rule arc_reversepath[OF h\<gamma>_arc])
+    thus ?thesis
+      unfolding \<gamma>w_def using False by (by100 simp)
+  qed
   have h\<gamma>w_img: "path_image \<gamma>w = geotop_polyhedron L"
     unfolding \<gamma>w_def using h\<gamma>_img path_image_reversepath by (by100 simp)
   have h\<gamma>w_start: "pathstart \<gamma>w = w"
@@ -5453,7 +5519,7 @@ proof -
     have "w = pathfinish \<gamma>"
       using hwE hE_eq False by (by100 blast)
     thus ?thesis
-      unfolding \<gamma>w_def using False by (by100 (simp add: pathstart_reversepath))
+      unfolding \<gamma>w_def using False by (simp add: pathstart_reversepath)
   qed
   show ?thesis
     sorry
