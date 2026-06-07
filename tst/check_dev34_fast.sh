@@ -42,8 +42,21 @@ Fast modes:
                fast scaffold check: process with skip_proofs=true
   split-hot FILE PAT
                cache FILE before the first PAT line, then process the remaining tail
+  slice-hot FILE PAT
+               cache FILE before PAT, then process only the next top-level theorem/lemma slice
   split-warm FILE PAT
                cache FILE before the first PAT line, but do not process the tail
+  focus-list   list named proof-focus targets
+  focus NAME [PAT]
+               full-index scan PAT, then slice-hot the named target
+  focus-full NAME [PAT]
+               full-index scan PAT, then split-hot the named target through file end
+  focus-warm NAME
+               cache the completed prefix before a named target
+  focus-warm-all
+               cache completed prefixes before all named remaining targets
+  focus-outline NAME [PAT]
+               focus with skip_proofs=true for scaffold iteration
   graph-focus [PAT]
                full-index scan PAT, then split-hot the active graph theorem
   graph-outline [PAT]
@@ -498,10 +511,8 @@ split_hot_one() {
   base=$(basename "$file" .thy)
   split_dir="$cache_dir/split-$key"
   prefix_theory="${base}_Split_${key}_Prefix"
-  tail_theory="${base}_Split_${key}_Tail"
   prefix_session="${base}_Split_${key}_Prefix_Session"
   prefix_file="$split_dir/$prefix_theory.thy"
-  tail_file="$split_dir/$tail_theory.thy"
 
   mkdir -p "$split_dir"
   write_if_changed "$split_dir/ROOT" <<EOF2
@@ -517,14 +528,6 @@ EOF2
     NR < start_line { print; next }
     END { print ""; print "end" }
   ' "$file" | write_if_changed "$prefix_file"
-
-  {
-    printf 'theory %s\n' "$tail_theory"
-    printf '  imports "%s.%s"\n' "$prefix_session" "$prefix_theory"
-    printf 'begin\n\n'
-    sed -n "${start_line},$((end_line - 1))p" "$file"
-    printf '\nend\n'
-  } | write_if_changed "$tail_file"
 
   if [ "${DEV34_FAST_VERBOSE:-0}" = 1 ]; then
     printf 'session %s = %s +\n' "$prefix_session" "$logic"
@@ -569,17 +572,48 @@ EOF2
     return 0
   fi
 
-  tail_key=$(printf 'split-tail\n%s\n%s\nforce_proofs=%s\nskip_proofs=%s\n%s\n%s\n' \
+  tail_mode=tail
+  tail_suffix=Tail
+  tail_end_line=$((end_line - 1))
+  if [ "${DEV34_FAST_SLICE_ONLY:-0}" = 1 ]; then
+    tail_mode=slice
+    tail_suffix=Slice
+    next_top_line=$(awk -v start_line="$start_line" '
+      NR > start_line &&
+      /^(lemma|theorem|corollary|proposition)[[:space:]]/ {
+        print NR
+        exit
+      }
+    ' "$file")
+    if [ -n "$next_top_line" ]; then
+      tail_end_line=$((next_top_line - 1))
+    fi
+  fi
+  tail_theory="${base}_Split_${key}_${tail_suffix}"
+  tail_file="$split_dir/$tail_theory.thy"
+
+  {
+    printf 'theory %s\n' "$tail_theory"
+    printf '  imports "%s.%s"\n' "$prefix_session" "$prefix_theory"
+    printf 'begin\n\n'
+    sed -n "${start_line},${tail_end_line}p" "$file"
+    printf '\nend\n'
+  } | write_if_changed "$tail_file"
+
+  tail_key=$(printf 'split-%s\n%s\n%s\nforce_proofs=%s\nskip_proofs=%s\n%s\n%s\n' \
+    "$tail_mode" \
     "$file" "$pattern" "${FORCE_PROOFS:-0}" "${SKIP_PROOFS:-0}" \
     "$split_digest" "$(sha256sum "$tail_file")")
   tail_digest=$(printf '%s' "$tail_key" | sha256sum | awk '{print $1}')
-  tail_stamp_file=$(split_stamp "$file:$pattern:tail:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
+  tail_stamp_file=$(split_stamp "$file:$pattern:$tail_mode:force=${FORCE_PROOFS:-0}:skip=${SKIP_PROOFS:-0}")
   if [ "${DEV34_FAST_PROC_CACHE:-1}" != 0 ] && [ -s "$tail_stamp_file" ] && [ "$(cat "$tail_stamp_file")" = "$tail_digest" ]; then
-    printf 'split-hot: skipped tail process for %s from line %s\n' "$file" "$start_line"
+    printf 'split-hot: skipped %s process for %s from line %s through %s\n' \
+      "$tail_mode" "$file" "$start_line" "$tail_end_line"
     return 0
   fi
 
-  printf 'split-hot: processing tail for %s from line %s\n' "$file" "$start_line"
+  printf 'split-hot: processing %s for %s from line %s through %s\n' \
+    "$tail_mode" "$file" "$start_line" "$tail_end_line"
   timeout "$limit" "$isabelle" process_theories \
     "${isabelle_options[@]}" \
     "${process_options[@]}" \
@@ -589,6 +623,139 @@ EOF2
 
 active_graph_file=dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy
 active_graph_pattern=geotop_finite_connected_degree_two_linear_graph_two_vertex_boundary_split_prefix
+
+focus_target_names() {
+  cat <<'EOF2'
+graph-branch
+graph-cycle-cut
+mid-split-free
+mid-fold
+mid-support
+mid-d42
+prefix-d44
+dev34-cycle
+dev34-fan
+dev34-semicircle
+EOF2
+}
+
+focus_target() {
+  case "$1" in
+    graph-branch)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy \
+        geotop_branch_vertex_deletion_disconnects_finite_linear_graph_prefix \
+        'branch vertex deletion disconnects finite linear graph'
+      ;;
+    graph-cycle-cut|graph-split|graph)
+      printf '%s\t%s\t%s\n' \
+        "$active_graph_file" \
+        "$active_graph_pattern" \
+        'cycle cut graph orbit nonadjacent reversed intersection'
+      ;;
+    mid-split-free)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        geotop_polygon_disk_nonfree_boundary_triangle_split_free_count_prefix \
+        'subdisk induction transfer nonfree boundary triangle split free count'
+      ;;
+    mid-fold)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        'theorem Theorem_GT_3_4' \
+        'Theorem_GT_3_4 ind_step free triangle fold elimination'
+      ;;
+    mid-support)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        'theorem Theorem_GT_3_7' \
+        'Theorem_GT_3_7 support in U supported folds'
+      ;;
+    mid-d42)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
+        'theorem Theorem_GT_4_2' \
+        'Theorem_GT_4_2 hD42_disjoint arc separation components'
+      ;;
+    prefix-d44)
+      printf '%s\t%s\t%s\n' \
+        dev34_prefix/GeoTop_3_4_Prefix.thy \
+        'theorem Theorem_GT_4_4' \
+        'Theorem_GT_4_4 brick regular neighborhood component frontier'
+      ;;
+    dev34-cycle)
+      printf '%s\t%s\t%s\n' \
+        dev34/GeoTop_3_4.thy \
+        geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34 \
+        'finite connected nonisolated linear graph boundary cycle model'
+      ;;
+    dev34-fan)
+      printf '%s\t%s\t%s\n' \
+        dev34/GeoTop_3_4.thy \
+        geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34 \
+        'endpoint degree one chain boundary arc fan target'
+      ;;
+    dev34-semicircle)
+      printf '%s\t%s\t%s\n' \
+        dev34/GeoTop_3_4.thy \
+        geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34 \
+        'semicircle one side simplex local separates domain sphere arc'
+      ;;
+    *)
+      printf 'focus: unknown target %s\n' "$1" >&2
+      printf 'focus: known targets are:\n' >&2
+      focus_target_names >&2
+      return 2
+      ;;
+  esac
+}
+
+focus_target_parts() {
+  entry=$(focus_target "$1") || return $?
+  focus_file=${entry%%$'\t'*}
+  rest=${entry#*$'\t'}
+  focus_pattern=${rest%%$'\t'*}
+  focus_scan=${rest#*$'\t'}
+}
+
+focus_list() {
+  while IFS= read -r name; do
+    focus_target_parts "$name"
+    printf '%-18s %s  ::  %s\n' "$name" "$focus_file" "$focus_pattern"
+  done <<EOF2
+$(focus_target_names)
+EOF2
+}
+
+focus_one() {
+  mode=$1
+  name=$2
+  shift 2
+  focus_target_parts "$name" || return $?
+  if [ "$mode" != warm ]; then
+    scan_pat=${*:-$focus_scan}
+    if [ -n "$scan_pat" ]; then
+      printf 'full-index/source scan: %s\n' "$scan_pat"
+      rg -n -i -- "$scan_pat" THEOREMS_AND_DEFS.txt STMT_INDEX.txt "${target_theories[@]}" || true
+      printf '\n'
+    fi
+  fi
+  case "$mode" in
+    slice)
+      DEV34_FAST_SLICE_ONLY=1 split_hot_one "$focus_file" "$focus_pattern"
+      ;;
+    full)
+      split_hot_one "$focus_file" "$focus_pattern"
+      ;;
+    warm)
+      DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$focus_file" "$focus_pattern"
+      ;;
+    *)
+      printf 'focus: bad mode %s\n' "$mode" >&2
+      return 2
+      ;;
+  esac
+}
 
 cache_status_line() {
   target=$1
@@ -1052,6 +1219,17 @@ EOF2
     pattern=$*
     split_hot_one "$file" "$pattern"
     ;;
+  slice-hot)
+    shift
+    if [ "$#" -lt 2 ]; then
+      usage
+      exit 2
+    fi
+    file=$1
+    shift
+    pattern=$*
+    DEV34_FAST_SLICE_ONLY=1 split_hot_one "$file" "$pattern"
+    ;;
   split-warm)
     shift
     if [ "$#" -lt 2 ]; then
@@ -1062,6 +1240,59 @@ EOF2
     shift
     pattern=$*
     DEV34_FAST_PREFIX_ONLY=1 split_hot_one "$file" "$pattern"
+    ;;
+  focus-list)
+    shift
+    focus_list
+    ;;
+  focus)
+    shift
+    if [ "$#" -lt 1 ]; then
+      usage
+      exit 2
+    fi
+    name=$1
+    shift
+    focus_one slice "$name" "$@"
+    ;;
+  focus-full)
+    shift
+    if [ "$#" -lt 1 ]; then
+      usage
+      exit 2
+    fi
+    name=$1
+    shift
+    focus_one full "$name" "$@"
+    ;;
+  focus-warm)
+    shift
+    if [ "$#" -lt 1 ]; then
+      usage
+      exit 2
+    fi
+    focus_one warm "$1"
+    ;;
+  focus-warm-all)
+    shift
+    status=0
+    while IFS= read -r name; do
+      [ -n "$name" ] || continue
+      printf '\n== %s ==\n' "$name"
+      if focus_one warm "$name"; then
+        :
+      else
+        status=$?
+        break
+      fi
+    done <<EOF2
+$(focus_target_names)
+EOF2
+    exit "$status"
+    ;;
+  focus-outline)
+    shift
+    exec env SKIP_PROOFS=1 "$0" focus "$@"
     ;;
   graph-focus|focus-graph)
     shift
