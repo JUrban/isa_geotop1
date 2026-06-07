@@ -4055,6 +4055,43 @@ proof -
     using he\<^sub>13_inter by (by100 blast)
   have he\<^sub>23_punctured_disj: "(e\<^sub>2 - {w}) \<inter> (e\<^sub>3 - {w}) = {}"
     using he\<^sub>23_inter by (by100 blast)
+  have hincident_selected_punctured_disj:
+      "\<And>e S. e \<in> E \<Longrightarrow> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<Longrightarrow> e \<noteq> S
+        \<Longrightarrow> (e - {w}) \<inter> (S - {w}) = {}"
+  proof -
+    fix e S
+    assume heE: "e \<in> E"
+    assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    assume heS: "e \<noteq> S"
+    have hSE: "S \<in> E"
+      using hS he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have heL': "e \<in> L"
+      using heE unfolding E_def by (by100 blast)
+    have hSL: "S \<in> L"
+      using hSE unfolding E_def by (by100 blast)
+    have he_edge': "geotop_is_edge e"
+      using heE unfolding E_def by (by100 blast)
+    have hS_edge: "geotop_is_edge S"
+      using hSE unfolding E_def by (by100 blast)
+    have hwe: "w \<in> e"
+      using heE unfolding E_def by (by100 blast)
+    have hwS: "w \<in> S"
+      using hSE unfolding E_def by (by100 blast)
+    have hInt: "e \<inter> S \<noteq> {}"
+      using hwe hwS by (by100 blast)
+    obtain p where hp: "e \<inter> S = {p}"
+      using geotop_complex_distinct_intersecting_edges_inter_singleton_prefix
+          [OF hL_complex heL' hSL he_edge' hS_edge heS hInt]
+      by (by100 blast)
+    have "w \<in> e \<inter> S"
+      using hwe hwS by (by100 blast)
+    hence hpw: "p = w"
+      using hp by (by100 simp)
+    have "e \<inter> S = {w}"
+      using hp hpw by (by100 simp)
+    then show "(e - {w}) \<inter> (S - {w}) = {}"
+      by (by100 blast)
+  qed
   have he\<^sub>1_punctured_sub: "e\<^sub>1 - {w} \<subseteq> geotop_polyhedron L - {w}"
     using he\<^sub>1_sub_poly by (by100 blast)
   have he\<^sub>2_punctured_sub: "e\<^sub>2 - {w} \<subseteq> geotop_polyhedron L - {w}"
@@ -4195,6 +4232,92 @@ proof -
       show ?thesis
         using h\<tau>E hx\<tau> by (by100 blast)
     qed
+  qed
+  have hball_punctured_carrier_incident_germs:
+      "ball w r \<inter> (geotop_polyhedron L - {w})
+        \<subseteq> \<Union>((\<lambda>e. e - {w}) ` E)"
+  proof
+    fix x
+    assume hx: "x \<in> ball w r \<inter> (geotop_polyhedron L - {w})"
+    have hx_ball_poly: "x \<in> ball w r \<inter> geotop_polyhedron L"
+      using hx by (by100 blast)
+    have hx_star: "x \<in> \<Union>{\<tau>\<in>L. w \<in> \<tau>}"
+      using hball_poly_star hx_ball_poly by (by100 blast)
+    have hx_vertex_or_edge: "x \<in> {w} \<union> \<Union>E"
+      using hstar_carrier_subset hx_star by (by100 blast)
+    have hx_ne_w: "x \<notin> {w}"
+      using hx by (by100 blast)
+    have hx_edges: "x \<in> \<Union>E"
+      using hx_vertex_or_edge hx_ne_w by (by100 blast)
+    obtain e where heE: "e \<in> E" and hxe: "x \<in> e"
+      using hx_edges by (by100 blast)
+    have "x \<in> e - {w}"
+      using hxe hx_ne_w by (by100 blast)
+    then show "x \<in> \<Union>((\<lambda>e. e - {w}) ` E)"
+      using heE by (by100 blast)
+  qed
+  have hother_incident_germ_in_radial_complement:
+      "\<And>e. e \<in> E \<Longrightarrow> e \<notin> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> (e - {w}) \<inter> ball w r
+          \<subseteq> ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
+  proof
+    fix e x
+    assume heE: "e \<in> E"
+    assume he_not_selected: "e \<notin> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    assume hx: "x \<in> (e - {w}) \<inter> ball w r"
+    have hx_ball: "x \<in> ball w r"
+      using hx by (by100 blast)
+    have hx_e_punctured: "x \<in> e - {w}"
+      using hx by (by100 blast)
+    have hx_not_w: "x \<notin> {w}"
+      using hx by (by100 blast)
+    have hx_not_e\<^sub>1: "x \<notin> e\<^sub>1"
+    proof
+      assume hxe\<^sub>1: "x \<in> e\<^sub>1"
+      have "x \<in> (e - {w}) \<inter> (e\<^sub>1 - {w})"
+        using hx_e_punctured hxe\<^sub>1 hx_not_w by (by100 blast)
+      moreover have "(e - {w}) \<inter> (e\<^sub>1 - {w}) = {}"
+      proof (rule hincident_selected_punctured_disj[OF heE])
+        show "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+          by (by100 simp)
+        show "e \<noteq> e\<^sub>1"
+          using he_not_selected by (by100 simp)
+      qed
+      ultimately show False
+        by (by100 blast)
+    qed
+    have hx_not_e\<^sub>2: "x \<notin> e\<^sub>2"
+    proof
+      assume hxe\<^sub>2: "x \<in> e\<^sub>2"
+      have "x \<in> (e - {w}) \<inter> (e\<^sub>2 - {w})"
+        using hx_e_punctured hxe\<^sub>2 hx_not_w by (by100 blast)
+      moreover have "(e - {w}) \<inter> (e\<^sub>2 - {w}) = {}"
+      proof (rule hincident_selected_punctured_disj[OF heE])
+        show "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+          by (by100 simp)
+        show "e \<noteq> e\<^sub>2"
+          using he_not_selected by (by100 simp)
+      qed
+      ultimately show False
+        by (by100 blast)
+    qed
+    have hx_not_e\<^sub>3: "x \<notin> e\<^sub>3"
+    proof
+      assume hxe\<^sub>3: "x \<in> e\<^sub>3"
+      have "x \<in> (e - {w}) \<inter> (e\<^sub>3 - {w})"
+        using hx_e_punctured hxe\<^sub>3 hx_not_w by (by100 blast)
+      moreover have "(e - {w}) \<inter> (e\<^sub>3 - {w}) = {}"
+      proof (rule hincident_selected_punctured_disj[OF heE])
+        show "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+          by (by100 simp)
+        show "e \<noteq> e\<^sub>3"
+          using he_not_selected by (by100 simp)
+      qed
+      ultimately show False
+        by (by100 blast)
+    qed
+    show "x \<in> ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
+      using hx_ball hx_not_e\<^sub>1 hx_not_e\<^sub>2 hx_not_e\<^sub>3 by (by100 blast)
   qed
   define x\<^sub>1 where "x\<^sub>1 = w + (r / dist w q\<^sub>1) *\<^sub>R (q\<^sub>1 - w)"
   define x\<^sub>2 where "x\<^sub>2 = w + (r / dist w q\<^sub>2) *\<^sub>R (q\<^sub>2 - w)"
