@@ -6496,6 +6496,15 @@ proof -
         by (rule hpack[OF _ _ hx\<^sub>23 hsame], (by100 simp)+)
     qed
   qed
+  have hsame_arc_side_two_germs_impossible: False
+    (**
+      Book local-1-manifold contradiction: the two arcs of the simple closed
+      curve through \<open>w\<close> are the two local sides at \<open>w\<close>.  The packaged
+      canonical witness above puts two distinct small incident edge germs on
+      one of those two sides, while the finite linear local-star calculation
+      says a connected arc side near \<open>w\<close> can follow only one such punctured
+      germ before leaving the small ball. **)
+    sorry
   have hlocal_sector_cut_book:
       "\<not> top1_connected_on (geotop_polyhedron L - {w})
         (subspace_topology UNIV geotop_euclidean_topology
@@ -6506,7 +6515,7 @@ proof -
       in the three edge germs at \<open>w\<close>, and use the finite linear complex
       intersection property to show any carrier path joining two selected
       sectors must pass through \<open>w\<close>. **)
-    sorry
+    using hsame_arc_side_two_germs_impossible by (by100 blast)
   show ?thesis
     by (rule hlocal_sector_cut_book)
 qed
