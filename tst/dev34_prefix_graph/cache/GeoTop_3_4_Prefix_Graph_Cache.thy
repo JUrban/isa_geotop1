@@ -1756,6 +1756,630 @@ proof -
   qed
 qed
 
+lemma geotop_finite_components_three_radial_segments_ball_prefix:
+  fixes P p\<^sub>1 p\<^sub>2 p\<^sub>3 :: "real^2"
+  assumes h\<delta>: "\<delta> > 0"
+  assumes hp\<^sub>1: "p\<^sub>1 \<noteq> P"
+  assumes hp\<^sub>2: "p\<^sub>2 \<noteq> P"
+  assumes hp\<^sub>3: "p\<^sub>3 \<noteq> P"
+  assumes h\<delta>p\<^sub>1: "\<delta> \<le> dist P p\<^sub>1"
+  assumes h\<delta>p\<^sub>2: "\<delta> \<le> dist P p\<^sub>2"
+  assumes h\<delta>p\<^sub>3: "\<delta> \<le> dist P p\<^sub>3"
+  assumes h12_empty:
+    "(closed_segment P p\<^sub>1 - {P}) \<inter> (closed_segment P p\<^sub>2 - {P}) \<inter> ball P \<delta> = {}"
+  assumes h13_empty:
+    "(closed_segment P p\<^sub>1 - {P}) \<inter> (closed_segment P p\<^sub>3 - {P}) \<inter> ball P \<delta> = {}"
+  assumes h23_empty:
+    "(closed_segment P p\<^sub>2 - {P}) \<inter> (closed_segment P p\<^sub>3 - {P}) \<inter> ball P \<delta> = {}"
+  shows "finite (components
+    (ball P \<delta> -
+      (closed_segment P p\<^sub>1 \<union> closed_segment P p\<^sub>2 \<union> closed_segment P p\<^sub>3)))"
+proof -
+  let ?S1 = "closed_segment P p\<^sub>1"
+  let ?S2 = "closed_segment P p\<^sub>2"
+  let ?S3 = "closed_segment P p\<^sub>3"
+  let ?R = "?S1 \<union> ?S2 \<union> ?S3"
+  define r where "r = \<delta> / 2"
+  define q\<^sub>1 where "q\<^sub>1 = P + (r / dist P p\<^sub>1) *\<^sub>R (p\<^sub>1 - P)"
+  define q\<^sub>2 where "q\<^sub>2 = P + (r / dist P p\<^sub>2) *\<^sub>R (p\<^sub>2 - P)"
+  define q\<^sub>3 where "q\<^sub>3 = P + (r / dist P p\<^sub>3) *\<^sub>R (p\<^sub>3 - P)"
+  define \<rho> where "\<rho> = (\<lambda>x. P + (r / dist P x) *\<^sub>R (x - P))"
+  have hr_pos: "r > 0"
+    unfolding r_def using h\<delta> by (by100 simp)
+  have hr_lt_\<delta>: "r < \<delta>"
+    unfolding r_def using h\<delta> by (by100 simp)
+  have hr_le_p\<^sub>1: "r \<le> dist P p\<^sub>1"
+    unfolding r_def using h\<delta>p\<^sub>1 h\<delta> by (by100 linarith)
+  have hr_le_p\<^sub>2: "r \<le> dist P p\<^sub>2"
+    unfolding r_def using h\<delta>p\<^sub>2 h\<delta> by (by100 linarith)
+  have hr_le_p\<^sub>3: "r \<le> dist P p\<^sub>3"
+    unfolding r_def using h\<delta>p\<^sub>3 h\<delta> by (by100 linarith)
+  have hp\<^sub>1_self: "p\<^sub>1 \<in> ?S1 - {P}"
+    using hp\<^sub>1 by (by100 simp)
+  have hp\<^sub>2_self: "p\<^sub>2 \<in> ?S2 - {P}"
+    using hp\<^sub>2 by (by100 simp)
+  have hp\<^sub>3_self: "p\<^sub>3 \<in> ?S3 - {P}"
+    using hp\<^sub>3 by (by100 simp)
+  have hq\<^sub>1:
+      "q\<^sub>1 \<in> (?S1 - {P}) \<inter> sphere P r"
+    unfolding q\<^sub>1_def
+    by (rule geotop_radial_projection_image_segment_prefix
+        [OF hp\<^sub>1_self hp\<^sub>1 hr_pos hr_le_p\<^sub>1])
+  have hq\<^sub>2:
+      "q\<^sub>2 \<in> (?S2 - {P}) \<inter> sphere P r"
+    unfolding q\<^sub>2_def
+    by (rule geotop_radial_projection_image_segment_prefix
+        [OF hp\<^sub>2_self hp\<^sub>2 hr_pos hr_le_p\<^sub>2])
+  have hq\<^sub>3:
+      "q\<^sub>3 \<in> (?S3 - {P}) \<inter> sphere P r"
+    unfolding q\<^sub>3_def
+    by (rule geotop_radial_projection_image_segment_prefix
+        [OF hp\<^sub>3_self hp\<^sub>3 hr_pos hr_le_p\<^sub>3])
+  have hq\<^sub>1_set: "q\<^sub>1 \<in> ?S1 - {P}"
+    using hq\<^sub>1 by (by100 blast)
+  have hq\<^sub>2_set: "q\<^sub>2 \<in> ?S2 - {P}"
+    using hq\<^sub>2 by (by100 blast)
+  have hq\<^sub>3_set: "q\<^sub>3 \<in> ?S3 - {P}"
+    using hq\<^sub>3 by (by100 blast)
+  have hq\<^sub>1_sphere: "q\<^sub>1 \<in> sphere P r"
+    using hq\<^sub>1 by (by100 blast)
+  have hq\<^sub>2_sphere: "q\<^sub>2 \<in> sphere P r"
+    using hq\<^sub>2 by (by100 blast)
+  have hq\<^sub>3_sphere: "q\<^sub>3 \<in> sphere P r"
+    using hq\<^sub>3 by (by100 blast)
+  have hq\<^sub>1_ball: "q\<^sub>1 \<in> ball P \<delta>"
+    using hq\<^sub>1_sphere hr_lt_\<delta> by (by100 simp)
+  have hq\<^sub>2_ball: "q\<^sub>2 \<in> ball P \<delta>"
+    using hq\<^sub>2_sphere hr_lt_\<delta> by (by100 simp)
+  have hq\<^sub>3_ball: "q\<^sub>3 \<in> ball P \<delta>"
+    using hq\<^sub>3_sphere hr_lt_\<delta> by (by100 simp)
+  have hq\<^sub>12: "q\<^sub>1 \<noteq> q\<^sub>2"
+  proof
+    assume h_eq: "q\<^sub>1 = q\<^sub>2"
+    have "q\<^sub>1 \<in> (?S1 - {P}) \<inter> (?S2 - {P}) \<inter> ball P \<delta>"
+      using hq\<^sub>1_set hq\<^sub>2_set hq\<^sub>1_ball h_eq by (by100 blast)
+    thus False
+      using h12_empty by (by100 blast)
+  qed
+  have hq\<^sub>13: "q\<^sub>1 \<noteq> q\<^sub>3"
+  proof
+    assume h_eq: "q\<^sub>1 = q\<^sub>3"
+    have "q\<^sub>1 \<in> (?S1 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+      using hq\<^sub>1_set hq\<^sub>3_set hq\<^sub>1_ball h_eq by (by100 blast)
+    thus False
+      using h13_empty by (by100 blast)
+  qed
+  have hq\<^sub>23: "q\<^sub>2 \<noteq> q\<^sub>3"
+  proof
+    assume h_eq: "q\<^sub>2 = q\<^sub>3"
+    have "q\<^sub>2 \<in> (?S2 - {P}) \<inter> (?S3 - {P}) \<inter> ball P \<delta>"
+      using hq\<^sub>2_set hq\<^sub>3_set hq\<^sub>2_ball h_eq by (by100 blast)
+    thus False
+      using h23_empty by (by100 blast)
+  qed
+  have hcircle_components_finite:
+      "finite (components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}))"
+    by (rule geotop_finite_components_punctured_circle_three_points_prefix
+        [OF hr_pos hq\<^sub>1_sphere hq\<^sub>2_sphere hq\<^sub>3_sphere hq\<^sub>12 hq\<^sub>13 hq\<^sub>23])
+  have hR_components_finite:
+      "finite (components (ball P \<delta> - ?R))"
+  proof -
+    have hR_closed: "closed ?R"
+      by (intro closed_Un closed_segment)
+    have hlocal_open: "open (ball P \<delta> - ?R)"
+      by (rule open_Diff[OF open_ball hR_closed])
+    have hP_R: "P \<in> ?R"
+      by (by100 simp)
+    have h_radial_preimage_segment:
+      "\<And>x p. \<lbrakk>x \<in> ball P \<delta>; x \<noteq> P; p \<noteq> P; \<delta> \<le> dist P p;
+                 \<rho> x \<in> closed_segment P p\<rbrakk>
+        \<Longrightarrow> x \<in> closed_segment P p"
+    proof -
+      fix x p :: "real^2"
+      assume hx_ball: "x \<in> ball P \<delta>"
+        and hx_ne: "x \<noteq> P"
+        and hp_ne: "p \<noteq> P"
+        and h\<delta>_p: "\<delta> \<le> dist P p"
+        and h\<rho>_seg: "\<rho> x \<in> closed_segment P p"
+      have h\<rho>x_def: "\<rho> x = P + (r / dist P x) *\<^sub>R (x - P)"
+        unfolding \<rho>_def by (by100 simp)
+      have hxx: "\<rho> x \<in> closed_segment x (\<rho> x)"
+        by (by100 simp)
+      show "x \<in> closed_segment P p"
+        by (rule closed_segment_radial_projection_preimage
+            [OF hx_ball hx_ne hp_ne h\<delta>_p hr_pos h\<rho>x_def hxx h\<rho>_seg])
+    qed
+    have h_trace_component:
+      "\<forall>C \<in> components (ball P \<delta> - ?R).
+          \<exists>K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}). \<rho> ` C \<subseteq> K"
+    proof
+      fix C
+      assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
+      have hC_conn: "connected C"
+        using hC_comp in_components_connected by (by100 blast)
+      have hC_sub_local: "C \<subseteq> ball P \<delta> - ?R"
+        using hC_comp in_components_subset by (by100 blast)
+      have hC_ne: "C \<noteq> {}"
+        using hC_comp in_components_nonempty by (by100 blast)
+      have hP_not_C: "P \<notin> C"
+        using hC_sub_local hP_R by (by100 blast)
+      have h\<rho>_cont: "continuous_on C \<rho>"
+        unfolding \<rho>_def
+        apply (intro continuous_intros)
+        using hP_not_C
+        by (by100 auto)
+      have h\<rho>_conn: "connected (\<rho> ` C)"
+        by (rule connected_continuous_image[OF h\<rho>_cont hC_conn])
+      have h\<rho>_punctured:
+          "\<rho> ` C \<subseteq> sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+      proof
+        fix y
+        assume hy: "y \<in> \<rho> ` C"
+        obtain x where hxC: "x \<in> C" and hy_eq: "y = \<rho> x"
+          using hy by (by100 blast)
+        have hx_local: "x \<in> ball P \<delta> - ?R"
+          using hxC hC_sub_local by (by100 blast)
+        have hx_ball: "x \<in> ball P \<delta>"
+          using hx_local by (by100 blast)
+        have hx_not_R: "x \<notin> ?R"
+          using hx_local by (by100 blast)
+        have hx_ne_P: "x \<noteq> P"
+          using hx_not_R hP_R by (by100 blast)
+        have hx_dist_pos: "dist P x > 0"
+          using hx_ne_P by (by100 simp)
+        have hy_sphere: "y \<in> sphere P r"
+        proof -
+          have "dist P (\<rho> x) = r"
+            unfolding \<rho>_def using hx_dist_pos hr_pos
+            by (simp add: dist_norm norm_minus_commute)
+          thus ?thesis
+            using hy_eq by (by100 simp)
+        qed
+        have hy_not_qs: "y \<notin> {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+        proof
+          assume hy_qs: "y \<in> {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+          have "x \<in> ?R"
+          proof (cases "y = q\<^sub>1")
+            case True
+            have h\<rho>x_S1: "\<rho> x \<in> ?S1"
+              using True hy_eq hq\<^sub>1_set by (by100 blast)
+            have "x \<in> ?S1"
+              by (rule h_radial_preimage_segment
+                  [OF hx_ball hx_ne_P hp\<^sub>1 h\<delta>p\<^sub>1 h\<rho>x_S1])
+            thus ?thesis by (by100 blast)
+          next
+            case hnot1: False
+            show ?thesis
+            proof (cases "y = q\<^sub>2")
+              case True
+              have h\<rho>x_S2: "\<rho> x \<in> ?S2"
+                using True hy_eq hq\<^sub>2_set by (by100 blast)
+              have "x \<in> ?S2"
+                by (rule h_radial_preimage_segment
+                    [OF hx_ball hx_ne_P hp\<^sub>2 h\<delta>p\<^sub>2 h\<rho>x_S2])
+              thus ?thesis by (by100 blast)
+            next
+              case hnot2: False
+              have hy_eq3: "y = q\<^sub>3"
+                using hy_qs hnot1 hnot2 by (by100 blast)
+              have h\<rho>x_S3: "\<rho> x \<in> ?S3"
+                using hy_eq3 hy_eq hq\<^sub>3_set by (by100 blast)
+              have "x \<in> ?S3"
+                by (rule h_radial_preimage_segment
+                    [OF hx_ball hx_ne_P hp\<^sub>3 h\<delta>p\<^sub>3 h\<rho>x_S3])
+              thus ?thesis by (by100 blast)
+            qed
+          qed
+          thus False using hx_not_R by (by100 blast)
+        qed
+        show "y \<in> sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+          using hy_sphere hy_not_qs by (by100 blast)
+      qed
+      obtain z where hzC: "z \<in> C"
+        using hC_ne by (by100 blast)
+      have h\<rho>z_img: "\<rho> z \<in> \<rho> ` C"
+        using hzC by (by100 blast)
+      have h\<rho>z_punctured: "\<rho> z \<in> sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+        using h\<rho>z_img h\<rho>_punctured by (by100 blast)
+      define K where "K = connected_component_set (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}) (\<rho> z)"
+      have hK_comp: "K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+        unfolding K_def by (rule componentsI[OF h\<rho>z_punctured])
+      have h\<rho>_sub_K: "\<rho> ` C \<subseteq> K"
+        unfolding K_def
+        by (rule connected_component_maximal
+            [OF h\<rho>z_img h\<rho>_conn h\<rho>_punctured])
+      show "\<exists>K\<in>components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}). \<rho> ` C \<subseteq> K"
+        using hK_comp h\<rho>_sub_K by (by100 blast)
+    qed
+    have h_radial_components_reduce_to_circle:
+      "\<exists>F. finite F \<and>
+        (\<forall>C \<in> components (ball P \<delta> - ?R).
+            \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+              K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}))"
+    proof (intro exI[where x="components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"] conjI)
+      show "finite (components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}))"
+        by (rule hcircle_components_finite)
+      show "\<forall>C\<in>components (ball P \<delta> - ?R).
+          \<exists>K\<in>components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}).
+            \<rho> ` C \<subseteq> K \<and> K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+      proof
+        fix C
+        assume hC: "C \<in> components (ball P \<delta> - ?R)"
+        obtain K where hK_comp: "K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+          and hK_sub: "\<rho> ` C \<subseteq> K"
+          using h_trace_component hC by (by100 blast)
+        show "\<exists>K\<in>components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}).
+            \<rho> ` C \<subseteq> K \<and> K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+          by (intro bexI[where x=K] conjI hK_comp hK_sub)
+      qed
+    qed
+    have h_same_circle_component_same_disk_component:
+      "\<forall>C \<in> components (ball P \<delta> - ?R).
+        \<forall>D \<in> components (ball P \<delta> - ?R).
+          (\<exists>K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}).
+            \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K) \<longrightarrow> C = D"
+    proof -
+      have hS1_sphere_r:
+          "(?S1 - {P}) \<inter> sphere P r = {q\<^sub>1}"
+        by (rule closed_segment_sphere_unique_from_center
+            [OF hp\<^sub>1 hr_pos hr_le_p\<^sub>1 q\<^sub>1_def])
+      have hS2_sphere_r:
+          "(?S2 - {P}) \<inter> sphere P r = {q\<^sub>2}"
+        by (rule closed_segment_sphere_unique_from_center
+            [OF hp\<^sub>2 hr_pos hr_le_p\<^sub>2 q\<^sub>2_def])
+      have hS3_sphere_r:
+          "(?S3 - {P}) \<inter> sphere P r = {q\<^sub>3}"
+        by (rule closed_segment_sphere_unique_from_center
+            [OF hp\<^sub>3 hr_pos hr_le_p\<^sub>3 q\<^sub>3_def])
+      have hS1_sphere_full: "?S1 \<inter> sphere P r = {q\<^sub>1}"
+      proof
+        show "?S1 \<inter> sphere P r \<subseteq> {q\<^sub>1}"
+        proof
+          fix z
+          assume hz: "z \<in> ?S1 \<inter> sphere P r"
+          have hzS: "z \<in> ?S1"
+            using hz by (by100 blast)
+          have hzsp: "z \<in> sphere P r"
+            using hz by (by100 blast)
+          have hz_ne: "z \<noteq> P"
+          proof
+            assume h_eq: "z = P"
+            have "dist P z = r"
+              using hzsp by (by100 simp)
+            hence "r = 0"
+              using h_eq by (by100 simp)
+            thus False
+              using hr_pos by (by100 simp)
+          qed
+          have "z \<in> (?S1 - {P}) \<inter> sphere P r"
+            using hzS hzsp hz_ne by (by100 blast)
+          thus "z \<in> {q\<^sub>1}"
+            using hS1_sphere_r by (by100 simp)
+        qed
+        show "{q\<^sub>1} \<subseteq> ?S1 \<inter> sphere P r"
+          using hS1_sphere_r by (by100 blast)
+      qed
+      have hS2_sphere_full: "?S2 \<inter> sphere P r = {q\<^sub>2}"
+      proof
+        show "?S2 \<inter> sphere P r \<subseteq> {q\<^sub>2}"
+        proof
+          fix z
+          assume hz: "z \<in> ?S2 \<inter> sphere P r"
+          have hzS: "z \<in> ?S2"
+            using hz by (by100 blast)
+          have hzsp: "z \<in> sphere P r"
+            using hz by (by100 blast)
+          have hz_ne: "z \<noteq> P"
+          proof
+            assume h_eq: "z = P"
+            have "dist P z = r"
+              using hzsp by (by100 simp)
+            hence "r = 0"
+              using h_eq by (by100 simp)
+            thus False
+              using hr_pos by (by100 simp)
+          qed
+          have "z \<in> (?S2 - {P}) \<inter> sphere P r"
+            using hzS hzsp hz_ne by (by100 blast)
+          thus "z \<in> {q\<^sub>2}"
+            using hS2_sphere_r by (by100 simp)
+        qed
+        show "{q\<^sub>2} \<subseteq> ?S2 \<inter> sphere P r"
+          using hS2_sphere_r by (by100 blast)
+      qed
+      have hS3_sphere_full: "?S3 \<inter> sphere P r = {q\<^sub>3}"
+      proof
+        show "?S3 \<inter> sphere P r \<subseteq> {q\<^sub>3}"
+        proof
+          fix z
+          assume hz: "z \<in> ?S3 \<inter> sphere P r"
+          have hzS: "z \<in> ?S3"
+            using hz by (by100 blast)
+          have hzsp: "z \<in> sphere P r"
+            using hz by (by100 blast)
+          have hz_ne: "z \<noteq> P"
+          proof
+            assume h_eq: "z = P"
+            have "dist P z = r"
+              using hzsp by (by100 simp)
+            hence "r = 0"
+              using h_eq by (by100 simp)
+            thus False
+              using hr_pos by (by100 simp)
+          qed
+          have "z \<in> (?S3 - {P}) \<inter> sphere P r"
+            using hzS hzsp hz_ne by (by100 blast)
+          thus "z \<in> {q\<^sub>3}"
+            using hS3_sphere_r by (by100 simp)
+        qed
+        show "{q\<^sub>3} \<subseteq> ?S3 \<inter> sphere P r"
+          using hS3_sphere_r by (by100 blast)
+      qed
+      have hR_sphere_r: "?R \<inter> sphere P r = {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+        using hS1_sphere_full hS2_sphere_full hS3_sphere_full by (by100 blast)
+      have h_radial_ray_preimage_segment:
+        "\<And>x z p. \<lbrakk>x \<in> ball P \<delta> - ?R; z \<in> closed_segment x (\<rho> x);
+                   z \<in> closed_segment P p; p \<noteq> P; \<delta> \<le> dist P p\<rbrakk>
+          \<Longrightarrow> x \<in> closed_segment P p"
+      proof -
+        fix x z p :: "real^2"
+        assume hx_local: "x \<in> ball P \<delta> - ?R"
+          and hz_x: "z \<in> closed_segment x (\<rho> x)"
+          and hz_p: "z \<in> closed_segment P p"
+          and hp_ne: "p \<noteq> P"
+          and h\<delta>_p: "\<delta> \<le> dist P p"
+        have hx_ball: "x \<in> ball P \<delta>"
+          using hx_local by (by100 blast)
+        have hx_not_R: "x \<notin> ?R"
+          using hx_local by (by100 blast)
+        have hx_ne: "x \<noteq> P"
+          using hx_not_R hP_R by (by100 blast)
+        have h\<rho>x_def: "\<rho> x = P + (r / dist P x) *\<^sub>R (x - P)"
+          unfolding \<rho>_def by (by100 simp)
+        show "x \<in> closed_segment P p"
+          by (rule closed_segment_radial_projection_preimage
+              [OF hx_ball hx_ne hp_ne h\<delta>_p hr_pos h\<rho>x_def hz_x hz_p])
+      qed
+      have h_radial_segment_subset:
+        "\<And>x. x \<in> ball P \<delta> - ?R \<Longrightarrow> closed_segment x (\<rho> x) \<subseteq> ball P \<delta> - ?R"
+      proof
+        fix x z
+        assume hx_local: "x \<in> ball P \<delta> - ?R"
+          and hz_seg: "z \<in> closed_segment x (\<rho> x)"
+        have hx_ball: "x \<in> ball P \<delta>"
+          using hx_local by (by100 blast)
+        have hx_not_R: "x \<notin> ?R"
+          using hx_local by (by100 blast)
+        have hx_ne: "x \<noteq> P"
+          using hx_not_R hP_R by (by100 blast)
+        have hx_dist_pos: "dist P x > 0"
+          using hx_ne by (by100 simp)
+        have h\<rho>x_ball: "\<rho> x \<in> ball P \<delta>"
+        proof -
+          have "dist P (\<rho> x) = r"
+            unfolding \<rho>_def using hx_dist_pos hr_pos
+            by (simp add: dist_norm norm_minus_commute)
+          thus ?thesis
+            using hr_lt_\<delta> by (by100 simp)
+        qed
+        have hz_ball: "z \<in> ball P \<delta>"
+          using closed_segment_subset[OF hx_ball h\<rho>x_ball convex_ball] hz_seg
+          by (by100 blast)
+        have hz_not_R: "z \<notin> ?R"
+        proof
+          assume hzR: "z \<in> ?R"
+          consider (S1) "z \<in> ?S1" | (S2) "z \<in> ?S2" | (S3) "z \<in> ?S3"
+            using hzR by (by100 blast)
+          hence "x \<in> ?R"
+          proof cases
+            case S1
+            have "x \<in> ?S1"
+              by (rule h_radial_ray_preimage_segment
+                  [OF hx_local hz_seg S1 hp\<^sub>1 h\<delta>p\<^sub>1])
+            thus ?thesis by (by100 blast)
+          next
+            case S2
+            have "x \<in> ?S2"
+              by (rule h_radial_ray_preimage_segment
+                  [OF hx_local hz_seg S2 hp\<^sub>2 h\<delta>p\<^sub>2])
+            thus ?thesis by (by100 blast)
+          next
+            case S3
+            have "x \<in> ?S3"
+              by (rule h_radial_ray_preimage_segment
+                  [OF hx_local hz_seg S3 hp\<^sub>3 h\<delta>p\<^sub>3])
+            thus ?thesis by (by100 blast)
+          qed
+          thus False
+            using hx_not_R by (by100 blast)
+        qed
+        show "z \<in> ball P \<delta> - ?R"
+          using hz_ball hz_not_R by (by100 blast)
+      qed
+      have h_circle_component_subset_local:
+        "\<And>K. K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})
+          \<Longrightarrow> K \<subseteq> ball P \<delta> - ?R"
+      proof
+        fix K z
+        assume hK_comp: "K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+          and hzK: "z \<in> K"
+        have hK_sub: "K \<subseteq> sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+          using hK_comp in_components_subset by (by100 blast)
+        have hz_sphere: "z \<in> sphere P r"
+          using hzK hK_sub by (by100 blast)
+        have hz_not_qs: "z \<notin> {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+          using hzK hK_sub by (by100 blast)
+        have hz_ball: "z \<in> ball P \<delta>"
+          using hz_sphere hr_lt_\<delta> by (by100 simp)
+        have hz_not_R: "z \<notin> ?R"
+        proof
+          assume hzR: "z \<in> ?R"
+          have "z \<in> ?R \<inter> sphere P r"
+            using hzR hz_sphere by (by100 blast)
+          hence "z \<in> {q\<^sub>1, q\<^sub>2, q\<^sub>3}"
+            using hR_sphere_r by (by100 simp)
+          thus False
+            using hz_not_qs by (by100 blast)
+        qed
+        show "z \<in> ball P \<delta> - ?R"
+          using hz_ball hz_not_R by (by100 blast)
+      qed
+      have h_same_aux:
+        "\<And>C D. \<lbrakk>C \<in> components (ball P \<delta> - ?R);
+            D \<in> components (ball P \<delta> - ?R);
+            \<exists>K\<in>components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}).
+              \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K\<rbrakk>
+          \<Longrightarrow> C = D"
+      proof -
+        fix C D
+        assume hC_comp: "C \<in> components (ball P \<delta> - ?R)"
+          and hD_comp: "D \<in> components (ball P \<delta> - ?R)"
+          and htrace_same:
+            "\<exists>K\<in>components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3}).
+              \<rho> ` C \<subseteq> K \<and> \<rho> ` D \<subseteq> K"
+        obtain K where hK_comp: "K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+          and hC_trace: "\<rho> ` C \<subseteq> K"
+          and hD_trace: "\<rho> ` D \<subseteq> K"
+          using htrace_same by (by100 clarify)
+        obtain x where hxC: "x \<in> C"
+          using hC_comp in_components_nonempty by (by100 blast)
+        obtain y where hyD: "y \<in> D"
+          using hD_comp in_components_nonempty by (by100 blast)
+        have hC_sub: "C \<subseteq> ball P \<delta> - ?R"
+          using hC_comp in_components_subset by (by100 blast)
+        have hD_sub: "D \<subseteq> ball P \<delta> - ?R"
+          using hD_comp in_components_subset by (by100 blast)
+        have hx_local: "x \<in> ball P \<delta> - ?R"
+          using hxC hC_sub by (by100 blast)
+        have hy_local: "y \<in> ball P \<delta> - ?R"
+          using hyD hD_sub by (by100 blast)
+        have h\<rho>x_K: "\<rho> x \<in> K"
+          using hxC hC_trace by (by100 blast)
+        have h\<rho>y_K: "\<rho> y \<in> K"
+          using hyD hD_trace by (by100 blast)
+        let ?T = "closed_segment x (\<rho> x) \<union> K \<union> closed_segment y (\<rho> y)"
+        have hsegx_conn: "connected (closed_segment x (\<rho> x))"
+          by (rule convex_connected[OF convex_closed_segment])
+        have hK_conn: "connected K"
+          using hK_comp in_components_connected by (by100 blast)
+        have hsegy_conn: "connected (closed_segment y (\<rho> y))"
+          by (rule convex_connected[OF convex_closed_segment])
+        have hsegx_K_meet: "closed_segment x (\<rho> x) \<inter> K \<noteq> {}"
+        proof -
+          have "\<rho> x \<in> closed_segment x (\<rho> x)"
+            by (by100 simp)
+          thus ?thesis using h\<rho>x_K by (by100 blast)
+        qed
+        have hleft_conn: "connected (closed_segment x (\<rho> x) \<union> K)"
+          by (rule connected_Un[OF hsegx_conn hK_conn hsegx_K_meet])
+        have hleft_segy_meet:
+            "(closed_segment x (\<rho> x) \<union> K) \<inter> closed_segment y (\<rho> y) \<noteq> {}"
+        proof -
+          have "\<rho> y \<in> closed_segment y (\<rho> y)"
+            by (by100 simp)
+          thus ?thesis using h\<rho>y_K by (by100 blast)
+        qed
+        have hT_conn: "connected ?T"
+          by (rule connected_Un[OF hleft_conn hsegy_conn hleft_segy_meet])
+        have hT_sub: "?T \<subseteq> ball P \<delta> - ?R"
+        proof
+          fix z
+          assume hzT: "z \<in> ?T"
+          consider (X) "z \<in> closed_segment x (\<rho> x)"
+            | (K) "z \<in> K"
+            | (Y) "z \<in> closed_segment y (\<rho> y)"
+            using hzT by (by100 blast)
+          thus "z \<in> ball P \<delta> - ?R"
+          proof cases
+            case X
+            show ?thesis using h_radial_segment_subset[OF hx_local] X by (by100 blast)
+          next
+            case K
+            show ?thesis using h_circle_component_subset_local[OF hK_comp] K by (by100 blast)
+          next
+            case Y
+            show ?thesis using h_radial_segment_subset[OF hy_local] Y by (by100 blast)
+          qed
+        qed
+        have hC_meet_T: "C \<inter> ?T \<noteq> {}"
+        proof -
+          have "x \<in> closed_segment x (\<rho> x)"
+            by (by100 simp)
+          thus ?thesis using hxC by (by100 blast)
+        qed
+        have hD_meet_T: "D \<inter> ?T \<noteq> {}"
+        proof -
+          have "y \<in> closed_segment y (\<rho> y)"
+            by (by100 simp)
+          thus ?thesis using hyD by (by100 blast)
+        qed
+        have hjoin:
+            "connected ?T \<and> ?T \<subseteq> ball P \<delta> - ?R \<and>
+              C \<in> components (ball P \<delta> - ?R) \<and>
+              D \<in> components (ball P \<delta> - ?R) \<and>
+              C \<inter> ?T \<noteq> {} \<and> D \<inter> ?T \<noteq> {}"
+          using hT_conn hT_sub hC_comp hD_comp hC_meet_T hD_meet_T
+          by (by100 blast)
+        show "C = D"
+          by (rule joinable_components_eq[OF hjoin])
+      qed
+      show ?thesis using h_same_aux by (by100 blast)
+    qed
+    have h_disk_components_inject_circle:
+      "\<exists>f. inj_on f (components (ball P \<delta> - ?R)) \<and>
+            f ` components (ball P \<delta> - ?R) \<subseteq>
+              components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+    proof -
+      obtain F where hF_fin: "finite F"
+        and hF:
+          "\<forall>C \<in> components (ball P \<delta> - ?R).
+            \<exists>K \<in> F. \<rho> ` C \<subseteq> K \<and>
+              K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+        using h_radial_components_reduce_to_circle by (by100 blast)
+      obtain f where hf:
+        "\<forall>C \<in> components (ball P \<delta> - ?R).
+            f C \<in> F \<and> \<rho> ` C \<subseteq> f C \<and>
+              f C \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+        using bchoice[of "components (ball P \<delta> - ?R)"
+            "\<lambda>C K. K \<in> F \<and> \<rho> ` C \<subseteq> K \<and>
+              K \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"] hF
+        by (by100 blast)
+      have hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+      proof (unfold inj_on_def, intro ballI impI)
+        fix C D
+        assume hC: "C \<in> components (ball P \<delta> - ?R)"
+          and hD: "D \<in> components (ball P \<delta> - ?R)"
+          and hf_eq: "f C = f D"
+        have hfC_comp: "f C \<in> components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+          using hf hC by (by100 blast)
+        have hC_sub: "\<rho> ` C \<subseteq> f C"
+          using hf hC by (by100 blast)
+        have hD_sub: "\<rho> ` D \<subseteq> f C"
+          using hf hD hf_eq by (by100 blast)
+        show "C = D"
+          using h_same_circle_component_same_disk_component hC hD hfC_comp hC_sub hD_sub
+          by (by100 blast)
+      qed
+      have hf_sub:
+          "f ` components (ball P \<delta> - ?R) \<subseteq>
+            components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+        using hf by (by100 blast)
+      show ?thesis using hf_inj hf_sub by (by100 blast)
+    qed
+    obtain f where hf_inj: "inj_on f (components (ball P \<delta> - ?R))"
+      and hf_sub:
+        "f ` components (ball P \<delta> - ?R) \<subseteq>
+          components (sphere P r - {q\<^sub>1, q\<^sub>2, q\<^sub>3})"
+      using h_disk_components_inject_circle by (by100 blast)
+    have hf_image_finite: "finite (f ` components (ball P \<delta> - ?R))"
+      by (rule finite_subset[OF hf_sub hcircle_components_finite])
+    show ?thesis
+      by (rule finite_imageD[OF hf_image_finite hf_inj])
+  qed
+  show ?thesis
+    by (rule hR_components_finite)
+qed
+
 lemma geotop_graph_endpoint_delete_leaf_complex_prefix:
   fixes L :: "(real^2) set set"
   assumes hL: "geotop_is_linear_graph L"
@@ -3579,6 +4203,35 @@ proof -
               h12_empty h13_empty h23_empty])
     show ?thesis
       using hbound he\<^sub>1_seg he\<^sub>2_seg he\<^sub>3_seg by (by100 simp)
+  qed
+  have hlocal_components_fin:
+      "finite (components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)))"
+  proof -
+    have hr_le_q\<^sub>1: "r \<le> dist w q\<^sub>1"
+      using hr_lt_q\<^sub>1 by (by100 linarith)
+    have hr_le_q\<^sub>2: "r \<le> dist w q\<^sub>2"
+      using hr_lt_q\<^sub>2 by (by100 linarith)
+    have hr_le_q\<^sub>3: "r \<le> dist w q\<^sub>3"
+      using hr_lt_q\<^sub>3 by (by100 linarith)
+    have h12_empty:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> (closed_segment w q\<^sub>2 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>12_punctured_disj he\<^sub>1_seg he\<^sub>2_seg by (by100 blast)
+    have h13_empty:
+        "(closed_segment w q\<^sub>1 - {w}) \<inter> (closed_segment w q\<^sub>3 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>13_punctured_disj he\<^sub>1_seg he\<^sub>3_seg by (by100 blast)
+    have h23_empty:
+        "(closed_segment w q\<^sub>2 - {w}) \<inter> (closed_segment w q\<^sub>3 - {w}) \<inter> ball w r = {}"
+      using he\<^sub>23_punctured_disj he\<^sub>2_seg he\<^sub>3_seg by (by100 blast)
+    have hfin:
+        "finite (components
+          (ball w r -
+            (closed_segment w q\<^sub>1 \<union> closed_segment w q\<^sub>2 \<union> closed_segment w q\<^sub>3)))"
+      by (rule geotop_finite_components_three_radial_segments_ball_prefix
+          [OF hr_pos hq\<^sub>1w hq\<^sub>2w hq\<^sub>3w
+              hr_le_q\<^sub>1 hr_le_q\<^sub>2 hr_le_q\<^sub>3
+              h12_empty h13_empty h23_empty])
+    show ?thesis
+      using hfin he\<^sub>1_seg he\<^sub>2_seg he\<^sub>3_seg by (by100 simp)
   qed
   have hcircle_components_fin:
       "finite (components (sphere w r - {x\<^sub>1, x\<^sub>2, x\<^sub>3}))"
