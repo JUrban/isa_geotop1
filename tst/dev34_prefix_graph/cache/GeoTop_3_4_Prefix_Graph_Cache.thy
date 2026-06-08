@@ -7704,6 +7704,167 @@ proof -
           rule exI[where x=p], rule exI[where x=y],
           rule exI[where x=D\<^sub>w], rule exI[where x=D\<^sub>q], rule hbody)
   qed
+  have hcanonical_pair_arc_side_split_selected_germs_clean:
+      "\<exists>S T C p y D\<^sub>w D\<^sub>q. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> p \<noteq> y
+        \<and> p \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> C = D\<^sub>w \<union> D\<^sub>q
+        \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+        \<and> top1_is_arc_on D\<^sub>w
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+        \<and> top1_is_arc_on D\<^sub>q
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+        \<and> top1_arc_endpoints_on D\<^sub>w
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p}
+        \<and> top1_arc_endpoints_on D\<^sub>q
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}
+        \<and> w \<in> D\<^sub>w
+        \<and> p \<in> D\<^sub>w
+        \<and> p \<in> D\<^sub>q
+        \<and> q\<^sub>1 \<in> D\<^sub>q
+        \<and> w \<notin> D\<^sub>q
+        \<and> q\<^sub>1 \<notin> D\<^sub>w
+        \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
+  proof -
+    obtain S T C p y D\<^sub>w D\<^sub>q where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      and hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hp_set: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hy_set: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hpy: "p \<noteq> y"
+      and hpC: "p \<in> C - {w}"
+      and hyC: "y \<in> C - {w}"
+      and hC_split: "C = D\<^sub>w \<union> D\<^sub>q"
+      and hDwDq: "D\<^sub>w \<inter> D\<^sub>q = {p}"
+      and hDw_arc: "top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)"
+      and hDq_arc: "top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+      and hDw_ep: "top1_arc_endpoints_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p}"
+      and hDq_ep: "top1_arc_endpoints_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}"
+      and hside: "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+      using hcanonical_pair_arc_side_split_selected_germs by (elim exE conjE)
+    have hwDw: "w \<in> D\<^sub>w"
+      using hDw_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hpDw: "p \<in> D\<^sub>w"
+      using hDw_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hpDq: "p \<in> D\<^sub>q"
+      using hDq_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hqDq: "q\<^sub>1 \<in> D\<^sub>q"
+      using hDq_ep unfolding top1_arc_endpoints_on_def by (by100 blast)
+    have hp_ne_w: "p \<noteq> w"
+      using hpS by (by100 blast)
+    have hp_ne_q\<^sub>1: "p \<noteq> q\<^sub>1"
+      using hpS by (by100 blast)
+    have hw_not_Dq: "w \<notin> D\<^sub>q"
+    proof
+      assume hwDq: "w \<in> D\<^sub>q"
+      have "w \<in> D\<^sub>w \<inter> D\<^sub>q"
+        using hwDw hwDq by (by100 blast)
+      hence "w = p"
+        using hDwDq by (by100 blast)
+      thus False
+        using hp_ne_w by (by100 blast)
+    qed
+    have hq_not_Dw: "q\<^sub>1 \<notin> D\<^sub>w"
+    proof
+      assume hqDw: "q\<^sub>1 \<in> D\<^sub>w"
+      have "q\<^sub>1 \<in> D\<^sub>w \<inter> D\<^sub>q"
+        using hqDw hqDq by (by100 blast)
+      hence "q\<^sub>1 = p"
+        using hDwDq by (by100 blast)
+      thus False
+        using hp_ne_q\<^sub>1 by (by100 blast)
+    qed
+    have hbody: "C \<in> {A\<^sub>1, A\<^sub>2}
+      \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> S \<noteq> T
+      \<and> (S - {w}) \<inter> (T - {w}) = {}
+      \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> p \<noteq> y
+      \<and> p \<in> C - {w}
+      \<and> y \<in> C - {w}
+      \<and> C = D\<^sub>w \<union> D\<^sub>q
+      \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+      \<and> top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+      \<and> top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+      \<and> top1_arc_endpoints_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p}
+      \<and> top1_arc_endpoints_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}
+      \<and> w \<in> D\<^sub>w
+      \<and> p \<in> D\<^sub>w
+      \<and> p \<in> D\<^sub>q
+      \<and> q\<^sub>1 \<in> D\<^sub>q
+      \<and> w \<notin> D\<^sub>q
+      \<and> q\<^sub>1 \<notin> D\<^sub>w
+      \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
+    proof (intro conjI)
+      show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+      show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+      show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+      show "S \<noteq> T" by (rule hST)
+      show "(S - {w}) \<inter> (T - {w}) = {}" by (rule hST_disj)
+      show "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hpS)
+      show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+      show "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hp_set)
+      show "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hy_set)
+      show "p \<noteq> y" by (rule hpy)
+      show "p \<in> C - {w}" by (rule hpC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "C = D\<^sub>w \<union> D\<^sub>q" by (rule hC_split)
+      show "D\<^sub>w \<inter> D\<^sub>q = {p}" by (rule hDwDq)
+      show "top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)"
+        by (rule hDw_arc)
+      show "top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+        by (rule hDq_arc)
+      show "top1_arc_endpoints_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w) = {w, p}"
+        by (rule hDw_ep)
+      show "top1_arc_endpoints_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q) = {p, q\<^sub>1}"
+        by (rule hDq_ep)
+      show "w \<in> D\<^sub>w" by (rule hwDw)
+      show "p \<in> D\<^sub>w" by (rule hpDw)
+      show "p \<in> D\<^sub>q" by (rule hpDq)
+      show "q\<^sub>1 \<in> D\<^sub>q" by (rule hqDq)
+      show "w \<notin> D\<^sub>q" by (rule hw_not_Dq)
+      show "q\<^sub>1 \<notin> D\<^sub>w" by (rule hq_not_Dw)
+      show "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+        by (rule hside)
+    qed
+    show ?thesis
+      by (rule exI[where x=S], rule exI[where x=T], rule exI[where x=C],
+          rule exI[where x=p], rule exI[where x=y],
+          rule exI[where x=D\<^sub>w], rule exI[where x=D\<^sub>q], rule hbody)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
