@@ -430,6 +430,137 @@ proof -
         [OF hL_linear hL_finite hdegree_two hs hp_gt2 hp_closed hinj hcard hL_cycle])
 qed
 
+lemma geotop_finite_connected_degree_two_linear_graph_cycle_orbit_package_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hL_nonempty: "L \<noteq> {}"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  shows "\<exists>w s q p. {w} \<in> L
+      \<and> s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
+      \<and> fst s = w
+      \<and> q \<noteq> w
+      \<and> snd s = closed_segment w q
+      \<and> {q} \<in> L
+      \<and> 1 < p
+      \<and> 2 < p
+      \<and> fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q
+      \<and> (geotop_oriented_edge_successor L ^^ p) s = s
+      \<and> (\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p
+      \<and> closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L
+      \<and> geotop_is_edge
+          (closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))
+      \<and> L =
+        (((\<lambda>v. {v}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+        \<union> ((\<lambda>j. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ j) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+  (**
+    Fig. 4.10 cycle-order package, separated from the geometric boundary
+    subdivision construction: choose a starting vertex and one oriented
+    incident edge, follow the degree-two successor once around the graph, and
+    use connectedness to show that this closed orbit exhausts L. **)
+proof -
+  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
+    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
+        [OF hL_linear hL_finite hL_nonempty hconn hdegree_two])
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hpoly_scc:
+      "top1_simple_closed_curve_on UNIV geotop_euclidean_topology (geotop_polyhedron L)"
+    by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hpolygon])
+  have hpoly_ne: "geotop_polyhedron L \<noteq> {}"
+    by (rule simple_closed_curve_nonempty[OF hpoly_scc])
+  obtain w where hwL: "{w} \<in> L"
+    using geotop_nonempty_polyhedron_has_complex_vertex[OF hL_complex hpoly_ne]
+    by (by100 blast)
+  obtain s q p where hs:
+      "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+    and hfst: "fst s = w"
+    and hq_ne: "q \<noteq> w"
+    and hsnd: "snd s = closed_segment w q"
+    and hqL: "{q} \<in> L"
+    and hp_gt1: "1 < p"
+    and hfirst_q: "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
+    and hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+    and hp_min:
+      "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+        (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+    and hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+    and hcard:
+      "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+    and hclosing_L:
+      "closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
+    and hclosing_edge:
+      "geotop_is_edge
+        (closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
+    using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
+        [OF hL_linear hL_finite hdegree_two hwL]
+    by (elim exE conjE)
+  have hp_pos: "0 < p"
+    using hp_gt1 by (by100 linarith)
+  have hp_gt2: "2 < p"
+    by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
+        [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
+  have hL_cycle:
+      "L =
+        (((\<lambda>v. {v}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+        \<union> ((\<lambda>j. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ j) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
+        [OF hL_linear hL_finite hconn hdegree_two hs hp_pos hp_closed])
+  show ?thesis
+  proof (intro exI conjI)
+    show "{w} \<in> L" by (rule hwL)
+    show "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+      by (rule hs)
+    show "fst s = w" by (rule hfst)
+    show "q \<noteq> w" by (rule hq_ne)
+    show "snd s = closed_segment w q" by (rule hsnd)
+    show "{q} \<in> L" by (rule hqL)
+    show "1 < p" by (rule hp_gt1)
+    show "2 < p" by (rule hp_gt2)
+    show "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
+      by (rule hfirst_q)
+    show "(geotop_oriented_edge_successor L ^^ p) s = s"
+      by (rule hp_closed)
+    show "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
+        (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
+      by (rule hp_min)
+    show "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+      by (rule hinj)
+    show "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+      by (rule hcard)
+    show "closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
+      by (rule hclosing_L)
+    show "geotop_is_edge
+        (closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
+      by (rule hclosing_edge)
+    show "L =
+        (((\<lambda>v. {v}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+        \<union> ((\<lambda>j. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ j) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
+      by (rule hL_cycle)
+  qed
+qed
+
 lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -450,9 +581,6 @@ lemma geotop_finite_connected_degree_two_linear_graph_boundary_subdivision_model
     build the corresponding subdivision of the frontier of a 2-simplex, and
     map vertices/edges in cyclic order to obtain a simplicial isomorphism. **)
 proof -
-  have hpolygon: "geotop_is_polygon (geotop_polyhedron L)"
-    by (rule geotop_finite_connected_degree_two_linear_graph_polygon_dev34
-        [OF hL_linear hL_finite hL_nonempty hconn hdegree_two])
   have hcycle_orbit_package:
       "\<exists>w s q p. {w} \<in> L
         \<and> s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}
@@ -479,98 +607,8 @@ proof -
           \<union> ((\<lambda>j. closed_segment
             (fst ((geotop_oriented_edge_successor L ^^ j) s))
             (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
-    (**
-      Fig. 4.10 cycle-order package: choose a starting vertex and one oriented
-      incident edge, follow the degree-two successor once around the graph, and
-      use connectedness to show that this closed orbit exhausts L. **)
-  proof -
-    have hL_complex: "geotop_is_complex L"
-      by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
-    have hpoly_scc:
-        "top1_simple_closed_curve_on UNIV geotop_euclidean_topology (geotop_polyhedron L)"
-      by (rule geotop_polygon_top1_simple_closed_curve_prefix[OF hpolygon])
-    have hpoly_ne: "geotop_polyhedron L \<noteq> {}"
-      by (rule simple_closed_curve_nonempty[OF hpoly_scc])
-    obtain w where hwL: "{w} \<in> L"
-      using geotop_nonempty_polyhedron_has_complex_vertex[OF hL_complex hpoly_ne]
-      by (by100 blast)
-    obtain s q p where hs:
-        "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
-      and hfst: "fst s = w"
-      and hq_ne: "q \<noteq> w"
-      and hsnd: "snd s = closed_segment w q"
-      and hqL: "{q} \<in> L"
-      and hp_gt1: "1 < p"
-      and hfirst_q: "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
-      and hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
-      and hp_min:
-        "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
-          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
-      and hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
-      and hcard:
-        "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
-      and hclosing_L:
-        "closed_segment
-          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
-      and hclosing_edge:
-        "geotop_is_edge
-          (closed_segment
-            (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
-      using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
-          [OF hL_linear hL_finite hdegree_two hwL]
-      by (elim exE conjE)
-    have hp_pos: "0 < p"
-      using hp_gt1 by (by100 linarith)
-    have hp_gt2: "2 < p"
-      by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
-          [OF hL_linear hdegree_two hs hp_gt1 hp_closed])
-    have hL_cycle:
-        "L =
-          (((\<lambda>v. {v}) `
-            ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
-          \<union> ((\<lambda>j. closed_segment
-            (fst ((geotop_oriented_edge_successor L ^^ j) s))
-            (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
-      by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
-          [OF hL_linear hL_finite hconn hdegree_two hs hp_pos hp_closed])
-    show ?thesis
-    proof (intro exI conjI)
-      show "{w} \<in> L" by (rule hwL)
-      show "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
-        by (rule hs)
-      show "fst s = w" by (rule hfst)
-      show "q \<noteq> w" by (rule hq_ne)
-      show "snd s = closed_segment w q" by (rule hsnd)
-      show "{q} \<in> L" by (rule hqL)
-      show "1 < p" by (rule hp_gt1)
-      show "2 < p" by (rule hp_gt2)
-      show "fst ((geotop_oriented_edge_successor L ^^ Suc 0) s) = q"
-        by (rule hfirst_q)
-      show "(geotop_oriented_edge_successor L ^^ p) s = s"
-        by (rule hp_closed)
-      show "\<forall>k. 0 < k \<and> k < p \<longrightarrow>
-          (geotop_oriented_edge_successor L ^^ k) s \<noteq> s"
-        by (rule hp_min)
-      show "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
-        by (rule hinj)
-      show "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
-        by (rule hcard)
-      show "closed_segment
-          (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s) \<in> L"
-        by (rule hclosing_L)
-      show "geotop_is_edge
-          (closed_segment
-            (fst ((geotop_oriented_edge_successor L ^^ (p - 1)) s)) (fst s))"
-        by (rule hclosing_edge)
-      show "L =
-          (((\<lambda>v. {v}) `
-            ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
-          \<union> ((\<lambda>j. closed_segment
-            (fst ((geotop_oriented_edge_successor L ^^ j) s))
-            (fst ((geotop_oriented_edge_successor L ^^ Suc j) s))) ` {0..<p}))"
-        by (rule hL_cycle)
-    qed
-  qed
+    by (rule geotop_finite_connected_degree_two_linear_graph_cycle_orbit_package_dev34
+        [OF hL_linear hL_finite hL_nonempty hconn hdegree_two])
   obtain w s q p where hwL: "{w} \<in> L"
     and hs: "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
     and hfst: "fst s = w"
