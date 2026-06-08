@@ -1955,6 +1955,15 @@ proof -
     show ?thesis
       unfolding bij_betw_def using hinj himage by (by100 simp)
   qed
+  have hanchor_bij_B_vertices:
+      "bij_betw ?\<psi>\<^sub>0
+        {v 0, v (Suc 0), v j\<^sub>L}
+        (geotop_complex_vertices ?B)"
+    using hanchor_bij hB_vertices_eq_named by (by100 simp)
+  have hB_vertices_card_le_source:
+      "card (geotop_complex_vertices ?B)
+        \<le> card (geotop_complex_vertices L)"
+    using hB_vertices_card hsource_vertices_card_gt2 by (by100 linarith)
   have h\<sigma>_named_vertices_in_F\<^sub>0_vertices:
       "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices F\<^sub>0"
     using h\<sigma>_vertices_in_F\<^sub>0_vertices hV\<^sub>\<sigma>_abc by (by100 blast)
