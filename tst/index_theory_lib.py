@@ -63,10 +63,18 @@ ADVICE_FILE_PATTERNS = [
     "slow_lines*.txt",
 ]
 SESSION_LOG_FILE_PATTERNS = [
+    "*.cast",
+    "*.cast.gz",
     "isa*.cast",
     "isa*.cast.gz",
+    "isa*.jsonl",
     "session*.cast",
     "session*.cast.gz",
+    "session*.jsonl",
+    "*session*.jsonl",
+    "*transcript*.jsonl",
+    "*conversation*.jsonl",
+    "codex*.jsonl",
 ]
 IGNORED_PATH_PARTS = {".dev34_fast_cache", ".index_cache", "__pycache__"}
 IGNORED_ADVICE_FILE_NAMES = {

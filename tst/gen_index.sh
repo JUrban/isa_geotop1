@@ -2,7 +2,7 @@
 # Generate theorem/definition index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
 # local advice/report notes, and bounded session transcript inputs
-# (`session*.cast(.gz)` and `isa*.cast(.gz)`).
+# (`*.cast(.gz)`, `isa*.jsonl`, `session*.jsonl`, transcript/conversation JSONL).
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh [--force]
 

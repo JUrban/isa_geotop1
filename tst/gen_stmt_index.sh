@@ -2,7 +2,7 @@
 # Generate a searchable theorem statement index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
 # local advice/report notes, and bounded session transcript inputs
-# (`session*.cast(.gz)` and `isa*.cast(.gz)`).
+# (`*.cast(.gz)`, `isa*.jsonl`, `session*.jsonl`, transcript/conversation JSONL).
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh [--force]
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -234,9 +234,32 @@ def transcript_lines(path: Path):
             except json.JSONDecodeError:
                 payload = raw
             else:
-                if not (isinstance(event, list) and len(event) >= 3):
+                if isinstance(event, list) and len(event) >= 3:
+                    payload = str(event[2])
+                elif isinstance(event, dict):
+                    parts: list[str] = []
+                    for key in ("message", "text", "content", "output", "cmd", "command"):
+                        value = event.get(key)
+                        if isinstance(value, str):
+                            parts.append(value)
+                    message = event.get("message")
+                    if isinstance(message, dict):
+                        content = message.get("content")
+                        if isinstance(content, str):
+                            parts.append(content)
+                        elif isinstance(content, list):
+                            for item in content:
+                                if isinstance(item, str):
+                                    parts.append(item)
+                                elif isinstance(item, dict):
+                                    text = item.get("text")
+                                    if isinstance(text, str):
+                                        parts.append(text)
+                    payload = " ".join(parts)
+                    if not payload:
+                        continue
+                else:
                     continue
-                payload = str(event[2])
             line = ANSI_RE.sub("", payload)
             line = line.replace("\r", " ").replace("\n", " ")
             line = re.sub(r"\s+", " ", line).strip()
