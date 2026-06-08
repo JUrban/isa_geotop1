@@ -798,8 +798,8 @@ focus_target() {
     mid-fold)
       printf '%s\t%s\t%s\n' \
         dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy \
-        'theorem Theorem_GT_3_4' \
-        'Theorem_GT_3_4 ind_step free triangle fold elimination'
+        geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix \
+        'free triangle fold normalization support induction'
       ;;
     mid-support)
       printf '%s\t%s\t%s\n' \
@@ -816,7 +816,7 @@ focus_target() {
     prefix-d44)
       printf '%s\t%s\t%s\n' \
         dev34_prefix/GeoTop_3_4_Prefix.thy \
-        'theorem Theorem_GT_4_4' \
+        geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix \
         'Theorem_GT_4_4 brick regular neighborhood component frontier'
       ;;
     dev34-cycle)
@@ -834,14 +834,14 @@ focus_target() {
     dev34-fan)
       printf '%s\t%s\t%s\n' \
         dev34/GeoTop_3_4.thy \
-        geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34 \
-        'endpoint degree one chain boundary arc fan target'
+        geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34 \
+        'endpoint oriented chain boundary arc fan target'
       ;;
     dev34-semicircle)
       printf '%s\t%s\t%s\n' \
         dev34/GeoTop_3_4.thy \
-        geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34 \
-        'semicircle one side simplex local separates domain sphere arc'
+        geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34 \
+        'semicircle one side simplex crosscut separates domain sphere arc'
       ;;
     *)
       printf 'focus: unknown target %s\n' "$1" >&2
@@ -868,11 +868,8 @@ focus_chain_pattern() {
     mid-d42)
       printf '%s\n' 'theorem Theorem_GT_3_7'
       ;;
-    dev34-fan)
-      printf '%s\n' geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
-      ;;
     dev34-semicircle)
-      printf '%s\n' geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
+      printf '%s\n' geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
       ;;
     *)
       printf '%s\n' ''
@@ -888,11 +885,8 @@ split_default_chain_pattern() {
     'dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:theorem Theorem_GT_4_2')
       printf '%s\n' 'theorem Theorem_GT_3_7'
       ;;
-    'dev34/GeoTop_3_4.thy:geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34')
-      printf '%s\n' geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34
-      ;;
-    'dev34/GeoTop_3_4.thy:geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34')
-      printf '%s\n' geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34
+    'dev34/GeoTop_3_4.thy:geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34')
+      printf '%s\n' geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
       ;;
     *)
       printf '%s\n' ''
