@@ -52,9 +52,17 @@ SESSION_RE = re.compile(
 SESSION_FILE_NAMES = {"ROOT", "ROOTS"}
 GENERATED_SESSION_FILE_NAMES = {"INDEX_THEORIES.txt"}
 ADVICE_FILE_PATTERNS = [
+    "PLAN*.md",
     "PLAN_zero_sorry-expert*.md",
+    "*REPORT*.md",
+    "STATUS*.md",
+    "ANSWER*.md",
+    "CLAUDE*.md",
 ]
-IGNORED_PATH_PARTS = {".dev34_fast_cache", "__pycache__"}
+IGNORED_PATH_PARTS = {".dev34_fast_cache", ".index_cache", "__pycache__"}
+IGNORED_ADVICE_FILE_NAMES = {
+    "THEOREMS_AND_DEFS.md",
+}
 
 
 def theory_tokens(raw_line: str) -> list[str]:
@@ -115,7 +123,9 @@ def iter_advice_files(base: Path) -> list[Path]:
         advice_files.extend(
             path
             for path in base.rglob(pattern)
-            if path.is_file() and not is_ignored_generated_path(base, path)
+            if path.is_file()
+            and not is_ignored_generated_path(base, path)
+            and path.name not in IGNORED_ADVICE_FILE_NAMES
         )
     return sorted(
         dict.fromkeys(advice_files),
