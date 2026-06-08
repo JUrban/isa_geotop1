@@ -23,6 +23,8 @@ OUT=STMT_INDEX.txt
 THEORY_LIST=INDEX_THEORIES.txt
 CACHE_DIR=.index_cache
 SIG_FILE="$CACHE_DIR/gen_stmt_index.sig"
+SESSION_LOG_CACHE="$CACHE_DIR/gen_stmt_index.session_logs.txt"
+SESSION_LOG_CACHE_SIG="$CACHE_DIR/gen_stmt_index.session_logs.sig"
 
 mkdir -p "$CACHE_DIR"
 
@@ -34,6 +36,7 @@ mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
 mapfile -t ADVICE_FILES < <(python3 index_theory_lib.py --advice-files)
 mapfile -t SESSION_LOG_FILES < <(python3 index_theory_lib.py --session-log-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
+SESSION_LOG_SIG=$(python3 index_theory_lib.py --session-log-signature)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
@@ -47,7 +50,16 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
   printf '  %s\n' "${MISSING[@]}" >&2
 fi
 
-python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" --session-logs "${SESSION_LOG_FILES[@]}" << 'PYEND'
+SESSION_LOG_ARGS=(--session-logs "${SESSION_LOG_FILES[@]}")
+SESSION_LOG_CACHE_STATUS=refreshed
+if [ "$FORCE" -eq 0 ] && [ -f "$SESSION_LOG_CACHE" ] && [ -f "$SESSION_LOG_CACHE_SIG" ] \
+  && [ "$(cat "$SESSION_LOG_CACHE_SIG")" = "$SESSION_LOG_SIG" ]; then
+  SESSION_LOG_ARGS=()
+  SESSION_LOG_CACHE_STATUS=hit
+fi
+
+python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" \
+  "${SESSION_LOG_ARGS[@]}" --session-log-cache "$SESSION_LOG_CACHE" << 'PYEND'
 import gzip
 import json
 import re
@@ -55,24 +67,32 @@ import sys
 from pathlib import Path
 
 out_path = Path(sys.argv[1])
-try:
-    advice_marker = sys.argv.index("--advice")
-except ValueError:
-    advice_marker = len(sys.argv)
-try:
-    session_logs_marker = sys.argv.index("--session-logs")
-except ValueError:
-    session_logs_marker = len(sys.argv)
-theories = [arg for arg in sys.argv[3:advice_marker] if arg != "--theories"]
-advice_files = (
-    sys.argv[advice_marker + 1:session_logs_marker]
-    if advice_marker < len(sys.argv)
-    else []
-)
-session_log_files = (
-    sys.argv[session_logs_marker + 1:]
-    if session_logs_marker < len(sys.argv)
-    else []
+argv = sys.argv[2:]
+markers = ["--theories", "--advice", "--session-logs", "--session-log-cache"]
+
+
+def marker_values(marker: str) -> list[str]:
+    if marker not in argv:
+        return []
+    start = argv.index(marker) + 1
+    end = len(argv)
+    for other in markers:
+        if other == marker:
+            continue
+        try:
+            pos = argv.index(other, start)
+        except ValueError:
+            continue
+        end = min(end, pos)
+    return argv[start:end]
+
+
+theories = marker_values("--theories")
+advice_files = marker_values("--advice")
+session_log_files = marker_values("--session-logs")
+session_log_cache_values = marker_values("--session-log-cache")
+session_log_cache = (
+    Path(session_log_cache_values[0]) if session_log_cache_values else None
 )
 
 sym_map = {
@@ -222,22 +242,38 @@ def transcript_lines(path: Path):
                 yield line_no, line
 
 
-for f in session_log_files:
-    path = Path(f)
-    emitted = 0
-    for line_no, line in transcript_lines(path):
-        if not TRANSCRIPT_KEEP_RE.search(line):
-            continue
-        text = line
-        if len(text) > 700:
-            text = text[:697] + "..."
-        out_lines.append(f"{f}:{line_no} session transcript :: {text}\n")
-        emitted += 1
-        if emitted >= 200:
-            out_lines.append(
-                f"{f}:{line_no} session transcript :: truncated after 200 matched transcript snippets\n"
-            )
-            break
+session_out_lines: list[str] = []
+
+if session_log_files:
+    for f in session_log_files:
+        path = Path(f)
+        emitted = 0
+        for line_no, line in transcript_lines(path):
+            if not TRANSCRIPT_KEEP_RE.search(line):
+                continue
+            text = line
+            if len(text) > 700:
+                text = text[:697] + "..."
+            session_out_lines.append(f"{f}:{line_no} session transcript :: {text}\n")
+            emitted += 1
+            if emitted >= 200:
+                session_out_lines.append(
+                    f"{f}:{line_no} session transcript :: truncated after 200 matched transcript snippets\n"
+                )
+                break
+    if session_log_cache is not None:
+        content = "".join(session_out_lines)
+        if (
+            not session_log_cache.exists()
+            or session_log_cache.read_text(encoding="utf-8", errors="replace") != content
+        ):
+            session_log_cache.write_text(content, encoding="utf-8")
+elif session_log_cache is not None and session_log_cache.exists():
+    session_out_lines = session_log_cache.read_text(
+        encoding="utf-8", errors="replace"
+    ).splitlines(True)
+
+out_lines.extend(session_out_lines)
 
 content = "".join(out_lines)
 if not out_path.exists() or out_path.read_text(encoding="utf-8", errors="replace") != content:
@@ -252,6 +288,7 @@ echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"
 echo "Tracked ${#SIGNATURE_FILES[@]} session/signature files"
 echo "Tracked ${#ADVICE_FILES[@]} advice files"
-echo "Tracked ${#SESSION_LOG_FILES[@]} bounded session logs"
+echo "Tracked ${#SESSION_LOG_FILES[@]} bounded session logs (${SESSION_LOG_CACHE_STATUS} snippets)"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"
+printf '%s\n' "$SESSION_LOG_SIG" > "$SESSION_LOG_CACHE_SIG"

@@ -418,6 +418,22 @@ def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> s
     return h.hexdigest()
 
 
+def named_files_signature(base: Path, names: list[str]) -> str:
+    h = hashlib.sha256()
+    for name in names:
+        path = base / name
+        h.update(name.encode("utf-8"))
+        if not path.exists():
+            h.update(b"\0missing")
+            continue
+        st = path.stat()
+        h.update(str(st.st_size).encode("ascii"))
+        h.update(b":")
+        h.update(str(st.st_mtime_ns).encode("ascii"))
+        h.update(b"\n")
+    return h.hexdigest()
+
+
 def write_if_changed(path: Path, content: str) -> bool:
     if path.exists() and path.read_text(encoding="utf-8", errors="replace") == content:
         return False
@@ -451,6 +467,11 @@ def main() -> int:
         help="print bounded session transcript files included in the cache signature",
     )
     parser.add_argument("--signature", action="store_true", help="print input signature")
+    parser.add_argument(
+        "--session-log-signature",
+        action="store_true",
+        help="print signature for bounded session transcript files only",
+    )
     parser.add_argument(
         "--write-list",
         metavar="PATH",
@@ -500,6 +521,8 @@ def main() -> int:
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))
+    if args.session_log_signature:
+        print(named_files_signature(base, session_log_files))
     return 0
 
 
