@@ -1404,6 +1404,21 @@ proof -
       "card {e\<in>L. geotop_is_edge e} \<le> p"
     using hsource_edges_eq card_image_le[OF hidx_finite,
       of "\<lambda>k. closed_segment (v k) (v (Suc k))"] by (by100 simp)
+  have hsource_listed_edge_in_L:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> closed_segment (v k) (v (Suc k)) \<in> L"
+    using hsource_edges_eq by (by100 blast)
+  have hsource_listed_edge_is_edge:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+    using hsource_edges_eq by (by100 blast)
+  have hsource_listed_edges_nonempty: "?E \<noteq> {}"
+    using hp_pos by (by100 blast)
+  have hsource_graph_edges_nonempty:
+      "{e\<in>L. geotop_is_edge e} \<noteq> {}"
+    using hsource_edges_eq hsource_listed_edges_nonempty by (by100 simp)
+  have hsource_edges_card_pos:
+      "0 < card {e\<in>L. geotop_is_edge e}"
+    using hsource_graph_edges_finite hsource_graph_edges_nonempty by (by100 simp)
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
