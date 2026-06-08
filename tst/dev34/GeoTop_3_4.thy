@@ -465,6 +465,23 @@ proof -
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         geotop_simplex_dim (closed_segment (v k) (v (Suc k))) 1"
     using hlisted_edge_members unfolding geotop_is_edge_def by (by100 blast)
+  have hlisted_edge_endpoints_distinct:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<noteq> v (Suc k)"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    assume heq: "v k = v (Suc k)"
+    have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hlisted_edge_members[OF hk] by (by100 blast)
+    have hdim0: "geotop_simplex_dim {v k} 0"
+      by (rule geotop_singleton_is_simplex)
+    have hdim1: "geotop_simplex_dim {v k} 1"
+      using hedge heq unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
