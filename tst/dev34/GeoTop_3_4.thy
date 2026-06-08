@@ -1676,6 +1676,41 @@ proof -
   have hF\<^sub>0_edges_finite:
       "finite {e\<in>F\<^sub>0. geotop_is_edge e}"
     using hF\<^sub>0_finite by (by100 simp)
+  obtain V\<^sub>\<sigma> m\<^sub>\<sigma> where hV\<^sub>\<sigma>_finite: "finite V\<^sub>\<sigma>"
+      and hV\<^sub>\<sigma>_card: "card V\<^sub>\<sigma> = 2 + 1"
+      and h2_le_m\<^sub>\<sigma>: "2 \<le> m\<^sub>\<sigma>"
+      and hV\<^sub>\<sigma>_gp: "geotop_general_position V\<^sub>\<sigma> m\<^sub>\<sigma>"
+      and h\<sigma>_eq_V\<^sub>\<sigma>: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V\<^sub>\<sigma>: "geotop_simplex_vertices \<sigma> V\<^sub>\<sigma>"
+    unfolding geotop_simplex_vertices_def
+    using hV\<^sub>\<sigma>_finite hV\<^sub>\<sigma>_card h2_le_m\<^sub>\<sigma> hV\<^sub>\<sigma>_gp h\<sigma>_eq_V\<^sub>\<sigma>
+    by (by100 blast)
+  have h\<sigma>_vertex_singletons_in_B:
+      "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> {x} \<in> ?B"
+  proof -
+    fix x
+    assume hxV: "x \<in> V\<^sub>\<sigma>"
+    have hsingleton_hull: "geotop_convex_hull {x} = {x}"
+      using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+    have hface_hull: "geotop_is_face (geotop_convex_hull {x}) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma>])
+        (use hxV in \<open>by (by100 simp_all)\<close>)
+    have hface: "geotop_is_face {x} \<sigma>"
+      using hface_hull hsingleton_hull by (by100 simp)
+    have hdim0: "geotop_simplex_dim {x} 0"
+      by (rule geotop_singleton_is_simplex)
+    show "{x} \<in> ?B"
+      by (rule geotop_2simplex_vertex_face_in_comb_boundary_dev34
+        [OF h\<sigma> hdim0 hface])
+  qed
+  have h\<sigma>_vertex_singletons_in_F\<^sub>0:
+      "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> {x} \<in> F\<^sub>0"
+    using hB_old_vertices_in_F\<^sub>0 h\<sigma>_vertex_singletons_in_B by (by100 blast)
+  have h\<sigma>_vertices_in_F\<^sub>0_vertices:
+      "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> x \<in> geotop_complex_vertices F\<^sub>0"
+    using geotop_complex_vertices_eq_0_simplexes[OF hF\<^sub>0_complex]
+      h\<sigma>_vertex_singletons_in_F\<^sub>0 by (by100 blast)
   show ?thesis
     sorry
 qed
