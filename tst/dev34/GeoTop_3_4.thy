@@ -1615,6 +1615,27 @@ proof -
     show ?thesis
       using hiff hsource_graph_edges_finite hsource_graph_edges_nonempty by (by100 blast)
   qed
+  have hsource_vertices_card_ge2:
+      "2 \<le> card (geotop_complex_vertices L)"
+  proof -
+    have h0: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have hv0: "v 0 \<in> geotop_complex_vertices L"
+      using hsource_index_vertex[OF h0] .
+    have hv1: "v (Suc 0) \<in> geotop_complex_vertices L"
+      using hsource_listed_edge_endpoints_vertices[OF h0] by (by100 blast)
+    have hneq: "v 0 \<noteq> v (Suc 0)"
+      by (rule hsource_adjacent_distinct[OF h0])
+    have hpair_sub:
+        "{v 0, v (Suc 0)} \<subseteq> geotop_complex_vertices L"
+      using hv0 hv1 by (by100 blast)
+    have hpair_card: "card {v 0, v (Suc 0)} = 2"
+      using hneq by (by100 simp)
+    have "card {v 0, v (Suc 0)} \<le> card (geotop_complex_vertices L)"
+      by (rule card_mono[OF hsource_vertices_finite hpair_sub])
+    thus ?thesis
+      using hpair_card by (by100 linarith)
+  qed
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
