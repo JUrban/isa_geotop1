@@ -2044,6 +2044,73 @@ proof -
         closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
         closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
     by (by100 simp)
+  have ha\<^sub>\<sigma>_notin_edge_bc:
+      "a\<^sub>\<sigma> \<notin> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+  proof -
+    have hsub: "{b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma> - {a\<^sub>\<sigma>}"
+      using hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>b\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+    have "a\<^sub>\<sigma> \<notin> geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+      by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+          [OF h\<sigma>V\<^sub>\<sigma> ha\<^sub>\<sigma>V hsub])
+    thus ?thesis
+      using h\<sigma>_pair_hull_eq_segment[of b\<^sub>\<sigma> c\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have hb\<^sub>\<sigma>_notin_edge_ca:
+      "b\<^sub>\<sigma> \<notin> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+  proof -
+    have hsub: "{c\<^sub>\<sigma>, a\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma> - {b\<^sub>\<sigma>}"
+      using hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>b\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+    have "b\<^sub>\<sigma> \<notin> geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>}"
+      by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+          [OF h\<sigma>V\<^sub>\<sigma> hb\<^sub>\<sigma>V hsub])
+    thus ?thesis
+      using h\<sigma>_pair_hull_eq_segment[of c\<^sub>\<sigma> a\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have hc\<^sub>\<sigma>_notin_edge_ab:
+      "c\<^sub>\<sigma> \<notin> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+  proof -
+    have hsub: "{a\<^sub>\<sigma>, b\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma> - {c\<^sub>\<sigma>}"
+      using hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>c\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 blast)
+    have "c\<^sub>\<sigma> \<notin> geotop_convex_hull {a\<^sub>\<sigma>, b\<^sub>\<sigma>}"
+      by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+          [OF h\<sigma>V\<^sub>\<sigma> hc\<^sub>\<sigma>V hsub])
+    thus ?thesis
+      using h\<sigma>_pair_hull_eq_segment[of a\<^sub>\<sigma> b\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have h\<sigma>_closed_edge_ab_ne_bc:
+      "closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<noteq> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+  proof
+    assume heq: "closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma> = closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+    have "a\<^sub>\<sigma> \<in> closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>"
+      using heq by (by100 simp)
+    thus False
+      using ha\<^sub>\<sigma>_notin_edge_bc by (by100 blast)
+  qed
+  have h\<sigma>_closed_edge_bc_ne_ca:
+      "closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma> \<noteq> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+  proof
+    assume heq: "closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma> = closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+    have "b\<^sub>\<sigma> \<in> closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>"
+      using heq by (by100 simp)
+    thus False
+      using hb\<^sub>\<sigma>_notin_edge_ca by (by100 blast)
+  qed
+  have h\<sigma>_closed_edge_ca_ne_ab:
+      "closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma> \<noteq> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+  proof
+    assume heq: "closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma> = closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+    have "c\<^sub>\<sigma> \<in> closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>"
+      using heq by (by100 simp)
+    thus False
+      using hc\<^sub>\<sigma>_notin_edge_ab by (by100 blast)
+  qed
+  have h\<sigma>_closed_boundary_edges_card:
+      "card {closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>} = 3"
+    using h\<sigma>_closed_edge_ab_ne_bc h\<sigma>_closed_edge_bc_ne_ca
+      h\<sigma>_closed_edge_ca_ne_ab
+    by (by100 simp)
   show ?thesis
     sorry
 qed
