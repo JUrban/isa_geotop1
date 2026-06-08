@@ -9370,6 +9370,125 @@ proof -
             rule exI[where x=y], rule exI[where x=z],
             rule exI[where x=N], rule hbody)
     qed
+    have hselected_sphere_germ_closure:
+        "\<And>S a. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> a \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> a \<in> closure ((S - {w}) \<inter> ball w r)"
+    proof -
+      fix S a
+      assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume haS: "a \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      have hradial_closure:
+          "\<And>q e x. q \<noteq> w
+            \<Longrightarrow> r < dist w q
+            \<Longrightarrow> e = closed_segment w q
+            \<Longrightarrow> x = w + (r / dist w q) *\<^sub>R (q - w)
+            \<Longrightarrow> x \<in> closure ((e - {w}) \<inter> ball w r)"
+      proof -
+        fix q e x
+        assume hq_ne: "q \<noteq> w"
+        assume hr_lt_q: "r < dist w q"
+        assume he: "e = closed_segment w q"
+        assume hx: "x = w + (r / dist w q) *\<^sub>R (q - w)"
+        have hdist_q_pos: "0 < dist w q"
+          using hq_ne by (by100 simp)
+        show "x \<in> closure ((e - {w}) \<inter> ball w r)"
+          unfolding closure_approachable
+        proof (intro allI impI)
+          fix \<epsilon> :: real
+          assume h\<epsilon>: "0 < \<epsilon>"
+          define d where "d = min (r / 2) (\<epsilon> / 2)"
+          have hd_pos: "0 < d"
+            unfolding d_def using hr_pos h\<epsilon> by (by100 simp)
+          have hd_lt_r: "d < r"
+            unfolding d_def using hr_pos h\<epsilon> by (by100 simp)
+          have hd_lt_\<epsilon>: "d < \<epsilon>"
+            unfolding d_def using hr_pos h\<epsilon> by (by100 simp)
+          define t where "t = r - d"
+          have ht_pos: "0 < t"
+            unfolding t_def using hd_lt_r by (by100 simp)
+          have ht_lt_r: "t < r"
+            unfolding t_def using hd_pos by (by100 simp)
+          have ht_le_q: "t \<le> dist w q"
+            unfolding t_def using hr_lt_q hd_pos by (by100 simp)
+          define u where "u = w + (t / dist w q) *\<^sub>R (q - w)"
+          have hu_seg_sphere:
+              "u \<in> (closed_segment w q - {w}) \<inter> sphere w t"
+          proof -
+            have hseg_sphere:
+                "(closed_segment w q - {w}) \<inter> sphere w t = {u}"
+              by (rule closed_segment_sphere_unique_from_center
+                  [OF hq_ne ht_pos ht_le_q u_def])
+            show ?thesis
+              using hseg_sphere by (by100 simp)
+          qed
+          have hu_set: "u \<in> (e - {w}) \<inter> ball w r"
+          proof -
+            have hue: "u \<in> e - {w}"
+              using hu_seg_sphere he by (by100 blast)
+            have hudist: "dist w u = t"
+              using hu_seg_sphere by (by100 simp)
+            have huball: "u \<in> ball w r"
+              using hudist ht_lt_r by (by100 simp)
+            show ?thesis
+              using hue huball by (by100 blast)
+          qed
+          have hux_vec:
+              "u - x = ((t - r) / dist w q) *\<^sub>R (q - w)"
+            unfolding u_def hx
+            apply vector
+            using hdist_q_pos
+            by (simp add: field_simps)
+          have hdist_ux: "dist u x = d"
+          proof -
+            have "dist u x = norm (u - x)"
+              by (simp add: dist_norm)
+            also have "\<dots> = norm (((t - r) / dist w q) *\<^sub>R (q - w))"
+              using hux_vec by (by100 simp)
+            also have "\<dots> = \<bar>(t - r) / dist w q\<bar> * norm (q - w)"
+              by (by100 simp)
+            also have "\<dots> = \<bar>t - r\<bar>"
+              using hdist_q_pos by (simp add: dist_norm norm_minus_commute)
+            also have "\<dots> = d"
+              unfolding t_def using hd_pos by (by100 simp)
+            finally show ?thesis .
+          qed
+          have hdist_eps: "dist u x < \<epsilon>"
+            using hdist_ux hd_lt_\<epsilon> by (by100 simp)
+          show "\<exists>y\<in>(e - {w}) \<inter> ball w r. dist y x < \<epsilon>"
+            using hu_set hdist_eps by (by100 blast)
+        qed
+      qed
+      have hcases: "S = e\<^sub>1 \<or> S = e\<^sub>2 \<or> S = e\<^sub>3"
+        using hS by (by100 simp)
+      show "a \<in> closure ((S - {w}) \<inter> ball w r)"
+        using hcases
+      proof (elim disjE)
+        assume hS_eq: "S = e\<^sub>1"
+        have ha_eq: "a = x\<^sub>1"
+          using hS_eq haS he\<^sub>1_sphere_punctured_eq by (by100 simp)
+        have hx_cl: "x\<^sub>1 \<in> closure ((e\<^sub>1 - {w}) \<inter> ball w r)"
+          by (rule hradial_closure[OF hq\<^sub>1w hr_lt_q\<^sub>1 he\<^sub>1_seg x\<^sub>1_def])
+        show "a \<in> closure ((S - {w}) \<inter> ball w r)"
+          using ha_eq hS_eq hx_cl by (by100 simp)
+      next
+        assume hS_eq: "S = e\<^sub>2"
+        have ha_eq: "a = x\<^sub>2"
+          using hS_eq haS he\<^sub>2_sphere_punctured_eq by (by100 simp)
+        have hx_cl: "x\<^sub>2 \<in> closure ((e\<^sub>2 - {w}) \<inter> ball w r)"
+          by (rule hradial_closure[OF hq\<^sub>2w hr_lt_q\<^sub>2 he\<^sub>2_seg x\<^sub>2_def])
+        show "a \<in> closure ((S - {w}) \<inter> ball w r)"
+          using ha_eq hS_eq hx_cl by (by100 simp)
+      next
+        assume hS_eq: "S = e\<^sub>3"
+        have ha_eq: "a = x\<^sub>3"
+          using hS_eq haS he\<^sub>3_sphere_punctured_eq by (by100 simp)
+        have hx_cl: "x\<^sub>3 \<in> closure ((e\<^sub>3 - {w}) \<inter> ball w r)"
+          by (rule hradial_closure[OF hq\<^sub>3w hr_lt_q\<^sub>3 he\<^sub>3_seg x\<^sub>3_def])
+        show "a \<in> closure ((S - {w}) \<inter> ball w r)"
+          using ha_eq hS_eq hx_cl by (by100 simp)
+      qed
+    qed
     have hcomponent_from_split_side:
         "\<And>S T U p y z N. S \<in> E
           \<Longrightarrow> T \<in> E
