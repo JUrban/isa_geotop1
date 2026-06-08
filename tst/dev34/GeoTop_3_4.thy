@@ -1344,6 +1344,13 @@ lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
   assumes hsource_vertices:
     "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
   assumes hsource_closed: "v p = v 0"
+  assumes hsource_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hsource_edge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
   assumes hsource_cases:
     "\<And>W. W \<subseteq> geotop_complex_vertices L
       \<Longrightarrow> geotop_convex_hull W \<in> L
@@ -1368,6 +1375,7 @@ lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
     listing, allowing repeated indices in the given parametrization. **)
 proof -
   let ?V = "((\<lambda>k. v k) ` {0..<p})"
+  let ?E = "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
   have hidx_finite: "finite {0..<p}"
     by (by100 simp)
@@ -1384,6 +1392,18 @@ proof -
     thus ?thesis
       using hsource_vertices by (by100 blast)
   qed
+  have hsource_edges_eq:
+      "?E = {e\<in>L. geotop_is_edge e}"
+    by (rule hsource_edge_segments)
+  have hsource_listed_edges_finite: "finite ?E"
+    by (rule finite_imageI[OF hidx_finite])
+  have hsource_graph_edges_finite:
+      "finite {e\<in>L. geotop_is_edge e}"
+    using hsource_edges_eq hsource_listed_edges_finite by (by100 simp)
+  have hsource_edges_card_le_p:
+      "card {e\<in>L. geotop_is_edge e} \<le> p"
+    using hsource_edges_eq card_image_le[OF hidx_finite,
+      of "\<lambda>k. closed_segment (v k) (v (Suc k))"] by (by100 simp)
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
@@ -1939,6 +1959,7 @@ proof -
   show ?thesis
     by (rule geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34
         [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hvertices hclosed_vertex
+          hL_listing_decomp hedge_segments
           hsource_cyclic_listing_convex_hull_in_L_cases_all
           hsource_singleton_convex_hull_in_L_image
           hsource_edge_convex_hull_in_L
