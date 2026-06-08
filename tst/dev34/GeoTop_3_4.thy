@@ -10951,6 +10951,34 @@ proof -
     show "x \<in> U"
       using hballU hx_poly_ball_s by (by100 blast)
   qed
+  have hp_\<sigma>: "p \<in> \<sigma>"
+  proof -
+    have hp_e: "p \<in> e"
+      using hp rel_interior_subset by (by100 blast)
+    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+      by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+    show ?thesis
+      using hp_e he_sub_\<sigma> by (by100 blast)
+  qed
+  have hp_U: "p \<in> U"
+  proof -
+    have hs_pos: "0 < s"
+      using hr hrs by (by100 linarith)
+    have hp_ball_s: "p \<in> ball p s"
+      using hs_pos by (by100 simp)
+    have hp_ball_sigma_s: "p \<in> ball p s \<inter> \<sigma>"
+      using hp_ball_s hp_\<sigma> by (by100 blast)
+    have hp_ball_poly_s: "p \<in> ball p s \<inter> geotop_polyhedron K"
+      using hlocal_poly_eq_\<sigma> hp_ball_sigma_s by (by100 blast)
+    have hp_poly_ball_s: "p \<in> geotop_polyhedron K \<inter> ball p s"
+      using hp_ball_poly_s by (by100 blast)
+    show ?thesis
+      using hballU hp_poly_ball_s by (by100 blast)
+  qed
+  have hp_not_A: "p \<notin> ?A"
+    using hr by (by100 simp)
+  have hp_inner_witness: "p \<in> U - ?A \<and> dist p p < r"
+    using hp_U hp_not_A hr by (by100 simp)
   have hcrosscut_book:
       "geotop_is_arc ?A
           (subspace_topology UNIV geotop_euclidean_topology ?A)
