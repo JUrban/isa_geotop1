@@ -2111,6 +2111,90 @@ proof -
     using h\<sigma>_closed_edge_ab_ne_bc h\<sigma>_closed_edge_bc_ne_ca
       h\<sigma>_closed_edge_ca_ne_ab
     by (by100 simp)
+  have h\<sigma>_closed_edge_ab_face:
+      "geotop_is_face (closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>) \<sigma>"
+  proof -
+    have hpair_ne: "{a\<^sub>\<sigma>, b\<^sub>\<sigma>} \<noteq> {}"
+      by (by100 simp)
+    have hpair_sub: "{a\<^sub>\<sigma>, b\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma>"
+      using hV\<^sub>\<sigma>_abc by (by100 blast)
+    have hface: "geotop_is_face (geotop_convex_hull {a\<^sub>\<sigma>, b\<^sub>\<sigma>}) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma> hpair_ne hpair_sub])
+    show ?thesis
+      using hface h\<sigma>_pair_hull_eq_segment[of a\<^sub>\<sigma> b\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have h\<sigma>_closed_edge_bc_face:
+      "geotop_is_face (closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>) \<sigma>"
+  proof -
+    have hpair_ne: "{b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<noteq> {}"
+      by (by100 simp)
+    have hpair_sub: "{b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma>"
+      using hV\<^sub>\<sigma>_abc by (by100 blast)
+    have hface: "geotop_is_face (geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>}) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma> hpair_ne hpair_sub])
+    show ?thesis
+      using hface h\<sigma>_pair_hull_eq_segment[of b\<^sub>\<sigma> c\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have h\<sigma>_closed_edge_ca_face:
+      "geotop_is_face (closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>) \<sigma>"
+  proof -
+    have hpair_ne: "{c\<^sub>\<sigma>, a\<^sub>\<sigma>} \<noteq> {}"
+      by (by100 simp)
+    have hpair_sub: "{c\<^sub>\<sigma>, a\<^sub>\<sigma>} \<subseteq> V\<^sub>\<sigma>"
+      using hV\<^sub>\<sigma>_abc by (by100 blast)
+    have hface: "geotop_is_face (geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>}) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma> hpair_ne hpair_sub])
+    show ?thesis
+      using hface h\<sigma>_pair_hull_eq_segment[of c\<^sub>\<sigma> a\<^sub>\<sigma>] by (by100 simp)
+  qed
+  have h\<sigma>_edge_faces_named_subset:
+      "{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}
+        \<subseteq> {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+    using h\<sigma>_closed_edge_ab_is_edge h\<sigma>_closed_edge_bc_is_edge
+      h\<sigma>_closed_edge_ca_is_edge h\<sigma>_closed_edge_ab_face
+      h\<sigma>_closed_edge_bc_face h\<sigma>_closed_edge_ca_face
+    by (by100 blast)
+  have h\<sigma>_edge_faces_all_named:
+      "{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}
+        = {closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+  proof -
+    have hfaces:
+        "finite {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}
+        \<and> card {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} \<le> 3"
+      by (rule geotop_2simplex_edge_faces_card_le3_prefix[OF h\<sigma>])
+    have hfaces_finite:
+        "finite {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+      using hfaces by (by100 blast)
+    have hfaces_card_le3:
+        "card {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} \<le> 3"
+      using hfaces by (by100 blast)
+    have hnamed_card_le_faces:
+        "card {closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}
+          \<le> card {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+      by (rule card_mono[OF hfaces_finite h\<sigma>_edge_faces_named_subset])
+    have hfaces_card_eq:
+        "card {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>} =
+          card {closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+            closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+            closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+      using hnamed_card_le_faces hfaces_card_le3 h\<sigma>_closed_boundary_edges_card
+      by (by100 linarith)
+    have hnamed_eq_faces:
+        "{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}
+        = {e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+      by (rule card_subset_eq[OF hfaces_finite
+          h\<sigma>_edge_faces_named_subset hfaces_card_eq[symmetric]])
+    show ?thesis
+      using hnamed_eq_faces by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
