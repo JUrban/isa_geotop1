@@ -391,6 +391,50 @@ proof -
     by (rule finite_imageI[OF hidx_fin])
   have hV_eq_complex_vertices: "?V = geotop_complex_vertices L"
     by (rule hvertices)
+  have hp_pos: "0 < p"
+    using hp_gt2 by (by100 linarith)
+  have hV_singletons_subset_L: "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
+    using hL_listing_decomp by (by100 blast)
+  have hE_eq_edges: "?E = {e\<in>L. geotop_is_edge e}"
+    by (rule hedge_segments)
+  have hE_subset_L: "?E \<subseteq> L"
+    using hE_eq_edges by (by100 blast)
+  have hE_edges: "\<And>e. e \<in> ?E \<Longrightarrow> geotop_is_edge e"
+    using hE_eq_edges by (by100 blast)
+  have hlisted_edge_members:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have hsegE: "closed_segment (v k) (v (Suc k)) \<in> ?E"
+      using hk by (by100 blast)
+    show "closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hsegE hE_subset_L hE_edges by (by100 blast)
+  qed
+  have hlisted_edge_dim:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_simplex_dim (closed_segment (v k) (v (Suc k))) 1"
+    using hlisted_edge_members unfolding geotop_is_edge_def by (by100 blast)
+  have hlisted_edge_endpoints_distinct:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<noteq> v (Suc k)"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    assume heq: "v k = v (Suc k)"
+    have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hlisted_edge_members[OF hk] by (by100 blast)
+    have hdim0: "geotop_simplex_dim {v k} 0"
+      by (rule geotop_singleton_is_simplex)
+    have hdim1: "geotop_simplex_dim {v k} 1"
+      using hedge heq unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
