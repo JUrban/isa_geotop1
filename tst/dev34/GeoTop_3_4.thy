@@ -1891,6 +1891,29 @@ proof -
   have h\<sigma>_named_vertices_finite:
       "finite {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
     by (by100 simp)
+  let ?\<psi>\<^sub>0 =
+      "\<lambda>x. if x = v 0 then a\<^sub>\<sigma>
+        else if x = v (Suc 0) then b\<^sub>\<sigma>
+        else c\<^sub>\<sigma>"
+  have hanchor_bij:
+      "bij_betw ?\<psi>\<^sub>0
+        {v 0, v (Suc 0), v j\<^sub>L}
+        {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+  proof -
+    have hinj:
+        "inj_on ?\<psi>\<^sub>0 {v 0, v (Suc 0), v j\<^sub>L}"
+      unfolding inj_on_def
+      using hsource_anchor_v0_ne_v1 hj\<^sub>L_ne_v0 hj\<^sub>L_ne_v1
+        ha\<^sub>\<sigma>b\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma>
+      by (by100 simp)
+    have himage:
+        "?\<psi>\<^sub>0 ` {v 0, v (Suc 0), v j\<^sub>L}
+          = {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+      using hsource_anchor_v0_ne_v1 hj\<^sub>L_ne_v0 hj\<^sub>L_ne_v1
+      by (by100 auto)
+    show ?thesis
+      unfolding bij_betw_def using hinj himage by (by100 simp)
+  qed
   have h\<sigma>_named_vertices_in_F\<^sub>0_vertices:
       "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices F\<^sub>0"
     using h\<sigma>_vertices_in_F\<^sub>0_vertices hV\<^sub>\<sigma>_abc by (by100 blast)
