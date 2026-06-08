@@ -19,6 +19,7 @@ dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9109
 Latest local commits:
 
 ```text
+7dbc3101 Record sections 3-4 goal status
 f5b72201 Track newer session transcript formats
 2c84b9dc Keep branch split witness cardinality
 d341d831 Record branch sphere triple cardinality
