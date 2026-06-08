@@ -6601,6 +6601,161 @@ proof -
     by (by100 simp)
 qed
 
+lemma geotop_finite_connected_degree_one_or_two_endpoint_chain_listing_from_first_neighbor_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 1 \<or>
+      card {e\<in>L. geotop_is_edge e \<and> x \<in> e} = 2"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  shows "\<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  using hL_finite hL_linear hconn hdegree12 hendpoint heL he_edge hw_e
+    hq_ne he_seg hqL
+proof (induction L arbitrary: w e q rule: finite_psubset_induct)
+  case (psubset L)
+  show ?case
+  proof -
+    have hfinL: "finite L"
+      by (rule psubset.hyps)
+    have hL: "geotop_is_linear_graph L"
+      by (rule psubset.prems(1))
+    have hconnL: "geotop_complex_connected L"
+      by (rule psubset.prems(2))
+    have hdegreeL: "\<forall>x. {x} \<in> L \<longrightarrow>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+        card {d\<in>L. geotop_is_edge d \<and> x \<in> d} = 2"
+      by (rule psubset.prems(3))
+    have hend: "geotop_graph_endpoint L w"
+      by (rule psubset.prems(4))
+    have heL': "e \<in> L"
+      by (rule psubset.prems(5))
+    have hedge: "geotop_is_edge e"
+      by (rule psubset.prems(6))
+    have hwe: "w \<in> e"
+      by (rule psubset.prems(7))
+    have hqw: "q \<noteq> w"
+      by (rule psubset.prems(8))
+    have heq: "e = closed_segment w q"
+      by (rule psubset.prems(9))
+    have hqL': "{q} \<in> L"
+      by (rule psubset.prems(10))
+    have hqcard_cases:
+        "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1 \<or>
+         card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 2"
+      using hdegreeL hqL' by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF hqcard_cases])
+      assume hqcard1: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+      show ?thesis
+      proof
+        show "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+          by (rule geotop_endpoint_chain_listing_two_vertex_dev34
+              [OF hL hfinL hconnL hend heL' hedge hwe hqw heq hqL' hqcard1])
+      qed
+    next
+      assume hqcard2: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 2"
+      let ?R = "L - {{w}, e}"
+      have hqe: "q \<in> e"
+        using heq by (by100 simp)
+      have hqR: "{q} \<in> ?R"
+      proof -
+        have hq_ne_w_singleton: "{q} \<noteq> {w}"
+          using hqw by (by100 blast)
+        have hq_ne_e: "{q} \<noteq> e"
+        proof
+          assume hqe_single: "{q} = e"
+          have "w \<in> {q}"
+            using hwe hqe_single by (by100 simp)
+          hence "w = q"
+            by (by100 simp)
+          thus False
+            using hqw by (by100 blast)
+        qed
+        show ?thesis
+          using hqL' hq_ne_w_singleton hq_ne_e by (by100 simp)
+      qed
+      have hR_psubset: "?R \<subset> L"
+        using heL' by (by100 blast)
+      have hR_linear: "geotop_is_linear_graph ?R"
+        by (rule geotop_graph_endpoint_delete_leaf_linear_graph_dev34
+            [OF hL hfinL hend heL' hedge hwe])
+      have hR_conn: "geotop_complex_connected ?R"
+        by (rule geotop_graph_endpoint_delete_leaf_connected_dev34
+            [OF hL hfinL hconnL hend heL' hedge hwe hqL' hqw heq])
+      have hR_degree12: "\<forall>x. {x} \<in> ?R \<longrightarrow>
+          card {l\<in>?R. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+          card {l\<in>?R. geotop_is_edge l \<and> x \<in> l} = 2"
+        by (rule geotop_graph_endpoint_delete_leaf_degree_one_or_two_dev34
+            [OF hL hfinL hend heL' hedge hwe hqL' hqw heq hdegreeL hqcard2])
+      have hR_endpoint: "geotop_graph_endpoint ?R q"
+        by (rule geotop_graph_endpoint_delete_leaf_neighbor_endpoint_dev34
+            [OF hL hfinL hend heL' hedge hwe hqL' hqw hqe hqcard2])
+      have hfinR: "finite ?R"
+        using hfinL by (by100 simp)
+      have hneighborR: "\<exists>e' r. e' \<in> ?R \<and> geotop_is_edge e' \<and> q \<in> e'
+          \<and> r \<noteq> q \<and> e' = closed_segment q r \<and> {r} \<in> ?R"
+        by (rule geotop_graph_endpoint_unique_segment_neighbor_dev34
+            [OF hR_linear hfinR hR_endpoint])
+      obtain e' r where hneighborR_pack:
+          "e' \<in> ?R \<and> geotop_is_edge e' \<and> q \<in> e'
+          \<and> r \<noteq> q \<and> e' = closed_segment q r \<and> {r} \<in> ?R"
+        using hneighborR
+        by (elim exE)
+      have heR: "e' \<in> ?R"
+        using hneighborR_pack by (by100 simp)
+      have he'_edge: "geotop_is_edge e'"
+        using hneighborR_pack by (by100 simp)
+      have hq_e': "q \<in> e'"
+        using hneighborR_pack by (by100 simp)
+      have hr_ne: "r \<noteq> q"
+        using hneighborR_pack by (by100 simp)
+      have he'_seg: "e' = closed_segment q r"
+        using hneighborR_pack by (by100 simp)
+      have hrR: "{r} \<in> ?R"
+        using hneighborR_pack by (by100 simp)
+      obtain vs where hlistR:
+        "geotop_linear_graph_endpoint_chain_listing_dev34 ?R q r vs"
+      proof -
+        have hex: "\<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 ?R q r vs"
+        proof (rule psubset.IH[where B = ?R and w = q and e = e' and q = r])
+          show "?R \<subset> L" by (rule hR_psubset)
+          show "geotop_is_linear_graph ?R" by (rule hR_linear)
+          show "geotop_complex_connected ?R" by (rule hR_conn)
+          show "\<forall>x. {x} \<in> ?R \<longrightarrow>
+              card {d \<in> ?R. geotop_is_edge d \<and> x \<in> d} = 1 \<or>
+              card {d \<in> ?R. geotop_is_edge d \<and> x \<in> d} = 2"
+            by (rule hR_degree12)
+          show "geotop_graph_endpoint ?R q" by (rule hR_endpoint)
+          show "e' \<in> ?R" by (rule heR)
+          show "geotop_is_edge e'" by (rule he'_edge)
+          show "q \<in> e'" by (rule hq_e')
+          show "r \<noteq> q" by (rule hr_ne)
+          show "e' = closed_segment q r" by (rule he'_seg)
+          show "{r} \<in> ?R" by (rule hrR)
+        qed
+        then obtain vs where
+          "geotop_linear_graph_endpoint_chain_listing_dev34 ?R q r vs"
+          by (by100 blast)
+        thus ?thesis
+          by (rule that)
+      qed
+      have hlistL: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q (w # vs)"
+        by (rule geotop_endpoint_chain_listing_cons_delete_leaf_dev34
+            [OF hL hfinL hend heL' hedge hwe hqw heq hlistR])
+      show ?thesis
+        using hlistL by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
