@@ -530,6 +530,10 @@ proof -
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
         \<exists>x\<in>?V. \<tau> = {x}"
     using hL_member_cases hE_edges by (by100 blast)
+  have hL_nonedge_eq_singletons:
+      "{\<tau>\<in>L. \<not> geotop_is_edge \<tau>} = ((\<lambda>x. {x}) ` ?V)"
+    using hL_nonedge_singleton_cases hvertex_singletons_in_L hsingleton_not_edge
+    by (by100 blast)
   have hconvex_hull_nonedge_singleton_cases:
       "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
         \<Longrightarrow> \<not> geotop_is_edge (geotop_convex_hull W)
