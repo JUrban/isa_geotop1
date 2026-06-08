@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1420
-dev34/GeoTop_3_4.thy:9494
-dev34/GeoTop_3_4.thy:10696
+dev34/GeoTop_3_4.thy:1427
+dev34/GeoTop_3_4.thy:9502
+dev34/GeoTop_3_4.thy:10704
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -118,6 +118,11 @@ facts: the boundary complex is finite and complex, its vertex set lies in its
 polyhedron, and the preserved-vertex finite subdivision `F0` is available with
 a finite vertex set. The remaining local proof is the geometric upgrade from
 this seed data to the required quotient cyclic listing.
+
+The exact target-realization lemma deliberately retains the original finite
+linear graph, degree-two, and adjacent-distinct source-listing hypotheses. This
+avoids overgeneralizing the remaining book step to degenerate repeated-index
+parametrizations that are not genuine boundary cycles.
 
 Latest local verification:
 

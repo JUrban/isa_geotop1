@@ -1334,6 +1334,11 @@ where
 lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
   assumes hp_gt2: "2 < p"
   assumes hsource_vertices:
@@ -1350,6 +1355,8 @@ lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
   assumes hsource_edge:
     "\<And>k. k \<in> {0..<p}
       \<Longrightarrow> geotop_convex_hull {v k, v (Suc k)} \<in> L"
+  assumes hsource_adjacent_distinct:
+    "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<noteq> v (Suc k)"
   shows "\<exists>F u \<psi>.
       geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F u
       \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
@@ -1931,10 +1938,11 @@ proof -
     using hsource_singleton_convex_hull_in_L hvertices by (by100 blast)
   show ?thesis
     by (rule geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34
-        [OF h\<sigma> hp_gt2 hvertices hclosed_vertex
+        [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hvertices hclosed_vertex
           hsource_cyclic_listing_convex_hull_in_L_cases_all
           hsource_singleton_convex_hull_in_L_image
-          hsource_edge_convex_hull_in_L])
+          hsource_edge_convex_hull_in_L
+          hsource_edge_endpoints_distinct])
 qed
 
 lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
