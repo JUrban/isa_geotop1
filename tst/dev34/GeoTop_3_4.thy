@@ -2120,6 +2120,49 @@ proof -
     by (rule geotop_is_subdivision_refl[OF hcomplex])
 qed
 
+lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
+  fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hS_finite: "finite S"
+  assumes hS_poly:
+    "S \<subseteq> geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>F. geotop_is_complex F
+      \<and> geotop_complex_is_1dim F
+      \<and> finite F
+      \<and> geotop_polyhedron F =
+        geotop_polyhedron
+          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> (\<forall>x\<in>S. {x} \<in> F)
+      \<and> (\<forall>v.
+        {v} \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2
+        \<longrightarrow> {v} \<in> F)"
+  (**
+    Moise Fig. 4.10 boundary-edge subdivision helper.  Any finite set of
+    prescribed points on the frontier complex of a 2-simplex can be made into
+    vertices of a finite 1-complex with the same boundary carrier. **)
+proof -
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  have hB_complex: "geotop_is_complex ?B"
+    by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_1dim: "geotop_complex_is_1dim ?B"
+    by (rule geotop_2simplex_comb_boundary_is_1dim_dev34[OF h\<sigma>])
+  have hB_finite: "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  obtain F where hF:
+      "geotop_is_complex F
+      \<and> geotop_complex_is_1dim F
+      \<and> finite F
+      \<and> geotop_polyhedron F = geotop_polyhedron ?B
+      \<and> (\<forall>x\<in>S. {x} \<in> F)
+      \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
+    using geotop_finite_polyhedron_points_as_vertices_dev34
+      [OF hB_complex hB_1dim hB_finite hS_finite hS_poly]
+    by (by100 blast)
+  show ?thesis
+    using hF by (by100 blast)
+qed
+
 lemma geotop_standard_2simplex_boundary_self_subdivision_model_dev34:
   shows "\<exists>(\<sigma> :: (real^2) set) F.
       geotop_simplex_dim \<sigma> 2
