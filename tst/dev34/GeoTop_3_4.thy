@@ -1377,6 +1377,10 @@ proof -
   let ?V = "((\<lambda>k. v k) ` {0..<p})"
   let ?E = "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
   have hidx_finite: "finite {0..<p}"
     by (by100 simp)
   have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
@@ -1398,9 +1402,17 @@ proof -
   have hsource_vertices_card_pos:
       "0 < card (geotop_complex_vertices L)"
     using hsource_vertices_finite hsource_vertices_nonempty by (by100 simp)
+  have hsource_singletons_subset_L:
+      "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
+    using hsource_listing_decomp by (by100 blast)
   have hsource_edges_eq:
       "?E = {e\<in>L. geotop_is_edge e}"
     by (rule hsource_edge_segments)
+  have hsource_edges_subset_L: "?E \<subseteq> L"
+    using hsource_edges_eq by (by100 blast)
+  have hsource_member_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<tau> \<in> ((\<lambda>x. {x}) ` ?V) \<or> \<tau> \<in> ?E"
+    using hsource_listing_decomp by (by100 blast)
   have hsource_listed_edges_finite: "finite ?E"
     by (rule finite_imageI[OF hidx_finite])
   have hsource_graph_edges_finite:
