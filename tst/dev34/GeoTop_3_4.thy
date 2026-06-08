@@ -1742,6 +1742,13 @@ proof -
       and hw\<^sub>L_ne_v0: "w\<^sub>L \<noteq> v 0"
       and hw\<^sub>L_ne_v1: "w\<^sub>L \<noteq> v (Suc 0)"
     using hsource_third_vertex_exists by (by100 blast)
+  obtain j\<^sub>L where hj\<^sub>L_idx: "j\<^sub>L \<in> {0..<p}"
+      and hj\<^sub>L_value: "v j\<^sub>L = w\<^sub>L"
+    using hsource_vertices hw\<^sub>L_vertex by (by100 blast)
+  have hj\<^sub>L_ne_v0: "v j\<^sub>L \<noteq> v 0"
+    using hj\<^sub>L_value hw\<^sub>L_ne_v0 by (by100 simp)
+  have hj\<^sub>L_ne_v1: "v j\<^sub>L \<noteq> v (Suc 0)"
+    using hj\<^sub>L_value hw\<^sub>L_ne_v1 by (by100 simp)
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
