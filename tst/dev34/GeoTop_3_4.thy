@@ -5007,9 +5007,96 @@ proof -
     apply (rule_tac x=L' in exI)
     apply (rule_tac x="geotop_complex_vertices F" in exI)
     apply (rule_tac x=c in exI)
-    using h\<sigma> hsubdiv h\<psi>_bij hcF hvertices hc_simplex
+  using h\<sigma> hsubdiv h\<psi>_bij hcF hvertices hc_simplex
         hboundary_target hcone_target
     by (by100 blast)
+qed
+
+lemma geotop_standard_boundary_self_fan_target_dev34:
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) F L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism F F \<psi>
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices F) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+proof -
+  obtain \<sigma> :: "(real^2) set" and F \<psi> where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    and hsub:
+      "geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    and hiso: "geotop_isomorphism F F \<psi>"
+    using geotop_standard_2simplex_boundary_self_isomorphism_model_dev34
+    by (by100 blast)
+  have hfan_ex:
+      "\<exists>(T :: (real^2) set set) L' B c.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices F) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    by (rule geotop_fig410_fan_target_from_boundary_subdivision_and_isomorphism_dev34
+        [OF h\<sigma> hsub hiso])
+  obtain T L' B c where hfan:
+      "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices F) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+    using hfan_ex by (elim exE) assumption
+  show ?thesis
+  proof (rule_tac x=T in exI, rule_tac x=\<sigma> in exI,
+      rule_tac x=F in exI, rule_tac x=L' in exI,
+      rule_tac x=B in exI, rule_tac x=c in exI,
+      rule_tac x=\<psi> in exI)
+    show "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} \<and>
+      geotop_simplex_dim \<sigma> 2 \<and>
+      geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2) \<and>
+      geotop_isomorphism F F \<psi> \<and>
+      geotop_is_subdivision L' T \<and>
+      bij_betw \<psi> (geotop_complex_vertices F) B \<and>
+      c \<notin> B \<and>
+      geotop_complex_vertices L' = insert c B \<and>
+      geotop_convex_hull {c} \<in> L' \<and>
+      (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F \<longleftrightarrow>
+          geotop_convex_hull (\<psi> ` W) \<in> L')) \<and>
+      (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F \<longleftrightarrow>
+          geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+      using h\<sigma> hsub hiso hfan by (by100 blast)
+  qed
 qed
 
 lemma geotop_fig410_cone_fan_from_boundary_subdivision_and_isomorphism_with_interior_dev34:
