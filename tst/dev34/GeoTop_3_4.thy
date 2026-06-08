@@ -553,6 +553,148 @@ proof -
               geotop_convex_hull W = closed_segment (v k) (v (Suc k)))"
     using hconvex_hull_nonedge_singleton_cases hconvex_hull_edge_listed_cases
     by (by100 blast)
+  have hlisted_edge_complex_vertex_endpoint_cases:
+      "\<And>x k. x \<in> ?V \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> x \<in> closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> x = v k \<or> x = v (Suc k)"
+  proof -
+    fix x k
+    assume hxV: "x \<in> ?V"
+    assume hk: "k \<in> {0..<p}"
+    assume hxseg: "x \<in> closed_segment (v k) (v (Suc k))"
+    have hxL: "{x} \<in> L"
+      by (rule hvertex_singletons_in_L[OF hxV])
+    have hsegL: "closed_segment (v k) (v (Suc k)) \<in> L"
+      using hlisted_edge_members[OF hk] by (by100 blast)
+    have hmeet: "{x} \<inter> closed_segment (v k) (v (Suc k)) \<noteq> {}"
+      using hxseg by (by100 blast)
+    have hface_pair:
+        "geotop_is_face ({x} \<inter> closed_segment (v k) (v (Suc k))) {x}
+        \<and> geotop_is_face ({x} \<inter> closed_segment (v k) (v (Suc k)))
+             (closed_segment (v k) (v (Suc k)))"
+      using geotop_is_complex_intersection[OF hL_complex] hxL hsegL hmeet
+      by (by100 blast)
+    have hface_single:
+        "geotop_is_face {x} (closed_segment (v k) (v (Suc k)))"
+      using hface_pair hxseg by (by100 simp)
+    have hface_cases:
+        "{x} = {v k}
+        \<or> {x} = {v (Suc k)}
+        \<or> {x} = closed_segment (v k) (v (Suc k))"
+      using geotop_segment_face_cases_dev34
+        [OF hlisted_edge_endpoints_distinct[OF hk] hface_single]
+      by (by100 blast)
+    show "x = v k \<or> x = v (Suc k)"
+    proof (rule disjE[OF hface_cases])
+      assume "{x} = {v k}"
+      thus ?thesis
+        by (by100 simp)
+    next
+      assume htail: "{x} = {v (Suc k)}
+        \<or> {x} = closed_segment (v k) (v (Suc k))"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume "{x} = {v (Suc k)}"
+        thus ?thesis
+          by (by100 simp)
+      next
+        assume hself: "{x} = closed_segment (v k) (v (Suc k))"
+        have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+          using hlisted_edge_members[OF hk] by (by100 blast)
+        have "geotop_is_edge {x}"
+          using hedge hself by (by100 simp)
+        thus ?thesis
+          using hsingleton_not_edge by (by100 blast)
+      qed
+    qed
+  qed
+  have hconvex_hull_listed_edge_vertex_subset:
+      "\<And>W k. W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> W \<subseteq> {v k, v (Suc k)}"
+  proof
+    fix W k x
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hk: "k \<in> {0..<p}"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> ?V"
+      using hWsub hxW hV_eq_complex_vertices by (by100 blast)
+    have hx_hull: "x \<in> geotop_convex_hull W"
+      using geotop_convex_hull_contains_V hxW by (by100 blast)
+    have hx_seg: "x \<in> closed_segment (v k) (v (Suc k))"
+      using hx_hull hWhull by (by100 simp)
+    show "x \<in> {v k, v (Suc k)}"
+      using hlisted_edge_complex_vertex_endpoint_cases[OF hxV hk hx_seg]
+      by (by100 blast)
+  qed
+  have hconvex_hull_nonempty_pair_if_listed_edge:
+      "\<And>W k. W \<noteq> {}
+        \<Longrightarrow> W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> W = {v k, v (Suc k)}"
+  proof -
+    fix W k
+    assume hW_ne: "W \<noteq> {}"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hk: "k \<in> {0..<p}"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    have hW_pair_sub: "W \<subseteq> {v k, v (Suc k)}"
+      by (rule hconvex_hull_listed_edge_vertex_subset[OF hWsub hk hWhull])
+    have hvk_in_W: "v k \<in> W"
+    proof (rule ccontr)
+      assume hvk_not: "v k \<notin> W"
+      have hW_sub_suc: "W \<subseteq> {v (Suc k)}"
+        using hW_pair_sub hvk_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {v (Suc k)}"
+        by (rule hull_mono[OF hW_sub_suc])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {v (Suc k)}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{v (Suc k)}"] by (by100 simp)
+      have hvk_seg: "v k \<in> closed_segment (v k) (v (Suc k))"
+        by (by100 simp)
+      have "v k \<in> geotop_convex_hull {v (Suc k)}"
+        using hgeo_sub hWhull hvk_seg by (by100 blast)
+      hence "v k = v (Suc k)"
+        using geotop_convex_hull_eq_HOL[of "{v (Suc k)}"] by (by100 simp)
+      thus False
+        using hlisted_edge_endpoints_distinct[OF hk] by (by100 blast)
+    qed
+    have hvsuc_in_W: "v (Suc k) \<in> W"
+    proof (rule ccontr)
+      assume hvsuc_not: "v (Suc k) \<notin> W"
+      have hW_sub_k: "W \<subseteq> {v k}"
+        using hW_pair_sub hvsuc_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {v k}"
+        by (rule hull_mono[OF hW_sub_k])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {v k}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{v k}"] by (by100 simp)
+      have hvsuc_seg: "v (Suc k) \<in> closed_segment (v k) (v (Suc k))"
+        by (by100 simp)
+      have "v (Suc k) \<in> geotop_convex_hull {v k}"
+        using hgeo_sub hWhull hvsuc_seg by (by100 blast)
+      hence "v (Suc k) = v k"
+        using geotop_convex_hull_eq_HOL[of "{v k}"] by (by100 simp)
+      thus False
+        using hlisted_edge_endpoints_distinct[OF hk] by (by100 blast)
+    qed
+    show "W = {v k, v (Suc k)}"
+      using hW_pair_sub hvk_in_W hvsuc_in_W by (by100 blast)
+  qed
+  have hcyclic_listing_convex_hull_in_L_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+    using hconvex_hull_member_cases hconvex_hull_nonempty_pair_if_listed_edge
+    by (by100 blast)
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
