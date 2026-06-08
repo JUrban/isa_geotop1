@@ -530,6 +530,25 @@ proof -
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
         \<exists>x\<in>?V. \<tau> = {x}"
     using hL_member_cases hE_edges by (by100 blast)
+  have hconvex_hull_nonedge_singleton_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> \<not> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>x\<in>?V. W = {x}"
+    using hL_nonedge_singleton_cases geotop_convex_hull_contains_V
+    by (by100 blast)
+  have hconvex_hull_edge_listed_cases:
+      "\<And>W. geotop_convex_hull W \<in> L
+        \<Longrightarrow> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>k\<in>{0..<p}.
+          geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    using hL_edge_listed_cases by (by100 blast)
+  have hconvex_hull_member_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}.
+              geotop_convex_hull W = closed_segment (v k) (v (Suc k)))"
+    using hconvex_hull_nonedge_singleton_cases hconvex_hull_edge_listed_cases
+    by (by100 blast)
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
