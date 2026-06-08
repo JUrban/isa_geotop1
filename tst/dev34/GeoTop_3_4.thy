@@ -8122,6 +8122,30 @@ proof -
     using htop_img hcomp by (by100 blast)
 qed
 
+lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hr: "0 < r"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p r \<inter> geotop_polyhedron K = ball p r \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  shows "\<exists>A. A = sphere p r \<inter> \<sigma>
+      \<and> geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)
+      \<and> \<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+  (**
+    Moise Lemma 3 crosscut form.  In the one-sided local model, take the full
+    small spherical crosscut \<open>A = sphere p r \<inter> \<sigma>\<close>.  The proof should use the
+    first radius-crossing argument: any carrier path from the inner cap to the
+    outer side first meets \<open>sphere p r\<close> while still in the local ball, hence by
+    the local equality it meets \<open>A\<close>. **)
+  sorry
+
 lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -8220,11 +8244,18 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology A)
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-    (**
-      Remaining Moise Lemma 3 geometry: in the half-neighborhood supplied by
-      the single incident 2-simplex, the radius-\<open>r\<close> semicircle centered at
-      \<open>p\<close> is an arc with endpoints on the edge and separates the domain. **)
-    sorry
+  proof -
+    obtain A where hA: "A = sphere p r \<inter> \<sigma>"
+      and hA_arc: "geotop_is_arc A
+          (subspace_topology UNIV geotop_euclidean_topology A)"
+      and hA_sep: "\<not> top1_connected_on (U - A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
+      using geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
+          [OF hedge hp h\<sigma>2 h\<sigma>face hr_pos hlocal_eq_r hballU_r hUsubM]
+      by (by100 blast)
+    show ?thesis
+      using hA hA_arc hA_sep by (by100 blast)
+  qed
   show ?thesis
     using hr_pos hrs hsemicircle_book by (by100 blast)
 qed
