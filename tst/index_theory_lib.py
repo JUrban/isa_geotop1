@@ -55,13 +55,23 @@ ADVICE_FILE_PATTERNS = [
     "PLAN*.md",
     "PLAN_zero_sorry-expert*.md",
     "*REPORT*.md",
-    "STATUS*.md",
+    "*STATUS*.md",
     "ANSWER*.md",
     "CLAUDE*.md",
+    "instructions.md",
+    "timing*.txt",
+    "slow_lines*.txt",
+]
+SESSION_LOG_FILE_PATTERNS = [
+    "session*.cast",
+    "session*.cast.gz",
 ]
 IGNORED_PATH_PARTS = {".dev34_fast_cache", ".index_cache", "__pycache__"}
 IGNORED_ADVICE_FILE_NAMES = {
+    "INDEX_THEORIES.txt",
+    "STMT_INDEX.txt",
     "THEOREMS_AND_DEFS.md",
+    "THEOREMS_AND_DEFS.txt",
 }
 
 
@@ -129,6 +139,21 @@ def iter_advice_files(base: Path) -> list[Path]:
         )
     return sorted(
         dict.fromkeys(advice_files),
+        key=lambda p: p.relative_to(base).as_posix(),
+    )
+
+
+def iter_session_log_files(base: Path) -> list[Path]:
+    session_log_files: list[Path] = []
+    for pattern in SESSION_LOG_FILE_PATTERNS:
+        session_log_files.extend(
+            path
+            for path in base.glob(pattern)
+            if path.is_file()
+            and not is_ignored_generated_path(base, path)
+        )
+    return sorted(
+        dict.fromkeys(session_log_files),
         key=lambda p: p.relative_to(base).as_posix(),
     )
 
@@ -374,7 +399,10 @@ def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> s
     advice_files = [
         path.relative_to(base).as_posix() for path in iter_advice_files(base)
     ]
-    for name in extra_files + session_files + advice_files + theories:
+    session_log_files = [
+        path.relative_to(base).as_posix() for path in iter_session_log_files(base)
+    ]
+    for name in extra_files + session_files + advice_files + session_log_files + theories:
         path = base / name
         h.update(name.encode("utf-8"))
         if not path.exists():
@@ -413,7 +441,12 @@ def main() -> int:
     parser.add_argument(
         "--advice-files",
         action="store_true",
-        help="print Markdown advice/report files included in the cache signature",
+        help="print advice/report/note files included in the cache signature",
+    )
+    parser.add_argument(
+        "--session-log-files",
+        action="store_true",
+        help="print bounded session transcript files included in the cache signature",
     )
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
@@ -441,6 +474,9 @@ def main() -> int:
     advice_files = [
         path.relative_to(base).as_posix() for path in iter_advice_files(base)
     ]
+    session_log_files = [
+        path.relative_to(base).as_posix() for path in iter_session_log_files(base)
+    ]
 
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
@@ -457,6 +493,8 @@ def main() -> int:
         sys.stdout.write("".join(f"{path}\n" for path in signature_files))
     if args.advice_files:
         sys.stdout.write("".join(f"{path}\n" for path in advice_files))
+    if args.session_log_files:
+        sys.stdout.write("".join(f"{path}\n" for path in session_log_files))
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Generate a searchable theorem statement index from active session theories and local imports.
-# Cache invalidation covers ROOT/ROOTS files plus the generated theory list.
+# Cache invalidation covers ROOT/ROOTS files, the generated theory list,
+# local advice/report notes, and bounded session transcript inputs.
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh [--force]
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -30,11 +31,12 @@ mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
 mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
 mapfile -t ADVICE_FILES < <(python3 index_theory_lib.py --advice-files)
+mapfile -t SESSION_LOG_FILES < <(python3 index_theory_lib.py --session-log-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#ROOTS[@]} ROOT files) -> $OUT"
+  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $OUT"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -44,7 +46,9 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
   printf '  %s\n' "${MISSING[@]}" >&2
 fi
 
-python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" << 'PYEND'
+python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" --session-logs "${SESSION_LOG_FILES[@]}" << 'PYEND'
+import gzip
+import json
 import re
 import sys
 from pathlib import Path
@@ -54,8 +58,21 @@ try:
     advice_marker = sys.argv.index("--advice")
 except ValueError:
     advice_marker = len(sys.argv)
+try:
+    session_logs_marker = sys.argv.index("--session-logs")
+except ValueError:
+    session_logs_marker = len(sys.argv)
 theories = [arg for arg in sys.argv[3:advice_marker] if arg != "--theories"]
-advice_files = sys.argv[advice_marker + 1:] if advice_marker < len(sys.argv) else []
+advice_files = (
+    sys.argv[advice_marker + 1:session_logs_marker]
+    if advice_marker < len(sys.argv)
+    else []
+)
+session_log_files = (
+    sys.argv[session_logs_marker + 1:]
+    if session_logs_marker < len(sys.argv)
+    else []
+)
 
 sym_map = {
     'forall': 'ALL ', 'exists': 'EX ', 'nexists': '~EX ',
@@ -173,6 +190,54 @@ for f in advice_files:
         pending.append(stripped)
     emit_advice(pending, start_line)
 
+
+ANSI_RE = re.compile(
+    r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1b\\)|[()][A-Za-z0-9]|[=>]|.)"
+)
+TRANSCRIPT_KEEP_RE = re.compile(
+    r"(Try this|No proof|sorry|Sledgehammer|by100|check_dev34_fast|"
+    r"geotop_|lemma |theorem |corollary |definition |Failed|Error|exception|"
+    r"timeout|timing|holes?)",
+    re.IGNORECASE,
+)
+
+
+def transcript_lines(path: Path):
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8", errors="replace") as handle:
+        for line_no, raw in enumerate(handle, 1):
+            try:
+                event = json.loads(raw)
+            except json.JSONDecodeError:
+                payload = raw
+            else:
+                if not (isinstance(event, list) and len(event) >= 3):
+                    continue
+                payload = str(event[2])
+            line = ANSI_RE.sub("", payload)
+            line = line.replace("\r", " ").replace("\n", " ")
+            line = re.sub(r"\s+", " ", line).strip()
+            if line:
+                yield line_no, line
+
+
+for f in session_log_files:
+    path = Path(f)
+    emitted = 0
+    for line_no, line in transcript_lines(path):
+        if not TRANSCRIPT_KEEP_RE.search(line):
+            continue
+        text = line
+        if len(text) > 700:
+            text = text[:697] + "..."
+        out_lines.append(f"{f}:{line_no} session transcript :: {text}\n")
+        emitted += 1
+        if emitted >= 200:
+            out_lines.append(
+                f"{f}:{line_no} session transcript :: truncated after 200 matched transcript snippets\n"
+            )
+            break
+
 content = "".join(out_lines)
 if not out_path.exists() or out_path.read_text(encoding="utf-8", errors="replace") != content:
     out_path.write_text(content, encoding="utf-8")
@@ -186,5 +251,6 @@ echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"
 echo "Tracked ${#SIGNATURE_FILES[@]} session/signature files"
 echo "Tracked ${#ADVICE_FILES[@]} advice files"
+echo "Tracked ${#SESSION_LOG_FILES[@]} bounded session logs"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"

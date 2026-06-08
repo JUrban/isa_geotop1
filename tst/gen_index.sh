@@ -1,6 +1,7 @@
 #!/bin/bash
 # Generate theorem/definition index from active session theories and local imports.
-# Cache invalidation covers ROOT/ROOTS files plus the generated theory list.
+# Cache invalidation covers ROOT/ROOTS files, the generated theory list,
+# local advice/report notes, and bounded session transcript inputs.
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh [--force]
 
@@ -30,11 +31,12 @@ mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
 mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
 mapfile -t ADVICE_FILES < <(python3 index_theory_lib.py --advice-files)
+mapfile -t SESSION_LOG_FILES < <(python3 index_theory_lib.py --session-log-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
+  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -138,5 +140,6 @@ echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"
 echo "Tracked ${#SIGNATURE_FILES[@]} session/signature files"
 echo "Tracked ${#ADVICE_FILES[@]} advice files"
+echo "Tracked ${#SESSION_LOG_FILES[@]} bounded session logs"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"
