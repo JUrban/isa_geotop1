@@ -15,7 +15,7 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34/GeoTop_3_4.thy:378
 dev34/GeoTop_3_4.thy:7627
 dev34/GeoTop_3_4.thy:8829
-dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9199
+dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9261
 ```
 
 `rg` over the current target directories found no `sledgehammer` or `try0`
@@ -59,6 +59,7 @@ lemma as a coherent finite-graph sprint rather than as unrelated holes.
 Recent commits show real narrowing of the finite-graph branch problem:
 
 ```text
+bcaecff2 Isolate graph split-side component bridge
 46e92106 Isolate branch local star bridge
 a68a08f5 Package selected edge sector contradiction
 ba5a28ca Add local sector bound contradiction
