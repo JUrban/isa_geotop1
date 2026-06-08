@@ -51,6 +51,20 @@ proof -
     using hdim by (by100 blast)
 qed
 
+lemma geotop_isomorphism_refl_id_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_isomorphism K K id"
+proof -
+  have hbij: "bij_betw id (geotop_complex_vertices K) (geotop_complex_vertices K)"
+    by (by100 simp)
+  have hcond: "\<forall>V. V \<subseteq> geotop_complex_vertices K \<longrightarrow>
+      (geotop_convex_hull V \<in> K \<longleftrightarrow> geotop_convex_hull (id ` V) \<in> K)"
+    by (by100 simp)
+  show ?thesis
+    unfolding geotop_isomorphism_def using hbij hcond by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
