@@ -2,6 +2,55 @@ theory GeoTop_3_4
   imports "GeoTop34CoreDirty.GeoTop_3_4_Core"
 begin
 
+lemma geotop_standard_2simplex_exists_dev34:
+  shows "\<exists>\<sigma> :: (real^2) set. geotop_simplex_dim \<sigma> 2"
+proof -
+  let ?V = "insert (0::real^2) Basis"
+  have hfin: "finite ?V"
+    by (by100 simp)
+  have hne: "?V \<noteq> {}"
+    by (by100 simp)
+  have h0: "(0::real^2) \<notin> Basis"
+    by (by100 simp)
+  have hdep_image:
+      "\<not> dependent ((\<lambda>x::real^2. - (0::real^2) + x) ` Basis)"
+    using independent_Basis by (by100 simp)
+  have hai: "\<not> affine_dependent ?V"
+    using affine_dependent_iff_dependent[OF h0] hdep_image by (by100 simp)
+  have hvertices: "geotop_simplex_vertices (geotop_convex_hull ?V) ?V"
+    by (rule geotop_AI_finite_ne_is_simplex_vertices[OF hfin hne hai])
+  have hcard_basis: "card (Basis :: (real^2) set) = 2"
+    by (by100 simp)
+  have hcard: "card ?V = 2 + 1"
+    using h0 hcard_basis by (by100 simp)
+  obtain m n where hfin': "finite ?V"
+    and hcard_n: "card ?V = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp: "geotop_general_position ?V m"
+    and hhull: "geotop_convex_hull ?V = geotop_convex_hull ?V"
+    using hvertices unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hn: "n = 2"
+    using hcard hcard_n by (by100 linarith)
+  have h2_le_m: "2 \<le> m"
+    using hn hn_le_m by (by100 simp)
+  have hdim: "geotop_simplex_dim (geotop_convex_hull ?V) 2"
+    unfolding geotop_simplex_dim_def
+  proof (intro exI conjI)
+    show "finite ?V"
+      by (rule hfin')
+    show "card ?V = 2 + 1"
+      by (rule hcard)
+    show "2 \<le> m"
+      by (rule h2_le_m)
+    show "geotop_general_position ?V m"
+      by (rule hgp)
+    show "geotop_convex_hull ?V = geotop_convex_hull ?V"
+      by (rule hhull)
+  qed
+  show ?thesis
+    using hdim by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
