@@ -1478,6 +1478,22 @@ proof -
     using htarget_seed_subdivision by (by100 blast)
   have hF\<^sub>0_complex: "geotop_is_complex F\<^sub>0"
     by (rule geotop_subdivision_source_is_complex_dev34[OF hF\<^sub>0_sub])
+  have hF\<^sub>0_poly_eq:
+      "geotop_polyhedron F\<^sub>0 = geotop_polyhedron ?B"
+    using hF\<^sub>0_sub unfolding geotop_is_subdivision_def by (by100 blast)
+  have hF\<^sub>0_vertices_poly:
+      "geotop_complex_vertices F\<^sub>0 \<subseteq> geotop_polyhedron F\<^sub>0"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices F\<^sub>0"
+    have hx_single: "{x} \<in> F\<^sub>0"
+      using geotop_complex_vertices_eq_0_simplexes[OF hF\<^sub>0_complex] hx by (by100 blast)
+    show "x \<in> geotop_polyhedron F\<^sub>0"
+      unfolding geotop_polyhedron_def using hx_single by (by100 blast)
+  qed
+  have hF\<^sub>0_vertices_boundary_poly:
+      "geotop_complex_vertices F\<^sub>0 \<subseteq> geotop_polyhedron ?B"
+    using hF\<^sub>0_vertices_poly hF\<^sub>0_poly_eq by (by100 simp)
   have hF\<^sub>0_vertices_finite:
       "finite (geotop_complex_vertices F\<^sub>0)"
     by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
