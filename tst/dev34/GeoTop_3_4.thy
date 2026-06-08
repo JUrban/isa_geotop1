@@ -356,6 +356,93 @@ proof -
     using heS hv_face_e by (by100 blast)
 qed
 
+lemma geotop_2simplex_proper_face_in_comb_boundary_dev34:
+  fixes \<sigma> \<rho> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hface: "geotop_is_face \<rho> \<sigma>"
+  assumes hne: "\<rho> \<noteq> \<sigma>"
+  shows "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and h\<rho>_eq: "\<rho> = geotop_convex_hull W"
+    and h\<rho>W: "geotop_simplex_vertices \<rho> W"
+    by (rule geotop_face_witness_simplex_vertices[OF hface])
+  obtain V2 m where hV2_fin: "finite V2"
+    and hV2_card: "card V2 = 2 + 1"
+    and h2_le_m: "2 \<le> m"
+    and hgp_V2: "geotop_general_position V2 m"
+    and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
+    unfolding geotop_simplex_vertices_def
+    using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
+  have hV_eq: "V = V2"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
+  have hW_sub_V2: "W \<subseteq> V2"
+    using hW_sub hV_eq by (by100 simp)
+  have hW_fin: "finite W"
+    by (rule finite_subset[OF hW_sub_V2 hV2_fin])
+  have hW_card_pos: "0 < card W"
+    using hW_fin hW_ne card_gt_0_iff by (by100 blast)
+  have hW_card_le3: "card W \<le> 3"
+    using card_mono[OF hV2_fin hW_sub_V2] hV2_card by (by100 simp)
+  have hW_card_ne3: "card W \<noteq> 3"
+  proof
+    assume hW_card3: "card W = 3"
+    have hW_eq_V2: "W = V2"
+      by (rule card_subset_eq[OF hV2_fin hW_sub_V2])
+        (use hW_card3 hV2_card in \<open>by100 simp\<close>)
+    have "\<rho> = \<sigma>"
+      using h\<rho>_eq h\<sigma>_eq_V2 hW_eq_V2 by (by100 simp)
+    show False
+      using hne \<open>\<rho> = \<sigma>\<close> by (by100 blast)
+  qed
+  have hW_card_cases: "card W = 1 \<or> card W = 2"
+    using hW_card_pos hW_card_le3 hW_card_ne3 by (by100 linarith)
+  show ?thesis
+  proof (rule disjE[OF hW_card_cases])
+    assume hW_card1: "card W = 1"
+    have h\<rho>dim0: "geotop_simplex_dim \<rho> 0"
+    proof -
+      obtain m' n' where hWfin': "finite W"
+        and hWcard': "card W = n' + 1"
+        and hn'm': "n' \<le> m'"
+        and hgpW': "geotop_general_position W m'"
+        and h\<rho>eq': "\<rho> = geotop_convex_hull W"
+        using h\<rho>W unfolding geotop_simplex_vertices_def by (by100 blast)
+      have "n' = 0"
+        using hW_card1 hWcard' by (by100 linarith)
+      show ?thesis
+        unfolding geotop_simplex_dim_def
+        using hWfin' hWcard' hn'm' hgpW' h\<rho>eq' \<open>n' = 0\<close> by (by100 blast)
+    qed
+    show ?thesis
+      by (rule geotop_2simplex_vertex_face_in_comb_boundary_dev34
+          [OF h\<sigma> h\<rho>dim0 hface])
+  next
+    assume hW_card2: "card W = 2"
+    have h\<rho>dim1: "geotop_simplex_dim \<rho> 1"
+    proof -
+      obtain m' n' where hWfin': "finite W"
+        and hWcard': "card W = n' + 1"
+        and hn'm': "n' \<le> m'"
+        and hgpW': "geotop_general_position W m'"
+        and h\<rho>eq': "\<rho> = geotop_convex_hull W"
+        using h\<rho>W unfolding geotop_simplex_vertices_def by (by100 blast)
+      have "n' = 1"
+        using hW_card2 hWcard' by (by100 linarith)
+      show ?thesis
+        unfolding geotop_simplex_dim_def
+        using hWfin' hWcard' hn'm' hgpW' h\<rho>eq' \<open>n' = 1\<close> by (by100 blast)
+    qed
+    show ?thesis
+      by (rule geotop_2simplex_edge_face_in_comb_boundary_dev34
+          [OF h\<sigma> h\<rho>dim1 hface])
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2189,93 +2276,6 @@ proof -
     using hpoly_sub hpoly_face by (by100 simp)
   show ?thesis
     using hc hpoly by (by100 simp)
-qed
-
-lemma geotop_2simplex_proper_face_in_comb_boundary_dev34:
-  fixes \<sigma> \<rho> :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  assumes hface: "geotop_is_face \<rho> \<sigma>"
-  assumes hne: "\<rho> \<noteq> \<sigma>"
-  shows "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
-proof -
-  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
-    and hW_ne: "W \<noteq> {}"
-    and hW_sub: "W \<subseteq> V"
-    and h\<rho>_eq: "\<rho> = geotop_convex_hull W"
-    and h\<rho>W: "geotop_simplex_vertices \<rho> W"
-    by (rule geotop_face_witness_simplex_vertices[OF hface])
-  obtain V2 m where hV2_fin: "finite V2"
-    and hV2_card: "card V2 = 2 + 1"
-    and h2_le_m: "2 \<le> m"
-    and hgp_V2: "geotop_general_position V2 m"
-    and h\<sigma>_eq_V2: "\<sigma> = geotop_convex_hull V2"
-    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
-  have h\<sigma>V2: "geotop_simplex_vertices \<sigma> V2"
-    unfolding geotop_simplex_vertices_def
-    using hV2_fin hV2_card h2_le_m hgp_V2 h\<sigma>_eq_V2 by (by100 blast)
-  have hV_eq: "V = V2"
-    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>V2])
-  have hW_sub_V2: "W \<subseteq> V2"
-    using hW_sub hV_eq by (by100 simp)
-  have hW_fin: "finite W"
-    by (rule finite_subset[OF hW_sub_V2 hV2_fin])
-  have hW_card_pos: "0 < card W"
-    using hW_fin hW_ne card_gt_0_iff by (by100 blast)
-  have hW_card_le3: "card W \<le> 3"
-    using card_mono[OF hV2_fin hW_sub_V2] hV2_card by (by100 simp)
-  have hW_card_ne3: "card W \<noteq> 3"
-  proof
-    assume hW_card3: "card W = 3"
-    have hW_eq_V2: "W = V2"
-      by (rule card_subset_eq[OF hV2_fin hW_sub_V2])
-        (use hW_card3 hV2_card in \<open>by100 simp\<close>)
-    have "\<rho> = \<sigma>"
-      using h\<rho>_eq h\<sigma>_eq_V2 hW_eq_V2 by (by100 simp)
-    show False
-      using hne \<open>\<rho> = \<sigma>\<close> by (by100 blast)
-  qed
-  have hW_card_cases: "card W = 1 \<or> card W = 2"
-    using hW_card_pos hW_card_le3 hW_card_ne3 by (by100 linarith)
-  show ?thesis
-  proof (rule disjE[OF hW_card_cases])
-    assume hW_card1: "card W = 1"
-    have h\<rho>dim0: "geotop_simplex_dim \<rho> 0"
-    proof -
-      obtain m' n' where hWfin': "finite W"
-        and hWcard': "card W = n' + 1"
-        and hn'm': "n' \<le> m'"
-        and hgpW': "geotop_general_position W m'"
-        and h\<rho>eq': "\<rho> = geotop_convex_hull W"
-        using h\<rho>W unfolding geotop_simplex_vertices_def by (by100 blast)
-      have "n' = 0"
-        using hW_card1 hWcard' by (by100 linarith)
-      show ?thesis
-        unfolding geotop_simplex_dim_def
-        using hWfin' hWcard' hn'm' hgpW' h\<rho>eq' \<open>n' = 0\<close> by (by100 blast)
-    qed
-    show ?thesis
-      by (rule geotop_2simplex_vertex_face_in_comb_boundary_dev34
-          [OF h\<sigma> h\<rho>dim0 hface])
-  next
-    assume hW_card2: "card W = 2"
-    have h\<rho>dim1: "geotop_simplex_dim \<rho> 1"
-    proof -
-      obtain m' n' where hWfin': "finite W"
-        and hWcard': "card W = n' + 1"
-        and hn'm': "n' \<le> m'"
-        and hgpW': "geotop_general_position W m'"
-        and h\<rho>eq': "\<rho> = geotop_convex_hull W"
-        using h\<rho>W unfolding geotop_simplex_vertices_def by (by100 blast)
-      have "n' = 1"
-        using hW_card2 hWcard' by (by100 linarith)
-      show ?thesis
-        unfolding geotop_simplex_dim_def
-        using hWfin' hWcard' hn'm' hgpW' h\<rho>eq' \<open>n' = 1\<close> by (by100 blast)
-    qed
-    show ?thesis
-      by (rule geotop_2simplex_edge_face_in_comb_boundary_dev34
-          [OF h\<sigma> h\<rho>dim1 hface])
-  qed
 qed
 
 lemma geotop_2simplex_rel_frontier_subset_comb_boundary_polyhedron_dev34:
