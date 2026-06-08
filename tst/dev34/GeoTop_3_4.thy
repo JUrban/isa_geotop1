@@ -2022,6 +2022,28 @@ proof -
       unfolding geotop_is_edge_def
       by (rule geotop_closed_segment_is_simplex[OF hc\<^sub>\<sigma>a\<^sub>\<sigma>])
   qed
+  have h\<sigma>_closed_edge_ab_is_edge:
+      "geotop_is_edge (closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>)"
+    using h\<sigma>_closed_boundary_edges_are_edges by (by100 blast)
+  have h\<sigma>_closed_edge_bc_is_edge:
+      "geotop_is_edge (closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>)"
+    using h\<sigma>_closed_boundary_edges_are_edges by (by100 blast)
+  have h\<sigma>_closed_edge_ca_is_edge:
+      "geotop_is_edge (closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>)"
+    using h\<sigma>_closed_boundary_edges_are_edges by (by100 blast)
+  have h\<sigma>_closed_boundary_edges_subset_B_edges:
+      "{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}
+        \<subseteq> {e\<in>?B. geotop_is_edge e}"
+    using h\<sigma>_closed_boundary_edges_in_B
+      h\<sigma>_closed_edge_ab_is_edge h\<sigma>_closed_edge_bc_is_edge h\<sigma>_closed_edge_ca_is_edge
+    by (by100 blast)
+  have h\<sigma>_closed_boundary_edges_finite:
+      "finite {closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    by (by100 simp)
   show ?thesis
     sorry
 qed
