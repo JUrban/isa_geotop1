@@ -1554,6 +1554,27 @@ proof -
     using h\<sigma> hsub by (by100 blast)
 qed
 
+lemma geotop_standard_2simplex_boundary_self_isomorphism_model_dev34:
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism F F \<psi>"
+proof -
+  obtain \<sigma> :: "(real^2) set" and F where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    and hsub:
+      "geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+    using geotop_standard_2simplex_boundary_self_subdivision_model_dev34
+    by (by100 blast)
+  have hF_complex: "geotop_is_complex F"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hsub])
+  have hiso: "geotop_isomorphism F F id"
+    by (rule geotop_isomorphism_refl_id_dev34[OF hF_complex])
+  show ?thesis
+    using h\<sigma> hsub hiso by (by100 blast)
+qed
+
 lemma geotop_boundary_subdivision_is_complex_dev34:
   fixes F :: "(real^2) set set"
   assumes hsub:
