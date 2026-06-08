@@ -1360,7 +1360,326 @@ lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
     2-simplex and define the vertex map by the two cyclic parametrizations.
     Injectivity of the index parametrization belongs to the upstream orbit
     package when the graph cycle is known to be listed without repeats. **)
-  sorry
+proof -
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  let ?VI = "((\<lambda>k. v k) ` {0..<p})"
+  have hsource_single:
+      "\<And>x. x \<in> ?VI \<Longrightarrow> geotop_convex_hull {x} \<in> L"
+  proof -
+    fix x
+    assume hx: "x \<in> ?VI"
+    have hxL: "{x} \<in> L"
+      using hx hL_listing_decomp by (by100 blast)
+    have hhull: "geotop_convex_hull {x} = {x}"
+      using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+    show "geotop_convex_hull {x} \<in> L"
+      using hxL hhull by (by100 simp)
+  qed
+  have hlisted_edge_members:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have "closed_segment (v k) (v (Suc k))
+        \<in> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+      using hk by (by100 blast)
+    hence "closed_segment (v k) (v (Suc k)) \<in> {e\<in>L. geotop_is_edge e}"
+      using hedge_segments by (by100 simp)
+    thus "closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      by (by100 blast)
+  qed
+  have hlisted_edge_endpoints_distinct:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<noteq> v (Suc k)"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    assume heq: "v k = v (Suc k)"
+    have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hlisted_edge_members[OF hk] by (by100 blast)
+    have hdim0: "geotop_simplex_dim {v k} 0"
+      by (rule geotop_singleton_is_simplex)
+    have hdim1: "geotop_simplex_dim {v k} 1"
+      using hedge heq unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  have hlisted_edge_simplex_vertices:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_simplex_vertices (closed_segment (v k) (v (Suc k)))
+          {v k, v (Suc k)}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hlisted_edge_endpoints_distinct])
+  have hlisted_edge_convex_hull_eq:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_convex_hull {v k, v (Suc k)}
+          = closed_segment (v k) (v (Suc k))"
+    using hlisted_edge_simplex_vertices
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsource_edge:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull {v k, v (Suc k)} \<in> L"
+    using hlisted_edge_convex_hull_eq hlisted_edge_members by (by100 simp)
+  let ?target_data = "\<lambda>F u \<psi>.
+        geotop_is_subdivision F ?B
+        \<and> u p = u 0
+        \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+  have htarget_boundary_cycle_data:
+      "\<exists>F u \<psi>. ?target_data F u \<psi>"
+    sorry
+  obtain F u \<psi> where htarget_data: "?target_data F u \<psi>"
+    using htarget_boundary_cycle_data by (elim exE)
+  have hF_sub: "geotop_is_subdivision F ?B"
+    by (rule conjunct1[OF htarget_data])
+  have htarget_data1:
+      "u p = u 0
+        \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data])
+  have hu_closed: "u p = u 0"
+    by (rule conjunct1[OF htarget_data1])
+  have htarget_data2:
+      "((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data1])
+  have htarget_vertices:
+      "((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F"
+    by (rule conjunct1[OF htarget_data2])
+  have htarget_data3:
+      "F =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+        \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data2])
+  have hF_decomp:
+      "F =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+        \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})"
+    by (rule conjunct1[OF htarget_data3])
+  have htarget_data4:
+      "((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data3])
+  have htarget_edges:
+      "((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        = {e\<in>F. geotop_is_edge e}"
+    by (rule conjunct1[OF htarget_data4])
+  have htarget_data5:
+      "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data4])
+  have h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+    by (rule conjunct1[OF htarget_data5])
+  have htarget_data6:
+      "(\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data5])
+  have h\<psi>idx: "\<forall>k\<in>{0..<p}. \<psi> (v k) = u k"
+    by (rule conjunct1[OF htarget_data6])
+  have htarget_data7:
+      "(\<forall>W. W \<subseteq> geotop_complex_vertices F
+          \<longrightarrow> geotop_convex_hull W \<in> F
+          \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+            \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+        \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data6])
+  have htarget_cases:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices F
+        \<longrightarrow> geotop_convex_hull W \<in> F
+        \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)}))"
+    by (rule conjunct1[OF htarget_data7])
+  have htarget_data8:
+      "(\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+        \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+    by (rule conjunct2[OF htarget_data7])
+  have htarget_single:
+      "\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F"
+    by (rule conjunct1[OF htarget_data8])
+  have htarget_edge:
+      "\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F"
+    by (rule conjunct2[OF htarget_data8])
+  have hLF_iso: "geotop_isomorphism L F \<psi>"
+  proof (rule geotop_cyclic_listing_isomorphism_from_matching_cases_dev34
+      [OF hvertices htarget_vertices hclosed_vertex hu_closed h\<psi>bij h\<psi>idx
+        hsource_cases hsource_single hsource_edge])
+    fix W
+    assume "W \<subseteq> geotop_complex_vertices F"
+      and "geotop_convex_hull W \<in> F"
+    thus "(\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+      \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})"
+      using htarget_cases by (by100 blast)
+  next
+    fix x
+    assume "x \<in> ((\<lambda>k. u k) ` {0..<p})"
+    thus "geotop_convex_hull {x} \<in> F"
+      using htarget_single by (by100 blast)
+  next
+    fix k
+    assume "k \<in> {0..<p}"
+    thus "geotop_convex_hull {u k, u (Suc k)} \<in> F"
+      using htarget_edge by (by100 blast)
+  qed
+  show ?thesis
+  proof
+    show "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
+    proof (rule exI[where x=F])
+      show "\<exists>\<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
+      proof (rule exI[where x=\<psi>])
+        show "geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
+        proof
+          show "geotop_is_subdivision F ?B"
+            by (rule hF_sub)
+          show "geotop_isomorphism L F \<psi>"
+            by (rule hLF_iso)
+        qed
+      qed
+    qed
+    show "\<exists>F u \<psi>.
+        geotop_is_subdivision F ?B
+        \<and> u p = u 0
+        \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> geotop_isomorphism L F \<psi>"
+    proof (rule exI[where x=F])
+      show "\<exists>u \<psi>.
+        geotop_is_subdivision F ?B
+        \<and> u p = u 0
+        \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> geotop_isomorphism L F \<psi>"
+      proof (rule exI[where x=u])
+        show "\<exists>\<psi>.
+          geotop_is_subdivision F ?B
+          \<and> u p = u 0
+          \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+          \<and> F =
+            ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+            \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+            = {e\<in>F. geotop_is_edge e}
+          \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+          \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+          \<and> geotop_isomorphism L F \<psi>"
+        proof (rule exI[where x=\<psi>])
+          show "geotop_is_subdivision F ?B
+            \<and> u p = u 0
+            \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+            \<and> F =
+              ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+              \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+            \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+              = {e\<in>F. geotop_is_edge e}
+            \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+            \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+            \<and> geotop_isomorphism L F \<psi>"
+          proof (intro conjI)
+            show "geotop_is_subdivision F ?B"
+              by (rule hF_sub)
+            show "u p = u 0"
+              by (rule hu_closed)
+            show "((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F"
+              by (rule htarget_vertices)
+            show "F =
+              ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+              \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})"
+              by (rule hF_decomp)
+            show "((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+              = {e \<in> F. geotop_is_edge e}"
+              by (rule htarget_edges)
+            show "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+              by (rule h\<psi>bij)
+            show "\<forall>k\<in>{0..<p}. \<psi> (v k) = u k"
+              by (rule h\<psi>idx)
+            show "geotop_isomorphism L F \<psi>"
+              by (rule hLF_iso)
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
 
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
