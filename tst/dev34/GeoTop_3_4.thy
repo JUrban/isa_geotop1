@@ -172,6 +172,44 @@ lemma geotop_successor_cycle_listing_vertex_edge_decomp_dev34:
     \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   using hvertex_image hedge_segments hL_decomp by (by100 simp)
 
+lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs:
+    "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_gt2: "2 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+  assumes hcard:
+    "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+  assumes hstate_edge_eq:
+    "\<And>k. snd ((geotop_oriented_edge_successor L ^^ k) s)
+      = closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+  assumes hL_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) `
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment
+        (fst ((geotop_oriented_edge_successor L ^^ k) s))
+        (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))) ` {0..<p})"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Moise Figure 4.10 standard-boundary realization package.  Use the indexed
+    cyclic successor listing to subdivide the frontier of a standard 2-simplex
+    with matching cyclic vertices and edges, then map the listed graph vertices
+    to the corresponding boundary subdivision vertices. **)
+  sorry
+
 lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -225,7 +263,9 @@ proof -
     by (rule geotop_successor_cycle_listing_vertex_edge_decomp_dev34
         [OF hvertex_image hedge_segments hL_decomp])
   show ?thesis
-    sorry
+    by (rule geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34
+        [OF hL_linear hL_finite hdegree_two hs hp_gt2 hp_closed hinj hcard
+            hstate_edge_eq hL_listing_decomp])
 qed
 
 lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34:
