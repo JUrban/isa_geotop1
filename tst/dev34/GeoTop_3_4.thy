@@ -358,6 +358,9 @@ lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
     "L =
       ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
       \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hedge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
   shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
       geotop_simplex_dim \<sigma> 2
       \<and> geotop_is_subdivision F
@@ -439,6 +442,12 @@ proof -
       qed
     qed
   qed
+  have hE_eq_edges: "?E = {e\<in>L. geotop_is_edge e}"
+    by (rule hedge_segments)
+  have hE_subset_L: "?E \<subseteq> L"
+    using hE_eq_edges by (by100 blast)
+  have hE_edges: "\<And>e. e \<in> ?E \<Longrightarrow> geotop_is_edge e"
+    using hE_eq_edges by (by100 blast)
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
@@ -474,6 +483,9 @@ lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
       = closed_segment
           (fst ((geotop_oriented_edge_successor L ^^ k) s))
           (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+  assumes hedge_image:
+    "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
   assumes hL_listing_decomp:
     "L =
       ((\<lambda>x. {x}) `
@@ -491,8 +503,18 @@ lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
     cyclic successor listing to subdivide the frontier of a standard 2-simplex
     with matching cyclic vertices and edges, then map the listed graph vertices
     to the corresponding boundary subdivision vertices. **)
-  by (rule geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34
-      [OF hL_linear hL_finite hdegree_two hp_gt2 hL_listing_decomp])
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  have hedge_segments:
+      "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p})
+        = {e\<in>L. geotop_is_edge e}"
+    by (rule geotop_successor_cycle_state_edge_image_eq_closed_segments_dev34
+        [OF hedge_image hstate_edge_eq])
+  show ?thesis
+    by (rule geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34
+        [OF hL_linear hL_finite hdegree_two hp_gt2 hL_listing_decomp
+          hedge_segments])
+qed
 
 lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
   fixes L :: "(real^2) set set"
@@ -549,7 +571,7 @@ proof -
   show ?thesis
     by (rule geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34
         [OF hL_linear hL_finite hdegree_two hs hp_gt2 hp_closed hinj hcard
-            hstate_edge_eq hL_listing_decomp])
+            hstate_edge_eq hedge_image hL_listing_decomp])
 qed
 
 lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34:
