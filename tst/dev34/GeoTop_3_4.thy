@@ -6022,6 +6022,55 @@ proof -
     using hconn hend by (by100 blast)
 qed
 
+lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
+  fixes L :: "(real^2) set set"
+  fixes \<gamma> :: "real \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hvertices_finite: "finite (geotop_complex_vertices L)"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  assumes h\<gamma>_arc: "arc \<gamma>"
+  assumes h\<gamma>_img: "path_image \<gamma> = geotop_polyhedron L"
+  assumes h\<gamma>_start: "pathstart \<gamma> = w"
+  assumes hfirst_edge_path_image: "closed_segment w q \<subseteq> path_image \<gamma>"
+  assumes h\<gamma>_endpoints:
+    "geotop_arc_endpoints (geotop_polyhedron L) {w, pathfinish \<gamma>}"
+  assumes hfinishL: "{pathfinish \<gamma>} \<in> L"
+  assumes hfinish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>)"
+  assumes hfirst_edge_exhausts_if_finish:
+    "q = pathfinish \<gamma> \<Longrightarrow> geotop_polyhedron L = e"
+  assumes hq_not_endpoint_if_not_finish:
+    "q \<noteq> pathfinish \<gamma> \<Longrightarrow> \<not> geotop_graph_endpoint L q"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Book construction isolated from the endpoint hygiene above: the oriented
+    finite broken-line chain starting at \<open>w\<close> and entering the first edge
+    \<open>closed_segment w q\<close> is placed on a subdivided boundary arc of a
+    2-simplex, and the adjacent boundary vertex is used as the fan vertex. **)
+  sorry
+
 lemma geotop_endpoint_first_neighbor_chain_boundary_arc_fan_target_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -6204,7 +6253,12 @@ proof -
       using hq_card_one hq_card_ge2 by (by100 simp)
   qed
   show ?thesis
-    sorry
+    by (rule geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
+        [OF hL_linear hL_finite hbroken hconn hvertices_finite hendpoint
+          heL he_edge hw_e hq_ne he_seg hqL h\<gamma>w_arc h\<gamma>w_img
+          h\<gamma>w_start hfirst_edge_path_image h\<gamma>w_endpoints h\<gamma>w_finishL
+          h\<gamma>w_finish_endpoint hfirst_edge_exhausts_if_finish
+          hq_not_endpoint_if_not_finish])
 qed
 
 lemma geotop_endpoint_degree_one_chain_boundary_arc_fan_target_dev34:
