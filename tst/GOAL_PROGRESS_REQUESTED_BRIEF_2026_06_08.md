@@ -7,9 +7,9 @@ The zero-sorry goal is not complete. A fresh local run of
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106:    sorry
-dev34/GeoTop_3_4.thy:700:    sorry
-dev34/GeoTop_3_4.thy:7952:    sorry
-dev34/GeoTop_3_4.thy:9154:  sorry
+dev34/GeoTop_3_4.thy:749:    sorry
+dev34/GeoTop_3_4.thy:8001:    sorry
+dev34/GeoTop_3_4.thy:9203:  sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047:    sorry

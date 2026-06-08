@@ -7,9 +7,9 @@ The zero-sorry goal is not complete. A fresh local run of
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106:    sorry
-dev34/GeoTop_3_4.thy:495:    sorry
-dev34/GeoTop_3_4.thy:7747:    sorry
-dev34/GeoTop_3_4.thy:8949:  sorry
+dev34/GeoTop_3_4.thy:749:    sorry
+dev34/GeoTop_3_4.thy:8001:    sorry
+dev34/GeoTop_3_4.thy:9203:  sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047:    sorry
@@ -66,8 +66,8 @@ wrapper.
 
 ## Current Verification Notes
 
-`./check_dev34_fast.sh focus-status dev34-cycle-realization graph-branch-local
-dev34-fan` reports hot caches for the cycle realization and graph-branch local
+`./check_dev34_fast.sh focus-status graph-branch-local dev34-cycle-realization
+dev34-fan` reports hot caches for the graph-branch local and cycle realization
 targets. The `dev34-fan` prefix and slice caches are stale or missing, so it
 should be warmed only when work moves to the endpoint fan package.
 
