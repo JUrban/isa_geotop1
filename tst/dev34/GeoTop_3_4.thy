@@ -124,6 +124,47 @@ proof (rule ccontr)
     using hedges_ne hedges_eq by (by100 blast)
 qed
 
+lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hs:
+    "s \<in> {(v, d). {v} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> v \<in> d}"
+  assumes hp_gt2: "2 < p"
+  assumes hp_closed: "(geotop_oriented_edge_successor L ^^ p) s = s"
+  assumes hinj: "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) {0..<p}"
+  assumes hcard:
+    "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s) ` {0..<p}) = p"
+  assumes hvertex_image:
+    "((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})
+      = geotop_complex_vertices L"
+  assumes hedge_image:
+    "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  assumes hL_decomp:
+    "L = ((\<lambda>v. {v}) ` geotop_complex_vertices L) \<union>
+      {e\<in>L. geotop_is_edge e}"
+  assumes hstate_edge_eq:
+    "\<And>k. snd ((geotop_oriented_edge_successor L ^^ k) s)
+      = closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Moise Figure 4.10, standard boundary model package.  Starting only from
+    the cyclic successor listing of the original finite graph, subdivide the
+    frontier of one standard 2-simplex into a cyclic chain with the same
+    number of vertices and edges, then map the listed graph vertices to the
+    listed boundary vertices to obtain the simplicial isomorphism. **)
+  sorry
+
 lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -449,7 +490,10 @@ proof -
         = {e\<in>L. geotop_is_edge e}"
     using hstate_edge_image_eq_E hE_eq_edges by (by100 simp)
   show ?thesis
-    sorry
+    by (rule geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34
+        [OF hL_linear hL_finite hdegree_two hs hp_gt2 hp_closed hinj hcard
+          hstate_vertex_image_eq_vertices hstate_edge_image_eq_edges
+          hL_vertex_edge_decomp hstate_edge_eq])
 qed
 
 lemma geotop_successor_cycle_realizes_boundary_subdivision_model_dev34:
