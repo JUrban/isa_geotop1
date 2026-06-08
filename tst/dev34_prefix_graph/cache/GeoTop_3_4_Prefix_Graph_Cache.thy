@@ -6523,9 +6523,41 @@ proof -
         \<and> y \<in> N"
   proof -
     show ?thesis
-      using hcanonical_connected_pair_cases hx\<^sub>1_edge_sphere hx\<^sub>2_edge_sphere
-        hx\<^sub>3_edge_sphere he\<^sub>12 he\<^sub>13 he\<^sub>23
-      by (by100 blast)
+      using hcanonical_connected_pair_cases
+    proof (elim disjE exE conjE)
+      fix N
+      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+        and hN_conn: "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+        and hx\<^sub>1N: "x\<^sub>1 \<in> N"
+        and hx\<^sub>2N: "x\<^sub>2 \<in> N"
+      show ?thesis
+        using hx\<^sub>1_edge_sphere hx\<^sub>2_edge_sphere he\<^sub>12 hN_sub hN_conn
+          hx\<^sub>1N hx\<^sub>2N
+        by (by100 blast)
+    next
+      fix N
+      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+        and hN_conn: "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+        and hx\<^sub>1N: "x\<^sub>1 \<in> N"
+        and hx\<^sub>3N: "x\<^sub>3 \<in> N"
+      show ?thesis
+        using hx\<^sub>1_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>13 hN_sub hN_conn
+          hx\<^sub>1N hx\<^sub>3N
+        by (by100 blast)
+    next
+      fix N
+      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+        and hN_conn: "top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)"
+        and hx\<^sub>2N: "x\<^sub>2 \<in> N"
+        and hx\<^sub>3N: "x\<^sub>3 \<in> N"
+      show ?thesis
+        using hx\<^sub>2_edge_sphere hx\<^sub>3_edge_sphere he\<^sub>23 hN_sub hN_conn
+          hx\<^sub>2N hx\<^sub>3N
+        by (by100 blast)
+    qed
   qed
   have hconnected_disjoint_incident_germ_witness:
       "\<exists>S T x y N. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
@@ -6540,9 +6572,44 @@ proof -
           (subspace_topology UNIV geotop_euclidean_topology N)
         \<and> x \<in> N
         \<and> y \<in> N"
-    using hconnected_distinct_incident_germ_witness he\<^sub>1E he\<^sub>2E he\<^sub>3E
-      hincident_selected_punctured_disj
-    by (by100 blast)
+  proof -
+    obtain S T x y N where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hxS: "x \<in> (S - {w}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w}) \<inter> sphere w r"
+      and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+      and hN_conn: "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+      and hxN: "x \<in> N"
+      and hyN: "y \<in> N"
+      using hconnected_distinct_incident_germ_witness by (elim exE conjE)
+    have hS_E: "S \<in> E"
+      using hS he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      by (rule hincident_selected_punctured_disj[OF hS_E hT hST])
+    have hxy: "x \<noteq> y"
+      using hST_disj hxS hyT by (by100 blast)
+    show ?thesis
+      apply (rule exI[where x=S])
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=x])
+      apply (rule exI[where x=y])
+      apply (rule exI[where x=N])
+      apply (intro conjI)
+      apply (rule hS)
+      apply (rule hT)
+      apply (rule hST)
+      apply (rule hST_disj)
+      apply (rule hxS)
+      apply (rule hyT)
+      apply (rule hxy)
+      apply (rule hN_sub)
+      apply (rule hN_conn)
+      apply (rule hxN)
+      apply (rule hyN)
+      done
+  qed
   have harc_side_disjoint_sphere_germ_witness:
       "\<exists>S T C x y. C \<in> {A\<^sub>1, A\<^sub>2}
         \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
@@ -6556,9 +6623,99 @@ proof -
         \<and> y \<in> C - {w}
         \<and> top1_connected_on (C - {w})
           (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
-    using htwo_selected_sphere_germs_connected_in_arc_side he\<^sub>1E he\<^sub>2E he\<^sub>3E
-      hincident_selected_punctured_disj
-    by (by100 blast)
+  proof -
+    obtain S T C x y where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hxS: "x \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hxC: "x \<in> C - {w}"
+      and hyC: "y \<in> C - {w}"
+      and hC_conn: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      using htwo_selected_sphere_germs_connected_in_arc_side by (elim exE conjE)
+    have hS_E: "S \<in> E"
+      using hS he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      by (rule hincident_selected_punctured_disj[OF hS_E hT hST])
+    have hxy: "x \<noteq> y"
+      using hST_disj hxS hyT by (by100 blast)
+    show ?thesis
+      apply (rule exI[where x=S])
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=C])
+      apply (rule exI[where x=x])
+      apply (rule exI[where x=y])
+      apply (intro conjI)
+      apply (rule hC)
+      apply (rule hS)
+      apply (rule hT)
+      apply (rule hST)
+      apply (rule hST_disj)
+      apply (rule hxS)
+      apply (rule hyT)
+      apply (rule hxy)
+      apply (rule hxC)
+      apply (rule hyC)
+      apply (rule hC_conn)
+      done
+  qed
+  have hcanonical_arc_side_disjoint_sphere_germ_witness:
+      "\<exists>S T C a b. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> a \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> b \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> a \<noteq> b
+        \<and> a \<in> C - {w}
+        \<and> b \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+  proof -
+    obtain S T C a b where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      and haS: "a \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hbT: "b \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hab: "a \<noteq> b"
+      and haC: "a \<in> C - {w}"
+      and hbC: "b \<in> C - {w}"
+      and hC_conn: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      using harc_side_disjoint_sphere_germ_witness by (elim exE conjE)
+    have ha_can: "a \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hS haS])
+    have hb_can: "b \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      by (rule hselected_sphere_germ_point_canonical[OF hT hbT])
+    show ?thesis
+      apply (rule exI[where x=S])
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=C])
+      apply (rule exI[where x=a])
+      apply (rule exI[where x=b])
+      apply (intro conjI)
+      apply (rule hC)
+      apply (rule hS)
+      apply (rule hT)
+      apply (rule hST)
+      apply (rule hST_disj)
+      apply (rule haS)
+      apply (rule hbT)
+      apply (rule ha_can)
+      apply (rule hb_can)
+      apply (rule hab)
+      apply (rule haC)
+      apply (rule hbC)
+      apply (rule hC_conn)
+      done
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
