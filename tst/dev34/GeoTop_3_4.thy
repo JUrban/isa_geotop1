@@ -157,6 +157,21 @@ proof -
     using himage hedge_image by (by100 simp)
 qed
 
+lemma geotop_successor_cycle_listing_vertex_edge_decomp_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hvertex_image:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes hedge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  assumes hL_decomp:
+    "L = ((\<lambda>v. {v}) ` geotop_complex_vertices L) \<union>
+      {e\<in>L. geotop_is_edge e}"
+  shows "L =
+    ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+    \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  using hvertex_image hedge_segments hL_decomp by (by100 simp)
+
 lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -203,6 +218,12 @@ proof -
         = {e\<in>L. geotop_is_edge e}"
     by (rule geotop_successor_cycle_state_edge_image_eq_closed_segments_dev34
         [OF hedge_image hstate_edge_eq])
+  have hL_listing_decomp:
+      "L =
+        ((\<lambda>x. {x}) ` (?v ` {0..<p}))
+        \<union> ((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p})"
+    by (rule geotop_successor_cycle_listing_vertex_edge_decomp_dev34
+        [OF hvertex_image hedge_segments hL_decomp])
   show ?thesis
     sorry
 qed
