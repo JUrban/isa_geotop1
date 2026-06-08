@@ -1527,15 +1527,27 @@ proof -
   proof -
     have hL_decomp: "L = ((\<lambda>x. {x}) ` ?V) \<union> ?E"
       by (rule hsource_listing_decomp)
+    have hcard_union_raw:
+        "card (((\<lambda>x. {x}) ` ?V) \<union> ?E) =
+          card ((\<lambda>x. {x}) ` ?V) + card ?E"
+      by (rule card_Un_disjoint[OF hsource_singleton_image_finite
+        hsource_listed_edges_finite hsource_vertex_edge_parts_disjoint])
     have hcard_union:
         "card L = card ((\<lambda>x. {x}) ` ?V) + card ?E"
-      using hL_decomp hsource_singleton_image_finite hsource_listed_edges_finite
-        hsource_vertex_edge_parts_disjoint by (by100 simp)
+      using hL_decomp hcard_union_raw by (by100 simp)
     show ?thesis
       using hcard_union hsource_singleton_image_card hsource_edges_eq by (by100 simp)
   qed
   have hsource_listed_edges_nonempty: "?E \<noteq> {}"
-    using hp_pos by (by100 blast)
+  proof
+    assume hempty: "?E = {}"
+    have h0: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have "closed_segment (v 0) (v (Suc 0)) \<in> ?E"
+      by (rule imageI[OF h0])
+    thus False
+      using hempty by (by100 simp)
+  qed
   have hsource_graph_edges_nonempty:
       "{e\<in>L. geotop_is_edge e} \<noteq> {}"
     using hsource_edges_eq hsource_listed_edges_nonempty by (by100 simp)
@@ -1728,8 +1740,13 @@ proof -
       using hvertices by (by100 simp)
     have hedge: "?E = {e\<in>L. geotop_is_edge e}"
       by (rule hsource_edges_eq)
+    have hrewrite:
+        "((\<lambda>x. {x}) ` ?V) \<union> ?E =
+          ((\<lambda>x. {x}) ` geotop_complex_vertices L)
+          \<union> {e\<in>L. geotop_is_edge e}"
+      by (simp only: hsingle hedge)
     show ?thesis
-      using hL hsingle hedge by (by100 simp)
+      by (simp only: hL hrewrite)
   qed
   have hsource_member_cases:
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow>
@@ -2206,9 +2223,15 @@ proof -
         hedge_segments hvertices hclosed_vertex]
     by (by100 blast)
   show ?thesis
-    using htarget h\<psi>bij h\<psi>idx
+    apply (rule exI[where x=F])
+    apply (rule exI[where x=u])
+    apply (rule exI[where x=\<psi>])
+    apply (insert htarget h\<psi>bij h\<psi>idx)
     unfolding geotop_standard_boundary_cycle_listing_data_dev34_def
-    by (by100 blast)
+    apply (elim conjE)
+    apply (intro conjI)
+             apply assumption+
+    done
 qed
 
 lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
