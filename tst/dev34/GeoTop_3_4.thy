@@ -1711,6 +1711,81 @@ proof -
       "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> x \<in> geotop_complex_vertices F\<^sub>0"
     using geotop_complex_vertices_eq_0_simplexes[OF hF\<^sub>0_complex]
       h\<sigma>_vertex_singletons_in_F\<^sub>0 by (by100 blast)
+  obtain a\<^sub>\<sigma> b\<^sub>\<sigma> c\<^sub>\<sigma> where hV\<^sub>\<sigma>_abc:
+      "V\<^sub>\<sigma> = {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+      and ha\<^sub>\<sigma>b\<^sub>\<sigma>: "a\<^sub>\<sigma> \<noteq> b\<^sub>\<sigma>"
+      and hb\<^sub>\<sigma>c\<^sub>\<sigma>: "b\<^sub>\<sigma> \<noteq> c\<^sub>\<sigma>"
+      and ha\<^sub>\<sigma>c\<^sub>\<sigma>: "a\<^sub>\<sigma> \<noteq> c\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_card unfolding card_3_iff by (by100 simp)
+  have ha\<^sub>\<sigma>V: "a\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_abc by (by100 simp)
+  have hb\<^sub>\<sigma>V: "b\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_abc by (by100 simp)
+  have hc\<^sub>\<sigma>V: "c\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
+    using hV\<^sub>\<sigma>_abc by (by100 simp)
+  have h\<sigma>_named_vertices_in_F\<^sub>0_vertices:
+      "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices F\<^sub>0"
+    using h\<sigma>_vertices_in_F\<^sub>0_vertices hV\<^sub>\<sigma>_abc by (by100 blast)
+  have h\<sigma>_pair_face_in_B:
+      "\<And>x y z. V\<^sub>\<sigma> = {x, y, z}
+        \<Longrightarrow> x \<noteq> y
+        \<Longrightarrow> x \<noteq> z
+        \<Longrightarrow> y \<noteq> z
+        \<Longrightarrow> geotop_convex_hull {x, y} \<in> ?B"
+  proof -
+    fix x y z
+    assume hVxyz: "V\<^sub>\<sigma> = {x, y, z}"
+    assume hxy: "x \<noteq> y"
+    assume hxz: "x \<noteq> z"
+    assume hyz: "y \<noteq> z"
+    have hpair_ne: "{x, y} \<noteq> {}"
+      by (by100 simp)
+    have hpair_sub: "{x, y} \<subseteq> V\<^sub>\<sigma>"
+      using hVxyz by (by100 blast)
+    have hface: "geotop_is_face (geotop_convex_hull {x, y}) \<sigma>"
+      by (rule geotop_is_face_of_subset[OF h\<sigma>V\<^sub>\<sigma> hpair_ne hpair_sub])
+    have hzV: "z \<in> V\<^sub>\<sigma>"
+      using hVxyz by (by100 simp)
+    have hpair_sub_without_z: "{x, y} \<subseteq> V\<^sub>\<sigma> - {z}"
+      using hVxyz hxz hyz by (by100 blast)
+    have hz_not_pair_hull: "z \<notin> geotop_convex_hull {x, y}"
+      by (rule geotop_simplex_vertex_notin_hull_of_other_vertices
+          [OF h\<sigma>V\<^sub>\<sigma> hzV hpair_sub_without_z])
+    have hproper: "geotop_convex_hull {x, y} \<noteq> \<sigma>"
+    proof
+      assume heq: "geotop_convex_hull {x, y} = \<sigma>"
+      have h\<sigma>_hull: "\<sigma> = geotop_convex_hull V\<^sub>\<sigma>"
+        using h\<sigma>V\<^sub>\<sigma> unfolding geotop_simplex_vertices_def by (by100 blast)
+      have "z \<in> convex hull V\<^sub>\<sigma>"
+        using hzV hull_inc by (by100 blast)
+      hence "z \<in> geotop_convex_hull V\<^sub>\<sigma>"
+        using geotop_convex_hull_eq_HOL[of V\<^sub>\<sigma>] by (by100 simp)
+      hence "z \<in> geotop_convex_hull {x, y}"
+        using h\<sigma>_hull heq by (by100 simp)
+      thus False
+        using hz_not_pair_hull by (by100 blast)
+    qed
+    show "geotop_convex_hull {x, y} \<in> ?B"
+      by (rule geotop_2simplex_proper_face_in_comb_boundary_dev34
+          [OF h\<sigma> hface hproper])
+  qed
+  have h\<sigma>_edge_ab_in_B:
+      "geotop_convex_hull {a\<^sub>\<sigma>, b\<^sub>\<sigma>} \<in> ?B"
+    by (rule h\<sigma>_pair_face_in_B[OF hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>b\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma>])
+  have h\<sigma>_edge_bc_in_B:
+      "geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<in> ?B"
+    by (rule h\<sigma>_pair_face_in_B)
+      (use hV\<^sub>\<sigma>_abc hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>b\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> in \<open>by (by100 simp_all)\<close>)
+  have h\<sigma>_edge_ca_in_B:
+      "geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>} \<in> ?B"
+    by (rule h\<sigma>_pair_face_in_B)
+      (use hV\<^sub>\<sigma>_abc ha\<^sub>\<sigma>c\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>b\<^sub>\<sigma> in \<open>by (by100 simp_all)\<close>)
+  have h\<sigma>_boundary_edges_in_B:
+      "{geotop_convex_hull {a\<^sub>\<sigma>, b\<^sub>\<sigma>},
+        geotop_convex_hull {b\<^sub>\<sigma>, c\<^sub>\<sigma>},
+        geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>}} \<subseteq> ?B"
+    using h\<sigma>_edge_ab_in_B h\<sigma>_edge_bc_in_B h\<sigma>_edge_ca_in_B
+    by (by100 blast)
   show ?thesis
     sorry
 qed
