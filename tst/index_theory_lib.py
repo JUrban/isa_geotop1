@@ -54,6 +54,7 @@ GENERATED_SESSION_FILE_NAMES = {"INDEX_THEORIES.txt"}
 ADVICE_FILE_PATTERNS = [
     "PLAN*.md",
     "PLAN_zero_sorry-expert*.md",
+    "*PROGRESS*.md",
     "*REPORT*.md",
     "*STATUS*.md",
     "ANSWER*.md",
