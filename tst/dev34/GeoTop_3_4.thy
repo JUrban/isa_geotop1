@@ -6351,6 +6351,256 @@ next
   qed
 qed
 
+lemma geotop_chain_edge_image_cons_dev34:
+  fixes vs :: "(real^2) list"
+  assumes hlen: "2 \<le> length vs"
+  shows "((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+      ` {0..<length (w # vs) - 1})
+    = insert (closed_segment w (vs ! 0))
+        ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+proof (rule equalityI)
+  show "((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+      ` {0..<length (w # vs) - 1})
+    \<subseteq> insert (closed_segment w (vs ! 0))
+        ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+  proof
+    fix a
+    assume ha: "a \<in> ((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+      ` {0..<length (w # vs) - 1})"
+    obtain i where hi: "i \<in> {0..<length (w # vs) - 1}"
+      and ha_eq: "a = closed_segment ((w # vs) ! i) ((w # vs) ! Suc i)"
+      using ha by (by100 blast)
+    have hi_lt: "i < length vs"
+      using hi by (by100 simp)
+    show "a \<in> insert (closed_segment w (vs ! 0))
+        ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    proof (cases i)
+      case 0
+      thus ?thesis
+        using ha_eq by (by100 simp)
+    next
+      case (Suc j)
+      have hj_lt: "j < length vs - 1"
+        using Suc hi_lt by (by100 linarith)
+      have "a = closed_segment (vs ! j) (vs ! Suc j)"
+        using ha_eq Suc by (by100 simp)
+      moreover have "j \<in> {0..<length vs - 1}"
+        using hj_lt by (by100 simp)
+      ultimately show ?thesis
+        by (by100 blast)
+    qed
+  qed
+next
+  show "insert (closed_segment w (vs ! 0))
+      ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+        ` {0..<length vs - 1})
+    \<subseteq> ((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+      ` {0..<length (w # vs) - 1})"
+  proof
+    fix a
+    assume ha: "a \<in> insert (closed_segment w (vs ! 0))
+      ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+        ` {0..<length vs - 1})"
+    show "a \<in> ((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+      ` {0..<length (w # vs) - 1})"
+    proof (rule insertE[OF ha])
+      assume ha_first: "a = closed_segment w (vs ! 0)"
+      have hvs_nonempty: "vs \<noteq> []"
+      proof
+        assume hnil: "vs = []"
+        have "length vs = 0"
+          using hnil by (by100 simp)
+        thus False
+          using hlen by (by100 linarith)
+      qed
+      have "0 \<in> {0..<length (w # vs) - 1}"
+        using hvs_nonempty by (by100 simp)
+      show ?thesis
+      proof (rule image_eqI[where x = 0])
+        show "a = closed_segment ((w # vs) ! 0) ((w # vs) ! Suc 0)"
+          using ha_first by (by100 simp)
+        show "0 \<in> {0..<length (w # vs) - 1}"
+          by (rule \<open>0 \<in> {0..<length (w # vs) - 1}\<close>)
+      qed
+    next
+      assume ha_rest: "a \<in> ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+        ` {0..<length vs - 1})"
+      obtain j where hj: "j \<in> {0..<length vs - 1}"
+        and ha_eq: "a = closed_segment (vs ! j) (vs ! Suc j)"
+        using ha_rest by (by100 blast)
+      have hSuc_range: "Suc j \<in> {0..<length (w # vs) - 1}"
+        using hj by (by100 simp)
+      have "a = closed_segment ((w # vs) ! Suc j) ((w # vs) ! Suc (Suc j))"
+        using ha_eq by (by100 simp)
+      thus ?thesis
+        using hSuc_range by (by100 blast)
+    qed
+  qed
+qed
+
+lemma geotop_endpoint_chain_listing_cons_delete_leaf_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hlistR:
+    "geotop_linear_graph_endpoint_chain_listing_dev34 (L - {{w}, e}) q r vs"
+  shows "geotop_linear_graph_endpoint_chain_listing_dev34 L w q (w # vs)"
+proof -
+  let ?R = "L - {{w}, e}"
+  have hlenR: "2 \<le> length vs"
+    by (rule geotop_endpoint_chain_listing_length_ge2_dev34[OF hlistR])
+  have hfirstR: "vs ! 0 = q \<and> vs ! 1 = r"
+    by (rule geotop_endpoint_chain_listing_first_vertices_dev34[OF hlistR])
+  have hverticesR: "set vs = geotop_complex_vertices ?R"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hlistR])
+  have hstepsR: "\<forall>i < length vs - 1.
+      closed_segment (vs ! i) (vs ! Suc i) \<in> ?R
+      \<and> geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i))"
+    using hlistR unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hedgeR: "{d \<in> ?R. geotop_is_edge d}
+      = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+    by (rule geotop_endpoint_chain_listing_edge_set_eq_dev34[OF hlistR])
+  have hverticesL: "geotop_complex_vertices L =
+      insert w (geotop_complex_vertices ?R)"
+    by (rule geotop_delete_leaf_complex_vertices_eq_insert_endpoint_dev34
+        [OF hL_linear hL_finite hendpoint heL he_edge hw_e])
+  have hR_complex: "geotop_is_complex ?R"
+    by (rule geotop_graph_endpoint_delete_leaf_complex_dev34
+        [OF hL_linear hL_finite hendpoint heL he_edge hw_e])
+  have hw_not_R_vertices: "w \<notin> geotop_complex_vertices ?R"
+  proof -
+    have hw_not_poly: "w \<notin> geotop_polyhedron ?R"
+      by (rule geotop_graph_endpoint_not_in_delete_leaf_polyhedron_dev34
+          [OF hL_linear hL_finite hendpoint heL he_edge hw_e])
+    have hvertices_poly: "geotop_complex_vertices ?R \<subseteq> geotop_polyhedron ?R"
+      by (rule geotop_complex_vertices_subset_polyhedron_dev34)
+    show ?thesis
+      using hw_not_poly hvertices_poly by (by100 blast)
+  qed
+  have hdistinct_cons: "distinct (w # vs)"
+  proof -
+    have hdistinctR: "distinct vs"
+      using hlistR unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+      by (by100 blast)
+    have "w \<notin> set vs"
+      using hverticesR hw_not_R_vertices by (by100 simp)
+    thus ?thesis
+      using hdistinctR by (by100 simp)
+  qed
+  have hvertices_cons: "set (w # vs) = geotop_complex_vertices L"
+    using hverticesR hverticesL by (by100 simp)
+  have hvertex_singletons: "\<forall>v \<in> set (w # vs). {v} \<in> L"
+  proof -
+    have hwL: "{w} \<in> L"
+      using geotop_graph_endpoint_singleton_and_card_one_dev34
+          [OF hL_linear hendpoint]
+      by (by100 blast)
+    have hsingleR: "\<forall>v \<in> set vs. {v} \<in> ?R"
+    proof
+      fix v
+      assume hv: "v \<in> set vs"
+      have "v \<in> geotop_complex_vertices ?R"
+        using hverticesR hv by (by100 simp)
+      thus "{v} \<in> ?R"
+        using geotop_complex_vertices_eq_0_simplexes[OF hR_complex]
+        by (by100 simp)
+    qed
+    show ?thesis
+    proof
+      fix v
+      assume hv: "v \<in> set (w # vs)"
+      have hcase: "v = w \<or> v \<in> set vs"
+        using hv by (by100 simp)
+      show "{v} \<in> L"
+      proof (rule disjE[OF hcase])
+        assume "v = w"
+        thus ?thesis
+          using hwL by (by100 simp)
+      next
+        assume hv_vs: "v \<in> set vs"
+        have "{v} \<in> ?R"
+          using hsingleR hv_vs by (by100 simp)
+        thus ?thesis
+          by (by100 simp)
+      qed
+    qed
+  qed
+  have hsteps_cons: "\<forall>i < length (w # vs) - 1.
+      closed_segment ((w # vs) ! i) ((w # vs) ! Suc i) \<in> L
+      \<and> geotop_is_edge (closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))"
+  proof (intro allI impI)
+    fix i
+    assume hi: "i < length (w # vs) - 1"
+    show "closed_segment ((w # vs) ! i) ((w # vs) ! Suc i) \<in> L
+      \<and> geotop_is_edge (closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))"
+    proof (cases i)
+      case 0
+      have "closed_segment ((w # vs) ! i) ((w # vs) ! Suc i) = e"
+        using 0 hfirstR he_seg by (by100 simp)
+      thus ?thesis
+        using heL he_edge by (by100 simp)
+    next
+      case (Suc j)
+      have hj_lt: "j < length vs - 1"
+        using Suc hi by (by100 simp)
+      have hstep_j: "closed_segment (vs ! j) (vs ! Suc j) \<in> ?R
+        \<and> geotop_is_edge (closed_segment (vs ! j) (vs ! Suc j))"
+        using hstepsR hj_lt by (by100 blast)
+      have hi_pos: "((w # vs) ! i) = vs ! j"
+        using Suc by (by100 simp)
+      have hi_next: "((w # vs) ! Suc i) = vs ! Suc j"
+        using Suc by (by100 simp)
+      thus ?thesis
+        using hstep_j hi_pos by (by100 simp)
+    qed
+  qed
+  have hedge_image_cons:
+      "((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+          ` {0..<length (w # vs) - 1})
+      = insert e ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+          ` {0..<length vs - 1})"
+  proof -
+    have himage:
+        "((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+            ` {0..<length (w # vs) - 1})
+        = insert (closed_segment w (vs ! 0))
+            ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i))
+              ` {0..<length vs - 1})"
+      by (rule geotop_chain_edge_image_cons_dev34[OF hlenR])
+    have "closed_segment w (vs ! 0) = e"
+      using hfirstR he_seg by (by100 simp)
+    thus ?thesis
+      using himage by (by100 simp)
+  qed
+  have hedge_set_cons: "{d \<in> L. geotop_is_edge d}
+      = ((\<lambda>i. closed_segment ((w # vs) ! i) ((w # vs) ! Suc i))
+          ` {0..<length (w # vs) - 1})"
+  proof -
+    have hdelete: "{d \<in> L. geotop_is_edge d}
+        = insert e {d \<in> ?R. geotop_is_edge d}"
+      by (rule geotop_delete_leaf_edge_set_eq_insert_deleted_edge_dev34
+          [OF heL he_edge])
+    show ?thesis
+      using hdelete hedgeR hedge_image_cons by (by100 simp)
+  qed
+  show ?thesis
+    unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    using hlenR hfirstR hdistinct_cons hvertices_cons hvertex_singletons
+      hsteps_cons hedge_set_cons
+    by (by100 simp)
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
