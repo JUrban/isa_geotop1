@@ -9196,7 +9196,131 @@ proof -
       punctured side must determine one local component of
       \<open>ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)\<close> whose closure meets all three selected
       germs. **)
-    sorry
+  proof -
+    have hsplit_side_three_card:
+        "\<exists>S T U p y z. S \<in> E
+          \<and> T \<in> E
+          \<and> U \<in> E
+          \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> {S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<and> S \<noteq> T
+          \<and> S \<noteq> U
+          \<and> T \<noteq> U
+          \<and> (S - {w}) \<inter> (T - {w}) = {}
+          \<and> (S - {w}) \<inter> (U - {w}) = {}
+          \<and> (T - {w}) \<inter> (U - {w}) = {}
+          \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r
+          \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> z \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> {p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<and> card {p, y, z} = 3
+          \<and> p \<noteq> y
+          \<and> p \<noteq> z
+          \<and> y \<noteq> z
+          \<and> top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) p y"
+      by (rule hcanonical_pair_split_side_three_card)
+    have hcomponent_from_split_side:
+        "\<And>S T U p y z. S \<in> E
+          \<Longrightarrow> T \<in> E
+          \<Longrightarrow> U \<in> E
+          \<Longrightarrow> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> {S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+          \<Longrightarrow> S \<noteq> T
+          \<Longrightarrow> S \<noteq> U
+          \<Longrightarrow> T \<noteq> U
+          \<Longrightarrow> (S - {w}) \<inter> (T - {w}) = {}
+          \<Longrightarrow> (S - {w}) \<inter> (U - {w}) = {}
+          \<Longrightarrow> (T - {w}) \<inter> (U - {w}) = {}
+          \<Longrightarrow> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r
+          \<Longrightarrow> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> z \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> {p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> card {p, y, z} = 3
+          \<Longrightarrow> p \<noteq> y
+          \<Longrightarrow> p \<noteq> z
+          \<Longrightarrow> y \<noteq> z
+          \<Longrightarrow> top1_in_same_component_on (geotop_polyhedron L - {w})
+            (subspace_topology UNIV geotop_euclidean_topology
+              (geotop_polyhedron L - {w})) p y
+          \<Longrightarrow> \<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+            \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      sorry
+    show ?thesis
+    proof -
+      obtain S T U p y z where hS_E: "S \<in> E"
+        and hT_E: "T \<in> E"
+        and hU_E: "U \<in> E"
+        and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hU: "U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hSTU: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        and hST: "S \<noteq> T"
+        and hSU: "S \<noteq> U"
+        and hTU: "T \<noteq> U"
+        and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+        and hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+        and hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+        and hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hzU: "z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
+        and hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+        and hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+        and hz_can: "z \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+        and hpyz_eq: "{p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+        and hcard: "card {p, y, z} = 3"
+        and hpy: "p \<noteq> y"
+        and hpz: "p \<noteq> z"
+        and hyz: "y \<noteq> z"
+        and hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) p y"
+        using hsplit_side_three_card by (elim exE conjE)
+      have hex_component:
+          "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+            \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+            \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        by (rule hcomponent_from_split_side
+            [OF hS_E hT_E hU_E hS hT hU hSTU hST hSU hTU
+              hST_disj hSU_disj hTU_disj hpS hyT hzU hp_can hy_can hz_can
+              hpyz_eq hcard hpy hpz hyz hsame])
+      obtain C where hC:
+          "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+        and hS_touch: "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        and hT_touch: "(T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        and hU_touch: "(U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        using hex_component by (elim exE conjE)
+      have hbody: "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+        \<and> {S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      proof (intro conjI)
+        show "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))" by (rule hC)
+        show "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hSTU)
+        show "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}" by (rule hS_touch)
+        show "(T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}" by (rule hT_touch)
+        show "(U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}" by (rule hU_touch)
+      qed
+      show ?thesis
+        by (rule exI[where x=C], rule exI[where x=S],
+            rule exI[where x=T], rule exI[where x=U], rule hbody)
+    qed
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to the
