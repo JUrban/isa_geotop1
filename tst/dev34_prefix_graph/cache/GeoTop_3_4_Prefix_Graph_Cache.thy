@@ -6716,6 +6716,207 @@ proof -
       apply (rule hC_conn)
       done
   qed
+  have hcanonical_arc_side_disjoint_pair_cases:
+      "(\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w})))
+      \<or> (\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w})))
+      \<or> (\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w})))"
+  proof -
+    obtain S T C a b where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and haS: "a \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hbT: "b \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and haC: "a \<in> C - {w}"
+      and hbC: "b \<in> C - {w}"
+      and hC_conn: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      using hcanonical_arc_side_disjoint_sphere_germ_witness by (elim exE conjE)
+    have ha_by_edge:
+        "(S = e\<^sub>1 \<and> a = x\<^sub>1)
+        \<or> (S = e\<^sub>2 \<and> a = x\<^sub>2)
+        \<or> (S = e\<^sub>3 \<and> a = x\<^sub>3)"
+      by (rule hselected_sphere_germ_edge_point_cases[OF hS haS])
+    have hb_by_edge:
+        "(T = e\<^sub>1 \<and> b = x\<^sub>1)
+        \<or> (T = e\<^sub>2 \<and> b = x\<^sub>2)
+        \<or> (T = e\<^sub>3 \<and> b = x\<^sub>3)"
+      by (rule hselected_sphere_germ_edge_point_cases[OF hT hbT])
+    have hpack12:
+        "x\<^sub>1 \<in> C - {w} \<Longrightarrow> x\<^sub>2 \<in> C - {w} \<Longrightarrow> ?thesis"
+    proof -
+      assume hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+      assume hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+      have hbody:
+          "C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (intro conjI)
+        show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+        show "x\<^sub>1 \<in> C - {w}" by (rule hx\<^sub>1C)
+        show "x\<^sub>2 \<in> C - {w}" by (rule hx\<^sub>2C)
+        show "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule hC_conn)
+      qed
+      show ?thesis
+      proof (rule disjI1)
+        show "\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule exI[where x=C], rule hbody)
+      qed
+    qed
+    have hpack13:
+        "x\<^sub>1 \<in> C - {w} \<Longrightarrow> x\<^sub>3 \<in> C - {w} \<Longrightarrow> ?thesis"
+    proof -
+      assume hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+      assume hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+      have hbody:
+          "C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (intro conjI)
+        show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+        show "x\<^sub>1 \<in> C - {w}" by (rule hx\<^sub>1C)
+        show "x\<^sub>3 \<in> C - {w}" by (rule hx\<^sub>3C)
+        show "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule hC_conn)
+      qed
+      show ?thesis
+      proof (rule disjI2, rule disjI1)
+        show "\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>1 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule exI[where x=C], rule hbody)
+      qed
+    qed
+    have hpack23:
+        "x\<^sub>2 \<in> C - {w} \<Longrightarrow> x\<^sub>3 \<in> C - {w} \<Longrightarrow> ?thesis"
+    proof -
+      assume hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+      assume hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+      have hbody:
+          "C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      proof (intro conjI)
+        show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+        show "x\<^sub>2 \<in> C - {w}" by (rule hx\<^sub>2C)
+        show "x\<^sub>3 \<in> C - {w}" by (rule hx\<^sub>3C)
+        show "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule hC_conn)
+      qed
+      show ?thesis
+      proof (rule disjI2, rule disjI2)
+        show "\<exists>C. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<and> x\<^sub>2 \<in> C - {w}
+          \<and> x\<^sub>3 \<in> C - {w}
+          \<and> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule exI[where x=C], rule hbody)
+      qed
+    qed
+    show ?thesis
+      using ha_by_edge
+    proof (elim disjE conjE)
+      assume hS_eq: "S = e\<^sub>1" and ha_eq: "a = x\<^sub>1"
+      show ?thesis
+        using hb_by_edge
+      proof (elim disjE conjE)
+        assume hT_eq: "T = e\<^sub>1" and hb_eq: "b = x\<^sub>1"
+        have False
+          using hST hS_eq hT_eq by (by100 simp)
+        then show ?thesis by (by100 simp)
+      next
+        assume hT_eq: "T = e\<^sub>2" and hb_eq: "b = x\<^sub>2"
+        have hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        have hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        show ?thesis by (rule hpack12[OF hx\<^sub>1C hx\<^sub>2C])
+      next
+        assume hT_eq: "T = e\<^sub>3" and hb_eq: "b = x\<^sub>3"
+        have hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        have hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        show ?thesis by (rule hpack13[OF hx\<^sub>1C hx\<^sub>3C])
+      qed
+    next
+      assume hS_eq: "S = e\<^sub>2" and ha_eq: "a = x\<^sub>2"
+      show ?thesis
+        using hb_by_edge
+      proof (elim disjE conjE)
+        assume hT_eq: "T = e\<^sub>1" and hb_eq: "b = x\<^sub>1"
+        have hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        have hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        show ?thesis by (rule hpack12[OF hx\<^sub>1C hx\<^sub>2C])
+      next
+        assume hT_eq: "T = e\<^sub>2" and hb_eq: "b = x\<^sub>2"
+        have False
+          using hST hS_eq hT_eq by (by100 simp)
+        then show ?thesis by (by100 simp)
+      next
+        assume hT_eq: "T = e\<^sub>3" and hb_eq: "b = x\<^sub>3"
+        have hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        have hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        show ?thesis by (rule hpack23[OF hx\<^sub>2C hx\<^sub>3C])
+      qed
+    next
+      assume hS_eq: "S = e\<^sub>3" and ha_eq: "a = x\<^sub>3"
+      show ?thesis
+        using hb_by_edge
+      proof (elim disjE conjE)
+        assume hT_eq: "T = e\<^sub>1" and hb_eq: "b = x\<^sub>1"
+        have hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        have hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        show ?thesis by (rule hpack13[OF hx\<^sub>1C hx\<^sub>3C])
+      next
+        assume hT_eq: "T = e\<^sub>2" and hb_eq: "b = x\<^sub>2"
+        have hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+          using hbC hb_eq by (by100 simp)
+        have hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+          using haC ha_eq by (by100 simp)
+        show ?thesis by (rule hpack23[OF hx\<^sub>2C hx\<^sub>3C])
+      next
+        assume hT_eq: "T = e\<^sub>3" and hb_eq: "b = x\<^sub>3"
+        have False
+          using hST hS_eq hT_eq by (by100 simp)
+        then show ?thesis by (by100 simp)
+      qed
+    qed
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
