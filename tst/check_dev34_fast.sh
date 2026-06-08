@@ -762,6 +762,7 @@ mid-support
 mid-d42
 prefix-d44
 dev34-cycle
+dev34-cycle-realization
 dev34-fan
 dev34-semicircle
 EOF2
@@ -816,6 +817,12 @@ focus_target() {
         dev34/GeoTop_3_4.thy \
         geotop_connected_nonisolated_finite_linear_graph_boundary_cycle_model_dev34 \
         'finite connected nonisolated linear graph boundary cycle model'
+      ;;
+    dev34-cycle-realization)
+      printf '%s\t%s\t%s\n' \
+        dev34/GeoTop_3_4.thy \
+        geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34 \
+        'cyclic vertex listing realizes standard triangle boundary subdivision'
       ;;
     dev34-fan)
       printf '%s\t%s\t%s\n' \

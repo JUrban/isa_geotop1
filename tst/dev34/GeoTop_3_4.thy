@@ -448,6 +448,23 @@ proof -
     using hE_eq_edges by (by100 blast)
   have hE_edges: "\<And>e. e \<in> ?E \<Longrightarrow> geotop_is_edge e"
     using hE_eq_edges by (by100 blast)
+  have hlisted_edge_members:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have hsegE: "closed_segment (v k) (v (Suc k)) \<in> ?E"
+      using hk by (by100 blast)
+    show "closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hsegE hE_subset_L hE_edges by (by100 blast)
+  qed
+  have hlisted_edge_dim:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_simplex_dim (closed_segment (v k) (v (Suc k))) 1"
+    using hlisted_edge_members unfolding geotop_is_edge_def by (by100 blast)
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
