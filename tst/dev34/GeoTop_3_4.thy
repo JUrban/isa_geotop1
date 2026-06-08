@@ -10846,21 +10846,24 @@ lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
   assumes h\<sigma>face: "geotop_is_face e \<sigma>"
   assumes hr: "0 < r"
+  assumes hrs: "r < s"
   assumes hlocal_poly_eq_\<sigma>:
-    "ball p r \<inter> geotop_polyhedron K = ball p r \<inter> \<sigma>"
-  assumes hballU: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
   assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
   shows "\<exists>A. A = sphere p r \<inter> \<sigma>
+      \<and> A \<subseteq> U
       \<and> geotop_is_arc A
           (subspace_topology UNIV geotop_euclidean_topology A)
       \<and> \<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
   (**
-    Moise Lemma 3 crosscut form.  In the one-sided local model, take the full
-    small spherical crosscut \<open>A = sphere p r \<inter> \<sigma>\<close>.  The proof should use the
-    first radius-crossing argument: any carrier path from the inner cap to the
-    outer side first meets \<open>sphere p r\<close> while still in the local ball, hence by
-    the local equality it meets \<open>A\<close>. **)
+    Moise Lemma 3 collar crosscut form.  In the one-sided local model, take
+    the full small spherical crosscut \<open>A = sphere p r \<inter> \<sigma>\<close> with \<open>r < s\<close>.
+    The collar hypotheses put \<open>A\<close> inside \<open>U\<close>.  The proof should use the
+    radius-crossing argument inside \<open>ball p s\<close>: any carrier path from the
+    inner cap to the outer side first meets \<open>sphere p r\<close>, and the local
+    equality on the larger collar ball identifies that crossing with \<open>A\<close>. **)
   sorry
 
 lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34:
@@ -10968,7 +10971,7 @@ proof -
       and hA_sep: "\<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
       using geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
-          [OF hedge hp h\<sigma>2 h\<sigma>face hr_pos hlocal_eq_r hballU_r hUsubM]
+          [OF hedge hp h\<sigma>2 h\<sigma>face hr_pos hrs hlocal_poly_eq_\<sigma> hballU_s hUsubM]
       by (by100 blast)
     show ?thesis
       using hA hA_arc hA_sep by (by100 blast)
