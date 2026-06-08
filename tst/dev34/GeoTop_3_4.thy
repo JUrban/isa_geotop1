@@ -1490,6 +1490,29 @@ proof -
     thus ?thesis
       using hsource_closed by (by100 simp)
   qed
+  have hsource_closed_vertex_in_image: "v p \<in> ?V"
+    using hsource_closed_vertex_in_vertices hsource_vertices by (by100 blast)
+  have hsource_last_index: "p - 1 \<in> {0..<p}"
+    using hp_pos by (by100 simp)
+  have hsource_last_successor_eq_first:
+      "v (Suc (p - 1)) = v 0"
+    using hp_pos hsource_closed by (by100 simp)
+  have hsource_closing_edge_in_L:
+      "closed_segment (v (p - 1)) (v 0) \<in> L"
+  proof -
+    have "closed_segment (v (p - 1)) (v (Suc (p - 1))) \<in> L"
+      by (rule hsource_listed_edge_in_L[OF hsource_last_index])
+    thus ?thesis
+      using hsource_last_successor_eq_first by (by100 simp)
+  qed
+  have hsource_closing_edge_is_edge:
+      "geotop_is_edge (closed_segment (v (p - 1)) (v 0))"
+  proof -
+    have "geotop_is_edge (closed_segment (v (p - 1)) (v (Suc (p - 1))))"
+      by (rule hsource_listed_edge_is_edge[OF hsource_last_index])
+    thus ?thesis
+      using hsource_last_successor_eq_first by (by100 simp)
+  qed
   have hsource_singleton_not_edge:
       "\<And>x :: real^2. \<not> geotop_is_edge {x}"
   proof
