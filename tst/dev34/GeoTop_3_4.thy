@@ -1443,6 +1443,50 @@ proof -
           = closed_segment (v k) (v (Suc k))"
     using hsource_listed_edge_simplex_vertices
     unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsource_singleton_not_edge:
+      "\<And>x :: real^2. \<not> geotop_is_edge {x}"
+  proof
+    fix x :: "real^2"
+    assume hedge: "geotop_is_edge {x}"
+    have hdim0: "geotop_simplex_dim {x} 0"
+      by (rule geotop_singleton_is_simplex[where P=x])
+    have hdim1: "geotop_simplex_dim {x} 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  have hsource_edge_not_singleton_image:
+      "\<And>e. e \<in> ?E \<Longrightarrow> e \<notin> ((\<lambda>x. {x}) ` ?V)"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    assume he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+    obtain x where heq: "e = {x}"
+      using he_single by (by100 blast)
+    have "geotop_is_edge {x}"
+      using hsource_edges_eq heE heq by (by100 blast)
+    thus False
+      using hsource_singleton_not_edge by (by100 blast)
+  qed
+  have hsource_vertex_edge_parts_disjoint:
+      "((\<lambda>x. {x}) ` ?V) \<inter> ?E = {}"
+  proof
+    show "((\<lambda>x. {x}) ` ?V) \<inter> ?E \<subseteq> {}"
+    proof
+      fix e
+      assume he: "e \<in> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      have heE: "e \<in> ?E"
+        using he by (by100 simp)
+      have he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+        using he by (by100 simp)
+      show "e \<in> {}"
+        using hsource_edge_not_singleton_image[OF heE] he_single by (by100 blast)
+    qed
+    show "{} \<subseteq> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      by (by100 simp)
+  qed
   have hsource_listed_edges_nonempty: "?E \<noteq> {}"
     using hp_pos by (by100 blast)
   have hsource_graph_edges_nonempty:
