@@ -365,9 +365,6 @@ lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34
       = {e\<in>L. geotop_is_edge e}"
   assumes hvertices:
     "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
-  assumes hedges:
-    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
-      = {e\<in>L. geotop_is_edge e}"
   shows "\<exists>F \<psi>.
       geotop_is_subdivision F
         (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
@@ -589,7 +586,7 @@ proof -
         \<open>geotop_isomorphism\<close>. **)
       by (rule geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34
           [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hL_listing_decomp
-            hedge_segments hV_eq_complex_vertices hE_eq_edges])
+            hedge_segments hV_eq_complex_vertices])
     show ?thesis
       using h\<sigma> hstandard_cycle_subdivision_model by (by100 blast)
   qed
