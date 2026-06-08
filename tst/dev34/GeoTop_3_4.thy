@@ -172,6 +172,96 @@ lemma geotop_successor_cycle_listing_vertex_edge_decomp_dev34:
     \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   using hvertex_image hedge_segments hL_decomp by (by100 simp)
 
+lemma geotop_finite_polyhedron_points_as_vertices_dev34:
+  fixes K :: "'a::euclidean_space set set" and S :: "'a set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes hK_finite: "finite K"
+  assumes hS_finite: "finite S"
+  assumes hS_poly: "S \<subseteq> geotop_polyhedron K"
+  shows "\<exists>K'. geotop_is_complex K'
+      \<and> geotop_complex_is_1dim K'
+      \<and> finite K'
+      \<and> geotop_polyhedron K' = geotop_polyhedron K
+      \<and> (\<forall>x\<in>S. {x} \<in> K')
+      \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')"
+  (**
+    Iterated finite-point subdivision helper for the boundary-realization
+    packages.  It keeps the carrier fixed while making a prescribed finite
+    subset of the carrier into vertices, and it records survival of the old
+    vertices for the next subdivision step. **)
+proof -
+  have hinduct:
+    "\<And>S. finite S \<Longrightarrow> S \<subseteq> geotop_polyhedron K \<Longrightarrow>
+      \<exists>K'. geotop_is_complex K'
+        \<and> geotop_complex_is_1dim K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' = geotop_polyhedron K
+        \<and> (\<forall>x\<in>S. {x} \<in> K')
+        \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')"
+  proof -
+    fix S :: "'a set"
+    assume hS_fin: "finite S"
+    show "S \<subseteq> geotop_polyhedron K \<Longrightarrow>
+      \<exists>K'. geotop_is_complex K'
+        \<and> geotop_complex_is_1dim K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' = geotop_polyhedron K
+        \<and> (\<forall>x\<in>S. {x} \<in> K')
+        \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')"
+      using hS_fin
+    proof (induction S rule: finite_induct)
+      case empty
+      have hS_vertices: "\<forall>x\<in>{}. {x} \<in> K"
+        by (by100 simp)
+      have hold_vertices: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K"
+        by (by100 simp)
+      show ?case
+        using hK_complex hK_1dim hK_finite hS_vertices hold_vertices
+        by (by100 blast)
+    next
+      case (insert x S)
+      have hS_poly: "S \<subseteq> geotop_polyhedron K"
+        using insert.prems by (by100 blast)
+      have hx_poly: "x \<in> geotop_polyhedron K"
+        using insert.prems by (by100 blast)
+      obtain K0 where hK0_complex: "geotop_is_complex K0"
+        and hK0_1dim: "geotop_complex_is_1dim K0"
+        and hK0_finite: "finite K0"
+        and hK0_poly: "geotop_polyhedron K0 = geotop_polyhedron K"
+        and hS_vertices: "\<forall>y\<in>S. {y} \<in> K0"
+        and hold_vertices0: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K0"
+        using insert.IH[OF hS_poly] by (by100 blast)
+      have hx_poly0: "x \<in> geotop_polyhedron K0"
+        using hx_poly hK0_poly by (by100 simp)
+      obtain K1 where hK1_complex: "geotop_is_complex K1"
+        and hK1_1dim: "geotop_complex_is_1dim K1"
+        and hK1_poly0: "geotop_polyhedron K1 = geotop_polyhedron K0"
+        and hx_vertex: "{x} \<in> K1"
+        and hvertices_preserved: "\<forall>v. {v} \<in> K0 \<longrightarrow> {v} \<in> K1"
+        and hfinite_imp: "finite K0 \<longrightarrow> finite K1"
+        using geotop_complex_subdivide_at[OF hK0_complex hK0_1dim hx_poly0]
+        by (by100 blast)
+      have hK1_finite: "finite K1"
+        using hfinite_imp hK0_finite by (by100 blast)
+      have hK1_poly: "geotop_polyhedron K1 = geotop_polyhedron K"
+        using hK1_poly0 hK0_poly by (by100 simp)
+      have hS_vertices1: "\<forall>y\<in>S. {y} \<in> K1"
+        using hS_vertices hvertices_preserved by (by100 blast)
+      have hinsert_vertices: "\<forall>y\<in>insert x S. {y} \<in> K1"
+        using hx_vertex hS_vertices1 by (by100 blast)
+      have hold_vertices1: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K1"
+        using hold_vertices0 hvertices_preserved by (by100 blast)
+      show ?case
+        using hK1_complex hK1_1dim hK1_finite hK1_poly
+          hinsert_vertices hold_vertices1
+        by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    by (rule hinduct[OF hS_finite hS_poly])
+qed
+
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -229,6 +319,41 @@ proof -
       by (by100 blast)
     thus ?thesis
       by (by100 blast)
+  qed
+  have hV_eq_complex_vertices: "?V = geotop_complex_vertices L"
+  proof
+    show "?V \<subseteq> geotop_complex_vertices L"
+      by (rule hV_subset_complex_vertices)
+    show "geotop_complex_vertices L \<subseteq> ?V"
+    proof
+      fix x
+      assume hx: "x \<in> geotop_complex_vertices L"
+      have hx_singleton: "{x} \<in> L"
+        using hx geotop_complex_vertices_eq_0_simplexes[OF hL_complex]
+        by (by100 simp)
+      have hx_cases:
+          "{x} \<in> ((\<lambda>x. {x}) ` ?V) \<or> {x} \<in> ?E"
+        using hx_singleton hL_listing_decomp by (by100 blast)
+      show "x \<in> ?V"
+      proof (rule disjE[OF hx_cases])
+        assume "{x} \<in> ((\<lambda>x. {x}) ` ?V)"
+        thus ?thesis
+          by (by100 blast)
+      next
+        assume hxE: "{x} \<in> ?E"
+        obtain k where hk: "k \<in> {0..<p}"
+          and hxseg: "{x} = closed_segment (v k) (v (Suc k))"
+          using hxE by (by100 blast)
+        have hvk_seg: "v k \<in> closed_segment (v k) (v (Suc k))"
+          by (by100 simp)
+        have hvk_singleton: "v k \<in> {x}"
+          using hxseg hvk_seg by (by100 simp)
+        have hx_eq: "x = v k"
+          using hvk_singleton by (by100 simp)
+        show ?thesis
+          using hk hx_eq by (by100 blast)
+      qed
+    qed
   qed
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
