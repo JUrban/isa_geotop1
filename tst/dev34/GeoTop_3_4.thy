@@ -7384,85 +7384,69 @@ proof -
           [OF hL_linear hL_finite hconn hdegree12 hendpoint heL he_edge
             hw_e hq_ne he_seg hqL])
   qed
-  have hchain_boundary_subdivision_model:
-      "\<exists>vs (\<sigma> :: (real^2) set) F \<psi>.
+  have hchain_boundary_arc_fan_target:
+      "\<exists>vs (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
         geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+        \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
         \<and> geotop_simplex_dim \<sigma> 2
-        \<and> geotop_is_subdivision F
-          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
-        \<and> geotop_isomorphism L F \<psi>"
+        \<and> geotop_is_subdivision L' T
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+        \<and> c \<notin> B
+        \<and> geotop_complex_vertices L' = insert c B
+        \<and> geotop_convex_hull {c} \<in> L'
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+          (geotop_convex_hull W \<in> L
+            \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+        \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+          (geotop_convex_hull W \<in> L
+            \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
     (**
       Remaining boundary-arc realization package from Moise Fig. 4.10:
       use the broken-line arc order, with the first edge oriented from \<open>w\<close>
-      to \<open>q\<close>, to obtain an endpoint chain listing; place that listed chain
-      as a subdivision of one boundary arc of a 2-simplex and verify the
-      simplicial isomorphism from \<open>L\<close> to the boundary subdivision. **)
+      to \<open>q\<close>, to obtain an endpoint chain listing; realize the listed chain
+      as the base arc of a fan subdividing a 2-simplex, with \<open>c\<close> the adjacent
+      boundary vertex.  This is the path analogue of the cyclic boundary
+      subdivision model, not an isomorphism with the whole boundary cycle. **)
     sorry
   show ?thesis
   proof -
-    from hchain_boundary_subdivision_model show ?thesis
+    from hchain_boundary_arc_fan_target show ?thesis
     proof (elim exE conjE)
       fix vs :: "(real^2) list"
+        and T :: "(real^2) set set"
         and \<sigma> :: "(real^2) set"
-        and F :: "(real^2) set set"
+        and L' :: "(real^2) set set"
+        and B :: "(real^2) set"
+        and c :: "real^2"
         and \<psi> :: "real^2 \<Rightarrow> real^2"
       assume hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+      assume hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
       assume h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-      assume hsub:
-        "geotop_is_subdivision F
-          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
-      assume hiso: "geotop_isomorphism L F \<psi>"
-      have hfan:
-          "\<exists>T L' B c.
-            T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
-            \<and> geotop_simplex_dim \<sigma> 2
-            \<and> geotop_is_subdivision L' T
-            \<and> bij_betw \<psi> (geotop_complex_vertices L) B
-            \<and> c \<notin> B
-            \<and> geotop_complex_vertices L' = insert c B
-            \<and> geotop_convex_hull {c} \<in> L'
-            \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
-              (geotop_convex_hull W \<in> L
-                \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
-            \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
-              W \<subseteq> geotop_complex_vertices L \<longrightarrow>
-              (geotop_convex_hull W \<in> L
-                \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
-        by (rule geotop_fig410_fan_target_from_boundary_subdivision_and_isomorphism_dev34
-            [OF h\<sigma> hsub hiso])
-      from hfan show ?thesis
-      proof (elim exE conjE)
-        fix T :: "(real^2) set set"
-          and L' :: "(real^2) set set"
-          and B :: "(real^2) set"
-          and c :: "real^2"
-        assume hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-        assume h\<sigma>': "geotop_simplex_dim \<sigma> 2"
-        assume hsub': "geotop_is_subdivision L' T"
-        assume hbij: "bij_betw \<psi> (geotop_complex_vertices L) B"
-        assume hcB: "c \<notin> B"
-        assume hvertices: "geotop_complex_vertices L' = insert c B"
-        assume hc_simplex: "geotop_convex_hull {c} \<in> L'"
-        assume hboundary_target:
-          "\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
-            (geotop_convex_hull W \<in> L
-              \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
-        assume hcone_target:
-          "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
-            W \<subseteq> geotop_complex_vertices L \<longrightarrow>
-            (geotop_convex_hull W \<in> L
-              \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
-        show ?thesis
-          apply (rule exI[where x=T])
-          apply (rule exI[where x=\<sigma>])
-          apply (rule exI[where x=L'])
-          apply (rule exI[where x=B])
-          apply (rule exI[where x=c])
-          apply (rule exI[where x=\<psi>])
-          using hT h\<sigma>' hsub' hbij hcB hvertices hc_simplex
-            hboundary_target hcone_target
-          by (by100 blast)
-      qed
+      assume hsub: "geotop_is_subdivision L' T"
+      assume hbij: "bij_betw \<psi> (geotop_complex_vertices L) B"
+      assume hcB: "c \<notin> B"
+      assume hvertices: "geotop_complex_vertices L' = insert c B"
+      assume hc_simplex: "geotop_convex_hull {c} \<in> L'"
+      assume hboundary_target:
+        "\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+          (geotop_convex_hull W \<in> L
+            \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+      assume hcone_target:
+        "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+          (geotop_convex_hull W \<in> L
+            \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+    show ?thesis
+      apply (rule exI[where x=T])
+      apply (rule exI[where x=\<sigma>])
+      apply (rule exI[where x=L'])
+      apply (rule exI[where x=B])
+      apply (rule exI[where x=c])
+      apply (rule exI[where x=\<psi>])
+      using hT h\<sigma> hsub hbij hcB hvertices hc_simplex
+        hboundary_target hcone_target
+      by (intro conjI)
     qed
   qed
 qed
