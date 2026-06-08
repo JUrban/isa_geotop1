@@ -1417,6 +1417,20 @@ proof -
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
     using hsource_edges_eq by (by100 blast)
+  have hsource_singleton_convex_hull_eq:
+      "\<And>x. geotop_convex_hull {x} = {x}"
+    using geotop_convex_hull_eq_HOL by (by100 simp)
+  have hsource_listed_edge_simplex_vertices:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> geotop_simplex_vertices
+          (closed_segment (v k) (v (Suc k))) {v k, v (Suc k)}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hsource_adjacent_distinct])
+  have hsource_listed_edge_convex_hull_eq:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull {v k, v (Suc k)}
+          = closed_segment (v k) (v (Suc k))"
+    using hsource_listed_edge_simplex_vertices
+    unfolding geotop_simplex_vertices_def by (by100 blast)
   have hsource_listed_edges_nonempty: "?E \<noteq> {}"
     using hp_pos by (by100 blast)
   have hsource_graph_edges_nonempty:
