@@ -2206,6 +2206,26 @@ proof -
     thus ?thesis
       using h\<sigma>_edge_faces_all_named by (by100 simp)
   qed
+  have h\<sigma>_named_edges_subset_B_poly:
+      "\<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}
+        \<subseteq> geotop_polyhedron ?B"
+  proof
+    fix x
+    assume hx: "x \<in> \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+    show "x \<in> geotop_polyhedron ?B"
+      unfolding geotop_polyhedron_def
+      using hx h\<sigma>_closed_edge_ab_in_B h\<sigma>_closed_edge_bc_in_B
+        h\<sigma>_closed_edge_ca_in_B
+      by (by100 blast)
+  qed
+  have h\<sigma>_frontier_subset_B_poly:
+      "frontier \<sigma> \<subseteq> geotop_polyhedron ?B"
+    using h\<sigma>_frontier_named_edges h\<sigma>_named_edges_subset_B_poly
+    by (by100 simp)
   show ?thesis
     sorry
 qed
