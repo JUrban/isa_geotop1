@@ -1487,6 +1487,32 @@ proof -
     show "{} \<subseteq> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
       by (by100 simp)
   qed
+  have hsource_singleton_image_finite:
+      "finite ((\<lambda>x. {x}) ` ?V)"
+    by (rule finite_imageI[OF finite_imageI[OF hidx_finite]])
+  have hsource_singleton_image_card:
+      "card ((\<lambda>x. {x}) ` ?V) = card (geotop_complex_vertices L)"
+  proof -
+    have hinj: "inj_on (\<lambda>x. {x}) ?V"
+      unfolding inj_on_def by (by100 simp)
+    have "card ((\<lambda>x. {x}) ` ?V) = card ?V"
+      by (rule card_image[OF hinj])
+    thus ?thesis
+      using hsource_vertices by (by100 simp)
+  qed
+  have hsource_L_card_decomp:
+      "card L =
+        card (geotop_complex_vertices L) + card {e\<in>L. geotop_is_edge e}"
+  proof -
+    have hL_decomp: "L = ((\<lambda>x. {x}) ` ?V) \<union> ?E"
+      by (rule hsource_listing_decomp)
+    have hcard_union:
+        "card L = card ((\<lambda>x. {x}) ` ?V) + card ?E"
+      using hL_decomp hsource_singleton_image_finite hsource_listed_edges_finite
+        hsource_vertex_edge_parts_disjoint by (by100 simp)
+    show ?thesis
+      using hcard_union hsource_singleton_image_card hsource_edges_eq by (by100 simp)
+  qed
   have hsource_listed_edges_nonempty: "?E \<noteq> {}"
     using hp_pos by (by100 blast)
   have hsource_graph_edges_nonempty:
