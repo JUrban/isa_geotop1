@@ -8024,6 +8024,80 @@ proof -
         by (rule hpack[OF hN_sub hN_conn hpDq hyN])
     qed
   qed
+  have hcanonical_pair_split_side_connected_incident_germ_hits:
+      "\<exists>S T p y N. S \<in> E
+        \<and> T \<in> E
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> p \<noteq> y
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> p \<in> (S - {w}) \<inter> N
+        \<and> y \<in> (T - {w}) \<inter> N"
+  proof -
+    obtain S T p y N where hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      and hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hpy: "p \<noteq> y"
+      and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+      and hN_conn: "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+      and hpN: "p \<in> N"
+      and hyN: "y \<in> N"
+      using hcanonical_pair_split_side_connected_selected_germs
+      by (elim exE conjE)
+    have hS_E: "S \<in> E"
+      using hS he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have hT_E: "T \<in> E"
+      using hT he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have hpSN: "p \<in> (S - {w}) \<inter> N"
+      using hpS hpN by (by100 blast)
+    have hyTN: "y \<in> (T - {w}) \<inter> N"
+      using hyT hyN by (by100 blast)
+    have hbody: "S \<in> E
+      \<and> T \<in> E
+      \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> S \<noteq> T
+      \<and> (S - {w}) \<inter> (T - {w}) = {}
+      \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> p \<noteq> y
+      \<and> N \<subseteq> geotop_polyhedron L - {w}
+      \<and> top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)
+      \<and> p \<in> (S - {w}) \<inter> N
+      \<and> y \<in> (T - {w}) \<inter> N"
+    proof (intro conjI)
+      show "S \<in> E" by (rule hS_E)
+      show "T \<in> E" by (rule hT_E)
+      show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+      show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+      show "S \<noteq> T" by (rule hST)
+      show "(S - {w}) \<inter> (T - {w}) = {}" by (rule hST_disj)
+      show "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hpS)
+      show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+      show "p \<noteq> y" by (rule hpy)
+      show "N \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
+      show "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+        by (rule hN_conn)
+      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+    qed
+    show ?thesis
+      by (rule exI[where x=S], rule exI[where x=T],
+          rule exI[where x=p], rule exI[where x=y],
+          rule exI[where x=N], rule hbody)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
