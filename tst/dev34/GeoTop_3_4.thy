@@ -695,6 +695,55 @@ proof -
           \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
     using hconvex_hull_member_cases hconvex_hull_nonempty_pair_if_listed_edge
     by (by100 blast)
+  have hempty_not_edge: "\<not> geotop_is_edge ({} :: (real^2) set)"
+  proof
+    assume hedge: "geotop_is_edge ({} :: (real^2) set)"
+    have hdim: "geotop_simplex_dim ({} :: (real^2) set) 1"
+      using hedge unfolding geotop_is_edge_def by (by100 blast)
+    have hsimplex: "geotop_is_simplex ({} :: (real^2) set)"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+    show False
+      using geotop_is_simplex_nonempty[OF hsimplex] by (by100 simp)
+  qed
+  have hconvex_hull_empty_notin_L:
+      "geotop_convex_hull ({} :: (real^2) set) \<notin> L"
+  proof
+    assume hempty_hull_L: "geotop_convex_hull ({} :: (real^2) set) \<in> L"
+    have hhullempty: "geotop_convex_hull ({} :: (real^2) set) = {}"
+      using geotop_convex_hull_eq_HOL[of "({} :: (real^2) set)"]
+      by (by100 simp)
+    have hempty_L: "({} :: (real^2) set) \<in> L"
+      using hempty_hull_L hhullempty by (by100 simp)
+    have hcases: "({} :: (real^2) set) \<in> ((\<lambda>x. {x}) ` ?V)
+        \<or> ({} :: (real^2) set) \<in> ?E"
+      using hL_member_cases[OF hempty_L] by (by100 blast)
+    have hnot_singleton_image:
+        "({} :: (real^2) set) \<notin> ((\<lambda>x. {x}) ` ?V)"
+      by (by100 blast)
+    show False
+      using hcases hnot_singleton_image hE_edges hempty_not_edge by (by100 blast)
+  qed
+  have hcyclic_listing_convex_hull_in_L_cases_all:
+      "\<And>W. W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  proof -
+    fix W
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hWhull_L: "geotop_convex_hull W \<in> L"
+    show "(\<exists>x\<in>?V. W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+    proof (cases "W = {}")
+      case True
+      show ?thesis
+        using hWhull_L hconvex_hull_empty_notin_L True by (by100 simp)
+    next
+      case False
+      show ?thesis
+        by (rule hcyclic_listing_convex_hull_in_L_cases[OF False hWsub hWhull_L])
+    qed
+  qed
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
