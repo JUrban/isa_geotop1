@@ -8844,6 +8844,24 @@ proof -
           rule exI[where x=y], rule exI[where x=z],
           rule hbody)
   qed
+  have hselected_distinct_sphere_germs_not_same_punctured_component:
+      "\<And>S T p y. S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> S \<noteq> T
+        \<Longrightarrow> (S - {w}) \<inter> (T - {w}) = {}
+        \<Longrightarrow> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<Longrightarrow> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<Longrightarrow> \<not> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) p y"
+    (**
+      Precise remaining local-star calculation: in the sufficiently small
+      star ball around \<open>w\<close>, distinct selected incident edge germs lie in
+      different local sectors after deleting \<open>w\<close>.  The carrier-sector cover
+      and the three-radial-sector bound prevent a connected punctured-carrier
+      component from joining the two sphere hits without passing through
+      \<open>w\<close>. **)
+    sorry
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
@@ -8853,7 +8871,44 @@ proof -
       cover forces a crossing between distinct local sectors without passing
       through \<open>w\<close>, contradicting the linear-complex local intersection
       calculation around \<open>w\<close>. **)
-    sorry
+  proof -
+    obtain S T U p y z where hS_E: "S \<in> E"
+      and hT_E: "T \<in> E"
+      and hU_E: "U \<in> E"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hU: "U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hSU: "S \<noteq> U"
+      and hTU: "T \<noteq> U"
+      and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      and hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+      and hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+      and hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hzU: "z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hz_can: "z \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hpyz_eq: "{p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hpy: "p \<noteq> y"
+      and hpz: "p \<noteq> z"
+      and hyz: "y \<noteq> z"
+      and hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w})) p y"
+      using hcanonical_pair_split_side_selected_three_edges_same_component
+      by (elim exE conjE)
+    have hnot_same:
+        "\<not> top1_in_same_component_on (geotop_polyhedron L - {w})
+          (subspace_topology UNIV geotop_euclidean_topology
+            (geotop_polyhedron L - {w})) p y"
+      by (rule hselected_distinct_sphere_germs_not_same_punctured_component
+          [OF hS hT hST hST_disj hpS hyT])
+    show False
+      using hnot_same hsame by (by100 blast)
+  qed
   have hsame_arc_side_two_germs_impossible: False
     using harc_side_disjoint_germs_local_star_impossible by (by100 blast)
   have hlocal_sector_cut_book:
