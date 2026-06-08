@@ -8098,6 +8098,185 @@ proof -
           rule exI[where x=p], rule exI[where x=y],
           rule exI[where x=N], rule hbody)
   qed
+  have hcanonical_pair_split_side_three_incident_germs:
+      "\<exists>S T U p y N. S \<in> E
+        \<and> T \<in> E
+        \<and> U \<in> E
+        \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> S \<noteq> T
+        \<and> S \<noteq> U
+        \<and> T \<noteq> U
+        \<and> (S - {w}) \<inter> (T - {w}) = {}
+        \<and> (S - {w}) \<inter> (U - {w}) = {}
+        \<and> (T - {w}) \<inter> (U - {w}) = {}
+        \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+        \<and> p \<noteq> y
+        \<and> N \<subseteq> geotop_polyhedron L - {w}
+        \<and> top1_connected_on N
+          (subspace_topology UNIV geotop_euclidean_topology N)
+        \<and> p \<in> (S - {w}) \<inter> N
+        \<and> y \<in> (T - {w}) \<inter> N"
+  proof -
+    obtain S T p y N where hS_E: "S \<in> E"
+      and hT_E: "T \<in> E"
+      and hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hST: "S \<noteq> T"
+      and hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      and hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      and hpy: "p \<noteq> y"
+      and hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+      and hN_conn: "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+      and hpSN: "p \<in> (S - {w}) \<inter> N"
+      and hyTN: "y \<in> (T - {w}) \<inter> N"
+      using hcanonical_pair_split_side_connected_incident_germ_hits
+      by (elim exE conjE)
+    have hremaining:
+        "\<exists>U. U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3} \<and> S \<noteq> U \<and> T \<noteq> U"
+    proof -
+      have hS_cases: "S = e\<^sub>1 \<or> S = e\<^sub>2 \<or> S = e\<^sub>3"
+        using hS by (by100 simp)
+      have hT_cases: "T = e\<^sub>1 \<or> T = e\<^sub>2 \<or> T = e\<^sub>3"
+        using hT by (by100 simp)
+      show ?thesis
+        using hS_cases
+      proof (elim disjE)
+        assume hS_eq: "S = e\<^sub>1"
+        show ?thesis
+          using hT_cases
+        proof (elim disjE)
+          assume hT_eq: "T = e\<^sub>1"
+          have False
+            using hST hS_eq hT_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hT_eq: "T = e\<^sub>2"
+          have hbody: "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>3 \<and> T \<noteq> e\<^sub>3"
+            using hS_eq hT_eq he\<^sub>13 he\<^sub>23 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>3], rule hbody)
+        next
+          assume hT_eq: "T = e\<^sub>3"
+          have hbody: "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>2 \<and> T \<noteq> e\<^sub>2"
+            using hS_eq hT_eq he\<^sub>12 he\<^sub>23 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>2], rule hbody)
+        qed
+      next
+        assume hS_eq: "S = e\<^sub>2"
+        show ?thesis
+          using hT_cases
+        proof (elim disjE)
+          assume hT_eq: "T = e\<^sub>1"
+          have hbody: "e\<^sub>3 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>3 \<and> T \<noteq> e\<^sub>3"
+            using hS_eq hT_eq he\<^sub>13 he\<^sub>23 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>3], rule hbody)
+        next
+          assume hT_eq: "T = e\<^sub>2"
+          have False
+            using hST hS_eq hT_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        next
+          assume hT_eq: "T = e\<^sub>3"
+          have hbody: "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>1 \<and> T \<noteq> e\<^sub>1"
+            using hS_eq hT_eq he\<^sub>12 he\<^sub>13 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>1], rule hbody)
+        qed
+      next
+        assume hS_eq: "S = e\<^sub>3"
+        show ?thesis
+          using hT_cases
+        proof (elim disjE)
+          assume hT_eq: "T = e\<^sub>1"
+          have hbody: "e\<^sub>2 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>2 \<and> T \<noteq> e\<^sub>2"
+            using hS_eq hT_eq he\<^sub>12 he\<^sub>23 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>2], rule hbody)
+        next
+          assume hT_eq: "T = e\<^sub>2"
+          have hbody: "e\<^sub>1 \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+            \<and> S \<noteq> e\<^sub>1 \<and> T \<noteq> e\<^sub>1"
+            using hS_eq hT_eq he\<^sub>12 he\<^sub>13 by (by100 simp)
+          show ?thesis
+            by (rule exI[where x=e\<^sub>1], rule hbody)
+        next
+          assume hT_eq: "T = e\<^sub>3"
+          have False
+            using hST hS_eq hT_eq by (by100 simp)
+          then show ?thesis by (by100 simp)
+        qed
+      qed
+    qed
+    obtain U where hU: "U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hSU: "S \<noteq> U"
+      and hTU: "T \<noteq> U"
+      using hremaining by (elim exE conjE)
+    have hU_E: "U \<in> E"
+      using hU he\<^sub>1E he\<^sub>2E he\<^sub>3E by (by100 blast)
+    have hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+      by (rule hincident_selected_punctured_disj[OF hS_E hU hSU])
+    have hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+      by (rule hincident_selected_punctured_disj[OF hT_E hU hTU])
+    have hbody: "S \<in> E
+      \<and> T \<in> E
+      \<and> U \<in> E
+      \<and> S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+      \<and> S \<noteq> T
+      \<and> S \<noteq> U
+      \<and> T \<noteq> U
+      \<and> (S - {w}) \<inter> (T - {w}) = {}
+      \<and> (S - {w}) \<inter> (U - {w}) = {}
+      \<and> (T - {w}) \<inter> (U - {w}) = {}
+      \<and> p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r
+      \<and> p \<noteq> y
+      \<and> N \<subseteq> geotop_polyhedron L - {w}
+      \<and> top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)
+      \<and> p \<in> (S - {w}) \<inter> N
+      \<and> y \<in> (T - {w}) \<inter> N"
+    proof (intro conjI)
+      show "S \<in> E" by (rule hS_E)
+      show "T \<in> E" by (rule hT_E)
+      show "U \<in> E" by (rule hU_E)
+      show "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hS)
+      show "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hT)
+      show "U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}" by (rule hU)
+      show "S \<noteq> T" by (rule hST)
+      show "S \<noteq> U" by (rule hSU)
+      show "T \<noteq> U" by (rule hTU)
+      show "(S - {w}) \<inter> (T - {w}) = {}" by (rule hST_disj)
+      show "(S - {w}) \<inter> (U - {w}) = {}" by (rule hSU_disj)
+      show "(T - {w}) \<inter> (U - {w}) = {}" by (rule hTU_disj)
+      show "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hpS)
+      show "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r" by (rule hyT)
+      show "p \<noteq> y" by (rule hpy)
+      show "N \<subseteq> geotop_polyhedron L - {w}" by (rule hN_sub)
+      show "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+        by (rule hN_conn)
+      show "p \<in> (S - {w}) \<inter> N" by (rule hpSN)
+      show "y \<in> (T - {w}) \<inter> N" by (rule hyTN)
+    qed
+    show ?thesis
+      by (rule exI[where x=S], rule exI[where x=T],
+          rule exI[where x=U], rule exI[where x=p],
+          rule exI[where x=y], rule exI[where x=N], rule hbody)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
