@@ -195,7 +195,56 @@ lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
     subdivision of the frontier of a standard 2-simplex with the same cyclic
     vertices and edges, then send each listed vertex of \<open>L\<close> to the
     corresponding subdivision vertex. **)
-  sorry
+proof -
+  let ?V = "(\<lambda>k. v k) ` {0..<p}"
+  let ?E = "(\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p}"
+  have hp_pos: "0 < p"
+    using hp_gt2 by (by100 linarith)
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hidx_fin: "finite {0..<p}"
+    by (by100 simp)
+  have hV_fin: "finite ?V"
+    by (rule finite_imageI[OF hidx_fin])
+  have hE_fin: "finite ?E"
+    by (rule finite_imageI[OF hidx_fin])
+  have hV_singletons_subset_L: "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
+    using hL_listing_decomp by (by100 blast)
+  have hV_subset_complex_vertices: "?V \<subseteq> geotop_complex_vertices L"
+  proof
+    fix x
+    assume hx: "x \<in> ?V"
+    have "{x} \<in> ((\<lambda>x. {x}) ` ?V)"
+      using hx by (by100 blast)
+    hence "{x} \<in> L"
+      using hV_singletons_subset_L by (by100 blast)
+    thus "x \<in> geotop_complex_vertices L"
+      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex] by (by100 simp)
+  qed
+  have hV_nonempty: "?V \<noteq> {}"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> ?V"
+      by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  have hboundary_cycle_model:
+      "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+        geotop_simplex_dim \<sigma> 2
+        \<and> geotop_is_subdivision F
+          (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+        \<and> geotop_isomorphism L F \<psi>"
+    (**
+      Remaining geometric construction: subdivide the three sides of a standard
+      2-simplex into a cyclic 1-complex with vertex set corresponding to
+      \<open>?V\<close> and edge set corresponding to \<open>?E\<close>, then use the resulting
+      ordered vertex bijection as the simplicial isomorphism. **)
+    sorry
+  show ?thesis
+    by (rule hboundary_cycle_model)
+qed
 
 lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
