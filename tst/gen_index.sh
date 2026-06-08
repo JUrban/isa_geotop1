@@ -1,7 +1,8 @@
 #!/bin/bash
 # Generate theorem/definition index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
-# local advice/report notes, and bounded session transcript inputs.
+# local advice/report notes, and bounded session transcript inputs
+# (`session*.cast(.gz)` and `isa*.cast(.gz)`).
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh [--force]
 
@@ -36,7 +37,7 @@ SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
+  echo "Index: cache hit (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi

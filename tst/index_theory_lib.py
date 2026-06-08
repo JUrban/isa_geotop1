@@ -63,6 +63,8 @@ ADVICE_FILE_PATTERNS = [
     "slow_lines*.txt",
 ]
 SESSION_LOG_FILE_PATTERNS = [
+    "isa*.cast",
+    "isa*.cast.gz",
     "session*.cast",
     "session*.cast.gz",
 ]

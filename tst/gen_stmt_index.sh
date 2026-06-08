@@ -1,7 +1,8 @@
 #!/bin/bash
 # Generate a searchable theorem statement index from active session theories and local imports.
 # Cache invalidation covers ROOT/ROOTS files, the generated theory list,
-# local advice/report notes, and bounded session transcript inputs.
+# local advice/report notes, and bounded session transcript inputs
+# (`session*.cast(.gz)` and `isa*.cast(.gz)`).
 # Each entry: file:line KIND name :: statement_fragment
 # Usage: cd /project/tst && bash gen_stmt_index.sh [--force]
 # Then search: grep "keyword" STMT_INDEX.txt
@@ -36,7 +37,7 @@ SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $OUT"
+  echo "Statement index: cache hit (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#SESSION_LOG_FILES[@]} session logs, ${#ROOTS[@]} ROOT files) -> $OUT"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
