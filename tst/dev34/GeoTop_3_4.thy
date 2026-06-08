@@ -65,6 +65,115 @@ proof -
     unfolding geotop_isomorphism_def using hbij hcond by (by100 blast)
 qed
 
+lemma geotop_subdivision_source_is_complex_dev34:
+  fixes K K' :: "'a::real_normed_vector set set"
+  assumes hsub: "geotop_is_subdivision K' K"
+  shows "geotop_is_complex K'"
+  using hsub unfolding geotop_is_subdivision_def by (by100 blast)
+
+lemma geotop_comb_boundary_subset_complex_dev34:
+  fixes K :: "'a::real_normed_vector set set"
+  assumes hK: "geotop_is_complex K"
+  shows "geotop_comb_boundary K n \<subseteq> K"
+  (**
+    The combinatorial boundary consists of selected \((n-1)\)-simplexes of
+    \<open>K\<close> and their faces; face closure of a complex keeps all of them inside
+    \<open>K\<close>. **)
+proof
+  fix \<rho>
+  assume h\<rho>: "\<rho> \<in> geotop_comb_boundary K n"
+  let ?S = "{\<tau> \<in> K. geotop_simplex_dim \<tau> (n - 1) \<and>
+      card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> n \<and> geotop_is_face \<tau> \<sigma>} = 1}"
+  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
+    using hK unfolding geotop_is_complex_def by (elim conjE) assumption
+  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
+  show "\<rho> \<in> K"
+  proof (rule UnE[OF h\<rho>_cases])
+    assume "\<rho> \<in> ?S"
+    show "\<rho> \<in> K"
+      using \<open>\<rho> \<in> ?S\<close> by (by100 blast)
+  next
+    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+      by (by100 blast)
+    have h\<tau>K: "\<tau> \<in> K"
+      using h\<tau>S by (by100 blast)
+    show "\<rho> \<in> K"
+      using hface_closed h\<tau>K h\<rho>\<tau> by (by100 blast)
+  qed
+qed
+
+lemma geotop_2simplex_comb_boundary_member_proper_face_dev34:
+  fixes \<sigma> \<rho> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<rho>:
+    "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  shows "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
+  (**
+    In the face complex of a 2-simplex, every simplex of the combinatorial
+    boundary is a proper face of the top 2-simplex. **)
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
+      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
+  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
+  have hS_proper: "\<forall>\<tau>\<in>?S. geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
+  proof
+    fix \<tau>
+    assume h\<tau>S: "\<tau> \<in> ?S"
+    have h\<tau>K: "\<tau> \<in> ?K"
+      using h\<tau>S by (by100 blast)
+    have h\<tau>dim1: "geotop_simplex_dim \<tau> 1"
+      using h\<tau>S by (by100 simp)
+    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
+    proof
+      assume h\<tau>eq: "\<tau> = \<sigma>"
+      have h\<tau>dim2: "geotop_simplex_dim \<tau> 2"
+        using h\<sigma> h\<tau>eq by (by100 simp)
+      have h12: "(1::nat) = 2"
+        by (rule geotop_simplex_dim_unique[OF h\<tau>dim1 h\<tau>dim2])
+      show False
+        using h12 by (by100 simp)
+    qed
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      using h\<tau>K h\<tau>ne\<sigma> by (by100 blast)
+    show "geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
+      using h\<tau>\<sigma> h\<tau>ne\<sigma> by (by100 blast)
+  qed
+  show ?thesis
+  proof (rule UnE[OF h\<rho>_cases])
+    assume h\<rho>S: "\<rho> \<in> ?S"
+    show ?thesis
+      using hS_proper h\<rho>S by (by100 blast)
+  next
+    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+      by (by100 blast)
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      using hS_proper h\<tau>S by (by100 blast)
+    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
+      using hS_proper h\<tau>S by (by100 blast)
+    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
+      by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
+    have h\<rho>ne\<sigma>: "\<rho> \<noteq> \<sigma>"
+    proof
+      assume h\<rho>eq: "\<rho> = \<sigma>"
+      have h\<sigma>sub\<tau>: "\<sigma> \<subseteq> \<tau>"
+        using geotop_is_face_imp_subset[OF h\<rho>\<tau>] h\<rho>eq by (by100 simp)
+      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
+      have "\<tau> = \<sigma>"
+        using h\<sigma>sub\<tau> h\<tau>sub\<sigma> by (by100 blast)
+      show False
+        using h\<tau>ne\<sigma> \<open>\<tau> = \<sigma>\<close> by (by100 blast)
+    qed
+    show ?thesis
+      using h\<rho>\<sigma> h\<rho>ne\<sigma> by (by100 blast)
+  qed
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -1863,12 +1972,6 @@ proof -
     using hvertices hpoly by (by100 simp)
 qed
 
-lemma geotop_subdivision_source_is_complex_dev34:
-  fixes K K' :: "'a::real_normed_vector set set"
-  assumes hsub: "geotop_is_subdivision K' K"
-  shows "geotop_is_complex K'"
-  using hsub unfolding geotop_is_subdivision_def by (by100 blast)
-
 lemma geotop_subdivision_target_is_complex_dev34:
   fixes K K' :: "'a::real_normed_vector set set"
   assumes hsub: "geotop_is_subdivision K' K"
@@ -1904,109 +2007,6 @@ proof -
     using hpoly_sub hpoly_face by (by100 simp)
   show ?thesis
     using hc hpoly by (by100 simp)
-qed
-
-lemma geotop_comb_boundary_subset_complex_dev34:
-  fixes K :: "'a::real_normed_vector set set"
-  assumes hK: "geotop_is_complex K"
-  shows "geotop_comb_boundary K n \<subseteq> K"
-  (**
-    The combinatorial boundary consists of selected \((n-1)\)-simplexes of
-    \<open>K\<close> and their faces; face closure of a complex keeps all of them inside
-    \<open>K\<close>. **)
-proof
-  fix \<rho>
-  assume h\<rho>: "\<rho> \<in> geotop_comb_boundary K n"
-  let ?S = "{\<tau> \<in> K. geotop_simplex_dim \<tau> (n - 1) \<and>
-      card {\<sigma> \<in> K. geotop_simplex_dim \<sigma> n \<and> geotop_is_face \<tau> \<sigma>} = 1}"
-  have hface_closed: "\<forall>\<sigma>\<in>K. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> K"
-    using hK unfolding geotop_is_complex_def by (elim conjE) assumption
-  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
-    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
-  show "\<rho> \<in> K"
-  proof (rule UnE[OF h\<rho>_cases])
-    assume "\<rho> \<in> ?S"
-    show "\<rho> \<in> K"
-      using \<open>\<rho> \<in> ?S\<close> by (by100 blast)
-  next
-    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
-    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
-      by (by100 blast)
-    have h\<tau>K: "\<tau> \<in> K"
-      using h\<tau>S by (by100 blast)
-    show "\<rho> \<in> K"
-      using hface_closed h\<tau>K h\<rho>\<tau> by (by100 blast)
-  qed
-qed
-
-lemma geotop_2simplex_comb_boundary_member_proper_face_dev34:
-  fixes \<sigma> \<rho> :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  assumes h\<rho>:
-    "\<rho> \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
-  shows "geotop_is_face \<rho> \<sigma> \<and> \<rho> \<noteq> \<sigma>"
-  (**
-    In the face complex of a 2-simplex, every simplex of the combinatorial
-    boundary is a proper face of the top 2-simplex. **)
-proof -
-  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
-      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
-  have h\<rho>_cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
-    using h\<rho> unfolding geotop_comb_boundary_def by (by100 simp)
-  have hS_proper: "\<forall>\<tau>\<in>?S. geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
-  proof
-    fix \<tau>
-    assume h\<tau>S: "\<tau> \<in> ?S"
-    have h\<tau>K: "\<tau> \<in> ?K"
-      using h\<tau>S by (by100 blast)
-    have h\<tau>dim1: "geotop_simplex_dim \<tau> 1"
-      using h\<tau>S by (by100 simp)
-    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
-    proof
-      assume h\<tau>eq: "\<tau> = \<sigma>"
-      have h\<tau>dim2: "geotop_simplex_dim \<tau> 2"
-        using h\<sigma> h\<tau>eq by (by100 simp)
-      have h12: "(1::nat) = 2"
-        by (rule geotop_simplex_dim_unique[OF h\<tau>dim1 h\<tau>dim2])
-      show False
-        using h12 by (by100 simp)
-    qed
-    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
-      using h\<tau>K h\<tau>ne\<sigma> by (by100 blast)
-    show "geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
-      using h\<tau>\<sigma> h\<tau>ne\<sigma> by (by100 blast)
-  qed
-  show ?thesis
-  proof (rule UnE[OF h\<rho>_cases])
-    assume h\<rho>S: "\<rho> \<in> ?S"
-    show ?thesis
-      using hS_proper h\<rho>S by (by100 blast)
-  next
-    assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
-    then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
-      by (by100 blast)
-    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
-      using hS_proper h\<tau>S by (by100 blast)
-    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
-      using hS_proper h\<tau>S by (by100 blast)
-    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
-      by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
-    have h\<rho>ne\<sigma>: "\<rho> \<noteq> \<sigma>"
-    proof
-      assume h\<rho>eq: "\<rho> = \<sigma>"
-      have h\<sigma>sub\<tau>: "\<sigma> \<subseteq> \<tau>"
-        using geotop_is_face_imp_subset[OF h\<rho>\<tau>] h\<rho>eq by (by100 simp)
-      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
-        by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
-      have "\<tau> = \<sigma>"
-        using h\<sigma>sub\<tau> h\<tau>sub\<sigma> by (by100 blast)
-      show False
-        using h\<tau>ne\<sigma> \<open>\<tau> = \<sigma>\<close> by (by100 blast)
-    qed
-    show ?thesis
-      using h\<rho>\<sigma> h\<rho>ne\<sigma> by (by100 blast)
-  qed
 qed
 
 lemma geotop_2simplex_face_complex_edge_unique_top_2face_dev34:
