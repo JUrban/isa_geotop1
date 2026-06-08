@@ -124,6 +124,39 @@ proof (rule ccontr)
     using hedges_ne hedges_eq by (by100 blast)
 qed
 
+lemma geotop_successor_cycle_state_edge_image_eq_closed_segments_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hedge_image:
+    "((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p}) = E"
+  assumes hstate_edge_eq:
+    "\<And>k. snd ((geotop_oriented_edge_successor L ^^ k) s)
+      = closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))"
+  shows "((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))) ` {0..<p}) = E"
+proof -
+  have himage:
+      "((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))) ` {0..<p})
+      = ((\<lambda>k. snd ((geotop_oriented_edge_successor L ^^ k) s)) ` {0..<p})"
+  proof (rule image_cong)
+    show "{0..<p} = {0..<p}"
+      by (rule HOL.refl)
+    fix k
+    assume "k \<in> {0..<p}"
+    show "closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s))
+        = snd ((geotop_oriented_edge_successor L ^^ k) s)"
+      using hstate_edge_eq[of k] by (by100 simp)
+  qed
+  show ?thesis
+    using himage hedge_image by (by100 simp)
+qed
+
 lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -163,7 +196,16 @@ lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivi
     frontier of one standard 2-simplex into a cyclic chain with the same
     number of vertices and edges, then map the listed graph vertices to the
     listed boundary vertices to obtain the simplicial isomorphism. **)
-  sorry
+proof -
+  let ?v = "\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s)"
+  have hedge_segments:
+      "((\<lambda>k. closed_segment (?v k) (?v (Suc k))) ` {0..<p})
+        = {e\<in>L. geotop_is_edge e}"
+    by (rule geotop_successor_cycle_state_edge_image_eq_closed_segments_dev34
+        [OF hedge_image hstate_edge_eq])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_successor_cycle_period_gt_two_realizes_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
