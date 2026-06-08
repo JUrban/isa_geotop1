@@ -1025,6 +1025,56 @@ proof -
     using hF_B hF_finite hS_vertices_F hold_vertices_F by (by100 blast)
 qed
 
+lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
+  fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+    and \<sigma> :: "(real^2) set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp_gt2: "2 < p"
+  assumes hL_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hedge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  assumes hvertices:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes hclosed_vertex: "v p = v 0"
+  assumes hsource_cases:
+    "\<And>W. W \<subseteq> geotop_complex_vertices L
+      \<Longrightarrow> geotop_convex_hull W \<in> L
+      \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. v k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  shows "(\<exists>F \<psi>.
+      geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>)
+    \<and> (\<exists>F u \<psi>.
+      geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> u p = u 0
+      \<and> inj_on u {0..<p}
+      \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+      \<and> F =
+        ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+        \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+      \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        = {e\<in>F. geotop_is_edge e}
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+      \<and> geotop_isomorphism L F \<psi>)"
+  (**
+    Precise Moise Fig. 4.10 target package.  The source graph is already in
+    cyclic singleton/adjacent-edge normal form; the remaining book step is to
+    build the matching cyclic subdivision of the frontier of a standard
+    2-simplex and define the vertex map by the two cyclic listings. **)
+  sorry
+
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
@@ -1545,9 +1595,28 @@ proof -
   have hF\<^sub>0_vertices_finite:
       "finite (geotop_complex_vertices F\<^sub>0)"
     by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
+  have htarget_cycle_model:
+      "(\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>)
+      \<and> (\<exists>F u \<psi>.
+        geotop_is_subdivision F ?B
+        \<and> u p = u 0
+        \<and> inj_on u {0..<p}
+        \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+        \<and> F =
+          ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+          \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+        \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+          = {e\<in>F. geotop_is_edge e}
+        \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+        \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)
+        \<and> geotop_isomorphism L F \<psi>)"
+    by (rule geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34
+        [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hL_listing_decomp
+          hedge_segments hvertices hclosed_vertex
+          hcyclic_listing_convex_hull_in_L_cases_all])
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
-    sorry
+    by (rule conjunct1[OF htarget_cycle_model])
   show ?thesis
     by (rule hstandard_boundary_cycle_subdivision_model)
 qed
