@@ -7157,6 +7157,109 @@ proof -
       by (rule exI[where x=C], rule exI[where x=p], rule exI[where x=y],
           rule exI[where x=U], rule exI[where x=V], rule hbody)
   qed
+  have hcanonical_pair_arc_side_split:
+      "\<exists>C p y D\<^sub>w D\<^sub>q. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> p \<noteq> y
+        \<and> p \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> C = D\<^sub>w \<union> D\<^sub>q
+        \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+        \<and> top1_is_arc_on D\<^sub>w
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+        \<and> top1_is_arc_on D\<^sub>q
+          (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+        \<and> w \<in> D\<^sub>w
+        \<and> q\<^sub>1 \<in> D\<^sub>q
+        \<and> p \<in> D\<^sub>w
+        \<and> p \<in> D\<^sub>q
+        \<and> D\<^sub>w \<subseteq> UNIV
+        \<and> D\<^sub>q \<subseteq> UNIV"
+  proof -
+    obtain C p y where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hp_set: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hy_set: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hpy: "p \<noteq> y"
+      and hpC: "p \<in> C - {w}"
+      and hyC: "y \<in> C - {w}"
+      using hcanonical_pair_arc_side_interior_cut by (elim exE conjE)
+    have hC_arc: "top1_is_arc_on C
+        (subspace_topology UNIV geotop_euclidean_topology C)"
+      using hC hA\<^sub>1_arc hA\<^sub>2_arc by (by100 blast)
+    have hC_ep: "top1_arc_endpoints_on C
+        (subspace_topology UNIV geotop_euclidean_topology C) = {w, q\<^sub>1}"
+      using hC hA\<^sub>1_ep hA\<^sub>2_ep by (by100 blast)
+    have hp_not_ep_set: "p \<notin> {w, q\<^sub>1}"
+      using hp_set hpC hx\<^sub>1_ne_q\<^sub>1 hx\<^sub>2_ne_q\<^sub>1 hx\<^sub>3_ne_q\<^sub>1 by (by100 blast)
+    have hp_not_ep: "p \<notin> top1_arc_endpoints_on C
+        (subspace_topology UNIV geotop_euclidean_topology C)"
+      using hC_ep hp_not_ep_set by (by100 simp)
+    have hp_in_C: "p \<in> C"
+      using hpC by (by100 blast)
+    have hwq: "w \<noteq> q\<^sub>1"
+      using hq\<^sub>1w by (by100 simp)
+    obtain D\<^sub>w D\<^sub>q where hC_split: "C = D\<^sub>w \<union> D\<^sub>q"
+      and hDwDq: "D\<^sub>w \<inter> D\<^sub>q = {p}"
+      and hDw_arc: "top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)"
+      and hDq_arc: "top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+      and hwDw: "w \<in> D\<^sub>w"
+      and hqDq: "q\<^sub>1 \<in> D\<^sub>q"
+      and hpDw: "p \<in> D\<^sub>w"
+      and hpDq: "p \<in> D\<^sub>q"
+      and hDw_sub: "D\<^sub>w \<subseteq> UNIV"
+      and hDq_sub: "D\<^sub>q \<subseteq> UNIV"
+      using arc_split_at_given_point
+        [OF geotop_euclidean_topology_UNIV_strict
+            geotop_euclidean_topology_UNIV_hausdorff subset_UNIV
+            hC_arc hp_in_C hp_not_ep hC_ep hwq]
+      by (elim exE conjE)
+    have hbody: "C \<in> {A\<^sub>1, A\<^sub>2}
+      \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> p \<noteq> y
+      \<and> p \<in> C - {w}
+      \<and> y \<in> C - {w}
+      \<and> C = D\<^sub>w \<union> D\<^sub>q
+      \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+      \<and> top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)
+      \<and> top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)
+      \<and> w \<in> D\<^sub>w
+      \<and> q\<^sub>1 \<in> D\<^sub>q
+      \<and> p \<in> D\<^sub>w
+      \<and> p \<in> D\<^sub>q
+      \<and> D\<^sub>w \<subseteq> UNIV
+      \<and> D\<^sub>q \<subseteq> UNIV"
+    proof (intro conjI)
+      show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+      show "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hp_set)
+      show "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hy_set)
+      show "p \<noteq> y" by (rule hpy)
+      show "p \<in> C - {w}" by (rule hpC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "C = D\<^sub>w \<union> D\<^sub>q" by (rule hC_split)
+      show "D\<^sub>w \<inter> D\<^sub>q = {p}" by (rule hDwDq)
+      show "top1_is_arc_on D\<^sub>w
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>w)"
+        by (rule hDw_arc)
+      show "top1_is_arc_on D\<^sub>q
+        (subspace_topology UNIV geotop_euclidean_topology D\<^sub>q)"
+        by (rule hDq_arc)
+      show "w \<in> D\<^sub>w" by (rule hwDw)
+      show "q\<^sub>1 \<in> D\<^sub>q" by (rule hqDq)
+      show "p \<in> D\<^sub>w" by (rule hpDw)
+      show "p \<in> D\<^sub>q" by (rule hpDq)
+      show "D\<^sub>w \<subseteq> UNIV" by (rule hDw_sub)
+      show "D\<^sub>q \<subseteq> UNIV" by (rule hDq_sub)
+    qed
+    show ?thesis
+      by (rule exI[where x=C], rule exI[where x=p], rule exI[where x=y],
+          rule exI[where x=D\<^sub>w], rule exI[where x=D\<^sub>q], rule hbody)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
