@@ -1888,6 +1888,47 @@ proof -
   have h\<sigma>_named_vertices_card:
       "card {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} = 3"
     using ha\<^sub>\<sigma>b\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 simp)
+  have hB_vertices_subset_\<sigma>_vertices:
+      "geotop_complex_vertices ?B \<subseteq> V\<^sub>\<sigma>"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices ?B"
+    have hx_single: "{x} \<in> ?B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hB_complex] hx
+      by (by100 blast)
+    have hproper: "geotop_is_face {x} \<sigma> \<and> {x} \<noteq> \<sigma>"
+      by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34
+          [OF h\<sigma> hx_single])
+    have hface: "geotop_is_face {x} \<sigma>"
+      using hproper by (by100 blast)
+    obtain V W where h\<sigma>V': "geotop_simplex_vertices \<sigma> V"
+      and hW_ne: "W \<noteq> {}"
+      and hW_sub: "W \<subseteq> V"
+      and hx_eq: "{x} = geotop_convex_hull W"
+      and hxW: "geotop_simplex_vertices {x} W"
+      by (rule geotop_face_witness_simplex_vertices[OF hface])
+    have hV_eq: "V = V\<^sub>\<sigma>"
+      by (rule geotop_simplex_vertices_unique[OF h\<sigma>V' h\<sigma>V\<^sub>\<sigma>])
+    have hW_sub_single: "W \<subseteq> {x}"
+      by (rule geotop_simplex_vertices_subset[OF hxW])
+    have hW_eq_single: "W = {x}"
+      using hW_ne hW_sub_single by (by100 blast)
+    have "x \<in> V"
+      using hW_sub hW_eq_single by (by100 blast)
+    thus "x \<in> V\<^sub>\<sigma>"
+      using hV_eq by (by100 simp)
+  qed
+  have hB_vertices_eq_named:
+      "geotop_complex_vertices ?B = {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+  proof
+    show "geotop_complex_vertices ?B \<subseteq> {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+      using hB_vertices_subset_\<sigma>_vertices hV\<^sub>\<sigma>_abc by (by100 simp)
+    show "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices ?B"
+      by (rule h\<sigma>_named_vertices_in_B_vertices)
+  qed
+  have hB_vertices_card:
+      "card (geotop_complex_vertices ?B) = 3"
+    using hB_vertices_eq_named h\<sigma>_named_vertices_card by (by100 simp)
   have h\<sigma>_named_vertices_finite:
       "finite {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
     by (by100 simp)
