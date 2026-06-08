@@ -1359,7 +1359,66 @@ lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
     geometric construction is to put a cyclic subdivision on the boundary of a
     standard 2-simplex with exactly the quotient cyclic incidence of the source
     listing, allowing repeated indices in the given parametrization. **)
-  sorry
+proof -
+  let ?V = "((\<lambda>k. v k) ` {0..<p})"
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  have hidx_finite: "finite {0..<p}"
+    by (by100 simp)
+  have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
+    using hsource_vertices hidx_finite by (by100 simp)
+  have hp_pos: "0 < p"
+    using hp_gt2 by (by100 linarith)
+  have hsource_vertices_nonempty: "geotop_complex_vertices L \<noteq> {}"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> ?V"
+      by (by100 blast)
+    thus ?thesis
+      using hsource_vertices by (by100 blast)
+  qed
+  have hB_complex:
+      "geotop_is_complex ?B"
+    by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_finite:
+      "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hB_vertices_finite:
+      "finite (geotop_complex_vertices ?B)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hB_complex hB_finite])
+  have hB_vertices_poly:
+      "geotop_complex_vertices ?B \<subseteq> geotop_polyhedron ?B"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices ?B"
+    have hx_single: "{x} \<in> ?B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hB_complex] hx by (by100 blast)
+    show "x \<in> geotop_polyhedron ?B"
+      unfolding geotop_polyhedron_def using hx_single by (by100 blast)
+  qed
+  have htarget_seed_subdivision:
+      "\<exists>F. geotop_is_subdivision F ?B
+        \<and> finite F
+        \<and> (\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F)
+        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
+    using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
+      [OF h\<sigma> hB_vertices_finite hB_vertices_poly]
+    by (by100 blast)
+  obtain F\<^sub>0 where hF\<^sub>0_sub: "geotop_is_subdivision F\<^sub>0 ?B"
+      and hF\<^sub>0_finite: "finite F\<^sub>0"
+      and hB_vertices_in_F\<^sub>0:
+        "\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F\<^sub>0"
+      and hB_old_vertices_in_F\<^sub>0:
+        "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F\<^sub>0"
+    using htarget_seed_subdivision by (by100 blast)
+  have hF\<^sub>0_complex: "geotop_is_complex F\<^sub>0"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hF\<^sub>0_sub])
+  have hF\<^sub>0_vertices_finite:
+      "finite (geotop_complex_vertices F\<^sub>0)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"

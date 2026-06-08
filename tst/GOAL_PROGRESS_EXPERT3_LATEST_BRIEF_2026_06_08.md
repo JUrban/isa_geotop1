@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1362
-dev34/GeoTop_3_4.thy:9435
-dev34/GeoTop_3_4.thy:10637
+dev34/GeoTop_3_4.thy:1420
+dev34/GeoTop_3_4.thy:9494
+dev34/GeoTop_3_4.thy:10696
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -111,6 +111,13 @@ proved from the source normal-form facts and the new exact target-realization
 lemma. This keeps the hole count unchanged but makes the remaining Figure 4.10
 obligation narrower: construct the target standard-boundary cyclic listing from
 source singleton/adjacent-edge cases, allowing repeated source indices.
+
+Inside the exact target-realization lemma, the verified setup now includes
+finite/nonempty source vertex facts and the standard-boundary seed subdivision
+facts: the boundary complex is finite and complex, its vertex set lies in its
+polyhedron, and the preserved-vertex finite subdivision `F0` is available with
+a finite vertex set. The remaining local proof is the geometric upgrade from
+this seed data to the required quotient cyclic listing.
 
 Latest local verification:
 
