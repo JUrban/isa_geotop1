@@ -1443,6 +1443,18 @@ proof -
     using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
       [OF h\<sigma> hB_vertices_finite hB_vertices_poly]
     by (by100 blast)
+  obtain F\<^sub>0 where hF\<^sub>0_sub: "geotop_is_subdivision F\<^sub>0 ?B"
+      and hF\<^sub>0_finite: "finite F\<^sub>0"
+      and hB_vertices_in_F\<^sub>0:
+        "\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F\<^sub>0"
+      and hB_old_vertices_in_F\<^sub>0:
+        "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F\<^sub>0"
+    using hboundary_vertices_preserving_subdivision by (by100 blast)
+  have hF\<^sub>0_complex: "geotop_is_complex F\<^sub>0"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hF\<^sub>0_sub])
+  have hF\<^sub>0_vertices_finite:
+      "finite (geotop_complex_vertices F\<^sub>0)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
