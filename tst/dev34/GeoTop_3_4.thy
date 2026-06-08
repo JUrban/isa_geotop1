@@ -1416,6 +1416,33 @@ proof -
         by (rule hcyclic_listing_convex_hull_in_L_cases[OF False hWsub hWhull_L])
     qed
   qed
+  have hB_complex:
+      "geotop_is_complex ?B"
+    by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_finite:
+      "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hB_vertices_finite:
+      "finite (geotop_complex_vertices ?B)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hB_complex hB_finite])
+  have hB_vertices_poly:
+      "geotop_complex_vertices ?B \<subseteq> geotop_polyhedron ?B"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices ?B"
+    have hx_single: "{x} \<in> ?B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hB_complex] hx by (by100 blast)
+    show "x \<in> geotop_polyhedron ?B"
+      unfolding geotop_polyhedron_def using hx_single by (by100 blast)
+  qed
+  have hboundary_vertices_preserving_subdivision:
+      "\<exists>F. geotop_is_subdivision F ?B
+        \<and> finite F
+        \<and> (\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F)
+        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
+    using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
+      [OF h\<sigma> hB_vertices_finite hB_vertices_poly]
+    by (by100 blast)
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
