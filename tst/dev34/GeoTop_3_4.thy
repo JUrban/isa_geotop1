@@ -6022,6 +6022,22 @@ proof -
     using hconn hend by (by100 blast)
 qed
 
+definition geotop_linear_graph_endpoint_chain_listing_dev34 ::
+  "(real^2) set set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> (real^2) list \<Rightarrow> bool"
+where
+  "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs \<longleftrightarrow>
+    2 \<le> length vs
+    \<and> vs ! 0 = w
+    \<and> vs ! 1 = q
+    \<and> distinct vs
+    \<and> set vs = geotop_complex_vertices L
+    \<and> (\<forall>v \<in> set vs. {v} \<in> L)
+    \<and> (\<forall>i < length vs - 1.
+      closed_segment (vs ! i) (vs ! Suc i) \<in> L
+      \<and> geotop_is_edge (closed_segment (vs ! i) (vs ! Suc i)))
+    \<and> {e \<in> L. geotop_is_edge e}
+      = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i)) ` {0..<length vs - 1})"
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
