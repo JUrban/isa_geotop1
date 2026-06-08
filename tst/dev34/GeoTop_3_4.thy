@@ -1383,8 +1383,10 @@ proof -
     by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
   have hidx_finite: "finite {0..<p}"
     by (by100 simp)
+  have hsource_index_image_finite: "finite ?V"
+    by (rule finite_imageI[OF hidx_finite])
   have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
-    using hsource_vertices hidx_finite by (by100 simp)
+    using hsource_vertices hsource_index_image_finite by (by100 simp)
   have hp_pos: "0 < p"
     using hp_gt2 by (by100 linarith)
   have hsource_vertices_nonempty: "geotop_complex_vertices L \<noteq> {}"
@@ -1401,7 +1403,15 @@ proof -
     using hsource_vertices card_image_le[OF hidx_finite, of v] by (by100 simp)
   have hsource_vertices_card_pos:
       "0 < card (geotop_complex_vertices L)"
-    using hsource_vertices_finite hsource_vertices_nonempty by (by100 simp)
+  proof -
+    have hiff:
+        "(0 < card (geotop_complex_vertices L))
+        = (geotop_complex_vertices L \<noteq> {}
+          \<and> finite (geotop_complex_vertices L))"
+      by (rule card_gt_0_iff)
+    show ?thesis
+      using hiff hsource_vertices_finite hsource_vertices_nonempty by (by100 blast)
+  qed
   have hsource_singletons_subset_L:
       "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
     using hsource_listing_decomp by (by100 blast)
@@ -1430,8 +1440,15 @@ proof -
         \<Longrightarrow> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
     using hsource_edges_eq by (by100 blast)
   have hsource_singleton_convex_hull_eq:
-      "\<And>x. geotop_convex_hull {x} = {x}"
-    using geotop_convex_hull_eq_HOL by (by100 simp)
+      "\<And>x :: real^2. geotop_convex_hull {x} = {x}"
+  proof -
+    fix x :: "real^2"
+    have "geotop_convex_hull {x} = convex hull {x}"
+      by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = {x}"
+      by (rule convex_hull_singleton)
+    finally show "geotop_convex_hull {x} = {x}" .
+  qed
   have hsource_listed_edge_simplex_vertices:
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> geotop_simplex_vertices
@@ -1465,8 +1482,12 @@ proof -
     assume he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
     obtain x where heq: "e = {x}"
       using he_single by (by100 blast)
+    have he_edge_set: "e \<in> {e\<in>L. geotop_is_edge e}"
+      using hsource_edges_eq heE by (by100 blast)
+    have he_edge: "geotop_is_edge e"
+      using he_edge_set by (by100 simp)
     have "geotop_is_edge {x}"
-      using hsource_edges_eq heE heq by (by100 blast)
+      using he_edge heq by (by100 simp)
     thus False
       using hsource_singleton_not_edge by (by100 blast)
   qed
@@ -1520,7 +1541,15 @@ proof -
     using hsource_edges_eq hsource_listed_edges_nonempty by (by100 simp)
   have hsource_edges_card_pos:
       "0 < card {e\<in>L. geotop_is_edge e}"
-    using hsource_graph_edges_finite hsource_graph_edges_nonempty by (by100 simp)
+  proof -
+    have hiff:
+        "(0 < card {e\<in>L. geotop_is_edge e})
+        = ({e\<in>L. geotop_is_edge e} \<noteq> {}
+          \<and> finite {e\<in>L. geotop_is_edge e})"
+      by (rule card_gt_0_iff)
+    show ?thesis
+      using hiff hsource_graph_edges_finite hsource_graph_edges_nonempty by (by100 blast)
+  qed
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
@@ -1624,8 +1653,10 @@ proof -
     by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
   have hidx_finite: "finite {0..<p}"
     by (by100 simp)
+  have hsource_index_image_finite: "finite ?V"
+    by (rule finite_imageI[OF hidx_finite])
   have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
-    using hvertices hidx_finite by (by100 simp)
+    using hvertices hsource_index_image_finite by (by100 simp)
   have hp_pos: "0 < p"
     using hp_gt2 by (by100 linarith)
   have hsource_vertices_nonempty: "geotop_complex_vertices L \<noteq> {}"
@@ -1678,12 +1709,28 @@ proof -
   have hsource_listed_edges_finite: "finite ?E"
     by (rule finite_imageI[OF hidx_finite])
   have hsource_edge_set_finite: "finite {e\<in>L. geotop_is_edge e}"
-    using hsource_edges_eq hsource_listed_edges_finite by (by100 simp)
+  proof -
+    have "{e\<in>L. geotop_is_edge e} = ?E"
+      using hsource_edges_eq by (by100 simp)
+    thus ?thesis
+      using hsource_listed_edges_finite by (by100 simp)
+  qed
   have hsource_vertex_edge_decomp:
       "L =
         ((\<lambda>x. {x}) ` geotop_complex_vertices L)
         \<union> {e\<in>L. geotop_is_edge e}"
-    using hL_listing_decomp hvertices hsource_edges_eq by (by100 simp)
+  proof -
+    have hL: "L = ((\<lambda>x. {x}) ` ?V) \<union> ?E"
+      by (rule hL_listing_decomp)
+    have hsingle:
+        "((\<lambda>x. {x}) ` ?V)
+        = ((\<lambda>x. {x}) ` geotop_complex_vertices L)"
+      using hvertices by (by100 simp)
+    have hedge: "?E = {e\<in>L. geotop_is_edge e}"
+      by (rule hsource_edges_eq)
+    show ?thesis
+      using hL hsingle hedge by (by100 simp)
+  qed
   have hsource_member_cases:
       "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow>
         \<tau> \<in> ((\<lambda>x. {x}) ` ?V) \<or> \<tau> \<in> ?E"
