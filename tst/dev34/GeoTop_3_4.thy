@@ -237,6 +237,28 @@ proof -
     using \<open>?S = {\<sigma>}\<close> by (by100 simp)
 qed
 
+lemma geotop_2simplex_edge_face_in_comb_boundary_dev34:
+  fixes \<sigma> e :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hedge: "geotop_simplex_dim e 1"
+  assumes hface: "geotop_is_face e \<sigma>"
+  shows "e \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
+      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
+  have heK: "e \<in> ?K"
+    using hface by (by100 simp)
+  have hcard:
+      "card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>} = 1"
+    by (rule geotop_2simplex_face_complex_edge_unique_top_2face_dev34
+        [OF h\<sigma> hedge hface])
+  have "e \<in> ?S"
+    using heK hedge hcard by (by100 simp)
+  show ?thesis
+    unfolding geotop_comb_boundary_def Let_def using \<open>e \<in> ?S\<close> by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2070,28 +2092,6 @@ proof -
     using hpoly_sub hpoly_face by (by100 simp)
   show ?thesis
     using hc hpoly by (by100 simp)
-qed
-
-lemma geotop_2simplex_edge_face_in_comb_boundary_dev34:
-  fixes \<sigma> e :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  assumes hedge: "geotop_simplex_dim e 1"
-  assumes hface: "geotop_is_face e \<sigma>"
-  shows "e \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
-proof -
-  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
-      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
-  have heK: "e \<in> ?K"
-    using hface by (by100 simp)
-  have hcard:
-      "card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>} = 1"
-    by (rule geotop_2simplex_face_complex_edge_unique_top_2face_dev34
-        [OF h\<sigma> hedge hface])
-  have "e \<in> ?S"
-    using heK hedge hcard by (by100 simp)
-  show ?thesis
-    unfolding geotop_comb_boundary_def Let_def using \<open>e \<in> ?S\<close> by (by100 blast)
 qed
 
 lemma geotop_2simplex_vertex_face_in_comb_boundary_dev34:
