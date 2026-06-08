@@ -13,7 +13,7 @@ geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix
 geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix
 geotop_polygon_arc_opposite_boundary_decomposition_prefix
 geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
-geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34
+geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34
 geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
 geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
 ```
@@ -26,15 +26,15 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1841
-dev34/GeoTop_3_4.thy:9398
-dev34/GeoTop_3_4.thy:10600
+dev34/GeoTop_3_4.thy:1362
+dev34/GeoTop_3_4.thy:9435
+dev34/GeoTop_3_4.thy:10637
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
 been closed. The active Figure 4.10 target-model package now has one remaining
-hole again, now isolated as the source-to-target package
-`geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34`.
+hole again, now isolated as the target realization package
+`geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34`.
 
 ## Progress Since Expert3
 
@@ -105,6 +105,13 @@ remaining missing step is still to upgrade this seed subdivision into the exact
 cyclic listing with `p`-periodic vertex map `u` and matching bijection from the
 source vertices.
 
+The broader wrapper
+`geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34` is now
+proved from the source normal-form facts and the new exact target-realization
+lemma. This keeps the hole count unchanged but makes the remaining Figure 4.10
+obligation narrower: construct the target standard-boundary cyclic listing from
+source singleton/adjacent-edge cases, allowing repeated source indices.
+
 Latest local verification:
 
 ```bash
@@ -135,7 +142,7 @@ one-sided semicircle separation.
 
 Continue the expert3 finite-graph sprint:
 
-1. close `geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34`;
+1. close `geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34`;
 2. reuse the same listing/subdivision machinery for
    `geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34`;
 3. return to `geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix`

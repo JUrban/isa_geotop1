@@ -1331,6 +1331,36 @@ where
     \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
     \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
 
+lemma geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34:
+  fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+    and \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp_gt2: "2 < p"
+  assumes hsource_vertices:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes hsource_closed: "v p = v 0"
+  assumes hsource_cases:
+    "\<And>W. W \<subseteq> geotop_complex_vertices L
+      \<Longrightarrow> geotop_convex_hull W \<in> L
+      \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. v k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  assumes hsource_single:
+    "\<And>x. x \<in> ((\<lambda>k. v k) ` {0..<p})
+      \<Longrightarrow> geotop_convex_hull {x} \<in> L"
+  assumes hsource_edge:
+    "\<And>k. k \<in> {0..<p}
+      \<Longrightarrow> geotop_convex_hull {v k, v (Suc k)} \<in> L"
+  shows "\<exists>F u \<psi>.
+      geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F u
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)"
+  (**
+    Moise Fig. 4.10 target realization in source normal form.  The remaining
+    geometric construction is to put a cyclic subdivision on the boundary of a
+    standard 2-simplex with exactly the quotient cyclic incidence of the source
+    listing, allowing repeated indices in the given parametrization. **)
+  sorry
+
 lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
@@ -1837,8 +1867,15 @@ proof -
   have hF\<^sub>0_vertices_finite:
       "finite (geotop_complex_vertices F\<^sub>0)"
     by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
+  have hsource_singleton_convex_hull_in_L_image:
+      "\<And>x. x \<in> ?V \<Longrightarrow> geotop_convex_hull {x} \<in> L"
+    using hsource_singleton_convex_hull_in_L hvertices by (by100 blast)
   show ?thesis
-    sorry
+    by (rule geotop_standard_boundary_cycle_listing_target_from_source_cases_dev34
+        [OF h\<sigma> hp_gt2 hvertices hclosed_vertex
+          hsource_cyclic_listing_convex_hull_in_L_cases_all
+          hsource_singleton_convex_hull_in_L_image
+          hsource_edge_convex_hull_in_L])
 qed
 
 lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
