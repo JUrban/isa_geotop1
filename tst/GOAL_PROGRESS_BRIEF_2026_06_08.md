@@ -8,8 +8,8 @@ The goal is not complete yet. The current local hole inventory reports 8 target
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106:    sorry
 dev34/GeoTop_3_4.thy:556:      sorry
-dev34/GeoTop_3_4.thy:7388:    sorry
-dev34/GeoTop_3_4.thy:8550:  sorry
+dev34/GeoTop_3_4.thy:7400:    sorry
+dev34/GeoTop_3_4.thy:8629:  sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803:    sorry
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047:    sorry
@@ -31,6 +31,11 @@ iteration could take minutes.
 The latest work also moved several obligations out of theorem bodies and into
 named packages. That matches the expert advice: close reusable geometric and
 finite-graph lemmas, then make theorem wrappers short.
+
+In particular, commit `fb1232c5` narrowed the active endpoint fan wrapper to the
+precise `hchain_boundary_subdivision_model` package. The remaining fan work is
+now the chain boundary-subdivision/isomorphism construction, not the cone/fan
+target assembly around it.
 
 ## Expert Audit Synthesis
 
@@ -57,7 +62,7 @@ problem. Several holes stand for whole book steps:
 - the branch-vertex local cutpoint argument needs the simple-closed-curve local
   one-manifold restriction, not just graph degree counting;
 - the cycle realization needs a clean cyclic listing/subdivision model;
-- the endpoint fan needs the path analogue of that realization;
+- the endpoint fan needs the chain boundary-subdivision/isomorphism package;
 - the semicircle statement may be too strong unless the local hypotheses really
   prevent reconnection outside the small ball;
 - D44 is probably the largest remaining conceptual package despite being one
