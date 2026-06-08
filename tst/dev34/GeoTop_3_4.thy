@@ -172,6 +172,31 @@ lemma geotop_successor_cycle_listing_vertex_edge_decomp_dev34:
     \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   using hvertex_image hedge_segments hL_decomp by (by100 simp)
 
+lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
+  fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes hp_gt2: "2 < p"
+  assumes hL_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  shows "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
+      geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Moise Figure 4.10 boundary-realization construction after the finite graph
+    has already been replaced by an abstract cyclic vertex listing.  Build a
+    subdivision of the frontier of a standard 2-simplex with the same cyclic
+    vertices and edges, then send each listed vertex of \<open>L\<close> to the
+    corresponding subdivision vertex. **)
+  sorry
+
 lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -208,7 +233,8 @@ lemma geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34:
     cyclic successor listing to subdivide the frontier of a standard 2-simplex
     with matching cyclic vertices and edges, then map the listed graph vertices
     to the corresponding boundary subdivision vertices. **)
-  sorry
+  by (rule geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34
+      [OF hL_linear hL_finite hdegree_two hp_gt2 hL_listing_decomp])
 
 lemma geotop_successor_cycle_listing_realizes_standard_triangle_boundary_subdivision_dev34:
   fixes L :: "(real^2) set set"
