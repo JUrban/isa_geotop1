@@ -3850,6 +3850,26 @@ proof -
   qed
 qed
 
+lemma top1_arc_non_endpoint_removal_disconnected_prefix:
+  assumes hep: "top1_arc_endpoints_on D (subspace_topology X TX D) = {a, b}"
+  assumes hpD: "p \<in> D"
+  assumes hp_ne: "p \<notin> {a, b}"
+  shows "\<not> top1_connected_on (D - {p})
+    (subspace_topology X TX (D - {p}))"
+proof
+  assume hconn: "top1_connected_on (D - {p})
+    (subspace_topology X TX (D - {p}))"
+  have hsub:
+      "subspace_topology D (subspace_topology X TX D) (D - {p})
+      = subspace_topology X TX (D - {p})"
+    by (rule subspace_topology_trans[OF Diff_subset])
+  have hp_ep: "p \<in> top1_arc_endpoints_on D (subspace_topology X TX D)"
+    unfolding top1_arc_endpoints_on_def
+    using hpD hconn hsub by (by100 simp)
+  show False
+    using hep hp_ep hp_ne by (by100 simp)
+qed
+
 lemma geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -6915,6 +6935,121 @@ proof -
           using hST hS_eq hT_eq by (by100 simp)
         then show ?thesis by (by100 simp)
       qed
+    qed
+  qed
+  have hcanonical_pair_arc_side_interior_cut:
+      "\<exists>C p y. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> p \<noteq> y
+        \<and> p \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+        \<and> \<not> top1_connected_on (C - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {p}))"
+  proof -
+    have hside_cut:
+        "\<And>C p. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<Longrightarrow> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> p \<in> C - {w}
+          \<Longrightarrow> \<not> top1_connected_on (C - {p})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {p}))"
+    proof -
+      fix C p
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      assume hp_set: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hpC: "p \<in> C - {w}"
+      have hp_not_ep: "p \<notin> {w, q\<^sub>1}"
+        using hp_set hpC hx\<^sub>1_ne_q\<^sub>1 hx\<^sub>2_ne_q\<^sub>1 hx\<^sub>3_ne_q\<^sub>1 by (by100 blast)
+      show "\<not> top1_connected_on (C - {p})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {p}))"
+      proof (cases "C = A\<^sub>1")
+        case True
+        show ?thesis
+          unfolding True
+          by (rule top1_arc_non_endpoint_removal_disconnected_prefix
+              [OF hA\<^sub>1_ep _ hp_not_ep])
+            (use hpC True in \<open>by (by100 blast)\<close>)
+      next
+        case False
+        have hC_eq: "C = A\<^sub>2"
+          using hC False by (by100 simp)
+        show ?thesis
+          unfolding hC_eq
+          by (rule top1_arc_non_endpoint_removal_disconnected_prefix
+              [OF hA\<^sub>2_ep _ hp_not_ep])
+            (use hpC hC_eq in \<open>by (by100 blast)\<close>)
+      qed
+    qed
+    have hpack:
+        "\<And>C p y. C \<in> {A\<^sub>1, A\<^sub>2}
+          \<Longrightarrow> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+          \<Longrightarrow> p \<noteq> y
+          \<Longrightarrow> p \<in> C - {w}
+          \<Longrightarrow> y \<in> C - {w}
+          \<Longrightarrow> top1_connected_on (C - {w})
+            (subspace_topology UNIV geotop_euclidean_topology (C - {w}))
+          \<Longrightarrow> ?thesis"
+    proof -
+      fix C p y
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      assume hp_set: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hy_set: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hpy: "p \<noteq> y"
+      assume hpC: "p \<in> C - {w}"
+      assume hyC: "y \<in> C - {w}"
+      assume hC_conn: "top1_connected_on (C - {w})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      have hdisc: "\<not> top1_connected_on (C - {p})
+        (subspace_topology UNIV geotop_euclidean_topology (C - {p}))"
+        by (rule hside_cut[OF hC hp_set hpC])
+      show ?thesis
+      proof (intro exI[where x=C] exI[where x=p] exI[where x=y] conjI)
+        show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+        show "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hp_set)
+        show "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hy_set)
+        show "p \<noteq> y" by (rule hpy)
+        show "p \<in> C - {w}" by (rule hpC)
+        show "y \<in> C - {w}" by (rule hyC)
+        show "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+          by (rule hC_conn)
+        show "\<not> top1_connected_on (C - {p})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {p}))"
+          by (rule hdisc)
+      qed
+    qed
+    show ?thesis
+      using hcanonical_arc_side_disjoint_pair_cases
+    proof (elim disjE exE conjE)
+      fix C
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+        and hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+        and hC_conn: "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      show ?thesis
+        by (rule hpack[OF hC _ _ hx\<^sub>12 hx\<^sub>1C hx\<^sub>2C hC_conn], (by100 simp)+)
+    next
+      fix C
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hx\<^sub>1C: "x\<^sub>1 \<in> C - {w}"
+        and hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+        and hC_conn: "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      show ?thesis
+        by (rule hpack[OF hC _ _ hx\<^sub>13 hx\<^sub>1C hx\<^sub>3C hC_conn], (by100 simp)+)
+    next
+      fix C
+      assume hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+        and hx\<^sub>2C: "x\<^sub>2 \<in> C - {w}"
+        and hx\<^sub>3C: "x\<^sub>3 \<in> C - {w}"
+        and hC_conn: "top1_connected_on (C - {w})
+          (subspace_topology UNIV geotop_euclidean_topology (C - {w}))"
+      show ?thesis
+        by (rule hpack[OF hC _ _ hx\<^sub>23 hx\<^sub>2C hx\<^sub>3C hC_conn], (by100 simp)+)
     qed
   qed
   have harc_side_disjoint_germs_local_star_impossible: False
