@@ -172,6 +172,90 @@ lemma geotop_successor_cycle_listing_vertex_edge_decomp_dev34:
     \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   using hvertex_image hedge_segments hL_decomp by (by100 simp)
 
+lemma geotop_face_dim_le_dev34:
+  fixes \<tau> \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> n"
+  assumes hface: "geotop_is_face \<tau> \<sigma>"
+  shows "\<exists>k. k \<le> n \<and> geotop_simplex_dim \<tau> k"
+  (**
+    Face-dimension monotonicity used by the Figure 4.10 boundary model:
+    the combinatorial boundary contains \((n-1)\)-faces and their faces, so
+    the second layer is still at most \((n-1)\)-dimensional. **)
+proof -
+  obtain V W where h\<sigma>V: "geotop_simplex_vertices \<sigma> V"
+    and hW_ne: "W \<noteq> {}"
+    and hW_sub: "W \<subseteq> V"
+    and h\<tau>_eq: "\<tau> = geotop_convex_hull W"
+    and h\<tau>W: "geotop_simplex_vertices \<tau> W"
+    by (rule geotop_face_witness_simplex_vertices[OF hface])
+  obtain Vn m where hVn_fin: "finite Vn"
+    and hVn_card: "card Vn = n + 1"
+    and hn_le_m: "n \<le> m"
+    and hgp_Vn: "geotop_general_position Vn m"
+    and h\<sigma>_eq_Vn: "\<sigma> = geotop_convex_hull Vn"
+    using h\<sigma> unfolding geotop_simplex_dim_def by (by100 blast)
+  have h\<sigma>Vn: "geotop_simplex_vertices \<sigma> Vn"
+    unfolding geotop_simplex_vertices_def
+    using hVn_fin hVn_card hn_le_m hgp_Vn h\<sigma>_eq_Vn by (by100 blast)
+  have hV_eq: "V = Vn"
+    by (rule geotop_simplex_vertices_unique[OF h\<sigma>V h\<sigma>Vn])
+  have hW_sub_Vn: "W \<subseteq> Vn"
+    using hW_sub hV_eq by (by100 simp)
+  obtain m' k where hW_fin: "finite W"
+    and hW_card: "card W = k + 1"
+    and hk_le_m': "k \<le> m'"
+    and hgp_W: "geotop_general_position W m'"
+    and h\<tau>_eq_W: "\<tau> = geotop_convex_hull W"
+    using h\<tau>W unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hcard_le: "card W \<le> card Vn"
+    by (rule card_mono[OF hVn_fin hW_sub_Vn])
+  have hk_le_n: "k \<le> n"
+    using hcard_le hW_card hVn_card by (by100 linarith)
+  have h\<tau>dim: "geotop_simplex_dim \<tau> k"
+    unfolding geotop_simplex_dim_def
+    using hW_fin hW_card hk_le_m' hgp_W h\<tau>_eq_W by (by100 blast)
+  show ?thesis
+    using hk_le_n h\<tau>dim by (by100 blast)
+qed
+
+lemma geotop_2simplex_comb_boundary_is_1dim_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_complex_is_1dim
+    (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  (**
+    The frontier complex of a 2-simplex is a finite 1-complex: it consists
+    of boundary edges and their vertex faces. **)
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?S = "{\<tau> \<in> ?K. geotop_simplex_dim \<tau> (2 - 1) \<and>
+      card {\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face \<tau> \<theta>} = 1}"
+  show ?thesis
+    unfolding geotop_complex_is_1dim_def
+  proof
+    fix \<rho>
+    assume h\<rho>B: "\<rho> \<in> geotop_comb_boundary ?K 2"
+    have h\<rho>cases: "\<rho> \<in> ?S \<union> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      using h\<rho>B unfolding geotop_comb_boundary_def Let_def by (by100 simp)
+    show "\<exists>n::nat. n \<le> 1 \<and> geotop_simplex_dim \<rho> n"
+    proof (rule UnE[OF h\<rho>cases])
+      assume h\<rho>S: "\<rho> \<in> ?S"
+      show ?thesis
+        using h\<rho>S by (by100 blast)
+    next
+      assume "\<rho> \<in> {\<rho>. \<exists>\<tau>\<in>?S. geotop_is_face \<rho> \<tau>}"
+      then obtain \<tau> where h\<tau>S: "\<tau> \<in> ?S" and h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+        by (by100 blast)
+      have h\<tau>dim: "geotop_simplex_dim \<tau> 1"
+        using h\<tau>S by (by100 simp)
+      obtain k where hk_le: "k \<le> 1" and h\<rho>dim: "geotop_simplex_dim \<rho> k"
+        using geotop_face_dim_le_dev34[OF h\<tau>dim h\<rho>\<tau>] by (by100 blast)
+      show ?thesis
+        using hk_le h\<rho>dim by (by100 blast)
+    qed
+  qed
+qed
+
 lemma geotop_finite_polyhedron_points_as_vertices_dev34:
   fixes K :: "'a::euclidean_space set set" and S :: "'a set"
   assumes hK_complex: "geotop_is_complex K"
