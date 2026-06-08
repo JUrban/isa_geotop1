@@ -150,7 +150,7 @@ def iter_session_log_files(base: Path) -> list[Path]:
     for pattern in SESSION_LOG_FILE_PATTERNS:
         session_log_files.extend(
             path
-            for path in base.glob(pattern)
+            for path in base.rglob(pattern)
             if path.is_file()
             and not is_ignored_generated_path(base, path)
         )
