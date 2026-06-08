@@ -1392,6 +1392,12 @@ proof -
     thus ?thesis
       using hsource_vertices by (by100 blast)
   qed
+  have hsource_vertices_card_le_p:
+      "card (geotop_complex_vertices L) \<le> p"
+    using hsource_vertices card_image_le[OF hidx_finite, of v] by (by100 simp)
+  have hsource_vertices_card_pos:
+      "0 < card (geotop_complex_vertices L)"
+    using hsource_vertices_finite hsource_vertices_nonempty by (by100 simp)
   have hsource_edges_eq:
       "?E = {e\<in>L. geotop_is_edge e}"
     by (rule hsource_edge_segments)
