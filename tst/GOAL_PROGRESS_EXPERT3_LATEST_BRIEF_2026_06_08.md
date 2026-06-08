@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1494
-dev34/GeoTop_3_4.thy:9051
-dev34/GeoTop_3_4.thy:10253
+dev34/GeoTop_3_4.thy:1501
+dev34/GeoTop_3_4.thy:9058
+dev34/GeoTop_3_4.thy:10260
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -84,7 +84,22 @@ cyclic subdivision and matching vertex map.
 
 The same package now also records indexed source vertex membership, the closed
 endpoint vertex membership, finiteness of the source singleton and edge images,
-and nonemptiness of the source complex.
+nonemptiness of the source complex, the 1-dimensionality of the source linear
+graph, and the decomposition of `L` into source singleton vertices plus source
+edge simplexes.
+
+Latest local verification:
+
+```bash
+./check_dev34_fast.sh focus dev34-cycle-realization
+./check_dev34_fast.sh holes
+rg -n "sledgehammer|try0" dev34/GeoTop_3_4.thy dev34_prefix dev34_prefix_mid dev34_prefix_graph dev34_prefix_graph/cache dev34_core || true
+git diff --check -- dev34/GeoTop_3_4.thy
+```
+
+The focused cycle-realization check passed, the hole scan remains at 8 target
+holes, the marker scan is empty, and `git diff --check` is clean for the touched
+theory file.
 
 ## Audit Synthesis
 

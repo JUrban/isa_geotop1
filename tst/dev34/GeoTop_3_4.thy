@@ -1364,6 +1364,8 @@ proof -
   let ?E = "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
   have hidx_finite: "finite {0..<p}"
     by (by100 simp)
   have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
@@ -1421,6 +1423,11 @@ proof -
     by (rule finite_imageI[OF hidx_finite])
   have hsource_edge_set_finite: "finite {e\<in>L. geotop_is_edge e}"
     using hsource_edges_eq hsource_listed_edges_finite by (by100 simp)
+  have hsource_vertex_edge_decomp:
+      "L =
+        ((\<lambda>x. {x}) ` geotop_complex_vertices L)
+        \<union> {e\<in>L. geotop_is_edge e}"
+    using hL_listing_decomp hvertices hsource_edges_eq by (by100 simp)
   have hsource_edge_members:
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         closed_segment (v k) (v (Suc k)) \<in> L
