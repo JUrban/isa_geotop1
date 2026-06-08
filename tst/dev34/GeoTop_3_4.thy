@@ -375,7 +375,28 @@ lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34
     one 2-simplex so that the resulting frontier complex has the same edge
     set cardinality and cyclic incidence as \<open>L\<close>, then send listed vertices of
     \<open>L\<close> to the corresponding boundary subdivision vertices. **)
-  sorry
+proof -
+  let ?V = "(\<lambda>k. v k) ` {0..<p}"
+  let ?E = "(\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p}"
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
+  have hidx_fin: "finite {0..<p}"
+    by (by100 simp)
+  have hV_fin: "finite ?V"
+    by (rule finite_imageI[OF hidx_fin])
+  have hE_fin: "finite ?E"
+    by (rule finite_imageI[OF hidx_fin])
+  have hV_eq_complex_vertices: "?V = geotop_complex_vertices L"
+    by (rule hvertices)
+  have hstandard_boundary_cycle_subdivision_model:
+      "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
+    sorry
+  show ?thesis
+    by (rule hstandard_boundary_cycle_subdivision_model)
+qed
 
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
