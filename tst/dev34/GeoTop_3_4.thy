@@ -1180,6 +1180,19 @@ proof -
       "\<And>k. k \<in> {0..<p} \<Longrightarrow> {v k} \<in> L \<and> {v (Suc k)} \<in> L"
     using hlisted_edge_endpoints_complex_vertices hL_complex
       geotop_complex_vertices_eq_0_simplexes by (by100 blast)
+  have hlisted_successor_vertices_in_V:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v (Suc k) \<in> ?V"
+    using hlisted_edge_endpoints_complex_vertices hV_eq_complex_vertices
+    by (by100 blast)
+  have hlast_successor_vertex_in_V: "v p \<in> ?V"
+    using hlisted_successor_vertices_in_V[of "p - 1"] hp_gt2 by (by100 simp)
+  have hclosing_listed_edge_members:
+      "closed_segment (v (p - 1)) (v p) \<in> L
+      \<and> geotop_is_edge (closed_segment (v (p - 1)) (v p))"
+    using hlisted_edge_members[of "p - 1"] hp_gt2 by (by100 simp)
+  obtain k\<^sub>p where hk\<^sub>p: "k\<^sub>p \<in> {0..<p}"
+      and hvp_eq: "v p = v k\<^sub>p"
+    using hlast_successor_vertex_in_V by (by100 blast)
   have hsingleton_convex_hull_in_L:
       "\<And>x. x \<in> ?V \<Longrightarrow> geotop_convex_hull {x} \<in> L"
     using hvertex_singletons_in_L geotop_convex_hull_eq_HOL[of "{_}"]
