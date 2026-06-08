@@ -379,6 +379,8 @@ proof -
     using hp_gt2 by (by100 linarith)
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hL_1dim: "geotop_complex_is_1dim L"
+    by (rule geotop_linear_graph_1dim_dev34[OF hL_linear])
   have hidx_fin: "finite {0..<p}"
     by (by100 simp)
   have hV_fin: "finite ?V"
