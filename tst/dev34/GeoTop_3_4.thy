@@ -1311,6 +1311,26 @@ proof -
     unfolding geotop_isomorphism_def using h\<psi>bij hcond by (by100 blast)
 qed
 
+definition geotop_standard_boundary_cycle_listing_data_dev34 ::
+  "(real^2) set \<Rightarrow> nat \<Rightarrow> (real^2) set set \<Rightarrow> (nat \<Rightarrow> real^2) \<Rightarrow> bool"
+where
+  "geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F u \<longleftrightarrow>
+    geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+    \<and> u p = u 0
+    \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
+    \<and> F =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+    \<and> ((\<lambda>k. closed_segment (u k) (u (Suc k))) ` {0..<p})
+      = {e\<in>F. geotop_is_edge e}
+    \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F
+      \<longrightarrow> geotop_convex_hull W \<in> F
+      \<longrightarrow> ((\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})))
+    \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
+    \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
+
 lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
