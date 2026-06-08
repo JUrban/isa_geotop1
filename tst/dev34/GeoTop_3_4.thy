@@ -2195,6 +2195,17 @@ proof -
     show ?thesis
       using hnamed_eq_faces by (by100 simp)
   qed
+  have h\<sigma>_frontier_named_edges:
+      "frontier \<sigma> =
+        \<Union>{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+          closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+          closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>}"
+  proof -
+    have "frontier \<sigma> = \<Union>{e. geotop_is_edge e \<and> geotop_is_face e \<sigma>}"
+      by (rule geotop_2simplex_frontier_eq_edge_faces_prefix[OF h\<sigma>])
+    thus ?thesis
+      using h\<sigma>_edge_faces_all_named by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
