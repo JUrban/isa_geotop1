@@ -346,6 +346,40 @@ proof -
     by (rule hinduct[OF hS_finite hS_poly])
 qed
 
+lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34:
+  fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+    and \<sigma> :: "(real^2) set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp_gt2: "2 < p"
+  assumes hL_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hedge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  assumes hvertices:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes hedges:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  shows "\<exists>F \<psi>.
+      geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> geotop_isomorphism L F \<psi>"
+  (**
+    Moise Fig. 4.10, boundary-cycle construction package.  After the finite
+    graph has been put in cyclic order, subdivide the three boundary edges of
+    one 2-simplex so that the resulting frontier complex has the same edge
+    set cardinality and cyclic incidence as \<open>L\<close>, then send listed vertices of
+    \<open>L\<close> to the corresponding boundary subdivision vertices. **)
+  sorry
+
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -553,7 +587,9 @@ proof -
         \<open>((\<lambda>x. {x}) ` ?V, ?E)\<close>; then define \<open>\<psi>\<close> by the cyclic vertex
         correspondence and verify the hull-membership clauses of
         \<open>geotop_isomorphism\<close>. **)
-      sorry
+      by (rule geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34
+          [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hL_listing_decomp
+            hedge_segments hV_eq_complex_vertices hE_eq_edges])
     show ?thesis
       using h\<sigma> hstandard_cycle_subdivision_model by (by100 blast)
   qed

@@ -10,9 +10,9 @@ dev34_prefix/GeoTop_3_4_Prefix.thy:106
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
-dev34/GeoTop_3_4.thy:556
-dev34/GeoTop_3_4.thy:7411
-dev34/GeoTop_3_4.thy:8613
+dev34/GeoTop_3_4.thy:381
+dev34/GeoTop_3_4.thy:7447
+dev34/GeoTop_3_4.thy:8649
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9109
 ```
 
@@ -24,6 +24,11 @@ The latest committed proof work is `dda49b08 Retarget endpoint fan package to
 boundary arc`. That fixed an important statement-shape problem: the endpoint fan
 target is now a boundary-arc fan package, not an incorrect full-boundary-cycle
 isomorphism requirement.
+
+The Figure 4.10 cycle realization hole is now named as
+`geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34`.
+The surrounding cyclic-listing proof calls this package instead of carrying an
+anonymous inner `sorry`.
 
 ## What The Expert Audits Imply
 
@@ -72,9 +77,9 @@ expert audit:
 1. Close the graph-cache branch/local cutpoint package, or at least isolate its
 exact local simple-closed-curve obstruction.
 2. Use the existing cyclic successor/orbit infrastructure to close the standard
-boundary-cycle subdivision model in `dev34/GeoTop_3_4.thy:556`.
+boundary-cycle subdivision model in `dev34/GeoTop_3_4.thy:381`.
 3. Then close the endpoint-chain boundary-arc fan package at
-   `dev34/GeoTop_3_4.thy:7411`, reusing the same graph-listing discipline.
+   `dev34/GeoTop_3_4.thy:7447`, reusing the same graph-listing discipline.
 
 That route is preferred because it connects several remaining holes and uses
 the freshest focus caches. The Section 3 fold and Theorem 4.4 brick package are
