@@ -459,6 +459,101 @@ proof -
     by (rule finite_subset[OF hbd_sub hK_finite])
 qed
 
+lemma geotop_2simplex_comb_boundary_is_complex_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "geotop_is_complex
+    (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?B = "geotop_comb_boundary ?K 2"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  have hB_sub_K: "?B \<subseteq> ?K"
+    by (rule geotop_comb_boundary_subset_complex_dev34[OF hK_complex])
+  have hB_fin: "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hK_simplexes: "\<forall>\<tau>\<in>?K. geotop_is_simplex \<tau>"
+    using conjunct1[OF hK_complex[unfolded geotop_is_complex_def]] .
+  have hsimplexes: "\<forall>\<tau>\<in>?B. geotop_is_simplex \<tau>"
+  proof
+    fix \<tau>
+    assume h\<tau>B: "\<tau> \<in> ?B"
+    have h\<tau>K: "\<tau> \<in> ?K"
+      using hB_sub_K h\<tau>B by (by100 blast)
+    show "geotop_is_simplex \<tau>"
+      using hK_simplexes h\<tau>K by (by100 blast)
+  qed
+  have hface_closed: "\<forall>\<tau>\<in>?B. \<forall>\<rho>. geotop_is_face \<rho> \<tau> \<longrightarrow> \<rho> \<in> ?B"
+  proof (intro ballI allI impI)
+    fix \<tau> \<rho>
+    assume h\<tau>B: "\<tau> \<in> ?B"
+    assume h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
+    have h\<tau>proper: "geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
+      by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34
+          [OF h\<sigma> h\<tau>B])
+    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
+      using h\<tau>proper by (by100 blast)
+    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
+      using h\<tau>proper by (by100 blast)
+    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
+      by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
+    have h\<rho>ne\<sigma>: "\<rho> \<noteq> \<sigma>"
+    proof
+      assume h\<rho>eq: "\<rho> = \<sigma>"
+      have h\<sigma>sub\<tau>: "\<sigma> \<subseteq> \<tau>"
+        using geotop_is_face_imp_subset[OF h\<rho>\<tau>] h\<rho>eq by (by100 simp)
+      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
+        by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
+      have "\<tau> = \<sigma>"
+        using h\<sigma>sub\<tau> h\<tau>sub\<sigma> by (by100 blast)
+      show False
+        using h\<tau>ne\<sigma> \<open>\<tau> = \<sigma>\<close> by (by100 blast)
+    qed
+    show "\<rho> \<in> ?B"
+      by (rule geotop_2simplex_proper_face_in_comb_boundary_dev34
+          [OF h\<sigma> h\<rho>\<sigma> h\<rho>ne\<sigma>])
+  qed
+  have hintersections:
+      "\<forall>\<tau>\<in>?B. \<forall>\<rho>\<in>?B. \<tau> \<inter> \<rho> \<noteq> {} \<longrightarrow>
+        geotop_is_face (\<tau> \<inter> \<rho>) \<tau> \<and> geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
+  proof (intro ballI impI)
+    fix \<tau> \<rho>
+    assume h\<tau>B: "\<tau> \<in> ?B"
+    assume h\<rho>B: "\<rho> \<in> ?B"
+    assume hmeet: "\<tau> \<inter> \<rho> \<noteq> {}"
+    have hK_inter:
+        "\<forall>\<alpha>\<in>?K. \<forall>\<beta>\<in>?K. \<alpha> \<inter> \<beta> \<noteq> {} \<longrightarrow>
+          geotop_is_face (\<alpha> \<inter> \<beta>) \<alpha> \<and> geotop_is_face (\<alpha> \<inter> \<beta>) \<beta>"
+      using conjunct1[OF conjunct2[OF conjunct2[
+        OF hK_complex[unfolded geotop_is_complex_def]]]] .
+    have h\<tau>K: "\<tau> \<in> ?K"
+      using hB_sub_K h\<tau>B by (by100 blast)
+    have h\<rho>K: "\<rho> \<in> ?K"
+      using hB_sub_K h\<rho>B by (by100 blast)
+    show "geotop_is_face (\<tau> \<inter> \<rho>) \<tau> \<and> geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
+      using hK_inter h\<tau>K h\<rho>K hmeet by (by100 blast)
+  qed
+  have hlocfin:
+      "\<forall>\<tau>\<in>?B. \<exists>U. open U \<and> \<tau> \<subseteq> U
+        \<and> finite {\<rho>\<in>?B. \<rho> \<inter> U \<noteq> {}}"
+  proof
+    fix \<tau>
+    assume h\<tau>B: "\<tau> \<in> ?B"
+    have hopen: "open (UNIV :: (real^2) set)"
+      by (by100 simp)
+    have hsub: "\<tau> \<subseteq> (UNIV :: (real^2) set)"
+      by (by100 simp)
+    have hfin: "finite {\<rho>\<in>?B. \<rho> \<inter> (UNIV :: (real^2) set) \<noteq> {}}"
+      using hB_fin by (by100 simp)
+    show "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<rho>\<in>?B. \<rho> \<inter> U \<noteq> {}}"
+      using hopen hsub hfin by (by100 blast)
+  qed
+  show ?thesis
+    unfolding geotop_is_complex_def
+    using hsimplexes hface_closed hintersections hlocfin by (by100 blast)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2382,101 +2477,6 @@ proof (rule equals0I)
     by (rule face_of_disjoint_rel_interior[OF hface_HOL hne])
   show False
     using hdisj hx\<rho> hx_rel by (by100 blast)
-qed
-
-lemma geotop_2simplex_comb_boundary_is_complex_dev34:
-  fixes \<sigma> :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  shows "geotop_is_complex
-    (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
-proof -
-  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-  let ?B = "geotop_comb_boundary ?K 2"
-  have hK_complex: "geotop_is_complex ?K"
-    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
-  have hB_sub_K: "?B \<subseteq> ?K"
-    by (rule geotop_comb_boundary_subset_complex_dev34[OF hK_complex])
-  have hB_fin: "finite ?B"
-    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
-  have hK_simplexes: "\<forall>\<tau>\<in>?K. geotop_is_simplex \<tau>"
-    using conjunct1[OF hK_complex[unfolded geotop_is_complex_def]] .
-  have hsimplexes: "\<forall>\<tau>\<in>?B. geotop_is_simplex \<tau>"
-  proof
-    fix \<tau>
-    assume h\<tau>B: "\<tau> \<in> ?B"
-    have h\<tau>K: "\<tau> \<in> ?K"
-      using hB_sub_K h\<tau>B by (by100 blast)
-    show "geotop_is_simplex \<tau>"
-      using hK_simplexes h\<tau>K by (by100 blast)
-  qed
-  have hface_closed: "\<forall>\<tau>\<in>?B. \<forall>\<rho>. geotop_is_face \<rho> \<tau> \<longrightarrow> \<rho> \<in> ?B"
-  proof (intro ballI allI impI)
-    fix \<tau> \<rho>
-    assume h\<tau>B: "\<tau> \<in> ?B"
-    assume h\<rho>\<tau>: "geotop_is_face \<rho> \<tau>"
-    have h\<tau>proper: "geotop_is_face \<tau> \<sigma> \<and> \<tau> \<noteq> \<sigma>"
-      by (rule geotop_2simplex_comb_boundary_member_proper_face_dev34
-          [OF h\<sigma> h\<tau>B])
-    have h\<tau>\<sigma>: "geotop_is_face \<tau> \<sigma>"
-      using h\<tau>proper by (by100 blast)
-    have h\<tau>ne\<sigma>: "\<tau> \<noteq> \<sigma>"
-      using h\<tau>proper by (by100 blast)
-    have h\<rho>\<sigma>: "geotop_is_face \<rho> \<sigma>"
-      by (rule geotop_is_face_trans[OF h\<rho>\<tau> h\<tau>\<sigma>])
-    have h\<rho>ne\<sigma>: "\<rho> \<noteq> \<sigma>"
-    proof
-      assume h\<rho>eq: "\<rho> = \<sigma>"
-      have h\<sigma>sub\<tau>: "\<sigma> \<subseteq> \<tau>"
-        using geotop_is_face_imp_subset[OF h\<rho>\<tau>] h\<rho>eq by (by100 simp)
-      have h\<tau>sub\<sigma>: "\<tau> \<subseteq> \<sigma>"
-        by (rule geotop_is_face_imp_subset[OF h\<tau>\<sigma>])
-      have "\<tau> = \<sigma>"
-        using h\<sigma>sub\<tau> h\<tau>sub\<sigma> by (by100 blast)
-      show False
-        using h\<tau>ne\<sigma> \<open>\<tau> = \<sigma>\<close> by (by100 blast)
-    qed
-    show "\<rho> \<in> ?B"
-      by (rule geotop_2simplex_proper_face_in_comb_boundary_dev34
-          [OF h\<sigma> h\<rho>\<sigma> h\<rho>ne\<sigma>])
-  qed
-  have hintersections:
-      "\<forall>\<tau>\<in>?B. \<forall>\<rho>\<in>?B. \<tau> \<inter> \<rho> \<noteq> {} \<longrightarrow>
-        geotop_is_face (\<tau> \<inter> \<rho>) \<tau> \<and> geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
-  proof (intro ballI impI)
-    fix \<tau> \<rho>
-    assume h\<tau>B: "\<tau> \<in> ?B"
-    assume h\<rho>B: "\<rho> \<in> ?B"
-    assume hmeet: "\<tau> \<inter> \<rho> \<noteq> {}"
-    have hK_inter:
-        "\<forall>\<alpha>\<in>?K. \<forall>\<beta>\<in>?K. \<alpha> \<inter> \<beta> \<noteq> {} \<longrightarrow>
-          geotop_is_face (\<alpha> \<inter> \<beta>) \<alpha> \<and> geotop_is_face (\<alpha> \<inter> \<beta>) \<beta>"
-      using conjunct1[OF conjunct2[OF conjunct2[
-        OF hK_complex[unfolded geotop_is_complex_def]]]] .
-    have h\<tau>K: "\<tau> \<in> ?K"
-      using hB_sub_K h\<tau>B by (by100 blast)
-    have h\<rho>K: "\<rho> \<in> ?K"
-      using hB_sub_K h\<rho>B by (by100 blast)
-    show "geotop_is_face (\<tau> \<inter> \<rho>) \<tau> \<and> geotop_is_face (\<tau> \<inter> \<rho>) \<rho>"
-      using hK_inter h\<tau>K h\<rho>K hmeet by (by100 blast)
-  qed
-  have hlocfin:
-      "\<forall>\<tau>\<in>?B. \<exists>U. open U \<and> \<tau> \<subseteq> U
-        \<and> finite {\<rho>\<in>?B. \<rho> \<inter> U \<noteq> {}}"
-  proof
-    fix \<tau>
-    assume h\<tau>B: "\<tau> \<in> ?B"
-    have hopen: "open (UNIV :: (real^2) set)"
-      by (by100 simp)
-    have hsub: "\<tau> \<subseteq> (UNIV :: (real^2) set)"
-      by (by100 simp)
-    have hfin: "finite {\<rho>\<in>?B. \<rho> \<inter> (UNIV :: (real^2) set) \<noteq> {}}"
-      using hB_fin by (by100 simp)
-    show "\<exists>U. open U \<and> \<tau> \<subseteq> U \<and> finite {\<rho>\<in>?B. \<rho> \<inter> U \<noteq> {}}"
-      using hopen hsub hfin by (by100 blast)
-  qed
-  show ?thesis
-    unfolding geotop_is_complex_def
-    using hsimplexes hface_closed hintersections hlocfin by (by100 blast)
 qed
 
 lemma geotop_2simplex_comb_boundary_self_subdivision_dev34:
