@@ -104,6 +104,17 @@ proof -
     by (rule finite_imageI[OF hidx_fin])
   have hE_fin: "finite ?E"
     by (rule finite_imageI[OF hidx_fin])
+  have hcycle_subcomplex:
+      "geotop_is_complex (((\<lambda>v. {v}) ` ?V) \<union> ?E)
+        \<and> (((\<lambda>v. {v}) ` ?V) \<union> ?E) \<subseteq> L"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_subcomplex_prefix
+        [OF hL_linear hdegree_two hs hp_pos hp_closed])
+  have hcycle_union_eq_L:
+      "(((\<lambda>v. {v}) ` ?V) \<union> ?E) = L"
+    using hL_cycle by (by100 simp)
+  have hcycle_union_is_complex:
+      "geotop_is_complex (((\<lambda>v. {v}) ` ?V) \<union> ?E)"
+    using hcycle_subcomplex by (by100 blast)
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
   have hsuccessor_states:
