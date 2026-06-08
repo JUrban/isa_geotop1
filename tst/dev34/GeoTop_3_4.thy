@@ -1716,6 +1716,32 @@ proof -
     show False
       using hincident_card_le1 hincident_card2 by (by100 linarith)
   qed
+  have hsource_third_vertex_exists:
+      "\<exists>x\<in>geotop_complex_vertices L.
+        x \<noteq> v 0 \<and> x \<noteq> v (Suc 0)"
+  proof (rule ccontr)
+    assume hnot:
+        "\<not> (\<exists>x\<in>geotop_complex_vertices L.
+          x \<noteq> v 0 \<and> x \<noteq> v (Suc 0))"
+    have hsub:
+        "geotop_complex_vertices L \<subseteq> {v 0, v (Suc 0)}"
+      using hnot by (by100 blast)
+    have hcard_le2:
+        "card (geotop_complex_vertices L) \<le> 2"
+    proof -
+      have "card (geotop_complex_vertices L) \<le> card {v 0, v (Suc 0)}"
+        by (rule card_mono[OF _ hsub]) (by100 simp)
+      also have "\<dots> \<le> 2"
+        by (by100 simp)
+      finally show ?thesis .
+    qed
+    show False
+      using hsource_vertices_card_gt2 hcard_le2 by (by100 linarith)
+  qed
+  obtain w\<^sub>L where hw\<^sub>L_vertex: "w\<^sub>L \<in> geotop_complex_vertices L"
+      and hw\<^sub>L_ne_v0: "w\<^sub>L \<noteq> v 0"
+      and hw\<^sub>L_ne_v1: "w\<^sub>L \<noteq> v (Suc 0)"
+    using hsource_third_vertex_exists by (by100 blast)
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
