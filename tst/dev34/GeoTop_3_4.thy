@@ -1786,6 +1786,51 @@ proof -
         geotop_convex_hull {c\<^sub>\<sigma>, a\<^sub>\<sigma>}} \<subseteq> ?B"
     using h\<sigma>_edge_ab_in_B h\<sigma>_edge_bc_in_B h\<sigma>_edge_ca_in_B
     by (by100 blast)
+  have h\<sigma>_pair_hull_eq_segment:
+      "\<And>x y :: real^2. geotop_convex_hull {x, y} = closed_segment x y"
+  proof -
+    fix x y :: "real^2"
+    have "geotop_convex_hull {x, y} = convex hull {x, y}"
+      by (rule geotop_convex_hull_eq_HOL)
+    also have "\<dots> = closed_segment x y"
+      by (rule segment_convex_hull[symmetric])
+    finally show "geotop_convex_hull {x, y} = closed_segment x y" .
+  qed
+  have h\<sigma>_closed_edge_ab_in_B:
+      "closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<in> ?B"
+    using h\<sigma>_edge_ab_in_B h\<sigma>_pair_hull_eq_segment[of a\<^sub>\<sigma> b\<^sub>\<sigma>]
+    by (by100 simp)
+  have h\<sigma>_closed_edge_bc_in_B:
+      "closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma> \<in> ?B"
+    using h\<sigma>_edge_bc_in_B h\<sigma>_pair_hull_eq_segment[of b\<^sub>\<sigma> c\<^sub>\<sigma>]
+    by (by100 simp)
+  have h\<sigma>_closed_edge_ca_in_B:
+      "closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma> \<in> ?B"
+    using h\<sigma>_edge_ca_in_B h\<sigma>_pair_hull_eq_segment[of c\<^sub>\<sigma> a\<^sub>\<sigma>]
+    by (by100 simp)
+  have h\<sigma>_closed_boundary_edges_in_B:
+      "{closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>,
+        closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>,
+        closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>} \<subseteq> ?B"
+    using h\<sigma>_closed_edge_ab_in_B h\<sigma>_closed_edge_bc_in_B h\<sigma>_closed_edge_ca_in_B
+    by (by100 blast)
+  have h\<sigma>_closed_boundary_edges_are_edges:
+      "geotop_is_edge (closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>)
+      \<and> geotop_is_edge (closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>)
+      \<and> geotop_is_edge (closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>)"
+  proof (intro conjI)
+    show "geotop_is_edge (closed_segment a\<^sub>\<sigma> b\<^sub>\<sigma>)"
+      unfolding geotop_is_edge_def
+      by (rule geotop_closed_segment_is_simplex[OF ha\<^sub>\<sigma>b\<^sub>\<sigma>])
+    show "geotop_is_edge (closed_segment b\<^sub>\<sigma> c\<^sub>\<sigma>)"
+      unfolding geotop_is_edge_def
+      by (rule geotop_closed_segment_is_simplex[OF hb\<^sub>\<sigma>c\<^sub>\<sigma>])
+    have hc\<^sub>\<sigma>a\<^sub>\<sigma>: "c\<^sub>\<sigma> \<noteq> a\<^sub>\<sigma>"
+      using ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 simp)
+    show "geotop_is_edge (closed_segment c\<^sub>\<sigma> a\<^sub>\<sigma>)"
+      unfolding geotop_is_edge_def
+      by (rule geotop_closed_segment_is_simplex[OF hc\<^sub>\<sigma>a\<^sub>\<sigma>])
+  qed
   show ?thesis
     sorry
 qed
