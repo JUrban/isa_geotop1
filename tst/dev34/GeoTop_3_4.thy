@@ -1859,6 +1859,10 @@ proof -
       by (rule geotop_2simplex_vertex_face_in_comb_boundary_dev34
         [OF h\<sigma> hdim0 hface])
   qed
+  have h\<sigma>_vertices_in_B_vertices:
+      "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> x \<in> geotop_complex_vertices ?B"
+    using geotop_complex_vertices_eq_0_simplexes[OF hB_complex]
+      h\<sigma>_vertex_singletons_in_B by (by100 blast)
   have h\<sigma>_vertex_singletons_in_F\<^sub>0:
       "\<And>x. x \<in> V\<^sub>\<sigma> \<Longrightarrow> {x} \<in> F\<^sub>0"
     using hB_old_vertices_in_F\<^sub>0 h\<sigma>_vertex_singletons_in_B by (by100 blast)
@@ -1878,6 +1882,15 @@ proof -
     using hV\<^sub>\<sigma>_abc by (by100 simp)
   have hc\<^sub>\<sigma>V: "c\<^sub>\<sigma> \<in> V\<^sub>\<sigma>"
     using hV\<^sub>\<sigma>_abc by (by100 simp)
+  have h\<sigma>_named_vertices_in_B_vertices:
+      "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices ?B"
+    using h\<sigma>_vertices_in_B_vertices hV\<^sub>\<sigma>_abc by (by100 blast)
+  have h\<sigma>_named_vertices_card:
+      "card {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} = 3"
+    using ha\<^sub>\<sigma>b\<^sub>\<sigma> hb\<^sub>\<sigma>c\<^sub>\<sigma> ha\<^sub>\<sigma>c\<^sub>\<sigma> by (by100 simp)
+  have h\<sigma>_named_vertices_finite:
+      "finite {a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>}"
+    by (by100 simp)
   have h\<sigma>_named_vertices_in_F\<^sub>0_vertices:
       "{a\<^sub>\<sigma>, b\<^sub>\<sigma>, c\<^sub>\<sigma>} \<subseteq> geotop_complex_vertices F\<^sub>0"
     using h\<sigma>_vertices_in_F\<^sub>0_vertices hV\<^sub>\<sigma>_abc by (by100 blast)
