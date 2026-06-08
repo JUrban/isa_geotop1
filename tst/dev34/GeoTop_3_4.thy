@@ -10915,13 +10915,13 @@ lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   assumes hp: "p \<in> rel_interior e"
   assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
   assumes h\<sigma>face: "geotop_is_face e \<sigma>"
-  assumes hr: "0 < r"
-  assumes hrs: "r < s"
+  assumes hs: "0 < s"
   assumes hlocal_poly_eq_\<sigma>:
     "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
   assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
   assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
-  shows "\<exists>A. A = sphere p r \<inter> \<sigma>
+  shows "\<exists>r A. 0 < r \<and> r < s
+      \<and> A = sphere p r \<inter> \<sigma>
       \<and> A \<subseteq> U
       \<and> geotop_is_arc A
           (subspace_topology UNIV geotop_euclidean_topology A)
@@ -10935,6 +10935,26 @@ lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
     inner cap to the outer side first meets \<open>sphere p r\<close>, and the local
     equality on the larger collar ball identifies that crossing with \<open>A\<close>. **)
 proof -
+  have hsmall_crosscut_book:
+      "\<exists>r. 0 < r \<and> r < s
+        \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
+            (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))
+        \<and> \<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+            (subspace_topology UNIV geotop_euclidean_topology
+              (U - (sphere p r \<inter> \<sigma>)))"
+    (**
+      Remaining book geometry: choose the radius small relative to the edge
+      endpoints and the opposite side of \<open>\<sigma>\<close>, so the sphere cuts \<open>\<sigma>\<close> in the
+      standard one-sided semicircle.  Then use the radius-crossing argument in
+      the collar \<open>ball p s\<close>. **)
+    sorry
+  obtain r where hr: "0 < r" and hrs: "r < s"
+      and hA_arc: "geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))"
+      and hA_sep: "\<not> top1_connected_on (U - (sphere p r \<inter> \<sigma>))
+        (subspace_topology UNIV geotop_euclidean_topology
+          (U - (sphere p r \<inter> \<sigma>)))"
+    using hsmall_crosscut_book by (by100 blast)
   let ?A = "sphere p r \<inter> \<sigma>"
   have hA_subU: "?A \<subseteq> U"
   proof
@@ -10979,19 +10999,8 @@ proof -
     using hr by (by100 simp)
   have hp_inner_witness: "p \<in> U - ?A \<and> dist p p < r"
     using hp_U hp_not_A hr by (by100 simp)
-  have hcrosscut_book:
-      "geotop_is_arc ?A
-          (subspace_topology UNIV geotop_euclidean_topology ?A)
-      \<and> \<not> top1_connected_on (U - ?A)
-          (subspace_topology UNIV geotop_euclidean_topology (U - ?A))"
-    (**
-      Remaining collar crosscut proof: show \<open>sphere p r \<inter> \<sigma>\<close> is the
-      one-sided semicircular arc, then separate \<open>U - ?A\<close> by the distance
-      levels \<open>dist p x < r\<close> and \<open>dist p x > r\<close> inside the larger collar
-      \<open>ball p s\<close>. **)
-    sorry
   show ?thesis
-    using hA_subU hcrosscut_book by (by100 blast)
+    using hr hrs hA_subU hA_arc hA_sep by (by100 blast)
 qed
 
 lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34:
@@ -11016,96 +11025,20 @@ lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev3
     unique incident 2-simplex with center \<open>p\<close> and radius strictly smaller
     than the local chart radius \<open>s\<close>; that semicircle is the separating arc. **)
 proof -
-  define r where "r = s / 2"
-  have hr_pos: "0 < r"
-    using hs unfolding r_def by (by100 simp)
-  have hrs: "r < s"
-    using hs unfolding r_def by (by100 simp)
-  have hlocal_eq_r:
-    "ball p r \<inter> geotop_polyhedron K = ball p r \<inter> \<sigma>"
-  proof
-    show "ball p r \<inter> geotop_polyhedron K \<subseteq> ball p r \<inter> \<sigma>"
-    proof
-      fix x
-      assume hx: "x \<in> ball p r \<inter> geotop_polyhedron K"
-      have hx_ball_s: "x \<in> ball p s"
-        using hx hrs by (by100 simp)
-      have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
-        using hx hx_ball_s by (by100 blast)
-      have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
-        using hlocal_poly_eq_\<sigma> hx_ball_poly_s by (by100 blast)
-      show "x \<in> ball p r \<inter> \<sigma>"
-        using hx hx_ball_sigma_s by (by100 blast)
-    qed
-    show "ball p r \<inter> \<sigma> \<subseteq> ball p r \<inter> geotop_polyhedron K"
-    proof
-      fix x
-      assume hx: "x \<in> ball p r \<inter> \<sigma>"
-      have hx_ball_s: "x \<in> ball p s"
-        using hx hrs by (by100 simp)
-      have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
-        using hx hx_ball_s by (by100 blast)
-      have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
-        using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
-      show "x \<in> ball p r \<inter> geotop_polyhedron K"
-        using hx hx_ball_poly_s by (by100 blast)
-    qed
-  qed
-  have hballU_r: "geotop_polyhedron K \<inter> ball p r \<subseteq> U"
-  proof
-    fix x
-    assume hx: "x \<in> geotop_polyhedron K \<inter> ball p r"
-    have hx_ball_s: "x \<in> ball p s"
-      using hx hrs by (by100 simp)
-    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
-      using hx hx_ball_s by (by100 blast)
-    show "x \<in> U"
-      using hballU_s hx_poly_ball_s by (by100 blast)
-  qed
-  have hsphere_sigma_subset_U: "sphere p r \<inter> \<sigma> \<subseteq> U"
-  proof
-    fix x
-    assume hx: "x \<in> sphere p r \<inter> \<sigma>"
-    have hx_ball_s: "x \<in> ball p s"
-      using hx hrs by (by100 simp)
-    have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
-      using hx hx_ball_s by (by100 blast)
-    have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
-      using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
-    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
-      using hx_ball_poly_s by (by100 blast)
-    show "x \<in> U"
-      using hballU_s hx_poly_ball_s by (by100 blast)
-  qed
-  have hp_\<sigma>: "p \<in> \<sigma>"
-  proof -
-    have hp_e: "p \<in> e"
-      using hp rel_interior_subset by (by100 blast)
-    have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
-      by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
-    show ?thesis
-      using hp_e he_sub_\<sigma> by (by100 blast)
-  qed
-  have hsemicircle_book:
-    "\<exists>A. A \<subseteq> sphere p r \<inter> \<sigma>
-      \<and> geotop_is_arc A
-          (subspace_topology UNIV geotop_euclidean_topology A)
-      \<and> \<not> top1_connected_on (U - A)
-          (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-  proof -
-    obtain A where hA: "A = sphere p r \<inter> \<sigma>"
+  obtain r A where hr_pos: "0 < r" and hrs: "r < s"
+      and hA: "A = sphere p r \<inter> \<sigma>"
+      and hA_subU: "A \<subseteq> U"
       and hA_arc: "geotop_is_arc A
           (subspace_topology UNIV geotop_euclidean_topology A)"
       and hA_sep: "\<not> top1_connected_on (U - A)
           (subspace_topology UNIV geotop_euclidean_topology (U - A))"
-      using geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
-          [OF hedge hp h\<sigma>2 h\<sigma>face hr_pos hrs hlocal_poly_eq_\<sigma> hballU_s hUsubM]
-      by (by100 blast)
-    show ?thesis
-      using hA hA_arc hA_sep by (by100 blast)
-  qed
+    using geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
+        [OF hedge hp h\<sigma>2 h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU_s hUsubM]
+    by (by100 blast)
+  have hA_sphere: "A \<subseteq> sphere p r \<inter> \<sigma>"
+    using hA by (by100 simp)
   show ?thesis
-    using hr_pos hrs hsemicircle_book by (by100 blast)
+    using hr_pos hrs hA_sphere hA_arc hA_sep by (by100 blast)
 qed
 
 lemma geotop_edge_one_side_simplex_local_semicircle_separates_domain_dev34:
