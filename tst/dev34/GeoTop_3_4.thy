@@ -536,7 +536,25 @@ proof -
       2-simplex into a cyclic 1-complex with vertex set corresponding to
       \<open>?V\<close> and edge set corresponding to \<open>?E\<close>, then use the resulting
       ordered vertex bijection as the simplicial isomorphism. **)
-    sorry
+  proof -
+    obtain \<sigma> :: "(real^2) set" where h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      using geotop_standard_2simplex_exists_dev34 by (by100 blast)
+    let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+    have hB_1dim: "geotop_complex_is_1dim ?B"
+      by (rule geotop_2simplex_comb_boundary_is_1dim_dev34[OF h\<sigma>])
+    have hstandard_cycle_subdivision_model:
+        "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
+      (**
+        Remaining Figure 4.10 standard-boundary construction: subdivide the
+        three boundary edges of \<open>\<sigma>\<close> into a finite cyclic 1-complex whose
+        vertex and edge incidence matches the disjoint cyclic listing
+        \<open>((\<lambda>x. {x}) ` ?V, ?E)\<close>; then define \<open>\<psi>\<close> by the cyclic vertex
+        correspondence and verify the hull-membership clauses of
+        \<open>geotop_isomorphism\<close>. **)
+      sorry
+    show ?thesis
+      using h\<sigma> hstandard_cycle_subdivision_model by (by100 blast)
+  qed
   show ?thesis
     by (rule hboundary_cycle_model)
 qed
