@@ -1058,7 +1058,6 @@ lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
       geotop_is_subdivision F
         (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
       \<and> u p = u 0
-      \<and> inj_on u {0..<p}
       \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
       \<and> F =
         ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))
@@ -1072,7 +1071,9 @@ lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
     Precise Moise Fig. 4.10 target package.  The source graph is already in
     cyclic singleton/adjacent-edge normal form; the remaining book step is to
     build the matching cyclic subdivision of the frontier of a standard
-    2-simplex and define the vertex map by the two cyclic listings. **)
+    2-simplex and define the vertex map by the two cyclic parametrizations.
+    Injectivity of the index parametrization belongs to the upstream orbit
+    package when the graph cycle is known to be listed without repeats. **)
   sorry
 
 lemma geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34:
@@ -1600,7 +1601,6 @@ proof -
       \<and> (\<exists>F u \<psi>.
         geotop_is_subdivision F ?B
         \<and> u p = u 0
-        \<and> inj_on u {0..<p}
         \<and> ((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F
         \<and> F =
           ((\<lambda>x. {x}) ` ((\<lambda>k. u k) ` {0..<p}))

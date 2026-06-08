@@ -1901,7 +1901,7 @@ geotop_convex_in_complex_in_simplex_DEFERRED   gb0/GeoTopBase0.thy              
 geotop_convex_open_broken_line_connected       gb/GeoTopBase.thy                    line 10368
 geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34  dev34/GeoTop_3_4.thy                 line 1028
 geotop_cyclic_successor_listing_standard_boundary_subdivision_model_dev34  dev34/GeoTop_3_4.thy                 line 1842
-geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34  dev34/GeoTop_3_4.thy                 line 1078
+geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34  dev34/GeoTop_3_4.thy                 line 1079
 geotop_cyclic_vertex_listing_standard_boundary_subdivision_model_dev34  dev34/GeoTop_3_4.thy                 line 1624
 geotop_degree_one_or_two_no_endpoint_degree_two_dev34  dev34_linkfacts/GeoTop_3_4_LinkFacts.thy  line 32
 geotop_degree_one_or_two_no_endpoint_degree_two_prefix  dev34_prefix_graph/GeoTop_3_4_Prefix_Graph.thy  line 5109
