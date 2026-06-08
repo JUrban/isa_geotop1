@@ -482,6 +482,32 @@ proof -
     thus False
       by (by100 linarith)
   qed
+  have hsingleton_not_edge: "\<And>(x :: real^2). \<not> geotop_is_edge {x}"
+  proof
+    fix x :: "real^2"
+    assume hedge: "geotop_is_edge {x}"
+    have hdim0: "geotop_simplex_dim {x} 0"
+      by (rule geotop_singleton_is_simplex[where P=x])
+    have hdim1: "geotop_simplex_dim {x} 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  have hE_not_singleton_image:
+      "\<And>e. e \<in> ?E \<Longrightarrow> e \<notin> ((\<lambda>x. {x}) ` ?V)"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    assume he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+    obtain x where heq: "e = {x}"
+      using he_single by (by100 blast)
+    have "geotop_is_edge {x}"
+      using hE_edges[OF heE] heq by (by100 simp)
+    thus False
+      using hsingleton_not_edge by (by100 blast)
+  qed
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
