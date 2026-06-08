@@ -10864,7 +10864,37 @@ lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
     radius-crossing argument inside \<open>ball p s\<close>: any carrier path from the
     inner cap to the outer side first meets \<open>sphere p r\<close>, and the local
     equality on the larger collar ball identifies that crossing with \<open>A\<close>. **)
-  sorry
+proof -
+  let ?A = "sphere p r \<inter> \<sigma>"
+  have hA_subU: "?A \<subseteq> U"
+  proof
+    fix x
+    assume hx: "x \<in> ?A"
+    have hx_ball_s: "x \<in> ball p s"
+      using hx hr hrs by (by100 simp)
+    have hx_ball_sigma_s: "x \<in> ball p s \<inter> \<sigma>"
+      using hx hx_ball_s by (by100 blast)
+    have hx_ball_poly_s: "x \<in> ball p s \<inter> geotop_polyhedron K"
+      using hlocal_poly_eq_\<sigma> hx_ball_sigma_s by (by100 blast)
+    have hx_poly_ball_s: "x \<in> geotop_polyhedron K \<inter> ball p s"
+      using hx_ball_poly_s by (by100 blast)
+    show "x \<in> U"
+      using hballU hx_poly_ball_s by (by100 blast)
+  qed
+  have hcrosscut_book:
+      "geotop_is_arc ?A
+          (subspace_topology UNIV geotop_euclidean_topology ?A)
+      \<and> \<not> top1_connected_on (U - ?A)
+          (subspace_topology UNIV geotop_euclidean_topology (U - ?A))"
+    (**
+      Remaining collar crosscut proof: show \<open>sphere p r \<inter> \<sigma>\<close> is the
+      one-sided semicircular arc, then separate \<open>U - ?A\<close> by the distance
+      levels \<open>dist p x < r\<close> and \<open>dist p x > r\<close> inside the larger collar
+      \<open>ball p s\<close>. **)
+    sorry
+  show ?thesis
+    using hA_subU hcrosscut_book by (by100 blast)
+qed
 
 lemma geotop_edge_one_side_simplex_local_semicircle_radius_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
