@@ -2231,6 +2231,78 @@ proof -
     using hF_B hF_finite hS_vertices_F by (by100 blast)
 qed
 
+lemma geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34:
+  fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hS_finite: "finite S"
+  assumes hS_poly:
+    "S \<subseteq> geotop_polyhedron
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>F. geotop_is_subdivision F
+        (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)
+      \<and> finite F
+      \<and> (\<forall>x\<in>S. {x} \<in> F)
+      \<and> (\<forall>v.
+        {v} \<in> geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2
+        \<longrightarrow> {v} \<in> F)"
+  (**
+    Fig. 4.10 boundary-subdivision helper with endpoint preservation: the
+    final common subdivision keeps both the newly prescribed boundary points and
+    the original vertices of the 2-simplex boundary as vertices. **)
+proof -
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
+  obtain K\<^sub>0 where hK\<^sub>0_complex: "geotop_is_complex K\<^sub>0"
+      and hK\<^sub>0_1dim: "geotop_complex_is_1dim K\<^sub>0"
+      and hK\<^sub>0_finite: "finite K\<^sub>0"
+      and hK\<^sub>0_poly: "geotop_polyhedron K\<^sub>0 = geotop_polyhedron ?B"
+      and hS_vertices_K\<^sub>0: "\<forall>x\<in>S. {x} \<in> K\<^sub>0"
+      and hold_vertices_K\<^sub>0:
+        "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> K\<^sub>0"
+    using geotop_2simplex_boundary_finite_points_as_vertices_dev34
+      [OF h\<sigma> hS_finite hS_poly]
+    by (by100 blast)
+  have hB_complex: "geotop_is_complex ?B"
+    by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_finite: "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hpoly_eq: "geotop_polyhedron ?B = geotop_polyhedron K\<^sub>0"
+    using hK\<^sub>0_poly by (by100 simp)
+  obtain F where hF_B: "geotop_is_subdivision F ?B"
+      and hF_K\<^sub>0: "geotop_is_subdivision F K\<^sub>0"
+    using geotop_common_subdivision_finite
+      [OF hB_complex hK\<^sub>0_complex hB_finite hK\<^sub>0_finite hpoly_eq]
+    by (by100 blast)
+  have hF_finite: "finite F"
+    by (rule geotop_subdivision_of_finite_is_finite[OF hB_finite hF_B])
+  have hF_complex: "geotop_is_complex F"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hF_B])
+  have hsingleton_survives: "\<And>x. {x} \<in> K\<^sub>0 \<Longrightarrow> {x} \<in> F"
+  proof -
+    fix x
+    assume hxK\<^sub>0: "{x} \<in> K\<^sub>0"
+    have hcover:
+        "{x} = \<Union>{\<rho>\<in>F. \<rho> \<subseteq> {x}}"
+      by (rule geotop_subdivision_covers_simplex
+          [OF hK\<^sub>0_complex hF_complex hK\<^sub>0_finite hF_finite hF_K\<^sub>0 hxK\<^sub>0])
+    have hx_union: "x \<in> \<Union>{\<rho>\<in>F. \<rho> \<subseteq> {x}}"
+      using hcover by (by100 simp)
+    obtain \<rho> where h\<rho>F: "\<rho> \<in> F"
+        and h\<rho>sub: "\<rho> \<subseteq> {x}"
+        and hx\<rho>: "x \<in> \<rho>"
+      using hx_union by (by100 blast)
+    have h\<rho>eq: "\<rho> = {x}"
+      using h\<rho>sub hx\<rho> by (by100 blast)
+    show "{x} \<in> F"
+      using h\<rho>F h\<rho>eq by (by100 simp)
+  qed
+  have hS_vertices_F: "\<forall>x\<in>S. {x} \<in> F"
+    using hS_vertices_K\<^sub>0 hsingleton_survives by (by100 blast)
+  have hold_vertices_F: "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F"
+    using hold_vertices_K\<^sub>0 hsingleton_survives by (by100 blast)
+  show ?thesis
+    using hF_B hF_finite hS_vertices_F hold_vertices_F by (by100 blast)
+qed
+
 lemma geotop_standard_2simplex_boundary_self_subdivision_model_dev34:
   shows "\<exists>(\<sigma> :: (real^2) set) F.
       geotop_simplex_dim \<sigma> 2
