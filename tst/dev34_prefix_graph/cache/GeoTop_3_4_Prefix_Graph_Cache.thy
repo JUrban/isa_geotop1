@@ -9125,6 +9125,64 @@ proof -
         using hbound by (by100 linarith)
     qed
   qed
+  have hno_local_component_meets_selected_three_edges:
+      "\<And>C S T U. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+        \<Longrightarrow> {S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<Longrightarrow> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<Longrightarrow> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<Longrightarrow> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<Longrightarrow> False"
+  proof -
+    fix C S T U
+    assume hC: "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+    assume hSTU: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+    assume hS_touch: "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+    assume hT_touch: "(T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+    assume hU_touch: "(U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+    have htouched_if_mem:
+        "\<And>R. R \<in> {S, T, U}
+          \<Longrightarrow> (R - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+    proof -
+      fix R
+      assume hR: "R \<in> {S, T, U}"
+      have hcases: "R = S \<or> R = T \<or> R = U"
+        using hR by (by100 simp)
+      show "(R - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        using hcases
+      proof (elim disjE)
+        assume hR_eq: "R = S"
+        show "(R - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+          using hR_eq hS_touch by (by100 simp)
+      next
+        assume hR_eq: "R = T"
+        show "(R - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+          using hR_eq hT_touch by (by100 simp)
+      next
+        assume hR_eq: "R = U"
+        show "(R - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+          using hR_eq hU_touch by (by100 simp)
+      qed
+    qed
+    have he\<^sub>1_mem: "e\<^sub>1 \<in> {S, T, U}"
+      using hSTU by (by100 simp)
+    have he\<^sub>2_mem: "e\<^sub>2 \<in> {S, T, U}"
+      using hSTU by (by100 simp)
+    have he\<^sub>3_mem: "e\<^sub>3 \<in> {S, T, U}"
+      using hSTU by (by100 simp)
+    have he\<^sub>1_touch: "(e\<^sub>1 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      by (rule htouched_if_mem[OF he\<^sub>1_mem])
+    have he\<^sub>2_touch: "(e\<^sub>2 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      by (rule htouched_if_mem[OF he\<^sub>2_mem])
+    have he\<^sub>3_touch: "(e\<^sub>3 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      by (rule htouched_if_mem[OF he\<^sub>3_mem])
+    have hall: "(e\<^sub>1 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (e\<^sub>2 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (e\<^sub>3 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      using he\<^sub>1_touch he\<^sub>2_touch he\<^sub>3_touch by (by100 simp)
+    show False
+      using hno_local_component_meets_all_three_selected_edges[OF hC] hall
+      by (by100 blast)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to the
