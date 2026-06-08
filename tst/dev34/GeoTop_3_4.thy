@@ -6038,6 +6038,50 @@ where
     \<and> {e \<in> L. geotop_is_edge e}
       = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i)) ` {0..<length vs - 1})"
 
+lemma geotop_endpoint_chain_listing_length_ge2_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "2 \<le> length vs"
+  using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+  by (by100 blast)
+
+lemma geotop_endpoint_chain_listing_vertices_eq_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "set vs = geotop_complex_vertices L"
+  using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+  by (by100 blast)
+
+lemma geotop_endpoint_chain_listing_first_vertices_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "vs ! 0 = w \<and> vs ! 1 = q"
+  using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+  by (by100 blast)
+
+lemma geotop_endpoint_chain_listing_edge_set_eq_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "{e \<in> L. geotop_is_edge e}
+      = ((\<lambda>i. closed_segment (vs ! i) (vs ! Suc i)) ` {0..<length vs - 1})"
+  using hlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+  by (by100 blast)
+
+lemma geotop_endpoint_chain_listing_first_edge_dev34:
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  shows "closed_segment w q \<in> L \<and> geotop_is_edge (closed_segment w q)"
+proof -
+  have hlen: "2 \<le> length vs"
+    by (rule geotop_endpoint_chain_listing_length_ge2_dev34[OF hlist])
+  have h0_lt: "0 < length vs - 1"
+    using hlen by (by100 linarith)
+  have hstep:
+      "closed_segment (vs ! 0) (vs ! Suc 0) \<in> L
+      \<and> geotop_is_edge (closed_segment (vs ! 0) (vs ! Suc 0))"
+    using hlist h0_lt unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hfirst: "vs ! 0 = w \<and> vs ! 1 = q"
+    by (rule geotop_endpoint_chain_listing_first_vertices_dev34[OF hlist])
+  show ?thesis
+    using hstep hfirst by (by100 simp)
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
