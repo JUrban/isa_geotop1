@@ -6967,6 +6967,20 @@ proof -
           [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
             he_seg hqL hq_card])
   qed
+  have hchain_listing_if_degree_one_or_two:
+      "(\<forall>x. {x} \<in> L \<longrightarrow>
+          card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+          card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 2)
+      \<Longrightarrow> \<exists>vs. geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  proof -
+    assume hdegree12: "\<forall>x. {x} \<in> L \<longrightarrow>
+        card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 1 \<or>
+        card {l\<in>L. geotop_is_edge l \<and> x \<in> l} = 2"
+    show ?thesis
+      by (rule geotop_finite_connected_degree_one_or_two_endpoint_chain_listing_from_first_neighbor_dev34
+          [OF hL_linear hL_finite hconn hdegree12 hendpoint heL he_edge
+            hw_e hq_ne he_seg hqL])
+  qed
   show ?thesis
     sorry
 qed
