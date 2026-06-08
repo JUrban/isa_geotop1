@@ -441,6 +441,10 @@ def write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
+def write_lines(path: Path, lines: list[str]) -> None:
+    write_if_changed(path, "".join(f"{line}\n" for line in lines))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--list", action="store_true", help="print existing theories")
@@ -478,6 +482,11 @@ def main() -> int:
         help="write existing theories to PATH, preserving mtime if unchanged",
     )
     parser.add_argument(
+        "--metadata-dir",
+        metavar="DIR",
+        help="write all discovered index metadata to DIR in one discovery pass",
+    )
+    parser.add_argument(
         "--extra",
         action="append",
         default=[],
@@ -504,6 +513,25 @@ def main() -> int:
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
         write_if_changed(base / args.write_list, content)
+    if args.metadata_dir:
+        metadata_dir = base / args.metadata_dir
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+        extra = ["index_theory_lib.py"] + args.extra
+        write_lines(metadata_dir / "theories", theories)
+        write_lines(metadata_dir / "missing", missing)
+        write_lines(metadata_dir / "roots", roots)
+        write_lines(metadata_dir / "session_files", session_files)
+        write_lines(metadata_dir / "signature_files", signature_files)
+        write_lines(metadata_dir / "advice_files", advice_files)
+        write_lines(metadata_dir / "session_log_files", session_log_files)
+        write_if_changed(
+            metadata_dir / "signature",
+            f"{file_signature(base, theories, extra)}\n",
+        )
+        write_if_changed(
+            metadata_dir / "session_log_signature",
+            f"{named_files_signature(base, session_log_files)}\n",
+        )
     if args.list:
         sys.stdout.write("".join(f"{theory}\n" for theory in theories))
     if args.missing:

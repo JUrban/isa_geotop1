@@ -23,17 +23,19 @@ MD=THEOREMS_AND_DEFS.md
 THEORY_LIST=INDEX_THEORIES.txt
 CACHE_DIR=.index_cache
 SIG_FILE="$CACHE_DIR/gen_index.sig"
+META_DIR="$CACHE_DIR/gen_index.meta"
 
 mkdir -p "$CACHE_DIR"
 
-mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY_LIST")
-mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
-mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
-mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
-mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
-mapfile -t ADVICE_FILES < <(python3 index_theory_lib.py --advice-files)
-mapfile -t SESSION_LOG_FILES < <(python3 index_theory_lib.py --session-log-files)
-SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
+python3 index_theory_lib.py --metadata-dir "$META_DIR" --write-list "$THEORY_LIST" --extra gen_index.sh
+mapfile -t THEORIES < "$META_DIR/theories"
+mapfile -t MISSING < "$META_DIR/missing"
+mapfile -t ROOTS < "$META_DIR/roots"
+mapfile -t SESSION_FILES < "$META_DIR/session_files"
+mapfile -t SIGNATURE_FILES < "$META_DIR/signature_files"
+mapfile -t ADVICE_FILES < "$META_DIR/advice_files"
+mapfile -t SESSION_LOG_FILES < "$META_DIR/session_log_files"
+SIG=$(cat "$META_DIR/signature")
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
