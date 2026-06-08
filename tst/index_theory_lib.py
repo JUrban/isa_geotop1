@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
+import shlex
 import sys
 from pathlib import Path
 
@@ -112,11 +113,70 @@ def iter_session_files(base: Path) -> list[Path]:
             for path in base.rglob(name)
             if path.is_file() and is_indexed_session_file(base, path)
         )
-    return sorted(session_files, key=lambda p: p.relative_to(base).as_posix())
+    session_files.extend(iter_roots_referenced_by_roots_files(base))
+    return sorted(
+        dict.fromkeys(session_files),
+        key=lambda p: p.relative_to(base).as_posix(),
+    )
 
 
 def iter_session_roots(base: Path) -> list[Path]:
     return [path for path in iter_session_files(base) if path.name == "ROOT"]
+
+
+def roots_file_entries(raw_line: str) -> list[str]:
+    line = raw_line.split("#", 1)[0].strip()
+    if not line:
+        return []
+    try:
+        return shlex.split(line)
+    except ValueError:
+        return line.split()
+
+
+def iter_roots_referenced_by_roots_files(base: Path) -> list[Path]:
+    base_resolved = base.resolve()
+    found: list[Path] = []
+    seen_roots_files: set[Path] = set()
+
+    def local_file(path: Path) -> Path | None:
+        try:
+            resolved = path.resolve()
+            resolved.relative_to(base_resolved)
+        except ValueError:
+            return None
+        return resolved if resolved.is_file() else None
+
+    def visit_roots_file(roots_file: Path) -> None:
+        roots_file = roots_file.resolve()
+        if roots_file in seen_roots_files:
+            return
+        seen_roots_files.add(roots_file)
+        for raw in roots_file.read_text(encoding="utf-8", errors="replace").splitlines():
+            for entry in roots_file_entries(raw):
+                target = (roots_file.parent / entry).resolve()
+                if target.is_dir():
+                    for candidate in (target / "ROOT", target / "ROOTS"):
+                        local = local_file(candidate)
+                        if local is None or is_ignored_generated_path(base_resolved, local):
+                            continue
+                        found.append(local)
+                        if local.name == "ROOTS":
+                            visit_roots_file(local)
+                else:
+                    local = local_file(target)
+                    if local is None or is_ignored_generated_path(base_resolved, local):
+                        continue
+                    found.append(local)
+                    if local.name == "ROOTS":
+                        visit_roots_file(local)
+
+    for roots_file in base.rglob("ROOTS"):
+        local = local_file(roots_file)
+        if local is not None and not is_ignored_generated_path(base_resolved, local):
+            visit_roots_file(local)
+
+    return found
 
 
 def strip_isabelle_comment_prefix(line: str) -> str:
