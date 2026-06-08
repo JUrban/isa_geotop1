@@ -1460,6 +1460,36 @@ proof -
           = closed_segment (v k) (v (Suc k))"
     using hsource_listed_edge_simplex_vertices
     unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsource_index_vertex:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<in> geotop_complex_vertices L"
+    using hsource_vertices by (by100 blast)
+  have hsource_index_singleton_in_L:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> {v k} \<in> L"
+    using hsource_singletons_subset_L by (by100 blast)
+  have hsource_index_degree_two:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> card {e\<in>L. geotop_is_edge e \<and> v k \<in> e} = 2"
+    using hdegree_two hsource_index_singleton_in_L by (by100 blast)
+  have hsource_listed_edge_endpoints_vertices:
+      "\<And>k. k \<in> {0..<p}
+        \<Longrightarrow> v k \<in> geotop_complex_vertices L
+        \<and> v (Suc k) \<in> geotop_complex_vertices L"
+    using hsource_listed_edge_in_L hsource_listed_edge_simplex_vertices
+    unfolding geotop_complex_vertices_def by (by100 blast)
+  have hsource_successor_vertex_in_image:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v (Suc k) \<in> ?V"
+    using hsource_listed_edge_endpoints_vertices hsource_vertices
+    by (by100 blast)
+  have hsource_closed_vertex_in_vertices:
+      "v p \<in> geotop_complex_vertices L"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> geotop_complex_vertices L"
+      using hsource_index_vertex by (by100 blast)
+    thus ?thesis
+      using hsource_closed by (by100 simp)
+  qed
   have hsource_singleton_not_edge:
       "\<And>x :: real^2. \<not> geotop_is_edge {x}"
   proof
