@@ -1025,6 +1025,292 @@ proof -
     using hF_B hF_finite hS_vertices_F hold_vertices_F by (by100 blast)
 qed
 
+lemma geotop_cyclic_listing_isomorphism_from_matching_cases_dev34:
+  fixes L F :: "(real^2) set set" and v u :: "nat \<Rightarrow> real^2"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hsource_vertices:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes htarget_vertices:
+    "((\<lambda>k. u k) ` {0..<p}) = geotop_complex_vertices F"
+  assumes hsource_closed: "v p = v 0"
+  assumes htarget_closed: "u p = u 0"
+  assumes h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+  assumes h\<psi>idx: "\<forall>k\<in>{0..<p}. \<psi> (v k) = u k"
+  assumes hsource_cases:
+    "\<And>W. W \<subseteq> geotop_complex_vertices L
+      \<Longrightarrow> geotop_convex_hull W \<in> L
+      \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. v k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  assumes hsource_single:
+    "\<And>x. x \<in> ((\<lambda>k. v k) ` {0..<p})
+      \<Longrightarrow> geotop_convex_hull {x} \<in> L"
+  assumes hsource_edge:
+    "\<And>k. k \<in> {0..<p}
+      \<Longrightarrow> geotop_convex_hull {v k, v (Suc k)} \<in> L"
+  assumes htarget_cases:
+    "\<And>W. W \<subseteq> geotop_complex_vertices F
+      \<Longrightarrow> geotop_convex_hull W \<in> F
+      \<Longrightarrow> (\<exists>x\<in>((\<lambda>k. u k) ` {0..<p}). W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {u k, u (Suc k)})"
+  assumes htarget_single:
+    "\<And>x. x \<in> ((\<lambda>k. u k) ` {0..<p})
+      \<Longrightarrow> geotop_convex_hull {x} \<in> F"
+  assumes htarget_edge:
+    "\<And>k. k \<in> {0..<p}
+      \<Longrightarrow> geotop_convex_hull {u k, u (Suc k)} \<in> F"
+  shows "geotop_isomorphism L F \<psi>"
+  (**
+    Fig. 4.10 bookkeeping lemma.  After both cyclic complexes have been reduced
+    to singleton/adjacent-edge hull cases and the listed vertices are matched by
+    a vertex bijection, the simplicial isomorphism condition follows by
+    transferring those two cases in both directions. **)
+proof -
+  let ?VL = "geotop_complex_vertices L"
+  let ?VF = "geotop_complex_vertices F"
+  let ?VI = "((\<lambda>k. v k) ` {0..<p})"
+  let ?UI = "((\<lambda>k. u k) ` {0..<p})"
+  have h\<psi>inj: "inj_on \<psi> ?VL"
+    using h\<psi>bij by (rule bij_betw_imp_inj_on)
+  have hp_pos_if_idx: "\<And>k. k \<in> {0..<p} \<Longrightarrow> 0 < p"
+    by (by100 simp)
+  have hsource_suc_in_image:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v (Suc k) \<in> ?VI"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    show "v (Suc k) \<in> ?VI"
+    proof (cases "Suc k < p")
+      case True
+      hence "Suc k \<in> {0..<p}"
+        by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    next
+      case False
+      have hSuc_eq: "Suc k = p"
+        using hk False by (by100 simp)
+      have "0 \<in> {0..<p}"
+        using hp_pos_if_idx[OF hk] by (by100 simp)
+      hence "v 0 \<in> ?VI"
+        by (by100 blast)
+      thus ?thesis
+        using hSuc_eq hsource_closed by (by100 simp)
+    qed
+  qed
+  have htarget_suc_in_image:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> u (Suc k) \<in> ?UI"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    show "u (Suc k) \<in> ?UI"
+    proof (cases "Suc k < p")
+      case True
+      hence "Suc k \<in> {0..<p}"
+        by (by100 simp)
+      thus ?thesis
+        by (by100 blast)
+    next
+      case False
+      have hSuc_eq: "Suc k = p"
+        using hk False by (by100 simp)
+      have "0 \<in> {0..<p}"
+        using hp_pos_if_idx[OF hk] by (by100 simp)
+      hence "u 0 \<in> ?UI"
+        by (by100 blast)
+      thus ?thesis
+        using hSuc_eq htarget_closed by (by100 simp)
+    qed
+  qed
+  have h\<psi>_suc:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> \<psi> (v (Suc k)) = u (Suc k)"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    show "\<psi> (v (Suc k)) = u (Suc k)"
+    proof (cases "Suc k < p")
+      case True
+      hence "Suc k \<in> {0..<p}"
+        by (by100 simp)
+      thus ?thesis
+        using h\<psi>idx by (by100 blast)
+    next
+      case False
+      have hSuc_eq: "Suc k = p"
+        using hk False by (by100 simp)
+      have h0: "0 \<in> {0..<p}"
+        using hp_pos_if_idx[OF hk] by (by100 simp)
+      have "\<psi> (v 0) = u 0"
+        using h\<psi>idx h0 by (by100 blast)
+      thus ?thesis
+        using hSuc_eq hsource_closed htarget_closed by (by100 simp)
+    qed
+  qed
+  have hforward:
+      "\<And>W. W \<subseteq> ?VL \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F"
+  proof -
+    fix W
+    assume hWsub: "W \<subseteq> ?VL"
+    assume hWL: "geotop_convex_hull W \<in> L"
+    have hcases:
+        "(\<exists>x\<in>?VI. W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+      by (rule hsource_cases[OF hWsub hWL])
+    show "geotop_convex_hull (\<psi> ` W) \<in> F"
+    proof (rule disjE[OF hcases])
+      assume hsingle: "\<exists>x\<in>?VI. W = {x}"
+      then obtain x where hxI: "x \<in> ?VI" and hW: "W = {x}"
+        by (by100 blast)
+      have hxVL: "x \<in> ?VL"
+        using hxI hsource_vertices by (by100 simp)
+      have h\<psi>xVF: "\<psi> x \<in> ?VF"
+        using h\<psi>bij hxVL unfolding bij_betw_def by (by100 blast)
+      have h\<psi>xI: "\<psi> x \<in> ?UI"
+        using h\<psi>xVF htarget_vertices by (by100 simp)
+      have himage: "\<psi> ` W = {\<psi> x}"
+        using hW by (by100 simp)
+      show ?thesis
+        using htarget_single[OF h\<psi>xI] himage by (by100 simp)
+    next
+      assume hedge: "\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)}"
+      then obtain k where hk: "k \<in> {0..<p}"
+          and hW: "W = {v k, v (Suc k)}"
+        by (by100 blast)
+      have h\<psi>k: "\<psi> (v k) = u k"
+        using h\<psi>idx hk by (by100 blast)
+      have h\<psi>Sk: "\<psi> (v (Suc k)) = u (Suc k)"
+        by (rule h\<psi>_suc[OF hk])
+      have himage: "\<psi> ` W = {u k, u (Suc k)}"
+        using hW h\<psi>k h\<psi>Sk by (by100 simp)
+      show ?thesis
+        using htarget_edge[OF hk] himage by (by100 simp)
+    qed
+  qed
+  have hreverse:
+      "\<And>W. W \<subseteq> ?VL \<Longrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F
+        \<Longrightarrow> geotop_convex_hull W \<in> L"
+  proof -
+    fix W
+    assume hWsub: "W \<subseteq> ?VL"
+    assume himageF: "geotop_convex_hull (\<psi> ` W) \<in> F"
+    have himage_sub: "\<psi> ` W \<subseteq> ?VF"
+      using h\<psi>bij hWsub unfolding bij_betw_def by (by100 blast)
+    have hcases:
+        "(\<exists>y\<in>?UI. \<psi> ` W = {y})
+        \<or> (\<exists>k\<in>{0..<p}. \<psi> ` W = {u k, u (Suc k)})"
+      by (rule htarget_cases[OF himage_sub himageF])
+    show "geotop_convex_hull W \<in> L"
+    proof (rule disjE[OF hcases])
+      assume hsingle: "\<exists>y\<in>?UI. \<psi> ` W = {y}"
+      then obtain y where hyI: "y \<in> ?UI" and himage: "\<psi> ` W = {y}"
+        by (by100 blast)
+      obtain x where hxW: "x \<in> W" and h\<psi>x: "\<psi> x = y"
+        using himage by (by100 blast)
+      have hxVL: "x \<in> ?VL"
+        using hWsub hxW by (by100 blast)
+      have hW_sub_x: "W \<subseteq> {x}"
+      proof
+        fix z
+        assume hzW: "z \<in> W"
+        have hzVL: "z \<in> ?VL"
+          using hWsub hzW by (by100 blast)
+        have "\<psi> z = y"
+          using himage hzW by (by100 blast)
+        hence "\<psi> z = \<psi> x"
+          using h\<psi>x by (by100 simp)
+        hence "z = x"
+          by (rule inj_onD[OF h\<psi>inj _ hzVL hxVL])
+        thus "z \<in> {x}"
+          by (by100 simp)
+      qed
+      have hW_eq: "W = {x}"
+        using hW_sub_x hxW by (by100 blast)
+      have hxI: "x \<in> ?VI"
+        using hxVL hsource_vertices by (by100 simp)
+      show ?thesis
+        using hsource_single[OF hxI] hW_eq by (by100 simp)
+    next
+      assume hedge: "\<exists>k\<in>{0..<p}. \<psi> ` W = {u k, u (Suc k)}"
+      then obtain k where hk: "k \<in> {0..<p}"
+          and himage: "\<psi> ` W = {u k, u (Suc k)}"
+        by (by100 blast)
+      have hvkI: "v k \<in> ?VI"
+        using hk by (by100 blast)
+      have hvSkI: "v (Suc k) \<in> ?VI"
+        by (rule hsource_suc_in_image[OF hk])
+      have hvkVL: "v k \<in> ?VL"
+        using hvkI hsource_vertices by (by100 simp)
+      have hvSkVL: "v (Suc k) \<in> ?VL"
+        using hvSkI hsource_vertices by (by100 simp)
+      have h\<psi>k: "\<psi> (v k) = u k"
+        using h\<psi>idx hk by (by100 blast)
+      have h\<psi>Sk: "\<psi> (v (Suc k)) = u (Suc k)"
+        by (rule h\<psi>_suc[OF hk])
+      have hW_nonempty: "W \<noteq> {}"
+        using himage by (by100 blast)
+      obtain x where hxW: "x \<in> W"
+        using hW_nonempty by (by100 blast)
+      have hW_sub_pair: "W \<subseteq> {v k, v (Suc k)}"
+      proof
+        fix z
+        assume hzW: "z \<in> W"
+        have hzVL: "z \<in> ?VL"
+          using hWsub hzW by (by100 blast)
+        have h\<psi>z_cases: "\<psi> z = u k \<or> \<psi> z = u (Suc k)"
+          using himage hzW by (by100 blast)
+        show "z \<in> {v k, v (Suc k)}"
+        proof (rule disjE[OF h\<psi>z_cases])
+          assume "\<psi> z = u k"
+          hence "\<psi> z = \<psi> (v k)"
+            using h\<psi>k by (by100 simp)
+          hence "z = v k"
+            by (rule inj_onD[OF h\<psi>inj _ hzVL hvkVL])
+          thus ?thesis
+            by (by100 simp)
+        next
+          assume "\<psi> z = u (Suc k)"
+          hence "\<psi> z = \<psi> (v (Suc k))"
+            using h\<psi>Sk by (by100 simp)
+          hence "z = v (Suc k)"
+            by (rule inj_onD[OF h\<psi>inj _ hzVL hvSkVL])
+          thus ?thesis
+            by (by100 simp)
+        qed
+      qed
+      have hW_cases:
+          "W = {v k} \<or> W = {v (Suc k)}
+          \<or> W = {v k, v (Suc k)}"
+        using hW_sub_pair hxW by (by100 blast)
+      show ?thesis
+      proof (rule disjE[OF hW_cases])
+        assume hW: "W = {v k}"
+        show ?thesis
+          using hsource_single[OF hvkI] hW by (by100 simp)
+      next
+        assume htail:
+            "W = {v (Suc k)} \<or> W = {v k, v (Suc k)}"
+        show ?thesis
+        proof (rule disjE[OF htail])
+          assume hW: "W = {v (Suc k)}"
+          show ?thesis
+            using hsource_single[OF hvSkI] hW by (by100 simp)
+        next
+          assume hW: "W = {v k, v (Suc k)}"
+          show ?thesis
+            using hsource_edge[OF hk] hW by (by100 simp)
+        qed
+      qed
+    qed
+  qed
+  have hcond:
+      "\<forall>W. W \<subseteq> ?VL \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F)"
+    using hforward hreverse by (by100 blast)
+  show ?thesis
+    unfolding geotop_isomorphism_def using h\<psi>bij hcond by (by100 blast)
+qed
+
 lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
