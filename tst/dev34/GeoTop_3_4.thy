@@ -1331,6 +1331,36 @@ where
     \<and> (\<forall>x\<in>((\<lambda>k. u k) ` {0..<p}). geotop_convex_hull {x} \<in> F)
     \<and> (\<forall>k\<in>{0..<p}. geotop_convex_hull {u k, u (Suc k)} \<in> F)"
 
+lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
+  fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+    and \<sigma> :: "(real^2) set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hdegree_two:
+      "\<forall>w. {w} \<in> L \<longrightarrow>
+        card {e\<in>L. geotop_is_edge e \<and> w \<in> e} = 2"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hp_gt2: "2 < p"
+  assumes hL_listing_decomp:
+    "L =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hedge_segments:
+    "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})
+      = {e\<in>L. geotop_is_edge e}"
+  assumes hvertices:
+    "((\<lambda>k. v k) ` {0..<p}) = geotop_complex_vertices L"
+  assumes hclosed_vertex: "v p = v 0"
+  shows "\<exists>F u \<psi>.
+      geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F u
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>k\<in>{0..<p}. \<psi> (v k) = u k)"
+  (**
+    Moise Fig. 4.10 source-to-target package: after constructing a cyclic
+    subdivision of the standard boundary, choose the simplicial vertex bijection
+    by matching the source and target cyclic listings position by position. **)
+  sorry
+
 lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
     and \<sigma> :: "(real^2) set"
@@ -1373,7 +1403,22 @@ lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
     Moise Fig. 4.10 target construction: subdivide the boundary of the given
     2-simplex into a cyclic 1-complex matching the already listed source cycle,
     then define the vertex bijection by corresponding cyclic positions. **)
-  sorry
+proof -
+  obtain F u \<psi> where htarget:
+      "geotop_standard_boundary_cycle_listing_data_dev34 \<sigma> p F u"
+      and h\<psi>bij:
+      "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+      and h\<psi>idx:
+      "\<forall>k\<in>{0..<p}. \<psi> (v k) = u k"
+    using geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34
+      [OF hL_linear hL_finite hdegree_two h\<sigma> hp_gt2 hL_listing_decomp
+        hedge_segments hvertices hclosed_vertex]
+    by (by100 blast)
+  show ?thesis
+    using htarget h\<psi>bij h\<psi>idx
+    unfolding geotop_standard_boundary_cycle_listing_data_dev34_def
+    by (by100 blast)
+qed
 
 lemma geotop_cyclic_listing_standard_boundary_cycle_target_model_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"

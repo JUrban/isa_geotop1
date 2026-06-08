@@ -13,7 +13,7 @@ geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix
 geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix
 geotop_polygon_arc_opposite_boundary_decomposition_prefix
 geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
-geotop_standard_2simplex_boundary_cyclic_target_data_dev34
+geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34
 geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
 geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
 ```
@@ -26,15 +26,15 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1356
-dev34/GeoTop_3_4.thy:8853
-dev34/GeoTop_3_4.thy:10055
+dev34/GeoTop_3_4.thy:1362
+dev34/GeoTop_3_4.thy:8918
+dev34/GeoTop_3_4.thy:10120
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
 been closed. The active Figure 4.10 target-model package now has one remaining
-hole again, now isolated as
-`geotop_standard_2simplex_boundary_cyclic_target_data_dev34`.
+hole again, now isolated as the source-to-target package
+`geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34`.
 
 ## Progress Since Expert3
 
@@ -69,8 +69,10 @@ theory check passed:
 The remaining Figure 4.10 burden is now mostly the target boundary subdivision
 construction, not arbitrary isomorphism bookkeeping or source-side case
 bookkeeping. The anonymous target-data hole has also been renamed as
-`geotop_standard_2simplex_boundary_cyclic_target_data_dev34`, so the missing
-book step is searchable by theorem name.
+`geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34`, and
+the standard boundary cyclic listing contract is named by
+`geotop_standard_boundary_cycle_listing_data_dev34`, so the missing book step is
+searchable by theorem name and by target-data predicate.
 
 ## Audit Synthesis
 
@@ -89,7 +91,7 @@ one-sided semicircle separation.
 
 Continue the expert3 finite-graph sprint:
 
-1. close `geotop_standard_2simplex_boundary_cyclic_target_data_dev34`;
+1. close `geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34`;
 2. reuse the same listing/subdivision machinery for
    `geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34`;
 3. return to `geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix`
