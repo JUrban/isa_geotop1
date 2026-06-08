@@ -1425,6 +1425,43 @@ proof -
     thus False
       by (by100 linarith)
   qed
+  have hsource_edge_simplex_vertices:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_simplex_vertices (closed_segment (v k) (v (Suc k)))
+          {v k, v (Suc k)}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hsource_edge_endpoints_distinct])
+  have hsource_edge_endpoints_vertices:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        v k \<in> geotop_complex_vertices L
+        \<and> v (Suc k) \<in> geotop_complex_vertices L"
+    using hsource_edge_members hsource_edge_simplex_vertices
+    unfolding geotop_complex_vertices_def by (by100 blast)
+  have hsource_successor_vertex_in_image:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v (Suc k) \<in> ?V"
+    using hsource_edge_endpoints_vertices hvertices by (by100 blast)
+  have hsource_singleton_convex_hull_in_L:
+      "\<And>x. x \<in> geotop_complex_vertices L \<Longrightarrow>
+        geotop_convex_hull {x} \<in> L"
+  proof -
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices L"
+    have hxL: "{x} \<in> L"
+      by (rule hsource_vertex_singleton[OF hx])
+    have hhull: "geotop_convex_hull {x} = {x}"
+      using geotop_convex_hull_eq_HOL[of "{x}"] by (by100 simp)
+    show "geotop_convex_hull {x} \<in> L"
+      using hxL hhull by (by100 simp)
+  qed
+  have hsource_edge_convex_hull_eq:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_convex_hull {v k, v (Suc k)}
+          = closed_segment (v k) (v (Suc k))"
+    using hsource_edge_simplex_vertices
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hsource_edge_convex_hull_in_L:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_convex_hull {v k, v (Suc k)} \<in> L"
+    using hsource_edge_convex_hull_eq hsource_edge_members by (by100 simp)
   show ?thesis
     sorry
 qed
