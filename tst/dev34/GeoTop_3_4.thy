@@ -1749,6 +1749,27 @@ proof -
     using hj\<^sub>L_value hw\<^sub>L_ne_v0 by (by100 simp)
   have hj\<^sub>L_ne_v1: "v j\<^sub>L \<noteq> v (Suc 0)"
     using hj\<^sub>L_value hw\<^sub>L_ne_v1 by (by100 simp)
+  have hsource_anchor_v0_idx: "0 \<in> {0..<p}"
+    using hp_pos by (by100 simp)
+  have hsource_anchor_v0_ne_v1: "v 0 \<noteq> v (Suc 0)"
+    by (rule hsource_adjacent_distinct[OF hsource_anchor_v0_idx])
+  have hsource_anchor_vertices_subset:
+      "{v 0, v (Suc 0), v j\<^sub>L} \<subseteq> geotop_complex_vertices L"
+  proof -
+    have "v 0 \<in> geotop_complex_vertices L"
+      by (rule hsource_index_vertex[OF hsource_anchor_v0_idx])
+    moreover have "v (Suc 0) \<in> geotop_complex_vertices L"
+      using hsource_listed_edge_endpoints_vertices[OF hsource_anchor_v0_idx]
+      by (by100 blast)
+    moreover have "v j\<^sub>L \<in> geotop_complex_vertices L"
+      using hj\<^sub>L_idx hsource_index_vertex by (by100 blast)
+    ultimately show ?thesis
+      by (by100 blast)
+  qed
+  have hsource_anchor_card:
+      "card {v 0, v (Suc 0), v j\<^sub>L} = 3"
+    using hsource_anchor_v0_ne_v1 hj\<^sub>L_ne_v0 hj\<^sub>L_ne_v1
+    by (by100 simp)
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
