@@ -1636,6 +1636,86 @@ proof -
     thus ?thesis
       using hpair_card by (by100 linarith)
   qed
+  have hsource_vertices_card_gt2:
+      "2 < card (geotop_complex_vertices L)"
+  proof (rule ccontr)
+    assume hnot: "\<not> 2 < card (geotop_complex_vertices L)"
+    have hcard2: "card (geotop_complex_vertices L) = 2"
+      using hsource_vertices_card_ge2 hnot by (by100 linarith)
+    have h0: "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    have hv0: "v 0 \<in> geotop_complex_vertices L"
+      using hsource_index_vertex[OF h0] .
+    have hv1: "v (Suc 0) \<in> geotop_complex_vertices L"
+      using hsource_listed_edge_endpoints_vertices[OF h0] by (by100 blast)
+    have hv0v1: "v 0 \<noteq> v (Suc 0)"
+      by (rule hsource_adjacent_distinct[OF h0])
+    have hvertex_cases:
+        "\<And>x. x \<in> geotop_complex_vertices L
+          \<Longrightarrow> x = v 0 \<or> x = v (Suc 0)"
+      by (rule geotop_card_two_member_cases_prefix
+          [OF hcard2 hv0 hv1 hv0v1])
+    have hincident_subset_single:
+        "{e\<in>L. geotop_is_edge e \<and> v 0 \<in> e}
+          \<subseteq> {closed_segment (v 0) (v (Suc 0))}"
+    proof
+      fix e
+      assume he: "e \<in> {e\<in>L. geotop_is_edge e \<and> v 0 \<in> e}"
+      have heE: "e \<in> ?E"
+        using hsource_edges_eq he by (by100 blast)
+      obtain k where hk: "k \<in> {0..<p}"
+          and he_eq: "e = closed_segment (v k) (v (Suc k))"
+        using heE by (by100 blast)
+      have hvk: "v k \<in> geotop_complex_vertices L"
+        using hsource_listed_edge_endpoints_vertices[OF hk] by (by100 blast)
+      have hvSk: "v (Suc k) \<in> geotop_complex_vertices L"
+        using hsource_listed_edge_endpoints_vertices[OF hk] by (by100 blast)
+      have hvk_cases: "v k = v 0 \<or> v k = v (Suc 0)"
+        by (rule hvertex_cases[OF hvk])
+      have hvSk_cases: "v (Suc k) = v 0 \<or> v (Suc k) = v (Suc 0)"
+        by (rule hvertex_cases[OF hvSk])
+      have hk_distinct: "v k \<noteq> v (Suc k)"
+        by (rule hsource_adjacent_distinct[OF hk])
+      have hseg_eq:
+          "closed_segment (v k) (v (Suc k))
+            = closed_segment (v 0) (v (Suc 0))"
+      proof -
+        have hcases:
+            "(v k = v 0 \<and> v (Suc k) = v (Suc 0))
+            \<or> (v k = v (Suc 0) \<and> v (Suc k) = v 0)"
+          using hvk_cases hvSk_cases hk_distinct by (by100 blast)
+        show ?thesis
+        proof (rule disjE[OF hcases])
+          assume hsame:
+              "v k = v 0 \<and> v (Suc k) = v (Suc 0)"
+          show ?thesis
+            using hsame by (by100 simp)
+        next
+          assume hswap:
+              "v k = v (Suc 0) \<and> v (Suc k) = v 0"
+          show ?thesis
+            using hswap closed_segment_commute[of "v (Suc 0)" "v 0"]
+            by (by100 simp)
+        qed
+      qed
+      show "e \<in> {closed_segment (v 0) (v (Suc 0))}"
+        using he_eq hseg_eq by (by100 simp)
+    qed
+    have hincident_card_le1:
+        "card {e\<in>L. geotop_is_edge e \<and> v 0 \<in> e} \<le> 1"
+    proof -
+      have "card {e\<in>L. geotop_is_edge e \<and> v 0 \<in> e}
+          \<le> card {closed_segment (v 0) (v (Suc 0))}"
+        by (rule card_mono[OF _ hincident_subset_single]) (by100 simp)
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hincident_card2:
+        "card {e\<in>L. geotop_is_edge e \<and> v 0 \<in> e} = 2"
+      by (rule hsource_index_degree_two[OF h0])
+    show False
+      using hincident_card_le1 hincident_card2 by (by100 linarith)
+  qed
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
