@@ -54,6 +54,7 @@ GENERATED_SESSION_FILE_NAMES = {"INDEX_THEORIES.txt"}
 ADVICE_FILE_PATTERNS = [
     "PLAN_zero_sorry-expert*.md",
 ]
+IGNORED_PATH_PARTS = {".dev34_fast_cache", "__pycache__"}
 
 
 def theory_tokens(raw_line: str) -> list[str]:
@@ -77,7 +78,7 @@ def theory_tokens(raw_line: str) -> list[str]:
 
 def is_ignored_generated_path(base: Path, path: Path) -> bool:
     rel_parts = path.relative_to(base).parts
-    return ".dev34_fast_cache" in rel_parts or path.name.endswith("~")
+    return any(part in IGNORED_PATH_PARTS for part in rel_parts) or path.name.endswith("~")
 
 
 def is_indexed_session_file(base: Path, path: Path) -> bool:
@@ -113,7 +114,7 @@ def iter_advice_files(base: Path) -> list[Path]:
     for pattern in ADVICE_FILE_PATTERNS:
         advice_files.extend(
             path
-            for path in base.glob(pattern)
+            for path in base.rglob(pattern)
             if path.is_file() and not is_ignored_generated_path(base, path)
         )
     return sorted(

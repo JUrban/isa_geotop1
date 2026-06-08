@@ -114,63 +114,68 @@ def signature_fragment(kind, flat):
     return sig
 
 
-with out_path.open("w", encoding="utf-8") as out:
-    for f in theories:
-        lines = open(f, encoding="utf-8", errors="replace").readlines()
-        i = 0
-        while i < len(lines):
-            m = re.match(r'^(lemma|theorem|corollary|definition|fun|abbreviation)\s+(\S+)', lines[i].strip())
-            if m:
-                kind, name = m.group(1), m.group(2).rstrip(':')
-                stmt = []
-                j = i
-                while j < min(len(lines), i + 25):
-                    line = lines[j].rstrip()
-                    stmt.append(line.strip())
-                    stripped = line.strip()
-                    stops = ['proof', 'sorry', 'oops', 'by ', 'unfolding', 'using',
-                             'lemma', 'theorem', 'corollary', 'definition', 'fun',
-                             'abbreviation', 'text', 'section', 'subsection', 'end']
-                    if any(stripped.startswith(k) for k in stops) and j > i:
-                        break
-                    j += 1
-                flat = ' '.join(stmt)
-                sig = signature_fragment(kind, flat)
-                out.write(f'{f}:{i+1} {kind} {name} :: {sig}\n')
-            i += 1
+out_lines = []
 
-    for f in advice_files:
-        lines = Path(f).read_text(encoding="utf-8", errors="replace").splitlines()
-        current_heading = "advice"
-        pending: list[str] = []
-        start_line = 1
+for f in theories:
+    lines = open(f, encoding="utf-8", errors="replace").readlines()
+    i = 0
+    while i < len(lines):
+        m = re.match(r'^(lemma|theorem|corollary|definition|fun|abbreviation)\s+(\S+)', lines[i].strip())
+        if m:
+            kind, name = m.group(1), m.group(2).rstrip(':')
+            stmt = []
+            j = i
+            while j < min(len(lines), i + 25):
+                line = lines[j].rstrip()
+                stmt.append(line.strip())
+                stripped = line.strip()
+                stops = ['proof', 'sorry', 'oops', 'by ', 'unfolding', 'using',
+                         'lemma', 'theorem', 'corollary', 'definition', 'fun',
+                         'abbreviation', 'text', 'section', 'subsection', 'end']
+                if any(stripped.startswith(k) for k in stops) and j > i:
+                    break
+                j += 1
+            flat = ' '.join(stmt)
+            sig = signature_fragment(kind, flat)
+            out_lines.append(f'{f}:{i+1} {kind} {name} :: {sig}\n')
+        i += 1
 
-        def emit_advice(parts: list[str], first_line: int) -> None:
-            text = " ".join(part.strip() for part in parts if part.strip())
-            text = re.sub(r"\s+", " ", text).strip()
-            if not text:
-                return
-            if len(text) > 700:
-                text = text[:697] + "..."
-            out.write(f"{f}:{first_line} advice {current_heading} :: {text}\n")
+for f in advice_files:
+    lines = Path(f).read_text(encoding="utf-8", errors="replace").splitlines()
+    current_heading = "advice"
+    pending: list[str] = []
+    start_line = 1
 
-        for line_no, line in enumerate(lines, 1):
-            stripped = line.strip()
-            if stripped.startswith("#"):
-                emit_advice(pending, start_line)
-                pending = []
-                current_heading = stripped.lstrip("#").strip() or "advice"
-                start_line = line_no
-                continue
-            if not stripped:
-                emit_advice(pending, start_line)
-                pending = []
-                start_line = line_no + 1
-                continue
-            if not pending:
-                start_line = line_no
-            pending.append(stripped)
-        emit_advice(pending, start_line)
+    def emit_advice(parts: list[str], first_line: int) -> None:
+        text = " ".join(part.strip() for part in parts if part.strip())
+        text = re.sub(r"\s+", " ", text).strip()
+        if not text:
+            return
+        if len(text) > 700:
+            text = text[:697] + "..."
+        out_lines.append(f"{f}:{first_line} advice {current_heading} :: {text}\n")
+
+    for line_no, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            emit_advice(pending, start_line)
+            pending = []
+            current_heading = stripped.lstrip("#").strip() or "advice"
+            start_line = line_no
+            continue
+        if not stripped:
+            emit_advice(pending, start_line)
+            pending = []
+            start_line = line_no + 1
+            continue
+        if not pending:
+            start_line = line_no
+        pending.append(stripped)
+    emit_advice(pending, start_line)
+
+content = "".join(out_lines)
+if not out_path.exists() or out_path.read_text(encoding="utf-8", errors="replace") != content:
+    out_path.write_text(content, encoding="utf-8")
 PYEND
 
 total=$(wc -l < "$OUT")

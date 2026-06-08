@@ -77,44 +77,58 @@ for theory in theories:
 # final comparison for entries with the same kind and name.
 entries.sort(key=lambda e: (e[1], e[2], f"{e[0]}|{e[1]}|{e[2]}|{e[3]}"))
 
-with txt.open("w", encoding="utf-8") as out:
-    for theory, kind, name, line_no in entries:
-        out.write(f"{theory}|{kind}|{name}|{line_no}\n")
+def write_if_changed(path, content):
+    if path.exists() and path.read_text(encoding="utf-8", errors="replace") == content:
+        return False
+    path.write_text(content, encoding="utf-8")
+    return True
+
+txt_lines = [
+    f"{theory}|{kind}|{name}|{line_no}\n"
+    for theory, kind, name, line_no in entries
+]
+write_if_changed(txt, "".join(txt_lines))
 
 name_counts = Counter(name for _, _, name, _ in entries)
 duplicates = sorted(name for name, count in name_counts.items() if count > 1)
 
-with md.open("w", encoding="utf-8") as out:
-    out.write("# Theorem and Definition Index\n")
-    today = datetime.datetime.now(datetime.UTC)
-    out.write(f"# Generated: {today:%Y-%m-%d}\n")
-    out.write("# Format: file | kind | name | line\n")
-    out.write("#\n")
-    out.write(f"# Files: {','.join(theories)}\n")
-    out.write("#\n")
-    out.write(f"# Total entries: {len(entries)}\n")
-    out.write(f"# Duplicate names: {len(duplicates)}\n")
-    out.write("\n")
+md_lines = []
 
-    for kind in ["definition", "fun", "abbreviation", "lemma", "theorem", "corollary"]:
-        rows = [entry for entry in entries if entry[1] == kind]
-        if not rows:
-            continue
-        out.write(f"## {kind}s ({len(rows)})\n")
-        out.write("\n")
-        for theory, _, name, line_no in rows:
-            out.write(f"{name:<45}  {theory:<35}  line {line_no}\n")
-        out.write("\n")
+def emit(line=""):
+    md_lines.append(f"{line}\n")
 
-    if duplicates:
-        out.write(f"## DUPLICATES ({len(duplicates)} names appear in multiple locations)\n")
-        out.write("\n")
-        for duplicate in duplicates:
-            out.write(f"  {duplicate}:\n")
-            for theory, kind, name, line_no in entries:
-                if name == duplicate:
-                    out.write(f"    {theory:<35}  {kind}  line {line_no}\n")
-        out.write("\n")
+emit("# Theorem and Definition Index")
+today = datetime.datetime.now(datetime.UTC)
+emit(f"# Generated: {today:%Y-%m-%d}")
+emit("# Format: file | kind | name | line")
+emit("#")
+emit(f"# Files: {','.join(theories)}")
+emit("#")
+emit(f"# Total entries: {len(entries)}")
+emit(f"# Duplicate names: {len(duplicates)}")
+emit()
+
+for kind in ["definition", "fun", "abbreviation", "lemma", "theorem", "corollary"]:
+    rows = [entry for entry in entries if entry[1] == kind]
+    if not rows:
+        continue
+    emit(f"## {kind}s ({len(rows)})")
+    emit()
+    for theory, _, name, line_no in rows:
+        emit(f"{name:<45}  {theory:<35}  line {line_no}")
+    emit()
+
+if duplicates:
+    emit(f"## DUPLICATES ({len(duplicates)} names appear in multiple locations)")
+    emit()
+    for duplicate in duplicates:
+        emit(f"  {duplicate}:")
+        for theory, kind, name, line_no in entries:
+            if name == duplicate:
+                emit(f"    {theory:<35}  {kind}  line {line_no}")
+    emit()
+
+write_if_changed(md, "".join(md_lines))
 
 print(f"Index: {len(entries)} entries, {len(duplicates)} duplicates from {len(theories)} theories incl. imports -> {txt} / {md}")
 print("Theory list -> INDEX_THEORIES.txt")
