@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1362
-dev34/GeoTop_3_4.thy:8918
-dev34/GeoTop_3_4.thy:10120
+dev34/GeoTop_3_4.thy:1429
+dev34/GeoTop_3_4.thy:8986
+dev34/GeoTop_3_4.thy:10188
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -73,6 +73,11 @@ bookkeeping. The anonymous target-data hole has also been renamed as
 the standard boundary cyclic listing contract is named by
 `geotop_standard_boundary_cycle_listing_data_dev34`, so the missing book step is
 searchable by theorem name and by target-data predicate.
+
+Inside the source-to-target package, the source-side finite/nonempty vertex
+facts, singleton membership facts, listed-edge membership facts, and listed-edge
+endpoint distinctness facts have now been proved. The remaining local hole is
+the actual standard-boundary cyclic subdivision and matching vertex map.
 
 ## Audit Synthesis
 

@@ -1359,7 +1359,75 @@ lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
     Moise Fig. 4.10 source-to-target package: after constructing a cyclic
     subdivision of the standard boundary, choose the simplicial vertex bijection
     by matching the source and target cyclic listings position by position. **)
-  sorry
+proof -
+  let ?V = "((\<lambda>k. v k) ` {0..<p})"
+  let ?E = "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hidx_finite: "finite {0..<p}"
+    by (by100 simp)
+  have hsource_vertices_finite: "finite (geotop_complex_vertices L)"
+    using hvertices hidx_finite by (by100 simp)
+  have hp_pos: "0 < p"
+    using hp_gt2 by (by100 linarith)
+  have hsource_vertices_nonempty: "geotop_complex_vertices L \<noteq> {}"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> ?V"
+      by (by100 blast)
+    thus ?thesis
+      using hvertices by (by100 blast)
+  qed
+  have hsource_singletons_subset_L: "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
+    using hL_listing_decomp by (by100 blast)
+  have hsource_vertex_singleton:
+      "\<And>x. x \<in> geotop_complex_vertices L \<Longrightarrow> {x} \<in> L"
+  proof -
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices L"
+    have "x \<in> ?V"
+      using hx hvertices by (by100 blast)
+    thus "{x} \<in> L"
+      using hsource_singletons_subset_L by (by100 blast)
+  qed
+  have hsource_edges_eq: "?E = {e\<in>L. geotop_is_edge e}"
+    by (rule hedge_segments)
+  have hsource_edge_members:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  proof -
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    have "closed_segment (v k) (v (Suc k)) \<in> ?E"
+      using hk by (by100 blast)
+    hence "closed_segment (v k) (v (Suc k)) \<in> {e\<in>L. geotop_is_edge e}"
+      using hsource_edges_eq by (by100 simp)
+    thus "closed_segment (v k) (v (Suc k)) \<in> L
+        \<and> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      by (by100 blast)
+  qed
+  have hsource_edge_endpoints_distinct:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<noteq> v (Suc k)"
+  proof
+    fix k
+    assume hk: "k \<in> {0..<p}"
+    assume heq: "v k = v (Suc k)"
+    have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hsource_edge_members[OF hk] by (by100 blast)
+    have hdim0: "geotop_simplex_dim {v k} 0"
+      by (rule geotop_singleton_is_simplex)
+    have hdim1: "geotop_simplex_dim {v k} 1"
+      using hedge heq unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_standard_2simplex_boundary_cyclic_target_data_dev34:
   fixes L :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
