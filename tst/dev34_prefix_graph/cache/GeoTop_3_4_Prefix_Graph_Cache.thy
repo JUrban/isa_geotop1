@@ -9526,7 +9526,55 @@ proof -
             \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
             \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
-      sorry
+    proof -
+      fix S T U p y z N
+      assume hS_E: "S \<in> E"
+      assume hT_E: "T \<in> E"
+      assume hU_E: "U \<in> E"
+      assume hS: "S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hT: "T \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hU: "U \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hSTU_eq: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      assume hST: "S \<noteq> T"
+      assume hSU: "S \<noteq> U"
+      assume hTU: "T \<noteq> U"
+      assume hST_disj: "(S - {w}) \<inter> (T - {w}) = {}"
+      assume hSU_disj: "(S - {w}) \<inter> (U - {w}) = {}"
+      assume hTU_disj: "(T - {w}) \<inter> (U - {w}) = {}"
+      assume hpS: "p \<in> (S - {w, q\<^sub>1}) \<inter> sphere w r"
+      assume hyT: "y \<in> (T - {w, q\<^sub>1}) \<inter> sphere w r"
+      assume hzU: "z \<in> (U - {w, q\<^sub>1}) \<inter> sphere w r"
+      assume hp_can: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hy_can: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hz_can: "z \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hpyz_eq: "{p, y, z} = {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      assume hcard: "card {p, y, z} = 3"
+      assume hpy: "p \<noteq> y"
+      assume hpz: "p \<noteq> z"
+      assume hyz: "y \<noteq> z"
+      assume hN_sub: "N \<subseteq> geotop_polyhedron L - {w}"
+      assume hN_conn: "top1_connected_on N
+        (subspace_topology UNIV geotop_euclidean_topology N)"
+      assume hpSN: "p \<in> (S - {w}) \<inter> N"
+      assume hyTN: "y \<in> (T - {w}) \<inter> N"
+      assume hsame: "top1_in_same_component_on (geotop_polyhedron L - {w})
+        (subspace_topology UNIV geotop_euclidean_topology
+          (geotop_polyhedron L - {w})) p y"
+      have hp_selected_germ_closure:
+          "p \<in> closure ((S - {w}) \<inter> ball w r)"
+        by (rule hselected_sphere_germ_closure[OF hS hpS])
+      have hy_selected_germ_closure:
+          "y \<in> closure ((T - {w}) \<inter> ball w r)"
+        by (rule hselected_sphere_germ_closure[OF hT hyT])
+      have hz_selected_germ_closure:
+          "z \<in> closure ((U - {w}) \<inter> ball w r)"
+        by (rule hselected_sphere_germ_closure[OF hU hzU])
+      show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+        \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+        sorry
+    qed
     show ?thesis
     proof -
       obtain S T U p y z N where hS_E: "S \<in> E"
