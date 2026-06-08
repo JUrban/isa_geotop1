@@ -374,6 +374,11 @@ def main() -> int:
         action="store_true",
         help="print discovered ROOT/ROOTS session files",
     )
+    parser.add_argument(
+        "--signature-files",
+        action="store_true",
+        help="print files included in the cache signature",
+    )
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
         "--write-list",
@@ -394,6 +399,9 @@ def main() -> int:
     session_files = [
         path.relative_to(base).as_posix() for path in iter_session_files(base)
     ]
+    signature_files = [
+        path.relative_to(base).as_posix() for path in iter_signature_session_files(base)
+    ]
 
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
@@ -406,6 +414,8 @@ def main() -> int:
         sys.stdout.write("".join(f"{root}\n" for root in roots))
     if args.session_files:
         sys.stdout.write("".join(f"{path}\n" for path in session_files))
+    if args.signature_files:
+        sys.stdout.write("".join(f"{path}\n" for path in signature_files))
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))

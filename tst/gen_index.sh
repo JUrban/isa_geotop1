@@ -28,11 +28,12 @@ mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY
 mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
 mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
+mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
+  echo "Index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ROOTS[@]} ROOT files) -> $TXT / $MD"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -120,5 +121,6 @@ PYEND
 
 echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"
+echo "Tracked ${#SIGNATURE_FILES[@]} session/signature files"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"
