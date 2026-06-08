@@ -174,6 +174,69 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_face_complex_edge_unique_top_2face_dev34:
+  fixes \<sigma> e :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hedge: "geotop_simplex_dim e 1"
+  assumes hface: "geotop_is_face e \<sigma>"
+  shows "card {\<theta> \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}.
+      geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>} = 1"
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?S = "{\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>}"
+  have h\<sigma>S: "\<sigma> \<in> ?S"
+    using h\<sigma> hface by (by100 simp)
+  have hSsub: "?S \<subseteq> {\<sigma>}"
+  proof
+    fix \<theta>
+    assume h\<theta>S: "\<theta> \<in> ?S"
+    have h\<theta>K: "\<theta> \<in> ?K"
+      using h\<theta>S by (by100 blast)
+    have h\<theta>dim: "geotop_simplex_dim \<theta> 2"
+      using h\<theta>S by (by100 blast)
+    have hcase: "geotop_is_face \<theta> \<sigma> \<or> \<theta> = \<sigma>"
+      using h\<theta>K by (by100 blast)
+    show "\<theta> \<in> {\<sigma>}"
+    proof (rule disjE[OF hcase])
+      assume h\<theta>face: "geotop_is_face \<theta> \<sigma>"
+      have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
+        by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
+      have h\<sigma>conv: "convex \<sigma>"
+        by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex])
+      have h\<theta>HOL: "\<theta> face_of \<sigma>"
+        by (rule geotop_is_face_imp_HOL_face_of_R2[OF h\<theta>face])
+      have h\<sigma>hyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
+        by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
+      have h\<theta>hyper: "geotop_hyperplane_dim (affine hull \<theta>) 2"
+        by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<theta>dim])
+      have h\<sigma>aff: "aff_dim \<sigma> = 2"
+        using geotop_hyperplane_dim_imp_affine_aff_dim[OF h\<sigma>hyper]
+        by (by100 simp)
+      have h\<theta>aff: "aff_dim \<theta> = 2"
+        using geotop_hyperplane_dim_imp_affine_aff_dim[OF h\<theta>hyper]
+        by (by100 simp)
+      have "\<theta> = \<sigma>"
+      proof (rule ccontr)
+        assume hne: "\<theta> \<noteq> \<sigma>"
+        have "aff_dim \<theta> < aff_dim \<sigma>"
+          by (rule face_of_aff_dim_lt[OF h\<sigma>conv h\<theta>HOL hne])
+        show False
+          using \<open>aff_dim \<theta> < aff_dim \<sigma>\<close> h\<sigma>aff h\<theta>aff by (by100 simp)
+      qed
+      show "\<theta> \<in> {\<sigma>}"
+        using \<open>\<theta> = \<sigma>\<close> by (by100 simp)
+    next
+      assume "\<theta> = \<sigma>"
+      show "\<theta> \<in> {\<sigma>}"
+        using \<open>\<theta> = \<sigma>\<close> by (by100 simp)
+    qed
+  qed
+  have "?S = {\<sigma>}"
+    using h\<sigma>S hSsub by (by100 blast)
+  show ?thesis
+    using \<open>?S = {\<sigma>}\<close> by (by100 simp)
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2007,69 +2070,6 @@ proof -
     using hpoly_sub hpoly_face by (by100 simp)
   show ?thesis
     using hc hpoly by (by100 simp)
-qed
-
-lemma geotop_2simplex_face_complex_edge_unique_top_2face_dev34:
-  fixes \<sigma> e :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  assumes hedge: "geotop_simplex_dim e 1"
-  assumes hface: "geotop_is_face e \<sigma>"
-  shows "card {\<theta> \<in> {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}.
-      geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>} = 1"
-proof -
-  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-  let ?S = "{\<theta> \<in> ?K. geotop_simplex_dim \<theta> 2 \<and> geotop_is_face e \<theta>}"
-  have h\<sigma>S: "\<sigma> \<in> ?S"
-    using h\<sigma> hface by (by100 simp)
-  have hSsub: "?S \<subseteq> {\<sigma>}"
-  proof
-    fix \<theta>
-    assume h\<theta>S: "\<theta> \<in> ?S"
-    have h\<theta>K: "\<theta> \<in> ?K"
-      using h\<theta>S by (by100 blast)
-    have h\<theta>dim: "geotop_simplex_dim \<theta> 2"
-      using h\<theta>S by (by100 blast)
-    have hcase: "geotop_is_face \<theta> \<sigma> \<or> \<theta> = \<sigma>"
-      using h\<theta>K by (by100 blast)
-    show "\<theta> \<in> {\<sigma>}"
-    proof (rule disjE[OF hcase])
-      assume h\<theta>face: "geotop_is_face \<theta> \<sigma>"
-      have h\<sigma>simplex: "geotop_is_simplex \<sigma>"
-        by (rule geotop_simplex_dim_imp_is_simplex[OF h\<sigma>])
-      have h\<sigma>conv: "convex \<sigma>"
-        by (rule GeoTopBase0.geotop_simplex_is_convex[OF h\<sigma>simplex])
-      have h\<theta>HOL: "\<theta> face_of \<sigma>"
-        by (rule geotop_is_face_imp_HOL_face_of_R2[OF h\<theta>face])
-      have h\<sigma>hyper: "geotop_hyperplane_dim (affine hull \<sigma>) 2"
-        by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<sigma>])
-      have h\<theta>hyper: "geotop_hyperplane_dim (affine hull \<theta>) 2"
-        by (rule geotop_simplex_dim_imp_hyperplane_dim[OF h\<theta>dim])
-      have h\<sigma>aff: "aff_dim \<sigma> = 2"
-        using geotop_hyperplane_dim_imp_affine_aff_dim[OF h\<sigma>hyper]
-        by (by100 simp)
-      have h\<theta>aff: "aff_dim \<theta> = 2"
-        using geotop_hyperplane_dim_imp_affine_aff_dim[OF h\<theta>hyper]
-        by (by100 simp)
-      have "\<theta> = \<sigma>"
-      proof (rule ccontr)
-        assume hne: "\<theta> \<noteq> \<sigma>"
-        have "aff_dim \<theta> < aff_dim \<sigma>"
-          by (rule face_of_aff_dim_lt[OF h\<sigma>conv h\<theta>HOL hne])
-        show False
-          using \<open>aff_dim \<theta> < aff_dim \<sigma>\<close> h\<sigma>aff h\<theta>aff by (by100 simp)
-      qed
-      show "\<theta> \<in> {\<sigma>}"
-        using \<open>\<theta> = \<sigma>\<close> by (by100 simp)
-    next
-      assume "\<theta> = \<sigma>"
-      show "\<theta> \<in> {\<sigma>}"
-        using \<open>\<theta> = \<sigma>\<close> by (by100 simp)
-    qed
-  qed
-  have "?S = {\<sigma>}"
-    using h\<sigma>S hSsub by (by100 blast)
-  show ?thesis
-    using \<open>?S = {\<sigma>}\<close> by (by100 simp)
 qed
 
 lemma geotop_2simplex_edge_face_in_comb_boundary_dev34:
