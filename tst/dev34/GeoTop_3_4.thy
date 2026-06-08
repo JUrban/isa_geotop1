@@ -490,6 +490,46 @@ proof -
     show "{} \<subseteq> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
       by (by100 simp)
   qed
+  have hvertex_singletons_in_L:
+      "\<And>x. x \<in> ?V \<Longrightarrow> {x} \<in> L"
+    using hV_singletons_subset_L by (by100 blast)
+  have hlisted_edge_simplex_vertices:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_simplex_vertices (closed_segment (v k) (v (Suc k)))
+          {v k, v (Suc k)}"
+    by (rule geotop_closed_segment_simplex_vertices[OF hlisted_edge_endpoints_distinct])
+  have hlisted_edge_endpoints_complex_vertices:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        v k \<in> geotop_complex_vertices L
+        \<and> v (Suc k) \<in> geotop_complex_vertices L"
+    using hlisted_edge_members hlisted_edge_simplex_vertices
+    unfolding geotop_complex_vertices_def by (by100 blast)
+  have hlisted_edge_endpoint_singletons_in_L:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> {v k} \<in> L \<and> {v (Suc k)} \<in> L"
+    using hlisted_edge_endpoints_complex_vertices hL_complex
+      geotop_complex_vertices_eq_0_simplexes by (by100 blast)
+  have hsingleton_convex_hull_in_L:
+      "\<And>x. x \<in> ?V \<Longrightarrow> geotop_convex_hull {x} \<in> L"
+    using hvertex_singletons_in_L geotop_convex_hull_eq_HOL[of "{_}"]
+    by (by100 simp)
+  have hlisted_edge_convex_hull_eq:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_convex_hull {v k, v (Suc k)}
+          = closed_segment (v k) (v (Suc k))"
+    using hlisted_edge_simplex_vertices
+    unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hlisted_edge_convex_hull_in_L:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow>
+        geotop_convex_hull {v k, v (Suc k)} \<in> L"
+    using hlisted_edge_convex_hull_eq hlisted_edge_members by (by100 simp)
+  have hL_edge_listed_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>k\<in>{0..<p}. \<tau> = closed_segment (v k) (v (Suc k))"
+    using hE_eq_edges by (by100 blast)
+  have hL_nonedge_singleton_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>x\<in>?V. \<tau> = {x}"
+    using hL_member_cases hE_edges by (by100 blast)
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
