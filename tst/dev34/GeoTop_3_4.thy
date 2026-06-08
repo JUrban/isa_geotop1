@@ -435,6 +435,61 @@ proof -
     thus False
       by (by100 linarith)
   qed
+  have hV_nonempty: "?V \<noteq> {}"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> ?V"
+      by (by100 blast)
+    thus ?thesis
+      by (by100 blast)
+  qed
+  have hL_member_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<tau> \<in> ((\<lambda>x. {x}) ` ?V) \<or> \<tau> \<in> ?E"
+    using hL_listing_decomp by (by100 blast)
+  have hsingleton_not_edge: "\<And>(x :: real^2). \<not> geotop_is_edge {x}"
+  proof
+    fix x :: "real^2"
+    assume hedge: "geotop_is_edge {x}"
+    have hdim0: "geotop_simplex_dim {x} 0"
+      by (rule geotop_singleton_is_simplex[where P=x])
+    have hdim1: "geotop_simplex_dim {x} 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  have hE_not_singleton_image:
+      "\<And>e. e \<in> ?E \<Longrightarrow> e \<notin> ((\<lambda>x. {x}) ` ?V)"
+  proof
+    fix e
+    assume heE: "e \<in> ?E"
+    assume he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+    obtain x where heq: "e = {x}"
+      using he_single by (by100 blast)
+    have "geotop_is_edge {x}"
+      using hE_edges[OF heE] heq by (by100 simp)
+    thus False
+      using hsingleton_not_edge by (by100 blast)
+  qed
+  have hvertex_edge_parts_disjoint:
+      "((\<lambda>x. {x}) ` ?V) \<inter> ?E = {}"
+  proof
+    show "((\<lambda>x. {x}) ` ?V) \<inter> ?E \<subseteq> {}"
+    proof
+      fix e
+      assume he: "e \<in> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      have heE: "e \<in> ?E"
+        using he by (by100 simp)
+      have he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+        using he by (by100 simp)
+      show "e \<in> {}"
+        using hE_not_singleton_image[OF heE] he_single by (by100 blast)
+    qed
+    show "{} \<subseteq> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      by (by100 simp)
+  qed
   have hstandard_boundary_cycle_subdivision_model:
       "\<exists>F \<psi>. geotop_is_subdivision F ?B \<and> geotop_isomorphism L F \<psi>"
     sorry
