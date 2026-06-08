@@ -508,6 +508,23 @@ proof -
     thus False
       using hsingleton_not_edge by (by100 blast)
   qed
+  have hvertex_edge_parts_disjoint:
+      "((\<lambda>x. {x}) ` ?V) \<inter> ?E = {}"
+  proof
+    show "((\<lambda>x. {x}) ` ?V) \<inter> ?E \<subseteq> {}"
+    proof
+      fix e
+      assume he: "e \<in> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      have heE: "e \<in> ?E"
+        using he by (by100 simp)
+      have he_single: "e \<in> ((\<lambda>x. {x}) ` ?V)"
+        using he by (by100 simp)
+      show "e \<in> {}"
+        using hE_not_singleton_image[OF heE] he_single by (by100 blast)
+    qed
+    show "{} \<subseteq> ((\<lambda>x. {x}) ` ?V) \<inter> ?E"
+      by (by100 simp)
+  qed
   have hboundary_cycle_model:
       "\<exists>(\<sigma> :: (real^2) set) F \<psi>.
         geotop_simplex_dim \<sigma> 2
