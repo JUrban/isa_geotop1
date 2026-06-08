@@ -9096,6 +9096,35 @@ proof -
           rule exI[where x=y], rule exI[where x=z],
           rule hbody)
   qed
+  have hno_local_component_meets_all_three_selected_edges:
+      "\<And>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+        \<Longrightarrow> \<not> ((e\<^sub>1 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>2 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>3 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {})"
+  proof -
+    fix C
+    assume hC: "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+    let ?T = "{S \<in> {e\<^sub>1, e\<^sub>2, e\<^sub>3}.
+      (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}}"
+    have hbound: "card ?T \<le> 2"
+      using hradial_sector_bound hC by (by100 blast)
+    have hcard_edges: "card {e\<^sub>1, e\<^sub>2, e\<^sub>3} = 3"
+      using he\<^sub>12 he\<^sub>13 he\<^sub>23 by (by100 simp)
+    show "\<not> ((e\<^sub>1 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>2 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>3 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {})"
+    proof
+      assume hall: "(e\<^sub>1 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>2 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+          \<and> (e\<^sub>3 - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      have hT_eq: "?T = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+        using hall by (by100 blast)
+      have "card ?T = 3"
+        using hT_eq hcard_edges by (by100 simp)
+      then show False
+        using hbound by (by100 linarith)
+    qed
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to the
