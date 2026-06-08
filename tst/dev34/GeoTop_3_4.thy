@@ -443,6 +443,22 @@ proof -
   qed
 qed
 
+lemma geotop_2simplex_comb_boundary_finite_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  shows "finite (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  have hbd_sub: "geotop_comb_boundary ?K 2 \<subseteq> ?K"
+    by (rule geotop_comb_boundary_subset_complex_dev34[OF hK_complex])
+  have hK_finite: "finite ?K"
+    by (rule geotop_simplex_dim_face_complex_finite_R2[OF h\<sigma>])
+  show ?thesis
+    by (rule finite_subset[OF hbd_sub hK_finite])
+qed
+
 lemma geotop_degree_two_oriented_edge_successor_period_gt_two_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -2366,22 +2382,6 @@ proof (rule equals0I)
     by (rule face_of_disjoint_rel_interior[OF hface_HOL hne])
   show False
     using hdisj hx\<rho> hx_rel by (by100 blast)
-qed
-
-lemma geotop_2simplex_comb_boundary_finite_dev34:
-  fixes \<sigma> :: "(real^2) set"
-  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
-  shows "finite (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
-proof -
-  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
-  have hK_complex: "geotop_is_complex ?K"
-    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
-  have hbd_sub: "geotop_comb_boundary ?K 2 \<subseteq> ?K"
-    by (rule geotop_comb_boundary_subset_complex_dev34[OF hK_complex])
-  have hK_finite: "finite ?K"
-    by (rule geotop_simplex_dim_face_complex_finite_R2[OF h\<sigma>])
-  show ?thesis
-    by (rule finite_subset[OF hbd_sub hK_finite])
 qed
 
 lemma geotop_2simplex_comb_boundary_is_complex_dev34:
