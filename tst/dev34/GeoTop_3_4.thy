@@ -6082,6 +6082,135 @@ proof -
     using hstep hfirst by (by100 simp)
 qed
 
+lemma geotop_endpoint_chain_listing_two_vertex_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  assumes hq_card: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+  shows "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  (**
+    Endpoint-chain base case in the book induction.  If the first neighbor
+    \<open>q\<close> is also the other degree-one endpoint, connectedness forces the
+    linear graph to consist only of \<open>{w}\<close>, \<open>{q}\<close>, and the edge
+    \<open>closed_segment w q\<close>, so the two-vertex list is the whole chain. **)
+proof -
+  have hL_complex: "geotop_is_complex L"
+    by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
+  have hwL: "{w} \<in> L"
+    using geotop_graph_endpoint_singleton_and_card_one_dev34
+        [OF hL_linear hendpoint]
+    by (by100 blast)
+  have hexhaust: "L - {{w}, {q}, e} = {}"
+    by (rule geotop_two_degree_one_endpoint_edge_connected_exhausts_dev34
+        [OF hL_linear hL_finite hconn hendpoint hqL hq_card
+          heL he_edge hw_e hq_ne he_seg])
+  have hL_sub: "L \<subseteq> {{w}, {q}, e}"
+    using hexhaust by (by100 blast)
+  have hvertices_subset: "geotop_complex_vertices L \<subseteq> {w, q}"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices L"
+    have hxL: "{x} \<in> L"
+      using hx geotop_complex_vertices_eq_0_simplexes[OF hL_complex]
+      by (by100 simp)
+    have hcase: "{x} = {w} \<or> {x} = {q} \<or> {x} = e"
+      using hL_sub hxL by (by100 blast)
+    show "x \<in> {w, q}"
+    proof (rule disjE[OF hcase])
+      assume "{x} = {w}"
+      thus ?thesis by (by100 simp)
+    next
+      assume hrest: "{x} = {q} \<or> {x} = e"
+      show ?thesis
+      proof (rule disjE[OF hrest])
+        assume "{x} = {q}"
+        thus ?thesis by (by100 simp)
+      next
+        assume hx_e: "{x} = e"
+        have "geotop_is_edge {x}"
+          using he_edge hx_e by (by100 simp)
+        moreover have "\<not> geotop_is_edge {x}"
+          by (rule geotop_singleton_not_edge_prefix)
+        ultimately show ?thesis
+          by (by100 blast)
+      qed
+    qed
+  qed
+  have hvertices_supset: "{w, q} \<subseteq> geotop_complex_vertices L"
+  proof
+    fix x
+    assume hx: "x \<in> {w, q}"
+    have "{x} \<in> L"
+      using hx hwL hqL by (by100 blast)
+    thus "x \<in> geotop_complex_vertices L"
+      using geotop_complex_vertices_eq_0_simplexes[OF hL_complex]
+      by (by100 simp)
+  qed
+  have hvertices_eq: "set [w, q] = geotop_complex_vertices L"
+    using hvertices_subset hvertices_supset by (by100 simp)
+  have hedge_set_eq: "{d \<in> L. geotop_is_edge d} = {e}"
+  proof
+    show "{d \<in> L. geotop_is_edge d} \<subseteq> {e}"
+    proof
+      fix d
+      assume hd: "d \<in> {d \<in> L. geotop_is_edge d}"
+      have hdL: "d \<in> L"
+        using hd by (by100 simp)
+      have hdedge: "geotop_is_edge d"
+        using hd by (by100 simp)
+      have hcase: "d = {w} \<or> d = {q} \<or> d = e"
+        using hL_sub hdL by (by100 blast)
+      show "d \<in> {e}"
+      proof (rule disjE[OF hcase])
+        assume hdw: "d = {w}"
+        have "\<not> geotop_is_edge {w}"
+          by (rule geotop_singleton_not_edge_prefix)
+        thus ?thesis
+          using hdedge hdw by (by100 blast)
+      next
+        assume hrest: "d = {q} \<or> d = e"
+        show ?thesis
+        proof (rule disjE[OF hrest])
+          assume hdq: "d = {q}"
+          have "\<not> geotop_is_edge {q}"
+            by (rule geotop_singleton_not_edge_prefix)
+          thus ?thesis
+            using hdedge hdq by (by100 blast)
+        next
+          assume "d = e"
+          thus ?thesis by (by100 simp)
+        qed
+      qed
+    qed
+  next
+    show "{e} \<subseteq> {d \<in> L. geotop_is_edge d}"
+      using heL he_edge by (by100 simp)
+  qed
+  have hedge_image:
+      "{d \<in> L. geotop_is_edge d}
+        = ((\<lambda>i. closed_segment ([w, q] ! i) ([w, q] ! Suc i))
+            ` {0..<length [w, q] - 1})"
+    using hedge_set_eq he_seg by (by100 simp)
+  have hsteps: "\<forall>i < length [w, q] - 1.
+      closed_segment ([w, q] ! i) ([w, q] ! Suc i) \<in> L
+      \<and> geotop_is_edge (closed_segment ([w, q] ! i) ([w, q] ! Suc i))"
+    using heL he_edge he_seg by (by100 simp)
+  have hvertex_singletons: "\<forall>v \<in> set [w, q]. {v} \<in> L"
+    using hwL hqL by (by100 simp)
+  show ?thesis
+    unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    using hq_ne hvertices_eq hvertex_singletons hsteps hedge_image
+    by (by100 simp)
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
@@ -6129,7 +6258,26 @@ lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
     finite broken-line chain starting at \<open>w\<close> and entering the first edge
     \<open>closed_segment w q\<close> is placed on a subdivided boundary arc of a
     2-simplex, and the adjacent boundary vertex is used as the fan vertex. **)
-  sorry
+proof -
+  have hchain_listing_base_if_finish:
+      "q = pathfinish \<gamma> \<Longrightarrow>
+        geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  proof -
+    assume hq_finish: "q = pathfinish \<gamma>"
+    have hq_endpoint: "geotop_graph_endpoint L q"
+      using hfinish_endpoint hq_finish by (by100 simp)
+    have hq_card: "card {l\<in>L. geotop_is_edge l \<and> q \<in> l} = 1"
+      using geotop_graph_endpoint_singleton_and_card_one_dev34
+          [OF hL_linear hq_endpoint]
+      by (by100 blast)
+    show ?thesis
+      by (rule geotop_endpoint_chain_listing_two_vertex_dev34
+          [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
+            he_seg hqL hq_card])
+  qed
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_endpoint_first_neighbor_chain_boundary_arc_fan_target_dev34:
   fixes L :: "(real^2) set set"
