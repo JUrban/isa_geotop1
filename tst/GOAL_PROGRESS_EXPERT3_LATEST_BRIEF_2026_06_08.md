@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1466
-dev34/GeoTop_3_4.thy:9023
-dev34/GeoTop_3_4.thy:10225
+dev34/GeoTop_3_4.thy:1494
+dev34/GeoTop_3_4.thy:9051
+dev34/GeoTop_3_4.thy:10253
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -81,6 +81,10 @@ simplex-vertex facts, endpoint membership in the source vertex set, successor
 membership in the listed source image, and source singleton/edge convex-hull
 membership facts. The remaining local hole is the actual standard-boundary
 cyclic subdivision and matching vertex map.
+
+The same package now also records indexed source vertex membership, the closed
+endpoint vertex membership, finiteness of the source singleton and edge images,
+and nonemptiness of the source complex.
 
 ## Audit Synthesis
 

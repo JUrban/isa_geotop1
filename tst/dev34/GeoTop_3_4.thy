@@ -1381,6 +1381,21 @@ proof -
   qed
   have hsource_singletons_subset_L: "((\<lambda>x. {x}) ` ?V) \<subseteq> L"
     using hL_listing_decomp by (by100 blast)
+  have hsource_index_vertex:
+      "\<And>k. k \<in> {0..<p} \<Longrightarrow> v k \<in> geotop_complex_vertices L"
+    using hvertices by (by100 blast)
+  have hsource_closed_vertex_in_vertices:
+      "v p \<in> geotop_complex_vertices L"
+  proof -
+    have "0 \<in> {0..<p}"
+      using hp_pos by (by100 simp)
+    hence "v 0 \<in> geotop_complex_vertices L"
+      using hsource_index_vertex by (by100 blast)
+    thus ?thesis
+      using hclosed_vertex by (by100 simp)
+  qed
+  have hsource_singleton_image_finite: "finite ((\<lambda>x. {x}) ` ?V)"
+    by (rule finite_imageI[OF finite_imageI[OF hidx_finite]])
   have hsource_vertex_singleton:
       "\<And>x. x \<in> geotop_complex_vertices L \<Longrightarrow> {x} \<in> L"
   proof -
@@ -1391,8 +1406,21 @@ proof -
     thus "{x} \<in> L"
       using hsource_singletons_subset_L by (by100 blast)
   qed
+  have hL_nonempty: "L \<noteq> {}"
+  proof -
+    obtain x where hx: "x \<in> geotop_complex_vertices L"
+      using hsource_vertices_nonempty by (by100 blast)
+    have "{x} \<in> L"
+      by (rule hsource_vertex_singleton[OF hx])
+    thus ?thesis
+      by (by100 blast)
+  qed
   have hsource_edges_eq: "?E = {e\<in>L. geotop_is_edge e}"
     by (rule hedge_segments)
+  have hsource_listed_edges_finite: "finite ?E"
+    by (rule finite_imageI[OF hidx_finite])
+  have hsource_edge_set_finite: "finite {e\<in>L. geotop_is_edge e}"
+    using hsource_edges_eq hsource_listed_edges_finite by (by100 simp)
   have hsource_edge_members:
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         closed_segment (v k) (v (Suc k)) \<in> L
