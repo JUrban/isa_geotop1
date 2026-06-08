@@ -29,11 +29,12 @@ mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
 mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
 mapfile -t SIGNATURE_FILES < <(python3 index_theory_lib.py --signature-files)
+mapfile -t ADVICE_FILES < <(python3 index_theory_lib.py --advice-files)
 SIG=$(python3 index_theory_lib.py --signature --extra gen_stmt_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$OUT" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then
-  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ROOTS[@]} ROOT files) -> $OUT"
+  echo "Statement index: fresh cache (${#THEORIES[@]} theories incl. imports, ${#SESSION_FILES[@]} session files, ${#SIGNATURE_FILES[@]} signature files, ${#ADVICE_FILES[@]} advice files, ${#ROOTS[@]} ROOT files) -> $OUT"
   echo "Theory list -> $THEORY_LIST"
   exit 0
 fi
@@ -43,13 +44,18 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
   printf '  %s\n' "${MISSING[@]}" >&2
 fi
 
-python3 - "$OUT" "${THEORIES[@]}" << 'PYEND'
+python3 - "$OUT" --theories "${THEORIES[@]}" --advice "${ADVICE_FILES[@]}" << 'PYEND'
 import re
 import sys
 from pathlib import Path
 
 out_path = Path(sys.argv[1])
-theories = sys.argv[2:]
+try:
+    advice_marker = sys.argv.index("--advice")
+except ValueError:
+    advice_marker = len(sys.argv)
+theories = [arg for arg in sys.argv[3:advice_marker] if arg != "--theories"]
+advice_files = sys.argv[advice_marker + 1:] if advice_marker < len(sys.argv) else []
 
 sym_map = {
     'forall': 'ALL ', 'exists': 'EX ', 'nexists': '~EX ',
@@ -132,6 +138,39 @@ with out_path.open("w", encoding="utf-8") as out:
                 sig = signature_fragment(kind, flat)
                 out.write(f'{f}:{i+1} {kind} {name} :: {sig}\n')
             i += 1
+
+    for f in advice_files:
+        lines = Path(f).read_text(encoding="utf-8", errors="replace").splitlines()
+        current_heading = "advice"
+        pending: list[str] = []
+        start_line = 1
+
+        def emit_advice(parts: list[str], first_line: int) -> None:
+            text = " ".join(part.strip() for part in parts if part.strip())
+            text = re.sub(r"\s+", " ", text).strip()
+            if not text:
+                return
+            if len(text) > 700:
+                text = text[:697] + "..."
+            out.write(f"{f}:{first_line} advice {current_heading} :: {text}\n")
+
+        for line_no, line in enumerate(lines, 1):
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                emit_advice(pending, start_line)
+                pending = []
+                current_heading = stripped.lstrip("#").strip() or "advice"
+                start_line = line_no
+                continue
+            if not stripped:
+                emit_advice(pending, start_line)
+                pending = []
+                start_line = line_no + 1
+                continue
+            if not pending:
+                start_line = line_no
+            pending.append(stripped)
+        emit_advice(pending, start_line)
 PYEND
 
 total=$(wc -l < "$OUT")
@@ -141,5 +180,6 @@ echo "Theory list -> $THEORY_LIST"
 echo "Discovered ${#ROOTS[@]} ROOT files"
 echo "Discovered ${#SESSION_FILES[@]} session files"
 echo "Tracked ${#SIGNATURE_FILES[@]} session/signature files"
+echo "Tracked ${#ADVICE_FILES[@]} advice files"
 
 printf '%s\n' "$SIG" > "$SIG_FILE"

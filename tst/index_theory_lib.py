@@ -51,6 +51,9 @@ SESSION_RE = re.compile(
 )
 SESSION_FILE_NAMES = {"ROOT", "ROOTS"}
 GENERATED_SESSION_FILE_NAMES = {"INDEX_THEORIES.txt"}
+ADVICE_FILE_PATTERNS = [
+    "PLAN_zero_sorry-expert*.md",
+]
 
 
 def theory_tokens(raw_line: str) -> list[str]:
@@ -102,6 +105,20 @@ def iter_generated_session_files(base: Path) -> list[Path]:
 def iter_signature_session_files(base: Path) -> list[Path]:
     return (
         iter_session_files(base) + iter_generated_session_files(base)
+    )
+
+
+def iter_advice_files(base: Path) -> list[Path]:
+    advice_files: list[Path] = []
+    for pattern in ADVICE_FILE_PATTERNS:
+        advice_files.extend(
+            path
+            for path in base.glob(pattern)
+            if path.is_file() and not is_ignored_generated_path(base, path)
+        )
+    return sorted(
+        dict.fromkeys(advice_files),
+        key=lambda p: p.relative_to(base).as_posix(),
     )
 
 
@@ -343,7 +360,10 @@ def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> s
     session_files = [
         path.relative_to(base).as_posix() for path in iter_signature_session_files(base)
     ]
-    for name in extra_files + session_files + theories:
+    advice_files = [
+        path.relative_to(base).as_posix() for path in iter_advice_files(base)
+    ]
+    for name in extra_files + session_files + advice_files + theories:
         path = base / name
         h.update(name.encode("utf-8"))
         if not path.exists():
@@ -377,7 +397,12 @@ def main() -> int:
     parser.add_argument(
         "--signature-files",
         action="store_true",
-        help="print files included in the cache signature",
+        help="print session/generated files included in the cache signature",
+    )
+    parser.add_argument(
+        "--advice-files",
+        action="store_true",
+        help="print Markdown advice/report files included in the cache signature",
     )
     parser.add_argument("--signature", action="store_true", help="print input signature")
     parser.add_argument(
@@ -402,6 +427,9 @@ def main() -> int:
     signature_files = [
         path.relative_to(base).as_posix() for path in iter_signature_session_files(base)
     ]
+    advice_files = [
+        path.relative_to(base).as_posix() for path in iter_advice_files(base)
+    ]
 
     if args.write_list:
         content = "".join(f"{theory}\n" for theory in theories)
@@ -416,6 +444,8 @@ def main() -> int:
         sys.stdout.write("".join(f"{path}\n" for path in session_files))
     if args.signature_files:
         sys.stdout.write("".join(f"{path}\n" for path in signature_files))
+    if args.advice_files:
+        sys.stdout.write("".join(f"{path}\n" for path in advice_files))
     if args.signature:
         extra = ["index_theory_lib.py"] + args.extra
         print(file_signature(base, theories, extra))
