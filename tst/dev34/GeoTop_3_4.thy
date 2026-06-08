@@ -1362,6 +1362,7 @@ lemma geotop_standard_boundary_cycle_listing_data_with_source_bijection_dev34:
 proof -
   let ?V = "((\<lambda>k. v k) ` {0..<p})"
   let ?E = "((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  let ?B = "geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2"
   have hL_complex: "geotop_is_complex L"
     by (rule geotop_linear_graph_complex_dev34[OF hL_linear])
   have hL_1dim: "geotop_complex_is_1dim L"
@@ -1797,6 +1798,45 @@ proof -
             [OF False hWsub hWhull_L])
     qed
   qed
+  have hB_complex:
+      "geotop_is_complex ?B"
+    by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_finite:
+      "finite ?B"
+    by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hB_vertices_finite:
+      "finite (geotop_complex_vertices ?B)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hB_complex hB_finite])
+  have hB_vertices_poly:
+      "geotop_complex_vertices ?B \<subseteq> geotop_polyhedron ?B"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_complex_vertices ?B"
+    have hx_single: "{x} \<in> ?B"
+      using geotop_complex_vertices_eq_0_simplexes[OF hB_complex] hx by (by100 blast)
+    show "x \<in> geotop_polyhedron ?B"
+      unfolding geotop_polyhedron_def using hx_single by (by100 blast)
+  qed
+  have htarget_seed_subdivision:
+      "\<exists>F. geotop_is_subdivision F ?B
+        \<and> finite F
+        \<and> (\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F)
+        \<and> (\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F)"
+    using geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34
+      [OF h\<sigma> hB_vertices_finite hB_vertices_poly]
+    by (by100 blast)
+  obtain F\<^sub>0 where hF\<^sub>0_sub: "geotop_is_subdivision F\<^sub>0 ?B"
+      and hF\<^sub>0_finite: "finite F\<^sub>0"
+      and hB_vertices_in_F\<^sub>0:
+        "\<forall>x\<in>geotop_complex_vertices ?B. {x} \<in> F\<^sub>0"
+      and hB_old_vertices_in_F\<^sub>0:
+        "\<forall>v. {v} \<in> ?B \<longrightarrow> {v} \<in> F\<^sub>0"
+    using htarget_seed_subdivision by (by100 blast)
+  have hF\<^sub>0_complex: "geotop_is_complex F\<^sub>0"
+    by (rule geotop_subdivision_source_is_complex_dev34[OF hF\<^sub>0_sub])
+  have hF\<^sub>0_vertices_finite:
+      "finite (geotop_complex_vertices F\<^sub>0)"
+    by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
   show ?thesis
     sorry
 qed

@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1801
-dev34/GeoTop_3_4.thy:9358
-dev34/GeoTop_3_4.thy:10560
+dev34/GeoTop_3_4.thy:1841
+dev34/GeoTop_3_4.thy:9398
+dev34/GeoTop_3_4.thy:10600
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -95,6 +95,15 @@ edge. The proof follows the already staged downstream argument: source members
 split into singleton/edge parts, non-edge hulls force singleton vertex sets,
 listed-edge hulls force both listed endpoints by the complex-intersection face
 case, and the empty hull is excluded from the listed 1-complex.
+
+On the target side, the same active package now obtains the standard-boundary
+seed subdivision `F0` from
+`geotop_2simplex_boundary_finite_points_subdivision_preserves_vertices_dev34`,
+records that it subdivides the boundary complex, is finite and complex, and has
+a finite vertex set while preserving the original boundary vertices. The
+remaining missing step is still to upgrade this seed subdivision into the exact
+cyclic listing with `p`-periodic vertex map `u` and matching bijection from the
+source vertices.
 
 Latest local verification:
 
