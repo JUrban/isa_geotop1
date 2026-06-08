@@ -9183,6 +9183,20 @@ proof -
       using hno_local_component_meets_all_three_selected_edges[OF hC] hall
       by (by100 blast)
   qed
+  have hlocal_component_meets_selected_three_edges_book_step:
+      "\<exists>C S T U. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+        \<and> {S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}
+        \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
+        \<and> (U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+    (**
+      Remaining local-star bridge in Moise's branch-point argument.  The
+      connected split-side package above gives three selected incident germs at
+      \<open>w\<close>; using the small star ball and the carrier-sector cover, their
+      punctured side must determine one local component of
+      \<open>ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)\<close> whose closure meets all three selected
+      germs. **)
+    sorry
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to the
@@ -9193,7 +9207,19 @@ proof -
       the three-radial-sector bound to show the split side cannot account for
       all three incident germs without making \<open>w\<close> a local branch point of the
       simple closed curve. **)
-    sorry
+  proof -
+    obtain C S T U where hC:
+        "C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+      and hSTU: "{S, T, U} = {e\<^sub>1, e\<^sub>2, e\<^sub>3}"
+      and hS_touch: "(S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      and hT_touch: "(T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      and hU_touch: "(U - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}"
+      using hlocal_component_meets_selected_three_edges_book_step
+      by (elim exE conjE)
+    show False
+      by (rule hno_local_component_meets_selected_three_edges
+          [OF hC hSTU hS_touch hT_touch hU_touch])
+  qed
   have hsame_arc_side_two_germs_impossible: False
     using harc_side_disjoint_germs_local_star_impossible by (by100 blast)
   have hlocal_sector_cut_book:
