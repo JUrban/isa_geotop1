@@ -1,5 +1,6 @@
 #!/bin/bash
 # Generate theorem/definition index from active session theories and local imports.
+# Cache invalidation covers ROOT/ROOTS files plus the generated theory list.
 # Run from /project/tst after each session to keep the index current.
 # Usage: cd /project/tst && bash gen_index.sh [--force]
 
@@ -27,7 +28,7 @@ mapfile -t THEORIES < <(python3 index_theory_lib.py --list --write-list "$THEORY
 mapfile -t MISSING < <(python3 index_theory_lib.py --missing)
 mapfile -t ROOTS < <(python3 index_theory_lib.py --roots)
 mapfile -t SESSION_FILES < <(python3 index_theory_lib.py --session-files)
-SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh --extra index_theory_lib.py)
+SIG=$(python3 index_theory_lib.py --signature --extra gen_index.sh)
 
 if [ "$FORCE" -eq 0 ] && [ -f "$SIG_FILE" ] && [ -f "$TXT" ] && [ -f "$MD" ] && [ -f "$THEORY_LIST" ] \
   && [ "$(cat "$SIG_FILE")" = "$SIG" ]; then

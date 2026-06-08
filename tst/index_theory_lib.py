@@ -49,6 +49,7 @@ SESSION_RE = re.compile(
     r'session\s+(?:"([^"]+)"|([^\s=]+))(?:\s+in\s+(?:"([^"]+)"|([^\s=]+)))?'
 )
 SESSION_FILE_NAMES = {"ROOT", "ROOTS"}
+GENERATED_SESSION_FILE_NAMES = {"INDEX_THEORIES.txt"}
 
 
 def theory_tokens(raw_line: str) -> list[str]:
@@ -70,12 +71,36 @@ def theory_tokens(raw_line: str) -> list[str]:
     return kept
 
 
-def is_indexed_session_file(base: Path, path: Path) -> bool:
+def is_ignored_generated_path(base: Path, path: Path) -> bool:
     rel_parts = path.relative_to(base).parts
+    return ".dev34_fast_cache" in rel_parts or path.name.endswith("~")
+
+
+def is_indexed_session_file(base: Path, path: Path) -> bool:
+    return path.name in SESSION_FILE_NAMES and not is_ignored_generated_path(base, path)
+
+
+def is_generated_session_file(base: Path, path: Path) -> bool:
     return (
-        path.name in SESSION_FILE_NAMES
-        and ".dev34_fast_cache" not in rel_parts
-        and not path.name.endswith("~")
+        path.name in GENERATED_SESSION_FILE_NAMES
+        and not is_ignored_generated_path(base, path)
+    )
+
+
+def iter_generated_session_files(base: Path) -> list[Path]:
+    session_files: list[Path] = []
+    for name in sorted(GENERATED_SESSION_FILE_NAMES):
+        session_files.extend(
+            path
+            for path in base.rglob(name)
+            if path.is_file() and is_generated_session_file(base, path)
+        )
+    return sorted(session_files, key=lambda p: p.relative_to(base).as_posix())
+
+
+def iter_signature_session_files(base: Path) -> list[Path]:
+    return (
+        iter_session_files(base) + iter_generated_session_files(base)
     )
 
 
@@ -256,7 +281,7 @@ def discover_theories(base: Path) -> tuple[list[str], list[str]]:
 def file_signature(base: Path, theories: list[str], extra_files: list[str]) -> str:
     h = hashlib.sha256()
     session_files = [
-        path.relative_to(base).as_posix() for path in iter_session_files(base)
+        path.relative_to(base).as_posix() for path in iter_signature_session_files(base)
     ]
     for name in extra_files + session_files + theories:
         path = base / name
