@@ -1425,6 +1425,9 @@ proof -
   have hB_finite:
       "finite ?B"
     by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
+  have hB_edges_finite:
+      "finite {e\<in>?B. geotop_is_edge e}"
+    using hB_finite by (by100 simp)
   have hB_vertices_finite:
       "finite (geotop_complex_vertices ?B)"
     by (rule geotop_finite_complex_vertices_finite_dev34[OF hB_complex hB_finite])
@@ -1458,6 +1461,9 @@ proof -
   have hF\<^sub>0_vertices_finite:
       "finite (geotop_complex_vertices F\<^sub>0)"
     by (rule geotop_finite_complex_vertices_finite_dev34[OF hF\<^sub>0_complex hF\<^sub>0_finite])
+  have hF\<^sub>0_edges_finite:
+      "finite {e\<in>F\<^sub>0. geotop_is_edge e}"
+    using hF\<^sub>0_finite by (by100 simp)
   show ?thesis
     sorry
 qed
