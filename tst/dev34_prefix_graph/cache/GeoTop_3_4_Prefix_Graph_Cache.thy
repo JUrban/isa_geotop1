@@ -7260,6 +7260,112 @@ proof -
       by (rule exI[where x=C], rule exI[where x=p], rule exI[where x=y],
           rule exI[where x=D\<^sub>w], rule exI[where x=D\<^sub>q], rule hbody)
   qed
+  have hcanonical_pair_arc_side_split_second_point_side:
+      "\<exists>C p y D\<^sub>w D\<^sub>q. C \<in> {A\<^sub>1, A\<^sub>2}
+        \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+        \<and> p \<noteq> y
+        \<and> p \<in> C - {w}
+        \<and> y \<in> C - {w}
+        \<and> C = D\<^sub>w \<union> D\<^sub>q
+        \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+        \<and> w \<in> D\<^sub>w
+        \<and> q\<^sub>1 \<in> D\<^sub>q
+        \<and> p \<in> D\<^sub>w
+        \<and> p \<in> D\<^sub>q
+        \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
+  proof -
+    obtain C p y D\<^sub>w D\<^sub>q where hC: "C \<in> {A\<^sub>1, A\<^sub>2}"
+      and hp_set: "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hy_set: "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}"
+      and hpy: "p \<noteq> y"
+      and hpC: "p \<in> C - {w}"
+      and hyC: "y \<in> C - {w}"
+      and hC_split: "C = D\<^sub>w \<union> D\<^sub>q"
+      and hDwDq: "D\<^sub>w \<inter> D\<^sub>q = {p}"
+      and hwDw: "w \<in> D\<^sub>w"
+      and hqDq: "q\<^sub>1 \<in> D\<^sub>q"
+      and hpDw: "p \<in> D\<^sub>w"
+      and hpDq: "p \<in> D\<^sub>q"
+      using hcanonical_pair_arc_side_split by (elim exE conjE)
+    have hy_in_union: "y \<in> D\<^sub>w \<union> D\<^sub>q"
+      using hyC hC_split by (by100 blast)
+    have hy_not_p: "y \<noteq> p"
+      using hpy by (by100 simp)
+    have hy_cases: "y \<in> D\<^sub>w \<or> y \<in> D\<^sub>q"
+      using hy_in_union by (by100 blast)
+    have hside:
+        "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+    proof (rule disjE[OF hy_cases])
+      assume hyDw: "y \<in> D\<^sub>w"
+      have hyDw_p: "y \<in> D\<^sub>w - {p}"
+        using hyDw hy_not_p by (by100 blast)
+      have hy_not_Dq_p: "y \<notin> D\<^sub>q - {p}"
+      proof
+        assume hyDq_p: "y \<in> D\<^sub>q - {p}"
+        have "y \<in> D\<^sub>w \<inter> D\<^sub>q"
+          using hyDw hyDq_p by (by100 blast)
+        hence "y = p"
+          using hDwDq by (by100 blast)
+        thus False
+          using hy_not_p by (by100 blast)
+      qed
+      show ?thesis
+        using hyDw_p hy_not_Dq_p by (by100 blast)
+    next
+      assume hyDq: "y \<in> D\<^sub>q"
+      have hyDq_p: "y \<in> D\<^sub>q - {p}"
+        using hyDq hy_not_p by (by100 blast)
+      have hy_not_Dw_p: "y \<notin> D\<^sub>w - {p}"
+      proof
+        assume hyDw_p: "y \<in> D\<^sub>w - {p}"
+        have "y \<in> D\<^sub>w \<inter> D\<^sub>q"
+          using hyDw_p hyDq by (by100 blast)
+        hence "y = p"
+          using hDwDq by (by100 blast)
+        thus False
+          using hy_not_p by (by100 blast)
+      qed
+      show ?thesis
+        using hyDq_p hy_not_Dw_p by (by100 blast)
+    qed
+    have hbody: "C \<in> {A\<^sub>1, A\<^sub>2}
+      \<and> p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}
+      \<and> p \<noteq> y
+      \<and> p \<in> C - {w}
+      \<and> y \<in> C - {w}
+      \<and> C = D\<^sub>w \<union> D\<^sub>q
+      \<and> D\<^sub>w \<inter> D\<^sub>q = {p}
+      \<and> w \<in> D\<^sub>w
+      \<and> q\<^sub>1 \<in> D\<^sub>q
+      \<and> p \<in> D\<^sub>w
+      \<and> p \<in> D\<^sub>q
+      \<and> ((y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+        \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p}))"
+    proof (intro conjI)
+      show "C \<in> {A\<^sub>1, A\<^sub>2}" by (rule hC)
+      show "p \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hp_set)
+      show "y \<in> {x\<^sub>1, x\<^sub>2, x\<^sub>3}" by (rule hy_set)
+      show "p \<noteq> y" by (rule hpy)
+      show "p \<in> C - {w}" by (rule hpC)
+      show "y \<in> C - {w}" by (rule hyC)
+      show "C = D\<^sub>w \<union> D\<^sub>q" by (rule hC_split)
+      show "D\<^sub>w \<inter> D\<^sub>q = {p}" by (rule hDwDq)
+      show "w \<in> D\<^sub>w" by (rule hwDw)
+      show "q\<^sub>1 \<in> D\<^sub>q" by (rule hqDq)
+      show "p \<in> D\<^sub>w" by (rule hpDw)
+      show "p \<in> D\<^sub>q" by (rule hpDq)
+      show "(y \<in> D\<^sub>w - {p} \<and> y \<notin> D\<^sub>q - {p})
+          \<or> (y \<in> D\<^sub>q - {p} \<and> y \<notin> D\<^sub>w - {p})"
+        by (rule hside)
+    qed
+    show ?thesis
+      by (rule exI[where x=C], rule exI[where x=p], rule exI[where x=y],
+          rule exI[where x=D\<^sub>w], rule exI[where x=D\<^sub>q], rule hbody)
+  qed
   have harc_side_disjoint_germs_local_star_impossible: False
     (**
       Remaining finite local-star calculation, now localized to one of the
