@@ -9569,6 +9569,40 @@ proof -
       have hz_selected_germ_closure:
           "z \<in> closure ((U - {w}) \<inter> ball w r)"
         by (rule hselected_sphere_germ_closure[OF hU hzU])
+      have hselected_union_eq:
+          "S \<union> T \<union> U = e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3"
+        using hSTU_eq by (by100 blast)
+      have hlocal_open:
+          "open (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))"
+      proof -
+        have hclosed: "closed (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3)"
+          unfolding he\<^sub>1_seg he\<^sub>2_seg he\<^sub>3_seg
+          by (intro closed_Un closed_segment)
+        show ?thesis
+          by (rule open_Diff[OF open_ball hclosed])
+      qed
+      have hlocal_open_selected:
+          "open (ball w r - (S \<union> T \<union> U))"
+        using hlocal_open hselected_union_eq by (by100 simp)
+      have hcomponent_path_connected:
+          "\<And>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
+            \<Longrightarrow> path_connected C"
+        by (rule component_of_open_path_connected[OF hlocal_open])
+      have hselected_punctured_carrier_sector_cover:
+          "ball w r \<inter> (geotop_polyhedron L - {w})
+            \<subseteq> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> (ball w r - (S \<union> T \<union> U))"
+        using hlocal_punctured_carrier_sector_cover hSTU_eq hselected_union_eq
+        by (by100 blast)
+      have hN_ball_sector_cover:
+          "N \<inter> ball w r
+            \<subseteq> ((S - {w}) \<inter> ball w r)
+              \<union> ((T - {w}) \<inter> ball w r)
+              \<union> ((U - {w}) \<inter> ball w r)
+              \<union> (ball w r - (S \<union> T \<union> U))"
+        using hN_sub hselected_punctured_carrier_sector_cover by (by100 blast)
       show "\<exists>C. C \<in> components (ball w r - (e\<^sub>1 \<union> e\<^sub>2 \<union> e\<^sub>3))
         \<and> (S - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
         \<and> (T - {w}) \<inter> ball w r \<inter> closure C \<noteq> {}
