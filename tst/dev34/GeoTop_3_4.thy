@@ -1428,6 +1428,14 @@ proof -
         ((\<lambda>x. {x}) ` geotop_complex_vertices L)
         \<union> {e\<in>L. geotop_is_edge e}"
     using hL_listing_decomp hvertices hsource_edges_eq by (by100 simp)
+  have hsource_member_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow>
+        \<tau> \<in> ((\<lambda>x. {x}) ` ?V) \<or> \<tau> \<in> ?E"
+    using hL_listing_decomp by (by100 blast)
+  have hsource_edge_listed_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>k\<in>{0..<p}. \<tau> = closed_segment (v k) (v (Suc k))"
+    using hsource_edges_eq by (by100 blast)
   have hsource_edge_members:
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         closed_segment (v k) (v (Suc k)) \<in> L
@@ -1460,6 +1468,25 @@ proof -
     thus False
       by (by100 linarith)
   qed
+  have hsource_singleton_not_edge:
+      "\<And>(x :: real^2). \<not> geotop_is_edge {x}"
+  proof
+    fix x :: "real^2"
+    assume hedge: "geotop_is_edge {x}"
+    have hdim0: "geotop_simplex_dim {x} 0"
+      by (rule geotop_singleton_is_simplex[where P=x])
+    have hdim1: "geotop_simplex_dim {x} 1"
+      using hedge unfolding geotop_is_edge_def by (by100 simp)
+    have "0 = (1::nat)"
+      by (rule geotop_simplex_dim_unique[OF hdim0 hdim1])
+    thus False
+      by (by100 linarith)
+  qed
+  have hsource_nonedge_singleton_cases:
+      "\<And>\<tau>. \<tau> \<in> L \<Longrightarrow> \<not> geotop_is_edge \<tau> \<Longrightarrow>
+        \<exists>x\<in>?V. \<tau> = {x}"
+    using hsource_member_cases hsource_edge_members hsource_singleton_not_edge
+    by (by100 blast)
   have hsource_edge_simplex_vertices:
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         geotop_simplex_vertices (closed_segment (v k) (v (Suc k)))
@@ -1497,6 +1524,279 @@ proof -
       "\<And>k. k \<in> {0..<p} \<Longrightarrow>
         geotop_convex_hull {v k, v (Suc k)} \<in> L"
     using hsource_edge_convex_hull_eq hsource_edge_members by (by100 simp)
+  have hsource_convex_hull_nonedge_singleton_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> \<not> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>x\<in>?V. W = {x}"
+  proof -
+    fix W :: "(real^2) set"
+    assume hW_ne: "W \<noteq> {}"
+    assume hWhull_L: "geotop_convex_hull W \<in> L"
+    assume hnot_edge: "\<not> geotop_is_edge (geotop_convex_hull W)"
+    obtain x where hxV: "x \<in> ?V" and hWhull_eq: "geotop_convex_hull W = {x}"
+      using hsource_nonedge_singleton_cases[OF hWhull_L hnot_edge] by (by100 blast)
+    have hW_sub_x: "W \<subseteq> {x}"
+    proof
+      fix y
+      assume hyW: "y \<in> W"
+      have hy_hull: "y \<in> geotop_convex_hull W"
+        using geotop_convex_hull_contains_V hyW by (by100 blast)
+      show "y \<in> {x}"
+        using hy_hull hWhull_eq by (by100 simp)
+    qed
+    have hxW: "x \<in> W"
+    proof -
+      obtain y where hyW: "y \<in> W"
+        using hW_ne by (by100 blast)
+      have hy_single: "y \<in> {x}"
+        using hW_sub_x hyW by (by100 blast)
+      have hyx: "y = x"
+        using hy_single by (by100 simp)
+      show ?thesis
+        using hyW hyx by (by100 simp)
+    qed
+    show "\<exists>x\<in>?V. W = {x}"
+      using hxV hW_sub_x hxW by (by100 blast)
+  qed
+  have hsource_convex_hull_edge_listed_cases:
+      "\<And>W. geotop_convex_hull W \<in> L
+        \<Longrightarrow> geotop_is_edge (geotop_convex_hull W)
+        \<Longrightarrow> \<exists>k\<in>{0..<p}.
+          geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    using hsource_edge_listed_cases by (by100 blast)
+  have hsource_convex_hull_member_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}.
+              geotop_convex_hull W = closed_segment (v k) (v (Suc k)))"
+    using hsource_convex_hull_nonedge_singleton_cases
+      hsource_convex_hull_edge_listed_cases
+    by (by100 blast)
+  have hsource_listed_edge_complex_vertex_endpoint_cases:
+      "\<And>x k. x \<in> ?V \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> x \<in> closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> x = v k \<or> x = v (Suc k)"
+  proof -
+    fix x k
+    assume hxV: "x \<in> ?V"
+    assume hk: "k \<in> {0..<p}"
+    assume hxseg: "x \<in> closed_segment (v k) (v (Suc k))"
+    have hxL: "{x} \<in> L"
+      using hxV hvertices hsource_vertex_singleton by (by100 blast)
+    have hsegL: "closed_segment (v k) (v (Suc k)) \<in> L"
+      using hsource_edge_members[OF hk] by (by100 blast)
+    have hmeet: "{x} \<inter> closed_segment (v k) (v (Suc k)) \<noteq> {}"
+      using hxseg by (by100 blast)
+    have hface_pair:
+        "geotop_is_face ({x} \<inter> closed_segment (v k) (v (Suc k))) {x}
+        \<and> geotop_is_face ({x} \<inter> closed_segment (v k) (v (Suc k)))
+             (closed_segment (v k) (v (Suc k)))"
+      using geotop_is_complex_intersection[OF hL_complex] hxL hsegL hmeet
+      by (by100 blast)
+    have hface_single:
+        "geotop_is_face {x} (closed_segment (v k) (v (Suc k)))"
+      using hface_pair hxseg by (by100 simp)
+    have hface_cases:
+        "{x} = {v k}
+        \<or> {x} = {v (Suc k)}
+        \<or> {x} = closed_segment (v k) (v (Suc k))"
+      using geotop_segment_face_cases_dev34
+        [OF hface_single hsource_edge_endpoints_distinct[OF hk]]
+      by (by100 blast)
+    show "x = v k \<or> x = v (Suc k)"
+    proof (rule disjE[OF hface_cases])
+      assume "{x} = {v k}"
+      thus ?thesis
+        by (by100 simp)
+    next
+      assume htail: "{x} = {v (Suc k)}
+        \<or> {x} = closed_segment (v k) (v (Suc k))"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume "{x} = {v (Suc k)}"
+        thus ?thesis
+          by (by100 simp)
+      next
+        assume hself: "{x} = closed_segment (v k) (v (Suc k))"
+        have hedge: "geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+          using hsource_edge_members[OF hk] by (by100 blast)
+        have "geotop_is_edge {x}"
+          using hedge hself by (by100 simp)
+        thus ?thesis
+          using hsource_singleton_not_edge by (by100 blast)
+      qed
+    qed
+  qed
+  have hsource_convex_hull_listed_edge_vertex_subset:
+      "\<And>W k. W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> W \<subseteq> {v k, v (Suc k)}"
+  proof
+    fix W k x
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hk: "k \<in> {0..<p}"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    assume hxW: "x \<in> W"
+    have hxV: "x \<in> ?V"
+      using hWsub hxW hvertices by (by100 blast)
+    have hx_hull: "x \<in> geotop_convex_hull W"
+      using geotop_convex_hull_contains_V hxW by (by100 blast)
+    have hx_seg: "x \<in> closed_segment (v k) (v (Suc k))"
+      using hx_hull hWhull by (by100 simp)
+    show "x \<in> {v k, v (Suc k)}"
+      using hsource_listed_edge_complex_vertex_endpoint_cases[OF hxV hk hx_seg]
+      by (by100 blast)
+  qed
+  have hsource_convex_hull_nonempty_pair_if_listed_edge:
+      "\<And>W k. W \<noteq> {}
+        \<Longrightarrow> W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> k \<in> {0..<p}
+        \<Longrightarrow> geotop_convex_hull W = closed_segment (v k) (v (Suc k))
+        \<Longrightarrow> W = {v k, v (Suc k)}"
+  proof -
+    fix W :: "(real^2) set" and k
+    assume hW_ne: "W \<noteq> {}"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hk: "k \<in> {0..<p}"
+    assume hWhull:
+        "geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+    have hW_pair_sub: "W \<subseteq> {v k, v (Suc k)}"
+      by (rule hsource_convex_hull_listed_edge_vertex_subset[OF hWsub hk hWhull])
+    have hvk_in_W: "v k \<in> W"
+    proof (rule ccontr)
+      assume hvk_not: "v k \<notin> W"
+      have hW_sub_suc: "W \<subseteq> {v (Suc k)}"
+        using hW_pair_sub hvk_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {v (Suc k)}"
+        by (rule hull_mono[OF hW_sub_suc])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {v (Suc k)}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{v (Suc k)}"] by (by100 simp)
+      have hvk_seg: "v k \<in> closed_segment (v k) (v (Suc k))"
+        by (by100 simp)
+      have "v k \<in> geotop_convex_hull {v (Suc k)}"
+        using hgeo_sub hWhull hvk_seg by (by100 blast)
+      hence "v k = v (Suc k)"
+        using geotop_convex_hull_eq_HOL[of "{v (Suc k)}"] by (by100 simp)
+      thus False
+        using hsource_edge_endpoints_distinct[OF hk] by (by100 blast)
+    qed
+    have hvsuc_in_W: "v (Suc k) \<in> W"
+    proof (rule ccontr)
+      assume hvsuc_not: "v (Suc k) \<notin> W"
+      have hW_sub_k: "W \<subseteq> {v k}"
+        using hW_pair_sub hvsuc_not by (by100 blast)
+      have hHOL_sub: "convex hull W \<subseteq> convex hull {v k}"
+        by (rule hull_mono[OF hW_sub_k])
+      have hgeo_sub:
+          "geotop_convex_hull W \<subseteq> geotop_convex_hull {v k}"
+        using hHOL_sub geotop_convex_hull_eq_HOL[of W]
+          geotop_convex_hull_eq_HOL[of "{v k}"] by (by100 simp)
+      have hvsuc_seg: "v (Suc k) \<in> closed_segment (v k) (v (Suc k))"
+        by (by100 simp)
+      have "v (Suc k) \<in> geotop_convex_hull {v k}"
+        using hgeo_sub hWhull hvsuc_seg by (by100 blast)
+      hence "v (Suc k) = v k"
+        using geotop_convex_hull_eq_HOL[of "{v k}"] by (by100 simp)
+      hence "v k = v (Suc k)"
+        by (by100 simp)
+      thus False
+        using hsource_edge_endpoints_distinct[OF hk] by (by100 blast)
+    qed
+    show "W = {v k, v (Suc k)}"
+      using hW_pair_sub hvk_in_W hvsuc_in_W by (by100 blast)
+  qed
+  have hsource_cyclic_listing_convex_hull_in_L_cases:
+      "\<And>W. W \<noteq> {} \<Longrightarrow> W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  proof -
+    fix W :: "(real^2) set"
+    assume hW_ne: "W \<noteq> {}"
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hWhull_L: "geotop_convex_hull W \<in> L"
+    have hcases:
+        "(\<exists>x\<in>?V. W = {x})
+        \<or> (\<exists>k\<in>{0..<p}.
+            geotop_convex_hull W = closed_segment (v k) (v (Suc k)))"
+      by (rule hsource_convex_hull_member_cases[OF hW_ne hWhull_L])
+    show "(\<exists>x\<in>?V. W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+    proof (rule disjE[OF hcases])
+      assume hsingle: "\<exists>x\<in>?V. W = {x}"
+      show ?thesis
+        using hsingle by (by100 blast)
+    next
+      assume hedge:
+          "\<exists>k\<in>{0..<p}.
+            geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+      obtain k where hk: "k \<in> {0..<p}"
+          and hWhull:
+            "geotop_convex_hull W = closed_segment (v k) (v (Suc k))"
+        using hedge by (by100 blast)
+      have hW_pair: "W = {v k, v (Suc k)}"
+        by (rule hsource_convex_hull_nonempty_pair_if_listed_edge
+            [OF hW_ne hWsub hk hWhull])
+      show ?thesis
+        using hk hW_pair by (by100 blast)
+    qed
+  qed
+  have hsource_empty_not_edge:
+      "\<not> geotop_is_edge ({} :: (real^2) set)"
+  proof
+    assume hedge: "geotop_is_edge ({} :: (real^2) set)"
+    have hdim: "geotop_simplex_dim ({} :: (real^2) set) 1"
+      using hedge unfolding geotop_is_edge_def by (by100 blast)
+    have hsimplex: "geotop_is_simplex ({} :: (real^2) set)"
+      by (rule geotop_simplex_dim_imp_is_simplex[OF hdim])
+    show False
+      using geotop_is_simplex_nonempty[OF hsimplex] by (by100 simp)
+  qed
+  have hsource_convex_hull_empty_notin_L:
+      "geotop_convex_hull ({} :: (real^2) set) \<notin> L"
+  proof
+    assume hempty_hull_L: "geotop_convex_hull ({} :: (real^2) set) \<in> L"
+    have hhullempty: "geotop_convex_hull ({} :: (real^2) set) = {}"
+      using geotop_convex_hull_eq_HOL[of "({} :: (real^2) set)"]
+      by (by100 simp)
+    have hempty_L: "({} :: (real^2) set) \<in> L"
+      using hempty_hull_L hhullempty by (by100 simp)
+    have hcases: "({} :: (real^2) set) \<in> ((\<lambda>x. {x}) ` ?V)
+        \<or> ({} :: (real^2) set) \<in> ?E"
+      using hsource_member_cases[OF hempty_L] by (by100 blast)
+    have hnot_singleton_image:
+        "({} :: (real^2) set) \<notin> ((\<lambda>x. {x}) ` ?V)"
+      by (by100 blast)
+    show False
+      using hcases hnot_singleton_image hsource_edge_members hsource_empty_not_edge
+      by (by100 blast)
+  qed
+  have hsource_cyclic_listing_convex_hull_in_L_cases_all:
+      "\<And>W. W \<subseteq> geotop_complex_vertices L
+        \<Longrightarrow> geotop_convex_hull W \<in> L
+        \<Longrightarrow> (\<exists>x\<in>?V. W = {x})
+          \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+  proof -
+    fix W
+    assume hWsub: "W \<subseteq> geotop_complex_vertices L"
+    assume hWhull_L: "geotop_convex_hull W \<in> L"
+    show "(\<exists>x\<in>?V. W = {x})
+        \<or> (\<exists>k\<in>{0..<p}. W = {v k, v (Suc k)})"
+    proof (cases "W = {}")
+      case True
+      show ?thesis
+        using hWhull_L hsource_convex_hull_empty_notin_L True by (by100 simp)
+    next
+      case False
+      show ?thesis
+        by (rule hsource_cyclic_listing_convex_hull_in_L_cases
+            [OF False hWsub hWhull_L])
+    qed
+  qed
   show ?thesis
     sorry
 qed

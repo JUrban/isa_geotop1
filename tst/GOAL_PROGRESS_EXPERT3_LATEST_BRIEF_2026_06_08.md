@@ -26,9 +26,9 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:1501
-dev34/GeoTop_3_4.thy:9058
-dev34/GeoTop_3_4.thy:10260
+dev34/GeoTop_3_4.thy:1801
+dev34/GeoTop_3_4.thy:9358
+dev34/GeoTop_3_4.thy:10560
 ```
 
 The temporary source-side holes from the in-progress Figure 4.10 refactor have
@@ -87,6 +87,14 @@ endpoint vertex membership, finiteness of the source singleton and edge images,
 nonemptiness of the source complex, the 1-dimensionality of the source linear
 graph, and the decomposition of `L` into source singleton vertices plus source
 edge simplexes.
+
+It now also proves the expert3-recommended source convex-hull case split inside
+the active source-to-target package: any `W` whose convex hull is a source
+simplex of `L` is either a listed singleton vertex or a listed adjacent source
+edge. The proof follows the already staged downstream argument: source members
+split into singleton/edge parts, non-edge hulls force singleton vertex sets,
+listed-edge hulls force both listed endpoints by the complex-intersection face
+case, and the empty hull is excluded from the listed 1-complex.
 
 Latest local verification:
 
