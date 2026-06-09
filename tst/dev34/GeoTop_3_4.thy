@@ -14852,7 +14852,25 @@ lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
     and entering \<open>closed_segment w q\<close>.  Then construct a target chain on one
     boundary edge of a 2-simplex, match the listed vertices, and cone that
     boundary-arc subdivision from the opposite boundary vertex. **)
-  sorry
+proof (cases "q = pathfinish \<gamma>")
+  case True
+  have hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+    by (rule geotop_endpoint_chain_listing_base_if_first_neighbor_is_finish_dev34
+        [OF hL_linear hL_finite hconn hendpoint heL he_edge hw_e hq_ne
+          he_seg hqL hfinish_endpoint True])
+  show ?thesis
+    by (rule geotop_two_vertex_endpoint_chain_fan_model_dev34
+        [OF hL_linear hlist])
+next
+  case False
+  (**
+    Remaining non-finish endpoint branch.  Following the book proof, the
+    broken-line arc order must first give the local degree-one-or-two bound,
+    then the source chain is enumerated and realized as a same-length boundary
+    arc subdivision. **)
+  show ?thesis
+    sorry
+qed
 
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
