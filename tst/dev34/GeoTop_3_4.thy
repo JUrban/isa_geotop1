@@ -15650,6 +15650,40 @@ next
     using False by (by100 linarith)
 qed
 
+lemma geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U C :: "(real^2) set"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hC_conn: "connected C"
+  assumes hC_sub: "C \<subseteq> U - (sphere p r \<inter> \<sigma>)"
+  assumes hC_ball: "C \<subseteq> ball p s"
+  assumes hp_closure: "p \<in> closure C"
+  assumes hyC: "y \<in> C"
+  assumes hr: "0 < r"
+  assumes hy_outer: "r < dist p y"
+  shows False
+  (**
+    Connected-set form of the radius-crossing step.  Any connected carrier
+    subset that starts at the center side and reaches a point of radius greater
+    than \<open>r\<close> must meet \<open>sphere p r\<close>; inside the collar this is exactly the
+    deleted crosscut. **)
+proof -
+  obtain z where hzC: "z \<in> C" and hz_sphere: "z \<in> sphere p r"
+    using connected_closure_point_meets_sphere_between
+      [OF hC_conn hp_closure hyC hr hy_outer]
+    by (by100 blast)
+  have hz_Uminus: "z \<in> U - (sphere p r \<inter> \<sigma>)"
+    using hC_sub hzC by (by100 blast)
+  have hz_ball: "z \<in> ball p s"
+    using hC_ball hzC by (by100 blast)
+  have hz_radius: "dist p z = r"
+    using hz_sphere by (by100 simp)
+  show False
+    by (rule geotop_collar_point_outside_crosscut_not_on_radius_dev34
+        [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
