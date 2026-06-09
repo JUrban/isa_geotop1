@@ -9919,6 +9919,78 @@ proof -
     using hB hB_U hXB hYB by (by100 blast)
 qed
 
+lemma geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34:
+  fixes J A :: "(real^2) set" and X P R :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hX: "X \<in> J"
+  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>U. U \<in> geotop_euclidean_topology \<and>
+          U \<subseteq> geotop_polygon_interior J - A \<and>
+          X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+  (**
+    Book step used twice in Theorem 4.2: if a boundary point of the polygon is
+    not one of the two arc endpoints, then it remains a frontier point of the
+    cut-open interior \<open>I - A\<close>. **)
+proof -
+  let ?U = "geotop_polygon_interior J - A"
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+    and h\<gamma>_img: "path_image \<gamma> = A"
+    using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+  have hA_closed: "closed A"
+    using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+  have hI_open: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hU_open_HOL: "open ?U"
+    by (rule open_Diff[OF hI_open hA_closed])
+  have hU_open: "?U \<in> geotop_euclidean_topology"
+    by (metis hU_open_HOL geotop_euclidean_topology_eq_open_sets
+              mem_Collect_eq top1_open_sets_def)
+  have hX_not_A: "X \<notin> A"
+  proof
+    assume hXA: "X \<in> A"
+    have "X \<in> A \<inter> J"
+      using hXA hX by (by100 blast)
+    hence "X = P \<or> X = R"
+      using hAJ by (by100 blast)
+    thus False
+      using hX_ne by (by100 blast)
+  qed
+  have hX_not_I: "X \<notin> geotop_polygon_interior J"
+    using hX polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
+  have hlim_top:
+      "is_limit_point_of X (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
+    using Theorem_GT_2_5[OF hJ] hX by (by100 blast)
+  have hlim_I: "X islimpt geotop_polygon_interior J"
+    using hlim_top
+      is_limit_point_of_UNIV_geotop_iff_islimpt[of X "geotop_polygon_interior J"]
+    by (by100 blast)
+  have hnotA_open: "open (- A)"
+    by (rule open_Compl[OF hA_closed])
+  have hX_in_notA: "X \<in> - A"
+    using hX_not_A by (by100 simp)
+  have hevent_not_A: "eventually (\<lambda>x. x \<in> - A) (at X)"
+    by (rule eventually_at_in_open'[OF hnotA_open hX_in_notA])
+  have hlim_U: "X islimpt ?U"
+  proof -
+    have "X islimpt (geotop_polygon_interior J \<inter> - A)"
+      by (rule islimpt_Int_eventually[OF hlim_I hevent_not_A])
+    thus ?thesis by (simp add: Diff_eq)
+  qed
+  have hX_closure: "X \<in> closure ?U"
+    using hlim_U unfolding closure_def by (by100 simp)
+  have hX_not_int: "X \<notin> interior ?U"
+    using hX_not_I interior_subset[of ?U] by (by100 blast)
+  have hX_front_HOL: "X \<in> frontier ?U"
+    using hX_closure hX_not_int
+    unfolding Elementary_Topology.frontier_def by (by100 blast)
+  have hX_front: "X \<in> geotop_frontier UNIV geotop_euclidean_topology ?U"
+    using hX_front_HOL geotop_frontier_UNIV_eq_frontier[of ?U] by (by100 simp)
+  show ?thesis
+    using hU_open hX_front by (by100 blast)
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -10001,6 +10073,18 @@ proof -
     hence "S \<in> {P, R}" using hAJ by (by100 simp)
     thus False using hS_ne_PR by (by100 blast)
   qed
+  have hQ_frontier_witness:
+      "\<exists>U. U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
+        [OF hJ hQ hQ_ne_PR hA hAJ])
+  have hS_frontier_witness:
+      "\<exists>U. U \<in> geotop_euclidean_topology
+        \<and> U \<subseteq> geotop_polygon_interior J - A
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+    by (rule geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34
+        [OF hJ hS hS_ne_PR hA hAJ])
   have hsame_component_broken_line_extraction:
     "\<And>X Y. X \<in> geotop_polygon_interior J - A \<Longrightarrow>
       Y \<in> geotop_component_at UNIV geotop_euclidean_topology
@@ -10026,78 +10110,6 @@ proof -
     sorry
   show ?thesis
     using hD42_theta_component_book_step by (by100 blast)
-qed
-
-lemma geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34:
-  fixes J A :: "(real^2) set" and X P R :: "real^2"
-  assumes hJ: "geotop_is_polygon J"
-  assumes hX: "X \<in> J"
-  assumes hX_ne: "X \<noteq> P \<and> X \<noteq> R"
-  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
-  assumes hAJ: "A \<inter> J = {P, R}"
-  shows "\<exists>U. U \<in> geotop_euclidean_topology \<and>
-          U \<subseteq> geotop_polygon_interior J - A \<and>
-          X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
-  (**
-    Book step used twice in Theorem 4.2: if a boundary point of the polygon is
-    not one of the two arc endpoints, then it remains a frontier point of the
-    cut-open interior \<open>I - A\<close>. **)
-proof -
-  let ?U = "geotop_polygon_interior J - A"
-  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
-    and h\<gamma>_img: "path_image \<gamma> = A"
-    using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
-  have hA_closed: "closed A"
-    using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
-  have hI_open: "open (geotop_polygon_interior J)"
-    by (rule polygon_interior_open[OF hJ])
-  have hU_open_HOL: "open ?U"
-    by (rule open_Diff[OF hI_open hA_closed])
-  have hU_open: "?U \<in> geotop_euclidean_topology"
-    by (metis hU_open_HOL geotop_euclidean_topology_eq_open_sets
-              mem_Collect_eq top1_open_sets_def)
-  have hX_not_A: "X \<notin> A"
-  proof
-    assume hXA: "X \<in> A"
-    have "X \<in> A \<inter> J"
-      using hXA hX by (by100 blast)
-    hence "X = P \<or> X = R"
-      using hAJ by (by100 blast)
-    thus False
-      using hX_ne by (by100 blast)
-  qed
-  have hX_not_I: "X \<notin> geotop_polygon_interior J"
-    using hX polygon_interior_disjoint_polygon[OF hJ] by (by100 blast)
-  have hlim_top:
-      "is_limit_point_of X (geotop_polygon_interior J) UNIV geotop_euclidean_topology"
-    using Theorem_GT_2_5[OF hJ] hX by (by100 blast)
-  have hlim_I: "X islimpt geotop_polygon_interior J"
-    using hlim_top
-      is_limit_point_of_UNIV_geotop_iff_islimpt[of X "geotop_polygon_interior J"]
-    by (by100 blast)
-  have hnotA_open: "open (- A)"
-    by (rule open_Compl[OF hA_closed])
-  have hX_in_notA: "X \<in> - A"
-    using hX_not_A by (by100 simp)
-  have hevent_not_A: "eventually (\<lambda>x. x \<in> - A) (at X)"
-    by (rule eventually_at_in_open'[OF hnotA_open hX_in_notA])
-  have hlim_U: "X islimpt ?U"
-  proof -
-    have "X islimpt (geotop_polygon_interior J \<inter> - A)"
-      by (rule islimpt_Int_eventually[OF hlim_I hevent_not_A])
-    thus ?thesis by (simp add: Diff_eq)
-  qed
-  have hX_closure: "X \<in> closure ?U"
-    using hlim_U unfolding closure_def by (by100 simp)
-  have hX_not_int: "X \<notin> interior ?U"
-    using hX_not_I interior_subset[of ?U] by (by100 blast)
-  have hX_front_HOL: "X \<in> frontier ?U"
-    using hX_closure hX_not_int
-    unfolding Elementary_Topology.frontier_def by (by100 blast)
-  have hX_front: "X \<in> geotop_frontier UNIV geotop_euclidean_topology ?U"
-    using hX_front_HOL geotop_frontier_UNIV_eq_frontier[of ?U] by (by100 simp)
-  show ?thesis
-    using hU_open hX_front by (by100 blast)
 qed
 
 lemma geotop_polygon_arc_opposite_boundary_decomposition_prefix:
