@@ -10142,6 +10142,51 @@ proof -
       using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front hQ'_cut hS'_cut
       by (intro exI conjI)
   qed
+  have hD42_same_component_broken_line:
+      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+        U\<^sub>Q0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A
+        \<and> (S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+              (geotop_polygon_interior J - A) Q'
+            \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+              \<and> B \<subseteq> geotop_polygon_interior J - A
+              \<and> Q' \<in> B \<and> S' \<in> B))"
+  proof -
+    obtain Q' S' U\<^sub>Q0 U\<^sub>S0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+      and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+      and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+      and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+      and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+      and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+      using hD42_side_points by (elim exE conjE)
+    have hsame_imp:
+      "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - A) Q'
+        \<longrightarrow> (\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> geotop_polygon_interior J - A
+          \<and> Q' \<in> B \<and> S' \<in> B)"
+    proof
+      assume hS'_comp:
+        "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
+          (geotop_polygon_interior J - A) Q'"
+      show "\<exists>B. geotop_is_broken_line B
+          \<and> B \<subseteq> geotop_polygon_interior J - A
+          \<and> Q' \<in> B \<and> S' \<in> B"
+        by (rule hsame_component_broken_line_extraction[OF hQ'_cut hS'_comp])
+    qed
+    show ?thesis
+      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
+        hQ'_cut hS'_cut hsame_imp
+      by (intro exI conjI)
+  qed
   have hD42_theta_component_book_step:
       "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
         \<and> U\<^sub>S \<in> geotop_euclidean_topology
