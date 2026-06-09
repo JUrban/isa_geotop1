@@ -3405,6 +3405,10 @@ proof -
   have hF_B_poly_eq_frontier:
       "geotop_polyhedron F_B = frontier \<sigma>"
     using hF_B_poly_eq h\<sigma>_B_poly_eq_frontier by (by100 simp)
+  have hF_B_poly_polygon:
+      "geotop_is_polygon (geotop_polyhedron F_B)"
+    using geotop_2simplex_frontier_is_polygon_prefix[OF h\<sigma>]
+      hF_B_poly_eq_frontier by (by100 simp)
   have hF_B_simplex_subset_frontier:
       "\<And>A. A \<in> F_B \<Longrightarrow> A \<subseteq> frontier \<sigma>"
   proof
