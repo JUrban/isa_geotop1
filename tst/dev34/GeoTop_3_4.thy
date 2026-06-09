@@ -12093,6 +12093,284 @@ proof -
     using hstep hfirst by (by100 simp)
 qed
 
+lemma geotop_two_point_segment_endpoint_chain_listing_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  defines "F \<equiv> {{a}, {b}, closed_segment a b}"
+  shows "geotop_is_linear_graph F
+    \<and> finite F
+    \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
+  (**
+    Endpoint target base model for the boundary-arc fan construction.  This is
+    the single-edge target chain used when the listed endpoint chain has two
+    vertices; later endpoint work subdivides one boundary edge of a 2-simplex
+    into the corresponding longer target chain. **)
+proof -
+  have ha_simp: "geotop_is_simplex {a}"
+    using geotop_singleton_is_simplex[of a]
+    unfolding geotop_is_simplex_def geotop_simplex_dim_def
+    by (by100 blast)
+  have hb_simp: "geotop_is_simplex {b}"
+    using geotop_singleton_is_simplex[of b]
+    unfolding geotop_is_simplex_def geotop_simplex_dim_def
+    by (by100 blast)
+  have hseg_dim: "geotop_simplex_dim (closed_segment a b) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hab])
+  have hseg_simp: "geotop_is_simplex (closed_segment a b)"
+    using hseg_dim unfolding geotop_is_simplex_def by (by100 blast)
+  have hseg_edge: "geotop_is_edge (closed_segment a b)"
+    using hseg_dim unfolding geotop_is_edge_def by (by100 simp)
+  have hF_simplexes: "\<forall>\<sigma>\<in>F. geotop_is_simplex \<sigma>"
+    unfolding F_def using ha_simp hb_simp hseg_simp by (by100 blast)
+  have hF_faces:
+      "\<forall>\<sigma>\<in>F. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> F"
+  proof (intro ballI allI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>F: "\<sigma> \<in> F"
+    assume hface: "geotop_is_face \<tau> \<sigma>"
+    have hcases: "\<sigma> = {a} \<or> \<sigma> = {b} \<or> \<sigma> = closed_segment a b"
+      using h\<sigma>F unfolding F_def by (by100 blast)
+    show "\<tau> \<in> F"
+    proof (rule disjE[OF hcases])
+      assume h\<sigma>a: "\<sigma> = {a}"
+      have "\<tau> = {a}"
+        using geotop_singleton_face_eq_prefix[OF hface] h\<sigma>a by (by100 simp)
+      thus ?thesis
+        unfolding F_def by (by100 blast)
+    next
+      assume htail: "\<sigma> = {b} \<or> \<sigma> = closed_segment a b"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume h\<sigma>b: "\<sigma> = {b}"
+        have "\<tau> = {b}"
+          using geotop_singleton_face_eq_prefix[OF hface] h\<sigma>b by (by100 simp)
+        thus ?thesis
+          unfolding F_def by (by100 blast)
+      next
+        assume h\<sigma>seg: "\<sigma> = closed_segment a b"
+        have hface_seg: "geotop_is_face \<tau> (closed_segment a b)"
+          using hface h\<sigma>seg by (by100 simp)
+        have "\<tau> = {a} \<or> \<tau> = {b} \<or> \<tau> = closed_segment a b"
+          by (rule geotop_segment_face_cases_dev34[OF hface_seg hab])
+        thus ?thesis
+          unfolding F_def by (by100 blast)
+      qed
+    qed
+  qed
+  have hface_a_a: "geotop_is_face {a} {a}"
+    by (rule geotop_singleton_is_face_self)
+  have hface_b_b: "geotop_is_face {b} {b}"
+    by (rule geotop_singleton_is_face_self)
+  have hface_a_seg: "geotop_is_face {a} (closed_segment a b)"
+    by (rule geotop_closed_segment_is_face_endpoint[OF hab]) (by100 simp)
+  have hface_b_seg: "geotop_is_face {b} (closed_segment a b)"
+    by (rule geotop_closed_segment_is_face_endpoint[OF hab]) (by100 simp)
+  have hface_seg_seg: "geotop_is_face (closed_segment a b) (closed_segment a b)"
+    by (rule geotop_closed_segment_is_face_self[OF hab])
+  have ha_seg_inter: "{a} \<inter> closed_segment a b = {a}"
+    by (by100 simp)
+  have hb_seg_inter: "{b} \<inter> closed_segment a b = {b}"
+    by (by100 simp)
+  have hab_single_inter: "{a} \<inter> {b} = {}"
+    using hab by (by100 simp)
+  have hF_inter:
+      "\<forall>\<sigma>\<in>F. \<forall>\<tau>\<in>F. \<sigma> \<inter> \<tau> \<noteq> {}
+        \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+          \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+  proof (intro ballI impI)
+    fix \<sigma> \<tau>
+    assume h\<sigma>F: "\<sigma> \<in> F"
+    assume h\<tau>F: "\<tau> \<in> F"
+    assume hne_inter: "\<sigma> \<inter> \<tau> \<noteq> {}"
+    have h\<sigma>cases: "\<sigma> = {a} \<or> \<sigma> = {b} \<or> \<sigma> = closed_segment a b"
+      using h\<sigma>F unfolding F_def by (by100 blast)
+    show "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+      \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    proof (rule disjE[OF h\<sigma>cases])
+      assume h\<sigma>a: "\<sigma> = {a}"
+      have h\<tau>cases: "\<tau> = {a} \<or> \<tau> = {b} \<or> \<tau> = closed_segment a b"
+        using h\<tau>F unfolding F_def by (by100 blast)
+      show ?thesis
+      proof (rule disjE[OF h\<tau>cases])
+        assume h\<tau>a: "\<tau> = {a}"
+        show ?thesis
+          using h\<sigma>a h\<tau>a hface_a_a by (by100 simp)
+      next
+        assume htail: "\<tau> = {b} \<or> \<tau> = closed_segment a b"
+        show ?thesis
+        proof (rule disjE[OF htail])
+          assume h\<tau>b: "\<tau> = {b}"
+          show ?thesis
+            using h\<sigma>a h\<tau>b hab_single_inter hne_inter by (by100 simp)
+        next
+          assume h\<tau>seg: "\<tau> = closed_segment a b"
+          show ?thesis
+            using h\<sigma>a h\<tau>seg ha_seg_inter hface_a_a hface_a_seg
+            by (by100 simp)
+        qed
+      qed
+    next
+      assume htail: "\<sigma> = {b} \<or> \<sigma> = closed_segment a b"
+      show ?thesis
+      proof (rule disjE[OF htail])
+        assume h\<sigma>b: "\<sigma> = {b}"
+        have h\<tau>cases: "\<tau> = {a} \<or> \<tau> = {b} \<or> \<tau> = closed_segment a b"
+          using h\<tau>F unfolding F_def by (by100 blast)
+        show ?thesis
+        proof (rule disjE[OF h\<tau>cases])
+          assume h\<tau>a: "\<tau> = {a}"
+          show ?thesis
+            using h\<sigma>b h\<tau>a hab_single_inter hne_inter by (by100 simp)
+        next
+          assume htail': "\<tau> = {b} \<or> \<tau> = closed_segment a b"
+          show ?thesis
+          proof (rule disjE[OF htail'])
+            assume h\<tau>b: "\<tau> = {b}"
+            show ?thesis
+              using h\<sigma>b h\<tau>b hface_b_b by (by100 simp)
+          next
+            assume h\<tau>seg: "\<tau> = closed_segment a b"
+            show ?thesis
+              using h\<sigma>b h\<tau>seg hb_seg_inter hface_b_b hface_b_seg
+              by (by100 simp)
+          qed
+        qed
+      next
+        assume h\<sigma>seg: "\<sigma> = closed_segment a b"
+        have h\<tau>cases: "\<tau> = {a} \<or> \<tau> = {b} \<or> \<tau> = closed_segment a b"
+          using h\<tau>F unfolding F_def by (by100 blast)
+        show ?thesis
+        proof (rule disjE[OF h\<tau>cases])
+          assume h\<tau>a: "\<tau> = {a}"
+          show ?thesis
+            using h\<sigma>seg h\<tau>a ha_seg_inter hface_a_seg hface_a_a
+            by (by100 simp)
+        next
+          assume htail': "\<tau> = {b} \<or> \<tau> = closed_segment a b"
+          show ?thesis
+          proof (rule disjE[OF htail'])
+            assume h\<tau>b: "\<tau> = {b}"
+            show ?thesis
+              using h\<sigma>seg h\<tau>b hb_seg_inter hface_b_seg hface_b_b
+              by (by100 simp)
+          next
+            assume h\<tau>seg: "\<tau> = closed_segment a b"
+            show ?thesis
+              using h\<sigma>seg h\<tau>seg hface_seg_seg by (by100 simp)
+          qed
+        qed
+      qed
+    qed
+  qed
+  have hF_nbhd:
+      "\<forall>\<sigma>\<in>F. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+        \<and> finite {\<tau>\<in>F. \<tau> \<inter> U \<noteq> {}}"
+  proof
+    fix \<sigma>
+    assume "\<sigma> \<in> F"
+    have "finite {\<tau>\<in>F. \<tau> \<inter> (UNIV :: (real^2) set) \<noteq> {}}"
+      unfolding F_def by (by100 simp)
+    thus "\<exists>U. open U \<and> \<sigma> \<subseteq> U
+      \<and> finite {\<tau>\<in>F. \<tau> \<inter> U \<noteq> {}}"
+      by (intro exI[where x="UNIV :: (real^2) set"]) (by100 simp)
+  qed
+  have hF_complex: "geotop_is_complex F"
+    unfolding geotop_is_complex_def
+    using hF_simplexes hF_faces hF_inter hF_nbhd by (by100 blast)
+  have hF_1dim: "geotop_complex_is_1dim F"
+  proof -
+    have "\<forall>\<sigma>\<in>F. \<exists>n::nat. n \<le> 1 \<and> geotop_simplex_dim \<sigma> n"
+      unfolding F_def using geotop_singleton_is_simplex[of a]
+        geotop_singleton_is_simplex[of b] hseg_dim by (by100 blast)
+    thus ?thesis
+      unfolding geotop_complex_is_1dim_def by (by100 simp)
+  qed
+  have hF_linear: "geotop_is_linear_graph F"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34[OF hF_complex hF_1dim])
+  have hF_finite: "finite F"
+    unfolding F_def by (by100 simp)
+  have hvertices: "geotop_complex_vertices F = {a, b}"
+  proof -
+    have hvertices0: "geotop_complex_vertices F = {v. {v} \<in> F}"
+      by (rule geotop_complex_vertices_eq_0_simplexes[OF hF_complex])
+    have "{v. {v} \<in> F} = {a, b}"
+    proof
+      show "{v. {v} \<in> F} \<subseteq> {a, b}"
+      proof
+        fix x
+        assume hx: "x \<in> {v. {v} \<in> F}"
+        have hcase:
+            "{x} = {a} \<or> {x} = {b} \<or> {x} = closed_segment a b"
+          using hx unfolding F_def by (by100 blast)
+        show "x \<in> {a, b}"
+        proof (rule disjE[OF hcase])
+          assume "{x} = {a}"
+          thus ?thesis by (by100 simp)
+        next
+          assume htail: "{x} = {b} \<or> {x} = closed_segment a b"
+          show ?thesis
+          proof (rule disjE[OF htail])
+            assume "{x} = {b}"
+            thus ?thesis by (by100 simp)
+          next
+            assume hx_seg: "{x} = closed_segment a b"
+            have "geotop_is_edge {x}"
+              using hseg_edge hx_seg by (by100 simp)
+            thus ?thesis
+              using geotop_singleton_not_edge_prefix by (by100 blast)
+          qed
+        qed
+      qed
+      show "{a, b} \<subseteq> {v. {v} \<in> F}"
+        unfolding F_def by (by100 blast)
+    qed
+    thus ?thesis
+      using hvertices0 by (by100 simp)
+  qed
+  have hedge_set: "{e \<in> F. geotop_is_edge e} = {closed_segment a b}"
+  proof
+    show "{e \<in> F. geotop_is_edge e} \<subseteq> {closed_segment a b}"
+    proof
+      fix e
+      assume he: "e \<in> {e \<in> F. geotop_is_edge e}"
+      have heF: "e \<in> F"
+        using he by (by100 simp)
+      have hedge: "geotop_is_edge e"
+        using he by (by100 simp)
+      have hcase: "e = {a} \<or> e = {b} \<or> e = closed_segment a b"
+        using heF unfolding F_def by (by100 blast)
+      show "e \<in> {closed_segment a b}"
+      proof (rule disjE[OF hcase])
+        assume he_a: "e = {a}"
+        have "\<not> geotop_is_edge {a}"
+          by (rule geotop_singleton_not_edge_prefix)
+        thus ?thesis
+          using hedge he_a by (by100 blast)
+      next
+        assume htail: "e = {b} \<or> e = closed_segment a b"
+        show ?thesis
+        proof (rule disjE[OF htail])
+          assume he_b: "e = {b}"
+          have "\<not> geotop_is_edge {b}"
+            by (rule geotop_singleton_not_edge_prefix)
+          thus ?thesis
+            using hedge he_b by (by100 blast)
+        next
+          assume "e = closed_segment a b"
+          thus ?thesis by (by100 simp)
+        qed
+      qed
+    qed
+    show "{closed_segment a b} \<subseteq> {e \<in> F. geotop_is_edge e}"
+      unfolding F_def using hseg_edge by (by100 simp)
+  qed
+  have hlisting: "geotop_linear_graph_endpoint_chain_listing_dev34 F a b [a, b]"
+    unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    using hab hvertices hedge_set hseg_edge F_def by (by100 simp)
+  show ?thesis
+    using hF_linear hF_finite hlisting by (by100 blast)
+qed
+
 lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
