@@ -17,7 +17,7 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:14093
+dev34/GeoTop_3_4.thy:14416
 ```
 
 This is better than the expert3 report's 8-hole map. Expert3 remains useful for
@@ -83,9 +83,11 @@ routine automation gap.
 The endpoint fan package is related. The source-side endpoint chain listing is
 mostly packaged, but the theorem currently lacks an immediate global
 degree/no-branch bridge from the broken-line hypotheses. On the target side,
-two new proved helpers now cache useful cone/fan work:
+four proved helpers now cache useful endpoint target and cone/fan work:
 
 ```text
+geotop_two_point_segment_endpoint_chain_listing_dev34
+geotop_two_vertex_endpoint_chain_target_matching_dev34
 geotop_endpoint_chain_target_model_from_boundary_subdivision_and_matching_dev34
 geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_boundary_subdivision_target_dev34
 ```
