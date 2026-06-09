@@ -9889,6 +9889,31 @@ definition geotop_polygon_cyclic_order ::
         0 \<le> tP \<and> tP < tQ \<and> tQ < tR \<and> tR < tS \<and> tS < 1 \<and>
         c tP = P \<and> c tQ = Q \<and> c tR = R \<and> c tS = S)"
 
+lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
+  fixes J A :: "(real^2) set" and P Q R S :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hP: "P \<in> J" and hQ: "Q \<in> J" and hR: "R \<in> J" and hS: "S \<in> J"
+  assumes hcyc: "geotop_polygon_cyclic_order J P Q R S"
+  assumes hcard: "card {P, Q, R, S} = 4"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hAsub: "A \<subseteq> closure_on UNIV geotop_euclidean_topology (geotop_polygon_interior J)"
+  assumes hAJ: "A \<inter> J = {P, R}"
+  shows "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+        \<and> geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+  (**
+    Named D42 theta package.  Following Moise's proof, choose the Q-side and
+    S-side components of \<open>geotop_polygon_interior J - A\<close>.  If they coincide,
+    extract a broken line from the Q-side to the S-side inside the cut-open
+    disk; together with the two boundary arcs from P to R this gives the
+    forbidden theta graph from Theorem 2.8. **)
+  sorry
+
 lemma geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
   assumes hJ: "geotop_is_polygon J"
@@ -10085,7 +10110,8 @@ proof -
       sides met, Moise's broken-line extraction gives a Q-S chord in
       \<open>I - A\<close>; together with the two boundary arcs from P to R this forms
       the forbidden theta graph from Theorem 2.8. **)
-    sorry
+    by (rule geotop_polygon_arc_opposite_boundary_theta_component_split_prefix
+        [OF hJ hP hQ hR hS hcyc hcard hA hAsub hAJ])
   have htheta_contradiction_book:
     "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology \<and>
             U\<^sub>S \<in> geotop_euclidean_topology \<and>
