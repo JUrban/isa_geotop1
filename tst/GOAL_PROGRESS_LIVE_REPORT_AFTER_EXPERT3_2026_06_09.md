@@ -15,8 +15,8 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:13765
-dev34/GeoTop_3_4.thy:15354
+dev34/GeoTop_3_4.thy:13967
+dev34/GeoTop_3_4.thy:15944
 ```
 
 Stable open package names:
@@ -70,6 +70,11 @@ enumerate the endpoint chain, build a matching boundary-arc chain on one edge of
 a 2-simplex, and cone that arc subdivision from the adjacent/opposite boundary
 vertex.
 
+The most recent endpoint pass removed stale local scaffolding from the checked
+target wrapper. That did not reduce the hole count, but it confirmed the wrapper
+itself is not the bottleneck: the remaining endpoint hole is exactly the model
+package above, not downstream packaging.
+
 ## What the expert audits got right
 
 The main expert conclusion remains correct: the remaining count is small, but
@@ -121,9 +126,10 @@ The focused checker remains the right iteration tool:
 ./check_dev34_fast.sh focus-status
 ```
 
-Recent endpoint helper work was checked through the focused `dev34-fan` slice
-and committed. Broad rebuilds should be reserved for larger checkpoints or final
-verification, because they are too slow for ordinary proof iteration.
+Recent endpoint helper work and the stale-wrapper cleanup were checked through
+the focused `dev34-fan` slice and committed. Broad rebuilds should be reserved
+for larger checkpoints or final verification, because they are too slow for
+ordinary proof iteration.
 
 I did not run a full Isabelle build for this report. The live facts above are
 based on the focused hole scan, marker scan, git history, and index searches.
