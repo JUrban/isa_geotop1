@@ -1572,6 +1572,16 @@ proof -
   have hp\<^sub>c_closed:
       "(geotop_oriented_edge_successor L ^^ p\<^sub>c) s\<^sub>c = s\<^sub>c"
     using hsource_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>c_gt2: "2 < p\<^sub>c"
+    by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
+        [OF hL_linear hdegree_two hs\<^sub>c hp\<^sub>c_gt1 hp\<^sub>c_closed])
+  have hsource_successor_state_inj:
+      "inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c) {0..<p\<^sub>c}"
+    using hsource_started_cycle_pkg by (by100 blast)
+  have hsource_successor_state_card:
+      "card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c)
+        ` {0..<p\<^sub>c}) = p\<^sub>c"
+    using hsource_started_cycle_pkg by (by100 blast)
   have hsource_successor_cycle_decomp:
       "L =
         (((\<lambda>w. {w}) `
