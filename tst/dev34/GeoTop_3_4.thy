@@ -12489,6 +12489,62 @@ proof -
     using hF_linear hF_finite hlisting by (by100 blast)
 qed
 
+lemma geotop_two_point_segment_hull_in_iff_nonempty_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hW: "W \<subseteq> {a, b}"
+  defines "F \<equiv> {{a}, {b}, closed_segment a b}"
+  shows "geotop_convex_hull W \<in> F \<longleftrightarrow> W \<noteq> {}"
+  (**
+    Finite-subset membership for the single-edge endpoint target.  This is the
+    target-edge analogue of the named 2-simplex face-complex membership cache
+    and is used to discharge the old-boundary and cone clauses in the
+    two-vertex endpoint fan model. **)
+proof
+  assume hin: "geotop_convex_hull W \<in> F"
+  show "W \<noteq> {}"
+  proof
+    assume hW_empty: "W = {}"
+    have hHull_empty: "geotop_convex_hull W = {}"
+      using hW_empty geotop_convex_hull_eq_HOL[of W] convex_hull_empty
+      by (by100 simp)
+    have h_empty_F: "{} \<in> F"
+      using hin hHull_empty by (by100 simp)
+    have hseg_nonempty: "closed_segment a b \<noteq> {}"
+      by (by100 simp)
+    show False
+      using h_empty_F hab hseg_nonempty unfolding F_def by (by100 simp)
+  qed
+next
+  assume hW_ne: "W \<noteq> {}"
+  have hW_cases: "W = {a} \<or> W = {b} \<or> W = {a, b}"
+    using hW hW_ne by (by100 blast)
+  show "geotop_convex_hull W \<in> F"
+  proof (rule disjE[OF hW_cases])
+    assume hWa: "W = {a}"
+    show ?thesis
+      unfolding F_def using hWa geotop_convex_hull_eq_HOL[of "{a}"]
+      by (by100 simp)
+  next
+    assume htail: "W = {b} \<or> W = {a, b}"
+    show ?thesis
+    proof (rule disjE[OF htail])
+      assume hWb: "W = {b}"
+      show ?thesis
+        unfolding F_def using hWb geotop_convex_hull_eq_HOL[of "{b}"]
+        by (by100 simp)
+    next
+      assume hWab: "W = {a, b}"
+      have hHull_ab: "geotop_convex_hull W = closed_segment a b"
+        using hWab geotop_convex_hull_eq_HOL[of "{a, b}"]
+          segment_convex_hull[of a b]
+        by (by100 simp)
+      show ?thesis
+        unfolding F_def using hHull_ab by (by100 simp)
+    qed
+  qed
+qed
+
 lemma geotop_two_vertex_endpoint_chain_target_matching_dev34:
   fixes L F :: "(real^2) set set"
     and \<psi> :: "real^2 \<Rightarrow> real^2"
@@ -12532,6 +12588,155 @@ proof -
     using hwq unfolding \<psi>_def by (by100 simp)
   show ?thesis
     using hF_linear hFlist hbij hidx by (by100 simp)
+qed
+
+lemma geotop_two_vertex_endpoint_chain_named_2simplex_fan_model_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q [w, q]"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  assumes hab: "a \<noteq> b"
+  assumes hc: "c \<notin> {a, b}"
+  shows "\<exists>F w' q' us (T :: (real^2) set set) L' c' \<psi>.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length [w, q]
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length [w, q]. \<psi> ([w, q] ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c' \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c' (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c'} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c' W) \<in> L'))"
+  (**
+    Base endpoint Fig. 4.10 target model.  A two-vertex source chain is matched
+    to one named boundary edge of a 2-simplex; the full face complex is the fan
+    target, with the third vertex as the cone vertex. **)
+proof -
+  let ?F = "{{a}, {b}, closed_segment a b}"
+  let ?T = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  let ?\<psi> = "\<lambda>x. if x = w then a else b"
+  have hmatching:
+      "geotop_is_linear_graph ?F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 ?F a b [a, b]
+      \<and> length [a, b] = length [w, q]
+      \<and> bij_betw ?\<psi> (geotop_complex_vertices L) (geotop_complex_vertices ?F)
+      \<and> (\<forall>i<length [w, q]. ?\<psi> ([w, q] ! i) = [a, b] ! i)"
+    by (rule geotop_two_vertex_endpoint_chain_target_matching_dev34
+        [OF hLlist hab])
+  have hF_linear: "geotop_is_linear_graph ?F"
+    using hmatching by (by100 blast)
+  have hFlist:
+      "geotop_linear_graph_endpoint_chain_listing_dev34 ?F a b [a, b]"
+    using hmatching by (by100 blast)
+  have hlen: "length [a, b] = length [w, q]"
+    using hmatching by (by100 blast)
+  have hbij:
+      "bij_betw ?\<psi> (geotop_complex_vertices L) (geotop_complex_vertices ?F)"
+    using hmatching by (by100 blast)
+  have hidx: "\<forall>i<length [w, q]. ?\<psi> ([w, q] ! i) = [a, b] ! i"
+    using hmatching by (by100 blast)
+  have hK_complex: "geotop_is_complex ?T"
+    by (rule geotop_simplex_dim_face_complex_is_complex_R2[OF h\<sigma>])
+  have hsub: "geotop_is_subdivision ?T ?T"
+    by (rule geotop_is_subdivision_refl[OF hK_complex])
+  have hF_vertices: "geotop_complex_vertices ?F = {a, b}"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 simp)
+  have hT_vertices: "geotop_complex_vertices ?T = {a, b, c}"
+    by (rule geotop_2simplex_face_complex_vertices_named_dev34
+        [OF h\<sigma> h\<sigma>V hab hc])
+  have hcF: "c \<notin> geotop_complex_vertices ?F"
+    using hF_vertices hc by (by100 simp)
+  have hvertices: "geotop_complex_vertices ?T =
+      insert c (geotop_complex_vertices ?F)"
+    using hT_vertices hF_vertices by (by100 blast)
+  have hc_simplex: "geotop_convex_hull {c} \<in> ?T"
+  proof -
+    have hsub_c: "{c} \<subseteq> {a, b, c}"
+      by (by100 simp)
+    have hiff:
+        "geotop_convex_hull {c} \<in> ?T \<longleftrightarrow> {c} \<noteq> {}"
+      by (rule geotop_2simplex_face_complex_hull_in_iff_nonempty_named_dev34
+          [OF h\<sigma> h\<sigma>V hsub_c])
+    show ?thesis
+      using hiff by (by100 simp)
+  qed
+  have hboundary:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices ?F \<longrightarrow>
+        (geotop_convex_hull W \<in> ?F
+          \<longleftrightarrow> geotop_convex_hull W \<in> ?T)"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hWF: "W \<subseteq> geotop_complex_vertices ?F"
+    have hWab: "W \<subseteq> {a, b}"
+      using hWF hF_vertices by (by100 simp)
+    have hWabc: "W \<subseteq> {a, b, c}"
+      using hWab by (by100 blast)
+    have hF_iff:
+        "geotop_convex_hull W \<in> ?F \<longleftrightarrow> W \<noteq> {}"
+      by (rule geotop_two_point_segment_hull_in_iff_nonempty_dev34
+          [OF hab hWab])
+    have hT_iff:
+        "geotop_convex_hull W \<in> ?T \<longleftrightarrow> W \<noteq> {}"
+      by (rule geotop_2simplex_face_complex_hull_in_iff_nonempty_named_dev34
+          [OF h\<sigma> h\<sigma>V hWabc])
+    show "geotop_convex_hull W \<in> ?F
+      \<longleftrightarrow> geotop_convex_hull W \<in> ?T"
+      using hF_iff hT_iff by (by100 simp)
+  qed
+  have hcone:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices ?F \<longrightarrow>
+        (geotop_convex_hull W \<in> ?F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> ?T)"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hW_fin: "finite W"
+    assume hW_ne: "W \<noteq> {}"
+    assume hWF: "W \<subseteq> geotop_complex_vertices ?F"
+    have hWab: "W \<subseteq> {a, b}"
+      using hWF hF_vertices by (by100 simp)
+    have hinsert_sub: "insert c W \<subseteq> {a, b, c}"
+      using hWab by (by100 blast)
+    have hF_iff:
+        "geotop_convex_hull W \<in> ?F \<longleftrightarrow> W \<noteq> {}"
+      by (rule geotop_two_point_segment_hull_in_iff_nonempty_dev34
+          [OF hab hWab])
+    have hT_iff:
+        "geotop_convex_hull (insert c W) \<in> ?T
+          \<longleftrightarrow> insert c W \<noteq> {}"
+      by (rule geotop_2simplex_face_complex_hull_in_iff_nonempty_named_dev34
+          [OF h\<sigma> h\<sigma>V hinsert_sub])
+    have hF_mem: "geotop_convex_hull W \<in> ?F"
+      using hF_iff hW_ne by (by100 simp)
+    have hT_mem: "geotop_convex_hull (insert c W) \<in> ?T"
+      using hT_iff by (by100 simp)
+    show "geotop_convex_hull W \<in> ?F
+      \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> ?T"
+      using hF_mem hT_mem by (by100 simp)
+  qed
+  show ?thesis
+    apply (rule exI[where x="?F"])
+    apply (rule exI[where x=a])
+    apply (rule exI[where x=b])
+    apply (rule exI[where x="[a, b]"])
+    apply (rule exI[where x="?T"])
+    apply (rule exI[where x="?T"])
+    apply (rule exI[where x=c])
+    apply (rule exI[where x="?\<psi>"])
+    using hF_linear hFlist hlen hbij hidx h\<sigma> hsub hcF hvertices
+      hc_simplex hboundary hcone
+    by (by100 blast)
 qed
 
 lemma geotop_endpoint_chain_listing_convex_hull_in_L_cases_dev34:
