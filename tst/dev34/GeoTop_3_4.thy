@@ -15025,6 +15025,70 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
   by (rule geotop_finite_linear_graph_broken_line_vertices_degree_one_or_two_dev34
       [OF hL_linear hL_finite hbroken hconn])
 
+definition geotop_endpoint_boundary_edge_chain_on_simplex_dev34 ::
+  "(real^2) set set \<Rightarrow> (real^2) set \<Rightarrow> real^2 \<Rightarrow> (real^2) list \<Rightarrow> bool"
+where
+  "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us \<longleftrightarrow>
+    (\<exists>a b.
+      geotop_simplex_vertices \<sigma> {a, b, c}
+      \<and> a \<noteq> b
+      \<and> c \<notin> {a, b}
+      \<and> 2 \<le> length us
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b
+      \<and> F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1}))"
+
+lemma geotop_endpoint_boundary_edge_chain_target_of_length_dev34:
+  fixes n :: nat
+  assumes hlong: "2 < n"
+  shows "\<exists>F w' q' us (\<sigma> :: (real^2) set) c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = n
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  (**
+    Book target-chain construction for the endpoint fan.  Choose a named
+    2-simplex, put \<open>n\<close> ordered vertices on one boundary edge, and let \<open>F\<close>
+    be the corresponding subdivided edge chain.  The opposite simplex vertex
+    \<open>c\<close> is deliberately outside the chain vertices and will be the cone
+    point in the next step. **)
+  sorry
+
+lemma geotop_endpoint_boundary_edge_chain_cone_fan_from_chain_target_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  shows "\<exists>(T :: (real^2) set set) L' c'.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_is_subdivision L' T
+      \<and> c' \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c' (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c'} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c' W) \<in> L'))"
+  (**
+    Cone step for the endpoint boundary-edge target.  Once the ordered target
+    chain \<open>F\<close> has been placed on one edge of the 2-simplex \<open>\<sigma>\<close>, take the
+    opposite vertex as the cone point and form the fan complex.  The existing
+    boundary-cone lemmas should discharge the subdivision, vertex, old-simplex,
+    and cone-simplex clauses after the edge-chain placement has supplied the
+    right carrier data. **)
+  sorry
+
 lemma geotop_endpoint_boundary_edge_cone_target_model_of_length_dev34:
   fixes n :: nat
   assumes hlong: "2 < n"
@@ -15052,7 +15116,82 @@ lemma geotop_endpoint_boundary_edge_cone_target_model_of_length_dev34:
     third simplex vertex.  This isolates the construction from the source
     graph; source matching is handled by the existing endpoint-chain
     bijection lemmas. **)
-  sorry
+proof -
+  have hchain:
+    "\<exists>F w' q' us (\<sigma> :: (real^2) set) c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = n
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+    by (rule geotop_endpoint_boundary_edge_chain_target_of_length_dev34[OF hlong])
+  from hchain show ?thesis
+  proof (elim exE conjE)
+    fix F :: "(real^2) set set"
+    fix w' :: "real^2"
+    fix q' :: "real^2"
+    fix us :: "(real^2) list"
+    fix \<sigma> :: "(real^2) set"
+    fix c\<^sub>0 :: "real^2"
+    assume hF_linear: "geotop_is_linear_graph F"
+      and hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+      and hlen: "length us = n"
+      and h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+      and hc\<^sub>0F: "c\<^sub>0 \<notin> geotop_complex_vertices F"
+      and hplace:
+        "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c\<^sub>0 us"
+    have hfan:
+      "\<exists>(T :: (real^2) set set) (L' :: (real^2) set set) (c :: real^2).
+        T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+        \<and> geotop_is_subdivision L' T
+        \<and> c \<notin> geotop_complex_vertices F
+        \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+        \<and> geotop_convex_hull {c} \<in> L'
+        \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+        \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+      by (rule geotop_endpoint_boundary_edge_chain_cone_fan_from_chain_target_dev34
+          [OF hF_linear hFlist h\<sigma> hc\<^sub>0F hplace])
+    from hfan show ?thesis
+    proof (elim exE conjE)
+      fix T :: "(real^2) set set"
+      fix L' :: "(real^2) set set"
+      fix c :: "real^2"
+      assume hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+        and hsub: "geotop_is_subdivision L' T"
+        and hcF: "c \<notin> geotop_complex_vertices F"
+        and hvertices: "geotop_complex_vertices L' =
+          insert c (geotop_complex_vertices F)"
+        and hc_simplex: "geotop_convex_hull {c} \<in> L'"
+        and hboundary:
+          "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+        and hcone:
+          "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+            W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+            (geotop_convex_hull W \<in> F
+              \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
+      show ?thesis
+        apply (rule exI[where x=F])
+        apply (rule exI[where x=w'])
+        apply (rule exI[where x=q'])
+        apply (rule exI[where x=us])
+        apply (rule exI[where x=T])
+        apply (rule exI[where x=\<sigma>])
+        apply (rule exI[where x=L'])
+        apply (rule exI[where x=c])
+        using hF_linear hFlist hlen hT h\<sigma> hsub hcF hvertices hc_simplex
+          hboundary hcone
+        by (by100 blast)
+    qed
+  qed
+qed
 
 lemma geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34:
   fixes L :: "(real^2) set set"
