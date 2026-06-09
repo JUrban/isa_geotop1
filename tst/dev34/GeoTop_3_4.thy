@@ -3584,6 +3584,197 @@ proof -
       qed
     qed
   qed
+  have hF_B_connected:
+      "geotop_complex_connected F_B"
+    by (rule geotop_finite_linear_graph_polygon_polyhedron_connected_dev34
+        [OF hF_B_linear hF_B_poly_polygon])
+  have hF_B_degree_two:
+      "\<forall>w. {w} \<in> F_B \<longrightarrow>
+        card {e\<in>F_B. geotop_is_edge e \<and> w \<in> e} = 2"
+    by (rule geotop_polygon_finite_linear_graph_vertices_degree_two_prefix
+        [OF hF_B_linear hF_B_finite hF_B_connected hF_B_poly_polygon])
+  have ha\<^sub>\<sigma>_in_S_B: "a\<^sub>\<sigma> \<in> S_B"
+    unfolding S_B_def by (by100 simp)
+  have ha\<^sub>\<sigma>_single_F_B: "{a\<^sub>\<sigma>} \<in> F_B"
+    using hS_B_vertices_in_F_B ha\<^sub>\<sigma>_in_S_B by (by100 blast)
+  obtain s\<^sub>B q\<^sub>B p\<^sub>B where hF_B_started_cycle_pkg:
+      "s\<^sub>B \<in> {(w, d). {w} \<in> F_B \<and> d \<in> F_B
+          \<and> geotop_is_edge d \<and> w \<in> d}
+      \<and> fst s\<^sub>B = a\<^sub>\<sigma>
+      \<and> q\<^sub>B \<noteq> a\<^sub>\<sigma>
+      \<and> snd s\<^sub>B = closed_segment a\<^sub>\<sigma> q\<^sub>B
+      \<and> {q\<^sub>B} \<in> F_B
+      \<and> 1 < p\<^sub>B
+      \<and> fst ((geotop_oriented_edge_successor F_B ^^ Suc 0) s\<^sub>B) = q\<^sub>B
+      \<and> (geotop_oriented_edge_successor F_B ^^ p\<^sub>B) s\<^sub>B = s\<^sub>B
+      \<and> (\<forall>k. 0 < k \<and> k < p\<^sub>B \<longrightarrow>
+          (geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B \<noteq> s\<^sub>B)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B) {0..<p\<^sub>B}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B) ` {0..<p\<^sub>B})
+          = p\<^sub>B
+      \<and> closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ (p\<^sub>B - 1)) s\<^sub>B))
+          (fst s\<^sub>B) \<in> F_B
+      \<and> geotop_is_edge
+          (closed_segment
+            (fst ((geotop_oriented_edge_successor F_B ^^ (p\<^sub>B - 1)) s\<^sub>B))
+            (fst s\<^sub>B))"
+    using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
+      [OF hF_B_linear hF_B_finite hF_B_degree_two ha\<^sub>\<sigma>_single_F_B]
+    by (by100 blast)
+  have hs\<^sub>B:
+      "s\<^sub>B \<in> {(w, d). {w} \<in> F_B \<and> d \<in> F_B
+          \<and> geotop_is_edge d \<and> w \<in> d}"
+    using hF_B_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>B_gt1: "1 < p\<^sub>B"
+    using hF_B_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>B_pos: "0 < p\<^sub>B"
+    using hp\<^sub>B_gt1 by (by100 linarith)
+  have hp\<^sub>B_closed:
+      "(geotop_oriented_edge_successor F_B ^^ p\<^sub>B) s\<^sub>B = s\<^sub>B"
+    using hF_B_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>B_gt2: "2 < p\<^sub>B"
+    by (rule geotop_degree_two_oriented_edge_successor_period_gt_two_dev34
+        [OF hF_B_linear hF_B_degree_two hs\<^sub>B hp\<^sub>B_gt1 hp\<^sub>B_closed])
+  have hF_B_successor_state_inj:
+      "inj_on (\<lambda>k. (geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B) {0..<p\<^sub>B}"
+    using hF_B_started_cycle_pkg by (by100 blast)
+  have hF_B_successor_state_card:
+      "card ((\<lambda>k. (geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B) ` {0..<p\<^sub>B})
+        = p\<^sub>B"
+    using hF_B_started_cycle_pkg by (by100 blast)
+  have hF_B_successor_cycle_decomp:
+      "F_B =
+        (((\<lambda>w. {w}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+            ` {0..<p\<^sub>B}))
+        \<union> ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+            ` {0..<p\<^sub>B}))"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
+        [OF hF_B_linear hF_B_finite hF_B_connected hF_B_degree_two
+          hs\<^sub>B hp\<^sub>B_pos hp\<^sub>B_closed])
+  have hF_B_successor_vertices_eq:
+      "((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) = geotop_complex_vertices F_B"
+  proof
+    show "((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) \<subseteq> geotop_complex_vertices F_B"
+    proof
+      fix x
+      assume hx:
+        "x \<in> ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          ` {0..<p\<^sub>B})"
+      have hx_single:
+          "{x} \<in> F_B"
+        using geotop_degree_two_oriented_edge_successor_vertex_orbit_subset_vertices_prefix
+          [OF hF_B_linear hF_B_degree_two hs\<^sub>B, of "{0..<p\<^sub>B}"] hx
+        by (by100 blast)
+      show "x \<in> geotop_complex_vertices F_B"
+        using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+          hx_single by (by100 blast)
+    qed
+    show "geotop_complex_vertices F_B \<subseteq>
+        ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          ` {0..<p\<^sub>B})"
+    proof
+      fix x
+      assume hx: "x \<in> geotop_complex_vertices F_B"
+      have hx_single: "{x} \<in> F_B"
+        using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+          hx by (by100 blast)
+      show "x \<in> ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          ` {0..<p\<^sub>B})"
+        by (rule geotop_degree_two_oriented_edge_successor_period_vertex_in_exhausted_cycle_prefix
+            [OF hF_B_linear hF_B_finite hF_B_connected hF_B_degree_two
+              hs\<^sub>B hp\<^sub>B_pos hp\<^sub>B_closed hx_single])
+    qed
+  qed
+  have hF_B_successor_edge_orbit_eq:
+      "((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+        ` {0..<p\<^sub>B}) = {e\<in>F_B. geotop_is_edge e}"
+  proof
+    show "((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+        ` {0..<p\<^sub>B}) \<subseteq> {e\<in>F_B. geotop_is_edge e}"
+      by (rule geotop_degree_two_oriented_edge_successor_period_closed_segment_edge_orbit_subset_edges_prefix
+          [OF hF_B_linear hF_B_degree_two hs\<^sub>B])
+    show "{e\<in>F_B. geotop_is_edge e} \<subseteq>
+        ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+        ` {0..<p\<^sub>B})"
+    proof
+      fix e
+      assume he: "e \<in> {e\<in>F_B. geotop_is_edge e}"
+      have heF: "e \<in> F_B"
+        using he by (by100 simp)
+      have he_edge: "geotop_is_edge e"
+        using he by (by100 simp)
+      have he_cases:
+          "e \<in> ((\<lambda>w. {w}) `
+              ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+                ` {0..<p\<^sub>B}))
+          \<or> e \<in> ((\<lambda>k. closed_segment
+              (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+              (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+            ` {0..<p\<^sub>B})"
+        using hF_B_successor_cycle_decomp heF by (by100 blast)
+      show "e \<in> ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+        ` {0..<p\<^sub>B})"
+      proof (rule disjE[OF he_cases])
+        assume he_single:
+            "e \<in> ((\<lambda>w. {w}) `
+              ((\<lambda>k. fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+                ` {0..<p\<^sub>B}))"
+        obtain w where he_eq: "e = {w}"
+          using he_single by (by100 blast)
+        have "\<not> geotop_is_edge {w}"
+          by (rule geotop_singleton_not_edge_prefix)
+        thus "e \<in> ((\<lambda>k. closed_segment
+            (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+            (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+          ` {0..<p\<^sub>B})"
+          using he_edge he_eq by (by100 blast)
+      next
+        assume "e \<in> ((\<lambda>k. closed_segment
+            (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+            (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+          ` {0..<p\<^sub>B})"
+        thus "e \<in> ((\<lambda>k. closed_segment
+            (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+            (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+          ` {0..<p\<^sub>B})" .
+      qed
+    qed
+  qed
+  have hF_B_successor_state_edge_eq:
+      "\<And>k. snd ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B)
+        = closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B))"
+    by (rule geotop_degree_two_oriented_edge_successor_funpow_edge_between_prefix
+        [OF hF_B_linear hF_B_degree_two hs\<^sub>B])
+  have hF_B_successor_snd_edge_orbit_eq:
+      "((\<lambda>k. snd ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B}) = {e\<in>F_B. geotop_is_edge e}"
+  proof -
+    have "((\<lambda>k. snd ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+        ` {0..<p\<^sub>B})
+      = ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor F_B ^^ k) s\<^sub>B))
+          (fst ((geotop_oriented_edge_successor F_B ^^ Suc k) s\<^sub>B)))
+        ` {0..<p\<^sub>B})"
+      using hF_B_successor_state_edge_eq by (by100 blast)
+    thus ?thesis
+      using hF_B_successor_edge_orbit_eq by (by100 simp)
+  qed
   show ?thesis
     sorry
 qed
