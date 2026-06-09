@@ -3403,6 +3403,67 @@ proof -
         (geotop_complex_vertices F_B)"
     using hu\<^sub>B_list_index_bij hu\<^sub>B_list_length_F_B_vertices
     by (by100 simp)
+  have hF_B_vertex_edge_decomp:
+      "F_B = ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+        \<union> {e\<in>F_B. geotop_is_edge e}"
+  proof
+    show "F_B \<subseteq> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+        \<union> {e \<in> F_B. geotop_is_edge e}"
+    proof
+      fix \<tau>
+      assume h\<tau>: "\<tau> \<in> F_B"
+      have hcases:
+          "(\<exists>x. \<tau> = {x}) \<or> (\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b)"
+        by (rule geotop_1dim_simplex_cases[OF hF_B_1dim h\<tau>])
+      show "\<tau> \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+          \<union> {e \<in> F_B. geotop_is_edge e}"
+      proof (rule disjE[OF hcases])
+        assume "\<exists>x. \<tau> = {x}"
+        then obtain x where h\<tau>x: "\<tau> = {x}"
+          by (by100 blast)
+        have hx: "x \<in> geotop_complex_vertices F_B"
+          using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+            h\<tau> h\<tau>x by (by100 blast)
+        show "\<tau> \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+            \<union> {e \<in> F_B. geotop_is_edge e}"
+          using hx h\<tau>x by (by100 blast)
+      next
+        assume "\<exists>a b. a \<noteq> b \<and> \<tau> = closed_segment a b"
+        then obtain a b where hab: "a \<noteq> b" and h\<tau>ab: "\<tau> = closed_segment a b"
+          by (by100 blast)
+        have h\<tau>edge: "geotop_is_edge \<tau>"
+          using geotop_closed_segment_is_simplex[OF hab] h\<tau>ab
+          unfolding geotop_is_edge_def by (by100 simp)
+        show "\<tau> \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+            \<union> {e \<in> F_B. geotop_is_edge e}"
+          using h\<tau> h\<tau>edge by (by100 blast)
+      qed
+    qed
+    show "((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+        \<union> {e \<in> F_B. geotop_is_edge e} \<subseteq> F_B"
+    proof
+      fix \<tau>
+      assume h\<tau>:
+          "\<tau> \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)
+            \<union> {e \<in> F_B. geotop_is_edge e}"
+      show "\<tau> \<in> F_B"
+      proof (rule UnE[OF h\<tau>])
+        assume "\<tau> \<in> ((\<lambda>v. {v}) ` geotop_complex_vertices F_B)"
+        then obtain x where hx: "x \<in> geotop_complex_vertices F_B"
+          and h\<tau>x: "\<tau> = {x}"
+          by (by100 blast)
+        have "{x} \<in> F_B"
+          using geotop_complex_vertices_eq_0_simplexes[OF hF_B_complex]
+            hx by (by100 blast)
+        thus "\<tau> \<in> F_B"
+          using h\<tau>x by (by100 simp)
+      next
+        assume "\<tau> \<in> {e \<in> F_B. geotop_is_edge e}"
+        thus "\<tau> \<in> F_B"
+          by (by100 blast)
+      qed
+    qed
+  qed
   show ?thesis
     sorry
 qed
