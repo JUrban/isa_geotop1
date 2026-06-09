@@ -3,7 +3,7 @@
 ## Current verified status
 
 The zero-target-`sorry` goal is not finished. The live target scan now reports
-six `sorry`s:
+seven `sorry` lines:
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106
@@ -11,14 +11,18 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:9933
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:3921
-dev34/GeoTop_3_4.thy:14859
+dev34/GeoTop_3_4.thy:14839
+dev34/GeoTop_3_4.thy:14871
 ```
 
-This is better than the expert3 raw count of eight. Two expert3 targets have
-since closed as target holes: the active standard-boundary cycle realization
-and the one-sided semicircle/collar package. The expert diagnosis is still
-right in substance: the remaining holes are package-sized Moise book arguments,
-not isolated automation cleanups.
+This is still better than the expert3 raw count of eight in package terms. Two
+expert3 targets have since closed as target packages: the active
+standard-boundary cycle realization and the one-sided semicircle/collar
+package. The endpoint non-finish package has deliberately been split into two
+named substeps, so the raw line count is seven while the stable remaining
+package count is still six. The expert diagnosis remains right in substance:
+the remaining holes are package-sized Moise book arguments, not isolated
+automation cleanups.
 
 ## Remaining packages
 
@@ -56,13 +60,19 @@ not isolated automation cleanups.
      needed by the local-component argument, rather than trying to prove the
      current abstract statement by automation.
 
-6. `geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34`
-   - Active endpoint non-finish package. It now combines the endpoint degree
-     bound with the endpoint boundary-arc fan target construction.
+6. Endpoint non-finish / boundary-arc fan package.
+   - The combined wrapper
+     `geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34`
+     is now proved from two named book substeps.
+   - `geotop_endpoint_nonfinish_degree_bound_book_step_dev34`: source-side
+     no-branch / degree-one-or-two bound for the finite broken-line graph.
+   - `geotop_endpoint_chain_boundary_arc_target_model_from_listing_book_step_dev34`:
+     target-side same-length boundary-arc chain realization and cone fan model
+     for an already listed endpoint chain.
    - The downstream wrapper
      `geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`
-     calls this named theorem; the visible hole is in the named package, not in
-     the wrapper.
+     still calls the combined theorem; the new split isolates the two remaining
+     endpoint obligations instead of leaving one opaque package hole.
 
 ## Audit takeaways to keep
 
@@ -90,11 +100,12 @@ rg -n "concept_or_theorem_name" THEOREMS_AND_DEFS.txt STMT_INDEX.txt
 ./check_dev34_fast.sh slice-hot dev34/GeoTop_3_4.thy geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
 ```
 
-The last two proof changes introduced named packages and verified focused
-slices:
+Recent proof changes introduced named packages and verified focused slices:
 
 ```text
 geotop_connected_split_side_three_germs_local_component_prefix
+geotop_endpoint_nonfinish_degree_bound_book_step_dev34
+geotop_endpoint_chain_boundary_arc_target_model_from_listing_book_step_dev34
 geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34
 ```
 
@@ -122,5 +133,5 @@ There are two realistic near-term choices:
    listing and fan-transfer helpers, while avoiding the old full-boundary-cycle
    shortcut.
 
-Either route should preserve the current six-hole map until a package is
-actually closed.
+The endpoint route currently has two explicit subholes; closing either one
+should reduce the raw line count without changing the package map.
