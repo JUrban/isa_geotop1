@@ -12903,6 +12903,62 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_endpoint_chain_fan_target_from_matching_model_dev34:
+  fixes L F L' :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hlen: "length us = length vs"
+  assumes h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L)
+      (geotop_complex_vertices F)"
+  assumes h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+  assumes hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub: "geotop_is_subdivision L' T"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hvertices: "geotop_complex_vertices L' =
+      insert c (geotop_complex_vertices F)"
+  assumes hc_simplex: "geotop_convex_hull {c} \<in> L'"
+  assumes hboundary:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F
+        \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+  assumes hcone:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+      W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F
+        \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Endpoint-chain target package with the source and target chains both
+    already listed.  This is the immediate reduction needed by the remaining
+    book step: after constructing the standard boundary-arc chain \<open>F\<close> and
+    its cone fan \<open>L'\<close>, only the indexwise vertex matching remains. **)
+proof -
+  have hiso: "geotop_isomorphism L F \<psi>"
+    by (rule geotop_endpoint_chain_listing_isomorphism_from_matching_dev34
+        [OF hL_linear hF_linear hLlist hFlist hlen h\<psi>bij h\<psi>idx])
+  show ?thesis
+    by (rule geotop_endpoint_chain_fan_target_transfer_from_isomorphism_dev34
+        [OF hT h\<sigma> hsub hiso hcF hvertices hc_simplex hboundary hcone])
+qed
+
 lemma geotop_endpoint_chain_listing_two_vertex_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
