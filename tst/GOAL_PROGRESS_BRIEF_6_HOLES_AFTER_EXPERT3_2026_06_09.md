@@ -3,6 +3,8 @@
 Date: 2026-06-09
 Branch: `codex-dev34-cache`
 Scope: local target stack under `tst/`
+Input reread: `PLAN_zero_sorry-expert3.md` plus the previous expert-audit
+status files.
 
 ## Current status
 
@@ -22,13 +24,14 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:9933
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9621
-dev34/GeoTop_3_4.thy:14872
+dev34/GeoTop_3_4.thy:14902
 ```
 
 This is real progress from the expert-audit sequence.  The older audits mention
-17, 14, 10, and then 8 target holes.  Those counts are stale locally, but the
-experts' main diagnosis remains correct: the remaining holes are package-sized
-Moise picture arguments, not final tactic cleanup.
+17, 14, 10, and then 8 target holes.  Those counts are stale locally, including
+expert3's 8-hole map, but the experts' main diagnosis remains correct: the
+remaining holes are package-sized Moise picture arguments, not final tactic
+cleanup.
 
 ## Remaining packages
 
@@ -99,8 +102,10 @@ bash gen_stmt_index.sh
 ```
 
 The current efficient targets are the hot graph-cache branch package and the
-active endpoint-fan slice.  D44 and the Section 3/D42 packages should be treated
-as larger named theorem packages, not as local proof-search cleanups.
+active endpoint-fan slice.  For faster iteration, prefer full-index greps before
+opening large theory regions and use the focused checker only on the current
+package.  D44 and the Section 3/D42 packages should be treated as larger named
+theorem packages, not as local proof-search cleanups.
 
 ## Bottom line
 
