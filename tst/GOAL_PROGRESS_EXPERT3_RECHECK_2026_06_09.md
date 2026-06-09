@@ -7,13 +7,13 @@ The zero-target-`sorry` goal is still open. A fresh local scan with
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106
-dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
+dev34/GeoTop_3_4.thy:3322
+dev34/GeoTop_3_4.thy:11427
+dev34/GeoTop_3_4.thy:12645
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
-dev34/GeoTop_3_4.thy:3272
-dev34/GeoTop_3_4.thy:11377
-dev34/GeoTop_3_4.thy:12595
+dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
 ```
 
 Stable open packages:
@@ -49,6 +49,9 @@ target boundary listing and source-target vertex map.
 Recent commits:
 
 ```text
+bbb6d7de Expose source successor edge orbit facts
+e4aba0f8 Record boundary target bijection facts
+f88a2d4a Record expert3 recheck progress report
 39cb4297 Expose cyclic target boundary graph facts
 6c1631a9 Record cyclic target boundary list facts
 ```
@@ -73,6 +76,28 @@ controlled exactly. The remaining missing step is to turn that exact vertex
 control into a cyclic boundary listing with adjacent-edge incidence, then build
 the required source-target bijection satisfying `psi (v k) = u k`.
 
+The latest two proof commits added two more pieces of infrastructure inside the
+same active theorem:
+
+```text
+bij_betw psi_B (geotop_complex_vertices L) (geotop_complex_vertices F_B)
+bij_betw ((!) u_B_list) {0..<length u_B_list} (geotop_complex_vertices F_B)
+bij_betw ((!) u_B_list) {0..<card (geotop_complex_vertices L)}
+  (geotop_complex_vertices F_B)
+bij_betw ((!) u_B_list) {0..<card (geotop_complex_vertices F_B)}
+  (geotop_complex_vertices F_B)
+snd ((geotop_oriented_edge_successor L ^^ k) s_c)
+  = closed_segment
+      (fst ((geotop_oriented_edge_successor L ^^ k) s_c))
+      (fst ((geotop_oriented_edge_successor L ^^ Suc k) s_c))
+((lambda k. snd ((geotop_oriented_edge_successor L ^^ k) s_c)) ` {0..<p_c})
+  = {e in L. geotop_is_edge e}
+```
+
+These facts expose both sides of the intended bijection, but they do not yet
+solve the main incidence problem: `u_B_list` is still only an exact distinct
+vertex list, not a proved cyclic boundary order.
+
 ## Current Blocker
 
 The active theorem still stops before producing:
@@ -89,6 +114,12 @@ distinct exact vertex list, but it is not yet an ordered boundary-cycle proof.
 The next useful proof step should either order the extra points along
 `open_segment a_sigma b_sigma`, or prove a general finite linear boundary graph
 cycle-listing lemma for `F_B` using the existing graph infrastructure.
+
+The new source successor facts make the source side less opaque, but they also
+confirm that the active obstacle is not source edge enumeration. The missing
+piece is the target boundary adjacency/listing package, especially because the
+current arbitrary ordering of `T_extra` along the open side has no adjacency
+proof.
 
 ## Recommended Next Order
 
