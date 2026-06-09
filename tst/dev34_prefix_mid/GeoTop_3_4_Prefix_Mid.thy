@@ -10303,6 +10303,18 @@ proof -
       using hx_not_PR by (by100 blast)
     qed
   qed
+  have hD42_PR_on_broken_boundary_arcs:
+      "P \<in> D\<^sub>1 \<and> R \<in> D\<^sub>1 \<and> P \<in> D\<^sub>2 \<and> R \<in> D\<^sub>2"
+  proof (intro conjI)
+    show "P \<in> D\<^sub>1"
+      using hD42_D\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "R \<in> D\<^sub>1"
+      using hD42_D\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "P \<in> D\<^sub>2"
+      using hD42_D\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "R \<in> D\<^sub>2"
+      using hD42_D\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+  qed
   have hD42_QS_broken_boundary_arc_split:
       "\<exists>F\<^sub>1 F\<^sub>2.
         J = F\<^sub>1 \<union> F\<^sub>2
@@ -10348,6 +10360,18 @@ proof -
         geotop_arc_interior F\<^sub>2 {Q, S} = {}"
     using hD42_QS_broken_boundary_arc_split
     by (elim exE conjE)
+  have hD42_QS_on_broken_boundary_arcs:
+      "Q \<in> F\<^sub>1 \<and> S \<in> F\<^sub>1 \<and> Q \<in> F\<^sub>2 \<and> S \<in> F\<^sub>2"
+  proof (intro conjI)
+    show "Q \<in> F\<^sub>1"
+      using hD42_F\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "S \<in> F\<^sub>1"
+      using hD42_F\<^sub>1E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "Q \<in> F\<^sub>2"
+      using hD42_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+    show "S \<in> F\<^sub>2"
+      using hD42_F\<^sub>2E unfolding geotop_arc_endpoints_def by (by100 blast)
+  qed
   have hQ_frontier_witness:
       "\<exists>U. U \<in> geotop_euclidean_topology
         \<and> U \<subseteq> geotop_polygon_interior J - A
