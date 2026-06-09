@@ -13911,6 +13911,132 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_endpoint_chain_target_model_from_boundary_subdivision_and_matching_dev34:
+  fixes L F :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hlen: "length us = length vs"
+  assumes h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L)
+      (geotop_complex_vertices F)"
+  assumes h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hboundary:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>(T :: (real^2) set set) L' c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Endpoint target-cache bridge.  Once the target endpoint chain \<open>F\<close> has been
+    realized as a subdivision of the standard 2-simplex boundary, the existing
+    Fig. 4.10 cone construction supplies all fan clauses; the remaining endpoint
+    work is only the boundary-arc chain realization and index matching. **)
+proof -
+  obtain L' c where hcone:
+      "geotop_is_subdivision L' {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>A. A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull A \<in> L'))
+      \<and> (\<forall>A. finite A \<longrightarrow> A \<noteq> {} \<longrightarrow>
+        A \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull A \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c A) \<in> L'))"
+    using geotop_fig410_cone_over_boundary_subdivision_dev34
+      [OF h\<sigma> hboundary]
+    by (by100 blast)
+  show ?thesis
+    apply (rule exI[where x="{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"])
+    apply (rule exI[where x=L'])
+    apply (rule exI[where x=c])
+    using hF_linear hFlist hlen h\<psi>bij h\<psi>idx h\<sigma> hcone
+    by (by100 blast)
+qed
+
+lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_boundary_subdivision_target_dev34:
+  fixes L F :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hF_linear: "geotop_is_linear_graph F"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hlen: "length us = length vs"
+  assumes h\<psi>bij: "bij_betw \<psi> (geotop_complex_vertices L)
+      (geotop_complex_vertices F)"
+  assumes h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hboundary:
+    "geotop_is_subdivision F
+      (geotop_comb_boundary {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>} 2)"
+  shows "\<exists>vs F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+      geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+      \<and> geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Source-facing endpoint bridge with the cone construction already discharged.
+    Future endpoint work can target only a matching boundary-subdivision chain
+    \<open>F,w',q',us,\<psi>\<close>; this lemma packages it into the book-step conclusion. **)
+proof -
+  obtain T L' c where htarget:
+      "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+    by (rule geotop_endpoint_chain_target_model_from_boundary_subdivision_and_matching_dev34
+        [OF hF_linear hFlist hlen h\<psi>bij h\<psi>idx h\<sigma> hboundary])
+  show ?thesis
+    by (rule geotop_endpoint_oriented_chain_boundary_arc_fan_model_from_chain_target_dev34
+        [OF hlist htarget])
+qed
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
