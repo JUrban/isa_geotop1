@@ -1073,6 +1073,58 @@ proof -
     by (by100 blast)
 qed
 
+lemma geotop_complex_subdivide_edge_vertices_subset_dev34:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K"
+  assumes he_dim: "geotop_simplex_dim e 1"
+  assumes hR_e: "R \<in> e"
+  shows "\<exists>K'. geotop_is_complex K'
+      \<and> geotop_complex_is_1dim K'
+      \<and> geotop_polyhedron K' = geotop_polyhedron K
+      \<and> {R} \<in> K'
+      \<and> K - {e} \<subseteq> K'
+      \<and> geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)
+      \<and> (finite K \<longrightarrow> finite K')"
+proof -
+  obtain V m where hV_fin: "finite V"
+      and hV_card: "card V = 1 + 1"
+      and hm: "1 \<le> m"
+      and hV_gp: "geotop_general_position V m"
+      and he_hull: "e = geotop_convex_hull V"
+    using he_dim unfolding geotop_simplex_dim_def by (by100 blast)
+  have hV_verts: "geotop_simplex_vertices e V"
+    unfolding geotop_simplex_vertices_def
+    using hV_fin hV_card hm hV_gp he_hull by (by100 blast)
+  have hV_card2: "card V = 2"
+    using hV_card by (by100 simp)
+  have hV2ex: "\<exists>x y. V = {x, y} \<and> x \<noteq> y"
+    using hV_card2 card_2_iff by (by100 blast)
+  obtain v\<^sub>0 v\<^sub>1 where hV_eq: "V = {v\<^sub>0, v\<^sub>1}"
+      and hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+    using hV2ex by (by100 blast)
+  show ?thesis
+  proof (cases "R \<in> V")
+    case True
+    have hR_K: "{R} \<in> K"
+      by (rule geotop_complex_subdivide_edge_vertex
+          [OF hK_complex he_K he_dim hV_verts True])
+    have hK_sup: "K - {e} \<subseteq> K"
+      by (by100 blast)
+    have hK_vertices:
+      "geotop_complex_vertices K \<subseteq> insert R (geotop_complex_vertices K)"
+      by (by100 blast)
+    show ?thesis
+      using hK_complex hK_1dim hR_K hK_sup hK_vertices by (by100 blast)
+  next
+    case False
+    show ?thesis
+      by (rule geotop_complex_subdivide_edge_interior_vertices_subset_dev34
+          [OF hK_complex hK_1dim he_K hV_verts hV_eq hv\<^sub>0v\<^sub>1 hR_e False])
+  qed
+qed
+
 lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
