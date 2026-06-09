@@ -17392,6 +17392,283 @@ proof
     using h\<tau>sub hx\<tau> by (by100 blast)
 qed
 
+lemma geotop_real_interval_chain_cover_dev34:
+  fixes ts :: "real list"
+  assumes hlen: "2 \<le> length ts"
+  assumes hfirst: "ts ! 0 = 0"
+  assumes hlast: "ts ! (length ts - 1) = 1"
+  shows "{0..1::real} \<subseteq>
+    (\<Union>i\<in>{0..<length ts - 1}. closed_segment (ts ! i) (ts ! Suc i))"
+proof
+  fix x :: real
+  assume hx: "x \<in> {0..1::real}"
+  let ?P = "\<lambda>i. i < length ts \<and> x \<le> ts ! i"
+  have hlast_idx: "length ts - 1 < length ts"
+    using hlen by (by100 linarith)
+  have hP_ex: "\<exists>i. ?P i"
+    using hlast_idx hlast hx by (by100 auto)
+  define i where "i = (LEAST i. ?P i)"
+  have hPi: "?P i"
+    unfolding i_def by (rule LeastI_ex[OF hP_ex])
+  have hi_len: "i < length ts"
+    using hPi by (by100 blast)
+  have hxi: "x \<le> ts ! i"
+    using hPi by (by100 blast)
+  show "x \<in>
+    (\<Union>i\<in>{0..<length ts - 1}. closed_segment (ts ! i) (ts ! Suc i))"
+  proof (cases "i = 0")
+    case True
+    have hx0: "x = 0"
+      using hx hxi True hfirst by (by100 simp)
+    have hidx: "0 \<in> {0..<length ts - 1}"
+      using hlen by (by100 simp)
+    have "x \<in> closed_segment (ts ! 0) (ts ! Suc 0)"
+      using hx0 hfirst by (by100 simp)
+    thus ?thesis
+      using hidx by (by100 blast)
+  next
+    case False
+    define j where "j = i - 1"
+    have hij: "i = Suc j"
+      using False unfolding j_def by (by100 simp)
+    have hj_less_i: "j < i"
+      using hij by (by100 simp)
+    have hnotPj: "\<not> ?P j"
+      using hj_less_i unfolding i_def by (rule not_less_Least)
+    have hj_len: "j < length ts"
+      using hi_len hij by (by100 simp)
+    have hj_edge: "j \<in> {0..<length ts - 1}"
+      using hi_len hij by (by100 simp)
+    have hxj: "ts ! j \<le> x"
+      using hnotPj hj_len by (by100 linarith)
+    have hxseg: "x \<in> closed_segment (ts ! j) (ts ! Suc j)"
+      using hxj hxi hij unfolding closed_segment_eq_real_ivl by (by100 auto)
+    show ?thesis
+      using hj_edge hxseg by (by100 blast)
+  qed
+qed
+
+lemma geotop_linepath_real_closed_segment_image_dev34:
+  fixes a b :: "real^2"
+  assumes ht: "t \<in> closed_segment s u"
+  shows "linepath a b t \<in>
+    closed_segment (linepath a b s) (linepath a b u)"
+proof -
+  obtain r where hr0: "0 \<le> r" and hr1: "r \<le> 1"
+      and ht_eq: "t = (1 - r) * s + r * u"
+    using ht by (auto simp: in_segment)
+  have hline:
+      "linepath a b t =
+        (1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u"
+    unfolding linepath_def ht_eq
+    apply (simp add: vec_eq_iff)
+    apply (intro allI)
+    by (simp add: algebra_simps)
+  show ?thesis
+    using hr0 hr1 hline by (auto simp: in_segment)
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_base_segment_subset_polyhedron_from_data_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hab: "a \<noteq> b"
+  assumes hlen: "2 \<le> length us"
+  assumes hfirst: "us ! 0 = a"
+  assumes hlast: "us ! (length us - 1) = b"
+  assumes hset: "set us \<subseteq> closed_segment a b"
+  assumes hF:
+    "F = ((\<lambda>x. {x}) ` set us)
+      \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+          ` {0..<length us - 1})"
+  shows "closed_segment a b \<subseteq> geotop_polyhedron F"
+proof
+  fix x
+  assume hx: "x \<in> closed_segment a b"
+  let ?I = "{0..1::real}"
+  let ?g = "inv_into ?I (linepath a b)"
+  define ts where "ts = map ?g us"
+  have hline_img: "linepath a b ` ?I = closed_segment a b"
+    by (rule linepath_image_01)
+  have hinj: "inj_on (linepath a b) ?I"
+    by (rule inj_on_linepath[OF hab])
+  have hx_img: "x \<in> linepath a b ` ?I"
+    using hx hline_img by (by100 simp)
+  have htxI: "?g x \<in> ?I"
+    by (rule inv_into_into[OF hx_img])
+  have hx_line: "linepath a b (?g x) = x"
+    by (rule f_inv_into_f[OF hx_img])
+  have hga: "?g a = 0"
+  proof -
+    have h0I: "0 \<in> ?I"
+      by (by100 simp)
+    have hline0: "linepath a b 0 = a"
+      unfolding linepath_def by (by100 simp)
+    show ?thesis
+      by (rule inv_into_f_eq[OF hinj h0I hline0])
+  qed
+  have hgb: "?g b = 1"
+  proof -
+    have h1I: "1 \<in> ?I"
+      by (by100 simp)
+    have hline1: "linepath a b 1 = b"
+      unfolding linepath_def by (by100 simp)
+    show ?thesis
+      by (rule inv_into_f_eq[OF hinj h1I hline1])
+  qed
+  have hts_len: "length ts = length us"
+    unfolding ts_def by (by100 simp)
+  have h0_len: "0 < length us"
+    using hlen by (by100 linarith)
+  have hlast_len: "length us - 1 < length us"
+    using hlen by (by100 linarith)
+  have hts_first: "ts ! 0 = 0"
+    unfolding ts_def using h0_len hfirst hga by (by100 simp)
+  have hts_last: "ts ! (length ts - 1) = 1"
+    unfolding ts_def using hlast_len hlast hgb hts_len by (by100 simp)
+  have hcover:
+      "{0..1::real} \<subseteq>
+        (\<Union>i\<in>{0..<length ts - 1}.
+          closed_segment (ts ! i) (ts ! Suc i))"
+    by (rule geotop_real_interval_chain_cover_dev34
+        [OF _ hts_first hts_last])
+       (use hlen hts_len in \<open>by100 simp\<close>)
+  have ht_cover:
+      "?g x \<in>
+        (\<Union>i\<in>{0..<length ts - 1}.
+          closed_segment (ts ! i) (ts ! Suc i))"
+    using hcover htxI by (by100 blast)
+  obtain i where hi_ts: "i \<in> {0..<length ts - 1}"
+      and ht_seg: "?g x \<in> closed_segment (ts ! i) (ts ! Suc i)"
+    using ht_cover by (by100 blast)
+  have hi_us: "i \<in> {0..<length us - 1}"
+    using hi_ts hts_len by (by100 simp)
+  have hi_len: "i < length us"
+    using hi_us by (by100 simp)
+  have hSi_len: "Suc i < length us"
+    using hi_us by (by100 simp)
+  have hui_base: "us ! i \<in> closed_segment a b"
+    using hset nth_mem[OF hi_len] by (by100 blast)
+  have hSi_base: "us ! Suc i \<in> closed_segment a b"
+    using hset nth_mem[OF hSi_len] by (by100 blast)
+  have hui_img: "us ! i \<in> linepath a b ` ?I"
+    using hui_base hline_img by (by100 simp)
+  have hSi_img: "us ! Suc i \<in> linepath a b ` ?I"
+    using hSi_base hline_img by (by100 simp)
+  have hline_i: "linepath a b (?g (us ! i)) = us ! i"
+    by (rule f_inv_into_f[OF hui_img])
+  have hline_Si: "linepath a b (?g (us ! Suc i)) = us ! Suc i"
+    by (rule f_inv_into_f[OF hSi_img])
+  have htsi: "ts ! i = ?g (us ! i)"
+    unfolding ts_def using hi_len by (by100 simp)
+  have htSi: "ts ! Suc i = ?g (us ! Suc i)"
+    unfolding ts_def using hSi_len by (by100 simp)
+  have hx_geom:
+      "linepath a b (?g x) \<in>
+        closed_segment (linepath a b (ts ! i)) (linepath a b (ts ! Suc i))"
+    by (rule geotop_linepath_real_closed_segment_image_dev34[OF ht_seg])
+  have hx_edge: "x \<in> closed_segment (us ! i) (us ! Suc i)"
+    using hx_line hx_geom htsi htSi hline_i hline_Si by (by100 simp)
+  have hedgeF: "closed_segment (us ! i) (us ! Suc i) \<in> F"
+    using hF hi_us by (by100 blast)
+  show "x \<in> geotop_polyhedron F"
+    unfolding geotop_polyhedron_def using hedgeF hx_edge by (by100 blast)
+qed
+
+lemma geotop_2simplex_vertex_to_opposite_edge_radial_cover_dev34:
+  fixes \<sigma> :: "(real^2) set"
+  assumes h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+  shows "\<forall>x\<in>\<sigma>. x = c \<or>
+    (\<exists>y\<in>closed_segment a b. x \<in> closed_segment c y)"
+proof (intro ballI)
+  fix x
+  assume hx\<sigma>: "x \<in> \<sigma>"
+  have h\<sigma>eq: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have hset_eq: "{a, b, c} = insert c {a, b}"
+    by (by100 blast)
+  have hx_hol: "x \<in> convex hull (insert c {a, b})"
+    using hx\<sigma> h\<sigma>eq hset_eq unfolding geotop_convex_hull_eq_HOL by (by100 simp)
+  have hx_union:
+      "x \<in> (\<Union>y\<in>convex hull {a, b}. closed_segment c y)"
+    using hx_hol unfolding convex_hull_insert_segments by (by100 simp)
+  then obtain y where hy_hull: "y \<in> convex hull {a, b}"
+      and hx_seg: "x \<in> closed_segment c y"
+    by (by100 blast)
+  have hy_base: "y \<in> closed_segment a b"
+    using hy_hull segment_convex_hull[of a b] by (by100 simp)
+  show "x = c \<or> (\<exists>y\<in>closed_segment a b. x \<in> closed_segment c y)"
+    using hy_base hx_seg by (by100 blast)
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_radial_cover_2simplex_dev34:
+  fixes F :: "(real^2) set set"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  shows "\<forall>x\<in>\<sigma>. x = c \<or>
+    (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+proof (intro ballI)
+  fix x
+  assume hx\<sigma>: "x \<in> \<sigma>"
+  obtain a b where h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+      and hab: "a \<noteq> b"
+      and hlen: "2 \<le> length us"
+      and hfirst: "us ! 0 = a"
+      and hlast: "us ! (length us - 1) = b"
+      and hset: "set us \<subseteq> closed_segment a b"
+      and hF:
+        "F = ((\<lambda>x. {x}) ` set us)
+          \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+              ` {0..<length us - 1})"
+    using hplace unfolding geotop_endpoint_boundary_edge_chain_on_simplex_dev34_def
+    by (by100 auto)
+  have hbase_poly: "closed_segment a b \<subseteq> geotop_polyhedron F"
+    by (rule geotop_endpoint_boundary_edge_chain_base_segment_subset_polyhedron_from_data_dev34
+        [OF hab hlen hfirst hlast hset hF])
+  have hrad:
+      "\<forall>x\<in>\<sigma>. x = c \<or>
+        (\<exists>y\<in>closed_segment a b. x \<in> closed_segment c y)"
+    by (rule geotop_2simplex_vertex_to_opposite_edge_radial_cover_dev34
+        [OF h\<sigma>V])
+  have hxcase: "x = c \<or> (\<exists>y\<in>closed_segment a b. x \<in> closed_segment c y)"
+    using hrad hx\<sigma> by (by100 blast)
+  show "x = c \<or> (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+  proof (rule disjE[OF hxcase])
+    assume "x = c"
+    show ?thesis
+      using \<open>x = c\<close> by (by100 blast)
+  next
+    assume "\<exists>y\<in>closed_segment a b. x \<in> closed_segment c y"
+    then obtain y where hy_base: "y \<in> closed_segment a b"
+      and hx_seg: "x \<in> closed_segment c y"
+      by (by100 blast)
+    have hy_poly: "y \<in> geotop_polyhedron F"
+      using hbase_poly hy_base by (by100 blast)
+    show ?thesis
+      using hy_poly hx_seg by (by100 blast)
+  qed
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_cone_polyhedron_eq_2simplex_dev34:
+  fixes F L' :: "(real^2) set set"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hL:
+    "L' =
+      insert (geotop_convex_hull {c})
+        (F \<union> {geotop_convex_hull (insert c A) | A. A \<in> F \<and> A \<noteq> {}})"
+  shows "geotop_polyhedron L' = \<sigma>"
+proof
+  show "geotop_polyhedron L' \<subseteq> \<sigma>"
+    by (rule geotop_endpoint_boundary_edge_chain_cone_polyhedron_subset_2simplex_dev34
+        [OF h\<sigma> hplace hL])
+  have hcover:
+      "\<forall>x\<in>\<sigma>. x = c \<or>
+        (\<exists>y\<in>geotop_polyhedron F. x \<in> closed_segment c y)"
+    by (rule geotop_endpoint_boundary_edge_chain_radial_cover_2simplex_dev34
+        [OF hplace])
+  show "\<sigma> \<subseteq> geotop_polyhedron L'"
+    by (rule geotop_boundary_cone_definition_polyhedron_contains_radial_cover_dev34
+        [OF hL hcover])
+qed
+
 lemma geotop_endpoint_boundary_edge_chain_cone_is_subdivision_dev34:
   fixes F L' :: "(real^2) set set"
   assumes hF_linear: "geotop_is_linear_graph F"
@@ -17409,7 +17686,25 @@ lemma geotop_endpoint_boundary_edge_chain_cone_is_subdivision_dev34:
     carrier \<open>\<sigma>\<close>.  The proof should mirror the already proved full-boundary
     cone subdivision, replacing the full boundary radial cover by the one-edge
     radial cover from \<open>c\<close> to the subdivided base segment. **)
-  sorry
+proof -
+  let ?K = "{\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  have hK_complex: "geotop_is_complex ?K"
+    by (rule geotop_boundary_cone_definition_target_complex_dev34[OF h\<sigma>])
+  have hL_complex: "geotop_is_complex L'"
+    by (rule geotop_endpoint_boundary_edge_chain_cone_source_complex_dev34
+        [OF hF_linear hplace hL])
+  have href: "geotop_refines L' ?K"
+    by (rule geotop_endpoint_boundary_edge_chain_cone_refines_2simplex_face_complex_dev34
+        [OF h\<sigma> hplace hL])
+  have hpolyL: "geotop_polyhedron L' = \<sigma>"
+    by (rule geotop_endpoint_boundary_edge_chain_cone_polyhedron_eq_2simplex_dev34
+        [OF h\<sigma> hplace hL])
+  have hpolyK: "geotop_polyhedron ?K = \<sigma>"
+    by (rule geotop_2simplex_face_complex_polyhedron_eq_dev34[OF h\<sigma>])
+  show ?thesis
+    unfolding geotop_is_subdivision_def
+    using hK_complex hL_complex href hpolyL hpolyK by (by100 simp)
+qed
 
 definition geotop_segment_chain_vertices_dev34 ::
   "real^2 \<Rightarrow> real^2 \<Rightarrow> nat \<Rightarrow> (real^2) list"
