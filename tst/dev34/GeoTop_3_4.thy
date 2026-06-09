@@ -12789,6 +12789,120 @@ proof -
     unfolding geotop_isomorphism_def using h\<psi>bij hcond by (by100 blast)
 qed
 
+lemma geotop_endpoint_chain_fan_target_transfer_from_isomorphism_dev34:
+  fixes L F L' :: "(real^2) set set"
+    and \<psi> :: "real^2 \<Rightarrow> real^2"
+  assumes hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+  assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+  assumes hsub: "geotop_is_subdivision L' T"
+  assumes hiso: "geotop_isomorphism L F \<psi>"
+  assumes hcF: "c \<notin> geotop_complex_vertices F"
+  assumes hvertices: "geotop_complex_vertices L' =
+      insert c (geotop_complex_vertices F)"
+  assumes hc_simplex: "geotop_convex_hull {c} \<in> L'"
+  assumes hboundary:
+    "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F
+        \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+  assumes hcone:
+    "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+      W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+      (geotop_convex_hull W \<in> F
+        \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
+  shows "\<exists>(T :: (real^2) set set) (\<sigma> :: (real^2) set) L' B c \<psi>.
+      T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) B
+      \<and> c \<notin> B
+      \<and> geotop_complex_vertices L' = insert c B
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices L \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'))"
+  (**
+    Pure transfer step for the endpoint boundary-arc fan package.  Once the
+    listed source chain is isomorphic to a target boundary-arc chain \<open>F\<close>,
+    and the cone/fan complex \<open>L'\<close> has the expected old-simplex and cone
+    membership clauses over \<open>F\<close>, the source-facing Fig. 4.10 clauses follow
+    by transporting membership through the isomorphism. **)
+proof -
+  let ?VL = "geotop_complex_vertices L"
+  let ?VF = "geotop_complex_vertices F"
+  have h\<psi>bij: "bij_betw \<psi> ?VL ?VF"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  have hiso_membership:
+      "\<forall>W. W \<subseteq> ?VL \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F)"
+    using hiso unfolding geotop_isomorphism_def by (by100 blast)
+  have himage_vertices:
+      "\<And>W. W \<subseteq> ?VL \<Longrightarrow> \<psi> ` W \<subseteq> ?VF"
+    using h\<psi>bij unfolding bij_betw_def by (by100 blast)
+  have hboundary_target:
+      "\<forall>W. W \<subseteq> ?VL \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L')"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hW: "W \<subseteq> ?VL"
+    have h\<psi>W: "\<psi> ` W \<subseteq> ?VF"
+      by (rule himage_vertices[OF hW])
+    have hLF:
+        "geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F"
+      using hiso_membership hW by (by100 blast)
+    have hFL':
+        "geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'"
+      using hboundary h\<psi>W by (by100 blast)
+    show "geotop_convex_hull W \<in> L
+      \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> L'"
+      using hLF hFL' by (by100 blast)
+  qed
+  have hcone_target:
+      "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow> W \<subseteq> ?VL \<longrightarrow>
+        (geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L')"
+  proof (intro allI impI)
+    fix W :: "(real^2) set"
+    assume hWfin: "finite W"
+    assume hWne: "W \<noteq> {}"
+    assume hW: "W \<subseteq> ?VL"
+    have h\<psi>W: "\<psi> ` W \<subseteq> ?VF"
+      by (rule himage_vertices[OF hW])
+    have h\<psi>Wfin: "finite (\<psi> ` W)"
+      using hWfin by (by100 simp)
+    have h\<psi>Wne: "\<psi> ` W \<noteq> {}"
+      using hWne by (by100 blast)
+    have hLF:
+        "geotop_convex_hull W \<in> L
+          \<longleftrightarrow> geotop_convex_hull (\<psi> ` W) \<in> F"
+      using hiso_membership hW by (by100 blast)
+    have hFL':
+        "geotop_convex_hull (\<psi> ` W) \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'"
+      using hcone h\<psi>Wfin h\<psi>Wne h\<psi>W by (by100 blast)
+    show "geotop_convex_hull W \<in> L
+      \<longleftrightarrow> geotop_convex_hull (insert c (\<psi> ` W)) \<in> L'"
+      using hLF hFL' by (by100 blast)
+  qed
+  show ?thesis
+    apply (rule exI[where x=T])
+    apply (rule exI[where x=\<sigma>])
+    apply (rule exI[where x=L'])
+    apply (rule exI[where x="?VF"])
+    apply (rule exI[where x=c])
+    apply (rule exI[where x=\<psi>])
+    using hT h\<sigma> hsub h\<psi>bij hcF hvertices hc_simplex
+      hboundary_target hcone_target
+    by (by100 blast)
+qed
+
 lemma geotop_endpoint_chain_listing_two_vertex_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
