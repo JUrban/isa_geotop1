@@ -15067,6 +15067,124 @@ where
         \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
             ` {0..<length us - 1}))"
 
+lemma geotop_endpoint_boundary_edge_chain_polyhedron_misses_apex_dev34:
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  shows "c \<notin> geotop_polyhedron F"
+proof -
+  obtain a b where hdata:
+      "geotop_simplex_vertices \<sigma> {a, b, c}
+      \<and> a \<noteq> b
+      \<and> c \<notin> {a, b}
+      \<and> 2 \<le> length us
+      \<and> us ! 0 = a
+      \<and> us ! (length us - 1) = b
+      \<and> distinct us
+      \<and> set us \<subseteq> closed_segment a b
+      \<and> F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+    using hplace unfolding geotop_endpoint_boundary_edge_chain_on_simplex_dev34_def
+    by (by100 auto)
+  have h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    using hdata by (by100 blast)
+  have hc_ab: "c \<notin> {a, b}"
+    using hdata by (by100 blast)
+  have hset: "set us \<subseteq> closed_segment a b"
+    using hdata by (by100 blast)
+  have hF:
+      "F = ((\<lambda>x. {x}) ` set us)
+        \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+    using hdata by (by100 blast)
+  have hc_not_base: "c \<notin> closed_segment a b"
+    by (rule geotop_2simplex_opposite_vertex_notin_closed_segment_dev34
+        [OF h\<sigma>V hc_ab])
+  have hpoly_sub: "geotop_polyhedron F \<subseteq> closed_segment a b"
+  proof
+    fix x
+    assume hx: "x \<in> geotop_polyhedron F"
+    then obtain \<tau> where h\<tau>F: "\<tau> \<in> F" and hx\<tau>: "x \<in> \<tau>"
+      unfolding geotop_polyhedron_def by (by100 blast)
+    have hcases:
+        "\<tau> \<in> ((\<lambda>x. {x}) ` set us)
+        \<or> \<tau> \<in> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+      using h\<tau>F unfolding hF by (by100 blast)
+    show "x \<in> closed_segment a b"
+    proof (rule disjE[OF hcases])
+      assume "\<tau> \<in> ((\<lambda>x. {x}) ` set us)"
+      then obtain u where hu: "u \<in> set us" and h\<tau>u: "\<tau> = {u}"
+        by (by100 blast)
+      have "u \<in> closed_segment a b"
+        using hset hu by (by100 blast)
+      thus ?thesis
+        using hx\<tau> h\<tau>u by (by100 simp)
+    next
+      assume "\<tau> \<in> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+          ` {0..<length us - 1})"
+      then obtain i where hi_set: "i \<in> {0..<length us - 1}"
+          and h\<tau>i: "\<tau> = closed_segment (us ! i) (us ! Suc i)"
+        by (by100 blast)
+      have hi: "i < length us"
+        using hi_set by (by100 simp)
+      have hSi: "Suc i < length us"
+        using hi_set by (by100 simp)
+      have hui: "us ! i \<in> closed_segment a b"
+        using hset nth_mem[OF hi] by (by100 blast)
+      have huSi: "us ! Suc i \<in> closed_segment a b"
+        using hset nth_mem[OF hSi] by (by100 blast)
+      have hseg_sub:
+          "closed_segment (us ! i) (us ! Suc i) \<subseteq> closed_segment a b"
+        by (rule closed_segment_subset[OF hui huSi convex_closed_segment])
+      show ?thesis
+        using hx\<tau> h\<tau>i hseg_sub by (by100 blast)
+    qed
+  qed
+  show ?thesis
+  proof
+    assume hc_poly: "c \<in> geotop_polyhedron F"
+    have "c \<in> closed_segment a b"
+      using hpoly_sub hc_poly by (by100 blast)
+    thus False
+      using hc_not_base by (by100 blast)
+  qed
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_old_hull_ne_cone_dev34:
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hA: "geotop_convex_hull A \<in> F"
+  shows "geotop_convex_hull A \<noteq> geotop_convex_hull (insert c B)"
+proof
+  assume heq: "geotop_convex_hull A = geotop_convex_hull (insert c B)"
+  have hc_cone: "c \<in> geotop_convex_hull (insert c B)"
+    by (rule geotop_convex_hull_insert_contains_insert_point_dev34)
+  have hc_old: "c \<in> geotop_convex_hull A"
+    using heq hc_cone by (by100 simp)
+  have hc_poly: "c \<in> geotop_polyhedron F"
+    using hA hc_old unfolding geotop_polyhedron_def by (by100 blast)
+  have hc_not_poly: "c \<notin> geotop_polyhedron F"
+    by (rule geotop_endpoint_boundary_edge_chain_polyhedron_misses_apex_dev34
+        [OF hplace])
+  show False
+    using hc_poly hc_not_poly by (by100 blast)
+qed
+
+lemma geotop_endpoint_boundary_edge_chain_cone_hull_not_old_dev34:
+  assumes hplace: "geotop_endpoint_boundary_edge_chain_on_simplex_dev34 F \<sigma> c us"
+  assumes hconeF: "geotop_convex_hull (insert c A) \<in> F"
+  shows False
+proof -
+  have hc_cone: "c \<in> geotop_convex_hull (insert c A)"
+    by (rule geotop_convex_hull_insert_contains_insert_point_dev34)
+  have hc_poly: "c \<in> geotop_polyhedron F"
+    using hconeF hc_cone unfolding geotop_polyhedron_def by (by100 blast)
+  have hc_not_poly: "c \<notin> geotop_polyhedron F"
+    by (rule geotop_endpoint_boundary_edge_chain_polyhedron_misses_apex_dev34
+        [OF hplace])
+  show False
+    using hc_poly hc_not_poly by (by100 blast)
+qed
+
 definition geotop_segment_chain_vertices_dev34 ::
   "real^2 \<Rightarrow> real^2 \<Rightarrow> nat \<Rightarrow> (real^2) list"
 where
