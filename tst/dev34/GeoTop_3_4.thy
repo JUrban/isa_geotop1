@@ -3369,6 +3369,20 @@ proof -
         "geotop_complex_vertices F_B \<subseteq>
           S_B \<union> geotop_complex_vertices ?B"
     using htarget_prescribed_subdivision by (by100 blast)
+  have hF_B_poly_eq_frontier:
+      "geotop_polyhedron F_B = frontier \<sigma>"
+    using hF_B_poly_eq h\<sigma>_B_poly_eq_frontier by (by100 simp)
+  have hF_B_simplex_subset_frontier:
+      "\<And>A. A \<in> F_B \<Longrightarrow> A \<subseteq> frontier \<sigma>"
+  proof
+    fix A x
+    assume hA: "A \<in> F_B"
+    assume hx: "x \<in> A"
+    have "x \<in> geotop_polyhedron F_B"
+      unfolding geotop_polyhedron_def using hA hx by (by100 blast)
+    thus "x \<in> frontier \<sigma>"
+      using hF_B_poly_eq_frontier by (by100 simp)
+  qed
   have hF_B_linear:
       "geotop_is_linear_graph F_B"
     by (rule geotop_complex_1dim_imp_linear_graph_dev34
