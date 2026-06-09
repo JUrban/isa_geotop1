@@ -16179,6 +16179,327 @@ proof -
     using hfA_arc hf_image by (by100 simp)
 qed
 
+lemma geotop_probe_triangle_contains_small_halfball_dev34:
+  fixes p v n :: "real^2"
+  assumes hv: "v \<noteq> 0"
+  assumes hn: "n \<noteq> 0"
+  assumes horth: "v \<bullet> n = 0"
+  assumes hu: "0 < u"
+  assumes hs: "0 < s"
+  shows "\<exists>eps>0. ball p eps \<inter> {x. 0 \<le> n \<bullet> (x - p)}
+      \<subseteq> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+  (**
+    One-sided version of the local diamond computation.  A small Euclidean
+    half-ball on the positive side of the edge normal is contained in the probe
+    triangle with base along the edge direction and apex on the inward normal
+    ray. **)
+proof -
+  have hspan: "span {v, n} = UNIV"
+  proof -
+    have hvn_distinct: "v \<noteq> n"
+    proof
+      assume hvn: "v = n"
+      have "v \<bullet> v = 0"
+        using horth hvn by (by100 simp)
+      thus False
+        using hv by (simp add: inner_eq_zero_iff)
+    qed
+    have hpair: "pairwise orthogonal {v, n}"
+      using horth by (simp add: pairwise_def orthogonal_def inner_commute)
+    have hzero: "0 \<notin> {v, n}"
+      using hv hn by (by100 simp)
+    have hind: "independent {v, n}"
+      by (rule pairwise_orthogonal_independent[OF hpair hzero])
+    have hcard: "card {v, n} = DIM(real^2)"
+      using hvn_distinct by (by100 simp)
+    have hdim: "dim {v, n} = DIM(real^2)"
+      using indep_card_eq_dim_span[OF hind] hcard by (by100 simp)
+    show ?thesis
+      using hdim dim_eq_full[of "{v, n}"] by (by100 simp)
+  qed
+  have hcoords:
+    "\<forall>x. \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+  proof
+    fix x
+    have hxspan: "x - p \<in> span (insert v {n})"
+      using hspan by (by100 simp)
+    obtain \<alpha> where h\<alpha>: "x - p - \<alpha> *\<^sub>R v \<in> span {n}"
+      using hxspan unfolding span_breakdown_eq by (by100 blast)
+    obtain \<beta> where h\<beta>: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n
+        \<in> span ({} :: (real^2) set)"
+      using h\<alpha> unfolding span_breakdown_eq by (by100 blast)
+    have hzero: "x - p - \<alpha> *\<^sub>R v - \<beta> *\<^sub>R n = 0"
+      using h\<beta> by (by100 simp)
+    show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+    proof (intro exI)
+      show "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hzero by (simp add: algebra_simps)
+    qed
+  qed
+  have hvn: "0 < norm v"
+    using hv by (by100 simp)
+  have hnn: "0 < norm n"
+    using hn by (by100 simp)
+  have hvn_nonneg: "0 \<le> norm v"
+    by (rule norm_ge_zero)
+  have hnn_nonneg: "0 \<le> norm n"
+    by (rule norm_ge_zero)
+  define eps where "eps = min (u * norm v / 4) (s * norm n / 4)"
+  have heps_v: "eps \<le> u * norm v / 4"
+    unfolding eps_def by (by100 simp)
+  have heps_n: "eps \<le> s * norm n / 4"
+    unfolding eps_def by (by100 simp)
+  have heps: "0 < eps"
+    unfolding eps_def using hu hs hvn hnn by (by100 simp)
+  have hsmall_coords:
+    "\<forall>x\<in>ball p eps.
+      \<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<and> \<bar>\<alpha>\<bar> < u / 2
+        \<and> \<bar>\<beta>\<bar> < s / 2"
+  proof
+    fix x
+    assume hx: "x \<in> ball p eps"
+    obtain \<alpha> \<beta> where hxrep: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+      using hcoords by (by100 blast)
+    let ?y = "x - p"
+    have hyrep: "?y = \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+      using hxrep by (simp add: algebra_simps)
+    have hy_norm: "norm ?y < eps"
+      using hx by (simp add: dist_norm norm_minus_commute)
+    have hv_inner_pos: "0 < v \<bullet> v"
+      using hv by (simp add: inner_gt_zero_iff)
+    have hn_inner_pos: "0 < n \<bullet> n"
+      using hn by (simp add: inner_gt_zero_iff)
+    have hv_inner_nonneg: "0 \<le> v \<bullet> v"
+      using hv_inner_pos by (by100 linarith)
+    have hn_inner_nonneg: "0 \<le> n \<bullet> n"
+      using hn_inner_pos by (by100 linarith)
+    have hv_inner_norm: "v \<bullet> v = norm v * norm v"
+      by (simp add: dot_square_norm power2_eq_square)
+    have hn_inner_norm: "n \<bullet> n = norm n * norm n"
+      by (simp add: dot_square_norm power2_eq_square)
+    have hnv: "n \<bullet> v = 0"
+      by (subst inner_commute) (rule horth)
+    have hdot_v: "?y \<bullet> v = \<alpha> * (v \<bullet> v)"
+    proof -
+      have "?y \<bullet> v = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> v"
+        using hyrep by (by100 simp)
+      also have "\<dots> = \<alpha> * (v \<bullet> v) + \<beta> * (n \<bullet> v)"
+        by (simp add: inner_add_left inner_scaleR_left)
+      also have "\<dots> = \<alpha> * (v \<bullet> v)"
+        using hnv by (by100 simp)
+      finally show ?thesis .
+    qed
+    have halpha_eq: "\<alpha> = (?y \<bullet> v) / (v \<bullet> v)"
+      using hdot_v hv_inner_pos by (simp add: field_simps)
+    have hdot_n: "?y \<bullet> n = \<beta> * (n \<bullet> n)"
+    proof -
+      have "?y \<bullet> n = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> n"
+        using hyrep by (by100 simp)
+      also have "\<dots> = \<alpha> * (v \<bullet> n) + \<beta> * (n \<bullet> n)"
+        by (simp add: inner_add_left inner_scaleR_left)
+      also have "\<dots> = \<beta> * (n \<bullet> n)"
+        using horth by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hbeta_eq: "\<beta> = (?y \<bullet> n) / (n \<bullet> n)"
+      using hdot_n hn_inner_pos by (simp add: field_simps)
+    have halpha_abs_le: "\<bar>\<alpha>\<bar> \<le> norm ?y / norm v"
+    proof -
+      have hcs: "\<bar>?y \<bullet> v\<bar> \<le> norm ?y * norm v"
+        by (rule Cauchy_Schwarz_ineq2)
+      have "\<bar>\<alpha>\<bar> = \<bar>?y \<bullet> v\<bar> / (v \<bullet> v)"
+        using halpha_eq hv_inner_pos by (by100 simp)
+      also have "\<dots> \<le> (norm ?y * norm v) / (v \<bullet> v)"
+        by (rule divide_right_mono[OF hcs hv_inner_nonneg])
+      also have "\<dots> = norm ?y / norm v"
+        using hvn hv_inner_norm by (simp add: field_simps)
+      finally show ?thesis .
+    qed
+    have hbeta_abs_le: "\<bar>\<beta>\<bar> \<le> norm ?y / norm n"
+    proof -
+      have hcs: "\<bar>?y \<bullet> n\<bar> \<le> norm ?y * norm n"
+        by (rule Cauchy_Schwarz_ineq2)
+      have "\<bar>\<beta>\<bar> = \<bar>?y \<bullet> n\<bar> / (n \<bullet> n)"
+        using hbeta_eq hn_inner_pos by (by100 simp)
+      also have "\<dots> \<le> (norm ?y * norm n) / (n \<bullet> n)"
+        by (rule divide_right_mono[OF hcs hn_inner_nonneg])
+      also have "\<dots> = norm ?y / norm n"
+        using hnn hn_inner_norm by (simp add: field_simps)
+      finally show ?thesis .
+    qed
+    have halpha_lt: "\<bar>\<alpha>\<bar> < u / 2"
+    proof -
+      have "norm ?y / norm v < eps / norm v"
+        by (rule divide_strict_right_mono[OF hy_norm hvn])
+      also have "\<dots> \<le> (u * norm v / 4) / norm v"
+        by (rule divide_right_mono[OF heps_v hvn_nonneg])
+      also have "\<dots> = u / 4"
+        using hvn by (simp add: field_simps)
+      also have "\<dots> < u / 2"
+        using hu by (by100 linarith)
+      finally show ?thesis
+        using halpha_abs_le by (by100 linarith)
+    qed
+    have hbeta_lt: "\<bar>\<beta>\<bar> < s / 2"
+    proof -
+      have "norm ?y / norm n < eps / norm n"
+        by (rule divide_strict_right_mono[OF hy_norm hnn])
+      also have "\<dots> \<le> (s * norm n / 4) / norm n"
+        by (rule divide_right_mono[OF heps_n hnn_nonneg])
+      also have "\<dots> = s / 4"
+        using hnn by (simp add: field_simps)
+      also have "\<dots> < s / 2"
+        using hs by (by100 linarith)
+      finally show ?thesis
+        using hbeta_abs_le by (by100 linarith)
+    qed
+    show "\<exists>\<alpha> \<beta>. x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<and> \<bar>\<alpha>\<bar> < u / 2
+        \<and> \<bar>\<beta>\<bar> < s / 2"
+      using hxrep halpha_lt hbeta_lt by (by100 blast)
+  qed
+  have hupper_membership:
+    "\<forall>\<alpha> \<beta>. \<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2 \<longrightarrow>
+      p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+  proof (intro allI impI)
+    fix \<alpha> \<beta>
+    assume h: "\<bar>\<alpha>\<bar> < u / 2 \<and> 0 \<le> \<beta> \<and> \<beta> < s / 2"
+    define \<mu> where "\<mu> = \<beta> / s"
+    define ell where "ell = ((\<alpha> / u) + 1 - \<mu>) / 2"
+    have h\<mu>0: "0 \<le> \<mu>"
+      using h hs unfolding \<mu>_def by (by100 simp)
+    have h\<mu>half: "\<mu> < 1 / 2"
+      using h hs unfolding \<mu>_def by (simp add: field_simps)
+    have h\<alpha>abs: "\<bar>\<alpha>\<bar> < u / 2"
+      using h by (by100 blast)
+    have h\<alpha>gt: "- (u / 2) < \<alpha>"
+    proof -
+      have "- \<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>lt: "\<alpha> < u / 2"
+    proof -
+      have "\<alpha> \<le> \<bar>\<alpha>\<bar>"
+        by (by100 simp)
+      thus ?thesis
+        using h\<alpha>abs by (by100 linarith)
+    qed
+    have h\<alpha>u_gt: "- (1 / 2) < \<alpha> / u"
+      using h\<alpha>gt hu by (simp add: field_simps)
+    have h\<alpha>u_lt: "\<alpha> / u < 1 / 2"
+      using h\<alpha>lt hu by (simp add: field_simps)
+    have hell_num_pos: "0 < \<alpha> / u + 1 - \<mu>"
+    proof -
+      have "- (1 / 2) + 1 - (1 / 2) < \<alpha> / u + 1 - \<mu>"
+        using h\<alpha>u_gt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell0_strict: "0 < ell"
+      using hell_num_pos unfolding ell_def by (by100 simp)
+    have hell0: "0 \<le> ell"
+      using hell0_strict by (by100 linarith)
+    have hell\<mu>_num_lt: "\<alpha> / u + 1 + \<mu> < 2"
+    proof -
+      have "\<alpha> / u + 1 + \<mu> < (1 / 2) + 1 + (1 / 2)"
+        using h\<alpha>u_lt h\<mu>half by linarith
+      thus ?thesis
+        by (by100 simp)
+    qed
+    have hell\<mu>_expr: "ell + \<mu> = (\<alpha> / u + 1 + \<mu>) / 2"
+      unfolding ell_def by (simp add: field_simps)
+    have hell\<mu>_strict: "ell + \<mu> < 1"
+      using hell\<mu>_expr hell\<mu>_num_lt by (by100 simp)
+    have hell\<mu>: "ell + \<mu> \<le> 1"
+      using hell\<mu>_strict by (by100 linarith)
+    have h\<mu>s: "\<mu> * s = \<beta>"
+      using hs unfolding \<mu>_def by (by100 simp)
+    have hv_coeff: "- u + 2 * u * ell + u * \<mu> = \<alpha>"
+      using hu hs unfolding ell_def \<mu>_def by (simp add: field_simps)
+    have heq:
+      "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n =
+        (p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))"
+    proof -
+      have hbase_diff:
+        "(p + u *\<^sub>R v) - (p - u *\<^sub>R v) = (2 * u) *\<^sub>R v"
+        by (simp add: vec_eq_iff algebra_simps)
+      have hapex_diff:
+        "(p + s *\<^sub>R n) - (p - u *\<^sub>R v) = u *\<^sub>R v + s *\<^sub>R n"
+        by (simp add: vec_eq_iff algebra_simps)
+      have "(p - u *\<^sub>R v)
+          + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+          + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        = p + (- u + 2 * u * ell + u * \<mu>) *\<^sub>R v + (\<mu> * s) *\<^sub>R n"
+        using hbase_diff hapex_diff
+        by (simp add: algebra_simps scaleR_add_right)
+      also have "\<dots> = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using h\<mu>s hv_coeff by (by100 simp)
+      finally show ?thesis
+        by (by100 simp)
+    qed
+    have "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n \<in>
+      {p - u *\<^sub>R v
+        + ell *\<^sub>R ((p + u *\<^sub>R v) - (p - u *\<^sub>R v))
+        + \<mu> *\<^sub>R ((p + s *\<^sub>R n) - (p - u *\<^sub>R v))
+        | ell \<mu>. 0 \<le> ell \<and> 0 \<le> \<mu> \<and> ell + \<mu> \<le> 1}"
+      using heq hell0 h\<mu>0 hell\<mu> by (by100 blast)
+    thus "p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n
+        \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+      using convex_hull_3_alt
+        [of "p - u *\<^sub>R v" "p + u *\<^sub>R v" "p + s *\<^sub>R n"]
+      by (by100 simp)
+  qed
+  have hsub: "ball p eps \<inter> {x. 0 \<le> n \<bullet> (x - p)}
+      \<subseteq> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+  proof
+    fix x
+    assume hx: "x \<in> ball p eps \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+    have hx_ball: "x \<in> ball p eps"
+      using hx by (by100 blast)
+    have hx_half: "0 \<le> n \<bullet> (x - p)"
+      using hx by (by100 blast)
+    obtain \<alpha> \<beta> where hx_eq: "x = p + \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+      and h\<alpha>: "\<bar>\<alpha>\<bar> < u / 2"
+      and h\<beta>: "\<bar>\<beta>\<bar> < s / 2"
+      using hsmall_coords hx_ball by (by100 blast)
+    have hdot: "(x - p) \<bullet> n = \<beta> * (n \<bullet> n)"
+    proof -
+      have "x - p = \<alpha> *\<^sub>R v + \<beta> *\<^sub>R n"
+        using hx_eq by (simp add: algebra_simps)
+      hence "(x - p) \<bullet> n = (\<alpha> *\<^sub>R v + \<beta> *\<^sub>R n) \<bullet> n"
+        by (by100 simp)
+      also have "\<dots> = \<alpha> * (v \<bullet> n) + \<beta> * (n \<bullet> n)"
+        by (simp add: inner_add_left inner_scaleR_left)
+      also have "\<dots> = \<beta> * (n \<bullet> n)"
+        using horth by (by100 simp)
+      finally show ?thesis .
+    qed
+    have hn_inner_pos: "0 < n \<bullet> n"
+      using hn by (simp add: inner_gt_zero_iff)
+    have h\<beta>_nonneg: "0 \<le> \<beta>"
+    proof -
+      have "0 \<le> (x - p) \<bullet> n"
+        using hx_half by (simp add: inner_commute)
+      hence "0 \<le> \<beta> * (n \<bullet> n)"
+        using hdot by (by100 simp)
+      thus ?thesis
+        using hn_inner_pos by (simp add: zero_le_mult_iff)
+    qed
+    have h\<beta>_lt: "\<beta> < s / 2"
+      using h\<beta> by (by100 simp)
+    show "x \<in> convex hull {p - u *\<^sub>R v, p + u *\<^sub>R v, p + s *\<^sub>R n}"
+      using hupper_membership h\<alpha> h\<beta>_nonneg h\<beta>_lt hx_eq by (by100 blast)
+  qed
+  show ?thesis
+    using heps hsub by (by100 blast)
+qed
+
 lemma geotop_edge_face_2simplex_small_sphere_halfspace_model_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -16194,7 +16515,152 @@ lemma geotop_edge_face_2simplex_small_sphere_halfspace_model_exists_dev34:
     opposite side.  Inside every sphere of radius less than \<open>eps\<close>, the
     triangle is indistinguishable from the closed half-plane bounded by the
     edge line and pointing into the simplex. **)
-  sorry
+proof -
+  obtain a b c where hab: "a \<noteq> b"
+    and hc_not_ab: "c \<notin> {a, b}"
+    and he_eq: "e = geotop_convex_hull {a, b}"
+    and h\<sigma>V: "geotop_simplex_vertices \<sigma> {a, b, c}"
+    by (rule geotop_2simplex_edge_face_vertices_prefix
+        [OF h\<sigma>2 hedge h\<sigma>face])
+  obtain n\<^sub>0 d where hn0: "n\<^sub>0 \<noteq> 0"
+    and hline0: "affine hull {a, b} = {x. n\<^sub>0 \<bullet> x = d}"
+    using geotop_edge_vertices_affine_hull_normal_form_prefix[OF hedge he_eq]
+    by (by100 blast)
+  have hp_e: "p \<in> e"
+    using hp rel_interior_subset by (by100 blast)
+  have he_line0: "e \<subseteq> {x. n\<^sub>0 \<bullet> x = d}"
+    by (rule geotop_edge_vertices_subset_normal_line_prefix[OF he_eq hline0])
+  have hp_line0: "n\<^sub>0 \<bullet> p = d"
+    using hp_e he_line0 by (by100 blast)
+  have hc_not_line: "n\<^sub>0 \<bullet> c \<noteq> d"
+  proof
+    assume hc_eq: "n\<^sub>0 \<bullet> c = d"
+    have "c \<in> affine hull {a, b}"
+      using hc_eq hline0 by (by100 simp)
+    thus False
+      using geotop_2simplex_opposite_vertex_notin_edge_affine_hull_prefix
+        [OF h\<sigma>V hc_not_ab]
+      by (by100 blast)
+  qed
+  define N where "N = (if n\<^sub>0 \<bullet> c > d then n\<^sub>0 else - n\<^sub>0)"
+  have hN: "N \<noteq> 0"
+    using hn0 unfolding N_def by (by100 simp)
+  have hlineN: "affine hull {a, b} = {x. N \<bullet> x = N \<bullet> p}"
+  proof (cases "n\<^sub>0 \<bullet> c > d")
+    case True
+    thus ?thesis
+      using hline0 hp_line0 unfolding N_def by (by100 simp)
+  next
+    case False
+    have hline_neg: "affine hull {a, b} = {x. (- n\<^sub>0) \<bullet> x = - d}"
+      using hline0 by (simp add: set_eq_iff)
+    show ?thesis
+      using False hline_neg hp_line0 unfolding N_def by (by100 simp)
+  qed
+  have hc_pos: "N \<bullet> c > N \<bullet> p"
+  proof (cases "n\<^sub>0 \<bullet> c > d")
+    case True
+    thus ?thesis
+      using hp_line0 unfolding N_def by (by100 simp)
+  next
+    case False
+    have "n\<^sub>0 \<bullet> c < d"
+      using False hc_not_line by (by100 linarith)
+    thus ?thesis
+      using hp_line0 unfolding N_def by (by100 simp)
+  qed
+  have ha_aff: "a \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have hb_aff: "b \<in> affine hull {a, b}"
+    by (rule hull_inc) (by100 simp)
+  have ha_line: "N \<bullet> a = N \<bullet> p"
+    using ha_aff hlineN by (by100 simp)
+  have hb_line: "N \<bullet> b = N \<bullet> p"
+    using hb_aff hlineN by (by100 simp)
+  have horth: "(b - a) \<bullet> N = 0"
+  proof -
+    have "N \<bullet> (b - a) = 0"
+      using ha_line hb_line by (simp add: inner_diff_right)
+    thus ?thesis
+      by (simp add: inner_commute)
+  qed
+  have hv: "b - a \<noteq> 0"
+    using hab by (by100 simp)
+  obtain u where hu: "0 < u"
+    and hminus_rel: "p - u *\<^sub>R (b - a) \<in> rel_interior e"
+    and hplus_rel: "p + u *\<^sub>R (b - a) \<in> rel_interior e"
+    by (rule geotop_edge_rel_interior_small_subsegment_prefix[OF hab he_eq hp])
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_edge_subset_2simplex_vertices_prefix[OF he_eq h\<sigma>V])
+  have hminus_\<sigma>: "p - u *\<^sub>R (b - a) \<in> \<sigma>"
+    using hminus_rel rel_interior_subset he_sub_\<sigma> by (by100 blast)
+  have hplus_\<sigma>: "p + u *\<^sub>R (b - a) \<in> \<sigma>"
+    using hplus_rel rel_interior_subset he_sub_\<sigma> by (by100 blast)
+  obtain s where hs: "0 < s"
+    and htop_int: "p + s *\<^sub>R N \<in> interior \<sigma>"
+    by (rule geotop_2simplex_positive_side_edge_normal_probe_in_HOL_interior_prefix
+        [OF hab hc_not_ab hN he_eq h\<sigma>V hlineN hc_pos hp])
+  have htop_\<sigma>: "p + s *\<^sub>R N \<in> \<sigma>"
+    using htop_int interior_subset by (by100 blast)
+  have htri_sub: "convex hull
+      {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R N} \<subseteq> \<sigma>"
+    by (rule geotop_convex_hull_three_points_subset_2simplex_prefix
+        [OF h\<sigma>V hminus_\<sigma> hplus_\<sigma> htop_\<sigma>])
+  obtain eps where heps: "0 < eps"
+    and hprobe_sub: "ball p eps \<inter> {x. 0 \<le> N \<bullet> (x - p)}
+      \<subseteq> convex hull
+        {p - u *\<^sub>R (b - a), p + u *\<^sub>R (b - a), p + s *\<^sub>R N}"
+    using geotop_probe_triangle_contains_small_halfball_dev34
+      [OF hv hN horth hu hs]
+    by (by100 blast)
+  have hlocal_half_sub: "ball p eps \<inter> {x. 0 \<le> N \<bullet> (x - p)} \<subseteq> \<sigma>"
+    using hprobe_sub htri_sub by (by100 blast)
+  have h\<sigma>_geo: "\<sigma> = geotop_convex_hull {a, b, c}"
+    using h\<sigma>V unfolding geotop_simplex_vertices_def by (by100 blast)
+  have h\<sigma>_HOL: "\<sigma> = convex hull {a, b, c}"
+    using h\<sigma>_geo geotop_convex_hull_eq_HOL[of "{a, b, c}"] by (by100 simp)
+  have hverts_half: "{a, b, c} \<subseteq> {x. N \<bullet> x \<ge> N \<bullet> p}"
+    using ha_line hb_line hc_pos by (by100 auto)
+  have hconv_half: "convex {x. N \<bullet> x \<ge> N \<bullet> p}"
+    by (rule convex_halfspace_ge)
+  have hconv_sub: "convex hull {a, b, c} \<subseteq> {x. N \<bullet> x \<ge> N \<bullet> p}"
+    by (rule hull_minimal[OF hverts_half hconv_half])
+  have hhalf_eq: "{x. N \<bullet> x \<ge> N \<bullet> p} = {x. 0 \<le> N \<bullet> (x - p)}"
+    by (simp add: inner_diff_right)
+  have h\<sigma>_half: "\<sigma> \<subseteq> {x. 0 \<le> N \<bullet> (x - p)}"
+    using h\<sigma>_HOL hconv_sub hhalf_eq by (by100 simp)
+  have hmodel: "\<forall>r. 0 < r \<and> r < eps \<longrightarrow>
+        sphere p r \<inter> \<sigma> = sphere p r \<inter> {x. 0 \<le> N \<bullet> (x - p)}"
+  proof (intro allI impI)
+    fix r
+    assume hrange: "0 < r \<and> r < eps"
+    show "sphere p r \<inter> \<sigma> = sphere p r \<inter> {x. 0 \<le> N \<bullet> (x - p)}"
+    proof (rule equalityI)
+      show "sphere p r \<inter> \<sigma> \<subseteq> sphere p r \<inter> {x. 0 \<le> N \<bullet> (x - p)}"
+        using h\<sigma>_half by (by100 blast)
+    next
+      show "sphere p r \<inter> {x. 0 \<le> N \<bullet> (x - p)} \<subseteq> sphere p r \<inter> \<sigma>"
+      proof
+        fix x
+        assume hx: "x \<in> sphere p r \<inter> {x. 0 \<le> N \<bullet> (x - p)}"
+        have hx_sphere: "x \<in> sphere p r"
+          using hx by (by100 blast)
+        have hx_half: "0 \<le> N \<bullet> (x - p)"
+          using hx by (by100 blast)
+        have hx_ball: "x \<in> ball p eps"
+          using hx_sphere hrange by (by100 simp)
+        have "x \<in> ball p eps \<inter> {x. 0 \<le> N \<bullet> (x - p)}"
+          using hx_ball hx_half by (by100 blast)
+        hence "x \<in> \<sigma>"
+          using hlocal_half_sub by (by100 blast)
+        thus "x \<in> sphere p r \<inter> \<sigma>"
+          using hx_sphere by (by100 blast)
+      qed
+    qed
+  qed
+  show ?thesis
+    using heps hN hmodel by (by100 blast)
+qed
 
 lemma geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
