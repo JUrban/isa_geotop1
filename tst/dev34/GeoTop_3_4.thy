@@ -13317,6 +13317,73 @@ next
   qed
 qed
 
+lemma geotop_endpoint_chain_listing_indexwise_bijection_exists_dev34:
+  fixes L F :: "(real^2) set set"
+  assumes hLlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+  assumes hlen: "length us = length vs"
+  shows "\<exists>\<psi>. bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+    \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)"
+  (**
+    Pure list bookkeeping for the endpoint boundary-arc target.  Once the
+    source and target chains are listed with the same length, the vertex
+    matching is the indexwise bijection between the two distinct lists. **)
+proof -
+  let ?I = "{0..<length vs}"
+  let ?\<psi> = "((!) us) \<circ> inv_into ?I ((!) vs)"
+  have hLvertices: "set vs = geotop_complex_vertices L"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hLlist])
+  have hFvertices: "set us = geotop_complex_vertices F"
+    by (rule geotop_endpoint_chain_listing_vertices_eq_dev34[OF hFlist])
+  have hvs_distinct: "distinct vs"
+    using hLlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hus_distinct: "distinct us"
+    using hFlist unfolding geotop_linear_graph_endpoint_chain_listing_dev34_def
+    by (by100 blast)
+  have hvs_bij: "bij_betw ((!) vs) ?I (set vs)"
+  proof (rule bij_betw_nth)
+    show "distinct vs" by (rule hvs_distinct)
+    show "?I = {..<length vs}"
+      using atLeast0LessThan[of "length vs"] by (by100 simp)
+    show "set vs = set vs" by (rule HOL.refl)
+  qed
+  have hinv_bij: "bij_betw (inv_into ?I ((!) vs)) (set vs) ?I"
+    by (rule bij_betw_inv_into[OF hvs_bij])
+  have hI_us: "?I = {0..<length us}"
+    using hlen by (by100 simp)
+  have hus_bij: "bij_betw ((!) us) ?I (set us)"
+  proof -
+    have "bij_betw ((!) us) {0..<length us} (set us)"
+    proof (rule bij_betw_nth)
+      show "distinct us" by (rule hus_distinct)
+      show "{0..<length us} = {..<length us}"
+        using atLeast0LessThan[of "length us"] by (by100 simp)
+      show "set us = set us" by (rule HOL.refl)
+    qed
+    thus ?thesis
+      using hI_us by (by100 simp)
+  qed
+  have h\<psi>_set_bij: "bij_betw ?\<psi> (set vs) (set us)"
+    by (rule bij_betw_trans[OF hinv_bij hus_bij])
+  have h\<psi>_vertices:
+      "bij_betw ?\<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+    using h\<psi>_set_bij hLvertices hFvertices by (by100 simp)
+  have hidx: "\<forall>i<length vs. ?\<psi> (vs ! i) = us ! i"
+  proof (intro allI impI)
+    fix i
+    assume hi: "i < length vs"
+    have hiI: "i \<in> ?I"
+      using hi by (by100 simp)
+    have hinv: "inv_into ?I ((!) vs) (vs ! i) = i"
+      by (rule bij_betw_inv_into_left[OF hvs_bij hiI])
+    show "?\<psi> (vs ! i) = us ! i"
+      using hinv by (by100 simp)
+  qed
+  show ?thesis
+    using h\<psi>_vertices hidx by (by100 blast)
+qed
+
 lemma geotop_endpoint_chain_listing_isomorphism_from_matching_dev34:
   fixes L F :: "(real^2) set set"
     and \<psi> :: "real^2 \<Rightarrow> real^2"
@@ -14838,6 +14905,37 @@ lemma geotop_endpoint_nonfinish_degree_bound_book_step_dev34:
     the leaf-deletion endpoint-chain listing. **)
   sorry
 
+lemma geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34:
+  fixes L :: "(real^2) set set"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hvertices_finite: "finite (geotop_complex_vertices L)"
+  assumes hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
+  assumes hlong: "2 < length vs"
+  shows "\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Geometric long-chain target model for the endpoint path analogue of
+    Fig. 4.10.  The only remaining construction is to put \<open>length vs\<close>
+    ordered vertices on one boundary edge of a named 2-simplex and cone that
+    boundary-edge subdivision from the third vertex.  The source-target
+    indexwise bijection is handled separately by list bookkeeping. **)
+  sorry
+
 lemma geotop_endpoint_chain_boundary_edge_cone_target_data_long_book_step_dev34:
   fixes L :: "(real^2) set set"
   assumes hL_linear: "geotop_is_linear_graph L"
@@ -14869,7 +14967,115 @@ lemma geotop_endpoint_chain_boundary_edge_cone_target_data_long_book_step_dev34:
     long-chain case is exactly the Moise path analogue of Fig. 4.10: subdivide
     one boundary edge into the same number of listed vertices, match them
     indexwise, and cone from the third vertex. **)
-  sorry
+proof -
+  have hmodel_ex:
+    "\<exists>F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c.
+      geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+    by (rule geotop_endpoint_chain_boundary_edge_cone_target_model_long_dev34
+        [OF hL_linear hvertices_finite hlist hlong])
+  obtain F w' q' us T \<sigma> L' c
+    where hmodel:
+      "geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+    using hmodel_ex by (elim exE)
+  have hF_linear: "geotop_is_linear_graph F"
+    using hmodel by (elim conjE)
+  have hFlist: "geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us"
+    using hmodel by (elim conjE)
+  have hlen: "length us = length vs"
+    using hmodel by (elim conjE)
+  have hT: "T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}"
+    using hmodel by (elim conjE)
+  have h\<sigma>: "geotop_simplex_dim \<sigma> 2"
+    using hmodel by (elim conjE)
+  have hsub: "geotop_is_subdivision L' T"
+    using hmodel by (elim conjE)
+  have hcF: "c \<notin> geotop_complex_vertices F"
+    using hmodel by (elim conjE)
+  have hvertices: "geotop_complex_vertices L' = insert c (geotop_complex_vertices F)"
+    using hmodel by (elim conjE)
+  have hc_simplex: "geotop_convex_hull {c} \<in> L'"
+    using hmodel by (elim conjE)
+  have hboundary:
+      "\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L')"
+    using hmodel by (elim conjE)
+  have hcone:
+        "\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+          W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+          (geotop_convex_hull W \<in> F
+            \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L')"
+    using hmodel by (elim conjE)
+  have h\<psi>_ex:
+      "\<exists>\<psi>. bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)"
+    by (rule geotop_endpoint_chain_listing_indexwise_bijection_exists_dev34
+        [OF hlist hFlist hlen])
+  obtain \<psi> where h\<psi>:
+      "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)"
+    using h\<psi>_ex by (elim exE)
+  have h\<psi>bij:
+      "bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)"
+    using h\<psi> by (elim conjE)
+  have h\<psi>idx: "\<forall>i<length vs. \<psi> (vs ! i) = us ! i"
+    using h\<psi> by (elim conjE)
+  show ?thesis
+    apply (rule exI[where x=F])
+    apply (rule exI[where x=w'])
+    apply (rule exI[where x=q'])
+    apply (rule exI[where x=us])
+    apply (rule exI[where x=T])
+    apply (rule exI[where x=\<sigma>])
+    apply (rule exI[where x=L'])
+    apply (rule exI[where x=c])
+    apply (rule exI[where x=\<psi>])
+    apply (intro conjI)
+                apply (rule hF_linear)
+               apply (rule hFlist)
+              apply (rule hlen)
+             apply (rule h\<psi>bij)
+            apply (rule h\<psi>idx)
+           apply (rule hT)
+          apply (rule h\<sigma>)
+         apply (rule hsub)
+        apply (rule hcF)
+       apply (rule hvertices)
+      apply (rule hc_simplex)
+     apply (rule hboundary)
+    apply (rule hcone)
+    done
+qed
 
 lemma geotop_endpoint_chain_boundary_edge_cone_target_data_from_base_or_long_dev34:
   fixes L :: "(real^2) set set"
