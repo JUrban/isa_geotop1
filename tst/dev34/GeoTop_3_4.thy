@@ -13709,6 +13709,61 @@ proof (induction L arbitrary: w e q rule: finite_psubset_induct)
   qed
 qed
 
+lemma geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34:
+  fixes L :: "(real^2) set set"
+  fixes \<gamma> :: "real \<Rightarrow> real^2"
+  assumes hL_linear: "geotop_is_linear_graph L"
+  assumes hL_finite: "finite L"
+  assumes hbroken: "geotop_is_broken_line (geotop_polyhedron L)"
+  assumes hconn: "geotop_complex_connected L"
+  assumes hvertices_finite: "finite (geotop_complex_vertices L)"
+  assumes hendpoint: "geotop_graph_endpoint L w"
+  assumes heL: "e \<in> L"
+  assumes he_edge: "geotop_is_edge e"
+  assumes hw_e: "w \<in> e"
+  assumes hq_ne: "q \<noteq> w"
+  assumes he_seg: "e = closed_segment w q"
+  assumes hqL: "{q} \<in> L"
+  assumes h\<gamma>_arc: "arc \<gamma>"
+  assumes h\<gamma>_img: "path_image \<gamma> = geotop_polyhedron L"
+  assumes h\<gamma>_start: "pathstart \<gamma> = w"
+  assumes hfirst_edge_path_image: "closed_segment w q \<subseteq> path_image \<gamma>"
+  assumes h\<gamma>_endpoints:
+    "geotop_arc_endpoints (geotop_polyhedron L) {w, pathfinish \<gamma>}"
+  assumes hfinishL: "{pathfinish \<gamma>} \<in> L"
+  assumes hfinish_endpoint: "geotop_graph_endpoint L (pathfinish \<gamma>)"
+  assumes hfirst_edge_exhausts_if_finish:
+    "q = pathfinish \<gamma> \<Longrightarrow> geotop_polyhedron L = e"
+  assumes hq_not_endpoint_if_not_finish:
+    "q \<noteq> pathfinish \<gamma> \<Longrightarrow> \<not> geotop_graph_endpoint L q"
+  shows "\<exists>vs F w' q' us (T :: (real^2) set set) (\<sigma> :: (real^2) set) L' c \<psi>.
+      geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs
+      \<and> geotop_is_linear_graph F
+      \<and> geotop_linear_graph_endpoint_chain_listing_dev34 F w' q' us
+      \<and> length us = length vs
+      \<and> bij_betw \<psi> (geotop_complex_vertices L) (geotop_complex_vertices F)
+      \<and> (\<forall>i<length vs. \<psi> (vs ! i) = us ! i)
+      \<and> T = {\<tau>. geotop_is_face \<tau> \<sigma> \<or> \<tau> = \<sigma>}
+      \<and> geotop_simplex_dim \<sigma> 2
+      \<and> geotop_is_subdivision L' T
+      \<and> c \<notin> geotop_complex_vertices F
+      \<and> geotop_complex_vertices L' = insert c (geotop_complex_vertices F)
+      \<and> geotop_convex_hull {c} \<in> L'
+      \<and> (\<forall>W. W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull W \<in> L'))
+      \<and> (\<forall>W. finite W \<longrightarrow> W \<noteq> {} \<longrightarrow>
+        W \<subseteq> geotop_complex_vertices F \<longrightarrow>
+        (geotop_convex_hull W \<in> F
+          \<longleftrightarrow> geotop_convex_hull (insert c W) \<in> L'))"
+  (**
+    Exact remaining Moise Fig. 4.10 endpoint package.  First enumerate the
+    finite broken-line carrier as the ordered endpoint chain beginning at \<open>w\<close>
+    and entering \<open>closed_segment w q\<close>.  Then construct a target chain on one
+    boundary edge of a 2-simplex, match the listed vertices, and cone that
+    boundary-arc subdivision from the opposite boundary vertex. **)
+  sorry
+
 lemma geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34:
   fixes L :: "(real^2) set set"
   fixes \<gamma> :: "real \<Rightarrow> real^2"
@@ -13838,7 +13893,12 @@ proof -
         \<open>w\<close> through \<open>q\<close>, build a matching target chain on one boundary edge
         of a 2-simplex, and cone that boundary-arc subdivision from the
         opposite boundary vertex. **)
-      sorry
+      by (rule geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
+          [OF hL_linear hL_finite hbroken hconn hvertices_finite hendpoint
+            heL he_edge hw_e hq_ne he_seg hqL h\<gamma>_arc h\<gamma>_img
+            h\<gamma>_start hfirst_edge_path_image h\<gamma>_endpoints hfinishL
+            hfinish_endpoint hfirst_edge_exhausts_if_finish
+            hq_not_endpoint_if_not_finish])
     obtain vs F w' q' us T \<sigma> L' c \<psi>
       where hlist: "geotop_linear_graph_endpoint_chain_listing_dev34 L w q vs"
         and hF_linear: "geotop_is_linear_graph F"

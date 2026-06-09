@@ -15,8 +15,8 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
-dev34/GeoTop_3_4.thy:13841
-dev34/GeoTop_3_4.thy:15294
+dev34/GeoTop_3_4.thy:13765
+dev34/GeoTop_3_4.thy:15354
 ```
 
 Stable open package names:
@@ -27,7 +27,7 @@ geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
 geotop_polygon_disk_chord_subdisk_induction_transfer_free_count_prefix
 geotop_polygon_disk_free_triangle_fold_normalization_supported_prefix
 geotop_polygon_arc_opposite_boundary_decomposition_prefix
-geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
+geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
 geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34
 ```
 
@@ -60,12 +60,15 @@ These helpers do not close the endpoint fan target yet, but they reduce the
 remaining proof to constructing the correct target-side boundary-arc fan model
 and applying the matching/isomorphism transfer.
 
-After the expert3 audit, the active endpoint fan target was also refactored so
-the remaining `sorry` is exactly the target-side model construction:
+After the expert3 audit, the active endpoint fan target was also refactored.
+The wrapper
+`geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34` is now
+checked in the focused `dev34-fan` slice, and the remaining `sorry` is the named
+model package
+`geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`:
 enumerate the endpoint chain, build a matching boundary-arc chain on one edge of
 a 2-simplex, and cone that arc subdivision from the adjacent/opposite boundary
-vertex. The surrounding transfer from that model to the original graph is now
-checked in the focused `dev34-fan` slice.
+vertex.
 
 ## What the expert audits got right
 
@@ -133,11 +136,17 @@ The best immediate target is still:
 geotop_endpoint_oriented_chain_boundary_arc_fan_target_book_step_dev34
 ```
 
-Reason: the needed source-side listing and transfer helpers are now in place,
-and the remaining work is narrower than D44 or the Section 3 fold package. The
-next useful helper is a target-side construction for an ordered endpoint chain
-realized as a subdivision of one boundary arc of a standard 2-simplex, coned
-from the adjacent/opposite boundary vertex.
+More precisely, the open package is now:
+
+```text
+geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
+```
+
+Reason: the needed transfer helpers are now in place, and the remaining work is
+narrower than D44 or the Section 3 fold package. The next useful split is likely
+between the source-side ordered endpoint-chain listing and the target-side
+construction that realizes that ordered chain as a subdivision of one boundary
+arc of a standard 2-simplex, coned from the adjacent/opposite boundary vertex.
 
 If that target stalls on geometry, the next fallback should be the graph-cache
 branch-vertex local cutpoint, but only by isolating the local component bridge
