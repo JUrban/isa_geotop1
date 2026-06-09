@@ -10375,6 +10375,8 @@ proof -
         \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
         \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
         \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> U\<^sub>Q0
+        \<and> S' \<in> U\<^sub>S0
         \<and> Q' \<in> geotop_polygon_interior J - A
         \<and> S' \<in> geotop_polygon_interior J - A"
   proof -
@@ -10399,7 +10401,8 @@ proof -
     have hS'_cut: "S' \<in> geotop_polygon_interior J - A"
       using hS'_US0 hUS0_sub by (by100 blast)
     show ?thesis
-      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front hQ'_cut hS'_cut
+      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
+        hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut
       by (intro exI conjI)
   qed
   have hD42_same_component_broken_line:
@@ -10571,6 +10574,8 @@ proof -
         \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
         \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
         \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> U\<^sub>Q0
+        \<and> S' \<in> U\<^sub>S0
         \<and> Q' \<in> geotop_polygon_interior J - A
         \<and> S' \<in> geotop_polygon_interior J - A
         \<and> ((S' \<in> geotop_component_at UNIV geotop_euclidean_topology
@@ -10595,6 +10600,8 @@ proof -
       and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
       and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
       and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+      and hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+      and hS'_US0: "S' \<in> U\<^sub>S0"
       and hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
       and hS'_cut: "S' \<in> geotop_polygon_interior J - A"
       using hD42_side_points by (elim exE conjE)
@@ -10693,7 +10700,7 @@ proof -
     qed
     show ?thesis
       using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
-        hQ'_cut hS'_cut hsame_imp hdiff_imp
+        hQ'_UQ0 hS'_US0 hQ'_cut hS'_cut hsame_imp hdiff_imp
       by (intro exI conjI)
   qed
   have hD42_theta_component_book_step:
