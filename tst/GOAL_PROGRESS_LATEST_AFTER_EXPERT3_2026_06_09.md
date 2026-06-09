@@ -4,23 +4,24 @@ Date: 2026-06-09
 
 ## Current status
 
-The zero-target-`sorry` goal is not complete. The current target scan shows
+The zero-target-`sorry` goal is not complete. A fresh target scan shows
 7 remaining target `sorry`s:
 
 ```text
 dev34_prefix/GeoTop_3_4_Prefix.thy:106
+dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:6664
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
-dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
 dev34/GeoTop_3_4.thy:13967
-dev34/GeoTop_3_4.thy:15725
+dev34/GeoTop_3_4.thy:15974
 ```
 
-This is progress relative to the expert3 report, which described an 8-hole
-state. The Figure 4.10 cyclic boundary-subdivision package is now closed. The
-remaining active `dev34` work is the endpoint boundary-arc fan package and the
-one-sided semicircle/collar separation package.
+This is progress relative to the expert3 report's 8-hole map. The Figure 4.10
+cyclic boundary-subdivision package
+`geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34`
+is now closed locally. The remaining active `dev34` holes are the endpoint
+boundary-arc fan model and the one-sided semicircle/collar separation package.
 
 ## Remaining proof packages
 
@@ -54,65 +55,79 @@ cleanup:
 6. `geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`
    - Endpoint chain to boundary-arc fan model.
    - The source-chain listing infrastructure is mostly packaged. The remaining
-     work is the same-length boundary-arc target model and fan/cone verification.
+     work is the same-length target boundary-arc subdivision plus cone/fan
+     verification.
 
 7. `geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34`
    - One-sided semicircle crosscut separation in a local collar.
-   - Recent helpers now prove the spherical crosscut is contained in `U` from
-     the collar assumption, that the edge interior point lies in `U`, and that
-     a connected collar subset cannot cross from the inner side to radius
-     greater than the deleted spherical crosscut.
+   - Recent helpers now prove the crosscut is contained in `U`, provide an
+     outer witness in `U`, and prove that such an outer witness disconnects
+     `U - (sphere p r Int sigma)`. The remaining open step is the metric
+     2-simplex geometry: choose a small radius for which
+     `sphere p r Int sigma` is the standard one-sided semicircle arc while an
+     edge-side point remains outside that radius.
 
 ## What changed since the expert audits
 
-The expert3 assessment remains useful, but its 8-hole map is now outdated in
-one important way: `geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34`
-has been closed. That makes the next finite-graph target narrower than the
-audit described.
+The expert3 assessment remains strategically useful, but its finite-cycle
+diagnosis is now partly outdated. The old target
+`geotop_cyclic_vertex_listing_standard_boundary_subdivision_book_step_dev34`
+is proved and indexed.
 
-Recent work also reduced the endpoint package by adding source-chain listing
-helpers and splitting the endpoint fan proof into smaller model/target steps.
-For the semicircle package, the work has moved toward the audit-recommended
-collar/radius-crossing proof instead of a broad Jordan-style argument.
-The latest committed helper is
-`geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34`
-(`a1f1d085`), which packages the connected first-crossing contradiction.
+Since the last progress-report commit, the semicircle package was narrowed by:
+
+```text
+4143289f Add semicircle collar distance separation helpers
+3c7d7985 Add semicircle outer witness separation helper
+31ff4dee Narrow semicircle collar geometry to arc radius choice
+```
+
+The latest structure is better than the raw expert3 warning about an
+under-assumed separator. The active statement uses the collar assumptions
+`r < s`, local equality with the simplex, `geotop_polyhedron K Int ball p s <= U`,
+and `U <= geotop_polyhedron K`. The remaining proof is not the radius-crossing
+separation anymore; it is the small-sphere/2-simplex arc geometry needed to
+produce a radius with the arc property.
 
 ## Verification and cache status
 
-Commands checked for this report:
+Commands checked for this update:
 
 ```bash
 ./check_dev34_fast.sh holes
-rg -n "geotop_polygon_two_disjoint_endpoint_arcs_brick_component_transfer_prefix|..." \
-  STMT_INDEX.txt THEOREMS_AND_DEFS.txt PLAN_zero_sorry-expert*.md GOAL_PROGRESS* GOAL_STATUS*
-./check_dev34_fast.sh focus-status dev34-fan dev34-semicircle graph-branch graph-branch-local
+./check_dev34_fast.sh focus-status dev34-semicircle dev34-fan graph-branch graph-branch-local
+rg -n "geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34|..." \
+  STMT_INDEX.txt THEOREMS_AND_DEFS.txt dev34/GeoTop_3_4.thy
 ```
 
 Focused status:
 
 ```text
-dev34-fan: fresh prefix and slice cache
-dev34-semicircle: fresh prefix and slice cache
-graph-branch: stale/missing late slice cache
-graph-branch-local: fresh local slice cache
+dev34-semicircle: fresh core, fresh prefix cache, fresh slice cache
+dev34-fan: fresh core, fresh prefix cache, fresh slice cache
+graph-branch: fresh prefix-base, stale/missing late prefix and slice cache
+graph-branch-local: fresh prefix-base, fresh local prefix and slice cache
 ```
 
-The fast iteration path is therefore to continue in `dev34-fan` or
-`dev34-semicircle`, where the relevant caches are fresh. If returning to the
-branch-vertex proof, refresh the late graph-branch slice first.
+Fast iteration should therefore stay in `dev34-semicircle` or `dev34-fan`
+unless there is a deliberate switch back to the graph branch. If returning to
+the late branch-vertex proof, refresh the `graph-branch` cache first.
 
 ## Recommended next order
 
-1. Continue with a narrow active package: endpoint target model or the next
-   semicircle collar/radius-crossing helper.
-2. Return to the graph branch package only with the expert3 local-component
-   bridge in mind; the current underpowered two-germ witness is not enough.
-3. Keep the Section 3 and D42/D44 packages as named book-step packages, not
-   scattered local claims.
-4. Continue using full-index greps before adding lemmas and regenerate the
-   theorem/statement indexes after theory changes.
+1. Continue with one hot active package: either close the endpoint fan model or
+   prove/isolate the remaining semicircle small-radius arc geometry.
+2. Keep using full-index greps before adding lemmas; no direct indexed lemma
+   currently proves that `sphere p r Int sigma` is an arc for a small sphere at
+   an edge-interior point of a 2-simplex.
+3. Return to the graph branch only with the expert3 local-component bridge in
+   mind; the current underpowered two-germ witness is not enough.
+4. Keep the Section 3 and D42/D44 packages as named book-step packages rather
+   than scattering their content into anonymous local claims.
+5. Regenerate `THEOREMS_AND_DEFS.txt` and `STMT_INDEX.txt` after theory changes
+   or when report content should be searchable by the full index.
 
-The project is still approaching the goal: the hole count is lower and the
-active packages are better isolated. The correct measure of remaining work is
-closed proof packages, not elapsed days or raw `sorry` count.
+The project is still approaching the goal: the hole count is lower, the old
+Figure 4.10 cycle package is closed, and the active packages are better
+isolated. The correct remaining measure is closed proof packages, not elapsed
+days or raw `sorry` count alone.
