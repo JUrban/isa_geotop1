@@ -914,6 +914,165 @@ proof
   qed
 qed
 
+lemma geotop_complex_subdivide_edge_interior_vertices_subset_dev34:
+  fixes K :: "'a::euclidean_space set set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes he_K: "e \<in> K"
+  assumes hV_verts: "geotop_simplex_vertices e V"
+  assumes hV_eq: "V = {v\<^sub>0, v\<^sub>1}"
+  assumes hv\<^sub>0v\<^sub>1: "v\<^sub>0 \<noteq> v\<^sub>1"
+  assumes hR_e: "R \<in> e"
+  assumes hR_V: "R \<notin> V"
+  shows "\<exists>K'. geotop_is_complex K'
+      \<and> geotop_complex_is_1dim K'
+      \<and> geotop_polyhedron K' = geotop_polyhedron K
+      \<and> {R} \<in> K'
+      \<and> K - {e} \<subseteq> K'
+      \<and> geotop_complex_vertices K' \<subseteq> insert R (geotop_complex_vertices K)
+      \<and> (finite K \<longrightarrow> finite K')"
+proof -
+  have hR_v\<^sub>0: "R \<noteq> v\<^sub>0"
+    using hR_V hV_eq by (by100 blast)
+  have hR_v\<^sub>1: "R \<noteq> v\<^sub>1"
+    using hR_V hV_eq by (by100 blast)
+  have he_eq: "e = closed_segment v\<^sub>0 v\<^sub>1"
+  proof -
+    have h_hull_V: "e = geotop_convex_hull V"
+      using hV_verts unfolding geotop_simplex_vertices_def by (by100 blast)
+    have h_hull_HOL: "e = convex hull V"
+      using h_hull_V geotop_convex_hull_eq_HOL by (by100 simp)
+    have h_V_pair: "convex hull V = convex hull {v\<^sub>0, v\<^sub>1}"
+      using hV_eq by (by100 simp)
+    have h_pair_seg: "convex hull {v\<^sub>0, v\<^sub>1} = closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule segment_convex_hull[symmetric])
+    show ?thesis
+      using h_hull_HOL h_V_pair h_pair_seg by (by100 simp)
+  qed
+  have he_split: "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 \<union> {R} = e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_e he_eq by (by100 simp)
+    have h_seg_split:
+      "closed_segment v\<^sub>0 R \<union> closed_segment R v\<^sub>1 =
+        closed_segment v\<^sub>0 v\<^sub>1"
+      by (rule Un_closed_segment[OF hR_seg])
+    have hR_in_lhs: "R \<in> closed_segment v\<^sub>0 R"
+      by (by100 simp)
+    show ?thesis
+      unfolding he_eq using h_seg_split hR_in_lhs by (by100 auto)
+  qed
+  let ?K' = "(K - {e}) \<union> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+  have hK'_poly: "geotop_polyhedron ?K' = geotop_polyhedron K"
+    by (rule geotop_subdivide_edge_polyhedron_eq[OF he_K he_split])
+  have hR_K': "{R} \<in> ?K'"
+    by (by100 blast)
+  have hK'_fin: "finite K \<longrightarrow> finite ?K'"
+    by (by100 simp)
+  have hK'_sim: "\<forall>\<sigma>\<in>?K'. geotop_is_simplex \<sigma>"
+    by (rule geotop_subdivide_edge_simplexes[OF hK_complex hR_v\<^sub>0 hR_v\<^sub>1])
+  have hR_dim: "geotop_simplex_dim {R} 0"
+    by (rule geotop_singleton_is_simplex)
+  have he\<^sub>l_dim: "geotop_simplex_dim (closed_segment v\<^sub>0 R) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hR_v\<^sub>0[symmetric]])
+  have he\<^sub>r_dim: "geotop_simplex_dim (closed_segment R v\<^sub>1) 1"
+    by (rule geotop_closed_segment_is_simplex[OF hR_v\<^sub>1])
+  have hK'_1dim: "geotop_complex_is_1dim ?K'"
+    unfolding geotop_complex_is_1dim_def
+  proof
+    fix \<sigma>
+    assume h\<sigma>K': "\<sigma> \<in> ?K'"
+    show "\<exists>n\<le>1. geotop_simplex_dim \<sigma> n"
+    proof (rule UnE[OF h\<sigma>K'])
+      assume h\<sigma>_K: "\<sigma> \<in> K - {e}"
+      have "\<sigma> \<in> K"
+        using h\<sigma>_K by (by100 simp)
+      thus ?thesis
+        using hK_1dim unfolding geotop_complex_is_1dim_def by (by100 blast)
+    next
+      assume h\<sigma>_new:
+        "\<sigma> \<in> {{R}, closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+      have h_ins:
+        "\<sigma> = {R} \<or> \<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        using h\<sigma>_new by (by100 simp)
+      show ?thesis
+      proof (rule disjE[OF h_ins])
+        assume "\<sigma> = {R}"
+        thus ?thesis
+          using hR_dim by (by100 blast)
+      next
+        assume h\<sigma>_seg: "\<sigma> \<in> {closed_segment v\<^sub>0 R, closed_segment R v\<^sub>1}"
+        have h_seg_cases:
+          "\<sigma> = closed_segment v\<^sub>0 R \<or> \<sigma> = closed_segment R v\<^sub>1"
+          using h\<sigma>_seg by (by100 simp)
+        show ?thesis
+        proof (rule disjE[OF h_seg_cases])
+          assume "\<sigma> = closed_segment v\<^sub>0 R"
+          thus ?thesis
+            using he\<^sub>l_dim by (by100 blast)
+        next
+          assume "\<sigma> = closed_segment R v\<^sub>1"
+          thus ?thesis
+            using he\<^sub>r_dim by (by100 blast)
+        qed
+      qed
+    qed
+  qed
+  have hv01_in_K: "{v\<^sub>0} \<in> K \<and> {v\<^sub>1} \<in> K"
+    by (rule geotop_subdivide_edge_vertices_in_K
+        [OF hK_complex he_K hV_verts hV_eq])
+  have hv\<^sub>0_K: "{v\<^sub>0} \<in> K"
+    using hv01_in_K by (by100 blast)
+  have hv\<^sub>1_K: "{v\<^sub>1} \<in> K"
+    using hv01_in_K by (by100 blast)
+  have hK'_faces:
+    "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>. geotop_is_face \<tau> \<sigma> \<longrightarrow> \<tau> \<in> ?K'"
+    by (rule geotop_subdivide_edge_face_closed
+        [OF hK_complex hK_1dim he_K hV_verts hV_eq hv\<^sub>0v\<^sub>1
+          hv\<^sub>0_K hv\<^sub>1_K hR_v\<^sub>0 hR_v\<^sub>1])
+  have hK'_inter:
+    "\<forall>\<sigma>\<in>?K'. \<forall>\<tau>\<in>?K'. \<sigma> \<inter> \<tau> \<noteq> {}
+      \<longrightarrow> geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
+        \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
+    by (rule geotop_subdivide_edge_inter_face
+        [OF hK_complex hK_1dim he_K hV_verts hV_eq hv\<^sub>0v\<^sub>1 hR_e hR_V])
+  have hel_sub_e: "closed_segment v\<^sub>0 R \<subseteq> e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_e he_eq by (by100 simp)
+    have "closed_segment v\<^sub>0 R \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_seg subset_closed_segment by (by100 blast)
+    thus ?thesis
+      using he_eq by (by100 simp)
+  qed
+  have her_sub_e: "closed_segment R v\<^sub>1 \<subseteq> e"
+  proof -
+    have hR_seg: "R \<in> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_e he_eq by (by100 simp)
+    have "closed_segment R v\<^sub>1 \<subseteq> closed_segment v\<^sub>0 v\<^sub>1"
+      using hR_seg subset_closed_segment by (by100 blast)
+    thus ?thesis
+      using he_eq by (by100 simp)
+  qed
+  have hK'_locfin:
+    "\<forall>\<sigma>\<in>?K'. \<exists>U. open U \<and> \<sigma> \<subseteq> U
+      \<and> finite {\<tau>\<in>?K'. \<tau> \<inter> U \<noteq> {}}"
+    by (rule geotop_subdivide_edge_locfin_inherit
+        [OF hK_complex he_K hel_sub_e her_sub_e hR_e])
+  have hK'_complex: "geotop_is_complex ?K'"
+    unfolding geotop_is_complex_def
+    using hK'_sim hK'_faces hK'_inter hK'_locfin by (by100 blast)
+  have hK'_sup: "K - {e} \<subseteq> ?K'"
+    by (by100 blast)
+  have hK'_vertices:
+    "geotop_complex_vertices ?K' \<subseteq> insert R (geotop_complex_vertices K)"
+    by (rule geotop_explicit_edge_subdivision_vertices_subset_dev34
+        [OF hK_complex hK'_complex hR_v\<^sub>0 hR_v\<^sub>1])
+  show ?thesis
+    using hK'_complex hK'_1dim hK'_poly hR_K' hK'_sup hK'_vertices hK'_fin
+    by (by100 blast)
+qed
+
 lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
