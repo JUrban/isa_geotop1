@@ -84,19 +84,52 @@ The main process lesson from the audits is still correct: do not spend days
 trying to close these by local proof search at the final `sorry`. Each target
 needs a small package of named lemmas, checked with focused slices.
 
+## Current Follow-Up After Re-Reading Expert3
+
+After re-reading `CLAUDE.md`, `PLAN_zero_sorry-expert3.md`, and the live
+graph-cache proof, the endpoint-chain fan is not the best immediate next
+target. The active endpoint model theorem can already call existing chain
+listing machinery once a degree-one-or-two source graph hypothesis is
+available, but deriving that degree bound from the current hypotheses depends
+on ruling out branch vertices. The live branch-vertex package is therefore
+upstream of the endpoint fan, not merely an adjacent cleanup.
+
+The remaining graph-cache hole is exactly the expert3 local-star bridge inside
+`geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix`. The file
+has already constructed:
+
+```text
+three selected incident edge germs e1 e2 e3 at w
+canonical sphere points x1 x2 x3 on those germs
+the simple-closed-curve arc-side split through w and q1
+a selected split-side package with p,y connected in the punctured carrier
+the radial-sector bound saying no one local component can touch all three germs
+```
+
+The only internal `sorry` is the bridge from the connected split-side package
+to a component of `ball w r - (e1 union e2 union e3)` whose closure touches all
+three selected germs. Immediately after that, the already-proved sector bound
+derives the contradiction.
+
 ## Recommended Next Move
 
-The immediate active semicircle package is closed, so the next best target is
-the graph-side endpoint-chain fan package:
+The immediate active semicircle package is closed. The next best target is now
+the graph-cache branch local cutpoint bridge:
+
+```text
+geotop_branch_vertex_local_disconnects_finite_linear_graph_prefix
+```
+
+The endpoint-chain fan package:
 
 ```text
 geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34
 ```
 
-It is now the best graph-side target after the Figure 4.10 cycle realization
-was closed. The branch-vertex local cutpoint should be attacked only through the
-expert3 local-component bridge for three selected germs, not by proving a false
-general "degree greater than two implies cutpoint" graph statement. The larger
+should follow after this no-branch/degree-bound bridge is available. The
+branch-vertex local cutpoint should still be attacked only through the expert3
+local-component bridge for three selected germs, not by proving a false general
+"degree greater than two implies cutpoint" graph statement. The larger
 semicircle separation theorem should be revisited only after checking the
 collar assumptions noted in expert3; the pure local half-plane model is no
 longer the blocker.
@@ -118,3 +151,11 @@ were:
 ./check_dev34_fast.sh focus dev34-semicircle geotop_edge_simplex_small_sphere_arc_radius_bound_exists_dev34
 ./check_dev34_fast.sh holes
 ```
+
+The current follow-up verification command was:
+
+```bash
+./check_dev34_fast.sh holes
+```
+
+It still reports the same 6 holes listed above.
