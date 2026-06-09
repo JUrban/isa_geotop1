@@ -9840,6 +9840,47 @@ proof -
     using hUnion hDisj hV_open hW_open hP_V hQ_W by blast
 qed
 
+lemma geotop_polygon_interior_minus_arc_open_prefix:
+  fixes J A :: "(real^2) set"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  shows "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
+  (**
+    D42 component-construction cache: the polygon interior is open and the
+    cutting arc is compact/closed, so the cut-open side set is Euclidean
+    open. **)
+proof -
+  obtain \<gamma> :: "real \<Rightarrow> real^2" where h\<gamma>_arc: "arc \<gamma>"
+    and h\<gamma>_img: "path_image \<gamma> = A"
+    using geotop_is_arc_imp_HOL_arc[OF hA] by (by100 blast)
+  have hA_closed: "closed A"
+    using closed_arc_image[OF h\<gamma>_arc] h\<gamma>_img by (by100 simp)
+  have hI_open: "open (geotop_polygon_interior J)"
+    by (rule polygon_interior_open[OF hJ])
+  have hU_open_HOL: "open (geotop_polygon_interior J - A)"
+    by (rule open_Diff[OF hI_open hA_closed])
+  show ?thesis
+    by (metis hU_open_HOL geotop_euclidean_topology_eq_open_sets
+        mem_Collect_eq top1_open_sets_def)
+qed
+
+lemma geotop_polygon_interior_minus_arc_component_open_prefix:
+  fixes J A :: "(real^2) set" and X :: "real^2"
+  assumes hJ: "geotop_is_polygon J"
+  assumes hA: "geotop_is_arc A (subspace_topology UNIV geotop_euclidean_topology A)"
+  assumes hX: "X \<in> geotop_polygon_interior J - A"
+  shows "geotop_component_at UNIV geotop_euclidean_topology
+    (geotop_polygon_interior J - A) X \<in> geotop_euclidean_topology"
+  (**
+    D42 component-construction cache: every component of the open cut polygon
+    interior is open. **)
+proof -
+  have hopen: "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
+    by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+  show ?thesis
+    by (rule geotop_component_at_open_in_euclidean[OF hopen hX])
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
