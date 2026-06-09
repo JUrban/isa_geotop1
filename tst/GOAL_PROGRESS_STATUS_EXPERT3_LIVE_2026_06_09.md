@@ -66,6 +66,14 @@ The endpoint package also shifted: the visible hole is now the model theorem
 `geotop_endpoint_oriented_chain_boundary_arc_fan_model_book_step_dev34`, while
 the target wrapper is checked in the focused fan slice.
 
+Latest local inspection confirms that the later boundary-vertex fan wrappers are
+downstream of this model hole.  In particular, the graph-only boundary-vertex
+fan target theorems after the endpoint block prove the right final target shape,
+but their proof chain currently calls the endpoint target wrapper, which calls
+the model theorem.  They are therefore evidence that the statement shape is
+right, not a shortcut that can be invoked to close the model theorem without
+reordering or replacing that dependency chain.
+
 ## Current approach
 
 The next useful proof work is the finite-graph/endpoint area.  The current best
@@ -94,3 +102,12 @@ lemmas; moving them into deeper wrappers would not count as progress.
 
 Recent index grep confirms all seven stable packages are present in both the
 name and statement indexes, and previous status reports are now also indexed.
+
+Focused cache status after rereading expert3:
+
+- `dev34-fan`: fresh core, fresh prefix cache, and fresh endpoint-fan slice.
+- `graph-branch-local`: fresh prefix-base, fresh prefix cache, and fresh local
+  branch slice.
+- `dev34-semicircle`: core and earlier chained prefix are fresh, but the final
+  semicircle prefix/slice around the remaining hole is stale and should only be
+  refreshed when work returns to that package.
