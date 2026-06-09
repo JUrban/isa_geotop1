@@ -15904,6 +15904,28 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
 qed
 
+lemma geotop_edge_simplex_small_sphere_arc_edge_outer_witness_exists_dev34:
+  fixes e \<sigma> :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  shows "\<exists>r y. 0 < r \<and> r < s
+      \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
+          (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))
+      \<and> y \<in> rel_interior e
+      \<and> r < dist p y
+      \<and> dist p y < s"
+  (**
+    Pure metric core of the one-sided semicircle argument.  With \<open>p\<close> in the
+    relative interior of the edge face of a 2-simplex, choose the radius below
+    all three local simplex-side distances, then choose the edge-side witness a
+    little farther along the same edge.  This contains no collar-domain
+    transfer; it is only the Euclidean 2-simplex geometry of the book's
+    semicircle crosscut. **)
+  sorry
+
 lemma geotop_edge_simplex_small_sphere_arc_outer_radius_exists_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15927,7 +15949,40 @@ lemma geotop_edge_simplex_small_sphere_arc_outer_radius_exists_dev34:
     and the collar radius \<open>s\<close>.  Then \<open>sphere p r \<inter> \<sigma>\<close> is exactly the
     standard semicircular crosscut of the one-sided simplex model.  The outer
     witness is a nearby edge-interior point at distance greater than \<open>r\<close>. **)
-  sorry
+proof -
+  obtain r y where hr: "0 < r"
+    and hrs: "r < s"
+    and hA_arc: "geotop_is_arc (sphere p r \<inter> \<sigma>)
+        (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))"
+    and hy_rel: "y \<in> rel_interior e"
+    and hy_outer: "r < dist p y"
+    and hy_dist_s: "dist p y < s"
+    using geotop_edge_simplex_small_sphere_arc_edge_outer_witness_exists_dev34
+      [OF hedge hp h\<sigma>2 h\<sigma>face hs]
+    by (by100 blast)
+  have hy_e: "y \<in> e"
+    using hy_rel rel_interior_subset by (by100 blast)
+  have he_sub_\<sigma>: "e \<subseteq> \<sigma>"
+    by (rule geotop_is_face_imp_subset[OF h\<sigma>face])
+  have hy_\<sigma>: "y \<in> \<sigma>"
+    using hy_e he_sub_\<sigma> by (by100 blast)
+  have hy_ball: "y \<in> ball p s"
+    using hy_dist_s by (by100 simp)
+  have hy_ball_sigma: "y \<in> ball p s \<inter> \<sigma>"
+    using hy_ball hy_\<sigma> by (by100 blast)
+  have hy_ball_poly: "y \<in> ball p s \<inter> geotop_polyhedron K"
+    using hlocal_poly_eq_\<sigma> hy_ball_sigma by (by100 blast)
+  have hy_poly_ball: "y \<in> geotop_polyhedron K \<inter> ball p s"
+    using hy_ball_poly by (by100 blast)
+  have hyU: "y \<in> U"
+    using hballU hy_poly_ball by (by100 blast)
+  have hy_not_crosscut: "y \<notin> sphere p r \<inter> \<sigma>"
+    using hy_outer by (by100 simp)
+  have hy_Uminus: "y \<in> U - (sphere p r \<inter> \<sigma>)"
+    using hyU hy_not_crosscut by (by100 blast)
+  show ?thesis
+    using hr hrs hA_arc hy_Uminus hy_outer by (by100 blast)
+qed
 
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
