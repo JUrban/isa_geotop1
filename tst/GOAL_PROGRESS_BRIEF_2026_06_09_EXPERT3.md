@@ -48,6 +48,13 @@ not isolated automation cleanups.
      simple-closed-curve/local split-side setup, produce a component of
      `ball w r - (e1 union e2 union e3)` whose closure meets all three selected
      incident edge germs.
+   - Current diagnosis: the bridge is now named and isolated, but as an
+     abstract lemma it appears under-specified. The hypotheses put `p` and `y`
+     in the connected set `N`; the third point `z` is only known to lie in the
+     closure of the third germ. The next useful edit is therefore to rethread
+     the upstream arc-side split data, or add the exact third-germ relation
+     needed by the local-component argument, rather than trying to prove the
+     current abstract statement by automation.
 
 6. `geotop_endpoint_nonfinish_degree_and_boundary_arc_target_book_step_dev34`
    - Active endpoint non-finish package. It now combines the endpoint degree
@@ -98,6 +105,11 @@ be followed by:
 bash gen_index.sh
 bash gen_stmt_index.sh
 ```
+
+The two index generators already include `PLAN_zero_sorry-expert*.md`,
+`*PROGRESS*.md`, `*REPORT*.md`, `*STATUS*.md`, `CLAUDE*.md`, and bounded
+session transcript files through `index_theory_lib.py`. No script change is
+needed for `PLAN_zero_sorry-expert3.md`; normal regeneration is enough.
 
 ## Recommended next move
 
