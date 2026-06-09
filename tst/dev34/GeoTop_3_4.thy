@@ -15073,6 +15073,44 @@ where
   "geotop_segment_chain_vertices_dev34 a b n =
     map (\<lambda>i. linepath a b (real i / real (n - 1))) [0..<n]"
 
+lemma geotop_segment_chain_vertices_nth_dev34:
+  assumes hi: "i < n"
+  shows "geotop_segment_chain_vertices_dev34 a b n ! i =
+    linepath a b (real i / real (n - 1))"
+  unfolding geotop_segment_chain_vertices_dev34_def
+  using hi by (by100 simp)
+
+lemma geotop_segment_chain_vertices_param_unit_dev34:
+  assumes hlong: "2 < n"
+  assumes hi: "i < n"
+  shows "real i / real (n - 1) \<in> {0..1::real}"
+proof -
+  have hden_pos: "0 < real (n - 1)"
+    using hlong by (by100 simp)
+  have hi_le: "i \<le> n - 1"
+    using hi by (by100 simp)
+  have hnonneg: "0 \<le> real i / real (n - 1)"
+    using hden_pos by (by100 simp)
+  have hub: "real i / real (n - 1) \<le> (1::real)"
+    using hi_le hden_pos by (by100 simp)
+  show ?thesis
+    using hnonneg hub by (by100 simp)
+qed
+
+lemma geotop_segment_chain_vertices_param_strict_mono_dev34:
+  assumes hlong: "2 < n"
+  assumes hij: "i < j"
+  assumes hj: "j < n"
+  shows "real i / real (n - 1) < real j / real (n - 1)"
+proof -
+  have hden_pos: "0 < real (n - 1)"
+    using hlong by (by100 simp)
+  have "real i < real j"
+    using hij by (by100 simp)
+  thus ?thesis
+    by (rule divide_strict_right_mono[OF _ hden_pos])
+qed
+
 lemma geotop_segment_chain_vertices_basic_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
