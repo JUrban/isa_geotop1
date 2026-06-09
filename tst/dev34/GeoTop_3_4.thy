@@ -15133,6 +15133,56 @@ next
     using hr0 hr1 hline by (by100 blast)
 qed
 
+lemma geotop_linepath_subsegment_param_exists_dev34:
+  fixes a b x :: "real^2"
+  assumes hs: "s \<in> {0..1::real}"
+  assumes hu: "u \<in> {0..1::real}"
+  assumes hsu: "s \<le> u"
+  assumes hx: "x \<in> closed_segment (linepath a b s) (linepath a b u)"
+  shows "\<exists>t\<in>{s..u}. x = linepath a b t"
+proof -
+  obtain r where hr0: "0 \<le> r" and hr1: "r \<le> 1"
+      and hx_eq:
+        "x = (1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u"
+    using hx unfolding closed_segment_def by (by100 blast)
+  define t where "t = (1 - r) * s + r * u"
+  have hst: "s \<le> t"
+  proof -
+    have hdiff: "t - s = r * (u - s)"
+      unfolding t_def by (by100 argo)
+    have hus_nonneg: "0 \<le> u - s"
+      using hsu by (by100 simp)
+    have hdiff_nonneg: "0 \<le> r * (u - s)"
+      by (rule mult_nonneg_nonneg[OF hr0 hus_nonneg])
+    show ?thesis
+      using hdiff hdiff_nonneg by (by100 linarith)
+  qed
+  have htu: "t \<le> u"
+  proof -
+    have h1r0: "0 \<le> 1 - r"
+      using hr1 by (by100 simp)
+    have hdiff: "u - t = (1 - r) * (u - s)"
+      unfolding t_def by (by100 argo)
+    have hus_nonneg: "0 \<le> u - s"
+      using hsu by (by100 simp)
+    have hdiff_nonneg: "0 \<le> (1 - r) * (u - s)"
+      by (rule mult_nonneg_nonneg[OF h1r0 hus_nonneg])
+    show ?thesis
+      using hdiff hdiff_nonneg by (by100 linarith)
+  qed
+  have hline:
+      "(1 - r) *\<^sub>R linepath a b s + r *\<^sub>R linepath a b u =
+        linepath a b t"
+    unfolding linepath_def t_def
+    apply (simp add: vec_eq_iff)
+    apply (intro allI)
+    by (simp add: algebra_simps)
+  have ht: "t \<in> {s..u}"
+    using hst htu by (by100 simp)
+  show ?thesis
+    using ht hx_eq hline by (by100 blast)
+qed
+
 lemma geotop_linepath_subsegment_param_bounds_dev34:
   fixes a b :: "real^2"
   assumes hab: "a \<noteq> b"
@@ -15304,6 +15354,116 @@ proof -
     by (rule geotop_linepath_between_params_dev34[OF htij htjk])
   thus ?thesis
     using hi_nth hj_nth hk_nth by (by100 simp)
+qed
+
+lemma geotop_segment_chain_edges_meet_indices_close_dev34:
+  fixes a b :: "real^2"
+  assumes hab: "a \<noteq> b"
+  assumes hlong: "2 < n"
+  defines "us \<equiv> geotop_segment_chain_vertices_dev34 a b n"
+  assumes hi: "i < length us - 1"
+  assumes hj: "j < length us - 1"
+  assumes hmeet:
+      "closed_segment (us ! i) (us ! Suc i)
+        \<inter> closed_segment (us ! j) (us ! Suc j) \<noteq> {}"
+  shows "i = j \<or> Suc i = j \<or> Suc j = i"
+proof -
+  have hlen: "length us = n"
+    unfolding us_def geotop_segment_chain_vertices_dev34_def by (by100 simp)
+  obtain x where hx_i: "x \<in> closed_segment (us ! i) (us ! Suc i)"
+      and hx_j: "x \<in> closed_segment (us ! j) (us ! Suc j)"
+    using hmeet by (by100 blast)
+  have hi_n: "i < n"
+    using hi hlen by (by100 linarith)
+  have hSi_n: "Suc i < n"
+    using hi hlen by (by100 linarith)
+  have hj_n: "j < n"
+    using hj hlen by (by100 linarith)
+  have hSj_n: "Suc j < n"
+    using hj hlen by (by100 linarith)
+  let ?d = "real (n - 1)"
+  let ?ti = "real i / ?d"
+  let ?tSi = "real (Suc i) / ?d"
+  let ?tj = "real j / ?d"
+  let ?tSj = "real (Suc j) / ?d"
+  have hden_pos: "0 < ?d"
+    using hlong by (by100 simp)
+  have hti_unit: "?ti \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hi_n])
+  have hSi_unit: "?tSi \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hSi_n])
+  have htj_unit: "?tj \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hj_n])
+  have hSj_unit: "?tSj \<in> {0..1::real}"
+    by (rule geotop_segment_chain_vertices_param_unit_dev34[OF hlong hSj_n])
+  have hti_le_tSi: "?ti \<le> ?tSi"
+    using hden_pos by (simp add: divide_right_mono)
+  have htj_le_tSj: "?tj \<le> ?tSj"
+    using hden_pos by (simp add: divide_right_mono)
+  have hi_nth: "us ! i = linepath a b ?ti"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hi_n])
+  have hSi_nth: "us ! Suc i = linepath a b ?tSi"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hSi_n])
+  have hj_nth: "us ! j = linepath a b ?tj"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hj_n])
+  have hSj_nth: "us ! Suc j = linepath a b ?tSj"
+    unfolding us_def
+    by (rule geotop_segment_chain_vertices_nth_dev34[OF hSj_n])
+  have hx_first:
+      "x \<in> closed_segment (linepath a b ?ti) (linepath a b ?tSi)"
+    using hx_i hi_nth hSi_nth by (by100 simp)
+  obtain t where ht_int: "t \<in> {?ti..?tSi}"
+      and hx_t: "x = linepath a b t"
+    using geotop_linepath_subsegment_param_exists_dev34
+      [OF hti_unit hSi_unit hti_le_tSi hx_first]
+    by (by100 blast)
+  have hti_le_t: "?ti \<le> t"
+    using ht_int by (by100 simp)
+  have ht_le_tSi: "t \<le> ?tSi"
+    using ht_int by (by100 simp)
+  have ht_nonneg: "0 \<le> t"
+  proof -
+    have hti_nonneg: "0 \<le> ?ti"
+      using hti_unit by (by100 simp)
+    show ?thesis
+      by (rule order_trans[OF hti_nonneg hti_le_t])
+  qed
+  have ht_le_one: "t \<le> 1"
+  proof -
+    have hSi_le_one: "?tSi \<le> 1"
+      using hSi_unit by (by100 simp)
+    show ?thesis
+      by (rule order_trans[OF ht_le_tSi hSi_le_one])
+  qed
+  have ht_unit: "t \<in> {0..1::real}"
+    using ht_nonneg ht_le_one by (by100 simp)
+  have hx_second:
+      "linepath a b t \<in> closed_segment (linepath a b ?tj) (linepath a b ?tSj)"
+    using hx_j hx_t hj_nth hSj_nth by (by100 simp)
+  have hbounds_j: "?tj \<le> t \<and> t \<le> ?tSj"
+    by (rule geotop_linepath_subsegment_param_bounds_dev34
+        [OF hab htj_unit ht_unit hSj_unit htj_le_tSj hx_second])
+  have htj_le_t: "?tj \<le> t"
+    using hbounds_j by (by100 blast)
+  have ht_le_tSj: "t \<le> ?tSj"
+    using hbounds_j by (by100 blast)
+  have hti_le_tSj: "?ti \<le> ?tSj"
+    by (rule order_trans[OF hti_le_t ht_le_tSj])
+  have htj_le_tSi: "?tj \<le> ?tSi"
+    by (rule order_trans[OF htj_le_t ht_le_tSi])
+  have hi_le_Sj_real: "real i \<le> real (Suc j)"
+    using hti_le_tSj hden_pos by (simp add: pos_divide_le_eq)
+  have hj_le_Si_real: "real j \<le> real (Suc i)"
+    using htj_le_tSi hden_pos by (simp add: pos_divide_le_eq)
+  have hi_le_Sj: "i \<le> Suc j"
+    using hi_le_Sj_real by (by100 simp)
+  have hj_le_Si: "j \<le> Suc i"
+    using hj_le_Si_real by (by100 simp)
+  show ?thesis
+    using hi_le_Sj hj_le_Si by (by100 linarith)
 qed
 
 lemma geotop_segment_chain_adjacent_edges_inter_dev34:
@@ -15718,7 +15878,349 @@ lemma geotop_segment_chain_vertices_intersections_dev34:
   assumes hmeet: "\<sigma> \<inter> \<tau> \<noteq> {}"
   shows "geotop_is_face (\<sigma> \<inter> \<tau>) \<sigma>
     \<and> geotop_is_face (\<sigma> \<inter> \<tau>) \<tau>"
-  sorry
+proof -
+  have hF_cases:
+      "\<And>\<rho>. \<rho> \<in> F \<Longrightarrow>
+        (\<exists>k<length us. \<rho> = {us ! k})
+        \<or> (\<exists>i<length us - 1.
+            \<rho> = closed_segment (us ! i) (us ! Suc i))"
+  proof -
+    fix \<rho>
+    assume h\<rho>F: "\<rho> \<in> F"
+    have h\<rho>F':
+        "\<rho> \<in> ((\<lambda>x. {x}) ` set us)
+          \<union> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+            ` {0..<length us - 1})"
+      using h\<rho>F unfolding F_def by (by100 simp)
+    show "(\<exists>k<length us. \<rho> = {us ! k})
+        \<or> (\<exists>i<length us - 1.
+            \<rho> = closed_segment (us ! i) (us ! Suc i))"
+    proof (rule UnE[OF h\<rho>F'])
+      assume "\<rho> \<in> ((\<lambda>x. {x}) ` set us)"
+      then obtain x where hx: "x \<in> set us" and h\<rho>x: "\<rho> = {x}"
+        by (by100 blast)
+      obtain k where hk: "k < length us" and hxk: "x = us ! k"
+        using hx in_set_conv_nth by (by100 metis)
+      show ?thesis
+        using hk h\<rho>x hxk by (by100 blast)
+    next
+      assume "\<rho> \<in> ((\<lambda>i. closed_segment (us ! i) (us ! Suc i))
+          ` {0..<length us - 1})"
+      then obtain i where hi_set: "i \<in> {0..<length us - 1}"
+          and h\<rho>i: "\<rho> = closed_segment (us ! i) (us ! Suc i)"
+        by (by100 blast)
+      have hi: "i < length us - 1"
+        using hi_set by (by100 simp)
+      show ?thesis
+        using hi h\<rho>i by (by100 blast)
+    qed
+  qed
+  have h\<sigma>cases:
+      "(\<exists>k<length us. \<sigma> = {us ! k})
+      \<or> (\<exists>i<length us - 1. \<sigma> = closed_segment (us ! i) (us ! Suc i))"
+    by (rule hF_cases[OF h\<sigma>])
+  have h\<tau>cases:
+      "(\<exists>k<length us. \<tau> = {us ! k})
+      \<or> (\<exists>i<length us - 1. \<tau> = closed_segment (us ! i) (us ! Suc i))"
+    by (rule hF_cases[OF h\<tau>])
+  show ?thesis
+  proof (rule disjE[OF h\<sigma>cases])
+    assume h\<sigma>single: "\<exists>k<length us. \<sigma> = {us ! k}"
+    then obtain k where hk: "k < length us" and h\<sigma>k: "\<sigma> = {us ! k}"
+      by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF h\<tau>cases])
+      assume h\<tau>single: "\<exists>l<length us. \<tau> = {us ! l}"
+      then obtain l where hl: "l < length us" and h\<tau>l: "\<tau> = {us ! l}"
+        by (by100 blast)
+      show ?thesis
+      proof -
+        have hmeet0: "{us ! k} \<inter> {us ! l} \<noteq> {}"
+          using hmeet h\<sigma>k h\<tau>l by (by100 simp)
+        have hpair:
+            "geotop_is_face ({us ! k} \<inter> {us ! l}) {us ! k}
+            \<and> geotop_is_face ({us ! k} \<inter> {us ! l}) {us ! l}"
+          by (rule geotop_segment_chain_singletons_inter_faces_dev34[OF hmeet0])
+        show ?thesis
+          using hpair h\<sigma>k h\<tau>l by (by100 simp)
+      qed
+    next
+      assume h\<tau>edge:
+          "\<exists>j<length us - 1. \<tau> = closed_segment (us ! j) (us ! Suc j)"
+      then obtain j where hj: "j < length us - 1"
+          and h\<tau>j: "\<tau> = closed_segment (us ! j) (us ! Suc j)"
+        by (by100 blast)
+      show ?thesis
+      proof -
+        have hmeet0: "{us ! k} \<inter> closed_segment (us ! j) (us ! Suc j) \<noteq> {}"
+          using hmeet h\<sigma>k h\<tau>j by (by100 simp)
+        have hk0: "k < length (geotop_segment_chain_vertices_dev34 a b n)"
+          using hk unfolding us_def by (by100 simp)
+        have hj0: "j < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+          using hj unfolding us_def by (by100 simp)
+        have hmeet_raw:
+            "{geotop_segment_chain_vertices_dev34 a b n ! k}
+              \<inter> closed_segment
+                (geotop_segment_chain_vertices_dev34 a b n ! j)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc j)
+            \<noteq> {}"
+          using hmeet0 unfolding us_def by (by100 simp)
+        have hpair0:
+            "geotop_is_face
+              ({geotop_segment_chain_vertices_dev34 a b n ! k}
+                \<inter> closed_segment
+                  (geotop_segment_chain_vertices_dev34 a b n ! j)
+                  (geotop_segment_chain_vertices_dev34 a b n ! Suc j))
+              {geotop_segment_chain_vertices_dev34 a b n ! k}
+            \<and> geotop_is_face
+              ({geotop_segment_chain_vertices_dev34 a b n ! k}
+                \<inter> closed_segment
+                  (geotop_segment_chain_vertices_dev34 a b n ! j)
+                  (geotop_segment_chain_vertices_dev34 a b n ! Suc j))
+              (closed_segment (geotop_segment_chain_vertices_dev34 a b n ! j)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc j))"
+          by (rule geotop_segment_chain_singleton_edge_inter_faces_dev34
+              [OF hab hlong hk0 hj0 hmeet_raw])
+        have hpair:
+            "geotop_is_face
+              ({us ! k} \<inter> closed_segment (us ! j) (us ! Suc j)) {us ! k}
+            \<and> geotop_is_face
+              ({us ! k} \<inter> closed_segment (us ! j) (us ! Suc j))
+              (closed_segment (us ! j) (us ! Suc j))"
+          using hpair0 unfolding us_def by (by100 simp)
+        show ?thesis
+          using hpair h\<sigma>k h\<tau>j by (by100 simp)
+      qed
+    qed
+  next
+    assume h\<sigma>edge:
+        "\<exists>i<length us - 1. \<sigma> = closed_segment (us ! i) (us ! Suc i)"
+    then obtain i where hi: "i < length us - 1"
+        and h\<sigma>i: "\<sigma> = closed_segment (us ! i) (us ! Suc i)"
+      by (by100 blast)
+    show ?thesis
+    proof (rule disjE[OF h\<tau>cases])
+      assume h\<tau>single: "\<exists>k<length us. \<tau> = {us ! k}"
+      then obtain k where hk: "k < length us" and h\<tau>k: "\<tau> = {us ! k}"
+        by (by100 blast)
+      show ?thesis
+      proof -
+        have hmeet0: "closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k} \<noteq> {}"
+          using hmeet h\<sigma>i h\<tau>k by (by100 simp)
+        have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+          using hi unfolding us_def by (by100 simp)
+        have hk0: "k < length (geotop_segment_chain_vertices_dev34 a b n)"
+          using hk unfolding us_def by (by100 simp)
+        have hmeet_raw:
+            "closed_segment
+                (geotop_segment_chain_vertices_dev34 a b n ! i)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+              \<inter> {geotop_segment_chain_vertices_dev34 a b n ! k}
+            \<noteq> {}"
+          using hmeet0 unfolding us_def by (by100 simp)
+        have hpair0:
+            "geotop_is_face
+              (closed_segment
+                (geotop_segment_chain_vertices_dev34 a b n ! i)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+                \<inter> {geotop_segment_chain_vertices_dev34 a b n ! k})
+              (closed_segment (geotop_segment_chain_vertices_dev34 a b n ! i)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc i))
+            \<and> geotop_is_face
+              (closed_segment
+                (geotop_segment_chain_vertices_dev34 a b n ! i)
+                (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+                \<inter> {geotop_segment_chain_vertices_dev34 a b n ! k})
+              {geotop_segment_chain_vertices_dev34 a b n ! k}"
+          by (rule geotop_segment_chain_edge_singleton_inter_faces_dev34
+              [OF hab hlong hi0 hk0 hmeet_raw])
+        have hpair:
+            "geotop_is_face
+              (closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k})
+              (closed_segment (us ! i) (us ! Suc i))
+            \<and> geotop_is_face
+              (closed_segment (us ! i) (us ! Suc i) \<inter> {us ! k}) {us ! k}"
+          using hpair0 unfolding us_def by (by100 simp)
+        show ?thesis
+          using hpair h\<sigma>i h\<tau>k by (by100 simp)
+      qed
+    next
+      assume h\<tau>edge:
+          "\<exists>j<length us - 1. \<tau> = closed_segment (us ! j) (us ! Suc j)"
+      then obtain j where hj: "j < length us - 1"
+          and h\<tau>j: "\<tau> = closed_segment (us ! j) (us ! Suc j)"
+        by (by100 blast)
+      show ?thesis
+      proof (cases "i = j")
+        case True
+        have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+          using hi unfolding us_def by (by100 simp)
+        have hne0:
+            "geotop_segment_chain_vertices_dev34 a b n ! i
+            \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc i"
+          by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+              [OF hab hlong hi0])
+        have hne: "us ! i \<noteq> us ! Suc i"
+          using hne0 unfolding us_def by (by100 simp)
+        have hface:
+            "geotop_is_face (closed_segment (us ! i) (us ! Suc i))
+              (closed_segment (us ! i) (us ! Suc i))"
+          by (rule geotop_closed_segment_is_face_self[OF hne])
+        show ?thesis
+          using True h\<sigma>i h\<tau>j hface by (by100 simp)
+      next
+        case hneq: False
+        show ?thesis
+        proof (cases "Suc i = j")
+          case True
+          have hSucSuc: "Suc (Suc i) < length us"
+            using True hj by (by100 linarith)
+          have hSucSuc0:
+              "Suc (Suc i) < length (geotop_segment_chain_vertices_dev34 a b n)"
+            using hSucSuc unfolding us_def by (by100 simp)
+          have hinter0:
+              "closed_segment (geotop_segment_chain_vertices_dev34 a b n ! i)
+                  (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+                \<inter> closed_segment (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+                  (geotop_segment_chain_vertices_dev34 a b n ! Suc (Suc i))
+              = {geotop_segment_chain_vertices_dev34 a b n ! Suc i}"
+            by (rule geotop_segment_chain_adjacent_edges_inter_dev34
+                [OF hlong hSucSuc0])
+          have hinter:
+              "closed_segment (us ! i) (us ! Suc i)
+                \<inter> closed_segment (us ! j) (us ! Suc j)
+              = {us ! Suc i}"
+            using True hinter0 unfolding us_def by (by100 simp)
+          have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+            using hi unfolding us_def by (by100 simp)
+          have hj0: "j < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+            using hj unfolding us_def by (by100 simp)
+          have hne_i0:
+              "geotop_segment_chain_vertices_dev34 a b n ! i
+              \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc i"
+            by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+                [OF hab hlong hi0])
+          have hne_j0:
+              "geotop_segment_chain_vertices_dev34 a b n ! j
+              \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc j"
+            by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+                [OF hab hlong hj0])
+          have hne_i: "us ! i \<noteq> us ! Suc i"
+            using hne_i0 unfolding us_def by (by100 simp)
+          have hne_j: "us ! j \<noteq> us ! Suc j"
+            using hne_j0 unfolding us_def by (by100 simp)
+          have hface_i:
+              "geotop_is_face {us ! Suc i} (closed_segment (us ! i) (us ! Suc i))"
+          proof -
+            have hv: "us ! Suc i = us ! i \<or> us ! Suc i = us ! Suc i"
+              by (by100 simp)
+            show ?thesis
+              by (rule geotop_closed_segment_is_face_endpoint[OF hne_i hv])
+          qed
+          have hface_j:
+              "geotop_is_face {us ! Suc i} (closed_segment (us ! j) (us ! Suc j))"
+          proof -
+            have hv: "us ! Suc i = us ! j \<or> us ! Suc i = us ! Suc j"
+              using True by (by100 simp)
+            show ?thesis
+              by (rule geotop_closed_segment_is_face_endpoint[OF hne_j hv])
+          qed
+          show ?thesis
+            using h\<sigma>i h\<tau>j hinter hface_i hface_j by (by100 simp)
+        next
+          case hnot_suc_i: False
+          show ?thesis
+          proof (cases "Suc j = i")
+            case True
+            have hSucSuc: "Suc (Suc j) < length us"
+              using True hi by (by100 linarith)
+            have hSucSuc0:
+                "Suc (Suc j) < length (geotop_segment_chain_vertices_dev34 a b n)"
+              using hSucSuc unfolding us_def by (by100 simp)
+            have hinter0:
+                "closed_segment (geotop_segment_chain_vertices_dev34 a b n ! j)
+                    (geotop_segment_chain_vertices_dev34 a b n ! Suc j)
+                  \<inter> closed_segment (geotop_segment_chain_vertices_dev34 a b n ! Suc j)
+                    (geotop_segment_chain_vertices_dev34 a b n ! Suc (Suc j))
+                = {geotop_segment_chain_vertices_dev34 a b n ! Suc j}"
+              by (rule geotop_segment_chain_adjacent_edges_inter_dev34
+                  [OF hlong hSucSuc0])
+            have hinter:
+                "closed_segment (us ! i) (us ! Suc i)
+                  \<inter> closed_segment (us ! j) (us ! Suc j)
+                = {us ! i}"
+              using True hinter0 unfolding us_def by (by100 blast)
+            have hi0: "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+              using hi unfolding us_def by (by100 simp)
+            have hj0: "j < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+              using hj unfolding us_def by (by100 simp)
+            have hne_i0:
+                "geotop_segment_chain_vertices_dev34 a b n ! i
+                \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc i"
+              by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+                  [OF hab hlong hi0])
+            have hne_j0:
+                "geotop_segment_chain_vertices_dev34 a b n ! j
+                \<noteq> geotop_segment_chain_vertices_dev34 a b n ! Suc j"
+              by (rule geotop_segment_chain_vertices_adjacent_distinct_dev34
+                  [OF hab hlong hj0])
+            have hne_i: "us ! i \<noteq> us ! Suc i"
+              using hne_i0 unfolding us_def by (by100 simp)
+            have hne_j: "us ! j \<noteq> us ! Suc j"
+              using hne_j0 unfolding us_def by (by100 simp)
+            have hface_i:
+                "geotop_is_face {us ! i} (closed_segment (us ! i) (us ! Suc i))"
+            proof -
+              have hv: "us ! i = us ! i \<or> us ! i = us ! Suc i"
+                by (by100 simp)
+              show ?thesis
+                by (rule geotop_closed_segment_is_face_endpoint[OF hne_i hv])
+            qed
+            have hface_j:
+                "geotop_is_face {us ! i} (closed_segment (us ! j) (us ! Suc j))"
+            proof -
+              have hv: "us ! i = us ! j \<or> us ! i = us ! Suc j"
+                using True by (by100 simp)
+              show ?thesis
+                by (rule geotop_closed_segment_is_face_endpoint[OF hne_j hv])
+            qed
+            show ?thesis
+              using h\<sigma>i h\<tau>j hinter hface_i hface_j by (by100 simp)
+          next
+            case hnot_suc_j: False
+            show ?thesis
+            proof -
+              have hmeet0:
+                  "closed_segment (us ! i) (us ! Suc i)
+                    \<inter> closed_segment (us ! j) (us ! Suc j) \<noteq> {}"
+                using hmeet h\<sigma>i h\<tau>j by (by100 simp)
+              have hi0:
+                  "i < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+                using hi unfolding us_def by (by100 simp)
+              have hj0:
+                  "j < length (geotop_segment_chain_vertices_dev34 a b n) - 1"
+                using hj unfolding us_def by (by100 simp)
+              have hmeet_raw:
+                  "closed_segment
+                      (geotop_segment_chain_vertices_dev34 a b n ! i)
+                      (geotop_segment_chain_vertices_dev34 a b n ! Suc i)
+                    \<inter> closed_segment
+                      (geotop_segment_chain_vertices_dev34 a b n ! j)
+                      (geotop_segment_chain_vertices_dev34 a b n ! Suc j)
+                  \<noteq> {}"
+                using hmeet0 unfolding us_def by (by100 simp)
+              have hclose: "i = j \<or> Suc i = j \<or> Suc j = i"
+                by (rule geotop_segment_chain_edges_meet_indices_close_dev34
+                    [OF hab hlong hi0 hj0 hmeet_raw])
+              show ?thesis
+                using hclose hneq hnot_suc_i hnot_suc_j by (by100 blast)
+            qed
+          qed
+        qed
+      qed
+    qed
+  qed
+qed
 
 lemma geotop_segment_chain_vertices_complex_dev34:
   fixes a b :: "real^2"
