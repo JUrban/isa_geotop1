@@ -15593,6 +15593,38 @@ proof -
     using hpU hp_not_sphere hr by (by100 simp)
 qed
 
+lemma geotop_collar_point_outside_crosscut_not_on_radius_dev34:
+  fixes K :: "(real^2) set set" and \<sigma> U :: "(real^2) set"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  assumes hx: "x \<in> U - (sphere p r \<inter> \<sigma>)"
+  assumes hx_ball: "x \<in> ball p s"
+  assumes hx_radius: "dist p x = r"
+  shows False
+  (**
+    Radius-crossing exclusion for the collar proof.  A point of the punctured
+    domain inside the collar ball cannot have exact radius \<open>r\<close>, because the
+    local carrier equality then puts it in \<open>sphere p r \<inter> \<sigma>\<close>. **)
+proof -
+  have hxU: "x \<in> U"
+    using hx by (by100 simp)
+  have hx_poly: "x \<in> geotop_polyhedron K"
+    using hUsubM hxU by (by100 blast)
+  have hx_ball_poly: "x \<in> ball p s \<inter> geotop_polyhedron K"
+    using hx_ball hx_poly by (by100 blast)
+  have hx_ball_sigma: "x \<in> ball p s \<inter> \<sigma>"
+    using hlocal_poly_eq_\<sigma> hx_ball_poly by (by100 blast)
+  have hx_sigma: "x \<in> \<sigma>"
+    using hx_ball_sigma by (by100 blast)
+  have hx_sphere: "x \<in> sphere p r"
+    using hx_radius by (by100 simp)
+  have "x \<in> sphere p r \<inter> \<sigma>"
+    using hx_sphere hx_sigma by (by100 blast)
+  thus False
+    using hx by (by100 blast)
+qed
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
