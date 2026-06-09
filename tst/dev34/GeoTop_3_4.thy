@@ -15904,6 +15904,245 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
 qed
 
+lemma geotop_standard_upper_semicircle_arc_R2_dev34:
+  defines "e\<^sub>2 \<equiv> (vector [0, 1] :: real^2)"
+  shows "geotop_is_arc (sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x})
+      (subspace_topology UNIV geotop_euclidean_topology
+        (sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}))"
+  (**
+    Standard upper semicircle, parametrised as the graph
+    \<open>t \<mapsto> (2t-1, sqrt(1 - (2t-1)^2))\<close> over the diameter.  This is the
+    normalized Moise half-circle used below before applying an affine
+    orthogonal change of coordinates. **)
+proof -
+  define \<gamma> :: "real \<Rightarrow> real^2"
+    where "\<gamma> = (\<lambda>t. vector [2 * t - 1, sqrt (1 - (2 * t - 1)^2)])"
+  have h\<gamma>_cont: "continuous_on {0..1} \<gamma>"
+    unfolding \<gamma>_def by (intro continuous_intros)
+  have h\<gamma>_inj: "inj_on \<gamma> {0..1}"
+  proof (rule inj_onI)
+    fix s t :: real
+    assume hst: "\<gamma> s = \<gamma> t"
+    have "2 * s - 1 = 2 * t - 1"
+      using hst unfolding \<gamma>_def by (simp add: vec_eq_iff)
+    thus "s = t" by (by100 simp)
+  qed
+  have h\<gamma>_arc: "arc \<gamma>"
+    unfolding arc_def path_def using h\<gamma>_cont h\<gamma>_inj by (by100 blast)
+  have h\<gamma>_image:
+      "path_image \<gamma> = sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}"
+    (**
+      Graph parametrisation image calculation.  For the forward direction use
+      \<open>a = 2t - 1\<close>, so \<open>a \<in> [-1,1]\<close> and
+      \<open>a\<^sup>2 + sqrt(1-a\<^sup>2)\<^sup>2 = 1\<close>.  For the reverse direction, take
+      \<open>t = (x$1 + 1)/2\<close>; the non-negative second coordinate and the unit
+      circle equation force \<open>x$2 = sqrt(1 - (x$1)^2)\<close>. **)
+  proof
+    show "path_image \<gamma> \<subseteq> sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}"
+    proof
+      fix x
+      assume hx: "x \<in> path_image \<gamma>"
+      obtain t where ht: "t \<in> {0..1}" and hx_eq: "x = \<gamma> t"
+        using hx unfolding path_image_def by (by100 blast)
+      define a where "a = 2 * t - 1"
+      have ha_bounds: "-1 \<le> a" "a \<le> 1"
+        using ht unfolding a_def by (by100 linarith)+
+      have ha_sq_le: "a\<^sup>2 \<le> 1"
+        using ha_bounds by (by100 simp add: square_le_1)
+      have ha_nonneg: "0 \<le> 1 - a\<^sup>2"
+        using ha_sq_le by (by100 linarith)
+      have hx_sphere: "x \<in> sphere (0::real^2) 1"
+        using hx_eq ha_nonneg unfolding \<gamma>_def a_def sphere_def
+        by (simp add: dist_norm norm_eq_sqrt_inner inner_vec_def sum_2
+            power2_eq_square)
+      have hx_half: "0 \<le> e\<^sub>2 \<bullet> x"
+        using hx_eq unfolding \<gamma>_def e\<^sub>2_def
+        by (simp add: inner_vec_def sum_2)
+      show "x \<in> sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}"
+        using hx_sphere hx_half by (by100 blast)
+    qed
+  next
+    show "sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x} \<subseteq> path_image \<gamma>"
+    proof
+      fix x
+      assume hx: "x \<in> sphere (0::real^2) 1 \<inter> {x. 0 \<le> e\<^sub>2 \<bullet> x}"
+      have hx_sphere: "x \<in> sphere (0::real^2) 1"
+        using hx by (by100 blast)
+      have hx_half: "0 \<le> e\<^sub>2 \<bullet> x"
+        using hx by (by100 blast)
+      have hx_norm_sq: "(x $ 1)\<^sup>2 + (x $ 2)\<^sup>2 = 1"
+        using hx_sphere unfolding sphere_def dist_norm
+        by (simp add: norm_eq_sqrt_inner inner_vec_def sum_2
+            power2_eq_square)
+      have hx2_nonneg: "0 \<le> x $ 2"
+        using hx_half unfolding e\<^sub>2_def by (simp add: inner_vec_def sum_2)
+      have hx1_sq_le: "(x $ 1)\<^sup>2 \<le> 1"
+        using hx_norm_sq by (by100 nlinarith)
+      have hx1_bounds: "-1 \<le> x $ 1" "x $ 1 \<le> 1"
+        using hx1_sq_le by (by100 simp add: square_le_1)+
+      define t where "t = ((x $ 1) + 1) / 2"
+      have ht: "t \<in> {0..1}"
+        using hx1_bounds unfolding t_def by (by100 simp)
+      have hfirst: "2 * t - 1 = x $ 1"
+        unfolding t_def by (by100 simp)
+      have hx2_sq: "(x $ 2)\<^sup>2 = 1 - (x $ 1)\<^sup>2"
+        using hx_norm_sq by (by100 simp)
+      have hx2_sqrt: "sqrt (1 - (x $ 1)\<^sup>2) = x $ 2"
+        using real_sqrt_unique[OF hx2_nonneg hx2_sq] .
+      have hx_gamma: "\<gamma> t = x"
+        unfolding \<gamma>_def
+        using hfirst hx2_sqrt by (simp add: vec_eq_iff forall_2)
+      show "x \<in> path_image \<gamma>"
+        unfolding path_image_def using ht hx_gamma by (by100 blast)
+    qed
+  qed
+  have hgeo: "geotop_is_arc (path_image \<gamma>)
+      (subspace_topology UNIV geotop_euclidean_topology (path_image \<gamma>))"
+    by (rule geotop_HOL_arc_imp_geotop_is_arc[OF h\<gamma>_arc])
+  show ?thesis
+    using hgeo h\<gamma>_image by (by100 simp)
+qed
+
+lemma geotop_halfspace_sphere_affine_image_standard_upper_semicircle_exists_dev34:
+  fixes n p :: "real^2"
+  assumes hn: "n \<noteq> 0"
+  assumes hr: "0 < r"
+  shows "\<exists>f. top1_homeomorphism_on (UNIV::(real^2) set)
+          (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
+          (UNIV::(real^2) set) geotop_euclidean_topology f
+        \<and> f ` (sphere (0::real^2) 1 \<inter>
+              {x. 0 \<le> (vector [0, 1] :: real^2) \<bullet> x})
+          = sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+  (**
+    Affine normalization transfer for the half-circle.  Choose an orthogonal
+    map sending the standard upward unit vector to \<open>n /\<^sub>R norm n\<close>, then
+    scale by \<open>r\<close> and translate by \<open>p\<close>.  This sends the standard upper
+    unit semicircle exactly onto the circle of radius \<open>r\<close> centered at \<open>p\<close>
+    cut by the closed half-plane \<open>0 \<le> n \<bullet> (x - p)\<close>. **)
+proof -
+  let ?e\<^sub>2 = "(vector [0, 1] :: real^2)"
+  have he\<^sub>2_norm: "norm ?e\<^sub>2 = 1"
+    by (simp add: norm_eq_sqrt_inner inner_vec_def sum_2)
+  have hn_norm_pos: "0 < norm n"
+    using hn by (by100 simp)
+  have hn_norm_ne: "norm n \<noteq> 0"
+    using hn_norm_pos by (by100 simp)
+  have hunit_norm: "norm (n /\<^sub>R norm n) = 1"
+    using hn_norm_pos by (by100 simp)
+  obtain T :: "real^2 \<Rightarrow> real^2" where hT_orth: "orthogonal_transformation T"
+    and hT_e\<^sub>2: "T ?e\<^sub>2 = n /\<^sub>R norm n"
+    by (rule orthogonal_transformation_exists[OF he\<^sub>2_norm hunit_norm])
+  define A :: "real^2 \<Rightarrow> real^2" where "A x = r *\<^sub>R T x" for x
+  define f :: "real^2 \<Rightarrow> real^2" where "f x = p + A x" for x
+  have hT_lin: "linear T"
+    by (rule orthogonal_transformation_linear[OF hT_orth])
+  have hA_lin: "linear A"
+    unfolding A_def
+    by (rule linearI) (simp_all add: linear_add hT_lin linear.scaleR)
+  have hT_inj: "inj T"
+    by (rule orthogonal_transformation_inj[OF hT_orth])
+  have hA_inj: "inj A"
+  proof (rule injI)
+    fix x y :: "real^2"
+    assume hxy: "A x = A y"
+    have "T x = T y"
+      using hxy hr unfolding A_def by (by100 simp)
+    thus "x = y"
+      using hT_inj unfolding inj_def by (by100 blast)
+  qed
+  have hf_homeo_eucl: "top1_homeomorphism_on (UNIV::(real^2) set)
+      geotop_euclidean_topology (UNIV::(real^2) set) geotop_euclidean_topology f"
+    unfolding f_def
+    by (rule geotop_affine_linear_homeomorphism_UNIV[OF hA_lin hA_inj, of p 0])
+  have hf_homeo: "top1_homeomorphism_on (UNIV::(real^2) set)
+      (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
+      (UNIV::(real^2) set) geotop_euclidean_topology f"
+    using hf_homeo_eucl by (simp add: subspace_topology_UNIV_UNIV)
+  have hn_as_Te\<^sub>2: "n = norm n *\<^sub>R T ?e\<^sub>2"
+    using hT_e\<^sub>2 hn_norm_ne by (by100 simp)
+  have hT_inner: "\<And>x y. T x \<bullet> T y = x \<bullet> y"
+    using hT_orth unfolding orthogonal_transformation_def by (by100 blast)
+  have hT_norm: "\<And>x. norm (T x) = norm x"
+    by (rule orthogonal_transformation_norm[OF hT_orth])
+  have hT_surj: "surj T"
+    by (rule orthogonal_transformation_surj[OF hT_orth])
+  have hf_image: "f ` (sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x})
+      = sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+  proof
+    show "f ` (sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x})
+        \<subseteq> sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+    proof
+      fix y
+      assume hy: "y \<in> f ` (sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x})"
+      obtain x where hx_sphere: "x \<in> sphere (0::real^2) 1"
+        and hx_half: "0 \<le> ?e\<^sub>2 \<bullet> x"
+        and hy_eq: "y = f x"
+        using hy by (by100 blast)
+      have hx_norm: "norm x = 1"
+        using hx_sphere unfolding sphere_def dist_norm by (by100 simp)
+      have hy_center: "y - p = r *\<^sub>R T x"
+        using hy_eq unfolding f_def A_def by (by100 simp)
+      have hy_sphere: "y \<in> sphere p r"
+        using hy_center hx_norm hr hT_norm[of x]
+        unfolding sphere_def dist_norm by (by100 simp)
+      have hinner_nonneg: "0 \<le> n \<bullet> (y - p)"
+      proof -
+        have "n \<bullet> (y - p) = r * norm n * (?e\<^sub>2 \<bullet> x)"
+          using hy_center hn_as_Te\<^sub>2 hT_inner[of ?e\<^sub>2 x]
+          by (simp add: inner_scaleR_left inner_scaleR_right algebra_simps)
+        thus ?thesis
+          using hr hn_norm_pos hx_half by (by100 simp)
+      qed
+      show "y \<in> sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+        using hy_sphere hinner_nonneg by (by100 blast)
+    qed
+  next
+    show "sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}
+        \<subseteq> f ` (sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x})"
+    proof
+      fix y
+      assume hy: "y \<in> sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+      have hy_sphere: "y \<in> sphere p r"
+        using hy by (by100 blast)
+      have hy_half: "0 \<le> n \<bullet> (y - p)"
+        using hy by (by100 blast)
+      obtain x where hx_T: "T x = (y - p) /\<^sub>R r"
+        using hT_surj unfolding surj_def by (by100 blast)
+      have hy_center: "y - p = r *\<^sub>R T x"
+        using hx_T hr by (by100 simp)
+      have hy_eq: "y = f x"
+        using hy_center unfolding f_def A_def by (by100 simp)
+      have hx_norm: "norm x = 1"
+      proof -
+        have "r = norm (y - p)"
+          using hy_sphere hr unfolding sphere_def dist_norm by (by100 simp)
+        also have "\<dots> = norm (r *\<^sub>R T x)"
+          using hy_center by (by100 simp)
+        also have "\<dots> = r * norm x"
+          using hr hT_norm[of x] by (by100 simp)
+        finally show ?thesis
+          using hr by (by100 simp)
+      qed
+      have hx_sphere: "x \<in> sphere (0::real^2) 1"
+        using hx_norm unfolding sphere_def dist_norm by (by100 simp)
+      have hx_half: "0 \<le> ?e\<^sub>2 \<bullet> x"
+      proof -
+        have "n \<bullet> (y - p) = r * norm n * (?e\<^sub>2 \<bullet> x)"
+          using hy_center hn_as_Te\<^sub>2 hT_inner[of ?e\<^sub>2 x]
+          by (simp add: inner_scaleR_left inner_scaleR_right algebra_simps)
+        thus ?thesis
+          using hy_half hr hn_norm_pos by (by100 simp)
+      qed
+      have hx_mem: "x \<in> sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x}"
+        using hx_sphere hx_half by (by100 blast)
+      show "y \<in> f ` (sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x})"
+        using hx_mem hy_eq by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    using hf_homeo hf_image by (by100 blast)
+qed
+
 lemma geotop_closed_halfspace_sphere_arc_R2_dev34:
   fixes n p :: "real^2"
   assumes hn: "n \<noteq> 0"
@@ -15915,7 +16154,30 @@ lemma geotop_closed_halfspace_sphere_arc_R2_dev34:
     The analytic half-circle fact used by Moise Lemma 3: a Euclidean circle
     cut by a closed half-plane through its center is a closed semicircle, hence
     an arc. **)
-  sorry
+proof -
+  let ?e\<^sub>2 = "(vector [0, 1] :: real^2)"
+  let ?A = "sphere (0::real^2) 1 \<inter> {x. 0 \<le> ?e\<^sub>2 \<bullet> x}"
+  obtain f where hf_homeo:
+      "top1_homeomorphism_on (UNIV::(real^2) set)
+        (subspace_topology UNIV geotop_euclidean_topology (UNIV::(real^2) set))
+        (UNIV::(real^2) set) geotop_euclidean_topology f"
+    and hf_image:
+      "f ` ?A = sphere p r \<inter> {x. 0 \<le> n \<bullet> (x - p)}"
+    using geotop_halfspace_sphere_affine_image_standard_upper_semicircle_exists_dev34
+      [OF hn hr]
+    by (by100 blast)
+  have hA_arc: "geotop_is_arc ?A
+      (subspace_topology UNIV geotop_euclidean_topology ?A)"
+    by (rule geotop_standard_upper_semicircle_arc_R2_dev34[of ?e\<^sub>2, OF refl])
+  have hA_sub_UNIV: "?A \<subseteq> (UNIV::(real^2) set)"
+    by (by100 simp)
+  have hfA_arc: "geotop_is_arc (f ` ?A)
+      (subspace_topology UNIV geotop_euclidean_topology (f ` ?A))"
+    by (rule geotop_homeomorphism_image_arc_dev34
+        [OF hf_homeo hA_sub_UNIV hA_arc])
+  show ?thesis
+    using hfA_arc hf_image by (by100 simp)
+qed
 
 lemma geotop_edge_face_2simplex_small_sphere_halfspace_model_exists_dev34:
   fixes e \<sigma> :: "(real^2) set"
