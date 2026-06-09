@@ -9912,7 +9912,28 @@ lemma geotop_polygon_arc_opposite_boundary_theta_component_split_prefix:
     extract a broken line from the Q-side to the S-side inside the cut-open
     disk; together with the two boundary arcs from P to R this gives the
     forbidden theta graph from Theorem 2.8. **)
-  sorry
+proof -
+  have hcut_open: "geotop_polygon_interior J - A \<in> geotop_euclidean_topology"
+    by (rule geotop_polygon_interior_minus_arc_open_prefix[OF hJ hA])
+  have hD42_theta_component_book_step:
+      "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S
+        \<and> U\<^sub>Q \<inter> U\<^sub>S = {}
+        \<and> geotop_polygon_interior J - A = U\<^sub>Q \<union> U\<^sub>S"
+    (**
+      Remaining D42 theta component step after the elementary cut-open fact:
+      choose the Q-side and S-side components of \<open>I - A\<close>.  If the two side
+      components coincide, extract the Moise broken-line chord in \<open>I - A\<close>
+      and combine it with the two P-R boundary arcs to obtain the forbidden
+      theta graph from Theorem 2.8. **)
+    sorry
+  show ?thesis
+    using hD42_theta_component_book_step by (by100 blast)
+qed
 
 lemma geotop_polygon_interior_minus_arc_frontier_at_boundary_point_dev34:
   fixes J A :: "(real^2) set" and X P R :: "real^2"
