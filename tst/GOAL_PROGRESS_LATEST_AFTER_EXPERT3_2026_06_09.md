@@ -14,7 +14,7 @@ dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:8803
 dev34_prefix_mid/GeoTop_3_4_Prefix_Mid.thy:10047
 dev34_prefix_graph/cache/GeoTop_3_4_Prefix_Graph_Cache.thy:9610
 dev34/GeoTop_3_4.thy:13967
-dev34/GeoTop_3_4.thy:15610
+dev34/GeoTop_3_4.thy:15725
 ```
 
 This is progress relative to the expert3 report, which described an 8-hole
@@ -59,7 +59,9 @@ cleanup:
 7. `geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34`
    - One-sided semicircle crosscut separation in a local collar.
    - Recent helpers now prove the spherical crosscut is contained in `U` from
-     the collar assumption and that the edge interior point lies in `U`.
+     the collar assumption, that the edge interior point lies in `U`, and that
+     a connected collar subset cannot cross from the inner side to radius
+     greater than the deleted spherical crosscut.
 
 ## What changed since the expert audits
 
@@ -72,6 +74,9 @@ Recent work also reduced the endpoint package by adding source-chain listing
 helpers and splitting the endpoint fan proof into smaller model/target steps.
 For the semicircle package, the work has moved toward the audit-recommended
 collar/radius-crossing proof instead of a broad Jordan-style argument.
+The latest committed helper is
+`geotop_connected_collar_crosscut_radius_crossing_contradiction_dev34`
+(`a1f1d085`), which packages the connected first-crossing contradiction.
 
 ## Verification and cache status
 
