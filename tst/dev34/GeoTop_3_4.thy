@@ -2571,6 +2571,13 @@ proof -
   have hB_complex:
       "geotop_is_complex ?B"
     by (rule geotop_2simplex_comb_boundary_is_complex_dev34[OF h\<sigma>])
+  have hB_1dim:
+      "geotop_complex_is_1dim ?B"
+    by (rule geotop_2simplex_comb_boundary_is_1dim_dev34[OF h\<sigma>])
+  have hB_linear:
+      "geotop_is_linear_graph ?B"
+    by (rule geotop_complex_1dim_imp_linear_graph_dev34
+        [OF hB_complex hB_1dim])
   have hB_finite:
       "finite ?B"
     by (rule geotop_2simplex_comb_boundary_finite_dev34[OF h\<sigma>])
@@ -3212,6 +3219,12 @@ proof -
       "geotop_is_linear_graph F_B"
     by (rule geotop_complex_1dim_imp_linear_graph_dev34
         [OF hF_B_complex hF_B_1dim])
+  have hF_B_frontier_subset_poly:
+      "frontier \<sigma> \<subseteq> geotop_polyhedron F_B"
+    using h\<sigma>_frontier_subset_B_poly hF_B_poly_eq by (by100 simp)
+  have hF_B_open_edge_ab_subset_poly:
+      "open_segment a\<^sub>\<sigma> b\<^sub>\<sigma> \<subseteq> geotop_polyhedron F_B"
+    using h\<sigma>_open_edge_ab_subset_B_poly hF_B_poly_eq by (by100 simp)
   have hS_B_subset_F_B_vertices:
       "S_B \<subseteq> geotop_complex_vertices F_B"
   proof
@@ -3237,6 +3250,9 @@ proof -
       "card (geotop_complex_vertices F_B)
         = card (geotop_complex_vertices L)"
     using hF_B_vertices_eq_S_B hS_B_card by (by100 simp)
+  have hF_B_vertices_card_gt2:
+      "2 < card (geotop_complex_vertices F_B)"
+    using hF_B_vertices_card hsource_vertices_card_gt2 by (by100 simp)
   have hu\<^sub>B_list_set_F_B_vertices:
       "set u\<^sub>B_list = geotop_complex_vertices F_B"
     using hu\<^sub>B_list_set hF_B_vertices_eq_S_B by (by100 simp)
