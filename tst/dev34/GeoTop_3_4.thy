@@ -15904,6 +15904,31 @@ proof -
         [OF hlocal_poly_eq_\<sigma> hUsubM hz_Uminus hz_ball hz_radius])
 qed
 
+lemma geotop_edge_simplex_small_sphere_arc_outer_radius_exists_dev34:
+  fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
+  assumes hedge: "geotop_is_edge e"
+  assumes hp: "p \<in> rel_interior e"
+  assumes h\<sigma>2: "geotop_simplex_dim \<sigma> 2"
+  assumes h\<sigma>face: "geotop_is_face e \<sigma>"
+  assumes hs: "0 < s"
+  assumes hlocal_poly_eq_\<sigma>:
+    "ball p s \<inter> geotop_polyhedron K = ball p s \<inter> \<sigma>"
+  assumes hballU: "geotop_polyhedron K \<inter> ball p s \<subseteq> U"
+  assumes hUsubM: "U \<subseteq> geotop_polyhedron K"
+  shows "\<exists>r y. 0 < r \<and> r < s
+      \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
+          (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))
+      \<and> y \<in> U - (sphere p r \<inter> \<sigma>)
+      \<and> r < dist p y"
+  (**
+    The remaining metric step in Moise Lemma 3.  Since \<open>p\<close> is in the
+    relative interior of the edge face \<open>e\<close> of the 2-simplex \<open>\<sigma>\<close>, choose a
+    radius smaller than the two edge-end distances, the opposite side distance,
+    and the collar radius \<open>s\<close>.  Then \<open>sphere p r \<inter> \<sigma>\<close> is exactly the
+    standard semicircular crosscut of the one-sided simplex model.  The outer
+    witness is a nearby edge-interior point at distance greater than \<open>r\<close>. **)
+  sorry
+
 lemma geotop_one_side_simplex_semicircle_crosscut_separates_domain_dev34:
   fixes K :: "(real^2) set set" and e \<sigma> U :: "(real^2) set"
   assumes hedge: "geotop_is_edge e"
@@ -15936,12 +15961,8 @@ proof -
             (subspace_topology UNIV geotop_euclidean_topology (sphere p r \<inter> \<sigma>))
         \<and> y \<in> U - (sphere p r \<inter> \<sigma>)
         \<and> r < dist p y"
-    (**
-      Remaining metric simplex geometry: choose the radius small relative to
-      the edge endpoints and the opposite side of \<open>\<sigma>\<close>, so the sphere cuts
-      \<open>\<sigma>\<close> in the standard one-sided semicircle, and keep an edge-side point
-      outside that radius. **)
-    sorry
+    by (rule geotop_edge_simplex_small_sphere_arc_outer_radius_exists_dev34
+        [OF hedge hp h\<sigma>2 h\<sigma>face hs hlocal_poly_eq_\<sigma> hballU hUsubM])
   have hsmall_crosscut_book:
       "\<exists>r. 0 < r \<and> r < s
         \<and> geotop_is_arc (sphere p r \<inter> \<sigma>)
