@@ -1215,6 +1215,106 @@ proof -
   qed
 qed
 
+lemma geotop_finite_polyhedron_points_as_vertices_vertices_subset_dev34:
+  fixes K :: "'a::euclidean_space set set" and S :: "'a set"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hK_1dim: "geotop_complex_is_1dim K"
+  assumes hK_finite: "finite K"
+  assumes hS_finite: "finite S"
+  assumes hS_poly: "S \<subseteq> geotop_polyhedron K"
+  shows "\<exists>K'. geotop_is_complex K'
+      \<and> geotop_complex_is_1dim K'
+      \<and> finite K'
+      \<and> geotop_polyhedron K' = geotop_polyhedron K
+      \<and> (\<forall>x\<in>S. {x} \<in> K')
+      \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
+      \<and> geotop_complex_vertices K' \<subseteq> S \<union> geotop_complex_vertices K"
+proof -
+  have hinduct:
+    "\<And>S. finite S \<Longrightarrow> S \<subseteq> geotop_polyhedron K \<Longrightarrow>
+      \<exists>K'. geotop_is_complex K'
+        \<and> geotop_complex_is_1dim K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' = geotop_polyhedron K
+        \<and> (\<forall>x\<in>S. {x} \<in> K')
+        \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
+        \<and> geotop_complex_vertices K' \<subseteq> S \<union> geotop_complex_vertices K"
+  proof -
+    fix S :: "'a set"
+    assume hS_fin: "finite S"
+    show "S \<subseteq> geotop_polyhedron K \<Longrightarrow>
+      \<exists>K'. geotop_is_complex K'
+        \<and> geotop_complex_is_1dim K'
+        \<and> finite K'
+        \<and> geotop_polyhedron K' = geotop_polyhedron K
+        \<and> (\<forall>x\<in>S. {x} \<in> K')
+        \<and> (\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K')
+        \<and> geotop_complex_vertices K' \<subseteq> S \<union> geotop_complex_vertices K"
+      using hS_fin
+    proof (induction S rule: finite_induct)
+      case empty
+      have hS_vertices: "\<forall>x\<in>{}. {x} \<in> K"
+        by (by100 simp)
+      have hold_vertices: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K"
+        by (by100 simp)
+      have hvertices_bound:
+        "geotop_complex_vertices K \<subseteq> {} \<union> geotop_complex_vertices K"
+        by (by100 simp)
+      show ?case
+        using hK_complex hK_1dim hK_finite hS_vertices hold_vertices hvertices_bound
+        by (by100 blast)
+    next
+      case (insert x S)
+      have hS_poly: "S \<subseteq> geotop_polyhedron K"
+        using insert.prems by (by100 blast)
+      have hx_poly: "x \<in> geotop_polyhedron K"
+        using insert.prems by (by100 blast)
+      obtain K0 where hK0_complex: "geotop_is_complex K0"
+        and hK0_1dim: "geotop_complex_is_1dim K0"
+        and hK0_finite: "finite K0"
+        and hK0_poly: "geotop_polyhedron K0 = geotop_polyhedron K"
+        and hS_vertices: "\<forall>y\<in>S. {y} \<in> K0"
+        and hold_vertices0: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K0"
+        and hK0_vertices:
+          "geotop_complex_vertices K0 \<subseteq> S \<union> geotop_complex_vertices K"
+        using insert.IH[OF hS_poly] by (by100 blast)
+      have hx_poly0: "x \<in> geotop_polyhedron K0"
+        using hx_poly hK0_poly by (by100 simp)
+      obtain K1 where hK1_complex: "geotop_is_complex K1"
+        and hK1_1dim: "geotop_complex_is_1dim K1"
+        and hK1_poly0: "geotop_polyhedron K1 = geotop_polyhedron K0"
+        and hx_vertex: "{x} \<in> K1"
+        and hvertices_preserved: "\<forall>v. {v} \<in> K0 \<longrightarrow> {v} \<in> K1"
+        and hK1_vertices0:
+          "geotop_complex_vertices K1 \<subseteq> insert x (geotop_complex_vertices K0)"
+        and hfinite_imp: "finite K0 \<longrightarrow> finite K1"
+        using geotop_complex_subdivide_at_vertices_subset_dev34
+          [OF hK0_complex hK0_1dim hx_poly0]
+        by (by100 blast)
+      have hK1_finite: "finite K1"
+        using hfinite_imp hK0_finite by (by100 blast)
+      have hK1_poly: "geotop_polyhedron K1 = geotop_polyhedron K"
+        using hK1_poly0 hK0_poly by (by100 simp)
+      have hS_vertices1: "\<forall>y\<in>S. {y} \<in> K1"
+        using hS_vertices hvertices_preserved by (by100 blast)
+      have hinsert_vertices: "\<forall>y\<in>insert x S. {y} \<in> K1"
+        using hx_vertex hS_vertices1 by (by100 blast)
+      have hold_vertices1: "\<forall>v. {v} \<in> K \<longrightarrow> {v} \<in> K1"
+        using hold_vertices0 hvertices_preserved by (by100 blast)
+      have hvertices_bound:
+        "geotop_complex_vertices K1
+          \<subseteq> insert x S \<union> geotop_complex_vertices K"
+        using hK1_vertices0 hK0_vertices by (by100 blast)
+      show ?case
+        using hK1_complex hK1_1dim hK1_finite hK1_poly
+          hinsert_vertices hold_vertices1 hvertices_bound
+        by (by100 blast)
+    qed
+  qed
+  show ?thesis
+    by (rule hinduct[OF hS_finite hS_poly])
+qed
+
 lemma geotop_2simplex_boundary_finite_points_as_vertices_dev34:
   fixes \<sigma> :: "(real^2) set" and S :: "(real^2) set"
   assumes h\<sigma>: "geotop_simplex_dim \<sigma> 2"
