@@ -9991,6 +9991,21 @@ proof -
     using hU_open hX_front by (by100 blast)
 qed
 
+lemma geotop_frontier_member_imp_set_nonempty_prefix:
+  fixes U :: "'a::real_normed_vector set" and X :: 'a
+  assumes hX: "X \<in> geotop_frontier UNIV geotop_euclidean_topology U"
+  shows "U \<noteq> {}"
+proof -
+  have hX_front: "X \<in> frontier U"
+    using hX geotop_frontier_UNIV_eq_frontier[of U] by (by100 simp)
+  show ?thesis
+  proof
+    assume hU_empty: "U = {}"
+    hence "frontier U = {}" by (by100 simp)
+    thus False using hX_front by (by100 blast)
+  qed
+qed
+
 definition geotop_polygon_cyclic_order ::
   "(real^2) set \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> real^2 \<Rightarrow> bool" where
   "geotop_polygon_cyclic_order J P Q R S \<longleftrightarrow>
@@ -10092,6 +10107,41 @@ proof -
       \<exists>B. geotop_is_broken_line B \<and>
           B \<subseteq> geotop_polygon_interior J - A \<and> X \<in> B \<and> Y \<in> B"
     by (rule geotop_open_component_broken_line_between_prefix[OF hcut_open])
+  have hD42_side_points:
+      "\<exists>Q' S' U\<^sub>Q0 U\<^sub>S0.
+        U\<^sub>Q0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>S0 \<in> geotop_euclidean_topology
+        \<and> U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A
+        \<and> U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A
+        \<and> Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0
+        \<and> S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0
+        \<and> Q' \<in> geotop_polygon_interior J - A
+        \<and> S' \<in> geotop_polygon_interior J - A"
+  proof -
+    obtain U\<^sub>Q0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
+      and hUQ0_sub: "U\<^sub>Q0 \<subseteq> geotop_polygon_interior J - A"
+      and hQ_front: "Q \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>Q0"
+      using hQ_frontier_witness by (elim exE conjE)
+    obtain U\<^sub>S0 where hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
+      and hUS0_sub: "U\<^sub>S0 \<subseteq> geotop_polygon_interior J - A"
+      and hS_front: "S \<in> geotop_frontier UNIV geotop_euclidean_topology U\<^sub>S0"
+      using hS_frontier_witness by (elim exE conjE)
+    have hUQ0_ne: "U\<^sub>Q0 \<noteq> {}"
+      by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hQ_front])
+    have hUS0_ne: "U\<^sub>S0 \<noteq> {}"
+      by (rule geotop_frontier_member_imp_set_nonempty_prefix[OF hS_front])
+    obtain Q' where hQ'_UQ0: "Q' \<in> U\<^sub>Q0"
+      using hUQ0_ne by (by100 blast)
+    obtain S' where hS'_US0: "S' \<in> U\<^sub>S0"
+      using hUS0_ne by (by100 blast)
+    have hQ'_cut: "Q' \<in> geotop_polygon_interior J - A"
+      using hQ'_UQ0 hUQ0_sub by (by100 blast)
+    have hS'_cut: "S' \<in> geotop_polygon_interior J - A"
+      using hS'_US0 hUS0_sub by (by100 blast)
+    show ?thesis
+      using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front hQ'_cut hS'_cut
+      by (intro exI conjI)
+  qed
   have hD42_theta_component_book_step:
       "\<exists>U\<^sub>Q U\<^sub>S. U\<^sub>Q \<in> geotop_euclidean_topology
         \<and> U\<^sub>S \<in> geotop_euclidean_topology
