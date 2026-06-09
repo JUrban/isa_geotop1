@@ -1311,6 +1311,68 @@ proof -
     unfolding geotop_isomorphism_def using h\<psi>bij hcond by (by100 blast)
 qed
 
+lemma geotop_closed_indexed_edge_cycle_complex_connected_dev34:
+  fixes K :: "(real^2) set set" and v :: "nat \<Rightarrow> real^2"
+  assumes hK_complex: "geotop_is_complex K"
+  assumes hp_pos: "0 < p"
+  assumes hclosed: "v p = v 0"
+  assumes hK_decomp:
+    "K =
+      ((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..<p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  assumes hedge:
+    "\<And>k. k \<in> {0..<p}
+      \<Longrightarrow> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+  shows "geotop_complex_connected K"
+proof -
+  let ?Kp = "((\<lambda>x. {x}) ` ((\<lambda>k. v k) ` {0..p}))
+      \<union> ((\<lambda>k. closed_segment (v k) (v (Suc k))) ` {0..<p})"
+  have himage_closed:
+      "((\<lambda>k. v k) ` {0..p}) = ((\<lambda>k. v k) ` {0..<p})"
+  proof
+    show "((\<lambda>k. v k) ` {0..p}) \<subseteq> ((\<lambda>k. v k) ` {0..<p})"
+    proof
+      fix x
+      assume hx: "x \<in> ((\<lambda>k. v k) ` {0..p})"
+      then obtain k where hk: "k \<in> {0..p}" and hxv: "x = v k"
+        by (by100 blast)
+      show "x \<in> ((\<lambda>k. v k) ` {0..<p})"
+      proof (cases "k = p")
+        case True
+        have "0 \<in> {0..<p}"
+          using hp_pos by (by100 simp)
+        thus ?thesis
+          using True hxv hclosed by (by100 blast)
+      next
+        case False
+        have "k \<in> {0..<p}"
+          using hk False by (by100 simp)
+        thus ?thesis
+          using hxv by (by100 blast)
+      qed
+    qed
+    show "((\<lambda>k. v k) ` {0..<p}) \<subseteq> ((\<lambda>k. v k) ` {0..p})"
+      by (by100 auto)
+  qed
+  have hK_eq_path: "K = ?Kp"
+    using hK_decomp himage_closed by (by100 simp)
+  have hKp_complex: "geotop_is_complex ?Kp"
+    using hK_complex hK_eq_path by (by100 simp)
+  have hpath_conn: "geotop_complex_connected ?Kp"
+  proof (rule geotop_indexed_edge_path_complex_connected_prefix
+      [where v = v and a = 0 and b = p and K = ?Kp])
+    show "geotop_is_complex ?Kp"
+      by (rule hKp_complex)
+    show "0 < p"
+      by (rule hp_pos)
+    show "\<forall>k\<in>{0..<p}.
+      geotop_is_edge (closed_segment (v k) (v (Suc k)))"
+      using hedge by (by100 blast)
+  qed
+  show ?thesis
+    using hpath_conn hK_eq_path by (by100 simp)
+qed
+
 definition geotop_standard_boundary_cycle_listing_data_dev34 ::
   "(real^2) set \<Rightarrow> nat \<Rightarrow> (real^2) set set \<Rightarrow> (nat \<Rightarrow> real^2) \<Rightarrow> bool"
 where
@@ -1439,6 +1501,10 @@ proof -
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> geotop_is_edge (closed_segment (v k) (v (Suc k)))"
     using hsource_edges_eq by (by100 blast)
+  have hsource_connected: "geotop_complex_connected L"
+    by (rule geotop_closed_indexed_edge_cycle_complex_connected_dev34
+        [OF hL_complex hp_pos hsource_closed hsource_listing_decomp
+          hsource_listed_edge_is_edge])
   have hsource_singleton_convex_hull_eq:
       "\<And>x :: real^2. geotop_convex_hull {x} = {x}"
   proof -
@@ -1470,6 +1536,54 @@ proof -
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> card {e\<in>L. geotop_is_edge e \<and> v k \<in> e} = 2"
     using hdegree_two hsource_index_singleton_in_L by (by100 blast)
+  have hsource_zero_idx_for_cycle: "0 \<in> {0..<p}"
+    using hp_pos by (by100 simp)
+  obtain s\<^sub>c q\<^sub>c p\<^sub>c where hsource_started_cycle_pkg:
+      "s\<^sub>c \<in> {(w, d). {w} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> w \<in> d}
+      \<and> fst s\<^sub>c = v 0
+      \<and> q\<^sub>c \<noteq> v 0
+      \<and> snd s\<^sub>c = closed_segment (v 0) q\<^sub>c
+      \<and> {q\<^sub>c} \<in> L
+      \<and> 1 < p\<^sub>c
+      \<and> fst ((geotop_oriented_edge_successor L ^^ Suc 0) s\<^sub>c) = q\<^sub>c
+      \<and> (geotop_oriented_edge_successor L ^^ p\<^sub>c) s\<^sub>c = s\<^sub>c
+      \<and> (\<forall>k. 0 < k \<and> k < p\<^sub>c \<longrightarrow>
+          (geotop_oriented_edge_successor L ^^ k) s\<^sub>c \<noteq> s\<^sub>c)
+      \<and> inj_on (\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c) {0..<p\<^sub>c}
+      \<and> card ((\<lambda>k. (geotop_oriented_edge_successor L ^^ k) s\<^sub>c) ` {0..<p\<^sub>c}) = p\<^sub>c
+      \<and> closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ (p\<^sub>c - 1)) s\<^sub>c))
+          (fst s\<^sub>c) \<in> L
+      \<and> geotop_is_edge
+          (closed_segment
+            (fst ((geotop_oriented_edge_successor L ^^ (p\<^sub>c - 1)) s\<^sub>c))
+            (fst s\<^sub>c))"
+    using geotop_degree_two_vertex_successor_started_cycle_edge_package_prefix
+      [OF hL_linear hL_finite hdegree_two
+        hsource_index_singleton_in_L[OF hsource_zero_idx_for_cycle]]
+    by (by100 blast)
+  have hs\<^sub>c:
+      "s\<^sub>c \<in> {(w, d). {w} \<in> L \<and> d \<in> L \<and> geotop_is_edge d \<and> w \<in> d}"
+    using hsource_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>c_gt1: "1 < p\<^sub>c"
+    using hsource_started_cycle_pkg by (by100 blast)
+  have hp\<^sub>c_pos: "0 < p\<^sub>c"
+    using hp\<^sub>c_gt1 by (by100 linarith)
+  have hp\<^sub>c_closed:
+      "(geotop_oriented_edge_successor L ^^ p\<^sub>c) s\<^sub>c = s\<^sub>c"
+    using hsource_started_cycle_pkg by (by100 blast)
+  have hsource_successor_cycle_decomp:
+      "L =
+        (((\<lambda>w. {w}) `
+          ((\<lambda>k. fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+            ` {0..<p\<^sub>c}))
+        \<union> ((\<lambda>k. closed_segment
+          (fst ((geotop_oriented_edge_successor L ^^ k) s\<^sub>c))
+          (fst ((geotop_oriented_edge_successor L ^^ Suc k) s\<^sub>c)))
+            ` {0..<p\<^sub>c}))"
+    by (rule geotop_degree_two_oriented_edge_successor_period_cycle_exhausts_connected_graph_prefix
+        [OF hL_linear hL_finite hsource_connected hdegree_two
+          hs\<^sub>c hp\<^sub>c_pos hp\<^sub>c_closed])
   have hsource_listed_edge_endpoints_vertices:
       "\<And>k. k \<in> {0..<p}
         \<Longrightarrow> v k \<in> geotop_complex_vertices L
