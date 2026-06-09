@@ -10258,7 +10258,8 @@ proof -
               (geotop_polygon_interior J - A) Q'
             \<longrightarrow> (\<exists>B. geotop_is_broken_line B
               \<and> B \<subseteq> geotop_polygon_interior J - A
-              \<and> Q' \<in> B \<and> S' \<in> B))"
+              \<and> Q' \<in> B \<and> S' \<in> B
+              \<and> A \<inter> B = {}))"
   proof -
     obtain Q' S' U\<^sub>Q0 U\<^sub>S0 where hUQ0_open: "U\<^sub>Q0 \<in> geotop_euclidean_topology"
       and hUS0_open: "U\<^sub>S0 \<in> geotop_euclidean_topology"
@@ -10274,15 +10275,39 @@ proof -
           (geotop_polygon_interior J - A) Q'
         \<longrightarrow> (\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> geotop_polygon_interior J - A
-          \<and> Q' \<in> B \<and> S' \<in> B)"
+          \<and> Q' \<in> B \<and> S' \<in> B
+          \<and> A \<inter> B = {})"
     proof
       assume hS'_comp:
         "S' \<in> geotop_component_at UNIV geotop_euclidean_topology
           (geotop_polygon_interior J - A) Q'"
       show "\<exists>B. geotop_is_broken_line B
           \<and> B \<subseteq> geotop_polygon_interior J - A
-          \<and> Q' \<in> B \<and> S' \<in> B"
-        by (rule hsame_component_broken_line_extraction[OF hQ'_cut hS'_comp])
+          \<and> Q' \<in> B \<and> S' \<in> B
+          \<and> A \<inter> B = {}"
+      proof -
+        obtain B where hB_bl: "geotop_is_broken_line B"
+          and hB_sub: "B \<subseteq> geotop_polygon_interior J - A"
+          and hQ'_B: "Q' \<in> B"
+          and hS'_B: "S' \<in> B"
+          using hsame_component_broken_line_extraction[OF hQ'_cut hS'_comp]
+          by (elim exE conjE)
+        have hA_B: "A \<inter> B = {}"
+        proof (rule equals0I)
+          fix x
+          assume hx: "x \<in> A \<inter> B"
+          have hxA: "x \<in> A"
+            using hx by (by100 blast)
+          have hxB: "x \<in> B"
+            using hx by (by100 blast)
+          have "x \<in> geotop_polygon_interior J - A"
+            using hB_sub hxB by (by100 blast)
+          thus False
+            using hxA by (by100 blast)
+        qed
+        show ?thesis
+          using hB_bl hB_sub hQ'_B hS'_B hA_B by (intro exI conjI)
+      qed
     qed
     show ?thesis
       using hUQ0_open hUS0_open hUQ0_sub hUS0_sub hQ_front hS_front
